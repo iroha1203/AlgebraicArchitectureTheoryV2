@@ -125,8 +125,12 @@ impl Data {
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.part().support.to_vec(), self.part().scope.clone())
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         self.part().scalar.as_ref()
@@ -2163,9 +2167,14 @@ mod rational_scope_tests {
             };
             for reference in [*certificate, answer.claim.unwrap()] {
                 assert!(
-                    evaluation.nodes[reference.0].support.iter().any(|fact| {
-                        fact.field.as_ref().is_some_and(|name| name == field) && fact.atom.is_some()
-                    }),
+                    evaluation.nodes[reference.0]
+                        .support
+                        .materialize_for_test()
+                        .into_iter()
+                        .any(|fact| {
+                            fact.field.as_ref().is_some_and(|name| name == field)
+                                && fact.atom.is_some()
+                        }),
                     "{field}"
                 );
             }

@@ -197,11 +197,15 @@ impl Data {
     pub(super) fn wire(&self) -> Json {
         self.output.wire()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (
             self.source.layout.data.support.clone(),
             self.source.layout.data.scope.clone(),
         )
+    }
+    pub(super) fn metadata(&self, c: &Control) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(c)?, scope))
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if at != self.source.position || self.arguments().iter().any(|r| r.0 >= at) {
@@ -232,7 +236,9 @@ pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), Vali
         || n.ty != data.ty()
         || n.rule != Rule::Construction("equation_family")
         || n.arguments != data.arguments()
-        || n.support.as_slice() != data.source.layout.data.support.as_slice()
+        || !n
+            .support
+            .same_facts(&data.source.layout.data.support, g.control())?
         || n.scope != data.source.layout.data.scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()

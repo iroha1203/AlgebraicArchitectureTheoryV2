@@ -256,7 +256,7 @@ impl Evaluator<'_, '_> {
             arguments: std::iter::once(original)
                 .chain(bindings.iter().map(|binding| binding.value))
                 .collect(),
-            support: analyzed.analysis.support.clone(),
+            support: analyzed.analysis.support.clone().into(),
             evidence: vec![],
             judgment: None,
             scope: analyzed.analysis.scope.clone(),
@@ -315,7 +315,7 @@ impl Evaluator<'_, '_> {
                 .into_iter()
                 .chain(value)
                 .collect(),
-            support: analysis.support,
+            support: analysis.support.into(),
             evidence: vec![],
             judgment: None,
             scope: analysis.scope,
@@ -724,7 +724,7 @@ impl Evaluator<'_, '_> {
                         .chain(domains.iter().copied())
                         .chain([left.evaluation, right.evaluation])
                         .collect(),
-                    support: support.clone(),
+                    support: support.clone().into(),
                     evidence: vec![],
                     judgment: None,
                     scope: scope.clone(),
@@ -772,7 +772,7 @@ impl Evaluator<'_, '_> {
                             .into_iter()
                             .chain(value)
                             .collect(),
-                        support: support.clone(),
+                        support: support.clone().into(),
                         evidence: vec![],
                         judgment: None,
                         scope: scope.clone(),
@@ -885,7 +885,7 @@ impl Evaluator<'_, '_> {
                         .into_iter()
                         .chain(steps.iter().copied())
                         .collect(),
-                    support: support.clone(),
+                    support: support.clone().into(),
                     evidence: vec![],
                     judgment: None,
                     scope: scope.clone(),
@@ -974,7 +974,7 @@ impl Evaluator<'_, '_> {
                 .chain(normalization)
                 .chain(pair)
                 .collect(),
-            support: support.clone(),
+            support: support.clone().into(),
             evidence: normalization.into_iter().chain(pair).collect(),
             judgment: None,
             scope: scope.clone(),
@@ -1019,7 +1019,7 @@ impl Evaluator<'_, '_> {
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments,
-                support: support.clone(),
+                support: support.clone().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -1033,7 +1033,7 @@ impl Evaluator<'_, '_> {
             evaluation,
             value,
             scope,
-            support,
+            support: support.into(),
             reasons,
             comparison: None,
             residual,
@@ -1320,7 +1320,7 @@ impl Evaluator<'_, '_> {
                 .chain(children.iter().map(|child| child.evaluated.evaluation))
                 .chain(value)
                 .collect(),
-            support: support.clone(),
+            support: support.clone().into(),
             evidence: vec![],
             judgment: None,
             scope: scope.clone(),

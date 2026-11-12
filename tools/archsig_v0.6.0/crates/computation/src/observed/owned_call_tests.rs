@@ -3,12 +3,8 @@ mod owned_call_fixture {
     include!("../../../../tests/common/owned_calls.rs");
 }
 fn owned_call_result(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        owned_call_fixture::input(false, true, "r1"),
-        asks,
-        &quiet(),
-    )
-    .unwrap();
+    let r = evaluate_observed_bytes(owned_call_fixture::input(false, true, "r1"), asks, &quiet())
+        .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -31,7 +27,8 @@ fn owned_call_success_rechecks_value_body_arguments_owner_support_and_scope() {
     assert!(
         r.nodes[target]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.field.as_deref() == Some("Reservations.State.owner")
                 && f.atom.as_deref() == Some("p-owner"))
     );
@@ -142,7 +139,8 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
     let call_span = law.exprs()[*call].span;
     let caller_span = law.exprs()[*caller].span;
     let arg_span = law.exprs()[args[0]].span;
-    let Signature::View { body, .. } = &law.declarations()["Reservations.plainAdd"].signature else {
+    let Signature::View { body, .. } = &law.declarations()["Reservations.plainAdd"].signature
+    else {
         panic!("callee")
     };
     let ExprKind::Binary { lhs, .. } = &law.exprs()[*body].kind else {
@@ -301,9 +299,15 @@ fn owned_snapshot_condition_rechecks_actual_text_values_facts_and_prefixes() {
         let right = r.nodes[p].arguments[n - 2].0;
         assert_eq!(data_scalar_at(&r, l), &Scalar::Text("v".into()));
         assert_eq!(data_scalar_at(&r, right), &Scalar::Text("w".into()));
-        assert!(r.nodes[p].support.iter().any(|f| f.snapshot == "v"
-            && f.subject == "p"
-            && f.atom.as_deref() == Some("p-owner")));
+        assert!(
+            r.nodes[p]
+                .support
+                .materialize_for_test()
+                .into_iter()
+                .any(|f| f.snapshot == "v"
+                    && f.subject == "p"
+                    && f.atom.as_deref() == Some("p-owner"))
+        );
     }
 }
 #[test]
@@ -354,7 +358,11 @@ fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_ab
                     .iter()
                     .any(|x| matches!(x.kind, ReasonKind::ConditionFailed { .. }))
             );
-            assert!(!n.support.is_empty());
+            assert!(
+                !n.support
+                    .is_empty(&archsig_common::control::Control::unlimited())
+                    .unwrap()
+            );
             fields.push(request);
         }
         // 失敗した内側の呼出しは値を出さず、元の条件の失敗を残す。

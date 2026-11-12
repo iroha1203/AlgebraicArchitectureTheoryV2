@@ -154,7 +154,7 @@ fn original(
         NodeRef,
         Objects,
         NodeRef,
-        Vec<Fact>,
+        Support,
         Scope,
     )>,
     ValidationFailure,
@@ -224,11 +224,10 @@ fn original(
         tick(c)?;
         let n = g.get(r)?;
         env.recheck_node(g, n, r.0)?;
-        support.extend(n.support.iter().cloned());
+        support.push(n.support.clone());
         scope.merge(&n.scope);
     }
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     tick(c)?;
     Ok(Some((a, components, objects, universe, support, scope)))
 }
@@ -347,8 +346,12 @@ impl Data {
     pub(super) fn wire(&self) -> Json {
         self.output.wire()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.source.support.to_vec(), self.source.scope.clone())
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
     }
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.source.support.clone(), self.source.scope.clone())
@@ -432,7 +435,7 @@ impl Environment<'_> {
             || objects != data.source.objects
             || components != data.source.components
             || universe != data.source.universe
-            || support != data.source.support
+            || !support.same_facts(&data.source.support, &c)?
             || scope != data.source.scope
             || self.indexes.inputs.sources() != data.source.inputs.sources()
         {

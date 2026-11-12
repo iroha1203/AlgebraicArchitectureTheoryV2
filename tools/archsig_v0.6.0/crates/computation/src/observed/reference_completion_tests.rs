@@ -125,8 +125,8 @@ fn reference_completion_domains_reject_missing_duplicate_and_unregistered_member
 }
 #[test]
 fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_and_known_slots() {
-    use archsig_input::archmap::{FieldAssignment, check_completion_with_values};
     use archsig_common::control::CheckFailure;
+    use archsig_input::archmap::{FieldAssignment, check_completion_with_values};
     let r = example(true);
     let i = r.prepared.inputs();
     let pin = |field: &str, target: &str| FieldAssignment {
@@ -332,6 +332,6 @@ fn reference_completion_owner_expression_keeps_known_fiber_and_original_missing_
         items.pop();
     });
     completion_mutation(&r, domain, |ns| {
-        ns[domain].support.make_owned().clear();
+        ns[domain].support.materialize_mut_for_test().clear();
     });
 }

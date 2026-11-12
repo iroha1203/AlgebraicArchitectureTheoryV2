@@ -15,7 +15,7 @@ pub(super) struct Seed {
     types: Vec<Type>,
     sources: Vec<NodeRef>,
     scope: Scope,
-    support: Vec<Fact>,
+    support: Support,
     reasons: Vec<Reason>,
     ty: Type,
 }
@@ -29,7 +29,7 @@ struct Aggregate {
     seed: Seed,
     evaluations: Vec<NodeRef>,
     scope: Scope,
-    support: Vec<Fact>,
+    support: Support,
     reasons: Vec<Reason>,
     value: Option<Scalar>,
     pair: Option<(usize, usize)>,
@@ -809,7 +809,7 @@ impl Environment<'_> {
             }
             self.validate_at(graph, graph.get(*root)?, root.0)?;
             scope.merge(&graph.get(*root)?.scope);
-            support.extend(graph.get(*root)?.support.iter().cloned());
+            support.push(graph.get(*root)?.support.clone());
         }
         let (expected_fields, expected_sources, reasons) = self.completion_slots(graph, roots)?;
         if *fields != expected_fields || *sources != expected_sources {
@@ -818,7 +818,7 @@ impl Environment<'_> {
         let types = self.completion_slot_types(fields)?;
         let assignments = self.completion_assignment_context(fields)?;
         scope.merge(&assignments.scope);
-        support.extend(assignments.support);
+        support.push(assignments.support.into());
         for source in sources {
             self.tick()?;
             if source.0 >= reference.0 {
@@ -826,8 +826,7 @@ impl Environment<'_> {
             }
         }
         scope.completions = true;
-        support.sort();
-        support.dedup();
+        let support = Support::sum(vec![], support);
         let expected_arguments: Vec<_> = bindings
             .iter()
             .map(|b| b.value)
@@ -842,7 +841,7 @@ impl Environment<'_> {
         if node.ty != NodeType::Expression(source_ty.clone())
             || !matches!(&node.rule, Rule::Input {kind:"law",location:actual} if actual == location)
             || node.arguments != expected_arguments
-            || !node.support.is_empty()
+            || !node.support.is_empty(&self.control)?
             || !node.evidence.is_empty()
             || node.judgment.is_some()
             || node.scope != scope
@@ -918,7 +917,7 @@ impl Environment<'_> {
             || !clean(node, "domain")
             || !node.reasons.is_empty()
             || node.scope != seed.scope
-            || node.support != seed.support
+            || !node.support.same_facts(&seed.support, &self.control)?
             || node.arguments
                 != std::iter::once(seed.reference)
                     .chain(elements.iter().copied())
@@ -944,7 +943,7 @@ impl Environment<'_> {
                 || !member.reasons.is_empty()
                 || member.arguments != [seed.reference]
                 || member.scope != seed.scope
-                || member.support != seed.support
+                || !member.support.same_facts(&seed.support, &self.control)?
                 || !data::contains(&enumeration.values, value, &self.control)?
                 || data::contains(&seen, value, &self.control)?
             {
@@ -1048,7 +1047,7 @@ impl Environment<'_> {
                 || !clean(node, "domain")
                 || node.arguments != [record.seed, record.domain, record.member, seed.sources[i]]
                 || node.scope != seed.scope
-                || node.support != seed.support
+                || !node.support.same_facts(&seed.support, &self.control)?
                 || !node.reasons.is_empty()
             {
                 return Err(internal!("補完slot projectionが元member/field/producerと違う").into());
@@ -1344,7 +1343,7 @@ impl Environment<'_> {
                 Some(_) => "undetermined",
             });
             scope.merge(&graph.get(evaluation)?.scope);
-            support.extend(graph.get(evaluation)?.support.iter().cloned());
+            support = Support::sum(vec![], [support, graph.get(evaluation)?.support.clone()]);
             reasons.extend(graph.get(evaluation)?.reasons.iter().cloned());
         }
         if !propositions.is_empty() {
@@ -1364,12 +1363,11 @@ impl Environment<'_> {
                 }
                 self.validate_at(graph, node, proposition.0)?;
                 scope.merge(&node.scope);
-                support.extend(node.support.iter().cloned());
+                support = Support::sum(vec![], [support, node.support.clone()]);
                 reasons.extend(node.reasons.iter().cloned());
             }
         }
-        support.sort();
-        support.dedup();
+
         let outcome =
             value_equality::all_cases(&case_values, self.indexes.inputs.law(), &self.control)?;
         if outcome.unsupported {
@@ -1641,7 +1639,7 @@ impl Environment<'_> {
             let a = self.completion_aggregate(graph, *body, c.domain, &evals, props)?;
             if node.ty != NodeType::LawInstance
                 || node.scope != a.scope
-                || node.support != a.support
+                || !node.support.same_facts(&a.support, &self.control)?
             {
                 return Err(internal!("補完LawInstanceの全case支持/Scopeが違う").into());
             }
@@ -1683,7 +1681,7 @@ impl Environment<'_> {
                             None => true,
                         }
                         || node.scope != a.scope
-                        || node.support != a.support
+                        || !node.support.same_facts(&a.support, &self.control)?
                         || !matches!(&node.rule, Rule::Construction("evaluation"))
                         || node.judgment.is_some()
                         || !node.reasons.is_empty()
@@ -1713,7 +1711,7 @@ impl Environment<'_> {
                             .chain(instances.iter().copied())
                             .collect::<Vec<_>>()
                     || node.scope != a.scope
-                    || node.support != a.support
+                    || !node.support.same_facts(&a.support, &self.control)?
                     || graph.context_at(limit) != seed.context
                 {
                     return Err(internal!("補完全検査の全coverage/同一結果が違う").into());
@@ -1765,7 +1763,7 @@ impl Environment<'_> {
                 || parts[0].value != *value
                 || *applicability != a.applicability
                 || node.scope != a.scope
-                || node.support != a.support
+                || !node.support.same_facts(&a.support, &self.control)?
                 || !reasons_equal(&node.reasons, &a.reasons)
                 || graph.context_at(limit) != a.seed.context
                 || (graph.requests[a.seed.context.request].kind == QuestionKind::Check
@@ -1842,7 +1840,7 @@ impl Environment<'_> {
                 || !matches!(&node.rule, Rule::Construction("proposition"))
                 || node.arguments != [*instance, evaluation]
                 || node.scope != a.scope
-                || node.support != a.support
+                || !node.support.same_facts(&a.support, &self.control)?
                 || !reasons_equal(&node.reasons, &a.reasons)
                 || !node.judgment.as_ref().is_some_and(|j| {
                     j.status == status
@@ -2052,7 +2050,7 @@ impl Environment<'_> {
                     .chain(roots.iter().copied())
                     .chain(sources.iter().copied())
                     .collect::<Vec<_>>()
-            || !node.support.is_empty()
+            || !node.support.is_empty(&self.control)?
             || !node.evidence.is_empty()
             || node.judgment.is_some()
             || node.scope != scope
@@ -2076,7 +2074,7 @@ impl Environment<'_> {
             || !clean(node, "domain")
             || !node.reasons.is_empty()
             || node.scope != seed.scope
-            || node.support != seed.support
+            || !node.support.same_facts(&seed.support, &self.control)?
             || graph.context_at(limit) != seed.context
             || node.arguments
                 != std::iter::once(seed.reference)
@@ -2116,7 +2114,7 @@ impl Environment<'_> {
         if !clean(node, "domain")
             || !node.reasons.is_empty()
             || node.scope != seed.scope
-            || node.support != seed.support
+            || !node.support.same_facts(&seed.support, &self.control)?
         {
             return Err(internal!("補完代入のScope/支持が違う").into());
         }
@@ -2299,7 +2297,7 @@ impl Environment<'_> {
             || !data::equal(graph.scalar(*assignment)?, value, &self.control)?
             || !matches!(&node.rule,Rule::Input{kind:"law",location:Location::Law{span:s}}if s==span)
             || node.scope != a.scalar_scope.unwrap_or(a.scope)
-            || !node.support.is_empty()
+            || !node.support.is_empty(&self.control)?
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
@@ -2365,7 +2363,7 @@ impl Environment<'_> {
             || !clean(node, "evidence")
             || !node.reasons.is_empty()
             || node.scope != a.scope
-            || node.support != a.support
+            || !node.support.same_facts(&a.support, &self.control)?
             || graph.context_at(limit) != seed.context
             || node.arguments
                 != [seed.reference, domain, first_result, second_result]

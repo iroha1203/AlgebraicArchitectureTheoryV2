@@ -806,9 +806,9 @@ pub(super) fn compute(
         arguments,
         None,
     )?;
-    b.parts[plan.0 - base].support.make_owned().extend(support);
-    b.parts[plan.0 - base].support.make_owned().sort();
-    b.parts[plan.0 - base].support.make_owned().dedup();
+    let part = &mut b.parts[plan.0 - base];
+    part.support = Support::sum(support, [part.support.clone()]);
+
     b.parts[plan.0 - base].scope.merge(&scope);
     outputs.insert("plan".into(), plan);
     let mut a = answer(r, claim, status, outputs, &b);

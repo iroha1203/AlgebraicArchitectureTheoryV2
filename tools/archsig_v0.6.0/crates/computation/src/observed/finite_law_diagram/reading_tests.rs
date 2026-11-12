@@ -308,7 +308,7 @@ fn source_and_graph_reject_bool_value_role_origin_metadata_and_output_tampering(
                 }
                 1 => *body = !*body,
                 2 => *origin = ds[0].originals[1].row,
-                _ => support.clear(),
+                _ => support.materialize_mut_for_test().clear(),
             }
         } else {
             match kind {

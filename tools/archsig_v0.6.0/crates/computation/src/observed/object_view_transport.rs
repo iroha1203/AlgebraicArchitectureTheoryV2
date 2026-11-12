@@ -1146,10 +1146,14 @@ mod tests {
                     };
                     e.nodes
                         .iter_mut()
-                        .find(|n| !n.support.is_empty())
+                        .find(|n| {
+                            !n.support
+                                .is_empty(&archsig_common::control::Control::unlimited())
+                                .unwrap()
+                        })
                         .unwrap()
                         .support
-                        .make_owned()
+                        .materialize_mut_for_test()
                         .clear();
                 }
             }

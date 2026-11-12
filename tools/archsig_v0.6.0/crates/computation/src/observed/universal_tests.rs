@@ -1,6 +1,5 @@
 fn universal_private_example(body: &str, requests: &[&str]) -> ObservedEvaluation {
-    let result =
-        evaluate_observed_bytes(affine_private_fixture(body), requests, &quiet()).unwrap();
+    let result = evaluate_observed_bytes(affine_private_fixture(body), requests, &quiet()).unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
@@ -55,7 +54,8 @@ fn universal_mixed_reference_rational_rows_recheck_missing_and_subject_producers
         assert!(
             result.nodes[row.0]
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|fact| fact.snapshot == *snapshot
                     && fact.subject == *subject
                     && fact.field.is_none())

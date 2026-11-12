@@ -58,12 +58,11 @@ impl Evaluator<'_, '_> {
                 scope.merge(&c.scope)
             }
             scope.merge(&info.scope);
-            let mut support = info.support.clone();
+            let mut support = vec![Support::from(info.support.clone())];
             for c in &evaluated {
-                support.extend(c.support.iter().cloned())
+                support.push(c.support.clone())
             }
-            support.sort();
-            support.dedup();
+            let support = Support::sum(vec![], support);
             let left = self.value(
                 left.clone(),
                 Rule::Construction("evaluation"),
@@ -84,7 +83,7 @@ impl Evaluator<'_, '_> {
                     bindings: self.bindings.clone(),
                     left,
                     right,
-                    facts: support.clone(),
+                    facts: support.materialize(self.control)?,
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: edges.iter().copied().chain([left, right]).collect(),
@@ -150,12 +149,11 @@ impl Evaluator<'_, '_> {
                 .sources
                 .get(&span)
                 .ok_or_else(|| Failure::Internal(internal!("Pathの元Sourceがない")))?;
-            let mut support = info.support.clone();
+            let mut support = vec![Support::from(info.support.clone())];
             for child in &evaluated {
-                support.extend(child.support.iter().cloned())
+                support.push(child.support.clone())
             }
-            support.sort();
-            support.dedup();
+            let support = Support::sum(vec![], support);
             let mut scope = source.scope.clone();
             for child in &evaluated {
                 scope.merge(&child.scope)

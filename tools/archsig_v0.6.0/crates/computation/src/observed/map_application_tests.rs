@@ -101,28 +101,38 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
         };
         *entity = "Reservations.System".into();
     });
-    completion_mutation(&r, t, |nodes| nodes[t].support.make_owned().clear());
+    completion_mutation(&r, t, |nodes| {
+        nodes[t].support.materialize_mut_for_test().clear()
+    });
     completion_mutation(&r, t, |nodes| {
         nodes[t].scope.snapshots.remove("v");
     });
     completion_mutation(&r, t, |nodes| {
-        let Rule::Input {
-            location: Location::Law { span },
-            ..
-        } = &mut nodes[t].rule
-        else {
-            panic!("location")
+        let Rule::OperandValue(Location::Law { span }) = &mut nodes[t].rule else {
+            panic!("actual local Map application location")
         };
         span.0 += 1;
     });
-    let key = r.nodes[t].arguments[1].0;
+    // The local value owns its Source and the two actual Evaluation refs.
+    // Mutate the underlying key/map Scalar, preserving the original rejection contract.
+    assert_eq!(r.nodes[t].arguments.len(), 3);
+    let actual_scalar = |evaluation: NodeRef| {
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &r.nodes[evaluation.0].payload
+        else {
+            panic!("actual Map operand Evaluation")
+        };
+        value.0
+    };
+    let key = actual_scalar(r.nodes[t].arguments[2]);
     completion_mutation(&r, key, |nodes| {
         let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut nodes[key].payload else {
             panic!("key")
         };
         *subject = "q".into();
     });
-    let map = r.nodes[t].arguments[0].0;
+    let map = actual_scalar(r.nodes[t].arguments[1]);
     completion_mutation(&r, map, |nodes| {
         let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut nodes[map].payload else {
             panic!("map")
@@ -149,7 +159,9 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
         completion_mutation(&r, t, |nodes| {
             nodes[t].payload = replacement.clone();
         });
-        completion_mutation(&r, t, |nodes| nodes[t].support.make_owned().clear());
+        completion_mutation(&r, t, |nodes| {
+            nodes[t].support.materialize_mut_for_test().clear()
+        });
         completion_mutation(&r, t, |nodes| {
             nodes[t].scope.snapshots.clear();
         });
@@ -231,8 +243,7 @@ fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
             None
         }
     });
-    let prepared =
-        prepare_observed(application_fixture::owned("known"), &asks, &control).unwrap();
+    let prepared = prepare_observed(application_fixture::owned("known"), &asks, &control).unwrap();
     let law = prepared.inputs().sources().law().bytes().to_vec();
     let stopped = evaluate_observed_with_validator(
         prepared,
@@ -282,4 +293,187 @@ fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
         assert_eq!(actual["details"], expected["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+}
+
+#[test]
+fn field_over_actual_map_call_does_not_preanalyze_or_cache_each_member() {
+    use std::{cell::Cell, collections::BTreeSet, rc::Rc};
+    struct Observer;
+    impl Drop for Observer {
+        fn drop(&mut self) {
+            data::clear_iteration_observer();
+        }
+    }
+    let _observer = Observer;
+    let original = application_fixture::owned("known");
+    let law = String::from_utf8(original.law().bytes().to_vec()).unwrap().replace(
+        "view seed():Z=1;",
+        "view projected(m:Reservations.Migration,x:Reservations.State,y:Reservations.State,e:Reservations.Reserve):Bool=forall n in list<Reservations.State>[x,y].m.reserves(e).from=m.reserves(e).from;view seed():Z=1;",
+    );
+    let sources = InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|s| s.bytes().to_vec())
+            .collect(),
+        law.into_bytes(),
+        original.archmap().bytes().to_vec(),
+    );
+    let prepared = prepare_observed(
+        sources,
+        &["current=evaluate(Applications.projected,m=@v/m,x=@v/p,y=@v/q,e=@v/e)"],
+        &quiet(),
+    )
+    .unwrap();
+    let Signature::View { body, .. } =
+        prepared.inputs().law().declarations()["Applications.projected"].signature
+    else {
+        unreachable!()
+    };
+    let law = prepared.inputs().law();
+    let root_span = law.exprs()[body].span;
+    let spans: BTreeSet<_> = law
+        .exprs()
+        .iter()
+        .enumerate()
+        .filter_map(|(id, expr)| {
+            if law.expr_type(id).is_none() || law.program().expressions.get(&expr.span) != Some(&id)
+            {
+                return None;
+            }
+            let ExprKind::Field { base, .. } = expr.kind else {
+                return None;
+            };
+            (root_span.0 <= expr.span.0
+                && expr.span.1 <= root_span.1
+                && matches!(law.exprs()[base].kind, ExprKind::Call { .. }))
+            .then_some(law.exprs()[base].span)
+        })
+        .collect();
+    assert_eq!(spans.len(), 2);
+    let analyses = Rc::new(Cell::new(0));
+    let inserts = Rc::new(Cell::new(0));
+    let (observed, cached, targets) = (analyses.clone(), inserts.clone(), spans.clone());
+    data::observe_iterations(move |span, _, phase, _| {
+        if targets.contains(&span) {
+            if phase == "source_analysis" {
+                observed.set(observed.get() + 1);
+            }
+            if phase == "source_cache_insert" {
+                cached.set(cached.get() + 1);
+            }
+        }
+    });
+    let result = evaluate_observed(prepared, &quiet()).unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(
+        data_scalar_at(&result, result.answers[0].outputs["value"].0),
+        &Scalar::Bool(true)
+    );
+    assert_eq!(result.iterations.len(), 2);
+    assert_eq!(analyses.get(), 0, "実Map子の前に元式を意味評価しない");
+    assert_eq!(
+        inserts.get(),
+        0,
+        "各memberの共通支持をflat SourceAnalysisとして保持しない"
+    );
+    let actual = result.nodes.iter().zip(&result.contexts).filter(|(node, context)| {
+        context.iteration.is_some() && node.rule == Rule::Construction("ordinary_evaluation") && matches!(&node.payload,
+            Some(Payload::Evaluation { parts, .. }) if parts.len()==1 && matches!(parts[0].location, Location::Law { span } if spans.contains(&span)))
+    }).count();
+    assert_eq!(
+        actual, 4,
+        "二つの元Map出現を実member二件でそれぞれ一度評価する"
+    );
+    let scopes: Vec<_> = result
+        .nodes
+        .iter()
+        .zip(&result.contexts)
+        .filter(|(node, context)| {
+            context.iteration.is_some() && matches!(node.rule, Rule::OrdinarySource(_))
+        })
+        .map(|(node, _)| &node.scope)
+        .collect();
+    assert!(scopes.len() > 4);
+    let anchor = scopes[0];
+    let same: Vec<_> = scopes
+        .into_iter()
+        .filter(|scope| {
+            scope.readings == anchor.readings
+                && scope.snapshots == anchor.snapshots
+                && scope.modes == anchor.modes
+                && scope.completions == anchor.completions
+                && scope.assignments == anchor.assignments
+                && scope.quantifiers == anchor.quantifiers
+        })
+        .collect();
+    assert!(same.len() > 4, "同じ厳密metadataを複数の実Sourceが使う");
+    let owners: BTreeSet<_> = same
+        .iter()
+        .map(|scope| (&***scope as *const super::super::result::ScopeData) as usize)
+        .collect();
+    assert!(
+        owners.len() <= 2,
+        "Sourceごとに同一ScopeDataを新保持せず既存二anchor内で共有する"
+    );
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    assert_eq!(
+        analyses.get(),
+        0,
+        "cold認証も指定された実Map子から局所検算する"
+    );
+    assert_eq!(inserts.get(), 0);
+    data::clear_iteration_observer();
+    let target = result
+        .nodes
+        .iter()
+        .zip(&result.contexts)
+        .position(|(node, context)| {
+            context.iteration.is_some() && node.rule == Rule::Construction("field_evaluation")
+        })
+        .unwrap();
+    rejects_mutated_prefix(&result, target, |nodes| {
+        nodes[target].scope.snapshots.clear();
+    });
+}
+
+#[test]
+fn field_over_map_call_preserves_miss_and_unknown_fallbacks() {
+    for (mode, key, missing) in [("known", "r", false), ("missing", "p", true)] {
+        let original = application_fixture::owned(mode);
+        let law = String::from_utf8(original.law().bytes().to_vec()).unwrap().replace("view seed():Z=1;",
+            "view projectedOne(m:Reservations.Migration,x:Reservations.State):Z=m.states(x).free;view seed():Z=1;");
+        let sources = InputSources::from_bytes(
+            original
+                .definitions()
+                .iter()
+                .map(|s| s.bytes().to_vec())
+                .collect(),
+            law.into_bytes(),
+            original.archmap().bytes().to_vec(),
+        );
+        let ask = format!("current=evaluate(Applications.projectedOne,m=@v/m,x=@v/{key})");
+        let result = evaluate_observed_bytes(sources, &[&ask], &quiet()).unwrap();
+        assert_ne!(result.status(), "error", "{mode}: {:?}", result.issues);
+        assert_eq!(result.answers[0].status, Decision::Undetermined);
+        assert!(!result.answers[0].outputs.contains_key("value"));
+        assert!(
+            result.answers[0].reasons.iter().any(|reason| if missing {
+                reason.kind == ReasonKind::Missing
+            } else {
+                matches!(reason.kind, ReasonKind::ConditionFailed { .. })
+            }),
+            "{mode}: {:?}",
+            result.answers[0].reasons
+        );
+        if !missing {
+            assert!(
+                result
+                    .nodes
+                    .iter()
+                    .any(|node| matches!(node.payload, Some(Payload::MapDomainCondition { .. })))
+            );
+        }
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    }
 }

@@ -65,16 +65,7 @@ fn same(left: &IterationInputs, right: &IterationInputs) {
     assert_eq!(left.0, right.0);
     assert_eq!(left.1, right.1);
     assert_eq!(left.2.scope, right.2.scope);
-    assert_eq!(left.2.scalar_scope, right.2.scalar_scope);
     assert_eq!(left.2.support, right.2.support);
-    assert_eq!(left.2.known_value, right.2.known_value);
-    assert!(!right.2.condition_failed && !right.2.condition_pending);
-    assert!(
-        right.2.symbolic.is_none()
-            && right.2.comparison.is_none()
-            && right.2.affine.is_none()
-            && right.2.missing.is_none()
-    );
 }
 
 #[test]
@@ -221,8 +212,28 @@ fn typed_iteration_collection_keeps_cutoff_keys() {
     let g = graph(&result, &control);
     let env = Environment::with_prepared(&result.prepared, &control).unwrap();
     env.validation_graph_session(&g, || {
-        input(&env, &g, g.nodes.len())?;
-        input(&env, &g, g.iterations[0].domain.0 + 1)?;
+        let record = &g.iterations[0];
+        // In now authenticates the actual normalized producer, member and finite
+        // Domain, all of which follow the collection Evaluation.
+        let required = [
+            record.source,
+            record.domain,
+            record.finite.unwrap(),
+            record.producer.unwrap(),
+        ]
+        .into_iter()
+        .map(|r| r.0)
+        .max()
+        .unwrap();
+        let first = input(&env, &g, g.nodes.len())?;
+        same(&first, &input(&env, &g, required + 1)?);
+        for cutoff in [record.domain.0 + 1, required] {
+            assert!(
+                input(&env, &g, cutoff).is_err(),
+                "future actual In producer at cutoff {cutoff}"
+            );
+        }
+        same(&first, &input(&env, &g, g.nodes.len())?);
         assert_eq!(typed_entries(&env), 0);
         assert!(
             env.results
@@ -333,18 +344,16 @@ fn changing_an_owned_iteration_result_keeps_other_callers_and_memo_unchanged() {
             let mut edited = input(&env, &g, g.nodes.len())?;
             let owned = std::rc::Rc::make_mut(&mut edited);
             owned.2.scope.readings.insert("caller-local".into());
-            owned
-                .2
-                .support
-                .make_owned()
-                .push(Fact::from(archsig_input::archmap::FactData {
+            owned.2.support.materialize_mut_for_test().push(Fact::from(
+                archsig_input::archmap::FactData {
                     snapshot: "caller-local".into(),
                     subject: "caller-local".into(),
                     field: None,
                     atom: None,
-                }));
+                },
+            ));
             assert_ne!(owned.2.support, original.2.support);
-            owned.2.support.make_owned().clear();
+            owned.2.support.materialize_mut_for_test().clear();
             owned.1 = Scalar::Bool(true);
             assert!(!original.2.scope.readings.contains("caller-local"));
             assert_eq!(

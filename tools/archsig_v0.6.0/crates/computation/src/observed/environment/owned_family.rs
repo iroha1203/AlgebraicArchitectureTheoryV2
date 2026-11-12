@@ -564,7 +564,9 @@ impl Environment<'_> {
                         .ok_or(internal!("元Family型がない"))?
                         .clone(),
                 )
-            || node.support != analysis.support
+            || !node
+                .support
+                .matches_flat(&analysis.support, &self.control)?
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
@@ -641,7 +643,9 @@ impl Environment<'_> {
                 .get(*expression)?
                 .scope
                 .source_compatible(&analysis.scope)
-            || node.support != analysis.support
+            || !node
+                .support
+                .matches_flat(&analysis.support, &self.control)?
             || !node.evidence.is_empty()
             || node.judgment.is_some()
         {

@@ -272,14 +272,14 @@ fn integer_problem_reobservation_reuses_linear_parts_with_current_rhs_and_proven
         current
             .nodes
             .iter()
-            .flat_map(|n| n.support.iter())
+            .flat_map(|n| n.support.materialize_for_test().into_iter())
             .any(|f| f.atom.as_deref() == Some("current-x-b"))
     );
     assert!(
         !current
             .nodes
             .iter()
-            .flat_map(|n| n.support.iter())
+            .flat_map(|n| n.support.materialize_for_test().into_iter())
             .any(|f| f.atom.as_deref() == Some("x-b"))
     );
     for node in &current.nodes {

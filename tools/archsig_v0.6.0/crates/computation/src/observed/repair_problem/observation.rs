@@ -709,10 +709,10 @@ fn compute_inner(
         arguments,
         None,
     )?;
-    b.parts[plan.0 - base].support.make_owned().extend(support);
+    let part = &mut b.parts[plan.0 - base];
+    part.support = Support::sum(support.into_iter().collect(), [part.support.clone()]);
     b.parts[plan.0 - base].scope.merge(&scope);
-    b.parts[plan.0 - base].support.make_owned().sort();
-    b.parts[plan.0 - base].support.make_owned().dedup();
+
     outputs.insert("plan".into(), plan);
     let mut a = answer(r, claim, status, outputs, &b);
     if !sufficient {

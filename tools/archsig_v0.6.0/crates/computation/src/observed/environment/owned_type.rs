@@ -374,7 +374,7 @@ impl Environment<'_> {
                     affine: None,
                     scope,
                     known_value: known,
-                    support,
+                    support: support.to_flat_facts(&self.control)?,
                     scalar_scope: None,
                 },
             );
@@ -566,7 +566,7 @@ impl Environment<'_> {
             || *applicability != "applicable"
             || node.scope != scope
             || !scope.completions
-            || node.support != domain.support
+            || !node.support.matches_flat(&domain.support, &self.control)?
             || original.support != domain.support
             || original.known_value.is_some()
             || !node.evidence.is_empty()

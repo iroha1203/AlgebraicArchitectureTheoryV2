@@ -756,13 +756,24 @@ fn check_valuation_inner<E: InputError>(
     }
     // subject順・field宣言順に条件を足す。初めて補完不能になるprefixとその
     // 最後の条件の位置を同時に確定し、停止後に原因位置を探し直さない。
-    for end in 1..=cons.len() {
+    let empty = vec![None; m.vars.len()];
+    let mut pending = Vec::new();
+    for condition in &cons {
         m.checkpoint()?;
-        if !feasible(&m, &cons[..end])? {
+        // 既知trueは以後の補完を制約しない。未決条件を追加したときだけ、
+        // それまでの未決prefixを探索する。既知falseも元の条件順で返す。
+        let possible = match m.eval(condition, &empty)? {
+            Some(value) => value,
+            None => {
+                pending.push(condition);
+                feasible(&m, &pending)?
+            }
+        };
+        if !possible {
             return E::finish(
                 Err(issue(
                     Code::InconsistentObservation,
-                    cons[end - 1].pointer(),
+                    condition.pointer(),
                     "no completion preserves known values, references, and ownership",
                 )
                 .into()),
@@ -780,11 +791,11 @@ type Group<'a> = Vec<(&'a Cons, Vec<usize>)>;
 
 /// 条件のすべてを満たす補完があるか。欠測 slot を共有する条件の組ごとに、
 /// その組の変数だけで探す。
-fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[Cons]) -> Result<bool, E> {
+fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> {
     m.checkpoint()?;
     let empty = vec![None; m.vars.len()];
     let mut open: Vec<(&Cons, Vec<usize>)> = Vec::new();
-    for c in cons {
+    for &c in cons {
         m.checkpoint()?;
         match m.eval(c, &empty)? {
             Some(false) => return m.done(false),

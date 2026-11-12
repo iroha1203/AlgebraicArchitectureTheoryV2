@@ -413,8 +413,12 @@ impl Data {
         .chain(self.part().arguments())
         .collect()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.source.support.to_vec(), self.source.scope.clone())
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
     }
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.source.support.clone(), self.source.scope.clone())
@@ -634,13 +638,13 @@ fn metadata(
     graph: &Graph,
     reference: NodeRef,
     universe: NodeRef,
-) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+) -> Result<(Support, Scope), ValidationFailure> {
     let architecture = graph.get(reference)?;
     let universe = graph.get(universe)?;
-    let mut support = architecture.support.clone().into_vec();
-    support.extend_from_slice(&universe.support);
-    support.sort_by_key(|f| f.wire().canonical());
-    support.dedup();
+    let support = Support::sum_canonical(
+        vec![],
+        [architecture.support.clone(), universe.support.clone()],
+    );
     let mut scope = architecture.scope.clone();
     scope.merge(&universe.scope);
     Ok((support, scope))
@@ -669,7 +673,7 @@ impl Source {
         let (support, scope) = metadata(graph, self.reference, self.universe)?;
         if parts != self.parts
             || outputs != self.outputs
-            || support != self.support
+            || !support.same_facts(&self.support, c)?
             || scope != self.scope
         {
             return Err(internal!("内部arrowの全計画・元検査・支持・scopeが違う").into());

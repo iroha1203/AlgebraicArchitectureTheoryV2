@@ -110,6 +110,8 @@ fn iteration(source: usize, domain: usize) -> crate::observed::call::Iteration {
         domain: NodeRef(domain),
         member: crate::observed::call::Member::ListPosition(0),
         finite: Some(NodeRef(domain)),
+        position: 0,
+        producer: None,
     }
 }
 

@@ -206,14 +206,14 @@ fn shared_integer_decomposition_uses_current_sources_and_does_not_retain_withdra
         current
             .nodes
             .iter()
-            .flat_map(|n| n.support.iter())
+            .flat_map(|n| n.support.materialize_for_test().into_iter())
             .any(|f| f.atom.as_deref() == Some("current-b"))
     );
     assert!(
         !current
             .nodes
             .iter()
-            .flat_map(|n| n.support.iter())
+            .flat_map(|n| n.support.materialize_for_test().into_iter())
             .any(|f| f.atom.as_deref() == Some("b"))
     );
     let missing = || {

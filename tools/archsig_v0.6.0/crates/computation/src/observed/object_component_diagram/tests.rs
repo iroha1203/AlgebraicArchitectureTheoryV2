@@ -543,7 +543,7 @@ fn current_inputs_consumers_positions_and_cached_root_requests_are_rechecked() {
         match field {
             0 => n.ty = NodeType::Construction(T::Architecture),
             1 => n.arguments.reverse(),
-            2 => n.support.make_owned().clear(),
+            2 => n.support.materialize_mut_for_test().clear(),
             _ => n.scope.assignments = true,
         }
         assert!(env.recheck_node(&g, &n, da.objects[1].0).is_err());
@@ -879,7 +879,8 @@ fn missing_and_outside_readings_remain_expressions_without_fabricating_none_true
         assert!(
             !g.nodes[r.expression.0]
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.atom.as_deref() == Some("px"))
         );
     }
@@ -987,7 +988,8 @@ fn reading_parameter_domains_preserve_external_snapshot_subject_support_and_scop
         let n = &g.nodes[r.expression.0];
         assert!(
             n.support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.snapshot == "w" && f.subject == "z" && f.field.is_none())
         );
         assert!(n.scope.snapshots.contains("w"));

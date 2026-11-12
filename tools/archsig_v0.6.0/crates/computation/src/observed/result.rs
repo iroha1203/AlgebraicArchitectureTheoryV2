@@ -17,66 +17,10 @@ mod semantic_result;
 pub(super) use semantic_result::concise_reasons;
 use std::collections::{BTreeMap, BTreeSet};
 
-/// 確定した支持。加工する側は所有 Vec を明示的に取り出す。
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(crate) struct Support(std::sync::Arc<Vec<Fact>>);
-impl Support {
-    /// 共有先を変えずに加工するため、この値の Vec を一意所有にする。
-    pub(crate) fn make_owned(&mut self) -> &mut Vec<Fact> {
-        std::sync::Arc::make_mut(&mut self.0)
-    }
-    pub(crate) fn into_vec(self) -> Vec<Fact> {
-        std::sync::Arc::try_unwrap(self.0).unwrap_or_else(|shared| (*shared).clone())
-    }
-}
-impl From<Vec<Fact>> for Support {
-    fn from(facts: Vec<Fact>) -> Self {
-        Self(std::sync::Arc::new(facts))
-    }
-}
-impl std::ops::Deref for Support {
-    type Target = Vec<Fact>;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-impl PartialEq<Vec<Fact>> for Support {
-    fn eq(&self, other: &Vec<Fact>) -> bool {
-        self.as_slice() == other.as_slice()
-    }
-}
-impl PartialEq<Support> for Vec<Fact> {
-    fn eq(&self, other: &Support) -> bool {
-        self.as_slice() == other.as_slice()
-    }
-}
-impl<'a> IntoIterator for &'a Support {
-    type Item = &'a Fact;
-    type IntoIter = std::slice::Iter<'a, Fact>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.iter()
-    }
-}
-
-#[cfg(test)]
-#[test]
-fn owned_support_edits_leave_shared_facts_unchanged() {
-    let original = Support::from(vec![Fact::from(archsig_input::archmap::FactData {
-        snapshot: "snapshot".into(),
-        subject: "subject".into(),
-        field: Some("Example.Entity.field".into()),
-        atom: Some("known".into()),
-    })]);
-    let expected = original.to_vec();
-    let mut edited = original.clone();
-    edited.make_owned()[0].subject = "caller-local".into();
-    edited.make_owned().clear();
-    assert!(edited.is_empty());
-    assert_eq!(original, expected);
-    let mut extracted = original.clone().into_vec();
-    extracted[0].atom = Some("different".into());
-    assert_eq!(original, expected);
-}
+mod flat_facts;
+pub(crate) use flat_facts::FlatFacts;
+mod support;
+pub(crate) use support::Support;
 
 #[derive(Debug)]
 pub enum EvaluationFailure {
@@ -536,14 +480,33 @@ impl PartialEq for Scalar {
     }
 }
 impl Eq for Scalar {}
+/// 不変metadataを共有し、実変更を行うconsumerだけが所有コピーを作る。
 #[derive(Clone, Debug, Default)]
-pub(crate) struct Scope {
+pub(crate) struct Scope(std::sync::Arc<ScopeData>);
+#[derive(Clone, Debug, Default)]
+pub(crate) struct ScopeData {
     pub readings: BTreeSet<String>,
     pub snapshots: BTreeSet<String>,
     pub modes: BTreeSet<String>,
     pub completions: bool,
     pub assignments: bool,
     pub quantifiers: Vec<Quantifier>,
+}
+impl std::ops::Deref for Scope {
+    type Target = ScopeData;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for Scope {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        std::sync::Arc::make_mut(&mut self.0)
+    }
+}
+impl From<ScopeData> for Scope {
+    fn from(data: ScopeData) -> Self {
+        Self(std::sync::Arc::new(data))
+    }
 }
 // 同じ元出現の実域間の並びを無視し、初出occurrence順と各要素の多重度を保つ。
 fn same_quantifiers(left: &[Quantifier], right: &[Quantifier]) -> bool {
@@ -567,7 +530,9 @@ fn same_quantifiers(left: &[Quantifier], right: &[Quantifier]) -> bool {
 }
 impl PartialEq for Scope {
     fn eq(&self, other: &Self) -> bool {
-        self.same_metadata(other) && same_quantifiers(&self.quantifiers, &other.quantifiers)
+        std::sync::Arc::ptr_eq(&self.0, &other.0)
+            || (self.same_metadata(other)
+                && same_quantifiers(&self.quantifiers, &other.quantifiers))
     }
 }
 impl Eq for Scope {}
@@ -604,6 +569,16 @@ impl Quantifier {
     }
 }
 impl Scope {
+    /// 内容を変えず既存の所有を共有する。意味上のScope同値とは別に、
+    /// 実Domain/Contextを含む量化列の順序・重複まで完全一致した場合だけ使う。
+    pub(super) fn reuse_if_exact(&mut self, anchor: &Self) -> bool {
+        if self.same_metadata(anchor) && self.quantifiers == anchor.quantifiers {
+            self.0 = anchor.0.clone();
+            true
+        } else {
+            false
+        }
+    }
     fn same_metadata(&self, other: &Self) -> bool {
         self.readings == other.readings
             && self.snapshots == other.snapshots
@@ -614,6 +589,9 @@ impl Scope {
     // 元式を展開したScopeを順序の正本にする。異なる実Context/Domainは
     // 省略せず、同じ元出現の実域間の表示順には意味を与えない。
     pub(super) fn order_quantifiers_like(&mut self, original: &Self) {
+        if self.quantifiers.len() < 2 {
+            return;
+        }
         self.quantifiers.sort_by_key(|quantifier| {
             original
                 .quantifiers
@@ -622,12 +600,24 @@ impl Scope {
                 .unwrap_or(original.quantifiers.len())
         });
     }
+    pub(super) fn from_quantifiers(quantifiers: Vec<Quantifier>) -> Self {
+        ScopeData {
+            quantifiers,
+            ..ScopeData::default()
+        }
+        .into()
+    }
     pub(crate) fn add_quantifier(&mut self, quantifier: Quantifier) {
-        let scope = Self {
-            quantifiers: vec![quantifier],
-            ..Self::default()
-        };
-        self.merge_quantifiers(&scope);
+        self.merge_quantifiers(&Self::from_quantifiers(vec![quantifier]));
+    }
+    fn append_quantifier(&mut self, quantifier: &Quantifier) {
+        let quantifiers = &mut self.quantifiers;
+        // A single binder does not need Vec's initial multi-element allocation.
+        // Later growth retains the usual amortized policy for large families.
+        if quantifiers.is_empty() {
+            quantifiers.reserve_exact(1);
+        }
+        quantifiers.push(quantifier.clone());
     }
     pub(crate) fn merge_quantifiers(&mut self, other: &Self) {
         let mut assembly_instances = None;
@@ -642,7 +632,7 @@ impl Scope {
                         .collect::<BTreeSet<_>>()
                 });
                 if instances.insert((instance.0.0, instance.1)) {
-                    self.quantifiers.push(q.clone());
+                    self.append_quantifier(q);
                 }
                 continue;
             }
@@ -659,19 +649,19 @@ impl Scope {
             if q.context.is_none() && q.domain.is_none() && self.quantifiers.iter().any(same) {
                 continue;
             }
-            if let Some(old) = self.quantifiers.iter_mut().find(|old| {
+            if let Some(index) = self.quantifiers.iter().position(|old| {
                 same(old)
                     && old.domain.is_none()
                     && (old.context.is_none() || old.context == q.context)
             }) {
-                *old = q.clone();
+                self.quantifiers[index] = q.clone();
             } else if q.domain.is_some()
                 || !self
                     .quantifiers
                     .iter()
                     .any(|old| same(old) && old.context == q.context)
             {
-                self.quantifiers.push(q.clone());
+                self.append_quantifier(q);
             }
         }
     }
@@ -702,16 +692,27 @@ impl Scope {
         self.merge_quantifiers(other);
     }
     pub(super) fn merge_metadata(&mut self, other: &Self) {
-        self.readings.extend(other.readings.iter().cloned());
-        self.snapshots.extend(other.snapshots.iter().cloned());
-        self.modes.extend(other.modes.iter().cloned());
-        self.completions |= other.completions;
-        self.assignments |= other.assignments;
+        if other.readings.is_subset(&self.readings)
+            && other.snapshots.is_subset(&self.snapshots)
+            && other.modes.is_subset(&self.modes)
+            && (!other.completions || self.completions)
+            && (!other.assignments || self.assignments)
+        {
+            return;
+        }
+        let data = std::sync::Arc::make_mut(&mut self.0);
+        data.readings.extend(other.readings.iter().cloned());
+        data.snapshots.extend(other.snapshots.iter().cloned());
+        data.modes.extend(other.modes.iter().cloned());
+        data.completions |= other.completions;
+        data.assignments |= other.assignments;
     }
     /// A fixed design point is the outer scope. Symbolic algebra on that
     /// object keeps its own scope on the native nodes.
     pub(super) fn restrict_to_design_point(&mut self) {
-        self.assignments = false;
+        if self.assignments {
+            self.assignments = false;
+        }
     }
     pub(crate) fn wire(&self) -> Json {
         Json::obj([
@@ -944,6 +945,27 @@ pub(crate) enum Rule {
         location: Location,
     },
     Construction(&'static str),
+    /// 静的な元出現。表示上のLaw入力位置は従来Sourceと共通。
+    OrdinarySource(Location),
+    /// static入力と実baseから確定したread出現。値計算前にScopeをcommitする。
+    FieldSource(Location),
+    /// 実子から構成した通常値。元Law位置の公開表示を保つ。
+    OrdinaryValue(Location),
+    /// Eq/Mapの実子Eval依存。公開引数は従来の左右/callee-key Scalar refへ射影する。
+    OperandValue(Location),
+    /// In binderの実collection依存。公開形は従来の[inputEval]を保つ。
+    BinderValue(Location),
+    /// field局所構成の識別子。公開由来は元atom/Law/object_fieldと同じ形で保持する。
+    FieldValue {
+        kind: &'static str,
+        location: Option<Location>,
+    },
+    /// One checked In collection, positional members, and complete coverage.
+    InSet,
+    InMember {
+        position: usize,
+    },
+    InDomain,
     Projection(Vec<super::projection::ProjectionStep>),
     ProjectionCheck {
         parameter: String,
@@ -973,6 +995,10 @@ impl ProjectionCheckPart {
 impl Rule {
     fn wire(&self) -> Json {
         match self {
+            Self::InSet | Self::InMember { .. } | Self::InDomain => Json::obj([
+                ("kind", Json::str("construction")),
+                ("name", Json::str("domain")),
+            ]),
             Self::OwnedBinding(_) => Json::obj([
                 ("kind", Json::str("construction")),
                 ("name", Json::str("binding")),
@@ -980,6 +1006,28 @@ impl Rule {
             Self::ProjectionCheck { part, .. } => Json::obj([
                 ("kind", Json::str("construction")),
                 ("name", Json::str(part.construction())),
+            ]),
+            Self::FieldValue {
+                kind,
+                location: Some(location),
+            } => Json::obj([
+                ("kind", Json::str(*kind)),
+                ("location", location_wire(location)),
+            ]),
+            Self::FieldValue {
+                kind,
+                location: None,
+            } => Json::obj([
+                ("kind", Json::str("construction")),
+                ("name", Json::str(*kind)),
+            ]),
+            Self::OrdinarySource(location)
+            | Self::FieldSource(location)
+            | Self::OrdinaryValue(location)
+            | Self::OperandValue(location)
+            | Self::BinderValue(location) => Json::obj([
+                ("kind", Json::str("law")),
+                ("location", location_wire(location)),
             ]),
             Self::Input { kind, location } => Json::obj([
                 ("kind", Json::str(*kind)),
@@ -1641,6 +1689,22 @@ pub(crate) struct Node {
     pub reasons: Vec<Reason>,
 }
 impl Node {
+    /// payload/実refsはexact、支持だけは共有表現と旧flatの意味同値を認める。
+    pub(super) fn matches_with_support(
+        &self,
+        expected: &Self,
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        Ok(self.ty == expected.ty
+            && self.payload == expected.payload
+            && self.rule == expected.rule
+            && self.arguments == expected.arguments
+            && self.scope == expected.scope
+            && self.evidence == expected.evidence
+            && self.judgment == expected.judgment
+            && self.reasons == expected.reasons
+            && self.support.same_facts(&expected.support, control)?)
+    }
     fn evidence_class(&self) -> EvidenceClass {
         if self.ty != NodeType::Evidence {
             return EvidenceClass::Proof;
@@ -1659,23 +1723,111 @@ impl Node {
             _ => vec![],
         }
     }
-    pub(super) fn wire(&self, id: usize, prior: &[Node]) -> Json {
-        self.wire_with_support(id, prior, true)
+    /// 内部のSource/実base Evaluation依存を、従来のfield Scalar表示へ射影する。
+    /// 内部引数はraw認証とpayloadの既出Ref解決に引き続き使う。
+    fn field_wire_arguments(&self, prior: &[Node]) -> Option<Vec<NodeRef>> {
+        let Rule::FieldValue { kind, .. } = self.rule else {
+            return None;
+        };
+        let [source, base, remaining @ ..] = self.arguments.as_slice() else {
+            panic!("挿入時に検査したfield ScalarのSource/base依存")
+        };
+        let Some(Payload::Evaluation {
+            value: Some(owner), ..
+        }) = prior.get(base.0).and_then(|node| node.payload.as_ref())
+        else {
+            panic!("挿入時に検査したfieldの既知owner Ref")
+        };
+        Some(match remaining {
+            [assigned] => vec![*source, *owner, *assigned],
+            [] if kind == "law" => vec![*owner, *source],
+            [] => vec![*owner],
+            _ => panic!("挿入時に検査したfield Scalarの補完依存数"),
+        })
     }
-    fn wire_with_support(&self, id: usize, prior: &[Node], include_support: bool) -> Json {
+
+    fn wire_arguments(&self, prior: &[Node]) -> Json {
+        if let Some(Payload::Construction(value)) = &self.payload
+            && let super::construction_result::ConstructionData::PredicateInvariant(data) =
+                &value.data
+        {
+            return refs(data.public_arguments());
+        }
+        match &self.rule {
+            Rule::FieldSource(_) => {
+                let [origin, _] = self.arguments.as_slice() else {
+                    panic!("認証済みfield read Sourceの入力Originと実base")
+                };
+                // 内部read依存は保持し、公開Sourceには元binding/Caseの直接入力を保つ。
+                refs(
+                    &prior
+                        .get(origin.0)
+                        .expect("認証済みfield readの既出入力Origin")
+                        .arguments,
+                )
+            }
+            Rule::FieldValue { .. } => refs(
+                &self
+                    .field_wire_arguments(prior)
+                    .expect("認証済みfieldの公開引数"),
+            ),
+            Rule::BinderValue(_) => {
+                refs(self.arguments.get(1..).expect("認証済みbinderのSource辺"))
+            }
+            Rule::OperandValue(_) => {
+                let [_, left, right] = self.arguments.as_slice() else {
+                    panic!("認証済み比較/Map値のSourceと実子2辺")
+                };
+                let scalar = |reference: NodeRef| {
+                    let Some(Payload::Evaluation {
+                        value: Some(value), ..
+                    }) = prior
+                        .get(reference.0)
+                        .and_then(|node| node.payload.as_ref())
+                    else {
+                        panic!("認証済み比較/Map値の実子Scalar")
+                    };
+                    *value
+                };
+                refs(&[scalar(*left), scalar(*right)])
+            }
+            _ => refs(&self.arguments),
+        }
+    }
+    pub(super) fn wire(&self, id: usize, prior: &[Node]) -> Json {
+        self.wire_with_support(id, prior, true, &Control::unlimited())
+            .expect("通常の表示は中断しない")
+    }
+    fn wire_with_support(
+        &self,
+        id: usize,
+        prior: &[Node],
+        include_support: bool,
+        control: &Control,
+    ) -> Result<Json, Signal> {
         let mut wire = BTreeMap::from([
             ("rule".into(), self.rule.wire()),
-            ("arguments".into(), refs(&self.arguments)),
+            ("arguments".into(), self.wire_arguments(prior)),
             ("evidence".into(), refs(&self.evidence)),
             ("scope".into(), self.scope.wire()),
         ]);
         if include_support {
             wire.insert(
                 "support".into(),
-                Json::Arr(self.support.iter().map(Fact::wire).collect()),
+                Json::Arr(
+                    self.support
+                        .materialize(control)
+                        .map_err(|failure| match failure {
+                            ValidationFailure::Stop(signal) => signal,
+                            _ => unreachable!("支持の表示射影は入力を意味評価しない"),
+                        })?
+                        .iter()
+                        .map(Fact::wire)
+                        .collect(),
+                ),
             );
         }
-        self.wire_fields(id, prior, wire, false)
+        Ok(self.wire_fields(id, prior, wire, false))
     }
     // 保存投影だけの入口。native引数はpayloadの既出Ref解決に引き続き使う。
     fn project_wire(&self, id: usize, prior: &[Node]) -> Json {
@@ -1962,7 +2114,7 @@ impl ObservedEvaluation {
                         .enumerate()
                         .map(|(i, n)| {
                             control.checkpoint(point)?;
-                            Ok(n.wire_with_support(i, &self.nodes[..i], inspection))
+                            n.wire_with_support(i, &self.nodes[..i], inspection, control)
                         })
                         .collect::<Result<_, Signal>>()?,
                 ),
@@ -2174,7 +2326,7 @@ impl Graph {
             || !node.evidence.is_empty()
             || node.judgment.is_some()
             || !node.reasons.is_empty()
-            || facts != &node.support
+            || facts != &node.support.materialize(&self.control)?
             || !matches!(self.get(*left)?.rule, Rule::Construction("evaluation"))
             || !matches!(self.get(*right)?.rule, Rule::Construction("domain"))
             || self.get(*left)?.arguments != node.arguments[..3]
@@ -2210,6 +2362,7 @@ impl Graph {
 
         self.tick()?;
         // Domain の要素と collection Scalar の形は Graph の挿入時に検査済み。
+        let mut producer = None;
         let member = if let Some(finite) = finite {
             let Some(Payload::Domain { elements, .. }) = &self.get(finite)?.payload else {
                 return Err(internal!("反復の有限域がDomainでない").into());
@@ -2217,6 +2370,7 @@ impl Graph {
             let element = elements
                 .get(position)
                 .ok_or(internal!("有限域の要素がない"))?;
+            producer = Some(*element);
             Member::SetElement(self.scalar(*element)?.clone())
         } else {
             let Some(Payload::Evaluation {
@@ -2244,6 +2398,8 @@ impl Graph {
             domain,
             member,
             finite,
+            position,
+            producer,
         })
     }
 
@@ -2270,6 +2426,7 @@ impl Graph {
             Some(iteration.source),
             Some(iteration.domain),
             iteration.finite,
+            iteration.producer,
         ]
         .into_iter()
         .flatten()
@@ -2284,6 +2441,9 @@ impl Graph {
     }
     pub(super) fn context_at(&self, index: usize) -> super::call::Context {
         self.contexts.get(index).copied().unwrap_or(self.active)
+    }
+    pub(super) fn control(&self) -> &Control {
+        &self.control
     }
     pub(crate) fn tick(&self) -> Result<(), ValidationFailure> {
         self.control
@@ -2493,7 +2653,7 @@ impl Graph {
             || !Self::owned_call_operand_type(&self.scalar(*left)?.ty())
             || self.scalar(*left)?.ty() != self.scalar(*right)?.ty()
             || super::data::equal(self.scalar(*left)?, self.scalar(*right)?, &self.control)?
-            || facts != &node.support
+            || facts != &node.support.materialize(&self.control)?
             || !matches!(node.rule, Rule::Construction("evidence"))
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
@@ -2511,7 +2671,7 @@ impl Graph {
             let value = self.get(r)?;
             if value.arguments != node.arguments[..n - 2]
                 || value.rule != Rule::Construction(rule)
-                || value.support != node.support
+                || !value.support.same_facts(&node.support, &self.control)?
                 || value.scope != node.scope
                 || !value.evidence.is_empty()
                 || !value.reasons.is_empty()
@@ -2557,7 +2717,7 @@ impl Graph {
                 || !judgment.reasons.is_empty()
                 || !node.reasons.is_empty()
                 || !matches!(node.rule, Rule::Construction("proposition"))
-                || node.support != proof.support
+                || !node.support.same_facts(&proof.support, &self.control)?
                 || node.scope != proof.scope
             {
                 return Err(internal!("Owned条件の反証・元辺・判断が違う").into());
@@ -2588,8 +2748,8 @@ impl Graph {
                 || proof.ty != NodeType::Evidence
                 || proof.arguments != node.arguments[..node.arguments.len() - 1]
                 || proof.scope != node.scope
-                || proof.support != node.support
-                || !matches!(&proof.payload,Some(Payload::PathCounterexample{left:a,right:b,facts,..})if a==left&&b==right&&facts==&node.support)
+                || !proof.support.same_facts(&node.support, &self.control)?
+                || !matches!(&proof.payload,Some(Payload::PathCounterexample{left:a,right:b,facts,..})if a==left&&b==right&&node.support.matches_flat(facts, &self.control)?)
                 || self.scalar(*left)? == self.scalar(*right)?
             {
                 return Err(internal!("Path条件の反証・元辺・Scopeが違う").into());
@@ -2615,7 +2775,7 @@ impl Graph {
                 || proof.arguments != [*source, *map, *key, *actual, *required]
                 || !self.map_domain_counterexample_shape(proof)?
                 || proof.scope != node.scope
-                || proof.support != node.support
+                || !proof.support.same_facts(&node.support, &self.control)?
                 || super::data::equal(self.scalar(*left)?, self.scalar(*right)?, &self.control)?
             {
                 return Err(internal!("Map域条件の反証・導出・Scopeが違う").into());
@@ -2666,7 +2826,7 @@ impl Graph {
                 || *guard != original_guard
                 || instance_bindings != bindings
                 || node.scope != whole.scope
-                || node.support != whole.support
+                || !node.support.same_facts(&whole.support, &self.control)?
             {
                 return Err(internal!("全域命題の元LawInstance・whole・Scope・支持が違う").into());
             }
@@ -2862,10 +3022,14 @@ impl Graph {
         let Some(quantifier) = quantifier else {
             return Ok(false);
         };
-        let mut support = self.get(*domain)?.support.clone().into_vec();
-        support.extend(self.get(*body)?.support.iter().cloned());
-        support.sort();
-        support.dedup();
+        let support = Support::sum(
+            vec![],
+            [
+                self.get(*domain)?.support.clone(),
+                self.get(*body)?.support.clone(),
+            ],
+        )
+        .materialize(&self.control)?;
         if record.source != *source
             || record.finite != Some(*domain)
             || *value != *left
@@ -3320,8 +3484,8 @@ impl Graph {
             || !node.scope.assignments
             || node.scope != value.scope
             || !node.scope.source_compatible(&source.scope)
-            || node.support != value.support
-            || &node.support != expected_support
+            || !node.support.same_facts(&value.support, &self.control)?
+            || !node.support.same_facts(expected_support, &self.control)?
         {
             return Err(internal!("全域正規化の導出・Scope・支持が違う").into());
         }
@@ -3360,7 +3524,9 @@ impl Graph {
             || node.arguments != [source, left, right, *before, *after]
             || self.get(*after)?.arguments != [*before, source, left, right]
             || !matches!(self.get(*after)?.rule, Rule::Construction("evaluation"))
-            || node.support != difference.support
+            || !node
+                .support
+                .same_facts(&difference.support, &self.control)?
             || node.scope != difference.scope
         {
             return Err(internal!("正規化証拠の実変換・導出・支持・Scopeが違う").into());
@@ -3489,7 +3655,9 @@ impl Graph {
             || !matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
             || !matches!(&node.rule, Rule::Input {kind:"law",location:actual} if actual == location)
             || !node.evidence.is_empty()
-            || node.support != self.get(*body)?.support
+            || !node
+                .support
+                .same_facts(&self.get(*body)?.support, &self.control)?
         {
             return Err(
                 internal!("局所数値量化の確定Boolが元型・Quant位置・支持に合わない").into(),
@@ -3548,7 +3716,9 @@ impl Graph {
             || values != expected_values
             || *applicability != "applicable"
             || !node.evidence.is_empty()
-            || node.support != self.get(*body)?.support
+            || !node
+                .support
+                .same_facts(&self.get(*body)?.support, &self.control)?
         {
             return Err(internal!("局所数値量化の実body・元位置・値・支持が違う").into());
         }
@@ -3557,7 +3727,7 @@ impl Graph {
             if !self.universal_local_quantifier_value_shape(scalar)?
                 || scalar.arguments != [*header, *domain, *body]
                 || scalar.scope != node.scope
-                || scalar.support != node.support
+                || !scalar.support.same_facts(&node.support, &self.control)?
             {
                 return Err(internal!("局所数値量化の値が別のbody・binderで導出された").into());
             }
@@ -3806,7 +3976,7 @@ impl Graph {
             if !self.universal_normalization_shape(proof)?
                 || !matches!(&proof.payload, Some(Payload::Normalization { before, after, steps }) if before == expression && after == value && steps.first() == expected_step.as_ref())
                 || proof.scope != node.scope
-                || proof.support != node.support
+                || !proof.support.same_facts(&node.support, &self.control)?
             {
                 return Err(internal!("全域wholeの正規化証拠が元式・判断に合わない").into());
             }
@@ -3815,7 +3985,7 @@ impl Graph {
             let proof = self.get(*pair)?;
             if !self.universal_completion_pair_shape(proof, self.context_at(pair.0))?
                 || proof.arguments.first() != Some(expression)
-                || proof.support != node.support
+                || !proof.support.same_facts(&node.support, &self.control)?
             {
                 return Err(internal!("未決の全域wholeが別template・支持の補完対を指す").into());
             }
@@ -4050,7 +4220,9 @@ impl Graph {
             || !node.evidence.is_empty()
             || node.scope != self.get(*anchor)?.scope
             || node.scope != value_node.scope
-            || node.support != value_node.support
+            || !node
+                .support
+                .same_facts(&value_node.support, &self.control)?
             || context != witness.caller
         {
             return Err(internal!("数値補完caseの元型域・slot順・whole・Scopeが違う").into());
@@ -4129,7 +4301,9 @@ impl Graph {
             if *expression != anchor
                 || self.get(*value)?.arguments != expected
                 || whole_node.scope != node.scope
-                || whole_node.support != node.support
+                || !whole_node
+                    .support
+                    .same_facts(&node.support, &self.control)?
             {
                 return Err(internal!("数値補完対が別caseのslot値・whole結果を指す").into());
             }
@@ -4401,7 +4575,7 @@ impl Graph {
         if self.boolean(*value)? != Some(false)
             || self.context_at(evidence.0) != self.context_at(evaluation.0)
             || proof.scope != whole.scope
-            || proof.support != whole.support
+            || !proof.support.same_facts(&whole.support, &self.control)?
         {
             return Ok(false);
         }
@@ -4458,8 +4632,8 @@ impl Graph {
                     || expected.arguments != node.arguments
                     || !matches!(expected.rule, Rule::Construction("proposition"))
                     || node.scope != whole.scope
-                    || facts != &node.support
-                    || node.support != whole.support
+                    || facts != &node.support.materialize(&self.control)?
+                    || !node.support.same_facts(&whole.support, &self.control)?
                 {
                     return Err(internal!("全域反例の偽・要求真・正規化・支持が違う").into());
                 }
@@ -4568,8 +4742,10 @@ impl Graph {
                     }
                 }
                 if node.scope != self.get(*normalization)?.scope
-                    || node.support != self.get(*normalization)?.support
-                    || facts != &node.support
+                    || !node
+                        .support
+                        .same_facts(&self.get(*normalization)?.support, &self.control)?
+                    || facts != &node.support.materialize(&self.control)?
                 {
                     return Err(internal!("具体全域反例のScope・支持が違う").into());
                 }
@@ -4770,6 +4946,27 @@ impl Graph {
                     return Err(internal!("型全域Domainに元Sourceがない").into());
                 };
                 self.universal_template_sources(*source)?;
+            }
+            (NodeType::Domain, Some(Payload::Domain { ty, elements }))
+                if node.rule == Rule::InDomain =>
+            {
+                let [_, _, set, rest @ ..] = node.arguments.as_slice() else {
+                    return Err(internal!("In Domain producer辺がない").into());
+                };
+                let Scalar::Set { element, items } = self.scalar(*set)? else {
+                    return Err(internal!("In Domain producerがSetでない").into());
+                };
+                if element != ty || items.len() != elements.len() || rest != elements {
+                    return Err(internal!("In Domain coverageの型/全数/辺が違う").into());
+                }
+                for (position, member) in elements.iter().enumerate() {
+                    self.tick()?;
+                    self.value(*member, ty)?;
+                    let actual = self.get(*member)?;
+                    if actual.rule != (Rule::InMember { position }) || actual.arguments != [*set] {
+                        return Err(internal!("In Domain coverageの位置producerが違う").into());
+                    }
+                }
             }
             (NodeType::Domain, Some(Payload::Domain { ty, elements })) => {
                 let mut values = Vec::new();
@@ -5318,17 +5515,178 @@ impl Graph {
 }
 
 #[cfg(test)]
+mod scope_cow_tests {
+    use super::*;
+    use std::sync::Arc;
+    fn quantifier(domain: Option<NodeRef>, request: Option<usize>) -> Quantifier {
+        Quantifier {
+            kind: archsig_input::law::ast::QuantKind::Forall,
+            name: "x".into(),
+            ty: Type::Bool,
+            domain,
+            occurrence: (1, 9),
+            context: request.map(|request| super::super::call::Context {
+                request,
+                ..Default::default()
+            }),
+            assembly_instance: None,
+        }
+    }
+    #[test]
+    fn scope_exact_reuse_shares_existing_owner_and_preserves_cow_isolation() {
+        let anchor = Scope::from_quantifiers(vec![quantifier(Some(NodeRef(3)), Some(0))]);
+        let mut candidate: Scope = (*anchor).clone().into();
+        let wire = candidate.wire();
+        assert!(!Arc::ptr_eq(&anchor.0, &candidate.0));
+        assert!(candidate.reuse_if_exact(&anchor));
+        assert!(Arc::ptr_eq(&anchor.0, &candidate.0));
+        assert_eq!(candidate.wire(), wire);
+        candidate.quantifiers[0].domain = Some(NodeRef(4));
+        assert_eq!(anchor.quantifiers[0].domain, Some(NodeRef(3)));
+        assert!(!Arc::ptr_eq(&anchor.0, &candidate.0));
+    }
+    #[test]
+    fn scope_exact_reuse_rejects_semantically_equal_reordered_domains() {
+        let first = quantifier(Some(NodeRef(3)), Some(0));
+        let second = quantifier(Some(NodeRef(4)), Some(0));
+        let anchor = Scope::from_quantifiers(vec![first.clone(), second.clone()]);
+        let mut candidate = Scope::from_quantifiers(vec![second, first]);
+        assert_eq!(
+            anchor, candidate,
+            "Scope意味同値は同出現の実Domain順を無視する"
+        );
+        let before = candidate.wire();
+        assert!(!candidate.reuse_if_exact(&anchor));
+        assert_eq!(candidate.wire(), before);
+        assert_ne!(candidate.wire(), anchor.wire());
+    }
+    #[test]
+    fn scope_exact_reuse_rejects_context_domain_metadata_flags_and_multiplicity_changes() {
+        let anchor = Scope::from_quantifiers(vec![quantifier(Some(NodeRef(3)), Some(0))]);
+        for mutation in 0..10 {
+            let mut candidate: Scope = (*anchor).clone().into();
+            match mutation {
+                0 => candidate.quantifiers[0].domain = Some(NodeRef(4)),
+                1 => candidate.quantifiers[0].context.as_mut().unwrap().frame = Some(1),
+                2 => candidate.quantifiers[0].context.as_mut().unwrap().case = Some(1),
+                3 => candidate.completions = true,
+                4 => candidate.assignments = true,
+                5 => {
+                    candidate.readings.insert("other".into());
+                }
+                6 => {
+                    candidate.snapshots.insert("other".into());
+                }
+                7 => {
+                    candidate.modes.insert("other".into());
+                }
+                8 => candidate
+                    .quantifiers
+                    .push(quantifier(Some(NodeRef(3)), Some(0))),
+                9 => candidate.quantifiers[0].assembly_instance = Some((NodeRef(8), 1)),
+                _ => unreachable!(),
+            }
+            let before = candidate.wire();
+            let owner = Arc::as_ptr(&candidate.0);
+            assert!(!candidate.reuse_if_exact(&anchor));
+            assert!(Arc::as_ptr(&candidate.0) == owner, "不一致で所有も変えない");
+            assert_eq!(candidate.wire(), before);
+        }
+    }
+    #[test]
+    fn scope_clone_shares_metadata_and_direct_mutation_is_isolated() {
+        let mut original = Scope::default();
+        original.readings.insert("observed".into());
+        original.snapshots.insert("a".into());
+        original.modes.insert("finite".into());
+        original.add_quantifier(quantifier(Some(NodeRef(3)), Some(0)));
+        let wire = original.wire();
+        let mut changed = original.clone();
+        assert!(Arc::ptr_eq(&original.0, &changed.0));
+        changed.snapshots.insert("b".into());
+        changed.completions = true;
+        changed.quantifiers[0].domain = Some(NodeRef(4));
+        assert!(!Arc::ptr_eq(&original.0, &changed.0));
+        assert_eq!(original.wire(), wire);
+        assert!(!original.snapshots.contains("b"));
+        assert!(!original.completions);
+        assert_eq!(original.quantifiers[0].domain, Some(NodeRef(3)));
+    }
+    #[test]
+    fn scope_noop_merges_restriction_and_single_order_keep_shared_storage() {
+        let mut original = Scope::default();
+        original.readings.insert("observed".into());
+        original.snapshots.insert("a".into());
+        original.completions = true;
+        original.add_quantifier(quantifier(Some(NodeRef(3)), Some(0)));
+        let mut same = original.clone();
+        same.merge(&original);
+        same.merge_metadata(&Scope::default());
+        same.add_quantifier(quantifier(None, None));
+        same.restrict_to_design_point();
+        same.order_quantifiers_like(&original);
+        assert!(Arc::ptr_eq(&original.0, &same.0));
+        assert_eq!(original.wire(), same.wire());
+    }
+    #[test]
+    fn scope_quantifier_resolution_context_and_order_keep_original_rules() {
+        let template = Scope::from_quantifiers(vec![quantifier(None, None)]);
+        let mut resolved = template.clone();
+        resolved.add_quantifier(quantifier(Some(NodeRef(3)), Some(0)));
+        assert_eq!(template.quantifiers, vec![quantifier(None, None)]);
+        assert_eq!(
+            resolved.quantifiers,
+            vec![quantifier(Some(NodeRef(3)), Some(0))]
+        );
+        resolved.add_quantifier(quantifier(Some(NodeRef(4)), Some(1)));
+        resolved.add_quantifier(quantifier(Some(NodeRef(4)), Some(1)));
+        assert_eq!(resolved.quantifiers.len(), 2);
+        let mut later = quantifier(Some(NodeRef(5)), Some(0));
+        later.name = "y".into();
+        later.occurrence = (20, 25);
+        let order = Scope::from_quantifiers(vec![later.clone(), resolved.quantifiers[0].clone()]);
+        let prior = resolved.clone();
+        resolved.add_quantifier(later);
+        resolved.order_quantifiers_like(&order);
+        assert_eq!(resolved.quantifiers[0].name, "y");
+        assert_eq!(prior.quantifiers.len(), 2);
+        assert_eq!(prior.quantifiers[0].name, "x");
+    }
+    #[test]
+    fn scope_metadata_changes_detach_and_preserve_other_flags() {
+        let original = Scope::default();
+        let mut changed = original.clone();
+        let incoming: Scope = ScopeData {
+            assignments: true,
+            modes: BTreeSet::from(["design".into()]),
+            ..Default::default()
+        }
+        .into();
+        changed.merge_metadata(&incoming);
+        assert!(!Arc::ptr_eq(&original.0, &changed.0));
+        assert!(changed.assignments && changed.modes.contains("design"));
+        assert!(!original.assignments && original.modes.is_empty());
+        let before_restrict = changed.clone();
+        changed.restrict_to_design_point();
+        assert!(before_restrict.assignments);
+        assert!(!changed.assignments);
+        assert_eq!(changed.modes, before_restrict.modes);
+    }
+}
+
+#[cfg(test)]
 mod invariant_tests {
     use super::*;
 
     fn quantified_scope(quantifiers: Vec<Quantifier>) -> Scope {
-        Scope {
+        ScopeData {
             readings: BTreeSet::from(["observed".into()]),
             snapshots: BTreeSet::from(["snapshot".into()]),
             modes: BTreeSet::from(["finite".into()]),
             quantifiers,
-            ..Scope::default()
+            ..ScopeData::default()
         }
+        .into()
     }
 
     #[test]

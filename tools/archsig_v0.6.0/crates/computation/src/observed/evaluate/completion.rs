@@ -35,8 +35,7 @@ impl Evaluator<'_, '_> {
         {
             // 理由の有無にかかわらず、原式で確定した値・反例を追加の導出/再検査より前に保持する。
             // 外側のvalidator callbackは呼ばず、Stop/失敗なら保存もしない。
-            self.environment
-                .validate_answer(self.graph, self.request, answer)?;
+            self.finish_answer(answer)?;
             self.verified_observed = Some(answer.clone());
         }
         let mut roots = Vec::new();
@@ -104,13 +103,12 @@ impl Evaluator<'_, '_> {
                 self.tick(Checkpoint::FiniteIteration)?;
                 scope.merge(&self.graph.get(binding.value)?.scope);
             }
-            let mut support = metadata.support;
+            let mut support = Support::from(metadata.support);
             for &r in &roots {
                 scope.merge(&self.graph.get(r)?.scope);
-                support.extend(self.graph.get(r)?.support.iter().cloned());
+                support = Support::sum(vec![], [support, self.graph.get(r)?.support.clone()]);
             }
-            support.sort();
-            support.dedup();
+
             let unbound: Vec<_> = params
                 .iter()
                 .filter(|p| !fixed.iter().any(|b| b.name == p.name))
@@ -282,13 +280,16 @@ impl Evaluator<'_, '_> {
                     return observed;
                 };
                 all_scope.merge(&answer.scope);
-                all_support.extend(self.graph.get(evaluation)?.support.iter().cloned());
+                all_support = Support::sum(
+                    vec![],
+                    [all_support, self.graph.get(evaluation)?.support.clone()],
+                );
                 all_reasons.extend(self.graph.get(evaluation)?.reasons.iter().cloned());
                 all_reasons.extend(answer.reasons);
                 if let Some(proposition) = answer.claim {
                     let node = self.graph.get(proposition)?;
                     all_scope.merge(&node.scope);
-                    all_support.extend(node.support.iter().cloned());
+                    all_support = Support::sum(vec![], [all_support, node.support.clone()]);
                     all_reasons.extend(node.reasons.iter().cloned());
                 }
                 let Some(Payload::Evaluation {
@@ -314,8 +315,7 @@ impl Evaluator<'_, '_> {
             if cases.is_empty() {
                 return Err(Failure::Internal(internal!("補完case集合が空")));
             }
-            all_support.sort();
-            all_support.dedup();
+
             let result_values: Vec<_> = cases
                 .iter()
                 .map(|r| match &self.graph.get(*r)?.payload {

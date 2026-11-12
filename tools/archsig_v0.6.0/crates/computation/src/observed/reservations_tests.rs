@@ -21,12 +21,9 @@ fn reservations_private_fixture(body: &str, missing: bool) -> InputSources {
 }
 
 fn reservations_private_example(body: &str, asks: &[&str], missing: bool) -> ObservedEvaluation {
-    let result = evaluate_observed_bytes(
-        reservations_private_fixture(body, missing),
-        asks,
-        &quiet(),
-    )
-    .unwrap();
+    let result =
+        evaluate_observed_bytes(reservations_private_fixture(body, missing), asks, &quiet())
+            .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
@@ -112,11 +109,35 @@ fn reservations_chain_prefixes_recheck_original_tokens_types_owners_and_children
     assert!(
         matches!(data_scalar_at(&result, owner_scalar), Scalar::Subject { snapshot, subject, entity } if snapshot=="v" && subject=="q" && entity=="Reservations.State")
     );
+    let (actual_source, actual_base, actual_owner, assigned) =
+        checked_field_inputs(&result, scalar);
+    assert_eq!(actual_source, NodeRef(source));
+    assert_eq!(actual_base, NodeRef(child));
+    assert_eq!(actual_owner, NodeRef(owner_scalar));
+    assert!(assigned.is_none());
     assert_eq!(
         result.nodes[scalar].arguments,
-        [NodeRef(owner_scalar), NodeRef(source)]
+        [NodeRef(source), NodeRef(child)]
     );
-    assert_eq!(result.nodes[evaluation].support.len(), 3);
+    let Json::Obj(ref public_scalar) = result.nodes[scalar].wire(scalar, &result.nodes[..scalar])
+    else {
+        unreachable!()
+    };
+    assert_eq!(
+        public_scalar["arguments"],
+        Json::Arr(vec![
+            Json::obj([("node", Json::str(format!("n{owner_scalar}")))]),
+            Json::obj([("node", Json::str(format!("n{source}")))]),
+        ]),
+        "chainの公開ownerRef/元Source辺は従来の型付き契約を保つ"
+    );
+    assert_eq!(
+        result.nodes[evaluation]
+            .support
+            .materialize_for_test()
+            .len(),
+        3
+    );
     for target in [
         source,
         owner_source,
@@ -171,13 +192,17 @@ fn reservations_chain_prefixes_recheck_original_tokens_types_owners_and_children
         *value += 1;
     });
     completion_mutation(&result, scalar, |nodes| {
-        nodes[scalar].support.make_owned()[0].subject = "p".into();
+        nodes[scalar].support.materialize_mut_for_test()[0].subject = "p".into();
     });
     completion_mutation(&result, scalar, |nodes| {
-        nodes[scalar].support.make_owned()[0].field = Some("Reservations.State.held".into());
+        nodes[scalar].support.materialize_mut_for_test()[0].field =
+            Some("Reservations.State.held".into());
     });
     completion_mutation(&result, scalar, |nodes| {
         nodes[scalar].arguments[0] = result.nodes[owner_scalar].arguments[0];
+    });
+    completion_mutation(&result, scalar, |nodes| {
+        nodes[scalar].arguments[1] = NodeRef(root);
     });
     completion_mutation(&result, evaluation, |nodes| {
         let Some(Payload::Evaluation { parts, .. }) = &mut nodes[evaluation].payload else {
@@ -196,7 +221,7 @@ fn reservations_chain_prefixes_recheck_original_tokens_types_owners_and_children
         nodes[evaluation].scope.completions = true;
     });
     completion_mutation(&result, evaluation, |nodes| {
-        nodes[evaluation].support.make_owned().pop();
+        nodes[evaluation].support.materialize_mut_for_test().pop();
     });
 }
 

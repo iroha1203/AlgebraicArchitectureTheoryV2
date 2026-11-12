@@ -50,7 +50,7 @@ fn equivalent(current: &ObservedEvaluation, cold: &ObservedEvaluation) {
     let support = |r: &ObservedEvaluation| {
         r.nodes
             .iter()
-            .flat_map(|n| n.support.iter().cloned())
+            .flat_map(|n| n.support.materialize_for_test().into_iter())
             .collect::<BTreeSet<_>>()
     };
     assert_eq!(support(current), support(cold));
@@ -140,7 +140,7 @@ fn reobservation_uses_current_atom_provenance_even_when_values_are_unchanged() {
     let facts = current
         .nodes
         .iter()
-        .flat_map(|n| n.support.iter())
+        .flat_map(|n| n.support.materialize_for_test().into_iter())
         .filter(|f| f.field.as_deref() == Some("Pattern.Root.h"))
         .collect::<Vec<_>>();
     assert!(facts.iter().any(|f| f.atom.as_deref() == Some("current-h")));

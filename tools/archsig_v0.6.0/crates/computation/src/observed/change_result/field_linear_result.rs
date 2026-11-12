@@ -164,13 +164,13 @@ pub(super) fn build(
     let equations = map(b, pm, em, &linear.equations, n, c)?;
     let part = &mut b.parts[equations.0 - b.base];
     if partial_architecture {
-        part.support.make_owned().extend(
-            linear
-                .constraint_support
-                .iter()
-                .filter(|fact| fact.field.is_none() || fact.atom.is_some())
-                .cloned(),
-        );
+        let appended = linear
+            .constraint_support
+            .iter()
+            .filter(|fact| fact.field.is_none() || fact.atom.is_some())
+            .cloned()
+            .collect::<Vec<_>>();
+        part.support = Support::concat([part.support.clone(), appended.into()]);
     }
     for quantifier in quantifiers {
         part.arguments.extend(quantifier.domain);

@@ -165,10 +165,9 @@ impl Environment<'_> {
         context: super::super::call::Context,
     ) -> Result<(), ValidationFailure> {
         // 固定Answerの全域を残し、今回の自由parameterだけを実Domainへ更新する。
-        scope.merge_quantifiers(&Scope {
-            quantifiers: self.family_descriptors(plan, domains, context),
-            ..Scope::default()
-        });
+        scope.merge_quantifiers(&Scope::from_quantifiers(
+            self.family_descriptors(plan, domains, context),
+        ));
         self.family_order_scope(plan, scope)
     }
     pub(in crate::observed) fn family_descriptors(
@@ -300,7 +299,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || node.ty != NodeType::Expression(Type::Bool)
             || !matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if actual==span)
-            || !node.support.is_empty()
+            || !node.support.is_empty(&self.control)?
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
@@ -605,7 +604,7 @@ impl Environment<'_> {
                     affine: super::super::affine::constant(&scalar, &self.control)?.map(Box::new),
                     scope: base.clone(),
                     known_value: Some(scalar),
-                    support: graph.get(value)?.support.clone(),
+                    support: graph.get(value)?.support.to_flat_facts(&self.control)?,
                     scalar_scope: Some(graph.get(value)?.scope.clone()),
                 },
             );
@@ -689,7 +688,10 @@ impl Environment<'_> {
                         (
                             vec![items[p].clone()],
                             self.family_domains(graph, source, &domains, &plan)?,
-                            graph.get(record.domain)?.support.to_vec(),
+                            graph
+                                .get(record.domain)?
+                                .support
+                                .materialize(&self.control)?,
                         )
                     }
                 } else if origin == Some(d.span) {
@@ -714,7 +716,7 @@ impl Environment<'_> {
                 if node.ty != NodeType::Value(value.ty())
                     || !data::contains(&expected_values, value, &self.control)?
                     || node.scope != scope
-                    || node.support != support
+                    || !node.support.matches_flat(&support, &self.control)?
                     || !node.evidence.is_empty()
                     || !node.reasons.is_empty()
                     || node.judgment.is_some()
@@ -758,7 +760,9 @@ impl Environment<'_> {
                 if node.ty != NodeType::Domain
                     || node.arguments.get(offset..) != Some(elements.as_slice())
                     || node.scope != scope
-                    || node.support != enumeration.support
+                    || !node
+                        .support
+                        .matches_flat(&enumeration.support, &self.control)?
                     || !node.evidence.is_empty()
                     || !node.reasons.is_empty()
                     || node.judgment.is_some()
@@ -840,7 +844,7 @@ struct Aggregate {
     rows: Vec<NodeRef>,
     domain: NodeRef,
     scope: Scope,
-    support: Vec<Fact>,
+    support: Support,
     reasons: Vec<Reason>,
     value: Option<bool>,
 }
@@ -935,7 +939,7 @@ impl Environment<'_> {
             return Err(internal!("wholeの実直積coverage件数が違う").into());
         }
         let mut scope = self.family_domains(graph, *body, &domains, &plan)?;
-        let mut support = graph.get(domain)?.support.clone().into_vec();
+        let mut support = graph.get(domain)?.support.clone();
         let mut reasons = Vec::new();
         let mut seen = Vec::new();
         let mut value = Some(true);
@@ -1030,11 +1034,10 @@ impl Environment<'_> {
                 value = None;
             }
             scope.merge(&graph.get(row)?.scope);
-            support.extend(graph.get(row)?.support.iter().cloned());
+            support = Support::sum(vec![], [support, graph.get(row)?.support.clone()]);
             reasons.extend(graph.get(row)?.reasons.iter().cloned());
         }
-        support.sort();
-        support.dedup();
+
         sort_reasons(&mut reasons);
         self.family_order_scope(&plan, &mut scope)?;
         Ok(Aggregate {
@@ -1303,7 +1306,7 @@ impl Environment<'_> {
                 let a = self.family_aggregate(graph, node)?;
                 if graph.context_at(body.0) != self.current_context(graph)
                     || node.scope != a.scope
-                    || node.support != a.support
+                    || !node.support.same_facts(&a.support, &self.control)?
                     || !node.evidence.is_empty()
                     || !node.reasons.is_empty()
                     || !family_clean(node, "law_instance", &[])
@@ -1330,7 +1333,7 @@ impl Environment<'_> {
                 unreachable!()
             };
             if node.scope != a.scope
-                || node.support != a.support
+                || !node.support.same_facts(&a.support, &self.control)?
                 || self.current_context(graph) != graph.context_at(instance.0)
             {
                 return Err(internal!("whole構成のScope/支持が違う").into());

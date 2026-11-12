@@ -161,11 +161,7 @@ fn input(
         None,
     )?;
     let part = &mut b.parts[source.0 - b.base];
-    part.support
-        .make_owned()
-        .extend(read.metadata.support.iter().cloned());
-    part.support.make_owned().sort();
-    part.support.make_owned().dedup();
+    part.support = Support::sum(read.metadata.support.clone(), [part.support.clone()]);
     part.scope.merge(&scope);
     let value = read
         .value
@@ -215,7 +211,7 @@ pub(super) fn select_quantifiers(part: &mut super::build_result::Part, scope: Sc
             Json::Arr(scope.quantifiers.iter().map(Quantifier::wire).collect()),
         );
     }
-    part.scope.quantifiers = scope.quantifiers;
+    part.scope.quantifiers = scope.quantifiers.clone();
 }
 
 fn attach_facts(
@@ -241,10 +237,9 @@ fn attach_facts(
         };
         part.scope
             .merge(&e.indexes.scope(subject, reading, origin)?);
-        part.support.make_owned().push(fact.clone());
+        part.support = Support::sum(vec![fact.clone()], [part.support.clone()]);
     }
-    part.support.make_owned().sort();
-    part.support.make_owned().dedup();
+
     Ok(())
 }
 

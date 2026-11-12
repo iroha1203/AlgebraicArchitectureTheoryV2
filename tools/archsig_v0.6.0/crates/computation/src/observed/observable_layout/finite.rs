@@ -264,8 +264,7 @@ pub(super) fn compute(
             },
         });
     }
-    support.sort();
-    support.dedup();
+
     reasons.sort_by_key(|r| r.wire().canonical());
     reasons.dedup();
     tick(c)?;

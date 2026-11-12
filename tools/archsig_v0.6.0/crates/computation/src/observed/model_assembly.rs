@@ -949,7 +949,10 @@ mod tests {
             if w.override_parent().is_some() {
                 assert!(Arc::ptr_eq(local, overrides));
                 assert_eq!(w.support().as_ptr(), parent.support().as_ptr());
-                assert_eq!(node.support.as_ptr(), parent.support().as_ptr());
+                assert_eq!(
+                    node.support.direct_facts().as_ptr(),
+                    parent.support().as_ptr()
+                );
                 restrictions.push(node);
             }
         }
@@ -1121,14 +1124,16 @@ mod tests {
             assert!(
                 result.nodes[interfaces.0]
                     .support
-                    .iter()
+                    .materialize_for_test()
+                    .into_iter()
                     .any(|f| f.atom.as_deref() == Some(atom))
             );
         }
         assert!(
             result.nodes[interfaces.0]
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .all(|f| f.field.is_none() || f.atom.is_some())
         );
         assert!(
@@ -1576,9 +1581,12 @@ mod tests {
         );
         assert!(supports.len() >= 2);
         assert_eq!(
-            supports[0].as_ptr(),
-            supports[1].as_ptr(),
-            "同じ支持の配列を輸送値ごとに持たない"
+            supports[0].materialize_for_test(),
+            supports[1].materialize_for_test()
+        );
+        assert!(
+            supports[0].shares_largest_fact_storage_for_test(supports[1]),
+            "大きな共通支持のFact配列を輸送値ごとに持たない"
         );
     }
     #[test]

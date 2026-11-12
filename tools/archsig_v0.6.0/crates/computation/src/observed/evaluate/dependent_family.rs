@@ -53,7 +53,7 @@ impl Evaluator<'_, '_> {
         let mut domains = Vec::new();
         let mut paths = Vec::new();
         let mut all_scope = raw_scope.clone();
-        let mut all_support = Vec::new();
+        let mut all_support = Support::default();
         // DFS preorder。子の逆順pushにより、元Domainの要素順でprefixを辿る。
         let mut pending = vec![(0, Prefix::default())];
         while let Some((parameter_index, prefix)) = pending.pop() {
@@ -87,11 +87,12 @@ impl Evaluator<'_, '_> {
             )?;
             let mut scope = raw_scope.clone();
             scope.merge(&step.enumeration.scope);
-            let mut support = step.enumeration.support;
+            let mut support = Support::from(step.enumeration.support);
             for &(_, selected) in &prefix.path {
                 self.tick(Checkpoint::FiniteIteration)?;
                 scope.merge(&self.graph.get(selected)?.scope);
-                support.extend(self.graph.get(selected)?.support.iter().cloned());
+                support =
+                    Support::sum(vec![], [support, self.graph.get(selected)?.support.clone()]);
                 self.tick(Checkpoint::FiniteIteration)?;
             }
             self.environment.dependent_merge_scope(
@@ -108,8 +109,7 @@ impl Evaluator<'_, '_> {
                     .collect::<Vec<_>>(),
                 root,
             )?;
-            support.sort();
-            support.dedup();
+
             if !step.missing.is_empty() {
                 all_scope.merge(&scope);
                 self.environment
@@ -182,7 +182,7 @@ impl Evaluator<'_, '_> {
             })?;
             domains.push((parameter_index, domain));
             all_scope.merge(&scope);
-            all_support.extend(support);
+            all_support = Support::sum(vec![], [all_support, support]);
             self.family_observe("dependent_domain_done", domains.len() - 1);
             self.tick(Checkpoint::FiniteIteration)?;
             for (scalar, mut child) in children.into_iter().rev() {
@@ -194,8 +194,7 @@ impl Evaluator<'_, '_> {
         }
         self.environment
             .dependent_merge_scope(&plan, &mut all_scope, &domains, root)?;
-        all_support.sort();
-        all_support.dedup();
+
         self.retained_scope.merge(&all_scope);
         let types: Vec<_> = plan.unbound.iter().map(|p| p.ty.erase()).collect();
         let mut members = Vec::new();
@@ -345,7 +344,10 @@ impl Evaluator<'_, '_> {
                 value = None;
             }
             all_scope.merge(&row.scope);
-            all_support.extend(self.graph.get(evaluation)?.support.iter().cloned());
+            all_support = Support::sum(
+                vec![],
+                [all_support, self.graph.get(evaluation)?.support.clone()],
+            );
             reasons.extend(row.reasons);
             for evidence in row.evidence {
                 if matches!(
@@ -358,8 +360,7 @@ impl Evaluator<'_, '_> {
             rows.push(evaluation);
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        all_support.sort();
-        all_support.dedup();
+
         sort_reasons(&mut reasons);
         self.environment.family_order_scope(&plan, &mut all_scope)?;
         let template = self.push(Node {

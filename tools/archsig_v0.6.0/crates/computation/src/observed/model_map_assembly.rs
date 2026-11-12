@@ -823,7 +823,8 @@ mod tests {
             assert!(
                 result.nodes[result.answers[1].claim.unwrap().0]
                     .support
-                    .iter()
+                    .materialize_for_test()
+                    .into_iter()
                     .any(|f| f.atom.as_deref() == Some(atom)),
                 "{atom}"
             );

@@ -80,7 +80,7 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(value)?, value.0)?;
             values.push(graph.scalar(value)?.clone());
             scope.merge(&graph.get(*r)?.scope);
-            support.extend(graph.get(*r)?.support.iter().cloned());
+            support.push(graph.get(*r)?.support.clone());
         }
         let Scalar::Map { domain, pairs, .. } = &values[0] else {
             return Err(internal!("Map条件の実calleeがMap値でない").into());
@@ -106,8 +106,7 @@ impl Environment<'_> {
         if data::equal(&actual, &required, &self.control)? {
             return Err(internal!("域外Map条件の反証が成立しない").into());
         }
-        support.sort();
-        support.dedup();
+        let support = Support::sum(vec![], support).materialize(&self.control)?;
         self.tick()?;
         Ok(Some(MapCondition {
             actual,
@@ -166,7 +165,9 @@ impl Environment<'_> {
             }
             return Ok(false);
         };
-        if node.support != expected.support
+        if !node
+            .support
+            .matches_flat(&expected.support, &self.control)?
             || node.scope != expected.scope
             || !node.reasons.is_empty()
         {

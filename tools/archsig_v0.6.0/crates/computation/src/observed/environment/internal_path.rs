@@ -763,7 +763,7 @@ impl Environment<'_> {
                 }
                 let analysis = self.analyze_source(graph, *span, bindings)?;
                 if analysis.known_value.as_ref() != Some(&Scalar::Path(path.clone()))
-                    || analysis.support != node.support
+                    || analysis.support != node.support.to_flat_facts(&self.control)?
                     || analysis.scalar_scope.as_ref() != Some(&node.scope)
                 {
                     return Err(internal!("Pathの値・支持・Scopeが元三入力と違う").into());

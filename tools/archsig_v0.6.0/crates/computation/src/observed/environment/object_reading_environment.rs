@@ -47,7 +47,7 @@ impl Environment<'_> {
                     affine: crate::observed::affine::constant(&value, &self.control)?.map(Box::new),
                     scope: scope.clone(),
                     known_value: Some(value),
-                    support: g.get(b.value)?.support.clone(),
+                    support: g.get(b.value)?.support.to_flat_facts(&self.control)?,
                     scalar_scope: Some(g.get(b.value)?.scope.clone()),
                 },
             );

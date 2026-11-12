@@ -363,10 +363,15 @@ fn compound_parameter_domain_keeps_external_snapshot_support_scope_and_rejects_o
             external += 1;
             for r in [binding.value, original.body, original.reference] {
                 let node = &g.nodes[r.0];
-                assert!(node.support.iter().any(|f| f.snapshot == "w"
-                    && f.subject == "z"
-                    && f.field.is_none()
-                    && f.atom.is_none()));
+                assert!(
+                    node.support
+                        .materialize_for_test()
+                        .into_iter()
+                        .any(|f| f.snapshot == "w"
+                            && f.subject == "z"
+                            && f.field.is_none()
+                            && f.atom.is_none())
+                );
                 assert!(node.scope.snapshots.contains("w"));
                 assert!(node.scope.modes.contains("proposed"));
                 assert!(node.scope.modes.contains("specification"));

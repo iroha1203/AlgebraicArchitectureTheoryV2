@@ -79,18 +79,27 @@ impl<'a> InputIndexes<'a> {
             .copied()
             .ok_or_else(|| internal!("origin が見つからない"))
     }
-    pub fn field(
+    /// 記述だけを読む。実readのcollectorとは独立にraw照合でも使う。
+    pub(in crate::observed) fn field_descriptor(
         &self,
-        state: &EvaluationState,
         snapshot: &str,
         subject: &str,
         name: &str,
     ) -> Result<&'a archsig_input::archmap::Field, InternalError> {
-        let field = self
-            .fields
+        self.fields
             .get(&(snapshot, subject, name))
             .copied()
-            .ok_or_else(|| internal!("field がない"))?;
+            .ok_or_else(|| internal!("field がない"))
+    }
+
+    /// 実read境界でだけ呼ぶ。成功Outcomeまで効果を遅らせない。
+    pub(in crate::observed) fn record_field_read(
+        &self,
+        state: &EvaluationState,
+        snapshot: &str,
+        subject: &str,
+        field: &archsig_input::archmap::Field,
+    ) {
         if matches!(field.slot, Slot::Missing)
             && state
                 .architecture_value_reference(&Fact::from(archsig_input::archmap::FactData {
@@ -118,6 +127,17 @@ impl<'a> InputIndexes<'a> {
                 atom: None,
             }));
         }
+    }
+
+    pub fn field(
+        &self,
+        state: &EvaluationState,
+        snapshot: &str,
+        subject: &str,
+        name: &str,
+    ) -> Result<&'a archsig_input::archmap::Field, InternalError> {
+        let field = self.field_descriptor(snapshot, subject, name)?;
+        self.record_field_read(state, snapshot, subject, field);
         Ok(field)
     }
     pub(in crate::observed) fn observed_scalar(

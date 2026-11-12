@@ -494,7 +494,7 @@ fn private_axis_and_graph_mutations_cannot_drop_reorder_or_borrow_another_axis()
                     n.arguments.pop();
                 }
                 1 => n.arguments.reverse(),
-                2 => n.support.make_owned().clear(),
+                2 => n.support.materialize_mut_for_test().clear(),
                 3 => n.scope = Scope::default(),
                 4 => n.ty = NodeType::Construction(T::CircuitPattern),
                 5 => {

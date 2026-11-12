@@ -13,7 +13,7 @@ use archsig_input::{
         ast::{ExprKind, Pattern, Span},
     },
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 #[cfg(test)]
 type IterationObserver = Box<dyn FnMut(Span, super::call::Context, &'static str, usize)>;
@@ -1028,6 +1028,29 @@ fn equal_with_retained(
     })
 }
 
+// Subject equality is exactly (snapshot, subject, entity), after the caller's
+// element-type check. Keep borrowed keys local to this one Set operation; other
+// Scalar kinds retain their established semantic equality (nested Sets, Maps,
+// Paths and Terms must not be replaced by a serialization key).
+fn first_subject<'a>(
+    value: &'a Scalar,
+    seen: &mut BTreeSet<(&'a str, &'a str, &'a str)>,
+    control: &Control,
+) -> Result<Option<bool>, ValidationFailure> {
+    let Scalar::Subject {
+        snapshot,
+        subject,
+        entity,
+    } = value
+    else {
+        return Ok(None);
+    };
+    tick(control)?;
+    let first = seen.insert((snapshot.as_str(), subject.as_str(), entity.as_str()));
+    tick(control)?;
+    Ok(Some(first))
+}
+
 /// Graph単体では一般値の形を検査する。familyの定義・arity・payload型はEnvironmentで照合する。
 pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -1056,16 +1079,21 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 }) {
                     return Err(internal!("containerの要素型が原始対応型でない").into());
                 }
+                let mut subjects = BTreeSet::new();
                 for (index, item) in items.iter().enumerate() {
                     tick(control)?;
                     if &item.ty() != element {
                         return Err(internal!("containerの要素型が違う").into());
                     }
                     check_shape(item, control)?;
-                    if matches!(value, Scalar::Set { .. })
-                        && contains(&items[..index], item, control)?
-                    {
-                        return Err(internal!("Set値に意味上の重複がある").into());
+                    if matches!(value, Scalar::Set { .. }) {
+                        let duplicate = match first_subject(item, &mut subjects, control)? {
+                            Some(first) => !first,
+                            None => contains(&items[..index], item, control)?,
+                        };
+                        if duplicate {
+                            return Err(internal!("Set値に意味上の重複がある").into());
+                        }
                     }
                 }
                 Ok(())
@@ -1149,6 +1177,7 @@ pub(super) fn set(
     control: &Control,
 ) -> Result<Scalar, ValidationFailure> {
     let mut result = Vec::new();
+    let mut subjects = BTreeSet::new();
     let mut remaining = items;
     while let Some((item, rest)) = remaining.split_first() {
         #[cfg(test)]
@@ -1158,7 +1187,11 @@ pub(super) fn set(
         if item.ty() != element {
             return Err(internal!("Set構成要素の型が違う").into());
         }
-        if !contains(&result, item, control)? {
+        let first = match first_subject(item, &mut subjects, control)? {
+            Some(first) => first,
+            None => !contains(&result, item, control)?,
+        };
+        if first {
             result.push(item.clone());
         }
         tick(control)?;
@@ -1353,3 +1386,7 @@ pub(super) fn map_apply(
     tick(control)?;
     Ok(selected)
 }
+
+#[cfg(test)]
+#[path = "data_subject_set_tests.rs"]
+mod subject_set_tests;

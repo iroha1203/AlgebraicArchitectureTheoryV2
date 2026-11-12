@@ -321,8 +321,12 @@ impl Data {
     pub(super) fn scope_domain_type(&self) -> Option<&Type> {
         self.part().domain_type.as_ref()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.part().support.to_vec(), self.part().scope.clone())
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         self.part().scalar.as_ref()
@@ -483,32 +487,22 @@ impl Builder<'_> {
             }
             let (s, q, why) = if input.0 < self.base {
                 let n = self.g.get(*input)?;
-                (n.support.as_slice(), &n.scope, &n.reasons)
+                (&n.support, &n.scope, &n.reasons)
             } else {
                 let p = &self.parts[input.0 - self.base];
-                (p.support.as_slice(), &p.scope, &p.reasons)
+                (&p.support, &p.scope, &p.reasons)
             };
-            support.extend(s.iter().cloned());
+            support.push(s.clone());
             scope.merge(q);
             reasons.extend(why.iter().cloned());
         }
-        support.sort();
-        support.dedup();
+        let support = Support::sum(vec![], support);
         sort_reasons(&mut reasons);
         let judgment = decision.map(|status| Judgment {
             status,
             evidence: vec![],
             reasons: reasons.clone(),
         });
-        let shared = arguments.iter().find_map(|input| {
-            let original = if input.0 < self.base {
-                &self.g.nodes[input.0].support
-            } else {
-                &self.parts[input.0 - self.base].support
-            };
-            (original.as_slice() == support.as_slice()).then(|| original.clone())
-        });
-        let support = shared.unwrap_or_else(|| support.into());
         self.parts.push(Part {
             ty,
             construction,
@@ -553,9 +547,7 @@ impl Builder<'_> {
             arguments,
         )?;
         let part = &mut self.parts[binding.0 - self.base];
-        part.support.make_owned().push(existence);
-        part.support.make_owned().sort();
-        part.support.make_owned().dedup();
+        part.support = Support::sum(vec![existence], [part.support.clone()]);
         part.scope
             .merge(&env.indexes.scope(subject, reading, None)?);
         let expression = self.push(
@@ -585,9 +577,7 @@ impl Builder<'_> {
         let mut position = position.clone();
         position.atom = atom;
         let part = &mut self.parts[expression.0 - self.base];
-        part.support.make_owned().push(position);
-        part.support.make_owned().sort();
-        part.support.make_owned().dedup();
+        part.support = Support::sum(vec![position], [part.support.clone()]);
         part.scope
             .merge(&env.indexes.scope(subject, reading, origin)?);
         Ok(expression)
@@ -867,13 +857,12 @@ fn compute_inner(
             }
             let mut inputs = comparison.inputs;
             let counterexample = if s == Decision::Refuted {
-                let facts = inputs
+                // Counterexampleは明示facts payloadを要求するため、ここでだけ展開する。
+                let factors = inputs
                     .iter()
-                    .map(|r| g.get(*r))
-                    .collect::<Result<Vec<_>, _>>()?
-                    .into_iter()
-                    .flat_map(|n| n.support.iter().cloned())
-                    .collect::<std::collections::BTreeSet<_>>();
+                    .map(|r| g.get(*r).map(|n| n.support.clone()))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let facts = Support::sum(vec![], factors).materialize(c)?;
                 let proof = b.push(
                     NodeType::Evidence,
                     "evidence",

@@ -20,19 +20,50 @@ fn recursive_tree_private_result(asks: &[&str]) -> ObservedEvaluation {
     evaluate_observed(prepared, &control).unwrap()
 }
 fn recursive_tree_private_atom(result: &ObservedEvaluation) -> usize {
-    result
-        .nodes
+    let owner = result.prepared.inputs().archmap().snapshots()[0]
+        .subjects
         .iter()
-        .position(|n| {
-            matches!(
-                (&n.payload, &n.rule),
-                (
-                    Some(Payload::Scalar(Scalar::Data { .. })),
-                    Rule::Input { kind: "atom", .. }
-                )
-            )
-        })
-        .unwrap()
+        .find(|subject| subject.id == "sample")
+        .unwrap();
+    let field = owner
+        .fields
+        .iter()
+        .find(|field| field.name == "Trees.Sample.tree")
+        .unwrap();
+    let Slot::Known { pointer, .. } = &field.slot else {
+        panic!("observed Tree slot")
+    };
+    let (index, node) = result.nodes.iter().enumerate().find(|(_, node)| {
+        matches!((&node.payload, &node.rule),
+            (Some(Payload::Scalar(Scalar::Data { .. })), Rule::FieldValue { kind: "atom", location: Some(Location::ArchMap { pointer: actual, span: None }) }) if actual == pointer)
+    }).expect("actual recursive Tree field producer at original atom pointer");
+    let [source, base] = node.arguments.as_slice() else {
+        panic!("Tree actual source/base")
+    };
+    let Some(Payload::Expression {
+        location: Location::Law { span },
+        ..
+    }) = &result.nodes[source.0].payload
+    else {
+        panic!("Tree source")
+    };
+    assert_eq!(
+        &result.prepared.inputs().sources().law().bytes()[span.0..span.1],
+        b"s.tree"
+    );
+    let Some(Payload::Evaluation {
+        value: Some(owner), ..
+    }) = &result.nodes[base.0].payload
+    else {
+        panic!("Tree base")
+    };
+    assert!(
+        matches!(&result.nodes[owner.0].payload, Some(Payload::Scalar(Scalar::Subject { snapshot, subject, entity })) if snapshot == "v" && subject == "sample" && entity == "Trees.Sample")
+    );
+    assert!(result.nodes.iter().any(|evaluation| matches!(&evaluation.payload,
+        Some(Payload::Evaluation { expression, parts, value: Some(actual), .. })
+            if expression == source && actual.0 == index && parts.len() == 1 && parts[0].children == [*base])));
+    index
 }
 fn recursive_tree_private_change_leaf(value: &mut Scalar) {
     let Scalar::Data { args, .. } = value else {
@@ -68,7 +99,7 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
         recursive_tree_private_change_leaf(value);
     });
     completion_mutation(&result, target, |nodes| {
-        nodes[target].support.make_owned().clear();
+        nodes[target].support.materialize_mut_for_test().clear();
     });
     completion_mutation(&result, target, |nodes| {
         nodes[target].scope.modes.clear();

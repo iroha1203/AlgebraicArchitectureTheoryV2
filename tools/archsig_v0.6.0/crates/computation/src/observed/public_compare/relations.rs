@@ -412,7 +412,7 @@ fn queries(
             let path = operand_path(graph, r)?;
             Ok(QueryPath {
                 path,
-                support: node.support.to_vec(),
+                support: node.support.materialize(graph.control())?,
                 scope: node.scope.clone(),
             })
         })
@@ -1022,7 +1022,7 @@ pub(in crate::observed) fn recheck(
                 || side.expression != *actual
                 || side.value != *value
                 || side.scope != node.scope
-                || side.support != node.support
+                || !node.support.matches_flat(&side.support, c)?
                 || side.reasons != node.reasons
                 || graph.context_at(side.evaluation.0).instance != Some(visible.instance)
                 || graph.context_at(side.evaluation.0).frame.is_some()
@@ -1150,7 +1150,7 @@ pub(in crate::observed) fn validate_node(
     if n.ty != v.ty()
         || n.rule != v.rule()
         || n.arguments != v.arguments()
-        || n.support != w.support
+        || !n.support.matches_flat(&w.support, graph.control())?
         || n.scope
             != match &v.data {
                 D::Comparison(Part::RelationDerived { index, .. }) => {
@@ -1334,8 +1334,8 @@ pub(in crate::observed) fn validate_incompatible(
     {
         return Err(internal!("relationの不適合条件が変わった").into());
     }
-    let mut support = graph.get(w.left)?.support.clone().into_vec();
-    support.extend(graph.get(w.right)?.support.iter().cloned());
+    let mut support = graph.get(w.left)?.support.materialize(graph.control())?;
+    support.extend(graph.get(w.right)?.support.materialize(graph.control())?);
     support.sort();
     support.dedup();
     let mut scope = graph.get(w.left)?.scope.clone();
@@ -1401,7 +1401,7 @@ fn proof_metadata(
     let mut scope = model.scope.clone();
     for reference in dependencies {
         let node = graph.get(*reference)?;
-        support.extend(node.support.iter().cloned());
+        support.extend(node.support.materialize(graph.control())?);
         scope.merge(&node.scope);
     }
     support.sort();

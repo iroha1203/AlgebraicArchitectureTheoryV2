@@ -16,7 +16,7 @@ pub(crate) struct Data {
     pub architecture: NodeRef,
     pub wire: Json,
     pub arguments: Vec<NodeRef>,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub scope: Scope,
 }
 impl Data {
@@ -103,11 +103,14 @@ fn expected(
     let wire = v.wire();
     let mut arguments = vec![base, template, architecture];
     arguments.extend(&base_node.arguments);
-    let mut support = base_node.support.clone().into_vec();
-    support.extend(graph.get(template)?.support.iter().cloned());
-    support.extend(graph.get(architecture)?.support.iter().cloned());
-    support.sort();
-    support.dedup();
+    let support = Support::sum(
+        vec![],
+        [
+            base_node.support.clone(),
+            graph.get(template)?.support.clone(),
+            graph.get(architecture)?.support.clone(),
+        ],
+    );
     // 全束縛済みの特殊化。テンプレートの未束縛parameterの全称Scopeは移さない。
     let mut scope = base_node.scope.clone();
     scope.merge(&graph.get(architecture)?.scope);
@@ -147,7 +150,7 @@ pub(super) fn validate_node(
         || n.ty != d.ty()
         || n.rule != Rule::Construction(d.construction())
         || n.arguments != d.arguments
-        || n.support != d.support
+        || !n.support.same_facts(&d.support, graph.control())?
         || n.scope != d.scope
         || !n.evidence.is_empty()
         || !n.reasons.is_empty()

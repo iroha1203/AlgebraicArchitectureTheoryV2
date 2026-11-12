@@ -56,7 +56,7 @@ pub(crate) struct Data {
     pub parameters: Vec<NodeRef>,
     pub kind: Kind,
     pub wire: Json,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub scope: Scope,
     pub reasons: Vec<Reason>,
     pub evidence: Vec<NodeRef>,
@@ -263,7 +263,7 @@ struct Aggregate {
     value: Option<bool>,
     evidence: Vec<NodeRef>,
     reasons: Vec<Reason>,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
 }
 fn rows(
@@ -364,13 +364,12 @@ fn rows(
         false_row |= value == Some(false);
         evidence.extend(&prop.evidence);
         reasons.extend(prop.reasons.iter().cloned());
-        support.extend(eval.support.iter().cloned());
-        support.extend(prop.support.iter().cloned());
+        support = Support::sum(vec![], [support, eval.support.clone()]);
+        support = Support::sum(vec![], [support, prop.support.clone()]);
         scope.merge(&eval.scope);
         scope.merge(&prop.scope);
     }
-    support.sort();
-    support.dedup();
+
     evidence.sort_by_key(|r| r.0);
     evidence.dedup();
     reasons.sort_by_key(|r| r.wire().canonical());
@@ -393,9 +392,11 @@ fn base_metadata(
     g: &Graph,
     d: &Data,
     p: &FamilyInputs,
-) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    let mut support = g.get(d.template)?.support.clone().into_vec();
-    support.extend(g.get(d.architecture)?.support.iter().cloned());
+) -> Result<(Support, Scope), ValidationFailure> {
+    let mut support = vec![
+        g.get(d.template)?.support.clone(),
+        g.get(d.architecture)?.support.clone(),
+    ];
     let mut scope = frames::base_scope(
         &p.architecture,
         &frames::origin(g, d.template)?
@@ -405,7 +406,7 @@ fn base_metadata(
     scope.merge(&g.get(d.architecture)?.scope);
     scope.assignments = true;
     for parameter in &p.parameters {
-        support.extend(g.get(parameter.reference)?.support.iter().cloned());
+        support.push(g.get(parameter.reference)?.support.clone());
         scope.merge(&g.get(parameter.reference)?.scope);
         scope.quantifiers.push(Quantifier {
             kind: archsig_input::law::ast::QuantKind::Forall,
@@ -417,8 +418,7 @@ fn base_metadata(
             context: None,
         })
     }
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     Ok((support, scope))
 }
 fn ref_array(rs: &[NodeRef]) -> Json {
@@ -658,7 +658,7 @@ pub(super) fn validate_node(
         || n.ty != d.ty()
         || n.rule != Rule::Construction(d.construction())
         || n.arguments != d.arguments()
-        || n.support != d.support
+        || !n.support.same_facts(&d.support, g.control())?
         || n.scope != d.scope
         || n.evidence != d.evidence
         || n.reasons != d.reasons
@@ -742,7 +742,7 @@ impl super::result_kind::ResultKind for Data {
             parameters: p.parameters.iter().map(|p| p.reference).collect(),
             kind: Kind::Domain { members: vec![] },
             wire: Json::Arr(vec![]),
-            support: vec![],
+            support: Support::default(),
             scope: Scope::default(),
             reasons: vec![],
             evidence: vec![],

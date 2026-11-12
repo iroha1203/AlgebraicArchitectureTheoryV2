@@ -196,7 +196,8 @@ fn helpers_preserve_compound_results_bindings_and_original_field_support() {
             g.get(side.evaluation)
                 .unwrap()
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.subject == "p" && f.field.as_deref() == Some("Profile.Part.quantity"))
         );
         assert!(g.frames.len() >= 2);
@@ -356,7 +357,10 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
             3 => Arc::make_mut(&mut d.source).origin.expression = o.base,
             4 => Arc::make_mut(&mut d.source).origin.architecture = o.architectures[1],
             5 => Arc::make_mut(&mut d.source).origin.bindings[0].value = o.base,
-            6 => Arc::make_mut(&mut d.source).support.clear(),
+            6 => Arc::make_mut(&mut d.source)
+                .support
+                .materialize_mut_for_test()
+                .clear(),
             7 => Arc::make_mut(&mut d.source).scope = Scope::default(),
             8 => {
                 Arc::make_mut(&mut d.source).origin.application = InstanceApplication::NotApplicable
@@ -389,7 +393,7 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
         match mode {
             0 => n.arguments.clear(),
             1 => n.arguments.push(r),
-            2 => n.support.make_owned().clear(),
+            2 => n.support.materialize_mut_for_test().clear(),
             3 => n.scope = Scope::default(),
             4 => n.ty = NodeType::Value(Type::Bool),
             _ => n.rule = Rule::Construction("domain"),

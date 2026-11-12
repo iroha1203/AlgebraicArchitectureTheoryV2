@@ -69,7 +69,9 @@ fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scop
         };
         *codomain = "Reservations.System".into();
     });
-    completion_mutation(&r, t, |nodes| nodes[t].support.make_owned().clear());
+    completion_mutation(&r, t, |nodes| {
+        nodes[t].support.materialize_mut_for_test().clear()
+    });
     completion_mutation(&r, d, |nodes| {
         nodes[d].scope.snapshots.remove("v");
     });
@@ -108,12 +110,8 @@ fn owned_compound_enumeration_cancel_keeps_verified_prefix_and_prior_refutation(
             None
         }
     });
-    let prepared = prepare_observed(
-        compound_fixture::input(false, false, "r1"),
-        &asks,
-        &control,
-    )
-    .unwrap();
+    let prepared =
+        prepare_observed(compound_fixture::input(false, false, "r1"), &asks, &control).unwrap();
     let law = prepared.inputs().sources().law().bytes().to_vec();
     let stopped = evaluate_observed_with_validator(
         prepared,

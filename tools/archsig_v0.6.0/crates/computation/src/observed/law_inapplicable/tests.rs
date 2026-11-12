@@ -306,7 +306,7 @@ fn outside_law_rejects_inside_origin_other_object_truth_scope_binding_and_reques
                 2 => d.kind = Kind::Value(Scalar::Bool(false)),
                 4 => d.body = inside,
                 5 => d.bindings.clear(),
-                6 => d.support.clear(),
+                6 => d.support.materialize_mut_for_test().clear(),
                 7 => d.scope.readings.clear(),
                 8 => d.kind = Kind::Evaluation { value: q },
                 _ => unreachable!(),

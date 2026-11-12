@@ -31,6 +31,9 @@ pub(super) struct Iteration {
     pub domain: NodeRef,
     pub member: Member,
     pub finite: Option<NodeRef>,
+    /// 実Domainから選んだ位置とproducer。内包の旧List位置枝ではproducerを持たない。
+    pub position: usize,
+    pub producer: Option<NodeRef>,
 }
 
 /// 元Law族の一組。番号は格納索引だけで、identityは元Sourceと実直積member。

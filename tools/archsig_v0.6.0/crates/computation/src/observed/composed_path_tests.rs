@@ -167,7 +167,7 @@ fn then_typed_endpoint_counterexample_recheck_rejects_fabricated_values_and_evid
             1 => {
                 bad.arguments.remove(1);
             }
-            2 => bad.support.make_owned().clear(),
+            2 => bad.support.materialize_mut_for_test().clear(),
             3 => {
                 let Some(Payload::PathCounterexample { facts, .. }) = &mut bad.payload else {
                     panic!()

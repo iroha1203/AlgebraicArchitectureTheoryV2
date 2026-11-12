@@ -116,7 +116,7 @@ enum Part {
         origin: NodeRef,
         body: bool,
         value: Scalar,
-        support: Vec<Fact>,
+        support: Support,
         scope: Scope,
     },
     Source {
@@ -519,16 +519,20 @@ impl Data {
     pub(super) fn wire(&self) -> Json {
         self.part().wire()
     }
-    fn metadata_ref(&self) -> (&[Fact], &Scope) {
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
+    }
+    #[cfg(test)]
+    fn metadata_ref(&self) -> (&Support, &Scope) {
         if let Part::ObservedBoolean { support, scope, .. } = self.part() {
             (support, scope)
         } else {
             (&self.source.support, &self.source.scope)
         }
-    }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        let (support, scope) = self.metadata_ref();
-        (support.to_vec(), scope.clone())
     }
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         if let Part::ObservedBoolean { support, scope, .. } = self.part() {
@@ -915,17 +919,18 @@ fn append_readings(
     base: usize,
     c: &Control,
 ) -> Result<(), ValidationFailure> {
-    let (base_support, base_scope) = native::metadata(&ConstructionValue {
-        witness: Witness::Architecture(architecture.clone()),
-        data: D::ConstructionLabel(Scalar::Text("observed_law".into())),
-    })?;
+    let (base_support, base_scope) = native::metadata(
+        &ConstructionValue {
+            witness: Witness::Architecture(architecture.clone()),
+            data: D::ConstructionLabel(Scalar::Text("observed_law".into())),
+        },
+        c,
+    )?;
+    let base_support = Support::from(base_support);
     for original in &out.originals {
         tick(c)?;
         let reading = family.observed_law(state, original.column, c)?;
-        let mut support = base_support.clone();
-        support.extend_from_slice(&reading.support);
-        support.sort();
-        support.dedup();
+        let support = Support::sum(reading.support.clone(), [base_support.clone()]);
         let mut scope = base_scope.clone();
         scope.merge(&reading.scope);
         let mut retain =
@@ -1125,7 +1130,7 @@ fn metadata(
         witness: Witness::Architecture(a.clone()),
         data: D::ConstructionLabel(Scalar::Text("finite_law".into())),
     };
-    let (mut support, mut scope) = native::metadata(&value)?;
+    let (mut support, mut scope) = native::metadata(&value, c)?;
     let env = Environment::new(inputs, c)?;
     for position in f.positions() {
         tick(c)?;
@@ -1142,14 +1147,14 @@ fn metadata(
         if let Slot::Known { atom, .. } = &field.slot {
             fact.atom = Some(atom.clone());
             let value = native::atom_value(Witness::Architecture(a.clone()), &fact, c)?;
-            let (facts, s) = native::metadata(&value)?;
+            let (facts, s) = native::metadata(&value, c)?;
             support.extend(facts);
             scope.merge(&s);
         } else {
             fact.field = None;
             fact.atom = None;
             let value = native::subject_value(Witness::Architecture(a.clone()), &fact)?;
-            let (facts, s) = native::metadata(&value)?;
+            let (facts, s) = native::metadata(&value, c)?;
             support.extend(facts);
             scope.merge(&s);
         }
@@ -1157,7 +1162,7 @@ fn metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     scope.assignments = true;
-    super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
+    super::equation_presentation_node::global_metadata(a, &mut support, &mut scope, c)?;
     tick(c)?;
     Ok((support, scope))
 }
@@ -1489,12 +1494,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
         return Err(internal!("有限Lawの元Architecture参照が違う").into());
     }
-    let (support, scope) = data.metadata_ref();
+    let (support, scope) = data.retained_metadata();
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support.as_slice() != support
-        || &n.scope != scope
+        || !n.support.same_facts(&support, graph.control())?
+        || n.scope != scope
         || n.reasons
             != match part {
                 Part::Equation(v) => v.reasons(),

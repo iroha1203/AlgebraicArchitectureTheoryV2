@@ -497,12 +497,9 @@ pub(super) fn prepare(
         None,
     )?;
     b.parts[problem.0 - base].scope.merge(&compiled.scope);
-    b.parts[problem.0 - base]
-        .support
-        .make_owned()
-        .extend(compiled.support.iter().cloned());
-    b.parts[problem.0 - base].support.make_owned().sort();
-    b.parts[problem.0 - base].support.make_owned().dedup();
+    let part = &mut b.parts[problem.0 - base];
+    part.support = Support::sum(compiled.support.clone(), [part.support.clone()]);
+
     let claim = condition(&mut b, r, vec![problem], Decision::Established)?;
     let a = answer(
         r,

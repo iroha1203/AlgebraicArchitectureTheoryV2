@@ -241,7 +241,10 @@ impl Environment<'_> {
                         .map(Box::new),
                     scope: inputs.origin.scope.clone(),
                     known_value: Some(scalar),
-                    support: graph.get(binding.value)?.support.clone(),
+                    support: graph
+                        .get(binding.value)?
+                        .support
+                        .to_flat_facts(&self.control)?,
                     scalar_scope: Some(graph.get(binding.value)?.scope.clone()),
                 },
             );

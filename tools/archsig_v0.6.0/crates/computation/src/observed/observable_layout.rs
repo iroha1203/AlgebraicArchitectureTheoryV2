@@ -77,7 +77,7 @@ pub(super) struct Data {
     pub indices: Vec<NodeRef>,
     pub factors: Vec<NodeRef>,
     pub objects: Vec<Object>,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub scope: Scope,
     pub reasons: Vec<Reason>,
     pub complete: bool,
@@ -114,7 +114,7 @@ fn check_refs(
     env: &Environment<'_>,
     g: &Graph,
     rs: impl IntoIterator<Item = NodeRef>,
-    support: &mut Vec<Fact>,
+    support: &mut Support,
     scope: &mut Scope,
     reasons: &mut Vec<Reason>,
     c: &Control,
@@ -123,7 +123,7 @@ fn check_refs(
         tick(c)?;
         let n = g.get(r)?;
         env.recheck_node(g, n, r.0)?;
-        support.extend(n.support.iter().cloned());
+        *support = Support::sum(vec![], [support.clone(), n.support.clone()]);
         scope.merge(&n.scope);
         reasons.extend(n.reasons.iter().cloned());
     }
@@ -325,8 +325,7 @@ fn compute_polynomial(
             status: d.status.clone(),
         });
     }
-    support.sort();
-    support.dedup();
+
     reasons.sort_by_key(|r| r.wire().canonical());
     reasons.dedup();
     tick(c)?;

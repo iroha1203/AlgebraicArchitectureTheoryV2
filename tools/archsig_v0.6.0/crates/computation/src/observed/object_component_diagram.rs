@@ -684,7 +684,7 @@ fn reading_metadata(
     source: &Node,
     c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    let mut support = source.support.clone().into_vec();
+    let mut support = source.support.materialize(c)?;
     let mut scope = source.scope.clone();
     let env = Environment::new(inputs, c)?;
     for row in a.readings().instances() {
@@ -692,7 +692,7 @@ fn reading_metadata(
             tick(c)?;
             let subject =
                 native::subject_value(Witness::Architecture(a.clone()), binding.subject())?;
-            let (facts, s) = native::metadata(&subject)?;
+            let (facts, s) = native::metadata(&subject, c)?;
             support.extend(facts);
             scope.merge(&s);
         }
@@ -893,7 +893,7 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support.as_slice() != support
+        || !n.support.matches_flat(support, graph.control())?
         || n.scope != scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()

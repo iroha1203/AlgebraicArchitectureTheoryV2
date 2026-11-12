@@ -85,7 +85,7 @@ impl Environment<'_> {
                         location: None,
                         inputs: vec![ConditionInput::Reference(root)],
                         scope: original.scope.clone(),
-                        support: original.support.to_vec(),
+                        support: original.support.materialize(&self.control)?,
                     });
                 }
             }
@@ -147,7 +147,7 @@ impl Environment<'_> {
                         location: None,
                         inputs: vec![ConditionInput::Reference(root)],
                         scope: original.scope.clone(),
-                        support: original.support.to_vec(),
+                        support: original.support.materialize(&self.control)?,
                     });
                 }
             }
@@ -208,7 +208,7 @@ impl Environment<'_> {
                     location: None,
                     inputs: vec![ConditionInput::Reference(root)],
                     scope: original.scope.clone(),
-                    support: original.support.to_vec(),
+                    support: original.support.materialize(&self.control)?,
                 });
             }
         }
@@ -269,7 +269,7 @@ impl Environment<'_> {
                     }),
                     inputs: vec![ConditionInput::Reference(root)],
                     scope: original.scope.clone(),
-                    support: original.support.to_vec(),
+                    support: original.support.materialize(&self.control)?,
                 });
             }
             self.tick()?;
@@ -345,8 +345,8 @@ impl Environment<'_> {
         if left == right {
             return Ok(None);
         }
-        let mut support = graph.get(a)?.support.clone().into_vec();
-        support.extend(graph.get(b)?.support.iter().cloned());
+        let mut support = graph.get(a)?.support.materialize(&self.control)?;
+        support.extend(graph.get(b)?.support.materialize(&self.control)?);
         support.sort();
         support.dedup();
         let mut scope = graph.get(a)?.scope.clone();
@@ -682,7 +682,7 @@ impl Graph {
                 expect_part(*required, Required)?;
                 if left != actual
                     || right != required
-                    || facts != &node.support
+                    || !node.support.matches_flat(facts, self.control())?
                     || node.ty != NodeType::Evidence
                     || self.get(*name)?.arguments != roots
                     || self.get(*actual)?.arguments != roots

@@ -194,13 +194,16 @@ fn finite_native_diagram_keeps_wire_values_original_nu_epsilon_and_ideal_generat
                 ..
             } => {
                 observed_count += 1;
-                assert_eq!(support, expected.as_slice());
+                assert_eq!(support, expected);
                 assert!(std::ptr::eq(scope, expected_scope));
                 assert!(!std::ptr::eq(scope, &data.source.scope));
                 true
             }
             _ => {
-                assert!(std::ptr::eq(&*n.support, &*data.source.support));
+                assert!(
+                    n.support
+                        .shares_recipe_storage_for_test(&data.source.support)
+                );
                 assert!(std::ptr::eq(scope, &data.source.scope));
                 false
             }
@@ -208,7 +211,12 @@ fn finite_native_diagram_keeps_wire_values_original_nu_epsilon_and_ideal_generat
         assert_eq!(n.scope.assignments, !observed);
         assert!(!n.scope.completions);
         assert!(n.scope.readings.contains("Chosen"));
-        assert!(n.support.iter().any(|f| f.atom.as_deref() == Some("px")));
+        assert!(
+            n.support
+                .materialize_for_test()
+                .into_iter()
+                .any(|f| f.atom.as_deref() == Some("px"))
+        );
     }
     assert!(observed_count > 0);
     replay(&e, &g.nodes, &g.contexts).unwrap();
@@ -270,7 +278,8 @@ fn missing_observation_omits_evaluation_and_epsilon_without_pruning_symbolic_dom
     assert!(
         !g.nodes[d.ring.0]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.atom.as_deref() == Some("qx"))
     );
     assert_eq!(property(&g, d.required, "kind"), Json::str("obstruction"));
@@ -345,8 +354,14 @@ fn diagram_consumer_recheck_rejects_input_architecture_object_and_node_changes()
             0 => n.arguments.clear(),
             1 => n.scope.assignments = false,
             2 => {
-                n.support.make_owned().clear();
-                assert!(!data(&g, d.ring).source.support.is_empty());
+                n.support.materialize_mut_for_test().clear();
+                assert!(
+                    !data(&g, d.ring)
+                        .source
+                        .support
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
             }
             3 => n.ty = NodeType::Construction(T::Ideal),
             _ => {
@@ -1366,7 +1381,8 @@ fn lexical_operand_substitution_closes_nested_let_match_and_keeps_discarded_read
             g.get(left)
                 .unwrap()
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.atom.as_deref() == Some("px"))
         );
         let texts = operand_source_texts(&g, left, raw);
@@ -1553,8 +1569,16 @@ fn operand_nodes_reject_changed_arguments_type_scope_support_and_source_position
             }
             3 => nodes[project_ref.0].scope.assignments = !nodes[project_ref.0].scope.assignments,
             4 => {
-                assert!(!nodes[project_ref.0].support.is_empty());
-                nodes[project_ref.0].support.make_owned().clear();
+                assert!(
+                    !nodes[project_ref.0]
+                        .support
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
+                nodes[project_ref.0]
+                    .support
+                    .materialize_mut_for_test()
+                    .clear();
             }
             _ => nodes[substitute_ref.0].payload = g.nodes[open_ref.0].payload.clone(),
         }
@@ -1657,7 +1681,8 @@ fn missing_operand_values_keep_closed_source_expressions_without_fabricated_scal
             !g.get(*left)
                 .unwrap()
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.atom.as_deref() == Some("qx"))
         );
         let Part::Source { bindings, .. } = data(&g, *left).part() else {

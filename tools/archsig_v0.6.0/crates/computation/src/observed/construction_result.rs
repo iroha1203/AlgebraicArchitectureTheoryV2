@@ -3,8 +3,8 @@ use super::{
     projection::{MapProjection, ProjectionStep, ProjectionType},
     request::Request,
     result::{
-        Binding, Decision, EvidenceKind, Fact, Graph, Judgment, Node, NodeRef, NodeType, Payload,
-        Reason, ReasonKind, Rule, Scalar, Scope, Support, ValidationFailure,
+        Binding, Decision, EvidenceKind, Fact, FlatFacts, Graph, Judgment, Node, NodeRef, NodeType,
+        Payload, Reason, ReasonKind, Rule, Scalar, Scope, Support, ValidationFailure,
     },
 };
 use crate::construction::{
@@ -162,7 +162,8 @@ struct ArchitectureBody {
     evaluations: Arc<super::object_evaluate::LawEvaluationCache>,
     profiles: OnceLock<Arc<crate::construction::profiles::ConfigurationProfiles>>,
     arrows: Vec<Fact>,
-    support: Support,
+    support: FlatFacts,
+    scope: Scope,
     overrides: Arc<Vec<(Fact, Scalar)>>,
 }
 // profilesとLaw評価は不変な構成から導出する補助値。初期化の有無は意味の等値性に含めない。
@@ -172,13 +173,14 @@ impl PartialEq for ArchitectureBody {
             && self.readings == other.readings
             && self.arrows == other.arrows
             && self.support == other.support
+            && self.scope == other.scope
             && self.overrides == other.overrides
     }
 }
 impl Eq for ArchitectureBody {}
 enum ArchitectureSupport<'a> {
     Collect(&'a [Fact]),
-    Shared(Support),
+    Shared(FlatFacts),
 }
 impl PartialEq for ArchitectureWitness {
     fn eq(&self, other: &Self) -> bool {
@@ -1518,6 +1520,24 @@ impl ArchitectureWitness {
                 support.into()
             }
         };
+        let mut scope = Scope::default();
+        scope.readings.insert(construction.reading().into());
+        if let Some(owner_scope) = construction.owner_scope() {
+            scope
+                .snapshots
+                .extend(owner_scope.snapshots.iter().cloned());
+            scope.modes.extend(owner_scope.modes.iter().cloned());
+            scope.completions = true;
+        }
+        for fact in &support {
+            control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
+            merge_fact_scope(&inputs, &mut scope, fact).map_err(|failure| match failure {
+                ValidationFailure::Stop(stop) => ConstructionFailure::Stopped(stop),
+                other => ConstructionFailure::Inconsistent(
+                    other.internal_context(format!("Architecture支持Scope: {other:?}")),
+                ),
+            })?;
+        }
         let readings = Arc::new(readings);
         let evaluations = Arc::new(super::object_evaluate::LawEvaluationCache::new(
             inputs.clone(),
@@ -1533,10 +1553,14 @@ impl ArchitectureWitness {
                 profiles: OnceLock::new(),
                 arrows,
                 support,
+                scope,
                 overrides,
             }),
             assembly_parent: None,
         }))
+    }
+    pub(super) fn scope(&self) -> &Scope {
+        &self.body.scope
     }
     pub fn construction(&self) -> &ConfigurationConstruction {
         &self.body.construction
@@ -1671,7 +1695,7 @@ impl ArchitectureWitness {
             .filter(|parent| Arc::ptr_eq(&self.body.overrides, &parent.body.overrides))
     }
     #[cfg(test)]
-    pub(super) fn support(&self) -> &Support {
+    pub(super) fn support(&self) -> &FlatFacts {
         &self.body.support
     }
     pub(super) fn selected_root(&self) -> &Fact {
@@ -1916,54 +1940,86 @@ pub fn atom_value(
         data: ConstructionData::Atom(leaf),
     })
 }
-pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+fn merge_fact_scope(
+    inputs: &CheckedInputs,
+    scope: &mut Scope,
+    fact: &Fact,
+) -> Result<(), ValidationFailure> {
+    scope.snapshots.insert(fact.snapshot.clone());
+    let subject = find_subject(inputs, fact)?;
+    let origin = if let Some(field) = &fact.field {
+        subject
+            .fields
+            .iter()
+            .find(|f| &f.name == field)
+            .and_then(|f| match &f.slot {
+                archsig_input::archmap::Slot::Known { origin, .. } => Some(origin),
+                _ => None,
+            })
+            .ok_or(internal!("native支持が既知fieldでない"))?
+    } else {
+        &subject.origin
+    };
+    let origin = inputs
+        .archmap()
+        .origins()
+        .iter()
+        .find(|o| &o.id == origin)
+        .ok_or(internal!("native支持のoriginがない"))?;
+    scope.modes.insert(origin.mode.wire().into());
+    Ok(())
+}
+pub fn metadata(
+    value: &ConstructionValue,
+    control: &Control,
+) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     if let ConstructionData::SharedRepair(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::Change(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::Quotient(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::Local(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::ObjectMap(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::ModelMap(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::Build(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::LawFamily(data) = &value.data {
-        return Ok((data.support.clone(), data.scope.clone()));
+        return Ok((data.support.materialize(control)?, data.scope.clone()));
     }
     if let ConstructionData::LawInstantiation(data) = &value.data {
-        return Ok((data.support.clone(), data.scope.clone()));
+        return Ok((data.support.materialize(control)?, data.scope.clone()));
     }
     if let ConstructionData::OutsideLaw(data) = &value.data {
-        return Ok((data.support.clone(), data.scope.clone()));
+        return Ok((data.support.materialize(control)?, data.scope.clone()));
     }
     if let ConstructionData::ObjectReadingFrame(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::ViewFamily(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::ViewInvariant(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::PredicateInvariant(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::LawFrame(data) = &value.data {
         return Ok((data.support.clone(), data.scope.clone()));
     }
     if let ConstructionData::FiniteLaw(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::PolynomialLaw(data) = &value.data {
         return Ok(data.metadata());
@@ -1973,13 +2029,13 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         return Ok((support.to_vec(), scope));
     }
     if let ConstructionData::InternalArrows(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::EquationFamily(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let ConstructionData::CircuitPattern(data) = &value.data {
-        return Ok(data.metadata());
+        return data.metadata(control);
     }
     if let Witness::PathCompose(c) = &value.witness {
         return Ok((c.support.clone(), c.scope.clone()));
@@ -2089,28 +2145,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         }
     }
     for fact in &support {
-        scope.snapshots.insert(fact.snapshot.clone());
-        let subject = find_subject(inputs, fact)?;
-        let origin = if let Some(field) = &fact.field {
-            subject
-                .fields
-                .iter()
-                .find(|f| &f.name == field)
-                .and_then(|f| match &f.slot {
-                    archsig_input::archmap::Slot::Known { origin, .. } => Some(origin),
-                    _ => None,
-                })
-                .ok_or(internal!("native支持が既知fieldでない"))?
-        } else {
-            &subject.origin
-        };
-        let origin = inputs
-            .archmap()
-            .origins()
-            .iter()
-            .find(|o| &o.id == origin)
-            .ok_or(internal!("native支持のoriginがない"))?;
-        scope.modes.insert(origin.mode.wire().into());
+        merge_fact_scope(inputs, &mut scope, fact)?;
     }
     Ok((support, scope))
 }
@@ -2220,11 +2255,19 @@ pub fn retain(
         ConstructionData::FiniteLaw(data) => data.retained_metadata(),
         ConstructionData::InternalArrows(data) => data.retained_metadata(),
         ConstructionData::CircuitPattern(data) => data.retained_metadata(),
+        ConstructionData::LawFamily(data) => (data.support.clone(), data.scope.clone()),
+        ConstructionData::LawInstantiation(data) => (data.support.clone(), data.scope.clone()),
+        ConstructionData::OutsideLaw(data) => (data.support.clone(), data.scope.clone()),
+        ConstructionData::ViewInvariant(data) => data.retained_metadata(),
+        ConstructionData::PredicateInvariant(data) => data.retained_metadata(),
+        ConstructionData::EquationFamily(data) => data.retained_metadata(),
+        ConstructionData::ViewFamily(data) => data.retained_metadata(),
+        ConstructionData::ObjectReadingFrame(data) => data.retained_metadata(),
         _ => {
-            let (support, scope) = metadata(&value)?;
+            let (support, scope) = metadata(&value, graph.control())?;
             let support = if let Witness::Architecture(a) = &value.witness {
-                if support == a.body.support {
-                    a.body.support.clone()
+                if a.body.support == support {
+                    a.body.support.clone().into()
                 } else {
                     support.into()
                 }
@@ -2535,8 +2578,8 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
     if node.ty != v.ty() || node.rule != v.rule() || node.arguments != v.arguments() {
         return Err(internal!("native構成の型・規則・既出引数が違う").into());
     }
-    let (support, scope) = metadata(v)?;
-    if node.support != support || node.scope != scope {
+    let (support, scope) = metadata(v, graph.control())?;
+    if !node.support.matches_flat(&support, graph.control())? || node.scope != scope {
         return Err(internal!("native構成の原始支持・Scopeが元入力と違う").into());
     }
     for r in node

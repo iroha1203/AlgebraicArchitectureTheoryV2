@@ -146,8 +146,12 @@ impl Data {
     pub(super) fn scope_domain_type(&self) -> Option<&Type> {
         self.part().domain_type.as_ref()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.part().support.to_vec(), self.part().scope.clone())
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
     }
     /// 保持済み表示のmetadataだけを読む。動的な作用表は生成しない。
     pub(super) fn wire_ref(&self) -> Option<&Json> {
@@ -427,16 +431,13 @@ fn compute(
             {
                 let holder = e.indexes.subject(snapshot, subject)?;
                 let part = &mut b.parts[at.0 - base];
-                part.support
-                    .make_owned()
-                    .push(Fact::from(archsig_input::archmap::FactData {
-                        snapshot: snapshot.clone(),
-                        subject: subject.clone(),
-                        field: None,
-                        atom: None,
-                    }));
-                part.support.make_owned().sort();
-                part.support.make_owned().dedup();
+                let fact = Fact::from(archsig_input::archmap::FactData {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: None,
+                    atom: None,
+                });
+                part.support = Support::sum(vec![fact], [part.support.clone()]);
                 part.scope.merge(
                     &e.indexes
                         .scope(holder, source.construction.reading(), None)?,
@@ -486,11 +487,7 @@ fn compute(
     )?;
     let part = &mut b.parts[expression.0 - base];
     if !read.metadata.support.is_empty() {
-        part.support
-            .make_owned()
-            .extend(read.metadata.support.iter().cloned());
-        part.support.make_owned().sort();
-        part.support.make_owned().dedup();
+        part.support = Support::sum(read.metadata.support.clone(), [part.support.clone()]);
     }
     part.scope.merge(&scope);
     selected_scope.merge_quantifiers(&part.scope);
@@ -615,7 +612,10 @@ fn compute(
                 &local.correspondence.snapshot,
                 &local.correspondence.subject,
             )?;
-            part.support.make_owned().push(local.correspondence.clone());
+            part.support = Support::concat([
+                part.support.clone(),
+                vec![local.correspondence.clone()].into(),
+            ]);
             part.scope.merge(
                 &e.indexes
                     .scope(holder, source.construction.reading(), None)?,
@@ -625,7 +625,7 @@ fn compute(
                 if let archsig_input::archmap::Slot::Known { atom, origin, .. } = &field.slot {
                     let mut fact = super::model_assembly::field_fact(holder, field);
                     fact.atom = Some(atom.clone());
-                    part.support.make_owned().push(fact);
+                    part.support = Support::concat([part.support.clone(), vec![fact].into()]);
                     part.scope.merge(&e.indexes.scope(
                         holder,
                         source.construction.reading(),
@@ -634,8 +634,7 @@ fn compute(
                 }
             }
         }
-        part.support.make_owned().sort();
-        part.support.make_owned().dedup();
+        part.support = Support::sum(vec![], [part.support.clone()]);
     }
     let mut maps = BTreeMap::new();
     let mut actions = BTreeMap::new();
@@ -1110,12 +1109,12 @@ fn compute(
                     });
                 }
                 counter_args.extend(nodes.source);
-                facts.extend(g.get(nodes.source[2])?.support.iter().cloned());
+                facts.extend(g.get(nodes.source[2])?.support.materialize(c)?);
                 left = nodes.source[2];
                 if let Some(target) = nodes.target {
                     right = target[2];
                     counter_args.extend(target);
-                    facts.extend(g.get(target[2])?.support.iter().cloned());
+                    facts.extend(g.get(target[2])?.support.materialize(c)?);
                 }
                 let family = law.family().and_then(|family| {
                     family

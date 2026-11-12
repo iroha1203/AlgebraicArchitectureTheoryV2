@@ -386,7 +386,7 @@ fn table_recheck_rejects_coverage_order_wrong_sources_metadata_and_future_refs()
                 bad.objects[0].holds[0] = bad.objects[1].holds[0];
             }
             13 => bad.objects[0].origins[0] = bad.indices[1],
-            14 => bad.support.clear(),
+            14 => bad.support.materialize_mut_for_test().clear(),
             15 => bad.scope.snapshots.clear(),
             16 => bad.scope.quantifiers.clear(),
             17 => bad.scope.assignments = false,
