@@ -412,8 +412,8 @@ struct ValidationCache {
     // このcache内の成功が一度でも全Frame/Iteration registryを読んだ事実。
     // snapshot延長や内側guardでは戻さず、cacheの破棄と同時にだけ消す。
     registry_read: bool,
-    checked: BTreeSet<NodeRefKey>,
-    rechecked: BTreeSet<NodeRefKey>,
+    checked: validation_checkpoint::SuccessSet,
+    rechecked: validation_checkpoint::SuccessSet,
     sources: SourceCache,
     context_candidates: context_candidates::ContextIndex,
     frames: BTreeMap<(usize, usize), FrameInputs>,
@@ -5630,6 +5630,9 @@ impl<'a> Environment<'a> {
         let mut result = Vec::new();
         for (id, expr) in law.exprs().iter().enumerate() {
             self.tick()?;
+            let ExprKind::Match { arms, .. } = &expr.kind else {
+                continue;
+            };
             if law.expr_type(id).is_none()
                 || self
                     .indexes
@@ -5642,13 +5645,11 @@ impl<'a> Environment<'a> {
             {
                 continue;
             }
-            if let ExprKind::Match { arms, .. } = &expr.kind {
-                for (arm, branch) in arms.iter().enumerate() {
-                    self.tick()?;
-                    let body = law.exprs()[branch.body].span;
-                    if body.0 <= span.0 && span.1 <= body.1 {
-                        result.push((id, arm));
-                    }
+            for (arm, branch) in arms.iter().enumerate() {
+                self.tick()?;
+                let body = law.exprs()[branch.body].span;
+                if body.0 <= span.0 && span.1 <= body.1 {
+                    result.push((id, arm));
                 }
             }
         }
@@ -7930,6 +7931,9 @@ impl<'a> Environment<'a> {
             let mut base = Scope::default();
             base.readings.insert(declaration.reading.clone());
             self.state.merge_architecture_scope(&mut base);
+            // Static Sources consume only base below. Authenticate every bound
+            // parameter as usual, but collect its value/support only when the
+            // later expression analysis will actually consume variables.
             let mut variables = BTreeMap::new();
             for parameter in params {
                 self.tick()?;
@@ -7977,20 +7981,22 @@ impl<'a> Environment<'a> {
                     }
                     let original = graph.get(binding.value)?;
                     base.merge(&original.scope);
-                    variables.insert(
-                        binding.name.clone(),
-                        SourceValue {
-                            condition_failed: false,
-                            condition_pending: false,
-                            symbolic: None,
-                            comparison: None,
-                            affine: None,
-                            scope: base.clone(),
-                            known_value: Some(value.clone()),
-                            support: original.support.to_flat_facts(&self.control)?,
-                            scalar_scope: Some(original.scope.clone()),
-                        },
-                    );
+                    if !inputs_only {
+                        variables.insert(
+                            binding.name.clone(),
+                            SourceValue {
+                                condition_failed: false,
+                                condition_pending: false,
+                                symbolic: None,
+                                comparison: None,
+                                affine: None,
+                                scope: base.clone(),
+                                known_value: Some(value.clone()),
+                                support: original.support.to_flat_facts(&self.control)?,
+                                scalar_scope: Some(original.scope.clone()),
+                            },
+                        );
+                    }
                     self.tick()?;
                     continue;
                 }
@@ -7998,20 +8004,22 @@ impl<'a> Environment<'a> {
                     self.object_view_binding_matches(graph, parameter, binding.value)?;
                     let original = graph.get(binding.value)?;
                     base.merge(&original.scope);
-                    variables.insert(
-                        binding.name.clone(),
-                        SourceValue {
-                            condition_failed: false,
-                            condition_pending: false,
-                            symbolic: None,
-                            comparison: None,
-                            affine: None,
-                            scope: base.clone(),
-                            known_value: Some(value.clone()),
-                            support: original.support.to_flat_facts(&self.control)?,
-                            scalar_scope: Some(original.scope.clone()),
-                        },
-                    );
+                    if !inputs_only {
+                        variables.insert(
+                            binding.name.clone(),
+                            SourceValue {
+                                condition_failed: false,
+                                condition_pending: false,
+                                symbolic: None,
+                                comparison: None,
+                                affine: None,
+                                scope: base.clone(),
+                                known_value: Some(value.clone()),
+                                support: original.support.to_flat_facts(&self.control)?,
+                                scalar_scope: Some(original.scope.clone()),
+                            },
+                        );
+                    }
                     self.tick()?;
                     continue;
                 }
@@ -8032,20 +8040,22 @@ impl<'a> Environment<'a> {
                     return Err(internal!("束縛subject値の範囲が元宣言・subject由来と違う").into());
                 }
                 base.merge(&subject_scope);
-                variables.insert(
-                    binding.name.clone(),
-                    SourceValue {
-                        condition_failed: false,
-                        condition_pending: false,
-                        symbolic: None,
-                        comparison: None,
-                        affine: None,
-                        scope: base.clone(),
-                        known_value: Some(value.clone()),
-                        support: self.subject_support(value)?.into(),
-                        scalar_scope: Some(subject_scope),
-                    },
-                );
+                if !inputs_only {
+                    variables.insert(
+                        binding.name.clone(),
+                        SourceValue {
+                            condition_failed: false,
+                            condition_pending: false,
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scope: base.clone(),
+                            known_value: Some(value.clone()),
+                            support: self.subject_support(value)?.into(),
+                            scalar_scope: Some(subject_scope),
+                        },
+                    );
+                }
                 self.tick()?;
             }
 

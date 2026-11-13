@@ -1011,10 +1011,12 @@ impl RegionOwnership {
         graph: &Graph,
         body: &Evaluated,
         evidence: &[NodeRef],
-        control: &Control,
     ) -> Result<ClosedBody, ValidationFailure> {
         let pending = environment.evaluation_condition_pending(graph, body.evaluation)?;
-        let support = body.support.materialize(control)?.into();
+        // Support owns only Facts and shared Fact factors, never Graph values.
+        // Keep the fixed roster factor shared; consumers materialize the Fact
+        // sequence only when producing a body or root counterexample.
+        let support = body.support.clone();
         Ok(ClosedBody {
             truth: graph.boolean(body.value())?,
             pending,

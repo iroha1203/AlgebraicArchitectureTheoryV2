@@ -1,12 +1,52 @@
 //! Retain an existing validation prefix while releasing a scratch body.
-//! Keys and append positions are captured once; cached values are never copied.
+//! Fixed successes stay in place; only additions after the prefix are undone.
 use super::*;
+
+/// Successful keys are append-only within one validation epoch. Recording starts
+/// only when a closed-body caller establishes a rollback prefix; raw evaluation
+/// does not keep a second copy of its successful keys.
+#[derive(Default)]
+pub(super) struct SuccessSet {
+    keys: BTreeSet<NodeRefKey>,
+    additions: Option<Vec<NodeRefKey>>,
+}
+impl SuccessSet {
+    pub(super) fn contains(&self, key: &NodeRefKey) -> bool {
+        self.keys.contains(key)
+    }
+    pub(super) fn insert(&mut self, key: NodeRefKey) -> bool {
+        if !self.keys.insert(key) {
+            return false;
+        }
+        if let Some(additions) = &mut self.additions {
+            additions.push(key);
+        }
+        true
+    }
+    pub(super) fn extend(&mut self, keys: impl IntoIterator<Item = NodeRefKey>) {
+        for key in keys {
+            self.insert(key);
+        }
+    }
+    fn begin_prefix(&mut self) {
+        self.additions = Some(Vec::new());
+    }
+    fn rollback(&mut self) {
+        if let Some(additions) = &mut self.additions {
+            for key in additions.drain(..) {
+                self.keys.remove(&key);
+            }
+        }
+    }
+    #[cfg(test)]
+    pub(super) fn is_empty(&self) -> bool {
+        self.keys.is_empty()
+    }
+}
 
 pub(in crate::observed) struct ValidationCheckpoint {
     epoch: std::rc::Rc<()>,
     registry_read: bool,
-    checked: BTreeSet<NodeRefKey>,
-    rechecked: BTreeSet<NodeRefKey>,
     sources: usize,
     candidates: usize,
     frames: BTreeSet<(usize, usize)>,
@@ -22,12 +62,16 @@ pub(in crate::observed) struct ValidationCheckpoint {
 }
 impl ResultStore {
     fn checkpoint_validation(&self) -> ValidationCheckpoint {
-        let c = self.cache.borrow();
+        let mut c = self.cache.borrow_mut();
+        // One active rollback region per cache. A later capture supersedes the
+        // earlier token, so a stale token can only clear the session, not retain
+        // successes from a different branch at reused indices.
+        c.epoch = std::rc::Rc::new(());
+        c.checked.begin_prefix();
+        c.rechecked.begin_prefix();
         ValidationCheckpoint {
             epoch: c.epoch.clone(),
             registry_read: c.registry_read,
-            checked: c.checked.clone(),
-            rechecked: c.rechecked.clone(),
             sources: c.sources.entries.len(),
             candidates: c.context_candidates.checkpoint(),
             frames: c.frames.keys().copied().collect(),
@@ -55,8 +99,8 @@ impl ResultStore {
         }
         let mut c = self.cache.borrow_mut();
         c.registry_read = prefix.registry_read;
-        c.checked.retain(|key| prefix.checked.contains(key));
-        c.rechecked.retain(|key| prefix.rechecked.contains(key));
+        c.checked.rollback();
+        c.rechecked.rollback();
         c.sources.entries.truncate(prefix.sources);
         c.sources.by_context.retain(|_, positions| {
             positions.retain(|&position| position < prefix.sources);
@@ -125,6 +169,43 @@ mod tests {
         }
     }
     #[test]
+    fn validation_rollback_removes_new_prefix_keys_but_keeps_duplicate_successes() {
+        let store = ResultStore::default();
+        let context = crate::observed::call::Context::default();
+        store.cache.borrow_mut().checked.insert((context, 4));
+        assert!(store.cache.borrow().checked.additions.is_none());
+        let prefix = store.checkpoint_validation();
+        for _ in 0..3 {
+            let mut cache = store.cache.borrow_mut();
+            assert!(!cache.checked.insert((context, 4)));
+            assert!(cache.checked.insert((context, 0)));
+            cache.rechecked.extend([(context, 0), (context, 0)]);
+            drop(cache);
+            assert!(store.rollback_validation(&prefix));
+            let cache = store.cache.borrow();
+            assert!(cache.checked.contains(&(context, 4)));
+            assert!(!cache.checked.contains(&(context, 0)));
+            assert!(cache.rechecked.is_empty());
+        }
+    }
+    #[test]
+    fn validation_rollback_superseded_prefix_cannot_retain_new_branch_successes() {
+        let store = ResultStore::default();
+        let context = crate::observed::call::Context::default();
+        store.cache.borrow_mut().checked.insert((context, 0));
+        let first = store.checkpoint_validation();
+        store.cache.borrow_mut().checked.insert((context, 1));
+        let second = store.checkpoint_validation();
+        store.cache.borrow_mut().checked.insert((context, 2));
+        assert!(store.rollback_validation(&second));
+        assert!(store.cache.borrow().checked.contains(&(context, 1)));
+        assert!(!store.cache.borrow().checked.contains(&(context, 2)));
+        assert!(!store.rollback_validation(&first));
+        assert!(store.cache.borrow().checked.is_empty());
+        assert!(!store.rollback_validation(&second));
+        assert!(store.cache.borrow().checked.is_empty());
+    }
+    #[test]
     fn validation_rollback_keeps_prefix_sources_and_drops_scratch_owners() {
         let store = ResultStore::default();
         let context = crate::observed::call::Context::default();
@@ -162,7 +243,7 @@ mod tests {
         assert!(scratch_weak.upgrade().is_none());
         assert!(store.source_checked(&persistent));
         let c = store.cache.borrow();
-        assert_eq!(c.checked, BTreeSet::from([(context, 0)]));
+        assert_eq!(c.checked.keys, BTreeSet::from([(context, 0)]));
         assert!(c.rechecked.is_empty());
         assert!(c.completion_slots.is_empty());
         assert_eq!(c.sources.entries.len(), 1);
@@ -243,7 +324,7 @@ mod tests {
         assert_eq!(control.stop_reason(), Some(Signal::Int));
         assert!(env.rollback_validation(&prefix).unwrap());
         assert_eq!(
-            env.results.cache.borrow().checked,
+            env.results.cache.borrow().checked.keys,
             BTreeSet::from([(context, 0)])
         );
         assert_eq!(control.stop_reason(), Some(Signal::Int));
