@@ -37,13 +37,13 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     .unwrap()
 }
 fn composed_index(r: &ObservedEvaluation) -> usize {
-    r.nodes.iter().enumerate().filter(|(_,n)|matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p)))if p.step.as_ref().is_some_and(|s|s.word_tail.len()==2))).map(|(i,_)|i).next().unwrap()
+    r.nodes.iter().enumerate().filter(|(_,n)|matches!(n.scalar_payload(),Some(Scalar::Path(p))if p.step.as_ref().is_some_and(|s|s.word_tail.len()==2))).map(|(i,_)|i).next().unwrap()
 }
 #[test]
 fn then_full_46_atom_action_composes_outside_original_source_family() {
     let r = example(false);
     let i = composed_index(&r);
-    let Some(Payload::Scalar(Scalar::Path(p))) = &r.nodes[i].payload else {
+    let Some(Scalar::Path(p)) = r.nodes[i].scalar_payload() else {
         panic!()
     };
     let step = p.step.as_ref().unwrap();
@@ -191,7 +191,7 @@ fn then_typed_endpoint_counterexample_recheck_rejects_fabricated_values_and_evid
     };
     let i = left.0;
     let mut bad = r.nodes[i].clone();
-    bad.payload = Some(Payload::Scalar(Scalar::Bool(true)));
+    bad.payload = Some(Payload::scalar(Scalar::Bool(true)));
     bad.ty = NodeType::Value(Type::Bool);
     reject(&r, i, bad);
 }

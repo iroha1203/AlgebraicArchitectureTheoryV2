@@ -56,7 +56,7 @@ impl Environment<'_> {
                 data::check(&scalar, self.indexes.inputs.law(), &self.control)?;
                 return Ok(AnswerBinding::Projection(Node {
                     ty: NodeType::Value(scalar.ty()),
-                    payload: Some(Payload::Scalar(scalar)),
+                    payload: Some(Payload::scalar(scalar)),
                     rule: Rule::Projection(path.to_vec()),
                     arguments: vec![root],
                     support: original.support.clone(),
@@ -216,7 +216,7 @@ impl Environment<'_> {
         data::check(scalar, self.indexes.inputs.law(), &self.control)?;
         let node = Node {
             ty: NodeType::Value(scalar.ty()),
-            payload: Some(Payload::Scalar(scalar.clone())),
+            payload: Some(Payload::scalar(scalar.clone())),
             rule: Rule::Projection(path.to_vec()),
             arguments: vec![root],
             support: original.support.clone(),

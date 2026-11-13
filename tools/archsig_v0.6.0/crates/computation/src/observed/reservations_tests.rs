@@ -178,15 +178,13 @@ fn reservations_chain_prefixes_recheck_original_tokens_types_owners_and_children
         *location = other.clone();
     });
     completion_mutation(&result, owner_scalar, |nodes| {
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) =
-            &mut nodes[owner_scalar].payload
-        else {
+        let Some(Scalar::Subject { subject, .. }) = nodes[owner_scalar].scalar_payload_mut() else {
             unreachable!()
         };
         *subject = "p".into();
     });
     completion_mutation(&result, scalar, |nodes| {
-        let Some(Payload::Scalar(Scalar::Z(value))) = &mut nodes[scalar].payload else {
+        let Some(Scalar::Z(value)) = nodes[scalar].scalar_payload_mut() else {
             unreachable!()
         };
         *value += 1;

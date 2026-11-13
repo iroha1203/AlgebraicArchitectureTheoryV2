@@ -99,8 +99,7 @@ fn mutate() {
                     g.nodes[domain].arguments[2] = NodeRef(first);
                 }
                 9 => {
-                    let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut g.nodes[first].payload
-                    else {
+                    let Some(Scalar::Tuple(values)) = g.nodes[first].scalar_payload_mut() else {
                         panic!()
                     };
                     values[0] = Scalar::Subject {

@@ -1,12 +1,13 @@
 //! 保存を依頼していないrunの回答表示。計算・後続参照には元の型付き結果を使う。
 use super::result::{
-    Binding, Decision, Fact, Node, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind,
+    Answer, Binding, Decision, Fact, Node, NodeRef, NodeType, ObservedEvaluation, Payload,
+    ReasonKind, Scalar,
 };
 use archsig_common::canonical::Json;
 use std::{borrow::Cow, collections::BTreeMap};
 
-const EXAMPLE_LIMIT: usize = 3;
-const ITEM_LIMIT: usize = 3;
+pub(super) const EXAMPLE_LIMIT: usize = 3;
+pub(super) const ITEM_LIMIT: usize = 3;
 
 // 型付き反例は元の参照を借りる。native構成の表示記録だけを変換対象として区別する。
 enum Counterexample<'a> {
@@ -140,7 +141,7 @@ fn has_reference(value: &Json) -> bool {
         _ => false,
     })
 }
-fn notice(value: &Json) -> Json {
+pub(super) fn notice(value: &Json) -> Json {
     let Some(source) = fields(value) else {
         return value.clone();
     };
@@ -152,121 +153,271 @@ fn notice(value: &Json) -> Json {
             .collect(),
     )
 }
+
+fn scalar_value_summary(mut brief: BTreeMap<String, Json>, value: &Json) -> Json {
+    let bytes = canonical_bytes(value);
+    if bytes <= 256 {
+        brief.insert("value".into(), value.clone());
+    } else {
+        brief.insert("value_bytes".into(), Json::Nat(bytes as u64));
+    }
+    Json::Obj(brief.into())
+}
+
+fn scalar_contains_path_value(value: &Scalar) -> bool {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
+        Scalar::Path(_) => true,
+        Scalar::Tuple(items)
+        | Scalar::List { items, .. }
+        | Scalar::Set { items, .. }
+        | Scalar::Data { args: items, .. } => items.iter().any(scalar_contains_path_value),
+        Scalar::Option { value, .. } => value.as_deref().is_some_and(scalar_contains_path_value),
+        Scalar::Map { pairs, .. } => pairs.iter().any(|(key, value)| {
+            scalar_contains_path_value(key) || scalar_contains_path_value(value)
+        }),
+        _ => false,
+    })
+}
+
+/// The scalar summary uses no Graph. Path values retain only their type in the
+/// existing brief format; an empty Path-typed container still displays its value.
+pub(super) fn scalar_node_summary(
+    scalar: &Scalar,
+) -> Result<Json, archsig_common::internal::InternalError> {
+    if scalar_contains_path_value(scalar) {
+        // Existing Path wire contains public node references; the summary has
+        // no whitelisted Path fields, so only its type is displayed.
+        return Ok(Json::obj([("type", scalar.ty().wire())]));
+    }
+    let value = scalar.wire();
+    if has_reference(&value) {
+        return Err(archsig_common::internal!(
+            "閉じたScalar表示にnode参照が残っている"
+        ));
+    }
+    Ok(scalar_value_summary(
+        BTreeMap::from([("type".into(), scalar.ty().wire())]),
+        &value,
+    ))
+}
+
+pub(super) fn bounded_counterexample_value(value: Json) -> Json {
+    let bytes = canonical_bytes(&value);
+    if bytes <= 512 {
+        value
+    } else {
+        Json::obj([("summary_bytes", Json::Nat(bytes as u64))])
+    }
+}
+
+fn operator_text(op: archsig_input::law::ast::BinOp) -> Option<&'static str> {
+    use archsig_input::law::ast::BinOp;
+    match op {
+        BinOp::Eq => Some("="),
+        BinOp::Ne => Some("!="),
+        BinOp::Lt => Some("<"),
+        BinOp::Le => Some("<="),
+        BinOp::Gt => Some(">"),
+        BinOp::Ge => Some(">="),
+        _ => None,
+    }
+}
+
+/// One terminal formatting rule for recorded and closed comparison examples.
+pub(super) fn comparison_summary<'a>(
+    left: Json,
+    right: Json,
+    bindings_total: usize,
+    bindings: impl Iterator<Item = (&'a str, Json)>,
+    facts: impl ExactSizeIterator<Item = Json>,
+    operator: Option<archsig_input::law::ast::BinOp>,
+) -> Json {
+    let mut row = archsig_common::canonical::JsonObject::from([
+        ("bindings_total".into(), Json::Nat(bindings_total as u64)),
+        (
+            "bindings".into(),
+            Json::Arr(
+                bindings
+                    .take(ITEM_LIMIT)
+                    .map(|(name, value)| {
+                        let mut row =
+                            archsig_common::canonical::JsonObject::from([("value".into(), value)]);
+                        brief_text(&mut row, "name", name);
+                        Json::Obj(row)
+                    })
+                    .collect(),
+            ),
+        ),
+        ("left".into(), left),
+        ("right".into(), right),
+        ("facts_total".into(), Json::Nat(facts.len() as u64)),
+        (
+            "facts".into(),
+            Json::Arr(
+                facts
+                    .take(ITEM_LIMIT)
+                    .map(|fact| {
+                        let mut row = archsig_common::canonical::JsonObject::new();
+                        for (key, value) in fields(&fact).expect("counterexample fact") {
+                            let Json::Str(value) = value else {
+                                unreachable!("fact identifier")
+                            };
+                            brief_text(&mut row, key, value);
+                        }
+                        Json::Obj(row)
+                    })
+                    .collect(),
+            ),
+        ),
+    ]);
+    if let Some(operator) = operator.and_then(operator_text) {
+        row.insert("operator".into(), Json::str(operator));
+    }
+    Json::Obj(row)
+}
+
+pub(super) fn summary_document(
+    answers: Vec<Json>,
+    status: &str,
+    code: u8,
+    issues: &[Json],
+) -> Json {
+    let mut result = BTreeMap::from([
+        ("format".into(), Json::str("archsig.summary/1")),
+        ("status".into(), Json::str(status)),
+        ("exit_code".into(), Json::Nat(code.into())),
+        ("answers".into(), Json::Arr(answers)),
+    ]);
+    if code >= 64 && !issues.is_empty() {
+        result.insert(
+            "issues".into(),
+            Json::Arr(issues.iter().map(notice).collect()),
+        );
+    }
+    Json::Obj(result.into())
+}
+
+struct SummaryView<'a> {
+    prepared: &'a super::PreparedObserved,
+    nodes: &'a [Node],
+}
+
+pub(super) fn recorded_answer_summary(
+    prepared: &super::PreparedObserved,
+    nodes: &[Node],
+    answer: &Answer,
+) -> Json {
+    SummaryView { prepared, nodes }.answer_summary(answer)
+}
+
 impl ObservedEvaluation {
     pub fn summary_wire(&self, status: &str, code: u8, issues: &[Json]) -> Json {
-        let answers = self
-            .answers
+        let view = SummaryView {
+            prepared: &self.prepared,
+            nodes: &self.nodes,
+        };
+        summary_document(
+            self.answers
+                .iter()
+                .map(|answer| view.answer_summary(answer))
+                .collect(),
+            status,
+            code,
+            issues,
+        )
+    }
+}
+
+impl SummaryView<'_> {
+    fn answer_summary(&self, answer: &Answer) -> Json {
+        let request = self
+            .prepared
+            .requests()
+            .requests()
             .iter()
-            .map(|answer| {
-                let request = self
-                    .prepared
-                    .requests()
-                    .requests()
-                    .iter()
-                    .find(|request| request.id == answer.id)
-                    .expect("回答の元の問い");
-                let mut row = archsig_common::canonical::JsonObject::from([
-                    ("id".into(), Json::str(&answer.id)),
-                    ("question".into(), Json::str(request.kind.wire())),
-                    ("status".into(), Json::str(answer.status.wire())),
-                    (
-                        "outputs".into(),
-                        Json::Obj(
-                            answer
-                                .outputs
-                                .iter()
-                                .filter(|(name, _)| {
-                                    !matches!(name.as_str(), "evaluation" | "proposition")
-                                })
-                                .map(|(name, reference)| {
-                                    (name.clone(), self.summary_node(*reference, 2))
-                                })
-                                .collect(),
-                        ),
-                    ),
-                ]);
-                if request.kind == crate::observed::request::QuestionKind::Solve
-                    && answer.status == Decision::Undetermined
-                    && let Some(reference) = answer.outputs.get("proposition")
-                    && let Some(judgment) = &self.nodes[reference.0].judgment
-                {
-                    row.insert("existence".into(), Json::str(judgment.status.wire()));
-                }
-                if request.kind == crate::observed::request::QuestionKind::Repair
-                    && let Some(reference) = answer.claim
-                    && let Some(Payload::Construction(value)) = &self.nodes[reference.0].payload
-                    && let crate::observed::construction_result::ConstructionData::Change(data) =
-                        &value.data
-                    && let Some(status) = data.completion_uniqueness()
-                {
-                    row.insert("uniqueness".into(), Json::str(status.wire()));
-                }
-                if let Some(reference) = answer.outputs.get("evaluation") {
-                    let node = &self.nodes[reference.0];
-                    if let Some(super::result::Payload::Evaluation { applicability, .. }) =
-                        &node.payload
-                    {
-                        row.insert("applicability".into(), Json::str(*applicability));
-                    }
-                }
-                let mut reasons = answer
-                    .reasons
-                    .iter()
-                    .filter(|reason| {
-                        answer.status == Decision::Undetermined
-                            || !matches!(reason.kind, ReasonKind::Missing)
-                    })
-                    .map(|reason| notice(&reason.wire()))
-                    .collect::<Vec<_>>();
-                super::result::concise_reasons(&mut reasons);
-                if !reasons.is_empty() {
-                    row.insert("reasons".into(), Json::Arr(reasons));
-                }
-                if answer.status == Decision::Refuted {
-                    let examples: Vec<_> = answer
-                        .evidence
+            .find(|request| request.id == answer.id)
+            .expect("回答の元の問い");
+        let mut row = archsig_common::canonical::JsonObject::from([
+            ("id".into(), Json::str(&answer.id)),
+            ("question".into(), Json::str(request.kind.wire())),
+            ("status".into(), Json::str(answer.status.wire())),
+            (
+                "outputs".into(),
+                Json::Obj(
+                    answer
+                        .outputs
                         .iter()
-                        .filter_map(|reference| {
-                            let node = &self.nodes[reference.0];
-                            if node.ty != NodeType::Evidence {
-                                return None;
-                            }
-                            Some((node, Counterexample::from_payload(node.payload.as_ref()?)?))
-                        })
-                        .collect();
-                    if !examples.is_empty() {
-                        row.insert(
-                            "counterexamples_total".into(),
-                            Json::Nat(examples.len() as u64),
-                        );
-                        row.insert(
-                            "counterexamples".into(),
-                            Json::Arr(
-                                examples
-                                    .into_iter()
-                                    .take(EXAMPLE_LIMIT)
-                                    .map(|(node, data)| self.summary_counterexample(node, data))
-                                    .collect(),
-                            ),
-                        );
-                    }
-                }
-                Json::Obj(row)
-            })
-            .collect();
-        let mut result = BTreeMap::from([
-            ("format".into(), Json::str("archsig.summary/1")),
-            ("status".into(), Json::str(status)),
-            ("exit_code".into(), Json::Nat(code.into())),
-            ("answers".into(), Json::Arr(answers)),
+                        .filter(|(name, _)| !matches!(name.as_str(), "evaluation" | "proposition"))
+                        .map(|(name, reference)| (name.clone(), self.summary_node(*reference, 2)))
+                        .collect(),
+                ),
+            ),
         ]);
-        if code >= 64 && !issues.is_empty() {
-            result.insert(
-                "issues".into(),
-                Json::Arr(issues.iter().map(notice).collect()),
-            );
+        if request.kind == crate::observed::request::QuestionKind::Solve
+            && answer.status == Decision::Undetermined
+            && let Some(reference) = answer.outputs.get("proposition")
+            && let Some(judgment) = &self.nodes[reference.0].judgment
+        {
+            row.insert("existence".into(), Json::str(judgment.status.wire()));
         }
-        Json::Obj(result.into())
+        if request.kind == crate::observed::request::QuestionKind::Repair
+            && let Some(reference) = answer.claim
+            && let Some(Payload::Construction(value)) = &self.nodes[reference.0].payload
+            && let crate::observed::construction_result::ConstructionData::Change(data) =
+                &value.data
+            && let Some(status) = data.completion_uniqueness()
+        {
+            row.insert("uniqueness".into(), Json::str(status.wire()));
+        }
+        if let Some(reference) = answer.outputs.get("evaluation") {
+            let node = &self.nodes[reference.0];
+            if let Some(super::result::Payload::Evaluation { applicability, .. }) = &node.payload {
+                row.insert("applicability".into(), Json::str(*applicability));
+            }
+        }
+        let mut reasons = answer
+            .reasons
+            .iter()
+            .filter(|reason| {
+                answer.status == Decision::Undetermined
+                    || !matches!(reason.kind, ReasonKind::Missing)
+            })
+            .map(|reason| notice(&reason.wire()))
+            .collect::<Vec<_>>();
+        super::result::concise_reasons(&mut reasons);
+        if !reasons.is_empty() {
+            row.insert("reasons".into(), Json::Arr(reasons));
+        }
+        if answer.status == Decision::Refuted {
+            let examples: Vec<_> = answer
+                .evidence
+                .iter()
+                .filter_map(|reference| {
+                    let node = &self.nodes[reference.0];
+                    if node.ty != NodeType::Evidence {
+                        return None;
+                    }
+                    Some((node, Counterexample::from_payload(node.payload.as_ref()?)?))
+                })
+                .collect();
+            if !examples.is_empty() {
+                row.insert(
+                    "counterexamples_total".into(),
+                    Json::Nat(examples.len() as u64),
+                );
+                row.insert(
+                    "counterexamples".into(),
+                    Json::Arr(
+                        examples
+                            .into_iter()
+                            .take(EXAMPLE_LIMIT)
+                            .map(|(node, data)| self.summary_counterexample(node, data))
+                            .collect(),
+                    ),
+                );
+            }
+        }
+        Json::Obj(row)
     }
 
     fn summary_counterexample(&self, node: &Node, data: Counterexample<'_>) -> Json {
@@ -338,47 +489,7 @@ impl ObservedEvaluation {
         bindings: impl ExactSizeIterator<Item = (&'a str, NodeRef)>,
         facts: impl ExactSizeIterator<Item = Json>,
     ) -> Json {
-        let mut row = archsig_common::canonical::JsonObject::from([
-            ("bindings_total".into(), Json::Nat(bindings.len() as u64)),
-            (
-                "bindings".into(),
-                Json::Arr(
-                    bindings
-                        .take(ITEM_LIMIT)
-                        .map(|(name, value)| {
-                            let mut row = archsig_common::canonical::JsonObject::from([(
-                                "value".into(),
-                                self.summary_value(value),
-                            )]);
-                            brief_text(&mut row, "name", name);
-                            Json::Obj(row)
-                        })
-                        .collect(),
-                ),
-            ),
-            ("left".into(), self.summary_value(left)),
-            ("right".into(), self.summary_value(right)),
-            ("facts_total".into(), Json::Nat(facts.len() as u64)),
-            (
-                "facts".into(),
-                Json::Arr(
-                    facts
-                        .take(ITEM_LIMIT)
-                        .map(|fact| {
-                            let mut row = archsig_common::canonical::JsonObject::new();
-                            for (key, value) in fields(&fact).expect("counterexample fact") {
-                                let Json::Str(value) = value else {
-                                    unreachable!("fact identifier")
-                                };
-                                brief_text(&mut row, key, value);
-                            }
-                            Json::Obj(row)
-                        })
-                        .collect(),
-                ),
-            ),
-        ]);
-        // 比較の左右がそのまま採られる、guardなしの直接のLaw比較だけを表示する。
+        let mut operator = None;
         for argument in &node.arguments {
             if let Some(Payload::LawInstance {
                 name, guard: None, ..
@@ -389,23 +500,20 @@ impl ObservedEvaluation {
                 } = &declaration.signature
                 && let archsig_input::law::ast::ExprKind::Binary { op, .. } =
                     self.prepared.inputs().law().exprs()[*body].kind
+                && operator_text(op).is_some()
             {
-                use archsig_input::law::ast::BinOp;
-                let operator = match op {
-                    BinOp::Eq => Some("="),
-                    BinOp::Ne => Some("!="),
-                    BinOp::Lt => Some("<"),
-                    BinOp::Le => Some("<="),
-                    BinOp::Gt => Some(">"),
-                    BinOp::Ge => Some(">="),
-                    _ => None,
-                };
-                if let Some(operator) = operator {
-                    row.insert("operator".into(), Json::str(operator));
-                }
+                operator = Some(op);
             }
         }
-        Json::Obj(row)
+        let total = bindings.len();
+        comparison_summary(
+            self.summary_value(left),
+            self.summary_value(right),
+            total,
+            bindings.map(|(name, value)| (name, self.summary_value(value))),
+            facts,
+            operator,
+        )
     }
 
     fn summary_value(&self, mut reference: NodeRef) -> Json {
@@ -415,13 +523,7 @@ impl ObservedEvaluation {
         {
             reference = *value;
         }
-        let value = self.summary_node(reference, 0);
-        let bytes = canonical_bytes(&value);
-        if bytes <= 512 {
-            value
-        } else {
-            Json::obj([("summary_bytes", Json::Nat(bytes as u64))])
-        }
+        bounded_counterexample_value(self.summary_node(reference, 0))
     }
     fn summary_node(&self, reference: NodeRef, depth: usize) -> Json {
         let node = &self.nodes[reference.0];
@@ -470,13 +572,7 @@ impl ObservedEvaluation {
             return Json::Obj(brief.into());
         };
         if matches!(node.ty, NodeType::Value(_)) && !has_reference(value) {
-            let bytes = canonical_bytes(value);
-            if bytes <= 256 {
-                brief.insert("value".into(), value.clone());
-            } else {
-                brief.insert("value_bytes".into(), Json::Nat(bytes as u64));
-            }
-            return Json::Obj(brief.into());
+            return scalar_value_summary(brief, value);
         }
         if let Some(value) = fields(value) {
             for key in [

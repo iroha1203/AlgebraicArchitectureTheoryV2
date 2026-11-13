@@ -79,8 +79,7 @@ fn mutate() {
                     g.nodes[domain].arguments[2] = NodeRef(first);
                 }
                 9 => {
-                    let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut g.nodes[first].payload
-                    else {
+                    let Some(Scalar::Tuple(values)) = g.nodes[first].scalar_payload_mut() else {
                         panic!()
                     };
                     values[0] = Scalar::Subject {
@@ -284,7 +283,7 @@ fn reference_completion_owner_expression_keeps_known_fiber_and_original_missing_
     assert_eq!(a.status, Decision::Established);
     assert!(a.scope.completions);
     let value = a.outputs["value"].0;
-    let Some(Payload::Scalar(Scalar::Set { element, items })) = &r.nodes[value].payload else {
+    let Some(Scalar::Set { element, items }) = r.nodes[value].scalar_payload() else {
         panic!()
     };
     assert_eq!(element, &Type::Ref("Reservations.State".into()));
@@ -319,14 +318,14 @@ fn reference_completion_owner_expression_keeps_known_fiber_and_original_missing_
     assert_eq!(elements.len(), 1);
     assert_eq!(
         r.nodes[elements[0].0].payload,
-        Some(Payload::Scalar(Scalar::Subject {
+        Some(Payload::scalar(Scalar::Subject {
             snapshot: "v".into(),
             subject: "A".into(),
             entity: "Reservations.System".into()
         }))
     );
     completion_mutation(&r, value, |ns| {
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut ns[value].payload else {
+        let Some(Scalar::Set { items, .. }) = ns[value].scalar_payload_mut() else {
             panic!()
         };
         items.pop();

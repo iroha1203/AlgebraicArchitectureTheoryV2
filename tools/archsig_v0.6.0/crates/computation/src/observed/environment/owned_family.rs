@@ -554,7 +554,7 @@ impl Environment<'_> {
         let analysis = self.owned_family_inputs(graph, *source, *owner_evaluation, id, limit)?;
         let bindings = self.expression_bindings(graph, *source)?;
         if !self.field_source_producer_matches(graph, node, limit, *source, bindings)?
-            || !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
+            || !matches!(node.scalar_payload(),Some(value) if analysis.known_value.as_ref()==Some(value))
             || node.ty
                 != NodeType::Value(
                     self.indexes

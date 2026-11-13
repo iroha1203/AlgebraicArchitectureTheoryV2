@@ -89,14 +89,14 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
     let t = r.answers[0].outputs["value"].0;
     rebuild_for_origin_and_support_recheck(&r, &r.nodes[..=t]).unwrap();
     completion_mutation(&r, t, |nodes| {
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Subject { subject, .. }) = nodes[t].scalar_payload_mut() else {
             panic!("ref")
         };
         *subject = "s".into();
     });
     completion_mutation(&r, t, |nodes| {
         nodes[t].ty = NodeType::Value(Type::Ref("Reservations.System".into()));
-        let Some(Payload::Scalar(Scalar::Subject { entity, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Subject { entity, .. }) = nodes[t].scalar_payload_mut() else {
             panic!("ref")
         };
         *entity = "Reservations.System".into();
@@ -127,14 +127,14 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
     };
     let key = actual_scalar(r.nodes[t].arguments[2]);
     completion_mutation(&r, key, |nodes| {
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut nodes[key].payload else {
+        let Some(Scalar::Subject { subject, .. }) = nodes[key].scalar_payload_mut() else {
             panic!("key")
         };
         *subject = "q".into();
     });
     let map = actual_scalar(r.nodes[t].arguments[1]);
     completion_mutation(&r, map, |nodes| {
-        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut nodes[map].payload else {
+        let Some(Scalar::Map { pairs, .. }) = nodes[map].scalar_payload_mut() else {
             panic!("map")
         };
         let Scalar::Subject { subject, .. } = &mut pairs[0].1 else {

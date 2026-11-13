@@ -411,7 +411,7 @@ impl Evaluator<'_, '_> {
                 .map(|value| {
                     self.push(Node {
                         ty: NodeType::Value(value.ty()),
-                        payload: Some(Payload::Scalar(value)),
+                        payload: Some(Payload::scalar(value)),
                         rule: Rule::Construction("evaluation"),
                         arguments: std::iter::once(seed)
                             .chain([domain])

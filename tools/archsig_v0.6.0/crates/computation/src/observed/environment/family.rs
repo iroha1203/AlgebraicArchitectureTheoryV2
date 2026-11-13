@@ -566,7 +566,7 @@ impl Environment<'_> {
                         && c.iteration.is_none()
                         && node.arguments == [source, record.domain, record.member]
                         && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if *span==p.span)
-                        && matches!(&node.payload,Some(Payload::Scalar(s)) if s==expected)
+                        && matches!(node.scalar_payload(),Some(s) if s==expected)
                     {
                         if found.is_some() {
                             return Err(internal!("同じinstanceの元parameter値が重複").into());
@@ -651,7 +651,7 @@ impl Environment<'_> {
             {
                 return Err(internal!("族Domain/memberが別Request・instanceに属す").into());
             }
-            if let Some(Payload::Scalar(value)) = &node.payload {
+            if let Some(value) = node.scalar_payload() {
                 let p = plan.unbound.iter().position(|p| Some(p.span) == origin);
                 let (expected_values, scope, support) = if let Some(p) = p {
                     let enumeration = self.family_values(&plan.unbound[p].ty, &mut |_, _| {})?;
@@ -1339,7 +1339,10 @@ impl Environment<'_> {
                 return Err(internal!("whole構成のScope/支持が違う").into());
             }
             match &node.payload {
-                Some(Payload::Scalar(Scalar::Bool(v))) => {
+                Some(Payload::Scalar(scalar)) if matches!(scalar.as_ref(), Scalar::Bool(_)) => {
+                    let Scalar::Bool(v) = scalar.as_ref() else {
+                        unreachable!()
+                    };
                     if node.ty != NodeType::Value(Type::Bool)
                         || !family_clean(node, "evaluation", &[])
                         || Some(*v) != a.value
@@ -1494,7 +1497,7 @@ impl Environment<'_> {
             && let Some((body, guard)) = self.family_skipped(graph, graph.get(instance)?)?
         {
             match &node.payload {
-                Some(Payload::Scalar(Scalar::Bool(true))) => {
+                Some(Payload::Scalar(scalar)) if matches!(scalar.as_ref(), Scalar::Bool(true)) => {
                     if !family_clean(node, "evaluation", &[])
                         || node.ty != NodeType::Value(Type::Bool)
                         || graph.context_at(instance.0) != self.current_context(graph)

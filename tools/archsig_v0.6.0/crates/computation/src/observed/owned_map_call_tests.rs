@@ -25,12 +25,10 @@ fn owned_map_actual_keys_images_types_and_return_body_are_rechecked() {
     let map = r
         .nodes
         .iter()
-        .position(
-            |n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Map{pairs,..}))if pairs.len()==2),
-        )
+        .position(|n| matches!(n.scalar_payload(),Some(Scalar::Map{pairs,..})if pairs.len()==2))
         .unwrap();
     rejects_mutated_prefix(&r, map, |ns| {
-        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut ns[map].payload else {
+        let Some(Scalar::Map { pairs, .. }) = ns[map].scalar_payload_mut() else {
             panic!()
         };
         let key = pairs[0].0.clone();
@@ -135,8 +133,9 @@ fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
 #[test]
 fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
     use std::{cell::Cell, rc::Rc};
-    let input = archsig_input::input::check_inputs(owned_map_fixture::input("missing", "r1"), &quiet())
-        .unwrap();
+    let input =
+        archsig_input::input::check_inputs(owned_map_fixture::input("missing", "r1"), &quiet())
+            .unwrap();
     let visits = Rc::new(Cell::new(0));
     let seen = visits.clone();
     let c = Control::new(move |p| {

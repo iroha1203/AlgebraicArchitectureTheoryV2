@@ -108,7 +108,7 @@ fn graph_session_keeps_safe_append_and_clears_changed_context_or_failure() {
     let mut graph = Graph::new(&control);
     let node = Node {
         ty: NodeType::Value(Type::Z),
-        payload: Some(Payload::Scalar(Scalar::Z(1.into()))),
+        payload: Some(Payload::scalar(Scalar::Z(1.into()))),
         rule: Rule::Construction("evaluation"),
         arguments: vec![],
         support: vec![].into(),

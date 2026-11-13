@@ -1,6 +1,7 @@
 //! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
 use super::result::Support;
 use archsig_common::internal::InternalError;
+pub(super) mod delivery;
 mod term_comparison_evaluate;
 use super::{
     PreparedObserved, data,
@@ -69,16 +70,69 @@ impl From<Signal> for Failure {
         Self::Stop(s)
     }
 }
+/// Scalar ownership is independent of trace storage. Native constructions keep
+/// an explicit trace dependency until their own component ownership is separated.
+#[derive(Clone, Debug)]
+enum RuntimeValue {
+    Unknown,
+    Scalar {
+        producer: NodeRef,
+        scalar: std::sync::Arc<Scalar>,
+    },
+    Native {
+        producer: NodeRef,
+    },
+}
+impl RuntimeValue {
+    fn from_recorded(graph: &Graph, value: Option<NodeRef>) -> Result<Self, InternalError> {
+        Ok(match value {
+            None => Self::Unknown,
+            Some(producer) => match &graph.get(producer)?.payload {
+                Some(Payload::Scalar(scalar)) => Self::Scalar {
+                    producer,
+                    scalar: scalar.clone(),
+                },
+                _ => Self::Native { producer },
+            },
+        })
+    }
+    fn producer(&self) -> Option<NodeRef> {
+        match self {
+            Self::Unknown => None,
+            Self::Scalar { producer, .. } | Self::Native { producer } => Some(*producer),
+        }
+    }
+    fn scalar<'v>(&'v self, graph: &'v Graph) -> Result<Option<&'v Scalar>, InternalError> {
+        match self {
+            Self::Unknown => Ok(None),
+            Self::Scalar { scalar, .. } => Ok(Some(scalar.as_ref())),
+            Self::Native { producer } => graph.scalar(*producer).map(Some),
+        }
+    }
+}
+#[derive(Clone, Debug)]
+enum Quantified {
+    Recorded(Evaluated),
+    Closed(delivery::ClosedBody),
+}
 #[derive(Clone, Debug)]
 struct Evaluated {
     expression: NodeRef,
     evaluation: NodeRef,
-    value: Option<NodeRef>,
+    runtime_value: RuntimeValue,
     scope: Scope,
     support: Support,
     reasons: Vec<Reason>,
     comparison: Option<(NodeRef, NodeRef)>,
     residual: Option<NodeRef>,
+}
+impl Evaluated {
+    fn value(&self) -> Option<NodeRef> {
+        self.runtime_value.producer()
+    }
+    fn scalar<'v>(&'v self, graph: &'v Graph) -> Result<Option<&'v Scalar>, InternalError> {
+        self.runtime_value.scalar(graph)
+    }
 }
 /// 公開relationの元instanceに対する、通常Evaluatorの完成済み部分。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -144,7 +198,7 @@ pub(in crate::observed) fn instance_expression<'a>(
             Ok(value) => Ok(RelationSide {
                 expression: value.expression,
                 evaluation: value.evaluation,
-                value: value.value,
+                value: value.value(),
                 support: value.support.materialize(control)?,
                 scope: value.scope,
                 reasons: value.reasons,
@@ -329,7 +383,7 @@ impl Evaluator<'_, '_> {
         let ty = value.ty();
         self.push(Node {
             ty: NodeType::Value(ty),
-            payload: Some(Payload::Scalar(value)),
+            payload: Some(Payload::scalar(value)),
             rule,
             arguments,
             support: support.into(),
@@ -461,7 +515,7 @@ impl Evaluator<'_, '_> {
         self.tick(Checkpoint::FiniteIteration)?;
         let value = self.push(Node {
             ty: NodeType::Value(Type::Bool),
-            payload: Some(Payload::Scalar(known)),
+            payload: Some(Payload::scalar(known)),
             rule: Rule::Input {
                 kind: "law",
                 location: Location::Law { span },
@@ -1140,7 +1194,7 @@ impl Evaluator<'_, '_> {
         Ok(Evaluated {
             expression,
             evaluation,
-            value,
+            runtime_value: RuntimeValue::from_recorded(self.graph, value)?,
             scope,
             support,
             reasons,
@@ -1372,13 +1426,13 @@ impl Evaluator<'_, '_> {
                     self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
                 } else if parameter && let Some(argument) = self.formal.get(&lexical.name).cloned()
                 {
-                    self.alias_result(first.span, argument.value, vec![argument])?
+                    self.alias_result(first.span, argument.value(), vec![argument])?
                 } else if let Some(binding) = found {
                     self.alias_result(first.span, Some(binding.value), vec![])?
                 } else if matches!(lexical.source, archsig_input::law::ir::BindingSource::Let)
                     && let Some(rhs) = self.lexical.get(&lexical.name).cloned()
                 {
-                    self.alias_result(first.span, rhs.value, vec![rhs])?
+                    self.alias_result(first.span, rhs.value(), vec![rhs])?
                 } else {
                     return Err(self.unsupported(span, "束縛変数以外を先頭とするドット式"));
                 };
@@ -1426,14 +1480,14 @@ impl Evaluator<'_, '_> {
                     self.graph,
                     id,
                     &self.bindings,
-                    input.value.map(|v| self.graph.scalar(v)).transpose()?,
+                    input.value().map(|v| self.graph.scalar(v)).transpose()?,
                     input.expression,
                 )?;
                 let mut children = vec![input];
                 let known = if let Some(arm) = selected {
                     let body = self.eval(arms[arm].body)?;
                     let known = body
-                        .value
+                        .value()
                         .map(|v| self.graph.scalar(v).cloned())
                         .transpose()?;
                     children.push(body);
@@ -1456,7 +1510,7 @@ impl Evaluator<'_, '_> {
                 self.lexical.remove(&name.name);
                 let body = result?;
                 let known = body
-                    .value
+                    .value()
                     .map(|r| self.graph.scalar(r).cloned())
                     .transpose()?;
                 self.lexical_result(span, ty, known, vec![rhs, body])
@@ -1470,9 +1524,12 @@ impl Evaluator<'_, '_> {
                 let left = self.eval(*then_branch)?;
                 let right = self.eval(*else_branch)?;
                 let known = conditional_branch(
-                    condition.value.map(|r| self.graph.scalar(r)).transpose()?,
-                    left.value.map(|r| self.graph.scalar(r)).transpose()?,
-                    right.value.map(|r| self.graph.scalar(r)).transpose()?,
+                    condition
+                        .value()
+                        .map(|r| self.graph.scalar(r))
+                        .transpose()?,
+                    left.value().map(|r| self.graph.scalar(r)).transpose()?,
+                    right.value().map(|r| self.graph.scalar(r)).transpose()?,
                     self.environment.indexes.inputs.law(),
                     self.control,
                 )?;
@@ -1480,7 +1537,16 @@ impl Evaluator<'_, '_> {
             }
             ExprKind::Group(child) => {
                 let child = self.eval(*child)?;
-                self.finish(span, ty, child.value, vec![child], vec![], None, None, None)
+                self.finish(
+                    span,
+                    ty,
+                    child.value(),
+                    vec![child],
+                    vec![],
+                    None,
+                    None,
+                    None,
+                )
             }
             ExprKind::Unary { op, operand }
                 if (*op == UnOp::Neg && numeric::is_numeric_type(&ty, self.control)?)
@@ -1494,7 +1560,7 @@ impl Evaluator<'_, '_> {
                 {
                     return self.lexical_result(span, ty, None, vec![operand]);
                 }
-                let value = match operand.value {
+                let value = match operand.value() {
                     Some(r) => Some(self.value(
                         unary(*op, self.graph.scalar(r)?, self.control)?,
                         Rule::Input {
@@ -1576,14 +1642,14 @@ impl Evaluator<'_, '_> {
         let mut scope = left.scope.clone();
         scope.merge(&right.scope);
         let support = Support::sum(vec![], [left.support.clone(), right.support.clone()]);
-        let pair = left.value.zip(right.value);
+        let pair = left.value().zip(right.value());
         let mut comparison = pair.filter(|_| is_comparison(op));
         #[cfg(test)]
         let previous = data::evaluation_context(Some((span, self.graph.active)));
         let computed = partial_binary(
             op,
-            left.value.map(|r| self.graph.scalar(r)).transpose()?,
-            right.value.map(|r| self.graph.scalar(r)).transpose()?,
+            left.value().map(|r| self.graph.scalar(r)).transpose()?,
+            right.value().map(|r| self.graph.scalar(r)).transpose()?,
             self.environment.indexes.inputs.law(),
             span,
             self.control,
@@ -1611,7 +1677,7 @@ impl Evaluator<'_, '_> {
                 self.term_comparison_evidence(span, op, &left, &right, &support, &scope)?;
             Some(self.push(Node {
                 ty: NodeType::Value(value.ty()),
-                payload: Some(Payload::Scalar(value)),
+                payload: Some(Payload::scalar(value)),
                 rule: Rule::Input {
                     kind: "law",
                     location: Location::Law { span },
@@ -1674,7 +1740,7 @@ impl Evaluator<'_, '_> {
         Ok(Evaluated {
             expression: *expression,
             evaluation: reference,
-            value: *value,
+            runtime_value: RuntimeValue::from_recorded(self.graph, *value)?,
             scope: node.scope.clone(),
             support: node.support.clone(),
             reasons: node.reasons.clone(),
@@ -1708,7 +1774,186 @@ impl Evaluator<'_, '_> {
         result
     }
 
+    /// Admission is selected before any body is executed. Consumers requiring
+    /// raw Answer/needed/native provenance keep the recorded route in the caller.
+    fn closed_root_eligible(&self, body: ExprId, guard: Option<ExprId>) -> Result<bool, Failure> {
+        if guard.is_some()
+            || !matches!(
+                self.request.kind,
+                QuestionKind::Check | QuestionKind::Evaluate
+            )
+            || self.completing
+            || self.finite_universal.is_some()
+            || self.graph.active.frame.is_some()
+            || self.graph.active.iteration.is_some()
+            || self.graph.active.instance.is_some()
+            || self.graph.active.case.is_some()
+            || self.request.arguments.iter().any(|argument| {
+                argument.name.starts_with("bind.")
+                    && !matches!(argument.value, Selector::Subject { .. })
+            })
+        {
+            return Ok(false);
+        }
+        if !matches!(
+            self.environment.indexes.inputs.law().exprs()[body].kind,
+            ExprKind::Quant { .. }
+        ) || !self.environment.ordinary_in_domain(body)?
+            || !self
+                .environment
+                .ordinary_source_eligible(self.graph, body)?
+            || self
+                .environment
+                .universal_quantifier_plan(self.graph, body, &self.bindings)?
+                .is_some()
+        {
+            return Ok(false);
+        }
+        Ok(true)
+    }
+
+    /// The ordinary evaluator has already authenticated every body and the
+    /// fixed Domain. Root shape is constructed directly from this private fold;
+    /// no arbitrary Graph node or public success tag can enter this producer.
+    fn closed_root_answer(
+        &mut self,
+        params: &[Param],
+        body: ExprId,
+        progress: &mut delivery::RootProgress,
+    ) -> Result<delivery::ClosedAnswer, Failure> {
+        let (actual_params, actual_guard, actual_body) = match &self.declaration.signature {
+            Signature::View { params, body, .. } => (params, None, *body),
+            Signature::Law {
+                params,
+                guard,
+                body,
+                ..
+            } => (params, *guard, *body),
+            _ => return Err(internal!("閉包rootの宣言種別が違う").into()),
+        };
+        let Selector::Declaration { name } = &self.request.head else {
+            return Err(internal!("閉包rootの宣言selectorがない").into());
+        };
+        if name != &self.declaration.name
+            || actual_body != body
+            || actual_guard.is_some()
+            || actual_params != params
+            || params.len() != self.bindings.len()
+            || self.graph.requests.get(self.graph.active.request) != Some(self.request)
+            || self
+                .request
+                .arguments
+                .iter()
+                .filter(|argument| argument.name.starts_with("bind."))
+                .count()
+                != params.len()
+        {
+            return Err(internal!("閉包rootのRequest/元宣言/束縛対応が違う").into());
+        }
+        for (parameter, binding) in params.iter().zip(&self.bindings) {
+            if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
+                return Err(internal!("閉包rootのparameter署名が違う").into());
+            }
+            let key = format!("bind.{}", parameter.name);
+            let Some(Selector::Subject { snapshot, subject }) = self
+                .request
+                .arguments
+                .iter()
+                .find(|argument| argument.name == key)
+                .map(|argument| &argument.value)
+            else {
+                return Err(internal!("閉包rootの束縛にはfull検査が必要").into());
+            };
+            if !matches!(self.graph.scalar(binding.value)?, Scalar::Subject {
+                snapshot: actual_snapshot, subject: actual_subject, ..
+            } if actual_snapshot == snapshot && actual_subject == subject)
+            {
+                return Err(internal!("閉包rootのsubject selectorが違う").into());
+            }
+        }
+        self.tick(Checkpoint::Expression)?;
+        self.prepare_source(body)?;
+        let closed = self.quantification_closed(body, progress)?;
+        progress.closed_body = Some(closed);
+        #[cfg(test)]
+        data::observe_actual(
+            self.declaration.span,
+            self.graph.active,
+            "delivery_root_fold_closed",
+            0,
+        );
+        // Keep the completed body in caller-owned state until all fallible root
+        // work is finished. A Stop here preserves a closed, fully checked prefix.
+        let closed = progress
+            .closed_body
+            .as_ref()
+            .expect("completed closed root");
+        let ownership = progress.ownership.as_mut().expect("closed root identities");
+        let value = closed
+            .truth
+            .map(|truth| ownership.fresh_value(Scalar::Bool(truth)))
+            .transpose()?;
+        progress.root_value = value.clone();
+        self.control.checkpoint(Checkpoint::Expression)?;
+        let status = match (self.request.kind, closed.truth) {
+            (_, None) => Decision::Undetermined,
+            (QuestionKind::Check, Some(false)) => Decision::Refuted,
+            _ => Decision::Established,
+        };
+        let final_counterexample = if status == Decision::Refuted {
+            Some(delivery::Counterexample {
+                bindings: self
+                    .bindings
+                    .iter()
+                    .map(|binding| ownership.binding(self.graph, binding))
+                    .collect::<Result<_, _>>()?,
+                left: value.clone().expect("false root value"),
+                right: ownership.fresh_value(Scalar::Bool(true))?,
+                facts: closed.support.materialize(self.control)?,
+                operator: None,
+            })
+        } else {
+            None
+        };
+        let mut closed = progress.closed_body.take().expect("sealed closed root");
+        if let Some(counterexample) = final_counterexample {
+            closed.counterexamples.push(counterexample);
+        }
+        if status != Decision::Refuted {
+            closed.counterexamples.clear();
+        }
+        Ok(delivery::ClosedAnswer {
+            id: self.request.id.clone(),
+            status,
+            value,
+            applicability: "applicable",
+            scope: closed.scope,
+            reasons: closed.reasons,
+            counterexamples: closed.counterexamples,
+        })
+    }
+
     fn quantification(&mut self, id: usize) -> Result<Evaluated, Failure> {
+        match self.quantification_impl(id, None)? {
+            Quantified::Recorded(value) => Ok(value),
+            Quantified::Closed(_) => unreachable!("raw quantifier cannot close its Graph"),
+        }
+    }
+    fn quantification_closed(
+        &mut self,
+        id: usize,
+        progress: &mut delivery::RootProgress,
+    ) -> Result<delivery::ClosedBody, Failure> {
+        match self.quantification_impl(id, Some(progress))? {
+            Quantified::Closed(body) => Ok(body),
+            Quantified::Recorded(_) => unreachable!("closed root cannot return a Graph receipt"),
+        }
+    }
+    fn quantification_impl(
+        &mut self,
+        id: usize,
+        mut closed: Option<&mut delivery::RootProgress>,
+    ) -> Result<Quantified, Failure> {
         let spec =
             super::quantifier::spec(self.environment.indexes.inputs.law(), id, self.control)?;
         let input = spec.domain.map(|domain| self.eval(domain)).transpose()?;
@@ -1759,7 +2004,7 @@ impl Evaluator<'_, '_> {
                 }
             } else {
                 input
-                    .value
+                    .value()
                     .map(|value| -> Result<Vec<Scalar>, Failure> {
                         let (Scalar::List { items, .. } | Scalar::Set { items, .. }) =
                             self.graph.scalar(value)?
@@ -1803,6 +2048,7 @@ impl Evaluator<'_, '_> {
             }
             enumeration.values
         };
+        let mut scratch = None;
         let member_scope = scope.clone();
         if let Some(items) = members {
             let domain = if let Some(domain) = prepared_domain {
@@ -1853,7 +2099,36 @@ impl Evaluator<'_, '_> {
             scope.add_quantifier(spec.descriptor(finite, Some(self.graph.active)));
             self.environment
                 .order_quantifier_scope(self.graph, source, &mut scope)?;
+            // Authenticate the inserted fixed Domain before capturing the
+            // validation prefix. First-body discoveries must not be replayed
+            // after every scratch rollback.
+            scratch = if closed.is_some() {
+                self.environment.validation_graph_session(self.graph, || {
+                    self.environment
+                        .validate_at(self.graph, self.graph.get(domain)?, domain.0)
+                })?;
+                let graph_prefix = self.graph.suffix_checkpoint();
+                let validation_prefix = self.environment.validation_checkpoint()?;
+                let mut ownership = delivery::RegionOwnership::new(&graph_prefix);
+                ownership.domain(self.graph, domain)?;
+                ownership.scope(self.graph, &scope)?;
+                closed.as_deref_mut().expect("closed root").ownership = Some(ownership);
+                Some((graph_prefix, validation_prefix))
+            } else {
+                None
+            };
+            let prefix_metadata = closed
+                .as_ref()
+                .map(|_| (self.retained_scope.clone(), self.reasons.clone()));
             for position in 0..items.len() {
+                if let Some(progress) = closed.as_deref_mut() {
+                    progress
+                        .ownership
+                        .as_mut()
+                        .expect("finite root ownership")
+                        .begin_body();
+                }
+
                 self.tick(Checkpoint::FiniteIteration)?;
                 let index = self.graph.append_iteration_from(
                     source,
@@ -1864,7 +2139,7 @@ impl Evaluator<'_, '_> {
                 let evaluated = self.with_iteration_state(index, scope.clone(), |this| {
                     let body = this.eval(spec.body)?;
                     if spec.kind == archsig_input::law::ast::QuantKind::Forall
-                        && this.graph.boolean(body.value)? == Some(false)
+                        && this.graph.boolean(body.value())? == Some(false)
                     {
                         #[cfg(test)]
                         data::observe_actual(
@@ -1892,7 +2167,7 @@ impl Evaluator<'_, '_> {
                             ty: NodeType::Evidence,
                             payload: Some(Payload::Counterexample {
                                 bindings,
-                                left: body.value.expect("falsebody"),
+                                left: body.value().expect("falsebody"),
                                 right,
                                 facts: counter_facts,
                             }),
@@ -1908,14 +2183,96 @@ impl Evaluator<'_, '_> {
                     Ok(body)
                 });
                 let body = evaluated?;
-                results.push(self.graph.boolean(body.value)?);
-                children.push(body);
+                if let (Some(progress), Some((graph_prefix, validation_prefix))) =
+                    (closed.as_deref_mut(), scratch.as_mut())
+                {
+                    let (prefix_scope, prefix_reasons) =
+                        prefix_metadata.as_ref().expect("closed prefix metadata");
+                    let fold = &mut progress.fold;
+                    let ownership = progress.ownership.as_mut().expect("finite root ownership");
+                    // Every fallible close step precedes discard. A stopped
+                    // close leaves this one body as the recorded tail.
+                    let owned = ownership.close_body(
+                        self.environment,
+                        self.graph,
+                        &body,
+                        &evidence,
+                        self.control,
+                    )?;
+                    let committed = ownership.scope(self.graph, &self.retained_scope)?;
+                    let reasons = &self.reasons[prefix_reasons.len()..];
+                    let committed_reasons = reasons
+                        .iter()
+                        .map(|reason| ownership.reason(reason))
+                        .collect::<Result<_, _>>()?;
+                    drop(body);
+                    self.graph.discard_suffix(graph_prefix)?;
+                    fold.retain_committed(committed, committed_reasons);
+                    fold.consume(owned);
+                    self.retained_scope = prefix_scope.clone();
+                    self.reasons.clone_from(&prefix_reasons);
+                    evidence.clear();
+                    if !self.environment.rollback_validation(validation_prefix)? {
+                        self.environment.validation_graph_session(self.graph, || {
+                            self.environment.validate_at(
+                                self.graph,
+                                self.graph.get(domain)?,
+                                domain.0,
+                            )
+                        })?;
+                        *validation_prefix = self.environment.validation_checkpoint()?;
+                    }
+                    #[cfg(test)]
+                    data::observe_actual(
+                        spec.span,
+                        self.graph.active,
+                        "delivery_body_closed",
+                        position,
+                    );
+                } else {
+                    results.push(self.graph.boolean(body.value())?);
+                    children.push(body);
+                }
                 self.tick(Checkpoint::FiniteIteration)?;
             }
         } else {
             scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
             self.environment
                 .order_quantifier_scope(self.graph, source, &mut scope)?;
+        }
+        if let Some(progress) = closed {
+            let fold = &mut progress.fold;
+            // The input participates in conditions but is not a body result.
+            for input in &children {
+                fold.observe_condition(
+                    input
+                        .reasons
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. })),
+                    self.environment
+                        .evaluation_condition_pending(self.graph, input.evaluation)?,
+                );
+            }
+            let ownership = progress.ownership.get_or_insert_with(|| {
+                delivery::RegionOwnership::new(&self.graph.suffix_checkpoint())
+            });
+            let root_reasons: Vec<_> = unresolved_reasons
+                .iter()
+                .chain(children.iter().flat_map(|child| child.reasons.iter()))
+                .cloned()
+                .collect();
+            let root_reasons = root_reasons
+                .iter()
+                .map(|reason| ownership.reason(reason))
+                .collect::<Result<_, _>>()?;
+            fold.retain_root(
+                ownership.scope(self.graph, &scope)?,
+                domain_support.materialize(self.control)?.into(),
+                root_reasons,
+            );
+            let known = fold.truth(spec.kind, finite.is_some(), self.control)?;
+            let result = std::mem::take(fold).seal(known);
+            return Ok(Quantified::Closed(result));
         }
         let failed = children.iter().any(|a| {
             a.reasons
@@ -1989,7 +2346,7 @@ impl Evaluator<'_, '_> {
             Some(
                 self.push(Node {
                     ty: NodeType::Value(Type::Bool),
-                    payload: Some(Payload::Scalar(Scalar::Bool(known))),
+                    payload: Some(Payload::scalar(Scalar::Bool(known))),
                     rule: Rule::Input {
                         kind: "law",
                         location: Location::Law { span: spec.span },
@@ -2025,7 +2382,7 @@ impl Evaluator<'_, '_> {
         if result.is_ok() {
             self.reasons.extend(committed_reasons);
         }
-        result
+        result.map(Quantified::Recorded)
     }
     fn comprehension(
         &mut self,
@@ -2042,7 +2399,7 @@ impl Evaluator<'_, '_> {
             .ok_or_else(|| Failure::Internal(internal!("内包元Sourceがない")))?
             .expression;
         let mut children = vec![input.clone()];
-        let Some(value) = input.value else {
+        let Some(value) = input.value() else {
             return self.lexical_result(span, ty, None, children);
         };
         let positions =
@@ -2059,7 +2416,7 @@ impl Evaluator<'_, '_> {
             let result = self.with_iteration_state(index, input.scope.clone(), |this| {
                 let condition = if let Some(filter) = filter {
                     let evaluated = this.eval(filter)?;
-                    let condition = this.graph.boolean(evaluated.value)?;
+                    let condition = this.graph.boolean(evaluated.value())?;
                     children.push(evaluated);
                     condition
                 } else {
@@ -2068,7 +2425,7 @@ impl Evaluator<'_, '_> {
                 match condition {
                     Some(true) => {
                         let evaluated = this.eval(elem)?;
-                        if let Some(value) = evaluated.value {
+                        if let Some(value) = evaluated.value() {
                             values.push(this.graph.scalar(value)?.clone());
                         } else {
                             known = false;
@@ -2130,7 +2487,7 @@ impl Evaluator<'_, '_> {
         for child in &evaluated {
             scope.merge(&child.scope);
             support.push(child.support.clone());
-            if let Some(value) = child.value {
+            if let Some(value) = child.value() {
                 arguments.push(value);
                 let original = self.graph.scalar(value)?;
                 let copied = original.clone();
@@ -2374,7 +2731,7 @@ impl Evaluator<'_, '_> {
         };
         for (parameter, argument) in params.iter().zip(&arguments) {
             self.formal.insert(parameter.name.clone(), argument.clone());
-            if let Some(value) = argument.value {
+            if let Some(value) = argument.value() {
                 self.bindings.push(Binding {
                     name: parameter.name.clone(),
                     ty: parameter.ty.erase(),
@@ -2394,7 +2751,7 @@ impl Evaluator<'_, '_> {
         let body = result?;
         self.tick(Checkpoint::FiniteIteration)?;
         let known = body
-            .value
+            .value()
             .map(|v| self.graph.scalar(v).cloned())
             .transpose()?;
         let partial = if owned {
@@ -2514,7 +2871,7 @@ impl Evaluator<'_, '_> {
         Ok(Evaluated {
             expression: source,
             evaluation,
-            value,
+            runtime_value: RuntimeValue::from_recorded(self.graph, value)?,
             scope,
             support,
             reasons,
@@ -2632,11 +2989,12 @@ impl Evaluator<'_, '_> {
         let result = &mut None;
         let retained = &mut self.retained_scope;
         let reasons = &mut self.reasons;
+        let runtime_value = RuntimeValue::from_recorded(self.graph, value)?;
         self.graph.push_with_metadata(node, |evaluation| {
             let evaluated = Evaluated {
                 expression: plan.source,
                 evaluation,
-                value,
+                runtime_value,
                 scope: plan.scope,
                 support: plan.support,
                 reasons: plan.reasons,
@@ -2667,7 +3025,7 @@ impl Evaluator<'_, '_> {
         }) {
             return self.field_from_actual_base(base, span);
         }
-        let Some(reference) = base.value else {
+        let Some(reference) = base.value() else {
             if self
                 .environment
                 .evaluation_condition_pending(self.graph, base.evaluation)?
@@ -3022,7 +3380,7 @@ impl Evaluator<'_, '_> {
         else {
             return Err(internal!("内部Answer rootがEvaluationでない").into());
         };
-        if *expression != root.expression || bindings != &self.bindings || *value != root.value {
+        if *expression != root.expression || bindings != &self.bindings || *value != root.value() {
             return Err(internal!("内部Answer rootが完成済みOutcomeと違う").into());
         }
         for (parameter, binding) in params.iter().zip(&self.bindings) {
@@ -3148,7 +3506,7 @@ impl Evaluator<'_, '_> {
         if (self.graph.active.instance.is_some() || self.graph.active.case.is_some())
             && guard
                 .as_ref()
-                .map(|g| self.graph.boolean(g.value))
+                .map(|g| self.graph.boolean(g.value()))
                 .transpose()?
                 .flatten()
                 == Some(false)
@@ -3185,7 +3543,7 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
         };
         if self.request.kind == QuestionKind::Evaluate {
-            if let Some(value) = body.value {
+            if let Some(value) = body.value() {
                 answer.outputs.insert("value".into(), value);
                 answer.status = Decision::Established;
             }
@@ -3221,14 +3579,14 @@ impl Evaluator<'_, '_> {
         // raw body の値と、guard による条件付き Law の値を区別する。
         let guard_value = guard
             .as_ref()
-            .map(|g| self.graph.boolean(g.value))
+            .map(|g| self.graph.boolean(g.value()))
             .transpose()?;
         let conditional = guard_value.is_some_and(|g| g != Some(true));
         let (law_expression, law_value) = if conditional {
             self.tick(Checkpoint::Expression)?;
             let g = guard.as_ref().expect("明示 guard");
             let expression = self.conditional_expression(g, &body, &scope)?;
-            let value = conditional_bool(guard_value.flatten(), self.graph.boolean(body.value)?)
+            let value = conditional_bool(guard_value.flatten(), self.graph.boolean(body.value())?)
                 .map(|value| {
                     self.value(
                         Scalar::Bool(value),
@@ -3242,7 +3600,7 @@ impl Evaluator<'_, '_> {
             self.tick(Checkpoint::Expression)?;
             (expression, value)
         } else {
-            (body.expression, body.value)
+            (body.expression, body.value())
         };
         let applicability = match guard_value {
             None | Some(Some(true)) => "applicable",
@@ -3264,7 +3622,7 @@ impl Evaluator<'_, '_> {
                                     [guard_id.expect("明示 guard")]
                                 .span,
                             },
-                            value: g.value,
+                            value: g.value(),
                             residual: g.residual,
                             children: vec![g.evaluation],
                         },
@@ -3272,7 +3630,7 @@ impl Evaluator<'_, '_> {
                             location: Location::Law {
                                 span: self.environment.indexes.inputs.law().exprs()[body_id].span,
                             },
-                            value: body.value,
+                            value: body.value(),
                             residual: body.residual,
                             children: vec![body.evaluation],
                         },
@@ -3845,7 +4203,7 @@ fn evaluate_observed_with_reuse(
                         outputs.insert("evaluation".into(), completed.evaluation);
                         scope.merge(&completed.scope);
                         if request.kind == QuestionKind::Evaluate
-                            && let Some(v) = completed.value
+                            && let Some(v) = completed.value()
                         {
                             outputs.insert("value".into(), v);
                         }
@@ -4202,7 +4560,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             .enumerate()
             .find_map(|(index, node)| {
                 (index > normalization
-                    && matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+                    && matches!(node.scalar_payload(), Some(Scalar::Bool(_)))
                     && node.evidence == [NodeRef(normalization)])
                 .then_some(index)
             })
@@ -4472,19 +4830,19 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 .find_map(|(index, node)| {
                     (result.contexts[index].request == if answer.id == "yes" { 1 } else { 2 }
                         && matches!(&node.rule, Rule::Input { kind: "law", .. })
-                        && matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_)))))
+                        && matches!(node.scalar_payload(), Some(Scalar::Bool(_))))
                     .then_some(index)
                 })
                 .unwrap();
             completion_mutation(&result, scalar, |nodes| {
-                nodes[scalar].payload = Some(Payload::Scalar(Scalar::Bool(answer.id != "yes")))
+                nodes[scalar].payload = Some(Payload::scalar(Scalar::Bool(answer.id != "yes")))
             });
         }
         let residual = result.nodes.iter().enumerate().find_map(|(index,node)| {
-            (result.contexts[index].request == 2 && matches!(&node.rule, Rule::Construction("evaluation")) && matches!(&node.payload, Some(Payload::Scalar(Scalar::Z(value))) if *value == (-1).into())).then_some(index)
+            (result.contexts[index].request == 2 && matches!(&node.rule, Rule::Construction("evaluation")) && matches!(node.scalar_payload(), Some(Scalar::Z(value)) if *value == (-1).into())).then_some(index)
         }).unwrap();
         completion_mutation(&result, residual, |nodes| {
-            nodes[residual].payload = Some(Payload::Scalar(Scalar::Z(0.into())))
+            nodes[residual].payload = Some(Payload::scalar(Scalar::Z(0.into())))
         });
         let counterexample = result.answers[2]
             .evidence
@@ -4809,7 +5167,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert!(result.nodes.iter().any(|node| {
             node.support.materialize_for_test().contains(&count)
                 && node.ty == NodeType::Value(Type::Z)
-                && node.payload == Some(Payload::Scalar(Scalar::Z(12.into())))
+                && node.payload == Some(Payload::scalar(Scalar::Z(12.into())))
                 && matches!(&node.rule,
                 Rule::FieldValue { kind: "atom", location: Some(Location::ArchMap { pointer, .. }) }
                 if pointer == "/snapshots/0/atoms/0/value")
@@ -4881,9 +5239,14 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             Rule::Input { location: Location::Law { span }, .. }
             if later_span.0 <= span.0 && span.1 <= later_span.1
         )));
-        assert!(result.nodes.iter().all(|node| !matches!(&node.payload,
-            Some(Payload::Scalar(Scalar::Z(value))) if *value == 149.into()
-        )));
+        assert!(
+            result
+                .nodes
+                .iter()
+                .all(|node| !matches!(node.scalar_payload(),
+                    Some(Scalar::Z(value)) if *value == 149.into()
+                ))
+        );
     }
 
     fn value_examples(missing: bool) -> ObservedEvaluation {
@@ -5002,7 +5365,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             graph
                 .nodes
                 .iter()
-                .position(|n| matches!(n.payload, Some(Payload::Scalar(Scalar::Subject { .. }))))
+                .position(|n| matches!(n.scalar_payload(), Some(Scalar::Subject { .. })))
                 .unwrap(),
         );
         for replacement in [subject, result.answers[1].outputs["value"]] {
@@ -5188,18 +5551,16 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let arithmetic = result
             .nodes
             .iter()
-            .position(|n| matches!(&n.payload, Some(Payload::Scalar(Scalar::Bool(false)))))
+            .position(|n| matches!(n.scalar_payload(), Some(Scalar::Bool(false))))
             .unwrap();
         recheck_mutation(&result, |nodes| {
-            nodes[arithmetic].payload = Some(Payload::Scalar(Scalar::Bool(true)))
+            nodes[arithmetic].payload = Some(Payload::scalar(Scalar::Bool(true)))
         });
         let zero = NodeRef(
             result
                 .nodes
                 .iter()
-                .position(
-                    |n| matches!(&n.payload, Some(Payload::Scalar(Scalar::Z(n))) if n == &0.into()),
-                )
+                .position(|n| matches!(n.scalar_payload(), Some(Scalar::Z(n)) if n == &0.into()))
                 .unwrap(),
         );
         let counterexample = result
@@ -5286,7 +5647,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         };
         let value = *value;
         recheck_mutation(&result, |nodes| {
-            nodes[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)))
+            nodes[value.0].payload = Some(Payload::scalar(Scalar::Bool(false)))
         });
         let unrelated = result.answers[0].outputs["evaluation"];
         let Some(Payload::Evaluation {
@@ -5759,7 +6120,7 @@ reading R {{
         assert_eq!(*applicability, "not_applicable");
         assert_eq!(graph.scalar(*value).unwrap(), &Scalar::Bool(true));
         let mut changed = result.nodes.clone();
-        changed[value.0].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        changed[value.0].payload = Some(Payload::scalar(Scalar::Bool(false)));
         assert!(
             matches!(
                 rebuild_for_origin_and_support_recheck(&result, &changed),
@@ -6013,7 +6374,7 @@ reading R {{
                 &Scalar::Z(expected.into())
             );
             let mut changed = result.nodes.clone();
-            changed[reference.0].payload = Some(Payload::Scalar(Scalar::Z(99.into())));
+            changed[reference.0].payload = Some(Payload::scalar(Scalar::Z(99.into())));
             assert!(
                 matches!(
                     rebuild_for_origin_and_support_recheck(&result, &changed),
@@ -6211,14 +6572,13 @@ reading R {{
             .iter()
             .enumerate()
             .find_map(|(i, n)| {
-                matches!(&n.payload,Some(Payload::Scalar(Scalar::Set {items,..})) if items.len()==2)
+                matches!(n.scalar_payload(),Some(Scalar::Set {items,..}) if items.len()==2)
                     .then_some(i)
             })
             .unwrap();
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=display]).unwrap();
         let mut reordered = result.nodes.clone();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[display].payload
-        else {
+        let Some(Scalar::Set { items, .. }) = reordered[display].scalar_payload_mut() else {
             unreachable!()
         };
         items.reverse();
@@ -6745,7 +7105,7 @@ reading Calc {{
             for mutation in 0..4 {
                 let mut changed = result.nodes[..=residual.0].to_vec();
                 match mutation {
-                    0 => changed[residual.0].payload = Some(Payload::Scalar(Scalar::Z(0.into()))),
+                    0 => changed[residual.0].payload = Some(Payload::scalar(Scalar::Z(0.into()))),
                     1 => changed[residual.0].arguments.swap(0, 1),
                     2 => changed[residual.0]
                         .support
@@ -6795,8 +7155,8 @@ reading Calc {{
             panic!("fieldの実base Evaluation/owner")
         };
         assert!(matches!(
-            result.nodes[owner.0].payload,
-            Some(Payload::Scalar(Scalar::Subject { .. }))
+            result.nodes[owner.0].scalar_payload(),
+            Some(Scalar::Subject { .. })
         ));
         let assigned = match rest {
             [] => None,
@@ -6912,7 +7272,7 @@ reading Calc {{
             rebuild_for_origin_and_support_recheck(&result, &prefix).unwrap();
             prefix.push(Node {
                 ty: NodeType::Value(Type::Q),
-                payload: Some(Payload::Scalar(Scalar::Q(0.into(), 1.into()))),
+                payload: Some(Payload::scalar(Scalar::Q(0.into(), 1.into()))),
                 rule: Rule::Input {
                     kind: "law",
                     location: location.clone(),
@@ -7268,7 +7628,7 @@ reading Calc {{
         .unwrap();
         assert_eq!(normal.status(), "complete");
         assert!(
-            matches!(&normal.nodes[normal.answers[0].outputs["value"].0].payload, Some(Payload::Scalar(Scalar::Q(n,d))) if n == &(-2).into() && d == &3.into())
+            matches!(normal.nodes[normal.answers[0].outputs["value"].0].scalar_payload(), Some(Scalar::Q(n,d)) if n == &(-2).into() && d == &3.into())
         );
         let sources = inputs(true);
         let law = sources.law().bytes().to_vec();
@@ -7305,7 +7665,7 @@ reading Calc {{
                         &node.rule,
                         Rule::Input { kind: "atom", .. } | Rule::FieldValue { kind: "atom", .. }
                     )
-                    && matches!(&node.payload, Some(Payload::Scalar(Scalar::Q(_, _)))))
+                    && matches!(node.scalar_payload(), Some(Scalar::Q(_, _))))
                 .then_some(i)
             })
             .collect();
@@ -7316,7 +7676,7 @@ reading Calc {{
             "calleeの既知qは補完代入でなく元atomを読む"
         );
         assert!(
-            matches!(&partial.nodes[values[0]].payload,Some(Payload::Scalar(Scalar::Q(n,d))) if n==&(-2).into() && d==&3.into())
+            matches!(partial.nodes[values[0]].scalar_payload(),Some(Scalar::Q(n,d)) if n==&(-2).into() && d==&3.into())
         );
         assert!(partial.nodes.iter().any(|node|matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span},bindings,..}) if &law[span.0..span.1]==b"x.q" && bindings.iter().any(|b|b.name=="x"))));
         rebuild_for_origin_and_support_recheck(&partial, &partial.nodes).unwrap();
@@ -7646,7 +8006,7 @@ reading Calc {{
             .enumerate()
             .find_map(|(index, node)| {
                 (result.contexts[index].frame == Some(0)
-                    && matches!(&node.payload, Some(Payload::Scalar(Scalar::Q(_, _)))))
+                    && matches!(node.scalar_payload(), Some(Scalar::Q(_, _))))
                 .then_some(index)
             })
             .unwrap();
@@ -7722,7 +8082,7 @@ reading Calc {{
         );
         let value = result.answers[0].outputs["value"];
         assert!(
-            matches!(&result.nodes[value.0].payload, Some(Payload::Scalar(Scalar::Q(n,d))) if n == &5.into() && d == &6.into())
+            matches!(result.nodes[value.0].scalar_payload(), Some(Scalar::Q(n,d)) if n == &5.into() && d == &6.into())
         );
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         let scalar = result.nodes.iter().enumerate().find_map(|(index, node)| (result.contexts[index].frame == Some(0) && matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer, ..}} | Rule::FieldValue {kind: "atom", location: Some(Location::ArchMap {pointer, ..})} if pointer.ends_with("/atoms/1/value"))).then_some(index)).unwrap();
@@ -7986,8 +8346,7 @@ reading Calc {{
             .iter()
             .enumerate()
             .find_map(|(index, node)| {
-                if result.contexts[index].request != 0
-                    || !matches!(node.payload, Some(Payload::Scalar(_)))
+                if result.contexts[index].request != 0 || !matches!(node.scalar_payload(), Some(_))
                 {
                     return None;
                 }
@@ -8041,8 +8400,7 @@ reading Calc {{
         for mutation in 0..4 {
             let mut changed = prefix.to_vec();
             let node = &mut changed[value];
-            let Some(Payload::Scalar(Scalar::Data { constructor, args })) = &mut node.payload
-            else {
+            let Some(Scalar::Data { constructor, args }) = node.scalar_payload_mut() else {
                 unreachable!()
             };
             match mutation {
@@ -8181,7 +8539,7 @@ reading Calc {{
             result
                 .nodes
                 .iter()
-                .all(|n| !matches!(n.payload, Some(Payload::Scalar(Scalar::Data { .. }))))
+                .all(|n| !matches!(n.scalar_payload(), Some(Scalar::Data { .. })))
         );
         assert!(result.answers[1].reasons.iter().any(|r| {
             r.missing
@@ -8235,14 +8593,14 @@ reading Calc {{
         let list = data_rule_scalar(&result, "list<Z>[2,1,2]");
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=list]).unwrap();
         let mut changed = result.nodes[..=list].to_vec();
-        let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut changed[list].payload else {
+        let Some(Scalar::List { items, .. }) = changed[list].scalar_payload_mut() else {
             unreachable!()
         };
         items.swap(0, 1);
         changed[list].arguments.swap(0, 1);
         rejects_named_prefix(&result, &changed);
         let mut changed = result.nodes[..=list].to_vec();
-        let Some(Payload::Scalar(Scalar::List { element, .. })) = &mut changed[list].payload else {
+        let Some(Scalar::List { element, .. }) = changed[list].scalar_payload_mut() else {
             unreachable!()
         };
         *element = Type::Q;
@@ -8251,7 +8609,7 @@ reading Calc {{
         let mixed = result.answers[1].outputs["value"].0;
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=mixed]).unwrap();
         let mut changed = result.nodes[..=mixed].to_vec();
-        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut changed[mixed].payload else {
+        let Some(Scalar::Tuple(items)) = changed[mixed].scalar_payload_mut() else {
             unreachable!()
         };
         items.swap(0, 1);
@@ -8262,8 +8620,7 @@ reading Calc {{
         let absent = result.answers[2].outputs["value"].0;
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=absent]).unwrap();
         let mut changed = result.nodes[..=absent].to_vec();
-        let Some(Payload::Scalar(Scalar::Option { value, .. })) = &mut changed[absent].payload
-        else {
+        let Some(Scalar::Option { value, .. }) = changed[absent].scalar_payload_mut() else {
             unreachable!()
         };
         *value = Some(Box::new(Scalar::Z(0.into())));
@@ -8287,7 +8644,7 @@ reading Calc {{
         assert_eq!(result.nodes[value].arguments.len(), 3);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value]).unwrap();
         let mut display = result.nodes.clone();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut display[value].payload else {
+        let Some(Scalar::Set { items, .. }) = display[value].scalar_payload_mut() else {
             unreachable!()
         };
         items.reverse();
@@ -8295,7 +8652,7 @@ reading Calc {{
         rebuild_for_origin_and_support_recheck(&result, &display[..=value]).unwrap();
         rebuild_for_origin_and_support_recheck(&result, &display).unwrap();
         let mut duplicate = result.nodes[..=value].to_vec();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut duplicate[value].payload else {
+        let Some(Scalar::Set { items, .. }) = duplicate[value].scalar_payload_mut() else {
             unreachable!()
         };
         items.push(items[0].clone());
@@ -8552,7 +8909,7 @@ reading Calc {{
     }
     fn iteration_binder_scalar(result: &ObservedEvaluation) -> usize {
         result.nodes.iter().enumerate().find_map(|(index,node)| {
-            (result.contexts[index].iteration==Some(0) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
+            (result.contexts[index].iteration==Some(0) && matches!(node.scalar_payload(),Some(_)) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
         }).unwrap()
     }
     #[test]
@@ -8569,15 +8926,15 @@ reading Calc {{
         for mutation in 0..2 {
             let mut changed = result.nodes[..=binder].to_vec();
             if mutation == 0 {
-                changed[binder].payload = Some(Payload::Scalar(Scalar::Z(1.into())));
+                changed[binder].payload = Some(Payload::scalar(Scalar::Z(1.into())));
             } else {
-                changed[binder].payload = Some(Payload::Scalar(Scalar::Q(2.into(), 1.into())));
+                changed[binder].payload = Some(Payload::scalar(Scalar::Q(2.into(), 1.into())));
                 changed[binder].ty = NodeType::Value(Type::Q);
             }
             rejects_named_prefix(&result, &changed);
         }
         let earlier=result.nodes.iter().enumerate().find_map(|(index,node)| {
-            (index<original.domain.0 && matches!(&node.payload,Some(Payload::Evaluation {value:Some(value),..}) if matches!(&result.nodes[value.0].payload,Some(Payload::Scalar(Scalar::List {..}))))).then_some(NodeRef(index))
+            (index<original.domain.0 && matches!(&node.payload,Some(Payload::Evaluation {value:Some(value),..}) if matches!(result.nodes[value.0].scalar_payload(),Some(Scalar::List {..})))).then_some(NodeRef(index))
         }).unwrap();
         assert_ne!(earlier, original.domain);
         assert_eq!(
@@ -8628,13 +8985,12 @@ reading Calc {{
             _ => unreachable!(),
         };
         let mut display = result.nodes.clone();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut display[domain_value.0].payload
-        else {
+        let Some(Scalar::Set { items, .. }) = display[domain_value.0].scalar_payload_mut() else {
             unreachable!()
         };
         items.reverse();
         let output = result.answers[0].outputs["value"].0;
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut display[output].payload else {
+        let Some(Scalar::Set { items, .. }) = display[output].scalar_payload_mut() else {
             unreachable!()
         };
         items.reverse();
@@ -8693,13 +9049,12 @@ reading Calc {{
             panic!("元のSetを評価した証拠")
         };
         let mut nodes = result.nodes.clone();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut nodes[domain_value.0].payload
-        else {
+        let Some(Scalar::Set { items, .. }) = nodes[domain_value.0].scalar_payload_mut() else {
             panic!("元のSet")
         };
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &nodes).unwrap();
-        let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut nodes[output].payload else {
+        let Some(Scalar::List { items, .. }) = nodes[output].scalar_payload_mut() else {
             panic!("順序付きの射影")
         };
         assert_eq!(items, &[Scalar::Z(1.into()), Scalar::Z(2.into())]);
@@ -8729,8 +9084,8 @@ reading Calc {{
         assert_eq!(result.status(), "complete");
         let answer = &result.answers[0];
         assert_eq!(answer.status, Decision::Established);
-        let Some(Payload::Scalar(Scalar::Set { element, items })) =
-            &result.nodes[answer.outputs["value"].0].payload
+        let Some(Scalar::Set { element, items }) =
+            result.nodes[answer.outputs["value"].0].scalar_payload()
         else {
             panic!("typed empty Set")
         };
@@ -8795,7 +9150,7 @@ reading Calc {{
                     "外側letの元RHS Evaluationを参照し、反復内へ再所属させない"
                 );
             }
-            if matches!(&node.payload, Some(Payload::Scalar(_)))
+            if matches!(node.scalar_payload(), Some(_))
                 && matches!(&node.rule, Rule::Input { kind: "law", location: Location::Law { span } } if bytes.get(span.0..span.1) == Some(b"x+y"))
             {
                 rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=index]).unwrap();
@@ -9036,7 +9391,7 @@ reading Calc {{
         let value = value.0;
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value]).unwrap();
         let mut changed = result.nodes[..=value].to_vec();
-        changed[value].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        changed[value].payload = Some(Payload::scalar(Scalar::Bool(false)));
         rejects_named_prefix(&result, &changed);
         let value = result.answers[0].outputs["value"].0;
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=value]).unwrap();
@@ -9058,10 +9413,10 @@ reading Calc {{
         reordered[domain].arguments.truncate(1);
         reordered[domain].arguments.extend(refs);
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
-        let set=result.nodes.iter().enumerate().find_map(|(index,node)|(result.contexts[index].request==1 && matches!(&node.payload,Some(Payload::Scalar(Scalar::Set {items,..})) if items.len()==2)).then_some(index)).unwrap();
+        let set=result.nodes.iter().enumerate().find_map(|(index,node)|(result.contexts[index].request==1 && matches!(node.scalar_payload(),Some(Scalar::Set {items,..}) if items.len()==2)).then_some(index)).unwrap();
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=set]).unwrap();
         let mut reordered = result.nodes.clone();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[set].payload else {
+        let Some(Scalar::Set { items, .. }) = reordered[set].scalar_payload_mut() else {
             unreachable!()
         };
         items.reverse();
@@ -9148,7 +9503,7 @@ reading Calc {{
         let body_value = body_value.0;
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=body_value]).unwrap();
         let mut changed = result.nodes[..=body_value].to_vec();
-        changed[body_value].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+        changed[body_value].payload = Some(Payload::scalar(Scalar::Bool(false)));
         rejects_named_prefix(&result, &changed);
         let scalar = result.answers[0].outputs["value"].0;
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
@@ -9170,19 +9525,410 @@ reading Calc {{
         reordered[domain].arguments.truncate(1);
         reordered[domain].arguments.extend(reverse);
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
-        let set=result.nodes.iter().enumerate().find_map(|(index,node)|(result.contexts[index].request==1 && matches!(&node.payload,Some(Payload::Scalar(Scalar::Set {items,..})) if items.len()==2)).then_some(index)).unwrap();
+        let set=result.nodes.iter().enumerate().find_map(|(index,node)|(result.contexts[index].request==1 && matches!(node.scalar_payload(),Some(Scalar::Set {items,..}) if items.len()==2)).then_some(index)).unwrap();
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=set]).unwrap();
         let mut reordered = result.nodes.clone();
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[set].payload else {
+        let Some(Scalar::Set { items, .. }) = reordered[set].scalar_payload_mut() else {
             unreachable!()
         };
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
     }
+    fn with_delivery_quantifier(
+        name: &str,
+        control: &Control,
+        run: impl FnOnce(&mut Evaluator<'_, '_>, ExprId),
+    ) {
+        let operation = if name.starts_with("root_") {
+            "check"
+        } else {
+            "evaluate"
+        };
+        let text = format!("value={operation}(Calc.{name})");
+        let prepared = prepare_observed(in_quantifier_fixture(), &[&text], control).unwrap();
+        let environment = Environment::with_prepared(&prepared, control).unwrap();
+        let request = &prepared.requests().requests()[0];
+        let declaration = &prepared.inputs().law().declarations()[request.declaration().unwrap()];
+        let (params, body) = match &declaration.signature {
+            Signature::View { params, body, .. } | Signature::Law { params, body, .. } => {
+                (params, body)
+            }
+            _ => unreachable!(),
+        };
+        let mut graph = Graph::new(control);
+        graph.requests = prepared.requests().requests().to_vec();
+        let mut evaluator = Evaluator {
+            environment: &environment,
+            graph: &mut graph,
+            control,
+            request,
+            declaration,
+            bindings: vec![],
+            lexical: BTreeMap::new(),
+            formal: BTreeMap::new(),
+            base: Scope::default(),
+            retained_scope: Scope::default(),
+            reasons: vec![],
+            completed: BTreeMap::new(),
+            answer_evaluation: None,
+            verified_observed: None,
+            completing: false,
+            finite_universal: None,
+            sources: BTreeMap::new(),
+        };
+        let _architecture = environment.enter_architecture(evaluator.graph).unwrap();
+        evaluator.base.readings.insert(declaration.reading.clone());
+        evaluator.bind(params).unwrap();
+        evaluator.prepare_source(*body).unwrap();
+        run(&mut evaluator, *body);
+    }
+    #[test]
+    fn delivery_root_shared_loop_drops_completed_bodies_and_keeps_domain() {
+        for (name, expected, counters) in [
+            ("full", Some(true), 0),
+            ("early", Some(false), 1),
+            ("empty", Some(false), 0),
+        ] {
+            let control = quiet();
+            with_delivery_quantifier(name, &control, |evaluator, body| {
+                let mut fold = delivery::RootProgress::default();
+                let result = evaluator
+                    .quantification_closed(body, &mut fold)
+                    .unwrap_or_else(|failure| panic!("{name}: {failure:?}"));
+                assert_eq!(result.truth, expected, "{name}");
+                assert_eq!(result.counterexamples.len(), counters, "{name}");
+                assert!(evaluator.graph.iterations.is_empty(), "{name}");
+                assert!(
+                    !evaluator.graph.nodes.iter().any(|node| matches!(
+                        node.payload,
+                        Some(Payload::Counterexample { .. } | Payload::FiniteExhaustion { .. })
+                    )),
+                    "{name}"
+                );
+                assert!(
+                    evaluator
+                        .graph
+                        .nodes
+                        .iter()
+                        .any(|node| node.ty == NodeType::Domain),
+                    "{name}"
+                );
+                assert!(
+                    result.scope.quantifiers.iter().any(|q| q.domain.is_some()),
+                    "{name}"
+                );
+            });
+        }
+    }
+    #[test]
+    fn delivery_root_stop_keeps_only_current_recorded_tail_and_closed_prefix() {
+        use std::{cell::Cell, rc::Rc};
+        let armed = Rc::new(Cell::new(false));
+        let polls = Rc::new(Cell::new(0));
+        let (trigger, counted) = (armed.clone(), polls.clone());
+        let control = Control::new(move |_| {
+            counted.set(counted.get() + 1);
+            trigger.get().then_some(Signal::Term)
+        });
+        with_delivery_quantifier("early", &control, |evaluator, body| {
+            let closed = Rc::new(Cell::new(false));
+            let (seen, trigger) = (closed.clone(), armed.clone());
+            data::observe_iterations(move |_, context, phase, _| {
+                if phase == "delivery_body_closed" {
+                    seen.set(true);
+                }
+                if seen.get() && context.iteration.is_some() && phase == "ordinary_source" {
+                    trigger.set(true);
+                }
+            });
+            let mut fold = delivery::RootProgress::default();
+            let result = evaluator.quantification_closed(body, &mut fold);
+            data::clear_iteration_observer();
+            assert!(matches!(result, Err(Failure::Stop(Signal::Term))));
+            assert!(closed.get());
+            let frozen = polls.get();
+            assert_eq!(fold.completed_len(), 1);
+            assert_eq!(evaluator.graph.iterations.len(), 1);
+            assert!(!evaluator.retained_scope.quantifiers.is_empty());
+            // Prefix counterexample is owned by fold; the unfinished body's
+            // committed Source stays recorded. Inspection does not reenter Control.
+            assert!(
+                !evaluator
+                    .graph
+                    .nodes
+                    .iter()
+                    .any(|node| matches!(node.payload, Some(Payload::Counterexample { .. })))
+            );
+            assert_eq!(polls.get(), frozen);
+        });
+    }
+    #[test]
+    fn delivery_root_seal_preserves_body_and_final_root_counterexample_order() {
+        let control = quiet();
+        with_delivery_quantifier("root_early", &control, |evaluator, body| {
+            assert!(evaluator.closed_root_eligible(body, None).unwrap());
+            let mut progress = delivery::RootProgress::default();
+            let answer = evaluator
+                .closed_root_answer(&[], body, &mut progress)
+                .unwrap();
+            assert_eq!(answer.status, Decision::Refuted);
+            assert_eq!(answer.counterexamples.len(), 2);
+            assert_eq!(answer.counterexamples[0].bindings.len(), 1);
+            assert!(answer.counterexamples[1].bindings.is_empty());
+            for counterexample in &answer.counterexamples {
+                assert_eq!(*counterexample.left.scalar, Scalar::Bool(false));
+                assert_eq!(*counterexample.right.scalar, Scalar::Bool(true));
+            }
+            assert_ne!(
+                answer.counterexamples[0].left.producer,
+                answer.counterexamples[1].left.producer
+            );
+            assert!(progress.closed_body.is_none());
+            assert!(evaluator.graph.iterations.is_empty());
+        });
+    }
+    #[test]
+    fn delivery_root_sealing_stop_keeps_completed_typed_body() {
+        use std::{cell::Cell, rc::Rc};
+        let armed = Rc::new(Cell::new(false));
+        let trigger = armed.clone();
+        let control = Control::new(move |_| trigger.get().then_some(Signal::Int));
+        with_delivery_quantifier("root_early", &control, |evaluator, body| {
+            let trigger = armed.clone();
+            data::observe_iterations(move |_, _, phase, _| {
+                if phase == "delivery_root_fold_closed" {
+                    trigger.set(true);
+                }
+            });
+            let mut progress = delivery::RootProgress::default();
+            let result = evaluator.closed_root_answer(&[], body, &mut progress);
+            data::clear_iteration_observer();
+            assert!(matches!(result, Err(Failure::Stop(Signal::Int))));
+            assert_eq!(progress.closed_body.as_ref().unwrap().truth, Some(false));
+            assert_eq!(
+                progress.closed_body.as_ref().unwrap().counterexamples.len(),
+                1
+            );
+            assert!(evaluator.graph.iterations.is_empty());
+        });
+    }
+    #[test]
+    fn delivery_closed_batch_owns_each_root_and_rejects_full_consumers_upfront() {
+        let control = quiet();
+        let asks = ["bad=check(Calc.root_early)", "good=evaluate(Calc.full)"];
+        let prepared = prepare_observed(in_quantifier_fixture(), &asks, &control).unwrap();
+        assert!(delivery::closed_roots_eligible(&prepared));
+        let run = delivery::evaluate_closed_roots(prepared, &control);
+        assert_eq!(run.status, "complete", "{:?}", run.issues);
+        assert!(run.tail.is_none());
+        assert!(run.has_nodes);
+        assert!(
+            matches!(&run.answers[0], delivery::DeliveryAnswer::Closed(answer) if answer.status == Decision::Refuted && answer.counterexamples.len() == 2)
+        );
+        assert!(
+            matches!(&run.answers[1], delivery::DeliveryAnswer::Closed(answer) if answer.status == Decision::Established && answer.value.as_ref().unwrap().scalar.as_ref() == &Scalar::Bool(true))
+        );
+        for asks in [
+            vec!["value=evaluate(Calc.argument_call)"],
+            vec!["value=evaluate(Calc.nested)"],
+            vec!["value=evaluate(Calc.full)", "later=evaluate(Calc.later)"],
+        ] {
+            let prepared = prepare_observed(in_quantifier_fixture(), &asks, &control).unwrap();
+            assert!(!delivery::closed_roots_eligible(&prepared));
+        }
+        let missing =
+            numeric_recheck_fixture(&["q"], "view full():Bool=forall n in list<Z>[1,2] . n>0;");
+        let prepared = prepare_observed(missing, &["value=evaluate(Calc.full)"], &control).unwrap();
+        assert!(!delivery::closed_roots_eligible(&prepared));
+    }
+    #[test]
+    fn delivery_closed_batch_stop_after_commit_preserves_answer_and_skips_later_roots() {
+        use std::{cell::Cell, rc::Rc};
+        let armed = Rc::new(Cell::new(false));
+        let trigger = armed.clone();
+        let control = Control::new(move |_| trigger.get().then_some(Signal::Term));
+        let prepared = prepare_observed(
+            in_quantifier_fixture(),
+            &["bad=check(Calc.root_early)", "good=evaluate(Calc.full)"],
+            &control,
+        )
+        .unwrap();
+        let trigger = armed.clone();
+        data::observe_iterations(move |_, _, phase, index| {
+            if phase == "delivery_answer_committed" && index == 0 {
+                trigger.set(true);
+            }
+        });
+        let run = delivery::evaluate_closed_roots(prepared, &control);
+        data::clear_iteration_observer();
+        assert_eq!(run.status, "interrupted");
+        assert!(run.tail.is_none());
+        assert!(
+            matches!(&run.answers[0], delivery::DeliveryAnswer::Closed(answer) if answer.status == Decision::Refuted)
+        );
+        assert!(
+            matches!(&run.answers[1], delivery::DeliveryAnswer::Recorded(answer) if answer.status == Decision::Undetermined && answer.outputs.is_empty())
+        );
+    }
+    #[test]
+    fn delivery_closed_batch_stop_retains_one_current_tail_and_owned_previous_body() {
+        use std::{cell::Cell, rc::Rc};
+        let armed = Rc::new(Cell::new(false));
+        let trigger = armed.clone();
+        let control = Control::new(move |_| trigger.get().then_some(Signal::Int));
+        let prepared = prepare_observed(
+            in_quantifier_fixture(),
+            &["bad=check(Calc.root_early)"],
+            &control,
+        )
+        .unwrap();
+        let closed = Rc::new(Cell::new(false));
+        let trigger = armed.clone();
+        data::observe_iterations(move |_, context, phase, _| {
+            if phase == "delivery_body_closed" {
+                closed.set(true);
+            }
+            if closed.get() && context.iteration.is_some() && phase == "ordinary_source" {
+                trigger.set(true);
+            }
+        });
+        let run = delivery::evaluate_closed_roots(prepared, &control);
+        data::clear_iteration_observer();
+        assert_eq!(run.status, "interrupted");
+        let tail = run.tail.unwrap();
+        assert_eq!(tail.graph.iterations.len(), 1);
+        assert!(!tail.retained.root_complete);
+        assert!(!tail.retained.scope.quantifiers.is_empty());
+        let delivery::DeliveryAnswer::Recorded(answer) = &run.answers[0] else {
+            unreachable!()
+        };
+        let mut mapped = tail.retained.references.map_scope(&answer.scope).unwrap();
+        mapped.merge(&tail.retained.scope);
+        assert_eq!(mapped.quantifiers.len(), 1);
+        assert!(mapped.quantifiers[0].domain.is_some());
+        assert!(
+            matches!(&run.answers[0], delivery::DeliveryAnswer::Recorded(answer) if answer.status == Decision::Undetermined && answer.evidence.is_empty())
+        );
+    }
+    #[test]
+    fn delivery_closed_batch_internal_failure_retains_only_previously_sealed_roots() {
+        let asks = ["first=check(Calc.root_early)", "second=evaluate(Calc.full)"];
+        for failed in ["first", "second"] {
+            let raw_control = quiet();
+            let raw_prepared =
+                prepare_observed(in_quantifier_fixture(), &asks, &raw_control).unwrap();
+            let raw = evaluate_observed_with_validator(
+                raw_prepared,
+                &raw_control,
+                |environment, graph, request, answer| {
+                    environment.validate_answer(graph, request, answer)?;
+                    if request.id == failed {
+                        Err(internal!("fixture root rejection").into())
+                    } else {
+                        Ok(())
+                    }
+                },
+            )
+            .unwrap();
+            let control = quiet();
+            let prepared = prepare_observed(in_quantifier_fixture(), &asks, &control).unwrap();
+            let run = delivery::evaluate_closed_roots_with_check(prepared, &control, |request| {
+                if request.id == failed {
+                    Err(internal!("fixture root rejection"))
+                } else {
+                    Ok(())
+                }
+            });
+            assert_eq!(run.status, raw.status(), "{failed}");
+            assert!(run.internal);
+            assert!(run.tail.is_none());
+            assert_eq!(run.has_nodes, raw.has_nodes(), "{failed}");
+            assert_eq!(run.has_nodes, failed == "second");
+            for (closed, raw) in run.answers.iter().zip(&raw.answers) {
+                match closed {
+                    delivery::DeliveryAnswer::Closed(answer) => {
+                        assert_eq!(answer.status, raw.status)
+                    }
+                    delivery::DeliveryAnswer::Recorded(answer) => {
+                        assert_eq!(answer.status, raw.status);
+                        assert!(answer.outputs.is_empty());
+                        assert_eq!(answer.scope, Scope::default());
+                    }
+                }
+            }
+            let Json::Obj(ref summary) =
+                crate::observed::delivery::summary_for_closed_run_test(run)
+            else {
+                panic!("internal failure summary");
+            };
+            let Json::Arr(answers) = &summary["answers"] else {
+                panic!("summary answers");
+            };
+            for answer in answers.iter().skip(usize::from(failed == "second")) {
+                let Json::Obj(answer) = answer else {
+                    panic!("answer")
+                };
+                assert_eq!(answer["status"], Json::str("undetermined"));
+                assert_eq!(answer["outputs"], Json::obj([] as [(&str, Json); 0]));
+                assert!(!answer.contains_key("applicability"));
+            }
+        }
+    }
+    #[test]
+    fn delivery_closed_map_application_keeps_failed_conditions_and_applicability() {
+        let fixture = application_fixture::owned("known");
+        let script = format!(
+            "{} law required root(m:Reservations.Migration,x:Reservations.State):forall item in list<Reservations.State>[x] . m.states(item)=item;",
+            application_fixture::OWNED_SCRIPT
+        );
+        let law = String::from_utf8(fixture.law().bytes().to_vec())
+            .unwrap()
+            .replace(application_fixture::OWNED_SCRIPT, &script);
+        let input = InputSources::from_bytes(
+            fixture
+                .definitions()
+                .iter()
+                .map(|definition| definition.bytes().to_vec())
+                .collect(),
+            law.into_bytes(),
+            fixture.archmap().bytes().to_vec(),
+        );
+        for subject in ["p", "r"] {
+            let ask = format!("root=check(Applications.root,m=@v/m,x=@v/{subject})");
+            let raw_control = quiet();
+            let raw = evaluate_observed_bytes(input.clone(), &[&ask], &raw_control).unwrap();
+            let control = quiet();
+            let prepared = prepare_observed(input.clone(), &[&ask], &control).unwrap();
+            assert!(delivery::closed_roots_eligible(&prepared));
+            let run = delivery::evaluate_closed_roots(prepared, &control);
+            assert_eq!(run.status, raw.status(), "{subject}: {:?}", run.issues);
+            let delivery::DeliveryAnswer::Closed(answer) = &run.answers[0] else {
+                panic!("closed map root")
+            };
+            assert_eq!(answer.status, raw.answers[0].status);
+            assert_eq!(answer.applicability, "applicable");
+            if subject == "r" {
+                assert_eq!(answer.status, Decision::Undetermined);
+                assert!(answer.value.is_none());
+                assert!(answer.counterexamples.is_empty());
+                assert!(
+                    answer
+                        .reasons
+                        .iter()
+                        .any(|reason| matches!(reason.kind, ReasonKindOf::ConditionFailed { .. }))
+                );
+            } else {
+                assert_eq!(answer.status, Decision::Refuted);
+                assert_eq!(answer.counterexamples.len(), 2);
+            }
+            assert!(run.tail.is_none());
+        }
+    }
     fn in_quantifier_fixture() -> InputSources {
         numeric_recheck_fixture(
             &[],
             r#"
+ law required root_early(): forall n in list<Z>[1,2] . n>1;
  view all(): Bool = forall n in list<Z>[1,1,2] . n>0;
  view empty(): Bool = exists q in list<Q>[] . q>rat(0,1);
  view negative(s: Sample): Bool = forall r in list<Sample>[s,s] . r.p;
@@ -9254,7 +10000,7 @@ reading Calc {{
     }
     fn iteration_binder_scalar_for_name(result: &ObservedEvaluation) -> usize {
         result.nodes.iter().enumerate().find_map(|(index,node)|{
-            (result.contexts[index].iteration==Some(0) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"bit".as_slice()))).then_some(index)
+            (result.contexts[index].iteration==Some(0) && matches!(node.scalar_payload(),Some(_)) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"bit".as_slice()))).then_some(index)
         }).unwrap()
     }
     #[test]
@@ -9371,7 +10117,7 @@ reading Calc {{
             .filter_map(|(index, node)| {
                 let context = result.contexts[index];
                 let case = context.case?;
-                let Some(Payload::Scalar(value)) = &node.payload else {
+                let Some(value) = node.scalar_payload() else {
                     return None;
                 };
                 let (span, source, owner, assigned) = match (&node.rule, node.arguments.as_slice())
@@ -9455,11 +10201,11 @@ reading Calc {{
                 {
                     return None;
                 }
-                let Some(Payload::Scalar(Scalar::Subject {
+                let Some(Scalar::Subject {
                     snapshot,
                     subject,
                     entity,
-                })) = &result.nodes[owner.0].payload
+                }) = result.nodes[owner.0].scalar_payload()
                 else {
                     return None;
                 };
@@ -9476,7 +10222,7 @@ reading Calc {{
                         && fact.field.as_deref() == Some(field.as_str())
                 })?;
                 if record.values.get(position) != Some(&assigned)
-                    || result.nodes[assigned.0].payload != Some(Payload::Scalar(value.clone()))
+                    || result.nodes[assigned.0].payload != Some(Payload::scalar(value.clone()))
                 {
                     return None;
                 }
@@ -9486,7 +10232,7 @@ reading Calc {{
     }
     fn replace_completion_scalar(nodes: &mut [Node], target: usize, value: Scalar) {
         nodes[target].ty = NodeType::Value(value.ty());
-        nodes[target].payload = Some(Payload::Scalar(value));
+        nodes[target].payload = Some(Payload::scalar(value));
     }
     #[test]
     fn finite_completion_unit_keeps_one_member_missing_and_typed_projection() {
@@ -9540,8 +10286,7 @@ reading Calc {{
             .0;
         for variant in 0..4 {
             completion_mutation(&result, member, |nodes| {
-                let Some(Payload::Scalar(Scalar::Data { constructor, args })) =
-                    &mut nodes[member].payload
+                let Some(Scalar::Data { constructor, args }) = nodes[member].scalar_payload_mut()
                 else {
                     unreachable!()
                 };
@@ -9570,8 +10315,7 @@ reading Calc {{
         assert_eq!(fields.len(), 3);
         let projection = result.nodes[fields[1]].arguments[2].0;
         completion_mutation(&result, projection, |nodes| {
-            let Some(Payload::Scalar(Scalar::Data { constructor, .. })) =
-                &mut nodes[projection].payload
+            let Some(Scalar::Data { constructor, .. }) = nodes[projection].scalar_payload_mut()
             else {
                 unreachable!()
             };
@@ -9582,8 +10326,7 @@ reading Calc {{
             .expect("valid Data constructor");
         });
         completion_mutation(&result, fields[1], |nodes| {
-            let Some(Payload::Scalar(Scalar::Data { args, .. })) = &mut nodes[fields[1]].payload
-            else {
+            let Some(Scalar::Data { args, .. }) = nodes[fields[1]].scalar_payload_mut() else {
                 unreachable!()
             };
             args.push(Scalar::Unit);
@@ -9620,8 +10363,7 @@ reading Calc {{
         );
         for variant in 0..3 {
             completion_mutation(&result, members[0].0, |nodes| {
-                let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut nodes[members[0].0].payload
-                else {
+                let Some(Scalar::Tuple(items)) = nodes[members[0].0].scalar_payload_mut() else {
                     unreachable!()
                 };
                 match variant {
@@ -9635,7 +10377,7 @@ reading Calc {{
         assert_eq!(fields.len(), 12);
         let projection = result.nodes[fields[0]].arguments[2].0;
         completion_mutation(&result, projection, |nodes| {
-            let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut nodes[projection].payload else {
+            let Some(Scalar::Tuple(items)) = nodes[projection].scalar_payload_mut() else {
                 unreachable!()
             };
             items.swap(0, 1);
@@ -9700,8 +10442,7 @@ reading Calc {{
             )
         });
         completion_mutation(&result, some, |nodes| {
-            let Some(Payload::Scalar(Scalar::Option { value, .. })) = &mut nodes[some].payload
-            else {
+            let Some(Scalar::Option { value, .. }) = nodes[some].scalar_payload_mut() else {
                 unreachable!()
             };
             *value = Some(Box::new(Scalar::Unit));
@@ -9739,8 +10480,7 @@ reading Calc {{
         for variant in 0..3 {
             let target = if variant == 2 { domain } else { member };
             completion_mutation(&result, target, |nodes| {
-                let Some(Payload::Scalar(Scalar::Set { element, items })) =
-                    &mut nodes[member].payload
+                let Some(Scalar::Set { element, items }) = nodes[member].scalar_payload_mut()
                 else {
                     unreachable!()
                 };
@@ -9763,8 +10503,7 @@ reading Calc {{
             .unwrap();
         let projection = result.nodes[field].arguments[2].0;
         completion_mutation(&result, projection, |nodes| {
-            let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut nodes[projection].payload
-            else {
+            let Some(Scalar::Set { items, .. }) = nodes[projection].scalar_payload_mut() else {
                 unreachable!()
             };
             items.push(items[0].clone());
@@ -9772,8 +10511,7 @@ reading Calc {{
         for target in [member, projection, field] {
             rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
             let mut reordered = result.nodes.clone();
-            let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[target].payload
-            else {
+            let Some(Scalar::Set { items, .. }) = reordered[target].scalar_payload_mut() else {
                 unreachable!()
             };
             items.reverse();
@@ -9806,8 +10544,7 @@ reading Calc {{
             matches!(&result.nodes[seed].payload,Some(Payload::CompletionSeed {fields,..}) if fields.len()==2 && fields[0].field.as_deref()==Some("ClosedValue.Sample.f") && fields[1].field.as_deref()==Some("ClosedValue.Sample.o"))
         );
         completion_mutation(&result, members[0].0, |nodes| {
-            let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut nodes[members[0].0].payload
-            else {
+            let Some(Scalar::Tuple(items)) = nodes[members[0].0].scalar_payload_mut() else {
                 unreachable!()
             };
             items.swap(0, 1);
@@ -10263,7 +11000,7 @@ reading Calc {{
         let law = result.prepared.inputs().sources().law().bytes();
         result.nodes.iter().enumerate().filter_map(|(index,node)| {
             (result.contexts[index].case.is_some() && node.arguments.len()==3
-                && matches!(&node.payload,Some(Payload::Scalar(Scalar::Fp {..})))
+                && matches!(node.scalar_payload(),Some(Scalar::Fp {..}))
                 && matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law {span}} | Rule::FieldValue {kind:"law",location:Some(Location::Law {span})} if &law[span.0..span.1]==bytes)).then_some(index)
         }).collect()
     }
@@ -10319,14 +11056,14 @@ reading Calc {{
         }
         let member = elements[0].0;
         completion_mutation(&result, member, |nodes| {
-            nodes[member].payload = Some(Payload::Scalar(Scalar::Fp {
+            nodes[member].payload = Some(Payload::scalar(Scalar::Fp {
                 modulus: "2".into(),
                 value: 2.into(),
             }))
         });
         completion_mutation(&result, member, |nodes| {
             nodes[member].ty = NodeType::Value(Type::Bool);
-            nodes[member].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+            nodes[member].payload = Some(Payload::scalar(Scalar::Bool(false)));
         });
         let fields = fp_completion_field_scalars(&result, b"s.f");
         assert_eq!(fields.len(), 4);
@@ -10343,7 +11080,7 @@ reading Calc {{
                     Type::Fp("3".into())
                 };
                 nodes[projection].ty = NodeType::Value(ty);
-                nodes[projection].payload = Some(Payload::Scalar(if variant == 0 {
+                nodes[projection].payload = Some(Payload::scalar(if variant == 0 {
                     Scalar::Bool(false)
                 } else {
                     Scalar::Fp {
@@ -10431,8 +11168,7 @@ reading Calc {{
             *ty = swapped.clone();
             for member in elements {
                 nodes[member.0].ty = NodeType::Value(swapped.clone());
-                let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut nodes[member.0].payload
-                else {
+                let Some(Scalar::Tuple(values)) = nodes[member.0].scalar_payload_mut() else {
                     unreachable!()
                 };
                 values.swap(0, 1);
@@ -10455,7 +11191,7 @@ reading Calc {{
         let projection = record.values[0].0;
         completion_mutation(&result, projection, |nodes| {
             nodes[projection].ty = NodeType::Value(Type::Bool);
-            nodes[projection].payload = Some(Payload::Scalar(Scalar::Bool(false)));
+            nodes[projection].payload = Some(Payload::scalar(Scalar::Bool(false)));
         });
         let pair = result.answers[0]
             .evidence
@@ -10845,7 +11581,7 @@ reading Calc {{
         let fields:Vec<_>=result.nodes.iter().enumerate().filter_map(|(i,node)| {
             (result.contexts[i].case.is_some() && node.arguments.len()==3
                 && matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law {span}} | Rule::FieldValue {kind:"law",location:Some(Location::Law {span})} if &law[span.0..span.1]==b"s.p")
-                && matches!(&node.payload,Some(Payload::Scalar(Scalar::Bool(_)))))
+                && matches!(node.scalar_payload(),Some(Scalar::Bool(_))))
                 .then_some(i)
         }).collect();
         assert_eq!(fields.len(), 4);
@@ -10854,7 +11590,7 @@ reading Calc {{
         }
         let projection = checked_field_inputs(&result, fields[0]).3.unwrap().0;
         completion_mutation(&result, projection, |nodes| {
-            let Some(Payload::Scalar(value)) = &mut nodes[projection].payload else {
+            let Some(value) = nodes[projection].scalar_payload_mut() else {
                 unreachable!()
             };
             let Scalar::Bool(value) = value else {
@@ -11362,11 +12098,14 @@ impl Evaluator<'_, '_> {
             .iter()
             .map(|child| child.evaluation)
             .collect::<Vec<_>>();
-        let plan = self.environment.ordinary_plan(
+        // Value access is lazy: Let does not consume its discarded RHS Scalar,
+        // which may be a native construction without an ordinary Scalar view.
+        let plan = self.environment.ordinary_plan_with_values(
             self.graph,
             expression,
             &refs,
             self.graph.nodes.len(),
+            |index| children[index].scalar(self.graph),
         )?;
         if plan.legacy {
             // Only the parent needs the old unknown/domain-condition semantics.
@@ -11422,11 +12161,14 @@ impl Evaluator<'_, '_> {
         children: Vec<Evaluated>,
     ) -> Result<Evaluated, Failure> {
         let refs: Vec<_> = children.iter().map(|child| child.evaluation).collect();
-        let plan = self.environment.ordinary_plan(
+        // Value access is lazy: Let does not consume its discarded RHS Scalar,
+        // which may be a native construction without an ordinary Scalar view.
+        let plan = self.environment.ordinary_plan_with_values(
             self.graph,
             expression,
             &refs,
             self.graph.nodes.len(),
+            |index| children[index].scalar(self.graph),
         )?;
         self.commit_ordinary_plan(id, span, expression, children, plan)
     }
@@ -11447,7 +12189,7 @@ impl Evaluator<'_, '_> {
         // post停止でも完成済みScalarのScopeだけを保持する。未完成Evalを公開しない。
         #[cfg(test)]
         let context = self.graph.active;
-        let value = if let Some(value) = plan.reused {
+        let value = if let Some(value) = plan.value.reused() {
             Some(value)
         } else if let Some(node) = self
             .environment
@@ -11470,11 +12212,12 @@ impl Evaluator<'_, '_> {
         let registry = &mut self.reasons;
         let completed = &mut self.completed;
         let result = &mut None;
+        let runtime_value = RuntimeValue::from_recorded(self.graph, value)?;
         self.graph.push_with_metadata(node, |evaluation| {
             let evaluated = Evaluated {
                 expression,
                 evaluation,
-                value,
+                runtime_value,
                 scope: plan.scope,
                 support: plan.support,
                 reasons: plan.reasons,

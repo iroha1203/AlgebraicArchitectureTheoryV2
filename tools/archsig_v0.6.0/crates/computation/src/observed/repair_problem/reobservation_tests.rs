@@ -74,7 +74,7 @@ fn equivalent(current: &ObservedEvaluation, cold: &ObservedEvaluation) {
 fn value(result: &ObservedEvaluation, id: &str) -> Scalar {
     let answer = result.answers.iter().find(|a| a.id == id).unwrap();
     match &result.nodes[answer.outputs["value"].0].payload {
-        Some(Payload::Scalar(value)) => value.clone(),
+        Some(Payload::Scalar(value)) => value.as_ref().clone(),
         Some(Payload::Construction(value)) => value.scalar().unwrap().clone(),
         _ => panic!("型付きの値"),
     }

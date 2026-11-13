@@ -167,7 +167,7 @@ impl Environment<'_> {
                 }
                 value
             };
-            if actual != &expected {
+            if actual.as_ref() != &expected {
                 return Err(internal!("Termの正規形または元body再代入値が違う").into());
             }
         }
@@ -393,7 +393,7 @@ impl Environment<'_> {
         } else {
             !expected.equal()
         };
-        if node.payload != Some(Payload::Scalar(Scalar::Bool(value))) {
+        if node.payload != Some(Payload::scalar(Scalar::Bool(value))) {
             return Err(internal!("Term比較値の元判断が違う").into());
         }
         Ok(())

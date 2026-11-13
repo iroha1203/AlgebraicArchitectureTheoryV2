@@ -9,7 +9,7 @@ mod fixture {
 fn node(value: i32) -> Node {
     Node {
         ty: NodeType::Value(Type::Z),
-        payload: Some(Payload::Scalar(Scalar::Z(value.into()))),
+        payload: Some(Payload::scalar(Scalar::Z(value.into()))),
         rule: Rule::Construction("evaluation"),
         arguments: vec![],
         support: vec![].into(),
@@ -251,4 +251,35 @@ fn stopped_suffix_build_keeps_a_consistent_prefix_and_first_signal_stays_frozen(
     assert_eq!(probes.get(), frozen);
     env.results.clear_validation();
     assert_eq!(env.results.cache.borrow().context_candidates.covered_len, 0);
+}
+
+#[test]
+fn validation_rollback_context_index_drops_scratch_positions_without_changing_held_candidates() {
+    let context = Context::default();
+    let scratch_context = Context {
+        iteration: Some(0),
+        ..context
+    };
+    let mut index = ContextIndex::default();
+    index.covered_len = 2;
+    index.positions.insert(context, Rc::new(vec![0, 1]));
+    let prefix = index.checkpoint();
+    let held = index.positions[&context].clone();
+    Rc::make_mut(index.positions.get_mut(&context).unwrap()).push(2);
+    index.positions.insert(scratch_context, Rc::new(vec![3]));
+    index.covered_len = 4;
+    index.rollback(prefix);
+    assert_eq!(index.covered_len, 2);
+    assert_eq!(index.positions[&context].as_slice(), [0, 1]);
+    assert!(!index.positions.contains_key(&scratch_context));
+    assert_eq!(held.as_slice(), [0, 1]);
+    // Reuse the released position for another Context; no stale membership remains.
+    let fresh_context = Context {
+        iteration: Some(1),
+        ..context
+    };
+    index.positions.insert(fresh_context, Rc::new(vec![2]));
+    index.covered_len = 3;
+    assert_eq!(index.positions[&fresh_context].as_slice(), [2]);
+    assert!(!index.positions.contains_key(&scratch_context));
 }

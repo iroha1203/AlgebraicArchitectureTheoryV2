@@ -28,7 +28,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     .unwrap()
 }
 fn path_mut(node: &mut Node) -> &mut super::super::super::path_value::PathValue {
-    let Some(Payload::Scalar(Scalar::Path(path))) = &mut node.payload else {
+    let Some(Scalar::Path(path)) = node.scalar_payload_mut() else {
         panic!("Path")
     };
     path
@@ -40,8 +40,7 @@ fn mutated_path() {
         .iter()
         .enumerate()
         .find(|(i, n)| {
-            r.contexts[*i].request == 1
-                && matches!(n.payload, Some(Payload::Scalar(Scalar::Path(_))))
+            r.contexts[*i].request == 1 && matches!(n.scalar_payload(), Some(Scalar::Path(_)))
         })
         .unwrap()
         .0;
@@ -103,7 +102,7 @@ fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers
     let law = r.prepared.inputs().law();
     let index = r.nodes.iter().position(|n| {
         let Rule::Input { kind: "law", location: Location::Law { span } } = &n.rule else { return false };
-        matches!(n.payload,Some(Payload::Scalar(Scalar::Bool(true))))
+        matches!(n.scalar_payload(),Some(Scalar::Bool(true)))
             && law.exprs().iter().enumerate().any(|(id,e)| {
                 e.span==*span && matches!(e.kind,ExprKind::Binary{op:BinOp::Eq,..})
                     && matches!(&e.kind,ExprKind::Binary{lhs,..} if matches!(law.expr_type(*lhs),Some(Type::Path(..))))
@@ -125,7 +124,7 @@ fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers
     for kind in 0..2 {
         let mut bad = original.clone();
         if kind == 0 {
-            bad.payload = Some(Payload::Scalar(Scalar::Bool(false)));
+            bad.payload = Some(Payload::scalar(Scalar::Bool(false)));
         } else {
             bad.arguments.swap(0, 1);
         }
@@ -166,8 +165,8 @@ fn nonprimitive_container_requires_the_same_typed_prior_value() {
         .find(|(i, n)| {
             r.contexts[*i].request == 1
                 && matches!(
-                    n.payload,
-                    Some(Payload::Scalar(Scalar::Option { value: Some(_), .. }))
+                    n.scalar_payload(),
+                    Some(Scalar::Option { value: Some(_), .. })
                 )
         })
         .unwrap()
@@ -187,7 +186,7 @@ fn nonprimitive_container_requires_the_same_typed_prior_value() {
     let p = r
         .nodes
         .iter()
-        .find(|n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p))) if p.snapshot=="w"))
+        .find(|n| matches!(n.scalar_payload(),Some(Scalar::Path(p)) if p.snapshot=="w"))
         .unwrap()
         .clone();
     empty.nodes.push(p);
@@ -196,15 +195,14 @@ fn nonprimitive_container_requires_the_same_typed_prior_value() {
         Err(ValidationFailure::Internal(_))
     ));
     // 数学的にも同じ値があっても、実 arguments の外にある値は借用しない。
-    let same=r.nodes.iter().find(|n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p))) if p.snapshot=="v" && p.subject=="a")).unwrap().clone();
+    let same=r.nodes.iter().find(|n| matches!(n.scalar_payload(),Some(Scalar::Path(p)) if p.snapshot=="v" && p.subject=="a")).unwrap().clone();
     empty.nodes.push(same);
     assert!(matches!(
         empty.push(bad),
         Err(ValidationFailure::Internal(_))
     ));
     let mut changed = r.nodes.clone();
-    let Some(Payload::Scalar(Scalar::Option { value: Some(p), .. })) = &mut changed[index].payload
-    else {
+    let Some(Scalar::Option { value: Some(p), .. }) = changed[index].scalar_payload_mut() else {
         panic!()
     };
     let Scalar::Path(p) = p.as_mut() else {

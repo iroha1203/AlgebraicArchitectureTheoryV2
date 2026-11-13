@@ -85,7 +85,7 @@ pub(super) fn selected(
             let value = match &binding {
                 AnswerBinding::Reference(r) => graph.scalar(*r)?,
                 AnswerBinding::Projection(node) => {
-                    let Some(Payload::Scalar(value)) = &node.payload else {
+                    let Some(value) = node.scalar_payload() else {
                         return Err(internal!("mapのonの射影が原始値でない").into());
                     };
                     value

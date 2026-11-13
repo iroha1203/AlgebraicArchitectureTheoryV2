@@ -55,7 +55,7 @@ fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scop
     });
     let t = es[0].0;
     completion_mutation(&r, t, |nodes| {
-        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Map { pairs, .. }) = nodes[t].scalar_payload_mut() else {
             panic!("map")
         };
         let Scalar::Subject { subject, .. } = &mut pairs[0].1 else {
@@ -64,7 +64,7 @@ fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scop
         *subject = "p".into();
     });
     completion_mutation(&r, t, |nodes| {
-        let Some(Payload::Scalar(Scalar::Map { codomain, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Map { codomain, .. }) = nodes[t].scalar_payload_mut() else {
             panic!("map")
         };
         *codomain = "Reservations.System".into();

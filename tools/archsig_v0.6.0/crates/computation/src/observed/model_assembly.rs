@@ -1458,7 +1458,7 @@ mod tests {
         assert!(result.answers[0].outputs.contains_key("assembly"));
         let node = &result.nodes[result.answers[2].outputs["value"].0];
         let value = match node.payload.as_ref() {
-            Some(Payload::Scalar(v)) => Some(v),
+            Some(Payload::Scalar(v)) => Some(v.as_ref()),
             Some(Payload::Construction(v)) => v.scalar(),
             _ => None,
         };

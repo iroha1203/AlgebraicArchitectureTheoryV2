@@ -112,7 +112,7 @@ fn scalar(
 ) -> Node {
     Node {
         ty: NodeType::Value(value.ty()),
-        payload: Some(Payload::Scalar(value)),
+        payload: Some(Payload::scalar(value)),
         rule,
         arguments,
         support,
@@ -259,7 +259,7 @@ impl Environment<'_> {
             }
             self.validate_at(graph, graph.get(*reference)?, reference.0)?;
         }
-        if let Some(Payload::Scalar(value)) = &node.payload {
+        if let Some(value) = node.scalar_payload() {
             data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         let expected = match node.rule {
@@ -276,8 +276,8 @@ impl Environment<'_> {
                     Scalar::Set {
                         items: expected, ..
                     },
-                    Some(Payload::Scalar(Scalar::Set { items: actual, .. })),
-                ) = (&value, &node.payload)
+                    Some(Scalar::Set { items: actual, .. }),
+                ) = (&value, node.scalar_payload())
                 else {
                     return Err(internal!("In Set payloadの型が違う").into());
                 };
@@ -303,7 +303,7 @@ impl Environment<'_> {
                     return Err(internal!("In memberのSet辺が違う").into());
                 };
                 let producer = graph.get(*set)?;
-                let Some(Payload::Scalar(Scalar::Set { items, .. })) = &producer.payload else {
+                let Some(Scalar::Set { items, .. }) = producer.scalar_payload() else {
                     return Err(internal!("In member producerがSetでない").into());
                 };
                 if producer.rule != Rule::InSet {
@@ -326,8 +326,7 @@ impl Environment<'_> {
                     return Err(internal!("In Domainの元辺がない").into());
                 };
                 let producer = graph.get(*set)?;
-                let Some(Payload::Scalar(Scalar::Set { element, items })) = &producer.payload
-                else {
+                let Some(Scalar::Set { element, items }) = producer.scalar_payload() else {
                     return Err(internal!("In Domain Set producerがない").into());
                 };
                 if producer.rule != Rule::InSet || producer.arguments != [*source, *input] {

@@ -968,9 +968,9 @@ impl Environment<'_> {
             (Some(Payload::OwnedCallCondition { .. }), _) => 3,
             (Some(Payload::OwnedCallCounterexample { .. }), _) => 2,
             (Some(Payload::Scalar(value)), Rule::Construction("evaluation" | "domain"))
-                if matches!(value, Scalar::Subject { .. } | Scalar::Text(_))
+                if matches!(value.as_ref(), Scalar::Subject { .. } | Scalar::Text(_))
                     || matches!(
-                        value,
+                        value.as_ref(),
                         Scalar::Set {
                             element: Type::Ref(_),
                             ..
@@ -1033,7 +1033,7 @@ impl Environment<'_> {
                     Rule::Construction("domain") => &required,
                     _ => return Err(internal!("Owned条件owner値の規則が違う").into()),
                 };
-                if value != expected
+                if value.as_ref() != expected
                     || node.ty != NodeType::Value(expected.ty())
                     || !node.evidence.is_empty()
                     || node.judgment.is_some()

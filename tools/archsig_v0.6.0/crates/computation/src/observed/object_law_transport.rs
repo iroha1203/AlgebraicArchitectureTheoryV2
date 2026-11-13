@@ -180,8 +180,8 @@ fn boolean(
 ) -> Result<Option<bool>, ConstructionFailure> {
     match reference {
         None => Ok(None),
-        Some(r) => match e.nodes.get(r.0).and_then(|n| n.payload.as_ref()) {
-            Some(Payload::Scalar(Scalar::Bool(v))) => Ok(Some(*v)),
+        Some(r) => match e.nodes.get(r.0).and_then(|n| n.scalar_payload()) {
+            Some(Scalar::Bool(v)) => Ok(Some(*v)),
             _ => Err(inconsistent("Lawの確定値が型付きBoolでない")),
         },
     }

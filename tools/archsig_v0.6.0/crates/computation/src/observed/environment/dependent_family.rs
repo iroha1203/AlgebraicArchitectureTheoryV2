@@ -162,7 +162,9 @@ impl Environment<'_> {
                 let Some(Payload::Scalar(value)) = node.payload else {
                     return Err(internal!("固定fiberの元Answerが値でない").into());
                 };
-                enumeration.values.push(value);
+                enumeration
+                    .values
+                    .push(std::sync::Arc::unwrap_or_clone(value));
                 enumeration.scope = node.scope;
                 enumeration.support = node.support.materialize(&self.control)?;
             }
@@ -736,7 +738,7 @@ impl Environment<'_> {
             if !step.missing.is_empty() {
                 return Err(internal!("未観測ownerから確定fiberを生成した").into());
             }
-            if let Some(Payload::Scalar(value)) = &node.payload {
+            if let Some(value) = node.scalar_payload() {
                 if node.arguments.len() != end
                     || !data::contains(&step.enumeration.values, value, &self.control)?
                 {
@@ -784,7 +786,7 @@ impl Environment<'_> {
             return Err(internal!("依存族の元parameter・宣言出現が違う").into());
         }
         let layout = self.dependent_layout(graph, source, &plan, limit, true)?;
-        if let Some(Payload::Scalar(value)) = &node.payload {
+        if let Some(value) = node.scalar_payload() {
             let path = node
                 .arguments
                 .get(1..)
@@ -851,7 +853,7 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         data::check(expected, self.indexes.inputs.law(), &self.control)?;
         if node.ty != NodeType::Value(expected.ty())
-            || !matches!(&node.payload,Some(Payload::Scalar(value)) if value == expected)
+            || !matches!(node.scalar_payload(),Some(value) if value == expected)
             || node.scope != *scope
             || !node.support.same_facts(&support.into(), &self.control)?
             || !node.evidence.is_empty()

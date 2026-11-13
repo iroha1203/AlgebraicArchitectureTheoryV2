@@ -1658,7 +1658,7 @@ impl Environment<'_> {
                 self.completion_domain_node(graph, node, limit, &seed, ty, elements)?;
                 return Ok(true);
             }
-            if let Some(Payload::Scalar(value)) = &node.payload {
+            if let Some(value) = node.scalar_payload() {
                 if matches!(&node.rule, Rule::Construction("domain")) {
                     self.completion_assignment_node(graph, node, &seed, value)?;
                     return Ok(true);
@@ -1858,7 +1858,7 @@ impl Environment<'_> {
             return Ok(true);
         }
         if self.current_context(graph).case.is_some()
-            && matches!(&node.payload, Some(Payload::Scalar(_)))
+            && matches!(node.scalar_payload(), Some(_))
             && node.arguments.len() == 3
             && matches!((&node.rule,&graph.get(node.arguments[0])?.payload),
             (Rule::Input {kind:"law",location:Location::Law {span}},
@@ -2285,7 +2285,7 @@ impl Environment<'_> {
             return Err(internal!("補完field ownerがRefでない").into());
         };
         let types = self.completion_slot_types(std::slice::from_ref(&fact))?;
-        let Some(Payload::Scalar(value)) = &node.payload else {
+        let Some(value) = node.scalar_payload() else {
             return Err(internal!("補完field値がない").into());
         };
         data::check(value, self.indexes.inputs.law(), &self.control)?;

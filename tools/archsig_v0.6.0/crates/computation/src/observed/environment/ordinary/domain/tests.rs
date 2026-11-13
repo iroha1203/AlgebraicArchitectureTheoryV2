@@ -187,8 +187,7 @@ fn cold_in_domain_rejects_coverage_member_recipe_support_context_and_cutoff_cofo
         let mut g = graph(&r, &c);
         match mutation {
             0 => {
-                let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut g.nodes[set.0].payload
-                else {
+                let Some(Scalar::Set { items, .. }) = g.nodes[set.0].scalar_payload_mut() else {
                     panic!("set")
                 };
                 items.truncate(1);
@@ -232,13 +231,12 @@ fn cold_in_domain_rejects_coverage_member_recipe_support_context_and_cutoff_cofo
                 g.nodes[set.0].arguments[1] = domain;
             }
             _ => {
-                let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut g.nodes[set.0].payload
-                else {
+                let Some(Scalar::Set { items, .. }) = g.nodes[set.0].scalar_payload_mut() else {
                     panic!("set");
                 };
                 items.reverse();
-                g.nodes[members[0].0].payload = Some(Payload::Scalar(Scalar::Bool(false)));
-                g.nodes[members[1].0].payload = Some(Payload::Scalar(Scalar::Bool(true)));
+                g.nodes[members[0].0].payload = Some(Payload::scalar(Scalar::Bool(false)));
+                g.nodes[members[1].0].payload = Some(Payload::scalar(Scalar::Bool(true)));
             }
         }
         let env = Environment::with_prepared(&r.prepared, &c).unwrap();

@@ -18,7 +18,7 @@ const ASKS: [&str; 5] = [
 fn value(r: &ObservedEvaluation, id: &str) -> Scalar {
     let a = r.answers.iter().find(|a| a.id == id).unwrap();
     match &r.nodes[a.outputs["value"].0].payload {
-        Some(Payload::Scalar(v)) => v.clone(),
+        Some(Payload::Scalar(v)) => v.as_ref().clone(),
         Some(Payload::Construction(v)) => v.scalar().unwrap().clone(),
         _ => panic!("scalar"),
     }

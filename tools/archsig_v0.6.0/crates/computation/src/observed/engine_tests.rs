@@ -30,7 +30,7 @@ fn engine_rechecks_all_z_coefficients_counterexample_assignment_and_original_sid
     };
     let x = bindings.iter().find(|b| b.name == "x").unwrap().value.0;
     rejects_mutated_prefix(&r, x, |ns| {
-        ns[x].payload = Some(Payload::Scalar(Scalar::Z(99.into())));
+        ns[x].payload = Some(Payload::scalar(Scalar::Z(99.into())));
     });
 }
 

@@ -534,10 +534,10 @@ impl Environment<'_> {
         };
         use ProjectionCheckPart::*;
         match (part, prior) {
-            (Name, []) => node.payload = Some(Payload::Scalar(Scalar::Text("projection".into()))),
+            (Name, []) => node.payload = Some(Payload::scalar(Scalar::Text("projection".into()))),
             (Actual, []) | (Required, []) => {
                 node.ty = NodeType::Value(Type::Bool);
-                node.payload = Some(Payload::Scalar(Scalar::Bool(part == Required)));
+                node.payload = Some(Payload::scalar(Scalar::Bool(part == Required)));
             }
             (Evidence, [name, actual, required]) => {
                 node.ty = NodeType::Evidence;
@@ -669,9 +669,10 @@ impl Graph {
             .ok_or(internal!("射影条件に元rootがない"))?;
         let (roots, prior) = node.arguments.split_at(count);
         match (part, &node.payload, prior) {
-            (Name, Some(Payload::Scalar(Scalar::Text(name))), []) if name == "projection" => {}
-            (Actual | Required, Some(Payload::Scalar(Scalar::Bool(value))), [])
-                if *value == (*part == Required) => {}
+            (Name, Some(Payload::Scalar(scalar)), []) if matches!(scalar.as_ref(), Scalar::Text(name) if name == "projection") =>
+                {}
+            (Actual | Required, Some(Payload::Scalar(scalar)), []) if matches!(scalar.as_ref(), Scalar::Bool(value) if *value == (*part == Required)) =>
+                {}
             (
                 Evidence,
                 Some(Payload::ProjectionCounterexample { left, right, facts }),

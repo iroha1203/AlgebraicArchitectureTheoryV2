@@ -20,8 +20,8 @@ fn example() -> ObservedEvaluation {
         "later=evaluate(RefCalc.seed)".into(),
     ];
     let asks: Vec<_> = asks.iter().map(String::as_str).collect();
-    let r = evaluate_observed_bytes(fixture::input(2, false, false, false), &asks, &quiet())
-        .unwrap();
+    let r =
+        evaluate_observed_bytes(fixture::input(2, false, false, false), &asks, &quiet()).unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -94,8 +94,7 @@ fn mutate() {
                     g.nodes[domain].arguments[2] = NodeRef(first);
                 }
                 9 => {
-                    let Some(Payload::Scalar(Scalar::Tuple(values))) = &mut g.nodes[first].payload
-                    else {
+                    let Some(Scalar::Tuple(values)) = g.nodes[first].scalar_payload_mut() else {
                         panic!()
                     };
                     values[0] = Scalar::Subject {

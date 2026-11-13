@@ -29,7 +29,7 @@ fn shared_problem_range_selection_reaches_original_law_and_next_change() {
     }
     let value = result.answers[8].outputs["value"];
     assert!(match &result.nodes[value.0].payload {
-        Some(Payload::Scalar(Scalar::Bool(true))) => true,
+        Some(Payload::Scalar(value)) => matches!(value.as_ref(), Scalar::Bool(true)),
         Some(Payload::Construction(v)) => matches!(v.scalar(), Some(Scalar::Bool(true))),
         _ => false,
     });

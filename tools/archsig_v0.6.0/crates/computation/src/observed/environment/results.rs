@@ -20,12 +20,23 @@ macro_rules! result_table {
         $($(#[$attr])* impl StoredValue for $value {
             fn entries(table: &VerifiedResults) -> &RefCell<Vec<Self>> { &table.$field }
         })*
+        pub(super) struct VerifiedCheckpoint {
+            $($(#[$attr])* $field: usize),*
+        }
         impl VerifiedResults {
+            pub(super) fn checkpoint(&self) -> VerifiedCheckpoint {
+                VerifiedCheckpoint { $($(#[$attr])* $field: self.$field.borrow().len()),* }
+            }
+            pub(super) fn rollback_session(&self, checkpoint: &VerifiedCheckpoint) {
+                $($(#[$attr])* { result_table!(@rollback $lifetime self.$field, checkpoint.$field); })*
+            }
             fn clear_session(&self) {
                 $($(#[$attr])* { result_table!(@clear $lifetime self.$field); })*
             }
         }
     };
+    (@rollback persistent $field:expr, $length:expr) => { let _ = $length; };
+    (@rollback session $field:expr, $length:expr) => { $field.borrow_mut().truncate($length); };
     (@clear persistent $field:expr) => {};
     (@clear session $field:expr) => { *$field.borrow_mut() = Vec::new(); };
 }
@@ -77,6 +88,13 @@ pub(crate) struct ResultStore {
 }
 
 impl ResultStore {
+    pub(super) fn checkpoint_verified(&self) -> VerifiedCheckpoint {
+        self.verified.checkpoint()
+    }
+    pub(super) fn rollback_verified(&self, checkpoint: &VerifiedCheckpoint) {
+        self.verified.rollback_session(checkpoint);
+    }
+
     pub(super) fn fresh_candidate(&self) -> Self {
         Self {
             repair_relations: self.repair_relations.clone(),

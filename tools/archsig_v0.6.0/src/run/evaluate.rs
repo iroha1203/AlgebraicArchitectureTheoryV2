@@ -4,7 +4,7 @@ use super::{Io, Outcome, RunArgs, Signals, output, read};
 use archsig_common::canonical::Json;
 use archsig_common::control::Control;
 use archsig_computation::observed::{
-    EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
+    DeliveryEvaluation, DeliveryFailure, PrepareFailure, evaluate_for_delivery, prepare_observed,
     request::{ResolveFailure, check_request_syntax},
 };
 use archsig_input::input::{InputSources, InputStatus};
@@ -102,10 +102,10 @@ pub(super) fn run_requests_validated(
             );
         }
     };
-    let evaluation = match evaluate_observed(prepared, control) {
+    let evaluation = match evaluate_for_delivery(prepared, control) {
         Ok(result) => result,
-        Err(EvaluationFailure::NotImplemented { partial, .. }) => *partial,
-        Err(EvaluationFailure::Prepare(_)) => {
+        Err(DeliveryFailure::NotImplemented { partial, .. }) => *partial,
+        Err(DeliveryFailure::Prepare(_)) => {
             return failure(
                 signals,
                 "run",
@@ -156,7 +156,7 @@ fn deliver(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &RunArgs,
-    evaluation: ObservedEvaluation,
+    evaluation: DeliveryEvaluation,
     verification: super::reuse::Verification,
     control: &Control,
 ) -> Outcome {

@@ -35,12 +35,9 @@ fn owned_private_example(
     omit: Option<&str>,
     false_p: bool,
 ) -> ObservedEvaluation {
-    let result = evaluate_observed_bytes(
-        owned_private_fixture(body, omit, false_p),
-        asks,
-        &quiet(),
-    )
-    .unwrap();
+    let result =
+        evaluate_observed_bytes(owned_private_fixture(body, omit, false_p), asks, &quiet())
+            .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
@@ -174,8 +171,7 @@ fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_a
         assert_eq!(result.status(), "complete");
         assert_eq!(result.answers[0].status, Decision::Established);
         let value = result.answers[0].outputs["value"];
-        let Some(Payload::Scalar(Scalar::Set { element, items })) = &result.nodes[value.0].payload
-        else {
+        let Some(Scalar::Set { element, items }) = result.nodes[value.0].scalar_payload() else {
             panic!()
         };
         assert_eq!(element, &Type::Ref("Reservations.State".into()));

@@ -584,7 +584,7 @@ fn view_root_and_tuple_projection_are_rechecked_from_the_actual_original_handle(
                 let n = &mut nodes[a.root.0];
                 match mode {
                     0 => {
-                        n.payload = Some(Payload::Scalar(Scalar::Subject {
+                        n.payload = Some(Payload::scalar(Scalar::Subject {
                             snapshot: "v".into(),
                             subject: "B".into(),
                             entity: "Reservations.System".into(),

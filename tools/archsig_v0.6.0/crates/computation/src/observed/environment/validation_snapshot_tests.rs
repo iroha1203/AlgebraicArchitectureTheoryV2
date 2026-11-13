@@ -4,7 +4,7 @@ use archsig_input::result::Signal;
 fn node(value: i32) -> Node {
     Node {
         ty: NodeType::Value(archsig_common::types::Type::Z),
-        payload: Some(Payload::Scalar(Scalar::Z(value.into()))),
+        payload: Some(Payload::scalar(Scalar::Z(value.into()))),
         rule: Rule::Construction("evaluation"),
         arguments: vec![],
         support: vec![].into(),

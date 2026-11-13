@@ -143,9 +143,9 @@ impl Environment<'_> {
     ) -> Result<bool, ValidationFailure> {
         let candidate = matches!(&node.payload, Some(Payload::MapDomainCondition { .. }))
             || matches!(
-                (&node.payload, &node.rule),
+                (node.scalar_payload(), &node.rule),
                 (
-                    Some(Payload::Scalar(Scalar::Set { .. })),
+                    Some(Scalar::Set { .. }),
                     Rule::Construction("evaluation" | "domain")
                 )
             )

@@ -44,7 +44,7 @@ fn map_pairs_mut(value: &mut Scalar) -> &mut Vec<(Scalar, Scalar)> {
 }
 fn scalar_mut(node: &mut Node) -> &mut Scalar {
     match node.payload.as_mut().unwrap() {
-        Payload::Scalar(s) => s,
+        Payload::Scalar(s) => std::sync::Arc::make_mut(s),
         _ => panic!("Scalar expected"),
     }
 }
@@ -60,7 +60,7 @@ fn map_field_totality_owned_key_image_and_duplicate_rows_are_rechecked() {
     };
     let first = elements
         .iter()
-        .find(|m| matches!(&r.nodes[m.0].payload, Some(Payload::Scalar(Scalar::Map { pairs, .. })) if !pairs.is_empty()))
+        .find(|m| matches!(r.nodes[m.0].scalar_payload(), Some(Scalar::Map { pairs, .. }) if !pairs.is_empty()))
         .unwrap()
         .0;
     // 全域性の再検査の代表: 候補のMapから行を消すと核が拒否する。
@@ -187,8 +187,8 @@ fn map_field_coverage_stop_never_promotes_unfinished_whole() {
 
 #[test]
 fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missing_identity() {
-    use archsig_input::archmap::{FieldAssignment, check_completion_with_values};
     use archsig_common::control::CheckFailure;
+    use archsig_input::archmap::{FieldAssignment, check_completion_with_values};
     let pin = |field: &str, value: Json| FieldAssignment {
         snapshot: "v".into(),
         subject: "h".into(),

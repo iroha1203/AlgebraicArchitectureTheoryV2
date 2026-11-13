@@ -8,7 +8,7 @@ pub(in crate::observed) struct FieldPlan {
     pub position: Option<Fact>,
     pub child: NodeRef,
     pub ty: Type,
-    pub value: Option<Scalar>,
+    pub value: Option<std::sync::Arc<Scalar>>,
     pub reused: Option<NodeRef>,
     pub assigned: Option<NodeRef>,
     pub scope: Scope,
@@ -17,6 +17,15 @@ pub(in crate::observed) struct FieldPlan {
     pub scalar_support: Support,
     pub scalar_rule: Option<Rule>,
     pub reasons: Vec<Reason>,
+}
+
+/// Already selected receiver data. The plan carries the source Scope and the
+/// actual child's Support/reasons; these borrowed inputs need no Graph lookup.
+pub(in crate::observed) struct FieldReceiver<'a> {
+    pub value: Option<&'a Scalar>,
+    pub pending: bool,
+    pub scope: &'a Scope,
+    pub request: Option<&'a Request>,
 }
 
 impl<'a> Environment<'a> {
@@ -107,10 +116,9 @@ impl<'a> Environment<'a> {
         {
             return Err(internal!("fieldの実baseの元出現・束縛・環境が違う").into());
         }
-        let mut scope = graph.get(source)?.scope.clone();
-        scope.merge(&node.scope);
+        let scope = graph.get(source)?.scope.clone();
         let reasons = self.evaluation_child_reasons(graph, source, &[child])?;
-        let mut plan = FieldPlan {
+        let plan = FieldPlan {
             span,
             source,
             origin: source,
@@ -127,8 +135,40 @@ impl<'a> Environment<'a> {
             scalar_rule: None,
             reasons,
         };
-        let Some(reference) = value else {
-            if self.evaluation_condition_pending(graph, child)?
+        // The Graph adapter authenticates the actual receiver once. The shared
+        // read boundary below consumes its value and condition state directly.
+        let pending = if value.is_none() {
+            self.evaluation_condition_pending(graph, child)?
+        } else {
+            false
+        };
+        let receiver = value.map(|reference| graph.scalar(reference)).transpose()?;
+        self.observe_field_receiver(
+            plan,
+            &name,
+            FieldReceiver {
+                value: receiver,
+                pending,
+                scope: &node.scope,
+                request: graph.requests.get(self.current_context(graph).request),
+            },
+            retained,
+        )
+    }
+
+    /// Shared actual-read boundary. Source/child authentication and recording
+    /// remain in the Graph adapter; no receiver value is re-extracted here.
+    pub(in crate::observed) fn observe_field_receiver(
+        &self,
+        mut plan: FieldPlan,
+        name: &archsig_common::names::QualifiedName,
+        receiver: FieldReceiver<'_>,
+        retained: impl FnOnce(&Scope, &[Reason]),
+    ) -> Result<FieldPlan, ValidationFailure> {
+        let span = plan.span;
+        plan.scope.merge(receiver.scope);
+        let Some(value) = receiver.value else {
+            if receiver.pending
                 || plan
                     .reasons
                     .iter()
@@ -146,7 +186,7 @@ impl<'a> Environment<'a> {
             snapshot,
             subject,
             entity,
-        } = graph.scalar(*reference)?
+        } = value
         else {
             return Err(internal!("fieldの実baseが原始Refでない").into());
         };
@@ -154,7 +194,7 @@ impl<'a> Environment<'a> {
         if owner.ty != *entity || name.owner() != Some(entity.as_str()) {
             return Err(internal!("fieldの実owner型が違う").into());
         }
-        let field = self.indexes.field_descriptor(snapshot, subject, &name)?;
+        let field = self.indexes.field_descriptor(snapshot, subject, name)?;
         if field.ty.erase() != plan.ty {
             return Err(internal!("fieldの元slot型が違う").into());
         }
@@ -189,20 +229,19 @@ impl<'a> Environment<'a> {
         plan.scope.merge(&read_scope);
         plan.scalar_scope.merge(&read_scope);
         // 値自身のleaf範囲へ、実binderの量化座標だけを継ぐ。
-        plan.scalar_scope.merge_quantifiers(&node.scope);
+        plan.scalar_scope.merge_quantifiers(receiver.scope);
         if architecture.is_some() {
             self.state.merge_architecture_scope(&mut plan.scope);
         } else if matches!(field.slot, Slot::Missing) {
             plan.scope.completions = true;
             plan.scalar_scope.completions = true;
-            let request = graph
-                .requests
-                .get(self.current_context(graph).request)
+            let request = receiver
+                .request
                 .ok_or(internal!("fieldの元Requestがない"))?;
             plan.reasons.push(Reason {
                 kind: ReasonKind::Missing,
                 request: request.id.clone(),
-                dependencies: vec![source],
+                dependencies: vec![plan.origin],
                 missing: vec![position.clone()],
                 location: Some(Location::Law { span }),
             });
@@ -311,7 +350,7 @@ impl<'a> Environment<'a> {
                         location: None,
                     }
                 });
-                Some((value, Some(fact)))
+                Some((std::sync::Arc::new(value), Some(fact)))
             } else if self.completion_type_supported(&field.ty)?
                 && matches!(field.slot, Slot::Missing)
                 && let Some(assigned) = self.completion_slot(graph, position)?
@@ -321,7 +360,13 @@ impl<'a> Environment<'a> {
                     kind: "law",
                     location: Some(Location::Law { span: plan.span }),
                 });
-                Some((graph.scalar(assigned)?.clone(), None))
+                Some((
+                    match &graph.get(assigned)?.payload {
+                        Some(Payload::Scalar(value)) => value.clone(),
+                        _ => std::sync::Arc::new(graph.scalar(assigned)?.clone()),
+                    },
+                    None,
+                ))
             } else if let Slot::Known { atom, pointer, .. } = &field.slot {
                 plan.scalar_rule = Some(Rule::FieldValue {
                     kind: if chain { "law" } else { "atom" },
@@ -343,7 +388,7 @@ impl<'a> Environment<'a> {
                     })?;
                 let mut fact = position.clone();
                 fact.atom = Some(atom.clone());
-                Some((value, Some(fact)))
+                Some((std::sync::Arc::new(value), Some(fact)))
             } else {
                 None
             };
@@ -364,7 +409,7 @@ impl<'a> Environment<'a> {
         let value = plan.value.as_ref()?;
         Some(Node {
             ty: NodeType::Value(plan.ty.clone()),
-            payload: Some(Payload::Scalar(value.clone())),
+            payload: Some(Payload::scalar(value.clone())),
             rule: plan.scalar_rule.clone()?,
             arguments: vec![plan.source, plan.child]
                 .into_iter()

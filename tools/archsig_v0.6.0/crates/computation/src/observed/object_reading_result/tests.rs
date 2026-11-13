@@ -269,11 +269,11 @@ fn missing_body_is_blocked_and_unbound_parameters_are_never_sampled() {
                 .any(|f| f.subject == "p" && f.field.as_deref() == Some("Profile.Part.quantity"))
         );
         assert!(!g.nodes[before..].iter().any(|n| matches!(
-            &n.payload,
-            Some(Payload::Scalar(Scalar::Option {
+            n.scalar_payload(),
+            Some(Scalar::Option {
                 element: Type::Z,
                 value: None
-            }))
+            })
         )));
     }
     replay(&p, &g);
@@ -547,7 +547,7 @@ fn four_stops_keep_completed_body_option_and_whole_evaluation_prefix() {
             assert_eq!(g.instances, &full.instances[..g.instances.len()]);
             frame_prefix |= g.nodes.len() > initial.nodes.len() && g.instances.is_empty();
             body_prefix |= !g.instances.is_empty();
-            option_prefix |= g.nodes.iter().any(|n|matches!(&n.payload,Some(Payload::Scalar(Scalar::Option{element:Type::Z,value:Some(_)})))) && !g.nodes.iter().any(|n|matches!(&n.payload,Some(Payload::Evaluation{expression:e,..}) if *e==expression));
+            option_prefix |= g.nodes.iter().any(|n|matches!(n.scalar_payload(),Some(Scalar::Option{element:Type::Z,value:Some(_)}))) && !g.nodes.iter().any(|n|matches!(&n.payload,Some(Payload::Evaluation{expression:e,..}) if *e==expression));
             replay(&p, &g);
         }
     }
@@ -711,7 +711,7 @@ fn whole_evaluation_value_body_and_original_view_cannot_be_rebound() {
         let n = &mut bad.nodes[v0.0];
         match mode {
             0 => {
-                n.payload = Some(Payload::Scalar(Scalar::Option {
+                n.payload = Some(Payload::scalar(Scalar::Option {
                     element: Type::Z,
                     value: Some(Box::new(Scalar::Z(3.into()))),
                 }))

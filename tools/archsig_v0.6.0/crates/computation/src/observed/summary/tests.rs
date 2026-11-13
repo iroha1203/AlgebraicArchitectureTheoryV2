@@ -119,8 +119,8 @@ fn typed_counterexample_variants_keep_values_and_optional_fact_fields() {
             ),
             ("operator", Json::str("<=")),
         ]);
-        let actual =
-            result.summary_counterexample(node, Counterexample::from_payload(payload).unwrap());
+        let actual = view(&result)
+            .summary_counterexample(node, Counterexample::from_payload(payload).unwrap());
         assert_eq!(actual, expected, "variant {index}");
     }
 }
@@ -149,9 +149,9 @@ fn native_comparison_and_separating_pair_keep_their_distinct_shapes() {
         matches!(&borrowed, Counterexample::Native(Cow::Borrowed(data))
         if std::ptr::eq(*data, &fields(&comparison).unwrap()["data"]))
     );
-    let borrowed_summary = result.summary_counterexample(node, borrowed);
-    let actual =
-        result.summary_counterexample(node, Counterexample::from_native(comparison).unwrap());
+    let borrowed_summary = view(&result).summary_counterexample(node, borrowed);
+    let actual = view(&result)
+        .summary_counterexample(node, Counterexample::from_native(comparison).unwrap());
     assert_eq!(borrowed_summary, actual);
     assert_eq!(
         actual,
@@ -176,8 +176,8 @@ fn native_comparison_and_separating_pair_keep_their_distinct_shapes() {
             ]),
         ),
     ]);
-    let actual =
-        result.summary_counterexample(node, Counterexample::from_native(separating).unwrap());
+    let actual = view(&result)
+        .summary_counterexample(node, Counterexample::from_native(separating).unwrap());
     assert_eq!(
         actual,
         Json::obj([
@@ -330,11 +330,11 @@ fn action_and_architecture_summary_use_typed_metadata_without_rendering_images_o
         }
     });
     assert_eq!(
-        result.summary_node(NodeRef(action), 2),
+        view(&result).summary_node(NodeRef(action), 2),
         Json::obj([("type", Json::str("AtomMap"))])
     );
     assert_eq!(
-        result.summary_node(NodeRef(architecture), 2),
+        view(&result).summary_node(NodeRef(architecture), 2),
         Json::obj([
             ("type", Json::str("Architecture")),
             ("laws_count", Json::Nat(0)),
@@ -342,4 +342,11 @@ fn action_and_architecture_summary_use_typed_metadata_without_rendering_images_o
     );
     assert_eq!(calls.get(), 0);
     crate::observed::data::clear_iteration_observer();
+}
+
+fn view(result: &ObservedEvaluation) -> SummaryView<'_> {
+    SummaryView {
+        prepared: &result.prepared,
+        nodes: &result.nodes,
+    }
 }

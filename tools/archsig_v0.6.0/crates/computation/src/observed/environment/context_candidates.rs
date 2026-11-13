@@ -8,6 +8,22 @@ pub(super) struct ContextIndex {
     positions: BTreeMap<super::super::call::Context, Rc<Vec<usize>>>,
 }
 
+impl ContextIndex {
+    pub(super) fn checkpoint(&self) -> usize {
+        self.covered_len
+    }
+    pub(super) fn rollback(&mut self, covered: usize) {
+        self.covered_len = self.covered_len.min(covered);
+        self.positions.retain(|_, positions| {
+            let length = positions.partition_point(|&position| position < self.covered_len);
+            if length < positions.len() {
+                Rc::make_mut(positions).truncate(length);
+            }
+            !positions.is_empty()
+        });
+    }
+}
+
 pub(super) enum CandidateIndices {
     All(Range<usize>),
     Context {

@@ -394,7 +394,7 @@ impl Environment<'_> {
         node: &Node,
         limit: usize,
     ) -> Result<bool, ValidationFailure> {
-        if let Some(Payload::Scalar(scalar)) = &node.payload {
+        if let Some(scalar) = node.scalar_payload() {
             let Some(&anchor) = node.arguments.get(1) else {
                 return Ok(false);
             };
@@ -1998,7 +1998,7 @@ impl Environment<'_> {
         let mut ordinal = 0;
         for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
-            if matches!(candidate.payload, Some(Payload::Scalar(_)))
+            if matches!(candidate.scalar_payload(), Some(_))
                 && matches!(candidate.rule, Rule::Input { kind: "law", .. })
                 && candidate.arguments.first() == Some(&template)
             {

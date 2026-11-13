@@ -9,6 +9,7 @@ mod call;
 mod circuit_pattern;
 pub(crate) mod construction_result;
 mod data;
+mod delivery;
 mod environment;
 mod equation_family;
 mod equation_presentation_node;
@@ -49,6 +50,7 @@ pub mod object_view_compatibility;
 pub(crate) mod object_view_family;
 pub mod object_view_transport;
 mod observable_layout;
+mod owned_scope;
 mod path_compose;
 mod path_value;
 mod polynomial_law_diagram;
@@ -65,6 +67,7 @@ mod term;
 mod value_equality;
 pub mod value_transport;
 mod view_family;
+pub use delivery::{DeliveryEvaluation, DeliveryFailure, evaluate_for_delivery};
 #[cfg(any(test, feature = "test-support"))]
 #[doc(hidden)]
 pub use evaluate::evaluate_observed_with_rejected_answer;

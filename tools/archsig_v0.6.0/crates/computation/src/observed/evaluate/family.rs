@@ -517,7 +517,7 @@ impl Evaluator<'_, '_> {
                         location: Location::Law {
                             span: self.environment.indexes.inputs.law().exprs()[guard_id].span,
                         },
-                        value: guard.value,
+                        value: guard.value(),
                         residual: guard.residual,
                         children: vec![guard.evaluation],
                     },

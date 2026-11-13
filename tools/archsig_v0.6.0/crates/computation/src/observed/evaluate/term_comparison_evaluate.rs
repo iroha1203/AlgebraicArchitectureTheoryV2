@@ -37,7 +37,7 @@ impl Evaluator<'_, '_> {
         if !matches!(op, BinOp::Eq | BinOp::Ne) {
             return Ok(vec![]);
         }
-        let Some((l, r)) = left.value.zip(right.value) else {
+        let Some((l, r)) = left.value().zip(right.value()) else {
             return Ok(vec![]);
         };
         let (Scalar::Term(a), Scalar::Term(b)) = (self.graph.scalar(l)?, self.graph.scalar(r)?)
@@ -71,7 +71,7 @@ impl Evaluator<'_, '_> {
             let mut args = base.clone();
             args.push(before);
             let after =
-                self.term_proof_node(Payload::Scalar(normal), "evaluation", args, support, scope)?;
+                self.term_proof_node(Payload::scalar(normal), "evaluation", args, support, scope)?;
             let mut args = base.clone();
             args.extend([before, after]);
             evidence.push(self.term_proof_node(
@@ -93,7 +93,7 @@ impl Evaluator<'_, '_> {
             let mut bindings = vec![];
             for ((name, ty), value) in a.params.iter().zip(&point.arguments) {
                 let reference = self.term_proof_node(
-                    Payload::Scalar(value.clone()),
+                    Payload::scalar(value.clone()),
                     "binding",
                     base.clone(),
                     support,
@@ -111,7 +111,7 @@ impl Evaluator<'_, '_> {
                 args.push(selected);
                 args.extend(bindings.iter().map(|b| b.value));
                 outputs.push(self.term_proof_node(
-                    Payload::Scalar(value.clone()),
+                    Payload::scalar(value.clone()),
                     "evaluation",
                     args,
                     support,

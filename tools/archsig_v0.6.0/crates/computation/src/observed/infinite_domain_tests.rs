@@ -66,9 +66,8 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
             "v=check(Walk.current)",
         ),
     ] {
-        let r =
-            evaluate_observed_bytes(fixture::input(script, "Z", &[], "r1"), &[ask], &quiet())
-                .unwrap();
+        let r = evaluate_observed_bytes(fixture::input(script, "Z", &[], "r1"), &[ask], &quiet())
+            .unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.answers[0].status, Decision::Undetermined);
         let at = r.answers[0].outputs["evaluation"].0;
@@ -111,8 +110,7 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
             .iter()
             .enumerate()
             .find_map(|(i, n)| {
-                matches!(&n.payload, Some(Payload::Scalar(Scalar::Bool(false))))
-                    .then_some(NodeRef(i))
+                matches!(n.scalar_payload(), Some(Scalar::Bool(false))).then_some(NodeRef(i))
             })
             .unwrap();
         let saved = graph.nodes[at].clone();
