@@ -29,17 +29,13 @@ fn partial_container_calls_reject_original_binder_member_and_condition_mutations
         .nodes
         .iter()
         .enumerate()
-        .find_map(|(i, node)| match &node.payload {
-            Some(Payload::Scalar(Scalar::Subject { subject, .. }))
-                if subject == "r" && i < container.0 =>
-            {
-                Some(i)
-            }
+        .find_map(|(i, node)| match node.scalar_payload() {
+            Some(Scalar::Subject { subject, .. }) if subject == "r" && i < container.0 => Some(i),
             _ => None,
         })
         .unwrap();
     rejects_mutated_prefix(&r, member, |ns| {
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut ns[member].payload else {
+        let Some(Scalar::Subject { subject, .. }) = ns[member].scalar_payload_mut() else {
             panic!("member")
         };
         *subject = "q".into();

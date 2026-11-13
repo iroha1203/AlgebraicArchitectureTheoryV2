@@ -29,7 +29,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     .unwrap()
 }
 fn path_mut(n: &mut Node) -> &mut super::super::super::path_value::PathValue {
-    let Some(Payload::Scalar(Scalar::Path(p))) = &mut n.payload else {
+    let Some(Scalar::Path(p)) = n.scalar_payload_mut() else {
         panic!("Path")
     };
     p
@@ -37,9 +37,7 @@ fn path_mut(n: &mut Node) -> &mut super::super::super::path_value::PathValue {
 fn path_index(r: &ObservedEvaluation) -> usize {
     r.nodes
         .iter()
-        .position(
-            |n| matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p)))if p.step.is_some()),
-        )
+        .position(|n| matches!(n.scalar_payload(),Some(Scalar::Path(p))if p.step.is_some()))
         .unwrap()
 }
 fn fact(snapshot: &str, subject: &str, field: Option<&str>) -> Fact {
@@ -53,7 +51,7 @@ fn fact(snapshot: &str, subject: &str, field: Option<&str>) -> Fact {
 #[test]
 fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity() {
     let r = example("step");
-    let Some(Payload::Scalar(Scalar::Path(p))) = &r.nodes[path_index(&r)].payload else {
+    let Some(Scalar::Path(p)) = r.nodes[path_index(&r)].scalar_payload() else {
         panic!()
     };
     let step = p.step.as_ref().unwrap();

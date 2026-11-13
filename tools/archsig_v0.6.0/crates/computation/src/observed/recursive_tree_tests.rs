@@ -34,8 +34,8 @@ fn recursive_tree_private_atom(result: &ObservedEvaluation) -> usize {
         panic!("observed Tree slot")
     };
     let (index, node) = result.nodes.iter().enumerate().find(|(_, node)| {
-        matches!((&node.payload, &node.rule),
-            (Some(Payload::Scalar(Scalar::Data { .. })), Rule::FieldValue { kind: "atom", location: Some(Location::ArchMap { pointer: actual, span: None }) }) if actual == pointer)
+        matches!((node.scalar_payload(), &node.rule),
+            (Some(Scalar::Data { .. }), Rule::FieldValue { kind: "atom", location: Some(Location::ArchMap { pointer: actual, span: None }) }) if actual == pointer)
     }).expect("actual recursive Tree field producer at original atom pointer");
     let [source, base] = node.arguments.as_slice() else {
         panic!("Tree actual source/base")
@@ -58,7 +58,7 @@ fn recursive_tree_private_atom(result: &ObservedEvaluation) -> usize {
         panic!("Tree base")
     };
     assert!(
-        matches!(&result.nodes[owner.0].payload, Some(Payload::Scalar(Scalar::Subject { snapshot, subject, entity })) if snapshot == "v" && subject == "sample" && entity == "Trees.Sample")
+        matches!(result.nodes[owner.0].scalar_payload(), Some(Scalar::Subject { snapshot, subject, entity }) if snapshot == "v" && subject == "sample" && entity == "Trees.Sample")
     );
     assert!(result.nodes.iter().any(|evaluation| matches!(&evaluation.payload,
         Some(Payload::Evaluation { expression, parts, value: Some(actual), .. })
@@ -84,8 +84,7 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
     completion_mutation(&result, target, |nodes| {
-        let Some(Payload::Scalar(Scalar::Data { constructor, .. })) = &mut nodes[target].payload
-        else {
+        let Some(Scalar::Data { constructor, .. }) = nodes[target].scalar_payload_mut() else {
             unreachable!()
         };
         *constructor =
@@ -93,7 +92,7 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
                 .expect("valid Data constructor");
     });
     completion_mutation(&result, target, |nodes| {
-        let Some(Payload::Scalar(value)) = &mut nodes[target].payload else {
+        let Some(value) = nodes[target].scalar_payload_mut() else {
             unreachable!()
         };
         recursive_tree_private_change_leaf(value);

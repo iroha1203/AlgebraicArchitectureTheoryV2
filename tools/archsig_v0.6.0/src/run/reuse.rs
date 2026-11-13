@@ -2,7 +2,7 @@
 use archsig_common::canonical::Json;
 use archsig_common::control::{CheckFailure, Checkpoint, Control};
 use archsig_common::json::{JNode, JValue};
-use archsig_computation::observed::ObservedEvaluation;
+use archsig_computation::observed::DeliveryEvaluation;
 use archsig_input::result::ResultIssue;
 use archsig_input::result::Signal;
 use std::{
@@ -36,7 +36,7 @@ impl Candidate {
     /// JSONは照合だけに使う。候補の値・束縛を評価器へ渡さない。
     pub(super) fn verify(
         mut self,
-        evaluation: &ObservedEvaluation,
+        evaluation: &DeliveryEvaluation,
         control: &Control,
     ) -> Verification {
         let mut replay = None;
@@ -400,7 +400,7 @@ fn node_content(mut node: Json, control: &Control) -> Checked<String> {
 fn verify(
     document: &JNode,
     replay: &Json,
-    evaluation: &ObservedEvaluation,
+    evaluation: &DeliveryEvaluation,
     control: &Control,
 ) -> Checked<()> {
     let empty = BTreeMap::new();

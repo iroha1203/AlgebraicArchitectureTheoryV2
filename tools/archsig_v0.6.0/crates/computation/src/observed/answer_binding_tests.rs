@@ -18,7 +18,7 @@ fn answer_binding_rechecks_original_values_types_support_scope_and_context() {
     // 束縛値の再検査の代表: 回答から束縛した値を書き換えると核が拒否する。
     let value = r.answers[2].outputs["value"].0;
     rejects_mutated_prefix(&r, value, |ns| {
-        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut ns[value].payload else {
+        let Some(Scalar::Tuple(items)) = ns[value].scalar_payload_mut() else {
             panic!()
         };
         items[0] = Scalar::Z(7.into());

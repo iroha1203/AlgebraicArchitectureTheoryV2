@@ -33,7 +33,7 @@ fn closed_term_rechecks_body_parameters_hidden_ast_types_support_and_scope() {
                 ns[t].scope.snapshots.clear();
                 return;
             }
-            let Some(Payload::Scalar(Scalar::Term(term))) = &mut ns[t].payload else {
+            let Some(Scalar::Term(term)) = ns[t].scalar_payload_mut() else {
                 panic!("Term")
             };
             match mode {
@@ -117,7 +117,7 @@ fn closed_term_rechecks_application_value_and_equal_earlier_request_producers() 
         }
     });
     completion_mutation(&r, result.0, |ns| {
-        ns[result.0].payload = Some(Payload::Scalar(Scalar::Z(12.into())))
+        ns[result.0].payload = Some(Payload::scalar(Scalar::Z(12.into())))
     });
 }
 #[test]
@@ -196,7 +196,7 @@ fn closed_term_rechecks_original_constructor_references_and_quantifier_binder_ty
         "q=evaluate(Terms.quantifier)",
     ]);
     let t = r.answers[0].outputs["value"].0;
-    let Some(Payload::Scalar(Scalar::Term(term))) = &r.nodes[t].payload else {
+    let Some(Scalar::Term(term)) = r.nodes[t].scalar_payload() else {
         panic!("Term")
     };
     assert!(
@@ -205,7 +205,7 @@ fn closed_term_rechecks_original_constructor_references_and_quantifier_binder_ty
             .any(|(_, n)| n == "Terms.Choice.Left")
     );
     completion_mutation(&r, t, |ns| {
-        let Some(Payload::Scalar(Scalar::Term(term))) = &mut ns[t].payload else {
+        let Some(Scalar::Term(term)) = ns[t].scalar_payload_mut() else {
             panic!("Term")
         };
         let entry = term
@@ -216,13 +216,13 @@ fn closed_term_rechecks_original_constructor_references_and_quantifier_binder_ty
         entry.1 = "Terms.Choice.Right".into();
     });
     let q = r.answers[1].outputs["value"].0;
-    let Some(Payload::Scalar(Scalar::Term(term))) = &r.nodes[q].payload else {
+    let Some(Scalar::Term(term)) = r.nodes[q].scalar_payload() else {
         panic!("Term")
     };
     assert_eq!(term.quantifier_types.len(), 1);
     assert!(term.quantifier_types.values().all(|t| *t == Type::Bool));
     completion_mutation(&r, q, |ns| {
-        let Some(Payload::Scalar(Scalar::Term(term))) = &mut ns[q].payload else {
+        let Some(Scalar::Term(term)) = ns[q].scalar_payload_mut() else {
             panic!("Term")
         };
         *term.quantifier_types.values_mut().next().unwrap() = Type::Z;

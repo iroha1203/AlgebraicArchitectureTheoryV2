@@ -3,7 +3,8 @@ mod affine_term_fixture {
 }
 fn affine_term_inputs(revision: &str) -> InputSources {
     let defs = affine_term_fixture::definitions();
-    let d = archsig_input::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
+    let d =
+        archsig_input::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Terms"].digest;
     InputSources::from_bytes(
         vec![defs.into_bytes()],
@@ -138,8 +139,8 @@ fn affine_tuple_binding_rechecks_unknown_actual_producers_and_cached_source_comp
     let r = affine_term_result(&["c=evaluate(Terms.tupleCache,s=@v/s)"]);
     assert_eq!(r.status(), "complete");
     assert!(matches!(
-        r.nodes[r.answers[0].outputs["value"].0].payload,
-        Some(Payload::Scalar(Scalar::Bool(true)))
+        r.nodes[r.answers[0].outputs["value"].0].scalar_payload(),
+        Some(Scalar::Bool(true))
     ));
 }
 
@@ -160,7 +161,7 @@ fn affine_term_standard_evidence_rechecks_typed_matrix_point_nodes_and_foreign_p
         })
         .unwrap();
     rejects_mutated_prefix(&r, left.0, |ns| {
-        let Some(Payload::Scalar(value)) = &mut ns[left.0].payload else {
+        let Some(value) = ns[left.0].scalar_payload_mut() else {
             panic!("point")
         };
         *value = super::super::numeric::literal("17", &value.ty(), &quiet()).unwrap();

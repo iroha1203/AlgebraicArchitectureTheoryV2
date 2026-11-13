@@ -458,7 +458,11 @@ mod notice_tests {
         assert_eq!(targets.iter().collect::<BTreeSet<_>>().len(), 3);
     }
 }
-fn clean_reasons(value: &mut Json, control: &Control, point: Checkpoint) -> Result<(), Signal> {
+pub(super) fn clean_reasons(
+    value: &mut Json,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(), Signal> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         control.checkpoint(point)?;
         match value {
@@ -531,7 +535,7 @@ impl Write for FingerprintWriter {
         Ok(())
     }
 }
-fn canonical_fingerprint(value: &Json) -> u64 {
+pub(in crate::observed) fn canonical_fingerprint(value: &Json) -> u64 {
     let mut sink = FingerprintWriter(DefaultHasher::new());
     value
         .write_canonical(&mut sink)

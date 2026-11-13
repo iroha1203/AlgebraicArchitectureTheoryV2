@@ -300,7 +300,7 @@ fn universal_view_local_nonzero_binder_rechecks_concrete_closed_axis_counterexam
         nodes[closed_values[1].0].arguments[1] = result.nodes[closed_values[0].0].arguments[1];
     });
     completion_mutation(&result, value.0, |nodes| {
-        nodes[value.0].payload = Some(Payload::Scalar(Scalar::Bool(true)))
+        nodes[value.0].payload = Some(Payload::scalar(Scalar::Bool(true)))
     });
     completion_mutation(&result, local, |nodes| {
         nodes[local]
@@ -335,7 +335,7 @@ fn universal_view_local_missing_keeps_whole_counterexample_without_common_assign
         !result
             .nodes
             .iter()
-            .any(|node| matches!(&node.payload, Some(Payload::Scalar(Scalar::Z(_)))))
+            .any(|node| matches!(node.scalar_payload(), Some(Scalar::Z(_))))
     );
     assert!(result.nodes[whole.0].reasons.iter().any(|reason| matches!(
         reason.kind,
@@ -380,7 +380,7 @@ fn universal_concrete_counterexample_rechecks_substitution_and_generated_paramet
         .0;
     assert_eq!(data_scalar_at(&result, parameter), &Scalar::Z(0.into()));
     completion_mutation(&result, parameter, |nodes| {
-        nodes[parameter].payload = Some(Payload::Scalar(Scalar::Z(1.into())))
+        nodes[parameter].payload = Some(Payload::scalar(Scalar::Z(1.into())))
     });
     completion_mutation(&result, substitute, |nodes| {
         let Some(Payload::ParameterizedTransform { bindings, .. }) = &mut nodes[substitute].payload
@@ -659,7 +659,7 @@ fn universal_affine_guard_counterexamples_belong_to_the_actual_guard_fiber() {
             .unwrap();
         assert_eq!(data_scalar_at(&result, binding.value.0), &expected);
         completion_mutation(&result, binding.value.0, |nodes| {
-            let Some(Payload::Scalar(value)) = &mut nodes[binding.value.0].payload else {
+            let Some(value) = nodes[binding.value.0].scalar_payload_mut() else {
                 panic!()
             };
             *value = if ty == "Q" {

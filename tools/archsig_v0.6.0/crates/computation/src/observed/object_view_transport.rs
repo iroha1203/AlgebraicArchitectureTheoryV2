@@ -537,7 +537,7 @@ pub(super) fn scalar_evaluation(
         return Ok(None);
     };
     match e.nodes.get(reference.0).and_then(|n| n.payload.as_ref()) {
-        Some(Payload::Scalar(v)) => Ok(Some(v.clone())),
+        Some(Payload::Scalar(v)) => Ok(Some(v.as_ref().clone())),
         _ => Err(ConstructionFailure::Inconsistent(internal!(
             "viewの確定値が型付き値でない"
         ))),

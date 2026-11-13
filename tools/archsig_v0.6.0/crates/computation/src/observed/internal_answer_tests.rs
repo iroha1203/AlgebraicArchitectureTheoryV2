@@ -67,8 +67,8 @@ fn internal_answer_finish_uses_live_outcome_and_rejects_wrong_correspondence() {
         evaluator.graph.requests[0].id = "forged".into();
         assert!(evaluator.finish_internal_answer(&answer).is_err());
         evaluator.graph.requests[0] = request.clone();
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) =
-            &mut evaluator.graph.nodes[evaluator.bindings[0].value.0].payload
+        let Some(Scalar::Subject { subject, .. }) =
+            evaluator.graph.nodes[evaluator.bindings[0].value.0].scalar_payload_mut()
         else {
             unreachable!()
         };

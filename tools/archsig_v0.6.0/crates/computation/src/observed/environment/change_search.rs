@@ -288,7 +288,7 @@ pub(in crate::observed) fn selector(
         Selector::Answer { .. } => match environment.answer_binding(graph, value, (0, 0))? {
             AnswerBinding::Reference(r) => graph.scalar(r)?.clone(),
             AnswerBinding::Projection(node) => match node.payload {
-                Some(Payload::Scalar(value)) => value,
+                Some(Payload::Scalar(value)) => std::sync::Arc::unwrap_or_clone(value),
                 _ => return Err(internal!("変更候補の束縛射影が通常値でない").into()),
             },
             AnswerBinding::Inapplicable(_) => {

@@ -37,7 +37,7 @@ impl Environment<'_> {
         };
         Ok(Some(Node {
             ty: NodeType::Value(p.ty.erase()),
-            payload: Some(Payload::Scalar(value)),
+            payload: Some(Payload::scalar(value)),
             rule: Rule::Input {
                 kind: "law",
                 location: Location::Law { span: p.span },

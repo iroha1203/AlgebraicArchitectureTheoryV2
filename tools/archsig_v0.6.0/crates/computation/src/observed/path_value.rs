@@ -277,7 +277,7 @@ pub(super) fn reference(
             .get(index)
             .ok_or(internal!("値表示の依存 Ref が既出でない"))?;
         let actual = match &node.payload {
-            Some(Payload::Scalar(actual)) => Some(actual),
+            Some(Payload::Scalar(actual)) => Some(actual.as_ref()),
             Some(Payload::Construction(value)) => value.scalar(),
             _ => None,
         };

@@ -22,17 +22,13 @@ fn partial_owned_calls_reject_original_binder_member_and_condition_mutations() {
         .nodes
         .iter()
         .enumerate()
-        .find_map(|(i, node)| match &node.payload {
-            Some(Payload::Scalar(Scalar::Subject { subject, .. }))
-                if subject == "r" && i < container.0 =>
-            {
-                Some(i)
-            }
+        .find_map(|(i, node)| match node.scalar_payload() {
+            Some(Scalar::Subject { subject, .. }) if subject == "r" && i < container.0 => Some(i),
             _ => None,
         })
         .unwrap();
     rejects_mutated_prefix(&r, member, |ns| {
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut ns[member].payload else {
+        let Some(Scalar::Subject { subject, .. }) = ns[member].scalar_payload_mut() else {
             panic!("member")
         };
         *subject = "q".into();
@@ -78,8 +74,7 @@ fn partial_owned_actual_member_stop_keeps_values_refutation_and_prefix() {
             None
         }
     });
-    let prepared =
-        prepare_observed(partial_call_fixture::input(false, "r1"), &asks, &c).unwrap();
+    let prepared = prepare_observed(partial_call_fixture::input(false, "r1"), &asks, &c).unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
@@ -198,7 +193,7 @@ fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absen
         panic!("true whole")
     };
     assert!(matches!(
-        r.nodes[value.0].payload,
-        Some(Payload::Scalar(Scalar::Bool(true)))
+        r.nodes[value.0].scalar_payload(),
+        Some(Scalar::Bool(true))
     ));
 }

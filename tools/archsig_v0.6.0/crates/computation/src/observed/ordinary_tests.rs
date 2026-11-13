@@ -54,11 +54,11 @@ fn ordinary_actual_children_static_source_and_cold_mutations() {
         .iter()
         .position(|n| {
             matches!(n.rule, Rule::OrdinaryValue(_))
-                && matches!(n.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+                && matches!(n.scalar_payload(), Some(Scalar::Bool(_)))
         })
         .unwrap();
     rejects_mutated_prefix(&result, scalar, |nodes| {
-        let Some(Payload::Scalar(Scalar::Bool(value))) = &mut nodes[scalar].payload else {
+        let Some(Scalar::Bool(value)) = nodes[scalar].scalar_payload_mut() else {
             unreachable!()
         };
         *value = !*value;
@@ -487,9 +487,11 @@ fn ordinary_comparison_known_values_keep_real_counterexample_operands() {
     assert_eq!(r.answers[1].status, Decision::Refuted);
     assert_eq!(r.answers[2].status, Decision::Established);
     assert!(r.nodes.iter().any(|node| {
-        let Some(Payload::Counterexample { left, right, .. }) = &node.payload else { return false; };
-        matches!((&r.nodes[left.0].payload, &r.nodes[right.0].payload),
-            (Some(Payload::Scalar(Scalar::Text(a))), Some(Payload::Scalar(Scalar::Text(b)))) if a == "left" && b == "right")
+        let Some(Payload::Counterexample { left, right, .. }) = &node.payload else {
+            return false;
+        };
+        matches!((r.nodes[left.0].scalar_payload(), r.nodes[right.0].scalar_payload()),
+            (Some(Scalar::Text(a)), Some(Scalar::Text(b))) if a == "left" && b == "right")
     }));
     for (index, node) in r
         .nodes
@@ -580,12 +582,12 @@ fn ordinary_map_hit_and_legacy_domain_miss_keep_actual_children() {
     };
     legacy.arguments = vec![operand_value(*map), operand_value(*key)];
     assert!(matches!(
-        hit.nodes[legacy.arguments[0].0].payload,
-        Some(Payload::Scalar(Scalar::Map { .. }))
+        hit.nodes[legacy.arguments[0].0].scalar_payload(),
+        Some(Scalar::Map { .. })
     ));
     assert!(matches!(
-        hit.nodes[legacy.arguments[1].0].payload,
-        Some(Payload::Scalar(Scalar::Subject { .. }))
+        hit.nodes[legacy.arguments[1].0].scalar_payload(),
+        Some(Scalar::Subject { .. })
     ));
     assert_eq!(
         node.wire(value.0, &hit.nodes[..value.0]),
@@ -750,6 +752,400 @@ fn ordinary_fallback_post_root_stop_retains_evaluation_and_does_not_repeat_child
                 assert_eq!(count, 1, "fallback must consume each original child once");
             }
             rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+        }
+    }
+}
+
+#[test]
+fn ordinary_reduction_consumes_values_without_graph_and_keeps_condition_state() {
+    use super::super::environment::ordinary::ReducedValue as OrdinaryReducedValue;
+    let control = quiet();
+    let prepared = prepare_observed(
+        affine_private_fixture(
+            "view current():Bool=let ignored=true in if true then (true and false) else false;",
+        ),
+        &["current=evaluate(Calc.current)"],
+        &control,
+    )
+    .unwrap();
+    let environment =
+        Environment::with_requests(prepared.inputs(), prepared.requests().requests(), &control)
+            .unwrap();
+    let law = prepared.inputs().law();
+    let find = |predicate: fn(&ExprKind) -> bool| {
+        law.exprs()
+            .iter()
+            .position(|expression| predicate(&expression.kind))
+            .unwrap()
+    };
+    let branch = find(|kind| matches!(kind, ExprKind::If { .. }));
+    let and = find(|kind| matches!(kind, ExprKind::Binary { op: BinOp::And, .. }));
+    let group = find(|kind| matches!(kind, ExprKind::Group(_)));
+    let local = find(|kind| matches!(kind, ExprKind::Let { .. }));
+    let yes = Scalar::Bool(true);
+    let no = Scalar::Bool(false);
+    // Unselected pending and a known selected value remain distinct from a
+    // pending selected branch. Neither case requires an Evaluation/Scalar node.
+    let result = environment
+        .ordinary_reduce(
+            branch,
+            3,
+            |i| Ok([Some(&yes), Some(&no), None][i]),
+            &[false, false, true],
+        )
+        .unwrap();
+    assert!(matches!(
+        result.value,
+        OrdinaryReducedValue::Fresh(Scalar::Bool(false))
+    ));
+    let result = environment
+        .ordinary_reduce(
+            branch,
+            3,
+            |i| Ok([Some(&yes), None, Some(&no)][i]),
+            &[false, true, false],
+        )
+        .unwrap();
+    assert!(matches!(result.value, OrdinaryReducedValue::Unknown));
+    let result = environment
+        .ordinary_reduce(and, 2, |i| Ok([Some(&no), None][i]), &[false, true])
+        .unwrap();
+    assert!(matches!(
+        result.value,
+        OrdinaryReducedValue::Fresh(Scalar::Bool(false))
+    ));
+    let result = environment
+        .ordinary_reduce(and, 2, |i| Ok([Some(&no), None][i]), &[false, true])
+        .unwrap()
+        .with_condition_failed(true);
+    assert!(matches!(result.value, OrdinaryReducedValue::Unknown));
+    let result = environment
+        .ordinary_reduce(group, 1, |i| Ok([Some(&yes)][i]), &[false])
+        .unwrap();
+    assert!(matches!(result.value, OrdinaryReducedValue::Reuse(0)));
+    let result = environment
+        .ordinary_reduce(group, 1, |i| Ok([Some(&yes)][i]), &[true])
+        .unwrap();
+    assert!(matches!(result.value, OrdinaryReducedValue::Unknown));
+    let result = environment
+        .ordinary_reduce(
+            local,
+            2,
+            |i| {
+                assert_eq!(
+                    i, 1,
+                    "Let must not consume discarded native RHS as a Scalar"
+                );
+                Ok(Some(&yes))
+            },
+            &[false, false],
+        )
+        .unwrap();
+    assert!(matches!(
+        result.value,
+        OrdinaryReducedValue::Fresh(Scalar::Bool(true))
+    ));
+    let result = environment
+        .ordinary_reduce(and, 2, |_| Ok(None), &[false, false])
+        .unwrap();
+    assert!(matches!(result.value, OrdinaryReducedValue::Unknown));
+    assert!(
+        environment
+            .ordinary_reduce(branch, 0, |i| Ok([][i]), &[])
+            .is_err()
+    );
+}
+
+#[test]
+fn ordinary_live_value_accessor_is_not_used_before_source_cutoff_check() {
+    let control = quiet();
+    let prepared = prepare_observed(
+        affine_private_fixture("view current():Bool=true and false;"),
+        &["current=evaluate(Calc.current)"],
+        &control,
+    )
+    .unwrap();
+    let mut checked = false;
+    let result = evaluate_observed_with_validator(
+        prepared,
+        &control,
+        |environment, graph, request, answer| {
+            let (source, children) = graph
+                .nodes
+                .iter()
+                .rev()
+                .find_map(|node| {
+                    if node.rule != Rule::Construction("ordinary_evaluation") {
+                        return None;
+                    }
+                    let Some(Payload::Evaluation {
+                        expression, parts, ..
+                    }) = &node.payload
+                    else {
+                        return None;
+                    };
+                    Some((*expression, &parts[0].children))
+                })
+                .unwrap();
+            assert!(
+                environment
+                    .ordinary_plan_with_values(graph, source, children, source.0, |_| panic!(
+                        "cutoff must reject before accessing runtime values"
+                    ))
+                    .is_err()
+            );
+            assert!(
+                environment
+                    .ordinary_plan(graph, source, children, source.0)
+                    .is_err()
+            );
+            checked = true;
+            environment.validate_answer(graph, request, answer)
+        },
+    )
+    .unwrap();
+    assert!(checked);
+    assert_ne!(result.status(), "error", "{:?}", result.issues);
+    // The public/raw path derives values from Graph and rejects forged Scalars.
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let scalar = result
+        .nodes
+        .iter()
+        .position(|node| matches!(node.rule, Rule::OrdinaryValue(_)))
+        .unwrap();
+    rejects_mutated_prefix(&result, scalar, |nodes| {
+        let Some(Scalar::Bool(value)) = nodes[scalar].scalar_payload_mut() else {
+            unreachable!()
+        };
+        *value = !*value;
+    });
+}
+
+#[test]
+fn ordinary_runtime_scalar_shares_storage_and_survives_trace_drop_with_cow_mutation() {
+    use std::sync::Arc;
+    fn send_sync<T: Send + Sync>() {}
+    send_sync::<Scalar>();
+    send_sync::<RuntimeValue>();
+    let control = quiet();
+    let result = evaluate_observed_bytes(
+        affine_private_fixture("view current():Bool=(true) and true;"),
+        &["current=evaluate(Calc.current)"],
+        &control,
+    )
+    .unwrap();
+    let mut graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let (group, child) = graph
+        .nodes
+        .iter()
+        .find_map(|node| {
+            if node.rule != Rule::Construction("ordinary_evaluation") {
+                return None;
+            }
+            let Some(Payload::Evaluation {
+                expression,
+                parts,
+                value: Some(value),
+                ..
+            }) = &node.payload
+            else {
+                return None;
+            };
+            let Some(Payload::Expression {
+                location: Location::Law { span },
+                ..
+            }) = &graph.nodes[expression.0].payload
+            else {
+                return None;
+            };
+            let law = result.prepared.inputs().law();
+            let id = law.program().expressions.get(span)?;
+            if !matches!(law.exprs()[*id].kind, ExprKind::Group(_)) {
+                return None;
+            }
+            let Some(Payload::Evaluation {
+                value: Some(child), ..
+            }) = &graph.nodes[parts[0].children[0].0].payload
+            else {
+                return None;
+            };
+            Some((*value, *child))
+        })
+        .expect("Group and its actual producer");
+    assert_eq!(
+        group, child,
+        "Group must retain the actual producer identity"
+    );
+    let live = RuntimeValue::from_recorded(&graph, Some(group)).unwrap();
+    let RuntimeValue::Scalar { scalar, producer } = &live else {
+        panic!("owned runtime Scalar")
+    };
+    let Some(Payload::Scalar(recorded)) = &graph.nodes[group.0].payload else {
+        panic!("recorded Scalar")
+    };
+    assert!(Arc::ptr_eq(scalar, recorded));
+    assert_eq!(*producer, group);
+    let fresh = graph
+        .nodes
+        .iter()
+        .enumerate()
+        .find_map(|(index, node)| {
+            (index != group.0
+                && matches!(node.rule, Rule::OrdinaryValue(_))
+                && node.scalar_payload() == Some(&Scalar::Bool(true)))
+            .then_some(NodeRef(index))
+        })
+        .expect("fresh equal literal producer");
+    assert_ne!(fresh, group);
+    let fresh_live = RuntimeValue::from_recorded(&graph, Some(fresh)).unwrap();
+    assert_ne!(fresh_live.producer(), live.producer());
+    let RuntimeValue::Scalar {
+        scalar: fresh_scalar,
+        ..
+    } = &fresh_live
+    else {
+        panic!()
+    };
+    assert!(!Arc::ptr_eq(scalar, fresh_scalar));
+    *graph.nodes[group.0].scalar_payload_mut().unwrap() = Scalar::Bool(false);
+    assert_eq!(graph.scalar(group).unwrap(), &Scalar::Bool(false));
+    assert_eq!(live.scalar(&graph).unwrap(), Some(&Scalar::Bool(true)));
+    assert_eq!(
+        result.nodes[group.0].scalar_payload(),
+        Some(&Scalar::Bool(true))
+    );
+    assert!(rebuild_for_origin_and_support_recheck(&result, &graph.nodes).is_err());
+    drop(graph);
+    drop(result);
+    assert_eq!(
+        Arc::strong_count(scalar),
+        1,
+        "the live result is now the only Scalar owner"
+    );
+    let empty = Graph::new(&control);
+    assert_eq!(
+        live.scalar(&empty).unwrap(),
+        Some(&Scalar::Bool(true)),
+        "ordinary runtime Scalar must not dereference its dropped trace"
+    );
+    assert_eq!(live.producer(), Some(group));
+}
+
+#[test]
+fn ordinary_binder_shares_scalar_contents_without_aliasing_member_producer() {
+    use std::sync::Arc;
+    let result = evaluate_observed_bytes(
+        affine_private_fixture(
+            "view current():Bool=forall bit in set<Bool>{true,false}.(bit or not bit);",
+        ),
+        &["current=evaluate(Calc.current)"],
+        &quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    let mut checked = 0;
+    for (index, node) in result.nodes.iter().enumerate() {
+        if !matches!(node.rule, Rule::BinderValue(_)) {
+            continue;
+        }
+        let iteration = result.contexts[index].iteration.expect("binder iteration");
+        let member = result.iterations[iteration]
+            .producer
+            .expect("actual member producer");
+        assert_ne!(NodeRef(index), member, "binder's producer remains distinct");
+        let (Some(Payload::Scalar(binder)), Some(Payload::Scalar(member_value))) =
+            (&node.payload, &result.nodes[member.0].payload)
+        else {
+            panic!("Scalar producers")
+        };
+        assert!(
+            Arc::ptr_eq(binder, member_value),
+            "immutable contents can share storage"
+        );
+        checked += 1;
+    }
+    assert!(checked >= 2);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+}
+
+#[test]
+fn field_receiver_boundary_keeps_blocked_state_without_reading_a_slot() {
+    use super::super::environment::field_read::{FieldPlan, FieldReceiver};
+    let control = quiet();
+    let prepared = prepare_observed(
+        affine_private_fixture("view current(s:Sample):Bool=s.p;"),
+        &["current=evaluate(Calc.current,s=@v/sample)"],
+        &control,
+    )
+    .unwrap();
+    let environment = Environment::with_prepared(&prepared, &control).unwrap();
+    let mut source_scope = Scope::default();
+    source_scope.readings.insert("source".into());
+    let mut receiver_scope = Scope::default();
+    receiver_scope.readings.insert("receiver".into());
+    for (pending, failed) in [(true, false), (false, true), (false, false)] {
+        let reasons = if failed {
+            vec![Reason {
+                kind: ReasonKind::ConditionFailed {
+                    condition: NodeRef(900),
+                    construction: "fixture",
+                },
+                request: "current".into(),
+                dependencies: vec![],
+                missing: vec![],
+                location: None,
+            }]
+        } else {
+            vec![]
+        };
+        let plan = FieldPlan {
+            // No Graph owns these refs, and no field exists at this span.
+            span: (0, 0),
+            source: NodeRef(901),
+            origin: NodeRef(901),
+            position: None,
+            child: NodeRef(902),
+            ty: Type::Bool,
+            value: None,
+            reused: None,
+            assigned: None,
+            scope: source_scope.clone(),
+            scalar_scope: source_scope.clone(),
+            support: Support::default(),
+            scalar_support: Support::default(),
+            scalar_rule: None,
+            reasons: reasons.clone(),
+        };
+        let mut retained = None;
+        let result = environment.observe_field_receiver(
+            plan,
+            &"No.Owner.slot".into(),
+            FieldReceiver {
+                value: None,
+                pending,
+                scope: &receiver_scope,
+                request: None,
+            },
+            |scope, reasons| {
+                assert!(reasons.is_empty());
+                retained = Some(scope.clone());
+            },
+        );
+        if pending || failed {
+            let plan = result.unwrap();
+            assert_eq!(plan.reasons, reasons);
+            assert!(plan.position.is_none());
+            assert!(plan.value.is_none());
+            assert_eq!(plan.scalar_scope, source_scope);
+            assert!(plan.scope.readings.contains("source"));
+            assert!(plan.scope.readings.contains("receiver"));
+            assert_eq!(retained.as_ref(), Some(&plan.scope));
+        } else {
+            assert!(matches!(
+                result,
+                Err(ValidationFailure::UnsupportedExpression { .. })
+            ));
+            assert!(retained.is_none());
         }
     }
 }

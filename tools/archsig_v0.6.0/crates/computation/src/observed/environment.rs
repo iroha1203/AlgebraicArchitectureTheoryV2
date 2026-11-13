@@ -21,7 +21,7 @@ use results::ResultStore;
 use state::{EvaluationState, ScopedReplace};
 mod answer_binding;
 pub(super) mod architecture_environment;
-mod field_read;
+pub(super) mod field_read;
 mod law_evaluation;
 mod object_reading_environment;
 mod object_view_family;
@@ -187,6 +187,7 @@ struct ScopedKey {
 // nodeの追加は既出DAGの意味を変えない。新frameも旧prefixから必ず除外される
 // producerを持つ場合だけ許す。新iteration/caseも同じprefix境界を守る。
 // 既存metadataの改変は全て失効させる。
+#[derive(Clone)]
 struct ValidationSnapshot {
     node_identity: std::rc::Rc<()>,
     node_len: usize,
@@ -407,6 +408,7 @@ impl ValidationSnapshot {
 
 #[derive(Default)]
 struct ValidationCache {
+    epoch: std::rc::Rc<()>,
     // このcache内の成功が一度でも全Frame/Iteration registryを読んだ事実。
     // snapshot延長や内側guardでは戻さず、cacheの破棄と同時にだけ消す。
     registry_read: bool,
@@ -476,7 +478,7 @@ struct DomainEnumeration<'a> {
     enumeration: &'a super::finite::Enumeration,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum CapturedDomain {
     Finite(CapturedMembers),
     Type,
@@ -1692,7 +1694,7 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         // 保存済みnodeの再検査も、Graph.push時の表現検査を前提にしない。
         // 不正な重複Set/Mapを数学的等値で比較する前に形・型を確認する。
-        if let Some(Payload::Scalar(value)) = &node.payload {
+        if let Some(value) = node.scalar_payload() {
             data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         if let Some(Payload::Evaluation {
@@ -2002,7 +2004,7 @@ impl<'a> Environment<'a> {
         limit: usize,
         domain: Option<DomainEnumeration<'_>>,
     ) -> Result<(), ValidationFailure> {
-        if let Some(Payload::Scalar(scalar)) = &node.payload {
+        if let Some(scalar) = node.scalar_payload() {
             data::check(scalar, self.indexes.inputs.law(), &self.control)?;
             if matches!(node.rule, Rule::Projection(_)) {
                 return self.validate_answer_projection_node(graph, node, limit);
@@ -3456,7 +3458,7 @@ impl<'a> Environment<'a> {
                     let analysis = self.analyze_source(graph, *span, bindings)?;
                     if actual != domain
                         || node.arguments != [domain]
-                        || !matches!(&node.payload,Some(Payload::Scalar(value)) if value==&expected)
+                        || !matches!(node.scalar_payload(),Some(value) if value==&expected)
                         || node.ty != NodeType::Value(expected.ty())
                         || node.scope != analysis.scope
                         || node.support.to_flat_facts(&self.control)? != analysis.support
@@ -3556,7 +3558,7 @@ impl<'a> Environment<'a> {
                 };
                 vec![scrutinee]
             };
-            let Some(Payload::Scalar(scalar)) = &node.payload else {
+            let Some(scalar) = node.scalar_payload() else {
                 return Err(internal!("let/if 結果が通常値でない").into());
             };
             if node.ty != NodeType::Value(scalar.ty())
@@ -3678,7 +3680,7 @@ impl<'a> Environment<'a> {
             else {
                 return Err(internal!("生成値に元 Law 出現がない").into());
             };
-            let Some(Payload::Scalar(scalar)) = &node.payload else {
+            let Some(scalar) = node.scalar_payload() else {
                 return Err(internal!("元 Law の生成値が通常 Scalar でない").into());
             };
             if node.arguments.first().is_some_and(|reference| {
@@ -4098,7 +4100,7 @@ impl<'a> Environment<'a> {
         self.validate_at(graph, source, difference.0)?;
         let parts = self.affine_difference_analysis(graph, source, difference.0)?;
         if node.ty != NodeType::Value(parts.residual.ty())
-            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value==&parts.residual)
+            || !matches!(node.scalar_payload(), Some(value) if value==&parts.residual)
             || !matches!(&node.rule, Rule::Construction("evaluation"))
             || node.scope != parts.analysis.scope
             || node.support.to_flat_facts(&self.control)? != parts.analysis.support
@@ -4177,7 +4179,7 @@ impl<'a> Environment<'a> {
         let parts = self.affine_normalization_analysis(graph, evidence, normalization.0)?;
         let span = self.expression_span(graph, *own)?;
         if node.ty != NodeType::Value(Type::Bool)
-            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value==&parts.value)
+            || !matches!(node.scalar_payload(), Some(value) if value==&parts.value)
             || !matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law{span:actual}} if *actual==span)
             || node.evidence != [*normalization]
             || node.scope != parts.analysis.scope
@@ -4207,7 +4209,7 @@ impl<'a> Environment<'a> {
         else {
             return Err(internal!("アフィン定数値の元 Law 出現がない").into());
         };
-        let Some(Payload::Scalar(scalar)) = &node.payload else {
+        let Some(scalar) = node.scalar_payload() else {
             return Err(internal!("アフィン定数値が通常 Scalar でない").into());
         };
         let ty = scalar.ty();
@@ -4383,7 +4385,7 @@ impl<'a> Environment<'a> {
             }) {
                 return Ok(self.affine_residual_analysis(graph, node, limit)?.analysis);
             }
-            let Some(Payload::Scalar(residual)) = &node.payload else {
+            let Some(residual) = node.scalar_payload() else {
                 return Err(internal!("残差が通常 Scalar でない").into());
             };
             let ty = residual.ty();
@@ -4640,7 +4642,7 @@ impl<'a> Environment<'a> {
                 )?,
                 &node.arguments,
             )?;
-            let Some(Payload::Scalar(Scalar::Bool(value))) = &node.payload else {
+            let Some(Scalar::Bool(value)) = node.scalar_payload() else {
                 return Err(internal!("Bool 論理値が通常 Bool Scalar でない").into());
             };
             if analysis.known_value.as_ref() != Some(&Scalar::Bool(*value))
@@ -4660,7 +4662,7 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<Vec<Fact>, ValidationFailure> {
-        let Some(Payload::Scalar(actual)) = &node.payload else {
+        let Some(actual) = node.scalar_payload() else {
             return Err(internal!("対象fieldの値がScalarでない").into());
         };
         let facts = node.support.materialize(&self.control)?;
@@ -4692,7 +4694,7 @@ impl<'a> Environment<'a> {
     ) -> Result<Vec<Fact>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
-            let Some(Payload::Scalar(value)) = &node.payload else {
+            let Some(value) = node.scalar_payload() else {
                 return Err(internal!("支持の依存先が通常値でない").into());
             };
             if matches!(node.rule, Rule::FieldValue { .. }) {
@@ -6311,7 +6313,7 @@ impl<'a> Environment<'a> {
             &node.arguments,
         )?;
         if field.ty.erase() != prefixes[count - 1].1
-            || !matches!(&node.payload, Some(Payload::Scalar(value)) if value == &expected)
+            || !matches!(node.scalar_payload(), Some(value) if value == &expected)
             || analysis.known_value.as_ref() != Some(&expected)
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
             || !node.support.matches_flat(&[fact.clone()], &self.control)?
@@ -6328,7 +6330,7 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<(), ValidationFailure> {
-        let Some(Payload::Scalar(value)) = &node.payload else {
+        let Some(value) = node.scalar_payload() else {
             return Err(internal!("field値がScalarでない").into());
         };
         if node.arguments.len() != 1 {
@@ -6585,7 +6587,7 @@ impl<'a> Environment<'a> {
             return Err(internal!("call Scalar元規則が違う").into());
         };
         let (_, analysis, _) = self.call_parts(graph, *span, &node.arguments, limit)?;
-        if !matches!(&node.payload, Some(Payload::Scalar(value)) if analysis.known_value.as_ref() == Some(value))
+        if !matches!(node.scalar_payload(), Some(value) if analysis.known_value.as_ref() == Some(value))
             || node.support.to_flat_facts(&self.control)? != analysis.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
@@ -7125,7 +7127,7 @@ impl<'a> Environment<'a> {
             return Err(internal!("内包Scalarの元規則がない").into());
         };
         let (_, analysis) = self.comprehension_parts(graph, *span, &node.arguments, limit)?;
-        if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
+        if !matches!(node.scalar_payload(),Some(value) if analysis.known_value.as_ref()==Some(value))
             || node.support.to_flat_facts(&self.control)? != analysis.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
@@ -11456,7 +11458,7 @@ impl<'a> Environment<'a> {
             owned = enumeration;
             (spec, &owned)
         };
-        let Some(Payload::Scalar(value)) = &node.payload else {
+        let Some(value) = node.scalar_payload() else {
             return Err(internal!("Domain要素が通常値でない").into());
         };
         let input = graph.get(if spec.domain.is_some() {
@@ -11869,7 +11871,7 @@ impl<'a> Environment<'a> {
         }
         let (analysis, domain) =
             self.quant_parts(graph, source, &node.arguments, &node.scope, limit)?;
-        if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
+        if !matches!(node.scalar_payload(),Some(value) if analysis.known_value.as_ref()==Some(value))
             || node.scope != analysis.scope
             || node.support.to_flat_facts(&self.control)? != analysis.support
         {
@@ -12584,3 +12586,6 @@ reading CountCheck {{
 #[cfg(test)]
 #[path = "environment/source_cache_tests.rs"]
 mod source_cache_tests;
+
+mod validation_checkpoint;
+pub(in crate::observed) use validation_checkpoint::ValidationCheckpoint;

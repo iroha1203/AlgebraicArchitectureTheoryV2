@@ -292,7 +292,7 @@ fn typed_iteration_universal_completion_and_capture_switch_to_cutoff_entries() {
                 field: Some("Counter.State.count".into()),
                 atom: None,
             }),
-            NodeRef(g.nodes.iter().position(|node| matches!(&node.payload, Some(Payload::Scalar(Scalar::Z(value))) if *value == 2.into())).expect("元countの値")),
+            NodeRef(g.nodes.iter().position(|node| matches!(node.scalar_payload(), Some(Scalar::Z(value)) if *value == 2.into())).expect("元countの値")),
             Scalar::Z(2.into()),
         )]);
         same(&expected, &input(&env, &g, g.nodes.len())?);

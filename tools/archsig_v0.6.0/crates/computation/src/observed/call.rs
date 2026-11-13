@@ -2,7 +2,7 @@
 use super::result::NodeRef;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
-pub(super) struct Context {
+pub(crate) struct Context {
     pub request: usize,
     pub frame: Option<usize>,
     pub iteration: Option<usize>,

@@ -103,7 +103,7 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                     &mut io,
                     &mut signals,
                     &args,
-                    evaluation,
+                    evaluation.into(),
                     super::super::reuse::Verification::default(),
                     &control,
                 );
@@ -198,7 +198,7 @@ fn generated_replay_and_fresh_rendering_deliver_identical_bytes() {
                         &control,
                     )
                     .unwrap();
-                    let evaluation = evaluate_observed(prepared, &control).unwrap();
+                    let evaluation = evaluate_for_delivery(prepared, &control).unwrap();
                     let replay = keep_replay.then(|| evaluation.result_wire());
                     let verification = Verification {
                         rejected: vec![
@@ -243,4 +243,139 @@ fn generated_replay_and_fresh_rendering_deliver_identical_bytes() {
         }
     }
     std::fs::remove_dir(&directory).unwrap();
+}
+
+#[test]
+fn quantified_delivery_keeps_raw_summary_save_reuse_and_final_signal_contracts() {
+    let directory =
+        std::env::temp_dir().join(format!("archsig-quant-delivery-{}", std::process::id()));
+    std::fs::create_dir(&directory).unwrap();
+    let atom = r#"{"id": "count", "subject": "s", "field": "Counter.State.count", "value": "2", "origin": "model"}"#;
+    let ask = "q=check(CountCheck.quantified,s=@v/s)";
+    for (case, (domain, body, missing, expected_code)) in [
+        ("set<Z>{0,1,2}", "n <= s.count", false, 0),
+        ("set<Z>{0,1,2}", "n >= s.count", false, 1),
+        ("set<Z>{0,1,2}", "n <= s.count", true, 2),
+        ("set<Z>{0,1,2}", "n >= s.count", true, 2),
+        ("set<Bool>{false,true}", "n = n", false, 0),
+        ("set<Bool>{false,true}", "n = false", false, 1),
+        ("set<Bool>{false,true}", "n = n", true, 0),
+        ("set<Bool>{false,true}", "n = false", true, 1),
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        let law = include_str!("../../../tests/fixtures/counter.law").replace(
+            "law required nonnegative", &format!("law required quantified(s: State): forall n in {domain} . {body};\n  law required nonnegative"));
+        let original_map = include_str!("../../../tests/fixtures/counter.archmap.json");
+        assert_eq!(original_map.matches(atom).count(), 1);
+        let map = if missing {
+            original_map.replace(atom, "")
+        } else {
+            original_map.to_owned()
+        };
+        let sources = || {
+            InputSources::from_bytes(
+                vec![include_bytes!("../../../tests/fixtures/counter.atoms.json").to_vec()],
+                law.as_bytes().to_vec(),
+                map.as_bytes().to_vec(),
+            )
+        };
+        let baseline = directory.join(format!("baseline-{case}"));
+        let args = |out| RunArgs {
+            inputs: CheckArgs {
+                atom_definitions: vec![],
+                law: PathBuf::new(),
+                archmap: None,
+                out,
+            },
+            asks: vec![ask.to_owned()],
+            reuse: None,
+        };
+        let control = Control::unlimited();
+        let prepared = prepare_observed(sources(), &[ask], &control).unwrap();
+        let raw = archsig_computation::observed::evaluate_observed(prepared, &control).unwrap();
+        let mut baseline_io = MemoryIo::default();
+        let baseline_outcome = deliver(
+            &mut baseline_io,
+            &mut FinalSignal(None, 0),
+            &args(Some(baseline.clone())),
+            raw.into(),
+            super::super::reuse::Verification::default(),
+            &control,
+        );
+        assert_eq!(baseline_outcome.exit_code, expected_code);
+        std::fs::create_dir(&baseline).unwrap();
+        std::fs::write(
+            baseline.join("result.json"),
+            &baseline_io.0[&baseline.join("result.json")],
+        )
+        .unwrap();
+        for save in [false, true] {
+            for signal in [None, Some(Signal::Int)] {
+                for reuse in [false, true] {
+                    let out = directory.join(format!("out-{case}"));
+                    let arguments = args(save.then_some(out.clone()));
+                    let mut results = Vec::new();
+                    for normal_delivery in [false, true] {
+                        let control = Control::unlimited();
+                        let prepared = prepare_observed(sources(), &[ask], &control).unwrap();
+                        let evaluation = if normal_delivery {
+                            evaluate_for_delivery(prepared, &control).unwrap()
+                        } else {
+                            archsig_computation::observed::evaluate_observed(prepared, &control)
+                                .unwrap()
+                                .into()
+                        };
+                        // Compare the current checked semantic projection to a raw
+                        // artifact through the existing canonical reuse verifier.
+                        // Internal node numbering/sharing is not a public identity.
+                        let verification = if reuse {
+                            let checked = super::super::reuse::inspect(Some(&baseline), &control)
+                                .unwrap()
+                                .verify(&evaluation, &control);
+                            assert!(
+                                checked.rejected.is_empty(),
+                                "{body}, missing={missing}, normal={normal_delivery}: {:?}",
+                                checked.rejected
+                            );
+                            assert!(checked.stop.is_none());
+                            checked
+                        } else {
+                            super::super::reuse::Verification::default()
+                        };
+                        let mut io = MemoryIo::default();
+                        let mut signals = FinalSignal(signal, 0);
+                        let outcome = deliver(
+                            &mut io,
+                            &mut signals,
+                            &arguments,
+                            evaluation,
+                            verification,
+                            &control,
+                        );
+                        assert_eq!(signals.1, 1);
+                        let result_path = out.join("result.json");
+                        let copies: BTreeMap<_, _> =
+                            io.0.into_iter()
+                                .filter(|(path, _)| path != &result_path)
+                                .collect();
+                        results.push((
+                            outcome.status,
+                            outcome.exit_code,
+                            outcome.result,
+                            outcome.issues,
+                            outcome.summary,
+                            copies,
+                        ));
+                    }
+                    assert_eq!(
+                        results[0], results[1],
+                        "{body}, missing={missing}, save={save}, signal={signal:?}, reuse={reuse}"
+                    );
+                }
+            }
+        }
+    }
+    std::fs::remove_dir_all(directory).unwrap();
 }

@@ -33,7 +33,7 @@ fn owned_call_success_rechecks_value_body_arguments_owner_support_and_scope() {
                 && f.atom.as_deref() == Some("p-owner"))
     );
     rejects_mutated_prefix(&r, target, |ns| {
-        let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut ns[target].payload else {
+        let Some(Scalar::Subject { subject, .. }) = ns[target].scalar_payload_mut() else {
             panic!("ref")
         };
         *subject = "q".into();

@@ -469,10 +469,8 @@ pub(super) fn evaluate_finite_view(
 
 #[cfg(test)]
 mod tests {
-    use super::super::{
-        object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
-        result::Payload,
-    };
+    use super::super::object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance};
+    use super::super::result::Payload;
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
     pub(super) use archsig_common::control::quiet;
@@ -594,7 +592,7 @@ mod tests {
             let value = &row.evaluation().nodes[a.outputs["value"].0];
             assert_eq!(
                 value.payload,
-                Some(Payload::Scalar(Scalar::Tuple(vec![
+                Some(Payload::scalar(Scalar::Tuple(vec![
                     Scalar::Z(if index >= 2 { 2.into() } else { 0.into() }),
                     Scalar::Bool(index % 2 == 1)
                 ])))
@@ -653,7 +651,10 @@ mod domain_tests {
                     .payload
                     .as_ref()
                     .unwrap();
-                let super::super::result::Payload::Scalar(Scalar::Tuple(items)) = value else {
+                let super::super::result::Payload::Scalar(value) = value else {
+                    panic!("typed Scalar")
+                };
+                let Scalar::Tuple(items) = value.as_ref() else {
                     panic!("tuple result")
                 };
                 assert_eq!(
@@ -689,7 +690,7 @@ mod domain_tests {
                 5 => {
                     let r = f.rows[0].evaluation.answers[0].outputs["value"].0;
                     f.rows[0].evaluation.nodes[r].payload =
-                        Some(super::super::result::Payload::Scalar(Scalar::Bool(true)));
+                        Some(super::super::result::Payload::scalar(Scalar::Bool(true)));
                 }
                 6 => {
                     let a = f.rows[0]
@@ -875,7 +876,7 @@ mod producer_tests {
         for kind in 0..4 {
             let mut nodes = e.nodes.clone();
             match kind {
-                0 => nodes[b].payload = Some(Payload::Scalar(Scalar::Bool(true))),
+                0 => nodes[b].payload = Some(Payload::scalar(Scalar::Bool(true))),
                 1 => nodes[b].scope.readings.clear(),
                 2 => {
                     let s = nodes
@@ -1075,8 +1076,7 @@ mod owner_missing_tests {
             );
             let a = &row.evaluation.answers[0];
             let node = &row.evaluation.nodes[a.outputs["value"].0];
-            let Some(super::super::result::Payload::Scalar(Scalar::Path(path))) = &node.payload
-            else {
+            let Some(Scalar::Path(path)) = node.scalar_payload() else {
                 panic!("typed Path")
             };
             assert_eq!(
@@ -1091,10 +1091,7 @@ mod owner_missing_tests {
 
 #[cfg(test)]
 mod recheck_regression_tests {
-    use super::super::{
-        object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance},
-        result::Payload,
-    };
+    use super::super::object_evaluate::{ObjectEvaluationOutcome, evaluate_object_instance};
     use super::tests::{fixture, quiet};
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
@@ -1122,7 +1119,7 @@ mod recheck_regression_tests {
             let mut changed = false;
             for row in &mut f.rows {
                 let output = row.evaluation.answers[0].outputs["value"].0;
-                let Some(Payload::Scalar(value)) = &mut row.evaluation.nodes[output].payload else {
+                let Some(value) = row.evaluation.nodes[output].scalar_payload_mut() else {
                     panic!("typed output")
                 };
                 match value {
@@ -1290,8 +1287,8 @@ mod empty_list_tests {
         let evaluation = family.rows()[0].evaluation();
         assert_eq!(evaluation.status(), "complete");
         assert!(matches!(
-            evaluation.nodes[evaluation.answers[0].outputs["value"].0].payload,
-            Some(super::super::result::Payload::Scalar(Scalar::Bool(true)))
+            evaluation.nodes[evaluation.answers[0].outputs["value"].0].scalar_payload(),
+            Some(super::super::result::Scalar::Bool(true))
         ));
         family.recheck(Arc::clone(&inputs), &quiet()).unwrap();
         let table = super::super::object_evaluation_table::evaluate_object_table(
@@ -1415,7 +1412,7 @@ mod empty_list_composite_tests {
             assert_eq!(evaluation.status(), "complete");
             assert_eq!(
                 evaluation.nodes[evaluation.answers[0].outputs["value"].0].payload,
-                Some(super::super::result::Payload::Scalar(Scalar::Tuple(
+                Some(super::super::result::Payload::scalar(Scalar::Tuple(
                     expected
                 )))
             );

@@ -445,7 +445,7 @@ fn part(g: &ObservedEvaluation, r: NodeRef) -> Result<&super::result::Part, Cons
 }
 fn scalar(g: &ObservedEvaluation, r: NodeRef) -> Option<&Scalar> {
     match g.nodes.get(r.0)?.payload.as_ref()? {
-        Payload::Scalar(s) => Some(s),
+        Payload::Scalar(s) => Some(s.as_ref()),
         _ => None,
     }
 }

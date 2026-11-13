@@ -50,7 +50,7 @@ fn integer_problem_ranges_candidate_and_applied_original_law_form_one_loop() {
             .payload
             .as_ref()
             .and_then(|p| match p {
-                Payload::Scalar(s) => Some(s),
+                Payload::Scalar(s) => Some(s.as_ref()),
                 Payload::Construction(v) => v.scalar(),
                 _ => None,
             }),
@@ -922,7 +922,10 @@ fn legacy_integer_ordinal_uses_the_public_origin_and_kernel_order() {
         };
         let value = |i: usize| -> Z {
             match result.nodes[i].payload.as_ref().unwrap() {
-                Payload::Scalar(Scalar::Z(z)) => z.clone(),
+                Payload::Scalar(value) => match value.as_ref() {
+                    Scalar::Z(z) => z.clone(),
+                    _ => panic!(),
+                },
                 Payload::Construction(v) => match v.scalar().unwrap() {
                     Scalar::Z(z) => z.clone(),
                     _ => panic!(),
@@ -1095,7 +1098,7 @@ fn legacy_and_prepared_integer_assignments_transfer_by_subject_across_coordinate
                 .find(|i| NodeRef(*i).wire() == *wire)
                 .unwrap();
             match result.nodes[at].payload.as_ref().unwrap() {
-                Payload::Scalar(s) => s.clone(),
+                Payload::Scalar(s) => s.as_ref().clone(),
                 Payload::Construction(v) => v.scalar().unwrap().clone(),
                 _ => panic!(),
             }

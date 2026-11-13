@@ -14,7 +14,7 @@ impl Evaluator<'_, '_> {
         data::observe_actual(span, self.graph.active, "owned_family_begin", 0);
         self.tick(Checkpoint::FiniteIteration)?;
         let known = owner
-            .value
+            .value()
             .map(|value| self.graph.scalar(value))
             .transpose()?;
         #[cfg(test)]

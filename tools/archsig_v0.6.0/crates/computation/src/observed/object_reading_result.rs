@@ -82,7 +82,7 @@ impl Plan {
             .clone()
             .ok_or(internal!("未確定view読取りにOption値を作れない"))?;
         Ok(self.node(
-            Payload::Scalar(value.clone()),
+            Payload::scalar(value.clone()),
             NodeType::Value(value.ty()),
             self.arguments(),
         ))

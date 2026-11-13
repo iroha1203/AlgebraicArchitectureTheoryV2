@@ -137,7 +137,7 @@ impl Evaluator<'_, '_> {
             for child in &evaluated {
                 arguments.push(
                     child
-                        .value
+                        .value()
                         .ok_or_else(|| Failure::Internal(internal!("Pathの元実引数値がない")))?,
                 );
             }

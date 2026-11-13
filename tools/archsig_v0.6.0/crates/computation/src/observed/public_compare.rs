@@ -261,7 +261,7 @@ fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationF
     };
     Ok(Node {
         ty: NodeType::Value(scalar.ty()),
-        payload: Some(Payload::Scalar(scalar)),
+        payload: Some(Payload::scalar(scalar)),
         rule: Rule::Input {
             kind: "subject",
             location: Location::ArchMap {

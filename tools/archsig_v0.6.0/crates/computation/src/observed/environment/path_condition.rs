@@ -78,8 +78,8 @@ impl Environment<'_> {
         );
         let candidate = path_payload
             || matches!(
-                (&node.payload, &node.rule),
-                (Some(Payload::Scalar(_)), Rule::Construction("evaluation"))
+                (node.scalar_payload(), &node.rule),
+                (Some(_), Rule::Construction("evaluation"))
             );
         if !candidate {
             return Ok(false);
@@ -141,7 +141,7 @@ impl Environment<'_> {
             .collect();
         match &node.payload {
             Some(Payload::Scalar(value)) => {
-                if value != &plan.left && value != &plan.right
+                if value.as_ref() != &plan.left && value.as_ref() != &plan.right
                     || node.arguments != edges
                     || node.ty != NodeType::Value(plan.left.ty())
                     || node.rule != Rule::Construction("evaluation")

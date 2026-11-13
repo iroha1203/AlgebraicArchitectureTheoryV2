@@ -64,13 +64,13 @@ fn finite_map_domains_recheck_totality_membership_type_support_and_scope() {
     });
     let t = es[0].0;
     completion_mutation(&r, t, |nodes| {
-        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Map { pairs, .. }) = nodes[t].scalar_payload_mut() else {
             unreachable!()
         };
         pairs.pop();
     });
     completion_mutation(&r, t, |nodes| {
-        let Some(Payload::Scalar(Scalar::Map { pairs, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Map { pairs, .. }) = nodes[t].scalar_payload_mut() else {
             unreachable!()
         };
         let Scalar::Subject { subject, .. } = &mut pairs[0].1 else {
@@ -79,7 +79,7 @@ fn finite_map_domains_recheck_totality_membership_type_support_and_scope() {
         *subject = "absent".into();
     });
     completion_mutation(&r, t, |nodes| {
-        let Some(Payload::Scalar(Scalar::Map { codomain, .. })) = &mut nodes[t].payload else {
+        let Some(Scalar::Map { codomain, .. }) = nodes[t].scalar_payload_mut() else {
             unreachable!()
         };
         *codomain = "Maps.Void".into();

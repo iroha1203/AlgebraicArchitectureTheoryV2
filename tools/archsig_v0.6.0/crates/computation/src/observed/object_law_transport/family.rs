@@ -590,7 +590,7 @@ pub(in crate::observed) fn constant_numeric_family(
     ) {
         return Ok(None);
     }
-    let Some(Payload::Scalar(value)) = g.nodes.get(value.0).and_then(|n| n.payload.as_ref()) else {
+    let Some(value) = g.nodes.get(value.0).and_then(|n| n.scalar_payload()) else {
         return Ok(None);
     };
     if !matches!(value.ty(), Type::Z | Type::Q) {
@@ -625,8 +625,8 @@ pub(in crate::observed) fn constant_numeric_family(
             guard
                 .value
                 .and_then(|value| g.nodes.get(value.0))
-                .and_then(|node| node.payload.as_ref()),
-            Some(Payload::Scalar(Scalar::Bool(true)))
+                .and_then(|node| node.scalar_payload()),
+            Some(Scalar::Bool(true))
         );
         if !guard_true && !zero_body {
             return Ok(None);

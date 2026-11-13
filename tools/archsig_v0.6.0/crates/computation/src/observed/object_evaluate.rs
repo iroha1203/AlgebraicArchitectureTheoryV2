@@ -543,7 +543,7 @@ mod tests {
                     elements.clear();
                     nodes[domain].arguments.truncate(1);
                 }
-                1 => nodes[value].payload = Some(Payload::Scalar(Scalar::Bool(false))),
+                1 => nodes[value].payload = Some(Payload::scalar(Scalar::Bool(false))),
                 2 => {
                     nodes[domain].support.materialize_mut_for_test().clear();
                 }

@@ -937,7 +937,7 @@ impl Evaluator<'_, '_> {
                 location: Location::Law {
                     span: self.environment.indexes.inputs.law().exprs()[plan.guard.unwrap()].span,
                 },
-                value: guard.evaluated.value,
+                value: guard.evaluated.value(),
                 residual: None,
                 children: vec![guard.evaluated.evaluation],
             });
@@ -947,7 +947,7 @@ impl Evaluator<'_, '_> {
                 span: plan.template_span,
             },
             value: if raw_guard.is_some() {
-                body.as_ref().and_then(|body| body.evaluated.value)
+                body.as_ref().and_then(|body| body.evaluated.value())
             } else {
                 value
             },
@@ -1031,7 +1031,7 @@ impl Evaluator<'_, '_> {
         let evaluated = Evaluated {
             expression: template,
             evaluation,
-            value,
+            runtime_value: RuntimeValue::from_recorded(self.graph, value)?,
             scope,
             support: support.into(),
             reasons,
@@ -1078,7 +1078,7 @@ impl Evaluator<'_, '_> {
         let evaluated = result.evaluated;
         self.answer_evaluation = Some(evaluated.evaluation);
         let status = match evaluated
-            .value
+            .value()
             .map(|value| self.graph.scalar(value))
             .transpose()?
         {
@@ -1332,7 +1332,7 @@ impl Evaluator<'_, '_> {
             evaluated: Evaluated {
                 expression,
                 evaluation,
-                value,
+                runtime_value: RuntimeValue::from_recorded(self.graph, value)?,
                 scope,
                 support,
                 reasons,
@@ -1550,7 +1550,7 @@ impl Evaluator<'_, '_> {
                     &self.bindings,
                     input
                         .evaluated
-                        .value
+                        .value()
                         .map(|value| self.graph.scalar(value))
                         .transpose()?,
                     input.evaluated.expression,
@@ -1595,7 +1595,7 @@ impl Evaluator<'_, '_> {
                 let right = self.universal_pointwise(plan, template, domains, *else_branch)?;
                 comparison = match cond
                     .evaluated
-                    .value
+                    .value()
                     .map(|value| self.graph.scalar(value))
                     .transpose()?
                 {
@@ -1742,7 +1742,7 @@ impl Evaluator<'_, '_> {
                 for (param, argument) in params.iter().zip(&arguments) {
                     self.formal
                         .insert(param.name.clone(), argument.evaluated.clone());
-                    if let Some(value) = argument.evaluated.value {
+                    if let Some(value) = argument.evaluated.value() {
                         self.bindings.push(Binding {
                             name: param.name.clone(),
                             ty: param.ty.erase(),

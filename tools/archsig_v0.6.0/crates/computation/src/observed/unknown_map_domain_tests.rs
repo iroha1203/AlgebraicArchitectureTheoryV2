@@ -52,10 +52,10 @@ fn reject(r: &ObservedEvaluation, i: usize, bad: Node) {
 #[test]
 fn map_owner_cases_reject_changed_assignment_domain_and_scope() {
     let r = example("empty_varying");
-    let c=r.cases.iter().find(|c| matches!(&r.nodes[c.values[0].0].payload,Some(Payload::Scalar(Scalar::Subject{subject,..}))if subject=="A")).unwrap();
+    let c=r.cases.iter().find(|c| matches!(r.nodes[c.values[0].0].scalar_payload(),Some(Scalar::Subject{subject,..})if subject=="A")).unwrap();
     let i = c.values[0].0;
     let mut bad = r.nodes[i].clone();
-    let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut bad.payload else {
+    let Some(Scalar::Subject { subject, .. }) = bad.scalar_payload_mut() else {
         panic!()
     };
     *subject = "B".into();

@@ -347,7 +347,7 @@ fn repeated_observed_maps_on_an_assembly_build_the_raw_rows_once() {
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
     assert_eq!(
         result.nodes[result.answers[1].outputs["value"].0].payload,
-        Some(Payload::Scalar(Scalar::Bool(true)))
+        Some(Payload::scalar(Scalar::Bool(true)))
     );
     assert_eq!(count.get(), 2);
     replay(&result, &result.nodes, &result.contexts).unwrap();
@@ -409,7 +409,7 @@ fn integer_law_assembly_keeps_unsupported_map_transport_and_blocks_only_its_mode
         if support {
             nodes[projected].support = Support::default();
         } else {
-            nodes[projected].payload = Some(Payload::Scalar(Scalar::Subject {
+            nodes[projected].payload = Some(Payload::scalar(Scalar::Subject {
                 snapshot: "v".into(),
                 subject: "A".into(),
                 entity: "Assemble.Root".into(),

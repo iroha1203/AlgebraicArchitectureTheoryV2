@@ -37,7 +37,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     .unwrap()
 }
 fn path_index(r: &ObservedEvaluation) -> usize {
-    r.nodes.iter().enumerate().filter(|(_,n)|matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p)))if p.step.as_ref().is_some_and(|s|s.word_tail.is_empty()))).map(|(i,_)|i).next().unwrap()
+    r.nodes.iter().enumerate().filter(|(_,n)|matches!(n.scalar_payload(),Some(Scalar::Path(p))if p.step.as_ref().is_some_and(|s|s.word_tail.is_empty()))).map(|(i,_)|i).next().unwrap()
 }
 #[test]
 fn repeated_correspondence_paths_share_the_original_maps() {
@@ -60,7 +60,7 @@ fn repeated_correspondence_paths_share_the_original_maps() {
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
     assert_eq!(
         result.nodes[result.answers[0].outputs["value"].0].payload,
-        Some(Payload::Scalar(Scalar::Bool(true)))
+        Some(Payload::scalar(Scalar::Bool(true)))
     );
     assert_eq!(count.get(), 3);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
@@ -70,7 +70,7 @@ fn repeated_correspondence_paths_share_the_original_maps() {
 fn correspondence_action_maps_all_41_original_atoms_and_collapses_exact_external_complement() {
     let r = example(false);
     let i = path_index(&r);
-    let Some(Payload::Scalar(Scalar::Path(p))) = &r.nodes[i].payload else {
+    let Some(Scalar::Path(p)) = r.nodes[i].scalar_payload() else {
         panic!()
     };
     let step = p.step.as_ref().unwrap();
@@ -304,7 +304,7 @@ fn correspondence_aligned_full_action_keeps_external_existence_but_collapses_its
     .unwrap();
     assert_eq!(r.status(), "complete");
     let i = path_index(&r);
-    let Some(Payload::Scalar(Scalar::Path(p))) = &r.nodes[i].payload else {
+    let Some(Scalar::Path(p)) = r.nodes[i].scalar_payload() else {
         panic!()
     };
     let step = p.step.as_ref().unwrap();

@@ -448,7 +448,7 @@ fn scalar(
         match g.nodes.get(at.0).and_then(|n| n.payload.as_ref()) {
             Some(Payload::Scalar(s)) => {
                 numeric::check(s, c).map_err(invalid)?;
-                return Ok(Some(s.clone()));
+                return Ok(Some(s.as_ref().clone()));
             }
             Some(Payload::Evaluation { value, .. }) => {
                 if value.is_some_and(|v| v.0 >= at.0) {

@@ -707,7 +707,7 @@ impl Environment<'_> {
             0,
         );
         self.tick()?;
-        let Some(Payload::Scalar(Scalar::Path(path))) = &node.payload else {
+        let Some(Scalar::Path(path)) = node.scalar_payload() else {
             return Err(internal!("元path式の結果値がPathでない").into());
         };
         if node.ty != NodeType::Value(Scalar::Path(path.clone()).ty())

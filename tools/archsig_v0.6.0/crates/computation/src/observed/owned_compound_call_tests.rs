@@ -3,12 +3,8 @@ mod compound_call_fixture {
     include!("../../../../tests/common/owned_compound_calls.rs");
 }
 fn compound_call_result(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        compound_call_fixture::input(false, "r1"),
-        asks,
-        &quiet(),
-    )
-    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let r = evaluate_observed_bytes(compound_call_fixture::input(false, "r1"), asks, &quiet())
+        .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -26,7 +22,7 @@ fn compound_calls_recheck_nested_return_members_types_order_support_and_scope() 
     // 入れ子の戻り値の再検査の代表: 戻り値のlistの要素を落とすと核が拒否する。
     let target = r.answers[0].outputs["value"].0;
     rejects_mutated_prefix(&r, target, |ns| {
-        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut ns[target].payload else {
+        let Some(Scalar::Tuple(items)) = ns[target].scalar_payload_mut() else {
             panic!("tuple")
         };
         let Scalar::List { items, .. } = &mut items[0] else {
@@ -81,8 +77,7 @@ fn compound_call_member_stop() {
             None
         }
     });
-    let prepared =
-        prepare_observed(compound_call_fixture::input(false, "r1"), &asks, &c).unwrap();
+    let prepared = prepare_observed(compound_call_fixture::input(false, "r1"), &asks, &c).unwrap();
     let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {

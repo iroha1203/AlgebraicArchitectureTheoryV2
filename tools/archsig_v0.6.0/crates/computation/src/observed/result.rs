@@ -14,6 +14,7 @@ mod completion_graph;
 mod data_constructor;
 pub(crate) use data_constructor::DataConstructor;
 mod semantic_result;
+pub(in crate::observed) use semantic_result::canonical_fingerprint;
 pub(super) use semantic_result::concise_reasons;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -57,7 +58,7 @@ impl Decision {
         }
     }
 }
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct NodeRef(pub(crate) usize);
 impl NodeRef {
     pub(crate) fn wire(self) -> Json {
@@ -480,37 +481,110 @@ impl PartialEq for Scalar {
     }
 }
 impl Eq for Scalar {}
-/// 不変metadataを共有し、実変更を行うconsumerだけが所有コピーを作る。
-#[derive(Clone, Debug, Default)]
-pub(crate) struct Scope(std::sync::Arc<ScopeData>);
-#[derive(Clone, Debug, Default)]
-pub(crate) struct ScopeData {
+/// Quantifier references vary by consumer; metadata and merge rules are shared.
+pub(crate) type Scope = ScopeOf<NodeRef, super::call::Context, (NodeRef, usize)>;
+pub(crate) type ScopeData = ScopeDataOf<NodeRef, super::call::Context, (NodeRef, usize)>;
+pub(crate) type Quantifier = QuantifierOf<NodeRef, super::call::Context, (NodeRef, usize)>;
+
+#[derive(Clone, Debug)]
+pub(crate) struct ScopeOf<D: Clone, C: Clone, A: Clone>(std::sync::Arc<ScopeDataOf<D, C, A>>);
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub(crate) struct ScopeMetadata {
     pub readings: BTreeSet<String>,
     pub snapshots: BTreeSet<String>,
     pub modes: BTreeSet<String>,
     pub completions: bool,
     pub assignments: bool,
-    pub quantifiers: Vec<Quantifier>,
 }
-impl std::ops::Deref for Scope {
-    type Target = ScopeData;
+#[derive(Clone, Debug)]
+pub(crate) struct ScopeDataOf<D: Clone, C: Clone, A: Clone> {
+    metadata: std::sync::Arc<ScopeMetadata>,
+    pub quantifiers: Vec<QuantifierOf<D, C, A>>,
+}
+impl<D: Clone, C: Clone, A: Clone> Default for ScopeDataOf<D, C, A> {
+    fn default() -> Self {
+        Self {
+            metadata: Default::default(),
+            quantifiers: Vec::new(),
+        }
+    }
+}
+impl<D: Clone, C: Clone, A: Clone> Default for ScopeOf<D, C, A> {
+    fn default() -> Self {
+        ScopeDataOf::default().into()
+    }
+}
+impl<D: Clone, C: Clone, A: Clone> std::ops::Deref for ScopeDataOf<D, C, A> {
+    type Target = ScopeMetadata;
+    fn deref(&self) -> &Self::Target {
+        &self.metadata
+    }
+}
+impl<D: Clone, C: Clone, A: Clone> std::ops::DerefMut for ScopeDataOf<D, C, A> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        std::sync::Arc::make_mut(&mut self.metadata)
+    }
+}
+impl<D: Clone, C: Clone, A: Clone> std::ops::Deref for ScopeOf<D, C, A> {
+    type Target = ScopeDataOf<D, C, A>;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
-impl std::ops::DerefMut for Scope {
+impl<D: Clone, C: Clone, A: Clone> std::ops::DerefMut for ScopeOf<D, C, A> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         std::sync::Arc::make_mut(&mut self.0)
     }
 }
-impl From<ScopeData> for Scope {
-    fn from(data: ScopeData) -> Self {
+impl<D: Clone, C: Clone, A: Clone> From<ScopeDataOf<D, C, A>> for ScopeOf<D, C, A> {
+    fn from(data: ScopeDataOf<D, C, A>) -> Self {
         Self(std::sync::Arc::new(data))
     }
 }
+impl<D: Clone, C: Clone, A: Clone> ScopeOf<D, C, A> {
+    #[cfg(test)]
+    pub(super) fn shares_metadata<F: Clone, G: Clone, H: Clone>(
+        &self,
+        other: &ScopeOf<F, G, H>,
+    ) -> bool {
+        std::sync::Arc::ptr_eq(&self.metadata, &other.metadata)
+    }
+    /// Conversion shares metadata; retain callbacks never clone its BTreeSets.
+    pub(super) fn try_map_references<E, F: Clone, G: Clone, H: Clone>(
+        &self,
+        mut domain: impl FnMut(&D) -> Result<F, E>,
+        mut context: impl FnMut(&C) -> Result<G, E>,
+        mut assembly: impl FnMut(&A) -> Result<H, E>,
+    ) -> Result<ScopeOf<F, G, H>, E> {
+        let mut quantifiers = Vec::with_capacity(self.quantifiers.len());
+        for q in &self.quantifiers {
+            quantifiers.push(QuantifierOf {
+                kind: q.kind,
+                name: q.name.clone(),
+                ty: q.ty.clone(),
+                occurrence: q.occurrence,
+                domain: q.domain.as_ref().map(&mut domain).transpose()?,
+                context: q.context.as_ref().map(&mut context).transpose()?,
+                assembly_instance: q
+                    .assembly_instance
+                    .as_ref()
+                    .map(&mut assembly)
+                    .transpose()?,
+            });
+        }
+        Ok(ScopeDataOf {
+            metadata: self.metadata.clone(),
+            quantifiers,
+        }
+        .into())
+    }
+}
 // 同じ元出現の実域間の並びを無視し、初出occurrence順と各要素の多重度を保つ。
-fn same_quantifiers(left: &[Quantifier], right: &[Quantifier]) -> bool {
-    let occurrences = |quantifiers: &[Quantifier]| {
+fn same_quantifiers<D: Clone + Eq, C: Clone + Eq, A: Clone + Eq>(
+    left: &[QuantifierOf<D, C, A>],
+    right: &[QuantifierOf<D, C, A>],
+) -> bool {
+    let occurrences = |quantifiers: &[QuantifierOf<D, C, A>]| {
         let mut order = Vec::new();
         for q in quantifiers {
             if !order.contains(&q.occurrence) {
@@ -528,27 +602,27 @@ fn same_quantifiers(left: &[Quantifier], right: &[Quantifier]) -> bool {
                     == right.iter().filter(|actual| *actual == q).count()
             }))
 }
-impl PartialEq for Scope {
+impl<D: Clone + Eq, C: Clone + Eq, A: Clone + Ord> PartialEq for ScopeOf<D, C, A> {
     fn eq(&self, other: &Self) -> bool {
         std::sync::Arc::ptr_eq(&self.0, &other.0)
             || (self.same_metadata(other)
                 && same_quantifiers(&self.quantifiers, &other.quantifiers))
     }
 }
-impl Eq for Scope {}
+impl<D: Clone + Eq, C: Clone + Eq, A: Clone + Ord> Eq for ScopeOf<D, C, A> {}
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct Quantifier {
+pub(crate) struct QuantifierOf<D, C, A> {
     pub kind: archsig_input::law::ast::QuantKind,
     pub name: String,
     pub ty: Type,
-    pub domain: Option<NodeRef>,
+    pub domain: Option<D>,
     // 元AST出現を区別する内部索引。wireの名前だけをidentityにしない。
     pub occurrence: (usize, usize),
-    pub(super) context: Option<super::call::Context>,
+    pub(super) context: Option<C>,
     // Unresolved domains have no Domain node to distinguish their actual occurrences.
-    pub(super) assembly_instance: Option<(NodeRef, usize)>,
+    pub(super) assembly_instance: Option<A>,
 }
-impl Quantifier {
+impl QuantifierOf<NodeRef, super::call::Context, (NodeRef, usize)> {
     pub(super) fn wire(&self) -> Json {
         let mut fields = BTreeMap::from([
             (
@@ -568,7 +642,7 @@ impl Quantifier {
         Json::Obj(fields.into())
     }
 }
-impl Scope {
+impl<D: Clone + Eq, C: Clone + Eq, A: Clone + Ord> ScopeOf<D, C, A> {
     /// 内容を変えず既存の所有を共有する。意味上のScope同値とは別に、
     /// 実Domain/Contextを含む量化列の順序・重複まで完全一致した場合だけ使う。
     pub(super) fn reuse_if_exact(&mut self, anchor: &Self) -> bool {
@@ -580,11 +654,12 @@ impl Scope {
         }
     }
     fn same_metadata(&self, other: &Self) -> bool {
-        self.readings == other.readings
-            && self.snapshots == other.snapshots
-            && self.modes == other.modes
-            && self.completions == other.completions
-            && self.assignments == other.assignments
+        std::sync::Arc::ptr_eq(&self.metadata, &other.metadata)
+            || (self.readings == other.readings
+                && self.snapshots == other.snapshots
+                && self.modes == other.modes
+                && self.completions == other.completions
+                && self.assignments == other.assignments)
     }
     // 元式を展開したScopeを順序の正本にする。異なる実Context/Domainは
     // 省略せず、同じ元出現の実域間の表示順には意味を与えない。
@@ -600,17 +675,17 @@ impl Scope {
                 .unwrap_or(original.quantifiers.len())
         });
     }
-    pub(super) fn from_quantifiers(quantifiers: Vec<Quantifier>) -> Self {
-        ScopeData {
+    pub(super) fn from_quantifiers(quantifiers: Vec<QuantifierOf<D, C, A>>) -> Self {
+        ScopeDataOf {
             quantifiers,
-            ..ScopeData::default()
+            ..ScopeDataOf::default()
         }
         .into()
     }
-    pub(crate) fn add_quantifier(&mut self, quantifier: Quantifier) {
+    pub(crate) fn add_quantifier(&mut self, quantifier: QuantifierOf<D, C, A>) {
         self.merge_quantifiers(&Self::from_quantifiers(vec![quantifier]));
     }
-    fn append_quantifier(&mut self, quantifier: &Quantifier) {
+    fn append_quantifier(&mut self, quantifier: &QuantifierOf<D, C, A>) {
         let quantifiers = &mut self.quantifiers;
         // A single binder does not need Vec's initial multi-element allocation.
         // Later growth retains the usual amortized policy for large families.
@@ -622,16 +697,14 @@ impl Scope {
     pub(crate) fn merge_quantifiers(&mut self, other: &Self) {
         let mut assembly_instances = None;
         for q in &other.quantifiers {
-            if let Some(instance) = q.assembly_instance {
+            if let Some(instance) = &q.assembly_instance {
                 let instances = assembly_instances.get_or_insert_with(|| {
                     self.quantifiers
                         .iter()
-                        .filter_map(|q| {
-                            q.assembly_instance.map(|(source, index)| (source.0, index))
-                        })
+                        .filter_map(|q| q.assembly_instance.clone())
                         .collect::<BTreeSet<_>>()
                 });
-                if instances.insert((instance.0.0, instance.1)) {
+                if instances.insert(instance.clone()) {
                     self.append_quantifier(q);
                 }
                 continue;
@@ -639,7 +712,7 @@ impl Scope {
             if self.quantifiers.contains(q) {
                 continue;
             }
-            let same = |old: &Quantifier| {
+            let same = |old: &QuantifierOf<D, C, A>| {
                 old.occurrence == q.occurrence
                     && old.assembly_instance == q.assembly_instance
                     && old.kind == q.kind
@@ -669,7 +742,7 @@ impl Scope {
         if !self.same_metadata(other) {
             return false;
         }
-        let normalize = |quantifiers: &[Quantifier]| {
+        let normalize = |quantifiers: &[QuantifierOf<D, C, A>]| {
             let mut qs = Vec::new();
             for q in quantifiers {
                 let mut q = q.clone();
@@ -692,12 +765,24 @@ impl Scope {
         self.merge_quantifiers(other);
     }
     pub(super) fn merge_metadata(&mut self, other: &Self) {
+        if std::sync::Arc::ptr_eq(&self.metadata, &other.metadata) {
+            return;
+        }
         if other.readings.is_subset(&self.readings)
             && other.snapshots.is_subset(&self.snapshots)
             && other.modes.is_subset(&self.modes)
             && (!other.completions || self.completions)
             && (!other.assignments || self.assignments)
         {
+            return;
+        }
+        if self.readings.is_empty()
+            && self.snapshots.is_empty()
+            && self.modes.is_empty()
+            && !self.completions
+            && !self.assignments
+        {
+            self.metadata = other.metadata.clone();
             return;
         }
         let data = std::sync::Arc::make_mut(&mut self.0);
@@ -714,6 +799,8 @@ impl Scope {
             self.assignments = false;
         }
     }
+}
+impl ScopeOf<NodeRef, super::call::Context, (NodeRef, usize)> {
     pub(crate) fn wire(&self) -> Json {
         Json::obj([
             (
@@ -746,18 +833,20 @@ impl Scope {
         ])
     }
 }
+pub(crate) type ReasonKind = ReasonKindOf<NodeRef>;
+pub(crate) type Reason = ReasonOf<NodeRef>;
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ReasonKind {
+pub(crate) enum ReasonKindOf<R> {
     Missing,
     VisibilityInsufficient {
         locals: Vec<String>,
-        coordinates: Vec<NodeRef>,
+        coordinates: Vec<R>,
     },
     DependencyBlocked {
         request: String,
     },
     ConditionFailed {
-        condition: NodeRef,
+        condition: R,
         construction: &'static str,
     },
     UnsupportedAlgorithm {
@@ -769,10 +858,10 @@ pub(crate) enum ReasonKind {
     Internal(String),
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) struct Reason {
-    pub kind: ReasonKind,
+pub(crate) struct ReasonOf<R> {
+    pub kind: ReasonKindOf<R>,
     pub request: String,
-    pub dependencies: Vec<NodeRef>,
+    pub dependencies: Vec<R>,
     pub missing: Vec<Fact>,
     pub location: Option<Location>,
 }
@@ -795,54 +884,89 @@ impl Reason {
             location: None,
         }
     }
+    pub(crate) fn wire(&self) -> Json {
+        self.wire_with_references(|reference| Some(reference.wire()))
+    }
+}
+impl<R> ReasonOf<R> {
+    pub(in crate::observed) fn sort_key(&self) -> (String, (String, String, usize), String) {
+        fn location_key(location: &Option<Location>) -> (String, String, usize) {
+            match location {
+                Some(Location::Law { span }) => ("law".into(), String::new(), span.0),
+                Some(Location::Definition {
+                    input,
+                    pointer,
+                    span,
+                }) => (input.clone(), pointer.clone(), span.map_or(0, |s| s.0)),
+                Some(Location::ArchMap { pointer, span }) => {
+                    ("archmap".into(), pointer.clone(), span.map_or(0, |s| s.0))
+                }
+                None => (String::new(), String::new(), 0),
+            }
+        }
+        (
+            self.code().to_owned(),
+            location_key(&self.location),
+            self.request.clone(),
+        )
+    }
     pub(crate) fn code(&self) -> &str {
         match &self.kind {
-            ReasonKind::Missing => "missing_observation",
-            ReasonKind::VisibilityInsufficient { .. } => "visibility_insufficient",
-            ReasonKind::DependencyBlocked { .. } => "dependency_blocked",
-            ReasonKind::ConditionFailed { .. } => "condition_failed",
-            ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
-            ReasonKind::Stop(signal) => {
+            ReasonKindOf::Missing => "missing_observation",
+            ReasonKindOf::VisibilityInsufficient { .. } => "visibility_insufficient",
+            ReasonKindOf::DependencyBlocked { .. } => "dependency_blocked",
+            ReasonKindOf::ConditionFailed { .. } => "condition_failed",
+            ReasonKindOf::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
+            ReasonKindOf::Stop(signal) => {
                 archsig_input::result::ResultIssue::Cancelled(*signal).code()
             }
-            ReasonKind::Internal(_) => "internal",
+            ReasonKindOf::Internal(_) => "internal",
         }
     }
-    pub(crate) fn wire(&self) -> Json {
+    pub(in crate::observed) fn wire_with_references(
+        &self,
+        mut reference: impl FnMut(&R) -> Option<Json>,
+    ) -> Json {
         let (message, details) = match &self.kind {
-            ReasonKind::Missing => (
+            ReasonKindOf::Missing => (
                 "observation of a primitive slot is required".to_owned(),
                 Json::obj([]),
             ),
-            ReasonKind::VisibilityInsufficient {
+            ReasonKindOf::VisibilityInsufficient {
                 locals,
                 coordinates,
             } => (
                 format!(
                     "insufficient local read permissions: locals {}, coordinates {}",
                     Json::Arr(locals.iter().map(Json::str).collect()).canonical(),
-                    refs(coordinates).canonical()
+                    Json::Arr(coordinates.iter().filter_map(&mut reference).collect()).canonical()
                 ),
                 Json::obj([
                     ("locals", Json::Arr(locals.iter().map(Json::str).collect())),
-                    ("coordinates", refs(coordinates)),
+                    (
+                        "coordinates",
+                        Json::Arr(coordinates.iter().filter_map(&mut reference).collect()),
+                    ),
                 ]),
             ),
-            ReasonKind::DependencyBlocked { request } => (
+            ReasonKindOf::DependencyBlocked { request } => (
                 format!("selected dependency output does not provide an ordinary value: {request}"),
                 Json::obj([("request", Json::str(request))]),
             ),
-            ReasonKind::ConditionFailed {
+            ReasonKindOf::ConditionFailed {
                 condition,
                 construction,
             } => (
                 format!("actual value does not satisfy the construction condition: {construction}"),
                 Json::obj([
-                    ("condition", condition.wire()),
+                    (
+                        "condition",
+                        reference(condition).unwrap_or_else(|| Json::obj([])),
+                    ),
                     ("construction", Json::str(*construction)),
                 ]),
             ),
-            ReasonKind::UnsupportedAlgorithm {
+            ReasonKindOf::UnsupportedAlgorithm {
                 question,
                 operand_types,
                 method,
@@ -861,17 +985,25 @@ impl Reason {
                     ("method", Json::str(method)),
                 ]),
             ),
-            ReasonKind::Internal(op) => (
+            ReasonKindOf::Internal(op) => (
                 format!("internal failure during {op}"),
                 Json::obj([("operation", Json::str(op))]),
             ),
-            ReasonKind::Stop(r) => {
+            ReasonKindOf::Stop(r) => {
                 let mut result = r.issue();
                 let Json::Obj(wire) = &mut result else {
                     unreachable!()
                 };
                 wire.insert("request".into(), Json::str(&self.request));
-                wire.insert("dependencies".into(), refs(&self.dependencies));
+                wire.insert(
+                    "dependencies".into(),
+                    Json::Arr(
+                        self.dependencies
+                            .iter()
+                            .filter_map(&mut reference)
+                            .collect(),
+                    ),
+                );
                 return result;
             }
         };
@@ -879,7 +1011,15 @@ impl Reason {
             ("code".into(), Json::str(self.code())),
             ("message".into(), Json::str(message)),
             ("request".into(), Json::str(&self.request)),
-            ("dependencies".into(), refs(&self.dependencies)),
+            (
+                "dependencies".into(),
+                Json::Arr(
+                    self.dependencies
+                        .iter()
+                        .filter_map(&mut reference)
+                        .collect(),
+                ),
+            ),
             (
                 "missing".into(),
                 Json::Arr(self.missing.iter().map(Fact::wire).collect()),
@@ -898,27 +1038,7 @@ pub(crate) fn reasons_equal(left: &[Reason], right: &[Reason]) -> bool {
 }
 
 pub(crate) fn sort_reasons(reasons: &mut Vec<Reason>) {
-    fn location_key(location: &Option<Location>) -> (String, String, usize) {
-        match location {
-            Some(Location::Law { span }) => ("law".into(), String::new(), span.0),
-            Some(Location::Definition {
-                input,
-                pointer,
-                span,
-            }) => (input.clone(), pointer.clone(), span.map_or(0, |s| s.0)),
-            Some(Location::ArchMap { pointer, span }) => {
-                ("archmap".into(), pointer.clone(), span.map_or(0, |s| s.0))
-            }
-            None => (String::new(), String::new(), 0),
-        }
-    }
-    reasons.sort_by_key(|r| {
-        (
-            r.code().to_owned(),
-            location_key(&r.location),
-            r.request.clone(),
-        )
-    });
+    reasons.sort_by_key(Reason::sort_key);
     reasons.dedup_by(|a, b| a.wire() == b.wire());
 }
 
@@ -1134,7 +1254,7 @@ pub(crate) enum Payload {
         checked: usize,
         instances: Vec<NodeRef>,
     },
-    Scalar(Scalar),
+    Scalar(std::sync::Arc<Scalar>),
     Expression {
         location: Location,
         parameters: Vec<(String, Type)>,
@@ -1287,6 +1407,11 @@ pub(super) enum EvidenceClass {
     Proof,
 }
 impl Payload {
+    /// Record one immutable value; callers can retain the same allocation.
+    pub(crate) fn scalar(value: impl Into<std::sync::Arc<Scalar>>) -> Self {
+        Self::Scalar(value.into())
+    }
+
     fn evidence_kind(&self) -> Option<EvidenceKind> {
         match self {
             Self::Construction(value) => value.evidence_kind(),
@@ -1689,6 +1814,22 @@ pub(crate) struct Node {
     pub reasons: Vec<Reason>,
 }
 impl Node {
+    pub(crate) fn scalar_payload(&self) -> Option<&Scalar> {
+        match &self.payload {
+            Some(Payload::Scalar(value)) => Some(value.as_ref()),
+            _ => None,
+        }
+    }
+
+    /// Mutation fixtures detach their copy instead of changing a live producer.
+    #[cfg(test)]
+    pub(crate) fn scalar_payload_mut(&mut self) -> Option<&mut Scalar> {
+        match &mut self.payload {
+            Some(Payload::Scalar(value)) => Some(std::sync::Arc::make_mut(value)),
+            _ => None,
+        }
+    }
+
     /// payload/実refsはexact、支持だけは共有表現と旧flatの意味同値を認める。
     pub(super) fn matches_with_support(
         &self,
@@ -2136,6 +2277,56 @@ impl ObservedEvaluation {
     }
 }
 
+/// Terminal diagnostic display shares the saved-result cleanup rules.
+pub(in crate::observed) fn public_reason_wire(reason: &Reason) -> Json {
+    let mut wire = reason.wire();
+    semantic_result::clean_reasons(&mut wire, &Control::unlimited(), Checkpoint::Expression)
+        .expect("ordinary reason projection");
+    wire
+}
+
+/// Project a recorded tail by borrowing its nodes. Closed delivery owns the
+/// prepared inputs once and never needs to copy a partial body into another Graph.
+pub(in crate::observed) fn project_recorded_tail(
+    prepared: &PreparedObserved,
+    nodes: &[Node],
+    answers: &[Answer],
+    issues: &[Reason],
+    status: &str,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<Json, Signal> {
+    control.checkpoint(point)?;
+    let mut result = Json::obj([
+        (
+            "inputs",
+            archsig_input::result::input_identities_wire(prepared.inputs().inputs()),
+        ),
+        ("status", Json::str(status)),
+        (
+            "requests",
+            Json::Arr(
+                prepared
+                    .requests()
+                    .requests()
+                    .iter()
+                    .map(|request| request.wire())
+                    .collect(),
+            ),
+        ),
+        (
+            "answers",
+            Json::Arr(answers.iter().map(Answer::wire).collect()),
+        ),
+        (
+            "issues",
+            Json::Arr(issues.iter().map(Reason::wire).collect()),
+        ),
+    ]);
+    semantic_result::compact(&mut result, nodes, control, point)?;
+    Ok(result)
+}
+
 // Graph の表は、検査付きの末尾追加だけが旧prefix identityを保つ。
 // 可変アクセス・表の複製では、内容が同じでも保存済みprefixを失効させる。
 #[derive(Debug)]
@@ -2241,6 +2432,22 @@ pub(crate) struct Graph {
     pub(super) checked_answers: Vec<(usize, Answer)>,
     control: Control,
 }
+/// Fixed prefix of a private delivery Graph. Nodes are not cloned; the three
+/// append-only arenas prove prefix immutability by their existing identities.
+/// Auxiliary registries contain references/Context only and are copied once per
+/// root, not once per body. No successful validation is represented by this mark.
+pub(super) struct GraphSuffixCheckpoint {
+    nodes: (usize, std::rc::Rc<()>, bool),
+    contexts: (usize, std::rc::Rc<()>, bool),
+    iterations: (usize, std::rc::Rc<()>, bool),
+    frames: Vec<super::call::Frame>,
+    instances: Vec<super::call::Instance>,
+    cases: Vec<super::call::CompletionCase>,
+    witnesses: Vec<UniversalWitness>,
+    requests: Vec<super::request::Request>,
+    answers: Vec<(usize, Answer)>,
+    active: super::call::Context,
+}
 #[derive(Debug)]
 pub(crate) enum ValidationFailure {
     Internal(InternalError),
@@ -2270,7 +2477,90 @@ impl From<Signal> for ValidationFailure {
         Self::Stop(s)
     }
 }
+impl GraphSuffixCheckpoint {
+    pub(super) fn node_len(&self) -> usize {
+        self.nodes.0
+    }
+    pub(super) fn context_limits(&self) -> [usize; 4] {
+        [
+            self.frames.len(),
+            self.iterations.0,
+            self.instances.len(),
+            self.cases.len(),
+        ]
+    }
+    pub(super) fn contains_context(&self, context: super::call::Context) -> bool {
+        context.frame.is_none_or(|i| i < self.frames.len())
+            && context.iteration.is_none_or(|i| i < self.iterations.0)
+            && context.instance.is_none_or(|i| i < self.instances.len())
+            && context.case.is_none_or(|i| i < self.cases.len())
+    }
+}
 impl Graph {
+    pub(super) fn suffix_checkpoint(&self) -> GraphSuffixCheckpoint {
+        GraphSuffixCheckpoint {
+            nodes: (
+                self.nodes.len(),
+                self.nodes.prefix_identity(),
+                self.nodes.checked_append_only,
+            ),
+            contexts: (
+                self.contexts.len(),
+                self.contexts.prefix_identity(),
+                self.contexts.checked_append_only,
+            ),
+            iterations: (
+                self.iterations.len(),
+                self.iterations.prefix_identity(),
+                self.iterations.checked_append_only,
+            ),
+            frames: self.frames.clone(),
+            instances: self.instances.clone(),
+            cases: self.cases.clone(),
+            witnesses: self.universal_witnesses.clone(),
+            requests: self.requests.clone(),
+            answers: self.checked_answers.clone(),
+            active: self.active,
+        }
+    }
+    /// The caller first closes the completed body and its committed diagnostics.
+    /// This operation neither traverses the discarded Graph nor re-enters Control,
+    /// so the same cleanup is valid after Stop. Arbitrary prefix mutation rejects
+    /// the operation before any table is changed; raw/full execution never uses it.
+    pub(super) fn discard_suffix(
+        &mut self,
+        prefix: &GraphSuffixCheckpoint,
+    ) -> Result<(), InternalError> {
+        fn same<T>(entries: &GraphEntries<T>, saved: &(usize, std::rc::Rc<()>, bool)) -> bool {
+            entries.len() >= saved.0 && std::rc::Rc::ptr_eq(&entries.identity, &saved.1)
+        }
+        if !same(&self.nodes, &prefix.nodes)
+            || !same(&self.contexts, &prefix.contexts)
+            || !same(&self.iterations, &prefix.iterations)
+            || self.active != prefix.active
+            || self.frames.get(..prefix.frames.len()) != Some(prefix.frames.as_slice())
+            || self.instances.get(..prefix.instances.len()) != Some(prefix.instances.as_slice())
+            || self.cases.get(..prefix.cases.len()) != Some(prefix.cases.as_slice())
+            || self.universal_witnesses.get(..prefix.witnesses.len())
+                != Some(prefix.witnesses.as_slice())
+            || self.requests != prefix.requests
+            || self.checked_answers != prefix.answers
+        {
+            return Err(internal!("配送bodyの固定prefixが変更された"));
+        }
+        self.nodes.values.truncate(prefix.nodes.0);
+        self.nodes.checked_append_only = prefix.nodes.2;
+        self.contexts.values.truncate(prefix.contexts.0);
+        self.contexts.checked_append_only = prefix.contexts.2;
+        self.iterations.values.truncate(prefix.iterations.0);
+        self.iterations.checked_append_only = prefix.iterations.2;
+        self.frames.truncate(prefix.frames.len());
+        self.instances.truncate(prefix.instances.len());
+        self.cases.truncate(prefix.cases.len());
+        self.universal_witnesses.truncate(prefix.witnesses.len());
+        Ok(())
+    }
+
     /// 封印されたnative結果の表示への転記。停止したControlで計算を再開しない。
     /// 任意のScalarや通常の推論nodeを挿入する経路には使えない。
     pub(super) fn retain_native(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
@@ -3652,7 +3942,7 @@ impl Graph {
         };
         self.universal_local_quantifier_inputs(*header, *domain, *body, &node.scope)?;
         if node.ty != NodeType::Value(Type::Bool)
-            || !matches!(&node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+            || !matches!(node.scalar_payload(), Some(Scalar::Bool(_)))
             || !matches!(&node.rule, Rule::Input {kind:"law",location:actual} if actual == location)
             || !node.evidence.is_empty()
             || !node
@@ -5614,6 +5904,11 @@ mod scope_cow_tests {
     }
     #[test]
     fn scope_noop_merges_restriction_and_single_order_keep_shared_storage() {
+        let empty = Scope::default();
+        let mut same_empty = empty.clone();
+        same_empty.merge_metadata(&Scope::default());
+        assert!(Arc::ptr_eq(&empty.0, &same_empty.0));
+
         let mut original = Scope::default();
         original.readings.insert("observed".into());
         original.snapshots.insert("a".into());
@@ -5657,8 +5952,11 @@ mod scope_cow_tests {
         let original = Scope::default();
         let mut changed = original.clone();
         let incoming: Scope = ScopeData {
-            assignments: true,
-            modes: BTreeSet::from(["design".into()]),
+            metadata: std::sync::Arc::new(ScopeMetadata {
+                assignments: true,
+                modes: BTreeSet::from(["design".into()]),
+                ..Default::default()
+            }),
             ..Default::default()
         }
         .into();
@@ -5680,11 +5978,13 @@ mod invariant_tests {
 
     fn quantified_scope(quantifiers: Vec<Quantifier>) -> Scope {
         ScopeData {
-            readings: BTreeSet::from(["observed".into()]),
-            snapshots: BTreeSet::from(["snapshot".into()]),
-            modes: BTreeSet::from(["finite".into()]),
+            metadata: std::sync::Arc::new(ScopeMetadata {
+                readings: BTreeSet::from(["observed".into()]),
+                snapshots: BTreeSet::from(["snapshot".into()]),
+                modes: BTreeSet::from(["finite".into()]),
+                ..Default::default()
+            }),
             quantifiers,
-            ..ScopeData::default()
         }
         .into()
     }
@@ -6138,7 +6438,7 @@ mod invariant_tests {
     fn integer() -> Node {
         Node {
             ty: NodeType::Value(Type::Z),
-            payload: Some(Payload::Scalar(Scalar::Z(2.into()))),
+            payload: Some(Payload::scalar(Scalar::Z(2.into()))),
             rule: Rule::Construction("evaluation"),
             arguments: vec![],
             support: vec![].into(),

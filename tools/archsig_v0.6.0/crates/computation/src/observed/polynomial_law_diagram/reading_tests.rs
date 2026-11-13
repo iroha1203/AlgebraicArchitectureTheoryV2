@@ -195,8 +195,8 @@ fn polynomial_missing_self_equality_retains_exact_inference_and_unknown_operands
                 ));
                 assert!(n.scope.completions && !n.evidence.is_empty());
                 assert!(matches!(
-                    raw.nodes[value.unwrap().0].payload,
-                    Some(Payload::Scalar(Scalar::Bool(true)))
+                    raw.nodes[value.unwrap().0].scalar_payload(),
+                    Some(Scalar::Bool(true))
                 ));
                 assert!(n.reasons.iter().any(|r| r.missing.iter().any(
                     |f| f.subject == "q" && f.field.as_deref() == Some("Family.Part.quantity")

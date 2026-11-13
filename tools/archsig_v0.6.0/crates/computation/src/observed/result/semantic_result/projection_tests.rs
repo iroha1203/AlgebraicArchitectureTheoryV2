@@ -173,7 +173,7 @@ fn saved_projection_keeps_legacy_bytes_for_checked_paths_and_nested_values() {
     assert!(
         nodes
             .iter()
-            .any(|node| matches!(node.payload, Some(Payload::Scalar(Scalar::Path(_)))))
+            .any(|node| matches!(node.scalar_payload(), Some(Scalar::Path(_))))
     );
 }
 
@@ -199,12 +199,12 @@ fn projection_keeps_payload_quantifiers_and_prunes_proofs_without_changing_full_
     let mut nodes = vec![
         node(
             NodeType::Value(Type::Bool),
-            Payload::Scalar(Scalar::Bool(true)),
+            Payload::scalar(Scalar::Bool(true)),
             vec![],
         ),
         node(
             NodeType::Value(Type::Bool),
-            Payload::Scalar(Scalar::Bool(false)),
+            Payload::scalar(Scalar::Bool(false)),
             vec![],
         ),
         node(
@@ -370,7 +370,7 @@ fn projection_keeps_payload_quantifiers_and_prunes_proofs_without_changing_full_
 fn projection_preserves_checkpoint_stop_and_freezes_control() {
     let nodes = vec![node(
         NodeType::Value(archsig_common::types::Type::Bool),
-        Payload::Scalar(Scalar::Bool(true)),
+        Payload::scalar(Scalar::Bool(true)),
         vec![],
     )];
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
@@ -428,7 +428,7 @@ fn evaluation_nodes(environment: Option<NodeRef>, value: Option<NodeRef>) -> Vec
     let mut nodes = vec![
         node(
             NodeType::Value(Type::Bool),
-            Payload::Scalar(Scalar::Bool(true)),
+            Payload::scalar(Scalar::Bool(true)),
             vec![],
         ),
         node(

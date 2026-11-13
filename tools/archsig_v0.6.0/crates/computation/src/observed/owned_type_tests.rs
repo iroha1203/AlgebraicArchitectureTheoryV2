@@ -204,14 +204,14 @@ fn owned_type_quantification_tuple_option_set_members_keep_each_original_owner()
         nodes[source].arguments.swap(len - 1, len - 2);
     });
     completion_mutation(&result, tuple, |nodes| {
-        let Some(Payload::Scalar(Scalar::Tuple(items))) = &mut nodes[tuple].payload else {
+        let Some(Scalar::Tuple(items)) = nodes[tuple].scalar_payload_mut() else {
             unreachable!()
         };
         assert_ne!(items[0], items[1]);
         items.swap(0, 1);
     });
     completion_mutation(&result, option, |nodes| {
-        let Some(Payload::Scalar(Scalar::Option { value, .. })) = &mut nodes[option].payload else {
+        let Some(Scalar::Option { value, .. }) = nodes[option].scalar_payload_mut() else {
             unreachable!()
         };
         let Some(item) = value else { unreachable!() };
@@ -221,7 +221,7 @@ fn owned_type_quantification_tuple_option_set_members_keep_each_original_owner()
         *subject = "r".into();
     });
     completion_mutation(&result, set, |nodes| {
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut nodes[set].payload else {
+        let Some(Scalar::Set { items, .. }) = nodes[set].scalar_payload_mut() else {
             unreachable!()
         };
         let Scalar::Subject { subject, .. } = &mut items[0] else {
@@ -230,7 +230,7 @@ fn owned_type_quantification_tuple_option_set_members_keep_each_original_owner()
         *subject = "r".into();
     });
     let mut reordered = result.nodes[..=set].to_vec();
-    let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut reordered[set].payload else {
+    let Some(Scalar::Set { items, .. }) = reordered[set].scalar_payload_mut() else {
         unreachable!()
     };
     items.reverse();
@@ -240,7 +240,7 @@ fn owned_type_quantification_tuple_option_set_members_keep_each_original_owner()
     );
     rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
     completion_mutation(&result, set, |nodes| {
-        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut nodes[set].payload else {
+        let Some(Scalar::Set { items, .. }) = nodes[set].scalar_payload_mut() else {
             unreachable!()
         };
         let Scalar::Subject { snapshot, .. } = &mut items[0] else {
@@ -607,17 +607,17 @@ fn owned_type_quantification_option_tag_changes_are_legal_members_but_rejected_i
                 == NodeType::Value(Type::Option(Box::new(element.clone()))))
     );
     for (target, donor) in [(somes[0].0, none), (none, somes[0].0)] {
-        let Some(Payload::Scalar(Scalar::Option {
+        let Some(Scalar::Option {
             element: original_element,
             value: original_tag,
-        })) = &result.nodes[target].payload
+        }) = result.nodes[target].scalar_payload()
         else {
             unreachable!()
         };
-        let Some(Payload::Scalar(Scalar::Option {
+        let Some(Scalar::Option {
             element: replacement_element,
             value: replacement_tag,
-        })) = &result.nodes[donor].payload
+        }) = result.nodes[donor].scalar_payload()
         else {
             unreachable!()
         };
@@ -695,13 +695,12 @@ fn owned_type_domain_member_checks_value_origin_scope_and_support_before_success
             let mut bad = original.clone();
             match mutation {
                 "value" => {
-                    let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut bad.payload
-                    else {
+                    let Some(Scalar::Subject { subject, .. }) = bad.scalar_payload_mut() else {
                         panic!("owned Ref member")
                     };
                     *subject = "r".into();
                 }
-                "value_type" => bad.payload = Some(Payload::Scalar(Scalar::Bool(true))),
+                "value_type" => bad.payload = Some(Payload::scalar(Scalar::Bool(true))),
                 "source" => bad.arguments[0] = bad.arguments[1],
                 "future_source" => bad.arguments[0] = NodeRef(domain),
                 "future_owner" => bad.arguments[1] = NodeRef(domain),

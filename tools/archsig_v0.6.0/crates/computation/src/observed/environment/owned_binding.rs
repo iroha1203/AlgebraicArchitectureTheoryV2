@@ -212,7 +212,7 @@ impl Environment<'_> {
                     return Err(internal!("所属束縛の元Answerが通常値でない").into());
                 };
                 Ok(Selected {
-                    scalar,
+                    scalar: std::sync::Arc::unwrap_or_clone(scalar),
                     scope: node.scope,
                     support: node.support.materialize(&self.control)?,
                     root: Some(root),
@@ -240,7 +240,7 @@ impl Environment<'_> {
         let original = self.indexes.subject(snapshot, subject)?;
         Ok(ConditionInput::Subject(Box::new(Node {
             ty: NodeType::Value(selected.scalar.ty()),
-            payload: Some(Payload::Scalar(selected.scalar.clone())),
+            payload: Some(Payload::scalar(selected.scalar.clone())),
             rule: Rule::Input {
                 kind: "subject",
                 location: Location::ArchMap {
@@ -521,7 +521,7 @@ impl Environment<'_> {
         self.tick()?;
         Ok(Some(Node {
             ty: NodeType::Value(Type::Bool),
-            payload: Some(Payload::Scalar(Scalar::Bool(true))),
+            payload: Some(Payload::scalar(Scalar::Bool(true))),
             rule: Rule::OwnedBinding(p.name.clone()),
             arguments,
             support: plan.checks.support.into(),

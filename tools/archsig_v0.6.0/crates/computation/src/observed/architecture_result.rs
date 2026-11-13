@@ -481,7 +481,7 @@ pub(super) fn selected_build(
                     graph.scalar(selected_root_reference(graph, *r, request)?)?
                 }
                 AnswerBinding::Projection(node) => {
-                    let Some(Payload::Scalar(value)) = &node.payload else {
+                    let Some(value) = node.scalar_payload() else {
                         return Err(internal!("buildのroot射影が原始値でない").into());
                     };
                     value

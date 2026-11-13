@@ -78,7 +78,7 @@ fn owned_type_domain_rejects_missing_duplicate_foreign_members_and_scope() {
         }
         reject(&r, i, bad);
     }
-    let later=r.nodes.iter().enumerate().find(|(j,n)|*j>i&&matches!(&n.payload,Some(Payload::Domain{ty:Type::Map(..),elements})if elements.len()==1&&matches!(&r.nodes[elements[0].0].payload,Some(Payload::Scalar(Scalar::Map{pairs,..}))if !pairs.is_empty()))).map(|(j,_)|j).unwrap();
+    let later=r.nodes.iter().enumerate().find(|(j,n)|*j>i&&matches!(&n.payload,Some(Payload::Domain{ty:Type::Map(..),elements})if elements.len()==1&&matches!(r.nodes[elements[0].0].scalar_payload(),Some(Scalar::Map{pairs,..})if !pairs.is_empty()))).map(|(j,_)|j).unwrap();
     let Some(Payload::Domain { elements, .. }) = &r.nodes[i].payload else {
         panic!()
     };

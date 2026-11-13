@@ -798,7 +798,7 @@ fn equivalent_support_does_not_hide_coordinated_fact_or_value_forgery() {
             let original = reference(&wire["value"]);
             let original = g.boolean(Some(original)).unwrap().unwrap();
             let opposite = g.nodes[..base].iter().position(|node|
-                matches!(node.payload, Some(Payload::Scalar(Scalar::Bool(value))) if value != original)
+                matches!(node.scalar_payload(), Some(Scalar::Bool(value)) if *value != original)
             ).map(NodeRef).unwrap();
             wire.insert("value".into(), opposite.wire());
             source.parts[index].arguments.push(opposite);

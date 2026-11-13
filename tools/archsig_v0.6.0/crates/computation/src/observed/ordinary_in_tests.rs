@@ -90,7 +90,7 @@ fn ordinary_in_uses_static_source_actual_members_and_complete_coverage() {
         .enumerate()
         .find_map(|(index, (node, context))| {
             (context.iteration == Some(0)
-                && matches!(node.payload, Some(Payload::Scalar(Scalar::Bool(_))))
+                && matches!(node.scalar_payload(), Some(Scalar::Bool(_)))
                 && matches!(node.rule, Rule::Input { kind: "law", .. }))
             .then_some(index)
         })

@@ -32,7 +32,7 @@ fn answer_projection_rechecks_original_root_path_value_type_scope_support_and_ar
     // 射影値の照合の代表: 射影した値を書き換えると核が拒否する。
     let at = projection(&r);
     rejects_mutated_prefix(&r, at, |ns| {
-        ns[at].payload = Some(Payload::Scalar(Scalar::Z(7.into())))
+        ns[at].payload = Some(Payload::scalar(Scalar::Z(7.into())))
     });
 }
 #[test]
@@ -47,8 +47,7 @@ fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_
         "current=evaluate(Applications.abIdentity,x=$nested.value[0].some[1][1])",
         "later=evaluate(Applications.abSeed)",
     ];
-    let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
+    let normal = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let params =
         match &normal.prepared.inputs().law().declarations()["Applications.abIdentity"].signature {

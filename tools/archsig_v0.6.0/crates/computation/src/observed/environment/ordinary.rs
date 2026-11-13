@@ -4,14 +4,51 @@ use super::*;
 pub(in crate::observed) struct Plan {
     span: (usize, usize),
     binder: bool,
-    pub value: Option<Scalar>,
-    pub reused: Option<NodeRef>,
+    pub value: PlannedValue,
     pub scope: Scope,
     pub scalar_scope: Scope,
     pub support: Support,
     pub reasons: Vec<Reason>,
     pub comparison: Option<(NodeRef, NodeRef)>,
     pub legacy: bool,
+}
+
+/// Mathematical output distinguishes a fresh producer from a reused input.
+/// Reuse carries an input position and never clones its Scalar contents.
+pub(in crate::observed) enum ReducedValue {
+    Fresh(Scalar),
+    Reuse(usize),
+    Unknown,
+}
+
+/// Recording resolves input positions into their actual producer identities.
+pub(in crate::observed) enum PlannedValue {
+    Fresh(std::sync::Arc<Scalar>),
+    Reuse(NodeRef),
+    Unknown,
+}
+impl PlannedValue {
+    pub fn reused(&self) -> Option<NodeRef> {
+        match self {
+            Self::Reuse(reference) => Some(*reference),
+            _ => None,
+        }
+    }
+}
+
+pub(in crate::observed) struct Outcome {
+    pub value: ReducedValue,
+    pub comparison: bool,
+    pub legacy: bool,
+}
+
+impl Outcome {
+    pub(in crate::observed) fn with_condition_failed(mut self, failed: bool) -> Self {
+        if failed {
+            self.value = ReducedValue::Unknown;
+        }
+        self
+    }
 }
 
 impl Environment<'_> {
@@ -422,6 +459,24 @@ impl Environment<'_> {
         children: &[NodeRef],
         limit: usize,
     ) -> Result<Plan, ValidationFailure> {
+        self.ordinary_plan_with_values(graph, source, children, limit, |index| {
+            let (_, _, value) = self.evaluation(graph, children[index])?;
+            value.map(|reference| graph.scalar(reference)).transpose()
+        })
+    }
+
+    /// Live呼出し元は、同じchildrenの順序と各Evaluated.valueから値を借用する。
+    /// EvaluatedはEvaluatorのprivate成果であり、任意raw入力を受け取らない。
+    /// raw認証はordinary_planだけを使い、caller提供値で検査を省略しない。
+    /// 元AST/束縛/Context/先行性は共通して検査する。値accessorはその検査後に使う。
+    pub(in crate::observed) fn ordinary_plan_with_values<'v>(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        children: &[NodeRef],
+        limit: usize,
+        scalar: impl Fn(usize) -> Result<Option<&'v Scalar>, InternalError>,
+    ) -> Result<Plan, ValidationFailure> {
         if source.0 >= limit {
             return Err(internal!("通常式Sourceが未出").into());
         }
@@ -443,8 +498,12 @@ impl Environment<'_> {
                 binder: true,
                 comparison: None,
                 legacy: false,
-                value: Some(graph.scalar(producer)?.clone()),
-                reused: None,
+                value: PlannedValue::Fresh(match &graph.get(producer)?.payload {
+                    Some(Payload::Scalar(value)) => value.clone(),
+                    // Preserve the existing native scalar projection when a
+                    // specialized producer is consumed as an ordinary binder.
+                    _ => std::sync::Arc::new(graph.scalar(producer)?.clone()),
+                }),
                 scalar_scope: scope.clone(),
                 scope,
                 support: input_node.support.clone(),
@@ -505,10 +564,67 @@ impl Environment<'_> {
             values.push(*value);
             pending.push(self.evaluation_condition_pending(graph, child)?);
         }
-        let mut required = vec![true; children.len()];
-        let scalar = |i: usize| values[i].map(|r| graph.scalar(r)).transpose();
-        let mut reused = None;
-        let mut comparison = None;
+        let outcome = self.ordinary_reduce(id, children.len(), scalar, &pending)?;
+        // Preserve the original order: value reduction precedes child-reason
+        // collection (including its Control/read effects).
+        let mut reasons = self.evaluation_child_reasons(graph, source, children)?;
+        sort_reasons(&mut reasons);
+        let failed = reasons
+            .iter()
+            .any(|reason| matches!(reason.kind, ReasonKind::ConditionFailed { .. }));
+        let outcome = outcome.with_condition_failed(failed);
+        let value = match outcome.value {
+            ReducedValue::Fresh(value) => PlannedValue::Fresh(std::sync::Arc::new(value)),
+            ReducedValue::Reuse(index) => {
+                PlannedValue::Reuse(values[index].ok_or(internal!("再使用する通常実値がない"))?)
+            }
+            ReducedValue::Unknown => PlannedValue::Unknown,
+        };
+        let comparison = if outcome.comparison {
+            values[0].zip(values[1])
+        } else {
+            None
+        };
+        let legacy = outcome.legacy;
+        if let Some(reference) = value.reused() {
+            scalar_scope = graph.get(reference)?.scope.clone();
+        }
+        Ok(Plan {
+            span,
+            binder: false,
+            comparison,
+            legacy,
+            value,
+            scope,
+            scalar_scope,
+            support: Support::sum(vec![], factors),
+            reasons,
+        })
+    }
+
+    /// 実値と条件状態だけを消費する共通の数学。Graph、producer identity、
+    /// Scope/Supportの由来検査と記録は呼出し側が引き受ける。
+    pub(in crate::observed) fn ordinary_reduce<'v>(
+        &self,
+        id: usize,
+        value_count: usize,
+        scalar: impl Fn(usize) -> Result<Option<&'v Scalar>, InternalError>,
+        pending: &[bool],
+    ) -> Result<Outcome, ValidationFailure> {
+        let law = self.indexes.inputs.law();
+        let span = law.exprs()[id].span;
+        let arity = match &law.exprs()[id].kind {
+            ExprKind::Int(_) | ExprKind::Bool(_) => 0,
+            ExprKind::Group(_) | ExprKind::Unary { op: UnOp::Not, .. } => 1,
+            ExprKind::Let { .. } | ExprKind::Call { .. } | ExprKind::Binary { .. } => 2,
+            ExprKind::If { .. } => 3,
+            _ => return Err(internal!("通常式の未対応規則").into()),
+        };
+        if value_count != arity || pending.len() != arity {
+            return Err(internal!("通常実値/条件状態の子数が違う").into());
+        }
+        let mut required = vec![true; value_count];
+        let mut comparison = false;
         let mut legacy = false;
         let known = match &law.exprs()[id].kind {
             ExprKind::Int(n) => Some(numeric::literal(
@@ -518,8 +634,20 @@ impl Environment<'_> {
             )?),
             ExprKind::Bool(b) => Some(Scalar::Bool(*b)),
             ExprKind::Group(_) => {
-                reused = values[0];
-                scalar(0)?.cloned()
+                let value = if scalar(0)?.is_some() {
+                    ReducedValue::Reuse(0)
+                } else {
+                    ReducedValue::Unknown
+                };
+                return Ok(Outcome {
+                    value: if pending[0] {
+                        ReducedValue::Unknown
+                    } else {
+                        value
+                    },
+                    comparison: false,
+                    legacy: false,
+                });
             }
             ExprKind::Let { .. } => scalar(1)?.cloned(),
             ExprKind::If { .. } => {
@@ -545,8 +673,8 @@ impl Environment<'_> {
             }
             ExprKind::Binary { op, .. } => {
                 if matches!(op, BinOp::Eq | BinOp::Ne) {
-                    comparison = values[0].zip(values[1]);
-                    legacy = comparison.is_none();
+                    comparison = scalar(0)?.zip(scalar(1)?).is_some();
+                    legacy = !comparison;
                 }
                 if is_boolean_binary(*op)
                     && matches!(
@@ -561,35 +689,21 @@ impl Environment<'_> {
             }
             _ => return Err(internal!("通常式の未対応規則").into()),
         };
-        let mut reasons = self.evaluation_child_reasons(graph, source, children)?;
-        sort_reasons(&mut reasons);
         let pending = pending
             .iter()
             .zip(&required)
             .any(|(pending, required)| *pending && *required);
-        let failed = reasons
-            .iter()
-            .any(|reason| matches!(reason.kind, ReasonKind::ConditionFailed { .. }));
-        let value = if pending || failed {
-            reused = None;
-            None
+        let value = if pending {
+            ReducedValue::Unknown
         } else {
             known
+                .map(ReducedValue::Fresh)
+                .unwrap_or(ReducedValue::Unknown)
         };
-        if let Some(reference) = reused {
-            scalar_scope = graph.get(reference)?.scope.clone();
-        }
-        Ok(Plan {
-            span,
-            binder: false,
+        Ok(Outcome {
+            value,
             comparison,
             legacy,
-            value,
-            reused,
-            scope,
-            scalar_scope,
-            support: Support::sum(vec![], factors),
-            reasons,
         })
     }
 
@@ -659,12 +773,15 @@ impl Environment<'_> {
         children: &[NodeRef],
         plan: &Plan,
     ) -> Option<Node> {
-        if plan.legacy || plan.reused.is_some() {
+        if plan.legacy || plan.value.reused().is_some() {
             return None;
         }
-        plan.value.as_ref().map(|value| Node {
+        let PlannedValue::Fresh(value) = &plan.value else {
+            return None;
+        };
+        Some(Node {
             ty: NodeType::Value(value.ty()),
-            payload: Some(Payload::Scalar(value.clone())),
+            payload: Some(Payload::scalar(value.clone())),
             rule: if plan.binder {
                 Rule::BinderValue(Location::Law { span: plan.span })
             } else if plan.comparison.is_some()
@@ -796,8 +913,8 @@ impl Environment<'_> {
                 }
                 let children = &parts[0].children;
                 let plan = self.ordinary_plan(graph, source, children, limit)?;
-                if plan.reused.is_some() {
-                    if *value != plan.reused {
+                if plan.value.reused().is_some() {
+                    if *value != plan.value.reused() {
                         return Err(internal!("通常aliasの値refが違う").into());
                     }
                 } else if let Some(expected) = self.ordinary_value_node(source, children, &plan) {
