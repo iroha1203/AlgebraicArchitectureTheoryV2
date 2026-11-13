@@ -205,6 +205,13 @@ pub fn evaluate_for_delivery(
 }
 
 #[cfg(test)]
+pub(in crate::observed) fn summary_for_closed_run_test(
+    run: super::evaluate::delivery::ClosedRun,
+) -> Json {
+    DeliveryEvaluation::from_closed(run).summary_wire("complete", 2, &[])
+}
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use archsig_input::input::InputSources;
@@ -310,6 +317,103 @@ mod tests {
         )
         .unwrap();
         assert!(matches!(delivery.content, Content::Full(_)));
+    }
+    fn stopped_at_root_phase(phase: &'static str, asks: &[&str]) -> DeliveryEvaluation {
+        use std::{cell::Cell, rc::Rc};
+        let armed = Rc::new(Cell::new(false));
+        let observed = armed.clone();
+        let control = Control::new(move |_| observed.get().then_some(Signal::Term));
+        let prepared = super::super::prepare_observed(sources(), asks, &control).unwrap();
+        super::super::data::observe_iterations(move |_, context, actual, _| {
+            if context.request == 0 && actual == phase {
+                armed.set(true);
+            }
+        });
+        let result = evaluate_for_delivery(prepared, &control);
+        super::super::data::clear_iteration_observer();
+        let evaluation = result.unwrap();
+        assert_eq!(evaluation.status(), "interrupted");
+        assert!(evaluation.has_nodes());
+        evaluation
+    }
+    #[test]
+    fn stopped_summary_without_tail_keeps_sealed_answer_and_unexecuted_row() {
+        let evaluation = stopped_at_root_phase(
+            "delivery_answer_committed",
+            &[
+                "prior=check(CountCheck.false_root)",
+                "later=evaluate(CountCheck.empty)",
+            ],
+        );
+        assert!(matches!(&evaluation.content, Content::Closed(run) if run.tail.is_none()));
+        let Json::Obj(ref summary) = evaluation.summary_wire("interrupted", 143, &[]) else {
+            panic!("summary");
+        };
+        let Json::Arr(answers) = &summary["answers"] else {
+            panic!("answers")
+        };
+        let Json::Obj(prior) = &answers[0] else {
+            panic!("prior")
+        };
+        let Json::Obj(later) = &answers[1] else {
+            panic!("later")
+        };
+        assert_eq!(prior["status"], Json::str("refuted"));
+        assert!(prior.contains_key("counterexamples"));
+        assert_eq!(later["status"], Json::str("undetermined"));
+        assert_eq!(later["outputs"], Json::obj([] as [(&str, Json); 0]));
+        assert!(!later.contains_key("applicability"));
+        assert!(!later.contains_key("counterexamples"));
+        let Json::Obj(ref saved) = evaluation.result_wire() else {
+            panic!("saved")
+        };
+        assert_eq!(saved["status"], Json::str("interrupted"));
+    }
+    #[test]
+    fn stopped_summary_applies_completed_tail_only_to_its_own_answer() {
+        let evaluation = stopped_at_root_phase(
+            "delivery_root_fold_closed",
+            &[
+                "current=evaluate(CountCheck.all)",
+                "later=check(CountCheck.false_root)",
+            ],
+        );
+        assert!(
+            matches!(&evaluation.content, Content::Closed(run) if run.tail.as_ref().is_some_and(|tail| tail.retained.root_complete))
+        );
+        let Json::Obj(ref summary) = evaluation.summary_wire("interrupted", 143, &[]) else {
+            panic!("summary")
+        };
+        let Json::Arr(answers) = &summary["answers"] else {
+            panic!("answers")
+        };
+        let Json::Obj(current) = &answers[0] else {
+            panic!("current")
+        };
+        let Json::Obj(later) = &answers[1] else {
+            panic!("later")
+        };
+        let Json::Obj(outputs) = &current["outputs"] else {
+            panic!("outputs")
+        };
+        let Json::Obj(value) = &outputs["value"] else {
+            panic!("value")
+        };
+        assert_eq!(value["value"], Json::Bool(true));
+        assert_eq!(current["applicability"], Json::str("applicable"));
+        assert_eq!(later["status"], Json::str("undetermined"));
+        assert_eq!(later["outputs"], Json::obj([] as [(&str, Json); 0]));
+        assert!(!later.contains_key("applicability"));
+        let Json::Obj(ref saved) = evaluation.result_wire() else {
+            panic!("saved")
+        };
+        let Json::Arr(saved_answers) = &saved["answers"] else {
+            panic!("saved answers")
+        };
+        let Json::Obj(saved_later) = &saved_answers[1] else {
+            panic!("saved later")
+        };
+        assert_eq!(saved_later["outputs"], later["outputs"]);
     }
     #[test]
     fn stopped_delivery_keeps_prior_closed_answer_and_one_typed_root_scope() {

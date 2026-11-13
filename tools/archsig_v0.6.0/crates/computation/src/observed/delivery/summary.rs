@@ -33,10 +33,11 @@ pub(super) fn run_summary(
                     .expect("sealed scalar summary needs no Graph")
             }
             DeliveryAnswer::Recorded(answer) => {
-                let tail = run
-                    .tail
-                    .as_ref()
-                    .expect("recorded answer owns current tail");
+                let Some(tail) = run.tail.as_ref().filter(|tail| {
+                    run.prepared.requests().requests()[tail.request_index].id == answer.id
+                }) else {
+                    return formatting::recorded_answer_summary(&run.prepared, &[], answer);
+                };
                 let request = &run.prepared.requests().requests()[tail.request_index];
                 let mut row =
                     formatting::recorded_answer_summary(&run.prepared, &tail.graph.nodes, answer);

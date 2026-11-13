@@ -9856,6 +9856,22 @@ reading Calc {{
                     }
                 }
             }
+            let Json::Obj(ref summary) =
+                crate::observed::delivery::summary_for_closed_run_test(run)
+            else {
+                panic!("internal failure summary");
+            };
+            let Json::Arr(answers) = &summary["answers"] else {
+                panic!("summary answers");
+            };
+            for answer in answers.iter().skip(usize::from(failed == "second")) {
+                let Json::Obj(answer) = answer else {
+                    panic!("answer")
+                };
+                assert_eq!(answer["status"], Json::str("undetermined"));
+                assert_eq!(answer["outputs"], Json::obj([] as [(&str, Json); 0]));
+                assert!(!answer.contains_key("applicability"));
+            }
         }
     }
     #[test]
