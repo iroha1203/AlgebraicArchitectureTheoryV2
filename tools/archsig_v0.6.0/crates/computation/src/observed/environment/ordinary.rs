@@ -332,6 +332,47 @@ impl Environment<'_> {
         ) {
             return Ok(None);
         }
+        // A normal active In carries its canonical origin already. Resolve
+        // discovery from that chain, but keep static discovery below for absent
+        // or unsupported origins: Iteration IR also covers comprehensions and
+        // finite type quantifiers, whose missing-chain contract is different.
+        let context = self.current_context(graph);
+        let mut current = context.iteration;
+        while let Some(index) = current {
+            self.tick()?;
+            let record = &graph.iterations[index]; // ordinary_context checked the chain.
+            if record.caller.frame != context.frame || record.source.0 >= limit {
+                break;
+            }
+            let source_span = self.expression_span(graph, record.source)?;
+            let &comp = law
+                .program()
+                .expressions
+                .get(&source_span)
+                .ok_or(internal!("In binderのcanonical元AST無し"))?;
+            if law.expr_type(comp).is_some()
+                && matches!(&graph.get(record.source)?.rule,
+                    Rule::OrdinarySource(Location::Law {span}) if *span == source_span)
+                && let ExprKind::Quant {
+                    var,
+                    split:
+                        archsig_input::law::ast::QuantSplit::Fixed {
+                            domain: archsig_input::law::ast::QuantDomain::In(_),
+                            body,
+                        },
+                    ..
+                } = &law.exprs()[comp].kind
+                && var.name == lexical.name
+                && law.quantifier_types()[comp].as_ref() == Some(&lexical.ty)
+                && law.exprs()[*body].span.0 <= span.0
+                && span.1 <= law.exprs()[*body].span.1
+            {
+                return self.ordinary_iteration_input(graph, index, limit).map(Some);
+            }
+            // Parent monotonicity and primitive In syntax were checked by
+            // ordinary_context; never follow a call frame's caller chain.
+            current = record.caller.iteration;
+        }
         let mut found = None;
         for (name, origin) in self.lexical_context(span)? {
             if name == lexical.name
@@ -957,3 +998,7 @@ impl Environment<'_> {
 // ordinary private construction / independent raw-validation boundary.
 mod domain;
 pub(in crate::observed) use domain::InDomain;
+
+#[cfg(test)]
+#[path = "ordinary/binder_tests.rs"]
+mod binder_tests;
