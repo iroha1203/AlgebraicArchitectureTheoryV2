@@ -5592,14 +5592,26 @@ impl<'a> Environment<'a> {
     fn find_name_token(&self, span: (usize, usize)) -> Result<Option<&str>, ValidationFailure> {
         let mut name = None;
         let law = self.indexes.inputs.law();
-        for (id, expression) in law.exprs().iter().enumerate() {
-            #[cfg(test)]
-            if let Some(context) = self.state.optional_name_context.get()
-                && let Some(observer) = self.state.name_token_observer.borrow_mut().as_mut()
-            {
-                observer(span, context);
-            }
+        // Program::build indexes every prefix of every typed Dotted, including
+        // constructor and rejected short parser candidates. A real first token
+        // is therefore present under its exact span; canonical selection stays
+        // below, just as in the full-arena lookup.
+        #[cfg(test)]
+        if let Some(context) = self.state.optional_name_context.get()
+            && let Some(observer) = self.state.name_token_observer.borrow_mut().as_mut()
+        {
+            observer(span, context);
+        }
+        self.tick()?;
+        for &(id, _) in law
+            .program()
+            .dotted_candidates
+            .get(&span)
+            .into_iter()
+            .flatten()
+        {
             self.tick()?;
+            let expression = &law.exprs()[id];
             if law.expr_type(id).is_some()
                 && self
                     .indexes
@@ -12599,3 +12611,7 @@ mod source_cache_tests;
 
 mod validation_checkpoint;
 pub(in crate::observed) use validation_checkpoint::ValidationCheckpoint;
+
+#[cfg(test)]
+#[path = "environment/name_token_tests.rs"]
+mod name_token_tests;
