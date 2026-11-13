@@ -1149,3 +1149,157 @@ fn field_receiver_boundary_keeps_blocked_state_without_reading_a_slot() {
         }
     }
 }
+
+#[test]
+fn ordinary_source_scope_only_keeps_unused_binding_authentication() {
+    let result = evaluate_observed_bytes(
+        numeric_recheck_fixture(&[], "view current(s:Sample):Bool=true;"),
+        &["current=evaluate(Calc.current,s=@v/sample)"],
+        &quiet(),
+    )
+    .unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let (source_index, original) = result.nodes.iter().enumerate().find(|(_, node)| {
+        matches!(node.rule, Rule::OrdinarySource(_))
+            && matches!(node.ty, NodeType::Expression(Type::Bool))
+    }).unwrap();
+    let Some(Payload::Expression { location: Location::Law { span }, bindings, .. }) = &original.payload else {
+        unreachable!()
+    };
+    let control = quiet();
+    let environment = Environment::with_prepared(&result.prepared, &control).unwrap();
+    let mut graph = Graph::new(&control);
+    graph.requests = result.prepared.requests().requests().to_vec();
+    for (index, node) in result.nodes[..source_index].iter().enumerate() {
+        graph.active = result.contexts[index];
+        graph.push(node.clone()).unwrap();
+    }
+    graph.active = result.contexts[source_index];
+    let build = |graph: &Graph, bindings: &[Binding]| {
+        environment.ordinary_source_at(graph, *span, &Type::Bool, bindings)
+    };
+    assert_eq!(build(&graph, bindings).unwrap(), *original);
+    assert!(original.scope.snapshots.contains("v"));
+    // Even an unused parameter must keep its original signature and selector.
+    let mut wrong = bindings.clone();
+    wrong[0].ty = Type::Bool;
+    assert!(matches!(build(&graph, &wrong), Err(ValidationFailure::Internal(_))));
+    let selector = graph.requests[0].arguments[0].value.clone();
+    graph.requests[0].arguments[0].value = Selector::Subject { snapshot: "v".into(), subject: "other".into() };
+    assert!(matches!(build(&graph, bindings), Err(ValidationFailure::Internal(_))));
+    graph.requests[0].arguments[0].value = selector;
+    let producer = bindings[0].value;
+    let scope = graph.nodes[producer.0].scope.clone();
+    graph.nodes[producer.0].scope.snapshots.clear();
+    assert!(matches!(build(&graph, bindings), Err(ValidationFailure::Internal(_))));
+    graph.nodes[producer.0].scope = scope;
+    assert_eq!(build(&graph, bindings).unwrap(), *original);
+}
+
+#[test]
+fn ordinary_scalar_scope_preserves_fresh_unknown_and_reused_producer_roles() {
+    for unknown in [false, true] {
+        let omitted = if unknown { vec!["p"] } else { vec![] };
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(&omitted, "view seed():Bool=true; view current(s:Sample):Bool=not s.p; view grouped(s:Sample,b:Bool):Bool=(b);"),
+            &["seed=evaluate(Calc.seed)", "current=evaluate(Calc.current,s=@v/sample)", "grouped=evaluate(Calc.grouped,s=@v/sample,b=$seed.value)"],
+            &quiet(),
+        ).unwrap();
+        let mut graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        let control = quiet();
+        let environment = Environment::with_prepared(&result.prepared, &control).unwrap();
+        for name in ["Calc.current", "Calc.grouped"] {
+            let Signature::View {body, ..} = &result.prepared.inputs().law().declarations()[name].signature else { unreachable!() };
+            let span = result.prepared.inputs().law().exprs()[*body].span;
+            let (index, source, children) = result.nodes.iter().enumerate().find_map(|(index,node)| {
+                let Some(Payload::Evaluation {expression,parts,..}) = &node.payload else { return None; };
+                (node.rule == Rule::Construction("ordinary_evaluation") && result.contexts[index].case.is_none()
+                    && matches!(&result.nodes[expression.0].payload, Some(Payload::Expression {location:Location::Law{span:actual},..}) if *actual == span))
+                    .then(|| (index,*expression,parts[0].children.clone()))
+            }).unwrap();
+            graph.active = result.contexts[index];
+            let plan = environment.ordinary_plan(&graph, source, &children, index).unwrap();
+            assert!(plan.scope.snapshots.contains("v"));
+            if name == "Calc.grouped" {
+                let producer = plan.value.reused().expect("Group keeps the selected producer");
+                assert!(graph.get(producer).unwrap().scope.snapshots.is_empty());
+                assert_eq!(plan.scalar_scope, graph.get(producer).unwrap().scope);
+                assert_ne!(plan.scalar_scope, plan.scope);
+            } else {
+                assert!(if unknown { matches!(plan.value, super::super::environment::ordinary::PlannedValue::Unknown) }
+                    else { matches!(plan.value, super::super::environment::ordinary::PlannedValue::Fresh(_)) });
+                assert_eq!(plan.scalar_scope, plan.scope);
+            }
+        }
+    }
+}
+
+#[test]
+fn ordinary_iteration_prefix_is_committed_once_per_activation() {
+    let result = evaluate_observed_bytes(
+        numeric_recheck_fixture(&[], "view current(s:Sample):Bool=forall b in list<Bool>[false,true] . b or s.p;"),
+        &["current=evaluate(Calc.current,s=@v/sample)"], &quiet(),
+    ).unwrap();
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+    let binder = result.prepared.inputs().law().program().nodes.iter().find(|expr|
+        matches!(&expr.kind, ExprKind::Dotted(parts) if parts.len() == 1 && parts[0].name == "b")
+        && expr.ty.is_some()).unwrap().span;
+    let sources: Vec<_> = result.nodes.iter().enumerate().filter_map(|(index,node)| {
+        matches!(&node.rule, Rule::OrdinarySource(Location::Law{span}) if *span == binder)
+            .then_some(result.contexts[index])
+    }).collect();
+    assert_eq!(sources.len(), 2, "one static origin for each of the two actual iterations");
+    assert_ne!(sources[0].iteration, sources[1].iteration);
+}
+
+#[test]
+fn ordinary_iteration_prefix_reuse_rejects_carriers_foreign_context_and_enriched_handles() {
+    let result = evaluate_observed_bytes(
+        numeric_recheck_fixture(&[], "view current(s:Sample):Bool=forall b in list<Bool>[false,true] . b or s.p;"),
+        &["current=evaluate(Calc.current,s=@v/sample)"], &quiet(),
+    ).unwrap();
+    let law = result.prepared.inputs().law();
+    let (id, binder) = law.program().nodes.iter().enumerate().find_map(|(id,expr)| {
+        (matches!(&expr.kind, ExprKind::Dotted(parts) if parts.len() == 1 && parts[0].name == "b")
+            && expr.ty.is_some()).then_some((id,expr.span))
+    }).unwrap();
+    let source_refs: Vec<_> = result.nodes.iter().enumerate().filter_map(|(index,node)| {
+        matches!(&node.rule, Rule::OrdinarySource(Location::Law{span}) if *span == binder).then_some(NodeRef(index))
+    }).collect();
+    assert_eq!(source_refs.len(), 2);
+    let context = result.contexts[source_refs[0].0];
+    let carrier = result.nodes.iter().enumerate().find_map(|(index,node)| {
+        (matches!(node.rule, Rule::FieldSource(_)) && result.contexts[index] == context).then_some(NodeRef(index))
+    }).expect("actual field-read carrier in the same body");
+    let Some(Payload::Expression {bindings,..}) = &result.nodes[source_refs[0].0].payload else { unreachable!() };
+    let declaration = &law.declarations()["Calc.current"];
+    for kind in ["static", "carrier", "context", "scope", "condition"] {
+        let control = quiet();
+        let environment = Environment::with_prepared(&result.prepared, &control).unwrap();
+        let mut graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        graph.active = context;
+        let reference = match kind { "carrier" => carrier, "context" => source_refs[1], _ => source_refs[0] };
+        let mut handle = SourceHandle {
+            expression: reference, scope: graph.get(reference).unwrap().scope.clone(),
+            known_value: None, missing: None, condition_failed: false, condition_pending: false,
+        };
+        if kind == "scope" { handle.scope.modes.insert("changed".into()); }
+        if kind == "condition" { handle.condition_pending = true; }
+        let start = graph.nodes.len();
+        let mut evaluator = Evaluator {
+            environment: &environment, graph: &mut graph, control: &control,
+            request: &result.prepared.requests().requests()[0], declaration,
+            bindings: bindings.clone(), lexical: BTreeMap::new(), formal: BTreeMap::new(),
+            base: result.nodes[source_refs[0].0].scope.clone(), retained_scope: Scope::default(),
+            reasons: vec![], completed: BTreeMap::new(), answer_evaluation: None,
+            verified_observed: None, completing: false, finite_universal: None,
+            sources: BTreeMap::from([(binder,handle)]),
+        };
+        let value = evaluator.eval_inner(id).unwrap();
+        if kind == "static" { assert_eq!(value.expression, reference); }
+        else { assert!(value.expression.0 >= start, "{kind} keeps fresh Source construction"); }
+        assert_eq!(evaluator.graph.get(value.expression).unwrap(), &result.nodes[source_refs[0].0]);
+        assert_eq!(value.scalar(evaluator.graph).unwrap(), Some(evaluator.graph.scalar(evaluator.graph.iterations[context.iteration.unwrap()].producer.unwrap()).unwrap()));
+        assert!(value.reasons.is_empty());
+    }
+}

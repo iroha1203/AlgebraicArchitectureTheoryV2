@@ -1327,7 +1327,35 @@ impl Evaluator<'_, '_> {
                     self.graph.nodes.len(),
                 )? {
                     let child = self.evaluated_reference(input)?;
-                    let source = self.prepare_static_source(first.span, lexical.ty.clone())?;
+                    // prepare_source has just committed every prefix in this
+                    // activation. The intervening binder/reference lookups are
+                    // readonly, so its cutoff and read metadata are unchanged.
+                    // A read carrier or a subsequently enriched handle is not
+                    // that static origin and keeps the fresh construction path.
+                    let prepared = self
+                        .sources
+                        .get(&first.span)
+                        .filter(|handle| {
+                            !handle.condition_failed
+                                && !handle.condition_pending
+                                && handle.known_value.is_none()
+                                && handle.missing.is_none()
+                        })
+                        .cloned();
+                    let source = if let Some(handle) = prepared
+                        && let Ok(node) = self.graph.get(handle.expression)
+                        && node.ty == NodeType::Expression(lexical.ty.clone())
+                        && matches!(&node.rule, Rule::OrdinarySource(Location::Law {span}) if *span == first.span)
+                        && self.graph.context_at(handle.expression.0)
+                            == self.environment.current_context(self.graph)
+                        && handle.scope == node.scope
+                        && matches!(&node.payload, Some(Payload::Expression {location:Location::Law {span}, bindings, parameters})
+                            if *span == first.span && bindings == &self.bindings && parameters.is_empty())
+                    {
+                        handle
+                    } else {
+                        self.prepare_static_source(first.span, lexical.ty.clone())?
+                    };
                     let mut current =
                         self.commit_ordinary(None, first.span, source.expression, vec![child])?;
                     for part in &lexical.projections {
@@ -2192,13 +2220,8 @@ impl Evaluator<'_, '_> {
                     let ownership = progress.ownership.as_mut().expect("finite root ownership");
                     // Every fallible close step precedes discard. A stopped
                     // close leaves this one body as the recorded tail.
-                    let owned = ownership.close_body(
-                        self.environment,
-                        self.graph,
-                        &body,
-                        &evidence,
-                        self.control,
-                    )?;
+                    let owned =
+                        ownership.close_body(self.environment, self.graph, &body, &evidence)?;
                     let committed = ownership.scope(self.graph, &self.retained_scope)?;
                     let reasons = &self.reasons[prefix_reasons.len()..];
                     let committed_reasons = reasons
@@ -9545,7 +9568,15 @@ reading Calc {{
             "evaluate"
         };
         let text = format!("value={operation}(Calc.{name})");
-        let prepared = prepare_observed(in_quantifier_fixture(), &[&text], control).unwrap();
+        with_delivery_request(in_quantifier_fixture(), &text, control, run);
+    }
+    fn with_delivery_request(
+        sources: InputSources,
+        text: &str,
+        control: &Control,
+        run: impl FnOnce(&mut Evaluator<'_, '_>, ExprId),
+    ) {
+        let prepared = prepare_observed(sources, &[text], control).unwrap();
         let environment = Environment::with_prepared(&prepared, control).unwrap();
         let request = &prepared.requests().requests()[0];
         let declaration = &prepared.inputs().law().declarations()[request.declaration().unwrap()];
@@ -9581,6 +9612,60 @@ reading Calc {{
         evaluator.bind(params).unwrap();
         evaluator.prepare_source(*body).unwrap();
         run(&mut evaluator, *body);
+    }
+    #[test]
+    fn delivery_close_support_keeps_fact_recipe_after_graph_values_are_released() {
+        let law = include_str!("../../../../tests/fixtures/counter.law").replace(
+            "  view amount(s: State): Z = s.count;",
+            "  view amount(s: State): Z = s.count;\n view supported(s:State):Bool=forall n in list<Z>[1,2] . s.count>=n;",
+        );
+        let sources = InputSources::from_bytes(
+            vec![include_bytes!("../../../../tests/fixtures/counter.atoms.json").to_vec()],
+            law.into_bytes(),
+            include_bytes!("../../../../tests/fixtures/counter.archmap.json").to_vec(),
+        );
+        let control = quiet();
+        with_delivery_request(
+            sources,
+            "value=evaluate(CountCheck.supported,bind.s=@v/s)",
+            &control,
+            |evaluator, body| {
+                let prefix = evaluator.graph.suffix_checkpoint();
+                let evaluated = evaluator.eval(body).unwrap();
+                let Some(Payload::Scalar(value)) = &evaluator
+                    .graph
+                    .get(evaluated.value().unwrap())
+                    .unwrap()
+                    .payload
+                else {
+                    panic!("actual Bool value");
+                };
+                let released = std::sync::Arc::downgrade(value);
+                let expected = evaluated.support.materialize(&control).unwrap();
+                assert!(
+                    !expected.is_empty(),
+                    "fixture reads the actual subject and count slot"
+                );
+                let mut ownership = delivery::RegionOwnership::new(&prefix);
+                let closed = ownership
+                    .close_body(evaluator.environment, evaluator.graph, &evaluated, &[])
+                    .unwrap();
+                assert!(
+                    closed.support.same_recipe(&evaluated.support),
+                    "closing Graph-free support must retain its shared recipe"
+                );
+                drop(evaluated);
+                evaluator.completed.clear();
+                evaluator.sources.clear();
+                evaluator.graph.discard_suffix(&prefix).unwrap();
+                assert!(
+                    released.upgrade().is_none(),
+                    "Fact support must not retain the body value"
+                );
+                assert_eq!(closed.truth, Some(true));
+                assert_eq!(closed.support.materialize(&control).unwrap(), expected);
+            },
+        );
     }
     #[test]
     fn delivery_root_shared_loop_drops_completed_bodies_and_keeps_domain() {

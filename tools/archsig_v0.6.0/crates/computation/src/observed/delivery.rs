@@ -308,6 +308,73 @@ mod tests {
         );
     }
     #[test]
+    fn closed_delivery_keeps_input_facts_in_body_and_final_root_counterexamples() {
+        let source = sources();
+        let law = String::from_utf8(source.law().bytes().to_vec()).unwrap().replace(
+            "  view amount(s: State): Z = s.count;",
+            "  view amount(s: State): Z = s.count;\n law required counter_bound(s:State):forall n in list<Z>[1,2] . s.count>n;",
+        );
+        let source = InputSources::from_bytes(
+            source
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            law.into_bytes(),
+            source.archmap().bytes().to_vec(),
+        );
+        let asks = ["q=check(CountCheck.counter_bound,bind.s=@v/s)"];
+        let control = Control::unlimited();
+        let raw = super::super::evaluate_observed_bytes(source.clone(), &asks, &control).unwrap();
+        let closed = evaluate_for_delivery(
+            super::super::prepare_observed(source, &asks, &control).unwrap(),
+            &control,
+        )
+        .unwrap();
+        let Content::Closed(run) = &closed.content else {
+            panic!("closed route")
+        };
+        let super::super::evaluate::delivery::DeliveryAnswer::Closed(answer) = &run.answers[0]
+        else {
+            panic!("closed answer")
+        };
+        assert_eq!(
+            answer.counterexamples.len(),
+            2,
+            "one false body and final root evidence"
+        );
+        let fact = super::super::result::Fact::from(archsig_input::archmap::FactData {
+            snapshot: "v".into(),
+            subject: "s".into(),
+            field: Some("Counter.State.count".into()),
+            atom: Some("count".into()),
+        });
+        for example in &answer.counterexamples {
+            assert!(
+                example.facts.contains(&fact),
+                "actual slot read belongs to both counterexamples"
+            );
+        }
+        let (Json::Obj(ref raw_wire), Json::Obj(ref closed_wire)) =
+            (raw.result_wire(), closed.result_wire())
+        else {
+            panic!("saved results")
+        };
+        let (Json::Arr(raw_nodes), Json::Arr(closed_nodes)) =
+            (&raw_wire["nodes"], &closed_wire["nodes"])
+        else {
+            panic!("nodes")
+        };
+        assert_eq!(
+            resolve(&raw_wire["answers"], raw_nodes),
+            resolve(&closed_wire["answers"], closed_nodes)
+        );
+        assert_eq!(
+            raw.summary_wire("complete", 1, &[]),
+            closed.summary_wire("complete", 1, &[])
+        );
+    }
+    #[test]
     fn dependent_batches_choose_full_before_evaluation() {
         let control = Control::unlimited();
         let asks = ["a=evaluate(CountCheck.all)", "p=needed($a)"];

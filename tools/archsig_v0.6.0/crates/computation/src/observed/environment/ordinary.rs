@@ -524,7 +524,6 @@ impl Environment<'_> {
             return Err(internal!("通常式の子数/Contextが違う").into());
         }
         let mut scope = graph.get(source)?.scope.clone();
-        let mut scalar_scope = scope.clone();
         let mut factors = Vec::new();
         let mut values = Vec::new();
         let mut pending = Vec::new();
@@ -559,7 +558,6 @@ impl Environment<'_> {
                 return Err(internal!("実子の元AST/型/束縛/環境/先行性が違う").into());
             }
             scope.merge(&node.scope);
-            scalar_scope.merge(&node.scope);
             factors.push(node.support.clone());
             values.push(*value);
             pending.push(self.evaluation_condition_pending(graph, child)?);
@@ -586,9 +584,11 @@ impl Environment<'_> {
             None
         };
         let legacy = outcome.legacy;
-        if let Some(reference) = value.reused() {
-            scalar_scope = graph.get(reference)?.scope.clone();
-        }
+        let scalar_scope = if let Some(reference) = value.reused() {
+            graph.get(reference)?.scope.clone()
+        } else {
+            scope.clone()
+        };
         Ok(Plan {
             span,
             binder: false,
