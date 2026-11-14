@@ -774,6 +774,11 @@ law required decisive_law(s: Sample): forall b:Bool . if b then false else s.fla
             panic!("元view/Law")
         };
         let at = checked.law().exprs()[*body].span;
+        if f(answer(&wire, id), "status") != &Json::str("undetermined") {
+            assert_eq!(evaluation_span(&ns, aggregate), at);
+            assert_eq!(f(answer(&wire, id), "scope"), f(aggregate, "scope"));
+            return aggregate;
+        }
         let originals = arr(f(seed, "arguments"))
             .iter()
             .map(|r| ns[text(f(r, "node"))])
@@ -841,6 +846,15 @@ law required decisive_law(s: Sample): forall b:Bool . if b then false else s.fla
     }
     for (id, original) in [("e", original_e), ("f", original_f), ("g", original_g)] {
         let aggregate = root(&wire, id);
+        if id != "e" {
+            assert_eq!(aggregate, original);
+            assert_eq!(
+                f(val(expression(&ns, aggregate)), "kind"),
+                &Json::str("source")
+            );
+            assert!(evidence(&ns, aggregate, "completion_pair").is_empty());
+            continue;
+        }
         let domain_ref = &arr(f(aggregate, "arguments"))[1];
         let domain = target(&ns, domain_ref, &Json::str("Domain"));
         assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
