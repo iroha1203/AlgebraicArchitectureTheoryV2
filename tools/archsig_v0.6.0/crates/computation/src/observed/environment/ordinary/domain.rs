@@ -37,10 +37,10 @@ fn prepare(
         .expressions
         .get(&span)
         .ok_or(internal!("In域の元量化ASTがない"))?;
-    let spec = quantifier::spec(law, id, &env.control)?;
-    let domain = spec
-        .domain
-        .ok_or(internal!("型域をIn producerとして構成した"))?;
+    let (domain, element) = env
+        .ordinary_collection_domain(id)?
+        .ok_or(internal!("局所collection域の元型が未対応"))?;
+    let comprehension = matches!(law.exprs()[id].kind, ExprKind::Comprehension { .. });
     let node = graph.get(input)?;
     let Some(Payload::Evaluation {
         expression,
@@ -73,7 +73,7 @@ fn prepare(
         .any(|reason| matches!(reason.kind, ReasonKind::ConditionFailed { .. }));
     let pending = env.evaluation_condition_pending(graph, input)?;
     #[cfg(test)]
-    data::observe_actual(spec.span, context, "in_domain_normalize", 0);
+    data::observe_actual(span, context, "in_domain_normalize", 0);
     let value = value
         .filter(|_| !failed && !pending)
         .map(|reference| {
@@ -82,21 +82,27 @@ fn prepare(
             }
             let value = graph.scalar(reference)?;
             match value {
-                Scalar::Set { element, .. } if *element == spec.element => Ok(value.clone()),
-                Scalar::List { element, items } if *element == spec.element => {
+                Scalar::Set { element: ty, .. } if *ty == element => Ok(value.clone()),
+                Scalar::List { element: ty, .. } if comprehension && *ty == element => {
+                    Ok(value.clone())
+                }
+                Scalar::List { element: ty, items } if *ty == element => {
                     #[cfg(test)]
-                    data::observe_actual(spec.span, context, "in_set_normalization", 0);
-                    data::set(spec.element.clone(), items, &env.control)
+                    data::observe_actual(span, context, "in_set_normalization", 0);
+                    data::set(element.clone(), items, &env.control)
                 }
                 _ => Err(internal!("In collectionが元要素型のList/Setでない").into()),
             }
         })
         .transpose()?;
     let mut domain_scope = node.scope.clone();
-    domain_scope.add_quantifier(spec.descriptor(None, Some(context)));
-    env.order_quantifier_scope(graph, source, &mut domain_scope)?;
+    if !comprehension {
+        let spec = quantifier::spec(law, id, &env.control)?;
+        domain_scope.add_quantifier(spec.descriptor(None, Some(context)));
+        env.order_quantifier_scope(graph, source, &mut domain_scope)?;
+    }
     Ok(Prepared {
-        element: spec.element.clone(),
+        element,
         value,
         scope: node.scope.clone(),
         domain_scope,
@@ -191,7 +197,7 @@ impl Environment<'_> {
         let Some(value) = p.value.take() else {
             return Ok(None);
         };
-        let Scalar::Set { items, .. } = &value else {
+        let (Scalar::List { items, .. } | Scalar::Set { items, .. }) = &value else {
             unreachable!()
         };
         let count = items.len();
@@ -210,7 +216,8 @@ impl Environment<'_> {
         let mut members = Vec::with_capacity(count);
         for position in 0..count {
             self.tick()?;
-            let Scalar::Set { items, .. } = graph.scalar(set)? else {
+            let (Scalar::List { items, .. } | Scalar::Set { items, .. }) = graph.scalar(set)?
+            else {
                 unreachable!()
             };
             let value = items[position].clone();
@@ -273,10 +280,13 @@ impl Environment<'_> {
                     .take()
                     .ok_or(internal!("未知In collectionから既知Setを作った"))?;
                 let (
-                    Scalar::Set {
+                    Scalar::List {
+                        items: expected, ..
+                    }
+                    | Scalar::Set {
                         items: expected, ..
                     },
-                    Some(Scalar::Set { items: actual, .. }),
+                    Some(Scalar::List { items: actual, .. } | Scalar::Set { items: actual, .. }),
                 ) = (&value, node.scalar_payload())
                 else {
                     return Err(internal!("In Set payloadの型が違う").into());
@@ -284,10 +294,26 @@ impl Environment<'_> {
                 if expected.len() != actual.len() {
                     return Err(internal!("In Set全数が元collectionと違う").into());
                 }
-                for (actual, expected) in actual.iter().zip(expected) {
-                    self.tick()?;
-                    if !data::equal(actual, expected, &self.control)? {
-                        return Err(internal!("In Setの元初出順が違う").into());
+                let span = self.expression_span(graph, *source)?;
+                let id = self.indexes.inputs.law().program().expressions[&span];
+                let extensional = matches!(
+                    self.indexes.inputs.law().exprs()[id].kind,
+                    ExprKind::Comprehension { .. }
+                ) && matches!(value, Scalar::Set { .. });
+                if extensional {
+                    if !data::equal(
+                        node.scalar_payload().ok_or(internal!("collection値無し"))?,
+                        &value,
+                        &self.control,
+                    )? {
+                        return Err(internal!("内包Setの元collection外延が違う").into());
+                    }
+                } else {
+                    for (actual, expected) in actual.iter().zip(expected) {
+                        self.tick()?;
+                        if !data::equal(actual, expected, &self.control)? {
+                            return Err(internal!("In collectionの元順序が違う").into());
+                        }
                     }
                 }
                 scalar(
@@ -303,7 +329,9 @@ impl Environment<'_> {
                     return Err(internal!("In memberのSet辺が違う").into());
                 };
                 let producer = graph.get(*set)?;
-                let Some(Scalar::Set { items, .. }) = producer.scalar_payload() else {
+                let Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) =
+                    producer.scalar_payload()
+                else {
                     return Err(internal!("In member producerがSetでない").into());
                 };
                 if producer.rule != Rule::InSet {
@@ -326,30 +354,37 @@ impl Environment<'_> {
                     return Err(internal!("In Domainの元辺がない").into());
                 };
                 let producer = graph.get(*set)?;
-                let Some(Scalar::Set { element, items }) = producer.scalar_payload() else {
+                let Some(Scalar::List { element, items } | Scalar::Set { element, items }) =
+                    producer.scalar_payload()
+                else {
                     return Err(internal!("In Domain Set producerがない").into());
                 };
                 if producer.rule != Rule::InSet || producer.arguments != [*source, *input] {
                     return Err(internal!("In Domainが別collection producerを指す").into());
                 }
-                let spec = quantifier::spec(
-                    self.indexes.inputs.law(),
-                    *self
-                        .indexes
-                        .inputs
-                        .law()
-                        .program()
-                        .expressions
-                        .get(&self.expression_span(graph, *source)?)
-                        .ok_or(internal!("In Domain元ASTがない"))?,
-                    &self.control,
-                )?;
-                if spec.domain.is_none() || *element != spec.element || rest.len() != items.len() {
+                let id = *self
+                    .indexes
+                    .inputs
+                    .law()
+                    .program()
+                    .expressions
+                    .get(&self.expression_span(graph, *source)?)
+                    .ok_or(internal!("In Domain元ASTがない"))?;
+                let (_, expected_element) = self
+                    .ordinary_collection_domain(id)?
+                    .ok_or(internal!("In Domain元collection型が未対応"))?;
+                if *element != expected_element || rest.len() != items.len() {
                     return Err(internal!("In Domain型/完全coverage件数が違う").into());
                 }
                 let mut scope = producer.scope.clone();
-                scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
-                scope.order_quantifiers_like(&graph.get(*source)?.scope);
+                if matches!(
+                    self.indexes.inputs.law().exprs()[id].kind,
+                    ExprKind::Quant { .. }
+                ) {
+                    let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
+                    scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
+                    scope.order_quantifiers_like(&graph.get(*source)?.scope);
+                }
                 for (position, member) in rest.iter().enumerate() {
                     let member = graph.get(*member)?;
                     if member.rule != (Rule::InMember { position }) || member.arguments != [*set] {

@@ -61,7 +61,8 @@ impl Environment<'_> {
             return Ok(None);
         }
         Ok(match &self.indexes.inputs.law().exprs()[id].kind {
-            ExprKind::Int(_) | ExprKind::Bool(_) => Some(vec![]),
+            ExprKind::Int(_) | ExprKind::Bool(_) | ExprKind::None(_) => Some(vec![]),
+            ExprKind::Some(child) => Some(vec![*child]),
             ExprKind::Group(child) => Some(vec![*child]),
             ExprKind::Let { value, body, .. } => Some(vec![*value, *body]),
             ExprKind::If {
@@ -138,7 +139,7 @@ impl Environment<'_> {
             let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
                 return Ok(false);
             };
-            if !self.ordinary_in_domain(id)? {
+            if self.ordinary_collection_domain(id)?.is_none() {
                 return Ok(false);
             }
             current = record.caller.iteration;
@@ -171,13 +172,83 @@ impl Environment<'_> {
         data::primitive_type(element, &self.control)
     }
 
+    /// Both iteration forms consume a real collection. Quantifiers normalize
+    /// Lists to Sets; comprehensions retain positions and duplicate List values.
+    pub(in crate::observed) fn ordinary_collection_domain(
+        &self,
+        id: usize,
+    ) -> Result<Option<(usize, Type)>, ValidationFailure> {
+        let law = self.indexes.inputs.law();
+        let domain = match &law.exprs()[id].kind {
+            ExprKind::Quant {
+                split:
+                    archsig_input::law::ast::QuantSplit::Fixed {
+                        domain: archsig_input::law::ast::QuantDomain::In(domain),
+                        ..
+                    },
+                ..
+            } => *domain,
+            ExprKind::Comprehension { domain, .. } => {
+                let Some(Type::List(element) | Type::Set(element)) = law.expr_type(id) else {
+                    return Ok(None);
+                };
+                if !data::primitive_type(element, &self.control)? {
+                    return Ok(None);
+                }
+                *domain
+            }
+            _ => return Ok(None),
+        };
+        let Some(Type::List(element) | Type::Set(element)) = law.expr_type(domain) else {
+            return Ok(None);
+        };
+        Ok(data::primitive_type(element, &self.control)?
+            .then(|| (domain, element.as_ref().clone())))
+    }
+
+    fn ordinary_iteration_contains(&self, id: usize, span: (usize, usize)) -> bool {
+        let law = self.indexes.inputs.law();
+        let contains = |id: usize| {
+            let body = law.exprs()[id].span;
+            body.0 <= span.0 && span.1 <= body.1
+        };
+        match &law.exprs()[id].kind {
+            ExprKind::Quant {
+                split: archsig_input::law::ast::QuantSplit::Fixed { body, .. },
+                ..
+            } => contains(*body),
+            ExprKind::Comprehension { elem, filter, .. } => {
+                contains(*elem) || filter.is_some_and(contains)
+            }
+            _ => false,
+        }
+    }
+
+    fn ordinary_iteration_binds(
+        &self,
+        id: usize,
+        name: &str,
+        ty: &Type,
+        span: (usize, usize),
+    ) -> Result<bool, ValidationFailure> {
+        let Some((_, element)) = self.ordinary_collection_domain(id)? else {
+            return Ok(false);
+        };
+        let var = match &self.indexes.inputs.law().exprs()[id].kind {
+            ExprKind::Quant { var, .. } | ExprKind::Comprehension { var, .. } => var,
+            _ => return Ok(false),
+        };
+        Ok(var.name == name && element == *ty && self.ordinary_iteration_contains(id, span))
+    }
+
     pub(in crate::observed) fn ordinary_source_eligible(
         &self,
         graph: &Graph,
         id: usize,
     ) -> Result<bool, ValidationFailure> {
         Ok(self.ordinary_context(graph)?
-            && (self.ordinary_in_domain(id)? || self.ordinary_children(graph, id)?.is_some()))
+            && (self.ordinary_collection_domain(id)?.is_some()
+                || self.ordinary_children(graph, id)?.is_some()))
     }
 
     /// 元AST/prefixの型付き出現のみを認証する。実行許可・値・欠測は生成しない。
@@ -262,9 +333,7 @@ impl Environment<'_> {
                         .expressions
                         .get(&source_span)
                         .ok_or(internal!("反復元AST無し"))?;
-                    let spec = quantifier::spec(law, id, &self.control)?;
-                    let body = law.exprs()[spec.body].span;
-                    if !(body.0 <= span.0 && span.1 <= body.1)
+                    if !self.ordinary_iteration_contains(id, span)
                         || self.expression_bindings(graph, record.source)? != bindings
                     {
                         return Err(internal!("静的Sourceが反復元body/束縛と違う").into());
@@ -353,19 +422,7 @@ impl Environment<'_> {
             if law.expr_type(comp).is_some()
                 && matches!(&graph.get(record.source)?.rule,
                     Rule::OrdinarySource(Location::Law {span}) if *span == source_span)
-                && let ExprKind::Quant {
-                    var,
-                    split:
-                        archsig_input::law::ast::QuantSplit::Fixed {
-                            domain: archsig_input::law::ast::QuantDomain::In(_),
-                            body,
-                        },
-                    ..
-                } = &law.exprs()[comp].kind
-                && var.name == lexical.name
-                && law.quantifier_types()[comp].as_ref() == Some(&lexical.ty)
-                && law.exprs()[*body].span.0 <= span.0
-                && span.1 <= law.exprs()[*body].span.1
+                && self.ordinary_iteration_binds(comp, &lexical.name, &lexical.ty, span)?
             {
                 return self.ordinary_iteration_input(graph, index, limit).map(Some);
             }
@@ -378,7 +435,7 @@ impl Environment<'_> {
             if name == lexical.name
                 && let LexicalOrigin::Iteration(comp) = origin
             {
-                if !self.ordinary_in_domain(comp)? {
+                if self.ordinary_collection_domain(comp)?.is_none() {
                     return Ok(None);
                 }
                 let index = self
@@ -428,12 +485,12 @@ impl Environment<'_> {
             .expressions
             .get(&span)
             .ok_or(internal!("In反復元AST無し"))?;
-        if !self.ordinary_in_domain(id)?
-            || !matches!(graph.get(record.source)?.rule, Rule::OrdinarySource(_))
-        {
+        let (domain_id, element) = self
+            .ordinary_collection_domain(id)?
+            .ok_or(internal!("実反復の元collection型が未対応"))?;
+        if !matches!(graph.get(record.source)?.rule, Rule::OrdinarySource(_)) {
             return Err(internal!("実In反復の元静的Sourceが違う").into());
         }
-        let spec = quantifier::spec(law, id, &self.control)?;
         let Some(Payload::Evaluation {
             environment,
             expression,
@@ -451,11 +508,7 @@ impl Environment<'_> {
         {
             return Err(internal!("In collectionの環境/束縛/先行性が違う").into());
         }
-        self.source_matches(
-            graph,
-            *expression,
-            spec.domain.ok_or(internal!("In collection元AST無し"))?,
-        )?;
+        self.source_matches(graph, *expression, domain_id)?;
         if graph
             .get(record.domain)?
             .reasons
@@ -470,26 +523,33 @@ impl Environment<'_> {
         };
         if domain.arguments.get(..2) != Some([record.source, record.domain].as_slice())
             || elements.get(record.position) != Some(&producer)
-            || *ty != spec.element
+            || *ty != element
             || producer.0 >= finite.0
         {
             return Err(internal!("In Domainの元refs/実member位置/型が違う").into());
         }
-        let super::super::call::Member::SetElement(member) = &record.member else {
-            return Err(internal!("In実member identityが要素でない").into());
-        };
-        if graph.scalar(producer)? != member || graph.scalar(producer)?.ty() != spec.element {
-            return Err(internal!("In実member producerの値/型が違う").into());
+        let actual = graph.scalar(producer)?;
+        if actual.ty() != element {
+            return Err(internal!("実member producerの型が違う").into());
         }
-        if !matches!(
-            graph.scalar(*value)?,
-            Scalar::List { .. } | Scalar::Set { .. }
-        ) {
-            return Err(internal!("In collectionがList/Setでない").into());
+        let comprehension = matches!(law.exprs()[id].kind, ExprKind::Comprehension { .. });
+        match (&record.member, graph.scalar(*value)?) {
+            (super::super::call::Member::ListPosition(position), Scalar::List { items, .. })
+                if comprehension
+                    && *position == record.position
+                    && items.get(*position) == Some(actual) => {}
+            (super::super::call::Member::SetElement(member), Scalar::Set { .. })
+                if member == actual => {}
+            (super::super::call::Member::SetElement(member), Scalar::List { .. })
+                if !comprehension && member == actual => {}
+            _ => return Err(internal!("実memberのcollection種別/位置/値が違う").into()),
         }
         let mut scope = domain.scope.clone();
-        scope.add_quantifier(spec.descriptor(Some(finite), Some(record.caller)));
-        self.order_quantifier_scope(graph, record.source, &mut scope)?;
+        if !comprehension {
+            let spec = quantifier::spec(law, id, &self.control)?;
+            scope.add_quantifier(spec.descriptor(Some(finite), Some(record.caller)));
+            self.order_quantifier_scope(graph, record.source, &mut scope)?;
+        }
         Ok((record.domain, producer, scope))
     }
 
@@ -556,6 +616,9 @@ impl Environment<'_> {
             .expressions
             .get(&span)
             .ok_or(internal!("通常式の元ASTがない"))?;
+        if matches!(law.exprs()[id].kind, ExprKind::Comprehension { .. }) {
+            return self.ordinary_comprehension_plan(graph, source, children, limit);
+        }
         let expected = self
             .ordinary_children(graph, id)?
             .ok_or(internal!("通常式の未対応AST"))?;
@@ -643,6 +706,210 @@ impl Environment<'_> {
         })
     }
 
+    /// Rebuild the comprehension from the real domain and every executed child.
+    /// Coverage and producer identity belong here, before ordinary expression
+    /// rules may reuse the domain support without flattening its Family facts.
+    fn ordinary_comprehension_plan(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        children: &[NodeRef],
+        limit: usize,
+    ) -> Result<Plan, ValidationFailure> {
+        let span = self.expression_span(graph, source)?;
+        let law = self.indexes.inputs.law();
+        let id = *law
+            .program()
+            .expressions
+            .get(&span)
+            .ok_or(internal!("内包の元AST無し"))?;
+        let ExprKind::Comprehension {
+            domain,
+            elem,
+            filter,
+            ..
+        } = law.exprs()[id].kind
+        else {
+            return Err(internal!("内包の元構文が違う").into());
+        };
+        if self.ordinary_collection_domain(id)?.is_none() || !self.ordinary_context(graph)? {
+            return Err(internal!("内包の局所collection型/Contextが違う").into());
+        }
+        let input = *children
+            .first()
+            .ok_or(internal!("内包の実collection無し"))?;
+        let bindings = self.expression_bindings(graph, source)?;
+        let context = self.current_context(graph);
+        if graph.context_at(source.0) != context
+            || input.0 >= limit
+            || graph.context_at(input.0) != context
+        {
+            return Err(internal!("内包のcollection先行性/Contextが違う").into());
+        }
+        let (input_source, actual, value) = self.evaluation(graph, input)?;
+        self.source_matches(graph, input_source, domain)?;
+        if actual != bindings || input_source.0 >= input.0 {
+            return Err(internal!("内包のcollection束縛/producerが違う").into());
+        }
+        let output = law.expr_type(id).ok_or(internal!("内包結果型無し"))?;
+        let mut scope = graph.get(source)?.scope.clone();
+        scope.merge(&graph.get(input)?.scope);
+        let mut factors = vec![graph.get(input)?.support.clone()];
+        let mut known = value.is_some();
+        let mut pending = self.evaluation_condition_pending(graph, input)?;
+        let mut reasons = graph.get(input)?.reasons.clone();
+        let mut collected = Vec::new();
+        let mut cursor = 1;
+        let mut finite = None;
+        let failed_input = reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
+        if let Some(value) = value.filter(|_| !pending && !failed_input) {
+            // Set display order is not entity identity. The checked collection
+            // producer owns positions; input Sets may be presented in any order.
+            let collection = if children.len() > 1 {
+                let first = children[1];
+                if first.0 >= limit {
+                    return Err(internal!("内包の実子が未出").into());
+                }
+                let iteration = graph
+                    .context_at(first.0)
+                    .iteration
+                    .ok_or(internal!("内包反復無し"))?;
+                let record = graph
+                    .iterations
+                    .get(iteration)
+                    .ok_or(internal!("内包反復無し"))?;
+                let domain = record.finite.ok_or(internal!("内包の実Domain無し"))?;
+                if domain.0 >= limit
+                    || graph.get(domain)?.rule != Rule::InDomain
+                    || graph.get(domain)?.arguments.get(..2) != Some([source, input].as_slice())
+                {
+                    return Err(internal!("内包の元collection Domainが違う").into());
+                }
+                let producer = *graph
+                    .get(domain)?
+                    .arguments
+                    .get(2)
+                    .ok_or(internal!("内包collection producer無し"))?;
+                graph.scalar(producer)?
+            } else {
+                graph.scalar(value)?
+            };
+            for position in data::comprehension_positions(collection, output, &self.control)? {
+                self.tick()?;
+                let first = *children
+                    .get(cursor)
+                    .ok_or(internal!("内包の反復coverage漏れ"))?;
+                if first.0 >= limit {
+                    return Err(internal!("内包の実子が未出").into());
+                }
+                let child_context = graph.context_at(first.0);
+                let index = child_context
+                    .iteration
+                    .ok_or(internal!("内包の実子に反復無し"))?;
+                let record = graph
+                    .iterations
+                    .get(index)
+                    .ok_or(internal!("内包反復無し"))?;
+                if record.caller != context
+                    || record.source != source
+                    || record.domain != input
+                    || record.position != position
+                    || child_context
+                        != (super::super::call::Context {
+                            iteration: Some(index),
+                            ..context
+                        })
+                {
+                    return Err(internal!("内包反復の元refs/位置/Contextが違う").into());
+                }
+                let actual_finite = record.finite.ok_or(internal!("内包の実Domain無し"))?;
+                if finite
+                    .replace(actual_finite)
+                    .is_some_and(|old| old != actual_finite)
+                {
+                    return Err(internal!("内包のDomainが反復間で違う").into());
+                }
+                self.ordinary_iteration_input(graph, index, limit)?;
+                let mut consume = |expected: usize| -> Result<Option<NodeRef>, ValidationFailure> {
+                    let child = *children
+                        .get(cursor)
+                        .ok_or(internal!("内包の必要な子評価漏れ"))?;
+                    cursor += 1;
+                    if child.0 >= limit || graph.context_at(child.0) != child_context {
+                        return Err(internal!("内包の実子先行性/Contextが違う").into());
+                    }
+                    let node = graph.get(child)?;
+                    let (expression, actual, value) = self.evaluation(graph, child)?;
+                    self.source_matches(graph, expression, expected)?;
+                    if actual != bindings
+                        || expression.0 >= child.0
+                        || node.ty
+                            != NodeType::Evaluation(
+                                law.expr_type(expected)
+                                    .ok_or(internal!("内包の子型無し"))?
+                                    .clone(),
+                            )
+                        || !matches!(&node.payload, Some(Payload::Evaluation { environment, .. }) if *environment == self.state.architecture_ref())
+                    {
+                        return Err(internal!("内包の実子AST/束縛/型/環境が違う").into());
+                    }
+                    scope.merge(&node.scope);
+                    factors.push(node.support.clone());
+                    reasons.extend(node.reasons.iter().cloned());
+                    pending |= self.evaluation_condition_pending(graph, child)?;
+                    Ok(value)
+                };
+                let condition = if let Some(filter) = filter {
+                    graph.boolean(consume(filter)?)?
+                } else {
+                    Some(true)
+                };
+                match condition {
+                    Some(true) => {
+                        if let Some(value) = consume(elem)? {
+                            collected.push(graph.scalar(value)?.clone());
+                        } else {
+                            known = false;
+                        }
+                    }
+                    Some(false) => {}
+                    None => known = false,
+                }
+            }
+        } else {
+            known = false;
+        }
+        if cursor != children.len() {
+            return Err(internal!("内包の余分な反復/除外elemがある").into());
+        }
+        sort_reasons(&mut reasons);
+        let failed = reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
+        let value = if known && !failed && !pending {
+            PlannedValue::Fresh(std::sync::Arc::new(data::comprehension_value(
+                output,
+                collected,
+                &self.control,
+            )?))
+        } else {
+            PlannedValue::Unknown
+        };
+        Ok(Plan {
+            span,
+            binder: false,
+            comparison: None,
+            legacy: false,
+            value,
+            scalar_scope: scope.clone(),
+            scope,
+            support: Support::sum(vec![], factors),
+            reasons,
+        })
+    }
+
     /// 実値と条件状態だけを消費する共通の数学。Graph、producer identity、
     /// Scope/Supportの由来検査と記録は呼出し側が引き受ける。
     pub(in crate::observed) fn ordinary_reduce<'v>(
@@ -655,8 +922,8 @@ impl Environment<'_> {
         let law = self.indexes.inputs.law();
         let span = law.exprs()[id].span;
         let arity = match &law.exprs()[id].kind {
-            ExprKind::Int(_) | ExprKind::Bool(_) => 0,
-            ExprKind::Group(_) | ExprKind::Unary { op: UnOp::Not, .. } => 1,
+            ExprKind::Int(_) | ExprKind::Bool(_) | ExprKind::None(_) => 0,
+            ExprKind::Group(_) | ExprKind::Some(_) | ExprKind::Unary { op: UnOp::Not, .. } => 1,
             ExprKind::Let { .. } | ExprKind::Call { .. } | ExprKind::Binary { .. } => 2,
             ExprKind::If { .. } => 3,
             _ => return Err(internal!("通常式の未対応規則").into()),
@@ -674,6 +941,11 @@ impl Environment<'_> {
                 &self.control,
             )?),
             ExprKind::Bool(b) => Some(Scalar::Bool(*b)),
+            ExprKind::None(_) => self.composite_value(id, &[])?,
+            ExprKind::Some(_) => scalar(0)?
+                .map(|value| self.composite_value(id, &[value.clone()]))
+                .transpose()?
+                .flatten(),
             ExprKind::Group(_) => {
                 let value = if scalar(0)?.is_some() {
                     ReducedValue::Reuse(0)

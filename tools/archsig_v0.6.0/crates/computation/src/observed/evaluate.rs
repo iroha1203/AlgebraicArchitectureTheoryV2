@@ -793,7 +793,7 @@ impl Evaluator<'_, '_> {
                 .ok_or_else(|| Failure::Internal(internal!("元式の型がない")))?
                 .clone();
             if self.environment.ordinary_source_eligible(self.graph, id)?
-                && self.environment.ordinary_in_domain(id)?
+                && self.environment.ordinary_collection_domain(id)?.is_some()
             {
                 return self.prepare_static_source(span, ty);
             }
@@ -2421,10 +2421,28 @@ impl Evaluator<'_, '_> {
             .get(&span)
             .ok_or_else(|| Failure::Internal(internal!("内包元Sourceがない")))?
             .expression;
+        let ordinary = matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_));
         let mut children = vec![input.clone()];
         let Some(value) = input.value() else {
-            return self.lexical_result(span, ty, None, children);
+            return if ordinary {
+                self.commit_ordinary(None, span, source, children)
+            } else {
+                self.lexical_result(span, ty, None, children)
+            };
         };
+        let finite = if ordinary {
+            let retained = &mut self.retained_scope;
+            self.environment
+                .construct_in_domain(self.graph, source, input.evaluation, |_, scope| {
+                    retained.merge(scope)
+                })?
+                .map(|domain| domain.domain)
+        } else {
+            None
+        };
+        if finite.is_none() && ordinary {
+            return self.commit_ordinary(None, span, source, children);
+        }
         let positions =
             data::comprehension_positions(self.graph.scalar(value)?, &ty, self.control)?;
         let mut values = Vec::new();
@@ -2435,7 +2453,7 @@ impl Evaluator<'_, '_> {
             self.tick(Checkpoint::FiniteIteration)?;
             let index =
                 self.graph
-                    .append_iteration_from(source, input.evaluation, None, position)?;
+                    .append_iteration_from(source, input.evaluation, finite, position)?;
             let result = self.with_iteration_state(index, input.scope.clone(), |this| {
                 let condition = if let Some(filter) = filter {
                     let evaluated = this.eval(filter)?;
@@ -2448,22 +2466,29 @@ impl Evaluator<'_, '_> {
                 match condition {
                     Some(true) => {
                         let evaluated = this.eval(elem)?;
-                        if let Some(value) = evaluated.value() {
-                            values.push(this.graph.scalar(value)?.clone());
-                        } else {
-                            known = false;
+                        if !ordinary {
+                            if let Some(value) = evaluated.value() {
+                                values.push(this.graph.scalar(value)?.clone());
+                            } else {
+                                known = false;
+                            }
                         }
                         children.push(evaluated);
                     }
                     Some(false) => {}
                     None => {
-                        known = false;
+                        if !ordinary {
+                            known = false;
+                        }
                     }
                 }
                 Ok(())
             });
             result?;
             self.tick(Checkpoint::FiniteIteration)?;
+        }
+        if ordinary {
+            return self.commit_ordinary(None, span, source, children);
         }
         let value = if known {
             #[cfg(test)]
@@ -8915,6 +8940,7 @@ reading Calc {{
             assert_eq!(probes.get(), before);
         }
     }
+    include!("ordinary_comprehension_tests.rs");
     fn comprehension_recheck_example(requests: &[&str]) -> ObservedEvaluation {
         evaluate_observed_bytes(
             numeric_recheck_fixture(
@@ -8932,7 +8958,7 @@ reading Calc {{
     }
     fn iteration_binder_scalar(result: &ObservedEvaluation) -> usize {
         result.nodes.iter().enumerate().find_map(|(index,node)| {
-            (result.contexts[index].iteration==Some(0) && matches!(node.scalar_payload(),Some(_)) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
+            (result.contexts[index].iteration==Some(0) && matches!(node.scalar_payload(),Some(_)) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} | Rule::BinderValue(Location::Law {span}) if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"x"))).then_some(index)
         }).unwrap()
     }
     #[test]
@@ -9027,7 +9053,7 @@ reading Calc {{
         result.iterations[0].member = original;
         for mutation in 0..3 {
             let mut changed = result.nodes[..=binder].to_vec();
-            let source=match &changed[binder].rule {Rule::Input {location:Location::Law {span},..}=>result.nodes.iter().enumerate().find_map(|(index,node)| (index<binder&&result.contexts[index].iteration==Some(0)&&matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span:actual},..}) if actual==span)).then_some(index)).unwrap(),_=>unreachable!()};
+            let source=match &changed[binder].rule {Rule::Input {location:Location::Law {span},..}|Rule::BinderValue(Location::Law{span})=>result.nodes.iter().enumerate().find_map(|(index,node)| (index<binder&&result.contexts[index].iteration==Some(0)&&matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span:actual},..}) if actual==span)).then_some(index)).unwrap(),_=>unreachable!()};
             match mutation {
                 0 => {
                     changed[source].scope.readings.insert("Foreign".into());
