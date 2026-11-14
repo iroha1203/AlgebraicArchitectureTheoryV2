@@ -754,6 +754,12 @@ fn unknown_if_retains_condition_missing_and_both_branches_without_choosing_one()
             panic!("view")
         };
         let at = checked.law().exprs()[*body].span;
+        if id != "different" {
+            assert_eq!(span(f(val(seed), "location")), at);
+            assert_eq!(f(answer(&result, id), "scope"), f(aggregate, "scope"));
+            originals.insert(id, aggregate);
+            continue;
+        }
         let candidates = arr(f(seed, "arguments"))
             .iter()
             .map(|r| ns[txt(f(r, "node"))])
@@ -793,6 +799,22 @@ fn unknown_if_retains_condition_missing_and_both_branches_without_choosing_one()
             f(f(answer(&result, id), "outputs"), "evaluation"),
             &Json::str("Evaluation"),
         );
+        if id != &"different" {
+            assert_eq!(aggregate, *original);
+            let source = target(
+                &ns,
+                f(val(aggregate), "expression"),
+                &Json::str("Expression"),
+            );
+            assert_eq!(f(val(source), "kind"), &Json::str("source"));
+            let at = span(f(val(source), "location"));
+            assert_eq!(arr(f(part_at(aggregate, at), "children")).len(), 3);
+            assert!(
+                arr(f(aggregate, "evidence")).is_empty(),
+                "既知両枝に追加補完証拠を要求しない"
+            );
+            continue;
+        }
         let domain_ref = &arr(f(aggregate, "arguments"))[1];
         let domain = target(&ns, domain_ref, &Json::str("Domain"));
         assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
