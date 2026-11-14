@@ -433,6 +433,18 @@ fn row_keys(rows: &[Vec<Json>], types: &[(&str, Json)]) -> BTreeSet<String> {
 fn retained_observed_family<'a>(wire: &'a Json, id: &str, name: &str) -> (&'a Json, &'a Json) {
     let ns = index(wire);
     let aggregate = root(wire, id);
+    if f(answer(wire, id), "status") != &Json::str("undetermined") {
+        let claim = target(&ns, f(answer(wire, id), "claim"), &Json::str("Proposition"));
+        assert_eq!(
+            arr(f(claim, "arguments")).get(1),
+            Some(f(f(answer(wire, id), "outputs"), "evaluation"))
+        );
+        assert_eq!(
+            f(val(aggregate_instance(&ns, aggregate).unwrap()), "name"),
+            &Json::str(name)
+        );
+        return (aggregate, claim);
+    }
     let seed = expression(&ns, aggregate);
     assert_eq!(
         arr(f(aggregate, "arguments")).first(),
@@ -1143,6 +1155,15 @@ law required observed(r:E): r.flag;
             f(f(aggregate, "scope"), "domain"),
             &Json::str("all_completions")
         );
+        if id == "e" {
+            assert_eq!(aggregate, original_e);
+            assert_eq!(
+                f(answer(&wire, id), "claim"),
+                &Json::obj([("node", f(original_e_claim, "id").clone())])
+            );
+            assert!(!evidence(&ns, original_e_claim, "counterexample").is_empty());
+            continue;
+        }
         let domain_ref = &arr(f(aggregate, "arguments"))[1];
         let domain = target(&ns, domain_ref, &Json::str("Domain"));
         assert_eq!(f(val(domain), "kind"), &Json::str("finite"));
