@@ -207,8 +207,33 @@ fn finite_completions_keep_original_guard_and_body_separate_from_the_implication
         assert_eq!(r.outcome(), &Outcome::Undetermined);
         let source = r.source_reading().unwrap();
         assert_eq!(source.application(), &LawApplication::Guard(None));
-        assert_eq!(source.body(), None);
+        assert_eq!(
+            source.body(),
+            if name == "finiteBody" {
+                None
+            } else {
+                Some(true)
+            }
+        );
         assert_eq!(source.conditional(), Some(true));
+        let expressions = &r.instance().declaration().expressions;
+        for (kind, expected) in [
+            (archsig_input::law::model::ExpressionKind::Guard, "c.flag"),
+            (
+                archsig_input::law::model::ExpressionKind::Body,
+                match name {
+                    "finiteGuard" => "true",
+                    "finiteBody" => "c.flag",
+                    _ => "forall k: Z. k = k",
+                },
+            ),
+        ] {
+            let span = expressions.iter().find(|e| e.kind == kind).unwrap().span;
+            assert_eq!(
+                &r.source_readings().source_law().bytes()[span.0..span.1],
+                expected.as_bytes()
+            );
+        }
         let target = r.target_reading().unwrap();
         assert_eq!(target.application(), &LawApplication::Guard(Some(true)));
         assert_eq!(target.body(), Some(true));
@@ -216,10 +241,28 @@ fn finite_completions_keep_original_guard_and_body_separate_from_the_implication
         let ObjectEvaluationOutcome::Evaluated(e) = r.source().unwrap().outcome() else {
             panic!()
         };
-        let wire = e.wire().canonical();
-        assert!(wire.contains("all_completions"));
-        assert!(wire.contains("not_applicable"));
-        assert!(wire.contains("Left.Child.flag"));
+        let wire = e.wire();
+        let root = f(
+            f(f(&arr(f(&wire, "answers"))[0], "outputs"), "evaluation"),
+            "node",
+        );
+        let root = arr(f(&wire, "nodes"))
+            .iter()
+            .find(|node| f(node, "id") == root)
+            .unwrap();
+        // Scope states the semantic domain, not whether cases were executed.
+        assert_eq!(f(f(root, "scope"), "domain"), &Json::str("all_completions"));
+        let parts = arr(f(f(root, "value"), "parts"));
+        if name == "finiteBody" {
+            assert_eq!(parts.len(), 1);
+            assert_eq!(arr(f(&parts[0], "children")).len(), 2);
+        } else {
+            // The original guard and body remain separate producers.
+            assert_eq!(parts.len(), 2);
+            assert_eq!(arr(f(&parts[0], "children")).len(), 1);
+            assert_eq!(arr(f(&parts[1], "children")).len(), 1);
+        }
+        assert!(wire.canonical().contains("Left.Child.flag"));
     }
     let r = run(Arc::clone(&i), "p", "falseGuard", "p");
     assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Applicability));
@@ -276,7 +319,10 @@ fn finite_owner_completions_do_not_turn_a_false_or_unknown_guard_into_true() {
 
 #[test]
 fn stopped_completion_reading_keeps_the_complete_source_dag_without_a_partial_guard() {
-    let i = inputs(L, A);
+    // This implication is genuinely undecided until the missing flag is
+    // completed, unlike `when c.flag: true` whose conditional is already true.
+    let law = L.replace("when c.flag: true;", "when c.flag: false;");
+    let i = inputs(&law, A);
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "finiteGuard", "p");
     let count = Rc::new(Cell::new(0));
@@ -294,6 +340,14 @@ fn stopped_completion_reading_keeps_the_complete_source_dag_without_a_partial_gu
         }),
     )
     .unwrap();
+    let ObjectEvaluationOutcome::Evaluated(source) = normal.source().unwrap().outcome() else {
+        panic!("completed source DAG");
+    };
+    assert!(source.wire().canonical().contains("all_completions"));
+    assert_eq!(
+        normal.source_reading().unwrap().application(),
+        &LawApplication::Guard(None)
+    );
     let total = count.get();
     assert!(total >= 8);
     // 両補完caseの読取り。後続はsource後・target後・比較後の三checkpoint。

@@ -1336,10 +1336,13 @@ fn missing_bool_completions_keep_original_cases_and_do_not_promote_branch_values
         let mut g = graph(&e);
         let b = architecture(&g, "b");
         let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
-        assert_eq!(d.coordinates.len(), 2);
+        // A discarded Bool does not require duplicate completion readings:
+        // its original numerical equation is already checked. The actual branch
+        // choice still needs both cases and must not acquire a single nu.
+        assert_eq!(d.coordinates.len(), if uniform { 1 } else { 2 });
         assert_eq!(
             d.coordinates.iter().map(|q| q.case).collect::<Vec<_>>(),
-            vec![0, 1]
+            if uniform { vec![0] } else { vec![0, 1] }
         );
         assert_eq!(
             d.status,
@@ -1352,7 +1355,11 @@ fn missing_bool_completions_keep_original_cases_and_do_not_promote_branch_values
         let core = data(&g, d.context.unwrap()).source.core.as_ref().unwrap();
         assert!(core.occurrences().iter().all(|q| q.nu.is_some() == uniform));
         if uniform {
-            assert_eq!(core.occurrences()[0].nu, core.occurrences()[1].nu);
+            assert_eq!(core.occurrences().len(), 1);
+            assert_eq!(
+                terms(&g, d.coordinates[0].nu.expect("original quantity symbol")),
+                vec![(Json::str("1"), vec![1])]
+            );
         }
         if uniform {
             let p = d.presentations[0].unwrap();

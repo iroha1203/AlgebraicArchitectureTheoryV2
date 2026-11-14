@@ -1301,15 +1301,45 @@ fn finite_value_completions_keep_products_and_extensional_sets() {
     cases(&wire, "a", &slots, &result_type, &wanted);
     assert_eq!(f(answer(&wire, "a"), "status"), &Json::str("undetermined"));
     let slot = sets();
-    let script = "view stable(s:Sample): Set<Bool> = if count(s.h)=0 then set<Bool>{false,true} else set<Bool>{true,false}; view count_value(s:Sample): Z=count(s.h);";
+    let script = "view stable(s:Sample): Set<Bool> = if count(s.h)=0 then set<Bool>{false,true} else set<Bool>{true,false}; view completed(s:Sample): Set<Bool> = set<Bool>{count(s.h)=0,count(s.h)!=0}; view count_value(s:Sample): Z=count(s.h);";
     let (wire, checked) = run(
         fixture(script, &[slot.clone()], false, false),
         &[
-            "a=evaluate(Calc.stable,s=@v/item)",
+            "a=evaluate(Calc.completed,s=@v/item)",
+            "known=evaluate(Calc.stable,s=@v/item)",
             "b=evaluate(Calc.count_value,s=@v/item)",
         ],
     );
+    missing_fields(&wire, "known", &[fact(&slot)]);
+    assert_eq!(
+        f(answer(&wire, "known"), "status"),
+        &Json::str("established")
+    );
+    assert_eq!(
+        f(val(expression(&index(&wire), root(&wire, "known"))), "kind"),
+        &Json::str("source")
+    );
+    assert_eq!(
+        f(answer(&wire, "known"), "scope"),
+        f(root(&wire, "known"), "scope")
+    );
     let ns = index(&wire);
+    assert_eq!(
+        value_key(
+            &slot.ty,
+            val(target(
+                &ns,
+                f(f(answer(&wire, "known"), "outputs"), "value"),
+                &slot.ty
+            ))
+        ),
+        value_key(
+            &slot.ty,
+            &Json::Arr(vec![Json::Bool(false), Json::Bool(true)])
+        )
+    );
+    assert!(evidence(&ns, root(&wire, "known"), "finite_exhaustion").is_empty());
+    assert!(evidence(&ns, root(&wire, "known"), "completion_pair").is_empty());
     let wanted = slot
         .values
         .iter()
@@ -1334,15 +1364,13 @@ fn finite_value_completions_keep_products_and_extensional_sets() {
         display_orders
             .insert(val(target(&ns, f(val(case.evaluation), "value"), &slot.ty)).canonical());
         let ch = children(&ns, case.evaluation);
-        assert_eq!(ch.len(), 3);
-        assert_eq!(
-            source(&checked, evaluation_span(&ns, ch[1])),
-            b"set<Bool>{false,true}"
-        );
-        assert_eq!(
-            source(&checked, evaluation_span(&ns, ch[2])),
-            b"set<Bool>{true,false}"
-        );
+        assert_eq!(ch.len(), 2);
+        for (child, body) in ch
+            .iter()
+            .zip([b"count(s.h)=0".as_slice(), b"count(s.h)!=0".as_slice()])
+        {
+            assert_eq!(source(&checked, evaluation_span(&ns, child)), body);
+        }
         for e in live(&ns, case.evaluation) {
             if source(&checked, evaluation_span(&ns, e)) == b"s.h" {
                 field_value(&ns, e, &slot, &case.assignment[0]);

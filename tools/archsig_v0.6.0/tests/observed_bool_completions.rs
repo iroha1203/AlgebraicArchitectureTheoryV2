@@ -1151,12 +1151,25 @@ view later(s:Sample): Unit = unit;
 
 #[test]
 fn bool_completions_compare_set_values_extensionally() {
-    let script = "view stable(s:Sample): Set<Bool> = if s.h then set<Bool>{false,true} else set<Bool>{true,false};";
+    let script = "view stable(s:Sample): Set<Bool> = if s.h then set<Bool>{false,true} else set<Bool>{true,false}; view completed(s:Sample): Set<Bool> = set<Bool>{s.h,not s.h};";
     let (wire, checked) = run(
         fixture(script, Shape::One, false, false),
-        &["a=evaluate(Calc.stable,s=@v/item)"],
+        &[
+            "a=evaluate(Calc.completed,s=@v/item)",
+            "known=evaluate(Calc.stable,s=@v/item)",
+        ],
     );
     assert_eq!(f(&wire, "status"), &Json::str("complete"));
+    let known = answer(&wire, "known");
+    assert_eq!(f(known, "status"), &Json::str("established"));
+    assert_missing_fields(&wire, "known", &[slot("v", "h")]);
+    let ns = index(&wire);
+    let direct = root(&wire, "known");
+    assert_eq!(
+        f(val(expression(&ns, direct)), "kind"),
+        &Json::str("source")
+    );
+    assert_eq!(f(known, "scope"), f(direct, "scope"));
     let a = answer(&wire, "a");
     assert_eq!(f(a, "status"), &Json::str("established"));
     assert!(!obj(a).contains_key("claim"));
@@ -1177,6 +1190,9 @@ fn bool_completions_compare_set_values_extensionally() {
             BTreeSet::from([false, true])
         );
     };
+    extensional(target(&ns, f(f(known, "outputs"), "value"), &t));
+    assert!(evidence(&ns, direct, "finite_exhaustion").is_empty());
+    assert!(evidence(&ns, direct, "completion_pair").is_empty());
     let output_ref = f(f(a, "outputs"), "value");
     assert_eq!(f(val(root), "value"), output_ref);
     extensional(target(&ns, output_ref, &t));
@@ -1185,7 +1201,7 @@ fn bool_completions_compare_set_values_extensionally() {
             &checked,
             span(f(val(original_body_source(&ns, root)), "location"))
         ),
-        b"if s.h then set<Bool>{false,true} else set<Bool>{true,false}"
+        b"set<Bool>{s.h,not s.h}"
     );
     let domain = assignment_domain(&ns, root);
     assert_eq!(f(val(domain), "type"), &Json::str("Bool"));
@@ -1239,17 +1255,13 @@ fn bool_completions_compare_set_values_extensionally() {
         extensional(value);
         displays.insert(val(value).canonical());
         let parts = children(&ns, case);
-        assert_eq!(parts.len(), 3);
+        assert_eq!(parts.len(), 2);
         assert_completed_field(&ns, parts[0], assignment[0]);
-        for (branch, original) in [
-            (parts[1], b"set<Bool>{false,true}".as_slice()),
-            (parts[2], b"set<Bool>{true,false}".as_slice()),
-        ] {
-            assert_eq!(source(&checked, evaluation_span(&ns, branch)), original);
-            extensional(target(&ns, f(val(branch), "value"), &t));
-        }
-        let selected = if assignment[0] { parts[1] } else { parts[2] };
-        assert_eq!(val(target(&ns, f(val(selected), "value"), &t)), val(value));
+        assert_eq!(source(&checked, evaluation_span(&ns, parts[1])), b"not s.h");
+        assert_eq!(
+            val(target(&ns, f(val(parts[1]), "value"), &Json::str("Bool"))),
+            &Json::Bool(!assignment[0])
+        );
     }
     assert_eq!(assignments, BTreeSet::from([false, true]));
     assert_eq!(

@@ -115,19 +115,25 @@ fn finite_term_values_use_extensional_equality_in_unknown_branches_and_completio
         ("params", Json::Arr(vec![Json::str("b")])),
         ("body", Json::str("if b then 4 else 9")),
     ]);
-    let alpha = Json::obj([
-        ("params", Json::Arr(vec![Json::str("t")])),
-        ("body", Json::str("if not t then 9 else 4")),
-    ]);
-    assert_eq!(value(&w, "b"), &alpha);
+    // Both observed branches are extensionally equal. Keep the original
+    // checked representative instead of choosing the first completion's syntax.
+    assert_eq!(value(&w, "b"), &g);
     assert_eq!(value(&w, "s"), &g);
     assert_eq!(get(answer(&w, "u"), "status"), &Json::str("undetermined"));
-    for id in ["b", "s"] {
-        let proof = evidence(&w, id, "finite_exhaustion");
-        assert_eq!(proof.len(), 1);
-        assert_eq!(get(get(proof[0], "data"), "checked"), &Json::Nat(2));
-        assert!(evidence(&w, id, "completion_pair").is_empty());
-    }
+    assert!(evidence(&w, "b", "finite_exhaustion").is_empty());
+    assert!(evidence(&w, "b", "completion_pair").is_empty());
+    assert!(
+        arr(get(answer(&w, "b"), "reasons"))
+            .iter()
+            .flat_map(|reason| arr(get(reason, "missing")))
+            .any(|missing| get(missing, "field") == &Json::str("Terms.Sample.p"))
+    );
+    // The correlated nested branch is initially unknown and still needs both
+    // completions to establish one extensional function value.
+    let proof = evidence(&w, "s", "finite_exhaustion");
+    assert_eq!(proof.len(), 1);
+    assert_eq!(get(get(proof[0], "data"), "checked"), &Json::Nat(2));
+    assert!(evidence(&w, "s", "completion_pair").is_empty());
     assert_eq!(evidence(&w, "u", "completion_pair").len(), 1);
     let unknown = answer(&w, "x");
     assert_eq!(get(unknown, "status"), &Json::str("undetermined"));
@@ -144,6 +150,7 @@ fn finite_term_values_use_extensional_equality_in_unknown_branches_and_completio
             .any(|m| get(m, "field") == &Json::str("Terms.Sample.p"))
     );
     assert!(!format!("{:?}", get(&w, "issues")).contains("internal"));
+    audit(&r, "r1");
 }
 
 fn evidence<'a>(w: &'a Json, id: &str, kind: &str) -> Vec<&'a Json> {

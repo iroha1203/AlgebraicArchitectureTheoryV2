@@ -287,13 +287,25 @@ fn unknown_guards_keep_both_applicable_and_inapplicable_cases_undetermined() {
         assert_eq!(r.outcome(), Some(&Outcome::Undetermined));
         for e in r.evaluations() {
             for row in &e.rows {
-                assert_eq!(row.cases.len(), 2);
-                assert_eq!(row.cases[0].reading.application().value(), Some(false));
-                assert_eq!(row.cases[1].reading.application().value(), Some(true));
-                assert_eq!(
-                    text(&row.cases[0].components[0].residual),
-                    Some("\"0\"".into())
-                );
+                if body == "2=1" {
+                    // The unresolved implication still needs both completions.
+                    assert_eq!(row.cases.len(), 2);
+                    assert_eq!(row.cases[0].reading.application().value(), Some(false));
+                    assert_eq!(row.cases[1].reading.application().value(), Some(true));
+                    assert_eq!(
+                        text(&row.cases[0].components[0].residual),
+                        Some("\"0\"".into())
+                    );
+                } else {
+                    // A true body settles the conditional, not applicability.
+                    assert_eq!(row.cases.len(), 1);
+                    let case = &row.cases[0];
+                    assert_eq!(case.reading.application().value(), None);
+                    assert_eq!(case.reading.body(), Some(true));
+                    assert_eq!(case.reading.conditional(), Some(true));
+                    assert_eq!(text(&case.components[0].epsilon), Some("\"0\"".into()));
+                    assert!(case.components[0].residual.is_none());
+                }
             }
         }
         r.recheck(i, &quiet()).unwrap();

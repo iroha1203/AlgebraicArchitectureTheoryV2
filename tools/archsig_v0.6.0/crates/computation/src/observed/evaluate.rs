@@ -4630,11 +4630,14 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
     #[test]
     fn affine_comparison_finite_case_and_law_evidence_retain_original_unknown_operands() {
         let result = affine_private_example(
-            "law required mixed(s:Sample):s.p and (s.z+1=s.z+2);",
+            "law required mixed(s:Sample):s.p or (s.z+1=s.z+2);",
             &["mixed=check(Calc.mixed,s=@v/sample)"],
         );
-        assert_eq!(result.status(), "complete");
-        assert_eq!(result.answers[0].status, Decision::Refuted);
+        assert_eq!(result.status(), "partial");
+        assert_eq!(result.answers[0].status, Decision::Undetermined);
+        // The false affine comparison leaves the whole disjunction dependent
+        // on the missing Bool, so both real completion contexts are necessary
+        // for this cross-case producer-forgery test.
         let proofs = affine_comparison_proofs(&result);
         let cases = proofs
             .iter()
@@ -6666,8 +6669,18 @@ reading R {{
             assert_eq!(candidates.len(), 1, "unique original whole family: {name}");
             candidates.into_iter().next().unwrap()
         };
-        // 回答rootはBool補完2caseのwhole族を指す。各caseの元Ref族は一行のままである。
-        for (request, name) in [(0, "Calc.uncertain"), (1, "Calc.ensured")] {
+        // The uncertain family needs both Bool completions. The ensured family
+        // retains its original whole-family proof, even with a missing guard.
+        let ensured_root = &unknown.nodes[unknown.answers[1].outputs["evaluation"].0];
+        assert!(!matches!(
+            unknown.nodes[ensured_root.arguments[0].0].payload,
+            Some(Payload::CompletionSeed { .. })
+        ));
+        assert!(!unknown.cases.iter().any(|case| case.caller.request == 1));
+        assert!(unknown.answers[1].evidence.iter().any(|reference|
+            matches!(&unknown.nodes[reference.0].payload,
+                Some(Payload::FiniteExhaustion { checked: 1, instances, .. }) if instances.len() == 1)));
+        for (request, name) in [(0, "Calc.uncertain")] {
             let evaluation = &unknown.nodes[unknown.answers[request].outputs["evaluation"].0];
             assert!(matches!(
                 &unknown.nodes[evaluation.arguments[0].0].payload,
@@ -6726,16 +6739,11 @@ reading R {{
                     }
                 );
             }
-            if request == 0 {
-                assert!(values.contains(&true) && values.contains(&false));
-                assert!(unknown.answers[request].evidence.iter().any(|r| matches!(
-                    &unknown.nodes[r.0].payload,
-                    Some(Payload::CompletionPair { .. })
-                )));
-            } else {
-                assert_eq!(values, vec![true, true]);
-                assert!(unknown.answers[request].evidence.iter().any(|r|matches!(&unknown.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==cases.len() && instances.iter().all(|instance|cases.contains(instance)))));
-            }
+            assert!(values.contains(&true) && values.contains(&false));
+            assert!(unknown.answers[request].evidence.iter().any(|r| matches!(
+                &unknown.nodes[r.0].payload,
+                Some(Payload::CompletionPair { .. })
+            )));
         }
         let rows = original_rows(0, "Calc.uncertain");
         assert_eq!(rows.len(), 1);
@@ -9249,26 +9257,19 @@ reading Calc {{
                 .any(|fact| fact.field.as_deref() == Some("Numeric.Sample.p"))
         }));
         let evaluation = &result.nodes[result.answers[1].outputs["evaluation"].0];
-        assert!(matches!(
+        assert!(!matches!(
             &result.nodes[evaluation.arguments[0].0].payload,
             Some(Payload::CompletionSeed { .. })
         ));
-        let Some(Payload::Evaluation { parts, .. }) = &evaluation.payload else {
-            unreachable!()
+        assert!(!result.cases.iter().any(|case| case.caller.request == 1));
+        let Some(Payload::Evaluation {
+            value: Some(value), ..
+        }) = &evaluation.payload
+        else {
+            panic!("checked original pattern result");
         };
-        // 補完した各caseは同じ集合を返し、網羅証拠は全caseを数える。
-        let cases = &parts[0].children;
-        assert_eq!(cases.len(), 2);
-        for case in cases {
-            let Some(Payload::Evaluation {
-                value: Some(value), ..
-            }) = &result.nodes[case.0].payload
-            else {
-                panic!("known pattern result in Bool case")
-            };
-            assert_eq!(data_scalar_at(&result, value.0), &set(&[11, 12]));
-        }
-        assert!(result.answers[1].evidence.iter().any(|r|matches!(&result.nodes[r.0].payload,Some(Payload::FiniteExhaustion {checked:2,instances,..}) if instances.len()==cases.len() && instances.iter().all(|instance|cases.contains(instance)))));
+        assert_eq!(data_scalar_at(&result, value.0), &set(&[11, 12]));
+        rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     }
     fn plain_ref_fixture() -> InputSources {
         let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Roster","version":"1","dependencies":[],"declarations":[
@@ -10804,32 +10805,21 @@ reading Calc {{
     }
     #[test]
     fn finite_completion_coverage_stop_keeps_all_cases_without_unfinished_proof() {
-        finite_completion_phase_stop("completion_coverage", 0, None);
+        finite_completion_phase_stop("completion_coverage", 0);
     }
-    #[test]
-    fn finite_completion_enumeration_stop_keeps_verified_law_counterexample() {
-        finite_completion_phase_stop("completion_enum", 1, Some(true));
-    }
-    fn finite_completion_phase_stop(phase: &'static str, at: usize, known: Option<bool>) {
+    include!("known_answer_completion_tests.rs");
+    fn finite_completion_phase_stop(phase: &'static str, at: usize) {
         use archsig_input::result::Signal;
         use std::{
             cell::{Cell, RefCell},
             rc::Rc,
         };
-        let current = match known {
-            Some(true) => "law required current(s:Sample):false and s.o=none<Bool>;",
-            Some(false) => "view current(s:Sample):Unit=if s.o=none<Bool> then unit else unit;",
-            None => "view current(s:Sample):Bool=s.o=s.o;",
-        };
+        let current = "view current(s:Sample):Bool=s.o=s.o;";
         let body = format!(
             "view seed():Unit=unit; law required prior(s:Sample):false; view hole(s:Sample):Q=s.q; {current}"
         );
         let inputs = finite_completion_fixture(&body, true);
-        let ask = if known == Some(true) {
-            "current=check(Calc.current,s=@v/sample)"
-        } else {
-            "current=evaluate(Calc.current,s=@v/sample)"
-        };
+        let ask = "current=evaluate(Calc.current,s=@v/sample)";
         let asks = [
             "seed=evaluate(Calc.seed)",
             "prior=check(Calc.prior,s=@v/sample)",
@@ -10876,14 +10866,7 @@ reading Calc {{
             &normal.nodes[r.0].payload,
             Some(Payload::Counterexample { .. })
         )));
-        assert_eq!(
-            normal.answers[3].status,
-            if known == Some(true) {
-                Decision::Refuted
-            } else {
-                Decision::Established
-            }
-        );
+        assert_eq!(normal.answers[3].status, Decision::Established);
         assert_eq!(
             &*progress.borrow(),
             if phase == "completion_coverage" {
@@ -10892,59 +10875,6 @@ reading Calc {{
                 &[0, 1, 2][..]
             }
         );
-        let original = if let Some(check) = known {
-            let roots:Vec<_>=normal.nodes.iter().enumerate().filter_map(|(index,node)| {
-                let context=normal.contexts[index];
-                (context.request==3 && context.case.is_none() && context.frame.is_none() && context.iteration.is_none() && context.instance.is_none()
-                    && matches!(&node.payload,Some(Payload::Evaluation {expression,..}) if matches!(&normal.nodes[expression.0].payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==body_span))).then_some(NodeRef(index))
-            }).collect();
-            assert_eq!(roots.len(), 1);
-            let root = roots[0];
-            let Some(Payload::Evaluation {
-                value: Some(value), ..
-            }) = &normal.nodes[root.0].payload
-            else {
-                panic!("verified known observed root")
-            };
-            let value = *value;
-            assert_eq!(
-                data_scalar_at(&normal, value.0),
-                &if check {
-                    Scalar::Bool(false)
-                } else {
-                    Scalar::Unit
-                }
-            );
-            rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=value.0]).unwrap();
-            let proposition = if check {
-                let props: Vec<_> = normal
-                    .nodes
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, node)| {
-                        (normal.contexts[i].request == 3
-                            && normal.contexts[i].case.is_none()
-                            && matches!(&node.payload, Some(Payload::Proposition { .. }))
-                            && node.arguments.get(1) == Some(&root))
-                        .then_some(NodeRef(i))
-                    })
-                    .collect();
-                assert_eq!(props.len(), 1);
-                let reference = props[0];
-                assert!(normal.nodes[reference.0].evidence.iter().any(|r| matches!(
-                    &normal.nodes[r.0].payload,
-                    Some(Payload::Counterexample { .. })
-                )));
-                rebuild_for_origin_and_support_recheck(&normal, &normal.nodes[..=reference.0])
-                    .unwrap();
-                Some(reference)
-            } else {
-                None
-            };
-            Some((root, value, proposition))
-        } else {
-            None
-        };
         let expected = Signal::Term;
         let armed = Rc::new(Cell::new(false));
         let probes = Rc::new(Cell::new(0));
@@ -11004,27 +10934,9 @@ reading Calc {{
             unreachable!()
         };
         assert_eq!(&stopped_answers[..3], &normal_answers[..3]);
-        if let Some((root, value, proposition)) = original {
-            assert_eq!(stopped.answers[3].status, normal.answers[3].status);
-            assert_eq!(stopped.answers[3].outputs.get("evaluation"), Some(&root));
-            assert_eq!(stopped.answers[3].claim, proposition);
-            if let Some(proposition) = proposition {
-                assert_eq!(
-                    stopped.answers[3].evidence,
-                    normal.nodes[proposition.0].evidence
-                );
-                assert!(stopped.answers[3].evidence.iter().any(|r| matches!(
-                    &stopped.nodes[r.0].payload,
-                    Some(Payload::Counterexample { .. })
-                )));
-            } else {
-                assert_eq!(stopped.answers[3].outputs.get("value"), Some(&value));
-            }
-        } else {
-            assert_eq!(stopped.answers[3].status, Decision::Undetermined);
-            assert!(stopped.answers[3].outputs.is_empty());
-            assert!(stopped.answers[3].evidence.is_empty());
-        }
+        assert_eq!(stopped.answers[3].status, Decision::Undetermined);
+        assert!(stopped.answers[3].outputs.is_empty());
+        assert!(stopped.answers[3].evidence.is_empty());
         assert!(
             stopped.answers[3]
                 .reasons
