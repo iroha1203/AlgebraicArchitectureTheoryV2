@@ -45,12 +45,24 @@ pub(super) struct Instance {
     pub member: NodeRef,
 }
 
-/// Bool補完は元slot列と型付き実assignmentへ属する。索引は表示identityにしない。
+/// Seedの型付き個別代入と、有限全域の列挙義務を区別する。
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum CompletionMode {
+    FiniteDomain,
+    Assignment,
+}
+/// Domain所属の全域補完と、一つの合法代入を混同しない。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum CompletionOrigin {
+    Domain(NodeRef),
+    Assignment,
+}
+/// 補完は元slot列と型付き実assignmentへ属する。索引は表示identityにしない。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct CompletionCase {
     pub caller: Context,
     pub seed: NodeRef,
-    pub domain: NodeRef,
+    pub origin: CompletionOrigin,
     pub member: NodeRef,
     pub values: Vec<NodeRef>,
 }
