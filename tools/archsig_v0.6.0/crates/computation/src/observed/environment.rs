@@ -3763,7 +3763,8 @@ impl<'a> Environment<'a> {
                 graph.scalar(argument)?;
                 self.tick()?;
             }
-            for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
+            for source_index in self.context_candidates(graph, limit)? {
+                let source = &graph.nodes[source_index];
                 self.tick()?;
                 let Some(Payload::Expression {
                     location: Location::Law { span: actual },
@@ -4412,7 +4413,8 @@ impl<'a> Environment<'a> {
             if numeric::binary(BinOp::Sub, left, right, &self.control)? != *residual {
                 return Err(internal!("残差が元左右の正確な差でない").into());
             }
-            for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
+            for source_index in self.context_candidates(graph, limit)? {
+                let source = &graph.nodes[source_index];
                 self.tick()?;
                 if graph.context_at(source_index) != self.current_context(graph) {
                     continue;
@@ -6990,7 +6992,8 @@ impl<'a> Environment<'a> {
         let (domain_source, bindings, value) = self.evaluation(graph, input)?;
         self.source_matches(graph, domain_source, domain)?;
         let mut own = None;
-        for (index, node) in graph.nodes.iter().enumerate().take(limit) {
+        for index in self.context_candidates(graph, limit)? {
+            let node = &graph.nodes[index];
             self.tick()?;
             if graph.context_at(index) == self.current_context(graph)
                 && matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span:actual},bindings:actual_bindings,..}) if *actual==span && actual_bindings==bindings)
