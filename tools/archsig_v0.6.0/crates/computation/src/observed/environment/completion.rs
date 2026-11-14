@@ -1,5 +1,7 @@
 //! 元の欠測 slot、補完代入、補完内の whole 評価を照合する。
 use super::*;
+use crate::observed::call::CompletionMode;
+mod witness;
 use crate::observed::environment::state::ScopedReplace;
 use crate::observed::value_equality;
 use archsig_common::control::CheckFailure;
@@ -7,6 +9,7 @@ use archsig_input::law::{ast::Role, model::Signature};
 
 #[derive(Clone)]
 pub(super) struct Seed {
+    mode: CompletionMode,
     reference: NodeRef,
     context: super::super::call::Context,
     location: Location,
@@ -21,7 +24,13 @@ pub(super) struct Seed {
 }
 pub(super) type MemoKey = (usize, super::super::call::Context, usize, usize);
 pub(super) type DomainKey = (usize, super::super::call::Context, usize, usize, usize);
-pub(super) type SlotsKey = (usize, super::super::call::Context, usize, Vec<usize>);
+pub(super) type SlotsKey = (
+    usize,
+    super::super::call::Context,
+    usize,
+    CompletionMode,
+    Vec<usize>,
+);
 pub(super) type SlotCollection = (Vec<Fact>, Vec<NodeRef>, Vec<Reason>);
 type EvaluationParts = (NodeRef, NodeRef, Vec<NodeRef>, Vec<NodeRef>);
 struct Aggregate {
@@ -119,10 +128,8 @@ fn components(
     };
     for (value, ty) in values.iter().zip(types) {
         control.checkpoint(Checkpoint::FiniteIteration)?;
-        if !super::super::finite::field_completion_supported(ty, law, control)?
-            || value.ty() != ty.erase()
-        {
-            return Err(internal!("補完代入の成分型が元の有限slotと違う").into());
+        if value.ty() != ty.erase() {
+            return Err(internal!("補完代入の成分型が元slotと違う").into());
         }
     }
     control.checkpoint(Checkpoint::FiniteIteration)?;
@@ -168,7 +175,7 @@ impl Environment<'_> {
         &self,
         fields: &[Fact],
     ) -> Result<super::super::finite::Enumeration, ValidationFailure> {
-        let types = self.completion_slot_types(fields)?;
+        let types = self.completion_slot_types_for(fields, CompletionMode::Assignment)?;
         let mut all = super::super::finite::Enumeration::default();
         if !self.completion_has_references(&types)? {
             return Ok(all);
@@ -406,6 +413,13 @@ impl Environment<'_> {
     }
 
     fn completion_slot_types(&self, fields: &[Fact]) -> Result<Vec<Type>, ValidationFailure> {
+        self.completion_slot_types_for(fields, CompletionMode::FiniteDomain)
+    }
+    fn completion_slot_types_for(
+        &self,
+        fields: &[Fact],
+        mode: CompletionMode,
+    ) -> Result<Vec<Type>, ValidationFailure> {
         self.tick()?;
         if fields.is_empty() {
             return Err(internal!("補完slotの型族が空である").into());
@@ -423,7 +437,8 @@ impl Environment<'_> {
             )?;
             if fact.atom.is_some()
                 || field.slot != Slot::Missing
-                || !self.completion_type_supported(&field.ty)?
+                || (mode == CompletionMode::FiniteDomain
+                    && !self.completion_type_supported(&field.ty)?)
             {
                 return Err(internal!("補完slotが元の有限型の欠測fieldでない").into());
             }
@@ -438,7 +453,7 @@ impl Environment<'_> {
         &self,
         fields: &[Fact],
     ) -> Result<Type, ValidationFailure> {
-        let types = self.completion_slot_types(fields)?;
+        let types = self.completion_slot_types_for(fields, CompletionMode::Assignment)?;
         let ty = assignment_type(&types);
         self.tick()?;
         Ok(ty)
@@ -458,12 +473,28 @@ impl Environment<'_> {
         graph: &Graph,
         roots: &[NodeRef],
     ) -> Result<SlotCollection, ValidationFailure> {
+        self.completion_slots_for(graph, roots, CompletionMode::FiniteDomain)
+    }
+    pub(in crate::observed) fn completion_assignment_slots(
+        &self,
+        graph: &Graph,
+        roots: &[NodeRef],
+    ) -> Result<SlotCollection, ValidationFailure> {
+        self.completion_slots_for(graph, roots, CompletionMode::Assignment)
+    }
+    fn completion_slots_for(
+        &self,
+        graph: &Graph,
+        roots: &[NodeRef],
+        mode: CompletionMode,
+    ) -> Result<SlotCollection, ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             let key = (
                 graph as *const Graph as usize,
                 self.current_context(graph),
                 self.state.cutoff.get().min(graph.nodes.len()),
+                mode,
                 roots.iter().map(|r| r.0).collect(),
             );
             let cached = self
@@ -477,7 +508,7 @@ impl Environment<'_> {
                 self.tick()?;
                 return Ok(value);
             }
-            let value = self.completion_slots_uncached(graph, roots)?;
+            let value = self.completion_slots_uncached(graph, roots, mode)?;
             self.tick()?;
             self.results
                 .cache
@@ -491,6 +522,7 @@ impl Environment<'_> {
         &self,
         graph: &Graph,
         roots: &[NodeRef],
+        mode: CompletionMode,
     ) -> Result<SlotCollection, ValidationFailure> {
         let mut pending = roots.to_vec();
         let mut seen = BTreeSet::new();
@@ -661,7 +693,9 @@ impl Environment<'_> {
                     missing: vec![fact.clone()],
                     location: Some(Location::Law { span: missing_span }),
                 });
-                if self.completion_type_supported(&field.ty)? {
+                if mode == CompletionMode::Assignment
+                    || self.completion_type_supported(&field.ty)?
+                {
                     slots
                         .entry(fact)
                         .and_modify(|old| {
@@ -730,6 +764,7 @@ impl Environment<'_> {
     ) -> Result<Seed, ValidationFailure> {
         let node = graph.get(reference)?;
         let Some(Payload::CompletionSeed {
+            mode,
             location,
             parameters,
             bindings,
@@ -832,11 +867,12 @@ impl Environment<'_> {
             scope.merge(&graph.get(*root)?.scope);
             support.push(graph.get(*root)?.support.clone());
         }
-        let (expected_fields, expected_sources, reasons) = self.completion_slots(graph, roots)?;
+        let (expected_fields, expected_sources, reasons) =
+            self.completion_slots_for(graph, roots, *mode)?;
         if *fields != expected_fields || *sources != expected_sources {
             return Err(internal!("補完Seedのslot identity/元field出現が違う").into());
         }
-        let types = self.completion_slot_types(fields)?;
+        let types = self.completion_slot_types_for(fields, *mode)?;
         let assignments = self.completion_assignment_context(fields)?;
         scope.merge(&assignments.scope);
         support.push(assignments.support.into());
@@ -871,6 +907,7 @@ impl Environment<'_> {
             return Err(internal!("補完Seedの型/元辺/Scope/理由が違う").into());
         }
         Ok(Seed {
+            mode: *mode,
             reference,
             context,
             location: location.clone(),
@@ -931,7 +968,8 @@ impl Environment<'_> {
         let Some(Payload::Domain { ty, elements }) = &node.payload else {
             return Err(internal!("補完の有限代入域がない").into());
         };
-        if domain.0 <= seed.reference.0
+        if seed.mode != CompletionMode::FiniteDomain
+            || domain.0 <= seed.reference.0
             || graph.context_at(domain.0) != seed.context
             || *ty != assignment_type(&seed.types)
             || node.ty != NodeType::Domain
@@ -988,7 +1026,10 @@ impl Environment<'_> {
                 .ok_or(internal!("補完case索引がない"))?;
             let limit = self.state.cutoff.get().min(graph.nodes.len());
             let prefix = std::iter::once(record.seed)
-                .chain([record.domain, record.member])
+                .chain(std::iter::once(record.member).chain(match record.origin {
+                    super::super::call::CompletionOrigin::Domain(domain) => Some(domain),
+                    super::super::call::CompletionOrigin::Assignment => None,
+                }))
                 .chain(record.values.iter().copied())
                 .map(|r| r.0)
                 .max()
@@ -1042,8 +1083,32 @@ impl Environment<'_> {
         if record.caller != seed.context || record.caller.case.is_some() {
             return Err(internal!("補完caseの元callerが違う").into());
         }
-        let elements = self.completion_domain(graph, &seed, record.domain)?;
-        if !elements.contains(&record.member) || record.values.len() != seed.fields.len() {
+        let domain = match record.origin {
+            super::super::call::CompletionOrigin::Domain(domain) => {
+                let elements = self.completion_domain(graph, &seed, domain)?;
+                if !elements.contains(&record.member) {
+                    return Err(internal!("補完caseのmemberが全域にない").into());
+                }
+                Some(domain)
+            }
+            super::super::call::CompletionOrigin::Assignment => {
+                if seed.mode != CompletionMode::Assignment {
+                    return Err(internal!("単独代入caseが個別代入Seedでない").into());
+                }
+                let member = graph.get(record.member)?;
+                self.completion_assignment_node(
+                    graph,
+                    member,
+                    &seed,
+                    graph.scalar(record.member)?,
+                )?;
+                if graph.context_at(record.member.0) != seed.context {
+                    return Err(internal!("単独補完memberが別Context").into());
+                }
+                None
+            }
+        };
+        if record.values.len() != seed.fields.len() {
             return Err(internal!("補完caseのmember/slot数が違う").into());
         }
         let values = components(
@@ -1061,12 +1126,16 @@ impl Environment<'_> {
                 self.indexes.inputs.law(),
                 &self.control,
             )?;
-            if reference.0 <= record.domain.0
+            let arguments: Vec<_> = std::iter::once(record.seed)
+                .chain(domain)
+                .chain([record.member, seed.sources[i]])
+                .collect();
+            if reference.0 <= record.member.0
                 || graph.context_at(reference.0) != seed.context
                 || node.ty != NodeType::Value(seed.types[i].clone())
                 || !data::equal(graph.scalar(reference)?, &value, &self.control)?
                 || !clean(node, "domain")
-                || node.arguments != [record.seed, record.domain, record.member, seed.sources[i]]
+                || node.arguments != arguments
                 || node.scope != seed.scope
                 || !node.support.same_facts(&seed.support, &self.control)?
                 || !node.reasons.is_empty()
@@ -1296,7 +1365,7 @@ impl Environment<'_> {
                 || context.iteration.is_some()
                 || context.instance.is_some()
                 || case.seed != seed_ref
-                || case.domain != domain
+                || case.origin != super::super::call::CompletionOrigin::Domain(domain)
                 || case.caller != seed.context
                 || !elements.contains(&case.member)
                 || seen.contains(&case.member)
@@ -1484,7 +1553,7 @@ impl Environment<'_> {
                 || context.iteration.is_some()
                 || context.instance.is_some()
                 || case.seed != seed.reference
-                || case.domain != domain
+                || case.origin != super::super::call::CompletionOrigin::Domain(domain)
             {
                 continue;
             }
@@ -1657,7 +1726,10 @@ impl Environment<'_> {
                         .ok_or(internal!("case命題の補完がない"))?,
                 )
                 .ok_or(internal!("case索引がない"))?;
-            let a = self.completion_aggregate(graph, *body, c.domain, &evals, props)?;
+            let super::super::call::CompletionOrigin::Domain(domain) = c.origin else {
+                return Err(internal!("単独代入を全補完LawInstanceへ使用した").into());
+            };
+            let a = self.completion_aggregate(graph, *body, domain, &evals, props)?;
             if node.ty != NodeType::LawInstance
                 || node.scope != a.scope
                 || !node.support.same_facts(&a.support, &self.control)?
@@ -1953,6 +2025,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         let Some(Payload::CompletionSeed {
+            mode,
             location,
             parameters,
             bindings,
@@ -2055,8 +2128,8 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(*root)?, root.0)?;
             scope.merge(&graph.get(*root)?.scope);
         }
-        let (fs, ss, rs) = self.completion_slots(graph, roots)?;
-        self.completion_slot_types(fields)?;
+        let (fs, ss, rs) = self.completion_slots_for(graph, roots, *mode)?;
+        self.completion_slot_types_for(fields, *mode)?;
         let assignments = self.completion_assignment_context(fields)?;
         scope.merge(&assignments.scope);
         scope.completions = true;
@@ -2090,7 +2163,8 @@ impl Environment<'_> {
         ty: &Type,
         elements: &[NodeRef],
     ) -> Result<(), ValidationFailure> {
-        if *ty != assignment_type(&seed.types)
+        if seed.mode != CompletionMode::FiniteDomain
+            || *ty != assignment_type(&seed.types)
             || node.ty != NodeType::Domain
             || !clean(node, "domain")
             || !node.reasons.is_empty()
@@ -2149,15 +2223,29 @@ impl Environment<'_> {
             return Ok(());
         }
         data::check(value, self.indexes.inputs.law(), &self.control)?;
-        let [actual, domain, member, source] = node.arguments.as_slice() else {
-            return Err(internal!("補完projectionの元辺が違う").into());
+        let (actual, domain, member, source) = match node.arguments.as_slice() {
+            [actual, domain, member, source] => (actual, Some(*domain), member, source),
+            [actual, member, source] => (actual, None, member, source),
+            _ => return Err(internal!("補完projectionの元辺が違う").into()),
         };
         if *actual != seed.reference {
             return Err(internal!("補完projectionが別Seed").into());
         }
-        let elements = self.completion_domain(graph, seed, *domain)?;
-        if !elements.contains(member) {
-            return Err(internal!("補完projectionのmemberがDomainにない").into());
+        if let Some(domain) = domain {
+            let elements = self.completion_domain(graph, seed, domain)?;
+            if !elements.contains(member) {
+                return Err(internal!("補完projectionのmemberがDomainにない").into());
+            }
+        } else {
+            self.completion_assignment_node(
+                graph,
+                graph.get(*member)?,
+                seed,
+                graph.scalar(*member)?,
+            )?;
+            if graph.context_at(member.0) != seed.context {
+                return Err(internal!("単独補完projectionの元memberが別Context").into());
+            }
         }
         let i = seed
             .sources
@@ -2301,7 +2389,8 @@ impl Environment<'_> {
         else {
             return Err(internal!("補完field ownerがRefでない").into());
         };
-        let types = self.completion_slot_types(std::slice::from_ref(&fact))?;
+        let types = self
+            .completion_slot_types_for(std::slice::from_ref(&fact), CompletionMode::Assignment)?;
         let Some(value) = node.scalar_payload() else {
             return Err(internal!("補完field値がない").into());
         };
@@ -2337,6 +2426,9 @@ impl Environment<'_> {
         first_result: NodeRef,
         second_result: NodeRef,
     ) -> Result<(), ValidationFailure> {
+        if self.validate_local_completion_pair(graph, node, limit)? {
+            return Ok(());
+        }
         let domain = *node
             .arguments
             .get(1)
