@@ -988,7 +988,7 @@ fn current_guard_truth_and_distinct_slots_do_not_prove_a_global_constant() {
 }
 
 #[test]
-fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
+fn known_boolean_guard_constants_keep_observed_equation_and_original_support() {
     let d = fixture::D.replace(
         "\"meaning\":\"数量。\"}",
         "\"meaning\":\"数量。\"},{\"name\":\"enabled\",\"type\":\"Bool\",\"meaning\":\"選択。\"}",
@@ -1001,24 +1001,23 @@ fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
         );
         let r = run(i.clone());
         assert_eq!(r.status(), S::Ready);
-        assert_eq!(r.occurrences().len(), 2);
+        assert_eq!(r.occurrences().len(), 1);
         assert_eq!(
             r.rings()[0].required_generators,
-            if truth { vec![0, 1] } else { vec![] }
+            if truth { vec![0] } else { vec![] }
         );
         for q in r.occurrences() {
             assert_eq!(q.guard, if truth { G::AlwaysTrue } else { G::AlwaysFalse });
             assert_eq!(q.status, if truth { S::Ready } else { S::NotApplicable });
-            assert_eq!(
-                number(&q.epsilon),
-                if truth { Some("\"2\"".into()) } else { None }
-            );
+            // The retained original body has observed operands even when its
+            // guard is false; epsilon is distinct from conditioned residual.
+            assert_eq!(number(&q.epsilon), Some("\"2\"".into()));
+            assert_eq!(q.operands.len(), 2);
+            assert!(q.epsilon_producer.is_some());
+            assert!(q.epsilon_constant.is_some());
             if !truth {
-                assert!(q.operands.is_empty());
                 assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
                 assert!(q.evaluated_nu.is_none());
-                assert!(q.epsilon_constant.is_none());
-                assert!(q.epsilon_producer.is_none());
                 assert!(q.component_holds.is_none());
             }
             assert_eq!(
@@ -1301,7 +1300,7 @@ fn unobserved_outer_match_keeps_its_slot_without_executing_a_missing_body() {
 }
 
 #[test]
-fn inactive_prime_field_equations_keep_symbolic_arithmetic_without_evaluating_missing_operands() {
+fn inactive_prime_field_equations_keep_symbolic_arithmetic_and_unknown_original_operands() {
     for (prime, value) in [("2", "1"), ("5", "2")] {
         let d = fixture::D.replace(r#""type":"Z""#, &format!(r#""type":["Fp","{prime}"]"#));
         let map = fixture::A.replace(r#""value":"2""#, &format!(r#""value":"{value}""#));
@@ -1323,14 +1322,8 @@ fn inactive_prime_field_equations_keep_symbolic_arithmetic_without_evaluating_mi
             let r = run(i.clone());
             assert!(r.is_complete());
             assert_eq!(r.status(), S::Ready);
-            assert_eq!(
-                r.occurrences().len(),
-                if missing {
-                    prime.parse::<usize>().unwrap()
-                } else {
-                    1
-                }
-            );
+            // A false guard settles the answer without assigning the unread field.
+            assert_eq!(r.occurrences().len(), 1);
             for q in r.occurrences() {
                 assert_eq!(q.ty, Type::Fp(prime.into()));
                 assert_eq!(q.guard, G::AlwaysFalse);
@@ -1339,7 +1332,9 @@ fn inactive_prime_field_equations_keep_symbolic_arithmetic_without_evaluating_mi
                     terms(q.nu.as_ref().unwrap()),
                     [(vec![], "\"1\"".into()), (vec![0], "\"1\"".into())]
                 );
-                assert_eq!(q.operands.is_empty(), missing);
+                // Original operand evaluations survive; unknown is a value state,
+                // not an absent producer or a completed field assignment.
+                assert_eq!(q.operands.len(), 2);
                 assert_eq!(
                     number(&q.epsilon),
                     (!missing).then(|| if prime == "2" {
