@@ -613,7 +613,6 @@ fn enumerate_values_maybe(
                     values
                 }
                 Type::Set(element) => {
-                    let mut subsets: Vec<Vec<Scalar>> = vec![Vec::new()];
                     let Some(items) = enumerate(
                         element,
                         law,
@@ -629,26 +628,40 @@ fn enumerate_values_maybe(
                     else {
                         return Ok(None);
                     };
-                    for item in items {
-                        tick(control)?;
-                        let count = subsets.len();
-                        for index in 0..count {
-                            tick(control)?;
-                            let mut subset = subsets[index].clone();
-                            subset.push(item.clone());
-                            subsets.push(subset);
-                            tick(control)?;
-                        }
-                    }
+                    // The former doubling construction emitted subsets in binary
+                    // order, with the first roster entry as the least significant
+                    // bit. Keep that order (including duplicate candidates), but
+                    // construct only the subset being emitted. A bit vector avoids
+                    // imposing a machine-word bound on the finite element domain.
+                    let mut selected = vec![false; items.len()];
                     let mut values = Vec::new();
-                    for subset in subsets {
+                    'subsets: loop {
                         tick(control)?;
+                        let mut subset = Vec::new();
+                        for (item, selected) in items.iter().zip(&selected) {
+                            tick(control)?;
+                            if *selected {
+                                subset.push(item.clone());
+                            }
+                        }
                         emit(
                             &mut values,
                             data::set((**element).erase(), &subset, control)?,
                             control,
                             visitor,
                         )?;
+                        let mut index = 0;
+                        loop {
+                            tick(control)?;
+                            if index == selected.len() {
+                                break 'subsets;
+                            }
+                            selected[index] = !selected[index];
+                            if selected[index] {
+                                break;
+                            }
+                            index += 1;
+                        }
                     }
                     values
                 }
@@ -836,5 +849,188 @@ mod map_endpoint_tests {
         assert_eq!(value.ty(), ty.erase());
         assert_eq!(value.wire(), archsig_common::canonical::Json::Arr(vec![]));
         assert_eq!(value.clone(), *value);
+    }
+}
+
+#[cfg(test)]
+mod set_enumeration_tests {
+    use super::*;
+    use archsig_common::control::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    fn law() -> CheckedLaw {
+        let definitions = archsig_input::definition::check_definitions(&[(
+            "sets",
+            br#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Sets","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Sets.Item","meaning":"Item","parameters":[],"fields":[],"alignments":[]}]}]}"#.as_slice(),
+        )])
+        .unwrap();
+        archsig_input::law::check_law(
+            format!(
+                "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Sets {{ use vocabulary Sets version \"1\" digest \"{}\"; view seed():Bool=true; }}",
+                definitions.vocabularies()["Sets"].digest,
+            )
+            .as_bytes(),
+            &definitions,
+        )
+        .unwrap()
+    }
+
+    fn item(index: usize) -> Scalar {
+        Scalar::Subject {
+            snapshot: "v".into(),
+            subject: format!("item{index}"),
+            entity: "Sets.Item".into(),
+        }
+    }
+
+    fn enumerate_set(
+        items: &[Scalar],
+        control: &Control,
+        visitor: &mut dyn FnMut(usize),
+    ) -> Result<Enumeration, ValidationFailure> {
+        values(
+            &Type::Set(Box::new(Type::Ref("Sets.Item".into()))),
+            &law(),
+            control,
+            &mut |entity| {
+                assert_eq!(entity, "Sets.Item");
+                Ok(Enumeration {
+                    values: items.to_vec(),
+                    ..Enumeration::default()
+                })
+            },
+            visitor,
+        )
+    }
+
+    // Independent, small reference for the previous doubling algorithm. Set
+    // normalization is deliberately unchanged; roster and result duplicates stay.
+    fn doubling_reference(items: &[Scalar]) -> Vec<Scalar> {
+        let mut subsets = vec![Vec::new()];
+        for item in items {
+            let count = subsets.len();
+            for index in 0..count {
+                let mut subset = subsets[index].clone();
+                subset.push(item.clone());
+                subsets.push(subset);
+            }
+        }
+        subsets
+            .iter()
+            .map(|subset| {
+                data::set(Type::Ref("Sets.Item".into()), subset, &Control::unlimited()).unwrap()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn set_values_preserve_doubling_order_empty_domain_and_duplicates() {
+        let mut domains = (0..=5)
+            .map(|size| (0..size).map(item).collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        domains.push(vec![item(2), item(0), item(2), item(1)]);
+        for items in domains {
+            let mut visited = Vec::new();
+            let actual = enumerate_set(&items, &Control::unlimited(), &mut |index| {
+                visited.push(index);
+            })
+            .unwrap();
+            assert_eq!(actual.values, doubling_reference(&items));
+            assert_eq!(visited, (0..actual.values.len()).collect::<Vec<_>>());
+            assert_eq!(actual.values.len(), 1 << items.len());
+        }
+    }
+
+    #[test]
+    fn nested_sets_and_option_elements_keep_their_complete_domains() {
+        let law = law();
+        for (element, count) in [
+            (Type::Set(Box::new(Type::Bool)), 16),
+            (Type::Option(Box::new(Type::Unit)), 4),
+        ] {
+            let actual = values(
+                &Type::Set(Box::new(element)),
+                &law,
+                &Control::unlimited(),
+                &mut |_| panic!("value-only domains do not read a roster"),
+                &mut |_| {},
+            )
+            .unwrap();
+            assert_eq!(actual.values.len(), count);
+            assert!(matches!(&actual.values[0], Scalar::Set { items, .. } if items.is_empty()));
+        }
+    }
+
+    #[test]
+    fn first_set_value_is_visited_without_constructing_the_powerset() {
+        // More elements than a machine-word bit mask can cover. The budget is
+        // deterministic: the old precomputation exhausts it before any visit.
+        let checkpoints = Rc::new(Cell::new(0));
+        let mut visited = Vec::new();
+        let cancelled = Rc::new(Cell::new(false));
+        let stop = cancelled.clone();
+        let count = checkpoints.clone();
+        let control = Control::new(move |_| {
+            count.set(count.get() + 1);
+            (stop.get() || count.get() >= 1000).then_some(Signal::Term)
+        });
+        let result = enumerate_set(
+            &(0..80).map(item).collect::<Vec<_>>(),
+            &control,
+            &mut |index| {
+                visited.push(index);
+                cancelled.set(true);
+            },
+        );
+        assert!(matches!(result, Err(ValidationFailure::Stop(Signal::Term))));
+        assert_eq!(visited, [0]);
+        assert!(checkpoints.get() < 1000);
+    }
+
+    #[test]
+    fn visitor_cancellation_stops_without_visiting_another_subset() {
+        for stop_index in [0, 3, 7] {
+            let flag = std::sync::Arc::new(std::sync::atomic::AtomicI32::new(0));
+            let control = Control::from_signal_flag(flag.clone(), 1, 2);
+            let mut visited = Vec::new();
+            let result = enumerate_set(
+                &(0..4).map(item).collect::<Vec<_>>(),
+                &control,
+                &mut |index| {
+                    visited.push(index);
+                    if index == stop_index {
+                        flag.store(1, std::sync::atomic::Ordering::Relaxed);
+                    }
+                },
+            );
+            assert!(matches!(result, Err(ValidationFailure::Stop(Signal::Int))));
+            assert_eq!(visited, (0..=stop_index).collect::<Vec<_>>());
+        }
+    }
+
+    #[test]
+    fn finite_checkpoint_cancellation_propagates_at_every_iteration_boundary() {
+        let checkpoints = Rc::new(Cell::new(0));
+        let count = checkpoints.clone();
+        let control = Control::new(move |point| {
+            assert_eq!(point, Checkpoint::FiniteIteration);
+            count.set(count.get() + 1);
+            None
+        });
+        enumerate_set(&[item(0), item(1)], &control, &mut |_| {}).unwrap();
+        for cutoff in 1..=checkpoints.get() {
+            let calls = Rc::new(Cell::new(0));
+            let count = calls.clone();
+            let control = Control::new(move |_| {
+                count.set(count.get() + 1);
+                (count.get() == cutoff).then_some(Signal::Term)
+            });
+            let result = enumerate_set(&[item(0), item(1)], &control, &mut |_| {});
+            assert!(
+                matches!(result, Err(ValidationFailure::Stop(Signal::Term))),
+                "cutoff {cutoff}"
+            );
+            assert_eq!(calls.get(), cutoff);
+        }
     }
 }
