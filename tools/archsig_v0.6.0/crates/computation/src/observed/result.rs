@@ -2661,7 +2661,17 @@ impl Graph {
                 .get(position)
                 .ok_or(internal!("有限域の要素がない"))?;
             producer = Some(*element);
-            Member::SetElement(self.scalar(*element)?.clone())
+            let collection = match &self.get(finite)?.arguments.get(2) {
+                Some(collection) if self.get(finite)?.rule == Rule::InDomain => {
+                    Some(self.scalar(**collection)?)
+                }
+                _ => None,
+            };
+            if matches!(collection, Some(Scalar::List { .. })) {
+                Member::ListPosition(position)
+            } else {
+                Member::SetElement(self.scalar(*element)?.clone())
+            }
         } else {
             let Some(Payload::Evaluation {
                 value: Some(value), ..
@@ -5243,7 +5253,9 @@ impl Graph {
                 let [_, _, set, rest @ ..] = node.arguments.as_slice() else {
                     return Err(internal!("In Domain producer辺がない").into());
                 };
-                let Scalar::Set { element, items } = self.scalar(*set)? else {
+                let (Scalar::List { element, items } | Scalar::Set { element, items }) =
+                    self.scalar(*set)?
+                else {
                     return Err(internal!("In Domain producerがSetでない").into());
                 };
                 if element != ty || items.len() != elements.len() || rest != elements {
