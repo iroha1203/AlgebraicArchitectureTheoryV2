@@ -1074,11 +1074,25 @@ left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指�
 未束縛parameterのLaw族についても、元の量化域と族全体の判断を検査した回答を使う。
 元の欠測理由と依存を保持し、適用状態が未決であることを成立判断と混同しない。
 Termなどの同値な値に異なる構文表示がある場合も、認証済みの元の値を保ち、追加補完の代表値へ置き換えない。
-未決の値・判断を補完から決める場合には、以下の補完域と全caseの検査を行う。
+通常値や成立・反証を全域補完から確定する場合には、以下の補完域と全caseの検査を行う。
+
+未決回答には、元のEvaluation・claim・guard/body・partsを保持したまま、独立に認証した
+completion_pairを回答の補助証拠として加えられる。元claimの証拠列は変更せず、追加分は同じ
+元Request・宣言・固定束縛のwhole評価が、元入力へ拡張可能な二つの型付き代入で異なる場合に限る。
+この代入は全域Domainのmemberではなく、全域coverageやfinite_exhaustionを表さない。
+個別代入の認証はslotの型・値と元入力への同時拡張可能性を検査する。値域の有限性は要求せず、
+Set<Text>の空集合や有限な要素集合も仮説として扱える。全域Domainの構築には従来の有限型と全coverageの検査を要求する。
+補助対のSourceは元Expression・単独assignment・slot値への辺を保ち、全域Domainへの辺を持たない。
+AnswerのScopeは元評価と補助証拠のScopeの和とし、元評価の理由を保持する。補助証拠自身は、
+代入の合法性・slot発見に使った実根と採用した証人の診断を保持する。仮説内だけで読んだ欠測は
+元回答の観測要求へ加えない。neededは現在の実評価の未解決な依存と理由を完全に辿り、追加観測後の
+再評価で新たな依存が現れ得る段階的な計画を返す。全補完を先行調査した最小・十分観測集合や、
+元guard/bodyの全補完における追加の確定は主張しない。補完対が認証できない場合、確定値のための
+全域補完検査は従来どおり必要である。
 
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。
-参照を含まない有限型slotの補完では、元Expressionを補完域の起点にし、Domainのelementsを
+全域列挙で扱う参照を含まない有限型slotでは、元Expressionを補完域の起点にし、Domainのelementsを
 slot一個ならその元型、二個以上なら元slot順の型付きTupleとして表示する。単一Tuple fieldは
 全体で一slotとし、複数slotを束ねる外側Tupleと区別する。Unit/Bool/Fp、非再帰の有限Dataと
 それらのTuple/Option/Setは元型の全値を保つ。Optionのnoneと空Setも各型の値であり、
