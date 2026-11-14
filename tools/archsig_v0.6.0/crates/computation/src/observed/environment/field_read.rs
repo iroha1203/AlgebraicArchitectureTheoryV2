@@ -351,8 +351,7 @@ impl<'a> Environment<'a> {
                     }
                 });
                 Some((std::sync::Arc::new(value), Some(fact)))
-            } else if self.completion_type_supported(&field.ty)?
-                && matches!(field.slot, Slot::Missing)
+            } else if matches!(field.slot, Slot::Missing)
                 && let Some(assigned) = self.completion_slot(graph, position)?
             {
                 plan.assigned = Some(assigned);

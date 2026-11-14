@@ -1,6 +1,8 @@
 //! 元の有限slotの共有assignmentごとに選択した問い全体を評価する。
 use super::*;
+use crate::observed::call::CompletionMode;
 use crate::observed::value_equality;
+mod witness;
 impl Evaluator<'_, '_> {
     fn completion_observe(&self, _phase: &'static str, _index: usize) {
         #[cfg(test)]
@@ -42,6 +44,14 @@ impl Evaluator<'_, '_> {
             // second derivation of the same result through every completion.
             return observed;
         }
+        self.completion_observe(
+            match &observed {
+                Ok(_) => "completion_observed_undetermined",
+                Err(Failure::NotImplemented { .. }) => "completion_observed_unsupported",
+                Err(_) => "completion_observed_failed",
+            },
+            0,
+        );
         let mut roots = Vec::new();
         match &observed {
             Ok(answer) => {
@@ -67,7 +77,9 @@ impl Evaluator<'_, '_> {
         }
         roots.sort_by_key(|r| r.0);
         roots.dedup();
-        let (fields, _, _) = self.environment.completion_slots(self.graph, &roots)?;
+        let (fields, _, _) = self
+            .environment
+            .completion_assignment_slots(self.graph, &roots)?;
         if fields.is_empty() {
             return observed;
         }
@@ -91,14 +103,23 @@ impl Evaluator<'_, '_> {
                     .cloned()
             })
             .collect();
+        let mut probe_carried = BTreeMap::new();
+        let mut mode = CompletionMode::Assignment;
         loop {
             self.completion_reset(root);
             self.bindings = fixed.clone();
-            let (fields, sources, reasons) =
-                self.environment.completion_slots(self.graph, &roots)?;
+            let (fields, sources, reasons) = match mode {
+                CompletionMode::Assignment => self
+                    .environment
+                    .completion_assignment_slots(self.graph, &roots)?,
+                CompletionMode::FiniteDomain => {
+                    self.environment.completion_slots(self.graph, &roots)?
+                }
+            };
             if fields.is_empty() {
-                return Err(Failure::Internal(internal!("既読の有限原始補完域が消えた")));
+                return observed;
             }
+            self.completion_observe("completion_probe_restart", fields.len());
             let metadata = self.environment.completion_assignment_context(&fields)?;
             let mut scope = self.base.clone();
             scope.completions = true;
@@ -132,6 +153,7 @@ impl Evaluator<'_, '_> {
                         .clone(),
                 ),
                 payload: Some(Payload::CompletionSeed {
+                    mode,
                     location: location.clone(),
                     parameters: unbound.clone(),
                     bindings: fixed.clone(),
@@ -155,6 +177,30 @@ impl Evaluator<'_, '_> {
                 scope: scope.clone(),
                 reasons: reasons.clone(),
             })?;
+            if mode == CompletionMode::Assignment
+                && let Ok(answer) = &observed
+            {
+                match self.probe_completion_pair(answer, seed, &support, &scope, &probe_carried)? {
+                    witness::ProbeOutcome::Pair(augmented) => return Ok(augmented),
+                    witness::ProbeOutcome::Discover {
+                        roots: discovered,
+                        carried,
+                    } => {
+                        roots.extend(discovered);
+                        roots.sort_by_key(|r| r.0);
+                        roots.dedup();
+                        probe_carried = carried;
+                        continue;
+                    }
+                    witness::ProbeOutcome::NoPair => {}
+                }
+            }
+            if mode == CompletionMode::Assignment {
+                mode = CompletionMode::FiniteDomain;
+                continue;
+            }
+            self.completion_observe("completion_before_full_domain", 0);
+            self.tick(Checkpoint::FiniteIteration)?;
             let ty = self.environment.completion_assignment_type(&fields)?;
             #[cfg(test)]
             let (span, context) = (self.declaration.span, root);
@@ -231,7 +277,7 @@ impl Evaluator<'_, '_> {
                 self.graph.cases.push(super::super::call::CompletionCase {
                     caller: root,
                     seed,
-                    domain,
+                    origin: super::super::call::CompletionOrigin::Domain(domain),
                     member,
                     values: refs.clone(),
                 });
@@ -272,6 +318,10 @@ impl Evaluator<'_, '_> {
                     .environment
                     .completion_slots(self.graph, &discovered_roots)?;
                 if new_fields.iter().any(|f| !fields.contains(f)) {
+                    for (field, reference) in fields.iter().zip(&refs) {
+                        probe_carried.insert(field.clone(), self.graph.scalar(*reference)?.clone());
+                    }
+                    mode = CompletionMode::Assignment;
                     roots.extend(discovered_roots);
                     roots.sort_by_key(|r| r.0);
                     roots.dedup();
@@ -490,6 +540,7 @@ impl Evaluator<'_, '_> {
                         self.push(Node {
                             ty: NodeType::Expression(Type::Bool),
                             payload: Some(Payload::CompletionSeed {
+                                mode,
                                 location: Location::Law {
                                     span: self.environment.indexes.inputs.law().exprs()[id].span,
                                 },

@@ -231,11 +231,16 @@ mod tests {
             .borrow_mut()
             .sources
             .insert(context, (1, (2, 3), vec![], analysis(8)));
-        store
-            .cache
-            .borrow_mut()
-            .completion_slots
-            .insert((0, context, 1, vec![0]), (vec![], vec![], vec![]));
+        store.cache.borrow_mut().completion_slots.insert(
+            (
+                0,
+                context,
+                1,
+                crate::observed::call::CompletionMode::FiniteDomain,
+                vec![0],
+            ),
+            (vec![], vec![], vec![]),
+        );
         drop(old);
         drop(scratch);
         assert!(store.rollback_validation(&prefix));

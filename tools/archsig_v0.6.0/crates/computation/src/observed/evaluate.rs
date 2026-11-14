@@ -3176,8 +3176,7 @@ impl Evaluator<'_, '_> {
                 None,
             );
         }
-        if self.environment.completion_type_supported(&field.ty)?
-            && matches!(field.slot, Slot::Missing)
+        if matches!(field.slot, Slot::Missing)
             && let Some(assigned) = self.environment.completion_slot(self.graph, &fact)?
         {
             let source = self
@@ -10808,6 +10807,7 @@ reading Calc {{
         finite_completion_phase_stop("completion_coverage", 0);
     }
     include!("known_answer_completion_tests.rs");
+    include!("completion_witness_tests.rs");
     fn finite_completion_phase_stop(phase: &'static str, at: usize) {
         use archsig_input::result::Signal;
         use std::{

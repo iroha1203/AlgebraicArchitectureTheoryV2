@@ -343,7 +343,10 @@ impl ValidationSnapshot {
         for case in &g.cases[self.cases.len()..] {
             if !Self::after(
                 std::iter::once(case.seed)
-                    .chain([case.domain, case.member])
+                    .chain(std::iter::once(case.member).chain(match case.origin {
+                        super::call::CompletionOrigin::Domain(domain) => Some(domain),
+                        super::call::CompletionOrigin::Assignment => None,
+                    }))
                     .chain(case.values.iter().copied()),
                 self.node_len,
                 control,
@@ -4928,6 +4931,18 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
+            if let Some((base, pair)) = graph.completion_witness_base(answer)? {
+                self.validate_answer_current(graph, request, &base)?;
+                if !self.validate_local_completion_pair(graph, graph.get(pair)?, pair.0)? {
+                    return Err(internal!("回答の補助補完対が局所証人でない").into());
+                }
+                let Some(Payload::CompletionPair { .. }) = &graph.get(pair)?.payload else {
+                    unreachable!();
+                };
+                let seed_ref = graph.get(pair)?.arguments[0];
+                self.local_completion_pair_matches_answer(graph, seed_ref, &base)?;
+                return Ok(());
+            }
             if super::request::shared_repair_request(request)
                 || matches!(
                     request.kind,
@@ -7662,7 +7677,11 @@ impl<'a> Environment<'a> {
                 .cases
                 .get(case)
                 .ok_or(internal!("Sourceの補完がない"))?;
-            arguments.extend([record.seed, record.domain, record.member]);
+            arguments.push(record.seed);
+            if let super::call::CompletionOrigin::Domain(domain) = record.origin {
+                arguments.push(domain);
+            }
+            arguments.push(record.member);
             arguments.extend(record.values.iter().copied());
         }
         for (matching, arm) in self.enclosing_matches(span)? {
@@ -10347,9 +10366,7 @@ impl<'a> Environment<'a> {
                         scalar_scope.completions = true;
                         (Some(assigned), Some(scalar_scope))
                     } else if let Some(assigned) = assigned {
-                        if !self.completion_type_supported(&field.ty)?
-                            || assigned.ty() != field.ty.erase()
-                        {
+                        if assigned.ty() != field.ty.erase() {
                             return Err(internal!("補完slotの元有限型が違う").into());
                         }
                         let mut scalar_scope = request_base.clone();
@@ -10719,7 +10736,7 @@ impl<'a> Environment<'a> {
             return Ok(());
         }
         match (&field.slot, value) {
-            (Slot::Missing, Some(actual)) if self.completion_type_supported(&field.ty)? => {
+            (Slot::Missing, Some(actual)) => {
                 let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
