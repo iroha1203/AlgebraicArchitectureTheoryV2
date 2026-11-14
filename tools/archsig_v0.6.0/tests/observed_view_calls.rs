@@ -701,7 +701,7 @@ fn missing_actual_arguments_and_callee_fields_keep_original_slots_without_fake_b
             f(f(a, "outputs"), "evaluation"),
             &Json::str("Evaluation"),
         );
-        if !["b", "constant_b"].contains(&id) {
+        if id != "b" {
             original.extend(evaluation_tree(&ns, root));
             continue;
         }
@@ -847,14 +847,14 @@ fn missing_actual_arguments_and_callee_fields_keep_original_slots_without_fake_b
     );
     assert_eq!(
         audit_calls_in(&result, &checked, Some(&case_calls)),
-        4,
-        "二つのBool問いそれぞれに補完callが二つ"
+        2,
+        "未知Bool問いの各補完に元callが一つ"
     );
     original.extend(case_calls);
     assert_eq!(
         audit_calls_in(&result, &checked, Some(&original)),
-        9,
-        "元callとcaseを通してcallee bodyを共有しない"
+        7,
+        "元callと未知caseを通してcallee bodyを共有しない"
     );
     let actual = arr(f(&result, "nodes"))
         .iter()
@@ -865,7 +865,7 @@ fn missing_actual_arguments_and_callee_fields_keep_original_slots_without_fake_b
         .collect::<BTreeSet<_>>();
     assert_eq!(
         actual, original,
-        "二つの補完集約を除く全Evaluationは元rootか四caseに属する"
+        "未知問いの補完集約を除く全Evaluationは元rootか二caseに属する"
     );
 }
 
