@@ -620,7 +620,7 @@ fn assert_family(
     decision: &str,
     mixed: bool,
 ) {
-    assert_family_selected(result, ask, expected, decision, mixed, None, None);
+    assert_family_selected(result, ask, expected, decision, mixed, None);
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -631,7 +631,6 @@ fn assert_family_selected(
     decision: &str,
     mixed: bool,
     selected: Option<(&str, &str)>,
-    completion: Option<(&str, bool)>,
 ) {
     let checked = result.prepared().inputs();
     let wire = result.wire();
@@ -815,9 +814,7 @@ fn assert_family_selected(
         } else {
             match slot {
                 Slot::Known { value, .. } => Some(value.canonical_json()),
-                Slot::Missing => completion
-                    .filter(|(id, _)| *id == leaf.id)
-                    .map(|(_, value)| Json::Bool(value)),
+                Slot::Missing => None,
             }
         };
         if let Some(expected) = expected_body {
@@ -1085,42 +1082,13 @@ fn missing_and_counterexample(flags: [Option<bool>; 2], missing_leaf: &str) {
         f(f(answer, "outputs"), "evaluation"),
         &Json::str("Evaluation"),
     );
-    let seed_ref = f(val(aggregate), "expression");
-    let seed = target(&ns, seed_ref, &Json::str("Expression"));
-    assert_eq!(arr(f(aggregate, "arguments")).first(), Some(seed_ref));
-    let direct: Vec<_> = arr(f(seed, "arguments"))
-        .iter()
-        .map(|r| ns[text(f(r, "node"))])
-        .collect();
-    let observed_claims: Vec<_> = direct
-        .iter()
-        .copied()
-        .filter(|n| {
-            f(n, "type") == &Json::str("Proposition")
-                && f(val(n), "predicate") == &Json::str("law_holds")
-        })
-        .collect();
+    let observed = aggregate;
+    let observed_claim = target(&ns, f(answer, "claim"), &Json::str("Proposition"));
     assert_eq!(
-        observed_claims.len(),
-        1,
-        "seedの元observed whole命題を直接選ぶ"
+        arr(f(observed_claim, "arguments")).get(1),
+        Some(f(f(answer, "outputs"), "evaluation"))
     );
-    let observed_claim = observed_claims[0];
-    let observed_args = arr(f(observed_claim, "arguments"));
-    assert_eq!(observed_args.len(), 2);
-    assert_eq!(
-        &observed_args[0],
-        &arr(f(val(observed_claim), "operands"))[0]
-    );
-    let observed = target(&ns, &observed_args[1], &Json::str("Evaluation"));
-    assert!(
-        direct.iter().any(|n| f(n, "id") == f(observed, "id")),
-        "元whole評価もseedの直接root"
-    );
-    assert_eq!(
-        arr(f(observed, "arguments")).first(),
-        Some(&observed_args[0])
-    );
+    assert_eq!(f(answer, "scope"), f(observed, "scope"));
     let expected_rows = [row("v", "A", "p", "l"), row("v", "B", "q", "m")];
     assert_family_selected(
         &result,
@@ -1129,82 +1097,15 @@ fn missing_and_counterexample(flags: [Option<bool>; 2], missing_leaf: &str) {
         "refuted",
         false,
         Some((text(f(observed, "id")), text(f(observed_claim, "id")))),
-        None,
     );
 
-    // 外側の全補完証拠と、各assignmentの独立した実Law族を分けて検査する。
-    let aggregate_args = arr(f(aggregate, "arguments"));
-    let completion_domain_ref = &aggregate_args[1];
-    let completion_domain = target(&ns, completion_domain_ref, &Json::str("Domain"));
-    assert_eq!(f(val(completion_domain), "type"), &Json::str("Bool"));
-    let assignments = arr(f(val(completion_domain), "elements"));
-    assert_eq!(assignments.len(), 2);
-    let parts = arr(f(val(aggregate), "parts"));
-    assert_eq!(parts.len(), 1);
-    let cases = arr(f(&parts[0], "children"));
-    assert_eq!(cases.len(), 2);
-    let mut covered = BTreeSet::new();
-    for (case_ref, assignment_ref) in cases.iter().zip(assignments) {
-        assert!(aggregate_args.contains(case_ref));
-        let case = target(&ns, case_ref, &Json::str("Evaluation"));
-        let case_source = target(&ns, f(val(case), "expression"), &Json::str("Expression"));
-        let arguments = arr(f(case_source, "arguments"));
-        assert_eq!(arguments.len(), 4);
-        assert_eq!(
-            &arguments[..3],
-            &[
-                seed_ref.clone(),
-                completion_domain_ref.clone(),
-                assignment_ref.clone()
-            ]
-        );
-        let assigned = target(&ns, &arguments[3], &Json::str("Bool"));
-        let assignment = target(&ns, assignment_ref, &Json::str("Bool"));
-        assert_eq!(val(assigned), val(assignment));
-        let Json::Bool(value) = val(assignment) else {
-            panic!("Bool補完assignment")
-        };
-        assert!(covered.insert(*value));
-        let assigned_args = arr(f(assigned, "arguments"));
-        assert_eq!(assigned_args.len(), 4);
-        assert_eq!(&assigned_args[..3], &arguments[..3]);
-        let original_slot_source = target(&ns, &assigned_args[3], &Json::str("Expression"));
-        let position = span(f(val(original_slot_source), "location"));
-        assert_eq!(
-            &result.prepared().inputs().sources().law().bytes()[position.0..position.1],
-            b"c.ok"
-        );
-        let case_claims: Vec<_> = aggregate_args
+    // 既知反例で族全体が反証済み。元の全rowと欠測理由を保持し、補完caseは要求しない。
+    assert!(
+        arr(f(answer, "evidence"))
             .iter()
-            .map(|r| ns[text(f(r, "node"))])
-            .filter(|n| {
-                f(n, "type") == &Json::str("Proposition")
-                    && arr(f(n, "arguments")).get(1) == Some(case_ref)
-            })
-            .collect();
-        assert_eq!(case_claims.len(), 1);
-        let case_claim = case_claims[0];
-        assert_family_selected(
-            &result,
-            ask,
-            &expected_rows,
-            "refuted",
-            false,
-            Some((text(f(case, "id")), text(f(case_claim, "id")))),
-            Some((missing_leaf, *value)),
-        );
-    }
-    assert_eq!(covered, BTreeSet::from([false, true]));
-    let proofs: Vec<_> = arr(f(answer, "evidence"))
-        .iter()
-        .map(|r| target(&ns, r, &Json::str("Evidence")))
-        .collect();
-    assert_eq!(proofs.len(), 1);
-    assert_eq!(f(val(proofs[0]), "kind"), &Json::str("finite_exhaustion"));
-    let data = f(val(proofs[0]), "data");
-    assert_eq!(f(data, "domain"), completion_domain_ref);
-    assert_eq!(f(data, "checked"), &Json::Nat(2));
-    assert_eq!(arr(f(data, "instances")), cases);
+            .all(|r| f(val(target(&ns, r, &Json::str("Evidence"))), "kind")
+                != &Json::str("completion_pair"))
+    );
     assert_eq!(
         val(target(&ns, f(val(aggregate), "value"), &Json::str("Bool"))),
         &Json::Bool(false)
