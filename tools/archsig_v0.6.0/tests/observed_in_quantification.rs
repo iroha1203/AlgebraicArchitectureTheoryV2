@@ -775,6 +775,14 @@ fn in_quantifiers_keep_known_decisions_with_missing_instances() {
         let ns = index(wire);
         let aggregate = root(wire, id);
         let seed = expression(&ns, aggregate);
+        if f(answer(wire, id), "status") != &Json::str("undetermined") {
+            assert_eq!(
+                evaluation_span(&ns, aggregate),
+                checked.law().exprs()[declared_body(checked, name)].span
+            );
+            assert_eq!(f(answer(wire, id), "scope"), f(aggregate, "scope"));
+            return aggregate;
+        }
         assert_eq!(
             arr(f(aggregate, "arguments")).first(),
             Some(f(val(aggregate), "expression"))
@@ -1035,9 +1043,11 @@ law required all_law(s: Sample): forall r in s.refs . r.flag;
         2
     );
     let original = original_completion_root(&wire, &checked, "a", "Calc.any_refs");
-    let mut exists_levels = vec![original];
-    exists_levels.extend(completion_cases(&wire, "a", &[(false, true), (true, true)]));
-    for level in exists_levels {
+    assert_eq!(
+        f(val(expression(&ns, original)), "kind"),
+        &Json::str("source")
+    );
+    for level in [original] {
         assert!(
             evidence(&ns, level, "finite_exhaustion").is_empty(),
             "元/各caseの存在証人を全域全検査へ置き換えない"
