@@ -58,7 +58,9 @@ fn graph(result: &ObservedEvaluation, control: &Control, cold: bool) -> Graph {
     graph
 }
 
-// Previous discovery, independent of the new active-chain selection.
+// Lexical discovery is independent of active-chain selection. Eligibility is
+// read from the checked syntax: primitive In and primitive comprehensions now
+// both require a real iteration; finite type quantifiers still use their route.
 fn static_binder(
     env: &Environment<'_>,
     graph: &Graph,
@@ -71,7 +73,23 @@ fn static_binder(
         if actual == name
             && let LexicalOrigin::Iteration(comp) = origin
         {
-            if !env.ordinary_in_domain(comp)? {
+            let law = env.indexes.inputs.law();
+            let supported = match &law.exprs()[comp].kind {
+                ExprKind::Comprehension { domain, .. } => {
+                    match (law.expr_type(*domain), law.expr_type(comp)) {
+                        (
+                            Some(Type::List(input) | Type::Set(input)),
+                            Some(Type::List(output) | Type::Set(output)),
+                        ) => {
+                            data::primitive_type(input, &env.control)?
+                                && data::primitive_type(output, &env.control)?
+                        }
+                        _ => false,
+                    }
+                }
+                _ => env.ordinary_in_domain(comp)?,
+            };
+            if !supported {
                 return Ok(None);
             }
             let index = env
@@ -116,6 +134,7 @@ fn ordinary_runtime_binder_matches_static_discovery_nested_domains_and_same_name
     let mut outer_in_inner = false;
     let mut outer_in_domain = false;
     let mut callee = false;
+    let mut comprehension = false;
     for (index, span) in uses(&result) {
         graph.active = result.contexts[index];
         if !env.ordinary_context(&graph).unwrap() {
@@ -147,13 +166,14 @@ fn ordinary_runtime_binder_matches_static_discovery_nested_domains_and_same_name
             domain.0 <= span.0 && span.1 <= domain.1
         });
         callee |= graph.active.frame.is_some();
+        comprehension |= graph.active.request == 4;
         assert!(
             env.ordinary_binder(&graph, span, actual.1.0).is_err(),
             "member at cutoff is not prior"
         );
     }
     // The inner domain executes in the outer context, before inner activation.
-    assert!(outer_in_inner && outer_in_domain && callee);
+    assert!(outer_in_inner && outer_in_domain && callee && comprehension);
 }
 
 #[test]
@@ -206,11 +226,49 @@ fn ordinary_runtime_binder_keeps_missing_and_unsupported_static_contracts() {
             && result.nodes.iter().zip(&result.contexts).any(|(node,context)| context.request==request && matches!(&node.payload,Some(Payload::Expression{location:Location::Law{span},..}) if *span==expr.span))
         }).unwrap().span;
         graph.active = Default::default();
-        assert!(
-            env.ordinary_binder(&graph, span, graph.nodes.len())
-                .unwrap()
-                .is_none()
-        );
+        if request == 3 {
+            // A finite type binder still belongs to its specialized route.
+            assert!(
+                env.ordinary_binder(&graph, span, graph.nodes.len())
+                    .unwrap()
+                    .is_none()
+            );
+            assert!(
+                static_binder(&env, &graph, span, graph.nodes.len())
+                    .unwrap()
+                    .is_none()
+            );
+        } else {
+            // A supported comprehension cannot silently lose its actual chain.
+            assert!(matches!(
+                env.ordinary_binder(&graph, span, graph.nodes.len()),
+                Err(ValidationFailure::Internal(_))
+            ));
+            assert!(matches!(
+                static_binder(&env, &graph, span, graph.nodes.len()),
+                Err(ValidationFailure::Internal(_))
+            ));
+            let (index, _) = uses(&result)
+                .into_iter()
+                .find(|(i, at)| result.contexts[*i].request == request && *at == span)
+                .unwrap();
+            graph.active = result.contexts[index];
+            let actual = env.ordinary_binder(&graph, span, index).unwrap().unwrap();
+            assert_eq!(
+                Some(actual.clone()),
+                static_binder(&env, &graph, span, index).unwrap()
+            );
+            assert_eq!(
+                actual.0,
+                graph.iterations[graph.active.iteration.unwrap()].domain
+            );
+            // Another request's real chain is not evidence for this occurrence.
+            graph.active = *sibling;
+            assert!(matches!(
+                env.ordinary_binder(&graph, span, graph.nodes.len()),
+                Err(ValidationFailure::Internal(_))
+            ));
+        }
     }
 }
 
