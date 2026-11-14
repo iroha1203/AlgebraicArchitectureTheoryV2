@@ -2421,15 +2421,16 @@ impl Evaluator<'_, '_> {
             .get(&span)
             .ok_or_else(|| Failure::Internal(internal!("内包元Sourceがない")))?
             .expression;
+        let ordinary = matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_));
         let mut children = vec![input.clone()];
         let Some(value) = input.value() else {
-            return if matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+            return if ordinary {
                 self.commit_ordinary(None, span, source, children)
             } else {
                 self.lexical_result(span, ty, None, children)
             };
         };
-        let finite = if matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+        let finite = if ordinary {
             let retained = &mut self.retained_scope;
             self.environment
                 .construct_in_domain(self.graph, source, input.evaluation, |_, scope| {
@@ -2439,7 +2440,7 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        if finite.is_none() && matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+        if finite.is_none() && ordinary {
             return self.commit_ordinary(None, span, source, children);
         }
         let positions =
@@ -2465,16 +2466,20 @@ impl Evaluator<'_, '_> {
                 match condition {
                     Some(true) => {
                         let evaluated = this.eval(elem)?;
-                        if let Some(value) = evaluated.value() {
-                            values.push(this.graph.scalar(value)?.clone());
-                        } else {
-                            known = false;
+                        if !ordinary {
+                            if let Some(value) = evaluated.value() {
+                                values.push(this.graph.scalar(value)?.clone());
+                            } else {
+                                known = false;
+                            }
                         }
                         children.push(evaluated);
                     }
                     Some(false) => {}
                     None => {
-                        known = false;
+                        if !ordinary {
+                            known = false;
+                        }
                     }
                 }
                 Ok(())
@@ -2482,7 +2487,7 @@ impl Evaluator<'_, '_> {
             result?;
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        if matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+        if ordinary {
             return self.commit_ordinary(None, span, source, children);
         }
         let value = if known {
