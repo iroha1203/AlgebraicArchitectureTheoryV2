@@ -336,41 +336,9 @@ impl Environment<'_> {
         let mut kept = Vec::new();
         for (index, value) in all.values.into_iter().enumerate() {
             self.tick()?;
-            let values = components(&value, &types, self.indexes.inputs.law(), &self.control)?;
-            let mut pinned = Vec::new();
-            for (fact, value) in fields.iter().zip(values) {
-                self.tick()?;
-                pinned.push(archsig_input::archmap::FieldAssignment {
-                    snapshot: fact.snapshot.clone(),
-                    subject: fact.subject.clone(),
-                    field: fact
-                        .field
-                        .clone()
-                        .ok_or(internal!("補完に元fieldがない"))?
-                        .into(),
-                    value: data::input_json(&value, &self.control)?,
-                });
-            }
             observer.borrow_mut()("reference_constraints", index);
-            self.tick()?;
-            match archsig_input::archmap::check_completion_with_values::<
-                CheckFailure<Box<archsig_common::issue::Issue>>,
-            >(
-                &self.indexes.inputs.archmap().snapshots(),
-                &self.indexes.inputs.law().definitions(),
-                &pinned,
-                &self.control,
-            ) {
-                Ok(()) => kept.push(value),
-                Err(CheckFailure::Input(issue))
-                    if issue.code == archsig_common::issue::Code::InconsistentObservation => {}
-                Err(CheckFailure::Stopped(reason)) => return Err(ValidationFailure::Stop(reason)),
-                Err(CheckFailure::Input(issue)) => {
-                    return Err(ValidationFailure::Internal(internal!(
-                        "参照補完候補の元入力検査: {}",
-                        issue.message
-                    )));
-                }
+            if self.completion_assignment_consistent(fields, &types, &value)? {
+                kept.push(value);
             }
             self.tick()?;
         }
@@ -382,6 +350,59 @@ impl Environment<'_> {
         }
         self.tick()?;
         Ok(all)
+    }
+
+    /// fields/typesはcompletion_slot_typesまたは認証済みSeedの同じslot順を使う。
+    /// 一つの代入を元入力へ同時にpinし、残りの欠測へ拡張できるか検査する。
+    /// 個別の合法性であり、Domainの全coverageは証明しない。
+    fn completion_assignment_consistent(
+        &self,
+        fields: &[Fact],
+        types: &[Type],
+        value: &Scalar,
+    ) -> Result<bool, ValidationFailure> {
+        if fields.len() != types.len() {
+            return Err(internal!("補完代入の元slot数・型数が違う").into());
+        }
+        let values = components(value, types, self.indexes.inputs.law(), &self.control)?;
+        if !self.completion_has_references(types)? {
+            return Ok(true);
+        }
+        let mut pinned = Vec::new();
+        for (fact, value) in fields.iter().zip(values) {
+            self.tick()?;
+            pinned.push(archsig_input::archmap::FieldAssignment {
+                snapshot: fact.snapshot.clone(),
+                subject: fact.subject.clone(),
+                field: fact
+                    .field
+                    .clone()
+                    .ok_or(internal!("補完に元fieldがない"))?
+                    .into(),
+                value: data::input_json(&value, &self.control)?,
+            });
+        }
+        self.tick()?;
+        match archsig_input::archmap::check_completion_with_values::<
+            CheckFailure<Box<archsig_common::issue::Issue>>,
+        >(
+            &self.indexes.inputs.archmap().snapshots(),
+            &self.indexes.inputs.law().definitions(),
+            &pinned,
+            &self.control,
+        ) {
+            Ok(()) => Ok(true),
+            Err(CheckFailure::Input(issue))
+                if issue.code == archsig_common::issue::Code::InconsistentObservation =>
+            {
+                Ok(false)
+            }
+            Err(CheckFailure::Stopped(reason)) => Err(ValidationFailure::Stop(reason)),
+            Err(CheckFailure::Input(issue)) => Err(ValidationFailure::Internal(internal!(
+                "参照補完候補の元入力検査: {}",
+                issue.message
+            ))),
+        }
     }
 
     fn completion_slot_types(&self, fields: &[Fact]) -> Result<Vec<Type>, ValidationFailure> {
@@ -2119,12 +2140,8 @@ impl Environment<'_> {
             return Err(internal!("補完代入のScope/支持が違う").into());
         }
         if node.arguments == [seed.reference] {
-            components(value, &seed.types, self.indexes.inputs.law(), &self.control)?;
-            if self.completion_has_references(&seed.types)? {
-                let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
-                if !data::contains(&all.values, value, &self.control)? {
-                    return Err(internal!("参照補完memberが元入力に整合する全域にない").into());
-                }
+            if !self.completion_assignment_consistent(&seed.fields, &seed.types, value)? {
+                return Err(internal!("補完memberが元入力へ拡張できない").into());
             }
             if node.ty != NodeType::Value(assignment_type(&seed.types)) {
                 return Err(internal!("補完member型が違う").into());
@@ -2429,5 +2446,157 @@ impl Environment<'_> {
             }
         }
         Ok(true)
+    }
+}
+
+#[cfg(test)]
+mod assignment_tests {
+    use super::*;
+    use crate::observed::prepare_observed;
+    use archsig_common::control::quiet;
+    #[allow(dead_code)]
+    mod fixture {
+        include!("../../../../../tests/common/map_field_completions.rs");
+    }
+    fn field(name: &str) -> Fact {
+        Fact::from(archsig_input::archmap::FactData {
+            snapshot: "v".into(),
+            subject: "h".into(),
+            field: Some(format!("MapFields.Holder.{name}").into()),
+            atom: None,
+        })
+    }
+    fn subject(snapshot: &str, id: &str, entity: &str) -> Scalar {
+        Scalar::Subject {
+            snapshot: snapshot.into(),
+            subject: id.into(),
+            entity: format!("MapFields.{entity}"),
+        }
+    }
+    fn table(pairs: Vec<(Scalar, Scalar)>) -> Scalar {
+        Scalar::Map {
+            domain: "MapFields.Key".into(),
+            codomain: "MapFields.Image".into(),
+            pairs: pairs.into(),
+        }
+    }
+    #[test]
+    fn completion_assignment_checks_map_totality_reference_type_and_missing_slot() {
+        let prepared = prepare_observed(
+            fixture::input(true, false, false, false),
+            &["q=evaluate(Inspect.read,h=@v/h)"],
+            &quiet(),
+        )
+        .unwrap();
+        let env =
+            Environment::with_requests(prepared.inputs(), prepared.requests().requests(), &quiet())
+                .unwrap();
+        let fields = [field("table")];
+        let types = env.completion_slot_types(&fields).unwrap();
+        let key = subject("v", "k", "Key");
+        let image = subject("v", "x", "Image");
+        assert!(
+            env.completion_assignment_consistent(
+                &fields,
+                &types,
+                &table(vec![(key.clone(), image.clone())])
+            )
+            .unwrap()
+        );
+        for invalid in [
+            table(vec![]),
+            table(vec![(subject("w", "k", "Key"), image.clone())]),
+            table(vec![(key.clone(), subject("w", "x", "Image"))]),
+        ] {
+            assert!(
+                !env.completion_assignment_consistent(&fields, &types, &invalid)
+                    .unwrap()
+            );
+        }
+        for invalid in [
+            Scalar::Bool(true),
+            table(vec![(key, subject("v", "ghost", "Image"))]),
+        ] {
+            assert!(!matches!(
+                env.completion_assignment_consistent(&fields, &types, &invalid),
+                Ok(true)
+            ));
+        }
+        // The helper consumes slot types authenticated by this boundary or Seed.
+        for invalid in [field("flag"), field("absent")] {
+            assert!(env.completion_slot_types(&[invalid]).is_err());
+        }
+        let mut altered = archsig_input::archmap::FactData {
+            snapshot: "v".into(),
+            subject: "h".into(),
+            field: Some("MapFields.Holder.table".into()),
+            atom: Some("invented".into()),
+        };
+        assert!(
+            env.completion_slot_types(&[Fact::from(altered.clone())])
+                .is_err()
+        );
+        altered.atom = None;
+        altered.subject = "ghost".into();
+        assert!(env.completion_slot_types(&[Fact::from(altered)]).is_err());
+    }
+    #[test]
+    fn completion_assignment_pins_unknown_owner_and_map_together() {
+        let prepared = prepare_observed(
+            fixture::input(false, false, true, false),
+            &["q=evaluate(Inspect.read,h=@v/h)"],
+            &quiet(),
+        )
+        .unwrap();
+        let env =
+            Environment::with_requests(prepared.inputs(), prepared.requests().requests(), &quiet())
+                .unwrap();
+        let owner_fields = [field("owner")];
+        let map_fields = [field("table")];
+        let fields = [field("owner"), field("table")];
+        let types = env.completion_slot_types(&fields).unwrap();
+        let owner_b = subject("v", "B", "Root");
+        let map = table(vec![(subject("v", "k", "Key"), subject("v", "x", "Image"))]);
+        assert!(
+            env.completion_assignment_consistent(
+                &owner_fields,
+                &env.completion_slot_types(&owner_fields).unwrap(),
+                &owner_b
+            )
+            .unwrap()
+        );
+        assert!(
+            env.completion_assignment_consistent(
+                &map_fields,
+                &env.completion_slot_types(&map_fields).unwrap(),
+                &map
+            )
+            .unwrap()
+        );
+        // Each value can extend alone, but their simultaneous assignment cannot.
+        assert!(
+            !env.completion_assignment_consistent(
+                &fields,
+                &types,
+                &Scalar::Tuple(vec![owner_b, map.clone()])
+            )
+            .unwrap()
+        );
+        assert!(
+            env.completion_assignment_consistent(
+                &fields,
+                &types,
+                &Scalar::Tuple(vec![subject("v", "A", "Root"), map])
+            )
+            .unwrap()
+        );
+        assert!(
+            env.completion_assignment_consistent(
+                &fields,
+                &types,
+                &Scalar::Tuple(vec![subject("v", "B", "Root"), table(vec![])])
+            )
+            .unwrap()
+        );
     }
 }
