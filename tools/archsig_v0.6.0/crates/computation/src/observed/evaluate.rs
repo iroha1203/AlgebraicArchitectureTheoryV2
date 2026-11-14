@@ -3322,16 +3322,19 @@ impl Evaluator<'_, '_> {
         &mut self,
         guard: &Evaluated,
         body: &Evaluated,
-        scope: &Scope,
     ) -> Result<NodeRef, Failure> {
         let not_body =
             self.transform_expression(TransformOp::Not, vec![body.expression], body.scope.clone())?;
+        // Transform operands are guard then not(body); preserve that occurrence order.
+        // The Law application retains its separate body-then-guard context.
+        let mut scope = guard.scope.clone();
+        scope.merge(&body.scope);
         let violation = self.transform_expression(
             TransformOp::And,
             vec![guard.expression, not_body],
             scope.clone(),
         )?;
-        self.transform_expression(TransformOp::Not, vec![violation], scope.clone())
+        self.transform_expression(TransformOp::Not, vec![violation], scope)
     }
     fn push_law_evaluation(&mut self, node: Node) -> Result<NodeRef, Failure> {
         self.environment.validate(self.graph, &node)?;
@@ -3632,7 +3635,7 @@ impl Evaluator<'_, '_> {
         let (law_expression, law_value) = if conditional {
             self.tick(Checkpoint::Expression)?;
             let g = guard.as_ref().expect("明示 guard");
-            let expression = self.conditional_expression(g, &body, &scope)?;
+            let expression = self.conditional_expression(g, &body)?;
             let value = conditional_bool(guard_value.flatten(), self.graph.boolean(body.value())?)
                 .map(|value| {
                     self.value(
@@ -11522,6 +11525,53 @@ reading Calc {{
         change(&mut full);
         rejects_named_prefix(result, &full);
     }
+    #[test]
+    fn conditional_transform_preserves_operand_scope_and_rejects_reordering() {
+        let result = completion_private_example(
+            "view enabled():Bool=exists x:Sample . false; law required guarded() when enabled(): forall y:Sample . true;",
+            &["c=check(Calc.guarded)"],
+        );
+        assert_eq!(result.answers[0].status, Decision::Established);
+        let root = result.answers[0].outputs["evaluation"];
+        let Some(Payload::Evaluation { applicability, .. }) = &result.nodes[root.0].payload else {
+            panic!("conditional Law evaluation");
+        };
+        assert_eq!(*applicability, "not_applicable");
+        let conjunction = result
+            .nodes
+            .iter()
+            .position(|node| {
+                matches!(
+                    &node.payload,
+                    Some(Payload::Transform {
+                        operation: TransformOp::And,
+                        ..
+                    })
+                )
+            })
+            .expect("conditional conjunction");
+        let names = |node: &Node| {
+            node.scope
+                .quantifiers
+                .iter()
+                .map(|q| q.name.clone())
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(names(&result.nodes[conjunction]), ["x", "y"]);
+        let instance = result
+            .nodes
+            .iter()
+            .find(|node| matches!(&node.payload, Some(Payload::LawInstance { .. })))
+            .expect("Law instance");
+        assert_eq!(names(instance), ["y", "x"]);
+        recheck_mutation(&result, |nodes| {
+            nodes[conjunction].scope.quantifiers.swap(0, 1);
+        });
+        recheck_mutation(&result, |nodes| {
+            nodes[conjunction].scope.quantifiers.pop();
+        });
+    }
+
     #[test]
     fn bool_completion_rechecks_aggregate_applicability() {
         for (body, expected) in [
