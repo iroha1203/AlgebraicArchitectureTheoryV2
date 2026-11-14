@@ -11,6 +11,7 @@ use archsig_input::result::Signal;
 use archsig_input::result::location_wire;
 use num_bigint::BigInt;
 mod completion_graph;
+mod completion_witness;
 mod data_constructor;
 pub(crate) use data_constructor::DataConstructor;
 mod semantic_result;
@@ -1220,6 +1221,7 @@ pub(crate) enum Payload {
         blockers: Vec<Reason>,
     },
     CompletionSeed {
+        mode: super::call::CompletionMode,
         location: Location,
         parameters: Vec<(String, Type)>,
         bindings: Vec<Binding>,
@@ -5711,6 +5713,9 @@ impl Graph {
     /// 構造の検査。元 Request への帰属は Environment の総合 Answer 検査で確かめる。
     pub fn validate_answer(&self, a: &Answer, check: bool) -> Result<(), ValidationFailure> {
         self.tick()?;
+        if let Some((base, _)) = self.completion_witness_base(a)? {
+            return self.validate_answer(&base, check);
+        }
         self.reasons(&a.reasons)?;
         for &r in &a.evidence {
             self.tick()?;
