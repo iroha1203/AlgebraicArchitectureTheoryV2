@@ -37,6 +37,10 @@ impl Evaluator<'_, '_> {
             // 外側のvalidator callbackは呼ばず、Stop/失敗なら保存もしない。
             self.finish_answer(answer)?;
             self.verified_observed = Some(answer.clone());
+            // The checked Answer already establishes the requested value or
+            // judgment over its Scope. Missing diagnostics do not require a
+            // second derivation of the same result through every completion.
+            return observed;
         }
         let mut roots = Vec::new();
         match &observed {
