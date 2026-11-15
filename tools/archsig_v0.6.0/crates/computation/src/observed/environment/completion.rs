@@ -390,14 +390,11 @@ impl Environment<'_> {
             });
         }
         self.tick()?;
-        match archsig_input::archmap::check_completion_with_values::<
-            CheckFailure<Box<archsig_common::issue::Issue>>,
-        >(
-            &self.indexes.inputs.archmap().snapshots(),
-            &self.indexes.inputs.law().definitions(),
-            &pinned,
-            &self.control,
-        ) {
+        match self
+            .indexes
+            .completion
+            .check::<CheckFailure<Box<archsig_common::issue::Issue>>>(&pinned, &self.control)
+        {
             Ok(()) => Ok(true),
             Err(CheckFailure::Input(issue))
                 if issue.code == archsig_common::issue::Code::InconsistentObservation =>

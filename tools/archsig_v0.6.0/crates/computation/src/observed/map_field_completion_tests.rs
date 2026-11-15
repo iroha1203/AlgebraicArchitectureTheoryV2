@@ -290,3 +290,60 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         matches!(check_completion_with_values::<CheckFailure<Box<archsig_common::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&quiet()),Err(CheckFailure::Input(issue)) if issue.code==archsig_common::issue::Code::InconsistentObservation)
     );
 }
+
+#[test]
+fn prepared_completion_keeps_pin_outcomes_bound_to_each_candidate_and_input() {
+    use archsig_common::control::{CheckFailure, Checkpoint, Control, Signal};
+    use archsig_common::issue::{Code, Issue};
+    use archsig_input::archmap::{CompletionPreparation, FieldAssignment};
+    type Checked = CheckFailure<Box<Issue>>;
+
+    let pin = |name, value| FieldAssignment {
+        snapshot: "v".into(),
+        subject: "h".into(),
+        field: format!("MapFields.Holder.{name}"),
+        value,
+    };
+    let empty = || pin("table", Json::Arr(vec![]));
+    let owner = |id| pin("owner", fixture::reference("v", id));
+    let input = example(4);
+    let other = example(9);
+    let control = quiet();
+    let input = input.prepared.inputs();
+    let other = other.prepared.inputs();
+    let prepared = CompletionPreparation::new(
+        input.archmap().snapshots(),
+        input.definitions(),
+        &control,
+        Checkpoint::Completion,
+    )
+    .unwrap();
+    let fixed = CompletionPreparation::new(
+        other.archmap().snapshots(),
+        other.definitions(),
+        &control,
+        Checkpoint::Completion,
+    )
+    .unwrap();
+
+    assert!(prepared.check::<Checked>(&[owner("A")], &control).is_ok());
+    assert!(prepared.check::<Checked>(&[empty()], &control).is_ok());
+    assert!(matches!(
+        prepared.check::<Checked>(&[owner("A"), empty()], &control),
+        Err(CheckFailure::Input(issue)) if issue.code == Code::InconsistentObservation
+    ));
+    assert!(matches!(
+        fixed.check::<Checked>(&[owner("B"), empty()], &control),
+        Err(CheckFailure::Input(issue)) if issue.code == Code::Reference
+    ));
+    let stopped = Control::new(|_| Some(Signal::Term));
+    assert!(matches!(
+        prepared.check::<Checked>(&[owner("B"), empty()], &stopped),
+        Err(CheckFailure::Stopped(Signal::Term))
+    ));
+    assert!(
+        prepared
+            .check::<Checked>(&[owner("B"), empty()], &control)
+            .is_ok()
+    );
+}

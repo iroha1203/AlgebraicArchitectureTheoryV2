@@ -255,7 +255,7 @@ impl<'a> Environment<'a> {
                 ));
             }
         }
-        primitive_constraints_hold(self.indexes.inputs, pinned, structurally_neutral, control)
+        primitive_constraints_hold(&self.indexes, pinned, structurally_neutral, control)
     }
 
     fn fresh_candidate(&self, control: &Control) -> Self {
@@ -275,7 +275,7 @@ impl<'a> Environment<'a> {
     ) -> Result<Option<Self>, ValidationFailure> {
         let inputs = environment.indexes.inputs;
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let roster = &environment.indexes.roster;
+        let roster = environment.indexes.completion.roster();
         let mut values = BTreeMap::new();
         let mut projected_positions = std::collections::BTreeSet::new();
         let mut original_values = BTreeMap::new();
@@ -367,7 +367,12 @@ impl<'a> Environment<'a> {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
         if constraints
-            && !primitive_constraints_hold(inputs, pinned, structurally_neutral, control)?
+            && !primitive_constraints_hold(
+                &environment.indexes,
+                pinned,
+                structurally_neutral,
+                control,
+            )?
         {
             return Ok(None);
         }
@@ -380,7 +385,7 @@ impl<'a> Environment<'a> {
 
 // 初回構築は既に生成したencodingと中立判定を渡し、probeは保存済み二表から渡す。
 fn primitive_constraints_hold(
-    inputs: &CheckedInputs,
+    indexes: &InputIndexes<'_>,
     pinned: Vec<(&Fact, &str, archsig_common::canonical::Json)>,
     structurally_neutral: bool,
     control: &Control,
@@ -399,14 +404,12 @@ fn primitive_constraints_hold(
                 value,
             });
         }
-        match archsig_input::archmap::check_valuation_with_values::<
-            CheckFailure<Box<archsig_common::issue::Issue>>,
-        >(
-            &inputs.archmap().snapshots(),
-            inputs.definitions(),
-            &checked_pins,
-            control,
-        ) {
+        match indexes
+            .completion
+            .check_valuation::<CheckFailure<Box<archsig_common::issue::Issue>>>(
+                &checked_pins,
+                control,
+            ) {
             Ok(()) => {}
             Err(CheckFailure::Stopped(stop)) => return Err(ValidationFailure::Stop(stop)),
             Err(CheckFailure::Input(issue))

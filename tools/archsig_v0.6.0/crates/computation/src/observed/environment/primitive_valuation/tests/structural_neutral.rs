@@ -131,7 +131,11 @@ fn checked_scalar_and_pure_container_pins_keep_known_and_missing_admission() {
             &data::input_json(value, &quiet()).unwrap(),
             &field.ty,
             inputs.definitions(),
-            &Environment::new(&inputs, &quiet()).unwrap().indexes.roster,
+            Environment::new(&inputs, &quiet())
+                .unwrap()
+                .indexes
+                .completion
+                .roster(),
             "Pattern",
             &control,
         )
@@ -233,7 +237,7 @@ fn neutral_value_walk_handles_every_container_and_rejects_ref_map_and_term() {
         &data::input_json(&term, &quiet()).unwrap(),
         &field.ty,
         inputs.definitions(),
-        &normal.indexes.roster,
+        normal.indexes.completion.roster(),
         "Pattern",
         &quiet(),
     )
