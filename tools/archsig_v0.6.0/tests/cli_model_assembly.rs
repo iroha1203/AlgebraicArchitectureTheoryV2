@@ -961,6 +961,41 @@ fn repaired_map_saves_finite_law_domain_and_actual_boolean_counterexample() {
         get(referenced(get(flag, "value")), "value").value,
         archsig_common::json::JValue::Bool(true)
     );
+    let occurrences = get(counterexample, "law_transport");
+    for (end, assembly) in [("source", "made0"), ("target", "made1")] {
+        let evidence = get(occurrences, end);
+        let actual_assembly = answers
+            .iter()
+            .find(|a| s(get(a, "id")) == assembly)
+            .unwrap();
+        assert_eq!(
+            get(evidence, "assembly").value,
+            get(get(actual_assembly, "outputs"), "assembly").value
+        );
+        assert_eq!(
+            s(get(referenced(get(evidence, "object")), "type")),
+            "ObjectComponent"
+        );
+        let law = referenced(get(evidence, "law"));
+        assert_eq!(s(get(law, "type")), "LawInstance");
+        let occurrence = get(law, "value");
+        assert_eq!(s(get(occurrence, "name")), "Assembly.active");
+        let [parameter] = arr(get(occurrence, "parameters")) else {
+            panic!("one Bool parameter");
+        };
+        assert_eq!(s(get(parameter, "name")), "flag");
+        assert_eq!(s(get(parameter, "type")), "Bool");
+    }
+    let [reason] = arr(get(different, "reasons")) else {
+        panic!("one failed Law condition");
+    };
+    let location = get(reason, "location");
+    assert_eq!(s(get(location, "input")), "law");
+    let span = arr(get(location, "span"));
+    let source_law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    assert!(
+        source_law[num(&span[0]) as usize..num(&span[1]) as usize].contains("active(flag:Bool")
+    );
     let replay = execute_asks(&dir, "checked", Some("out"), &asks);
     assert_eq!(replay.code, first.code);
     let replay = result_json(&dir, &replay);

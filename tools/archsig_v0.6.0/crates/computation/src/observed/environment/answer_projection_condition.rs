@@ -14,6 +14,20 @@ pub(in crate::observed) struct ProjectionFailurePlan {
     pub scope: Scope,
     pub support: Vec<Fact>,
 }
+fn wrong_value_type(
+    graph: &Graph,
+    plan: AnswerBinding,
+    expected: &Type,
+) -> Result<Option<NodeRef>, ValidationFailure> {
+    let expected = NodeType::Value(expected.erase());
+    Ok(match plan {
+        AnswerBinding::Inapplicable(root) => Some(root),
+        AnswerBinding::Reference(root) if graph.get(root)?.ty != expected => Some(root),
+        AnswerBinding::Projection(node) if node.ty != expected => node.arguments.first().copied(),
+        _ => None,
+    })
+}
+
 impl Environment<'_> {
     pub(in crate::observed) fn projection_failure_plans(
         &self,
@@ -215,25 +229,28 @@ impl Environment<'_> {
         if request.kind == QuestionKind::Quotient
             && let Some(argument) = request.arguments.iter().find(|a| a.name == "fiber.at")
             && let Selector::Answer { id, .. } = &argument.value
+            && let archsig_input::law::model::Signature::View { returns, .. } =
+                &declaration.signature
         {
-            match self.answer_binding(graph, &argument.value, declaration.span) {
-                Ok(AnswerBinding::Inapplicable(root)) => {
-                    let original = graph.get(root)?;
-                    plans.push(ProjectionFailurePlan {
-                        context: self.current_context(graph),
-                        parameter: "fiber.at".into(),
-                        root,
-                        producer: id.clone(),
-                        location: Some(Location::Law {
-                            span: declaration.span,
-                        }),
-                        inputs: vec![ConditionInput::Reference(root)],
-                        scope: original.scope.clone(),
-                        support: original.support.materialize(&self.control)?,
-                    });
-                }
-                Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => {}
+            let root = match self.answer_binding(graph, &argument.value, declaration.span) {
+                Ok(plan) => wrong_value_type(graph, plan, returns)?,
+                Err(ValidationFailure::UnsupportedExpression { .. }) => None,
                 Err(error) => return Err(error),
+            };
+            if let Some(root) = root {
+                let original = graph.get(root)?;
+                plans.push(ProjectionFailurePlan {
+                    context: self.current_context(graph),
+                    parameter: "fiber.at".into(),
+                    root,
+                    producer: id.clone(),
+                    location: Some(Location::Law {
+                        span: declaration.span,
+                    }),
+                    inputs: vec![ConditionInput::Reference(root)],
+                    scope: original.scope.clone(),
+                    support: original.support.materialize(&self.control)?,
+                });
             }
         }
         for parameter in params {
@@ -267,20 +284,7 @@ impl Environment<'_> {
                 Err(ValidationFailure::UnsupportedExpression { .. }) => continue,
                 Err(error) => return Err(error),
             };
-            let root = match plan {
-                AnswerBinding::Inapplicable(root) => Some(root),
-                AnswerBinding::Reference(reference)
-                    if graph.get(reference)?.ty != NodeType::Value(parameter.ty.erase()) =>
-                {
-                    Some(reference)
-                }
-                AnswerBinding::Projection(node)
-                    if node.ty != NodeType::Value(parameter.ty.erase()) =>
-                {
-                    node.arguments.first().copied()
-                }
-                _ => None,
-            };
+            let root = wrong_value_type(graph, plan, &parameter.ty)?;
             if let Some(root) = root {
                 let original = graph.get(root)?;
                 plans.push(ProjectionFailurePlan {

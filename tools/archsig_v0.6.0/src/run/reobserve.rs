@@ -174,6 +174,12 @@ pub(super) fn execute(
         Ok(prepared) => prepared,
         Err(outcome) => return input_stage(outcome, "current"),
     };
+    let current_inputs = args
+        .current
+        .inputs
+        .out
+        .is_some()
+        .then(|| current.shared_inputs());
     let Some(previous) = result(evaluate_observed(previous, c)) else {
         return evaluate::run_internal_outcome(signals);
     };
@@ -276,6 +282,8 @@ pub(super) fn execute(
             "current".into(),
             saved_stage(current, "current", &mut files),
         );
+    } else if let Some(inputs) = &current_inputs {
+        saved_inputs(inputs, "current", &mut files);
     }
     if let Some(report) = continuity {
         document.insert("assembly".into(), report);
@@ -328,7 +336,20 @@ fn saved_stage<'a>(
     name: &str,
     files: &mut Vec<(String, &'a [u8])>,
 ) -> Json {
-    let inputs = evaluation.prepared().inputs();
+    let inputs = saved_inputs(evaluation.prepared().inputs(), name, files);
+    let mut result = evaluation.result_wire();
+    let Json::Obj(wire) = &mut result else {
+        unreachable!("evaluation result object")
+    };
+    wire.insert("inputs".into(), inputs);
+    result
+}
+
+fn saved_inputs<'a>(
+    inputs: &'a archsig_input::input::CheckedInputs,
+    name: &str,
+    files: &mut Vec<(String, &'a [u8])>,
+) -> Json {
     let sources = inputs.sources();
     let mut identities = inputs.inputs().to_vec();
     for identity in &mut identities {
@@ -352,15 +373,7 @@ fn saved_stage<'a>(
         identity.path = Some(path.clone());
         files.push((path, bytes));
     }
-    let mut result = evaluation.result_wire();
-    let Json::Obj(wire) = &mut result else {
-        unreachable!("evaluation result object")
-    };
-    wire.insert(
-        "inputs".into(),
-        Json::Arr(identities.iter().map(|identity| identity.wire()).collect()),
-    );
-    result
+    Json::Arr(identities.iter().map(|identity| identity.wire()).collect())
 }
 
 #[cfg(test)]
@@ -506,6 +519,16 @@ mod tests {
                     assert_eq!(stage_status(summary, "current", 0), Some("established"));
                 }
                 if let Some(path) = result.result {
+                    let output = path.parent().unwrap().join("inputs");
+                    for stage in ["previous", "current"] {
+                        for (file, input) in [
+                            (format!("{stage}.law"), LAW),
+                            (format!("{stage}.archmap.json"), MAP),
+                            (format!("definitions/{stage}-0.json"), DEFINITION),
+                        ] {
+                            assert_eq!(std::fs::read(output.join(file)).unwrap(), input);
+                        }
+                    }
                     let document = std::fs::read(path).unwrap();
                     assert!(
                         std::str::from_utf8(&document)

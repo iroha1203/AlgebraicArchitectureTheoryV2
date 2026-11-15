@@ -515,7 +515,9 @@ propositionは包含と再制限の可換性を確認する。generatorsは全�
 各行は元 Law の宣言順での `position`（0 始まり）、始終の全域値 `source` / `target`、
 および `source` の各値に対応する輸送後の値 `images` を持つ。
 反証の `bindings` は異なる適用・成立を与える始域の代入、`left` / `right` は各選択状態での実 Bool 値を指す。
-元 Law 出現と始終の組立てを依存に持つ。
+修復状態上の Law の反証は、保存結果の `law_transport.source` / `target` から、始終それぞれの
+`ModelAssembly`、比較した `ObjectComponent` と元の `LawInstance` を参照できる。
+対応する終域出現が見つからない場合は `target` を省略する。理由の `location` は始域 Law の宣言位置を指す。
 ConfigurationMapの確認済み結果は、操作/Lawの移送が反証・未決でもconfiguration_mapとして保持できる。
 map:ModelMapAssemblyは全構成条件が成立した場合だけ返す。始終の対象自身のLaw真偽と写像の保存命題を区別する。
 ConfigurationMap同士のcomposeは同じMapCandidate/AtomMap表現を返し、comparison.kind=actionは全Uの像を比較する。
@@ -1025,7 +1027,8 @@ requirementsが空で完全な共通解を確定した場合だけ、回答の�
 
 `reobserve` は標準出力で `archsig.reobservation.summary/1`、保存時は `result.json` に
 `archsig.reobservation/1` を返す。共通欄は `format`、`semantics`、`status`、`exit_code`、`issues`。
-`previous` / `current` の各段階は、要約では通常の回答要約、保存時は各段階の入力表・問い・回答・導出を保持する。
+`previous` / `current` の各段階は、要約では通常の回答要約を返す。保存時は各段階の入力表・問い・回答と、
+通常の `run` と同じ保存射影を施した値・条件のグラフを保持する。
 入力検査で停止した場合、失敗した段階は issue の `stage` に記す。
 中断された段階の要約には、その中断の終了コードを記す。評価前に停止した現在段階の欄は省略する。保存先の `inputs/` に前後の Law・ArchMap と指定した対応表を、
 `inputs/definitions/` に前後の Atom 定義を保持する。各段階の node 参照は同じ段階の node 表で解決する。
@@ -1070,7 +1073,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,condition_detail?:String,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,law_transport?:AssemblyLawTransport,condition_detail?:String,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | rational_polyhedron | `{equalities:ModuleMap,rhs:Vector,inequalities:ModuleMap,upper_bounds:Vector,outcome:"empty"\|"unique"\|"multiple",contradiction?:Vector,point?:Vector,second?:Vector,coordinate_bounds?:{lower:Vector,upper:Vector}[]}` |
@@ -1104,7 +1107,9 @@ restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘e
 `AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
 left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
 これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
-設計選択付き組立ての反例は `condition_detail` に具体的な失敗理由を保持する。
+`AssemblyLawTransport={source:AssemblyLawOccurrence,target?:AssemblyLawOccurrence}`。
+`AssemblyLawOccurrence={assembly:ModelAssembly,object:ObjectComponent,law:LawInstance}`。
+設計選択付き組立てと修復状態の Law 移送の反例は `condition_detail` に具体的な失敗理由を保持する。
 選択済み構成を使う移行の端点不一致は、欠けている側、実端点とその側の組立てを保持する。
 局所対応が観測済みの単一参照を保存しない場合は、始域の参照を運んだ像と実際の終域参照を保持する。
 組立てで共有 field の値が合わない場合、修復済みの側は `repaired` に元 `apply` と slot を保持する。

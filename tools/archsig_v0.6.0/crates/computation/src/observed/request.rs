@@ -1197,7 +1197,7 @@ fn resolve_inner(
             else {
                 unreachable!("quotient View");
             };
-            if plan.ty != ProjectionType::Law(returns.clone()) {
+            if !projection::can_bind_controlled(&plan.ty, returns, control).map_err(stopped)? {
                 return Err(invalid(problem(
                     RequestIssueCode::Type,
                     &req.id,

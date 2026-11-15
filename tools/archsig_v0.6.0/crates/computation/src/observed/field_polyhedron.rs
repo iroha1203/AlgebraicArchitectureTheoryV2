@@ -430,7 +430,7 @@ pub(super) fn affine_obstruction(
 }
 
 fn project_prefix(
-    original: &[Halfspace],
+    original: impl IntoIterator<Item = Halfspace>,
     n: usize,
     prefix: usize,
     keep_history: bool,
@@ -439,7 +439,7 @@ fn project_prefix(
 ) -> Result<Projected, ValidationFailure> {
     let one = integer(1);
     let mut tight = BTreeMap::new();
-    for (i, h) in original.iter().enumerate() {
+    for (i, h) in original.into_iter().enumerate() {
         tick(c)?;
         if h.coefficients.len() != n {
             return Err(internal!("半空間の座標数が違う").into());
@@ -453,7 +453,7 @@ fn project_prefix(
         keep_tightest(
             &mut tight,
             EliminationRow {
-                inequality: h.clone(),
+                inequality: h,
                 combination: if track_combinations {
                     BTreeMap::from([(i, one.clone())])
                 } else {
@@ -482,12 +482,12 @@ fn project_all(
     keep_history: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
-    project_prefix(original, n, n, keep_history, true, c)
+    project_prefix(original.iter().cloned(), n, n, keep_history, true, c)
 }
 
 /// 残りの元座標へ正確に射影する。空集合は矛盾半空間一行で表す。
 pub(super) fn project_trailing(
-    original: &[Halfspace],
+    original: Vec<Halfspace>,
     prefix: usize,
     trailing: usize,
     c: &Control,

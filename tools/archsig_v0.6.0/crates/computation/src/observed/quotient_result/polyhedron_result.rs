@@ -73,16 +73,25 @@ pub(super) fn build(
     let m = image.matrix.len();
     let zero = numeric::zero(&Type::Q, c)?;
     let negative_one = numeric::unary(UnOp::Neg, &numeric::literal("1", &Type::Q, c)?, c)?;
-    let mut original =
-        field_polyhedron::halfspaces(&linear.equations, &linear.rhs, &polyhedron.inequalities, c)?;
-    let projected = if matches!(polyhedron.outcome, Outcome::Empty(_)) {
+    let at = request.arguments.iter().find(|arg| arg.name == "fiber.at");
+    let empty = matches!(polyhedron.outcome, Outcome::Empty(_));
+    let mut original = if empty && at.is_none() {
+        vec![]
+    } else {
+        field_polyhedron::halfspaces(&linear.equations, &linear.rhs, &polyhedron.inequalities, c)?
+    };
+    let projected = if empty {
         vec![Halfspace {
             coefficients: vec![zero.clone(); m],
             rhs: negative_one.clone(),
         }]
     } else {
         // Mx + b = y を付け、x だけを消去する。返す行の座標は View の成分順。
-        let mut graph = original.clone();
+        let mut graph = if at.is_some() {
+            original.clone()
+        } else {
+            std::mem::take(&mut original)
+        };
         for row in &mut graph {
             c.checkpoint(Checkpoint::Quotient)?;
             row.coefficients.resize(n + m, zero.clone());
@@ -101,7 +110,7 @@ pub(super) fn build(
             .map(|offset| numeric::binary(BinOp::Sub, &zero, offset, c))
             .collect::<Result<Vec<_>, _>>()?;
         graph.extend(field_polyhedron::halfspaces(&equations, &rhs, &[], c)?);
-        field_polyhedron::project_trailing(&graph, n, m, c)?
+        field_polyhedron::project_trailing(graph, n, m, c)?
     };
     let classes = b.push(
         NodeType::Domain,
@@ -138,7 +147,7 @@ pub(super) fn build(
         vec![source, classes, map, offset],
         None,
     )?;
-    let fiber = if let Some(at) = request.arguments.iter().find(|arg| arg.name == "fiber.at") {
+    let fiber = if let Some(at) = at {
         let value = change_search::selector(env, b.g, &at.value)?;
         let mut coords = Vec::new();
         flatten(&value, &mut coords, c)?;

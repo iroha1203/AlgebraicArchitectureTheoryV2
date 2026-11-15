@@ -7,7 +7,7 @@ use super::{
     projection::ProjectionStep,
     reevaluate_observed,
     request::{QuestionKind, Request, Selector},
-    result::{Decision, Fact, Node, Payload, ReasonKind, Scalar, ValidationFailure},
+    result::{Answer, Decision, Fact, Node, Payload, ReasonKind, Scalar, ValidationFailure},
 };
 use crate::construction::{ConstructionFailure, is_owner_fact, owner_slot_for};
 use archsig_common::{
@@ -328,14 +328,12 @@ fn question<'a>(
         .ok_or_else(|| invalid("対応する種類・ID の元要求がない"))
 }
 
-fn output<'a>(evaluation: &'a ObservedEvaluation, id: &str, field: &str) -> Option<&'a Node> {
-    let reference = evaluation
-        .answers
-        .iter()
-        .find(|a| a.id == id)?
-        .outputs
-        .get(field)?;
-    evaluation.nodes.get(reference.0)
+fn output<'a>(
+    evaluation: &'a ObservedEvaluation,
+    answer: &Answer,
+    field: &str,
+) -> Option<&'a Node> {
+    evaluation.nodes.get(answer.outputs.get(field)?.0)
 }
 
 fn selected_reading(prepared: &PreparedObserved, question: &Request, reading: &str) -> bool {
@@ -1426,11 +1424,18 @@ fn reevaluate_assembly_aligned(
     };
     let evaluation = reevaluate_observed(previous, current, control)
         .map_err(|failure| ReobservationFailure::Evaluation(Box::new(failure)))?;
-    if let Some(current_answer) = evaluation
+    let previous_answers = previous
         .answers
         .iter()
-        .find(|a| a.id == alignment.assembly)
-    {
+        .map(|a| (a.id.as_str(), a))
+        .collect::<BTreeMap<_, _>>();
+    let current_answers = evaluation
+        .answers
+        .iter()
+        .map(|a| (a.id.as_str(), a))
+        .collect::<BTreeMap<_, _>>();
+    let current_assembly = current_answers.get(alignment.assembly);
+    if let Some(current_answer) = current_assembly {
         layout_missing.extend(
             current_answer
                 .reasons
@@ -1591,29 +1596,27 @@ fn reevaluate_assembly_aligned(
     for local in selected_locals {
         let previous_candidate = local.alignment.previous_candidate;
         let current_solve = local.alignment.current_solve;
-        let mut missing = evaluation
-            .answers
-            .iter()
-            .filter(|answer| {
-                answer.id == current_solve
-                    || answer.id == local.prepare
-                    || local
-                        .selection
-                        .as_ref()
-                        .is_some_and(|(apply, _)| answer.id == *apply)
-            })
+        let solve_answer = current_answers.get(current_solve);
+        let prepare_answer = current_answers.get(local.prepare.as_str());
+        let apply_answer = local
+            .selection
+            .as_ref()
+            .and_then(|(apply, _)| current_answers.get(apply.as_str()));
+        let mut missing = [solve_answer, prepare_answer, apply_answer]
+            .into_iter()
+            .flatten()
             .flat_map(|answer| &answer.reasons)
             .filter(|reason| reason.kind == ReasonKind::Missing)
             .flat_map(|reason| reason.missing.iter().cloned())
             .collect::<Vec<_>>();
         missing.sort();
         missing.dedup();
-        let solutions = evaluation
-            .answers
-            .iter()
-            .find(|answer| answer.id == current_solve)
+        let solutions = solve_answer
             .and_then(|answer| answer.outputs.get("solutions"))
             .copied();
+        let previous_assignment = previous_answers
+            .get(previous_candidate)
+            .and_then(|answer| output(previous, answer, "assignment"));
         let mut current_assignment = None;
         let mut continuity = CandidateContinuity::Undetermined;
         let mut undecided = Some(if continuity_stop.is_some() {
@@ -1625,10 +1628,8 @@ fn reevaluate_assembly_aligned(
         } else {
             ContinuityPending::PreviousAssignmentUnavailable
         });
-        if let (Some(old), Some(solutions)) = (
-            output(previous, previous_candidate, "assignment"),
-            solutions,
-        ) && continuity_stop.is_none()
+        if let (Some(old), Some(solutions)) = (previous_assignment, solutions)
+            && continuity_stop.is_none()
             && layout_missing.is_empty()
         {
             use super::repair_problem::ReobservedMembership as Membership;
@@ -1686,18 +1687,15 @@ fn reevaluate_assembly_aligned(
             undecided,
             current_assignment,
             missing,
-            selected_candidate: local.selection.and_then(|(apply, candidate)| {
-                output(&evaluation, &apply, "object")
+            selected_candidate: local.selection.and_then(|(_, candidate)| {
+                apply_answer
+                    .and_then(|answer| output(&evaluation, answer, "object"))
                     .is_some()
                     .then_some(candidate)
             }),
         });
     }
-    let assembly_status = evaluation
-        .answers
-        .iter()
-        .find(|answer| answer.id == alignment.assembly)
-        .map(|answer| answer.status);
+    let assembly_status = current_assembly.map(|answer| answer.status);
     Ok(ReobservedAssembly {
         evaluation,
         observations,

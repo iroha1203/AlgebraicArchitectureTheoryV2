@@ -999,6 +999,7 @@ fn compute(
             .map(|failure| archsig_common::issue::Location::Law { span: failure.span });
         let mut facts = Vec::new();
         let mut action_difference = None;
+        let mut law_transport = None;
         let mut overlap = None;
         let difference = |kind: &str, subject: &Fact, fact: &Fact, left: &Fact, right: &Fact| {
             Json::obj([
@@ -1159,11 +1160,16 @@ fn compute(
                 .find(|law| matches!(law.outcome(), O::Refuted(_)))
             {
                 let nodes = law_nodes(law, source_plan, target_plan)?;
+                let selected_state = law.source().is_none()
+                    && law.target().is_none()
+                    && (law.family().is_some() || law.source_reading().is_some());
                 if fixed_design {
                     failed_law.extend([nodes.source[1], nodes.source[2]]);
                     if let Some(target) = nodes.target {
                         failed_law.extend([target[1], target[2]]);
                     }
+                }
+                if fixed_design || selected_state {
                     refutation_location = Some(archsig_common::issue::Location::Law {
                         span: law.instance().declaration().span,
                     });
@@ -1180,10 +1186,22 @@ fn compute(
                         _ => "the selected configuration does not preserve the corresponding Law",
                     });
                 }
-                if law.source().is_none()
-                    && law.target().is_none()
-                    && (law.family().is_some() || law.source_reading().is_some())
-                {
+                if selected_state {
+                    let endpoint = |assembly: NodeRef, [object, occurrence, _]: [NodeRef; 3]| {
+                        Json::obj([
+                            ("assembly", assembly.wire()),
+                            ("object", object.wire()),
+                            ("law", occurrence.wire()),
+                        ])
+                    };
+                    let mut provenance = archsig_common::canonical::JsonObject::from([(
+                        "source".into(),
+                        endpoint(refs[0], nodes.source),
+                    )]);
+                    if let Some(target) = nodes.target {
+                        provenance.insert("target".into(), endpoint(refs[1], target));
+                    }
+                    law_transport = Some(Json::Obj(provenance));
                     counter_args.extend([nodes.source[0], nodes.source[1], refs[0], refs[1]]);
                     if let Some(target) = nodes.target {
                         counter_args.extend([target[0], target[1]]);
@@ -1329,6 +1347,9 @@ fn compute(
         }
         if let Some(value) = overlap {
             details.insert("overlap".into(), value);
+        }
+        if let Some(value) = law_transport {
+            details.insert("law_transport".into(), value);
         }
         let counterexample = b.push(
             NodeType::Evidence,

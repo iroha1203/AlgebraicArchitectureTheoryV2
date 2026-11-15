@@ -1341,7 +1341,10 @@ fn rational_polyhedron_images_and_fibers_keep_the_original_coordinates() {
     let dir = input("quotient-polyhedron");
     let path = dir.join("d.json");
     let definitions = std::fs::read_to_string(&path).unwrap();
-    let rational = definitions.replace("\"Bool\"", "\"Q\"");
+    let rational = definitions.replace("\"Bool\"", "\"Q\"").replace(
+        r#""declarations":["#,
+        r#""declarations":[{"kind":"data","name":"Pair.Measure","meaning":"Published measurements.","constructors":[{"name":"Exact","arguments":["Q"],"meaning":"An exact measurement."},{"name":"Flag","arguments":["Bool"],"meaning":"A flag."}]},"#,
+    );
     std::fs::write(path, &rational).unwrap();
     let digest = |text: &str| {
         definition::check_definitions(&[("d", text.as_bytes())])
@@ -1369,6 +1372,8 @@ reading Pair {{
  view publicX(s:State):Q=s.x;
  view usesAt(at:State):Q=at.x;
  view absent():Option<Q> = none<Q>;
+ view boxed():Measure=Pair.Measure.Exact(rat(1,1));
+ view other():Measure=Pair.Measure.Flag(false);
  view diagonal(s:State):(Q,Q)=(s.x,s.x+s.x);
  view nonlinear(s:State):Q=s.x*s.y;
  view boundary():Q=rat(1,1);
@@ -1398,6 +1403,10 @@ reading Pair {{
         "legacy=quotient(Pair.usesAt,on=$square.domain,at=@v/s)",
         "missingAt=evaluate(Pair.absent)",
         "conditional=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$missingAt.value.some)",
+        "boxed=evaluate(Pair.boxed)",
+        "typed=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$boxed.value[0])",
+        "other=evaluate(Pair.other)",
+        "wrongDynamic=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$other.value[0])",
     ];
     for (id, at) in [
         ("wrong-type", "$diagAt.value"),
@@ -1480,6 +1489,23 @@ reading Pair {{
     assert_eq!(s(get(&answers[17], "status")), "undetermined");
     assert!(
         arr(get(&answers[17], "reasons"))
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "condition_failed")
+    );
+    assert_eq!(s(get(&answers[19], "status")), "established");
+    let typed = poly(19, "fiber");
+    assert_eq!(
+        get(typed, "halfspaces").value,
+        get(square_fiber, "halfspaces").value
+    );
+    assert_eq!(
+        get(node(&result, get(typed, "at")), "value").value,
+        get(node(&result, get(square_fiber, "at")), "value").value
+    );
+    assert_eq!(s(get(&answers[21], "status")), "undetermined");
+    assert!(!has(get(&answers[21], "outputs"), "quotient"));
+    assert!(
+        arr(get(&answers[21], "reasons"))
             .iter()
             .any(|reason| s(get(reason, "code")) == "condition_failed")
     );

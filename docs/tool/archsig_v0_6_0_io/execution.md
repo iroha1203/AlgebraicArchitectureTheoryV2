@@ -261,6 +261,7 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 同じ問いに `fiber.at=$y.value` を指定すると、View の返り型と一致する既出値 `y` での
 ファイバーが `$q.quotient.fiber` に加わる。例えば
 `q=quotient(Stock.publicLoad,on=$s.solutions,s=@v/stock,fiber.at=$y.value)`。
+型が実値によって決まる射影では、実値の型が一致した場合に指定値として使い、不一致は `condition_failed` とする。
 空のファイバーも確定した集合として返す。多面体の Law 降下と対象外 View は理由付きの未決を返す。
 集合・View・元座標の解釈は [計算仕様](computations.md#9-決定範囲) と [型付き結果](results.md#5-線形表示診断修復商) に従う。
 
