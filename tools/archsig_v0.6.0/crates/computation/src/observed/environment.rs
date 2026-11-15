@@ -193,40 +193,21 @@ struct ValidationSnapshot {
     node_len: usize,
     context_identity: std::rc::Rc<()>,
     context_len: usize,
-    frames: Vec<super::call::Frame>,
+    frames: super::result::GraphPrefix,
     iterations: Vec<super::call::Iteration>,
     // 検査付き追加だけを経た表の旧prefixは、内容を複製せず同一性で照合する。
     iteration_identity: Option<std::rc::Rc<()>>,
     iteration_len: usize,
-    instances: Vec<super::call::Instance>,
-    cases: Vec<super::call::CompletionCase>,
-    witnesses: Vec<super::result::UniversalWitness>,
-    requests: Vec<Request>,
-    answers: Vec<(usize, Answer)>,
+    instances: super::result::GraphPrefix,
+    cases: super::result::GraphPrefix,
+    witnesses: super::result::GraphPrefix,
+    requests: super::result::GraphPrefix,
+    answers: super::result::GraphPrefix,
 }
 impl ValidationSnapshot {
     fn tick(control: &Control) -> Result<(), ValidationFailure> {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(())
-    }
-    fn same<T: PartialEq>(
-        left: &[T],
-        right: &[T],
-        control: &Control,
-    ) -> Result<bool, ValidationFailure> {
-        Self::tick(control)?;
-        if left.len() != right.len() {
-            return Ok(false);
-        }
-        for (a, b) in left.iter().zip(right) {
-            Self::tick(control)?;
-            let equal = a == b;
-            Self::tick(control)?;
-            if !equal {
-                return Ok(false);
-            }
-        }
-        Ok(true)
     }
     fn copy<T: Clone>(items: &[T], control: &Control) -> Result<Vec<T>, ValidationFailure> {
         let mut copied = Vec::new();
@@ -266,9 +247,9 @@ impl ValidationSnapshot {
         if self.node_len > g.nodes.len()
             || self.context_len != self.node_len
             || g.contexts.len() != g.nodes.len()
-            || g.frames.len() < self.frames.len()
-            || g.cases.len() < self.cases.len()
-            || g.instances.len() < self.instances.len()
+            || g.frames.len() < self.frames.len
+            || g.cases.len() < self.cases.len
+            || g.instances.len() < self.instances.len
             || g.iterations.len() < self.iteration_len
         {
             return Ok(false);
@@ -278,16 +259,12 @@ impl ValidationSnapshot {
         {
             return Ok(false);
         }
-        if !Self::same(&g.frames[..self.frames.len()], &self.frames, control)?
-            || !Self::same(&g.cases[..self.cases.len()], &self.cases, control)?
-            || !Self::same(
-                &g.instances[..self.instances.len()],
-                &self.instances,
-                control,
-            )?
-            || !Self::same(&g.universal_witnesses, &self.witnesses, control)?
-            || !Self::same(&g.requests, &self.requests, control)?
-            || !Self::same(&g.checked_answers, &self.answers, control)?
+        if !self.frames.retained_in(&g.frames)
+            || !self.cases.retained_in(&g.cases)
+            || !self.instances.retained_in(&g.instances)
+            || !self.witnesses.same(&g.universal_witnesses)
+            || !self.requests.same(&g.requests)
+            || !self.answers.same(&g.checked_answers)
         {
             return Ok(false);
         }
@@ -307,7 +284,7 @@ impl ValidationSnapshot {
         // 全registryの不在・一意性を読んだ成功だけが、旧producerを使う
         // 兄弟の追加に依存する。旧反復は上で identity または内容を照合済み。
         if registry_read {
-            for frame in &g.frames[self.frames.len()..] {
+            for frame in &g.frames[self.frames.len..] {
                 if !Self::after(
                     std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
                     self.node_len,
@@ -331,7 +308,7 @@ impl ValidationSnapshot {
         }
         // 既存instanceの全内容は上で照合済み。新しいmember/domainを参照する
         // 追加instanceは古いnodeのContextを変えないため、成功を破棄しない。
-        for instance in &g.instances[self.instances.len()..] {
+        for instance in &g.instances[self.instances.len..] {
             if !Self::after(
                 [instance.source, instance.domain, instance.member].into_iter(),
                 self.node_len,
@@ -340,7 +317,7 @@ impl ValidationSnapshot {
                 return Ok(false);
             }
         }
-        for case in &g.cases[self.cases.len()..] {
+        for case in &g.cases[self.cases.len..] {
             if !Self::after(
                 std::iter::once(case.seed)
                     .chain(std::iter::once(case.member).chain(match case.origin {
@@ -364,7 +341,7 @@ impl ValidationSnapshot {
             node_len: g.nodes.len(),
             context_identity: g.contexts.prefix_identity(),
             context_len: g.contexts.len(),
-            frames: Self::copy(&g.frames, control)?,
+            frames: g.frames.prefix(),
             iterations: if iteration_identity.is_none() {
                 Self::copy(&g.iterations, control)?
             } else {
@@ -372,27 +349,23 @@ impl ValidationSnapshot {
             },
             iteration_identity,
             iteration_len: g.iterations.len(),
-            instances: Self::copy(&g.instances, control)?,
-            cases: Self::copy(&g.cases, control)?,
-            witnesses: Self::copy(&g.universal_witnesses, control)?,
-            requests: Self::copy(&g.requests, control)?,
-            answers: Self::copy(&g.checked_answers, control)?,
+            instances: g.instances.prefix(),
+            cases: g.cases.prefix(),
+            witnesses: g.universal_witnesses.prefix(),
+            requests: g.requests.prefix(),
+            answers: g.checked_answers.prefix(),
         })
     }
-    // matches成功後の同じ不変Graph借用でだけ呼ぶ。node表は同じidentityの
-    // 検査済末尾追加だけを許し、metadataは既存内容の照合後に延長する。
+    // matches成功後の同じ不変Graph借用でだけ呼ぶ。検査済末尾追加の位置を記録する。
     fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
         Self::tick(control)?;
         self.node_identity = g.nodes.prefix_identity();
         self.context_identity = g.contexts.prefix_identity();
         self.node_len = g.nodes.len();
         self.context_len = g.contexts.len();
-        self.frames
-            .extend(Self::copy(&g.frames[self.frames.len()..], control)?);
-        self.instances
-            .extend(Self::copy(&g.instances[self.instances.len()..], control)?);
-        self.cases
-            .extend(Self::copy(&g.cases[self.cases.len()..], control)?);
+        self.frames = g.frames.prefix();
+        self.instances = g.instances.prefix();
+        self.cases = g.cases.prefix();
         let iteration_identity = g.iterations.checked_prefix_identity();
         if iteration_identity.is_some() {
             self.iterations.clear();
@@ -1425,8 +1398,11 @@ impl<'a> Environment<'a> {
                 &snapshot.context_identity,
                 &graph.contexts.prefix_identity(),
             )
-            || graph.checked_answers.len() != snapshot.answers.len() + 1
-            || snapshot.answers.iter().any(|(prior, _)| *prior == index)
+            || graph.checked_answers.len() != snapshot.answers.len + 1
+            || !snapshot.answers.retained_in(&graph.checked_answers)
+            || graph.checked_answers[..snapshot.answers.len]
+                .iter()
+                .any(|(prior, _)| *prior == index)
             || graph.requests.get(index) != Some(request)
             || graph
                 .checked_answers
@@ -1438,7 +1414,7 @@ impl<'a> Environment<'a> {
         }
         // Sourceが読んだregistryの不在・一意性も、従来どおり後続追加で失効させる。
         self.results.cache.borrow_mut().registry_read = registry_read;
-        snapshot.answers.push((index, answer.clone()));
+        snapshot.answers = graph.checked_answers.prefix();
         self.results.remember(source);
     }
 

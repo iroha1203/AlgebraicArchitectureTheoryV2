@@ -28,7 +28,7 @@ fn prepared(inputs: Arc<CheckedInputs>) -> PreparedObserved {
 fn start(p: &PreparedObserved) -> (Graph, Arc<Table>) {
     let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = super::super::architecture_result::build(
         p.shared_inputs(),
         &env,

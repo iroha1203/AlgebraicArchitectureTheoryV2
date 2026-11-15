@@ -241,7 +241,7 @@ impl Evaluator<'_, '_> {
             self.tick(Checkpoint::FiniteIteration)?;
             let items = family_items(self.graph.scalar(member)?, types.len())?;
             let index = self.graph.instances.len();
-            self.graph.instances.push(super::super::call::Instance {
+            self.graph.append_instance(super::super::call::Instance {
                 caller: root,
                 source,
                 domain: product,

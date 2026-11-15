@@ -25,7 +25,7 @@ fn prepared(map: &str, asks: &[&str]) -> PreparedObserved {
 }
 fn empty(p: &PreparedObserved) -> Graph {
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     g
 }
 fn build(p: &PreparedObserved, g: &mut Graph) -> architecture_result::Architecture {
@@ -440,7 +440,7 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
         None
     });
     let mut normal = Graph::new(&measure);
-    normal.requests = p.requests().requests().to_vec();
+    normal.requests = p.requests().requests().to_vec().into();
     let a = build(&p, &mut normal);
     let o = family(&p, &mut normal, &a);
     let start = normal.nodes.len();
@@ -473,7 +473,7 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
             Some(archsig_input::result::Signal::Int)
         });
         let mut g = Graph::new(&c);
-        g.requests = p.requests().requests().to_vec();
+        g.requests = p.requests().requests().to_vec().into();
         let a = build(&p, &mut g);
         let o = family(&p, &mut g, &a);
         let prefix = g.nodes.clone();

@@ -46,7 +46,7 @@ fn prepared(input: InputSources, asks: &[&str]) -> PreparedObserved {
 }
 fn empty(p: &PreparedObserved, c: &Control) -> Graph {
     let mut g = Graph::new(c);
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     g
 }
 fn replay(
@@ -771,7 +771,7 @@ fn build_generation_rejects_foreign_request_context_and_invalid_root_selectors_b
         );
         assert!(g.nodes.is_empty());
     }
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     g.active.frame = Some(0);
     assert!(
         build(

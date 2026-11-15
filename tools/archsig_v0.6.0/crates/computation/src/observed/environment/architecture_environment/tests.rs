@@ -12,7 +12,7 @@ fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationF
     let c = quiet();
     let environment = Environment::with_prepared(result.prepared(), &c)?;
     let mut graph = Graph::new(&c);
-    graph.requests = result.prepared().requests().requests().to_vec();
+    graph.requests = result.prepared().requests().requests().to_vec().into();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();
@@ -235,7 +235,7 @@ fn owned_graph_with_map(
     let c = quiet();
     let env = Environment::with_prepared(result.prepared(), &c).unwrap();
     let mut graph = Graph::new(&c);
-    graph.requests = result.prepared().requests().requests().to_vec();
+    graph.requests = result.prepared().requests().requests().to_vec().into();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();
@@ -560,7 +560,7 @@ fn repeated_assembly_environment_selection_shares_transported_value_buffers() {
     };
     let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = Graph::new(&c);
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let answer =
         crate::observed::build_result::evaluate(&p, &env, &mut g, &p.requests().requests()[0], &c)
             .unwrap();

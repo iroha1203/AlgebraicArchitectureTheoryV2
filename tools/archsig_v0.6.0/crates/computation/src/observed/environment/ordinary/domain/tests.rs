@@ -27,7 +27,7 @@ fn graph(result: &ObservedEvaluation, c: &Control) -> Graph {
     let mut g = Graph::new(c);
     g.nodes = result.nodes.clone().into();
     g.contexts = result.contexts.clone();
-    g.requests = result.prepared.requests().requests().to_vec();
+    g.requests = result.prepared.requests().requests().to_vec().into();
     g.frames = result.frames.clone();
     g.iterations = result.iterations.clone();
     g.instances = result.instances.clone();

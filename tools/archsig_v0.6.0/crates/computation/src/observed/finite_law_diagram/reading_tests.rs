@@ -20,7 +20,7 @@ fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
     let c = quiet();
     let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,
@@ -357,7 +357,7 @@ fn raw_reading_rejects_other_inputs_and_preserves_pending_and_failed_owned_condi
         let c = quiet();
         let env = Environment::with_prepared(&p, &c).unwrap();
         let mut g = Graph::new(&c);
-        g.requests = p.requests().requests().to_vec();
+        g.requests = p.requests().requests().to_vec().into();
         let a = crate::observed::architecture_result::build(
             p.shared_inputs(),
             &env,

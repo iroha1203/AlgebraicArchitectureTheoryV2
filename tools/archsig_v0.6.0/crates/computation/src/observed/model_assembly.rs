@@ -905,7 +905,7 @@ mod tests {
         };
         let env = crate::observed::environment::Environment::with_prepared(&p, &c).unwrap();
         let mut g = Graph::new(&c);
-        g.requests = p.requests().requests().to_vec();
+        g.requests = p.requests().requests().to_vec().into();
         let answer = crate::observed::build_result::evaluate(
             &p,
             &env,

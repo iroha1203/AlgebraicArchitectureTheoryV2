@@ -8,6 +8,20 @@ use super::super::{
 use archsig_common::{canonical::Json, internal::InternalError};
 use std::collections::BTreeMap;
 
+pub(super) fn owned_summary_reason(
+    run: &super::super::evaluate::delivery::ClosedRun,
+    reason: &OwnedReason,
+) -> Json {
+    let mut wire = super::project::reason(reason);
+    if !run.retain_condition_details
+        && matches!(reason.kind, ReasonKindOf::ConditionFailed { .. })
+        && let Json::Obj(fields) = &mut wire
+    {
+        fields.remove("details");
+    }
+    wire
+}
+
 /// The display borrows an unfinished recorded tail instead of fabricating a raw
 /// ObservedEvaluation for earlier sealed answers.
 pub(super) fn run_summary(
@@ -29,18 +43,24 @@ pub(super) fn run_summary(
                     .iter()
                     .find(|request| request.id == answer.id)
                     .expect("closed answer request");
-                closed_answer_summary(answer, request.kind, super::project::reason)
-                    .expect("sealed scalar summary needs no Graph")
+                closed_answer_summary(answer, request.kind, |reason| {
+                    owned_summary_reason(run, reason)
+                })
+                .expect("sealed scalar summary needs no Graph")
             }
             DeliveryAnswer::Recorded(answer) => {
                 let Some(tail) = run.tail.as_ref().filter(|tail| {
                     run.prepared.requests().requests()[tail.request_index].id == answer.id
                 }) else {
-                    return formatting::recorded_answer_summary(&run.prepared, &[], answer);
+                    return formatting::recorded_answer_summary(
+                        &run.prepared,
+                        &run.recorded_nodes,
+                        answer,
+                    );
                 };
                 let request = &run.prepared.requests().requests()[tail.request_index];
                 let mut row =
-                    formatting::recorded_answer_summary(&run.prepared, &tail.graph.nodes, answer);
+                    formatting::recorded_answer_summary(&run.prepared, &run.recorded_nodes, answer);
                 let Json::Obj(fields) = &mut row else {
                     unreachable!("answer summary object")
                 };
@@ -55,7 +75,7 @@ pub(super) fn run_summary(
                     .map(|reason| {
                         (
                             reason.sort_key(),
-                            formatting::notice(&super::project::reason(reason)),
+                            formatting::notice(&owned_summary_reason(run, reason)),
                         )
                     })
                     .chain(

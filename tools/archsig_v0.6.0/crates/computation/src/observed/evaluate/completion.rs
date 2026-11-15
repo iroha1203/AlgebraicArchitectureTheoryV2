@@ -274,7 +274,7 @@ impl Evaluator<'_, '_> {
                     )?);
                 }
                 let index = self.graph.cases.len();
-                self.graph.cases.push(super::super::call::CompletionCase {
+                self.graph.append_case(super::super::call::CompletionCase {
                     caller: root,
                     seed,
                     origin: super::super::call::CompletionOrigin::Domain(domain),

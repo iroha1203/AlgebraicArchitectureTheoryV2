@@ -359,7 +359,7 @@ fn candidate_environment_cannot_validate_observation_graph_nodes() {
     .unwrap();
     assert!(candidate.state.completion_values.borrow().is_empty());
     let mut g = Graph::new(&c);
-    g.requests = r.prepared.requests().requests().to_vec();
+    g.requests = r.prepared.requests().requests().to_vec().into();
     g.checked_answers = r.answers.iter().cloned().enumerate().collect();
     g.frames = r.frames.clone();
     g.iterations = r.iterations.clone();
@@ -1532,7 +1532,7 @@ fn local_object_witness(
     };
     let env = Environment::with_prepared(&prepared, &c).unwrap();
     let mut graph = Graph::new(&c);
-    graph.requests = prepared.requests().requests().to_vec();
+    graph.requests = prepared.requests().requests().to_vec().into();
     crate::observed::architecture_result::build(
         prepared.shared_inputs(),
         &env,

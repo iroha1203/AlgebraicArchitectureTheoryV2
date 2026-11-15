@@ -506,7 +506,7 @@ mod tests {
         let control = quiet();
         let environment = environment::Environment::with_prepared(result.prepared(), &control)?;
         let mut graph = Graph::new(&control);
-        graph.requests = result.prepared().requests().requests().to_vec();
+        graph.requests = result.prepared().requests().requests().to_vec().into();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();

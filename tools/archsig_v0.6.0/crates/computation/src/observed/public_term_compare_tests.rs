@@ -77,7 +77,7 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
         let env = Environment::with_prepared(&prepared, &Control::unlimited()).unwrap();
         let graph = || {
             let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
-            g.requests = prepared.requests().requests().to_vec();
+            g.requests = prepared.requests().requests().to_vec().into();
             g.active = crate::observed::call::Context {
                 request: 2,
                 frame: None,

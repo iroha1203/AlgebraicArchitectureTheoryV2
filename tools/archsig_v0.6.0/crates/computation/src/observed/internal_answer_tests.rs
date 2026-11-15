@@ -23,7 +23,7 @@ fn internal_answer_finish_uses_live_outcome_and_rejects_wrong_correspondence() {
             _ => unreachable!(),
         };
         let mut graph = Graph::new(&control);
-        graph.requests = prepared.requests().requests().to_vec();
+        graph.requests = prepared.requests().requests().to_vec().into();
         let mut evaluator = Evaluator {
             environment: &environment,
             graph: &mut graph,

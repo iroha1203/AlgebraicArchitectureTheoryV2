@@ -696,7 +696,7 @@ fn native_integer_observation_validates_its_owner_edges_and_current_scope() {
             &c,
         )?;
         let mut graph = Graph::new(&c);
-        graph.requests = result.prepared.requests().requests().to_vec();
+        graph.requests = result.prepared.requests().requests().to_vec().into();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
         for (i, node) in nodes.iter().enumerate() {
             graph.active = result.contexts[i];

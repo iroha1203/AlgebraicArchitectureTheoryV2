@@ -2128,15 +2128,15 @@ pub struct ObservedEvaluation {
     #[cfg(test)]
     pub(super) contexts: GraphEntries<super::call::Context>,
     #[cfg(test)]
-    pub(super) frames: Vec<super::call::Frame>,
+    pub(super) frames: GraphEntries<super::call::Frame>,
     #[cfg(test)]
     pub(super) iterations: GraphEntries<super::call::Iteration>,
     #[cfg(test)]
-    pub(super) instances: Vec<super::call::Instance>,
+    pub(super) instances: GraphEntries<super::call::Instance>,
     #[cfg(test)]
-    pub(super) cases: Vec<super::call::CompletionCase>,
+    pub(super) cases: GraphEntries<super::call::CompletionCase>,
     #[cfg(test)]
-    pub(super) universal_witnesses: Vec<UniversalWitness>,
+    pub(super) universal_witnesses: GraphEntries<UniversalWitness>,
 }
 impl ObservedEvaluation {
     /// 配送時の終了コードに用いる、検算済み反例の有無。
@@ -2331,11 +2331,15 @@ pub(in crate::observed) fn project_recorded_tail(
 
 // Graph の表は、検査付きの末尾追加だけが旧prefix identityを保つ。
 // 可変アクセス・表の複製では、内容が同じでも保存済みprefixを失効させる。
-#[derive(Debug)]
 pub(crate) struct GraphEntries<T> {
     values: Vec<T>,
     identity: std::rc::Rc<()>,
     checked_append_only: bool,
+}
+impl<T: std::fmt::Debug> std::fmt::Debug for GraphEntries<T> {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.values.fmt(formatter)
+    }
 }
 type GraphNodes = GraphEntries<Node>;
 impl<T> Default for GraphEntries<T> {
@@ -2350,6 +2354,11 @@ impl<T> From<Vec<T>> for GraphEntries<T> {
             values,
             identity: std::rc::Rc::new(()),
         }
+    }
+}
+impl<T> FromIterator<T> for GraphEntries<T> {
+    fn from_iter<I: IntoIterator<Item = T>>(values: I) -> Self {
+        values.into_iter().collect::<Vec<_>>().into()
     }
 }
 impl<T: Clone> Clone for GraphEntries<T> {
@@ -2424,30 +2433,61 @@ impl<T> GraphEntries<T> {
 pub(crate) struct Graph {
     pub nodes: GraphNodes,
     pub(super) contexts: GraphEntries<super::call::Context>,
-    pub(super) frames: Vec<super::call::Frame>,
+    pub(super) frames: GraphEntries<super::call::Frame>,
     pub(super) iterations: GraphEntries<super::call::Iteration>,
-    pub(super) instances: Vec<super::call::Instance>,
-    pub(super) cases: Vec<super::call::CompletionCase>,
-    pub(super) universal_witnesses: Vec<UniversalWitness>,
+    pub(super) instances: GraphEntries<super::call::Instance>,
+    pub(super) cases: GraphEntries<super::call::CompletionCase>,
+    pub(super) universal_witnesses: GraphEntries<UniversalWitness>,
     pub(super) active: super::call::Context,
-    pub(super) requests: Vec<super::request::Request>,
-    pub(super) checked_answers: Vec<(usize, Answer)>,
+    pub(super) requests: GraphEntries<super::request::Request>,
+    pub(super) checked_answers: GraphEntries<(usize, Answer)>,
     control: Control,
 }
-/// Fixed prefix of a private delivery Graph. Nodes are not cloned; the three
-/// append-only arenas prove prefix immutability by their existing identities.
-/// Auxiliary registries contain references/Context only and are copied once per
-/// root, not once per body. No successful validation is represented by this mark.
+/// Append-only operations preserve this marker of the original table prefix.
+#[derive(Clone)]
+pub(super) struct GraphPrefix {
+    pub(super) len: usize,
+    capacity: usize,
+    identity: std::rc::Rc<()>,
+    checked_append_only: bool,
+}
+impl<T> GraphEntries<T> {
+    pub(super) fn prefix(&self) -> GraphPrefix {
+        GraphPrefix {
+            len: self.len(),
+            capacity: self.capacity(),
+            identity: self.prefix_identity(),
+            checked_append_only: self.checked_append_only,
+        }
+    }
+}
+impl GraphPrefix {
+    pub(super) fn retained_in<T>(&self, entries: &GraphEntries<T>) -> bool {
+        entries.len() >= self.len && std::rc::Rc::ptr_eq(&self.identity, &entries.identity)
+    }
+    pub(super) fn same<T>(&self, entries: &GraphEntries<T>) -> bool {
+        entries.len() == self.len && self.retained_in(entries)
+    }
+    fn rewind<T>(&self, entries: &mut GraphEntries<T>) {
+        entries.values.truncate(self.len);
+        entries.checked_append_only = self.checked_append_only;
+    }
+    fn release_extra<T>(&self, entries: &mut GraphEntries<T>) {
+        entries.values.shrink_to(self.capacity);
+    }
+}
+
+/// The checkpoint borrows no payloads and copies no recorded data.
 pub(super) struct GraphSuffixCheckpoint {
-    nodes: (usize, std::rc::Rc<()>, bool),
-    contexts: (usize, std::rc::Rc<()>, bool),
-    iterations: (usize, std::rc::Rc<()>, bool),
-    frames: Vec<super::call::Frame>,
-    instances: Vec<super::call::Instance>,
-    cases: Vec<super::call::CompletionCase>,
-    witnesses: Vec<UniversalWitness>,
-    requests: Vec<super::request::Request>,
-    answers: Vec<(usize, Answer)>,
+    nodes: GraphPrefix,
+    contexts: GraphPrefix,
+    iterations: GraphPrefix,
+    frames: GraphPrefix,
+    instances: GraphPrefix,
+    cases: GraphPrefix,
+    universal_witnesses: GraphPrefix,
+    requests: GraphPrefix,
+    checked_answers: GraphPrefix,
     active: super::call::Context,
 }
 #[derive(Debug)]
@@ -2481,85 +2521,102 @@ impl From<Signal> for ValidationFailure {
 }
 impl GraphSuffixCheckpoint {
     pub(super) fn node_len(&self) -> usize {
-        self.nodes.0
+        self.nodes.len
     }
     pub(super) fn context_limits(&self) -> [usize; 4] {
         [
-            self.frames.len(),
-            self.iterations.0,
-            self.instances.len(),
-            self.cases.len(),
+            self.frames.len,
+            self.iterations.len,
+            self.instances.len,
+            self.cases.len,
         ]
     }
     pub(super) fn contains_context(&self, context: super::call::Context) -> bool {
-        context.frame.is_none_or(|i| i < self.frames.len())
-            && context.iteration.is_none_or(|i| i < self.iterations.0)
-            && context.instance.is_none_or(|i| i < self.instances.len())
-            && context.case.is_none_or(|i| i < self.cases.len())
+        context.frame.is_none_or(|i| i < self.frames.len)
+            && context.iteration.is_none_or(|i| i < self.iterations.len)
+            && context.instance.is_none_or(|i| i < self.instances.len)
+            && context.case.is_none_or(|i| i < self.cases.len)
     }
 }
 impl Graph {
+    pub(super) fn append_frame(&mut self, frame: super::call::Frame) {
+        self.frames.append_checked(frame);
+    }
+    pub(super) fn append_instance(&mut self, instance: super::call::Instance) {
+        self.instances.append_checked(instance);
+    }
+    pub(super) fn append_case(&mut self, case: super::call::CompletionCase) {
+        self.cases.append_checked(case);
+    }
+    pub(super) fn append_universal_witness(&mut self, witness: UniversalWitness) {
+        self.universal_witnesses.append_checked(witness);
+    }
+    pub(super) fn record_answer(&mut self, index: usize, answer: Answer) {
+        self.checked_answers.append_checked((index, answer));
+    }
+
     pub(super) fn suffix_checkpoint(&self) -> GraphSuffixCheckpoint {
         GraphSuffixCheckpoint {
-            nodes: (
-                self.nodes.len(),
-                self.nodes.prefix_identity(),
-                self.nodes.checked_append_only,
-            ),
-            contexts: (
-                self.contexts.len(),
-                self.contexts.prefix_identity(),
-                self.contexts.checked_append_only,
-            ),
-            iterations: (
-                self.iterations.len(),
-                self.iterations.prefix_identity(),
-                self.iterations.checked_append_only,
-            ),
-            frames: self.frames.clone(),
-            instances: self.instances.clone(),
-            cases: self.cases.clone(),
-            witnesses: self.universal_witnesses.clone(),
-            requests: self.requests.clone(),
-            answers: self.checked_answers.clone(),
+            nodes: self.nodes.prefix(),
+            contexts: self.contexts.prefix(),
+            iterations: self.iterations.prefix(),
+            frames: self.frames.prefix(),
+            instances: self.instances.prefix(),
+            cases: self.cases.prefix(),
+            universal_witnesses: self.universal_witnesses.prefix(),
+            requests: self.requests.prefix(),
+            checked_answers: self.checked_answers.prefix(),
             active: self.active,
         }
     }
-    /// The caller first closes the completed body and its committed diagnostics.
-    /// This operation neither traverses the discarded Graph nor re-enters Control,
-    /// so the same cleanup is valid after Stop. Arbitrary prefix mutation rejects
-    /// the operation before any table is changed; raw/full execution never uses it.
+
+    /// Body cleanup reserves scratch buffers for the next body.
+    /// Any prefix mutation rejects cleanup before the first truncation.
     pub(super) fn discard_suffix(
         &mut self,
         prefix: &GraphSuffixCheckpoint,
     ) -> Result<(), InternalError> {
-        fn same<T>(entries: &GraphEntries<T>, saved: &(usize, std::rc::Rc<()>, bool)) -> bool {
-            entries.len() >= saved.0 && std::rc::Rc::ptr_eq(&entries.identity, &saved.1)
-        }
-        if !same(&self.nodes, &prefix.nodes)
-            || !same(&self.contexts, &prefix.contexts)
-            || !same(&self.iterations, &prefix.iterations)
-            || self.active != prefix.active
-            || self.frames.get(..prefix.frames.len()) != Some(prefix.frames.as_slice())
-            || self.instances.get(..prefix.instances.len()) != Some(prefix.instances.as_slice())
-            || self.cases.get(..prefix.cases.len()) != Some(prefix.cases.as_slice())
-            || self.universal_witnesses.get(..prefix.witnesses.len())
-                != Some(prefix.witnesses.as_slice())
-            || self.requests != prefix.requests
-            || self.checked_answers != prefix.answers
+        if self.active != prefix.active
+            || !prefix.nodes.retained_in(&self.nodes)
+            || !prefix.contexts.retained_in(&self.contexts)
+            || !prefix.iterations.retained_in(&self.iterations)
+            || !prefix.frames.retained_in(&self.frames)
+            || !prefix.instances.retained_in(&self.instances)
+            || !prefix.cases.retained_in(&self.cases)
+            || !prefix
+                .universal_witnesses
+                .retained_in(&self.universal_witnesses)
+            || !prefix.requests.same(&self.requests)
+            || !prefix.checked_answers.same(&self.checked_answers)
         {
             return Err(internal!("配送bodyの固定prefixが変更された"));
         }
-        self.nodes.values.truncate(prefix.nodes.0);
-        self.nodes.checked_append_only = prefix.nodes.2;
-        self.contexts.values.truncate(prefix.contexts.0);
-        self.contexts.checked_append_only = prefix.contexts.2;
-        self.iterations.values.truncate(prefix.iterations.0);
-        self.iterations.checked_append_only = prefix.iterations.2;
-        self.frames.truncate(prefix.frames.len());
-        self.instances.truncate(prefix.instances.len());
-        self.cases.truncate(prefix.cases.len());
-        self.universal_witnesses.truncate(prefix.witnesses.len());
+        prefix.nodes.rewind(&mut self.nodes);
+        prefix.contexts.rewind(&mut self.contexts);
+        prefix.iterations.rewind(&mut self.iterations);
+        prefix.frames.rewind(&mut self.frames);
+        prefix.instances.rewind(&mut self.instances);
+        prefix.cases.rewind(&mut self.cases);
+        prefix
+            .universal_witnesses
+            .rewind(&mut self.universal_witnesses);
+        Ok(())
+    }
+
+    pub(super) fn discard_root_suffix(
+        &mut self,
+        prefix: &GraphSuffixCheckpoint,
+    ) -> Result<(), InternalError> {
+        self.discard_suffix(prefix)?;
+        prefix.nodes.release_extra(&mut self.nodes);
+        prefix.contexts.release_extra(&mut self.contexts);
+        prefix.iterations.release_extra(&mut self.iterations);
+        prefix.frames.release_extra(&mut self.frames);
+        prefix.instances.release_extra(&mut self.instances);
+        prefix.cases.release_extra(&mut self.cases);
+        prefix
+            .universal_witnesses
+            .release_extra(&mut self.universal_witnesses);
         Ok(())
     }
 
@@ -2632,14 +2689,14 @@ impl Graph {
         Self {
             nodes: Vec::new().into(),
             contexts: Vec::new().into(),
-            frames: vec![],
+            frames: GraphEntries::default(),
             iterations: Vec::new().into(),
-            instances: vec![],
-            cases: vec![],
-            universal_witnesses: vec![],
+            instances: GraphEntries::default(),
+            cases: GraphEntries::default(),
+            universal_witnesses: GraphEntries::default(),
             active: super::call::Context::default(),
-            requests: vec![],
-            checked_answers: vec![],
+            requests: GraphEntries::default(),
+            checked_answers: GraphEntries::default(),
             control: control.clone(),
         }
     }

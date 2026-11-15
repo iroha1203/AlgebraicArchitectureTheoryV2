@@ -6,21 +6,51 @@ use std::{ops::Range, rc::Rc};
 pub(super) struct ContextIndex {
     covered_len: usize,
     positions: BTreeMap<super::super::call::Context, Rc<Vec<usize>>>,
+    scratch: Option<ScratchContexts>,
+}
+
+struct ScratchContexts {
+    cutoff: usize,
+    changed: BTreeSet<super::super::call::Context>,
 }
 
 impl ContextIndex {
-    pub(super) fn checkpoint(&self) -> usize {
-        self.covered_len
-    }
-    pub(super) fn rollback(&mut self, covered: usize) {
-        self.covered_len = self.covered_len.min(covered);
-        self.positions.retain(|_, positions| {
-            let length = positions.partition_point(|&position| position < self.covered_len);
-            if length < positions.len() {
-                Rc::make_mut(positions).truncate(length);
-            }
-            !positions.is_empty()
+    pub(super) fn checkpoint(&mut self, cutoff: usize) {
+        self.scratch = Some(ScratchContexts {
+            cutoff,
+            changed: BTreeSet::new(),
         });
+    }
+
+    fn append(&mut self, context: super::super::call::Context, position: usize) {
+        debug_assert_eq!(position, self.covered_len);
+        if let Some(scratch) = &mut self.scratch
+            && position >= scratch.cutoff
+        {
+            scratch.changed.insert(context);
+        }
+        Rc::make_mut(self.positions.entry(context).or_default()).push(position);
+        // Keep the indexed prefix consistent before the next stop checkpoint.
+        self.covered_len = position + 1;
+    }
+
+    pub(super) fn rollback(&mut self) {
+        let scratch = self.scratch.as_mut().expect("context index checkpoint");
+        self.covered_len = self.covered_len.min(scratch.cutoff);
+        for context in std::mem::take(&mut scratch.changed) {
+            let mut entry = match self.positions.entry(context) {
+                std::collections::btree_map::Entry::Occupied(entry) => entry,
+                _ => unreachable!("indexed scratch context"),
+            };
+            let length = entry
+                .get()
+                .partition_point(|&position| position < scratch.cutoff);
+            if length == 0 {
+                entry.remove();
+            } else {
+                Rc::make_mut(entry.get_mut()).truncate(length);
+            }
+        }
     }
 }
 
@@ -77,10 +107,7 @@ impl Environment<'_> {
             self.tick()?;
             let context = graph.context_at(position);
             let mut cache = self.results.cache.borrow_mut();
-            let index = &mut cache.context_candidates;
-            Rc::make_mut(index.positions.entry(context).or_default()).push(position);
-            // appendとcovered_lenの更新の間では停止せず、途中停止でも整合したprefixを残す。
-            index.covered_len = position + 1;
+            cache.context_candidates.append(context, position);
         }
         self.tick()?;
         let cache = self.results.cache.borrow();

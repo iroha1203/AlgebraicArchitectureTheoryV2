@@ -261,14 +261,13 @@ fn validation_rollback_context_index_drops_scratch_positions_without_changing_he
         ..context
     };
     let mut index = ContextIndex::default();
-    index.covered_len = 2;
-    index.positions.insert(context, Rc::new(vec![0, 1]));
-    let prefix = index.checkpoint();
+    index.append(context, 0);
+    index.append(context, 1);
+    index.checkpoint(2);
     let held = index.positions[&context].clone();
-    Rc::make_mut(index.positions.get_mut(&context).unwrap()).push(2);
-    index.positions.insert(scratch_context, Rc::new(vec![3]));
-    index.covered_len = 4;
-    index.rollback(prefix);
+    index.append(context, 2);
+    index.append(scratch_context, 3);
+    index.rollback();
     assert_eq!(index.covered_len, 2);
     assert_eq!(index.positions[&context].as_slice(), [0, 1]);
     assert!(!index.positions.contains_key(&scratch_context));
@@ -278,8 +277,40 @@ fn validation_rollback_context_index_drops_scratch_positions_without_changing_he
         iteration: Some(1),
         ..context
     };
-    index.positions.insert(fresh_context, Rc::new(vec![2]));
-    index.covered_len = 3;
+    index.append(fresh_context, 2);
     assert_eq!(index.positions[&fresh_context].as_slice(), [2]);
     assert!(!index.positions.contains_key(&scratch_context));
+}
+
+#[test]
+fn scratch_rollback_keeps_a_lazily_indexed_graph_prefix() {
+    let prior = Context::default();
+    let shared = Context {
+        request: 1,
+        ..prior
+    };
+    let first_body = Context {
+        iteration: Some(0),
+        ..shared
+    };
+    let second_body = Context {
+        iteration: Some(1),
+        ..shared
+    };
+    let mut index = ContextIndex::default();
+
+    index.checkpoint(2);
+    index.append(prior, 0);
+    index.append(shared, 1);
+    let prior_positions = index.positions[&prior].clone();
+
+    for context in [first_body, second_body] {
+        index.append(shared, 2);
+        index.append(context, 3);
+        index.rollback();
+        assert_eq!(index.covered_len, 2);
+        assert!(Rc::ptr_eq(&index.positions[&prior], &prior_positions));
+        assert_eq!(index.positions[&shared].as_slice(), &[1]);
+        assert!(!index.positions.contains_key(&context));
+    }
 }

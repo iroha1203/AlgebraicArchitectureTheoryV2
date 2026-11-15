@@ -103,7 +103,7 @@ impl Evaluator<'_, '_> {
         for (ordinal, values) in [&pair.0, &pair.1].into_iter().enumerate() {
             self.universal_observe(plan.template_span, 5)?;
             let anchor_ref = NodeRef(self.graph.nodes.len());
-            self.graph.universal_witnesses.push(UniversalWitness {
+            self.graph.append_universal_witness(UniversalWitness {
                 caller: self.graph.active,
                 template,
                 anchor: anchor_ref,
@@ -1723,7 +1723,7 @@ impl Evaluator<'_, '_> {
                 }
                 let caller = self.graph.active;
                 let frame = self.graph.frames.len();
-                self.graph.frames.push(super::super::call::Frame {
+                self.graph.append_frame(super::super::call::Frame {
                     caller,
                     source: source.expression,
                     arguments: arguments

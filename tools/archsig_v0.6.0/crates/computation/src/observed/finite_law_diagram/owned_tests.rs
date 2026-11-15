@@ -45,7 +45,7 @@ fn replay(
     let env =
         Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)?;
     let mut g = Graph::new(&c);
-    g.requests = e.prepared.requests().requests().to_vec();
+    g.requests = e.prepared.requests().requests().to_vec().into();
     g.frames = e.frames.clone();
     g.iterations = e.iterations.clone();
     g.instances = e.instances.clone();

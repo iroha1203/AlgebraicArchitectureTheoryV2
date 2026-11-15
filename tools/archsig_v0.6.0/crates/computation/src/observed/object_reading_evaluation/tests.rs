@@ -37,7 +37,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
 fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram::Diagram) {
     let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,
@@ -626,7 +626,7 @@ fn unknown_ownership_retains_the_pending_architecture_and_never_fakes_a_view_sou
     let p = prepared(LAW, &map);
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,

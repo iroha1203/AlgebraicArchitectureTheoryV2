@@ -205,7 +205,7 @@ fn ordinary_actual_and_cold_validation_preserve_read_collectors() {
     )
     .unwrap();
     let mut graph = Graph::new(&control);
-    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.requests = result.prepared.requests().requests().to_vec().into();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();
@@ -1169,7 +1169,7 @@ fn ordinary_source_scope_only_keeps_unused_binding_authentication() {
     let control = quiet();
     let environment = Environment::with_prepared(&result.prepared, &control).unwrap();
     let mut graph = Graph::new(&control);
-    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.requests = result.prepared.requests().requests().to_vec().into();
     for (index, node) in result.nodes[..source_index].iter().enumerate() {
         graph.active = result.contexts[index];
         graph.push(node.clone()).unwrap();

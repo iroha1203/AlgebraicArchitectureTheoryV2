@@ -12,7 +12,7 @@ fn direct_answer(script: &str, expected: Decision, check: impl FnOnce(&Graph, &A
     let prepared = prepare_observed(input, &["a=check(Walk.finite)"], &c).unwrap();
     let env = Environment::with_prepared(&prepared, &c).unwrap();
     let mut graph = Graph::new(&c);
-    graph.requests = prepared.requests().requests().to_vec();
+    graph.requests = prepared.requests().requests().to_vec().into();
     let request = &prepared.requests().requests()[0];
     let declaration = &prepared.inputs().law().declarations()["Walk.finite"];
     let Signature::Law {

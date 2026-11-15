@@ -24,7 +24,7 @@ fn initial(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
     let c = quiet();
     let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,

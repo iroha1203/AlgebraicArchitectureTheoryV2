@@ -49,7 +49,7 @@ fn prepared(inputs: Arc<archsig_input::input::CheckedInputs>) -> PreparedObserve
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
     let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,

@@ -44,7 +44,7 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
     let p = prepared("law required zero(c:Part):c.quantity=0;");
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,
@@ -134,7 +134,7 @@ fn native_false_guard_proposition_keeps_unread_body_and_conditional_truth() {
     let p = prepared("law required inactive(c:Part) when false:c.quantity=0;");
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,
@@ -213,7 +213,7 @@ fn from_inputs(inputs: Arc<archsig_input::input::CheckedInputs>) -> PreparedObse
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
     let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     let a = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,

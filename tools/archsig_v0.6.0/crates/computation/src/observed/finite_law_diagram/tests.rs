@@ -45,7 +45,7 @@ fn replay(
     let env =
         Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)?;
     let mut g = Graph::new(&c);
-    g.requests = e.prepared.requests().requests().to_vec();
+    g.requests = e.prepared.requests().requests().to_vec().into();
     g.frames = e.frames.clone();
     g.iterations = e.iterations.clone();
     g.instances = e.instances.clone();
@@ -1930,7 +1930,7 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
             g.cases = old.cases;
             g.universal_witnesses = old.universal_witnesses;
             g.active = old.active;
-            g.requests = old.requests;
+            g.requests = old.requests.into();
             g.checked_answers = old.checked_answers;
             assert!(matches!(
                 retain(&mut g, e.prepared.shared_inputs(), a, 0, &control),

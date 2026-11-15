@@ -86,7 +86,7 @@ fn setup(extra: &str) -> (PreparedObserved, Graph, NodeRef, NodeRef) {
         &Control::unlimited(),
     )
     .unwrap();
-    graph.requests = prepared.requests().requests().to_vec();
+    graph.requests = prepared.requests().requests().to_vec().into();
     graph.active = Context {
         request: 2,
         ..Context::default()

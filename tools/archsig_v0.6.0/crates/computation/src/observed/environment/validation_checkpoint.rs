@@ -48,7 +48,6 @@ pub(in crate::observed) struct ValidationCheckpoint {
     epoch: std::rc::Rc<()>,
     registry_read: bool,
     sources: usize,
-    candidates: usize,
     frames: BTreeSet<(usize, usize)>,
     universal_frames: usize,
     universal_sources: usize,
@@ -61,7 +60,7 @@ pub(in crate::observed) struct ValidationCheckpoint {
     snapshot: Option<ValidationSnapshot>,
 }
 impl ResultStore {
-    fn checkpoint_validation(&self) -> ValidationCheckpoint {
+    fn checkpoint_validation(&self, graph_prefix: usize) -> ValidationCheckpoint {
         let mut c = self.cache.borrow_mut();
         // One active rollback region per cache. A later capture supersedes the
         // earlier token, so a stale token can only clear the session, not retain
@@ -69,11 +68,11 @@ impl ResultStore {
         c.epoch = std::rc::Rc::new(());
         c.checked.begin_prefix();
         c.rechecked.begin_prefix();
+        c.context_candidates.checkpoint(graph_prefix);
         ValidationCheckpoint {
             epoch: c.epoch.clone(),
             registry_read: c.registry_read,
             sources: c.sources.entries.len(),
-            candidates: c.context_candidates.checkpoint(),
             frames: c.frames.keys().copied().collect(),
             universal_frames: c.universal_frames.len(),
             universal_sources: c.universal_sources.len(),
@@ -106,7 +105,7 @@ impl ResultStore {
             positions.retain(|&position| position < prefix.sources);
             !positions.is_empty()
         });
-        c.context_candidates.rollback(prefix.candidates);
+        c.context_candidates.rollback();
         c.frames.retain(|key, _| prefix.frames.contains(key));
         c.universal_frames.truncate(prefix.universal_frames);
         c.universal_sources.truncate(prefix.universal_sources);
@@ -130,12 +129,24 @@ impl Environment<'_> {
     /// Capture once after the fixed Graph prefix is locally validated.
     pub(in crate::observed) fn validation_checkpoint(
         &self,
+        graph_prefix: usize,
     ) -> Result<ValidationCheckpoint, InternalError> {
         if self.state.validation_depth.get() != 0 {
             return Err(internal!("検査中のsessionを反復prefixとして保存できない"));
         }
-        Ok(self.results.checkpoint_validation())
+        Ok(self.results.checkpoint_validation(graph_prefix))
     }
+    /// A sealed root releases all graph-backed checks before indices can be reused.
+    pub(in crate::observed) fn discard_root_validation(&self) -> Result<(), InternalError> {
+        if self.state.validation_depth.get() != 0 {
+            return Err(internal!("検査中のsessionを解放できない"));
+        }
+        self.results.scoped_values.borrow_mut().clear();
+        self.results.clear_validation();
+        self.results.validation_snapshot.replace(None);
+        Ok(())
+    }
+
     /// Only after the scratch Graph suffix has been discarded and its immutable
     /// prefix verified unchanged. No checkpoints/analysis are run after Stop.
     /// False means a nested reset invalidated the prefix cache; nothing revived.
@@ -174,7 +185,7 @@ mod tests {
         let context = crate::observed::call::Context::default();
         store.cache.borrow_mut().checked.insert((context, 4));
         assert!(store.cache.borrow().checked.additions.is_none());
-        let prefix = store.checkpoint_validation();
+        let prefix = store.checkpoint_validation(0);
         for _ in 0..3 {
             let mut cache = store.cache.borrow_mut();
             assert!(!cache.checked.insert((context, 4)));
@@ -193,9 +204,9 @@ mod tests {
         let store = ResultStore::default();
         let context = crate::observed::call::Context::default();
         store.cache.borrow_mut().checked.insert((context, 0));
-        let first = store.checkpoint_validation();
+        let first = store.checkpoint_validation(0);
         store.cache.borrow_mut().checked.insert((context, 1));
-        let second = store.checkpoint_validation();
+        let second = store.checkpoint_validation(0);
         store.cache.borrow_mut().checked.insert((context, 2));
         assert!(store.rollback_validation(&second));
         assert!(store.cache.borrow().checked.contains(&(context, 1)));
@@ -222,7 +233,7 @@ mod tests {
             .borrow_mut()
             .sources
             .insert(context, (1, (2, 3), vec![], analysis(7)));
-        let prefix = store.checkpoint_validation();
+        let prefix = store.checkpoint_validation(0);
         store.remember(scratch.clone());
         store.cache.borrow_mut().checked.insert((context, 1));
         store.cache.borrow_mut().rechecked.insert((context, 0));
@@ -265,7 +276,7 @@ mod tests {
         let old_weak = Arc::downgrade(&old);
         store.remember(old);
         store.cache.borrow_mut().checked.insert((context, 0));
-        let prefix = store.checkpoint_validation();
+        let prefix = store.checkpoint_validation(0);
         store.clear_validation();
         assert!(old_weak.upgrade().is_none());
         store.cache.borrow_mut().checked.insert((context, 0));
@@ -281,7 +292,7 @@ mod tests {
     fn validation_rollback_reuses_one_prefix_without_stale_body_source_hits() {
         let store = ResultStore::default();
         let context = crate::observed::call::Context::default();
-        let prefix = store.checkpoint_validation();
+        let prefix = store.checkpoint_validation(0);
         for value in [11, 29, -5] {
             assert!(
                 store
@@ -323,7 +334,7 @@ mod tests {
         let env = Environment::new(&inputs, &control).unwrap();
         let context = crate::observed::call::Context::default();
         env.results.cache.borrow_mut().checked.insert((context, 0));
-        let prefix = env.validation_checkpoint().unwrap();
+        let prefix = env.validation_checkpoint(0).unwrap();
         env.results.cache.borrow_mut().checked.insert((context, 1));
         flag.store(2, Ordering::Relaxed);
         assert_eq!(control.stop_reason(), Some(Signal::Int));
@@ -334,7 +345,7 @@ mod tests {
         );
         assert_eq!(control.stop_reason(), Some(Signal::Int));
         let _depth = env.state.validation_depth.scoped(1);
-        assert!(env.validation_checkpoint().is_err());
+        assert!(env.validation_checkpoint(0).is_err());
         assert!(env.rollback_validation(&prefix).is_err());
     }
 }
