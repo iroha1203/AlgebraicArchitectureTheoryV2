@@ -18,9 +18,9 @@ pub(super) struct Candidate {
 }
 struct Comparison {
     bytes: Vec<u8>,
-    nodes: Option<Vec<Span>>,
+    nodes: Vec<Span>,
     status: JNode,
-    exit_code: JNode,
+    exit_code: u64,
     answers: JNode,
     issues: JNode,
 }
@@ -128,7 +128,7 @@ pub(super) fn inspect(
             return Ok(candidate);
         }
     };
-    let (mut document, mut nodes) = match archsig_common::json::parse_deferred_root_array::<
+    let (mut document, nodes) = match archsig_common::json::parse_deferred_root_array::<
         CheckFailure<Box<archsig_common::issue::Issue>>,
     >(&bytes, "nodes", control, Checkpoint::Reuse)
     {
@@ -139,21 +139,17 @@ pub(super) fn inspect(
             return Ok(candidate);
         }
     };
-    match header(&document, control) {
-        Ok(()) => {}
+    let exit_code = match header(&document, control) {
+        Ok(exit_code) => exit_code,
         Err(Failure::Rejected(message)) => {
             candidate.reject(message);
             return Ok(candidate);
         }
         Err(Failure::Stopped(reason)) => return Err(reason),
-    }
-    match preflight(&document, prepared, control) {
-        Ok(()) => {
-            retain_node_bytes(
-                &mut bytes,
-                nodes.as_deref_mut().unwrap_or_default(),
-                control,
-            )?;
+    };
+    match preflight(&document, prepared, nodes, control) {
+        Ok(mut nodes) => {
+            retain_node_bytes(&mut bytes, &mut nodes, control)?;
             let JValue::Obj(fields) = &mut document.value else {
                 unreachable!("checked reuse header")
             };
@@ -173,7 +169,7 @@ pub(super) fn inspect(
                 bytes,
                 nodes,
                 status: take("status"),
-                exit_code: take("exit_code"),
+                exit_code,
                 answers: take("answers"),
                 issues: take("issues"),
             });
@@ -270,13 +266,14 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
     }
     Ok(())
 }
-fn nat(node: &JNode) -> Checked<()> {
+fn nat(node: &JNode) -> Checked<u64> {
     match &node.value {
-        JValue::Num(s) if archsig_input::archmap::nat_value(s).is_some() => Ok(()),
-        _ => Err(invalid("Nat must be an integer in 0..9007199254740991")),
+        JValue::Num(s) => archsig_input::archmap::nat_value(s),
+        _ => None,
     }
+    .ok_or_else(|| invalid("Nat must be an integer in 0..9007199254740991"))
 }
-fn header(document: &JNode, control: &Control) -> Checked<()> {
+fn header(document: &JNode, control: &Control) -> Checked<u64> {
     control.checkpoint(Checkpoint::Reuse)?;
     if text(field(document, "format")?)? != archsig_input::result::RESULT_FORMAT
         || text(field(document, "semantics")?)? != archsig_input::law::SEMANTICS
@@ -304,13 +301,13 @@ fn header(document: &JNode, control: &Control) -> Checked<()> {
         ],
         &["warnings"],
     )?;
-    nat(field(document, "exit_code")?)?;
+    let exit_code = nat(field(document, "exit_code")?)?;
     if let Some((_, warnings)) = fields(document)?.iter().find(|(key, _)| key == "warnings") {
         for issue in array(warnings)? {
             issue_shape(issue, control)?;
         }
     }
-    Ok(())
+    Ok(exit_code)
 }
 fn issue_shape(issue: &JNode, control: &Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
@@ -492,7 +489,12 @@ fn node_content(mut node: Json, control: &Control) -> Checked<String> {
     }
     encoding(&node, control)
 }
-fn preflight(document: &JNode, prepared: &PreparedObserved, control: &Control) -> Checked<()> {
+fn preflight(
+    document: &JNode,
+    prepared: &PreparedObserved,
+    nodes: Option<Vec<Span>>,
+    control: &Control,
+) -> Checked<Vec<Span>> {
     let empty = BTreeMap::new();
     // 元byte列のidentityと解決済み要求を照合する。宣言・型は現在の三入力から再検査する。
     let mut inputs = normalized_candidate(field(document, "inputs")?, &empty, control)?;
@@ -538,7 +540,21 @@ fn preflight(document: &JNode, prepared: &PreparedObserved, control: &Control) -
             "cannot verify requests against the current checked result",
         ));
     }
-    Ok(())
+    if !matches!(field(document, "status")?.value, JValue::Str(ref status) if matches!(status.as_str(), "complete" | "partial"))
+    {
+        return Err(invalid(
+            "cannot verify status against the current checked result",
+        ));
+    }
+    let nodes = nodes.ok_or_else(|| invalid("expected an array"))?;
+    for name in ["answers", "issues"] {
+        if !matches!(field(document, name)?.value, JValue::Arr(_)) {
+            return Err(invalid(format!(
+                "cannot verify {name} against the current checked derivation"
+            )));
+        }
+    }
+    Ok(nodes)
 }
 
 fn verify(
@@ -574,11 +590,7 @@ fn verify(
         native_ids.insert(format!("n{index}"), key);
     }
     let mut candidate_ids = BTreeMap::new();
-    for (index, (start, end)) in candidate_nodes
-        .ok_or_else(|| invalid("expected an array"))?
-        .into_iter()
-        .enumerate()
-    {
+    for (index, (start, end)) in candidate_nodes.into_iter().enumerate() {
         control.checkpoint(Checkpoint::Reuse)?;
         let node = archsig_common::json::parse_inner::<
             CheckFailure<Box<archsig_common::issue::Issue>>,
@@ -622,7 +634,7 @@ fn verify(
         "complete" => u64::from(evaluation.has_refuted_answer()),
         _ => return Err(invalid("candidate verification is not finalized")),
     };
-    if normalized_candidate(&exit_code, &empty, control)? != Json::Nat(code) {
+    if exit_code != code {
         return Err(invalid(
             "cannot verify exit_code against the computation result",
         ));

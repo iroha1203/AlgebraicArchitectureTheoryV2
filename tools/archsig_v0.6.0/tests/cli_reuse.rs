@@ -120,15 +120,39 @@ fn valid_reuse_recomputes_current_values_with_exact_counts() {
         bytes
     );
     // Natは綴りでなく値を検査する。整数を表す小数/指数のmetadataも同じ値である。
-    let notation = String::from_utf8(bytes)
-        .unwrap()
-        .replace("\"exit_code\":0", "\"exit_code\":0e0")
-        .replace("\"exit_code\":0", "\"exit_code\":0.0");
+    let notation = String::from_utf8(bytes).unwrap().replace(
+        "\"exit_code\":0",
+        &format!("\"exit_code\":0.{}e0", "0".repeat(128 * 1024)),
+    );
     std::fs::write(dir.join("previous/result.json"), notation).unwrap();
     let notation_run = execute(&dir, "out-notation", Some("previous"), &ASKS);
     let notation_result = checked(&dir, &notation_run, 0, true);
     assert_eq!(value(&notation_result), "2");
     assert!(warnings(&notation_result).is_empty());
+}
+
+#[test]
+fn reuse_rejects_root_shapes_that_cannot_match_an_evaluation() {
+    let dir = setup("reuse-root-shape");
+    let previous = execute(&dir, "previous", None, &ASKS);
+    let before = result_json(&dir, &previous);
+    for (field, value, message) in [
+        ("nodes", Json::obj([]), "expected an array"),
+        ("status", Json::str("interrupted"), "cannot verify status"),
+        ("answers", Json::str("invalid"), "cannot verify answers"),
+        ("issues", Json::str("invalid"), "cannot verify issues"),
+    ] {
+        let mut candidate = owned(&before);
+        *field_mut(&mut candidate, field) = value;
+        std::fs::write(dir.join("previous/result.json"), candidate.canonical()).unwrap();
+        let reused = execute(&dir, field, Some("previous"), &ASKS);
+        let result = checked(&dir, &reused, 0, false);
+        assert_eq!(warnings(&result).len(), 1);
+        assert!(s(get(&warnings(&result)[0], "message")).contains(message));
+        for name in ["answers", "nodes", "issues"] {
+            assert_eq!(get(&before, name), get(&result, name));
+        }
+    }
 }
 
 #[test]
