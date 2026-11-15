@@ -398,3 +398,64 @@ fn direct_completion_uses_the_subject_coordinate_in_both_indexes() {
     check_completion_with_values::<Checked>(&snapshots, definitions, &candidate, &quiet()).unwrap();
     check_valuation_with_values::<Checked>(&snapshots, definitions, &candidate, &quiet()).unwrap();
 }
+
+#[test]
+fn direct_valuation_checks_replacement_without_reading_the_original_map() {
+    use archsig_common::{control::CheckFailure, issue::Issue, names::QualifiedName};
+    use archsig_input::archmap::{
+        Field, FieldAssignment, Snapshot, Subject, check_valuation_with_values, value::Value,
+    };
+
+    let result = example(8);
+    let input = result.prepared.inputs();
+    let subject = |id: &str, ty: &str, fields| Subject {
+        id: id.into(),
+        snapshot: "v".into(),
+        ty: QualifiedName::parse(format!("MapFields.{ty}")),
+        origin: "v".into(),
+        fields,
+        pointer: format!("/subjects/{id}"),
+    };
+    let reference = |id: &str| Value::Ref {
+        snapshot: "v".into(),
+        subject: id.into(),
+    };
+    let snapshots = [Snapshot {
+        id: "v".into(),
+        origin: "v".into(),
+        subjects: vec![
+            subject("k", "Key", vec![]),
+            subject("i", "Image", vec![]),
+            subject(
+                "h",
+                "Holder",
+                vec![Field {
+                    name: QualifiedName::parse("MapFields.Holder.plain".into()),
+                    ty: Type::Map(
+                        Box::new(Type::Ref("MapFields.Key".into())),
+                        Box::new(Type::Ref("MapFields.Image".into())),
+                    ),
+                    slot: Slot::Known {
+                        atom: "previous".into(),
+                        origin: "v".into(),
+                        pointer: "/previous/table".into(),
+                        value: Value::Map(vec![(reference("unregistered"), reference("i"))]),
+                    },
+                }],
+            ),
+        ],
+    }];
+    let candidate = [FieldAssignment {
+        snapshot: "v".into(),
+        subject: "h".into(),
+        field: "MapFields.Holder.plain".into(),
+        value: fixture::table("v", "k", "i"),
+    }];
+    check_valuation_with_values::<CheckFailure<Box<Issue>>>(
+        &snapshots,
+        input.definitions(),
+        &candidate,
+        &quiet(),
+    )
+    .unwrap();
+}

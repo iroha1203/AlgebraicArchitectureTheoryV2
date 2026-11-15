@@ -628,7 +628,7 @@ pub fn check_completion_with_values<E: InputError>(
     CompletionPreparation::index(snapshots, definitions, || {
         E::checkpoint(control, Checkpoint::Completion)
     })?
-    .check(pinned, control)
+    .check_unprepared(pinned, false, control)
 }
 
 /// 既知slotを含む内部候補も、同じ原始型・所属・Map全域性で検査する。
@@ -642,7 +642,7 @@ pub fn check_valuation_with_values<E: InputError>(
     CompletionPreparation::index(snapshots, definitions, || {
         E::checkpoint(control, Checkpoint::Completion)
     })?
-    .check_valuation(pinned, control)
+    .check_unprepared(pinned, true, control)
 }
 
 impl<'a> CompletionPreparation<'a> {
@@ -693,6 +693,14 @@ impl<'a> CompletionPreparation<'a> {
         if let Some(compiled) = self.compiled.get() {
             return Ok(compiled);
         }
+        let mut compiled = self.compile_index::<E>(control)?;
+        compiled.ordered = Self::compile_conditions(&Model::<E>::new(self, &compiled, control))?;
+        Ok(self.compiled.get_or_init(|| compiled))
+    }
+
+    fn compile_index<E: InputError>(&self, control: &Control) -> Result<CompletionConstraints, E> {
+        let checkpoint = || E::checkpoint(control, Checkpoint::Completion);
+        checkpoint()?;
         let mut subjects = Vec::new();
         let mut names = HashMap::<String, HashMap<String, usize>>::new();
         let mut by_type = HashMap::<String, Vec<usize>>::new();
@@ -731,7 +739,7 @@ impl<'a> CompletionPreparation<'a> {
             }
         }
         let data_inhabited = data_inhabitation::<E>(self.definitions, &by_type, control)?;
-        let mut compiled = CompletionConstraints {
+        Ok(CompletionConstraints {
             subjects,
             names,
             by_type,
@@ -740,21 +748,28 @@ impl<'a> CompletionPreparation<'a> {
             var_index,
             ordered: Vec::new(),
             data_inhabited,
-        };
-        let m = Model::<E>::new(self, &compiled, control);
+        })
+    }
+
+    fn compile_conditions<E: InputError>(
+        m: &Model<'_, E>,
+    ) -> Result<Vec<(SlotPosition, Vec<Cons>)>, E> {
         let mut ordered = Vec::new();
-        for g in 0..compiled.subjects.len() {
+        for g in 0..m.compiled.subjects.len() {
             m.checkpoint()?;
             let subject = m.subject(g);
             for (f, field) in subject.fields.iter().enumerate() {
                 m.checkpoint()?;
+                if m.pinned.contains_key(&(g, f)) {
+                    continue;
+                }
                 let mut cons = Vec::new();
                 match &field.slot {
                     Slot::Known { value, pointer, .. } => {
-                        collect_known(&m, g, &field.ty, value, pointer, &mut cons)?;
+                        collect_known(m, g, &field.ty, value, pointer, &mut cons)?;
                     }
                     Slot::Missing => {
-                        if let Some(&v) = compiled.var_index.get(&(g, f))
+                        if let Some(&v) = m.compiled.var_index.get(&(g, f))
                             && let Type::Owned(..) = field.ty
                         {
                             let family = m.family_of(g, &field.ty)?.expect("依存参照");
@@ -765,7 +780,7 @@ impl<'a> CompletionPreparation<'a> {
                                 pointer: subject.pointer.clone(),
                             });
                         }
-                        if has_reference(&m, &field.ty)? {
+                        if has_reference(m, &field.ty)? {
                             cons.push(Cons::Inhabit {
                                 holder: g,
                                 ty: field.ty.clone(),
@@ -780,9 +795,7 @@ impl<'a> CompletionPreparation<'a> {
                 m.checkpoint()?;
             }
         }
-        m.checkpoint()?;
-        compiled.ordered = ordered;
-        Ok(self.compiled.get_or_init(|| compiled))
+        m.done(ordered)
     }
 
     /// 一つの代入を元の欠測slotへ同時に置き、補完が存在するかを検査する。
@@ -811,6 +824,30 @@ impl<'a> CompletionPreparation<'a> {
     ) -> Result<(), E> {
         let compiled = self.constraints::<E>(control)?;
         let mut m = Model::<E>::new(self, compiled, control);
+        self.pin_values(&mut m, pinned, replace_known)?;
+        Self::check_pinned(&m, &compiled.ordered)
+    }
+
+    fn check_unprepared<E: InputError>(
+        &self,
+        pinned: &[FieldAssignment],
+        replace_known: bool,
+        control: &Control,
+    ) -> Result<(), E> {
+        let compiled = self.compile_index::<E>(control)?;
+        let mut m = Model::<E>::new(self, &compiled, control);
+        // The raw Snapshot API can replace an original value before it is read.
+        self.pin_values(&mut m, pinned, replace_known)?;
+        let ordered = Self::compile_conditions(&m)?;
+        Self::check_pinned(&m, &ordered)
+    }
+
+    fn pin_values<E: InputError>(
+        &self,
+        m: &mut Model<'_, E>,
+        pinned: &[FieldAssignment],
+        replace_known: bool,
+    ) -> Result<(), E> {
         m.checkpoint()?;
         for assignment in pinned {
             m.checkpoint()?;
@@ -821,7 +858,7 @@ impl<'a> CompletionPreparation<'a> {
                     "completion value does not match the original missing slot",
                 )
             };
-            let Some(g) = compiled.position(&assignment.snapshot, &assignment.subject) else {
+            let Some(g) = m.compiled.position(&assignment.snapshot, &assignment.subject) else {
                 return Err(fail().into());
             };
             let mut selected = None;
@@ -846,18 +883,25 @@ impl<'a> CompletionPreparation<'a> {
                 self.definitions,
                 &self.roster,
                 namespace,
-                control,
+                m.control,
             )?;
             m.pinned.insert((g, f), value);
             m.checkpoint()?;
         }
+        m.done(())
+    }
+
+    fn check_pinned<E: InputError>(
+        m: &Model<'_, E>,
+        ordered: &[(SlotPosition, Vec<Cons>)],
+    ) -> Result<(), E> {
         let mut added = Vec::new();
         for (&(g, f), value) in &m.pinned {
             m.checkpoint()?;
             let subject = m.subject(g);
             let mut cons = Vec::new();
             collect_known(
-                &m,
+                m,
                 g,
                 &subject.fields[f].ty,
                 value,
@@ -868,7 +912,7 @@ impl<'a> CompletionPreparation<'a> {
                 added.push(((g, f), cons));
             }
         }
-        let mut original = compiled.ordered.iter().peekable();
+        let mut original = ordered.iter().peekable();
         let mut added = added.iter().peekable();
         let conditions = std::iter::from_fn(|| match (original.peek(), added.peek()) {
             (_, None) => original.next().map(|group| (group, true)),
@@ -894,7 +938,7 @@ impl<'a> CompletionPreparation<'a> {
                     Some(value) => value,
                     None => {
                         pending.push(condition);
-                        feasible(&m, &pending)?
+                        feasible(m, &pending)?
                     }
                 };
                 if !possible {
@@ -905,7 +949,7 @@ impl<'a> CompletionPreparation<'a> {
                             "no completion preserves known values, references, and ownership",
                         )
                         .into()),
-                        control,
+                        m.control,
                         Checkpoint::Completion,
                     );
                 }
