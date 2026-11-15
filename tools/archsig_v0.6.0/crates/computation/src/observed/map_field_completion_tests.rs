@@ -290,3 +290,172 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         matches!(check_completion_with_values::<CheckFailure<Box<archsig_common::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&quiet()),Err(CheckFailure::Input(issue)) if issue.code==archsig_common::issue::Code::InconsistentObservation)
     );
 }
+
+#[test]
+fn prepared_completion_keeps_pin_outcomes_bound_to_each_candidate_and_input() {
+    use archsig_common::control::{CheckFailure, Checkpoint, Control, Signal};
+    use archsig_common::issue::{Code, Issue};
+    use archsig_input::archmap::{CompletionPreparation, FieldAssignment};
+    type Checked = CheckFailure<Box<Issue>>;
+
+    let pin = |name, value| FieldAssignment {
+        snapshot: "v".into(),
+        subject: "h".into(),
+        field: format!("MapFields.Holder.{name}"),
+        value,
+    };
+    let empty = || pin("table", Json::Arr(vec![]));
+    let owner = |id| pin("owner", fixture::reference("v", id));
+    let input = example(4);
+    let other = example(9);
+    let control = quiet();
+    let input = input.prepared.inputs();
+    let other = other.prepared.inputs();
+    let prepared = CompletionPreparation::new(input, &control, Checkpoint::Completion).unwrap();
+    let fixed = CompletionPreparation::new(other, &control, Checkpoint::Completion).unwrap();
+
+    assert!(prepared.check::<Checked>(&[owner("A")], &control).is_ok());
+    assert!(prepared.check::<Checked>(&[empty()], &control).is_ok());
+    assert!(matches!(
+        prepared.check::<Checked>(&[owner("A"), empty()], &control),
+        Err(CheckFailure::Input(issue)) if issue.code == Code::InconsistentObservation
+    ));
+    assert!(matches!(
+        fixed.check::<Checked>(&[owner("B"), empty()], &control),
+        Err(CheckFailure::Input(issue)) if issue.code == Code::Reference
+    ));
+    use std::{cell::Cell, rc::Rc};
+    let pins = [owner("B"), empty()];
+    for warm in [false, true] {
+        let run = |stop_at| {
+            let candidate =
+                CompletionPreparation::new(input, &control, Checkpoint::Completion).unwrap();
+            if warm {
+                candidate.check::<Checked>(&pins, &control).unwrap();
+            }
+            let checkpoints = Rc::new(Cell::new(0_usize));
+            let observed = checkpoints.clone();
+            let control = Control::new(move |_| {
+                observed.set(observed.get() + 1);
+                (stop_at == Some(observed.get())).then_some(Signal::Term)
+            });
+            let result = candidate.check::<Checked>(&pins, &control);
+            candidate.check::<Checked>(&pins, &quiet()).unwrap();
+            (result, checkpoints.get())
+        };
+        let (result, checkpoints) = run(None);
+        result.unwrap();
+        for at in 1..=checkpoints {
+            assert!(
+                matches!(run(Some(at)).0, Err(CheckFailure::Stopped(Signal::Term))),
+                "warm={warm}, checkpoint={at}"
+            );
+        }
+    }
+}
+
+#[test]
+fn direct_completion_uses_the_subject_coordinate_in_both_indexes() {
+    use archsig_common::{control::CheckFailure, issue::Issue, names::QualifiedName};
+    use archsig_input::archmap::{
+        Field, FieldAssignment, Snapshot, Subject, check_completion_with_values,
+        check_valuation_with_values,
+    };
+    type Checked = CheckFailure<Box<Issue>>;
+
+    let subject = |id: &str, ty: &str, fields| Subject {
+        id: id.into(),
+        snapshot: "v".into(),
+        ty: QualifiedName::parse(format!("MapFields.{ty}")),
+        origin: "v".into(),
+        fields,
+        pointer: "/subjects".into(),
+    };
+    let snapshots = [Snapshot {
+        id: "container".into(),
+        origin: "v".into(),
+        subjects: vec![
+            subject("A", "Root", vec![]),
+            subject(
+                "k",
+                "Key",
+                vec![Field {
+                    name: QualifiedName::parse("MapFields.Key.owner".into()),
+                    ty: Type::Ref("MapFields.Root".into()),
+                    slot: Slot::Missing,
+                }],
+            ),
+        ],
+    }];
+    let candidate = [FieldAssignment {
+        snapshot: "v".into(),
+        subject: "k".into(),
+        field: "MapFields.Key.owner".into(),
+        value: fixture::reference("v", "A"),
+    }];
+    let result = example(4);
+    let definitions = result.prepared.inputs().definitions();
+    check_completion_with_values::<Checked>(&snapshots, definitions, &candidate, &quiet()).unwrap();
+    check_valuation_with_values::<Checked>(&snapshots, definitions, &candidate, &quiet()).unwrap();
+}
+
+#[test]
+fn direct_valuation_checks_replacement_without_reading_the_original_map() {
+    use archsig_common::{control::CheckFailure, issue::Issue, names::QualifiedName};
+    use archsig_input::archmap::{
+        Field, FieldAssignment, Snapshot, Subject, check_valuation_with_values, value::Value,
+    };
+
+    let result = example(8);
+    let input = result.prepared.inputs();
+    let subject = |id: &str, ty: &str, fields| Subject {
+        id: id.into(),
+        snapshot: "v".into(),
+        ty: QualifiedName::parse(format!("MapFields.{ty}")),
+        origin: "v".into(),
+        fields,
+        pointer: format!("/subjects/{id}"),
+    };
+    let reference = |id: &str| Value::Ref {
+        snapshot: "v".into(),
+        subject: id.into(),
+    };
+    let snapshots = [Snapshot {
+        id: "v".into(),
+        origin: "v".into(),
+        subjects: vec![
+            subject("k", "Key", vec![]),
+            subject("i", "Image", vec![]),
+            subject(
+                "h",
+                "Holder",
+                vec![Field {
+                    name: QualifiedName::parse("MapFields.Holder.plain".into()),
+                    ty: Type::Map(
+                        Box::new(Type::Ref("MapFields.Key".into())),
+                        Box::new(Type::Ref("MapFields.Image".into())),
+                    ),
+                    slot: Slot::Known {
+                        atom: "previous".into(),
+                        origin: "v".into(),
+                        pointer: "/previous/table".into(),
+                        value: Value::Map(vec![(reference("unregistered"), reference("i"))]),
+                    },
+                }],
+            ),
+        ],
+    }];
+    let candidate = [FieldAssignment {
+        snapshot: "v".into(),
+        subject: "h".into(),
+        field: "MapFields.Holder.plain".into(),
+        value: fixture::table("v", "k", "i"),
+    }];
+    check_valuation_with_values::<CheckFailure<Box<Issue>>>(
+        &snapshots,
+        input.definitions(),
+        &candidate,
+        &quiet(),
+    )
+    .unwrap();
+}

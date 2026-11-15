@@ -267,11 +267,21 @@ pub struct Roster<'a> {
     pub types: HashMap<(&'a str, &'a str), &'a str>,
 }
 
+pub(super) trait ReferenceTypes<E> {
+    fn type_of(&self, snapshot: &str, subject: &str) -> Result<Option<&str>, E>;
+}
+
+impl<E> ReferenceTypes<E> for Roster<'_> {
+    fn type_of(&self, snapshot: &str, subject: &str) -> Result<Option<&str>, E> {
+        Ok(self.types.get(&(snapshot, subject)).copied())
+    }
+}
+
 struct Reader<'a, 'b, E> {
     control: Control,
     error: std::marker::PhantomData<E>,
     definitions: &'a CheckedDefinitions,
-    roster: &'b Roster<'b>,
+    roster: &'b dyn ReferenceTypes<E>,
     /// 値を読む field が属する宣言の namespace。Term の本体の名前の解決に使う。
     namespace: &'a str,
     rebases: &'b super::schema::Rebases,
@@ -367,11 +377,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     &self.control,
                 )?;
                 let subject = as_string(&items[1], &pointer_push(ptr, "1"))?;
-                let Some(actual) = self
-                    .roster
-                    .types
-                    .get(&(snapshot.as_str(), subject.as_str()))
-                else {
+                let Some(actual) = self.roster.type_of(&snapshot, &subject)? else {
                     return Err((issue(
                         Code::Reference,
                         ptr,
@@ -379,7 +385,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     ))
                     .into());
                 };
-                if *actual != e {
+                if actual != e {
                     return Err((Box::new(Issue {
                         code: Code::Type,
                         message: format!("`{snapshot}/{subject}` is not a {e}"),
@@ -389,7 +395,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                         },
                         details: Details::Type {
                             expected: Type::Ref(e.clone()),
-                            actual: Type::Ref((*actual).to_owned()),
+                            actual: Type::Ref(actual.to_owned()),
                         },
                     }))
                     .into());
@@ -765,6 +771,17 @@ pub fn check_assignment<E: InputError>(
     ty: &Type,
     definitions: &CheckedDefinitions,
     roster: &Roster<'_>,
+    namespace: &str,
+    control: &Control,
+) -> Result<Value, E> {
+    check_assignment_for(value, ty, definitions, roster, namespace, control)
+}
+
+pub(super) fn check_assignment_for<E: InputError>(
+    value: &Json,
+    ty: &Type,
+    definitions: &CheckedDefinitions,
+    roster: &dyn ReferenceTypes<E>,
     namespace: &str,
     control: &Control,
 ) -> Result<Value, E> {

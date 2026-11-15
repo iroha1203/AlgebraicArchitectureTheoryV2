@@ -1664,6 +1664,10 @@ fn local_candidate_factory_rejects_unselected_source_and_propagates_both_signals
     let witness = local_object_witness(inputs.clone());
     fixed.select_local_object(&witness, &quiet()).unwrap();
     let assignments = [(slot("p", "quantity"), fp("2", 1))];
+    fixed
+        .try_local_primitive_valuation_from(&assignments, &quiet())
+        .unwrap()
+        .unwrap();
     let seen = Rc::new(Cell::new(0));
     let visits = seen.clone();
     let measure = Control::new(move |point| {

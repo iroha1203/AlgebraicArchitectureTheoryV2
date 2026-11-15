@@ -3,7 +3,10 @@
 
 mod canonical;
 mod complete;
-pub use complete::{FieldAssignment, check_completion_with_values, check_valuation_with_values};
+pub use complete::{
+    CompletionPreparation, FieldAssignment, check_completion_with_values,
+    check_valuation_with_values,
+};
 mod model;
 mod schema;
 pub use schema::nat_value;

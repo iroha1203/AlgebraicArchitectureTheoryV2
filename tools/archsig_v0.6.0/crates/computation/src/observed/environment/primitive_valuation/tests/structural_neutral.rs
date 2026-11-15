@@ -125,17 +125,18 @@ fn checked_scalar_and_pure_container_pins_keep_known_and_missing_admission() {
             .find(|f| Some(&f.name) == fact.field.as_ref())
             .unwrap();
         let (control, count, _) = stopping(Checkpoint::Completion, usize::MAX, None, false);
-        archsig_input::archmap::value::check_assignment::<
-            CheckFailure<Box<archsig_common::issue::Issue>>,
-        >(
-            &data::input_json(value, &quiet()).unwrap(),
-            &field.ty,
-            inputs.definitions(),
-            &Environment::new(&inputs, &quiet()).unwrap().indexes.roster,
-            "Pattern",
-            &control,
-        )
-        .unwrap();
+        Environment::new(&inputs, &quiet())
+            .unwrap()
+            .indexes
+            .completion
+            .check_assignment::<CheckFailure<Box<archsig_common::issue::Issue>>>(
+                &data::input_json(value, &quiet()).unwrap(),
+                &field.ty,
+                "Pattern",
+                &control,
+                Checkpoint::PrimitiveValuation,
+            )
+            .unwrap();
         decoding_count += count.get();
     }
     assert_eq!(
@@ -227,17 +228,17 @@ fn neutral_value_walk_handles_every_container_and_rejects_ref_map_and_term() {
         .indexes
         .field(&normal.state, "v", "p", "Pattern.Part.program")
         .unwrap();
-    let value = archsig_input::archmap::value::check_assignment::<
-        CheckFailure<Box<archsig_common::issue::Issue>>,
-    >(
-        &data::input_json(&term, &quiet()).unwrap(),
-        &field.ty,
-        inputs.definitions(),
-        &normal.indexes.roster,
-        "Pattern",
-        &quiet(),
-    )
-    .unwrap();
+    let value = normal
+        .indexes
+        .completion
+        .check_assignment::<CheckFailure<Box<archsig_common::issue::Issue>>>(
+            &data::input_json(&term, &quiet()).unwrap(),
+            &field.ty,
+            "Pattern",
+            &quiet(),
+            Checkpoint::PrimitiveValuation,
+        )
+        .unwrap();
     assert!(!structural_neutral_value(&value, &quiet()).unwrap());
 }
 

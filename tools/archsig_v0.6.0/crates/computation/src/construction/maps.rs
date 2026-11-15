@@ -847,6 +847,7 @@ fn typed_reference_constraints_violation(
         check(control)?;
         target_shapes.push(reference_shape(target, &BTreeMap::new(), control)?);
     }
+    let mut completion = None;
     let mut positions = vec![0; variables.len()];
     loop {
         check(control)?;
@@ -950,14 +951,18 @@ fn typed_reference_constraints_violation(
                 });
             }
             use archsig_common::control::CheckFailure;
-            match archsig_input::archmap::check_completion_with_values::<
-                CheckFailure<Box<archsig_common::issue::Issue>>,
-            >(
-                &inputs.archmap().snapshots(),
-                inputs.definitions(),
-                &assignments,
-                control,
-            ) {
+            if completion.is_none() {
+                completion = Some(archsig_input::archmap::CompletionPreparation::new(
+                    inputs,
+                    control,
+                    archsig_common::control::Checkpoint::Completion,
+                )?);
+            }
+            match completion
+                .as_ref()
+                .expect("prepared matching trial")
+                .check::<CheckFailure<Box<archsig_common::issue::Issue>>>(&assignments, control)
+            {
                 Ok(()) => return Ok(false),
                 Err(CheckFailure::Input(issue))
                     if issue.code == archsig_common::issue::Code::InconsistentObservation => {}

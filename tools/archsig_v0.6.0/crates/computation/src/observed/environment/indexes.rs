@@ -1,6 +1,7 @@
 //! 検査済み入力から構築する索引と固定した評価入力。
 use super::*;
 use archsig_common::internal::InternalError;
+use archsig_input::archmap::CompletionPreparation;
 use std::collections::HashMap;
 
 /// 候補値を元入力で読むか、選択対象への明示変更として読むか。
@@ -16,7 +17,7 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) object_instance: Option<&'a crate::construction::readings::ObjectInstance>,
     pub(super) object_values: Option<&'a crate::observed::object_view_family::FiniteViewAssignment>,
     pub(super) original_requests: Option<&'a [Request]>,
-    fixed: std::sync::Arc<FixedInputIndexes<'a>>,
+    fixed: std::rc::Rc<FixedInputIndexes<'a>>,
     // 検査済み入力の Map 値を入力内の値ごとに共有する。
     observed_maps: data::InputMapCache,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
@@ -38,7 +39,7 @@ pub(crate) struct FixedInputIndexes<'a> {
     pub(super) atoms: HashMap<(&'a str, &'a str), Fact>,
     pub(super) modes: BTreeMap<String, &'static str>,
     pub(super) snapshot_origins: BTreeMap<String, String>,
-    pub(super) roster: archsig_input::archmap::value::Roster<'a>,
+    pub(super) completion: CompletionPreparation<'a>,
 }
 impl<'a> std::ops::Deref for InputIndexes<'a> {
     type Target = FixedInputIndexes<'a>;
@@ -206,7 +207,6 @@ impl<'a> InputIndexes<'a> {
         let mut atoms = HashMap::new();
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();
-        let mut roster_types = HashMap::new();
         for origin in inputs.archmap().origins() {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             modes.insert(origin.id.clone(), origin.mode.wire());
@@ -223,7 +223,6 @@ impl<'a> InputIndexes<'a> {
                     .or_default()
                     .push((position, s));
                 subjects.insert((s.snapshot.as_str(), s.id.as_str()), s);
-                roster_types.insert((s.snapshot.as_str(), s.id.as_str()), s.ty.as_str());
                 for field in &s.fields {
                     control.checkpoint(Checkpoint::FiniteIteration)?;
                     fields.insert(
@@ -254,16 +253,18 @@ impl<'a> InputIndexes<'a> {
             object: None,
             object_instance: None,
             object_values: None,
-            fixed: std::sync::Arc::new(FixedInputIndexes {
+            fixed: std::rc::Rc::new(FixedInputIndexes {
                 subjects,
                 subjects_by_type,
                 fields,
                 atoms,
                 modes,
                 snapshot_origins,
-                roster: archsig_input::archmap::value::Roster {
-                    types: roster_types,
-                },
+                completion: CompletionPreparation::new(
+                    inputs,
+                    control,
+                    Checkpoint::FiniteIteration,
+                )?,
             }),
             observed_maps: RefCell::default(),
             original_requests: None,

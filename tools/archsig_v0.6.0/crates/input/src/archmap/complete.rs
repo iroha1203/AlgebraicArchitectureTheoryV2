@@ -63,18 +63,66 @@ impl Cons {
     }
 }
 
-struct Model<'a, E> {
-    subjects: Vec<&'a Subject>,
-    index: HashMap<(&'a str, &'a str), usize>,
-    by_type: HashMap<&'a str, Vec<usize>>,
-    owner_field: Vec<Option<usize>>,
-    /// 欠測した参照 slot ごとの変数 (subject, field) と候補。
-    vars: Vec<(usize, usize, Vec<usize>)>,
-    var_index: HashMap<(usize, usize), usize>,
-    pinned: HashMap<(usize, usize), Value>,
-    data_inhabited: HashMap<String, bool>,
+type SlotPosition = (usize, usize);
+// Only the variables visited by the current search get working entries.
+type Assignment = HashMap<usize, usize>;
+
+/// 元の snapshot と型定義に借用で結び付いた、逐次候補検査の不変部分。
+pub struct CompletionPreparation<'a> {
+    snapshots: &'a [Snapshot],
     definitions: &'a CheckedDefinitions,
-    control: Control,
+    references: std::cell::OnceCell<ReferenceIndex>,
+    compiled: std::cell::OnceCell<CompletionConstraints>,
+}
+
+#[derive(Default)]
+struct ReferenceIndex {
+    subjects: Vec<(usize, usize)>,
+    names: HashMap<String, HashMap<String, usize>>,
+}
+impl ReferenceIndex {
+    fn position(&self, snapshot: &str, subject: &str) -> Option<usize> {
+        self.names.get(snapshot)?.get(subject).copied()
+    }
+
+    fn subject<'a>(&self, snapshots: &'a [Snapshot], position: usize) -> &'a Subject {
+        let (snapshot, subject) = self.subjects[position];
+        &snapshots[snapshot].subjects[subject]
+    }
+}
+
+struct AssignmentReferences<'a> {
+    prepared: &'a CompletionPreparation<'a>,
+    control: &'a Control,
+    point: Checkpoint,
+}
+impl<E: InputError> value::ReferenceTypes<E> for AssignmentReferences<'_> {
+    fn type_of(&self, snapshot: &str, subject: &str) -> Result<Option<&str>, E> {
+        let index = self
+            .prepared
+            .reference_index::<E>(self.control, self.point)?;
+        Ok(index
+            .position(snapshot, subject)
+            .map(|g| index.subject(self.prepared.snapshots, g).ty.as_str()))
+    }
+}
+
+struct CompletionConstraints {
+    by_type: HashMap<String, Vec<usize>>,
+    owner_field: Vec<Option<usize>>,
+    /// 欠測参照変数の元slot。
+    variables: Vec<SlotPosition>,
+    var_index: HashMap<SlotPosition, usize>,
+    ordered: Vec<(SlotPosition, Cons)>,
+    data_inhabited: HashMap<String, bool>,
+}
+
+struct Model<'a, E> {
+    prepared: &'a CompletionPreparation<'a>,
+    references: &'a ReferenceIndex,
+    compiled: &'a CompletionConstraints,
+    pinned: BTreeMap<SlotPosition, Value>,
+    control: &'a Control,
     error: std::marker::PhantomData<fn() -> E>,
 }
 
@@ -95,8 +143,34 @@ fn or3(a: Option<bool>, b: Option<bool>) -> Option<bool> {
 }
 
 impl<'a, E: InputError> Model<'a, E> {
+    fn new(
+        prepared: &'a CompletionPreparation<'a>,
+        references: &'a ReferenceIndex,
+        compiled: &'a CompletionConstraints,
+        control: &'a Control,
+    ) -> Self {
+        Self {
+            prepared,
+            references,
+            compiled,
+            pinned: BTreeMap::new(),
+            control,
+            error: std::marker::PhantomData,
+        }
+    }
+
+    fn subject(&self, position: usize) -> &'a Subject {
+        self.references.subject(self.prepared.snapshots, position)
+    }
+
+    fn position(&self, snapshot: &str, subject: &str) -> usize {
+        self.references
+            .position(snapshot, subject)
+            .expect("元表で型検査済みの参照")
+    }
+
     fn checkpoint(&self) -> Result<(), E> {
-        E::checkpoint(&self.control, Checkpoint::Completion)
+        E::checkpoint(self.control, Checkpoint::Completion)
     }
 
     /// 各意味検査の結果を採用する前にも、共有された停止を確認する。
@@ -107,7 +181,7 @@ impl<'a, E: InputError> Model<'a, E> {
 
     fn field_index(&self, g: usize, name: &str) -> Result<usize, E> {
         self.checkpoint()?;
-        for (i, f) in self.subjects[g].fields.iter().enumerate() {
+        for (i, f) in self.subject(g).fields.iter().enumerate() {
             self.checkpoint()?;
             if f.name.short() == name {
                 return self.done(i);
@@ -123,30 +197,34 @@ impl<'a, E: InputError> Model<'a, E> {
             return self.done(
                 value
                     .as_ref()
-                    .map(|(snapshot, subject)| RefSrc::Known(self.index[&(snapshot, subject)])),
+                    .map(|(snapshot, subject)| RefSrc::Known(self.position(snapshot, subject))),
             );
         }
-        let out = match &self.subjects[g].fields[f].slot {
+        let out = match &self.subject(g).fields[f].slot {
             Slot::Known { value, .. } => value
                 .as_ref()
-                .map(|(s, id)| RefSrc::Known(self.index[&(s, id)])),
-            Slot::Missing => self.var_index.get(&(g, f)).map(|v| RefSrc::Var(*v)),
+                .map(|(s, id)| RefSrc::Known(self.position(s, id))),
+            Slot::Missing => self
+                .compiled
+                .var_index
+                .get(&(g, f))
+                .map(|v| RefSrc::Var(*v)),
         };
         self.done(out)
     }
 
-    fn resolve(&self, r: RefSrc, assign: &[Option<usize>]) -> Result<Option<usize>, E> {
+    fn resolve(&self, r: RefSrc, assign: &Assignment) -> Result<Option<usize>, E> {
         self.checkpoint()?;
         self.done(match r {
             RefSrc::Known(g) => Some(g),
-            RefSrc::Var(v) => assign[v],
+            RefSrc::Var(v) => assign.get(&v).copied(),
         })
     }
 
     /// x の所属先。所属を持たない型は Some(None)、未定は None。
-    fn owner(&self, x: usize, assign: &[Option<usize>]) -> Result<Option<Option<usize>>, E> {
+    fn owner(&self, x: usize, assign: &Assignment) -> Result<Option<Option<usize>>, E> {
         self.checkpoint()?;
-        let out = match self.owner_field[x] {
+        let out = match self.compiled.owner_field[x] {
             None => Some(None),
             Some(f) => match self.slot_ref(x, f)? {
                 Some(r) => self.resolve(r, assign)?.map(Some),
@@ -161,7 +239,7 @@ impl<'a, E: InputError> Model<'a, E> {
         &self,
         holder: usize,
         family: &Family,
-        assign: &[Option<usize>],
+        assign: &Assignment,
     ) -> Result<Option<Option<usize>>, E> {
         self.checkpoint()?;
         let out = match family {
@@ -180,19 +258,19 @@ impl<'a, E: InputError> Model<'a, E> {
         x: usize,
         holder: usize,
         family: &Family,
-        assign: &[Option<usize>],
+        assign: &Assignment,
     ) -> Result<Option<bool>, E> {
         self.checkpoint()?;
         let out = match family {
-            Family::All(e) => Some(self.subjects[x].ty == *e),
+            Family::All(e) => Some(self.subject(x).ty == *e),
             Family::Owned { entity, .. } => {
-                if self.subjects[x].ty != *entity {
+                if self.subject(x).ty != *entity {
                     return self.done(Some(false));
                 }
                 let Some(Some(root)) = self.family_root(holder, family, assign)? else {
                     return self.done(None);
                 };
-                if self.subjects[x].snapshot != self.subjects[root].snapshot {
+                if self.subject(x).snapshot != self.subject(root).snapshot {
                     return self.done(Some(false));
                 }
                 self.owner(x, assign)?.map(|owner| owner == Some(root))
@@ -206,14 +284,19 @@ impl<'a, E: InputError> Model<'a, E> {
         let e = match family {
             Family::All(e) | Family::Owned { entity: e, .. } => e,
         };
-        self.done(self.by_type.get(e.as_str()).map_or(&[], Vec::as_slice))
+        self.done(
+            self.compiled
+                .by_type
+                .get(e.as_str())
+                .map_or(&[], Vec::as_slice),
+        )
     }
 
     fn nonempty(
         &self,
         holder: usize,
         family: &Family,
-        assign: &[Option<usize>],
+        assign: &Assignment,
     ) -> Result<Option<bool>, E> {
         self.checkpoint()?;
         let mut out = Some(false);
@@ -243,12 +326,7 @@ impl<'a, E: InputError> Model<'a, E> {
         self.done(out)
     }
 
-    fn inhabited(
-        &self,
-        holder: usize,
-        ty: &Type,
-        assign: &[Option<usize>],
-    ) -> Result<Option<bool>, E> {
+    fn inhabited(&self, holder: usize, ty: &Type, assign: &Assignment) -> Result<Option<bool>, E> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.checkpoint()?;
             let out = match ty {
@@ -279,7 +357,7 @@ impl<'a, E: InputError> Model<'a, E> {
                     }
                     acc
                 }
-                Type::Data(d) => Some(self.data_inhabited.get(d).copied().unwrap_or(true)),
+                Type::Data(d) => Some(self.compiled.data_inhabited.get(d).copied().unwrap_or(true)),
                 _ => Some(true),
             };
             self.done(out)
@@ -304,7 +382,7 @@ impl<'a, E: InputError> Model<'a, E> {
 
     fn owner_var(&self, x: usize, out: &mut Vec<usize>) -> Result<(), E> {
         self.checkpoint()?;
-        if let Some(f) = self.owner_field[x]
+        if let Some(f) = self.compiled.owner_field[x]
             && let Some(RefSrc::Var(v)) = self.slot_ref(x, f)?
         {
             out.push(v);
@@ -371,7 +449,7 @@ impl<'a, E: InputError> Model<'a, E> {
         self.done(out)
     }
 
-    fn eval(&self, c: &Cons, assign: &[Option<usize>]) -> Result<Option<bool>, E> {
+    fn eval(&self, c: &Cons, assign: &Assignment) -> Result<Option<bool>, E> {
         self.checkpoint()?;
         let out = match c {
             Cons::Member {
@@ -443,7 +521,7 @@ fn collect_known_inner<E: InputError>(
     m.checkpoint()?;
     match (ty, v) {
         (Type::Owned(..), Value::Ref { snapshot, subject }) => {
-            let target = RefSrc::Known(m.index[&(snapshot.as_str(), subject.as_str())]);
+            let target = RefSrc::Known(m.position(snapshot, subject));
             let family = m.family_of(holder, ty)?.expect("依存参照");
             out.push(Cons::Member {
                 holder,
@@ -471,7 +549,7 @@ fn collect_known_inner<E: InputError>(
         }
         (Type::Data(d), Value::Data { constructor, args }) => {
             let PrimitiveSignature::Data { constructors } =
-                &m.definitions.declarations[d].signature
+                &m.prepared.definitions.declarations[d].signature
             else {
                 unreachable!("data 型は Law の宣言")
             };
@@ -498,7 +576,7 @@ fn collect_known_inner<E: InputError>(
             for (k, _) in pairs {
                 m.checkpoint()?;
                 let (s, id) = k.as_ref().expect("Map key must be a reference");
-                keys.push(m.index[&(s, id)]);
+                keys.push(m.position(s, id));
                 m.checkpoint()?;
             }
             out.push(Cons::Cover {
@@ -571,7 +649,8 @@ pub fn check_completion_with_values<E: InputError>(
     pinned: &[FieldAssignment],
     control: &Control,
 ) -> Result<(), E> {
-    check_valuation_inner::<E>(snapshots, definitions, pinned, false, control)
+    CompletionPreparation::from_snapshots(snapshots, definitions)
+        .check_unprepared(pinned, false, control)
 }
 
 /// 既知slotを含む内部候補も、同じ原始型・所属・Map全域性で検査する。
@@ -582,208 +661,365 @@ pub fn check_valuation_with_values<E: InputError>(
     pinned: &[FieldAssignment],
     control: &Control,
 ) -> Result<(), E> {
-    check_valuation_inner::<E>(snapshots, definitions, pinned, true, control)
+    CompletionPreparation::from_snapshots(snapshots, definitions)
+        .check_unprepared(pinned, true, control)
 }
 
-fn check_valuation_inner<E: InputError>(
-    snapshots: &[Snapshot],
-    definitions: &CheckedDefinitions,
-    pinned: &[FieldAssignment],
-    replace_known: bool,
-    control: &Control,
-) -> Result<(), E> {
-    E::checkpoint(control, Checkpoint::Completion)?;
-    let mut subjects = Vec::new();
-    for snapshot in snapshots {
-        E::checkpoint(control, Checkpoint::Completion)?;
-        for subject in &snapshot.subjects {
-            E::checkpoint(control, Checkpoint::Completion)?;
-            subjects.push(subject);
-            E::checkpoint(control, Checkpoint::Completion)?;
-        }
-        E::checkpoint(control, Checkpoint::Completion)?;
+impl<'a> CompletionPreparation<'a> {
+    /// 元入力の型付き参照索引を共有し、補完に特有の制約は初回に組み立てる。
+    pub fn new(
+        inputs: &'a crate::input::CheckedInputs,
+        control: &Control,
+        point: Checkpoint,
+    ) -> Result<Self, archsig_common::control::Signal> {
+        control.checkpoint(point)?;
+        Ok(Self::from_snapshots(
+            inputs.archmap().snapshots(),
+            inputs.definitions(),
+        ))
     }
-    let mut index = HashMap::new();
-    let mut by_type: HashMap<&str, Vec<usize>> = HashMap::new();
-    for (g, s) in subjects.iter().enumerate() {
-        E::checkpoint(control, Checkpoint::Completion)?;
-        index.insert((s.snapshot.as_str(), s.id.as_str()), g);
-        by_type.entry(s.ty.as_str()).or_default().push(g);
-        E::checkpoint(control, Checkpoint::Completion)?;
-    }
-    let roster = value::Roster {
-        types: subjects
-            .iter()
-            .map(|s| ((s.snapshot.as_str(), s.id.as_str()), s.ty.as_str()))
-            .collect(),
-    };
-    let mut owner_field = Vec::new();
-    for s in &subjects {
-        E::checkpoint(control, Checkpoint::Completion)?;
-        let mut owner = None;
-        if matches!(
-            definitions.declarations[s.ty.as_str()].signature,
-            PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. }
-        ) {
-            for (f, field) in s.fields.iter().enumerate() {
-                E::checkpoint(control, Checkpoint::Completion)?;
-                if field.name.is_owner() {
-                    owner = Some(f);
-                    break;
-                }
-                E::checkpoint(control, Checkpoint::Completion)?;
-            }
-        }
-        owner_field.push(owner);
-        E::checkpoint(control, Checkpoint::Completion)?;
-    }
-    let data_inhabited = data_inhabitation::<E>(definitions, &by_type, control)?;
-    let mut m = Model::<E> {
-        subjects,
-        index,
-        by_type,
-        owner_field,
-        vars: Vec::new(),
-        var_index: HashMap::new(),
-        pinned: HashMap::new(),
-        data_inhabited,
-        definitions,
-        control: control.clone(),
-        error: std::marker::PhantomData,
-    };
-    for assignment in pinned {
-        m.checkpoint()?;
-        let fail = || {
-            issue(
-                Code::Reference,
-                "",
-                "completion value does not match the original missing slot",
-            )
-        };
-        let Some(&g) = m
-            .index
-            .get(&(assignment.snapshot.as_str(), assignment.subject.as_str()))
-        else {
-            return Err(fail().into());
-        };
-        let mut selected = None;
-        for (index, field) in m.subjects[g].fields.iter().enumerate() {
-            m.checkpoint()?;
-            if field.name == assignment.field {
-                selected = Some((index, field));
-                break;
-            }
-            m.checkpoint()?;
-        }
-        let Some((f, field)) = selected else {
-            return Err(fail().into());
-        };
-        if (!replace_known && field.slot != Slot::Missing) || m.pinned.contains_key(&(g, f)) {
-            return Err(fail().into());
-        }
-        let namespace = m.subjects[g].ty.namespace();
-        let value = value::check_assignment::<E>(
-            &assignment.value,
-            &field.ty,
-            definitions,
-            &roster,
-            namespace,
+
+    /// Check an encoded primitive candidate against this input's registered subjects.
+    pub fn check_assignment<E: InputError>(
+        &self,
+        value: &archsig_common::canonical::Json,
+        ty: &Type,
+        namespace: &str,
+        control: &Control,
+        point: Checkpoint,
+    ) -> Result<Value, E> {
+        E::checkpoint(control, point)?;
+        let roster = AssignmentReferences {
+            prepared: self,
             control,
-        )?;
-        m.pinned.insert((g, f), value);
-        m.checkpoint()?;
+            point,
+        };
+        value::check_assignment_for(value, ty, self.definitions, &roster, namespace, control)
     }
-    for g in 0..m.subjects.len() {
-        m.checkpoint()?;
-        for (f, field) in m.subjects[g].fields.iter().enumerate() {
-            m.checkpoint()?;
-            if field.slot == Slot::Missing
-                && !m.pinned.contains_key(&(g, f))
-                && let Type::Ref(e) | Type::Owned(e, _) = &field.ty
-            {
-                let domain = m.by_type.get(e.as_str()).cloned().unwrap_or_default();
-                m.var_index.insert((g, f), m.vars.len());
-                m.vars.push((g, f, domain));
-            }
-            m.checkpoint()?;
+
+    fn from_snapshots(snapshots: &'a [Snapshot], definitions: &'a CheckedDefinitions) -> Self {
+        Self {
+            snapshots,
+            definitions,
+            references: std::cell::OnceCell::new(),
+            compiled: std::cell::OnceCell::new(),
         }
-        m.checkpoint()?;
     }
-    let mut cons = Vec::new();
-    for g in 0..m.subjects.len() {
-        m.checkpoint()?;
-        let s = m.subjects[g];
-        for (f, field) in s.fields.iter().enumerate() {
-            m.checkpoint()?;
-            if let Some(value) = m.pinned.get(&(g, f)) {
-                collect_known(&m, g, &field.ty, value, &s.pointer, &mut cons)?;
-                m.checkpoint()?;
-                continue;
+
+    fn reference_index<E: InputError>(
+        &self,
+        control: &Control,
+        point: Checkpoint,
+    ) -> Result<&ReferenceIndex, E> {
+        let checkpoint = || E::checkpoint(control, point);
+        checkpoint()?;
+        if let Some(index) = self.references.get() {
+            return Ok(index);
+        }
+        let mut index = ReferenceIndex::default();
+        for (snapshot_index, snapshot) in self.snapshots.iter().enumerate() {
+            checkpoint()?;
+            for (subject_index, subject) in snapshot.subjects.iter().enumerate() {
+                checkpoint()?;
+                let g = index.subjects.len();
+                index.subjects.push((snapshot_index, subject_index));
+                index
+                    .names
+                    .entry(subject.snapshot.clone())
+                    .or_default()
+                    .insert(subject.id.clone(), g);
             }
-            match &field.slot {
-                Slot::Known { value, pointer, .. } => {
-                    collect_known(&m, g, &field.ty, value, pointer, &mut cons)?
+        }
+        checkpoint()?;
+        Ok(self.references.get_or_init(|| index))
+    }
+
+    fn constraints<E: InputError>(
+        &self,
+        references: &ReferenceIndex,
+        control: &Control,
+    ) -> Result<&CompletionConstraints, E> {
+        let checkpoint = || E::checkpoint(control, Checkpoint::Completion);
+        checkpoint()?;
+        if let Some(compiled) = self.compiled.get() {
+            return Ok(compiled);
+        }
+        let mut compiled = self.compile_index::<E>(references, control)?;
+        let mut ordered = Vec::new();
+        Self::compile_conditions(
+            &Model::<E>::new(self, references, &compiled, control),
+            |slot, condition| {
+                ordered.push((slot, condition));
+            },
+        )?;
+        compiled.ordered = ordered;
+        Ok(self.compiled.get_or_init(|| compiled))
+    }
+
+    fn compile_index<E: InputError>(
+        &self,
+        references: &ReferenceIndex,
+        control: &Control,
+    ) -> Result<CompletionConstraints, E> {
+        let checkpoint = || E::checkpoint(control, Checkpoint::Completion);
+        checkpoint()?;
+        let mut by_type = HashMap::<String, Vec<usize>>::new();
+        let mut owner_field = Vec::new();
+        let mut variables = Vec::new();
+        let mut var_index = HashMap::new();
+        for g in 0..references.subjects.len() {
+            checkpoint()?;
+            let subject = references.subject(self.snapshots, g);
+            by_type.entry(subject.ty.to_string()).or_default().push(g);
+            let has_owner = matches!(
+                self.definitions.declarations[subject.ty.as_str()].signature,
+                PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. }
+            );
+            let mut owner = None;
+            for (f, field) in subject.fields.iter().enumerate() {
+                checkpoint()?;
+                if has_owner && owner.is_none() && field.name.is_owner() {
+                    owner = Some(f);
                 }
-                Slot::Missing => {
-                    let pointer = s.pointer.clone();
-                    if let Some(&v) = m.var_index.get(&(g, f)) {
-                        if let Type::Owned(..) = field.ty {
-                            let family = m.family_of(g, &field.ty)?.expect("依存参照");
-                            cons.push(Cons::Member {
-                                holder: g,
-                                family,
-                                target: RefSrc::Var(v),
-                                pointer: pointer.clone(),
-                            });
+                if field.slot == Slot::Missing && matches!(field.ty, Type::Ref(_) | Type::Owned(..))
+                {
+                    var_index.insert((g, f), variables.len());
+                    variables.push((g, f));
+                }
+            }
+            owner_field.push(owner);
+        }
+        let data_inhabited = data_inhabitation::<E>(self.definitions, &by_type, control)?;
+        Ok(CompletionConstraints {
+            by_type,
+            owner_field,
+            variables,
+            var_index,
+            ordered: Vec::new(),
+            data_inhabited,
+        })
+    }
+
+    fn compile_conditions<E: InputError>(
+        m: &Model<'_, E>,
+        mut record: impl FnMut(SlotPosition, Cons),
+    ) -> Result<(), E> {
+        let mut cons = Vec::new();
+        for g in 0..m.references.subjects.len() {
+            m.checkpoint()?;
+            let subject = m.subject(g);
+            for (f, field) in subject.fields.iter().enumerate() {
+                m.checkpoint()?;
+                if let Some(value) = m.pinned.get(&(g, f)) {
+                    collect_known(m, g, &field.ty, value, &subject.pointer, &mut cons)?;
+                } else {
+                    match &field.slot {
+                        Slot::Known { value, pointer, .. } => {
+                            collect_known(m, g, &field.ty, value, pointer, &mut cons)?;
                         }
-                        cons.push(Cons::Inhabit {
-                            holder: g,
-                            ty: field.ty.clone(),
-                            pointer,
-                        });
-                    } else if has_reference(&m, &field.ty)? {
-                        cons.push(Cons::Inhabit {
-                            holder: g,
-                            ty: field.ty.clone(),
-                            pointer,
-                        });
+                        Slot::Missing => {
+                            if let Some(&v) = m.compiled.var_index.get(&(g, f))
+                                && let Type::Owned(..) = field.ty
+                            {
+                                let family = m.family_of(g, &field.ty)?.expect("依存参照");
+                                cons.push(Cons::Member {
+                                    holder: g,
+                                    family,
+                                    target: RefSrc::Var(v),
+                                    pointer: subject.pointer.clone(),
+                                });
+                            }
+                            if has_reference(m, &field.ty)? {
+                                cons.push(Cons::Inhabit {
+                                    holder: g,
+                                    ty: field.ty.clone(),
+                                    pointer: subject.pointer.clone(),
+                                });
+                            }
+                        }
                     }
                 }
+                for condition in cons.drain(..) {
+                    record((g, f), condition);
+                }
+                m.checkpoint()?;
+            }
+        }
+        m.done(())
+    }
+
+    /// 一つの代入を元の欠測slotへ同時に置き、補完が存在するかを検査する。
+    pub fn check<E: InputError>(
+        &self,
+        pinned: &[FieldAssignment],
+        control: &Control,
+    ) -> Result<(), E> {
+        self.check_inner(pinned, false, control)
+    }
+
+    /// 既知slotを変更する内部の原始valuationを同じ元制約で検査する。
+    pub fn check_valuation<E: InputError>(
+        &self,
+        pinned: &[FieldAssignment],
+        control: &Control,
+    ) -> Result<(), E> {
+        self.check_inner(pinned, true, control)
+    }
+
+    fn check_inner<E: InputError>(
+        &self,
+        pinned: &[FieldAssignment],
+        replace_known: bool,
+        control: &Control,
+    ) -> Result<(), E> {
+        let references = self.reference_index::<E>(control, Checkpoint::Completion)?;
+        let compiled = self.constraints::<E>(references, control)?;
+        let mut m = Model::<E>::new(self, references, compiled, control);
+        self.pin_values(&mut m, pinned, replace_known)?;
+        Self::check_pinned(&m, &compiled.ordered)
+    }
+
+    fn check_unprepared<E: InputError>(
+        &self,
+        pinned: &[FieldAssignment],
+        replace_known: bool,
+        control: &Control,
+    ) -> Result<(), E> {
+        let references = self.reference_index::<E>(control, Checkpoint::Completion)?;
+        let compiled = self.compile_index::<E>(references, control)?;
+        let mut m = Model::<E>::new(self, references, &compiled, control);
+        // The raw Snapshot API can replace an original value before it is read.
+        self.pin_values(&mut m, pinned, replace_known)?;
+        let mut ordered = Vec::new();
+        Self::compile_conditions(&m, |_, condition| ordered.push(condition))?;
+        Self::check_conditions(&m, ordered.iter().map(|condition| (None, condition)))
+    }
+
+    fn pin_values<E: InputError>(
+        &self,
+        m: &mut Model<'_, E>,
+        pinned: &[FieldAssignment],
+        replace_known: bool,
+    ) -> Result<(), E> {
+        m.checkpoint()?;
+        if pinned.is_empty() {
+            return Ok(());
+        }
+        for assignment in pinned {
+            m.checkpoint()?;
+            let fail = || {
+                issue(
+                    Code::Reference,
+                    "",
+                    "completion value does not match the original missing slot",
+                )
+            };
+            let Some(g) = m
+                .references
+                .position(&assignment.snapshot, &assignment.subject)
+            else {
+                return Err(fail().into());
+            };
+            let mut selected = None;
+            for (index, field) in m.subject(g).fields.iter().enumerate() {
+                m.checkpoint()?;
+                if field.name == assignment.field {
+                    selected = Some((index, field));
+                    break;
+                }
+                m.checkpoint()?;
+            }
+            let Some((f, field)) = selected else {
+                return Err(fail().into());
+            };
+            if (!replace_known && field.slot != Slot::Missing) || m.pinned.contains_key(&(g, f)) {
+                return Err(fail().into());
+            }
+            let namespace = m.subject(g).ty.namespace();
+            let value = self.check_assignment::<E>(
+                &assignment.value,
+                &field.ty,
+                namespace,
+                m.control,
+                Checkpoint::Completion,
+            )?;
+            m.pinned.insert((g, f), value);
+            m.checkpoint()?;
+        }
+        m.done(())
+    }
+
+    fn check_pinned<E: InputError>(
+        m: &Model<'_, E>,
+        ordered: &[(SlotPosition, Cons)],
+    ) -> Result<(), E> {
+        let mut added = Vec::new();
+        let mut cons = Vec::new();
+        for (&(g, f), value) in &m.pinned {
+            m.checkpoint()?;
+            let subject = m.subject(g);
+            collect_known(
+                m,
+                g,
+                &subject.fields[f].ty,
+                value,
+                &subject.pointer,
+                &mut cons,
+            )?;
+            added.extend(cons.drain(..).map(|condition| ((g, f), condition)));
+        }
+        let mut original = ordered.iter().peekable();
+        let mut added = added.iter().peekable();
+        let conditions = std::iter::from_fn(|| match (original.peek(), added.peek()) {
+            (_, None) => original
+                .next()
+                .map(|(slot, condition)| (Some(slot), condition)),
+            (Some((slot, _)), Some((position, _))) if slot <= position => original
+                .next()
+                .map(|(slot, condition)| (Some(slot), condition)),
+            _ => added.next().map(|(_, condition)| (None, condition)),
+        });
+        Self::check_conditions(m, conditions)
+    }
+
+    fn check_conditions<'c, E: InputError>(
+        m: &Model<'_, E>,
+        conditions: impl Iterator<Item = (Option<&'c SlotPosition>, &'c Cons)>,
+    ) -> Result<(), E> {
+        // subject順・field宣言順に条件を足す。初めて補完不能になるprefixとその
+        // 最後の条件の位置を同時に確定し、停止後に原因位置を探し直さない。
+        let empty = Assignment::new();
+        let mut pending = Vec::new();
+        for (original_slot, condition) in conditions {
+            m.checkpoint()?;
+            if original_slot.is_some_and(|slot| m.pinned.contains_key(slot)) {
+                continue;
+            }
+            // 既知trueは以後の補完を制約しない。未決条件を追加したときだけ、
+            // それまでの未決prefixを探索する。既知falseも元の条件順で返す。
+            let possible = match m.eval(condition, &empty)? {
+                Some(value) => value,
+                None => {
+                    pending.push(condition);
+                    feasible(m, &pending)?
+                }
+            };
+            if !possible {
+                return E::finish(
+                    Err(issue(
+                        Code::InconsistentObservation,
+                        condition.pointer(),
+                        "no completion preserves known values, references, and ownership",
+                    )
+                    .into()),
+                    m.control,
+                    Checkpoint::Completion,
+                );
             }
             m.checkpoint()?;
         }
-        m.checkpoint()?;
+        m.done(())
     }
-    // subject順・field宣言順に条件を足す。初めて補完不能になるprefixとその
-    // 最後の条件の位置を同時に確定し、停止後に原因位置を探し直さない。
-    let empty = vec![None; m.vars.len()];
-    let mut pending = Vec::new();
-    for condition in &cons {
-        m.checkpoint()?;
-        // 既知trueは以後の補完を制約しない。未決条件を追加したときだけ、
-        // それまでの未決prefixを探索する。既知falseも元の条件順で返す。
-        let possible = match m.eval(condition, &empty)? {
-            Some(value) => value,
-            None => {
-                pending.push(condition);
-                feasible(&m, &pending)?
-            }
-        };
-        if !possible {
-            return E::finish(
-                Err(issue(
-                    Code::InconsistentObservation,
-                    condition.pointer(),
-                    "no completion preserves known values, references, and ownership",
-                )
-                .into()),
-                control,
-                Checkpoint::Completion,
-            );
-        }
-        m.checkpoint()?;
-    }
-    m.done(())
 }
 
 /// 条件と、その真偽が依存する変数の組。
@@ -793,7 +1029,7 @@ type Group<'a> = Vec<(&'a Cons, Vec<usize>)>;
 /// その組の変数だけで探す。
 fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> {
     m.checkpoint()?;
-    let empty = vec![None; m.vars.len()];
+    let empty = Assignment::new();
     let mut open: Vec<(&Cons, Vec<usize>)> = Vec::new();
     for &c in cons {
         m.checkpoint()?;
@@ -806,31 +1042,31 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> 
     }
     fn find<E: InputError>(
         m: &Model<'_, E>,
-        parent: &mut [usize],
+        parent: &mut HashMap<usize, usize>,
         mut v: usize,
     ) -> Result<usize, E> {
         m.checkpoint()?;
-        while parent[v] != v {
+        while let Some(&next) = parent.get(&v) {
             m.checkpoint()?;
-            parent[v] = parent[parent[v]];
-            v = parent[v];
-            m.checkpoint()?;
+            let Some(&grandparent) = parent.get(&next) else {
+                return m.done(next);
+            };
+            parent.insert(v, grandparent);
+            v = grandparent;
         }
         m.done(v)
     }
 
-    let mut parent = Vec::new();
-    for v in 0..m.vars.len() {
-        m.checkpoint()?;
-        parent.push(v);
-        m.checkpoint()?;
-    }
+    // 未決条件が同じ組に結ぶ変数だけを記録する。
+    let mut parent = HashMap::new();
     for (_, vs) in &open {
         m.checkpoint()?;
         for w in vs.iter().skip(1) {
             m.checkpoint()?;
             let (a, b) = (find(m, &mut parent, vs[0])?, find(m, &mut parent, *w)?);
-            parent[a] = b;
+            if a != b {
+                parent.insert(a, b);
+            }
             m.checkpoint()?;
         }
         m.checkpoint()?;
@@ -858,6 +1094,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> 
     let mut assign = empty;
     for (_, group) in &groups {
         m.checkpoint()?;
+        assign.clear();
         if !search(m, group, &mut assign)? {
             return m.done(false);
         }
@@ -871,7 +1108,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> 
 fn search<E: InputError>(
     m: &Model<'_, E>,
     cons: &[(&Cons, Vec<usize>)],
-    assign: &mut Vec<Option<usize>>,
+    assign: &mut Assignment,
 ) -> Result<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         m.checkpoint()?;
@@ -885,7 +1122,7 @@ fn search<E: InputError>(
                     let mut free = Vec::new();
                     for &v in vs {
                         m.checkpoint()?;
-                        if assign[v].is_none() {
+                        if !assign.contains_key(&v) {
                             free.push(v);
                         }
                         m.checkpoint()?;
@@ -905,9 +1142,18 @@ fn search<E: InputError>(
         };
         // 破る条件のない候補を、真に決まる条件の多い順に置く。
         let mut order: Vec<(usize, usize)> = Vec::new();
-        for (candidate, &x) in m.vars[v].2.iter().enumerate() {
+        let (g, f) = m.compiled.variables[v];
+        let (Type::Ref(entity) | Type::Owned(entity, _)) = &m.subject(g).fields[f].ty else {
+            unreachable!("欠測参照変数の元型")
+        };
+        let domain = m
+            .compiled
+            .by_type
+            .get(entity)
+            .map_or(&[][..], Vec::as_slice);
+        for (candidate, &x) in domain.iter().enumerate() {
             m.checkpoint()?;
-            assign[v] = Some(x);
+            assign.insert(v, x);
             let mut decided = 0;
             let mut broken = false;
             for (c, vs) in cons {
@@ -927,14 +1173,14 @@ fn search<E: InputError>(
             if !broken {
                 order.push((decided, x));
             }
-            if candidate + 1 == m.vars[v].2.len() && order.is_empty() {
-                assign[v] = None;
+            if candidate + 1 == domain.len() && order.is_empty() {
+                assign.remove(&v);
                 return m.done(false);
             }
             m.checkpoint()?;
         }
         if order.is_empty() {
-            assign[v] = None;
+            assign.remove(&v);
             return m.done(false);
         }
         order.sort_by_key(|&(decided, _)| std::cmp::Reverse(decided));
@@ -942,7 +1188,7 @@ fn search<E: InputError>(
         let mut remaining = order.into_iter().peekable();
         while let Some((_, x)) = remaining.next() {
             m.checkpoint()?;
-            assign[v] = Some(x);
+            assign.insert(v, x);
             if search(m, cons, assign)? {
                 return m.done(true);
             }
@@ -950,7 +1196,7 @@ fn search<E: InputError>(
                 m.checkpoint()?;
             }
         }
-        assign[v] = None;
+        assign.remove(&v);
         m.done(false)
     })
 }
@@ -958,7 +1204,7 @@ fn search<E: InputError>(
 /// data 型が、登録 subject を使って有限の値を持つか。参照の引数は登録 subject を要する。
 fn data_inhabitation<E: InputError>(
     definitions: &CheckedDefinitions,
-    by_type: &HashMap<&str, Vec<usize>>,
+    by_type: &HashMap<String, Vec<usize>>,
     control: &Control,
 ) -> Result<HashMap<String, bool>, E> {
     E::checkpoint(control, Checkpoint::Completion)?;
@@ -975,7 +1221,7 @@ fn data_inhabitation<E: InputError>(
     fn inh<E: InputError>(
         t: &Type,
         ok: &HashMap<String, bool>,
-        by_type: &HashMap<&str, Vec<usize>>,
+        by_type: &HashMap<String, Vec<usize>>,
         control: &Control,
     ) -> Result<bool, E> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
