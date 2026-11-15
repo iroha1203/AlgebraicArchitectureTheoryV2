@@ -1824,31 +1824,23 @@ pub(super) struct CandidateInput {
     pub domain_type: ProjectionType,
     pub integer_family: Option<super::repair_problem::integer::Family>,
 }
-pub(super) fn checked_polyhedron(
-    env: &Environment<'_>,
-    g: &Graph,
-    reference: NodeRef,
-) -> Result<Option<(Arc<native::ArchitectureWitness>, ProjectionType)>, ValidationFailure> {
-    let node = g.get(reference)?;
-    if node.ty != NodeType::Construction(T::SolutionSet) {
-        return Ok(None);
+impl CandidateInput {
+    pub(super) fn rational_polyhedron(
+        &self,
+    ) -> Option<(
+        &super::environment::field_change::Linear,
+        &super::environment::field_change::Polyhedron,
+    )> {
+        use super::environment::field_change::Solutions;
+        if !matches!(self.domain_type, ProjectionType::SolutionSet(_)) {
+            return None;
+        }
+        let linear = self.search.rational.as_ref()?;
+        match &linear.solutions {
+            Solutions::Polyhedron(polyhedron) => Some((linear, polyhedron)),
+            Solutions::Affine(_) => None,
+        }
     }
-    let Some(Payload::Construction(value)) = &node.payload else {
-        return Ok(None);
-    };
-    let D::Change(data) = &value.data else {
-        return Ok(None);
-    };
-    if !data.source.rational_polyhedron {
-        return Ok(None);
-    }
-    let checked = checked_candidate(env, g, reference)?;
-    Ok(Some((
-        checked.source.architecture.witness.clone(),
-        checked
-            .projection_type()
-            .ok_or(internal!("有理半空間の候補域型がない"))?,
-    )))
 }
 
 pub(super) fn candidate_input(

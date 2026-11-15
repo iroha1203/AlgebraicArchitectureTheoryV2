@@ -18,6 +18,7 @@ use archsig_input::law::model::Signature;
 use std::{collections::BTreeMap, sync::Arc};
 mod affine_result;
 mod law_result;
+mod polyhedron_result;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -106,7 +107,7 @@ impl Data {
         let allowed = match self.ty() {
             NodeType::Construction(T::Quotient) => matches!(
                 field.as_str(),
-                "domain" | "classes" | "projection" | "descent"
+                "domain" | "classes" | "projection" | "descent" | "fiber"
             ),
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             NodeType::Construction(T::Architecture) => field == "root",
@@ -165,18 +166,20 @@ fn compute(
         let AnswerBinding::Reference(reference) = env.answer_binding(g, on, (0, 0))? else {
             return Err(internal!("商のonが既出参照でない").into());
         };
-        if let Some((witness, domain_type)) = change_result::checked_polyhedron(env, g, reference)?
+        let input = change_result::candidate_input(env, g, reference, c)?;
+        if request.arguments.iter().any(|a| a.name == "at") && input.rational_polyhedron().is_none()
         {
-            return affine_result::unsupported_polyhedron(
+            return affine_result::unsupported(
                 env,
                 g,
-                (witness, domain_type),
+                input,
                 reference,
                 request,
+                "rational_polyhedron_fiber",
+                None,
                 base,
             );
         }
-        let input = change_result::candidate_input(env, g, reference, c)?;
         if input.search.linear.is_some() || input.search.rational.is_some() {
             return affine_result::compute(env, g, input, reference, request, base, c);
         }
@@ -699,7 +702,7 @@ impl super::result_kind::ResultKind for Data {
             return Ok(answer);
         }
         for argument in &request.arguments {
-            if argument.name.starts_with("bind.")
+            if (argument.name.starts_with("bind.") || argument.name == "at")
                 && matches!(argument.value, Selector::Answer { .. })
             {
                 if let AnswerBinding::Projection(node) =

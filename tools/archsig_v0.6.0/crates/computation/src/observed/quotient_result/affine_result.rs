@@ -8,18 +8,25 @@ use crate::observed::{
     numeric,
 };
 
-pub(super) fn unsupported_polyhedron(
+pub(super) fn unsupported(
     env: &Environment<'_>,
     g: &Graph,
-    (witness, domain_type): (Arc<ArchitectureWitness>, ProjectionType),
+    input: CandidateInput,
     reference: NodeRef,
     request: &Request,
+    method: &str,
+    location: Option<Location>,
     base: usize,
 ) -> Result<Source, ValidationFailure> {
     let declaration = &env.indexes.inputs.law().declarations()[request
         .declaration()
         .ok_or(internal!("有理半空間の商のViewがない"))?];
-    let Signature::View { body, params, .. } = &declaration.signature else {
+    let Signature::View {
+        body,
+        params,
+        returns,
+    } = &declaration.signature
+    else {
         return Err(internal!("有理半空間の商のView署名が違う").into());
     };
     let mut b = Builder {
@@ -39,15 +46,15 @@ pub(super) fn unsupported_polyhedron(
     let reason = Reason {
         kind: ReasonKind::UnsupportedAlgorithm {
             question: request.kind,
-            operand_types: vec![Type::Q],
-            method: "rational_polyhedron_quotient".into(),
+            operand_types: vec![Type::Q, returns.clone()],
+            method: method.into(),
         },
         request: request.id.clone(),
         dependencies: vec![expression],
         missing: vec![],
-        location: Some(Location::Law {
+        location: location.or(Some(Location::Law {
             span: declaration.span,
-        }),
+        })),
     };
     part.reasons.push(reason.clone());
     Ok(Source {
@@ -63,8 +70,8 @@ pub(super) fn unsupported_polyhedron(
             scope,
         },
         request: request.clone(),
-        witness,
-        domain_type,
+        witness: input.witness,
+        domain_type: input.domain_type,
     })
 }
 
@@ -77,7 +84,41 @@ pub(super) fn compute(
     base: usize,
     c: &Control,
 ) -> Result<Source, ValidationFailure> {
-    let image = quotient_affine::compute(env, g, &input, request, c)?;
+    let polyhedral = input.rational_polyhedron().is_some();
+    let image = if polyhedral
+        && request
+            .arguments
+            .iter()
+            .any(|argument| argument.name == "law")
+    {
+        return unsupported(
+            env,
+            g,
+            input,
+            reference,
+            request,
+            "rational_polyhedron_law_descent",
+            None,
+            base,
+        );
+    } else {
+        match quotient_affine::compute(env, g, &input, request, c) {
+            Ok(image) => image,
+            Err(ValidationFailure::UnsupportedExpression { location, .. }) if polyhedral => {
+                return unsupported(
+                    env,
+                    g,
+                    input,
+                    reference,
+                    request,
+                    "rational_polyhedron_affine_view",
+                    Some(location),
+                    base,
+                );
+            }
+            Err(error) => return Err(error),
+        }
+    };
     let ty = &image.ty;
     let declaration = &env.indexes.inputs.law().declarations()[request
         .declaration()
@@ -211,7 +252,20 @@ pub(super) fn compute(
     let mut descent = None;
     let mut evidence = vec![];
     let mut evaluations = vec![];
-    let (classes, projection, representation) = if image.empty {
+    let mut selected_fiber = None;
+    let (classes, projection, representation) = if polyhedral {
+        let result = polyhedron_result::build(
+            &mut b,
+            env,
+            &input,
+            &image,
+            [reference, expression, source],
+            request,
+            c,
+        )?;
+        selected_fiber = result.fiber;
+        (result.classes, result.projection, result.representation)
+    } else if image.empty {
         let parameter_type = Type::Tuple(vec![ty.clone(); image.parameter_count]);
         let classes = domain(
             &mut b,
@@ -425,6 +479,12 @@ pub(super) fn compute(
         args,
         None,
     )?;
+    if let Some(fiber) = selected_fiber {
+        let Some(Json::Obj(wire)) = b.parts[quotient.0 - base].wire_mut() else {
+            return Err(internal!("有理多面体商のrecordがない").into());
+        };
+        wire.insert("fiber".into(), fiber.wire());
+    }
     let mut status = Decision::Established;
     let mut outputs = BTreeMap::from([("quotient".into(), quotient)]);
     let mut claim = None;

@@ -47,48 +47,9 @@ pub(super) fn run_requests_validated(
     args: &RunArgs,
     control: &Control,
 ) -> Outcome {
-    let texts: Vec<_> = args.asks.iter().map(String::as_str).collect();
-    if let Err(error) = check_request_syntax(&texts, control) {
-        return request_failure(signals, error, control);
-    }
-    let map_path = args.inputs.archmap.as_ref().expect("検査済みrunのArchMap");
-    let mut issues = Vec::new();
-    let definitions: Vec<_> = args
-        .inputs
-        .atom_definitions
-        .iter()
-        .map(|p| read(p, &mut issues))
-        .collect();
-    let law = read(&args.inputs.law, &mut issues);
-    let map = read(map_path, &mut issues);
-    if !issues.is_empty() {
-        return output::without_result(signals, Status::Error, issues);
-    }
-    let sources = InputSources::from_bytes(
-        definitions.into_iter().flatten().collect(),
-        law.expect("読込成功を確認したLaw"),
-        map.expect("読込成功を確認したArchMap"),
-    );
-    let prepared = match prepare_observed(sources, &texts, control) {
+    let prepared = match load_requests(signals, args, control) {
         Ok(prepared) => prepared,
-        Err(PrepareFailure::Inputs(failure)) => {
-            let (status, code) = match failure.status() {
-                InputStatus::Invalid => (Status::Invalid, 65),
-                InputStatus::Unsupported => (Status::Unsupported, 69),
-                InputStatus::Interrupted => (Status::Interrupted, 75),
-                InputStatus::Error => (Status::Error, 70),
-            };
-            return output::notify(
-                signals,
-                status,
-                code,
-                control.stop_reason(),
-                failure.issues().to_vec(),
-            );
-        }
-        Err(PrepareFailure::Requests { failure: error, .. }) => {
-            return request_failure(signals, error, control);
-        }
+        Err(outcome) => return outcome,
     };
     let candidate = match super::reuse::inspect(args.reuse.as_deref(), control) {
         Ok(rejected) => rejected,
@@ -115,6 +76,56 @@ pub(super) fn run_requests_validated(
     };
     let verification = candidate.verify(&evaluation, control);
     deliver(io, signals, args, evaluation, verification, control)
+}
+
+pub(super) fn load_requests(
+    signals: &mut dyn Signals,
+    args: &RunArgs,
+    control: &Control,
+) -> Result<archsig_computation::observed::PreparedObserved, Outcome> {
+    let texts: Vec<_> = args.asks.iter().map(String::as_str).collect();
+    if let Err(error) = check_request_syntax(&texts, control) {
+        return Err(request_failure(signals, error, control));
+    }
+    let map_path = args.inputs.archmap.as_ref().expect("検査済みrunのArchMap");
+    let mut issues = Vec::new();
+    let definitions: Vec<_> = args
+        .inputs
+        .atom_definitions
+        .iter()
+        .map(|p| read(p, &mut issues))
+        .collect();
+    let law = read(&args.inputs.law, &mut issues);
+    let map = read(map_path, &mut issues);
+    if !issues.is_empty() {
+        return Err(output::without_result(signals, Status::Error, issues));
+    }
+    let sources = InputSources::from_bytes(
+        definitions.into_iter().flatten().collect(),
+        law.expect("読込成功を確認したLaw"),
+        map.expect("読込成功を確認したArchMap"),
+    );
+    match prepare_observed(sources, &texts, control) {
+        Ok(prepared) => Ok(prepared),
+        Err(PrepareFailure::Inputs(failure)) => {
+            let (status, code) = match failure.status() {
+                InputStatus::Invalid => (Status::Invalid, 65),
+                InputStatus::Unsupported => (Status::Unsupported, 69),
+                InputStatus::Interrupted => (Status::Interrupted, 75),
+                InputStatus::Error => (Status::Error, 70),
+            };
+            Err(output::notify(
+                signals,
+                status,
+                code,
+                control.stop_reason(),
+                failure.issues().to_vec(),
+            ))
+        }
+        Err(PrepareFailure::Requests { failure: error, .. }) => {
+            Err(request_failure(signals, error, control))
+        }
+    }
 }
 
 fn request_failure(signals: &mut dyn Signals, error: ResolveFailure, control: &Control) -> Outcome {

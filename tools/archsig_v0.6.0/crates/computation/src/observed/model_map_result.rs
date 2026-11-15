@@ -797,13 +797,46 @@ fn compute(
                     vec![local_condition],
                     Decision::Established,
                 )?;
-                laws.push(Json::obj([
-                    ("source_object", so.wire()),
-                    ("target_object", to.wire()),
-                    ("source_law", sl.wire()),
-                    ("target_law", tl.wire()),
-                    ("proposition", p.wire()),
-                ]));
+                let mut row = archsig_common::canonical::JsonObject::from([
+                    ("source_object".into(), so.wire()),
+                    ("target_object".into(), to.wire()),
+                    ("source_law".into(), sl.wire()),
+                    ("target_law".into(), tl.wire()),
+                    ("proposition".into(), p.wire()),
+                ]);
+                if (law.source().is_none() && law.target().is_none())
+                    && let Some(family) = law.family()
+                {
+                    let mut domains = Vec::new();
+                    for parameter in family.parameters() {
+                        tick(c)?;
+                        let values = |values: &[super::value_transport::FiniteTransportValue]| {
+                            values
+                                .iter()
+                                .map(|value| {
+                                    tick(c)?;
+                                    Ok(value.wire())
+                                })
+                                .collect::<Result<Vec<_>, ValidationFailure>>()
+                        };
+                        domains.push(Json::obj([
+                            (
+                                "position",
+                                Json::Nat(match parameter.position() {
+                                    super::value_transport::DeclarationValuePosition::Parameter(
+                                        position,
+                                    ) => position as u64,
+                                    _ => return Err(internal!("Law族のparameter位置でない").into()),
+                                }),
+                            ),
+                            ("source", Json::Arr(values(parameter.source())?)),
+                            ("target", Json::Arr(values(parameter.target())?)),
+                            ("images", Json::Arr(values(parameter.images())?)),
+                        ]));
+                    }
+                    row.insert("parameter_domains".into(), Json::Arr(domains));
+                }
+                laws.push(Json::Obj(row));
                 args.extend([so, to, sl, tl, p]);
             }
             for row in &local_fields {
@@ -869,6 +902,45 @@ fn compute(
         }
     }
     if let Some(v) = &verified {
+        for law in &v.laws {
+            let nodes = law_nodes(law, source_plan, target_plan)?;
+            let location = Some(archsig_common::issue::Location::Law {
+                span: law.instance().declaration().span,
+            });
+            let dependencies = vec![local_condition, nodes.source[1]];
+            if !law.state_missing().is_empty()
+                && matches!(
+                    law.outcome(),
+                    super::object_law_transport::LawTransportOutcome::Undetermined
+                )
+            {
+                reasons.push(Reason {
+                    kind: ReasonKind::Missing,
+                    request: r.id.clone(),
+                    dependencies: dependencies.clone(),
+                    missing: law.state_missing().to_vec(),
+                    location: location.clone(),
+                });
+            }
+            if law.unsupported_state_expression() {
+                reasons.push(Reason {
+                    kind: ReasonKind::UnsupportedAlgorithm {
+                        question: r.kind,
+                        operand_types: law
+                            .instance()
+                            .parameters()
+                            .iter()
+                            .map(|p| p.ty.clone())
+                            .collect(),
+                        method: "repaired_model_map_law_expression".into(),
+                    },
+                    request: r.id.clone(),
+                    dependencies,
+                    missing: vec![],
+                    location,
+                });
+            }
+        }
         for &index in &v.unsupported_instances {
             let instance = &source_plan.architecture.witness.readings().instances()[index];
             reasons.push(Reason {
@@ -1108,13 +1180,23 @@ fn compute(
                         _ => "the selected configuration does not preserve the corresponding Law",
                     });
                 }
-                counter_args.extend(nodes.source);
-                facts.extend(g.get(nodes.source[2])?.support.materialize(c)?);
-                left = nodes.source[2];
-                if let Some(target) = nodes.target {
-                    right = target[2];
-                    counter_args.extend(target);
-                    facts.extend(g.get(target[2])?.support.materialize(c)?);
+                if law.source().is_none()
+                    && law.target().is_none()
+                    && (law.family().is_some() || law.source_reading().is_some())
+                {
+                    counter_args.extend([nodes.source[0], nodes.source[1], refs[0], refs[1]]);
+                    if let Some(target) = nodes.target {
+                        counter_args.extend([target[0], target[1]]);
+                    }
+                } else {
+                    counter_args.extend(nodes.source);
+                    facts.extend(g.get(nodes.source[2])?.support.materialize(c)?);
+                    left = nodes.source[2];
+                    if let Some(target) = nodes.target {
+                        right = target[2];
+                        counter_args.extend(target);
+                        facts.extend(g.get(target[2])?.support.materialize(c)?);
+                    }
                 }
                 let family = law.family().and_then(|family| {
                     family

@@ -429,9 +429,10 @@ pub(super) fn affine_obstruction(
     }))
 }
 
-fn project_all(
+fn project_prefix(
     original: &[Halfspace],
     n: usize,
+    prefix: usize,
     keep_history: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
@@ -463,11 +464,53 @@ fn project_all(
     }
     project(
         tight.into_values().collect(),
-        (0..n).rev(),
+        (0..prefix).rev(),
         &zero_row,
         keep_history,
         c,
     )
+}
+
+fn project_all(
+    original: &[Halfspace],
+    n: usize,
+    keep_history: bool,
+    c: &Control,
+) -> Result<Projected, ValidationFailure> {
+    project_prefix(original, n, n, keep_history, c)
+}
+
+/// 残りの元座標へ正確に射影する。空集合は矛盾半空間一行で表す。
+pub(super) fn project_trailing(
+    original: &[Halfspace],
+    prefix: usize,
+    trailing: usize,
+    c: &Control,
+) -> Result<Vec<Halfspace>, ValidationFailure> {
+    let zero = integer(0);
+    match project_prefix(original, prefix + trailing, prefix, false, c)? {
+        Projected::Obstruction(_) => Ok(vec![Halfspace {
+            coefficients: vec![zero; trailing],
+            rhs: integer(-1),
+        }]),
+        Projected::Rows(projection) => {
+            let mut rows = Vec::new();
+            for row in projection.rows {
+                tick(c)?;
+                let coefficients = &row.inequality.coefficients;
+                if coefficients[..prefix].iter().any(|value| value != &zero) {
+                    return Err(internal!("多面体の射影に消去座標が残っている").into());
+                }
+                if coefficients[prefix..].iter().any(|value| value != &zero) {
+                    rows.push(Halfspace {
+                        coefficients: coefficients[prefix..].to_vec(),
+                        rhs: row.inequality.rhs,
+                    });
+                }
+            }
+            Ok(rows)
+        }
+    }
 }
 
 pub(super) fn contradiction(

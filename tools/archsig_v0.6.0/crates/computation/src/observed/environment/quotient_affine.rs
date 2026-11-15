@@ -185,31 +185,33 @@ pub(in crate::observed) fn compute(
         })
         .transpose()?;
     let n = linear.parameter_count;
-    let (origin, embedding, dimensions, empty) =
-        if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
-            let dimensions = linear.kernel.first().map_or(0, Vec::len);
-            let empty = linear.particular.is_none();
-            (
-                linear
-                    .particular
-                    .take()
-                    .unwrap_or(vec![numeric::zero(ty, c)?; n]),
-                std::mem::take(&mut linear.kernel),
-                dimensions,
-                empty,
-            )
-        } else {
-            let empty = linear.guard_origin.is_none();
-            (
-                linear
-                    .guard_origin
-                    .take()
-                    .unwrap_or(vec![numeric::zero(ty, c)?; n]),
-                std::mem::take(&mut linear.guard_kernel),
-                linear.guard_dimensions,
-                empty,
-            )
-        };
+    let polyhedral = input.rational_polyhedron().is_some();
+    let (origin, embedding, dimensions, empty) = if polyhedral {
+        (vec![], vec![], n, false)
+    } else if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
+        let dimensions = linear.kernel.first().map_or(0, Vec::len);
+        let empty = linear.particular.is_none();
+        (
+            linear
+                .particular
+                .take()
+                .unwrap_or(vec![numeric::zero(ty, c)?; n]),
+            std::mem::take(&mut linear.kernel),
+            dimensions,
+            empty,
+        )
+    } else {
+        let empty = linear.guard_origin.is_none();
+        (
+            linear
+                .guard_origin
+                .take()
+                .unwrap_or(vec![numeric::zero(ty, c)?; n]),
+            std::mem::take(&mut linear.guard_kernel),
+            linear.guard_dimensions,
+            empty,
+        )
+    };
     let mut result = Image {
         ty: ty.clone(),
         view_type: returns.clone(),
@@ -316,6 +318,12 @@ pub(in crate::observed) fn compute(
         return Err(unsupported(request, "商のViewが指定係数のアフィン式でない"));
     };
     result.missing.clear();
+    if polyhedral {
+        result.matrix = rows;
+        result.offset = constants;
+        return Ok(result);
+    }
+
     for (constant, row) in constants.iter_mut().zip(&rows) {
         for (a, x) in row.iter().zip(&result.origin) {
             *constant = coefficients::add_product(constant, a, x, c)?;
@@ -557,6 +565,103 @@ pub(in crate::observed) fn compute(
     Ok(result)
 }
 
+fn known_view_bindings(image: &Image) -> BTreeMap<String, SourceValue> {
+    image
+        .bindings
+        .iter()
+        .map(|(name, value)| {
+            (
+                name.clone(),
+                SourceValue {
+                    known_value: Some(value.clone()),
+                    scalar_scope: Some(Scope::default()),
+                    scope: Scope::default(),
+                    support: vec![].into(),
+                    condition_failed: false,
+                    condition_pending: false,
+                    symbolic: None,
+                    comparison: None,
+                    affine: None,
+                },
+            )
+        })
+        .collect()
+}
+
+/// 証拠点の元 parameter を通常の change、Law、View に代入して検査する。
+pub(in crate::observed) fn verify_polyhedral_point(
+    original: &Environment<'_>,
+    input: &CandidateInput,
+    image: &Image,
+    parameters: &[Scalar],
+    expected: &Scalar,
+    request: &Request,
+    c: &Control,
+) -> Result<(), ValidationFailure> {
+    c.checkpoint(Checkpoint::ChangeWitness)?;
+    let inputs = original.indexes.inputs;
+    let mut env = Environment::with_primitive_valuation(inputs, &input.search.valuation, c)?;
+    let domain = Arc::new(ObjectDomain::from_readings(
+        inputs,
+        input.witness.readings(),
+        0,
+        c,
+    )?);
+    env.indexes.object = Some(domain.clone());
+    let origin = crate::observed::construction_result::Witness::Architecture(input.witness.clone());
+    let using = origin
+        .request()
+        .arguments
+        .iter()
+        .find_map(|arg| match (arg.name.as_str(), &arg.value) {
+            ("using", Selector::Declaration { name }) => Some(name),
+            _ => None,
+        })
+        .ok_or(internal!("多面体の元changeがない"))?;
+    let roster = &input
+        .search
+        .candidates
+        .as_ref()
+        .ok_or(internal!("多面体の元候補域がない"))?
+        .subjects;
+    let candidate = change_evaluation::candidate(
+        &env,
+        &inputs.law().declarations()[using],
+        roster,
+        parameters,
+    )?;
+    if change_evaluation::solution_row(&env, &candidate, 0, &input.search.requirements)?.member
+        != Some(true)
+    {
+        return Err(internal!("多面体ファイバーの証拠点が元 Law を満たさない").into());
+    }
+    let mut valuation = input
+        .search
+        .valuation
+        .iter()
+        .cloned()
+        .collect::<BTreeMap<_, _>>();
+    valuation.extend(candidate.update.values);
+    let values = valuation.into_iter().collect::<Vec<_>>();
+    let mut updated = Environment::with_primitive_valuation(inputs, &values, c)?;
+    updated.indexes.object = Some(domain);
+    let declaration = &inputs.law().declarations()[request
+        .declaration()
+        .ok_or(internal!("多面体の元 View がない"))?];
+    let Signature::View { body, .. } = &declaration.signature else {
+        return Err(internal!("多面体の元 View 署名が違う").into());
+    };
+    let vars = known_view_bindings(image);
+    let value = updated.scoped_ast(*body, &vars, &Scope::default(), &declaration.reading)?;
+    if value.condition_failed
+        || value.condition_pending
+        || value.known_value.as_ref() != Some(expected)
+    {
+        return Err(internal!("多面体ファイバーの証拠点が元 View と一致しない").into());
+    }
+    Ok(())
+}
+
 /// 核の反例を元Assignmentへ戻し、同じ通常評価器で左右の実値を確認する。
 pub(in crate::observed) fn point(
     original: &Environment<'_>,
@@ -690,26 +795,7 @@ pub(in crate::observed) fn point(
     else {
         return Err(internal!("アフィン商のView署名がない").into());
     };
-    let vars = image
-        .bindings
-        .iter()
-        .map(|(name, v)| {
-            (
-                name.clone(),
-                SourceValue {
-                    known_value: Some(v.clone()),
-                    scalar_scope: Some(Scope::default()),
-                    scope: Scope::default(),
-                    support: vec![].into(),
-                    condition_failed: false,
-                    condition_pending: false,
-                    symbolic: None,
-                    comparison: None,
-                    affine: None,
-                },
-            )
-        })
-        .collect();
+    let vars = known_view_bindings(image);
     let view = env.scoped_ast(*view_body, &vars, &Scope::default(), &declaration.reading)?;
     let expected = apply(&image.matrix, &image.offset, coordinates)?;
     let view = view

@@ -151,6 +151,8 @@ pub struct ObjectLawTransport {
     source_reading: Option<LawBooleanReading>,
     target_reading: Option<LawBooleanReading>,
     family: Option<FiniteLawFamily>,
+    missing: Vec<super::result::Fact>,
+    unsupported_state_expression: bool,
     numeric_family: Option<super::environment::numeric_law_function::Family>,
     outcome: LawTransportOutcome,
 }
@@ -322,14 +324,31 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
     Ok(r)
 }
 
+struct StateReading {
+    value: LawBooleanReading,
+    missing: Vec<super::result::Fact>,
+    unsupported: bool,
+}
+
+impl StateReading {
+    fn known(value: LawBooleanReading) -> Self {
+        Self {
+            value,
+            missing: vec![],
+            unsupported: false,
+        }
+    }
+}
+
 fn reading_from_state(
     state: &super::environment::Environment<'_>,
     domains: &[Arc<super::object_evaluate::ObjectDomain>],
     readings: &ObjectReadingInstances,
     object: usize,
     instance: usize,
+    parameters: &[(String, super::value_transport::FiniteTransportValue)],
     c: &Control,
-) -> Result<LawBooleanReading, ConstructionFailure> {
+) -> Result<StateReading, ConstructionFailure> {
     use super::result::{Scalar, ValidationFailure};
     use crate::construction::readings::InstanceApplication;
     use archsig_common::types::Type;
@@ -344,11 +363,18 @@ fn reading_from_state(
         InstanceApplication::NotApplicable => {
             result.application = LawApplication::OutsideObject;
             result.conditional = Some(true);
-            return Ok(result);
+            return Ok(StateReading::known(result));
         }
         InstanceApplication::Applicable { conditions } if !conditions.is_empty() => {
             result.application = LawApplication::ConditionalMembership(conditions.clone());
-            return Ok(result);
+            return Ok(StateReading {
+                value: result,
+                missing: conditions
+                    .iter()
+                    .map(|condition| condition.slot().clone())
+                    .collect(),
+                unsupported: false,
+            });
         }
         InstanceApplication::Applicable { .. } => {}
     }
@@ -378,14 +404,39 @@ fn reading_from_state(
             },
         ));
     }
+    bindings.extend(
+        parameters
+            .iter()
+            .map(|(name, value)| (name.clone(), value.scalar().clone())),
+    );
+    bindings.sort_by_key(|(name, _)| {
+        row.declaration()
+            .parameters
+            .iter()
+            .position(|(parameter, _)| name == parameter)
+    });
     let declaration = &env.indexes.inputs.law().declarations()[&row.declaration().name];
-    let evaluation = match env.local_point_without_trace(declaration, &bindings) {
-        Ok((evaluation, _)) => evaluation,
-        Err(ValidationFailure::UnsupportedExpression { .. }) => return Ok(result),
+    let (evaluation, mut missing) = match env.local_point_without_trace(declaration, &bindings) {
+        Ok(point) => point,
+        Err(ValidationFailure::UnsupportedExpression { .. }) => {
+            return Ok(StateReading {
+                value: result,
+                missing: vec![],
+                unsupported: true,
+            });
+        }
         Err(failure) => return Err(classify(failure)),
     };
-    if evaluation.condition_failed || evaluation.condition_pending {
-        return Ok(result);
+    missing.extend(evaluation.application_missing);
+    if evaluation.application != Some(true)
+        || evaluation.condition_failed
+        || evaluation.condition_pending
+    {
+        return Ok(StateReading {
+            value: result,
+            missing,
+            unsupported: false,
+        });
     }
     result.application = LawApplication::Guard(evaluation.guard);
     result.body = evaluation.predicate;
@@ -394,7 +445,11 @@ fn reading_from_state(
         (Some(true), predicate) => predicate,
         _ => None,
     };
-    Ok(result)
+    Ok(StateReading {
+        value: result,
+        missing,
+        unsupported: false,
+    })
 }
 
 /// 補完族の集約ではなく、元DAGの指定caseの適用と述語を読む。
@@ -587,6 +642,8 @@ pub(super) fn object_law_transport_on_state(
         source_reading: None,
         target_reading: None,
         family: None,
+        missing: Vec::new(),
+        unsupported_state_expression: false,
         numeric_family: None,
         outcome: LawTransportOutcome::Undetermined,
     };
@@ -649,35 +706,39 @@ pub(super) fn object_law_transport_on_state(
             tick(c)?;
             return Ok(());
         }
-        if let Some(
-            [
-                (source_state, source_domains),
-                (target_state, target_domains),
-            ],
-        ) = states
-        {
+        if let Some(states) = states {
             if r.instance().parameters().is_empty()
                 && r.target_readings.instances()[ti].parameters().is_empty()
             {
                 let source = reading_from_state(
-                    source_state,
-                    source_domains,
+                    states[0].0,
+                    states[0].1,
                     &r.source_readings,
                     object,
                     instance,
+                    &[],
                     c,
                 )?;
                 let target = reading_from_state(
-                    target_state,
-                    target_domains,
+                    states[1].0,
+                    states[1].1,
                     &r.target_readings,
                     to,
                     ti,
+                    &[],
                     c,
                 )?;
-                r.outcome = family::compare(&source, &target);
-                r.source_reading = Some(source);
-                r.target_reading = Some(target);
+                r.outcome = family::compare(&source.value, &target.value);
+                r.missing
+                    .extend(source.missing.into_iter().chain(target.missing));
+                r.unsupported_state_expression = source.unsupported || target.unsupported;
+                r.source_reading = Some(source.value);
+                r.target_reading = Some(target.value);
+            } else {
+                family::prepare(&inputs, &mut r, c)?;
+                if !matches!(r.outcome, LawTransportOutcome::Refuted(_)) {
+                    family::compare_state_rows(&mut r, states, [(object, instance), (to, ti)], c)?;
+                }
             }
             decided = true;
             tick(c)?;
@@ -838,6 +899,12 @@ impl ObjectLawTransport {
     }
     pub fn outcome(&self) -> &LawTransportOutcome {
         &self.outcome
+    }
+    pub(super) fn state_missing(&self) -> &[super::result::Fact] {
+        &self.missing
+    }
+    pub(super) fn unsupported_state_expression(&self) -> bool {
+        self.unsupported_state_expression
     }
     pub fn family(&self) -> Option<&FiniteLawFamily> {
         self.family.as_ref()

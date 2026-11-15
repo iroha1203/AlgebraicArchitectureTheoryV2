@@ -702,8 +702,100 @@ pub(super) fn compare_rows(
     {
         return Ok(());
     }
+    r.outcome = compare_points(
+        family,
+        source.instance(),
+        target.instance(),
+        source_keys,
+        c,
+        |key, image, _| {
+            let refs = |rows: &Option<Rows>, key: &[usize]| {
+                rows.as_ref()
+                    .and_then(|rows| rows.get(key))
+                    .cloned()
+                    .unwrap_or_default()
+            };
+            let sr = refs(&source_rows, key);
+            let tr = refs(&target_rows, image);
+            let a = row_reading(source, &sr, c)?;
+            let b = row_reading(target, &tr, c)?;
+            Ok((a, b, sr, tr))
+        },
+    )?;
+    Ok(())
+}
+
+pub(super) fn compare_state_rows(
+    r: &mut ObjectLawTransport,
+    states: [SelectedState<'_, '_>; 2],
+    positions: [(usize, usize); 2],
+    c: &Control,
+) -> Result<(), ConstructionFailure> {
+    let family = r
+        .family
+        .as_mut()
+        .ok_or_else(|| inconsistent("Law族がない"))?;
+    let readings = [&r.source_readings, &r.target_readings];
+    let keys = coordinates(
+        &family
+            .parameters
+            .iter()
+            .map(|p| p.source().len())
+            .collect::<Vec<_>>(),
+        c,
+    )?;
+    r.outcome = compare_points(
+        family,
+        &readings[0].instances()[positions[0].1],
+        &readings[1].instances()[positions[1].1],
+        keys,
+        c,
+        |_, _, bindings| {
+            let read = |n: usize| {
+                let (object, instance) = positions[n];
+                reading_from_state(
+                    states[n].0,
+                    states[n].1,
+                    readings[n],
+                    object,
+                    instance,
+                    bindings[n],
+                    c,
+                )
+            };
+            let a = read(0)?;
+            let b = read(1)?;
+            r.missing.extend(a.missing.into_iter().chain(b.missing));
+            r.unsupported_state_expression |= a.unsupported || b.unsupported;
+            Ok((a.value, b.value, vec![], vec![]))
+        },
+    )?;
+    r.missing.sort();
+    r.missing.dedup();
+    Ok(())
+}
+
+type PointComparison = (
+    LawBooleanReading,
+    LawBooleanReading,
+    Vec<NodeRef>,
+    Vec<NodeRef>,
+);
+
+fn compare_points(
+    family: &mut FiniteLawFamily,
+    source: &ObjectInstance,
+    target: &ObjectInstance,
+    keys: Vec<Vec<usize>>,
+    c: &Control,
+    mut evaluate: impl FnMut(
+        &[usize],
+        &[usize],
+        [&[(String, FiniteTransportValue)]; 2],
+    ) -> Result<PointComparison, ConstructionFailure>,
+) -> Result<LawTransportOutcome, ConstructionFailure> {
     let mut outcome = LawTransportOutcome::Preserved;
-    for key in source_keys {
+    for key in keys {
         tick(c)?;
         let mut image = Vec::new();
         for (p, &index) in family.parameters.iter().zip(&key) {
@@ -713,49 +805,40 @@ pub(super) fn compare_rows(
                     .ok_or_else(|| inconsistent("Law族の全域順写像がない"))?,
             );
         }
-        let sr = source_rows
-            .as_ref()
-            .and_then(|rs| rs.get(&key))
-            .cloned()
-            .unwrap_or_default();
-        let tr = target_rows
-            .as_ref()
-            .and_then(|rs| rs.get(&image))
-            .cloned()
-            .unwrap_or_default();
-        let a = row_reading(source, &sr, c)?;
-        let b = row_reading(target, &tr, c)?;
-        let point = compare(&a, &b);
-        if !matches!(outcome, LawTransportOutcome::Refuted(_)) {
-            match &point {
-                LawTransportOutcome::Refuted(_) => outcome = point.clone(),
-                LawTransportOutcome::Undetermined => outcome = LawTransportOutcome::Undetermined,
-                _ => {}
-            }
+        let source_bindings: Vec<_> = source
+            .parameters()
+            .iter()
+            .zip(&key)
+            .zip(&family.parameters)
+            .map(|((p, &index), domain)| (p.name.clone(), domain.source()[index].clone()))
+            .collect();
+        let target_bindings: Vec<_> = target
+            .parameters()
+            .iter()
+            .zip(&image)
+            .zip(&family.parameters)
+            .map(|((p, &index), domain)| (p.name.clone(), domain.target()[index].clone()))
+            .collect();
+        let (source, target, source_evaluations, target_evaluations) =
+            evaluate(&key, &image, [&source_bindings, &target_bindings])?;
+        let point = compare(&source, &target);
+        if !matches!(outcome, LawTransportOutcome::Refuted(_))
+            && !matches!(point, LawTransportOutcome::Preserved)
+        {
+            outcome = point.clone();
         }
-        let bindings =
-            |e: &ObjectEvaluation, key: &[usize], domains: &[&[FiniteTransportValue]]| {
-                e.instance()
-                    .parameters()
-                    .iter()
-                    .zip(key)
-                    .zip(domains)
-                    .map(|((p, &index), domain)| (p.name.clone(), domain[index].clone()))
-                    .collect()
-            };
         family.rows.push(LawParameterComparison {
-            source_bindings: bindings(source, &key, &sources),
-            target_bindings: bindings(target, &image, &targets),
-            source_evaluations: sr,
-            target_evaluations: tr,
-            source: a,
-            target: b,
+            source_bindings,
+            target_bindings,
+            source_evaluations,
+            target_evaluations,
+            source,
+            target,
             outcome: point,
         });
         tick(c)?;
     }
-    r.outcome = outcome;
-    Ok(())
+    Ok(outcome)
 }
 
 /// 元Lawの全有限代入と、その読みを支える元DAG内の全case。

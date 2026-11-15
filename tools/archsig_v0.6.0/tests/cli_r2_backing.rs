@@ -804,7 +804,7 @@ fn rational_backing_stops_before_unchecked_solutions_and_saves_the_completed_pre
 }
 
 #[test]
-fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate() {
+fn rational_backing_keeps_empty_solution_quotient_and_candidate_domain_separate() {
     let ask = POLY_QUERIES.lines().nth(1).unwrap();
     let dir = workdir("r2-polyhedron-quotient");
     polyhedron_inputs(&dir, "overlapInsufficient");
@@ -815,27 +815,48 @@ fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate
         "independent=evaluate(Backing.stockLoad,s=@fixture/overlapInsufficient.X)",
     ];
     let first = polyhedron_asks(&dir, &asks, "first", None);
-    assert_eq!(first.code, 2, "{}{}", first.stdout, first.stderr);
+    assert_eq!(first.code, 1, "{}{}", first.stdout, first.stderr);
     let result = result_json(&dir, &first);
     let [solve, quotient, domain, independent] = arr(get(&result, "answers")) else {
         panic!("all requests remain");
     };
     assert_eq!(s(get(solve, "status")), "refuted");
     assert_eq!(s(get(certificate(&result), "outcome")), "empty");
-    assert_eq!(s(get(quotient, "status")), "undetermined");
-    assert!(!has(get(quotient, "outputs"), "quotient"));
-    let [reason] = arr(get(quotient, "reasons")) else {
-        panic!("typed quotient reason")
-    };
-    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    assert_eq!(s(get(quotient, "status")), "established");
+    let q = get(
+        referenced(&result, get(get(quotient, "outputs"), "quotient")),
+        "value",
+    );
     assert_eq!(
-        s(get(get(reason, "details"), "method")),
-        "rational_polyhedron_quotient"
+        s(get(get(q, "representation"), "kind")),
+        "rational_polyhedron"
+    );
+    assert_eq!(
+        get(q, "domain").value,
+        get(get(solve, "outputs"), "solutions").value
+    );
+    let classes = get(referenced(&result, get(q, "classes")), "value");
+    let [obstruction] = arr(get(classes, "halfspaces")) else {
+        panic!("one contradiction")
+    };
+    let [coefficient] = arr(get(obstruction, "coefficients")) else {
+        panic!("Q coordinate")
+    };
+    assert_eq!(
+        arr(coefficient).iter().map(s).collect::<Vec<_>>(),
+        ["0", "1"]
+    );
+    assert_eq!(
+        arr(get(obstruction, "upper"))
+            .iter()
+            .map(s)
+            .collect::<Vec<_>>(),
+        ["-1", "1"]
     );
     assert_eq!(s(get(domain, "status")), "established");
     assert_eq!(s(get(independent, "status")), "established");
     let replay = polyhedron_asks(&dir, &asks, "same", Some("first"));
-    assert_eq!(replay.code, 2, "{}{}", replay.stdout, replay.stderr);
+    assert_eq!(replay.code, 1, "{}{}", replay.stdout, replay.stderr);
     let replay = result_json(&dir, &replay);
     assert!(warnings(&replay).is_empty());
     for key in ["answers", "nodes", "issues"] {

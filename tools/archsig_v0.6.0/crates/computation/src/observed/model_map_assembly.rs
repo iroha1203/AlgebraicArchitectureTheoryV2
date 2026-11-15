@@ -384,12 +384,6 @@ pub(super) fn verify(
         if row.declaration().kind != "law" {
             continue;
         }
-        if !row.parameters().is_empty()
-            && (!source.repaired_values.is_empty() || !target.repaired_values.is_empty())
-        {
-            unsupported_instances.push(index);
-            continue;
-        }
         for parameter in row.parameters() {
             let supported =
                 super::finite::supported(&parameter.ty, inputs.law(), c).map_err(|e| match e {
@@ -702,7 +696,6 @@ mod tests {
         edit: impl FnOnce(String) -> String,
         body: Option<&str>,
     ) -> (Arc<CheckedInputs>, Arc<Model>) {
-        let c = Control::unlimited();
         let original = fixture::mapped(edit);
         let original = if let Some(body) = body {
             archsig_input::input::InputSources::from_bytes(
@@ -720,6 +713,12 @@ mod tests {
         } else {
             original
         };
+        mapped_model(original)
+    }
+    fn mapped_model(
+        original: archsig_input::input::InputSources,
+    ) -> (Arc<CheckedInputs>, Arc<Model>) {
+        let c = Control::unlimited();
         let inputs = Arc::new(check_inputs(original, &c).unwrap());
         let Preparation::Ready(model) = compile_same_snapshot(
             &inputs,
@@ -1342,6 +1341,130 @@ mod tests {
             law.outcome(),
             super::super::object_law_transport::LawTransportOutcome::Refuted(_)
         )));
+    }
+
+    #[test]
+    fn repaired_finite_law_uses_the_pointwise_boolean_reads() {
+        use super::super::{
+            object_law_transport::{LawConditionFailure, LawTransportOutcome},
+            result::Scalar,
+        };
+        let raw = fixture::mapped(fixture::swapping);
+        let before_definition = std::str::from_utf8(raw.definitions()[0].bytes()).unwrap();
+        let definition = before_definition.replace(r#""declarations": ["#, concat!(
+            r#""declarations": ["#,
+            r#"{"kind":"data","name":"Assemble.Mode","meaning":"mode","constructors":[{"name":"Off","arguments":[],"meaning":"off"},{"name":"On","arguments":["Bool"],"meaning":"on"}]},"#,
+            r#"{"kind":"entity","name":"Assemble.Probe","meaning":"unobserved type","parameters":[],"fields":[],"alignments":[]},"#,
+        ));
+        let digest = |text: &str| {
+            archsig_input::definition::check_definitions(&[("d", text.as_bytes())])
+                .unwrap()
+                .vocabularies()["Assemble"]
+                .digest
+                .clone()
+        };
+        let (old_digest, new_digest) = (digest(before_definition), digest(&definition));
+        let law = std::str::from_utf8(raw.law().bytes()).unwrap().replace(&old_digest, &new_digest)
+            .replace("law required zero(p:Part):p.quantity=0;", concat!(
+                "law required parameter(q:Bool,p:Part,m:Mode): if q then (match m { Off=>true; On(b)=>if b then p.quantity=0 else true; }) else true;",
+                "law optional empty(p:Part,x:(Probe,Bool)):false;",
+            ));
+        let map = std::str::from_utf8(raw.archmap().bytes())
+            .unwrap()
+            .replace(&old_digest, &new_digest);
+        let (inputs, raw) = mapped_model(archsig_input::input::InputSources::from_bytes(
+            vec![definition.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ));
+        let completed = |quantity: i64| {
+            let point = ["ma", "mb", "a", "b"].map(|subject| {
+                let mut position = (*fact(subject)).clone();
+                position.field = Some("Assemble.Part.quantity".into());
+                (Fact::from(position), Scalar::Z(quantity.into()))
+            });
+            let Preparation::Ready(model) = compile_same_snapshot(
+                &inputs,
+                "Assembly",
+                &fact("G"),
+                &[fact("A"), fact("B")],
+                &[(fact("ma"), fact("mb"))],
+                &point.into_iter().collect(),
+                &Control::unlimited(),
+            )
+            .unwrap() else {
+                panic!("ready repaired assembly")
+            };
+            Arc::new(model)
+        };
+        let zero = completed(0);
+        let one = completed(1);
+        assert!(evaluate(inputs.clone(), &raw, &raw).all_preserved());
+        let repaired = evaluate(inputs.clone(), &zero, &zero);
+        assert!(repaired.all_preserved());
+        let mut empty_rows = repaired
+            .laws
+            .iter()
+            .filter(|law| law.instance().declaration().name == "Assembly.empty")
+            .peekable();
+        assert!(
+            empty_rows.peek().is_some(),
+            "empty parameter instances are checked"
+        );
+        assert!(empty_rows.all(|law| {
+            law.family()
+                .is_some_and(|family| family.parameters().len() == 1 && family.rows().is_empty())
+        }));
+        assert!(
+            repaired.laws.iter().any(|law| {
+                law.instance()
+                    .bindings()
+                    .iter()
+                    .any(|binding| binding.subject().subject == "a")
+                    && law.target_instance().is_some_and(|target| {
+                        target
+                            .bindings()
+                            .iter()
+                            .any(|binding| binding.subject().subject == "b")
+                    })
+            }),
+            "the swapped reference is mapped to the real target instance"
+        );
+        for (source, target) in [(&raw, &one), (&zero, &one)] {
+            let verified = evaluate(inputs.clone(), source, target);
+            assert!(verified.transport.all_preserved());
+            assert!(verified.has_refutation());
+            let differences = verified.laws.iter().filter(|law| {
+                matches!(
+                    law.outcome(),
+                    LawTransportOutcome::Refuted(LawConditionFailure::Holds)
+                )
+            });
+            assert!(differences.clone().count() > 0);
+            for law in differences {
+                let rows = law.family().unwrap().rows();
+                assert_eq!(rows.len(), 6);
+                assert_eq!(
+                    rows.iter()
+                        .filter(|row| matches!(row.outcome(), LawTransportOutcome::Refuted(_)))
+                        .count(),
+                    1
+                );
+                for row in rows {
+                    let [(flag, value), (mode, value_mode)] = row.source_bindings() else {
+                        panic!("Bool and data parameters")
+                    };
+                    assert_eq!((flag.as_str(), mode.as_str()), ("q", "m"));
+                    let Scalar::Bool(q) = value.scalar() else {
+                        panic!("Bool")
+                    };
+                    let active = value_mode.wire().canonical() == r#"{"args":[true],"tag":"On"}"#;
+                    assert_eq!(row.target_bindings(), row.source_bindings());
+                    assert_eq!(row.source().body(), Some(true));
+                    assert_eq!(row.target().body(), Some(!(*q && active)));
+                }
+            }
+        }
     }
 
     #[test]

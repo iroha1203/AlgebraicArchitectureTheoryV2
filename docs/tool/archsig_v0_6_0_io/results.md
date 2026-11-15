@@ -511,6 +511,11 @@ ModelMapAssemblyは局所correspondenceの元View・束縛、始終の組立て�
 locals.mapは元の担当間の写像、locals.restrictionは始終の局所像間で全体写像を制限した実写像であり、
 propositionは包含と再制限の可換性を確認する。generatorsは全体の生成元保存、lawsは各対象・元Law出現の
 適用/required status/Bool読取りの移送を確認する。局所行やLaw出現を、同じ値だけを理由に統合しない。
+修復状態で有限 parameter 族を比較した成立行には `parameter_domains` が付く。
+各行は元 Law の宣言順での `position`（0 始まり）、始終の全域値 `source` / `target`、
+および `source` の各値に対応する輸送後の値 `images` を持つ。
+反証の `bindings` は異なる適用・成立を与える始域の代入、`left` / `right` は各選択状態での実 Bool 値を指す。
+元 Law 出現と始終の組立てを依存に持つ。
 ConfigurationMapの確認済み結果は、操作/Lawの移送が反証・未決でもconfiguration_mapとして保持できる。
 map:ModelMapAssemblyは全構成条件が成立した場合だけ返す。始終の対象自身のLaw真偽と写像の保存命題を区別する。
 ConfigurationMap同士のcomposeは同じMapCandidate/AtomMap表現を返し、comparison.kind=actionは全Uの像を比較する。
@@ -909,6 +914,20 @@ fiberのimageはその同値類、preimageは同じ候補集合。空の商も�
 descentは十分性成立時の商からLaw評価族への実写像。十分性のPropositionは商の後に別nodeで作る。
 Lawの十分性反証には同じview値を持ち、Law評価族が異なる候補対をEvidenceに残す。
 
+有理多面体の商は `representation:{kind:"rational_polyhedron",view_type:Type,linear:ModuleMap,offset:Vector}`。
+`domain` は元 `SolutionSet` の参照、`projection` はその元座標から View の実像へのアフィン写像。
+`classes` は像の `{kind:"rational_polyhedron",type:Type,halfspaces:Halfspace[]}`。
+`Halfspace={coefficients:Q[],upper:Q}` は内積が upper 以下である条件。
+像の座標は Q または Tuple 成分を左から深さ優先で平坦化した順で、矛盾行は空の像、空の行列は全座標域を表す。
+
+`at` を指定した場合は `fiber:Domain` を追加する。ファイバーの `halfspaces` は元等式の正・負、
+元不等式、固定 View 値の各等式の正・負をこの順で並べたもの。
+`solutions` と `at` で元の解集合と指定した値を参照する。ファイバーの座標は元 `SolutionSet` の
+`domain` が指定した元 parameter 順の Q の Tuple で、証拠点をそのまま元 Assignment に戻せる。
+`outcome` は `empty`、`unique`、`multiple`。矛盾なら非負結合の `contradiction`、一意なら点と
+各座標を固定する `coordinate_bounds`、非一意なら異なる `point` / `second` を保持する。
+現在の入力と問いで実像・元半空間・指定値・証拠を再構成して保存結果を照合する。
+
 `guarded_affine` は、同一係数域ZまたはQ上で選択した完全なアフィン域のLaw評価族を表す。
 `AffinePart={linear:ModuleMap,offset:Vector}` とし、各linearのsourceはcoordinates、
 offsetのmoduleはそのlinearのtargetとする。coordinatesは商の実像の基底であり、
@@ -1000,6 +1019,25 @@ requirementsが空で完全な共通解を確定した場合だけ、回答の�
 内部の再利用部品は保存payloadへ追加せず、回答・node・支持・証拠は現在入力の新しい導出とする。
 前回graphの参照番号・source・成功判断を現在の結果へ持ち込まない。
 保存JSONの読込みはnativeな前回結果を構成する入口ではなく、現在の導出との照合である。
+
+### 再観測の結果
+
+`reobserve` は標準出力で `archsig.reobservation.summary/1`、保存時は `result.json` に
+`archsig.reobservation/1` を返す。共通欄は `format`、`semantics`、`status`、`exit_code`、`issues`。
+`previous` / `current` の各段階は、要約では通常の回答要約、保存時は各段階の入力表・問い・回答・導出を保持する。
+評価前に停止した現在段階の欄は省略する。保存先の `inputs/` に前後の Law・ArchMap と指定した対応表を、
+`inputs/definitions/` に前後の Atom 定義を保持する。各段階の node 参照は同じ段階の node 表で解決する。
+
+対応表を用いた再観測は `assembly` に `assembly_status`、`observations`、`layout_missing`、`candidates` を返す。
+観測対応の各行は前回の `needed` と、見つかった現在の `observed` を持つ。
+候補行には `participant`、`previous_candidate`、`current_solve`、`status`、
+現在の `missing`、現在の apply が成立した場合の `selected_candidate` がある。
+`status` は `retained`、`excluded`、`undetermined`。判定不能は `reason` で組立て配置の欠測、
+候補の欠測、前回 Assignment または現在 solve の未確定、候補域の不適合、中断を区別する。
+保持した場合は `current_assignment` として、
+現在の `solutions` への参照と、現在主体と宣言順の型付き parameter 値の `entries` を返す。
+この継続結果は現在の元 Law・更新・適用条件を使った所属確認である。
+Law の意味保存は独立した保存検査の命題として扱う。
 
 ### 整数修復の観測要求
 

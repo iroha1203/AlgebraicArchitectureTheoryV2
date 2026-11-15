@@ -803,9 +803,7 @@ fn r2_repairs_keep_local_freedom_and_reassemble_actual_objects() {
     }
 }
 
-#[test]
-fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
-    let dir = workdir("repaired-boolean-assembly");
+fn repaired_boolean_inputs(extra_law: &str) -> archsig_input::input::InputSources {
     let original = include_str!("fixtures/r2-repaired-locals/definitions.json");
     let definitions = original.replace("\"Z\"", "\"Bool\"");
     let digest = |text: &str| {
@@ -823,7 +821,11 @@ fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
         .replace("quantity=if q then 1 else 0", "quantity=q")
         .replace("a.quantity+b.quantity=1", "a.quantity!=b.quantity")
         .replace("p.quantity=0", "p.quantity=false")
-        .replace("p.quantity=1", "p.quantity=true");
+        .replace("p.quantity=1", "p.quantity=true")
+        .replace(
+            "  law optional pair",
+            &format!("{extra_law}\n  law optional pair"),
+        );
     let mut map = include_str!("fixtures/r2-repaired-locals/archmap.json")
         .replace(&original_digest, &new_digest);
     for (id, value) in [
@@ -834,14 +836,17 @@ fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
     ] {
         map = fixture::atom(map, id, Some(Json::Bool(value)));
     }
-    write_inputs(
-        &dir,
-        &archsig_input::input::InputSources::from_bytes(
-            vec![definitions.into_bytes()],
-            law.into_bytes(),
-            map.into_bytes(),
-        ),
-    );
+    archsig_input::input::InputSources::from_bytes(
+        vec![definitions.into_bytes()],
+        law.into_bytes(),
+        map.into_bytes(),
+    )
+}
+
+#[test]
+fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
+    let dir = workdir("repaired-boolean-assembly");
+    write_inputs(&dir, &repaired_boolean_inputs(""));
     let asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
         .lines()
         .filter(|line| {
@@ -875,4 +880,90 @@ fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
         get(get(assembly, "outputs"), "object").value,
         get(get(global, "outputs"), "environment").value
     );
+}
+
+#[test]
+fn repaired_map_saves_finite_law_domain_and_actual_boolean_counterexample() {
+    let dir = workdir("repaired-model-map-finite-law");
+    write_inputs(
+        &dir,
+        &repaired_boolean_inputs(
+            "  law optional active(flag:Bool,p:Part):if flag then not p.quantity else true;",
+        ),
+    );
+    let original = include_str!("fixtures/r2-repaired-locals/queries.txt");
+    let mut asks = original
+        .lines()
+        .filter(|ask| {
+            let id = ask.split_once('=').unwrap().0;
+            !matches!(
+                id,
+                "madeConflict" | "madePartial" | "mixedOwner" | "moveBetweenChoices"
+            )
+        })
+        .collect::<Vec<_>>();
+    asks.extend([
+        "same=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)",
+        "different=assemble_map(Assembly.moves,from=$made0.assembly,to=$made1.assembly,x=@v/moveA,y=@v/moveB)",
+    ]);
+    let first = execute_asks(&dir, "out", None, &asks);
+    let result = result_json(&dir, &first);
+    let ns = arr(get(&result, "nodes"));
+    let referenced = |r: &archsig_common::json::JNode| {
+        let id = s(get(r, "node"));
+        ns.iter().find(|n| s(get(n, "id")) == id).unwrap()
+    };
+    let answers = arr(get(&result, "answers"));
+    let same = &answers[answers.len() - 2];
+    let different = answers.last().unwrap();
+    assert_eq!(s(get(same, "status")), "established", "{}", first.stdout);
+    let map = get(referenced(get(get(same, "outputs"), "map")), "value");
+    let domains = arr(get(map, "laws"))
+        .iter()
+        .filter(|row| has(row, "parameter_domains"))
+        .collect::<Vec<_>>();
+    assert!(!domains.is_empty());
+    for row in domains {
+        let [domain] = arr(get(row, "parameter_domains")) else {
+            panic!("one Bool domain")
+        };
+        assert_eq!(num(get(domain, "position")), 0);
+        assert_eq!(
+            arr(get(domain, "source"))
+                .iter()
+                .map(|value| &value.value)
+                .collect::<Vec<_>>(),
+            [
+                &archsig_common::json::JValue::Bool(false),
+                &archsig_common::json::JValue::Bool(true)
+            ]
+        );
+        assert_eq!(get(domain, "images").value, get(domain, "target").value);
+    }
+    assert_eq!(s(get(different, "status")), "refuted");
+    assert!(has(get(different, "outputs"), "configuration_map"));
+    let [evidence] = arr(get(different, "counterexamples")) else {
+        panic!("one counterexample")
+    };
+    let evidence = referenced(evidence);
+    let counterexample = get(get(evidence, "value"), "data");
+    let observed = |key| &get(referenced(get(counterexample, key)), "value").value;
+    assert_eq!(observed("left"), &archsig_common::json::JValue::Bool(true));
+    assert_eq!(
+        observed("right"),
+        &archsig_common::json::JValue::Bool(false)
+    );
+    let flag = arr(get(counterexample, "bindings"))
+        .iter()
+        .find(|binding| s(get(binding, "name")) == "flag")
+        .expect("actual flag");
+    assert_eq!(
+        get(referenced(get(flag, "value")), "value").value,
+        archsig_common::json::JValue::Bool(true)
+    );
+    let replay = execute_asks(&dir, "checked", Some("out"), &asks);
+    assert_eq!(replay.code, first.code);
+    let replay = result_json(&dir, &replay);
+    assert!(warnings(&replay).is_empty());
+    assert_eq!(get(&result, "answers").value, get(&replay, "answers").value);
 }

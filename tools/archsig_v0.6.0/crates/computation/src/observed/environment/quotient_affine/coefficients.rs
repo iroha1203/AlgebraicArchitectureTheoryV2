@@ -41,10 +41,13 @@ impl Input {
         let (slots, action, offset) = updates(search)?;
         if let Some(x) = &search.rational {
             let (particular, kernel) = if solutions {
-                let super::super::field_change::Solutions::Affine(fiber) = &x.solutions else {
-                    return Err(internal!("半空間の解集合をアフィン商へ渡した").into());
-                };
-                (fiber.particular.clone(), fiber.kernel.clone())
+                match &x.solutions {
+                    super::super::field_change::Solutions::Affine(fiber) => {
+                        (fiber.particular.clone(), fiber.kernel.clone())
+                    }
+                    // The caller reads directly on the full original coordinates.
+                    super::super::field_change::Solutions::Polyhedron(_) => (None, vec![]),
+                }
             } else {
                 (None, vec![])
             };
