@@ -124,14 +124,14 @@ pub(super) fn inspect(
     };
     let read = read();
     control.checkpoint(Checkpoint::Reuse)?;
-    let bytes = match read {
+    let mut bytes = match read {
         Ok(bytes) => bytes,
         Err(error) => {
             candidate.reject(format!("cannot read result.json: {error}"));
             return Ok(candidate);
         }
     };
-    let (mut document, nodes) = match archsig_common::json::parse_deferred_root_array::<
+    let (mut document, mut nodes) = match archsig_common::json::parse_deferred_root_array::<
         CheckFailure<Box<archsig_common::issue::Issue>>,
     >(&bytes, "nodes", control, Checkpoint::Reuse)
     {
@@ -152,6 +152,11 @@ pub(super) fn inspect(
     }
     candidate.pending = Some(match preflight(&document, prepared, control) {
         Ok(()) => {
+            retain_node_bytes(
+                &mut bytes,
+                nodes.as_deref_mut().unwrap_or_default(),
+                control,
+            )?;
             let JValue::Obj(fields) = &mut document.value else {
                 unreachable!("checked reuse header")
             };
@@ -181,6 +186,27 @@ pub(super) fn inspect(
     });
     Ok(candidate)
 }
+/// Keep exactly the serialized entries to be compared. Compact forward so
+/// inspected headers, separators and outer whitespace do not span evaluation.
+fn retain_node_bytes(
+    bytes: &mut Vec<u8>,
+    nodes: &mut [Span],
+    control: &Control,
+) -> Result<(), Signal> {
+    let mut retained = 0;
+    for (start, end) in nodes {
+        control.checkpoint(Checkpoint::Reuse)?;
+        let width = *end - *start;
+        bytes.copy_within(*start..*end, retained);
+        *start = retained;
+        retained += width;
+        *end = retained;
+    }
+    bytes.truncate(retained);
+    bytes.shrink_to_fit();
+    control.checkpoint(Checkpoint::Reuse)
+}
+
 enum Failure {
     Rejected(String),
     Stopped(Signal),
@@ -595,6 +621,22 @@ fn verify(
 mod reference_array_tests {
     use super::*;
     use std::{cell::Cell, rc::Rc};
+    #[test]
+    fn candidate_keeps_only_entry_bytes_and_rebases_each_range() {
+        let mut bytes = br#"  {"nodes": [ true, {"x":[1,2]} ],"other":[0]} "#.to_vec();
+        let control = Control::unlimited();
+        let (_, spans) = archsig_common::json::parse_deferred_root_array::<
+            Box<archsig_common::issue::Issue>,
+        >(&bytes, "nodes", &control, Checkpoint::Reuse)
+        .unwrap();
+        let mut spans = spans.unwrap();
+        retain_node_bytes(&mut bytes, &mut spans, &control).unwrap();
+        assert_eq!(bytes, br#"true{"x":[1,2]}"#);
+        assert_eq!(spans, [(0, 4), (4, 15)]);
+        retain_node_bytes(&mut bytes, &mut [], &control).unwrap();
+        assert!(bytes.is_empty());
+    }
+
     #[test]
     fn compact_refs_reuse_the_same_canonical_keys_and_reject_nonprior_ids() {
         let ids = BTreeMap::from([("n1".into(), "v0".into()), ("n2".into(), "v1".into())]);
