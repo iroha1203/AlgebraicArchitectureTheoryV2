@@ -1092,11 +1092,24 @@ mod tests {
         let enabled = vec![true; shared.subjects.len()];
         // A fixed h can be matched by p and a fixed z by q. No fixed (p,q)
         // works on all four inputs because its opposite is always present.
-        for (allowed, expected) in [([0, 1], 1), ([1, 0], 0)] {
+        for (allowed, expected, groups) in
+            [([0, 1], 1, [[0, 2], [1, 3]]), ([1, 0], 0, [[0, 1], [2, 3]])]
+        {
             let reduced = reduce(&shared, &allowed, &enabled, Goal::Assignment, &c).unwrap();
             assert_eq!(reduced.readings, [expected]);
             assert!(reduced.analysis.sufficient());
-            assert_eq!(reduced.analysis.groups.len(), 2);
+            assert_eq!(
+                reduced
+                    .analysis
+                    .groups
+                    .iter()
+                    .map(|group| group.indices.as_slice())
+                    .collect::<Vec<_>>(),
+                groups
+                    .iter()
+                    .map(|indices| indices.as_slice())
+                    .collect::<Vec<_>>(),
+            );
             assert!(
                 reduced
                     .analysis
