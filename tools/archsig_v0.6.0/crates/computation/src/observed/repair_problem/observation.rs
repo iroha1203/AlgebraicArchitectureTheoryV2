@@ -1044,7 +1044,14 @@ mod tests {
                 .iter()
                 .all(|g| g.possible == Some(true) && g.common == Some(true))
         );
-        assert_eq!(assignment.necessary.len(), 2);
+        assert_eq!(
+            assignment
+                .necessary
+                .iter()
+                .map(|(field, _)| *field)
+                .collect::<Vec<_>>(),
+            [0, 1]
+        );
         for (field, witness) in assignment.necessary {
             let kept = 1 - field;
             let want = family
@@ -1060,6 +1067,50 @@ mod tests {
         assert_eq!(insufficient.analysis.witnesses.len(), 2);
         assert_eq!(insufficient.analysis.groups.len(), 2);
         assert!(insufficient.necessary.is_empty());
+    }
+    #[test]
+    fn canonical_deletion_order_selects_one_of_two_inclusion_minimal_readings() {
+        let inputs = input(
+            r#"view input(r:Root):(Bool,Bool)=(r.h,r.z);
+                change choose(c:Part,p:Bool,q:Bool)=c with {
+                    flag=p,label=if q then "b" else "a"
+                };
+                law required valid(r:Root):forall c in Part[r].
+                    c.flag=r.h or (c.label="b")=r.z;"#,
+            r#""Bool""#,
+            None,
+        );
+        let c = archsig_common::control::quiet();
+        let result = super::super::super::evaluate_observed_bytes(
+            inputs,
+            &["p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,r=@v/root)"],
+            &c,
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let shared = shared(&result);
+        let enabled = vec![true; shared.subjects.len()];
+        // A fixed h can be matched by p and a fixed z by q. No fixed (p,q)
+        // works on all four inputs because its opposite is always present.
+        for (allowed, expected) in [([0, 1], 1), ([1, 0], 0)] {
+            let reduced = reduce(&shared, &allowed, &enabled, Goal::Assignment, &c).unwrap();
+            assert_eq!(reduced.readings, [expected]);
+            assert!(reduced.analysis.sufficient());
+            assert_eq!(reduced.analysis.groups.len(), 2);
+            assert!(
+                reduced
+                    .analysis
+                    .groups
+                    .iter()
+                    .all(|g| g.indices.len() == 2 && g.common == Some(true))
+            );
+            let [(field, witness)] = reduced.necessary.as_slice() else {
+                panic!("one remaining reading")
+            };
+            assert_eq!(*field, expected);
+            assert_eq!(witness.kind, "no_common_assignment");
+            assert_eq!(witness.indices, [0, 1, 2, 3]);
+        }
     }
     #[test]
     fn public_observe_reuses_the_problem_and_constructs_after_the_input_is_observed() {
