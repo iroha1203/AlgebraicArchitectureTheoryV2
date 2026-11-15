@@ -2,10 +2,7 @@
 use super::*;
 use crate::observed::{
     change_result::{CandidateInput, field_linear_result, linear_result},
-    environment::{
-        change_search,
-        quotient_affine::{Image, verify_polyhedral_points},
-    },
+    environment::quotient_affine::{Image, verify_polyhedral_points},
     field_polyhedron::{self, Halfspace, Outcome},
     numeric,
 };
@@ -62,7 +59,7 @@ pub(super) fn build(
     env: &Environment<'_>,
     input: &CandidateInput,
     image: &Image,
-    [solutions, expression, source]: [NodeRef; 3],
+    ([solutions, expression, source], at): ([NodeRef; 3], Option<NodeRef>),
     request: &Request,
     c: &Control,
 ) -> Result<ResultParts, ValidationFailure> {
@@ -73,7 +70,6 @@ pub(super) fn build(
     let m = image.matrix.len();
     let zero = numeric::zero(&Type::Q, c)?;
     let negative_one = numeric::unary(UnOp::Neg, &numeric::literal("1", &Type::Q, c)?, c)?;
-    let at = request.arguments.iter().find(|arg| arg.name == "fiber.at");
     let empty = matches!(polyhedron.outcome, Outcome::Empty(_));
     let mut original = if empty && at.is_none() {
         vec![]
@@ -148,9 +144,9 @@ pub(super) fn build(
         None,
     )?;
     let fiber = if let Some(at) = at {
-        let value = change_search::selector(env, b.g, &at.value)?;
+        let value = b.g.scalar(at)?;
         let mut coords = Vec::new();
-        flatten(&value, &mut coords, c)?;
+        flatten(value, &mut coords, c)?;
         if coords.len() != m || value.ty() != image.view_type {
             return Err(internal!("多面体のファイバー指定が View 型と違う").into());
         }
@@ -167,7 +163,7 @@ pub(super) fn build(
             Outcome::Unique { point, .. } => &[point],
             Outcome::Multiple { first, second } => &[first, second],
         };
-        verify_polyhedral_points(env, input, image, points, &value, request, c)?;
+        verify_polyhedral_points(env, input, image, points, value, request, c)?;
         let (kind, witnesses) = match result {
             Outcome::Empty(row) => (
                 "empty",
@@ -211,19 +207,6 @@ pub(super) fn build(
         for (name, value) in witnesses {
             wire.insert(name, value);
         }
-        let at = match env.answer_binding(b.g, &at.value, (0, 0))? {
-            AnswerBinding::Reference(reference) => reference,
-            AnswerBinding::Projection(node) => {
-                b.g.nodes
-                    .iter()
-                    .position(|item| *item == node)
-                    .map(NodeRef)
-                    .ok_or(internal!("多面体のファイバーの元View値が保持されていない"))?
-            }
-            AnswerBinding::Inapplicable(_) => {
-                return Err(internal!("多面体のファイバーの元View値が不適合").into());
-            }
-        };
         wire.insert("at".into(), at.wire());
         Some(b.push(
             NodeType::Domain,

@@ -518,6 +518,7 @@ propositionは包含と再制限の可換性を確認する。generatorsは全�
 修復状態上の Law の反証は、保存結果の `law_transport.source` / `target` から、始終それぞれの
 `ModelAssembly`、比較した `ObjectComponent` と元の `LawInstance` を参照できる。
 対応する終域出現が見つからない場合は `target` を省略する。理由の `location` は始域 Law の宣言位置を指す。
+`facts` には反証点で実際に読んだ原始観測 Atom を含める。修復で設定した値は組立て側の参照から辿る。
 ConfigurationMapの確認済み結果は、操作/Lawの移送が反証・未決でもconfiguration_mapとして保持できる。
 map:ModelMapAssemblyは全構成条件が成立した場合だけ返す。始終の対象自身のLaw真偽と写像の保存命題を区別する。
 ConfigurationMap同士のcomposeは同じMapCandidate/AtomMap表現を返し、comparison.kind=actionは全Uの像を比較する。

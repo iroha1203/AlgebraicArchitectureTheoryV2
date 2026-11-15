@@ -328,6 +328,32 @@ fn question<'a>(
         .ok_or_else(|| invalid("対応する種類・ID の元要求がない"))
 }
 
+struct Questions<'a> {
+    prepared: &'a PreparedObserved,
+    by_id: BTreeMap<&'a str, &'a Request>,
+}
+impl<'a> Questions<'a> {
+    fn new(
+        prepared: &'a PreparedObserved,
+        control: &Control,
+    ) -> Result<Self, ReobservationFailure> {
+        let mut by_id = BTreeMap::new();
+        for request in prepared.requests().requests() {
+            control.checkpoint(Checkpoint::ConfigurationMap)?;
+            by_id.insert(request.id.as_str(), request);
+        }
+        Ok(Self { prepared, by_id })
+    }
+
+    fn get(&self, id: &str, kind: QuestionKind) -> Result<&'a Request, ReobservationFailure> {
+        self.by_id
+            .get(id)
+            .copied()
+            .filter(|request| request.kind == kind)
+            .ok_or_else(|| invalid("対応する種類・ID の元要求がない"))
+    }
+}
+
 fn output<'a>(
     evaluation: &'a ObservedEvaluation,
     answer: &Answer,
@@ -364,16 +390,16 @@ fn answer_field<'a>(selector: &'a Selector, field: &str) -> Option<&'a str> {
 }
 
 fn repair_selection<'a>(
-    prepared: &'a PreparedObserved,
+    prepared: &Questions<'a>,
     selector: &Selector,
     solve: &Request,
 ) -> Result<(&'a Request, &'a Request), ReobservationFailure> {
     let apply = answer_field(selector, "object")
         .ok_or_else(|| invalid("局所選択が apply.object を指さない"))?;
-    let apply = question(prepared, apply, QuestionKind::Apply)?;
+    let apply = prepared.get(apply, QuestionKind::Apply)?;
     let selected = answer_field(&apply.head, "assignment")
         .ok_or_else(|| invalid("局所 apply に選択 Assignment がない"))?;
-    let selected = question(prepared, selected, QuestionKind::Candidate)?;
+    let selected = prepared.get(selected, QuestionKind::Candidate)?;
     let in_solutions = apply
         .arguments
         .iter()
@@ -957,20 +983,20 @@ fn matching_arguments<'a>(
 }
 
 fn repair_requests<'a>(
-    before: &'a PreparedObserved,
-    current: &'a PreparedObserved,
+    before: &Questions<'a>,
+    current: &Questions<'a>,
     previous_candidate: &str,
     current_solve: &str,
     reading: &str,
     checked_changes: &mut Option<BTreeSet<&'a str>>,
     control: &Control,
 ) -> Result<([&'a Request; 2], [&'a Request; 2]), ReobservationFailure> {
-    let before_candidate = question(before, previous_candidate, QuestionKind::Candidate)?;
+    let before_candidate = before.get(previous_candidate, QuestionKind::Candidate)?;
     let Some(prior_solve_id) = answer_field(&before_candidate.head, "solutions") else {
         return Err(invalid("前候補に元 solve がない"));
     };
-    let prior_solve = question(before, prior_solve_id, QuestionKind::Solve)?;
-    let new_solve = question(current, current_solve, QuestionKind::Solve)?;
+    let prior_solve = before.get(prior_solve_id, QuestionKind::Solve)?;
+    let new_solve = current.get(current_solve, QuestionKind::Solve)?;
     if [prior_solve, new_solve].iter().any(|request| {
         request.arguments.iter().any(|argument| {
             argument.name == "mode"
@@ -991,12 +1017,14 @@ fn repair_requests<'a>(
             "finite prepare の現在 solve を要求する".into(),
         ));
     };
-    let prior_prepare = question(before, prior_prepare_id, QuestionKind::Prepare)?;
-    let new_prepare = question(current, new_prepare_id, QuestionKind::Prepare)?;
+    let prior_prepare = before.get(prior_prepare_id, QuestionKind::Prepare)?;
+    let new_prepare = current.get(new_prepare_id, QuestionKind::Prepare)?;
+    let [before, current] = [before.prepared, current.prepared];
     let using = selected_change(prior_prepare)?;
     if using != selected_change(new_prepare)? {
         return Err(invalid("前回と現在の change が対応しない"));
     }
+    let revised_law = checked_changes.is_some();
     if let Some(checked_changes) = checked_changes
         && checked_changes.insert(using)
     {
@@ -1022,13 +1050,37 @@ fn repair_requests<'a>(
             ));
         }
     }
-    if prior_prepare.head != new_prepare.head
-        || !selected_reading(before, prior_prepare, reading)
+    if !selected_reading(before, prior_prepare, reading)
         || !selected_reading(current, new_prepare, reading)
     {
-        return Err(invalid(
-            "finite repair の要求 Law または reading が対応しない",
-        ));
+        return Err(invalid("finite repair の reading が対応しない"));
+    }
+    if prior_prepare.head != new_prepare.head {
+        if !revised_law {
+            return Err(invalid(
+                "同一 Law 入力での finite repair の要求 Law が対応しない",
+            ));
+        }
+        let params = |prepared: &'a PreparedObserved, request: &Request| {
+            let name = request
+                .declaration()
+                .ok_or_else(|| invalid("prepare の元 Law がない"))?;
+            let Signature::Law { params, .. } =
+                &prepared.inputs().law().declarations()[name].signature
+            else {
+                return Err(invalid("prepare の元宣言が Law でない"));
+            };
+            Ok(params)
+        };
+        let old = params(before, prior_prepare)?;
+        let new = params(current, new_prepare)?;
+        if old
+            .iter()
+            .map(|p| (&p.name, &p.ty))
+            .ne(new.iter().map(|p| (&p.name, &p.ty)))
+        {
+            return Err(invalid("改訂後の要求 Law の型付き引数が対応しない"));
+        }
     }
     Ok(([prior_solve, new_solve], [prior_prepare, new_prepare]))
 }
@@ -1263,6 +1315,8 @@ fn reevaluate_assembly_aligned(
         }
         Ok(())
     };
+    let old_questions = Questions::new(before, control)?;
+    let new_questions = Questions::new(&current, control)?;
     let mut checked_changes = (old.law().bytes() != new.law().bytes()).then(BTreeSet::new);
     let mut selected_locals = Vec::new();
     for (a, b) in matching_arguments(before_request, after_request)? {
@@ -1280,8 +1334,8 @@ fn reevaluate_assembly_aligned(
             .remove(participant)
             .ok_or_else(|| invalid("局所 apply に担当の候補対応がない"))?;
         let ([prior_solve, new_solve], [prior_prepare, new_prepare]) = repair_requests(
-            before,
-            &current,
+            &old_questions,
+            &new_questions,
             candidate.previous_candidate,
             candidate.current_solve,
             alignment.reading,
@@ -1309,8 +1363,8 @@ fn reevaluate_assembly_aligned(
             }
             Ok((snapshot.clone(), subject.clone()))
         };
-        let (_, old_candidate) = repair_selection(before, &a.value, prior_solve)?;
-        let (new_apply, new_candidate) = repair_selection(&current, &b.value, new_solve)?;
+        let (_, old_candidate) = repair_selection(&old_questions, &a.value, prior_solve)?;
+        let (new_apply, new_candidate) = repair_selection(&new_questions, &b.value, new_solve)?;
         if old_candidate.id != candidate.previous_candidate {
             return Err(invalid(
                 "前回の局所 apply が照合対象の前回候補を使用していない",
@@ -1328,8 +1382,8 @@ fn reevaluate_assembly_aligned(
     }
     if let Some(candidate) = standalone {
         let (_, [prior_prepare, new_prepare]) = repair_requests(
-            before,
-            &current,
+            &old_questions,
+            &new_questions,
             candidate.previous_candidate,
             candidate.current_solve,
             alignment.reading,
@@ -1832,6 +1886,12 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
             "law optional boundary(p:Part)",
             "law optional unrelated():true; law optional boundary(p:Part)",
         );
+        let added = law.replace(
+            "law optional boundary(p:Part)",
+            "law optional stricter(p:Part,b:Part):p.quantity=1; law optional boundary(p:Part)",
+        );
+        let new_requirement =
+            queries.replace("prepare(Assembly.flexible,", "prepare(Assembly.stricter,");
         let reformatted = unrelated.replace("quantity=if q", "quantity = if q");
         for (old, new, map, asks, expected, assembly) in [
             (
@@ -1863,6 +1923,14 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
                 &strong,
                 AFTER,
                 queries,
+                CandidateContinuity::Excluded,
+                "refuted",
+            ),
+            (
+                &law,
+                &added,
+                AFTER,
+                new_requirement.as_str(),
                 CandidateContinuity::Excluded,
                 "refuted",
             ),

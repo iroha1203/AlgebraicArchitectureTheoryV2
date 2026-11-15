@@ -2,7 +2,7 @@
 use super::{
     object_evaluate::{ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome},
     object_transport::{mapped_instance, same_evaluation},
-    result::{NodeRef, ObservedEvaluation, Payload, Scalar},
+    result::{Fact, NodeRef, ObservedEvaluation, Payload, Scalar, Scope},
 };
 #[cfg(test)]
 use crate::construction::readings::object_reading_instances;
@@ -27,10 +27,13 @@ use archsig_input::{input::CheckedInputs, result::Signal};
 use std::sync::Arc;
 
 mod family;
+pub(super) use family::{
+    Domains as FiniteLawDomains, compare_native_readings, constant_numeric_family,
+    read_native_family,
+};
 pub use family::{
     FiniteLawFamily, LawParameterComparison, LawReadingDomain, LawReadingFamily, LawReadingRow,
 };
-pub(super) use family::{compare_native_readings, constant_numeric_family, read_native_family};
 
 #[derive(Debug)]
 pub enum ObjectLawTransportFailure {
@@ -153,6 +156,7 @@ pub struct ObjectLawTransport {
     family: Option<FiniteLawFamily>,
     missing: Vec<super::result::Fact>,
     unsupported_state_expression: bool,
+    state_reads: StateLawReads,
     numeric_family: Option<super::environment::numeric_law_function::Family>,
     outcome: LawTransportOutcome,
 }
@@ -324,10 +328,27 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
     Ok(r)
 }
 
+#[derive(Debug, Default)]
+pub(super) struct StateLawReads {
+    pub facts: Vec<Fact>,
+    pub scope: Scope,
+}
+
+impl StateLawReads {
+    fn combined(mut self, other: Self) -> Self {
+        self.facts.extend(other.facts);
+        self.facts.sort();
+        self.facts.dedup();
+        self.scope.merge(&other.scope);
+        self
+    }
+}
+
 struct StateReading {
     value: LawBooleanReading,
     missing: Vec<super::result::Fact>,
     unsupported: bool,
+    reads: StateLawReads,
 }
 
 impl StateReading {
@@ -336,6 +357,7 @@ impl StateReading {
             value,
             missing: vec![],
             unsupported: false,
+            reads: StateLawReads::default(),
         }
     }
 }
@@ -374,6 +396,7 @@ fn reading_from_state(
                     .map(|condition| condition.slot().clone())
                     .collect(),
                 unsupported: false,
+                reads: StateLawReads::default(),
             });
         }
         InstanceApplication::Applicable { .. } => {}
@@ -423,11 +446,20 @@ fn reading_from_state(
                 value: result,
                 missing: vec![],
                 unsupported: true,
+                reads: StateLawReads::default(),
             });
         }
         Err(failure) => return Err(classify(failure)),
     };
     missing.extend(evaluation.application_missing);
+    let reads = StateLawReads {
+        facts: evaluation
+            .support
+            .into_iter()
+            .filter(|fact| fact.atom.is_some() || fact.field.is_none())
+            .collect(),
+        scope: evaluation.scope,
+    };
     if evaluation.application != Some(true)
         || evaluation.condition_failed
         || evaluation.condition_pending
@@ -436,6 +468,7 @@ fn reading_from_state(
             value: result,
             missing,
             unsupported: false,
+            reads,
         });
     }
     result.application = LawApplication::Guard(evaluation.guard);
@@ -449,6 +482,7 @@ fn reading_from_state(
         value: result,
         missing,
         unsupported: false,
+        reads,
     })
 }
 
@@ -600,7 +634,7 @@ pub(super) fn object_law_transport_on_state(
     evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
     object: usize,
     instance: usize,
-    states: Option<[SelectedState<'_, '_>; 2]>,
+    states: Option<([SelectedState<'_, '_>; 2], &mut FiniteLawDomains)>,
     c: &Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     let source_readings = evaluations[0].readings().clone();
@@ -644,6 +678,7 @@ pub(super) fn object_law_transport_on_state(
         family: None,
         missing: Vec::new(),
         unsupported_state_expression: false,
+        state_reads: StateLawReads::default(),
         numeric_family: None,
         outcome: LawTransportOutcome::Undetermined,
     };
@@ -706,7 +741,7 @@ pub(super) fn object_law_transport_on_state(
             tick(c)?;
             return Ok(());
         }
-        if let Some(states) = states {
+        if let Some((states, cache)) = states {
             if r.instance().parameters().is_empty()
                 && r.target_readings.instances()[ti].parameters().is_empty()
             {
@@ -732,10 +767,11 @@ pub(super) fn object_law_transport_on_state(
                 r.missing
                     .extend(source.missing.into_iter().chain(target.missing));
                 r.unsupported_state_expression = source.unsupported || target.unsupported;
+                r.state_reads = source.reads.combined(target.reads);
                 r.source_reading = Some(source.value);
                 r.target_reading = Some(target.value);
             } else {
-                family::prepare(&inputs, &mut r, c)?;
+                family::prepare(&inputs, &mut r, Some(cache), c)?;
                 if !matches!(r.outcome, LawTransportOutcome::Refuted(_)) {
                     family::compare_state_rows(&mut r, states, [(object, instance), (to, ti)], c)?;
                 }
@@ -782,7 +818,7 @@ pub(super) fn object_law_transport_on_state(
             return Ok(());
         }
         if !r.instance().parameters().is_empty() {
-            family::prepare(&inputs, &mut r, c)?;
+            family::prepare(&inputs, &mut r, None, c)?;
             if matches!(r.outcome, LawTransportOutcome::Refuted(_)) {
                 decided = true;
                 tick(c)?;
@@ -900,6 +936,10 @@ impl ObjectLawTransport {
     pub fn outcome(&self) -> &LawTransportOutcome {
         &self.outcome
     }
+    pub(super) fn state_reads(&self) -> &StateLawReads {
+        &self.state_reads
+    }
+
     pub(super) fn state_missing(&self) -> &[super::result::Fact] {
         &self.missing
     }

@@ -99,7 +99,7 @@ pub(super) fn compute(
     env: &Environment<'_>,
     g: &Graph,
     input: CandidateInput,
-    reference: NodeRef,
+    (reference, at): (NodeRef, Option<NodeRef>),
     request: &Request,
     base: usize,
     c: &Control,
@@ -282,7 +282,7 @@ pub(super) fn compute(
             env,
             &input,
             &image,
-            [reference, expression, source],
+            ([reference, expression, source], at),
             request,
             c,
         )?;

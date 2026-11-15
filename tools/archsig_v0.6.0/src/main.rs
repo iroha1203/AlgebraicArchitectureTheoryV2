@@ -436,8 +436,20 @@ mod tests {
             "--out",
             "out",
         ];
-        if kind == "run" {
+        if matches!(kind.as_str(), "run" | "reobserve") {
             args.extend(["--ask", "n=evaluate(CountCheck.amount,s=@v/s)"]);
+        }
+        if kind == "reobserve" {
+            args.extend([
+                "--before-atom-definition",
+                "d.json",
+                "--before-law",
+                "l.law",
+                "--before-archmap",
+                "a.json",
+                "--before-ask",
+                "n=evaluate(CountCheck.amount,s=@v/s)",
+            ]);
         }
         let args: Vec<_> = args.into_iter().map(std::ffi::OsString::from).collect();
         let (outcome, version) = execute(&args, &mut signals);
@@ -470,7 +482,7 @@ mod tests {
             };
             value
         }
-        for kind in ["check", "run"] {
+        for kind in ["check", "run", "reobserve"] {
             for (signal, code, name) in [
                 (OsSignal::SIGINT, 130, "SIGINT"),
                 (OsSignal::SIGTERM, 143, "SIGTERM"),

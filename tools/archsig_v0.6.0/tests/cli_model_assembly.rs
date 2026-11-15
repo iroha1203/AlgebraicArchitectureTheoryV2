@@ -803,9 +803,16 @@ fn r2_repairs_keep_local_freedom_and_reassemble_actual_objects() {
     }
 }
 
-fn repaired_boolean_inputs(extra_law: &str) -> archsig_input::input::InputSources {
+fn repaired_boolean_inputs(extra_law: &str, gate: bool) -> archsig_input::input::InputSources {
     let original = include_str!("fixtures/r2-repaired-locals/definitions.json");
-    let definitions = original.replace("\"Z\"", "\"Bool\"");
+    let mut definitions = original.replace("\"Z\"", "\"Bool\"");
+    if gate {
+        definitions = definitions.replace(
+            r#""name": "quantity","#,
+            r#""name":"gate","type":"Bool","meaning":"Enable the Law reading."},
+               {"name": "quantity","#,
+        );
+    }
     let digest = |text: &str| {
         archsig_input::definition::check_definitions(&[("definition0", text.as_bytes())])
             .unwrap()
@@ -836,6 +843,16 @@ fn repaired_boolean_inputs(extra_law: &str) -> archsig_input::input::InputSource
     ] {
         map = fixture::atom(map, id, Some(Json::Bool(value)));
     }
+    if gate {
+        let atoms = ["a", "b", "ma", "mb"].map(|subject| {
+            format!(r#"{{"id":"{subject}-gate","subject":"{subject}","field":"Assemble.Part.gate","value":{},"origin":"model"}}"#, subject == "a")
+        });
+        map = map.replacen(
+            r#""atoms":["#,
+            &format!(r#""atoms":[{},"#, atoms.join(",")),
+            1,
+        );
+    }
     archsig_input::input::InputSources::from_bytes(
         vec![definitions.into_bytes()],
         law.into_bytes(),
@@ -846,7 +863,7 @@ fn repaired_boolean_inputs(extra_law: &str) -> archsig_input::input::InputSource
 #[test]
 fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
     let dir = workdir("repaired-boolean-assembly");
-    write_inputs(&dir, &repaired_boolean_inputs(""));
+    write_inputs(&dir, &repaired_boolean_inputs("", false));
     let asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
         .lines()
         .filter(|line| {
@@ -888,7 +905,8 @@ fn repaired_map_saves_finite_law_domain_and_actual_boolean_counterexample() {
     write_inputs(
         &dir,
         &repaired_boolean_inputs(
-            "  law optional active(flag:Bool,p:Part):if flag then not p.quantity else true;",
+            "  law optional active(flag:Bool,p:Part):if flag then (not p.gate or not p.quantity) else true;",
+            true,
         ),
     );
     let original = include_str!("fixtures/r2-repaired-locals/queries.txt");
@@ -961,6 +979,17 @@ fn repaired_map_saves_finite_law_domain_and_actual_boolean_counterexample() {
         get(referenced(get(flag, "value")), "value").value,
         archsig_common::json::JValue::Bool(true)
     );
+    let facts = arr(get(counterexample, "facts"));
+    assert!(facts.iter().any(|fact| {
+        has(fact, "atom")
+            && s(get(fact, "atom")) == "a-gate"
+            && s(get(fact, "field")) == "Assemble.Part.gate"
+    }));
+    assert!(
+        !facts
+            .iter()
+            .any(|fact| has(fact, "field") && s(get(fact, "field")) == "Assemble.Part.quantity")
+    );
     let occurrences = get(counterexample, "law_transport");
     for (end, assembly) in [("source", "made0"), ("target", "made1")] {
         let evidence = get(occurrences, end);
@@ -1011,6 +1040,7 @@ fn repaired_map_skips_the_body_of_a_law_when_its_guard_is_false() {
         &repaired_boolean_inputs(
             "view owned(r:Root,p:Part[r]):Bool=true;
              law optional scoped(p:Part,q:Bool) when false: forall b:Root . owned(b,p);",
+            false,
         ),
     );
     let mut asks = include_str!("fixtures/r2-repaired-locals/queries.txt")

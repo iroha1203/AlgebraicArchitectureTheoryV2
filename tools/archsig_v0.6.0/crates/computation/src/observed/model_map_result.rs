@@ -274,6 +274,13 @@ fn put_map(
     maps.insert(reference.0 - b.base, map.clone());
     Ok((candidate, reference))
 }
+fn include_law_reads(part: &mut Part, reads: &super::object_law_transport::StateLawReads) {
+    if !reads.facts.is_empty() {
+        part.support = Support::sum(reads.facts.clone(), [part.support.clone()]);
+    }
+    part.scope.merge(&reads.scope);
+}
+
 struct LawNodes {
     source: [NodeRef; 3],
     target: Option<[NodeRef; 3]>,
@@ -797,6 +804,7 @@ fn compute(
                     vec![local_condition],
                     Decision::Established,
                 )?;
+                include_law_reads(&mut b.parts[p.0 - base], law.state_reads());
                 let mut row = archsig_common::canonical::JsonObject::from([
                     ("source_object".into(), so.wire()),
                     ("target_object".into(), to.wire()),
@@ -1000,6 +1008,7 @@ fn compute(
         let mut facts = Vec::new();
         let mut action_difference = None;
         let mut law_transport = None;
+        let mut law_reads = None;
         let mut overlap = None;
         let difference = |kind: &str, subject: &Fact, fact: &Fact, left: &Fact, right: &Fact| {
             Json::obj([
@@ -1202,6 +1211,9 @@ fn compute(
                         provenance.insert("target".into(), endpoint(refs[1], target));
                     }
                     law_transport = Some(Json::Obj(provenance));
+                    let reads = law.state_reads();
+                    facts.extend(reads.facts.iter().cloned());
+                    law_reads = Some(reads);
                     counter_args.extend([nodes.source[0], nodes.source[1], refs[0], refs[1]]);
                     if let Some(target) = nodes.target {
                         counter_args.extend([target[0], target[1]]);
@@ -1361,6 +1373,9 @@ fn compute(
             counter_args,
             None,
         )?;
+        if let Some(reads) = law_reads {
+            include_law_reads(&mut b.parts[counterexample.0 - base], reads);
+        }
         evidence.push(counterexample);
         let condition = b.proposition(
             "constructible",
