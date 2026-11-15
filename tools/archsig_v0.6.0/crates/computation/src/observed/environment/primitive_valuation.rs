@@ -275,7 +275,6 @@ impl<'a> Environment<'a> {
     ) -> Result<Option<Self>, ValidationFailure> {
         let inputs = environment.indexes.inputs;
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let roster = environment.indexes.completion.roster();
         let mut values = BTreeMap::new();
         let mut projected_positions = std::collections::BTreeSet::new();
         let mut original_values = BTreeMap::new();
@@ -310,23 +309,23 @@ impl<'a> Environment<'a> {
             data::check(value, inputs.law(), control)?;
             let encoded = data::input_json(value, control)?;
             let namespace = subject.ty.namespace();
-            let original = archsig_input::archmap::value::check_assignment::<
-                CheckFailure<Box<archsig_common::issue::Issue>>,
-            >(
-                &encoded,
-                &field.ty,
-                inputs.definitions(),
-                roster,
-                namespace,
-                control,
-            )
-            .map_err(|failure| match failure {
-                CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-                CheckFailure::Input(issue) => ValidationFailure::Internal(internal!(
-                    "候補代入が元fieldの条件を満たさない: {}",
-                    issue.message
-                )),
-            })?;
+            let original = environment
+                .indexes
+                .completion
+                .check_assignment::<CheckFailure<Box<archsig_common::issue::Issue>>>(
+                    &encoded,
+                    &field.ty,
+                    namespace,
+                    control,
+                    Checkpoint::PrimitiveValuation,
+                )
+                .map_err(|failure| match failure {
+                    CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+                    CheckFailure::Input(issue) => ValidationFailure::Internal(internal!(
+                        "候補代入が元fieldの条件を満たさない: {}",
+                        issue.message
+                    )),
+                })?;
             let checked = scalar_from(&original, &field.ty, inputs.law(), control)?
                 .ok_or(internal!("候補代入の原始値を読めない"))?;
             if !same_primitive_value(value, &checked, control)? {
