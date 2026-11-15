@@ -261,8 +261,7 @@ impl<'a> InputIndexes<'a> {
                 modes,
                 snapshot_origins,
                 completion: CompletionPreparation::new(
-                    inputs.archmap().snapshots(),
-                    inputs.definitions(),
+                    inputs,
                     control,
                     Checkpoint::FiniteIteration,
                 )?,

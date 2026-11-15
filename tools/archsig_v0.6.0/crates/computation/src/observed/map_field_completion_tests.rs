@@ -311,20 +311,8 @@ fn prepared_completion_keeps_pin_outcomes_bound_to_each_candidate_and_input() {
     let control = quiet();
     let input = input.prepared.inputs();
     let other = other.prepared.inputs();
-    let prepared = CompletionPreparation::new(
-        input.archmap().snapshots(),
-        input.definitions(),
-        &control,
-        Checkpoint::Completion,
-    )
-    .unwrap();
-    let fixed = CompletionPreparation::new(
-        other.archmap().snapshots(),
-        other.definitions(),
-        &control,
-        Checkpoint::Completion,
-    )
-    .unwrap();
+    let prepared = CompletionPreparation::new(input, &control, Checkpoint::Completion).unwrap();
+    let fixed = CompletionPreparation::new(other, &control, Checkpoint::Completion).unwrap();
 
     assert!(prepared.check::<Checked>(&[owner("A")], &control).is_ok());
     assert!(prepared.check::<Checked>(&[empty()], &control).is_ok());
@@ -336,14 +324,32 @@ fn prepared_completion_keeps_pin_outcomes_bound_to_each_candidate_and_input() {
         fixed.check::<Checked>(&[owner("B"), empty()], &control),
         Err(CheckFailure::Input(issue)) if issue.code == Code::Reference
     ));
-    let stopped = Control::new(|_| Some(Signal::Term));
-    assert!(matches!(
-        prepared.check::<Checked>(&[owner("B"), empty()], &stopped),
-        Err(CheckFailure::Stopped(Signal::Term))
-    ));
-    assert!(
-        prepared
-            .check::<Checked>(&[owner("B"), empty()], &control)
-            .is_ok()
-    );
+    use std::{cell::Cell, rc::Rc};
+    let pins = [owner("B"), empty()];
+    for warm in [false, true] {
+        let run = |stop_at| {
+            let candidate =
+                CompletionPreparation::new(input, &control, Checkpoint::Completion).unwrap();
+            if warm {
+                candidate.check::<Checked>(&pins, &control).unwrap();
+            }
+            let checkpoints = Rc::new(Cell::new(0_usize));
+            let observed = checkpoints.clone();
+            let control = Control::new(move |_| {
+                observed.set(observed.get() + 1);
+                (stop_at == Some(observed.get())).then_some(Signal::Term)
+            });
+            let result = candidate.check::<Checked>(&pins, &control);
+            candidate.check::<Checked>(&pins, &quiet()).unwrap();
+            (result, checkpoints.get())
+        };
+        let (result, checkpoints) = run(None);
+        result.unwrap();
+        for at in 1..=checkpoints {
+            assert!(
+                matches!(run(Some(at)).0, Err(CheckFailure::Stopped(Signal::Term))),
+                "warm={warm}, checkpoint={at}"
+            );
+        }
+    }
 }

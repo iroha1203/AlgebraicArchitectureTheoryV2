@@ -6,7 +6,7 @@ use archsig_common::{
     types::Type,
 };
 use archsig_input::{
-    archmap::{Fact, FieldAssignment, Slot},
+    archmap::{CompletionPreparation, Fact, FieldAssignment, Slot},
     input::CheckedInputs,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -194,6 +194,7 @@ pub(crate) fn determined_owners(
     support.sort();
     support.dedup();
     tick(c)?;
+    let completion = CompletionPreparation::new(inputs, c, Checkpoint::Completion)?;
     let mut kept = Vec::new();
     for values in candidates {
         tick(c)?;
@@ -212,12 +213,7 @@ pub(crate) fn determined_owners(
             });
         }
         tick(c)?;
-        match archsig_input::archmap::check_completion_with_values::<CheckFailure<Box<Issue>>>(
-            &inputs.archmap().snapshots(),
-            &inputs.law().definitions(),
-            &pinned,
-            c,
-        ) {
+        match completion.check::<CheckFailure<Box<Issue>>>(&pinned, c) {
             Ok(()) => kept.push(values),
             Err(CheckFailure::Input(issue)) if issue.code == Code::InconsistentObservation => (),
             Err(CheckFailure::Stopped(signal)) => return Err(Failure::Stopped(signal)),

@@ -651,12 +651,13 @@ pub fn check_valuation_with_values<E: InputError>(
 impl<'a> CompletionPreparation<'a> {
     /// 元入力の型付き参照索引を共有し、補完に特有の制約は初回に組み立てる。
     pub fn new(
-        snapshots: &'a [Snapshot],
-        definitions: &'a CheckedDefinitions,
+        inputs: &'a crate::input::CheckedInputs,
         control: &Control,
         point: Checkpoint,
     ) -> Result<Self, archsig_common::control::Signal> {
-        Self::index(snapshots, definitions, || control.checkpoint(point))
+        Self::index(inputs.archmap().snapshots(), inputs.definitions(), || {
+            control.checkpoint(point)
+        })
     }
 
     pub fn roster(&self) -> &value::Roster<'a> {
