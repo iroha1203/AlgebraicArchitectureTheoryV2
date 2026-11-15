@@ -688,6 +688,7 @@ impl<'a> CompletionPreparation<'a> {
         control: &Control,
         point: Checkpoint,
     ) -> Result<Value, E> {
+        E::checkpoint(control, point)?;
         let roster = AssignmentReferences {
             prepared: self,
             control,
