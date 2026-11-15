@@ -41,7 +41,7 @@ fn graph(result: &ObservedEvaluation, control: &Control, cold: bool) -> Graph {
     )
     .unwrap();
     let mut graph = Graph::new(control);
-    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.requests = result.prepared.requests().requests().to_vec().into();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();

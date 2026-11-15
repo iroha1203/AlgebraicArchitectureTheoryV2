@@ -267,7 +267,7 @@ fn normal_validator_rejects_changed_producer_edges_and_support() {
             &c,
         )?;
         let mut g = Graph::new(&c);
-        g.requests = requests;
+        g.requests = requests.into();
         g.checked_answers = result.answers.iter().cloned().enumerate().collect();
         for (index, node) in nodes.iter().enumerate() {
             g.active = result.contexts[index];
@@ -1315,7 +1315,7 @@ fn shared_repair_validation_reuses_success_and_rechecks_after_mutable_graph_acce
     let source_base = data_from(&result, reference).source.base;
     let env = Environment::with_prepared(&result.prepared, &control).unwrap();
     let mut graph = Graph::new(&control);
-    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.requests = result.prepared.requests().requests().to_vec().into();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();
     graph.instances = result.instances.clone();

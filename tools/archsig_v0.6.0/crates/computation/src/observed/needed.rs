@@ -352,7 +352,7 @@ mod tests {
         let mut graph = Graph::new(&Control::unlimited());
         graph.nodes = result.nodes.clone().into();
         graph.contexts = result.contexts.clone();
-        graph.requests = result.prepared.requests().requests().to_vec();
+        graph.requests = result.prepared.requests().requests().to_vec().into();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();

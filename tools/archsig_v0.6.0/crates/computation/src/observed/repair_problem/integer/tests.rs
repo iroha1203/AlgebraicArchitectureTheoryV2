@@ -853,7 +853,7 @@ fn integer_native_validation_rejects_changed_owner_edges_metadata_and_request() 
             &c,
         )?;
         let mut graph = Graph::new(&c);
-        graph.requests = requests;
+        graph.requests = requests.into();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
         for (i, node) in nodes.iter().enumerate() {
             graph.active = result.contexts[i];

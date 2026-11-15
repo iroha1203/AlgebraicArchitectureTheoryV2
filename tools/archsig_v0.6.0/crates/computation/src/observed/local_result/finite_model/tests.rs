@@ -211,7 +211,7 @@ fn finite_summary_inhabitation_is_rechecked_from_both_complete_state_tables() {
     let base = source.base;
     let env = Environment::with_prepared(&normal.prepared, &control).unwrap();
     let mut graph = Graph::new(&control);
-    graph.requests = normal.prepared.requests().requests().to_vec();
+    graph.requests = normal.prepared.requests().requests().to_vec().into();
     graph.frames = normal.frames.clone();
     graph.iterations = normal.iterations.clone();
     graph.instances = normal.instances.clone();

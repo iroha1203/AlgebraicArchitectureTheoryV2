@@ -77,6 +77,27 @@ pub(in crate::observed) fn closed_root_plan(
         }
     }
     let mut missing = BTreeSet::new();
+    let mut admitted = vec![false; requests.len()];
+    let mut needs_recorded_prefix = false;
+    for &index in prepared.requests().evaluation_order().iter().rev() {
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        let request = &requests[index];
+        // These native diagnostics serialize coordinates with their raw graph
+        // positions in the message. Earlier graph slots affect those messages
+        // even if the request has no explicit dependency on those slots.
+        needs_recorded_prefix |= matches!(
+            request.kind,
+            QuestionKind::Localize | QuestionKind::Diagnose
+        ) || (request.kind == QuestionKind::Compare
+            && crate::observed::request::comparison::kind(request)
+                .is_ok_and(|kind| kind == "diagnostics"));
+        if !needs_recorded_prefix && !consumed.contains(request.id.as_str()) {
+            admitted[index] = closed_request_eligible(prepared, request, &missing, control)?;
+        }
+    }
+    if !admitted.iter().any(|&eligible| eligible) {
+        return Ok(admitted);
+    }
     for field in prepared
         .inputs()
         .archmap()
@@ -96,13 +117,12 @@ pub(in crate::observed) fn closed_root_plan(
             missing.insert(&field.name);
         }
     }
-    let mut admitted = Vec::with_capacity(requests.len());
-    for request in requests {
-        control.checkpoint(Checkpoint::FiniteIteration)?;
-        admitted.push(
-            !consumed.contains(request.id.as_str())
-                && closed_request_eligible(prepared, request, &missing, control)?,
-        );
+    if !missing.is_empty() {
+        for (request, eligible) in requests.iter().zip(&mut admitted) {
+            if *eligible {
+                *eligible = closed_request_eligible(prepared, request, &missing, control)?;
+            }
+        }
     }
     control.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(admitted)
@@ -594,6 +614,22 @@ mod tests {
                 .truth,
             Some(true)
         );
+    }
+
+    #[test]
+    fn delivery_sealed_root_releases_reserve_without_discarding_the_prefix() {
+        let mut graph = Graph::new(&Control::unlimited());
+        let prior = graph.push(value(Arc::new(Scalar::Bool(false)))).unwrap();
+        let capacity = graph.nodes.capacity();
+        let prefix = graph.suffix_checkpoint();
+        for _ in 0..(capacity + 1) {
+            graph.push(value(Arc::new(Scalar::Bool(true)))).unwrap();
+        }
+        assert!(graph.nodes.capacity() > capacity);
+        graph.discard_root_suffix(&prefix).unwrap();
+        assert_eq!(graph.nodes.capacity(), capacity);
+        assert_eq!(graph.nodes.len(), 1);
+        assert_eq!(graph.boolean(Some(prior)).unwrap(), Some(false));
     }
     #[test]
     fn delivery_shared_domain_keeps_only_required_members_after_body_graph_release() {

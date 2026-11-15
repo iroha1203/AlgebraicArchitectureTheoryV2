@@ -31,7 +31,7 @@ fn graph(result: &super::super::ObservedEvaluation, control: &Control) -> Graph 
     let mut graph = Graph::new(control);
     graph.nodes = result.nodes.clone().into();
     graph.contexts = result.contexts.clone();
-    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.requests = result.prepared.requests().requests().to_vec().into();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();
@@ -476,7 +476,7 @@ fn published_local_source_keeps_registry_dependency_and_rejects_duplicate_public
     env.validate_answer(&g, request, &answer).unwrap();
     let source = super::super::local_result::published_source(&g, request, &answer).unwrap();
     env.results.cache.borrow_mut().registry_read = true;
-    g.checked_answers.push((index, answer.clone()));
+    g.record_answer(index, answer.clone());
     env.keep_published_local_source(&g, index, request, &answer);
     assert!(env.results.source_checked(&source));
     assert!(env.results.cache.borrow().registry_read);
@@ -501,7 +501,7 @@ fn published_local_source_keeps_registry_dependency_and_rejects_duplicate_public
     g.iterations.pop();
     env.validate_answer(&g, request, &answer).unwrap();
     assert!(env.results.source_checked(&source));
-    g.checked_answers.push((index, answer.clone()));
+    g.record_answer(index, answer.clone());
     env.keep_published_local_source(&g, index, request, &answer);
     assert!(!env.results.source_checked(&source));
     assert!(env.results.validation_snapshot.borrow().is_none());

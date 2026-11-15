@@ -119,7 +119,7 @@ impl DeliveryEvaluation {
             Content::Closed(run) => ordered_issues(run)
                 .into_iter()
                 .map(|reason| match reason {
-                    DeliveryReason::Closed(reason) => summary::owned_reason_wire(reason),
+                    DeliveryReason::Closed(reason) => project::reason(reason),
                     DeliveryReason::Recorded(reason) => reason.wire(),
                 })
                 .collect(),
@@ -472,6 +472,54 @@ mod tests {
             assert_eq!(
                 raw.summary_wire(actual.status(), code, &raw.issues_wire()),
                 actual.summary_wire(actual.status(), code, &actual.issues_wire())
+            );
+        }
+    }
+
+    #[test]
+    fn terminal_roots_keep_the_prefix_visible_to_local_diagnostic_messages() {
+        use super::super::evaluate::delivery::closed_root_plan;
+        let fixture = sources();
+        let law = String::from_utf8(fixture.law().bytes().to_vec())
+            .unwrap()
+            .replace(
+                "  view amount(s: State): Z = s.count;",
+                "  view amount(s: State): Z = s.count; local here(t:State) reads t;",
+            );
+        let input = InputSources::from_bytes(
+            fixture
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            law.into_bytes(),
+            fixture.archmap().bytes().to_vec(),
+        );
+        let closed = "q=evaluate(CountCheck.all)";
+        let native = [
+            "b=build(CountCheck,on=@v/s)",
+            "l=localize($b.object,law=CountCheck.nonnegative,s=@v/s)",
+            "n=needed($l)",
+        ];
+        let c = Control::unlimited();
+        for root_before in [true, false] {
+            let mut asks = native.to_vec();
+            asks.insert(if root_before { 0 } else { asks.len() }, closed);
+            let prepared = super::super::prepare_observed(input.clone(), &asks, &c).unwrap();
+            let plan = closed_root_plan(&prepared, &c).unwrap();
+            assert_eq!(plan, [false, false, false, !root_before]);
+            let raw = super::super::evaluate_observed_bytes(input.clone(), &asks, &c).unwrap();
+            let delivery = evaluate_for_delivery(prepared, &c).unwrap();
+            let signalled = raw.issues_wire();
+            assert!(
+                signalled
+                    .iter()
+                    .any(|issue| issue.canonical().contains("visibility_insufficient"))
+            );
+            assert_eq!(signalled, delivery.issues_wire());
+            assert_eq!(
+                raw.summary_wire("partial", 2, &signalled),
+                delivery.summary_wire("partial", 2, &delivery.issues_wire())
             );
         }
     }

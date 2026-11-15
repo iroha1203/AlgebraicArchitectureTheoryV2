@@ -24,7 +24,7 @@ fn replay(
         &c,
     )?;
     let mut graph = Graph::new(&c);
-    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.requests = result.prepared.requests().requests().to_vec().into();
     graph.frames = result.frames.clone();
     graph.iterations = result.iterations.clone();
     graph.instances = result.instances.clone();
@@ -115,7 +115,7 @@ fn stop_keeps_a_replayable_native_prefix_and_never_returns_a_completed_answer() 
         });
         let environment = Environment::with_prepared(&result.prepared, &control).unwrap();
         let mut graph = Graph::new(&control);
-        graph.requests = result.prepared.requests().requests().to_vec();
+        graph.requests = result.prepared.requests().requests().to_vec().into();
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();
         graph.instances = result.instances.clone();

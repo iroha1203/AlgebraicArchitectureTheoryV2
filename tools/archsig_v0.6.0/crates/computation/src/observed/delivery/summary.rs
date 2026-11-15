@@ -8,18 +8,6 @@ use super::super::{
 use archsig_common::{canonical::Json, internal::InternalError};
 use std::collections::BTreeMap;
 
-/// A condition failure's details include a derivation reference in the
-/// recorded route. The terminal summary hides the same field for an owned root.
-pub(super) fn owned_reason_wire(reason: &OwnedReason) -> Json {
-    let mut wire = super::project::reason(reason);
-    if matches!(reason.kind, ReasonKindOf::ConditionFailed { .. })
-        && let Json::Obj(fields) = &mut wire
-    {
-        fields.remove("details");
-    }
-    wire
-}
-
 /// The display borrows an unfinished recorded tail instead of fabricating a raw
 /// ObservedEvaluation for earlier sealed answers.
 pub(super) fn run_summary(
@@ -41,7 +29,7 @@ pub(super) fn run_summary(
                     .iter()
                     .find(|request| request.id == answer.id)
                     .expect("closed answer request");
-                closed_answer_summary(answer, request.kind, owned_reason_wire)
+                closed_answer_summary(answer, request.kind, super::project::reason)
                     .expect("sealed scalar summary needs no Graph")
             }
             DeliveryAnswer::Recorded(answer) => {
@@ -71,7 +59,7 @@ pub(super) fn run_summary(
                     .map(|reason| {
                         (
                             reason.sort_key(),
-                            formatting::notice(&owned_reason_wire(reason)),
+                            formatting::notice(&super::project::reason(reason)),
                         )
                     })
                     .chain(

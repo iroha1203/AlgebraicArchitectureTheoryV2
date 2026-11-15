@@ -1507,7 +1507,7 @@ mod produced_source_tests {
         });
         let env = Environment::with_prepared(&normal.prepared, &control).unwrap();
         let mut graph = Graph::new(&control);
-        graph.requests = normal.prepared.requests().requests().to_vec();
+        graph.requests = normal.prepared.requests().requests().to_vec().into();
         graph.frames = normal.frames.clone();
         graph.iterations = normal.iterations.clone();
         graph.instances = normal.instances.clone();
@@ -1531,7 +1531,7 @@ mod produced_source_tests {
             0,
             "a sealed newly produced source is not computed twice"
         );
-        graph.checked_answers.push((1, answer.clone()));
+        graph.record_answer(1, answer.clone());
         env.keep_published_local_source(&graph, 1, request, &answer);
         count.set(0);
         env.validate_answer(&graph, request, &answer).unwrap();

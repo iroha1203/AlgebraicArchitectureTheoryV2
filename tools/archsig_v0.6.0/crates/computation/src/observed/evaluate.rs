@@ -2757,7 +2757,7 @@ impl Evaluator<'_, '_> {
             .clone();
         let caller = self.graph.active;
         let frame = self.graph.frames.len();
-        self.graph.frames.push(super::call::Frame {
+        self.graph.append_frame(super::call::Frame {
             caller,
             source: source.expression,
             arguments: arguments.iter().map(|a| a.evaluation).collect(),
@@ -3939,7 +3939,7 @@ fn execute_observed(
     ) -> Result<(), ValidationFailure>,
 ) -> Execution {
     let mut graph = Graph::new(control);
-    graph.requests = prepared.requests().requests().to_vec();
+    graph.requests = prepared.requests().requests().to_vec().into();
     let mut answers: Vec<Option<Answer>> = vec![None; prepared.requests().requests().len()];
     let mut issues = Vec::new();
     let mut internal = false;
@@ -4103,7 +4103,7 @@ fn execute_observed(
                         if let Some(stop) = control.stop_reason() {
                             issues.push(Reason::stopped(&request.id, stop));
                         }
-                        graph.checked_answers.push((index, answer.clone()));
+                        graph.record_answer(index, answer.clone());
                         if validated {
                             environment
                                 .keep_published_local_source(&graph, index, request, &answer);
@@ -4163,7 +4163,7 @@ fn execute_observed(
             if request.kind == QuestionKind::Needed {
                 match super::needed::evaluate(&mut graph, environment, request, control) {
                     Ok((answer, stopped)) => {
-                        graph.checked_answers.push((index, answer.clone()));
+                        graph.record_answer(index, answer.clone());
                         verified_prefix = sizes(&graph);
                         answers[index] = Some(answer);
                         if let Some(reason) = stopped {
@@ -4238,6 +4238,9 @@ fn execute_observed(
                 let prefix = evaluator.graph.suffix_checkpoint();
                 let mut progress = delivery::RootProgress::default();
                 let result = (|| {
+                    // Closed roots have no request dependencies. Their body
+                    // rollback tracks only work from this root.
+                    environment.discard_root_validation()?;
                     if let Some(failure) = architecture_failure {
                         return Err(failure.into());
                     }
@@ -4251,7 +4254,7 @@ fn execute_observed(
                     let answer = evaluator.closed_root_answer(params, body, &mut progress)?;
                     (delivery.after_root)(request).map_err(Failure::Internal)?;
                     let had_nodes = evaluator.graph.nodes.len() > prefix.node_len();
-                    evaluator.graph.discard_suffix(&prefix)?;
+                    evaluator.graph.discard_root_suffix(&prefix)?;
                     environment.discard_root_validation()?;
                     Ok((answer, had_nodes))
                 })();
@@ -4368,10 +4371,7 @@ fn execute_observed(
             match result {
                 Ok(answer) => {
                     issues.extend(answer.reasons.iter().cloned());
-                    evaluator
-                        .graph
-                        .checked_answers
-                        .push((index, answer.clone()));
+                    evaluator.graph.record_answer(index, answer.clone());
                     verified_prefix = sizes(evaluator.graph);
                     answers[index] = Some(answer);
                     if let Err(reason) = evaluator.tick(Checkpoint::FiniteIteration) {
@@ -5505,7 +5505,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             let environment = Environment::new(result.prepared.inputs(), &control).unwrap();
             let mut graph = Graph::new(&control);
             graph.nodes = result.nodes.clone().into();
-            graph.requests = result.prepared.requests().requests().to_vec();
+            graph.requests = result.prepared.requests().requests().to_vec().into();
             graph.contexts = result.contexts.clone();
             graph.frames = result.frames.clone();
             graph.iterations = result.iterations.clone();
@@ -5902,7 +5902,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         )
         .map_err(ValidationFailure::from)?;
         let mut graph = Graph::new(&control);
-        graph.requests = result.prepared.requests().requests().to_vec();
+        graph.requests = result.prepared.requests().requests().to_vec().into();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
         graph.frames = result.frames.clone();
         graph.iterations = result.iterations.clone();
@@ -9754,7 +9754,7 @@ reading Calc {{
             _ => unreachable!(),
         };
         let mut graph = Graph::new(control);
-        graph.requests = prepared.requests().requests().to_vec();
+        graph.requests = prepared.requests().requests().to_vec().into();
         let mut evaluator = Evaluator {
             environment: &environment,
             graph: &mut graph,
@@ -10193,6 +10193,14 @@ reading Calc {{
                 raw.summary_wire(raw.status(), code, &raw.issues_wire()),
                 "{subject}",
             );
+            if subject == "r" {
+                let summary = actual.summary_wire(actual.status(), code, &actual.issues_wire());
+                assert!(
+                    summary
+                        .canonical()
+                        .contains(r#""details":{"construction":"evaluation"}"#)
+                );
+            }
         }
     }
     fn in_quantifier_fixture() -> InputSources {

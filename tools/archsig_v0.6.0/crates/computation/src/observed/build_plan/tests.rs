@@ -26,7 +26,7 @@ fn prepared(missing: bool) -> PreparedObserved {
 }
 fn graph(p: &PreparedObserved) -> Graph {
     let mut g = Graph::new(&quiet());
-    g.requests = p.requests().requests().to_vec();
+    g.requests = p.requests().requests().to_vec().into();
     g
 }
 
@@ -397,7 +397,7 @@ fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
         let p = prepared(false);
         let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = Graph::new(&control);
-        g.requests = p.requests().requests().to_vec();
+        g.requests = p.requests().requests().to_vec().into();
         let answer = crate::observed::build_result::evaluate(
             &p,
             &env,

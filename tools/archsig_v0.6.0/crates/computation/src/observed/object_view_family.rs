@@ -835,7 +835,7 @@ mod producer_tests {
         let c = quiet();
         let env = Environment::with_prepared(e.prepared(), &c)?;
         let mut g = Graph::new(&c);
-        g.requests = e.prepared().requests().requests().to_vec();
+        g.requests = e.prepared().requests().requests().to_vec().into();
         g.checked_answers = e.answers.iter().cloned().enumerate().collect();
         g.frames = e.frames.clone();
         g.iterations = e.iterations.clone();

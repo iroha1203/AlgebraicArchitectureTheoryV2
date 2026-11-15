@@ -226,7 +226,7 @@ fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamp
         let env = Environment::with_prepared(&prepared, &Control::unlimited()).unwrap();
         let graph = || {
             let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
-            g.requests = prepared.requests().requests().to_vec();
+            g.requests = prepared.requests().requests().to_vec().into();
             g
         };
         let count = Rc::new(Cell::new(0));

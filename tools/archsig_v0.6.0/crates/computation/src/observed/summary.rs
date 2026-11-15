@@ -145,13 +145,21 @@ pub(super) fn notice(value: &Json) -> Json {
     let Some(source) = fields(value) else {
         return value.clone();
     };
-    Json::Obj(
-        source
-            .iter()
-            .filter(|(key, value)| key.as_str() != "dependencies" && !has_reference(value))
-            .map(|(key, value)| (key.clone(), value.clone()))
-            .collect(),
-    )
+    let mut projected: archsig_common::canonical::JsonObject = source
+        .iter()
+        .filter(|(key, value)| key.as_str() != "dependencies" && !has_reference(value))
+        .map(|(key, value)| (key.clone(), value.clone()))
+        .collect();
+    if matches!(source.get("code"), Some(Json::Str(code)) if code == "condition_failed")
+        && let Some(Json::Obj(details)) = source.get("details")
+        && let Some(Json::Str(construction)) = details.get("construction")
+    {
+        projected.insert(
+            "details".into(),
+            Json::obj([("construction", Json::str(construction))]),
+        );
+    }
+    Json::Obj(projected)
 }
 
 fn scalar_value_summary(mut brief: BTreeMap<String, Json>, value: &Json) -> Json {

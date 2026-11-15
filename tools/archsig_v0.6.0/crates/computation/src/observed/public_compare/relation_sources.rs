@@ -816,7 +816,7 @@ pub(in crate::observed) fn domains(
         for (row, member) in row_indices.into_iter().zip(members) {
             c.checkpoint(Checkpoint::FiniteIteration)?;
             let index = graph.instances.len();
-            graph.instances.push(crate::observed::call::Instance {
+            graph.append_instance(crate::observed::call::Instance {
                 caller,
                 source,
                 domain,

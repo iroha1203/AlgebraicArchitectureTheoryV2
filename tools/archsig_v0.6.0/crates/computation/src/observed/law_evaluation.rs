@@ -490,7 +490,7 @@ pub(super) fn prepare_instance(
     )?;
     let domain = put(graph, &row, origin, architecture, Kind::Domain { member })?;
     let instance = graph.instances.len();
-    graph.instances.push(super::call::Instance {
+    graph.append_instance(super::call::Instance {
         caller,
         source: origin,
         domain,

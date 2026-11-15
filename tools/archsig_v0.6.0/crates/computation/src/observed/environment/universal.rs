@@ -2391,7 +2391,7 @@ mod registry_epoch_tests {
         let mut g = Graph::new(&control);
         g.nodes = result.nodes.clone().into();
         g.contexts = result.contexts.clone();
-        g.requests = result.prepared.requests().requests().to_vec();
+        g.requests = result.prepared.requests().requests().to_vec().into();
         g.frames = result.frames.clone();
         let id = result
             .prepared
@@ -2422,7 +2422,8 @@ mod registry_epoch_tests {
         assert!(!env.results.cache.borrow().registry_read);
         g.frames = frames;
         assert!(!g.frames.is_empty());
-        g.frames.push(g.frames[0].clone());
+        let duplicate = g.frames[0].clone();
+        g.frames.push(duplicate);
         env.validation_graph_session(&g, || {
             assert!(
                 env.universal_graph_context(&g, &plan, template, &[], vec![])

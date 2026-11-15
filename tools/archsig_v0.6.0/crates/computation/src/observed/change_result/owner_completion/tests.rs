@@ -34,7 +34,7 @@ fn rebuild(result: &ObservedEvaluation, nodes: &[Node]) -> Result<Graph, Validat
     )
     .map_err(ValidationFailure::from)?;
     let mut g = Graph::new(&c);
-    g.requests = result.prepared.requests().requests().to_vec();
+    g.requests = result.prepared.requests().requests().to_vec().into();
     g.checked_answers = result.answers.iter().cloned().enumerate().collect();
     g.frames = result.frames.clone();
     g.iterations = result.iterations.clone();
