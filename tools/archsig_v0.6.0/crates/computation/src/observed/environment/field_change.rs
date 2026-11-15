@@ -12,7 +12,7 @@ use archsig_input::law::model::{Declaration, Signature};
 pub(in crate::observed) struct Linear {
     pub parameter_count: usize,
     pub axes: Vec<Parameter>,
-    pub guard_fiber: Fiber,
+    pub guard_fiber: Option<Fiber>,
     pub slots: Vec<Fact>,
     pub action: Matrix,
     pub offset: Vec<Scalar>,
@@ -1692,7 +1692,7 @@ fn compute_inner(
     Ok(Linear {
         parameter_count: axes.len(),
         axes,
-        guard_fiber,
+        guard_fiber: Some(guard_fiber),
         slots,
         action,
         offset,

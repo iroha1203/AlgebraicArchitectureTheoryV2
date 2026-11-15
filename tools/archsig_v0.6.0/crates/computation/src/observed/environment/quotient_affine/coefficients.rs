@@ -51,27 +51,28 @@ impl Input {
             } else {
                 (None, vec![])
             };
+            let (guard_origin, guard_kernel, guard_dimensions) = if solutions {
+                (None, vec![], 0)
+            } else {
+                let guard = x
+                    .guard_fiber
+                    .as_ref()
+                    .ok_or(internal!("有理候補域のguardがない"))?;
+                (
+                    guard.particular.clone(),
+                    guard.kernel.clone(),
+                    x.parameter_count - guard.pivots.len(),
+                )
+            };
             return Ok(Self {
                 ty: Type::Q,
                 parameter_count: x.parameter_count,
                 axes: x.axes.clone(),
                 particular,
                 kernel,
-                guard_origin: if solutions {
-                    None
-                } else {
-                    x.guard_fiber.particular.clone()
-                },
-                guard_kernel: if solutions {
-                    vec![]
-                } else {
-                    x.guard_fiber.kernel.clone()
-                },
-                guard_dimensions: if solutions {
-                    0
-                } else {
-                    x.parameter_count - x.guard_fiber.pivots.len()
-                },
+                guard_origin,
+                guard_kernel,
+                guard_dimensions,
                 slots,
                 action,
                 offset,

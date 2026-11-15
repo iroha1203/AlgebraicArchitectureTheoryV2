@@ -298,7 +298,9 @@ impl ReobservedAssembly {
 fn owner_failure(failure: ConstructionFailure) -> ReobservationFailure {
     match failure {
         ConstructionFailure::Stopped(signal) => ReobservationFailure::Stopped(signal),
-        _ => ReobservationFailure::Unsupported("定義上の owner を確認できない".into()),
+        _ => ReobservationFailure::Unsupported(
+            "cannot resolve the owner declared by the Atom Definition".into(),
+        ),
     }
 }
 
@@ -325,7 +327,12 @@ fn question<'a>(
         .requests()
         .iter()
         .find(|r| r.id == id && r.kind == kind)
-        .ok_or_else(|| invalid("対応する種類・ID の元要求がない"))
+        .ok_or_else(|| {
+            invalid(&format!(
+                "unknown {} request ID {id:?} in --alignment",
+                kind.wire()
+            ))
+        })
 }
 
 struct Questions<'a> {
@@ -350,7 +357,12 @@ impl<'a> Questions<'a> {
             .get(id)
             .copied()
             .filter(|request| request.kind == kind)
-            .ok_or_else(|| invalid("対応する種類・ID の元要求がない"))
+            .ok_or_else(|| {
+                invalid(&format!(
+                    "unknown {} request ID {id:?} in --alignment",
+                    kind.wire()
+                ))
+            })
     }
 }
 
@@ -395,10 +407,10 @@ fn repair_selection<'a>(
     solve: &Request,
 ) -> Result<(&'a Request, &'a Request), ReobservationFailure> {
     let apply = answer_field(selector, "object")
-        .ok_or_else(|| invalid("局所選択が apply.object を指さない"))?;
+        .ok_or_else(|| invalid("the local selection must reference apply.object"))?;
     let apply = prepared.get(apply, QuestionKind::Apply)?;
     let selected = answer_field(&apply.head, "assignment")
-        .ok_or_else(|| invalid("局所 apply に選択 Assignment がない"))?;
+        .ok_or_else(|| invalid("the local apply does not consume a candidate assignment"))?;
     let selected = prepared.get(selected, QuestionKind::Candidate)?;
     let in_solutions = apply
         .arguments
@@ -409,7 +421,7 @@ fn repair_selection<'a>(
         || answer_field(&selected.head, "solutions") != Some(solve.id.as_str())
     {
         return Err(invalid(
-            "局所 apply と選択候補が照合対象の solve を消費しない",
+            "the local apply and its candidate must consume solutions from the aligned solve",
         ));
     }
     Ok((apply, selected))
@@ -489,7 +501,9 @@ fn checked_layout(
         } else {
             let domain = architecture.witness.construction().local_domain();
             if domain.known().len() != 1 {
-                return Err(invalid("組立て先rootに既存の所属個体がある"));
+                return Err(invalid(
+                    "the assembly target root already has owned subjects",
+                ));
             }
             layout.missing.extend(
                 domain
@@ -511,7 +525,7 @@ fn read_layout(
     let unsupported = |message: &str| ReobservationFailure::Unsupported(message.into());
     let classify = |failure| match failure {
         ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
-        _ => unsupported("組立ての View を現在の原始観測で読めない"),
+        _ => unsupported("cannot evaluate an assembly View from the current observations"),
     };
     let env = Environment::with_prepared(prepared, control)?;
     let mut bindings = Vec::new();
@@ -520,13 +534,13 @@ fn read_layout(
             control.checkpoint(Checkpoint::ConfigurationMap)?;
             let Selector::Subject { snapshot, subject } = &arg.value else {
                 return Err(unsupported(
-                    "組立て View の束縛には明示した原始参照を要求する",
+                    "the assembly View bindings must be explicit primitive references",
                 ));
             };
             let entity = env
                 .indexes
                 .subject(snapshot, subject)
-                .map_err(|_| invalid("組立て View の参照先がない"))?
+                .map_err(|_| invalid("a subject referenced by an assembly View does not exist"))?
                 .ty
                 .to_string();
             bindings.push((
@@ -547,10 +561,10 @@ fn read_layout(
             Selector::Declaration { name } => Some(name.as_str()),
             _ => None,
         })
-        .ok_or_else(|| unsupported("共有 View 宣言がない"))?;
+        .ok_or_else(|| unsupported("the assembly has no shared-pair View declaration"))?;
     let head = request
         .declaration()
-        .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
+        .ok_or_else(|| unsupported("the assembly has no participant View declaration"))?;
     let fragments = assembly_plan::read(&env, head, &bindings, false, false).map_err(classify)?;
     let interfaces = assembly_plan::read(&env, along, &bindings, false, false).map_err(classify)?;
     let target = layout_target(request)?;
@@ -589,7 +603,9 @@ fn read_layout(
 fn layout_target(request: &Request) -> Result<Fact, ReobservationFailure> {
     let target = request.arguments.iter().find(|arg| arg.name == "on");
     let Some(Selector::Subject { snapshot, subject }) = target.map(|arg| &arg.value) else {
-        return Err(invalid("組立て先の明示rootがない"));
+        return Err(invalid(
+            "the assembly request must name its target root explicitly",
+        ));
     };
     Ok(Fact::from(FactData {
         snapshot: snapshot.clone(),
@@ -607,10 +623,10 @@ fn check_target_ownership(
 ) -> Result<(), ReobservationFailure> {
     let target = layout_target(request)?;
     let root = model_assembly::subject(prepared.inputs(), &target)
-        .map_err(|_| invalid("組立て先の root がない"))?;
+        .map_err(|_| invalid("the assembly target root does not exist"))?;
     let head = request
         .declaration()
-        .ok_or_else(|| invalid("担当 View 宣言がない"))?;
+        .ok_or_else(|| invalid("the assembly has no participant View declaration"))?;
     let reading = &prepared.inputs().law().declarations()[head].reading;
     let (occupied, missing) = crate::construction::layout_ownership(
         prepared.inputs(),
@@ -623,15 +639,19 @@ fn check_target_ownership(
         crate::construction::ConstructionFailure::Stopped(signal) => {
             ReobservationFailure::Stopped(signal)
         }
-        _ => ReobservationFailure::Unsupported("組立ての所属域を現在の原始観測で読めない".into()),
+        _ => ReobservationFailure::Unsupported(
+            "cannot verify assembly ownership from the current observations".into(),
+        ),
     })?;
     if let Some(occupied) = occupied {
         if occupied.snapshot != target.snapshot {
             return Err(ReobservationFailure::Unsupported(
-                "組立て先の所属個体が別 snapshot に属する".into(),
+                "a subject owned by the assembly target belongs to a different snapshot".into(),
             ));
         }
-        return Err(invalid("組立て先rootに既存の所属個体がある"));
+        return Err(invalid(
+            "the assembly target root already has owned subjects",
+        ));
     }
     layout.missing.extend(missing);
     Ok(())
@@ -645,7 +665,9 @@ fn layout_from_reads(
 ) -> Result<Layout, ReobservationFailure> {
     let classify = |failure| match failure {
         ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
-        _ => ReobservationFailure::Unsupported("組立ての View を現在の原始観測で読めない".into()),
+        _ => ReobservationFailure::Unsupported(
+            "cannot evaluate an assembly View from the current observations".into(),
+        ),
     };
     let roots = assembly_plan::fragment_roots(fragments, control).map_err(classify)?;
     let shared = interfaces
@@ -665,7 +687,9 @@ fn layout_from_reads(
     };
     validate_snapshot(&layout)?;
     if fragments.metadata.failed || interfaces.metadata.failed {
-        return Err(invalid("組立て View の適用条件が成立しない"));
+        return Err(invalid(
+            "the applicability condition of an assembly View failed",
+        ));
     }
     if let Some(problem) = fragments
         .unsupported
@@ -676,12 +700,12 @@ fn layout_from_reads(
     }
     if layout.roots.is_none() && fragments.metadata.missing.is_empty() {
         return Err(ReobservationFailure::Unsupported(
-            "担当集合を確定できない".into(),
+            "cannot determine the assembly's participant set".into(),
         ));
     }
     if layout.shared.is_none() && interfaces.metadata.missing.is_empty() {
         return Err(ReobservationFailure::Unsupported(
-            "共有対を確定できない".into(),
+            "cannot determine the assembly's shared pairs".into(),
         ));
     }
     Ok(layout)
@@ -700,13 +724,13 @@ fn checked_shared_partition(
     let shared = match layout
         .shared
         .as_ref()
-        .ok_or_else(|| invalid("共有対が未確定"))?
+        .ok_or_else(|| invalid("the shared pairs of the assembly are unresolved"))?
     {
         SharedLayout::Checked(model) => {
             let construction = &model.construction;
-            let transport = construction
-                .transport()
-                .ok_or_else(|| invalid("検査済み組立ての参照輸送がない"))?;
+            let transport = construction.transport().ok_or_else(|| {
+                invalid("a shared reference has no transport in the checked assembly")
+            })?;
             for (member, representative) in transport {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 // The transport also contains identities and maps fragment roots to the target.
@@ -732,16 +756,16 @@ fn checked_shared_partition(
     let mut owner_root = |fact: &Fact| -> Result<Option<&str>, ReobservationFailure> {
         if fact.snapshot != snapshot {
             return Err(ReobservationFailure::Unsupported(
-                "共有対が別 snapshot の参照を含む".into(),
+                "a shared pair contains a reference to a different snapshot".into(),
             ));
         }
         let member = roster
             .get(fact.subject.as_str())
             .copied()
-            .ok_or_else(|| invalid("共有対の主体がない"))?;
+            .ok_or_else(|| invalid("a subject in a shared pair does not exist"))?;
         let (field, _) = owner_slot_for(check.0.inputs(), member, None, control)
             .map_err(owner_failure)?
-            .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))?;
+            .ok_or_else(|| invalid("a shared subject is outside the participant roots"))?;
         match &field.slot {
             Slot::Known {
                 value:
@@ -753,14 +777,14 @@ fn checked_shared_partition(
             } => {
                 if owner_snapshot != snapshot {
                     return Err(ReobservationFailure::Unsupported(
-                        "共有個体の owner が別 snapshot を参照する".into(),
+                        "the owner of a shared subject references a different snapshot".into(),
                     ));
                 }
                 if roots
                     .as_ref()
                     .is_some_and(|roots| !roots.contains(subject.as_str()))
                 {
-                    return Err(invalid("共有対の個体が担当 root に所属しない"));
+                    return Err(invalid("a shared subject is outside the participant roots"));
                 }
                 Ok(Some(subject.as_str()))
             }
@@ -768,12 +792,14 @@ fn checked_shared_partition(
                 missing.push(self::fact(member, field, None));
                 Ok(None)
             }
-            _ => Err(invalid("共有個体の owner が参照でない")),
+            _ => Err(invalid("the owner of a shared subject must be a reference")),
         }
     };
     let classify = |failure| match failure {
         ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
-        _ => ReobservationFailure::Unsupported("共有対の同値閉包を確認できない".into()),
+        _ => ReobservationFailure::Unsupported(
+            "cannot verify the equivalence closure of the shared pairs".into(),
+        ),
     };
     let mut parent = BTreeMap::new();
     let mut members = BTreeMap::new();
@@ -791,7 +817,9 @@ fn checked_shared_partition(
             || (left_owner.is_some() && left_owner == right_owner)
             || roster[left.subject.as_str()].ty != roster[right.subject.as_str()].ty
         {
-            return Err(invalid("共有対は別担当の同じ型の個体を要求する"));
+            return Err(invalid(
+                "a shared pair requires subjects of the same type in different participants",
+            ));
         }
         parent.entry(left.clone()).or_insert_with(|| left.clone());
         parent.entry(right.clone()).or_insert_with(|| right.clone());
@@ -808,7 +836,9 @@ fn checked_shared_partition(
         if let Some(owner) = owner
             && !local_images.insert((owner, &parent[member]))
         {
-            return Err(invalid("共有対の閉包が同じ担当の異なる個体を同一視する"));
+            return Err(invalid(
+                "closing the shared pairs identifies distinct subjects in one participant",
+            ));
         }
     }
     for (member, representative) in &parent {
@@ -837,10 +867,10 @@ fn check_inclusions(
     };
     let target = layout_target(request)?;
     let root = model_assembly::subject(prepared.inputs(), &target)
-        .map_err(|_| invalid("組立て先の root がない"))?;
+        .map_err(|_| invalid("the assembly target root does not exist"))?;
     let head = request
         .declaration()
-        .ok_or_else(|| invalid("担当 View 宣言がない"))?;
+        .ok_or_else(|| invalid("the assembly has no participant View declaration"))?;
     let reading = &prepared.inputs().law().declarations()[head].reading;
     transport.insert(target.clone(), target.clone());
     for fragment in roots {
@@ -852,7 +882,7 @@ fn check_inclusions(
         control.checkpoint(Checkpoint::ConfigurationMap)?;
         let subject = roster
             .get(endpoint.subject.as_str())
-            .ok_or_else(|| invalid("共有端点の主体がない"))?;
+            .ok_or_else(|| invalid("a shared endpoint refers to a missing subject"))?;
         relevant_types.insert(subject.ty.as_str());
     }
     let (collapsed, positions) = crate::construction::check_layout_inclusions(
@@ -869,10 +899,14 @@ fn check_inclusions(
         crate::construction::ConstructionFailure::Stopped(signal) => {
             ReobservationFailure::Stopped(signal)
         }
-        _ => ReobservationFailure::Unsupported("局所構成の参照を確認できない".into()),
+        _ => ReobservationFailure::Unsupported(
+            "cannot verify the references in the local configuration".into(),
+        ),
     })?;
     if collapsed {
-        return Err(invalid("共有対応の推移閉包が局所の異なる個体を同一視する"));
+        return Err(invalid(
+            "closing the shared pairs identifies distinct local subjects",
+        ));
     }
     missing.extend(positions);
     Ok(())
@@ -891,7 +925,7 @@ fn selected_change(request: &Request) -> Result<&str, ReobservationFailure> {
                 None
             }
         })
-        .ok_or_else(|| invalid("prepare の change がない"))
+        .ok_or_else(|| invalid("the prepare request has no using change"))
 }
 
 /// Law改訂時も更新式と、それが読む補助宣言の意味を固定する。
@@ -914,10 +948,14 @@ fn check_change(
         let [Some(a), Some(b)] =
             [old, new].map(|inputs| inputs.law().infos().iter().find(|info| info.name == name))
         else {
-            return Err(invalid("change の参照宣言が現在入力にない"));
+            return Err(invalid(
+                "a declaration referenced by the change is missing from one Law input",
+            ));
         };
         if a.kind != b.kind || a.parameters != b.parameters || a.returns != b.returns {
-            return Err(invalid("change または参照宣言の型付き署名が対応しない"));
+            return Err(invalid(
+                "the typed signature of the change or a referenced declaration differs",
+            ));
         }
         let tokens = |info: &archsig_input::law::model::DeclarationInfo,
                       inputs: &archsig_input::input::CheckedInputs| {
@@ -926,13 +964,13 @@ fn check_change(
                 .law()
                 .bytes()
                 .get(info.span.0..info.span.1)
-                .ok_or_else(|| invalid("検査済みの change 宣言位置がない"))?;
+                .ok_or_else(|| invalid("the checked change declaration has no source position"))?;
             archsig_input::law::lexer::lex_controlled(bytes, c).map_err(|cause| match cause {
                 archsig_common::control::CheckFailure::Stopped(signal) => {
                     ReobservationFailure::Stopped(signal)
                 }
                 archsig_common::control::CheckFailure::Input(_) => {
-                    invalid("検査済みの change 宣言を読めない")
+                    invalid("cannot read the checked change declaration")
                 }
             })
         };
@@ -948,7 +986,9 @@ fn check_change(
                 .map(|(_, name)| name)
                 .ne(b.references.iter().map(|(_, name)| name))
         {
-            return Err(invalid("change の更新式・条件・参照が対応しない"));
+            return Err(invalid(
+                "the change update expression, condition or declaration references differ",
+            ));
         }
         for dependency in &a.dependencies {
             if old
@@ -977,7 +1017,9 @@ fn matching_arguments<'a>(
     ReobservationFailure,
 > {
     if prior.arguments.len() != new.arguments.len() {
-        return Err(invalid("明示引数の件数が対応しない"));
+        return Err(invalid(
+            "the number of explicit arguments differs between the aligned requests",
+        ));
     }
     Ok(prior.arguments.iter().zip(&new.arguments))
 }
@@ -993,10 +1035,14 @@ fn repair_requests<'a>(
 ) -> Result<([&'a Request; 2], [&'a Request; 2]), ReobservationFailure> {
     let before_candidate = before.get(previous_candidate, QuestionKind::Candidate)?;
     let Some(prior_solve_id) = answer_field(&before_candidate.head, "solutions") else {
-        return Err(invalid("前候補に元 solve がない"));
+        return Err(invalid(
+            "previous_candidate must reference the solutions of a solve request",
+        ));
     };
     let prior_solve = before.get(prior_solve_id, QuestionKind::Solve)?;
-    let new_solve = current.get(current_solve, QuestionKind::Solve)?;
+    let new_solve = current.get(current_solve, QuestionKind::Solve).map_err(|_| {
+        invalid(&format!("unknown solve request ID {current_solve:?} in --alignment candidates[].current_solve"))
+    })?;
     if [prior_solve, new_solve].iter().any(|request| {
         request.arguments.iter().any(|argument| {
             argument.name == "mode"
@@ -1004,17 +1050,17 @@ fn repair_requests<'a>(
         })
     }) {
         return Err(ReobservationFailure::Unsupported(
-            "前後の solve は全解を要求する".into(),
+            "the previous and current solve requests must return the full solution set".into(),
         ));
     }
     let Some(prior_prepare_id) = answer_field(&prior_solve.head, "problem") else {
         return Err(ReobservationFailure::Unsupported(
-            "finite prepare の前回 solve を要求する".into(),
+            "the previous solve must use a finite prepare result".into(),
         ));
     };
     let Some(new_prepare_id) = answer_field(&new_solve.head, "problem") else {
         return Err(ReobservationFailure::Unsupported(
-            "finite prepare の現在 solve を要求する".into(),
+            "current_solve must use a finite prepare result".into(),
         ));
     };
     let prior_prepare = before.get(prior_prepare_id, QuestionKind::Prepare)?;
@@ -1022,7 +1068,9 @@ fn repair_requests<'a>(
     let [before, current] = [before.prepared, current.prepared];
     let using = selected_change(prior_prepare)?;
     if using != selected_change(new_prepare)? {
-        return Err(invalid("前回と現在の change が対応しない"));
+        return Err(invalid(
+            "the previous and current prepare requests select different changes",
+        ));
     }
     let revised_law = checked_changes.is_some();
     if let Some(checked_changes) = checked_changes
@@ -1032,43 +1080,47 @@ fn repair_requests<'a>(
     }
     let law = before.inputs().law();
     let Signature::Change { params, .. } = &law.declarations()[using].signature else {
-        return Err(invalid("前回 prepare の using が change でない"));
+        return Err(invalid(
+            "the previous prepare using declaration is not a change",
+        ));
     };
     for parameter in params.iter().skip(1) {
         let supported =
             super::finite::completion_supported(&parameter.ty, law, control).map_err(|error| {
                 match error {
                     ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
-                    _ => {
-                        ReobservationFailure::Unsupported("change の有限値域を確認できない".into())
-                    }
+                    _ => ReobservationFailure::Unsupported(
+                        "cannot verify the finite domain of a change parameter".into(),
+                    ),
                 }
             })?;
         if !supported {
             return Err(ReobservationFailure::Unsupported(
-                "change の parameter は有限値域を要求する".into(),
+                "the change parameters must have finite input domains".into(),
             ));
         }
     }
     if !selected_reading(before, prior_prepare, reading)
         || !selected_reading(current, new_prepare, reading)
     {
-        return Err(invalid("finite repair の reading が対応しない"));
+        return Err(invalid(
+            "both finite prepare requests must use the reading named in --alignment",
+        ));
     }
     if prior_prepare.head != new_prepare.head {
         if !revised_law {
             return Err(invalid(
-                "同一 Law 入力での finite repair の要求 Law が対応しない",
+                "with identical Law inputs the previous and current prepare requests must select the same Law",
             ));
         }
         let params = |prepared: &'a PreparedObserved, request: &Request| {
             let name = request
                 .declaration()
-                .ok_or_else(|| invalid("prepare の元 Law がない"))?;
+                .ok_or_else(|| invalid("the prepare request has no source Law"))?;
             let Signature::Law { params, .. } =
                 &prepared.inputs().law().declarations()[name].signature
             else {
-                return Err(invalid("prepare の元宣言が Law でない"));
+                return Err(invalid("the declaration selected by prepare must be a Law"));
             };
             Ok(params)
         };
@@ -1079,7 +1131,9 @@ fn repair_requests<'a>(
             .map(|p| (&p.name, &p.ty))
             .ne(new.iter().map(|p| (&p.name, &p.ty)))
         {
-            return Err(invalid("改訂後の要求 Law の型付き引数が対応しない"));
+            return Err(invalid(
+                "the revised prepare Law has different typed parameters",
+            ));
         }
     }
     Ok(([prior_solve, new_solve], [prior_prepare, new_prepare]))
@@ -1112,13 +1166,15 @@ pub fn reevaluate_assembly(
         current_solve: alignment.current_solve,
     };
     if locals.next().is_some() {
-        return Err(invalid("各担当の候補対応を指定する"));
+        return Err(invalid(
+            "provide one candidate correspondence for each local participant",
+        ));
     }
     let standalone = (candidate.participant.is_empty()).then_some(candidate);
     let candidates = [candidate];
     if before.inputs().sources().law().bytes() != current.inputs().sources().law().bytes() {
         return Err(ReobservationFailure::Unsupported(
-            "一担当 API は同一 Law を要求する".into(),
+            "single-participant reevaluation requires identical Law input".into(),
         ));
     }
     reevaluate_assembly_aligned(
@@ -1169,7 +1225,7 @@ fn reevaluate_assembly_aligned(
             .all(|(a, b)| a.bytes() == b.bytes())
     {
         return Err(ReobservationFailure::Unsupported(
-            "定義が同一の読みを要求する".into(),
+            "assembly reevaluation requires identical Atom Definition inputs".into(),
         ));
     }
     let before_request = question(before, alignment.assembly, QuestionKind::Assemble)?;
@@ -1178,7 +1234,9 @@ fn reevaluate_assembly_aligned(
         || !selected_reading(before, before_request, alignment.reading)
         || !selected_reading(&current, after_request, alignment.reading)
     {
-        return Err(invalid("組立ての View または reading が対応しない"));
+        return Err(invalid(
+            "the previous and current assembly Views or readings do not match",
+        ));
     }
     let snapshot = |prepared: &PreparedObserved, id: &str| {
         prepared
@@ -1187,7 +1245,7 @@ fn reevaluate_assembly_aligned(
             .snapshots()
             .iter()
             .position(|s| s.id == id)
-            .ok_or_else(|| invalid("明示された snapshot がない"))
+            .ok_or_else(|| invalid("the snapshot named in --alignment does not exist"))
     };
     let a = &before.inputs().archmap().snapshots()[snapshot(before, alignment.before_snapshot)?];
     let current_inputs = current.shared_inputs();
@@ -1198,16 +1256,17 @@ fn reevaluate_assembly_aligned(
     let mut used = BTreeSet::new();
     for &(left, right) in alignment.subjects {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
-        let old = a
-            .get(left)
-            .copied()
-            .ok_or_else(|| invalid("before subject がない"))?;
+        let old = a.get(left).copied().ok_or_else(|| {
+            invalid("the previous subject in --alignment subjects does not exist")
+        })?;
         let new = b
             .get(right)
             .copied()
-            .ok_or_else(|| invalid("after subject がない"))?;
+            .ok_or_else(|| invalid("the current subject in --alignment subjects does not exist"))?;
         if old.ty != new.ty || pairs.insert(left, (old, new)).is_some() || !used.insert(right) {
-            return Err(invalid("subject 対応は同型の一対一を要求する"));
+            return Err(invalid(
+                "alignment subjects must be paired one-to-one with equal types",
+            ));
         }
     }
     let matches_subject = |left: &str, right: &str| {
@@ -1225,7 +1284,7 @@ fn reevaluate_assembly_aligned(
             let (new_field, _) = owner_slot_for(current.inputs(), new, None, control)
                 .map_err(owner_failure)?
                 .filter(|(f, _)| f.name == old_field.name && f.ty == old_field.ty)
-                .ok_or_else(|| invalid("owner field の型が対応しない"))?;
+                .ok_or_else(|| invalid("paired subjects have different owner field types"))?;
             for (slot, snapshot) in [
                 (&old_field.slot, alignment.before_snapshot),
                 (&new_field.slot, alignment.after_snapshot),
@@ -1234,7 +1293,7 @@ fn reevaluate_assembly_aligned(
                     if owner_snapshot != snapshot)
                 {
                     return Err(ReobservationFailure::Unsupported(
-                        "owner が別 snapshot を参照する".into(),
+                        "an owner field references a subject in a different snapshot".into(),
                     ));
                 }
             }
@@ -1265,11 +1324,16 @@ fn reevaluate_assembly_aligned(
                 ) if a == alignment.before_snapshot
                     && b == alignment.after_snapshot
                     && matches_subject(x, y) => {}
-                _ => return Err(invalid("owner が明示した同一性に沿わない")),
+                _ => {
+                    return Err(invalid(
+                        "an owner field does not follow the explicit subject correspondence",
+                    ));
+                }
             }
         }
     }
-    let same_argument = |a: &Selector, b: &Selector| match (a, b) {
+    let same_argument = |a: &Selector, b: &Selector| {
+        match (a, b) {
         (
             Selector::Subject {
                 snapshot: s,
@@ -1282,15 +1346,16 @@ fn reevaluate_assembly_aligned(
         ) => {
             if s != alignment.before_snapshot || t != alignment.after_snapshot {
                 return Err(ReobservationFailure::Unsupported(
-                    "一つの組立て要求に別 snapshot を混在できない".into(),
+                    "an assembly request cannot mix subjects from different snapshots".into(),
                 ));
             }
             Ok(matches_subject(x, y))
         }
         (Selector::Declaration { .. }, Selector::Declaration { .. }) => Ok(a == b),
         _ => Err(ReobservationFailure::Unsupported(
-            "root、共有位置と修復束縛を明示する".into(),
+            "alignment requires explicit references for the assembly root, shared positions and repair bindings".into(),
         )),
+    }
     };
     let mut candidate_alignments = BTreeMap::new();
     let mut prior_candidates = BTreeSet::new();
@@ -1303,14 +1368,18 @@ fn reevaluate_assembly_aligned(
             || !prior_candidates.insert(candidate.previous_candidate)
             || !current_solves.insert(candidate.current_solve)
         {
-            return Err(invalid("担当・前回候補・現在 solve の対応が重複する"));
+            return Err(invalid(
+                "alignment candidates repeat a participant, previous_candidate or current_solve",
+            ));
         }
     }
     let compare_prepare = |prior: &Request, new: &Request| {
         for (prior, new) in matching_arguments(prior, new)? {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
             if prior.name != new.name || !same_argument(&prior.value, &new.value)? {
-                return Err(invalid("担当の修復束縛が対応しない"));
+                return Err(invalid(
+                    "the participant's previous and current repair bindings do not correspond",
+                ));
             }
         }
         Ok(())
@@ -1322,17 +1391,21 @@ fn reevaluate_assembly_aligned(
     for (a, b) in matching_arguments(before_request, after_request)? {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
         if a.name != b.name {
-            return Err(invalid("組立ての明示引数名が対応しない"));
+            return Err(invalid(
+                "the explicit arguments of the previous and current assembly requests differ",
+            ));
         }
         let Some(participant) = a.name.strip_prefix("local.") else {
             if !same_argument(&a.value, &b.value)? {
-                return Err(invalid("root・共有個体・宣言・明示束縛の対応が違う"));
+                return Err(invalid(
+                    "the assembly root, shared subjects, declarations or explicit bindings do not correspond",
+                ));
             }
             continue;
         };
-        let candidate = candidate_alignments
-            .remove(participant)
-            .ok_or_else(|| invalid("局所 apply に担当の候補対応がない"))?;
+        let candidate = candidate_alignments.remove(participant).ok_or_else(|| {
+            invalid("a local apply has no candidate correspondence for its participant")
+        })?;
         let ([prior_solve, new_solve], [prior_prepare, new_prepare]) = repair_requests(
             &old_questions,
             &new_questions,
@@ -1356,10 +1429,14 @@ fn reevaluate_assembly_aligned(
                 .find(|a| a.name == "on")
                 .map(|a| &a.value);
             let Some(Selector::Subject { snapshot, subject }) = source else {
-                return Err(invalid("局所 apply の元rootが明示されていない"));
+                return Err(invalid(
+                    "the local apply must name its prepare root explicitly",
+                ));
             };
             if selected != source {
-                return Err(invalid("局所 apply の元rootが担当の明示束縛と異なる"));
+                return Err(invalid(
+                    "the local apply root differs from its explicit participant binding",
+                ));
             }
             Ok((snapshot.clone(), subject.clone()))
         };
@@ -1367,7 +1444,7 @@ fn reevaluate_assembly_aligned(
         let (new_apply, new_candidate) = repair_selection(&new_questions, &b.value, new_solve)?;
         if old_candidate.id != candidate.previous_candidate {
             return Err(invalid(
-                "前回の局所 apply が照合対象の前回候補を使用していない",
+                "the previous local apply does not consume the aligned previous_candidate",
             ));
         }
         selected_locals.push(SelectedLocal {
@@ -1399,14 +1476,16 @@ fn reevaluate_assembly_aligned(
         });
     }
     if !candidate_alignments.is_empty() || selected_locals.is_empty() {
-        return Err(invalid("担当の候補対応と局所 apply が一致しない"));
+        return Err(invalid(
+            "the candidate correspondences do not match the local apply requests",
+        ));
     }
 
     let before_answer = previous
         .answers
         .iter()
         .find(|a| a.id == alignment.assembly)
-        .ok_or_else(|| invalid("before の組立て回答がない"))?;
+        .ok_or_else(|| invalid("the requested assembly has no previous answer"))?;
     let mut observations = Vec::new();
     let mut external_missing = Vec::new();
     let mut seen = BTreeSet::new();
@@ -1423,22 +1502,28 @@ fn reevaluate_assembly_aligned(
             if is_owner_fact(before.inputs(), needed) {
                 return Ok(());
             }
-            return Err(invalid("組立ての不足位置に subject 対応がない"));
+            return Err(invalid(
+                "a missing assembly observation has no subject correspondence",
+            ));
         };
         let name = needed
             .field
             .as_ref()
-            .ok_or_else(|| invalid("不足位置に field がない"))?;
+            .ok_or_else(|| invalid("the missing observation does not name a field"))?;
         let old_field = old
             .fields
             .iter()
             .find(|f| &f.name == name && matches!(f.slot, Slot::Missing))
-            .ok_or_else(|| invalid("before の不足位置が原始 slot と一致しない"))?;
+            .ok_or_else(|| {
+                invalid("the previous missing observation is not an unobserved primitive slot")
+            })?;
         let field = new
             .fields
             .iter()
             .find(|f| &f.name == name && f.ty == old_field.ty)
-            .ok_or_else(|| invalid("after の field と型が一致しない"))?;
+            .ok_or_else(|| {
+                invalid("the current observation field and its type do not match the previous slot")
+            })?;
         let observed = match &field.slot {
             Slot::Missing => None,
             Slot::Known { atom, .. } => Some(fact(new, field, Some(atom.clone()))),
@@ -1523,7 +1608,9 @@ fn reevaluate_assembly_aligned(
                             .iter()
                             .any(|root| root.snapshot == *snapshot && root.subject == *subject)
                     }) {
-                        return Err(invalid("局所 apply の元rootが評価済みの担当集合にない"));
+                        return Err(invalid(
+                            "the local apply root is absent from the evaluated participant set",
+                        ));
                     }
                 }
             }
@@ -1533,7 +1620,7 @@ fn reevaluate_assembly_aligned(
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
                     return Err(ReobservationFailure::Unsupported(
-                        "組立て View が別 snapshot の参照を返した".into(),
+                        "the assembly View returned a reference to a different snapshot".into(),
                     ));
                 }
                 Ok(fact.clone())
@@ -1542,7 +1629,7 @@ fn reevaluate_assembly_aligned(
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.before_snapshot {
                     return Err(ReobservationFailure::Unsupported(
-                        "組立て View が別 snapshot の参照を返した".into(),
+                        "the assembly View returned a reference to a different snapshot".into(),
                     ));
                 }
                 pairs
@@ -1555,7 +1642,11 @@ fn reevaluate_assembly_aligned(
                             atom: None,
                         })
                     })
-                    .ok_or_else(|| invalid("組立て View の参照先に明示対応がない"))
+                    .ok_or_else(|| {
+                        invalid(
+                            "a subject returned by an assembly View has no explicit correspondence",
+                        )
+                    })
             };
             let old_roots = before_layout
                 .roots
@@ -1580,7 +1671,9 @@ fn reevaluate_assembly_aligned(
             if let (Some(old), Some(new)) = (&old_roots, &new_roots)
                 && old != new
             {
-                return Err(invalid("評価済みの担当集合が明示対応と異なる"));
+                return Err(invalid(
+                    "the evaluated participant set does not match the explicit subject correspondence",
+                ));
             }
             let old_shared = if before_layout.shared.is_some() {
                 Some(checked_shared_partition(
@@ -1630,7 +1723,9 @@ fn reevaluate_assembly_aligned(
             if let (Some(old), Some(new)) = (old_shared, new_shared)
                 && old != new
             {
-                return Err(invalid("評価済みの共有対が明示対応と異なる"));
+                return Err(invalid(
+                    "the evaluated shared pairs do not match the explicit subject correspondence",
+                ));
             }
             Ok(())
         };
@@ -1724,7 +1819,7 @@ fn reevaluate_assembly_aligned(
                 }
                 Err(_) => {
                     return Err(ReobservationFailure::Unsupported(
-                        "有限割当ての対応を照合できない".into(),
+                        "cannot verify the correspondence of the finite assignments".into(),
                     ));
                 }
             }
@@ -2046,7 +2141,7 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
         }
         let changed = law.replace("quantity=if q then 1 else 0", "quantity=if q then 0 else 1");
         assert!(
-            matches!(reevaluate_assembly_many(&prior, prepared_with("after", AFTER, changed.as_bytes(), queries, &c), &alignment, &c), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("更新式"))
+            matches!(reevaluate_assembly_many(&prior, prepared_with("after", AFTER, changed.as_bytes(), queries, &c), &alignment, &c), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("update expression"))
         );
     }
 
@@ -2252,8 +2347,8 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
         let mut private = left.clone();
         private.subject = "a".into();
         for (edge, detail) in [
-            ((left.clone(), left.clone()), "別担当"),
-            ((private, right.clone()), "閉包"),
+            ((left.clone(), left.clone()), "different participants"),
+            ((private, right.clone()), "closing the shared pairs"),
         ] {
             let invalid_layout = Layout {
                 roots: layout.roots.clone(),
@@ -2470,7 +2565,7 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
             &previous,
             prepared_with("after", &changed_root, root_law.as_bytes(), QUERIES, &c),
             &alignment, &c,
-        ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("担当集合")));
+        ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("participant set")));
 
         let invalid_shared = std::str::from_utf8(LAW)
             .unwrap()
@@ -2488,7 +2583,7 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
         assert!(matches!(reevaluate_assembly(
             &previous, prepared_with("after", &incomplete, invalid_shared.as_bytes(), &raw, &c),
             &alignment, &c,
-        ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")));
+        ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("shared pair") || message.contains("共有対")));
     }
 
     #[test]
@@ -2671,14 +2766,14 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
                 law.to_owned(),
                 QUERIES.replace("local.a=", "local.b="),
                 AFTER,
-                "担当の明示束縛",
+                "participant binding",
             ),
             (
                 law.replace("set<Root>{a,b}", "set<Root>{b}")
                     .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]"),
                 QUERIES.to_owned(),
                 AFTER,
-                "評価済みの担当集合",
+                "evaluated participant set",
             ),
             (with_target, target_in_roster, AFTER, "異なるroot"),
             (
@@ -2693,10 +2788,17 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
                 &c,
             )
             .unwrap();
-            assert!(matches!(reevaluate_assembly(
-                &previous, prepared_with("after", after, law.as_bytes(), &asks, &c),
-                &alignment, &c,
-            ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)));
+            let failure = reevaluate_assembly(
+                &previous,
+                prepared_with("after", after, law.as_bytes(), &asks, &c),
+                &alignment,
+                &c,
+            )
+            .expect_err("the aligned layout must be invalid");
+            assert!(
+                matches!(&failure, ReobservationFailure::InvalidCorrespondence(message) if message.contains(detail)),
+                "expected {detail}: {failure:?}"
+            );
         }
         let position = concat!(
             "\"id\": \"a-links\",\n          \"subject\": \"a\",\n",
@@ -2709,7 +2811,7 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
             assert!(matches!(reevaluate_assembly(
                 &previous, prepared_with("after", &after, LAW, &asks, &c),
                 &alignment, &c,
-            ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("同一視")));
+            ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("identifies") || message.contains("同一視")));
         }
         let bounded_owned = AFTER.replacen(
             r#""subjects": ["#,

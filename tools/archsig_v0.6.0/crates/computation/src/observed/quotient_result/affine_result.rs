@@ -72,9 +72,12 @@ pub(super) fn unsupported(
         request: request.id.clone(),
         dependencies: vec![expression],
         missing: vec![],
-        location: location.or(Some(Location::Law {
-            span: declaration.span,
-        })),
+        location: Some(match location {
+            None | Some(Location::Law { span: (0, 0) }) => Location::Law {
+                span: env.indexes.inputs.law().exprs()[*body].span,
+            },
+            Some(location) => location,
+        }),
     };
     part.reasons.push(reason.clone());
     Ok(Source {

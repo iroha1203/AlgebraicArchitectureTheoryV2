@@ -320,8 +320,34 @@ fn reobserve_rejects_invalid_alignment_current_input_and_io_failures() {
     std::fs::write(&path, alignment.replace("\"solveIt\"", "\"wrong\"")).unwrap();
     let rejected = run_binary(&dir, &args);
     assert_eq!(rejected.code, 64);
+    let issue = &arr(get(&rejected.receipt, "issues"))[0];
+    let message = s(get(issue, "message"));
+    assert!(message.contains("current_solve") && message.contains("wrong"));
+    assert!(message.is_ascii());
     assert!(!dir.join("out").exists());
     std::fs::write(path, alignment).unwrap();
+    let current_definition = dir.join("current-definition.json");
+    let mut changed_definitions = DEFINITIONS.to_vec();
+    changed_definitions.push(b'\n');
+    std::fs::write(&current_definition, changed_definitions).unwrap();
+    let mut unsupported_args = args.clone();
+    let selected = unsupported_args
+        .iter()
+        .position(|arg| *arg == "--atom-definition")
+        .unwrap();
+    unsupported_args[selected + 1] = "current-definition.json";
+    let unsupported = run_binary(&dir, &unsupported_args);
+    assert_eq!(unsupported.code, 69);
+    assert_eq!(s(get(&unsupported.receipt, "status")), "unsupported");
+    let [issue] = arr(get(&unsupported.receipt, "issues")) else {
+        panic!("one unsupported alignment issue");
+    };
+    assert_eq!(s(get(issue, "code")), "usage");
+    assert_eq!(s(get(get(issue, "details"), "argument")), "--alignment");
+    assert!(arr(get(issue, "dependencies")).is_empty());
+    assert!(arr(get(issue, "missing")).is_empty());
+    assert!(s(get(issue, "message")).contains("identical Atom Definition inputs"));
+    assert!(!dir.join("out").exists());
     for (stage, name, valid) in [
         ("previous", "before.json", BEFORE),
         ("current", "after.json", AFTER),

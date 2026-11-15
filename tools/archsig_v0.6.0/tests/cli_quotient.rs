@@ -1511,10 +1511,15 @@ reading Pair {{
     );
     let unsupported = &arr(get(&result, "answers"))[13];
     assert_eq!(s(get(unsupported, "status")), "undetermined");
-    assert!(
-        arr(get(unsupported, "reasons"))
-            .iter()
-            .any(|reason| s(get(reason, "code")) == "unsupported_algorithm")
+    let unsupported_reason = arr(get(unsupported, "reasons"))
+        .iter()
+        .find(|reason| s(get(reason, "code")) == "unsupported_algorithm")
+        .unwrap();
+    let span = arr(get(get(unsupported_reason, "location"), "span"));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    assert_eq!(
+        &law[num(&span[0]) as usize..num(&span[1]) as usize],
+        "s.x*s.y"
     );
     {
         use archsig_common::control::{Checkpoint, Control, Signal};

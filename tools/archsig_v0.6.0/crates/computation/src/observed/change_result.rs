@@ -1983,7 +1983,17 @@ impl super::result_kind::ResultKind for Data {
             .and_then(|s| s.candidates.as_ref())
             .map_or(0, |table| table.rows.len());
         let rational_polyhedron = if polyhedral {
-            verification.take().map(Arc::new)
+            verification.take().map(|mut search| {
+                // 解集合の商は元制約と元座標を読む。候補域の分解と検算済み標本は保持しない。
+                if let Some(linear) = &mut search.rational {
+                    linear.guard_fiber = None;
+                }
+                if let Some(candidates) = &mut search.candidates {
+                    candidates.rows.clear();
+                }
+                search.solutions.clear();
+                Arc::new(search)
+            })
         } else {
             None
         };

@@ -28,16 +28,19 @@ pub(super) fn compute(
         requirements,
         pending,
     )?;
+    let guard = f
+        .guard_fiber
+        .ok_or(internal!("有理changeのguard域がない"))?;
     Ok(Linear {
         parameter_count: f.parameter_count,
         slots: f.slots,
         action: integer_fiber::matrix(&f.action)?,
         offset: integer_fiber::vector(&f.offset)?,
         guard: Some(Guard {
-            equations: integer_fiber::matrix(&f.guard_fiber.reduced)?,
-            rhs: integer_fiber::vector(&f.guard_fiber.transformed_rhs)?,
+            equations: integer_fiber::matrix(&guard.reduced)?,
+            rhs: integer_fiber::vector(&guard.transformed_rhs)?,
         }),
-        candidates_empty: f.guard_fiber.particular.is_none(),
+        candidates_empty: guard.particular.is_none(),
         equations: integer_fiber::matrix(&f.equations)?,
         rhs: integer_fiber::vector(&f.rhs)?,
     })

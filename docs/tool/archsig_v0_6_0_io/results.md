@@ -511,10 +511,11 @@ ModelMapAssemblyは局所correspondenceの元View・束縛、始終の組立て�
 locals.mapは元の担当間の写像、locals.restrictionは始終の局所像間で全体写像を制限した実写像であり、
 propositionは包含と再制限の可換性を確認する。generatorsは全体の生成元保存、lawsは各対象・元Law出現の
 適用/required status/Bool読取りの移送を確認する。局所行やLaw出現を、同じ値だけを理由に統合しない。
-修復状態で有限 parameter 族を比較した成立行には `parameter_domains` が付く。
+各有限 parameter の値輸送には全単射を要求する。修復状態で有限族を比較した成立行には `parameter_domains` が付く。
 各行は元 Law の宣言順での `position`（0 始まり）、始終の全域値 `source` / `target`、
 および `source` の各値に対応する輸送後の値 `images` を持つ。
-反証の `bindings` は異なる適用・成立を与える始域の代入、`left` / `right` は各選択状態での実 Bool 値を指す。
+適用・Bool 読取りの反証では、`bindings` が始域の実代入、`left` / `right` が各選択状態での実 Bool 値を指す。
+全単射の失敗は `parameter_transport` に型・全域・各像と、最初の失敗の添字を保存する。
 修復状態上の Law の反証は、保存結果の `law_transport.source` / `target` から、始終それぞれの
 `ModelAssembly`、比較した `ObjectComponent` と元の `LawInstance` を参照できる。
 対応する終域出現が見つからない場合は `target` を省略する。理由の `location` は始域 Law の宣言位置を指す。
@@ -1075,7 +1076,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,law_transport?:AssemblyLawTransport,condition_detail?:String,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,law_transport?:AssemblyLawTransport,parameter_transport?:LawParameterTransportFailure,condition_detail?:String,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | rational_polyhedron | `{equalities:ModuleMap,rhs:Vector,inequalities:ModuleMap,upper_bounds:Vector,outcome:"empty"\|"unique"\|"multiple",contradiction?:Vector,point?:Vector,second?:Vector,coordinate_bounds?:{lower:Vector,upper:Vector}[]}` |
@@ -1111,6 +1112,10 @@ left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指�
 これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
 `AssemblyLawTransport={source:AssemblyLawOccurrence,target?:AssemblyLawOccurrence}`。
 `AssemblyLawOccurrence={assembly:ModelAssembly,object:ObjectComponent,law:LawInstance}`。
+`LawParameterTransportFailure={position:Nat,source_type:Type,target_type:Type,source:Value[],target:Value[],
+images:Value[],kind:"outside_target"|"collision"|"unreached",source_indices?:Nat[],target_index?:Nat}`。
+`images` は始域順。終域外では元値・輸送像を、衝突では同じ像を持つ二つの元値を、
+未到達では終域値・全像の列を `left` / `right` に示す。
 設計選択付き組立てと修復状態の Law 移送の反例は `condition_detail` に具体的な失敗理由を保持する。
 選択済み構成を使う移行の端点不一致は、欠けている側、実端点とその側の組立てを保持する。
 局所対応が観測済みの単一参照を保存しない場合は、始域の参照を運んだ像と実際の終域参照を保持する。

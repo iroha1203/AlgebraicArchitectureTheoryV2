@@ -1074,3 +1074,128 @@ fn repaired_map_skips_the_body_of_a_law_when_its_guard_is_false() {
     assert!(answers.iter().all(|a| s(get(a, "status")) == "established"));
     assert!(has(get(answers.last().unwrap(), "outputs"), "map"));
 }
+
+#[test]
+fn repaired_map_saves_the_colliding_finite_parameter_values() {
+    let dir = workdir("repaired-model-map-parameter-collision");
+    let input =
+        repaired_boolean_inputs("law optional aConstant(r:Root,t:(Part,Bool)):true;", false);
+    let law = std::str::from_utf8(input.law().bytes())
+        .unwrap()
+        .replace(
+            "law optional pair(a:Part,b:Part):a.quantity!=b.quantity;",
+            "",
+        )
+        .replace(
+            "law optional boundary(p:Part):p.quantity=false;",
+            "law optional boundary(r:Root):true;",
+        )
+        .replace(
+            "law optional boundaryOne(p:Part):p.quantity=true;",
+            "law optional boundaryOne(r:Root):true;",
+        );
+    let mut map = fixture::without_arrows(
+        std::str::from_utf8(input.archmap().bytes())
+            .unwrap()
+            .to_owned(),
+    );
+    for id in ["moveA-steps", "moveB-steps"] {
+        map = fixture::atom(map, id, Some(Json::Arr(vec![])));
+    }
+    let reference = |subject| Json::Arr(vec![Json::str("v"), Json::str(subject)]);
+    map = fixture::atom(map, "moveB-to", Some(reference("A")));
+    let pairs = [("mb", "ma"), ("b", "a")]
+        .into_iter()
+        .map(|(source, target)| Json::Arr(vec![reference(source), reference(target)]))
+        .collect();
+    map = fixture::atom(map, "moveB-parts", Some(Json::Arr(pairs)));
+    write_inputs(
+        &dir,
+        &archsig_input::input::InputSources::from_bytes(
+            vec![input.definitions()[0].bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+    );
+    let mut asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
+        .lines()
+        .filter(|ask| {
+            matches!(
+                ask.split_once('=').unwrap().0,
+                "aWithin"
+                    | "bWithin"
+                    | "aProblem"
+                    | "bProblem"
+                    | "aSolve"
+                    | "bSolve"
+                    | "aPick0"
+                    | "bPick0"
+                    | "aApply0"
+                    | "bApply0"
+                    | "made0"
+            )
+        })
+        .map(|ask| {
+            if ask.contains("Problem=prepare") {
+                ask.replace("p=@v/ma", "r=@v/A")
+                    .replace("p=@v/mb", "r=@v/B")
+            } else {
+                ask.to_owned()
+            }
+        })
+        .collect::<Vec<_>>();
+    asks.push("fold=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)".to_owned());
+    let asks = asks.iter().map(String::as_str).collect::<Vec<_>>();
+    let run = execute_asks(&dir, "out", None, &asks);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answer = arr(get(&result, "answers")).last().unwrap();
+    assert_eq!(s(get(answer, "status")), "refuted");
+    assert!(has(get(answer, "outputs"), "configuration_map"));
+    let nodes = arr(get(&result, "nodes"));
+    let dereference = |r: &archsig_common::json::JNode| {
+        nodes
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(r, "node")))
+            .unwrap()
+    };
+    let [point] = arr(get(answer, "counterexamples")) else {
+        panic!("one parameter transport failure");
+    };
+    let data = get(get(dereference(point), "value"), "data");
+    let witness = get(data, "parameter_transport");
+    assert_eq!(num(get(witness, "position")), 1);
+    assert_eq!(s(get(witness, "kind")), "collision");
+    let [first, second] = arr(get(witness, "source_indices")) else {
+        panic!("two distinct source values");
+    };
+    let (first, second) = (num(first) as usize, num(second) as usize);
+    let source = arr(get(witness, "source"));
+    let target = arr(get(witness, "target"));
+    let images = arr(get(witness, "images"));
+    assert_ne!(source[first].value, source[second].value);
+    assert_eq!(images[first].value, images[second].value);
+    assert_eq!(
+        images[first].value,
+        target[num(get(witness, "target_index")) as usize].value
+    );
+    assert_eq!(
+        get(dereference(get(data, "left")), "value").value,
+        source[first].value
+    );
+    assert_eq!(
+        get(dereference(get(data, "right")), "value").value,
+        source[second].value
+    );
+    let supporting_law = dereference(get(get(get(data, "law_transport"), "source"), "law"));
+    assert_eq!(
+        s(get(get(supporting_law, "value"), "name")),
+        "Assembly.aConstant"
+    );
+
+    let replay = execute_asks(&dir, "checked", Some("out"), &asks);
+    assert_eq!(replay.code, run.code);
+    let replay = result_json(&dir, &replay);
+    assert!(warnings(&replay).is_empty());
+    assert_eq!(get(&replay, "answers").value, get(&result, "answers").value);
+}

@@ -122,6 +122,21 @@ fn invalid(signals: &mut dyn Signals, message: String) -> Outcome {
     )
 }
 
+fn correspondence_issue(alignment: &Alignment<'_>, message: String) -> ResultIssue {
+    let message = if message.is_ascii() {
+        message
+    } else {
+        format!(
+            "cannot align assembly request {:?}: its participant roots or shared layout do not meet the supported conditions",
+            alignment.assembly
+        )
+    };
+    ResultIssue::Usage {
+        argument: "--alignment".into(),
+        message,
+    }
+}
+
 fn result(value: Result<ObservedEvaluation, EvaluationFailure>) -> Option<ObservedEvaluation> {
     match value {
         Ok(evaluation) => Some(evaluation),
@@ -199,7 +214,11 @@ pub(super) fn execute(
             }
             Err(ReobservationFailure::Stopped(_)) => None,
             Err(ReobservationFailure::InvalidCorrespondence(message)) => {
-                return invalid(signals, message);
+                return output::without_result(
+                    signals,
+                    Status::Invalid,
+                    vec![correspondence_issue(&alignment, message)],
+                );
             }
             Err(ReobservationFailure::Unsupported(message)) => {
                 return output::notify(
@@ -207,10 +226,7 @@ pub(super) fn execute(
                     Status::Unsupported,
                     69,
                     c.stop_reason(),
-                    vec![Json::obj([
-                        ("code", Json::str("unsupported_alignment")),
-                        ("message", Json::str(message)),
-                    ])],
+                    vec![correspondence_issue(&alignment, message).wire()],
                 );
             }
             Err(ReobservationFailure::Evaluation(failure)) => result(Err(*failure)),
