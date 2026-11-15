@@ -109,14 +109,17 @@ fn possibilities(
         })
         .collect()
 }
-fn analyze(
-    shared: &Shared,
+fn group_analyses<'a>(
+    shared: &'a Shared,
     readings: &[usize],
-    enabled: &[bool],
+    enabled: &'a [bool],
     goal: Goal,
-    repairable: &[bool],
-    c: &Control,
-) -> Result<Analysis, ValidationFailure> {
+    repairable: &'a [bool],
+    c: &'a Control,
+) -> Result<
+    impl Iterator<Item = Result<(Group, Option<Counterexample>), ValidationFailure>> + use<'a>,
+    ValidationFailure,
+> {
     let (family, _) = shared
         .family
         .as_ref()
@@ -129,11 +132,7 @@ fn analyze(
             .or_default()
             .push(index);
     }
-    let mut result = Analysis {
-        groups: vec![],
-        witnesses: vec![],
-    };
-    for (_, indices) in groups {
+    Ok(groups.into_values().map(move |indices| {
         tick(c)?;
         let mut first_yes = None;
         let mut first_no = None;
@@ -160,11 +159,11 @@ fn analyze(
         } else {
             None
         };
-        if let (Some(yes), Some(no)) = (first_yes, first_no) {
-            result.witnesses.push(Counterexample {
+        let witness = if let (Some(yes), Some(no)) = (first_yes, first_no) {
+            Some(Counterexample {
                 kind: "decision_difference",
                 indices: vec![yes, no],
-            });
+            })
         } else if goal == Goal::Assignment && possible == Some(true) && common == Some(false) {
             let mut witness = indices.clone();
             for index in &indices {
@@ -180,18 +179,22 @@ fn analyze(
                     }
                 }
             }
-            result.witnesses.push(Counterexample {
+            Some(Counterexample {
                 kind: "no_common_assignment",
                 indices: witness,
-            });
-        }
-        result.groups.push(Group {
-            indices,
-            possible,
-            common,
-        });
-    }
-    Ok(result)
+            })
+        } else {
+            None
+        };
+        Ok((
+            Group {
+                indices,
+                possible,
+                common,
+            },
+            witness,
+        ))
+    }))
 }
 struct Reduced {
     readings: Vec<usize>,
@@ -207,7 +210,15 @@ fn reduce(
 ) -> Result<Reduced, ValidationFailure> {
     let repairable = possibilities(shared, enabled, c)?;
     let mut readings = allowed.to_vec();
-    let mut analysis = analyze(shared, &readings, enabled, goal, &repairable, c)?;
+    let mut analysis = Analysis {
+        groups: vec![],
+        witnesses: vec![],
+    };
+    for group in group_analyses(shared, &readings, enabled, goal, &repairable, c)? {
+        let (details, witness) = group?;
+        analysis.groups.push(details);
+        analysis.witnesses.extend(witness);
+    }
     let mut necessary = vec![];
     if analysis.sufficient() {
         for field in allowed {
@@ -217,19 +228,21 @@ fn reduce(
                 .copied()
                 .filter(|f| f != field)
                 .collect::<Vec<_>>();
-            let checked = analyze(shared, &trial, enabled, goal, &repairable, c)?;
-            if checked.sufficient() {
-                readings = trial;
-                analysis = checked;
+            let mut verified = Vec::new();
+            let mut counterexample = None;
+            for group in group_analyses(shared, &trial, enabled, goal, &repairable, c)? {
+                let (details, witness) = group?;
+                if let Some(witness) = witness {
+                    counterexample = Some(witness);
+                    break;
+                }
+                verified.push(details);
+            }
+            if let Some(witness) = counterexample {
+                necessary.push((*field, witness));
             } else {
-                necessary.push((
-                    *field,
-                    checked
-                        .witnesses
-                        .into_iter()
-                        .next()
-                        .ok_or(internal!("不足の反例がない"))?,
-                ));
+                readings = trial;
+                analysis.groups = verified;
             }
         }
     }
@@ -948,6 +961,105 @@ mod tests {
         let enough = reduce(&shared, &[0], &enabled, Goal::Assignment, &c).unwrap();
         assert_eq!(enough.readings, vec![0]);
         assert!(enough.analysis.sufficient());
+    }
+    #[test]
+    fn reduction_retains_the_first_witness_and_all_final_groups() {
+        let inputs = input(
+            r#"view input(r:Root):(Fp(3),Bool)=(r.h,r.z);
+                change choose(c:Part,p:Fp(3),q:Bool)=c with {
+                    label=if p=0 then "a" else if p=1 then "b" else "c",flag=q
+                };
+                law required valid(r:Root):forall c in Part[r].
+                    c.flag=r.z and (if r.h=0 then c.label!="c"
+                                         else if r.h=1 then c.label!="a"
+                                         else c.label!="b");"#,
+            r#"["Fp","3"]"#,
+            None,
+        );
+        let c = archsig_common::control::quiet();
+        let result = super::super::super::evaluate_observed_bytes(
+            inputs,
+            &["p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,r=@v/root)"],
+            &c,
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let shared = shared(&result);
+        let enabled = vec![true; shared.subjects.len()];
+        let (family, _) = shared.family.as_ref().unwrap();
+        assert_eq!(family.points.len(), 6);
+        assert_eq!(family.fields.len(), 2);
+
+        // Independent direct enumeration of repairs on the (h,z) product.
+        let expected = |readings: &[usize], decision: bool| {
+            let mut groups = BTreeMap::<Vec<usize>, Vec<Vec<(usize, usize)>>>::new();
+            for h in 0..3 {
+                for z in 0..2 {
+                    let input = [h, z];
+                    groups
+                        .entry(readings.iter().map(|i| input[*i]).collect())
+                        .or_default()
+                        .push(
+                            (0..3)
+                                .filter(|p| *p != [2, 0, 1][h])
+                                .map(|p| (p, z))
+                                .collect(),
+                        );
+                }
+            }
+            groups.values().all(|repairs| {
+                if decision {
+                    repairs.iter().all(|points| !points.is_empty())
+                } else {
+                    repairs[0]
+                        .iter()
+                        .any(|point| repairs.iter().all(|points| points.contains(point)))
+                }
+            })
+        };
+        let expected_reduction = |decision: bool| {
+            let mut allowed = vec![0, 1];
+            for field in [0, 1] {
+                let trial = allowed
+                    .iter()
+                    .copied()
+                    .filter(|i| *i != field)
+                    .collect::<Vec<_>>();
+                if expected(&trial, decision) {
+                    allowed = trial;
+                }
+            }
+            allowed
+        };
+        let decision = reduce(&shared, &[0, 1], &enabled, Goal::Decision, &c).unwrap();
+        assert_eq!(decision.readings, expected_reduction(true));
+        assert_eq!(decision.analysis.groups.len(), 1);
+        let assignment = reduce(&shared, &[0, 1], &enabled, Goal::Assignment, &c).unwrap();
+        assert_eq!(assignment.readings, expected_reduction(false));
+        assert_eq!(assignment.analysis.groups.len(), 6);
+        assert!(
+            assignment
+                .analysis
+                .groups
+                .iter()
+                .all(|g| g.possible == Some(true) && g.common == Some(true))
+        );
+        assert_eq!(assignment.necessary.len(), 2);
+        for (field, witness) in assignment.necessary {
+            let kept = 1 - field;
+            let want = family
+                .points
+                .iter()
+                .enumerate()
+                .filter_map(|(i, point)| (point[kept] == 0).then_some(i))
+                .collect::<Vec<_>>();
+            assert_eq!(witness.kind, "no_common_assignment");
+            assert_eq!(witness.indices, want);
+        }
+        let insufficient = reduce(&shared, &[1], &enabled, Goal::Assignment, &c).unwrap();
+        assert_eq!(insufficient.analysis.witnesses.len(), 2);
+        assert_eq!(insufficient.analysis.groups.len(), 2);
+        assert!(insufficient.necessary.is_empty());
     }
     #[test]
     fn public_observe_reuses_the_problem_and_constructs_after_the_input_is_observed() {
