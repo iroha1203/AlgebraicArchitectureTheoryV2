@@ -155,8 +155,19 @@ pub(super) fn build(
             .zip(&image.offset)
             .map(|(coordinate, offset)| numeric::binary(BinOp::Sub, coordinate, offset, c))
             .collect::<Result<Vec<_>, _>>()?;
-        original.extend(field_polyhedron::halfspaces(&image.matrix, &rhs, &[], c)?);
-        let result = field_polyhedron::solve(&original, n, c)?;
+        let view_rows = field_polyhedron::halfspaces(&image.matrix, &rhs, &[], c)?;
+        let view_row_count = view_rows.len();
+        original.extend(view_rows);
+        let result = match &polyhedron.outcome {
+            Outcome::Empty(contradiction) => {
+                let mut contradiction = contradiction.clone();
+                contradiction
+                    .combination
+                    .extend(std::iter::repeat_n(zero.clone(), view_row_count));
+                Outcome::Empty(contradiction)
+            }
+            _ => field_polyhedron::solve(&original, n, c)?,
+        };
         field_polyhedron::verify(&original, n, &result, c)?;
         let points: &[&[Scalar]] = match &result {
             Outcome::Empty(_) => &[],

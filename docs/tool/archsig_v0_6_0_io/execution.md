@@ -721,7 +721,8 @@ archsig reobserve \
 入力・対応が有効な場合、終了状態は現在の回答に従い、候補照合に判定不能があれば partial/2 となる。
 入力・解決・I/O エラーには通常の終了コードを使う。前回または現在の入力検査エラーの
 `issues[].stage` は `previous` / `current` のいずれか。対応の不一致は 64、未対応の組合せは 69。
-対応表に起因する通知は `issues[].details.argument` に `--alignment` を記す。
+対応表の形式不正・対応不一致・未対応の組合せでは、`issues[].details.argument` に `--alignment` を記す。
+対応表ファイルの読込みに失敗した場合は I/O エラーの 74 とし、`issues[].details` に操作とパスを記録する。
 SIGINT/SIGTERM は 130/143 とし、前回段階で停止した場合は前回の確定済み回答、
 現在段階で停止した場合は前回と現在の確定済み回答を保持する。`--reuse` は `run` の保存結果照合に使う。
 

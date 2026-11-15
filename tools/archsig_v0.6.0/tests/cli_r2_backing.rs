@@ -813,11 +813,12 @@ fn rational_backing_keeps_empty_solution_quotient_and_candidate_domain_separate(
         "q=quotient(Backing.stockLoad,on=$overlapInsufficient.solutions,s=@fixture/overlapInsufficient.X)",
         "domain=quotient(Backing.stockLoad,on=$overlapInsufficient.domain,s=@fixture/overlapInsufficient.X)",
         "independent=evaluate(Backing.stockLoad,s=@fixture/overlapInsufficient.X)",
+        "qAt=quotient(Backing.stockLoad,on=$overlapInsufficient.solutions,s=@fixture/overlapInsufficient.X,fiber.at=$independent.value)",
     ];
     let first = polyhedron_asks(&dir, &asks, "first", None);
     assert_eq!(first.code, 1, "{}{}", first.stdout, first.stderr);
     let result = result_json(&dir, &first);
-    let [solve, quotient, domain, independent] = arr(get(&result, "answers")) else {
+    let [solve, quotient, domain, independent, quotient_at] = arr(get(&result, "answers")) else {
         panic!("all requests remain");
     };
     assert_eq!(s(get(solve, "status")), "refuted");
@@ -855,6 +856,22 @@ fn rational_backing_keeps_empty_solution_quotient_and_candidate_domain_separate(
     );
     assert_eq!(s(get(domain, "status")), "established");
     assert_eq!(s(get(independent, "status")), "established");
+    assert_eq!(s(get(quotient_at, "status")), "established");
+    let q_at = get(
+        referenced(&result, get(get(quotient_at, "outputs"), "quotient")),
+        "value",
+    );
+    let fiber = get(referenced(&result, get(q_at, "fiber")), "value");
+    assert_eq!(s(get(fiber, "outcome")), "empty");
+    let mut weights = coordinates(&result, get(certificate(&result), "contradiction"));
+    weights.extend([("0", "1"); 2]);
+    let fiber_weights = arr(get(fiber, "contradiction"));
+    assert_eq!(fiber_weights.len(), arr(get(fiber, "halfspaces")).len());
+    assert_eq!(fiber_weights.len(), weights.len());
+    for (weight, (numerator, denominator)) in fiber_weights.iter().zip(weights) {
+        let [n, d] = arr(weight) else { panic!("Q") };
+        assert_eq!((s(n), s(d)), (numerator, denominator));
+    }
     let replay = polyhedron_asks(&dir, &asks, "same", Some("first"));
     assert_eq!(replay.code, 1, "{}{}", replay.stdout, replay.stderr);
     let replay = result_json(&dir, &replay);
