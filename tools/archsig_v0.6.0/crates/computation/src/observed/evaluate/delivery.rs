@@ -54,363 +54,276 @@ pub(super) struct ClosedBody {
     pub counterexamples: Vec<Counterexample>,
 }
 
-/// A conservative first route: the decision is made for the whole batch before
-/// evaluating any body. Other request consumers keep the existing full API.
+/// Only terminal requests may discard their source graph. Missing fields are
+/// compared with resolved reads for scalar slots. Missing structural slots
+/// can affect implicit membership or value inhabitation; keep their full route.
+pub(in crate::observed) fn closed_root_plan(prepared: &PreparedObserved) -> Vec<bool> {
+    use std::collections::BTreeSet;
+
+    let requests = prepared.requests().requests();
+    if prepared.object.is_some() {
+        return vec![false; requests.len()];
+    }
+    let consumed = requests
+        .iter()
+        .flat_map(|request| request.dependencies.iter().map(String::as_str))
+        .collect::<BTreeSet<_>>();
+    let mut missing = BTreeSet::new();
+    for field in prepared
+        .inputs()
+        .archmap()
+        .snapshots()
+        .iter()
+        .flat_map(|snapshot| &snapshot.subjects)
+        .flat_map(|subject| &subject.fields)
+        .filter(|field| field.slot == Slot::Missing)
+    {
+        if !matches!(
+            field.ty,
+            Type::Unit | Type::Bool | Type::Text | Type::Z | Type::Q | Type::Fp(_)
+        ) {
+            return vec![false; requests.len()];
+        }
+        missing.insert(&field.name);
+    }
+    requests
+        .iter()
+        .map(|request| {
+            !consumed.contains(request.id.as_str())
+                && closed_request_eligible(prepared, request, &missing)
+        })
+        .collect()
+}
+
+#[cfg(test)]
 pub(in crate::observed) fn closed_roots_eligible(prepared: &PreparedObserved) -> bool {
+    let plan = closed_root_plan(prepared);
+    !plan.is_empty() && plan.into_iter().all(|admitted| admitted)
+}
+
+fn closed_request_eligible(
+    prepared: &PreparedObserved,
+    request: &Request,
+    missing: &std::collections::BTreeSet<&archsig_common::names::QualifiedName>,
+) -> bool {
     use archsig_input::law::ast::{QuantDomain, QuantSplit};
-    if prepared.object.is_some()
-        || prepared.requests().requests().is_empty()
-        || prepared
-            .inputs()
-            .archmap()
-            .snapshots()
+    let law = prepared.inputs().law();
+    if !matches!(request.kind, QuestionKind::Check | QuestionKind::Evaluate)
+        || !request.dependencies.is_empty()
+        || request
+            .constraints
             .iter()
-            .flat_map(|s| &s.subjects)
-            .flat_map(|s| &s.fields)
-            .any(|field| !matches!(field.slot, Slot::Known { .. }))
+            .any(|constraint| constraint.dynamic)
+        || request.arguments.iter().any(|argument| {
+            !argument.name.starts_with("bind.")
+                || !matches!(argument.value, Selector::Subject { .. })
+        })
     {
         return false;
     }
-    let law = prepared.inputs().law();
-    for request in prepared.requests().requests() {
-        if !matches!(request.kind, QuestionKind::Check | QuestionKind::Evaluate)
-            || !request.dependencies.is_empty()
-            || request
-                .constraints
-                .iter()
-                .any(|constraint| constraint.dynamic)
-            || request.arguments.iter().any(|argument| {
-                !argument.name.starts_with("bind.")
-                    || !matches!(argument.value, Selector::Subject { .. })
+    let Some(name) = request.declaration() else {
+        return false;
+    };
+    let declaration = &law.declarations()[name];
+    let (params, body) = match &declaration.signature {
+        Signature::View { params, body, .. }
+        | Signature::Law {
+            params,
+            guard: None,
+            body,
+            ..
+        } => (params, *body),
+        _ => return false,
+    };
+    if params.len() != request.arguments.len() {
+        return false;
+    }
+    let ExprKind::Quant {
+        split:
+            QuantSplit::Fixed {
+                domain: QuantDomain::In(domain),
+                body,
+            },
+        ..
+    } = &law.exprs()[body].kind
+    else {
+        return false;
+    };
+    let Some(Type::List(element) | Type::Set(element)) = law.expr_type(*domain) else {
+        return false;
+    };
+    if !matches!(
+        element.as_ref(),
+        Type::Unit
+            | Type::Text
+            | Type::Bool
+            | Type::Z
+            | Type::Q
+            | Type::Fp(_)
+            | Type::Ref(_)
+            | Type::Data(_)
+    ) {
+        return false;
+    }
+    let mut pending = vec![*domain, *body];
+    while let Some(id) = pending.pop() {
+        let resolved = &law.program().nodes[id];
+        if resolved
+            .field
+            .as_ref()
+            .is_some_and(|field| missing.contains(field))
+            || resolved.lexical.as_ref().is_some_and(|lexical| {
+                lexical
+                    .projections
+                    .iter()
+                    .any(|read| missing.contains(&read.name))
             })
+            || (!missing.is_empty()
+                && matches!(resolved.kind, ExprKind::Field { .. })
+                && resolved.field.is_none())
         {
             return false;
         }
-        let Some(name) = request.declaration() else {
-            return false;
-        };
-        let declaration = &law.declarations()[name];
-        let (params, body) = match &declaration.signature {
-            Signature::View { params, body, .. }
-            | Signature::Law {
-                params,
-                guard: None,
-                body,
-                ..
-            } => (params, *body),
+        // Path/Term wire projection needs native owners. Plain data and
+        // typed Map application have self-owned Scalar payloads.
+        let mut types = vec![law.expr_type(id).expect("checked expression type")];
+        while let Some(ty) = types.pop() {
+            match ty {
+                Type::Path(..) | Type::Term(..) => return false,
+                Type::Tuple(items) => types.extend(items),
+                Type::List(item) | Type::Set(item) | Type::Option(item) => types.push(item),
+                Type::Map(domain, codomain) => {
+                    types.push(domain);
+                    types.push(codomain);
+                }
+                _ => {}
+            }
+        }
+        match &law.exprs()[id].kind {
+            ExprKind::Int(_)
+            | ExprKind::Bool(_)
+            | ExprKind::Str(_)
+            | ExprKind::Unit
+            | ExprKind::Dotted(_)
+            | ExprKind::None(_) => {}
+            ExprKind::Group(child) | ExprKind::Some(child) => pending.push(*child),
+            ExprKind::Unary { operand, .. } => pending.push(*operand),
+            ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs, *rhs]),
+            ExprKind::Field { base, .. } | ExprKind::Index { base, .. } => pending.push(*base),
+            ExprKind::Family { owner, .. } => pending.push(*owner),
+            ExprKind::Let { value, body, .. } => pending.extend([*value, *body]),
+            ExprKind::If {
+                cond,
+                then_branch,
+                else_branch,
+            } => pending.extend([*cond, *then_branch, *else_branch]),
+            ExprKind::ListLit { items, .. }
+            | ExprKind::SetLit { items, .. }
+            | ExprKind::Tuple(items) => pending.extend(items),
+            ExprKind::Call { callee, args }
+                if args.len() == 1 && matches!(law.expr_type(*callee), Some(Type::Map(..))) =>
+            {
+                pending.extend([*callee, args[0]]);
+            }
+            // Named/native calls, free axes and nested quantifiers retain
+            // their full route until their own consumers are connected.
             _ => return false,
-        };
-        if params.len() != request.arguments.len() {
-            return false;
-        }
-        let ExprKind::Quant {
-            split:
-                QuantSplit::Fixed {
-                    domain: QuantDomain::In(domain),
-                    body,
-                },
-            ..
-        } = &law.exprs()[body].kind
-        else {
-            return false;
-        };
-        let Some(Type::List(element) | Type::Set(element)) = law.expr_type(*domain) else {
-            return false;
-        };
-        if !matches!(
-            element.as_ref(),
-            Type::Unit
-                | Type::Text
-                | Type::Bool
-                | Type::Z
-                | Type::Q
-                | Type::Fp(_)
-                | Type::Ref(_)
-                | Type::Data(_)
-        ) {
-            return false;
-        }
-        let mut pending = vec![*domain, *body];
-        while let Some(id) = pending.pop() {
-            // Path/Term wire projection needs native owners. Plain data and
-            // typed Map application have self-owned Scalar payloads.
-            let mut types = vec![law.expr_type(id).expect("checked expression type")];
-            while let Some(ty) = types.pop() {
-                match ty {
-                    Type::Path(..) | Type::Term(..) => return false,
-                    Type::Tuple(items) => types.extend(items),
-                    Type::List(item) | Type::Set(item) | Type::Option(item) => types.push(item),
-                    Type::Map(domain, codomain) => {
-                        types.push(domain);
-                        types.push(codomain);
-                    }
-                    _ => {}
-                }
-            }
-            match &law.exprs()[id].kind {
-                ExprKind::Int(_)
-                | ExprKind::Bool(_)
-                | ExprKind::Str(_)
-                | ExprKind::Unit
-                | ExprKind::Dotted(_)
-                | ExprKind::None(_) => {}
-                ExprKind::Group(child) | ExprKind::Some(child) => pending.push(*child),
-                ExprKind::Unary { operand, .. } => pending.push(*operand),
-                ExprKind::Binary { lhs, rhs, .. } => pending.extend([*lhs, *rhs]),
-                ExprKind::Field { base, .. } | ExprKind::Index { base, .. } => pending.push(*base),
-                ExprKind::Family { owner, .. } => pending.push(*owner),
-                ExprKind::Let { value, body, .. } => pending.extend([*value, *body]),
-                ExprKind::If {
-                    cond,
-                    then_branch,
-                    else_branch,
-                } => pending.extend([*cond, *then_branch, *else_branch]),
-                ExprKind::ListLit { items, .. }
-                | ExprKind::SetLit { items, .. }
-                | ExprKind::Tuple(items) => pending.extend(items),
-                ExprKind::Call { callee, args }
-                    if args.len() == 1 && matches!(law.expr_type(*callee), Some(Type::Map(..))) =>
-                {
-                    pending.extend([*callee, args[0]]);
-                }
-                // Named/native calls, free axes and nested quantifiers retain
-                // their full route until their own consumers are connected.
-                _ => return false,
-            }
         }
     }
     true
 }
 
-/// Execute the admitted requests with the same Evaluator and body reducer.
-/// Each completed root owns its delivery data; the next root gets a fresh
-/// recording Graph. Only an unfinished current root can escape as a raw tail.
+/// The same request runner serves native recording and delivery. Only delivery
+/// can replace a terminal root with owned output and discard its graph suffix.
 pub(in crate::observed) fn evaluate_closed_roots(
     prepared: PreparedObserved,
     control: &Control,
+    admitted: Vec<bool>,
 ) -> ClosedRun {
-    evaluate_closed_roots_with_check(prepared, control, |_| Ok(()))
+    run_delivery(prepared, control, admitted, |_| Ok(()))
 }
-// Like the raw runner's rejecting validator callback, this can reject a
-// completed root before commit; it cannot supply or change a successful result.
+
+#[cfg(test)]
 pub(super) fn evaluate_closed_roots_with_check(
     prepared: PreparedObserved,
     control: &Control,
+    after_root: impl FnMut(&Request) -> Result<(), InternalError>,
+) -> ClosedRun {
+    let admitted = closed_root_plan(&prepared);
+    run_delivery(prepared, control, admitted, after_root)
+}
+
+fn run_delivery(
+    prepared: PreparedObserved,
+    control: &Control,
+    admitted: Vec<bool>,
     mut after_root: impl FnMut(&Request) -> Result<(), InternalError>,
 ) -> ClosedRun {
-    let mut answers: Vec<Option<DeliveryAnswer>> = std::iter::repeat_with(|| None)
-        .take(prepared.requests().requests().len())
-        .collect();
-    let mut issues = Vec::new();
-    let mut tail = None;
-    let mut internal = false;
-    let mut has_nodes = false;
-    let mut not_implemented = None;
-    {
-        let environment = Environment::with_prepared(&prepared, control).ok();
-        for &index in prepared.requests().evaluation_order() {
-            let request = &prepared.requests().requests()[index];
-            let declaration = &prepared.inputs().law().declarations()
-                [request.declaration().expect("admitted declaration")];
-            let mut base = Scope::default();
-            base.readings.insert(declaration.reading.clone());
-            if let Some(signal) = control.stop_reason() {
-                let reason = Reason::stopped(&request.id, signal);
-                issues.push(DeliveryReason::Recorded(reason.clone()));
-                answers[index] = Some(DeliveryAnswer::Recorded(Answer {
-                    id: request.id.clone(),
-                    status: Decision::Undetermined,
-                    outputs: BTreeMap::new(),
-                    claim: None,
-                    evidence: vec![],
-                    reasons: vec![reason],
-                    scope: base,
-                }));
-                continue;
-            }
-            if internal {
-                let reason =
-                    Reason::internal(&request.id, "previous derivation verification".into());
-                issues.push(DeliveryReason::Recorded(reason.clone()));
-                answers[index] = Some(DeliveryAnswer::Recorded(Answer {
-                    id: request.id.clone(),
-                    status: Decision::Undetermined,
-                    outputs: BTreeMap::new(),
-                    claim: None,
-                    evidence: vec![],
-                    reasons: vec![reason],
-                    scope: Scope::default(),
-                }));
-                continue;
-            }
-            let environment = environment
-                .as_ref()
-                .expect("unstopped environment construction");
-            let mut graph = Graph::new(control);
-            graph.requests = prepared.requests().requests().to_vec();
-            graph.active.request = index;
-            let (_architecture, architecture_failure) = match environment.enter_architecture(&graph)
-            {
-                Ok(guard) => (Some(guard), None),
-                Err(failure) => (None, Some(failure)),
-            };
-            environment.state.merge_architecture_scope(&mut base);
-            let (params, guard, body) = match &declaration.signature {
-                Signature::View { params, body, .. } => (params, None, *body),
-                Signature::Law {
-                    params,
-                    guard,
-                    body,
-                    ..
-                } => (params, *guard, *body),
-                _ => unreachable!("admitted declaration signature"),
-            };
-            let mut evaluator = Evaluator {
-                environment,
-                graph: &mut graph,
-                control,
-                request,
-                declaration,
-                bindings: vec![],
-                lexical: BTreeMap::new(),
-                formal: BTreeMap::new(),
-                base,
-                retained_scope: Scope::default(),
-                reasons: vec![],
-                completed: BTreeMap::new(),
-                answer_evaluation: None,
-                verified_observed: None,
-                completing: false,
-                finite_universal: None,
-                sources: BTreeMap::new(),
-            };
-            let mut progress = RootProgress::default();
-            let result = (|| {
-                if let Some(failure) = architecture_failure {
-                    return Err(failure.into());
-                }
-                evaluator.tick(Checkpoint::FiniteIteration)?;
-                evaluator.projection_conditions()?;
-                evaluator.bind(params)?;
-                if !evaluator.closed_root_eligible(body, guard)? || evaluator.is_family(params) {
-                    return Err(internal!("静的閉包admissionと実root contextが一致しない").into());
-                }
-                evaluator.closed_root_answer(params, body, &mut progress)
-            })();
-            let result = result.and_then(|answer| {
-                after_root(request).map_err(Failure::Internal)?;
-                Ok(answer)
-            });
-            match result {
-                Ok(answer) => {
-                    has_nodes |= !evaluator.graph.nodes.is_empty();
-                    issues.extend(answer.reasons.iter().cloned().map(DeliveryReason::Closed));
-                    answers[index] = Some(DeliveryAnswer::Closed(answer));
-                    #[cfg(test)]
-                    data::observe_actual(
-                        declaration.span,
-                        evaluator.graph.active,
-                        "delivery_answer_committed",
-                        index,
-                    );
-                    if let Err(Failure::Stop(signal)) = evaluator.tick(Checkpoint::FiniteIteration)
-                    {
-                        issues.push(DeliveryReason::Recorded(Reason::stopped(
-                            &request.id,
-                            signal,
-                        )));
-                    }
-                }
-                Err(failure) => {
-                    let stopped = matches!(failure, Failure::Stop(_));
-                    let reason = match failure {
-                        Failure::Stop(signal) => Reason::stopped(&request.id, signal),
-                        Failure::NotImplemented { location, feature } => {
-                            not_implemented = Some((declaration.name.clone(), location, feature));
-                            internal = true;
-                            Reason::internal(
-                                &request.id,
-                                format!("{} evaluation", request.kind.wire()),
-                            )
-                        }
-                        Failure::Internal(_) => {
-                            internal = true;
-                            Reason::internal(
-                                &request.id,
-                                format!("{} evaluation", request.kind.wire()),
-                            )
-                        }
-                    };
-                    if stopped {
-                        has_nodes |= !evaluator.graph.nodes.is_empty();
-                        let mut reasons = evaluator.reasons.clone();
-                        reasons.push(reason);
-                        sort_reasons(&mut reasons);
-                        let mut scope = evaluator.base.clone();
-                        scope.merge(&evaluator.retained_scope);
-                        let retained = progress.into_retained();
-                        issues.extend(retained.reasons.iter().cloned().map(DeliveryReason::Closed));
-                        issues.extend(reasons.iter().cloned().map(DeliveryReason::Recorded));
-                        answers[index] = Some(DeliveryAnswer::Recorded(Answer {
-                            id: request.id.clone(),
-                            status: Decision::Undetermined,
-                            outputs: BTreeMap::new(),
-                            claim: None,
-                            evidence: vec![],
-                            reasons,
-                            scope,
-                        }));
-                        drop(evaluator);
-                        tail = Some(RecordedTail {
-                            graph,
-                            request_index: index,
-                            retained,
-                        });
-                    } else {
-                        // Match the raw failure contract: unverified current
-                        // outputs/metadata cannot qualify the saved prefix.
-                        issues.push(DeliveryReason::Recorded(reason.clone()));
-                        answers[index] = Some(DeliveryAnswer::Recorded(Answer {
-                            id: request.id.clone(),
-                            status: Decision::Undetermined,
-                            outputs: BTreeMap::new(),
-                            claim: None,
-                            evidence: vec![],
-                            reasons: vec![reason],
-                            scope: Scope::default(),
-                        }));
-                    }
-                }
-            }
-        }
-    }
-    let answers: Vec<_> = answers
+    let mut delivery = DeliveryState {
+        answers: (0..admitted.len()).map(|_| None).collect(),
+        admitted,
+        tail: None,
+        has_nodes: false,
+        after_root: &mut after_root,
+    };
+    let execution = super::execute_observed(
+        &prepared,
+        control,
+        None,
+        Some(&mut delivery),
+        |_, _, _, _| Ok(()),
+    );
+    let mut issues = execution
+        .issues
         .into_iter()
-        .map(|answer| answer.expect("complete request order"))
-        .collect();
+        .map(DeliveryReason::Recorded)
+        .collect::<Vec<_>>();
+    if let Some(tail) = &delivery.tail {
+        issues.extend(
+            tail.retained
+                .reasons
+                .iter()
+                .cloned()
+                .map(DeliveryReason::Closed),
+        );
+    }
+    let answers = execution
+        .answers
+        .into_iter()
+        .zip(delivery.answers)
+        .map(|(recorded, owned)| match owned {
+            Some(answer) => {
+                issues.extend(answer.reasons.iter().cloned().map(DeliveryReason::Closed));
+                DeliveryAnswer::Closed(answer)
+            }
+            None => DeliveryAnswer::Recorded(recorded.expect("each request receives an answer")),
+        })
+        .collect::<Vec<_>>();
     let partial = answers.iter().any(|answer| match answer {
         DeliveryAnswer::Closed(answer) => answer.status == Decision::Undetermined,
         DeliveryAnswer::Recorded(answer) => answer.status == Decision::Undetermined,
     });
-    let status = if control.stop_reason().is_some() {
-        "interrupted"
-    } else if internal || not_implemented.is_some() {
-        "error"
-    } else if partial {
-        "partial"
-    } else {
-        "complete"
-    };
     ClosedRun {
         prepared,
         answers,
         issues,
-        status,
-        tail,
-        internal,
-        has_nodes,
-        not_implemented,
+        status: super::run_status(control, execution.internal, partial),
+        has_nodes: delivery.has_nodes || !execution.graph.nodes.is_empty(),
+        tail: delivery.tail,
+        #[cfg(test)]
+        recorded_iterations: execution.graph.iterations.len(),
+        recorded_nodes: execution.graph.nodes.into_vec(),
+        internal: execution.internal,
+        not_implemented: execution.not_implemented,
     }
+}
+
+pub(super) struct DeliveryState<'a> {
+    pub(super) admitted: Vec<bool>,
+    pub(super) answers: Vec<Option<ClosedAnswer>>,
+    pub(super) tail: Option<RecordedTail>,
+    pub(super) has_nodes: bool,
+    pub(super) after_root: &'a mut dyn FnMut(&Request) -> Result<(), InternalError>,
 }
 
 #[derive(Debug)]
@@ -420,6 +333,9 @@ pub(in crate::observed) struct ClosedRun {
     pub issues: Vec<DeliveryReason>,
     pub status: &'static str,
     pub tail: Option<RecordedTail>,
+    pub recorded_nodes: Vec<Node>,
+    #[cfg(test)]
+    pub recorded_iterations: usize,
     pub internal: bool,
     pub has_nodes: bool,
     pub not_implemented: Option<(String, Location, String)>,
@@ -436,7 +352,6 @@ pub(in crate::observed) enum DeliveryReason {
 }
 #[derive(Debug)]
 pub(in crate::observed) struct RecordedTail {
-    pub graph: Graph,
     pub request_index: usize,
     pub retained: RetainedRoot,
 }

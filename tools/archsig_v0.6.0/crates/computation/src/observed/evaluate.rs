@@ -3846,13 +3846,98 @@ fn evaluate_observed_with_reuse(
     prepared: PreparedObserved,
     control: &Control,
     previous: Option<&ObservedEvaluation>,
-    mut after_answer: impl FnMut(
+    after_answer: impl FnMut(
         &Environment<'_>,
         &Graph,
         &Request,
         &Answer,
     ) -> Result<(), ValidationFailure>,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
+    let Execution {
+        graph,
+        answers,
+        issues,
+        internal,
+        not_implemented,
+        repair_cache,
+        integer_cache,
+    } = execute_observed(&prepared, control, previous, None, after_answer);
+    let answers: Vec<_> = answers
+        .into_iter()
+        .map(|a| a.expect("依存順は全要求を含む"))
+        .collect();
+    let status = run_status(
+        control,
+        internal,
+        answers.iter().any(|a| a.status == Decision::Undetermined),
+    );
+    let evaluation = ObservedEvaluation {
+        repair_cache,
+        integer_cache,
+        prepared,
+        nodes: graph.nodes.into_vec(),
+        #[cfg(test)]
+        contexts: graph.contexts,
+        #[cfg(test)]
+        frames: graph.frames,
+        #[cfg(test)]
+        iterations: graph.iterations,
+        #[cfg(test)]
+        instances: graph.instances,
+        #[cfg(test)]
+        cases: graph.cases,
+        #[cfg(test)]
+        universal_witnesses: graph.universal_witnesses,
+        answers,
+        issues,
+        status,
+    };
+    if let Some((declaration, location, feature)) = not_implemented {
+        Err(EvaluationFailure::NotImplemented {
+            declaration,
+            location,
+            feature,
+            partial: Box::new(evaluation),
+        })
+    } else {
+        Ok(evaluation)
+    }
+}
+
+fn run_status(control: &Control, internal: bool, partial: bool) -> &'static str {
+    if control.stop_reason().is_some() {
+        "interrupted"
+    } else if internal {
+        "error"
+    } else if partial {
+        "partial"
+    } else {
+        "complete"
+    }
+}
+
+struct Execution {
+    graph: Graph,
+    answers: Vec<Option<Answer>>,
+    issues: Vec<Reason>,
+    internal: bool,
+    not_implemented: Option<(String, Location, String)>,
+    repair_cache: Vec<std::sync::Arc<super::environment::repair_problem::reuse::Frame>>,
+    integer_cache: Vec<std::sync::Arc<super::integer_fiber::reuse::Entry>>,
+}
+
+fn execute_observed(
+    prepared: &PreparedObserved,
+    control: &Control,
+    previous: Option<&ObservedEvaluation>,
+    mut delivery: Option<&mut delivery::DeliveryState<'_>>,
+    mut after_answer: impl FnMut(
+        &Environment<'_>,
+        &Graph,
+        &Request,
+        &Answer,
+    ) -> Result<(), ValidationFailure>,
+) -> Execution {
     let mut graph = Graph::new(control);
     graph.requests = prepared.requests().requests().to_vec();
     let mut answers: Vec<Option<Answer>> = vec![None; prepared.requests().requests().len()];
@@ -3873,7 +3958,7 @@ fn evaluate_observed_with_reuse(
     let mut repair_cache = vec![];
     let mut integer_cache = vec![];
     {
-        let environment = Environment::with_prepared(&prepared, control).ok();
+        let environment = Environment::with_prepared(prepared, control).ok();
         if let (Some(environment), Some(previous)) = (&environment, previous) {
             let current = prepared.inputs().sources();
             let old = previous.prepared.inputs().sources();
@@ -3975,7 +4060,7 @@ fn evaluate_observed_with_reuse(
                 } else {
                     super::public_map::evaluate
                 };
-                match evaluate(&prepared, environment, &mut graph, request, control) {
+                match evaluate(prepared, environment, &mut graph, request, control) {
                     Ok(answer) => {
                         let validated = control.stop_reason().is_none();
                         if validated {
@@ -4147,6 +4232,93 @@ fn evaluate_observed_with_reuse(
                 } => (params, *guard, *body, Some(*role)),
                 _ => unreachable!("要求解決済みの view/Law"),
             };
+            if let Some(delivery) = delivery.as_deref_mut()
+                && delivery.admitted[index]
+            {
+                let prefix = evaluator.graph.suffix_checkpoint();
+                let validation_prefix = environment.validation_checkpoint();
+                let mut progress = delivery::RootProgress::default();
+                let result = (|| {
+                    let validation_prefix = validation_prefix?;
+                    if let Some(failure) = architecture_failure {
+                        return Err(failure.into());
+                    }
+                    evaluator.tick(Checkpoint::FiniteIteration)?;
+                    evaluator.projection_conditions()?;
+                    evaluator.bind(params)?;
+                    if !evaluator.closed_root_eligible(body, guard)? || evaluator.is_family(params)
+                    {
+                        return Err(internal!("配送条件と実際の量化域が一致しない").into());
+                    }
+                    let answer = evaluator.closed_root_answer(params, body, &mut progress)?;
+                    (delivery.after_root)(request).map_err(Failure::Internal)?;
+                    let had_nodes = evaluator.graph.nodes.len() > prefix.node_len();
+                    evaluator.graph.discard_suffix(&prefix)?;
+                    environment.rollback_validation(&validation_prefix)?;
+                    Ok((answer, had_nodes))
+                })();
+                match result {
+                    Ok((answer, had_nodes)) => {
+                        delivery.has_nodes |= had_nodes;
+                        delivery.answers[index] = Some(answer);
+                        #[cfg(test)]
+                        data::observe_actual(
+                            declaration.span,
+                            evaluator.graph.active,
+                            "delivery_answer_committed",
+                            index,
+                        );
+                        if let Err(Failure::Stop(signal)) =
+                            evaluator.tick(Checkpoint::FiniteIteration)
+                        {
+                            issues.push(Reason::stopped(&request.id, signal));
+                        }
+                    }
+                    Err(failure) => {
+                        let reason = match failure {
+                            Failure::Stop(signal) => {
+                                delivery.tail = Some(delivery::RecordedTail {
+                                    request_index: index,
+                                    retained: progress.into_retained(),
+                                });
+                                Reason::stopped(&request.id, signal)
+                            }
+                            Failure::NotImplemented { location, feature } => {
+                                not_implemented =
+                                    Some((declaration.name.clone(), location, feature));
+                                internal = true;
+                                Reason::internal(
+                                    &request.id,
+                                    format!("{} evaluation", request.kind.wire()),
+                                )
+                            }
+                            Failure::Internal(_) => {
+                                internal = true;
+                                Reason::internal(
+                                    &request.id,
+                                    format!("{} evaluation", request.kind.wire()),
+                                )
+                            }
+                        };
+                        let mut reasons = std::mem::take(&mut evaluator.reasons);
+                        reasons.push(reason);
+                        sort_reasons(&mut reasons);
+                        let mut scope = std::mem::take(&mut evaluator.base);
+                        scope.merge(&evaluator.retained_scope);
+                        issues.extend(reasons.iter().cloned());
+                        answers[index] = Some(Answer {
+                            id: request.id.clone(),
+                            status: Decision::Undetermined,
+                            outputs: BTreeMap::new(),
+                            claim: None,
+                            evidence: vec![],
+                            reasons,
+                            scope,
+                        });
+                    }
+                }
+                continue;
+            }
             let result = (|| {
                 if let Some(failure) = architecture_failure {
                     return Err(failure.into());
@@ -4271,7 +4443,8 @@ fn evaluate_observed_with_reuse(
                 }
             }
         }
-        if !internal
+        if delivery.is_none()
+            && !internal
             && not_implemented.is_none()
             && control.stop_reason().is_none()
             && let Some(environment) = &environment
@@ -4301,7 +4474,9 @@ fn evaluate_observed_with_reuse(
             if checked.contains(&index) {
                 continue;
             }
-            let answer = answer.as_mut().expect("依存順は全要求を含む");
+            let Some(answer) = answer.as_mut() else {
+                continue;
+            };
             answer.outputs.clear();
             answer.claim = None;
             answer.evidence.clear();
@@ -4322,49 +4497,14 @@ fn evaluate_observed_with_reuse(
         });
     }
     sort_reasons(&mut issues);
-    let answers: Vec<_> = answers
-        .into_iter()
-        .map(|a| a.expect("依存順は全要求を含む"))
-        .collect();
-    let status = if control.stop_reason().is_some() {
-        "interrupted"
-    } else if internal || not_implemented.is_some() {
-        "error"
-    } else if answers.iter().any(|a| a.status == Decision::Undetermined) {
-        "partial"
-    } else {
-        "complete"
-    };
-    let evaluation = ObservedEvaluation {
-        repair_cache,
-        integer_cache,
-        prepared,
-        nodes: graph.nodes.into_vec(),
-        #[cfg(test)]
-        contexts: graph.contexts,
-        #[cfg(test)]
-        frames: graph.frames,
-        #[cfg(test)]
-        iterations: graph.iterations,
-        #[cfg(test)]
-        instances: graph.instances,
-        #[cfg(test)]
-        cases: graph.cases,
-        #[cfg(test)]
-        universal_witnesses: graph.universal_witnesses,
+    Execution {
+        graph,
         answers,
         issues,
-        status,
-    };
-    if let Some((declaration, location, feature)) = not_implemented {
-        Err(EvaluationFailure::NotImplemented {
-            declaration,
-            location,
-            feature,
-            partial: Box::new(evaluation),
-        })
-    } else {
-        Ok(evaluation)
+        internal,
+        not_implemented,
+        repair_cache,
+        integer_cache,
     }
 }
 
@@ -9832,7 +9972,8 @@ reading Calc {{
         let asks = ["bad=check(Calc.root_early)", "good=evaluate(Calc.full)"];
         let prepared = prepare_observed(in_quantifier_fixture(), &asks, &control).unwrap();
         assert!(delivery::closed_roots_eligible(&prepared));
-        let run = delivery::evaluate_closed_roots(prepared, &control);
+        let plan = delivery::closed_root_plan(&prepared);
+        let run = delivery::evaluate_closed_roots(prepared, &control, plan);
         assert_eq!(run.status, "complete", "{:?}", run.issues);
         assert!(run.tail.is_none());
         assert!(run.has_nodes);
@@ -9853,7 +9994,7 @@ reading Calc {{
         let missing =
             numeric_recheck_fixture(&["q"], "view full():Bool=forall n in list<Z>[1,2] . n>0;");
         let prepared = prepare_observed(missing, &["value=evaluate(Calc.full)"], &control).unwrap();
-        assert!(!delivery::closed_roots_eligible(&prepared));
+        assert!(delivery::closed_roots_eligible(&prepared));
     }
     #[test]
     fn delivery_closed_batch_stop_after_commit_preserves_answer_and_skips_later_roots() {
@@ -9873,7 +10014,8 @@ reading Calc {{
                 trigger.set(true);
             }
         });
-        let run = delivery::evaluate_closed_roots(prepared, &control);
+        let plan = delivery::closed_root_plan(&prepared);
+        let run = delivery::evaluate_closed_roots(prepared, &control, plan);
         data::clear_iteration_observer();
         assert_eq!(run.status, "interrupted");
         assert!(run.tail.is_none());
@@ -9906,11 +10048,12 @@ reading Calc {{
                 trigger.set(true);
             }
         });
-        let run = delivery::evaluate_closed_roots(prepared, &control);
+        let plan = delivery::closed_root_plan(&prepared);
+        let run = delivery::evaluate_closed_roots(prepared, &control, plan);
         data::clear_iteration_observer();
         assert_eq!(run.status, "interrupted");
         let tail = run.tail.unwrap();
-        assert_eq!(tail.graph.iterations.len(), 1);
+        assert_eq!(run.recorded_iterations, 1);
         assert!(!tail.retained.root_complete);
         assert!(!tail.retained.scope.quantifiers.is_empty());
         let delivery::DeliveryAnswer::Recorded(answer) = &run.answers[0] else {
@@ -10014,7 +10157,8 @@ reading Calc {{
             let control = quiet();
             let prepared = prepare_observed(input.clone(), &[&ask], &control).unwrap();
             assert!(delivery::closed_roots_eligible(&prepared));
-            let run = delivery::evaluate_closed_roots(prepared, &control);
+            let plan = delivery::closed_root_plan(&prepared);
+            let run = delivery::evaluate_closed_roots(prepared, &control, plan);
             assert_eq!(run.status, raw.status(), "{subject}: {:?}", run.issues);
             let delivery::DeliveryAnswer::Closed(answer) = &run.answers[0] else {
                 panic!("closed map root")

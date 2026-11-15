@@ -36,11 +36,15 @@ pub(super) fn run_summary(
                 let Some(tail) = run.tail.as_ref().filter(|tail| {
                     run.prepared.requests().requests()[tail.request_index].id == answer.id
                 }) else {
-                    return formatting::recorded_answer_summary(&run.prepared, &[], answer);
+                    return formatting::recorded_answer_summary(
+                        &run.prepared,
+                        &run.recorded_nodes,
+                        answer,
+                    );
                 };
                 let request = &run.prepared.requests().requests()[tail.request_index];
                 let mut row =
-                    formatting::recorded_answer_summary(&run.prepared, &tail.graph.nodes, answer);
+                    formatting::recorded_answer_summary(&run.prepared, &run.recorded_nodes, answer);
                 let Json::Obj(fields) = &mut row else {
                     unreachable!("answer summary object")
                 };

@@ -183,8 +183,9 @@ pub fn evaluate_for_delivery(
     prepared: PreparedObserved,
     control: &Control,
 ) -> Result<DeliveryEvaluation, DeliveryFailure> {
-    if super::evaluate::delivery::closed_roots_eligible(&prepared) {
-        let mut run = super::evaluate::delivery::evaluate_closed_roots(prepared, control);
+    let plan = super::evaluate::delivery::closed_root_plan(&prepared);
+    if plan.iter().any(|admitted| *admitted) {
+        let mut run = super::evaluate::delivery::evaluate_closed_roots(prepared, control, plan);
         let not_implemented = run.not_implemented.take();
         let result = DeliveryEvaluation::from_closed(run);
         if let Some((declaration, location, feature)) = not_implemented {
@@ -385,6 +386,162 @@ mod tests {
         .unwrap();
         assert!(matches!(delivery.content, Content::Full(_)));
     }
+    fn mixed_sources(missing: bool) -> InputSources {
+        let original = sources();
+        let law = String::from_utf8(original.law().bytes().to_vec())
+            .unwrap()
+            .replace(
+                "  view amount(s: State): Z = s.count;",
+                concat!(
+                    "  view amount(s: State): Z = s.count;",
+                    " view echo(x:Bool):Bool=x;",
+                    " law required bound(s:State):forall n in list<Z>[1,2] . s.count>n;"
+                ),
+            );
+        let map = String::from_utf8(original.archmap().bytes().to_vec()).unwrap();
+        let map = if missing {
+            map.replace(r#"{"id": "count", "subject": "s", "field": "Counter.State.count", "value": "2", "origin": "model"}"#, "")
+        } else {
+            map
+        };
+        InputSources::from_bytes(
+            original
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            law.into_bytes(),
+            map.into_bytes(),
+        )
+    }
+
+    #[test]
+    fn mixed_delivery_retains_the_producer_for_multiple_consumers_and_frees_terminal_roots() {
+        use super::super::evaluate::delivery::{DeliveryAnswer, closed_root_plan};
+        let asks = [
+            "source=evaluate(CountCheck.all)",
+            "separate=check(CountCheck.false_root)",
+            "plan=needed($source)",
+            "echo=evaluate(CountCheck.echo,x=$source.value)",
+            "comparison=compare($source.value,kind=value,to=$echo.value)",
+            "bound=check(CountCheck.bound,s=@v/s)",
+        ];
+        let control = Control::unlimited();
+        for missing in [false, true] {
+            let input = mixed_sources(missing);
+            let prepared = super::super::prepare_observed(input.clone(), &asks, &control).unwrap();
+            assert_eq!(
+                closed_root_plan(&prepared),
+                [false, true, false, false, false, !missing]
+            );
+            let actual = evaluate_for_delivery(prepared, &control).unwrap();
+            let raw = super::super::evaluate_observed_bytes(input, &asks, &control).unwrap();
+            let Content::Closed(run) = &actual.content else {
+                panic!("mixed delivery");
+            };
+            assert!(
+                matches!(&run.answers[1], DeliveryAnswer::Closed(answer) if answer.status == Decision::Refuted)
+            );
+            assert!(
+                matches!(&run.answers[4], DeliveryAnswer::Recorded(answer) if answer.status == Decision::Established)
+            );
+            assert!(run.recorded_nodes.len() < raw.nodes.len());
+            assert_eq!(
+                actual.status(),
+                if missing { "partial" } else { "complete" }
+            );
+            let (Json::Obj(ref expected), Json::Obj(ref projected)) =
+                (raw.result_wire(), actual.result_wire())
+            else {
+                panic!("results")
+            };
+            let (Json::Arr(original), Json::Arr(result)) =
+                (&expected["nodes"], &projected["nodes"])
+            else {
+                panic!("nodes")
+            };
+            for field in ["answers", "issues"] {
+                assert_eq!(
+                    resolve(&expected[field], original),
+                    resolve(&projected[field], result),
+                    "{field}, missing={missing}"
+                );
+            }
+            let code = if missing { 2 } else { 1 };
+            assert_eq!(
+                raw.summary_wire(actual.status(), code, &raw.issues_wire()),
+                actual.summary_wire(actual.status(), code, &actual.issues_wire())
+            );
+        }
+    }
+
+    #[test]
+    fn stopped_mixed_delivery_keeps_recorded_and_sealed_prefixes() {
+        use std::{cell::Cell, rc::Rc};
+        let asks = [
+            "source=evaluate(CountCheck.amount,s=@v/s)",
+            "plan=needed($source)",
+            "separate=check(CountCheck.false_root)",
+            "later=evaluate(CountCheck.empty)",
+        ];
+        for checkpoint in ["delivery_body_closed", "delivery_answer_committed"] {
+            let armed = Rc::new(Cell::new(false));
+            let signal = armed.clone();
+            let control = Control::new(move |_| signal.get().then_some(Signal::Term));
+            let prepared =
+                super::super::prepare_observed(mixed_sources(false), &asks, &control).unwrap();
+            super::super::data::observe_iterations(move |_, context, phase, _| {
+                if context.request == 2 && phase == checkpoint {
+                    armed.set(true);
+                }
+            });
+            let result = evaluate_for_delivery(prepared, &control);
+            super::super::data::clear_iteration_observer();
+            let result = result.unwrap();
+            assert_eq!(result.status(), "interrupted");
+            assert!(result.has_nodes());
+            let Json::Obj(ref wire) = result.result_wire() else {
+                panic!("saved result")
+            };
+            let Json::Arr(answers) = &wire["answers"] else {
+                panic!("saved answers")
+            };
+            let Json::Arr(nodes) = &wire["nodes"] else {
+                panic!("saved nodes")
+            };
+            let status = |row: &Json| {
+                let Json::Obj(fields) = row else {
+                    panic!("answer row")
+                };
+                fields["status"].clone()
+            };
+            assert_eq!(status(&answers[0]), Json::str("established"));
+            assert_eq!(status(&answers[1]), Json::str("established"));
+            let separate = if checkpoint == "delivery_answer_committed" {
+                "refuted"
+            } else {
+                "undetermined"
+            };
+            assert_eq!(status(&answers[2]), Json::str(separate));
+            assert_eq!(status(&answers[3]), Json::str("undetermined"));
+            let Json::Obj(ref prior) = resolve(&answers[0], nodes) else {
+                panic!("resolved prior")
+            };
+            let Json::Obj(outputs) = &prior["outputs"] else {
+                panic!("prior outputs")
+            };
+            assert!(outputs.contains_key("value"));
+            let Json::Obj(ref summary) = result.summary_wire("interrupted", 143, &[]) else {
+                panic!("summary")
+            };
+            let Json::Arr(rows) = &summary["answers"] else {
+                panic!("summary answers")
+            };
+            assert_eq!(status(&rows[0]), Json::str("established"));
+            assert_eq!(status(&rows[1]), Json::str("established"));
+        }
+    }
+
     fn stopped_at_root_phase(phase: &'static str, asks: &[&str]) -> DeliveryEvaluation {
         use std::{cell::Cell, rc::Rc};
         let armed = Rc::new(Cell::new(false));

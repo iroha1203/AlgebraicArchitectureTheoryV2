@@ -295,14 +295,9 @@ pub(super) fn run(
             _ => None,
         })
         .collect::<Vec<_>>();
-    let nodes = run
-        .tail
-        .as_ref()
-        .map(|tail| &tail.graph.nodes[..])
-        .unwrap_or(&[]);
     let mut result = super::super::result::project_recorded_tail(
         &run.prepared,
-        nodes,
+        &run.recorded_nodes,
         &recorded,
         &[],
         run.status,
