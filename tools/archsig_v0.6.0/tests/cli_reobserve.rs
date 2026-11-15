@@ -28,10 +28,16 @@ fn source(map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), map.to_vec())
 }
 
-fn inputs(dir: &Path, current: &[u8], after_snapshot: &str) {
+fn inputs(
+    dir: &Path,
+    previous: &[u8],
+    before_snapshot: &str,
+    current: &[u8],
+    after_snapshot: &str,
+) {
     let alignment = format!(
         r#"{{
-        "before_snapshot":"before","after_snapshot":"{after_snapshot}","reading":"Assembly","assembly":"joined",
+        "before_snapshot":"{before_snapshot}","after_snapshot":"{after_snapshot}","reading":"Assembly","assembly":"joined",
         "subjects":[["A","A"],["B","B"],["G","G"],["a","a"],["b","b"],["ma","ma"],["mb","mb"]],
         "candidates":[{{"participant":"a","previous_candidate":"pick","current_solve":"solveIt"}}]
     }}"#
@@ -39,7 +45,7 @@ fn inputs(dir: &Path, current: &[u8], after_snapshot: &str) {
     for (name, bytes) in [
         ("d.json", DEFINITIONS),
         ("l.law", LAW),
-        ("before.json", BEFORE),
+        ("before.json", previous),
         ("after.json", current),
         ("alignment.json", alignment.as_bytes()),
     ] {
@@ -80,9 +86,6 @@ fn arguments<'a>(previous: &'a str, current: &'a str, out: Option<&'a str>) -> V
 #[test]
 fn reobserve_saves_current_native_evidence_for_additions_corrections_and_withdrawals() {
     let c = Control::unlimited();
-    let previous_queries = QUERIES.replace("SNAP", "before");
-    let previous_asks = previous_queries.lines().collect::<Vec<_>>();
-    let old = evaluate_observed_bytes(source(BEFORE), &previous_asks, &c).unwrap();
     let corrected = std::str::from_utf8(AFTER).unwrap().replace(
         concat!(
             "\"id\": \"a-quantity\",\n          \"subject\": \"a\",\n",
@@ -94,13 +97,23 @@ fn reobserve_saves_current_native_evidence_for_additions_corrections_and_withdra
         ),
     );
     assert_ne!(corrected.as_bytes(), AFTER);
-    for (case, map, snapshot, status) in [
-        ("addition", AFTER, "after", "retained"),
-        ("correction", corrected.as_bytes(), "after", "retained"),
-        ("withdrawal", BEFORE, "before", "retained"),
+    for (case, previous_map, before_snapshot, map, snapshot, status) in [
+        ("addition", BEFORE, "before", AFTER, "after", "retained"),
+        (
+            "correction",
+            AFTER,
+            "after",
+            corrected.as_bytes(),
+            "after",
+            "retained",
+        ),
+        ("withdrawal", AFTER, "after", BEFORE, "before", "retained"),
     ] {
         let dir = workdir(case);
-        inputs(&dir, map, snapshot);
+        inputs(&dir, previous_map, before_snapshot, map, snapshot);
+        let previous_queries = QUERIES.replace("SNAP", before_snapshot);
+        let previous_asks = previous_queries.lines().collect::<Vec<_>>();
+        let old = evaluate_observed_bytes(source(previous_map), &previous_asks, &c).unwrap();
         let current_queries = QUERIES.replace("SNAP", snapshot);
         let candidates = [AssemblyCandidateAlignment {
             participant: "a",
@@ -108,7 +121,7 @@ fn reobserve_saves_current_native_evidence_for_additions_corrections_and_withdra
             current_solve: "solveIt",
         }];
         let alignment = MultiAssemblyAlignment {
-            before_snapshot: "before",
+            before_snapshot,
             after_snapshot: snapshot,
             reading: "Assembly",
             subjects: SUBJECTS,
@@ -150,16 +163,35 @@ fn reobserve_saves_current_native_evidence_for_additions_corrections_and_withdra
                 .value
         );
         if case == "withdrawal" {
-            assert_eq!(s(get(assembled, "assembly_status")), "undetermined");
-            let [observation] = arr(get(assembled, "observations")) else {
-                panic!("withdrawn shared observation");
+            let joined = |stage: &str| {
+                arr(get(get(&saved, stage), "answers"))
+                    .iter()
+                    .find(|answer| s(get(answer, "id")) == "joined")
+                    .unwrap()
             };
-            assert!(!has(observation, "observed"));
+            assert_eq!(s(get(joined("previous"), "status")), "established");
+            assert_eq!(s(get(joined("current"), "status")), "undetermined");
+            assert!(
+                arr(get(joined("current"), "reasons"))
+                    .iter()
+                    .flat_map(|reason| arr(get(reason, "missing")))
+                    .any(|fact| s(get(fact, "subject")) == "mb"
+                        && s(get(fact, "field")) == "Assemble.Part.quantity")
+            );
         }
         let [candidate] = arr(get(assembled, "candidates")) else {
             panic!("one candidate")
         };
         assert_eq!(s(get(candidate, "status")), status);
+        let solve = arr(get(current, "answers"))
+            .iter()
+            .find(|answer| s(get(answer, "id")) == s(get(candidate, "current_solve")))
+            .unwrap();
+        let reference = get(get(solve, "outputs"), "solutions");
+        assert!(arr(get(current, "nodes")).iter().any(|node| {
+            s(get(node, "id")) == s(get(reference, "node")) && s(get(node, "type")) == "SolutionSet"
+        }));
+        assert!(!has(get(candidate, "current_assignment"), "solutions"));
         assert_eq!(has(candidate, "current_assignment"), status == "retained");
         assert_eq!(
             std::fs::read(dir.join("out/inputs/current.archmap.json")).unwrap(),
@@ -175,7 +207,7 @@ fn reobserve_saves_current_native_evidence_for_additions_corrections_and_withdra
 #[test]
 fn reobserve_rejects_invalid_alignment_current_input_and_io_failures() {
     let dir = workdir("reobserve-errors");
-    inputs(&dir, AFTER, "after");
+    inputs(&dir, BEFORE, "before", AFTER, "after");
     let before = QUERIES.replace("SNAP", "before");
     let after = QUERIES.replace("SNAP", "after");
     let args = arguments(&before, &after, Some("out"));

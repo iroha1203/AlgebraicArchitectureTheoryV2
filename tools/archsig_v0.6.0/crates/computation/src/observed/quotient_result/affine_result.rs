@@ -168,6 +168,9 @@ pub(super) fn compute(
     part.arguments.sort_by_key(|r| r.0);
     part.arguments.dedup();
     part.scope.merge(&g.get(reference)?.scope);
+    if polyhedral {
+        part.support = Support::sum(vec![], [part.support.clone(), image.view_support.clone()]);
+    }
     part.scope.merge(&image.scope);
     part.scope.readings.insert(declaration.reading.clone());
     let law_expression = if let Some(law) = &image.law {

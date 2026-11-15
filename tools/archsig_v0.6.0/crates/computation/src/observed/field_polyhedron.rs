@@ -434,6 +434,7 @@ fn project_prefix(
     n: usize,
     prefix: usize,
     keep_history: bool,
+    track_combinations: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
     let one = integer(1);
@@ -453,7 +454,11 @@ fn project_prefix(
             &mut tight,
             EliminationRow {
                 inequality: h.clone(),
-                combination: BTreeMap::from([(i, one.clone())]),
+                combination: if track_combinations {
+                    BTreeMap::from([(i, one.clone())])
+                } else {
+                    BTreeMap::new()
+                },
             },
             c,
         )?;
@@ -477,7 +482,7 @@ fn project_all(
     keep_history: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
-    project_prefix(original, n, n, keep_history, c)
+    project_prefix(original, n, n, keep_history, true, c)
 }
 
 /// 残りの元座標へ正確に射影する。空集合は矛盾半空間一行で表す。
@@ -488,7 +493,7 @@ pub(super) fn project_trailing(
     c: &Control,
 ) -> Result<Vec<Halfspace>, ValidationFailure> {
     let zero = integer(0);
-    match project_prefix(original, prefix + trailing, prefix, false, c)? {
+    match project_prefix(original, prefix + trailing, prefix, false, false, c)? {
         Projected::Obstruction(_) => Ok(vec![Halfspace {
             coefficients: vec![zero; trailing],
             rhs: integer(-1),

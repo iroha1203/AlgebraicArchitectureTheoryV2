@@ -7,7 +7,7 @@ use super::{
     projection::ProjectionStep,
     reevaluate_observed,
     request::{QuestionKind, Request, Selector},
-    result::{Decision, Fact, Node, NodeRef, Payload, ReasonKind, Scalar, ValidationFailure},
+    result::{Decision, Fact, Node, Payload, ReasonKind, Scalar, ValidationFailure},
 };
 use crate::construction::{ConstructionFailure, is_owner_fact, owner_slot_for};
 use archsig_common::{
@@ -129,15 +129,10 @@ impl ContinuityPending {
 
 #[derive(Debug)]
 pub struct CurrentAssignment {
-    solutions: NodeRef,
     entries: Vec<(Scalar, Vec<Scalar>)>,
 }
 
 impl CurrentAssignment {
-    /// 現在の評価 DAG に属する SolutionSet の参照。
-    pub fn solutions(&self) -> usize {
-        self.solutions.0
-    }
     /// 現在の主体・宣言順へ戻した元 parameter 値。
     pub fn entries_wire(&self) -> Json {
         let typed =
@@ -270,10 +265,7 @@ impl ReobservedAssembly {
                 if let Some(assignment) = candidate.current_assignment() {
                     row.insert(
                         "current_assignment".into(),
-                        Json::obj([
-                            ("solutions", assignment.solutions.wire()),
-                            ("entries", assignment.entries_wire()),
-                        ]),
+                        Json::obj([("entries", assignment.entries_wire())]),
                     );
                 }
                 if let Some(selected) = candidate.selected_candidate() {
@@ -906,16 +898,30 @@ fn check_change(
         if a.kind != b.kind || a.parameters != b.parameters || a.returns != b.returns {
             return Err(invalid("change または参照宣言の型付き署名が対応しない"));
         }
-        let source = |info: &archsig_input::law::model::DeclarationInfo,
+        let tokens = |info: &archsig_input::law::model::DeclarationInfo,
                       inputs: &archsig_input::input::CheckedInputs| {
-            inputs
+            let bytes = inputs
                 .sources()
                 .law()
                 .bytes()
                 .get(info.span.0..info.span.1)
-                .map(<[u8]>::to_vec)
+                .ok_or_else(|| invalid("検査済みの change 宣言位置がない"))?;
+            archsig_input::law::lexer::lex_controlled(bytes, c).map_err(|cause| match cause {
+                archsig_common::control::CheckFailure::Stopped(signal) => {
+                    ReobservationFailure::Stopped(signal)
+                }
+                archsig_common::control::CheckFailure::Input(_) => {
+                    invalid("検査済みの change 宣言を読めない")
+                }
+            })
         };
-        if source(a, old) != source(b, new)
+        let prior_tokens = tokens(a, old)?;
+        let current_tokens = tokens(b, new)?;
+        let same_tokens = prior_tokens
+            .iter()
+            .map(|token| (token.kind, &token.text))
+            .eq(current_tokens.iter().map(|token| (token.kind, &token.text)));
+        if !same_tokens
             || a.references
                 .iter()
                 .map(|(_, name)| name)
@@ -1576,6 +1582,7 @@ fn reevaluate_assembly_aligned(
     layout_missing.sort();
     layout_missing.dedup();
     let mut candidates = Vec::new();
+    let mut membership_environment = None;
     for local in selected_locals {
         let previous_candidate = local.alignment.previous_candidate;
         let current_solve = local.alignment.current_solve;
@@ -1620,16 +1627,26 @@ fn reevaluate_assembly_aligned(
             && layout_missing.is_empty()
         {
             use super::repair_problem::ReobservedMembership as Membership;
-            match super::repair_problem::reobserved_membership(
-                old,
-                &evaluation.nodes[solutions.0],
-                translate,
-                &evaluation,
-                control,
-            ) {
+            let membership = (|| {
+                if membership_environment.is_none() {
+                    membership_environment =
+                        Some(Environment::with_prepared(evaluation.prepared(), control)?);
+                }
+                let environment = membership_environment
+                    .as_ref()
+                    .ok_or(internal!("候補照合の現在環境がない"))?;
+                super::repair_problem::reobserved_membership(
+                    old,
+                    &evaluation.nodes[solutions.0],
+                    translate,
+                    environment,
+                    control,
+                )
+            })();
+            match membership {
                 Ok(Membership::Retained(entries)) => {
                     continuity = CandidateContinuity::Retained;
-                    current_assignment = Some(CurrentAssignment { solutions, entries });
+                    current_assignment = Some(CurrentAssignment { entries });
                     undecided = None;
                 }
                 Ok(Membership::Excluded) => {
@@ -1812,6 +1829,7 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
             "law optional boundary(p:Part)",
             "law optional unrelated():true; law optional boundary(p:Part)",
         );
+        let reformatted = unrelated.replace("quantity=if q", "quantity = if q");
         for (old, new, map, asks, expected, assembly) in [
             (
                 &law,
@@ -1856,6 +1874,14 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
             (
                 &law,
                 &unrelated,
+                AFTER,
+                queries,
+                CandidateContinuity::Retained,
+                "established",
+            ),
+            (
+                &law,
+                &reformatted,
                 AFTER,
                 queries,
                 CandidateContinuity::Retained,

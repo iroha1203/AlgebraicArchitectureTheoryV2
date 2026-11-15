@@ -212,6 +212,30 @@ impl Environment<'_> {
                 });
             }
         }
+        if request.kind == QuestionKind::Quotient
+            && let Some(argument) = request.arguments.iter().find(|a| a.name == "fiber.at")
+            && let Selector::Answer { id, .. } = &argument.value
+        {
+            match self.answer_binding(graph, &argument.value, declaration.span) {
+                Ok(AnswerBinding::Inapplicable(root)) => {
+                    let original = graph.get(root)?;
+                    plans.push(ProjectionFailurePlan {
+                        context: self.current_context(graph),
+                        parameter: "fiber.at".into(),
+                        root,
+                        producer: id.clone(),
+                        location: Some(Location::Law {
+                            span: declaration.span,
+                        }),
+                        inputs: vec![ConditionInput::Reference(root)],
+                        scope: original.scope.clone(),
+                        support: original.support.materialize(&self.control)?,
+                    });
+                }
+                Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => {}
+                Err(error) => return Err(error),
+            }
+        }
         for parameter in params {
             self.tick()?;
             if parameter.ty != parameter.ty.erase()

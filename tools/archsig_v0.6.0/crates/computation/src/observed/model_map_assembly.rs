@@ -1368,6 +1368,8 @@ mod tests {
             .replace("law required zero(p:Part):p.quantity=0;", concat!(
                 "law required parameter(q:Bool,p:Part,m:Mode): if q then (match m { Off=>true; On(b)=>if b then p.quantity=0 else true; }) else true;",
                 "law optional empty(p:Part,x:(Probe,Bool)):false;",
+                "law optional guarded(q:Bool,p:Part) when q and p.quantity=0:true;",
+
             ));
         let map = std::str::from_utf8(raw.archmap().bytes())
             .unwrap()
@@ -1434,6 +1436,23 @@ mod tests {
             let verified = evaluate(inputs.clone(), source, target);
             assert!(verified.transport.all_preserved());
             assert!(verified.has_refutation());
+            assert!(
+                verified.laws.iter().any(|law| {
+                    law.instance().declaration().name == "Assembly.guarded"
+                        && law.family().is_some_and(|family| {
+                            family.rows().iter().any(|row| {
+                                row.outcome()
+                                    == &LawTransportOutcome::Refuted(
+                                        LawConditionFailure::Applicability,
+                                    )
+                                    && row.source_bindings()[0].1.scalar() == &Scalar::Bool(true)
+                                    && row.source().application().value() == Some(true)
+                                    && row.target().application().value() == Some(false)
+                            })
+                        })
+                }),
+                "guard mismatch is checked at the actual parameter"
+            );
             let differences = verified.laws.iter().filter(|law| {
                 matches!(
                     law.outcome(),

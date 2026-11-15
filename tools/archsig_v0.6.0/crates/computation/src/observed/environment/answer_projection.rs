@@ -316,11 +316,20 @@ impl Environment<'_> {
             if argument.name == "on" {
                 continue;
             }
-            let parameter = params
-                .iter()
-                .find(|parameter| argument.name == format!("bind.{}", parameter.name))
-                .ok_or(internal!("射影の元parameterがない"))?;
-            let expected = match self.answer_binding(graph, &argument.value, parameter.span) {
+            let (ty, span) = if request.kind == QuestionKind::Quotient
+                && argument.name == "fiber.at"
+                && let archsig_input::law::model::Signature::View { returns, .. } =
+                    &declaration.signature
+            {
+                (returns.erase(), (0, 0))
+            } else {
+                let parameter = params
+                    .iter()
+                    .find(|parameter| argument.name == format!("bind.{}", parameter.name))
+                    .ok_or(internal!("射影の元parameterがない"))?;
+                (parameter.ty.erase(), parameter.span)
+            };
+            let expected = match self.answer_binding(graph, &argument.value, span) {
                 Ok(AnswerBinding::Projection(expected)) => expected,
                 Ok(AnswerBinding::Reference(_))
                 | Ok(AnswerBinding::Inapplicable(_))
@@ -328,7 +337,7 @@ impl Environment<'_> {
                 Err(failure) => return Err(failure),
             };
             if expected.arguments == node.arguments && expected.rule == node.rule {
-                if expected != *node || expected.ty != NodeType::Value(parameter.ty.erase()) {
+                if expected != *node || expected.ty != NodeType::Value(ty) {
                     return Err(internal!("射影の値・型・支持・Scopeが元出力と違う").into());
                 }
                 self.tick()?;

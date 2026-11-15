@@ -147,6 +147,10 @@ pub(super) fn compare(
     }
 }
 fn coordinates(lengths: &[usize], c: &Control) -> Result<Vec<Vec<usize>>, ConstructionFailure> {
+    if lengths.contains(&0) {
+        tick(c)?;
+        return Ok(Vec::new());
+    }
     let mut rows = vec![vec![]];
     for &length in lengths {
         let mut next = Vec::new();

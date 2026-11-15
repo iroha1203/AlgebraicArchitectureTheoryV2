@@ -1339,6 +1339,8 @@ reading Pair {{
  law optional segment(s:State):s.x>=rat(0,1) and s.x<=rat(1,1) and s.x=s.y;
  law optional unbounded(s:State):s.x>=rat(0,1) and s.y=rat(1,1);
  view publicX(s:State):Q=s.x;
+ view usesAt(at:State):Q=at.x;
+ view absent():Option<Q> = none<Q>;
  view diagonal(s:State):(Q,Q)=(s.x,s.x+s.x);
  view nonlinear(s:State):Q=s.x*s.y;
  view boundary():Q=rat(1,1);
@@ -1355,16 +1357,35 @@ reading Pair {{
         "middle=evaluate(Pair.middle)",
         "diagAt=evaluate(Pair.diagonalAt)",
         "square=solve(Pair.square,on=@v/s,using=Pair.choose,s=@v/s)",
-        "p=quotient(Pair.publicX,on=$square.solutions,s=@v/s,at=$boundary.value)",
-        "e=quotient(Pair.publicX,on=$square.solutions,s=@v/s,at=$outside.value)",
+        "p=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$boundary.value)",
+        "e=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$outside.value)",
         "point=solve(Pair.point,on=@v/s,using=Pair.choose,s=@v/s)",
-        "pin=quotient(Pair.publicX,on=$point.solutions,s=@v/s,at=$boundary.value)",
+        "pin=quotient(Pair.publicX,on=$point.solutions,s=@v/s,fiber.at=$boundary.value)",
         "segment=solve(Pair.segment,on=@v/s,using=Pair.choose,s=@v/s)",
-        "rank=quotient(Pair.diagonal,on=$segment.solutions,s=@v/s,at=$diagAt.value)",
+        "rank=quotient(Pair.diagonal,on=$segment.solutions,s=@v/s,fiber.at=$diagAt.value)",
         "unbounded=solve(Pair.unbounded,on=@v/s,using=Pair.choose,s=@v/s)",
-        "ray=quotient(Pair.publicX,on=$unbounded.solutions,s=@v/s,at=$outside.value)",
+        "ray=quotient(Pair.publicX,on=$unbounded.solutions,s=@v/s,fiber.at=$outside.value)",
         "unsupported=quotient(Pair.nonlinear,on=$square.solutions,s=@v/s)",
+        "projected=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$diagAt.value[1])",
+        "legacy=quotient(Pair.usesAt,on=$square.domain,at=@v/s)",
+        "missingAt=evaluate(Pair.absent)",
+        "conditional=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$missingAt.value.some)",
     ];
+    for (id, at) in [
+        ("wrong-type", "$diagAt.value"),
+        ("unknown-projection", "$boundary.unknown"),
+        ("unknown-request", "$absent.value"),
+    ] {
+        let bad = format!("p=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at={at})");
+        let bad_asks = asks[..5]
+            .iter()
+            .copied()
+            .chain([bad.as_str()])
+            .collect::<Vec<_>>();
+        let invalid = execute(&dir, id, &bad_asks, None);
+        assert_eq!(invalid.code, 64, "{}", invalid.stdout);
+        assert!(!dir.join(id).exists());
+    }
     let first = execute(&dir, "out", &asks, None);
     assert_eq!(first.code, 2, "{}", first.stdout);
     let result = result_json(&dir, &first);
@@ -1421,6 +1442,19 @@ reading Pair {{
     assert!(contains(poly(12, "classes"), &[2000], 1));
     assert!(!contains(poly(12, "classes"), &[-1], 2));
     assert_eq!(point(poly(12, "fiber"), "point"), [(3, 2), (1, 1)]);
+    assert_eq!(s(get(poly(14, "fiber"), "outcome")), "multiple");
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(
+        s(get(&answers[15], "status")),
+        "established",
+        "legacy bare at parameter"
+    );
+    assert_eq!(s(get(&answers[17], "status")), "undetermined");
+    assert!(
+        arr(get(&answers[17], "reasons"))
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "condition_failed")
+    );
     let unsupported = &arr(get(&result, "answers"))[13];
     assert_eq!(s(get(unsupported, "status")), "undetermined");
     assert!(

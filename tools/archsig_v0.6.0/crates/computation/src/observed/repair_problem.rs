@@ -1662,7 +1662,7 @@ pub(super) fn reobserved_membership(
     previous: &Node,
     current: &Node,
     subject_image: impl Fn(&Scalar) -> Option<Scalar>,
-    evaluation: &ObservedEvaluation,
+    env: &Environment<'_>,
     c: &Control,
 ) -> Result<ReobservedMembership, ValidationFailure> {
     let (Some(Payload::Construction(old)), Some(Payload::Construction(new))) =
@@ -1777,13 +1777,12 @@ pub(super) fn reobserved_membership(
     let Some(point) = b.compiled.relations.witness(&target_pins, c)? else {
         return Ok(ReobservedMembership::Excluded);
     };
-    let env = Environment::with_prepared(evaluation.prepared(), c)?;
     if b.family.is_some() {
-        if let Application::Missing(facts) = family_application(&env, b, &point, c)? {
+        if let Application::Missing(facts) = family_application(env, b, &point, c)? {
             return Ok(ReobservedMembership::Missing(facts));
         }
     } else {
-        verify_observed_application(&env, b, &point)?;
+        verify_observed_application(env, b, &point)?;
     }
     let mut entries = Vec::new();
     for (i, subject) in b.compiled.subjects.iter().enumerate() {

@@ -410,7 +410,7 @@ variantや引数から型が静的に確定しないときは、構成した値�
 | Module | ring: Ring、free_rank: Z、torsion: List<Z> |
 | ModuleMap | source: Module、target: Module |
 | StateMap | source: Domain、target: Domain |
-| Quotient | domain: CandidateSpaceまたはSolutionSet、classes: Domain、projection: StateMap、descent: StateMap |
+| Quotient | domain: CandidateSpaceまたはSolutionSet、classes: Domain、projection: StateMap、descent: StateMap、fiber: Domain（指定値がある有理多面体） |
 | Operation | source: Architecture、target: Architecture、candidate: MapCandidate、configuration_map: ConfigurationMap、action: AtomMap、word[index]: その位置の原始arrow/correspondence参照型 |
 | Path | source/target: 各端点の参照型、generators[index]: その位置の原始arrow/correspondence参照型 |
 | MapCandidate | subject: 元arrow/correspondence参照型、source: Architecture、target: Architecture、action: AtomMap |
@@ -482,7 +482,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[],state_of?:Architecture}` |
 | ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,design?:Architecture,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
-| ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
+| ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition,parameter_domains?:{position:Nat,source:Value[],target:Value[],images:Value[]}[]}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
 | MapCandidate | `{declaration?:QName,subject?:Ref,source:Architecture,target:Architecture,action:AtomMap}` |
@@ -729,7 +729,7 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 
 | Type | Payload |
 | --- | --- |
-| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
+| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` / `{kind:"rational_polyhedron",type:T,halfspaces:Halfspace[]}`（像・ファイバーの詳細は §5） |
 | StateSpace | `{base:Architecture,slots:Slot[],state_type:P}` |
 | StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"change",base:Architecture,change:QName,instances:Ref[]}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` / `{source:Domain,target:Domain,kind:"guarded_affine",coordinates:Module,value_type:T,instances:{key:Ref,guard:Bool|AffinePart,values?:AffinePart}[]}` |
 | CandidateSpace | `{kind:"change"\|"identity",base:Architecture,bindings:Binding[],change?:QName,parameters:Domain,states:StateSpace,action:StateMap,instances:{subject:Ref,positions:Nat[]}[],guards:Expression[],requirements:LawInstance[]}` |
@@ -850,7 +850,7 @@ Idealの零性やideal membershipを、εの零性へ読み替えない。
 | Diagnostic | `{kind:"finite_matching",side:Side,system:LocalSystem,degree:Nat,matching:Domain,global:Ref,restriction:StateMap,fibers:{matching:Ref,preimage:Ref}[],conditions:Proposition[]}` / `{kind:"affine_cech",side:Side,system:LocalSystem,degree:Nat,complex:Complex,space:Cohomology,class?:Class,local_sections:Vector[],conditions:Proposition[]}` |
 | Assignment | `{domain:CandidateSpace,entries:{subject:Ref,parameters:Ref[]}[]}` |
 | Repair | `{domain:CandidateSpace,solutions:SolutionSet,parameters:Assignment,steps:{subject:Ref,change:QName,parameters:Ref[]}[],object:Architecture,rechecks:Proposition[],local_lift?:StateMap}` |
-| Quotient | `{domain:Ref,view:QName,bindings:Binding[],classes:Domain,projection:StateMap,representation:QuotientRepresentation,law?:QName,evaluations:Evaluation[],descent?:StateMap}` |
+| Quotient | `{domain:Ref,view:QName,bindings:Binding[],classes:Domain,projection:StateMap,representation:QuotientRepresentation,law?:QName,evaluations:Evaluation[],descent?:StateMap,fiber?:Domain}` |
 | Comparison | `{kind:"value"\|"word"\|"action"\|"relation",left:Ref,right:Ref}` / `{kind:"diagnostics",left:Diagnostic,right:Diagnostic,along:Operation,cochain_map?:CochainMap,cohomology_map?:ModuleMap,kernel?:Module,cokernel?:Module,class_transport?:Proposition,finite_map?:StateMap,conditions:Proposition[]}` |
 | ObservationPlan | `{request:String,requirements:{field:FactPointer,dependents:Ref[],locations:Location[]}[],blockers:Issue[]}` |
 
@@ -906,8 +906,9 @@ stepsは同じsubjectごとに同じ元parameter値を持ち、changeはdomain.c
 未完了時は構成済みの全解表示や存在証拠を保持し、暫定候補をRepair/objectへ昇格しない。
 SolutionRepresentation.particularは解集合の表示用特解であり、一意性を示すものではない。
 
-QuotientRepresentationは`{kind:"finite",fibers:{image:Ref,preimage:Domain}[]}`または
-`{kind:"affine",image:Module,kernel:Module,map:ModuleMap,offset:Vector}`。
+QuotientRepresentationは `{kind:"finite",fibers:{image:Ref,preimage:Domain}[]}`、
+`{kind:"affine",image:Module,kernel:Module,map:ModuleMap,offset:Vector}`、
+`{kind:"rational_polyhedron",view_type:Type,linear:ModuleMap,offset:Vector}` のいずれか。
 有限Quotientのclassesは候補値の同値類の集合、projectionは各候補からその同値類への全域写像。
 fiberのimageはその同値類、preimageは同じ候補集合。空の商も元のdomain/typeを保持する。
 アフィン商は元のparameter域上の実像とoffsetを保持し、周囲の格子全体へ拡大しない。
@@ -920,7 +921,7 @@ Lawの十分性反証には同じview値を持ち、Law評価族が異なる候�
 `Halfspace={coefficients:Q[],upper:Q}` は内積が upper 以下である条件。
 像の座標は Q または Tuple 成分を左から深さ優先で平坦化した順で、矛盾行は空の像、空の行列は全座標域を表す。
 
-`at` を指定した場合は `fiber:Domain` を追加する。ファイバーの `halfspaces` は元等式の正・負、
+`fiber.at` を指定した場合は `fiber:Domain` を追加する。ファイバーの `halfspaces` は元等式の正・負、
 元不等式、固定 View 値の各等式の正・負をこの順で並べたもの。
 `solutions` と `at` で元の解集合と指定した値を参照する。ファイバーの座標は元 `SolutionSet` の
 `domain` が指定した元 parameter 順の Q の Tuple で、証拠点をそのまま元 Assignment に戻せる。
@@ -1035,7 +1036,8 @@ requirementsが空で完全な共通解を確定した場合だけ、回答の�
 `status` は `retained`、`excluded`、`undetermined`。判定不能は `reason` で組立て配置の欠測、
 候補の欠測、前回 Assignment または現在 solve の未確定、候補域の不適合、中断を区別する。
 保持した場合は `current_assignment` として、
-現在の `solutions` への参照と、現在主体と宣言順の型付き parameter 値の `entries` を返す。
+現在主体と宣言順の型付き parameter 値の `entries` を返す。`current_solve` は前後の表示 node 番号に
+依存せず、現在段階の回答 ID を指す。その回答の `solutions` から現在の候補域と導出を確認できる。
 この継続結果は現在の元 Law・更新・適用条件を使った所属確認である。
 Law の意味保存は独立した保存検査の命題として扱う。
 

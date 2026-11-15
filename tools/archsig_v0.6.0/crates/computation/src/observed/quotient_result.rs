@@ -167,7 +167,8 @@ fn compute(
             return Err(internal!("商のonが既出参照でない").into());
         };
         let input = change_result::candidate_input(env, g, reference, c)?;
-        if request.arguments.iter().any(|a| a.name == "at") && input.rational_polyhedron().is_none()
+        if request.arguments.iter().any(|a| a.name == "fiber.at")
+            && input.rational_polyhedron().is_none()
         {
             return affine_result::unsupported(
                 env,
@@ -702,7 +703,7 @@ impl super::result_kind::ResultKind for Data {
             return Ok(answer);
         }
         for argument in &request.arguments {
-            if (argument.name.starts_with("bind.") || argument.name == "at")
+            if (argument.name.starts_with("bind.") || argument.name == "fiber.at")
                 && matches!(argument.value, Selector::Answer { .. })
             {
                 if let AnswerBinding::Projection(node) =

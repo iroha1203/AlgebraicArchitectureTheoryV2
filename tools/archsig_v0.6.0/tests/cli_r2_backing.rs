@@ -1489,3 +1489,57 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         }
     }
 }
+
+#[test]
+fn rational_quotient_keeps_observations_used_only_by_the_view() {
+    use archsig_common::{control::Control, json::parse};
+    use archsig_computation::observed::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
+    let law = POLY_LAW.replace(
+        " view claimLoad",
+        " view outside(s:Pool.Stock):Q=s.available;\n view claimLoad",
+    );
+    let asks = [
+        POLY_QUERIES.lines().next().unwrap(),
+        "q=quotient(Backing.outside,on=$overlapFeasible.solutions,s=@fixture/overlapInsufficient.X)",
+    ];
+    let original = std::str::from_utf8(POLY_MAP).unwrap();
+    let changed = original.replace(
+        r#""id":"overlapInsufficient.X.available","subject":"overlapInsufficient.X","field":"Pool.Stock.available","value":["5","1"]"#,
+        r#""id":"overlapInsufficient.X.available","subject":"overlapInsufficient.X","field":"Pool.Stock.available","value":["99","1"]"#,
+    );
+    assert_ne!(original, changed);
+    for (map, expected) in [(original, "5"), (changed.as_str(), "99")] {
+        let inputs = InputSources::from_bytes(
+            vec![include_bytes!("fixtures/r2-backing-polyhedron/definitions.json").to_vec()],
+            law.as_bytes().to_vec(),
+            map.as_bytes().to_vec(),
+        );
+        let evaluation = evaluate_observed_bytes(inputs, &asks, &Control::unlimited()).unwrap();
+        let wire = parse(evaluation.wire().canonical().as_bytes()).unwrap();
+        let [solve, q] = arr(get(&wire, "answers")) else {
+            panic!("solve and quotient")
+        };
+        let quotient = referenced(&wire, get(get(q, "outputs"), "quotient"));
+        let classes = referenced(&wire, get(get(quotient, "value"), "classes"));
+        let supporting = |node: &JNode| {
+            arr(get(node, "support")).iter().any(|fact| {
+                has(fact, "atom") && s(get(fact, "atom")) == "overlapInsufficient.X.available"
+            })
+        };
+        assert!(!supporting(referenced(
+            &wire,
+            get(get(solve, "outputs"), "solutions")
+        )));
+        assert!(supporting(quotient));
+        assert!(supporting(classes));
+        let halfspaces = arr(get(get(classes, "value"), "halfspaces"));
+        assert!(halfspaces.iter().any(|row| {
+            let [a] = arr(get(row, "coefficients")) else {
+                return false;
+            };
+            arr(a).iter().map(s).eq(["1", "1"])
+                && arr(get(row, "upper")).iter().map(s).eq([expected, "1"])
+        }));
+    }
+}

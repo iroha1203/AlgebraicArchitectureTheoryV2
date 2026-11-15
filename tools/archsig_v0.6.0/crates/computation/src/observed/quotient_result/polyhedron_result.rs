@@ -4,7 +4,7 @@ use crate::observed::{
     change_result::{CandidateInput, field_linear_result, linear_result},
     environment::{
         change_search,
-        quotient_affine::{Image, verify_polyhedral_point},
+        quotient_affine::{Image, verify_polyhedral_points},
     },
     field_polyhedron::{self, Halfspace, Outcome},
     numeric,
@@ -138,7 +138,7 @@ pub(super) fn build(
         vec![source, classes, map, offset],
         None,
     )?;
-    let fiber = if let Some(at) = request.arguments.iter().find(|arg| arg.name == "at") {
+    let fiber = if let Some(at) = request.arguments.iter().find(|arg| arg.name == "fiber.at") {
         let value = change_search::selector(env, b.g, &at.value)?;
         let mut coords = Vec::new();
         flatten(&value, &mut coords, c)?;
@@ -153,17 +153,12 @@ pub(super) fn build(
         original.extend(field_polyhedron::halfspaces(&image.matrix, &rhs, &[], c)?);
         let result = field_polyhedron::solve(&original, n, c)?;
         field_polyhedron::verify(&original, n, &result, c)?;
-        let check = |parameters: &[Scalar]| {
-            verify_polyhedral_point(env, input, image, parameters, &value, request, c)
+        let points: &[&[Scalar]] = match &result {
+            Outcome::Empty(_) => &[],
+            Outcome::Unique { point, .. } => &[point],
+            Outcome::Multiple { first, second } => &[first, second],
         };
-        match &result {
-            Outcome::Empty(_) => {}
-            Outcome::Unique { point, .. } => check(point)?,
-            Outcome::Multiple { first, second } => {
-                check(first)?;
-                check(second)?;
-            }
-        }
+        verify_polyhedral_points(env, input, image, points, &value, request, c)?;
         let (kind, witnesses) = match result {
             Outcome::Empty(row) => (
                 "empty",

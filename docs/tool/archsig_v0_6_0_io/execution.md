@@ -138,7 +138,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `diagnose(Handle,degree=Degree?,side=equation\|semantic?)` | LocalSystemのdegree（既定1）、side（既定equation）を診断する。`diagnostic:Diagnostic`。計算できた場合`space:Cohomology`、`class:Class`、`proposition:Proposition`をそれぞれ保持する |
 | `solve(Law,using=Change,on=Handle,B)` | 許された変更でLawを満たす全候補を求める。`domain:CandidateSpace`、`solutions:SolutionSet`、`proposition:Proposition` |
 | `repair(Law,using=Change,on=Handle,B)` | solveと同じ全解中の元Assignmentが一意な場合だけ修復対象を構成し元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、存在の`existence:Proposition`、構成条件の`proposition:Proposition`、構成成立時だけ`repair:Repair`、`object:Architecture` |
-| `quotient(View,on=Handle,law=QName?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
+| `quotient(View,on=Handle,law=QName?,fiber.at=Handle?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
 | `needed($Id)` | 問いの依存先にある未観測位置と、それ以外の未決理由を返す。`plan:ObservationPlan` |
 
 各行にない固定引数を拒否する。evaluateのBはviewの全parameterを束縛する。
@@ -258,9 +258,9 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 
 有限域の商は全fiberを返す。整数アフィン域では実際の格子像、核、射影、降下写像を返す。
 有理多面体の `SolutionSet` では、Q または Q の入れ子の Tuple を返すアフィン View の像を閉半空間で返す。
-同じ問いに `at=$y.value` を指定すると、View の返り型と一致する既出値 `y` での
+同じ問いに `fiber.at=$y.value` を指定すると、View の返り型と一致する既出値 `y` での
 ファイバーが `$q.quotient.fiber` に加わる。例えば
-`q=quotient(Stock.publicLoad,on=$s.solutions,s=@v/stock,at=$y.value)`。
+`q=quotient(Stock.publicLoad,on=$s.solutions,s=@v/stock,fiber.at=$y.value)`。
 空のファイバーも確定した集合として返す。多面体の Law 降下と対象外 View は理由付きの未決を返す。
 集合・View・元座標の解釈は [計算仕様](computations.md#9-決定範囲) と [型付き結果](results.md#5-線形表示診断修復商) に従う。
 
@@ -733,13 +733,16 @@ CLI では同じ表を `reobserve --alignment ALIGNMENT_JSON` へ渡す。例え
 }
 ```
 
-主体対は呼出し側が与える一対一かつ同型の対応である。各 `local.*` を一度ずつ指定する。
+snapshot・reading・要求 ID は照合対象を選ぶ。主体対は観測側の呼出し側が宣言する前後の同一性の仮定である。
+核は両主体の存在・型・一対一性と、組立てで使う構造を確認する。継続判定はこの同一性の仮定の下で成り立つ。
+各 `local.*` を一度ずつ指定する。
 前回の適用が指定した candidate の Assignment を消費し、現在の candidate と apply が指定した
 現在 solve の全解を参照することを検査する。複数の対応は担当の引数名で解決する。
 従来の `reevaluate_assembly` と `AssemblyAlignment` は同一 Law の一担当照合を受け持つ。
 
 前後の宣言と原始個体への明示束縛、根・既知の owner・View で得た担当集合と共有の同値関係を照合する。
 Law 改訂を扱う場合は同じ定義、同じ change と、その型付き署名・更新式・補助宣言の一致を要求する。
+宣言の空白とコメントを除いた字句と、解決済みの参照を比較する。
 候補照合は現在の全解集合で元 parameter を検査し、組立ては現在の各 `apply` が選んだ値で計算する。
 各候補の継続状態と全体の組立て状態は別に返す。選択した現候補が前回の候補と同じかどうかは、
 候補番号に関わらず現在の元 Assignment で判断する。
