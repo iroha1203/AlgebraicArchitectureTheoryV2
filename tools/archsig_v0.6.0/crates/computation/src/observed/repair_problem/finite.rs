@@ -392,7 +392,7 @@ impl Problem {
         }
         Ok(true)
     }
-    /// 生成中の依存探索に必要な一つの合法点。件数は計算しない。
+    /// 元座標順で最初の合法点。各独立成分の最初の点を結合する。
     pub fn witness(
         &self,
         pins: &[Option<usize>],
@@ -432,26 +432,30 @@ impl Problem {
                 .ok_or(internal!("証人の座標が未確定"))?,
         ))
     }
-    fn count(
+    fn count_up_to(
         &self,
         component: usize,
         pins: &mut [Option<usize>],
+        limit: &BigUint,
         c: &Control,
     ) -> Result<BigUint, ValidationFailure> {
         let mut count = BigUint::zero();
         self.walk(component, pins, c, |_| {
             count += 1_u32;
-            true
+            &count < limit
         })?;
         Ok(count)
     }
-    /// 番号を指定したときだけ必要なfiberを数え、全候補の列を保持せず元座標へ戻す。
+    /// 候補の順位選択に必要な範囲まで数え、元の座標順で復元する。
     pub fn candidate(
         &self,
         pins: &[Option<usize>],
         mut index: BigUint,
         c: &Control,
     ) -> Result<Option<Vec<usize>>, ValidationFailure> {
+        if index.is_zero() {
+            return self.witness(pins, c);
+        }
         tick(c)?;
         if !self.valid_pins(pins) {
             return Err(internal!("有限問題の固定座標が不適合").into());
@@ -460,8 +464,11 @@ impl Problem {
             return Ok(None);
         }
         let mut point = pins.to_vec();
+        // 残りの順位は常にこの上限未満。各成分の計数を丸めても、
+        // 順位を超えるブロックの判定と、飛ばすブロックの正確なサイズは保たれる。
+        let limit = &index + 1_u32;
         let mut counts = (0..self.components.len())
-            .map(|i| self.count(i, &mut point, c))
+            .map(|i| self.count_up_to(i, &mut point, &limit, c))
             .collect::<Result<Vec<_>, _>>()?;
         let mut remaining = counts.iter().fold(BigUint::one(), |a, b| a * b);
         if index >= remaining {
@@ -478,7 +485,7 @@ impl Problem {
             for value in 0..self.sizes[variable] {
                 tick(c)?;
                 point[variable] = Some(value);
-                let count = self.count(component, &mut point, c)?;
+                let count = self.count_up_to(component, &mut point, &limit, c)?;
                 let block = &other * &count;
                 if index < block {
                     counts[component] = count;
@@ -639,13 +646,87 @@ mod tests {
         }
     }
     #[test]
+    fn selection_preserves_global_order_across_interleaved_components() {
+        let p = Problem::new(
+            vec![2; 5],
+            vec![
+                Relation {
+                    columns: vec![0, 3],
+                    rows: vec![vec![0, 0], vec![0, 1], vec![1, 0]].into(),
+                },
+                Relation {
+                    columns: vec![1, 4],
+                    rows: vec![vec![0, 1], vec![1, 0], vec![1, 1]].into(),
+                },
+            ],
+            &c(),
+        )
+        .unwrap();
+        for pins in [
+            [None; 5],
+            [None, Some(1), None, Some(0), None],
+            [Some(0), None, Some(1), None, Some(1)],
+        ] {
+            let expected = (0..32)
+                .map(|n| (0..5).map(|i| (n >> (4 - i)) & 1).collect::<Vec<_>>())
+                .filter(|v| {
+                    v[0] + v[3] <= 1
+                        && v[1] + v[4] >= 1
+                        && pins.iter().zip(v).all(|(p, v)| p.is_none_or(|p| p == *v))
+                })
+                .collect::<Vec<_>>();
+            for (i, value) in expected.iter().enumerate() {
+                assert_eq!(
+                    p.candidate(&pins, BigUint::from(i), &c()).unwrap().as_ref(),
+                    Some(value)
+                );
+            }
+            assert_eq!(
+                p.candidate(&pins, BigUint::from(expected.len()), &c())
+                    .unwrap(),
+                None
+            );
+        }
+    }
+
+    #[test]
+    fn small_ranks_do_not_enumerate_a_large_connected_fiber() {
+        use std::{cell::Cell, rc::Rc};
+
+        // Coordinate 0 connects all 23 other coordinates, which may vary independently.
+        let relations = (1..24)
+            .map(|i| Relation {
+                columns: vec![0, i],
+                rows: vec![vec![0, 0], vec![0, 1]].into(),
+            })
+            .collect();
+        let p = Problem::new(vec![2; 24], relations, &c()).unwrap();
+        for index in [0_u32, 1] {
+            let checkpoints = Rc::new(Cell::new(0));
+            let seen = checkpoints.clone();
+            let control = Control::new(move |_| {
+                seen.set(seen.get() + 1);
+                (seen.get() == 10_000).then_some(archsig_common::control::Signal::Term)
+            });
+            let mut expected = vec![0; 24];
+            expected[23] = index as usize;
+            assert_eq!(
+                p.candidate(&[None; 24], BigUint::from(index), &control)
+                    .unwrap(),
+                Some(expected)
+            );
+        }
+    }
+
+    #[test]
     fn arbitrary_precision_selection_does_not_expand_independent_global_product() {
-        let p = Problem::new(vec![2; 54], vec![], &c()).unwrap();
-        let last = (BigUint::one() << 54_usize) - BigUint::one();
+        let p = Problem::new(vec![2; 80], vec![], &c()).unwrap();
+        let end = BigUint::one() << 80_usize;
         assert_eq!(
-            p.candidate(&vec![None; 54], last, &c()).unwrap(),
-            Some(vec![1; 54])
+            p.candidate(&[None; 80], &end - 1_u32, &c()).unwrap(),
+            Some(vec![1; 80])
         );
+        assert_eq!(p.candidate(&[None; 80], end, &c()).unwrap(), None);
     }
     #[test]
     fn deterministic_update_keeps_unused_parameter_fiber_and_nonzero_identity() {
@@ -707,6 +788,8 @@ mod tests {
         )
         .unwrap();
         assert!(!empty.exists(&[], &c()).unwrap());
+        assert_eq!(empty.candidate(&[], BigUint::zero(), &c()).unwrap(), None);
+        assert_eq!(unit.candidate(&[], BigUint::one(), &c()).unwrap(), None);
         assert!(!unit.member(&[], &[0], &c()).unwrap());
         assert!(
             Problem::new(
