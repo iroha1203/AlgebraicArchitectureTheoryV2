@@ -267,13 +267,13 @@ pub struct Roster<'a> {
     pub types: HashMap<(&'a str, &'a str), &'a str>,
 }
 
-pub(super) trait ReferenceTypes {
-    fn type_of(&self, snapshot: &str, subject: &str) -> Option<&str>;
+pub(super) trait ReferenceTypes<E> {
+    fn type_of(&self, snapshot: &str, subject: &str) -> Result<Option<&str>, E>;
 }
 
-impl ReferenceTypes for Roster<'_> {
-    fn type_of(&self, snapshot: &str, subject: &str) -> Option<&str> {
-        self.types.get(&(snapshot, subject)).copied()
+impl<E> ReferenceTypes<E> for Roster<'_> {
+    fn type_of(&self, snapshot: &str, subject: &str) -> Result<Option<&str>, E> {
+        Ok(self.types.get(&(snapshot, subject)).copied())
     }
 }
 
@@ -281,7 +281,7 @@ struct Reader<'a, 'b, E> {
     control: Control,
     error: std::marker::PhantomData<E>,
     definitions: &'a CheckedDefinitions,
-    roster: &'b dyn ReferenceTypes,
+    roster: &'b dyn ReferenceTypes<E>,
     /// 値を読む field が属する宣言の namespace。Term の本体の名前の解決に使う。
     namespace: &'a str,
     rebases: &'b super::schema::Rebases,
@@ -377,7 +377,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     &self.control,
                 )?;
                 let subject = as_string(&items[1], &pointer_push(ptr, "1"))?;
-                let Some(actual) = self.roster.type_of(&snapshot, &subject) else {
+                let Some(actual) = self.roster.type_of(&snapshot, &subject)? else {
                     return Err((issue(
                         Code::Reference,
                         ptr,
@@ -781,7 +781,7 @@ pub(super) fn check_assignment_for<E: InputError>(
     value: &Json,
     ty: &Type,
     definitions: &CheckedDefinitions,
-    roster: &dyn ReferenceTypes,
+    roster: &dyn ReferenceTypes<E>,
     namespace: &str,
     control: &Control,
 ) -> Result<Value, E> {
