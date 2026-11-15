@@ -2136,7 +2136,9 @@ impl Evaluator<'_, '_> {
                         .validate_at(self.graph, self.graph.get(domain)?, domain.0)
                 })?;
                 let graph_prefix = self.graph.suffix_checkpoint();
-                let validation_prefix = self.environment.validation_checkpoint()?;
+                let validation_prefix = self
+                    .environment
+                    .validation_checkpoint(graph_prefix.node_len())?;
                 let mut ownership = delivery::RegionOwnership::new(&graph_prefix);
                 ownership.domain(self.graph, domain)?;
                 ownership.scope(self.graph, &scope)?;
@@ -2243,7 +2245,9 @@ impl Evaluator<'_, '_> {
                                 domain.0,
                             )
                         })?;
-                        *validation_prefix = self.environment.validation_checkpoint()?;
+                        *validation_prefix = self
+                            .environment
+                            .validation_checkpoint(graph_prefix.node_len())?;
                     }
                     #[cfg(test)]
                     data::observe_actual(
