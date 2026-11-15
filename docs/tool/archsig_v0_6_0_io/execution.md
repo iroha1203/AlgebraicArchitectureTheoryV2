@@ -6,16 +6,20 @@
 archsig check --atom-definition D [--atom-definition D ...] --law L [--archmap A] [--out NEW_DIRECTORY]
 archsig run --atom-definition D [--atom-definition D ...] --law L --archmap A --ask 'ID=QUESTION' [--ask 'ID=QUESTION' ...]
             [--out NEW_DIRECTORY] [--reuse OLD_DIRECTORY]
+archsig reobserve --before-atom-definition D0 --before-law L0 --before-archmap A0 --before-ask 'ID=QUESTION'
+                  --atom-definition D1 --law L1 --archmap A1 --ask 'ID=QUESTION'
+                  [--alignment ALIGNMENT_JSON] [--out NEW_DIRECTORY]
 archsig evidence --archmap A --atom SNAPSHOT/ATOM [--atom SNAPSHOT/ATOM ...] [--source ID=FILE ...]
 archsig law-fibers --table TABLE
 archsig version | --version
 archsig --help | -h | help
-archsig help run | help check | help evidence | help law-fibers | help version
-archsig run --help | check --help | evidence --help | law-fibers --help | version --help
+archsig help run | help reobserve | help check | help evidence | help law-fibers | help version
+archsig run --help | reobserve --help | check --help | evidence --help | law-fibers --help | version --help
 ```
 
 これが全コマンドと全flagである。`--atom-definition`と`--ask`を反復でき、問い ID の重複を拒否する。
 単数flagの重複、未知flag、位置引数、必須flagの欠落は`usage`。
+`reobserve` は各段階で定義と問いの flag を反復できる。指定方法は [メモリ内の再観測](#メモリ内の再観測) を参照。
 `run`の`--out`は任意で、省略時は回答の状態・値・反例・未決理由を一行の
 `archsig.summary/1`として標準出力へ返す。保存する場合だけ`--out`を指定する。
 `check`も`--out`は任意で、省略時は検査状態を一行の`archsig.receipt/1`として返す。
@@ -50,13 +54,13 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
-Key      ::= Name | "bind." Name | "local." Name | "design." Name
+Key      ::= Name | "bind." Name | "local." Name | "design." Name | "fiber.at"
 Index    ::= "0" | [1-9][0-9]*
 Degree   ::= Index
 Ordinal  ::= Index
 ```
 
-`local.` と `design.` の Key は `assemble` にだけ指定できる。
+`local.` と `design.` の Key は `assemble` に、`fiber.at` は `quotient` に指定する。
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
 ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
 Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
@@ -134,7 +138,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `diagnose(Handle,degree=Degree?,side=equation\|semantic?)` | LocalSystemのdegree（既定1）、side（既定equation）を診断する。`diagnostic:Diagnostic`。計算できた場合`space:Cohomology`、`class:Class`、`proposition:Proposition`をそれぞれ保持する |
 | `solve(Law,using=Change,on=Handle,B)` | 許された変更でLawを満たす全候補を求める。`domain:CandidateSpace`、`solutions:SolutionSet`、`proposition:Proposition` |
 | `repair(Law,using=Change,on=Handle,B)` | solveと同じ全解中の元Assignmentが一意な場合だけ修復対象を構成し元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、存在の`existence:Proposition`、構成条件の`proposition:Proposition`、構成成立時だけ`repair:Repair`、`object:Architecture` |
-| `quotient(View,on=Handle,law=QName?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
+| `quotient(View,on=Handle,law=QName?,fiber.at=Handle?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
 | `needed($Id)` | 問いの依存先にある未観測位置と、それ以外の未決理由を返す。`plan:ObservationPlan` |
 
 各行にない固定引数を拒否する。evaluateのBはviewの全parameterを束縛する。
@@ -253,7 +257,13 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 対応する算法のない無限量化の評価族は未実装として返す。
 
 有限域の商は全fiberを返す。整数アフィン域では実際の格子像、核、射影、降下写像を返す。
-それ以外の対応する算法のない無限域は式と型を保持して未決を返す。
+有理多面体の `SolutionSet` では、Q または Q の入れ子の Tuple を返すアフィン View の像を閉半空間で返す。
+同じ問いに `fiber.at=$y.value` を指定すると、View の返り型と一致する既出値 `y` での
+ファイバーが `$q.quotient.fiber` に加わる。例えば
+`q=quotient(Stock.publicLoad,on=$s.solutions,s=@v/stock,fiber.at=$y.value)`。
+型が実値によって決まる射影では、実値の型が一致した場合に指定値として使い、不一致は `condition_failed` とする。
+空のファイバーも確定した集合として返す。多面体の Law 降下と対象外 View は理由付きの未決を返す。
+集合・View・元座標の解釈は [計算仕様](computations.md#9-v060-の必須決定範囲) と [型付き結果](results.md#5-線形表示診断修復商) に従う。
 
 ### 共通の有限修復問題を使う問い
 
@@ -443,9 +453,11 @@ owned型とfield位置の対応は同じ元宣言を結ぶものとする。
 
 局所対応の型・値・参照・configuration保存、重なりの像の一致、再制限の可換性、
 全体生成操作の保存とLaw移送を核が検査する。Law移送はrequired status・適用とBool読取りを
-元の出現と束縛で比較する。原始状態同士では、残る parameter の全域を構成できる有限 Law 族を扱う。
-修復済み状態を含む場合は、束縛済みの Law を実際の更新値で読む。未束縛の族の未対応理由は
-元 Law 宣言の位置と残る parameter の型を示す。
+元の出現と束縛で比較する。残る parameter の全域を構成できる有限 Law 族では、
+値の輸送が全単射であることを確認し、輸送した各代入を始終それぞれの状態で比較する。
+原始状態では元の観測値を、修復状態では更新後の値を読む。
+全単射が成立しない場合は、失敗した parameter と実際の値の対応を反証に保持する。
+対象外の parameter 域では、元 Law 宣言の位置と parameter の型を未対応理由に示す。
 Configuration保存を確認した時点でconfiguration_mapを保持し、操作/Law保存も確認した場合だけ
 ModelMapAssemblyを返す。確認済みの構造ごとにfieldを区別する。
 欠測は元位置付きmissing_observation、その他の適用族外は元位置付きunsupported_algorithm、
@@ -687,33 +699,72 @@ Rustの `observed::reevaluate_observed(previous,prepared,control)` は、同じ�
 元parameterへの復元を求め、適用対象・元Lawの検査と由来は現在入力から生成する。
 行列や適用条件が変わる場合は現在の生成・検査へ戻し、旧成功表示を採用しない。
 
+同じ入口を CLI から使うには、`reobserve` に前回の三入力と問いを `--before-*`、
+現在の三入力と問いを通常の flag で渡す。両方の入力を検査し、前回の評価と現在の再観測を順に実行する。
+例えば、同梱の [Counter 入力](examples/counter.archmap.json) の count を 2 から 3 に訂正する。
+リポジトリのルートから実行すると、`previous` の count は 2、`current` の count は 3 となり、
+前後の結果を `"$work/comparison/result.json"` で確認できる。
+
+```sh
+cd docs/tool/archsig_v0_6_0_io/examples
+work=$(mktemp -d)
+sed -e 's/"value": "2"/"value": "3"/' -e 's/件数が2/件数が3/' counter.archmap.json > "$work/current.archmap.json"
+archsig reobserve \
+  --before-atom-definition counter.atoms.json --before-law counter.law \
+  --before-archmap counter.archmap.json --before-ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
+  --atom-definition counter.atoms.json --law counter.law \
+  --archmap "$work/current.archmap.json" --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
+  --out "$work/comparison"
+```
+
+`--out` は任意。標準出力の要約と保存結果は [再観測の結果](results.md#再観測の結果) に従う。
+入力・対応が有効な場合、終了状態は現在の回答に従い、候補照合に判定不能があれば partial/2 となる。
+入力・解決・I/O エラーには通常の終了コードを使う。前回または現在の入力検査エラーの
+`issues[].stage` は `previous` / `current` のいずれか。対応の不一致は 64、未対応の組合せは 69。
+対応表の形式不正・対応不一致・未対応の組合せでは、`issues[].details.argument` に `--alignment` を記す。
+対応表ファイルの読込みに失敗した場合は I/O エラーの 74 とし、`issues[].details` に操作とパスを記録する。
+SIGINT/SIGTERM は 130/143 とし、前回段階で停止した場合は前回の確定済み回答、
+現在段階で停止した場合は前回と現在の確定済み回答を保持する。`--reuse` は `run` の保存結果照合に使う。
+
 ### 局所組立てと追加観測の対応
 
-Rust の `observed::assembly_reobservation::reevaluate_assembly` は前回の native 結果、
-現在の検査済み三入力と要求、明示した `AssemblyAlignment` を受け取る。対応には始終 snapshot、
-同じ reading、元組立ての要求 ID、主体対、前回 candidate と現在 solve の ID を指定する。
-主体対は観測側で呼出し側が与える同一性の仮定であり、以下の継続判定はこの対応に従う。
-定義は同じ順序とバイト列、Law も同じバイト列を要求する。前後で型・既知の owner・原始参照の明示束縛を検査する。
-View の実評価から担当集合と共有の同値関係を照合する。共有対は別担当の同じ型の個体を結び、
-共有の同値類には各担当から高々一個体が属する。有効な共有対の順序・向きは同値関係を変えない。
-対象 root・担当 root・所属個体・共有対の端点はそれぞれの評価 snapshot に属する。通常 field の外部参照は元の参照を保ち、別 snapshot を指せる。
-担当・共有 View と owner の欠測、局所包含の検査で保留した欠測を `layout_missing()` に残し、候補継続は判定不能とする。
-局所包含を確認する際は、共有端点や組立て root の型への通常参照を含み得る未観測 field も、型に基づいて保守的に保留する。
-この場合も現在評価と観測対応を返す。適用族外と対応そのものの不一致は型付きエラーで区別する。
-前回の組立て回答と View・所属域の再読取りで特定した、前回 snapshot の未観測 slot を、明示した主体対応で現在の同じ field と型の Atom に結ぶ。
-現在も未観測なら Atom の参照は空になる。前回の通常 field の参照先で別 snapshot の欠測を読んだ場合は、
-その位置を `layout_missing()` に残す。対応表による Atom の照合は指定した snapshot の主体に限る。
+Rust の `observed::assembly_reobservation::reevaluate_assembly_many` は前回の native 結果、
+現在の検査済み入力と問い、`MultiAssemblyAlignment` を受け取る。対応は snapshot、reading、
+組立ての要求 ID、主体対および `local.<participant>` ごとの前回 candidate と現在 solve の ID を持つ。
+CLI では同じ表を `reobserve --alignment ALIGNMENT_JSON` へ渡す。例えば一担当を照合する表は次の形となる。
 
-現在の要求は既存の native 再観測で実行する。有限修復の前回 Assignment は元個体を明示対応で運び、
-有限 `prepare` の元個体集合が明示対応で一致し、parameter 座標数が等しいとき、以前の値を現在の解集合で再検査する。保持・除外・判定不能を返す。
-比較する `prepare` の引数は宣言と原始個体の直接参照に限り、前後の `solve` は全解を要求する。
-`assemble` ではこれらに加え、追跡する `local.*` の `apply.object` を受け取る。
-局所 `apply` を指定する場合は一つの担当を追跡する。前回の適用要求は指定した前回候補とその候補を生成した `solve` の全解を参照する。
-現在の適用と選択候補は、指定した現在 `solve` の全解を参照する。組立て成立時に実際の候補 ID を返す。
-候補照合中に停止した場合も現在の確定済み回答を保持する。
-現在の組立ては現在 snapshot のみで行い、以前の組立てや候補を現在の証拠へ転用しない。
-対応検査は対象域と View の適用族外を返す。対応を検査できても、値の輸送で組立てが未決なら、
-その理由は現在評価の組立て回答に残り、採用候補 ID は空になる。
+```json
+{
+  "before_snapshot": "before",
+  "after_snapshot": "after",
+  "reading": "Assembly",
+  "assembly": "joined",
+  "subjects": [["A", "A2"], ["B", "B"], ["G", "G"], ["a", "a2"], ["b", "b"], ["ma", "ma"], ["mb", "mb"]],
+  "candidates": [{"participant": "a", "previous_candidate": "pick", "current_solve": "solveIt"}]
+}
+```
+
+snapshot・reading・要求 ID は照合対象を選ぶ。主体対は観測側の呼出し側が宣言する前後の同一性の仮定である。
+核は両主体の存在・型・一対一性と、組立てで使う構造を確認する。継続判定はこの同一性の仮定の下で成り立つ。
+各 `local.*` を一度ずつ指定する。
+前回の適用が指定した candidate の Assignment を消費し、現在の candidate と apply が指定した
+現在 solve の全解を参照することを検査する。複数の対応は担当の引数名で解決する。
+従来の `reevaluate_assembly` と `AssemblyAlignment` は同一 Law の一担当照合を受け持つ。
+
+前後の宣言と原始個体への明示束縛、根・既知の owner・View で得た担当集合と共有の同値関係を照合する。
+Law 改訂を扱う場合は同じ定義、同じ change と、その型付き署名・更新式・補助宣言の一致を要求する。
+宣言の空白とコメントを除いた字句と、解決済みの参照を比較する。
+Law 改訂の前後で、`prepare` が選ぶ要求は同じ reading と型付き parameter を持つ。
+この条件を満たす追加 Law を現在の要求に選べる。
+候補照合は現在の全解集合で元 parameter を検査し、組立ては現在の各 `apply` が選んだ値で計算する。
+合法な全入力で元 parameter が解になり、補完ごとに更新値が変わるときは、候補を保持して具体的な `apply` の欠測を返す。
+各候補の継続状態と全体の組立て状態は別に返す。選択した現候補が前回の候補と同じかどうかは、
+候補番号に関わらず現在の元 Assignment で判断する。
+
+前回の未観測 slot は現在の明示対応先の同型 field と照合し、追加された観測の Atom があれば報告する。
+共有の同値類には各担当から高々一個体が属する。担当と共有 View・owner・局所包含に現れる未観測位置を
+`layout_missing()` に保持し、局所候補の計算に必要な現在の未観測位置を候補行にも保持する。
+候補照合の停止時は、既に確定した候補行および現在の評価結果を保持する。
 
 ## 8. 観測補助
 

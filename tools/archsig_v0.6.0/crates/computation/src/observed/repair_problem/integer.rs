@@ -125,7 +125,7 @@ pub(super) fn candidate_input(
         witness: shared.witness.clone(),
         domain_type,
         integer_family,
-        search: change_search::Search {
+        search: Arc::new(change_search::Search {
             linear: Some(shared.compiled.linear.clone()),
             rational: None,
             pending_integer: None,
@@ -136,7 +136,7 @@ pub(super) fn candidate_input(
             missing: vec![],
             complete: true,
             valuation: shared.compiled.fixed.clone(),
-        },
+        }),
     })
 }
 pub(super) fn assignment_input(

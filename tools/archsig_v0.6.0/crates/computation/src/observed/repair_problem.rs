@@ -515,7 +515,7 @@ pub(super) fn candidate_input(
         } else {
             ProjectionType::CandidateSpace(shared.root_type.clone())
         },
-        search: change_search::Search {
+        search: Arc::new(change_search::Search {
             linear: None,
             rational: None,
             pending_integer: None,
@@ -531,7 +531,7 @@ pub(super) fn candidate_input(
             missing: vec![],
             complete: true,
             valuation: shared.compiled.fixed.clone(),
-        },
+        }),
     })
 }
 pub(super) fn assignment_input(
@@ -742,7 +742,7 @@ fn assignment(
 }
 enum Application {
     Ready(change_evaluation::Candidate),
-    Missing(Vec<Fact>),
+    VariableUpdate(Vec<Fact>),
 }
 fn family_application(
     env: &Environment<'_>,
@@ -828,7 +828,7 @@ fn family_application(
             missing.extend(row.missing);
             missing.sort();
             missing.dedup();
-            return Ok(Application::Missing(missing));
+            return Ok(Application::VariableUpdate(missing));
         }
         candidate.update.values = first.ok_or(internal!("共通候補の入力族が空"))?;
         candidate.update.state = change_evaluation::State::Ready;
@@ -894,6 +894,29 @@ fn pending_application(
         observation: None,
     })
 }
+fn verify_observed_application(
+    env: &Environment<'_>,
+    s: &Shared,
+    point: &[usize],
+) -> Result<change_evaluation::Candidate, ValidationFailure> {
+    let c = &env.control;
+    let mut fixed = env
+        .try_primitive_valuation_from(&s.compiled.fixed, c)?
+        .ok_or(internal!("選択候補の基準が不適合"))?;
+    fixed.select_local_object(&s.witness, c)?;
+    let origin = Witness::Architecture(s.witness.clone());
+    let change = &origin.inputs().law().declarations()[&s.change];
+    let values = (0..s.compiled.parameter_count)
+        .map(|i| s.compiled.domains[i][point[i]].clone())
+        .collect::<Vec<_>>();
+    let candidate = change_evaluation::candidate(&fixed, change, &s.compiled.subjects, &values)?;
+    let row = change_evaluation::solution_row(&fixed, &candidate, 0, &s.compiled.requirements)?;
+    if row.member != Some(true) || candidate.update.state != change_evaluation::State::Ready {
+        return Err(internal!("選択候補が元更新・Lawへの再代入を満たさない").into());
+    }
+    Ok(candidate)
+}
+
 fn apply_object(
     env: &Environment<'_>,
     b: &mut Builder<'_>,
@@ -906,25 +929,9 @@ fn apply_object(
     let (selected, solutions) = selection;
     let g = b.g;
     let c = &env.control;
-    let mut fixed = env
-        .try_primitive_valuation_from(&s.compiled.fixed, c)?
-        .ok_or(internal!("選択候補の基準が不適合"))?;
-    fixed.select_local_object(&s.witness, c)?;
-    let origin = Witness::Architecture(s.witness.clone());
-    let change = &origin.inputs().law().declarations()[&s.change];
-    let values = (0..s.compiled.parameter_count)
-        .map(|i| s.compiled.domains[i][point[i]].clone())
-        .collect::<Vec<_>>();
-    let candidate = if let Some(candidate) = checked {
-        candidate
-    } else {
-        let candidate =
-            change_evaluation::candidate(&fixed, change, &s.compiled.subjects, &values)?;
-        let row = change_evaluation::solution_row(&fixed, &candidate, 0, &s.compiled.requirements)?;
-        if row.member != Some(true) || candidate.update.state != change_evaluation::State::Ready {
-            return Err(internal!("選択候補が元更新・Lawへの再代入を満たさない").into());
-        }
-        candidate
+    let candidate = match checked {
+        Some(candidate) => candidate,
+        None => verify_observed_application(env, s, point)?,
     };
     for output in &s.compiled.outputs {
         tick(c)?;
@@ -1187,7 +1194,7 @@ fn consume(
             c,
         )? {
             Application::Ready(candidate) => checked_application = Some(candidate),
-            Application::Missing(missing) => {
+            Application::VariableUpdate(missing) => {
                 return pending_application(env, g, r, shared, inputs, missing);
             }
         }
@@ -1644,20 +1651,27 @@ pub(super) fn validate_origin(
     Ok(())
 }
 
+pub(super) enum ReobservedMembership {
+    Retained(Vec<(Scalar, Vec<Scalar>)>),
+    Excluded,
+    Incompatible,
+}
 /// 同じ finite change の元個体・parameter 値を現在の解集合で照合する。
 pub(super) fn reobserved_membership(
     previous: &Node,
-    current: &Node,
+    (current, solutions): (&Node, NodeRef),
+    selection: Option<&Node>,
     subject_image: impl Fn(&Scalar) -> Option<Scalar>,
+    env: &Environment<'_>,
     c: &Control,
-) -> Result<Option<bool>, ValidationFailure> {
+) -> Result<ReobservedMembership, ValidationFailure> {
     let (Some(Payload::Construction(old)), Some(Payload::Construction(new))) =
         (&previous.payload, &current.payload)
     else {
-        return Ok(None);
+        return Ok(ReobservedMembership::Incompatible);
     };
     let (D::SharedRepair(old), D::SharedRepair(new)) = (&old.data, &new.data) else {
-        return Ok(None);
+        return Ok(ReobservedMembership::Incompatible);
     };
     let (Some(a), Some(b), Some(chosen), Some(enabled)) = (
         old.source.finite(),
@@ -1665,7 +1679,7 @@ pub(super) fn reobserved_membership(
         &old.source.chosen,
         &new.source.range,
     ) else {
-        return Ok(None);
+        return Ok(ReobservedMembership::Incompatible);
     };
     if old.ty() != NodeType::Construction(T::Assignment)
         || new.ty() != NodeType::Construction(T::SolutionSet)
@@ -1682,13 +1696,42 @@ pub(super) fn reobserved_membership(
         || a.compiled.subjects.len() != b.compiled.subjects.len()
         || a.compiled.parameter_count != b.compiled.parameter_count
     {
-        return Ok(None);
+        return Ok(ReobservedMembership::Incompatible);
+    }
+    if a.compiled.parameter_types != b.compiled.parameter_types {
+        return Ok(ReobservedMembership::Incompatible);
     }
     let width = a
         .compiled
         .parameter_count
         .checked_div(a.compiled.subjects.len())
         .unwrap_or(0);
+    let mut expected_slots = std::collections::BTreeSet::new();
+    for output in &a.compiled.outputs {
+        tick(c)?;
+        let Some(Scalar::Subject {
+            ref snapshot,
+            ref subject,
+            ..
+        }) = subject_image(&a.compiled.subjects[output.subject])
+        else {
+            return Ok(ReobservedMembership::Incompatible);
+        };
+        expected_slots.insert((snapshot.clone(), subject.clone(), output.fact.field.clone()));
+    }
+    for output in &b.compiled.outputs {
+        tick(c)?;
+        if !expected_slots.remove(&(
+            output.fact.snapshot.clone(),
+            output.fact.subject.clone(),
+            output.fact.field.clone(),
+        )) {
+            return Ok(ReobservedMembership::Incompatible);
+        }
+    }
+    if !expected_slots.is_empty() {
+        return Ok(ReobservedMembership::Incompatible);
+    }
     let mut target_subjects = BTreeMap::new();
     for (i, subject) in b.compiled.subjects.iter().enumerate() {
         tick(c)?;
@@ -1698,7 +1741,7 @@ pub(super) fn reobserved_membership(
             entity,
         } = subject
         else {
-            return Ok(None);
+            return Ok(ReobservedMembership::Incompatible);
         };
         target_subjects.insert((snapshot.as_str(), subject.as_str(), entity.as_str()), i);
     }
@@ -1713,11 +1756,11 @@ pub(super) fn reobserved_membership(
             entity,
         }) = image.as_ref()
         else {
-            return Ok(None);
+            return Ok(ReobservedMembership::Incompatible);
         };
         let Some(&j) = target_subjects.get(&(snapshot.as_str(), subject.as_str(), entity.as_str()))
         else {
-            return Ok(None);
+            return Ok(ReobservedMembership::Incompatible);
         };
         for k in 0..width {
             tick(c)?;
@@ -1726,10 +1769,56 @@ pub(super) fn reobserved_membership(
             let original = &a.compiled.domains[index][chosen[index]];
             let found = domain_index(&b.compiled.domains[target], original, c)?;
             let Some(found) = found else {
-                return Ok(Some(false));
+                return Ok(ReobservedMembership::Excluded);
             };
             target_pins[target] = Some(found);
         }
     }
-    Ok(Some(b.compiled.relations.exists(&target_pins, c)?))
+    // 現在のapplyが同じ解集合・元座標を検査済みなら、その検査を共有する。
+    let checked = if let Some(Node {
+        payload: Some(Payload::Construction(applied)),
+        ..
+    }) = selection
+        && let D::SharedRepair(data) = &applied.data
+        && data.ty() == NodeType::Construction(T::Selection)
+        && data.source.request.kind == QuestionKind::Apply
+        && data.source.inputs.get(1) == Some(&solutions)
+        && data
+            .source
+            .finite()
+            .is_some_and(|shared| Arc::ptr_eq(shared, b))
+    {
+        data.source.chosen.as_ref().is_some_and(|point| {
+            point.len() == target_pins.len()
+                && point
+                    .iter()
+                    .zip(&target_pins)
+                    .all(|(value, pin)| pin.is_none_or(|required| required == *value))
+        })
+    } else {
+        false
+    };
+    if !checked {
+        let Some(point) = b.compiled.relations.witness(&target_pins, c)? else {
+            return Ok(ReobservedMembership::Excluded);
+        };
+        if b.family.is_some() {
+            // 合法な入力の全点で元 change と Law を再検査する。
+            // 更新値が補完ごとに変わっても、元座標は各点の解に属する。
+            family_application(env, b, &point, c)?;
+        } else {
+            verify_observed_application(env, b, &point)?;
+        }
+    }
+    let mut entries = Vec::new();
+    for (i, subject) in b.compiled.subjects.iter().enumerate() {
+        tick(c)?;
+        let mut values = Vec::new();
+        for column in i * width..(i + 1) * width {
+            let index = target_pins[column].ok_or(internal!("現在の有限割当てが全域でない"))?;
+            values.push(b.compiled.domains[column][index].clone());
+        }
+        entries.push((subject.clone(), values));
+    }
+    Ok(ReobservedMembership::Retained(entries))
 }

@@ -11,7 +11,7 @@ use crate::observed::{
     },
 };
 use archsig_common::types::Type;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawFamily)
@@ -54,7 +54,7 @@ impl LawParameterComparison {
 }
 #[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub struct FiniteLawFamily {
-    parameters: Vec<FiniteValueTransport>,
+    parameters: Arc<Vec<FiniteValueTransport>>,
     rows: Vec<LawParameterComparison>,
 }
 impl FiniteLawFamily {
@@ -62,7 +62,8 @@ impl FiniteLawFamily {
     pub fn parameters(&self) -> &[FiniteValueTransport] {
         &self.parameters
     }
-    /// 完成した比較のみ。停止結果ではこの列を族全体の結論としない。
+    /// 原始状態では完成した比較。修復後の組立て写像では最初の反証行。
+    /// 停止結果ではこの列を族全体の結論としない。
     pub fn rows(&self) -> &[LawParameterComparison] {
         &self.rows
     }
@@ -80,49 +81,66 @@ fn unsupported(r: &ObjectLawTransport) -> ObjectLawTransportFailure {
         instance: Box::new(r.instance().clone()),
     }
 }
+pub(in crate::observed) type Domains =
+    BTreeMap<(String, Vec<usize>), Arc<Vec<FiniteValueTransport>>>;
+
 pub(super) fn prepare(
     inputs: &CheckedInputs,
     r: &mut ObjectLawTransport,
+    cache: Option<&mut Domains>,
     c: &Control,
 ) -> Result<(), ObjectLawTransportFailure> {
-    let source = r.instance().clone();
-    let target = r
-        .target_instance()
-        .ok_or_else(|| inconsistent("Law族の対応instanceがない"))?
-        .clone();
+    let source = &r.source_readings.instances()[r.instance];
+    let target = &r.target_readings.instances()[r
+        .target_instance
+        .ok_or_else(|| inconsistent("Law族の対応instanceがない"))?];
+    let declaration = source.declaration();
+    let positions = source
+        .parameters()
+        .iter()
+        .map(|p| {
+            tick(c)?;
+            declaration
+                .parameters
+                .iter()
+                .position(|(name, _)| name == &p.name)
+                .ok_or_else(|| inconsistent("元Lawのparameter位置がない"))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let key = (declaration.name.clone(), positions);
+    if let Some(parameters) = cache.as_ref().and_then(|cache| cache.get(&key)) {
+        r.family = Some(FiniteLawFamily {
+            parameters: Arc::clone(parameters),
+            rows: vec![],
+        });
+        return Ok(());
+    }
     for p in source.parameters().iter().chain(target.parameters()) {
         tick(c)?;
         if !finite::supported(&p.ty, inputs.law(), c).map_err(validation)? {
             return Err(unsupported(r));
         }
     }
-    r.family = Some(FiniteLawFamily::default());
-    for p in source.parameters() {
+    let family = r.family.insert(FiniteLawFamily::default());
+    for &position in &key.1 {
         tick(c)?;
-        let position = source
-            .declaration()
-            .parameters
-            .iter()
-            .position(|(name, _)| name == &p.name)
-            .ok_or_else(|| inconsistent("元Lawのparameter位置がない"))?;
         let transport = finite_declaration_value_transport_checked(
             inputs,
             &r.declarations,
-            &source.declaration().name,
+            &declaration.name,
             DeclarationValuePosition::Parameter(position),
             c,
         )?;
         let preserved = transport.bijection().is_some();
-        r.family
-            .as_mut()
-            .ok_or_else(|| inconsistent("有限Law族がない"))?
-            .parameters
-            .push(transport);
+        Arc::make_mut(&mut family.parameters).push(transport);
         if !preserved {
             r.outcome =
                 LawTransportOutcome::Refuted(LawConditionFailure::ParameterType { position });
             return Ok(());
         }
+    }
+    if let Some(cache) = cache {
+        cache.insert(key, Arc::clone(&family.parameters));
     }
     Ok(())
 }
@@ -147,6 +165,10 @@ pub(super) fn compare(
     }
 }
 fn coordinates(lengths: &[usize], c: &Control) -> Result<Vec<Vec<usize>>, ConstructionFailure> {
+    if lengths.contains(&0) {
+        tick(c)?;
+        return Ok(Vec::new());
+    }
     let mut rows = vec![vec![]];
     for &length in lengths {
         let mut next = Vec::new();
@@ -702,8 +724,118 @@ pub(super) fn compare_rows(
     {
         return Ok(());
     }
+    r.outcome = compare_points(
+        family,
+        source.instance(),
+        target.instance(),
+        source_keys,
+        true,
+        c,
+        |key, image, _| {
+            let refs = |rows: &Option<Rows>, key: &[usize]| {
+                rows.as_ref()
+                    .and_then(|rows| rows.get(key))
+                    .cloned()
+                    .unwrap_or_default()
+            };
+            let sr = refs(&source_rows, key);
+            let tr = refs(&target_rows, image);
+            let a = row_reading(source, &sr, c)?;
+            let b = row_reading(target, &tr, c)?;
+            Ok((a, b, sr, tr, StateLawReads::default()))
+        },
+    )?
+    .0;
+    Ok(())
+}
+
+/// 修復状態は全代入を順に読む。直積全体を先に確保しない。
+fn state_coordinates(lengths: Vec<usize>) -> impl Iterator<Item = Vec<usize>> {
+    let first = (!lengths.contains(&0)).then(|| vec![0; lengths.len()]);
+    std::iter::successors(first, move |previous| {
+        let mut next = previous.clone();
+        for (index, length) in next.iter_mut().zip(&lengths).rev() {
+            *index += 1;
+            if *index < *length {
+                return Some(next);
+            }
+            *index = 0;
+        }
+        None
+    })
+}
+
+pub(super) fn compare_state_rows(
+    r: &mut ObjectLawTransport,
+    states: [SelectedState<'_, '_>; 2],
+    positions: [(usize, usize); 2],
+    c: &Control,
+) -> Result<(), ConstructionFailure> {
+    let family = r
+        .family
+        .as_mut()
+        .ok_or_else(|| inconsistent("Law族がない"))?;
+    let readings = [&r.source_readings, &r.target_readings];
+    let keys = state_coordinates(family.parameters.iter().map(|p| p.source().len()).collect());
+    let mut missing = BTreeSet::new();
+    let outcome = compare_points(
+        family,
+        &readings[0].instances()[positions[0].1],
+        &readings[1].instances()[positions[1].1],
+        keys,
+        false,
+        c,
+        |_, _, bindings| {
+            let read = |n: usize| {
+                let (object, instance) = positions[n];
+                reading_from_state(
+                    states[n].0,
+                    states[n].1,
+                    readings[n],
+                    object,
+                    instance,
+                    bindings[n],
+                    c,
+                )
+            };
+            let a = read(0)?;
+            let b = read(1)?;
+            missing.extend(a.missing.into_iter().chain(b.missing));
+            r.unsupported_state_expression |= a.unsupported || b.unsupported;
+            Ok((a.value, b.value, vec![], vec![], a.reads.combined(b.reads)))
+        },
+    );
+    r.missing.extend(missing);
+    (r.outcome, r.state_reads) = outcome?;
+    Ok(())
+}
+
+type PointComparison = (
+    LawBooleanReading,
+    LawBooleanReading,
+    Vec<NodeRef>,
+    Vec<NodeRef>,
+    StateLawReads,
+);
+
+fn compare_points(
+    family: &mut FiniteLawFamily,
+    source: &ObjectInstance,
+    target: &ObjectInstance,
+    keys: impl IntoIterator<Item = Vec<usize>>,
+    keep_all_rows: bool,
+    c: &Control,
+    mut evaluate: impl FnMut(
+        &[usize],
+        &[usize],
+        [&[(String, FiniteTransportValue)]; 2],
+    ) -> Result<PointComparison, ConstructionFailure>,
+) -> Result<(LawTransportOutcome, StateLawReads), ConstructionFailure> {
     let mut outcome = LawTransportOutcome::Preserved;
-    for key in source_keys {
+    let mut facts = BTreeSet::new();
+    let mut scope = Scope::default();
+    let mut refutation = None;
+    for key in keys {
         tick(c)?;
         let mut image = Vec::new();
         for (p, &index) in family.parameters.iter().zip(&key) {
@@ -713,49 +845,58 @@ pub(super) fn compare_rows(
                     .ok_or_else(|| inconsistent("Law族の全域順写像がない"))?,
             );
         }
-        let sr = source_rows
-            .as_ref()
-            .and_then(|rs| rs.get(&key))
-            .cloned()
-            .unwrap_or_default();
-        let tr = target_rows
-            .as_ref()
-            .and_then(|rs| rs.get(&image))
-            .cloned()
-            .unwrap_or_default();
-        let a = row_reading(source, &sr, c)?;
-        let b = row_reading(target, &tr, c)?;
-        let point = compare(&a, &b);
+        let source_bindings: Vec<_> = source
+            .parameters()
+            .iter()
+            .zip(&key)
+            .zip(family.parameters.iter())
+            .map(|((p, &index), domain)| (p.name.clone(), domain.source()[index].clone()))
+            .collect();
+        let target_bindings: Vec<_> = target
+            .parameters()
+            .iter()
+            .zip(&image)
+            .zip(family.parameters.iter())
+            .map(|((p, &index), domain)| (p.name.clone(), domain.target()[index].clone()))
+            .collect();
+        let (source, target, source_evaluations, target_evaluations, reads) =
+            evaluate(&key, &image, [&source_bindings, &target_bindings])?;
+        let point = compare(&source, &target);
+        let refuted = matches!(point, LawTransportOutcome::Refuted(_));
         if !matches!(outcome, LawTransportOutcome::Refuted(_)) {
-            match &point {
-                LawTransportOutcome::Refuted(_) => outcome = point.clone(),
-                LawTransportOutcome::Undetermined => outcome = LawTransportOutcome::Undetermined,
-                _ => {}
+            if refuted {
+                refutation = Some(reads);
+            } else {
+                facts.extend(reads.facts);
+                scope.merge(&reads.scope);
+            }
+            if !matches!(point, LawTransportOutcome::Preserved) {
+                outcome = point.clone();
             }
         }
-        let bindings =
-            |e: &ObjectEvaluation, key: &[usize], domains: &[&[FiniteTransportValue]]| {
-                e.instance()
-                    .parameters()
-                    .iter()
-                    .zip(key)
-                    .zip(domains)
-                    .map(|((p, &index), domain)| (p.name.clone(), domain[index].clone()))
-                    .collect()
-            };
-        family.rows.push(LawParameterComparison {
-            source_bindings: bindings(source, &key, &sources),
-            target_bindings: bindings(target, &image, &targets),
-            source_evaluations: sr,
-            target_evaluations: tr,
-            source: a,
-            target: b,
-            outcome: point,
-        });
+        if keep_all_rows || refuted {
+            family.rows.push(LawParameterComparison {
+                source_bindings,
+                target_bindings,
+                source_evaluations,
+                target_evaluations,
+                source,
+                target,
+                outcome: point,
+            });
+        }
+        if refuted && !keep_all_rows {
+            break;
+        }
         tick(c)?;
     }
-    r.outcome = outcome;
-    Ok(())
+    Ok((
+        outcome,
+        refutation.unwrap_or_else(|| StateLawReads {
+            facts: facts.into_iter().collect(),
+            scope,
+        }),
+    ))
 }
 
 /// 元Lawの全有限代入と、その読みを支える元DAG内の全case。
@@ -1042,7 +1183,7 @@ mod tests {
             let (i, mut r) = super::super::tests::example("family");
             let f = r.family.as_mut().unwrap();
             match mode {
-                0 => f.parameters.clear(),
+                0 => Arc::make_mut(&mut f.parameters).clear(),
                 1 => {
                     f.rows.pop();
                 }

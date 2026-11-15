@@ -42,6 +42,7 @@ mod cli_r2_backing;
 mod cli_refuted_summary;
 mod cli_rejections;
 mod cli_relation_comparison;
+mod cli_reobserve;
 mod cli_repair_problem;
 mod cli_request_acceptance;
 mod cli_reuse;

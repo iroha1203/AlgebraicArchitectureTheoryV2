@@ -429,15 +429,17 @@ pub(super) fn affine_obstruction(
     }))
 }
 
-fn project_all(
-    original: &[Halfspace],
+fn project_prefix(
+    original: impl IntoIterator<Item = Halfspace>,
     n: usize,
+    prefix: usize,
     keep_history: bool,
+    track_combinations: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
     let one = integer(1);
     let mut tight = BTreeMap::new();
-    for (i, h) in original.iter().enumerate() {
+    for (i, h) in original.into_iter().enumerate() {
         tick(c)?;
         if h.coefficients.len() != n {
             return Err(internal!("半空間の座標数が違う").into());
@@ -451,8 +453,12 @@ fn project_all(
         keep_tightest(
             &mut tight,
             EliminationRow {
-                inequality: h.clone(),
-                combination: BTreeMap::from([(i, one.clone())]),
+                inequality: h,
+                combination: if track_combinations {
+                    BTreeMap::from([(i, one.clone())])
+                } else {
+                    BTreeMap::new()
+                },
             },
             c,
         )?;
@@ -463,11 +469,53 @@ fn project_all(
     }
     project(
         tight.into_values().collect(),
-        (0..n).rev(),
+        (0..prefix).rev(),
         &zero_row,
         keep_history,
         c,
     )
+}
+
+fn project_all(
+    original: &[Halfspace],
+    n: usize,
+    keep_history: bool,
+    c: &Control,
+) -> Result<Projected, ValidationFailure> {
+    project_prefix(original.iter().cloned(), n, n, keep_history, true, c)
+}
+
+/// 残りの元座標へ正確に射影する。空集合は矛盾半空間一行で表す。
+pub(super) fn project_trailing(
+    original: Vec<Halfspace>,
+    prefix: usize,
+    trailing: usize,
+    c: &Control,
+) -> Result<Vec<Halfspace>, ValidationFailure> {
+    let zero = integer(0);
+    match project_prefix(original, prefix + trailing, prefix, false, false, c)? {
+        Projected::Obstruction(_) => Ok(vec![Halfspace {
+            coefficients: vec![zero; trailing],
+            rhs: integer(-1),
+        }]),
+        Projected::Rows(projection) => {
+            let mut rows = Vec::new();
+            for row in projection.rows {
+                tick(c)?;
+                let coefficients = &row.inequality.coefficients;
+                if coefficients[..prefix].iter().any(|value| value != &zero) {
+                    return Err(internal!("多面体の射影に消去座標が残っている").into());
+                }
+                if coefficients[prefix..].iter().any(|value| value != &zero) {
+                    rows.push(Halfspace {
+                        coefficients: coefficients[prefix..].to_vec(),
+                        rhs: row.inequality.rhs,
+                    });
+                }
+            }
+            Ok(rows)
+        }
+    }
 }
 
 pub(super) fn contradiction(

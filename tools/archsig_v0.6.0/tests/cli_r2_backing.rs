@@ -804,7 +804,7 @@ fn rational_backing_stops_before_unchecked_solutions_and_saves_the_completed_pre
 }
 
 #[test]
-fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate() {
+fn rational_backing_keeps_empty_solution_quotient_and_candidate_domain_separate() {
     let ask = POLY_QUERIES.lines().nth(1).unwrap();
     let dir = workdir("r2-polyhedron-quotient");
     polyhedron_inputs(&dir, "overlapInsufficient");
@@ -813,29 +813,67 @@ fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate
         "q=quotient(Backing.stockLoad,on=$overlapInsufficient.solutions,s=@fixture/overlapInsufficient.X)",
         "domain=quotient(Backing.stockLoad,on=$overlapInsufficient.domain,s=@fixture/overlapInsufficient.X)",
         "independent=evaluate(Backing.stockLoad,s=@fixture/overlapInsufficient.X)",
+        "qAt=quotient(Backing.stockLoad,on=$overlapInsufficient.solutions,s=@fixture/overlapInsufficient.X,fiber.at=$independent.value)",
     ];
     let first = polyhedron_asks(&dir, &asks, "first", None);
-    assert_eq!(first.code, 2, "{}{}", first.stdout, first.stderr);
+    assert_eq!(first.code, 1, "{}{}", first.stdout, first.stderr);
     let result = result_json(&dir, &first);
-    let [solve, quotient, domain, independent] = arr(get(&result, "answers")) else {
+    let [solve, quotient, domain, independent, quotient_at] = arr(get(&result, "answers")) else {
         panic!("all requests remain");
     };
     assert_eq!(s(get(solve, "status")), "refuted");
     assert_eq!(s(get(certificate(&result), "outcome")), "empty");
-    assert_eq!(s(get(quotient, "status")), "undetermined");
-    assert!(!has(get(quotient, "outputs"), "quotient"));
-    let [reason] = arr(get(quotient, "reasons")) else {
-        panic!("typed quotient reason")
-    };
-    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    assert_eq!(s(get(quotient, "status")), "established");
+    let q = get(
+        referenced(&result, get(get(quotient, "outputs"), "quotient")),
+        "value",
+    );
     assert_eq!(
-        s(get(get(reason, "details"), "method")),
-        "rational_polyhedron_quotient"
+        s(get(get(q, "representation"), "kind")),
+        "rational_polyhedron"
+    );
+    assert_eq!(
+        get(q, "domain").value,
+        get(get(solve, "outputs"), "solutions").value
+    );
+    let classes = get(referenced(&result, get(q, "classes")), "value");
+    let [obstruction] = arr(get(classes, "halfspaces")) else {
+        panic!("one contradiction")
+    };
+    let [coefficient] = arr(get(obstruction, "coefficients")) else {
+        panic!("Q coordinate")
+    };
+    assert_eq!(
+        arr(coefficient).iter().map(s).collect::<Vec<_>>(),
+        ["0", "1"]
+    );
+    assert_eq!(
+        arr(get(obstruction, "upper"))
+            .iter()
+            .map(s)
+            .collect::<Vec<_>>(),
+        ["-1", "1"]
     );
     assert_eq!(s(get(domain, "status")), "established");
     assert_eq!(s(get(independent, "status")), "established");
+    assert_eq!(s(get(quotient_at, "status")), "established");
+    let q_at = get(
+        referenced(&result, get(get(quotient_at, "outputs"), "quotient")),
+        "value",
+    );
+    let fiber = get(referenced(&result, get(q_at, "fiber")), "value");
+    assert_eq!(s(get(fiber, "outcome")), "empty");
+    let mut weights = coordinates(&result, get(certificate(&result), "contradiction"));
+    weights.extend([("0", "1"); 2]);
+    let fiber_weights = arr(get(fiber, "contradiction"));
+    assert_eq!(fiber_weights.len(), arr(get(fiber, "halfspaces")).len());
+    assert_eq!(fiber_weights.len(), weights.len());
+    for (weight, (numerator, denominator)) in fiber_weights.iter().zip(weights) {
+        let [n, d] = arr(weight) else { panic!("Q") };
+        assert_eq!((s(n), s(d)), (numerator, denominator));
+    }
     let replay = polyhedron_asks(&dir, &asks, "same", Some("first"));
-    assert_eq!(replay.code, 2, "{}{}", replay.stdout, replay.stderr);
+    assert_eq!(replay.code, 1, "{}{}", replay.stdout, replay.stderr);
     let replay = result_json(&dir, &replay);
     assert!(warnings(&replay).is_empty());
     for key in ["answers", "nodes", "issues"] {
@@ -1466,5 +1504,59 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         } else {
             assert!(requirements.is_empty(), "{out}");
         }
+    }
+}
+
+#[test]
+fn rational_quotient_keeps_observations_used_only_by_the_view() {
+    use archsig_common::{control::Control, json::parse};
+    use archsig_computation::observed::evaluate_observed_bytes;
+    use archsig_input::input::InputSources;
+    let law = POLY_LAW.replace(
+        " view claimLoad",
+        " view outside(s:Pool.Stock):Q=s.available;\n view claimLoad",
+    );
+    let asks = [
+        POLY_QUERIES.lines().next().unwrap(),
+        "q=quotient(Backing.outside,on=$overlapFeasible.solutions,s=@fixture/overlapInsufficient.X)",
+    ];
+    let original = std::str::from_utf8(POLY_MAP).unwrap();
+    let changed = original.replace(
+        r#""id":"overlapInsufficient.X.available","subject":"overlapInsufficient.X","field":"Pool.Stock.available","value":["5","1"]"#,
+        r#""id":"overlapInsufficient.X.available","subject":"overlapInsufficient.X","field":"Pool.Stock.available","value":["99","1"]"#,
+    );
+    assert_ne!(original, changed);
+    for (map, expected) in [(original, "5"), (changed.as_str(), "99")] {
+        let inputs = InputSources::from_bytes(
+            vec![include_bytes!("fixtures/r2-backing-polyhedron/definitions.json").to_vec()],
+            law.as_bytes().to_vec(),
+            map.as_bytes().to_vec(),
+        );
+        let evaluation = evaluate_observed_bytes(inputs, &asks, &Control::unlimited()).unwrap();
+        let wire = parse(evaluation.wire().canonical().as_bytes()).unwrap();
+        let [solve, q] = arr(get(&wire, "answers")) else {
+            panic!("solve and quotient")
+        };
+        let quotient = referenced(&wire, get(get(q, "outputs"), "quotient"));
+        let classes = referenced(&wire, get(get(quotient, "value"), "classes"));
+        let supporting = |node: &JNode| {
+            arr(get(node, "support")).iter().any(|fact| {
+                has(fact, "atom") && s(get(fact, "atom")) == "overlapInsufficient.X.available"
+            })
+        };
+        assert!(!supporting(referenced(
+            &wire,
+            get(get(solve, "outputs"), "solutions")
+        )));
+        assert!(supporting(quotient));
+        assert!(supporting(classes));
+        let halfspaces = arr(get(get(classes, "value"), "halfspaces"));
+        assert!(halfspaces.iter().any(|row| {
+            let [a] = arr(get(row, "coefficients")) else {
+                return false;
+            };
+            arr(a).iter().map(s).eq(["1", "1"])
+                && arr(get(row, "upper")).iter().map(s).eq([expected, "1"])
+        }));
     }
 }

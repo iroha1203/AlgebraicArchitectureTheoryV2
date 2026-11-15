@@ -274,6 +274,121 @@ fn put_map(
     maps.insert(reference.0 - b.base, map.clone());
     Ok((candidate, reference))
 }
+fn include_law_reads(part: &mut Part, reads: &super::object_law_transport::StateLawReads) {
+    if !reads.facts.is_empty() {
+        part.support = Support::sum(reads.facts.clone(), [part.support.clone()]);
+    }
+    part.scope.merge(&reads.scope);
+}
+
+fn parameter_domain(
+    parameter: &super::value_transport::FiniteValueTransport,
+    c: &Control,
+) -> Result<archsig_common::canonical::JsonObject, ValidationFailure> {
+    use super::value_transport::{DeclarationValuePosition, FiniteTransportValue};
+    let DeclarationValuePosition::Parameter(position) = parameter.position() else {
+        return Err(internal!("Law族のparameter位置でない").into());
+    };
+    let values = |values: &[FiniteTransportValue]| {
+        values
+            .iter()
+            .map(|value| {
+                tick(c)?;
+                Ok(value.wire())
+            })
+            .collect::<Result<Vec<_>, ValidationFailure>>()
+    };
+    Ok(archsig_common::canonical::JsonObject::from([
+        ("position".into(), Json::Nat(position as u64)),
+        ("source".into(), Json::Arr(values(parameter.source())?)),
+        ("target".into(), Json::Arr(values(parameter.target())?)),
+        ("images".into(), Json::Arr(values(parameter.images())?)),
+    ]))
+}
+
+fn parameter_refutation(
+    b: &mut Builder<'_>,
+    parameter: &super::value_transport::FiniteValueTransport,
+    arguments: &[NodeRef],
+    c: &Control,
+) -> Result<(Json, NodeRef, NodeRef, &'static str), ValidationFailure> {
+    use super::value_transport::FiniteValueConditionFailure;
+    let mut details = parameter_domain(parameter, c)?;
+    details.insert("source_type".into(), parameter.source_type().wire());
+    details.insert("target_type".into(), parameter.target_type().wire());
+    let failure = parameter
+        .failures()
+        .first()
+        .ok_or(internal!("Law族のparameterに移送失敗がない"))?;
+    let mut capture = |value: &super::value_transport::FiniteTransportValue| {
+        b.captured_scalar(value.scalar(), arguments, c)
+    };
+    let (kind, left, right, detail) = match failure {
+        FiniteValueConditionFailure::OutsideTarget { source, .. } => {
+            details.insert(
+                "source_indices".into(),
+                Json::Arr(vec![Json::Nat(*source as u64)]),
+            );
+            let left = capture(&parameter.source()[*source])?;
+            let target = Scalar::List {
+                element: parameter.target_type().erase(),
+                items: parameter
+                    .target()
+                    .iter()
+                    .map(|value| value.scalar().clone())
+                    .collect(),
+            };
+            (
+                "outside_target",
+                left,
+                b.captured_scalar(&target, arguments, c)?,
+                "the transported parameter candidate is outside the target domain",
+            )
+        }
+        FiniteValueConditionFailure::Collision {
+            target, sources, ..
+        } => {
+            let [first, second, ..] = sources.as_slice() else {
+                return Err(internal!("Law族のparameter衝突に二つの元値がない").into());
+            };
+            details.insert(
+                "source_indices".into(),
+                Json::Arr(vec![Json::Nat(*first as u64), Json::Nat(*second as u64)]),
+            );
+            if let Some(target) = target {
+                details.insert("target_index".into(), Json::Nat(*target as u64));
+            }
+            (
+                "collision",
+                capture(&parameter.source()[*first])?,
+                capture(&parameter.source()[*second])?,
+                "two distinct source parameter values have the same image",
+            )
+        }
+        FiniteValueConditionFailure::Unreached { target } => {
+            details.insert("target_index".into(), Json::Nat(*target as u64));
+            let left = capture(&parameter.target()[*target])?;
+            let images = Scalar::List {
+                element: parameter.target_type().erase(),
+                items: parameter
+                    .images()
+                    .iter()
+                    .map(|value| value.scalar().clone())
+                    .collect(),
+            };
+            let right = b.captured_scalar(&images, arguments, c)?;
+            (
+                "unreached",
+                left,
+                right,
+                "a target parameter value has no source preimage",
+            )
+        }
+    };
+    details.insert("kind".into(), Json::str(kind));
+    Ok((Json::Obj(details), left, right, detail))
+}
+
 struct LawNodes {
     source: [NodeRef; 3],
     target: Option<[NodeRef; 3]>,
@@ -346,6 +461,7 @@ fn compute(
     });
     let source = model(source_plan)?;
     let target = model(target_plan)?;
+    let repaired = !source.repaired_values.is_empty() || !target.repaired_values.is_empty();
     let mut values = Vec::new();
     for a in &r.arguments {
         if let Some(name) = a.name.strip_prefix("bind.") {
@@ -797,13 +913,25 @@ fn compute(
                     vec![local_condition],
                     Decision::Established,
                 )?;
-                laws.push(Json::obj([
-                    ("source_object", so.wire()),
-                    ("target_object", to.wire()),
-                    ("source_law", sl.wire()),
-                    ("target_law", tl.wire()),
-                    ("proposition", p.wire()),
-                ]));
+                include_law_reads(&mut b.parts[p.0 - base], law.state_reads());
+                let mut row = archsig_common::canonical::JsonObject::from([
+                    ("source_object".into(), so.wire()),
+                    ("target_object".into(), to.wire()),
+                    ("source_law".into(), sl.wire()),
+                    ("target_law".into(), tl.wire()),
+                    ("proposition".into(), p.wire()),
+                ]);
+                if (law.source().is_none() && law.target().is_none())
+                    && let Some(family) = law.family()
+                {
+                    let mut domains = Vec::new();
+                    for parameter in family.parameters() {
+                        tick(c)?;
+                        domains.push(Json::Obj(parameter_domain(parameter, c)?));
+                    }
+                    row.insert("parameter_domains".into(), Json::Arr(domains));
+                }
+                laws.push(Json::Obj(row));
                 args.extend([so, to, sl, tl, p]);
             }
             for row in &local_fields {
@@ -869,6 +997,45 @@ fn compute(
         }
     }
     if let Some(v) = &verified {
+        for law in &v.laws {
+            let nodes = law_nodes(law, source_plan, target_plan)?;
+            let location = Some(archsig_common::issue::Location::Law {
+                span: law.instance().declaration().span,
+            });
+            let dependencies = vec![local_condition, nodes.source[1]];
+            if !law.state_missing().is_empty()
+                && matches!(
+                    law.outcome(),
+                    super::object_law_transport::LawTransportOutcome::Undetermined
+                )
+            {
+                reasons.push(Reason {
+                    kind: ReasonKind::Missing,
+                    request: r.id.clone(),
+                    dependencies: dependencies.clone(),
+                    missing: law.state_missing().to_vec(),
+                    location: location.clone(),
+                });
+            }
+            if law.unsupported_state_expression() {
+                reasons.push(Reason {
+                    kind: ReasonKind::UnsupportedAlgorithm {
+                        question: r.kind,
+                        operand_types: law
+                            .instance()
+                            .parameters()
+                            .iter()
+                            .map(|p| p.ty.clone())
+                            .collect(),
+                        method: "repaired_model_map_law_expression".into(),
+                    },
+                    request: r.id.clone(),
+                    dependencies,
+                    missing: vec![],
+                    location,
+                });
+            }
+        }
         for &index in &v.unsupported_instances {
             let instance = &source_plan.architecture.witness.readings().instances()[index];
             reasons.push(Reason {
@@ -927,6 +1094,9 @@ fn compute(
             .map(|failure| archsig_common::issue::Location::Law { span: failure.span });
         let mut facts = Vec::new();
         let mut action_difference = None;
+        let mut law_transport = None;
+        let mut parameter_transport = None;
+        let mut law_reads = None;
         let mut overlap = None;
         let difference = |kind: &str, subject: &Fact, fact: &Fact, left: &Fact, right: &Fact| {
             Json::obj([
@@ -1092,6 +1262,8 @@ fn compute(
                     if let Some(target) = nodes.target {
                         failed_law.extend([target[1], target[2]]);
                     }
+                }
+                if fixed_design || repaired {
                     refutation_location = Some(archsig_common::issue::Location::Law {
                         span: law.instance().declaration().span,
                     });
@@ -1108,13 +1280,38 @@ fn compute(
                         _ => "the selected configuration does not preserve the corresponding Law",
                     });
                 }
-                counter_args.extend(nodes.source);
-                facts.extend(g.get(nodes.source[2])?.support.materialize(c)?);
-                left = nodes.source[2];
-                if let Some(target) = nodes.target {
-                    right = target[2];
-                    counter_args.extend(target);
-                    facts.extend(g.get(target[2])?.support.materialize(c)?);
+                if repaired {
+                    let endpoint = |assembly: NodeRef, [object, occurrence, _]: [NodeRef; 3]| {
+                        Json::obj([
+                            ("assembly", assembly.wire()),
+                            ("object", object.wire()),
+                            ("law", occurrence.wire()),
+                        ])
+                    };
+                    let mut provenance = archsig_common::canonical::JsonObject::from([(
+                        "source".into(),
+                        endpoint(refs[0], nodes.source),
+                    )]);
+                    if let Some(target) = nodes.target {
+                        provenance.insert("target".into(), endpoint(refs[1], target));
+                    }
+                    law_transport = Some(Json::Obj(provenance));
+                    let reads = law.state_reads();
+                    facts.extend(reads.facts.iter().cloned());
+                    law_reads = Some(reads);
+                    counter_args.extend([nodes.source[0], nodes.source[1], refs[0], refs[1]]);
+                    if let Some(target) = nodes.target {
+                        counter_args.extend([target[0], target[1]]);
+                    }
+                } else {
+                    counter_args.extend(nodes.source);
+                    facts.extend(g.get(nodes.source[2])?.support.materialize(c)?);
+                    left = nodes.source[2];
+                    if let Some(target) = nodes.target {
+                        right = target[2];
+                        counter_args.extend(target);
+                        facts.extend(g.get(target[2])?.support.materialize(c)?);
+                    }
                 }
                 let family = law.family().and_then(|family| {
                     family
@@ -1122,6 +1319,26 @@ fn compute(
                         .iter()
                         .find(|row| matches!(row.outcome(), O::Refuted(_)))
                 });
+                if repaired && let O::Refuted(F::ParameterType { position }) = law.outcome() {
+                    let parameter = law
+                        .family()
+                        .and_then(|family| {
+                            family.parameters().iter().find(|parameter| {
+                                parameter.position()
+                                    == super::value_transport::DeclarationValuePosition::Parameter(
+                                        *position,
+                                    )
+                            })
+                        })
+                        .ok_or(internal!("Law族のparameter反証に型域がない"))?;
+                    let (witness, source, target, detail) =
+                        parameter_refutation(&mut b, parameter, &counter_args, c)?;
+                    parameter_transport = Some(witness);
+                    left = source;
+                    right = target;
+                    endpoint_detail = Some(detail);
+                    facts.extend(parameter.support().iter().cloned());
+                }
                 let readings = if let Some(row) = family {
                     Some((row.source(), row.target(), row.outcome()))
                 } else {
@@ -1248,6 +1465,12 @@ fn compute(
         if let Some(value) = overlap {
             details.insert("overlap".into(), value);
         }
+        if let Some(value) = law_transport {
+            details.insert("law_transport".into(), value);
+        }
+        if let Some(value) = parameter_transport {
+            details.insert("parameter_transport".into(), value);
+        }
         let counterexample = b.push(
             NodeType::Evidence,
             "evidence",
@@ -1258,6 +1481,9 @@ fn compute(
             counter_args,
             None,
         )?;
+        if let Some(reads) = law_reads {
+            include_law_reads(&mut b.parts[counterexample.0 - base], reads);
+        }
         evidence.push(counterexample);
         let condition = b.proposition(
             "constructible",

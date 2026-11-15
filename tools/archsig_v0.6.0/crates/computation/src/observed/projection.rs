@@ -283,7 +283,7 @@ fn project_inner(
         },
         (ProjectionType::Quotient(domain), Field(f)) => match f.as_str() {
             "domain" => exact((**domain).clone()),
-            "classes" => exact(ProjectionType::Domain),
+            "classes" | "fiber" => exact(ProjectionType::Domain),
             "projection" | "descent" => exact(ProjectionType::StateMap),
             _ => Err("Quotient projection is not public".into()),
         },

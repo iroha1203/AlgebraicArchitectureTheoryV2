@@ -39,6 +39,14 @@ pub fn lex(bytes: &[u8]) -> Result<Vec<Token>, Box<Issue>> {
     lex_up_to(bytes, usize::MAX)
 }
 
+/// 検査済み宣言片の照合など、呼出し側の中断条件で字句を読む。
+pub fn lex_controlled(
+    bytes: &[u8],
+    control: &Control,
+) -> Result<Vec<Token>, archsig_common::control::CheckFailure<Box<Issue>>> {
+    lex_inner(bytes, usize::MAX, control, Checkpoint::LawIteration)
+}
+
 /// 先頭から `max` 個までの字句。header の版を、残りの字句より先に読むために使う。
 pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
     lex_inner(bytes, max, &Control::unlimited(), Checkpoint::LawIteration)

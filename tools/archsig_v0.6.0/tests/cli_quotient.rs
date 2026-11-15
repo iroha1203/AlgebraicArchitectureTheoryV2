@@ -164,6 +164,34 @@ fn finite_quotient_distinguishes_all_candidates_from_solutions() {
     exact_fibers(&original, 1, vec![vec![(true, false)], vec![(true, true)]]);
 }
 #[test]
+fn unsupported_fiber_reports_actual_candidate_and_view_types() {
+    let dir = input("quotient-finite-fiber");
+    let run = execute(
+        &dir,
+        "out",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "v=evaluate(Pair.last,s=@v/s)",
+            "q=quotient(Pair.last,on=$s.solutions,s=@v/s,fiber.at=$v.value)",
+        ],
+        None,
+    );
+    assert_eq!(run.code, 2, "{}{:?}", run.stdout, run.stderr());
+    let result = result_json(&dir, &run);
+    let q = arr(get(&result, "answers")).last().unwrap();
+    assert_eq!(s(get(q, "status")), "undetermined");
+    let [reason] = arr(get(q, "reasons")) else {
+        panic!("one unsupported algorithm reason");
+    };
+    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    let types = arr(get(get(reason, "details"), "operand_types"))
+        .iter()
+        .map(s)
+        .collect::<Vec<_>>();
+    assert_eq!(types, ["Bool"]);
+}
+
+#[test]
 fn empty_solution_quotient_keeps_its_type_and_has_no_fibers() {
     let dir = input("quotient-empty");
     let r = execute(
@@ -1307,3 +1335,226 @@ mod data_tests;
 
 #[path = "common/atomic_bool_quotient.rs"]
 mod atomic_bool;
+
+#[test]
+fn rational_polyhedron_images_and_fibers_keep_the_original_coordinates() {
+    let dir = input("quotient-polyhedron");
+    let path = dir.join("d.json");
+    let definitions = std::fs::read_to_string(&path).unwrap();
+    let rational = definitions.replace("\"Bool\"", "\"Q\"").replace(
+        r#""declarations":["#,
+        r#""declarations":[{"kind":"data","name":"Pair.Measure","meaning":"Published measurements.","constructors":[{"name":"Exact","arguments":["Q"],"meaning":"An exact measurement."},{"name":"Flag","arguments":["Bool"],"meaning":"A flag."}]},"#,
+    );
+    std::fs::write(path, &rational).unwrap();
+    let digest = |text: &str| {
+        definition::check_definitions(&[("d", text.as_bytes())])
+            .unwrap()
+            .vocabularies()["Pair"]
+            .digest
+            .clone()
+    };
+    let path = dir.join("a.json");
+    let archmap = std::fs::read_to_string(&path)
+        .unwrap()
+        .replace(&digest(&definitions), &digest(&rational))
+        .replace("false", r#"["0","1"]"#);
+    std::fs::write(path, archmap).unwrap();
+    let path = dir.join("l.law");
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Pair {{
+ use vocabulary Pair version "1" digest "{}";
+ change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};
+ law optional square(s:State):s.x>=rat(0,1) and s.x<=rat(1,1) and s.y>=rat(0,1) and s.y<=rat(1,1);
+ law optional point(s:State):s.x>=rat(1,1) and s.x<=rat(1,1) and s.y=rat(2,1);
+ law optional segment(s:State):s.x>=rat(0,1) and s.x<=rat(1,1) and s.x=s.y;
+ law optional unbounded(s:State):s.x>=rat(0,1) and s.y=rat(1,1);
+ view publicX(s:State):Q=s.x;
+ view usesAt(at:State):Q=at.x;
+ view absent():Option<Q> = none<Q>;
+ view boxed():Measure=Pair.Measure.Exact(rat(1,1));
+ view other():Measure=Pair.Measure.Flag(false);
+ view diagonal(s:State):(Q,Q)=(s.x,s.x+s.x);
+ view nonlinear(s:State):Q=s.x*s.y;
+ view boundary():Q=rat(1,1);
+ view outside():Q=rat(3,2);
+ view middle():Q=rat(1,2);
+ view diagonalAt():(Q,Q)=(rat(1,2),rat(1,1));
+}}"#,
+        digest(&rational)
+    );
+    std::fs::write(path, law).unwrap();
+    let asks = [
+        "boundary=evaluate(Pair.boundary)",
+        "outside=evaluate(Pair.outside)",
+        "middle=evaluate(Pair.middle)",
+        "diagAt=evaluate(Pair.diagonalAt)",
+        "square=solve(Pair.square,on=@v/s,using=Pair.choose,s=@v/s)",
+        "p=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$boundary.value)",
+        "e=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$outside.value)",
+        "point=solve(Pair.point,on=@v/s,using=Pair.choose,s=@v/s)",
+        "pin=quotient(Pair.publicX,on=$point.solutions,s=@v/s,fiber.at=$boundary.value)",
+        "segment=solve(Pair.segment,on=@v/s,using=Pair.choose,s=@v/s)",
+        "rank=quotient(Pair.diagonal,on=$segment.solutions,s=@v/s,fiber.at=$diagAt.value)",
+        "unbounded=solve(Pair.unbounded,on=@v/s,using=Pair.choose,s=@v/s)",
+        "ray=quotient(Pair.publicX,on=$unbounded.solutions,s=@v/s,fiber.at=$outside.value)",
+        "unsupported=quotient(Pair.nonlinear,on=$square.solutions,s=@v/s)",
+        "projected=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$diagAt.value[1])",
+        "legacy=quotient(Pair.usesAt,on=$square.domain,at=@v/s)",
+        "missingAt=evaluate(Pair.absent)",
+        "conditional=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$missingAt.value.some)",
+        "boxed=evaluate(Pair.boxed)",
+        "typed=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$boxed.value[0])",
+        "other=evaluate(Pair.other)",
+        "wrongDynamic=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at=$other.value[0])",
+    ];
+    for (id, at) in [
+        ("wrong-type", "$diagAt.value"),
+        ("unknown-projection", "$boundary.unknown"),
+        ("unknown-request", "$absent.value"),
+    ] {
+        let bad = format!("p=quotient(Pair.publicX,on=$square.solutions,s=@v/s,fiber.at={at})");
+        let bad_asks = asks[..5]
+            .iter()
+            .copied()
+            .chain([bad.as_str()])
+            .collect::<Vec<_>>();
+        let invalid = execute(&dir, id, &bad_asks, None);
+        assert_eq!(invalid.code, 64, "{}", invalid.stdout);
+        assert!(!dir.join(id).exists());
+    }
+    let first = execute(&dir, "out", &asks, None);
+    assert_eq!(first.code, 2, "{}", first.stdout);
+    let result = result_json(&dir, &first);
+    let poly = |i, field| get(node(&result, get(quotient(&result, i), field)), "value");
+    let fraction = |value: &JNode| {
+        let parts = arr(value);
+        (
+            s(&parts[0]).parse::<i64>().unwrap(),
+            s(&parts[1]).parse::<i64>().unwrap(),
+        )
+    };
+    let contains = |set: &JNode, coords: &[i64], denominator: i64| {
+        arr(get(set, "halfspaces")).iter().all(|row| {
+            let (upper, divisor) = fraction(get(row, "upper"));
+            let (num, den) = arr(get(row, "coefficients")).iter().zip(coords).fold(
+                (0, denominator),
+                |(num, den), (a, x)| {
+                    let (n, d) = fraction(a);
+                    (num * d + n * x * (den / denominator), den * d)
+                },
+            );
+            num * divisor <= upper * den
+        })
+    };
+    let point = |fiber: &JNode, field| {
+        arr(get(fiber, field))
+            .iter()
+            .map(fraction)
+            .collect::<Vec<_>>()
+    };
+    let square_image = poly(5, "classes");
+    for (x, expected) in [(-1, false), (0, true), (1, true), (2, true), (3, false)] {
+        assert_eq!(contains(square_image, &[x], 2), expected, "x={x}/2");
+    }
+    let square_fiber = poly(5, "fiber");
+    assert_eq!(s(get(square_fiber, "outcome")), "multiple");
+    let a = point(square_fiber, "point");
+    let b = point(square_fiber, "second");
+    assert_ne!(a, b);
+    for witness in [a, b] {
+        assert_eq!(witness[0], (1, 1));
+        assert!((0..=witness[1].1).contains(&witness[1].0));
+    }
+    assert!(!contains(square_fiber, &[0, 0], 1));
+    assert_eq!(s(get(poly(6, "fiber"), "outcome")), "empty");
+    assert_eq!(point(poly(8, "fiber"), "point"), [(1, 1), (2, 1)]);
+    assert!(contains(poly(8, "classes"), &[1], 1));
+    assert!(!contains(poly(8, "classes"), &[0], 1));
+    let diagonal_image = poly(10, "classes");
+    assert!(contains(diagonal_image, &[1, 2], 2));
+    assert!(!contains(diagonal_image, &[1, 1], 2));
+    assert!(!contains(diagonal_image, &[3, 6], 2));
+    assert_eq!(point(poly(10, "fiber"), "point"), [(1, 2), (1, 2)]);
+    assert!(contains(poly(12, "classes"), &[2000], 1));
+    assert!(!contains(poly(12, "classes"), &[-1], 2));
+    assert_eq!(point(poly(12, "fiber"), "point"), [(3, 2), (1, 1)]);
+    assert_eq!(s(get(poly(14, "fiber"), "outcome")), "multiple");
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(
+        s(get(&answers[15], "status")),
+        "established",
+        "legacy bare at parameter"
+    );
+    assert_eq!(s(get(&answers[17], "status")), "undetermined");
+    assert!(
+        arr(get(&answers[17], "reasons"))
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "condition_failed")
+    );
+    assert_eq!(s(get(&answers[19], "status")), "established");
+    let typed = poly(19, "fiber");
+    assert_eq!(
+        get(typed, "halfspaces").value,
+        get(square_fiber, "halfspaces").value
+    );
+    assert_eq!(
+        get(node(&result, get(typed, "at")), "value").value,
+        get(node(&result, get(square_fiber, "at")), "value").value
+    );
+    assert_eq!(s(get(&answers[21], "status")), "undetermined");
+    assert!(!has(get(&answers[21], "outputs"), "quotient"));
+    assert!(
+        arr(get(&answers[21], "reasons"))
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "condition_failed")
+    );
+    let unsupported = &arr(get(&result, "answers"))[13];
+    assert_eq!(s(get(unsupported, "status")), "undetermined");
+    let unsupported_reason = arr(get(unsupported, "reasons"))
+        .iter()
+        .find(|reason| s(get(reason, "code")) == "unsupported_algorithm")
+        .unwrap();
+    let span = arr(get(get(unsupported_reason, "location"), "span"));
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    assert_eq!(
+        &law[num(&span[0]) as usize..num(&span[1]) as usize],
+        "s.x*s.y"
+    );
+    {
+        use archsig_common::control::{Checkpoint, Control, Signal};
+        use archsig_computation::observed::evaluate_observed_bytes;
+        use archsig_input::input::InputSources;
+        let mut quotient = false;
+        let cancel = Control::new(move |checkpoint| {
+            quotient |= checkpoint == Checkpoint::Quotient;
+            (quotient && checkpoint == Checkpoint::RationalPolyhedronElimination)
+                .then_some(Signal::Term)
+        });
+        let inputs = InputSources::from_bytes(
+            vec![std::fs::read(dir.join("d.json")).unwrap()],
+            std::fs::read(dir.join("l.law")).unwrap(),
+            std::fs::read(dir.join("a.json")).unwrap(),
+        );
+        let stopped = evaluate_observed_bytes(inputs, &asks, &cancel).unwrap();
+        let json =
+            archsig_common::json::parse(stopped.result_wire().canonical().as_bytes()).unwrap();
+        assert_eq!(s(get(&json, "status")), "interrupted");
+        let answers = arr(get(&json, "answers"));
+        assert_eq!(s(get(&answers[4], "status")), "established");
+        assert!(has(get(&answers[4], "outputs"), "solutions"));
+        assert_eq!(s(get(&answers[5], "status")), "undetermined");
+        assert!(!has(get(&answers[5], "outputs"), "quotient"));
+        assert_eq!(
+            s(get(&arr(get(&answers[5], "reasons"))[0], "code")),
+            "cancelled"
+        );
+    }
+    let replay = execute(&dir, "rechecked", &asks, Some("out"));
+    assert_eq!(replay.code, 2);
+    let replay = result_json(&dir, &replay);
+    assert!(warnings(&replay).is_empty());
+    for key in ["answers", "nodes", "issues"] {
+        assert_eq!(get(&result, key).value, get(&replay, key).value);
+    }
+}

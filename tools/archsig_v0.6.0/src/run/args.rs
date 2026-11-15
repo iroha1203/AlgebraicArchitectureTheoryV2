@@ -1,6 +1,6 @@
 //! check/run/version の CLI 引数解析(実行仕様 §1)。
 
-use super::{CheckArgs, Command, RunArgs, UsageError};
+use super::{CheckArgs, Command, ReobserveArgs, RunArgs, UsageError};
 use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::PathBuf;
@@ -74,6 +74,9 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         [Some("run"), Some("--help" | "-h")] | [Some("help"), Some("run")] => {
             return Ok(Command::Help(super::RUN_HELP));
         }
+        [Some("reobserve"), Some("--help" | "-h")] | [Some("help"), Some("reobserve")] => {
+            return Ok(Command::Help(super::REOBSERVE_HELP));
+        }
         [Some("check"), Some("--help" | "-h")] | [Some("help"), Some("check")] => {
             return Ok(Command::Help(super::CHECK_HELP));
         }
@@ -94,16 +97,17 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         }
         Some("check") => false,
         Some("run") => true,
+        Some("reobserve") => return reobserve_args(&args[1..]),
         Some(other) => {
             return Err(usage(
                 other,
-                "expected command check, run, evidence, law-fibers, or version",
+                "expected command check, run, reobserve, evidence, law-fibers, or version",
             ));
         }
         None => {
             return Err(usage(
                 "",
-                "specify command check, run, evidence, law-fibers, or version",
+                "specify command check, run, reobserve, evidence, law-fibers, or version",
             ));
         }
     };
@@ -178,6 +182,62 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         validate_check(&inputs)?;
         Ok(Command::Check(Checked(inputs)))
     }
+}
+
+fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
+    let mut previous = vec![OsString::from("run")];
+    let mut current = vec![OsString::from("run")];
+    let mut alignment = None;
+    let mut pairs = args.chunks_exact(2);
+    for pair in &mut pairs {
+        let flag = pair[0].to_string_lossy();
+        let value = &pair[1];
+        if flag == "--alignment" {
+            if alignment.replace(PathBuf::from(value)).is_some() {
+                return Err(usage(&flag, "duplicate flag"));
+            }
+            continue;
+        }
+        let (destination, option) = if let Some(option) = flag.strip_prefix("--before-") {
+            let option = match option {
+                "atom-definition" => "--atom-definition",
+                "law" => "--law",
+                "archmap" => "--archmap",
+                "ask" => "--ask",
+                _ => return Err(usage(&flag, "unknown reobservation flag")),
+            };
+            (&mut previous, option)
+        } else {
+            if !matches!(
+                flag.as_ref(),
+                "--atom-definition" | "--law" | "--archmap" | "--ask" | "--out"
+            ) {
+                return Err(usage(&flag, "unknown reobservation flag"));
+            }
+            (&mut current, flag.as_ref())
+        };
+        destination.extend([OsString::from(option), value.clone()]);
+    }
+    if let [flag] = pairs.remainder() {
+        return Err(usage(&flag.to_string_lossy(), "flag requires a value"));
+    }
+    let Command::Run(previous) = parse_args(&previous).map_err(|error| {
+        usage(
+            &format!("--before-{}", error.argument.trim_start_matches("--")),
+            error.message,
+        )
+    })?
+    else {
+        unreachable!("previous arguments use the run parser")
+    };
+    let Command::Run(current) = parse_args(&current)? else {
+        unreachable!("current arguments use the run parser")
+    };
+    Ok(Command::Reobserve(ReobserveArgs {
+        previous,
+        current,
+        alignment,
+    }))
 }
 
 #[cfg(test)]

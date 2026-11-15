@@ -3,6 +3,7 @@
 mod args;
 mod evaluate;
 mod output;
+mod reobserve;
 mod reuse;
 pub use evaluate::{run_internal_outcome, run_requests};
 
@@ -22,8 +23,9 @@ pub const VERSION_LINE: &str =
     r#"{"product":"archsig","version":"0.6.0","semantics":["archsig/0.6.0"]}"#;
 
 pub const HELP: &str = "ArchSig: check inputs and answer questions from Atom definitions, Law and ArchMap.
-Usage: archsig <run|check|evidence|law-fibers|version> [options]
+Usage: archsig <run|reobserve|check|evidence|law-fibers|version> [options]
   run      Compute answers; saving is optional
+  reobserve Evaluate previous and current inputs in one process
   check    Validate inputs without computing questions; saving is optional
   evidence Verify selected atoms against local source bytes
   law-fibers Check an explicitly enumerated finite evaluation table
@@ -45,6 +47,9 @@ Exit: 0 established, 1 refuted, 2 undetermined, 64 usage, 65 invalid input,
 69 unsupported version, 70 internal, 74 I/O, 130 SIGINT, 141 broken pipe, 143 SIGTERM.
 Example:
   archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'";
+pub const REOBSERVE_HELP: &str = "Usage: archsig reobserve --before-atom-definition D --before-law L --before-archmap A --before-ask 'ID=QUESTION' --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [--alignment JSON] [--out NEW_DIRECTORY]
+Repeat the definition and question options as needed. Use --alignment for explicit assembly and candidate correspondence.
+The output contains separate previous and current evaluations. Exit status reflects the current evaluation or an execution failure.";
 pub const CHECK_HELP: &str =
     "Usage: archsig check --atom-definition D --law L [--archmap A] [--out NEW_DIRECTORY]
   --atom-definition D  Atom definition file (required, repeatable)
@@ -134,9 +139,17 @@ pub struct RunArgs {
 }
 
 #[derive(Debug, PartialEq, Eq)]
+pub struct ReobserveArgs {
+    previous: Checked<RunArgs>,
+    current: Checked<RunArgs>,
+    alignment: Option<PathBuf>,
+}
+
+#[derive(Debug, PartialEq, Eq)]
 pub enum Command {
     Check(Checked<CheckArgs>),
     Run(Checked<RunArgs>),
+    Reobserve(ReobserveArgs),
     Version,
     Help(&'static str),
 }
@@ -413,11 +426,12 @@ pub fn execute_command(
     let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match command {
         Command::Check(args) => run_check_validated(io, signals, args, control),
         Command::Run(args) => evaluate::run_requests_validated(io, signals, args, control),
+        Command::Reobserve(args) => reobserve::execute(io, signals, args, control),
         Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
     }));
     Some(outcome.unwrap_or_else(|_| match command {
         Command::Check(args) => internal_outcome(io, signals, args),
-        Command::Run(_) => run_internal_outcome(signals),
+        Command::Run(_) | Command::Reobserve(_) => run_internal_outcome(signals),
         Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
     }))
 }

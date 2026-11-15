@@ -18,6 +18,7 @@ use archsig_input::law::model::Signature;
 use std::{collections::BTreeMap, sync::Arc};
 mod affine_result;
 mod law_result;
+mod polyhedron_result;
 #[derive(Debug)]
 pub(super) struct Source {
     base: usize,
@@ -106,7 +107,7 @@ impl Data {
         let allowed = match self.ty() {
             NodeType::Construction(T::Quotient) => matches!(
                 field.as_str(),
-                "domain" | "classes" | "projection" | "descent"
+                "domain" | "classes" | "projection" | "descent" | "fiber"
             ),
             NodeType::Construction(T::StateMap) => matches!(field.as_str(), "source" | "target"),
             NodeType::Construction(T::Architecture) => field == "root",
@@ -148,11 +149,25 @@ fn domain(
         None,
     )
 }
+fn fiber_binding(
+    env: &Environment<'_>,
+    graph: &Graph,
+    request: &Request,
+) -> Result<Option<AnswerBinding>, ValidationFailure> {
+    request
+        .arguments
+        .iter()
+        .find(|argument| argument.name == "fiber.at")
+        .map(|argument| env.answer_binding(graph, &argument.value, (0, 0)))
+        .transpose()
+}
+
 fn compute(
     env: &Environment<'_>,
     g: &Graph,
     request: &Request,
     base: usize,
+    at: Option<NodeRef>,
     c: &Control,
 ) -> Result<Source, ValidationFailure> {
     env.validation_graph_session(g, || {
@@ -165,20 +180,21 @@ fn compute(
         let AnswerBinding::Reference(reference) = env.answer_binding(g, on, (0, 0))? else {
             return Err(internal!("商のonが既出参照でない").into());
         };
-        if let Some((witness, domain_type)) = change_result::checked_polyhedron(env, g, reference)?
-        {
-            return affine_result::unsupported_polyhedron(
+        let input = change_result::candidate_input(env, g, reference, c)?;
+        if at.is_some() && input.rational_polyhedron().is_none() {
+            return affine_result::unsupported(
                 env,
                 g,
-                (witness, domain_type),
+                input,
                 reference,
                 request,
+                "rational_polyhedron_fiber",
+                None,
                 base,
             );
         }
-        let input = change_result::candidate_input(env, g, reference, c)?;
         if input.search.linear.is_some() || input.search.rational.is_some() {
-            return affine_result::compute(env, g, input, reference, request, base, c);
+            return affine_result::compute(env, g, input, (reference, at), request, base, c);
         }
         let table = quotient_evaluation::compute(env, g, &input, request, c)?;
         let declaration = &env.indexes.inputs.law().declarations()
@@ -607,7 +623,28 @@ impl Environment<'_> {
             return Ok(());
         }
         let rebuilt = self.with_request_context(g, &d.source.request, || {
-            compute(self, g, &d.source.request, d.source.base, &self.control)
+            let fiber = match fiber_binding(self, g, &d.source.request)? {
+                Some(AnswerBinding::Reference(r)) => Some(r),
+                Some(AnswerBinding::Projection(node)) => Some(
+                    g.nodes[..d.source.base]
+                        .iter()
+                        .rposition(|item| *item == node)
+                        .map(NodeRef)
+                        .ok_or(internal!("多面体のファイバーの元View値が保持されていない"))?,
+                ),
+                Some(AnswerBinding::Inapplicable(_)) => {
+                    return Err(internal!("多面体のファイバーの元View値が不適合").into());
+                }
+                None => None,
+            };
+            compute(
+                self,
+                g,
+                &d.source.request,
+                d.source.base,
+                fiber,
+                &self.control,
+            )
         })?;
         if rebuilt.parts != d.source.parts
             || rebuilt.answer != d.source.answer
@@ -710,7 +747,18 @@ impl super::result_kind::ResultKind for Data {
                 }
             }
         }
-        let source = Arc::new(compute(env, g, request, g.nodes.len(), c)?);
+        let fiber = match fiber_binding(env, g, request)? {
+            Some(AnswerBinding::Reference(r)) => Some(r),
+            Some(AnswerBinding::Projection(node)) => {
+                env.validate(g, &node)?;
+                Some(g.push(node)?)
+            }
+            Some(AnswerBinding::Inapplicable(_)) => {
+                return Err(internal!("多面体のファイバーの元View値が不適合").into());
+            }
+            None => None,
+        };
+        let source = Arc::new(compute(env, g, request, g.nodes.len(), fiber, c)?);
         for (index, part) in source.parts.iter().enumerate() {
             native::retain(
                 g,

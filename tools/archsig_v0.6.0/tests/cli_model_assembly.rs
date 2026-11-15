@@ -803,11 +803,16 @@ fn r2_repairs_keep_local_freedom_and_reassemble_actual_objects() {
     }
 }
 
-#[test]
-fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
-    let dir = workdir("repaired-boolean-assembly");
+fn repaired_boolean_inputs(extra_law: &str, gate: bool) -> archsig_input::input::InputSources {
     let original = include_str!("fixtures/r2-repaired-locals/definitions.json");
-    let definitions = original.replace("\"Z\"", "\"Bool\"");
+    let mut definitions = original.replace("\"Z\"", "\"Bool\"");
+    if gate {
+        definitions = definitions.replace(
+            r#""name": "quantity","#,
+            r#""name":"gate","type":"Bool","meaning":"Enable the Law reading."},
+               {"name": "quantity","#,
+        );
+    }
     let digest = |text: &str| {
         archsig_input::definition::check_definitions(&[("definition0", text.as_bytes())])
             .unwrap()
@@ -823,7 +828,11 @@ fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
         .replace("quantity=if q then 1 else 0", "quantity=q")
         .replace("a.quantity+b.quantity=1", "a.quantity!=b.quantity")
         .replace("p.quantity=0", "p.quantity=false")
-        .replace("p.quantity=1", "p.quantity=true");
+        .replace("p.quantity=1", "p.quantity=true")
+        .replace(
+            "  law optional pair",
+            &format!("{extra_law}\n  law optional pair"),
+        );
     let mut map = include_str!("fixtures/r2-repaired-locals/archmap.json")
         .replace(&original_digest, &new_digest);
     for (id, value) in [
@@ -834,14 +843,27 @@ fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
     ] {
         map = fixture::atom(map, id, Some(Json::Bool(value)));
     }
-    write_inputs(
-        &dir,
-        &archsig_input::input::InputSources::from_bytes(
-            vec![definitions.into_bytes()],
-            law.into_bytes(),
-            map.into_bytes(),
-        ),
-    );
+    if gate {
+        let atoms = ["a", "b", "ma", "mb"].map(|subject| {
+            format!(r#"{{"id":"{subject}-gate","subject":"{subject}","field":"Assemble.Part.gate","value":{},"origin":"model"}}"#, subject == "a")
+        });
+        map = map.replacen(
+            r#""atoms":["#,
+            &format!(r#""atoms":[{},"#, atoms.join(",")),
+            1,
+        );
+    }
+    archsig_input::input::InputSources::from_bytes(
+        vec![definitions.into_bytes()],
+        law.into_bytes(),
+        map.into_bytes(),
+    )
+}
+
+#[test]
+fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
+    let dir = workdir("repaired-boolean-assembly");
+    write_inputs(&dir, &repaired_boolean_inputs("", false));
     let asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
         .lines()
         .filter(|line| {
@@ -875,4 +897,361 @@ fn repaired_boolean_assembly_uses_the_selected_point_in_finite_law_tables() {
         get(get(assembly, "outputs"), "object").value,
         get(get(global, "outputs"), "environment").value
     );
+}
+
+#[test]
+fn repaired_map_saves_finite_law_domain_and_actual_boolean_counterexample() {
+    let dir = workdir("repaired-model-map-finite-law");
+    write_inputs(
+        &dir,
+        &repaired_boolean_inputs(
+            "  law optional active(flag:Bool,p:Part):if flag then (not p.gate or not p.quantity) else true;",
+            true,
+        ),
+    );
+    let original = include_str!("fixtures/r2-repaired-locals/queries.txt");
+    let mut asks = original
+        .lines()
+        .filter(|ask| {
+            let id = ask.split_once('=').unwrap().0;
+            !matches!(
+                id,
+                "madeConflict" | "madePartial" | "mixedOwner" | "moveBetweenChoices"
+            )
+        })
+        .collect::<Vec<_>>();
+    asks.extend([
+        "same=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)",
+        "different=assemble_map(Assembly.moves,from=$made0.assembly,to=$made1.assembly,x=@v/moveA,y=@v/moveB)",
+    ]);
+    let first = execute_asks(&dir, "out", None, &asks);
+    let result = result_json(&dir, &first);
+    let ns = arr(get(&result, "nodes"));
+    let referenced = |r: &archsig_common::json::JNode| {
+        let id = s(get(r, "node"));
+        ns.iter().find(|n| s(get(n, "id")) == id).unwrap()
+    };
+    let answers = arr(get(&result, "answers"));
+    let same = &answers[answers.len() - 2];
+    let different = answers.last().unwrap();
+    assert_eq!(s(get(same, "status")), "established", "{}", first.stdout);
+    let map = get(referenced(get(get(same, "outputs"), "map")), "value");
+    let domains = arr(get(map, "laws"))
+        .iter()
+        .filter(|row| has(row, "parameter_domains"))
+        .collect::<Vec<_>>();
+    assert!(!domains.is_empty());
+    for row in domains {
+        let [domain] = arr(get(row, "parameter_domains")) else {
+            panic!("one Bool domain")
+        };
+        assert_eq!(num(get(domain, "position")), 0);
+        assert_eq!(
+            arr(get(domain, "source"))
+                .iter()
+                .map(|value| &value.value)
+                .collect::<Vec<_>>(),
+            [
+                &archsig_common::json::JValue::Bool(false),
+                &archsig_common::json::JValue::Bool(true)
+            ]
+        );
+        assert_eq!(get(domain, "images").value, get(domain, "target").value);
+    }
+    assert_eq!(s(get(different, "status")), "refuted");
+    assert!(has(get(different, "outputs"), "configuration_map"));
+    let [evidence] = arr(get(different, "counterexamples")) else {
+        panic!("one counterexample")
+    };
+    let evidence = referenced(evidence);
+    let counterexample = get(get(evidence, "value"), "data");
+    let observed = |key| &get(referenced(get(counterexample, key)), "value").value;
+    assert_eq!(observed("left"), &archsig_common::json::JValue::Bool(true));
+    assert_eq!(
+        observed("right"),
+        &archsig_common::json::JValue::Bool(false)
+    );
+    let flag = arr(get(counterexample, "bindings"))
+        .iter()
+        .find(|binding| s(get(binding, "name")) == "flag")
+        .expect("actual flag");
+    assert_eq!(
+        get(referenced(get(flag, "value")), "value").value,
+        archsig_common::json::JValue::Bool(true)
+    );
+    let facts = arr(get(counterexample, "facts"));
+    assert!(facts.iter().any(|fact| {
+        has(fact, "atom")
+            && s(get(fact, "atom")) == "a-gate"
+            && s(get(fact, "field")) == "Assemble.Part.gate"
+    }));
+    assert!(
+        !facts
+            .iter()
+            .any(|fact| has(fact, "field") && s(get(fact, "field")) == "Assemble.Part.quantity")
+    );
+    let occurrences = get(counterexample, "law_transport");
+    for (end, assembly) in [("source", "made0"), ("target", "made1")] {
+        let evidence = get(occurrences, end);
+        let actual_assembly = answers
+            .iter()
+            .find(|a| s(get(a, "id")) == assembly)
+            .unwrap();
+        assert_eq!(
+            get(evidence, "assembly").value,
+            get(get(actual_assembly, "outputs"), "assembly").value
+        );
+        assert_eq!(
+            s(get(referenced(get(evidence, "object")), "type")),
+            "ObjectComponent"
+        );
+        let law = referenced(get(evidence, "law"));
+        assert_eq!(s(get(law, "type")), "LawInstance");
+        let occurrence = get(law, "value");
+        assert_eq!(s(get(occurrence, "name")), "Assembly.active");
+        let [parameter] = arr(get(occurrence, "parameters")) else {
+            panic!("one Bool parameter");
+        };
+        assert_eq!(s(get(parameter, "name")), "flag");
+        assert_eq!(s(get(parameter, "type")), "Bool");
+    }
+    let [reason] = arr(get(different, "reasons")) else {
+        panic!("one failed Law condition");
+    };
+    let location = get(reason, "location");
+    assert_eq!(s(get(location, "input")), "law");
+    let span = arr(get(location, "span"));
+    let source_law = std::fs::read_to_string(dir.join("l.law")).unwrap();
+    assert!(
+        source_law[num(&span[0]) as usize..num(&span[1]) as usize].contains("active(flag:Bool")
+    );
+    let replay = execute_asks(&dir, "checked", Some("out"), &asks);
+    assert_eq!(replay.code, first.code);
+    let replay = result_json(&dir, &replay);
+    assert!(warnings(&replay).is_empty());
+    assert_eq!(get(&result, "answers").value, get(&replay, "answers").value);
+}
+
+#[test]
+fn repaired_map_skips_the_body_of_a_law_when_its_guard_is_false() {
+    let dir = workdir("repaired-model-map-false-guard");
+    write_inputs(
+        &dir,
+        &repaired_boolean_inputs(
+            "view owned(r:Root,p:Part[r]):Bool=true;
+             law optional scoped(p:Part,q:Bool) when false: forall b:Root . owned(b,p);",
+            false,
+        ),
+    );
+    let mut asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
+        .lines()
+        .filter(|ask| {
+            matches!(
+                ask.split_once('=').unwrap().0,
+                "aWithin"
+                    | "bWithin"
+                    | "aProblem"
+                    | "bProblem"
+                    | "aSolve"
+                    | "bSolve"
+                    | "aPick0"
+                    | "bPick0"
+                    | "aApply0"
+                    | "bApply0"
+                    | "made0"
+            )
+        })
+        .collect::<Vec<_>>();
+    asks.extend([
+        "off=check(Assembly.scoped,p=@v/a,on=$made0.object)",
+        "same=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)",
+    ]);
+    let first = execute_asks(&dir, "out", None, &asks);
+    assert_eq!(first.code, 0, "{}{}", first.stdout, first.stderr);
+    let result = result_json(&dir, &first);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(answers.len(), asks.len());
+    assert!(answers.iter().all(|a| s(get(a, "status")) == "established"));
+    assert!(has(get(answers.last().unwrap(), "outputs"), "map"));
+}
+
+fn repaired_folding_fixture(dir: &Path, parameter_type: &str) -> Vec<String> {
+    let input = repaired_boolean_inputs(
+        &format!("law optional aConstant(r:Root,t:{parameter_type}):true;"),
+        false,
+    );
+    let law = std::str::from_utf8(input.law().bytes())
+        .unwrap()
+        .replace(
+            "law optional pair(a:Part,b:Part):a.quantity!=b.quantity;",
+            "",
+        )
+        .replace(
+            "law optional boundary(p:Part):p.quantity=false;",
+            "law optional boundary(r:Root):true;",
+        )
+        .replace(
+            "law optional boundaryOne(p:Part):p.quantity=true;",
+            "law optional boundaryOne(r:Root):true;",
+        );
+    let mut map = fixture::without_arrows(
+        std::str::from_utf8(input.archmap().bytes())
+            .unwrap()
+            .to_owned(),
+    );
+    for id in ["moveA-steps", "moveB-steps"] {
+        map = fixture::atom(map, id, Some(Json::Arr(vec![])));
+    }
+    let reference = |subject| Json::Arr(vec![Json::str("v"), Json::str(subject)]);
+    map = fixture::atom(map, "moveB-to", Some(reference("A")));
+    let pairs = [("mb", "ma"), ("b", "a")]
+        .into_iter()
+        .map(|(source, target)| Json::Arr(vec![reference(source), reference(target)]))
+        .collect();
+    map = fixture::atom(map, "moveB-parts", Some(Json::Arr(pairs)));
+    write_inputs(
+        dir,
+        &archsig_input::input::InputSources::from_bytes(
+            vec![input.definitions()[0].bytes().to_vec()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+    );
+    let mut asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
+        .lines()
+        .filter(|ask| {
+            matches!(
+                ask.split_once('=').unwrap().0,
+                "aWithin"
+                    | "bWithin"
+                    | "aProblem"
+                    | "bProblem"
+                    | "aSolve"
+                    | "bSolve"
+                    | "aPick0"
+                    | "bPick0"
+                    | "aApply0"
+                    | "bApply0"
+                    | "made0"
+            )
+        })
+        .map(|ask| {
+            if ask.contains("Problem=prepare") {
+                ask.replace("p=@v/ma", "r=@v/A")
+                    .replace("p=@v/mb", "r=@v/B")
+            } else {
+                ask.to_owned()
+            }
+        })
+        .collect::<Vec<_>>();
+    asks.push("fold=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)".to_owned());
+    asks
+}
+
+#[test]
+fn repaired_map_saves_the_colliding_finite_parameter_values() {
+    let dir = workdir("repaired-model-map-parameter-collision");
+    let asks = repaired_folding_fixture(&dir, "(Part,Bool)");
+    let asks = asks.iter().map(String::as_str).collect::<Vec<_>>();
+    let run = execute_asks(&dir, "out", None, &asks);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answer = arr(get(&result, "answers")).last().unwrap();
+    assert_eq!(s(get(answer, "status")), "refuted");
+    assert!(has(get(answer, "outputs"), "configuration_map"));
+    let nodes = arr(get(&result, "nodes"));
+    let dereference = |r: &archsig_common::json::JNode| {
+        nodes
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(r, "node")))
+            .unwrap()
+    };
+    let [point] = arr(get(answer, "counterexamples")) else {
+        panic!("one parameter transport failure");
+    };
+    let data = get(get(dereference(point), "value"), "data");
+    let witness = get(data, "parameter_transport");
+    assert_eq!(num(get(witness, "position")), 1);
+    assert_eq!(s(get(witness, "kind")), "collision");
+    let [first, second] = arr(get(witness, "source_indices")) else {
+        panic!("two distinct source values");
+    };
+    let (first, second) = (num(first) as usize, num(second) as usize);
+    let source = arr(get(witness, "source"));
+    let target = arr(get(witness, "target"));
+    let images = arr(get(witness, "images"));
+    assert_ne!(source[first].value, source[second].value);
+    assert_eq!(images[first].value, images[second].value);
+    assert_eq!(
+        images[first].value,
+        target[num(get(witness, "target_index")) as usize].value
+    );
+    assert_eq!(
+        get(dereference(get(data, "left")), "value").value,
+        source[first].value
+    );
+    assert_eq!(
+        get(dereference(get(data, "right")), "value").value,
+        source[second].value
+    );
+    let supporting_law = dereference(get(get(get(data, "law_transport"), "source"), "law"));
+    assert_eq!(
+        s(get(get(supporting_law, "value"), "name")),
+        "Assembly.aConstant"
+    );
+
+    let replay = execute_asks(&dir, "checked", Some("out"), &asks);
+    assert_eq!(replay.code, run.code);
+    let replay = result_json(&dir, &replay);
+    assert!(warnings(&replay).is_empty());
+    assert_eq!(get(&replay, "answers").value, get(&result, "answers").value);
+}
+
+#[test]
+fn repaired_map_saves_an_outside_candidate_as_diagnostic_data() {
+    let dir = workdir("repaired-model-map-outside-target");
+    let asks = repaired_folding_fixture(&dir, "Map<Part,Root>");
+    let asks = asks.iter().map(String::as_str).collect::<Vec<_>>();
+    let run = execute_asks(&dir, "out", None, &asks);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answer = arr(get(&result, "answers")).last().unwrap();
+    assert_eq!(s(get(answer, "status")), "refuted");
+    assert!(has(get(answer, "outputs"), "configuration_map"));
+    let nodes = arr(get(&result, "nodes"));
+    let dereference = |r: &archsig_common::json::JNode| {
+        nodes
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(r, "node")))
+            .unwrap()
+    };
+    let [point] = arr(get(answer, "counterexamples")) else {
+        panic!("one parameter transport failure");
+    };
+    let data = get(get(dereference(point), "value"), "data");
+    let witness = get(data, "parameter_transport");
+    assert_eq!(s(get(witness, "kind")), "outside_target");
+    assert_eq!(num(get(witness, "position")), 1);
+    let [i] = arr(get(witness, "source_indices")) else {
+        panic!("one source value")
+    };
+    let i = num(i) as usize;
+    let left = dereference(get(data, "left"));
+    let right = dereference(get(data, "right"));
+    let source = &arr(get(witness, "source"))[i];
+    let image = &arr(get(witness, "images"))[i];
+    assert_eq!(get(left, "value").value, source.value);
+    let keys = |map: &archsig_common::json::JNode| {
+        arr(map)
+            .iter()
+            .map(|entry| s(&arr(&arr(entry)[0])[1]).to_owned())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(keys(source), ["a", "b", "ma", "mb"]);
+    assert_eq!(keys(image), ["a", "ma", "mb"]);
+    assert_eq!(s(&arr(get(right, "type"))[0]), "List");
+    assert_eq!(get(right, "value").value, get(witness, "target").value);
+    for value in arr(get(right, "value")) {
+        assert_eq!(keys(value), ["a", "b", "ma", "mb"]);
+    }
 }

@@ -378,16 +378,11 @@ pub(super) fn verify(
         ])
     };
     let mut laws = Vec::new();
+    let mut domains = super::object_law_transport::FiniteLawDomains::new();
     let readings = evaluations[0].readings();
     let mut unsupported_instances = Vec::new();
     for (index, row) in readings.instances().iter().enumerate() {
         if row.declaration().kind != "law" {
-            continue;
-        }
-        if !row.parameters().is_empty()
-            && (!source.repaired_values.is_empty() || !target.repaired_values.is_empty())
-        {
-            unsupported_instances.push(index);
             continue;
         }
         for parameter in row.parameters() {
@@ -422,10 +417,13 @@ pub(super) fn verify(
                 states
                     .as_ref()
                     .map(|[(source, source_domains), (target, target_domains)]| {
-                        [
-                            (source, source_domains.as_slice()),
-                            (target, target_domains.as_slice()),
-                        ]
+                        (
+                            [
+                                (source, source_domains.as_slice()),
+                                (target, target_domains.as_slice()),
+                            ],
+                            &mut domains,
+                        )
                     }),
                 c,
             )?);
@@ -702,7 +700,6 @@ mod tests {
         edit: impl FnOnce(String) -> String,
         body: Option<&str>,
     ) -> (Arc<CheckedInputs>, Arc<Model>) {
-        let c = Control::unlimited();
         let original = fixture::mapped(edit);
         let original = if let Some(body) = body {
             archsig_input::input::InputSources::from_bytes(
@@ -720,6 +717,12 @@ mod tests {
         } else {
             original
         };
+        mapped_model(original)
+    }
+    fn mapped_model(
+        original: archsig_input::input::InputSources,
+    ) -> (Arc<CheckedInputs>, Arc<Model>) {
+        let c = Control::unlimited();
         let inputs = Arc::new(check_inputs(original, &c).unwrap());
         let Preparation::Ready(model) = compile_same_snapshot(
             &inputs,
@@ -1342,6 +1345,251 @@ mod tests {
             law.outcome(),
             super::super::object_law_transport::LawTransportOutcome::Refuted(_)
         )));
+    }
+
+    #[test]
+    fn repaired_finite_law_uses_the_pointwise_boolean_reads() {
+        use super::super::{
+            object_law_transport::{LawConditionFailure, LawTransportOutcome},
+            result::Scalar,
+        };
+        let raw = fixture::mapped(fixture::swapping);
+        let before_definition = std::str::from_utf8(raw.definitions()[0].bytes()).unwrap();
+        let definition = before_definition.replace(r#""declarations": ["#, concat!(
+            r#""declarations": ["#,
+            r#"{"kind":"data","name":"Assemble.Mode","meaning":"mode","constructors":[{"name":"Off","arguments":[],"meaning":"off"},{"name":"On","arguments":["Bool"],"meaning":"on"}]},"#,
+            r#"{"kind":"entity","name":"Assemble.Probe","meaning":"unobserved type","parameters":[],"fields":[],"alignments":[]},"#,
+        ));
+        let digest = |text: &str| {
+            archsig_input::definition::check_definitions(&[("d", text.as_bytes())])
+                .unwrap()
+                .vocabularies()["Assemble"]
+                .digest
+                .clone()
+        };
+        let (old_digest, new_digest) = (digest(before_definition), digest(&definition));
+        let mut expected = BTreeMap::new();
+        let mut laws = String::from(concat!(
+            "law optional empty(p:Part,x:(Probe,Bool)):false;",
+            "law optional guarded(q:Bool,p:Part) when q and p.quantity=0:true;",
+        ));
+        // 各代入が単独の反例になるLawを作る。この6法を照合すると、任意の1点の
+        // 列挙漏れを見つけられる。実装が返す最初の反例から期待値を作らない。
+        for (flag, test) in [(false, "not q"), (true, "q")] {
+            for (tag, off, on, mode) in [
+                ("Off", "p.quantity=0", "true", r#"{"args":[],"tag":"Off"}"#),
+                (
+                    "OnFalse",
+                    "true",
+                    "if b then true else p.quantity=0",
+                    r#"{"args":[false],"tag":"On"}"#,
+                ),
+                (
+                    "OnTrue",
+                    "true",
+                    "if b then p.quantity=0 else true",
+                    r#"{"args":[true],"tag":"On"}"#,
+                ),
+            ] {
+                let name = format!("parameter{flag}{tag}");
+                laws.push_str(&format!(
+                    "law required {name}(q:Bool,p:Part,m:Mode): if {test} then (match m {{Off=>{off}; On(b)=>{on};}}) else true;"
+                ));
+                expected.insert(format!("Assembly.{name}"), (flag, mode));
+            }
+        }
+        let law = std::str::from_utf8(raw.law().bytes())
+            .unwrap()
+            .replace(&old_digest, &new_digest)
+            .replace("law required zero(p:Part):p.quantity=0;", &laws);
+        let map = std::str::from_utf8(raw.archmap().bytes())
+            .unwrap()
+            .replace(&old_digest, &new_digest);
+        let (inputs, raw) = mapped_model(archsig_input::input::InputSources::from_bytes(
+            vec![definition.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ));
+        let completed = |quantity: i64| {
+            let point = ["ma", "mb", "a", "b"].map(|subject| {
+                let mut position = (*fact(subject)).clone();
+                position.field = Some("Assemble.Part.quantity".into());
+                (Fact::from(position), Scalar::Z(quantity.into()))
+            });
+            let Preparation::Ready(model) = compile_same_snapshot(
+                &inputs,
+                "Assembly",
+                &fact("G"),
+                &[fact("A"), fact("B")],
+                &[(fact("ma"), fact("mb"))],
+                &point.into_iter().collect(),
+                &Control::unlimited(),
+            )
+            .unwrap() else {
+                panic!("ready repaired assembly")
+            };
+            Arc::new(model)
+        };
+        let zero = completed(0);
+        let one = completed(1);
+        assert!(evaluate(inputs.clone(), &raw, &raw).all_preserved());
+        let repaired = evaluate(inputs.clone(), &zero, &zero);
+        assert!(repaired.all_preserved());
+        let mut empty_rows = repaired
+            .laws
+            .iter()
+            .filter(|law| law.instance().declaration().name == "Assembly.empty")
+            .peekable();
+        assert!(
+            empty_rows.peek().is_some(),
+            "empty parameter instances are checked"
+        );
+        assert!(empty_rows.all(|law| {
+            law.family()
+                .is_some_and(|family| family.parameters().len() == 1 && family.rows().is_empty())
+        }));
+        assert!(
+            repaired.laws.iter().any(|law| {
+                law.instance()
+                    .bindings()
+                    .iter()
+                    .any(|binding| binding.subject().subject == "a")
+                    && law.target_instance().is_some_and(|target| {
+                        target
+                            .bindings()
+                            .iter()
+                            .any(|binding| binding.subject().subject == "b")
+                    })
+            }),
+            "the swapped reference is mapped to the real target instance"
+        );
+        for (source, target) in [(&raw, &one), (&zero, &one)] {
+            let verified = evaluate(inputs.clone(), source, target);
+            assert!(verified.transport.all_preserved());
+            assert!(verified.has_refutation());
+            assert!(
+                verified.laws.iter().any(|law| {
+                    law.instance().declaration().name == "Assembly.guarded"
+                        && law.family().is_some_and(|family| {
+                            family.rows().iter().any(|row| {
+                                row.outcome()
+                                    == &LawTransportOutcome::Refuted(
+                                        LawConditionFailure::Applicability,
+                                    )
+                                    && row.source_bindings()[0].1.scalar() == &Scalar::Bool(true)
+                                    && row.source().application().value() == Some(true)
+                                    && row.target().application().value() == Some(false)
+                            })
+                        })
+                }),
+                "guard mismatch is checked at the actual parameter"
+            );
+            let mut seen = std::collections::BTreeSet::new();
+            for law in &verified.laws {
+                let name = &law.instance().declaration().name;
+                let Some(&(expected_flag, expected_mode)) = expected.get(name) else {
+                    continue;
+                };
+                if law.outcome() == &LawTransportOutcome::Preserved {
+                    continue; // この対象に属さない束縛では本文を比較しない。
+                }
+                assert_eq!(
+                    law.outcome(),
+                    &LawTransportOutcome::Refuted(LawConditionFailure::Holds),
+                    "{name}"
+                );
+                seen.insert(name);
+                let family = law.family().unwrap();
+                let domains = family
+                    .parameters()
+                    .iter()
+                    .map(|parameter| parameter.source().len())
+                    .collect::<Vec<_>>();
+                assert_eq!(domains, [2, 3]);
+                let [row] = family.rows() else {
+                    panic!("first concrete refutation")
+                };
+                let [(flag, value), (mode, value_mode)] = row.source_bindings() else {
+                    panic!("Bool and data parameters")
+                };
+                assert_eq!((flag.as_str(), mode.as_str()), ("q", "m"));
+                assert_eq!(value.scalar(), &Scalar::Bool(expected_flag), "{name}");
+                assert_eq!(value_mode.wire().canonical(), expected_mode, "{name}");
+                assert_eq!(row.target_bindings(), row.source_bindings());
+                assert_eq!(row.source().body(), Some(true));
+                assert_eq!(row.target().body(), Some(false));
+            }
+            assert_eq!(seen.len(), expected.len());
+        }
+    }
+
+    #[test]
+    fn repaired_finite_law_keeps_missing_observations_after_configuration_transport() {
+        use super::super::{object_law_transport::LawTransportOutcome, result::Scalar};
+        let raw = fixture::mapped(fixture::swapping);
+        let before = std::str::from_utf8(raw.definitions()[0].bytes()).unwrap();
+        let definition = before.replace(
+            r#""declarations": ["#,
+            r#""declarations": [{"kind":"entity","name":"Assemble.Probe","meaning":"Independent observation.","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"A condition."}],"alignments":[]},"#,
+        );
+        let digest = |text: &str| {
+            archsig_input::definition::check_definitions(&[("d", text.as_bytes())])
+                .unwrap()
+                .vocabularies()["Assemble"]
+                .digest
+                .clone()
+        };
+        let (old, new) = (digest(before), digest(&definition));
+        let law = std::str::from_utf8(raw.law().bytes())
+            .unwrap()
+            .replace(&old, &new)
+            .replace(
+                "law required zero(p:Part):p.quantity=0;",
+                "law optional probe(q:Bool,p:Part):if q then (forall x:Probe . x.flag) else true;",
+            );
+        let map = std::str::from_utf8(raw.archmap().bytes())
+            .unwrap()
+            .replace(&old, &new)
+            .replace(
+                r#""subjects":["#,
+                r#""subjects":[{"id":"external","type":"Assemble.Probe","origin":"model"},"#,
+            );
+        let (inputs, _) = mapped_model(archsig_input::input::InputSources::from_bytes(
+            vec![definition.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ));
+        let fixed = ["ma", "mb"].map(|subject| {
+            let mut position = (*fact(subject)).clone();
+            position.field = Some("Assemble.Part.quantity".into());
+            (Fact::from(position), Scalar::Z(0.into()))
+        });
+        let Preparation::Ready(model) = compile_same_snapshot(
+            &inputs,
+            "Assembly",
+            &fact("G"),
+            &[fact("A"), fact("B")],
+            &[(fact("ma"), fact("mb"))],
+            &fixed.into_iter().collect(),
+            &Control::unlimited(),
+        )
+        .unwrap() else {
+            panic!("configuration with selected values");
+        };
+        let model = Arc::new(model);
+        let verified = evaluate(inputs, &model, &model);
+        assert!(verified.transport.all_preserved());
+        assert!(!verified.all_preserved());
+        assert!(!verified.has_refutation());
+        assert!(verified.laws.iter().any(|law| {
+            law.instance().declaration().name == "Assembly.probe"
+                && law.outcome() == &LawTransportOutcome::Undetermined
+                && law.state_missing().iter().any(|fact| {
+                    fact.subject == "external"
+                        && fact.field.as_deref() == Some("Assemble.Probe.flag")
+                        && fact.atom.is_none()
+                })
+        }));
     }
 
     #[test]

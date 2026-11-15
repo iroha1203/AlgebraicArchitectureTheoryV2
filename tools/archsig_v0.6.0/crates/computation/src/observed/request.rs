@@ -613,6 +613,44 @@ fn resolve_inner(
         let mut dependencies = BTreeSet::new();
         for (key, value) in raw.arguments {
             phase(control, Checkpoint::RequestBinding)?;
+            if key == "fiber.at" && kind == QuestionKind::Quotient {
+                let Selector::Answer { id, path } = &value else {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        "fiber.at",
+                        "fiber.at must refer to a View value",
+                    )));
+                };
+                if path.is_empty() {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Projection,
+                        &raw.id,
+                        "fiber.at",
+                        "specify an output field",
+                    )));
+                }
+                dependencies.insert(id.clone());
+                if arguments
+                    .insert(
+                        "fiber.at".into(),
+                        RequestArgument {
+                            name: "fiber.at".into(),
+                            value,
+                            origin: ArgumentOrigin::Explicit,
+                        },
+                    )
+                    .is_some()
+                {
+                    return Err(invalid(problem(
+                        RequestIssueCode::DuplicateArgument,
+                        &raw.id,
+                        "fiber.at",
+                        "duplicate fiber.at",
+                    )));
+                }
+                continue;
+            }
             if key == "law" && kind == QuestionKind::Quotient {
                 if arguments
                     .insert(
@@ -1136,6 +1174,35 @@ fn resolve_inner(
                     &req.id,
                     "on",
                     "on Handle must be an Architecture",
+                )));
+            }
+        }
+        if req.kind == QuestionKind::Quotient
+            && let Some(at) = req
+                .arguments
+                .iter()
+                .find(|argument| argument.name == "fiber.at")
+        {
+            let (plan, _) = selector_type(
+                law,
+                map,
+                &requests,
+                &names,
+                &at.value,
+                control,
+                (&req.id, "fiber.at"),
+            )?;
+            let Signature::View { returns, .. } =
+                &law.declarations()[req.declaration().expect("quotient View")].signature
+            else {
+                unreachable!("quotient View");
+            };
+            if !projection::can_bind_controlled(&plan.ty, returns, control).map_err(stopped)? {
+                return Err(invalid(problem(
+                    RequestIssueCode::Type,
+                    &req.id,
+                    "fiber.at",
+                    "fiber.at must have the View return type",
                 )));
             }
         }
@@ -2296,6 +2363,7 @@ impl<'a> Parser<'a> {
             if self.take(b'.')? {
                 if key != "bind"
                     && !(kind == "assemble" && matches!(key.as_str(), "local" | "design"))
+                    && !(kind == "quotient" && key == "fiber")
                 {
                     return Err(self.error("invalid dotted argument prefix"));
                 }

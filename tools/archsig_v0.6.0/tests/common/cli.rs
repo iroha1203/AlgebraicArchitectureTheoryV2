@@ -122,7 +122,9 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         let outcome = match parse_args(&words) {
             Ok(Command::Check(check)) => run_check(io, signals, &check, &Control::unlimited()),
             Ok(Command::Run(request)) => run_requests(io, signals, &request, &Control::unlimited()),
-            Ok(Command::Version | Command::Help(_)) => panic!("version は run_binary で確かめる"),
+            Ok(Command::Version | Command::Help(_) | Command::Reobserve(_)) => {
+                panic!("version は run_binary で確かめる")
+            }
             Err(error) => usage_outcome(io, signals, error),
         };
         (outcome.exit_code, outcome.receipt())

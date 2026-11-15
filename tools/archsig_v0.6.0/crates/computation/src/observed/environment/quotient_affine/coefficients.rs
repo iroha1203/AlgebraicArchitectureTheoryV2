@@ -41,12 +41,28 @@ impl Input {
         let (slots, action, offset) = updates(search)?;
         if let Some(x) = &search.rational {
             let (particular, kernel) = if solutions {
-                let super::super::field_change::Solutions::Affine(fiber) = &x.solutions else {
-                    return Err(internal!("半空間の解集合をアフィン商へ渡した").into());
-                };
-                (fiber.particular.clone(), fiber.kernel.clone())
+                match &x.solutions {
+                    super::super::field_change::Solutions::Affine(fiber) => {
+                        (fiber.particular.clone(), fiber.kernel.clone())
+                    }
+                    // The caller reads directly on the full original coordinates.
+                    super::super::field_change::Solutions::Polyhedron(_) => (None, vec![]),
+                }
             } else {
                 (None, vec![])
+            };
+            let (guard_origin, guard_kernel, guard_dimensions) = if solutions {
+                (None, vec![], 0)
+            } else {
+                let guard = x
+                    .guard_fiber
+                    .as_ref()
+                    .ok_or(internal!("有理候補域のguardがない"))?;
+                (
+                    guard.particular.clone(),
+                    guard.kernel.clone(),
+                    x.parameter_count - guard.pivots.len(),
+                )
             };
             return Ok(Self {
                 ty: Type::Q,
@@ -54,21 +70,9 @@ impl Input {
                 axes: x.axes.clone(),
                 particular,
                 kernel,
-                guard_origin: if solutions {
-                    None
-                } else {
-                    x.guard_fiber.particular.clone()
-                },
-                guard_kernel: if solutions {
-                    vec![]
-                } else {
-                    x.guard_fiber.kernel.clone()
-                },
-                guard_dimensions: if solutions {
-                    0
-                } else {
-                    x.parameter_count - x.guard_fiber.pivots.len()
-                },
+                guard_origin,
+                guard_kernel,
+                guard_dimensions,
                 slots,
                 action,
                 offset,
