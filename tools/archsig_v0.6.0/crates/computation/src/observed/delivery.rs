@@ -119,7 +119,7 @@ impl DeliveryEvaluation {
             Content::Closed(run) => ordered_issues(run)
                 .into_iter()
                 .map(|reason| match reason {
-                    DeliveryReason::Closed(reason) => project::reason(reason),
+                    DeliveryReason::Closed(reason) => summary::owned_summary_reason(run, reason),
                     DeliveryReason::Recorded(reason) => reason.wire(),
                 })
                 .collect(),
@@ -184,7 +184,7 @@ pub fn evaluate_for_delivery(
     control: &Control,
 ) -> Result<DeliveryEvaluation, DeliveryFailure> {
     if let Ok(plan) = super::evaluate::delivery::closed_root_plan(&prepared, control)
-        && plan.iter().any(|admitted| *admitted)
+        && plan.admitted.iter().any(|admitted| *admitted)
     {
         let mut run = super::evaluate::delivery::evaluate_closed_roots(prepared, control, plan);
         let not_implemented = run.not_implemented.take();
@@ -432,7 +432,7 @@ mod tests {
             let input = mixed_sources(missing);
             let prepared = super::super::prepare_observed(input.clone(), &asks, &control).unwrap();
             assert_eq!(
-                closed_root_plan(&prepared, &control).unwrap(),
+                closed_root_plan(&prepared, &control).unwrap().admitted,
                 [false, true, false, false, false, !missing]
             );
             let actual = evaluate_for_delivery(prepared, &control).unwrap();
@@ -477,6 +477,76 @@ mod tests {
     }
 
     #[test]
+    fn terminal_reads_distinguish_slots_of_the_same_field() {
+        use super::super::evaluate::delivery::closed_root_plan;
+        let fixture = mixed_sources(false);
+        let law = String::from_utf8(fixture.law().bytes().to_vec())
+            .unwrap()
+            .replace(
+                "law required bound(s:State):forall n in list<Z>[1,2] . s.count>n;",
+                concat!(
+                    "law required bound(s:State):forall n in list<Z>[1,2] . s.count>=n;",
+                    "law required grouped(s:State):forall n in list<Z>[1,2] . (s).count>=n;",
+                    "law required alias(s:State):forall n in list<Z>[1,2] . let selected=s in selected.count>=n;"
+                ),
+            );
+        let map = String::from_utf8(fixture.archmap().bytes().to_vec()).unwrap();
+        let same_snapshot = map.replace(
+            r#"{"id": "s", "type": "Counter.State", "origin": "model"}"#,
+            r#"{"id": "s", "type": "Counter.State", "origin": "model"}, {"id": "other", "type": "Counter.State", "origin": "model"}"#,
+        );
+        let other_snapshot = map.replace(
+            "  }]",
+            r#"  },{"id":"other","origin":"model","subjects":[{"id":"s","type":"Counter.State","origin":"model"}],"atoms":[]}]"#,
+        );
+        assert_ne!(same_snapshot, map);
+        assert_ne!(other_snapshot, map);
+        let actual_missing = map.replace(
+            r#"{"id": "count", "subject": "s", "field": "Counter.State.count", "value": "2", "origin": "model"}"#,
+            "",
+        );
+        let asks = [
+            "bound=check(CountCheck.bound,s=@v/s)",
+            "grouped=check(CountCheck.grouped,s=@v/s)",
+            "alias=check(CountCheck.alias,s=@v/s)",
+            "side=evaluate(CountCheck.amount,s=@v/s)",
+        ];
+        let c = Control::unlimited();
+        for (map, actual_missing) in [
+            (same_snapshot, false),
+            (other_snapshot, false),
+            (actual_missing, true),
+        ] {
+            let input = InputSources::from_bytes(
+                fixture
+                    .definitions()
+                    .iter()
+                    .map(|d| d.bytes().to_vec())
+                    .collect(),
+                law.clone().into_bytes(),
+                map.into_bytes(),
+            );
+            let prepared = super::super::prepare_observed(input.clone(), &asks, &c).unwrap();
+            assert_eq!(
+                closed_root_plan(&prepared, &c).unwrap().admitted,
+                [!actual_missing, !actual_missing, false, false]
+            );
+            let actual = evaluate_for_delivery(prepared, &c).unwrap();
+            let raw = super::super::evaluate_observed_bytes(input, &asks, &c).unwrap();
+            let (status, code) = if actual_missing {
+                ("partial", 2)
+            } else {
+                ("complete", 0)
+            };
+            assert_eq!(actual.status(), status);
+            assert_eq!(
+                actual.summary_wire(status, code, &actual.issues_wire()),
+                raw.summary_wire(status, code, &raw.issues_wire())
+            );
+        }
+    }
+
+    #[test]
     fn terminal_roots_keep_the_prefix_visible_to_local_diagnostic_messages() {
         use super::super::evaluate::delivery::closed_root_plan;
         let fixture = sources();
@@ -507,7 +577,7 @@ mod tests {
             asks.insert(if root_before { 0 } else { asks.len() }, closed);
             let prepared = super::super::prepare_observed(input.clone(), &asks, &c).unwrap();
             let plan = closed_root_plan(&prepared, &c).unwrap();
-            assert_eq!(plan, [false, false, false, !root_before]);
+            assert_eq!(plan.admitted, [false, false, false, !root_before]);
             let raw = super::super::evaluate_observed_bytes(input.clone(), &asks, &c).unwrap();
             let delivery = evaluate_for_delivery(prepared, &c).unwrap();
             let signalled = raw.issues_wire();
@@ -526,6 +596,7 @@ mod tests {
 
     #[test]
     fn cancellation_during_mixed_admission_leaves_all_requests_unstarted() {
+        use std::{cell::Cell, rc::Rc};
         let asks = [
             "separate=check(CountCheck.false_root)",
             "source=evaluate(CountCheck.amount,s=@v/s)",
@@ -534,13 +605,17 @@ mod tests {
         let prepared =
             super::super::prepare_observed(mixed_sources(false), &asks, &Control::unlimited())
                 .unwrap();
-        let mut count = 0;
-        let control = Control::new(move |point| {
-            assert_eq!(point, Checkpoint::FiniteIteration);
-            count += 1;
-            (count == 6).then_some(Signal::Term)
+        let armed = Rc::new(Cell::new(false));
+        let signal = armed.clone();
+        let control = Control::new(move |_| signal.get().then_some(Signal::Term));
+        super::super::data::observe_iterations(move |_, context, operation, _| {
+            if context.request == 0 && operation == "delivery_admission" {
+                armed.set(true);
+            }
         });
-        let result = evaluate_for_delivery(prepared, &control).unwrap();
+        let result = evaluate_for_delivery(prepared, &control);
+        super::super::data::clear_iteration_observer();
+        let result = result.unwrap();
         assert_eq!(result.status(), "interrupted");
         assert!(!result.has_nodes());
         let Content::Full(result) = result.content else {

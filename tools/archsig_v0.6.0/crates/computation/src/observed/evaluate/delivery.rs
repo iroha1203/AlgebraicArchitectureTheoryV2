@@ -6,7 +6,12 @@ use super::*;
 use crate::observed::owned_scope::{
     ActivationId, BodyScopeRetention, Identities, OwnedDomain, OwnedScope, ProducerId,
 };
-use std::sync::Arc;
+use archsig_common::names::QualifiedName;
+use archsig_input::law::ir::{BindingSource, Lexical, Program};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 
 pub(in crate::observed) type OwnedReason = ReasonOf<ProducerId>;
 
@@ -54,19 +59,32 @@ pub(super) struct ClosedBody {
     pub counterexamples: Vec<Counterexample>,
 }
 
+pub(in crate::observed) struct ClosedRootPlan {
+    pub admitted: Vec<bool>,
+    retain_condition_details: bool,
+}
+impl ClosedRootPlan {
+    fn new(admitted: Vec<bool>, all_observed: bool) -> Self {
+        // Preserve the projection of the old all-or-nothing delivery route.
+        let retain_condition_details = all_observed && admitted.iter().all(|&eligible| eligible);
+        Self {
+            admitted,
+            retain_condition_details,
+        }
+    }
+}
+
 /// Only terminal requests may discard their source graph. Missing fields are
 /// compared with resolved reads for scalar slots. Missing structural slots
 /// can affect implicit membership or value inhabitation; keep their full route.
 pub(in crate::observed) fn closed_root_plan(
     prepared: &PreparedObserved,
     control: &Control,
-) -> Result<Vec<bool>, Signal> {
-    use std::collections::BTreeSet;
-
+) -> Result<ClosedRootPlan, Signal> {
     control.checkpoint(Checkpoint::FiniteIteration)?;
     let requests = prepared.requests().requests();
     if prepared.object.is_some() {
-        return Ok(vec![false; requests.len()]);
+        return Ok(ClosedRootPlan::new(vec![false; requests.len()], false));
     }
     let mut consumed = BTreeSet::new();
     for request in requests {
@@ -76,8 +94,7 @@ pub(in crate::observed) fn closed_root_plan(
             consumed.insert(dependency.as_str());
         }
     }
-    let mut missing = BTreeSet::new();
-    let mut admitted = vec![false; requests.len()];
+    let mut candidates = (0..requests.len()).map(|_| None).collect::<Vec<_>>();
     let mut needs_recorded_prefix = false;
     for &index in prepared.requests().evaluation_order().iter().rev() {
         control.checkpoint(Checkpoint::FiniteIteration)?;
@@ -92,19 +109,44 @@ pub(in crate::observed) fn closed_root_plan(
             && crate::observed::request::comparison::kind(request)
                 .is_ok_and(|kind| kind == "diagnostics"));
         if !needs_recorded_prefix && !consumed.contains(request.id.as_str()) {
-            admitted[index] = closed_request_eligible(prepared, request, &missing, control)?;
+            #[cfg(test)]
+            if let Some(name) = request.declaration() {
+                super::data::observe_actual(
+                    prepared.inputs().law().declarations()[name].span,
+                    crate::observed::call::Context {
+                        request: index,
+                        frame: None,
+                        iteration: None,
+                        instance: None,
+                        case: None,
+                    },
+                    "delivery_admission",
+                    index,
+                );
+            }
+            candidates[index] = closed_request_reads(prepared, request, control)?;
         }
     }
-    if !admitted.iter().any(|&eligible| eligible) {
-        return Ok(admitted);
+    if !candidates.iter().any(Option::is_some) {
+        return Ok(ClosedRootPlan::new(vec![false; requests.len()], false));
     }
-    for field in prepared
+    let mut bound_reads = BTreeSet::new();
+    for reads in candidates.iter().flatten() {
+        for &(field, position) in &reads.fields {
+            control.checkpoint(Checkpoint::FiniteIteration)?;
+            if let Some(position) = position {
+                bound_reads.insert((field, position));
+            }
+        }
+    }
+    let mut missing = MissingFields::default();
+    for (subject, field) in prepared
         .inputs()
         .archmap()
         .snapshots()
         .iter()
         .flat_map(|snapshot| &snapshot.subjects)
-        .flat_map(|subject| &subject.fields)
+        .flat_map(|subject| subject.fields.iter().map(move |field| (subject, field)))
     {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         if field.slot == Slot::Missing {
@@ -112,34 +154,113 @@ pub(in crate::observed) fn closed_root_plan(
                 field.ty,
                 Type::Unit | Type::Bool | Type::Text | Type::Z | Type::Q | Type::Fp(_)
             ) {
-                return Ok(vec![false; requests.len()]);
+                return Ok(ClosedRootPlan::new(vec![false; requests.len()], false));
             }
-            missing.insert(&field.name);
+            missing.fields.insert(&field.name);
+            let slot = (
+                &field.name,
+                (subject.snapshot.as_str(), subject.id.as_str()),
+            );
+            if bound_reads.contains(&slot) {
+                missing.bound.insert(slot);
+            }
         }
     }
-    if !missing.is_empty() {
-        for (request, eligible) in requests.iter().zip(&mut admitted) {
-            if *eligible {
-                *eligible = closed_request_eligible(prepared, request, &missing, control)?;
-            }
-        }
+    let mut admitted = Vec::with_capacity(candidates.len());
+    for reads in candidates {
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        let eligible = match reads {
+            Some(reads) => !reads.intersects(&missing, control)?,
+            None => false,
+        };
+        admitted.push(eligible);
     }
     control.checkpoint(Checkpoint::FiniteIteration)?;
-    Ok(admitted)
+    Ok(ClosedRootPlan::new(admitted, missing.fields.is_empty()))
 }
 
 #[cfg(test)]
 pub(in crate::observed) fn closed_roots_eligible(prepared: &PreparedObserved) -> bool {
     let plan = closed_root_plan(prepared, &Control::unlimited()).unwrap();
-    !plan.is_empty() && plan.into_iter().all(|admitted| admitted)
+    !plan.admitted.is_empty() && plan.admitted.into_iter().all(|admitted| admitted)
 }
 
-fn closed_request_eligible(
-    prepared: &PreparedObserved,
-    request: &Request,
-    missing: &std::collections::BTreeSet<&archsig_common::names::QualifiedName>,
+type SubjectPosition<'a> = (&'a str, &'a str);
+
+#[derive(Default)]
+struct MissingFields<'a> {
+    fields: BTreeSet<&'a QualifiedName>,
+    bound: BTreeSet<(&'a QualifiedName, SubjectPosition<'a>)>,
+}
+
+#[derive(Default)]
+struct FieldReads<'a> {
+    unknown: bool,
+    fields: Vec<(&'a QualifiedName, Option<SubjectPosition<'a>>)>,
+}
+impl FieldReads<'_> {
+    fn intersects(&self, missing: &MissingFields<'_>, control: &Control) -> Result<bool, Signal> {
+        if missing.fields.is_empty() {
+            return Ok(false);
+        }
+        if self.unknown {
+            return Ok(true);
+        }
+        for &(field, position) in &self.fields {
+            control.checkpoint(Checkpoint::FiniteIteration)?;
+            let is_missing = match position {
+                Some(position) => missing.bound.contains(&(field, position)),
+                None => missing.fields.contains(field),
+            };
+            if is_missing {
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+}
+
+fn parameter_subject<'a>(request: &'a Request, lexical: &Lexical) -> Option<SubjectPosition<'a>> {
+    if !matches!(lexical.source, BindingSource::Parameter) {
+        return None;
+    }
+    request.arguments.iter().find_map(|argument| {
+        if argument.name.strip_prefix("bind.") == Some(lexical.name.as_str())
+            && let Selector::Subject { snapshot, subject } = &argument.value
+        {
+            Some((snapshot.as_str(), subject.as_str()))
+        } else {
+            None
+        }
+    })
+}
+
+fn field_receiver<'a>(
+    program: &Program,
+    mut receiver: usize,
+    request: &'a Request,
     control: &Control,
-) -> Result<bool, Signal> {
+) -> Result<Option<SubjectPosition<'a>>, Signal> {
+    loop {
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        let expression = &program.nodes[receiver];
+        if let ExprKind::Group(child) = expression.kind {
+            receiver = child;
+        } else {
+            return Ok(expression
+                .lexical
+                .as_ref()
+                .filter(|lexical| lexical.projections.is_empty())
+                .and_then(|lexical| parameter_subject(request, lexical)));
+        }
+    }
+}
+
+fn closed_request_reads<'a>(
+    prepared: &'a PreparedObserved,
+    request: &'a Request,
+    control: &Control,
+) -> Result<Option<FieldReads<'a>>, Signal> {
     use archsig_input::law::ast::{QuantDomain, QuantSplit};
     let law = prepared.inputs().law();
     if !matches!(request.kind, QuestionKind::Check | QuestionKind::Evaluate)
@@ -153,10 +274,10 @@ fn closed_request_eligible(
                 || !matches!(argument.value, Selector::Subject { .. })
         })
     {
-        return Ok(false);
+        return Ok(None);
     }
     let Some(name) = request.declaration() else {
-        return Ok(false);
+        return Ok(None);
     };
     let declaration = &law.declarations()[name];
     let (params, body) = match &declaration.signature {
@@ -167,10 +288,10 @@ fn closed_request_eligible(
             body,
             ..
         } => (params, *body),
-        _ => return Ok(false),
+        _ => return Ok(None),
     };
     if params.len() != request.arguments.len() {
-        return Ok(false);
+        return Ok(None);
     }
     let ExprKind::Quant {
         split:
@@ -181,10 +302,10 @@ fn closed_request_eligible(
         ..
     } = &law.exprs()[body].kind
     else {
-        return Ok(false);
+        return Ok(None);
     };
     let Some(Type::List(element) | Type::Set(element)) = law.expr_type(*domain) else {
-        return Ok(false);
+        return Ok(None);
     };
     if !matches!(
         element.as_ref(),
@@ -197,27 +318,33 @@ fn closed_request_eligible(
             | Type::Ref(_)
             | Type::Data(_)
     ) {
-        return Ok(false);
+        return Ok(None);
     }
+    let mut reads = FieldReads::default();
     let mut pending = vec![*domain, *body];
     while let Some(id) = pending.pop() {
         control.checkpoint(Checkpoint::FiniteIteration)?;
-        let resolved = &law.program().nodes[id];
-        if resolved
-            .field
-            .as_ref()
-            .is_some_and(|field| missing.contains(field))
-            || resolved.lexical.as_ref().is_some_and(|lexical| {
-                lexical
-                    .projections
-                    .iter()
-                    .any(|read| missing.contains(&read.name))
-            })
-            || (!missing.is_empty()
-                && matches!(resolved.kind, ExprKind::Field { .. })
-                && resolved.field.is_none())
-        {
-            return Ok(false);
+        let program = law.program();
+        let resolved = &program.nodes[id];
+        if let ExprKind::Field { base, .. } = resolved.kind {
+            if let Some(field) = &resolved.field {
+                reads
+                    .fields
+                    .push((field, field_receiver(program, base, request, control)?));
+            } else {
+                reads.unknown = true;
+            }
+        } else if let Some(field) = &resolved.field {
+            reads.fields.push((field, None));
+        }
+        if let Some(lexical) = &resolved.lexical {
+            let mut receiver = parameter_subject(request, lexical);
+            for projection in &lexical.projections {
+                control.checkpoint(Checkpoint::FiniteIteration)?;
+                // An explicit parameter binds the first receiver. A projected
+                // value can point elsewhere, so subsequent receivers remain open.
+                reads.fields.push((&projection.name, receiver.take()));
+            }
         }
         // Path/Term wire projection needs native owners. Plain data and
         // typed Map application have self-owned Scalar payloads.
@@ -225,7 +352,7 @@ fn closed_request_eligible(
         while let Some(ty) = types.pop() {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             match ty {
-                Type::Path(..) | Type::Term(..) => return Ok(false),
+                Type::Path(..) | Type::Term(..) => return Ok(None),
                 Type::Tuple(items) => types.extend(items),
                 Type::List(item) | Type::Set(item) | Type::Option(item) => types.push(item),
                 Type::Map(domain, codomain) => {
@@ -263,10 +390,10 @@ fn closed_request_eligible(
             }
             // Named/native calls, free axes and nested quantifiers retain
             // their full route until their own consumers are connected.
-            _ => return Ok(false),
+            _ => return Ok(None),
         }
     }
-    Ok(true)
+    Ok(Some(reads))
 }
 
 /// The same request runner serves native recording and delivery. Only delivery
@@ -274,9 +401,9 @@ fn closed_request_eligible(
 pub(in crate::observed) fn evaluate_closed_roots(
     prepared: PreparedObserved,
     control: &Control,
-    admitted: Vec<bool>,
+    plan: ClosedRootPlan,
 ) -> ClosedRun {
-    run_delivery(prepared, control, admitted, |_| Ok(()))
+    run_delivery(prepared, control, plan, |_| Ok(()))
 }
 
 #[cfg(test)]
@@ -285,17 +412,22 @@ pub(super) fn evaluate_closed_roots_with_check(
     control: &Control,
     after_root: impl FnMut(&Request) -> Result<(), InternalError>,
 ) -> ClosedRun {
-    let admitted = closed_root_plan(&prepared, control)
-        .unwrap_or_else(|_| vec![false; prepared.requests().requests().len()]);
-    run_delivery(prepared, control, admitted, after_root)
+    let plan = closed_root_plan(&prepared, control).unwrap_or_else(|_| {
+        ClosedRootPlan::new(vec![false; prepared.requests().requests().len()], false)
+    });
+    run_delivery(prepared, control, plan, after_root)
 }
 
 fn run_delivery(
     prepared: PreparedObserved,
     control: &Control,
-    admitted: Vec<bool>,
+    plan: ClosedRootPlan,
     mut after_root: impl FnMut(&Request) -> Result<(), InternalError>,
 ) -> ClosedRun {
+    let ClosedRootPlan {
+        admitted,
+        retain_condition_details,
+    } = plan;
     let mut delivery = DeliveryState {
         answers: (0..admitted.len()).map(|_| None).collect(),
         admitted,
@@ -345,6 +477,7 @@ fn run_delivery(
     recorded_nodes.shrink_to_fit();
     ClosedRun {
         prepared,
+        retain_condition_details,
         answers,
         issues,
         status: super::run_status(control, execution.internal, partial),
@@ -368,6 +501,7 @@ pub(super) struct DeliveryState<'a> {
 
 #[derive(Debug)]
 pub(in crate::observed) struct ClosedRun {
+    pub retain_condition_details: bool,
     pub prepared: PreparedObserved,
     pub answers: Vec<DeliveryAnswer>,
     pub issues: Vec<DeliveryReason>,
@@ -617,7 +751,7 @@ mod tests {
     }
 
     #[test]
-    fn delivery_sealed_root_releases_reserve_without_discarding_the_prefix() {
+    fn delivery_sealed_root_releases_scratch_without_discarding_the_prefix() {
         let mut graph = Graph::new(&Control::unlimited());
         let prior = graph.push(value(Arc::new(Scalar::Bool(false)))).unwrap();
         let capacity = graph.nodes.capacity();
@@ -625,9 +759,12 @@ mod tests {
         for _ in 0..(capacity + 1) {
             graph.push(value(Arc::new(Scalar::Bool(true)))).unwrap();
         }
+        let temporary = Arc::new(Scalar::Bool(true));
+        let weak = Arc::downgrade(&temporary);
+        graph.push(value(temporary)).unwrap();
         assert!(graph.nodes.capacity() > capacity);
         graph.discard_root_suffix(&prefix).unwrap();
-        assert_eq!(graph.nodes.capacity(), capacity);
+        assert!(weak.upgrade().is_none());
         assert_eq!(graph.nodes.len(), 1);
         assert_eq!(graph.boolean(Some(prior)).unwrap(), Some(false));
     }

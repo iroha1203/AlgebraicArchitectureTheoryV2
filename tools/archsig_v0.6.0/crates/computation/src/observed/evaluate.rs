@@ -10164,6 +10164,14 @@ reading Calc {{
             assert_eq!(answer.status, raw.answers[0].status);
             assert_eq!(answer.applicability, "applicable");
             if subject == "r" {
+                let prepared = prepare_observed(input.clone(), &[&ask], &control).unwrap();
+                let solo = crate::observed::evaluate_for_delivery(prepared, &control).unwrap();
+                let summary = solo.summary_wire(solo.status(), 2, &solo.issues_wire());
+                assert!(
+                    summary
+                        .canonical()
+                        .contains(r#""details":{"construction":"evaluation"}"#)
+                );
                 assert_eq!(answer.status, Decision::Undetermined);
                 assert!(answer.value.is_none());
                 assert!(answer.counterexamples.is_empty());
@@ -10196,7 +10204,7 @@ reading Calc {{
             if subject == "r" {
                 let summary = actual.summary_wire(actual.status(), code, &actual.issues_wire());
                 assert!(
-                    summary
+                    !summary
                         .canonical()
                         .contains(r#""details":{"construction":"evaluation"}"#)
                 );
