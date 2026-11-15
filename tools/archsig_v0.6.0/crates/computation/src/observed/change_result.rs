@@ -31,7 +31,7 @@ pub(super) struct Source {
     parts: Vec<Part>,
     answer: Answer,
     integer: Option<Arc<super::environment::change_affine::Linear>>,
-    rational_polyhedron: bool,
+    rational_polyhedron: Option<Arc<change_search::Search>>,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -1506,7 +1506,7 @@ impl Environment<'_> {
             compute(self, g, &d.source.architecture, d.source.base, request, &c)?;
         // Polyhedral search checks each witness against the original change and Law.
         if let Some(search) = verification
-            && !d.source.rational_polyhedron
+            && d.source.rational_polyhedron.is_none()
         {
             for point in 0..search
                 .candidates
@@ -1820,7 +1820,7 @@ pub(super) fn same_candidate_space(
 pub(super) struct CandidateInput {
     pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
-    pub search: change_search::Search,
+    pub search: Arc<change_search::Search>,
     pub domain_type: ProjectionType,
     pub integer_family: Option<super::repair_problem::integer::Family>,
 }
@@ -1854,33 +1854,38 @@ pub(super) fn candidate_input(
         return super::repair_problem::candidate_input(env, g, reference, c);
     }
     let d = checked_candidate(env, g, reference)?;
-    let origin = Witness::Architecture(d.source.architecture.witness.clone());
-    let request = origin.request();
-    env.with_request_context(g, request, || {
-        let _selected = env.enter_architecture(g)?;
-        let search = if d.source.rational_polyhedron
-            && d.ty() == NodeType::Construction(T::CandidateSpace)
-        {
-            change_search::search_rational_domain(
-                env,
-                g,
-                &d.source.architecture.witness,
-                request,
-                c,
-            )
-        } else {
-            change_search::search(env, g, &d.source.architecture.witness, request, c)
+    let domain_type = d
+        .projection_type()
+        .ok_or(internal!("商の候補域の公開型がない"))?;
+    // 元解集合の検査後は、その構築に使った多面体を共有する。
+    let search = match (&d.source.rational_polyhedron, &domain_type) {
+        (Some(search), ProjectionType::SolutionSet(_)) => Arc::clone(search),
+        _ => {
+            let origin = Witness::Architecture(d.source.architecture.witness.clone());
+            let request = origin.request();
+            Arc::new(env.with_request_context(g, request, || {
+                let _selected = env.enter_architecture(g)?;
+                if d.source.rational_polyhedron.is_some() {
+                    change_search::search_rational_domain(
+                        env,
+                        g,
+                        &d.source.architecture.witness,
+                        request,
+                        c,
+                    )
+                } else {
+                    change_search::search(env, g, &d.source.architecture.witness, request, c)
+                }
+                .map_err(|failure| failure.cause)
+            })?)
         }
-        .map_err(|f| f.cause)?;
-        Ok(CandidateInput {
-            integer_family: None,
-            architecture: d.source.architecture.reference,
-            witness: d.source.architecture.witness.clone(),
-            search,
-            domain_type: d
-                .projection_type()
-                .ok_or(internal!("商の候補域の公開型がない"))?,
-        })
+    };
+    Ok(CandidateInput {
+        integer_family: None,
+        architecture: d.source.architecture.reference,
+        witness: d.source.architecture.witness.clone(),
+        search,
+        domain_type,
     })
 }
 
@@ -1963,7 +1968,7 @@ impl super::result_kind::ResultKind for Data {
         }
         let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
         let base = g.nodes.len();
-        let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
+        let (parts, answer, mut verification) = compute(env, g, &architecture, base, request, c)?;
         let polyhedral = verification.as_ref().is_some_and(|search| {
             search.rational.as_ref().is_some_and(|linear| {
                 matches!(
@@ -1973,19 +1978,24 @@ impl super::result_kind::ResultKind for Data {
             })
         });
         let integer = verification.as_ref().and_then(|s| s.linear.clone());
+        let points = verification
+            .as_ref()
+            .and_then(|s| s.candidates.as_ref())
+            .map_or(0, |table| table.rows.len());
+        let rational_polyhedron = if polyhedral {
+            verification.take().map(Arc::new)
+        } else {
+            None
+        };
         let source = Arc::new(Source {
             integer,
-            rational_polyhedron: polyhedral,
+            rational_polyhedron,
             architecture,
             boundary,
             base,
             parts,
             answer,
         });
-        let points = verification
-            .as_ref()
-            .and_then(|s| s.candidates.as_ref())
-            .map_or(0, |table| table.rows.len());
         if points > 0 && !polyhedral {
             change_search::verify_point(
                 env,

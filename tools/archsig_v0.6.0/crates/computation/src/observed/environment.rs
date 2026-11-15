@@ -603,14 +603,22 @@ impl<'a> Environment<'a> {
         ),
         ValidationFailure,
     > {
-        self.local_point_mode(declaration, bindings, true)
+        self.local_point_mode(declaration, bindings, true, false)
     }
     pub(super) fn local_point_without_trace(
         &self,
         declaration: &archsig_input::law::model::Declaration,
         bindings: &[(String, Scalar)],
     ) -> Result<(finite_law_valuations::FiniteLawRow, Vec<Fact>), ValidationFailure> {
-        let (row, missing, _) = self.local_point_mode(declaration, bindings, false)?;
+        let (row, missing, _) = self.local_point_mode(declaration, bindings, false, false)?;
+        Ok((row, missing))
+    }
+    pub(super) fn conditional_local_point(
+        &self,
+        declaration: &archsig_input::law::model::Declaration,
+        bindings: &[(String, Scalar)],
+    ) -> Result<(finite_law_valuations::FiniteLawRow, Vec<Fact>), ValidationFailure> {
+        let (row, missing, _) = self.local_point_mode(declaration, bindings, false, true)?;
         Ok((row, missing))
     }
     fn local_point_mode(
@@ -618,6 +626,7 @@ impl<'a> Environment<'a> {
         declaration: &archsig_input::law::model::Declaration,
         bindings: &[(String, Scalar)],
         capture_trace: bool,
+        conditional: bool,
     ) -> Result<
         (
             finite_law_valuations::FiniteLawRow,
@@ -639,7 +648,11 @@ impl<'a> Environment<'a> {
                 stack: vec![],
             }
         }));
-        let result = finite_law_valuations::evaluate_local_point(self, declaration, bindings);
+        let result = if conditional {
+            finite_law_valuations::evaluate_change_point(self, declaration, bindings, 0)
+        } else {
+            finite_law_valuations::evaluate_local_point(self, declaration, bindings)
+        };
         let nodes = match (capture_trace, prior.restore()) {
             (true, Some(capture)) => capture.nodes,
             (false, None) => vec![],

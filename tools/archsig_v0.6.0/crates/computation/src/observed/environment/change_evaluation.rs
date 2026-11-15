@@ -596,7 +596,7 @@ pub(in crate::observed) fn candidate(
     })
 }
 
-#[derive(Clone, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct SolutionRow {
     pub candidate: usize,
     pub member: Option<bool>,

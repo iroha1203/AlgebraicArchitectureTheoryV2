@@ -218,8 +218,20 @@ fn reobserve_rejects_invalid_alignment_current_input_and_io_failures() {
     assert_eq!(rejected.code, 64);
     assert!(!dir.join("out").exists());
     std::fs::write(path, alignment).unwrap();
-    std::fs::write(dir.join("after.json"), b"invalid JSON").unwrap();
-    assert_eq!(run_binary(&dir, &args).code, 65);
+    for (stage, name, valid) in [
+        ("previous", "before.json", BEFORE),
+        ("current", "after.json", AFTER),
+    ] {
+        std::fs::write(dir.join(name), b"invalid JSON").unwrap();
+        let rejected = run_binary(&dir, &args);
+        assert_eq!(rejected.code, 65);
+        let [issue] = arr(get(&rejected.receipt, "issues")) else {
+            panic!("one invalid input issue")
+        };
+        assert_eq!(s(get(issue, "stage")), stage);
+        assert_eq!(s(get(get(issue, "location"), "input")), "archmap");
+        std::fs::write(dir.join(name), valid).unwrap();
+    }
     std::fs::remove_file(dir.join("after.json")).unwrap();
     assert_eq!(run_binary(&dir, &args).code, 74);
     assert!(!dir.join("out").exists());

@@ -880,9 +880,6 @@ fn check_change(
 ) -> Result<(), ReobservationFailure> {
     let old = before.inputs();
     let new = current.inputs();
-    if old.sources().law().bytes() == new.sources().law().bytes() {
-        return Ok(());
-    }
     let mut remaining = vec![name];
     let mut seen = BTreeSet::new();
     while let Some(name) = remaining.pop() {
@@ -967,6 +964,7 @@ fn repair_requests<'a>(
     previous_candidate: &str,
     current_solve: &str,
     reading: &str,
+    checked_changes: &mut Option<BTreeSet<&'a str>>,
     control: &Control,
 ) -> Result<([&'a Request; 2], [&'a Request; 2]), ReobservationFailure> {
     let before_candidate = question(before, previous_candidate, QuestionKind::Candidate)?;
@@ -1001,7 +999,11 @@ fn repair_requests<'a>(
     if using != selected_change(new_prepare)? {
         return Err(invalid("前回と現在の change が対応しない"));
     }
-    check_change(before, current, using, control)?;
+    if let Some(checked_changes) = checked_changes
+        && checked_changes.insert(using)
+    {
+        check_change(before, current, using, control)?;
+    }
     let law = before.inputs().law();
     let Signature::Change { params, .. } = &law.declarations()[using].signature else {
         return Err(invalid("前回 prepare の using が change でない"));
@@ -1263,6 +1265,7 @@ fn reevaluate_assembly_aligned(
         }
         Ok(())
     };
+    let mut checked_changes = (old.law().bytes() != new.law().bytes()).then(BTreeSet::new);
     let mut selected_locals = Vec::new();
     for (a, b) in matching_arguments(before_request, after_request)? {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -1284,6 +1287,7 @@ fn reevaluate_assembly_aligned(
             candidate.previous_candidate,
             candidate.current_solve,
             alignment.reading,
+            &mut checked_changes,
             control,
         )?;
         compare_prepare(prior_prepare, new_prepare)?;
@@ -1331,6 +1335,7 @@ fn reevaluate_assembly_aligned(
             candidate.previous_candidate,
             candidate.current_solve,
             alignment.reading,
+            &mut checked_changes,
             control,
         )?;
         compare_prepare(prior_prepare, new_prepare)?;

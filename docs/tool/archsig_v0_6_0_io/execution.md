@@ -54,13 +54,13 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
-Key      ::= Name | "bind." Name | "local." Name | "design." Name
+Key      ::= Name | "bind." Name | "local." Name | "design." Name | "fiber.at"
 Index    ::= "0" | [1-9][0-9]*
 Degree   ::= Index
 Ordinal  ::= Index
 ```
 
-`local.` と `design.` の Key は `assemble` にだけ指定できる。
+`local.` と `design.` の Key は `assemble` に、`fiber.at` は `quotient` に指定する。
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
 ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
 Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
@@ -711,7 +711,8 @@ archsig reobserve \
 
 `--out` は任意。標準出力の要約と保存結果は [再観測の結果](results.md#再観測の結果) に従う。
 入力・対応が有効な場合、終了状態は現在の回答に従い、候補照合に判定不能があれば partial/2 となる。
-入力・解決・I/O エラーには通常の終了コードを使う。対応の不一致は 64、未対応の組合せは 69。
+入力・解決・I/O エラーには通常の終了コードを使う。前回または現在の入力検査エラーの
+`issues[].stage` は `previous` / `current` のいずれか。対応の不一致は 64、未対応の組合せは 69。
 SIGINT/SIGTERM は 130/143 とし、前回段階で停止した場合は前回の確定済み回答、
 現在段階で停止した場合は前回と現在の確定済み回答を保持する。`--reuse` は `run` の保存結果照合に使う。
 

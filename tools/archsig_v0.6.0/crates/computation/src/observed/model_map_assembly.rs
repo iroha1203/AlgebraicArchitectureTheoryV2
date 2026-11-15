@@ -1461,27 +1461,28 @@ mod tests {
             });
             assert!(differences.clone().count() > 0);
             for law in differences {
-                let rows = law.family().unwrap().rows();
-                assert_eq!(rows.len(), 6);
+                let family = law.family().unwrap();
+                let domains = family
+                    .parameters()
+                    .iter()
+                    .map(|parameter| parameter.source().len())
+                    .collect::<Vec<_>>();
+                assert_eq!(domains, [2, 3]);
+                let [row] = family.rows() else {
+                    panic!("first concrete refutation")
+                };
+                let [(flag, value), (mode, value_mode)] = row.source_bindings() else {
+                    panic!("Bool and data parameters")
+                };
+                assert_eq!((flag.as_str(), mode.as_str()), ("q", "m"));
+                assert_eq!(value.scalar(), &Scalar::Bool(true));
                 assert_eq!(
-                    rows.iter()
-                        .filter(|row| matches!(row.outcome(), LawTransportOutcome::Refuted(_)))
-                        .count(),
-                    1
+                    value_mode.wire().canonical(),
+                    r#"{"args":[true],"tag":"On"}"#
                 );
-                for row in rows {
-                    let [(flag, value), (mode, value_mode)] = row.source_bindings() else {
-                        panic!("Bool and data parameters")
-                    };
-                    assert_eq!((flag.as_str(), mode.as_str()), ("q", "m"));
-                    let Scalar::Bool(q) = value.scalar() else {
-                        panic!("Bool")
-                    };
-                    let active = value_mode.wire().canonical() == r#"{"args":[true],"tag":"On"}"#;
-                    assert_eq!(row.target_bindings(), row.source_bindings());
-                    assert_eq!(row.source().body(), Some(true));
-                    assert_eq!(row.target().body(), Some(!(*q && active)));
-                }
+                assert_eq!(row.target_bindings(), row.source_bindings());
+                assert_eq!(row.source().body(), Some(true));
+                assert_eq!(row.target().body(), Some(false));
             }
         }
     }

@@ -11,7 +11,7 @@ use crate::observed::{
     },
 };
 use archsig_common::types::Type;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawFamily)
@@ -62,7 +62,8 @@ impl FiniteLawFamily {
     pub fn parameters(&self) -> &[FiniteValueTransport] {
         &self.parameters
     }
-    /// 完成した比較のみ。停止結果ではこの列を族全体の結論としない。
+    /// 原始状態では完成した比較。修復後の組立て写像では最初の反証行。
+    /// 停止結果ではこの列を族全体の結論としない。
     pub fn rows(&self) -> &[LawParameterComparison] {
         &self.rows
     }
@@ -711,6 +712,7 @@ pub(super) fn compare_rows(
         source.instance(),
         target.instance(),
         source_keys,
+        true,
         c,
         |key, image, _| {
             let refs = |rows: &Option<Rows>, key: &[usize]| {
@@ -729,6 +731,22 @@ pub(super) fn compare_rows(
     Ok(())
 }
 
+/// 修復状態は全代入を順に読む。直積全体を先に確保しない。
+fn state_coordinates(lengths: Vec<usize>) -> impl Iterator<Item = Vec<usize>> {
+    let first = (!lengths.contains(&0)).then(|| vec![0; lengths.len()]);
+    std::iter::successors(first, move |previous| {
+        let mut next = previous.clone();
+        for (index, length) in next.iter_mut().zip(&lengths).rev() {
+            *index += 1;
+            if *index < *length {
+                return Some(next);
+            }
+            *index = 0;
+        }
+        None
+    })
+}
+
 pub(super) fn compare_state_rows(
     r: &mut ObjectLawTransport,
     states: [SelectedState<'_, '_>; 2],
@@ -740,19 +758,14 @@ pub(super) fn compare_state_rows(
         .as_mut()
         .ok_or_else(|| inconsistent("Law族がない"))?;
     let readings = [&r.source_readings, &r.target_readings];
-    let keys = coordinates(
-        &family
-            .parameters
-            .iter()
-            .map(|p| p.source().len())
-            .collect::<Vec<_>>(),
-        c,
-    )?;
-    r.outcome = compare_points(
+    let keys = state_coordinates(family.parameters.iter().map(|p| p.source().len()).collect());
+    let mut missing = BTreeSet::new();
+    let outcome = compare_points(
         family,
         &readings[0].instances()[positions[0].1],
         &readings[1].instances()[positions[1].1],
         keys,
+        false,
         c,
         |_, _, bindings| {
             let read = |n: usize| {
@@ -769,13 +782,13 @@ pub(super) fn compare_state_rows(
             };
             let a = read(0)?;
             let b = read(1)?;
-            r.missing.extend(a.missing.into_iter().chain(b.missing));
+            missing.extend(a.missing.into_iter().chain(b.missing));
             r.unsupported_state_expression |= a.unsupported || b.unsupported;
             Ok((a.value, b.value, vec![], vec![]))
         },
-    )?;
-    r.missing.sort();
-    r.missing.dedup();
+    );
+    r.missing.extend(missing);
+    r.outcome = outcome?;
     Ok(())
 }
 
@@ -790,7 +803,8 @@ fn compare_points(
     family: &mut FiniteLawFamily,
     source: &ObjectInstance,
     target: &ObjectInstance,
-    keys: Vec<Vec<usize>>,
+    keys: impl IntoIterator<Item = Vec<usize>>,
+    keep_all_rows: bool,
     c: &Control,
     mut evaluate: impl FnMut(
         &[usize],
@@ -831,15 +845,19 @@ fn compare_points(
         {
             outcome = point.clone();
         }
-        family.rows.push(LawParameterComparison {
-            source_bindings,
-            target_bindings,
-            source_evaluations,
-            target_evaluations,
-            source,
-            target,
-            outcome: point,
-        });
+        if keep_all_rows
+            || (family.rows.is_empty() && matches!(point, LawTransportOutcome::Refuted(_)))
+        {
+            family.rows.push(LawParameterComparison {
+                source_bindings,
+                target_bindings,
+                source_evaluations,
+                target_evaluations,
+                source,
+                target,
+                outcome: point,
+            });
+        }
         tick(c)?;
     }
     Ok(outcome)

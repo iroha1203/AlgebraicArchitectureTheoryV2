@@ -515,7 +515,7 @@ pub(super) fn candidate_input(
         } else {
             ProjectionType::CandidateSpace(shared.root_type.clone())
         },
-        search: change_search::Search {
+        search: Arc::new(change_search::Search {
             linear: None,
             rational: None,
             pending_integer: None,
@@ -531,7 +531,7 @@ pub(super) fn candidate_input(
             missing: vec![],
             complete: true,
             valuation: shared.compiled.fixed.clone(),
-        },
+        }),
     })
 }
 pub(super) fn assignment_input(

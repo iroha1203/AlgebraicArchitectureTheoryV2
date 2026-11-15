@@ -130,6 +130,15 @@ fn result(value: Result<ObservedEvaluation, EvaluationFailure>) -> Option<Observ
     }
 }
 
+fn input_stage(mut outcome: Outcome, stage: &str) -> Outcome {
+    for issue in &mut outcome.issues {
+        if let Json::Obj(fields) = issue {
+            fields.insert("stage".into(), Json::str(stage));
+        }
+    }
+    outcome
+}
+
 pub(super) fn execute(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
@@ -159,11 +168,11 @@ pub(super) fn execute(
     };
     let previous = match evaluate::load_requests(signals, &args.previous, c) {
         Ok(prepared) => prepared,
-        Err(outcome) => return outcome,
+        Err(outcome) => return input_stage(outcome, "previous"),
     };
     let current = match evaluate::load_requests(signals, &args.current, c) {
         Ok(prepared) => prepared,
-        Err(outcome) => return outcome,
+        Err(outcome) => return input_stage(outcome, "current"),
     };
     let Some(previous) = result(evaluate_observed(previous, c)) else {
         return evaluate::run_internal_outcome(signals);
@@ -238,9 +247,9 @@ pub(super) fn execute(
         };
     }
     let mut summary = envelope("archsig.reobservation.summary/1", state, &issues);
-    summary.insert("previous".into(), summary_stage(&previous));
+    summary.insert("previous".into(), summary_stage(&previous, signal));
     if let Some(current) = &current {
-        summary.insert("current".into(), summary_stage(current));
+        summary.insert("current".into(), summary_stage(current, signal));
     }
     if let Some(report) = &continuity {
         summary.insert("assembly".into(), report.clone());
@@ -301,8 +310,16 @@ fn envelope(format: &str, state: (Status, u8), issues: &[Json]) -> JsonObject {
     ])
 }
 
-fn summary_stage(evaluation: &DeliveryEvaluation) -> Json {
+fn summary_stage(
+    evaluation: &DeliveryEvaluation,
+    signal: Option<archsig_common::control::Signal>,
+) -> Json {
     let (status, code) = status(evaluation);
+    let code = if status == Status::Interrupted {
+        exit_code(status, signal, &[])
+    } else {
+        code
+    };
     evaluation.summary_wire(status.wire(), code, &evaluation.issues_wire())
 }
 
@@ -404,6 +421,19 @@ mod tests {
         Some(status)
     }
 
+    fn stage_exit_code(summary: &Json, stage: &str) -> u64 {
+        let Json::Obj(report) = summary else {
+            panic!("summary")
+        };
+        let Json::Obj(stage) = &report[stage] else {
+            panic!("stage")
+        };
+        let Json::Nat(code) = stage["exit_code"] else {
+            panic!("exit code")
+        };
+        code
+    }
+
     #[test]
     fn signals_during_either_evaluation_keep_the_verified_prefix() {
         let dir =
@@ -468,6 +498,7 @@ mod tests {
                 let summary = result.summary.as_ref().expect("verified prefix");
                 assert_eq!(stage_status(summary, "previous", 0), Some("established"));
                 assert_eq!(stage_status(summary, stage, 1), Some("undetermined"));
+                assert_eq!(stage_exit_code(summary, stage), 143);
                 if stage == "previous" {
                     assert!(stage_status(summary, "current", 0).is_none());
                 } else {

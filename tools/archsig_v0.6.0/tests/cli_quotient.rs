@@ -164,6 +164,34 @@ fn finite_quotient_distinguishes_all_candidates_from_solutions() {
     exact_fibers(&original, 1, vec![vec![(true, false)], vec![(true, true)]]);
 }
 #[test]
+fn unsupported_fiber_reports_actual_candidate_and_view_types() {
+    let dir = input("quotient-finite-fiber");
+    let run = execute(
+        &dir,
+        "out",
+        &[
+            "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
+            "v=evaluate(Pair.last,s=@v/s)",
+            "q=quotient(Pair.last,on=$s.solutions,s=@v/s,fiber.at=$v.value)",
+        ],
+        None,
+    );
+    assert_eq!(run.code, 2, "{}{:?}", run.stdout, run.stderr());
+    let result = result_json(&dir, &run);
+    let q = arr(get(&result, "answers")).last().unwrap();
+    assert_eq!(s(get(q, "status")), "undetermined");
+    let [reason] = arr(get(q, "reasons")) else {
+        panic!("one unsupported algorithm reason");
+    };
+    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    let types = arr(get(get(reason, "details"), "operand_types"))
+        .iter()
+        .map(s)
+        .collect::<Vec<_>>();
+    assert_eq!(types, ["Bool"]);
+}
+
+#[test]
 fn empty_solution_quotient_keeps_its_type_and_has_no_fibers() {
     let dir = input("quotient-empty");
     let r = execute(

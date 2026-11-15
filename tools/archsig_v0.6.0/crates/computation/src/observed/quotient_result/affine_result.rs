@@ -43,10 +43,30 @@ pub(super) fn unsupported(
     part.arguments.push(reference);
     part.scope.merge(&g.get(reference)?.scope);
     let scope = part.scope.clone();
+    let candidate_types = if input.search.rational.is_some() {
+        vec![Type::Q]
+    } else if input.search.linear.is_some() || input.search.pending_integer.is_some() {
+        vec![Type::Z]
+    } else {
+        input
+            .search
+            .candidates
+            .as_ref()
+            .map_or_else(Vec::new, |candidates| candidates.parameter_types.clone())
+    };
+    let mut operand_types = Vec::new();
+    for ty in candidate_types
+        .into_iter()
+        .chain(std::iter::once(returns.clone()))
+    {
+        if !operand_types.contains(&ty) {
+            operand_types.push(ty);
+        }
+    }
     let reason = Reason {
         kind: ReasonKind::UnsupportedAlgorithm {
             question: request.kind,
-            operand_types: vec![Type::Q, returns.clone()],
+            operand_types,
             method: method.into(),
         },
         request: request.id.clone(),

@@ -8,6 +8,7 @@ use archsig_input::law::model::Signature;
 use change_evaluation::{Candidates, SolutionRow};
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub(in crate::observed) struct Search {
     pub linear: Option<Arc<change_affine::Linear>>,
     pub rational: Option<field_change::Linear>,

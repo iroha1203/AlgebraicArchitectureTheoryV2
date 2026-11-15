@@ -1026,7 +1026,8 @@ requirementsが空で完全な共通解を確定した場合だけ、回答の�
 `reobserve` は標準出力で `archsig.reobservation.summary/1`、保存時は `result.json` に
 `archsig.reobservation/1` を返す。共通欄は `format`、`semantics`、`status`、`exit_code`、`issues`。
 `previous` / `current` の各段階は、要約では通常の回答要約、保存時は各段階の入力表・問い・回答・導出を保持する。
-評価前に停止した現在段階の欄は省略する。保存先の `inputs/` に前後の Law・ArchMap と指定した対応表を、
+入力検査で停止した場合、失敗した段階は issue の `stage` に記す。
+中断された段階の要約には、その中断の終了コードを記す。評価前に停止した現在段階の欄は省略する。保存先の `inputs/` に前後の Law・ArchMap と指定した対応表を、
 `inputs/definitions/` に前後の Atom 定義を保持する。各段階の node 参照は同じ段階の node 表で解決する。
 
 対応表を用いた再観測は `assembly` に `assembly_status`、`observations`、`layout_missing`、`candidates` を返す。

@@ -967,3 +967,45 @@ fn repaired_map_saves_finite_law_domain_and_actual_boolean_counterexample() {
     assert!(warnings(&replay).is_empty());
     assert_eq!(get(&result, "answers").value, get(&replay, "answers").value);
 }
+
+#[test]
+fn repaired_map_skips_the_body_of_a_law_when_its_guard_is_false() {
+    let dir = workdir("repaired-model-map-false-guard");
+    write_inputs(
+        &dir,
+        &repaired_boolean_inputs(
+            "view owned(r:Root,p:Part[r]):Bool=true;
+             law optional scoped(p:Part,q:Bool) when false: forall b:Root . owned(b,p);",
+        ),
+    );
+    let mut asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
+        .lines()
+        .filter(|ask| {
+            matches!(
+                ask.split_once('=').unwrap().0,
+                "aWithin"
+                    | "bWithin"
+                    | "aProblem"
+                    | "bProblem"
+                    | "aSolve"
+                    | "bSolve"
+                    | "aPick0"
+                    | "bPick0"
+                    | "aApply0"
+                    | "bApply0"
+                    | "made0"
+            )
+        })
+        .collect::<Vec<_>>();
+    asks.extend([
+        "off=check(Assembly.scoped,p=@v/a,on=$made0.object)",
+        "same=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)",
+    ]);
+    let first = execute_asks(&dir, "out", None, &asks);
+    assert_eq!(first.code, 0, "{}{}", first.stdout, first.stderr);
+    let result = result_json(&dir, &first);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(answers.len(), asks.len());
+    assert!(answers.iter().all(|a| s(get(a, "status")) == "established"));
+    assert!(has(get(answers.last().unwrap(), "outputs"), "map"));
+}

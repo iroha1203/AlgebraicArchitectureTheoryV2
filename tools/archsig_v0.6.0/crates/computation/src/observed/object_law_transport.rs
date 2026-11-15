@@ -416,7 +416,7 @@ fn reading_from_state(
             .position(|(parameter, _)| name == parameter)
     });
     let declaration = &env.indexes.inputs.law().declarations()[&row.declaration().name];
-    let (evaluation, mut missing) = match env.local_point_without_trace(declaration, &bindings) {
+    let (evaluation, mut missing) = match env.conditional_local_point(declaration, &bindings) {
         Ok(point) => point,
         Err(ValidationFailure::UnsupportedExpression { .. }) => {
             return Ok(StateReading {
