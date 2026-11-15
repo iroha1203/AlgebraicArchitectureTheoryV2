@@ -119,7 +119,7 @@ impl DeliveryEvaluation {
             Content::Closed(run) => ordered_issues(run)
                 .into_iter()
                 .map(|reason| match reason {
-                    DeliveryReason::Closed(reason) => project::reason(reason),
+                    DeliveryReason::Closed(reason) => summary::owned_reason_wire(reason),
                     DeliveryReason::Recorded(reason) => reason.wire(),
                 })
                 .collect(),
@@ -183,8 +183,9 @@ pub fn evaluate_for_delivery(
     prepared: PreparedObserved,
     control: &Control,
 ) -> Result<DeliveryEvaluation, DeliveryFailure> {
-    let plan = super::evaluate::delivery::closed_root_plan(&prepared);
-    if plan.iter().any(|admitted| *admitted) {
+    if let Ok(plan) = super::evaluate::delivery::closed_root_plan(&prepared, control)
+        && plan.iter().any(|admitted| *admitted)
+    {
         let mut run = super::evaluate::delivery::evaluate_closed_roots(prepared, control, plan);
         let not_implemented = run.not_implemented.take();
         let result = DeliveryEvaluation::from_closed(run);
@@ -431,7 +432,7 @@ mod tests {
             let input = mixed_sources(missing);
             let prepared = super::super::prepare_observed(input.clone(), &asks, &control).unwrap();
             assert_eq!(
-                closed_root_plan(&prepared),
+                closed_root_plan(&prepared, &control).unwrap(),
                 [false, true, false, false, false, !missing]
             );
             let actual = evaluate_for_delivery(prepared, &control).unwrap();
@@ -473,6 +474,36 @@ mod tests {
                 actual.summary_wire(actual.status(), code, &actual.issues_wire())
             );
         }
+    }
+
+    #[test]
+    fn cancellation_during_mixed_admission_leaves_all_requests_unstarted() {
+        let asks = [
+            "separate=check(CountCheck.false_root)",
+            "source=evaluate(CountCheck.amount,s=@v/s)",
+            "needed=needed($source)",
+        ];
+        let prepared =
+            super::super::prepare_observed(mixed_sources(false), &asks, &Control::unlimited())
+                .unwrap();
+        let mut count = 0;
+        let control = Control::new(move |point| {
+            assert_eq!(point, Checkpoint::FiniteIteration);
+            count += 1;
+            (count == 6).then_some(Signal::Term)
+        });
+        let result = evaluate_for_delivery(prepared, &control).unwrap();
+        assert_eq!(result.status(), "interrupted");
+        assert!(!result.has_nodes());
+        let Content::Full(result) = result.content else {
+            panic!("stopped planning")
+        };
+        assert!(
+            result
+                .answers
+                .iter()
+                .all(|a| a.status == Decision::Undetermined && a.outputs.is_empty())
+        );
     }
 
     #[test]

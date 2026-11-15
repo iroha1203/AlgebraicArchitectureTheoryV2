@@ -57,17 +57,25 @@ pub(super) struct ClosedBody {
 /// Only terminal requests may discard their source graph. Missing fields are
 /// compared with resolved reads for scalar slots. Missing structural slots
 /// can affect implicit membership or value inhabitation; keep their full route.
-pub(in crate::observed) fn closed_root_plan(prepared: &PreparedObserved) -> Vec<bool> {
+pub(in crate::observed) fn closed_root_plan(
+    prepared: &PreparedObserved,
+    control: &Control,
+) -> Result<Vec<bool>, Signal> {
     use std::collections::BTreeSet;
 
+    control.checkpoint(Checkpoint::FiniteIteration)?;
     let requests = prepared.requests().requests();
     if prepared.object.is_some() {
-        return vec![false; requests.len()];
+        return Ok(vec![false; requests.len()]);
     }
-    let consumed = requests
-        .iter()
-        .flat_map(|request| request.dependencies.iter().map(String::as_str))
-        .collect::<BTreeSet<_>>();
+    let mut consumed = BTreeSet::new();
+    for request in requests {
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        for dependency in &request.dependencies {
+            control.checkpoint(Checkpoint::FiniteIteration)?;
+            consumed.insert(dependency.as_str());
+        }
+    }
     let mut missing = BTreeSet::new();
     for field in prepared
         .inputs()
@@ -76,28 +84,33 @@ pub(in crate::observed) fn closed_root_plan(prepared: &PreparedObserved) -> Vec<
         .iter()
         .flat_map(|snapshot| &snapshot.subjects)
         .flat_map(|subject| &subject.fields)
-        .filter(|field| field.slot == Slot::Missing)
     {
-        if !matches!(
-            field.ty,
-            Type::Unit | Type::Bool | Type::Text | Type::Z | Type::Q | Type::Fp(_)
-        ) {
-            return vec![false; requests.len()];
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        if field.slot == Slot::Missing {
+            if !matches!(
+                field.ty,
+                Type::Unit | Type::Bool | Type::Text | Type::Z | Type::Q | Type::Fp(_)
+            ) {
+                return Ok(vec![false; requests.len()]);
+            }
+            missing.insert(&field.name);
         }
-        missing.insert(&field.name);
     }
-    requests
-        .iter()
-        .map(|request| {
+    let mut admitted = Vec::with_capacity(requests.len());
+    for request in requests {
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        admitted.push(
             !consumed.contains(request.id.as_str())
-                && closed_request_eligible(prepared, request, &missing)
-        })
-        .collect()
+                && closed_request_eligible(prepared, request, &missing, control)?,
+        );
+    }
+    control.checkpoint(Checkpoint::FiniteIteration)?;
+    Ok(admitted)
 }
 
 #[cfg(test)]
 pub(in crate::observed) fn closed_roots_eligible(prepared: &PreparedObserved) -> bool {
-    let plan = closed_root_plan(prepared);
+    let plan = closed_root_plan(prepared, &Control::unlimited()).unwrap();
     !plan.is_empty() && plan.into_iter().all(|admitted| admitted)
 }
 
@@ -105,7 +118,8 @@ fn closed_request_eligible(
     prepared: &PreparedObserved,
     request: &Request,
     missing: &std::collections::BTreeSet<&archsig_common::names::QualifiedName>,
-) -> bool {
+    control: &Control,
+) -> Result<bool, Signal> {
     use archsig_input::law::ast::{QuantDomain, QuantSplit};
     let law = prepared.inputs().law();
     if !matches!(request.kind, QuestionKind::Check | QuestionKind::Evaluate)
@@ -119,10 +133,10 @@ fn closed_request_eligible(
                 || !matches!(argument.value, Selector::Subject { .. })
         })
     {
-        return false;
+        return Ok(false);
     }
     let Some(name) = request.declaration() else {
-        return false;
+        return Ok(false);
     };
     let declaration = &law.declarations()[name];
     let (params, body) = match &declaration.signature {
@@ -133,10 +147,10 @@ fn closed_request_eligible(
             body,
             ..
         } => (params, *body),
-        _ => return false,
+        _ => return Ok(false),
     };
     if params.len() != request.arguments.len() {
-        return false;
+        return Ok(false);
     }
     let ExprKind::Quant {
         split:
@@ -147,10 +161,10 @@ fn closed_request_eligible(
         ..
     } = &law.exprs()[body].kind
     else {
-        return false;
+        return Ok(false);
     };
     let Some(Type::List(element) | Type::Set(element)) = law.expr_type(*domain) else {
-        return false;
+        return Ok(false);
     };
     if !matches!(
         element.as_ref(),
@@ -163,10 +177,11 @@ fn closed_request_eligible(
             | Type::Ref(_)
             | Type::Data(_)
     ) {
-        return false;
+        return Ok(false);
     }
     let mut pending = vec![*domain, *body];
     while let Some(id) = pending.pop() {
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         let resolved = &law.program().nodes[id];
         if resolved
             .field
@@ -182,14 +197,15 @@ fn closed_request_eligible(
                 && matches!(resolved.kind, ExprKind::Field { .. })
                 && resolved.field.is_none())
         {
-            return false;
+            return Ok(false);
         }
         // Path/Term wire projection needs native owners. Plain data and
         // typed Map application have self-owned Scalar payloads.
         let mut types = vec![law.expr_type(id).expect("checked expression type")];
         while let Some(ty) = types.pop() {
+            control.checkpoint(Checkpoint::FiniteIteration)?;
             match ty {
-                Type::Path(..) | Type::Term(..) => return false,
+                Type::Path(..) | Type::Term(..) => return Ok(false),
                 Type::Tuple(items) => types.extend(items),
                 Type::List(item) | Type::Set(item) | Type::Option(item) => types.push(item),
                 Type::Map(domain, codomain) => {
@@ -227,10 +243,10 @@ fn closed_request_eligible(
             }
             // Named/native calls, free axes and nested quantifiers retain
             // their full route until their own consumers are connected.
-            _ => return false,
+            _ => return Ok(false),
         }
     }
-    true
+    Ok(true)
 }
 
 /// The same request runner serves native recording and delivery. Only delivery
@@ -249,7 +265,8 @@ pub(super) fn evaluate_closed_roots_with_check(
     control: &Control,
     after_root: impl FnMut(&Request) -> Result<(), InternalError>,
 ) -> ClosedRun {
-    let admitted = closed_root_plan(&prepared);
+    let admitted = closed_root_plan(&prepared, control)
+        .unwrap_or_else(|_| vec![false; prepared.requests().requests().len()]);
     run_delivery(prepared, control, admitted, after_root)
 }
 
@@ -303,16 +320,19 @@ fn run_delivery(
         DeliveryAnswer::Closed(answer) => answer.status == Decision::Undetermined,
         DeliveryAnswer::Recorded(answer) => answer.status == Decision::Undetermined,
     });
+    let has_nodes = delivery.has_nodes || !execution.graph.nodes.is_empty();
+    let mut recorded_nodes = execution.graph.nodes.into_vec();
+    recorded_nodes.shrink_to_fit();
     ClosedRun {
         prepared,
         answers,
         issues,
         status: super::run_status(control, execution.internal, partial),
-        has_nodes: delivery.has_nodes || !execution.graph.nodes.is_empty(),
+        has_nodes,
         tail: delivery.tail,
         #[cfg(test)]
         recorded_iterations: execution.graph.iterations.len(),
-        recorded_nodes: execution.graph.nodes.into_vec(),
+        recorded_nodes,
         internal: execution.internal,
         not_implemented: execution.not_implemented,
     }

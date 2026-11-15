@@ -136,6 +136,17 @@ impl Environment<'_> {
         }
         Ok(self.results.checkpoint_validation())
     }
+    /// A sealed root releases all graph-backed checks before indices can be reused.
+    pub(in crate::observed) fn discard_root_validation(&self) -> Result<(), InternalError> {
+        if self.state.validation_depth.get() != 0 {
+            return Err(internal!("検査中のsessionを解放できない"));
+        }
+        self.results.scoped_values.borrow_mut().clear();
+        self.results.clear_validation();
+        self.results.validation_snapshot.replace(None);
+        Ok(())
+    }
+
     /// Only after the scratch Graph suffix has been discarded and its immutable
     /// prefix verified unchanged. No checkpoints/analysis are run after Stop.
     /// False means a nested reset invalidated the prefix cache; nothing revived.

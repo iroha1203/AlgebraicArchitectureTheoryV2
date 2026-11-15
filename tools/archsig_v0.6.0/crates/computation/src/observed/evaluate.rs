@@ -4236,10 +4236,8 @@ fn execute_observed(
                 && delivery.admitted[index]
             {
                 let prefix = evaluator.graph.suffix_checkpoint();
-                let validation_prefix = environment.validation_checkpoint();
                 let mut progress = delivery::RootProgress::default();
                 let result = (|| {
-                    let validation_prefix = validation_prefix?;
                     if let Some(failure) = architecture_failure {
                         return Err(failure.into());
                     }
@@ -4254,7 +4252,7 @@ fn execute_observed(
                     (delivery.after_root)(request).map_err(Failure::Internal)?;
                     let had_nodes = evaluator.graph.nodes.len() > prefix.node_len();
                     evaluator.graph.discard_suffix(&prefix)?;
-                    environment.rollback_validation(&validation_prefix)?;
+                    environment.discard_root_validation()?;
                     Ok((answer, had_nodes))
                 })();
                 match result {
@@ -9972,7 +9970,7 @@ reading Calc {{
         let asks = ["bad=check(Calc.root_early)", "good=evaluate(Calc.full)"];
         let prepared = prepare_observed(in_quantifier_fixture(), &asks, &control).unwrap();
         assert!(delivery::closed_roots_eligible(&prepared));
-        let plan = delivery::closed_root_plan(&prepared);
+        let plan = delivery::closed_root_plan(&prepared, &control).unwrap();
         let run = delivery::evaluate_closed_roots(prepared, &control, plan);
         assert_eq!(run.status, "complete", "{:?}", run.issues);
         assert!(run.tail.is_none());
@@ -10014,7 +10012,7 @@ reading Calc {{
                 trigger.set(true);
             }
         });
-        let plan = delivery::closed_root_plan(&prepared);
+        let plan = delivery::closed_root_plan(&prepared, &control).unwrap();
         let run = delivery::evaluate_closed_roots(prepared, &control, plan);
         data::clear_iteration_observer();
         assert_eq!(run.status, "interrupted");
@@ -10048,7 +10046,7 @@ reading Calc {{
                 trigger.set(true);
             }
         });
-        let plan = delivery::closed_root_plan(&prepared);
+        let plan = delivery::closed_root_plan(&prepared, &control).unwrap();
         let run = delivery::evaluate_closed_roots(prepared, &control, plan);
         data::clear_iteration_observer();
         assert_eq!(run.status, "interrupted");
@@ -10135,7 +10133,7 @@ reading Calc {{
     fn delivery_closed_map_application_keeps_failed_conditions_and_applicability() {
         let fixture = application_fixture::owned("known");
         let script = format!(
-            "{} law required root(m:Reservations.Migration,x:Reservations.State):forall item in list<Reservations.State>[x] . m.states(item)=item;",
+            "{} view small():Z=1; law required root(m:Reservations.Migration,x:Reservations.State):forall item in list<Reservations.State>[x] . m.states(item)=item;",
             application_fixture::OWNED_SCRIPT
         );
         let law = String::from_utf8(fixture.law().bytes().to_vec())
@@ -10157,7 +10155,7 @@ reading Calc {{
             let control = quiet();
             let prepared = prepare_observed(input.clone(), &[&ask], &control).unwrap();
             assert!(delivery::closed_roots_eligible(&prepared));
-            let plan = delivery::closed_root_plan(&prepared);
+            let plan = delivery::closed_root_plan(&prepared, &control).unwrap();
             let run = delivery::evaluate_closed_roots(prepared, &control, plan);
             assert_eq!(run.status, raw.status(), "{subject}: {:?}", run.issues);
             let delivery::DeliveryAnswer::Closed(answer) = &run.answers[0] else {
@@ -10180,6 +10178,21 @@ reading Calc {{
                 assert_eq!(answer.counterexamples.len(), 2);
             }
             assert!(run.tail.is_none());
+            let asks = [
+                "source=evaluate(Applications.small)",
+                "needed=needed($source)",
+                &ask,
+            ];
+            let raw = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
+            let control = quiet();
+            let prepared = prepare_observed(input.clone(), &asks, &control).unwrap();
+            let actual = crate::observed::evaluate_for_delivery(prepared, &control).unwrap();
+            let code = if subject == "r" { 2 } else { 1 };
+            assert_eq!(
+                actual.summary_wire(actual.status(), code, &actual.issues_wire()),
+                raw.summary_wire(raw.status(), code, &raw.issues_wire()),
+                "{subject}",
+            );
         }
     }
     fn in_quantifier_fixture() -> InputSources {

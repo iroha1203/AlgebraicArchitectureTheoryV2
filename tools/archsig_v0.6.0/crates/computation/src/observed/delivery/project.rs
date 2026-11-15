@@ -37,22 +37,35 @@ pub(super) struct Projector {
     scalar_buckets: BTreeMap<u64, Vec<usize>>,
 }
 impl Projector {
-    fn with_nodes(nodes: Vec<Json>) -> Self {
+    fn with_nodes(nodes: Vec<Json>, control: &Control, point: Checkpoint) -> Result<Self, Signal> {
         let mut this = Self {
             nodes,
             ..Self::default()
         };
         for (index, node) in this.nodes.iter().enumerate() {
-            if let Json::Obj(fields) = node {
-                if let Some(value) = fields.get("value") {
-                    this.scalar_buckets
-                        .entry(super::super::result::canonical_fingerprint(value))
-                        .or_default()
-                        .push(index);
+            control.checkpoint(point)?;
+            if let Json::Obj(fields) = node
+                && fields.get("state") == Some(&Json::str("value"))
+                && matches!(fields.get("conditions"), Some(Json::Arr(v)) if v.is_empty())
+                && matches!(fields.get("reasons"), Some(Json::Arr(v)) if v.is_empty())
+                // The owned root contributes finite scalar members, bindings,
+                // Boolean results, and their domains.
+                && match fields.get("type") {
+                    Some(Json::Str(tag)) => matches!(tag.as_str(), "Unit" | "Bool" | "Z" | "Q" | "Text" | "Domain"),
+                    Some(Json::Arr(parts)) => matches!(parts.first(),
+                        Some(Json::Str(tag)) if matches!(tag.as_str(), "Fp" | "Ref" | "Data")),
+                    _ => false,
                 }
+                && let Some(value) = fields.get("value")
+            {
+                this.scalar_buckets
+                    .entry(super::super::result::canonical_fingerprint(value))
+                    .or_default()
+                    .push(index);
             }
         }
-        this
+        control.checkpoint(point)?;
+        Ok(this)
     }
     fn node(&mut self, ty: Json, value: Json) -> NodeRef {
         let reference = NodeRef(self.nodes.len());
@@ -320,7 +333,7 @@ pub(super) fn run(
     let Some(Json::Arr(_)) = document.remove("issues") else {
         unreachable!("recorded issues")
     };
-    let mut projector = Projector::with_nodes(recorded_nodes);
+    let mut projector = Projector::with_nodes(recorded_nodes, control, point)?;
     let mut recorded_rows = recorded_rows.into_iter();
     let mut rows = vec![];
     for (index, answer) in run.answers.iter().enumerate() {
