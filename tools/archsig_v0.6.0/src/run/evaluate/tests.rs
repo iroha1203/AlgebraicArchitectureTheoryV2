@@ -331,9 +331,13 @@ fn quantified_delivery_keeps_raw_summary_save_reuse_and_final_signal_contracts()
                         // artifact through the existing canonical reuse verifier.
                         // Internal node numbering/sharing is not a public identity.
                         let verification = if reuse {
-                            let checked = super::super::reuse::inspect(Some(&baseline), &control)
-                                .unwrap()
-                                .verify(&evaluation, &control);
+                            let checked = super::super::reuse::inspect(
+                                Some(&baseline),
+                                evaluation.prepared(),
+                                &control,
+                            )
+                            .unwrap()
+                            .verify(&evaluation, &control);
                             assert!(
                                 checked.rejected.is_empty(),
                                 "{body}, missing={missing}, normal={normal_delivery}: {:?}",

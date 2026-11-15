@@ -773,3 +773,42 @@ fn reuse_path_is_relative_to_the_calling_directory() {
     assert!(reused.stderr.is_empty());
     assert!(warnings(&result_json(&dir, &reused)).is_empty());
 }
+
+#[test]
+fn preflight_rejection_warns_even_if_the_current_run_stops_after_a_confirmed_answer() {
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_input::result::Signal;
+
+    let dir = inputs("reuse-preflight-stop", Some("2"), L);
+    let initial = requests(&dir, &ASKS);
+    assert_eq!(initial.code, 0);
+    let previous = dir.join("previous");
+    std::fs::rename(dir.join("out"), &previous).unwrap();
+    for save in [false, true] {
+        let mut args = run_args(&dir);
+        args.asks = vec![ASKS[0].into(), "p=needed($n)".into()];
+        args.reuse = Some(previous.clone());
+        args.inputs.out = save.then(|| dir.join("interrupted"));
+        let control =
+            Control::new(|point| (point == Checkpoint::ObservationPlan).then_some(Signal::Int));
+        let outcome =
+            archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &control);
+        assert_eq!(outcome.exit_code, 130);
+        assert_eq!(outcome.result.is_some(), save);
+        let assert_prefix_and_warning = |json: &archsig_common::json::JNode| {
+            assert_eq!(s(get(answer(json, "n"), "status")), "established");
+            assert_eq!(s(get(answer(json, "p"), "status")), "undetermined");
+            let notices = arr(get(json, "warnings"));
+            assert_eq!(notices.len(), 1);
+            assert!(s(get(&notices[0], "message")).contains("cannot verify requests"));
+        };
+        let summary = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
+        assert_prefix_and_warning(&summary);
+        if let Some(out) = &args.inputs.out {
+            let saved =
+                archsig_common::json::parse(&std::fs::read(out.join("result.json")).unwrap())
+                    .unwrap();
+            assert_prefix_and_warning(&saved);
+        }
+    }
+}

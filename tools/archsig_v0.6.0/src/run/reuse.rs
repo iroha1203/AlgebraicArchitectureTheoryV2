@@ -1,8 +1,8 @@
 //! 候補を現在の検査済み導出へ照合し、推論は採用せず全再計算する。
 use archsig_common::canonical::Json;
 use archsig_common::control::{CheckFailure, Checkpoint, Control};
-use archsig_common::json::{JNode, JValue};
-use archsig_computation::observed::DeliveryEvaluation;
+use archsig_common::json::{JNode, JValue, Span};
+use archsig_computation::observed::{DeliveryEvaluation, PreparedObserved};
 use archsig_input::result::ResultIssue;
 use archsig_input::result::Signal;
 use std::{
@@ -13,9 +13,18 @@ use std::{
 
 pub(super) struct Candidate {
     path: PathBuf,
-    document: Option<JNode>,
+    pending: Option<Comparison>,
     rejected: Vec<Json>,
 }
+struct Comparison {
+    bytes: Vec<u8>,
+    nodes: Vec<Span>,
+    status: JNode,
+    exit_code: u64,
+    answers: JNode,
+    issues: JNode,
+}
+
 /// 照合通知と、現在入力から生成済みの保存表示。
 #[derive(Default)]
 pub(super) struct Verification {
@@ -24,7 +33,14 @@ pub(super) struct Verification {
     pub replay: Option<Json>,
 }
 impl Candidate {
-    fn reject(&mut self, message: String) {
+    fn reject(&mut self, mut message: String) {
+        // JSON keys and reference IDs can appear in diagnostics. Keep the
+        // reason and a short excerpt even for an arbitrarily large old key.
+        const MAX_REASON_BYTES: usize = 1024;
+        if message.len() > MAX_REASON_BYTES {
+            message.truncate(message.floor_char_boundary(MAX_REASON_BYTES));
+            message.push('…');
+        }
         self.rejected.push(
             ResultIssue::Usage {
                 argument: "--reuse".into(),
@@ -41,13 +57,13 @@ impl Candidate {
     ) -> Verification {
         let mut replay = None;
         let mut stop = None;
-        if let Some(document) = &self.document
-            && matches!(evaluation.status(), "complete" | "partial")
+        if matches!(evaluation.status(), "complete" | "partial")
+            && let Some(candidate) = self.pending.take()
         {
             let checked = (|| {
                 control.checkpoint(Checkpoint::Reuse)?;
                 let current = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
-                let result = verify(document, &current, evaluation, control);
+                let result = verify(candidate, &current, evaluation, control);
                 replay = Some(current);
                 result
             })();
@@ -64,10 +80,14 @@ impl Candidate {
         }
     }
 }
-pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidate, Signal> {
+pub(super) fn inspect(
+    path: Option<&Path>,
+    prepared: &PreparedObserved,
+    control: &Control,
+) -> Result<Candidate, Signal> {
     let mut candidate = Candidate {
         path: path.unwrap_or_else(|| Path::new("")).to_owned(),
-        document: None,
+        pending: None,
         rejected: Vec::new(),
     };
     let Some(path) = path else {
@@ -101,31 +121,102 @@ pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidat
     };
     let read = read();
     control.checkpoint(Checkpoint::Reuse)?;
-    let bytes = match read {
+    let mut bytes = match read {
         Ok(bytes) => bytes,
         Err(error) => {
             candidate.reject(format!("cannot read result.json: {error}"));
             return Ok(candidate);
         }
     };
-    let document = match archsig_common::json::parse_inner::<
+    let (mut document, nodes) = match archsig_common::json::parse_deferred_root_array::<
         CheckFailure<Box<archsig_common::issue::Issue>>,
-    >(&bytes, control, Checkpoint::Reuse)
+    >(&bytes, "nodes", control, Checkpoint::Reuse)
     {
-        Ok(document) => document,
+        Ok(parsed) => parsed,
         Err(CheckFailure::Stopped(reason)) => return Err(reason),
         Err(CheckFailure::Input(issue)) => {
             candidate.reject(format!("invalid JSON: {}", issue.message));
             return Ok(candidate);
         }
     };
-    match header(&document, control) {
-        Ok(()) => candidate.document = Some(document),
+    let exit_code = match header(&document, control) {
+        Ok(exit_code) => exit_code,
+        Err(Failure::Rejected(message)) => {
+            candidate.reject(message);
+            return Ok(candidate);
+        }
+        Err(Failure::Stopped(reason)) => return Err(reason),
+    };
+    match preflight(&document, prepared, nodes, control) {
+        Ok(mut nodes) => {
+            retain_node_bytes(&mut bytes, &mut nodes, control)?;
+            let JValue::Obj(fields) = &mut document.value else {
+                unreachable!("checked reuse header")
+            };
+            let mut take = |name: &str| {
+                let (_, node) = fields
+                    .iter_mut()
+                    .find(|(key, _)| key == name)
+                    .expect("required reuse field");
+                std::mem::replace(
+                    node,
+                    JNode {
+                        value: JValue::Null,
+                    },
+                )
+            };
+            candidate.pending = Some(Comparison {
+                bytes,
+                nodes,
+                status: take("status"),
+                exit_code,
+                answers: take("answers"),
+                issues: take("issues"),
+            });
+        }
         Err(Failure::Rejected(message)) => candidate.reject(message),
         Err(Failure::Stopped(reason)) => return Err(reason),
     }
     Ok(candidate)
 }
+/// Keep exactly the serialized entries to be compared. Compact forward so
+/// inspected headers and insignificant whitespace do not span evaluation.
+fn retain_node_bytes(
+    bytes: &mut Vec<u8>,
+    nodes: &mut [Span],
+    control: &Control,
+) -> Result<(), Signal> {
+    const COPY_BLOCK_BYTES: usize = 16 * 1024;
+    let mut retained = 0;
+    for (start, end) in nodes {
+        let output_start = retained;
+        let mut quoted = false;
+        let mut escaped = false;
+        for block in (*start..*end).step_by(COPY_BLOCK_BYTES) {
+            control.checkpoint(Checkpoint::Reuse)?;
+            for read in block..(block + COPY_BLOCK_BYTES).min(*end) {
+                let byte = bytes[read];
+                if quoted || !matches!(byte, b' ' | b'\t' | b'\n' | b'\r') {
+                    bytes[retained] = byte;
+                    retained += 1;
+                }
+                if escaped {
+                    escaped = false;
+                } else if quoted && byte == b'\\' {
+                    escaped = true;
+                } else if byte == b'"' {
+                    quoted = !quoted;
+                }
+            }
+        }
+        *start = output_start;
+        *end = retained;
+    }
+    bytes.truncate(retained);
+    bytes.shrink_to_fit();
+    control.checkpoint(Checkpoint::Reuse)
+}
+
 enum Failure {
     Rejected(String),
     Stopped(Signal),
@@ -175,13 +266,14 @@ fn record(node: &JNode, required: &[&str], optional: &[&str]) -> Checked<()> {
     }
     Ok(())
 }
-fn nat(node: &JNode) -> Checked<()> {
+fn nat(node: &JNode) -> Checked<u64> {
     match &node.value {
-        JValue::Num(s) if archsig_input::archmap::nat_value(s).is_some() => Ok(()),
-        _ => Err(invalid("Nat must be an integer in 0..9007199254740991")),
+        JValue::Num(s) => archsig_input::archmap::nat_value(s),
+        _ => None,
     }
+    .ok_or_else(|| invalid("Nat must be an integer in 0..9007199254740991"))
 }
-fn header(document: &JNode, control: &Control) -> Checked<()> {
+fn header(document: &JNode, control: &Control) -> Checked<u64> {
     control.checkpoint(Checkpoint::Reuse)?;
     if text(field(document, "format")?)? != archsig_input::result::RESULT_FORMAT
         || text(field(document, "semantics")?)? != archsig_input::law::SEMANTICS
@@ -209,13 +301,13 @@ fn header(document: &JNode, control: &Control) -> Checked<()> {
         ],
         &["warnings"],
     )?;
-    nat(field(document, "exit_code")?)?;
+    let exit_code = nat(field(document, "exit_code")?)?;
     if let Some((_, warnings)) = fields(document)?.iter().find(|(key, _)| key == "warnings") {
         for issue in array(warnings)? {
             issue_shape(issue, control)?;
         }
     }
-    Ok(())
+    Ok(exit_code)
 }
 fn issue_shape(issue: &JNode, control: &Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
@@ -397,15 +489,14 @@ fn node_content(mut node: Json, control: &Control) -> Checked<String> {
     }
     encoding(&node, control)
 }
-fn verify(
+fn preflight(
     document: &JNode,
-    replay: &Json,
-    evaluation: &DeliveryEvaluation,
+    prepared: &PreparedObserved,
+    nodes: Option<Vec<Span>>,
     control: &Control,
-) -> Checked<()> {
+) -> Checked<Vec<Span>> {
     let empty = BTreeMap::new();
     // 元byte列のidentityと解決済み要求を照合する。宣言・型は現在の三入力から再検査する。
-    // 候補が別の入力/問いのものでも、通常評価は既に現在入力から実行済みである。
     let mut inputs = normalized_candidate(field(document, "inputs")?, &empty, control)?;
     let Json::Arr(identities) = &mut inputs else {
         return Err(invalid("inputs must be an array"));
@@ -432,17 +523,60 @@ fn verify(
         }
         fields.remove("path");
     }
-    if inputs != *wire_field(replay, "inputs")? {
+    if inputs != archsig_input::result::input_identities_wire(prepared.inputs().inputs()) {
         return Err(invalid("current input identity does not match"));
     }
-    for name in ["requests", "status"] {
-        let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
-        if candidate != *wire_field(replay, name)? {
+    let requests = prepared
+        .requests()
+        .requests()
+        .iter()
+        .map(|request| {
+            control.checkpoint(Checkpoint::Reuse)?;
+            Ok(request.wire())
+        })
+        .collect::<Checked<Vec<_>>>()?;
+    if normalized_candidate(field(document, "requests")?, &empty, control)? != Json::Arr(requests) {
+        return Err(invalid(
+            "cannot verify requests against the current checked result",
+        ));
+    }
+    if !matches!(field(document, "status")?.value, JValue::Str(ref status) if matches!(status.as_str(), "complete" | "partial"))
+    {
+        return Err(invalid(
+            "cannot verify status against the current checked result",
+        ));
+    }
+    let nodes = nodes.ok_or_else(|| invalid("expected an array"))?;
+    for name in ["answers", "issues"] {
+        if !matches!(field(document, name)?.value, JValue::Arr(_)) {
             return Err(invalid(format!(
-                "cannot verify {name} against the current checked result"
+                "cannot verify {name} against the current checked derivation"
             )));
         }
     }
+    Ok(nodes)
+}
+
+fn verify(
+    candidate: Comparison,
+    replay: &Json,
+    evaluation: &DeliveryEvaluation,
+    control: &Control,
+) -> Checked<()> {
+    let empty = BTreeMap::new();
+    if normalized_candidate(&candidate.status, &empty, control)? != *wire_field(replay, "status")? {
+        return Err(invalid(
+            "cannot verify status against the current checked result",
+        ));
+    }
+    let Comparison {
+        bytes,
+        nodes: candidate_nodes,
+        answers,
+        issues,
+        exit_code,
+        ..
+    } = candidate;
     let mut native_ids = BTreeMap::new();
     let mut verified = BTreeMap::new();
     let Json::Arr(nodes) = wire_field(replay, "nodes")? else {
@@ -456,14 +590,21 @@ fn verify(
         native_ids.insert(format!("n{index}"), key);
     }
     let mut candidate_ids = BTreeMap::new();
-    for (index, node) in array(field(document, "nodes")?)?.iter().enumerate() {
+    for (index, (start, end)) in candidate_nodes.into_iter().enumerate() {
         control.checkpoint(Checkpoint::Reuse)?;
-        let id = text(field(node, "id")?)?;
+        let node = archsig_common::json::parse_inner::<
+            CheckFailure<Box<archsig_common::issue::Issue>>,
+        >(&bytes[start..end], control, Checkpoint::Reuse)
+        .map_err(|error| match error {
+            CheckFailure::Stopped(reason) => Failure::Stopped(reason),
+            CheckFailure::Input(issue) => invalid(format!("invalid JSON: {}", issue.message)),
+        })?;
+        let id = text(field(&node, "id")?)?;
         if id != format!("n{index}") {
             return Err(invalid(format!("node.id must be n{index}")));
         }
         let content = node_content(
-            normalized_candidate(node, &candidate_ids, control)?,
+            normalized_candidate(&node, &candidate_ids, control)?,
             control,
         )?;
         let key = verified.get(&content).ok_or_else(|| {
@@ -473,15 +614,16 @@ fn verify(
         })?;
         candidate_ids.insert(id.to_owned(), key.clone());
     }
+    drop(bytes);
     // node番号・順序・共有を意味にしない。各Refを検査済みの導出内容へ正規化する。
     // digest一致で済ませず、payload・型・全依存・元位置を含むcanonical全文を照合する。
-    let answers = normalized_candidate(field(document, "answers")?, &candidate_ids, control)?;
+    let answers = normalized_candidate(&answers, &candidate_ids, control)?;
     if answers != normalized_wire(wire_field(replay, "answers")?, &native_ids, control)? {
         return Err(invalid(
             "cannot verify answers against the current checked derivation",
         ));
     }
-    let issues = normalized_candidate(field(document, "issues")?, &candidate_ids, control)?;
+    let issues = normalized_candidate(&issues, &candidate_ids, control)?;
     if issues != normalized_wire(wire_field(replay, "issues")?, &native_ids, control)? {
         return Err(invalid(
             "cannot verify issues against the current checked derivation",
@@ -492,7 +634,7 @@ fn verify(
         "complete" => u64::from(evaluation.has_refuted_answer()),
         _ => return Err(invalid("candidate verification is not finalized")),
     };
-    if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {
+    if exit_code != code {
         return Err(invalid(
             "cannot verify exit_code against the computation result",
         ));
@@ -505,6 +647,50 @@ fn verify(
 mod reference_array_tests {
     use super::*;
     use std::{cell::Cell, rc::Rc};
+    #[test]
+    fn candidate_keeps_only_entry_bytes_and_rebases_each_range() {
+        let mut bytes = br#"  {"nodes": [ true, {"x":[1,2]} ],"other":[0]} "#.to_vec();
+        let control = Control::unlimited();
+        let (_, spans) = archsig_common::json::parse_deferred_root_array::<
+            Box<archsig_common::issue::Issue>,
+        >(&bytes, "nodes", &control, Checkpoint::Reuse)
+        .unwrap();
+        let mut spans = spans.unwrap();
+        retain_node_bytes(&mut bytes, &mut spans, &control).unwrap();
+        assert_eq!(bytes, br#"true{"x":[1,2]}"#);
+        assert_eq!(spans, [(0, 4), (4, 15)]);
+        retain_node_bytes(&mut bytes, &mut [], &control).unwrap();
+        assert!(bytes.is_empty());
+    }
+
+    #[test]
+    fn whitespace_inside_each_node_is_elided_only_outside_json_strings() {
+        let mut raw = br#"{"nodes":[{ "#.to_vec();
+        raw.extend(std::iter::repeat_n(b' ', 40_000));
+        raw.extend_from_slice(br#""text" : [ "keep space \t", "a\" b", "\\", " c " ] }]}"#);
+        let control = Control::unlimited();
+        let (_, spans) = archsig_common::json::parse_deferred_root_array::<
+            Box<archsig_common::issue::Issue>,
+        >(&raw, "nodes", &control, Checkpoint::Reuse)
+        .unwrap();
+        let mut spans = spans.unwrap();
+        let original = archsig_common::json::parse(&raw[spans[0].0..spans[0].1]).unwrap();
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let stop = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            (seen.get() == 2).then_some(Signal::Term)
+        });
+        assert!(matches!(
+            retain_node_bytes(&mut raw.clone(), &mut spans.clone(), &stop),
+            Err(Signal::Term)
+        ));
+        retain_node_bytes(&mut raw, &mut spans, &control).unwrap();
+        assert_eq!(raw, br#"{"text":["keep space \t","a\" b","\\"," c "]}"#);
+        assert_eq!(spans, [(0, raw.len())]);
+        assert_eq!(archsig_common::json::parse(&raw).unwrap(), original);
+    }
+
     #[test]
     fn compact_refs_reuse_the_same_canonical_keys_and_reject_nonprior_ids() {
         let ids = BTreeMap::from([("n1".into(), "v0".into()), ("n2".into(), "v1".into())]);
