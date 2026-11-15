@@ -353,3 +353,48 @@ fn prepared_completion_keeps_pin_outcomes_bound_to_each_candidate_and_input() {
         }
     }
 }
+
+#[test]
+fn direct_completion_uses_the_subject_coordinate_in_both_indexes() {
+    use archsig_common::{control::CheckFailure, issue::Issue, names::QualifiedName};
+    use archsig_input::archmap::{
+        Field, FieldAssignment, Snapshot, Subject, check_completion_with_values,
+        check_valuation_with_values,
+    };
+    type Checked = CheckFailure<Box<Issue>>;
+
+    let subject = |id: &str, ty: &str, fields| Subject {
+        id: id.into(),
+        snapshot: "v".into(),
+        ty: QualifiedName::parse(format!("MapFields.{ty}")),
+        origin: "v".into(),
+        fields,
+        pointer: "/subjects".into(),
+    };
+    let snapshots = [Snapshot {
+        id: "container".into(),
+        origin: "v".into(),
+        subjects: vec![
+            subject("A", "Root", vec![]),
+            subject(
+                "k",
+                "Key",
+                vec![Field {
+                    name: QualifiedName::parse("MapFields.Key.owner".into()),
+                    ty: Type::Ref("MapFields.Root".into()),
+                    slot: Slot::Missing,
+                }],
+            ),
+        ],
+    }];
+    let candidate = [FieldAssignment {
+        snapshot: "v".into(),
+        subject: "k".into(),
+        field: "MapFields.Key.owner".into(),
+        value: fixture::reference("v", "A"),
+    }];
+    let result = example(4);
+    let definitions = result.prepared.inputs().definitions();
+    check_completion_with_values::<Checked>(&snapshots, definitions, &candidate, &quiet()).unwrap();
+    check_valuation_with_values::<Checked>(&snapshots, definitions, &candidate, &quiet()).unwrap();
+}

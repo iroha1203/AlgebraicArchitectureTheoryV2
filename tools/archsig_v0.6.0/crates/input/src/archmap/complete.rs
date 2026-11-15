@@ -64,15 +64,17 @@ impl Cons {
 }
 
 type SlotPosition = (usize, usize);
+// Only the variables visited by the current search get working entries.
+type Assignment = HashMap<usize, usize>;
 
-/// 元の snapshot と型定義に借用で結び付いた、補完検査の不変部分。
+/// 元の snapshot と型定義に借用で結び付いた、逐次候補検査の不変部分。
 pub struct CompletionPreparation<'a> {
     snapshots: &'a [Snapshot],
     definitions: &'a CheckedDefinitions,
     roster: value::Roster<'a>,
     // The compiled part owns only names and positions. The preparation can
     // still borrow the original tables for their native lifetime.
-    compiled: std::sync::OnceLock<CompletionConstraints>,
+    compiled: std::cell::OnceCell<CompletionConstraints>,
 }
 
 struct CompletionConstraints {
@@ -187,16 +189,16 @@ impl<'a, E: InputError> Model<'a, E> {
         self.done(out)
     }
 
-    fn resolve(&self, r: RefSrc, assign: &[Option<usize>]) -> Result<Option<usize>, E> {
+    fn resolve(&self, r: RefSrc, assign: &Assignment) -> Result<Option<usize>, E> {
         self.checkpoint()?;
         self.done(match r {
             RefSrc::Known(g) => Some(g),
-            RefSrc::Var(v) => assign[v],
+            RefSrc::Var(v) => assign.get(&v).copied(),
         })
     }
 
     /// x の所属先。所属を持たない型は Some(None)、未定は None。
-    fn owner(&self, x: usize, assign: &[Option<usize>]) -> Result<Option<Option<usize>>, E> {
+    fn owner(&self, x: usize, assign: &Assignment) -> Result<Option<Option<usize>>, E> {
         self.checkpoint()?;
         let out = match self.compiled.owner_field[x] {
             None => Some(None),
@@ -213,7 +215,7 @@ impl<'a, E: InputError> Model<'a, E> {
         &self,
         holder: usize,
         family: &Family,
-        assign: &[Option<usize>],
+        assign: &Assignment,
     ) -> Result<Option<Option<usize>>, E> {
         self.checkpoint()?;
         let out = match family {
@@ -232,7 +234,7 @@ impl<'a, E: InputError> Model<'a, E> {
         x: usize,
         holder: usize,
         family: &Family,
-        assign: &[Option<usize>],
+        assign: &Assignment,
     ) -> Result<Option<bool>, E> {
         self.checkpoint()?;
         let out = match family {
@@ -270,7 +272,7 @@ impl<'a, E: InputError> Model<'a, E> {
         &self,
         holder: usize,
         family: &Family,
-        assign: &[Option<usize>],
+        assign: &Assignment,
     ) -> Result<Option<bool>, E> {
         self.checkpoint()?;
         let mut out = Some(false);
@@ -300,12 +302,7 @@ impl<'a, E: InputError> Model<'a, E> {
         self.done(out)
     }
 
-    fn inhabited(
-        &self,
-        holder: usize,
-        ty: &Type,
-        assign: &[Option<usize>],
-    ) -> Result<Option<bool>, E> {
+    fn inhabited(&self, holder: usize, ty: &Type, assign: &Assignment) -> Result<Option<bool>, E> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.checkpoint()?;
             let out = match ty {
@@ -428,7 +425,7 @@ impl<'a, E: InputError> Model<'a, E> {
         self.done(out)
     }
 
-    fn eval(&self, c: &Cons, assign: &[Option<usize>]) -> Result<Option<bool>, E> {
+    fn eval(&self, c: &Cons, assign: &Assignment) -> Result<Option<bool>, E> {
         self.checkpoint()?;
         let out = match c {
             Cons::Member {
@@ -686,7 +683,7 @@ impl<'a> CompletionPreparation<'a> {
             snapshots,
             definitions,
             roster: value::Roster { types },
-            compiled: std::sync::OnceLock::new(),
+            compiled: std::cell::OnceCell::new(),
         })
     }
 
@@ -704,12 +701,14 @@ impl<'a> CompletionPreparation<'a> {
         let mut var_index = HashMap::new();
         for (snapshot_index, snapshot) in self.snapshots.iter().enumerate() {
             checkpoint()?;
-            let positions = names.entry(snapshot.id.clone()).or_default();
             for (subject_index, subject) in snapshot.subjects.iter().enumerate() {
                 checkpoint()?;
                 let g = subjects.len();
                 subjects.push((snapshot_index, subject_index));
-                positions.insert(subject.id.clone(), g);
+                names
+                    .entry(subject.snapshot.clone())
+                    .or_default()
+                    .insert(subject.id.clone(), g);
                 by_type.entry(subject.ty.to_string()).or_default().push(g);
                 let has_owner = matches!(
                     self.definitions.declarations[subject.ty.as_str()].signature,
@@ -880,7 +879,7 @@ impl<'a> CompletionPreparation<'a> {
         });
         // subject順・field宣言順に条件を足す。初めて補完不能になるprefixとその
         // 最後の条件の位置を同時に確定し、停止後に原因位置を探し直さない。
-        let empty = vec![None; compiled.domains.len()];
+        let empty = Assignment::new();
         let mut pending = Vec::new();
         for ((slot, group), original) in conditions {
             m.checkpoint()?;
@@ -924,7 +923,7 @@ type Group<'a> = Vec<(&'a Cons, Vec<usize>)>;
 /// その組の変数だけで探す。
 fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> {
     m.checkpoint()?;
-    let empty = vec![None; m.compiled.domains.len()];
+    let empty = Assignment::new();
     let mut open: Vec<(&Cons, Vec<usize>)> = Vec::new();
     for &c in cons {
         m.checkpoint()?;
@@ -937,31 +936,31 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> 
     }
     fn find<E: InputError>(
         m: &Model<'_, E>,
-        parent: &mut [usize],
+        parent: &mut HashMap<usize, usize>,
         mut v: usize,
     ) -> Result<usize, E> {
         m.checkpoint()?;
-        while parent[v] != v {
+        while let Some(&next) = parent.get(&v) {
             m.checkpoint()?;
-            parent[v] = parent[parent[v]];
-            v = parent[v];
-            m.checkpoint()?;
+            let Some(&grandparent) = parent.get(&next) else {
+                return m.done(next);
+            };
+            parent.insert(v, grandparent);
+            v = grandparent;
         }
         m.done(v)
     }
 
-    let mut parent = Vec::new();
-    for v in 0..m.compiled.domains.len() {
-        m.checkpoint()?;
-        parent.push(v);
-        m.checkpoint()?;
-    }
+    // 未決条件が同じ組に結ぶ変数だけを記録する。
+    let mut parent = HashMap::new();
     for (_, vs) in &open {
         m.checkpoint()?;
         for w in vs.iter().skip(1) {
             m.checkpoint()?;
             let (a, b) = (find(m, &mut parent, vs[0])?, find(m, &mut parent, *w)?);
-            parent[a] = b;
+            if a != b {
+                parent.insert(a, b);
+            }
             m.checkpoint()?;
         }
         m.checkpoint()?;
@@ -989,6 +988,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> 
     let mut assign = empty;
     for (_, group) in &groups {
         m.checkpoint()?;
+        assign.clear();
         if !search(m, group, &mut assign)? {
             return m.done(false);
         }
@@ -1002,7 +1002,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[&Cons]) -> Result<bool, E> 
 fn search<E: InputError>(
     m: &Model<'_, E>,
     cons: &[(&Cons, Vec<usize>)],
-    assign: &mut Vec<Option<usize>>,
+    assign: &mut Assignment,
 ) -> Result<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         m.checkpoint()?;
@@ -1016,7 +1016,7 @@ fn search<E: InputError>(
                     let mut free = Vec::new();
                     for &v in vs {
                         m.checkpoint()?;
-                        if assign[v].is_none() {
+                        if !assign.contains_key(&v) {
                             free.push(v);
                         }
                         m.checkpoint()?;
@@ -1043,7 +1043,7 @@ fn search<E: InputError>(
             .map_or(&[][..], Vec::as_slice);
         for (candidate, &x) in domain.iter().enumerate() {
             m.checkpoint()?;
-            assign[v] = Some(x);
+            assign.insert(v, x);
             let mut decided = 0;
             let mut broken = false;
             for (c, vs) in cons {
@@ -1064,13 +1064,13 @@ fn search<E: InputError>(
                 order.push((decided, x));
             }
             if candidate + 1 == domain.len() && order.is_empty() {
-                assign[v] = None;
+                assign.remove(&v);
                 return m.done(false);
             }
             m.checkpoint()?;
         }
         if order.is_empty() {
-            assign[v] = None;
+            assign.remove(&v);
             return m.done(false);
         }
         order.sort_by_key(|&(decided, _)| std::cmp::Reverse(decided));
@@ -1078,7 +1078,7 @@ fn search<E: InputError>(
         let mut remaining = order.into_iter().peekable();
         while let Some((_, x)) = remaining.next() {
             m.checkpoint()?;
-            assign[v] = Some(x);
+            assign.insert(v, x);
             if search(m, cons, assign)? {
                 return m.done(true);
             }
@@ -1086,7 +1086,7 @@ fn search<E: InputError>(
                 m.checkpoint()?;
             }
         }
-        assign[v] = None;
+        assign.remove(&v);
         m.done(false)
     })
 }
