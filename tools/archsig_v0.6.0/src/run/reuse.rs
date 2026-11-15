@@ -13,14 +13,9 @@ use std::{
 
 pub(super) struct Candidate {
     path: PathBuf,
-    pending: Option<Pending>,
+    pending: Option<Comparison>,
     rejected: Vec<Json>,
 }
-enum Pending {
-    Mismatch(String),
-    Compare(Comparison),
-}
-
 struct Comparison {
     bytes: Vec<u8>,
     nodes: Option<Vec<Span>>,
@@ -38,7 +33,14 @@ pub(super) struct Verification {
     pub replay: Option<Json>,
 }
 impl Candidate {
-    fn reject(&mut self, message: String) {
+    fn reject(&mut self, mut message: String) {
+        // JSON keys and reference IDs can appear in diagnostics. Keep the
+        // reason and a short excerpt even for an arbitrarily large old key.
+        const MAX_REASON_BYTES: usize = 1024;
+        if message.len() > MAX_REASON_BYTES {
+            message.truncate(message.floor_char_boundary(MAX_REASON_BYTES));
+            message.push('…');
+        }
         self.rejected.push(
             ResultIssue::Usage {
                 argument: "--reuse".into(),
@@ -55,25 +57,20 @@ impl Candidate {
     ) -> Verification {
         let mut replay = None;
         let mut stop = None;
-        if matches!(evaluation.status(), "complete" | "partial") {
-            match self.pending.take() {
-                Some(Pending::Mismatch(message)) => self.reject(message),
-                Some(Pending::Compare(candidate)) => {
-                    let checked = (|| {
-                        control.checkpoint(Checkpoint::Reuse)?;
-                        let current =
-                            evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
-                        let result = verify(candidate, &current, evaluation, control);
-                        replay = Some(current);
-                        result
-                    })();
-                    match checked {
-                        Ok(()) => {}
-                        Err(Failure::Rejected(message)) => self.reject(message),
-                        Err(Failure::Stopped(reason)) => stop = Some(reason),
-                    }
-                }
-                None => {}
+        if matches!(evaluation.status(), "complete" | "partial")
+            && let Some(candidate) = self.pending.take()
+        {
+            let checked = (|| {
+                control.checkpoint(Checkpoint::Reuse)?;
+                let current = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
+                let result = verify(candidate, &current, evaluation, control);
+                replay = Some(current);
+                result
+            })();
+            match checked {
+                Ok(()) => {}
+                Err(Failure::Rejected(message)) => self.reject(message),
+                Err(Failure::Stopped(reason)) => stop = Some(reason),
             }
         }
         Verification {
@@ -150,7 +147,7 @@ pub(super) fn inspect(
         }
         Err(Failure::Stopped(reason)) => return Err(reason),
     }
-    candidate.pending = Some(match preflight(&document, prepared, control) {
+    match preflight(&document, prepared, control) {
         Ok(()) => {
             retain_node_bytes(
                 &mut bytes,
@@ -172,34 +169,51 @@ pub(super) fn inspect(
                     },
                 )
             };
-            Pending::Compare(Comparison {
+            candidate.pending = Some(Comparison {
                 bytes,
                 nodes,
                 status: take("status"),
                 exit_code: take("exit_code"),
                 answers: take("answers"),
                 issues: take("issues"),
-            })
+            });
         }
-        Err(Failure::Rejected(message)) => Pending::Mismatch(message),
+        Err(Failure::Rejected(message)) => candidate.reject(message),
         Err(Failure::Stopped(reason)) => return Err(reason),
-    });
+    }
     Ok(candidate)
 }
 /// Keep exactly the serialized entries to be compared. Compact forward so
-/// inspected headers, separators and outer whitespace do not span evaluation.
+/// inspected headers and insignificant whitespace do not span evaluation.
 fn retain_node_bytes(
     bytes: &mut Vec<u8>,
     nodes: &mut [Span],
     control: &Control,
 ) -> Result<(), Signal> {
+    const COPY_BLOCK_BYTES: usize = 16 * 1024;
     let mut retained = 0;
     for (start, end) in nodes {
-        control.checkpoint(Checkpoint::Reuse)?;
-        let width = *end - *start;
-        bytes.copy_within(*start..*end, retained);
-        *start = retained;
-        retained += width;
+        let output_start = retained;
+        let mut quoted = false;
+        let mut escaped = false;
+        for block in (*start..*end).step_by(COPY_BLOCK_BYTES) {
+            control.checkpoint(Checkpoint::Reuse)?;
+            for read in block..(block + COPY_BLOCK_BYTES).min(*end) {
+                let byte = bytes[read];
+                if quoted || !matches!(byte, b' ' | b'\t' | b'\n' | b'\r') {
+                    bytes[retained] = byte;
+                    retained += 1;
+                }
+                if escaped {
+                    escaped = false;
+                } else if quoted && byte == b'\\' {
+                    escaped = true;
+                } else if byte == b'"' {
+                    quoted = !quoted;
+                }
+            }
+        }
+        *start = output_start;
         *end = retained;
     }
     bytes.truncate(retained);
@@ -635,6 +649,34 @@ mod reference_array_tests {
         assert_eq!(spans, [(0, 4), (4, 15)]);
         retain_node_bytes(&mut bytes, &mut [], &control).unwrap();
         assert!(bytes.is_empty());
+    }
+
+    #[test]
+    fn whitespace_inside_each_node_is_elided_only_outside_json_strings() {
+        let mut raw = br#"{"nodes":[{ "#.to_vec();
+        raw.extend(std::iter::repeat_n(b' ', 40_000));
+        raw.extend_from_slice(br#""text" : [ "keep space \t", "a\" b", "\\", " c " ] }]}"#);
+        let control = Control::unlimited();
+        let (_, spans) = archsig_common::json::parse_deferred_root_array::<
+            Box<archsig_common::issue::Issue>,
+        >(&raw, "nodes", &control, Checkpoint::Reuse)
+        .unwrap();
+        let mut spans = spans.unwrap();
+        let original = archsig_common::json::parse(&raw[spans[0].0..spans[0].1]).unwrap();
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let stop = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            (seen.get() == 2).then_some(Signal::Term)
+        });
+        assert!(matches!(
+            retain_node_bytes(&mut raw.clone(), &mut spans.clone(), &stop),
+            Err(Signal::Term)
+        ));
+        retain_node_bytes(&mut raw, &mut spans, &control).unwrap();
+        assert_eq!(raw, br#"{"text":["keep space \t","a\" b","\\"," c "]}"#);
+        assert_eq!(spans, [(0, raw.len())]);
+        assert_eq!(archsig_common::json::parse(&raw).unwrap(), original);
     }
 
     #[test]

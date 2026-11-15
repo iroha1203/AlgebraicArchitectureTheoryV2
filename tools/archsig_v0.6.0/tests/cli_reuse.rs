@@ -477,3 +477,31 @@ fn unavailable_and_linked_candidates_do_not_change_inputs_or_outputs() {
             .all(|i| s(get(i, "code")) != "usage")
     );
 }
+
+#[test]
+fn reuse_warning_keeps_the_reason_without_carrying_an_oversized_reference_id() {
+    let dir = setup("reuse-oversized-diagnostic");
+    let previous = execute(&dir, "previous", None, &ASKS);
+    let expected = result_json(&dir, &previous);
+    let mut candidate = owned(&expected);
+    let Json::Arr(requests) = field_mut(&mut candidate, "requests") else {
+        panic!("requests");
+    };
+    let Json::Arr(arguments) = field_mut(&mut requests[0], "arguments") else {
+        panic!("arguments");
+    };
+    *field_mut(&mut arguments[0], "value") = Json::obj([("node", Json::str("長".repeat(10_000)))]);
+    std::fs::write(dir.join("previous/result.json"), candidate.canonical()).unwrap();
+
+    let output = execute(&dir, "out", Some("previous"), &ASKS);
+    let current = checked(&dir, &output, 0, false);
+    let notices = warnings(&current);
+    assert_eq!(notices.len(), 1);
+    let message = s(get(&notices[0], "message"));
+    assert!(message.contains("undefined or nonpreceding Ref"));
+    assert!(message.ends_with('…'));
+    assert!(message.len() < 1500, "diagnostic size is {}", message.len());
+    for key in ["requests", "answers", "inputs", "nodes", "issues"] {
+        assert_eq!(get(&current, key), get(&expected, key), "{key}");
+    }
+}
