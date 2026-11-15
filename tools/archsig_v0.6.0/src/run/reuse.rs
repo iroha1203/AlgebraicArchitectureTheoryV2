@@ -1,8 +1,8 @@
 //! 候補を現在の検査済み導出へ照合し、推論は採用せず全再計算する。
 use archsig_common::canonical::Json;
 use archsig_common::control::{CheckFailure, Checkpoint, Control};
-use archsig_common::json::{JNode, JValue};
-use archsig_computation::observed::DeliveryEvaluation;
+use archsig_common::json::{JNode, JValue, Span};
+use archsig_computation::observed::{DeliveryEvaluation, PreparedObserved};
 use archsig_input::result::ResultIssue;
 use archsig_input::result::Signal;
 use std::{
@@ -13,9 +13,23 @@ use std::{
 
 pub(super) struct Candidate {
     path: PathBuf,
-    document: Option<JNode>,
+    pending: Option<Pending>,
     rejected: Vec<Json>,
 }
+enum Pending {
+    Mismatch(String),
+    Compare(Comparison),
+}
+
+struct Comparison {
+    bytes: Vec<u8>,
+    nodes: Option<Vec<Span>>,
+    status: JNode,
+    exit_code: JNode,
+    answers: JNode,
+    issues: JNode,
+}
+
 /// 照合通知と、現在入力から生成済みの保存表示。
 #[derive(Default)]
 pub(super) struct Verification {
@@ -41,20 +55,25 @@ impl Candidate {
     ) -> Verification {
         let mut replay = None;
         let mut stop = None;
-        if let Some(document) = &self.document
-            && matches!(evaluation.status(), "complete" | "partial")
-        {
-            let checked = (|| {
-                control.checkpoint(Checkpoint::Reuse)?;
-                let current = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
-                let result = verify(document, &current, evaluation, control);
-                replay = Some(current);
-                result
-            })();
-            match checked {
-                Ok(()) => {}
-                Err(Failure::Rejected(message)) => self.reject(message),
-                Err(Failure::Stopped(reason)) => stop = Some(reason),
+        if matches!(evaluation.status(), "complete" | "partial") {
+            match self.pending.take() {
+                Some(Pending::Mismatch(message)) => self.reject(message),
+                Some(Pending::Compare(candidate)) => {
+                    let checked = (|| {
+                        control.checkpoint(Checkpoint::Reuse)?;
+                        let current =
+                            evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
+                        let result = verify(candidate, &current, evaluation, control);
+                        replay = Some(current);
+                        result
+                    })();
+                    match checked {
+                        Ok(()) => {}
+                        Err(Failure::Rejected(message)) => self.reject(message),
+                        Err(Failure::Stopped(reason)) => stop = Some(reason),
+                    }
+                }
+                None => {}
             }
         }
         Verification {
@@ -64,10 +83,14 @@ impl Candidate {
         }
     }
 }
-pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidate, Signal> {
+pub(super) fn inspect(
+    path: Option<&Path>,
+    prepared: &PreparedObserved,
+    control: &Control,
+) -> Result<Candidate, Signal> {
     let mut candidate = Candidate {
         path: path.unwrap_or_else(|| Path::new("")).to_owned(),
-        document: None,
+        pending: None,
         rejected: Vec::new(),
     };
     let Some(path) = path else {
@@ -108,11 +131,11 @@ pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidat
             return Ok(candidate);
         }
     };
-    let document = match archsig_common::json::parse_inner::<
+    let (mut document, nodes) = match archsig_common::json::parse_deferred_root_array::<
         CheckFailure<Box<archsig_common::issue::Issue>>,
-    >(&bytes, control, Checkpoint::Reuse)
+    >(&bytes, "nodes", control, Checkpoint::Reuse)
     {
-        Ok(document) => document,
+        Ok(parsed) => parsed,
         Err(CheckFailure::Stopped(reason)) => return Err(reason),
         Err(CheckFailure::Input(issue)) => {
             candidate.reject(format!("invalid JSON: {}", issue.message));
@@ -120,10 +143,42 @@ pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidat
         }
     };
     match header(&document, control) {
-        Ok(()) => candidate.document = Some(document),
-        Err(Failure::Rejected(message)) => candidate.reject(message),
+        Ok(()) => {}
+        Err(Failure::Rejected(message)) => {
+            candidate.reject(message);
+            return Ok(candidate);
+        }
         Err(Failure::Stopped(reason)) => return Err(reason),
     }
+    candidate.pending = Some(match preflight(&document, prepared, control) {
+        Ok(()) => {
+            let JValue::Obj(fields) = &mut document.value else {
+                unreachable!("checked reuse header")
+            };
+            let mut take = |name: &str| {
+                let (_, node) = fields
+                    .iter_mut()
+                    .find(|(key, _)| key == name)
+                    .expect("required reuse field");
+                std::mem::replace(
+                    node,
+                    JNode {
+                        value: JValue::Null,
+                    },
+                )
+            };
+            Pending::Compare(Comparison {
+                bytes,
+                nodes,
+                status: take("status"),
+                exit_code: take("exit_code"),
+                answers: take("answers"),
+                issues: take("issues"),
+            })
+        }
+        Err(Failure::Rejected(message)) => Pending::Mismatch(message),
+        Err(Failure::Stopped(reason)) => return Err(reason),
+    });
     Ok(candidate)
 }
 enum Failure {
@@ -397,15 +452,9 @@ fn node_content(mut node: Json, control: &Control) -> Checked<String> {
     }
     encoding(&node, control)
 }
-fn verify(
-    document: &JNode,
-    replay: &Json,
-    evaluation: &DeliveryEvaluation,
-    control: &Control,
-) -> Checked<()> {
+fn preflight(document: &JNode, prepared: &PreparedObserved, control: &Control) -> Checked<()> {
     let empty = BTreeMap::new();
     // 元byte列のidentityと解決済み要求を照合する。宣言・型は現在の三入力から再検査する。
-    // 候補が別の入力/問いのものでも、通常評価は既に現在入力から実行済みである。
     let mut inputs = normalized_candidate(field(document, "inputs")?, &empty, control)?;
     let Json::Arr(identities) = &mut inputs else {
         return Err(invalid("inputs must be an array"));
@@ -432,17 +481,46 @@ fn verify(
         }
         fields.remove("path");
     }
-    if inputs != *wire_field(replay, "inputs")? {
+    if inputs != archsig_input::result::input_identities_wire(prepared.inputs().inputs()) {
         return Err(invalid("current input identity does not match"));
     }
-    for name in ["requests", "status"] {
-        let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
-        if candidate != *wire_field(replay, name)? {
-            return Err(invalid(format!(
-                "cannot verify {name} against the current checked result"
-            )));
-        }
+    let requests = prepared
+        .requests()
+        .requests()
+        .iter()
+        .map(|request| {
+            control.checkpoint(Checkpoint::Reuse)?;
+            Ok(request.wire())
+        })
+        .collect::<Checked<Vec<_>>>()?;
+    if normalized_candidate(field(document, "requests")?, &empty, control)? != Json::Arr(requests) {
+        return Err(invalid(
+            "cannot verify requests against the current checked result",
+        ));
     }
+    Ok(())
+}
+
+fn verify(
+    candidate: Comparison,
+    replay: &Json,
+    evaluation: &DeliveryEvaluation,
+    control: &Control,
+) -> Checked<()> {
+    let empty = BTreeMap::new();
+    if normalized_candidate(&candidate.status, &empty, control)? != *wire_field(replay, "status")? {
+        return Err(invalid(
+            "cannot verify status against the current checked result",
+        ));
+    }
+    let Comparison {
+        bytes,
+        nodes: candidate_nodes,
+        answers,
+        issues,
+        exit_code,
+        ..
+    } = candidate;
     let mut native_ids = BTreeMap::new();
     let mut verified = BTreeMap::new();
     let Json::Arr(nodes) = wire_field(replay, "nodes")? else {
@@ -456,14 +534,25 @@ fn verify(
         native_ids.insert(format!("n{index}"), key);
     }
     let mut candidate_ids = BTreeMap::new();
-    for (index, node) in array(field(document, "nodes")?)?.iter().enumerate() {
+    for (index, (start, end)) in candidate_nodes
+        .ok_or_else(|| invalid("expected an array"))?
+        .into_iter()
+        .enumerate()
+    {
         control.checkpoint(Checkpoint::Reuse)?;
-        let id = text(field(node, "id")?)?;
+        let node = archsig_common::json::parse_inner::<
+            CheckFailure<Box<archsig_common::issue::Issue>>,
+        >(&bytes[start..end], control, Checkpoint::Reuse)
+        .map_err(|error| match error {
+            CheckFailure::Stopped(reason) => Failure::Stopped(reason),
+            CheckFailure::Input(issue) => invalid(format!("invalid JSON: {}", issue.message)),
+        })?;
+        let id = text(field(&node, "id")?)?;
         if id != format!("n{index}") {
             return Err(invalid(format!("node.id must be n{index}")));
         }
         let content = node_content(
-            normalized_candidate(node, &candidate_ids, control)?,
+            normalized_candidate(&node, &candidate_ids, control)?,
             control,
         )?;
         let key = verified.get(&content).ok_or_else(|| {
@@ -473,15 +562,16 @@ fn verify(
         })?;
         candidate_ids.insert(id.to_owned(), key.clone());
     }
+    drop(bytes);
     // node番号・順序・共有を意味にしない。各Refを検査済みの導出内容へ正規化する。
     // digest一致で済ませず、payload・型・全依存・元位置を含むcanonical全文を照合する。
-    let answers = normalized_candidate(field(document, "answers")?, &candidate_ids, control)?;
+    let answers = normalized_candidate(&answers, &candidate_ids, control)?;
     if answers != normalized_wire(wire_field(replay, "answers")?, &native_ids, control)? {
         return Err(invalid(
             "cannot verify answers against the current checked derivation",
         ));
     }
-    let issues = normalized_candidate(field(document, "issues")?, &candidate_ids, control)?;
+    let issues = normalized_candidate(&issues, &candidate_ids, control)?;
     if issues != normalized_wire(wire_field(replay, "issues")?, &native_ids, control)? {
         return Err(invalid(
             "cannot verify issues against the current checked derivation",
@@ -492,7 +582,7 @@ fn verify(
         "complete" => u64::from(evaluation.has_refuted_answer()),
         _ => return Err(invalid("candidate verification is not finalized")),
     };
-    if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {
+    if normalized_candidate(&exit_code, &empty, control)? != Json::Nat(code) {
         return Err(invalid(
             "cannot verify exit_code against the computation result",
         ));

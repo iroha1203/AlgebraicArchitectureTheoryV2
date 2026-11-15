@@ -110,8 +110,29 @@ pub fn parse_inner<E: InputError>(
     control: &Control,
     point: Checkpoint,
 ) -> Result<JNode, E> {
+    parse_document(bytes, None, control, point).map(|(document, _)| document)
+}
+
+/// Validate the entire document while retaining only byte spans for the items
+/// of one named root array. The root keeps an empty array at that key. Absent
+/// or non-array fields have no spans and keep their original representation.
+pub fn parse_deferred_root_array<E: InputError>(
+    bytes: &[u8],
+    key: &str,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(JNode, Option<Vec<Span>>), E> {
+    parse_document(bytes, Some(key), control, point)
+}
+
+fn parse_document<E: InputError>(
+    bytes: &[u8],
+    deferred_key: Option<&str>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(JNode, Option<Vec<Span>>), E> {
     E::checkpoint(control, point)?;
-    let result = (|| -> Result<JNode, E> {
+    let result = (|| {
         if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
             return Err((syntax((0, 3), "BOM is not allowed")).into());
         }
@@ -125,6 +146,8 @@ pub fn parse_inner<E: InputError>(
         let mut p = P {
             s: text.as_bytes(),
             text,
+            deferred_key,
+            spans: None,
             i: 0,
             control,
             point,
@@ -138,7 +161,7 @@ pub fn parse_inner<E: InputError>(
                 (syntax((p.i, p.s.len()), "unexpected characters after JSON value")).into(),
             );
         }
-        Ok(v)
+        Ok((v, p.spans))
     })();
     E::finish(result, control, point)
 }
@@ -146,6 +169,8 @@ pub fn parse_inner<E: InputError>(
 struct P<'a, 'c, E> {
     s: &'a [u8],
     text: &'a str,
+    deferred_key: Option<&'a str>,
+    spans: Option<Vec<Span>>,
     i: usize,
     control: &'c Control,
     point: Checkpoint,
@@ -216,7 +241,21 @@ impl<E: InputError> P<'_, '_, E> {
                         }
                         self.i += 1;
                         self.ws()?;
-                        let v = self.value(&child)?;
+                        let v = if pointer.is_empty()
+                            && self.deferred_key == Some(key.as_str())
+                            && self.s.get(self.i) == Some(&b'[')
+                        {
+                            self.checkpoint()?;
+                            let mut spans = Vec::new();
+                            self.array(&child, |_, span| spans.push(span))?;
+                            self.checkpoint()?;
+                            self.spans = Some(spans);
+                            JNode {
+                                value: JValue::Arr(Vec::new()),
+                            }
+                        } else {
+                            self.value(&child)?
+                        };
                         entries.push((key, v));
                         self.ws()?;
                         match self.s.get(self.i) {
@@ -232,27 +271,8 @@ impl<E: InputError> P<'_, '_, E> {
                 JValue::Obj(entries)
             }
             b'[' => {
-                self.i += 1;
                 let mut items = Vec::new();
-                self.ws()?;
-                if self.s.get(self.i) == Some(&b']') {
-                    self.i += 1;
-                } else {
-                    loop {
-                        self.ws()?;
-                        let child = pointer_push(pointer, &items.len().to_string());
-                        items.push(self.value(&child)?);
-                        self.ws()?;
-                        match self.s.get(self.i) {
-                            Some(b',') => self.i += 1,
-                            Some(b']') => {
-                                self.i += 1;
-                                break;
-                            }
-                            _ => return Err((syntax(self.here(), "expected `,` or `]`")).into()),
-                        }
-                    }
-                }
+                self.array(pointer, |item, _| items.push(item))?;
                 JValue::Arr(items)
             }
             b'"' => JValue::Str(self.string()?),
@@ -272,6 +292,33 @@ impl<E: InputError> P<'_, '_, E> {
             _ => return Err((syntax(self.here(), "expected a JSON value")).into()),
         };
         Ok(JNode { value })
+    }
+
+    fn array(&mut self, pointer: &str, mut item: impl FnMut(JNode, Span)) -> Result<(), E> {
+        self.i += 1;
+        self.ws()?;
+        if self.s.get(self.i) == Some(&b']') {
+            self.i += 1;
+            return Ok(());
+        }
+        let mut index = 0_usize;
+        loop {
+            self.ws()?;
+            let child = pointer_push(pointer, &index.to_string());
+            let start = self.i;
+            let value = self.value(&child)?;
+            item(value, (start, self.i));
+            index += 1;
+            self.ws()?;
+            match self.s.get(self.i) {
+                Some(b',') => self.i += 1,
+                Some(b']') => {
+                    self.i += 1;
+                    return Ok(());
+                }
+                _ => return Err((syntax(self.here(), "expected `,` or `]`")).into()),
+            }
+        }
     }
 
     fn number(&mut self) -> Result<String, E> {
@@ -428,4 +475,53 @@ pub fn parse_definition_inner<E: InputError>(
             issue
         })
     })
+}
+
+#[cfg(test)]
+mod deferred_array_tests {
+    use super::*;
+
+    #[test]
+    fn deferred_array_offsets_recover_values_and_validate_every_entry() {
+        let input =
+            br#"{"nodes":[ {"nested":["\\u263a",{"nodes":[7]}]} , null, 1e1 ],"other":[3]}"#;
+        let control = Control::unlimited();
+        let point = Checkpoint::Reuse;
+        let (header, spans) =
+            parse_deferred_root_array::<Box<Issue>>(input, "nodes", &control, point).unwrap();
+        let spans = spans.unwrap();
+        let JValue::Obj(fields) = &header.value else {
+            panic!("header")
+        };
+        assert!(matches!(&fields[0].1.value, JValue::Arr(items) if items.is_empty()));
+        let plain = parse(input).unwrap();
+        let JValue::Obj(fields) = &plain.value else {
+            panic!("plain document")
+        };
+        let JValue::Arr(items) = &fields[0].1.value else {
+            panic!("nodes")
+        };
+        assert_eq!(spans.len(), items.len());
+        for ((start, end), expected) in spans.into_iter().zip(items) {
+            assert_eq!(&parse(&input[start..end]).unwrap(), expected);
+        }
+
+        for invalid in [
+            br#"{"nodes":[0,{"same":true,"same":false}]}"#.as_slice(),
+            br#"{"nodes":[0,]}"#,
+            br#"{"nodes":[],"nodes":[]}"#,
+            br#"{"nodes":[0,{"text":"\uD800"}]}"#,
+        ] {
+            let old = parse(invalid).unwrap_err();
+            let deferred =
+                parse_deferred_root_array::<Box<Issue>>(invalid, "nodes", &control, point)
+                    .unwrap_err();
+            assert_eq!(old, deferred);
+        }
+        let absent = br#"{"nodes":{"names":[]}}"#;
+        let (header, spans) =
+            parse_deferred_root_array::<Box<Issue>>(absent, "nodes", &control, point).unwrap();
+        assert!(spans.is_none());
+        assert_eq!(header, parse(absent).unwrap());
+    }
 }

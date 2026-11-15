@@ -51,7 +51,7 @@ pub(super) fn run_requests_validated(
         Ok(prepared) => prepared,
         Err(outcome) => return outcome,
     };
-    let candidate = match super::reuse::inspect(args.reuse.as_deref(), control) {
+    let candidate = match super::reuse::inspect(args.reuse.as_deref(), &prepared, control) {
         Ok(rejected) => rejected,
         Err(reason) => {
             return output::notify(
