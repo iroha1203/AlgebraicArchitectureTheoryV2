@@ -862,8 +862,9 @@ fn compare_points(
         let (source, target, source_evaluations, target_evaluations, reads) =
             evaluate(&key, &image, [&source_bindings, &target_bindings])?;
         let point = compare(&source, &target);
+        let refuted = matches!(point, LawTransportOutcome::Refuted(_));
         if !matches!(outcome, LawTransportOutcome::Refuted(_)) {
-            if matches!(point, LawTransportOutcome::Refuted(_)) {
+            if refuted {
                 refutation = Some(reads);
             } else {
                 facts.extend(reads.facts);
@@ -873,9 +874,7 @@ fn compare_points(
                 outcome = point.clone();
             }
         }
-        if keep_all_rows
-            || (family.rows.is_empty() && matches!(point, LawTransportOutcome::Refuted(_)))
-        {
+        if keep_all_rows || refuted {
             family.rows.push(LawParameterComparison {
                 source_bindings,
                 target_bindings,
@@ -885,6 +884,9 @@ fn compare_points(
                 target,
                 outcome: point,
             });
+        }
+        if refuted && !keep_all_rows {
+            break;
         }
         tick(c)?;
     }

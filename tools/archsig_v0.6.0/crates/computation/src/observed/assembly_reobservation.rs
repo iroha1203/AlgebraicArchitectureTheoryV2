@@ -1656,7 +1656,7 @@ fn reevaluate_assembly_aligned(
             .selection
             .as_ref()
             .and_then(|(apply, _)| current_answers.get(apply.as_str()));
-        let mut missing = [solve_answer, prepare_answer, apply_answer]
+        let mut missing = [solve_answer, prepare_answer]
             .into_iter()
             .flatten()
             .flat_map(|answer| &answer.reasons)
@@ -1677,6 +1677,8 @@ fn reevaluate_assembly_aligned(
             ContinuityPending::Interrupted
         } else if !layout_missing.is_empty() {
             ContinuityPending::LayoutMissing
+        } else if solutions.is_none() && !missing.is_empty() {
+            ContinuityPending::Missing
         } else if solutions.is_none() {
             ContinuityPending::CurrentSolveUnavailable
         } else {
@@ -1712,12 +1714,6 @@ fn reevaluate_assembly_aligned(
                 Ok(Membership::Excluded) => {
                     continuity = CandidateContinuity::Excluded;
                     undecided = None;
-                }
-                Ok(Membership::Missing(facts)) => {
-                    missing.extend(facts);
-                    missing.sort();
-                    missing.dedup();
-                    undecided = Some(ContinuityPending::Missing);
                 }
                 Ok(Membership::Incompatible) => {
                     undecided = Some(ContinuityPending::IncompatibleDomain);

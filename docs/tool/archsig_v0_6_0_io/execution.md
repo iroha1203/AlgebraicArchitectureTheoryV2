@@ -453,9 +453,9 @@ owned型とfield位置の対応は同じ元宣言を結ぶものとする。
 
 局所対応の型・値・参照・configuration保存、重なりの像の一致、再制限の可換性、
 全体生成操作の保存とLaw移送を核が検査する。Law移送はrequired status・適用とBool読取りを
-元の出現と束縛で比較する。原始状態同士では、残る parameter の全域を構成できる有限 Law 族を扱う。
-修復済み状態を含む場合は、束縛済みの Law を実際の更新値で読む。未束縛の族の未対応理由は
-元 Law 宣言の位置と残る parameter の型を示す。
+元の出現と束縛で比較する。残る parameter の全域を構成できる有限 Law 族では、
+輸送した各代入を始終それぞれの状態で比較する。原始状態では元の観測値を、修復状態では更新後の値を読む。
+対象外の parameter 域では、元 Law 宣言の位置と parameter の型を未対応理由に示す。
 Configuration保存を確認した時点でconfiguration_mapを保持し、操作/Law保存も確認した場合だけ
 ModelMapAssemblyを返す。確認済みの構造ごとにfieldを区別する。
 欠測は元位置付きmissing_observation、その他の適用族外は元位置付きunsupported_algorithm、
@@ -699,15 +699,20 @@ Rustの `observed::reevaluate_observed(previous,prepared,control)` は、同じ�
 
 同じ入口を CLI から使うには、`reobserve` に前回の三入力と問いを `--before-*`、
 現在の三入力と問いを通常の flag で渡す。両方の入力を検査し、前回の評価と現在の再観測を順に実行する。
-例えば、同じ Counter の count を観測し直す。
+例えば、同梱の [Counter 入力](examples/counter.archmap.json) の count を 2 から 3 に訂正する。
+リポジトリのルートから実行すると、`previous` の count は 2、`current` の count は 3 となり、
+前後の結果を `"$work/comparison/result.json"` で確認できる。
 
 ```sh
+cd docs/tool/archsig_v0_6_0_io/examples
+work=$(mktemp -d)
+sed -e 's/"value": "2"/"value": "3"/' -e 's/件数が2/件数が3/' counter.archmap.json > "$work/current.archmap.json"
 archsig reobserve \
   --before-atom-definition counter.atoms.json --before-law counter.law \
-  --before-archmap before.archmap.json --before-ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
+  --before-archmap counter.archmap.json --before-ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
   --atom-definition counter.atoms.json --law counter.law \
-  --archmap current.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
-  --out comparison
+  --archmap "$work/current.archmap.json" --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
+  --out "$work/comparison"
 ```
 
 `--out` は任意。標準出力の要約と保存結果は [再観測の結果](results.md#再観測の結果) に従う。
@@ -747,6 +752,7 @@ Law 改訂を扱う場合は同じ定義、同じ change と、その型付き�
 宣言の空白とコメントを除いた字句と、解決済みの参照を比較する。
 Law 改訂後の `prepare` は、同じ reading と型付き parameter を持つ追加 Law を現在の要求に指定できる。
 候補照合は現在の全解集合で元 parameter を検査し、組立ては現在の各 `apply` が選んだ値で計算する。
+合法な全入力で元 parameter が解になり、補完ごとに更新値が変わるときは、候補を保持して具体的な `apply` の欠測を返す。
 各候補の継続状態と全体の組立て状態は別に返す。選択した現候補が前回の候補と同じかどうかは、
 候補番号に関わらず現在の元 Assignment で判断する。
 

@@ -742,7 +742,7 @@ fn assignment(
 }
 enum Application {
     Ready(change_evaluation::Candidate),
-    Missing(Vec<Fact>),
+    VariableUpdate(Vec<Fact>),
 }
 fn family_application(
     env: &Environment<'_>,
@@ -828,7 +828,7 @@ fn family_application(
             missing.extend(row.missing);
             missing.sort();
             missing.dedup();
-            return Ok(Application::Missing(missing));
+            return Ok(Application::VariableUpdate(missing));
         }
         candidate.update.values = first.ok_or(internal!("共通候補の入力族が空"))?;
         candidate.update.state = change_evaluation::State::Ready;
@@ -1194,7 +1194,7 @@ fn consume(
             c,
         )? {
             Application::Ready(candidate) => checked_application = Some(candidate),
-            Application::Missing(missing) => {
+            Application::VariableUpdate(missing) => {
                 return pending_application(env, g, r, shared, inputs, missing);
             }
         }
@@ -1654,7 +1654,6 @@ pub(super) fn validate_origin(
 pub(super) enum ReobservedMembership {
     Retained(Vec<(Scalar, Vec<Scalar>)>),
     Excluded,
-    Missing(Vec<Fact>),
     Incompatible,
 }
 /// 同じ finite change の元個体・parameter 値を現在の解集合で照合する。
@@ -1778,9 +1777,9 @@ pub(super) fn reobserved_membership(
         return Ok(ReobservedMembership::Excluded);
     };
     if b.family.is_some() {
-        if let Application::Missing(facts) = family_application(env, b, &point, c)? {
-            return Ok(ReobservedMembership::Missing(facts));
-        }
+        // 合法な入力の全点で元 change と Law を再検査する。
+        // 更新値が補完ごとに変わっても、元座標は各点の解に属する。
+        family_application(env, b, &point, c)?;
     } else {
         verify_observed_application(env, b, &point)?;
     }

@@ -84,6 +84,110 @@ fn arguments<'a>(previous: &'a str, current: &'a str, out: Option<&'a str>) -> V
 }
 
 #[test]
+fn reobserve_retains_a_common_solution_when_concrete_updates_need_observation() {
+    let dir = workdir("reobserve-common-solution-variable-update");
+    let definitions = std::str::from_utf8(DEFINITIONS).unwrap();
+    let with_gate = definitions.replace(
+        r#""name": "quantity","#,
+        r#""name":"gate","type":"Bool","meaning":"Determines the updated quantity."},
+           {"name": "quantity","#,
+    );
+    let digest = |source: &str| {
+        archsig_input::definition::check_definitions(&[("d", source.as_bytes())])
+            .unwrap()
+            .vocabularies()["Assemble"]
+            .digest
+            .clone()
+    };
+    let (old, current) = (digest(definitions), digest(&with_gate));
+    let law = std::str::from_utf8(LAW)
+        .unwrap()
+        .replace(&old, &current)
+        .replace(
+            "quantity=if q then 1 else 0",
+            "quantity=if q then (if p.gate then 1 else 0) else 2",
+        )
+        .replace(
+            "law optional desired(p:Part,b:Part):p.quantity=b.quantity;",
+            "view gate(p:Part):Bool=p.gate; law optional desired(p:Part):true;",
+        );
+    let law = law
+        .lines()
+        .filter(|line| {
+            !["pair(", "boundary(", "boundaryOne("].iter().any(|name| {
+                line.trim_start()
+                    .strip_prefix("law optional ")
+                    .is_some_and(|rest| rest.starts_with(name))
+            })
+        })
+        .collect::<Vec<_>>()
+        .join(
+            "
+",
+        );
+    let map = |subjects: &[&str]| {
+        let atoms = subjects.iter().map(|subject| {
+            format!(r#"{{"id":"{subject}-gate","subject":"{subject}","field":"Assemble.Part.gate","value":{},"origin":"model"}}"#, matches!(*subject, "a" | "b"))
+        }).collect::<Vec<_>>();
+        std::str::from_utf8(AFTER)
+            .unwrap()
+            .replace(&old, &current)
+            .replacen(
+                r#""atoms": ["#,
+                &format!(r#""atoms": [{},"#, atoms.join(",")),
+                1,
+            )
+    };
+    let previous = map(&["a", "b", "ma", "mb"]);
+    let current = map(&["b", "ma", "mb"]);
+    inputs(
+        &dir,
+        previous.as_bytes(),
+        "after",
+        current.as_bytes(),
+        "after",
+    );
+    std::fs::write(dir.join("d.json"), with_gate).unwrap();
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let questions = QUERIES.lines().filter(|line| !line.starts_with("global="))
+        .map(|line| if line.starts_with("prepareIt=") {
+            "prepareIt=prepare(Assembly.desired,using=Assembly.choose,on=@after/A,p=@after/a,inputs=Assembly.gate)".into()
+        } else {
+            line.replace("SNAP", "after").replace("index=0", "index=1")
+        }).collect::<Vec<_>>().join("
+");
+    let run = run_binary(&dir, &arguments(&questions, &questions, Some("out")));
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let saved = result_json(&dir, &run);
+    let report = get(&saved, "assembly");
+    assert_eq!(s(get(report, "assembly_status")), "undetermined");
+    assert!(arr(get(report, "layout_missing")).is_empty());
+    let [candidate] = arr(get(report, "candidates")) else {
+        panic!("one candidate")
+    };
+    assert_eq!(s(get(candidate, "status")), "retained");
+    assert!(has(candidate, "current_assignment"));
+    assert!(arr(get(candidate, "missing")).is_empty());
+    for phase in ["previous", "current"] {
+        let answers = arr(get(get(&saved, phase), "answers"));
+        let answer = |name| answers.iter().find(|a| s(get(a, "id")) == name).unwrap();
+        assert_eq!(s(get(answer("solveIt"), "status")), "established");
+        assert_eq!(s(get(answer("pick"), "status")), "established");
+        if phase == "previous" {
+            assert_eq!(s(get(answer("joined"), "status")), "established");
+        } else {
+            let apply = answer("selected");
+            assert_eq!(s(get(apply, "status")), "undetermined");
+            assert!(arr(get(apply, "reasons")).iter().any(|reason| {
+                arr(get(reason, "missing")).iter().any(|fact| {
+                    s(get(fact, "subject")) == "a" && s(get(fact, "field")) == "Assemble.Part.gate"
+                })
+            }));
+        }
+    }
+}
+
+#[test]
 fn reobserve_saves_current_native_evidence_for_additions_corrections_and_withdrawals() {
     let c = Control::unlimited();
     let corrected = std::str::from_utf8(AFTER).unwrap().replace(

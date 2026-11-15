@@ -1037,7 +1037,8 @@ requirementsが空で完全な共通解を確定した場合だけ、回答の�
 対応表を用いた再観測は `assembly` に `assembly_status`、`observations`、`layout_missing`、`candidates` を返す。
 観測対応の各行は前回の `needed` と、見つかった現在の `observed` を持つ。
 候補行には `participant`、`previous_candidate`、`current_solve`、`status`、
-現在の `missing`、現在の apply が成立した場合の `selected_candidate` がある。
+候補所属に関係する現在の `missing`、現在の apply が成立した場合の `selected_candidate` がある。
+具体的な更新に必要な欠測は現在段階の `apply` の理由に記す。
 `status` は `retained`、`excluded`、`undetermined`。判定不能は `reason` で組立て配置の欠測、
 候補の欠測、前回 Assignment または現在 solve の未確定、候補域の不適合、中断を区別する。
 保持した場合は `current_assignment` として、
