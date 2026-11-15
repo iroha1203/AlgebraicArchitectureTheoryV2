@@ -1659,7 +1659,8 @@ pub(super) enum ReobservedMembership {
 /// 同じ finite change の元個体・parameter 値を現在の解集合で照合する。
 pub(super) fn reobserved_membership(
     previous: &Node,
-    current: &Node,
+    (current, solutions): (&Node, NodeRef),
+    selection: Option<&Node>,
     subject_image: impl Fn(&Scalar) -> Option<Scalar>,
     env: &Environment<'_>,
     c: &Control,
@@ -1773,15 +1774,41 @@ pub(super) fn reobserved_membership(
             target_pins[target] = Some(found);
         }
     }
-    let Some(point) = b.compiled.relations.witness(&target_pins, c)? else {
-        return Ok(ReobservedMembership::Excluded);
-    };
-    if b.family.is_some() {
-        // 合法な入力の全点で元 change と Law を再検査する。
-        // 更新値が補完ごとに変わっても、元座標は各点の解に属する。
-        family_application(env, b, &point, c)?;
+    // 現在のapplyが同じ解集合・元座標を検査済みなら、その検査を共有する。
+    let checked = if let Some(Node {
+        payload: Some(Payload::Construction(applied)),
+        ..
+    }) = selection
+        && let D::SharedRepair(data) = &applied.data
+        && data.ty() == NodeType::Construction(T::Selection)
+        && data.source.request.kind == QuestionKind::Apply
+        && data.source.inputs.get(1) == Some(&solutions)
+        && data
+            .source
+            .finite()
+            .is_some_and(|shared| Arc::ptr_eq(shared, b))
+    {
+        data.source.chosen.as_ref().is_some_and(|point| {
+            point.len() == target_pins.len()
+                && point
+                    .iter()
+                    .zip(&target_pins)
+                    .all(|(value, pin)| pin.is_none_or(|required| required == *value))
+        })
     } else {
-        verify_observed_application(env, b, &point)?;
+        false
+    };
+    if !checked {
+        let Some(point) = b.compiled.relations.witness(&target_pins, c)? else {
+            return Ok(ReobservedMembership::Excluded);
+        };
+        if b.family.is_some() {
+            // 合法な入力の全点で元 change と Law を再検査する。
+            // 更新値が補完ごとに変わっても、元座標は各点の解に属する。
+            family_application(env, b, &point, c)?;
+        } else {
+            verify_observed_application(env, b, &point)?;
+        }
     }
     let mut entries = Vec::new();
     for (i, subject) in b.compiled.subjects.iter().enumerate() {

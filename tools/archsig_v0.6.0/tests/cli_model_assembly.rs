@@ -1075,11 +1075,11 @@ fn repaired_map_skips_the_body_of_a_law_when_its_guard_is_false() {
     assert!(has(get(answers.last().unwrap(), "outputs"), "map"));
 }
 
-#[test]
-fn repaired_map_saves_the_colliding_finite_parameter_values() {
-    let dir = workdir("repaired-model-map-parameter-collision");
-    let input =
-        repaired_boolean_inputs("law optional aConstant(r:Root,t:(Part,Bool)):true;", false);
+fn repaired_folding_fixture(dir: &Path, parameter_type: &str) -> Vec<String> {
+    let input = repaired_boolean_inputs(
+        &format!("law optional aConstant(r:Root,t:{parameter_type}):true;"),
+        false,
+    );
     let law = std::str::from_utf8(input.law().bytes())
         .unwrap()
         .replace(
@@ -1110,7 +1110,7 @@ fn repaired_map_saves_the_colliding_finite_parameter_values() {
         .collect();
     map = fixture::atom(map, "moveB-parts", Some(Json::Arr(pairs)));
     write_inputs(
-        &dir,
+        dir,
         &archsig_input::input::InputSources::from_bytes(
             vec![input.definitions()[0].bytes().to_vec()],
             law.into_bytes(),
@@ -1145,6 +1145,13 @@ fn repaired_map_saves_the_colliding_finite_parameter_values() {
         })
         .collect::<Vec<_>>();
     asks.push("fold=assemble_map(Assembly.moves,from=$made0.assembly,to=$made0.assembly,x=@v/moveA,y=@v/moveB)".to_owned());
+    asks
+}
+
+#[test]
+fn repaired_map_saves_the_colliding_finite_parameter_values() {
+    let dir = workdir("repaired-model-map-parameter-collision");
+    let asks = repaired_folding_fixture(&dir, "(Part,Bool)");
     let asks = asks.iter().map(String::as_str).collect::<Vec<_>>();
     let run = execute_asks(&dir, "out", None, &asks);
     assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
@@ -1198,4 +1205,53 @@ fn repaired_map_saves_the_colliding_finite_parameter_values() {
     let replay = result_json(&dir, &replay);
     assert!(warnings(&replay).is_empty());
     assert_eq!(get(&replay, "answers").value, get(&result, "answers").value);
+}
+
+#[test]
+fn repaired_map_saves_an_outside_candidate_as_diagnostic_data() {
+    let dir = workdir("repaired-model-map-outside-target");
+    let asks = repaired_folding_fixture(&dir, "Map<Part,Root>");
+    let asks = asks.iter().map(String::as_str).collect::<Vec<_>>();
+    let run = execute_asks(&dir, "out", None, &asks);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answer = arr(get(&result, "answers")).last().unwrap();
+    assert_eq!(s(get(answer, "status")), "refuted");
+    assert!(has(get(answer, "outputs"), "configuration_map"));
+    let nodes = arr(get(&result, "nodes"));
+    let dereference = |r: &archsig_common::json::JNode| {
+        nodes
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(r, "node")))
+            .unwrap()
+    };
+    let [point] = arr(get(answer, "counterexamples")) else {
+        panic!("one parameter transport failure");
+    };
+    let data = get(get(dereference(point), "value"), "data");
+    let witness = get(data, "parameter_transport");
+    assert_eq!(s(get(witness, "kind")), "outside_target");
+    assert_eq!(num(get(witness, "position")), 1);
+    let [i] = arr(get(witness, "source_indices")) else {
+        panic!("one source value")
+    };
+    let i = num(i) as usize;
+    let left = dereference(get(data, "left"));
+    let right = dereference(get(data, "right"));
+    let source = &arr(get(witness, "source"))[i];
+    let image = &arr(get(witness, "images"))[i];
+    assert_eq!(get(left, "value").value, source.value);
+    let keys = |map: &archsig_common::json::JNode| {
+        arr(map)
+            .iter()
+            .map(|entry| s(&arr(&arr(entry)[0])[1]).to_owned())
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(keys(source), ["a", "b", "ma", "mb"]);
+    assert_eq!(keys(image), ["a", "ma", "mb"]);
+    assert_eq!(s(&arr(get(right, "type"))[0]), "List");
+    assert_eq!(get(right, "value").value, get(witness, "target").value);
+    for value in arr(get(right, "value")) {
+        assert_eq!(keys(value), ["a", "b", "ma", "mb"]);
+    }
 }

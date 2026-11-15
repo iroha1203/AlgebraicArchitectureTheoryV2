@@ -1107,12 +1107,12 @@ fn repair_requests<'a>(
             "both finite prepare requests must use the reading named in --alignment",
         ));
     }
-    if prior_prepare.head != new_prepare.head {
-        if !revised_law {
-            return Err(invalid(
-                "with identical Law inputs the previous and current prepare requests must select the same Law",
-            ));
-        }
+    if prior_prepare.head != new_prepare.head && !revised_law {
+        return Err(invalid(
+            "with identical Law inputs the previous and current prepare requests must select the same Law",
+        ));
+    }
+    if revised_law {
         let params = |prepared: &'a PreparedObserved, request: &Request| {
             let name = request
                 .declaration()
@@ -1794,7 +1794,8 @@ fn reevaluate_assembly_aligned(
                     .ok_or(internal!("候補照合の現在環境がない"))?;
                 super::repair_problem::reobserved_membership(
                     old,
-                    &evaluation.nodes[solutions.0],
+                    (&evaluation.nodes[solutions.0], solutions),
+                    apply_answer.and_then(|answer| output(&evaluation, answer, "selection")),
                     translate,
                     environment,
                     control,
@@ -2143,6 +2144,29 @@ joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/
         assert!(
             matches!(reevaluate_assembly_many(&prior, prepared_with("after", AFTER, changed.as_bytes(), queries, &c), &alignment, &c), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("update expression"))
         );
+        let original_parameters =
+            law.replace("flexible(p:Part,b:Part)", "flexible(p:Part,b:Part,t:Bool)");
+        let previous = before(&original_parameters);
+        let changed_parameters = original_parameters.replace("t:Bool", "t:Option<Bool>");
+        let renamed = changed_parameters.replace("flexible", "revisedFlexible");
+        let renamed_queries = queries.replace(
+            "prepare(Assembly.flexible,",
+            "prepare(Assembly.revisedFlexible,",
+        );
+        for (revised, asks) in [
+            (changed_parameters.as_str(), queries),
+            (renamed.as_str(), renamed_queries.as_str()),
+        ] {
+            assert!(matches!(
+                reevaluate_assembly_many(
+                    &previous,
+                    prepared_with("after", AFTER, revised.as_bytes(), asks, &c),
+                    &alignment,
+                    &c,
+                ),
+                Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("different typed parameters")
+            ));
+        }
     }
 
     #[test]

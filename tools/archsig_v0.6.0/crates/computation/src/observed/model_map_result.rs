@@ -329,11 +329,20 @@ fn parameter_refutation(
                 "source_indices".into(),
                 Json::Arr(vec![Json::Nat(*source as u64)]),
             );
+            let left = capture(&parameter.source()[*source])?;
+            let target = Scalar::List {
+                element: parameter.target_type().erase(),
+                items: parameter
+                    .target()
+                    .iter()
+                    .map(|value| value.scalar().clone())
+                    .collect(),
+            };
             (
                 "outside_target",
-                capture(&parameter.source()[*source])?,
-                capture(&parameter.images()[*source])?,
-                "the transported parameter value is outside the target domain",
+                left,
+                b.captured_scalar(&target, arguments, c)?,
+                "the transported parameter candidate is outside the target domain",
             )
         }
         FiniteValueConditionFailure::Collision {

@@ -1113,9 +1113,10 @@ left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指�
 `AssemblyLawTransport={source:AssemblyLawOccurrence,target?:AssemblyLawOccurrence}`。
 `AssemblyLawOccurrence={assembly:ModelAssembly,object:ObjectComponent,law:LawInstance}`。
 `LawParameterTransportFailure={position:Nat,source_type:Type,target_type:Type,source:Value[],target:Value[],
-images:Value[],kind:"outside_target"|"collision"|"unreached",source_indices?:Nat[],target_index?:Nat}`。
-`images` は始域順。終域外では元値・輸送像を、衝突では同じ像を持つ二つの元値を、
-未到達では終域値・全像の列を `left` / `right` に示す。
+images:Json[],kind:"outside_target"|"collision"|"unreached",source_indices?:Nat[],target_index?:Nat}`。
+`images` は始域順の候補像を表す診断用 JSON。例えば、キーが衝突して一部のキーが欠ける Map の候補像も、その対の列を保持する。
+終域外では元値・終域の全値列を、衝突では同じ像を持つ二つの元値を、
+未到達では終域値・像の列を `left` / `right` に示す。
 設計選択付き組立てと修復状態の Law 移送の反例は `condition_detail` に具体的な失敗理由を保持する。
 選択済み構成を使う移行の端点不一致は、欠けている側、実端点とその側の組立てを保持する。
 局所対応が観測済みの単一参照を保存しない場合は、始域の参照を運んだ像と実際の終域参照を保持する。
