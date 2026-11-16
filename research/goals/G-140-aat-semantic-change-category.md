@@ -1,16 +1,16 @@
-# G-151-aat-semantic-change-category — 意味を保つ全変更とその局所性
+# G-140-aat-semantic-change-category — 意味を保つ全変更とその局所性
 
-- `id`: G-151-aat-semantic-change-category
+- `id`: G-140-aat-semantic-change-category
 - `status`: `draft`
 - `research mode`: `target-theorem`
 - 関連メモ: [#6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)。実行用tracking Issueはactive化時に定める。
 - 設計: [n1019 §5–6・8](../../docs/note/n1019_shigure_representability_design.md)
-- 依存: G-150の意味再構成・Law幾何。
+- 依存: G-139の意味再構成・Law幾何。
 
 ## 研究目的
 
 元の意味を保つ非可逆な変更、その合成、整合する局所変更の組立てを同じ幾何で回復する。
-局所変更を整合させる補正とその障害はG-152、指定障害と診断の比較はG-144が扱う。
+局所変更を整合させる補正とその障害はG-141、指定障害と診断の比較はG-142が扱う。
 
 ## 固定target
 
@@ -28,7 +28,7 @@ phase・stutteringを使うときはその翻訳と許可経路を明示する�
 
 ### B. 射の幾何と合成
 
-G-150 Nの全Homのprofile表示と同A–Dのquantity引戻し・対応空間から、
+G-139 Nの全Homのprofile表示と同A–Dのquantity引戻し・対応空間から、
 各係数的実現σの独立な変更modelと幾何的表示の全Rでの自然な同値を構成する。
 さらにnative基点で元のChgの全Homを回復し、指定native点の係数移送と比較する。
 copying familyとlinear familyを全Rで同一視しない。
@@ -66,7 +66,7 @@ G-126の共通behavior上端を保つ商修復と、指定adapter間の変更が
 
 [n1020 §12・16](../../docs/note/n1020_shigure_polynomial_specializations.md#development-change)
 のbefore/after・状態比較h・観測・操作語翻訳τからcomparison presentationを作り、
-G-150 Pのschemeと独立なmodelの同値へ通す。両端の状態階数が違う場合も量化する。
+G-139 Pのschemeと独立なmodelの同値へ通す。両端の状態階数が違う場合も量化する。
 原始式から両端へのspanとそのfiber、合成可能な比較のfiber productから合成比較への射を
 生成し、Bのnerveへ同定する。unmarked版では同型を保持した2-fiber productを使う。
 
@@ -95,14 +95,14 @@ ArchSigの純粋affine Termの型付き解釈では、元式と加群上の式�
    μ=1のcompact_allは非単射で、固定引数compact_tとその有限語はtranslationであることも検査する。
 
 同時変形のliftと、合成可能な意味保存射の合成は別のfiber問題として定義する。
-Pの同じsnapshotを使った高次liftの存在・失敗はG-152の固定targetとする。
+Pの同じsnapshotを使った高次liftの存在・失敗はG-141の固定targetとする。
 
 ## 前提・構成台帳
 
 | 対象 | 役割 | 構成・証拠 | 使用先 |
 | --- | --- | --- | --- |
 | 指定観測・操作・語の翻訳 | 入力 | Aの状態mapと可換式 | 全語の意味保存 |
-| 係数的実現・そのnative比較 | 先行構成 | G-150 | Bの射と合成の幾何 |
+| 係数的実現・そのnative比較 | 先行構成 | G-139 | Bの射と合成の幾何 |
 | 文脈support・witness・係数被覆 | 入力と構成義務 | Cの二種類のdescentを区別 | 組立て比較 |
 | matchingな変更・全制限・組立て | 構成義務 | Cの同じ原始maps | 局所から大域への射と合成 |
 | 台帳・phase・状態比較・語翻訳 | 原始入力と構成 | Pの操作と不変量 | 一般の変更構成への同定 |
@@ -115,5 +115,5 @@ G-124・G-126への同一対象上の比較と必要仮定の放電をreportに�
 反証は同じ原始入力と破れる比較を示して記録し、一般targetを黙って弱めない。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、
-research/reports/G-151-aat-semantic-change-category.mdの宣言・前提対応に置く。
+research/reports/G-140-aat-semantic-change-category.mdの宣言・前提対応に置く。
 [共通完了基準](../../.codex/skills/target-theorem-loop/references/target-goal-contract.md#共通基準の参照適用)を適用する。

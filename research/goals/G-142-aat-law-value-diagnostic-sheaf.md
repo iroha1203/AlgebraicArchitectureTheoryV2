@@ -1,12 +1,12 @@
-# G-144-aat-law-value-diagnostic-sheaf — 診断の幾何と意味障害との比較
+# G-142-aat-law-value-diagnostic-sheaf — 診断の幾何と意味障害との比較
 
-- `id`: `G-144-aat-law-value-diagnostic-sheaf`
+- `id`: `G-142-aat-law-value-diagnostic-sheaf`
 - `status`: `draft`
 - `research mode`: `target-theorem`
 - 関連メモ: [#6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)。実行用tracking Issueはactive化時に定める。
 - 設計: [n1020 §4・14・16](../../docs/note/n1020_shigure_polynomial_specializations.md)
-- 依存: [G-150](G-150-aat-law-generated-relative-geometry.md)の実現幾何。
-  E–Fの実修復との比較には[G-152](G-152-aat-coherent-repair-effectivity.md)の有限graph adapter族を使う。
+- 依存: [G-139](G-139-aat-law-generated-relative-geometry.md)の実現幾何。
+  E–Fの実修復との比較には[G-141](G-141-aat-coherent-repair-effectivity.md)の有限graph adapter族を使う。
 
 ## 研究目的
 
@@ -39,7 +39,7 @@ faithfully flatな場合は各指定類の零性を反映すると証明する�
 regular functions f_{ℓ,s}と診断係数環Λを量化する。chart台はSの部分集合で指定し、
 edge・faceの台S_σはK1の交差から生成する。
 既存のfinite SourceからSへの全射readingを使う場合は、Lawのadequacyを同じ評価で照合する。
-G-150の実現scheme B=M_Pへの適用では、fを原始scalar式から生成し、評価一致を証明する。
+G-139の実現scheme B=M_Pへの適用では、fを原始scalar式から生成し、評価一致を証明する。
 式には係数、加法・乗法、有限tensor式の自己準同型のtraceを使い、名前付き生成元が
 基底となる型では演算成分も使う。一般の基底成分はそのchart上で扱い、traceの基底不変性と
 成分の変換則を証明する。required Lawの零残差と、選んだreadoutを区別する。
@@ -71,7 +71,7 @@ flatnessを要求せず、恒等・合成、scalar式を保つreading代入と�
 locally closed B_πを生成する。これらの点集合による有限分割と、各B_π上での
 有限自由Λ加群の定数複体への同型を証明する。
 普遍座標を持つA^{L×S}_ℤ上でも構成し、任意のfの族をそのpullbackとして回収する。
-全R値の実現とreadoutはG-150が保持し、幾何stalkと冪零値の相違をW2で検査する。
+全R値の実現とreadoutはG-139が保持し、幾何stalkと冪零値の相違をW2で検査する。
 
 ### C. 合流による類の生成・消失
 
@@ -130,7 +130,7 @@ Bの定数係数étale層は同じfamilyを実現することと併せ、二種�
 
 ### E. 同じ操作の障害を読む指定診断類
 
-G-152の有限graph adapter族を使う。可換環R、少なくとも一辺を持つ有限連結単純graph Γ、
+G-141の有限graph adapter族を使う。可換環R、少なくとも一辺を持つ有限連結単純graph Γ、
 辺の向き、μ、offset bを持つ同じ台帳から、E_b、Ob=underline Rv、State、
 r_e=λ_j−λ_i−b_eとo_b=[r]=[−b]を得る。まずR=ℤとする。
 Sourceを共有interfaceである辺の出現、chart台を接続辺、edge台を実交差とし、
@@ -144,7 +144,7 @@ Sourceを共有interfaceである辺の出現、chart台を接続辺、edge台�
 を構成し、次数0–2の整数診断複体との同型、ℤ→ℚでの既存K0への写像を作る。
 各cellの写像av↦a e_{(Law,0)}を
 [actualCechDiagnosticH1Map](../lean/ResearchLean/AG/ObstructionDiagnosticBridge/ActualCechH1Comparison.lean)
-へ同定し、両微分、G-152のSAGA比較、実操作のresidualとの可換性を証明する。
+へ同定し、両微分、G-141のSAGA比較、実操作のresidualとの可換性を証明する。
 SAGAの増加pairからgraphの向きへの符号付き写像Tを合成し、
 [ActualCechAffineLocalData](../lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedAffineObstruction.lean)
 のtransition=−b、localState=λを同じ実操作から生成する。
@@ -172,7 +172,7 @@ cycleの一つのchartを二つへ分け、間にg₀=idを挿入する。追加
 粗側被覆の逆像（分割した二chartの和）と細側被覆を比較する。
 元のoffset・μ・操作を保つ代入と追加一致Lawから、実現と修復の比較を生成する。
 許容頂点はchart mapの逆像、許容辺は元の辺の一意なlift、追加offsetは0とし、
-G-152の制約付き修復と全解への作用も比較する。
+G-141の制約付き修復と全解への作用も比較する。
 
 W3の同じ支持からAtlasのC0–C6を構成・証明する。台の像、fiberの連結性、edge lift、
 fiber内のchain、face lift、edge liftの一意性、self-loop条件を各々放電する。
@@ -195,10 +195,10 @@ fiber内のchain、face lift、edge liftの一意性、self-loop条件を各々�
    V(μ−1)上の生成とV(λ)上の消失をCの同じr、ρと核・余核で説明する。
    Λ=ℤ・ℚでstalk・微分を同定し、k=ℚ、R=k[ε]/ε²の(0,0),(0,ε)について、
    readoutのR値の相違と幾何点での一致を同時に示す。
-3. G-152の三角形0→1→2→0の同じ台帳をE–Fへ通す。負のoriented sumでH¹≅Rとすると
+3. G-141の三角形0→1→2→0の同じ台帳をE–Fへ通す。負のoriented sumでH¹≅Rとすると
    o_b,κ_bがb₀₁+b₁₂+b₂₀へ写ることを証明する。ℤ・ℚでb=(1,2,−3)と(1,0,0)を比較し、
    診断H¹は同じ一次元でも指定類の零性と実操作の存在が異なることを示す。
-   κ_b=0でも全頂点を固定した補正が存在しないG-152の例も、同じ類へ通す。
+   κ_b=0でも全頂点を固定した補正が存在しないG-141の例も、同じ類へ通す。
    細側chartを0a,0b,1,2、Sourceを{s₂₀,t,s₀₁,s₁₂}、台を順に
    {s₂₀,t},{t,s₀₁},{s₀₁,s₁₂},{s₁₂,s₂₀}とする。
    細側readingは恒等、粗側はt↦s₀₁（他は恒等）、chart mapは0a,0b↦0とする。
@@ -209,17 +209,17 @@ fiber内のchain、face lift、edge liftの一意性、self-loop条件を各々�
 | 対象 | 役割 | 構成・証拠 | 使用先 |
 | --- | --- | --- | --- |
 | 有限source・Law・supported nerve・Λ | 入力 | A–B。同じcellと支持から生成 | 整数診断・層・合流 |
-| 実現schemeと原始scalar式 | 先行構成と入力 | G-150、Bの評価一致 | 全base change・stalk |
+| 実現schemeと原始scalar式 | 先行構成と入力 | G-139、Bの評価一致 | 全base change・stalk |
 | 有限順像、Mayer–Vietoris、上半連続性 | 既存数学 | [03QN](https://stacks.math.columbia.edu/tag/03QN)、[0BDI](https://stacks.math.columbia.edu/tag/0BDI)、既存Law値分解 | B–D |
 | Bの有限表示、g_i,h,β | 入力 | Dの原始cycle構成 | 任意構成可能関数の実現 |
-| E_b,Ob,State,実residual,SAGAの比較 | 先行構成 | G-152の同じadapterと実交差 | E–F |
+| E_b,Ob,State,実residual,SAGAの比較 | 先行構成 | G-141の同じadapterと実交差 | E–F |
 | relation完全性・整数H¹の自由性 | 構成・証明義務 | Eの原始支持とspanning tree | 指定類と零性反映 |
 | 細分化・C0–C6・比較図式 | 構成・証明義務 | F・W3の同じ実現と支持 | Atlasと実修復の保存 |
 
 ## 完了条件
 
 A–F・WをLeanで証明し、同じ原始入力からの生成、既存宣言との対応、仮定と使用先を
-`research/reports/G-144-aat-law-value-diagnostic-sheaf.md`に記す。
+`research/reports/G-142-aat-law-value-diagnostic-sheaf.md`に記す。
 証拠は`research/lean/ResearchLean/AG/`に置き、
 [共通完了基準](../../.codex/skills/target-theorem-loop/references/target-goal-contract.md#共通基準の参照適用)を適用する。
 有限例のrank検算はDの全入力についての構成を代替せず、任意に選んだ比較同型・零性反映を

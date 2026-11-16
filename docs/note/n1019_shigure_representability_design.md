@@ -11,7 +11,7 @@ scheme、stack、ind表示、逆極限は、原始構造に応じて構成・判
 一般のsheafに幾何の名前を与えるだけでは、この研究目的を達成したことにならない。
 
 以下には直接計算による証明と、構成・形式化すべき主定理を区別して記す。
-[G-150・G-151・G-152・G-144](../../research/goals/README.md#draft人間の確認待ち)を
+[G-139・G-140・G-141・G-142](../../research/goals/README.md#draft人間の確認待ち)を
 四つの研究到達像として定める。
 有限局所自由加群のmoduli、診断値の合流、台帳分割の詳細は
 [n1020](n1020_shigure_polynomial_specializations.md)に置く。これらは一般構成への
@@ -323,7 +323,7 @@ term substitution・restriction・operationとの可換性を普遍tupleで検�
 identity restrictionにもかかわらず係数familyでは可換でない。
 互換な拡張のmoduli上に普遍residualを構成し、その零点familyを相対Specで作る。
 これにより、拡張の非一意性も選択肢の幾何として扱う。
-この全D・q・εの分類、coherence、nativeとの比較が未構成なら、G-150は未達である。
+この全D・q・εの分類、coherence、nativeとの比較が未構成なら、G-139は未達である。
 
 各Atom/Law familyの係数的実現には、このscalar分類、domain・witness、
 ind表示・対応関係を接続する。
@@ -629,17 +629,17 @@ G-126で同じsource上の商修復を組み合わせられることと、§7の
 
 | GOAL | 研究到達像 | 依存 |
 | --- | --- | --- |
-| [G-150](../../research/goals/G-150-aat-law-generated-relative-geometry.md) | 任意担体・全Homを回復するLawの相対幾何。意味再構成、相対Spec、全residualの拡張分類、scheme・stack特殊化 | 原始意味、既存G-124 |
-| [G-151](../../research/goals/G-151-aat-semantic-change-category.md) | 非可逆な意味保存変更、その合成と整合する局所変更の組立て | G-150 |
-| [G-152](../../research/goals/G-152-aat-coherent-repair-effectivity.md) | 局所変更を整合させる障害と全修復、§7のČech・cotangent・lim¹比較、有限証拠の十分性 | G-150・G-151 |
-| [G-144](../../research/goals/G-144-aat-law-value-diagnostic-sheaf.md) | 診断族の合流・保存・反映と、実際の意味障害との比較 | 診断族はG-150。指定障害との比較はG-152 |
+| [G-139](../../research/goals/G-139-aat-law-generated-relative-geometry.md) | 任意担体・全Homを回復するLawの相対幾何。意味再構成、相対Spec、全residualの拡張分類、scheme・stack特殊化 | 原始意味、既存G-124 |
+| [G-140](../../research/goals/G-140-aat-semantic-change-category.md) | 非可逆な意味保存変更、その合成と整合する局所変更の組立て | G-139 |
+| [G-141](../../research/goals/G-141-aat-coherent-repair-effectivity.md) | 局所変更を整合させる障害と全修復、§7のČech・cotangent・lim¹比較、有限証拠の十分性 | G-139・G-140 |
+| [G-142](../../research/goals/G-142-aat-law-value-diagnostic-sheaf.md) | 診断族の合流・保存・反映と、実際の意味障害との比較 | 診断族はG-139。指定障害との比較はG-141 |
 
-係数拡張、chartの接着、reading自然性はG-150を構成する証明義務として扱う。
+係数拡張、chartの接着、reading自然性はG-139を構成する証明義務として扱う。
 有限moduleのmoduli、全syzygy・Artin試験、台帳adapterの特殊化は、
 [n1020 §9](n1020_shigure_polynomial_specializations.md#9-goalの分割と証明経路)で各GOALに対応させる。
-意味を回復する構成とその幾何を一つのGOALに置き、G-151のmatchingな変更の組立てと
-G-152のmatchingにする補正を分ける。診断の次元変化だけでは意味障害を決定できないため、
-その変化の分類と指定類の比較をG-144の独立した到達像とする。
+意味を回復する構成とその幾何を一つのGOALに置き、G-140のmatchingな変更の組立てと
+G-141のmatchingにする補正を分ける。診断の次元変化だけでは意味障害を決定できないため、
+その変化の分類と指定類の比較をG-142の独立した到達像とする。
 
 coalgebraへの集合の埋込み、Sym/Spec、quotient stack、cotangent、Milnor列は標準数学である。
 それらの存在や用語の追加に新規性を置かない。
@@ -649,7 +649,7 @@ coalgebraへの集合の埋込み、Sym/Spec、quotient stack、cotangent、Miln
 
 数学的非自明性を問う試験は、§7の「全有限段・Zariski局所で存在、大域で不存在」を
 元の全変更について示せること、およびその同じ指定類を加群拡大・実際の微小lift・Čechから
-回復できることに置く。加えて、G-151の非可逆射を含む全変更と合成の比較を必須にする。
+回復できることに置く。加えて、G-140の非可逆射を含む全変更と合成の比較を必須にする。
 §7の変更自体は全てtranslationで可逆である。
 非可逆な必須例にはV=Boolとしてlensのhidden担体の忘却 $K\times V\to V$ を使い、
 get/put保存と、$|K|>1$ なら同型でないことを同じ射の幾何で示す。

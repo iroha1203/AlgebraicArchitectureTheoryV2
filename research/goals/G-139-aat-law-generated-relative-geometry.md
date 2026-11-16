@@ -1,6 +1,6 @@
-# G-150-aat-law-generated-relative-geometry — 元の意味を回復するLawの相対幾何
+# G-139-aat-law-generated-relative-geometry — 元の意味を回復するLawの相対幾何
 
-- `id`: G-150-aat-law-generated-relative-geometry
+- `id`: G-139-aat-law-generated-relative-geometry
 - `status`: `draft`
 - `research mode`: `target-theorem`
 - 関連メモ: [#6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)。実行用tracking Issueはactive化時に定める。
@@ -246,5 +246,5 @@ N・A–D・Pの定理、原始sourceとの対応、正例・反例をLeanで証
 任意sheafという名称だけで、通常の幾何への比較を済ませない。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、
-research/reports/G-150-aat-law-generated-relative-geometry.mdの宣言・前提対応に置く。
+research/reports/G-139-aat-law-generated-relative-geometry.mdの宣言・前提対応に置く。
 [共通完了基準](../../.codex/skills/target-theorem-loop/references/target-goal-contract.md#共通基準の参照適用)を適用する。

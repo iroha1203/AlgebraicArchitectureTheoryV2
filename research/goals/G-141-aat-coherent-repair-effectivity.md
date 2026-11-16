@@ -1,11 +1,11 @@
-# G-152-aat-coherent-repair-effectivity — 変更の障害・修復・有限判定
+# G-141-aat-coherent-repair-effectivity — 変更の障害・修復・有限判定
 
-- `id`: G-152-aat-coherent-repair-effectivity
+- `id`: G-141-aat-coherent-repair-effectivity
 - `status`: `draft`
 - `research mode`: `target-theorem`
 - 関連メモ: [#6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)。実行用tracking Issueはactive化時に定める。
 - 設計: [n1019 §6–8](../../docs/note/n1019_shigure_representability_design.md)、[n1020 §13・15–16](../../docs/note/n1020_shigure_polynomial_specializations.md#semantic-lift)
-- 依存: G-150・G-151。診断への比較はG-144が本カードの実修復から構成する。
+- 依存: G-139・G-140。診断への比較はG-142が本カードの実修復から構成する。
 
 意味を保つ変更について、その存在・組立ての障害・全修復と残る自由を同じ原始Lawから
 導く。有限表示の微小liftと無限diagramの大域化を比較し、有限計算から結論してよい
@@ -15,7 +15,7 @@
 
 ### A. 原始変更とderived inverse limit
 
-G-151の変更を実際のfinite fragmentへ制限する射を構成する。
+G-140の変更を実際のfinite fragmentへ制限する射を構成する。
 線形lift問題では、原始operation/Lawの全syzygyから
 自己同型を−1、補正を0、defectを1とする複体D_Fを作る。
 元の変更の複体とRlim_F D_Fの比較を構成し、同値となる条件を
@@ -35,7 +35,7 @@ category上のdiagramにはL_fe=L_fL_eとa_fe=a_f+L_fa_eを課す。
 全意味保存射がtranslationへ分類されることを証明し、
 adapterの線形部・定数項から実際の補正複体を生成する。
 source aからtarget bへの式はc_t−L_ec_s=b_e−a_eとする。
-moduleやpublic担体も変える射はG-151の全変更に残し、このtranslation分類と混同しない。
+moduleやpublic担体も変える射はG-140の全変更に残し、このtranslation分類と混同しない。
 scheme表示を使うfamilyではmoduleの表示とbase changeを明示し、任意moduleを
 有限自由と置き換えない。n1019 §7はhidden moduleがℤの必須例とする。
 
@@ -126,7 +126,7 @@ D̄=[Hom_R(E_x,M)→Hom_R(N_x,M)]を構成する。単一chartに入らないx�
 chartのD、D̄、RHom_R(Lx*L_{M_P/k},M)の次数0・1と指定障害を同定する。
 N_xのprojectivityは要求しない。Noetherian係数・有限表示の系では、有限principal
 affine cover上の準連接性、Homの局所化、Čech totalizationとの比較を証明する。
-この系の仮定をG-150の表現定理へ移さない。
+この系の仮定をG-139の表現定理へ移さない。
 
 原始代入とLaw導出u:P→P′からρ:Sem_{P′}→Sem_Pを作り、x∈Sem_{P′}(R)と
 指定されたy′∈Lift_P(ρx,R′)に対するLift_u(x,y′)を独立に定義する。
@@ -147,10 +147,10 @@ b−Lp∈L(H)、全解をker(L|_H)のtorsorで特徴づける。非線形Lawの�
 導き、全大域syzygyから0→H¹(D)→H¹(T_raw)→∏_{s∈S}Mの完全性を証明する。
 実残差が右写像の核へ入り、その逆像がo_Pになること、細分化との可換性も含める。
 K0/K1のincidence生成とは同じ支持で比較し、微分・syzygyを持つ複体との同型を
-Law値の一致だけから仮定しない。正の診断比較はG-144の同じadapter族で行う。
+Law値の一致だけから仮定しない。正の診断比較はG-142の同じadapter族で行う。
 
 conormal比較では全表示の普遍ambient Bとprincipal-open siteを固定する。
-G-150で構成する普遍equation systemのObservableとLaw idealをB_s、J_sへ同定し、
+G-139で構成する普遍equation systemのObservableとLaw idealをB_s、J_sへ同定し、
 [Raw.shortComplex](../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean)を
 そのsiteへ制限して、(J²)_s=(J_s)²とZariski層化から標準conormal列へ同定する。
 実現xで引き戻す前のJ/J²を保持し、lawfulな評価後の零idealへ置き換えない。
@@ -203,7 +203,7 @@ B₀/m₀^{r+1}、B₀/(J₀+m₀^{r+1})の任意base changeとの交換を証�
 可換環R、一辺以上を持つ有限連結単純graph Γ、その向き、μ∈R、offset b_e∈Rを
 量化する。各頂点の台帳R²・公開状態Rについて、原始加群演算とLawから
 p=(1,1)、v=(1,−1)ᵀ、i_λ=(λ,1−λ)ᵀ、j_μ=μv、g_b=I+bvpを構成する。
-固定pの族はG-151 Pの一型の係数表示とのmarked同型を使い、p i=id、p j=0から
+固定pの族はG-140 Pの一型の係数表示とのmarked同型を使い、p i=id、p j=0から
 apply_u(x)=x+i(u)、compact_t(x)=x+j(t)、read=pの全有限語の公開意味保存を証明する。
 入力u,tは比較の両側で同じ外部入力とする。
 g_b^{-1}=g_{−b}、p g_b=p、g_bv=v、g_bi_λ=i_{λ+b}、g_bj_μ=j_μ、g_cg_b=g_{b+c}
@@ -235,7 +235,7 @@ State(X_Γ)≠∅ ⇔ o_b=0 ⇔ b∈im d⁰を証明し、非空な全解をOb(X
 全解をker(d⁰|_{H_V})のtorsorとする。SAGAの引く補正とはa=−c_SAGAで比較する。
 辺の変更可能集合からH_E⊆R^Eを生成した場合は[b]+[Δb]=0でoffset修復を判定し、
 全解をker(H_E→H¹(Γ;R))のtorsorとする。各修復後の操作のH⁰の自由も保持する。
-この同じOb、State、r、o_bをG-144の診断・Atlas比較へ渡す。
+この同じOb、State、r、o_bをG-142の診断・Atlas比較へ渡す。
 
 ### H. 同じ構成を通す指定例
 
@@ -268,14 +268,14 @@ State(X_Γ)≠∅ ⇔ o_b=0 ⇔ b∈im d⁰を証明し、非空な全解をOb(X
    ℚ上で後者のoffset修復域を全辺、一辺、空とした全解は平面、単点、空となり、
    各修復後に一自由度が残る。λ=0、b=(1,2,−3)では全頂点固定の場合だけ修復不能となる。
 
-さらにG-151 Pの同じsnapshot protocolと、その意味保存条件μδ=0を用いる。
+さらにG-140 Pの同じsnapshot protocolと、その意味保存条件μδ=0を用いる。
 原始追加E=μδ、E=0をFの消去へ通し、同じ意味保存係数fiberをV(μδ)へ同定する。
 体上の原点の特異性、ν=2、各軸方向の全次数lift、δ=μ=εの二次lift不能を証明する。
 任意の候補δ=ε+aε²、μ=ε+bε²の残差ε²、実read差−ε²、Eの相対障害、
 二文脈E=μδ / E=0の合法修復係数C⁰=0、C¹=(ε²)を同じ写像で比較する。
 固定pの族と一型の係数表示のmarked同型を用い、unmarkedな同型へ自動移送しない。
 
-G-151 Pのfinish_snapへの修正ではこの障害が消えることを、同じ観測と状態比較で示す。
+G-140 Pのfinish_snapへの修正ではこの障害が消えることを、同じ観測と状態比較で示す。
 ℚ上でGのg₁はλ=μ=1をλ′=2,μ′=1へ運ぶが、後者ではIdle(0,0)から
 begin; apply_1; finishのreadが2となることを証明する。
 同じμ=1でg₁(compact_all(1,0))=(2,−1)とcompact_all(g₁(1,0))=(1,0)を比較し、
@@ -291,7 +291,7 @@ begin; apply_1; finishのreadが2となることを証明する。
 | ML性・有限安定性・証明規則 | 別々の放電義務 | Dの原始構造から導出 | 有限certificateの十分性 |
 | 有限表示、平方零拡大、原始reading、指定観測lift | Eの入力 | 独立Sem、全syzygy、残差、合法修復を生成 | 実lift・相対fiber・conormal比較 |
 | 体、有限表示、実現点／自由観測chart | Fの各系の仮定 | Noetherian性・Artin商／構文上界を別々に導く | 全Artin検出・有限上界 |
-| 有限graph、μ、offset、許可変更集合 | Gの入力 | 実adapter・全交差・State・LiftFiberDataを生成 | SAGAの零性と実操作、G-144の診断比較 |
+| 有限graph、μ、offset、許可変更集合 | Gの入力 | 実adapter・全交差・State・LiftFiberDataを生成 | SAGAの零性と実操作、G-142の診断比較 |
 | Hの原始表示・phase・試験環 | 指定証人 | E–Gと同じ生成・比較へ通す | syzygy・検出次数・修復・操作輸送の検査 |
 
 ## 完了条件
@@ -306,5 +306,5 @@ Gの実操作・Ob・State・指定障害は同じ入力から生成し、SAGA�
 固定主張への反証は、その量化に属する原始入力と破れる比較・存在判定を示して記録する。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、
-research/reports/G-152-aat-coherent-repair-effectivity.mdの宣言・前提対応に置く。
+research/reports/G-141-aat-coherent-repair-effectivity.mdの宣言・前提対応に置く。
 [共通完了基準](../../.codex/skills/target-theorem-loop/references/target-goal-contract.md#共通基準の参照適用)を適用する。
