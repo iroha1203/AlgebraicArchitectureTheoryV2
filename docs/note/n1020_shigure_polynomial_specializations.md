@@ -1,9 +1,9 @@
 # SHIGUREの多項式特殊化 — 有限局所自由実現と診断
 
 [n1019](n1019_shigure_representability_design.md)の一般構成に接続する、有限局所自由加群の
-実現、Law値診断、台帳分割の設計を定める。G-139〜G-148はこの特殊化を構成するdraftである。
-任意担体の再構成、全変更の幾何、一般のLawの解釈はG-149〜G-152で扱い、
-本ノートの成果だけをSHIGURE全体の達成とはしない。
+実現、Law値診断、台帳分割の設計を定める。各特殊化はG-150・G-151・G-152・G-144の
+固定targetへ対応づける。任意担体の意味再構成と一般のLaw幾何はn1019を正本とし、
+本ノートは同じ構成の具体的な対象・射・評価を与える。
 
 ## 1. 特殊化の入力と表現定理
 
@@ -39,21 +39,21 @@ Law評価を回復することがSHIGUREへの接続義務である。
 | 既存対象・宣言 | 実際の入力と結論 | SHIGUREでの使用と追加義務 |
 | --- | --- | --- |
 | [ArchitecturalEquationSystem](../../Formal/AG/Equation/Basic.lean) | Observable環、restriction、Atom別のsymbolic violationとobject別residualを保持。両者の一致はfieldにない | Lawの式から両者を生成し、評価による一致を証明する。任意の既存equation systemが多項式表示を持つとは置かない |
-| [FreeTypedCommAlg](../../Formal/AG/LawAlgebra/AmbientAlgebra.lean)、[witnessIdeal / obstructionIdeal](../../Formal/AG/LawAlgebra/LawEquation.lean) | 任意の可換係数上の多項式環、選択されたviolation座標が生成するidealとrestriction写像 | chartの変数・関係・Law residualから直接使う。幾何側の生成idealと元のLawの意味の一致をG-140で構成 |
+| [FreeTypedCommAlg](../../Formal/AG/LawAlgebra/AmbientAlgebra.lean)、[witnessIdeal / obstructionIdeal](../../Formal/AG/LawAlgebra/LawEquation.lean) | 任意の可換係数上の多項式環、選択されたviolation座標が生成するidealとrestriction写像 | chartの変数・関係・Law residualから直接使う。幾何側の生成idealと元のLawの意味の一致をG-150 Pで構成 |
 | [StructuralRelationFamily](../../Formal/AG/LawAlgebra/StructuralRelation.lean) | 任意の多項式関係族とその生成idealによるambient quotientを持つ | 本草案ではこのAPIの関係族を空にし、個別の方程式を全てrequired Lawに置く。加群・tensor積の標準等式は成分計算で証明する |
 | [StandardArchitectureScheme / EquationObservableRealization](../../Formal/AG/LawAlgebra/StandardScheme.lean) | 前者はscheme・atlas・overlapと妥当性を入力に持つ。後者の`representingEquiv`、`EquationRepresentingGeometry.representation`は表現同値を入力に持つ | SHIGUREの結論を格納・利用する候補。これらを受け取ることは(S)の構成証明にならない。既存のcontextと新しいmoduli chartの比較も別に構成する |
 | [FlatCoefficientChange / raw.baseChange / baseChangePresheafIso](../../Formal/AG/ReadingFunctoriality/Coefficient.lean) | rawの座標・関係の係数変更。flatな環射の型と、sheafification比較のAPIがある | rawの係数変更は再利用。任意の環射による解の移送と、flatnessを使うコホモロジー同型を区別する |
 | [StandardArchitectureScheme.baseChange](../../Formal/AG/ReadingFunctoriality/StandardSchemeCoefficient.lean) | 実際のscheme pullback、atlas・overlap、恒等・合成の同型。flatness、両側のHasSheafify、site依存のHasSheafComposeが必要 | 既存の装飾つきschemeとの比較に用いる。新しいMの任意base changeは独立に証明し、必要なinstanceを自動充足と扱わない |
 | [CoefficientGeometry](../../Formal/AG/ReadingFunctoriality/CoefficientGeometry.lean) | 普遍点のpullbackからresidual・idealを運ぶ。`BaseChangeRepresentation.baseChangeMap_isIso`は、変更後schemeが同じ絶対点関手を指定方法で表現するなら射が同型になると示す | k′への変更後はCAlg_k′上の相対関手を使う。同じ絶対関手を再表現するという誤った要求を避ける |
 | [StandardGeometryReference.CoefficientChange](../../Formal/AG/Examples/StandardGeometryReference/CoefficientChange.lean) | 整数から多項式環への変更、chart pullback、Law idealのstrictな包含、係数・Law比較の可換性 | 元の仮定を伴う既存の非恒等例。新しいSemの例への同定は追加義務 |
-| [LawGeneratedComplex](../../research/lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean) | K1はchart台の交差、K0はcell・Law・相異なる評価値。有限source等の下で`ThreeCochainComplex ℚ`を生成し、d¹d⁰=0を証明 | 同じlabelを保つ整数モデルと任意係数への拡張をG-139で構成。Lawの評価値の再同定は別の操作 |
+| [LawGeneratedComplex](../../research/lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean) | K1はchart台の交差、K0はcell・Law・相異なる評価値。有限source等の下で`ThreeCochainComplex ℚ`を生成し、d¹d⁰=0を証明 | 同じlabelを保つ整数モデルと任意係数への拡張をG-144で構成。Lawの評価値の再同定は別の操作 |
 | [G124MainTheorem.aatLocalSemanticReconstruction_abc](../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/G124MainTheorem.lean) | [Parameter / NativeCategory / LocalCategory](../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean)はgeometry、lens、protocolを選ぶ。原始readingのHom組立て、対象再構成、比較を扱う | 対象の再構成と係数代数にわたる自然性は異なる義務。新しい加群実現とこれらの圏との関手・射・評価の対応を示した範囲で使う |
 | [LocalReading.homEquiv](../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/LocalModelCategory.lean) | 一般形はMorphismSeparates / MorphismAssembles等を仮定する | 新しい実現の分離・組立てを§3の操作から証明して初めて適用できる |
 | [IndependentPolynomialExpressions](../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentPolynomialExpressions.lean)、[points_iff_map](../../research/lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentPolynomialCoefficientPoints.lean) | 有限式の原始評価と、固定座標の係数点からMvPolynomial.mapへの同定 | scalar式の評価・係数自然性を再利用。加群のdescentやscheme表現は新規 |
 | [TrueSemanticRepairSheaf / sagaGroundedGluing](../../Formal/AG/SemanticRepair/Saga/TrueSheafDescent.lean) | 実際のsheaf条件、局所repairの所属、relation / generator completeness等の下で大域repairの存在と障害の零性を比較 | 新しい実現とのrepair・被覆・係数の対応を別に作る。Semのdescentをこの仮定へ言い換えるだけでは済ませない |
 | [LawGeneratedConormalFirstOrderDescentPackage](../../Formal/AG/SemanticRepair/Conormal/LawGeneratedConormalFirstOrderDescentPackage.lean) | O/IのsectionをO/I²のsectionへ持ち上げる問題とsemantic repairを比較し、H⁰作用の自由推移性等を示す | 実現の係数環拡大へのliftとは型が異なる。§13で元のsource・係数・比較写像を構成した場合にだけ接続する |
-| [AtlasのConditionC](../../research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean)、[generatedComparisonH1Map_bijective](../../research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean) | 同じfinite Source・Law評価、両readingのadequacy、supported nerve morphism、C0–C6から既存ℚ比較の全単射を得る | G-148のadapter細分化で同じ入力とC0–C6を生成する。値が変わる§14の合流とは別の比較 |
-| [G-125のactual Čech・診断比較](../../research/reports/G-125-aat-obstruction-diagnostic-bridge.md) | relationから生成した整数係数、局所定数Ob、実mismatchと診断類を比較。既存反映定理はReflectionConditionとCommonLabelChartSupportを要求 | G-148ではker pとadapterから既存比較写像へ同定する。cycleでは後者の支持条件が偽なので、spanning treeから反映性を新たに証明する。SAGAの全Atom occurrenceも自動供給しない |
+| [AtlasのConditionC](../../research/lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean)、[generatedComparisonH1Map_bijective](../../research/lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean) | 同じfinite Source・Law評価、両readingのadequacy、supported nerve morphism、C0–C6から既存ℚ比較の全単射を得る | G-144のadapter細分化で同じ入力とC0–C6を生成する。値が変わる§14の合流とは別の比較 |
+| [G-125のactual Čech・診断比較](../../research/reports/G-125-aat-obstruction-diagnostic-bridge.md) | relationから生成した整数係数、局所定数Ob、実mismatchと診断類を比較。既存反映定理はReflectionConditionとCommonLabelChartSupportを要求 | G-144ではker pとadapterから既存比較写像へ同定する。cycleでは後者の支持条件が偽なので、spanning treeから反映性を新たに証明する。SAGAの全Atom occurrenceも自動供給しない |
 
 [#3446](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3446)、
 [#3451](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/3451)、
@@ -104,7 +104,7 @@ required Lawを一つ追加し、実現の充足条件とreading射の保存対�
 この入力から、型付きAtomの五座標、configuration、`ArchitectureObject`への解釈、
 chart別の`ArchitecturalEquationSystem`を構成する。Atomへ関数やschemeを丸ごと
 格納して由来を済ませず、演算の型と式の各出現を読み戻せるようにする。
-§8のW1・W2・W3・W8について同じ構成を通すことをG-140の必須条件とする。
+§8のW1・W2・W3・W8について同じ構成を通すことをG-150 Pの必須条件とする。
 
 ### 3.2 SemとReal
 
@@ -139,7 +139,7 @@ G-124の再構成を係数側のdescentへ移すには、この二つの添字�
 
 宣言V⊂Wを忘れるSem_W→Sem_Vは、座標環ではB_V→B_Wとなる。
 既存`ArchitecturalEquationSystem`のObservable W→Observable Vとは方向が異なる。
-G-140では全表示Pと基底chartを固定し、ambient Spec Bのprincipal openと、
+G-150 Pでは全表示Pと基底chartを固定し、ambient Spec Bのprincipal openと、
 その局所化を保持するAAT contextへの関手を構成する。open V⊆Wの環射はΓ(W,O)→Γ(V,O)。
 全required Lawの残差と生成idealを同じ局所化で運び、既存raw conormal列を
 principal-open基底へ制限してからZariski層へ延長する。関手・被覆・係数の比較は構成義務である。
@@ -157,7 +157,7 @@ B_s\longrightarrow R_{x(s)},\quad b/s^n\longmapsto x(b)/x(s)^n,
 D(1)を含むので、E_xでの全residualの零性と原式の全Law成立を同値にできる。
 例えばk=ℚ、t↦ε∈k[ε]/(ε²)では、普遍t²は非零でも評価後は零であり、D(t)の逆像は空になる。
 全contextからΓ(T,⊤)への環射を要求する既存`EquationArchitecturePoint.evaluation`は使わず、
-逆像open上の評価をG-140で生成する。conormalはE_BのJ/J²を作ってからxで引き戻す。
+逆像open上の評価をG-150 Pで生成する。conormalはE_BのJ/J²を作ってからxで引き戻す。
 Lawfulなxで零となるE_xのidealから作り直すと、残すべき変形情報を失う。
 
 例えば宣言V={X}、W={X,Y,XY=id}では、忘却の環射はℚ[x]→ℚ[x,y]/(xy−1)。
@@ -224,7 +224,7 @@ R上の実現全体が一つのIに入るとは要求しない。局所解から
 結果には[Stacks Project, Tag 01JJ](https://stacks.math.columbia.edu/tag/01JJ)を用いる。
 局所基底の選択は[Grassmannianの構成, Tag 089T](https://stacks.math.columbia.edu/tag/089T)を
 参照する。被覆・open性・descent・cocycleをSHIGUREの入力に追加して済ませず、上の
-実現から作ることがG-140・G-141の義務になる。
+実現から作ることがG-150 Pの義務になる。
 
 ## 6. readingの射と自然性
 
@@ -333,50 +333,33 @@ W2のqの全射性は−2+3=1から検査でき、kernelはℤ(3,−2)。
 
 ## 9. GOALの分割と証明経路
 
-| GOAL | 固定する成果 | 依存 |
+研究到達像は[n1019 §9](n1019_shigure_representability_design.md#9-研究分割と数学的な評価)の
+四GOALで定める。本ノートの特殊化を独立したGOALへ増やさず、次の固定targetへ接続する。
+
+| GOAL | 本ノートで構成する証明義務 | 参照箇所 |
 | --- | --- | --- |
-| [G-139](../../research/goals/G-139-aat-law-coefficient-extension.md) | Law式とK0/K1の係数拡張、既存ℚ診断への特殊化 | 既存law algebra・K0/K1 |
-| [G-140](../../research/goals/G-140-aat-independent-realization-descent.md) | Sem / Realの独立構成、Atom / Lawへの接続、二種類の局所性、descent | G-139の式の係数自然性。診断コホモロジー部分は待たない |
-| [G-141](../../research/goals/G-141-aat-semantic-scheme-representability.md) | chart・overlap・M・普遍実現と(S) | G-140、G-139の多項式部分 |
-| [G-142](../../research/goals/G-142-aat-shigure-reading-naturality.md) | reading・基礎環変更との可換性を持つ(S)の統合 | G-140・G-141 |
-| [G-143](../../research/goals/G-143-aat-realization-stack-comparison.md) | (G)、自己同型、M→𝓧によるscheme版との比較 | G-140。Mとの比較にG-141・G-142 |
-| [G-144](../../research/goals/G-144-aat-law-value-diagnostic-sheaf.md) | 実現族からの有限root scheme、K0/K1のétale層、stalkとbase change | G-139・G-140・G-141 |
-| [G-145](../../research/goals/G-145-aat-diagnostic-collision-geometry.md) | 合流の保存条件、constructible関数の実現、perfect比較の不成立例 | G-144、既存block分解・Mayer–Vietoris |
-| [G-146](../../research/goals/G-146-aat-semantic-lift-and-repair-comparison.md) | 全syzygyによる実現lift・局所修復・低次数cotangent比較 | G-139〜G-142 |
-| [G-147](../../research/goals/G-147-aat-formal-reading-detection.md) | 消去、全Artin試験の初回失敗、構文からの上界と鋭い例 | G-140〜G-142・G-146 |
-| [G-148](../../research/goals/G-148-aat-operational-descent-diagnostic-comparison.md) | adapter・実修復・SAGA係数・K0指定類・Atlasの正の比較 | G-140・G-142・G-144・G-146、既存G-125・Atlas |
+| [G-150](../../research/goals/G-150-aat-law-generated-relative-geometry.md) | 独立なSem / Real、Atomと残差の評価一致、係数descent、chart・scheme・stack、readingと任意基礎環変更の自然性 | §3・5–8・11。同じ原始入力をG-150 Pへ通す |
+| [G-151](../../research/goals/G-151-aat-semantic-change-category.md) | 状態比較と操作語翻訳を持つ変更、階数変更、比較の合成、phase不変量と全経路の観測保存 | §12・16.1・16.3–4 |
+| [G-152](../../research/goals/G-152-aat-coherent-repair-effectivity.md) | 全syzygy・conormal・相対lift、全Artin試験と鋭い次数上界、adapterから実State・SAGA・許容域付き全修復を生成 | §13・15・16.2・16.4–5 |
+| [G-144](../../research/goals/G-144-aat-law-value-diagnostic-sheaf.md) | 同じlabelの整数係数、診断のétale層、合流の核・余核、構成可能関数の実現とpseudo-coherent実現の不存在、実障害のK0指定類とAtlasへの比較 | §4・14・16.5–6 |
 
 ```mermaid
 flowchart LR
-  A[AtomとLawの式] --> C[G-139 係数拡張]
-  C --> S[G-140 独立な実現とdescent]
-  S --> M[G-141 scheme表現]
-  M --> N[G-142 readingと係数の自然性]
-  S --> G[G-143 groupoidとstack]
-  N --> G
-  M --> D[G-144 診断のétale層]
+  A[G-150 意味を回復するLaw幾何] --> B[G-151 意味保存変更と合成]
+  B --> C[G-152 障害・修復・有限判定]
+  A --> D[G-144 診断の幾何と意味障害の比較]
   C --> D
-  D --> J[G-145 合流と跳躍の実現]
-  N --> L[G-146 実現liftと修復]
-  L --> F[G-147 変更の初回失敗]
-  N --> O[G-148 操作の組立てと診断の零性]
-  D --> O
-  L --> O
-  J --> T[ArchSigの有限特殊化]
-  F --> T
-  O --> T
 ```
 
-まず意味側の型とscalar自然性を固定し、局所表示、descent、open被覆の生成を証明する。
-その後に標準的なscheme接着を使い、最後に表現同値の自然性からreading射を同定する。
-stackのobject構成はscheme版と並行に進められるが、二つの目標の比較を省略しない。
-本特殊化ではG-139〜G-143が表現の基盤、G-144〜G-148が診断と開発変更についての比較である。
-SHIGUREの主経路はn1019のG-149〜G-152にあり、本特殊化との同じ対象・射による比較を要求する。
-表現の基盤だけの完了と、ここで設計した意味保存・診断比較の達成は別に判定する。
+G-150では独立な意味、局所基底、残差式、descentを生成してから表現を証明する。
+その同じ表現同値でreadingと係数の自然性を示す。schemeとstackは生成元を忘れる
+比較を含めた一つの構成義務であり、それぞれを別の到達像にはしない。
+G-151はmatchingな変更の組立て、G-152は与えられた局所変更をmatchingへ補正する条件と
+全修復を担う。G-152の実修復はK0を使わずに構成し、G-144が同じ指定障害を診断へ送る。
 
-各カードは一般定理と指定例を両方要求する。固定された一般主張に反例が出た場合は、
-その入力、破れる式、元の量化への帰属を示して反証を記録する。
-反証による決着と肯定形の主定理の証明完了を区別し、対象を狭めて同じ成功扱いにしない。
+各GOALは一般定理と指定例を要求する。係数拡張、cocycle、自然性を補題に位置づけても、
+その証明義務を省略しない。任意constructible関数の実現、全Artin検出の上界、
+実修復と診断の零性反映は、単なる検算例へ格下げせず固定targetに残す。
 証明方法・補題分割・Leanの内部APIは後続の設計で選ぶ。
 
 ## 10. 論文で主張する貢献と既知の数学
@@ -403,9 +386,9 @@ constructible関数の実現と、§15の合成深さに対する鋭い検査次
 この比較軸に対する新規性を論文で論じ、表現可能性・Mayer–Vietoris・cotangentの
 標準結果自体を新しい結果として数えない。
 
-意味保存の正の比較はG-148の同じadapter・ker p・指定障害類で行う。一方、G-145の
+実修復はG-152のadapter族から構成し、G-144で同じker p・指定障害類を診断へ比較する。G-144の
 任意constructible関数の実現は、任意に選んだ値診断の次元だけでは意味保存を判定できない
-ことを説明する。G-146のsyzygy表示やG-147の普遍Artin商の判定は、それだけで新規な一般
+ことを説明する。G-152 Eのsyzygy表示やG-152 Fの普遍Artin商の判定は、それだけで新規な一般
 障害理論ではない。貢献候補は、これらを同じ原始操作・許可変更・診断へ結ぶ構成と、
 成立条件・破れる条件・実際の修正を同じ実現上で決める比較定理群として評価する。
 
@@ -428,7 +411,7 @@ reading選択空間、実現moduli、comparisonの欠損を区別する構想を
 
 有限状態の単項写像の像をfield値点で特徴づけるには、matrix各列にidempotence、
 相互直交、和1の式を課す。一般の環では互いに直交するidempotentによる局所的な分岐が
-生じるため、一つの集合写像への復元には連結性等の条件が要る。これをG-140の像の定理と
+生じるため、一つの集合写像への復元には連結性等の条件が要る。これをG-150 Pの像の定理と
 不成立例に含める。一般理論の全R量化と、特定の入力意味へ戻せるRの条件は別に述べる。
 
 <a id="development-change"></a>
@@ -488,7 +471,7 @@ D^1=M^r\xrightarrow{(s^\alpha(x))_\alpha}D^2=M^{\{\alpha\}}
 ```
 
 を作る。この節では演算・Lawを有限とし、有限計算には有効なNoetherian係数を指定する。
-G-141の小さい無限表示の表現定理とは量化を分ける。
+G-150 Pの小さい無限表示の表現定理とは量化を分ける。
 syzygyは多項式上で生成してからxで評価する。
 
 B→R′への任意のambient liftでf_iを評価するとM値の残差が得られる。
@@ -505,13 +488,14 @@ ker(d¹)=Hom_A(J/J²,M)を構成し、低次数のcotangentによる分類へ同
 含む文脈へ配置してから局所修復を作る。
 Law・変数の支持から局所残差と共有部分の差を生成し、補正と貼り合わせを実際に作る。
 複数文脈にまたがるsyzygyも取り込む。全域の原式から作るDとの比較を構成することが
-G-146の義務であり、Čechという名称だけでその比較を済ませない。
+G-152 Eの義務であり、Čechという名称だけでその比較を済ませない。
 
 検査例は、冗長な(t²,t³)と(t²)、三文脈のx₁−x₀、x₂−x₁、x₀−x₂という依存するLaw、
 最後の式をx₀−x₂−tへ変更した族とする。評価後のJacobianだけでは、元の多項式関係の
 有無を回収できない。t²=0とt³=0も同じ一次接空間を持つが、二次のliftは異なる。
 
-SAGAの係数複体と実際の修復への正の比較はG-148のadapter族で固定する。
+SAGAの係数複体と実際の修復への正の比較はG-152のadapter族で固定し、
+同じ指定類を診断へ送る比較はG-144で構成する。
 conormalは§3.4の固定ambientとprincipal-open基底を使う。ambient lift B→R′はJ²を消すので
 B/J²→R′を与え、そのJ/J²上の制限κ:J/J²→Mが残差になる。同じambient liftがB/Jを
 経由する条件はκ=0であり、ambient liftの選択差を除いた[κ]は上のo_Pに一致する。
@@ -593,7 +577,7 @@ Oに補助演算Y_j=F_j(O,Y₁,…,Y_{j−1})を順に追加した表示Pを考�
 marked版の閉埋め込みとunmarked版のfull faithfulな射を同じ消去から構成する。
 
 有限表示、体k、k値実現xを選び、観測点aの局所環Aと極大ideal mを取る。
-νをK⊆m^νとなる最大次数とし、K=0なら∞とする。G-147では任意のr≥0について
+νをK⊆m^νとなる最大次数とし、K=0なら∞とする。G-152 Fでは任意のr≥0について
 
 ```math
 \begin{aligned}
@@ -666,7 +650,7 @@ R=ℚ、p_B=p_C=idの下でbase担当がc=0,λ_B=0、delta担当がd=0,λ_C=1を
 許容変更を係数の加法として指定すると、修復はΔc+Δd=1。
 両係数を変更できるとき全解は(t,1−t)、自由方向は(1,−1)。base固定なら(0,1)だけ、
 両方固定なら不存在となる。修復の許容域・残差・全解を同じ原始表示から生成し、
-G-146のaffine特殊化として比較する。
+G-152 Eのaffine特殊化として比較する。
 
 ### 16.3 観測を細かくすると失敗する
 
@@ -698,7 +682,7 @@ deltaへの書込みだけを導入する変更（μ=0）と、集約だけを�
 組合せには積の制約が生じる。同じ原始操作から意味保存族Spec k[δ,μ]/(μδ)を生成する。
 体上では二つの座標軸の合併で、原点の接空間は二次元だが、二次の条件が同時変更を妨げる。
 δ=μ=εはk[ε]/(ε²)では合法、k[ε]/(ε³)ではどの二次補正を加えても残差ε²が残り、
-公開readは1−ε²になる。G-147の初回次数ν=2と、この失われた更新を同じ式で同定する。
+公開readは1−ε²になる。G-152 Fの初回次数ν=2と、この失われた更新を同じ式で同定する。
 左文脈E=μδと右文脈E=0の局所liftの差も、共有部の同じε²である。
 
 実装修正finish_snap(B,C,h)=(B+μh,C−μh)では、Busyの状態Law μ(h−C)=0も除き、
@@ -733,7 +717,7 @@ underlyingな状態の図式と、操作iを追加した図式の実現を分け
 局所splittingの修復係数はker p=R·vであり、第1成分からRとの同型を作る。
 既存SAGAの増加pairからgraphの向きへ符号付きで移した残差はλ_j−λ_i−b_ij、指定類は[−b]。
 三角形では(c₀₁,c₀₂,c₁₂)↦(c₀₁,c₁₂,−c₀₂)を使い、SAGAの微分とgraphの微分を可換にする。
-G-148では同じ被覆とinterface sourceをK0/K1へ送り、readoutを補正vの公開値p(v)=0
+G-144では同じ被覆とinterface sourceをK0/K1へ送り、readoutを補正vの公開値p(v)=0
 から生成する。整数上の指定障害類を既存ℚ診断へ送り、cycleのH¹のtorsion-free性から
 零性を反映する。次元H¹=1という数だけでなく、この指定類が零かどうかが組立てを判定する。
 既存G-125の比較写像は使うが、既存反映定理の共通target支持条件はcycleでは満たされない。
@@ -782,7 +766,7 @@ Law、型と単位はAtom定義に置く。原子性の抽象化と観測自体�
 | この変形を次段へ延ばせるか | 現実現・有限次元Artin係数代数・有限次元kernel・有効な乗法表・Law多項式・全syzygy・観測lift | 残差類、補正方程式、全補正の自由。Q等の計算可能体上で有限linear algebraへ特殊化 |
 | 低次検査はどこまで十分か | reading代入・補助演算の依存順序・追加Law | 消去ideal、構文次数上界、最初に失敗するArtin witness。一般の非線形整数可解性は別問題 |
 | 診断が変わった理由は何か | scalar readout・支持・変化前後の等値partition | 合流block、Mayer–Vietorisの核/余核、意味の障害との区別 |
-| 局所adapterを一つの実装へ組み立てられるか | 同じ台帳の比較式・interface支持・adapter値・許容変更域 | G-148の指定class、cycle和、全修復・自由。整数incidenceと既存診断比較への接続 |
+| 局所adapterを一つの実装へ組み立てられるか | 同じ台帳の比較式・interface支持・adapter値・許容変更域 | G-152のcycle和・全修復・自由と、G-144の指定class。整数incidenceと既存診断比較への接続 |
 
 既存の有限候補、[整数fiber](../../tools/archsig_v0.6.0/crates/computation/src/observed/integer_fiber.rs)、
 有理多面体の計算は、固定readingの有限特殊化として接続する。

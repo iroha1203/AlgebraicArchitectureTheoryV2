@@ -21,41 +21,22 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
-SHIGUREの主経路は、[n1019](../../docs/note/n1019_shigure_representability_design.md)の
-元の意味・全変更・Lawの相対幾何から定める。
+SHIGUREは、[n1019](../../docs/note/n1019_shigure_representability_design.md)の
+次の四つの研究到達像で構成する。係数拡張・表現・自然性と多項式特殊化は、
+各GOALの証明義務として位置づける。
 
-- [G-149-aat-native-coalgebraic-reconstruction](G-149-aat-native-coalgebraic-reconstruction.md)
-  (任意担体のcartesian意味、全Hom、totality、既存native族の回復)
 - [G-150-aat-law-generated-relative-geometry](G-150-aat-law-generated-relative-geometry.md)
-  (量とLawの相対Spec、全regular extensionの分類、係数的実現、代数性)
+  (任意担体・全Homを回復する意味再構成と、Lawの相対Spec・全拡張分類・通常の代数性)
 - [G-151-aat-semantic-change-category](G-151-aat-semantic-change-category.md)
-  (非可逆変更・観測・合成、文脈と係数のdescent、SAGA等への比較)
+  (非可逆な意味保存変更、合成、整合する局所変更の組立て)
 - [G-152-aat-coherent-repair-effectivity](G-152-aat-coherent-repair-effectivity.md)
-  (実変更・Čech・cotangent・lim¹の同じ障害、有限証明への到達)
-
-次のG-139〜G-148は[n1020](../../docs/note/n1020_shigure_polynomial_specializations.md)の
-多項式特殊化であり、主経路との同じ対象・射・評価による比較を必要とする。
-
-- [G-139-aat-law-coefficient-extension](G-139-aat-law-coefficient-extension.md)
-  (SHIGURE: Law式とK0/K1の係数拡張、既存ℚ診断への特殊化)
-- [G-140-aat-independent-realization-descent](G-140-aat-independent-realization-descent.md)
-  (SHIGURE: Atom / Lawからの実現関手、文脈と係数側のdescent)
-- [G-141-aat-semantic-scheme-representability](G-141-aat-semantic-scheme-representability.md)
-  (SHIGURE: 原始実現からのopen chart、接着、普遍実現とscheme表現)
-- [G-142-aat-shigure-reading-naturality](G-142-aat-shigure-reading-naturality.md)
-  (SHIGURE: reading・任意の係数変更に自然なscheme表現の統合)
-- [G-143-aat-realization-stack-comparison](G-143-aat-realization-stack-comparison.md)
-  (SHIGURE: groupoidの代数性、自己同型、生成元を忘れるschemeからstackへの比較)
+  (変更の障害・全修復、Čech・cotangent・lim¹比較、有限証拠・全Artin検出の十分性)
 - [G-144-aat-law-value-diagnostic-sheaf](G-144-aat-law-value-diagnostic-sheaf.md)
-  (SHIGURE: 実現族からK0/K1のétale層を生成、stalkと任意base change)
-- [G-145-aat-diagnostic-collision-geometry](G-145-aat-diagnostic-collision-geometry.md)
-  (SHIGURE: Law値合流の保存条件、構成可能関数の実現、perfect比較の不成立)
-- [G-146-aat-semantic-lift-and-repair-comparison](G-146-aat-semantic-lift-and-repair-comparison.md)
-  (SHIGURE: 原始Lawと全syzygyから実現lift・局所修復・残る自由を比較)
-- [G-147-aat-formal-reading-detection](G-147-aat-formal-reading-detection.md)
-  (SHIGURE: 消去idealと変更の初回失敗、全Artin試験の十分性と限界)
-- [G-148-aat-operational-descent-diagnostic-comparison](G-148-aat-operational-descent-diagnostic-comparison.md)
-  (SHIGURE: 台帳adapterから実際の組立て・SAGA係数・K0指定類・Atlasを結ぶ比較)
+  (診断の族・合流・構成可能関数の実現と、実際の意味障害の指定類・Atlas比較)
+
+依存はG-150→G-151→G-152。G-144の診断族はG-150を使い、
+実障害との比較にはG-152を使う。具体的な特殊化は
+[n1020](../../docs/note/n1020_shigure_polynomial_specializations.md)で同じ対象・射へ対応づける。
 
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)

@@ -11,7 +11,8 @@ scheme、stack、ind表示、逆極限は、原始構造に応じて構成・判
 一般のsheafに幾何の名前を与えるだけでは、この研究目的を達成したことにならない。
 
 以下には直接計算による証明と、構成・形式化すべき主定理を区別して記す。
-[G-149〜G-152](../../research/goals/README.md#draft人間の確認待ち)は主経路のdraftである。
+[G-150・G-151・G-152・G-144](../../research/goals/README.md#draft人間の確認待ち)を
+四つの研究到達像として定める。
 有限局所自由加群のmoduli、診断値の合流、台帳分割の詳細は
 [n1020](n1020_shigure_polynomial_specializations.md)に置く。これらは一般構成への
 特殊化・比較として残す。[Issue #6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)
@@ -626,13 +627,19 @@ G-126で同じsource上の商修復を組み合わせられることと、§7の
 
 ## 9. 研究分割と数学的な評価
 
-| 主経路 | 責務 | 依存 |
+| GOAL | 研究到達像 | 依存 |
 | --- | --- | --- |
-| [G-149](../../research/goals/G-149-aat-native-coalgebraic-reconstruction.md) | 任意担体・cartesian Law・全Homの回復、totality、既存native族との比較 | native source、coalgebraの標準構成 |
-| [G-150](../../research/goals/G-150-aat-law-generated-relative-geometry.md) | 相対Spec、residual評価、構造変動、通常の代数性と有効化 | G-149 |
-| [G-151](../../research/goals/G-151-aat-semantic-change-category.md) | 非可逆変更、観測、nerve、二つのsite、SAGA等への実写像 | G-149・G-150 |
-| [G-152](../../research/goals/G-152-aat-coherent-repair-effectivity.md) | native修復とderived limit、§7のscheme・Čech・cotangent一致、有限certificate | G-150・G-151 |
-| [G-139〜G-148](n1020_shigure_polynomial_specializations.md#9-goalの分割と証明経路) | 有限局所自由model、値診断、有限次数、台帳例の特殊化 | 各カードの依存に加え、主経路への比較 |
+| [G-150](../../research/goals/G-150-aat-law-generated-relative-geometry.md) | 任意担体・全Homを回復するLawの相対幾何。意味再構成、相対Spec、全residualの拡張分類、scheme・stack特殊化 | 原始意味、既存G-124 |
+| [G-151](../../research/goals/G-151-aat-semantic-change-category.md) | 非可逆な意味保存変更、その合成と整合する局所変更の組立て | G-150 |
+| [G-152](../../research/goals/G-152-aat-coherent-repair-effectivity.md) | 局所変更を整合させる障害と全修復、§7のČech・cotangent・lim¹比較、有限証拠の十分性 | G-150・G-151 |
+| [G-144](../../research/goals/G-144-aat-law-value-diagnostic-sheaf.md) | 診断族の合流・保存・反映と、実際の意味障害との比較 | 診断族はG-150。指定障害との比較はG-152 |
+
+係数拡張、chartの接着、reading自然性はG-150を構成する証明義務として扱う。
+有限moduleのmoduli、全syzygy・Artin試験、台帳adapterの特殊化は、
+[n1020 §9](n1020_shigure_polynomial_specializations.md#9-goalの分割と証明経路)で各GOALに対応させる。
+意味を回復する構成とその幾何を一つのGOALに置き、G-151のmatchingな変更の組立てと
+G-152のmatchingにする補正を分ける。診断の次元変化だけでは意味障害を決定できないため、
+その変化の分類と指定類の比較をG-144の独立した到達像とする。
 
 coalgebraへの集合の埋込み、Sym/Spec、quotient stack、cotangent、Milnor列は標準数学である。
 それらの存在や用語の追加に新規性を置かない。

@@ -6,8 +6,8 @@
 
 | ノート | 内容 |
 | --- | --- |
-| [n1019 SHIGUREの設計](n1019_shigure_representability_design.md) | 任意担体の意味再構成、量とLawの相対Spec、全変更、Čech・cotangent・逆極限の比較、G-149〜G-152 |
-| [n1020 SHIGUREの多項式特殊化](n1020_shigure_polynomial_specializations.md) | 有限局所自由実現、診断の合流、有限次数、台帳分割とG-139〜G-148 |
+| [n1019 SHIGUREの設計](n1019_shigure_representability_design.md) | 意味を回復するLaw幾何、変更、修復、診断比較の四GOALと、Čech・cotangent・逆極限の主例 |
+| [n1020 SHIGUREの多項式特殊化](n1020_shigure_polynomial_specializations.md) | 四GOALの証明義務に対応する有限局所自由実現、診断の合流、有限次数、台帳分割 |
 | [n1004 表示的意味論](n1004_aat_denotational_semantics_of_architecture.md) | SHIGUREの当初の主定理候補と意味のモジュライ化 |
 | [n1005 意味の幾何への研究構想](n1005_aat_semantic_geometry_route_after_g107.md) | affine被覆、係数忠実性、比較の族、実現moduliとdefect locusの候補 |
 | [n1016 Rising Sea改訂版の構想](n1016_rising_sea_v2_paper_plan.md) | 再構成・輸送・比較と実現の族の接続 |
