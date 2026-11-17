@@ -16,10 +16,11 @@
 $`\mathrm{Real}`$と書く。ここで構成する表現は
 
 ```math
-\begin{aligned}
-\mathop{\mathrm{Sem}}\nolimits _P(R)&\simeq\mathop{\mathrm{Hom}}\nolimits _k(\mathop{\mathrm{Spec}}\nolimits R,M_P),\tag{S}\\
-\mathop{\mathrm{Real}}\nolimits _P(R)&\simeq\mathcal X_P(\mathop{\mathrm{Spec}}\nolimits R).\tag{G}
-\end{aligned}
+\mathop{\mathrm{Sem}}\nolimits _P(R)\simeq\mathop{\mathrm{Hom}}\nolimits _k(\mathop{\mathrm{Spec}}\nolimits R,M_P),\tag{S}
+```
+
+```math
+\mathop{\mathrm{Real}}\nolimits _P(R)\simeq\mathcal X_P(\mathop{\mathrm{Spec}}\nolimits R).\tag{G}
 ```
 
 である。$`M`$、普遍実現、chartの接着、$`\mathrm{Real}`$のdescent、商stackとの同値を構成し、
