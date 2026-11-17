@@ -545,7 +545,7 @@ $`c_0=c_1`$ が従う。translationを変更の定義に仮定していない。
 source $`h^0`$ からtarget $`h^a`$ への自然性は、正確に
 
 ```math
-                    c_n-2c_{n+1}=a_n.                 \tag{*}
+                    c_n-2c_{n+1}=a_n.                 \qquad\text{(*)}
 ```
 
 従ってこの方程式の解は、選んだ観測と全操作語を保ち、全adapterと整合する
