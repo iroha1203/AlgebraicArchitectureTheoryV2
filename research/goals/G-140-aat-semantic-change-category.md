@@ -18,7 +18,7 @@ PRを意味射として解釈し、現在の実現・守る意味・許す編集
 ### A. 非可逆射と観測
 
 原始signatureのmodel圏において、実際のsort mapsからoperation/relation保存射を作る。
-観測oと各operationを保つh:A→Bの全体をChg_o(A,B)と定義する。
+観測$`o`$と各operationを保つ$`h:A\to B`$の全体を$`\mathop{\mathrm{Chg}}\nolimits_o(A,B)`$と定義する。
 元の状態mapからこの条件を検査し、全有限操作語の観測保存を帰納的に証明する。
 非単射・非全射を許し、全射を同型に置換しない。
 
@@ -30,23 +30,23 @@ phase・stutteringを使うときはその翻訳と許可経路を明示する�
 ### B. 射の幾何と合成
 
 G-139 Nの全Homのprofile表示と同A–Dのquantity引戻し・対応空間から、
-各係数的実現σの独立な変更modelと幾何的表示の全Rでの自然な同値を構成する。
+各係数的実現$`\sigma`$の独立な変更modelと幾何的表示の全$`R`$での自然な同値を構成する。
 さらにnative基点で元のChgの全Homを回復し、指定native点の係数移送と比較する。
-copying familyとlinear familyを全Rで同一視しない。
+copying familyとlinear familyを全$`R`$で同一視しない。
 各射を、その源・標的・quantity保存等式とともに表現する。
-単にM_before×_{M_obs}M_afterの点を取って、状態比較hを落とすことはしない。
+単に$`M_{\mathrm{before}}\times_{M_{\mathrm{obs}}}M_{\mathrm{after}}`$の点を取って、状態比較$`h`$を落とすことはしない。
 
-N_nをn個の合成可能な実際の変更とその可逆な比較のgroupoidとして作る。
+$`N_n`$を$`n`$個の合成可能な実際の変更とその可逆な比較のgroupoidとして作る。
 Segal同値、恒等、合成、coherenceとnativeの合成との一致を証明する。
 同型比較のgroupoid化と変更そのものの可逆化を混同しない。
 同型な原始表示、definitionalな補助演算の追加・消去について、この全構造を比較する。
 
-PRの時間方向と状態比較hの方向を明示する。詳細化後から前へのh:X₁→X₀を使う場合は、
-時間方向のnerveを反対圏で作り、h₀₂=h₀₁h₁₂と語翻訳の合成を証明する。
-状態schemeのchart X_i=Spec(A_i/I_i)では原始式からH#:A₀→A₁を生成し、
-H#(I₀)⊆I₁とlawfulな状態への一意因子分解を同値にする。
+PRの時間方向と状態比較$`h`$の方向を明示する。詳細化後から前への$`h:X_1\to X_0`$を使う場合は、
+時間方向のnerveを反対圏で作り、$`h_{02}=h_{01}h_{12}`$と語翻訳の合成を証明する。
+状態schemeのchart $`X_i=\mathop{\mathrm{Spec}}\nolimits(A_i/I_i)`$では原始式から$`H^\#:A_0\to A_1`$を生成し、
+$`H^\#(I_0)\subseteq I_1`$とlawfulな状態への一意因子分解を同値にする。
 操作・観測の残差も同じ商環で評価し、全許可語保存と合成へ接続する。
-一般のideal所属条件とambient恒等式を分け、R[y]/(ay)内のy=0がD(a)を与える例を含める。
+一般のideal所属条件とambient恒等式を分け、$`R[y]/(ay)`$内の$`y=0`$が$`D(a)`$を与える例を含める。
 導出witnessを使う表示では選択差を処理し、全Homとの比較に余分な選択を残さない。
 状態射、quantityの反変引戻し、比較moduli上の点、両端へのspanを別々に同定する。
 
@@ -67,25 +67,30 @@ matching familyから対象・状態比較・観測保存を持つ実際の変�
 
 全lens Hom、全protocol自然変換、G-124の同じHom query、
 G-126のquotient repairを比較対象にする。
-非可逆な必須例として、V=Bool、hidden担体Kを持つlensの射K×V→Vを、
-get/put保存・全Hom分類・合成とともに幾何へ運ぶ。|K|>1なら同型ではないことを示す。
+非可逆な必須例として、$`V=\mathrm{Bool}`$、hidden担体$`K`$を持つlensの射$`K\times V\to V`$を、
+get/put保存・全Hom分類・合成とともに幾何へ運ぶ。$`\lvert K\rvert>1`$なら同型ではないことを示す。
 G-126の共通behavior上端を保つ商修復と、指定adapter間の変更が別fiberであることを示す。
 前者の組立て原理の仮定と後者のfiberの入力を照合し、同一の問題として扱わない。
 
 ### E. 目的を満たす全変更の探索fiber
 
-固定source a:Spec R→M、変更可能な宣言・固定部分・許すtermと補助状態からなる編集域Hを
-入力とし、全候補族E_Hを原始構文から生成する。候補に状態比較h・語翻訳τを保持し、
-保存条件からC_Hとsource/target射s,tを構成する。集合値の評価対象Tとその部分関手P↪Tを
-目的として指定し、評価規則からv:C_H→Tを作る。
-F_{a,H,P}=(C_H×_{s,M,a}Spec R)×_{T_R}P_Rを構成する。
-全係数拡大に自然に、独立に定義した「aからHに属し意味と目的を保つ変更」への同値を証明する。
+固定source $`a:\mathop{\mathrm{Spec}}\nolimits R\to M`$、変更可能な宣言・固定部分・許すtermと補助状態からなる編集域$`H`$を
+入力とし、全候補族$`E_H`$を原始構文から生成する。候補に状態比較$`h`$・語翻訳$`\tau`$を保持し、
+保存条件から$`C_H`$とsource/target射$`s,t`$を構成する。集合値の評価対象$`T`$とその部分関手$`P\hookrightarrow T`$を
+目的として指定し、評価規則から$`v:C_H\to T`$を作る。
+
+```math
+F_{a,H,P}=(C_H\times_{s,M,a}\mathop{\mathrm{Spec}}\nolimits R)\times_{T_R}P_R
+```
+
+を構成する。
+全係数拡大に自然に、独立に定義した「$`a`$から$`H`$に属し意味と目的を保つ変更」への同値を証明する。
 sourceの変更、編集域の包含、目的の引戻しとの可換性を含める。
-同型比較を持つ場合はP,Tを離散groupoidとして2-fiberを使い、
+同型比較を持つ場合は$`P,T`$を離散groupoidとして2-fiberを使い、
 目的へのliftが空またはcontractibleになることから、余分な目的witnessを数えない比較を証明する。
 対象を有限候補へ限定することは一般targetの前提とせず、表示系も同じ比較で扱う。
 
-Hを完成済みの解集合として入力しない。優劣の順序は選んだ係数域の解の上で指定し、
+$`H`$を完成済みの解集合として入力しない。優劣の順序は選んだ係数域の解の上で指定し、
 その順序を保つ比較について目的の評価と順位を保持する。
 返した点から状態比較・操作・targetを回復する。保護する意味Lawと変更可能な実装表示のLawを
 区別し、固定と宣言されたLawを除く編集を候補に入れない。
@@ -95,7 +100,7 @@ Hを完成済みの解集合として入力しない。優劣の順序は選ん�
 ### P. 階数変更と操作言語を持つ多項式特殊化
 
 [n1020 §12・16](../../docs/note/n1020_shigure_polynomial_specializations.md#development-change)
-のbefore/after・状態比較h・観測・操作語翻訳τからcomparison presentationを作り、
+のbefore/after・状態比較$`h`$・観測・操作語翻訳$`\tau`$からcomparison presentationを作り、
 G-139 Pのschemeと独立なmodelの同値へ通す。両端の状態階数が違う場合も量化する。
 原始式から両端へのspanとそのfiber、合成可能な比較のfiber productから合成比較への射を
 生成し、Bのnerveへ同定する。unmarked版では同型を保持した2-fiber productを使う。
@@ -106,30 +111,30 @@ ArchSigの純粋affine Termの型付き解釈では、元式と加群上の式�
 0引数演算と不変量の実現fiberとして作り、遷移後の不変量と観測差が元のidealに属することを
 原始式から証明する。この比較から全許可有限経路の観測保存を導く。
 
-台帳の同じAtom・apply・compact・read・比較p・初期状態対応を使い、次を必須例とする。
+台帳の同じAtom・apply・compact・read・比較$`p`$・初期状態対応を使い、次を必須例とする。
 
-1. pi=id、pj=0から全原子操作語の保存を証明し、係数実現をSL₂×A¹に同定する。
-   p=(1,1)のmarked fiberはA²_(λ,μ)、固定状態のfiberはp⁻¹(x)として区別する。
-   rank1・一生成元・unary λ,μの表示から各型のコピーとp,i,jを回復し、marked fiberとの
+1. $`pi=\mathop{\mathrm{id}}\nolimits`$、$`pj=0`$から全原子操作語の保存を証明し、係数実現を$`\mathop{\mathrm{SL}}\nolimits_2\times\mathbb A^1`$に同定する。
+   $`p=(1,1)`$のmarked fiberは$`\mathbb A^2_{(\lambda,\mu)}`$、固定状態のfiberは$`p^{-1}(x)`$として区別する。
+   rank1・一生成元・unary $`\lambda,\mu`$の表示から各型のコピーと$`p,i,j`$を回復し、marked fiberとの
    自然同型を構成する。異なる型の射をidへ等置せず、unmarkedの同値も推論しない。
-2. writeB/writeCの途中にもreadを許す場合、R=ℚ、λ=1/2、u=2で保存が失われることを示す。
+2. writeB/writeCの途中にもreadを許す場合、$`R=\mathbb Q`$、$`\lambda=1/2`$、$`u=2`$で保存が失われることを示す。
    原子操作語の保存と、観測言語を広げた場合の保存を同じ状態・評価で比較する。
-3. snapshotではBusyの不変量μ(h−C)=0を保持し、全許可経路の保存とμ(1−λ)=0の同値を
-   begin; apply_1; finishの必要性を含めて証明する。意味保存の像をV(μδ)、δ=1−λへ同定する。
-   Busyの全ambient R³上で同じ保存を要求した場合の条件μ=0を、(B,C,h)=(0,0,1)から導く。
-   λ=μ=1では合法状態上の全語保存が成立することも、同じR=ℚで示す。
-4. compact_allを固定引数compact_tへのt=Cの代入として生成し、applyなしのbegin; finishと
-   一致することを示す。修正版finish_snapではBusyの状態Lawを除いて全R³を状態とし、
-   x=B+Cで全係数の操作列を保存すること、μδ=0上で旧合法状態の包含が遷移と可換になることを証明する。
-   R=ℚで旧状態Lawを残したδ=μ=1ではbegin; apply_1が閉じないことを示す。
-   μ=1のcompact_allは非単射で、固定引数compact_tとその有限語はtranslationであることも検査する。
+3. snapshotではBusyの不変量$`\mu(h-C)=0`$を保持し、全許可経路の保存と$`\mu(1-\lambda)=0`$の同値を
+   $`\mathop{\mathrm{begin}}\nolimits;\mathop{\mathrm{apply}}\nolimits_1;\mathop{\mathrm{finish}}\nolimits`$の必要性を含めて証明する。意味保存の像を$`V(\mu\delta)`$、$`\delta=1-\lambda`$へ同定する。
+   Busyの全ambient $`R^3`$上で同じ保存を要求した場合の条件$`\mu=0`$を、$`(B,C,h)=(0,0,1)`$から導く。
+   $`\lambda=\mu=1`$では合法状態上の全語保存が成立することも、同じ$`R=\mathbb Q`$で示す。
+4. $`\mathop{\mathrm{compact}}\nolimits_{\mathrm{all}}`$を固定引数$`\mathop{\mathrm{compact}}\nolimits_t`$への$`t=C`$の代入として生成し、applyなしの$`\mathop{\mathrm{begin}}\nolimits;\mathop{\mathrm{finish}}\nolimits`$と
+   一致することを示す。修正版$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$ではBusyの状態Lawを除いて全$`R^3`$を状態とし、
+   $`x=B+C`$で全係数の操作列を保存すること、$`\mu\delta=0`$上で旧合法状態の包含が遷移と可換になることを証明する。
+   $`R=\mathbb Q`$で旧状態Lawを残した$`\delta=\mu=1`$では$`\mathop{\mathrm{begin}}\nolimits;\mathop{\mathrm{apply}}\nolimits_1`$が閉じないことを示す。
+   $`\mu=1`$の$`\mathop{\mathrm{compact}}\nolimits_{\mathrm{all}}`$は非単射で、固定引数$`\mathop{\mathrm{compact}}\nolimits_t`$とその有限語はtranslationであることも検査する。
 
 同時変形のliftと、合成可能な意味保存射の合成は別のfiber問題として定義する。
 Pの同じsnapshotを使った高次liftの存在・失敗はG-141の固定targetとする。
-Eの必須例には、同じ比較p・語翻訳を固定したV(μδ)と目的D(μ),D(δ)を用いる。
-begin*(μ(h−C))=0、apply_u*(μ(h−C))=μ(h−C)−μδuとfinishのread差からBの因子分解を導く。
-型・操作署名だけを読むq_typeで旧finishとfinish_snapの像が一致する一方、
-ℚ上のδ=μ=1で同じ経路のread差が−1と0になることを示し、その評価への不十分性を証明する。
+Eの必須例には、同じ比較$`p`$・語翻訳を固定した$`V(\mu\delta)`$と目的$`D(\mu),D(\delta)`$を用いる。
+$`\mathop{\mathrm{begin}}\nolimits^*(\mu(h-C))=0`$、$`\mathop{\mathrm{apply}}\nolimits_u^*(\mu(h-C))=\mu(h-C)-\mu\delta u`$とfinishのread差からBの因子分解を導く。
+型・操作署名だけを読む$`q_{\mathrm{type}}`$で旧finishと$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$の像が一致する一方、
+$`\mathbb Q`$上の$`\delta=\mu=1`$で同じ経路のread差が$`-1`$と$`0`$になることを示し、その評価への不十分性を証明する。
 
 ## 前提・構成台帳
 

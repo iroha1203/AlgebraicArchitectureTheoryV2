@@ -18,12 +18,12 @@ G-140の探索fiberを使い、守る意味と目的から全候補・不存在�
 
 G-140の変更を実際のfinite fragmentへ制限する射を構成する。
 線形lift問題では、原始operation/Lawの全syzygyから
-自己同型を−1、補正を0、defectを1とする複体D_Fを作る。
-元の変更の複体とRlim_F D_Fの比較を構成し、同値となる条件を
+自己同型を−1、補正を0、defectを1とする複体$`D_F`$を作る。
+元の変更の複体と$`R\!\varprojlim_F D_F`$の比較を構成し、同値となる条件を
 原始support・totality・cochain制限から証明する。
 比較同値そのものをinput fieldに置かない。
 
-可算cofinal towerではMilnor列を、一般の添字では高次R^p limを用いて
+可算cofinal towerではMilnor列を、一般の添字では高次$`R^p\!\varprojlim`$を用いて
 有限段の障害と全体の障害を比較する。
 条件なしの有限段存在⇒全体存在は主張しない。
 非線形な変更全体が一つの加群になるとも主張しない。
@@ -31,35 +31,35 @@ G-140の変更を実際のfinite fragmentへ制限する射を構成する。
 一般性の正の核として、任意の小さいadapter diagramを持つ加法作用protocolを扱う。
 状態はpublic担体とhidden moduleの積、保持する操作はhidden側の全平行移動と
 public側の指定された非空な推移的作用、観測はpublic成分とする。
-各vertexのpublic担体・hidden module・作用と、各adapterの線形部L_eをsource/targetで固定する。
-category上のdiagramにはL_fe=L_fL_eとa_fe=a_f+L_fa_eを課す。
+各vertexのpublic担体・hidden module・作用と、各adapterの線形部$`L_e`$をsource/targetで固定する。
+category上のdiagramには$`L_{fe}=L_fL_e`$と$`a_{fe}=a_f+L_fa_e`$を課す。
 全意味保存射がtranslationへ分類されることを証明し、
 adapterの線形部・定数項から実際の補正複体を生成する。
-source aからtarget bへの式はc_t−L_ec_s=b_e−a_eとする。
+source aからtarget bへの式は$`c_t-L_ec_s=b_e-a_e`$とする。
 moduleやpublic担体も変える射はG-140の全変更に残し、このtranslation分類と混同しない。
 scheme表示を使うfamilyではmoduleの表示とbase changeを明示し、任意moduleを
-有限自由と置き換えない。n1019 §7はhidden moduleがℤの必須例とする。
+有限自由と置き換えない。n1019 §7はhidden moduleが$`\mathbb Z`$の必須例とする。
 
 ### B. 一つのnative例の全比較
 
-Bool×ℤ、全u_t、flip v、観測Bool、h_n^a(b,z)=(b,2z+a_n)を原始入力とする。
-全native変更の分類からc_n−2c_{n+1}=a_nを導く。
-全係数環のfamilyではBool_R×A¹_Rと全G_a作用を使い、u₁だけで代用しない。
+$`\mathrm{Bool}\times\mathbb Z`$、全$`u_t`$、flip v、観測Bool、$`h_n^a(b,z)=(b,2z+a_n)`$を原始入力とする。
+全native変更の分類から$`c_n-2c_{n+1}=a_n`$を導く。
+全係数環のfamilyでは$`\mathrm{Bool}_R\times\mathbb A^1_R`$と全$`\mathbb G_a`$作用を使い、$`u_{1}`$だけで代用しない。
 
 次を同じ対象・写像で証明する。
 
-- Y_a=Spec ℤ[c₀,c₁,…]/(c_n−2c_{n+1}−a_n)が全変更を表現する。
-- 有限Y_{a,N}≅A¹、遷移c_N=2c_{N+1}+a_N、Y_a=lim Y_{a,N}。
-- 斉次変更群G=Spec Sym_ℤ(ℤ[1/2])と、解がある場合の自由推移的作用。
-- L_{B_a/ℤ}≃B_a[1/2][0]、および実Law複体
-  C(R)=[∏R→∏R]、d(c)_n=c_n−2c_{n+1}とRHom_R(R[1/2],R)との比較。
-- C(R)≃Rlim C_N(R)、H¹C(R)≃lim¹(R,×2)。
+- $`Y_a=\mathop{\mathrm{Spec}}\nolimits \mathbb Z [c_{0},c_{1},\ldots ]/(c_n-2c_{n+1}-a_n)`$が全変更を表現する。
+- 有限$`Y_{a,N}\cong \mathbb A^{1}`$、遷移$`c_N=2c_{N+1}+a_N`$、$`Y_a=\varprojlim Y_{a,N}`$。
+- 斉次変更群$`G=\mathop{\mathrm{Spec}}\nolimits \mathop{\mathrm{Sym}}\nolimits_{\mathbb Z} (\mathbb Z [1/2])`$と、解がある場合の自由推移的作用。
+- $`L_{B_a/\mathbb Z }\simeq B_a[1/2][0]`$、および実Law複体
+  $`C(R)=[\prod R\to \prod R]`$、$`d(c)_n=c_n-2c_{n+1}`$と$`\mathop{\mathrm{RHom}}\nolimits_R(R[1/2],R)`$との比較。
+- $`C(R)\simeq R\!\varprojlim C_N(R)`$、$`H^{1}C(R)\simeq \mathop{\mathrm{lim}}\nolimits^1(R,\times 2)`$。
 - 平方零liftの補正とその障害が同じ複体のkernel係数版から得られる。
 
-原始adapterからE_a=(ℤz⊕⊕ℤe_n)/(e_n−2e_{n+1}−a_nz)を作り、
-0→ℤz→E_a→ℤ[1/2]→0、全Rでのtensor後の完全性を証明する。
-Y_a(R)をz↦1のR-linear retractionの全体と同定し、
-B_a≅Sym(E_a)/(z−1)と、拡大類[a]の同定を構成する。
+原始adapterから$`E_a=(\mathbb Z z\oplus\bigoplus\mathbb Z e_n)/(e_n-2e_{n+1}-a_nz)`$を作り、
+$`0\to \mathbb Z z\to E_a\to \mathbb Z [1/2]\to 0`$、全Rでのtensor後の完全性を証明する。
+$`Y_a(R)`$を$`z\mapsto 1`$のR-linear retractionの全体と同定し、
+$`B_a\cong \mathop{\mathrm{Sym}}\nolimits(E_a)/(z-1)`$と、拡大類$`[a]`$の同定を構成する。
 Čechの符号はretractionの差で固定し、quotientのsectionの差と混ぜない。
 
 任意の大きな変更の存在とcotangentの微小liftを混同しない。
@@ -67,52 +67,52 @@ B_a≅Sym(E_a)/(z−1)と、拡大類[a]の同定を構成する。
 
 ### C. 非零障害とZariski局所修復
 
-a_even=1、a_odd=0とする。全有限段の整数解を構成し、
-3c₀+1=4^m(3c_{2m}+1)から全体の整数解不存在を証明する。
+$`a_{\mathrm{even}}=1`$、$`a_{\mathrm{odd}}=0`$とする。全有限段の整数解を構成し、
+$`3c_{0}+1=4^m(3c_{2m}+1)`$から全体の整数解不存在を証明する。
 
-D(2)ではc₀=0から再帰、D(3)では周期解(−1/3,−2/3)を構成する。
+$`D(2)`$では$`c_{0}=0`$から再帰、$`D(3)`$では周期解$`(-1/3,-2/3)`$を構成する。
 これらが全無限diagramの変更であることを検査する。
-G(D2)=ℤ[1/2]、G(D3)=0、G(D6)=ℤ[1/6]を計算し、
-指定Čech類[−1/3]の非零性と位数3を証明する。
+$`G(D(2))=\mathbb Z[1/2]`$、$`G(D(3))=0`$、$`G(D(6))=\mathbb Z[1/6]`$を計算し、
+指定Čech類$`[-1/3]`$の非零性と位数3を証明する。
 
 複体のlocalization短完全列から接続写像を構成し、この類が
-[a]∈lim¹(ℤ,×2)≅ℤ₂/ℤの同じ[−1/3]になることを証明する。
-ℤ[1/6]/ℤ[1/2]≅ℤ[1/3]/ℤを経由し、ℤ[1/6]を直接ℤ₂へ埋め込まない。
-ℚ上の全解とℤ₂上の唯一の解も構成する。
+$`[a]\in \mathop{\mathrm{lim}}\nolimits^1(\mathbb Z ,\times 2)\cong \mathbb Z _{2}/\mathbb Z`$の同じ$`[-1/3]`$になることを証明する。
+$`\mathbb Z [1/6]/\mathbb Z [1/2]\cong \mathbb Z [1/3]/\mathbb Z`$を経由し、$`\mathbb Z [1/6]`$を直接$`\mathbb Z _{2}`$へ埋め込まない。
+$`\mathbb Q`$上の全解と$`\mathbb Z _{2}`$上の唯一の解も構成する。
 
-さらに普遍map d:A^ℕ_c→A^ℕ_a、a'_n=εa_nを持つℤ[ε]/ε²上の基底と、
-mod εでの点c=0を構成する。liftがc'=εx、d(x)=aと同値であることを証明する。
+さらに普遍map $`d:\mathbb A^{\mathbb N}_c\to\mathbb A^{\mathbb N}_a`$、$`a'_n=\varepsilon a_n`$を持つ$`\mathbb Z [\varepsilon ]/\varepsilon ^{2}`$上の基底と、
+$`\bmod\varepsilon`$での点$`c=0`$を構成する。liftが$`c'=\varepsilon x`$、$`d(x)=a`$と同値であることを証明する。
 relative cotangentの零点pullbackを次数−1,0のtelescope複体から計算し、
-defect=a'−d(c_tilde)の規約で、同じ非零[a]が実際の平方零lift障害になると示す。
+$`\mathrm{defect}=a'-d(\widetilde c)`$の規約で、同じ非零$`[a]`$が実際の平方零lift障害になると示す。
 有限stageのsmoothnessと、全体のformal smoothnessの不成立を同じmapで比較する。
 
-H⁰C(ℤ)=0とH⁰C(ℚ)=ℚから、C(ℤ)⊗ℚ→C(ℚ)および
-H⁰C(ℤ)⊗ℚ→H⁰C(ℚ)が同型でないことを示す。
-原因は(∏ℤ)⊗ℚ→∏ℚの非同型である。
+$`H^{0}C(\mathbb Z )=0`$と$`H^{0}C(\mathbb Q )=\mathbb Q`$から、$`C(\mathbb Z )\otimes \mathbb Q \to C(\mathbb Q )`$および
+$`H^{0}C(\mathbb Z )\otimes \mathbb Q \to H^{0}C(\mathbb Q )`$が同型でないことを示す。
+原因は$`(\prod \mathbb Z )\otimes \mathbb Q \to \prod \mathbb Q`$の非同型である。
 flat tensor自体は核と交換する。schemeのbase changeとも区別する。
 
 ### D. 有限計算と設計探索の十分性を証明する
 
-Mittag–Leffler性でlim¹が消えることと、有限段階で全結論が決まることは別に証明する。
+Mittag–Leffler性で$`\mathop{\mathrm{lim}}\nolimits^1`$が消えることと、有限段階で全結論が決まることは別に証明する。
 原始presentationから安定性・有限生成性・再帰的な構造を導く具体的な十分条件を与える。
 条件を満たす場合に、有限の証拠から全変更の存在・不存在・自由を結論する比較を構成する。
 周期的adapter族について、有限個の遷移式から全段の不変式を導くcertificateを作る。
 
-G-140 EのF_{a,H,P}について、次の有限計算への特殊化を原始編集式から構成し、
+G-140 Eの$`F_{a,H,P}`$について、次の有限計算への特殊化を原始編集式から構成し、
 出力の変更としての正しさ、指定した域での全解の回収、witnessの復元を証明する。
 
 1. 有限体上の有限個の係数・有限個の編集式では、生成した保存方程式の全解を列挙する。
    保存方程式の生成は全操作語の評価定理を使い、有限長の実行試験で代用しない。
 2. 整数・有理数上のaffine編集制約では、全解のparameter表示と不存在のcertificateを作り、
    許す変更域・固定部分・原始操作への復元を同じ写像で証明する。
-3. ℚ上の有限多項式chartと有限個の等式・可逆条件では、ug−1=0による可逆条件の表示、
+3. $`\mathbb Q`$上の有限多項式chartと有限個の等式・可逆条件では、$`ug-1=0`$による可逆条件の表示、
    ideal所属の検査証拠、代数閉包上の空性の判定を構成する。
    原始操作からchartと式を生成し、一般のideal包含条件を無条件に閉零点としない。
 4. 同じ有限表示から目的parameterへの射について、消去と開条件の分岐から幾何点での
    実際の像を構成可能集合として計算し、各目的の全fiberと比較する。
-   xy=1→xの像D(x)と閉包A¹を区別し、像の点に存在する変更witnessを保持する。
+   $`xy=1\to x`$の像$`D(x)`$と閉包$`\mathbb A^{1}`$を区別し、像の点に存在する変更witnessを保持する。
 
-schemeの表示と指定係数域の点の探索を区別する。x²+1=0のℚ点と代数閉包の点、
+schemeの表示と指定係数域の点の探索を区別する。$`x^{2}+1=0`$の$`\mathbb Q`$点と代数閉包の点、
 無限fragmentでのB・Cを必須の識別例にする。
 順序付き目的では比較する評価と順序を入力に保持し、表現だけから最適性を結論しない。
 
@@ -125,122 +125,134 @@ sourceに関する抽出の正しさは観測者が確保し、有限解と操�
 ### E. 有限表示の実現liftと合法な局所修復
 
 可換環k、有限個の演算・Lawを持つn1020 §3の原始表示P、k代数R、独立な実現
-x∈Sem_P(R)、平方零拡大R′→Rとkernel Mをこの順に量化する。Lawを忘れた
+$`x\in \mathop{\mathrm{Sem}}\nolimits_P(R)`$、平方零拡大$`R' \to R`$とkernel Mをこの順に量化する。Lawを忘れた
 smooth ambient Yを原始表示から構成し、affine test上でのambient liftの存在を証明する。
-基底chartではB=k[z₁,…,z_n]、原始Lawの全成分f₁,…,f_r、J=(f)、A=B/Jとし、
-全syzygy S=ker(B^r→J)からN=J/J²の表示と次の複体を生成する。
+基底chartでは$`B=k[z_{1},\ldots ,z_n]`$、原始Lawの全成分$`f_{1},\ldots ,f_r`$、$`J=(f)`$、$`A=B/J`$とし、
+全syzygy $`S=\ker (B^r\to J)`$から$`N=J/J^{2}`$の表示と次の複体を生成する。
 
 ```math
-D^0=M^n\xrightarrow{\operatorname{Jac}(f)(x)}D^1=M^r
+D^0=M^n\xrightarrow{\mathop{\mathrm{Jac}}\nolimits(f)(x)}D^1=M^r
  \xrightarrow{d^1}D^2=\prod_{s\in S}M,
 \qquad(d^1r)_s=\sum_i s_i(x)r_i.
 ```
 
-原式の恒等式からd¹d⁰=0とker d¹≃Hom_R(N⊗_A R,M)を証明する。
-有限syzygy生成族を使うときは生成性とH⁰・H¹の比較を証明する。
-ambient lift z̃の残差r=f(z̃)からo_P∈H¹(D)を構成し、liftの変更則
-r(z̃+δ)=r(z̃)+d⁰δ、o_P=0と実際のlawful liftの存在の同値、非空な全liftへの
-H⁰(D)の自由推移作用を同じ加群・演算・Lawへ戻して証明する。
+原式の恒等式から$`d^{1}d^{0}=0`$と$`\ker  d^{1}\simeq \mathop{\mathrm{Hom}}\nolimits_R(N\otimes _A R,M)`$を証明する。
+有限syzygy生成族を使うときは生成性と$`H^{0}`$・$`H^{1}`$の比較を証明する。
+ambient lift $`\widetilde z`$の残差$`r=f(\widetilde z)`$から$`o_P\in H^{1}(D)`$を構成し、liftの変更則
+$`r(\widetilde z+\delta )=r(\widetilde z)+d^{0}\delta`$、$`o_P=0`$と実際のlawful liftの存在の同値、非空な全liftへの
+$`H^{0}(D)`$の自由推移作用を同じ加群・演算・Lawへ戻して証明する。
 
-Yのideal sheafを𝒥、E_x=x*Ω_{Y/k}、N_x=x*(𝒥/𝒥²)として
-D̄=[Hom_R(E_x,M)→Hom_R(N_x,M)]を構成する。単一chartに入らないxも含め、
-chartのD、D̄、RHom_R(Lx*L_{M_P/k},M)の次数0・1と指定障害を同定する。
-N_xのprojectivityは要求しない。Noetherian係数・有限表示の系では、有限principal
+Yのideal sheafを$`\mathcal J`$、$`E_x=x^*\Omega_{Y/k}`$、$`N_x=x^*(\mathcal J/\mathcal J^2)`$として
+
+```math
+\bar D=[\mathop{\mathrm{Hom}}\nolimits_R(E_x,M)\to\mathop{\mathrm{Hom}}\nolimits_R(N_x,M)]
+```
+
+を構成する。単一chartに入らないxも含め、
+chartのD、$`\bar D`$、$`R\mathop{\mathrm{Hom}}\nolimits_R(Lx^*L_{M_P/k},M)`$の次数0・1と指定障害を同定する。
+$`N_x`$のprojectivityは要求しない。Noetherian係数・有限表示の系では、有限principal
 affine cover上の準連接性、Homの局所化、Čech totalizationとの比較を証明する。
 この系の仮定をG-139の表現定理へ移さない。
 
-原始代入とLaw導出u:P→P′からρ:Sem_{P′}→Sem_Pを作り、x∈Sem_{P′}(R)と
-指定されたy′∈Lift_P(ρx,R′)に対するLift_u(x,y′)を独立に定義する。
-ideal・conormal・微分・syzygyの比較からF_u=Cone(D̄_{P′}→D̄_P)[−1]を構成し、
-Law残差とρの像の差からo_u∈H¹(F_u)を得る。o_u=0と指定liftの存在、全解の
-H⁰(F_u)-torsor分類、恒等・合成・拡大の射・表示変更との自然性を証明する。
+原始代入とLaw導出$`u:P\to P'`$から$`\rho :\mathop{\mathrm{Sem}}\nolimits_{P' }\to \mathop{\mathrm{Sem}}\nolimits_P`$を作り、$`x\in \mathop{\mathrm{Sem}}\nolimits_{P' }(R)`$と
+指定された$`y' \in \mathop{\mathrm{Lift}}\nolimits_P(\rho x,R' )`$に対する$`\mathop{\mathrm{Lift}}\nolimits_u(x,y' )`$を独立に定義する。
+ideal・conormal・微分・syzygyの比較から$`F_u=\mathop{\mathrm{Cone}}\nolimits(\bar D_{P'}\to\bar D_P)[-1]`$を構成し、
+Law残差と$`\rho`$の像の差から$`o_u\in H^{1}(F_u)`$を得る。$`o_u=0`$と指定liftの存在、全解の
+$`H^{0}(F_u)`$-torsor分類、恒等・合成・拡大の射・表示変更との自然性を証明する。
 
-affine Law Lz−b、基準状態p、変更可能域Hについて、実修復集合の非空性を
-b−Lp∈L(H)、全解をker(L|_H)のtorsorで特徴づける。非線形Lawの平方零修復は
+affine Law $`Lz-b`$、基準状態p、変更可能域Hについて、実修復集合の非空性を
+$`b-Lp\in L(H)`$、全解を$`\ker(L\vert_H)`$のtorsorで特徴づける。非線形Lawの平方零修復は
 原始Jacobianを使う。文脈ごとのHは変更可能な宣言から生成し、観測式の全参照が
 所属する被覆と、その交差上で可換な原始代入から合法な修復係数を生成する。
-制限、作用、matchingから実修復への組立てを証明する。T↦X+Yを{X}/{Y}だけに
-分ける不適合例では、ℚ[ε]/ε²上の合法差分(ε,−ε)を局所係数0へ制限できず、
-観測を落とすと(ε,0)も組み立つことを示す。全参照を含む合併被覆で適合性を回復する。
+制限、作用、matchingから実修復への組立てを証明する。$`T\mapsto X+Y`$を$`\{X\}/\{Y\}`$だけに
+分ける不適合例では、$`\mathbb Q [\varepsilon ]/\varepsilon ^{2}`$上の合法差分$`(\varepsilon ,-\varepsilon )`$を局所係数0へ制限できず、
+観測を落とすと$`(\varepsilon ,0)`$も組み立つことを示す。全参照を含む合併被覆で適合性を回復する。
 
-全多重交差を持つ宣言被覆から自由な変数・Law残差のČech total complex T_rawを作る。
-各宣言の支持がfull simplexであることからH⁰(T_raw)≃ker d⁰、H¹(T_raw)≃coker d⁰を
-導き、全大域syzygyから0→H¹(D)→H¹(T_raw)→∏_{s∈S}Mの完全性を証明する。
-実残差が右写像の核へ入り、その逆像がo_Pになること、細分化との可換性も含める。
+全多重交差を持つ宣言被覆から自由な変数・Law残差のČech total complex $`T_{\mathrm{raw}}`$を作る。
+各宣言の支持がfull simplexであることから$`H^{0}(T_{\mathrm{raw}})\simeq \ker  d^{0}`$、$`H^{1}(T_{\mathrm{raw}})\simeq \mathop{\mathrm{coker}}\nolimits  d^{0}`$を
+導き、全大域syzygyから$`0\to H^{1}(D)\to H^{1}(T_{\mathrm{raw}})\to \prod _{s\in S}M`$の完全性を証明する。
+実残差が右写像の核へ入り、その逆像が$`o_P`$になること、細分化との可換性も含める。
 K0/K1のincidence生成とは同じ支持で比較し、微分・syzygyを持つ複体との同型を
 Law値の一致だけから仮定しない。正の診断比較はG-142の同じadapter族で行う。
 
 conormal比較では全表示の普遍ambient Bとprincipal-open siteを固定する。
-G-139で構成する普遍equation systemのObservableとLaw idealをB_s、J_sへ同定し、
+G-139で構成する普遍equation systemのObservableとLaw idealを$`B_s`$、$`J_s`$へ同定し、
 [Raw.shortComplex](../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean)を
-そのsiteへ制限して、(J²)_s=(J_s)²とZariski層化から標準conormal列へ同定する。
-実現xで引き戻す前のJ/J²を保持し、lawfulな評価後の零idealへ置き換えない。
-ambient lift B/J²→R′の制限κ:J/J²→Mについて、κ=0と同じliftがB/Jを経由すること、
-選択差を除いた[κ]=o_Pを証明する。section liftと実現liftはこの写像で比較する。
-宣言の忘却とZariski制限を混同せず、共有xを保ってxy−1を零へ送る
-ℚ[x,y]→ℚ[x]の不存在を指定例として証明する。
+そのsiteへ制限して、$`(J^{2})_s=(J_s)^{2}`$とZariski層化から標準conormal列へ同定する。
+実現xで引き戻す前の$`J/J^{2}`$を保持し、lawfulな評価後の零idealへ置き換えない。
+ambient lift $`B/J^{2}\to R'`$の制限$`\kappa :J/J^{2}\to M`$について、$`\kappa =0`$と同じliftが$`B/J`$を経由すること、
+選択差を除いた$`[\kappa ]=o_P`$を証明する。section liftと実現liftはこの写像で比較する。
+宣言の忘却とZariski制限を混同せず、共有xを保って$`xy-1`$を零へ送る
+$`\mathbb Q [x,y]\to \mathbb Q [x]`$の不存在を指定例として証明する。
 
 ### F. 全Artin試験・初回障害・有限上界
 
 任意の可換環k上で、同じ型・階数・生成元を持つOへ有限の補助演算
-Y_j=F_j(O,Y₁,…,Y_{j−1})と追加Law G_α=0を置いてPを作る。原始代入による消去から
-残差Ḡ_α、ideal sheaf 𝒥_uを生成し、全RでSem_P(R)をその零点へ自然に同定する。
+$`Y_j=F_j(O,Y_{1},\ldots ,Y_{j-1})`$と追加Law $`G_\alpha =0`$を置いてPを作る。原始代入による消去から
+残差$`\bar G_\alpha`$、ideal sheaf $`\mathcal J _u`$を生成し、全Rで$`\mathop{\mathrm{Sem}}\nolimits_P(R)`$をその零点へ自然に同定する。
 marked実現の閉埋め込み、Realのfull faithfulな関手・essential image・自己同型群の
 同定を証明する。追加Lawが空なら全Rで同値になる。
 
-体k、有限表示O・P、x∈Sem_P(k)、a=u*xについてA=𝒪_{M_O,a}、m、J=(𝒥_u)_aを作る。
-剰余体k、極大ideal n_Rにn_R^{r+1}=0を課す全局所Artin k代数上のpointed deformationに
-ついて、比較が自然同値 ⇔ J⊆m^{r+1} ⇔ 普遍観測変形A→A/m^{r+1}がliftする、を
-全r≥0で証明する。普遍商のArtin性も有限表示から証明する。
-J≠0ならν=max{n | J⊆m^n}、J=0ならν=∞とし、Krull交叉から最大値、初回失敗r=ν、
-全次数での同値 ⇔ J=0 ⇔ aのあるopen近傍での同型を導く。全R上の同値は𝒥_u=0で
+体k、有限表示O・P、$`x\in \mathop{\mathrm{Sem}}\nolimits_P(k)`$、$`a=u^*x`$について$`A=\mathcal O _{M_O,a}`$、m、$`J=(\mathcal J _u)_a`$を作る。
+剰余体k、極大ideal $`n_R`$に$`n_R^{r+1}=0`$を課す全局所Artin k代数上のpointed deformationに
+ついて、比較が自然同値 ⇔ $`J\subseteq m^{r+1}`$ ⇔ 普遍観測変形$`A\to A/m^{r+1}`$がliftする、を
+全$`r\ge 0`$で証明する。普遍商のArtin性も有限表示から証明する。
+$`J\ne 0`$なら$`\nu=\max\{n\mid J\subseteq m^n\}`$、$`J=0`$なら$`\nu =\infty`$とし、Krull交叉から最大値、初回失敗$`r=\nu`$、
+全次数での同値 ⇔ $`J=0`$ ⇔ aのあるopen近傍での同型を導く。全R上の同値は$`\mathcal J _u=0`$で
 判定する。曲線jetや有限サンプルによる試験とは量化を区別し、係数を動かすjet functorも
 含めてn1020 §10・15の先行理論と比較する。
 
-有限νの普遍拡大A/m^{ν+1}→A/m^νとkernel I=m^ν/m^{ν+1}から、
-κ_u:J/J²→I、f↦f mod m^{ν+1}を構成し、Eの指定観測liftの非零障害へ送る。
-ν≥2では観測liftを変えるderivationもJを消すので、そのP実現自体のlift不存在を示す。
-ν=1では指定観測方向の不成立を結論し、基点の定値liftと区別する。
-原始tensor残差と同型の共有演算Z_αを持つ二文脈Z_α=Ḡ_α / Z_α=0を作り、
-任意の指定観測liftで局所liftを構成する。全syzygyからHom_{A/J}(J/J²,I)→I^qの
-単射と像を構成し、κ_uを実際の共有部の差へ送り、その零性と合法修復をEへ同定する。
+有限$`\nu`$の普遍拡大$`A/m^{\nu +1}\to A/m^\nu`$とkernel $`I=m^\nu /m^{\nu +1}`$から、
+$`\kappa _u:J/J^{2}\to I`$、$`f\mapsto f\bmod m^{\nu+1}`$を構成し、Eの指定観測liftの非零障害へ送る。
+$`\nu \ge 2`$では観測liftを変えるderivationもJを消すので、そのP実現自体のlift不存在を示す。
+$`\nu =1`$では指定観測方向の不成立を結論し、基点の定値liftと区別する。
+原始tensor残差と同型の共有演算$`Z_\alpha`$を持つ二文脈$`Z_\alpha =\bar G_\alpha  / Z_\alpha =0`$を作り、
+任意の指定観測liftで局所liftを構成する。全syzygyから$`\mathop{\mathrm{Hom}}\nolimits_{A/J}(J/J^{2},I)\to I^q`$の
+単射と像を構成し、$`\kappa _u`$を実際の共有部の差へ送り、その零性と合法修復をEへ同定する。
 
 chart、改名、相互導出を持つ冗長Law、定義だけの補助演算の追加・消去に対して
-J、ν、κ_uと比較を自然にする。F冒頭の型のreading u,vの合成について、追加idealの
-逆像からν(vu)=min{ν(u),ν(v)}を対応する点の局所環で証明する。
+J、$`\nu`$、$`\kappa _u`$と比較を自然にする。F冒頭の型のreading u,vの合成について、追加idealの
+逆像から$`\nu(vu)=\min\{\nu(u),\nu(v)\}`$を対応する点の局所環で証明する。
 pointed Realは還元同型を持つgroupoidとして定義し、Artin環上の生成元のliftから
-同じ検出次数を比較する。生成元数m_v≥n_vと選択を変えてもνとpointed Realの判定は
+同じ検出次数を比較する。生成元数$`m_v\ge n_v`$と選択を変えても$`\nu`$とpointed Realの判定は
 一致し、指定観測liftの相対fiberは空またはcontractibleになることを証明する。
 
-自由観測chart k[z₁,…,z_d]では原始式の積で加算、和で最大を取り、補助定義順に
-代入して消去残差の次数上界Dを生成し、J≠0⇒ν≤Dを証明する。
-augmentation B₀→k₀、m₀、J₀⊆m₀を持つ一般係数版では、二つの冪零商
-B₀/m₀^{r+1}、B₀/(J₀+m₀^{r+1})の任意base changeとの交換を証明する。
-両者の射のkernel D_rについて変更後のkernelをD_r⊗k₁の像へ同定し、flatなときの
+自由観測chart $`k[z_{1},\ldots ,z_d]`$では原始式の積で加算、和で最大を取り、補助定義順に
+代入して消去残差の次数上界Dを生成し、$`J\ne 0\Rightarrow \nu \le D`$を証明する。
+augmentation $`B_{0}\to k_{0}`$、$`m_{0}`$、$`J_{0}\subseteq m_{0}`$を持つ一般係数版では、二つの冪零商
+$`B_{0}/m_{0}^{r+1}`$、$`B_{0}/(J_{0}+m_{0}^{r+1})`$の任意base changeとの交換を証明する。
+両者の射のkernel $`D_r`$について変更後のkernelを$`D_r\otimes k_{1}`$の像へ同定し、flatなときの
 同型とfaithfully flatなときの零性反映を証明する。これは剰余体kのArtin判定と分ける。
 
 ### G. 有限graphの実adapter・SAGA・全修復
 
-可換環R、一辺以上を持つ有限連結単純graph Γ、その向き、μ∈R、offset b_e∈Rを
-量化する。各頂点の台帳R²・公開状態Rについて、原始加群演算とLawから
-p=(1,1)、v=(1,−1)ᵀ、i_λ=(λ,1−λ)ᵀ、j_μ=μv、g_b=I+bvpを構成する。
-固定pの族はG-140 Pの一型の係数表示とのmarked同型を使い、p i=id、p j=0から
-apply_u(x)=x+i(u)、compact_t(x)=x+j(t)、read=pの全有限語の公開意味保存を証明する。
-入力u,tは比較の両側で同じ外部入力とする。
-g_b^{-1}=g_{−b}、p g_b=p、g_bv=v、g_bi_λ=i_{λ+b}、g_bj_μ=j_μ、g_cg_b=g_{b+c}
-から、実操作のadapter整合がλ_j−λ_i=b_eと同値になることを示す。
+可換環R、一辺以上を持つ有限連結単純graph $`\Gamma`$、その向き、$`\mu \in R`$、offset $`b_e\in R`$を
+量化する。各頂点の台帳$`R^{2}`$・公開状態Rについて、原始加群演算とLawから
+$`p=(1,1)`$、$`v=(1,-1)^{\mathsf T}`$、$`i_\lambda =(\lambda ,1-\lambda )^{\mathsf T}`$、$`j_\mu =\mu v`$、$`g_b=I+bvp`$を構成する。
+固定pの族はG-140 Pの一型の係数表示とのmarked同型を使い、$`p i=\mathrm{id}`$、$`p j=0`$から
+$`\mathop{\mathrm{apply}}\nolimits_u(x)=x+i(u)`$、$`\mathop{\mathrm{compact}}\nolimits_t(x)=x+j(t)`$、$`\mathop{\mathrm{read}}\nolimits=p`$の全有限語の公開意味保存を証明する。
+入力$`u,t`$は比較の両側で同じ外部入力とする。
 
-Γの頂点と辺を点とし、U_i={iと接続辺}を最小開集合とする有限Alexandrov空間を作る。
-U_iの非空連結性、二重交差が辺一点または空、相異なる三重交差が空であることを証明し、
+```math
+\begin{aligned}
+g_b^{-1}&=g_{-b}, & p g_b&=p, & g_bv&=v,\\
+g_bi_\lambda&=i_{\lambda+b}, & g_bj_\mu&=j_\mu, & g_cg_b&=g_{b+c}
+\end{aligned}
+```
+
+から、実操作のadapter整合が$`\lambda _j-\lambda _i=b_e`$と同値になることを示す。
+
+$`\Gamma`$の頂点と辺を点とし、$`U_i=\{i\text{と接続辺}\}`$を最小開集合とする有限Alexandrov空間を作る。
+$`U_i`$の非空連結性、二重交差が辺一点または空、相異なる三重交差が空であることを証明し、
 全実交差、AAT site、topologyに属する被覆、MonomorphicOrderedCover、K1支持を生成する。
-g_bのdescentから局所自由・局所定数の層E_bと0→R̲v→E_b→R̲→0を構成する。
-ker p≃Rv、Ob(V)=Γ(V,R̲v)、State(V)={s∈Γ(V,E_b) | p(s)=1}と層条件を導き、
-State(X_Γ)と実大域操作i(a)=asを同定する。E_bのdescentとiの存在を分ける。
+$`g_b`$のdescentから局所自由・局所定数の層$`E_b`$と$`0\to \underline Rv\to E_b\to \underline R\to 0`$を構成する。
+$`\ker  p\simeq Rv`$、$`\mathop{\mathrm{Ob}}\nolimits(V)=\Gamma (V,\underline Rv)`$、$`\mathop{\mathrm{State}}\nolimits(V)=\{s\in\Gamma(V,E_b)\mid p(s)=1\}`$と層条件を導き、
+$`\mathop{\mathrm{State}}\nolimits(X_\Gamma )`$と実大域操作$`i(a)=as`$を同定する。$`E_b`$のdescentとiの存在を分ける。
 
 [SAGA EquationLift](../../Formal/AG/SemanticRepair/Saga/EquationLift.lean)のLiftFiberDataを
-上のsectionとbase=1から生成し、exact_at_middle、restriction、単射性を放電する。
+上のsectionと$`\mathrm{base}=1`$から生成し、`exact_at_middle`、restriction、単射性を放電する。
 liftSystemからAffineCoefficientLiftSystem、局所実現からCoefficientLiftAtlasを作り、
-residualClass_isZero_iff_matching_correctionを同じ入力へ適用する。
+`residualClass_isZero_iff_matching_correction`を同じ入力へ適用する。
 空交差・対角・順序反転とStateの層条件から全pairの一致を実sectionへ戻す。
 [PartIVBridge](../../Formal/AG/SemanticRepair/Saga/PartIVBridge.lean)の
 SitePresheafData.ofObstructionSheaf、incToCoverRelativeH1を同じObへ適用し、
@@ -248,71 +260,82 @@ omitted pair/tripleの零係数を実交差から証明して指定IncH1類とCo
 全siteのAtomOccurrenceReadingをこの有限空間から仮定しない。
 
 SAGAの増加pairから指定向きへ、次数0は恒等、次数1は向きの符号を掛けるTを作り、
-Tδ⁰_SAGA=d⁰_Γを証明する。三角形ではT(c₀₁,c₀₂,c₁₂)=(c₀₁,c₁₂,−c₀₂)。
-交差をj側で読み、r_e=λ_j−λ_i−b_e、o_b=[r]=[−b]=δ(1)を同定する。
-State(X_Γ)≠∅ ⇔ o_b=0 ⇔ b∈im d⁰を証明し、非空な全解をOb(X_Γ)≃Rのtorsorとする。
+$`T\delta^0_{\mathrm{SAGA}}=d^0_\Gamma`$を証明する。三角形では$`T(c_{01},c_{02},c_{12})=(c_{01},c_{12},-c_{02})`$。
+交差をj側で読み、$`r_e=\lambda _j-\lambda _i-b_e`$、$`o_b=[r]=[-b]=\delta (1)`$を同定する。
 
-頂点の変更可能集合からH_V⊆R^Vを生成した場合はb−d⁰λ∈d⁰(H_V)で存在を判定し、
-全解をker(d⁰|_{H_V})のtorsorとする。SAGAの引く補正とはa=−c_SAGAで比較する。
-辺の変更可能集合からH_E⊆R^Eを生成した場合は[b]+[Δb]=0でoffset修復を判定し、
-全解をker(H_E→H¹(Γ;R))のtorsorとする。各修復後の操作のH⁰の自由も保持する。
-この同じOb、State、r、o_bをG-142の診断・Atlas比較へ渡す。
+```math
+\mathop{\mathrm{State}}\nolimits(X_\Gamma)\ne\varnothing\quad\Longleftrightarrow\quad o_b=0\quad\Longleftrightarrow\quad b\in\mathop{\mathrm{im}}\nolimits d^0
+```
+
+を証明し、非空な全解を$`\mathop{\mathrm{Ob}}\nolimits(X_\Gamma )\simeq R`$のtorsorとする。
+
+頂点の変更可能集合から$`H_V\subseteq R^V`$を生成した場合は$`b-d^{0}\lambda \in d^{0}(H_V)`$で存在を判定し、
+全解を$`\ker(d^0\vert_{H_V})`$のtorsorとする。SAGAの引く補正とは$`a=-c_{\mathrm{SAGA}}`$で比較する。
+辺の変更可能集合から$`H_E\subseteq R^E`$を生成した場合は$`[b]+[\Delta b]=0`$でoffset修復を判定し、
+全解を$`\ker (H_E\to H^{1}(\Gamma ;R))`$のtorsorとする。各修復後の操作の$`H^{0}`$の自由も保持する。
+この同じOb、State、r、$`o_b`$をG-142の診断・Atlas比較へ渡す。
 
 ### H. 同じ構成を通す指定例
 
 以下をE–Gの原始生成・比較へ通す。係数を記さない有限表示例ではkを任意の体とする。
 
-1. ℚ上のc+d=1を基準c=d=0から修復し、全域、Δd=0、全固定で解集合が順に直線、
+1. $`\mathbb Q`$上の$`c+d=1`$を基準$`c=d=0`$から修復し、全域、$`\Delta d=0`$、全固定で解集合が順に直線、
    単点、空となることを示す。局所Law・観測を保つ部分加群も同じデータで計算する。
-2. Law t²=0のt=εはk[ε]/ε²上で成立しk[ε]/ε³へlift不能となる。
-   比較用のLaw t=0では同じ基準点の一次自由度が零であることを示す。
-   残差(t²,t³)のsyzygy(t,−1)と、ℤ上の(z²,2z²)のsyzygy(−2,1)から、冗長Lawを
-   除いたH⁰・H¹・障害との同定を証明する。後者はF₂への特殊化も同じ比較へ通す。
-3. k=ℚ[t]、三文脈のx₁−x₀、x₂−x₁、x₀−x₂を、R=k/(t)、基点0で読む。
-   syzygy(1,1,1)によりH¹(T_raw)≃ℚ、H¹(D)=0となる。一方、最後のLawからtを引くと
-   各文脈はk/(t²)へliftできるが、大域ではH¹(D)≃ℚの非零障害が残る。
+2. Law $`t^{2}=0`$の$`t=\varepsilon`$は$`k[\varepsilon ]/\varepsilon ^{2}`$上で成立し$`k[\varepsilon ]/\varepsilon ^{3}`$へlift不能となる。
+   比較用のLaw $`t=0`$では同じ基準点の一次自由度が零であることを示す。
+   残差$`(t^{2},t^{3})`$のsyzygy $`(t,-1)`$と、$`\mathbb Z`$上の$`(z^{2},2z^{2})`$のsyzygy $`(-2,1)`$から、冗長Lawを
+   除いた$`H^{0}`$・$`H^{1}`$・障害との同定を証明する。後者は$`\mathbb F_2`$への特殊化も同じ比較へ通す。
+3. $`k=\mathbb Q [t]`$、三文脈の$`x_{1}-x_{0}`$、$`x_{2}-x_{1}`$、$`x_{0}-x_{2}`$を、$`R=k/(t)`$、基点0で読む。
+   syzygy $`(1,1,1)`$により$`H^{1}(T_{\mathrm{raw}})\simeq \mathbb Q`$、$`H^{1}(D)=0`$となる。一方、最後のLawからtを引くと
+   各文脈は$`k/(t^{2})`$へliftできるが、大域では$`H^{1}(D)\simeq \mathbb Q`$の非零障害が残る。
    両入力で基点のLaw値・支持が一致することも示す。
-4. 二文脈Y=T² / Y=0、共有T,Yで、T=ε、Y=0をk[ε]/ε²からk[ε]/ε³へ比較する。
-   任意の観測lift T=ε+aε²に対して局所liftは存在し、合法修復係数C⁰=0、C¹=(ε²)に
-   κ_uと同じ非零[ε²]が残ること、ν=2を証明する。
-5. 全N≥1でY₁=T²、Y_{j+1}=Y_j²、Y_N=0を消去し、J=(t^{2^N})、ν=2^N、
-   構文上界の鋭さと初回lift不能を示す。観測Law Y=T^Nと追加Law Y=0ではν=Nとなり、
+4. 二文脈$`Y=T^{2} / Y=0`$、共有$`T,Y`$で、$`T=\varepsilon`$、$`Y=0`$を$`k[\varepsilon ]/\varepsilon ^{2}`$から$`k[\varepsilon ]/\varepsilon ^{3}`$へ比較する。
+   任意の観測lift $`T=\varepsilon +a\varepsilon ^{2}`$に対して局所liftは存在し、合法修復係数$`C^{0}=0`$、$`C^{1}=(\varepsilon ^{2})`$に
+   $`\kappa _u`$と同じ非零$`[\varepsilon ^{2}]`$が残ること、$`\nu =2`$を証明する。
+5. 全$`N\ge 1`$で$`Y_{1}=T^{2}`$、$`Y_{j+1}=Y_j^{2}`$、$`Y_N=0`$を消去し、$`J=(t^{2^N})`$、$`\nu =2^N`$、
+   構文上界の鋭さと初回lift不能を示す。観測Law $`Y=T^N`$と追加Law $`Y=0`$では$`\nu =N`$となり、
    表示上の一次式だけでは検出次数が決まらないことを示す。
-6. ℤ[t]、J=(2t²+t³)、t↦0で、orderはℤ・ℚ上で2、F₂上で3となる。
-   D₂=2ℤt²のtensorは非零でも変更後のkernelは零となり、Fの像の比較と一致する。
-7. 任意の体k上の無限表示T_i=T_{i+1}²ではA_∞=colim k[t_i]を原式から作る。原点局所環でm=m²、
-   t₀≠0、全有限Artin変形は定値と証明する。T₀=0を追加しても全次数の比較は同値だが、
-   A_∞は整域、A_∞/(t₀)のt₁は非零平方零なので両schemeは同型でないことを示す。
-8. Gの三角形0→1→2→0で、負のoriented sumによりo_bをΣb_eへ同定し、holonomyの
-   大域操作固定条件もΣb_e=0とする。ℤ・ℚでb=(1,2,−3)の全解は(t,t+1,t+3)、
-   b=(1,0,0)は局所実現とE_bがあっても大域操作を持たない。
-   ℚ上で後者のoffset修復域を全辺、一辺、空とした全解は平面、単点、空となり、
-   各修復後に一自由度が残る。ℚ上でλ=0、b=(1,2,−3)を頂点変更で修復する場合、
+6. $`\mathbb Z [t]`$、$`J=(2t^{2}+t^{3})`$、$`t\mapsto 0`$で、orderは$`\mathbb Z`$・$`\mathbb Q`$上で2、$`\mathbb F_2`$上で3となる。
+   $`D_{2}=2\mathbb Z t^{2}`$のtensorは非零でも変更後のkernelは零となり、Fの像の比較と一致する。
+7. 任意の体k上の無限表示$`T_i=T_{i+1}^{2}`$では$`A_\infty=\mathop{\mathrm{colim}}\nolimits k[t_i]`$を原式から作る。原点局所環で$`m=m^{2}`$、
+   $`t_{0}\ne 0`$、全有限Artin変形は定値と証明する。$`T_{0}=0`$を追加しても全次数の比較は同値だが、
+   $`A_\infty`$は整域、$`A_\infty /(t_{0})`$の$`t_{1}`$は非零平方零なので両schemeは同型でないことを示す。
+8. Gの三角形$`0\to 1\to 2\to 0`$で、負のoriented sumにより$`o_b`$を$`\sum b_e`$へ同定し、holonomyの
+   大域操作固定条件も$`\sum b_e=0`$とする。$`\mathbb Z`$・$`\mathbb Q`$で$`b=(1,2,-3)`$の全解は$`(t,t+1,t+3)`$、
+   $`b=(1,0,0)`$は局所実現と$`E_b`$があっても大域操作を持たない。
+   $`\mathbb Q`$上で後者のoffset修復域を全辺、一辺、空とした全解は平面、単点、空となり、
+   各修復後に一自由度が残る。$`\mathbb Q`$上で$`\lambda =0`$、$`b=(1,2,-3)`$を頂点変更で修復する場合、
    固定頂点なしなら一自由度、固定頂点が一つなら一意、二つ以上なら不能となる。
-   全解(t,t+1,t+3)と固定成分が零である条件から、全ての許容頂点集合についてこの分類を証明する。
+   全解$`(t,t+1,t+3)`$と固定成分が零である条件から、全ての許容頂点集合についてこの分類を証明する。
 
-さらにG-140 Pの同じsnapshot protocolと、その意味保存条件μδ=0を用いる。
-原始追加E=μδ、E=0をFの消去へ通し、同じ意味保存係数fiberをV(μδ)へ同定する。
-体上の原点の特異性、ν=2、各軸方向の全次数lift、δ=μ=εの二次lift不能を証明する。
-任意の候補δ=ε+aε²、μ=ε+bε²の残差ε²、実read差−ε²、Eの相対障害、
-二文脈E=μδ / E=0の合法修復係数C⁰=0、C¹=(ε²)を同じ写像で比較する。
+さらにG-140 Pの同じsnapshot protocolと、その意味保存条件$`\mu \delta =0`$を用いる。
+原始追加$`E=\mu \delta`$、$`E=0`$をFの消去へ通し、同じ意味保存係数fiberを$`V(\mu \delta )`$へ同定する。
+体上の原点の特異性、$`\nu =2`$、各軸方向の全次数lift、$`\delta =\mu =\varepsilon`$の二次lift不能を証明する。
+任意の候補$`\delta =\varepsilon +a\varepsilon ^{2}`$、$`\mu =\varepsilon +b\varepsilon ^{2}`$の残差$`\varepsilon ^{2}`$、実read差$`-\varepsilon ^{2}`$、Eの相対障害、
+二文脈$`E=\mu \delta  / E=0`$の合法修復係数$`C^{0}=0`$、$`C^{1}=(\varepsilon ^{2})`$を同じ写像で比較する。
 固定pの族と一型の係数表示のmarked同型を用い、unmarkedな同型へ自動移送しない。
 
-G-140 Pのfinish_snapへの修正ではこの障害が消えることを、同じ観測と状態比較で示す。
-さらにbefore・p・語翻訳を固定し、目的D(μ),D(δ)をG-140 Eの探索fiberとして構成する。
-旧式のV(μδ)では一方の目的だけならG_m、両方なら空であることを全R点で比較する。
-許容編集式finish_ρ(B,C,h)=(B+μh,C−μ((1−ρ)C+ρh))から
-g_ρ=μ(1−ρ)(h−C)を生成し、BusyをV(g_ρ)とする。
-begin・applyのg_ρへの代入、finishのread差、begin; apply_1; finishから、
-全語の意味保存とμδ(1−ρ)=0を同値にする。
-目的D(μδ)の下でρ=1が強制され、全解がG_m²、状態が全R³、
-選ばれる式がfinish_snapになることを原始編集族から導く。
+G-140 Pの$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$への修正ではこの障害が消えることを、同じ観測と状態比較で示す。
+さらにbefore・p・語翻訳を固定し、目的$`D(\mu ),D(\delta )`$をG-140 Eの探索fiberとして構成する。
+旧式の$`V(\mu \delta )`$では一方の目的だけなら$`\mathbb G_m`$、両方なら空であることを全R点で比較する。
+許容編集式
+
+```math
+\mathop{\mathrm{finish}}\nolimits_\rho(B,C,h)=(B+\mu h,C-\mu((1-\rho)C+\rho h))
+```
+
+から
+$`g_\rho =\mu (1-\rho )(h-C)`$を生成し、Busyを$`V(g_\rho )`$とする。
+begin・applyの$`g_\rho`$への代入、finishのread差、begin; $`\mathop{\mathrm{apply}}\nolimits_1`$; finishから、
+全語の意味保存と$`\mu \delta (1-\rho )=0`$を同値にする。
+目的$`D(\mu \delta )`$の下で$`\rho =1`$が強制され、全解が$`\mathbb G_m^2`$、状態が全$`R^{3}`$、
+選ばれる式が$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$になることを原始編集族から導く。
 旧Busy Lawを固定する編集域では、同じ目的の解が空のままであることも証明する。
 体上の非零目的と全R上の単元条件を区別し、この編集族における全解の比較をDへ通す。
 
-ℚ上でGのg₁はλ=μ=1をλ′=2,μ′=1へ運ぶが、後者ではIdle(0,0)から
-begin; apply_1; finishのreadが2となることを証明する。
-同じμ=1でg₁(compact_all(1,0))=(2,−1)とcompact_all(g₁(1,0))=(1,0)を比較し、
+$`\mathbb Q`$上でGの$`g_{1}`$は$`\lambda =\mu =1`$を$`\lambda ' =2,\mu ' =1`$へ運ぶが、後者では$`\mathop{\mathrm{Idle}}\nolimits(0,0)`$から
+begin; $`\mathop{\mathrm{apply}}\nolimits_1`$; finishのreadが2となることを証明する。
+同じ$`\mu =1`$で$`g_1(\mathop{\mathrm{compact}}\nolimits_{\mathrm{all}}(1,0))=(2,-1)`$と$`\mathop{\mathrm{compact}}\nolimits_{\mathrm{all}}(g_1(1,0))=(1,0)`$を比較し、
 原子操作のadapter保存を拡張した観測言語へそのまま移せないことを証明する。
 
 ## 前提・構成台帳
@@ -321,17 +344,17 @@ begin; apply_1; finishのreadが2となることを証明する。
 | --- | --- | --- | --- |
 | 観測・作用・adapterの原式 | 入力 | A–Bの全射分類 | change scheme・複体 |
 | 複体・制限射・cotangent・比較 | 構成義務 | A–Bの同じ原式から生成 | 大域障害・微小lift |
-| 交互列aとD(2),D(3) | 指定証人 | Cの全段・局所解と非零類 | Čech・Ext・lim¹の一致 |
+| 交互列aと$`D(2)`$,$`D(3)`$ | 指定証人 | Cの全段・局所解と非零類 | Čech・Ext・$`\mathop{\mathrm{lim}}\nolimits^1`$の一致 |
 | ML性・有限安定性・証明規則 | 別々の放電義務 | Dの原始構造から導出 | 有限certificateの十分性 |
 | 許容編集・目的・係数域と探索fiber | 入力と先行構成 | G-140 E、Dの生成・全解回収・復元 | 目的を満たす設計候補と不存在 |
 | 有限表示、平方零拡大、原始reading、指定観測lift | Eの入力 | 独立Sem、全syzygy、残差、合法修復を生成 | 実lift・相対fiber・conormal比較 |
 | 体、有限表示、実現点／自由観測chart | Fの各系の仮定 | Noetherian性・Artin商／構文上界を別々に導く | 全Artin検出・有限上界 |
-| 有限graph、μ、offset、許可変更集合 | Gの入力 | 実adapter・全交差・State・LiftFiberDataを生成 | SAGAの零性と実操作、G-142の診断比較 |
+| 有限graph、$`\mu`$、offset、許可変更集合 | Gの入力 | 実adapter・全交差・State・LiftFiberDataを生成 | SAGAの零性と実操作、G-142の診断比較 |
 | Hの原始表示・phase・試験環 | 指定証人 | E–Gと同じ生成・比較へ通す | syzygy・検出次数・修復・操作輸送の検査 |
 
 ## 完了条件
 
-A–Hの一般比較と指定例をLeanで証明し、native射・scheme・cotangent・Čech・lim¹の
+A–Hの一般比較と指定例をLeanで証明し、native射・scheme・cotangent・Čech・$`\mathop{\mathrm{lim}}\nolimits^1`$の
 全写像を同じprimitive入力に遡ってreportする。
 Milnor列の引用だけでnative比較を、有限段の成功だけで大域的存在を済ませない。
 無限個のLawを固定有限数に打ち切った定理はB・Cの代用にならない。
