@@ -448,7 +448,7 @@ begin; $`\mathop{\mathrm{apply}}\nolimits_1`$; finishのreadが2となること�
 
 | 対象 | 役割 | 構成・証拠 | 使用先 |
 | --- | --- | --- | --- |
-| 観測・作用・adapterの原式 | 入力 | A–Bの全射分類 | change scheme・複体 |
+| 観測・作用・adapterの原式 | 入力 | A–Bの全ての射の分類 | change scheme・複体 |
 | 複体・制限射・cotangent・比較 | 構成義務 | A–Bの同じ原式から生成 | 大域障害・微小lift |
 | 交互列aと$`D(2)`$,$`D(3)`$ | 指定証人 | Cの全段・局所解と非零類 | Čech・Ext・$`\mathop{\mathrm{lim}}\nolimits^1`$の一致 |
 | 指定部分を持つ有限図式・長さ固定の経路・状態移送 | G-140 F・Gの構成 | Cの実制限、descent、affine・平方零補正複体 | 補完の存在・全修復・自己同型 |
