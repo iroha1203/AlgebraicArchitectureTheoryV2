@@ -23,15 +23,15 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 SHIGUREは、[n1019](../../docs/note/n1019_shigure_representability_design.md)の
 次の四つの研究到達像で構成する。係数拡張・表現・自然性と多項式特殊化は、
-各GOALの証明義務として位置づける。PRの意味射、Atlasによる観測比較、
-守る意味と目的からの設計探索を、この四つの構成で接続する。
+各GOALの証明義務として位置づける。意味保存射、Atlasによる数学的観測の比較、
+保存条件と評価条件に相対的な解空間を、この四つの構成で接続する。
 
 - [G-139-aat-law-generated-relative-geometry](G-139-aat-law-generated-relative-geometry.md)
   (任意担体・全Homを回復する意味再構成と、Lawの相対Spec・全拡張分類・通常の代数性)
 - [G-140-aat-semantic-change-category](G-140-aat-semantic-change-category.md)
-  (PRの非可逆な意味保存射、合成・局所組立て、目的相対の探索fiber)
+  (非可逆な意味保存射、合成・局所組立て、評価条件に相対的なfiber)
 - [G-141-aat-coherent-repair-effectivity](G-141-aat-coherent-repair-effectivity.md)
-  (変更の障害・全修復、Čech・cotangent・lim¹比較、有限設計探索・全Artin検出の十分性)
+  (変更の障害・全修復、Čech・cotangent・lim¹比較、有限計算・全Artin検出の十分性)
 - [G-142-aat-law-value-diagnostic-sheaf](G-142-aat-law-value-diagnostic-sheaf.md)
   (診断の族・合流・構成可能関数の実現、意味障害の指定類とAtlasによる探索fiberの比較)
 
