@@ -64,7 +64,7 @@ stalk複体を同じ値域$`\Omega`$で再生成したAのK0/K1複体へ、両�
 
 任意のscheme射$`g:B' \to B`$について、式の引戻しで生成した$`Z'`$と$`C'`$が
 $`Z\times _B B'`$、$`g^{-1}C`$に一致することを、同じ制限写像・stalk同定で証明する。
-flatnessを要求せず、恒等・合成、scalar式を保つreading代入との可換性を含める。
+非flatな射も含め、恒等・合成、scalar式を保つreading代入との可換性を証明する。
 任意の$`\Lambda \to \Lambda '`$について、次数別の診断係数変更、各項の$`\Lambda`$-flatness、導来tensor積との
 同定を証明する。コホモロジーの通常tensor積との交換はAの条件で述べる。
 
@@ -98,7 +98,7 @@ $`H^{1}(r)`$が同型であることと$`H^{0}(\rho )`$が全射かつ$`H^{1}(\r
 任意有限block族の全交差からMayer–Vietoris複体を生成し、cellごとの完全性、
 合併を計算する比較、交差コホモロジーからのspectral sequenceを構成する。
 二値合流の任意の順序による合成が同じ$`r_{\pi ' ,\pi }`$となることを証明する。
-途中の分解の一致ではなく、全体の写像・核・余核の一致を要求する。
+分解順序を変えた全体の写像・核・余核の一致を証明する。
 
 ### D. 診断次元の変動の実現と非存在定理
 
@@ -159,19 +159,18 @@ $`H^1(\Gamma;\mathbb Z)\cong\mathbb Z^{\lvert E\rvert-\lvert V\rvert+1}`$を構�
 \quad\Longleftrightarrow\quad\kappa_b=0
 ```
 
-を得る。cycleでは`CommonLabelChartSupport`が偽であることも確認し、同条件を要する
-[既存反映定理](../lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedClassReflection.lean)
-を適用せず、上の整数$`H^{1}`$による反映証明を構成する。
-$`R=\mathbb Q`$でも比較し、一般Rでは$`\Lambda =R`$で同じ複体を構成する。任意$`R\to \Lambda`$の零性反映は仮定しない。
+を得る。cycleの反映証明は上の整数$`H^{1}`$から構成する。
+[既存反映定理](../lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedClassReflection.lean)との比較では、
+その仮定`CommonLabelChartSupport`がcycleで偽になることを示す。
+$`R=\mathbb Q`$でも比較し、一般Rでは$`\Lambda =R`$で同じ複体を構成する。各$`R\to \Lambda`$の零性反映には、Aの条件または個別の証明を用いる。
 同じ支持とregular readout $`p(v)=0`$をBへ通し、次元がoffsetによらず一定でも
 指定類の零性で組立てが異なることをW3で証明する。
 
 ### F. 細分化とAtlasの実比較
 
-本節は、独立に構成したSHIGUREの実現・修復と、Atlasのreading比較を結ぶ定理である。
-A–EおよびG-139–141の構成は本節を前提にせず、Atlasの一般定理もSHIGUREの実現や解空間を
-前提にしない。接点は同じ原始データから得るreading・Law評価・支持・比較写像であり、
-両理論を同一の定義や処理系として扱わない。
+SHIGUREの実現・修復（A–EおよびG-139–141）とAtlasのreading比較を、それぞれ独立に構成する。
+本節は両者の構成を受け取り、同じ原始データから得るreading・Law評価・支持・比較写像を
+介して結ぶ比較定理である。
 
 cycleの一つのchartを二つへ分け、間に$`g_{0}=\mathrm{id}`$を挿入する。追加辺と両端を元の頂点へ送る
 有限空間の縮約を構成し、粗側$`E_b`$の逆像を細側へ同定する。同じ細側空間上で、
@@ -182,8 +181,8 @@ G-141の制約付き修復と全解への作用も比較する。
 
 W3の同じ支持からAtlasのC0–C6を構成・証明する。台の像、fiberの連結性、edge lift、
 fiber内のchain、face lift、edge liftの一意性、self-loop条件を各々放電する。
-一辺のtreeのcycleが零であること、両方のfaceが空であること、粗側にself-loopがないことを使い、
-比較射の単射性・全射性を条件として入力しない。
+一辺のtreeのcycleが零であること、両方のfaceが空であること、粗側のself-loopの不存在から、
+比較射の単射性・全射性を導く。
 [generatedComparisonH1Map_bijective](../lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean)
 を同じ入力へ適用し、実ObのČech比較、SAGA比較、EのK0比較と可換になることを証明する。
 指定類・実修復の存在・全解への作用の対応、有限反復の恒等・合成を含める。
@@ -195,22 +194,22 @@ fiber内のchain、face lift、edge liftの一意性、self-loop条件を各々�
 原始代入と追加一致Lawから、評価写像と修復適用の比較を構成し、
 全Rで条件付きfiberの自然な同値、指定障害の比較との可換性を証明する。
 順序付き評価を用いる場合も同じ値と順序を保持し、候補比較を運ぶ。
-同値を入力fieldとして受け取らず、追加頂点の一致から候補を一意に復元する。
+同値の逆写像は、追加頂点の一致から候補を一意に復元して構成する。
 
 Law評価の十分性、C0–C6による診断の同型、評価条件を含む全修復fiberの同値を
 別の主張として比較する。前二者だけから第三を推論できない例には、
 Law評価と支持に現れない自由変換係数tを持つ$`\mathbb A^{1}\to \mathop{\mathrm{Spec}}\nolimits k`$を用いる。
 Law評価と診断は一定でも全変換のfiberは異なり、評価条件$`t=1`$を落とすreadingでは
-評価が降下しないことを示す。一般の情報を落とすreadingに同値を要求せず、
-元の候補の像とfiber、評価条件を運べる条件を明示する。
+評価が降下しないことを示す。情報を落とす一般のreadingでは、
+元の候補の像とfiberを計算し、評価条件を運べる条件を明示する。
 
-### W. 一般定理を発火させる指定例
+### W. 一般定理を適用する指定例
 
 1. [n1020 W4](../../docs/note/n1020_shigure_polynomial_specializations.md#8-固定する具体例)の
    $`\times 2:\mathbb Z \to \mathbb Z`$で非flat係数変更による$`H^{0}`$の相違と、flatな$`\mathbb Z \to \mathbb Q`$による非零$`H^{1}`$類の消失を示す。
    別に二source・一Law・値0,2からK0を生成し、$`\mathbb F_2`$値への再生成と固定labelのtensorを区別する。
    全chart台が同じ共通Law値を持つ三辺cycle・faceなしのnerveから$`H^{1}(C_{\mathbb Z} )\cong \mathbb Z`$と$`\mathbb Q`$特殊化を証明する。
-   ×2の対照例をK0の微分と同一視せず、K0でのflatnessの必要性の証明にも用いない。
+   ×2は一般複体の係数変更の対照例とし、K0の係数依存は上記のsource・Law値から生成して比較する。
 2. base/delta台帳と同じ$`B=\mathbb A^{2}_{k,(\lambda ,\mu )}`$、3 chart、4 sourceを固定し、sourceのchart台を順に
    $`\{0,1\}`$、$`\{1,2\}`$、$`\{2,0\}`$、$`\{0,1,2\}`$、readoutを$`0,\lambda ,0,\mu`$、ambient nerveをfull 2-skeletonとする。
    任意の体kと独立な係数体$`\Lambda`$で$`\dim  H^{1}=1`$が$`\lambda =0`$かつ$`\mu \ne 0`$と同値、他では0と証明する。
@@ -245,10 +244,9 @@ A–F・WをLeanで証明し、同じ原始入力からの生成、既存宣言�
 `research/reports/G-142-aat-law-value-diagnostic-sheaf.md`に記す。
 証拠は`research/lean/ResearchLean/AG/`に置き、
 [共通完了基準](../../.codex/skills/target-theorem-loop/references/target-goal-contract.md#共通基準の参照適用)を適用する。
-有限例のrank検算はDの全入力についての構成を代替せず、任意に選んだ比較同型・零性反映を
-受け取る定理はE–Fの生成義務を満たさない。
+Dは量化した全入力について構成し、E–Fの比較同型と零性反映は原始支持・実操作から生成して証明する。
 
 固定主張が偽の場合は、対象条項の量化に属する原始入力と破れる式・写像を構成し、
 不成立を証明して`target-refuted`として記録する。肯定形の全主定理の証明完了とは区別する。
 Dの非存在主張への反証には、W2の全点で指定式を満たすpseudo-coherent複体の構成を要する。
-形式化APIの不足は反例ではなく未証明として扱う。
+形式化APIの不足によって残る証明義務は、未証明として記録する。

@@ -24,12 +24,12 @@
 relation、指定domain上のpartial operation、選択値から独立なmodel圏を構成する。
 射は実際のsort mapsとoperation/relation保存であり、恒等と合成を証明する。
 存在witnessを選んだモデルと存在だけを要求したモデルを区別する。
-表示から完成済みのモデル集合やschemeへのHomを入力に取らない。
+モデル集合と射を原始表示から生成し、その幾何的表現との比較を後段で構成する。
 
 Atom configuration、opaque payload、lens、protocol、G-124のgeometryについて
 原始宣言を構成し、既存の対象と全Homを回復する比較関手を与える。
-generic ArchitectureObjectに未指定のHom構造を既存と称してはいけない。
-その場合は実際に追加した射のデータと忘却するデータを明示する。
+generic ArchitectureObjectについては射のデータを新たに構成し、
+元の型・値への忘却を明示する。
 
 #### N2. 複製・消去を保持した係数化
 
@@ -40,7 +40,7 @@ $`\mathop{\mathrm{Hom}}\nolimits_R(\coprod_X\mathop{\mathrm{Spec}}\nolimits R,\c
 連結な非零環で全native Homを回復し、全可換環にscalar extensionで自然な射の族は
 $`\mathbb Z`$成分から元の集合写像を回復することを示す。零環での挙動も証明する。
 
-全$`R`$上のHomを単一の集合写像と同定せず、入力ごとの有限直交冪等元分割を構成する。
+全$`R`$上のHomを、入力ごとの有限直交冪等元分割と出力選択によって分類する。
 任意のnilpotent thickeningでこの離散Homが一意に持ち上がることも証明する。
 この零の微小変形と、Aのquantityの非零微小変形を区別する。
 
@@ -64,7 +64,7 @@ total lensの三等式から$`C\cong K\times V`$を構成する。
 viewも変える一般相対Homは、両viewに基準値がある場合、
 $`(K\to K')\times(V\to V')`$に対応させ、既存のstate/view両mapを回復する。
 空viewの場合はgetのsourceも空になることから対象・Homを直接分類して残す。
-有限fiberは一般targetの仮定にしない。
+この分類は任意のfiberを対象とする。
 Set上の分解・相対射のnormal formには既存の
 [GeneralRelativeLens](../lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean)
 のproductEquiv・normalForm・productMapを再利用し、新規義務を係数・descentとの比較に置く。
@@ -72,8 +72,8 @@ Set上の分解・相対射のnormal formには既存の
 全path Lawと全自然変換を回復する。非単射射と非自明自己同型を必須例とする。
 
 opaque payloadは任意$`P`$と選択点のまま保持する。
-任意の既存residualはその実際のgraphとして保持し、多項式性を推論しない。
-量や構造の内部が未指定のfieldには、式・係数作用を捏造しない。
+任意の既存residualはその実際のgraphとして保持する。
+式と係数作用を指定した宣言については、その指定から係数的解釈を構成する。
 
 ### A. 任意担体・任意個の量とLaw
 
@@ -90,25 +90,26 @@ $`\rho_\ell:C_k(E_\ell(S))\to A_S`$を生成する。$`I_S`$は全像の生成id
 ```
 
 を全$`k`$代数$`R`$・全環射について自然に構成する。
-変数・Law・担体の有限性、idealの有限生成性を仮定しない。
-左辺を環Homとして定義する方法は禁止する。
+変数・Law・担体とidealの生成族は任意の濃度を許す。
+左辺は関数と原始Lawの充足によって定義し、環Homとの対応を評価定理から導く。
 
 任意可換$`k`$代数$`S`$について、量$`q:S\to R`$に環演算保存Lawを課すことで
 $`A_S/I_S\cong S`$と$`\mathop{\mathrm{Spec}}\nolimits S`$を回収し、全環Homの反変な射との一致を証明する。
 任意module $`M`$の線形quantityから$`\mathop{\mathrm{Sym}}\nolimits M`$も回収する。
 一般には任意QC module $`Q`$の線形quantityが$`\mathop{\mathrm{Spec}}\nolimits\mathop{\mathrm{Sym}}\nolimits Q`$で表現される構成を使い、
-copying domainとmodule domainを有限rankの仮定なしに接続する。
+任意のcopying domainとmodule domainを接続する。
 
 ### B. 構造と係数と文脈を同時に動かす
 
 Nのsplit copying coalgebraとそのdescent forms、実際のoperation・relationから
 構造のstack $`B_{\mathrm{copy}}`$を構成する。被覆の種類を固定し、局所split moduleの降下と全Homの降下を
-証明する。任意の内部sheaf担体がこの形であるという未証明の同定は用いない。
+証明する。このstackの担体は、Nのsplit copying coalgebraの局所splitな降下形とする。
 
 別にnativeの係数作用・原式からmodule $`M\otimes R`$、scalar $`R`$等の係数的実現$`\sigma`$と$`B_\sigma`$を構成する。
 $`\Delta\lvert M\rvert\to M\otimes R`$の写像、指定native定数点の回復、native基点での全Homの回復を証明する。
 非連結$`k`$の追加点と、dual numbers上の新しい線形方向を保持し、
-全$`R`$で$`B_{\mathrm{copy}}`$と$`B_\sigma`$を同値とはしない。点ごとのLawと全係数familyでのLawも区別する。
+全$`R`$で$`B_{\mathrm{copy}}`$と$`B_\sigma`$をそれぞれの原始構造から構成する。
+点ごとのLawと全係数familyでのLawを、それぞれの評価によって比較する。
 
 $`Q`$、$`\rho`$、$`I`$を同じ同型に沿って降下し、$`M=\mathop{\mathrm{Spec}}\nolimits_{B_{\mathrm{copy}}}(\mathop{\mathrm{Sym}}\nolimits Q/I)`$を構成する。
 任意scheme $`T\to B_{\mathrm{copy}}`$へのpullbackが独立なquantity modelのaffine $`T`$-schemeになること、
@@ -125,7 +126,7 @@ sheafificationとscalar extensionの交換には必要な仮定を実際に放�
 
 既存ArchitecturalEquationSystemのsymbolic coordinateとobject-dependent residualを
 原始データとして保持し、原式または下記拡張空間から生成したresidualとの評価一致を比較する。
-既存の任意residualを有限式と仮定しない。
+有限式で与えられたresidualと任意関数として与えられたresidualを、それぞれの原始データから扱う。
 各native familyで次を区別する。1・2を構成し、3は下記の拡張空間の点が与える選択として構成する。
 
 1. graphとして元のresidualをそのまま保持する。
@@ -136,7 +137,7 @@ $`\mathop{\mathrm{Nat}}\nolimits(R^n,R)\simeq k[t_1,\ldots,t_n]`$を普遍tuple�
 $`\mathbb F_p`$上で$`t`$と$`t^p`$が同じnative値を持つが異なるfamilyになること、
 $`\mathbb Q`$上の$`\delta_0`$が$`\mathbb A^1`$上のregular extensionを持たないことを証明する。
 有限support Lawにはzero extensionのind表示を構成し、全有限restrictionの逆極限との
-非同値を証明する。これらのLawを意味圏から除去してCを達成したことにしない。
+非同値を証明する。これらのLawも同じ意味圏の対象として保持する。
 
 さらに任意native担体$`D`$、任意$`X`$、指定されたquantity reading $`q:D\to k^X`$、
 任意$`\varepsilon:D\to k`$について、全regular extensionの空間を構成する。
@@ -144,7 +145,7 @@ $`\mathbb Q`$上の$`\delta_0`$が$`\mathbb A^1`$上のregular extensionを持�
 全$`d\in D`$で$`\sum b_m m(q(d))=\varepsilon(d)`$を課すaffine scheme $`E_{\varepsilon,q,F}`$を作る。
 zero extensionの閉埋込みに沿うind表示$`E_{\varepsilon,q}`$を構成し、
 その$`S`$点が全$`S`$代数$`R`$に自然な$`R^X\to R`$でnative値に一致するものを全て分類すると証明する。
-$`q`$を$`\varepsilon`$へ選び直す方法や、次数・座標数の上限で切る方法は使わない。
+$`q`$を固定し、$`\varepsilon`$に一致する拡張を、全次数・全有限座標supportにわたって分類する。
 
 全入力$`D=k^X,q=\mathop{\mathrm{id}}\nolimits`$では、無限体で存在すれば一意であることを証明する。
 有限体$`\mathbb F_q`$では評価核$`(t_x^q-t_x)_x`$と、延長存在と有限座標依存の同値を証明する。
@@ -158,8 +159,7 @@ $`\mathbb F_p`$上の$`t/t^p`$による、native値の一致だけではcoherenc
 
 $`M\otimes R`$、$`\mathop{\mathrm{Hom}}\nolimits(M,R)`$、$`C_R(\lvert M\rvert)`$を任意module $`M`$について区別し、
 実際の比較写像と、dualizability等を使う箇所を記す。
-全native構造に係数familyを一意に割り当てるという反証された要求は採用しない。
-その代わり、指定された原始係数構造を保持する比較を必須にする。
+係数familyの選択を明示し、指定された原始係数構造を保持する比較を構成する。
 
 ### D. 通常の代数性と有効化
 
@@ -170,26 +170,26 @@ dualizabilityから局所有限自由性を導き、全局所階数成分のfram
 構成したGL作用・torsor・同型diagramから商stackの代数性を証明する。
 markingによる自己同型消滅とopen overlapが構成できる場合はschemeを接着する。
 
-この十分条件を全AATの入力条件にはしない。
-独立なline quotientの無限積$`\mathbb P^1`$と、無限階数moduleの全自己同型を
+一般の意味圏では任意担体を保持する。独立なline quotientの無限積$`\mathbb P^1`$と、無限階数moduleの全自己同型を
 同じ意味圏に保持して、それぞれの通常のalgebraic space・algebraic stackへの非有効化を証明する。
-operation profileは各chartと全profile表示を区別し、無限であるだけで非有効化とはしない。
+operation profileは各chartと全profile表示について有効化を個別に判定する。
 $`\mathbb N`$の恒等写像を表すprofile $`S_n=\{n\}`$のchartは$`\mathop{\mathrm{Spec}}\nolimits k`$になることも検査する。
-無限moduleの接空間はtensor extensionの$`B_\sigma`$で計算し、$`B_{\mathrm{copy}}`$の零微小変形とは混同しない。
-trivial inertiaだけでschemeを結論しない。
+無限moduleの接空間はtensor extensionの$`B_\sigma`$で計算し、$`B_{\mathrm{copy}}`$では微小変形が零であることを示す。
+schemeへの接着には、trivial inertiaとopen overlapの構成を証明する。
 
 ### P. 多項式特殊化との同一入力上の比較
 
 [n1020 §3–8](../../docs/note/n1020_shigure_polynomial_specializations.md#3-原始入力と独立な実現)
 の原始表示Pについて、N・A–Dの構成を次の同じ対象・射へ同定する。
 可換基礎環、有限個の型と階数・生成元数、小さい演算・Law族を量化し、
-Law族全体の有限性や生成idealの有限生成性を追加しない。
+Law族とidealの生成族は任意の濃度を許す。
 
 1. **独立な実現と原始評価。** 加群・演算・Lawから$`\mathop{\mathrm{Sem}}\nolimits_P`$、非可逆な演算保存写像の圏、
    その最大部分groupoid $`\mathop{\mathrm{Real}}\nolimits_P`$を定める。Semは$`K_v\subseteq R^{m_v}`$と商上の演算として定義し、
    全射qを保持する実現の同型類との同値を構成する。Atomの五座標・configurationと
    raw係数tupleのgraphからencode/decodeを作り、$`\mathop{\mathrm{decode}}\nolimits\circ\mathop{\mathrm{encode}}\nolimits=\mathop{\mathrm{id}}\nolimits`$を証明する。
-   値を一意に読めないobjectのdecodeは零tupleとし、その全objectでの係数自然性は要求しない。
+   値を一意に読めないobjectにはdecodeを零tupleで補完する。
+   decodeの係数自然性は、raw tupleのencode像上で証明する。
    原始Lawを普遍ambient Bの残差と評価先Rの残差へ生成し、
    $`B_s\to R_{x(s)}`$による評価一致と、全raw点での$`\mathop{\mathrm{EquationLawful}}\nolimits\iff\text{原式の全Law成立}`$を証明する。
    全contextの係数は点支持の内部$`U_W`$上の$`\Gamma(U_W,O)`$とし、principal open外も含める。
@@ -199,13 +199,13 @@ Law族全体の有限性や生成idealの有限生成性を追加しない。
    determinantを可逆にするoverlap、tensor残差の変換とidealの一致、cocycleを生成する。
    個別の方程式はrequired Lawへ置き、StructuralRelationFamilyを使う場合は空とする。
    原始式の係数変更から、任意基礎環射での生成idealのextensionと商環のscalar extensionを
-   変数・Law別生成元の対応まで同定する。この比較にflatnessは加えない。
+   変数・Law別生成元の対応まで、非flatな基礎環射も含めて同定する。
    宣言被覆とZariski被覆の制限・組立ての交換、Realのfppf descentを実加群から証明する。
    任意環射でのKの像とprojective quotientの分裂、tensorのcoherenceを同じ構成へ通す。
    独立な$`\mathop{\mathrm{Sem}}\nolimits_P(R)`$と$`\mathop{\mathrm{Hom}}\nolimits(\mathop{\mathrm{Spec}}\nolimits R,M_P)`$の同値、普遍実現、基底openの被覆を構成する。
 3. **readingと基礎環の自然性。** 型を改名・追加する単射、tensor式代入、required Lawと
    標準等式からの導出でreading射を定義する。射の等号は型対応と導出可能な式の等号とし、
-   導出証明の選択を区別しない。Semの反変な解釈とMの射を同じ式で構成し、
+   導出証明の選択に依存せずに定まるものとする。Semの反変な解釈とMの射を同じ式で構成し、
    恒等・合成、任意基礎環変更、普遍実現、文脈細分化との可換性を証明する。
    逆代入から同型を、Law追加からその成立locusへの閉埋め込みを構成する。
    StandardArchitectureScheme.baseChangeへは、その装飾と仮定を別に満たす同じ入力で比較する。
@@ -223,8 +223,8 @@ Law族全体の有限性や生成idealの有限生成性を追加しない。
    Nのコピーを忘れたBool ANDが$`2e_{\mathrm{true}}`$で冪等性を失う例、非連結環のidempotent分割、
    $`x(t)=\varepsilon`$における普遍残差と評価後残差の違いも同じ比較に残す。
 
-Pの各結果をN・A–Dへの比較として証明する。多項式特殊化だけを独立に構成して、
-元の任意担体・全Hom・全residualとの比較を完了扱いにしない。
+Pの各結果をN・A–Dへの比較として証明し、
+元の任意担体・全Hom・全residualから生成した一般構成との対応を与える。
 
 ## 前提・構成台帳
 
@@ -237,16 +237,15 @@ Pの各結果をN・A–Dへの比較として証明する。多項式特殊化�
 | 局所split性、moduleの係数作用 | 経路ごとの入力 | Bのcopyingと$`\sigma`$を区別し、各原始解釈を構成 | descent・基点の全Hom |
 | duality等式・有限frame生成規則 | Dの十分条件 | frame・作用・overlapを生成 | 通常の代数性 |
 | 多項式表示・生成元・原始代入 | 特殊化の入力 | Pの同じSem・Real・Law評価から生成 | chart・stack・係数自然性 |
-| 全nativeの保持・非有効化 | 構成義務 | C–Dの分類と指定反例 | 特殊化への縮小を防ぐ |
+| 全nativeの保持・非有効化 | 構成義務 | C–Dの分類と指定反例 | 一般構成と特殊化の比較 |
 
 ## 完了と主目標への関係
 
 N・A–D・Pの定理、原始sourceとの対応、正例・反例をLeanで証明する。
-具体的なframe構成、$`\rho`$の生成、descentは結論相当の入力fieldへ移さない。
-全$`D`$・$`q`$・$`\varepsilon`$の拡張空間、context全体の互換性、原始係数構造とnativeの比較が
-未構成なら本GOALは未達であり、報告事項へ移して完了することはできない。
-有限module成分だけの達成でC・DまたはSHIGURE全体を達成したことにはしない。
-任意sheafという名称だけで、通常の幾何への比較を済ませない。
+完了には、原始入力からのframe構成、$`\rho`$の生成、descentの証明を含める。
+全$`D`$・$`q`$・$`\varepsilon`$の拡張空間、context全体の互換性、原始係数構造とnativeの比較、
+通常のscheme・algebraic stackへの有効化と指定された非有効化の証明を揃える。
+有限module成分は、この一般構成への比較として証明する。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、
 research/reports/G-139-aat-law-generated-relative-geometry.mdの宣言・前提対応に置く。

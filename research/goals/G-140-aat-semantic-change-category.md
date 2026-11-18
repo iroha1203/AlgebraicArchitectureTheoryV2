@@ -20,7 +20,7 @@
 原始signatureのmodel圏において、実際のsort mapsからoperation/relation保存射を作る。
 観測$`o`$と各operationを保つ$`h:A\to B`$の全体を$`\mathop{\mathrm{Chg}}\nolimits_o(A,B)`$と定義する。
 元の状態mapからこの条件を検査し、全有限操作語の観測保存を帰納的に証明する。
-非単射・非全射を許し、全射を同型に置換しない。
+非単射・非全射を含む全ての保存射を対象とする。
 
 固定語彙の構造保存と、traceだけのbehavioral equivalenceを区別する。
 操作語翻訳を持つ変更は、原始term substitutionと状態mapで定義して合成を構成する。
@@ -32,13 +32,13 @@ phase・stutteringを使うときはその翻訳と許可経路を明示する�
 G-139 Nの全Homのprofile表示と同A–Dのquantity引戻し・対応空間から、
 各係数的実現$`\sigma`$の独立な変更modelと幾何的表示の全$`R`$での自然な同値を構成する。
 さらにnative基点で元のChgの全Homを回復し、指定native点の係数移送と比較する。
-copying familyとlinear familyを全$`R`$で同一視しない。
+copying familyとlinear familyは、それぞれの係数的実現に沿って全$`R`$で比較する。
 各射を、その源・標的・quantity保存等式とともに表現する。
-単に$`M_{\mathrm{before}}\times_{M_{\mathrm{obs}}}M_{\mathrm{after}}`$の点を取って、状態比較$`h`$を落とすことはしない。
+$`M_{\mathrm{before}}\times_{M_{\mathrm{obs}}}M_{\mathrm{after}}`$の点に加え、状態比較$`h`$とその保存条件を保持する。
 
 $`N_n`$を$`n`$個の合成可能な実際の変更とその可逆な比較のgroupoidとして作る。
 Segal同値、恒等、合成、coherenceとnativeの合成との一致を証明する。
-同型比較のgroupoid化と変更そのものの可逆化を混同しない。
+groupoidの対象は非可逆な変更を含む列であり、射はその列の可逆な比較とする。
 同型な原始表示、definitionalな補助演算の追加・消去について、この全構造を比較する。
 
 状態射を$`h_{01}:X_1\to X_0`$、$`h_{12}:X_2\to X_1`$と取る場合の
@@ -47,7 +47,7 @@ $`h_{02}=h_{01}h_{12}`$と語翻訳の合成を証明する。逆向きの添字
 $`H^\#(I_0)\subseteq I_1`$とlawfulな状態への一意因子分解を同値にする。
 操作・観測の残差も同じ商環で評価し、全許可語保存と合成へ接続する。
 一般のideal所属条件とambient恒等式を分け、$`R[y]/(ay)`$内の$`y=0`$が$`D(a)`$を与える例を含める。
-導出witnessを使う表示では選択差を処理し、全Homとの比較に余分な選択を残さない。
+導出witnessを使う表示では選択差を同一視し、元の全Homとの全単射を証明する。
 状態射、quantityの反変引戻し、比較moduli上の点、両端へのspanを別々に同定する。
 
 ### C. 文脈と係数のdescent
@@ -55,13 +55,12 @@ $`H^\#(I_0)\subseteq I_1`$とlawfulな状態への一意因子分解を同値に
 原始宣言・witness・Law supportからAAT文脈coverを生成する。
 別に係数schemeの被覆を固定する。二つの制限の可換性を構成し、
 対象・全Hom・観測保存・合成のdescentを同じprimitive mapsから証明する。
-Lawを含まない断片だけの被覆でLawfulのdescentを主張しない。
-totalityや有限supportの条件もそのまま残す。
+被覆はLaw supportを含めて生成し、totalityと有限supportも制限・組立てに保つ。
 
 平方零lift、文脈に沿う組立て、fragmentの延長を、それぞれどのfiberの問題か定義する。
 matching familyから対象・状態比較・観測保存を持つ実際の変更を組み立て、その一意性を証明する。
-原始宣言から被覆・全制限・matching条件を作り、sheaf条件をcallerに要求するだけで済ませない。
-整合していない局所変更をmatchingへ補正する存在問題とは区別する。
+原始宣言から被覆・全制限・matching条件を作り、sheaf条件を証明する。
+局所変更をmatchingへ補正する存在問題はG-141へ接続する。
 
 ### D. 同じ意味を保持していることの試験
 
@@ -70,15 +69,15 @@ G-126のquotient repairを比較対象にする。
 非可逆な必須例として、$`V=\mathrm{Bool}`$、hidden担体$`K`$を持つlensの射$`K\times V\to V`$を、
 get/put保存・全Hom分類・合成とともに幾何へ運ぶ。$`\lvert K\rvert>1`$なら同型ではないことを示す。
 G-126の共通behavior上端を保つ商修復と、指定adapter間の変更が別fiberであることを示す。
-前者の組立て原理の仮定と後者のfiberの入力を照合し、同一の問題として扱わない。
+前者の組立て原理の仮定と後者のfiberの入力を照合し、各fiberの存在条件を比較する。
 
 ### E. 評価条件を満たす全変更のfiber
 
 固定source $`a:\mathop{\mathrm{Spec}}\nolimits R\to M`$と原始表示の許容変換仕様$`H`$を入力とする。
 $`H`$は変換可能な宣言、固定する部分表示、許す型付きterm代入、係数・補助sort・演算・phaseの
 導入と忘却の規則を指定する。各規則のsort・入出力・Law支持・固定宣言の像を保持し、
-規則族全体に有限性を課さない。全候補族$`E_H`$を原始構文から生成する。
-状態比較$`h`$は実際のsort mapsとして量化し、全変更圏のHomをtermで定義可能な射へ限定しない。
+規則族は任意の濃度を許す。全候補族$`E_H`$を原始構文から生成する。
+状態比較$`h`$は実際のsort maps全体で量化し、termで定義できる射も含めた全Homを保持する。
 候補に$`h`$・語翻訳$`\tau`$を保持し、
 保存条件から$`C_H`$とsource/target射$`s,t`$を構成する。集合値の評価対象$`T`$とその部分関手$`P\hookrightarrow T`$を
 評価条件として指定し、式とquantityの評価規則から自然変換$`v:C_H\to T`$を構成する。
@@ -91,13 +90,13 @@ F_{a,H,P}=(C_H\times_{s,M,a}\mathop{\mathrm{Spec}}\nolimits R)\times_{T_R}P_R
 全係数拡大に自然に、独立に定義した「$`a`$から$`H`$に属し、意味を保ち、評価条件を満たす変更」への同値を証明する。
 sourceの変更、許容変換域の包含、評価条件の引戻しとの可換性を含める。
 同型比較を持つ場合は$`P,T`$を離散groupoidとして2-fiberを使い、
-評価条件へのliftが空またはcontractibleになることから、余分な条件充足witnessを数えない比較を証明する。
-対象を有限候補へ限定することは一般targetの前提とせず、表示系も同じ比較で扱う。
+評価条件へのliftが空またはcontractibleになることから、条件を満たす変更そのものを分類すると証明する。
+候補族は任意の濃度を許し、表示系も同じ比較で扱う。
 
-$`H`$を完成済みの解集合として入力しない。優劣の順序は選んだ係数域の解の上で指定し、
+$`H`$の変換規則から解集合を生成する。優劣の順序は選んだ係数域の解の上で指定し、
 その順序を保つ比較について評価と順位を保持する。
 返した点から状態比較・操作・targetを回復する。保存する意味Lawと変更可能な表示のLawを
-区別し、固定と宣言されたLawを除く変換を候補に入れない。
+区別し、候補は固定と宣言されたLawを全て保持する。
 共通sourceからの二変更の併用と、合成可能な二射の合成を別のfiberとして構成する。
 有限な計算手続きの正しさ・完全性と障害の計算はG-141がこのfiberに対して証明する。
 
@@ -112,7 +111,7 @@ G-139 Pのschemeと独立なmodelの同値へ通す。両端の状態階数が�
 加法・単項演算から状態作用を作り、G-126のOperationSystem / behaviorへ同じ評価で接続する。
 加法・定数・単項線形演算から生成した任意の型付きaffine termについて、
 原始構文の評価と加群上の式評価の一致を証明する。
-二引数加法をtensor上の双線形写像とはしない。有限phase graphでは各phaseの状態を
+二引数加法は直和上の線形写像として扱う。有限phase graphでは各phaseの状態を
 0引数演算と不変量の実現fiberとして作り、遷移後の不変量と観測差が元のidealに属することを
 原始式から証明する。この比較から全許可有限経路の観測保存を導く。
 
@@ -121,7 +120,7 @@ G-139 Pのschemeと独立なmodelの同値へ通す。両端の状態階数が�
 1. $`pi=\mathop{\mathrm{id}}\nolimits`$、$`pj=0`$から全原子操作語の保存を証明し、係数実現を$`\mathop{\mathrm{SL}}\nolimits_2\times\mathbb A^1`$に同定する。
    $`p=(1,1)`$のmarked fiberは$`\mathbb A^2_{(\lambda,\mu)}`$、固定状態のfiberは$`p^{-1}(x)`$として区別する。
    rank1・一生成元・unary $`\lambda,\mu`$の表示から各型のコピーと$`p,i,j`$を回復し、marked fiberとの
-   自然同型を構成する。異なる型の射をidへ等置せず、unmarkedの同値も推論しない。
+   自然同型を構成する。この比較は各型のコピーを明示したmarked fiberの同型とする。
 2. writeB/writeCの途中にもreadを許す場合、$`R=\mathbb Q`$、$`\lambda=1/2`$、$`u=2`$で保存が失われることを示す。
    原子操作語の保存と、観測言語を広げた場合の保存を同じ状態・評価で比較する。
 3. snapshotではBusyの不変量$`\mu(h-C)=0`$を保持し、全許可経路の保存と$`\mu(1-\lambda)=0`$の同値を
@@ -156,8 +155,8 @@ $`\mathbb Q`$上の$`\delta=\mu=1`$で同じ経路のread差が$`-1`$と$`0`$に
 
 A–E・Pの構成、全Homと合成の比較、descent、評価条件に相対的な探索fiber、指定例をLeanで証明する。
 G-124・G-126への同一対象上の比較と必要仮定の放電をreportに記す。
-未構成の射・witnessを除去した小さなcategoryの同値では本targetを達成しない。
-反証は同じ原始入力と破れる比較を示して記録し、一般targetを黙って弱めない。
+比較の対象には、原始意味圏の全射と指定witnessを保持する。
+固定targetへの反証は、同じ原始入力と破れる比較を示して記録する。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、
 research/reports/G-140-aat-semantic-change-category.mdの宣言・前提対応に置く。

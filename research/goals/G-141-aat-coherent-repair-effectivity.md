@@ -21,14 +21,13 @@ G-140の変更を実際のfinite fragmentへ制限する射を構成する。
 自己同型を−1、補正を0、defectを1とする複体$`D_F`$を作る。
 元の変更の複体と$`R\!\varprojlim_F D_F`$の比較を構成し、同値となる条件を
 原始support・totality・cochain制限から証明する。
-比較同値そのものをinput fieldに置かない。
 
 可算cofinal towerではMilnor列を、一般の添字では高次$`R^p\!\varprojlim`$を用いて
 有限段の障害と全体の障害を比較する。
-条件なしの有限段存在⇒全体存在は主張しない。
-非線形な変更全体が一つの加群になるとも主張しない。
+有限段存在から全体存在へ進める条件を、この比較から導く。
+非線形な変更全体はG-140のfiberとして扱い、線形lift問題から加群の複体を構成する。
 
-一般性の正の核として、任意の小さいadapter diagramを持つ加法作用protocolを扱う。
+任意の小さいadapter diagramを持つ加法作用protocolについて、次の一般定理を構成する。
 状態はpublic担体とhidden moduleの積、保持する操作はhidden側の全平行移動と
 public側の指定された非空な推移的作用、観測はpublic成分とする。
 各vertexのpublic担体・hidden module・作用と、各adapterの線形部$`L_e`$をsource/targetで固定する。
@@ -36,15 +35,15 @@ category上のdiagramには$`L_{fe}=L_fL_e`$と$`a_{fe}=a_f+L_fa_e`$を課す。
 全意味保存射がtranslationへ分類されることを証明し、
 adapterの線形部・定数項から実際の補正複体を生成する。
 source aからtarget bへの式は$`c_t-L_ec_s=b_e-a_e`$とする。
-moduleやpublic担体も変える射はG-140の全変更に残し、このtranslation分類と混同しない。
-scheme表示を使うfamilyではmoduleの表示とbase changeを明示し、任意moduleを
-有限自由と置き換えない。n1019 §7はhidden moduleが$`\mathbb Z`$の必須例とする。
+moduleやpublic担体も変える射はG-140の全変更で扱い、固定した担体上でtranslation分類を得る。
+scheme表示を使うfamilyでは、元の任意moduleの表示とbase changeを明示する。
+n1019 §7はhidden moduleが$`\mathbb Z`$の必須例とする。
 
 ### B. 一つのnative例の全比較
 
 $`\mathrm{Bool}\times\mathbb Z`$、全$`u_t`$、flip v、観測Bool、$`h_n^a(b,z)=(b,2z+a_n)`$を原始入力とする。
 全native変更の分類から$`c_n-2c_{n+1}=a_n`$を導く。
-全係数環のfamilyでは$`\mathrm{Bool}_R\times\mathbb A^1_R`$と全$`\mathbb G_a`$作用を使い、$`u_{1}`$だけで代用しない。
+全係数環のfamilyでは$`\mathrm{Bool}_R\times\mathbb A^1_R`$と、$`u_{1}`$を含む全$`\mathbb G_a`$作用への等変性を使う。
 
 次を同じ対象・写像で証明する。
 
@@ -60,9 +59,9 @@ $`\mathrm{Bool}\times\mathbb Z`$、全$`u_t`$、flip v、観測Bool、$`h_n^a(b,
 $`0\to \mathbb Z z\to E_a\to \mathbb Z [1/2]\to 0`$、全Rでのtensor後の完全性を証明する。
 $`Y_a(R)`$を$`z\mapsto 1`$のR-linear retractionの全体と同定し、
 $`B_a\cong \mathop{\mathrm{Sym}}\nolimits(E_a)/(z-1)`$と、拡大類$`[a]`$の同定を構成する。
-Čechの符号はretractionの差で固定し、quotientのsectionの差と混ぜない。
+Čechの符号はretractionの差を規約として固定する。
 
-任意の大きな変更の存在とcotangentの微小liftを混同しない。
+大きな変更の存在とcotangentによる微小liftを、それぞれのfiberとして定める。
 この例では同じaffineな原始方程式が両方を計算することを比較定理にする。
 
 ### C. 非零障害とZariski局所修復
@@ -77,7 +76,8 @@ $`G(D(2))=\mathbb Z[1/2]`$、$`G(D(3))=0`$、$`G(D(6))=\mathbb Z[1/6]`$を計算
 
 複体のlocalization短完全列から接続写像を構成し、この類が
 $`[a]\in \mathop{\mathrm{lim}}\nolimits^1(\mathbb Z ,\times 2)\cong \mathbb Z _{2}/\mathbb Z`$の同じ$`[-1/3]`$になることを証明する。
-$`\mathbb Z [1/6]/\mathbb Z [1/2]\cong \mathbb Z [1/3]/\mathbb Z`$を経由し、$`\mathbb Z [1/6]`$を直接$`\mathbb Z _{2}`$へ埋め込まない。
+$`\mathbb Z [1/6]/\mathbb Z [1/2]\cong \mathbb Z [1/3]/\mathbb Z`$を経由する。
+$`\mathbb Z [1/6]`$から$`\mathbb Z _{2}`$への単位的環射は、2の可逆性の相違により存在しない。
 $`\mathbb Q`$上の全解と$`\mathbb Z _{2}`$上の唯一の解も構成する。
 
 さらに普遍map $`d:\mathbb A^{\mathbb N}_c\to\mathbb A^{\mathbb N}_a`$、$`a'_n=\varepsilon a_n`$を持つ$`\mathbb Z [\varepsilon ]/\varepsilon ^{2}`$上の基底と、
@@ -103,23 +103,22 @@ G-140 Eの$`F_{a,H,P}`$について、次の有限計算への特殊化を原始
 各算法の適用には、原始表示から有限個の候補係数と有限個の検査式を有効に生成し、
 その生成の停止性と、検査式が全Law・全操作語の保存条件・評価条件に同値であることを証明する。
 有限表示を直接コンパイルする場合と、無限表示から安定性・帰納法等により有限還元を導く場合を分ける。
-後者の還元と停止性も原始入力から構成する義務であり、完成済みの有限式系・比較同値・判定結果を
-追加の入力として受け取って済ませない。
+後者でも、有限式系・比較同値・停止性を原始入力から構成し、判定結果の正しさを導く。
 
 1. 有限体上で上記の有限還元を持つ表示について、生成した検査式を満たす全候補を列挙する。
-   保存方程式の生成は全操作語の評価定理を使い、有限長の実行試験で代用しない。
+   保存方程式は全操作語の評価定理から生成する。
 2. 整数・有理数上で上記の有限還元がaffine方程式を生成する場合、全解のparameter表示と不存在のcertificateを作り、
    許す変更域・固定部分・原始操作への復元を同じ写像で証明する。
 3. $`\mathbb Q`$上の有限多項式chartと有限個の等式・可逆条件では、$`ug-1=0`$による可逆条件の表示、
    ideal所属の検査証拠、代数閉包上の空性の判定を構成する。
-   原始操作からchartと式を生成し、一般のideal包含条件を無条件に閉零点としない。
+   原始操作からchartと式を生成し、ideal包含条件が定める実際のlocusを計算する。
 4. 同じ有限表示から評価parameterへの射について、消去と開条件の分岐から幾何点での
    実際の像を構成可能集合として計算し、各評価条件の全fiberと比較する。
    $`xy=1\to x`$の像$`D(x)`$と閉包$`\mathbb A^{1}`$を区別し、像の点に存在する変更witnessを保持する。
 
 schemeの表示と指定係数域の点の探索を区別する。$`x^{2}+1=0`$の$`\mathbb Q`$点と代数閉包の点、
 無限fragmentでのB・Cを必須の識別例にする。
-順序付き評価条件では比較する評価と順序を入力に保持し、表現だけから最適性を結論しない。
+順序付き評価条件では、比較する評価と順序を入力に保持し、その順序によって解を比較する。
 
 候補の有限性と有限還元の有効性を区別する必須反例として、$`\mathbb F_2`$上の一係数$`c`$と
 固定列$`a_n\in\mathbb F_2`$に対するLaw $`a_nc=0`$（全$`n\in\mathbb N`$）を用いる。
@@ -161,9 +160,9 @@ Yのideal sheafを$`\mathcal J`$、$`E_x=x^*\Omega_{Y/k}`$、$`N_x=x^*(\mathcal 
 
 を構成する。単一chartに入らないxも含め、
 chartのD、$`\bar D`$、$`R\mathop{\mathrm{Hom}}\nolimits_R(Lx^*L_{M_P/k},M)`$の次数0・1と指定障害を同定する。
-$`N_x`$のprojectivityは要求しない。Noetherian係数・有限表示の系では、有限principal
+$`N_x`$は一般の加群として扱う。Noetherian係数・有限表示の系では、有限principal
 affine cover上の準連接性、Homの局所化、Čech totalizationとの比較を証明する。
-この系の仮定をG-139の表現定理へ移さない。
+G-139の表現定理は任意担体・任意Law族を対象とし、この系ではそのNoetherian係数・有限表示への特殊化を使う。
 
 原始代入とLaw導出$`u:P\to P'`$から$`\rho :\mathop{\mathrm{Sem}}\nolimits_{P' }\to \mathop{\mathrm{Sem}}\nolimits_P`$を作り、$`x\in \mathop{\mathrm{Sem}}\nolimits_{P' }(R)`$と
 指定された$`y' \in \mathop{\mathrm{Lift}}\nolimits_P(\rho x,R' )`$に対する$`\mathop{\mathrm{Lift}}\nolimits_u(x,y' )`$を独立に定義する。
@@ -183,17 +182,17 @@ $`b-Lp\in L(H)`$、全解を$`\ker(L\vert_H)`$のtorsorで特徴づける。非�
 各宣言の支持がfull simplexであることから$`H^{0}(T_{\mathrm{raw}})\simeq \ker  d^{0}`$、$`H^{1}(T_{\mathrm{raw}})\simeq \mathop{\mathrm{coker}}\nolimits  d^{0}`$を
 導き、全大域syzygyから$`0\to H^{1}(D)\to H^{1}(T_{\mathrm{raw}})\to \prod _{s\in S}M`$の完全性を証明する。
 実残差が右写像の核へ入り、その逆像が$`o_P`$になること、細分化との可換性も含める。
-K0/K1のincidence生成とは同じ支持で比較し、微分・syzygyを持つ複体との同型を
-Law値の一致だけから仮定しない。正の診断比較はG-142の同じadapter族で行う。
+K0/K1のincidence生成とは同じ支持で比較する。微分・syzygyを持つ複体との同型には
+それらの比較も構成し、G-142の同じadapter族で診断比較を証明する。
 
 conormal比較では全表示の普遍ambient Bとprincipal-open siteを固定する。
 G-139で構成する普遍equation systemのObservableとLaw idealを$`B_s`$、$`J_s`$へ同定し、
 [Raw.shortComplex](../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean)を
 そのsiteへ制限して、$`(J^{2})_s=(J_s)^{2}`$とZariski層化から標準conormal列へ同定する。
-実現xで引き戻す前の$`J/J^{2}`$を保持し、lawfulな評価後の零idealへ置き換えない。
+実現xで引き戻す前の普遍ambientにおいて$`J/J^{2}`$を作る。
 ambient lift $`B/J^{2}\to R'`$の制限$`\kappa :J/J^{2}\to M`$について、$`\kappa =0`$と同じliftが$`B/J`$を経由すること、
 選択差を除いた$`[\kappa ]=o_P`$を証明する。section liftと実現liftはこの写像で比較する。
-宣言の忘却とZariski制限を混同せず、共有xを保って$`xy-1`$を零へ送る
+宣言の忘却とZariski制限の比較では、共有xを保って$`xy-1`$を零へ送る
 $`\mathbb Q [x,y]\to \mathbb Q [x]`$の不存在を指定例として証明する。
 
 ### F. 全Artin試験・初回障害・有限上界
@@ -268,7 +267,7 @@ liftSystemからAffineCoefficientLiftSystem、局所実現からCoefficientLiftA
 [PartIVBridge](../../Formal/AG/SemanticRepair/Saga/PartIVBridge.lean)の
 SitePresheafData.ofObstructionSheaf、incToCoverRelativeH1を同じObへ適用し、
 omitted pair/tripleの零係数を実交差から証明して指定IncH1類とCoverRelativeHn 1を同定する。
-全siteのAtomOccurrenceReadingをこの有限空間から仮定しない。
+この比較のsite・被覆・制限写像は、上の有限空間と実交差から構成する。
 
 SAGAの増加pairから指定向きへ、次数0は恒等、次数1は向きの符号を掛けるTを作り、
 $`T\delta^0_{\mathrm{SAGA}}=d^0_\Gamma`$を証明する。三角形では$`T(c_{01},c_{02},c_{12})=(c_{01},c_{12},-c_{02})`$。
@@ -324,7 +323,7 @@ $`T\delta^0_{\mathrm{SAGA}}=d^0_\Gamma`$を証明する。三角形では$`T(c_{
 体上の原点の特異性、$`\nu =2`$、各軸方向の全次数lift、$`\delta =\mu =\varepsilon`$の二次lift不能を証明する。
 任意の候補$`\delta =\varepsilon +a\varepsilon ^{2}`$、$`\mu =\varepsilon +b\varepsilon ^{2}`$の残差$`\varepsilon ^{2}`$、実read差$`-\varepsilon ^{2}`$、Eの相対障害、
 二文脈$`E=\mu \delta  / E=0`$の合法修復係数$`C^{0}=0`$、$`C^{1}=(\varepsilon ^{2})`$を同じ写像で比較する。
-固定pの族と一型の係数表示のmarked同型を用い、unmarkedな同型へ自動移送しない。
+比較には、固定pの族と一型の係数表示のmarked同型を用いる。
 
 G-140 Pの$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$への修正ではこの障害が消えることを、同じ観測と状態比較で示す。
 さらにbefore・p・語翻訳を固定し、評価条件$`D(\mu ),D(\delta )`$をG-140 Eの探索fiberとして構成する。
@@ -367,11 +366,10 @@ begin; $`\mathop{\mathrm{apply}}\nolimits_1`$; finishのreadが2となること�
 
 A–Hの一般比較と指定例をLeanで証明し、native射・scheme・cotangent・Čech・$`\mathop{\mathrm{lim}}\nolimits^1`$の
 全写像を同じprimitive入力に遡ってreportする。
-Milnor列の引用だけでnative比較を、有限段の成功だけで大域的存在を済ませない。
-無限個のLawを固定有限数に打ち切った定理はB・Cの代用にならない。
-反証と一般比較に残る研究義務は明示し、特殊化の達成で主目標を取り消さない。
+native比較は原始操作から構成し、大域的存在と障害の零性の比較は、全Lawと全fragmentにわたって証明する。
+B・Cでは無限Law族の全体を保持し、有限特殊化との比較と残る研究義務を明示する。
 Gの実操作・Ob・State・指定障害は同じ入力から生成し、SAGAのmatchingから実sectionへ
-戻す比較を完了対象に含める。Hの無限Artin例はFの有限表示定理への反例とは扱わない。
+戻す比較を完了対象に含める。Fの有限表示定理とHの無限Artin例は、それぞれの量化で証明する。
 固定主張への反証は、その量化に属する原始入力と破れる比較・存在判定を示して記録する。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、

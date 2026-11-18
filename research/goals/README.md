@@ -36,8 +36,8 @@ SHIGUREは、[n1019](../../docs/note/n1019_shigure_representability_design.md)�
   (診断の族・合流・構成可能関数の実現、意味障害の指定類とAtlasによる探索fiberの比較)
 
 依存はG-139→G-140→G-141。G-142の診断族はG-139を使い、
-実障害との比較にはG-141を使う。G-142 Fは独立なSHIGUREとAtlasを結ぶ比較定理であり、
-両理論の定義を互いに依存させない。具体的な特殊化は
+実障害との比較にはG-141を使う。SHIGUREとAtlasはそれぞれの原始入力から構成し、
+G-142 Fで両者を結ぶ比較定理を証明する。具体的な特殊化は
 [n1020](../../docs/note/n1020_shigure_polynomial_specializations.md)で同じ対象・射へ対応づける。
 
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
