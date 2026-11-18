@@ -21,6 +21,26 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+SHIGUREの研究到達像は[n1019](../../docs/note/n1019_shigure_representability_design.md)にまとめ、
+次の四つのGOALに定める。意味保存射、保存条件と評価条件に相対的な解空間、
+独立なAtlasとの観測比較を接続し、同じ原始構造から図式の補完・状態移送・
+複数変更の相互作用・判定に必要な追加観測を導く。
+係数拡張・表現・自然性と多項式特殊化は各GOALの証明義務として扱う。
+
+- [G-139-aat-law-generated-relative-geometry](G-139-aat-law-generated-relative-geometry.md)
+  (Lawから生成する相対Spec、任意担体・全Homを回復する意味再構成、全拡張分類・通常の代数性)
+- [G-140-aat-semantic-change-category](G-140-aat-semantic-change-category.md)
+  (非可逆な意味保存射、図式補完・経路・状態移送、評価条件に相対的なfiberと共通候補)
+- [G-141-aat-coherent-repair-effectivity](G-141-aat-coherent-repair-effectivity.md)
+  (変更の障害・全修復、Čech・cotangent・lim¹比較、有限計算、相互作用と全Artin検出)
+- [G-142-aat-law-value-diagnostic-sheaf](G-142-aat-law-value-diagnostic-sheaf.md)
+  (診断の族・合流、指定障害とAtlasによる全fiberの比較、頑健な判定と必要な追加観測)
+
+依存はG-139→G-140→G-141の順になる。G-142の診断族はG-139を、
+変更・判定の比較はG-140とG-141を使う。SHIGUREとAtlasはそれぞれの原始入力から構成し、
+G-142 Fで両者の比較定理を証明する。具体的な特殊化は
+[n1020](../../docs/note/n1020_shigure_polynomial_specializations.md)で同じ対象・射へ対応づける。
+
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
