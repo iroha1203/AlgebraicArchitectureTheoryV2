@@ -1,6 +1,6 @@
 # SHIGURE — AATの意味・量・変更から生成する代数幾何
 
-SHIGUREの研究目的は、AtomとLawで定めた構造、その実現、意味保存射の全体に幾何を与え、
+SHIGUREの研究目的はAtomとLawで定めた構造、その実現、意味保存射の全体に幾何を与え、
 **固定した実現・保存条件・評価条件に相対的な解空間を構成し、その存在と変形を研究すること**である。
 意味保存射の合成、指定図式の補完、状態の移送、局所からの組立てとその障害を、同じ原始構造から導く。
 観測と整合する実現の全体に対して候補を比較し、どの追加観測で判定が定まるかを求める。
@@ -8,12 +8,12 @@ SHIGUREの研究目的は、AtomとLawで定めた構造、その実現、意味
 独立な観測理論であるAtlasとの接続は、§8.1の比較定理として扱う。
 [研究の全体目標](../research_goal.md)に従い、任意担体の意味を保持した幾何を構成する。
 
-中心に置く構成は、**任意担体の状態と操作を複製・消去まで保持し、その上の量とLawから
-相対的な座標環を生成すること**である。構造間の変更は、非可逆な射も含めて扱う。
+その基礎として、任意担体の状態と操作を複製・消去まで保持し、その上の量とLawから
+相対的な座標環を生成する。構造間の変更には非可逆な射も含める。
 原始構造に応じてscheme、stack、ind表示、逆極限を構成し、元の対象・射との比較と
 各表示が有効になる条件を証明する。
 
-以下には直接計算による証明と、構成・形式化すべき主定理を区別して記す。
+以下では直接計算による証明と、構成・形式化すべき主定理を区別して記す。
 [G-139・G-140・G-141・G-142](../../research/goals/README.md#draft人間の確認待ち)を
 四つの研究到達像として定める。
 有限局所自由加群のmoduli、診断値の合流、台帳分割の詳細は
@@ -23,9 +23,9 @@ SHIGUREの研究目的は、AtomとLawで定めた構造、その実現、意味
 ソフトウェアへの適用は、ArchSig側が観測と法からこの数学的データを構成することで行う。
 その解釈と検証の責務は[n1020 §17](n1020_shigure_polynomial_specializations.md#archsig-application)に置く。
 
-## 1. 元の意味を回復する相対幾何
+## 1. 実現と意味保存変更の幾何
 
-原始入力には、Atomの型と値、状態担体、実際の演算・関係、選択された量、
+原始入力にはAtomの型と値、状態担体、実際の演算・関係、選択された量、
 Lawの意味、文脈制限を置く。意味側の対象と射を先に定義し、恒等・合成を構成する。
 この入力から表現schemeとchartを構成し、表現同値・忠実性・descentを証明する。
 
@@ -56,13 +56,13 @@ $`\mathcal M`$、観測を $`o`$ として
    =\{h:A\to B\mid h\text{ が操作を運び }o_Bh=o_A\}
 ```
 
-を構成する。最初の式は、§3で原始式と評価の一致から証明する相対affine部分の定理である。
+を構成する。最初の式は§3で原始式と評価の一致から証明する相対affine部分の定理である。
 opaque residualはそのgraphを保持し、regularな拡張の全体を§3.3で分類する。
 $`\sigma`$ は§3.2で構成する係数的実現を表す。
 $`\mathcal B_\sigma`$ 自身の代数性は§4で別に証明する。非代数的な場合も元の対象を保持し、
 必要な表示系と、通常のscheme・algebraic stackへ有効化できない理由を特定する。
 
-## 2. 状態と操作を忠実に運ぶ
+## 2. 状態と操作の忠実な表示
 
 ### 2.1 複製と消去を保持するcoalgebra
 
@@ -78,11 +78,11 @@ $`C_R(X\times Y)\cong C_R(X)\otimes_R C_R(Y)`$ であり、
 cocommutative・counital coalgebraの圏ではtensorが圏論的直積になる。
 後者は[Barr, §5](https://math.mcgill.ca/barr/papers/coalgebra.pdf)の標準結果である。
 
-この対応は、変数の反復を $`\Delta`$、変数の廃棄を $`\epsilon`$ に送る。
+この対応は変数の反復を $`\Delta`$、変数の廃棄を $`\epsilon`$ に送る。
 従って任意のmany-sorted cartesian theoryの有限式と等式を運べる。
 例えばBool ANDの冪等性は $`m\Delta=\mathrm{id}`$ である。
 自由加群上の全 $`v`$ に $`m(v\otimes v)=v`$ を要求すると失敗する。
-cartesianな変数の反復を正しく運ぶ役割を、複製が担う。
+複製によってcartesianな変数の反復を正しく運べる。
 
 回復は次の直接計算による。有限supportの $`g=\sum_y a_ye_y`$ がgroup-likeである条件は
 
@@ -99,7 +99,7 @@ cartesianな変数の反復を正しく運ぶ役割を、複製が担う。
    \left(\coprod_X\mathop{\mathrm{Spec}}\nolimits R,\coprod_Y\mathop{\mathrm{Spec}}\nolimits R\right).
 ```
 
-各入力について有限clopen分割ごとに出力を選ぶ、という正確な対応である。
+この同型は各入力について有限clopen分割ごとに出力を選ぶ対応を表す。
 連結な非零環では出力は一つなので全ての集合写像を回復する。
 特に $`\mathbb Z`$ 上で、元の全Homとの全単射がある。
 全可換環でscalar extensionに自然なcoalgebra射の族も、その $`\mathbb Z`$ 成分で決まる。
@@ -131,13 +131,13 @@ cartesianな変数の反復を正しく運ぶ役割を、複製が担う。
 を回収する。有限support $`D`$ は入力ごとに選ぶ。
 $`X=Y=\mathbb N`$ の恒等写像では、出力全体が無限になる。
 合成のsupportは $`\bigcup_{y\in S_x^f}S_y^g`$ であり、chart上で有限和により計算できる。
-同じpointwise合成を全profile上で接続する。
+このpointwise合成を全profileにわたって接続する。
 
-この表示は、全profileを添字にするind-affineな表示系として構成する。
+この表示は全profileを添字にするind-affineな表示系として構成する。
 例えば $`f(g(x))`$ の評価で読む $`f`$ の行は $`g(x)`$ に依存する。
 このモデルごとの有限supportを、表示と合成に保持する。
 
-### 2.3 何を元のAATから回復するか
+### 2.3 元のAATの回復
 
 | 原始対象 | 回復の仕様 | 新しく証明すること |
 | --- | --- | --- |
@@ -157,7 +157,7 @@ $`(K\to K')\times(V\to V')`$ として回復する。空viewではgetのsource�
 その対象・射を直接分類する。これにより固定viewと可変viewの両方で全Homを回復する。
 Set上の分解・normal formには既存の
 [GeneralRelativeLens](../../research/lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean)
-を再利用する。新しい義務はその全射を係数family・descent・幾何へ結ぶ比較である。
+を再利用する。新たな証明義務はその全ての射を係数family・descent・幾何へ結ぶ比較である。
 
 [ArchitectureObject](../../Formal/AG/Atom/ArchitectureObject.lean)は
 StructureMaps・SelectedQuantitiesを型と値として、
@@ -166,7 +166,7 @@ SHIGUREではこれらの任意担体を保ち、内部の演算・係数作用�
 型付きsemantic declarationとして定める。既存データへの忘却と、既存の各native圏に対する
 全Homの再構成を新たに証明する。
 
-## 3. 任意担体の上の量から、実際のschemeを生成する
+## 3. 量とLawからのscheme構成
 
 ### 3.1 独立な意味と座標環
 
@@ -195,7 +195,7 @@ $`I_S`$ はその全ての像が生成するidealである。
  \quad M_S=\mathop{\mathrm{Spec}}\nolimits(A_S/I_S).
 ```
 
-証明は、各 $`q_j`$ を普遍変数の像にする環射を作り、termに関する帰納法で
+証明は各 $`q_j`$ を普遍変数の像にする環射を作り、termに関する帰納法で
 元の評価と $`\rho_\ell`$ の評価の一致を示すことによる。
 共有入力の複製もこの帰納法に含める。Lawfulであることとidealを零へ送ることは
 この評価定理の帰結である。左辺は関数と原始Lawの充足によって定義する。
@@ -213,9 +213,9 @@ $`A_S/I_S\cong S`$、$`M_S\cong\mathop{\mathrm{Spec}}\nolimits S`$ を与える�
 $`\mathop{\mathrm{Spec}}\nolimits k[t_x]`$、状態上の大域関数環 $`k^X`$ は異なる。
 無限 $`X`$ の状態familyを $`\mathop{\mathrm{Spec}}\nolimits(k^X)`$ に置換すると余分なprimeが入る。
 また量は $`\mathop{\mathrm{Hom}}\nolimits(C_R X,R)`$ であり、$`C_R X`$ 自身との同一視には
-有限性が必要になる。量の一般構成には、このHomを用いる。
+有限性が必要になる。量の一般構成にはこのHomを用いる。
 
-### 3.2 構造も変動させる
+### 3.2 構造の変動と係数的実現
 
 まず二つの係数的実現を区別する。§2から作る $`\mathcal B_{\rm copy}`$ では
 状態は局所定数であり、同じ離散operationの冪零方向の変形はない。
@@ -231,13 +231,13 @@ native module $`M`$ に対する $`M\otimes_kR`$、scalar sortの $`R`$、
 ```
 
 である。指定されたnative定数点は $`R=k`$ で元の $`m`$に戻る。
-非連結 $`k`$ では、全点の比較にclopen分割に由来する追加の点も含める。
+非連結 $`k`$ では全点の比較にclopen分割に由来する追加の点も含める。
 dual numbers上の $`\iota`$ は一般に同型でなく、線形familyには新しい微小方向がある。
 全 $`R`$ でcopying Homとlinear Homの比較を構成し、それぞれが保持する射を特定する。
 
 係数的実現ごとに、native基点での対象・全Homの回復、原始操作とLawの保存、
 係数自然性を原始データから証明する。
-moduleの線形射、lens、protocolなどで個別の構成から一般化する。
+moduleの線形射、lens、protocolなどの個別の構成から一般化する。
 $`\mathbb F_p`$ 上の点ごとの $`x^p=x`$ は $`k[t]`$ へのtensor extension後に全要素では成り立たない。
 nativeのLawが係数拡張後に保存される条件を調べ、この不成立も検出する。
 
@@ -250,7 +250,7 @@ $`\mathcal M=\mathop{\mathrm{Spec}}\nolimits_{\mathcal B_{\rm copy}}(\mathop{\ma
 上の独立なquantity modelを表現するaffine $`T`$-schemeになることを証明する。
 内部sheaf担体による一般構成との比較では、局所split表示を持つ対象とその射を
 特定し、両構成の対応を証明する。
-同じ構成は、quantity domainのcopying coalgebraを降下できる各 $`\mathcal B_\sigma`$ 上でも行う。
+同じ構成はquantity domainのcopying coalgebraを降下できる各 $`\mathcal B_\sigma`$ 上でも行う。
 module自体を動かす幾何には、指定された係数的実現と§4の別の構成を用いる。
 
 原始宣言にはquantity domain $`D_j`$ とLaw入力 $`E_\ell`$ のsort、
@@ -259,7 +259,7 @@ module自体を動かす幾何には、指定された係数的実現と§4の�
 $`A_S\to A_{S'}`$、$`t_{j,x}\mapsto t_{j,h(x)}`$ であり、
 schemeの向きは $`M_{S'}\to M_S`$ である。
 Lawの保存はこの写像がidealを運ぶこととして証明する。
-意味を保つ変更には、この引戻しと $`q=h^*q'`$ という等式を同時に持たせる。
+意味を保つ変更にはこの引戻しと $`q=h^*q'`$ という等式を同時に持たせる。
 Law入力のdomainを運ぶ条件も必要である。例えばLawを $`P`$ の補集合だけに課すと、
 $`P`$ へ移る入力のLawが失われる。補集合を使う場合はそのdomainと保存写像も宣言する。
 この条件を満たさない元のnative射 $`h`$も、次の対応空間で保持する。
@@ -275,24 +275,24 @@ Law入力を運ぶこと等からLawの引戻しを証明できた場合であ�
 $`q(a)=0`$ というLawはtargetにない。$`Z_h`$ は $`q'(b)=0`$ を切り出し、
 元の $`h`$ を残したまま、意味を保てる量の条件を正確に示す。
 
-### 3.3 任意のresidualと係数的意味を接続する義務
+### 3.3 residualの係数拡張
 
 [ArchitecturalEquationSystem](../../Formal/AG/Equation/Basic.lean)の
 object-dependent residualは任意関数として定義されている。
 §3.1の式による表現は、実際の式を構成し、全入力での評価一致を証明することで得る。
 
-全native residualは、まずそのgraphとして§2に保持する。
+全native residualはまずそのgraphとして§2に保持する。
 Observableの $`k`$-代数構造があれば、固定native対象について
 $`\varepsilon(A)\otimes1\in\mathrm{Observable}\otimes_kR`$ を構成できる。
 これは固定値の係数拡張である。量を動かすfamily上のregular residualは、次の構成で扱う。
 
-係数的な追加構造が必要であること自体に、正確な反証がある。
+次の反例と性質から、係数的な追加構造の必要性が分かる。
 
 - $`k=\mathbb F_p`$ では $`t`$ と $`t^p`$ が全native $`k`$-点で一致するが、
   dual numbers上では異なる。値tableだけでは微小変形が一意に決まらない。
 - $`\mathbb Q`$ 上で0にだけ値1を返す関数は多項式ではない。
   $`\mathbb A^1`$ 上のregular familyとしての延長は存在しない。
-- 全 $`k`$-代数に自然な操作 $`R^n\to R`$ は、普遍tupleにおける値から
+- 全 $`k`$-代数に自然な操作 $`R^n\to R`$ は普遍tupleにおける値から
   一意の多項式になる。従ってscalar familyの自然性から多項式性を導ける。
 
 任意のnative担体 $`D`$、任意集合 $`X`$、
@@ -314,26 +314,26 @@ $`E_{\varepsilon,q}=\mathop{\rm colim}_F E_{\varepsilon,q,F}`$ を構成する�
 Yonedaによる $`\mathop{\mathrm{Nat}}\nolimits(R^X,R)\cong k[t_x\mid x\in X]`$ から、
 $`E_{\varepsilon,q}(k)`$ は元のresidualと一致する全natural scalar extensionを正確に分類する。
 全ての次数と有限座標集合を含める。
-$`S`$ 点は、全 $`S`$-代数 $`R`$に自然な $`R^X\to R`$ で、native入力の $`S`$ への像に一致するものを分類する。
+$`S`$ 点は全 $`S`$-代数 $`R`$に自然な $`R^X\to R`$ で、native入力の $`S`$ への像に一致するものを分類する。
 同じ量の読取りを持つ二つのnative対象で $`\varepsilon`$ が異なれば、その値を区別できないという
 失敗をこの比較で記録する。$`D`$ そのものはcopying表示に保持する。
 
 全入力の場合 $`D=k^X`$、$`q=\mathrm{id}`$ では、無限体 $`k`$ なら存在すれば一意、
 有限体 $`\mathbb F_q`$ では同じnative関数の拡張の差は
 $`(t_x^q-t_x)_x`$ に入る。これは各多項式が有限個の変数しか使わないことから証明する。
-$`\delta_0`$ の不存在、有限体での非一意性は、この空間の具体的な性質として残る。
+$`\delta_0`$ の不存在、有限体での非一意性はこの空間の具体的な性質として残る。
 元のresidualのgraphを保持し、拡張の存在・一意性・不存在を分類する。
 一般の基礎環では $`k`$ 点の不存在とschemeの空性を区別する。
 例えば $`k=\mathbb Z`$、$`q=\mathrm{id}`$、$`\varepsilon(n)=n(n-1)/2`$ には整数係数多項式の拡張がないが、
 次数2の拡張chartは $`\mathop{\mathrm{Spec}}\nolimits\mathbb Z[1/2]`$になる。
 
-複数contextの拡張は、term substitution・restriction・operationとの可換性を普遍tupleで検査し、
+複数contextの拡張については、term substitution・restriction・operationとの可換性を普遍tupleで検査し、
 同じsupport-profile chart上の係数等式として課す。
 例えば$`\mathbb F_p`$ 上で同じnative residualを $`t`$ と $`t^p`$ に延長した二contextは、
 identity restrictionにもかかわらず係数familyでは可換でない。
 互換な拡張のmoduli上に普遍residualを構成し、その零点familyを相対Specで作る。
 これにより、拡張の非一意性も選択肢の幾何として扱う。
-G-139では、全 $`D`$・$`q`$・$`\varepsilon`$ の分類、coherence、nativeとの比較を構成する。
+G-139では全 $`D`$・$`q`$・$`\varepsilon`$ の分類、coherence、nativeとの比較を構成する。
 
 各Atom/Law familyの係数的実現には、このscalar分類、domain・witness、
 ind表示・対応関係を接続する。
@@ -342,7 +342,7 @@ $`\mathop{\rm colim}_{F\subset_{\rm fin}X}\mathbb A^F`$ であって、
 全量の $`\mathop{\rm lim}_F\mathbb A^F`$ ではない。
 各表示と元の意味を結ぶ比較を、係数的実現ごとに証明する。
 
-## 4. 通常のscheme・stackになる理由を導く
+## 4. scheme・stackの成立条件
 
 原始宣言からchartを構成し、次の条件と幾何的帰結を導く。
 
@@ -375,9 +375,9 @@ algebraic stackのstabilizerは体上で局所有限型である
 §7の無限protocolの変更空間は、通常のaffine schemeとして表現される。
 担体・Law・自己同型の実際の性質から、各対象の幾何を判定する。
 
-## 5. 変更・意味保存・二種類の局所性
+## 5. 意味保存変更と局所性
 
-### 5.1 意味射と局所性
+### 5.1 意味保存射と局所性
 
 観測 $`o_A:A\to O`$ と名前付き操作を固定する。
 射 $`h:A\to B`$ が操作を運び $`o_Bh=o_A`$ を満たせば、全有限操作語 $`w`$ に対して
@@ -393,7 +393,7 @@ algebraic stackのstabilizerは体上で局所有限型である
 構造保存射は操作と観測の両方を運び、behavioral equivalenceは出力traceの一致を表す。
 構造保存射から全語の観測保存を導き、traceだけを比較する場合はbehavioral equivalenceを用いる。
 操作語の翻訳、phaseの変更、stutteringが必要なら、それ自体をsignatureの射として
-指定し、充足と合成を証明する。全語の一致は、語長に関する帰納法で証明する。
+指定し、充足と合成を証明する。全語の一致は語長に関する帰納法で証明する。
 
 全意味圏のnerveを使い、$`N_n`$ は $`n`$ 個の合成可能な変更のgroupoidとする。
 変更は非可逆なものも含めて1-cellに置き、その比較に使う2-cellを同型とする。
@@ -406,7 +406,8 @@ $`N_n\simeq N_1\times_{N_0}\cdots\times_{N_0}N_1`$ と合成のcoherenceを証�
 | 係数schemeの被覆 | coalgebra、quantity、module、同型 | 同じ実現と変更のeffective descent |
 | 有限fragment | 実際のqueryへの制限、全体の一部分 | 元のモデルとの逆極限比較、totality・support条件の保持 |
 
-AAT文脈と係数schemeの被覆はそれぞれにdescentを構成し、両制限の可換性を証明する。
+AAT文脈と係数schemeの被覆という二種類の局所性について、それぞれdescentを構成し、
+両制限の可換性を証明する。
 各Lawが有限fragmentに現れること、または明示したind条件として残ることが必要である。
 合法な全体の有限片への像だけを集めると、有限support列から全ての列へ誤って拡大する。
 
@@ -431,8 +432,8 @@ schemeとしての状態表示 $`X_i=\mathop{\mathrm{Spec}}\nolimits(A_i/I_i)`$ 
 これは閉部分schemeへの因子分解の標準結果である
 ([Stacks 01HP](https://stacks.math.columbia.edu/tag/01HP))。
 同じ商環で操作保存・観測保存の残差を零へ送り、全許可操作語の保存を導く。
-合成についてもideal包含と可換式を合成する。二つの状態表示の間の比較が、
-どのLawを保つ射になるかを、元の式の代入として計算できる。
+合成についてもideal包含と可換式を合成する。二つの状態表示の間の比較が
+どのLawを保つ射になるかは、元の式への代入によって計算できる。
 集合担体には§2の状態scheme、係数作用には§3.2の実現を使い、両者の比較を保持する。
 
 保存条件の係数族には開条件も現れる。
@@ -443,17 +444,17 @@ ideal所属の導出witnessを使う表示では、その選択の違いを処�
 
 この状態射、§3.2の量の引戻し $`M_{S'}\to M_S`$、
 変更のmoduli $`\mathcal C`$ 上の点は異なる。
-個々の変更は、両端への射 $`M_0\leftarrow\mathcal C\to M_1`$ 上の点として
+個々の変更は両端への射 $`M_0\leftarrow\mathcal C\to M_1`$ 上の点として
 $`h,\tau`$ を保持する。Lawの引戻し条件が成立すれば量の空間にも射を得る。
 一般の場合は同節の $`Z_h`$ を用い、許される量の組を計算する。
 両端の実現を固定したfiberにも $`h,\tau`$ の選択を保持する。
 
-### 5.3 保存条件と評価条件に相対的な解空間
+### 5.3 保存・評価条件に相対的な解空間
 
 始域の実現 $`a:\mathop{\mathrm{Spec}}\nolimits R\to\mathcal M`$、原始表示の許容変換仕様 $`H`$、
 集合値の評価関手 $`T`$ と、その部分関手 $`P\hookrightarrow T`$ を固定する。
 $`P`$ は条件を満たす評価値を表す。部分関手への包含により、条件充足のliftは存在すれば一意になる。
-$`H`$ は、変換可能な宣言とその添字、固定する部分表示、許す型付きterm代入、
+$`H`$ は変換可能な宣言とその添字、固定する部分表示、許す型付きterm代入、
 係数・補助sort・演算・phaseの導入と忘却の規則から与える。
 各規則はsort、入出力、Lawの支持、固定宣言の像を指定する。各termは有限式であり、
 宣言・規則・係数parameterは任意の族を扱う。
@@ -469,7 +470,7 @@ $`\mathcal C_H`$ とsource/target射 $`s,t`$ を構成する。
        \times_{T_R}P_R .
 ```
 
-これが条件付き変更の解空間である。各係数環へのbase changeに自然に、
+これが条件付き変更の解空間である。各係数環へのbase changeに対して自然な形で、
 「$`a`$ を始域とし、$`H`$ の規則に属し、意味を保ち、評価が $`P`$ に属する変更」と同値になることを証明する。
 groupoidの変更族では $`P,T`$ を離散groupoidとして2-fiberを取り、
 部分関手へのliftのfiberが空またはcontractibleであることから同じ比較を得る。
@@ -488,17 +489,17 @@ $`V(f)\cap D(g)`$ として扱う。優劣を比較するには、選んだ係�
 
 合成可能な意味保存射の合成は意味を保つ。同じ変更前状態から独立に選んだ
 二つの変更の併用は、両変更を実現する候補族のfiber問題として定める。
-[台帳例](n1020_shigure_polynomial_specializations.md#design-search)では、
+[台帳例](n1020_shigure_polynomial_specializations.md#design-search)では
 解空間の空性と、更新式の変更によって生じる新しい解の族をこの区別で示す。
 
-### 5.4 指定した部分図式を補完する
+### 5.4 部分図式の補完
 
 小さい図式形 $`J`$、部分圏 $`K\hookrightarrow J`$、固定図式 $`d:K\to\mathbf A_R`$ を取る。
 $`\mathbf A_R`$ は、係数的実現と実際のsort mapsから作る意味圏である。
-補完を、$`D:J\to\mathbf A_R`$ と固定部分の同定 $`\alpha:D|_K\cong d`$、
+補完を $`D:J\to\mathbf A_R`$ と固定部分の同定 $`\alpha:D|_K\cong d`$、
 原始許容規則 $`H`$、評価条件の充足から独立に定義する。
 候補図式の比較は自然同型とし、図式内の射には非可逆な意味保存射も含める。
-固定部分を持つ全図式は、次の2-fiberにより表される。
+固定部分を持つ全図式は次の2-fiberにより表される。
 
 ```math
  \mathcal D_{J,K,d}(R)=
@@ -510,19 +511,19 @@ $`\mathbf A_R`$ は、係数的実現と実際のsort mapsから作る意味圏�
 この上で $`H`$ の候補生成とLaw・評価条件を課し、§5.3の条件付きfiberを作る。
 図式の頂点・射・可換関係をそれぞれ原始宣言・sort maps・等式へ送り、
 独立に定義した全補完との同値、係数拡張と部分図式への制限に対する自然性を証明する。
-原始表示の変更については、指定部分と許容規則を運ぶ比較を構成する。
+原始表示の変更については指定部分と許容規則を運ぶ比較を構成する。
 有限個の対象・生成射・関係で表示される図式形では、その有限表示をchartの方程式へ送る。
-任意の小さい図式形では、全生成射・関係を保持した表示系とdescentを使う。
+任意の小さい図式形では全生成射・関係を保持した表示系とdescentを使う。
 
 一本の矢印、可換正方形、鎖、立方体はこの同じ問題の特殊化になる。
-正方形には、二つの指定変更の内容と固定部分を保持する条件を $`H`$ に含める。
+正方形には二つの指定変更の内容と固定部分を保持する条件を $`H`$ に含める。
 これにより、共通targetを持つことに加えて、双方の指定構造を実現する補完を求められる。
 局所補完のmatching、補正、全補完の自由は、この図式fiber上の問題として§6へ接続する。
 
 ### 5.5 許された変更の経路と状態の移送
 
 許された一段変更の族 $`\mathcal E\to\mathcal M\times\mathcal M`$ を原始規則から作る。
-長さ $`n`$ の経路は、合成可能な一段変更の2-fiber積
+長さ $`n`$ の経路は合成可能な一段変更の2-fiber積
 
 ```math
  \mathcal P_n=
@@ -532,10 +533,10 @@ $`\mathbf A_R`$ は、係数的実現と実際のsort mapsから作る意味圏�
 
 に端点と各中間段の条件を課したfiberである。長さ0は恒等経路とする。
 同じ中間実現を持つ経路の連結を構成し、全変更圏への合成写像との可換性を証明する。
-細分化では、元の一段変更を実現する合成と、追加した各段の許容条件を保持する。
+細分化では元の一段変更を実現する合成と、追加した各段の許容条件を保持する。
 これにより端点間の変更、指定された順序での経路、各段の評価を一緒に比較する。
 
-状態の移送は、意味を比較する射と組にして定める。
+状態の移送は意味を比較する射と組にして定める。
 意味射 $`h:X_1\to X_0`$ と移送を許す状態 $`\iota_D:D\hookrightarrow X_0`$ に対し、
 原始規則から全候補 $`m:D\to X_1`$ を生成し、
 
@@ -565,14 +566,14 @@ $`\mathbf A_R`$ は、係数的実現と実際のsort mapsから作る意味圏�
 [n1020 §16](n1020_shigure_polynomial_specializations.md#design-search)で、
 合法な係数点を通ってもBusy状態をそのまま移すとLawを失う例と、この構成を比較する。
 
-### 5.6 観測と整合する実現の上で候補を比較する
+### 5.6 観測と整合する実現での候補比較
 
 実現の族を読む写像 $`q:U\to B`$ と、同じ観測値の上で共有する許容規則のparameter族
-$`C\to B`$ を取る。全Homの構成に加え、この指定規則族について候補を横断的に比較する。
+$`C\to B`$ を取る。全Homの構成に加え、この指定規則族の候補を実現をまたいで比較する。
 候補 $`(u,c)`$ の実際の状態射・語翻訳・補完を生成し、Lawと評価条件から良否を定める。
 候補がこれらの射を既に指定する場合は、その保存条件を $`E(u,c)`$ と書く。
 補完を求める場合は全解family $`\mathcal F\to U\times_B C`$ を保持し、
-$`E(u,c)`$ をそのfiberの非空性とする。後者では、得られた解のwitnessを候補へ戻す。
+$`E(u,c)`$ をそのfiberの非空性とする。後者では得られた解のwitnessを候補へ戻す。
 
 まず係数域を固定し、集合 $`U_b`$・$`C_b`$ と関係 $`E`$ について次を区別する。
 
@@ -590,7 +591,7 @@ $`\mathbb G_m\to\mathbb G_m,\ z\mapsto z^2=t`$ は全幾何fiberに解を持つ�
 Laurent環 $`k[t,t^{-1}]`$ のunitの指数から大域regular sectionを持たない。
 これは局所的に候補を選ぶことと、その整合した大域選択の差を示す。
 
-固定係数域での点の判定には、その係数域を出力に保持する。
+固定係数域での点の判定にはその係数域を出力に保持する。
 base changeに安定な全称条件を定義するときは、$`b\in B(R),c\in C_b(R)`$ に対し、
 全 $`R`$-代数 $`S`$ と全 $`u\in U_{b_S}(S)`$ で $`E(u,c_S)`$ を検査する。
 非空性には $`U_b(R)`$ のwitnessを保持して、その像を各 $`S`$ に運ぶ方法、
@@ -601,12 +602,12 @@ base changeに安定な全称条件を定義するときは、$`b\in B(R),c\in C
 
 平方零拡大、局所adapterの変更、有限fragmentからの延長は、別々のlift問題である。
 同じchange space上の対応するfiberを定義してから比較する。
-affine chart $`B=k[V]/I`$ では、原始Lawの残差と全syzygyから余接複体を構成する。
+affine chart $`B=k[V]/I`$ では原始Lawの残差と全syzygyから余接複体を構成する。
 Jacobianによる一次計算から、syzygyが担う高次の関係までをこの複体で扱う。
 
 平方零liftの標準的な障害・torsor理論にはcotangent complexを使う
 ([Stacks 08S3](https://stacks.math.columbia.edu/tag/08S3))。
-AAT側での仕事は、実際の操作保存・観測保存の残差が、その同じ障害類になることの証明である。
+AAT側での仕事は、実際の操作保存・観測保存の残差がその同じ障害類になることの証明である。
 群oidでは自己同型を次数 $`-1`$、補正を0、defectを1に置く規約で比較する。
 
 可算な有限fragmentの塔について、原始Lawから生成した複体を $`D_n`$ とする。
@@ -619,7 +620,7 @@ AAT側での仕事は、実際の操作保存・観測保存の残差が、そ�
 ```
 
 を適用する。これは[derived inverse limitの標準結果](https://stacks.math.columbia.edu/tag/07KV)である。
-新しい義務は、その前にあるnative変更との比較と、同じ制限写像の生成にある。
+新たな証明義務はこの適用に先立つnative変更との比較と、同じ制限写像の生成にある。
 可算cofinal towerを持たない場合には高次 $`R^p\!\lim`$ を含む比較を使う。
 
 $`q=1`$ の $`\lim^1H^0`$ は各段の障害だけでは見えない整合の障害になる。
@@ -634,7 +635,7 @@ Mittag–Leffler性を原始構造から導けば、この追加障害は消え�
 局所候補がmatchingするときはG-140のdescentを使い、matchingにする補正はG-141で求める。
 無限図式には全fragmentの制限と整合を保持し、上の逆極限比較を適用する。
 
-### 6.1 相互作用に参加する変更と微小変形の次数
+### 6.1 変更の相互作用と微小変形の次数
 
 有限個の名前付き変更を $`t_1,\ldots,t_n`$、未変更の値を0とする。
 保存条件を多項式残差の零として表す自由parameter chart $`k[t_1,\ldots,t_n]`$ を取り、
@@ -656,22 +657,22 @@ $`r=n`$ では右辺を零idealとする。証明は多項式の単項式基底�
 ここで零とは座標face全体での多項式恒等式であり、全係数環での評価零性に対応する。
 指定した変更labelとzeroing図式を運ぶ表示比較について、この判定の自然性を証明する。
 
-この参加変数数と、原点のideal $`\mathfrak m=(t_1,\ldots,t_n)`$ による消滅次数は異なる。
+この相互作用に参加する変数の数と、原点のideal $`\mathfrak m=(t_1,\ldots,t_n)`$ による消滅次数は異なる。
 $`t^m`$ は一つの変更で高次数に現れ、$`\mu\delta`$ は二つの変更の二次相互作用である。
-G-141 Fでは、全Artin試験で定める次数 $`\nu`$ とこのsupport判定を、同じ残差へ適用して比較する。
+G-141 Fでは全Artin試験で定める次数 $`\nu`$ とこのsupport判定を同じ残差へ適用して比較する。
 Boolean配置は $`k[b_i]/(b_i^2-b_i)_i`$ で全配置を扱い、許す切替を有向辺として指定する。
 冪等元は冪零拡大に一意にliftする
 ([Stacks 00J9](https://stacks.math.columbia.edu/tag/00J9))ため、Boolean切替と微小方向を別々に保持する。
 
-部分変更の修復可能性は、その全修復family $`\mathcal F_S`$ の非空性で判定する。
+部分変更の修復可能性はその全修復family $`\mathcal F_S`$ の非空性で判定する。
 $`S\subseteq T`$ で非存在を伝播させるには、固定条件を保つ射
 $`\mathcal F_T\to\mathcal F_S`$ を原始規則から構成する。
 台帳の残差 $`\mu\delta(1-\rho)`$ では、$`\mu=\delta=1,\rho=0`$ が失敗し、
 $`\rho=1`$ の追加によって修復される。追加変更が修復を生む場合も、このfamilyが表す。
 
-## 7. 通しの例：すべての局所で可能なprotocol変更が、大域では存在しない
+## 7. 通しの例：protocol変更の局所解と大域障害
 
-### 7.1 Atom・操作・観測から全変更を決める
+### 7.1 Atom・操作・観測による全変更の分類
 
 各 $`n\in\mathbb N`$ に状態 $`S_n=\mathrm{Bool}\times\mathbb Z`$ を持たせる。
 観測は $`o(b,z)=b`$、操作は
@@ -689,14 +690,14 @@ $`h_n^a u_t=u_{2t}h_n^a`$、$`h_n^av=vh_n^a`$ とする。
 観測と全 $`u_t`$、$`v`$ を保つ写像は必ず
 $`\tau_c(b,z)=(b,z+c)`$ となる。
 実際、加法作用の保存から各 $`b`$ で $`z\mapsto z+c_b`$、$`v`$ の保存から
-$`c_0=c_1`$ が従う。この計算が、任意の意味保存写像をtranslationへ分類する。
+$`c_0=c_1`$ が従う。この計算により、任意の意味保存写像がtranslationに分類される。
 source $`h^0`$ からtarget $`h^a`$ への自然性は、正確に
 
 ```math
                     c_n-2c_{n+1}=a_n.                 \qquad\text{(*)}
 ```
 
-従ってこの方程式の解は、選んだ観測と全操作語を保ち、全adapterと整合する
+従ってこの方程式の解は選んだ観測と全操作語を保ち、全adapterと整合する
 native変更の全体そのものである。
 
 ### 7.2 同じ変更を表現するscheme
@@ -706,8 +707,8 @@ native変更の全体そのものである。
 上と同じ証明が全可換環で成り立つ。
 $`u_1`$ だけを要求すると標数 $`p`$ で余分な写像が入るため、全作用を保持する。
 これはnative hidden module $`\mathbb Z`$ のtensor extension $`\mathbb Z\otimes R=R`$と、明示した加法作用から
-生成する係数的実現である。copying表示の $`\Delta\mathbb Z`$ と $`\mathbb A^1`$ は、次の自然な写像で比較する。
-$`R=\mathbb Z`$ ではnative全射も係数familyの全射も整数 $`c`$ によるtranslationに分類され、
+生成する係数的実現である。copying表示の $`\Delta\mathbb Z`$ と $`\mathbb A^1`$ は自然な写像で比較する。
+$`R=\mathbb Z`$ ではnativeの全ての射も係数familyの全ての射も整数 $`c`$ によるtranslationに分類され、
 基点で全Homを回復する。元の状態は $`\iota_{\mathbb Z,R}`$ で自然に送られる。
 
 ```math
@@ -728,7 +729,7 @@ $`Y_a=\lim_nY_{a,n}`$ となる。
 差を取ると $`Y_a`$ の二つの解は $`G`$ の元だけ異なる。
 以下の被覆では局所解が存在するので、$`Y_a`$ は実際に $`G`$-torsorである。
 
-### 7.3 有限部分でもZariski局所でも存在するが、整数上では存在しない
+### 7.3 有限部分・Zariski局所の解と整数上の不存在
 
 $`a_{2j}=1,\ a_{2j+1}=0`$ とする。
 有限段では末尾 $`c_n=0`$ から後ろ向きに整数解を作れる。
@@ -760,7 +761,7 @@ $`V`$ 上は $`c_{2j}=-1/3,\ c_{2j+1}=-2/3`$ が全段の解になる。
 **全有限部分の修復可能性、係数の局所での全変更の存在、大域変更の不存在が、
 同じnative protocolと同じscheme上で同時に成立する。**
 
-### 7.4 余接複体・逆極限・実際の不整合が一致する
+### 7.4 余接複体・逆極限と指定障害類
 
 有限段の座標環は $`\mathbb Z[c_n]`$、遷移は $`c_n\mapsto2c_{n+1}+a_n`$ である。
 [cotangentのfiltered colimit](https://stacks.math.columbia.edu/tag/08PL)から
@@ -781,9 +782,9 @@ $`V`$ 上は $`c_{2j}=-1/3,\ c_{2j+1}=-2/3`$ が全段の解になる。
 次数は0、1である。実際の変更は $`d(c)=a`$、障害は $`[a]\in H^1C(R)`$、
 存在するときの全自由変更は $`H^0C(R)`$ である。
 平方零liftの補正にも同じ複体をkernel係数で用いる。
-このaffineな操作保存問題では、全変更と平方零liftを同じ線形写像で計算できる。
+このaffineな操作保存問題では全変更と平方零liftを同じ線形写像で計算できる。
 
-指定された類の来歴は、元のadapterから作る加群
+指定された類の来歴は元のadapterから作る加群
 
 ```math
  E_a=(\mathbb Zz\oplus\bigoplus_n\mathbb Ze_n)/
@@ -829,7 +830,7 @@ $`[\bigoplus\mathbb Z\xrightarrow{d^\vee}\bigoplus\mathbb Z]\simeq\mathbb Z[1/2]
 $`d^\vee(e_n)=e_n-2e_{n+1}`$ である。defectを $`a'-d(\widetilde c)`$ と定めれば、
 lift障害は上の $`[-1/3]\in\mathop{\mathrm{Ext}}\nolimits^1_{\mathbb Z}(\mathbb Z[1/2],\mathbb Z)`$ である。
 有限段のmapはsmoothでliftできるが、この全体のmapはformally smoothではない。
-比較の基点は、普遍familyの実在する零点である。
+比較の基点は普遍familyの実在する零点である。
 
 係数変更は結論も変える。$`\mathbb Q`$ 上は $`c_0`$ を自由に選べ、
 $`\mathbb Z_2`$ 上では上の周期解が唯一である。
@@ -851,37 +852,37 @@ G-126では同じsource上の商修復を組み合わせられ、§7では指定
 
 ### 8.1 Atlasによる観測と条件付きfiberの比較
 
-AtlasとSHIGUREは、reading・Law評価・支持とその比較写像を介して接続する。
+AtlasとSHIGUREはreading・Law評価・支持とその比較写像を介して接続する。
 SHIGUREはAtom・操作・Lawから実現・意味保存射・解空間・障害を構成する。
 AtlasはreadingとLaw評価から観測の十分性とreading間の比較を定める。
 それぞれの入力から独立に構成した対象を、以下の比較定理で結ぶ。
 
 操作系の族から選んだデータを読む数学的写像をreadingとする。
-台帳例の二つの操作系は、状態の型と操作署名を共有し、finishの式が異なる。
+台帳例の二つの操作系は状態の型と操作署名を共有し、finishの式が異なる。
 型と操作署名だけのreadingを $`q_{\rm type}`$ とすれば、旧 $`\mathrm{finish}`$ と $`\mathrm{finish}_{\mathrm{snap}}`$ は同じ像を持つが、
 $`\mathrm{begin};\ \mathrm{apply}_1;\ \mathrm{finish}`$ のread差は一方が $`-\mu\delta`$、他方が0である。
 $`k=\mathbb Q,\mu=\delta=1`$ で値が異なるので、このreadingはその評価には不十分である。
 式とphaseを含むreadingは、この区別を保持する。
 
-AtlasのLaw相対の十分性は、source族と評価族を固定して
+AtlasのLaw相対の十分性はsource族と評価族を固定して
 $`q(x)=q(y)\Rightarrow e_\ell(x)=e_\ell(y)`$ と述べる。
 この条件は指定した数学的写像とLaw評価についての命題である。
-既存G-104のC0–C6は、同じLaw由来係数・台・比較射について
+既存G-104のC0–C6は同じLaw由来係数・台・比較射について
 診断 $`H^1`$ の同型を与える。意味保存変更の全fiberの同値には、以下の候補復元の証明が必要である。
 この定理へ接続する場合は、有限Source・Law評価族・両reading・chart支持・比較写像を
 同じ原始データから構成する。これらをAtlasとの比較に用いる特殊化の入力とする。
 
-条件付き解空間では、許容変換仕様、全比較射、評価写像も二つのreadingの間で運ぶ必要がある。
+条件付き解空間では許容変換仕様、全比較射、評価写像も二つのreadingの間で運ぶ必要がある。
 G-140の全Hom比較とG-141の実修復を使い、G-142では同じadapter例について
 $`\mathcal F_{a,H,P}`$ の比較と指定障害の比較が可換になることを証明する。
 評価式が比較で保存されれば、その評価条件のfiberへも同じ比較を制限できる。
-この比較では、Law値・指定障害とともに、条件を満たす全候補の復元を証明する。
+この比較ではLaw値・指定障害とともに、条件を満たす全候補の復元を証明する。
 
 ### 8.2 原始表示からの有限計算
 
-有限計算は、原始表示から生成した対象・写像とその解についての数学的手続きとして定める。
+有限計算は原始表示から生成した対象・写像とその解についての数学的手続きとして定める。
 
-| 入力から理論への写像 | 有限に出せるもの | 答える問い |
+| 入力から理論への写像 | 有限計算で得られるもの | 答える問い |
 | --- | --- | --- |
 | Atomの原始宣言とLaw式から評価写像を作る | 型と式、quantity座標、指定残差の来歴 | 何を同じ意味として保存するのか |
 | 操作保存・観測保存からchange equationsを生成 | 候補変更、非存在の証拠、全補正のparameter | この変更が何によって可能／不能になるか |
@@ -896,7 +897,7 @@ $`\mathcal F_{a,H,P}`$ の比較と指定障害の比較が可換になること
 生成の停止性、および検査式と全Law・全操作語の保存条件・評価条件との同値が証明義務である。
 有限表示を直接コンパイルする場合と、無限表示から安定性・帰納法等によって有限還元する場合を分け、
 いずれも原始入力から検査式系と還元の同値を構成する。
-この還元を持つ場合の対象と答えを次のように固定する。
+この還元がある場合の計算対象と出力を次のように定める。
 
 | 計算対象 | 出力と証拠 |
 | --- | --- |
@@ -905,7 +906,7 @@ $`\mathcal F_{a,H,P}`$ の比較と指定障害の比較が可換になること
 | $`\mathbb Q`$ 上の有限多項式chartと有限個の等式・可逆条件 | ideal計算による因子分解検査と、代数閉包上の解の空性。可逆条件には補助式 $`ug-1=0`$ を使う |
 | 有限表示の候補族から評価parameterへの射 | 幾何点で実現可能な評価値の構成可能集合、各値の解fiberと変更witness |
 
-最後の行の構成可能性には、有限表示・quasi-compactな射に対する
+最後の行の構成可能性には有限表示・quasi-compactな射に対する
 [Chevalleyの定理](https://stacks.math.columbia.edu/tag/054K)を使う。
 算法では有限式からの消去と開条件の分岐を構成し、像そのものを達成可能集合として返す。
 例えば $`xy=1`$ の $`x`$ への像は $`D(x)`$ であり、その閉包の原点は解を持たない。
@@ -924,7 +925,7 @@ SHIGUREで構成するのは、**原始構造・全操作・Lawから生成し�
 高次の干渉、無限diagramの組立てを、同じ意味比較で結ぶ幾何**である。
 どの制約が解を消し、どの変換で解が生じるかを、この族と有限計算の比較から説明する。
 
-§7の全有限段は全て成功するので、有限実行を何回繰り返しても不存在は検出できない。
+§7では全有限段に解があるため、有限実行を何回繰り返しても全体の不存在は検出できない。
 一方、周期的なLawの記述と上の $`3c_0+1`$ の証明を持てば、
 全体の不存在に有限の数学的certificateを与えられる。
 原始構造から有限証明を生成できる条件と、その構成を研究する。
@@ -952,7 +953,7 @@ $`E\subseteq Z=U\times_B C`$ を、原始式と有効有限還元から生成で
 G-141 Dは消去・開条件・否定条件の分岐とwitnessの復元を構成し、元の意味側の判定との一致を証明する。
 幾何点の分類に加えて、元の全係数関手に冪零方向を保持し、指定係数域での解の存在も別に計算する。
 
-判定が混在するfiberでは、それを分ける追加観測を求める。
+候補の良否が混在するfiberでは、その判定を分ける追加観測を求める。
 候補観測 $`e_i:U\to V_i`$ と添字集合 $`I`$ に対して、
 観測 $`(q,(e_i)_{i\in I})`$ から全候補の良否が決まる必要十分条件は
 
@@ -963,7 +964,7 @@ G-141 Dは消去・開条件・否定条件の分岐とwitnessの復元を構成
 ```
 
 これは判定写像が観測の像を経由する条件である。
-G-142では、原始操作から構成した判定にこのkernel条件を適用し、reading比較の定理を証明する。
+G-142では原始操作から構成した判定にこのkernel条件を適用し、reading比較の定理を証明する。
 Atlasとの接続には既存の
 [Readingのfactorizationと十分性](../../research/lean/ResearchLean/AG/CanonicalResolution/Reading.lean)
 を用いる。SHIGUREの解familyと判定の構成は、その比較に先立って行う。
@@ -975,7 +976,7 @@ Atlasとの接続には既存の
 [n1020](n1020_shigure_polynomial_specializations.md#design-search)で、この計算と
 共通候補・大域選択の各例を台帳の変更と対応づける。
 
-## 9. 研究分割と数学的な評価
+## 9. 研究の分割と数学的な評価
 
 | GOAL | 研究到達像 | 依存 |
 | --- | --- | --- |
@@ -995,11 +996,11 @@ G-141のmatchingにする補正を分ける。診断の次元変化だけでは�
 全てを原始データの同じ生成経路へ戻し、四つの到達像の依存を保つ。
 
 coalgebraへの集合の埋込み、Sym/Spec、quotient stack、cotangent、Milnor列を基礎に、
-AATの実際の操作と全Homを保持する構成を研究する。その核は、同じ構成から
+AATの実際の操作と全Homを保持する構成を研究する。その核は同じ構成から
 量のscheme、変更の空間、指定された障害類、計算可能な特殊化までを導き、
 表現の変更にもその比較を自然にすることである。
 
-数学的非自明性を問う試験は、§7の「全有限段・Zariski局所で存在、大域で不存在」を
+数学的な非自明性を確かめる試験は、§7の「全有限段・Zariski局所で存在、大域で不存在」を
 元の全変更について示せること、およびその同じ指定類を加群拡大・実際の微小lift・Čechから
 回復できることに置く。加えて、G-140の非可逆射を含む全変更と合成の比較を必須にする。
 §7の変更自体は全てtranslationで可逆である。
@@ -1007,9 +1008,9 @@ AATの実際の操作と全Homを保持する構成を研究する。その核�
 get/put保存と、$`\lvert K\rvert>1`$ なら同型でないことを同じ射の幾何で示す。
 各例の原始操作から、全変更・合成・障害を導くことが試験の要件である。
 
-論文化では、一般再構成・相対表現・変更の比較を主定理とし、§7を一貫した証人にする。
-独創性の最終判断には、coalgebraic semantics、moduli of algebraic structures、
+論文化では一般再構成・相対表現・変更の比較を主定理とし、§7を一貫した証人にする。
+独創性の最終判断にはcoalgebraic semantics、moduli of algebraic structures、
 refinement mappings、deformation of diagramsとの比較と、一般定理の証明が必要である。
 四つのdraft GOALは、その証明と形式化の到達点を定める。
 全native residualの拡張空間と元のgraphの比較、係数的実現の比較、表示独立性を
-主経路の固定義務として証明し、先行研究との比較から独創性を確定する。
+主定理に至る必須の証明義務として証明し、先行研究との比較から独創性を確定する。
