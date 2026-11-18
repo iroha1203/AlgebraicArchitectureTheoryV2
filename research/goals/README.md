@@ -23,7 +23,7 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 SHIGUREは、[n1019](../../docs/note/n1019_shigure_representability_design.md)の
 次の四つの研究到達像で構成する。係数拡張・表現・自然性と多項式特殊化は、
-各GOALの証明義務として位置づける。意味保存射、Atlasによる数学的観測の比較、
+各GOALの証明義務として位置づける。意味保存射、独立なAtlasとの観測比較、
 保存条件と評価条件に相対的な解空間を、この四つの構成で接続する。
 
 - [G-139-aat-law-generated-relative-geometry](G-139-aat-law-generated-relative-geometry.md)
@@ -36,7 +36,8 @@ SHIGUREは、[n1019](../../docs/note/n1019_shigure_representability_design.md)�
   (診断の族・合流・構成可能関数の実現、意味障害の指定類とAtlasによる探索fiberの比較)
 
 依存はG-139→G-140→G-141。G-142の診断族はG-139を使い、
-実障害との比較にはG-141を使う。具体的な特殊化は
+実障害との比較にはG-141を使う。G-142 Fは独立なSHIGUREとAtlasを結ぶ比較定理であり、
+両理論の定義を互いに依存させない。具体的な特殊化は
 [n1020](../../docs/note/n1020_shigure_polynomial_specializations.md)で同じ対象・射へ対応づける。
 
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
