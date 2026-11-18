@@ -380,4 +380,3 @@ Boolean係数環 $`k[b_1,\ldots,b_n]/(b_i^2-b_i)_i`$ は各切替状態を保持
 ([Stacks 00J9](https://stacks.math.columbia.edu/tag/00J9))ので、
 Boolean係数の切替は離散的な状態の選択を、§15の冪零parameterは固定点での変形を記述する。
 両者の比較では、その係数環と点関手の写像を指定する。
-
