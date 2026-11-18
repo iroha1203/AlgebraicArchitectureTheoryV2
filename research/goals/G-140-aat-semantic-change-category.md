@@ -199,8 +199,7 @@ $`m_{01}`$が$`D_1`$を経由する場合には$`D_{02}\cong D_0`$を構成す�
 
 ### P. 階数変更と操作言語を持つ多項式特殊化
 
-[n1020 §12](../../docs/note/n1020_shigure_polynomial_specializations.md#development-change)・
-[§16](../../docs/note/n1020_shigure_ledger_example.md#ledger-example)
+[n1020 §12・16](../../docs/note/n1020_shigure_polynomial_specializations.md#development-change)
 のbefore/after・状態比較$`h`$・観測・操作語翻訳$`\tau`$からcomparison presentationを作り、
 G-139 Pのschemeと独立なmodelの同値へ通す。両端の状態階数が違う場合も量化する。
 原始式から両端へのspanとそのfiber、合成可能な比較のfiber productから合成比較への射を

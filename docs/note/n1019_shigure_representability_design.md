@@ -488,7 +488,7 @@ $`V(f)\cap D(g)`$ として扱う。優劣を比較するには、選んだ係�
 
 合成可能な意味保存射の合成は意味を保つ。同じ変更前状態から独立に選んだ
 二つの変更の併用は、両変更を実現する候補族のfiber問題として定める。
-[台帳例](n1020_shigure_ledger_example.md#design-search)では、
+[台帳例](n1020_shigure_polynomial_specializations.md#design-search)では、
 解空間の空性と、更新式の変更によって生じる新しい解の族をこの区別で示す。
 
 ### 5.4 指定した部分図式を補完する
@@ -562,7 +562,7 @@ $`\mathbf A_R`$ は、係数的実現と実際のsort mapsから作る意味圏�
 係数空間の経路から状態を移すには、各段の移送または切替を含むphase protocolを構成する。
 台帳例では係数を状態成分に含め、遷移先も係数Lawを満たすIdleでの切替を操作として宣言する。
 そのprotocolから共通の公開状態への意味射を作り、全操作語の保存を証明する。
-[n1020 §16](n1020_shigure_ledger_example.md#design-search)で、
+[n1020 §16](n1020_shigure_polynomial_specializations.md#design-search)で、
 合法な係数点を通ってもBusy状態をそのまま移すとLawを失う例と、この構成を比較する。
 
 ### 5.6 観測と整合する実現の上で候補を比較する
@@ -972,7 +972,7 @@ Atlasとの接続には既存の
 同じ $`q`$ 値で良否が異なる各対について、それを分ける観測の添字集合を作る。
 これら全てに交わる添字集合を列挙し、包含に関して極小なものを全て返す。
 分離できる観測が一つもない対は、指定観測族での不足を示すwitnessになる。
-[n1020](n1020_shigure_ledger_example.md#design-search)で、この計算と
+[n1020](n1020_shigure_polynomial_specializations.md#design-search)で、この計算と
 共通候補・大域選択の各例を台帳の変更と対応づける。
 
 ## 9. 研究分割と数学的な評価
