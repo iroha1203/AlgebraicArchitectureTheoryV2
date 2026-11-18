@@ -4,7 +4,7 @@
 - `status`: `draft`
 - `research mode`: `target-theorem`
 - 関連メモ: [#6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)。実行用tracking Issueはactive化時に定める。
-- 設計: [n1020 §4・14・16](../../docs/note/n1020_shigure_polynomial_specializations.md)
+- 設計: [n1020 §4・14](../../docs/note/n1020_shigure_polynomial_specializations.md)・[§16](../../docs/note/n1020_shigure_ledger_example.md#ledger-example)
 - 依存: [G-139](G-139-aat-law-generated-relative-geometry.md)の実現幾何。
   E–Fの実修復との比較には[G-141](G-141-aat-coherent-repair-effectivity.md)の有限graph adapter族を使う。
   Gの判定には[G-140](G-140-aat-semantic-change-category.md)の共有候補族、有限計算にはG-141 Dを使う。

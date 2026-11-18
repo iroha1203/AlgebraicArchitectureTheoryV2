@@ -4,7 +4,7 @@
 - `status`: `draft`
 - `research mode`: `target-theorem`
 - 関連メモ: [#6359](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6359)。実行用tracking Issueはactive化時に定める。
-- 設計: [n1019 §6–8](../../docs/note/n1019_shigure_representability_design.md)、[n1020 §13・15–16](../../docs/note/n1020_shigure_polynomial_specializations.md#semantic-lift)
+- 設計: [n1019 §6–8](../../docs/note/n1019_shigure_representability_design.md)、[n1020 §13・15](../../docs/note/n1020_shigure_polynomial_specializations.md#semantic-lift)・[§16](../../docs/note/n1020_shigure_ledger_example.md#ledger-example)
 - 依存: G-139・G-140。診断への比較はG-142が本カードの実修復から構成する。
 
 意味を保つ変更について、その存在・組立ての障害・全修復と残る自由を同じ原始Lawから
