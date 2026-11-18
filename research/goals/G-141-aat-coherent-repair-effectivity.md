@@ -11,6 +11,7 @@
 導く。有限表示の微小liftと無限diagramの大域化を比較し、有限計算から結論してよい
 条件を証明する。syzygy、cotangent、Čech、逆極限はこの一つの到達像を支える構成である。
 G-140の条件付きfiberを使い、保存条件と評価条件から全候補・不存在の証拠・残る自由を計算する。
+原始表示から作る変更族について、観測に適合する実現ごとの成立判定と、指定された複数変更の相互作用を導く。
 
 ## 固定target
 
@@ -91,6 +92,21 @@ $`H^{0}C(\mathbb Z )\otimes \mathbb Q \to H^{0}C(\mathbb Q )`$が同型でない
 原因は$`(\prod \mathbb Z )\otimes \mathbb Q \to \prod \mathbb Q`$の非同型である。
 flat tensor自体は核と交換する。schemeのbase changeとも区別する。
 
+G-140 Fの有限図式の補完と長さを固定した変更経路、Gの状態移送liftについても、
+同じ原始操作・Law・指定された射から、Eの支持条件を満たす宣言被覆と係数のZariski被覆への制限を構成する。
+各交差での同型とそのcocycle条件を持つ局所補完を、G-139のstackのdescentと比較し、
+状態写像・語翻訳・指定部分を保つ大域補完とその全同型を回収する。
+affineな補正問題と平方零liftでは、実残差と全syzygyからA・Eの複体を作り、
+指定障害の零性と補完の存在、補正がある場合の同型類への$`H^0`$の自由推移作用、
+各補正の自己同型群と$`H^{-1}`$の同定を証明する。
+図式の制限、経路の連結、状態移送の合成との可換性を、G-140の同じ射から証明する。
+
+選択族と指定した有限étale被覆に対して、局所選択の重なりの比較を原始式から構成し、descentを証明する。
+G-142 W5の$`z^2=t`$から生成する$`\mathbb G_m`$上の選択族では、$`\mu_2`$作用とtorsor条件を証明する。
+局所選択の比から$`\mu_2`$値のcocycleを作り、それがcoboundaryであることと大域regularなsectionの存在を同値にする。
+代数閉体上で標数が2と異なる場合に、全幾何点での解、有限étale被覆上の選択、
+大域sectionの不存在を同じ原始Lawから証明する。局所選択の修正はこの$`\mu_2`$作用で計算する。
+
 ### D. 有限計算と解空間の探索の十分性を証明する
 
 Mittag–Leffler性で$`\mathop{\mathrm{lim}}\nolimits^1`$が消えることと、有限段階で全結論が決まることは別に証明する。
@@ -119,6 +135,34 @@ G-140 Eの$`F_{a,H,P}`$について、次の有限計算への特殊化を原始
 schemeの表示と指定係数域の点の探索を区別する。$`x^{2}+1=0`$の$`\mathbb Q`$点と代数閉包の点、
 無限fragmentでのB・Cを必須の識別例にする。
 順序付き評価条件では、比較する評価と順序を入力に保持し、その順序によって解を比較する。
+
+G-140 Eの$`q:U\to B`$と、全実現に共通の候補族$`C\to B`$について、
+原始Law・全操作語の保存・評価の各条件から成立集合$`E\subseteq |U\times_B C|`$を生成する。
+補完存在を条件とする場合は、原始式から全解族$`F\to U\times_B C`$を作り、
+その幾何的像をEとする。Eの点へ至る元の補完witnessを同じ射から回収する。
+NoetherianなB上でUとCが有限型であり、上記の有限還元からEが構成可能になる場合、
+補完存在ではさらに$`F\to U\times_B C`$が有限型になることを有限還元から導き、
+射影$`\pi:U\times_B C\to C`$に対して
+
+```math
+P=\pi(E),\qquad N=\pi\bigl(|U\times_B C|\setminus E\bigr)
+```
+
+を作り、[Chevalleyの定理](https://stacks.math.columbia.edu/tag/054K)から両者の構成可能性を導く。
+各幾何点$`c:\mathop{\mathrm{Spec}}\nolimits\Omega\to C`$を、次の互いに素な四集合で分類する。
+
+| 候補cの所属 | 同じ候補を適用する幾何的実現$`U_c`$の分類 |
+| --- | --- |
+| $`P\setminus N`$ | 非空であり、全実現で成立する |
+| $`N\setminus P`$ | 非空であり、全実現で不成立となる |
+| $`P\cap N`$ | 成立する実現と不成立となる実現がともに存在する |
+| $`C\setminus(P\cup N)`$ | 適合する実現が空である |
+
+四分類と幾何的fiberの係数変更との比較を証明する。固定RのR点を量化する判定には
+G-140 Eの量化を用い、その係数変更との比較を個別に証明する。
+上記1–4の算法を適用できる有効な有限還元では、消去と開条件の分岐からP・Nを計算し、
+成立・不成立の各像の点について元の実現と候補のwitnessを復元する。
+構成可能性、算法の停止性、全原始Lawとの比較、witnessの復元をそれぞれ証明義務とする。
 
 候補の有限性と有限還元の有効性を区別する必須反例として、$`\mathbb F_2`$上の一係数$`c`$と
 固定列$`a_n\in\mathbb F_2`$に対するLaw $`a_nc=0`$（全$`n\in\mathbb N`$）を用いる。
@@ -234,6 +278,48 @@ $`B_{0}/m_{0}^{r+1}`$、$`B_{0}/(J_{0}+m_{0}^{r+1})`$の任意base changeとの�
 両者の射のkernel $`D_r`$について変更後のkernelを$`D_r\otimes k_{1}`$の像へ同定し、flatなときの
 同型とfaithfully flatなときの零性反映を証明する。これは剰余体kのArtin判定と分ける。
 
+**指定部分変更族の相互作用。** 有限集合$`I=\{1,\ldots,n\}`$でlabelを付けた変更を取り、
+G-140 Eの許容変換式から、実際のsort maps h・語翻訳$`\tau`$を含む候補族を生成する。
+独立な係数$`t_i`$を持つchart $`X=\mathop{\mathrm{Spec}}\nolimits k[t_1,\ldots,t_n]`$と、
+$`S\subseteq I`$に対して$`t_j=0`$（$`j\notin S`$）とする射$`i_S:\mathbb A^S_k\to X`$を構成し、
+包含$`S\subseteq T`$について同じ零代入による$`i_{S,T}:\mathbb A^S_k\to\mathbb A^T_k`$を作り、
+$`i_Ti_{S,T}=i_S`$と全包含の合成との両立を証明して、部分変更の図式を固定する。
+全Lawの保存条件が閉条件になる特殊化では、
+原始操作から全残差ideal Jを生成し、全k代数Rで候補の意味保存と$`V(J)`$への因子化を同値にする。
+任意の可換環k、任意のideal $`J\subseteq k[t_1,\ldots,t_n]`$、$`0\le r\le n`$について、
+次の同値とidealの等式を証明する。
+
+```math
+\begin{aligned}
+\bigl(\forall S\subseteq I,\ |S|\le r:\ i_S^*J=0\bigr)
+&\quad\Longleftrightarrow\quad J\subseteq K_{r+1},\\
+K_{r+1}
+&=\bigcap_{\substack{S\subseteq I\\ |S|\le r}}(t_j\mid j\notin S)\\
+&=\left(\prod_{i\in T}t_i\ \middle|\ T\subseteq I,\ |T|=r+1\right).
+\end{aligned}
+```
+
+$`K_{n+1}=0`$とする。この判定は指定族のうちr個以下を残すすべての座標面での
+多項式恒等式を表し、全k代数Rの全係数値にわたる保存と同値にする。
+単項式展開から、各項のsupportがr個以下のとき、対応する座標面への制限でその係数が残ることを証明する。
+labelと部分変更の図式を運ぶ表示比較について、この判定を自然にする。
+係数の零判定が有効でDの有限還元が得られる場合、残差の多重次数とsupportから
+包含関係に関して最小の不成立部分族を計算する。
+体上の$`J=(t^m)`$では一つの変更が任意の次数$`m\ge 1`$で初めて検出されることを示し、
+$`\nu`$が測る総次数と、この判定が測る参加変更数を比較する。
+
+指定した部分変更の補正fiberを$`F_S`$として構成し、固定Rにおける
+$`\forall S\subseteq I,\ |S|\le r:\ F_S(R)\ne\varnothing`$を補正存在の条件とする。
+指定候補の成立、全係数での保存、各部分族の補正存在は、それぞれの量化で比較する。
+$`S\subseteq T`$に対し指定データを保つ制限$`F_T\to F_S`$を原始操作から構成できる場合、
+$`F_S(R)=\varnothing`$から$`F_T(R)=\varnothing`$への伝播と、最小の不成立部分族による分類を証明する。
+個々の補正を大域補正へ組み立てる条件は、同じ制限射を用いてC・Eのdescentへ比較する。
+
+Boolean配置は$`k[b_i\mid i\in I]/(b_i^2-b_i)\cong\prod_{S\subseteq I}k`$で表示し、
+配置ごとのLaw判定を計算する。一般のR点では、各冪等元が$`\mathop{\mathrm{Spec}}\nolimits R`$の開閉分解を選ぶ。
+[冪等元の一意lift](https://stacks.math.columbia.edu/tag/00J9)を用いて冪零拡大に沿う配置の固定を証明し、
+各配置上の係数変形に対してArtin試験と$`\nu`$を適用する。
+
 ### G. 有限graphの実adapter・SAGA・全修復
 
 可換環R、一辺以上を持つ有限連結単純graph $`\Gamma`$、その向き、$`\mu \in R`$、offset $`b_e\in R`$を
@@ -317,6 +403,10 @@ $`T\delta^0_{\mathrm{SAGA}}=d^0_\Gamma`$を証明する。三角形では$`T(c_{
    各修復後に一自由度が残る。$`\mathbb Q`$上で$`\lambda =0`$、$`b=(1,2,-3)`$を頂点変更で修復する場合、
    固定頂点なしなら一自由度、固定頂点が一つなら一意、二つ以上なら不能となる。
    全解$`(t,t+1,t+3)`$と固定成分が零である条件から、全ての許容頂点集合についてこの分類を証明する。
+9. $`B=C=\mathbb A^1_{\mathbb Q,b}`$、$`U=D(b)\times\mathbb A^1_{\mathbb Q,u}`$を取り、
+   Law $`(b-1)((b-2)u-1)=0`$の成立集合Eを原始式から作る。
+   Dの四分類が、順に$`\{b=1\}`$、$`\{b=2\}`$、$`D(b(b-1)(b-2))`$、$`\{b=0\}`$となることを証明する。
+   両方が存在する場合のwitness $`u=1/(b-2)`$と$`u=0`$を同じfiberで回収する。
 
 さらにG-140 Pの同じsnapshot protocolと、その意味保存条件$`\mu \delta =0`$を用いる。
 原始追加$`E=\mu \delta`$、$`E=0`$をFの消去へ通し、同じ意味保存係数fiberを$`V(\mu \delta )`$へ同定する。
@@ -338,6 +428,11 @@ G-140 Pの$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$への修正で�
 $`g_\rho =\mu (1-\rho )(h-C)`$を生成し、Busyを$`V(g_\rho )`$とする。
 begin・applyの$`g_\rho`$への代入、finishのread差、begin; $`\mathop{\mathrm{apply}}\nolimits_1`$; finishから、
 全語の意味保存と$`\mu \delta (1-\rho )=0`$を同値にする。
+この残差をFの部分変更図式へ通し、一変更の全座標面では保存が成立し、
+$`\{\mu,\delta\}`$の座標面で初めて不成立となることを証明する。
+体上の固定配置$`(\mu,\delta,\rho)=(1,1,0)`$では不成立、$`(1,1,1)`$では成立となることから、
+変更追加による成立回復を同じ原始族で示す。Boolean配置、全係数での座標面判定、
+$`\rho`$を補正変数とするfiberの非空性を、それぞれ計算して比較する。
 評価条件$`D(\mu \delta )`$の下で$`\rho =1`$が強制され、全解が$`\mathbb G_m^2`$、状態が全$`R^{3}`$、
 選ばれる式が$`\mathop{\mathrm{finish}}\nolimits_{\mathrm{snap}}`$になることを原始変換族から導く。
 旧Busy Lawを固定する許容変換域では、同じ評価条件の解が空のままであることも証明する。
@@ -355,10 +450,15 @@ begin; $`\mathop{\mathrm{apply}}\nolimits_1`$; finishのreadが2となること�
 | 観測・作用・adapterの原式 | 入力 | A–Bの全射分類 | change scheme・複体 |
 | 複体・制限射・cotangent・比較 | 構成義務 | A–Bの同じ原式から生成 | 大域障害・微小lift |
 | 交互列aと$`D(2)`$,$`D(3)`$ | 指定証人 | Cの全段・局所解と非零類 | Čech・Ext・$`\mathop{\mathrm{lim}}\nolimits^1`$の一致 |
+| 指定部分を持つ有限図式・長さ固定の経路・状態移送 | G-140 F・Gの構成 | Cの実制限、descent、affine・平方零補正複体 | 補完の存在・全修復・自己同型 |
+| 選択族と有限étale被覆 | 原始Lawからの構成 | C・G-142 W5の$`\mu_2`$作用、cocycle、sectionとの比較 | 点ごとの可解性と大域選択 |
 | ML性・有限安定性・有限還元・停止性 | 別々の放電義務 | Dの原始構造から導出 | 有限certificateと算法の十分性 |
 | 許容変換・評価条件・係数域と探索fiber | 入力と先行構成 | G-140 E、Dの生成・全解回収・復元 | 評価条件を満たす変更候補と不存在 |
+| 有限型$`U\to B`$・$`C\to B`$、Noetherian B、原始成立条件 | Dの特殊化の入力 | 有限還元からEの構成可能性、像P・N、実witnessを生成 | 幾何的実現の非空性を含む四分類 |
 | 有限表示、平方零拡大、原始reading、指定観測lift | Eの入力 | 独立Sem、全syzygy、残差、合法修復を生成 | 実lift・相対fiber・conormal比較 |
 | 体、有限表示、実現点／自由観測chart | Fの各系の仮定 | Noetherian性・Artin商／構文上界を別々に導く | 全Artin検出・有限上界 |
+| label付き独立係数と部分変更図式、原始変換式・全Law | Fの入力と構成義務 | h・$`\tau`$・Jの生成、座標面ideal等式、全R比較 | 参加変更数・多重次数・最小の不成立部分族 |
+| 部分変更の補正fiber、Boolean配置 | Fの構成 | 実制限による不存在の伝播、冪等元の一意lift | 補正存在・配置判定・微小変形の比較 |
 | 有限graph、$`\mu`$、offset、許可変更集合 | Gの入力 | 実adapter・全交差・State・LiftFiberDataを生成 | SAGAの零性と実操作、G-142の診断比較 |
 | Hの原始表示・phase・試験環 | 指定証人 | E–Gと同じ生成・比較へ通す | syzygy・検出次数・修復・操作輸送の検査 |
 
@@ -370,6 +470,10 @@ native比較は原始操作から構成し、大域的存在と障害の零性�
 B・Cでは無限Law族の全体を保持し、有限特殊化との比較と残る研究義務を明示する。
 Gの実操作・Ob・State・指定障害は同じ入力から生成し、SAGAのmatchingから実sectionへ
 戻す比較を完了対象に含める。Fの有限表示定理とHの無限Artin例は、それぞれの量化で証明する。
+G-140 F・Gの補完について、局所データの組立てとaffine・平方零問題の全修復を同じ原始射へ戻す。
+Dの四分類は、空の実現族を独立に回収し、成立・不成立のwitnessと全原始Lawの比較を含める。
+Fの座標面ideal定理は任意可換環と全係数で証明し、指定label・部分変更図式を保つ比較を構成する。
+部分族の補正存在、固定配置の判定、Artin次数をそれぞれ量化し、Hの同じ残差と実制限で比較する。
 固定主張への反証は、その量化に属する原始入力と破れる比較・存在判定を示して記録する。
 
 成果物はresearch/lean/ResearchLean/AG/のLean証拠と、

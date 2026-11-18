@@ -25,18 +25,19 @@ SHIGUREは、[n1019](../../docs/note/n1019_shigure_representability_design.md)�
 次の四つの研究到達像で構成する。係数拡張・表現・自然性と多項式特殊化は、
 各GOALの証明義務として位置づける。意味保存射、独立なAtlasとの観測比較、
 保存条件と評価条件に相対的な解空間を、この四つの構成で接続する。
+図式の補完・状態移送・複数変更の相互作用・判定に必要な追加観測を同じ原始構造から導く。
 
 - [G-139-aat-law-generated-relative-geometry](G-139-aat-law-generated-relative-geometry.md)
   (任意担体・全Homを回復する意味再構成と、Lawの相対Spec・全拡張分類・通常の代数性)
 - [G-140-aat-semantic-change-category](G-140-aat-semantic-change-category.md)
-  (非可逆な意味保存射、合成・局所組立て、評価条件に相対的なfiber)
+  (非可逆な意味保存射、図式補完・経路・状態移送、評価条件に相対的なfiberと共通候補)
 - [G-141-aat-coherent-repair-effectivity](G-141-aat-coherent-repair-effectivity.md)
-  (変更の障害・全修復、Čech・cotangent・lim¹比較、有限計算・全Artin検出の十分性)
+  (変更の障害・全修復、Čech・cotangent・lim¹比較、有限計算、相互作用と全Artin検出)
 - [G-142-aat-law-value-diagnostic-sheaf](G-142-aat-law-value-diagnostic-sheaf.md)
-  (診断の族・合流・構成可能関数の実現、意味障害の指定類とAtlasによる探索fiberの比較)
+  (診断の族・合流、指定障害とAtlasによる全fiberの比較、頑健な判定と必要な追加観測)
 
 依存はG-139→G-140→G-141。G-142の診断族はG-139を使い、
-実障害との比較にはG-141を使う。SHIGUREとAtlasはそれぞれの原始入力から構成し、
+変更・判定の比較にはG-140とG-141を使う。SHIGUREとAtlasはそれぞれの原始入力から構成し、
 G-142 Fで両者を結ぶ比較定理を証明する。具体的な特殊化は
 [n1020](../../docs/note/n1020_shigure_polynomial_specializations.md)で同じ対象・射へ対応づける。
 
