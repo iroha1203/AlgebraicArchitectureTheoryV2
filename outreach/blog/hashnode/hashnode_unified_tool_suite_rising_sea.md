@@ -13,9 +13,9 @@ Both sides have hit a wall.
 
 We do not need to pick between reading every line and reading nothing. We need a **middle path**.
 
-In this article, I introduce **a Rising Sea for software engineering**—a research vision for building that middle path. The idea is to place **Algebraic Architecture Theory (AAT)** underneath existing tools—static analysis, LLM semantic reading, tests, and formal methods like TLA+—so they share a single mathematical structure and **make pull requests computable**.
+In this article, I introduce **a Rising Sea for software engineering**—a research vision for building that middle path. The idea is to place **Algebraic Architecture Theory (AAT)** underneath existing tools—static analysis, LLM semantic reading, tests, and formal methods like TLA+—so they share a single geometry and **make pull requests computable**.
 
-I have published the mathematical foundations of AAT in [*Foundations of Algebraic Architecture Theory (Rising Sea)*](https://arxiv.org/abs/2609.27638) and am actively developing the computational tool ArchSig. Here, I lay out the broader vision built on top of that foundation: connecting multiple tools and the full development lifecycle through one common structure.
+I have published the mathematical foundations of AAT in [*Foundations of Algebraic Architecture Theory (Rising Sea)*](https://arxiv.org/abs/2609.27638) and am actively developing the computational tool ArchSig. Here, I lay out the broader vision built on top of that foundation: connecting multiple tools and the full development lifecycle through one shared geometry.
 
 ## Separating what you do not need to read from the one point that matters
 
@@ -49,13 +49,13 @@ Yet we remain trapped in the "read or don't read" binary because **the evidence 
 
 Because every tool speaks a different language and offers a different kind of assurance, the work of combining them—asking *"taken together, does this change preserve our requirements, and where is the one place a human needs to look?"*—still happens **inside a human reviewer's head while reading code**. Adding yet another standalone tool does not break the binary as long as that integration burden stays on the reviewer.
 
-We do not need another tool meant to replace existing ones. We need **a shared structure underneath our tools and engineering workflows**.
+We do not need another tool meant to replace existing ones. We need **a shared geometry underneath our tools and engineering workflows**.
 
 ## AAT as a shared sea: Atoms, Laws, and scheme theory
 
 Mathematician Alexander Grothendieck described an approach he called the **Rising Sea** (*la mer qui monte*): instead of cracking a hard problem open with a hammer, raise the level of abstraction until the problem opens on its own.
 
-**AAT (Algebraic Architecture Theory)** brings this idea to software engineering. Rather than piling up ad hoc checks for each language, framework, or verification technique, AAT places **one mathematical structure** beneath them so diverse engineering questions become computations in the same setting.
+**AAT (Algebraic Architecture Theory)** brings this idea to software engineering. Rather than piling up ad hoc checks for each language, framework, or verification technique, AAT places **one shared geometry** beneath them so diverse engineering questions become computations in the same setting.
 
 Four properties give AAT its leverage here.
 
@@ -74,7 +74,7 @@ There is another practical payoff. Traditional formal specifications and archite
 
 Atoms and Laws are abstracted away from concrete syntax and ecosystems. Extracting facts from source code depends on your stack, but the theory and calculations above it do not.
 
-A Rust microservice, a TypeScript web app, or a polyglot distributed system can all be analyzed with the same structure and theorems. You do not rebuild the theory every time a language or framework changes—and the promises and evidence you accumulate outlive any single stack.
+A Rust microservice, a TypeScript web app, or a polyglot distributed system can all be analyzed with the same geometry and theorems. You do not rebuild the theory every time a language or framework changes—and the promises and evidence you accumulate outlive any single stack.
 
 ### 3. Powered by algebraic geometry and scheme theory
 
@@ -85,7 +85,7 @@ Why reach for modern algebraic geometry—specifically **scheme theory**—inste
 - **Gluing and obstructions (sheaves and cohomology)**: parts often work individually yet break when combined. This corresponds directly to gluing local data across overlaps and computing the obstruction that prevents a global assembly.
 - **Comparison and transport**: asking whether a coarser view preserves the same diagnosis, or whether guarantees carry forward across a change, becomes geometric comparison and transport.
 
-Standing on this single structure takes us far beyond binary pass/fail checks. **The full space of valid solutions, gluing obstructions and their repairs, the design freedom left open by constraints, the missing information needed to decide, and safe migration paths**—questions that once looked unrelated all emerge from the same calculations.
+Standing on this single geometry takes us far beyond binary pass/fail checks. **The full space of valid solutions, gluing obstructions and their repairs, the design freedom left open by constraints, the missing information needed to decide, and safe migration paths**—questions that once looked unrelated all emerge from the same calculations.
 
 ### 4. Grounded in the Rising Sea paper, hidden from the user
 
@@ -99,16 +99,16 @@ Crucially, **engineers using these tools never need to learn scheme theory or co
 flowchart TB
   Code["Source code, specs, and requirements"] --> Obs["Observation and reading (provenance preserved)"]
   Obs --> ArchSig["ArchSig (interpretation and finite computation)"]
-  Math["Mathematics: AAT / scheme theory (structures and theorems)"] --> ArchSig
+  Math["Mathematics: AAT / scheme theory (geometry and theorems)"] --> ArchSig
   Lean["Lean (machine-checked proofs)"] --> Math
   ArchSig --> Ans["Answers for engineering (PR verdict, design candidates, obstructions, review points)"]
 ```
 
-## Connecting multiple tools through one structure
+## Connecting multiple tools through one geometry
 
-Extending the ideas of the foundational paper across verification tools and the entire development workflow is what I call **a Rising Sea for software engineering**. Rather than replacing existing methods, we connect each tool's strengths onto one AAT structure.
+Extending the ideas of the foundational paper across verification tools and the entire development workflow is what I call **a Rising Sea for software engineering**. Rather than replacing existing methods, we connect each tool's strengths onto one AAT geometry.
 
-| Method | What it contributes to the shared structure | Kind of evidence connected |
+| Method | What it contributes to the shared geometry | Kind of evidence connected |
 | --- | --- | --- |
 | Type checking, static analysis, linters | Types, dependencies, side effects, syntactic facts | Observed facts, proven constraints, counterexamples |
 | LLM semantic reading | Candidate meanings in usage context (roles of values, exposed behavior, transactional scope, candidate Laws) | Source-linked reading candidates with provenance |
@@ -118,7 +118,7 @@ Extending the ideas of the foundational paper across verification tools and the 
 
 One discipline is essential here: never flatten static-analysis facts, LLM hypotheses, test examples, and formal proofs into a single generic "verified" checkmark. We preserve the kind and provenance of every piece of evidence, composing and reusing results only where assumptions and shared boundaries genuinely align.
 
-Moreover, this connection works in both directions. With formal methods like TLA+, writing an accurate model from production code has long been the biggest barrier to adoption. Once observed Atoms and Laws live in a shared AAT structure, **ArchSig can generate TLA+ models directly for the parts that require concurrency checking**. The shared structure anchors the model to the code, lowering the modeling burden so TLA+ can focus on what it does best: exploring concurrent executions.
+Moreover, this connection works in both directions. With formal methods like TLA+, writing an accurate model from production code has long been the biggest barrier to adoption. Once observed Atoms and Laws live in a shared AAT geometry, **ArchSig can generate TLA+ models directly for the parts that require concurrency checking**. The shared geometry anchors the model to the code, lowering the modeling burden so TLA+ can focus on what it does best: exploring concurrent executions.
 
 ### LLM semantic reading crosses the boundary of static analysis
 
@@ -128,7 +128,7 @@ Traditional static analysis and type checking are rigorous, but they stop at syn
 
 LLMs excel at extracting this contextual meaning across large codebases. On their own, however, they are probabilistic and inconsistent, so their output cannot serve directly as a guarantee.
 
-In this framework, the LLM is not the final judge. It is a **semantic reader that proposes source-linked candidate interpretations**. When multiple interpretations remain consistent with what has been observed, we do not force the LLM to guess one. We keep **all consistent interpretations** and compute over them inside the mathematical structure.
+In this framework, the LLM is not the final judge. It is a **semantic reader that proposes source-linked candidate interpretations**. When multiple interpretations remain consistent with what has been observed, we do not force the LLM to guess one. We keep **all consistent interpretations** and compute over them inside the geometry.
 
 As a result, **a pull request stops being just a text diff and becomes a computable object**. We can separate three distinct questions:
 
@@ -151,12 +151,12 @@ You want two Laws to hold:
 - Canceling a paid order issues a refund exactly once and releases the inventory reservation.
 - An already canceled order is never refunded twice.
 
-Multiple tools cooperate over the shared structure on this PR:
+Multiple tools cooperate over the shared geometry on this PR:
 
 - **Type checking and static analysis**: establish as facts which functions the cancellation flow calls, where database transactions begin and end, and the input/output types of the payment client.
 - **LLM semantic reading**: extracts source-linked candidate meanings—what `status = "pending"` represents in the database, and how `retry_token` acts as an idempotency key for the external payment API.
 - **Tests**: supply concrete execution evidence for normal cancellation and for calling the cancel endpoint twice in a row without double refunding.
-- **TLA+ (via ArchSig model generation)**: once those facts and Laws sit in the AAT structure, ArchSig emits a TLA+ model to check concurrency races between a user's manual cancellation and a timeout-triggered automatic cancellation.
+- **TLA+ (via ArchSig model generation)**: once those facts and Laws sit in the AAT geometry, ArchSig emits a TLA+ model to check concurrency races between a user's manual cancellation and a timeout-triggered automatic cancellation.
 
 Now suppose two ambiguities remain in the LLM's reading:
 
@@ -172,7 +172,7 @@ Nearly all 800 lines are accounted for by computation, and your attention goes s
 
 ### Beyond verification: design exploration with ArchSig
 
-AAT and ArchSig are not limited to checking a PR after it is written. Because a single mathematical structure represents the whole space of valid designs, **ArchSig can explore that solution space before you write a single line of code**.
+AAT and ArchSig are not limited to checking a PR after it is written. Because a single geometry represents the whole space of valid designs, **ArchSig can explore that solution space before you write a single line of code**.
 
 Pass your Laws and the scope of modules you are willing to change into ArchSig, and it computes the shape of the solution space. Up front, you can see:
 
@@ -192,13 +192,13 @@ Only conclusions affected by changed observations are recomputed. Wherever a mea
 
 ## How this middle path reshapes AI-era engineering
 
-When multiple tools and development stages—design, task splitting, implementation, review, integration, and migration—connect through one shared structure, four major shifts open up.
+When multiple tools and development stages—design, task splitting, implementation, review, integration, and migration—connect through one shared geometry, four major shifts open up.
 
 ### 1. Parallel agent development and "semantic merge"
 
 When multiple AI agents work in parallel, each branch often passes its own tests only to break system behavior the moment they merge. Endless generate-and-revert loops erase the gains of parallelism.
 
-On a shared structure, you can check before work starts whether a valid solution exists and distribute tasks with explicit compatibility conditions on shared boundaries. At integration time, rather than reconciling raw line diffs alone, you compute **merge orders that preserve Laws and identify semantic conflicts and repairs**. With the same AI capabilities, teams can safely push the scale and complexity of parallel changes much further.
+On a shared geometry, you can check before work starts whether a valid solution exists and distribute tasks with explicit compatibility conditions on shared boundaries. At integration time, rather than reconciling raw line diffs alone, you compute **merge orders that preserve Laws and identify semantic conflicts and repairs**. With the same AI capabilities, teams can safely push the scale and complexity of parallel changes much further.
 
 ### 2. Shifting long-term value from "lines of code" to "promises, observations, and evidence"
 
@@ -222,10 +222,10 @@ Users should not need to learn algebraic geometry or formal methods. They state 
 
 To turn this vision into reality on top of the mathematical foundation established in the *Rising Sea* paper, I am pursuing five core research goals:
 
-1. **Representation and correspondence**: map the objects and properties handled by static analysis, LLM reading, tests, and TLA+ into the shared structure, and prove the exact conditions under which their verdicts correspond faithfully.
-2. **Composing evidence from parts to wholes**: establish the conditions for assembling system-wide conclusions and evidence from multiple tools and local scopes—and derive obstructions and repairs from the same structure.
+1. **Representation and correspondence**: map the objects and properties handled by static analysis, LLM reading, tests, and TLA+ into the shared geometry, and prove the exact conditions under which their verdicts correspond faithfully.
+2. **Composing evidence from parts to wholes**: establish the conditions for assembling system-wide conclusions and evidence from multiple tools and local scopes—and derive obstructions and repairs from the same geometry.
 3. **Sufficient observation**: characterize exactly how much information and which views are sufficient for Law evaluation, change verification, and design-space exploration.
-4. **Bridging to finite computation**: derive computable finite presentations from general scheme-theoretic structures, proving termination, completeness, and faithful reconstruction of answers.
+4. **Bridging to finite computation**: derive computable finite presentations from general scheme-theoretic geometry, proving termination, completeness, and faithful reconstruction of answers.
 5. **Maintaining evidence across change**: formalize how evidence is transported, re-observed, and recomputed as code and Laws evolve, while keeping the link between real code and mathematical inputs verifiable.
 
 Alongside the theory, bringing this into daily practice requires low-friction ingestion from existing tools and a workflow where Laws and observations grow naturally as part of everyday changes.
@@ -234,7 +234,7 @@ Alongside the theory, bringing this into daily practice requires low-friction in
 
 No matter how fast AI writes code, a binary choice between the exhaustion of reading every line and the gamble of not reading at all will not sustain software over the long run.
 
-Place **one mathematical structure built from Atoms and Laws** beneath the tools we already trust. Connect the rigor of static analysis, the semantic reach of LLMs, the concreteness of tests, and the concurrency power of formal methods—without erasing where each piece of evidence came from. Make PR verification and design exploration computable, and hand humans only the few decisions that truly belong to them.
+Place **one geometry built from Atoms and Laws** beneath the tools we already trust. Connect the rigor of static analysis, the semantic reach of LLMs, the concreteness of tests, and the concurrency power of formal methods—without erasing where each piece of evidence came from. Make PR verification and design exploration computable, and hand humans only the few decisions that truly belong to them.
 
 Moving past "read or don't read" is how we make AI speed an asset rather than a liability—allowing humans to take responsibility for larger, more complex software with promises and computation underneath.
 
