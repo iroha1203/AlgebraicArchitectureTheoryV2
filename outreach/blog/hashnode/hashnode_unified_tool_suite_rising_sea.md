@@ -68,7 +68,7 @@ AAT starts from two primitives: **Atoms** and **Laws**.
 
 External API requirements and internal design rules—such as *"dependencies flow in one direction across layers"* or *"all payment calls go through the dedicated payment module"*—live in the same formalism. We can also trace relationships between Laws: which requirement a design rule actually supports, or whether an alternative structure still satisfies the same external promises.
 
-There is another practical payoff. Traditional formal specifications and architecture documents ask teams to write specs first and keep code in sync, which inevitably leads to drift and double maintenance. AAT reverses the direction: **it constructs the architecture from facts observed directly in the source code (Atoms) and evaluates your chosen Laws against that structure**, avoiding the drift between separate design documents and implementation.
+Here, **we first express the properties we want to preserve as Laws, use those Laws to guide the observation of Atoms from source code, and construct a geometry from those observations**. Within that geometry, we examine whether the Laws hold and explore the changes that satisfy them.
 
 ### 2. Independent of programming languages and frameworks
 
