@@ -1,0 +1,6 @@
+flowchart TB
+  Code["Source code, specs, and requirements"] --> Obs["Observation and reading (provenance preserved)"]
+  Obs --> ArchSig["ArchSig (interpretation and finite computation)"]
+  Math["Mathematics: AAT / scheme theory (geometry and theorems)"] --> ArchSig
+  Lean["Lean (machine-checked proofs)"] --> Math
+  ArchSig --> Ans["Answers for engineering (PR verdict, design candidates, obstructions, review points)"]

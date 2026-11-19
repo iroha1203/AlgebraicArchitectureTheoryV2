@@ -95,14 +95,7 @@ One central result, the **Atlas Theorem**, characterizes when simplifying away f
 
 Crucially, **engineers using these tools never need to learn scheme theory or cohomology**. The mathematics and Lean proofs stay beneath the surface, while the tool layer (ArchSig) handles real-world code observation and finite computation.
 
-```mermaid
-flowchart TB
-  Code["Source code, specs, and requirements"] --> Obs["Observation and reading (provenance preserved)"]
-  Obs --> ArchSig["ArchSig (interpretation and finite computation)"]
-  Math["Mathematics: AAT / scheme theory (geometry and theorems)"] --> ArchSig
-  Lean["Lean (machine-checked proofs)"] --> Math
-  ArchSig --> Ans["Answers for engineering (PR verdict, design candidates, obstructions, review points)"]
-```
+![Source code feeds observation and reading; Lean supports AAT mathematics. Both feed ArchSig, which produces PR verdicts, design candidates, obstructions, and review points.](../assets/software_engineering_rising_sea_workflow_en.png)
 
 ## Connecting multiple tools through one geometry
 
