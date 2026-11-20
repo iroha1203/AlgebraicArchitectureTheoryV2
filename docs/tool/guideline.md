@@ -8,7 +8,7 @@
 - このガイドラインには作り方の規律を書き、コマンド・フィールド・計算仕様の詳細はマニュアルに置く。
 - 文書と作業記録の分担は [Workflow guideline](../workflow/guideline.md) の
   「ドキュメントをステートレスに保つ規則」に、PRD の扱いは [PRD guideline](../prd/guideline.md) に従う。
-- ArchView と FieldSig は ArchSig の出力を読む消費側ツールであり、判定・結論は常に ArchSig に委ねる。
+- ArchView と FieldSig は ArchSig の出力を読み、AAT の構造解析の判定・結論には ArchSig の計算結果を用いる。
 
 ## 責務範囲(入力トライアドの正本)
 
