@@ -13,11 +13,10 @@
 - SFT は、場として捉えたソフトウェア進化（field-shaped software evolution）の計算理論である。
 - SFT は、AAT の architecture object、operation、不変量、obstruction witness、signature、
   および定理の適用範囲を、観測量・制約・制御入力として利用する。
-- SFT は AAT の数学的な核を置き換えない。AAT から SFT への依存は片方向に保つ。
+- SFT は AAT の数学的な核の上に構築し、AAT → SFT の片方向依存を保つ。
 - AAT の理論本体の所在は
   [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)にある。
-  実成果物の測定対象と観測方法は SFT・ArchSig・実証データの側で定める。
-  SFT 側でも、AAT の外側にある観測の限界を AAT の未完了定理として扱わない。
+  実成果物の測定対象・観測方法・観測条件は SFT・ArchSig・実証データの側で定める。
 - `docs/sft/software_field_theory.md` が SFT 本文であり、`docs/sft/aat_interface.md` が
   AAT / SFT 間のインタフェースを定める。
 - `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT とその接続の根幹文書であり、
@@ -32,21 +31,21 @@
 - 予測、確率、因果的な解釈、安全性、および CI・テスト・人間レビューとの関係は、
   明示されたモデル、データセット、運用成果物に紐づけて扱う。
 - 実証データセット、運用フィードバック、キャリブレーション資料においては、
-  相関・観測・仮説を因果に関する定理と混同しない。
+  相関・観測・仮説と因果に関する定理を明確に区別する。
 - Lean の定理として主張できる範囲は AAT / Lean 側に置く。SFT の文書で定理に触れる場合は、
   AAT 数学本文と対応する `Formal/` の宣言を確認する。
-- ArchSig / FieldSig のレポートは、選んだ入力（観測と法・方程式）の範囲で言える肯定的な結論として読む。
-  語れない外側を一般的な非結論や残タスクとして膨らませない。
+- ArchSig / FieldSig のレポートは、選んだ入力（観測と法・方程式）から導かれる肯定的な結論として読む。
 - レビューやタスク整理では、SFT 文書が定義した成果物、型つきの結論、アクセサ定理、
-  キャリブレーション手順だけを完了条件にする。現実の未来全体や因果全体を未完了タスクとして持ち出さない。
+  キャリブレーション手順を完了条件とする
+  （判定範囲は [Workflow guideline](../workflow/guideline.md#完了レビューの判定範囲) に従う）。
 
 ## 編集方針
 
 - SFT 固有の語彙（特に field、force、attractor、basin、`ForecastCone`、`ConsequenceEnvelope`）は、
-  比喩にとどめず、計算可能な定義へ結びつけて丁寧に説明する。
-- AAT・ArchSig・FieldSig それぞれの役割と分担を曖昧にしない。
-- AI エージェントやレビュー・CI を完全性の証明とはみなさず、場を制御する介入・成果物として扱う。
-- 外部記事や website 向けの説明を SFT 本文に混ぜない。公開向けの文面は `website/` または `outreach/` 側で扱う。
+  計算可能な定義へ結びつけて丁寧に説明する。
+- AAT・ArchSig・FieldSig それぞれの役割と分担を明確に保つ。
+- AI エージェントやレビュー・CI は、場を制御する介入・成果物として位置づける。
+- SFT 本文は理論・仕様の記述に集中し、外部記事や公開向けの説明は `website/` または `outreach/` 側で扱う。
 
 ## 検証
 

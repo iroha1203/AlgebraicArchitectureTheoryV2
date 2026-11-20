@@ -4,44 +4,32 @@
 
 ## Claim discipline
 
-- 語らない範囲は無理に触れず、語れる範囲だけを正確かつ明確に述べる。
 - AAT / Lean の定理・定義・レビュー説明では、選んだ atom vocabulary、Law、cover、
-  係数、仮定、証明済み theorem package の範囲を肯定形で述べる。
-- 禁止: 「実コードベースは対象としない」「この定理はコード全体の品質を判定しない」のように、
-  AAT の外側を定型の但し書きとして主張に付け足すこと。外側の事柄は失敗・残タスク・補足説明にせず、
-  言及しないことで扱う。
-- OK: 「選んだ atom vocabulary と有限 cover の範囲で XXX を証明する」
+  係数、仮定、証明済み theorem package の範囲を肯定形で明確に述べる。
+- 良い例: 「選んだ atom vocabulary と有限 cover の範囲で XXX を証明する」
   「Lean で証明済みの sheaf condition と明示された comparison map のもとで YYY が成り立つ」のように、
-  主張の範囲を正面から限定して述べること。
-- 弱化防止や過剰主張の防止を目的とした否定一覧は、通常の説明文に繰り返さない。
-  実際に範囲を越えた主張を止めるときだけ、監査理由として最小限に使う。
+  主張の成立範囲を正面から示す。
+- AAT の外側にある事柄（実コードベース全体の品質判定など）は通常の説明や定型の但し書きに含めず、
+  実際に範囲を越えた主張を指摘する監査理由として必要な場面だけで最小限に述べる。
 
 ## 位置づけ
 
-- 現行の AAT は代数幾何的アーキテクチャ論である。最新の理論本体の所在は
+- 現行の AAT は代数幾何的アーキテクチャ論であり、最新の理論本体は
   [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)にある。
-  公理や定義の記述順序を、Law に基づく観測と幾何の構成を否定する作業規律へ読み替えない。
-- AAT は代数幾何の単なる比喩ではない。Atom を土台に、site、Grothendieck topology、sheaf、
-  ringed topos、scheme、Čech cohomology、derived / stacky structure といった
-  代数幾何の概念へ接続する理論として扱う。
-- Lean 形式化でも、AAT 専用の仮置きラッパーや名前だけの対応物で済ませない。
-  有限で小さい対象から始めても、定義、comparison map、同値、境界定理を通じて、
-  可能な限り既存の数学的構造と接続する方向へ育てる。
-- Atom、Law、obstruction、flatness、signature は代数幾何版の基礎データや局所表示である。
-  外部の設計パターン語彙へ還元して説明しない。
-- 実コードベースの抽出器、ArchMap の観測、ツールの検証は、AAT への入力を準備・検査する
-  前段または後段の層であり、AAT の定理群の完了条件には含めない。
-- AAT 自体に観測・計測・ツールの制約はない。制約を持つのは、ArchMap、
-  LawPolicy / MeasurementProfile による選択、ArchSig / FieldSig の測定結果、または
-  実証データセットの側である。
-- Lean ソースは代数幾何版 AAT の定義・定理・有限例を形式化する場所である。
-  実測や実証上の相関は、AAT ではなくツールや SFT 側の成果物に紐づけて扱う。
-- Lean 形式化は万能の検査器ではない。形式化の対象は、AAT の語彙で明示的に述べられる命題に限る。
-  実行時全体、意味宇宙全体、ソース抽出の完全性、ツール検証の完全性を
-  AAT の定理群のスコープに入れない。
-- 数学本文には Lean の証明状態、Issue 番号、実装済み API の進捗管理を混ぜない。
-- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書であり保護対象である。
-  更新条件は [Workflow guideline](../workflow/guideline.md) の「保護対象(3条件)」に従う。
+  Law に基づいて Atom を観測し、幾何を構成する方針のもとで理論と作業を進める。
+- AAT は Atom を土台に、site、Grothendieck topology、sheaf、ringed topos、scheme、
+  Čech cohomology、derived / stacky structure といった代数幾何の概念へ接続する
+  純粋数学理論として扱う。
+- Lean 形式化は、有限で小さい対象から始める場合でも、定義、comparison map、同値、
+  境界定理を通じて、可能な限り既存の数学的構造（mathlib を含む）と接続する方向へ育てる。
+- Atom、Law、obstruction、flatness、signature は代数幾何版の基礎データや局所表示として、
+  AAT の語彙のまま説明する。
+- 実コードベースの抽出器、ArchMap の観測、LawPolicy / MeasurementProfile による計測条件の選択、
+  ArchSig / FieldSig の検証・測定、実証データセットは、AAT への入力生成または後段の計測・実証層として管理する。
+- Lean ソース（`Formal/`）では、AAT の語彙で明示的に述べられる定義・定理・有限例を形式化する。
+  実測や実証上の相関はツールや SFT 側の成果物で扱う。
+- 数学本文（`docs/aat/algebraic_geometric_theory/`）は純粋な理論記述を保ち、保護対象として
+  [Workflow guideline](../workflow/guideline.md) の「保護対象(3条件)」に従って更新する。
 - Lean の証明状態と Issue の対応は、Lean ソース、GOAL、GitHub Issues、PRD を直接確認する。
 
 ## Lean 形式化方針
@@ -54,16 +42,16 @@
 - 明示的な相談なしに `axiom`、`admit`、`sorry`、`unsafe` を導入しない。
 - 定義は小さく保ち、同値性や対応関係は定理として証明する。
 - 現在の `Decomposable` は `StrictLayered` を意味する。
-- 非巡回性（acyclicity）、有限伝播（finite propagation）、べき零性（nilpotence）、
-  スペクトル条件は `Decomposable` の定義に混ぜず、別個の定理または将来の証明義務として扱う。
+  非巡回性（acyclicity）、有限伝播（finite propagation）、べき零性（nilpotence）、
+  スペクトル条件は独立した定理または将来の証明義務として扱う。
 - `ComponentCategory` は thin category であり、path count や walk length を意図的に忘れる。
 - 定量指標は `Walk`、`Path`、隣接行列、または将来の free-category 構成の側で扱う。
 - 実行可能な計測量は、まず有限の measurement universe 上の計算として定義し、
   グラフ水準の事実との接続は別定理として証明する。
-- `ComponentUniverse` は proof-carrying measurement universe として扱う。ソース抽出の成否は
-  AAT の定理ではなく、ArchMap やツール側の入力生成の仕様（contract）として扱う。
-- ArchSig や Rust ツールの有用性を Lean との対応で正当化しない。Lean 側は AAT で語れる命題を支える
-  形式化であり、ArchSig は別に観測（ArchMap）と法・方程式（LawPolicy）から診断結果を計算するツールである。
+- `ComponentUniverse` は proof-carrying measurement universe として扱い、ソース抽出の成否は
+  ArchMap やツール側の入力生成の仕様（contract）として管理する。
+- Lean 側は AAT で語れる命題の形式化を担い、ArchSig は観測（ArchMap）と法・方程式（LawPolicy）から
+  診断結果を計算するツールとして、それぞれの価値と責務を独立に説明する。
 
 ## 「境界」という言葉の使用を禁止する
 
@@ -166,26 +154,19 @@ AAT / Lean 形式化では mathlib 型の statement review 基準を採る。仮
 - 新規の `Prop + holds` フィールドは導入しない。どうしても selected assumption slot として
   導入する場合は、棚卸し台帳の公理スロットに登録し、`proved` ではなく
   `packaged (assumption-relative)` または `statement-only` の未放電仮定つき状態として扱う。
-- Lean で証明済みの主張と、実証研究で検証する主張を混同しない。
+- Lean で証明済みの主張と、実証研究で検証する主張を区別して書く。
 - 完了レビューでは、対象文書が列挙した定理、suite field、受け入れ定理、フィクスチャ、Issue クローズ条件を
-  直接照合する。対象文書が要求していない無制限の主張を「未完了部分」として追加しない。
-- 禁止: AAT の完了レビューで、ソース観測層の性質を `non-conclusion`、残タスク、
-  未完了の主張、証明不能な限界として列挙しない。ソースコードから AAT 入力を作成する過程は
-  AAT の定理群の外側にある。必要であれば ArchMap / ArchSig / FieldSig の
-  具体的な成果物、フィクスチャ、スキーマ、検証器、Issue 受け入れ条件として別管理する。
-- non-conclusion や主張の適用範囲は、具体的な定理や成果物の近くに必要な分だけ記録する。
-  レビュー報告や残タスク欄を、一般的に証明できない巨大な主張の一覧にしない。
-- 語れることだけを確かに語る。AAT / Lean の文書では、語れない外部領域を `non-conclusion` 一覧として
-  前面に出さない。必要な限定は、定理や成果物の有効範囲を示すために最小限だけ置く。
+  直接照合する（判定範囲は [Workflow guideline](../workflow/guideline.md#完了レビューの判定範囲) に従う）。
+  ソースコードから AAT 入力を作成する層の課題は、ArchMap / ArchSig / FieldSig 側の
+  具体的な成果物、フィクスチャ、スキーマ、検証器、Issue 受け入れ条件として管理する。
 - 定理や定義を追加した場合は、数学本文、Lean ソース、対応する GOAL または Issue を突合する。
 - 役目を終えた文書は削除する。
 - AAT の恒久情報は現行の数学本文に、Lean の定義・証明は Lean ソースに置く。
   作業の状態と記録の分担は [Workflow guideline](../workflow/guideline.md) の
   「ドキュメントをステートレスに保つ規則」に従う。
-- Architecture Signature は単一スコアではなく、多軸診断として扱う。
-- SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の基本概念ではない。
-  必要な場合だけ、law presentation、cover、restriction compatibility、obstruction ideal、
-  lawful locus の具体例として読む。
+- Architecture Signature は多軸診断として扱う。
+- SOLID や Layered / Clean Architecture などの外部設計語彙を扱う場合は、law presentation、cover、
+  restriction compatibility、obstruction ideal、lawful locus の具体例として位置づける。
 
 ## 検証
 
