@@ -17,12 +17,9 @@
 
 ## 位置づけ
 
-- 現行 AAT は代数幾何的アーキテクチャ論である。Atom は primitive architectural fact
-  として公理化され、Atom family / configuration から architecture object が生成される。
-  その上で固定された law universe、coverage topology、係数環 / 係数 sheaf から
-  architecture geometry を構成し、AAT site、sheaf、ringed AAT topos、law algebra、
-  obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、
-  derived / stacky geometry として読む。
+- 現行 AAT は代数幾何的アーキテクチャ論である。最新の理論本体の所在は
+  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)に従う。
+  公理・定義の記述順序を、Law に基づく観測と幾何の構成を否定する作業規律へ読み替えない。
 - AAT は代数幾何の比喩ではない。Atom を土台に、site、Grothendieck topology、sheaf、
   ringed topos、scheme、Čech cohomology、derived / stacky structure などの本物の
   代数幾何概念へ接続していく理論として扱う。
@@ -41,7 +38,7 @@
 - Lean 形式化は全知の検査器ではない。形式化対象は、AAT の語彙で明示的に述べられる命題に限る。
   全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
   AAT theorem package のスコープに入れない。
-- `docs/aat/algebraic_geometric_theory/` は現行 AAT 数学本文の正典である。Lean status、Issue 番号、実装済み API の進捗管理は本文に混ぜない。
+- 数学本文には Lean status、Issue 番号、実装済み API の進捗管理を混ぜない。
 - `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書であり保護ファイルである。
   更新条件は [workflow guideline](../workflow/guideline.md) の「保護ファイル(3条件)」を正とする。
 - Lean status とIssueとの対応は、Lean source、GOAL、GitHub Issues、PRDを直接確認する。

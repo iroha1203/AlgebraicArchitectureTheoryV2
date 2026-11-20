@@ -27,8 +27,8 @@
   成り立つ。語れることを、語れないことの一覧で覆い隠さない。
 - **種類を混ぜない。** 証明、仮定の下の証明、観測、仮説を区別して語る。
   測って零だったことと、測っていないことは違う。
-- **観測は構造を作らない。** 構造は見る前からそこにあり、観測と測定はそれを
-  読むだけである。何をどう読むかが reading であり、意味は定義ではなく使用に宿る。
+- **Law から観測と幾何を組み立てる。** Law に基づいて Atom を観測し、幾何を構成する。
+  その幾何の上で Law の成立と、条件を満たす変更を調べる。
 
 誓約は閉じた一覧ではない。素数のように、新しい誓約は不定期に見つかるだろう。
 それを底に加えるか、改めるかは、人間の明示的な指示による。
@@ -37,22 +37,27 @@
 
 ## 基礎概念
 
-- **AAT**: Atom を公理とする純粋数学理論(代数幾何的アーキテクチャ論)。比喩ではなく、
-  site / sheaf / cohomology 等の本物の代数幾何概念へ接続する。内部は公理と定理だけで
-  完結し、観測・測定・tooling は外側から接続する。
+- **AAT**: Atom と Law からアーキテクチャの幾何を構成する純粋数学理論。
+  site / sheaf / cohomology 等の代数幾何概念へ接続する。
+  最新の理論本体は、下の「理論本文の参照先」を参照する。
 - **SFT**: artifact や practice が software evolution の reachable future をどう変えるかを
   扱う理論。AAT が構造の幾何を扱い、SFT が実践と進化の場を扱う。
-- **ArchMap**: 観測した atom を source ref とともに記録する有限 artifact。
+- **ArchMap**: Law に基づいて観測した Atom を source ref とともに記録する有限 artifact。
 - **LawPolicy**(law-equation-surface / MeasurementProfile を含む): law reading、cover、
   witness、measurement regime を固定する法・方程式側 contract。
-- **ArchSig**: 観測(ArchMap)と法・方程式(LawPolicy 系)の二系統の入力から
-  bounded diagnostic を計算する Rust tooling。
+- **ArchSig**: 共通の Atom 定義、Law、ArchMap から幾何と診断結果を計算する Rust tooling。
+  入力の役割は [Tool guideline](docs/tool/guideline.md#責務範囲入力トライアドの正本)を参照する。
 - **ArchView**: ArchMap の Atom / Context / Cover を geometry として可視化し、ArchSig の
   分析結果を overlay として重ねて source landing へ接続する。
 - **FieldSig**: ArchSig の handoff artifact と workflow evidence を SFT 側の
   evolution measurement / governance input として読む。
 - **Lean 形式化**(`Formal/`): AAT の語彙で述べられる命題だけを形式化する。
 - **Website**: AAT / SFT / tooling を公開向けに読むための publication surface。
+
+## 理論本文の参照先
+
+`docs/aat/algebraic_geometric_theory/` の数学本文は、最終編集から時間が経過している。
+最新の理論本体は [Rising Sea](outreach/paper/rising-sea/README.md) を参照する。
 
 ## モノレポの地図と guideline ルーティング
 

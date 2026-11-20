@@ -17,6 +17,10 @@ ArchSig がすべてを現実のソースコードの上の計測に降ろす。
 
 software architecture の意味は、Atom と Law から生成される空間をなす。
 
+Law を定め、そこで必要になる区別に従って Atom を観測し、幾何を構成する。
+その幾何の上で、Law が成立する条件と、条件を満たす変更を調べる。
+Atom 定義は Law と観測が共有する語彙・型・意味を与え、観測は個々の source における値を与える。
+
 Atom は、architectural fact の最小単位である。Law は、Atom の集まり(family)の
 上に置かれた方程式である。複数の Law は連立方程式として同時に働き、意味は、
 そのすべてを満たす解、すなわち零点として住まう。
@@ -57,7 +61,8 @@ SFT は、その問いを感想ではなく力学の問題にする。
 
 ArchSig は、この研究の決定論的な計算核である。同じ入力からは必ず同じ計測結果を
 返し、理論の判定を、証拠と来歴(provenance)の付いた certificate として再現する。
-ArchMap が観測を記録し、LawPolicy が Law の選択を記録し、ArchSig が計算する。
+LawPolicy が Law の選択を記録し、ArchMap がそれに基づく Atom の観測を記録する。
+ArchSig は共通の Atom 定義と両者を読み、幾何とその上の判定を計算する。
 ArchView はその幾何を可視化し、FieldSig は計測を evolution の力学へ渡す。
 
 定理のあるところ、計測がある。計測のあるところ、定理がある。理論だけが

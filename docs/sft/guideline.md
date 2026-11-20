@@ -13,7 +13,9 @@
 - SFT は field-shaped software evolution の計算理論である。
 - SFT は AAT の architecture object、operation、invariant、obstruction witness、signature、theorem boundary / non-conclusions を観測量・制約・制御入力として使う。
 - SFT は AAT の数学的核を置き換えない。AAT から SFT への依存は片方向として保つ。
-- AAT は Atom を公理とする純粋数学理論であり、測定境界は SFT / ArchSig / empirical artifact 側にある。
+- AAT の理論本体の所在は
+  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)を参照する。
+  実 artifact の測定対象と観測方法は SFT / ArchSig / empirical artifact 側で定める。
   SFT 側でも、AAT の外部にある観測限界を AAT の未完了 theorem として扱わない。
 - `docs/sft/software_field_theory.md` は SFT 本文、`docs/sft/aat_interface.md` は AAT / SFT 境界の source of truth である。
 - `docs/sft/software_field_theory.md` と `docs/sft/aat_interface.md` は SFT / interface の根幹文書であり
