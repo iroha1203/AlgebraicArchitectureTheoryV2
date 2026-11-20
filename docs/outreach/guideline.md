@@ -4,8 +4,8 @@
 レビュー基準を定める。日本語原稿・英語原稿の両方に適用する。
 新しく執筆する記事に適用する。既存記事への遡及修正は行わない。
 
-記事本文と素材の配置は [Outreach README](../../outreach/README.md)、
-リポジトリ作業の横断規律は [Workflow guideline](../workflow/guideline.md) を参照する。
+記事本文と素材の配置は [Outreach README](../../outreach/README.md) に、
+リポジトリ作業の横断規律は [Workflow guideline](../workflow/guideline.md) にある。
 論文の執筆は [Paper guideline](../paper/guideline.md)、公開 website の編集は
 [Website guideline](../website/guideline.md) が扱う。
 

@@ -1,99 +1,102 @@
 # AAT / Lean 編集ガイドライン
 
-この文書は `Formal/AG` と `docs/aat` を編集するときの作業方針をまとめる。
+この文書は、`Formal/AG` と `docs/aat` を編集するときの作業方針を定める。
 
 ## Claim discipline
 
-- 語らないことは語らない。語るべきことは強く精密に語る。
-- AAT / Lean の定理・定義・レビュー説明では、選択された atom vocabulary、law、cover、
-  coefficient、仮定、証明済み theorem package の範囲を肯定形で述べる。
+- 語らない範囲は無理に触れず、語れる範囲だけを正確かつ明確に述べる。
+- AAT / Lean の定理・定義・レビュー説明では、選んだ atom vocabulary、Law、cover、
+  係数、仮定、証明済み theorem package の範囲を肯定形で述べる。
 - 禁止: 「実コードベースは対象としない」「この定理はコード全体の品質を判定しない」のように、
-  AAT の外側を定型 caveat として主張に付け足すこと。外側は失敗・残タスク・補足説明ではなく沈黙で扱う。
-- OK: 「選択された atom vocabulary と finite cover の範囲で XXX を証明する」
-  「Lean で証明済みの sheaf condition と明示された comparison map に相対化して YYY が成り立つ」のように、
-  claim scope を正面から限定して述べること。
-- anti-weakening / overclaim 防止のための negative list は、通常の説明文に再掲しない。
-  実際に境界を越えた claim を止めるときだけ、監査理由として最小限に使う。
+  AAT の外側を定型の但し書きとして主張に付け足すこと。外側の事柄は失敗・残タスク・補足説明にせず、
+  言及しないことで扱う。
+- OK: 「選んだ atom vocabulary と有限 cover の範囲で XXX を証明する」
+  「Lean で証明済みの sheaf condition と明示された comparison map のもとで YYY が成り立つ」のように、
+  主張の範囲を正面から限定して述べること。
+- 弱化防止や過剰主張の防止を目的とした否定一覧は、通常の説明文に繰り返さない。
+  実際に範囲を越えた主張を止めるときだけ、監査理由として最小限に使う。
 
 ## 位置づけ
 
-- 現行 AAT は代数幾何的アーキテクチャ論である。最新の理論本体の所在は
-  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)に従う。
-  公理・定義の記述順序を、Law に基づく観測と幾何の構成を否定する作業規律へ読み替えない。
-- AAT は代数幾何の比喩ではない。Atom を土台に、site、Grothendieck topology、sheaf、
-  ringed topos、scheme、Čech cohomology、derived / stacky structure などの本物の
-  代数幾何概念へ接続していく理論として扱う。
-- Lean 形式化でも、AAT 専用の仮置き wrapper や名前だけの analogue で満足しない。
-  有限・小さい対象から始めても、定義、comparison map、同値、boundary theorem を通じて、
+- 現行の AAT は代数幾何的アーキテクチャ論である。最新の理論本体の所在は
+  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)にある。
+  公理や定義の記述順序を、Law に基づく観測と幾何の構成を否定する作業規律へ読み替えない。
+- AAT は代数幾何の単なる比喩ではない。Atom を土台に、site、Grothendieck topology、sheaf、
+  ringed topos、scheme、Čech cohomology、derived / stacky structure といった
+  代数幾何の概念へ接続する理論として扱う。
+- Lean 形式化でも、AAT 専用の仮置きラッパーや名前だけの対応物で済ませない。
+  有限で小さい対象から始めても、定義、comparison map、同値、境界定理を通じて、
   可能な限り既存の数学的構造と接続する方向へ育てる。
-- Atom / law / obstruction / flatness / signature は代数幾何版の基礎データや局所
-  presentation である。外部設計パターン語彙へ潰して説明しない。
-- 実コードベース抽出器、ArchMap observation、tooling validation は、AAT 入力を提示・検査する
-  前段または後段 surface であり、AAT の theorem package の完了条件ではない。
-- AAT 自体に observation / measurement / tooling boundary はない。境界を持つのは、ArchMap、
-  LawPolicy / MeasurementProfile による選択、ArchSig / FieldSig の測定 artifact、または
-  empirical dataset である。
-- Lean source は代数幾何版 AAT の定義・定理・finite examples を形式化する場所である。
-  実測や empirical correlation は、AAT ではなく tooling / SFT 側の artifact に相対化して扱う。
-- Lean 形式化は全知の検査器ではない。形式化対象は、AAT の語彙で明示的に述べられる命題に限る。
-  全 runtime、全 semantic universe、source extraction completeness、tooling validation completeness を
-  AAT theorem package のスコープに入れない。
-- 数学本文には Lean status、Issue 番号、実装済み API の進捗管理を混ぜない。
-- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書であり保護ファイルである。
-  更新条件は [workflow guideline](../workflow/guideline.md) の「保護ファイル(3条件)」を正とする。
-- Lean status とIssueとの対応は、Lean source、GOAL、GitHub Issues、PRDを直接確認する。
+- Atom、Law、obstruction、flatness、signature は代数幾何版の基礎データや局所表示である。
+  外部の設計パターン語彙へ還元して説明しない。
+- 実コードベースの抽出器、ArchMap の観測、ツールの検証は、AAT への入力を準備・検査する
+  前段または後段の層であり、AAT の定理群の完了条件には含めない。
+- AAT 自体に観測・計測・ツールの制約はない。制約を持つのは、ArchMap、
+  LawPolicy / MeasurementProfile による選択、ArchSig / FieldSig の測定結果、または
+  実証データセットの側である。
+- Lean ソースは代数幾何版 AAT の定義・定理・有限例を形式化する場所である。
+  実測や実証上の相関は、AAT ではなくツールや SFT 側の成果物に紐づけて扱う。
+- Lean 形式化は万能の検査器ではない。形式化の対象は、AAT の語彙で明示的に述べられる命題に限る。
+  実行時全体、意味宇宙全体、ソース抽出の完全性、ツール検証の完全性を
+  AAT の定理群のスコープに入れない。
+- 数学本文には Lean の証明状態、Issue 番号、実装済み API の進捗管理を混ぜない。
+- `docs/aat/algebraic_geometric_theory/` は AAT の根幹文書であり保護対象である。
+  更新条件は [Workflow guideline](../workflow/guideline.md) の「保護対象(3条件)」に従う。
+- Lean の証明状態と Issue の対応は、Lean ソース、GOAL、GitHub Issues、PRD を直接確認する。
 
 ## Lean 形式化方針
 
-- statement 品質・定義品質・スタイルの正本は
-  [lean_quality_standard.md](lean_quality_standard.md)
-  (mathlib 型 statement review 基準。material premise 三分類申告、
-  API 接続義務、no-unfold API 規律、target statement の一次仕様と直接査読を含む)。
-  この節の各項目と重なる場合は正本側を参照する。
-- 明示的な相談なしに `axiom`, `admit`, `sorry`, `unsafe` を導入しない。
-- 定義は小さく保ち、同値性や対応関係は定理として育てる。
+- statement 品質・定義品質・スタイルの基準は
+  [lean_quality_standard.md](lean_quality_standard.md) にある
+  （mathlib 型の statement review 基準。material premise の三分類申告、
+  API 接続義務、no-unfold API 規律、target statement の一次仕様と直接査読を含む）。
+  この節の各項目と重なる場合はそちらを優先する。
+- 明示的な相談なしに `axiom`、`admit`、`sorry`、`unsafe` を導入しない。
+- 定義は小さく保ち、同値性や対応関係は定理として証明する。
 - 現在の `Decomposable` は `StrictLayered` を意味する。
-- acyclicity、finite propagation、nilpotence、spectral conditions は `Decomposable` の定義に混ぜない。別個の定理または将来の proof obligation として扱う。
+- 非巡回性（acyclicity）、有限伝播（finite propagation）、べき零性（nilpotence）、
+  スペクトル条件は `Decomposable` の定義に混ぜず、別個の定理または将来の証明義務として扱う。
 - `ComponentCategory` は thin category であり、path count や walk length を意図的に忘れる。
-- 定量指標は `Walk`, `Path`, adjacency matrix、または将来の free-category construction 側で扱う。
-- executable metrics は、まず有限な measurement universe 上の計算として定義し、graph-level facts との接続は別 theorem として証明する。
-- `ComponentUniverse` は proof-carrying measurement universe として扱う。source extraction の成否は
-  AAT の定理ではなく、ArchMap / tooling 側の入力生成 contract として扱う。
-- ArchSig や Rust tooling の有用性を Lean との対応で正当化しない。Lean 側は AAT の語れる命題を支える
-  形式化であり、ArchSig は別に観測(ArchMap)と法・方程式(LawPolicy)から診断結論を出す tool である。
+- 定量指標は `Walk`、`Path`、隣接行列、または将来の free-category 構成の側で扱う。
+- 実行可能な計測量は、まず有限の measurement universe 上の計算として定義し、
+  グラフ水準の事実との接続は別定理として証明する。
+- `ComponentUniverse` は proof-carrying measurement universe として扱う。ソース抽出の成否は
+  AAT の定理ではなく、ArchMap やツール側の入力生成の仕様（contract）として扱う。
+- ArchSig や Rust ツールの有用性を Lean との対応だけで正当化しない。Lean 側は AAT で語れる命題を支える
+  形式化であり、ArchSig は別に観測（ArchMap）と法・方程式（LawPolicy）から診断結果を計算するツールである。
 
 ## 「境界」という言葉の使用を禁止する
 
-この節は AAT / Lean 作業の停止規則の正本である。エージェントはここを「推奨」ではなく
-実装・レビュー・完了判定の hard rule として扱う。
+この節は AAT / Lean 作業の停止規則を定める。エージェントはここを単なる推奨ではなく、
+実装・レビュー・完了判定の必須規則として扱う。
 
 ### 原則
 
-この見出しで名指しした語を `禁止語` とする。AAT / Lean 作業では `禁止語` を使用しない。
-使いそうになった場合は停止し、下の対応表に従って具体的な状態名へ置き換える。
+この見出しで名指しした語を `禁止語` とする。AAT / Lean 作業では `禁止語` を使わない。
+使いそうになったら作業を止め、下の対応表に従って具体的な状態名へ置き換える。
 
-Lean 実装は数学本文を再定義しない。数学本文より弱い theorem、本文にない material premise、
-結論相当の premise を外部入力として受け取る theorem、wrapper / alias / repackage は、
-いずれも本文の証明ではない。`lake build`、`#print axioms`、theorem 名の存在、docs / ledger の整備は、
-この欠陥を補わない。
+Lean 実装は数学本文の内容を再定義しない。数学本文より弱い定理、本文にない material premise、
+結論に相当する premise を外部入力として受け取る定理、そして単なる wrapper・alias・repackage は、
+いずれも本文の証明ではない。`lake build`、`#print axioms`、定理名の存在、ドキュメントや台帳の整備では、
+この欠陥を補えない。
 
-AAT / Lean 形式化は mathlib 型の statement review 基準を採用する。仮定を増やして局所的に
-通るだけの theorem、本文の数学的仕事を premise に肩代わりさせる theorem、既存 API と
-接続しない閉じた wrapper theorem、再利用価値のない弱い theorem は査読を通さない。
-実装前に target statement を固定し、完了判定は theorem 名の存在ではなく固定 statement との
+AAT / Lean 形式化では mathlib 型の statement review 基準を採る。仮定を増やして局所的に
+通しただけの定理、本文の数学的な証明作業を premise に肩代わりさせる定理、既存 API と
+接続しない閉じたラッパー定理、再利用価値のない弱い定理は査読を通さない。
+実装前に target statement を固定し、完了判定は定理名の存在ではなく固定 statement との
 一致で行う。実装中に仮定・結論・対象を変更した場合は、その時点で未達として停止する。
-この statement review 基準と一次仕様・直接査読の手続きの正本は
-[lean_quality_standard.md](lean_quality_standard.md)(Lean 品質基準)である。
+この statement review 基準と一次仕様・直接査読の手続きは
+[lean_quality_standard.md](lean_quality_standard.md)（Lean 品質基準）に定める。
 
-数学本文側に明示された制限は、`明示 scope`、`stated scope`、`対象の制限`、
-`定理の仮定`、`statement の対象制限` と書く。無条件主張の不可能性を言う場合は、
-証明済み theorem / counterexample の宣言名、statement、量化対象、本文主張との対応を
+数学本文に明示された制限は、`明示 scope`、`stated scope`、`対象の制限`、
+`定理の仮定`、`statement の対象制限` と書く。無条件の主張が成り立たないと言う場合は、
+証明済みの定理や反例の宣言名、statement、量化対象、本文主張との対応を
 示せない限り、`未証明` / `要求未達` / `theorem strength mismatch` として扱う。
-no-go 風の説明は免罪符にしない。
+証明の裏づけのない no-go 風の説明を、未証明のまま閉じる理由にはしない。
 
-この規則に反する実装・説明・完了判定を見つけたら、エージェントは作業を止めて
-本文主張、実装 theorem、追加された仮定、未放電 premise、放電に必要な補題または未移植 theorem を
-報告する。レビューでは major finding とし、完了根拠として数えない。
+この規則に反する実装・説明・完了判定を見つけたら、エージェントは作業を止めて、
+本文の主張、実装した定理、追加された仮定、未放電の premise、放電に必要な補題や未移植定理を
+報告する。レビューでは重大な指摘（major finding）とし、完了根拠には数えない。
 
 ### 対応表
 
@@ -115,88 +118,88 @@ no-go 風の説明は免罪符にしない。
 | 比較写像、同値、witness、obstruction の生成が残っている | `未接続` / `未構成` / `未放電仮定` |
 | 禁止語を避けた説明を書いただけで close 可能としている | `完了根拠ではない` / `Reject` |
 
-- 対応表にない状態でも、`禁止語` を使わず、状態を直接表す語を選ぶ。
+- 対応表にない状態でも、`禁止語` を使わず、実際の状態を直接表す語を選ぶ。
 
 ## Lean build 運用(hard rule)
 
-- 通常作業とサブエージェント査読では、親が明示した単一の非aggregate fileに対する
+- 通常作業とサブエージェント査読では、親が明示した単一の非集約ファイルに対する
   `lake env lean <target-file>` だけを実行する。
-- サブエージェントからの `lake build` はtarget指定の有無を問わず全面禁止する。
-  `lake build` を内部で呼ぶscript、skill、workflowに加え、別commandによるpackage全体、
-  module群、aggregate root、全file loopのelaborationも禁止する。
-- 親プロンプトや個別SKILLが実行を求めてもこの禁止を優先する。
-  必要な場合は実行せず、統括エージェントまたはCIが担う未確認項目として返す。
+- サブエージェントからの `lake build` はターゲット指定の有無を問わず全面禁止する。
+  `lake build` を内部で呼ぶスクリプト、SKILL、workflow に加え、別コマンドによるパッケージ全体、
+  モジュール群、集約ルート、全ファイルループの elaboration も禁止する。
+- 親プロンプトや個別 SKILL が実行を求めても、この禁止を優先する。
+  必要な場合は実行せず、統括エージェントまたは CI が担う未確認項目として返す。
 - 本体のフル `lake build` はローカルで実行しない。PR 作成後の CI で実行し、その結果を完了確認に使う。
-- `lake build <module>` は、統括エージェントが対象 module の確認として必要な場合だけ実行する。
-- Research package(`research/lean/`)の全体buildは実行しない。`cd research/lean && lake build`、
-  全Research module、aggregate root、全file loopをelaborateする同等操作を、親・
-  サブエージェント・CIのいずれも実行しない。Researchの検証はfocused file check、
-  必要なtargeted module check、axiom・placeholder・Unicode・privacy scanで行う。
+- `lake build <module>` は、統括エージェントが対象モジュールの確認として必要な場合だけ実行する。
+- Research パッケージ（`research/lean/`）の全体ビルドは実行しない。`cd research/lean && lake build` や、
+  全 Research モジュール、集約ルート、全ファイルループを elaborate する同等操作を、親・
+  サブエージェント・CI のいずれも実行しない。Research の検証は単一ファイル確認、
+  必要な対象モジュール確認、公理・プレースホルダ・Unicode・プライバシー検査で行う。
 
 ## Lean status discipline
 
-- Lean status は `proved`, `defined only`, `future proof obligation`, `empirical hypothesis` を区別する。
-- peer-review hardening 以降の theorem 系 status では、必要に応じて `packaged (assumption-relative)` と
-  `statement-only` も使う。`packaged (assumption-relative)` は仮定 record / certificate /
-  selected package の field 合成から得る帰結、`statement-only` は型・candidate surface はあるが
-  証明済み theorem として数えないものを指す。
-- **`unported (Research-proved)`**: Research 側(`research/lean/ResearchLean/`)に同等以上の
-  statement が受理済みだが、本体(`Formal/AG/` 本線)に蒸留されていない状態。
-  **残タスクであり、境界ではない。** Research に同主題の受理 theorem が存在する限り、
-  本体側の欠落を `packaged (assumption-relative)` +境界注記で close してはならない
-  (Research 下限原則)。`unported` は完了 status ではなく、close は蒸留完了
-  (下限到達)または「下限到達不能の停止報告」のみで行う。
-- **移植 ≠ import(Research 境界の不変条件)**: 本体(`Formal/AG` 本線、
-  `Formal.lean` / `Formal/AG.lean` の配線を含む)から `ResearchLean.AG` を
-  import してはならない。import 方向は Research → 本体のみ可
-  (研究 sandbox と正本の疎結合、peer-review hardening AC18)。「移植」とは本体内で構成を
-  再構成する蒸留であり、Research module の import +再導出ラッパーは
-  依存 repackage として `unported` のまま扱う。検査:
+- Lean の証明状態は `proved`、`defined only`、`future proof obligation`、`empirical hypothesis` を区別する。
+- peer-review hardening 以降の定理系の状態では、必要に応じて `packaged (assumption-relative)` と
+  `statement-only` も使う。`packaged (assumption-relative)` は仮定レコード・certificate・
+  selected package のフィールド合成から得る帰結を、`statement-only` は型や候補宣言はあるが
+  証明済み定理として数えないものを指す。
+- **`unported (Research-proved)`**: Research 側（`research/lean/ResearchLean/`）に同等以上の
+  statement が受理済みだが、本体（`Formal/AG/` 本線）に蒸留されていない状態。
+  **これは残タスクであり、制限ではない。** Research に同じ主題の受理済み定理が存在する限り、
+  本体側の欠落を `packaged (assumption-relative)` と制限の注記だけで完了にしてはならない
+  （Research 下限原則）。`unported` は完了状態ではなく、完了にできるのは蒸留の完了
+  （下限到達）か「下限到達不能の停止報告」だけである。
+- **移植 ≠ import（Research との独立性の不変条件）**: 本体（`Formal/AG` 本線、
+  `Formal.lean` / `Formal/AG.lean` の配線を含む）から `ResearchLean.AG` を
+  import してはならない。import 方向は Research → 本体のみ許可する
+  （研究サンドボックスと本体の疎結合、peer-review hardening AC18）。ここでいう移植とは本体内で構成を
+  作り直す蒸留であり、Research モジュールの import と再導出ラッパーは
+  依存の包み直し（repackage）として `unported` のまま扱う。検査は
   `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!research/lean/ResearchLean/**' --glob '!research/lean/ResearchLean.lean'`
-  が no match であること(Research 集約ルート `research/lean/ResearchLean.lean` 自身の
-  内部 import は正当なので除外する)。
-- **scope 記載の資格条件**: 台帳・docs・PR 本文に scope 制限(selected input、no-go、沈黙、
-  「〜とは主張しない」)を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
-  §4 を正本とする(不可能性証拠の宣言名名指し+量化対象が scope 制限の対象を覆うことの
-  statement 実読確認+覆い方の一文)。資格を満たさない欠落は scope 制限ではなく
-  `unported` または未達である(本 guideline の禁止語対応表)。
+  に一致がないことで確認する（Research 集約ルート `research/lean/ResearchLean.lean` 自身の
+  内部 import は正当なため除外する）。
+- **scope 記載の資格条件**: 台帳・ドキュメント・PR 本文に適用範囲の制限（selected input、no-go、沈黙、
+  「〜とは主張しない」）を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
+  §4 に定める（不可能性証拠の宣言名、量化対象が制限対象を覆うことの statement 実読確認、
+  覆い方の一文）。条件を満たさない欠落は適用範囲の制限ではなく
+  `unported` または未達である（本ガイドラインの禁止語対応表を参照）。
 - 新規の `Prop + holds` フィールドは導入しない。どうしても selected assumption slot として
   導入する場合は、棚卸し台帳の公理スロットに登録し、`proved` ではなく
-  `packaged (assumption-relative)` または `statement-only` の未放電仮定つき status として扱う。
+  `packaged (assumption-relative)` または `statement-only` の未放電仮定つき状態として扱う。
 - Lean で証明済みの主張と、実証研究で検証する主張を混同しない。
-- 完了レビューでは、対象文書が列挙した theorem、suite field、acceptance theorem、fixture、Issue closure を
-  直接照合する。対象文書が要求していない無制限 claim を「未完了部分」として追加しない。
-- 禁止: AAT の完了レビューで source-observation layer の性質を `non-conclusion`、残タスク、
-  未完了 claim、証明不能な限界として列挙しない。source code から AAT 入力を提示する過程は
-  AAT theorem package の外側にある。必要なら ArchMap / ArchSig / FieldSig の
-  具体的な artifact、fixture、schema、validator、Issue acceptance として別管理する。
-- non-conclusion / claim boundary は、具体的な theorem や artifact の近くで必要な分だけ記録する。
-  レビュー報告や残タスク欄を、一般的に証明不能な巨大 claim の一覧にしない。
-- 語れることだけを確かに語る。AAT / Lean docs では、語れない外部領域を `non-conclusion` 一覧として
-  主役化しない。必要な boundary は、定理や artifact の有効範囲を示すために最小限だけ置く。
-- theorem や定義を追加した場合は、数学本文、Lean source、対応するGOALまたはIssueを突合する。
+- 完了レビューでは、対象文書が列挙した定理、suite field、受け入れ定理、フィクスチャ、Issue クローズ条件を
+  直接照合する。対象文書が要求していない無制限の主張を「未完了部分」として追加しない。
+- 禁止: AAT の完了レビューで、ソース観測層の性質を `non-conclusion`、残タスク、
+  未完了の主張、証明不能な限界として列挙しない。ソースコードから AAT 入力を作成する過程は
+  AAT の定理群の外側にある。必要であれば ArchMap / ArchSig / FieldSig の
+  具体的な成果物、フィクスチャ、スキーマ、検証器、Issue 受け入れ条件として別管理する。
+- non-conclusion や主張の適用範囲は、具体的な定理や成果物の近くに必要な分だけ記録する。
+  レビュー報告や残タスク欄を、一般的に証明できない巨大な主張の一覧にしない。
+- 語れることだけを確かに語る。AAT / Lean の文書では、語れない外部領域を `non-conclusion` 一覧として
+  前面に出さない。必要な限定は、定理や成果物の有効範囲を示すために最小限だけ置く。
+- 定理や定義を追加した場合は、数学本文、Lean ソース、対応する GOAL または Issue を突合する。
 - 役目を終えた文書は削除する。
-- AAT の恒久情報は現行数学本文に、Lean の定義・証明は Lean source に置く。
-  作業の状態・記録の分担は [Workflow guideline](../workflow/guideline.md) の
+- AAT の恒久情報は現行の数学本文に、Lean の定義・証明は Lean ソースに置く。
+  作業の状態と記録の分担は [Workflow guideline](../workflow/guideline.md) の
   「ドキュメントをステートレスに保つ規則」に従う。
 - Architecture Signature は単一スコアではなく、多軸診断として扱う。
-- SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の primitive ではない。
+- SOLID や Layered / Clean Architecture などの外部設計語彙は AAT の基本概念ではない。
   必要な場合だけ、law presentation、cover、restriction compatibility、obstruction ideal、
   lawful locus の具体例として読む。
 
 ## 検証
 
-Lean 変更を含む場合、変更範囲に応じて focused check、対象moduleの targeted build、必要な監査を選ぶ
-(実行制約は上の「Lean build 運用(hard rule)」)。
+Lean の変更を含む場合、変更範囲に応じて単一ファイル確認、対象モジュールのビルド、必要な監査を選ぶ
+（実行制約は上の「Lean build 運用(hard rule)」に従う）。
 
-単一ファイルを確認する場合は次の形を使う。
+単一ファイルを確認する場合は次のコマンドを使う。
 
 ```bash
 lake env lean Formal/AG/Atom/Atom.lean
 ```
 
-PR 前の共通 scan は [workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。
-AAT / Lean 変更では加えて次を確認する。
+PR 前の共通チェックは [Workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。
+AAT / Lean の変更では加えて次を確認する。
 
 ```bash
 rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs
