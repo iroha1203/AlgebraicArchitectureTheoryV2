@@ -30,10 +30,9 @@
   最新の理論本体は、下の「理論本文の参照先」を参照する。
 - **SFT**: 開発の成果物や実践が、ソフトウェア進化で到達しうる未来をどう変えるかを扱う理論。
   AAT が構造の幾何を扱い、SFT が実践と進化の場を扱う。
-- **ArchMap**: Law に基づいて観測した Atom を、ソース参照とあわせて記録する有限の成果物（artifact）。
-- **LawPolicy**（law-equation-surface / MeasurementProfile を含む）: Law の reading、cover、
-  witness、計測条件（measurement regime）を固定する法・方程式側の取り決め（contract）。
-- **ArchSig**: 共通の Atom 定義、Law、ArchMap から幾何と診断結果を計算する Rust ツール。
+- **ArchMap**: Law に基づいて観測した Atom を、ソース参照と由来（静的解析・実行観測・LLM 読解候補・人間採用の区別）とあわせて記録する有限の成果物（artifact）。
+- **Law**: 特定のコード実体から独立に、設計上の出発点として必要な区別、関係・制約、reading、局所公開情報、許容変換や目的評価条件を宣言する規則。
+- **ArchSig**: 共通の Atom 定義、Law、ArchMap から対象・操作・対応・局所構造・診断・修復候補を計算する Rust ツール（現行実装は `tools/archsig_v0.6.0`）。
   入力の役割分担は [Tool guideline](docs/tool/guideline.md#責務範囲入力トライアドの正本) を参照する。
 - **ArchView**: ArchMap の Atom・Context・Cover を幾何構造として可視化し、ArchSig の
   分析結果を重ねてソースコードの該当箇所へたどれるようにするツール。
@@ -59,7 +58,7 @@
 | --- | --- | --- |
 | Lean / AAT | `Formal/AG`, `Formal.lean`, `docs/aat`（数学本文は [algebraic_geometric_theory](docs/aat/algebraic_geometric_theory/README.md)） | [AAT guideline](docs/aat/guideline.md) |
 | SFT | `docs/sft` | [SFT guideline](docs/sft/guideline.md) |
-| Tooling | `tools/archsig`, `tools/archview`, `tools/fieldsig`, `docs/tool` | [Tool guideline](docs/tool/guideline.md) |
+| Tooling | `tools/archsig_v0.6.0`, `tools/archview`, `tools/fieldsig`, `docs/tool` | [Tool guideline](docs/tool/guideline.md) |
 | Website | `website`, `docs/website` | [Website guideline](docs/website/guideline.md) |
 | PRD | `docs/prd` | [PRD guideline](docs/prd/guideline.md) |
 | 論文 | `outreach/paper`, `docs/paper` | [Paper guideline](docs/paper/guideline.md) |

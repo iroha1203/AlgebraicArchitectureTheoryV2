@@ -1,101 +1,56 @@
 ---
 name: tool-review
-description: ArchSig / FieldSig tooling、docs/tool、schema catalogの実装完了後の最終差分を4観点で敵対レビューし、編集せず合否を返す。"$tool-review"、review-prの最終ゲート、リリース前監査で使う。
+description: ArchSig v0.6.0 / ArchView / FieldSig の実装および docs/tool の完了後差分を、独立 1 lane で敵対レビューし、編集せず合否を返す。"$tool-review"、review-prの最終ゲート、リリース前監査で使う。
 ---
 
 # Tool Review
 
-ArchSig / FieldSig tooling の実装と、関連する文書・schema catalog の差分を敵対的にレビューする。
+ArchSig v0.6.0・ArchView・FieldSig の実装と `docs/tool/` の差分を、実装セッションから独立した **1 lane（新規 subagent 1本）** で一貫して敵対レビューする。
 
-## 必須契約
+## 必須規則
 
 `.codex/skills/_shared/review-protocol.md` と
 `.codex/skills/_shared/refutation-checklist.md` を全文読み、
-非編集・独立査読・fail-closed・報告形式をそのまま適用する。
+非編集・独立査読（履歴なし `fork_turns: "none"`）・fail-closed・報告形式を適用する。
+設計・品質・テストの基準は [Tool guideline](../../../docs/tool/guideline.md) を参照する。
 
-## 基本方針
+## 査読体制（独立 1 lane）
 
-- AAT / Lean / ArchSig / FieldSig / Website の責務を混同しない。
-  ArchSig は観測(ArchMap)と法・方程式(LawPolicy / law-equation-surface /
-  MeasurementProfile)の二系統から、選ばれた語彙内の肯定的 diagnostic conclusion を計算する。
+- 実装セッションの履歴・期待結論を引き継がない新規 subagent を **1本** 起動し、差分・周辺コード・仕様書全体を通して一貫した視点で監査する。
+- 1本の subagent 内で、以下の4つの確認軸を漏れなく反証的に検査する。
+- 仕様書に未定義の境界や設計判断が必要な論点は、必須修正として実装と往復させず、設計判断事項（人間判断待ち）として切り出して報告する。
 
-## 4観点(サブエージェント必須)
+### 確認軸（1 lane 内で一貫検査）
 
-4観点を4つの独立したsubagentに分け、共有契約どおり利用可能枠まで並行する。
+1. **入力区分・由来分離・数学対応**（checklist §8・[Tool guideline「責務範囲」](../../../docs/tool/guideline.md#責務範囲入力トライアドの正本)）
+   - 入力が Atom 定義・Law・ArchMap・問いの4区分に中身で帰属しているか。結論相当データの外部注入や、読解候補・観測・計算結果・数学的証明の混同がないかを疑う。
+   - ArchView / FieldSig が AAT 構造解析の判定・結論を独自生成せず、ArchSig の計算結果を用いているかを確認する。
+   - 論文・SHIGURE GOAL・Lean 定理の有限特殊化を含む場合、対応する定理参照、適用条件の実行時検査、条件外入力の沈黙（未対応理由）、実コード復元と再観測の境界が揃っているかを確認する。
 
-1. **入力トライアド帰属と結論 scope**
-   - ArchSig の入力が観測と法・方程式の二系統に帰属しているか
-     (checklist §8 が正本)、判定語・doctrine 的断定が evaluator と
-     evidence path に支えられているかを反証的に検査する。
-   - `SAFE_WITHIN_POLICY` 等の肯定的結論が中心で、未観測領域の
-     non-conclusion 一覧が主役化していないかを疑う。
-   - FieldSig が workflow evidence / governance input として読まれ、
-     raw ArchMap を forecast truth として扱っていないかを疑う。
-   - Architecture Signature が単一スコアに縮退していないか
-     (多軸診断として扱われているか)、source-observation output を
-     proof-carrying bridge なしに `ComponentUniverse` と同一視して
-     いないかを疑う。
+2. **仕様整合・導出の実体性**（checklist §5・`docs/tool/archsig_v0_6_0_io/`）
+   - 実装・同梱 SKILL・[ArchSig v0.6.0 I/O 仕様](../../../docs/tool/archsig_v0_6_0_io/README.md)・クレート README の記述と実動作が一致しているか。
+   - 計算結果（値・成立・反証・反例・障害・修復解・必要観測・未決理由）がダミーや proxy ではなく計算核から実際に導出され、根拠と元位置を追跡できるかを追う。
+   - 仕様上の名前を名乗る fixture や golden 期待値の出自を仕様と突合する。
 
-2. **witness 駆動性と帰属・ロック値・fixture 実体**(checklist §5 が正本)
-   - witness、materialization、score computation が proxy 的 label 代入に
-     戻っていないかを疑う。結論(`SAFE_WITHIN_POLICY` 等)が実際の
-     evaluator と evidence path に支えられているかを追う。
-   - output / viewer / release skill / docs の contract が同じ読み方を
-     しているかを突合する。
-   - theoremRef 等の本文帰属: 参照先の部に該当番号の定理が実在し、
-     主張の方向が設計正本の写像と一致するかを本文で反証的に確認する。
-   - golden / lock テストの期待値の出自を設計正本まで遡って検証する。
-   - 仕様上の名前を名乗る fixture は、名前ではなく実体(構成・数値)を
-     仕様と突合する。
-   - PRD が「正式経路」と指定する workflow に E2E テストが実在するかを疑う。
+3. **設計構造・複雑度・性能**（[Rust 品質規約](../../../docs/tool/guideline.md#rust-品質規約)・[簡素化と引き算](../../../docs/tool/guideline.md#簡素化と引き算)）
+   - 直交する軸（型 × 演算 × 問い × 局所/大域 × 欠測等）を特例分岐やファイル複製で横並び増築していないか、肥大化停止線（1,000行超ファイルへの無条件追記、既存 `observed/` への無制限な継ぎ足し）に抵触していないかを疑う。
+   - 変更関数だけで判断せず、呼出し元・下流・既存の類似実装を読み、同一リクエスト内の重複検証・重複生成・不要なコピー・全件走査・過大な寿命やメモリ保持がないかを追う。
+   - 欠落入力の `unwrap_or_default` や重複入力の黙殺、`panic!` / `unwrap`、不正な path / 出力先処理がないか、代表題材での実測なしにキャッシュ・予算制御・パッケージング等を先回り実装していないかを疑う。
+   - 公開物・fixture・出力にローカルパス・個人名・内部情報が露出していないか確認する（checklist §6）。
 
-3. **設計・Rust 品質・簡素化と引き算**
-   - [Rust 品質規約](../../../docs/tool/guideline.md#rust-品質規約)に従い、依存方向・型の不変条件・API と所有権を確認する。
-   - [簡素化と引き算](../../../docs/tool/guideline.md#簡素化と引き算)を独立した観点として、不要な機能・並行実装・一般化を疑う。
-     YAGNI・DRY・KISS の確認では、次のように処理と値の流れを追う。
-     - 変更関数だけで判断せず、呼出し元、下流の利用箇所、既存の類似実装を読み、
-       各段階の責務・入力条件・既に保証された不変条件を突合する。周辺の設計と
-       整合しない責務の配置、迂回したデータ受け渡し、不要な抽象化を具体的に指摘する。
-     - 同一リクエスト内で検証・変換・候補生成・計算を繰り返していないか、
-       コピーや全件走査が重なっていないかを追う。再利用を提案する場合も、
-       入力・設定・更新の有無を確認し、同じ結果や保証を使える根拠を示す。
-     - 中間値・保持状態・出力について、生成から利用・解放までを追い、
-       未使用の結果、次段での作り直し、必要以上の寿命がないかを確認する。
-     - 入力規模、ループの入れ子・繰り返し回数、データの大きさ・同時保持数から、
-       変更前後の時間・空間計算量を見積もる。支配する項と前提を示し、
-       cache の照合・同期・無効化を含む全体の費用を確認する。
-     - 不要処理の削除に対する指摘では、失われる保証が実際の公開 contract や
-       到達可能な入力で必要か、どの経路で破れるかを確認する。重い再検証の復活を
-       即座に修正案とせず、構築時の保証・型・既存の検証結果の再利用などで、
-       必要な保証をより少ない計算・状態で保てるかを比較する。
-     - 指摘には読んだ経路と根拠を添え、実測と計算量・呼出回数からの推定を区別する。
-       性能上の利益と、共通化・cache・API 変更で増える複雑さを比較し、
-       指摘の採否と修正後確認は共有 review protocol に従う。
-   - 欠落入力の `unwrap_or_default`、重複入力の先勝ち/後勝ち黙殺など、
-     「黙って無視しない」原則への違反経路を疑う。欠落・重複の負系
-     fixture の存在を確認する。
-   - 入力検証、path handling、出力先 handling、panic / `unwrap`、
-     exit code / diagnostics の実用性を疑う。
-   - release artifact / schema catalog / fixture / viewer data への
-     個人環境パス・private/internal 風値・repo-local docs path の露出を
-     疑う(checklist §6 の privacy scan)。
-
-4. **schema・テスト被覆・回帰**
-   - [テストの書き方](../../../docs/tool/guideline.md#テストの書き方)に従い、層・assertion・fixture・実行の隔離と停止を確認する。
-   - `Result` / error design、serde schema、versioned artifact、
-     fixture ownership の整合を疑う。
-   - CLI tests、golden output、schema compatibility、E2E workflow が
-     変更範囲を覆うかを疑う。テストは名前でなく assertion 内容で
-     証拠にする。
+4. **テストの妥当性・実測確認**（[テストの書き方](../../../docs/tool/guideline.md#テストの書き方)）
+   - テストは名前ではなく assertion 内容で証拠にする。仕様の組合せごとに巨大な統合／CLI テストファイルを複製せず、代数的不変条件・負系・境界条件を最も狭い層（単体・パラメトリック・property-based・代表 E2E）で検証しているか確認する。
+   - CI 3分要件を圧迫する過剰テストがないか、計算核の大きな変更や性能関連変更で代表規模ベンチマーク（実行時間・最大 RSS）の実測比較が揃っているかを確認する。
 
 ## 検証
 
-- [Tool guideline「テスト責務と実行経路」](../../../docs/tool/guideline.md#テスト責務と実行経路)に従って検証する。
-- checklist §6 の横断機械 scan(`git diff --check`、hidden/bidi、privacy)
+- [Tool guideline「テスト責務と実行経路」](../../../docs/tool/guideline.md#テスト責務と実行経路)に従って変更ワークスペースのテストを確認する。
+- checklist §6 の横断機械 scan（`git diff --check`、hidden/bidi、privacy、語彙ルール）を実行する。
 - 実行できない検証は理由と残リスクとして報告する。
 
-## 親 Codex の統合判定
+## 親の統合判定
 
 [レビューでの扱い](../../../docs/tool/guideline.md#レビューでの扱い)に従い、指摘を簡潔に示す。
-共有契約の統合出力に従い、判定を
+共有ルールの統合出力に従い、判定を
 `Needs changes` / `No major findings` / `Blocked / cannot determine` で返す。
+仕様未定義の設計判断事項は判定を空転させず、人間判断事項として明記する。

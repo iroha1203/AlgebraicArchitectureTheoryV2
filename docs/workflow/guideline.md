@@ -80,9 +80,9 @@
 ## レビュー体制
 
 - レビューは分野別の敵対レビュー SKILL
-  （`math-lean-review` / `tool-review` / `website-review` / `docs-review`）で行う。
+  （`.codex/skills/` 配下の `math-lean-review` / `tool-review` / `website-review` / `docs-review`）で行う。
   共通の反証観点は `.codex/skills/_shared/refutation-checklist.md` にまとめている。
-- Claude が実装する差分（ツール、website）は `.claude/skills/pr-review` でレビューする。
+  査読 lane 数は分野別 SKILL の規定に従う（Lean 実装は 4 本、ツール実装は独立 1 本）。
 - Lean 実装（`Formal/`）を触る差分は、大きさを問わず PR 作成後のレビューゲートとして
   `math-lean-review` の4本の独立査読を行う。承認は、4本すべての合格、または指摘事項の
   全解消と `review-protocol.md` に従う修正後確認（直接対応）の記録をもって成立する。

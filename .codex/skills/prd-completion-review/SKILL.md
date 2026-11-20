@@ -27,7 +27,7 @@ Lean要件を含むPRDでは
 - 判定は証拠ベースにする。該当ファイル、テスト、CI、Issue / PR、台帳、生成物が確認できない項目は `未確認` または `未達` として扱う。
 - 証拠には階層を置く。一次証拠は、コード・Lean 宣言の statement 実読、instance の実在確認、実行した検証、kernel 検査。二次証拠は、台帳、inventory、tracking Issue の checklist、Issue / PR 本文、iteration コメントなど、レビュー対象の作業自身が生成した記録。`満たした` 判定は一次証拠でのみ行う。二次証拠は主張の索引として使い、単独では判定根拠にしない。
 - 対象 PRD がループ(prd-loop 等)で実装された場合、台帳・checklist・closure 記録はそのループの出力であり、監査対象であって証拠ではない。checklist が check 済みであることは「主張がある」ことしか意味しない。
-- 公開物に入る可能性がある code、fixture、docs、schema catalog、website、release asset、tool output contract に、個人名、ローカル絶対パス、private/internal 風の fixture 値、作業環境固有名が混入している場合は、PRD 条件が他に満たされていても重要 finding として扱う。
+- 公開物に入る可能性がある code、fixture、docs、website、release asset、tool output に、個人名、ローカル絶対パス、private/internal 風の fixture 値、作業環境固有名が混入している場合は、PRD 条件が他に満たされていても重要 finding として扱う。
 
 ## 入力
 
@@ -67,7 +67,7 @@ Lean要件を含むPRDでは
      旧構造・旧挙動・旧文言(型、フィールド、fail-fast 挙動、hardcode、docs 記述)を
      1 項目 1 行で抽出する。PRD が明示的に「別 PRD の管轄」「既知の残置」とした項目は
      除外し、除外理由を併記する。
-   - 親 Codex の抽出は統合時の照合用とし、laneへ渡さない。4本それぞれがPRD全文から
+   - 親の抽出は統合時の照合用とし、lane へ渡さない。規定本数の各 lane が PRD 全文から
      独立に同じ抽出を行い、親は手順5で差分を検算する。
 
 3. 証拠を集める。
@@ -88,23 +88,26 @@ Lean要件を含むPRDでは
    - PRD が検証コマンドを指定している場合は実行する。指定がなければ変更領域に応じて最小限の検証を選ぶ。
    - 実行できない検証は、理由と判定への影響を明記する。
 
-4. subagentで複数観点レビューを行う。
-   - [references/reviewer-lanes.md](references/reviewer-lanes.md)の要件査読A/Bと
-     実装・検証査読A/Bの4本を、共有review protocolどおり新規・履歴なしで起動する。
-     4本は同じ合格基準を持つ重複独立査読とし、PRレビューの判定を再利用しない。
-   - 独立抽出と必要な深掘りは各lane内で行う。条件群が多い場合は同じlane内で順次読み、
-     抽出専用laneや深掘りlaneを追加しない。読めない範囲はcoverage不足として返す。
+4. subagentで独立重複査読を行う。
+   - 対象 PRD の種別に応じて [references/reviewer-lanes.md](references/reviewer-lanes.md) の規定本数を、
+     共有 review protocol どおり新規・履歴なしで起動する（PR レビューの判定を再利用しない）。
+     - **ツール専用 PRD（`tools/`・`docs/tool/` を主対象とし、Lean / 数学要件を含まないもの）**:
+       同一の観点・合格基準を持つ **独立 2 lane（ツール完了査読 A / B）** で重複独立査読し、査読の揺らぎを吸収する。
+     - **Lean / 数学要件を含む PRD、およびその他分野の PRD**:
+       **独立 4 lane（要件査読 A/B、実装・検証査読 A/B）** で重複独立査読する。
+   - 独立抽出と必要な深掘りは各 lane 内で行う。条件群が多い場合は同じ lane 内で順次読み、
+     抽出専用 lane や深掘り lane を追加しない。読めない範囲は coverage 不足として返す。
 
-5. 親 Codex が統合判定する。
+5. 親が統合判定する。
    - sub-agent の指摘を PRD 条件単位に統合する。
    - 重複、矛盾、過剰 claim、PRD 外要求を整理する。
    - 各条件を `満たした`, `未達`, `未確認`, `PRD欠陥`, `範囲外` に分類する。
-   - 親と4本の条件抽出・判定・coverageを照合し、欠落と不一致を一次証拠で解消する。
-     4本すべての有資格な結果と親の再判定が揃い、全必須条件・拘束条件・must-not-remain・
-     問いの回答が確認できた場合だけ `達成済み` とする。未完了lane、未解消finding、
-     coverage不足は親の自己点検で埋めず、未達・未確認・PRD欠陥として報告する。
-   - findingは実装側へまとめて戻す。修正後はsnapshotを固定し直し、4本すべてを新規に
-     再実行する。完了判定にはfinding限定の直接対応を適用しない。
+   - 親と規定全 lane（ツール専用 PRD は 2 本、その他は 4 本）の条件抽出・判定・coverage を照合し、
+     欠落と不一致を一次証拠で解消する。規定全 lane の有資格な結果と親の再判定が揃い、
+     全必須条件・拘束条件・must-not-remain・問いの回答が確認できた場合だけ `達成済み` とする。
+     未完了 lane、未解消 finding、coverage 不足は親の自己点検で埋めず、未達・未確認・PRD 欠陥として報告する。
+   - finding は実装側へまとめて戻す。修正後は snapshot を固定し直し、規定全 lane を新規に
+     再実行する。完了判定には finding 限定の直接対応を適用しない。
 
 ## Lean 反証チェックリスト
 

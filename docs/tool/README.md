@@ -1,67 +1,44 @@
 # Tool Docs
 
-`docs/tool/` は ArchMap / LawPolicy / law-equation-surface /
-MeasurementProfile / ArchSig / ArchView / FieldSig の現行 tooling contract と製品コンセプトを扱う。
-AAT の数学的主張は定義せず、各toolが supplied artifact から何を読み、何を生成するかを固定する。
+`docs/tool/` は ArchSig v0.6.0・ArchView・FieldSig の製品コンセプト、仕様（contract）、編集ガイドラインを扱う。
+AAT の数学的主張は定義せず、各ツールが何を入力して何を計算・生成するかを固定する。
 
-## 製品コンセプト
+## ArchSig v0.6.0 の入口
 
-- [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md): AI Agent SKILLを通してAATの構造を解析する、AIネイティブなアーキテクチャ計算基盤の製品像と設計原則。
-- [ArchSig v0.6.0 実装と使い方](../../tools/archsig_v0.6.0/README.md): CLI の `check/version` と Rust 観測評価 API の提供範囲、最小例、制限、テスト手順。
-- [ArchSig v0.6.0 I/O 仕様](archsig_v0_6_0_io/README.md): 全体の入力・計算・CLI・結果の実装要件。
+- [Tooling 編集ガイドライン](guideline.md): ツールの責務範囲、設計・Rust 品質・肥大化停止線、テストと代表規模ベンチマークの規律。
+- [ArchSig v0.6.0 製品コンセプト](archsig_v0_6_0_concept.md): AI Agent SKILL を通して AAT の構造を解析する、AI ネイティブなアーキテクチャ計算基盤の製品像と設計原則。
+- [ArchSig v0.6.0 I/O 仕様](archsig_v0_6_0_io/README.md): Atom 定義・Law・ArchMap・問い・計算範囲・実行・型付き結果の実装要件。
+- [Atom と Law のエンジン設計](archsig_atom_law_engine/README.md): 計算核の設計判断と具体例。
+- [ArchSig v0.6.0 実装 README](../../tools/archsig_v0.6.0/README.md): クレート構成、ビルド、CLI 実行、観測補助、テスト手順。
+- [同梱観測 SKILL](../../tools/archsig_v0.6.0/skills/archsig-observe/SKILL.md): 実コードから Atom 定義・Law・ArchMap を構成し、CLI 計算へ接続する製品 SKILL。
 
-## Product map
+## ツール構成
 
-この表の ArchSig 入出力は旧版 `tools/archsig` のもの。v0.6.0 の入力と提供範囲は上の入口を参照する。
-
-| Product | Responsibility | Primary input / output |
+| ツール | 責務 | 主な入口・実装 |
 | --- | --- | --- |
-| ArchMap | source-groundedなAtom evidence、Context、Cover、source refsを記録する | `archmap/v0.5.4` |
-| LawPolicy | evaluator、law、basis、scope、severityを選択する | `law-policy/v0.5.4` |
-| law-equation-surface | 選択可能なlaw universeとwitness variablesを宣言する | `law-equation-surface/v0.5.4` |
-| MeasurementProfile | finite measurement regimeを選択する | `measurement-profile/v0.5.4` |
-| ArchSig | 選択済みcontract内でmeasurement、comparison、gate decisionを計算する | measurement packet / summary / insight / compare / gate / viewer data |
-| ArchView | ArchMapのAtom geometryを可視化し、ArchSig analysisを同じgeometry上へ重ね、sourceへ接続する | ArchMap + optional ArchSig run artifacts |
-| FieldSig | ArchSig measurement packetとworkflow evidenceをSFTのevolution measurement inputとして読む | serialized ArchSig handoff |
+| ArchSig（v0.6.0） | 共通の Atom 定義・Law・ArchMap と問いから、対象・操作・対応・局所構造・診断・修復候補・必要観測を計算する | `tools/archsig_v0.6.0/`、[I/O 仕様](archsig_v0_6_0_io/README.md) |
+| ArchView | ArchMap の Atom 構造を可視化し、ArchSig の分析結果を重ねてソース参照へ接続する | `tools/archview/`、[ArchView README](../../tools/archview/README.md) |
+| FieldSig | ArchSig の計測出力と開発ワークフローの証拠を、SFT の進化計測入力として読む | `tools/fieldsig/`、[FieldSig README](../../tools/fieldsig/README.md) |
 
 ## ArchView
 
-ArchViewはArchSig reportの付属viewerではない。ArchMapだけでコードベース理解を成立させる
-Atom-native Architecture Atlasであり、次の3責務を持つ。
+ArchView は ArchSig レポートの付属ビューアではない。ArchMap だけでコードベース理解を成立させる Atom-native Architecture Atlas であり、次の3責務を持つ。
 
-1. ArchMapのAtom / Context / Coverからarchitecture structureを理解できる形にする。
-2. ArchSigが供給したanalysisを同じgeometry上のoverlayとして表示する。
-3. findingのsupport Atomからsupplied source refを解決し、file / symbol / lineへ到達させる。
+1. ArchMap の Atom / Context / Cover からアーキテクチャ構造を理解できる形にする。
+2. ArchSig が供給した分析結果を同じ幾何上のオーバーレイとして表示する。
+3. finding の支持 Atom からソース参照を解決し、file / symbol / line へ到達させる。
 
-ArchViewはstructural verdict、relation、source symbol、repair recommendationを生成しない。
-direct evidence、boundary participant、candidate change point、validated repairを区別し、
-描画要素と視覚チャネルの由来をsupplied artifactへ追跡可能にする。
-
-現在checked inされている`tools/archview/archview.html`は再構築前のviewer-data readerである。
-現行実装と再構築後の契約の差は[ArchView README](../../tools/archview/README.md)に記録する。
+ArchView は構造判定・関係・ソース記号・修復提案を独自に生成せず、AAT 構造解析の判定・結論には ArchSig の計算結果を用いる。
+現行実装と再構築の差は [ArchView README](../../tools/archview/README.md) に置く。
 
 ## Sources of truth
 
-| Concern | Source of truth |
+| 領域 | 参照先 |
 | --- | --- |
-| Tooling編集規律と検証経路 | [guideline.md](guideline.md) |
-| ArchMap input | `tools/archsig/src/schema/archmap.rs`、ArchSig validation、供給済み `archmap/v0.5.4` artifact |
-| LawPolicy authoring | [law_policy.md](law_policy.md) |
-| ArchSig v0.5.x runtime | `tools/archsig/src/`、schema catalog、CLI docs、runtime tests |
-| ArchSig v0.6.0 runtime | [実装 README](../../tools/archsig_v0.6.0/README.md)、`tools/archsig_v0.6.0/src/` と同クレートの tests |
-| ArchSig artifact reading | [Artifacts and boundaries](../../tools/archsig/docs/artifacts-and-boundaries.md) |
-| ArchView product・runtime・fidelity | [tools/archview/README.md](../../tools/archview/README.md)とUI / E2E tests |
-| FieldSig runtime | `tools/fieldsig/README.md`、serialized schema、tests |
+| Tooling 編集規律・品質・検証 | [guideline.md](guideline.md) |
+| ArchSig v0.6.0 仕様 | [ArchSig v0.6.0 I/O 仕様](archsig_v0_6_0_io/README.md) |
+| ArchSig v0.6.0 実装 | [実装 README](../../tools/archsig_v0.6.0/README.md)、`tools/archsig_v0.6.0/` と同ワークスペースの tests |
+| ArchView | [tools/archview/README.md](../../tools/archview/README.md) と UI / E2E tests |
+| FieldSig | [tools/fieldsig/README.md](../../tools/fieldsig/README.md)、serialized schema、tests |
 
-PRDや設計ノートを恒久仕様として参照しない。実装済みcontractは現行仕様、schema、source、test、fixtureへ置く。
-
-## Entry points
-
-- [ArchSig Analyze E2E Workflow](llm_native_e2e_workflow.md)
-- [ArchSig measurement view model](archsig_view_model_contract.md)
-- [ArchSig gate policy](archsig_gate_policy.md)
-- [ArchSig compare report](archsig_compare.md)
-- [Golden corpus](golden_corpus.md)
-- [AG measurement input](ag_measurement_input_contract.md)
-- [ArchSig skills](../../tools/archsig/skills/)
-- [ArchView](../../tools/archview/README.md)
+PRD や設計ノートを恒久仕様として参照しない。実装済み仕様は現行仕様書・ソース・テスト・フィクスチャへ置く。
