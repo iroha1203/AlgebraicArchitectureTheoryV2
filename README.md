@@ -18,11 +18,11 @@ ArchSig makes selected architecture evidence measurable.
 SFT makes software evolution computable.
 ```
 
-The project's core philosophy is stated in the PHILOSOPHY section of [AGENTS.md](AGENTS.md).
-The research constitution is [docs/research_goal.md](docs/research_goal.md) (Japanese):
-it describes not where the research is, but where it commits to arrive. The theory
-grows to meet those words; the constitution is never weakened to match the present.
-The research-loop operating entry is [research/README.md](research/README.md), with
+The project's guiding principles are stated in the PHILOSOPHY section of [AGENTS.md](AGENTS.md).
+The overall research goal is in [docs/research_goal.md](docs/research_goal.md) (Japanese),
+which sets out the target state of the theory rather than its current status; the goal is
+not scaled back to fit what is already proved.
+The research-loop operating guide is [research/README.md](research/README.md), with
 GOAL definitions under [research/goals](research/goals/README.md).
 
 ## Research Question
@@ -107,9 +107,8 @@ inside a selected algebraic-geometric regime.
 
 ## SFT
 
-SFT v2 treats software evolution as a computable development system rather than
-as a static codebase that merely receives changes. Its central object is
-represented by
+SFT v2 models software evolution as a computable development system rather than
+as a static codebase. Its central object is represented by
 
 ```text
 𝔇 = (𝒯, 𝔛, 𝔖, Π, 𝔐)

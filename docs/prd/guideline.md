@@ -1,66 +1,68 @@
 # PRD guideline
 
-この文書は、PRDの責務、lifecycle、参照規律、完了後削除の条件を定める正本である。
-PRD作業では本guidelineをhard ruleとして適用し、既存違反も例外扱いしない。
+この文書は、PRD の責務、ライフサイクル、参照の規則、完了後の削除条件を定める。
+PRD に関する作業では、このガイドラインを必須規則として適用し、既存の違反も例外扱いしない。
 
 ## PRD lifecycle
 
-- PRDは実装作業中だけ有効な一時的実行契約である。
-- PRDに置いてよい内容は、問い、現状診断、現行source of truth・非PRD依存・Issueへの参照、
-  要求、acceptance criteria、当該作業の失敗判定としてのFailure Contract、実装計画、
-  task固有のtarget statement、non-goals、停止条件に限定する。
-- PRDに恒久的な規律、編集ルール、schema / artifact contract、status語彙、
-  product/runtimeのFailure Contract、運用手順の正本を書いてはならない。これらはPRD着手前に
-  数学本文、guideline、仕様書、schema文書などの現行source of truthへ置き、PRDは参照だけを持つ。
-  作業の状態・記録の置き場は [Workflow guideline](../workflow/guideline.md) の
+- PRD は実装作業のあいだだけ有効な一時的な作業仕様である。
+- PRD に書いてよい内容は、問い、現状診断、現行の基準文書・PRD 以外の依存先・Issue への参照、
+  要求、受け入れ条件、その作業での失敗判定条件（Failure Contract）、実装計画、
+  タスク固有の target statement、対象外（non-goals）、停止条件に限る。
+- PRD に恒久的な規律、編集ルール、スキーマや成果物の仕様（contract）、状態語彙、
+  製品・実行時の Failure Contract、運用手順の基準を書いてはならない。これらは PRD 着手前に
+  数学本文、ガイドライン、仕様書、スキーマ文書などの恒久文書へ置き、PRD からは参照だけを行う。
+  作業の状態と記録の置き場は [Workflow guideline](../workflow/guideline.md) の
   「ドキュメントをステートレスに保つ規則」に従う。
-- target statementの一次仕様は、PRD、GOAL・候補カード、GitHub Issue、現行docs、数学本文、
-  その他のtask artifactのいずれでもよい。実装開始前に一次仕様を1つ指定し、target claim、
-  必要な結論、明示された仮定・受け入れ条件を実装者と査読者が作業中に参照できる状態を保つ。
-  target theoremや新規defの完全Lean signatureは必要に応じて記録してよいが必須ではない。
-  同じclaimやsignatureを複数箇所へ正本として複製しない。
+- target statement の一次仕様は、PRD、GOAL・候補カード、GitHub Issue、現行ドキュメント、
+  数学本文、その他の作業文書のいずれでもよい。実装開始前に一次仕様を1つ指定し、対象の主張、
+  必要な結論、明示された仮定と受け入れ条件を実装者と査読者が作業中に参照できる状態を保つ。
+  target theorem や新規 `def` の完全な Lean signature は必要に応じて記録してよいが、必須ではない。
+  同じ主張や signature を複数箇所へ基準として複製しない。
 - 実装前に、完成実装の写し、全補題の証明列、生成物一式、またはそれらを説明する
-  大規模または恒久的なevidence packetを作ることを要求してはならない。必要な事前固定は、実装する対象、
-  acceptance criteria、必要なら target theorem と新規def の最小 signature に限る。
-  実装・証明の一次証拠は実装PRの固定headに置き、検証結果はそのheadに紐付く
-  PR・CIの記録に置く。一次証拠への短いlink索引は作ってよい。
-- 作業中に恒久ルールが必要になった場合も、先に現行source of truthへ反映してから
-  PRDのacceptance criteriaへ組み込む。
+  大規模・恒久的な証拠集を作ることを求めてはならない。事前に固定すべき内容は、実装する対象、
+  受け入れ条件、必要であれば target theorem と新規 `def` の最小 signature に限る。
+  実装・証明の一次証拠は実装 PR の固定 commit に置き、検証結果はその commit に紐づく
+  PR や CI の記録に置く。一次証拠への短いリンク索引は作ってよい。
+- 作業中に恒久ルールが必要になった場合も、先に恒久文書へ反映してから
+  PRD の受け入れ条件へ組み込む。
 
 ## 完了と削除
 
-PRDは次をすべて満たした後に削除する。
+PRD は次の条件をすべて満たした後に削除する。
 
-1. acceptance criteriaがすべて充足されている。
-2. 必要な分野別review、test、CIが完了している。
-3. taskが要求する実装・docs・PR / Issueの記録・website等がmerge済み、または明示された納品状態にある。
-4. 成果物、恒久contract、恒久ルール、statusが現行source of truthへ反映されている。
-5. repository全体から、そのPRDへの参照がゼロである。
+1. 受け入れ条件がすべて満たされている。
+2. 必要な分野別レビュー、テスト、CI が完了している。
+3. タスクが求める実装、ドキュメント、PR / Issue の記録、website などがマージ済み、または明示された納品状態にある。
+4. 成果物、恒久仕様（contract）、恒久ルール、状態が現行の恒久文書へ反映されている。
+5. リポジトリ全体から、その PRD への参照がゼロになっている。
 
-完了後のPRDは削除する。archiveは作らない。
-既存PRDや既存参照も例外扱いせず、上記条件を満たすまで文書整理の完了根拠に数えない。
-PRDがtask固有のtarget statementの一次仕様である場合も、履歴はGit commit historyとGitHub Issue / PR / reviewに残る。
-同じclaimやsignatureを完了後の現行docsへ移すことは削除条件にしない。
+完了した PRD は削除し、アーカイブは作らない。
+既存の PRD や既存参照も例外扱いせず、上記の条件を満たすまで文書整理の完了根拠に数えない。
+PRD がタスク固有の target statement の一次仕様である場合も、履歴は Git のコミット履歴と
+GitHub の Issue / PR / レビューに残る。同じ主張や signature を完了後の現行ドキュメントへ
+移すことは削除条件にしない。
 
 PRD の現状診断や実装計画は作成時点の記述である。完了済み PRD の古い記述だけを根拠に
-現行仕様の不具合と判断しない。現行仕様、source、実行結果を確認して判断する。
+現行仕様の不具合と判断しない。現行仕様、ソースコード、実行結果を確認して判断する。
 
 ## PRD参照の禁止
 
-現行のdocs、README、台帳、guideline、website、source code、test、fixture、schema、workflowから
-個別PRD本文、個別PRDのpath、title、contractへの参照を禁止する。作業中の別PRDからの参照も禁止し、PRD間の依存は
-GitHub Issueのdependencyで管理する。Git commit historyとGitHub Issue / PR / reviewの
-作業履歴もrepositoryの現行文書・コードではないため、この参照禁止の対象外とする。
+現行のドキュメント、README、台帳、ガイドライン、website、ソースコード、テスト、フィクスチャ、
+スキーマ、workflow から、個別 PRD の本文、パス、タイトル、仕様への参照を禁止する。
+作業中の別 PRD からの参照も禁止し、PRD 間の依存は GitHub Issue の依存関係で管理する。
+Git のコミット履歴と GitHub の Issue / PR / レビューの作業履歴はリポジトリ内の現行文書や
+コードではないため、この参照禁止の対象外とする。
 
-完了scanでは、対象PRDについて少なくとも次を検索する。
+完了前の検査では、対象 PRD について少なくとも次を検索する。
 
-- 現在path
-- filename
-- 文書title
-- `PRD-N`などの固有identifier
+- 現在のパス
+- ファイル名
+- 文書タイトル
+- `PRD-N` などの固有識別子
 
-一般語としての `PRD` や、別PRDを指すidentifierのhitは対象PRDへの参照として数えない。
-各hitを実読し、対象PRDへのlink、path、citation、sourceRef、fixture metadata、正本依存であれば
-除去または恒久sourceへの置換を行う。
+一般語としての `PRD` や、別の PRD を指す識別子の一致は対象 PRD への参照として数えない。
+一致した箇所はそれぞれ中身を読み、対象 PRD へのリンク、パス、引用、sourceRef、フィクスチャの
+メタデータ、基準としての依存であれば削除するか、恒久文書への参照へ置き換える。
 
-PRDの削除によって失われる恒久規律・恒久contract・statusがある場合、削除条件4は未達である。
+PRD の削除によって失われる恒久規律・恒久仕様・状態がある場合、削除条件4は満たされていない。
