@@ -7,7 +7,8 @@ use crate::ir::presentation::{ComparisonPair, LawKind, Presentation};
 use crate::ir::term::CoeffDomain;
 use crate::ir::validate::{
     CheckedChangeSpec, CheckedComparisonPair, CheckedEvalCondition, ValidationError,
-    require_non_empty, validate_coeff_domain, validate_poly_expr, validate_presentation,
+    require_non_empty, validate_allowed_params, validate_coeff_domain, validate_opt_source_ref,
+    validate_poly_expr, validate_presentation, validate_provenance,
 };
 use archsig_common::prime::is_prime;
 use std::collections::{BTreeMap, BTreeSet};
@@ -17,6 +18,13 @@ pub fn validate_comparison_pair(
     pair: ComparisonPair,
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedComparisonPair, ValidationError> {
+    validate_allowed_params(allowed_params, "comparison_pair.allowed_params")?;
+    if pair.before.name == pair.after.name {
+        return Err(ValidationError::DuplicateDecl {
+            kind: "presentation",
+            name: pair.before.name.clone(),
+        });
+    }
     if pair.before.coeff_domain != pair.after.coeff_domain {
         return Err(ValidationError::DomainMismatch {
             expected: pair.before.coeff_domain.clone(),
@@ -31,6 +39,10 @@ pub fn validate_comparison_pair(
     let mut h_by_after_phase: BTreeMap<String, String> = BTreeMap::new();
     let empty_args = BTreeSet::new();
     for sc in &pair.state_comparisons {
+        validate_opt_source_ref(
+            sc.provenance.as_ref(),
+            &format!("state_comparison `{}`", sc.after_phase),
+        )?;
         let Some(after_phase) = after.inner().phase(&sc.after_phase) else {
             return Err(ValidationError::UnknownRef {
                 kind: "after phase",
@@ -91,8 +103,46 @@ pub fn validate_comparison_pair(
         }
     }
 
+    // 各状態比較 h: after_phase -> before_phase について、before_phase 上の全観測が
+    // after_phase 上に同名・同成分数で存在することを検証する。
+    for (after_phase_name, before_phase_name) in &h_by_after_phase {
+        for before_obs in before
+            .inner()
+            .observations
+            .iter()
+            .filter(|o| o.phase == *before_phase_name)
+        {
+            let Some(after_obs) = after
+                .inner()
+                .observations
+                .iter()
+                .find(|o| o.phase == *after_phase_name && o.name == before_obs.name)
+            else {
+                return Err(ValidationError::MissingObservation {
+                    after_phase: after_phase_name.clone(),
+                    before_phase: before_phase_name.clone(),
+                    observation: before_obs.name.clone(),
+                });
+            };
+            if after_obs.components.len() != before_obs.components.len() {
+                return Err(ValidationError::ArityMismatch {
+                    context: format!(
+                        "observation `{}` between after phase `{after_phase_name}` and before phase `{before_phase_name}`",
+                        before_obs.name
+                    ),
+                    expected: before_obs.components.len(),
+                    actual: after_obs.components.len(),
+                });
+            }
+        }
+    }
+
     let mut seen_ops = BTreeSet::new();
     for tw in &pair.word_translation.entries {
+        validate_opt_source_ref(
+            tw.provenance.as_ref(),
+            &format!("word_translation `{}`", tw.after_operation),
+        )?;
         let Some(after_op) = after.inner().operation(&tw.after_operation) else {
             return Err(ValidationError::UnknownRef {
                 kind: "after operation",
@@ -203,9 +253,14 @@ pub(crate) fn collect_and_check_param_names(
 ) -> Result<BTreeSet<String>, ValidationError> {
     require_non_empty(&spec.name, "change_spec.name")?;
     validate_coeff_domain(&spec.coeff_domain, &format!("change_spec `{}`", spec.name))?;
+    validate_provenance(&spec.provenance, &format!("change_spec `{}`", spec.name))?;
     let mut names = BTreeSet::new();
     for param in &spec.parameters {
         require_non_empty(&param.name, "change_spec.parameter")?;
+        validate_opt_source_ref(
+            param.provenance.as_ref(),
+            &format!("parameter `{}`", param.name),
+        )?;
         if !names.insert(param.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
                 kind: "parameter",
@@ -248,10 +303,24 @@ pub fn validate_change_spec(
         });
     }
 
+    let mut seen_fixed = BTreeSet::new();
     for fixed in &spec.fixed {
+        if !seen_fixed.insert(fixed) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "fixed target",
+                name: format!("{fixed:?}"),
+            });
+        }
         validate_fixed_target(fixed, pair.inner())?;
     }
+    let mut seen_editable = BTreeSet::new();
     for editable in &spec.editable {
+        if !seen_editable.insert(editable) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "editable target",
+                name: format!("{editable:?}"),
+            });
+        }
         validate_editable_target(editable, pair.inner())?;
         for fixed in &spec.fixed {
             if editable.conflicts_with(fixed) {
@@ -474,6 +543,9 @@ pub fn validate_eval_condition(
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedEvalCondition, ValidationError> {
     require_non_empty(&cond.name, "eval_condition.name")?;
+    validate_allowed_params(allowed_params, "eval_condition.allowed_params")?;
+    validate_coeff_domain(coeff_domain, &format!("eval_condition `{}`", cond.name))?;
+    validate_provenance(&cond.provenance, &format!("eval_condition `{}`", cond.name))?;
     validate_point_domain_compatibility(coeff_domain, &cond.point_domain)?;
 
     validate_named_polys(
@@ -533,6 +605,7 @@ fn validate_named_polys(
     let mut seen = BTreeSet::new();
     for item in items {
         require_non_empty(&item.name, kind)?;
+        validate_opt_source_ref(item.provenance.as_ref(), &format!("{kind} `{}`", item.name))?;
         if !seen.insert(item.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
                 kind,

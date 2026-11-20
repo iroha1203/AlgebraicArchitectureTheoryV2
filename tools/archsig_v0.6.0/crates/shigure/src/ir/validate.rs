@@ -4,7 +4,8 @@
 //! 不正な参照・型不一致・意味 Law の編集許可・固定/編集衝突・未観測値の暗黙零補完を防ぐ。
 
 use crate::ir::change::{ChangeSpec, EvalCondition, PointDomain};
-use crate::ir::presentation::{ComparisonPair, Presentation};
+use crate::ir::presentation::{ComparisonPair, CoordValue, Presentation};
+use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use crate::ir::validate_change::collect_and_check_param_names;
 use archsig_common::prime::is_prime;
@@ -51,9 +52,15 @@ pub enum ValidationError {
     ZeroRankSort {
         sort: String,
     },
-    ConflictingObservationState {
-        phase: String,
-        coord: String,
+    InvalidSourceSpan {
+        origin_id: String,
+        start: u64,
+        end: u64,
+    },
+    MissingObservation {
+        after_phase: String,
+        before_phase: String,
+        observation: String,
     },
     MissingCoordUpdate {
         operation: String,
@@ -135,10 +142,24 @@ impl fmt::Display for ValidationError {
             ValidationError::ZeroRankSort { sort } => {
                 write!(f, "sort `{sort}` must have positive rank")
             }
-            ValidationError::ConflictingObservationState { phase, coord } => {
+            ValidationError::InvalidSourceSpan {
+                origin_id,
+                start,
+                end,
+            } => {
                 write!(
                     f,
-                    "coordinate `{phase}.{coord}` cannot be both missing and observed"
+                    "invalid source span [{start}, {end}) on origin `{origin_id}`: expected start <= end"
+                )
+            }
+            ValidationError::MissingObservation {
+                after_phase,
+                before_phase,
+                observation,
+            } => {
+                write!(
+                    f,
+                    "after phase `{after_phase}` is missing observation `{observation}` required by before phase `{before_phase}`"
                 )
             }
             ValidationError::MissingCoordUpdate { operation, coord } => {
@@ -361,7 +382,7 @@ impl CheckedShigureTask {
 fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<String>) {
     for phase in &pres.phases {
         for coord in &phase.coords {
-            if coord.missing {
+            if coord.is_missing() {
                 out.insert(format!("{}.{}.{}", pres.name, phase.name, coord.name));
             }
         }
@@ -389,6 +410,53 @@ pub(crate) fn require_non_empty(name: &str, context: &str) -> Result<(), Validat
     } else {
         Ok(())
     }
+}
+
+pub(crate) fn validate_allowed_params(
+    allowed_params: &BTreeSet<String>,
+    context: &str,
+) -> Result<(), ValidationError> {
+    for name in allowed_params {
+        require_non_empty(name, context)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_source_ref(
+    source_ref: &SourceRef,
+    context: &str,
+) -> Result<(), ValidationError> {
+    require_non_empty(&source_ref.origin_id, &format!("{context}.origin_id"))?;
+    if let Some((start, end)) = source_ref.span
+        && start > end
+    {
+        return Err(ValidationError::InvalidSourceSpan {
+            origin_id: source_ref.origin_id.clone(),
+            start,
+            end,
+        });
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_opt_source_ref(
+    source_ref: Option<&SourceRef>,
+    context: &str,
+) -> Result<(), ValidationError> {
+    if let Some(sr) = source_ref {
+        validate_source_ref(sr, context)?;
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_provenance(
+    provenance: &Provenance,
+    context: &str,
+) -> Result<(), ValidationError> {
+    for sr in &provenance.origins {
+        validate_source_ref(sr, context)?;
+    }
+    Ok(())
 }
 
 pub fn validate_coeff_domain(domain: &CoeffDomain, context: &str) -> Result<(), ValidationError> {
@@ -484,6 +552,7 @@ pub(crate) fn validate_poly_expr(
             Ok(())
         }
         PolyExpr::ParamVar(v) => {
+            require_non_empty(v, context)?;
             if !allowed_params.contains(v) {
                 return Err(ValidationError::UnknownRef {
                     kind: "parameter",
@@ -493,7 +562,10 @@ pub(crate) fn validate_poly_expr(
             }
             Ok(())
         }
-        PolyExpr::Unobserved { slot, .. } => require_non_empty(slot, context),
+        PolyExpr::Unobserved { slot, origin } => {
+            require_non_empty(slot, context)?;
+            validate_opt_source_ref(origin.as_ref(), context)
+        }
         PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => validate_poly_expr(
             e,
             expected,
@@ -529,11 +601,14 @@ pub fn validate_presentation(
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedPresentation, ValidationError> {
     require_non_empty(&pres.name, "presentation.name")?;
+    validate_allowed_params(allowed_params, "presentation.allowed_params")?;
     validate_coeff_domain(&pres.coeff_domain, &format!("presentation `{}`", pres.name))?;
+    validate_provenance(&pres.provenance, &format!("presentation `{}`", pres.name))?;
 
     let mut sort_names = BTreeSet::new();
     for sort in &pres.sorts {
         require_non_empty(&sort.name, "sort.name")?;
+        validate_opt_source_ref(sort.provenance.as_ref(), &format!("sort `{}`", sort.name))?;
         if !sort_names.insert(sort.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
                 kind: "sort",
@@ -559,6 +634,10 @@ pub fn validate_presentation(
     let mut phase_coords: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for phase in &pres.phases {
         require_non_empty(&phase.name, "phase.name")?;
+        validate_opt_source_ref(
+            phase.provenance.as_ref(),
+            &format!("phase `{}`", phase.name),
+        )?;
         if phase_coords.contains_key(&phase.name) {
             return Err(ValidationError::DuplicateDecl {
                 kind: "phase",
@@ -568,6 +647,10 @@ pub fn validate_presentation(
         let mut coords = BTreeSet::new();
         for coord in &phase.coords {
             require_non_empty(&coord.name, &format!("phase `{}` coord", phase.name))?;
+            validate_opt_source_ref(
+                coord.provenance.as_ref(),
+                &format!("coordinate `{}.{}`", phase.name, coord.name),
+            )?;
             if !coords.insert(coord.name.clone()) {
                 return Err(ValidationError::DuplicateDecl {
                     kind: "coordinate",
@@ -581,13 +664,7 @@ pub fn validate_presentation(
                     context: format!("coordinate `{}.{}`", phase.name, coord.name),
                 });
             }
-            if coord.missing && coord.observed_value.is_some() {
-                return Err(ValidationError::ConflictingObservationState {
-                    phase: phase.name.clone(),
-                    coord: coord.name.clone(),
-                });
-            }
-            if let Some(lit) = &coord.observed_value {
+            if let CoordValue::Observed(lit) = &coord.value {
                 validate_scalar_lit(
                     lit,
                     &pres.coeff_domain,
@@ -598,6 +675,10 @@ pub fn validate_presentation(
         let mut law_names = BTreeSet::new();
         for law in &phase.state_laws {
             require_non_empty(&law.name, &format!("phase `{}` state_law", phase.name))?;
+            validate_opt_source_ref(
+                law.provenance.as_ref(),
+                &format!("state_law `{}.{}`", phase.name, law.name),
+            )?;
             if !law_names.insert(law.name.clone()) {
                 return Err(ValidationError::DuplicateDecl {
                     kind: "state_law",
@@ -619,6 +700,7 @@ pub fn validate_presentation(
     let mut op_names = BTreeSet::new();
     for op in &pres.operations {
         require_non_empty(&op.name, "operation.name")?;
+        validate_opt_source_ref(op.provenance.as_ref(), &format!("operation `{}`", op.name))?;
         if !op_names.insert(op.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
                 kind: "operation",
@@ -685,6 +767,10 @@ pub fn validate_presentation(
     let mut obs_keys = BTreeSet::new();
     for obs in &pres.observations {
         require_non_empty(&obs.name, "observation.name")?;
+        validate_opt_source_ref(
+            obs.provenance.as_ref(),
+            &format!("observation `{}.{}`", obs.phase, obs.name),
+        )?;
         let Some(coords) = phase_coords.get(&obs.phase) else {
             return Err(ValidationError::UnknownRef {
                 kind: "phase",

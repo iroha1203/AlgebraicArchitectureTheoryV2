@@ -404,7 +404,7 @@ fn non_prime_fp_modulus_is_rejected() {
 #[test]
 fn unobserved_coordinates_and_terms_are_preserved_not_zeroed() {
     let (mut pair, spec, eval_cond) = ledger_snapshot_task();
-    pair.after.phases[0].coords[0].missing = true;
+    pair.after.phases[0].coords[0].value = CoordValue::Missing;
     pair.after.operations[0].updates.insert(
         "h".into(),
         PolyExpr::unobserved("SnapshotLedger.Idle.h_init", None),
@@ -422,15 +422,14 @@ fn unobserved_coordinates_and_terms_are_preserved_not_zeroed() {
 }
 
 #[test]
-fn conflicting_missing_and_observed_coordinate_is_rejected() {
-    let (mut pair, spec, eval_cond) = ledger_snapshot_task();
-    pair.after.phases[0].coords[0].missing = true;
-    pair.after.phases[0].coords[0].observed_value = ScalarLit::rat(1, 1);
-    let err = CheckedShigureTask::validate(pair, spec, Some(eval_cond)).unwrap_err();
-    assert!(matches!(
-        err,
-        ValidationError::ConflictingObservationState { .. }
-    ));
+fn observed_and_missing_coord_values_are_distinguished_by_sum_type() {
+    let sym = CoordDecl::symbolic("B", "B");
+    let obs = CoordDecl::observed("B", "B", ScalarLit::rat(0, 1).unwrap());
+    let mis = CoordDecl::missing("B", "B");
+    assert!(!sym.is_missing());
+    assert!(!obs.is_missing());
+    assert!(mis.is_missing());
+    assert_ne!(obs.value, mis.value);
 }
 
 #[test]
@@ -476,7 +475,7 @@ fn unreduced_or_zero_denominator_rational_is_rejected() {
 }
 
 #[test]
-fn affine_degree_check_distinguishes_state_and_parameter_products() {
+fn affine_degree_check_distinguishes_state_parameter_and_unobserved() {
     let affine_term = PolyExpr::add(
         PolyExpr::mul(PolyExpr::param("a"), PolyExpr::state("B")),
         PolyExpr::mul(
@@ -484,11 +483,16 @@ fn affine_degree_check_distinguishes_state_and_parameter_products() {
             PolyExpr::arg("u"),
         ),
     );
-    assert!(affine_term.is_affine_in_state_and_args());
+    assert_eq!(affine_term.is_affine_in_state_and_args(), Some(true));
+    assert_eq!(affine_term.max_state_arg_degree(), Some(1));
 
     let quadratic_state = PolyExpr::mul(PolyExpr::state("B"), PolyExpr::state("C"));
-    assert!(!quadratic_state.is_affine_in_state_and_args());
-    assert_eq!(quadratic_state.max_state_arg_degree(), 2);
+    assert_eq!(quadratic_state.is_affine_in_state_and_args(), Some(false));
+    assert_eq!(quadratic_state.max_state_arg_degree(), Some(2));
+
+    let unknown_term = PolyExpr::mul(PolyExpr::unobserved("slot.x", None), PolyExpr::state("B"));
+    assert_eq!(unknown_term.max_state_arg_degree(), None);
+    assert_eq!(unknown_term.is_affine_in_state_and_args(), None);
 }
 
 #[test]
@@ -574,5 +578,205 @@ fn duplicate_missing_update_arity_and_phase_path_errors_are_detected() {
     assert!(matches!(
         CheckedShigureTask::validate(pair, spec, None),
         Err(ValidationError::PhasePathMismatch { .. })
+    ));
+}
+
+#[test]
+fn same_name_before_and_after_presentations_are_rejected() {
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.after.name = pair.before.name.clone();
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DuplicateDecl {
+            kind: "presentation",
+            ..
+        })
+    ));
+}
+
+#[test]
+fn observation_missing_and_arity_mismatch_across_pair_are_rejected() {
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.after.observations.retain(|o| o.phase != "Busy");
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::MissingObservation {
+            ref after_phase,
+            ref observation,
+            ..
+        }) if after_phase == "Busy" && observation == "read"
+    ));
+
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.after.observations[0]
+        .components
+        .push(PolyExpr::state("C"));
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::ArityMismatch {
+            expected: 1,
+            actual: 2,
+            ..
+        })
+    ));
+}
+
+#[test]
+fn standalone_eval_condition_checks_prime_modulus_and_non_empty_allowed_params() {
+    let cond = EvalCondition {
+        name: "UniversalCheck".into(),
+        evaluations: vec![],
+        equations: vec![],
+        invertibles: vec![],
+        point_domain: PointDomain::UniversalRing,
+        provenance: Provenance::default(),
+    };
+    assert!(matches!(
+        validate_eval_condition(
+            cond.clone(),
+            &CoeffDomain::Fp(BigUint::from(9u32)),
+            &BTreeSet::new()
+        ),
+        Err(ValidationError::InvalidPrimeModulus { .. })
+    ));
+
+    let empty_param = BTreeSet::from([" ".to_owned()]);
+    assert!(matches!(
+        validate_eval_condition(cond, &CoeffDomain::Q, &empty_param),
+        Err(ValidationError::EmptyName { .. })
+    ));
+}
+
+#[test]
+fn duplicate_fixed_or_editable_targets_and_invalid_source_refs_are_rejected() {
+    let (pair, mut spec, _) = ledger_snapshot_task();
+    let dup = spec.fixed[0].clone();
+    spec.fixed.push(dup);
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DuplicateDecl {
+            kind: "fixed target",
+            ..
+        })
+    ));
+
+    let (pair, mut spec, _) = ledger_snapshot_task();
+    let dup_edit = spec.editable[0].clone();
+    spec.editable.push(dup_edit);
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DuplicateDecl {
+            kind: "editable target",
+            ..
+        })
+    ));
+
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.provenance.origins[0].span = Some((10, 2));
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::InvalidSourceSpan {
+            start: 10,
+            end: 2,
+            ..
+        })
+    ));
+
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.provenance.origins[0].origin_id = "  ".into();
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::EmptyName { .. })
+    ));
+}
+
+#[test]
+fn interaction_summary_distinguishes_zero_constant_and_multi_variable_ideals() {
+    let zero_ideal = InteractionSummary {
+        min_interacting_variables: None,
+        max_vanishing_subset_size: Some(2),
+        minimal_failing_subsets: vec![],
+        parameters: vec!["delta".into(), "mu".into()],
+    };
+    let constant_ideal = InteractionSummary {
+        min_interacting_variables: Some(0),
+        max_vanishing_subset_size: None,
+        minimal_failing_subsets: vec![vec![]],
+        parameters: vec!["delta".into(), "mu".into()],
+    };
+    let mu_delta = InteractionSummary {
+        min_interacting_variables: Some(2),
+        max_vanishing_subset_size: Some(1),
+        minimal_failing_subsets: vec![vec!["delta".into(), "mu".into()]],
+        parameters: vec!["delta".into(), "mu".into()],
+    };
+    assert_ne!(
+        zero_ideal.to_json().canonical(),
+        constant_ideal.to_json().canonical()
+    );
+    assert!(
+        mu_delta
+            .to_json()
+            .canonical()
+            .contains(r#""min_interacting_variables":2"#)
+    );
+    assert!(
+        mu_delta
+            .to_json()
+            .canonical()
+            .contains(r#""max_vanishing_subset_size":1"#)
+    );
+    assert!(
+        !zero_ideal
+            .to_json()
+            .canonical()
+            .contains("min_interacting_variables")
+    );
+    assert!(
+        !constant_ideal
+            .to_json()
+            .canonical()
+            .contains("max_vanishing_subset_size")
+    );
+}
+
+#[test]
+fn state_dependent_word_translation_and_out_of_range_fp_literal_are_checked() {
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    // G-140 P2.1: state-dependent argument expression in word translation (`apply(C)`).
+    pair.word_translation.entries[1].steps[0].arg_exprs = vec![PolyExpr::state("C")];
+    CheckedShigureTask::validate(pair, spec, None)
+        .expect("state coordinate in source phase is valid in translated step arg_exprs");
+
+    let p5 = BigUint::from(5u32);
+    let bad_fp_pres = Presentation {
+        name: "FpBadLit".into(),
+        coeff_domain: CoeffDomain::Fp(p5.clone()),
+        sorts: vec![SortDecl {
+            name: "D".into(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Fp(p5.clone()),
+            provenance: None,
+        }],
+        phases: vec![PhaseDecl {
+            name: "S".into(),
+            coords: vec![CoordDecl::observed(
+                "x",
+                "D",
+                ScalarLit::Fp {
+                    value: BigUint::from(5u32),
+                    modulus: p5,
+                },
+            )],
+            state_laws: vec![],
+            provenance: None,
+        }],
+        operations: vec![],
+        observations: vec![],
+        provenance: Provenance::default(),
+    };
+    assert!(matches!(
+        validate_presentation(bad_fp_pres, &BTreeSet::new()),
+        Err(ValidationError::InvalidFpLiteral { .. })
     ));
 }

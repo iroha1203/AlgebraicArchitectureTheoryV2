@@ -13,14 +13,24 @@ pub struct SortDecl {
     pub provenance: Option<SourceRef>,
 }
 
-/// phase に属する状態座標。既知値と未観測（missing）を型で区別する。
+/// 状態座標の観測状態。自由記号変数・既知観測値・未観測（missing）を直和型で区別し、
+/// 未観測と観測済みの零や矛盾状態を型レベルで排除する。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum CoordValue {
+    /// 全状態にわたって量化される自由状態座標。
+    Symbolic,
+    /// 観測済みの具体的スカラー値。
+    Observed(ScalarLit),
+    /// 未観測（欠測）。零へ暗黙補完しない。
+    Missing,
+}
+
+/// phase に属する状態座標。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CoordDecl {
     pub name: String,
     pub sort: String,
-    pub observed_value: Option<ScalarLit>,
-    /// true のとき未観測の座標として扱い、零へ暗黙補完しない。
-    pub missing: bool,
+    pub value: CoordValue,
     pub provenance: Option<SourceRef>,
 }
 
@@ -29,8 +39,16 @@ impl CoordDecl {
         Self {
             name: name.into(),
             sort: sort.into(),
-            observed_value: None,
-            missing: false,
+            value: CoordValue::Symbolic,
+            provenance: None,
+        }
+    }
+
+    pub fn observed(name: impl Into<String>, sort: impl Into<String>, lit: ScalarLit) -> Self {
+        Self {
+            name: name.into(),
+            sort: sort.into(),
+            value: CoordValue::Observed(lit),
             provenance: None,
         }
     }
@@ -39,10 +57,13 @@ impl CoordDecl {
         Self {
             name: name.into(),
             sort: sort.into(),
-            observed_value: None,
-            missing: true,
+            value: CoordValue::Missing,
             provenance: None,
         }
+    }
+
+    pub fn is_missing(&self) -> bool {
+        matches!(self.value, CoordValue::Missing)
     }
 }
 
@@ -144,6 +165,7 @@ pub struct StateComparison {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TranslatedStep {
     pub before_operation: String,
+    /// 変更後操作の始域 phase の状態座標（G-140 P2.1 の状態依存代入を含む）・
     /// 変更後操作の引数変数・定数・パラメータから構成する引数式（変更前操作の引数順）。
     pub arg_exprs: Vec<PolyExpr>,
 }

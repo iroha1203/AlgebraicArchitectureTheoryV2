@@ -22,8 +22,9 @@ pub use change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,
 };
 pub use presentation::{
-    ComparisonPair, CoordDecl, LawKind, ObservationDecl, OperationDecl, PhaseDecl, Presentation,
-    SortDecl, StateComparison, StateLaw, TranslatedStep, TranslatedWord, WordTranslation,
+    ComparisonPair, CoordDecl, CoordValue, LawKind, ObservationDecl, OperationDecl, PhaseDecl,
+    Presentation, SortDecl, StateComparison, StateLaw, TranslatedStep, TranslatedWord,
+    WordTranslation,
 };
 pub use provenance::{MathClause, OriginKind, Provenance, SourceRef};
 pub use result::{

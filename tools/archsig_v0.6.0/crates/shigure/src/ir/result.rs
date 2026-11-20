@@ -261,8 +261,13 @@ impl RestoredArtifact {
 /// 相互作用解析（G-141 F10–F12）の結果。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InteractionSummary {
-    /// すべての非零残差が消える最大部分集合サイズ r（最小相互作用参加変数数は r + 1、残差ゼロなら 0）。
-    pub min_interacting_variables: usize,
+    /// 極小不成立部分族の最小サイズ（不成立なし＝残差 ideal 零なら `None`、
+    /// 定数残差 `1 in J` で空集合不成立なら `Some(0)`、`t^m` なら `Some(1)`、`mu*delta` なら `Some(2)`）。
+    pub min_interacting_variables: Option<usize>,
+    /// G-141 F11 の最大零化部分集合サイズ r（`forall |S| <= r, i_S^* J = 0` を満たす最大 r）。
+    /// 定数残差（空集合でも不成立）なら `None`、`t^m` なら `Some(0)`、`mu*delta` なら `Some(1)`、
+    /// 残差 ideal 零なら `Some(parameters.len())`。
+    pub max_vanishing_subset_size: Option<usize>,
     /// 多項式恒等式として不成立となる包含極小の部分変数族。
     pub minimal_failing_subsets: Vec<Vec<String>>,
     /// 自由パラメータ全体。
@@ -271,13 +276,9 @@ pub struct InteractionSummary {
 
 impl InteractionSummary {
     pub fn to_json(&self) -> Json {
-        Json::obj([
+        let mut obj = JsonObject::from([
             (
-                "min_interacting_variables",
-                Json::Nat(self.min_interacting_variables as u64),
-            ),
-            (
-                "minimal_failing_subsets",
+                "minimal_failing_subsets".into(),
                 Json::Arr(
                     self.minimal_failing_subsets
                         .iter()
@@ -286,10 +287,20 @@ impl InteractionSummary {
                 ),
             ),
             (
-                "parameters",
+                "parameters".into(),
                 Json::Arr(self.parameters.iter().map(Json::str).collect()),
             ),
-        ])
+        ]);
+        if let Some(min_vars) = self.min_interacting_variables {
+            obj.insert(
+                "min_interacting_variables".into(),
+                Json::Nat(min_vars as u64),
+            );
+        }
+        if let Some(max_r) = self.max_vanishing_subset_size {
+            obj.insert("max_vanishing_subset_size".into(), Json::Nat(max_r as u64));
+        }
+        Json::Obj(obj)
     }
 }
 

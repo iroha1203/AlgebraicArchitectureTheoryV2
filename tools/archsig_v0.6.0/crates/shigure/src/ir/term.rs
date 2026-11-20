@@ -254,26 +254,31 @@ impl PolyExpr {
         }
     }
 
-    /// 式が状態座標と操作引数について次数 1 以下（パラメータ係数を許す affine term）か検査する。
+    /// 式が状態座標と操作引数について持つ最大次数を返す（パラメータ係数は次数 0）。
+    /// 未観測値（`Unobserved`）を含む式は次数未確定として `None` を返す。
     ///
     /// G-140 P0.1 の型付き affine term の適用条件検査に用いる。
-    pub fn max_state_arg_degree(&self) -> u32 {
+    pub fn max_state_arg_degree(&self) -> Option<u32> {
         match self {
-            PolyExpr::Const(_) | PolyExpr::ParamVar(_) | PolyExpr::Unobserved { .. } => 0,
-            PolyExpr::StateVar(_) | PolyExpr::ArgVar(_) => 1,
+            PolyExpr::Unobserved { .. } => None,
+            PolyExpr::Const(_) | PolyExpr::ParamVar(_) => Some(0),
+            PolyExpr::StateVar(_) | PolyExpr::ArgVar(_) => Some(1),
             PolyExpr::Neg(e) => e.max_state_arg_degree(),
             PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) => {
-                a.max_state_arg_degree().max(b.max_state_arg_degree())
+                Some(a.max_state_arg_degree()?.max(b.max_state_arg_degree()?))
             }
-            PolyExpr::Mul(a, b) => a
-                .max_state_arg_degree()
-                .saturating_add(b.max_state_arg_degree()),
-            PolyExpr::Pow(e, exp) => e.max_state_arg_degree().saturating_mul(*exp),
+            PolyExpr::Mul(a, b) => Some(
+                a.max_state_arg_degree()?
+                    .saturating_add(b.max_state_arg_degree()?),
+            ),
+            PolyExpr::Pow(e, exp) => Some(e.max_state_arg_degree()?.saturating_mul(*exp)),
         }
     }
 
-    pub fn is_affine_in_state_and_args(&self) -> bool {
-        self.max_state_arg_degree() <= 1
+    /// 状態座標・操作引数について affine（次数 1 以下）かを返す。
+    /// 未観測値を含む場合は `None`（未確定）を返し、affine と誤認定しない。
+    pub fn is_affine_in_state_and_args(&self) -> Option<bool> {
+        self.max_state_arg_degree().map(|deg| deg <= 1)
     }
 }
 
