@@ -49,6 +49,8 @@ U_i=\{i\}\cup\{e\mid i\text{ は }e\text{ の端点}\}.
 
 ## G3 — 全AAT contextへの実装上の比較
 
+係数環 `R`、AtomCarrier、sectionの係数群は一つのuniverse `u` に揃える。必要な小さい型は `ULift` とその環・加法群構造で移し、元・演算・restrictionを上下写像で運ぶ。これにより `SitePresheafData.ofObstructionSheaf` が要求する `AtomCarrier.{u}` と `ObstructionSheaf` の係数universeが一致する。
+
 既存 `AATSite.category` は全architecture contextである。[G-139 P1a.2](../G-139-aat-law-generated-relative-geometry/polynomial-realizations.md)と同じ構成をこの有限空間に使う。台帳の原始宣言Atomに `point(x)`、`x∈X_Γ` を加えたbase objectを取り、各context `W` の点supportの内部を `U_W` とする。実context射は `U_W⊆U_Z` を与えるので、全 `W` に
 
 ```math

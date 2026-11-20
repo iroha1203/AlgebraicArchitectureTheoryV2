@@ -52,16 +52,16 @@
 
 | 宣言・source | 紙上で同定するdataとmap |
 | --- | --- |
-| [Reading.factors_iff_kernel、FiniteLawFamily.adequate_iff_kernel](../../lean/ResearchLean/AG/CanonicalResolution/Reading.lean) | A1の原始Law descent、G5の判定Boolを含むsource `X` と像への全射 |
+| [Reading.factors_iff_kernel、FiniteLawFamily.adequate_iff_kernel](../../lean/ResearchLean/AG/CanonicalResolution/Reading.lean) | A1の原始Law descent、G5の候補を含むsource `X : Type u` と像への全射。判定値域を `ULift.{u} Bool` として同じuniverseに揃える |
 | [comparisonFactor、Law descent](../../lean/ResearchLean/AG/ResolutionInvariance/ComparisonData.lean) | A2・B6・F4の同じ粗細readingと値の一致 |
-| [CellCoordinate、lawGeneratedD0/D1/Complex](../../lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean) | A1–A2のlabel、右−左、三辺の交代和、Q係数 |
+| [CellCoordinate、lawGeneratedD0/D1/Complex](../../lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean) | A1–A2のlabel、右−左、三辺の交代和、Q係数。B3の直接同定は `chartSupport_nonempty` を持つ場合で、空chart支持は零直和成分を許す本文の拡張 |
 | [TargetSupportedNerveMorphism](../../lean/ResearchLean/AG/ResolutionInvariance/SupportedNerveMorphism.lean)、[generatedPullback0/1/2](../../lean/ResearchLean/AG/ResolutionInvariance/GeneratedComparisonMap.lean) | A2・F4のchart map・部分edge/face map、退化時零、同じcochain map |
 | [lawValueBlockComplex](../../lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockDecomposition.lean)、[lawGeneratedH1BlockEquiv](../../lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockCohomology.lean) | B3・C1で同じ `(Law,value)` のcoordinateを読む分解 |
 | [GeneratorPresentation](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/GeneratorPresentation.lean)、[PresentationGroup](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/PresentationGroup.lean) | E2の実制限から得たrelation、局所核・連結性、整数の生成元商 |
 | [coefficientComparison](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/CoefficientComparison.lean) | E3の `[e]↦e_(Law,0)`、整数から有理係数へのmap |
 | [ContextOpenSupport](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/AATLocallyConstantObstruction.lean)、[FaceEmptyAATCechCover](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/FaceEmptyCechNormalization.lean) | E3の全contextの実openと実product交差、非空連結section |
 | [CochainComparison](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/CochainComparison.lean)、[actualCechDiagnosticH1Map](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/ActualCechH1Comparison.lean) | E3–E4・F3の生成元像、両微分、H¹の同じ商map |
-| [ActualCechAffineLocalData、h1_map_actual_class_eq_diagnostic_class](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedAffineObstruction.lean) | E4の符号map後の `transition=−b`、`localState=λ`、`r=dλ−b` |
+| [ActualCechAffineLocalData、h1_map_actual_class_eq_diagnostic_class](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedAffineObstruction.lean) | E4の `R=Z` と `Z→Q` 比較で、符号map後の `transition=−b`、`localState=λ`、`r=dλ−b` を同定。一般環 `R` の `Λ=R` 版は本文で構成 |
 | [CommonLabelChartSupport](../../lean/ResearchLean/AG/ObstructionDiagnosticBridge/SpecifiedClassReflection.lean) | E5で三辺cycleに対し偽と証明。零性反映は別途spanning treeから得る |
 | [ConditionC0–C6](../../lean/ResearchLean/AG/ResolutionInvariance/ResolutionInvarianceConditions.lean)、[generatedComparisonH1Map_bijective](../../lean/ResearchLean/AG/ResolutionInvariance/LawValueBlockComparisonBijectivity.lean) | F4で各fieldを原始支持から放電し、F3の実比較へ同定 |
 | [SAGA LiftFiberData](../../../Formal/AG/SemanticRepair/Saga/EquationLift.lean)、[PartIVBridge](../../../Formal/AG/SemanticRepair/Saga/PartIVBridge.lean) | G-141 G3–G5を介してE3–E5・F3へ。実residual、全tupleの空交差、`Tδ=dT` |

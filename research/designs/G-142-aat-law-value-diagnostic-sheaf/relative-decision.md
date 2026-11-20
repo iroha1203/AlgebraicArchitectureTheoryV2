@@ -100,7 +100,7 @@ Q_J:X\longrightarrow Y_J,\qquad
 
 **証明。** 因子分解があれば、全 `e_i` が等しい二点は `Q_J` の同じ値を持つので判定も等しく、異判定対ではない。逆に右辺が成立し `Q_J(u,c)=Q_J(u',c')` なら、候補・粗観測・全追加値が等しい。判定が異なれば右辺に矛盾するため同じ判定を持つ。各 `y∈Y_J` の任意の逆像の判定を `barχ(y)` と置けば、選択に依存せず `χ_E=barχQ_J`。全射性からこの `barχ` は一意である。□
 
-これは [Reading.factors_iff_kernel](../../lean/ResearchLean/AG/CanonicalResolution/Reading.lean) に `Source=X`、`f=χ_E` を入れた同じ証明である。有限 `X` では一Law・値域Bool・評価 `χ_E` の `FiniteLawFamily` を作れば、同じ条件が `adequate_iff_kernel` に一致する。有限な元の実現集合だけでなく、候補も含めた `X` が派生判定のsourceである。
+これは [Reading.factors_iff_kernel](../../lean/ResearchLean/AG/CanonicalResolution/Reading.lean) に `Source=X` を入れた同じ証明である。既存APIはSourceと値域を同じuniverseに置くため、`X : Type u` では `f=ULift.up∘χ_E : X→ULift.{u} Bool` として適用する。`ULift.up` の単射性からkernel条件は元のBool評価と同じである。有限 `X` では一Law・値域 `ULift.{u} Bool`・この評価の `FiniteLawFamily` を作れば、同じ条件が `adequate_iff_kernel` に一致する。有限な元の実現集合だけでなく、候補も含めた `X` が派生判定のsourceである。
 
 元のLaw値へのadequacyは、その元の評価がreadingのkernelで一定である条件。共有候補の判定へのadequacyは、ここで生成した別の評価 `χ_E` の条件である。W6の一定readoutと変動する保存残差は、前者だけから後者が従わないことを示す。
 

@@ -40,17 +40,18 @@
 | --- | --- | --- |
 | [Atom](../../../Formal/AG/Atom/Atom.lean)、[Configuration](../../../Formal/AG/Atom/Configuration.lean)、[ObjectAlgebra](../../../Formal/AG/Atom/ObjectAlgebra.lean) | 五座標、三つのconfiguration relation、`ConfigurationHom` の実際の保存条件 | N1の意味圏への解釈、同じ条件の対象・射の読み戻し |
 | [ArchitectureObject](../../../Formal/AG/Atom/ArchitectureObject.lean) | `StructureMaps`、`SelectedQuantities` と各選択値 | 実際の関数による新しい射、型・値への忘却 |
-| [GeneralRelativeLens](../../lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean) | `productEquiv`、`normalForm`、`productMap` | copyingへの輸送、係数・descentとの比較 |
+| [GeneralRelativeLens](../../lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean) | `GeneralLens.productEquiv`、`GeneralLens.normalForm`、`GeneralLens.productMap` | copyingへの輸送、係数・descentとの比較 |
 | [IndependentCarrierGraphReadings](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentCarrierGraphReadings.lean) | `IsTyped`、`IsTotal`、`compose_finite_support` | 同じqueryに対する冪等係数表示、全profileと非一様性 |
 | [IndependentAATPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentAATPrimitiveReconstruction.lean) | `Parameter`、`NativeCategory`、`LocalCategory` の各family | N1の宣言と係数familyを区別した比較 |
 | [IndependentGeometryPrimitiveAssembly](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryPrimitiveAssembly.lean) | `foundation`、`dependent`、`stages`、`assemble` | 同じfield順のmany-sorted解釈 |
 | [IndependentGeometryCategoryReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean) | `representativeReadingHomEquiv`、`explicitReadingHomEquiv` とそのidentity/composition、両modeのread/assembleとequivalence | 係数化後のnative回復、全環の追加Homとの区別 |
 | [IndependentGeometryHomNativeFullRecovery](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryHomNativeFullRecovery.lean) | `localRepresentative_assemble`、`localExplicit_assemble` | 元の係数map・raw data・全context actionを落とさない比較 |
-| [IndependentLensPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean)、[IndependentProtocolPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean) | 実際のstate/view、path、自然変換のreadingとassembly | 任意signatureへの組込みとcopying・σの各比較 |
+| [IndependentLensPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentLensPrimitiveReconstruction.lean)、[IndependentProtocolPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean) | Lensは固定非空View・`finite_fiber`・View固定Hom、Protocolはquiver表示 `ProtocolSchema`・`state_finite`・`Type u` 値のreadingとassembly | 空View・無限fiber・View変更射・任意小圏の観測sliceはN4の新しい構成。既存部分とのcopying・σ比較 |
 | [Equation.Basic](../../../Formal/AG/Equation/Basic.lean) | `violationCoordinate`、`equationResidual`、全context・全Atomでの `EquationLawful` | raw graph decode、普遍残差と評価残差の別々の系、同じ入力での充足同値 |
 | [Context](../../../Formal/AG/Site/Context.lean)、[ContextCategory](../../../Formal/AG/Site/ContextCategory.lean) | `IsRestriction`、`contextMorphismPreorderCategory`、実際のsupport map | 全contextの点supportから `U_W` と係数restrictionを生成 |
-| [StandardScheme](../../../Formal/AG/LawAlgebra/StandardScheme.lean) | scheme・decoration・atlasの格納型。表現同値を入力とする `EquationObservableRealization` 等 | P2で表現同値とatlasを構成。入力fieldの射影を証明の代わりにしない |
-| [StandardSchemeCoefficient](../../../Formal/AG/ReadingFunctoriality/StandardSchemeCoefficient.lean) | `baseChange`、`baseChangeUnderlyingIso` とflat/sheaf仮定 | 同じ装飾付き入力での比較、適用する係数変更での仮定放電 |
+| [StandardScheme](../../../Formal/AG/LawAlgebra/StandardScheme.lean)、[StructureSheaf](../../../Formal/AG/LawAlgebra/StructureSheaf.lean) | `RawAmbientRestrictionSystem`、`singleAffine` のdecoration・atlas・overlapの構成 | P3.2：構造関係が空の定数raw `A_I` とbottom topologyからambient `Spec A_I` を生成 |
+| [ClosedEquationalGeometry](../../../Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean) | `ClosedEquationalLawWitness.ofGlobalSections`、`lawGeneratedIdealSheaf`、`lawfulClosedSubscheme` | P3.2：原始required残差から `U_I=Spec(A_I/J_I)` を生成し、P2のoverlapで接着 |
+| [StandardSchemeCoefficient](../../../Formal/AG/ReadingFunctoriality/StandardSchemeCoefficient.lean)、[DisconnectedGluing](../../../Formal/AG/Examples/StandardGeometryReference/DisconnectedGluing.lean) | `baseChange`、`baseChangeUnderlyingIso`、bottom topologyのsheafification | P3.2：`S.category : Type (u+1)` を保持し `sheafBotEquivalence` で `HasSheafify`、`isSheaf_bot` で `HasSheafCompose` を放電。ambientの比較をrequired商・局所化・接着へ運ぶ |
 
 ## Material premiseの所在
 
@@ -64,8 +65,8 @@
 | dualityのevaluation/coevaluationとsnake | Dの明示された十分条件 | 有限projective性・frameをここから導出 |
 | Markingとopen overlap | scheme化の条件 | 全射性でinertia消滅、選択列とdeterminantでopen overlapを構成 |
 | finite presentationとLawの有効な有限還元 | P6の有限化経路の条件 | 有限構文のcompilerと両方向の解同値を証明。一般familyはN5に保持 |
-| 既存APIのdecorated入力 | P3.2に明示された比較範囲 | 普遍実現・選択chartと同じ入力だけを比較。全contextのaffine性は要求しない |
-| flatness・sheaf保存 | 既存APIへの適用条件 | finite projective係数変更では全limit保存から放電。P2の表現自体は非flat射にも自然 |
+| 既存APIのdecorated入力 | P3.2で原始入力から構成 | 空relationのambientに `singleAffine` を適用し、required商からP2の普遍実現へ接続。全context係数とは大域sectionの制限で比較 |
+| flatness・sheaf保存 | 既存APIへの適用条件 | 構成したbottom topologyで全presheafがsheafとなるため、任意flat係数変更で放電。P2の表現自体は非flat射にも自然 |
 | connectedかつ非零 | 一個の係数環からnative Homを回復する十分条件 | N2の一般全Hom分類とは別。零環と非連結の挙動も証明 |
 | 非零基礎環 | Dの無限familyの非有効化例 | 零環は空schemeとなることを明示 |
 
@@ -80,7 +81,7 @@
 | [Dualityとfinite projective, 0FNJ](https://stacks.math.columbia.edu/tag/0FNJ)、[局所有限自由性, 00NX](https://stacks.math.columbia.edu/tag/00NX) | D1。本文にもdual basisの生成を記載 |
 | [Grassmannian, 089T](https://stacks.math.columbia.edu/tag/089T) | P2の生成列からの基底open。本文でoverlapと被覆を証明 |
 | [商stackの代数性, 06PI](https://stacks.math.columbia.edu/tag/06PI) | D2・P4。有限積GLのsmooth作用groupoidを構成して適用 |
-| [無限積の反例, 078E](https://stacks.math.columbia.edu/tag/078E) | D3の独立なline quotient族 |
+| [無限積の反例, 078E](https://stacks.math.columbia.edu/tag/078E) | D3：対角の閉埋込みとaffine全射からqc separated性を証明し、独立なline quotient族を反証 |
 | [Isomの局所有限型性, 04XR](https://stacks.math.columbia.edu/tag/04XR) | D3の無限自由moduleのstabilizerによる反証 |
 
 この依存は紙上証明の標準定理への依存であり、Leanライブラリへの実装済み対応を意味しない。新規形式化では、上の各構成とsource対応を同じ量化・同じ残差・同じ全Homで実装する必要がある。

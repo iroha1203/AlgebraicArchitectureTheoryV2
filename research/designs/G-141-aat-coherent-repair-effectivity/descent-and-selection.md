@@ -61,11 +61,45 @@ G-140 Fの有限図式補完・固定長経路、Gの移送liftを取る。対�
 
 ## C8 — Affine・平方零問題の全修復groupoid
 
-まずlawfulな基準と指定された平方零kernelを固定する。宣言coverについてはE8、係数の有限principal affine coverについてはE4の準連接比較を使う。局所変数・Law残差・全syzygyを加え、unmarked版ではE6の還元が恒等の同型も加える。
+まずlawfulな基準と指定された平方零kernelを固定する。宣言coverについてはE8の全宣言と全syzygyを用いる。係数の有限principal affine coverでは、各実際のopen上でE4のconormalを使い、層の複体
 
-局所ambient実現と、還元上の同型のliftを選ぶ。overlapのmodule同型は、基底での可逆matrixをnilpotent拡大へliftして得る。操作保存の失敗、局所Law残差、三重交差での同型の合成の失敗を実際に評価する。平方零の場合、積の二次誤差は零なので、これらはそれぞれ補正複体の次数0・1・−1を使ったČech totalの次数1成分になる。
+```math
+\mathscr D^0=\mathcal Hom(E_x,\widetilde M)
+\longrightarrow
+\mathscr D^1=\mathcal Hom(N_x,\widetilde M)
+```
 
-この実defectがcycleである理由は、局所Lawのsyzygy、二重交差での原始評価の一致、三重交差での合成の結合則である。各式を差にして展開すると、total微分の各成分が相殺する。局所ambient選択や同型liftを変えると、同じ計算でtotal次数0補正の微分だけ変わる。
+を作る。右項は各open上で全syzygyを消す残差mapの層である。unmarked版ではE6の還元が恒等の同型の層 `\mathscr D^{-1}` とその無限小作用も加える。以下のČech totalには、この層の各交差上の**実section**を用いる。全syzygyを添字とする無限積 `D²=∏_(s∈S)M` を大域で作ってから局所化する操作は使わない。
+
+大域加群複体とのE4の準連接比較には、さらに `N_x` の有限表示が必要である。例えば `k` がNoetherianで `P` が有限表示ならこれが成立し、両Homの局所化同型と各項のČech非輪状性から、大域 `bar D` とこのtotalを比較できる。同じ条件ではE2のsyzygy加群に有限生成系を取り、次数2を有限積 `M^q` とした複体も使える。一般の係数環での全修復分類は、上で定義した実sectionのtotalについて述べるため、この追加条件を要求しない。
+
+局所ambient実現 `tilde x_i` と、還元上の同型をliftしたambient同型 `g_ij`（jからiへ）を選ぶ。有限局所自由module間の同型は、Homのprojectivityによりliftでき、還元で可逆なliftはnilpotent性により可逆である。基底chartでは同じ事実は可逆matrixのliftで確認できる。還元同型で係数を同定した上で、局所Law残差を `r_i`、操作保存の失敗を `Δ_ij=g_ij(tilde x_j)−tilde x_i`、三重交差の合成の失敗を
+
+```math
+\omega_{ijk}=1-g_{ij}g_{jk}g_{ik}^{-1}
+```
+
+とする。最後の差は平方零kernelに値を持つ無限小自己同型である。これらはそれぞれČech bidegree `(0,1),(1,0),(2,−1)` に属す。横微分を `δ`、縦微分を `d` とし、`d_tot=δ+(-1)^p d` を使う。
+
+E2の局所全syzygy表示も併記すると、cycle条件の四成分は
+
+```math
+d^1r=0,\qquad
+\delta r-d^0\Delta=0,\qquad
+\delta\Delta+d^{-1}\omega=0,\qquad
+\delta\omega=0.
+```
+
+第一式は原始syzygy恒等式をambient liftへ代入して得られ、`r` が上の `\mathscr D¹` に入る理由である。第二式は二重交差上のTaylor式で、二個のkernel因子の積は零。第三式は三重交差で `g_ij g_jk` と `g_ik` の作用差を展開した式で、上の `ω` の負号と一致する。第四式は **四重交差** で `(g_ij g_jk)g_kl=g_ij(g_jk g_kl)` を展開した式である。無限小自己同型同士の積の誤差は零なので、還元同型による係数の移送の下で交代和が零になる。
+
+局所ambient選択を `a∈C^{0,0}` だけ変え、同型liftを `g'_ij=(1−b_ij)g_ij`、`b∈C^{1,−1}` とする規約では、defectの変化は
+
+```math
+(r,\Delta,\omega)\longmapsto
+(r+d^0a,\ \Delta+\delta a-d^{-1}b,\ \omega+\delta b).
+```
+
+これは `d_tot(a,b)` である。従って指定類は選択に依存しない。
 
 従って指定類 `o∈H¹(Tot D)` を得る。`o=0` なら実際の補正tupleを選んでdefectを消し、C7で実補完へ貼れる。逆に実補完を制限して元の選択との差を取れば、その微分がdefectとなる。二つの補正の差はtotal 0-cycle、還元同型による比較はtotal次数−1の微分だから、非空な全修復の同型類は `H⁰(Tot D)` のtorsor、各自己同型群は `H^(−1)(Tot D)` となる。
 

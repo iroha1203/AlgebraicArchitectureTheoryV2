@@ -2,7 +2,7 @@
 
 ## P0 — 入力
 
-`k` を可換環、`V` を有限sort集合、各sortに自然数 `0≤n_v≤m_v` を与える。演算族 `E` とLaw族 `L` は任意に小さくてよい。演算は有限入力列から一つの出力へのtensor-linear mapであり、0入力のtensorは `k`。Lawは同じ型を持つ二つの有限tensor式の等式である。式の構成子は演算、恒等、tensor、置換、合成、有限和、scalar倍。required・optional・derivedのroleを保持し、実現にはrequired Lawを課す。
+`k` を可換環、`V` を有限sort集合、各sortに自然数 `0≤n_v≤m_v` を与える。演算族 `E` とLaw族 `L` は任意に小さくてよい。原始演算は有限入力列から一つのsortへのtensor-linear mapである。tensor式の入出力型は有限sort列で、空列のtensorは単位 `k` とする。特に単位上の恒等とscalar倍を使うLaw `c·id_k=d·id_k` も許す。Lawは同じ型を持つ二つの有限tensor式の等式である。式の構成子は演算、恒等、tensor、置換、合成、有限和、scalar倍。required・optional・derivedのroleを保持し、実現にはrequired Lawを課す。
 
 宣言contextは、参照に関して閉じた部分宣言であり、一つのsortを含めたらその階数と全名前付き生成元を含める。宣言被覆は合併が元の宣言になる族。この入力は [n1020 §3](../../../docs/note/n1020_shigure_polynomial_specializations.md#3-原始入力と独立な実現) と同じである。
 
@@ -155,15 +155,42 @@ scheme側では `M_(P')` の普遍実現をこの式で解釈し、P2により `
 
 宣言 `V⊆W` の忘却は `Sem_W→Sem_V`、座標環では `B_V→B_W`。open `U⊆U'` の係数制限は `Γ(U',O)→Γ(U,O)`。この二つを同じ射にしない。例えば `Q[x]→Q[x,y]/(xy-1)` は宣言を増やす環射であり、共有 `x` を保つ逆方向の環射は `xφ(y)=1` を要求して存在しない。
 
-### P3.2 — StandardArchitectureSchemeへの限定した比較
+### P3.2 — Ambient、required閉部分scheme、接着を通じたAPI比較
 
-既存 `StandardArchitectureScheme.baseChange` は、schemeだけでなく指定 `raw`、reading decoration、context chart、overlap、およびflatな係数変更と `HasSheafCompose` を使うAPIである。その入力に P2 の同じschemeと同じ生成式を格納できるreadingを固定した場合に比較する。任意の既存decorationが自動的に一致するとは主張しない。
+既存 `StandardArchitectureScheme` のcanonical chartは `Spec(SheafifiedSectionRing raw W)` である。P1a.3の空 `StructuralRelationFamily` はambient環を与え、required Lawの商は別に取る。従って比較を、各基底chartのambient `Spec A_I`、required閉部分scheme `U_I=Spec(A_I/J_I)`、P2の接着の順に構成する。
 
-この比較の内容は具体的である。指定contextのsectionから大域sectionへの解釈が普遍実現の同じ係数を送り、指定chartが P2 のopen chart、overlapが上で生成した逆行列変換を表すことを検査する。これらの入力について `baseChangeUnderlyingIso` の右辺は実際のscheme fiber productであり、P2.1 の同型と同じ普遍実現を持つ。二つの射は各chartの全生成元で一致するので等しい。decoration・chart・overlapの比較も同じ生成元と局所化の式で可換になる。
+**Siteとrawの生成。** chart `I` を固定し、P1aのAtomCarrierと全contextの圏を使う。base objectには宣言・Law・点Atomを含め、全Atomを読むcontextを `W₀` とする。`U_(W₀)=Spec A_I` である。equation systemはP1aの `E_B`、overlapは実product contextからの `meetOverlapPullback` とする。このAPI比較用のsignatureは、axisを一点型、選択axisをその一点、値型を `Z_I→A_I`、objectの値をP1a.1の `decode_(A_I)` とする。必要な型は共通のAtomCarrierのuniverseへliftする。`CoverageRequirements` を次の具体的なpredicateで指定する。
 
-sheafificationは小さいsite上の可換代数sheafの標準構成で存在する。`HasSheafCompose` の実際に放電できる係数変更として `k'` が有限projectiveな `k` moduleである場合を取れる。このときtensorはdualizable moduleによるtensorなので全limitを保ち、sheaf条件の等化子と任意積を保つ。従って係数extensionはsheafをsheafへ送り、flatnessも成立する。例えば `k'=k[ε]/ε²` はrank2自由で、非自明な係数変更のこの条件を満たす。一般のflat射に対してこの追加仮定を省略しない。
+| field | 指定するpredicate |
+| --- | --- |
+| `requiredSupport` | base objectのAtom全体 |
+| `requiredEquationCoordinate`、`selectedViolationWitness` | それぞれの全coordinate |
+| `requiredAxis` | 唯一のaxis |
+| `supportVisibleOn`、`equationCoordinateVisibleOn`、`violationWitnessVisibleOn` | contextが `W₀` であること |
+| `axisReadableOn` | contextが `W₀` であること |
+| `boundaryVisibleOn overlap base` | `base=W₀` |
 
-以上は同じ装飾付き入力でのAPI比較である。P1aの全context係数を各々affine chartと呼ぶ構成は使わない。非affine openにも係数を与えることと、それを `Spec Γ(U,O)` で元のopenへ同定できることは異なる。
+singleton family `W₀→W₀` は全条件を満たす。逆にadmissible familyはaxis条件から `W₀` のpatchを持ち、そのpatch対の最後の条件からbaseも `W₀` となる。context圏はthinなのでその包含射は恒等。従って全生成sieveはtopで、生成Grothendieck topologyはbottomである。これで `S_I.topology=⊥` を入力dataから証明した。
+
+全context `W` で `coordFamily W` の座標集合を原始宣言から作ったraw座標 `Z_I`、labelをsemantic、各 `LocalData` を一点型とする。構造関係の添字を空型、restrictionの変数像を `X_z↦X_z` とする。`JStruct=0` なのでideal保存が成立し、多項式生成元上の計算から恒等・合成則が成立する。これが実際の `raw_I : RawAmbientRestrictionSystem S_I k` であり、各 `raw_I.rawAlgebra W` は `A_I` に同型である。
+
+**Sheafificationとambient scheme。** `AtomCarrier.{u}` に対して `S_I.category` は `Type (u+1)` にあるため、係数対象 `AATCommAlgCat.{u,v} k` に一般の小siteのsheafificationをそのまま適用しない。ここでは証明したbottom topologyを使う。全presheafはsheafなので、`sheafBotEquivalence` の逆の随伴から `HasSheafify` を構成でき、層化unitも同型である。これは [DisconnectedGluing](../../../Formal/AG/Examples/StandardGeometryReference/DisconnectedGluing.lean) の `disconnectedHasSheafify` と同じ経路で、siteと値域のuniverseの大小を追加仮定にしない。
+
+そこで既存constructor
+
+```text
+X_I := StandardArchitectureScheme.singleAffine raw_I W₀
+```
+
+を使う。`singleAffine` はidentity chart、その被覆性、self-overlapのpullbackと両射影式を構成し、`X_I.underlying≅Spec A_I` とreading decorationを与える。schemeやatlasの成立証拠を外から供給しない。この定数rawとP1aのObservable `Γ(U_W,O)` は、大域sectionの制限 `A_I→Γ(U_W,O)` で接続する。指定残差は同じ制限像となるが、非affineな `U_W` を含む全contextで環同型とはしない。
+
+**同じrequired Lawの閉部分scheme。** `X_I≅Spec A_I` 上で、P1a.3の各成分残差 `f_(ℓ,α)` を指定Law Atomの大域section、他Atomでは零とする。[ClosedEquationalLawWitness.ofGlobalSections](../../../Formal/AG/LawAlgebra/ClosedEquationalGeometry.lean) で各affine openへのwitnessを作る。`ClosedEquationalLawReading` の `closed` と各openの `selected` は全Law、roleは元のroleとする。幾何的な充足はtest scheme上の同じ原始式の評価零で定義する。P1a.3の評価一致によりwitnessの零性と同値であり、test schemeのpullbackで保たれる。witnessの制限式は大域sectionの関手性、selectionの制限式は同じ全Lawを選ぶことから従う。従って `IsClosedEquationalLawReading` と `RequiredClosed` の各条件を満たす。
+
+`lawGeneratedIdealSheaf` はrequiredな成分だけで生成される `~J_I`、`lawfulClosedSubscheme` は `Spec(A_I/J_I)=U_I` となる。optional Lawはambientにもこの商にも追加しない。この経路では、全contextのObservableとraw環の同型を要求する `SemanticLawEquationSchemeBridge` を用いない。
+
+**係数変更とgluing。** bottom topologyでは任意のfunctorがsheafをsheafへ送るので、係数extensionの `HasSheafCompose` は `Presheaf.isSheaf_bot` から得られる。よって任意の `FlatCoefficientChange k k'` について、既存 `baseChange` と `baseChangeUnderlyingIso` を実構成した `X_I` に適用できる。ambient比較は各変数と係数を同じ元へ送る `A_I⊗_k k'≅A'_I` である。
+
+同じ射は全残差を係数変更後の原式へ送り、required閉部分schemeでは `(A_I/J_I)⊗_k k'≅A'_I/J'_I` を与える。decorationの変数sectionも閉埋込みに沿ってP2の普遍係数に移る。さらに `d_IJ` と随伴行列の式が一致するので、局所化・overlap変換との比較は可換。三重交差のcocycleによってP2の `M_P` 全体の同型へ接着する。従って既存APIとの比較とP2.1は、同じambient、原始Law、商、普遍実現を運ぶ同一のmapである。P2.1の非flatな環射についての比較は、商環・局所化の直接計算で成立する。
 
 ## 定理 P4 — 生成元を忘れる商stack
 

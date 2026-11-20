@@ -37,6 +37,7 @@ d_c^0(\lambda+a)=b+\Delta b\}
 と表示する。片方を固定する修復は対応する成分を零にすればよい。細側の `\mathcal F_f` は同じ式から生成し、
 
 ```math
+\Phi_R:\mathcal F_c(R)\longrightarrow\mathcal F_f(R),\qquad
 (a,\Delta b)\longmapsto
 \bigl(p^0a,\ (0,\Delta b_{01},\Delta b_{12},\Delta b_{20})\bigr)
 ```
@@ -98,7 +99,7 @@ H¹で全射であることを示す。細側cochain `η` に対し、頂点 `0b
 
 F2の逆mapは分割chartの共通係数を読むため、この候補比較はaffineな表示のmapと逆mapを持つ。必要な可逆条件の局所化とも可換する。全 `R` 点での自然な同型は、G-140の独立な実変更modelへのdecodeとも可換する。これはここで指定した修復規則の候補fiberであり、一般の変更圏が保持する全sort mapのHomはG-140のままである。
 
-粗側の変換係数と修復後の操作のregular式から `v_c:\mathcal F_c→T` を作り、条件 `P↪T` を有限個の等式と可逆条件で定めるlocally closed subschemeとする。細側では `v_f=v_c∘p^(-1)` と同じ式を引き戻す。すると全 `R` に自然に
+粗側の変換係数と修復後の操作のregular式から `v_c:\mathcal F_c→T` を作り、条件 `P↪T` を有限個の等式と可逆条件で定めるlocally closed subschemeとする。F2の自然な全解同型を `Φ` と書き、細側では `v_f=v_c∘Φ^(-1)` と同じ式を引き戻す。すると全 `R` に自然に
 
 ```math
 \mathcal F_c\times_TP\ \cong\ \mathcal F_f\times_TP .

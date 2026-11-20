@@ -68,7 +68,7 @@ total lensは `get:C→V`、`put:C×V→C` と
 (k,v)\longmapsto(a(k),u(v)),\qquad a:K\to K',\quad u:V\to V'
 ```
 
-である。実際、`get` 保存で第二成分が決まり、`put` 保存で第一成分は `v` に依存しない。逆にこの式は両保存則を満たす。合成は `(a',u')∘(a,u)=(a'a,u'u)`。同じ `V` 上で `u=id` を固定した全Homは `K→K'` に対応する。`K` は空でも任意濃度でもよい。この計算は既存 `GeneralRelativeLens.productEquiv`、`normalForm`、`productMap` の順序 `V×K` を入れ替えたものである。
+である。実際、`get` 保存で第二成分が決まり、`put` 保存で第一成分は `v` に依存しない。逆にこの式は両保存則を満たす。合成は `(a',u')∘(a,u)=(a'a,u'u)`。同じ `V` 上で `u=id` を固定した全Homは `K→K'` に対応する。`K` は空でも任意濃度でもよい。この計算は既存 `GeneralLens.productEquiv`、`GeneralLens.normalForm`、`GeneralLens.productMap` の順序 `V×K` を入れ替えたものである。
 
 `V=∅` なら `get` の存在から `C=∅`。空viewのlensから任意のlensへの相対射は一意である。非空viewから空viewへの相対射は存在しない。両viewが空なら一意である。`V≠∅, C=∅` は許され、基準値を選べば `K=∅` という上の分類に含まれる。viewに点がない場合を非空fiberの仮定で捨てない。
 

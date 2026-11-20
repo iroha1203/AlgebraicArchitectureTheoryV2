@@ -46,8 +46,8 @@
 | --- | --- | --- |
 | [G-139 紙上証明](../G-139-aat-law-generated-relative-geometry/README.md) | Nの原始意味・全copying Hom、A–Dのquantity・係数descent、Pの多項式実現 | B3の全変更表示、Cの対象・全map、P0の同じ入力 |
 | [G-139 source対応](../G-139-aat-law-generated-relative-geometry/source-map.md) | Atom・Configuration・ArchitectureObject・context・Equationの宣言対応 | 原始field・参照・値・Lawを維持した比較 |
-| [GeneralRelativeLens](../../lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean) | `productEquiv`、`normalForm`、`productMap` | D1の全hidden mapと合成、非可逆射、係数化 |
-| [IndependentProtocolPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean) | 頂点・path・自然変換の原始readingとassembly | D2の全Homと観測slice |
+| [GeneralRelativeLens](../../lean/ResearchLean/AG/RealizationReconstruction/GeneralRelativeLens.lean) | `GeneralLens.productEquiv`、`GeneralLens.normalForm`、`GeneralLens.productMap` | D1の全hidden mapと合成、非可逆射、係数化。G-124の固定非空View・有限fiber・View固定Homとの比較を一般化部分と区別 |
+| [IndependentProtocolPrimitiveReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentProtocolPrimitiveReconstruction.lean) | quiver表示 `ProtocolSchema` 上の `state_finite`・`Type u` 値の頂点・path・自然変換のreadingとassembly | D2の任意小圏・無限状態を含む全Homと観測sliceは本稿の一般化 |
 | [IndependentCarrierGraphReadings](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentCarrierGraphReadings.lean) | `IsTyped`、`IsTotal`、`compose_finite_support` | 同じ `edge(S,T,x,y)` とprofileの比較 |
 | [IndependentGeometryCategoryReconstruction](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryCategoryReconstruction.lean)、[IndependentGeometryHomNativeFullRecovery](../../lean/ResearchLean/AG/LocalSemanticReconstruction/IndependentGeometryHomNativeFullRecovery.lean) | representative / explicitの全Hom read・assembleと恒等・合成 | D2のnative回復、raw mapと全context actionの保持 |
 | [OperationRepair/Basic](../../lean/ResearchLean/AG/OperationRepair/Basic.lean) | `OperationSystem`、`eval`、`eval_append`、`OperationCongruence` | A2・D3・P1の同じ全域操作評価 |

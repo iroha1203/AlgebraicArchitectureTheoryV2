@@ -140,13 +140,22 @@ unmarked実現では、還元が恒等となる同型も保持する。局所fra
 
 残差を消す補正 `δ` を対象、`δ'−δ=d^{-1}A` を満たす `A` を射とするgroupoidは、実際の還元同型を持つlift groupoidと同値である。従って非空な同型類は `H⁰(D)` のtorsor、各自己同型群は `H^{-1}(D)`。marked全射生成元を固定すると `A_vq_v=0` と全射性から `A_v=0` となり、E3の集合版に戻る。
 
-既存conormalとの比較には評価前の普遍ambient `B` とprincipal-open siteを固定する。G-139 P1aのObservableは `B_s`、Law idealは `J_s` であり、有限積を局所化する直接計算から `(J²)_s=(J_s)²`。従って [Raw.shortComplex](../../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean) は各openで
+既存conormalとの比較には、評価前の普遍ambient `B` とそのprincipal-open site `P_B` を固定する。G-139 P1a.2の全context上の普遍equation systemを `G` とし、包含 `D(s)⊆D(t)` を実際のcontext射へ送る関手
+
+```math
+\iota:P_B\longrightarrow S.\mathrm{category},
+\qquad D(s)\longmapsto W_{D(s)}
+```
+
+を用いる。`G.Observable W_(D(s))≅B_s` であり、指定Law Atomのsymbolic coordinateは `f_i/1`、他Atomでは零だから、同じ同型で `G.obstructionIdeal W_(D(s))=J_s` となる。これは任意contextのopenがprincipalであるという主張ではなく、`ι` の像上の計算である。
+
+[Raw.shortComplex](../../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean) の各項は `S.categoryᵒᵖ` 上のpresheafである。各項と二つの自然変換を `ι.op` との前合成で制限し、`ι^*(Raw.shortComplex G)` を作る。局所化は完全で、ideal積について `(J²)_s=(J_s)²` だから、この制限複体は `D(s)` 上で
 
 ```math
 0\to(J/J^2)_s\to(B/J^2)_s\to(B/J)_s\to0
 ```
 
-となる。同じ制限mapで層化すれば標準conormal列である。
+となる。包含に沿う射も各商と分数の普遍性による局所化mapで一致する。ここで用いる層化は **`P_B` 上のZariski層化** であり、同じmoduleの局所化presheafから標準conormal列を得る。全context上の `S.topology` に関する `Raw.sheafifiedShortComplex` とは区別する。この比較は前者の層化だけを使い、後者の `HasSheafify S.topology` を入力にしない。
 
 ambient lift `B→R'` は `J²` を消す。得られる `B/J²→R'` の `J/J²` への制限が `κ` であり、`κ=0` は**同じmap**が `B/J` を経由することと同値。liftの選択差をderivationで商にした `[κ]` はE3の `o_P` である。評価後の零idealからconormalを作り直さない。
 

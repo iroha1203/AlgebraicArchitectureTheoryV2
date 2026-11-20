@@ -71,7 +71,7 @@ av\longmapsto a\,e_{(\mathrm{Law},0)}.
 
 G-141 G4の増加pairからgraphの指定向きへの符号map `T` を使う。次数0は恒等、逆向きの辺では次数1に−1を掛けるので、辺ごとに `Tδ⁰_SAGA=d⁰_Γ`。全tupleの空交差のsectionは零、逆pairは負、対角は零であり、SAGAの正規化比較とも可換する。
 
-`ActualCechAffineLocalData` は、この増加pair座標で `transition=T^(-1)(−b)`、`localState=λ` として同じ実操作から作る。graph座標に移れば
+`R=Z` では、E2の整数係数群の同定により、既存 `ActualCechAffineLocalData` をこの増加pair座標で `transition=T^(-1)(−b)`、`localState=λ` として同じ実操作から作る。一般の可換環 `R` では、同じ式を `underline Rv` の実Čech複体に適用して係数 `Λ=R` のdataを作る。後者は本稿で構成する係数版である。どちらもgraph座標に移れば
 
 ```math
 T(\mathrm{actualMismatch})
@@ -79,7 +79,7 @@ T(\mathrm{actualMismatch})
 o_b=[r]=[-b]=\delta(1).
 ```
 
-最後の等式は `E_b→underline R` の局所lift `i_(λ_i)` の差で連結準同型を計算したG-141 G4の式である。係数比較は上の各cellのmapなので、`h1_map_actual_class_eq_diagnostic_class` の両辺は同じ `[-b]` を表す。この像を `κ_b` とする。SAGAの類、実層の類、指定診断類の比較図式は、同じ残差の各成分で可換となる。
+最後の等式は `E_b→underline R` の局所lift `i_(λ_i)` の差で連結準同型を計算したG-141 G4の式である。係数比較は上の各cellのmapなので、一般の `R` では同じ `[-b]` を係数 `Λ=R` の指定診断類 `κ_b` へ送る。`R=Z` から `Z→Q` を合成したとき、この生成元上の比較が既存 `h1_map_actual_class_eq_diagnostic_class` の両辺に一致する。同宣言の比較先は有理係数に固定されている。SAGAの類、実層の類、指定診断類の比較図式は、各係数で同じ残差の成分を送ることにより可換となる。
 
 ## E5 — Spanning treeによる零性反映と全操作
 

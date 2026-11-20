@@ -69,8 +69,8 @@
 | [Site/Coverage](../../../Formal/AG/Site/Coverage.lean)、[Site/Topology](../../../Formal/AG/Site/Topology.lean) | `CoverageRequirements`、`AdmissibleCover`、`generate_mem` | G3：全点supportで被覆性を放電、実productのopen交差 |
 | [Saga/Cover](../../../Formal/AG/SemanticRepair/Saga/Cover.lean) | `MonomorphicOrderedCover`、`TopologicalMonomorphicCover` | G3：全pair・triple、射影・lift、省略指定、topologyへの所属 |
 | [Saga/EquationLift](../../../Formal/AG/SemanticRepair/Saga/EquationLift.lean) | `LiftFiberData`、`liftSystem`、`AffineCoefficientLiftSystem`、`CoefficientLiftAtlas`、`residualClass_isZero_iff_matching_correction` | G4–G5：同じ層の完全列、実局所操作、右−左の差、引く補正と貼合せ |
-| [Saga/PartIVBridge](../../../Formal/AG/SemanticRepair/Saga/PartIVBridge.lean) | `SitePresheafData.ofObstructionSheaf`、`incToCoverRelativeH1`、相互逆比較 | G4：同じObと制限、全添字の省略交差が零、指定類の輸送 |
-| [Conormal/LawGeneratedIdealPowerShortExact](../../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean) | `Raw.shortComplex` | E6：評価前の普遍Law ideal、`(J²)_s=(J_s)²`、同じ `κ` |
+| [Saga/PartIVBridge](../../../Formal/AG/SemanticRepair/Saga/PartIVBridge.lean) | `SitePresheafData.ofObstructionSheaf`、`incToCoverRelativeH1`、相互逆比較 | G3–G4：AtomCarrierと係数群を同じuniverseへlift。同じObと制限、全添字の省略交差が零、指定類の輸送 |
+| [Conormal/LawGeneratedIdealPowerShortExact](../../../Formal/AG/SemanticRepair/Conormal/LawGeneratedIdealPowerShortExact.lean) | `Raw.shortComplex` | E6：`ι:D(s)↦W_(D(s))` の前合成で全contextから制限。Observable・idealを `B_s,J_s` へ同定し、principal-open siteのZariski層化、`(J²)_s=(J_s)²`、同じ `κ` を比較 |
 | [ResolutionInvariance/LawGeneratedComplex](../../lean/ResearchLean/AG/ResolutionInvariance/LawGeneratedComplex.lean) | `TargetSupportedNerve`、`edgeSupport`、`faceSupport` | E8・G4：実supportの交差とincidence、係数・微分の追加比較 |
 
 ## 仮定が使われる箇所
@@ -84,7 +84,7 @@
 | Lawful基準・平方零kernel | E2–E5の全syzygy、Taylor、相対障害。一般affine修復は二項複体を用いる |
 | Affine式・原始加法作用 | E6・C8・A4・G5の有限変位。一般の有限自己同型群を加法群に置換しない |
 | 有限projective ambient data | E1の独立なambient lift、E4の次数0・1のcotangent計算 |
-| Noetherian係数・有限表示 | E4のHom局所化、F2の普遍Artin商とF3のKrull交叉 |
+| Noetherian係数・有限表示 | E4・C8のHom局所化と大域加群複体への比較、有限syzygy表示。C8の一般係数では各openの実sectionを使う。F2の普遍Artin商とF3のKrull交叉 |
 | 自由な観測chart | F7の構文次数上界。既存Lawを持つ観測環はH5で区別 |
 | Labelと零化図式 | F11の座標面判定。一般座標変更ではこの図式も運ぶ |
 | 有限候補の有効生成・全Lawとの同値 | D1–D2の全解算法。D8は候補数だけでは足りない反例 |

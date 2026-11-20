@@ -14,6 +14,8 @@ fppf topologyを固定する。scheme `T` 上のcopying構造は、N1の各sort�
 
 **証明。** fppf被覆とoverlap上の同型cocycleを与える。quasi-coherent moduleとそのすべての射はfpqc、従ってfppfでeffective descentを持つ（[Stacks 023T](https://stacks.math.columbia.edu/tag/023T)）。これを各sortとrelation/domainのmoduleに適用する。tensor積のbase change同型により `Δ,ε`、operation、domain包含のmapも降下する。faithfully flatなpullbackはmapの等式を検出するのでcoalgebra公理、operation式、Law式、単射性が降下する。局所split性は、元の被覆とその上のsplit被覆を合成して得られる。
 
+N1・N2の一階論理式Lawは、降下したsort・relation・domainのfppf sheafにおける内部論理で解釈する。その充足は被覆上で検査できる。特に存在量化は被覆上のwitness、全称量化と含意は全base change後のsectionで解釈されるため、元の被覆へのpullbackとその細分化での充足から大域充足が従う。この局所性を、単にmodule射の等式を検出する議論と分けて用いる。
+
 同じ議論を二つの構造間の全sort mapに適用すれば、局所mapの互換族が一意に降下し、その保存式も降下する。逆射を持つmapは逆射も一意に降下する。よって対象と全Homについてdescentが成立する。無限個のsort・mapは各々に同じ議論を適用する。無限rankのmoduleをZariski局所有限自由と結論する段階はない。□
 
 ### 定義 B1.3 — 原始係数構造からのσ
@@ -50,7 +52,9 @@ nativeの係数作用を保つ全Homは実際の `k` 線形mapと指定operation
 
 quantity domainとLaw入力を構造の宣言に含める。固定構造では任意集合をこのsortに置ける。構造を変動させるときは、それらのsort mapとLawの有限式も原始宣言に含める。任意の外在的集合操作が自動的にdescentと可換であるとは仮定しない。
 
-`B_copy` のsplit chart上で A1 の `Q,ρ,I` を作る。構造同型は各quantity domain・Law入力の同型とtermの可換式を与えるので、`Q` の同型は `ρ` を運び、生成idealを運ぶ。これらの同型のcocycleは原始sort mapのcocycleとterm帰納法から従う。B1.2によって `Q` と各 `ρ` が降下し、`I` は普遍代数内の全 `ρ` の像が生成するquasi-coherent idealとして大域的に作れる。
+`B_copy` のsplit chart上で A1 の `Q,ρ,I` を作る。残差map `ρ_ℓ:C(E_ℓ)→Sym Q` の構成はbasisに依存しない。構造termは指定coalgebra射の合成、quantity評価は `C(D_j)→Q→Sym Q`、定数 `c` は `cε`、二つの値の積は `m(f⊗g)Δ`、和と差は線形mapの和と差である。従ってcoalgebraの `Δ,ε` と構造射を保つmapについて、構文帰納法で `ρ_ℓ` の可換性が従う。
+
+非連結なoverlap上でもこの計算を使う。N2.2の一入力に対する有限冪等元分割 `(e_y)` は、積では `e_y e_z=0`（`y≠z`）、定数では `Σe_y=1` により同じ残差を運ぶ。全入力共通の有限分割を選ぶ必要はない。従って構造同型は `Q` と `ρ` の同型を与え、そのcocycleは原始sort mapのcocycleとterm帰納法から従う。B1.2によって `Q` と各 `ρ` が降下し、`I` は普遍代数内の全 `ρ` の像が生成するquasi-coherent idealとして大域的に作れる。
 
 ここで無限個の像を使ってもよい。idealは乗法map
 
@@ -59,9 +63,11 @@ quantity domainとLaw入力を構造の宣言に含める。固定構造では�
 \longrightarrow\operatorname{Sym}Q
 ```
 
-の像である。quasi-coherent moduleの直和、tensor、cokernelから構成できるためquasi-coherentである。
+の像である。quasi-coherent moduleの直和、tensor、像（このmapのcokernelへの射のkernel）から構成できるためquasi-coherentである。
 
-`M` を「構造と、その上の独立なlawful quantity」のgroupoidとして定義する。任意 `T→B_copy` に沿うpullbackの量は `f^*Q→O` の線形mapで、原始残差を零にするもの。A1とA2を各affine openで適用し、重なりでは同じquantity値を読むと、
+`M` を「構造と、その上の独立なlawful quantity」のgroupoidとして定義する。任意 `T→B_copy` とtest scheme `f:T'→T` を取る。まず構造をsplitするfppf被覆上でA1を適用する。各quantity domainの全関数はその自由moduleからの線形mapに対応し、lawfulnessは全 `ρ_ℓ` を消す条件に対応する。この同定は上のcoalgebraの計算により全overlapで可換である。B1.2のQC射descentから、独立quantityは一意な `f^*Q_T→O_(T')` へ降下し、残差の零性も忠実平坦に検出される。逆にこの線形mapをsplit被覆へ引き戻し、basisの値を読めば元のquantityを回収する。
+
+次にZariski affine open上でA2のSymの普遍性と商環の普遍性を適用する。この段階の `Q_T` は任意のQC moduleでよく、Zariski局所でsplitしている必要はない。重なりで同じ線形mapを制限することにより、全test schemeに自然な同型
 
 ```math
 M\times_{B_{\rm copy}}T
@@ -153,7 +159,21 @@ markingが全射 `q:R^m→Q` なら `u q=q` から `u=id` となる。しかしt
 
 ## D3 — 通常の代数性を持たない二つのfamily
 
-**独立なline quotient。** `k≠0` とする。可算個のsortごとに `R²↠L_i`、rank1の条件を置き、sort間のLawを置かない。P2の一sort版は `P¹` を与えるので、意味関手は `∏_(i∈N) P¹_k` である。これは通常のalgebraic spaceではない。反証に使う標準結果は [Stacks 078E](https://stacks.math.columbia.edu/tag/078E)。その理由は、もしこの積がalgebraic spaceならquasi-compact separatedとなりQC cohomologyに有限の一様次数限界がある一方、有限個のfactorへの射影はsectionを持ち、`(P¹)^n` の外積 `O(-2,…,-2)` の非零 `H^n` を任意の `n` で引き戻せることである。各 `n` の引戻しはそのsectionで分裂するので矛盾する。同じ証明は体上でも成立し、任意の非零 `k` については剰余体へのbase changeで反証できる。`k=0` では空schemeとなる。
+**独立なline quotient。** `k≠0` とする。可算個のsortごとに `R²↠L_i`、rank1の条件を置き、sort間のLawを置かない。P2の一sort版は `P¹` を与えるので、意味関手は `X=∏_(i∈N) P¹_k` である。以下ではこの関手がalgebraic spaceであると仮定し、[Stacks 078E](https://stacks.math.columbia.edu/tag/078E)の反証に必要な前提も構成する。
+
+まず任意affine test `Spec R→X×X` について、対角の引戻しは各factorでの二射の一致条件を同時に課す。`P¹_k` は分離的なので、各条件はideal `I_i⊆R` による閉部分schemeであり、全条件は `Spec(R/Σ_i I_i)` である。従って `Δ_X` は閉埋込みで、`X` は分離的である。
+
+次のaffine schemeから各factorへ、全射列 `(x_i,y_i)` を読む射を作る：
+
+```math
+Z=\operatorname{Spec}
+k[x_i,y_i,a_i,b_i\mid i\in\mathbb N]/
+(a_ix_i+b_iy_i-1\mid i\in\mathbb N)\longrightarrow X.
+```
+
+任意の体 `K/k` と `X(K)` の点について、各line quotientのbasisを選べば非零の対 `(x_i,y_i)` が得られ、`a_ix_i+b_iy_i=1` を解ける。従って `Z(K)→X(K)` は全射。algebraic spaceの各位相点はある体値点で表せるため、`|Z|→|X|` も全射である。affine schemeのquasi-compact性と連続性から `X` はquasi-compactとなる。
+
+非零 `k` の剰余体 `K` へbase changeする。上で示したquasi-compact separated algebraic spaceには、QC cohomologyが消える有限の一様次数上界がある。一方、射影 `π_n:X_K→(P¹_K)^n` は残りのfactorを `[1:0]` に固定するsection `s_n` を持つ。`L_n=O(-2,…,-2)` に対するコホモロジーの引戻しの合成は `(π_n s_n)^*=id` だから、非零の `H^n((P¹_K)^n,L_n)≅K` は `H^n(X_K,π_n^*L_n)` に単射で入る。任意の `n` でこれが成り立ち、上界に矛盾する。従って元の関手はalgebraic spaceでない。`k=0` では空schemeとなる。
 
 **無限自由moduleの全自己同型。** 体 `k` 上で `V=⊕_N k` とし、そのtensor familyと全線形自己同型を保持するgroupoidを取る。恒等自己同型のdual numbers上のliftは
 

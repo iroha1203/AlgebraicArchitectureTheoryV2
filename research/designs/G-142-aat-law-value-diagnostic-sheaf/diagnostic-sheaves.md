@@ -4,6 +4,8 @@
 
 任意scheme `B`、有限集合 `S,L`、有限supported nerveを取り、各 `ℓ,s` に `f_(ℓ,s)∈Γ(B,O_B)` を与える。chart支持は `S` の部分集合、edge・face支持はK1の交差で生成する。有限 `Source` の全射reading `q:Source→S` を使う場合は、原始評価が `f_(ℓ,q(x))` となることを検査する。この等式と全射性からadequacyと一意なLaw descentを得る。
 
+既存 `TargetSupportedNerve` への直接の入力では、各chart支持は `chartSupport_nonempty` を満たす。本節のroot schemeと層の構成自体は空chart支持にも拡張でき、そのchartの次数0成分は零となる。この拡張と、既存の非空chart支持を持つAPIとの同定を区別する。edge・face支持は既存APIでも空でよい。
+
 G-139の実現scheme `M_P` では、`f` を原始scalar構文から作る。係数、有限和・積は構造層の同じ演算で評価し、有限tensor式から得た有限局所自由moduleの自己準同型にはtraceを取る。局所matrixでのtraceは対角和でregularであり、可換環上の `tr(AB)=tr(BA)` から `tr(gAg^(-1))=tr(A)`。よってchart間で貼れる。
 
 名前付き生成元が基底の場合は演算matrixの成分も大域regularである。一般のframe変更では、多重線形演算のmatrixは `g_out μ(g_1^(-1)⊗⋯⊗g_r^(-1))` へ移る。従って成分を読む場合はそのframe chartを `B` として扱う。構文帰納法で、これらのregular functionの `R` 点での評価が独立な実現の同じ原始演算に一致する。
@@ -48,7 +50,7 @@ Z_{\sigma,\ell}=\operatorname{Spec}_B
 ```
 
 閉埋込みによるrestrictionは、残る同じrootの成分を読む射影になる。したがって両微分を含めて
-`(mathscr C_(B,Λ))_(bar b)≅C_(bar b,Λ)`。右辺は同じ値域 `Ω` でAのlabelを再生成したK0/K1である。さらに `(ℓ,a)` ごとの成分への分解も同じcoordinateで一致する。このstalk式と任意base changeは[有限順像の定理](https://stacks.math.columbia.edu/tag/03QN)を使っている。
+`(mathscr C_(B,Λ))_(bar b)≅C_(bar b,Λ)`。各chart支持が非空なら、右辺は同じ値域 `Ω` でAのlabelを再生成したK0/K1そのものである。空chart支持を許す拡張では、その空の値集合に対応する零直和成分を加えた同じ式になる。さらに `(ℓ,a)` ごとの成分への分解も同じcoordinateで一致する。このstalk式と任意base changeは[有限順像の定理](https://stacks.math.columbia.edu/tag/03QN)を使っている。
 
 ## B4 — 幾何のbase changeと診断係数のtensor
 
