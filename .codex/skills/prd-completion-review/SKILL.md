@@ -27,7 +27,7 @@ Lean要件を含むPRDでは
 - 判定は証拠ベースにする。該当ファイル、テスト、CI、Issue / PR、台帳、生成物が確認できない項目は `未確認` または `未達` として扱う。
 - 証拠には階層を置く。一次証拠は、コード・Lean 宣言の statement 実読、instance の実在確認、実行した検証、kernel 検査。二次証拠は、台帳、inventory、tracking Issue の checklist、Issue / PR 本文、iteration コメントなど、レビュー対象の作業自身が生成した記録。`満たした` 判定は一次証拠でのみ行う。二次証拠は主張の索引として使い、単独では判定根拠にしない。
 - 対象 PRD がループ(prd-loop 等)で実装された場合、台帳・checklist・closure 記録はそのループの出力であり、監査対象であって証拠ではない。checklist が check 済みであることは「主張がある」ことしか意味しない。
-- 公開物に入る可能性がある code、fixture、docs、website、release asset、tool output に、個人名、ローカル絶対パス、private/internal 風の fixture 値、作業環境固有名が混入している場合は、PRD 条件が他に満たされていても重要 finding として扱う。
+- 公開物に入る可能性がある code、fixture、docs、website、release asset、tool output に、個人名、ローカル絶対パス、非公開・内部用の fixture 値、作業環境固有名が混入している場合は、PRD 条件が他に満たされていても重要 finding として扱う。
 
 ## 入力
 
