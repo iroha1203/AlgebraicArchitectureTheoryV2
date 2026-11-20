@@ -14,7 +14,7 @@
 | A 任意量・任意Lawの相対Spec | [A1](quantity-and-extension.md) | `Q,ρ,I` を原始式から生成し、評価帰納法から表現同値 |
 | A 全代数・線形quantity・QC module | [A2](quantity-and-extension.md) | 環／線形保存のLaw、Symと相対Specの普遍性 |
 | B copyingとσの各stack、native基点、全Hom | [B1.1–B1.4](descent-and-algebraicity.md) | QC descent、実際の係数作用、冪等分割の加重和 |
-| B 相対Spec、全scheme pullback、自然性 | [B2](descent-and-algebraicity.md) | `Q,ρ,I` の同型によるdescent、各affine上のA1 |
+| B 相対Spec、全scheme pullback、自然性 | [B2](descent-and-algebraicity.md) | split fppf被覆上のA1、QC射descent、Zariski局所のA2 |
 | B 射と対応空間、補集合Law | [B3](descent-and-algebraicity.md) | domain/Law-input map、普遍target quantityによるideal検査 |
 | B sheafificationとscalar extension | [B4](descent-and-algebraicity.md)、[P3.2](polynomial-realizations.md) | localizationとstalk、既存APIのflatness・sheaf保存の個別放電 |
 | C symbolic coordinateとactual residual、三解釈 | [C1](quantity-and-extension.md)、[P1a](polynomial-realizations.md) | graph、固定native値のtensor、選択された普遍多項式 |
