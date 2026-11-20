@@ -44,7 +44,7 @@ website 側の文章は、ここに置いた研究上の主張規律を参照し
 エージェント向けの作業文書に適用する。
 
 - 文書は3層で構成する。**入口**（AGENTS.md / CLAUDE.md）、**規律の基準**（各ガイドライン）、
-  **実行手順**（Codex は `.codex/skills` の SKILL と `_shared` の共有定義、Claude は `.claude/skills` の SKILL）。
+  **実行手順**（`.codex/skills` の SKILL と `_shared` の共有定義）。
 - 各必須規則（hard rule）の記述はちょうど1箇所に置く。他の文書や SKILL はリンクで参照し、
   言い換えて再掲しない。
 - SKILL には手順・判断基準・入出力の条件だけを置く。作業規律の本文は参照先のガイドラインを読む。
@@ -101,7 +101,7 @@ Review / CI controls transitions.
 | --- | --- | --- |
 | AAT | Atom 公理系から生成される architecture object を、AAT site、sheaf、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent へ持ち上げる代数幾何的・形式的・証明可能な核。 | `docs/aat/algebraic_geometric_theory/README.md` |
 | AAT / SFT Interface | AAT から SFT への片方向依存と主張範囲の規律。 | `docs/sft/aat_interface.md` |
-| ArchSig | 供給された証拠と MeasurementProfile から範囲の定まった診断・計測データを作り、SFT の予測・制御へ渡す計測層。 | `docs/tool/` |
+| ArchSig | 共通の Atom 定義・Law・ArchMap から対象・操作・対応・局所構造・診断・修復候補を計算する Rust ツール基盤。 | `docs/tool/` |
 | SFT | 大域的・力学的・予測的・制御的な上位理論。 | `docs/sft/software_field_theory.md` |
 | AI-driven Development | SFT の予測と AAT の定理の仮定の中で変更操作を生成する制御対象。 | `docs/sft/software_field_theory.md`, tooling / AIR docs |
 
@@ -113,7 +113,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## Tooling
 
-- [AAT Tooling Documentation](tool/README.md): AIR、主張範囲の規律、signature 出力、レポート、抽出器、ワークフロー、スキーマ互換性に関するツール側の総合入口。
+- [AAT Tooling Documentation](tool/README.md): ArchSig v0.6.0 の製品コンセプト・I/O 仕様・実装入口、および ArchView / FieldSig のツール側総合入口。
 
 ## Reports
 

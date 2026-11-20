@@ -134,8 +134,7 @@ docs 保守を単独で依頼した場合に使う。
   `unported (Research-proved)` の併記を、旧語彙への回帰として
   「修正」しない(退行修正の禁止)。
 - `ArchitectureSignature` は単一スコアではなく多軸診断として扱う。
-- source-observation output は、proof-carrying bridge や validation report が
-  ない限り `ComponentUniverse` と同一視しない。
+- 観測出力と数学上の対象は、対応の根拠や適用条件の確認なしに同一視しない。
 - equivalence chain が部分実装なら、次に分けて書く:
   無条件に `proved` な事実/finite universe 下で `proved` な事実/
   `future proof obligation`。

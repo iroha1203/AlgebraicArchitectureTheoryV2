@@ -1,4 +1,4 @@
 interface:
   display_name: "ArchSig QA Loop"
-  short_description: "Macでマニュアルから設計したリリース前QAを実測し判断材料を報告する"
-  default_prompt: "$archsig-qa-loopで指定したArchSig候補のMacリリース前QAを、許可範囲内で設計・実測し、証拠とfindingと人間判断事項を報告してください。"
+  short_description: "Macで現行仕様書から設計したQA・マイルストーン実測を行い判断材料を報告する"
+  default_prompt: "$archsig-qa-loopで指定したArchSig候補のMac実測（リリース前QAまたはマイルストーン代表題材実測）を、許可範囲内で設計・実行し、証拠・性能実測・finding・人間判断事項を報告してください。"

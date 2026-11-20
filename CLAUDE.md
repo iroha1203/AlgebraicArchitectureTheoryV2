@@ -21,7 +21,7 @@ AGENTS.md を正とする。細かな作業規律は各ガイドラインにあ�
 - **Claude**: ツールの設計・実装、website の実装。
 - **ユーザー**: 受け入れテストと最終判断。
 
-実装は PRD を起点に `.claude/skills/prd-loop` で進め、PR のレビューは `.claude/skills/pr-review` で行う。
+実装は PRD を起点に `.codex/skills/prd-loop` で進め、PR のレビューは `.codex/skills/review-pr` で行う（全エージェントの SKILL は `.codex/skills/` に一本化している）。
 
 PRD を書くときは冒頭に「## 問い」節を置き、その問いを採否の判断基準として使う。
 問いの立て方やスコープの切り方については複数案を提示し、ユーザーに選んでもらう。

@@ -57,7 +57,7 @@ fail-closed、反証試行、証拠資格、統合出力を適用する。
    | 分野 | 対象 | 委譲先 |
    | --- | --- | --- |
    | AAT / Lean / 数学claim | `Formal/`、数学本文、研究GOAL、一次仕様、数学claim、および Lean 実装変更に伴う `docs/aat/` 台帳整合 | `$math-lean-review` |
-   | Tooling | `tools/`、`docs/tool/`、schema catalog | `$tool-review` |
+   | Tooling | `tools/`、`docs/tool/` | `$tool-review` |
    | Website | `website/`、`docs/website/` | `$website-review` |
    | Docs / governance | docs-onlyの`docs/aat/`台帳、`docs/sft/`、非数学的な`docs/note/`、PRD、README、`AGENTS.md`、`docs/workflow/`、`.codex/skills/`、文章主体のIssue / PR template、cross-domain docs | `$docs-review`(レビューモード) |
 
