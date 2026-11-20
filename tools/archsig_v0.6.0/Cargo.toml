@@ -6,14 +6,15 @@ publish = false
 autotests = false
 
 [workspace]
-members = ["crates/common", "crates/input", "crates/computation"]
-default-members = [".", "crates/common", "crates/input", "crates/computation"]
+members = ["crates/common", "crates/input", "crates/computation", "crates/shigure"]
+default-members = [".", "crates/common", "crates/input", "crates/computation", "crates/shigure"]
 resolver = "3"
 
 [dependencies]
 archsig-common = { path = "crates/common" }
 archsig-input = { path = "crates/input" }
 archsig-computation = { path = "crates/computation" }
+archsig-shigure = { path = "crates/shigure" }
 nix = { version = "0.29", default-features = false, features = ["signal", "process"] }
 rustix = { version = "1", features = ["fs"] }
 signal-hook = "0.3"
