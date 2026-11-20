@@ -289,18 +289,68 @@ fn lookup_presentation<'a>(pair: &'a ComparisonPair, name: &str) -> Option<&'a P
     }
 }
 
+fn collect_presentation_params(pres: &Presentation, out: &mut BTreeSet<String>) {
+    let mut states = BTreeSet::new();
+    let mut args = BTreeSet::new();
+    for phase in &pres.phases {
+        for law in &phase.state_laws {
+            law.polynomial.collect_vars(&mut states, &mut args, out);
+        }
+    }
+    for op in &pres.operations {
+        for expr in op.updates.values() {
+            expr.collect_vars(&mut states, &mut args, out);
+        }
+    }
+    for obs in &pres.observations {
+        for expr in &obs.components {
+            expr.collect_vars(&mut states, &mut args, out);
+        }
+    }
+}
+
+fn collect_pair_params(pair: &ComparisonPair, out: &mut BTreeSet<String>) {
+    collect_presentation_params(&pair.before, out);
+    collect_presentation_params(&pair.after, out);
+    let mut states = BTreeSet::new();
+    let mut args = BTreeSet::new();
+    for sc in &pair.state_comparisons {
+        for expr in sc.map.values() {
+            expr.collect_vars(&mut states, &mut args, out);
+        }
+    }
+    for tw in &pair.word_translation.entries {
+        for step in &tw.steps {
+            for expr in &step.arg_exprs {
+                expr.collect_vars(&mut states, &mut args, out);
+            }
+        }
+    }
+}
+
 /// 許容変換仕様 H（`ChangeSpec`）を `CheckedComparisonPair` に対して検証する。
 pub fn validate_change_spec(
     spec: ChangeSpec,
     pair: &CheckedComparisonPair,
 ) -> Result<CheckedChangeSpec, ValidationError> {
-    let _ = collect_and_check_param_names(&spec)?;
+    let param_names = collect_and_check_param_names(&spec)?;
     if spec.coeff_domain != pair.inner().before.coeff_domain {
         return Err(ValidationError::DomainMismatch {
             expected: pair.inner().before.coeff_domain.clone(),
             actual: spec.coeff_domain.clone(),
             context: format!("change_spec `{}`", spec.name),
         });
+    }
+    let mut used_params = BTreeSet::new();
+    collect_pair_params(pair.inner(), &mut used_params);
+    for used in used_params {
+        if !param_names.contains(&used) {
+            return Err(ValidationError::UnknownRef {
+                kind: "parameter",
+                name: used,
+                context: format!("change_spec `{}` against comparison pair", spec.name),
+            });
+        }
     }
 
     let mut seen_fixed = BTreeSet::new();
@@ -581,7 +631,7 @@ fn validate_point_domain_compatibility(
         (_, PointDomain::UniversalRing) => true,
         (CoeffDomain::Q | CoeffDomain::Z, PointDomain::AlgebraicClosure)
         | (CoeffDomain::Q | CoeffDomain::Z, PointDomain::RationalPoints)
-        | (CoeffDomain::Q | CoeffDomain::Z, PointDomain::IntegerPoints) => true,
+        | (CoeffDomain::Z, PointDomain::IntegerPoints) => true,
         (CoeffDomain::Fp(p1), PointDomain::FiniteFieldPoints(p2)) => p1 == p2,
         _ => false,
     };

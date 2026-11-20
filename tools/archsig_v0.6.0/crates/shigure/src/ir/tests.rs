@@ -780,3 +780,61 @@ fn state_dependent_word_translation_and_out_of_range_fp_literal_are_checked() {
         Err(ValidationError::InvalidFpLiteral { .. })
     ));
 }
+
+#[test]
+fn rational_coeff_domain_rejects_integer_points_while_z_accepts_it() {
+    let (pair, spec, mut eval_cond) = ledger_snapshot_task();
+    eval_cond.point_domain = PointDomain::IntegerPoints;
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, Some(eval_cond)),
+        Err(ValidationError::PointDomainMismatch {
+            coeff_domain: CoeffDomain::Q,
+            point_domain: PointDomain::IntegerPoints,
+        })
+    ));
+
+    let z_cond = EvalCondition {
+        name: "IntegerCheck".into(),
+        evaluations: vec![],
+        equations: vec![],
+        invertibles: vec![],
+        point_domain: PointDomain::IntegerPoints,
+        provenance: Provenance::default(),
+    };
+    validate_eval_condition(z_cond, &CoeffDomain::Z, &BTreeSet::new())
+        .expect("Z coefficient domain accepts IntegerPoints");
+}
+
+#[test]
+fn standalone_validate_change_spec_rejects_undeclared_pair_params() {
+    let (pair, mut spec, _) = ledger_snapshot_task();
+    let allowed = BTreeSet::from(["delta".to_owned(), "mu".to_owned(), "rho".to_owned()]);
+    let checked_pair = validate_comparison_pair(pair, &allowed).expect("pair validates");
+    spec.parameters.retain(|p| p.name != "rho");
+    assert!(matches!(
+        validate_change_spec(spec, &checked_pair),
+        Err(ValidationError::UnknownRef {
+            kind: "parameter",
+            ref name,
+            ..
+        }) if name == "rho"
+    ));
+}
+
+#[test]
+fn empty_optional_source_ref_fields_are_rejected() {
+    let cases = [
+        SourceRef::new("orig", OriginKind::StaticAnalysis).with_location("", "a.rs", None),
+        SourceRef::new("orig", OriginKind::StaticAnalysis).with_location("src", "   ", None),
+        SourceRef::new("orig", OriginKind::StaticAnalysis).with_atom_ref(""),
+        SourceRef::new("orig", OriginKind::StaticAnalysis).with_law_declaration(" "),
+    ];
+    for bad_ref in cases {
+        let (mut pair, spec, _) = ledger_snapshot_task();
+        pair.before.provenance.origins[0] = bad_ref;
+        assert!(matches!(
+            CheckedShigureTask::validate(pair, spec, None),
+            Err(ValidationError::EmptyName { .. })
+        ));
+    }
+}

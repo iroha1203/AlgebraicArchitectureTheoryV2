@@ -427,6 +427,18 @@ pub(crate) fn validate_source_ref(
     context: &str,
 ) -> Result<(), ValidationError> {
     require_non_empty(&source_ref.origin_id, &format!("{context}.origin_id"))?;
+    if let Some(src) = &source_ref.source_id {
+        require_non_empty(src, &format!("{context}.source_id"))?;
+    }
+    if let Some(path) = &source_ref.path {
+        require_non_empty(path, &format!("{context}.path"))?;
+    }
+    if let Some(atom_ref) = &source_ref.atom_ref {
+        require_non_empty(atom_ref, &format!("{context}.atom_ref"))?;
+    }
+    if let Some(decl) = &source_ref.law_declaration {
+        require_non_empty(decl, &format!("{context}.law_declaration"))?;
+    }
     if let Some((start, end)) = source_ref.span
         && start > end
     {
