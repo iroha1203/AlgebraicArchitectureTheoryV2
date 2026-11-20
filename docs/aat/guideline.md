@@ -62,7 +62,7 @@
   グラフ水準の事実との接続は別定理として証明する。
 - `ComponentUniverse` は proof-carrying measurement universe として扱う。ソース抽出の成否は
   AAT の定理ではなく、ArchMap やツール側の入力生成の仕様（contract）として扱う。
-- ArchSig や Rust ツールの有用性を Lean との対応だけで正当化しない。Lean 側は AAT で語れる命題を支える
+- ArchSig や Rust ツールの有用性を Lean との対応で正当化しない。Lean 側は AAT で語れる命題を支える
   形式化であり、ArchSig は別に観測（ArchMap）と法・方程式（LawPolicy）から診断結果を計算するツールである。
 
 ## 「境界」という言葉の使用を禁止する
@@ -146,9 +146,9 @@ AAT / Lean 形式化では mathlib 型の statement review 基準を採る。仮
 - **`unported (Research-proved)`**: Research 側（`research/lean/ResearchLean/`）に同等以上の
   statement が受理済みだが、本体（`Formal/AG/` 本線）に蒸留されていない状態。
   **これは残タスクであり、制限ではない。** Research に同じ主題の受理済み定理が存在する限り、
-  本体側の欠落を `packaged (assumption-relative)` と制限の注記だけで完了にしてはならない
-  （Research 下限原則）。`unported` は完了状態ではなく、完了にできるのは蒸留の完了
-  （下限到達）か「下限到達不能の停止報告」だけである。
+  本体側の欠落を `packaged (assumption-relative)` と制限の注記だけで閉じてはならない
+  （Research 下限原則）。`unported` は完了状態ではなく、作業を閉じる場合は、蒸留の完了
+  （下限到達）か、未達を明記した「下限到達不能の停止報告」を必要とする。
 - **移植 ≠ import（Research との独立性の不変条件）**: 本体（`Formal/AG` 本線、
   `Formal.lean` / `Formal/AG.lean` の配線を含む）から `ResearchLean.AG` を
   import してはならない。import 方向は Research → 本体のみ許可する
