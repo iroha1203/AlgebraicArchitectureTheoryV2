@@ -97,7 +97,7 @@ Document = "law" String "semantics" String ";" Reading { Reading } ;
 Reading = "reading" Name "{" { Use | VocabularyUse | Declaration } "}" ;
 Use = "use" Name "as" Name ";" ;
 VocabularyUse = "use" "vocabulary" Name "version" String "digest" String ";" ;
-Declaration = View | Law | Local | Change | Relation ;
+Declaration = View | Law | Local | Change | Relation | ShigureDecl ;
 View = "view" Name "(" Fields ")" ":" Type "=" Expr ";" ;
 Law = "law" ( "required" | "optional" ) Name "(" Fields ")"
       [ "when" Expr ] ":" Expr ";" ;
@@ -322,11 +322,11 @@ ShigureDecl ::=
 
 ShigurePresentation ::= "presentation" Name "{"
   "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
-  ("sort" Name ("rank" Integer)? ";")+
+  ("sort" Name ("rank" Integer)? ";")*
   ("phase" Name "{"
     ("coord" Name ":" Name ("observed" QName)? ";")*
     ("law" ("semantic" | "required" | "representation") Name ":" PolyExpr "=" PolyExpr ";")*
-  "}")+
+  "}")*
   (("op" | "operation") Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
     (Name "=" PolyExpr ";")*
   "}")*
@@ -375,6 +375,7 @@ ShigureTask ::= "task" Name "{"
 
 `PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
 `+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
+各 `shigure` 宣言ブロックおよび `phase` ブロック内の句は任意の順序で記述できる（`domain`・`before`・`after`・`point_domain`・`comparison`・`change_spec` は必須 1 回、`eval_condition` は任意最大 1 回とし重複を拒否する）。
 
 静的検査と変換検査では次を強制する。
 
