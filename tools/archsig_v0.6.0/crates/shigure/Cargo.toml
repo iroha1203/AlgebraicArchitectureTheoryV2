@@ -1,0 +1,12 @@
+[package]
+name = "archsig-shigure"
+version = "0.6.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+archsig-common = { path = "../common" }
+archsig-input = { path = "../input" }
+num-bigint = "0.4"
+num-integer = "0.1"
+num-traits = "0.2"

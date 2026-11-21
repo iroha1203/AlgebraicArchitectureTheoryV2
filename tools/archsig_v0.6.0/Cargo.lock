@@ -18,6 +18,7 @@ dependencies = [
  "archsig-common",
  "archsig-computation",
  "archsig-input",
+ "archsig-shigure",
  "nix",
  "num-bigint",
  "rustix",
@@ -57,6 +58,17 @@ dependencies = [
  "num-integer",
  "num-traits",
  "stacker",
+]
+
+[[package]]
+name = "archsig-shigure"
+version = "0.6.0"
+dependencies = [
+ "archsig-common",
+ "archsig-input",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
 ]
 
 [[package]]
