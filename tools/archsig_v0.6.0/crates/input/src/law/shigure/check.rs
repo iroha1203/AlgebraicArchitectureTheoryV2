@@ -5,8 +5,8 @@ use super::check_relations::{
 };
 use super::*;
 use crate::definition::CheckedDefinitions;
-use crate::law::ast::{QName, Reading, Span};
-use crate::law::check::{Checker, duplicate, full, reference, syntax};
+use crate::law::ast::{QName, Span};
+use crate::law::check::{Checker, check_decl_name, duplicate, full, reference, syntax};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Details, Issue, Location};
 use archsig_common::json::InputError;
@@ -32,18 +32,36 @@ pub(super) enum DeclCategory {
 /// 既存の `Checker` 状態（reading・alias・vocabulary import・通常宣言名）を使って
 /// 全 reading 内の SHIGURE 宣言を検査し、`CheckedShigureDecls` を構成する。
 pub(crate) fn check_shigure_decls<E: InputError>(
-    checker: &Checker<'_, E>,
+    checker: &mut Checker<'_, E>,
     control: &Control,
 ) -> CResult<CheckedShigureDecls, E> {
-    let readings: &[Reading] = &checker.ast;
-    let mut index: HashMap<String, (DeclCategory, Span)> = HashMap::new();
+    let readings = checker.ast.clone();
+    let mut index: HashMap<String, (DeclCategory, Span, usize)> = HashMap::new();
+    let mut shigure_edges: Vec<(usize, usize, Span)> = Vec::new();
 
-    // Pass 1: 名前の一意性確認（通常宣言および SHIGURE 宣言相互の衝突を拒否）
-    for r in readings {
+    // Pass 1: 名前の一意性確認（組込み演算名・alias・原始定義 FQN・通常宣言・SHIGURE 宣言相互の衝突を拒否）
+    for (r_idx, r) in readings.iter().enumerate() {
         E::checkpoint(control, Checkpoint::LawSemantics)?;
         for d in &r.shigure_decls {
             E::checkpoint(control, Checkpoint::LawSemantics)?;
+            check_decl_name::<E>(d.name())?;
+            if checker.aliases[r_idx].contains_key(&d.name().name) {
+                return duplicate(
+                    d.name().span,
+                    format!(
+                        "SHIGURE declaration `{}` conflicts with `use` alias in reading `{}`",
+                        d.name().name,
+                        r.name.name
+                    ),
+                );
+            }
             let name = full(&r.name.name, &[&d.name().name]);
+            if checker.primitive_identifier_exists(&name)? {
+                return duplicate(
+                    d.name().span,
+                    format!("fully qualified name `{name}` conflicts with a primitive definition"),
+                );
+            }
             if checker.decl_index.contains_key(&name) || index.contains_key(&name) {
                 return duplicate(d.name().span, format!("duplicate declaration `{name}`"));
             }
@@ -54,7 +72,7 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 ShigureDeclAst::EvalCondition(_) => DeclCategory::EvalCondition,
                 ShigureDeclAst::Task(_) => DeclCategory::Task,
             };
-            index.insert(name, (cat, d.span()));
+            index.insert(name, (cat, d.span(), r_idx));
         }
     }
 
@@ -88,6 +106,7 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                         checker,
                         &index,
                         &out.presentations,
+                        &mut shigure_edges,
                         control,
                     )?;
                     out.comparisons.insert(checked.name.clone(), checked);
@@ -101,6 +120,7 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                         checker,
                         &index,
                         &out.presentations,
+                        &mut shigure_edges,
                         control,
                     )?;
                     out.change_specs.insert(checked.name.clone(), checked);
@@ -120,10 +140,25 @@ pub(crate) fn check_shigure_decls<E: InputError>(
         for d in &r.shigure_decls {
             if let ShigureDeclAst::Task(raw) = d {
                 E::checkpoint(control, Checkpoint::LawSemantics)?;
-                let checked = check_task(raw, r_idx, &r.name.name, checker, &index, &out, control)?;
+                let checked = check_task(
+                    raw,
+                    r_idx,
+                    &r.name.name,
+                    checker,
+                    &index,
+                    &out,
+                    &mut shigure_edges,
+                    control,
+                )?;
                 out.tasks.insert(checked.name.clone(), checked);
             }
         }
+    }
+
+    // reading 間の依存グラフ非循環性（通常宣言と SHIGURE 宣言の混合循環も含む）を検査する。
+    if !shigure_edges.is_empty() {
+        checker.reading_edges.extend(shigure_edges);
+        checker.check_reading_cycles()?;
     }
 
     Ok(out)
@@ -648,7 +683,8 @@ pub(super) fn resolve_shigure_ref<E: InputError>(
     r_idx: usize,
     reading_name: &str,
     checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span)>,
+    index: &HashMap<String, (DeclCategory, Span, usize)>,
+    edges: &mut Vec<(usize, usize, Span)>,
 ) -> CResult<String, E> {
     let parts: Vec<&str> = qname.parts.iter().map(|p| p.name.as_str()).collect();
     let resolved = match parts.as_slice() {
@@ -667,7 +703,7 @@ pub(super) fn resolve_shigure_ref<E: InputError>(
             );
         }
     };
-    let Some((cat, _)) = index.get(&resolved) else {
+    let Some((cat, _, target_r_idx)) = index.get(&resolved) else {
         return reference(
             qname.span(),
             format!("unknown SHIGURE declaration `{}`", qname.text()),
@@ -681,5 +717,117 @@ pub(super) fn resolve_shigure_ref<E: InputError>(
         ))
         .into());
     }
+    if *target_r_idx != r_idx {
+        edges.push((r_idx, *target_r_idx, qname.span()));
+    }
     Ok(resolved)
+}
+
+/// 反復走査で `ShigurePolyExpr::Var` がすべて許可変数集合に含まれることを検査する。
+pub(super) fn check_poly_vars<E: InputError>(
+    expr: &ShigurePolyExpr,
+    allowed: &HashSet<&str>,
+    span: Span,
+    context: &str,
+    control: &Control,
+) -> CResult<(), E> {
+    let mut stack = vec![expr];
+    while let Some(node) = stack.pop() {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        match node {
+            ShigurePolyExpr::Var(v) => {
+                if !allowed.contains(v.as_str()) {
+                    return reference(span, format!("unknown variable `{v}` in {context}"));
+                }
+            }
+            ShigurePolyExpr::Int(_) | ShigurePolyExpr::Rat { .. } | ShigurePolyExpr::Fp { .. } => {}
+            ShigurePolyExpr::Neg(a) | ShigurePolyExpr::Pow(a, _) => stack.push(a),
+            ShigurePolyExpr::Add(a, b)
+            | ShigurePolyExpr::Sub(a, b)
+            | ShigurePolyExpr::Mul(a, b) => {
+                stack.push(b);
+                stack.push(a);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// 表示内の全式（`state_laws`・`operations`・`observations`）に対し、
+/// 変数参照と名前空間衝突（座標・引数・パラメータ）を検査する。
+/// `params == None` のとき `before` 表示としてパラメータを一切許可しない。
+pub(super) fn check_presentation_vars<E: InputError>(
+    pres: &ShigurePresentation,
+    params: Option<&HashSet<&str>>,
+    control: &Control,
+) -> CResult<(), E> {
+    let mut phase_coords: HashMap<&str, HashSet<&str>> = HashMap::new();
+    for ph in &pres.phases {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        let mut coords: HashSet<&str> = HashSet::new();
+        for c in &ph.coords {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
+            if let Some(ps) = params
+                && ps.contains(c.name.as_str())
+            {
+                return duplicate(
+                    c.span,
+                    format!(
+                        "coordinate `{}` in `{}.{}` collides with change_spec parameter",
+                        c.name, pres.name, ph.name
+                    ),
+                );
+            }
+            coords.insert(c.name.as_str());
+        }
+        let mut allowed = coords.clone();
+        if let Some(ps) = params {
+            allowed.extend(ps.iter().copied());
+        }
+        for l in &ph.state_laws {
+            let ctx = format!("{}.{}.{}", pres.name, ph.name, l.name);
+            check_poly_vars(&l.expr, &allowed, l.span, &ctx, control)?;
+        }
+        phase_coords.insert(ph.name.as_str(), coords);
+    }
+
+    for op in &pres.operations {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        let mut allowed = phase_coords[op.source_phase.as_str()].clone();
+        for (a_name, _) in &op.args {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
+            if let Some(ps) = params
+                && ps.contains(a_name.as_str())
+            {
+                return duplicate(
+                    op.span,
+                    format!(
+                        "argument `{a_name}` in `{}.{}` collides with change_spec parameter",
+                        pres.name, op.name
+                    ),
+                );
+            }
+            allowed.insert(a_name.as_str());
+        }
+        if let Some(ps) = params {
+            allowed.extend(ps.iter().copied());
+        }
+        for (u_name, u_expr) in &op.updates {
+            let ctx = format!("{}.{}.{u_name}", pres.name, op.name);
+            check_poly_vars(u_expr, &allowed, op.span, &ctx, control)?;
+        }
+    }
+
+    for obs in &pres.observations {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        let mut allowed = phase_coords[obs.phase.as_str()].clone();
+        if let Some(ps) = params {
+            allowed.extend(ps.iter().copied());
+        }
+        let ctx = format!("{}.{}.{}", pres.name, obs.phase, obs.name);
+        for comp in &obs.components {
+            check_poly_vars(comp, &allowed, obs.span, &ctx, control)?;
+        }
+    }
+    Ok(())
 }

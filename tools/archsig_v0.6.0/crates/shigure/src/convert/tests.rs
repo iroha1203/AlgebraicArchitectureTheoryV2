@@ -650,7 +650,7 @@ fn rejects_before_parameters_namespace_collision_and_ambiguous_or_missing_tasks(
     let digest = ledger_vocab_digest();
     let archmap = ledger_archmap_json(&digest, true, true);
 
-    // 1. before 表示にパラメータが混入したケースを変換層で拒否
+    // 1. before 表示にパラメータ（または未宣言変数）が混入したケースを check_inputs 段階で即時拒否
     let law_before_param = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading BadBefore {{
@@ -683,57 +683,83 @@ reading BadBefore {{
 }}
 "#
     );
-    let checked = check_inputs(
-        InputSources::from_bytes(
-            vec![LEDGER_ATOM_DEF.as_bytes().to_vec()],
-            law_before_param.into_bytes(),
-            archmap.as_bytes().to_vec(),
-        ),
-        &Control::unlimited(),
-    )
-    .unwrap();
-    let err = ShigureConverter::default().convert(&checked).unwrap_err();
     assert!(
-        matches!(err, ValidationError::ConversionError { ref detail } if detail.contains("before"))
+        check_inputs(
+            InputSources::from_bytes(
+                vec![LEDGER_ATOM_DEF.as_bytes().to_vec()],
+                law_before_param.into_bytes(),
+                archmap.as_bytes().to_vec(),
+            ),
+            &Control::unlimited(),
+        )
+        .is_err()
     );
 
-    // 2. 変数名前空間衝突（coord 名と param 名が同一）を拒否
-    let law_collide = format!(
+    // 2. 変数名前空間衝突（coord 名と param 名が同一）:
+    //    task 宣言ありは check_inputs 段階で即時拒否、task 省略経路は変換層で拒否。
+    let law_collide_task = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading BadCollide {{
   use vocabulary LedgerVocab version "1" digest "{digest}";
   shigure presentation B {{
-    domain Q;
-    sort D;
-    phase S {{ coord x: D; }}
+    domain Q; sort D; phase S {{ coord x: D; }}
     op step(u: D): S -> S {{ x = x + u; }}
     obs read on S = (x);
   }}
   shigure presentation A {{
-    domain Q;
-    sort D;
-    phase S {{ coord x: D; }}
+    domain Q; sort D; phase S {{ coord x: D; }}
     op step(u: D): S -> S {{ x = x + u; }}
     obs read on S = (x);
   }}
   shigure comparison C {{
-    before B;
-    after A;
+    before B; after A;
     state_map S -> S {{ x = x; }}
     translate step -> [step(u)];
   }}
-  shigure change_spec H {{
-    domain Q;
-    param x: Q;
-  }}
+  shigure change_spec H {{ domain Q; param x: Q; }}
   shigure task T {{ comparison C; change_spec H; }}
+}}
+"#
+    );
+    assert!(
+        check_inputs(
+            InputSources::from_bytes(
+                vec![LEDGER_ATOM_DEF.as_bytes().to_vec()],
+                law_collide_task.into_bytes(),
+                archmap.as_bytes().to_vec(),
+            ),
+            &Control::unlimited(),
+        )
+        .is_err()
+    );
+
+    let law_collide_notask = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading BadCollideNoTask {{
+  use vocabulary LedgerVocab version "1" digest "{digest}";
+  shigure presentation B {{
+    domain Q; sort D; phase S {{ coord x: D; }}
+    op step(u: D): S -> S {{ x = x + u; }}
+    obs read on S = (x);
+  }}
+  shigure presentation A {{
+    domain Q; sort D; phase S {{ coord x: D; }}
+    op step(u: D): S -> S {{ x = x + u; }}
+    obs read on S = (x);
+  }}
+  shigure comparison C {{
+    before B; after A;
+    state_map S -> S {{ x = x; }}
+    translate step -> [step(u)];
+  }}
+  shigure change_spec H {{ domain Q; param x: Q; }}
 }}
 "#
     );
     let checked_c = check_inputs(
         InputSources::from_bytes(
             vec![LEDGER_ATOM_DEF.as_bytes().to_vec()],
-            law_collide.into_bytes(),
+            law_collide_notask.into_bytes(),
             archmap.as_bytes().to_vec(),
         ),
         &Control::unlimited(),
@@ -745,8 +771,41 @@ reading BadCollide {{
     );
 
     // 3. 未宣言の task 名指定・未宣言の snapshot 名指定を拒否
+    let law_ok = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading OkTask {{
+  use vocabulary LedgerVocab version "1" digest "{digest}";
+  shigure presentation B {{
+    domain Q; sort D; phase S {{ coord x: D; }}
+    op step(u: D): S -> S {{ x = x + u; }}
+    obs read on S = (x);
+  }}
+  shigure presentation A {{
+    domain Q; sort D; phase S {{ coord x: D; }}
+    op step(u: D): S -> S {{ x = x + u; }}
+    obs read on S = (x);
+  }}
+  shigure comparison C {{
+    before B; after A;
+    state_map S -> S {{ x = x; }}
+    translate step -> [step(u)];
+  }}
+  shigure change_spec H {{ domain Q; }}
+  shigure task T {{ comparison C; change_spec H; }}
+}}
+"#
+    );
+    let checked_ok = check_inputs(
+        InputSources::from_bytes(
+            vec![LEDGER_ATOM_DEF.as_bytes().to_vec()],
+            law_ok.into_bytes(),
+            archmap.as_bytes().to_vec(),
+        ),
+        &Control::unlimited(),
+    )
+    .unwrap();
     assert!(matches!(
-        ShigureConverter::for_task("NoSuchTask").convert(&checked_c),
+        ShigureConverter::for_task("NoSuchTask").convert(&checked_ok),
         Err(ValidationError::UnknownRef {
             kind: "shigure task",
             ..
@@ -755,7 +814,7 @@ reading BadCollide {{
     assert!(matches!(
         ShigureConverter::for_task("T")
             .with_snapshot("no_such_snap")
-            .convert(&checked_c),
+            .convert(&checked_ok),
         Err(ValidationError::UnknownRef {
             kind: "snapshot",
             ..

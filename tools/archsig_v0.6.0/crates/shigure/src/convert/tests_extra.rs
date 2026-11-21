@@ -580,4 +580,110 @@ reading F1h {
             "F1 case #{idx} must be rejected directly by check_law"
         );
     }
+
+    // 8. Re-run #2 F1/F2 回帰:
+    //    (a) eval_condition / state_map の未宣言変数、(b) reading 循環参照、(c) use alias 衝突、
+    //    (d) 原始定義 FQN 衝突、(e) 組込み演算名衝突 をすべて check_law 段階で即時拒否する。
+    let rerun2_cases = [
+        // 8a. eval_condition の未宣言パラメータ
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading BadEvalVar {
+  shigure presentation B { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison C { before B; after A; state_map S -> S { x = x; } translate id -> [id()]; }
+  shigure change_spec H { domain Q; param k: Q; }
+  shigure eval_condition P { point_domain algebraic_closure; equation e: typo_param = 1; }
+  shigure task T { comparison C; change_spec H; eval_condition P; }
+}"#,
+        // 8b. state_map の未宣言変数
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading BadStateMapVar {
+  shigure presentation B { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison C { before B; after A; state_map S -> S { x = bogus; } translate id -> [id()]; }
+  shigure change_spec H { domain Q; }
+  shigure task T { comparison C; change_spec H; }
+}"#,
+        // 8c. SHIGURE reading 間の循環参照 (A -> B -> A)
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading CycA {
+  shigure presentation PA { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison CA { before PA; after CycB.PB; state_map S -> S { x = x; } translate id -> [id()]; }
+}
+reading CycB {
+  shigure presentation PB { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison CB { before PB; after CycA.PA; state_map S -> S { x = x; } translate id -> [id()]; }
+}"#,
+        // 8d. use alias との短名衝突
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading OtherR { shigure presentation X { domain Q; } }
+reading AliasCollide {
+  use OtherR as P;
+  shigure presentation P { domain Q; }
+}"#,
+        // 8e. AtomDefinition 原始定義 FQN (MultiVocab.Metric) との衝突
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading MultiVocab {
+  shigure presentation Metric { domain Q; }
+}"#,
+        // 8f. 組込み演算名 (sum) との衝突
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading BuiltinCollide {
+  shigure presentation sum { domain Q; }
+}"#,
+    ];
+    for (idx, bad_src) in rerun2_cases.iter().enumerate() {
+        assert!(
+            check_law(bad_src.as_bytes(), &defs).is_err(),
+            "Re-run #2 F1/F2 case #{idx} must be rejected directly by check_law"
+        );
+    }
+
+    // 9. Re-run #2 F3 回帰: 小スタック thread (512 KiB) 上で深さ 5,000 の平坦和を
+    //    check_inputs -> ShigureConverter::convert -> clone -> PartialEq -> Display -> Drop まで安全に実行する。
+    let archmap_deep = archmap;
+    let handle = std::thread::Builder::new()
+        .stack_size(512 * 1024)
+        .spawn(move || {
+            let sum_5000 = std::iter::repeat_n("x", 5000)
+                .collect::<Vec<_>>()
+                .join(" + ");
+            let law_deep = format!(
+                r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading DeepPoly {{
+  shigure presentation B {{
+    domain Q; sort D; phase S {{ coord x: D; }}
+    op id(): S -> S {{ x = x; }}
+    obs r on S = (5000 * x);
+  }}
+  shigure presentation A {{
+    domain Q; sort D; phase S {{ coord x: D; }}
+    op id(): S -> S {{ x = x; }}
+    obs r on S = ({sum_5000});
+  }}
+  shigure comparison C {{ before B; after A; state_map S -> S {{ x = x; }} translate id -> [id()]; }}
+  shigure change_spec H {{ domain Q; }}
+  shigure task T {{ comparison C; change_spec H; }}
+}}
+"#
+            );
+            let ci = check_inputs(
+                InputSources::from_bytes(
+                    vec![MULTI_DOMAIN_ATOM_DEF.as_bytes().to_vec()],
+                    law_deep.into_bytes(),
+                    archmap_deep.into_bytes(),
+                ),
+                &Control::unlimited(),
+            )
+            .unwrap();
+            let task = ShigureConverter::for_task("T").convert(&ci).unwrap();
+            let cloned = task.clone();
+            assert_eq!(task, cloned);
+            let disp = task.pair().after.observations[0].components[0].to_string();
+            assert!(disp.len() > 5000);
+        })
+        .expect("spawn small-stack thread");
+    handle
+        .join()
+        .expect("deep PolyExpr operations must not stack overflow");
 }

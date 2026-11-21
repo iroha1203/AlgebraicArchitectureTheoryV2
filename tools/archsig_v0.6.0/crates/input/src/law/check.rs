@@ -302,7 +302,7 @@ impl<'d, E: InputError> Checker<'d, E> {
     }
 
     /// 原始宣言、constructor、field の完全名は Law 宣言と共有する一意な名前空間。
-    fn primitive_identifier_exists(&self, name: &str) -> CResult<bool, E> {
+    pub(super) fn primitive_identifier_exists(&self, name: &str) -> CResult<bool, E> {
         self.cooperate()?;
         let definitions = &self.definitions;
         if definitions.declarations.contains_key(name) {

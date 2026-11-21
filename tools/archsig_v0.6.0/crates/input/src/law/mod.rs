@@ -444,7 +444,7 @@ fn check_law_processing<E: InputError>(
     })();
     E::finish(result, control, Checkpoint::LawSemantics)
         .map_err(|i| fail(i, Some(digest.clone())))?;
-    let shigure_result = shigure::check::check_shigure_decls(&checker, control);
+    let shigure_result = shigure::check::check_shigure_decls(&mut checker, control);
     let shigure = E::finish(shigure_result, control, Checkpoint::LawSemantics)
         .map_err(|i| fail(i, Some(digest.clone())))?;
     let infos = checker

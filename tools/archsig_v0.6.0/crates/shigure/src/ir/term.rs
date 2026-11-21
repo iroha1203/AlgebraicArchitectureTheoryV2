@@ -136,8 +136,9 @@ impl fmt::Display for ScalarLit {
 
 /// 状態座標・操作引数・探索パラメータ上の型付き多項式 / affine 構文木（G-140 P0.1）。
 ///
-/// 未観測値（`Unobserved`）を既知の零定数と型レベルで分離する。
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// 未観測値（`Unobserved`）を既知の零定数と型レベルで分離し、
+/// 深い平坦和でもスタックを枯渇させないよう `Clone`・`PartialEq`・`Display`・`Drop` を反復実装する。
+#[derive(Debug, Eq)]
 pub enum PolyExpr {
     Const(ScalarLit),
     /// 現在の phase に属する状態座標変数。
@@ -398,17 +399,185 @@ fn take_poly_expr_children(expr: &mut PolyExpr, stack: &mut Vec<PolyExpr>) {
     }
 }
 
+impl Clone for PolyExpr {
+    fn clone(&self) -> Self {
+        enum CloneFrame<'a> {
+            Visit(&'a PolyExpr),
+            Neg,
+            Add,
+            Sub,
+            Mul,
+            Pow(u32),
+        }
+        let mut work = vec![CloneFrame::Visit(self)];
+        let mut out: Vec<PolyExpr> = Vec::new();
+        while let Some(frame) = work.pop() {
+            match frame {
+                CloneFrame::Visit(node) => match node {
+                    PolyExpr::Const(c) => out.push(PolyExpr::Const(c.clone())),
+                    PolyExpr::StateVar(v) => out.push(PolyExpr::StateVar(v.clone())),
+                    PolyExpr::ArgVar(v) => out.push(PolyExpr::ArgVar(v.clone())),
+                    PolyExpr::ParamVar(v) => out.push(PolyExpr::ParamVar(v.clone())),
+                    PolyExpr::Unobserved { slot, origin } => out.push(PolyExpr::Unobserved {
+                        slot: slot.clone(),
+                        origin: origin.clone(),
+                    }),
+                    PolyExpr::Neg(a) => {
+                        work.push(CloneFrame::Neg);
+                        work.push(CloneFrame::Visit(a));
+                    }
+                    PolyExpr::Add(a, b) => {
+                        work.push(CloneFrame::Add);
+                        work.push(CloneFrame::Visit(b));
+                        work.push(CloneFrame::Visit(a));
+                    }
+                    PolyExpr::Sub(a, b) => {
+                        work.push(CloneFrame::Sub);
+                        work.push(CloneFrame::Visit(b));
+                        work.push(CloneFrame::Visit(a));
+                    }
+                    PolyExpr::Mul(a, b) => {
+                        work.push(CloneFrame::Mul);
+                        work.push(CloneFrame::Visit(b));
+                        work.push(CloneFrame::Visit(a));
+                    }
+                    PolyExpr::Pow(a, e) => {
+                        work.push(CloneFrame::Pow(*e));
+                        work.push(CloneFrame::Visit(a));
+                    }
+                },
+                CloneFrame::Neg => {
+                    let a = out.pop().expect("clone neg");
+                    out.push(PolyExpr::Neg(Box::new(a)));
+                }
+                CloneFrame::Add => {
+                    let b = out.pop().expect("clone add rhs");
+                    let a = out.pop().expect("clone add lhs");
+                    out.push(PolyExpr::Add(Box::new(a), Box::new(b)));
+                }
+                CloneFrame::Sub => {
+                    let b = out.pop().expect("clone sub rhs");
+                    let a = out.pop().expect("clone sub lhs");
+                    out.push(PolyExpr::Sub(Box::new(a), Box::new(b)));
+                }
+                CloneFrame::Mul => {
+                    let b = out.pop().expect("clone mul rhs");
+                    let a = out.pop().expect("clone mul lhs");
+                    out.push(PolyExpr::Mul(Box::new(a), Box::new(b)));
+                }
+                CloneFrame::Pow(e) => {
+                    let a = out.pop().expect("clone pow");
+                    out.push(PolyExpr::Pow(Box::new(a), e));
+                }
+            }
+        }
+        out.pop().expect("cloned PolyExpr root")
+    }
+}
+
+impl PartialEq for PolyExpr {
+    fn eq(&self, other: &Self) -> bool {
+        let mut stack = vec![(self, other)];
+        while let Some((lhs, rhs)) = stack.pop() {
+            match (lhs, rhs) {
+                (PolyExpr::Const(a), PolyExpr::Const(b)) => {
+                    if a != b {
+                        return false;
+                    }
+                }
+                (PolyExpr::StateVar(a), PolyExpr::StateVar(b))
+                | (PolyExpr::ArgVar(a), PolyExpr::ArgVar(b))
+                | (PolyExpr::ParamVar(a), PolyExpr::ParamVar(b)) => {
+                    if a != b {
+                        return false;
+                    }
+                }
+                (
+                    PolyExpr::Unobserved {
+                        slot: s1,
+                        origin: o1,
+                    },
+                    PolyExpr::Unobserved {
+                        slot: s2,
+                        origin: o2,
+                    },
+                ) => {
+                    if s1 != s2 || o1 != o2 {
+                        return false;
+                    }
+                }
+                (PolyExpr::Neg(a), PolyExpr::Neg(b)) => stack.push((a, b)),
+                (PolyExpr::Add(a1, a2), PolyExpr::Add(b1, b2))
+                | (PolyExpr::Sub(a1, a2), PolyExpr::Sub(b1, b2))
+                | (PolyExpr::Mul(a1, a2), PolyExpr::Mul(b1, b2)) => {
+                    stack.push((a2, b2));
+                    stack.push((a1, b1));
+                }
+                (PolyExpr::Pow(a, e1), PolyExpr::Pow(b, e2)) => {
+                    if e1 != e2 {
+                        return false;
+                    }
+                    stack.push((a, b));
+                }
+                _ => return false,
+            }
+        }
+        true
+    }
+}
+
 impl fmt::Display for PolyExpr {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            PolyExpr::Const(c) => write!(f, "{c}"),
-            PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => write!(f, "{v}"),
-            PolyExpr::Unobserved { slot, .. } => write!(f, "?{slot}"),
-            PolyExpr::Neg(e) => write!(f, "(-{e})"),
-            PolyExpr::Add(a, b) => write!(f, "({a} + {b})"),
-            PolyExpr::Sub(a, b) => write!(f, "({a} - {b})"),
-            PolyExpr::Mul(a, b) => write!(f, "({a} * {b})"),
-            PolyExpr::Pow(e, exp) => write!(f, "({e}^{exp})"),
+        enum DispFrame<'a> {
+            Expr(&'a PolyExpr),
+            Text(&'static str),
+            PowSuffix(u32),
         }
+        let mut stack = vec![DispFrame::Expr(self)];
+        while let Some(frame) = stack.pop() {
+            match frame {
+                DispFrame::Text(s) => f.write_str(s)?,
+                DispFrame::PowSuffix(exp) => write!(f, "^{exp})")?,
+                DispFrame::Expr(node) => match node {
+                    PolyExpr::Const(c) => write!(f, "{c}")?,
+                    PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
+                        f.write_str(v)?;
+                    }
+                    PolyExpr::Unobserved { slot, .. } => write!(f, "?{slot}")?,
+                    PolyExpr::Neg(e) => {
+                        stack.push(DispFrame::Text(")"));
+                        stack.push(DispFrame::Expr(e));
+                        stack.push(DispFrame::Text("(-"));
+                    }
+                    PolyExpr::Add(a, b) => {
+                        stack.push(DispFrame::Text(")"));
+                        stack.push(DispFrame::Expr(b));
+                        stack.push(DispFrame::Text(" + "));
+                        stack.push(DispFrame::Expr(a));
+                        stack.push(DispFrame::Text("("));
+                    }
+                    PolyExpr::Sub(a, b) => {
+                        stack.push(DispFrame::Text(")"));
+                        stack.push(DispFrame::Expr(b));
+                        stack.push(DispFrame::Text(" - "));
+                        stack.push(DispFrame::Expr(a));
+                        stack.push(DispFrame::Text("("));
+                    }
+                    PolyExpr::Mul(a, b) => {
+                        stack.push(DispFrame::Text(")"));
+                        stack.push(DispFrame::Expr(b));
+                        stack.push(DispFrame::Text(" * "));
+                        stack.push(DispFrame::Expr(a));
+                        stack.push(DispFrame::Text("("));
+                    }
+                    PolyExpr::Pow(e, exp) => {
+                        stack.push(DispFrame::PowSuffix(*exp));
+                        stack.push(DispFrame::Expr(e));
+                        stack.push(DispFrame::Text("("));
+                    }
+                },
+            }
+        }
+        Ok(())
     }
 }

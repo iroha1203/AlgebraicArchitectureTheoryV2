@@ -2,7 +2,7 @@
 
 use super::check::{
     CResult, DeclCategory, LiteralDomainRule, check_coeff_domain, check_point_domain,
-    check_poly_literals, resolve_shigure_ref,
+    check_poly_literals, check_poly_vars, check_presentation_vars, resolve_shigure_ref,
 };
 use super::*;
 use crate::law::ast::{QName, Span};
@@ -12,13 +12,15 @@ use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn check_comparison<E: InputError>(
     raw: &RawComparison,
     r_idx: usize,
     reading_name: &str,
     checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span)>,
+    index: &HashMap<String, (DeclCategory, Span, usize)>,
     presentations: &BTreeMap<String, ShigurePresentation>,
+    edges: &mut Vec<(usize, usize, Span)>,
     control: &Control,
 ) -> CResult<ShigureComparison, E> {
     let full_name = full(reading_name, &[&raw.name.name]);
@@ -29,6 +31,7 @@ pub(super) fn check_comparison<E: InputError>(
         reading_name,
         checker,
         index,
+        edges,
     )?;
     let after = resolve_shigure_ref(
         &raw.after,
@@ -37,6 +40,7 @@ pub(super) fn check_comparison<E: InputError>(
         reading_name,
         checker,
         index,
+        edges,
     )?;
     if before == after {
         return Err(Box::new(Issue::law(
@@ -56,6 +60,8 @@ pub(super) fn check_comparison<E: InputError>(
         ))
         .into());
     }
+    // `before` 表示は探索パラメータ禁止であり、全式の変数が座標・引数のみで閉じることを確定検査する。
+    check_presentation_vars(before_p, None, control)?;
 
     let mut phase_map: HashMap<String, String> = HashMap::new();
     let mut state_comparisons = Vec::with_capacity(raw.state_comparisons.len());
@@ -323,7 +329,8 @@ fn split_pres_tail<E: InputError>(
     r_idx: usize,
     reading_name: &str,
     checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span)>,
+    index: &HashMap<String, (DeclCategory, Span, usize)>,
+    edges: &mut Vec<(usize, usize, Span)>,
 ) -> CResult<(String, Vec<String>), E> {
     if qname.parts.len() <= tail_len {
         return syntax(
@@ -346,6 +353,7 @@ fn split_pres_tail<E: InputError>(
         reading_name,
         checker,
         index,
+        edges,
     )?;
     let tail = qname.parts[split_at..]
         .iter()
@@ -354,13 +362,15 @@ fn split_pres_tail<E: InputError>(
     Ok((pres, tail))
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn check_change_spec<E: InputError>(
     raw: &RawChangeSpec,
     r_idx: usize,
     reading_name: &str,
     checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span)>,
+    index: &HashMap<String, (DeclCategory, Span, usize)>,
     presentations: &BTreeMap<String, ShigurePresentation>,
+    edges: &mut Vec<(usize, usize, Span)>,
     control: &Control,
 ) -> CResult<ShigureChangeSpec, E> {
     let full_name = full(reading_name, &[&raw.name.name]);
@@ -401,7 +411,8 @@ pub(super) fn check_change_spec<E: InputError>(
         E::checkpoint(control, Checkpoint::LawSemantics)?;
         let resolved = match target {
             RawFixedTarget::SemanticLaw(q) => {
-                let (pres, tail) = split_pres_tail(q, 2, r_idx, reading_name, checker, index)?;
+                let (pres, tail) =
+                    split_pres_tail(q, 2, r_idx, reading_name, checker, index, edges)?;
                 validate_law_target(
                     presentations,
                     &pres,
@@ -417,7 +428,8 @@ pub(super) fn check_change_spec<E: InputError>(
                 }
             }
             RawFixedTarget::RepresentationLaw(q) => {
-                let (pres, tail) = split_pres_tail(q, 2, r_idx, reading_name, checker, index)?;
+                let (pres, tail) =
+                    split_pres_tail(q, 2, r_idx, reading_name, checker, index, edges)?;
                 validate_law_target(
                     presentations,
                     &pres,
@@ -433,7 +445,8 @@ pub(super) fn check_change_spec<E: InputError>(
                 }
             }
             RawFixedTarget::OperationExpr(q) => {
-                let (pres, tail) = split_pres_tail(q, 1, r_idx, reading_name, checker, index)?;
+                let (pres, tail) =
+                    split_pres_tail(q, 1, r_idx, reading_name, checker, index, edges)?;
                 if !presentations[&pres]
                     .operations
                     .iter()
@@ -450,7 +463,8 @@ pub(super) fn check_change_spec<E: InputError>(
                 }
             }
             RawFixedTarget::ObservationExpr(q) => {
-                let (pres, tail) = split_pres_tail(q, 2, r_idx, reading_name, checker, index)?;
+                let (pres, tail) =
+                    split_pres_tail(q, 2, r_idx, reading_name, checker, index, edges)?;
                 if !presentations[&pres]
                     .observations
                     .iter()
@@ -486,7 +500,8 @@ pub(super) fn check_change_spec<E: InputError>(
         E::checkpoint(control, Checkpoint::LawSemantics)?;
         let resolved = match target {
             RawEditableTarget::OperationExpr(q) => {
-                let (pres, tail) = split_pres_tail(q, 1, r_idx, reading_name, checker, index)?;
+                let (pres, tail) =
+                    split_pres_tail(q, 1, r_idx, reading_name, checker, index, edges)?;
                 if !presentations[&pres]
                     .operations
                     .iter()
@@ -503,7 +518,8 @@ pub(super) fn check_change_spec<E: InputError>(
                 }
             }
             RawEditableTarget::RepresentationLaw(q) => {
-                let (pres, tail) = split_pres_tail(q, 2, r_idx, reading_name, checker, index)?;
+                let (pres, tail) =
+                    split_pres_tail(q, 2, r_idx, reading_name, checker, index, edges)?;
                 validate_law_target(
                     presentations,
                     &pres,
@@ -671,8 +687,9 @@ pub(super) fn check_task<E: InputError>(
     r_idx: usize,
     reading_name: &str,
     checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span)>,
+    index: &HashMap<String, (DeclCategory, Span, usize)>,
     decls: &CheckedShigureDecls,
+    edges: &mut Vec<(usize, usize, Span)>,
     control: &Control,
 ) -> CResult<ShigureTask, E> {
     let full_name = full(reading_name, &[&raw.name.name]);
@@ -683,6 +700,7 @@ pub(super) fn check_task<E: InputError>(
         reading_name,
         checker,
         index,
+        edges,
     )?;
     let change_spec = resolve_shigure_ref(
         &raw.change_spec,
@@ -691,6 +709,7 @@ pub(super) fn check_task<E: InputError>(
         reading_name,
         checker,
         index,
+        edges,
     )?;
     let eval_condition = match &raw.eval_condition {
         Some(q) => Some(resolve_shigure_ref(
@@ -700,6 +719,7 @@ pub(super) fn check_task<E: InputError>(
             reading_name,
             checker,
             index,
+            edges,
         )?),
         None => None,
     };
@@ -783,6 +803,50 @@ pub(super) fn check_task<E: InputError>(
             }
         }
     }
+    // `after` 表示・`state_map`・`translate`・`eval_condition` の全式に対し、
+    // パラメータ名前空間衝突と変数参照の静的検査を行う。
+    let param_set: HashSet<&str> = spec.parameters.iter().map(|p| p.name.as_str()).collect();
+    check_presentation_vars(after_p, Some(&param_set), control)?;
+    for sc in &cmp.state_comparisons {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        let after_ph = after_p
+            .phases
+            .iter()
+            .find(|p| p.name == sc.after_phase)
+            .expect("checked after_phase");
+        let mut allowed: HashSet<&str> = after_ph.coords.iter().map(|c| c.name.as_str()).collect();
+        allowed.extend(param_set.iter().copied());
+        for (coord, expr) in &sc.map {
+            let ctx = format!("{}.state_map.{}.{coord}", cmp.name, sc.after_phase);
+            check_poly_vars(expr, &allowed, sc.span, &ctx, control)?;
+        }
+    }
+    for tw in &cmp.word_translation {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        let after_op = after_p
+            .operations
+            .iter()
+            .find(|o| o.name == tw.after_operation)
+            .expect("checked after_operation");
+        let src_ph = after_p
+            .phases
+            .iter()
+            .find(|p| p.name == after_op.source_phase)
+            .expect("checked source_phase");
+        let mut allowed: HashSet<&str> = src_ph.coords.iter().map(|c| c.name.as_str()).collect();
+        allowed.extend(after_op.args.iter().map(|(a, _)| a.as_str()));
+        allowed.extend(param_set.iter().copied());
+        for st in &tw.steps {
+            for (idx, expr) in st.arg_exprs.iter().enumerate() {
+                let ctx = format!(
+                    "{}.translate.{}.{}[{idx}]",
+                    cmp.name, tw.after_operation, st.before_operation
+                );
+                check_poly_vars(expr, &allowed, st.span, &ctx, control)?;
+            }
+        }
+    }
+
     if let Some(ec_name) = &eval_condition {
         let ec = &decls.eval_conditions[ec_name];
         let compatible = match (&spec.coeff_domain, &ec.point_domain) {
@@ -818,6 +882,8 @@ pub(super) fn check_task<E: InputError>(
                 item.span,
                 control,
             )?;
+            let ctx = format!("{}.{}", ec.name, item.name);
+            check_poly_vars(&item.expr, &param_set, item.span, &ctx, control)?;
         }
     }
 
