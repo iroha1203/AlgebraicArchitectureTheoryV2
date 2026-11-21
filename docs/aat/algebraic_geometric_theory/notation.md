@@ -46,7 +46,7 @@
 | $`E_s`$、$`\pi_s`$、$`\mathrm{Mark}_{\boldsymbol m,\boldsymbol n}`$ | 加群層、名前付き生成元からの全射、生成元付き実現の同型類 | [6.2](part_2/chapter_6_families_and_moduli.md#62-生成元と基底chart) |
 | $`U_I`$、$`M_{\boldsymbol m,\boldsymbol n}`$ | 選択生成元が基底となるchartと、その接着scheme | [6.2–6.3](part_2/chapter_6_families_and_moduli.md#63-chartの接着と普遍実現) |
 | $`X_{\boldsymbol n}`$、$`G_{\boldsymbol n}`$、$`P_E`$ | 基底付きの演算係数scheme、基底変更群、frame torsor | [6.4](part_2/chapter_6_families_and_moduli.md#64-frame自己同型商stack) |
-| $`\mathcal B_\sigma`$、$`Q`$、$`I`$、$`\mathcal L`$ | 構造のstack、量の型を表す加群、普遍Law ideal、量・Lawモデルの相対Spec | [6.5](part_2/chapter_6_families_and_moduli.md#65-相対specと表示の成立条件) |
+| $`\mathcal B_\sigma`$、$`Q`$、$`I`$、$`\mathcal C`$、$`\mathcal L`$ | 量を加える前の構造stack、量の型の加群、flat-fppf site上のLaw ideal、商代数、量・Lawモデルの相対Spec | [6.5](part_2/chapter_6_families_and_moduli.md#65-相対specと表示の成立条件) |
 
 合成は $`(g\circ f)(x)=g(f(x))`$ の順で書く。
 $`u:\mathbb T\to\mathbb T'`$ のモデル引戻しは
@@ -60,3 +60,11 @@ $`\Gamma`$ は変数文脈、$`U,V,W`$ は宣言文脈を表す。
 係数的実現方式を $`\sigma`$ と書く。後続の診断係数は $`\Lambda`$ とする。
 原始表示 $`\mathcal P`$、固定部分 $`K_{\mathrm{fix}}`$、評価対象 $`E`$ は別の記号とする。
 一つのモデルの状態、モデルを動かすパラメータ、モデル間の変更は、それぞれの担体で扱う。
+
+第6章の有限sort集合は $`S_0`$、試験schemeは $`T`$、例の単項演算は $`N`$ と書く。
+添字付きの $`E_s`$ は担体加群、$`E_\ell(S)`$ はLaw入力、$`E_F`$ は残差の拡張を表すschemeである。
+$`J`$ は第5章では量の添字集合、第6章の $`I,J,K`$ は選択基底のchart添字である。
+$`J_I`$ はそのchartのLaw ideal、$`K_s`$ はmarkingのkernelまたは、基底変更の式では選択列の添字を表す。
+$`Q_s`$ は生成元付きの商担体、$`Q_S,Q_b,Q`$ は量の型を表す加群である。
+第4章の $`K_x`$ は合成射の有限supportであり、いずれも定義域と添字で区別する。
+第6章の $`I_b`$ は任意の試験射での像イデアルであり、加群の引戻し $`b^*I`$ と区別する。
