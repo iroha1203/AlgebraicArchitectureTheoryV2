@@ -331,4 +331,4 @@ copying方式では[定理4.6](../part_2/chapter_4_coefficient_realizations.md#4
 一般の $`\mathcal C`$、$`s,t`$ とnerveは、これらの表現条件を用いずに既に構成されている。
 
 [前章：構造の族と実現のモジュライ](../part_2/chapter_6_families_and_moduli.md) ·
-[第III部](README.md) · [次章：条件を満たす変更と図式補完](chapter_8_constrained_changes_and_completions.md)
+[第III部](../README.md#第iii部-意味を保つ変更の全体) · [次章：条件を満たす変更と図式補完](chapter_8_constrained_changes_and_completions.md)

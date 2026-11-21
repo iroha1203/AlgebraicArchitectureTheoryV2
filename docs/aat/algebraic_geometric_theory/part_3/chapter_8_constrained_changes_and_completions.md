@@ -392,6 +392,90 @@ $`R=\mathbb Q`$ で係数点を $`(\delta,\mu)=(1,0),(0,0),(0,1)`$ の順に選�
 Idleにはこの追加条件がなく、共通readを保って切り替えられる。
 係数の経路から実状態の移送を得るには、各phaseで次節の移送条件を満たす写像を作る必要がある。
 
+**例8.12の続き（許容規則と評価条件から修正式を回復する）.**
+単一台帳 $`D=R`$、外部入力、read $`p(B,C)=B+C`$ と、
+Idle・Busyのambient担体の名前付き座標を固定する。
+比較 $`p`$ は各phaseの状態から単一台帳へ向くため、
+ここでは構成8.6の始域固定を終域固定へ置き換えたfiberを用いる。
+固定部分の全比較はこれらの座標と単一台帳の上で恒等とする。
+
+許容規則を広げ、係数 $`\delta,\mu,\rho`$ を独立な名前付きparameterとして持つ候補を作る。
+begin、両phaseのapply、read、語翻訳は例8.12の式を用いる。
+変更可能な宣言は、finishが差し引く量とBusyの状態Lawである。
+差し引く量を現在値 $`C`$ と取得済みの値 $`z`$ のaffineな組合せとし、
+その係数 $`\rho`$ を保持した規則
+
+```math
+\mathrm{finish}_{\rho}(B,C,z)
+ =\bigl(B+\mu z,\ C-\mu((1-\rho)C+\rho z)\bigr)
+```
+
+を許す。finishによるreadの差を計算すると
+$`g_\rho=\mu(1-\rho)(z-C)`$ となる。
+Busyの状態を、この原式から生成するLaw $`g_\rho=0`$ の解とする。
+従って状態Lawも候補の実際の担体に反映され、finishの式とともに動く。
+全代数上でこの担体と操作を読み、parameterを環射で運ぶ。
+
+原始操作を代入すると
+
+```math
+\mathrm{begin}^*g_\rho=0,\qquad
+(\mathrm{apply}^{\mathrm{Busy}}_u)^*g_\rho
+ =g_\rho-\mu\delta(1-\rho)u,\qquad
+p\,\mathrm{finish}_\rho-p=g_\rho.
+```
+
+従って $`\mu\delta(1-\rho)=0`$ なら、全操作が指定された状態を保ち、
+applyはreadを $`u`$ だけ増やし、begin・finishはreadを保つ。
+定理7.2により全許可経路が単一台帳の対応する語と同じ観測を持つ。
+逆に全てのapplyをBusy上の操作とするには、beginで作る状態 $`(0,0,0)`$ に
+$`\mathrm{apply}^{\mathrm{Busy}}_1`$ を施した状態でもLawが成立する必要がある。
+その残差は $`-\mu\delta(1-\rho)`$ であるから、この係数は0でなければならない。
+同じ式は、原始式としてbegin・apply・finishを合成したreadの差でもある。
+これで、操作の閉性と全語の保存に必要十分な条件を原式から得た。
+
+宣言したparameter付き規則の全候補は
+
+```math
+Z=\mathrm{Spec}\,k[\delta,\mu,\rho]/(\mu\delta(1-\rho))
+```
+
+で表される。点からparameterと状態Law、全操作、比較 $`p`$、語翻訳を上の式で戻し、
+候補から名前付きparameterを読むと元の点へ戻る。
+座標とparameterを固定する比較は恒等なので、この問題の全比較も回復する。
+parameterを忘れる問題を選ぶ場合には、同じ操作式となる候補の比較を別に加える。
+例えば $`\mu=0`$ での $`\rho`$ の値はfinishからは読めず、名前付きparameterの保持がここで効く。
+
+評価を $`v:Z\to E=\mathbb A^2_k`$、$`v=(\delta,\mu)`$ とし、
+部分関手 $`V=\mathbb G_m^2\hookrightarrow E`$ を選ぶ。
+これは各代数で両係数が単元であるという条件であり、係数変更に自然である。
+その全解の座標環では
+
+```math
+k[\delta^{\pm1},\mu^{\pm1},\rho]/(\mu\delta(1-\rho))
+ \cong k[\delta^{\pm1},\mu^{\pm1}],\qquad \rho=1.
+```
+
+逆元を掛けて $`1-\rho=0`$ を得ることと、$`\rho=1`$ を代入することが互いに逆である。
+従って全解は $`\mathbb G_m^2`$ であり、求めた修正式は
+
+```math
+\mathrm{finish}_{1}(B,C,z)=(B+\mu z,C-\mu z)
+```
+
+となる。同時に $`g_1=0`$ は恒等式となるため、Busyの担体は全 $`R^3`$ へ広がる。
+この状態Lawの変更と実際のfinishを、同じ解から回復した。
+式の代入と単元の逆元は環射と可換するので、この回復は係数変更に自然である。
+
+比較として、旧Busy Law $`\mu(z-C)=0`$ を固定した許容規則を取る。
+finishを変更しても、begin後のapplyの閉性は依然として $`\mu\delta=0`$ を要求する。
+両係数を可逆にすると座標環は零環となり、解schemeは空になる。
+一方、旧合法係数 $`\mu\delta=0`$ の上では旧Busyから $`R^3`$ への包含があり、
+旧Lawから $`\mu z=\mu C`$ なので旧finishと $`\mathrm{finish}_1`$ はその包含上で一致する。
+begin・apply・readも同じ式である。
+これにより、状態Lawを変更可能にすることがどの新しい解を許すか、
+既存の合法状態と操作をどの写像で回復するかが、同じ固定データの下で分かる。
+
 ## 8.5 状態移送と操作domainのlift
 
 **定理8.13（移送後の全操作語と合成）.**
@@ -467,4 +551,4 @@ $`h'a_1=a_0h`$、$`\iota_{D'}b=a_0\iota_D`$、$`m'b=a_1m`$ を満たすものと
 対象の修復だけでなく、式(8.2)を保つ再同定と評価・復元の自然性まで構成せよ。
 
 [前章：意味保存変更と合成の幾何](chapter_7_semantic_changes_and_composition.md) ·
-[第III部](README.md) · [次章：商・対称性・持ち上げの分類](chapter_9_quotients_symmetry_and_lifts.md)
+[第III部](../README.md#第iii部-意味を保つ変更の全体) · [次章：商・対称性・持ち上げの分類](chapter_9_quotients_symmetry_and_lifts.md)
