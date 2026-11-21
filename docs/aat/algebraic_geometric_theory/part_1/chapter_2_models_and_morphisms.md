@@ -40,7 +40,7 @@ k_t h_t p_A
 ```
 
 となる。他の条件も同じように合成される。単位律と結合律は成分写像で成り立つので、
-構造の圏 $`\operatorname{Str}_\Sigma`$ を得る。
+構造の圏 $`\mathrm{Str}_\Sigma`$ を得る。
 
 射は単射性・全射性を要求されない。
 同型とは、逆向きにも式(2.1)を満たす逆射を持つ射である。
@@ -51,7 +51,7 @@ k_t h_t p_A
 
 **定義2.2（意味圏）.**
 $`\mathbb T`$ のモデルは、その署名の構造で全必須Lawを満たすものである。
-$`\operatorname{Str}_\Sigma`$ のうち、これらの対象と、その間の全構造保存射からなる
+$`\mathrm{Str}_\Sigma`$ のうち、これらの対象と、その間の全構造保存射からなる
 充満部分圏を $`\mathcal A_{\mathbb T}`$ と書く。
 Lawの成立は対象の条件であり、射の条件は式(2.1)である。
 
@@ -91,7 +91,7 @@ Hom集合は同じである。恒等と合成も同じである。□
 たとえば一つの単項操作 $`f`$ にLawを課さない理論から、
 $`f(f(x))=f(x)`$ を追加した理論への恒等翻訳を考える。
 忘却は冪等操作を持つモデルから任意の操作を持つモデルへ向く。
-二点を交換する操作は後者のモデルだが、$`f^2=\operatorname{id}\ne f`$ なので前者のモデルではない。
+二点を交換する操作は後者のモデルだが、$`f^2=\mathrm{id}\ne f`$ なので前者のモデルではない。
 
 ## 2.3 構造保存射と理論の解釈
 
@@ -117,7 +117,7 @@ B\models u\varphi(\gamma)
 ```
 
 となる。恒等と合成について
-$`\operatorname{id}^*=\operatorname{Id}`$、
+$`\mathrm{id}^*=\mathrm{Id}`$、
 $`(v\circ u)^*=u^*\circ v^*`$ が成り立つ。
 
 **構成と証明.**
@@ -128,7 +128,7 @@ $`u^*B`$ の全域操作 $`f`$ を $`\tau_f`$ の評価で定める。
 部分操作 $`p`$ のdomainを
 $`\{\boldsymbol b\mid B\models\delta_p(\boldsymbol b)\}`$ とし、
 そこで $`\tau_p`$ を評価する。
-$`\delta_p\dashv\vdash\operatorname{Def}_{\tau_p}`$ の導出の健全性により、
+$`\delta_p\dashv\vdash\mathrm{Def}_{\tau_p}`$ の導出の健全性により、
 これはちょうど評価可能な入力全体である。
 
 変数の場合から始め、termの構文木について帰納する。
@@ -182,7 +182,7 @@ u:\mathbb T\to\mathbb T',\quad h:A\to u^*B
 \tag{2.6}
 ```
 
-とする。恒等は $`(\operatorname{id},\operatorname{id})`$、合成は
+とする。恒等は $`(\mathrm{id},\mathrm{id})`$、合成は
 
 ```math
 (v,k)\circ(u,h)=(v\circ u,\ u^*k\circ h)
@@ -197,7 +197,7 @@ $`u^*v^*\ell\circ u^*k\circ h`$ となる。
 
 射影 $`\pi:\mathcal A_{\mathrm{tot}}\to\mathbf{Th}`$ は $`(u,h)`$ を $`u`$ へ送る。
 $`\mathbb T`$ 上のfiber、すなわち対象を $`(\mathbb T,A)`$、
-射の理論成分を $`\operatorname{id}_{\mathbb T}`$ に固定した圏は $`\mathcal A_{\mathbb T}`$ である。
+射の理論成分を $`\mathrm{id}_{\mathbb T}`$ に固定した圏は $`\mathcal A_{\mathbb T}`$ である。
 同型だけを残した最大部分groupoidを $`\mathcal A_{\mathbb T}^{\simeq}`$ と書く。
 対象のモジュライを扱う際にはこのgroupoidを用い、変更と合成には元の意味圏を用いる。
 
@@ -215,10 +215,10 @@ $`\mathbb T`$ 上のfiber、すなわち対象を $`(\mathbb T,A)`$、
 
 ```math
 \begin{aligned}
-h_s(\operatorname{Dom}_A(w))&\subseteq\operatorname{Dom}_B(w),\\
+h_s(\mathrm{Dom}_A(w))&\subseteq\mathrm{Dom}_B(w),\\
 h_t(w_A(a))&=w_B(h_s(a)),\\
 o_{B,t}(w_B(h_s(a)))&=o_{A,t}(w_A(a))
-\quad(a\in\operatorname{Dom}_A(w))
+\quad(a\in\mathrm{Dom}_A(w))
 \end{aligned}
 \tag{2.8}
 ```
@@ -232,7 +232,7 @@ h_{\boldsymbol s}(\boldsymbol a)\in D_p^B
 \tag{2.9}
 ```
 
-なら、$`\operatorname{Dom}_A(w)=h_s^{-1}(\operatorname{Dom}_B(w))`$ である。
+なら、$`\mathrm{Dom}_A(w)=h_s^{-1}(\mathrm{Dom}_B(w))`$ である。
 
 理論解釈 $`u:\mathbb T\to\mathbb T'`$ と射 $`h:A\to u^*B`$ については、
 右辺の操作語を翻訳term $`u(w)`$ として同じ結論を得る。
@@ -325,9 +325,9 @@ $`C_L=g_L^{-1}(v_0)`$ とする。このとき
 別のlens $`M`$ に独立に $`w_0\in V_M`$ を選ぶと、全ての射の集合には全単射
 
 ```math
-\operatorname{Hom}_{\mathbf{Lens}}(L,M)
+\mathrm{Hom}_{\mathbf{Lens}}(L,M)
 \ \cong\
-\operatorname{Map}(V_L,V_M)\times\operatorname{Map}(C_L,C_M)
+\mathrm{Map}(V_L,V_M)\times\mathrm{Map}(C_L,C_M)
 \tag{2.13}
 ```
 
@@ -373,7 +373,7 @@ p_M(h(a),w_0)&=p_M(p_M(h(c),k(v)),w_0)\\
 空viewの場合はgetの存在からstateも空となり、定理2.9でそのまま扱える。
 
 読取りだけを保つ写像の例として、$`V=C=\{0,1\}`$ 上の積lensを取り、
-$`h(v,c)=(v,v)`$、$`k=\operatorname{id}`$ とする。
+$`h(v,c)=(v,v)`$、$`k=\mathrm{id}`$ とする。
 $`gh=g`$ だが、
 $`h(p((0,0),1))=(1,1)`$、
 $`p(h(0,0),1)=(1,0)`$ である。よってputの保存は読取りの保存からは従わない。
@@ -393,7 +393,7 @@ protocolは関手 $`X:\mathcal E\to\mathbf{Set}`$ と自然変換 $`o:X\Rightarr
 state操作と観測に次のLawを課す。
 
 ```math
-T_{\operatorname{id}_s}(a)=a,\qquad
+T_{\mathrm{id}_s}(a)=a,\qquad
 T_{f\circ e}(a)=T_f(T_e(a)),\qquad
 o_t(T_e(a))=O(e)(o_s(a)).
 \tag{2.14}

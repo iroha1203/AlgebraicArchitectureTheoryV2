@@ -9,7 +9,7 @@
 ## 3.1 依存に閉じた文脈とLawの支持
 
 **定義3.1（宣言文脈）.**
-原始表示 $`\mathcal P`$ の宣言の集合を $`\operatorname{Decl}(\mathcal P)`$ とする。
+原始表示 $`\mathcal P`$ の宣言の集合を $`\mathrm{Decl}(\mathcal P)`$ とする。
 sort、操作、関係、部分操作、量に加えて、Lawの名前付き宣言もこの集合に含める。
 部分操作とそのdomain・graph記号は一つの宣言の組として扱う。
 次の参照を宣言の依存とする。
@@ -23,14 +23,14 @@ sort、操作、関係、部分操作、量に加えて、Lawの名前付き宣�
   使用したgraphの構造公理に現れる宣言、および使用した必須Lawにも依存する。
   それらの宣言についても依存に閉じていることを要求する。
 
-文脈 $`U`$ は、この依存について閉じた $`\operatorname{Decl}(\mathcal P)`$ の部分集合である。
-Lawの式と入力を読むのに必要な宣言の最小の依存閉包を $`\operatorname{Supp}(\ell)`$ と呼ぶ。
+文脈 $`U`$ は、この依存について閉じた $`\mathrm{Decl}(\mathcal P)`$ の部分集合である。
+Lawの式と入力を読むのに必要な宣言の最小の依存閉包を $`\mathrm{Supp}(\ell)`$ と呼ぶ。
 Lawの宣言も保持した文脈が必要な場合は、
-$`\{\ell\}\cup\operatorname{Supp}(\ell)`$ の依存閉包を取る。
+$`\{\ell\}\cup\mathrm{Supp}(\ell)`$ の依存閉包を取る。
 具体的な入力値は支持に含めず、その入力を走らせるsortと式を保持する。
 
 包含 $`V\subseteq U`$ を一つの射 $`V\to U`$ とする文脈圏を
-$`\operatorname{Ctx}(\mathcal P)`$ と書く。
+$`\mathrm{Ctx}(\mathcal P)`$ と書く。
 交差と任意の合併は依存に閉じており、それぞれ文脈になる。
 制限表示 $`\mathcal P|_U`$ は、$`U`$ に含まれる宣言とLawを保持する。
 その必須Lawは、$`U`$ 内の必須Law宣言である。
@@ -54,7 +54,7 @@ sort $`s`$ を残すことは、$`X_s(A)`$ の一部の状態だけを残すこ�
 $`V\subseteq U`$ に対して、忘却による関手
 
 ```math
-\operatorname{res}_{U,V}:\mathcal A(U)\longrightarrow\mathcal A(V),
+\mathrm{res}_{U,V}:\mathcal A(U)\longrightarrow\mathcal A(V),
 \qquad A\longmapsto A|_V
 \tag{3.1}
 ```
@@ -77,7 +77,7 @@ termの構文木で帰納すれば、残した原始操作が同じ写像なの�
 恒等と合成は成分で一致する。
 二段の制限と一段の制限は同じデータを残すため等しい。□
 
-したがって $`\mathcal A`$ は $`\operatorname{Ctx}(\mathcal P)^{\mathrm{op}}`$ 上の圏値の関手である。
+したがって $`\mathcal A`$ は $`\mathrm{Ctx}(\mathcal P)^{\mathrm{op}}`$ 上の圏値の関手である。
 式の支持を保つ宣言制限は、構文側の制限と評価側の制限を同時に与える。
 Lawの結論だけを残して入力の式を忘れると、この証明の入力集合の一致が失われる。
 
@@ -103,11 +103,11 @@ A_i|_{U_i\cap U_j}=A_j|_{U_i\cap U_j}
 二つの整合族 $`(A_i),(B_i)`$ の間の整合局所射は、
 $`h_i:A_i\to B_i`$ で
 $`h_i|_{U_i\cap U_j}=h_j|_{U_i\cap U_j}`$ を満たす族である。
-これらからなる圏を $`\operatorname{Match}((U_i),\mathcal A)`$ と書く。
+これらからなる圏を $`\mathrm{Match}((U_i),\mathcal A)`$ と書く。
 
 同型によって局所対象を同定するデータは、別に
 $`\theta_{ij}:A_j|_{U_i\cap U_j}\xrightarrow{\sim}A_i|_{U_i\cap U_j}`$ と
-$`\theta_{ii}=\operatorname{id}`$、
+$`\theta_{ii}=\mathrm{id}`$、
 $`\theta_{ij}\theta_{jk}=\theta_{ik}`$ を三重交差上で指定する。
 射の整合条件も
 $`h_i\theta^A_{ij}=\theta^B_{ij}h_j`$ となる。
@@ -149,7 +149,7 @@ $`h_i:A|_{U_i}\to B|_{U_i}`$ から、制限が全ての $`h_i`$ となる一意
 この構成は制限・恒等・合成と可換する。したがって制限関手は圏の同型
 
 ```math
-\mathcal A(U)\ \cong\ \operatorname{Match}((U_i),\mathcal A)
+\mathcal A(U)\ \cong\ \mathrm{Match}((U_i),\mathcal A)
 \tag{3.3}
 ```
 
@@ -342,9 +342,9 @@ $`V`$ のLaw idealを $`W`$ のLaw idealへ送るとする。
 任意の $`k`$ 代数 $`R`$ でのモデルの忘却は
 
 ```math
-\operatorname{Hom}_{k\text{-alg}}(B_W,R)
+\mathrm{Hom}_{k\text{-alg}}(B_W,R)
 \longrightarrow
-\operatorname{Hom}_{k\text{-alg}}(B_V,R)
+\mathrm{Hom}_{k\text{-alg}}(B_V,R)
 \tag{3.8}
 ```
 
@@ -360,7 +360,7 @@ $`V`$ のLawは商への因子化から成立する。これがモデルの忘�
 これに対し、一つの係数空間の開包含 $`\Omega_V\subseteq\Omega_W`$ では、
 関数の制限は
 $`\Gamma(\Omega_W,\mathcal O)\to\Gamma(\Omega_V,\mathcal O)`$ である。
-たとえば $`\operatorname{Spec}B`$ の基本開集合 $`D(s)`$ では、
+たとえば $`\mathrm{Spec}B`$ の基本開集合 $`D(s)`$ では、
 環 $`B`$ から局所化 $`B_s`$ への写像を用いる。
 宣言を忘れる写像と、この局所化による制限は、別々の構成である。
 

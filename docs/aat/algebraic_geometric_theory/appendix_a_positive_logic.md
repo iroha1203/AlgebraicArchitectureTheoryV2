@@ -82,7 +82,7 @@ $`E_t(\boldsymbol x,y)\wedge E_t(\boldsymbol x,z)\vdash y=z`$ を構文木の帰
 本体の一価性を適用する。
 
 全域操作のgraphを $`E_{\tau_f}`$ へ翻訳したとき、その一価性は直前の導出であり、
-全域性は解釈が持つ $`\top\vdash\operatorname{Def}_{\tau_f}`$ の導出である。
+全域性は解釈が持つ $`\top\vdash\mathrm{Def}_{\tau_f}`$ の導出である。
 部分操作の一価性も同じで、
 graphからdomainへの含意とdomain上の値の存在は
 $`\delta_p\dashv\vdash\exists y\,E_{\tau_p}`$ から得る。

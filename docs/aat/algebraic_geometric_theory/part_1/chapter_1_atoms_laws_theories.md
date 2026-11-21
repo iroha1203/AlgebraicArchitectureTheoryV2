@@ -26,9 +26,9 @@ Atom語彙は、事実の種類と、種類ごとの名前・参照先・値の�
 
 各種類はタグ付きで区別し、名前も型付きで比較する。
 原始表示 $`\mathcal P`$ の宣言と式の出現からなる集合を
-$`\operatorname{At}_{\mathrm{dec}}(\mathcal P)`$ と書く。
+$`\mathrm{At}_{\mathrm{dec}}(\mathcal P)`$ と書く。
 構造 $`A`$ を与えたときの状態・操作graph・関係・domain・量の事実の直和を
-$`\operatorname{At}_{\mathrm{val}}(A)`$ と書く。
+$`\mathrm{At}_{\mathrm{val}}(A)`$ と書く。
 たとえば操作事実の成分は
 
 ```math
@@ -116,13 +116,13 @@ D_p(\boldsymbol x)&\ \dashv\vdash_{\boldsymbol x}\
 有限変数文脈を $`\Gamma=(x_1:s_1,\ldots,x_n:s_n)`$ と書き、
 $`X_\Gamma(A)=\prod_iX_{s_i}(A)`$ とする。
 型付きtermは、変数、全域操作・部分操作・量の有限回の適用、
-および有限の束縛式 $`\operatorname{let}z=t\operatorname{\,in\,}s`$ で生成する。
+および有限の束縛式 $`\mathrm{let}\,z=t\mathrm{\,in\,}s`$ で生成する。
 termは構文木であり、その値は構造と入力を与えた後に定まる。
 
-評価 $`\operatorname{ev}_A(t,\gamma)`$ は部分的に定める。
+評価 $`\mathrm{ev}_A(t,\gamma)`$ は部分的に定める。
 変数は対応成分を返す。操作への適用では全ての引数termを先に評価し、
 部分操作なら、その値の組が $`D_p^A`$ に入るときにだけ $`p_A`$ を適用する。
-term $`t`$ が定義される入力の集合を $`\operatorname{Dom}_A(t)`$ と書く。
+term $`t`$ が定義される入力の集合を $`\mathrm{Dom}_A(t)`$ と書く。
 一つの未定義の引数を持つ操作termも未定義とする。
 束縛式では $`t`$ を先に評価し、その値を $`z`$ へ割り当てて $`s`$ を評価する。
 $`s`$ が $`z`$ を使わない場合も $`t`$ の評価を行う。
@@ -141,13 +141,13 @@ E_t(\boldsymbol x,y):=
 
 とする。$`e`$ には部分操作も含める。
 束縛式の値graphは
-$`E_{\operatorname{let}z=t\operatorname{\,in\,}s}(\boldsymbol x,y) :=\exists z\,(E_t(\boldsymbol x,z)\wedge E_s(\boldsymbol x,z,y))`$ である。
+$`E_{\mathrm{let}\,z=t\mathrm{\,in\,}s}(\boldsymbol x,y) :=\exists z\,(E_t(\boldsymbol x,z)\wedge E_s(\boldsymbol x,z,y))`$ である。
 $`z`$ は他の自由変数と衝突しないように選ぶ。
-$`\operatorname{Def}_t(\boldsymbol x):=\exists y\,E_t(\boldsymbol x,y)`$ と置く。
+$`\mathrm{Def}_t(\boldsymbol x):=\exists y\,E_t(\boldsymbol x,y)`$ と置く。
 構文木の帰納法とgraphの一価性から、
 $`A\models E_t(\gamma,b)`$ であることは
 「$`t`$ が $`\gamma`$ で定義され、その値が $`b`$」と同値になる。
-したがって $`E_t`$ は常に一価であり、その存在量化が $`\operatorname{Dom}_A(t)`$ を表す。
+したがって $`E_t`$ は常に一価であり、その存在量化が $`\mathrm{Dom}_A(t)`$ を表す。
 
 **定義1.4（正の式）.**
 基本の原子式は、同じsortの変数間の等式、宣言された関係、
@@ -207,7 +207,7 @@ A\models\ell
 
 ```math
 \rho_{\ell,A}(\gamma)
-  =\operatorname{ev}_A(t,\gamma)-\operatorname{ev}_A(t',\gamma)
+  =\mathrm{ev}_A(t,\gamma)-\mathrm{ev}_A(t',\gamma)
 \tag{1.6}
 ```
 
@@ -253,17 +253,17 @@ $`R`$ の担体と環構造を固定し、射の $`R`$ 成分を恒等とする�
 別の変数文脈 $`\Delta`$ 上の同じsortのterm $`\sigma_i`$ の族である。
 構文的代入 $`t[\sigma]`$ は変数出現を置き換え、
 量化された変数は捕獲を避けるように改名する。
-$`D_{\sigma,A}:=\bigcap_i\operatorname{Dom}_A(\sigma_i)`$ 上で
+$`D_{\sigma,A}:=\bigcap_i\mathrm{Dom}_A(\sigma_i)`$ 上で
 
 ```math
 \sigma_A:D_{\sigma,A}\longrightarrow X_\Gamma(A),\qquad
 \delta\longmapsto
-  \bigl(\operatorname{ev}_A(\sigma_i,\delta)\bigr)_i
+  \bigl(\mathrm{ev}_A(\sigma_i,\delta)\bigr)_i
 \tag{1.8}
 ```
 
 が定まる。入力条件 $`\eta`$ を伴う代入を使う場合には、
-$`\eta\vdash_\Delta\bigwedge_i\operatorname{Def}_{\sigma_i}`$ を証明しておく。
+$`\eta\vdash_\Delta\bigwedge_i\mathrm{Def}_{\sigma_i}`$ を証明しておく。
 
 **定理1.8（代入・評価・構造射による保存）.**
 任意の署名、構造 $`A,B`$、有限の型付きtermと正の式について、次が成り立つ。
@@ -271,7 +271,7 @@ $`\eta\vdash_\Delta\bigwedge_i\operatorname{Def}_{\sigma_i}`$ を証明してお
 **(1)** $`\delta\in D_{\sigma,A}`$ なら、
 $`t[\sigma]`$ が $`\delta`$ で定義されることと、$`t`$ が $`\sigma_A(\delta)`$ で定義されることは同値であり、
 定義されるとき
-$`\operatorname{ev}_A(t[\sigma],\delta)=\operatorname{ev}_A(t,\sigma_A(\delta))`$ である。
+$`\mathrm{ev}_A(t[\sigma],\delta)=\mathrm{ev}_A(t,\sigma_A(\delta))`$ である。
 同じ条件で、正の式 $`\varphi`$ について
 $`A\models\varphi[\sigma](\delta)\Longleftrightarrow A\models\varphi(\sigma_A(\delta))`$ が成り立つ。
 
@@ -286,12 +286,12 @@ h_t(p_A(\boldsymbol a))=p_B(h_{\boldsymbol s}(\boldsymbol a))
 ```
 
 を満たすとする。ここで $`h_{\boldsymbol s}`$ は入力sortの写像の積である。
-このとき $`\gamma\in\operatorname{Dom}_A(t)`$ なら
-$`h_\Gamma\gamma\in\operatorname{Dom}_B(t)`$ であり、
+このとき $`\gamma\in\mathrm{Dom}_A(t)`$ なら
+$`h_\Gamma\gamma\in\mathrm{Dom}_B(t)`$ であり、
 
 ```math
-h_s(\operatorname{ev}_A(t,\gamma))
-  =\operatorname{ev}_B(t,h_\Gamma\gamma).
+h_s(\mathrm{ev}_A(t,\gamma))
+  =\mathrm{ev}_B(t,h_\Gamma\gamma).
 \tag{1.10}
 ```
 
@@ -345,10 +345,10 @@ $`u:\mathbb T\to\mathbb T'`$ は、次の翻訳と導出からなる。
 
 - sortの写像 $`s\mapsto u(s)`$。
 - 全域操作・量 $`f`$ に、その翻訳された入力型・出力型のterm $`\tau_f`$。
-  $`\mathbb T'`$ で $`\top\vdash\operatorname{Def}_{\tau_f}`$ を導出する。
+  $`\mathbb T'`$ で $`\top\vdash\mathrm{Def}_{\tau_f}`$ を導出する。
 - 関係 $`r`$ に、翻訳された引数型の正の式 $`\varphi_r`$。
 - 部分操作 $`p`$ に、同じ翻訳型のterm $`\tau_p`$ と正のdomain式 $`\delta_p`$。
-  $`\mathbb T'`$ で $`\delta_p\dashv\vdash\operatorname{Def}_{\tau_p}`$ を導出する。
+  $`\mathbb T'`$ で $`\delta_p\dashv\vdash\mathrm{Def}_{\tau_p}`$ を導出する。
 - 各必須Law $`\iota_\ell\vdash\chi_\ell`$ に、
   $`\mathbb T'`$ の必須Lawと構造公理からの翻訳 $`u\iota_\ell\vdash u\chi_\ell`$ の導出。
 
