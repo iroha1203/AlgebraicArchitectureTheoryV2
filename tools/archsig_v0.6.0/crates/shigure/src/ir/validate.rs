@@ -520,12 +520,9 @@ fn validate_scalar_lit(
             Ok(())
         }
         ScalarLit::Fp { value, modulus } => {
-            if !is_prime(modulus) {
-                return Err(ValidationError::InvalidPrimeModulus {
-                    modulus: modulus.clone(),
-                    context: context.to_owned(),
-                });
-            }
+            // `expected` は事前に `validate_coeff_domain` で素数性検証済みであり、
+            // 上の `matches_domain` により `modulus == p` が成立しているため再検定を省く。
+            debug_assert!(is_prime(modulus));
             if value >= modulus {
                 return Err(ValidationError::InvalidFpLiteral {
                     context: context.to_owned(),

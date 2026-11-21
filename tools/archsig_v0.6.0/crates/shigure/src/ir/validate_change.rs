@@ -43,6 +43,29 @@ pub(crate) fn validate_comparison_pair_checked_params(
     let after = validate_presentation_checked_params(pair.after, allowed_params)?;
     let domain = &before.inner().coeff_domain;
 
+    let before_phase_coords: BTreeMap<&str, BTreeSet<String>> = before
+        .inner()
+        .phases
+        .iter()
+        .map(|p| {
+            (
+                p.name.as_str(),
+                p.coords.iter().map(|c| c.name.clone()).collect(),
+            )
+        })
+        .collect();
+    let after_phase_coords: BTreeMap<&str, BTreeSet<String>> = after
+        .inner()
+        .phases
+        .iter()
+        .map(|p| {
+            (
+                p.name.as_str(),
+                p.coords.iter().map(|c| c.name.clone()).collect(),
+            )
+        })
+        .collect();
+
     let mut h_by_after_phase: BTreeMap<String, String> = BTreeMap::new();
     let empty_args = BTreeSet::new();
     for sc in &pair.state_comparisons {
@@ -50,14 +73,14 @@ pub(crate) fn validate_comparison_pair_checked_params(
             sc.provenance.as_ref(),
             &format!("state_comparison `{}`", sc.after_phase),
         )?;
-        let Some(after_phase) = after.inner().phase(&sc.after_phase) else {
+        let Some(after_coords) = after_phase_coords.get(sc.after_phase.as_str()) else {
             return Err(ValidationError::UnknownRef {
                 kind: "after phase",
                 name: sc.after_phase.clone(),
                 context: "state_comparison".to_owned(),
             });
         };
-        let Some(before_phase) = before.inner().phase(&sc.before_phase) else {
+        let Some(before_coords) = before_phase_coords.get(sc.before_phase.as_str()) else {
             return Err(ValidationError::UnknownRef {
                 kind: "before phase",
                 name: sc.before_phase.clone(),
@@ -73,11 +96,7 @@ pub(crate) fn validate_comparison_pair_checked_params(
                 name: sc.after_phase.clone(),
             });
         }
-        let after_coords: BTreeSet<String> =
-            after_phase.coords.iter().map(|c| c.name.clone()).collect();
-        let before_coords: BTreeSet<String> =
-            before_phase.coords.iter().map(|c| c.name.clone()).collect();
-        for bc in &before_coords {
+        for bc in before_coords {
             if !sc.map.contains_key(bc) {
                 return Err(ValidationError::MissingCoordUpdate {
                     operation: format!("state_comparison({})", sc.after_phase),
@@ -95,7 +114,7 @@ pub(crate) fn validate_comparison_pair_checked_params(
             validate_poly_expr(
                 expr,
                 domain,
-                &after_coords,
+                after_coords,
                 &empty_args,
                 allowed_params,
                 &format!("state_comparison `{}.{coord}`", sc.after_phase),
@@ -111,38 +130,62 @@ pub(crate) fn validate_comparison_pair_checked_params(
     }
 
     // 各状態比較 h: after_phase -> before_phase について、before_phase 上の全観測が
-    // after_phase 上に同名・同成分数で存在することを検証する。
+    // after_phase 上に同名・同成分数で存在することを事前索引で O(O log O + P) 検証する。
+    let mut before_obs_by_phase: BTreeMap<&str, Vec<(&str, usize)>> = BTreeMap::new();
+    for obs in &before.inner().observations {
+        before_obs_by_phase
+            .entry(obs.phase.as_str())
+            .or_default()
+            .push((obs.name.as_str(), obs.components.len()));
+    }
+    let after_obs_arities: BTreeMap<(&str, &str), usize> = after
+        .inner()
+        .observations
+        .iter()
+        .map(|obs| {
+            (
+                (obs.phase.as_str(), obs.name.as_str()),
+                obs.components.len(),
+            )
+        })
+        .collect();
     for (after_phase_name, before_phase_name) in &h_by_after_phase {
-        for before_obs in before
-            .inner()
-            .observations
-            .iter()
-            .filter(|o| o.phase == *before_phase_name)
-        {
-            let Some(after_obs) = after
-                .inner()
-                .observations
-                .iter()
-                .find(|o| o.phase == *after_phase_name && o.name == before_obs.name)
-            else {
-                return Err(ValidationError::MissingObservation {
-                    after_phase: after_phase_name.clone(),
-                    before_phase: before_phase_name.clone(),
-                    observation: before_obs.name.clone(),
-                });
-            };
-            if after_obs.components.len() != before_obs.components.len() {
-                return Err(ValidationError::ArityMismatch {
-                    context: format!(
-                        "observation `{}` between after phase `{after_phase_name}` and before phase `{before_phase_name}`",
-                        before_obs.name
-                    ),
-                    expected: before_obs.components.len(),
-                    actual: after_obs.components.len(),
-                });
+        if let Some(before_list) = before_obs_by_phase.get(before_phase_name.as_str()) {
+            for &(obs_name, expected_arity) in before_list {
+                let Some(&actual_arity) =
+                    after_obs_arities.get(&(after_phase_name.as_str(), obs_name))
+                else {
+                    return Err(ValidationError::MissingObservation {
+                        after_phase: after_phase_name.clone(),
+                        before_phase: before_phase_name.clone(),
+                        observation: obs_name.to_owned(),
+                    });
+                };
+                if actual_arity != expected_arity {
+                    return Err(ValidationError::ArityMismatch {
+                        context: format!(
+                            "observation `{obs_name}` between after phase `{after_phase_name}` and before phase `{before_phase_name}`"
+                        ),
+                        expected: expected_arity,
+                        actual: actual_arity,
+                    });
+                }
             }
         }
     }
+
+    let before_ops: BTreeMap<&str, _> = before
+        .inner()
+        .operations
+        .iter()
+        .map(|op| (op.name.as_str(), op))
+        .collect();
+    let after_ops: BTreeMap<&str, _> = after
+        .inner()
+        .operations
+        .iter()
+        .map(|op| (op.name.as_str(), op))
+        .collect();
 
     let mut seen_ops = BTreeSet::new();
     for tw in &pair.word_translation.entries {
@@ -150,7 +193,7 @@ pub(crate) fn validate_comparison_pair_checked_params(
             tw.provenance.as_ref(),
             &format!("word_translation `{}`", tw.after_operation),
         )?;
-        let Some(after_op) = after.inner().operation(&tw.after_operation) else {
+        let Some(&after_op) = after_ops.get(tw.after_operation.as_str()) else {
             return Err(ValidationError::UnknownRef {
                 kind: "after operation",
                 name: tw.after_operation.clone(),
@@ -165,14 +208,7 @@ pub(crate) fn validate_comparison_pair_checked_params(
         }
         let expected_start = &h_by_after_phase[&after_op.source_phase];
         let expected_end = &h_by_after_phase[&after_op.target_phase];
-        let after_src_coords: BTreeSet<String> = after
-            .inner()
-            .phase(&after_op.source_phase)
-            .expect("validated phase")
-            .coords
-            .iter()
-            .map(|c| c.name.clone())
-            .collect();
+        let after_src_coords = &after_phase_coords[after_op.source_phase.as_str()];
         let after_args: BTreeSet<String> =
             after_op.args.iter().map(|(name, _)| name.clone()).collect();
 
@@ -188,7 +224,7 @@ pub(crate) fn validate_comparison_pair_checked_params(
         } else {
             let mut current_phase = expected_start.as_str();
             for (idx, step) in tw.steps.iter().enumerate() {
-                let Some(before_op) = before.inner().operation(&step.before_operation) else {
+                let Some(&before_op) = before_ops.get(step.before_operation.as_str()) else {
                     return Err(ValidationError::UnknownRef {
                         kind: "before operation",
                         name: step.before_operation.clone(),
@@ -218,7 +254,7 @@ pub(crate) fn validate_comparison_pair_checked_params(
                     validate_poly_expr(
                         arg_expr,
                         domain,
-                        &after_src_coords,
+                        after_src_coords,
                         &after_args,
                         allowed_params,
                         &format!(
@@ -382,16 +418,39 @@ pub(crate) fn validate_change_spec_checked_params(
             });
         }
         validate_editable_target(editable, pair.inner())?;
-        for fixed in &spec.fixed {
-            if editable.conflicts_with(fixed) {
-                return Err(ValidationError::FixedEditableConflict {
-                    target: format!("{editable:?}"),
-                });
-            }
+        let counterpart = fixed_counterpart(editable);
+        if seen_fixed.contains(&counterpart) {
+            return Err(ValidationError::FixedEditableConflict {
+                target: format!("{editable:?}"),
+            });
         }
     }
 
     Ok(CheckedChangeSpec::from_validated(spec))
+}
+
+fn fixed_counterpart(target: &EditableTarget) -> FixedTarget {
+    match target {
+        EditableTarget::OperationExpr {
+            presentation,
+            operation,
+        } => FixedTarget::OperationExpr {
+            presentation: presentation.clone(),
+            operation: operation.clone(),
+        },
+        EditableTarget::RepresentationLaw {
+            presentation,
+            phase,
+            law,
+        } => FixedTarget::RepresentationLaw {
+            presentation: presentation.clone(),
+            phase: phase.clone(),
+            law: law.clone(),
+        },
+        EditableTarget::StateComparisonExpr { after_phase } => FixedTarget::StateComparisonExpr {
+            after_phase: after_phase.clone(),
+        },
+    }
 }
 
 fn validate_fixed_target(
