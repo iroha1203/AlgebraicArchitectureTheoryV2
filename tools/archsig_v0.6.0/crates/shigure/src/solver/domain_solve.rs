@@ -26,7 +26,10 @@ pub(crate) fn solve_affine_direct_z(
     mut ctx: SolveCtx,
 ) -> ShigureOutcome {
     let residual_display = display_polys(eqs_z, param_vars);
-    let (mat, rhs) = polys_to_affine_system_z(eqs_z, param_vars.len());
+    let (mat, rhs) = match polys_to_affine_system_z(eqs_z, param_vars.len()) {
+        Ok(sys) => sys,
+        Err(reason) => return ctx.undetermined(residual_display, reason),
+    };
     match solve_affine_z(&mat, &rhs, param_vars.len()) {
         Ok(AffineSolutionZ::Inconsistent { verified: true, .. }) => {
             ctx.checks.push(ApplicabilityCheck::passed(
@@ -71,7 +74,7 @@ pub(crate) fn solve_affine_direct_z(
                 }
                 let reason = SilenceReason::NonLinearRationalOrIntegerExistence {
                     point_domain: PointDomain::IntegerPoints,
-                    detail: "no concrete integer point satisfying open conditions was verified within deterministic witness search".to_owned(),
+                    detail: "no concrete integer point making invertible expressions units in Z (|g| = 1) was verified within deterministic witness search".to_owned(),
                 };
                 ctx.checks.push(ApplicabilityCheck::failed(
                     "integer_open_witness_verified",
@@ -125,6 +128,21 @@ pub(crate) fn solve_over_fp(
     modulus: &BigUint,
     mut ctx: SolveCtx,
 ) -> ShigureOutcome {
+    if ctx.point_domain != PointDomain::FiniteFieldPoints(modulus.clone()) {
+        let reason = SilenceReason::ApplicabilityConditionNotMet {
+            condition: "universal_ring_solution_space_out_of_scope".to_owned(),
+            detail: format!(
+                "point domain `{}` cannot be decided by Fp({modulus})-point enumeration alone",
+                ctx.point_domain
+            ),
+        };
+        ctx.checks.push(ApplicabilityCheck::failed(
+            "fp_point_domain_exact",
+            MathClause::G141D4,
+            reason.code(),
+        ));
+        return ctx.undetermined(vec![], reason);
+    }
     let residuals = match extract_closed_residuals_fp(obligations, param_vars.vars(), modulus) {
         Ok(Some(r)) => r,
         Ok(None) => {

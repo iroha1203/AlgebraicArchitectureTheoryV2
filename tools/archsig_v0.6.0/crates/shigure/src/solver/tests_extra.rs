@@ -512,14 +512,14 @@ fn z_points_open_witness_and_refutation_and_non_integer_face_guard() {
     assert_eq!(out_z_empty.verdict, Verdict::Refuted);
     assert!(out_z_empty.empty_witness.expect("empty witness").verified);
 
-    // 2. Z_points: 2*k - 4 = 0 かつ D(k) => Established (k = 2)、復元・再評価一致。
+    // 2. Z_points: 2*k - 2 = 0 かつ D(k) => k = 1 ∈ Z^× なので Established（復元・再評価一致）。
     let out_z_ok = execute_shigure_task(
         &build_single_param_residual_task(
             CoeffDomain::Z,
             "k",
-            PolyExpr::int(2) * PolyExpr::param("k") - PolyExpr::int(4),
+            PolyExpr::int(2) * PolyExpr::param("k") - PolyExpr::int(2),
             Some(EvalCondition {
-                name: "z_ok_open".to_owned(),
+                name: "z_ok_unit".to_owned(),
                 evaluations: vec![],
                 equations: vec![],
                 invertibles: vec![NamedPoly::new("k_unit", PolyExpr::param("k"))],
@@ -530,9 +530,28 @@ fn z_points_open_witness_and_refutation_and_non_integer_face_guard() {
         ShigureQueryKind::ConditionalSolutionSpace,
     );
     assert_eq!(out_z_ok.verdict, Verdict::Established);
-    let rest = out_z_ok.restored.expect("restored Z solution");
-    assert_eq!(rest.parameter_assignments["k"], "2");
+    let rest = out_z_ok.restored.expect("restored Z unit solution");
+    assert_eq!(rest.parameter_assignments["k"], "1");
     assert!(rest.reeval.checked && rest.reeval.matched);
+
+    // 2b. Z_points: 2*k - 4 = 0 かつ D(k) => k = 2 ∉ Z^×（Z で単元でない）なので Refuted（F3 回帰）。
+    let out_z_non_unit = execute_shigure_task(
+        &build_single_param_residual_task(
+            CoeffDomain::Z,
+            "k",
+            PolyExpr::int(2) * PolyExpr::param("k") - PolyExpr::int(4),
+            Some(EvalCondition {
+                name: "z_non_unit".to_owned(),
+                evaluations: vec![],
+                equations: vec![],
+                invertibles: vec![NamedPoly::new("k_unit", PolyExpr::param("k"))],
+                point_domain: PointDomain::IntegerPoints,
+                provenance: Provenance::default(),
+            }),
+        ),
+        ShigureQueryKind::ConditionalSolutionSpace,
+    );
+    assert_eq!(out_z_non_unit.verdict, Verdict::Refuted);
 
     // 3. Z 上の InteractionAnalysis で非整数切断面 2*k - 1 = 0 は fail-closed で拒否される。
     let out_z_face = execute_shigure_task(
@@ -561,4 +580,341 @@ fn z_points_open_witness_and_refutation_and_non_integer_face_guard() {
             ..
         }) if condition == "integer_coordinate_face_required"
     ));
+}
+
+#[test]
+fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_translation() {
+    // F1 回帰: Q_points で 2 層の非閉ローカス（strata[0] が非線形 V(k^2+1, a)、
+    // strata[1] が有理点を持つ V(a-1) ∩ D(k^2+1)）に対し、先頭層で誤って Undetermined にならず Established を返す。
+    let before_q = single_ledger_before(CoeffDomain::Q);
+    let k2_plus_1 = PolyExpr::pow(PolyExpr::param("k"), 2) + q_lit(1);
+    let after_f1 = Presentation {
+        name: "MultiStratumQ".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        sorts: vec![SortDecl {
+            name: "D".to_owned(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Q,
+            provenance: None,
+        }],
+        phases: vec![PhaseDecl {
+            name: "Active".to_owned(),
+            coords: vec![CoordDecl::symbolic("x", "D"), CoordDecl::symbolic("y", "D")],
+            state_laws: vec![StateLaw {
+                name: "k2p1_y".to_owned(),
+                kind: LawKind::Representation,
+                polynomial: k2_plus_1.clone() * PolyExpr::state("y"),
+                provenance: None,
+            }],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "apply".to_owned(),
+            source_phase: "Active".to_owned(),
+            target_phase: "Active".to_owned(),
+            args: vec![("u".to_owned(), "D".to_owned())],
+            updates: BTreeMap::from([
+                ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
+                ("y".to_owned(), PolyExpr::state("y")),
+            ]),
+            provenance: None,
+        }],
+        observations: vec![ObservationDecl {
+            name: "read".to_owned(),
+            phase: "Active".to_owned(),
+            components: vec![
+                PolyExpr::state("x")
+                    + PolyExpr::param("a") * PolyExpr::state("y")
+                    + k2_plus_1 * (PolyExpr::param("a") - q_lit(1)),
+            ],
+            provenance: None,
+        }],
+        provenance: Provenance::default(),
+    };
+    let task_f1 = CheckedShigureTask::validate(
+        ComparisonPair {
+            before: before_q,
+            after: after_f1,
+            state_comparisons: vec![StateComparison {
+                after_phase: "Active".to_owned(),
+                before_phase: "Active".to_owned(),
+                map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                provenance: None,
+            }],
+            word_translation: WordTranslation {
+                entries: vec![TranslatedWord {
+                    after_operation: "apply".to_owned(),
+                    steps: vec![TranslatedStep {
+                        before_operation: "apply".to_owned(),
+                        arg_exprs: vec![PolyExpr::arg("u")],
+                    }],
+                    provenance: None,
+                }],
+            },
+        },
+        ChangeSpec {
+            name: "H_f1".to_owned(),
+            coeff_domain: CoeffDomain::Q,
+            parameters: vec![
+                ParamDecl {
+                    name: "a".to_owned(),
+                    coeff_domain: CoeffDomain::Q,
+                    provenance: None,
+                },
+                ParamDecl {
+                    name: "k".to_owned(),
+                    coeff_domain: CoeffDomain::Q,
+                    provenance: None,
+                },
+            ],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::default(),
+        },
+        Some(EvalCondition {
+            name: "f1_q_points".to_owned(),
+            evaluations: vec![],
+            equations: vec![],
+            invertibles: vec![],
+            point_domain: PointDomain::RationalPoints,
+            provenance: Provenance::default(),
+        }),
+    )
+    .unwrap();
+    let out_f1 = execute_shigure_task(&task_f1, ShigureQueryKind::ConditionalSolutionSpace);
+    assert_eq!(out_f1.verdict, Verdict::Established);
+    let rest_f1 = out_f1.restored.expect("stratum 1 must be restored");
+    assert_eq!(rest_f1.parameter_assignments["a"], "1");
+    assert!(rest_f1.reeval.checked && rest_f1.reeval.matched);
+
+    // F2 回帰: CoeffDomain::Z で Z-捩れを持つ状態 Law `2*y = 0`（read = x + y）は
+    // Q 商環へフォールバックせず IntegerPoints / InteractionAnalysis ともに QuotientIdealOutOfScope で沈黙。
+    let before_z = single_ledger_before(CoeffDomain::Z);
+    let after_z_torsion = Presentation {
+        name: "ZTorsion".to_owned(),
+        coeff_domain: CoeffDomain::Z,
+        sorts: vec![SortDecl {
+            name: "D".to_owned(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Z,
+            provenance: None,
+        }],
+        phases: vec![PhaseDecl {
+            name: "Active".to_owned(),
+            coords: vec![CoordDecl::symbolic("x", "D"), CoordDecl::symbolic("y", "D")],
+            state_laws: vec![StateLaw {
+                name: "two_y_zero".to_owned(),
+                kind: LawKind::Representation,
+                polynomial: PolyExpr::int(2) * PolyExpr::state("y"),
+                provenance: None,
+            }],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "apply".to_owned(),
+            source_phase: "Active".to_owned(),
+            target_phase: "Active".to_owned(),
+            args: vec![("u".to_owned(), "D".to_owned())],
+            updates: BTreeMap::from([
+                ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
+                ("y".to_owned(), PolyExpr::state("y")),
+            ]),
+            provenance: None,
+        }],
+        observations: vec![ObservationDecl {
+            name: "read".to_owned(),
+            phase: "Active".to_owned(),
+            components: vec![PolyExpr::state("x") + PolyExpr::state("y")],
+            provenance: None,
+        }],
+        provenance: Provenance::default(),
+    };
+    let task_f2 = CheckedShigureTask::validate(
+        ComparisonPair {
+            before: before_z,
+            after: after_z_torsion,
+            state_comparisons: vec![StateComparison {
+                after_phase: "Active".to_owned(),
+                before_phase: "Active".to_owned(),
+                map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                provenance: None,
+            }],
+            word_translation: WordTranslation {
+                entries: vec![TranslatedWord {
+                    after_operation: "apply".to_owned(),
+                    steps: vec![TranslatedStep {
+                        before_operation: "apply".to_owned(),
+                        arg_exprs: vec![PolyExpr::arg("u")],
+                    }],
+                    provenance: None,
+                }],
+            },
+        },
+        ChangeSpec {
+            name: "H_f2".to_owned(),
+            coeff_domain: CoeffDomain::Z,
+            parameters: vec![],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::default(),
+        },
+        Some(EvalCondition {
+            name: "f2_z_points".to_owned(),
+            evaluations: vec![],
+            equations: vec![],
+            invertibles: vec![],
+            point_domain: PointDomain::IntegerPoints,
+            provenance: Provenance::default(),
+        }),
+    )
+    .unwrap();
+    assert!(matches!(
+        execute_shigure_task(&task_f2, ShigureQueryKind::ConditionalSolutionSpace).verdict,
+        Verdict::Undetermined(SilenceReason::QuotientIdealOutOfScope { .. })
+    ));
+    assert!(matches!(
+        execute_shigure_task(&task_f2, ShigureQueryKind::InteractionAnalysis).verdict,
+        Verdict::Undetermined(SilenceReason::QuotientIdealOutOfScope { .. })
+    ));
+
+    // F4 回帰: UniversalRing での (Fp(3), k^2+1=0) と (Z, 2k-1=0) は誤反証・非整数復元せず沈黙。
+    let p3 = BigUint::from(3u32);
+    let one_fp3 = PolyExpr::Const(ScalarLit::fp(BigInt::from(1), p3.clone()).unwrap());
+    let out_f4_fp = execute_shigure_task(
+        &build_single_param_residual_task(
+            CoeffDomain::Fp(p3),
+            "k",
+            PolyExpr::pow(PolyExpr::param("k"), 2) + one_fp3,
+            Some(EvalCondition {
+                name: "f4_fp_univ".to_owned(),
+                evaluations: vec![],
+                equations: vec![],
+                invertibles: vec![],
+                point_domain: PointDomain::UniversalRing,
+                provenance: Provenance::default(),
+            }),
+        ),
+        ShigureQueryKind::ConditionalSolutionSpace,
+    );
+    assert!(matches!(
+        out_f4_fp.verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    let out_f4_z = execute_shigure_task(
+        &build_single_param_residual_task(
+            CoeffDomain::Z,
+            "k",
+            PolyExpr::int(2) * PolyExpr::param("k") - PolyExpr::int(1),
+            Some(EvalCondition {
+                name: "f4_z_univ".to_owned(),
+                evaluations: vec![],
+                equations: vec![],
+                invertibles: vec![],
+                point_domain: PointDomain::UniversalRing,
+                provenance: Provenance::default(),
+            }),
+        ),
+        ShigureQueryKind::ConditionalSolutionSpace,
+    );
+    assert!(matches!(
+        out_f4_z.verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    // 追加カバレッジ: 2 ステップ語翻訳（apply_twice -> [apply(u), apply(u)]）+ Observed 座標。
+    let before_2s = single_ledger_before(CoeffDomain::Q);
+    let after_2s = Presentation {
+        name: "TwiceAfter".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        sorts: vec![SortDecl {
+            name: "D".to_owned(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Q,
+            provenance: None,
+        }],
+        phases: vec![PhaseDecl {
+            name: "Active".to_owned(),
+            coords: vec![
+                CoordDecl::symbolic("x", "D"),
+                CoordDecl::observed("bias", "D", ScalarLit::rat(0, 1).unwrap()),
+            ],
+            state_laws: vec![],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "apply_twice".to_owned(),
+            source_phase: "Active".to_owned(),
+            target_phase: "Active".to_owned(),
+            args: vec![("u".to_owned(), "D".to_owned())],
+            updates: BTreeMap::from([
+                (
+                    "x".to_owned(),
+                    PolyExpr::state("x")
+                        + PolyExpr::param("c") * PolyExpr::arg("u")
+                        + PolyExpr::state("bias"),
+                ),
+                ("bias".to_owned(), PolyExpr::state("bias")),
+            ]),
+            provenance: None,
+        }],
+        observations: vec![ObservationDecl {
+            name: "read".to_owned(),
+            phase: "Active".to_owned(),
+            components: vec![PolyExpr::state("x") + PolyExpr::state("bias")],
+            provenance: None,
+        }],
+        provenance: Provenance::default(),
+    };
+    let task_2s = CheckedShigureTask::validate(
+        ComparisonPair {
+            before: before_2s,
+            after: after_2s,
+            state_comparisons: vec![StateComparison {
+                after_phase: "Active".to_owned(),
+                before_phase: "Active".to_owned(),
+                map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                provenance: None,
+            }],
+            word_translation: WordTranslation {
+                entries: vec![TranslatedWord {
+                    after_operation: "apply_twice".to_owned(),
+                    steps: vec![
+                        TranslatedStep {
+                            before_operation: "apply".to_owned(),
+                            arg_exprs: vec![PolyExpr::arg("u")],
+                        },
+                        TranslatedStep {
+                            before_operation: "apply".to_owned(),
+                            arg_exprs: vec![PolyExpr::arg("u")],
+                        },
+                    ],
+                    provenance: None,
+                }],
+            },
+        },
+        ChangeSpec {
+            name: "H_2step".to_owned(),
+            coeff_domain: CoeffDomain::Q,
+            parameters: vec![ParamDecl {
+                name: "c".to_owned(),
+                coeff_domain: CoeffDomain::Q,
+                provenance: None,
+            }],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::default(),
+        },
+        None,
+    )
+    .unwrap();
+    let out_2s = execute_shigure_task(&task_2s, ShigureQueryKind::ConditionalSolutionSpace);
+    assert_eq!(out_2s.verdict, Verdict::Established);
+    let rest_2s = out_2s.restored.expect("restored 2-step translation");
+    assert_eq!(rest_2s.parameter_assignments["c"], "2");
+    assert_eq!(
+        rest_2s.word_translation["apply_twice"],
+        vec!["apply(u)".to_owned(), "apply(u)".to_owned()]
+    );
+    assert!(rest_2s.reeval.checked && rest_2s.reeval.matched);
 }

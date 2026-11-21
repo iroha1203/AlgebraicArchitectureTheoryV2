@@ -22,7 +22,6 @@ pub const MAX_COMBINED_STRATA: usize = 128;
 /// 単一の保存義務 `target(state, arg, param) in (source_laws(state, param))`。
 #[derive(Clone, Debug)]
 pub struct PreservationObligation {
-    pub label: String,
     pub state_vars: Vec<String>,
     pub arg_vars: Vec<String>,
     pub source_laws: Vec<PolyExpr>,
@@ -38,8 +37,6 @@ pub struct PreservationLocusQ {
     pub closure_ideal: Vec<Poly<Rat>>,
     /// `⋃_j (V(E_j) ∩ D(U_j)) == V(closure_ideal)` が真に成り立つ（開条件の欠損がない）とき `true`。
     pub is_zariski_closed: bool,
-    /// 生成された保存義務の本数（診断用）。
-    pub obligation_count: usize,
 }
 
 /// `PolyExpr` の状態変数・引数変数・パラメータ変数を指定写像で同時置換する。
@@ -183,10 +180,6 @@ pub fn build_preservation_obligations(
                 && let Some(h_expr) = h_map.get(&b_coord.name)
             {
                 obligations.push(PreservationObligation {
-                    label: format!(
-                        "state_comparison_observed_coord:{}.{}",
-                        after_phase.name, b_coord.name
-                    ),
                     state_vars: state_vars.clone(),
                     arg_vars: vec![],
                     source_laws: src_laws.clone(),
@@ -199,7 +192,6 @@ pub fn build_preservation_obligations(
         for b_law in &before_phase.state_laws {
             let pulled = substitute_poly_expr(&b_law.polynomial, &h_map, &empty, &empty);
             obligations.push(PreservationObligation {
-                label: format!("state_comparison_law:{}.{}", after_phase.name, b_law.name),
                 state_vars: state_vars.clone(),
                 arg_vars: vec![],
                 source_laws: src_laws.clone(),
@@ -230,13 +222,10 @@ pub fn build_preservation_obligations(
                     ),
                 }
             })?;
-            for (idx, (a_comp, b_comp)) in
-                a_obs.components.iter().zip(&b_obs.components).enumerate()
-            {
+            for (a_comp, b_comp) in a_obs.components.iter().zip(&b_obs.components) {
                 let a_eval = substitute_poly_expr(a_comp, &obs_coord_map, &empty, &empty);
                 let b_eval = substitute_poly_expr(b_comp, &h_map, &empty, &empty);
                 obligations.push(PreservationObligation {
-                    label: format!("observation:{}.{}.{}", after_phase.name, b_obs.name, idx),
                     state_vars: state_vars.clone(),
                     arg_vars: vec![],
                     source_laws: src_laws.clone(),
@@ -304,7 +293,6 @@ pub fn build_preservation_obligations(
                 && let Some(upd) = after_updates.get(&d_coord.name)
             {
                 obligations.push(PreservationObligation {
-                    label: format!("op_observed_coord:{}.{}", after_op.name, d_coord.name),
                     state_vars: state_vars.clone(),
                     arg_vars: arg_vars.clone(),
                     source_laws: src_laws.clone(),
@@ -317,7 +305,6 @@ pub fn build_preservation_obligations(
         for dst_law in &dst_phase.state_laws {
             let pulled = substitute_poly_expr(&dst_law.polynomial, &after_updates, &empty, &empty);
             obligations.push(PreservationObligation {
-                label: format!("op_law_closure:{}.{}", after_op.name, dst_law.name),
                 state_vars: state_vars.clone(),
                 arg_vars: arg_vars.clone(),
                 source_laws: src_laws.clone(),
@@ -369,7 +356,6 @@ pub fn build_preservation_obligations(
                 }
             })?;
             obligations.push(PreservationObligation {
-                label: format!("op_commutation:{}.{}", after_op.name, coord),
                 state_vars: state_vars.clone(),
                 arg_vars: arg_vars.clone(),
                 source_laws: src_laws.clone(),
@@ -494,7 +480,6 @@ pub fn compute_preservation_locus_q(
             strata: vec![],
             closure_ideal: vec![Poly::one(param_vars.len(), Rat::zero())],
             is_zariski_closed: true,
-            obligation_count: obligations.len(),
         });
     }
     let clean_ambient: Vec<Poly<Rat>> = base_gb.basis_polys().into_iter().cloned().collect();
@@ -510,7 +495,6 @@ pub fn compute_preservation_locus_q(
                 strata: vec![],
                 closure_ideal: vec![Poly::one(param_vars.len(), Rat::zero())],
                 is_zariski_closed: true,
-                obligation_count: obligations.len(),
             });
         }
     }
@@ -522,7 +506,6 @@ pub fn compute_preservation_locus_q(
         strata: combined,
         closure_ideal,
         is_zariski_closed,
-        obligation_count: obligations.len(),
     })
 }
 
@@ -566,22 +549,28 @@ pub fn intersect_strata_lists(
 }
 
 /// 局所閉層の和集合 `⋃_j (V(E_j) ∩ D(U_j))` の Zariski 閉包 ideal `⋂_j sat(E_j, U_j)` を計算する。
-fn compute_strata_closure_ideal(
+pub(crate) fn compute_strata_closure_ideal(
     strata: &[QuotientStratum],
     param_vars: &VarOrder,
 ) -> Result<Vec<Poly<Rat>>, SilenceReason> {
     if strata.is_empty() {
         return Ok(vec![Poly::one(param_vars.len(), Rat::zero())]);
     }
+    let saturate_stratum = |s: &QuotientStratum| -> Result<Vec<Poly<Rat>>, SilenceReason> {
+        if s.invertibles.is_empty() {
+            Ok(s.equations.clone())
+        } else {
+            let rab = rabinowitsch_solve(&s.equations, &s.invertibles, param_vars)
+                .map_err(map_algebra_silence)?;
+            Ok(rab.parameter_equations)
+        }
+    };
     let mut iter = strata.iter();
     let first = iter.next().expect("non-empty strata");
-    let first_rab = rabinowitsch_solve(&first.equations, &first.invertibles, param_vars)
-        .map_err(map_algebra_silence)?;
-    let mut acc = first_rab.parameter_equations;
+    let mut acc = saturate_stratum(first)?;
     for s in iter {
-        let rab = rabinowitsch_solve(&s.equations, &s.invertibles, param_vars)
-            .map_err(map_algebra_silence)?;
-        acc = intersect_ideals_q(&acc, &rab.parameter_equations, param_vars)?;
+        let sat = saturate_stratum(s)?;
+        acc = intersect_ideals_q(&acc, &sat, param_vars)?;
     }
     let gb = GroebnerBasis::compute(&acc, param_vars.clone(), MonomialOrder::Grevlex)
         .map_err(map_algebra_silence)?;

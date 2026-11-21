@@ -10,10 +10,10 @@
 
 mod domain_solve;
 mod interaction_query;
-pub mod preservation;
-pub mod restore;
+pub(crate) mod preservation;
+pub(crate) mod restore;
 mod restore_format;
-pub mod solve;
+pub(crate) mod solve;
 
 #[cfg(test)]
 mod tests;

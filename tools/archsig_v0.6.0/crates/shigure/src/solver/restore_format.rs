@@ -192,7 +192,12 @@ where
 
     let mut operations = BTreeMap::new();
     for op in &pair.after.operations {
-        let src = phase_map[op.source_phase.as_str()];
+        let src = *phase_map.get(op.source_phase.as_str()).ok_or_else(|| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "after_source_phase_present".to_owned(),
+                detail: format!("missing after phase `{}`", op.source_phase),
+            }
+        })?;
         let (state_vars, obs_map) = symbolic_and_observed(src);
         let arg_vars: Vec<String> = op.args.iter().map(|(a, _)| a.clone()).collect();
         let (order, bind) = ExprBindings::from_slices(&state_vars, &arg_vars, free_params)
@@ -220,7 +225,12 @@ where
 
     let mut state_comparisons = BTreeMap::new();
     for sc in &pair.state_comparisons {
-        let ph = phase_map[sc.after_phase.as_str()];
+        let ph = *phase_map.get(sc.after_phase.as_str()).ok_or_else(|| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "after_phase_present".to_owned(),
+                detail: format!("missing after phase `{}`", sc.after_phase),
+            }
+        })?;
         let (state_vars, obs_map) = symbolic_and_observed(ph);
         let (order, bind) = ExprBindings::from_slices(&state_vars, &[], free_params)
             .map_err(map_algebra_silence)?;
@@ -240,8 +250,18 @@ where
         .collect();
     let mut word_translation = BTreeMap::new();
     for tw in &pair.word_translation.entries {
-        let op = op_map[tw.after_operation.as_str()];
-        let src = phase_map[op.source_phase.as_str()];
+        let op = *op_map.get(tw.after_operation.as_str()).ok_or_else(|| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "after_operation_present".to_owned(),
+                detail: format!("missing after operation `{}`", tw.after_operation),
+            }
+        })?;
+        let src = *phase_map.get(op.source_phase.as_str()).ok_or_else(|| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "after_source_phase_present".to_owned(),
+                detail: format!("missing after phase `{}`", op.source_phase),
+            }
+        })?;
         let (state_vars, obs_map) = symbolic_and_observed(src);
         let arg_vars: Vec<String> = op.args.iter().map(|(a, _)| a.clone()).collect();
         let (order, bind) = ExprBindings::from_slices(&state_vars, &arg_vars, free_params)

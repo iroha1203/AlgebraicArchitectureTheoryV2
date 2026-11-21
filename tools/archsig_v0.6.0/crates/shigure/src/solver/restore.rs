@@ -2,8 +2,7 @@
 //! 独立した数学モデル再評価検算（G-140 E2・P1.2・P4・P6 / R3.2–R3.3）。
 
 use crate::algebra::{
-    AffineSolutionQ, ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder,
-    rabinowitsch_solve, solve_affine_q,
+    ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve,
 };
 use crate::ir::change::EvalCondition;
 use crate::ir::presentation::ComparisonPair;
@@ -19,7 +18,7 @@ use crate::solver::restore_format::{
     substitute_comparison_pair,
 };
 use num_bigint::{BigInt, BigUint};
-use num_traits::{One, Zero};
+use num_traits::{One, Signed, Zero};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 復元時に抽出されたパラメータ代入（pivot 変数 -> 自由変数式、および自由変数一覧）。
@@ -63,14 +62,12 @@ pub fn extract_affine_substitution_q(
         }));
     }
 
-    let (matrix, rhs) = polys_to_affine_system_q(&affine_polys, n);
-    match solve_affine_q(&matrix, &rhs, n).map_err(map_algebra_silence)? {
-        AffineSolutionQ::Inconsistent { .. } => return Ok(None),
-        AffineSolutionQ::Consistent { .. } => {}
-    }
-
-    // RREF を直接計算し、各 pivot 変数 x_p = b[r] - sum_{free} a[r][free] * x_free を構築する。
+    let (matrix, rhs) = polys_to_affine_system_q(&affine_polys, n)?;
+    // 単一の RREF で整合性判定と pivot 表現 x_p = b[r] - sum_{free} a[r][free] * x_free を同時に得る。
     let (rref_a, rref_b, pivot_cols) = rref_q(&matrix, &rhs, n);
+    if (pivot_cols.len()..rref_b.len()).any(|r| !rref_b[r].is_zero()) {
+        return Ok(None);
+    }
     let pivot_set: BTreeSet<usize> = pivot_cols.iter().map(|&(_, c)| c).collect();
     let free_indices: Vec<usize> = (0..n).filter(|c| !pivot_set.contains(c)).collect();
     let free_parameters: Vec<String> = free_indices
@@ -130,6 +127,51 @@ pub fn extract_affine_substitution_q(
     }))
 }
 
+/// 決定論的かつ重複のない小さな整数係数サンプル列を生成する。
+fn witness_sample_vectors(k: usize) -> Vec<Vec<i64>> {
+    let mut seen: BTreeSet<Vec<i64>> = BTreeSet::new();
+    let mut out = Vec::new();
+    let mut push_unique = |v: Vec<i64>| {
+        if seen.insert(v.clone()) {
+            out.push(v);
+        }
+    };
+
+    if k == 1 {
+        push_unique(vec![0]);
+        for v in 1..=64i64 {
+            push_unique(vec![v]);
+            push_unique(vec![-v]);
+        }
+        return out;
+    }
+
+    // 1. 対角線候補 c ∈ {0, 1, -1, 2, -2, ..., 16, -16}。
+    push_unique(vec![0; k]);
+    for v in 1..=16i64 {
+        push_unique(vec![v; k]);
+        push_unique(vec![-v; k]);
+    }
+    // 2. 座標軸方向と異成分の格子点（重複を除外し最大 256 点まで）。
+    let digits = [0i64, 1, -1, 2, -2, 3, -3, 5];
+    let base = digits.len();
+    for idx in 1..=512usize {
+        let mut x = idx;
+        let mut coeffs = Vec::with_capacity(k);
+        for d in 0..k {
+            coeffs.push(digits[(x + d * 3) % base]);
+            x /= base;
+        }
+        if seen.insert(coeffs.clone()) {
+            out.push(coeffs);
+            if out.len() >= 256 {
+                break;
+            }
+        }
+    }
+    out
+}
+
 /// Q アフィン解空間 `particular + span(kernel_basis)` 上で、`invertibles` がすべて非零となる
 /// 具体的な有理点（整数パラメータ選択による）を決定的に探索し検算する。
 pub fn find_witness_point_q(
@@ -156,36 +198,7 @@ pub fn find_witness_point_q(
         return Ok(check_point(particular)?.then(|| particular.to_vec()));
     }
 
-    // 各自由座標に小さな整数列を当て、開条件をすべて満たす具体点を探索する。
-    let k = kernel_basis.len();
-    let max_samples = 256usize;
-    let mut tested = 0usize;
-
-    // 1. まず全自由変数が同一値 c ∈ {0, 1, -1, 2, -2, ..., 16, -16} の対角線候補を試す。
-    let mut diag_vals = vec![0i64];
-    for v in 1..=16i64 {
-        diag_vals.push(v);
-        diag_vals.push(-v);
-    }
-    for c in diag_vals {
-        let pt = combine_affine_q(particular, kernel_basis, &vec![c; k]);
-        tested += 1;
-        if check_point(&pt)? {
-            return Ok(Some(pt));
-        }
-    }
-
-    // 2. 次に決定的な線形合同・進数格子で異成分の整数ベクトルを試す（最大 max_samples 点）。
-    let digits = [1i64, -1, 2, -2, 3, -3, 5];
-    let base = digits.len();
-    for idx in 0..max_samples.saturating_sub(tested) {
-        let mut x = idx + 1;
-        let mut coeffs = Vec::with_capacity(k);
-        for d in 0..k {
-            let slot = (x + d * 3) % base;
-            coeffs.push(digits[slot]);
-            x /= base;
-        }
+    for coeffs in witness_sample_vectors(kernel_basis.len()) {
         let pt = combine_affine_q(particular, kernel_basis, &coeffs);
         if check_point(&pt)? {
             return Ok(Some(pt));
@@ -195,8 +208,8 @@ pub fn find_witness_point_q(
     Ok(None)
 }
 
-/// Z アフィン解空間 `particular + span(kernel_basis)` 上で、`invertibles` がすべて非零となる
-/// 具体的な整数点を決定的に探索し検算する。
+/// Z アフィン解空間 `particular + span(kernel_basis)` 上で、`invertibles` がすべて
+/// Z の単元（`|g(pt)| == 1`, すなわち `∃ u ∈ Z, u*g - 1 = 0`）となる具体的整数点を探索する（G-141 D5）。
 pub fn find_witness_point_z(
     particular: &[BigInt],
     kernel_basis: &[Vec<BigInt>],
@@ -210,7 +223,8 @@ pub fn find_witness_point_z(
             }
         }
         for inv in invertibles {
-            if inv.eval_at(pt).map_err(map_algebra_silence)?.is_zero() {
+            let val = inv.eval_at(pt).map_err(map_algebra_silence)?;
+            if !val.abs().is_one() {
                 return Ok(false);
             }
         }
@@ -221,29 +235,7 @@ pub fn find_witness_point_z(
         return Ok(check_point(particular)?.then(|| particular.to_vec()));
     }
 
-    let k = kernel_basis.len();
-    let mut diag_vals = vec![0i64];
-    for v in 1..=16i64 {
-        diag_vals.push(v);
-        diag_vals.push(-v);
-    }
-    for c in diag_vals {
-        let pt = combine_affine_z(particular, kernel_basis, &vec![c; k]);
-        if check_point(&pt)? {
-            return Ok(Some(pt));
-        }
-    }
-
-    let digits = [1i64, -1, 2, -2, 3, -3, 5];
-    let base = digits.len();
-    for idx in 0..220usize {
-        let mut x = idx + 1;
-        let mut coeffs = Vec::with_capacity(k);
-        for d in 0..k {
-            let slot = (x + d * 3) % base;
-            coeffs.push(digits[slot]);
-            x /= base;
-        }
+    for coeffs in witness_sample_vectors(kernel_basis.len()) {
         let pt = combine_affine_z(particular, kernel_basis, &coeffs);
         if check_point(&pt)? {
             return Ok(Some(pt));
@@ -317,6 +309,16 @@ pub fn restore_and_reeval_z(
     param_vars: &VarOrder,
     point: &[BigInt],
 ) -> Result<RestoredArtifact, SilenceReason> {
+    if point.len() != param_vars.len() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "parameter_point_arity_match".to_owned(),
+            detail: format!(
+                "expected {} parameter values, got {}",
+                param_vars.len(),
+                point.len()
+            ),
+        });
+    }
     let mut param_subst = BTreeMap::new();
     let mut display_assignments = BTreeMap::new();
     for (name, val) in param_vars.vars().iter().zip(point) {
@@ -340,13 +342,8 @@ pub fn restore_and_reeval_z(
             fail_detail = "restored Z presentation has nonzero preservation residual".to_owned();
         }
     } else {
-        // 状態 Law を持つ場合は Q 商環検算へフォールバック。
-        let zero_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
-        let locus = compute_preservation_locus_q(&obligations, &zero_order)?;
-        if locus.strata.is_empty() {
-            matched = false;
-            fail_detail = "restored presentation violates quotient state-law closure".to_owned();
-        }
+        matched = false;
+        fail_detail = "quotient state-law re-evaluation over Z is out of scope".to_owned();
     }
 
     if matched && let Some(cond) = eval_cond {
@@ -367,10 +364,12 @@ pub fn restore_and_reeval_z(
             for inv in &cond.invertibles {
                 let sub = substitute_poly_expr(&inv.expr, &empty, &empty, &param_subst);
                 let p = Poly::from_expr_z(&sub, &empty_bind).map_err(map_algebra_silence)?;
-                if p.is_zero() {
+                if !p.constant_value().abs().is_one() {
                     matched = false;
-                    fail_detail =
-                        format!("eval invertible `{}` vanished after restoration", inv.name);
+                    fail_detail = format!(
+                        "eval invertible `{}` is not a unit in Z (|g| != 1) after restoration",
+                        inv.name
+                    );
                     break;
                 }
             }
@@ -409,6 +408,16 @@ pub fn restore_and_reeval_fp(
     point: &[FpElem],
     modulus: &BigUint,
 ) -> Result<RestoredArtifact, SilenceReason> {
+    if point.len() != param_vars.len() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "parameter_point_arity_match".to_owned(),
+            detail: format!(
+                "expected {} parameter values, got {}",
+                param_vars.len(),
+                point.len()
+            ),
+        });
+    }
     let mut param_subst = BTreeMap::new();
     let mut display_assignments = BTreeMap::new();
     for (name, val) in param_vars.vars().iter().zip(point) {
@@ -580,14 +589,22 @@ fn reeval_restored_pair_q(
     })
 }
 
-pub fn polys_to_affine_system_q(polys: &[Poly<Rat>], num_vars: usize) -> (Vec<Vec<Rat>>, Vec<Rat>) {
+type AffineSystemQ = (Vec<Vec<Rat>>, Vec<Rat>);
+type AffineSystemZ = (Vec<Vec<BigInt>>, Vec<BigInt>);
+
+pub fn polys_to_affine_system_q(
+    polys: &[Poly<Rat>],
+    num_vars: usize,
+) -> Result<AffineSystemQ, SilenceReason> {
     let mut matrix = Vec::with_capacity(polys.len());
     let mut rhs = Vec::with_capacity(polys.len());
     for p in polys {
-        assert!(
-            p.is_affine(),
-            "polys_to_affine_system_q requires affine polynomials"
-        );
+        if p.num_vars() != num_vars || !p.is_affine() {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "affine_system_expected".to_owned(),
+                detail: "polynomial arity or degree exceeds affine system bounds".to_owned(),
+            });
+        }
         let mut row = vec![Rat::zero(); num_vars];
         let mut c0 = Rat::zero();
         for (mono, coeff) in p.terms() {
@@ -600,20 +617,22 @@ pub fn polys_to_affine_system_q(polys: &[Poly<Rat>], num_vars: usize) -> (Vec<Ve
         matrix.push(row);
         rhs.push(-&c0);
     }
-    (matrix, rhs)
+    Ok((matrix, rhs))
 }
 
 pub fn polys_to_affine_system_z(
     polys: &[Poly<BigInt>],
     num_vars: usize,
-) -> (Vec<Vec<BigInt>>, Vec<BigInt>) {
+) -> Result<AffineSystemZ, SilenceReason> {
     let mut matrix = Vec::with_capacity(polys.len());
     let mut rhs = Vec::with_capacity(polys.len());
     for p in polys {
-        assert!(
-            p.is_affine(),
-            "polys_to_affine_system_z requires affine polynomials"
-        );
+        if p.num_vars() != num_vars || !p.is_affine() {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "affine_system_expected".to_owned(),
+                detail: "polynomial arity or degree exceeds affine system bounds".to_owned(),
+            });
+        }
         let mut row = vec![BigInt::zero(); num_vars];
         let mut c0 = BigInt::zero();
         for (mono, coeff) in p.terms() {
@@ -626,7 +645,7 @@ pub fn polys_to_affine_system_z(
         matrix.push(row);
         rhs.push(-c0);
     }
-    (matrix, rhs)
+    Ok((matrix, rhs))
 }
 
 type RrefResultQ = (Vec<Vec<Rat>>, Vec<Rat>, Vec<(usize, usize)>);
@@ -803,4 +822,37 @@ pub fn extract_coordinate_fix_fp(poly: &Poly<FpElem>, vars: &VarOrder) -> Option
     let inv = var_coeff.inv()?;
     let val = const_coeff.neg_elem().mul_checked(&inv)?;
     Some((vars.vars()[idx].clone(), val))
+}
+
+/// Z 上の座標固定方程式 `a * param + b = 0`（単変数 1 次、`a != 0`）を抽出する。
+/// 整除できない場合は `Some((name, None))` として非整数切断面であることを呼び出し側へ伝える。
+pub fn extract_coordinate_fix_z(
+    poly: &Poly<BigInt>,
+    vars: &VarOrder,
+) -> Option<(String, Option<BigInt>)> {
+    if poly.total_degree() != 1 {
+        return None;
+    }
+    let mut var_idx: Option<usize> = None;
+    let mut var_coeff = BigInt::zero();
+    let mut const_coeff = BigInt::zero();
+    for (mono, coeff) in poly.terms() {
+        if mono.is_one() {
+            const_coeff = coeff.clone();
+        } else {
+            let idx = mono.exps().iter().position(|&e| e == 1)?;
+            if var_idx.is_some() {
+                return None;
+            }
+            var_idx = Some(idx);
+            var_coeff = coeff.clone();
+        }
+    }
+    let idx = var_idx?;
+    if var_coeff.is_zero() {
+        return None;
+    }
+    let neg_c = -const_coeff;
+    let exact = (&neg_c % &var_coeff == BigInt::zero()).then(|| neg_c / var_coeff);
+    Some((vars.vars()[idx].clone(), exact))
 }

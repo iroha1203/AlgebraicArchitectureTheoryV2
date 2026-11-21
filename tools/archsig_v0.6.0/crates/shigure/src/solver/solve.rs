@@ -17,8 +17,8 @@ use crate::solver::domain_solve::{solve_affine_direct_z, solve_over_fp};
 use crate::solver::interaction_query::execute_interaction_analysis;
 use crate::solver::preservation::{
     PreservationObligation, build_preservation_obligations, collect_all_provenance_origins,
-    compute_preservation_locus_q, extract_closed_residuals_z, intersect_strata_lists,
-    map_algebra_silence,
+    compute_preservation_locus_q, compute_strata_closure_ideal, extract_closed_residuals_z,
+    intersect_strata_lists, is_stratum_covered_by_union, map_algebra_silence,
 };
 use crate::solver::restore::{
     extract_affine_substitution_q, find_witness_point_q, polys_to_affine_system_q,
@@ -29,6 +29,7 @@ use num_integer::Integer;
 use num_traits::{One, Zero};
 
 /// 実行中の共通メタデータ（係数域・点集合域・適用条件検査・由来）を束ねるコンテキスト。
+#[derive(Clone)]
 pub(crate) struct SolveCtx {
     pub coeff_domain: CoeffDomain,
     pub point_domain: PointDomain,
@@ -157,7 +158,9 @@ pub fn execute_task(task: &CheckedShigureTask, query: ShigureQueryKind) -> Shigu
 }
 
 fn resolve_point_domain(task: &CheckedShigureTask, query: ShigureQueryKind) -> PointDomain {
-    if let Some(cond) = task.eval_condition() {
+    if query != ShigureQueryKind::SemanticPreservation
+        && let Some(cond) = task.eval_condition()
+    {
         return cond.point_domain.clone();
     }
     if query == ShigureQueryKind::InteractionAnalysis {
@@ -170,23 +173,26 @@ fn resolve_point_domain(task: &CheckedShigureTask, query: ShigureQueryKind) -> P
 }
 
 fn build_outcome_provenance(task: &CheckedShigureTask, query: ShigureQueryKind) -> Provenance {
-    let eval_origins: Vec<_> = task
-        .eval_condition()
-        .map(|c| {
-            let mut out = c.provenance.origins.clone();
-            for item in c
-                .evaluations
-                .iter()
-                .chain(&c.equations)
-                .chain(&c.invertibles)
-            {
-                if let Some(o) = &item.provenance {
-                    out.push(o.clone());
+    let eval_origins: Vec<_> = if query == ShigureQueryKind::SemanticPreservation {
+        Vec::new()
+    } else {
+        task.eval_condition()
+            .map(|c| {
+                let mut out = c.provenance.origins.clone();
+                for item in c
+                    .evaluations
+                    .iter()
+                    .chain(&c.equations)
+                    .chain(&c.invertibles)
+                {
+                    if let Some(o) = &item.provenance {
+                        out.push(o.clone());
+                    }
                 }
-            }
-            out
-        })
-        .unwrap_or_default();
+                out
+            })
+            .unwrap_or_default()
+    };
     let mut change_origins = task.change_spec().provenance.origins.clone();
     for p in &task.change_spec().parameters {
         if let Some(o) = &p.provenance {
@@ -313,11 +319,15 @@ fn execute_semantic_preservation(
     param_vars: &VarOrder,
     mut ctx: SolveCtx,
 ) -> ShigureOutcome {
+    let has_source_laws = obligations.iter().any(|o| !o.source_laws.is_empty());
     match ctx.coeff_domain.clone() {
         CoeffDomain::Fp(modulus) => {
             solve_over_fp(task, obligations, None, param_vars, &modulus, ctx)
         }
         CoeffDomain::Q | CoeffDomain::Z => {
+            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, &ctx) {
+                return out;
+            }
             let locus = match compute_preservation_locus_q(obligations, param_vars) {
                 Ok(l) => {
                     ctx.checks.push(ApplicabilityCheck::passed(
@@ -342,21 +352,20 @@ fn execute_semantic_preservation(
                 return ctx.refuted(residual_display, witness);
             }
 
-            let (final_eqs, final_invs): (&[Poly<Rat>], &[Poly<Rat>]) = if locus.is_zariski_closed {
-                (&locus.closure_ideal, &[])
-            } else {
-                (&locus.strata[0].equations, &locus.strata[0].invertibles)
-            };
+            if locus.is_zariski_closed {
+                return finalize_q_or_z_solution(
+                    task,
+                    None,
+                    &locus.closure_ideal,
+                    &[],
+                    param_vars,
+                    has_source_laws,
+                    ctx,
+                    residual_display,
+                );
+            }
 
-            finalize_q_or_z_solution(
-                task,
-                None,
-                final_eqs,
-                final_invs,
-                param_vars,
-                ctx,
-                residual_display,
-            )
+            finalize_non_closed_strata(task, None, &locus.strata, param_vars, has_source_laws, ctx)
         }
     }
 }
@@ -367,6 +376,7 @@ fn execute_conditional_solution_space(
     param_vars: &VarOrder,
     mut ctx: SolveCtx,
 ) -> ShigureOutcome {
+    let has_source_laws = obligations.iter().any(|o| !o.source_laws.is_empty());
     let eval_cond = task.eval_condition();
     let param_bind = ExprBindings::params_only(param_vars);
 
@@ -390,6 +400,17 @@ fn execute_conditional_solution_space(
             solve_over_fp(task, obligations, eval_cond, param_vars, &modulus, ctx)
         }
         CoeffDomain::Z if ctx.point_domain == PointDomain::IntegerPoints => {
+            if has_source_laws {
+                let reason = SilenceReason::QuotientIdealOutOfScope {
+                    detail: "parametric quotient state-law membership over Z (with possible Z-torsion) is out of scope; use Q or algebraic_closure".to_owned(),
+                };
+                ctx.checks.push(ApplicabilityCheck::failed(
+                    "z_quotient_out_of_scope",
+                    MathClause::G141D5,
+                    reason.code(),
+                ));
+                return ctx.undetermined(vec![], reason);
+            }
             if let Ok(Some(z_res)) = extract_closed_residuals_z(obligations, param_vars.vars()) {
                 let mut all_eqs_z = z_res;
                 let mut invs_z = Vec::new();
@@ -414,12 +435,78 @@ fn execute_conditional_solution_space(
                     );
                 }
             }
-            solve_conditional_via_q(task, obligations, eval_cond, param_vars, &param_bind, ctx)
+            // 状態 Law 空の非線形 Z 系のみ、Q 上での代数閉包空性判定（1 in I）と沈黙判定へ進む。
+            solve_conditional_via_q(
+                task,
+                obligations,
+                eval_cond,
+                param_vars,
+                &param_bind,
+                has_source_laws,
+                ctx,
+            )
         }
         CoeffDomain::Q | CoeffDomain::Z => {
-            solve_conditional_via_q(task, obligations, eval_cond, param_vars, &param_bind, ctx)
+            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, &ctx) {
+                return out;
+            }
+            solve_conditional_via_q(
+                task,
+                obligations,
+                eval_cond,
+                param_vars,
+                &param_bind,
+                has_source_laws,
+                ctx,
+            )
         }
     }
+}
+
+fn guard_z_quotient_or_universal(has_source_laws: bool, ctx: &SolveCtx) -> Option<ShigureOutcome> {
+    if ctx.coeff_domain == CoeffDomain::Z
+        && has_source_laws
+        && ctx.point_domain != PointDomain::AlgebraicClosure
+    {
+        let mut c = ctx.clone();
+        let reason = SilenceReason::QuotientIdealOutOfScope {
+            detail: "parametric quotient state-law membership over Z (with possible Z-torsion) is out of scope; use Q or algebraic_closure".to_owned(),
+        };
+        c.checks.push(ApplicabilityCheck::failed(
+            "z_quotient_out_of_scope",
+            MathClause::G141D5,
+            reason.code(),
+        ));
+        return Some(c.undetermined(vec![], reason));
+    }
+    if ctx.point_domain == PointDomain::UniversalRing {
+        if ctx.coeff_domain == CoeffDomain::Z {
+            let mut c = ctx.clone();
+            let reason = SilenceReason::ApplicabilityConditionNotMet {
+                condition: "universal_ring_solution_space_out_of_scope".to_owned(),
+                detail: "UniversalRing solution-space restoration over Z cannot be approximated by rational Q-sections".to_owned(),
+            };
+            c.checks.push(ApplicabilityCheck::failed(
+                "universal_ring_solution_space_out_of_scope",
+                MathClause::G141D1,
+                reason.code(),
+            ));
+            return Some(c.undetermined(vec![], reason));
+        }
+        if has_source_laws {
+            let mut c = ctx.clone();
+            let reason = SilenceReason::QuotientIdealOutOfScope {
+                detail: "quotient ideal membership over arbitrary non-reduced commutative rings (UniversalRing) is out of scope; use algebraic_closure".to_owned(),
+            };
+            c.checks.push(ApplicabilityCheck::failed(
+                "universal_ring_quotient_out_of_scope",
+                MathClause::G141D5,
+                reason.code(),
+            ));
+            return Some(c.undetermined(vec![], reason));
+        }
+    }
+    None
 }
 
 fn solve_conditional_via_q(
@@ -428,6 +515,7 @@ fn solve_conditional_via_q(
     eval_cond: Option<&EvalCondition>,
     param_vars: &VarOrder,
     param_bind: &ExprBindings,
+    has_source_laws: bool,
     mut ctx: SolveCtx,
 ) -> ShigureOutcome {
     let locus = match compute_preservation_locus_q(obligations, param_vars) {
@@ -494,6 +582,7 @@ fn solve_conditional_via_q(
             &rab.parameter_equations,
             &eval_invs,
             param_vars,
+            has_source_laws,
             ctx,
             final_residual,
         );
@@ -520,25 +609,118 @@ fn solve_conditional_via_q(
         return ctx.refuted(closure_disp, witness);
     }
 
-    let first = &intersected[0];
-    let final_residual = display_polys(&first.equations, param_vars);
-    finalize_q_or_z_solution(
+    finalize_non_closed_strata(
         task,
         eval_cond,
-        &first.equations,
-        &first.invertibles,
+        &intersected,
         param_vars,
+        has_source_laws,
         ctx,
-        final_residual,
     )
 }
 
+/// 非閉な局所閉層の和集合 `strata` を、先頭層だけへ黙って潰さず全層整合に解決する（F1）。
+fn finalize_non_closed_strata(
+    task: &CheckedShigureTask,
+    eval_cond: Option<&EvalCondition>,
+    strata: &[QuotientStratum],
+    param_vars: &VarOrder,
+    has_source_laws: bool,
+    mut ctx: SolveCtx,
+) -> ShigureOutcome {
+    if strata.len() == 1 {
+        let first = &strata[0];
+        let final_residual = display_polys(&first.equations, param_vars);
+        return finalize_q_or_z_solution(
+            task,
+            eval_cond,
+            &first.equations,
+            &first.invertibles,
+            param_vars,
+            has_source_laws,
+            ctx,
+            final_residual,
+        );
+    }
+
+    // 交差後に複数層の和集合が閉集合へ回復していれば、単一の閉包 ideal として扱う。
+    let inter_closure = match compute_strata_closure_ideal(strata, param_vars) {
+        Ok(c) => c,
+        Err(reason) => return ctx.undetermined(vec![], reason),
+    };
+    let inter_disp = display_polys(&inter_closure, param_vars);
+    match is_stratum_covered_by_union(&inter_closure, &[], strata, param_vars) {
+        Ok(true) => {
+            return finalize_q_or_z_solution(
+                task,
+                eval_cond,
+                &inter_closure,
+                &[],
+                param_vars,
+                has_source_laws,
+                ctx,
+                inter_disp,
+            );
+        }
+        Ok(false) => {}
+        Err(reason) => return ctx.undetermined(inter_disp, reason),
+    }
+
+    match ctx.point_domain {
+        PointDomain::RationalPoints | PointDomain::IntegerPoints => {
+            let mut first_undetermined: Option<SilenceReason> = None;
+            for stratum in strata {
+                let stratum_disp = display_polys(&stratum.equations, param_vars);
+                let out = finalize_q_or_z_solution(
+                    task,
+                    eval_cond,
+                    &stratum.equations,
+                    &stratum.invertibles,
+                    param_vars,
+                    has_source_laws,
+                    ctx.clone(),
+                    stratum_disp,
+                );
+                match out.verdict {
+                    Verdict::Established => return out,
+                    Verdict::Refuted => {}
+                    Verdict::Undetermined(reason) => {
+                        if first_undetermined.is_none() {
+                            first_undetermined = Some(reason);
+                        }
+                    }
+                }
+            }
+            if let Some(reason) = first_undetermined {
+                ctx.undetermined(inter_disp, reason)
+            } else {
+                ctx.refuted(inter_disp, None)
+            }
+        }
+        PointDomain::AlgebraicClosure
+        | PointDomain::UniversalRing
+        | PointDomain::FiniteFieldPoints(_) => {
+            let reason = SilenceReason::QuotientIdealOutOfScope {
+                detail: "solution space decomposes into multiple non-closed quotient strata that cannot be merged into a single residual ideal".to_owned(),
+            };
+            ctx.checks.push(ApplicabilityCheck::failed(
+                "single_closed_or_single_stratum_locus",
+                MathClause::G141D5,
+                reason.code(),
+            ));
+            ctx.undetermined(inter_disp, reason)
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
 fn finalize_q_or_z_solution(
     task: &CheckedShigureTask,
     eval_cond: Option<&EvalCondition>,
     final_eqs: &[Poly<Rat>],
     final_invs: &[Poly<Rat>],
     param_vars: &VarOrder,
+    has_source_laws: bool,
     mut ctx: SolveCtx,
     residual_display: Vec<String>,
 ) -> ShigureOutcome {
@@ -563,6 +745,9 @@ fn finalize_q_or_z_solution(
             )
         }
         PointDomain::UniversalRing => {
+            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, &ctx) {
+                return out;
+            }
             if !final_invs.is_empty() {
                 let reason = SilenceReason::ApplicabilityConditionNotMet {
                     condition: "universal_ring_closed_equations_only".to_owned(),
@@ -581,7 +766,7 @@ fn finalize_q_or_z_solution(
                 final_eqs,
                 &[],
                 param_vars,
-                prefer_z,
+                false,
                 ctx,
                 residual_display,
             )
@@ -599,7 +784,10 @@ fn finalize_q_or_z_solution(
                 ));
                 return ctx.undetermined(residual_display, reason);
             }
-            let (mat, rhs) = polys_to_affine_system_q(final_eqs, param_vars.len());
+            let (mat, rhs) = match polys_to_affine_system_q(final_eqs, param_vars.len()) {
+                Ok(sys) => sys,
+                Err(reason) => return ctx.undetermined(residual_display, reason),
+            };
             match solve_affine_q(&mat, &rhs, param_vars.len()) {
                 Ok(AffineSolutionQ::Inconsistent { .. }) => {
                     let witness = compute_empty_witness_q(final_eqs, final_invs, param_vars);
