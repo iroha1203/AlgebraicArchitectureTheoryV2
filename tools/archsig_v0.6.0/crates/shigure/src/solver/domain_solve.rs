@@ -8,13 +8,13 @@ use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
 use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason};
 use crate::ir::validate::CheckedShigureTask;
+use crate::solver::context::{SolveCtx, display_polys};
 use crate::solver::preservation::{
     PreservationObligation, extract_closed_residuals_fp, map_algebra_silence,
 };
 use crate::solver::restore::{
     find_witness_point_z, polys_to_affine_system_z, restore_and_reeval_fp, restore_and_reeval_z,
 };
-use crate::solver::solve::{SolveCtx, display_polys};
 use num_bigint::{BigInt, BigUint};
 
 pub(crate) fn solve_affine_direct_z(

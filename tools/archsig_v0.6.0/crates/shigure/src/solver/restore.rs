@@ -2,7 +2,8 @@
 //! 独立した数学モデル再評価検算（G-140 E2・P1.2・P4・P6 / R3.2–R3.3）。
 
 use crate::algebra::{
-    ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve,
+    ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly, Rat, RingCoeff, VarOrder,
+    rabinowitsch_solve,
 };
 use crate::ir::change::EvalCondition;
 use crate::ir::presentation::ComparisonPair;
@@ -21,17 +22,42 @@ use num_bigint::{BigInt, BigUint};
 use num_traits::{One, Signed, Zero};
 use std::collections::{BTreeMap, BTreeSet};
 
-/// 復元時に抽出されたパラメータ代入（pivot 変数 -> 自由変数式、および自由変数一覧）。
+/// 復元時に抽出されたパラメータ代入（pivot 変数 -> 未代入変数式、および自由変数一覧）。
 #[derive(Clone, Debug)]
 pub struct ExtractedSubstitutionQ {
     pub param_subst: BTreeMap<String, PolyExpr>,
     pub display_assignments: BTreeMap<String, String>,
+    /// 式展開に残る未代入パラメータ全体（非線形制約を受ける変数を含む）。
+    pub unassigned_parameters: Vec<String>,
+    /// 非線形制約にも現れない真の自由パラメータのみ（`RestoredArtifact.free_parameters` 用、F6）。
     pub free_parameters: Vec<String>,
     pub remaining_nonlinear: Vec<Poly<Rat>>,
 }
 
+fn filter_truly_free_parameters(
+    unassigned: &[String],
+    remaining_nonlinear: &[Poly<Rat>],
+) -> Vec<String> {
+    let mut constrained_indices = BTreeSet::new();
+    for nl in remaining_nonlinear {
+        for mono in nl.terms().keys() {
+            for (idx, &e) in mono.exps().iter().enumerate() {
+                if e > 0 {
+                    constrained_indices.insert(idx);
+                }
+            }
+        }
+    }
+    unassigned
+        .iter()
+        .enumerate()
+        .filter(|(idx, _)| !constrained_indices.contains(idx))
+        .map(|(_, name)| name.clone())
+        .collect()
+}
+
 /// Q 上のパラメータ方程式列からアフィン部分を抽出し、RREF により pivot 変数を
-/// 自由パラメータの一次式として解く。
+/// 未代入パラメータの一次式として解く。
 ///
 /// 返り値が `Ok(None)` のときはアフィン部分自体が矛盾（空集合）。
 pub fn extract_affine_substitution_q(
@@ -54,10 +80,13 @@ pub fn extract_affine_substitution_q(
     }
 
     if affine_polys.is_empty() {
+        let unassigned = param_vars.vars().to_vec();
+        let free_parameters = filter_truly_free_parameters(&unassigned, &nonlinear_polys);
         return Ok(Some(ExtractedSubstitutionQ {
             param_subst: BTreeMap::new(),
             display_assignments: BTreeMap::new(),
-            free_parameters: param_vars.vars().to_vec(),
+            unassigned_parameters: unassigned,
+            free_parameters,
             remaining_nonlinear: nonlinear_polys,
         }));
     }
@@ -70,11 +99,11 @@ pub fn extract_affine_substitution_q(
     }
     let pivot_set: BTreeSet<usize> = pivot_cols.iter().map(|&(_, c)| c).collect();
     let free_indices: Vec<usize> = (0..n).filter(|c| !pivot_set.contains(c)).collect();
-    let free_parameters: Vec<String> = free_indices
+    let unassigned_parameters: Vec<String> = free_indices
         .iter()
         .map(|&c| param_vars.vars()[c].clone())
         .collect();
-    let free_order = VarOrder::new(free_parameters.clone()).map_err(map_algebra_silence)?;
+    let free_order = VarOrder::new(unassigned_parameters.clone()).map_err(map_algebra_silence)?;
     let free_bind = ExprBindings::params_only(&free_order);
 
     let mut param_subst = BTreeMap::new();
@@ -95,7 +124,7 @@ pub fn extract_affine_substitution_q(
         display_assignments.insert(pname, poly_disp);
     }
 
-    // 残余の非線形多項式にも抽出したアフィン代入を適用し、自由変数環へ縮約する。
+    // 残余の非線形多項式にも抽出したアフィン代入を適用し、未代入変数環へ縮約する。
     let mut remaining_nonlinear = Vec::new();
     if !nonlinear_polys.is_empty() {
         let subst_polys: Vec<Poly<Rat>> = (0..n)
@@ -104,9 +133,12 @@ pub fn extract_affine_substitution_q(
                 if let Some(expr) = param_subst.get(name) {
                     Poly::from_expr_q(expr, &free_bind).map_err(map_algebra_silence)
                 } else {
-                    let fidx = free_order
-                        .index_of(name)
-                        .expect("non-pivot parameter must be in free_order");
+                    let fidx = free_order.index_of(name).ok_or_else(|| {
+                        SilenceReason::ApplicabilityConditionNotMet {
+                            condition: "parameter_binding_consistent".to_owned(),
+                            detail: format!("non-pivot parameter `{name}` missing from free order"),
+                        }
+                    })?;
                     Ok(Poly::var(free_order.len(), fidx, Rat::zero()))
                 }
             })
@@ -119,9 +151,13 @@ pub fn extract_affine_substitution_q(
         }
     }
 
+    let free_parameters =
+        filter_truly_free_parameters(&unassigned_parameters, &remaining_nonlinear);
+
     Ok(Some(ExtractedSubstitutionQ {
         param_subst,
         display_assignments,
+        unassigned_parameters,
         free_parameters,
         remaining_nonlinear,
     }))
@@ -255,22 +291,25 @@ pub fn restore_and_reeval_q(
 ) -> Result<RestoredArtifact, SilenceReason> {
     let restored_pair = substitute_comparison_pair(pair, &extracted.param_subst);
     let free_order =
-        VarOrder::new(extracted.free_parameters.clone()).map_err(map_algebra_silence)?;
+        VarOrder::new(extracted.unassigned_parameters.clone()).map_err(map_algebra_silence)?;
     let free_bind = ExprBindings::params_only(&free_order);
 
     let (operations, state_laws, state_comparisons, word_translation) =
-        format_restored_pair_q(&restored_pair, &extracted.free_parameters)?;
+        format_restored_pair_q(&restored_pair, &extracted.unassigned_parameters)?;
 
-    // extra_invs を自由変数空間へ縮約する（非閉な商環層の開条件を検算にも引き継ぐ）。
+    // extra_invs を未代入変数空間へ縮約する（非閉な商環層の開条件を検算にも引き継ぐ）。
     let subst_polys: Vec<Poly<Rat>> = (0..param_vars.len())
         .map(|idx| {
             let name = &param_vars.vars()[idx];
             if let Some(expr) = extracted.param_subst.get(name) {
                 Poly::from_expr_q(expr, &free_bind).map_err(map_algebra_silence)
             } else {
-                let fidx = free_order
-                    .index_of(name)
-                    .expect("non-pivot parameter must be in free_order");
+                let fidx = free_order.index_of(name).ok_or_else(|| {
+                    SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "parameter_binding_consistent".to_owned(),
+                        detail: format!("non-pivot parameter `{name}` missing from free order"),
+                    }
+                })?;
                 Ok(Poly::var(free_order.len(), fidx, Rat::zero()))
             }
         })
@@ -300,6 +339,39 @@ pub fn restore_and_reeval_q(
         word_translation,
         reeval,
     })
+}
+
+/// Q 上の具体的有理点から `RestoredArtifact` を復元し、暗黙の開条件なしで独立再評価検算を行う（F2 対策）。
+pub fn restore_and_reeval_q_point(
+    pair: &ComparisonPair,
+    eval_cond: Option<&EvalCondition>,
+    param_vars: &VarOrder,
+    point: &[Rat],
+) -> Result<RestoredArtifact, SilenceReason> {
+    if point.len() != param_vars.len() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "parameter_point_arity_match".to_owned(),
+            detail: format!(
+                "expected {} parameter values, got {}",
+                param_vars.len(),
+                point.len()
+            ),
+        });
+    }
+    let mut param_subst = BTreeMap::new();
+    let mut display_assignments = BTreeMap::new();
+    for (name, val) in param_vars.vars().iter().zip(point) {
+        param_subst.insert(name.clone(), rat_to_expr(val, false));
+        display_assignments.insert(name.clone(), val.to_string());
+    }
+    let extracted = ExtractedSubstitutionQ {
+        param_subst,
+        display_assignments,
+        unassigned_parameters: vec![],
+        free_parameters: vec![],
+        remaining_nonlinear: vec![],
+    };
+    restore_and_reeval_q(pair, eval_cond, &[], param_vars, &extracted)
 }
 
 /// Z 上の具体的整数点から `RestoredArtifact` を復元し、独立再評価検算を行う。
@@ -771,35 +843,8 @@ fn combine_affine_z(particular: &[BigInt], kernel: &[Vec<BigInt>], coeffs: &[i64
     pt
 }
 
-/// 座標固定方程式 `a * param + b = 0`（単変数 1 次、`a != 0`）を抽出し、
-/// `(param_name, -b/a)` を返す。非座標固定の式なら `None`。
-pub fn extract_coordinate_fix_q(poly: &Poly<Rat>, vars: &VarOrder) -> Option<(String, Rat)> {
-    if poly.total_degree() != 1 {
-        return None;
-    }
-    let mut var_idx: Option<usize> = None;
-    let mut var_coeff = Rat::zero();
-    let mut const_coeff = Rat::zero();
-    for (mono, coeff) in poly.terms() {
-        if mono.is_one() {
-            const_coeff = coeff.clone();
-        } else {
-            let idx = mono.exps().iter().position(|&e| e == 1)?;
-            if var_idx.is_some() {
-                // 2 変数以上の一次結合（例: x - y = 0）は座標面固定ではない。
-                return None;
-            }
-            var_idx = Some(idx);
-            var_coeff = coeff.clone();
-        }
-    }
-    let idx = var_idx?;
-    let val = (&(-&const_coeff) / &var_coeff)?;
-    Some((vars.vars()[idx].clone(), val))
-}
-
-/// F_p 上の座標固定方程式 `a * param + b = 0`（単変数 1 次、`a != 0`）を抽出する。
-pub fn extract_coordinate_fix_fp(poly: &Poly<FpElem>, vars: &VarOrder) -> Option<(String, FpElem)> {
+/// 単変数 1 次式 `a * x_idx + b` から `(idx, a, b)` を抽出する共通ヘルパ（F7）。
+fn extract_univariate_linear<C: RingCoeff>(poly: &Poly<C>) -> Option<(usize, C, C)> {
     if poly.total_degree() != 1 {
         return None;
     }
@@ -819,8 +864,25 @@ pub fn extract_coordinate_fix_fp(poly: &Poly<FpElem>, vars: &VarOrder) -> Option
         }
     }
     let idx = var_idx?;
-    let inv = var_coeff.inv()?;
-    let val = const_coeff.neg_elem().mul_checked(&inv)?;
+    if var_coeff.coeff_is_zero() {
+        return None;
+    }
+    Some((idx, var_coeff, const_coeff))
+}
+
+/// 座標固定方程式 `a * param + b = 0`（単変数 1 次、`a != 0`）を抽出し、
+/// `(param_name, -b/a)` を返す。非座標固定の式なら `None`。
+pub fn extract_coordinate_fix_q(poly: &Poly<Rat>, vars: &VarOrder) -> Option<(String, Rat)> {
+    let (idx, a, b) = extract_univariate_linear(poly)?;
+    let val = (&(-&b) / &a)?;
+    Some((vars.vars()[idx].clone(), val))
+}
+
+/// F_p 上の座標固定方程式 `a * param + b = 0`（単変数 1 次、`a != 0`）を抽出する。
+pub fn extract_coordinate_fix_fp(poly: &Poly<FpElem>, vars: &VarOrder) -> Option<(String, FpElem)> {
+    let (idx, a, b) = extract_univariate_linear(poly)?;
+    let inv = a.inv()?;
+    let val = b.neg_elem().mul_checked(&inv)?;
     Some((vars.vars()[idx].clone(), val))
 }
 
@@ -830,29 +892,8 @@ pub fn extract_coordinate_fix_z(
     poly: &Poly<BigInt>,
     vars: &VarOrder,
 ) -> Option<(String, Option<BigInt>)> {
-    if poly.total_degree() != 1 {
-        return None;
-    }
-    let mut var_idx: Option<usize> = None;
-    let mut var_coeff = BigInt::zero();
-    let mut const_coeff = BigInt::zero();
-    for (mono, coeff) in poly.terms() {
-        if mono.is_one() {
-            const_coeff = coeff.clone();
-        } else {
-            let idx = mono.exps().iter().position(|&e| e == 1)?;
-            if var_idx.is_some() {
-                return None;
-            }
-            var_idx = Some(idx);
-            var_coeff = coeff.clone();
-        }
-    }
-    let idx = var_idx?;
-    if var_coeff.is_zero() {
-        return None;
-    }
-    let neg_c = -const_coeff;
-    let exact = (&neg_c % &var_coeff == BigInt::zero()).then(|| neg_c / var_coeff);
+    let (idx, a, b) = extract_univariate_linear(poly)?;
+    let neg_b = -b;
+    let exact = (&neg_b % &a == BigInt::zero()).then(|| neg_b / a);
     Some((vars.vars()[idx].clone(), exact))
 }

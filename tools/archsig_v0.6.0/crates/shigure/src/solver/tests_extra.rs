@@ -685,6 +685,8 @@ fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_transl
     assert_eq!(out_f1.verdict, Verdict::Established);
     let rest_f1 = out_f1.restored.expect("stratum 1 must be restored");
     assert_eq!(rest_f1.parameter_assignments["a"], "1");
+    assert!(rest_f1.parameter_assignments.contains_key("k"));
+    assert!(rest_f1.free_parameters.is_empty());
     assert!(rest_f1.reeval.checked && rest_f1.reeval.matched);
 
     // F2 回帰: CoeffDomain::Z で Z-捩れを持つ状態 Law `2*y = 0`（read = x + y）は
@@ -729,35 +731,37 @@ fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_transl
         }],
         provenance: Provenance::default(),
     };
-    let task_f2 = CheckedShigureTask::validate(
-        ComparisonPair {
-            before: before_z,
-            after: after_z_torsion,
-            state_comparisons: vec![StateComparison {
-                after_phase: "Active".to_owned(),
-                before_phase: "Active".to_owned(),
-                map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+    let pair_f2 = ComparisonPair {
+        before: before_z,
+        after: after_z_torsion,
+        state_comparisons: vec![StateComparison {
+            after_phase: "Active".to_owned(),
+            before_phase: "Active".to_owned(),
+            map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+            provenance: None,
+        }],
+        word_translation: WordTranslation {
+            entries: vec![TranslatedWord {
+                after_operation: "apply".to_owned(),
+                steps: vec![TranslatedStep {
+                    before_operation: "apply".to_owned(),
+                    arg_exprs: vec![PolyExpr::arg("u")],
+                }],
                 provenance: None,
             }],
-            word_translation: WordTranslation {
-                entries: vec![TranslatedWord {
-                    after_operation: "apply".to_owned(),
-                    steps: vec![TranslatedStep {
-                        before_operation: "apply".to_owned(),
-                        arg_exprs: vec![PolyExpr::arg("u")],
-                    }],
-                    provenance: None,
-                }],
-            },
         },
-        ChangeSpec {
-            name: "H_f2".to_owned(),
-            coeff_domain: CoeffDomain::Z,
-            parameters: vec![],
-            fixed: vec![],
-            editable: vec![],
-            provenance: Provenance::default(),
-        },
+    };
+    let cs_f2 = ChangeSpec {
+        name: "H_f2".to_owned(),
+        coeff_domain: CoeffDomain::Z,
+        parameters: vec![],
+        fixed: vec![],
+        editable: vec![],
+        provenance: Provenance::default(),
+    };
+    let task_f2 = CheckedShigureTask::validate(
+        pair_f2.clone(),
+        cs_f2.clone(),
         Some(EvalCondition {
             name: "f2_z_points".to_owned(),
             evaluations: vec![],
@@ -772,8 +776,13 @@ fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_transl
         execute_shigure_task(&task_f2, ShigureQueryKind::ConditionalSolutionSpace).verdict,
         Verdict::Undetermined(SilenceReason::QuotientIdealOutOfScope { .. })
     ));
+    let task_f2_univ = CheckedShigureTask::validate(pair_f2, cs_f2, None).unwrap();
     assert!(matches!(
-        execute_shigure_task(&task_f2, ShigureQueryKind::InteractionAnalysis).verdict,
+        execute_shigure_task(&task_f2_univ, ShigureQueryKind::SemanticPreservation).verdict,
+        Verdict::Undetermined(SilenceReason::QuotientIdealOutOfScope { .. })
+    ));
+    assert!(matches!(
+        execute_shigure_task(&task_f2_univ, ShigureQueryKind::InteractionAnalysis).verdict,
         Verdict::Undetermined(SilenceReason::QuotientIdealOutOfScope { .. })
     ));
 

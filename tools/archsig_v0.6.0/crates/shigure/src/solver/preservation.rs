@@ -11,7 +11,7 @@ use crate::algebra::{
     QuotientStratum, Rat, RingCoeff, VarOrder, quotient_membership_locus, rabinowitsch_solve,
 };
 use crate::ir::presentation::{ComparisonPair, CoordValue, OperationDecl, PhaseDecl};
-use crate::ir::result::SilenceReason;
+use crate::ir::result::{EmptyWitness, SilenceReason};
 use crate::ir::term::PolyExpr;
 use num_bigint::{BigInt, BigUint};
 use std::collections::{BTreeMap, BTreeSet};
@@ -37,6 +37,8 @@ pub struct PreservationLocusQ {
     pub closure_ideal: Vec<Poly<Rat>>,
     /// `⋃_j (V(E_j) ∩ D(U_j)) == V(closure_ideal)` が真に成り立つ（開条件の欠損がない）とき `true`。
     pub is_zariski_closed: bool,
+    /// 実残差生成元からの空性証明 witness（`base_gb` で `1 in I` が直接示された場合のみ保持）。
+    pub empty_witness: Option<EmptyWitness>,
 }
 
 /// `PolyExpr` の状態変数・引数変数・パラメータ変数を指定写像で同時置換する。
@@ -476,10 +478,12 @@ pub fn compute_preservation_locus_q(
     let base_gb = GroebnerBasis::compute(&ambient_eqs, param_vars.clone(), MonomialOrder::Grevlex)
         .map_err(map_algebra_silence)?;
     if base_gb.contains_one() {
+        let empty_witness = base_gb.empty_witness().ok().flatten();
         return Ok(PreservationLocusQ {
             strata: vec![],
             closure_ideal: vec![Poly::one(param_vars.len(), Rat::zero())],
             is_zariski_closed: true,
+            empty_witness,
         });
     }
     let clean_ambient: Vec<Poly<Rat>> = base_gb.basis_polys().into_iter().cloned().collect();
@@ -495,6 +499,7 @@ pub fn compute_preservation_locus_q(
                 strata: vec![],
                 closure_ideal: vec![Poly::one(param_vars.len(), Rat::zero())],
                 is_zariski_closed: true,
+                empty_witness: None,
             });
         }
     }
@@ -506,7 +511,52 @@ pub fn compute_preservation_locus_q(
         strata: combined,
         closure_ideal,
         is_zariski_closed,
+        empty_witness: None,
     })
+}
+
+/// 全保存義務がスキーム論的（冪零元を含む全可換 Q-代数上）に
+/// `ob.target ∈ (ob.source_laws) + (closure_ideal)` を満たすことを `Q[y, u, c]` 上の
+/// Gröbner 基底所属判定で直接検算する（G-141 F11 健全性、F1 対策）。
+pub(crate) fn verify_scheme_membership_q(
+    obligations: &[PreservationObligation],
+    closure_ideal: &[Poly<Rat>],
+    param_vars: &VarOrder,
+) -> Result<bool, SilenceReason> {
+    let param_names = param_vars.vars();
+    for ob in obligations {
+        if ob.source_laws.is_empty() {
+            continue;
+        }
+        let (order, bindings) =
+            ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, param_names)
+                .map_err(map_algebra_silence)?;
+        let target_poly = Poly::from_expr_q(&ob.target, &bindings).map_err(map_algebra_silence)?;
+        if target_poly.is_zero() {
+            continue;
+        }
+        let state_arg_count = ob.state_vars.len() + ob.arg_vars.len();
+        let mut gens: Vec<Poly<Rat>> =
+            Vec::with_capacity(ob.source_laws.len() + closure_ideal.len());
+        for law in &ob.source_laws {
+            let p = Poly::from_expr_q(law, &bindings).map_err(map_algebra_silence)?;
+            if !p.is_zero() {
+                gens.push(p);
+            }
+        }
+        for c_poly in closure_ideal {
+            if !c_poly.is_zero() {
+                gens.push(c_poly.lift_vars(state_arg_count));
+            }
+        }
+        let gb = GroebnerBasis::compute(&gens, order, MonomialOrder::Grevlex)
+            .map_err(map_algebra_silence)?;
+        let mem = gb.membership(&target_poly).map_err(map_algebra_silence)?;
+        if !mem.is_member || !mem.verified {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
 /// 2 つの層族の直積交わりを計算し、空な層を Rabinowitsch で即時剪定する。

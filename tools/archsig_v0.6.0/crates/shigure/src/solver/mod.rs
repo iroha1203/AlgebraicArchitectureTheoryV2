@@ -8,6 +8,7 @@
 //! - `solve` / `domain_solve` / `interaction_query`: 適用条件検査、係数域・点集合域ごとの計算分岐、
 //!   沈黙（`Verdict::Undetermined`）規律、座標面支持による相互作用解析の統合実行
 
+mod context;
 mod domain_solve;
 mod interaction_query;
 pub(crate) mod preservation;
@@ -19,6 +20,8 @@ pub(crate) mod solve;
 mod tests;
 #[cfg(test)]
 mod tests_extra;
+#[cfg(test)]
+mod tests_regressions;
 
 use crate::ir::result::ShigureOutcome;
 use crate::ir::validate::CheckedShigureTask;

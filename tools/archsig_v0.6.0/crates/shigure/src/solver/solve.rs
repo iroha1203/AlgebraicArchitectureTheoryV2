@@ -2,97 +2,30 @@
 
 use crate::algebra::{
     AffineSolutionQ, ExprBindings, GroebnerBasis, MonomialOrder, Poly, QuotientStratum, Rat,
-    RingCoeff, VarOrder, rabinowitsch_solve, require_closed_for_interaction, solve_affine_q,
+    VarOrder, rabinowitsch_solve, solve_affine_q,
 };
-use crate::ir::change::{EditableTarget, EvalCondition, PointDomain};
-use crate::ir::provenance::{MathClause, Provenance};
-use crate::ir::result::{
-    ApplicabilityCheck, EmptyWitness, InteractionSummary, RestoredArtifact, ShigureOutcome,
-    SilenceReason, Verdict,
-};
+use crate::ir::change::{EvalCondition, PointDomain};
+use crate::ir::provenance::MathClause;
+use crate::ir::result::{ApplicabilityCheck, EmptyWitness, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::term::CoeffDomain;
 use crate::ir::validate::CheckedShigureTask;
 use crate::solver::ShigureQueryKind;
+use crate::solver::context::{
+    SolveCtx, build_outcome_provenance, check_common_applicability, clear_denominators_to_z,
+    display_polys, guard_z_quotient_or_universal, resolve_point_domain,
+    validate_eval_map_expressions,
+};
 use crate::solver::domain_solve::{solve_affine_direct_z, solve_over_fp};
 use crate::solver::interaction_query::execute_interaction_analysis;
 use crate::solver::preservation::{
-    PreservationObligation, build_preservation_obligations, collect_all_provenance_origins,
-    compute_preservation_locus_q, compute_strata_closure_ideal, extract_closed_residuals_z,
-    intersect_strata_lists, is_stratum_covered_by_union, map_algebra_silence,
+    PreservationObligation, build_preservation_obligations, compute_preservation_locus_q,
+    compute_strata_closure_ideal, extract_closed_residuals_z, intersect_strata_lists,
+    is_stratum_covered_by_union, map_algebra_silence,
 };
 use crate::solver::restore::{
     extract_affine_substitution_q, find_witness_point_q, polys_to_affine_system_q,
-    restore_and_reeval_q,
+    restore_and_reeval_q, restore_and_reeval_q_point,
 };
-use num_bigint::BigInt;
-use num_integer::Integer;
-use num_traits::{One, Zero};
-
-/// 実行中の共通メタデータ（係数域・点集合域・適用条件検査・由来）を束ねるコンテキスト。
-#[derive(Clone)]
-pub(crate) struct SolveCtx {
-    pub coeff_domain: CoeffDomain,
-    pub point_domain: PointDomain,
-    pub checks: Vec<ApplicabilityCheck>,
-    pub provenance: Provenance,
-}
-
-impl SolveCtx {
-    pub(crate) fn established(
-        self,
-        residual_ideal: Vec<String>,
-        restored: Option<RestoredArtifact>,
-        interaction: Option<InteractionSummary>,
-    ) -> ShigureOutcome {
-        ShigureOutcome {
-            verdict: Verdict::Established,
-            coeff_domain: self.coeff_domain,
-            point_domain: self.point_domain,
-            applicability: self.checks,
-            provenance: self.provenance,
-            residual_ideal,
-            empty_witness: None,
-            restored,
-            interaction,
-        }
-    }
-
-    pub(crate) fn refuted(
-        self,
-        residual_ideal: Vec<String>,
-        empty_witness: Option<EmptyWitness>,
-    ) -> ShigureOutcome {
-        ShigureOutcome {
-            verdict: Verdict::Refuted,
-            coeff_domain: self.coeff_domain,
-            point_domain: self.point_domain,
-            applicability: self.checks,
-            provenance: self.provenance,
-            residual_ideal,
-            empty_witness,
-            restored: None,
-            interaction: None,
-        }
-    }
-
-    pub(crate) fn undetermined(
-        self,
-        residual_ideal: Vec<String>,
-        reason: SilenceReason,
-    ) -> ShigureOutcome {
-        ShigureOutcome {
-            verdict: Verdict::Undetermined(reason),
-            coeff_domain: self.coeff_domain,
-            point_domain: self.point_domain,
-            applicability: self.checks,
-            provenance: self.provenance,
-            residual_ideal,
-            empty_witness: None,
-            restored: None,
-            interaction: None,
-        }
-    }
-}
 
 /// `CheckedShigureTask` に対して指定された問いを実行し、型付き `ShigureOutcome` を返す。
 pub fn execute_task(task: &CheckedShigureTask, query: ShigureQueryKind) -> ShigureOutcome {
@@ -157,162 +90,6 @@ pub fn execute_task(task: &CheckedShigureTask, query: ShigureQueryKind) -> Shigu
     }
 }
 
-fn resolve_point_domain(task: &CheckedShigureTask, query: ShigureQueryKind) -> PointDomain {
-    if query != ShigureQueryKind::SemanticPreservation
-        && let Some(cond) = task.eval_condition()
-    {
-        return cond.point_domain.clone();
-    }
-    if query == ShigureQueryKind::InteractionAnalysis {
-        return PointDomain::UniversalRing;
-    }
-    match &task.change_spec().coeff_domain {
-        CoeffDomain::Q | CoeffDomain::Z => PointDomain::AlgebraicClosure,
-        CoeffDomain::Fp(p) => PointDomain::FiniteFieldPoints(p.clone()),
-    }
-}
-
-fn build_outcome_provenance(task: &CheckedShigureTask, query: ShigureQueryKind) -> Provenance {
-    let eval_origins: Vec<_> = if query == ShigureQueryKind::SemanticPreservation {
-        Vec::new()
-    } else {
-        task.eval_condition()
-            .map(|c| {
-                let mut out = c.provenance.origins.clone();
-                for item in c
-                    .evaluations
-                    .iter()
-                    .chain(&c.equations)
-                    .chain(&c.invertibles)
-                {
-                    if let Some(o) = &item.provenance {
-                        out.push(o.clone());
-                    }
-                }
-                out
-            })
-            .unwrap_or_default()
-    };
-    let mut change_origins = task.change_spec().provenance.origins.clone();
-    for p in &task.change_spec().parameters {
-        if let Some(o) = &p.provenance {
-            change_origins.push(o.clone());
-        }
-    }
-    let origins = collect_all_provenance_origins(task.pair(), &change_origins, &eval_origins);
-    let clauses = match query {
-        ShigureQueryKind::SemanticPreservation => vec![
-            MathClause::G139P0P1,
-            MathClause::G140P0Dot1,
-            MathClause::G140A2,
-            MathClause::G140P1,
-            MathClause::G140P3P5,
-            MathClause::G141D5,
-        ],
-        ShigureQueryKind::ConditionalSolutionSpace => vec![
-            MathClause::G139P0P1,
-            MathClause::G140A2,
-            MathClause::G140E1E2,
-            MathClause::G140P6,
-            MathClause::G141D1,
-            MathClause::G141D4,
-            MathClause::G141D5,
-        ],
-        ShigureQueryKind::InteractionAnalysis => vec![
-            MathClause::G139P0P1,
-            MathClause::G140A2,
-            MathClause::G141D1,
-            MathClause::G141F10F12,
-        ],
-    };
-    Provenance::new(origins, clauses)
-}
-
-fn check_common_applicability(
-    task: &CheckedShigureTask,
-    query: ShigureQueryKind,
-    checks: &mut Vec<ApplicabilityCheck>,
-) -> Result<(), SilenceReason> {
-    let missing = task.unobserved_slots();
-    if !missing.is_empty() {
-        checks.push(ApplicabilityCheck::failed(
-            "unobserved_slots_absent",
-            MathClause::G140P0Dot1,
-            format!("missing slots: {}", missing.join(", ")),
-        ));
-        return Err(SilenceReason::UnobservedDependency { slots: missing });
-    }
-    checks.push(ApplicabilityCheck::passed(
-        "unobserved_slots_absent",
-        MathClause::G140P0Dot1,
-    ));
-
-    for pres in [&task.pair().before, &task.pair().after] {
-        for sort in &pres.sorts {
-            if sort.rank != 1 {
-                let detail = format!(
-                    "sort `{}` in `{}` has rank {}, but scalar polynomial engine requires rank == 1",
-                    sort.name, pres.name, sort.rank
-                );
-                checks.push(ApplicabilityCheck::failed(
-                    "sort_rank_one_required",
-                    MathClause::G139P0P1,
-                    detail.clone(),
-                ));
-                return Err(SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "sort_rank_one_required".to_owned(),
-                    detail,
-                });
-            }
-        }
-    }
-    checks.push(ApplicabilityCheck::passed(
-        "sort_rank_one_required",
-        MathClause::G139P0P1,
-    ));
-
-    for target in &task.change_spec().editable {
-        let target_pres = match target {
-            EditableTarget::OperationExpr { presentation, .. }
-            | EditableTarget::RepresentationLaw { presentation, .. } => Some(presentation.as_str()),
-            EditableTarget::StateComparisonExpr { .. } => None,
-        };
-        if target_pres == Some(task.pair().before.name.as_str()) {
-            let detail = format!(
-                "editable target references fixed reference presentation `{}`",
-                task.pair().before.name
-            );
-            checks.push(ApplicabilityCheck::failed(
-                "editable_target_must_be_after",
-                MathClause::G140E1E2,
-                detail.clone(),
-            ));
-            return Err(SilenceReason::ApplicabilityConditionNotMet {
-                condition: "editable_target_must_be_after".to_owned(),
-                detail,
-            });
-        }
-    }
-    checks.push(ApplicabilityCheck::passed(
-        "editable_target_must_be_after",
-        MathClause::G140E1E2,
-    ));
-
-    if query == ShigureQueryKind::InteractionAnalysis
-        && let Some(cond) = task.eval_condition()
-        && let Err(reason) = require_closed_for_interaction(!cond.is_purely_closed())
-    {
-        checks.push(ApplicabilityCheck::failed(
-            "closed_condition_for_interaction",
-            MathClause::G141F10F12,
-            reason.code(),
-        ));
-        return Err(reason);
-    }
-
-    Ok(())
-}
-
 fn execute_semantic_preservation(
     task: &CheckedShigureTask,
     obligations: &[PreservationObligation],
@@ -324,10 +101,20 @@ fn execute_semantic_preservation(
         CoeffDomain::Fp(modulus) => {
             solve_over_fp(task, obligations, None, param_vars, &modulus, ctx)
         }
+        CoeffDomain::Z if has_source_laws => {
+            // Z 上で状態 Law を持つ場合、SemanticPreservation で暗黙に Q 商環へ昇格させない。
+            // （代数閉包上での判定を明示要求する場合は ConditionalSolutionSpace + algebraic_closure を用いる。）
+            let reason = SilenceReason::QuotientIdealOutOfScope {
+                detail: "parametric quotient state-law preservation over Z (with possible Z-torsion) is out of scope; use Q or explicit algebraic_closure".to_owned(),
+            };
+            ctx.checks.push(ApplicabilityCheck::failed(
+                "z_quotient_out_of_scope",
+                MathClause::G141D5,
+                reason.code(),
+            ));
+            ctx.undetermined(vec![], reason)
+        }
         CoeffDomain::Q | CoeffDomain::Z => {
-            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, &ctx) {
-                return out;
-            }
             let locus = match compute_preservation_locus_q(obligations, param_vars) {
                 Ok(l) => {
                     ctx.checks.push(ApplicabilityCheck::passed(
@@ -348,8 +135,8 @@ fn execute_semantic_preservation(
 
             let residual_display = display_polys(&locus.closure_ideal, param_vars);
             if locus.strata.is_empty() {
-                let witness = compute_empty_witness_q(&locus.closure_ideal, &[], param_vars);
-                return ctx.refuted(residual_display, witness);
+                // F3 対策: 実残差からの空性 witness をそのまま返し、1 = 1*1 を捏造しない。
+                return ctx.refuted(residual_display, locus.empty_witness);
             }
 
             if locus.is_zariski_closed {
@@ -358,6 +145,7 @@ fn execute_semantic_preservation(
                     None,
                     &locus.closure_ideal,
                     &[],
+                    &[],
                     param_vars,
                     has_source_laws,
                     ctx,
@@ -365,7 +153,15 @@ fn execute_semantic_preservation(
                 );
             }
 
-            finalize_non_closed_strata(task, None, &locus.strata, param_vars, has_source_laws, ctx)
+            finalize_non_closed_strata(
+                task,
+                None,
+                &locus.strata,
+                &[],
+                param_vars,
+                has_source_laws,
+                ctx,
+            )
         }
     }
 }
@@ -463,52 +259,6 @@ fn execute_conditional_solution_space(
     }
 }
 
-fn guard_z_quotient_or_universal(has_source_laws: bool, ctx: &SolveCtx) -> Option<ShigureOutcome> {
-    if ctx.coeff_domain == CoeffDomain::Z
-        && has_source_laws
-        && ctx.point_domain != PointDomain::AlgebraicClosure
-    {
-        let mut c = ctx.clone();
-        let reason = SilenceReason::QuotientIdealOutOfScope {
-            detail: "parametric quotient state-law membership over Z (with possible Z-torsion) is out of scope; use Q or algebraic_closure".to_owned(),
-        };
-        c.checks.push(ApplicabilityCheck::failed(
-            "z_quotient_out_of_scope",
-            MathClause::G141D5,
-            reason.code(),
-        ));
-        return Some(c.undetermined(vec![], reason));
-    }
-    if ctx.point_domain == PointDomain::UniversalRing {
-        if ctx.coeff_domain == CoeffDomain::Z {
-            let mut c = ctx.clone();
-            let reason = SilenceReason::ApplicabilityConditionNotMet {
-                condition: "universal_ring_solution_space_out_of_scope".to_owned(),
-                detail: "UniversalRing solution-space restoration over Z cannot be approximated by rational Q-sections".to_owned(),
-            };
-            c.checks.push(ApplicabilityCheck::failed(
-                "universal_ring_solution_space_out_of_scope",
-                MathClause::G141D1,
-                reason.code(),
-            ));
-            return Some(c.undetermined(vec![], reason));
-        }
-        if has_source_laws {
-            let mut c = ctx.clone();
-            let reason = SilenceReason::QuotientIdealOutOfScope {
-                detail: "quotient ideal membership over arbitrary non-reduced commutative rings (UniversalRing) is out of scope; use algebraic_closure".to_owned(),
-            };
-            c.checks.push(ApplicabilityCheck::failed(
-                "universal_ring_quotient_out_of_scope",
-                MathClause::G141D5,
-                reason.code(),
-            ));
-            return Some(c.undetermined(vec![], reason));
-        }
-    }
-    None
-}
-
 fn solve_conditional_via_q(
     task: &CheckedShigureTask,
     obligations: &[PreservationObligation],
@@ -556,8 +306,7 @@ fn solve_conditional_via_q(
     }
 
     if locus.strata.is_empty() {
-        let witness = compute_empty_witness_q(&locus.closure_ideal, &[], param_vars);
-        return ctx.refuted(closure_disp, witness);
+        return ctx.refuted(closure_disp, locus.empty_witness);
     }
 
     if locus.is_zariski_closed {
@@ -581,6 +330,7 @@ fn solve_conditional_via_q(
             eval_cond,
             &rab.parameter_equations,
             &eval_invs,
+            &eval_invs,
             param_vars,
             has_source_laws,
             ctx,
@@ -590,7 +340,7 @@ fn solve_conditional_via_q(
 
     let eval_stratum = vec![QuotientStratum {
         equations: eval_eqs,
-        invertibles: eval_invs,
+        invertibles: eval_invs.clone(),
     }];
     let intersected = match intersect_strata_lists(&locus.strata, &eval_stratum, param_vars) {
         Ok(s) => s,
@@ -613,17 +363,19 @@ fn solve_conditional_via_q(
         task,
         eval_cond,
         &intersected,
+        &eval_invs,
         param_vars,
         has_source_laws,
         ctx,
     )
 }
 
-/// 非閉な局所閉層の和集合 `strata` を、先頭層だけへ黙って潰さず全層整合に解決する（F1）。
+/// 非閉な局所閉層の和集合 `strata` を、開条件を黙って落とさずに全層整合で解決する（F1・F2 対策）。
 fn finalize_non_closed_strata(
     task: &CheckedShigureTask,
     eval_cond: Option<&EvalCondition>,
     strata: &[QuotientStratum],
+    input_eval_invs: &[Poly<Rat>],
     param_vars: &VarOrder,
     has_source_laws: bool,
     mut ctx: SolveCtx,
@@ -636,6 +388,7 @@ fn finalize_non_closed_strata(
             eval_cond,
             &first.equations,
             &first.invertibles,
+            input_eval_invs,
             param_vars,
             has_source_laws,
             ctx,
@@ -649,13 +402,14 @@ fn finalize_non_closed_strata(
         Err(reason) => return ctx.undetermined(vec![], reason),
     };
     let inter_disp = display_polys(&inter_closure, param_vars);
-    match is_stratum_covered_by_union(&inter_closure, &[], strata, param_vars) {
+    match is_stratum_covered_by_union(&inter_closure, input_eval_invs, strata, param_vars) {
         Ok(true) => {
             return finalize_q_or_z_solution(
                 task,
                 eval_cond,
                 &inter_closure,
-                &[],
+                input_eval_invs,
+                input_eval_invs,
                 param_vars,
                 has_source_laws,
                 ctx,
@@ -667,7 +421,7 @@ fn finalize_non_closed_strata(
     }
 
     match ctx.point_domain {
-        PointDomain::RationalPoints | PointDomain::IntegerPoints => {
+        PointDomain::RationalPoints => {
             let mut first_undetermined: Option<SilenceReason> = None;
             for stratum in strata {
                 let stratum_disp = display_polys(&stratum.equations, param_vars);
@@ -676,6 +430,7 @@ fn finalize_non_closed_strata(
                     eval_cond,
                     &stratum.equations,
                     &stratum.invertibles,
+                    input_eval_invs,
                     param_vars,
                     has_source_laws,
                     ctx.clone(),
@@ -699,6 +454,7 @@ fn finalize_non_closed_strata(
         }
         PointDomain::AlgebraicClosure
         | PointDomain::UniversalRing
+        | PointDomain::IntegerPoints
         | PointDomain::FiniteFieldPoints(_) => {
             let reason = SilenceReason::QuotientIdealOutOfScope {
                 detail: "solution space decomposes into multiple non-closed quotient strata that cannot be merged into a single residual ideal".to_owned(),
@@ -719,6 +475,7 @@ fn finalize_q_or_z_solution(
     eval_cond: Option<&EvalCondition>,
     final_eqs: &[Poly<Rat>],
     final_invs: &[Poly<Rat>],
+    input_eval_invs: &[Poly<Rat>],
     param_vars: &VarOrder,
     has_source_laws: bool,
     mut ctx: SolveCtx,
@@ -727,8 +484,33 @@ fn finalize_q_or_z_solution(
     let prefer_z = ctx.coeff_domain == CoeffDomain::Z;
     let all_affine = final_eqs.iter().all(Poly::is_affine);
 
+    // F2 対策: 商環計算により入力 eval_condition に含まれない暗黙の開条件が生じたか判定する。
+    let has_implicit_open = if final_invs.is_empty() {
+        false
+    } else {
+        let single = [QuotientStratum {
+            equations: final_eqs.to_vec(),
+            invertibles: final_invs.to_vec(),
+        }];
+        match is_stratum_covered_by_union(final_eqs, input_eval_invs, &single, param_vars) {
+            Ok(covered) => !covered,
+            Err(reason) => return ctx.undetermined(residual_display, reason),
+        }
+    };
+
     match ctx.point_domain.clone() {
         PointDomain::AlgebraicClosure => {
+            if has_implicit_open {
+                let reason = SilenceReason::QuotientIdealOutOfScope {
+                    detail: "quotient preservation requires implicit open/invertible conditions not declared in eval_condition; declare D(g) explicitly or solve over a concrete point domain".to_owned(),
+                };
+                ctx.checks.push(ApplicabilityCheck::failed(
+                    "no_unreported_open_condition",
+                    MathClause::G141D5,
+                    reason.code(),
+                ));
+                return ctx.undetermined(residual_display, reason);
+            }
             ctx.checks.push(ApplicabilityCheck::passed(
                 "algebraic_closure_nonempty",
                 MathClause::G141D5,
@@ -798,6 +580,7 @@ fn finalize_q_or_z_solution(
                     kernel_basis,
                     verified: true,
                 }) => {
+                    let mut witness_pt: Option<Vec<Rat>> = None;
                     if !final_invs.is_empty() {
                         match find_witness_point_q(
                             &particular,
@@ -805,10 +588,13 @@ fn finalize_q_or_z_solution(
                             final_eqs,
                             final_invs,
                         ) {
-                            Ok(Some(_)) => ctx.checks.push(ApplicabilityCheck::passed(
-                                "rational_open_witness_verified",
-                                MathClause::G141D4,
-                            )),
+                            Ok(Some(pt)) => {
+                                ctx.checks.push(ApplicabilityCheck::passed(
+                                    "rational_open_witness_verified",
+                                    MathClause::G141D4,
+                                ));
+                                witness_pt = Some(pt);
+                            }
                             Ok(None) => {
                                 let reason = SilenceReason::NonLinearRationalOrIntegerExistence {
                                     point_domain: PointDomain::RationalPoints,
@@ -823,6 +609,31 @@ fn finalize_q_or_z_solution(
                             }
                             Err(reason) => return ctx.undetermined(residual_display, reason),
                         }
+                    }
+                    // F2 対策: 暗黙の開条件がある場合は具体有理点を捨てず、具体点として復元・検算する。
+                    if has_implicit_open && let Some(pt) = witness_pt {
+                        return match restore_and_reeval_q_point(
+                            task.pair(),
+                            eval_cond,
+                            param_vars,
+                            &pt,
+                        ) {
+                            Ok(artifact) if artifact.reeval.matched => {
+                                ctx.checks.push(ApplicabilityCheck::passed(
+                                    "restored_model_reevaluation_matched",
+                                    MathClause::G140E1E2,
+                                ));
+                                ctx.established(residual_display, Some(artifact), None)
+                            }
+                            Ok(artifact) => ctx.undetermined(
+                                residual_display,
+                                SilenceReason::ApplicabilityConditionNotMet {
+                                    condition: "restored_model_reevaluation_matched".to_owned(),
+                                    detail: artifact.reeval.detail,
+                                },
+                            ),
+                            Err(reason) => ctx.undetermined(residual_display, reason),
+                        };
                     }
                     restore_q_and_finish(
                         task,
@@ -920,27 +731,6 @@ fn restore_q_and_finish(
     }
 }
 
-fn validate_eval_map_expressions(
-    cond: &EvalCondition,
-    param_bind: &ExprBindings,
-    domain: &CoeffDomain,
-) -> Result<(), SilenceReason> {
-    for item in &cond.evaluations {
-        match domain {
-            CoeffDomain::Q => {
-                Poly::from_expr_q(&item.expr, param_bind).map_err(map_algebra_silence)?;
-            }
-            CoeffDomain::Z => {
-                Poly::from_expr_z(&item.expr, param_bind).map_err(map_algebra_silence)?;
-            }
-            CoeffDomain::Fp(m) => {
-                Poly::from_expr_fp(&item.expr, param_bind, m).map_err(map_algebra_silence)?;
-            }
-        }
-    }
-    Ok(())
-}
-
 fn compute_empty_witness_q(
     eqs: &[Poly<Rat>],
     invs: &[Poly<Rat>],
@@ -953,30 +743,4 @@ fn compute_empty_witness_q(
         let rab = rabinowitsch_solve(eqs, invs, param_vars).ok()?;
         rab.empty_witness
     }
-}
-
-fn clear_denominators_to_z(polys: &[Poly<Rat>]) -> Vec<Poly<BigInt>> {
-    polys
-        .iter()
-        .map(|p| {
-            let mut lcm = BigInt::one();
-            for coeff in p.terms().values() {
-                lcm = lcm.lcm(coeff.den());
-            }
-            let mut out = Poly::zero(p.num_vars(), BigInt::zero());
-            for (mono, coeff) in p.terms() {
-                let scaled = coeff.num() * (&lcm / coeff.den());
-                out.add_term(mono.clone(), scaled);
-            }
-            out
-        })
-        .collect()
-}
-
-pub(crate) fn display_polys<C: RingCoeff>(polys: &[Poly<C>], vars: &VarOrder) -> Vec<String> {
-    polys
-        .iter()
-        .filter(|p| !p.is_zero())
-        .map(|p| p.display(vars, MonomialOrder::Grevlex))
-        .collect()
 }
