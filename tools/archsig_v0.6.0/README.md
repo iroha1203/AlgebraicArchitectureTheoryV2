@@ -80,6 +80,13 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
   --archmap tools/archsig_v0.6.0/tests/fixtures/counter.archmap.json
 ```
 
+上の `run` の例は3件とも `established`、値は2、終了コードは0です。
+要求が成り立たない回答は `refuted`、入力から決まらない回答は `undetermined` と理由を返します。
+実行失敗は標準エラー出力の機械可読JSONと終了コードで確認できます。
+終了コードと中断時の扱いは実行仕様を参照してください。
+
+### SHIGURE の実行例
+
 SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction` の各問いで
 意味保存変更・条件付き解空間と操作式復元・座標面支持による相互作用解析を実行できます。
 
@@ -91,10 +98,8 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger
   --ask 'p6d=shigure_solve(LedgerMigration.P6dFixedOldBusy)'
 ```
 
-上の `run` の例は3件とも `established`、値は2、終了コードは0です。
-要求が成り立たない回答は `refuted`、入力から決まらない回答は `undetermined` と理由を返します。
-実行失敗は標準エラー出力の機械可読JSONと終了コードで確認できます。
-終了コードと中断時の扱いは実行仕様を参照してください。
+この例では `p6c` が `established`（`rho = 1`・`finish` と Busy Law を復元し再評価一致）、
+`p6d` が `refuted`（検算済み空性 witness 付き）となり、反証を含むため終了コードは 1 です。
 
 ## 仕様
 

@@ -628,6 +628,111 @@ fn shigure_ac5b_silence_provenance_and_cli_guards() {
         "unobserved_dependency"
     );
 
+    // proposed（llm_candidate）snapshot の由来は scope.modes で "proposed" とし "observed" へ付け替えない
+    let proposed_map = dir.join("proposed_only.archmap.json");
+    let proposed_json = r#"{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {"namespace":"LedgerVocab","version":"1","digest":"sha256:cb35ebe9d9af7271972225abdcd0993b4ae6051104a331f094dd45cea9f4daae"}
+  ],
+  "sources": [],
+  "origins": [
+    {"id":"o_llm","mode":"proposed","method":"llm-reader","kind":"llm_candidate","locations":[],"note":"candidate"}
+  ],
+  "snapshots": [
+    {
+      "id": "snap_prop",
+      "origin": "o_llm",
+      "subjects": [{"id":"acc1","type":"LedgerVocab.Account","origin":"o_llm"}],
+      "atoms": [
+        {"id":"a_bal","subject":"acc1","field":"LedgerVocab.Account.balance","value":["3","2"],"origin":"o_llm"}
+      ]
+    }
+  ]
+}"#;
+    std::fs::write(&proposed_map, proposed_json).unwrap();
+    let r_prop = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            def.to_str().unwrap(),
+            "--law",
+            law.to_str().unwrap(),
+            "--archmap",
+            proposed_map.to_str().unwrap(),
+            "--ask",
+            "obs=shigure_solve(LedgerMigration.ObservedBalanceTask, snapshot=snap_prop)",
+            "--out",
+            "proposed_out",
+        ],
+    );
+    assert_eq!(
+        r_prop.code, 0,
+        "stdout={}\nstderr={}",
+        r_prop.stdout, r_prop.stderr
+    );
+    let prop_saved = parse(&std::fs::read(dir.join("proposed_out/result.json")).unwrap()).unwrap();
+    let prop_modes = str_list(get(
+        get(&arr(get(&prop_saved, "answers"))[0], "scope"),
+        "modes",
+    ));
+    assert_eq!(
+        prop_modes,
+        vec!["proposed", "specification"],
+        "proposed snapshot must never be relabeled as observed"
+    );
+
+    // subject 不在の欠測フォールバック（origin_id == "law"）も "observed" へ付け替えない
+    let empty_snap_map = dir.join("empty_snap.archmap.json");
+    let empty_snap_json = r#"{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {"namespace":"LedgerVocab","version":"1","digest":"sha256:cb35ebe9d9af7271972225abdcd0993b4ae6051104a331f094dd45cea9f4daae"}
+  ],
+  "sources": [],
+  "origins": [
+    {"id":"o_spec","mode":"specification","method":"spec","kind":"human_adopted","locations":[],"note":"empty spec"}
+  ],
+  "snapshots": [
+    {"id":"snap_empty","origin":"o_spec","subjects":[],"atoms":[]}
+  ]
+}"#;
+    std::fs::write(&empty_snap_map, empty_snap_json).unwrap();
+    let r_empty = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            def.to_str().unwrap(),
+            "--law",
+            law.to_str().unwrap(),
+            "--archmap",
+            empty_snap_map.to_str().unwrap(),
+            "--ask",
+            "obs=shigure_solve(LedgerMigration.ObservedBalanceTask)",
+            "--out",
+            "empty_out",
+        ],
+    );
+    assert_eq!(
+        r_empty.code, 2,
+        "stdout={}\nstderr={}",
+        r_empty.stdout, r_empty.stderr
+    );
+    let empty_saved = parse(&std::fs::read(dir.join("empty_out/result.json")).unwrap()).unwrap();
+    let empty_modes = str_list(get(
+        get(&arr(get(&empty_saved, "answers"))[0], "scope"),
+        "modes",
+    ));
+    assert_eq!(
+        empty_modes,
+        vec!["specification"],
+        "missing subject fallback must not claim observed mode"
+    );
+
     // 旧形式 ArchMap（Origin.kind 省略）を SHIGURE observed 座標へ結合すると fail-closed（exit 65）
     let legacy_map = dir.join("legacy_no_kind.archmap.json");
     let no_kind = raw_map.replace("      \"kind\": \"static_analysis\",\n", "");

@@ -327,32 +327,40 @@ ShigurePresentation ::= "presentation" Name "{"
     ("coord" Name ":" Name ("observed" QName)? ";")*
     ("law" ("semantic" | "representation") Name ":" PolyExpr "=" PolyExpr ";")*
   "}")+
-  ("op" Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
-    (Name "=" PolyExpr ";")*
-  "}")*
-  ("obs" Name "on" Name "=" "(" (PolyExpr ("," PolyExpr)*)? ")" ";")*
+    ("op" Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
+      (Name "=" PolyExpr ";")*
+    "}")*
+    ("obs" Name "on" Name "=" "(" PolyExpr ("," PolyExpr)* ")" ";")*
 "}"
 
 ShigureComparison ::= "comparison" Name "{"
   "before" QName ";"
   "after" QName ";"
   ("state_map" Name "->" Name "{" (Name "=" PolyExpr ";")* "}")*
-  ("translate" Name "->" "[" (Name ("(" (PolyExpr ("," PolyExpr)*)? ")")?
-    ("," Name ("(" (PolyExpr ("," PolyExpr)*)? ")")?)*)? "]" ";")*
+  ("translate" Name "->" "[" (Name "(" (PolyExpr ("," PolyExpr)*)? ")"
+    ("," Name "(" (PolyExpr ("," PolyExpr)*)? ")")*)? "]" ";")*
 "}"
 
 ShigureChangeSpec ::= "change_spec" Name "{"
   "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
   ("param" Name ":" ("Z" | "Q" | "Fp" "(" Integer ")") ";")*
-  ("fixed" ("presentation" | "operation" | "semantic_law" | "representation_law"
-          | "state_comparison" | "word_translation") QName ";")*
-  ("editable" ("operation" | "representation_law" | "state_comparison"
-             | "word_translation") QName ";")*
+  ("fixed" (
+      ("semantic_law" | "representation_law" | "operation" | "op" | "observation" | "obs") QName
+    | ("state_comparison" | "word_translation") Name
+  ) ";")*
+  ("editable" (
+      ("representation_law" | "operation" | "op") QName
+    | "state_comparison" Name
+  ) ";")*
 "}"
 
 ShigureEvalCondition ::= "eval_condition" Name "{"
-  "point_domain" ("algebraic_closure" | "universal_ring" | "rational_points"
-                | "integer_points" | "finite_field") ";"
+  "point_domain" (
+      "algebraic_closure" | "universal_ring"
+    | "rational_points" | "Q_points"
+    | "integer_points" | "Z_points"
+    | ("finite_field_points" | "Fp_points") "(" Integer ")"
+  ) ";"
   ("eval" Name "=" PolyExpr ";")*
   ("equation" Name ":" PolyExpr "=" PolyExpr ";")*
   ("invertible" Name ":" PolyExpr ";")*
@@ -370,8 +378,9 @@ ShigureTask ::= "task" Name "{"
 
 静的検査と変換検査では次を強制する。
 
-- **結論注入の拒否**: `residual_ideal`、`empty_witness`、`solutions`、`interaction_summary`、
-  `verdict`、`groebner_basis`、`restored`、`reevaluation` などの計算結論相当の欄や宣言を Law 入力に含めた場合、構文検査で拒否する。
+- **結論注入の拒否**: `residual_ideal`、`residuals`、`empty_witness`、`witness`、`solution`、`solutions`、
+  `interaction`、`interaction_summary`、`participating_variables`、`minimal_failing_subsets`、
+  `verdict`、`restored`、`reeval`、`groebner_basis` などの計算結論相当の欄や宣言を Law 入力に含めた場合、構文検査で拒否する。
 - **守る意味 Law の保護**: `editable semantic_law` は構文・型検査で拒否する。
   `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
   `editable` による `before` 表示の変更、および `before` 表示への探索パラメータ混入も拒否する。

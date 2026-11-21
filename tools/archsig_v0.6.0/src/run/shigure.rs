@@ -524,11 +524,19 @@ fn deliver_shigure(
     if let Some(sig) = control.stop_reason().or(frozen) {
         status = Status::Interrupted;
         code = exit_code(status, Some(sig), &[]);
-        if interrupted_reason.is_none() && control.stop_reason().is_none() {
-            top_issues.push(sig.issue());
+        let sig_issue = sig.issue();
+        if !top_issues.contains(&sig_issue) {
+            top_issues.push(sig_issue);
         }
     }
     output::sort_issues(&mut top_issues);
+
+    let origin_modes: std::collections::BTreeMap<&str, &'static str> = checked
+        .archmap()
+        .origins()
+        .iter()
+        .map(|o| (o.id.as_str(), o.mode.wire()))
+        .collect();
 
     let snapshot_ids: Vec<Json> = checked
         .archmap()
@@ -574,14 +582,22 @@ fn deliver_shigure(
             Some(sid) => vec![Json::str(sid)],
             None => snapshot_ids.clone(),
         };
-        let has_observed_origin = outcome_opt
-            .as_ref()
-            .is_some_and(|o| o.provenance.origins.iter().any(|r| r.atom_ref.is_some()));
-        let modes = if has_observed_origin {
-            vec![Json::str("specification"), Json::str("observed")]
-        } else {
-            vec![Json::str("specification")]
-        };
+        let mut mode_set = BTreeSet::from(["specification"]);
+        if let Some(outcome) = &outcome_opt {
+            for origin_ref in &outcome.provenance.origins {
+                if origin_ref.atom_ref.is_some()
+                    && origin_ref.origin_id != "law"
+                    && let Some(&mode_str) = origin_modes.get(origin_ref.origin_id.as_str())
+                {
+                    mode_set.insert(mode_str);
+                }
+            }
+        }
+        let modes: Vec<Json> = ["observed", "proposed", "specification"]
+            .into_iter()
+            .filter(|m| mode_set.contains(m))
+            .map(Json::str)
+            .collect();
         let scope = Json::obj([
             ("readings", Json::Arr(vec![Json::str(&req.reading_name)])),
             ("snapshots", Json::Arr(req_snapshots)),
@@ -835,4 +851,100 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
         ("missing", Json::Arr(vec![])),
         ("details", reason.to_json()),
     ])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::run::{CheckArgs, FileIo};
+    use std::path::PathBuf;
+    use std::sync::Arc;
+    use std::sync::atomic::AtomicI32;
+
+    struct NoFreezeSignals;
+    impl Signals for NoFreezeSignals {
+        fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
+            None
+        }
+    }
+
+    #[test]
+    fn deliver_shigure_records_cancelled_issue_when_signal_arrives_during_final_task() {
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shigure-ledger");
+        let defs = vec![std::fs::read(dir.join("ledger.atoms.json")).unwrap()];
+        let law = std::fs::read(dir.join("ledger.law")).unwrap();
+        let map = std::fs::read(dir.join("ledger.archmap.json")).unwrap();
+        let checked = check_inputs(
+            InputSources::from_bytes(defs, law, map),
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let task = ShigureConverter::for_task("LedgerMigration.P1AtomicMarked")
+            .convert(&checked)
+            .unwrap();
+        let outcome = execute_shigure_task(&task, ShigureQueryKind::ConditionalSolutionSpace);
+
+        // 最終タスク実行中に SIGINT が到着した状態（interrupted_reason=None, control.stop_reason()=Some(Int)）
+        let flag = Arc::new(AtomicI32::new(2));
+        let control = Control::from_signal_flag(flag, 2, 15);
+        assert_eq!(
+            control.stop_reason(),
+            Some(archsig_input::result::Signal::Int)
+        );
+
+        let req = ResolvedShigureRequest {
+            parsed: ParsedShigureRequest {
+                id: "p1m".into(),
+                text: "p1m=shigure_solve(LedgerMigration.P1AtomicMarked)".into(),
+                query_kind: ShigureQueryKind::ConditionalSolutionSpace,
+                task_name: "LedgerMigration.P1AtomicMarked".into(),
+                snapshot: None,
+            },
+            resolved_task_name: "LedgerMigration.P1AtomicMarked".into(),
+            reading_name: "LedgerMigration".into(),
+            task,
+        };
+        let args = RunArgs {
+            inputs: CheckArgs {
+                atom_definitions: vec![],
+                law: PathBuf::new(),
+                archmap: None,
+                out: None,
+            },
+            asks: vec![req.parsed.text.clone()],
+            reuse: None,
+        };
+        let mut io = FileIo;
+        let mut sigs = NoFreezeSignals;
+        let delivered = deliver_shigure(
+            &mut io,
+            &mut sigs,
+            &args,
+            &checked,
+            vec![(req, Some(outcome))],
+            vec![],
+            None,
+            &control,
+        );
+        assert_eq!(delivered.status, Status::Interrupted);
+        assert_eq!(delivered.exit_code, 130);
+        assert_eq!(
+            delivered.issues.len(),
+            1,
+            "interrupted outcome must carry non-empty cancelled issue"
+        );
+        assert_eq!(
+            delivered.issues[0],
+            archsig_input::result::Signal::Int.issue()
+        );
+        let summary = delivered.summary.expect("completed answer summary kept");
+        let Json::Obj(fields) = &summary else {
+            panic!("summary must be object");
+        };
+        let Json::Arr(summary_issues) = fields.get("issues").expect("summary must include issues")
+        else {
+            panic!("summary issues must be array");
+        };
+        assert_eq!(summary_issues.len(), 1);
+    }
 }

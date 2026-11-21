@@ -24,7 +24,7 @@ Result = {
 RunStatus = "complete"|"partial"|"invalid"|"unsupported"|"interrupted"|"error"
 SavedAnswer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
                applicability?:String,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[],scope:Scope}
-SavedType = Type | "Counterexample" | "EvaluationResult"
+SavedType = Type | "Counterexample" | "EvaluationResult" | "ShigureOutcome"
 SavedNode = {id:String,type:SavedType,state:"value"|"blocked",value?:Payload,
              partial?:Partial,conditions:Ref[],judgment?:SavedJudgment,reasons:Issue[]}
 SavedJudgment = {status:Decision,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[]}
@@ -65,7 +65,7 @@ Rule = {kind:"definition"|"subject"|"atom"|"law",location:Location}
      | {kind:"construction",name:Construction,path?:(String|Nat)[]}
 Partial = {entries:{path:(String|Nat)[],value?:Ref,reasons:Issue[]}[]}
 Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specification")[],
-         domain:"finite_model"|"all_assignments"|"candidate_space"|"all_completions",
+         domain:"finite_model"|"all_assignments"|"candidate_space"|"all_completions"|"shigure_presentation",
          quantifiers:Quantifier[],assumptions:Ref[]}
 Quantifier = {kind:"forall"|"exists",name:String,type:Type,domain?:Ref}
 FactPointer = {snapshot:Id,subject:Id,field?:QName,atom?:Id}
@@ -1225,9 +1225,10 @@ Repair/objectを生成せず不足位置を保持する。neededと後続の未�
 | IssueCode | 必須のdetailsと意味 |
 | --- | --- |
 | missing_observation | `{}`。missingにslot、dependenciesに依存式を要求 |
+| unobserved | SHIGURE 問いの未観測座標依存。`details` に [§8 の `SilenceReason`](#8-shigure-の型付き結果shigureoutcome) を保持 |
 | visibility_insufficient | `{locals:QName[],coordinates:Ref[]}`。原始値の欠測と別 |
 | inconsistent_observation | `{}`。型・参照を満たす補完が存在しない提示 |
-| unsupported_algorithm | `{question:QuestionKind,operand_types:Type[],method:String}`。有効な型付き問いに算法がない |
+| unsupported_algorithm | 通常問いは `{question:QuestionKind,operand_types:Type[],method:String}`。SHIGURE 問いは [§8 の `SilenceReason`](#8-shigure-の型付き結果shigureoutcome) |
 | condition_failed | `{condition:Ref,construction:Construction}`。構成条件が反証された |
 | dependency_blocked | `{request:String}`。dependenciesと元理由を推移的に保持 |
 | cancelled | `{signal:"SIGINT"\|"SIGTERM"}` |
@@ -1281,10 +1282,13 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 `scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
 
 ```text
+ShigurePointDomain = "algebraic_closure" | "universal_ring" | "Q_points" | "Z_points"
+                   | ["Fp_points", DecimalPrime]
+
 ShigureOutcome = {
   verdict: "established" | "refuted" | "undetermined",
   coeff_domain: "Z" | "Q" | ["Fp", DecimalPrime],
-  point_domain: "algebraic_closure" | "universal_ring" | "Q_points" | "Z_points" | "Fp_points",
+  point_domain: ShigurePointDomain,
   applicability: ApplicabilityCheck[],
   provenance: { origins: ShigureOriginRef[], clauses: String[] },
   residual_ideal: String[],
@@ -1324,7 +1328,7 @@ SilenceReason = {
       | "quotient_ideal_out_of_scope" | "open_condition_in_interaction"
       | "applicability_condition_not_met",
   missing_slots?: String[],
-  point_domain?: String,
+  point_domain?: ShigurePointDomain,
   coeff_domain?: "Z" | "Q" | ["Fp", DecimalPrime],
   condition?: String,
   detail?: String
