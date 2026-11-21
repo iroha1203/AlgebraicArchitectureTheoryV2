@@ -440,3 +440,18 @@ archsig run --atom-definition examples/engine.atoms.json \
 Pair.totalの一解だけを持つ再利用候補からRepair/objectを採用しない。全解の一意性を再検査し、
 複数解の存在と非一意性を保持する。Pair.pinnedへLawを変更した場合も現在の要求で再検査する。
 終了コード、signal、I/O失敗、依存する問いへの未決の伝播も実行仕様に従う。
+
+## 7. SHIGURE の適合条件
+
+SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction`）の実装は、
+題材固有の特例分岐やハードコードではなく、一般の原始表示 IR と多項式／ideal 計算核から次を満たすことを検証する。
+
+| 検証項目 | 期待する結果・証拠 |
+| --- | --- |
+| 原子操作の保存方程式と marked fiber 復元 | 単一台帳 → base+delta 移行（`apply` / `compact`）で保存残差 $ac+bd-1,\, ar+bs$ を導出し、$a=1,b=1$ の評価条件で $c=1-d,\, r=-s$・$h(x,y)=x+y$ を復元し `reevaluation.matched = true` を得る |
+| snapshot 方式の非線形保存族と可逆評価条件 | 非線形残差 $V(\mu\delta)$ に対し、$D(\mu)$ で $\delta=0$、$D(\delta)$ で $\mu=0$ を導出し、$D(\mu\delta)$ で `refuted` と検算一致済み（`verified = true`）の空性 witness $1 = \sum h_i f_i$ を返す |
+| 許容変換 $H$ の拡張と旧表示 Law 固定の対照 | $\mathrm{finish}_\rho$ と Busy 表示 Law 編集可の $V(\mu\delta(1-\rho)) \cap D(\mu\delta)$ から $\rho=1$ を導出して `finish_snap` と全状態 Busy を復元・再評価一致させ、旧 Busy 表示 Law 固定の対照条件では依然 `refuted`（空性 witness 検算一致）を返す |
+| 座標面支持による相互作用解析 | 閉条件の $\mu\delta$ で `min_interacting_variables = 2`・極小不成立部分族 `[["delta","mu"]]`、単変数 $t^3$ で `1`・`[["t"]]`、$\mu\delta(1-\rho)$ の $\rho=0$ 面で不成立・$\rho=1$ 面で解消を区別し、開条件 $D(\mu\delta)$ を伴う場合は `open_condition_in_interaction` で沈黙する |
+| 商環上の ideal 所属判定 | 商環 $R[y]/(ay)$ で $y=0$ の条件を ambient 多項式零へ強めず商環上の ideal 所属として扱う |
+| 係数域・点集合域の区別と沈黙規律 | $p^2+1=0$ を `algebraic_closure` では `established`、`Q_points` / `Z_points` では `nonlinear_point_existence_out_of_scope` で `undetermined`（exit 2 / `partial`）とする。ArchMap の欠測座標は零補完せず `unobserved_dependency` で沈黙する |
+| 入力保護・由来分離 | 結論注入（`residual_ideal` 等）、`editable semantic_law`、非素数 `Fp(4)`、`observed` 座標の `Origin.kind` 欠落は入力／変換検査で拒否（exit 65）し、通常問いと SHIGURE 問いの混在や未知タスクは `usage`（exit 64）で拒否する |

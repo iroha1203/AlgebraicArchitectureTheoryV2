@@ -308,3 +308,89 @@ Bool の false and x、true or x、同じ未知整数 h の h−h は補完に�
 それ以外の補完を必要とする問いは未観測箇所を明示し、対応する算法がなければその理由も付す。
 未観測値の全補完が空になる提示は `inconsistent_observation` として拒否し、空虚な成立を返さない。
 change の自由 parameter と未観測 slot は異なる。修復・探索で後者を決定変数にしない。
+
+## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク）
+
+`reading` 本体の中に、文脈キーワード `shigure` で始まる 5 種類の宣言を置ける。
+`shigure` は予約語一覧へ追加しないため、既存の宣言名・view 名・変数名と衝突しない。
+通常の `view` / `law` / `local` / `change` / `relation` 宣言と同一 `reading` 内で共存できる。
+
+```text
+ShigureDecl ::=
+  "shigure" (ShigurePresentation | ShigureComparison | ShigureChangeSpec
+           | ShigureEvalCondition | ShigureTask)
+
+ShigurePresentation ::= "presentation" Name "{"
+  "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+  ("sort" Name ("rank" Integer)? ";")+
+  ("phase" Name "{"
+    ("coord" Name ":" Name ("observed" QName)? ";")*
+    ("law" ("semantic" | "required" | "representation") Name ":" PolyExpr "=" PolyExpr ";")*
+  "}")+
+  (("op" | "operation") Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
+    (Name "=" PolyExpr ";")*
+  "}")*
+  (("obs" | "observation") Name "on" Name "=" "(" PolyExpr ("," PolyExpr)* ")" ";")*
+"}"
+
+ShigureComparison ::= "comparison" Name "{"
+  "before" QName ";"
+  "after" QName ";"
+  ("state_map" Name "->" Name "{" (Name "=" PolyExpr ";")* "}")*
+  ("translate" Name "->" "[" (Name "(" (PolyExpr ("," PolyExpr)*)? ")"
+    ("," Name "(" (PolyExpr ("," PolyExpr)*)? ")")*)? "]" ";")*
+"}"
+
+ShigureChangeSpec ::= "change_spec" Name "{"
+  "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+  ("param" Name ":" ("Z" | "Q" | "Fp" "(" Integer ")") ";")*
+  ("fixed" (
+      ("semantic_law" | "representation_law" | "operation" | "op" | "observation" | "obs") QName
+    | ("state_comparison" | "word_translation") Name
+  ) ";")*
+  ("editable" (
+      ("representation_law" | "operation" | "op") QName
+    | "state_comparison" Name
+  ) ";")*
+"}"
+
+ShigureEvalCondition ::= "eval_condition" Name "{"
+  "point_domain" (
+      "algebraic_closure" | "universal_ring"
+    | "rational_points" | "Q_points"
+    | "integer_points" | "Z_points"
+    | ("finite_field_points" | "Fp_points") "(" Integer ")"
+  ) ";"
+  ("eval" Name "=" PolyExpr ";")*
+  ("equation" Name ":" PolyExpr "=" PolyExpr ";")*
+  ("invertible" Name ":" PolyExpr ";")*
+"}"
+
+ShigureTask ::= "task" Name "{"
+  "comparison" QName ";"
+  "change_spec" QName ";"
+  ("eval_condition" QName ";")?
+"}"
+```
+
+`PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
+`+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
+
+静的検査と変換検査では次を強制する。
+
+- **結論注入の拒否**: `residual_ideal`、`residuals`、`empty_witness`、`witness`、`solution`、`solutions`、
+  `interaction`、`interaction_summary`、`participating_variables`、`minimal_failing_subsets`、
+  `verdict`、`restored`、`reeval`、`groebner_basis` などの計算結論相当の欄や宣言を Law 入力に含めた場合、構文検査で拒否する。
+- **守る意味 Law の保護**: `editable semantic_law` は構文・型検査で拒否する。
+  `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
+  `editable` による `before` 表示の変更、および `before` 表示への探索パラメータ混入も拒否する。
+- **名前・参照・型・循環検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
+  reading 間の循環参照、未宣言の phase・座標・操作・変数、`state`/`arg`/`param` の名前空間衝突、
+  `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
+  （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
+  `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
+  法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル）を拒否する。
+  なお `domain Z` と `rational_points` は $\mathbb{Z} \hookrightarrow \mathbb{Q}$ による $\mathbb{Q}$ 点評価として受理する。
+- **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合、
+  零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` で沈黙する。
+  参照した観測座標の `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。

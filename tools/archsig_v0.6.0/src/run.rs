@@ -5,6 +5,7 @@ mod evaluate;
 mod output;
 mod reobserve;
 mod reuse;
+mod shigure;
 pub use evaluate::{run_internal_outcome, run_requests};
 
 pub use args::{Checked, parse_args};

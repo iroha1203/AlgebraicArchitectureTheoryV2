@@ -24,7 +24,7 @@ Result = {
 RunStatus = "complete"|"partial"|"invalid"|"unsupported"|"interrupted"|"error"
 SavedAnswer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
                applicability?:String,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[],scope:Scope}
-SavedType = Type | "Counterexample" | "EvaluationResult"
+SavedType = Type | "Counterexample" | "EvaluationResult" | "ShigureOutcome"
 SavedNode = {id:String,type:SavedType,state:"value"|"blocked",value?:Payload,
              partial?:Partial,conditions:Ref[],judgment?:SavedJudgment,reasons:Issue[]}
 SavedJudgment = {status:Decision,counterexamples?:Ref[],evidence?:Ref[],reasons:Issue[]}
@@ -65,7 +65,7 @@ Rule = {kind:"definition"|"subject"|"atom"|"law",location:Location}
      | {kind:"construction",name:Construction,path?:(String|Nat)[]}
 Partial = {entries:{path:(String|Nat)[],value?:Ref,reasons:Issue[]}[]}
 Scope = {readings:QName[],snapshots:Id[],modes:("observed"|"proposed"|"specification")[],
-         domain:"finite_model"|"all_assignments"|"candidate_space"|"all_completions",
+         domain:"finite_model"|"all_assignments"|"candidate_space"|"all_completions"|"shigure_presentation",
          quantifiers:Quantifier[],assumptions:Ref[]}
 Quantifier = {kind:"forall"|"exists",name:String,type:Type,domain?:Ref}
 FactPointer = {snapshot:Id,subject:Id,field?:QName,atom?:Id}
@@ -1225,13 +1225,14 @@ Repair/objectを生成せず不足位置を保持する。neededと後続の未�
 | IssueCode | 必須のdetailsと意味 |
 | --- | --- |
 | missing_observation | `{}`。missingにslot、dependenciesに依存式を要求 |
+| unobserved | SHIGURE 問いの未観測座標依存。`details` に [§8 の `SilenceReason`](#8-shigure-の型付き結果shigureoutcome) を保持 |
 | visibility_insufficient | `{locals:QName[],coordinates:Ref[]}`。原始値の欠測と別 |
-| inconsistent_observation | `{}`。型・参照を満たす補完が存在しない提示 |
-| unsupported_algorithm | `{question:QuestionKind,operand_types:Type[],method:String}`。有効な型付き問いに算法がない |
+| inconsistent_observation | `{}`。型・参照を満たす補完が存在しない提示。SHIGURE 変換検査エラー（`Origin.kind` 省略・曖昧な subject 解決・IR 変換不整合等）では `request` を付し `location` を省略して exit 65 で返す |
+| unsupported_algorithm | 通常問いは `{question:QuestionKind,operand_types:Type[],method:String}`。SHIGURE 問いは [§8 の `SilenceReason`](#8-shigure-の型付き結果shigureoutcome) |
 | condition_failed | `{condition:Ref,construction:Construction}`。構成条件が反証された |
 | dependency_blocked | `{request:String}`。dependenciesと元理由を推移的に保持 |
 | cancelled | `{signal:"SIGINT"\|"SIGTERM"}` |
-| syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle | typeは`{expected:Type,actual:Type}`。referenceは語彙bindingのnamespace未登録の場合に下記のavailable形式、それ以外は`{}`。入力の位置を必須 |
+| syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle | typeは`{expected:Type,actual:Type}`。referenceは語彙bindingのnamespace未登録の場合に下記のavailable形式、それ以外は`{}`。入力の位置を必須（ただし SHIGURE 変換時の参照解決エラーでは `request` を付し `location` を省略） |
 | vocabulary_mismatch | digest不一致は`{namespace:String,version:String,found_digest:Digest,expected_digest:Digest}`。binding自体がない場合はfound_digestを省略。指定version未登録は`{namespace:String,version:String,available:{namespace:String,version:String}[]}`。入力の位置を必須 |
 | unsupported_version | `{found_format:String,found_semantics?:String}` |
 | usage | `{argument:String}` |
@@ -1272,3 +1273,70 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 型を含む短い表示自体が512 byteを超える場合は `summary_bytes` のみを示す。
 束縛名とAtom位置の各識別子が256 byteを超える場合は、その欄の代わりに
 `name_bytes` / `snapshot_bytes` / `subject_bytes` / `field_bytes` / `atom_bytes` で元のbyte数を示す。
+
+## 8. SHIGURE の型付き結果（`ShigureOutcome`）
+
+`shigure_preservation`・`shigure_solve`・`shigure_interaction` の回答は、
+標準出力の `archsig.summary/1` では `answers[].outputs.shigure` に直接保持し、
+`--out` 保存時の `archsig.result/4` では `type: "ShigureOutcome"` の `SavedNode`（`answers[].outputs.shigure = {"node": ...}`、
+`scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
+
+```text
+ShigurePointDomain = "algebraic_closure" | "universal_ring" | "Q_points" | "Z_points"
+                   | ["Fp_points", DecimalPrime]
+
+ShigureOutcome = {
+  verdict: "established" | "refuted" | "undetermined",
+  coeff_domain: "Z" | "Q" | ["Fp", DecimalPrime],
+  point_domain: ShigurePointDomain,
+  applicability: ApplicabilityCheck[],
+  provenance: { origins: ShigureOriginRef[], clauses: String[] },
+  residual_ideal: String[],
+  result_kind: "mathematical_computation",
+  silence_reason?: SilenceReason,
+  empty_witness?: { generators: String[], cofactors: String[], verified: Bool },
+  restored?: {
+    parameter_assignments: { [Name]: String },
+    free_parameters: String[],
+    operations: { [OpName]: { [CoordName]: String } },
+    state_laws: { [PhaseName]: String[] },
+    state_comparisons: { [PhaseName]: { [CoordName]: String } },
+    word_translation: { [OpName]: String[] },
+    reevaluation: {
+      checked: Bool, matched: Bool, detail: String,
+      scope: "mathematical_model_reevaluation"
+    }
+  },
+  interaction?: {
+    parameters: String[],
+    minimal_failing_subsets: String[][],
+    min_interacting_variables?: Nat,
+    max_vanishing_subset_size?: Nat
+  }
+}
+
+ApplicabilityCheck = { condition: String, clause: String, satisfied: Bool, detail?: String }
+ShigureOriginRef = {
+  origin_id: String,
+  kind: "static_analysis" | "runtime_observation" | "llm_candidate" | "human_adopted",
+  source_id?: String, path?: String, span?: [Nat, Nat],
+  atom_ref?: String, law_declaration?: String
+}
+SilenceReason = {
+  code: "unobserved_dependency" | "nonlinear_point_existence_out_of_scope"
+      | "infinite_presentation_not_finitely_reducible" | "unsupported_coeff_ring"
+      | "quotient_ideal_out_of_scope" | "open_condition_in_interaction"
+      | "applicability_condition_not_met",
+  missing_slots?: String[],
+  point_domain?: ShigurePointDomain,
+  coeff_domain?: "Z" | "Q" | ["Fp", DecimalPrime],
+  condition?: String,
+  detail?: String
+}
+```
+
+`verdict: "undetermined"` のときは、対応する `SavedAnswer.reasons` と `SummaryAnswer.reasons` に
+`code: "unobserved"`（`unobserved_dependency` の場合）または `code: "unsupported_algorithm"`（その他の適用条件外の場合）の
+Issue を付与し、`details` へ `silence_reason` の構造体をそのまま保持する。
+`provenance.origins` には、当該タスクが参照した Law 宣言と、実際に参照された `observed` 座標の ArchMap `Origin`（全 `SourceLocation`）だけを収集し、未参照の `Origin` は混入させない。
+`restored.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。

@@ -51,6 +51,7 @@ Question ::= Kind "(" Head ("," Key "=" Argument)* ")"
 Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose | compare
            | localize | diagnose | repair | solve | quotient | needed
            | prepare | scopes | candidate | apply | observe
+           | shigure_preservation | shigure_solve | shigure_interaction
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
@@ -140,6 +141,9 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `repair(Law,using=Change,on=Handle,B)` | solveと同じ全解中の元Assignmentが一意な場合だけ修復対象を構成し元のLawへ再代入する。`domain:CandidateSpace`、`solutions:SolutionSet`、存在の`existence:Proposition`、構成条件の`proposition:Proposition`、構成成立時だけ`repair:Repair`、`object:Architecture` |
 | `quotient(View,on=Handle,law=QName?,fiber.at=Handle?,B)` | onはCandidateSpaceまたはSolutionSet。view評価が同じ候補を同一視する。`quotient:Quotient`。law指定時`proposition:Proposition` |
 | `needed($Id)` | 問いの依存先にある未観測位置と、それ以外の未決理由を返す。`plan:ObservationPlan` |
+| `shigure_preservation(Task,snapshot=Id?)` | 指定した `shigure task` について意味保存変更を検査し、保存残差 ideal・商環での状態 Law 閉性・全許可有限語の保存根拠を返す。`shigure:ShigureOutcome` |
+| `shigure_solve(Task,snapshot=Id?)` | 指定した `shigure task` の条件付き解空間 $\mathcal{F}_{a,H,P}$ を計算し、残差 ideal・空性証明 witness または復元した操作式/状態 Law/$h$/$\tau$ と再評価検算を返す。`shigure:ShigureOutcome` |
+| `shigure_interaction(Task,snapshot=Id?)` | 指定した `shigure task` の閉条件残差 ideal に対し、座標面支持から相互作用に参加する変数数と極小不成立部分族を計算する。`shigure:ShigureOutcome` |
 
 各行にない固定引数を拒否する。evaluateのBはviewの全parameterを束縛する。
 LawのBは部分束縛を許し、未束縛parameterは[Lawの適用](law.md#5-law-の表示と適用)に従って全称化する。
@@ -152,6 +156,15 @@ checkに対象選択がない場合は現在のArchMap全体、localize/solve/re
 無限域の全称を有限の試行例で代用せず、型付きの式と適用可能な算法を保持する。
 未観測fieldの補完をBで与えることはできない。
 `build/map/compose/compare/diagnose/needed`にはBを指定しない。
+
+SHIGURE の 3 種別の問い（`shigure_preservation`・`shigure_solve`・`shigure_interaction`）では、
+`Task` に Law ファイル内の `shigure task` の完全名（`Reading.Task`）または一意な短名を指定し、
+任意の `snapshot=Id` で `observed` 座標参照の対象 ArchMap snapshot を絞れる。
+同一の `archsig run` に複数の SHIGURE 問いを並べて実行できるが、通常の観測評価系の問いとは混在できない（混在は `usage` / exit 64）。
+SHIGURE 問いへ `--reuse` を渡した場合はキャッシュを再利用せず、`warnings`（`details.argument: "--reuse"`）を添えて現在入力から再計算する。
+出力は通常と同じ `archsig.summary/1`（stdout）および `archsig.result/4`（`--out` 保存時）に従い、
+1 件以上の `undetermined`（沈黙）があれば `partial` / exit 2、全件確定かつ 1 件以上の `refuted` があれば `complete` / exit 1、
+全件 `established` なら `complete` / exit 0 を返す。`archsig check` は入力の SHIGURE 宣言も同一の静的検査で検証する。
 
 `build`はrootと各owned entityを対象族、保存確認済みの内部arrowを生成元とし、型の合う全有限語を
 操作とするObjectAlgebraを返す。Law・方程式・circuit・不変量・signatureは標準規則で生成する。

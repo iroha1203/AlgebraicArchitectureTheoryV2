@@ -26,15 +26,18 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/ideal 計算核・意味保存変更/条件付き解空間/相互作用エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
-下位3 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
+下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
+依存の向きは `archsig-common` → `archsig-input` → `archsig-computation` / `archsig-shigure` → `archsig` であり、
+`archsig-shigure` は `crates/computation/src/observed/` へ依存しません。
 各モジュールは担当crateで一度だけコンパイルします。統合テストも
-`archsig_input::archmap`、`archsig_computation::observed`など所有crateを直接参照し、
+`archsig_input::archmap`、`archsig_computation::observed`、`archsig_shigure::solver` など所有crateを直接参照し、
 CLI packageから下位モジュールを再公開しません。
 検査済み入力は共有参照のgetterで読み取り、上位crateから構築・更新できません。
 
-workspaceの`default-members`は4 packageすべてです。既存のmanifest指定の
+workspaceの`default-members`は5 packageすべてです。既存のmanifest指定の
 `cargo test`とCIのnextest partitionで、各crateのunit testとCLIの統合テストを実行します。
 `-p archsig`だけでは下位crateのunit testを実行しません。
 `cargo test --doc --workspace --manifest-path tools/archsig_v0.6.0/Cargo.toml`で
@@ -81,6 +84,22 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
 要求が成り立たない回答は `refuted`、入力から決まらない回答は `undetermined` と理由を返します。
 実行失敗は標準エラー出力の機械可読JSONと終了コードで確認できます。
 終了コードと中断時の扱いは実行仕様を参照してください。
+
+### SHIGURE の実行例
+
+SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction` の各問いで
+意味保存変更・条件付き解空間と操作式復元・座標面支持による相互作用解析を実行できます。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.archmap.json \
+  --ask 'p6c=shigure_solve(LedgerMigration.P6cEditableBusy)' \
+  --ask 'p6d=shigure_solve(LedgerMigration.P6dFixedOldBusy)'
+```
+
+この例では `p6c` が `established`（`rho = 1`・`finish` と Busy Law を復元し再評価一致）、
+`p6d` が `refuted`（検算済み空性 witness 付き）となり、反証を含むため終了コードは 1 です。
 
 ## 仕様
 

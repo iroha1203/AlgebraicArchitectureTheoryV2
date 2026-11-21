@@ -1,0 +1,33 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "LedgerVocab",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "LedgerVocab.Account",
+          "meaning": "Ledger account observation subject for SHIGURE migration checks.",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "balance",
+              "type": "Q",
+              "meaning": "Observed rational balance coordinate."
+            },
+            {
+              "name": "tag",
+              "type": "Text",
+              "meaning": "Account label."
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
