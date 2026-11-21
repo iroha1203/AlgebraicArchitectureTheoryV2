@@ -85,6 +85,9 @@ pub(crate) fn model_json_controlled<E: InputError>(
             E::checkpoint(control, point)?;
         }
         object.insert("locations".to_owned(), Json::Arr(locations));
+        if let Some(kind) = origin.kind {
+            object.insert("kind".to_owned(), Json::str(kind.wire()));
+        }
         if let Some(note) = &origin.note {
             object.insert("note".to_owned(), Json::str(note.clone()));
         }

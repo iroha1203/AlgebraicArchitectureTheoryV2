@@ -54,25 +54,35 @@ impl<E: InputError> Parser<E> {
 
     // ---- 字句の参照 ----
 
-    fn peek(&self) -> Option<&Token> {
+    pub(super) fn peek(&self) -> Option<&Token> {
         (self.pos < self.limit).then(|| &self.toks[self.pos])
     }
 
-    fn peek_at(&self, k: usize) -> Option<&Token> {
+    pub(super) fn peek_at(&self, k: usize) -> Option<&Token> {
         (self.pos + k < self.limit).then(|| &self.toks[self.pos + k])
     }
 
-    fn is_sym(&self, s: &str) -> bool {
+    pub(super) fn advance(&mut self) {
+        if self.pos < self.limit {
+            self.pos += 1;
+        }
+    }
+
+    pub(super) fn checkpoint_here(&self) -> PResult<(), E> {
+        E::checkpoint(&self.control, self.point)
+    }
+
+    pub(super) fn is_sym(&self, s: &str) -> bool {
         self.peek()
             .is_some_and(|t| t.kind == TokenKind::Sym && t.text == s)
     }
 
-    fn is_kw(&self, s: &str) -> bool {
+    pub(super) fn is_kw(&self, s: &str) -> bool {
         self.peek()
             .is_some_and(|t| t.kind == TokenKind::Name && t.text == s)
     }
 
-    fn here(&self) -> Span {
+    pub(super) fn here(&self) -> Span {
         match self.peek() {
             Some(t) => t.span,
             None if self.limit < self.toks.len() => self.toks[self.limit].span,
@@ -80,7 +90,15 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn prev_end(&self) -> usize {
+    pub(super) fn prev_span(&self) -> Span {
+        if self.pos == 0 {
+            (0, 0)
+        } else {
+            self.toks[self.pos - 1].span
+        }
+    }
+
+    pub(super) fn prev_end(&self) -> usize {
         if self.pos == 0 {
             0
         } else {
@@ -88,11 +106,11 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn err<T>(&self, message: impl Into<String>) -> PResult<T, E> {
+    pub(super) fn err<T>(&self, message: impl Into<String>) -> PResult<T, E> {
         Err((Box::new(Issue::law(Code::Syntax, self.here(), message))).into())
     }
 
-    fn eat_sym(&mut self, s: &str) -> bool {
+    pub(super) fn eat_sym(&mut self, s: &str) -> bool {
         if self.is_sym(s) {
             self.pos += 1;
             true
@@ -101,7 +119,7 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn eat_kw(&mut self, s: &str) -> bool {
+    pub(super) fn eat_kw(&mut self, s: &str) -> bool {
         if self.is_kw(s) {
             self.pos += 1;
             true
@@ -110,7 +128,7 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn expect_sym(&mut self, s: &str) -> PResult<Span, E> {
+    pub(super) fn expect_sym(&mut self, s: &str) -> PResult<Span, E> {
         if self.is_sym(s) {
             self.pos += 1;
             Ok(self.toks[self.pos - 1].span)
@@ -119,7 +137,7 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn expect_kw(&mut self, s: &str) -> PResult<Span, E> {
+    pub(super) fn expect_kw(&mut self, s: &str) -> PResult<Span, E> {
         if self.is_kw(s) {
             self.pos += 1;
             Ok(self.toks[self.pos - 1].span)
@@ -128,7 +146,7 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn ident(&mut self) -> PResult<Ident, E> {
+    pub(super) fn ident(&mut self) -> PResult<Ident, E> {
         match self.peek() {
             Some(t) if t.kind == TokenKind::Name && !is_reserved(&t.text) => {
                 let id = Ident {
@@ -159,7 +177,7 @@ impl<E: InputError> Parser<E> {
     }
 
     /// `.` に続く名前を貪欲に読む。
-    fn qname(&mut self) -> PResult<QName, E> {
+    pub(super) fn qname(&mut self) -> PResult<QName, E> {
         // Embedded ArchMap Term parsers retain their caller's checkpoint.
         let point = if self.point == Checkpoint::LawIteration {
             Checkpoint::LawName
@@ -237,6 +255,7 @@ impl<E: InputError> Parser<E> {
             let mut uses = Vec::new();
             let mut vocabularies = Vec::new();
             let mut decls = Vec::new();
+            let mut shigure_decls = Vec::new();
             while !parser.is_sym("}") {
                 E::checkpoint(&parser.control, parser.point)?;
                 if parser.eat_kw("use") {
@@ -284,6 +303,8 @@ impl<E: InputError> Parser<E> {
                         parser.expect_sym(";")?;
                         uses.push(Use { reading, alias });
                     }
+                } else if parser.is_kw("shigure") {
+                    shigure_decls.push(parser.parse_shigure_decl()?);
                 } else {
                     decls.push(parser.decl()?);
                 }
@@ -296,6 +317,7 @@ impl<E: InputError> Parser<E> {
                 uses,
                 vocabularies,
                 decls,
+                shigure_decls,
                 span: (start, parser.prev_end()),
             })
         })

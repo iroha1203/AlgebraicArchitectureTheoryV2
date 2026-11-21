@@ -107,6 +107,9 @@ pub enum ValidationError {
     ConclusionInjectionRejected {
         field: String,
     },
+    ConversionError {
+        detail: String,
+    },
 }
 
 impl fmt::Display for ValidationError {
@@ -241,6 +244,9 @@ impl fmt::Display for ValidationError {
             }
             ValidationError::ConclusionInjectionRejected { field } => {
                 write!(f, "conclusion injection field `{field}` is forbidden")
+            }
+            ValidationError::ConversionError { detail } => {
+                write!(f, "input conversion error: {detail}")
             }
         }
     }

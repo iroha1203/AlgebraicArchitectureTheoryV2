@@ -64,7 +64,8 @@ atomic!(
     crate::law::ast::QuantKind,
     crate::law::ast::Role,
     crate::law::model::ExpressionKind,
-    crate::archmap::Mode
+    crate::archmap::Mode,
+    crate::archmap::OriginKind
 );
 impl ControlledEq for str {
     fn compare(&self, other: &Self, c: &mut Comparison<'_>) -> Result<(), BundleError> {
@@ -1016,6 +1017,7 @@ impl ControlledEq for crate::archmap::Origin {
         c.eq(&self.id, &other.id)?;
         c.eq(&self.mode, &other.mode)?;
         c.eq(&self.method, &other.method)?;
+        c.eq(&self.kind, &other.kind)?;
         c.eq(&self.locations, &other.locations)?;
         c.eq(&self.note, &other.note)?;
         Ok(())
@@ -1316,6 +1318,9 @@ impl ControlledEq for crate::law::CheckedLaw {
         c.eq(&self.quantifier_types, &other.quantifier_types)?;
         c.eq(&self.infos, &other.infos)?;
         c.eq(&self.definitions, &other.definitions)?;
+        if self.shigure != other.shigure {
+            return c.mismatch();
+        }
         Ok(())
     }
 }

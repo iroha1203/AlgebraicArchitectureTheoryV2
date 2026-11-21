@@ -39,11 +39,41 @@ pub struct SourceLocation {
     pub span: Option<(u64, u64)>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum OriginKind {
+    StaticAnalysis,
+    RuntimeObservation,
+    LlmCandidate,
+    HumanAdopted,
+}
+
+impl OriginKind {
+    pub fn wire(self) -> &'static str {
+        match self {
+            OriginKind::StaticAnalysis => "static_analysis",
+            OriginKind::RuntimeObservation => "runtime_observation",
+            OriginKind::LlmCandidate => "llm_candidate",
+            OriginKind::HumanAdopted => "human_adopted",
+        }
+    }
+
+    pub fn from_wire(s: &str) -> Option<Self> {
+        match s {
+            "static_analysis" => Some(OriginKind::StaticAnalysis),
+            "runtime_observation" => Some(OriginKind::RuntimeObservation),
+            "llm_candidate" => Some(OriginKind::LlmCandidate),
+            "human_adopted" => Some(OriginKind::HumanAdopted),
+            _ => None,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Origin {
     pub id: String,
     pub mode: Mode,
     pub method: String,
+    pub kind: Option<OriginKind>,
     pub locations: Vec<SourceLocation>,
     pub note: Option<String>,
 }
