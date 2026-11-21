@@ -9,6 +9,8 @@ mod lower;
 mod lower_expr;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_extra;
 
 use crate::ir::validate::{CheckedShigureTask, ValidationError};
 use archsig_input::input::CheckedInputs;

@@ -1,8 +1,6 @@
 //! `CheckedInputs` から `CheckedShigureTask` への厳密な lowering 実装。
 
-use super::lower_expr::{
-    conv_err, harvest_archmap_origins, law_source_ref, lower_poly_expr, resolve_observed_coord,
-};
+use super::lower_expr::{conv_err, law_source_ref, lower_poly_expr, resolve_observed_coord};
 use crate::ir::change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,
 };
@@ -70,7 +68,6 @@ pub(super) fn convert_checked_inputs(
             context: selected.comparison.name.clone(),
         })?;
 
-    let archmap_origins = harvest_archmap_origins(archmap, snapshot_id)?;
     let param_names: BTreeSet<String> = selected
         .change_spec
         .parameters
@@ -84,31 +81,33 @@ pub(super) fn convert_checked_inputs(
         before_decl,
         archmap,
         snapshot_id,
-        &archmap_origins,
         &empty_params,
         Some(&param_names),
     )?;
-    let after = lower_presentation(
-        after_decl,
-        archmap,
-        snapshot_id,
-        &archmap_origins,
-        &param_names,
-        None,
-    )?;
+    let after = lower_presentation(after_decl, archmap, snapshot_id, &param_names, None)?;
 
     let pair = lower_comparison_pair(selected.comparison, before, after, &param_names)?;
-    let change_spec = lower_change_spec(selected.change_spec, &archmap_origins);
+    let change_spec = lower_change_spec(selected.change_spec);
+
+    // task 省略経路でも明示 task 経路と同じく `editable` は `after` 側限定であることを強制する。
+    for target in &change_spec.editable {
+        match target {
+            EditableTarget::OperationExpr { presentation, .. }
+            | EditableTarget::RepresentationLaw { presentation, .. }
+                if presentation != &pair.after.name =>
+            {
+                return Err(conv_err(format!(
+                    "editable target must belong to `after` presentation `{}` (got `{presentation}`)",
+                    pair.after.name
+                )));
+            }
+            _ => {}
+        }
+    }
+
     let eval_condition = selected
         .eval_condition
-        .map(|ec| {
-            lower_eval_condition(
-                ec,
-                &change_spec.coeff_domain,
-                &param_names,
-                &archmap_origins,
-            )
-        })
+        .map(|ec| lower_eval_condition(ec, &change_spec.coeff_domain, &param_names))
         .transpose()?;
 
     CheckedShigureTask::validate(pair, change_spec, eval_condition)
@@ -238,7 +237,6 @@ fn lower_presentation(
     decl: &ShigurePresentation,
     archmap: &CheckedArchMap,
     snapshot_id: Option<&str>,
-    archmap_origins: &[SourceRef],
     allowed_params: &BTreeSet<String>,
     forbidden_params: Option<&BTreeSet<String>>,
 ) -> Result<Presentation, ValidationError> {
@@ -256,6 +254,8 @@ fn lower_presentation(
         })
         .collect();
 
+    // 表示に実際に参照された `observed` 座標の由来だけを厳密に収集する（未参照 ArchMap 由来は混入させない）。
+    let mut pres_origins: BTreeSet<SourceRef> = BTreeSet::from([pres_ref.clone()]);
     let mut phases = Vec::with_capacity(decl.phases.len());
     let mut phase_coord_sets: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for ph in &decl.phases {
@@ -265,14 +265,21 @@ fn lower_presentation(
             coord_set.insert(c.name.clone());
             let (value, provenance) = match &c.binding {
                 ShigureCoordBinding::Symbolic => (CoordValue::Symbolic, Some(pres_ref.clone())),
-                ShigureCoordBinding::ObservedField { entity, field, .. } => resolve_observed_coord(
-                    archmap,
-                    snapshot_id,
-                    entity,
-                    field,
-                    &coeff_domain,
-                    &pres_ref,
-                )?,
+                ShigureCoordBinding::ObservedField { entity, field, .. } => {
+                    let (val, refs) = resolve_observed_coord(
+                        archmap,
+                        snapshot_id,
+                        entity,
+                        field,
+                        &coeff_domain,
+                        &pres_ref,
+                    )?;
+                    let first = refs.first().cloned();
+                    for r in refs {
+                        pres_origins.insert(r);
+                    }
+                    (val, first)
+                }
             };
             coords.push(CoordDecl {
                 name: c.name.clone(),
@@ -377,9 +384,6 @@ fn lower_presentation(
         });
     }
 
-    let mut origins = vec![pres_ref];
-    origins.extend(archmap_origins.iter().cloned());
-
     Ok(Presentation {
         name: decl.name.clone(),
         coeff_domain,
@@ -388,7 +392,7 @@ fn lower_presentation(
         operations,
         observations,
         provenance: Provenance {
-            origins,
+            origins: pres_origins.into_iter().collect(),
             clauses: vec![],
         },
     })
@@ -494,7 +498,7 @@ fn lower_comparison_pair(
     })
 }
 
-fn lower_change_spec(decl: &ShigureChangeSpec, archmap_origins: &[SourceRef]) -> ChangeSpec {
+fn lower_change_spec(decl: &ShigureChangeSpec) -> ChangeSpec {
     let spec_ref = law_source_ref(&decl.name);
     let parameters = decl
         .parameters
@@ -580,8 +584,6 @@ fn lower_change_spec(decl: &ShigureChangeSpec, archmap_origins: &[SourceRef]) ->
             }
         })
         .collect();
-    let mut origins = vec![spec_ref];
-    origins.extend(archmap_origins.iter().cloned());
     ChangeSpec {
         name: decl.name.clone(),
         coeff_domain: lower_coeff_domain(&decl.coeff_domain),
@@ -589,7 +591,7 @@ fn lower_change_spec(decl: &ShigureChangeSpec, archmap_origins: &[SourceRef]) ->
         fixed,
         editable,
         provenance: Provenance {
-            origins,
+            origins: vec![spec_ref],
             clauses: vec![],
         },
     }
@@ -599,7 +601,6 @@ fn lower_eval_condition(
     decl: &ShigureEvalCondition,
     coeff_domain: &CoeffDomain,
     param_names: &BTreeSet<String>,
-    archmap_origins: &[SourceRef],
 ) -> Result<EvalCondition, ValidationError> {
     let ec_ref = law_source_ref(&decl.name);
     let empty = BTreeSet::new();
@@ -629,8 +630,6 @@ fn lower_eval_condition(
     let evaluations = lower_named(&decl.evaluations, "eval")?;
     let equations = lower_named(&decl.equations, "equation")?;
     let invertibles = lower_named(&decl.invertibles, "invertible")?;
-    let mut origins = vec![ec_ref];
-    origins.extend(archmap_origins.iter().cloned());
     Ok(EvalCondition {
         name: decl.name.clone(),
         evaluations,
@@ -638,7 +637,7 @@ fn lower_eval_condition(
         invertibles,
         point_domain: lower_point_domain(&decl.point_domain),
         provenance: Provenance {
-            origins,
+            origins: vec![ec_ref],
             clauses: vec![],
         },
     })

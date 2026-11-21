@@ -285,15 +285,6 @@ impl<E: InputError> Parser<E> {
         let mut updates = Vec::new();
         while !self.is_sym("}") {
             self.checkpoint_here()?;
-            if let Some(t) = self.peek()
-                && t.kind == TokenKind::Name
-                && is_forbidden_conclusion_field(&t.text)
-            {
-                return self.err(format!(
-                    "conclusion injection is forbidden: `{}` cannot be supplied in `op`",
-                    t.text
-                ));
-            }
             let coord = self.ident()?;
             self.expect_sym("=")?;
             let expr = self.parse_shigure_poly_expr()?;

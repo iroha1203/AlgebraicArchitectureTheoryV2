@@ -1,4 +1,4 @@
-//! ArchMap 由来・観測座標解決と多項式式の名前空間分離 lowering。
+//! ArchMap 由来・観測座標解決と多項式式の反復 lowering（名前空間分離）。
 
 use crate::ir::presentation::CoordValue;
 use crate::ir::provenance::{OriginKind, SourceRef};
@@ -12,8 +12,6 @@ use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::{One, Zero};
 use std::collections::BTreeSet;
-
-const MAX_POLY_DEPTH: usize = 256;
 
 pub(super) fn conv_err(detail: impl Into<String>) -> ValidationError {
     ValidationError::ConversionError {
@@ -34,19 +32,15 @@ fn lower_origin_kind(k: InputOriginKind) -> OriginKind {
     }
 }
 
-pub(super) fn origin_to_source_refs(
+fn origin_to_source_refs(
     origin: &Origin,
     atom_ref: Option<String>,
-    require_kind: bool,
 ) -> Result<Vec<SourceRef>, ValidationError> {
     let Some(kind) = origin.kind else {
-        if require_kind {
-            return Err(conv_err(format!(
-                "SHIGURE observed origin `{}` must declare an explicit `kind` (`static_analysis`, `runtime_observation`, `llm_candidate`, or `human_adopted`)",
-                origin.id
-            )));
-        }
-        return Ok(vec![]);
+        return Err(conv_err(format!(
+            "SHIGURE observed origin `{}` must declare an explicit `kind` (`static_analysis`, `runtime_observation`, `llm_candidate`, or `human_adopted`)",
+            origin.id
+        )));
     };
     let kind = lower_origin_kind(kind);
     if origin.locations.is_empty() {
@@ -68,41 +62,8 @@ pub(super) fn origin_to_source_refs(
     Ok(out)
 }
 
-pub(super) fn harvest_archmap_origins(
-    archmap: &CheckedArchMap,
-    snapshot_id: Option<&str>,
-) -> Result<Vec<SourceRef>, ValidationError> {
-    let mut active_origin_ids: Option<BTreeSet<&str>> = None;
-    if let Some(sid) = snapshot_id {
-        let mut ids = BTreeSet::new();
-        for snap in archmap.snapshots().iter().filter(|s| s.id == sid) {
-            ids.insert(snap.origin.as_str());
-            for subj in &snap.subjects {
-                ids.insert(subj.origin.as_str());
-                for f in &subj.fields {
-                    if let Slot::Known { origin, .. } = &f.slot {
-                        ids.insert(origin.as_str());
-                    }
-                }
-            }
-        }
-        active_origin_ids = Some(ids);
-    }
-
-    let mut refs = BTreeSet::new();
-    for origin in archmap.origins() {
-        if let Some(filter) = &active_origin_ids
-            && !filter.contains(origin.id.as_str())
-        {
-            continue;
-        }
-        for sr in origin_to_source_refs(origin, None, false)? {
-            refs.insert(sr);
-        }
-    }
-    Ok(refs.into_iter().collect())
-}
-
+/// `observed <Entity.field>` 座標を ArchMap から解決し、値と全 `SourceLocation` 由来の
+/// `SourceRef` 列を返す（複数 location の `atom_ref` を落とさない）。
 pub(super) fn resolve_observed_coord(
     archmap: &CheckedArchMap,
     snapshot_id: Option<&str>,
@@ -110,7 +71,7 @@ pub(super) fn resolve_observed_coord(
     field_full: &str,
     domain: &CoeffDomain,
     fallback_law_ref: &SourceRef,
-) -> Result<(CoordValue, Option<SourceRef>), ValidationError> {
+) -> Result<(CoordValue, Vec<SourceRef>), ValidationError> {
     let mut matches: Vec<(&Snapshot, &Subject)> = Vec::new();
     for snap in archmap.snapshots() {
         if let Some(sid) = snapshot_id
@@ -134,7 +95,7 @@ pub(super) fn resolve_observed_coord(
         let missing_ref = fallback_law_ref
             .clone()
             .with_atom_ref(format!("missing_subject:{entity}:{field_full}"));
-        return Ok((CoordValue::Missing, Some(missing_ref)));
+        return Ok((CoordValue::Missing, vec![missing_ref]));
     };
 
     let field = subj
@@ -159,8 +120,8 @@ pub(super) fn resolve_observed_coord(
                     context: format!("{}:{}", snap.id, subj.id),
                 })?;
             let atom_slot = format!("{}:{}:{}", snap.id, subj.id, field_full);
-            let refs = origin_to_source_refs(origin, Some(atom_slot), true)?;
-            Ok((CoordValue::Missing, refs.into_iter().next()))
+            let refs = origin_to_source_refs(origin, Some(atom_slot))?;
+            Ok((CoordValue::Missing, refs))
         }
         Slot::Known {
             atom,
@@ -178,9 +139,9 @@ pub(super) fn resolve_observed_coord(
                     context: format!("{}:{}:{atom}", snap.id, subj.id),
                 })?;
             let atom_ref = format!("{}:{}:{}:{atom}", snap.id, subj.id, field_full);
-            let refs = origin_to_source_refs(origin, Some(atom_ref), true)?;
+            let refs = origin_to_source_refs(origin, Some(atom_ref))?;
             let lit = archmap_value_to_scalar(value, domain, field_full)?;
-            Ok((CoordValue::Observed(lit), refs.into_iter().next()))
+            Ok((CoordValue::Observed(lit), refs))
         }
     }
 }
@@ -221,6 +182,16 @@ fn archmap_value_to_scalar(
     }
 }
 
+enum LowerFrame<'a> {
+    Visit(&'a ShigurePolyExpr),
+    ApplyNeg,
+    ApplyAdd,
+    ApplySub,
+    ApplyMul,
+    ApplyPow(u32),
+}
+
+/// 深い平坦和でもスタックを枯渇させない反復ワークリストによる `ShigurePolyExpr` → `PolyExpr` 変換。
 pub(super) fn lower_poly_expr(
     expr: &ShigurePolyExpr,
     domain: &CoeffDomain,
@@ -245,205 +216,146 @@ pub(super) fn lower_poly_expr(
             )));
         }
     }
-    lower_poly_expr_rec(
-        expr,
-        domain,
-        state_vars,
-        arg_vars,
-        param_vars,
-        forbidden_params,
-        context,
-        0,
-    )
-}
 
-#[allow(clippy::too_many_arguments)]
-fn lower_poly_expr_rec(
-    expr: &ShigurePolyExpr,
-    domain: &CoeffDomain,
-    state_vars: &BTreeSet<String>,
-    arg_vars: &BTreeSet<String>,
-    param_vars: &BTreeSet<String>,
-    forbidden_params: Option<&BTreeSet<String>>,
-    context: &str,
-    depth: usize,
-) -> Result<PolyExpr, ValidationError> {
-    if depth > MAX_POLY_DEPTH {
-        return Err(conv_err(format!(
-            "polynomial expression nesting exceeded limit ({MAX_POLY_DEPTH}) in {context}"
-        )));
-    }
-    match expr {
-        ShigurePolyExpr::Int(n) => {
-            let lit = match domain {
-                CoeffDomain::Z => ScalarLit::Z(n.clone()),
-                CoeffDomain::Q => ScalarLit::Q {
-                    num: n.clone(),
-                    den: BigInt::one(),
-                },
-                CoeffDomain::Fp(p) => {
-                    let Some(u) = n.to_biguint() else {
-                        return Err(ValidationError::InvalidFpLiteral {
-                            context: context.to_owned(),
-                        });
+    let mut work: Vec<LowerFrame<'_>> = vec![LowerFrame::Visit(expr)];
+    let mut values: Vec<PolyExpr> = Vec::new();
+
+    while let Some(frame) = work.pop() {
+        match frame {
+            LowerFrame::Visit(node) => match node {
+                ShigurePolyExpr::Int(n) => {
+                    let lit = match domain {
+                        CoeffDomain::Z => ScalarLit::Z(n.clone()),
+                        CoeffDomain::Q => ScalarLit::Q {
+                            num: n.clone(),
+                            den: BigInt::one(),
+                        },
+                        CoeffDomain::Fp(p) => {
+                            let Some(u) = n.to_biguint() else {
+                                return Err(ValidationError::InvalidFpLiteral {
+                                    context: context.to_owned(),
+                                });
+                            };
+                            if &u >= p {
+                                return Err(ValidationError::InvalidFpLiteral {
+                                    context: context.to_owned(),
+                                });
+                            }
+                            ScalarLit::Fp {
+                                value: u,
+                                modulus: p.clone(),
+                            }
+                        }
                     };
-                    if &u >= p {
-                        return Err(ValidationError::InvalidFpLiteral {
+                    values.push(PolyExpr::Const(lit));
+                }
+                ShigurePolyExpr::Rat { num, den } => {
+                    if !matches!(domain, CoeffDomain::Q) {
+                        return Err(ValidationError::DomainMismatch {
+                            expected: domain.clone(),
+                            actual: CoeffDomain::Q,
                             context: context.to_owned(),
                         });
                     }
-                    ScalarLit::Fp {
-                        value: u,
-                        modulus: p.clone(),
+                    if *den <= BigInt::zero() {
+                        return Err(ValidationError::InvalidRational {
+                            context: context.to_owned(),
+                        });
+                    }
+                    let g = num.gcd(den);
+                    values.push(PolyExpr::Const(ScalarLit::Q {
+                        num: num / &g,
+                        den: den / g,
+                    }));
+                }
+                ShigurePolyExpr::Fp { value, modulus } => match domain {
+                    CoeffDomain::Fp(expected) if expected == modulus => {
+                        if value >= modulus {
+                            return Err(ValidationError::InvalidFpLiteral {
+                                context: context.to_owned(),
+                            });
+                        }
+                        values.push(PolyExpr::Const(ScalarLit::Fp {
+                            value: value.clone(),
+                            modulus: modulus.clone(),
+                        }));
+                    }
+                    _ => {
+                        return Err(ValidationError::DomainMismatch {
+                            expected: domain.clone(),
+                            actual: CoeffDomain::Fp(modulus.clone()),
+                            context: context.to_owned(),
+                        });
+                    }
+                },
+                ShigurePolyExpr::Var(v) => {
+                    if state_vars.contains(v) {
+                        values.push(PolyExpr::StateVar(v.clone()));
+                    } else if arg_vars.contains(v) {
+                        values.push(PolyExpr::ArgVar(v.clone()));
+                    } else if param_vars.contains(v) {
+                        values.push(PolyExpr::ParamVar(v.clone()));
+                    } else if forbidden_params.is_some_and(|fp| fp.contains(v)) {
+                        return Err(conv_err(format!(
+                            "parameter `{v}` cannot appear in `before` presentation ({context})"
+                        )));
+                    } else {
+                        return Err(ValidationError::UnknownRef {
+                            kind: "variable",
+                            name: v.clone(),
+                            context: context.to_owned(),
+                        });
                     }
                 }
-            };
-            Ok(PolyExpr::Const(lit))
-        }
-        ShigurePolyExpr::Rat { num, den } => {
-            if !matches!(domain, CoeffDomain::Q) {
-                return Err(ValidationError::DomainMismatch {
-                    expected: domain.clone(),
-                    actual: CoeffDomain::Q,
-                    context: context.to_owned(),
-                });
-            }
-            if *den <= BigInt::zero() {
-                return Err(ValidationError::InvalidRational {
-                    context: context.to_owned(),
-                });
-            }
-            let g = num.gcd(den);
-            Ok(PolyExpr::Const(ScalarLit::Q {
-                num: num / &g,
-                den: den / g,
-            }))
-        }
-        ShigurePolyExpr::Fp { value, modulus } => match domain {
-            CoeffDomain::Fp(expected) if expected == modulus => {
-                if value >= modulus {
-                    return Err(ValidationError::InvalidFpLiteral {
-                        context: context.to_owned(),
-                    });
+                ShigurePolyExpr::Neg(a) => {
+                    work.push(LowerFrame::ApplyNeg);
+                    work.push(LowerFrame::Visit(a));
                 }
-                Ok(PolyExpr::Const(ScalarLit::Fp {
-                    value: value.clone(),
-                    modulus: modulus.clone(),
-                }))
+                ShigurePolyExpr::Add(a, b) => {
+                    work.push(LowerFrame::ApplyAdd);
+                    work.push(LowerFrame::Visit(b));
+                    work.push(LowerFrame::Visit(a));
+                }
+                ShigurePolyExpr::Sub(a, b) => {
+                    work.push(LowerFrame::ApplySub);
+                    work.push(LowerFrame::Visit(b));
+                    work.push(LowerFrame::Visit(a));
+                }
+                ShigurePolyExpr::Mul(a, b) => {
+                    work.push(LowerFrame::ApplyMul);
+                    work.push(LowerFrame::Visit(b));
+                    work.push(LowerFrame::Visit(a));
+                }
+                ShigurePolyExpr::Pow(a, exp) => {
+                    work.push(LowerFrame::ApplyPow(*exp));
+                    work.push(LowerFrame::Visit(a));
+                }
+            },
+            LowerFrame::ApplyNeg => {
+                let a = values.pop().expect("neg operand");
+                values.push(PolyExpr::negate(a));
             }
-            _ => Err(ValidationError::DomainMismatch {
-                expected: domain.clone(),
-                actual: CoeffDomain::Fp(modulus.clone()),
-                context: context.to_owned(),
-            }),
-        },
-        ShigurePolyExpr::Var(v) => {
-            if state_vars.contains(v) {
-                Ok(PolyExpr::StateVar(v.clone()))
-            } else if arg_vars.contains(v) {
-                Ok(PolyExpr::ArgVar(v.clone()))
-            } else if param_vars.contains(v) {
-                Ok(PolyExpr::ParamVar(v.clone()))
-            } else if forbidden_params.is_some_and(|fp| fp.contains(v)) {
-                Err(conv_err(format!(
-                    "parameter `{v}` cannot appear in `before` presentation ({context})"
-                )))
-            } else {
-                Err(ValidationError::UnknownRef {
-                    kind: "variable",
-                    name: v.clone(),
-                    context: context.to_owned(),
-                })
+            LowerFrame::ApplyAdd => {
+                let b = values.pop().expect("add rhs");
+                let a = values.pop().expect("add lhs");
+                values.push(PolyExpr::sum(a, b));
+            }
+            LowerFrame::ApplySub => {
+                let b = values.pop().expect("sub rhs");
+                let a = values.pop().expect("sub lhs");
+                values.push(PolyExpr::diff(a, b));
+            }
+            LowerFrame::ApplyMul => {
+                let b = values.pop().expect("mul rhs");
+                let a = values.pop().expect("mul lhs");
+                values.push(PolyExpr::prod(a, b));
+            }
+            LowerFrame::ApplyPow(exp) => {
+                let a = values.pop().expect("pow base");
+                values.push(PolyExpr::pow(a, exp));
             }
         }
-        ShigurePolyExpr::Neg(a) => Ok(PolyExpr::negate(lower_poly_expr_rec(
-            a,
-            domain,
-            state_vars,
-            arg_vars,
-            param_vars,
-            forbidden_params,
-            context,
-            depth + 1,
-        )?)),
-        ShigurePolyExpr::Add(a, b) => Ok(PolyExpr::sum(
-            lower_poly_expr_rec(
-                a,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-            lower_poly_expr_rec(
-                b,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-        )),
-        ShigurePolyExpr::Sub(a, b) => Ok(PolyExpr::diff(
-            lower_poly_expr_rec(
-                a,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-            lower_poly_expr_rec(
-                b,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-        )),
-        ShigurePolyExpr::Mul(a, b) => Ok(PolyExpr::prod(
-            lower_poly_expr_rec(
-                a,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-            lower_poly_expr_rec(
-                b,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-        )),
-        ShigurePolyExpr::Pow(a, exp) => Ok(PolyExpr::pow(
-            lower_poly_expr_rec(
-                a,
-                domain,
-                state_vars,
-                arg_vars,
-                param_vars,
-                forbidden_params,
-                context,
-                depth + 1,
-            )?,
-            *exp,
-        )),
     }
+
+    Ok(values.pop().expect("root lowered expression"))
 }

@@ -490,6 +490,7 @@ pub(super) fn check_eval_condition<E: InputError>(
     let full_name = full(reading_name, &[&raw.name.name]);
     let point_domain = check_point_domain(&raw.point_domain, control)?;
     let literal_domain = match &point_domain {
+        ShigurePointDomain::IntegerPoints => Some(ShigureCoeffDomain::Z),
         ShigurePointDomain::FiniteFieldPoints(p) => Some(ShigureCoeffDomain::Fp(p.clone())),
         _ => None,
     };
@@ -536,6 +537,7 @@ pub(super) fn check_task<E: InputError>(
     checker: &Checker<'_, E>,
     index: &HashMap<String, (DeclCategory, Span)>,
     decls: &CheckedShigureDecls,
+    control: &Control,
 ) -> CResult<ShigureTask, E> {
     let full_name = full(reading_name, &[&raw.name.name]);
     let comparison = resolve_shigure_ref(
@@ -650,6 +652,7 @@ pub(super) fn check_task<E: InputError>(
             | (ShigureCoeffDomain::Q, ShigurePointDomain::RationalPoints)
             | (ShigureCoeffDomain::Q, ShigurePointDomain::UniversalRing)
             | (ShigureCoeffDomain::Z, ShigurePointDomain::AlgebraicClosure)
+            | (ShigureCoeffDomain::Z, ShigurePointDomain::RationalPoints)
             | (ShigureCoeffDomain::Z, ShigurePointDomain::IntegerPoints)
             | (ShigureCoeffDomain::Z, ShigurePointDomain::UniversalRing) => true,
             (ShigureCoeffDomain::Fp(p1), ShigurePointDomain::FiniteFieldPoints(p2)) => p1 == p2,
@@ -663,6 +666,15 @@ pub(super) fn check_task<E: InputError>(
                 "`eval_condition` point_domain is incompatible with `change_spec` coefficient domain",
             ))
             .into());
+        }
+        // `eval_condition` 内のリテラルが task の係数域（spec.coeff_domain）と整合することも検査する。
+        for item in ec
+            .evaluations
+            .iter()
+            .chain(&ec.equations)
+            .chain(&ec.invertibles)
+        {
+            check_poly_literals(&item.expr, Some(&spec.coeff_domain), item.span, control)?;
         }
     }
 

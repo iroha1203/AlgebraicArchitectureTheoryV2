@@ -29,7 +29,7 @@ impl<'a> Comparison<'a> {
             BundleError::finish(result, self.control, Checkpoint::TableComparison)
         })
     }
-    fn mismatch(&mut self) -> Result<(), BundleError> {
+    pub(super) fn mismatch(&mut self) -> Result<(), BundleError> {
         self.mismatched = true;
         Err(BundleError::Input(Box::new(Issue {
             code: Code::VocabularyMismatch,
@@ -1318,9 +1318,7 @@ impl ControlledEq for crate::law::CheckedLaw {
         c.eq(&self.quantifier_types, &other.quantifier_types)?;
         c.eq(&self.infos, &other.infos)?;
         c.eq(&self.definitions, &other.definitions)?;
-        if self.shigure != other.shigure {
-            return c.mismatch();
-        }
+        c.eq(&self.shigure, &other.shigure)?;
         Ok(())
     }
 }

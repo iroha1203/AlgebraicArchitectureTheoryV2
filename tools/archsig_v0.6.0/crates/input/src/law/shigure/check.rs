@@ -4,7 +4,7 @@ use super::check_relations::{
     check_change_spec, check_comparison, check_eval_condition, check_task,
 };
 use super::*;
-use crate::definition::{CheckedDefinitions, PrimitiveSignature};
+use crate::definition::CheckedDefinitions;
 use crate::law::ast::{QName, Reading, Span};
 use crate::law::check::{Checker, duplicate, full, reference, syntax};
 use archsig_common::control::{Checkpoint, Control};
@@ -120,7 +120,7 @@ pub(crate) fn check_shigure_decls<E: InputError>(
         for d in &r.shigure_decls {
             if let ShigureDeclAst::Task(raw) = d {
                 E::checkpoint(control, Checkpoint::LawSemantics)?;
-                let checked = check_task(raw, r_idx, &r.name.name, checker, &index, &out)?;
+                let checked = check_task(raw, r_idx, &r.name.name, checker, &index, &out, control)?;
                 out.tasks.insert(checked.name.clone(), checked);
             }
         }
@@ -184,7 +184,23 @@ pub(super) fn check_poly_literals<E: InputError>(
     stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
         E::checkpoint(control, Checkpoint::LawSemantics)?;
         match expr {
-            ShigurePolyExpr::Int(_) | ShigurePolyExpr::Var(_) => Ok(()),
+            ShigurePolyExpr::Var(_) => Ok(()),
+            ShigurePolyExpr::Int(n) => {
+                if let Some(ShigureCoeffDomain::Fp(p)) = domain {
+                    let valid = n.to_biguint().is_some_and(|u| &u < p);
+                    if !valid {
+                        return Err(Box::new(Issue::law(
+                            Code::Type,
+                            span,
+                            format!(
+                                "integer literal `{n}` in Fp({p}) must satisfy 0 <= value < {p}"
+                            ),
+                        ))
+                        .into());
+                    }
+                }
+                Ok(())
+            }
             ShigurePolyExpr::Rat { .. } => {
                 if let Some(d) = domain
                     && !matches!(d, ShigureCoeffDomain::Q)
@@ -567,14 +583,6 @@ fn resolve_observed_field<E: InputError>(
                 actual: field_def.ty.clone(),
             },
         })
-        .into());
-    }
-    if matches!(decl.signature, PrimitiveSignature::Data { .. }) {
-        return Err(Box::new(Issue::law(
-            Code::Type,
-            span,
-            format!("`{entity_full}` cannot be used as observed coordinate subject"),
-        ))
         .into());
     }
     Ok(ShigureCoordBinding::ObservedField {

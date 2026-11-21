@@ -1,6 +1,7 @@
 //! 元 byte 列と検査済み三表を同じ定義 identity の下で保持する。
 
 mod comparison;
+mod comparison_shigure;
 
 use crate::result::Signal;
 use crate::{

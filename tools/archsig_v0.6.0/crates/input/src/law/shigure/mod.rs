@@ -59,8 +59,9 @@ pub enum ShigureLawKind {
     Representation,
 }
 
-/// SHIGURE 宣言内の多項式式。
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// SHIGURE 宣言内の多項式式。深い木でもスタックを枯渇させないよう、
+/// `Clone` / `PartialEq` は `stacker`、解放は反復 `Drop` を用いる。
+#[derive(Debug, Eq)]
 pub enum ShigurePolyExpr {
     Int(BigInt),
     Rat { num: BigInt, den: BigInt },
@@ -71,6 +72,68 @@ pub enum ShigurePolyExpr {
     Sub(Box<ShigurePolyExpr>, Box<ShigurePolyExpr>),
     Mul(Box<ShigurePolyExpr>, Box<ShigurePolyExpr>),
     Pow(Box<ShigurePolyExpr>, u32),
+}
+
+const POLY_RED_ZONE: usize = 64 * 1024;
+const POLY_STACK_STEP: usize = 1024 * 1024;
+
+impl Clone for ShigurePolyExpr {
+    fn clone(&self) -> Self {
+        stacker::maybe_grow(POLY_RED_ZONE, POLY_STACK_STEP, || match self {
+            ShigurePolyExpr::Int(n) => ShigurePolyExpr::Int(n.clone()),
+            ShigurePolyExpr::Rat { num, den } => ShigurePolyExpr::Rat {
+                num: num.clone(),
+                den: den.clone(),
+            },
+            ShigurePolyExpr::Fp { value, modulus } => ShigurePolyExpr::Fp {
+                value: value.clone(),
+                modulus: modulus.clone(),
+            },
+            ShigurePolyExpr::Var(s) => ShigurePolyExpr::Var(s.clone()),
+            ShigurePolyExpr::Neg(a) => ShigurePolyExpr::Neg(Box::new((**a).clone())),
+            ShigurePolyExpr::Add(a, b) => {
+                ShigurePolyExpr::Add(Box::new((**a).clone()), Box::new((**b).clone()))
+            }
+            ShigurePolyExpr::Sub(a, b) => {
+                ShigurePolyExpr::Sub(Box::new((**a).clone()), Box::new((**b).clone()))
+            }
+            ShigurePolyExpr::Mul(a, b) => {
+                ShigurePolyExpr::Mul(Box::new((**a).clone()), Box::new((**b).clone()))
+            }
+            ShigurePolyExpr::Pow(a, e) => ShigurePolyExpr::Pow(Box::new((**a).clone()), *e),
+        })
+    }
+}
+
+impl PartialEq for ShigurePolyExpr {
+    fn eq(&self, other: &Self) -> bool {
+        stacker::maybe_grow(POLY_RED_ZONE, POLY_STACK_STEP, || match (self, other) {
+            (ShigurePolyExpr::Int(a), ShigurePolyExpr::Int(b)) => a == b,
+            (
+                ShigurePolyExpr::Rat { num: n1, den: d1 },
+                ShigurePolyExpr::Rat { num: n2, den: d2 },
+            ) => n1 == n2 && d1 == d2,
+            (
+                ShigurePolyExpr::Fp {
+                    value: v1,
+                    modulus: m1,
+                },
+                ShigurePolyExpr::Fp {
+                    value: v2,
+                    modulus: m2,
+                },
+            ) => v1 == v2 && m1 == m2,
+            (ShigurePolyExpr::Var(a), ShigurePolyExpr::Var(b)) => a == b,
+            (ShigurePolyExpr::Neg(a), ShigurePolyExpr::Neg(b)) => **a == **b,
+            (ShigurePolyExpr::Add(a1, a2), ShigurePolyExpr::Add(b1, b2))
+            | (ShigurePolyExpr::Sub(a1, a2), ShigurePolyExpr::Sub(b1, b2))
+            | (ShigurePolyExpr::Mul(a1, a2), ShigurePolyExpr::Mul(b1, b2)) => {
+                **a1 == **b1 && **a2 == **b2
+            }
+            (ShigurePolyExpr::Pow(a, e1), ShigurePolyExpr::Pow(b, e2)) => e1 == e2 && **a == **b,
+            _ => false,
+        })
+    }
 }
 
 impl Drop for ShigurePolyExpr {

@@ -362,13 +362,21 @@ fn convert_and_solve_full_ledger_p1_p6c_p6d_interaction_and_provenance() {
         rest_p1.parameter_assignments.get("b").map(String::as_str),
         Some("1")
     );
-    // 由来種別 4 種（static_analysis / runtime_observation / llm_candidate / human_adopted）が欠落せず保持される。
-    let kinds: std::collections::BTreeSet<OriginKind> =
-        out_p1.provenance.origins.iter().map(|o| o.kind).collect();
-    assert!(kinds.contains(&OriginKind::StaticAnalysis));
-    assert!(kinds.contains(&OriginKind::RuntimeObservation));
-    assert!(kinds.contains(&OriginKind::LlmCandidate));
-    assert!(kinds.contains(&OriginKind::HumanAdopted));
+    // 純粋な Law タスク（observed 座標なし）には未参照の ArchMap 由来（o_llm / o_runtime 等）が混入しない。
+    assert!(
+        out_p1
+            .provenance
+            .origins
+            .iter()
+            .all(|o| o.origin_id == "law" && o.kind == OriginKind::HumanAdopted)
+    );
+    assert!(
+        !out_p1
+            .provenance
+            .origins
+            .iter()
+            .any(|o| o.origin_id == "o_llm" || o.origin_id == "o_runtime")
+    );
 
     // 2. P6(c): V(mu*delta*(1-rho)) ∩ D(mu*delta) -> rho = 1 + finish_snap & all-state Busy 復元
     let task_p6c = ShigureConverter::for_task("LedgerMigration.P6cEditableBusy")
