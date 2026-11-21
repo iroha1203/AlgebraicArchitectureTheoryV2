@@ -254,6 +254,24 @@ impl PolyExpr {
         }
     }
 
+    /// 式中のパラメータ変数（`ParamVar`）のみを収集する。
+    pub fn collect_params(&self, params: &mut BTreeSet<String>) {
+        match self {
+            PolyExpr::ParamVar(v) => {
+                params.insert(v.clone());
+            }
+            PolyExpr::Const(_)
+            | PolyExpr::StateVar(_)
+            | PolyExpr::ArgVar(_)
+            | PolyExpr::Unobserved { .. } => {}
+            PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => e.collect_params(params),
+            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+                a.collect_params(params);
+                b.collect_params(params);
+            }
+        }
+    }
+
     /// 式が状態座標と操作引数について持つ最大次数を返す（パラメータ係数は次数 0）。
     /// 未観測値（`Unobserved`）を含む式は次数未確定として `None` を返す。
     ///

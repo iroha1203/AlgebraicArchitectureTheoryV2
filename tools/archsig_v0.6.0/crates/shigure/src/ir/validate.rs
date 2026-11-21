@@ -7,7 +7,10 @@ use crate::ir::change::{ChangeSpec, EvalCondition, PointDomain};
 use crate::ir::presentation::{ComparisonPair, CoordValue, Presentation};
 use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
-use crate::ir::validate_change::collect_and_check_param_names;
+use crate::ir::validate_change::{
+    collect_and_check_param_names, validate_change_spec_checked_params,
+    validate_comparison_pair_checked_params, validate_eval_condition_checked_params,
+};
 use archsig_common::prime::is_prime;
 use num_bigint::BigUint;
 use num_integer::Integer;
@@ -316,10 +319,10 @@ impl CheckedShigureTask {
         eval_condition: Option<EvalCondition>,
     ) -> Result<Self, ValidationError> {
         let param_names = collect_and_check_param_names(&change_spec)?;
-        let checked_pair = validate_comparison_pair(pair, &param_names)?;
-        let checked_spec = validate_change_spec(change_spec, &checked_pair)?;
+        let checked_pair = validate_comparison_pair_checked_params(pair, &param_names)?;
+        let checked_spec = validate_change_spec_checked_params(change_spec, &checked_pair)?;
         let checked_eval = match eval_condition {
-            Some(cond) => Some(validate_eval_condition(
+            Some(cond) => Some(validate_eval_condition_checked_params(
                 cond,
                 &checked_spec.inner().coeff_domain,
                 &param_names,
@@ -612,8 +615,15 @@ pub fn validate_presentation(
     pres: Presentation,
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedPresentation, ValidationError> {
-    require_non_empty(&pres.name, "presentation.name")?;
     validate_allowed_params(allowed_params, "presentation.allowed_params")?;
+    validate_presentation_checked_params(pres, allowed_params)
+}
+
+pub(crate) fn validate_presentation_checked_params(
+    pres: Presentation,
+    allowed_params: &BTreeSet<String>,
+) -> Result<CheckedPresentation, ValidationError> {
+    require_non_empty(&pres.name, "presentation.name")?;
     validate_coeff_domain(&pres.coeff_domain, &format!("presentation `{}`", pres.name))?;
     validate_provenance(&pres.provenance, &format!("presentation `{}`", pres.name))?;
 

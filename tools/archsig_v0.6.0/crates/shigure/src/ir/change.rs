@@ -130,7 +130,7 @@ impl NamedPoly {
 /// 代数閉包上の幾何点判定と Q 点・Z 点・F_p 点の判定を混同しない（R3.2 / G-141 D5–D6）。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum PointDomain {
-    /// 代数閉包上の幾何点（Nullstellensatz `1 in I` による空性判定）。
+    /// 標数 0 の代数閉包（Q-bar）上の幾何点（Nullstellensatz `1 in I` による空性判定、Z -> Q -> Q-bar）。
     AlgebraicClosure,
     /// 有理数点 Q（アフィン系は完全判定、一般非線形は判断不能で沈黙）。
     RationalPoints,

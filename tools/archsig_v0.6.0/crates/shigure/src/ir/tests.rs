@@ -838,3 +838,137 @@ fn empty_optional_source_ref_fields_are_rejected() {
         ));
     }
 }
+
+#[test]
+fn domain_mismatch_zero_rank_empty_observation_and_missing_maps_are_rejected() {
+    // DomainMismatch: before/after mismatch
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.after.coeff_domain = CoeffDomain::Z;
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DomainMismatch { .. })
+    ));
+
+    // DomainMismatch: sort vs presentation
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.sorts[0].coeff_domain = CoeffDomain::Z;
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DomainMismatch { .. })
+    ));
+
+    // DomainMismatch: ChangeSpec vs pair
+    let (pair, mut spec, _) = ledger_snapshot_task();
+    spec.coeff_domain = CoeffDomain::Z;
+    for p in &mut spec.parameters {
+        p.coeff_domain = CoeffDomain::Z;
+    }
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DomainMismatch { .. })
+    ));
+
+    // DomainMismatch: ScalarLit Z inside Q presentation
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.phases[0].state_laws[0].polynomial = PolyExpr::int(0);
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::DomainMismatch { .. })
+    ));
+
+    // ZeroRankSort
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.sorts[0].rank = 0;
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::ZeroRankSort { .. })
+    ));
+
+    // EmptyObservation
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.observations[0].components.clear();
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::EmptyObservation { .. })
+    ));
+
+    // MissingStateComparison
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.state_comparisons.pop();
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::MissingStateComparison { .. })
+    ));
+
+    // MissingWordTranslation
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.word_translation.entries.pop();
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::MissingWordTranslation { .. })
+    ));
+}
+
+#[test]
+fn multistep_word_translation_phase_chain_and_fixed_law_kind_mismatches_are_rejected() {
+    // Non-empty multi-step word translation with broken intermediate phase chain
+    let (mut pair, spec, _) = ledger_snapshot_task();
+    pair.before.phases.push(PhaseDecl {
+        name: "Alt".into(),
+        coords: vec![CoordDecl::symbolic("x", "D")],
+        state_laws: vec![],
+        provenance: None,
+    });
+    pair.before.operations.push(OperationDecl {
+        name: "to_alt".into(),
+        source_phase: "Single".into(),
+        target_phase: "Alt".into(),
+        args: vec![],
+        updates: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+        provenance: None,
+    });
+    pair.word_translation.entries[1].steps = vec![
+        TranslatedStep {
+            before_operation: "to_alt".into(),
+            arg_exprs: vec![],
+        },
+        TranslatedStep {
+            before_operation: "apply".into(),
+            arg_exprs: vec![PolyExpr::arg("u")],
+        },
+    ];
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::PhasePathMismatch { .. })
+    ));
+
+    // FixedTarget::SemanticLaw pointing to a Representation law is rejected
+    let (pair, mut spec, _) = ledger_snapshot_task();
+    spec.fixed.push(FixedTarget::SemanticLaw {
+        presentation: "SnapshotLedger".into(),
+        phase: "Busy".into(),
+        law: "busy_snapshot_law".into(),
+    });
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::UnknownRef {
+            kind: "semantic",
+            ..
+        })
+    ));
+
+    // FixedTarget::RepresentationLaw pointing to a Semantic law is rejected
+    let (pair, mut spec, _) = ledger_snapshot_task();
+    spec.fixed[0] = FixedTarget::RepresentationLaw {
+        presentation: "SingleLedger".into(),
+        phase: "Single".into(),
+        law: "semantic_identity".into(),
+    };
+    assert!(matches!(
+        CheckedShigureTask::validate(pair, spec, None),
+        Err(ValidationError::UnknownRef {
+            kind: "representation",
+            ..
+        })
+    ));
+}

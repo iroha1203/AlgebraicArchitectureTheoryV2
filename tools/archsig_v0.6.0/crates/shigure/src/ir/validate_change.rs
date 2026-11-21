@@ -8,7 +8,7 @@ use crate::ir::term::CoeffDomain;
 use crate::ir::validate::{
     CheckedChangeSpec, CheckedComparisonPair, CheckedEvalCondition, ValidationError,
     require_non_empty, validate_allowed_params, validate_coeff_domain, validate_opt_source_ref,
-    validate_poly_expr, validate_presentation, validate_provenance,
+    validate_poly_expr, validate_presentation_checked_params, validate_provenance,
 };
 use archsig_common::prime::is_prime;
 use std::collections::{BTreeMap, BTreeSet};
@@ -19,6 +19,13 @@ pub fn validate_comparison_pair(
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedComparisonPair, ValidationError> {
     validate_allowed_params(allowed_params, "comparison_pair.allowed_params")?;
+    validate_comparison_pair_checked_params(pair, allowed_params)
+}
+
+pub(crate) fn validate_comparison_pair_checked_params(
+    pair: ComparisonPair,
+    allowed_params: &BTreeSet<String>,
+) -> Result<CheckedComparisonPair, ValidationError> {
     if pair.before.name == pair.after.name {
         return Err(ValidationError::DuplicateDecl {
             kind: "presentation",
@@ -32,8 +39,8 @@ pub fn validate_comparison_pair(
             context: "comparison pair before/after".to_owned(),
         });
     }
-    let before = validate_presentation(pair.before, allowed_params)?;
-    let after = validate_presentation(pair.after, allowed_params)?;
+    let before = validate_presentation_checked_params(pair.before, allowed_params)?;
+    let after = validate_presentation_checked_params(pair.after, allowed_params)?;
     let domain = &before.inner().coeff_domain;
 
     let mut h_by_after_phase: BTreeMap<String, String> = BTreeMap::new();
@@ -290,21 +297,19 @@ fn lookup_presentation<'a>(pair: &'a ComparisonPair, name: &str) -> Option<&'a P
 }
 
 fn collect_presentation_params(pres: &Presentation, out: &mut BTreeSet<String>) {
-    let mut states = BTreeSet::new();
-    let mut args = BTreeSet::new();
     for phase in &pres.phases {
         for law in &phase.state_laws {
-            law.polynomial.collect_vars(&mut states, &mut args, out);
+            law.polynomial.collect_params(out);
         }
     }
     for op in &pres.operations {
         for expr in op.updates.values() {
-            expr.collect_vars(&mut states, &mut args, out);
+            expr.collect_params(out);
         }
     }
     for obs in &pres.observations {
         for expr in &obs.components {
-            expr.collect_vars(&mut states, &mut args, out);
+            expr.collect_params(out);
         }
     }
 }
@@ -312,17 +317,15 @@ fn collect_presentation_params(pres: &Presentation, out: &mut BTreeSet<String>) 
 fn collect_pair_params(pair: &ComparisonPair, out: &mut BTreeSet<String>) {
     collect_presentation_params(&pair.before, out);
     collect_presentation_params(&pair.after, out);
-    let mut states = BTreeSet::new();
-    let mut args = BTreeSet::new();
     for sc in &pair.state_comparisons {
         for expr in sc.map.values() {
-            expr.collect_vars(&mut states, &mut args, out);
+            expr.collect_params(out);
         }
     }
     for tw in &pair.word_translation.entries {
         for step in &tw.steps {
             for expr in &step.arg_exprs {
-                expr.collect_vars(&mut states, &mut args, out);
+                expr.collect_params(out);
             }
         }
     }
@@ -334,13 +337,6 @@ pub fn validate_change_spec(
     pair: &CheckedComparisonPair,
 ) -> Result<CheckedChangeSpec, ValidationError> {
     let param_names = collect_and_check_param_names(&spec)?;
-    if spec.coeff_domain != pair.inner().before.coeff_domain {
-        return Err(ValidationError::DomainMismatch {
-            expected: pair.inner().before.coeff_domain.clone(),
-            actual: spec.coeff_domain.clone(),
-            context: format!("change_spec `{}`", spec.name),
-        });
-    }
     let mut used_params = BTreeSet::new();
     collect_pair_params(pair.inner(), &mut used_params);
     for used in used_params {
@@ -351,6 +347,20 @@ pub fn validate_change_spec(
                 context: format!("change_spec `{}` against comparison pair", spec.name),
             });
         }
+    }
+    validate_change_spec_checked_params(spec, pair)
+}
+
+pub(crate) fn validate_change_spec_checked_params(
+    spec: ChangeSpec,
+    pair: &CheckedComparisonPair,
+) -> Result<CheckedChangeSpec, ValidationError> {
+    if spec.coeff_domain != pair.inner().before.coeff_domain {
+        return Err(ValidationError::DomainMismatch {
+            expected: pair.inner().before.coeff_domain.clone(),
+            actual: spec.coeff_domain.clone(),
+            context: format!("change_spec `{}`", spec.name),
+        });
     }
 
     let mut seen_fixed = BTreeSet::new();
@@ -592,9 +602,17 @@ pub fn validate_eval_condition(
     coeff_domain: &CoeffDomain,
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedEvalCondition, ValidationError> {
-    require_non_empty(&cond.name, "eval_condition.name")?;
     validate_allowed_params(allowed_params, "eval_condition.allowed_params")?;
     validate_coeff_domain(coeff_domain, &format!("eval_condition `{}`", cond.name))?;
+    validate_eval_condition_checked_params(cond, coeff_domain, allowed_params)
+}
+
+pub(crate) fn validate_eval_condition_checked_params(
+    cond: EvalCondition,
+    coeff_domain: &CoeffDomain,
+    allowed_params: &BTreeSet<String>,
+) -> Result<CheckedEvalCondition, ValidationError> {
+    require_non_empty(&cond.name, "eval_condition.name")?;
     validate_provenance(&cond.provenance, &format!("eval_condition `{}`", cond.name))?;
     validate_point_domain_compatibility(coeff_domain, &cond.point_domain)?;
 
