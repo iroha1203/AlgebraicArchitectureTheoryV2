@@ -12,6 +12,8 @@ Lawを満たす一つの意味をモデルとして与え、その間の変更�
 二構造 $`A,B`$ の間の構造保存射 $`h:A\to B`$ は、sortごとの写像
 $`h_s:X_s(A)\to X_s(B)`$ で、次を満たすものとする。
 
+**式(2.1)**
+
 ```math
 \begin{aligned}
 h_t(f_A(\boldsymbol a))&=f_B(h_{\boldsymbol s}(\boldsymbol a)),\\
@@ -22,7 +24,6 @@ h_t(f_A(\boldsymbol a))&=f_B(h_{\boldsymbol s}(\boldsymbol a)),\\
 h_t(p_A(\boldsymbol a))&=p_B(h_{\boldsymbol s}(\boldsymbol a))
   \quad(\boldsymbol a\in D_p^A).
 \end{aligned}
-\tag{2.1}
 ```
 
 量にも第一式を課す。domain sortの包含を使うときは、
@@ -58,9 +59,10 @@ Lawの成立は対象の条件であり、射の条件は式(2.1)である。
 指定sort $`s`$ と集合 $`O`$ を固定した観測付きモデルは、
 対 $`(A,o_A:X_s(A)\to O)`$ である。その射には
 
+**式(2.2)**
+
 ```math
 o_B\circ h_s=o_A
-\tag{2.2}
 ```
 
 を加える。複数の観測では各成分に同じ条件を課す。
@@ -76,9 +78,10 @@ o_B\circ h_s=o_A
 同じ署名について、$`\mathbb T'`$ が $`\mathbb T`$ の必須LawにLawを追加して得られるとする。
 このとき、構造をそのまま読む忘却関手
 
+**式(2.3)**
+
 ```math
 \mathcal A_{\mathbb T'}\longrightarrow\mathcal A_{\mathbb T}
-\tag{2.3}
 ```
 
 は充満忠実である。
@@ -99,9 +102,10 @@ $`f(f(x))=f(x)`$ を追加した理論への恒等翻訳を考える。
 [定義1.9](chapter_1_atoms_laws_theories.md#14-表示代入理論の射)の理論解釈
 $`u:\mathbb T\to\mathbb T'`$ から、関手
 
+**式(2.4)**
+
 ```math
 u^*:\mathcal A_{\mathbb T'}\longrightarrow\mathcal A_{\mathbb T}
-\tag{2.4}
 ```
 
 が構成される。任意の $`\mathbb T'`$ モデル $`B`$ に対し、その担体は
@@ -109,11 +113,12 @@ $`X_s(u^*B)=X_{u(s)}(B)`$ である。
 任意のterm $`t`$、正の式 $`\varphi`$ と型の合う割当て $`\gamma`$ について、
 termの翻訳前後の定義可能性・値が一致し、
 
+**式(2.5)**
+
 ```math
 u^*B\models\varphi(\gamma)
 \quad\Longleftrightarrow\quad
 B\models u\varphi(\gamma)
-\tag{2.5}
 ```
 
 となる。恒等と合成について
@@ -175,18 +180,20 @@ $`\mathcal A_{\mathbb T}\simeq\mathcal A_{\mathbb T'}`$ を得る。
 $`\mathcal A_{\mathrm{tot}}`$ の対象を $`(\mathbb T,A)`$、
 射を
 
+**式(2.6)**
+
 ```math
 (u,h):(\mathbb T,A)\longrightarrow(\mathbb T',B),
 \qquad
 u:\mathbb T\to\mathbb T',\quad h:A\to u^*B
-\tag{2.6}
 ```
 
 とする。恒等は $`(\mathrm{id},\mathrm{id})`$、合成は
 
+**式(2.7)**
+
 ```math
 (v,k)\circ(u,h)=(v\circ u,\ u^*k\circ h)
-\tag{2.7}
 ```
 
 である。右辺の終域は $`u^*v^*C=(v\circ u)^*C`$ である。
@@ -213,6 +220,8 @@ $`\mathbb T`$ 上のfiber、すなわち対象を $`(\mathbb T,A)`$、
 同じ署名の構造保存射 $`h:A\to B`$ と、各終点sortで式(2.2)を満たす観測を与える。
 任意の有限操作語 $`w:s\rightsquigarrow t`$ について
 
+**式(2.8)**
+
 ```math
 \begin{aligned}
 h_s(\mathrm{Dom}_A(w))&\subseteq\mathrm{Dom}_B(w),\\
@@ -220,16 +229,16 @@ h_t(w_A(a))&=w_B(h_s(a)),\\
 o_{B,t}(w_B(h_s(a)))&=o_{A,t}(w_A(a))
 \quad(a\in\mathrm{Dom}_A(w))
 \end{aligned}
-\tag{2.8}
 ```
 
 が成り立つ。さらに $`h`$ が各原始部分操作のdomainを反射する、すなわち
+
+**式(2.9)**
 
 ```math
 \boldsymbol a\in D_p^A
 \quad\Longleftrightarrow\quad
 h_{\boldsymbol s}(\boldsymbol a)\in D_p^B
-\tag{2.9}
 ```
 
 なら、$`\mathrm{Dom}_A(w)=h_s^{-1}(\mathrm{Dom}_B(w))`$ である。
@@ -274,10 +283,11 @@ $`g_L:S_L\to V_L`$、$`p_L:S_L\times V_L\to S_L`$ で、
 式(1.7)の三法則を満たすものとする。
 射 $`L\to M`$ は、二つの写像 $`h:S_L\to S_M`$、$`k:V_L\to V_M`$ で
 
+**式(2.10)**
+
 ```math
 g_Mh=kg_L,\qquad
 h(p_L(a,v))=p_M(h(a),k(v))
-\tag{2.10}
 ```
 
 を満たすものとする。恒等と合成は二成分で与える。
@@ -287,9 +297,10 @@ h(p_L(a,v))=p_M(h(a),k(v))
 第1章の二sort、get・put、三法則の理論を $`\mathbb T_{\mathrm{lens}}`$ とする。
 各lensをその担体と二操作で解釈する対応は圏の同型
 
+**式(2.11)**
+
 ```math
 \mathbf{Lens}\ \cong\ \mathcal A_{\mathbb T_{\mathrm{lens}}}
-\tag{2.11}
 ```
 
 を与える。view $`V`$ を固定し、view成分を恒等とした場合にも同じ対応が成り立つ。
@@ -311,6 +322,8 @@ get・putに $`g_L,p_L`$ を割り当てる。
 lens $`L`$ に基準view $`v_0\in V_L`$ を選び、
 $`C_L=g_L^{-1}(v_0)`$ とする。このとき
 
+**式(2.12)**
+
 ```math
 \begin{aligned}
 \theta_L:S_L&\longrightarrow V_L\times C_L,
@@ -318,17 +331,17 @@ $`C_L=g_L^{-1}(v_0)`$ とする。このとき
 \theta_L^{-1}:V_L\times C_L&\longrightarrow S_L,
 &(v,c)&\longmapsto p_L(c,v)
 \end{aligned}
-\tag{2.12}
 ```
 
 は互いに逆で、getは第一射影、putは $`(v,c)\mapsto(w,c)`$ となる。
 別のlens $`M`$ に独立に $`w_0\in V_M`$ を選ぶと、全ての射の集合には全単射
 
+**式(2.13)**
+
 ```math
 \mathrm{Hom}_{\mathbf{Lens}}(L,M)
 \ \cong\
 \mathrm{Map}(V_L,V_M)\times\mathrm{Map}(C_L,C_M)
-\tag{2.13}
 ```
 
 があり、対応する状態写像の標準形は
@@ -392,11 +405,12 @@ protocolは関手 $`X:\mathcal E\to\mathbf{Set}`$ と自然変換 $`o:X\Rightarr
 観測sortと $`O(e)`$ の解釈を固定し、射では観測sortの成分を恒等にする。
 state操作と観測に次のLawを課す。
 
+**式(2.14)**
+
 ```math
 T_{\mathrm{id}_s}(a)=a,\qquad
 T_{f\circ e}(a)=T_f(T_e(a)),\qquad
 o_t(T_e(a))=O(e)(o_s(a)).
-\tag{2.14}
 ```
 
 この固定データの下のモデル圏を $`\mathcal A_{\mathrm{prot}(\mathcal E,O)}`$ と書く。
@@ -404,11 +418,12 @@ o_t(T_e(a))=O(e)(o_s(a)).
 **定理2.12（protocolの対象・全Hom・生成経路の回復）.**
 上の宣言への解釈と読戻しは圏の同型
 
+**式(2.15)**
+
 ```math
 \mathbf{Prot}(\mathcal E,O)
 \ \cong\
 \mathcal A_{\mathrm{prot}(\mathcal E,O)}
-\tag{2.15}
 ```
 
 を与える。

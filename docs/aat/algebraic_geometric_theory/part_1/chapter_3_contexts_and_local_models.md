@@ -53,10 +53,11 @@ sort $`s`$ を残すことは、$`X_s(A)`$ の一部の状態だけを残すこ�
 各文脈 $`U`$ に $`\mathcal A(U):=\mathcal A_{\mathbb T_{\mathcal P|_U}}`$ を対応させる。
 $`V\subseteq U`$ に対して、忘却による関手
 
+**式(3.1)**
+
 ```math
 \mathrm{res}_{U,V}:\mathcal A(U)\longrightarrow\mathcal A(V),
 \qquad A\longmapsto A|_V
-\tag{3.1}
 ```
 
 がある。これらは恒等と合成に厳密に従う。
@@ -94,9 +95,10 @@ $`\bigcup_iU_i=U`$ を満たすものとする。添字集合 $`I`$ は小さい
 局所モデル $`A_i\in\mathcal A(U_i)`$ の厳密な整合族とは、
 全 $`i,j`$ について
 
+**式(3.2)**
+
 ```math
 A_i|_{U_i\cap U_j}=A_j|_{U_i\cap U_j}
-\tag{3.2}
 ```
 
 が成り立つ族である。等号には共有sortの担体、操作、関係、domain、量の全データを含む。
@@ -148,9 +150,10 @@ $`A_i`$ は $`\ell`$ を満たすので結論の式が成立し、同じ評価�
 $`h_i:A|_{U_i}\to B|_{U_i}`$ から、制限が全ての $`h_i`$ となる一意の射 $`h:A\to B`$ が構成される。
 この構成は制限・恒等・合成と可換する。したがって制限関手は圏の同型
 
+**式(3.3)**
+
 ```math
 \mathcal A(U)\ \cong\ \mathrm{Match}((U_i),\mathcal A)
-\tag{3.3}
 ```
 
 を与える。
@@ -181,11 +184,12 @@ $`f`$ だけを持つ文脈と $`g`$ だけを持つ文脈に、それぞれ定�
 可換環 $`R`$、各型 $`s`$ の有限な生成元数 $`m_s`$ と階数 $`n_s`$ を固定する。
 局所実現のデータを
 
+**式(3.4)**
+
 ```math
 K_s\subseteq R^{m_s},\qquad
 Q_s=R^{m_s}/K_s,\qquad
 \pi_s:R^{m_s}\twoheadrightarrow Q_s
-\tag{3.4}
 ```
 
 とし、$`K_s`$ は部分加群、$`Q_s`$ は階数 $`n_s`$ の有限局所自由加群とする。
@@ -217,12 +221,13 @@ tensor積からの線形写像を用いる記述とも、その多重線形写�
 $`R=\mathbb Q`$ とし、型 $`p,q,r`$ に階数 $`1`$、生成元数 $`1,2,1`$ を指定する。
 型 $`q`$ の共有表示を
 
+**式(3.5)**
+
 ```math
 K_q=\mathbb Q(3,-2),\qquad
 Q_q=\mathbb Q^2/K_q,\qquad
 \phi:Q_q\xrightarrow{\sim}\mathbb Q,\quad
 [x,y]\longmapsto 2x+3y
-\tag{3.5}
 ```
 
 とする。kernelは表示した一次元部分空間であり、$`\phi([1/2,0])=1`$ なので同型である。
@@ -293,10 +298,11 @@ $`i\le j`$ に対する忘却関手 $`r_{ji}:\mathcal F_j\to\mathcal F_i`$、
 
 すなわち、原始データから構成した比較関手
 
+**式(3.6)**
+
 ```math
 \mathcal A_{\mathbb T}\longrightarrow
 \varprojlim_{i\in I}\mathcal F_i
-\tag{3.6}
 ```
 
 の本質的全射性と充満忠実性を、具体的な条件から証明する問題である。
@@ -314,9 +320,10 @@ $`Q_n=\{0,\ldots,n\}^2`$ 上の全graph queryに、真偽の両方を答える�
 これらは表を切り取る制限について厳密に整合する。
 各 $`F_n`$ は、全域写像
 
+**式(3.7)**
+
 ```math
 f_n(0)=n+1,\qquad f_n(i)=i\quad(i\ge1)
-\tag{3.7}
 ```
 
 の観測として実現できる。
@@ -341,11 +348,12 @@ $`V`$ のLaw idealを $`W`$ のLaw idealへ送るとする。
 商環を $`B_V,B_W`$ と書くと、環射 $`B_V\to B_W`$ があり、
 任意の $`k`$ 代数 $`R`$ でのモデルの忘却は
 
+**式(3.8)**
+
 ```math
 \mathrm{Hom}_{k\text{-alg}}(B_W,R)
 \longrightarrow
 \mathrm{Hom}_{k\text{-alg}}(B_V,R)
-\tag{3.8}
 ```
 
 という前合成で与えられる。
@@ -369,10 +377,11 @@ $`\Gamma(\Omega_W,\mathcal O)\to\Gamma(\Omega_V,\mathcal O)`$ である。
 共通の環演算と型の宣言は両方に含めている。
 座標環と忘却に対応する環射は
 
+**式(3.9)**
+
 ```math
 B_V=\mathbb Q[x]\longrightarrow
 B_W=\mathbb Q[x,y]/(xy-1),\qquad x\longmapsto\bar x
-\tag{3.9}
 ```
 
 である。共有 $`x`$ を保つ逆向きの $`\mathbb Q`$ 代数射

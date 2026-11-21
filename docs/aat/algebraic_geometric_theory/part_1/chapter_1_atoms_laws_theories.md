@@ -75,6 +75,8 @@ $`G_p^A=\{(\boldsymbol a,p_A(\boldsymbol a))\mid\boldsymbol a\in D_p^A\}`$ で�
 graphによる記述では、次の式が全ての構造で成り立つ。
 $`\vdash_{\boldsymbol x,y,z}`$ などの添字は、表示した全自由変数の型付き文脈を表す。
 
+**式(1.1)**
+
 ```math
 \begin{aligned}
 G_f(\boldsymbol x,y)\wedge G_f(\boldsymbol x,z)
@@ -87,7 +89,6 @@ G_p(\boldsymbol x,y)\wedge G_p(\boldsymbol x,z)
 G_p(\boldsymbol x,y)&\ \vdash_{\boldsymbol x,y}\ D_p(\boldsymbol x),\\
 D_p(\boldsymbol x)&\ \vdash_{\boldsymbol x}\ \exists y\,G_p(\boldsymbol x,y).
 \end{aligned}
-\tag{1.1}
 ```
 
 量にも全域操作の二式を用いる。逆に、これらを満たすgraphから、一意の値を取ることで
@@ -97,13 +98,14 @@ D_p(\boldsymbol x)&\ \vdash_{\boldsymbol x}\ \exists y\,G_p(\boldsymbol x,y).
 domainを別sort $`d`$ の包含で表したい場合には、各 $`j_i:d\to s_i`$ を全域操作として宣言する。
 この表示と部分操作のdomainとの整合は、次のLawで指定できる。
 
+**式(1.2)**
+
 ```math
 \begin{aligned}
 \bigwedge_i j_i(z)=j_i(z')&\ \vdash_{z,z':d}\ z=z',\\
 D_p(\boldsymbol x)&\ \dashv\vdash_{\boldsymbol x}\
   \exists z:d\,\bigwedge_i j_i(z)=x_i.
 \end{aligned}
-\tag{1.2}
 ```
 
 ここで $`\dashv\vdash`$ は二方向の含意を表す。第一式は $`(j_i)_i`$ の単射性、
@@ -131,12 +133,13 @@ $`s`$ が $`z`$ を使わない場合も $`t`$ の評価を行う。
 変数では $`E_{x_i}(\boldsymbol x,y)`$ を $`x_i=y`$ とし、
 $`t=e(t_1,\ldots,t_m)`$ では
 
+**式(1.3)**
+
 ```math
 E_t(\boldsymbol x,y):=
 \exists z_1\cdots z_m
 \left(\bigwedge_{j=1}^m E_{t_j}(\boldsymbol x,z_j)
  \wedge G_e(z_1,\ldots,z_m,y)\right).
-\tag{1.3}
 ```
 
 とする。$`e`$ には部分操作も含める。
@@ -158,6 +161,8 @@ $`A\models E_t(\gamma,b)`$ であることは
 
 termを引数に持つ原子式は、式(1.3)を用いた略記である。たとえば
 
+**式(1.4)**
+
 ```math
 \begin{aligned}
 r(t_1,\ldots,t_m)
@@ -165,7 +170,6 @@ r(t_1,\ldots,t_m)
   \left(\bigwedge_j E_{t_j}(\boldsymbol x,z_j)\wedge r(\boldsymbol z)\right),\\
 t=t'&:=\exists y\,(E_t(\boldsymbol x,y)\wedge E_{t'}(\boldsymbol x,y)).
 \end{aligned}
-\tag{1.4}
 ```
 
 したがって、部分termについて $`t=t`$ はその定義可能性を表す。
@@ -177,6 +181,8 @@ Law $`\ell`$ は、有限変数文脈 $`\Gamma_\ell`$、
 入力を指定する正の式 $`\iota_\ell`$、充足条件を表す正の式 $`\chi_\ell`$ を持つ。
 構造 $`A`$ での入力集合と充足を
 
+**式(1.5)**
+
 ```math
 \begin{aligned}
 I_\ell^A&=\{\gamma\in X_{\Gamma_\ell}(A)\mid A\models\iota_\ell(\gamma)\},\\
@@ -184,7 +190,6 @@ A\models\ell
 &\quad\Longleftrightarrow\quad
   \forall\gamma\in I_\ell^A,\ A\models\chi_\ell(\gamma)
 \end{aligned}
-\tag{1.5}
 ```
 
 で定める。Lawはsequent $`\iota_\ell\vdash_{\Gamma_\ell}\chi_\ell`$ とも書く。
@@ -205,10 +210,11 @@ A\models\ell
 値sortが可換環 $`R_A`$ で、入力 $`I_\ell^A`$ 上でterm $`t,t'`$ がともに定義されるとき、
 等式Lawの残差を
 
+**式(1.6)**
+
 ```math
 \rho_{\ell,A}(\gamma)
   =\mathrm{ev}_A(t,\gamma)-\mathrm{ev}_A(t',\gamma)
-\tag{1.6}
 ```
 
 とする。この入力上で等式の充足は残差の零性と同値である。
@@ -219,11 +225,12 @@ A\models\ell
 **lens.** sort $`S,V`$ と全域操作
 $`g:S\to V`$、$`p:S\times V\to S`$ を宣言し、全入力で
 
+**式(1.7)**
+
 ```math
 p(a,g(a))=a,\qquad
 g(p(a,v))=v,\qquad
 p(p(a,v),w)=p(a,w)
-\tag{1.7}
 ```
 
 を課す。各式の変数文脈は順に $`(a:S)`$、$`(a:S,v:V)`$、$`(a:S,v:V,w:V)`$ である。
@@ -255,11 +262,12 @@ $`R`$ の担体と環構造を固定し、射の $`R`$ 成分を恒等とする�
 量化された変数は捕獲を避けるように改名する。
 $`D_{\sigma,A}:=\bigcap_i\mathrm{Dom}_A(\sigma_i)`$ 上で
 
+**式(1.8)**
+
 ```math
 \sigma_A:D_{\sigma,A}\longrightarrow X_\Gamma(A),\qquad
 \delta\longmapsto
   \bigl(\mathrm{ev}_A(\sigma_i,\delta)\bigr)_i
-\tag{1.8}
 ```
 
 が定まる。入力条件 $`\eta`$ を伴う代入を使う場合には、
@@ -278,21 +286,25 @@ $`A\models\varphi[\sigma](\delta)\Longleftrightarrow A\models\varphi(\sigma_A(\d
 **(2)** sortごとの写像 $`h_s:X_s(A)\to X_s(B)`$ が、全域操作・量と可換し、
 関係を保存し、部分操作について
 
+**式(1.9)**
+
 ```math
-h_{\boldsymbol s}(D_p^A)\subseteq D_p^B,\qquad
-h_t(p_A(\boldsymbol a))=p_B(h_{\boldsymbol s}(\boldsymbol a))
+\begin{aligned}
+h_{\boldsymbol s}(D_p^A)&\subseteq D_p^B,\\
+h_t(p_A(\boldsymbol a))&=p_B(h_{\boldsymbol s}(\boldsymbol a))
 \quad(\boldsymbol a\in D_p^A)
-\tag{1.9}
+\end{aligned}
 ```
 
 を満たすとする。ここで $`h_{\boldsymbol s}`$ は入力sortの写像の積である。
 このとき $`\gamma\in\mathrm{Dom}_A(t)`$ なら
 $`h_\Gamma\gamma\in\mathrm{Dom}_B(t)`$ であり、
 
+**式(1.10)**
+
 ```math
 h_s(\mathrm{ev}_A(t,\gamma))
   =\mathrm{ev}_B(t,h_\Gamma\gamma).
-\tag{1.10}
 ```
 
 また、$`A\models\varphi(\gamma)`$ なら $`B\models\varphi(h_\Gamma\gamma)`$ である。
@@ -301,9 +313,10 @@ h_s(\mathrm{ev}_A(t,\gamma))
 **(3)** 値sortの写像 $`h_R:R_A\to R_B`$ が環準同型であるとき、
 式(1.6)の入力上で
 
+**式(1.11)**
+
 ```math
 h_R(\rho_{\ell,A}(\gamma))=\rho_{\ell,B}(h_{\Gamma_\ell}\gamma)
-\tag{1.11}
 ```
 
 が成り立つ。代入についても、定義される入力上で
@@ -406,9 +419,10 @@ readingは、どの署名・Law、観測、宣言文脈と被覆、値の構造�
 状態写像 $`h:A\to u^*B`$、観測値の写像 $`\alpha:O\to O'`$ を指定し、
 必要な観測の可換性
 
+**式(1.12)**
+
 ```math
 o_B\circ h_s=\alpha\circ o_A
-\tag{1.12}
 ```
 
 を課す。文脈や係数も変えるときには、その写像と制限・評価との可換性を併せて与える。
