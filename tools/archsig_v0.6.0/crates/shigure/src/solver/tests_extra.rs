@@ -578,7 +578,7 @@ fn z_points_open_witness_and_refutation_and_non_integer_face_guard() {
         Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
             ref condition,
             ..
-        }) if condition == "integer_coordinate_face_required"
+        }) if condition == "unit_integer_coordinate_face_required"
     ));
 }
 

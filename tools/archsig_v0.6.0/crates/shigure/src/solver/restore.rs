@@ -288,6 +288,7 @@ pub fn restore_and_reeval_q(
     extra_invs: &[Poly<Rat>],
     param_vars: &VarOrder,
     extracted: &ExtractedSubstitutionQ,
+    require_strict_ideal: bool,
 ) -> Result<RestoredArtifact, SilenceReason> {
     let restored_pair = substitute_comparison_pair(pair, &extracted.param_subst);
     let free_order =
@@ -328,6 +329,7 @@ pub fn restore_and_reeval_q(
         &reduced_extra_invs,
         &free_order,
         &free_bind,
+        require_strict_ideal,
     )?;
 
     Ok(RestoredArtifact {
@@ -371,7 +373,7 @@ pub fn restore_and_reeval_q_point(
         free_parameters: vec![],
         remaining_nonlinear: vec![],
     };
-    restore_and_reeval_q(pair, eval_cond, &[], param_vars, &extracted)
+    restore_and_reeval_q(pair, eval_cond, &[], param_vars, &extracted, false)
 }
 
 /// Z 上の具体的整数点から `RestoredArtifact` を復元し、独立再評価検算を行う。
@@ -571,6 +573,7 @@ pub fn restore_and_reeval_fp(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 fn reeval_restored_pair_q(
     restored_pair: &ComparisonPair,
     eval_cond: Option<&EvalCondition>,
@@ -579,6 +582,7 @@ fn reeval_restored_pair_q(
     extra_invs: &[Poly<Rat>],
     free_order: &VarOrder,
     free_bind: &ExprBindings,
+    require_strict_ideal: bool,
 ) -> Result<ReevalCheck, SilenceReason> {
     let obligations = build_preservation_obligations(restored_pair)?;
     let locus = compute_preservation_locus_q(&obligations, free_order)?;
@@ -614,39 +618,45 @@ fn reeval_restored_pair_q(
         });
     }
 
-    let sat_gb = GroebnerBasis::compute(
-        &target_rab.parameter_equations,
-        free_order.clone(),
-        MonomialOrder::Grevlex,
-    )
-    .map_err(map_algebra_silence)?;
-
-    for res_poly in &locus.closure_ideal {
-        let nf = sat_gb.normal_form(res_poly).map_err(map_algebra_silence)?;
-        if !nf.is_zero() {
+    if require_strict_ideal {
+        if !locus.is_zariski_closed {
             return Ok(ReevalCheck {
                 checked: true,
                 matched: false,
-                detail: format!(
-                    "restored preservation residual `{}` did not vanish modulo remaining constraints",
-                    res_poly.display(free_order, MonomialOrder::Grevlex)
-                ),
+                detail: "restored preservation locus is not Zariski-closed for UniversalRing"
+                    .to_owned(),
             });
         }
-    }
-
-    if !locus.is_zariski_closed
-        && !is_stratum_covered_by_union(
+        let sat_gb = GroebnerBasis::compute(
             &target_rab.parameter_equations,
-            &eval_invs,
-            &locus.strata,
-            free_order,
-        )?
-    {
+            free_order.clone(),
+            MonomialOrder::Grevlex,
+        )
+        .map_err(map_algebra_silence)?;
+
+        for res_poly in &locus.closure_ideal {
+            let nf = sat_gb.normal_form(res_poly).map_err(map_algebra_silence)?;
+            if !nf.is_zero() {
+                return Ok(ReevalCheck {
+                    checked: true,
+                    matched: false,
+                    detail: format!(
+                        "restored preservation residual `{}` did not vanish modulo remaining constraints",
+                        res_poly.display(free_order, MonomialOrder::Grevlex)
+                    ),
+                });
+            }
+        }
+    } else if !is_stratum_covered_by_union(
+        &target_rab.parameter_equations,
+        &eval_invs,
+        &locus.strata,
+        free_order,
+    )? {
         return Ok(ReevalCheck {
             checked: true,
             matched: false,
-            detail: "restored locus is not contained in non-closed quotient preservation strata"
+            detail: "restored locus is not contained in preservation strata over algebraic closure"
                 .to_owned(),
         });
     }
@@ -887,13 +897,14 @@ pub fn extract_coordinate_fix_fp(poly: &Poly<FpElem>, vars: &VarOrder) -> Option
 }
 
 /// Z 上の座標固定方程式 `a * param + b = 0`（単変数 1 次、`a != 0`）を抽出する。
-/// 整除できない場合は `Some((name, None))` として非整数切断面であることを呼び出し側へ伝える。
+/// `UniversalRing`（全可換環 R）上で座標超平面 `param = -b/a` を定めるには係数が単元 `a ∈ Z^× = {±1}`
+/// である必要があるため、非単元係数の場合は `Some((name, None))` として呼び出し側へ沈黙を伝える。
 pub fn extract_coordinate_fix_z(
     poly: &Poly<BigInt>,
     vars: &VarOrder,
 ) -> Option<(String, Option<BigInt>)> {
     let (idx, a, b) = extract_univariate_linear(poly)?;
     let neg_b = -b;
-    let exact = (&neg_b % &a == BigInt::zero()).then(|| neg_b / a);
+    let exact = a.abs().is_one().then(|| neg_b / a);
     Some((vars.vars()[idx].clone(), exact))
 }

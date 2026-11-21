@@ -10,7 +10,7 @@ use crate::ir::result::{
     ApplicabilityCheck, EmptyWitness, InteractionSummary, RestoredArtifact, ShigureOutcome,
     SilenceReason, Verdict,
 };
-use crate::ir::term::{CoeffDomain, PolyExpr};
+use crate::ir::term::CoeffDomain;
 use crate::ir::validate::CheckedShigureTask;
 use crate::solver::ShigureQueryKind;
 use crate::solver::preservation::{collect_all_provenance_origins, map_algebra_silence};
@@ -289,6 +289,7 @@ pub(crate) fn check_common_applicability(
 
 pub(crate) fn guard_z_quotient_or_universal(
     has_source_laws: bool,
+    eval_cond: Option<&EvalCondition>,
     ctx: &SolveCtx,
 ) -> Option<ShigureOutcome> {
     if ctx.coeff_domain == CoeffDomain::Z
@@ -328,6 +329,19 @@ pub(crate) fn guard_z_quotient_or_universal(
             c.checks.push(ApplicabilityCheck::failed(
                 "universal_ring_quotient_out_of_scope",
                 MathClause::G141D5,
+                reason.code(),
+            ));
+            return Some(c.undetermined(vec![], reason));
+        }
+        if eval_cond.is_some_and(|cond| !cond.is_purely_closed()) {
+            let mut c = ctx.clone();
+            let reason = SilenceReason::ApplicabilityConditionNotMet {
+                condition: "universal_ring_closed_equations_only".to_owned(),
+                detail: "open/invertible conditions cannot be evaluated uniformly over all rings including the zero ring".to_owned(),
+            };
+            c.checks.push(ApplicabilityCheck::failed(
+                "universal_ring_closed_equations_only",
+                MathClause::G141D1,
                 reason.code(),
             ));
             return Some(c.undetermined(vec![], reason));
@@ -387,35 +401,18 @@ fn collect_presentation_params(pres: &Presentation) -> BTreeSet<String> {
     let mut params = BTreeSet::new();
     for ph in &pres.phases {
         for l in &ph.state_laws {
-            collect_expr_params(&l.polynomial, &mut params);
+            l.polynomial.collect_params(&mut params);
         }
     }
     for op in &pres.operations {
         for expr in op.updates.values() {
-            collect_expr_params(expr, &mut params);
+            expr.collect_params(&mut params);
         }
     }
     for obs in &pres.observations {
         for expr in &obs.components {
-            collect_expr_params(expr, &mut params);
+            expr.collect_params(&mut params);
         }
     }
     params
-}
-
-fn collect_expr_params(expr: &PolyExpr, out: &mut BTreeSet<String>) {
-    match expr {
-        PolyExpr::ParamVar(v) => {
-            out.insert(v.clone());
-        }
-        PolyExpr::Neg(a) | PolyExpr::Pow(a, _) => collect_expr_params(a, out),
-        PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
-            collect_expr_params(a, out);
-            collect_expr_params(b, out);
-        }
-        PolyExpr::Const(_)
-        | PolyExpr::StateVar(_)
-        | PolyExpr::ArgVar(_)
-        | PolyExpr::Unobserved { .. } => {}
-    }
 }

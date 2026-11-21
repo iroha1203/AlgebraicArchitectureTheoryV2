@@ -390,3 +390,225 @@ fn rerun1_f1_nilpotent_interaction_f2_implicit_open_f3_real_witness_f4_domain_an
         }) if condition == "before_presentation_must_be_parameter_free"
     ));
 }
+
+#[test]
+fn rerun2_f1_z_unit_face_f2_nilpotent_reeval_f3_universal_ring_open() {
+    // 1. F1 回帰: Z 上の InteractionAnalysis (UniversalRing) で非単元係数の切断面 `2*rho - 2 = 0`
+    //    を `rho = 1` へ割らず沈黙する（F_2[delta,mu] では 2*0 - 2 = 0 でも残差が消えない）。
+    let before_z = single_ledger_before(CoeffDomain::Z);
+    let mut after_z = single_ledger_before(CoeffDomain::Z);
+    after_z.name = "AfterZUnitFace".to_owned();
+    after_z.operations[0].updates.insert(
+        "x".to_owned(),
+        PolyExpr::state("x")
+            + PolyExpr::arg("u")
+            + PolyExpr::param("mu")
+                * PolyExpr::param("delta")
+                * (PolyExpr::int(1) - PolyExpr::param("rho")),
+    );
+    let task_z_nonunit = CheckedShigureTask::validate(
+        ComparisonPair {
+            before: before_z,
+            after: after_z,
+            state_comparisons: vec![StateComparison {
+                after_phase: "Active".to_owned(),
+                before_phase: "Active".to_owned(),
+                map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                provenance: None,
+            }],
+            word_translation: WordTranslation {
+                entries: vec![TranslatedWord {
+                    after_operation: "apply".to_owned(),
+                    steps: vec![TranslatedStep {
+                        before_operation: "apply".to_owned(),
+                        arg_exprs: vec![PolyExpr::arg("u")],
+                    }],
+                    provenance: None,
+                }],
+            },
+        },
+        ChangeSpec {
+            name: "H_z_nonunit".to_owned(),
+            coeff_domain: CoeffDomain::Z,
+            parameters: vec![
+                ParamDecl {
+                    name: "mu".to_owned(),
+                    coeff_domain: CoeffDomain::Z,
+                    provenance: None,
+                },
+                ParamDecl {
+                    name: "delta".to_owned(),
+                    coeff_domain: CoeffDomain::Z,
+                    provenance: None,
+                },
+                ParamDecl {
+                    name: "rho".to_owned(),
+                    coeff_domain: CoeffDomain::Z,
+                    provenance: None,
+                },
+            ],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::default(),
+        },
+        Some(EvalCondition {
+            name: "nonunit_face".to_owned(),
+            evaluations: vec![],
+            equations: vec![NamedPoly {
+                name: "two_rho_eq_two".to_owned(),
+                expr: PolyExpr::int(2) * PolyExpr::param("rho") - PolyExpr::int(2),
+                provenance: None,
+            }],
+            invertibles: vec![],
+            point_domain: PointDomain::UniversalRing,
+            provenance: Provenance::default(),
+        }),
+    )
+    .unwrap();
+    let out_f1 = execute_shigure_task(&task_z_nonunit, ShigureQueryKind::InteractionAnalysis);
+    assert!(matches!(
+        out_f1.verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
+            ref condition,
+            ..
+        }) if condition == "unit_integer_coordinate_face_required"
+    ));
+
+    // 2. F2 回帰: AlgebraicClosure 上の復元再評価で、`c*y = 0`, `x' = x + u + a^2`, `read = x + a*y`,
+    //    `eval_condition: c = 0` の冪零差（`(a^2)` 対 `a`）を Nullstellensatz 幾何学的被覆で正しく受理する。
+    let before_q = single_ledger_before(CoeffDomain::Q);
+    let after_f2 = Presentation {
+        name: "NilpotentReevalQ".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        sorts: vec![SortDecl {
+            name: "D".to_owned(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Q,
+            provenance: None,
+        }],
+        phases: vec![PhaseDecl {
+            name: "Active".to_owned(),
+            coords: vec![CoordDecl::symbolic("x", "D"), CoordDecl::symbolic("y", "D")],
+            state_laws: vec![StateLaw {
+                name: "c_y_zero".to_owned(),
+                kind: LawKind::Representation,
+                polynomial: PolyExpr::param("c") * PolyExpr::state("y"),
+                provenance: None,
+            }],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "apply".to_owned(),
+            source_phase: "Active".to_owned(),
+            target_phase: "Active".to_owned(),
+            args: vec![("u".to_owned(), "D".to_owned())],
+            updates: BTreeMap::from([
+                (
+                    "x".to_owned(),
+                    PolyExpr::state("x")
+                        + PolyExpr::arg("u")
+                        + PolyExpr::pow(PolyExpr::param("a"), 2),
+                ),
+                ("y".to_owned(), PolyExpr::state("y")),
+            ]),
+            provenance: None,
+        }],
+        observations: vec![ObservationDecl {
+            name: "read".to_owned(),
+            phase: "Active".to_owned(),
+            components: vec![PolyExpr::state("x") + PolyExpr::param("a") * PolyExpr::state("y")],
+            provenance: None,
+        }],
+        provenance: Provenance::default(),
+    };
+    let task_f2 = CheckedShigureTask::validate(
+        ComparisonPair {
+            before: before_q,
+            after: after_f2,
+            state_comparisons: vec![StateComparison {
+                after_phase: "Active".to_owned(),
+                before_phase: "Active".to_owned(),
+                map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                provenance: None,
+            }],
+            word_translation: WordTranslation {
+                entries: vec![TranslatedWord {
+                    after_operation: "apply".to_owned(),
+                    steps: vec![TranslatedStep {
+                        before_operation: "apply".to_owned(),
+                        arg_exprs: vec![PolyExpr::arg("u")],
+                    }],
+                    provenance: None,
+                }],
+            },
+        },
+        ChangeSpec {
+            name: "H_f2".to_owned(),
+            coeff_domain: CoeffDomain::Q,
+            parameters: vec![
+                ParamDecl {
+                    name: "a".to_owned(),
+                    coeff_domain: CoeffDomain::Q,
+                    provenance: None,
+                },
+                ParamDecl {
+                    name: "c".to_owned(),
+                    coeff_domain: CoeffDomain::Q,
+                    provenance: None,
+                },
+            ],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::default(),
+        },
+        Some(EvalCondition {
+            name: "c_zero".to_owned(),
+            evaluations: vec![],
+            equations: vec![NamedPoly {
+                name: "c_eq_0".to_owned(),
+                expr: PolyExpr::param("c"),
+                provenance: None,
+            }],
+            invertibles: vec![],
+            point_domain: PointDomain::AlgebraicClosure,
+            provenance: Provenance::default(),
+        }),
+    )
+    .unwrap();
+    let out_f2 = execute_shigure_task(&task_f2, ShigureQueryKind::ConditionalSolutionSpace);
+    assert_eq!(out_f2.verdict, Verdict::Established);
+    let rest_f2 = out_f2.restored.expect("restored f2 artifact");
+    assert!(rest_f2.reeval.checked && rest_f2.reeval.matched);
+    assert_eq!(
+        rest_f2.parameter_assignments.get("c").map(String::as_str),
+        Some("0")
+    );
+
+    // 3. F3 回帰: UniversalRing + 開条件 D(a) と V(a) の組合せは、零環での成立と矛盾するため
+    //    Refuted に落とさず事前ガードで `universal_ring_closed_equations_only` 沈黙を返す。
+    let task_f3 = build_single_param_residual_task(
+        CoeffDomain::Q,
+        "a",
+        PolyExpr::param("a"),
+        Some(EvalCondition {
+            name: "univ_open".to_owned(),
+            evaluations: vec![],
+            equations: vec![],
+            invertibles: vec![NamedPoly {
+                name: "a_inv".to_owned(),
+                expr: PolyExpr::param("a"),
+                provenance: None,
+            }],
+            point_domain: PointDomain::UniversalRing,
+            provenance: Provenance::default(),
+        }),
+    );
+    let out_f3 = execute_shigure_task(&task_f3, ShigureQueryKind::ConditionalSolutionSpace);
+    assert!(matches!(
+        out_f3.verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
+            ref condition,
+            ..
+        }) if condition == "universal_ring_closed_equations_only"
+    ));
+}

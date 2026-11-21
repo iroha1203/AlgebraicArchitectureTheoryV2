@@ -79,9 +79,9 @@ pub(crate) fn execute_interaction_analysis(
                 |p, eq_name| match extract_coordinate_fix_z(p, param_vars) {
                     Some((name, Some(val))) => Ok((name, val)),
                     Some((name, None)) => Err(SilenceReason::ApplicabilityConditionNotMet {
-                        condition: "integer_coordinate_face_required".to_owned(),
+                        condition: "unit_integer_coordinate_face_required".to_owned(),
                         detail: format!(
-                            "equation `{eq_name}` fixes `{name}` to a non-integer coordinate over Z"
+                            "equation `{eq_name}` does not have a unit coefficient (+1 or -1) for `{name}` over Z"
                         ),
                     }),
                     None => Err(non_coord_silence(eq_name)),

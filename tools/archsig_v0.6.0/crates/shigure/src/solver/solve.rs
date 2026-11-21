@@ -105,7 +105,7 @@ fn execute_semantic_preservation(
             // Z 上で状態 Law を持つ場合、SemanticPreservation で暗黙に Q 商環へ昇格させない。
             // （代数閉包上での判定を明示要求する場合は ConditionalSolutionSpace + algebraic_closure を用いる。）
             let reason = SilenceReason::QuotientIdealOutOfScope {
-                detail: "parametric quotient state-law preservation over Z (with possible Z-torsion) is out of scope; use Q or explicit algebraic_closure".to_owned(),
+                detail: "parametric quotient state-law preservation over Z (with possible Z-torsion) is out of scope; use Q or ConditionalSolutionSpace with explicit algebraic_closure".to_owned(),
             };
             ctx.checks.push(ApplicabilityCheck::failed(
                 "z_quotient_out_of_scope",
@@ -243,7 +243,7 @@ fn execute_conditional_solution_space(
             )
         }
         CoeffDomain::Q | CoeffDomain::Z => {
-            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, &ctx) {
+            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, eval_cond, &ctx) {
                 return out;
             }
             solve_conditional_via_q(
@@ -321,7 +321,7 @@ fn solve_conditional_via_q(
                 "rabinowitsch_emptiness_verified",
                 MathClause::G141D5,
             ));
-            return ctx.refuted(closure_disp, rab.empty_witness);
+            return ctx.refuted(display_polys(&combined_eqs, param_vars), rab.empty_witness);
         }
 
         let final_residual = display_polys(&rab.parameter_equations, param_vars);
@@ -527,7 +527,7 @@ fn finalize_q_or_z_solution(
             )
         }
         PointDomain::UniversalRing => {
-            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, &ctx) {
+            if let Some(out) = guard_z_quotient_or_universal(has_source_laws, eval_cond, &ctx) {
                 return out;
             }
             if !final_invs.is_empty() {
@@ -704,7 +704,15 @@ fn restore_q_and_finish(
         }
         Err(reason) => return ctx.undetermined(residual_display, reason),
     };
-    match restore_and_reeval_q(task.pair(), eval_cond, final_invs, param_vars, &extracted) {
+    let require_strict_ideal = ctx.point_domain == PointDomain::UniversalRing;
+    match restore_and_reeval_q(
+        task.pair(),
+        eval_cond,
+        final_invs,
+        param_vars,
+        &extracted,
+        require_strict_ideal,
+    ) {
         Ok(artifact) if artifact.reeval.matched => {
             ctx.checks.push(ApplicabilityCheck::passed(
                 "restored_model_reevaluation_matched",
