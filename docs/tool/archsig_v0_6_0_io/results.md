@@ -1272,3 +1272,67 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 型を含む短い表示自体が512 byteを超える場合は `summary_bytes` のみを示す。
 束縛名とAtom位置の各識別子が256 byteを超える場合は、その欄の代わりに
 `name_bytes` / `snapshot_bytes` / `subject_bytes` / `field_bytes` / `atom_bytes` で元のbyte数を示す。
+
+## 8. SHIGURE の型付き結果（`ShigureOutcome`）
+
+`shigure_preservation`・`shigure_solve`・`shigure_interaction` の回答は、
+標準出力の `archsig.summary/1` では `answers[].outputs.shigure` に直接保持し、
+`--out` 保存時の `archsig.result/4` では `type: "ShigureOutcome"` の `SavedNode`（`answers[].outputs.shigure = {"node": ...}`、
+`scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
+
+```text
+ShigureOutcome = {
+  verdict: "established" | "refuted" | "undetermined",
+  coeff_domain: "Z" | "Q" | ["Fp", DecimalPrime],
+  point_domain: "algebraic_closure" | "universal_ring" | "Q_points" | "Z_points" | "Fp_points",
+  applicability: ApplicabilityCheck[],
+  provenance: { origins: ShigureOriginRef[], clauses: String[] },
+  residual_ideal: String[],
+  result_kind: "mathematical_computation",
+  silence_reason?: SilenceReason,
+  empty_witness?: { generators: String[], cofactors: String[], verified: Bool },
+  restored?: {
+    parameter_assignments: { [Name]: String },
+    free_parameters: String[],
+    operations: { [OpName]: { [CoordName]: String } },
+    state_laws: { [PhaseName]: String[] },
+    state_comparisons: { [PhaseName]: { [CoordName]: String } },
+    word_translation: { [OpName]: String[] },
+    reevaluation: {
+      checked: Bool, matched: Bool, detail: String,
+      scope: "mathematical_model_reevaluation"
+    }
+  },
+  interaction?: {
+    parameters: String[],
+    minimal_failing_subsets: String[][],
+    min_interacting_variables?: Nat,
+    max_vanishing_subset_size?: Nat
+  }
+}
+
+ApplicabilityCheck = { condition: String, clause: String, satisfied: Bool, detail?: String }
+ShigureOriginRef = {
+  origin_id: String,
+  kind: "static_analysis" | "runtime_observation" | "llm_candidate" | "human_adopted",
+  source_id?: String, path?: String, span?: [Nat, Nat],
+  atom_ref?: String, law_declaration?: String
+}
+SilenceReason = {
+  code: "unobserved_dependency" | "nonlinear_point_existence_out_of_scope"
+      | "infinite_presentation_not_finitely_reducible" | "unsupported_coeff_ring"
+      | "quotient_ideal_out_of_scope" | "open_condition_in_interaction"
+      | "applicability_condition_not_met",
+  missing_slots?: String[],
+  point_domain?: String,
+  coeff_domain?: "Z" | "Q" | ["Fp", DecimalPrime],
+  condition?: String,
+  detail?: String
+}
+```
+
+`verdict: "undetermined"` のときは、対応する `SavedAnswer.reasons` と `SummaryAnswer.reasons` に
+`code: "unobserved"`（`unobserved_dependency` の場合）または `code: "unsupported_algorithm"`（その他の適用条件外の場合）の
+Issue を付与し、`details` へ `silence_reason` の構造体をそのまま保持する。
+`provenance.origins` には、当該タスクが参照した Law 宣言と、実際に参照された `observed` 座標の ArchMap `Origin`（全 `SourceLocation`）だけを収集し、未参照の `Origin` は混入させない。
+`restored.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。

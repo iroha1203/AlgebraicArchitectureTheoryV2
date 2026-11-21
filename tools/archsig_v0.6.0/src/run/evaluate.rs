@@ -47,6 +47,15 @@ pub(super) fn run_requests_validated(
     args: &RunArgs,
     control: &Control,
 ) -> Outcome {
+    match super::shigure::classify_asks(&args.asks) {
+        super::shigure::AskPartition::None => {}
+        super::shigure::AskPartition::AllShigure => {
+            return super::shigure::run_shigure_validated(io, signals, args, control);
+        }
+        super::shigure::AskPartition::Mixed => {
+            return super::shigure::mixed_asks_outcome(signals, control);
+        }
+    }
     let prepared = match load_requests(signals, args, control) {
         Ok(prepared) => prepared,
         Err(outcome) => return outcome,

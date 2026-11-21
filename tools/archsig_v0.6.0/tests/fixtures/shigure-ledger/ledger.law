@@ -1,0 +1,515 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading LedgerMigration {
+  use vocabulary LedgerVocab version "1" digest "sha256:cb35ebe9d9af7271972225abdcd0993b4ae6051104a331f094dd45cea9f4daae";
+
+  // 既存 Law 宣言との共存
+  view read_balance(a: Account): Q = a.balance;
+
+  // =========================================================================
+  // 共通の移行前表示（単一台帳）
+  // =========================================================================
+  shigure presentation SingleLedger {
+    domain Q;
+    sort D;
+    phase Active {
+      coord x: D;
+      law semantic trivial_inv: x - x = 0;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + u;
+    }
+    obs read on Active = (x);
+  }
+
+  // =========================================================================
+  // AC3(a): 原子操作の base+delta 分割（ac + bd = 1, ar + bs = 0）と p=(1,1) 復元
+  // =========================================================================
+  shigure presentation SplitAtomic {
+    domain Q;
+    sort D;
+    phase Active {
+      coord x: D;
+      coord y: D;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + c * u;
+      y = y + d * u;
+    }
+    op compact(t: D): Active -> Active {
+      x = x + r * t;
+      y = y + s * t;
+    }
+    obs read on Active = (a * x + b * y);
+  }
+
+  shigure comparison AtomicCmp {
+    before SingleLedger;
+    after SplitAtomic;
+    state_map Active -> Active {
+      x = a * x + b * y;
+    }
+    translate apply -> [apply(u)];
+    translate compact -> [];
+  }
+
+  shigure change_spec AtomicSpec {
+    domain Q;
+    param a: Q;
+    param b: Q;
+    param c: Q;
+    param d: Q;
+    param r: Q;
+    param s: Q;
+    fixed semantic_law SingleLedger.Active.trivial_inv;
+    editable operation SplitAtomic.apply;
+    editable operation SplitAtomic.compact;
+    editable state_comparison Active;
+  }
+
+  shigure eval_condition UncondAlgebraic {
+    point_domain algebraic_closure;
+  }
+
+  shigure eval_condition MarkedFiber11 {
+    point_domain algebraic_closure;
+    eval p_a = a;
+    eval p_b = b;
+    equation fix_a: a = 1;
+    equation fix_b: b = 1;
+  }
+
+  shigure task P1AtomicUncond {
+    comparison AtomicCmp;
+    change_spec AtomicSpec;
+    eval_condition UncondAlgebraic;
+  }
+
+  shigure task P1AtomicMarked {
+    comparison AtomicCmp;
+    change_spec AtomicSpec;
+    eval_condition MarkedFiber11;
+  }
+
+  // =========================================================================
+  // AC3(b): snapshot 方式の非線形保存族 V(mu*delta) と D(mu), D(delta), D(mu*delta)
+  // =========================================================================
+  shigure presentation SnapshotBase {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord B: D;
+      coord C: D;
+    }
+    phase Busy {
+      coord B: D;
+      coord C: D;
+      coord h: D;
+      law representation busy_law: mu * (h - C) = 0;
+    }
+    op apply_idle(u: D): Idle -> Idle {
+      B = B + (1 - delta) * u;
+      C = C + delta * u;
+    }
+    op apply_busy(u: D): Busy -> Busy {
+      B = B + (1 - delta) * u;
+      C = C + delta * u;
+      h = h;
+    }
+    op begin(): Idle -> Busy {
+      B = B;
+      C = C;
+      h = C;
+    }
+    op finish(): Busy -> Idle {
+      B = B + mu * h;
+      C = C - mu * C;
+    }
+    obs read on Idle = (B + C);
+    obs read on Busy = (B + C);
+  }
+
+  shigure comparison SnapshotBaseCmp {
+    before SingleLedger;
+    after SnapshotBase;
+    state_map Idle -> Active { x = B + C; }
+    state_map Busy -> Active { x = B + C; }
+    translate apply_idle -> [apply(u)];
+    translate apply_busy -> [apply(u)];
+    translate begin -> [];
+    translate finish -> [];
+  }
+
+  shigure change_spec SnapshotBaseSpec {
+    domain Q;
+    param mu: Q;
+    param delta: Q;
+    fixed representation_law SnapshotBase.Busy.busy_law;
+    editable operation SnapshotBase.apply_idle;
+    editable operation SnapshotBase.apply_busy;
+    editable operation SnapshotBase.finish;
+  }
+
+  shigure eval_condition CondDMu {
+    point_domain algebraic_closure;
+    eval e_mu = mu;
+    invertible inv_mu: mu;
+  }
+
+  shigure eval_condition CondDDelta {
+    point_domain algebraic_closure;
+    eval e_delta = delta;
+    invertible inv_delta: delta;
+  }
+
+  shigure eval_condition CondDMuDelta {
+    point_domain algebraic_closure;
+    eval active = mu * delta;
+    invertible mu_delta: mu * delta;
+  }
+
+  shigure task P3SnapshotUncond {
+    comparison SnapshotBaseCmp;
+    change_spec SnapshotBaseSpec;
+  }
+
+  shigure task P3SnapshotDMu {
+    comparison SnapshotBaseCmp;
+    change_spec SnapshotBaseSpec;
+    eval_condition CondDMu;
+  }
+
+  shigure task P3SnapshotDDelta {
+    comparison SnapshotBaseCmp;
+    change_spec SnapshotBaseSpec;
+    eval_condition CondDDelta;
+  }
+
+  shigure task P3SnapshotDMuDelta {
+    comparison SnapshotBaseCmp;
+    change_spec SnapshotBaseSpec;
+    eval_condition CondDMuDelta;
+  }
+
+  // =========================================================================
+  // AC3(c) & AC3(d): finish_rho + Busy 表示 Law 編集可 vs 旧 Busy Law 固定対照
+  // =========================================================================
+  shigure presentation SnapshotFixedOldBusy {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord B: D;
+      coord C: D;
+    }
+    phase Busy {
+      coord B: D;
+      coord C: D;
+      coord h: D;
+      law representation busy_law: mu * (h - C) = 0;
+    }
+    op apply_idle(u: D): Idle -> Idle {
+      B = B + (1 - delta) * u;
+      C = C + delta * u;
+    }
+    op apply_busy(u: D): Busy -> Busy {
+      B = B + (1 - delta) * u;
+      C = C + delta * u;
+      h = h;
+    }
+    op begin(): Idle -> Busy {
+      B = B;
+      C = C;
+      h = C;
+    }
+    op finish(): Busy -> Idle {
+      B = B + mu * h;
+      C = C - mu * ((1 - rho) * C + rho * h);
+    }
+    obs read on Idle = (B + C);
+    obs read on Busy = (B + C);
+  }
+
+  shigure presentation SnapshotEditableBusy {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord B: D;
+      coord C: D;
+    }
+    phase Busy {
+      coord B: D;
+      coord C: D;
+      coord h: D;
+      law representation busy_law: (1 - rho) * mu * (h - C) = 0;
+    }
+    op apply_idle(u: D): Idle -> Idle {
+      B = B + (1 - delta) * u;
+      C = C + delta * u;
+    }
+    op apply_busy(u: D): Busy -> Busy {
+      B = B + (1 - delta) * u;
+      C = C + delta * u;
+      h = h;
+    }
+    op begin(): Idle -> Busy {
+      B = B;
+      C = C;
+      h = C;
+    }
+    op finish(): Busy -> Idle {
+      B = B + mu * h;
+      C = C - mu * ((1 - rho) * C + rho * h);
+    }
+    obs read on Idle = (B + C);
+    obs read on Busy = (B + C);
+  }
+
+  shigure comparison SnapshotFixedCmp {
+    before SingleLedger;
+    after SnapshotFixedOldBusy;
+    state_map Idle -> Active { x = B + C; }
+    state_map Busy -> Active { x = B + C; }
+    translate apply_idle -> [apply(u)];
+    translate apply_busy -> [apply(u)];
+    translate begin -> [];
+    translate finish -> [];
+  }
+
+  shigure comparison SnapshotEditCmp {
+    before SingleLedger;
+    after SnapshotEditableBusy;
+    state_map Idle -> Active { x = B + C; }
+    state_map Busy -> Active { x = B + C; }
+    translate apply_idle -> [apply(u)];
+    translate apply_busy -> [apply(u)];
+    translate begin -> [];
+    translate finish -> [];
+  }
+
+  shigure change_spec SnapshotFixedSpec {
+    domain Q;
+    param mu: Q;
+    param delta: Q;
+    param rho: Q;
+    fixed representation_law SnapshotFixedOldBusy.Busy.busy_law;
+    editable operation SnapshotFixedOldBusy.finish;
+  }
+
+  shigure change_spec SnapshotEditSpec {
+    domain Q;
+    param mu: Q;
+    param delta: Q;
+    param rho: Q;
+    editable representation_law SnapshotEditableBusy.Busy.busy_law;
+    editable operation SnapshotEditableBusy.finish;
+  }
+
+  shigure task P6cEditableBusy {
+    comparison SnapshotEditCmp;
+    change_spec SnapshotEditSpec;
+    eval_condition CondDMuDelta;
+  }
+
+  shigure task P6dFixedOldBusy {
+    comparison SnapshotFixedCmp;
+    change_spec SnapshotFixedSpec;
+    eval_condition CondDMuDelta;
+  }
+
+  // =========================================================================
+  // AC4: 相互作用解析（t^3、mu*delta*(1-rho) の rho=0 面不成立と rho=1 解消）
+  // =========================================================================
+  shigure presentation UnivariateCubeAfter {
+    domain Q;
+    sort D;
+    phase Active {
+      coord x: D;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + (1 + t * t * t) * u;
+    }
+    obs read on Active = (x);
+  }
+
+  shigure comparison UnivariateCubeCmp {
+    before SingleLedger;
+    after UnivariateCubeAfter;
+    state_map Active -> Active { x = x; }
+    translate apply -> [apply(u)];
+  }
+
+  shigure change_spec UnivariateCubeSpec {
+    domain Q;
+    param t: Q;
+    editable operation UnivariateCubeAfter.apply;
+  }
+
+  shigure task InteractionUnivariateCube {
+    comparison UnivariateCubeCmp;
+    change_spec UnivariateCubeSpec;
+  }
+
+  shigure eval_condition FaceRho0 {
+    point_domain universal_ring;
+    equation fix_rho0: rho = 0;
+  }
+
+  shigure eval_condition FaceRho1 {
+    point_domain universal_ring;
+    equation fix_rho1: rho = 1;
+  }
+
+  shigure task InteractionFace0 {
+    comparison SnapshotEditCmp;
+    change_spec SnapshotEditSpec;
+    eval_condition FaceRho0;
+  }
+
+  shigure task InteractionFace1 {
+    comparison SnapshotEditCmp;
+    change_spec SnapshotEditSpec;
+    eval_condition FaceRho1;
+  }
+
+  // =========================================================================
+  // AC5(b): 沈黙規律（x^2 + 1 = 0 の代数閉包 vs Q 点 vs Z 点）＋ 観測由来連携
+  // =========================================================================
+  shigure presentation X2Plus1After {
+    domain Q;
+    sort D;
+    phase Active {
+      coord x: D;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + (1 + p * p + 1) * u;
+    }
+    obs read on Active = (x);
+  }
+
+  shigure comparison X2Plus1Cmp {
+    before SingleLedger;
+    after X2Plus1After;
+    state_map Active -> Active { x = x; }
+    translate apply -> [apply(u)];
+  }
+
+  shigure change_spec X2Plus1Spec {
+    domain Q;
+    param p: Q;
+    editable operation X2Plus1After.apply;
+  }
+
+  shigure eval_condition CondRationalPoints {
+    point_domain rational_points;
+  }
+
+  shigure eval_condition CondIntegerPoints {
+    point_domain integer_points;
+  }
+
+  shigure task X2Plus1AlgClosure {
+    comparison X2Plus1Cmp;
+    change_spec X2Plus1Spec;
+    eval_condition UncondAlgebraic;
+  }
+
+  shigure task X2Plus1Rational {
+    comparison X2Plus1Cmp;
+    change_spec X2Plus1Spec;
+    eval_condition CondRationalPoints;
+  }
+
+  shigure presentation SingleLedgerZ {
+    domain Z;
+    sort D;
+    phase Active {
+      coord x: D;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + u;
+    }
+    obs read on Active = (x);
+  }
+
+  shigure presentation X2Plus1ZAfter {
+    domain Z;
+    sort D;
+    phase Active {
+      coord x: D;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + (1 + p * p + 1) * u;
+    }
+    obs read on Active = (x);
+  }
+
+  shigure comparison X2Plus1ZCmp {
+    before SingleLedgerZ;
+    after X2Plus1ZAfter;
+    state_map Active -> Active { x = x; }
+    translate apply -> [apply(u)];
+  }
+
+  shigure change_spec X2Plus1ZSpec {
+    domain Z;
+    param p: Z;
+    editable operation X2Plus1ZAfter.apply;
+  }
+
+  shigure task X2Plus1Integer {
+    comparison X2Plus1ZCmp;
+    change_spec X2Plus1ZSpec;
+    eval_condition CondIntegerPoints;
+  }
+
+  // 観測座標（observed Account.balance）と由来（Origin.kind）の CLI 通し確認
+  shigure presentation ObservedBefore {
+    domain Q;
+    sort D;
+    phase Active {
+      coord x: D;
+      coord b: D observed Account.balance;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + u;
+      b = b;
+    }
+    obs read on Active = (x + b);
+  }
+
+  shigure presentation ObservedAfter {
+    domain Q;
+    sort D;
+    phase Active {
+      coord x: D;
+      coord b: D observed Account.balance;
+    }
+    op apply(u: D): Active -> Active {
+      x = x + k * u;
+      b = b;
+    }
+    obs read on Active = (x + b);
+  }
+
+  shigure comparison ObservedCmp {
+    before ObservedBefore;
+    after ObservedAfter;
+    state_map Active -> Active {
+      x = x;
+      b = b;
+    }
+    translate apply -> [apply(u)];
+  }
+
+  shigure change_spec ObservedSpec {
+    domain Q;
+    param k: Q;
+    editable operation ObservedAfter.apply;
+  }
+
+  shigure task ObservedBalanceTask {
+    comparison ObservedCmp;
+    change_spec ObservedSpec;
+    eval_condition UncondAlgebraic;
+  }
+}

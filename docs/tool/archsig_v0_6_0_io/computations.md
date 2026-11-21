@@ -877,3 +877,25 @@ CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)�
 数学的対象から決まる値を返す。表示用の特解・基底・証明証人は出力に保持して検査・表示に使い、
 その便宜的選択を新しい Law の束縛へ変換する経路にしない。
 核は表示を変えて計算する場合も、型付きの対象・射・類と、それらについての判定を保つ。
+
+## 11. SHIGURE の標準構成・適用条件・沈黙規律
+
+独立クレート `archsig-shigure` は、[Law §7](law.md#7-shigure-宣言原始表示比較変更仕様評価条件タスク) の
+原始表示・比較・変更仕様・評価条件から、次の 4 構成を有限特殊化として計算する。
+
+| 構成 | 入力と計算内容 | 適用条件（コード上で明示検査） | 条件外時の振る舞い |
+| --- | --- | --- | --- |
+| 原始表示と多項式評価一致 | 有限の sort・phase・座標・操作・状態 Law・観測写像を型付き多項式 IR へ変換し評価する | 全参照・係数環の整合、sort rank 1、未観測値不在 | 型・参照不正は入力エラー。未観測座標依存は不足位置を返して `undetermined`（`unobserved_dependency`） |
+| 意味保存変更（`shigure_preservation`） | 状態比較 $h$ と操作語翻訳 $\tau$ に対し、(1) 状態 Law の `after`→`before` 保存、(2) 生成操作ごとの状態 Law 閉性（商環上の ideal 所属）、(3) 遷移可換性 $h \circ \mathrm{op}' = \tau(\mathrm{op}) \circ h$、(4) 観測保存の 4 族から保存残差 ideal を生成し全許可有限語の保存根拠を得る | 有限還元可能な保存義務、`before` の探索パラメータ非混入、`editable` 対象の `after` 限定、商環上の ideal 所属判定の適用域内 | 商環上の所属判定を ambient 零へ暗黙に強めない。有限還元不能・商環適用外は `undetermined`（`infinite_presentation_not_finitely_reducible` / `quotient_ideal_out_of_scope`） |
+| 条件付き解空間 $\mathcal{F}_{a,H,P}$ と復元（`shigure_solve`） | 保存残差 ideal に評価条件の等式 $V(f)$ と Rabinowitsch 補助式 $ug-1=0$ による可逆条件 $D(g)$ を加え、$\mathbb{Q}$ 上の Gröbner 基底・空性証明 witness（$1 = \sum h_i f_i$ の展開検算一致）・アフィン座標抽出・$\mathbb{F}_p$ 全列挙から、元の操作式・状態 Law・状態比較 $h$・語翻訳 $\tau$ を復元し独立した数学モデル再評価検算を行う | 係数域と点集合域（`algebraic_closure` / `universal_ring` / `Q_points` / `Z_points` / `Fp_points`）ごとの有効算法の成立 | $\mathbb{Q}$ / $\mathbb{Z}$ 非線形系の有理点・整数点存在判定（例: $x^2+1=0$ の代数閉包非空・有理点不在）、非対応係数環、または非単元整数座標面などは `undetermined`（`nonlinear_point_existence_out_of_scope` / `unsupported_coeff_ring` / `applicability_condition_not_met`） |
+| 相互作用解析（`shigure_interaction`） | 閉条件の自由パラメータ座標環 $k[t_1,\ldots,t_n]$ における残差 ideal の座標面支持から、最大零化部分集合サイズ $r$（$\forall |S| \le r,\, i_S^* J = 0$）、相互作用に参加する最小変数数、包含極小の不成立部分族を算出する | 閉条件のみで構成される自由パラメータ空間、有効な係数零判定、有限個の残差多項式への有限還元 | 開条件 $D(g)$ が本質的に絡む場合は閉条件へ丸めず `undetermined`（`open_condition_in_interaction`） |
+
+### 沈黙規律と再評価のスコープ区別
+
+1. **係数域と点集合域を混同しない**: 代数閉包上の幾何点存在（`algebraic_closure`）と、
+   $\mathbb{Q}$ 点（`Q_points`）・$\mathbb{Z}$ 点（`Z_points`）・$\mathbb{F}_p$ 点（`Fp_points`）・
+   普遍環（`universal_ring`）の判定を型と出力欄で常に区別する。
+2. **判断不能（沈黙）は正常出力**: 適用条件を外れる入力に対し、誤った `established` / `refuted` や暗黙の近似を返さず、
+   理由コード・不足スロット・適用外詳細を添えた `verdict: "undetermined"` を正常出力（CLI では `status: "partial"`, exit 2）として返す。
+3. **数学モデル再評価と実コード再観測の分離**: 復元した操作式・状態 Law・$h$・$\tau$ の元式への検算結果（`reevaluation`）は
+   `scope: "mathematical_model_reevaluation"` として記録し、実コードへの変更適用と再観測（ArchMap 再抽出）の確認とは明確に区別する。

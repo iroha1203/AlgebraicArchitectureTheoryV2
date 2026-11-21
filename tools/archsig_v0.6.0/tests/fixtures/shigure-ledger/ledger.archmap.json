@@ -1,0 +1,92 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "LedgerVocab",
+      "version": "1",
+      "digest": "sha256:cb35ebe9d9af7271972225abdcd0993b4ae6051104a331f094dd45cea9f4daae"
+    }
+  ],
+  "sources": [
+    {
+      "id": "src_ledger",
+      "uri": "file://ledger.rs",
+      "revision": "rev1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000001"
+    }
+  ],
+  "origins": [
+    {
+      "id": "o_static",
+      "mode": "observed",
+      "method": "ast-extractor",
+      "kind": "static_analysis",
+      "locations": [
+        {
+          "source": "src_ledger",
+          "path": "src/ledger.rs",
+          "span": [10, 42]
+        }
+      ]
+    },
+    {
+      "id": "o_runtime",
+      "mode": "observed",
+      "method": "trace-probe",
+      "kind": "runtime_observation",
+      "locations": [
+        {
+          "source": "src_ledger",
+          "path": "src/runtime.rs",
+          "span": [5, 20]
+        }
+      ]
+    },
+    {
+      "id": "o_llm",
+      "mode": "proposed",
+      "method": "llm-reader",
+      "kind": "llm_candidate",
+      "locations": [],
+      "note": "candidate migration hypothesis"
+    },
+    {
+      "id": "o_human",
+      "mode": "specification",
+      "method": "design-review",
+      "kind": "human_adopted",
+      "locations": [],
+      "note": "adopted specification"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "snap1",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "acc1",
+          "type": "LedgerVocab.Account",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_bal",
+          "subject": "acc1",
+          "field": "LedgerVocab.Account.balance",
+          "value": ["3", "2"],
+          "origin": "o_static"
+        },
+        {
+          "id": "a_tag",
+          "subject": "acc1",
+          "field": "LedgerVocab.Account.tag",
+          "value": "primary",
+          "origin": "o_runtime"
+        }
+      ]
+    }
+  ]
+}

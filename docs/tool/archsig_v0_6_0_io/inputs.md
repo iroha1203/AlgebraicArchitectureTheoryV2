@@ -40,7 +40,9 @@ ArchMap = {
 VocabularyBinding = {namespace: Name, version: String, digest: Digest}
 Source = {id: Id, uri: String, revision: String, digest: Digest}
 Origin = {id: Id, mode: "observed"|"proposed"|"specification",
-          method: String, locations: Location[], note?: String}
+          method: String,
+          kind?: "static_analysis"|"runtime_observation"|"llm_candidate"|"human_adopted",
+          locations: Location[], note?: String}
 Location = {source: Id, path: String, span?: [Nat,Nat]}
 Snapshot = {id: Id, origin: Id, subjects: Subject[], atoms: Atom[]}
          | {id: Id, origin: Id, base: Id,
@@ -204,6 +206,12 @@ observed の locations は1件以上で、実装コードの使用箇所を指�
 テストコードや runtime trace は観測の対象に含めない。核がファイル名から適格性を認定することはない。
 proposed/specification の locations は空でもよいが、そのとき note は非空必須。
 method は作り方を説明する非空文字列。由来の prose を計算の数値へ戻さない。
+
+`Origin.kind` は省略可能な由来種別であり、静的解析（`static_analysis`）、実行観測（`runtime_observation`）、
+LLM 読解候補（`llm_candidate`）、人間採用（`human_adopted`）を型で区別する。
+省略した場合は canonical JSON にも出力せず、既存の ArchMap の `model_digest` と後方互換を保つ。
+ただし SHIGURE 宣言の `observed` 座標から参照する Atom の Origin には `kind` の明示を要求し、
+省略されたままの結合は変換検査で拒否する。
 
 原始値・参照を固定して provenance だけを変えた場合、数学的結果は変わらず、artifact digest と
 出力の由来は変わる。古い source revision を現在の実装についての結論へ付け替えない。
