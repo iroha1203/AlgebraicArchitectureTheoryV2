@@ -14,6 +14,7 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 - [共通記号](notation.md)：対象、写像、係数、文脈の記号。
 - [第I部 Lawと意味の基礎](#第i部-lawと意味の基礎)：第1–3章。
 - [第II部 実現の族とLawの幾何](#第ii部-実現の族とlawの幾何)：第4–6章。
+- [第III部 意味を保つ変更の全体](part_3/README.md)：第7–9章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる導出規則。
 - [付録B 係数・affine構成・descent](appendix_b_coefficients_and_descent.md)：第II部で使う係数変更と局所からの組立て。
 
@@ -23,6 +24,7 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 [序論](introduction.md)で各結果の問いと入力を述べるために用いる。
 第I部の証明は第1–3章と付録Aの中で閉じる。
 第II部はこの結果を使い、第4–6章と付録Bで実現の表示と係数descentを構成する。
+第III部は第7–9章で全変更と条件付き変更族を構成し、商・代表選択・持ち上げを分類する。
 
 ### 第I部 Lawと意味の基礎
 
@@ -38,9 +40,9 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 
 ### 第III部 意味を保つ変更の全体
 
-7. 意味保存変更と合成の幾何
-8. 条件を満たす変更と図式補完
-9. 商・対称性・持ち上げの分類
+7. [意味保存変更と合成の幾何](part_3/chapter_7_semantic_changes_and_composition.md)
+8. [条件を満たす変更と図式補完](part_3/chapter_8_constrained_changes_and_completions.md)
+9. [商・対称性・持ち上げの分類](part_3/chapter_9_quotients_symmetry_and_lifts.md)
 
 ### 第IV部 局所変更・修復・障害
 

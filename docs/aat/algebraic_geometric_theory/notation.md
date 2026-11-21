@@ -47,6 +47,17 @@
 | $`U_I`$、$`M_{\boldsymbol m,\boldsymbol n}`$ | 選択生成元が基底となるchartと、その接着scheme | [6.2–6.3](part_2/chapter_6_families_and_moduli.md#63-chartの接着と普遍実現) |
 | $`X_{\boldsymbol n}`$、$`G_{\boldsymbol n}`$、$`P_E`$ | 基底付きの演算係数scheme、基底変更群、frame torsor | [6.4](part_2/chapter_6_families_and_moduli.md#64-frame自己同型商stack) |
 | $`\mathcal B_\sigma`$、$`Q`$、$`I`$、$`\mathcal C`$、$`\mathcal L`$ | 量を加える前の構造stack、量の型の加群、flat-fppf site上のLaw ideal、商代数、量・Lawモデルの相対Spec | [6.5](part_2/chapter_6_families_and_moduli.md#65-相対specと表示の成立条件) |
+| $`\mathcal C`$、$`s,t`$、$`N_n`$ | 全意味保存射と可換な同型のgroupoid、始域・終域、合成可能な射のnerve | [7.3–7.4](part_3/chapter_7_semantic_changes_and_composition.md#73-全変更の関手と比較表示) |
+| $`\mathcal P_{01,u}`$、$`H_s`$ | 理論解釈を指定した比較表示と状態写像の新しい宣言 | [7.3](part_3/chapter_7_semantic_changes_and_composition.md#73-全変更の関手と比較表示) |
+| $`H`$、$`\mathrm{Syn}_H`$、$`\mathrm{Adm}_H=\mathcal C_H`$ | 許容規則、構文候補、独立な許容変更のgroupoid | [8.1](part_3/chapter_8_constrained_changes_and_completions.md#81-許容規則の構文意味同一視) |
+| $`E`$、$`v`$、$`V\hookrightarrow E`$、$`\mathcal F_{a,H,V}`$ | 評価関手、評価写像、評価条件、始域の同定を保持する条件付き変更族 | [8.2](part_3/chapter_8_constrained_changes_and_completions.md#82-候補生成と条件付き変更族) |
+| $`J`$、$`K_{\mathrm{fix}}`$、$`d`$、$`\alpha`$ | 図式形、固定部分圏、固定図式、そのtrivialization | [8.3](part_3/chapter_8_constrained_changes_and_completions.md#83-固定図式とtrivializationを保つ全補完) |
+| $`\mathcal D_{J,K_{\mathrm{fix}},d}`$、$`\mathcal P_n`$ | 固定図式の全補完、許された一段変更の経路 | [8.3–8.4](part_3/chapter_8_constrained_changes_and_completions.md#83-固定図式とtrivializationを保つ全補完) |
+| $`\mathrm{Tr}(h,D)`$、$`m`$ | 指定domainからの全移送、$`hm=\iota_D`$ を満たす移送 | [8.5](part_3/chapter_8_constrained_changes_and_completions.md#85-状態移送と操作domainのlift) |
+| $`\mathrm{Con}(S,T)`$、$`\mathscr R`$、$`\equiv_{\mathscr R}`$、$`\approx_o`$ | 操作合同関係の束、同一視要求、生成合同関係、全操作語の観測同値 | [9.1](part_3/chapter_9_quotients_symmetry_and_lifts.md#91-操作合同関係と観測同値) |
+| $`q,s,N`$ | 操作・観測を保つ商、保存section、保存冪等射 $`N=sq`$ | [9.3](part_3/chapter_9_quotients_symmetry_and_lifts.md#93-保存section冪等射分裂) |
+| $`\mathrm{Hol}_j`$、$`\mathrm{Lift}(g)`$、$`K`$ | 根のholonomy群、可視変更の全lift、垂直変更群 | [9.4](part_3/chapter_9_quotients_symmetry_and_lifts.md#94-holonomyと中心化群) |
+| $`G_{\mathrm{chg}}\to G_{\mathrm{vis}}`$、$`G_{\mathrm{lift}}`$ | 全変更群の可視群への射影、その像 | [9.5](part_3/chapter_9_quotients_symmetry_and_lifts.md#95-持ち上げのfiberと選択の整合) |
 
 合成は $`(g\circ f)(x)=g(f(x))`$ の順で書く。
 $`u:\mathbb T\to\mathbb T'`$ のモデル引戻しは
@@ -68,3 +79,9 @@ $`J_I`$ はそのchartのLaw ideal、$`K_s`$ はmarkingのkernelまたは、基�
 $`Q_s`$ は生成元付きの商担体、$`Q_S,Q_b,Q`$ は量の型を表す加群である。
 第4章の $`K_x`$ は合成射の有限supportであり、いずれも定義域と添字で区別する。
 第6章の $`I_b`$ は任意の試験射での像イデアルであり、加群の引戻し $`b^*I`$ と区別する。
+
+第7章以降の変更groupoid $`\mathcal C`$ は、第6章の商代数 $`\mathcal C`$ と用途で区別する。
+第8章の $`H`$ は許容規則、$`H_s`$ は比較表示の写像宣言である。
+同章の $`V`$ は評価条件を表す部分関手であり、宣言文脈の包含に使う $`V`$ とは別である。
+第9章では係数環 $`R`$ と同一視要求を区別するため、後者を $`\mathscr R`$ と書く。
+商のsection $`s`$、全変更の始域関手 $`s`$、sort添字 $`s`$ は定義域で区別する。
