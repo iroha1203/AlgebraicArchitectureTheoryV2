@@ -521,4 +521,63 @@ reading FlatSum {{
         execute_shigure_task(&t_flat, ShigureQueryKind::SemanticPreservation).verdict,
         Verdict::Established
     );
+
+    // 7. F1 回帰: check_law 単体で局所決定可能な不正 SHIGURE 宣言を全件拒否する。
+    let f1_cases = [
+        // 7a. state_map の phase 網羅漏れ
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1a {
+  shigure presentation B { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } phase T { coord y: D; } op id(): S -> S { x = x; } obs r on S = (x); obs r on T = (y); }
+  shigure comparison C { before B; after A; state_map S -> S { x = x; } translate id -> [id()]; }
+}"#,
+        // 7b. state_map の before 座標割当漏れ
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1b {
+  shigure presentation B { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison C { before B; after A; state_map S -> S {} translate id -> [id()]; }
+}"#,
+        // 7c. observation 成分数不一致
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1c {
+  shigure presentation B { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x, x); }
+  shigure comparison C { before B; after A; state_map S -> S { x = x; } translate id -> [id()]; }
+}"#,
+        // 7d. translate の操作網羅漏れ
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1d {
+  shigure presentation B { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } op id(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison C { before B; after A; state_map S -> S { x = x; } }
+}"#,
+        // 7e. translate 空語の phase 経路不整合
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1e {
+  shigure presentation B { domain Q; sort D; phase P { coord x: D; } phase Qp { coord y: D; } op mv(): P -> Qp { y = x; } obs r on P = (x); obs r on Qp = (y); }
+  shigure presentation A { domain Q; sort D; phase P { coord x: D; } phase Qp { coord y: D; } op mv(): P -> Qp { y = x; } obs r on P = (x); obs r on Qp = (y); }
+  shigure comparison C { before B; after A; state_map P -> P { x = x; } state_map Qp -> Qp { y = y; } translate mv -> []; }
+}"#,
+        // 7f. 操作引数名と source_phase 座標名の衝突
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1f {
+  shigure presentation A { domain Q; sort D; phase S { coord x: D; } op step(x: D): S -> S { x = x; } obs r on S = (x); }
+}"#,
+        // 7g. characteristic-0 点域 (rational_points / algebraic_closure) の eval_condition への fp(...) 混入
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1g {
+  shigure eval_condition E { point_domain rational_points; equation e: fp(1, 5) = 0; }
+}"#,
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading F1h {
+  shigure eval_condition E { point_domain algebraic_closure; equation e: fp(1, 5) = 0; }
+}"#,
+    ];
+    for (idx, bad_src) in f1_cases.iter().enumerate() {
+        assert!(
+            check_law(bad_src.as_bytes(), &defs).is_err(),
+            "F1 case #{idx} must be rejected directly by check_law"
+        );
+    }
 }

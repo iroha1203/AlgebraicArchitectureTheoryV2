@@ -1,13 +1,13 @@
 //! `shigure comparison` / `change_spec` / `eval_condition` / `task` の静的検査。
 
 use super::check::{
-    CResult, DeclCategory, check_coeff_domain, check_point_domain, check_poly_literals,
-    resolve_shigure_ref,
+    CResult, DeclCategory, LiteralDomainRule, check_coeff_domain, check_point_domain,
+    check_poly_literals, resolve_shigure_ref,
 };
 use super::*;
 use crate::law::ast::{QName, Span};
 use crate::law::check::{Checker, duplicate, full, reference, syntax};
-use archsig_common::control::Control;
+use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -57,9 +57,10 @@ pub(super) fn check_comparison<E: InputError>(
         .into());
     }
 
-    let mut seen_phases = HashSet::new();
+    let mut phase_map: HashMap<String, String> = HashMap::new();
     let mut state_comparisons = Vec::with_capacity(raw.state_comparisons.len());
     for sc in &raw.state_comparisons {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         if !after_p.phases.iter().any(|p| p.name == sc.after_phase.name) {
             return reference(
                 sc.after_phase.span,
@@ -76,7 +77,10 @@ pub(super) fn check_comparison<E: InputError>(
                 format!("unknown before phase `{}`", sc.before_phase.name),
             );
         };
-        if !seen_phases.insert(sc.after_phase.name.clone()) {
+        if phase_map
+            .insert(sc.after_phase.name.clone(), sc.before_phase.name.clone())
+            .is_some()
+        {
             return duplicate(
                 sc.after_phase.span,
                 format!(
@@ -88,6 +92,7 @@ pub(super) fn check_comparison<E: InputError>(
         let mut seen_coords = HashSet::new();
         let mut map = Vec::with_capacity(sc.map.len());
         for (coord, expr) in &sc.map {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
             if !b_phase.coords.iter().any(|c| c.name == coord.name) {
                 return reference(
                     coord.span,
@@ -103,8 +108,62 @@ pub(super) fn check_comparison<E: InputError>(
                     format!("duplicate state_map entry for coordinate `{}`", coord.name),
                 );
             }
-            check_poly_literals(expr, Some(&before_p.coeff_domain), sc.span, control)?;
+            check_poly_literals(
+                expr,
+                LiteralDomainRule::Exact(&before_p.coeff_domain),
+                sc.span,
+                control,
+            )?;
             map.push((coord.name.clone(), expr.clone()));
+        }
+        if seen_coords.len() != b_phase.coords.len() {
+            return Err(Box::new(Issue::law(
+                Code::Type,
+                sc.span,
+                format!(
+                    "state_map `{}` -> `{}` must assign every coordinate of before phase `{}`",
+                    sc.after_phase.name, b_phase.name, b_phase.name
+                ),
+            ))
+            .into());
+        }
+        // before phase の各観測が after phase に同名・同成分数で存在することを検査する。
+        for b_obs in before_p
+            .observations
+            .iter()
+            .filter(|o| o.phase == b_phase.name)
+        {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
+            let Some(a_obs) = after_p
+                .observations
+                .iter()
+                .find(|o| o.phase == sc.after_phase.name && o.name == b_obs.name)
+            else {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    sc.span,
+                    format!(
+                        "after phase `{}` is missing observation `{}` required by before phase `{}`",
+                        sc.after_phase.name, b_obs.name, b_phase.name
+                    ),
+                ))
+                .into());
+            };
+            if a_obs.components.len() != b_obs.components.len() {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    sc.span,
+                    format!(
+                        "observation `{}` arity mismatch between after phase `{}` ({}) and before phase `{}` ({})",
+                        b_obs.name,
+                        sc.after_phase.name,
+                        a_obs.components.len(),
+                        b_phase.name,
+                        b_obs.components.len()
+                    ),
+                ))
+                .into());
+            }
         }
         state_comparisons.push(ShigureStateComparison {
             after_phase: sc.after_phase.name.clone(),
@@ -113,20 +172,32 @@ pub(super) fn check_comparison<E: InputError>(
             span: sc.span,
         });
     }
+    if phase_map.len() != after_p.phases.len() {
+        return Err(Box::new(Issue::law(
+            Code::Type,
+            raw.span,
+            format!(
+                "`shigure comparison {}` must define a `state_map` for every phase of `{}`",
+                raw.name.name, after_p.name
+            ),
+        ))
+        .into());
+    }
 
     let mut seen_ops = HashSet::new();
     let mut word_translation = Vec::with_capacity(raw.word_translation.len());
     for tw in &raw.word_translation {
-        if !after_p
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        let Some(after_op) = after_p
             .operations
             .iter()
-            .any(|o| o.name == tw.after_operation.name)
-        {
+            .find(|o| o.name == tw.after_operation.name)
+        else {
             return reference(
                 tw.after_operation.span,
                 format!("unknown after operation `{}`", tw.after_operation.name),
             );
-        }
+        };
         if !seen_ops.insert(tw.after_operation.name.clone()) {
             return duplicate(
                 tw.after_operation.span,
@@ -136,45 +207,103 @@ pub(super) fn check_comparison<E: InputError>(
                 ),
             );
         }
+        let expected_src = &phase_map[&after_op.source_phase];
+        let expected_dst = &phase_map[&after_op.target_phase];
         let mut steps = Vec::with_capacity(tw.steps.len());
-        for st in &tw.steps {
-            let Some(b_op) = before_p
-                .operations
-                .iter()
-                .find(|o| o.name == st.before_operation.name)
-            else {
-                return reference(
-                    st.before_operation.span,
-                    format!("unknown before operation `{}`", st.before_operation.name),
-                );
-            };
-            if st.arg_exprs.len() != b_op.args.len() {
+        if tw.steps.is_empty() {
+            if expected_src != expected_dst {
                 return Err(Box::new(Issue::law(
                     Code::Type,
-                    st.span,
+                    tw.span,
                     format!(
-                        "translated step `{}` expects {} arguments, got {}",
-                        b_op.name,
-                        b_op.args.len(),
-                        st.arg_exprs.len()
+                        "empty translation for `{}` requires h({}) == h({}) (got `{expected_src}` vs `{expected_dst}`)",
+                        after_op.name, after_op.source_phase, after_op.target_phase
                     ),
                 ))
                 .into());
             }
-            for e in &st.arg_exprs {
-                check_poly_literals(e, Some(&before_p.coeff_domain), st.span, control)?;
+        } else {
+            let mut cur_phase = expected_src.as_str();
+            for st in &tw.steps {
+                E::checkpoint(control, Checkpoint::LawSemantics)?;
+                let Some(b_op) = before_p
+                    .operations
+                    .iter()
+                    .find(|o| o.name == st.before_operation.name)
+                else {
+                    return reference(
+                        st.before_operation.span,
+                        format!("unknown before operation `{}`", st.before_operation.name),
+                    );
+                };
+                if b_op.source_phase != cur_phase {
+                    return Err(Box::new(Issue::law(
+                        Code::Type,
+                        st.span,
+                        format!(
+                            "translated step `{}` starts at phase `{}`, expected `{cur_phase}`",
+                            b_op.name, b_op.source_phase
+                        ),
+                    ))
+                    .into());
+                }
+                if st.arg_exprs.len() != b_op.args.len() {
+                    return Err(Box::new(Issue::law(
+                        Code::Type,
+                        st.span,
+                        format!(
+                            "translated step `{}` expects {} arguments, got {}",
+                            b_op.name,
+                            b_op.args.len(),
+                            st.arg_exprs.len()
+                        ),
+                    ))
+                    .into());
+                }
+                for e in &st.arg_exprs {
+                    E::checkpoint(control, Checkpoint::LawSemantics)?;
+                    check_poly_literals(
+                        e,
+                        LiteralDomainRule::Exact(&before_p.coeff_domain),
+                        st.span,
+                        control,
+                    )?;
+                }
+                cur_phase = b_op.target_phase.as_str();
+                steps.push(ShigureTranslatedStep {
+                    before_operation: st.before_operation.name.clone(),
+                    arg_exprs: st.arg_exprs.clone(),
+                    span: st.span,
+                });
             }
-            steps.push(ShigureTranslatedStep {
-                before_operation: st.before_operation.name.clone(),
-                arg_exprs: st.arg_exprs.clone(),
-                span: st.span,
-            });
+            if cur_phase != expected_dst.as_str() {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    tw.span,
+                    format!(
+                        "translated word for `{}` ends at phase `{cur_phase}`, expected `{expected_dst}`",
+                        after_op.name
+                    ),
+                ))
+                .into());
+            }
         }
         word_translation.push(ShigureTranslatedWord {
             after_operation: tw.after_operation.name.clone(),
             steps,
             span: tw.span,
         });
+    }
+    if seen_ops.len() != after_p.operations.len() {
+        return Err(Box::new(Issue::law(
+            Code::Type,
+            raw.span,
+            format!(
+                "`shigure comparison {}` must define a `translate` entry for every operation of `{}`",
+                raw.name.name, after_p.name
+            ),
+        ))
+        .into());
     }
 
     Ok(ShigureComparison {
@@ -240,6 +369,7 @@ pub(super) fn check_change_spec<E: InputError>(
     let mut seen_params = HashSet::new();
     let mut parameters = Vec::with_capacity(raw.parameters.len());
     for p in &raw.parameters {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         if !seen_params.insert(p.name.name.clone()) {
             return duplicate(
                 p.name.span,
@@ -268,6 +398,7 @@ pub(super) fn check_change_spec<E: InputError>(
     let mut seen_fixed = HashSet::new();
     let mut fixed = Vec::with_capacity(raw.fixed.len());
     for (target, span) in &raw.fixed {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         let resolved = match target {
             RawFixedTarget::SemanticLaw(q) => {
                 let (pres, tail) = split_pres_tail(q, 2, r_idx, reading_name, checker, index)?;
@@ -352,6 +483,7 @@ pub(super) fn check_change_spec<E: InputError>(
     let mut seen_editable = HashSet::new();
     let mut editable = Vec::with_capacity(raw.editable.len());
     for (target, span) in &raw.editable {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         let resolved = match target {
             RawEditableTarget::OperationExpr(q) => {
                 let (pres, tail) = split_pres_tail(q, 1, r_idx, reading_name, checker, index)?;
@@ -398,15 +530,13 @@ pub(super) fn check_change_spec<E: InputError>(
                 "duplicate `editable` target in `shigure change_spec`",
             );
         }
-        for (f, _) in &fixed {
-            if editable_conflicts_with_fixed(&resolved, f) {
-                return Err(Box::new(Issue::law(
-                    Code::Type,
-                    *span,
-                    "target cannot be both `fixed` and `editable`",
-                ))
-                .into());
-            }
+        if seen_fixed.contains(&editable_fixed_counterpart(&resolved)) {
+            return Err(Box::new(Issue::law(
+                Code::Type,
+                *span,
+                "target cannot be both `fixed` and `editable`",
+            ))
+            .into());
         }
         editable.push((resolved, *span));
     }
@@ -450,35 +580,29 @@ fn validate_law_target<E: InputError>(
     Ok(())
 }
 
-fn editable_conflicts_with_fixed(e: &ShigureEditableTarget, f: &ShigureFixedTarget) -> bool {
-    match (e, f) {
-        (
-            ShigureEditableTarget::OperationExpr {
-                presentation: p1,
-                operation: o1,
-            },
-            ShigureFixedTarget::OperationExpr {
-                presentation: p2,
-                operation: o2,
-            },
-        ) => p1 == p2 && o1 == o2,
-        (
-            ShigureEditableTarget::RepresentationLaw {
-                presentation: p1,
-                phase: ph1,
-                law: l1,
-            },
-            ShigureFixedTarget::RepresentationLaw {
-                presentation: p2,
-                phase: ph2,
-                law: l2,
-            },
-        ) => p1 == p2 && ph1 == ph2 && l1 == l2,
-        (
-            ShigureEditableTarget::StateComparisonExpr { after_phase: a1 },
-            ShigureFixedTarget::StateComparisonExpr { after_phase: a2 },
-        ) => a1 == a2,
-        _ => false,
+fn editable_fixed_counterpart(e: &ShigureEditableTarget) -> ShigureFixedTarget {
+    match e {
+        ShigureEditableTarget::OperationExpr {
+            presentation,
+            operation,
+        } => ShigureFixedTarget::OperationExpr {
+            presentation: presentation.clone(),
+            operation: operation.clone(),
+        },
+        ShigureEditableTarget::RepresentationLaw {
+            presentation,
+            phase,
+            law,
+        } => ShigureFixedTarget::RepresentationLaw {
+            presentation: presentation.clone(),
+            phase: phase.clone(),
+            law: law.clone(),
+        },
+        ShigureEditableTarget::StateComparisonExpr { after_phase } => {
+            ShigureFixedTarget::StateComparisonExpr {
+                after_phase: after_phase.clone(),
+            }
+        }
     }
 }
 
@@ -489,23 +613,34 @@ pub(super) fn check_eval_condition<E: InputError>(
 ) -> CResult<ShigureEvalCondition, E> {
     let full_name = full(reading_name, &[&raw.name.name]);
     let point_domain = check_point_domain(&raw.point_domain, control)?;
-    let literal_domain = match &point_domain {
-        ShigurePointDomain::IntegerPoints => Some(ShigureCoeffDomain::Z),
+    let fp_domain_owned = match &point_domain {
         ShigurePointDomain::FiniteFieldPoints(p) => Some(ShigureCoeffDomain::Fp(p.clone())),
         _ => None,
+    };
+    let z_domain = ShigureCoeffDomain::Z;
+    let literal_rule = match &point_domain {
+        ShigurePointDomain::IntegerPoints => LiteralDomainRule::Exact(&z_domain),
+        ShigurePointDomain::FiniteFieldPoints(_) => {
+            LiteralDomainRule::Exact(fp_domain_owned.as_ref().expect("fp domain"))
+        }
+        ShigurePointDomain::AlgebraicClosure | ShigurePointDomain::RationalPoints => {
+            LiteralDomainRule::NonFp
+        }
+        ShigurePointDomain::UniversalRing => LiteralDomainRule::Any,
     };
 
     let check_list = |items: &[RawNamedPoly], kind: &str| -> CResult<Vec<ShigureNamedPoly>, E> {
         let mut seen = HashSet::new();
         let mut out = Vec::with_capacity(items.len());
         for item in items {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
             if !seen.insert(item.name.name.clone()) {
                 return duplicate(
                     item.name.span,
                     format!("duplicate {kind} name `{}`", item.name.name),
                 );
             }
-            check_poly_literals(&item.expr, literal_domain.as_ref(), item.span, control)?;
+            check_poly_literals(&item.expr, literal_rule.clone(), item.span, control)?;
             out.push(ShigureNamedPoly {
                 name: item.name.name.clone(),
                 expr: item.expr.clone(),
@@ -530,6 +665,7 @@ pub(super) fn check_eval_condition<E: InputError>(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn check_task<E: InputError>(
     raw: &RawTask,
     r_idx: usize,
@@ -581,6 +717,7 @@ pub(super) fn check_task<E: InputError>(
         .into());
     }
     for (target, span) in &spec.fixed {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         match target {
             ShigureFixedTarget::SemanticLaw { presentation, .. }
             | ShigureFixedTarget::RepresentationLaw { presentation, .. }
@@ -618,6 +755,7 @@ pub(super) fn check_task<E: InputError>(
         }
     }
     for (target, span) in &spec.editable {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         match target {
             ShigureEditableTarget::OperationExpr { presentation, .. }
             | ShigureEditableTarget::RepresentationLaw { presentation, .. } => {
@@ -667,14 +805,19 @@ pub(super) fn check_task<E: InputError>(
             ))
             .into());
         }
-        // `eval_condition` 内のリテラルが task の係数域（spec.coeff_domain）と整合することも検査する。
         for item in ec
             .evaluations
             .iter()
             .chain(&ec.equations)
             .chain(&ec.invertibles)
         {
-            check_poly_literals(&item.expr, Some(&spec.coeff_domain), item.span, control)?;
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
+            check_poly_literals(
+                &item.expr,
+                LiteralDomainRule::Exact(&spec.coeff_domain),
+                item.span,
+                control,
+            )?;
         }
     }
 

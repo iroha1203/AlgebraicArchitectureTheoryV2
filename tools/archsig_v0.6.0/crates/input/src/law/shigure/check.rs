@@ -175,9 +175,18 @@ fn parse_prime<E: InputError>(modulus: &str, span: Span, control: &Control) -> C
     Ok(p)
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) enum LiteralDomainRule<'a> {
+    Exact(&'a ShigureCoeffDomain),
+    /// `algebraic_closure` / `rational_points`: `Z`/`Q` のみ許可、`fp(...)` は拒否。
+    NonFp,
+    /// `universal_ring` 単独（`task` 側で `spec.coeff_domain` に照合する）。
+    Any,
+}
+
 pub(super) fn check_poly_literals<E: InputError>(
     expr: &ShigurePolyExpr,
-    domain: Option<&ShigureCoeffDomain>,
+    rule: LiteralDomainRule<'_>,
     span: Span,
     control: &Control,
 ) -> CResult<(), E> {
@@ -186,7 +195,7 @@ pub(super) fn check_poly_literals<E: InputError>(
         match expr {
             ShigurePolyExpr::Var(_) => Ok(()),
             ShigurePolyExpr::Int(n) => {
-                if let Some(ShigureCoeffDomain::Fp(p)) = domain {
+                if let LiteralDomainRule::Exact(ShigureCoeffDomain::Fp(p)) = rule {
                     let valid = n.to_biguint().is_some_and(|u| &u < p);
                     if !valid {
                         return Err(Box::new(Issue::law(
@@ -202,7 +211,7 @@ pub(super) fn check_poly_literals<E: InputError>(
                 Ok(())
             }
             ShigurePolyExpr::Rat { .. } => {
-                if let Some(d) = domain
+                if let LiteralDomainRule::Exact(d) = rule
                     && !matches!(d, ShigureCoeffDomain::Q)
                 {
                     return Err(Box::new(Issue::law(
@@ -232,29 +241,37 @@ pub(super) fn check_poly_literals<E: InputError>(
                     ))
                     .into());
                 }
-                if let Some(d) = domain {
-                    match d {
-                        ShigureCoeffDomain::Fp(expected) if expected == modulus => {}
-                        _ => {
-                            return Err(Box::new(Issue::law(
-                                Code::Type,
-                                span,
-                                "Fp literal modulus does not match declaration coefficient domain",
-                            ))
-                            .into());
-                        }
+                match rule {
+                    LiteralDomainRule::NonFp => {
+                        return Err(Box::new(Issue::law(
+                            Code::Type,
+                            span,
+                            "Fp literal is incompatible with characteristic-0 point domain",
+                        ))
+                        .into());
                     }
+                    LiteralDomainRule::Exact(ShigureCoeffDomain::Fp(expected))
+                        if expected == modulus => {}
+                    LiteralDomainRule::Exact(_) => {
+                        return Err(Box::new(Issue::law(
+                            Code::Type,
+                            span,
+                            "Fp literal modulus does not match declaration coefficient domain",
+                        ))
+                        .into());
+                    }
+                    LiteralDomainRule::Any => {}
                 }
                 Ok(())
             }
             ShigurePolyExpr::Neg(a) | ShigurePolyExpr::Pow(a, _) => {
-                check_poly_literals(a, domain, span, control)
+                check_poly_literals(a, rule, span, control)
             }
             ShigurePolyExpr::Add(a, b)
             | ShigurePolyExpr::Sub(a, b)
             | ShigurePolyExpr::Mul(a, b) => {
-                check_poly_literals(a, domain, span, control)?;
-                check_poly_literals(b, domain, span, control)
+                check_poly_literals(a, rule.clone(), span, control)?;
+                check_poly_literals(b, rule, span, control)
             }
         }
     })
@@ -273,6 +290,7 @@ fn check_presentation<E: InputError>(
     let mut sort_names = HashSet::new();
     let mut sorts = Vec::with_capacity(raw.sorts.len());
     for s in &raw.sorts {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         if s.rank == 0 {
             return Err(Box::new(Issue::law(
                 Code::Type,
@@ -294,12 +312,14 @@ fn check_presentation<E: InputError>(
     let mut phase_coords: HashMap<String, HashSet<String>> = HashMap::new();
     let mut phases = Vec::with_capacity(raw.phases.len());
     for ph in &raw.phases {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         if phase_coords.contains_key(&ph.name.name) {
             return duplicate(ph.name.span, format!("duplicate phase `{}`", ph.name.name));
         }
         let mut coords = Vec::with_capacity(ph.coords.len());
         let mut coord_names = HashSet::new();
         for c in &ph.coords {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
             if !coord_names.insert(c.name.name.clone()) {
                 return duplicate(
                     c.name.span,
@@ -338,6 +358,7 @@ fn check_presentation<E: InputError>(
         let mut law_names = HashSet::new();
         let mut state_laws = Vec::with_capacity(ph.state_laws.len());
         for l in &ph.state_laws {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
             if !law_names.insert(l.name.name.clone()) {
                 return duplicate(
                     l.name.span,
@@ -347,7 +368,12 @@ fn check_presentation<E: InputError>(
                     ),
                 );
             }
-            check_poly_literals(&l.expr, Some(&coeff_domain), l.span, control)?;
+            check_poly_literals(
+                &l.expr,
+                LiteralDomainRule::Exact(&coeff_domain),
+                l.span,
+                control,
+            )?;
             state_laws.push(ShigureStateLawDecl {
                 name: l.name.name.clone(),
                 kind: l.kind,
@@ -367,18 +393,19 @@ fn check_presentation<E: InputError>(
     let mut op_names = HashSet::new();
     let mut operations = Vec::with_capacity(raw.operations.len());
     for op in &raw.operations {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         if !op_names.insert(op.name.name.clone()) {
             return duplicate(
                 op.name.span,
                 format!("duplicate operation `{}`", op.name.name),
             );
         }
-        if !phase_coords.contains_key(&op.source_phase.name) {
+        let Some(source_coords) = phase_coords.get(&op.source_phase.name) else {
             return reference(
                 op.source_phase.span,
                 format!("unknown source phase `{}`", op.source_phase.name),
             );
-        }
+        };
         let Some(target_coords) = phase_coords.get(&op.target_phase.name) else {
             return reference(
                 op.target_phase.span,
@@ -388,8 +415,18 @@ fn check_presentation<E: InputError>(
         let mut arg_names = HashSet::new();
         let mut args = Vec::with_capacity(op.args.len());
         for (a_name, a_sort) in &op.args {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
             if !arg_names.insert(a_name.name.clone()) {
                 return duplicate(a_name.span, format!("duplicate argument `{}`", a_name.name));
+            }
+            if source_coords.contains(&a_name.name) {
+                return duplicate(
+                    a_name.span,
+                    format!(
+                        "argument `{}` of operation `{}` collides with coordinate of source phase `{}`",
+                        a_name.name, op.name.name, op.source_phase.name
+                    ),
+                );
             }
             if !sort_names.contains(&a_sort.name) {
                 return reference(
@@ -405,6 +442,7 @@ fn check_presentation<E: InputError>(
         let mut seen_updates = HashSet::new();
         let mut updates = Vec::with_capacity(op.updates.len());
         for (u_name, u_expr) in &op.updates {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
             if !target_coords.contains(&u_name.name) {
                 return reference(
                     u_name.span,
@@ -420,7 +458,12 @@ fn check_presentation<E: InputError>(
                     format!("duplicate update for coordinate `{}`", u_name.name),
                 );
             }
-            check_poly_literals(u_expr, Some(&coeff_domain), op.span, control)?;
+            check_poly_literals(
+                u_expr,
+                LiteralDomainRule::Exact(&coeff_domain),
+                op.span,
+                control,
+            )?;
             updates.push((u_name.name.clone(), u_expr.clone()));
         }
         if seen_updates.len() != target_coords.len() {
@@ -447,6 +490,7 @@ fn check_presentation<E: InputError>(
     let mut obs_keys = HashSet::new();
     let mut observations = Vec::with_capacity(raw.observations.len());
     for obs in &raw.observations {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
         if !phase_coords.contains_key(&obs.phase.name) {
             return reference(
                 obs.phase.span,
@@ -475,7 +519,13 @@ fn check_presentation<E: InputError>(
             );
         }
         for comp in &obs.components {
-            check_poly_literals(comp, Some(&coeff_domain), obs.span, control)?;
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
+            check_poly_literals(
+                comp,
+                LiteralDomainRule::Exact(&coeff_domain),
+                obs.span,
+                control,
+            )?;
         }
         observations.push(ShigureObservationDecl {
             name: obs.name.name.clone(),

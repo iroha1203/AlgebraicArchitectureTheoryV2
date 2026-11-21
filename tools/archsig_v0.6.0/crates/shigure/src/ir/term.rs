@@ -210,87 +210,129 @@ impl PolyExpr {
         PolyExpr::Pow(Box::new(base), exp)
     }
 
-    /// 式中に現れる未観測 slot 名をすべて収集する。
+    /// 式中に現れる未観測 slot 名をすべて収集する（深い木でもスタック安全な反復走査）。
     pub fn collect_unobserved(&self, out: &mut BTreeSet<String>) {
-        match self {
-            PolyExpr::Unobserved { slot, .. } => {
-                out.insert(slot.clone());
-            }
-            PolyExpr::Const(_)
-            | PolyExpr::StateVar(_)
-            | PolyExpr::ArgVar(_)
-            | PolyExpr::ParamVar(_) => {}
-            PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => e.collect_unobserved(out),
-            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
-                a.collect_unobserved(out);
-                b.collect_unobserved(out);
+        let mut stack = vec![self];
+        while let Some(node) = stack.pop() {
+            match node {
+                PolyExpr::Unobserved { slot, .. } => {
+                    out.insert(slot.clone());
+                }
+                PolyExpr::Const(_)
+                | PolyExpr::StateVar(_)
+                | PolyExpr::ArgVar(_)
+                | PolyExpr::ParamVar(_) => {}
+                PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => stack.push(e),
+                PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+                    stack.push(b);
+                    stack.push(a);
+                }
             }
         }
     }
 
-    /// 式中の状態変数・引数変数・パラメータ変数の集合を収集する。
+    /// 式中の状態変数・引数変数・パラメータ変数の集合を収集する（反復走査）。
     pub fn collect_vars(
         &self,
         states: &mut BTreeSet<String>,
         args: &mut BTreeSet<String>,
         params: &mut BTreeSet<String>,
     ) {
-        match self {
-            PolyExpr::StateVar(v) => {
-                states.insert(v.clone());
-            }
-            PolyExpr::ArgVar(v) => {
-                args.insert(v.clone());
-            }
-            PolyExpr::ParamVar(v) => {
-                params.insert(v.clone());
-            }
-            PolyExpr::Const(_) | PolyExpr::Unobserved { .. } => {}
-            PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => e.collect_vars(states, args, params),
-            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
-                a.collect_vars(states, args, params);
-                b.collect_vars(states, args, params);
+        let mut stack = vec![self];
+        while let Some(node) = stack.pop() {
+            match node {
+                PolyExpr::StateVar(v) => {
+                    states.insert(v.clone());
+                }
+                PolyExpr::ArgVar(v) => {
+                    args.insert(v.clone());
+                }
+                PolyExpr::ParamVar(v) => {
+                    params.insert(v.clone());
+                }
+                PolyExpr::Const(_) | PolyExpr::Unobserved { .. } => {}
+                PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => stack.push(e),
+                PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+                    stack.push(b);
+                    stack.push(a);
+                }
             }
         }
     }
 
-    /// 式中のパラメータ変数（`ParamVar`）のみを収集する。
+    /// 式中のパラメータ変数（`ParamVar`）のみを収集する（反復走査）。
     pub fn collect_params(&self, params: &mut BTreeSet<String>) {
-        match self {
-            PolyExpr::ParamVar(v) => {
-                params.insert(v.clone());
-            }
-            PolyExpr::Const(_)
-            | PolyExpr::StateVar(_)
-            | PolyExpr::ArgVar(_)
-            | PolyExpr::Unobserved { .. } => {}
-            PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => e.collect_params(params),
-            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
-                a.collect_params(params);
-                b.collect_params(params);
+        let mut stack = vec![self];
+        while let Some(node) = stack.pop() {
+            match node {
+                PolyExpr::ParamVar(v) => {
+                    params.insert(v.clone());
+                }
+                PolyExpr::Const(_)
+                | PolyExpr::StateVar(_)
+                | PolyExpr::ArgVar(_)
+                | PolyExpr::Unobserved { .. } => {}
+                PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => stack.push(e),
+                PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+                    stack.push(b);
+                    stack.push(a);
+                }
             }
         }
     }
 
-    /// 式が状態座標と操作引数について持つ最大次数を返す（パラメータ係数は次数 0）。
+    /// 式が状態座標と操作引数について持つ最大次数を返す（パラメータ係数は次数 0、反復走査）。
     /// 未観測値（`Unobserved`）を含む式は次数未確定として `None` を返す。
     ///
     /// G-140 P0.1 の型付き affine term の適用条件検査に用いる。
     pub fn max_state_arg_degree(&self) -> Option<u32> {
-        match self {
-            PolyExpr::Unobserved { .. } => None,
-            PolyExpr::Const(_) | PolyExpr::ParamVar(_) => Some(0),
-            PolyExpr::StateVar(_) | PolyExpr::ArgVar(_) => Some(1),
-            PolyExpr::Neg(e) => e.max_state_arg_degree(),
-            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) => {
-                Some(a.max_state_arg_degree()?.max(b.max_state_arg_degree()?))
-            }
-            PolyExpr::Mul(a, b) => Some(
-                a.max_state_arg_degree()?
-                    .saturating_add(b.max_state_arg_degree()?),
-            ),
-            PolyExpr::Pow(e, exp) => Some(e.max_state_arg_degree()?.saturating_mul(*exp)),
+        enum DegFrame<'a> {
+            Visit(&'a PolyExpr),
+            Max2,
+            Add2,
+            MulConst(u32),
         }
+        let mut work = vec![DegFrame::Visit(self)];
+        let mut vals: Vec<u32> = Vec::new();
+        while let Some(frame) = work.pop() {
+            match frame {
+                DegFrame::Visit(node) => match node {
+                    PolyExpr::Unobserved { .. } => return None,
+                    PolyExpr::Const(_) | PolyExpr::ParamVar(_) => vals.push(0),
+                    PolyExpr::StateVar(_) | PolyExpr::ArgVar(_) => vals.push(1),
+                    PolyExpr::Neg(e) => work.push(DegFrame::Visit(e)),
+                    PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) => {
+                        work.push(DegFrame::Max2);
+                        work.push(DegFrame::Visit(b));
+                        work.push(DegFrame::Visit(a));
+                    }
+                    PolyExpr::Mul(a, b) => {
+                        work.push(DegFrame::Add2);
+                        work.push(DegFrame::Visit(b));
+                        work.push(DegFrame::Visit(a));
+                    }
+                    PolyExpr::Pow(e, exp) => {
+                        work.push(DegFrame::MulConst(*exp));
+                        work.push(DegFrame::Visit(e));
+                    }
+                },
+                DegFrame::Max2 => {
+                    let b = vals.pop()?;
+                    let a = vals.pop()?;
+                    vals.push(a.max(b));
+                }
+                DegFrame::Add2 => {
+                    let b = vals.pop()?;
+                    let a = vals.pop()?;
+                    vals.push(a.saturating_add(b));
+                }
+                DegFrame::MulConst(exp) => {
+                    let a = vals.pop()?;
+                    vals.push(a.saturating_mul(exp));
+                }
+            }
+        }
+        vals.pop()
     }
 
     /// 状態座標・操作引数について affine（次数 1 以下）かを返す。
@@ -325,6 +367,34 @@ impl std::ops::Mul for PolyExpr {
     type Output = PolyExpr;
     fn mul(self, rhs: PolyExpr) -> PolyExpr {
         PolyExpr::prod(self, rhs)
+    }
+}
+
+impl Drop for PolyExpr {
+    fn drop(&mut self) {
+        let mut stack = Vec::new();
+        take_poly_expr_children(self, &mut stack);
+        while let Some(mut node) = stack.pop() {
+            take_poly_expr_children(&mut node, &mut stack);
+        }
+    }
+}
+
+fn take_poly_expr_children(expr: &mut PolyExpr, stack: &mut Vec<PolyExpr>) {
+    let zero = || PolyExpr::Const(ScalarLit::Z(BigInt::from(0)));
+    match expr {
+        PolyExpr::Neg(a) | PolyExpr::Pow(a, _) => {
+            stack.push(std::mem::replace(&mut **a, zero()));
+        }
+        PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+            stack.push(std::mem::replace(&mut **a, zero()));
+            stack.push(std::mem::replace(&mut **b, zero()));
+        }
+        PolyExpr::Const(_)
+        | PolyExpr::StateVar(_)
+        | PolyExpr::ArgVar(_)
+        | PolyExpr::ParamVar(_)
+        | PolyExpr::Unobserved { .. } => {}
     }
 }
 

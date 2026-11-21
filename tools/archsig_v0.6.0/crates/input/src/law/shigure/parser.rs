@@ -716,6 +716,7 @@ impl<E: InputError> Parser<E> {
 
     fn parse_shigure_poly_unary(&mut self) -> PResult<ShigurePolyExpr, E> {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
+            self.checkpoint_here()?;
             if self.eat_sym("-") {
                 let inner = self.parse_shigure_poly_unary()?;
                 Ok(ShigurePolyExpr::Neg(Box::new(inner)))
@@ -727,6 +728,7 @@ impl<E: InputError> Parser<E> {
 
     fn parse_shigure_poly_primary(&mut self) -> PResult<ShigurePolyExpr, E> {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
+            self.checkpoint_here()?;
             if self.eat_sym("(") {
                 let inner = self.parse_shigure_poly_expr()?;
                 self.expect_sym(")")?;
