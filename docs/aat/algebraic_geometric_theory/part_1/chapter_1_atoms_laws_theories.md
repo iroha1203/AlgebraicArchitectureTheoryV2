@@ -25,7 +25,7 @@ Atom語彙は、事実の種類と、種類ごとの名前・参照先・値の�
 | 式の出現 | 式を持つ宣言の名前、有限構文木内の位置 | その部分式の評価 |
 
 各種類はタグ付きで区別し、名前も型付きで比較する。
-原始表示 $`\mathcal P`$ の宣言と式の出現からなる集合を
+[定義1.7](#14-表示代入理論の射)で定める原始表示 $`\mathcal P`$ の宣言と式の出現からなる集合を
 $`\mathrm{At}_{\mathrm{dec}}(\mathcal P)`$ と書く。
 構造 $`A`$ を与えたときの状態・操作graph・関係・domain・量の事実の直和を
 $`\mathrm{At}_{\mathrm{val}}(A)`$ と書く。
@@ -172,6 +172,8 @@ t=t'&:=\exists y\,(E_t(\boldsymbol x,y)\wedge E_{t'}(\boldsymbol x,y)).
 \end{aligned}
 ```
 
+domain式 $`D_p(t_1,\ldots,t_m)`$ とgraph式 $`G_e(t_1,\ldots,t_m,t')`$ も、
+関係の場合と同じく全引数の値graphを連言し、その値を表す新しい変数を存在量化して読む。
 したがって、部分termについて $`t=t`$ はその定義可能性を表す。
 等式論理の反射律を無条件に使う対象は変数の等式であり、
 部分termへの代入には定義可能性を伴わせる。
@@ -207,8 +209,9 @@ A\models\ell
 導出に使う規則と健全性は[付録A](../appendix_a_positive_logic.md)に与える。
 役割を指定することと、そのLawが成り立つ証明を持つことを区別する。
 
-値sortが可換環 $`R_A`$ で、入力 $`I_\ell^A`$ 上でterm $`t,t'`$ がともに定義されるとき、
-等式Lawの残差を
+値sortが可換環 $`R_A`$ である等式Law $`\ell=(\iota_\ell\vdash_{\Gamma_\ell}t=t')`$ に対し、
+$`J_\ell^A:=I_\ell^A\cap\mathrm{Dom}_A(t)\cap\mathrm{Dom}_A(t')`$ を定める。
+残差 $`\rho_{\ell,A}:J_\ell^A\to R_A`$ は
 
 **式(1.6)**
 
@@ -217,7 +220,9 @@ A\models\ell
   =\mathrm{ev}_A(t,\gamma)-\mathrm{ev}_A(t',\gamma)
 ```
 
-とする。この入力上で等式の充足は残差の零性と同値である。
+とする。$`J_\ell^A`$ 上で等式の充足は残差の零性と同値である。
+Law全体の成立 $`A\models\ell`$ は、$`J_\ell^A=I_\ell^A`$ であり、
+全 $`\gamma\in J_\ell^A`$ で $`\rho_{\ell,A}(\gamma)=0`$ となることと同値である。
 環演算と有限termから多項式を得る構成は、[第5章](../README.md#第ii部-実現の族とlawの幾何)に接続する。
 
 **例1.6（同じ言語で書かれるLaw）.**
@@ -247,6 +252,7 @@ $`\top\vdash_{x:s}t_\alpha(x)=t_\beta(x)`$ を課す。
 加法群の等式、作用の結合・単位・両変数の分配を課すと、環とその加群を得る。
 この場合も各Lawは有限の入力と式を持つ。係数を固定する場合には、
 $`R`$ の担体と環構造を固定し、射の $`R`$ 成分を恒等とする。
+この固定データを持つモデル圏は[定義2.2](chapter_2_models_and_morphisms.md#22-lawを満たすモデルと観測)で定める。
 
 ## 1.4 表示・代入・理論の射
 
@@ -256,32 +262,45 @@ $`R`$ の担体と環構造を固定し、射の $`R`$ 成分を恒等とする�
 その必須Lawで指定される理論を $`\mathbb T_{\mathcal P}`$ と書く。
 表示には式の書き方と名前が残り、理論に関する等しさはLawからの導出で判断する。
 
-変数文脈 $`\Gamma=(x_i:s_i)_{i=1}^n`$ への代入 $`\sigma`$ は、
-別の変数文脈 $`\Delta`$ 上の同じsortのterm $`\sigma_i`$ の族である。
-構文的代入 $`t[\sigma]`$ は変数出現を置き換え、
-量化された変数は捕獲を避けるように改名する。
-$`D_{\sigma,A}:=\bigcap_i\mathrm{Dom}_A(\sigma_i)`$ 上で
+変数文脈 $`\Gamma=(x_i:s_i)_{i=1}^n`$ への代入 $`\theta`$ は、
+別の変数文脈 $`\Delta`$ 上の同じsortのterm $`\theta_i`$ の族である。
+構文的代入 $`t[\theta]`$ は自由な変数出現を置き換える。
+正の式 $`\varphi[\theta]`$ は原子式の各引数へ代入し、式(1.4)の規則で展開した後、
+論理構文子に沿って定める。$`\exists`$ と $`\mathrm{let}`$ の束縛変数は、
+代入termの自由変数を捕獲しないよう先に改名する。
+$`\mathrm{Def}_\theta:=\bigwedge_i\mathrm{Def}_{\theta_i}`$ と置くと、
+その成立する入力は $`D_{\theta,A}:=\bigcap_i\mathrm{Dom}_A(\theta_i)`$ であり、この上で
 
 **式(1.8)**
 
 ```math
-\sigma_A:D_{\sigma,A}\longrightarrow X_\Gamma(A),\qquad
+\theta_A:D_{\theta,A}\longrightarrow X_\Gamma(A),\qquad
 \delta\longmapsto
-  \bigl(\mathrm{ev}_A(\sigma_i,\delta)\bigr)_i
+  \bigl(\mathrm{ev}_A(\theta_i,\delta)\bigr)_i
 ```
 
-が定まる。入力条件 $`\eta`$ を伴う代入を使う場合には、
-$`\eta\vdash_\Delta\bigwedge_i\mathrm{Def}_{\sigma_i}`$ を証明しておく。
+が定まる。Law $`\ell=(\iota_\ell\vdash_\Gamma\chi_\ell)`$ への代入は
+
+```math
+\ell[\theta]:=
+\bigl(\mathrm{Def}_\theta\wedge\iota_\ell[\theta]
+  \ \vdash_\Delta\ \chi_\ell[\theta]\bigr)
+```
+
+とする。式に出現しない変数への代入も、$`\mathrm{Def}_\theta`$ に含める。
+入力条件 $`\eta`$ の下で使う場合には、
+$`\eta\vdash_\Delta\mathrm{Def}_\theta`$ を証明する。
+このとき $`\eta`$ を前提に加えたLawでは、定義可能性の連言を省略できる。
 
 **定理1.8（代入・評価・構造射による保存）.**
 任意の署名、構造 $`A,B`$、有限の型付きtermと正の式について、次が成り立つ。
 
-**(1)** $`\delta\in D_{\sigma,A}`$ なら、
-$`t[\sigma]`$ が $`\delta`$ で定義されることと、$`t`$ が $`\sigma_A(\delta)`$ で定義されることは同値であり、
+**(1)** $`\delta\in D_{\theta,A}`$ なら、
+$`t[\theta]`$ が $`\delta`$ で定義されることと、$`t`$ が $`\theta_A(\delta)`$ で定義されることは同値であり、
 定義されるとき
-$`\mathrm{ev}_A(t[\sigma],\delta)=\mathrm{ev}_A(t,\sigma_A(\delta))`$ である。
+$`\mathrm{ev}_A(t[\theta],\delta)=\mathrm{ev}_A(t,\theta_A(\delta))`$ である。
 同じ条件で、正の式 $`\varphi`$ について
-$`A\models\varphi[\sigma](\delta)\Longleftrightarrow A\models\varphi(\sigma_A(\delta))`$ が成り立つ。
+$`A\models\varphi[\theta](\delta)\Longleftrightarrow A\models\varphi(\theta_A(\delta))`$ が成り立つ。
 
 **(2)** sortごとの写像 $`h_s:X_s(A)\to X_s(B)`$ が、全域操作・量と可換し、
 関係を保存し、部分操作について
@@ -310,8 +329,9 @@ h_s(\mathrm{ev}_A(t,\gamma))
 また、$`A\models\varphi(\gamma)`$ なら $`B\models\varphi(h_\Gamma\gamma)`$ である。
 特に $`h_{\Gamma_\ell}(I_\ell^A)\subseteq I_\ell^B`$ となる。
 
-**(3)** 値sortの写像 $`h_R:R_A\to R_B`$ が環準同型であるとき、
-式(1.6)の入力上で
+**(3)** (2)の仮定の下で、値sortの写像 $`h_R:R_A\to R_B`$ が環準同型であるとする。
+等式Law $`\ell`$ と $`\gamma\in J_\ell^A`$ に対して
+$`h_{\Gamma_\ell}\gamma\in J_\ell^B`$ であり、
 
 **式(1.11)**
 
@@ -319,8 +339,15 @@ h_s(\mathrm{ev}_A(t,\gamma))
 h_R(\rho_{\ell,A}(\gamma))=\rho_{\ell,B}(h_{\Gamma_\ell}\gamma)
 ```
 
-が成り立つ。代入についても、定義される入力上で
-$`\rho_{\ell[\sigma],A}(\delta)=\rho_{\ell,A}(\sigma_A\delta)`$ となる。
+が成り立つ。代入については
+
+```math
+J_{\ell[\theta]}^A
+ =\{\delta\in D_{\theta,A}\mid\theta_A(\delta)\in J_\ell^A\}
+```
+
+であり、この集合上で
+$`\rho_{\ell[\theta],A}(\delta)=\rho_{\ell,A}(\theta_A\delta)`$ となる。
 
 **証明.**
 1のtermに関する主張を構文木で帰納する。変数の場合は式(1.8)である。
@@ -349,9 +376,12 @@ $`\exists y:t\,\psi(\gamma,y)`$ のwitness $`b`$ があれば、
 帰納法から $`\psi(h_\Gamma\gamma,h_t(b))`$ を得る。
 入力集合への主張は $`\varphi=\iota_\ell`$ への適用である。
 
-3は二つのtermへの式(1.10)と、
+3では、(2)の入力の保存と二つのtermの定義可能性の保存から
+$`h_{\Gamma_\ell}(J_\ell^A)\subseteq J_\ell^B`$ を得る。二つのtermへの式(1.10)と、
 $`h_R(x-y)=h_R(x)-h_R(y)`$ を合わせる。
-代入の場合は1を二つのtermへ適用する。□
+代入の場合は、Law代入の入力に $`\mathrm{Def}_\theta`$ が含まれるため、
+1を入力の式と二つのtermへ適用して定義域の等号を得る。
+その定義域上で二つの値の差を取れば残差の等号となる。□
 
 **定義1.9（理論の解釈）.**
 $`u:\mathbb T\to\mathbb T'`$ は、次の翻訳と導出からなる。
@@ -369,7 +399,7 @@ graph記号 $`G_f,G_p`$ はそれぞれ $`E_{\tau_f},E_{\tau_p}`$ に、
 domain記号 $`D_p`$ は $`\delta_p`$ に送る。
 式の翻訳は、原子式をこの規則で置き換え、
 連言・選言・存在量化に関して延長する。等号と変数は対応するsortの等号と変数に送る。
-部分termを含む式は式(1.3)–(1.4)で展開してから翻訳する。
+非変数termを含む式は式(1.3)–(1.4)で展開してから翻訳する。
 term自体の翻訳では、操作適用 $`e(t_1,\ldots,t_m)`$ を
 「翻訳された $`t_1,\ldots,t_m`$ の値を順に新しい変数 $`z_1,\ldots,z_m`$ へ束縛し、
 $`\tau_e(\boldsymbol z)`$ を評価する」termへ送る。
@@ -379,9 +409,13 @@ $`\tau_e(\boldsymbol z)`$ を評価する」termへ送る。
 射の等号は、sort写像が同じで、各操作の値graphと各関係・domainの翻訳が
 $`\mathbb T'`$ で相互に導出可能であることとする。導出木の選び方は射の等号に含めない。
 値graphを比較するため、操作の定義可能性も等号に含まれる。
-恒等翻訳と翻訳の代入で合成を定める。
-合成に必要な導出は[付録Aの命題A.2](../appendix_a_positive_logic.md#a3-翻訳と導出)で得る。
-捕獲を避けた構文の代入は結合的で、等号の条件も代入で保たれるから、理論の圏 $`\mathbf{Th}`$ を得る。
+恒等翻訳はsortと原始記号を保ち、操作 $`e`$ を $`e(\boldsymbol x)`$、
+関係 $`r`$ を $`r(\boldsymbol x)`$、domainを $`D_p(\boldsymbol x)`$ へ送る。
+$`u:\mathbb T\to\mathbb T'`$ と $`v:\mathbb T'\to\mathbb T''`$ の合成候補では、
+sort写像を合成し、$`u`$ の操作term・関係式・domain式に $`v`$ の翻訳を施す。
+[付録Aの補題A.3・命題A.4](../appendix_a_positive_logic.md#a3-翻訳と導出)で、
+値graphと式の相互導出から、合成が解釈となること、代表によらないこと、単位律と結合律を証明する。
+この等号で割った解釈を射とする圏を、理論の圏 $`\mathbf{Th}`$ と呼ぶ。
 
 **例1.10（domainと入力を運ぶ必要）.**
 一つのsort $`S=\{0,1\}`$、定数 $`c=1`$、部分単項操作 $`p`$ を考える。
@@ -391,7 +425,11 @@ $`B`$ では $`D_p^B=\{0\}`$、$`p_B(0)=0`$ とする。
 $`A`$ で成り立つ $`p(c)=c`$ は、$`B`$ では左辺が未定義なので成り立たない。
 
 また、$`B`$ は $`D_p(x)\vdash_x p(x)=x`$ を満たすが、
-$`\top\vdash_x p(x)=x`$ を満たさない。前者の導出を使って後者を翻訳することはできない。
+$`\top\vdash_x p(x)=x`$ を満たさない。
+後者を必須Lawとする理論から、前者を必須Lawとする理論への翻訳候補として、
+sortと全原始記号を同じ名前へ送るものを取る。
+翻訳先のモデル $`B`$ が翻訳Lawを満たさないので、健全性によりその導出は存在せず、
+この候補は定義1.9の解釈にならない。
 Lawの入力と、その入力上で必要な定義可能性が翻訳の一部になる理由がここにある。
 
 本章の正の式は、非単射・非全射を含む構造保存射に沿う一方向の保存を持つ。
@@ -415,7 +453,8 @@ readingは、どの署名・Law、観測、宣言文脈と被覆、値の構造�
 文脈と被覆は[第3章](chapter_3_contexts_and_local_models.md)で定義する。
 係数を用いるreadingでは、その係数と係数的実現方式も保持する。
 
-二つのreadingを比較するときは、理論解釈 $`u`$、
+二つのreadingを比較するときは、理論解釈 $`u`$ と、
+[定理2.4](chapter_2_models_and_morphisms.md#23-構造保存射と理論の解釈)で構成する引戻しモデル $`u^*B`$ を用いる。
 状態写像 $`h:A\to u^*B`$、観測値の写像 $`\alpha:O\to O'`$ を指定し、
 必要な観測の可換性
 
