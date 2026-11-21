@@ -72,9 +72,10 @@ pub(super) fn classify_asks(asks: &[String]) -> AskPartition {
 }
 
 fn looks_like_shigure_ask(ask: &str) -> bool {
-    let rhs = match ask.find('=') {
-        Some(pos) => ask[pos + 1..].trim_start(),
-        None => ask.trim_start(),
+    let rhs = match (ask.find('='), ask.find('(')) {
+        (Some(eq), Some(open)) if eq < open => ask[eq + 1..].trim_start(),
+        (Some(eq), None) => ask[eq + 1..].trim_start(),
+        _ => ask.trim_start(),
     };
     for prefix in [
         "shigure_preservation",
@@ -291,11 +292,6 @@ fn parse_single_ask(ask: &str) -> Result<ParsedShigureRequest, String> {
     }
     let mut parts = inner.split(',');
     let head = parts.next().expect("non-empty split").trim();
-    if head.is_empty() || head.starts_with('.') || head.starts_with('[') {
-        return Err(format!(
-            "invalid SHIGURE task name `{head}` in `{ask}`; quote arguments if your shell expanded `$` references"
-        ));
-    }
     if !is_qname(head) {
         return Err(format!(
             "invalid SHIGURE task name `{head}` in `{ask}`: expected identifier or qualified `Reading.Task` name"

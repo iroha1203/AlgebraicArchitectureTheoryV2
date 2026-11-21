@@ -97,3 +97,24 @@ fn deliver_shigure_records_cancelled_issue_when_signal_arrives_during_final_task
         "archsig.summary/1 issues must omit `dependencies`"
     );
 }
+
+#[test]
+fn shigure_ask_classifier_and_head_error_match_execution_spec() {
+    // ID= 欠落かつ snapshot= を含む SHIGURE 問いを混在誤分類せず AllShigure として構文検査へ渡す
+    let missing_id = "shigure_solve(LedgerMigration.P1AtomicMarked, snapshot=snap1)".to_owned();
+    let valid_ask = "p=shigure_solve(LedgerMigration.P1AtomicMarked)".to_owned();
+    assert_eq!(
+        classify_asks(&[missing_id.clone(), valid_ask]),
+        AskPartition::AllShigure
+    );
+    assert!(parse_single_ask(&missing_id).is_err());
+
+    // 宣言名位置の先頭 `.` / `[` では `$` シェル展開案内を加えない（execution.md §2）
+    for bad in ["a=shigure_solve(.foo)", "a=shigure_solve([0])"] {
+        let msg = parse_single_ask(bad).unwrap_err();
+        assert!(
+            !msg.contains("shell expanded"),
+            "declaration head error must not emit `$` shell expansion hint: {msg}"
+        );
+    }
+}
