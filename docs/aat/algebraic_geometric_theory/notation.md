@@ -52,7 +52,7 @@
 | $`\mathcal P_{01,u}`$、$`H_s`$、$`\mathrm{Cmp}_\sigma`$ | 比較表示、状態写像の宣言、両端の対象条件と任意の許可写像を別に読む混合解釈のgroupoid | [7.3](part_3/chapter_7_semantic_changes_and_composition.md#73-全変更の関手と比較表示) |
 | $`H`$、$`\mathrm{Syn}_H`$、$`\mathrm{Adm}_H=\mathcal C_H`$ | 型・適用域・解釈・比較を持つ許容規則、構文候補、独立な許容変更のgroupoid | [8.1–8.2](part_3/chapter_8_constrained_changes_and_completions.md#81-許容規則の構文意味同一視) |
 | $`H_{\mathrm{poly}}`$、$`n_{v,s}`$ | 有限次数の多項式・行列を生成する規則、頂点とsortごとの階数 | [8.2](part_3/chapter_8_constrained_changes_and_completions.md#82-候補生成と条件付き変更族) |
-| $`\mathcal B^{\partial}_{a,H}`$ | 選んだ端点と $`a`$ の同定 $`\alpha`$ を保持するfiber | [8.2](part_3/chapter_8_constrained_changes_and_completions.md#82-候補生成と条件付き変更族) |
+| $`\widehat{\mathcal C}_H`$、$`\mathcal B^{\partial}_{a,H}`$ | 元の記録と同型で運んだ変更を持つ表示、選んだ端点と $`a`$ の同定を保持するfiber | [8.2](part_3/chapter_8_constrained_changes_and_completions.md#82-候補生成と条件付き変更族) |
 | $`E`$、$`\widetilde v`$、$`V\hookrightarrow E`$、$`\mathcal F^{\partial}_{a,H,V}`$ | 評価関手、固定同定も読む評価、評価条件、$`\partial=s,t`$ で始域または終域を固定する条件付き変更族 | [8.2](part_3/chapter_8_constrained_changes_and_completions.md#82-候補生成と条件付き変更族) |
 | $`J`$、$`K_{\mathrm{fix}}`$、$`d`$、$`\alpha`$ | 図式形、固定部分圏、固定図式、そのtrivialization | [8.3](part_3/chapter_8_constrained_changes_and_completions.md#83-固定図式とtrivializationを保つ全補完) |
 | $`\mathcal D_{J,K_{\mathrm{fix}},d}`$、$`\mathrm{Path}_{H,n}`$ | 固定図式の全補完、許された一段変更の経路 | [8.3–8.4](part_3/chapter_8_constrained_changes_and_completions.md#83-固定図式とtrivializationを保つ全補完) |

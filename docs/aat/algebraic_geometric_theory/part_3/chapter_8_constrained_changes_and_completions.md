@@ -294,10 +294,35 @@ $`\widetilde v(c,\alpha)=v(c)`$ と引き戻す特例である。
 係数の族を用いない場合は、$`\mathrm{Spec}\,R`$ を一点groupoidに替え、
 $`E,V`$ を集合として同じ構成を行う。
 
+同型で運んだ記録も保持する表示を構成する。
+記録から実際の変更を取る忘却関手を $`\Phi_H:\mathcal C_H\to\mathcal C`$ とし、
+$`\widehat{\mathcal C}_H`$ の対象を
+$`(c,b,\theta:\Phi_H(c)\xrightarrow{\sim}b)`$ とする。
+ここで $`b`$ は $`\mathcal C`$ の任意の対象である。
+比較は $`(\gamma:c\to c',\delta:b\to b')`$ で
+$`\delta\theta=\theta'\Phi_H(\gamma)`$ を満たす対とする。
+恒等・合成は成分で定め、始域・終域は $`b`$ から取る。
+元の記録 $`c`$ を残すので、その固定データとwitnessも保持される。
+
+この表示での端点固定fiberの対象は
+$`(c,b,\theta,\alpha:\partial b\cong a_S)`$ であり、評価を
+$`\widehat v(c,b,\theta,\alpha)=\widetilde v(c,\alpha\,\partial\theta)`$ とする。
+$`\delta\theta=\theta'\Phi_H(\gamma)`$ と $`\alpha'\partial\delta=\alpha`$ から
+$`(\alpha'\partial\theta')\partial\Phi_H(\gamma)=\alpha\partial\theta`$ なので、
+これは元の評価の比較不変性を引き継ぐ。
+係数変更・宣言制限は全成分を運び、忘却関手の比較同型も挿入する。
+
+元の $`\mathcal C_H`$ の内部で端点を厳密固定できるとは限らない。
+集合の意味圏で唯一の記録を $`\mathrm{id}_{\{0\}}`$、比較を恒等だけとすると、
+$`a=\{1\}`$ への同定を持つfiberは非空だが、始域が厳密に $`a`$ である元の記録はない。
+$`\widehat{\mathcal C}_H`$ は、この場合にも同型で運んだ変更を元の記録とともに扱う表示である。
+
 **系8.9（独立な全解と候補からの回復）.**
 式(8.1)のgroupoidは、選んだ始域または終域を $`a`$ と同定し、許容・固定条件を満たし、
 評価が $`V`$ に属する独立な全変更のgroupoidである。
 定理8.6の族では、構文候補に同じ条件を課したgroupoidからの評価は自然な同値になる。
+さらに、$`\widehat{\mathcal C}_H`$ を用いて $`\partial b=a_S`$、$`\alpha=\mathrm{id}`$ と
+厳密固定した条件付きgroupoidも、式(8.1)の全解と同値である。
 
 **証明.**
 上の対象・射の記述が独立な全解を与える。
@@ -306,7 +331,32 @@ $`E,V`$ を集合として同じ構成を行う。
 復元は全比較射に忠実充満で、$`\alpha'\partial(\gamma)=\alpha`$ も同じ可換式になる。
 候補側の評価は $`\widetilde v`$ をこの全データの復元に沿って引き戻したものである。
 その比較不変性から、同値で運ばれた候補にも同じ $`e`$ がある。
-この抽出と評価は元の $`c,\alpha,e`$ へ戻り、係数変更と可換する。□
+この抽出と評価は元の $`c,\alpha,e`$ へ戻り、係数変更と可換する。
+
+まず $`\widehat{\mathcal C}_H`$ の同型付きfiberから元のfiberへ
+$`(c,b,\theta,\alpha,e)\mapsto(c,\alpha\,\partial\theta,e)`$ と送る。
+逆に $`(c,\beta,e)`$ から $`b=\Phi_H(c),\theta=\mathrm{id},\alpha=\beta`$ として戻す。
+比較 $`\gamma`$ に対する $`\delta`$ は
+$`\delta=\theta'\Phi_H(\gamma)\theta^{-1}`$ と一意に決まり、
+端点の可換条件は元のfiberの条件と同値である。
+従って全Homを回復し、$`(\mathrm{id}_c,\theta)`$ が往復の自然同型を与える。
+評価の定義から $`e`$ も同じである。
+
+次に $`b`$ の実際の射を $`h:A\to B`$ と書く。
+始域固定なら $`h^s=h\alpha^{-1}:a_S\to B`$ とし、
+$`\rho=(\alpha,\mathrm{id}_B):b\cong b^s`$ を作る。
+終域固定なら $`h^t=\alpha h:A\to a_S`$ とし、
+$`\rho=(\mathrm{id}_A,\alpha):b\cong b^t`$ を作る。
+いずれも $`\partial\rho=\alpha`$ である。
+$`(c,b,\theta,\alpha,e)`$ を
+$`(c,b^{\partial},\rho\theta,\mathrm{id},e)`$ へ送る。
+元の記録 $`c`$ は変えず、新しい実変更と同定を表示に加えるため、これは常に対象となる。
+評価も $`\widetilde v(c,\partial(\rho\theta))=\widetilde v(c,\alpha\partial\theta)`$ で一致する。
+比較 $`(\gamma,\delta)`$ は $`(\gamma,\rho'\delta\rho^{-1})`$ へ送り、
+その端点成分は $`\alpha'\partial\delta\alpha^{-1}=\mathrm{id}`$ となる。
+厳密な対象ではこの操作は恒等であり、一般の対象には $`(\mathrm{id}_c,\rho)`$ が往復の自然同型を与える。
+これで厳密固定との同値を得る。全構成は合成・逆・成分の輸送からなるので、
+係数変更と許された宣言制限に、設定7.1・定義8.1の比較同型と整合して擬自然である。□
 
 幾何的表示を得る場合は評価にも条件を課す。
 固定同定の行列と逆行列を加えた定理8.6の有限chart上で $`\widetilde v`$ が多項式評価であり、$`V`$ が有限個の
@@ -318,12 +368,9 @@ $`f_i=0`$、$`g_j\in S^\times`$ で指定されるとする。
 したがって基底を保つ問題のschemeと、基底を忘れた問題のgroupoid表示をそれぞれ得る。
 一般の $`E,V`$ については式(8.1)の解関手を用いる。
 
-固定始域を厳密に $`a_S`$ とした表示も使える。
-$`h:s(c)\to t(c)`$ を $`h\alpha^{-1}:a_S\to t(c)`$ に置き換え、
-固定witnessを同じ同型で運ぶと、始域上の比較は恒等になる。
-許容条件と $`\widetilde v`$ の比較不変性により同じ条件を満たし、$`\alpha`$ を持つ表示と同値である。
-終域固定では同様に $`h`$ を $`\alpha h:s(c)\to a_S`$ へ送り、
-終域上の比較を恒等にする。固定同定を含む比較がこの二つの厳密化を正当化する。
+$`\mathcal C_H`$ 自身について、端点同型に沿う記録・witnessの輸送が構成され、
+許容条件を保つと分かっている場合は、運んだ記録を $`\mathcal C_H`$ の対象として使う厳密化もできる。
+一般の $`H`$ では、系8.9の同値は $`\widehat{\mathcal C}_H`$ の厳密固定表示を用いる。
 
 一般の写像 $`V\to E`$ を使うと、式(8.1)はliftの選択も分類する。
 例えば定数関手 $`E=\{*\}`$、$`V=\{0,1\}`$ では一つの候補に二つのliftがある。
@@ -454,7 +501,10 @@ $`\eta_d^{-1}G(\delta^{-1}\alpha'):(GD')|_{K_{\mathrm{fix}}}\cong d`$ を作れ�
 
 このgroupoidに $`H`$ の許容条件と $`V`$ の評価条件を課すと、固定図式付きの条件付き変更族になる。
 定理8.6の有限自由族では、上の頂点・辺・逆行列・関係の構成によってその全候補も復元される。
-定理8.12の厳密化を用いるときは、$`H`$ のwitnessも同型で運び、評価の不変性を使う。
+一般の $`H`$ を課した後に厳密化するときは、構成8.8の忘却先を補完groupoidへ替え、
+元の許容記録・実補完・その同定を持つ表示を使う。
+定理8.12で作る $`D\cong D^s`$ をこの同定へ後合成すれば、元のwitnessを保持したまま
+厳密補完を得る。評価は元の記録への同定に沿って読み、系8.9と同じ比較式で全解を回復する。
 
 **例8.13（固定された二辺を持つ正方形）.**
 図式形を $`0\to1\to3`$、$`0\to2\to3`$ とその合成の等式とし、
