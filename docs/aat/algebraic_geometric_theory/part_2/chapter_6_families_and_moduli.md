@@ -560,4 +560,4 @@ descentの全忠実性からこれらの比較は一意に降下し、三つの�
 これらの構成の対象・射・係数変更を保持して、一般の実現方式で必要な表示を調べる。
 
 [第II部](../README.md#第ii部-実現の族とlawの幾何) · [共通記号](../notation.md) ·
-[後続：意味を保つ変更の全体](../README.md#第iii部-意味を保つ変更の全体)
+[次章：意味保存変更と合成の幾何](../part_3/chapter_7_semantic_changes_and_composition.md)
