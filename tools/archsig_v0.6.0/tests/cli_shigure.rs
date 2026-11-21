@@ -782,7 +782,45 @@ fn shigure_ac5b_silence_provenance_and_cli_guards() {
     assert_eq!(warnings.len(), 1);
     assert_eq!(s(get(get(&warnings[0], "details"), "argument")), "--reuse");
 
-    // SHIGURE 問いと通常問いの混在・未知タスク・未知 snapshot・重複 ID・不正構文は exit 64
+    // Origin.id == "law"（正当な ArchMap ID）で mode: "observed" の由来も scope.modes から欠落させない
+    let origin_named_law_map = dir.join("origin_named_law.archmap.json");
+    let origin_named_law_json = raw_map.replace("\"o_static\"", "\"law\"");
+    assert_ne!(origin_named_law_json, raw_map);
+    std::fs::write(&origin_named_law_map, &origin_named_law_json).unwrap();
+    let r_origin_law = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            def.to_str().unwrap(),
+            "--law",
+            law.to_str().unwrap(),
+            "--archmap",
+            origin_named_law_map.to_str().unwrap(),
+            "--ask",
+            "obs=shigure_solve(LedgerMigration.ObservedBalanceTask)",
+            "--out",
+            "origin_named_law_out",
+        ],
+    );
+    assert_eq!(
+        r_origin_law.code, 0,
+        "stdout={}\nstderr={}",
+        r_origin_law.stdout, r_origin_law.stderr
+    );
+    let origin_law_saved =
+        parse(&std::fs::read(dir.join("origin_named_law_out/result.json")).unwrap()).unwrap();
+    let origin_law_modes = str_list(get(
+        get(&arr(get(&origin_law_saved, "answers"))[0], "scope"),
+        "modes",
+    ));
+    assert_eq!(
+        origin_law_modes,
+        vec!["observed", "specification"],
+        "ArchMap origin with id `law` must preserve observed mode"
+    );
+
+    // SHIGURE 問いと通常問いの混在・未知タスク・未知 snapshot・重複 ID・不正構文・予約語・先頭 _ は exit 64
     for bad_args in [
         vec![
             "--ask",
@@ -802,6 +840,8 @@ fn shigure_ac5b_silence_provenance_and_cli_guards() {
             "dup=shigure_interaction(LedgerMigration.P3SnapshotUncond)",
         ],
         vec!["--ask", "bad=shigure_solve()"],
+        vec!["--ask", "_x=shigure_solve(LedgerMigration.P1AtomicMarked)"],
+        vec!["--ask", "law=shigure_solve(LedgerMigration.P1AtomicMarked)"],
     ] {
         let mut cmd = vec![
             "run",
@@ -817,4 +857,26 @@ fn shigure_ac5b_silence_provenance_and_cli_guards() {
         assert_eq!(r_bad.code, 64, "cmd={cmd:?}\nstderr={}", r_bad.stderr);
         assert!(r_bad.stdout.is_empty());
     }
+
+    // 不正 snapshot ID はファイル読込み I/O より前に exit 64 (usage) で拒否される
+    let r_bad_snap_before_io = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "nonexistent.atoms.json",
+            "--law",
+            "nonexistent.law",
+            "--archmap",
+            "nonexistent.archmap.json",
+            "--ask",
+            "x=shigure_solve(LedgerMigration.P1AtomicMarked, snapshot=1bad!)",
+        ],
+    );
+    assert_eq!(
+        r_bad_snap_before_io.code, 64,
+        "stderr={}",
+        r_bad_snap_before_io.stderr
+    );
+    assert!(r_bad_snap_before_io.stdout.is_empty());
 }

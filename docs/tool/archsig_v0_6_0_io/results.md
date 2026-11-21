@@ -1227,12 +1227,12 @@ Repair/objectを生成せず不足位置を保持する。neededと後続の未�
 | missing_observation | `{}`。missingにslot、dependenciesに依存式を要求 |
 | unobserved | SHIGURE 問いの未観測座標依存。`details` に [§8 の `SilenceReason`](#8-shigure-の型付き結果shigureoutcome) を保持 |
 | visibility_insufficient | `{locals:QName[],coordinates:Ref[]}`。原始値の欠測と別 |
-| inconsistent_observation | `{}`。型・参照を満たす補完が存在しない提示 |
+| inconsistent_observation | `{}`。型・参照を満たす補完が存在しない提示。SHIGURE 変換検査エラー（`Origin.kind` 省略・曖昧な subject 解決・IR 変換不整合等）では `request` を付し `location` を省略して exit 65 で返す |
 | unsupported_algorithm | 通常問いは `{question:QuestionKind,operand_types:Type[],method:String}`。SHIGURE 問いは [§8 の `SilenceReason`](#8-shigure-の型付き結果shigureoutcome) |
 | condition_failed | `{condition:Ref,construction:Construction}`。構成条件が反証された |
 | dependency_blocked | `{request:String}`。dependenciesと元理由を推移的に保持 |
 | cancelled | `{signal:"SIGINT"\|"SIGTERM"}` |
-| syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle | typeは`{expected:Type,actual:Type}`。referenceは語彙bindingのnamespace未登録の場合に下記のavailable形式、それ以外は`{}`。入力の位置を必須 |
+| syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle | typeは`{expected:Type,actual:Type}`。referenceは語彙bindingのnamespace未登録の場合に下記のavailable形式、それ以外は`{}`。入力の位置を必須（ただし SHIGURE 変換時の参照解決エラーでは `request` を付し `location` を省略） |
 | vocabulary_mismatch | digest不一致は`{namespace:String,version:String,found_digest:Digest,expected_digest:Digest}`。binding自体がない場合はfound_digestを省略。指定version未登録は`{namespace:String,version:String,available:{namespace:String,version:String}[]}`。入力の位置を必須 |
 | unsupported_version | `{found_format:String,found_semantics?:String}` |
 | usage | `{argument:String}` |

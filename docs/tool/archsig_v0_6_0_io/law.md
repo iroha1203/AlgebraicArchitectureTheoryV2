@@ -322,15 +322,15 @@ ShigureDecl ::=
 
 ShigurePresentation ::= "presentation" Name "{"
   "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
-  ("sort" Name ";")+
+  ("sort" Name ("rank" Integer)? ";")+
   ("phase" Name "{"
     ("coord" Name ":" Name ("observed" QName)? ";")*
-    ("law" ("semantic" | "representation") Name ":" PolyExpr "=" PolyExpr ";")*
+    ("law" ("semantic" | "required" | "representation") Name ":" PolyExpr "=" PolyExpr ";")*
   "}")+
-    ("op" Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
-      (Name "=" PolyExpr ";")*
-    "}")*
-    ("obs" Name "on" Name "=" "(" PolyExpr ("," PolyExpr)* ")" ";")*
+  (("op" | "operation") Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
+    (Name "=" PolyExpr ";")*
+  "}")*
+  (("obs" | "observation") Name "on" Name "=" "(" PolyExpr ("," PolyExpr)* ")" ";")*
 "}"
 
 ShigureComparison ::= "comparison" Name "{"
@@ -374,7 +374,7 @@ ShigureTask ::= "task" Name "{"
 ```
 
 `PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
-`+` / `-` / `*` / 単項 `-` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
+`+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
 
 静的検査と変換検査では次を強制する。
 
@@ -387,7 +387,10 @@ ShigureTask ::= "task" Name "{"
 - **名前・参照・型・循環検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
   reading 間の循環参照、未宣言の phase・座標・操作・変数、`state`/`arg`/`param` の名前空間衝突、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
-  （例: `domain Z` と `rational_points`、`domain Q` と `integer_points`、`Fp(p)` での範囲外リテラル）を拒否する。
+  （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
+  `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
+  法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル）を拒否する。
+  なお `domain Z` と `rational_points` は $\mathbb{Z} \hookrightarrow \mathbb{Q}$ による $\mathbb{Q}$ 点評価として受理する。
 - **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合、
   零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` で沈黙する。
   参照した観測座標の `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。

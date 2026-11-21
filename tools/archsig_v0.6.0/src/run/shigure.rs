@@ -349,10 +349,9 @@ fn is_ident(s: &str) -> bool {
     let Some(first) = bytes.next() else {
         return false;
     };
-    if !(first.is_ascii_alphabetic() || first == b'_') {
-        return false;
-    }
-    bytes.all(|b| b.is_ascii_alphanumeric() || b == b'_')
+    first.is_ascii_alphabetic()
+        && bytes.all(|b| b.is_ascii_alphanumeric() || b == b'_')
+        && !archsig_common::names::is_reserved(s)
 }
 
 fn is_qname(s: &str) -> bool {
@@ -360,9 +359,12 @@ fn is_qname(s: &str) -> bool {
 }
 
 fn is_snapshot_id(s: &str) -> bool {
-    !s.is_empty()
-        && s.bytes()
-            .all(|b| b.is_ascii_graphic() && !matches!(b, b',' | b'=' | b'(' | b')' | b'/' | b'$'))
+    let mut bytes = s.bytes();
+    let Some(first) = bytes.next() else {
+        return false;
+    };
+    first.is_ascii_alphabetic()
+        && bytes.all(|b| b.is_ascii_alphanumeric() || matches!(b, b'_' | b'.' | b'-'))
 }
 
 fn resolve_and_convert(
@@ -586,7 +588,7 @@ fn deliver_shigure(
         if let Some(outcome) = &outcome_opt {
             for origin_ref in &outcome.provenance.origins {
                 if origin_ref.atom_ref.is_some()
-                    && origin_ref.origin_id != "law"
+                    && origin_ref.law_declaration.is_none()
                     && let Some(&mode_str) = origin_modes.get(origin_ref.origin_id.as_str())
                 {
                     mode_set.insert(mode_str);
@@ -789,11 +791,6 @@ fn usage_issue(request_id: Option<&str>, message: &str) -> Json {
 fn conversion_error_issue(request_id: &str, err: &ValidationError) -> Json {
     let code = match err {
         ValidationError::UnknownRef { .. } => "reference",
-        ValidationError::DomainMismatch { .. }
-        | ValidationError::InvalidPrimeModulus { .. }
-        | ValidationError::InvalidRational { .. }
-        | ValidationError::InvalidFpLiteral { .. } => "type",
-        ValidationError::DuplicateDecl { .. } => "duplicate_id",
         _ => "inconsistent_observation",
     };
     Json::obj([
