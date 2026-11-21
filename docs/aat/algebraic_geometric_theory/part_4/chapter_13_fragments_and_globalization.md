@@ -203,7 +203,7 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 具体的な同型は
 
 ```math
-\operatorname{coker}d\longrightarrow\mathbb Z_2/\mathbb Z,qquad
+\operatorname{coker}d\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
 [a]\longmapsto\left[\sum_{n\ge0}2^na_n\right].
 \tag{13.6}
 ```
