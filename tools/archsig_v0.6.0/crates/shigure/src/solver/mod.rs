@@ -1,11 +1,27 @@
-//! 意味保存・条件付き解空間・相互作用エンジンのモジュール境界（Step 3 で実装）。
+//! 意味保存・条件付き解空間・相互作用エンジン（Step 3 実装）。
 //!
 //! 責務:
-//! - 検証済み IR（`CheckedShigureTask`）からの保存残差方程式と商環上の状態 Law 閉性の生成
-//! - 条件付き解空間 F_{a,H,P} の計算、空性 witness・具体解・自由パラメータの導出
-//! - 操作式・状態表示・状態比較 h・語翻訳 τ への復元と元式への再評価検算
-//! - 座標面支持による相互作用参加変数数と極小不成立部分族の解析
-//! - 適用条件外の入力・未観測欠測に対する沈黙（`Verdict::Undetermined`）の返却
+//! - `preservation`: 検証済み IR（`CheckedShigureTask`）からの 4 族の保存義務生成、
+//!   商環上の状態 Law 閉性層別、ideal 交わりと Zariski 閉性判定
+//! - `restore` / `restore_format`: 抽出されたアフィン／具体解からの操作式・状態表示・状態比較 h・
+//!   語翻訳 τ 復元と独立した数学モデル再評価検算（`ReevalCheck`）
+//! - `solve` / `domain_solve` / `interaction_query`: 適用条件検査、係数域・点集合域ごとの計算分岐、
+//!   沈黙（`Verdict::Undetermined`）規律、座標面支持による相互作用解析の統合実行
+
+mod context;
+mod domain_solve;
+mod interaction_query;
+pub(crate) mod preservation;
+pub(crate) mod restore;
+mod restore_format;
+pub(crate) mod solve;
+
+#[cfg(test)]
+mod tests;
+#[cfg(test)]
+mod tests_extra;
+#[cfg(test)]
+mod tests_regressions;
 
 use crate::ir::result::ShigureOutcome;
 use crate::ir::validate::CheckedShigureTask;
@@ -24,4 +40,19 @@ pub enum ShigureQueryKind {
 /// solver 入口の共通トレイト境界。
 pub trait ShigureEngine {
     fn execute(&self, task: &CheckedShigureTask, query: ShigureQueryKind) -> ShigureOutcome;
+}
+
+/// 標準の SHIGURE 計算エンジン。
+#[derive(Clone, Copy, Debug, Default)]
+pub struct DefaultShigureEngine;
+
+impl ShigureEngine for DefaultShigureEngine {
+    fn execute(&self, task: &CheckedShigureTask, query: ShigureQueryKind) -> ShigureOutcome {
+        solve::execute_task(task, query)
+    }
+}
+
+/// 検証済み SHIGURE タスクを実行する便利関数。
+pub fn execute_shigure_task(task: &CheckedShigureTask, query: ShigureQueryKind) -> ShigureOutcome {
+    DefaultShigureEngine.execute(task, query)
 }
