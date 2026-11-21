@@ -14,12 +14,24 @@ pub fn analyze_coordinate_interaction<C: RingCoeff>(
     residuals: &[Poly<C>],
     vars: &VarOrder,
 ) -> Result<InteractionSummary, AlgebraError> {
+    let mut ring_ref: Option<&C> = None;
     for poly in residuals {
         if poly.num_vars() != vars.len() {
             return Err(AlgebraError::ArityMismatch {
                 expected: vars.len(),
                 actual: poly.num_vars(),
             });
+        }
+        let coeff = poly.zero_coeff();
+        if let Some(expected) = ring_ref {
+            if !expected.same_ring(coeff) {
+                return Err(AlgebraError::DomainMismatch {
+                    expected: format!("{expected:?}"),
+                    actual: format!("{coeff:?}"),
+                });
+            }
+        } else {
+            ring_ref = Some(coeff);
         }
     }
 
@@ -88,6 +100,7 @@ pub fn analyze_interaction_on_face<C: RingCoeff>(
     vars: &VarOrder,
     fixed_values: &BTreeMap<String, C>,
 ) -> Result<InteractionSummary, AlgebraError> {
+    let mut ring_ref: Option<&C> = None;
     for poly in residuals {
         if poly.num_vars() != vars.len() {
             return Err(AlgebraError::ArityMismatch {
@@ -95,13 +108,28 @@ pub fn analyze_interaction_on_face<C: RingCoeff>(
                 actual: poly.num_vars(),
             });
         }
-        for val in fixed_values.values() {
-            if !poly.zero_coeff().same_ring(val) {
+        let coeff = poly.zero_coeff();
+        if let Some(expected) = ring_ref {
+            if !expected.same_ring(coeff) {
                 return Err(AlgebraError::DomainMismatch {
-                    expected: format!("{:?}", poly.zero_coeff()),
+                    expected: format!("{expected:?}"),
+                    actual: format!("{coeff:?}"),
+                });
+            }
+        } else {
+            ring_ref = Some(coeff);
+        }
+    }
+    for val in fixed_values.values() {
+        if let Some(expected) = ring_ref {
+            if !expected.same_ring(val) {
+                return Err(AlgebraError::DomainMismatch {
+                    expected: format!("{expected:?}"),
                     actual: format!("{val:?}"),
                 });
             }
+        } else {
+            ring_ref = Some(val);
         }
     }
     let mut fixed_by_idx = BTreeMap::new();

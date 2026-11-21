@@ -94,18 +94,18 @@ fn leading_state_term(sp: &StatePoly) -> Option<(&Monomial, &Poly<Rat>)> {
         .max_by(|(m1, _), (m2, _)| m1.cmp_order(m2, MonomialOrder::Grevlex))
 }
 
-fn state_poly_scale(sp: &StatePoly, factor: &Poly<Rat>) -> StatePoly {
+fn state_poly_scale(sp: &StatePoly, factor: &Poly<Rat>) -> Result<StatePoly, AlgebraError> {
     if factor.is_zero() {
-        return BTreeMap::new();
+        return Ok(BTreeMap::new());
     }
     let mut out = BTreeMap::new();
     for (m, c) in sp {
-        let prod = c.mul(factor);
+        let prod = c.checked_mul(factor)?;
         if !prod.is_zero() {
             out.insert(m.clone(), prod);
         }
     }
-    out
+    Ok(out)
 }
 
 fn state_poly_sub_mul(
@@ -114,21 +114,25 @@ fn state_poly_sub_mul(
     y_shift: &Monomial,
     c_factor: &Poly<Rat>,
     param_count: usize,
-) -> StatePoly {
+) -> Result<StatePoly, AlgebraError> {
     let mut out = lhs.clone();
     if c_factor.is_zero() {
-        return out;
+        return Ok(out);
     }
     for (m, c) in rhs {
-        let shifted = m.mul(y_shift);
-        let sub_val = c.mul(c_factor);
+        let shifted = m
+            .checked_mul(y_shift)
+            .ok_or_else(|| AlgebraError::OutOfScope {
+                detail: "state monomial exponent addition overflowed u32".to_owned(),
+            })?;
+        let sub_val = c.checked_mul(c_factor)?;
         let entry = out
             .entry(shifted)
             .or_insert_with(|| Poly::zero(param_count, Rat::zero()));
         *entry = entry.sub(&sub_val);
     }
     out.retain(|_, c| !c.is_zero());
-    out
+    Ok(out)
 }
 
 /// 現在の枝上で多項式 `p(c)` が零になり得るか（`V(eqs, p) ∩ D(invs)` が非空か）を判定する。
@@ -275,8 +279,10 @@ fn stratify_quotient_branch(
             &shift_i,
             &lc_j.neg(),
             param_vars.len(),
-        );
-        let s_raw = state_poly_sub_mul(&s_lhs, &red_gens[j], &shift_j, lc_i, param_vars.len());
+        )
+        .map_err(map_out_of_scope)?;
+        let s_raw = state_poly_sub_mul(&s_lhs, &red_gens[j], &shift_j, lc_i, param_vars.len())
+            .map_err(map_out_of_scope)?;
         let s_red = pseudo_reduce_state_poly(&s_raw, &red_gens, &param_gb, param_vars.len())
             .map_err(map_out_of_scope)?;
         if !s_red.is_empty() {
@@ -349,13 +355,13 @@ fn pseudo_reduce_state_poly(
             if let Some((lm_g, lc_g)) = leading_state_term(g)
                 && let Some(shift) = lm_cur.div_exact(lm_g)
             {
-                let scaled = state_poly_scale(&cur, lc_g);
-                let next = state_poly_sub_mul(&scaled, g, &shift, &lc_cur, param_count);
+                let scaled = state_poly_scale(&cur, lc_g)?;
+                let next = state_poly_sub_mul(&scaled, g, &shift, &lc_cur, param_count)?;
                 cur = reduce_state_poly(&next, param_gb)?;
                 // 不変条件 `u * target ≡ cur + rem (mod basis)` を保つため、
                 // `cur` を `lc_g` 倍したときは退避済みの `rem` も同じ単元 `lc_g` 倍する。
                 if !rem.is_empty() {
-                    rem = reduce_state_poly(&state_poly_scale(&rem, lc_g), param_gb)?;
+                    rem = reduce_state_poly(&state_poly_scale(&rem, lc_g)?, param_gb)?;
                 }
                 divided = true;
                 break;

@@ -848,3 +848,86 @@ fn namespace_separation_overflow_grevlex_and_ring_mismatch_regressions() {
         Err(SilenceReason::QuotientIdealOutOfScope { .. })
     ));
 }
+
+#[test]
+fn groebner_quotient_overflow_interaction_ring_and_poly_zero_coeff_regressions() {
+    // F1: GroebnerBasis::compute returns Err(OutOfScope) instead of panicking on u32 exponent overflow.
+    let vars2 = VarOrder::new(vec!["x".into(), "y".into()]).unwrap();
+    let bind2 = ExprBindings::params_only(&vars2);
+    let f0 = Poly::from_expr_q(
+        &(PolyExpr::pow(PolyExpr::param("x"), 2) + PolyExpr::pow(PolyExpr::param("y"), u32::MAX)),
+        &bind2,
+    )
+    .unwrap();
+    let f1 = Poly::from_expr_q(
+        &(PolyExpr::param("x") * PolyExpr::pow(PolyExpr::param("y"), 2)),
+        &bind2,
+    )
+    .unwrap();
+    assert!(matches!(
+        GroebnerBasis::compute(&[f0, f1], vars2, MonomialOrder::Lex),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+
+    // F1: quotient_membership_locus returns Err(QuotientIdealOutOfScope) instead of panicking on overflow.
+    let (_, q_bind) =
+        ExprBindings::from_slices(&["x".into(), "y".into()], &[], &["a".into()]).unwrap();
+    let p_a = VarOrder::new(vec!["a".into()]).unwrap();
+    let qg0 = poly_q_bound(
+        &(PolyExpr::pow(PolyExpr::state("x"), u32::MAX)
+            + PolyExpr::pow(PolyExpr::state("y"), u32::MAX)),
+        &q_bind,
+    );
+    let qg1 = poly_q_bound(
+        &(PolyExpr::state("x") * PolyExpr::pow(PolyExpr::state("y"), 2)),
+        &q_bind,
+    );
+    let q_target = poly_q_bound(&PolyExpr::state("x"), &q_bind);
+    assert!(matches!(
+        quotient_membership_locus(&q_target, &[qg0, qg1], 2, &p_a),
+        Err(SilenceReason::QuotientIdealOutOfScope { .. })
+    ));
+
+    // F2: interaction functions reject cross-modulus Fp residuals and cross-modulus fixed_values.
+    let p3 = BigUint::from(3u32);
+    let p5 = BigUint::from(5u32);
+    let v1 = VarOrder::new(vec!["x".into()]).unwrap();
+    let v2 = VarOrder::new(vec!["x".into(), "y".into()]).unwrap();
+    let poly_p3 = Poly::var(1, 0, FpElem::zero(p3.clone()).unwrap());
+    let poly_p5 = Poly::var(1, 0, FpElem::zero(p5.clone()).unwrap());
+    assert!(matches!(
+        analyze_coordinate_interaction(&[poly_p3.clone(), poly_p5.clone()], &v1),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+    assert!(matches!(
+        analyze_interaction_on_face(&[poly_p3, poly_p5], &v1, &BTreeMap::new()),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+    assert!(matches!(
+        analyze_interaction_on_face(
+            &[],
+            &v2,
+            &BTreeMap::from([
+                ("x".to_owned(), FpElem::one(p3).unwrap()),
+                ("y".to_owned(), FpElem::one(p5).unwrap()),
+            ]),
+        ),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+
+    // F3: Poly::zero and Poly::var normalize zero_coeff via zero_like().
+    let z_from_one = Poly::zero(1, Rat::one());
+    assert_eq!(z_from_one, Poly::zero(1, Rat::zero()));
+    assert_eq!(z_from_one.constant_value(), Rat::zero());
+    assert_eq!(z_from_one.eval_at(&[Rat::one()]).unwrap(), Rat::zero());
+    let x_from_one = Poly::var(1, 0, Rat::one());
+    assert_eq!(x_from_one, Poly::var(1, 0, Rat::zero()));
+    assert_eq!(x_from_one.eval_at(&[Rat::zero()]).unwrap(), Rat::zero());
+}
+
+#[test]
+#[should_panic(expected = "out of bounds")]
+fn partial_eval_panics_on_out_of_bounds_variable_index() {
+    let p = Poly::var(1, 0, Rat::zero());
+    let _ = p.partial_eval(&BTreeMap::from([(1usize, Rat::one())]));
+}

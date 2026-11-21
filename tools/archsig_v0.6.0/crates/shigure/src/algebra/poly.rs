@@ -385,7 +385,7 @@ impl<C: RingCoeff> Poly<C> {
     pub fn zero(num_vars: usize, zero_coeff: C) -> Self {
         Self {
             num_vars,
-            zero_coeff,
+            zero_coeff: zero_coeff.zero_like(),
             terms: BTreeMap::new(),
         }
     }
@@ -409,6 +409,7 @@ impl<C: RingCoeff> Poly<C> {
     }
 
     pub fn var(num_vars: usize, idx: usize, zero_coeff: C) -> Self {
+        let zero_coeff = zero_coeff.zero_like();
         let one = zero_coeff.one_like();
         let mut terms = BTreeMap::new();
         if !one.coeff_is_zero() {
@@ -461,20 +462,30 @@ impl<C: RingCoeff> Poly<C> {
         self.total_degree() <= 1
     }
 
-    /// 変数数・係数環（`FpElem` の法を含む）を検査した上で単項式項を加算する。
-    pub fn try_add_term(&mut self, mono: Monomial, coeff: C) -> Result<(), AlgebraError> {
-        if mono.num_vars() != self.num_vars {
+    fn check_arity(&self, actual: usize) -> Result<(), AlgebraError> {
+        if actual != self.num_vars {
             return Err(AlgebraError::ArityMismatch {
                 expected: self.num_vars,
-                actual: mono.num_vars(),
+                actual,
             });
         }
-        if !self.zero_coeff.same_ring(&coeff) {
+        Ok(())
+    }
+
+    fn check_ring(&self, coeff: &C) -> Result<(), AlgebraError> {
+        if !self.zero_coeff.same_ring(coeff) {
             return Err(AlgebraError::DomainMismatch {
                 expected: format!("{:?}", self.zero_coeff),
                 actual: format!("{coeff:?}"),
             });
         }
+        Ok(())
+    }
+
+    /// 変数数・係数環（`FpElem` の法を含む）を検査した上で単項式項を加算する。
+    pub fn try_add_term(&mut self, mono: Monomial, coeff: C) -> Result<(), AlgebraError> {
+        self.check_arity(mono.num_vars())?;
+        self.check_ring(&coeff)?;
         if coeff.coeff_is_zero() {
             return Ok(());
         }
@@ -500,27 +511,43 @@ impl<C: RingCoeff> Poly<C> {
         self.terms.remove(mono)
     }
 
-    /// `self -= other * (scalar * mono)` を多項式全体の複製なしに in-place 実行する。
-    pub fn sub_mul_term_assign(&mut self, other: &Self, mono: &Monomial, scalar: &C) {
-        assert_eq!(self.num_vars, other.num_vars, "polynomial arity mismatch");
-        assert_eq!(mono.num_vars(), self.num_vars, "monomial arity mismatch");
-        assert!(
-            self.zero_coeff.same_ring(&other.zero_coeff),
-            "polynomial coefficient ring mismatch"
-        );
-        assert!(
-            self.zero_coeff.same_ring(scalar),
-            "polynomial scalar ring mismatch"
-        );
+    /// 変数数・係数環・単項式指数のオーバーフローを検査しながら
+    /// `self -= other * (scalar * mono)` を in-place 実行する（失敗時は `self` を破壊しない）。
+    pub fn checked_sub_mul_term_assign(
+        &mut self,
+        other: &Self,
+        mono: &Monomial,
+        scalar: &C,
+    ) -> Result<(), AlgebraError> {
+        self.check_arity(other.num_vars)?;
+        self.check_arity(mono.num_vars())?;
+        self.check_ring(&other.zero_coeff)?;
+        self.check_ring(scalar)?;
         if scalar.coeff_is_zero() || other.is_zero() {
-            return;
+            return Ok(());
         }
+        let mut updates = Vec::with_capacity(other.terms.len());
         for (m, c) in &other.terms {
             let prod = c.mul_ref(scalar).neg_ref();
             if !prod.coeff_is_zero() {
-                self.add_term(m.mul(mono), prod);
+                let shifted = m
+                    .checked_mul(mono)
+                    .ok_or_else(|| AlgebraError::OutOfScope {
+                        detail: "monomial exponent addition overflowed u32".to_owned(),
+                    })?;
+                updates.push((shifted, prod));
             }
         }
+        for (shifted, prod) in updates {
+            self.add_term(shifted, prod);
+        }
+        Ok(())
+    }
+
+    /// `self -= other * (scalar * mono)` を多項式全体の複製なしに in-place 実行する。
+    pub fn sub_mul_term_assign(&mut self, other: &Self, mono: &Monomial, scalar: &C) {
+        self.checked_sub_mul_term_assign(other, mono, scalar)
+            .expect("polynomial arity, ring, or exponent overflow in sub_mul_term_assign");
     }
 
     pub fn add(&self, other: &Self) -> Self {
@@ -580,39 +607,37 @@ impl<C: RingCoeff> Poly<C> {
         out
     }
 
-    pub fn mul_term(&self, mono: &Monomial, scalar: &C) -> Self {
-        assert_eq!(mono.num_vars(), self.num_vars, "monomial arity mismatch");
-        assert!(
-            self.zero_coeff.same_ring(scalar),
-            "polynomial scalar ring mismatch"
-        );
+    /// 変数数・係数環・単項式指数のオーバーフローを検査しながら単項式項を掛ける。
+    pub fn checked_mul_term(&self, mono: &Monomial, scalar: &C) -> Result<Self, AlgebraError> {
+        self.check_arity(mono.num_vars())?;
+        self.check_ring(scalar)?;
         if scalar.coeff_is_zero() || self.is_zero() {
-            return Self::zero(self.num_vars, self.zero_coeff.clone());
+            return Ok(Self::zero(self.num_vars, self.zero_coeff.clone()));
         }
         let mut out = Self::zero(self.num_vars, self.zero_coeff.clone());
         for (m, c) in &self.terms {
             let prod = c.mul_ref(scalar);
             if !prod.coeff_is_zero() {
-                out.add_term(m.mul(mono), prod);
+                let shifted = m
+                    .checked_mul(mono)
+                    .ok_or_else(|| AlgebraError::OutOfScope {
+                        detail: "monomial exponent addition overflowed u32".to_owned(),
+                    })?;
+                out.add_term(shifted, prod);
             }
         }
-        out
+        Ok(out)
+    }
+
+    pub fn mul_term(&self, mono: &Monomial, scalar: &C) -> Self {
+        self.checked_mul_term(mono, scalar)
+            .expect("polynomial arity, ring, or exponent overflow in mul_term")
     }
 
     /// 変数数・係数環・単項式指数のオーバーフローを検査しながら乗算する。
     pub fn checked_mul(&self, other: &Self) -> Result<Self, AlgebraError> {
-        if self.num_vars != other.num_vars {
-            return Err(AlgebraError::ArityMismatch {
-                expected: self.num_vars,
-                actual: other.num_vars,
-            });
-        }
-        if !self.zero_coeff.same_ring(&other.zero_coeff) {
-            return Err(AlgebraError::DomainMismatch {
-                expected: format!("{:?}", self.zero_coeff),
-                actual: format!("{:?}", other.zero_coeff),
-            });
-        }
+        self.check_arity(other.num_vars)?;
+        self.check_ring(&other.zero_coeff)?;
         if self.is_zero() || other.is_zero() {
             return Ok(Self::zero(self.num_vars, self.zero_coeff.clone()));
         }
@@ -629,21 +654,8 @@ impl<C: RingCoeff> Poly<C> {
     }
 
     pub fn mul(&self, other: &Self) -> Self {
-        assert_eq!(self.num_vars, other.num_vars, "polynomial arity mismatch");
-        assert!(
-            self.zero_coeff.same_ring(&other.zero_coeff),
-            "polynomial coefficient ring mismatch"
-        );
-        if self.is_zero() || other.is_zero() {
-            return Self::zero(self.num_vars, self.zero_coeff.clone());
-        }
-        let mut out = Self::zero(self.num_vars, self.zero_coeff.clone());
-        for (m1, c1) in &self.terms {
-            for (m2, c2) in &other.terms {
-                out.add_term(m1.mul(m2), c1.mul_ref(c2));
-            }
-        }
-        out
+        self.checked_mul(other)
+            .expect("polynomial arity, ring, or exponent overflow in mul")
     }
 
     /// 単項式指数のオーバーフローを検査しながら冪乗する。
@@ -668,19 +680,9 @@ impl<C: RingCoeff> Poly<C> {
         Ok(result)
     }
 
-    pub fn pow(&self, mut exp: u32) -> Self {
-        let mut result = Self::one(self.num_vars, self.zero_coeff.clone());
-        let mut base = self.clone();
-        while exp > 0 {
-            if exp % 2 == 1 {
-                result = result.mul(&base);
-            }
-            exp /= 2;
-            if exp > 0 {
-                base = base.mul(&base);
-            }
-        }
-        result
+    pub fn pow(&self, exp: u32) -> Self {
+        self.checked_pow(exp)
+            .expect("monomial exponent overflow in pow")
     }
 
     pub fn leading_term(&self, order: MonomialOrder) -> Option<(&Monomial, &C)> {
@@ -691,19 +693,9 @@ impl<C: RingCoeff> Poly<C> {
 
     /// 変数へのスカラー代入による評価。
     pub fn eval_at(&self, values: &[C]) -> Result<C, AlgebraError> {
-        if values.len() != self.num_vars {
-            return Err(AlgebraError::ArityMismatch {
-                expected: self.num_vars,
-                actual: values.len(),
-            });
-        }
+        self.check_arity(values.len())?;
         for v in values {
-            if !self.zero_coeff.same_ring(v) {
-                return Err(AlgebraError::DomainMismatch {
-                    expected: format!("{:?}", self.zero_coeff),
-                    actual: format!("{v:?}"),
-                });
-            }
+            self.check_ring(v)?;
         }
         let mut acc = self.zero_coeff.clone();
         for (mono, coeff) in &self.terms {
@@ -721,7 +713,12 @@ impl<C: RingCoeff> Poly<C> {
 
     /// 一部の変数へスカラー値を固定代入し、同じ環上の多項式として縮約する。
     pub fn partial_eval(&self, fixed: &BTreeMap<usize, C>) -> Self {
-        for val in fixed.values() {
+        for (&idx, val) in fixed {
+            assert!(
+                idx < self.num_vars,
+                "partial_eval variable index {idx} out of bounds (num_vars = {})",
+                self.num_vars
+            );
             assert!(
                 self.zero_coeff.same_ring(val),
                 "partial_eval coefficient ring mismatch"
@@ -732,7 +729,7 @@ impl<C: RingCoeff> Poly<C> {
             let mut new_exps = mono.exps().to_vec();
             let mut new_coeff = coeff.clone();
             for (&idx, val) in fixed {
-                if idx < self.num_vars && new_exps[idx] > 0 {
+                if new_exps[idx] > 0 {
                     let e = new_exps[idx];
                     new_exps[idx] = 0;
                     let p = pow_coeff(val, e, self.zero_coeff.one_like());

@@ -141,8 +141,8 @@ impl GroebnerBasis {
                 continue;
             }
 
-            let s_poly = s_polynomial(&basis[i], &basis[j], order);
-            let reduced = reduce_tracked(&s_poly, &basis, order);
+            let s_poly = s_polynomial(&basis[i], &basis[j], order)?;
+            let reduced = reduce_tracked(&s_poly, &basis, order)?;
             handled.insert(pair_key);
             if !reduced.poly.is_zero() {
                 let monic = make_monic(reduced, order);
@@ -170,7 +170,7 @@ impl GroebnerBasis {
             }
         }
 
-        let reduced_basis = inter_reduce(basis, order);
+        let reduced_basis = inter_reduce(basis, order)?;
         Ok(Self {
             vars,
             order,
@@ -215,7 +215,7 @@ impl GroebnerBasis {
         let n = self.vars.len();
         let k = self.originals.len();
         let zero_p = Poly::zero(n, Rat::zero());
-        let (remainder, quotients) = divide_with_quotients(target, &self.basis, self.order);
+        let (remainder, quotients) = divide_with_quotients(target, &self.basis, self.order)?;
 
         let mut cofactors = vec![zero_p; k];
         for (q, g) in quotients.iter().zip(&self.basis) {
@@ -224,7 +224,7 @@ impl GroebnerBasis {
             }
             for (acc, gc) in cofactors.iter_mut().zip(&g.cofactors) {
                 if !gc.is_zero() {
-                    *acc = acc.add(&q.mul(gc));
+                    *acc = acc.add(&q.checked_mul(gc)?);
                 }
             }
         }
@@ -233,7 +233,7 @@ impl GroebnerBasis {
         let mut recon = remainder.clone();
         for (h, f) in cofactors.iter().zip(&self.originals) {
             if !h.is_zero() && !f.is_zero() {
-                recon = recon.add(&h.mul(f));
+                recon = recon.add(&h.checked_mul(f)?);
             }
         }
         let verified = recon == *target;
@@ -279,7 +279,7 @@ impl GroebnerBasis {
                 actual: target.num_vars(),
             });
         }
-        let (rem, _) = divide_with_quotients(target, &self.basis, self.order);
+        let (rem, _) = divide_with_quotients(target, &self.basis, self.order)?;
         Ok(rem)
     }
 }
@@ -310,7 +310,7 @@ pub fn rabinowitsch_solve(
     for (i, g) in invertibles.iter().enumerate() {
         let u_i = Poly::var(ext_n, i, Rat::zero());
         let g_ext = g.lift_vars(m);
-        ext_gens.push(u_i.mul(&g_ext).sub(&one));
+        ext_gens.push(u_i.checked_mul(&g_ext)?.sub(&one));
     }
 
     // 補助変数を最上位に置いた Lex 順序により、補助変数を含まないパラメータ式が自然に消去される。
@@ -365,7 +365,11 @@ fn make_monic(mut tracked: TrackedPoly, order: MonomialOrder) -> TrackedPoly {
     tracked
 }
 
-fn s_polynomial(a: &TrackedPoly, b: &TrackedPoly, order: MonomialOrder) -> TrackedPoly {
+fn s_polynomial(
+    a: &TrackedPoly,
+    b: &TrackedPoly,
+    order: MonomialOrder,
+) -> Result<TrackedPoly, AlgebraError> {
     let (lm_a, lc_a) = a
         .poly
         .leading_term(order)
@@ -382,22 +386,22 @@ fn s_polynomial(a: &TrackedPoly, b: &TrackedPoly, order: MonomialOrder) -> Track
 
     let poly = a
         .poly
-        .mul_term(&m_a, &inv_a)
-        .sub(&b.poly.mul_term(&m_b, &inv_b));
-    let cofactors = a
-        .cofactors
-        .iter()
-        .zip(&b.cofactors)
-        .map(|(ca, cb)| ca.mul_term(&m_a, &inv_a).sub(&cb.mul_term(&m_b, &inv_b)))
-        .collect();
-    TrackedPoly { poly, cofactors }
+        .checked_mul_term(&m_a, &inv_a)?
+        .sub(&b.poly.checked_mul_term(&m_b, &inv_b)?);
+    let mut cofactors = Vec::with_capacity(a.cofactors.len());
+    for (ca, cb) in a.cofactors.iter().zip(&b.cofactors) {
+        let left = ca.checked_mul_term(&m_a, &inv_a)?;
+        let right = cb.checked_mul_term(&m_b, &inv_b)?;
+        cofactors.push(left.sub(&right));
+    }
+    Ok(TrackedPoly { poly, cofactors })
 }
 
 fn reduce_tracked(
     target: &TrackedPoly,
     basis: &[TrackedPoly],
     order: MonomialOrder,
-) -> TrackedPoly {
+) -> Result<TrackedPoly, AlgebraError> {
     let n = target.poly.num_vars();
     let mut p = target.poly.clone();
     let mut cofactors = target.cofactors.clone();
@@ -412,10 +416,10 @@ fn reduce_tracked(
                 && let Some(q_mono) = lm_p.div_exact(lm_g)
             {
                 let q_coeff = (&lc_p / lc_g).expect("divisor leading coeff nonzero");
-                p.sub_mul_term_assign(&g.poly, &q_mono, &q_coeff);
+                p.checked_sub_mul_term_assign(&g.poly, &q_mono, &q_coeff)?;
                 for (acc, gc) in cofactors.iter_mut().zip(&g.cofactors) {
                     if !gc.is_zero() {
-                        acc.sub_mul_term_assign(gc, &q_mono, &q_coeff);
+                        acc.checked_sub_mul_term_assign(gc, &q_mono, &q_coeff)?;
                     }
                 }
                 divided = true;
@@ -428,17 +432,17 @@ fn reduce_tracked(
         }
     }
 
-    TrackedPoly {
+    Ok(TrackedPoly {
         poly: rem,
         cofactors,
-    }
+    })
 }
 
 fn divide_with_quotients(
     target: &Poly<Rat>,
     basis: &[TrackedPoly],
     order: MonomialOrder,
-) -> (Poly<Rat>, Vec<Poly<Rat>>) {
+) -> Result<(Poly<Rat>, Vec<Poly<Rat>>), AlgebraError> {
     let n = target.num_vars();
     let mut p = target.clone();
     let mut rem = Poly::zero(n, Rat::zero());
@@ -453,7 +457,7 @@ fn divide_with_quotients(
                 && let Some(q_mono) = lm_p.div_exact(lm_g)
             {
                 let q_coeff = (&lc_p / lc_g).expect("divisor leading coeff nonzero");
-                p.sub_mul_term_assign(&g.poly, &q_mono, &q_coeff);
+                p.checked_sub_mul_term_assign(&g.poly, &q_mono, &q_coeff)?;
                 quotients[idx].add_term(q_mono, q_coeff);
                 divided = true;
                 break;
@@ -465,7 +469,7 @@ fn divide_with_quotients(
         }
     }
 
-    (rem, quotients)
+    Ok((rem, quotients))
 }
 
 fn pop_min_degree_pair(pairs: &mut Vec<(usize, usize, u64)>) -> Option<(usize, usize)> {
@@ -506,7 +510,10 @@ fn chain_criterion_applies(
     false
 }
 
-fn inter_reduce(basis: Vec<TrackedPoly>, order: MonomialOrder) -> Vec<TrackedPoly> {
+fn inter_reduce(
+    basis: Vec<TrackedPoly>,
+    order: MonomialOrder,
+) -> Result<Vec<TrackedPoly>, AlgebraError> {
     let mut minimal: Vec<TrackedPoly> = Vec::new();
     for (i, candidate) in basis.iter().enumerate() {
         let Some((lm_i, _)) = candidate.poly.leading_term(order) else {
@@ -534,7 +541,7 @@ fn inter_reduce(basis: Vec<TrackedPoly>, order: MonomialOrder) -> Vec<TrackedPol
             .filter(|&(j, _)| j != i)
             .map(|(_, g)| g.clone())
             .collect();
-        let next = make_monic(reduce_tracked(&reduced[i], &others, order), order);
+        let next = make_monic(reduce_tracked(&reduced[i], &others, order)?, order);
         reduced[i] = next;
     }
     reduced.retain(|g| !g.poly.is_zero());
@@ -546,5 +553,5 @@ fn inter_reduce(basis: Vec<TrackedPoly>, order: MonomialOrder) -> Vec<TrackedPol
             _ => std::cmp::Ordering::Equal,
         }
     });
-    reduced
+    Ok(reduced)
 }
