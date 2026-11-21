@@ -495,7 +495,7 @@ o_t(T_e(a))=O(e)(o_s(a)).
 ```
 
 この署名とLawの理論を $`\mathbb T_{\mathrm{prot}(\mathcal E)}`$ とする。
-観測sortと観測操作だけの部分署名の構造 $`M_0^O`$ を、関手 $`O`$ から定める。
+観測sortと観測側の操作だけの部分署名の構造 $`M_0^O`$ を、関手 $`O`$ から定める。
 固定データの下のモデル圏は、定義2.2の記号で
 $`\mathcal A_{\mathrm{prot}(\mathcal E,O)}:=\mathcal A_{\mathbb T_{\mathrm{prot}(\mathcal E)};M_0^O}`$ である。
 
