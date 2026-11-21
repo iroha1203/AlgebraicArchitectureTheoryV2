@@ -79,6 +79,7 @@ impl GroebnerBasis {
         let one_p = Poly::one(n, Rat::zero());
 
         let mut basis: Vec<TrackedPoly> = Vec::new();
+        let mut basis_lms: Vec<Monomial> = Vec::new();
         for (i, g) in generators.iter().enumerate() {
             if g.is_zero() {
                 continue;
@@ -92,11 +93,11 @@ impl GroebnerBasis {
                 },
                 order,
             );
-            if tracked
-                .poly
-                .leading_term(order)
-                .is_some_and(|(m, _)| m.is_one())
-            {
+            let Some((lm, _)) = tracked.poly.leading_term(order) else {
+                continue;
+            };
+            let lm = lm.clone();
+            if lm.is_one() {
                 return Ok(Self {
                     vars,
                     order,
@@ -105,18 +106,20 @@ impl GroebnerBasis {
                 });
             }
             basis.push(tracked);
+            basis_lms.push(lm);
         }
 
-        let mut pairs: Vec<(usize, usize)> = Vec::new();
+        let mut pairs: Vec<(usize, usize, u64)> = Vec::new();
         for i in 0..basis.len() {
             for j in (i + 1)..basis.len() {
-                pairs.push((i, j));
+                let deg = basis_lms[i].lcm(&basis_lms[j]).total_degree();
+                pairs.push((i, j, deg));
             }
         }
         let mut handled: BTreeSet<(usize, usize)> = BTreeSet::new();
 
         let mut processed = 0usize;
-        while let Some((i, j)) = pop_min_degree_pair(&mut pairs, &basis, order) {
+        while let Some((i, j)) = pop_min_degree_pair(&mut pairs) {
             processed += 1;
             if processed > max_pairs {
                 return Err(AlgebraError::OutOfScope {
@@ -124,14 +127,8 @@ impl GroebnerBasis {
                 });
             }
             let pair_key = if i < j { (i, j) } else { (j, i) };
-            let Some((lm_i, _)) = basis[i].poly.leading_term(order) else {
-                handled.insert(pair_key);
-                continue;
-            };
-            let Some((lm_j, _)) = basis[j].poly.leading_term(order) else {
-                handled.insert(pair_key);
-                continue;
-            };
+            let lm_i = &basis_lms[i];
+            let lm_j = &basis_lms[j];
             // Buchberger 第 1 基準（先頭単項式が互いに素なら S 多項式は 0 へ簡約される）。
             if lm_i.gcd_is_one(lm_j) {
                 handled.insert(pair_key);
@@ -139,7 +136,7 @@ impl GroebnerBasis {
             }
             // Buchberger 第 2 基準（既処理ペアのみを参照するため循環スキップ不能）。
             let lcm_ij = lm_i.lcm(lm_j);
-            if chain_criterion_applies(&basis, i, j, &lcm_ij, &handled, order) {
+            if chain_criterion_applies(&basis_lms, i, j, &lcm_ij, &handled) {
                 handled.insert(pair_key);
                 continue;
             }
@@ -149,15 +146,18 @@ impl GroebnerBasis {
             handled.insert(pair_key);
             if !reduced.poly.is_zero() {
                 let monic = make_monic(reduced, order);
-                let is_unit = monic
-                    .poly
-                    .leading_term(order)
-                    .is_some_and(|(m, _)| m.is_one());
+                let Some((new_lm, _)) = monic.poly.leading_term(order) else {
+                    continue;
+                };
+                let new_lm = new_lm.clone();
+                let is_unit = new_lm.is_one();
                 let new_idx = basis.len();
-                for prev in 0..new_idx {
-                    pairs.push((prev, new_idx));
+                for (prev, prev_lm) in basis_lms.iter().enumerate() {
+                    let deg = prev_lm.lcm(&new_lm).total_degree();
+                    pairs.push((prev, new_idx, deg));
                 }
                 basis.push(monic);
+                basis_lms.push(new_lm);
                 if is_unit {
                     let unit = basis.pop().expect("unit polynomial was just pushed");
                     return Ok(Self {
@@ -412,10 +412,10 @@ fn reduce_tracked(
                 && let Some(q_mono) = lm_p.div_exact(lm_g)
             {
                 let q_coeff = (&lc_p / lc_g).expect("divisor leading coeff nonzero");
-                p = p.sub(&g.poly.mul_term(&q_mono, &q_coeff));
+                p.sub_mul_term_assign(&g.poly, &q_mono, &q_coeff);
                 for (acc, gc) in cofactors.iter_mut().zip(&g.cofactors) {
                     if !gc.is_zero() {
-                        *acc = acc.sub(&gc.mul_term(&q_mono, &q_coeff));
+                        acc.sub_mul_term_assign(gc, &q_mono, &q_coeff);
                     }
                 }
                 divided = true;
@@ -423,9 +423,7 @@ fn reduce_tracked(
             }
         }
         if !divided {
-            let mut single = Poly::zero(n, Rat::zero());
-            single.add_term(lm_p.clone(), lc_p.clone());
-            p = p.sub(&single);
+            p.remove_term(&lm_p);
             rem.add_term(lm_p, lc_p);
         }
     }
@@ -455,16 +453,14 @@ fn divide_with_quotients(
                 && let Some(q_mono) = lm_p.div_exact(lm_g)
             {
                 let q_coeff = (&lc_p / lc_g).expect("divisor leading coeff nonzero");
-                p = p.sub(&g.poly.mul_term(&q_mono, &q_coeff));
+                p.sub_mul_term_assign(&g.poly, &q_mono, &q_coeff);
                 quotients[idx].add_term(q_mono, q_coeff);
                 divided = true;
                 break;
             }
         }
         if !divided {
-            let mut single = Poly::zero(n, Rat::zero());
-            single.add_term(lm_p.clone(), lc_p.clone());
-            p = p.sub(&single);
+            p.remove_term(&lm_p);
             rem.add_term(lm_p, lc_p);
         }
     }
@@ -472,47 +468,33 @@ fn divide_with_quotients(
     (rem, quotients)
 }
 
-fn pop_min_degree_pair(
-    pairs: &mut Vec<(usize, usize)>,
-    basis: &[TrackedPoly],
-    order: MonomialOrder,
-) -> Option<(usize, usize)> {
+fn pop_min_degree_pair(pairs: &mut Vec<(usize, usize, u64)>) -> Option<(usize, usize)> {
     if pairs.is_empty() {
         return None;
     }
     let mut best_pos = 0usize;
-    let mut best_deg = u32::MAX;
-    for (pos, &(i, j)) in pairs.iter().enumerate() {
-        let deg = match (
-            basis[i].poly.leading_term(order),
-            basis[j].poly.leading_term(order),
-        ) {
-            (Some((mi, _)), Some((mj, _))) => mi.lcm(mj).total_degree(),
-            _ => 0,
-        };
+    let mut best_deg = pairs[0].2;
+    for (pos, &(_, _, deg)) in pairs.iter().enumerate().skip(1) {
         if deg < best_deg {
             best_deg = deg;
             best_pos = pos;
         }
     }
-    Some(pairs.swap_remove(best_pos))
+    let (i, j, _) = pairs.swap_remove(best_pos);
+    Some((i, j))
 }
 
 fn chain_criterion_applies(
-    basis: &[TrackedPoly],
+    basis_lms: &[Monomial],
     i: usize,
     j: usize,
     lcm_ij: &Monomial,
     handled: &BTreeSet<(usize, usize)>,
-    order: MonomialOrder,
 ) -> bool {
-    for (k, gk) in basis.iter().enumerate() {
+    for (k, lm_k) in basis_lms.iter().enumerate() {
         if k == i || k == j {
             continue;
         }
-        let Some((lm_k, _)) = gk.poly.leading_term(order) else {
-            continue;
-        };
         if lm_k.divides(lcm_ij) {
             let pair_ik = if i < k { (i, k) } else { (k, i) };
             let pair_jk = if j < k { (j, k) } else { (k, j) };

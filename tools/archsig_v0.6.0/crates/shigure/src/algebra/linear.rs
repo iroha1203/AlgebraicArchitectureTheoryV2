@@ -766,7 +766,7 @@ pub fn solve_polynomial_system_q(
                     SystemPointOutcome::Undetermined(
                         SilenceReason::NonLinearRationalOrIntegerExistence {
                             point_domain: PointDomain::RationalPoints,
-                            detail: "ideal is nonempty over algebraic closure, but rational point existence for nonlinear equations is outside affine scope (G-141 D5–D6)".to_owned(),
+                            detail: "ideal is nonempty over algebraic closure, but rational point existence for nonlinear or open-condition systems is outside affine scope (G-141 D5–D6)".to_owned(),
                         },
                     )
                 }
@@ -805,7 +805,7 @@ pub fn solve_polynomial_system_q(
                 Ok(_) => SystemPointOutcome::Undetermined(
                     SilenceReason::NonLinearRationalOrIntegerExistence {
                         point_domain: PointDomain::IntegerPoints,
-                        detail: "general nonlinear integer point existence is outside Smith normal form affine scope (G-141 D4–D6)".to_owned(),
+                        detail: "general nonlinear or open-condition integer point existence is outside Smith normal form affine scope (G-141 D4–D6)".to_owned(),
                     },
                 ),
                 Err(e) => {

@@ -13,6 +13,8 @@ use std::collections::BTreeMap;
 
 /// 層別分岐の安全上限（超過時は誤判定せず `SilenceReason::QuotientIdealOutOfScope` を返す）。
 pub const DEFAULT_MAX_QUOTIENT_BRANCHES: usize = 64;
+/// 単一枝上の `y` 方向 Gröbner 補完における S-pair 処理上限。
+pub const DEFAULT_MAX_QUOTIENT_Y_PAIRS: usize = 256;
 
 /// 商環上の ideal 所属が成立する局所閉層 `V(equations) ∩ D(invertibles)`（G-141 D5）。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -248,9 +250,11 @@ fn stratify_quotient_branch(
     let mut pair_steps = 0usize;
     while let Some((i, j)) = pairs.pop() {
         pair_steps += 1;
-        if pair_steps > 256 {
+        if pair_steps > DEFAULT_MAX_QUOTIENT_Y_PAIRS {
             return Err(SilenceReason::QuotientIdealOutOfScope {
-                detail: "parametric y-Groebner completion exceeded pair limit".to_owned(),
+                detail: format!(
+                    "parametric y-Groebner completion exceeded pair limit ({DEFAULT_MAX_QUOTIENT_Y_PAIRS})"
+                ),
             });
         }
         let Some((lm_i, lc_i)) = leading_state_term(&red_gens[i]) else {

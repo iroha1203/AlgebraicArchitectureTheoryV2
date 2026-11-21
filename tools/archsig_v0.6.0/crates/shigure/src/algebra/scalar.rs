@@ -20,6 +20,10 @@ pub trait RingCoeff: Clone + Eq + fmt::Debug + fmt::Display {
     fn zero_like(&self) -> Self;
     /// 同じ環に属する単位元 `1` を返す。
     fn one_like(&self) -> Self;
+    /// 2 つの係数が同じ係数環（特に `FpElem` の同一素数法）に属するか判定する。
+    fn same_ring(&self, _other: &Self) -> bool {
+        true
+    }
 }
 
 impl RingCoeff for BigInt {
@@ -445,6 +449,10 @@ impl RingCoeff for FpElem {
             value: BigUint::one(),
             modulus: self.modulus.clone(),
         }
+    }
+
+    fn same_ring(&self, other: &Self) -> bool {
+        self.modulus == other.modulus
     }
 }
 

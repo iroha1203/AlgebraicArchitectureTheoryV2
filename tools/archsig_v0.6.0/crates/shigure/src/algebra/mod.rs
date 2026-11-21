@@ -31,8 +31,11 @@ pub use linear::{
     SystemPointOutcome, solve_affine_q, solve_affine_z, solve_fp_enumeration,
     solve_polynomial_system_q,
 };
-pub use poly::{AlgebraError, Monomial, Poly, VarOrder};
-pub use quotient::{DEFAULT_MAX_QUOTIENT_BRANCHES, QuotientStratum, quotient_membership_locus};
+pub use poly::{AlgebraError, ExprBindings, Monomial, Poly, VarOrder};
+pub use quotient::{
+    DEFAULT_MAX_QUOTIENT_BRANCHES, DEFAULT_MAX_QUOTIENT_Y_PAIRS, QuotientStratum,
+    quotient_membership_locus,
+};
 pub use scalar::{FpElem, Rat, RingCoeff};
 
 /// 単項式順序の種別。

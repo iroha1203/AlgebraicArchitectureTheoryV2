@@ -95,6 +95,14 @@ pub fn analyze_interaction_on_face<C: RingCoeff>(
                 actual: poly.num_vars(),
             });
         }
+        for val in fixed_values.values() {
+            if !poly.zero_coeff().same_ring(val) {
+                return Err(AlgebraError::DomainMismatch {
+                    expected: format!("{:?}", poly.zero_coeff()),
+                    actual: format!("{val:?}"),
+                });
+            }
+        }
     }
     let mut fixed_by_idx = BTreeMap::new();
     let mut remaining_names = Vec::new();

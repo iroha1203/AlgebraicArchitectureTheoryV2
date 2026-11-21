@@ -11,7 +11,12 @@ fn rat(n: i64, d: i64) -> Rat {
 }
 
 fn poly_q(expr: &PolyExpr, vars: &VarOrder) -> Poly<Rat> {
-    Poly::from_expr_q(expr, vars).expect("valid Q polynomial expression")
+    let bindings = ExprBindings::params_only(vars);
+    Poly::from_expr_q(expr, &bindings).expect("valid Q polynomial expression")
+}
+
+fn poly_q_bound(expr: &PolyExpr, bindings: &ExprBindings) -> Poly<Rat> {
+    Poly::from_expr_q(expr, bindings).expect("valid bound Q polynomial expression")
 }
 
 fn q_lit(n: i64) -> PolyExpr {
@@ -52,13 +57,16 @@ fn scalar_field_axioms_and_prime_checks_hold_parametrically() {
 #[test]
 fn unobserved_poly_expr_is_never_coerced_to_zero() {
     let vars = VarOrder::new(vec!["x".into()]).unwrap();
+    let bindings = ExprBindings::params_only(&vars);
     let expr = PolyExpr::param("x") + PolyExpr::unobserved("Ledger.Idle.missing_x", None);
-    let err = Poly::from_expr_q(&expr, &vars).unwrap_err();
+    let expected = AlgebraError::UnobservedDependency {
+        slots: vec!["Ledger.Idle.missing_x".to_owned()],
+    };
+    assert_eq!(Poly::from_expr_q(&expr, &bindings).unwrap_err(), expected);
+    assert_eq!(Poly::from_expr_z(&expr, &bindings).unwrap_err(), expected);
     assert_eq!(
-        err,
-        AlgebraError::UnobservedDependency {
-            slots: vec!["Ledger.Idle.missing_x".to_owned()],
-        }
+        Poly::from_expr_fp(&expr, &bindings, &BigUint::from(5u32)).unwrap_err(),
+        expected
     );
 }
 
@@ -181,10 +189,10 @@ fn rabinowitsch_ledger_conditions_match_g140_p6() {
 #[test]
 fn quotient_ring_membership_does_not_strengthen_to_ambient_zero() {
     // AC5(a) canonical example: R[y]/(a*y) with target y = 0 holds precisely on D(a).
-    let combined = VarOrder::new(vec!["y".into(), "a".into()]).unwrap();
+    let (_, comb_bind) = ExprBindings::from_slices(&["y".into()], &[], &["a".into()]).unwrap();
     let param_vars = VarOrder::new(vec!["a".into()]).unwrap();
-    let y = poly_q(&PolyExpr::state("y"), &combined);
-    let ay = poly_q(&(PolyExpr::param("a") * PolyExpr::state("y")), &combined);
+    let y = poly_q_bound(&PolyExpr::state("y"), &comb_bind);
+    let ay = poly_q_bound(&(PolyExpr::param("a") * PolyExpr::state("y")), &comb_bind);
     let strata = quotient_membership_locus(&y, &[ay], 1, &param_vars)
         .expect("quotient stratification succeeds");
     let a_param = poly_q(&PolyExpr::param("a"), &param_vars);
@@ -193,20 +201,18 @@ fn quotient_ring_membership_does_not_strengthen_to_ambient_zero() {
     assert_eq!(strata[0].invertibles, vec![a_param]);
 
     // G-140 P3 Busy Law: g = mu*(h - C), target apply_u^*(g) = mu*(h - C) - mu*delta*u.
-    let busy_vars = VarOrder::new(vec![
-        "h".into(),
-        "C".into(),
-        "u".into(),
-        "delta".into(),
-        "mu".into(),
-    ])
+    let (_, busy_bind) = ExprBindings::from_slices(
+        &["h".into(), "C".into()],
+        &["u".into()],
+        &["delta".into(), "mu".into()],
+    )
     .unwrap();
     let busy_params = VarOrder::new(vec!["delta".into(), "mu".into()]).unwrap();
     let g_expr = PolyExpr::param("mu") * (PolyExpr::state("h") - PolyExpr::state("C"));
     let apply_g_expr =
         g_expr.clone() - PolyExpr::param("mu") * PolyExpr::param("delta") * PolyExpr::arg("u");
-    let g_poly = poly_q(&g_expr, &busy_vars);
-    let apply_g_poly = poly_q(&apply_g_expr, &busy_vars);
+    let g_poly = poly_q_bound(&g_expr, &busy_bind);
+    let apply_g_poly = poly_q_bound(&apply_g_expr, &busy_bind);
 
     let busy_strata = quotient_membership_locus(
         &apply_g_poly,
@@ -310,17 +316,18 @@ fn affine_q_and_smith_z_and_fp_enumeration_are_exact_and_verified() {
     // exactly (3 - 1)^2 = 4 solutions, all forcing rho = 1.
     let p3 = BigUint::from(3u32);
     let vars3 = VarOrder::new(vec!["delta".into(), "mu".into(), "rho".into()]).unwrap();
+    let bind3 = ExprBindings::params_only(&vars3);
     let one_fp =
         PolyExpr::Const(crate::ir::term::ScalarLit::fp(BigInt::from(1), p3.clone()).unwrap());
     let eq_fp = Poly::from_expr_fp(
         &(PolyExpr::param("mu") * PolyExpr::param("delta") * (one_fp - PolyExpr::param("rho"))),
-        &vars3,
+        &bind3,
         &p3,
     )
     .unwrap();
     let inv_fp = Poly::from_expr_fp(
         &(PolyExpr::param("mu") * PolyExpr::param("delta")),
-        &vars3,
+        &bind3,
         &p3,
     )
     .unwrap();
@@ -529,14 +536,16 @@ fn edge_cases_empty_constant_ideals_multigen_quotient_and_negative_smith() {
 
     // Multi-generator quotient ideal: J = (a*y - z, b*z) in Q[a, b][y, z], target = y.
     // y in (a*y - z, b*z) holds iff both a and b are invertible (y = a^-1*(a*y - z) + (a*b)^-1*(b*z)).
-    let comb = VarOrder::new(vec!["y".into(), "z".into(), "a".into(), "b".into()]).unwrap();
+    let (_, comb_bind) =
+        ExprBindings::from_slices(&["y".into(), "z".into()], &[], &["a".into(), "b".into()])
+            .unwrap();
     let pvars = VarOrder::new(vec!["a".into(), "b".into()]).unwrap();
-    let g1 = poly_q(
+    let g1 = poly_q_bound(
         &(PolyExpr::param("a") * PolyExpr::state("y") - PolyExpr::state("z")),
-        &comb,
+        &comb_bind,
     );
-    let g2 = poly_q(&(PolyExpr::param("b") * PolyExpr::state("z")), &comb);
-    let target_y = poly_q(&PolyExpr::state("y"), &comb);
+    let g2 = poly_q_bound(&(PolyExpr::param("b") * PolyExpr::state("z")), &comb_bind);
+    let target_y = poly_q_bound(&PolyExpr::state("y"), &comb_bind);
     let strata = quotient_membership_locus(&target_y, &[g1, g2], 2, &pvars).unwrap();
     let pa = poly_q(&PolyExpr::param("a"), &pvars);
     let pb = poly_q(&PolyExpr::param("b"), &pvars);
@@ -573,23 +582,25 @@ fn edge_cases_empty_constant_ideals_multigen_quotient_and_negative_smith() {
 #[test]
 fn quotient_pseudo_reduction_scales_remainder_on_spoly_regression() {
     // Regression for F1: Q[a][x, y, z], J = (x - y - z, x, a*z - 1).
-    let comb = VarOrder::new(vec!["x".into(), "y".into(), "z".into(), "a".into()]).unwrap();
+    let (_, comb_bind) =
+        ExprBindings::from_slices(&["x".into(), "y".into(), "z".into()], &[], &["a".into()])
+            .unwrap();
     let pvars = VarOrder::new(vec!["a".into()]).unwrap();
     let x = PolyExpr::state("x");
     let y = PolyExpr::state("y");
     let z = PolyExpr::state("z");
     let a = PolyExpr::param("a");
 
-    let g0 = poly_q(&(x.clone() - y.clone() - z.clone()), &comb);
-    let g1 = poly_q(&x, &comb);
-    let g2 = poly_q(&(a.clone() * z - q_lit(1)), &comb);
+    let g0 = poly_q_bound(&(x.clone() - y.clone() - z.clone()), &comb_bind);
+    let g1 = poly_q_bound(&x, &comb_bind);
+    let g2 = poly_q_bound(&(a.clone() * z - q_lit(1)), &comb_bind);
     let ideal = [g0, g1, g2];
     let pa = poly_q(&a, &pvars);
     let pa_minus_1 = poly_q(&(a.clone() - q_lit(1)), &pvars);
 
     // 1. False-negative check: a*y + 1 = a*x - a*(x - y - z) - (a*z - 1) belongs to J for ALL a.
     // On D(a), equations must be empty (no spurious a - 1 = 0).
-    let member_target = poly_q(&(a * y.clone() + q_lit(1)), &comb);
+    let member_target = poly_q_bound(&(a * y.clone() + q_lit(1)), &comb_bind);
     let strata_mem = quotient_membership_locus(&member_target, &ideal, 3, &pvars).unwrap();
     assert!(
         strata_mem
@@ -600,7 +611,7 @@ fn quotient_pseudo_reduction_scales_remainder_on_spoly_regression() {
 
     // 2. False-positive check: y + 1 is NOT in J for a != 0, 1 (at a = 2, y = -1/2 => y + 1 = 1/2).
     // Exact locus on D(a) is V(a - 1) ∩ D(a).
-    let non_member_target = poly_q(&(y + q_lit(1)), &comb);
+    let non_member_target = poly_q_bound(&(y + q_lit(1)), &comb_bind);
     let strata_non = quotient_membership_locus(&non_member_target, &ideal, 3, &pvars).unwrap();
     assert!(
         !strata_non
@@ -735,5 +746,105 @@ fn rat_ord_smith_rank2_groebner_limit_fp_and_arity_guards() {
             expected: 3,
             actual: 2,
         })
+    ));
+}
+
+#[test]
+fn namespace_separation_overflow_grevlex_and_ring_mismatch_regressions() {
+    // F1: StateVar("x"), ArgVar("x"), and ParamVar("x") never collide into the same variable.
+    let (order, bindings) =
+        ExprBindings::from_slices(&["x".into()], &["x".into()], &["x".into()]).unwrap();
+    assert_eq!(order.len(), 3);
+    let diff = PolyExpr::state("x") - PolyExpr::param("x");
+    let poly_q_diff = Poly::from_expr_q(&diff, &bindings).unwrap();
+    assert!(!poly_q_diff.is_zero());
+    assert_eq!(poly_q_diff.terms().len(), 2);
+    let poly_z_diff = Poly::from_expr_z(&diff, &bindings).unwrap();
+    assert!(!poly_z_diff.is_zero());
+    let p5 = BigUint::from(5u32);
+    let poly_fp_diff = Poly::from_expr_fp(&diff, &bindings, &p5).unwrap();
+    assert!(!poly_fp_diff.is_zero());
+
+    // `params_only` rejects StateVar/ArgVar instead of aliasing them to ParamVar.
+    let p_only_vars = VarOrder::new(vec!["x".into()]).unwrap();
+    let p_only = ExprBindings::params_only(&p_only_vars);
+    assert!(matches!(
+        Poly::from_expr_q(&PolyExpr::state("x"), &p_only),
+        Err(AlgebraError::UnknownVariable { .. })
+    ));
+    assert!(matches!(
+        Poly::from_expr_q(&PolyExpr::arg("x"), &p_only),
+        Err(AlgebraError::UnknownVariable { .. })
+    ));
+
+    // F2: Exponent overflow in `PolyExpr::Pow` returns Err(OutOfScope) without panicking.
+    let huge = PolyExpr::pow(PolyExpr::pow(PolyExpr::param("x"), 65_536), 65_536);
+    assert!(matches!(
+        Poly::from_expr_q(&huge, &p_only),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+    assert!(matches!(
+        Poly::from_expr_z(&huge, &p_only),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+    assert!(matches!(
+        Poly::from_expr_fp(&huge, &p_only, &p5),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+
+    // F2: Grevlex total_degree uses u64 without u32 saturation, preserving strict monotonicity.
+    let m_hi = Monomial::from_exps(vec![u32::MAX, 1]);
+    let m_lo = Monomial::from_exps(vec![u32::MAX, 0]);
+    assert_eq!(m_hi.total_degree(), u64::from(u32::MAX) + 1);
+    assert_eq!(m_lo.total_degree(), u64::from(u32::MAX));
+    assert_eq!(
+        m_hi.cmp_order(&m_lo, MonomialOrder::Grevlex),
+        std::cmp::Ordering::Greater
+    );
+
+    // F3: try_add_term, eval_at, and analyze_interaction_on_face reject Fp modulus & arity mismatch.
+    let p3 = BigUint::from(3u32);
+    let mut fp_poly = Poly::zero(1, FpElem::zero(p3.clone()).unwrap());
+    assert!(matches!(
+        fp_poly.try_add_term(
+            Monomial::from_exps(vec![1, 0]),
+            FpElem::one(p3.clone()).unwrap()
+        ),
+        Err(AlgebraError::ArityMismatch {
+            expected: 1,
+            actual: 2
+        })
+    ));
+    assert!(matches!(
+        fp_poly.try_add_term(
+            Monomial::from_exps(vec![1]),
+            FpElem::one(p5.clone()).unwrap()
+        ),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+    fp_poly
+        .try_add_term(
+            Monomial::from_exps(vec![1]),
+            FpElem::one(p3.clone()).unwrap(),
+        )
+        .unwrap();
+    assert!(matches!(
+        fp_poly.eval_at(&[FpElem::one(p5.clone()).unwrap()]),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+    assert!(matches!(
+        analyze_interaction_on_face(
+            &[fp_poly],
+            &p_only_vars,
+            &BTreeMap::from([("x".to_owned(), FpElem::one(p5).unwrap())]),
+        ),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+
+    // Coverage gap: quotient_membership_locus arity mismatch fails closed with QuotientIdealOutOfScope.
+    let bad_target = Poly::var(3, 0, Rat::zero());
+    assert!(matches!(
+        quotient_membership_locus(&bad_target, &[], 1, &p_only_vars),
+        Err(SilenceReason::QuotientIdealOutOfScope { .. })
     ));
 }

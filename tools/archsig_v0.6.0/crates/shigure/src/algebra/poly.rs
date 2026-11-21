@@ -101,6 +101,122 @@ impl VarOrder {
     }
 }
 
+/// `PolyExpr` の 3 名前空間（`StateVar` / `ArgVar` / `ParamVar`）を互いに分離して
+/// 多項式環の変数インデックスへ対応付ける束縛表。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ExprBindings {
+    num_vars: usize,
+    state_vars: BTreeMap<String, usize>,
+    arg_vars: BTreeMap<String, usize>,
+    param_vars: BTreeMap<String, usize>,
+}
+
+impl ExprBindings {
+    /// `VarOrder` の全変数を `ParamVar` 名前空間のみに束縛する（状態変数・引数変数は未束縛）。
+    pub fn params_only(vars: &VarOrder) -> Self {
+        let mut param_vars = BTreeMap::new();
+        for (i, name) in vars.vars().iter().enumerate() {
+            param_vars.insert(name.clone(), i);
+        }
+        Self {
+            num_vars: vars.len(),
+            state_vars: BTreeMap::new(),
+            arg_vars: BTreeMap::new(),
+            param_vars,
+        }
+    }
+
+    /// 状態変数・引数変数・パラメータ変数の 3 名前空間を順に `[state..., arg..., param...]` へ配置し、
+    /// 対応する `VarOrder` と `ExprBindings` を構築する。
+    /// 異なる名前空間間で同名変数がある場合は表示名のみ接頭辞で分離し、名前空間自体は衝突させない。
+    pub fn from_slices(
+        state_names: &[String],
+        arg_names: &[String],
+        param_names: &[String],
+    ) -> Result<(VarOrder, Self), AlgebraError> {
+        for (kind, names) in [
+            ("state", state_names),
+            ("arg", arg_names),
+            ("param", param_names),
+        ] {
+            let mut seen = BTreeSet::new();
+            for name in names {
+                if name.trim().is_empty() || !seen.insert(name.as_str()) {
+                    return Err(AlgebraError::OutOfScope {
+                        detail: format!("invalid or duplicate {kind} variable name `{name}`"),
+                    });
+                }
+            }
+        }
+
+        let mut counts: BTreeMap<&str, usize> = BTreeMap::new();
+        for name in state_names
+            .iter()
+            .chain(arg_names.iter())
+            .chain(param_names.iter())
+        {
+            *counts.entry(name.as_str()).or_insert(0) += 1;
+        }
+
+        let mut used_display: BTreeSet<String> = BTreeSet::new();
+        let mut display_vars: Vec<String> =
+            Vec::with_capacity(state_names.len() + arg_names.len() + param_names.len());
+        let mut state_vars = BTreeMap::new();
+        let mut arg_vars = BTreeMap::new();
+        let mut param_vars = BTreeMap::new();
+
+        let mut push_var = |prefix: &str, name: &str, map: &mut BTreeMap<String, usize>| {
+            let idx = display_vars.len();
+            let base = if counts.get(name).copied().unwrap_or(0) > 1 {
+                format!("{prefix}::{name}")
+            } else {
+                name.to_owned()
+            };
+            let mut disp = base;
+            while !used_display.insert(disp.clone()) {
+                disp.push('_');
+            }
+            display_vars.push(disp);
+            map.insert(name.to_owned(), idx);
+        };
+
+        for name in state_names {
+            push_var("state", name, &mut state_vars);
+        }
+        for name in arg_names {
+            push_var("arg", name, &mut arg_vars);
+        }
+        for name in param_names {
+            push_var("param", name, &mut param_vars);
+        }
+
+        let order = VarOrder::new(display_vars)?;
+        let bindings = Self {
+            num_vars: order.len(),
+            state_vars,
+            arg_vars,
+            param_vars,
+        };
+        Ok((order, bindings))
+    }
+
+    pub fn num_vars(&self) -> usize {
+        self.num_vars
+    }
+
+    pub fn state_index(&self, name: &str) -> Option<usize> {
+        self.state_vars.get(name).copied()
+    }
+
+    pub fn arg_index(&self, name: &str) -> Option<usize> {
+        self.arg_vars.get(name).copied()
+    }
+
+    pub fn param_index(&self, name: &str) -> Option<usize> {
+        self.param_vars.get(name).copied()
+    }
+}
+
 /// 固定変数数上の単項式（指数ベクトル）。
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Monomial {
@@ -132,8 +248,8 @@ impl Monomial {
         self.exps.len()
     }
 
-    pub fn total_degree(&self) -> u32 {
-        self.exps.iter().copied().fold(0u32, u32::saturating_add)
+    pub fn total_degree(&self) -> u64 {
+        self.exps.iter().map(|&e| u64::from(e)).sum()
     }
 
     pub fn is_one(&self) -> bool {
@@ -150,7 +266,7 @@ impl Monomial {
     }
 
     pub fn checked_mul(&self, other: &Self) -> Option<Self> {
-        debug_assert_eq!(self.exps.len(), other.exps.len());
+        assert_eq!(self.exps.len(), other.exps.len(), "monomial arity mismatch");
         let mut exps = Vec::with_capacity(self.exps.len());
         for (&a, &b) in self.exps.iter().zip(&other.exps) {
             exps.push(a.checked_add(b)?);
@@ -164,7 +280,11 @@ impl Monomial {
     }
 
     pub fn divides(&self, target: &Self) -> bool {
-        debug_assert_eq!(self.exps.len(), target.exps.len());
+        assert_eq!(
+            self.exps.len(),
+            target.exps.len(),
+            "monomial arity mismatch"
+        );
         self.exps.iter().zip(&target.exps).all(|(&a, &b)| a <= b)
     }
 
@@ -182,7 +302,7 @@ impl Monomial {
     }
 
     pub fn lcm(&self, other: &Self) -> Self {
-        debug_assert_eq!(self.exps.len(), other.exps.len());
+        assert_eq!(self.exps.len(), other.exps.len(), "monomial arity mismatch");
         let exps = self
             .exps
             .iter()
@@ -194,7 +314,7 @@ impl Monomial {
 
     /// Buchberger 第 1 基準（互いに素判定: `gcd(m1, m2) == 1`）。
     pub fn gcd_is_one(&self, other: &Self) -> bool {
-        debug_assert_eq!(self.exps.len(), other.exps.len());
+        assert_eq!(self.exps.len(), other.exps.len(), "monomial arity mismatch");
         self.exps
             .iter()
             .zip(&other.exps)
@@ -202,7 +322,7 @@ impl Monomial {
     }
 
     pub fn cmp_order(&self, other: &Self, order: MonomialOrder) -> Ordering {
-        debug_assert_eq!(self.exps.len(), other.exps.len());
+        assert_eq!(self.exps.len(), other.exps.len(), "monomial arity mismatch");
         match order {
             MonomialOrder::Lex => self.exps.cmp(&other.exps),
             MonomialOrder::Grevlex => {
@@ -329,7 +449,7 @@ impl<C: RingCoeff> Poly<C> {
             .unwrap_or_else(|| self.zero_coeff.clone())
     }
 
-    pub fn total_degree(&self) -> u32 {
+    pub fn total_degree(&self) -> u64 {
         self.terms
             .keys()
             .map(Monomial::total_degree)
@@ -341,10 +461,22 @@ impl<C: RingCoeff> Poly<C> {
         self.total_degree() <= 1
     }
 
-    pub fn add_term(&mut self, mono: Monomial, coeff: C) {
-        debug_assert_eq!(mono.num_vars(), self.num_vars);
+    /// 変数数・係数環（`FpElem` の法を含む）を検査した上で単項式項を加算する。
+    pub fn try_add_term(&mut self, mono: Monomial, coeff: C) -> Result<(), AlgebraError> {
+        if mono.num_vars() != self.num_vars {
+            return Err(AlgebraError::ArityMismatch {
+                expected: self.num_vars,
+                actual: mono.num_vars(),
+            });
+        }
+        if !self.zero_coeff.same_ring(&coeff) {
+            return Err(AlgebraError::DomainMismatch {
+                expected: format!("{:?}", self.zero_coeff),
+                actual: format!("{coeff:?}"),
+            });
+        }
         if coeff.coeff_is_zero() {
-            return;
+            return Ok(());
         }
         let next = match self.terms.get(&mono) {
             Some(existing) => existing.add_ref(&coeff),
@@ -355,10 +487,48 @@ impl<C: RingCoeff> Poly<C> {
         } else {
             self.terms.insert(mono, next);
         }
+        Ok(())
+    }
+
+    pub fn add_term(&mut self, mono: Monomial, coeff: C) {
+        self.try_add_term(mono, coeff)
+            .expect("polynomial arity or coefficient ring mismatch");
+    }
+
+    pub fn remove_term(&mut self, mono: &Monomial) -> Option<C> {
+        assert_eq!(mono.num_vars(), self.num_vars, "polynomial arity mismatch");
+        self.terms.remove(mono)
+    }
+
+    /// `self -= other * (scalar * mono)` を多項式全体の複製なしに in-place 実行する。
+    pub fn sub_mul_term_assign(&mut self, other: &Self, mono: &Monomial, scalar: &C) {
+        assert_eq!(self.num_vars, other.num_vars, "polynomial arity mismatch");
+        assert_eq!(mono.num_vars(), self.num_vars, "monomial arity mismatch");
+        assert!(
+            self.zero_coeff.same_ring(&other.zero_coeff),
+            "polynomial coefficient ring mismatch"
+        );
+        assert!(
+            self.zero_coeff.same_ring(scalar),
+            "polynomial scalar ring mismatch"
+        );
+        if scalar.coeff_is_zero() || other.is_zero() {
+            return;
+        }
+        for (m, c) in &other.terms {
+            let prod = c.mul_ref(scalar).neg_ref();
+            if !prod.coeff_is_zero() {
+                self.add_term(m.mul(mono), prod);
+            }
+        }
     }
 
     pub fn add(&self, other: &Self) -> Self {
-        debug_assert_eq!(self.num_vars, other.num_vars);
+        assert_eq!(self.num_vars, other.num_vars, "polynomial arity mismatch");
+        assert!(
+            self.zero_coeff.same_ring(&other.zero_coeff),
+            "polynomial coefficient ring mismatch"
+        );
         let mut out = self.clone();
         for (m, c) in &other.terms {
             out.add_term(m.clone(), c.clone());
@@ -380,7 +550,11 @@ impl<C: RingCoeff> Poly<C> {
     }
 
     pub fn sub(&self, other: &Self) -> Self {
-        debug_assert_eq!(self.num_vars, other.num_vars);
+        assert_eq!(self.num_vars, other.num_vars, "polynomial arity mismatch");
+        assert!(
+            self.zero_coeff.same_ring(&other.zero_coeff),
+            "polynomial coefficient ring mismatch"
+        );
         let mut out = self.clone();
         for (m, c) in &other.terms {
             out.add_term(m.clone(), c.neg_ref());
@@ -389,6 +563,10 @@ impl<C: RingCoeff> Poly<C> {
     }
 
     pub fn scale(&self, scalar: &C) -> Self {
+        assert!(
+            self.zero_coeff.same_ring(scalar),
+            "polynomial scalar ring mismatch"
+        );
         if scalar.coeff_is_zero() || self.is_zero() {
             return Self::zero(self.num_vars, self.zero_coeff.clone());
         }
@@ -403,6 +581,11 @@ impl<C: RingCoeff> Poly<C> {
     }
 
     pub fn mul_term(&self, mono: &Monomial, scalar: &C) -> Self {
+        assert_eq!(mono.num_vars(), self.num_vars, "monomial arity mismatch");
+        assert!(
+            self.zero_coeff.same_ring(scalar),
+            "polynomial scalar ring mismatch"
+        );
         if scalar.coeff_is_zero() || self.is_zero() {
             return Self::zero(self.num_vars, self.zero_coeff.clone());
         }
@@ -416,8 +599,41 @@ impl<C: RingCoeff> Poly<C> {
         out
     }
 
+    /// 変数数・係数環・単項式指数のオーバーフローを検査しながら乗算する。
+    pub fn checked_mul(&self, other: &Self) -> Result<Self, AlgebraError> {
+        if self.num_vars != other.num_vars {
+            return Err(AlgebraError::ArityMismatch {
+                expected: self.num_vars,
+                actual: other.num_vars,
+            });
+        }
+        if !self.zero_coeff.same_ring(&other.zero_coeff) {
+            return Err(AlgebraError::DomainMismatch {
+                expected: format!("{:?}", self.zero_coeff),
+                actual: format!("{:?}", other.zero_coeff),
+            });
+        }
+        if self.is_zero() || other.is_zero() {
+            return Ok(Self::zero(self.num_vars, self.zero_coeff.clone()));
+        }
+        let mut out = Self::zero(self.num_vars, self.zero_coeff.clone());
+        for (m1, c1) in &self.terms {
+            for (m2, c2) in &other.terms {
+                let mono = m1.checked_mul(m2).ok_or_else(|| AlgebraError::OutOfScope {
+                    detail: "monomial exponent addition overflowed u32".to_owned(),
+                })?;
+                out.add_term(mono, c1.mul_ref(c2));
+            }
+        }
+        Ok(out)
+    }
+
     pub fn mul(&self, other: &Self) -> Self {
-        debug_assert_eq!(self.num_vars, other.num_vars);
+        assert_eq!(self.num_vars, other.num_vars, "polynomial arity mismatch");
+        assert!(
+            self.zero_coeff.same_ring(&other.zero_coeff),
+            "polynomial coefficient ring mismatch"
+        );
         if self.is_zero() || other.is_zero() {
             return Self::zero(self.num_vars, self.zero_coeff.clone());
         }
@@ -428,6 +644,28 @@ impl<C: RingCoeff> Poly<C> {
             }
         }
         out
+    }
+
+    /// 単項式指数のオーバーフローを検査しながら冪乗する。
+    pub fn checked_pow(&self, mut exp: u32) -> Result<Self, AlgebraError> {
+        if exp == 0 {
+            return Ok(Self::one(self.num_vars, self.zero_coeff.clone()));
+        }
+        if self.is_zero() {
+            return Ok(Self::zero(self.num_vars, self.zero_coeff.clone()));
+        }
+        let mut result = Self::one(self.num_vars, self.zero_coeff.clone());
+        let mut base = self.clone();
+        while exp > 0 {
+            if exp % 2 == 1 {
+                result = result.checked_mul(&base)?;
+            }
+            exp /= 2;
+            if exp > 0 {
+                base = base.checked_mul(&base)?;
+            }
+        }
+        Ok(result)
     }
 
     pub fn pow(&self, mut exp: u32) -> Self {
@@ -459,6 +697,14 @@ impl<C: RingCoeff> Poly<C> {
                 actual: values.len(),
             });
         }
+        for v in values {
+            if !self.zero_coeff.same_ring(v) {
+                return Err(AlgebraError::DomainMismatch {
+                    expected: format!("{:?}", self.zero_coeff),
+                    actual: format!("{v:?}"),
+                });
+            }
+        }
         let mut acc = self.zero_coeff.clone();
         for (mono, coeff) in &self.terms {
             let mut term_val = coeff.clone();
@@ -475,6 +721,12 @@ impl<C: RingCoeff> Poly<C> {
 
     /// 一部の変数へスカラー値を固定代入し、同じ環上の多項式として縮約する。
     pub fn partial_eval(&self, fixed: &BTreeMap<usize, C>) -> Self {
+        for val in fixed.values() {
+            assert!(
+                self.zero_coeff.same_ring(val),
+                "partial_eval coefficient ring mismatch"
+            );
+        }
         let mut out = Self::zero(self.num_vars, self.zero_coeff.clone());
         for (mono, coeff) in &self.terms {
             let mut new_exps = mono.exps().to_vec();
@@ -578,6 +830,70 @@ fn pow_coeff<C: RingCoeff>(base: &C, mut exp: u32, one: C) -> C {
     acc
 }
 
+fn expand_expr_with<C, F>(
+    expr: &PolyExpr,
+    bindings: &ExprBindings,
+    zero: &C,
+    lit_to_coeff: &F,
+) -> Result<Poly<C>, AlgebraError>
+where
+    C: RingCoeff,
+    F: Fn(&ScalarLit) -> Result<C, AlgebraError>,
+{
+    let n = bindings.num_vars();
+    match expr {
+        PolyExpr::Const(lit) => Ok(Poly::constant(n, lit_to_coeff(lit)?)),
+        PolyExpr::StateVar(v) => {
+            let idx = bindings
+                .state_index(v)
+                .ok_or_else(|| AlgebraError::UnknownVariable {
+                    name: format!("state:{v}"),
+                })?;
+            Ok(Poly::var(n, idx, zero.clone()))
+        }
+        PolyExpr::ArgVar(v) => {
+            let idx = bindings
+                .arg_index(v)
+                .ok_or_else(|| AlgebraError::UnknownVariable {
+                    name: format!("arg:{v}"),
+                })?;
+            Ok(Poly::var(n, idx, zero.clone()))
+        }
+        PolyExpr::ParamVar(v) => {
+            let idx = bindings
+                .param_index(v)
+                .ok_or_else(|| AlgebraError::UnknownVariable {
+                    name: format!("param:{v}"),
+                })?;
+            Ok(Poly::var(n, idx, zero.clone()))
+        }
+        PolyExpr::Unobserved { slot, .. } => Err(AlgebraError::UnobservedDependency {
+            slots: vec![slot.clone()],
+        }),
+        PolyExpr::Neg(e) => Ok(expand_expr_with(e, bindings, zero, lit_to_coeff)?.neg()),
+        PolyExpr::Add(a, b) => Ok(expand_expr_with(a, bindings, zero, lit_to_coeff)?
+            .add(&expand_expr_with(b, bindings, zero, lit_to_coeff)?)),
+        PolyExpr::Sub(a, b) => Ok(expand_expr_with(a, bindings, zero, lit_to_coeff)?
+            .sub(&expand_expr_with(b, bindings, zero, lit_to_coeff)?)),
+        PolyExpr::Mul(a, b) => expand_expr_with(a, bindings, zero, lit_to_coeff)?
+            .checked_mul(&expand_expr_with(b, bindings, zero, lit_to_coeff)?),
+        PolyExpr::Pow(e, exp) => {
+            expand_expr_with(e, bindings, zero, lit_to_coeff)?.checked_pow(*exp)
+        }
+    }
+}
+
+fn check_unobserved(expr: &PolyExpr) -> Result<(), AlgebraError> {
+    let mut missing = BTreeSet::new();
+    expr.collect_unobserved(&mut missing);
+    if !missing.is_empty() {
+        return Err(AlgebraError::UnobservedDependency {
+            slots: missing.into_iter().collect(),
+        });
+    }
+    Ok(())
+}
+
 impl Poly<Rat> {
     pub fn monic(&self, order: MonomialOrder) -> Self {
         let Some((_, lc)) = self.leading_term(order) else {
@@ -590,86 +906,36 @@ impl Poly<Rat> {
     }
 
     /// `PolyExpr` を `Q` 上の多項式へ展開する。未観測値を含む場合は零化せず `UnobservedDependency` を返す。
-    pub fn from_expr_q(expr: &PolyExpr, vars: &VarOrder) -> Result<Self, AlgebraError> {
-        let mut missing = BTreeSet::new();
-        expr.collect_unobserved(&mut missing);
-        if !missing.is_empty() {
-            return Err(AlgebraError::UnobservedDependency {
-                slots: missing.into_iter().collect(),
-            });
-        }
-        expand_expr_q(expr, vars)
-    }
-}
-
-fn expand_expr_q(expr: &PolyExpr, vars: &VarOrder) -> Result<Poly<Rat>, AlgebraError> {
-    let n = vars.len();
-    match expr {
-        PolyExpr::Const(ScalarLit::Q { num, den }) => {
-            let rat =
+    pub fn from_expr_q(expr: &PolyExpr, bindings: &ExprBindings) -> Result<Self, AlgebraError> {
+        check_unobserved(expr)?;
+        let zero = Rat::zero();
+        expand_expr_with(expr, bindings, &zero, &|lit| match lit {
+            ScalarLit::Q { num, den } => {
                 Rat::new(num.clone(), den.clone()).ok_or_else(|| AlgebraError::OutOfScope {
                     detail: "zero denominator in rational literal".to_owned(),
-                })?;
-            Ok(Poly::constant(n, rat))
-        }
-        PolyExpr::Const(ScalarLit::Z(z)) => Ok(Poly::constant(n, Rat::from_int(z.clone()))),
-        PolyExpr::Const(ScalarLit::Fp { modulus, .. }) => Err(AlgebraError::DomainMismatch {
-            expected: "Q".to_owned(),
-            actual: format!("Fp({modulus})"),
-        }),
-        PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
-            let idx = vars
-                .index_of(v)
-                .ok_or_else(|| AlgebraError::UnknownVariable { name: v.clone() })?;
-            Ok(Poly::var(n, idx, Rat::zero()))
-        }
-        PolyExpr::Unobserved { slot, .. } => Err(AlgebraError::UnobservedDependency {
-            slots: vec![slot.clone()],
-        }),
-        PolyExpr::Neg(e) => Ok(expand_expr_q(e, vars)?.neg()),
-        PolyExpr::Add(a, b) => Ok(expand_expr_q(a, vars)?.add(&expand_expr_q(b, vars)?)),
-        PolyExpr::Sub(a, b) => Ok(expand_expr_q(a, vars)?.sub(&expand_expr_q(b, vars)?)),
-        PolyExpr::Mul(a, b) => Ok(expand_expr_q(a, vars)?.mul(&expand_expr_q(b, vars)?)),
-        PolyExpr::Pow(e, exp) => Ok(expand_expr_q(e, vars)?.pow(*exp)),
+                })
+            }
+            ScalarLit::Z(z) => Ok(Rat::from_int(z.clone())),
+            ScalarLit::Fp { modulus, .. } => Err(AlgebraError::DomainMismatch {
+                expected: "Q".to_owned(),
+                actual: format!("Fp({modulus})"),
+            }),
+        })
     }
 }
 
 impl Poly<BigInt> {
     /// `PolyExpr` を `Z` 上の多項式へ展開する。
-    pub fn from_expr_z(expr: &PolyExpr, vars: &VarOrder) -> Result<Self, AlgebraError> {
-        let mut missing = BTreeSet::new();
-        expr.collect_unobserved(&mut missing);
-        if !missing.is_empty() {
-            return Err(AlgebraError::UnobservedDependency {
-                slots: missing.into_iter().collect(),
-            });
-        }
-        expand_expr_z(expr, vars)
-    }
-}
-
-fn expand_expr_z(expr: &PolyExpr, vars: &VarOrder) -> Result<Poly<BigInt>, AlgebraError> {
-    let n = vars.len();
-    match expr {
-        PolyExpr::Const(ScalarLit::Z(z)) => Ok(Poly::constant(n, z.clone())),
-        PolyExpr::Const(other) => Err(AlgebraError::DomainMismatch {
-            expected: "Z".to_owned(),
-            actual: other.domain().to_string(),
-        }),
-        PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
-            let idx = vars
-                .index_of(v)
-                .ok_or_else(|| AlgebraError::UnknownVariable { name: v.clone() })?;
-            Ok(Poly::var(n, idx, BigInt::zero()))
-        }
-        PolyExpr::Unobserved { slot, .. } => Err(AlgebraError::UnobservedDependency {
-            slots: vec![slot.clone()],
-        }),
-        PolyExpr::Neg(e) => Ok(expand_expr_z(e, vars)?.neg()),
-        PolyExpr::Add(a, b) => Ok(expand_expr_z(a, vars)?.add(&expand_expr_z(b, vars)?)),
-        PolyExpr::Sub(a, b) => Ok(expand_expr_z(a, vars)?.sub(&expand_expr_z(b, vars)?)),
-        PolyExpr::Mul(a, b) => Ok(expand_expr_z(a, vars)?.mul(&expand_expr_z(b, vars)?)),
-        PolyExpr::Pow(e, exp) => Ok(expand_expr_z(e, vars)?.pow(*exp)),
+    pub fn from_expr_z(expr: &PolyExpr, bindings: &ExprBindings) -> Result<Self, AlgebraError> {
+        check_unobserved(expr)?;
+        let zero = BigInt::zero();
+        expand_expr_with(expr, bindings, &zero, &|lit| match lit {
+            ScalarLit::Z(z) => Ok(z.clone()),
+            other => Err(AlgebraError::DomainMismatch {
+                expected: "Z".to_owned(),
+                actual: other.domain().to_string(),
+            }),
+        })
     }
 }
 
@@ -677,7 +943,7 @@ impl Poly<FpElem> {
     /// `PolyExpr` を素数体 `Fp(modulus)` 上の多項式へ展開する。
     pub fn from_expr_fp(
         expr: &PolyExpr,
-        vars: &VarOrder,
+        bindings: &ExprBindings,
         modulus: &BigUint,
     ) -> Result<Self, AlgebraError> {
         if !is_prime(modulus) {
@@ -685,61 +951,28 @@ impl Poly<FpElem> {
                 modulus: modulus.clone(),
             });
         }
-        let mut missing = BTreeSet::new();
-        expr.collect_unobserved(&mut missing);
-        if !missing.is_empty() {
-            return Err(AlgebraError::UnobservedDependency {
-                slots: missing.into_iter().collect(),
-            });
-        }
-        expand_expr_fp(expr, vars, modulus)
-    }
-}
-
-fn expand_expr_fp(
-    expr: &PolyExpr,
-    vars: &VarOrder,
-    modulus: &BigUint,
-) -> Result<Poly<FpElem>, AlgebraError> {
-    let n = vars.len();
-    let zero = FpElem::from_checked_prime(BigInt::zero(), modulus.clone());
-    match expr {
-        PolyExpr::Const(ScalarLit::Fp {
-            value,
-            modulus: lit_mod,
-        }) => {
-            if lit_mod != modulus {
-                return Err(AlgebraError::DomainMismatch {
-                    expected: format!("Fp({modulus})"),
-                    actual: format!("Fp({lit_mod})"),
-                });
+        check_unobserved(expr)?;
+        let zero = FpElem::from_checked_prime(BigInt::zero(), modulus.clone());
+        expand_expr_with(expr, bindings, &zero, &|lit| match lit {
+            ScalarLit::Fp {
+                value,
+                modulus: lit_mod,
+            } => {
+                if lit_mod != modulus {
+                    return Err(AlgebraError::DomainMismatch {
+                        expected: format!("Fp({modulus})"),
+                        actual: format!("Fp({lit_mod})"),
+                    });
+                }
+                Ok(FpElem::from_checked_prime(
+                    BigInt::from(value.clone()),
+                    modulus.clone(),
+                ))
             }
-            let elem = FpElem::from_checked_prime(BigInt::from(value.clone()), modulus.clone());
-            Ok(Poly::constant(n, elem))
-        }
-        PolyExpr::Const(other) => Err(AlgebraError::DomainMismatch {
-            expected: format!("Fp({modulus})"),
-            actual: other.domain().to_string(),
-        }),
-        PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
-            let idx = vars
-                .index_of(v)
-                .ok_or_else(|| AlgebraError::UnknownVariable { name: v.clone() })?;
-            Ok(Poly::var(n, idx, zero))
-        }
-        PolyExpr::Unobserved { slot, .. } => Err(AlgebraError::UnobservedDependency {
-            slots: vec![slot.clone()],
-        }),
-        PolyExpr::Neg(e) => Ok(expand_expr_fp(e, vars, modulus)?.neg()),
-        PolyExpr::Add(a, b) => {
-            Ok(expand_expr_fp(a, vars, modulus)?.add(&expand_expr_fp(b, vars, modulus)?))
-        }
-        PolyExpr::Sub(a, b) => {
-            Ok(expand_expr_fp(a, vars, modulus)?.sub(&expand_expr_fp(b, vars, modulus)?))
-        }
-        PolyExpr::Mul(a, b) => {
-            Ok(expand_expr_fp(a, vars, modulus)?.mul(&expand_expr_fp(b, vars, modulus)?))
-        }
-        PolyExpr::Pow(e, exp) => Ok(expand_expr_fp(e, vars, modulus)?.pow(*exp)),
+            other => Err(AlgebraError::DomainMismatch {
+                expected: format!("Fp({modulus})"),
+                actual: other.domain().to_string(),
+            }),
+        })
     }
 }
