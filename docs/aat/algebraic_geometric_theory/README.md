@@ -13,7 +13,7 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 - [序論](introduction.md)：三つの到達点と、そこへ至る論証の順序。
 - [共通記号](notation.md)：対象、写像、係数、文脈の記号。
 - [第I部 Lawと意味の基礎](#第i部-lawと意味の基礎)：第1–3章。
-- [第II部 実現の族とLawの幾何](part_2/README.md)：第4–6章。
+- [第II部 実現の族とLawの幾何](#第ii部-実現の族とlawの幾何)：第4–6章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる導出規則。
 - [付録B 係数・affine構成・descent](appendix_b_coefficients_and_descent.md)：第II部で使う係数変更と局所からの組立て。
 

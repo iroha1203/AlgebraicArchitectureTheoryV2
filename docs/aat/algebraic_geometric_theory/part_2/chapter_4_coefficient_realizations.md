@@ -386,5 +386,5 @@ tensorでは命題4.10の恒等式、または原始domainを含め別途確認�
 第5章では状態構造を固定したまま量を独立に動かし、
 第6章ではこのtensor方式の有限局所自由実現そのものを動かす。
 
-[第II部](README.md) · [共通記号](../notation.md) ·
+[第II部](../README.md#第ii部-実現の族とlawの幾何) · [共通記号](../notation.md) ·
 [次章：量とLawから生じる相対幾何](chapter_5_quantities_and_law_geometry.md)

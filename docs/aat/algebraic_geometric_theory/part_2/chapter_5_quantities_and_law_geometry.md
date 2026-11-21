@@ -345,5 +345,5 @@ $`q(d)=q(d')`$ かつ $`\varepsilon(d)\ne\varepsilon(d')`$ なら、
 複数の文脈で拡張を比較する際は、定理5.8の原式の引戻しと拡張の多項式が一致する条件を、
 普遍tupleでの係数等式として課すことができる。
 
-[第II部](README.md) · [共通記号](../notation.md) ·
+[第II部](../README.md#第ii部-実現の族とlawの幾何) · [共通記号](../notation.md) ·
 [次章：構造の族と実現のモジュライ](chapter_6_families_and_moduli.md)

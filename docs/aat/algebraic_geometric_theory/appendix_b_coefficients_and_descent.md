@@ -293,4 +293,4 @@ fppf stack $`\mathcal B`$ 上の準連接代数の場合は、各試験scheme $`
 構造 $`b`$ を固定したfiberは補題B.7のaffine $`T`$-schemeである。
 第6章の相対Specはこの構成で定める。
 
-[全体の構成](README.md) · [第II部](part_2/README.md) · [共通記号](notation.md)
+[全体の構成](README.md) · [第II部](README.md#第ii部-実現の族とlawの幾何) · [共通記号](notation.md)
