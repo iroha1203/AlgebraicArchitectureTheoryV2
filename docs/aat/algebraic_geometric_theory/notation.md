@@ -31,6 +31,22 @@
 | $`\mathrm{Supp}(t)`$、$`\mathrm{Supp}(\varphi)`$、$`\mathrm{Supp}(\ell)`$ | term・式・Lawを入力文脈とともに読むための宣言の支持 | [3.1](part_1/chapter_3_contexts_and_local_models.md#31-依存に閉じた文脈とlawの支持) |
 | $`\mathrm{Match}((U_i),\mathcal A)`$ | 宣言被覆上の厳密な整合局所モデルと整合局所射の圏 | [3.3](part_1/chapter_3_contexts_and_local_models.md#33-被覆と局所整合データ) |
 | $`K_s`$、$`Q_s=R^{m_s}/K_s`$ | 生成元付き加群のkernelと商加群 | [3.3](part_1/chapter_3_contexts_and_local_models.md#生成元付き加群への適用) |
+| $`k`$、$`R`$、$`\sigma`$ | 基礎環、係数となる可換代数、係数的実現方式 | [4.1](part_2/chapter_4_coefficient_realizations.md#41-原始実現データと係数に沿う関手) |
+| $`\mathcal A_{\mathbb T,\sigma}(U,R)`$ | 宣言文脈と係数を指定した実現の意味圏 | [4.1](part_2/chapter_4_coefficient_realizations.md#41-原始実現データと係数に沿う関手) |
+| $`C_R(X)`$、$`\underline X_R`$ | copying coalgebraと、集合の状態を保持するschemeの族 | [4.2](part_2/chapter_4_coefficient_realizations.md#42-複製消去を保つcoalgebra) |
+| $`F=(F_x)`$、$`P_F`$ | 入力ごとの有限supportとその係数のchart | [4.3](part_2/chapter_4_coefficient_realizations.md#43-無限担体とtotality) |
+| $`M_R=M\otimes_kR`$、$`\iota_{M,R}`$ | 加群のtensor実現とcopyingからの比較写像 | [4.4](part_2/chapter_4_coefficient_realizations.md#44-加群のtensor実現と比較) |
+| $`S`$、$`D_j(S)`$、$`E_\ell(S)`$ | 固定構造、量domain、固定したLaw入力。ここでの $`S`$ はsort集合と別の記号 | [5.1](part_2/chapter_5_quantities_and_law_geometry.md#51-固定構造上の量モデル) |
+| $`\mathrm{QMod}_S(R)`$ | 関数と原式の充足から定義する量・Lawモデル | [5.1](part_2/chapter_5_quantities_and_law_geometry.md#51-固定構造上の量モデル) |
+| $`Q_S`$、$`A_S`$、$`\rho_\ell`$、$`I_S`$ | 量座標の自由加群、多項式環、普遍残差、残差生成イデアル | [5.2](part_2/chapter_5_quantities_and_law_geometry.md#52-普遍量残差生成イデアル) |
+| $`X_S`$、$`M_S`$ | 量のambientとLawful locus | [5.2–5.3](part_2/chapter_5_quantities_and_law_geometry.md#53-表現と通常のaffine幾何の回復) |
+| $`\phi_h`$、$`M(h)`$、$`Z_h`$ | 構造射に沿う座標環射、量モデルの引戻し、量の一致の対応空間 | [5.4](part_2/chapter_5_quantities_and_law_geometry.md#54-構造射と量の引戻し) |
+| $`E_F`$、$`E=\mathop{\mathrm{colim}}_F E_F`$ | 有限単項式supportごとの拡張と全拡張の関手 | [5.5](part_2/chapter_5_quantities_and_law_geometry.md#55-residualの係数拡張) |
+| $`\mathcal M`$、$`\mathrm{Real}_{\boldsymbol n}`$ | 実現の同型groupoidの族、有限局所自由の階数別の族 | [6.1](part_2/chapter_6_families_and_moduli.md#61-係数実現の族と同型) |
+| $`E_s`$、$`\pi_s`$、$`\mathrm{Mark}_{\boldsymbol m,\boldsymbol n}`$ | 加群層、名前付き生成元からの全射、生成元付き実現の同型類 | [6.2](part_2/chapter_6_families_and_moduli.md#62-生成元と基底chart) |
+| $`U_I`$、$`M_{\boldsymbol m,\boldsymbol n}`$ | 選択生成元が基底となるchartと、その接着scheme | [6.2–6.3](part_2/chapter_6_families_and_moduli.md#63-chartの接着と普遍実現) |
+| $`X_{\boldsymbol n}`$、$`G_{\boldsymbol n}`$、$`P_E`$ | 基底付きの演算係数scheme、基底変更群、frame torsor | [6.4](part_2/chapter_6_families_and_moduli.md#64-frame自己同型商stack) |
+| $`\mathcal B_\sigma`$、$`Q`$、$`I`$、$`\mathcal L`$ | 構造のstack、量の型を表す加群、普遍Law ideal、量・Lawモデルの相対Spec | [6.5](part_2/chapter_6_families_and_moduli.md#65-相対specと表示の成立条件) |
 
 合成は $`(g\circ f)(x)=g(f(x))`$ の順で書く。
 $`u:\mathbb T\to\mathbb T'`$ のモデル引戻しは
@@ -40,7 +56,7 @@ $`\Gamma`$ は変数文脈、$`U,V,W`$ は宣言文脈を表す。
 幾何の節で用いる $`\Gamma(\Omega,\mathcal O)`$ は、開集合 $`\Omega`$ 上の切断の集合である。
 基準viewによる積表示 $`\theta_L`$ は、term代入 $`\theta`$ と添字・定義域によって区別する。
 
-後続で係数を指定する際には、基礎環を $`k`$、$`k`$ 代数を $`R`$、
-係数的実現方式を $`\sigma`$、診断係数を $`\Lambda`$ と書く。
+係数を指定する際には、基礎環を $`k`$、$`k`$ 代数を $`R`$、
+係数的実現方式を $`\sigma`$ と書く。後続の診断係数は $`\Lambda`$ とする。
 原始表示 $`\mathcal P`$、固定部分 $`K_{\mathrm{fix}}`$、評価対象 $`E`$ は別の記号とする。
 一つのモデルの状態、モデルを動かすパラメータ、モデル間の変更は、それぞれの担体で扱う。

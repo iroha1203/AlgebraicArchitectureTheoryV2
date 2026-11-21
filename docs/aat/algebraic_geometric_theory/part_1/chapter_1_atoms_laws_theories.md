@@ -223,7 +223,7 @@ $`J_\ell^A:=I_\ell^A\cap\mathrm{Dom}_A(t)\cap\mathrm{Dom}_A(t')`$ を定める�
 とする。$`J_\ell^A`$ 上で等式の充足は残差の零性と同値である。
 Law全体の成立 $`A\models\ell`$ は、$`J_\ell^A=I_\ell^A`$ であり、
 全 $`\gamma\in J_\ell^A`$ で $`\rho_{\ell,A}(\gamma)=0`$ となることと同値である。
-環演算と有限termから多項式を得る構成は、[第5章](../README.md#第ii部-実現の族とlawの幾何)に接続する。
+環演算と有限termから多項式を得る構成は、[第5章](../part_2/chapter_5_quantities_and_law_geometry.md)に接続する。
 
 **例1.6（同じ言語で書かれるLaw）.**
 
