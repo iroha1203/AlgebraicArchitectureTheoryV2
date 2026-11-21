@@ -107,6 +107,9 @@ pub enum ValidationError {
     ConclusionInjectionRejected {
         field: String,
     },
+    ConversionError {
+        detail: String,
+    },
 }
 
 impl fmt::Display for ValidationError {
@@ -241,6 +244,9 @@ impl fmt::Display for ValidationError {
             }
             ValidationError::ConclusionInjectionRejected { field } => {
                 write!(f, "conclusion injection field `{field}` is forbidden")
+            }
+            ValidationError::ConversionError { detail } => {
+                write!(f, "input conversion error: {detail}")
             }
         }
     }
@@ -541,70 +547,50 @@ pub(crate) fn validate_poly_expr(
     allowed_params: &BTreeSet<String>,
     context: &str,
 ) -> Result<(), ValidationError> {
-    match expr {
-        PolyExpr::Const(lit) => validate_scalar_lit(lit, expected, context),
-        PolyExpr::StateVar(v) => {
-            if !allowed_states.contains(v) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "state coordinate",
-                    name: v.clone(),
-                    context: context.to_owned(),
-                });
+    let mut stack = vec![expr];
+    while let Some(node) = stack.pop() {
+        match node {
+            PolyExpr::Const(lit) => validate_scalar_lit(lit, expected, context)?,
+            PolyExpr::StateVar(v) => {
+                if !allowed_states.contains(v) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "state coordinate",
+                        name: v.clone(),
+                        context: context.to_owned(),
+                    });
+                }
             }
-            Ok(())
-        }
-        PolyExpr::ArgVar(v) => {
-            if !allowed_args.contains(v) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "operation argument",
-                    name: v.clone(),
-                    context: context.to_owned(),
-                });
+            PolyExpr::ArgVar(v) => {
+                if !allowed_args.contains(v) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "operation argument",
+                        name: v.clone(),
+                        context: context.to_owned(),
+                    });
+                }
             }
-            Ok(())
-        }
-        PolyExpr::ParamVar(v) => {
-            require_non_empty(v, context)?;
-            if !allowed_params.contains(v) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "parameter",
-                    name: v.clone(),
-                    context: context.to_owned(),
-                });
+            PolyExpr::ParamVar(v) => {
+                require_non_empty(v, context)?;
+                if !allowed_params.contains(v) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "parameter",
+                        name: v.clone(),
+                        context: context.to_owned(),
+                    });
+                }
             }
-            Ok(())
-        }
-        PolyExpr::Unobserved { slot, origin } => {
-            require_non_empty(slot, context)?;
-            validate_opt_source_ref(origin.as_ref(), context)
-        }
-        PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => validate_poly_expr(
-            e,
-            expected,
-            allowed_states,
-            allowed_args,
-            allowed_params,
-            context,
-        ),
-        PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
-            validate_poly_expr(
-                a,
-                expected,
-                allowed_states,
-                allowed_args,
-                allowed_params,
-                context,
-            )?;
-            validate_poly_expr(
-                b,
-                expected,
-                allowed_states,
-                allowed_args,
-                allowed_params,
-                context,
-            )
+            PolyExpr::Unobserved { slot, origin } => {
+                require_non_empty(slot, context)?;
+                validate_opt_source_ref(origin.as_ref(), context)?;
+            }
+            PolyExpr::Neg(e) | PolyExpr::Pow(e, _) => stack.push(e),
+            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+                stack.push(b);
+                stack.push(a);
+            }
         }
     }
+    Ok(())
 }
 
 /// 単一の `Presentation` を検証する。

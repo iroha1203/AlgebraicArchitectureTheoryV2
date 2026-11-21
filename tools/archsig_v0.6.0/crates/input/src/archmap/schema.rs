@@ -529,7 +529,7 @@ fn read_document_inner<'a, E: InputError>(
             v,
             &p,
             &["id", "mode", "method", "locations"],
-            &["note"],
+            &["note", "kind"],
             control,
         )?;
         let id = o.id("id")?;
@@ -563,6 +563,22 @@ fn read_document_inner<'a, E: InputError>(
             Some((v, np)) => Some(as_string(v, &np)?),
             None => None,
         };
+        let kind = match o.get("kind")? {
+            Some((v, kp)) => {
+                let raw = as_string(v, &kp)?;
+                match OriginKind::from_wire(&raw) {
+                    Some(k) => Some(k),
+                    None => {
+                        return Err((syntax(
+                            &kp,
+                            "kind must be static_analysis, runtime_observation, llm_candidate, or human_adopted",
+                        ))
+                        .into());
+                    }
+                }
+            }
+            None => None,
+        };
         let (locs, lptr) = o.array("locations")?;
         let mut locations = Vec::new();
         for (j, l) in locs.iter().enumerate() {
@@ -591,6 +607,7 @@ fn read_document_inner<'a, E: InputError>(
                 id,
                 mode,
                 method,
+                kind,
                 locations,
                 note,
             },

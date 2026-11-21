@@ -436,7 +436,7 @@ impl<E: InputError> Checker<'_, E> {
         Ok(())
     }
 
-    fn check_reading_cycles(&mut self) -> CResult<(), E> {
+    pub(super) fn check_reading_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         let mut first_spans = BTreeMap::new();
         for (a, b, span) in &self.reading_edges {

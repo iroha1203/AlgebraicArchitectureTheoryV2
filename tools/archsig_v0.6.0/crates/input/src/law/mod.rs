@@ -10,6 +10,7 @@ pub mod lexer;
 mod metadata;
 pub mod model;
 pub mod parser;
+pub mod shigure;
 
 use crate::definition::CheckedDefinitions;
 use archsig_common::canonical::{Json, sha256_digest};
@@ -56,6 +57,7 @@ pub const SEMANTICS: &str = "archsig/0.6.0";
 ///     quantifier_types: vec![], infos: vec![],
 ///     program: Default::default(), resolved_names: Default::default(),
 ///     definitions: archsig_input::definition::check_definitions(&[]).unwrap(),
+///     shigure: Default::default(),
 /// };
 /// ```
 #[derive(Debug)]
@@ -73,6 +75,7 @@ pub struct CheckedLaw {
     pub(crate) quantifier_types: Vec<Option<Type>>,
     pub(crate) infos: Vec<DeclarationInfo>,
     pub(crate) definitions: CheckedDefinitions,
+    pub(crate) shigure: shigure::CheckedShigureDecls,
 }
 
 /// 検査した観測 Term の本体。
@@ -126,6 +129,9 @@ impl CheckedLaw {
     }
     pub fn definitions(&self) -> &CheckedDefinitions {
         &self.definitions
+    }
+    pub fn shigure(&self) -> &shigure::CheckedShigureDecls {
+        &self.shigure
     }
     pub fn expr_type(&self, id: ExprId) -> Option<&Type> {
         self.program.nodes.get(id).and_then(|expr| expr.ty.as_ref())
@@ -438,6 +444,9 @@ fn check_law_processing<E: InputError>(
     })();
     E::finish(result, control, Checkpoint::LawSemantics)
         .map_err(|i| fail(i, Some(digest.clone())))?;
+    let shigure_result = shigure::check::check_shigure_decls(&mut checker, control);
+    let shigure = E::finish(shigure_result, control, Checkpoint::LawSemantics)
+        .map_err(|i| fail(i, Some(digest.clone())))?;
     let infos = checker
         .declaration_infos()
         .map_err(|i| fail(i, Some(digest.clone())))?;
@@ -486,6 +495,7 @@ fn check_law_processing<E: InputError>(
         quantifier_types: std::mem::take(&mut checker.quantifier_types),
         infos,
         definitions: definitions.clone(),
+        shigure,
     })
 }
 

@@ -375,6 +375,7 @@ pub struct Reading {
     pub uses: Vec<Use>,
     pub vocabularies: Vec<VocabularyUse>,
     pub decls: Vec<Decl>,
+    pub shigure_decls: Vec<super::shigure::ShigureDeclAst>,
     pub span: Span,
 }
 
