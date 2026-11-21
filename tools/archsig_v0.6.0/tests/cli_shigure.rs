@@ -475,10 +475,14 @@ fn shigure_ac4_interaction_analysis_via_cli() {
     );
     let open_sum = parse(r_open.stdout.as_bytes()).unwrap();
     assert_eq!(s(get(&open_sum, "status")), "partial");
-    let sh = get(
-        get(&arr(get(&open_sum, "answers"))[0], "outputs"),
-        "shigure",
+    let open_ans = &arr(get(&open_sum, "answers"))[0];
+    let open_reasons = arr(get(open_ans, "reasons"));
+    assert_eq!(open_reasons.len(), 1);
+    assert!(
+        !has_key(&open_reasons[0], "dependencies"),
+        "archsig.summary/1 reasons must omit `dependencies`"
     );
+    let sh = get(get(open_ans, "outputs"), "shigure");
     assert_eq!(s(get(sh, "verdict")), "undetermined");
     assert_eq!(
         s(get(get(sh, "silence_reason"), "code")),
@@ -879,4 +883,75 @@ fn shigure_ac5b_silence_provenance_and_cli_guards() {
         r_bad_snap_before_io.stderr
     );
     assert!(r_bad_snap_before_io.stdout.is_empty());
+
+    // cross-reading SHIGURE タスクは参照先の reading も SavedAnswer.scope.readings へ収集する
+    let cross_law = dir.join("cross_reading.law");
+    std::fs::write(
+        &cross_law,
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading BaseSpec {
+  use vocabulary LedgerVocab version "1" digest "sha256:cb35ebe9d9af7271972225abdcd0993b4ae6051104a331f094dd45cea9f4daae";
+  shigure presentation Before {
+    domain Q;
+    sort D;
+    phase Active { coord x: D; }
+    op step(u: D): Active -> Active { x = x + u; }
+    obs read on Active = (x);
+  }
+}
+reading ConsumerTask {
+  use BaseSpec as B;
+  shigure presentation After {
+    domain Q;
+    sort D;
+    phase Active { coord x: D; }
+    op step(u: D): Active -> Active { x = x + k * u; }
+    obs read on Active = (x);
+  }
+  shigure comparison Cmp {
+    before B.Before;
+    after After;
+    state_map Active -> Active { x = x; }
+    translate step -> [step(u)];
+  }
+  shigure change_spec Spec {
+    domain Q;
+    param k: Q;
+    editable operation After.step;
+  }
+  shigure task CrossCheck {
+    comparison Cmp;
+    change_spec Spec;
+  }
+}
+"#,
+    )
+    .unwrap();
+    let r_cross = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            def.to_str().unwrap(),
+            "--law",
+            cross_law.to_str().unwrap(),
+            "--archmap",
+            map.to_str().unwrap(),
+            "--ask",
+            "c=shigure_solve(ConsumerTask.CrossCheck)",
+            "--out",
+            "cross_out",
+        ],
+    );
+    assert_eq!(
+        r_cross.code, 0,
+        "stdout={}\nstderr={}",
+        r_cross.stdout, r_cross.stderr
+    );
+    let cross_saved = parse(&std::fs::read(dir.join("cross_out/result.json")).unwrap()).unwrap();
+    let cross_readings = str_list(get(
+        get(&arr(get(&cross_saved, "answers"))[0], "scope"),
+        "readings",
+    ));
+    assert_eq!(cross_readings, vec!["BaseSpec", "ConsumerTask"]);
 }

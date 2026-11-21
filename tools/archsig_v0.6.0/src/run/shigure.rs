@@ -600,8 +600,17 @@ fn deliver_shigure(
             .filter(|m| mode_set.contains(m))
             .map(Json::str)
             .collect();
+        let scope_readings = collect_scope_readings(
+            checked.law().shigure(),
+            &req.resolved_task_name,
+            &req.reading_name,
+            outcome_opt.as_ref(),
+        );
         let scope = Json::obj([
-            ("readings", Json::Arr(vec![Json::str(&req.reading_name)])),
+            (
+                "readings",
+                Json::Arr(scope_readings.into_iter().map(Json::str).collect()),
+            ),
             ("snapshots", Json::Arr(req_snapshots)),
             ("modes", Json::Arr(modes)),
             ("domain", Json::str("shigure_presentation")),
@@ -629,7 +638,10 @@ fn deliver_shigure(
                 ),
             ]);
             if !answer_reasons.is_empty() {
-                summary_answer.insert("reasons".into(), Json::Arr(answer_reasons.clone()));
+                summary_answer.insert(
+                    "reasons".into(),
+                    Json::Arr(answer_reasons.iter().map(summary_issue).collect()),
+                );
             }
             summary_answers.push(Json::Obj(summary_answer));
 
@@ -664,7 +676,10 @@ fn deliver_shigure(
                 ("outputs".into(), Json::Obj(JsonObject::new())),
             ]);
             if !cancel_reasons.is_empty() {
-                summary_answer.insert("reasons".into(), Json::Arr(cancel_reasons.clone()));
+                summary_answer.insert(
+                    "reasons".into(),
+                    Json::Arr(cancel_reasons.iter().map(summary_issue).collect()),
+                );
             }
             summary_answers.push(Json::Obj(summary_answer));
 
@@ -685,7 +700,10 @@ fn deliver_shigure(
         ("answers".into(), Json::Arr(summary_answers)),
     ]);
     if !top_issues.is_empty() {
-        summary_fields.insert("issues".into(), Json::Arr(top_issues.clone()));
+        summary_fields.insert(
+            "issues".into(),
+            Json::Arr(top_issues.iter().map(summary_issue).collect()),
+        );
     }
     if !warnings.is_empty() {
         summary_fields.insert("warnings".into(), Json::Arr(warnings.clone()));
@@ -771,6 +789,53 @@ fn deliver_shigure(
     )
 }
 
+/// `archsig.summary/1` の理由・通知から `dependencies` を除く（実行仕様 §5）。
+fn summary_issue(issue: &Json) -> Json {
+    let Json::Obj(fields) = issue else {
+        return issue.clone();
+    };
+    Json::Obj(
+        fields
+            .iter()
+            .filter(|(k, _)| k.as_str() != "dependencies")
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
+    )
+}
+
+/// cross-reading タスクを含め、計算に関与した全 reading 名を収集する。
+fn collect_scope_readings(
+    decls: &archsig_input::law::shigure::CheckedShigureDecls,
+    task_name: &str,
+    task_reading: &str,
+    outcome: Option<&ShigureOutcome>,
+) -> Vec<String> {
+    let mut readings = BTreeSet::from([task_reading.to_owned()]);
+    let mut push_decl = |qname: &str| {
+        if let Some((r, _)) = qname.split_once('.') {
+            readings.insert(r.to_owned());
+        }
+    };
+    if let Some(out) = outcome {
+        for origin_ref in &out.provenance.origins {
+            if let Some(decl) = &origin_ref.law_declaration {
+                push_decl(decl);
+            }
+        }
+    } else if let Some(task) = decls.tasks.get(task_name) {
+        push_decl(&task.comparison);
+        push_decl(&task.change_spec);
+        if let Some(ec) = &task.eval_condition {
+            push_decl(ec);
+        }
+        if let Some(cmp) = decls.comparisons.get(&task.comparison) {
+            push_decl(&cmp.before);
+            push_decl(&cmp.after);
+        }
+    }
+    readings.into_iter().collect()
+}
+
 fn usage_issue(request_id: Option<&str>, message: &str) -> Json {
     let mut obj = JsonObject::from([
         ("code".into(), Json::str("usage")),
@@ -851,97 +916,5 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::run::{CheckArgs, FileIo};
-    use std::path::PathBuf;
-    use std::sync::Arc;
-    use std::sync::atomic::AtomicI32;
-
-    struct NoFreezeSignals;
-    impl Signals for NoFreezeSignals {
-        fn freeze(&mut self) -> Option<archsig_input::result::Signal> {
-            None
-        }
-    }
-
-    #[test]
-    fn deliver_shigure_records_cancelled_issue_when_signal_arrives_during_final_task() {
-        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/shigure-ledger");
-        let defs = vec![std::fs::read(dir.join("ledger.atoms.json")).unwrap()];
-        let law = std::fs::read(dir.join("ledger.law")).unwrap();
-        let map = std::fs::read(dir.join("ledger.archmap.json")).unwrap();
-        let checked = check_inputs(
-            InputSources::from_bytes(defs, law, map),
-            &Control::unlimited(),
-        )
-        .unwrap();
-        let task = ShigureConverter::for_task("LedgerMigration.P1AtomicMarked")
-            .convert(&checked)
-            .unwrap();
-        let outcome = execute_shigure_task(&task, ShigureQueryKind::ConditionalSolutionSpace);
-
-        // 最終タスク実行中に SIGINT が到着した状態（interrupted_reason=None, control.stop_reason()=Some(Int)）
-        let flag = Arc::new(AtomicI32::new(2));
-        let control = Control::from_signal_flag(flag, 2, 15);
-        assert_eq!(
-            control.stop_reason(),
-            Some(archsig_input::result::Signal::Int)
-        );
-
-        let req = ResolvedShigureRequest {
-            parsed: ParsedShigureRequest {
-                id: "p1m".into(),
-                text: "p1m=shigure_solve(LedgerMigration.P1AtomicMarked)".into(),
-                query_kind: ShigureQueryKind::ConditionalSolutionSpace,
-                task_name: "LedgerMigration.P1AtomicMarked".into(),
-                snapshot: None,
-            },
-            resolved_task_name: "LedgerMigration.P1AtomicMarked".into(),
-            reading_name: "LedgerMigration".into(),
-            task,
-        };
-        let args = RunArgs {
-            inputs: CheckArgs {
-                atom_definitions: vec![],
-                law: PathBuf::new(),
-                archmap: None,
-                out: None,
-            },
-            asks: vec![req.parsed.text.clone()],
-            reuse: None,
-        };
-        let mut io = FileIo;
-        let mut sigs = NoFreezeSignals;
-        let delivered = deliver_shigure(
-            &mut io,
-            &mut sigs,
-            &args,
-            &checked,
-            vec![(req, Some(outcome))],
-            vec![],
-            None,
-            &control,
-        );
-        assert_eq!(delivered.status, Status::Interrupted);
-        assert_eq!(delivered.exit_code, 130);
-        assert_eq!(
-            delivered.issues.len(),
-            1,
-            "interrupted outcome must carry non-empty cancelled issue"
-        );
-        assert_eq!(
-            delivered.issues[0],
-            archsig_input::result::Signal::Int.issue()
-        );
-        let summary = delivered.summary.expect("completed answer summary kept");
-        let Json::Obj(fields) = &summary else {
-            panic!("summary must be object");
-        };
-        let Json::Arr(summary_issues) = fields.get("issues").expect("summary must include issues")
-        else {
-            panic!("summary issues must be array");
-        };
-        assert_eq!(summary_issues.len(), 1);
-    }
-}
+#[path = "shigure_tests.rs"]
+mod tests;
