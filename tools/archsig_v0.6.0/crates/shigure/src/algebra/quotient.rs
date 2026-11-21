@@ -348,6 +348,11 @@ fn pseudo_reduce_state_poly(
                 let scaled = state_poly_scale(&cur, lc_g);
                 let next = state_poly_sub_mul(&scaled, g, &shift, &lc_cur, param_count);
                 cur = reduce_state_poly(&next, param_gb)?;
+                // 不変条件 `u * target ≡ cur + rem (mod basis)` を保つため、
+                // `cur` を `lc_g` 倍したときは退避済みの `rem` も同じ単元 `lc_g` 倍する。
+                if !rem.is_empty() {
+                    rem = reduce_state_poly(&state_poly_scale(&rem, lc_g), param_gb)?;
+                }
                 divided = true;
                 break;
             }

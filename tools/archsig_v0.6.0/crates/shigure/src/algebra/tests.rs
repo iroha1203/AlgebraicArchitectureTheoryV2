@@ -569,3 +569,171 @@ fn edge_cases_empty_constant_ideals_multigen_quotient_and_negative_smith() {
         AffineSolutionZ::Inconsistent { verified: true, .. }
     ));
 }
+
+#[test]
+fn quotient_pseudo_reduction_scales_remainder_on_spoly_regression() {
+    // Regression for F1: Q[a][x, y, z], J = (x - y - z, x, a*z - 1).
+    let comb = VarOrder::new(vec!["x".into(), "y".into(), "z".into(), "a".into()]).unwrap();
+    let pvars = VarOrder::new(vec!["a".into()]).unwrap();
+    let x = PolyExpr::state("x");
+    let y = PolyExpr::state("y");
+    let z = PolyExpr::state("z");
+    let a = PolyExpr::param("a");
+
+    let g0 = poly_q(&(x.clone() - y.clone() - z.clone()), &comb);
+    let g1 = poly_q(&x, &comb);
+    let g2 = poly_q(&(a.clone() * z - q_lit(1)), &comb);
+    let ideal = [g0, g1, g2];
+    let pa = poly_q(&a, &pvars);
+    let pa_minus_1 = poly_q(&(a.clone() - q_lit(1)), &pvars);
+
+    // 1. False-negative check: a*y + 1 = a*x - a*(x - y - z) - (a*z - 1) belongs to J for ALL a.
+    // On D(a), equations must be empty (no spurious a - 1 = 0).
+    let member_target = poly_q(&(a * y.clone() + q_lit(1)), &comb);
+    let strata_mem = quotient_membership_locus(&member_target, &ideal, 3, &pvars).unwrap();
+    assert!(
+        strata_mem
+            .iter()
+            .any(|s| s.equations.is_empty() && s.invertibles == vec![pa.clone()]),
+        "a*y + 1 must hold on all of D(a), got {strata_mem:?}"
+    );
+
+    // 2. False-positive check: y + 1 is NOT in J for a != 0, 1 (at a = 2, y = -1/2 => y + 1 = 1/2).
+    // Exact locus on D(a) is V(a - 1) ∩ D(a).
+    let non_member_target = poly_q(&(y + q_lit(1)), &comb);
+    let strata_non = quotient_membership_locus(&non_member_target, &ideal, 3, &pvars).unwrap();
+    assert!(
+        !strata_non
+            .iter()
+            .any(|s| s.equations.is_empty() && s.invertibles == vec![pa.clone()]),
+        "y + 1 must NOT hold on all of D(a), got {strata_non:?}"
+    );
+    assert!(
+        strata_non
+            .iter()
+            .any(|s| s.equations == vec![pa_minus_1.clone()] && s.invertibles == vec![pa.clone()]),
+        "y + 1 on D(a) must restrict to V(a - 1) ∩ D(a), got {strata_non:?}"
+    );
+}
+
+#[test]
+fn rat_ord_smith_rank2_groebner_limit_fp_and_arity_guards() {
+    // Rat mathematical ordering (F4).
+    assert!(rat(1, 3) < rat(1, 2));
+    assert!(rat(3, 10) < rat(1, 2));
+    assert!(rat(-1, 2) < rat(-2, 5));
+    assert_eq!(rat(2, 4).cmp(&rat(1, 2)), std::cmp::Ordering::Equal);
+
+    // Smith rank-2 divisibility trigger: diag(2, 3) -> Smith diagonals [1, 6] (F7).
+    let mat2 = vec![
+        vec![BigInt::from(2), BigInt::from(0)],
+        vec![BigInt::from(0), BigInt::from(3)],
+    ];
+    match solve_affine_z(&mat2, &[BigInt::from(4), BigInt::from(9)], 2).unwrap() {
+        AffineSolutionZ::Consistent {
+            particular,
+            smith_diagonals,
+            verified,
+            ..
+        } => {
+            assert!(verified);
+            assert_eq!(smith_diagonals, vec![BigInt::from(1), BigInt::from(6)]);
+            assert_eq!(particular, vec![BigInt::from(2), BigInt::from(3)]);
+        }
+        other => panic!("expected rank-2 consistent Smith solution, got {other:?}"),
+    }
+
+    // Groebner pair limit fails closed with OutOfScope (F7).
+    let v3 = VarOrder::new(vec!["x".into(), "y".into(), "z".into()]).unwrap();
+    let f0 = poly_q(
+        &(PolyExpr::pow(PolyExpr::param("x"), 2) - PolyExpr::param("y")),
+        &v3,
+    );
+    let f1 = poly_q(
+        &(PolyExpr::pow(PolyExpr::param("x"), 3) - PolyExpr::param("z")),
+        &v3,
+    );
+    assert!(matches!(
+        GroebnerBasis::compute_with_limit(&[f0, f1], v3.clone(), MonomialOrder::Grevlex, 0),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+
+    // FpElem & solve_fp_enumeration edge cases (F2, F7): modulus 0/1/composite, arity/modulus mismatch, num_vars == 0.
+    for bad in [0u32, 1, 9] {
+        let m = BigUint::from(bad);
+        assert!(FpElem::new(BigInt::from(0), m.clone()).is_none());
+        assert!(matches!(
+            solve_fp_enumeration(&[], &[], 1, &m, 16),
+            Err(SilenceReason::UnsupportedCoeffRing { .. })
+        ));
+    }
+    let p3 = BigUint::from(3u32);
+    let p5 = BigUint::from(5u32);
+    let poly_2vars_p3 = Poly::var(2, 0, FpElem::zero(p3.clone()).unwrap());
+    assert!(matches!(
+        solve_fp_enumeration(std::slice::from_ref(&poly_2vars_p3), &[], 1, &p3, 16),
+        Err(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+    assert!(matches!(
+        solve_fp_enumeration(std::slice::from_ref(&poly_2vars_p3), &[], 2, &p5, 100),
+        Err(SilenceReason::UnsupportedCoeffRing { .. })
+    ));
+    // num_vars == 0 with max_points == 0 fails closed; with huge prime M61 succeeds without OOM.
+    assert!(matches!(
+        solve_fp_enumeration(&[], &[], 0, &p3, 0),
+        Err(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+    let m61 = (BigUint::from(1u32) << 61u32) - BigUint::from(1u32);
+    let zero_var_res = solve_fp_enumeration(&[], &[], 0, &m61, 1).unwrap();
+    assert_eq!(zero_var_res.total_domain_size, 1);
+    assert_eq!(zero_var_res.solutions, vec![vec![]]);
+
+    // solve_polynomial_system_q arity mismatch & non-integer affine over IntegerPoints (F3).
+    let vars1 = VarOrder::new(vec!["x".into()]).unwrap();
+    let poly2 = Poly::var(2, 1, Rat::zero());
+    assert!(matches!(
+        solve_polynomial_system_q(
+            std::slice::from_ref(&poly2),
+            &[],
+            &vars1,
+            &PointDomain::RationalPoints,
+        ),
+        SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+    let half_x = poly_q(
+        &(PolyExpr::rat(1, 2).unwrap() * PolyExpr::param("x") - q_lit(1)),
+        &vars1,
+    );
+    assert!(matches!(
+        solve_polynomial_system_q(&[half_x], &[], &vars1, &PointDomain::IntegerPoints),
+        SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
+            ref condition,
+            ..
+        }) if condition == "integer_coefficients_required"
+    ));
+
+    // Multi-generator overlapping supports & analyze_interaction_on_face arity check (F5, F7).
+    let p_xy_xyz = poly_q(
+        &(PolyExpr::param("x") * PolyExpr::param("y")
+            + PolyExpr::param("x") * PolyExpr::param("y") * PolyExpr::param("z")),
+        &v3,
+    );
+    let p_yz = poly_q(&(PolyExpr::param("y") * PolyExpr::param("z")), &v3);
+    let multi_sum = analyze_coordinate_interaction(&[p_xy_xyz, p_yz], &v3).unwrap();
+    assert_eq!(multi_sum.min_interacting_variables, Some(2));
+    assert_eq!(multi_sum.max_vanishing_subset_size, Some(1));
+    assert_eq!(
+        multi_sum.minimal_failing_subsets,
+        vec![
+            vec!["x".to_owned(), "y".to_owned()],
+            vec!["y".to_owned(), "z".to_owned()],
+        ]
+    );
+    assert!(matches!(
+        analyze_interaction_on_face(&[poly2], &v3, &BTreeMap::new()),
+        Err(AlgebraError::ArityMismatch {
+            expected: 3,
+            actual: 2,
+        })
+    ));
+}

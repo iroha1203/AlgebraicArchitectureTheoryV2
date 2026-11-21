@@ -88,6 +88,14 @@ pub fn analyze_interaction_on_face<C: RingCoeff>(
     vars: &VarOrder,
     fixed_values: &BTreeMap<String, C>,
 ) -> Result<InteractionSummary, AlgebraError> {
+    for poly in residuals {
+        if poly.num_vars() != vars.len() {
+            return Err(AlgebraError::ArityMismatch {
+                expected: vars.len(),
+                actual: poly.num_vars(),
+            });
+        }
+    }
     let mut fixed_by_idx = BTreeMap::new();
     let mut remaining_names = Vec::new();
     for (idx, name) in vars.vars().iter().enumerate() {

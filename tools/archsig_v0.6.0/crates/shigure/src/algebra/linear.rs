@@ -549,6 +549,73 @@ pub fn solve_fp_enumeration(
             detail: format!("modulus `{modulus}` is not prime"),
         });
     }
+    for poly in equations.iter().chain(invertibles) {
+        if poly.num_vars() != num_vars {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "finite_field_variable_arity".to_owned(),
+                detail: format!(
+                    "polynomial has {} variables, expected {num_vars}",
+                    poly.num_vars()
+                ),
+            });
+        }
+        if poly.zero_coeff().modulus() != modulus {
+            return Err(SilenceReason::UnsupportedCoeffRing {
+                domain: crate::ir::term::CoeffDomain::Fp(poly.zero_coeff().modulus().clone()),
+                detail: format!(
+                    "polynomial modulus `{}` does not match target modulus `{modulus}`",
+                    poly.zero_coeff().modulus()
+                ),
+            });
+        }
+    }
+
+    if num_vars == 0 {
+        if max_points == 0 {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "finite_field_enumeration_size".to_owned(),
+                detail: "domain size 1 exceeds bound (0)".to_owned(),
+            });
+        }
+        let mut eq_ok = true;
+        for eq in equations {
+            let val = eq
+                .eval_at(&[])
+                .map_err(|e| SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "finite_field_evaluation".to_owned(),
+                    detail: e.to_string(),
+                })?;
+            if !val.is_zero() {
+                eq_ok = false;
+                break;
+            }
+        }
+        let mut inv_ok = true;
+        if eq_ok {
+            for inv in invertibles {
+                let val =
+                    inv.eval_at(&[])
+                        .map_err(|e| SilenceReason::ApplicabilityConditionNotMet {
+                            condition: "finite_field_evaluation".to_owned(),
+                            detail: e.to_string(),
+                        })?;
+                if val.is_zero() {
+                    inv_ok = false;
+                    break;
+                }
+            }
+        }
+        return Ok(FpEnumerationResult {
+            modulus: modulus.clone(),
+            total_domain_size: 1,
+            solutions: if eq_ok && inv_ok {
+                vec![vec![]]
+            } else {
+                vec![]
+            },
+        });
+    }
+
     let Some(p_usize) = modulus.to_usize() else {
         return Err(SilenceReason::ApplicabilityConditionNotMet {
             condition: "finite_field_enumeration_size".to_owned(),
@@ -556,6 +623,12 @@ pub fn solve_fp_enumeration(
         });
     };
     let mut total = 1usize;
+    if total > max_points {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "finite_field_enumeration_size".to_owned(),
+            detail: format!("domain size exceeds bound ({max_points})"),
+        });
+    }
     for _ in 0..num_vars {
         let Some(next) = total.checked_mul(p_usize) else {
             return Err(SilenceReason::ApplicabilityConditionNotMet {
@@ -582,15 +655,35 @@ pub fn solve_fp_enumeration(
             *slot = field_elems[idx % p_usize].clone();
             idx /= p_usize;
         }
-        let eq_ok = equations
-            .iter()
-            .all(|eq| eq.eval_at(&current).is_ok_and(|val| val.is_zero()));
+        let mut eq_ok = true;
+        for eq in equations {
+            let val =
+                eq.eval_at(&current)
+                    .map_err(|e| SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "finite_field_evaluation".to_owned(),
+                        detail: e.to_string(),
+                    })?;
+            if !val.is_zero() {
+                eq_ok = false;
+                break;
+            }
+        }
         if !eq_ok {
             continue;
         }
-        let inv_ok = invertibles
-            .iter()
-            .all(|inv| inv.eval_at(&current).is_ok_and(|val| !val.is_zero()));
+        let mut inv_ok = true;
+        for inv in invertibles {
+            let val =
+                inv.eval_at(&current)
+                    .map_err(|e| SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "finite_field_evaluation".to_owned(),
+                        detail: e.to_string(),
+                    })?;
+            if val.is_zero() {
+                inv_ok = false;
+                break;
+            }
+        }
         if inv_ok {
             solutions.push(current.clone());
         }
@@ -610,13 +703,25 @@ pub fn solve_fp_enumeration(
 ///   非線形の場合はまず代数閉包空性（`1 in I`）を確認し、空なら `Empty`（Q 点も確実に不在）、
 ///   非空なら簡約基底が純 affine であれば `solve_affine_q`、なお非線形なら
 ///   `Undetermined(NonLinearRationalOrIntegerExistence)` を返す（例: `x^2 + 1 = 0`）。
-/// - `IntegerPoints`: 整数係数 affine なら `solve_affine_z`、非線形なら `Undetermined`。
+/// - `IntegerPoints`: 整数係数 affine なら `solve_affine_z`、非整数係数アフィンや非線形は理由付き `Undetermined`。
 pub fn solve_polynomial_system_q(
     equations: &[Poly<Rat>],
     invertibles: &[Poly<Rat>],
     vars: &VarOrder,
     point_domain: &PointDomain,
 ) -> SystemPointOutcome {
+    for poly in equations.iter().chain(invertibles) {
+        if poly.num_vars() != vars.len() {
+            return SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "polynomial_variable_arity".to_owned(),
+                detail: format!(
+                    "polynomial has {} variables, expected {}",
+                    poly.num_vars(),
+                    vars.len()
+                ),
+            });
+        }
+    }
     match point_domain {
         PointDomain::AlgebraicClosure => match rabinowitsch_solve(equations, invertibles, vars) {
             Ok(rab) if rab.is_empty_over_closure => SystemPointOutcome::Empty {
@@ -674,31 +779,42 @@ pub fn solve_polynomial_system_q(
             }
         }
         PointDomain::IntegerPoints => {
-            if invertibles.is_empty()
-                && equations.iter().all(Poly::is_affine)
-                && let Some((mat, rhs)) = extract_affine_z_from_q(equations, vars.len())
-            {
-                return match solve_affine_z(&mat, &rhs, vars.len()) {
-                    Ok(sol) => SystemPointOutcome::AffineZ(sol),
-                    Err(e) => SystemPointOutcome::Undetermined(
+            if invertibles.is_empty() && equations.iter().all(Poly::is_affine) {
+                return match extract_affine_z_from_q(equations, vars.len()) {
+                    Some((mat, rhs)) => match solve_affine_z(&mat, &rhs, vars.len()) {
+                        Ok(sol) => SystemPointOutcome::AffineZ(sol),
+                        Err(e) => SystemPointOutcome::Undetermined(
+                            SilenceReason::ApplicabilityConditionNotMet {
+                                condition: "integer_affine_solver".to_owned(),
+                                detail: e.to_string(),
+                            },
+                        ),
+                    },
+                    None => SystemPointOutcome::Undetermined(
                         SilenceReason::ApplicabilityConditionNotMet {
-                            condition: "integer_affine_solver".to_owned(),
-                            detail: e.to_string(),
+                            condition: "integer_coefficients_required".to_owned(),
+                            detail: "affine equation contains non-integer rational coefficients; integer Smith solver requires Z coefficients".to_owned(),
                         },
                     ),
                 };
             }
-            if let Ok(rab) = rabinowitsch_solve(equations, invertibles, vars)
-                && rab.is_empty_over_closure
-            {
-                return SystemPointOutcome::Empty {
+            match rabinowitsch_solve(equations, invertibles, vars) {
+                Ok(rab) if rab.is_empty_over_closure => SystemPointOutcome::Empty {
                     witness: rab.empty_witness,
-                };
+                },
+                Ok(_) => SystemPointOutcome::Undetermined(
+                    SilenceReason::NonLinearRationalOrIntegerExistence {
+                        point_domain: PointDomain::IntegerPoints,
+                        detail: "general nonlinear integer point existence is outside Smith normal form affine scope (G-141 D4–D6)".to_owned(),
+                    },
+                ),
+                Err(e) => {
+                    SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "groebner_computation".to_owned(),
+                        detail: e.to_string(),
+                    })
+                }
             }
-            SystemPointOutcome::Undetermined(SilenceReason::NonLinearRationalOrIntegerExistence {
-                point_domain: PointDomain::IntegerPoints,
-                detail: "general nonlinear integer point existence is outside Smith normal form affine scope (G-141 D4–D6)".to_owned(),
-            })
         }
         other => SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
             condition: "point_domain_dispatch".to_owned(),

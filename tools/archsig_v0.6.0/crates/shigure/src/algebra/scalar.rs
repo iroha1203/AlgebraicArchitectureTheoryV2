@@ -57,10 +57,23 @@ impl RingCoeff for BigInt {
 }
 
 /// 任意精度の既約有理数（不変条件: `den > 0`、`gcd(|num|, den) == 1`、`0` は `0/1`）。
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Rat {
     num: BigInt,
     den: BigInt,
+}
+
+impl Ord for Rat {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // 不変条件 `den > 0` より `a/b <=> c/d` は `a*d <=> c*b` と同値。
+        (&self.num * &other.den).cmp(&(&other.num * &self.den))
+    }
+}
+
+impl PartialOrd for Rat {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Rat {

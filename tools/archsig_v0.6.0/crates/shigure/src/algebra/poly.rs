@@ -149,15 +149,18 @@ impl Monomial {
             .collect()
     }
 
-    pub fn mul(&self, other: &Self) -> Self {
+    pub fn checked_mul(&self, other: &Self) -> Option<Self> {
         debug_assert_eq!(self.exps.len(), other.exps.len());
-        let exps = self
-            .exps
-            .iter()
-            .zip(&other.exps)
-            .map(|(&a, &b)| a.saturating_add(b))
-            .collect();
-        Self { exps }
+        let mut exps = Vec::with_capacity(self.exps.len());
+        for (&a, &b) in self.exps.iter().zip(&other.exps) {
+            exps.push(a.checked_add(b)?);
+        }
+        Some(Self { exps })
+    }
+
+    pub fn mul(&self, other: &Self) -> Self {
+        self.checked_mul(other)
+            .expect("monomial exponent addition overflowed u32")
     }
 
     pub fn divides(&self, target: &Self) -> bool {
@@ -407,7 +410,7 @@ impl<C: RingCoeff> Poly<C> {
         for (m, c) in &self.terms {
             let prod = c.mul_ref(scalar);
             if !prod.coeff_is_zero() {
-                out.terms.insert(m.mul(mono), prod);
+                out.add_term(m.mul(mono), prod);
             }
         }
         out
@@ -461,18 +464,7 @@ impl<C: RingCoeff> Poly<C> {
             let mut term_val = coeff.clone();
             for (idx, &e) in mono.exps().iter().enumerate() {
                 if e > 0 {
-                    let mut p = self.zero_coeff.one_like();
-                    let mut b = values[idx].clone();
-                    let mut k = e;
-                    while k > 0 {
-                        if k % 2 == 1 {
-                            p = p.mul_ref(&b);
-                        }
-                        k /= 2;
-                        if k > 0 {
-                            b = b.mul_ref(&b);
-                        }
-                    }
+                    let p = pow_coeff(&values[idx], e, self.zero_coeff.one_like());
                     term_val = term_val.mul_ref(&p);
                 }
             }
@@ -491,9 +483,8 @@ impl<C: RingCoeff> Poly<C> {
                 if idx < self.num_vars && new_exps[idx] > 0 {
                     let e = new_exps[idx];
                     new_exps[idx] = 0;
-                    for _ in 0..e {
-                        new_coeff = new_coeff.mul_ref(val);
-                    }
+                    let p = pow_coeff(val, e, self.zero_coeff.one_like());
+                    new_coeff = new_coeff.mul_ref(&p);
                 }
             }
             out.add_term(Monomial::from_exps(new_exps), new_coeff);
@@ -570,6 +561,21 @@ impl<C: RingCoeff> Poly<C> {
         }
         out
     }
+}
+
+fn pow_coeff<C: RingCoeff>(base: &C, mut exp: u32, one: C) -> C {
+    let mut acc = one;
+    let mut b = base.clone();
+    while exp > 0 {
+        if exp % 2 == 1 {
+            acc = acc.mul_ref(&b);
+        }
+        exp /= 2;
+        if exp > 0 {
+            b = b.mul_ref(&b);
+        }
+    }
+    acc
 }
 
 impl Poly<Rat> {
