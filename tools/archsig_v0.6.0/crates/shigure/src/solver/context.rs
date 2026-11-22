@@ -293,26 +293,6 @@ pub(crate) fn check_common_applicability(
         }
     }
 
-    for pres in [&task.pair().before, &task.pair().after] {
-        for op in &pres.operations {
-            if !op.domain_laws.is_empty() {
-                let detail = format!(
-                    "operation `{}` in `{}` declares domain_laws, which requires phase 2 path/transfer solver",
-                    op.name, pres.name
-                );
-                checks.push(ApplicabilityCheck::failed(
-                    "operation_domain_laws_unsupported_in_single_task",
-                    MathClause::G140G2,
-                    detail.clone(),
-                ));
-                return Err(SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "operation_domain_laws_unsupported_in_single_task".to_owned(),
-                    detail,
-                });
-            }
-        }
-    }
-
     Ok(())
 }
 
