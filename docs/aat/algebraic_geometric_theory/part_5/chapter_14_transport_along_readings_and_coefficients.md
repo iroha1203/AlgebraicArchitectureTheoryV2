@@ -540,10 +540,10 @@ $`M_S=S\otimes_RM`$ と書き、$`U_S,V_S,(U\cap V)_S`$ をそれぞれのテン
 ```math
 \frac{U_S\cap V_S}{(U\cap V)_S}
 \cong
-\operatorname{coker}\!\left(
-\operatorname{Tor}_1^R(S,M/U\oplus M/V)
+\mathop{\mathrm{coker}}\nolimits \!\left(
+\mathop{\mathrm{Tor}}\nolimits _1^R(S,M/U\oplus M/V)
 \longrightarrow
-\operatorname{Tor}_1^R(S,M/(U+V))
+\mathop{\mathrm{Tor}}\nolimits _1^R(S,M/(U+V))
 \right)
 ```
 
@@ -561,7 +561,7 @@ $`M=\mathbb Z^2`$、$`U=\mathbb Z(1,0)`$、$`V=\mathbb Z(1,2)`$、$`S=\mathbb F_
 整数上では $`U\cap V=0`$ だが、$`M_S=\mathbb F_2^2`$ では $`U_S=V_S=\mathbb F_2(1,0)`$ なので、交差の増分は一次元である。
 実際 $`M/U\cong\mathbb Z`$、$`M/V\cong\mathbb Z`$ は自由であり、$`M/(U+V)\cong\mathbb Z/2`$ だから、定理14.13の右辺は $`0\to\mathbb F_2`$ の余核である。
 
-一方、$`M=\mathbb Z/2`$、$`U=V=0`$、$`S=\mathbb F_2`$ とすると、$`\operatorname{Tor}_1^{\mathbb Z}(S,M/(U+V))\cong\mathbb F_2`$ は非零であるが、二つの成分からの差写像は全射である。
+一方、$`M=\mathbb Z/2`$、$`U=V=0`$、$`S=\mathbb F_2`$ とすると、$`\mathop{\mathrm{Tor}}\nolimits _1^{\mathbb Z}(S,M/(U+V))\cong\mathbb F_2`$ は非零であるが、二つの成分からの差写像は全射である。
 その余核も交差増分も $`0`$ になる。
 非平坦な係数変更における交差の変化を測るのは、この特定の射の余核である。
 
@@ -572,7 +572,7 @@ $`M=\mathbb Z^2`$、$`U=\mathbb Z(1,0)`$、$`V=\mathbb Z(1,2)`$、$`S=\mathbb F_
 ```math
 (1\otimes f)(\mathrm{im}\partial_U)=0,
 \qquad
-\partial_U:\operatorname{Tor}_1^R(S,M/U)\longrightarrow S\otimes_RU
+\partial_U:\mathop{\mathrm{Tor}}\nolimits _1^R(S,M/U)\longrightarrow S\otimes_RU
 ```
 
 である。ここで $`\partial_U`$ は $`0\to U\to M\to M/U\to0`$ の連結射である。

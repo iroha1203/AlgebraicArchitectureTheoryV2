@@ -398,7 +398,7 @@ $`L_e^{v,h}=\iota(h_e)\widetilde L_e(v)`$
 その変化は、有限個の小行列式の零・非零条件で記述できる。
 
 **設定18.11（原始操作から生成される正則な行列族）.**
-体 $`k`$ 上の有限型アフィンスキーム $`T=\operatorname{Spec}A`$ と、固定した有限セル表示・固定部分・常時許容辺・候補辺集合 $`\mathsf E`$ を取る。
+体 $`k`$ 上の有限型アフィンスキーム $`T=\mathop{\mathrm{Spec}}\nolimits A`$ と、固定した有限セル表示・固定部分・常時許容辺・候補辺集合 $`\mathsf E`$ を取る。
 各射影の核には有限自由 $`A`$-加群の座標を指定し、式(18.2)の線形成分 $`M_e`$ とその逆、平行移動の定数部および入力係数を $`A`$ の行列で与える。
 面の線形成分の一致と3-セルの比較等式は、この原始族の等式として課す。
 未知入力 $`v`$ は固定した $`A^n`$ の座標を持ち、固定部分の Law、入力条件、および既知情報を連立した式を $`Lv=s`$ と書く。
@@ -441,9 +441,9 @@ K_{S,J}=\begin{pmatrix}D_S&B\\0&Q_J\end{pmatrix}.
 \qquad\text{(18.10)}
 ```
 
-まず $`F_t\ne\varnothing`$ は $`\operatorname{rank}L_t=\operatorname{rank}[L_t\ s_t]`$ と同値である。
+まず $`F_t\ne\varnothing`$ は $`\mathop{\mathrm{rank}}\nolimits L_t=\mathop{\mathrm{rank}}\nolimits [L_t\ s_t]`$ と同値である。
 可解な入力とその補正が同時に存在する条件は
-$`\operatorname{rank}M_{S,t}=\operatorname{rank}[M_{S,t}\ c_t]`$
+$`\mathop{\mathrm{rank}}\nolimits M_{S,t}=\mathop{\mathrm{rank}}\nolimits [M_{S,t}\ c_t]`$
 である。前者だけが成り立ち後者が成り立たなければ、非空な入力ファイバー全体が不能である。
 
 可解な入力が存在するとき、定理18.4の核条件は次の階数等式に一致する。
@@ -451,21 +451,21 @@ $`\operatorname{rank}M_{S,t}=\operatorname{rank}[M_{S,t}\ c_t]`$
 ```math
 \begin{aligned}
 J\text{ が判定に十分}
-&\iff \operatorname{rank}K_{S,J,t}
-       =\operatorname{rank}D_{S,t}+\operatorname{rank}Q_{J,t},\\
+&\iff \mathop{\mathrm{rank}}\nolimits K_{S,J,t}
+       =\mathop{\mathrm{rank}}\nolimits D_{S,t}+\mathop{\mathrm{rank}}\nolimits Q_{J,t},\\
 J\text{ が数値補正に十分}
-&\iff \operatorname{rank}\binom{Q_{J,t}}{B_t}
-       =\operatorname{rank}Q_{J,t}.
+&\iff \mathop{\mathrm{rank}}\nolimits \binom{Q_{J,t}}{B_t}
+       =\mathop{\mathrm{rank}}\nolimits Q_{J,t}.
 \end{aligned}
 \qquad\text{(18.11)}
 ```
 
 第二式は行空間の包含そのものである。
-第一式では、$`K_{S,J,t}`$ の像から第二成分の $`\operatorname{im}Q_{J,t}`$ へ射影すると全射となり、その核は
-$`\operatorname{im}D_{S,t}+B_t\ker Q_{J,t}`$
+第一式では、$`K_{S,J,t}`$ の像から第二成分の $`\mathop{\mathrm{im}}\nolimits Q_{J,t}`$ へ射影すると全射となり、その核は
+$`\mathop{\mathrm{im}}\nolimits D_{S,t}+B_t\ker Q_{J,t}`$
 である。よってその階数は
-$`\operatorname{rank}Q_{J,t}+\dim(\operatorname{im}D_{S,t}+B_t\ker Q_{J,t})`$
-であり、等式は $`B_t\ker Q_{J,t}\subseteq\operatorname{im}D_{S,t}`$ と同値になる。
+$`\mathop{\mathrm{rank}}\nolimits Q_{J,t}+\dim(\mathop{\mathrm{im}}\nolimits D_{S,t}+B_t\ker Q_{J,t})`$
+であり、等式は $`B_t\ker Q_{J,t}\subseteq\mathop{\mathrm{im}}\nolimits D_{S,t}`$ と同値になる。
 これは $`\ker Q_{J,t}=\ker L_t\cap\ker O_{J,t}`$ を用いた判定の核条件である。
 
 有限行列 $`H`$ の階数が $`r`$ となる点集合は、すべての $`(r+1)`$ 次小行列式が零、少なくとも一つの $`r`$ 次小行列式が非零という条件で定まる。
@@ -525,7 +525,7 @@ $`A=k[\varepsilon]/(\varepsilon^2)`$ 上の $`0h=\varepsilon`$ で失敗する�
 この場合、拡大行列の一次小行列式を零とするチャートの方程式は $`\varepsilon=0`$ であり、命題18.13が用いた条件を正確に示している。
 
 **例18.14（構造の特殊化と無限値）.**
-$`T=\operatorname{Spec}k[t,(1-t)^{-1}]`$ とし、方程式を $`th=v`$、問い合わせ候補を一つ $`\lambda_t(v)=tv`$ とする。既知情報はない。
+$`T=\mathop{\mathrm{Spec}}\nolimits k[t,(1-t)^{-1}]`$ とし、方程式を $`th=v`$、問い合わせ候補を一つ $`\lambda_t(v)=tv`$ とする。既知情報はない。
 これは一頂点のアフィン網で実現できる。固定ループを $`a(x)=(1-t)x`$、修復対象のループの基準を $`\widetilde e(x)=x`$ とし、面の両経路を $`ea,ae`$、指定比較を $`u_v(x)=x+v`$ とする。
 補正 $`e^h(x)=x+h`$ を代入すると
 $`u_v a e^h-e^h a=v-th`$
@@ -551,18 +551,18 @@ $`\mathcal J_{\rm dec}(S)\subseteq\mathcal J_{\rm dec}(S')`$
 ```math
 \begin{aligned}
 m_{\rm dec}(S)
- &=\operatorname{rank}(\pi_SB|_{\ker L})
-  =\operatorname{rank}\begin{pmatrix}D_S&B\\0&L\end{pmatrix}
-     -\operatorname{rank}D_S-\operatorname{rank}L,\\
+ &=\mathop{\mathrm{rank}}\nolimits (\pi_SB|_{\ker L})
+  =\mathop{\mathrm{rank}}\nolimits \begin{pmatrix}D_S&B\\0&L\end{pmatrix}
+     -\mathop{\mathrm{rank}}\nolimits D_S-\mathop{\mathrm{rank}}\nolimits L,\\
 m_{\rm num}(S)
- &=\operatorname{rank}(B|_{\ker L})
-  =\operatorname{rank}\binom{L}{B}-\operatorname{rank}L.
+ &=\mathop{\mathrm{rank}}\nolimits (B|_{\ker L})
+  =\mathop{\mathrm{rank}}\nolimits \binom{L}{B}-\mathop{\mathrm{rank}}\nolimits L.
 \end{aligned}
 \qquad\text{(18.13)}
 ```
 
 **証明.**
-列を加える範囲拡大では $`\operatorname{im}D_S\subseteq\operatorname{im}D_{S'}`$ である。
+列を加える範囲拡大では $`\mathop{\mathrm{im}}\nolimits D_S\subseteq\mathop{\mathrm{im}}\nolimits D_{S'}`$ である。
 よって $`\ker(\pi_SB)\subseteq\ker(\pi_{S'}B)`$ となり、定理18.4の判定用核条件は $`S`$ から $`S'`$ へ保存される。
 数値補正用の条件は両範囲で同じ $`\ker B`$ を使うため、十分集合の族が等しい。
 定理18.6を適用すれば、$`\infty`$ を含めた最適値の関係を得る。
@@ -570,7 +570,7 @@ m_{\rm num}(S)
 任意の線形写像 $`C`$ に対し、$`N=\ker L`$ 上で $`C`$ の行が張る双対部分空間の次元を $`r`$ とする。
 核条件を満たす $`q`$ 個のスカラー問い合わせの行は、この $`r`$ 次元空間を張らねばならないので $`q\ge r`$ である。
 逆に、この空間の基底である $`r`$ 個の線形汎関数を選び、$`N`$ から $`P_{\mathrm{in}}`$ へ延長して問い合わせに用いれば十分である。
-したがって最適値は $`r=\operatorname{rank}(C|_N)`$ となる。
+したがって最適値は $`r=\mathop{\mathrm{rank}}\nolimits (C|_N)`$ となる。
 $`C=\pi_SB,B`$ を代入し、定理18.12の像への射影と同じ次元計算を用いると式(18.13)を得る。□
 
 固定された問い合わせ候補では、式(18.13)の階数は下界になっても、候補の最小濃度と一致するとは限らない。

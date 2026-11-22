@@ -429,7 +429,7 @@ F=\bigoplus_a u_{A_a}
 
 逆に、空でない $`A`$ に対して評価 $`\lambda_A(s)=\mathbf1_A(q_c(s))`$ を取る。値 $`1`$ の成分はまさに $`u_A`$ である。直和の比較が同型なら、各成分の包含と射影によって $`H^1(u_A)`$ も同型となる。$`A=\varnothing`$ の両複体は零である。これですべての支持部分集合が尽くされる。□
 
-構成17.8は面を持たないセル系に対するこの定理の特殊化である。面を含む有限セル系でも $`\ker d^1/\operatorname{im}d^0`$ と比較行列を計算すれば同じ安全性を検査できる。[定理16.22](../part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md)の基本変形はすべての支持成分の鎖ホモトピー同値を与えるため、任意の十分 Law 族について安全である。[定理16.25](../part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md)は二領域の安全性を大域へ渡す際に、交差の $`q`$ と $`Z`$ が担う追加条件を与える。
+構成17.8は面を持たないセル系に対するこの定理の特殊化である。面を含む有限セル系でも $`\ker d^1/\mathop{\mathrm{im}}\nolimits d^0`$ と比較行列を計算すれば同じ安全性を検査できる。[定理16.22](../part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md)の基本変形はすべての支持成分の鎖ホモトピー同値を与えるため、任意の十分 Law 族について安全である。[定理16.25](../part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md)は二領域の安全性を大域へ渡す際に、交差の $`q`$ と $`Z`$ が担う追加条件を与える。
 
 次に、調べる支持の大きさをあらかじめ制限したとき、何が判定できるかを調べる。幅 $`k`$ の観測を、すべての $`|A|\le k`$ に対する一次比較 $`H^1(u_A)`$ の族とする。比較の両端の空間、射、および支持包含による制限を、可換な同型まで保持する。有限 Law 族の幅は、すべての発生ラベルの値集合 $`A_a`$ が $`|A_a|\le k`$ を満たすことと定める。
 
@@ -466,7 +466,7 @@ $`A\subseteq C`$ の細セル選択は次の表で尽くされる。
 一方、閉路側の全支持では周期
 
 ```math
-\operatorname{per}(z)=\sum_{i\in C}\bigl(z(a_i)+z(b_i)\bigr)
+\mathop{\mathrm{per}}\nolimits (z)=\sum_{i\in C}\bigl(z(a_i)+z(b_i)\bigr)
 ```
 
 が $`d^0`$ の像で零になる。周期が零なら一周の累積和が同じ始点値へ戻るので頂点原始元が存在する。$`a_0`$ で値 $`1`$、他の辺で値 $`0`$ のコチェインの周期は $`1`$ である。従って全支持の細 $`H^1`$ は $`\Lambda`$、比較は $`0\to\Lambda`$ となり安全性を失う。道側は全支持でも $`H^1=0`$ なので安全である。
@@ -484,7 +484,7 @@ r_c^0:\Lambda^2\to\Lambda,\quad(x,y)\mapsto x-y,
 r_f^0:\Lambda^2\to\Lambda^2,\quad(x,y)\mapsto(x-y,x-y).
 ```
 
-従って $`Q_c=0`$、$`Q_f=\Lambda^2/\Delta\Lambda\cong\Lambda`$、$`q:0\to\Lambda`$ であり、局所と交差の $`H^1`$ はすべて零なので $`Z=0`$ である。定理16.25の余核はこの $`\operatorname{coker}q`$ に一致する。
+従って $`Q_c=0`$、$`Q_f=\Lambda^2/\Delta\Lambda\cong\Lambda`$、$`q:0\to\Lambda`$ であり、局所と交差の $`H^1`$ はすべて零なので $`Z=0`$ である。定理16.25の余核はこの $`\mathop{\mathrm{coker}}\nolimits q`$ に一致する。
 
 交差を $`(w_{-1},w_0)`$ の順に書いて $`z=(0,1)`$ とする。$`A`$ 上の頂点関数を $`x(w_{-1})=x(v_0)=0,x(w_0)=1`$、$`B`$ 側を零とすれば、その差制限が $`z`$ になる。微分を貼り合わせると $`a_0`$ だけで値 $`1`$ を持つ一コチェインが得られ、周期は $`1`$ である。これにより同じ原始入力上で、交差の零次からの連結射が全支持の非零診断類を具体的に生成することが分かる。
 

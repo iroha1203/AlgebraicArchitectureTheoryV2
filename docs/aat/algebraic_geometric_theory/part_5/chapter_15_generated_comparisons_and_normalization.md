@@ -339,8 +339,8 @@ a(\delta_2,\delta_1)=s(\delta_2)s(\delta_1)s(\delta_2\delta_1)^{-1}\in L
 
 ```math
 \begin{gathered}
-G_X=\operatorname{Aut}_{\mathcal E}(X),\qquad
-G_Y=\operatorname{Aut}_{\mathcal E}(Y),\qquad
+G_X=\mathop{\mathrm{Aut}}\nolimits _{\mathcal E}(X),\qquad
+G_Y=\mathop{\mathrm{Aut}}\nolimits _{\mathcal E}(Y),\qquad
 T:G_X\xrightarrow{\sim}G_Y,\quad T(a)=cac^{-1},\\
 r_X(a)=O(a),\qquad r_Y(b)=O(b),\qquad
 K_X=\ker r_X,\quad K_Y=\ker r_Y,\\
@@ -391,7 +391,7 @@ $`(u,1)(v,v)(u^{-1},1)=(uvu^{-1},v)\notin L`$ であり、$`L`$ は正規でな�
 定理はそれでも $`K/L`$ を6点の基点付き集合として $`S_3`$ と同定する。
 
 定義15.7への適用では、まず対象を冪等射の組 $`(X,e)`$、射を $`ae=e'a`$ を満たす射とする圏を取る。
-その観測関手を $`(X,e)\mapsto(X,e)\in\operatorname{Kar}(\mathcal E)`$、$`a\mapsto e'ae`$ とする。
+その観測関手を $`(X,e)\mapsto(X,e)\in\mathop{\mathrm{Kar}}\nolimits (\mathcal E)`$、$`a\mapsto e'ae`$ とする。
 恒等射は $`e`$ へ移り、合成の保存は冪等射との可換式によって従う。
 同型比較 $`c`$ は $`dc=ce`$ を満たすため、この圏の同型である。
 端点の自己同型群はちょうど定義15.7の中心化群となり、定理15.12は正規化の実際の核 $`K`$ と適合核 $`L`$ に適用される。

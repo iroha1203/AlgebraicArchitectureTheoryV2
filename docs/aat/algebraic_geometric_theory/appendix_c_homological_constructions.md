@@ -117,7 +117,7 @@ $`A=d^{n-1}`$、$`r=\mathop{\mathrm{rank}}_{\mathbb Q}A`$ と置き、非零固�
 g_n=\det'(A^\top A)\in\mathbb Z_{>0}
 ```
 
-を定める。$`h_n(z)=0`$ を満たす整数コサイクル $`z`$ から、$`Au=g_nz`$ を満たす整数元 $`u`$ を行列の整数多項式で構成できる。従って $`u/g_n`$ は有理修復であり、各座標の既約分母は $`g_n`$ を割る。また $`g_n\operatorname{Tor}H^n(C)=0`$ が成り立つ。標準内積のもとでは、この有理修復は $`Aa=z`$ の最小ノルム解である。
+を定める。$`h_n(z)=0`$ を満たす整数コサイクル $`z`$ から、$`Au=g_nz`$ を満たす整数元 $`u`$ を行列の整数多項式で構成できる。従って $`u/g_n`$ は有理修復であり、各座標の既約分母は $`g_n`$ を割る。また $`g_n\mathop{\mathrm{Tor}}\nolimits H^n(C)=0`$ が成り立つ。標準内積のもとでは、この有理修復は $`Aa=z`$ の最小ノルム解である。
 
 **証明.**
 $`r=0`$ ならば $`A=0`$ であり、仮定から $`z=0`$ なので $`u=0`$ とすればよい。以下 $`r>0`$ とする。$`P=AA^\top`$ の非零固有値は $`A^\top A`$ の非零固有値と重複度込みで一致する。実際、正の固有値 $`\lambda`$ の固有空間の間で $`A`$ と $`\lambda^{-1}A^\top`$ が互いに逆となる。整数特性多項式を
@@ -128,7 +128,7 @@ p(t)=t^r+a_{r-1}t^{r-1}+\cdots+a_1t+a_0,
 \qquad a_0=(-1)^rg_n
 ```
 
-と書く。ただし $`b=\operatorname{rank}_{\mathbb Z}C^n`$ である。$`P`$ は半正定値実対称行列なので、$`g_n`$ は正の整数である。整数多項式
+と書く。ただし $`b=\mathop{\mathrm{rank}}\nolimits _{\mathbb Z}C^n`$ である。$`P`$ は半正定値実対称行列なので、$`g_n`$ は正の整数である。整数多項式
 
 ```math
 Q(t)=(-1)^{r+1}\frac{p(t)-a_0}{t}
@@ -165,17 +165,17 @@ z-Aa=g_n y\qquad(y\in C^n)
 
 ## C.6 格子体積・レギュレータ・ラプラシアン
 
-正定値内積空間の全格子 $`L`$ の共体積 $`\operatorname{vol}(L)`$ は、格子基底の Gram 行列式の正の平方根とする。零次元では $`1`$ とする。部分群 $`L'\subseteq L`$ は、$`mx\in L'`$、$`m\ne0`$ から $`x\in L'`$ が従うとき**飽和**しているという。有限生成自由群の飽和部分群は整数基底の一部へ延長できる。これは整数行列に互除法による行・列基本変形を施す対角化から従う。すなわち非零の最小の成分をピボットとして余りを減らし、余りがなくなった行と列を取り除く操作を繰り返せば対角形を得る。飽和性は、その商に現れる非零対角成分がすべて単元であることに対応する。
+正定値内積空間の全格子 $`L`$ の共体積 $`\mathop{\mathrm{vol}}\nolimits (L)`$ は、格子基底の Gram 行列式の正の平方根とする。零次元では $`1`$ とする。部分群 $`L'\subseteq L`$ は、$`mx\in L'`$、$`m\ne0`$ から $`x\in L'`$ が従うとき**飽和**しているという。有限生成自由群の飽和部分群は整数基底の一部へ延長できる。これは整数行列に互除法による行・列基本変形を施す対角化から従う。すなわち非零の最小の成分をピボットとして余りを減らし、余りがなくなった行と列を取り除く操作を繰り返せば対角形を得る。飽和性は、その商に現れる非零対角成分がすべて単元であることに対応する。
 
 **補題C.6（直交射影と格子体積）.**
 全格子 $`L\subseteq V`$ と飽和部分格子 $`M\subseteq L`$ を取り、$`W=M\otimes\mathbb R`$ とする。このとき直交射影 $`\pi:V\to W^\perp`$ の像 $`\pi L`$ は全格子であり、
 
 ```math
-\operatorname{vol}(L)=\operatorname{vol}(M)\operatorname{vol}(\pi L)
+\mathop{\mathrm{vol}}\nolimits (L)=\mathop{\mathrm{vol}}\nolimits (M)\mathop{\mathrm{vol}}\nolimits (\pi L)
 ```
 
 が成り立つ。また同じ実線形包を持つ有限指数部分格子 $`M'\subseteq M`$ について
-$`\operatorname{vol}(M')=[M:M']\operatorname{vol}(M)`$ である。
+$`\mathop{\mathrm{vol}}\nolimits (M')=[M:M']\mathop{\mathrm{vol}}\nolimits (M)`$ である。
 
 **証明.**
 $`M`$ の整数基底を $`L`$ の整数基底へ延長する。$`W\oplus W^\perp`$ の正規直交基底でこの基底行列を書くとブロック上三角形となり、その下側の列は $`\pi L`$ の基底である。行列式の絶対値を取ると積公式を得る。有限指数の場合は、整数基底間の変換行列の行列式の絶対値が指数に等しい。これは同じ整数対角化で、対角成分の積として確かめられる。□
@@ -189,9 +189,9 @@ $`C^n=0`$ が $`n<0`$ および $`n>m`$ で成り立つとし、
 \begin{gathered}
 \Delta_n=d^{n-1}(d^{n-1})^*+(d^n)^*d^n,\qquad
 \eta_n=\det'((d^n)^*d^n),\\
-T^n=\operatorname{Tor}H^n(C),\quad t_n=|T^n|,\quad
-\nu_n=\operatorname{vol}(C^n),\quad
-R_n=\operatorname{vol}_{\mathcal H^n}(h_n(Z^n))
+T^n=\mathop{\mathrm{Tor}}\nolimits H^n(C),\quad t_n=|T^n|,\quad
+\nu_n=\mathop{\mathrm{vol}}\nolimits (C^n),\quad
+R_n=\mathop{\mathrm{vol}}\nolimits _{\mathcal H^n}(h_n(Z^n))
 \end{gathered}
 ```
 
@@ -209,15 +209,15 @@ R_n=\operatorname{vol}_{\mathcal H^n}(h_n(Z^n))
 指定整数基底を正規直交にした場合は $`\nu_n=1`$ であり、最後の積は消える。この場合、各 $`\eta_n`$ と $`\det'(\Delta_n)`$ は正の整数である。
 
 **証明.**
-$`B^n_{\mathrm{sat}}=(B^n\otimes\mathbb R)\cap C^n`$、$`b_n=\operatorname{vol}(B^n_{\mathrm{sat}})`$ と置く。$`B^n_{\mathrm{sat}}\subseteq Z^n`$ であり、
+$`B^n_{\mathrm{sat}}=(B^n\otimes\mathbb R)\cap C^n`$、$`b_n=\mathop{\mathrm{vol}}\nolimits (B^n_{\mathrm{sat}})`$ と置く。$`B^n_{\mathrm{sat}}\subseteq Z^n`$ であり、
 $`B^n_{\mathrm{sat}}/B^n=T^n`$ である。実際、$`Z^n/B^n`$ のねじれ元は、ある非零整数倍が $`B^n`$ に入る元であり、整数行列の有理行消去からこれはちょうど $`B^n\otimes\mathbb R`$ 内の整数元になる。
 
 $`B^n_{\mathrm{sat}}`$ は $`Z^n`$ の飽和部分格子であり、その直交補は $`\mathcal H^n`$ である。補題C.6から
 
 ```math
-\operatorname{vol}(Z^n)=b_nR_n,\qquad
-\operatorname{vol}(B^{n+1})=t_{n+1}b_{n+1},\qquad
-\operatorname{vol}(\pi_{(Z^n_{\mathbb R})^\perp}C^n)
+\mathop{\mathrm{vol}}\nolimits (Z^n)=b_nR_n,\qquad
+\mathop{\mathrm{vol}}\nolimits (B^{n+1})=t_{n+1}b_{n+1},\qquad
+\mathop{\mathrm{vol}}\nolimits (\pi_{(Z^n_{\mathbb R})^\perp}C^n)
 =\frac{\nu_n}{b_nR_n}
 ```
 
@@ -232,8 +232,8 @@ Hodge 直交分解の三つの直和成分の上で、$`\Delta_n`$ はそれぞ�
 標準内積では、同じ計算が補題C.4の整数に対して
 
 ```math
-g_n=t_n^2\operatorname{vol}(B^n_{\mathrm{sat}})^2
-             \operatorname{vol}(Z^{n-1})^2
+g_n=t_n^2\mathop{\mathrm{vol}}\nolimits (B^n_{\mathrm{sat}})^2
+             \mathop{\mathrm{vol}}\nolimits (Z^{n-1})^2
 ```
 
 を与える。後二因子は整数基底の Gram 行列式なので正の整数である。従って $`t_n^2\mid g_n`$、特に $`|T^n|\le\sqrt{g_n}`$ であり、補題C.4の消去整数とは別にねじれ群の位数の上界も得られる。
@@ -245,10 +245,10 @@ g_n=t_n^2\operatorname{vol}(B^n_{\mathrm{sat}})^2
 
 ## C.7 整数周期と非零調和ノルムの下界
 
-双対整数チェイン複体を $`C_n^\vee=\operatorname{Hom}_{\mathbb Z}(C^n,\mathbb Z)`$、微分を前合成 $`\partial_n=(d^{n-1})^\vee`$ とする。次数 $`n`$ の双対サイクル $`c`$ とコサイクル $`z`$ の周期は整数 $`c(z)`$ である。
+双対整数チェイン複体を $`C_n^\vee=\mathop{\mathrm{Hom}}\nolimits _{\mathbb Z}(C^n,\mathbb Z)`$、微分を前合成 $`\partial_n=(d^{n-1})^\vee`$ とする。次数 $`n`$ の双対サイクル $`c`$ とコサイクル $`z`$ の周期は整数 $`c(z)`$ である。
 
 **命題C.9（周期が与える量的な分離）.**
-$`H_n(C^\vee)/\operatorname{Tor}`$ の整数基底を表すサイクル $`c_1,\ldots,c_\beta`$ を選ぶ。$`\beta>0`$ のとき、選んだ内積の双対ノルムによって $`L=\max_i\|c_i\|_*`$ と置く。任意の整数コサイクル $`z`$ は
+$`H_n(C^\vee)/\mathop{\mathrm{Tor}}\nolimits `$ の整数基底を表すサイクル $`c_1,\ldots,c_\beta`$ を選ぶ。$`\beta>0`$ のとき、選んだ内積の双対ノルムによって $`L=\max_i\|c_i\|_*`$ と置く。任意の整数コサイクル $`z`$ は
 
 ```math
 h_n(z)=0\quad\text{または}\quad\|h_n(z)\|\ge L^{-1}
@@ -278,9 +278,9 @@ $`B=M/U\oplus M/V`$、$`Q=M/(U+V)`$ と置くと、自然同型
 ```math
 \frac{U_S\cap V_S}{(U\cap V)_S}
 \cong
-\operatorname{coker}\left(
-\operatorname{Tor}_1^R(S,B)\longrightarrow
-\operatorname{Tor}_1^R(S,Q)\right)
+\mathop{\mathrm{coker}}\nolimits \left(
+\mathop{\mathrm{Tor}}\nolimits _1^R(S,B)\longrightarrow
+\mathop{\mathrm{Tor}}\nolimits _1^R(S,Q)\right)
 ```
 
 が成り立つ。Tor 間の写像は $`B\to Q`$、$`([x]_U,[y]_V)\mapsto[x-y]_{U+V}`$ から誘導される。
@@ -300,8 +300,8 @@ $`p([x],[y])=0`$ ならば $`x-y=u+v`$（$`u\in U,v\in V`$）と書けるので�
 C.3節の自由解消を使って得られる連結射を $`\partial`$ とすると、完全列の該当部分は
 
 ```math
-\operatorname{Tor}_1^R(S,B)\longrightarrow
-\operatorname{Tor}_1^R(S,Q)\xrightarrow{\partial}
+\mathop{\mathrm{Tor}}\nolimits _1^R(S,B)\longrightarrow
+\mathop{\mathrm{Tor}}\nolimits _1^R(S,Q)\xrightarrow{\partial}
  S\otimes_R A\xrightarrow{1\otimes i}S\otimes_R B
 ```
 

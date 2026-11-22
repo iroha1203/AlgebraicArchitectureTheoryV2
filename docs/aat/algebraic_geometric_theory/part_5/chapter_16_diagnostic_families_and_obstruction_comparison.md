@@ -855,7 +855,7 @@ r_s(x,y)=x|_I-y|_I
 \tag{16.24b}
 ```
 
-がある。$`r_s^n`$ は差制限が誘導する写像である。また、同じ領域の比較錐 $`\operatorname{Cone}(u_X)`$ に対しても、式(16.24a)の各写像を二座標へ適用して短完全列と長完全列が得られる。
+がある。$`r_s^n`$ は差制限が誘導する写像である。また、同じ領域の比較錐 $`\mathop{\mathrm{Cone}}\nolimits (u_X)`$ に対しても、式(16.24a)の各写像を二座標へ適用して短完全列と長完全列が得られる。
 
 **証明.** 交差上の閉元 $`z`$ を差制限によって組 $`(x,y)`$ に持ち上げると、$`(dx,dy)`$ は差制限の核に入る。従って $`U`$ 上の一意な閉元 $`w`$ へ貼り合い、$`\delta_s[z]=[w]`$ と定められる。持ち上げを変えた差は $`i_s(a)`$ の形なので $`w`$ は $`da`$ だけ変わり、$`z`$ の代表を $`dz'`$ だけ変える場合は $`z'`$ を持ち上げてその微分を加えればよい。よって類は選択によらない。
 
@@ -869,7 +869,7 @@ $`\delta_s[z]=0`$ なら $`w=da`$ として持ち上げから $`i_s(a)`$ を引�
 $`T_X=H^1(u_X)`$ と書き、$`T_A,T_B`$ が同型であると仮定する。式(16.24b)から
 
 ```math
-Q_s=\operatorname{coker}r_s^0,\qquad
+Q_s=\mathop{\mathrm{coker}}\nolimits r_s^0,\qquad
 P_s=\ker r_s^1,\qquad
 q:Q_c\longrightarrow Q_f,\quad q[z]=[H^0(u_I)z],
 ```
@@ -877,15 +877,15 @@ q:Q_c\longrightarrow Q_f,\quad q[z]=[H^0(u_I)z],
 を定め、
 
 ```math
-Z=\operatorname{im}r_c^1\cap\ker H^1(u_I)
+Z=\mathop{\mathrm{im}}\nolimits r_c^1\cap\ker H^1(u_I)
 ```
 
 と置く。このとき自然な同型と短完全列
 
 ```math
 \ker T_U\cong\ker q,\qquad
-0\longrightarrow\operatorname{coker}q
- \longrightarrow\operatorname{coker}T_U
+0\longrightarrow\mathop{\mathrm{coker}}\nolimits q
+ \longrightarrow\mathop{\mathrm{coker}}\nolimits T_U
  \longrightarrow Z\longrightarrow0
 \tag{16.25a}
 ```
@@ -894,7 +894,7 @@ Z=\operatorname{im}r_c^1\cap\ker H^1(u_I)
 
 ```math
 J(T_U)=\bigl(\dim\ker q,
-             \dim\operatorname{coker}q+\dim Z\bigr)
+             \dim\mathop{\mathrm{coker}}\nolimits q+\dim Z\bigr)
 ```
 
 である。
@@ -910,11 +910,11 @@ J(T_U)=\bigl(\dim\ker q,
 
 ```math
 0\to\ker q\to\ker T_U\to\ker p
- \xrightarrow{\partial_{\mathrm{sn}}}\operatorname{coker}q
- \to\operatorname{coker}T_U\to\operatorname{coker}p\to0.
+ \xrightarrow{\partial_{\mathrm{sn}}}\mathop{\mathrm{coker}}\nolimits q
+ \to\mathop{\mathrm{coker}}\nolimits T_U\to\mathop{\mathrm{coker}}\nolimits p\to0.
 ```
 
-その連結射は次の具体式で得られる。$`a\in\ker p`$ を $`b\in H^1(C_{c,U})`$ に持ち上げると、$`T_Ub=j_f(z)`$ となる一意な $`z\in Q_f`$ があり、$`\partial_{\mathrm{sn}}(a)=[z]`$ とする。別の持ち上げとの差は $`j_c(Q_c)`$ なので、$`z`$ の差は $`q(Q_c)`$ に入る。各箇所の完全性もこの式で確認できる。例えば $`[z]`$ が次の射の核に入れば $`j_f(z)=T_Ub`$ と書け、$`t_cb\in\ker p`$ の連結像が $`[z]`$ である。また $`[b_f]`$ が $`\operatorname{coker}p`$ で消えるなら、$`t_fb_f=p(a_c)`$ を満たす $`a_c`$ の持ち上げ $`b_c`$ を取り、$`b_f-T_Ub_c\in j_f(Q_f)`$ として一つ前の像へ戻せる。他の箇所は同じ短完全列の核・像の同定から従う。
+その連結射は次の具体式で得られる。$`a\in\ker p`$ を $`b\in H^1(C_{c,U})`$ に持ち上げると、$`T_Ub=j_f(z)`$ となる一意な $`z\in Q_f`$ があり、$`\partial_{\mathrm{sn}}(a)=[z]`$ とする。別の持ち上げとの差は $`j_c(Q_c)`$ なので、$`z`$ の差は $`q(Q_c)`$ に入る。各箇所の完全性もこの式で確認できる。例えば $`[z]`$ が次の射の核に入れば $`j_f(z)=T_Ub`$ と書け、$`t_cb\in\ker p`$ の連結像が $`[z]`$ である。また $`[b_f]`$ が $`\mathop{\mathrm{coker}}\nolimits p`$ で消えるなら、$`t_fb_f=p(a_c)`$ を満たす $`a_c`$ の持ち上げ $`b_c`$ を取り、$`b_f-T_Ub_c\in j_f(Q_f)`$ として一つ前の像へ戻せる。他の箇所は同じ短完全列の核・像の同定から従う。
 
 $`L`$ は同型だから $`p`$ は単射である。また
 
@@ -922,7 +922,7 @@ $`L`$ は同型だから $`p`$ は単射である。また
 P_f\longrightarrow Z,\qquad y\longmapsto r_c^1(L^{-1}y)
 ```
 
-は全射で、核は $`p(P_c)`$ に等しい。像が $`Z`$ に入ることは $`H^1(u_I)r_c^1=r_f^1L`$ による。逆に $`z=r_c^1(x)\in\ker H^1(u_I)`$ なら $`Lx\in P_f`$ が $`z`$ へ移る。よって $`\operatorname{coker}p\cong Z`$ であり、蛇の列から式(16.25a)が従う。
+は全射で、核は $`p(P_c)`$ に等しい。像が $`Z`$ に入ることは $`H^1(u_I)r_c^1=r_f^1L`$ による。逆に $`z=r_c^1(x)\in\ker H^1(u_I)`$ なら $`Lx\in P_f`$ が $`z`$ へ移る。よって $`\mathop{\mathrm{coker}}\nolimits p\cong Z`$ であり、蛇の列から式(16.25a)が従う。
 
 余核の包含は $`[z]\mapsto[\delta_fz]`$、射影は
 $`[b_f]\mapsto r_c^1(L^{-1}t_fb_f)`$ である。従ってこの列は元の大域比較の実際の余核を中項に持つ。各 Law 値成分について $`A,B`$ をその値集合との交差へ替え、実セル交差を取れば同じ構成ができ、有限直和で Law 族全体の列になる。□

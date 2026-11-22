@@ -729,7 +729,7 @@ $`C^2`$ の上式を $`d^2c`$ と定義すれば、展開によって $`d^2d^1=0
 型付き単項操作と経路等式 Law が提示する小圏を $`\mathcal E`$ とし、各 sort $`s`$ に観測値集合 $`O_s`$ を固定する。観測しない sort には1元集合を置く。全域操作のモデルとは、$`\mathcal E`$ の集合への作用と写像 $`o_s:X_s\to O_s`$ であり、射は操作と観測を保つ写像族とする。この圏の対象
 
 ```math
-\Omega_s=\prod_t O_t^{\operatorname{Hom}_{\mathcal E}(s,t)}
+\Omega_s=\prod_t O_t^{\mathop{\mathrm{Hom}}\nolimits _{\mathcal E}(s,t)}
 ```
 
 を、$`T_e(f)(v)=f(ve)`$、$`o_s(f)=f(1_s)`$ と定める。任意のモデルからの写像
@@ -738,7 +738,7 @@ $`\mathrm{beh}_s(x)(w)=o_{t(w)}(T_wx)`$
 
 部分操作では、経路等式 Law を**定義域を含む部分写像の等号**として課す。すなわちモデルは、各 $`w:s\to t`$ に部分写像 $`T_w:X_s\rightharpoonup X_t`$ を与え、$`T_1=1`$、$`T_{vu}=T_vT_u`$ を定義域も含めて満たすものとする。射には定義域の保存と反映を課す。$`\Omega_s^{\mathrm{par}}`$ の元は次の組 $`(D,f)`$ とする。
 
-- $`D\subseteq\coprod_t\operatorname{Hom}_{\mathcal E}(s,t)`$ は $`1_s`$ を含み、$`vu\in D`$ なら $`u\in D`$ を満たす。
+- $`D\subseteq\coprod_t\mathop{\mathrm{Hom}}\nolimits _{\mathcal E}(s,t)`$ は $`1_s`$ を含み、$`vu\in D`$ なら $`u\in D`$ を満たす。
 - 各 $`w\in D`$ に値 $`f(w)\in O_{t(w)}`$ を与える。
 
 操作 $`u:s\to t`$ は $`u\in D`$ のときに定義され、その値を残余データ
