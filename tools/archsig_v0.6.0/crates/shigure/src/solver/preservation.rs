@@ -48,44 +48,7 @@ pub fn substitute_poly_expr(
     arg_map: &BTreeMap<String, PolyExpr>,
     param_map: &BTreeMap<String, PolyExpr>,
 ) -> PolyExpr {
-    match expr {
-        PolyExpr::Const(c) => PolyExpr::Const(c.clone()),
-        PolyExpr::StateVar(v) => state_map
-            .get(v)
-            .cloned()
-            .unwrap_or_else(|| PolyExpr::StateVar(v.clone())),
-        PolyExpr::ArgVar(v) => arg_map
-            .get(v)
-            .cloned()
-            .unwrap_or_else(|| PolyExpr::ArgVar(v.clone())),
-        PolyExpr::ParamVar(v) => param_map
-            .get(v)
-            .cloned()
-            .unwrap_or_else(|| PolyExpr::ParamVar(v.clone())),
-        PolyExpr::Unobserved { slot, origin } => PolyExpr::Unobserved {
-            slot: slot.clone(),
-            origin: origin.clone(),
-        },
-        PolyExpr::Neg(inner) => {
-            PolyExpr::negate(substitute_poly_expr(inner, state_map, arg_map, param_map))
-        }
-        PolyExpr::Add(a, b) => PolyExpr::sum(
-            substitute_poly_expr(a, state_map, arg_map, param_map),
-            substitute_poly_expr(b, state_map, arg_map, param_map),
-        ),
-        PolyExpr::Sub(a, b) => PolyExpr::diff(
-            substitute_poly_expr(a, state_map, arg_map, param_map),
-            substitute_poly_expr(b, state_map, arg_map, param_map),
-        ),
-        PolyExpr::Mul(a, b) => PolyExpr::prod(
-            substitute_poly_expr(a, state_map, arg_map, param_map),
-            substitute_poly_expr(b, state_map, arg_map, param_map),
-        ),
-        PolyExpr::Pow(base, exp) => PolyExpr::pow(
-            substitute_poly_expr(base, state_map, arg_map, param_map),
-            *exp,
-        ),
-    }
+    crate::ir::morphism::substitute_poly_expr_iter(expr, state_map, arg_map, param_map)
 }
 
 /// phase の状態座標から、自由記号変数リストと `Observed` 座標の定数置換写像を抽出する。

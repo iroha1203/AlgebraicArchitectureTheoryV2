@@ -431,13 +431,13 @@ fn time_step_morphism_orientation_and_contravariant_composition() {
     let first = TimeStepMorphism::new("P1", "P2", h2).expect("valid P1 -> P2");
     let second = TimeStepMorphism::new("P2", "P3", h1).expect("valid P2 -> P3");
     let composed = compose_time_order(&first, &second, &p2, &p3).expect("compose time order");
-    assert_eq!(composed.before, "P1");
-    assert_eq!(composed.after, "P3");
-    assert_eq!(composed.state_map.source, "P3");
-    assert_eq!(composed.state_map.target, "P1");
+    assert_eq!(composed.before(), "P1");
+    assert_eq!(composed.after(), "P3");
+    assert_eq!(composed.state_map().source, "P3");
+    assert_eq!(composed.state_map().target, "P1");
     assert_eq!(
         eval_expr_rat(
-            &composed.state_map.state_comparisons[0].map["bx"],
+            &composed.state_map().state_comparisons[0].map["bx"],
             &[("x", 9)],
             &[]
         ),

@@ -1,13 +1,15 @@
 //! 固定図式の全補完 IR（`DiagramSpec` / `CheckedDiagramTask`、G-140 F1・F1.1–F1.2）。
 
 use crate::ir::change::{ChangeSpec, EditableTarget, EvalCondition, FixedTarget};
-use crate::ir::morphism::{MorphismDirection, StateMorphism, validate_state_morphism};
+use crate::ir::morphism::{
+    MorphismDirection, StateMorphism, validate_state_morphism_checked_endpoints,
+};
 use crate::ir::presentation::{LawKind, Presentation};
 use crate::ir::provenance::Provenance;
 use crate::ir::validate::{
     CheckedChangeSpec, CheckedEvalCondition, ValidationError, collect_eval_unobserved,
-    collect_presentation_unobserved, require_non_empty, validate_presentation_checked_params,
-    validate_provenance,
+    collect_morphism_unobserved, collect_presentation_unobserved, require_non_empty,
+    validate_opt_source_ref, validate_presentation_ref_checked_params, validate_provenance,
 };
 use crate::ir::validate_change::{
     collect_and_check_param_names, validate_change_spec_struct_only,
@@ -83,6 +85,10 @@ impl CheckedDiagramTask {
 
         for v in &spec.vertices {
             require_non_empty(&v.name, "diagram.vertex.name")?;
+            validate_opt_source_ref(
+                v.provenance.as_ref(),
+                &format!("diagram vertex `{}`", v.name),
+            )?;
             if vertices_by_name.insert(v.name.as_str(), v).is_some() {
                 return Err(ValidationError::DuplicateDecl {
                     kind: "diagram vertex",
@@ -101,16 +107,27 @@ impl CheckedDiagramTask {
             } else {
                 &param_names
             };
-            let _ = validate_presentation_checked_params(v.presentation.clone(), allowed)?;
-            vertices_by_pres
+            validate_presentation_ref_checked_params(&v.presentation, allowed)?;
+            let bucket = vertices_by_pres
                 .entry(v.presentation.name.as_str())
-                .or_default()
-                .push((&v.presentation, v.is_fixed));
+                .or_default();
+            if let Some((existing_pres, _)) = bucket.first()
+                && *existing_pres != &v.presentation
+            {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "diagram vertex `{}` reuses presentation name `{}` with differing definition",
+                        v.name, v.presentation.name
+                    ),
+                });
+            }
+            bucket.push((&v.presentation, v.is_fixed));
         }
 
         let mut edges_by_name: BTreeMap<&str, &DiagramEdge> = BTreeMap::new();
         for e in &spec.edges {
             require_non_empty(&e.name, "diagram.edge.name")?;
+            validate_opt_source_ref(e.provenance.as_ref(), &format!("diagram edge `{}`", e.name))?;
             if edges_by_name.insert(e.name.as_str(), e).is_some() {
                 return Err(ValidationError::DuplicateDecl {
                     kind: "diagram edge",
@@ -151,7 +168,7 @@ impl CheckedDiagramTask {
             } else {
                 &param_names
             };
-            validate_state_morphism(
+            validate_state_morphism_checked_endpoints(
                 &e.morphism,
                 &morph_src_v.presentation,
                 &morph_tgt_v.presentation,
@@ -231,18 +248,11 @@ impl CheckedDiagramTask {
             collect_presentation_unobserved(&v.presentation, &mut slots);
         }
         for e in &self.spec.edges {
-            for sc in &e.morphism.state_comparisons {
-                for expr in sc.map.values() {
-                    expr.collect_unobserved(&mut slots);
-                }
-            }
-            for tw in &e.morphism.word_translation.entries {
-                for st in &tw.steps {
-                    for expr in &st.arg_exprs {
-                        expr.collect_unobserved(&mut slots);
-                    }
-                }
-            }
+            collect_morphism_unobserved(
+                &e.morphism.state_comparisons,
+                &e.morphism.word_translation,
+                &mut slots,
+            );
         }
         if let Some(ec) = self.eval_condition() {
             collect_eval_unobserved(ec, &mut slots);
@@ -261,6 +271,10 @@ fn validate_diagram_relations(
     let mut seen = BTreeSet::new();
     for rel in &spec.relations {
         require_non_empty(&rel.name, "diagram.relation.name")?;
+        validate_opt_source_ref(
+            rel.provenance.as_ref(),
+            &format!("diagram relation `{}`", rel.name),
+        )?;
         if !seen.insert(rel.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
                 kind: "diagram relation",
@@ -328,14 +342,17 @@ pub(crate) fn validate_scoped_change_targets(
     morphisms: &[(&StateMorphism, bool)],
     label: &str,
 ) -> Result<(), ValidationError> {
-    let find_pres_phase_law = |pres_name: &str, phase: &str, law: &str| {
+    let find_pres_phase_law_kinds = |pres_name: &str, phase: &str, law: &str| {
         presentations.get(pres_name).map(|vs| {
-            let kind = vs.iter().find_map(|(pres, _)| {
-                pres.phase(phase)
-                    .and_then(|ph| ph.state_laws.iter().find(|l| l.name == law))
-                    .map(|l| l.kind)
-            });
-            (vs, kind)
+            let kinds: Vec<LawKind> = vs
+                .iter()
+                .filter_map(|(pres, _)| {
+                    pres.phase(phase)
+                        .and_then(|ph| ph.state_laws.iter().find(|l| l.name == law))
+                        .map(|l| l.kind)
+                })
+                .collect();
+            (vs, kinds)
         })
     };
 
@@ -346,14 +363,21 @@ pub(crate) fn validate_scoped_change_targets(
                 phase,
                 law,
             } => {
-                let Some((_, Some(kind))) = find_pres_phase_law(presentation, phase, law) else {
+                let Some((_, kinds)) = find_pres_phase_law_kinds(presentation, phase, law) else {
                     return Err(ValidationError::UnknownRef {
                         kind: "semantic_law",
                         name: format!("{presentation}.{phase}.{law}"),
                         context: format!("{label} change_spec fixed"),
                     });
                 };
-                if kind != LawKind::Semantic {
+                if kinds.is_empty() {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "semantic_law",
+                        name: format!("{presentation}.{phase}.{law}"),
+                        context: format!("{label} change_spec fixed"),
+                    });
+                }
+                if !kinds.contains(&LawKind::Semantic) {
                     return Err(ValidationError::ConversionError {
                         detail: format!("`{presentation}.{phase}.{law}` is not a semantic law"),
                     });
@@ -364,14 +388,21 @@ pub(crate) fn validate_scoped_change_targets(
                 phase,
                 law,
             } => {
-                let Some((_, Some(kind))) = find_pres_phase_law(presentation, phase, law) else {
+                let Some((_, kinds)) = find_pres_phase_law_kinds(presentation, phase, law) else {
                     return Err(ValidationError::UnknownRef {
                         kind: "representation_law",
                         name: format!("{presentation}.{phase}.{law}"),
                         context: format!("{label} change_spec fixed"),
                     });
                 };
-                if kind != LawKind::Representation {
+                if kinds.is_empty() {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "representation_law",
+                        name: format!("{presentation}.{phase}.{law}"),
+                        context: format!("{label} change_spec fixed"),
+                    });
+                }
+                if !kinds.contains(&LawKind::Representation) {
                     return Err(ValidationError::ConversionError {
                         detail: format!(
                             "`{presentation}.{phase}.{law}` is not a representation law"
@@ -471,7 +502,7 @@ pub(crate) fn validate_scoped_change_targets(
                         context: format!("{label} change_spec editable"),
                     });
                 }
-                if vs.iter().all(|(_, is_fixed)| *is_fixed) {
+                if vs.iter().any(|(_, is_fixed)| *is_fixed) {
                     return Err(ValidationError::ConversionError {
                         detail: format!(
                             "editable target `{presentation}.{operation}` cannot belong to a fixed vertex"
@@ -484,21 +515,28 @@ pub(crate) fn validate_scoped_change_targets(
                 phase,
                 law,
             } => {
-                let Some((vs, Some(kind))) = find_pres_phase_law(presentation, phase, law) else {
+                let Some((vs, kinds)) = find_pres_phase_law_kinds(presentation, phase, law) else {
                     return Err(ValidationError::UnknownRef {
                         kind: "representation_law",
                         name: format!("{presentation}.{phase}.{law}"),
                         context: format!("{label} change_spec editable"),
                     });
                 };
-                if kind == LawKind::Semantic {
+                if kinds.is_empty() {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "representation_law",
+                        name: format!("{presentation}.{phase}.{law}"),
+                        context: format!("{label} change_spec editable"),
+                    });
+                }
+                if kinds.contains(&LawKind::Semantic) {
                     return Err(ValidationError::SemanticLawEditable {
                         presentation: presentation.clone(),
                         phase: phase.clone(),
                         law: law.clone(),
                     });
                 }
-                if vs.iter().all(|(_, is_fixed)| *is_fixed) {
+                if vs.iter().any(|(_, is_fixed)| *is_fixed) {
                     return Err(ValidationError::ConversionError {
                         detail: format!(
                             "editable target `{presentation}.{phase}.{law}` cannot belong to a fixed vertex"

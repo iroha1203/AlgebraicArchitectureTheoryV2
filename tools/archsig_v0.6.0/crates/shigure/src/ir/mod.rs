@@ -28,6 +28,8 @@ mod validate_change;
 mod tests;
 #[cfg(test)]
 mod tests_phase2;
+#[cfg(test)]
+mod tests_phase2_extra;
 
 pub use change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,

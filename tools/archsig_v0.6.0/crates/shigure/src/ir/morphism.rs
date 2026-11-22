@@ -8,7 +8,7 @@ use crate::ir::provenance::SourceRef;
 use crate::ir::term::PolyExpr;
 use crate::ir::validate::{
     ValidationError, require_non_empty, validate_opt_source_ref, validate_poly_expr,
-    validate_presentation_checked_params,
+    validate_presentation_ref_checked_params,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -76,9 +76,9 @@ impl StateMorphism {
 /// 内部に逆向きの状態比較射 `state_map: after -> before` を保持し、合成順を型で保証する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TimeStepMorphism {
-    pub before: String,
-    pub after: String,
-    pub state_map: StateMorphism,
+    before: String,
+    after: String,
+    state_map: StateMorphism,
 }
 
 impl TimeStepMorphism {
@@ -103,6 +103,18 @@ impl TimeStepMorphism {
             after,
             state_map,
         })
+    }
+
+    pub fn before(&self) -> &str {
+        &self.before
+    }
+
+    pub fn after(&self) -> &str {
+        &self.after
+    }
+
+    pub fn state_map(&self) -> &StateMorphism {
+        &self.state_map
     }
 }
 
@@ -278,16 +290,37 @@ pub fn compose_state_order(
     }
 
     let empty = BTreeMap::new();
-    let outer_sc_by_phase: BTreeMap<&str, &StateComparison> = outer
-        .state_comparisons
-        .iter()
-        .map(|sc| (sc.after_phase.as_str(), sc))
-        .collect();
-    let inner_sc_by_phase: BTreeMap<&str, &StateComparison> = inner
-        .state_comparisons
-        .iter()
-        .map(|sc| (sc.after_phase.as_str(), sc))
-        .collect();
+    let mut outer_sc_by_phase: BTreeMap<&str, &StateComparison> = BTreeMap::new();
+    for sc in &outer.state_comparisons {
+        if outer_sc_by_phase
+            .insert(sc.after_phase.as_str(), sc)
+            .is_some()
+        {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "state_comparison",
+                name: format!("{}.{}", outer.source, sc.after_phase),
+            });
+        }
+    }
+    let mut inner_sc_by_phase: BTreeMap<&str, &StateComparison> = BTreeMap::new();
+    for sc in &inner.state_comparisons {
+        if inner_sc_by_phase
+            .insert(sc.after_phase.as_str(), sc)
+            .is_some()
+        {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "state_comparison",
+                name: format!("{}.{}", inner.source, sc.after_phase),
+            });
+        }
+    }
+    for ph in &source.phases {
+        if !inner_sc_by_phase.contains_key(ph.name.as_str()) {
+            return Err(ValidationError::MissingStateComparison {
+                after_phase: ph.name.clone(),
+            });
+        }
+    }
 
     let mut composed_scs = Vec::with_capacity(inner.state_comparisons.len());
     for sc_in in &inner.state_comparisons {
@@ -325,8 +358,15 @@ pub fn compose_state_order(
         .map(|op| (op.name.as_str(), op))
         .collect();
 
+    let mut seen_src_ops = BTreeSet::new();
     let mut composed_entries = Vec::with_capacity(inner.word_translation.entries.len());
     for tw_in in &inner.word_translation.entries {
+        if !seen_src_ops.insert(tw_in.after_operation.as_str()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "word_translation",
+                name: format!("{}.{}", source.name, tw_in.after_operation),
+            });
+        }
         let src_op = source_ops
             .get(tw_in.after_operation.as_str())
             .ok_or_else(|| ValidationError::UnknownRef {
@@ -339,10 +379,16 @@ pub fn compose_state_order(
             .ok_or_else(|| ValidationError::MissingStateComparison {
                 after_phase: src_op.source_phase.clone(),
             })?;
+        let sc_end = inner_sc_by_phase
+            .get(src_op.target_phase.as_str())
+            .ok_or_else(|| ValidationError::MissingStateComparison {
+                after_phase: src_op.target_phase.clone(),
+            })?;
 
         let mut mid_state: BTreeMap<String, PolyExpr> = sc_in.map.clone();
+        let mut cur_mid_phase = sc_in.before_phase.as_str();
         let mut steps = Vec::new();
-        for step_in in &tw_in.steps {
+        for (step_idx, step_in) in tw_in.steps.iter().enumerate() {
             let mid_op = middle_ops
                 .get(step_in.before_operation.as_str())
                 .ok_or_else(|| ValidationError::UnknownRef {
@@ -350,6 +396,15 @@ pub fn compose_state_order(
                     name: step_in.before_operation.clone(),
                     context: format!("compose_state_order word `{}`", tw_in.after_operation),
                 })?;
+            if mid_op.source_phase != cur_mid_phase {
+                return Err(ValidationError::PhasePathMismatch {
+                    after_operation: tw_in.after_operation.clone(),
+                    detail: format!(
+                        "compose_state_order step {step_idx} (`{}`) expects middle phase `{cur_mid_phase}`, got `{}`",
+                        mid_op.name, mid_op.source_phase
+                    ),
+                });
+            }
             let tw_out = outer
                 .word_translation
                 .for_operation(&mid_op.name)
@@ -394,6 +449,16 @@ pub fn compose_state_order(
                 );
             }
             mid_state = next_mid_state;
+            cur_mid_phase = mid_op.target_phase.as_str();
+        }
+        if cur_mid_phase != sc_end.before_phase.as_str() {
+            return Err(ValidationError::PhasePathMismatch {
+                after_operation: tw_in.after_operation.clone(),
+                detail: format!(
+                    "compose_state_order ends at middle phase `{cur_mid_phase}`, expected `{}`",
+                    sc_end.before_phase
+                ),
+            });
         }
 
         composed_entries.push(TranslatedWord {
@@ -401,6 +466,13 @@ pub fn compose_state_order(
             steps,
             provenance: tw_in.provenance.clone(),
         });
+    }
+    for op in &source.operations {
+        if !seen_src_ops.contains(op.name.as_str()) {
+            return Err(ValidationError::MissingWordTranslation {
+                after_operation: op.name.clone(),
+            });
+        }
     }
 
     Ok(StateMorphism {
@@ -434,12 +506,41 @@ pub fn compose_time_order(
             ),
         });
     }
+    if first.after != middle.name {
+        return Err(ValidationError::ConversionError {
+            detail: format!(
+                "compose_time_order mismatch: middle vertex `{}` != presentation `{}`",
+                first.after, middle.name
+            ),
+        });
+    }
+    if second.after != after.name {
+        return Err(ValidationError::ConversionError {
+            detail: format!(
+                "compose_time_order mismatch: after vertex `{}` != presentation `{}`",
+                second.after, after.name
+            ),
+        });
+    }
     let composed_map = compose_state_order(&first.state_map, &second.state_map, after, middle)?;
     TimeStepMorphism::new(first.before.clone(), second.after.clone(), composed_map)
 }
 
 /// 任意の `StateMorphism`（`source == target` の恒等・自己射を含む）を `source`・`target` 表示に対して検査する。
 pub(crate) fn validate_state_morphism(
+    m: &StateMorphism,
+    source: &Presentation,
+    target: &Presentation,
+    allowed_params: &BTreeSet<String>,
+    context: &str,
+) -> Result<(), ValidationError> {
+    validate_presentation_ref_checked_params(source, allowed_params)?;
+    validate_presentation_ref_checked_params(target, allowed_params)?;
+    validate_state_morphism_checked_endpoints(m, source, target, allowed_params, context)
+}
+
+/// 端点表示を事前に検証済みの状態で `StateMorphism`（`source == target` の自己射含む）を検査する。
+pub(crate) fn validate_state_morphism_checked_endpoints(
     m: &StateMorphism,
     source: &Presentation,
     target: &Presentation,
@@ -469,9 +570,28 @@ pub(crate) fn validate_state_morphism(
             context: context.to_owned(),
         });
     }
-    validate_opt_source_ref(m.provenance.as_ref(), context)?;
-    let _ = validate_presentation_checked_params(source.clone(), allowed_params)?;
-    let _ = validate_presentation_checked_params(target.clone(), allowed_params)?;
+    validate_morphism_correspondence(
+        &m.state_comparisons,
+        &m.word_translation,
+        m.provenance.as_ref(),
+        source,
+        target,
+        allowed_params,
+        context,
+    )
+}
+
+/// 状態比較 `state_comparisons`・観測対応・操作語翻訳 `word_translation` の共通整合検査本体。
+pub(crate) fn validate_morphism_correspondence(
+    state_comparisons: &[StateComparison],
+    word_translation: &WordTranslation,
+    provenance: Option<&SourceRef>,
+    source: &Presentation,
+    target: &Presentation,
+    allowed_params: &BTreeSet<String>,
+    context: &str,
+) -> Result<(), ValidationError> {
+    validate_opt_source_ref(provenance, context)?;
 
     let domain = &source.coeff_domain;
     let source_phase_coords: BTreeMap<&str, BTreeSet<String>> = source
@@ -497,7 +617,7 @@ pub(crate) fn validate_state_morphism(
 
     let mut h_by_src_phase: BTreeMap<String, String> = BTreeMap::new();
     let empty_args = BTreeSet::new();
-    for sc in &m.state_comparisons {
+    for sc in state_comparisons {
         validate_opt_source_ref(
             sc.provenance.as_ref(),
             &format!("{context}.state_comparison `{}`", sc.after_phase),
@@ -560,7 +680,7 @@ pub(crate) fn validate_state_morphism(
 
     check_observation_correspondence(source, target, &h_by_src_phase)?;
     validate_word_translations(
-        m,
+        word_translation,
         source,
         target,
         &h_by_src_phase,
@@ -616,7 +736,7 @@ fn check_observation_correspondence(
 }
 
 fn validate_word_translations(
-    m: &StateMorphism,
+    word_translation: &WordTranslation,
     source: &Presentation,
     target: &Presentation,
     h_by_src_phase: &BTreeMap<String, String>,
@@ -636,7 +756,7 @@ fn validate_word_translations(
         .collect();
 
     let mut seen = BTreeSet::new();
-    for tw in &m.word_translation.entries {
+    for tw in &word_translation.entries {
         validate_opt_source_ref(
             tw.provenance.as_ref(),
             &format!("{context}.word_translation `{}`", tw.after_operation),

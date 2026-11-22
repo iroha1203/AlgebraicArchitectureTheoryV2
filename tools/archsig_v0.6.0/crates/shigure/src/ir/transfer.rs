@@ -8,8 +8,8 @@ use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::PolyExpr;
 use crate::ir::validate::{
     CheckedChangeSpec, CheckedEvalCondition, ValidationError, collect_eval_unobserved,
-    collect_presentation_unobserved, require_non_empty, validate_opt_source_ref,
-    validate_poly_expr, validate_provenance,
+    collect_morphism_unobserved, collect_presentation_unobserved, require_non_empty,
+    validate_opt_source_ref, validate_poly_expr, validate_provenance,
 };
 use crate::ir::validate_change::{
     collect_and_check_param_names, validate_change_spec_struct_only,
@@ -339,18 +339,11 @@ impl CheckedTransferTask {
         for step in &self.spec.steps {
             collect_presentation_unobserved(&step.comparison.before, &mut slots);
             collect_presentation_unobserved(&step.comparison.after, &mut slots);
-            for sc in &step.comparison.state_comparisons {
-                for e in sc.map.values() {
-                    e.collect_unobserved(&mut slots);
-                }
-            }
-            for tw in &step.comparison.word_translation.entries {
-                for st in &tw.steps {
-                    for e in &st.arg_exprs {
-                        e.collect_unobserved(&mut slots);
-                    }
-                }
-            }
+            collect_morphism_unobserved(
+                &step.comparison.state_comparisons,
+                &step.comparison.word_translation,
+                &mut slots,
+            );
             for l in &step.domain_laws {
                 l.polynomial.collect_unobserved(&mut slots);
             }

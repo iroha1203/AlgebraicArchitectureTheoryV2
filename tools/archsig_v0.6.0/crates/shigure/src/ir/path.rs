@@ -2,15 +2,17 @@
 
 use crate::ir::change::{ChangeSpec, EvalCondition};
 use crate::ir::diagram::validate_scoped_change_targets;
-use crate::ir::morphism::{MorphismDirection, StateMorphism, validate_state_morphism};
+use crate::ir::morphism::{
+    MorphismDirection, StateMorphism, validate_state_morphism_checked_endpoints,
+};
 use crate::ir::presentation::{ComparisonPair, Presentation, StateLaw};
 use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::{PolyExpr, ScalarLit};
 use crate::ir::validate::{
     CheckedChangeSpec, CheckedComparisonPair, CheckedEvalCondition, ValidationError,
-    collect_eval_unobserved, collect_presentation_unobserved, require_non_empty,
-    validate_opt_source_ref, validate_poly_expr, validate_presentation_checked_params,
-    validate_provenance, validate_scalar_lit,
+    collect_eval_unobserved, collect_morphism_unobserved, collect_presentation_unobserved,
+    require_non_empty, validate_opt_source_ref, validate_poly_expr,
+    validate_presentation_ref_checked_params, validate_provenance, validate_scalar_lit,
 };
 use crate::ir::validate_change::{
     collect_and_check_param_names, validate_change_spec_checked_params,
@@ -165,6 +167,11 @@ impl CheckedPathTask {
                         detail: "enlarged_protocol_execution_path uses protocol `allowed_ops`, not one-step change rules".to_owned(),
                     });
                 }
+                if !spec.vertices.is_empty() || spec.start.is_some() || spec.end.is_some() {
+                    return Err(ValidationError::ConversionError {
+                        detail: "enlarged_protocol_execution_path must not specify `vertices`, `start`, or `end`".to_owned(),
+                    });
+                }
                 let proto =
                     spec.protocol
                         .as_ref()
@@ -225,39 +232,30 @@ impl CheckedPathTask {
             for u in rule.param_updates.values() {
                 u.collect_unobserved(&mut slots);
             }
-            for sc in &rule.morphism.state_comparisons {
-                for e in sc.map.values() {
-                    e.collect_unobserved(&mut slots);
-                }
-            }
-            for tw in &rule.morphism.word_translation.entries {
-                for st in &tw.steps {
-                    for e in &st.arg_exprs {
-                        e.collect_unobserved(&mut slots);
-                    }
-                }
-            }
+            collect_morphism_unobserved(
+                &rule.morphism.state_comparisons,
+                &rule.morphism.word_translation,
+                &mut slots,
+            );
             if let Some(ec) = &rule.eval_condition {
                 collect_eval_unobserved(ec, &mut slots);
             }
         }
         if let PathQueryMode::Subdivide { target_edge } = &self.spec.query_mode {
-            for sc in &target_edge.state_comparisons {
-                for e in sc.map.values() {
-                    e.collect_unobserved(&mut slots);
-                }
-            }
-            for tw in &target_edge.word_translation.entries {
-                for st in &tw.steps {
-                    for e in &st.arg_exprs {
-                        e.collect_unobserved(&mut slots);
-                    }
-                }
-            }
+            collect_morphism_unobserved(
+                &target_edge.state_comparisons,
+                &target_edge.word_translation,
+                &mut slots,
+            );
         }
         if let Some(proto) = &self.spec.protocol {
             collect_presentation_unobserved(&proto.comparison.before, &mut slots);
             collect_presentation_unobserved(&proto.comparison.after, &mut slots);
+            collect_morphism_unobserved(
+                &proto.comparison.state_comparisons,
+                &proto.comparison.word_translation,
+                &mut slots,
+            );
             for l in proto.start_laws.iter().chain(&proto.end_laws) {
                 l.polynomial.collect_unobserved(&mut slots);
             }
@@ -303,6 +301,7 @@ fn validate_fixed_change_path(
     domain: &crate::ir::term::CoeffDomain,
     param_names: &BTreeSet<String>,
 ) -> Result<(), ValidationError> {
+    let mut seen_pres_by_name: BTreeMap<&str, &Presentation> = BTreeMap::new();
     for (v_name, pres) in &spec.vertices {
         require_non_empty(v_name, "path.vertex")?;
         if &pres.coeff_domain != domain {
@@ -312,7 +311,19 @@ fn validate_fixed_change_path(
                 context: format!("path vertex `{v_name}`"),
             });
         }
-        let _ = validate_presentation_checked_params(pres.clone(), param_names)?;
+        validate_presentation_ref_checked_params(pres, param_names)?;
+        if let Some(&existing) = seen_pres_by_name.get(pres.name.as_str()) {
+            if existing != pres {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "path vertex `{v_name}` reuses presentation name `{}` with differing definition",
+                        pres.name
+                    ),
+                });
+            }
+        } else {
+            seen_pres_by_name.insert(pres.name.as_str(), pres);
+        }
     }
 
     validate_endpoint(start, &spec.vertices, domain, param_names, "start")?;
@@ -349,8 +360,19 @@ fn validate_fixed_change_path(
                     context: format!("path rule `{}` to_vertex", rule.name),
                 })?;
 
+        let mut guard_names = BTreeSet::new();
         for g in &rule.param_guards {
             require_non_empty(&g.name, &format!("path rule `{}` guard", rule.name))?;
+            validate_opt_source_ref(
+                g.provenance.as_ref(),
+                &format!("path rule `{}` guard `{}`", rule.name, g.name),
+            )?;
+            if !guard_names.insert(g.name.clone()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "param guard",
+                    name: format!("{}.{}", rule.name, g.name),
+                });
+            }
             validate_poly_expr(
                 &g.expr,
                 domain,
@@ -382,7 +404,7 @@ fn validate_fixed_change_path(
             MorphismDirection::StateMap => (from_pres, to_pres),
             MorphismDirection::TimeOrder => (to_pres, from_pres),
         };
-        validate_state_morphism(
+        validate_state_morphism_checked_endpoints(
             &rule.morphism,
             m_src,
             m_tgt,
@@ -441,7 +463,7 @@ fn validate_fixed_change_path(
                 MorphismDirection::StateMap => (start_pres, end_pres),
                 MorphismDirection::TimeOrder => (end_pres, start_pres),
             };
-            validate_state_morphism(
+            validate_state_morphism_checked_endpoints(
                 target_edge,
                 m_src,
                 m_tgt,
@@ -477,12 +499,19 @@ fn validate_protocol_spec(
 
     let empty = BTreeSet::new();
     let start_coords: BTreeSet<String> = start_ph.coords.iter().map(|c| c.name.clone()).collect();
+    let mut seen_start_laws = BTreeSet::new();
     for law in &proto.start_laws {
         require_non_empty(&law.name, "protocol.start_law")?;
         validate_opt_source_ref(
             law.provenance.as_ref(),
             &format!("protocol start_law `{}`", law.name),
         )?;
+        if !seen_start_laws.insert(law.name.clone()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "start_law",
+                name: law.name.clone(),
+            });
+        }
         validate_poly_expr(
             &law.polynomial,
             domain,
@@ -494,12 +523,19 @@ fn validate_protocol_spec(
     }
 
     let end_coords: BTreeSet<String> = end_ph.coords.iter().map(|c| c.name.clone()).collect();
+    let mut seen_end_laws = BTreeSet::new();
     for law in &proto.end_laws {
         require_non_empty(&law.name, "protocol.end_law")?;
         validate_opt_source_ref(
             law.provenance.as_ref(),
             &format!("protocol end_law `{}`", law.name),
         )?;
+        if !seen_end_laws.insert(law.name.clone()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "end_law",
+                name: law.name.clone(),
+            });
+        }
         validate_poly_expr(
             &law.polynomial,
             domain,
