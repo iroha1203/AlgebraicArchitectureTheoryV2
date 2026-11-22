@@ -35,7 +35,7 @@ A_eng = (C_eng, structure_maps, selected_quantities)
 
 `structure_maps` は各操作の型付き入出力と式の解釈、`selected_quantities` は
 入力依存・型保存・Law 保存・合成等の評価軸である。
-これは [AAT 第I部](../../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
+これは [旧本文 AAT 第I部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
 §§4–7・10 の configuration、architecture object、equation system に対応する。
 
 分析対象の入力 family `F`、エンジン仕様の `F_eng`、計算結果の `DerivedModel` は別の型である。
@@ -299,7 +299,7 @@ L01–L13 の全量化した要求を満たすには、個々の演算の意味�
 将来の形式化では、特定の DSL 意味論や検査器の健全性を定理として切り出せる。
 設計モデルの自己評価、実装のテスト、数学的な証明は、それぞれ何を確認したかを保持する。
 
-根拠は [AAT 第I部](../../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
+根拠は [旧本文 AAT 第I部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
 定義7.1–7.3・10.2・10.4Aと、
-[第II部](../../aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)
+[旧本文 第II部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)
 定義3.1・4.3A・7.2である。これらを変更せず、tooling の有限 reading として具体化している。

@@ -43,8 +43,8 @@
 
 ## 理論本文の参照先
 
-`docs/aat/algebraic_geometric_theory/` の数学本文は、最終編集から時間が経過している。
-最新の理論本体は [Rising Sea](outreach/paper/rising-sea/README.md) を参照する。
+理論本体は [代数幾何的アーキテクチャ論](docs/aat/algebraic_geometric_theory/README.md)
+の全6部19章と付録A–Eにある。
 
 ## モノレポの地図と guideline ルーティング
 

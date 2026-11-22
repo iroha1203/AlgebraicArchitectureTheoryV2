@@ -74,7 +74,7 @@ website 側の文章は、ここに置いた研究上の主張規律を参照し
 ## 全体文書
 
 - [研究の全体目標](research_goal.md): この研究の憲法。現在の姿ではなく、目指す姿を書く。理論はこの言葉に追いつくように進め、憲法を現在の理論に合わせて弱めることはしない。
-- [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md): AAT 数学本文の基準文書。Atom 公理系から architecture object を構成し、AAT site、sheaf、ringed topos、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、derived / stacky geometry、measurement、evolution geometry へ進む。
+- [代数幾何的 AAT 数学本文](aat/algebraic_geometric_theory/README.md): 全6部19章と付録A–E。Atom・Lawから意味の対象と射を定め、係数的実現、条件付き変更、descentと修復、輸送と診断、観測と再構成を扱う。
 - [AAT / SFT Interface](sft/aat_interface.md): SFT が AAT から借りる概念と、片方向依存のインタフェースを整理する。
 - [ソフトウェアの場の理論](sft/software_field_theory.md): PRD、仕様書、Issue、PR、レビュー、CI、組織、AI、ライフサイクルを力・場・軌道・制御として整理する。
 - [Lean 形式化](../Formal/): 現在 Lean に実装されている定義・定理のソース。

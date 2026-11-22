@@ -223,7 +223,7 @@ L05 instance の context `W_(c,s)` は source の式、候補規則、両評価�
 どの演算を使うかを不足値として返す。`add` と `sub` の補完は、それぞれ
 上の成立・不成立を与えるため、この不足を零や規則なしへ置換できない。
 
-この例は、[AAT 第I部](../../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
+この例は、[旧本文 AAT 第I部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
 §§4–7 の configuration、architecture object、equation system を、コンパイラ仕様の
 有限提示に適用したものである。確認の単位は提示された規則と source Law の組であり、
 その組では全代入を記号的に比較する。任意の source 構文木への一般化には構造帰納法を、

@@ -161,7 +161,7 @@ s_b = (q:0, r:β)
 s_c = (p:0, r:γ)
 ```
 
-[AAT 第X部 §2](../../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+[旧本文 AAT 第X部 §2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 の increasing-index Čech complex を用いる。係数と重なりの計算から、
 
 ```math
@@ -298,8 +298,8 @@ TD=BR,\qquad \mu T=\lambda
 | 障害・大域解 | 商、補正、頂点値の貼り合わせ | `ker μ=im B`、零類と大域解の両方向 |
 | 線形計算との比較 | 正規化と局所差の線形化 | `TD=BR`、`μT=λ`、商上の同型 |
 
-これは[AAT 第IV部 §5](../../aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
-の torsor-normalized mismatch と、[第X部 §2](../../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+これは[旧本文 AAT 第IV部 §5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
+の torsor-normalized mismatch と、[旧本文 第X部 §2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 の cover-relative Čech complex を、この Atom 定義・Law・ArchMapから具体化した例である。
 得られる大域状態は、この例で定義した座標 z である。
 

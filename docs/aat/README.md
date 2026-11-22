@@ -1,93 +1,39 @@
 # AAT: 代数的アーキテクチャ論
 
-このディレクトリは、Algebraic Architecture Theory, AAT の数学本文、
-Lean 形式化 status、証明義務を管理する。
+このディレクトリは、AATの数学本文とLean形式化の編集基準を案内する。
+理論本体は[代数幾何的アーキテクチャ論](algebraic_geometric_theory/README.md)の
+全6部19章と付録A–Eにある。
 
-AAT は、primitive architectural fact を Atom として公理化したうえで、
-固定された vocabulary、law universe、coverage topology、係数環 / 係数 sheaf に相対化された
-architecture geometry を構成する純粋な代数幾何理論である。
+AATは、AtomとLawによって意味の対象と射を定め、その実現・変更・修復の全体を調べる。
+共通の語彙で状態・操作・関係・量を持つモデルを構成し、その族の幾何、局所からの組立て、
+障害、観測に必要な情報へ進む。
 
-```text
-AAT
-  = Atom vocabulary
-  + Atom axiom system
-  + Atom family / configuration
-  + Architecture object
-  + Law universe
-  + Coverage topology
-  + Coefficient sheaf
-  + AAT site
-  + Sheaves
-  + Law algebra
-  + Obstruction ideal sheaf
-  + Lawful locus
-  + Architecture scheme
-  + Čech descent
-  + Derived law geometry
-```
+## 数学本文を読む
 
-AAT は、他の理論のための補助概念ではなく、ソフトウェアアーキテクチャの
-数学理論として独立に成立する。後続理論は AAT を使えるが、AAT 側に
-逆依存を作らない。
+[序論](algebraic_geometric_theory/introduction.md)で三つの到達点と論証の順序を確認し、
+[共通記号](algebraic_geometric_theory/notation.md)を参照しながら各部へ進む。
+章・節・付録へのリンクは[数学本文の目次](algebraic_geometric_theory/README.md)にある。
 
-## 読む順序
+| 部 | 章 | 主題 |
+| --- | --- | --- |
+| I | 1–3 | Lawと意味の基礎 |
+| II | 4–6 | 実現の族とLawの幾何 |
+| III | 7–9 | 意味を保つ変更の全体 |
+| IV | 10–13 | 局所変更・修復・障害 |
+| V | 14–16 | 輸送・比較・診断 |
+| VI | 17–19 | 観測・必要情報・再構成 |
 
-1. [代数幾何的 AAT 数学本文](algebraic_geometric_theory/README.md)
-   - AAT 数学本文の正典。
-   - AAT を site、ringed topos、affine chart、scheme、derived / stacky geometry として読む。
-   - 標準代数幾何への埋め込み方と claim status は [付録](algebraic_geometric_theory/appendix.md) にまとめる。
-   - Lean 形式化との対応があるものは、`Formal/` のLean sourceで直接確認する。
-   - Part X theorem-7.5のtarget claimは、taskが指定する一次仕様と
-     `Formal/` の実装 declaration を直接突合して確認する。
-2. [AAT / Lean 編集ガイドライン](guideline.md)
-3. [Lean 品質基準](lean_quality_standard.md)
-   - mathlib 型 statement review 基準と target statement の一次仕様・直接査読の正本。
+付録A–Eは、正の論理、係数とdescent、関係・解消・逆極限、有限root schemeとstalk、
+変更経路と費用を扱う。定義・定理・証明と、それらに必要な仮定は数学本文の中で確認できる。
 
-現行の AAT 数学本文の正典は `algebraic_geometric_theory/` に置く。
-力学・場・予測・制御の内容は [SFT](../sft/software_field_theory.md) 側で扱う。
+## 編集と形式化の参照先
 
-## AAT の中心対象
+- [AAT / Lean 編集ガイドライン](guideline.md)
+- [Lean 品質基準](lean_quality_standard.md)
 
-```text
-Atom vocabulary
-Atom axiom system
-Atom family
-Atom configuration
-Architecture object
-Law universe
-Coverage topology
-AAT site
-Sheaf / coefficient sheaf
-Ringed AAT topos
-Law algebra
-Obstruction ideal sheaf
-Lawful locus
-Affine AAT chart
-Architecture scheme
-Čech obstruction cohomology
-Derived law geometry
-Singularity / monodromy / stack
-Representation / period / analytic reading
-Measurement profile
-Evolution geometry
-```
-
-## AAT の問い
-
-```text
-どの Atom vocabulary と Atom axiom system を固定しているか。
-どの Atom family / configuration が architecture object を生成するか。
-どの law universe / coverage topology / coefficient を固定しているか。
-Atom から生成された architecture object の上に、どの AAT site と sheaf が立ち上がるか。
-law algebra はどの零点条件を切り出すか。
-obstruction ideal sheaf はどの law failure を表すか。
-lawful locus はどの局所条件として定義されるか。
-局所 lawful section は Čech descent によって大域化できるか。
-derived law geometry はどの repair residue / Tor conflict を露出するか。
-measurement profile はどの有限 regime で不変量を計算可能にするか。
-```
-
-## 証明済み主張の読み方
+Lean 形式化との対応があるものは、`Formal/` のLean sourceで直接確認する。
+Part X theorem-7.5のtarget claimは、taskが指定する一次仕様と
+`Formal/` の実装 declaration を直接突合して確認する。
 
 数学本文は、作業状態や Issue 管理状態を混ぜない。
 現在 Lean に存在する定義・定理は `Formal/` のLean sourceで確認する。
@@ -97,26 +43,5 @@ measurement profile はどの有限 regime で不変量を計算可能にする�
 を混同しない。特に、tooling output、source-observation output、未測定軸、
 empirical correlation は、それだけで Lean theorem にはならない。
 
-## ArchMap / ArchSig との責務境界
-
-AAT は代数幾何的数学本文を source of truth とする。
-ArchMap がどの source artifact をどう観測し、どの evidence を記録するかは AAT の内部 claim ではない。
-
-ウィトゲンシュタイン的責務境界では、ArchSig は与えられた
-`ArchMap + LawPolicy` から語れることだけを語り、
-語れないことには沈黙する。selected universe の妥当性は
-ArchMap author と LawPolicy author の責務であり、AAT / Lean はその選ばれた範囲内で
-成立する theorem boundary / measurement boundary を与える。
-
-## 非目標
-
-AAT は次を主張しない。
-
-```text
-- 実コードから完全な ComponentUniverse を抽出できる。
-- static flatness から runtime / semantic flatness が自動的に従う。
-- architecture quality を単一スコアへ潰せる。
-- measurement が 0 なら未測定軸も安全である。
-- SOLID や Layered などの設計語彙が AAT primitive である。
-- empirical cost correlation が Lean theorem である。
-```
+SFTの理論は[SFT](../sft/software_field_theory.md)、ArchMap・ArchSigなどの入力と計算は
+[Tooling](../tool/README.md)で扱う。
