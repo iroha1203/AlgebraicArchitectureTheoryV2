@@ -89,13 +89,13 @@ $`t\,[t^2]-[t^3]=0`$ が残差を結ぶ。独立な二本の障害として数�
 その近傍で $`I`$ が正則列 $`f_1,\ldots,f_r`$ によって生成され、変数が $`n`$ 個であるとする。
 固定データを保つ意味の一次変形は $`\ker J_x`$ と自然に一対一であり、
 ここで $`J_x=(\partial f_i/\partial x_j)(x)`$ である。
-chartが $`x`$ でsmoothであることと $`\mathop{\mathrm{rank}}\nolimitsJ_x=r`$ は同値である。
+chartが $`x`$ でsmoothであることと $`\mathop{\mathrm{rank}}\nolimits J_x=r`$ は同値である。
 
 **証明.**
 双対数環 $`k[\epsilon]/\epsilon^2`$ へのliftを $`x_j+\epsilon u_j`$ と書く。
 Lawの展開は $`f_i(x)+\epsilon\sum_jJ_{ij}u_j`$ であるから、全liftは $`J_xu=0`$ に一致する。
 意味への評価と一般元からの抽出は定理12.2と同じである。
-正則列による局所環の次元は $`n-r`$、接空間の次元は $`n-\mathop{\mathrm{rank}}\nolimitsJ_x`$ である。
+正則列による局所環の次元は $`n-r`$、接空間の次元は $`n-\mathop{\mathrm{rank}}\nolimits J_x`$ である。
 [補題C.2](../appendix_c_homological_constructions.md#c2-正則列とsmoothness)の局所判定により、
 完全体上の有理点では、この二次元の一致とsmoothnessが同値となる。
 

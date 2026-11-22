@@ -203,7 +203,7 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 具体的な同型は
 
 ```math
-\mathop{\mathrm{coker}}\nolimitsd\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
+\mathop{\mathrm{coker}}\nolimits d\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
 [a]\longmapsto\left[\sum_{n\ge0}2^na_n\right].
 \tag{13.6}
 ```
@@ -245,7 +245,7 @@ $`a'_n=\epsilon a_n`$、還元点を $`c=0`$ とする。
 全liftは $`c'_n=\epsilon x_n`$ であり、その実操作保存は $`d(x)=a`$ と同値になる。
 原始Lawを $`f_n=a_n-c_n+2c_{n+1}`$ と向きづけると、
 ambient lift $`\widetilde c=0`$ の残差は $`\epsilon a`$、補正微分は $`-d`$ である。
-従って定理12.2の規約でも障害は同じ $`[a]\in\mathop{\mathrm{coker}}\nolimitsd`$ となる。
+従って定理12.2の規約でも障害は同じ $`[a]\in\mathop{\mathrm{coker}}\nolimits d`$ となる。
 相対余接複体をこの零点に引くと
 $`[\bigoplus\mathbb Z\xrightarrow{-d^\vee}\bigoplus\mathbb Z]`$（次数 $`-1,0`$）であり、
 $`d^\vee(e_n)=e_n-2e_{n+1}`$ は有限support上で単射、余核は $`\mathbb Z[1/2]`$ である。
