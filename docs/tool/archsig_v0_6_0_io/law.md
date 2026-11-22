@@ -440,8 +440,8 @@ ShigureTransfer ::= "transfer" Name "{"
   ("step" Name "{"
     ("before" QName ";")?
     ("after" QName ";")?
-    ("source_phase" Name ";")
-    ("target_phase" Name ";")
+    "source_phase" Name ";"
+    "target_phase" Name ";"
     ("domain_law" ShigureLawClause)*
     "lift" "{" (Name "=" PolyExpr ";")* "}"
     ShigureMorphismClause
@@ -480,14 +480,14 @@ ShigureTransfer ::= "transfer" Name "{"
   初段 `step[0]` の始端表示 $X_0$ をパラメータフリーかつ編集不可に制限する（2 段目以降の共有中間表示における編集・パラメータ指定は許容する）。
 - **名前・参照・型・循環・無界境界の検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
   `shigure` reading 間の循環参照、未宣言の phase・座標・操作・変数、
-  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数とパラメータ・操作名の衝突を含む）、
+  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数重複およびパラメータとの衝突を含む）、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
   （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
   `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
   法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル）、
   および `direction` と射端点の不整合を拒否する。
   なお `domain Z` と `rational_points` は $\mathbb{Z} \hookrightarrow \mathbb{Q}$ による $\mathbb{Q}$ 点評価として受理する。
-  また `shigure path` の `length` および `old_word_lift` の `max_length` の省略は構文上受理し、実行時に `unbounded_search_out_of_scope` の `undetermined` として扱う。
+  また `shigure path` の `mode find` / `mode subdivide` における `length` 省略および `old_word_lift` の `max_length` 省略は構文上受理し、実行時に `unbounded_search_out_of_scope` の `undetermined` として扱う（`mode concatenate` は `first`・`second` の列長から経路長が定まるため `length` 省略を通常評価する）。
 - **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合、
   零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` で沈黙する。
   参照した観測座標の `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。

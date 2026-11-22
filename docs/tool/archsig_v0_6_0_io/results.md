@@ -1355,7 +1355,7 @@ PathOutcomeDetail = {
     intermediate_vertices: String[],
     parameter_assignments: { [Name]: String },
     free_parameters: String[],
-    step_states: { [Param]: String }[],
+    step_states: { [Param | CoordName]: String }[],
     composite_state_comparisons: { [PhaseName]: { [CoordName]: String } },
     composite_word_translation: { [OpName]: String[] },
     composite_is_one_step?: Bool,
@@ -1364,7 +1364,7 @@ PathOutcomeDetail = {
   rejected_candidates: {
     steps: String[],
     failed_step: Nat,
-    intermediate_state: { [Param]: String },
+    intermediate_state: { [Param | CoordName]: String },
     residuals: String[],
     reason: String
   }[]
@@ -1433,4 +1433,5 @@ SilenceReason = {
 `code: "unobserved"`（`unobserved_dependency` の場合）または `code: "unsupported_algorithm"`（その他の適用条件外の場合）の
 Issue を付与し、`details` へ `silence_reason` の構造体をそのまま保持する。
 `provenance.origins` には、当該タスクが参照した Law 宣言と、実際に参照された `observed` 座標の ArchMap `Origin`（全 `SourceLocation`）だけを収集し、未参照の `Origin` は混入させない。
+`path.valid_paths[].step_states` と `path.rejected_candidates[].intermediate_state` のキーには、`fixed_protocol_change_path` では `change_spec` のパラメータ名、`enlarged_protocol_execution_path` では対象位相の状態座標名を格納する。
 `restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
