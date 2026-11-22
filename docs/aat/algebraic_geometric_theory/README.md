@@ -16,9 +16,11 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 - [第II部 実現の族とLawの幾何](#第ii部-実現の族とlawの幾何)：第4–6章。
 - [第III部 意味を保つ変更の全体](#第iii部-意味を保つ変更の全体)：第7–9章。
 - [第IV部 局所変更・修復・障害](#第iv部-局所変更修復障害)：第10–13章。
+- [第V部 輸送・比較・診断](#第v部-輸送比較診断)：第14–16章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる導出規則。
 - [付録B 係数・affine構成・descent](appendix_b_coefficients_and_descent.md)：第II部で使う係数変更と局所からの組立て。
 - [付録C 関係・解消・逆極限](appendix_c_homological_constructions.md)：余接複体、Tor、複体の塔の比較。
+- [付録D 有限root schemeとstalk](appendix_d_finite_roots_and_stalks.md)：実現族上の診断層と幾何点のLaw値複体。
 
 ## 全体の構成
 
@@ -29,6 +31,7 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 第III部は第7–9章で全変更と条件付き変更族を構成し、商・代表選択・持ち上げを分類する。
 第IV部は第10–13章で二方向のdescent、アリアドネの全修復、変形と交差の障害、
 有限fragmentからの大域復元を構成する。
+第V部は第14–16章でreadingと係数の輸送、生成比較と正規化、診断の族と指定障害の比較を構成する。
 
 ### 第I部 Lawと意味の基礎
 
@@ -57,9 +60,9 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 
 ### 第V部 輸送・比較・診断
 
-14. readingと係数に沿う輸送
-15. 生成比較と正規化
-16. 診断の族と障害の比較
+14. [readingと係数に沿う輸送](part_5/chapter_14_transport_along_readings_and_coefficients.md)
+15. [生成比較と正規化](part_5/chapter_15_generated_comparisons_and_normalization.md)
+16. [診断の族と障害の比較](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md)
 
 ### 第VI部 観測・必要情報・再構成
 

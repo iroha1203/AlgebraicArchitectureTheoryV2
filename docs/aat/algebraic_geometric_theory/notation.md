@@ -81,6 +81,16 @@ $`\pi_i,\pi_{\mathrm{ob}}`$ は線形商写像、$`B_i`$ は頂点補正空間�
 | $`M_{\mathrm{sem}},Q_E,\Phi,\beta`$ | repair wordの関係商、方程式の生成商 $`O_E/I_{\mathrm{Ob}}^E`$、係数同型、実状態と方程式liftの対応 | [12.4](part_4/chapter_12_deformations_and_obstructions.md#124-局所lift後の貼り合わせと意味比較) |
 | $`B,I_1,I_2,\mathop{\mathrm{Tor}}\nolimits`$ | 共通ambient環、二つの残差イデアル、導来交差のコホモロジー | [12.5](part_4/chapter_12_deformations_and_obstructions.md#125-複数lawの導来交差とtor) |
 | $`D_n,R\!\lim D_n,\lim^1`$ | 原始修正複体の塔、その導来逆極限、追加の整合障害を持つ導来関手 | [13.3](part_4/chapter_13_fragments_and_globalization.md#133-導来逆極限と追加障害) |
+| $`B_b,\chi_{b,u}`$、$`e_!,e^*`$ | 係数変更と理論引戻しの比較、exactな原始対応に沿う輸送と逆向きの制限 | [14.1–14.3](part_5/chapter_14_transport_along_readings_and_coefficients.md#141-理論引戻しと係数実現readingatom観測) |
+| $`L_u,R_u,\alpha:D\Rightarrow V`$ | 随伴を持つ輸送・制限、二経路を結ぶ生成mate | [15.1](part_5/chapter_15_generated_comparisons_and_normalization.md#151-二経路と標準比較) |
+| $`\mathrm{Kar}(\mathcal E),(X,e),(Y,d),\beta`$ | 冪等射の像を対象とする圏、正規化された比較 | [15.2](part_5/chapter_15_generated_comparisons_and_normalization.md#152-冪等正規化と像) |
+| $`r:G\to Q,\Gamma,\Delta,L`$ | 実比較の端点変更群から像の変更群への写像、適合部分群、制限準同型の核 | [15.4–15.5](part_5/chapter_15_generated_comparisons_and_normalization.md#154-保存反映持ち上げ) |
+| $`S,q,\lambda_\ell,K_a,D_q,\Lambda`$ | 有限Source、reading、Law値readout、labelの可視セル、診断複体、診断係数 | [16.1](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#161-指定修復問題とlaw評価からの診断複体) |
+| $`\mathrm{Cone}(F),J(f),\delta`$ | 比較の写像錐、次数1の核・余核の次元対、六項列の相殺写像 | [16.2](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#162-核余核写像錐と合成) |
+| $`\Phi_c,\Gamma_e,\Psi_F,G,P,L_\bullet,\mathscr R,\tau`$ | セルlift、順像係数とその複体、退化部分複体、fiber適合空間と連結射 | [16.3](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#163-係数fiber局所貼り合わせによる分解) |
+| $`Z_{\sigma,\ell},\mathscr D_B`$ | regular readoutの有限root scheme、定数étale層の順像から作る診断の族 | [16.4](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#164-実現族と値の合流)、[付録D](appendix_d_finite_roots_and_stalks.md) |
+| $`M,g,[g],\mathrm{diag}(g)`$ | 原始関係商、実mismatch、指定実障害とその診断類 | [16.5](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#165-実障害の比較と零性反映) |
+| $`D^\vee,\Delta_n,\mathcal H^n,h(g)`$ | 双対chain、Laplacian、harmonic空間、指定cocycleのharmonic射影 | [16.6](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#166-双対評価と有限hilbert複体による読取り) |
 
 合成は $`(g\circ f)(x)=g(f(x))`$ の順で書く。
 $`u:\mathbb T\to\mathbb T'`$ のモデル引戻しは
@@ -124,3 +134,10 @@ $`E`$ は第8章では評価対象、第9章では名前付き操作の集合で
 第11章の $`R_i`$ は公開アフィン関係で、係数環 $`R`$ と区別する。
 第12章の $`R_{\mathrm{rep}}(U)`$ はrepair wordの関係群である。
 第13章の $`D_n`$ は複体であり、部分操作のdomainとは型で区別する。
+
+第15章の $`\Gamma,\Delta`$ は適合する変更の部分群であり、変数文脈や第16章のLaplacian $`\Delta_n`$ とは別である。
+第16章の $`S`$ はSource、$`L`$ はreadoutの有限添字集合、$`L_\bullet`$ は退化部分複体を表す。
+同章16.3節の $`G`$ はセル係数系、$`P`$ はそのcochain複体、$`\Gamma_e`$ は辺liftの関係グラフ、
+$`\mathscr R`$ はfiber類の適合部分空間である。16.5節の $`G`$ は実被覆のグラフ、
+$`P=L\times S`$ は実係数の原始生成元集合であり、各節で型を指定し直す。
+$`T`$ は16.1節ではreadingの値集合、16.3節では直接比較の $`H^1`$ 射である。
