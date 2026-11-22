@@ -153,6 +153,7 @@ impl ControlledEq for ShigureOperationDecl {
         c.eq(&self.source_phase, &other.source_phase)?;
         c.eq(&self.target_phase, &other.target_phase)?;
         c.eq(&self.args, &other.args)?;
+        c.eq(&self.domain_laws, &other.domain_laws)?;
         c.eq(&self.updates, &other.updates)?;
         c.eq(&self.span, &other.span)
     }
@@ -388,7 +389,10 @@ impl ControlledEq for CheckedShigureDecls {
         c.eq(&self.comparisons, &other.comparisons)?;
         c.eq(&self.change_specs, &other.change_specs)?;
         c.eq(&self.eval_conditions, &other.eval_conditions)?;
-        c.eq(&self.tasks, &other.tasks)
+        c.eq(&self.tasks, &other.tasks)?;
+        c.eq(&self.diagrams, &other.diagrams)?;
+        c.eq(&self.paths, &other.paths)?;
+        c.eq(&self.transfers, &other.transfers)
     }
 }
 

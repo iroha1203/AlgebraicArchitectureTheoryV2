@@ -4,9 +4,18 @@
 //! 予約語を追加せず文脈キーワード `shigure` で導入する。
 //! 残差 ideal・空性 witness・解・相互作用要約などの結論注入は構文・検査段階で明示拒否する。
 
+pub mod ast_ext;
 pub mod check;
+mod check_diagram;
+mod check_ext_common;
+mod check_path;
 mod check_relations;
+mod check_transfer;
 pub mod parser;
+mod parser_diagram_path;
+mod parser_transfer;
+
+pub use ast_ext::*;
 
 use super::ast::{Ident, QName, Span};
 use num_bigint::{BigInt, BigUint};
@@ -28,6 +37,34 @@ pub const FORBIDDEN_CONCLUSION_FIELDS: &[&str] = &[
     "restored",
     "reeval",
     "groebner_basis",
+    "completed_diagram",
+    "restored_diagram",
+    "diagram_solution",
+    "commutativity_residuals",
+    "edge_results",
+    "computed_path",
+    "computed_paths",
+    "restored_path",
+    "restored_paths",
+    "path_solution",
+    "path_solutions",
+    "rejected_candidates",
+    "subdivision_fiber",
+    "composite_morphism",
+    "composite_is_one_step",
+    "associativity_checked",
+    "transfer_verdict",
+    "transfer_result",
+    "restored_transfer",
+    "restored_steps",
+    "common_domain",
+    "common_domains",
+    "composed_domain",
+    "composed_domain_relation",
+    "word_check_results",
+    "old_word_lift_results",
+    "lift_found",
+    "domain_nonempty",
 ];
 
 pub fn is_forbidden_conclusion_field(name: &str) -> bool {
@@ -232,6 +269,7 @@ pub struct RawOperationDecl {
     pub source_phase: Ident,
     pub target_phase: Ident,
     pub args: Vec<(Ident, Ident)>,
+    pub domain_laws: Vec<RawStateLawDecl>,
     pub updates: Vec<(Ident, ShigurePolyExpr)>,
     pub span: Span,
 }
@@ -354,6 +392,9 @@ pub enum ShigureDeclAst {
     ChangeSpec(RawChangeSpec),
     EvalCondition(RawEvalCondition),
     Task(RawTask),
+    Diagram(RawDiagramTask),
+    Path(Box<RawPathTask>),
+    Transfer(RawTransferTask),
 }
 
 impl ShigureDeclAst {
@@ -364,6 +405,9 @@ impl ShigureDeclAst {
             ShigureDeclAst::ChangeSpec(h) => &h.name,
             ShigureDeclAst::EvalCondition(e) => &e.name,
             ShigureDeclAst::Task(t) => &t.name,
+            ShigureDeclAst::Diagram(d) => &d.name,
+            ShigureDeclAst::Path(p) => &p.name,
+            ShigureDeclAst::Transfer(t) => &t.name,
         }
     }
 
@@ -374,6 +418,9 @@ impl ShigureDeclAst {
             ShigureDeclAst::ChangeSpec(h) => h.span,
             ShigureDeclAst::EvalCondition(e) => e.span,
             ShigureDeclAst::Task(t) => t.span,
+            ShigureDeclAst::Diagram(d) => d.span,
+            ShigureDeclAst::Path(p) => p.span,
+            ShigureDeclAst::Transfer(t) => t.span,
         }
     }
 }
@@ -428,6 +475,7 @@ pub struct ShigureOperationDecl {
     pub source_phase: String,
     pub target_phase: String,
     pub args: Vec<(String, String)>,
+    pub domain_laws: Vec<ShigureStateLawDecl>,
     pub updates: Vec<(String, ShigurePolyExpr)>,
     pub span: Span,
 }
@@ -584,6 +632,9 @@ pub struct CheckedShigureDecls {
     pub change_specs: BTreeMap<String, ShigureChangeSpec>,
     pub eval_conditions: BTreeMap<String, ShigureEvalCondition>,
     pub tasks: BTreeMap<String, ShigureTask>,
+    pub diagrams: BTreeMap<String, ShigureDiagramTask>,
+    pub paths: BTreeMap<String, ShigurePathTask>,
+    pub transfers: BTreeMap<String, ShigureTransferTask>,
 }
 
 impl CheckedShigureDecls {
@@ -593,5 +644,8 @@ impl CheckedShigureDecls {
             && self.change_specs.is_empty()
             && self.eval_conditions.is_empty()
             && self.tasks.is_empty()
+            && self.diagrams.is_empty()
+            && self.paths.is_empty()
+            && self.transfers.is_empty()
     }
 }

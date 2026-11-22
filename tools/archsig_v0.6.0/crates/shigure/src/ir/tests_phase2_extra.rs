@@ -502,3 +502,117 @@ fn f7_compose_state_order_rejects_broken_middle_phase_chain() {
     ));
     let _ = p_tgt;
 }
+
+#[test]
+fn transfer_step0_baseline_rejects_params_and_editable_while_step1_intermediate_allows_both() {
+    let orig = origin();
+    let d = CoeffDomain::Z;
+    let x0 = base_pres("X0");
+    let mut x1 = base_pres("X1");
+    x1.phases[0].state_laws.push(StateLaw {
+        name: "rep_k".into(),
+        kind: LawKind::Representation,
+        polynomial: PolyExpr::param("k") * PolyExpr::state("x"),
+        provenance: None,
+    });
+    let mut x2 = base_pres("X2");
+    x2.phases[0].state_laws.push(StateLaw {
+        name: "rep_k".into(),
+        kind: LawKind::Representation,
+        polynomial: PolyExpr::param("k") * PolyExpr::state("x"),
+        provenance: None,
+    });
+
+    let step1 = TransferStepSpec {
+        name: "s1".into(),
+        comparison: id_edge("X1", "X0").to_comparison_pair(&x1, &x0),
+        source_phase: "Active".into(),
+        domain_laws: vec![],
+        target_phase: "Active".into(),
+        lift_map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+        provenance: Some(orig.clone()),
+    };
+    let step2 = TransferStepSpec {
+        name: "s2".into(),
+        comparison: id_edge("X2", "X1").to_comparison_pair(&x2, &x1),
+        source_phase: "Active".into(),
+        domain_laws: vec![],
+        target_phase: "Active".into(),
+        lift_map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+        provenance: Some(orig.clone()),
+    };
+
+    let mut ch_mid_edit = empty_change("H", vec!["k"]);
+    ch_mid_edit
+        .editable
+        .push(EditableTarget::RepresentationLaw {
+            presentation: "X1".into(),
+            phase: "Active".into(),
+            law: "rep_k".into(),
+        });
+
+    let ok_spec = TransferSpec {
+        name: "ok_2step".into(),
+        steps: vec![step1, step2.clone()],
+        word_checks: vec![],
+        old_word_lifts: vec![],
+        change_spec: ch_mid_edit,
+        eval_condition: None,
+        require_full_domain: false,
+        provenance: Provenance::new(vec![orig.clone()], vec![MathClause::G140G1]),
+    };
+    assert!(CheckedTransferTask::validate(ok_spec.clone()).is_ok());
+
+    let mut bad_step0_param = ok_spec.clone();
+    bad_step0_param.steps[0].comparison.before.phases[0]
+        .state_laws
+        .push(StateLaw {
+            name: "leak".into(),
+            kind: LawKind::Representation,
+            polynomial: PolyExpr::param("k"),
+            provenance: None,
+        });
+    assert!(matches!(
+        CheckedTransferTask::validate(bad_step0_param),
+        Err(ValidationError::UnknownRef {
+            kind: "parameter",
+            ..
+        })
+    ));
+
+    let mut bad_edit_op = ok_spec.clone();
+    bad_edit_op
+        .change_spec
+        .editable
+        .push(EditableTarget::OperationExpr {
+            presentation: "X0".into(),
+            operation: "apply".into(),
+        });
+    assert!(matches!(
+        CheckedTransferTask::validate(bad_edit_op),
+        Err(ValidationError::ConversionError { ref detail }) if detail.contains("cannot belong to a fixed vertex")
+    ));
+
+    let mut bad_edit_law = ok_spec;
+    bad_edit_law.steps[0].comparison.before.phases[0]
+        .state_laws
+        .push(StateLaw {
+            name: "rep0".into(),
+            kind: LawKind::Representation,
+            polynomial: PolyExpr::state("x"),
+            provenance: None,
+        });
+    bad_edit_law
+        .change_spec
+        .editable
+        .push(EditableTarget::RepresentationLaw {
+            presentation: "X0".into(),
+            phase: "Active".into(),
+            law: "rep0".into(),
+        });
+    assert!(matches!(
+        CheckedTransferTask::validate(bad_edit_law),
+        Err(ValidationError::ConversionError { ref detail }) if detail.contains("cannot belong to a fixed vertex")
+    ));
+    let _ = (d, step2);
+}

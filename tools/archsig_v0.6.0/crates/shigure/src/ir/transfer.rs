@@ -2,14 +2,15 @@
 
 use crate::ir::change::{ChangeSpec, EvalCondition};
 use crate::ir::diagram::validate_scoped_change_targets;
-use crate::ir::morphism::{StateMorphism, validate_state_morphism};
+use crate::ir::morphism::{StateMorphism, validate_state_morphism_checked_endpoints};
 use crate::ir::presentation::{ComparisonPair, Presentation, StateLaw};
 use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::PolyExpr;
 use crate::ir::validate::{
     CheckedChangeSpec, CheckedEvalCondition, ValidationError, collect_eval_unobserved,
     collect_morphism_unobserved, collect_presentation_unobserved, require_non_empty,
-    validate_opt_source_ref, validate_poly_expr, validate_provenance,
+    validate_opt_source_ref, validate_poly_expr, validate_presentation_ref_checked_params,
+    validate_provenance,
 };
 use crate::ir::validate_change::{
     collect_and_check_param_names, validate_change_spec_struct_only,
@@ -117,8 +118,13 @@ impl CheckedTransferTask {
                 });
             }
 
+            validate_presentation_ref_checked_params(
+                &step.comparison.before,
+                if idx == 0 { &empty } else { &param_names },
+            )?;
+            validate_presentation_ref_checked_params(&step.comparison.after, &param_names)?;
             let morph = StateMorphism::from_comparison_pair(&step.comparison);
-            validate_state_morphism(
+            validate_state_morphism_checked_endpoints(
                 &morph,
                 &step.comparison.after,
                 &step.comparison.before,
@@ -244,11 +250,11 @@ impl CheckedTransferTask {
         }
 
         let mut pres_map: BTreeMap<&str, Vec<(&Presentation, bool)>> = BTreeMap::new();
-        for step in &spec.steps {
+        for (idx, step) in spec.steps.iter().enumerate() {
             pres_map
                 .entry(step.comparison.before.name.as_str())
                 .or_default()
-                .push((&step.comparison.before, false));
+                .push((&step.comparison.before, idx == 0));
             pres_map
                 .entry(step.comparison.after.name.as_str())
                 .or_default()

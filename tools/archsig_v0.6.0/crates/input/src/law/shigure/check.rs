@@ -1,8 +1,11 @@
 //! `archsig.law/2` 内の SHIGURE 宣言群の静的検査（名前・型・参照・素数・意味 Law 保護）。
 
+use super::check_diagram::check_diagram;
+use super::check_path::check_path;
 use super::check_relations::{
     check_change_spec, check_comparison, check_eval_condition, check_task,
 };
+use super::check_transfer::check_transfer;
 use super::*;
 use crate::definition::CheckedDefinitions;
 use crate::law::ast::{QName, Span};
@@ -27,6 +30,9 @@ pub(super) enum DeclCategory {
     ChangeSpec,
     EvalCondition,
     Task,
+    Diagram,
+    Path,
+    Transfer,
 }
 
 /// 既存の `Checker` 状態（reading・alias・vocabulary import・通常宣言名）を使って
@@ -71,6 +77,9 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 ShigureDeclAst::ChangeSpec(_) => DeclCategory::ChangeSpec,
                 ShigureDeclAst::EvalCondition(_) => DeclCategory::EvalCondition,
                 ShigureDeclAst::Task(_) => DeclCategory::Task,
+                ShigureDeclAst::Diagram(_) => DeclCategory::Diagram,
+                ShigureDeclAst::Path(_) => DeclCategory::Path,
+                ShigureDeclAst::Transfer(_) => DeclCategory::Transfer,
             };
             index.insert(name, (cat, d.span(), r_idx));
         }
@@ -130,27 +139,79 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                     let checked = check_eval_condition(raw, &r.name.name, control)?;
                     out.eval_conditions.insert(checked.name.clone(), checked);
                 }
-                ShigureDeclAst::Presentation(_) | ShigureDeclAst::Task(_) => {}
+                ShigureDeclAst::Presentation(_)
+                | ShigureDeclAst::Task(_)
+                | ShigureDeclAst::Diagram(_)
+                | ShigureDeclAst::Path(_)
+                | ShigureDeclAst::Transfer(_) => {}
             }
         }
     }
 
-    // Pass 4: tasks（comparison・change_spec・eval_condition の整合確認）
+    // Pass 4: tasks, diagrams, paths, transfers
     for (r_idx, r) in readings.iter().enumerate() {
         for d in &r.shigure_decls {
-            if let ShigureDeclAst::Task(raw) = d {
-                E::checkpoint(control, Checkpoint::LawSemantics)?;
-                let checked = check_task(
-                    raw,
-                    r_idx,
-                    &r.name.name,
-                    checker,
-                    &index,
-                    &out,
-                    &mut shigure_edges,
-                    control,
-                )?;
-                out.tasks.insert(checked.name.clone(), checked);
+            match d {
+                ShigureDeclAst::Task(raw) => {
+                    E::checkpoint(control, Checkpoint::LawSemantics)?;
+                    let checked = check_task(
+                        raw,
+                        r_idx,
+                        &r.name.name,
+                        checker,
+                        &index,
+                        &out,
+                        &mut shigure_edges,
+                        control,
+                    )?;
+                    out.tasks.insert(checked.name.clone(), checked);
+                }
+                ShigureDeclAst::Diagram(raw) => {
+                    E::checkpoint(control, Checkpoint::LawSemantics)?;
+                    let checked = check_diagram(
+                        raw,
+                        r_idx,
+                        &r.name.name,
+                        checker,
+                        &index,
+                        &out,
+                        &mut shigure_edges,
+                        control,
+                    )?;
+                    out.diagrams.insert(checked.name.clone(), checked);
+                }
+                ShigureDeclAst::Path(raw) => {
+                    E::checkpoint(control, Checkpoint::LawSemantics)?;
+                    let checked = check_path(
+                        raw.as_ref(),
+                        r_idx,
+                        &r.name.name,
+                        checker,
+                        &index,
+                        &out,
+                        &mut shigure_edges,
+                        control,
+                    )?;
+                    out.paths.insert(checked.name.clone(), checked);
+                }
+                ShigureDeclAst::Transfer(raw) => {
+                    E::checkpoint(control, Checkpoint::LawSemantics)?;
+                    let checked = check_transfer(
+                        raw,
+                        r_idx,
+                        &r.name.name,
+                        checker,
+                        &index,
+                        &out,
+                        &mut shigure_edges,
+                        control,
+                    )?;
+                    out.transfers.insert(checked.name.clone(), checked);
+                }
+                ShigureDeclAst::Presentation(_)
+                | ShigureDeclAst::Comparison(_)
+                | ShigureDeclAst::ChangeSpec(_)
+                | ShigureDeclAst::EvalCondition(_) => {}
             }
         }
     }
@@ -512,11 +573,18 @@ fn check_presentation<E: InputError>(
             ))
             .into());
         }
+        let domain_laws = super::check_ext_common::check_state_law_list(
+            &op.domain_laws,
+            &coeff_domain,
+            &format!("operation `{}`", op.name.name),
+            control,
+        )?;
         operations.push(ShigureOperationDecl {
             name: op.name.name.clone(),
             source_phase: op.source_phase.name.clone(),
             target_phase: op.target_phase.name.clone(),
             args,
+            domain_laws,
             updates,
             span: op.span,
         });
@@ -811,6 +879,10 @@ pub(super) fn check_presentation_vars<E: InputError>(
         }
         if let Some(ps) = params {
             allowed.extend(ps.iter().copied());
+        }
+        for l in &op.domain_laws {
+            let ctx = format!("{}.{}.domain_law.{}", pres.name, op.name, l.name);
+            check_poly_vars(&l.expr, &allowed, l.span, &ctx, control)?;
         }
         for (u_name, u_expr) in &op.updates {
             let ctx = format!("{}.{}.{u_name}", pres.name, op.name);

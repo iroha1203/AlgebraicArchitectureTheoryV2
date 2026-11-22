@@ -8,7 +8,6 @@ use crate::ir::provenance::SourceRef;
 use crate::ir::term::PolyExpr;
 use crate::ir::validate::{
     ValidationError, require_non_empty, validate_opt_source_ref, validate_poly_expr,
-    validate_presentation_ref_checked_params,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -524,19 +523,6 @@ pub fn compose_time_order(
     }
     let composed_map = compose_state_order(&first.state_map, &second.state_map, after, middle)?;
     TimeStepMorphism::new(first.before.clone(), second.after.clone(), composed_map)
-}
-
-/// 任意の `StateMorphism`（`source == target` の恒等・自己射を含む）を `source`・`target` 表示に対して検査する。
-pub(crate) fn validate_state_morphism(
-    m: &StateMorphism,
-    source: &Presentation,
-    target: &Presentation,
-    allowed_params: &BTreeSet<String>,
-    context: &str,
-) -> Result<(), ValidationError> {
-    validate_presentation_ref_checked_params(source, allowed_params)?;
-    validate_presentation_ref_checked_params(target, allowed_params)?;
-    validate_state_morphism_checked_endpoints(m, source, target, allowed_params, context)
 }
 
 /// 端点表示を事前に検証済みの状態で `StateMorphism`（`source == target` の自己射含む）を検査する。

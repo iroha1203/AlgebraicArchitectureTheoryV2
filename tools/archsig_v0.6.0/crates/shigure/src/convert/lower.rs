@@ -208,7 +208,7 @@ fn select_task<'a>(
     })
 }
 
-fn lower_coeff_domain(d: &ShigureCoeffDomain) -> CoeffDomain {
+pub(super) fn lower_coeff_domain(d: &ShigureCoeffDomain) -> CoeffDomain {
     match d {
         ShigureCoeffDomain::Z => CoeffDomain::Z,
         ShigureCoeffDomain::Q => CoeffDomain::Q,
@@ -226,14 +226,14 @@ fn lower_point_domain(d: &ShigurePointDomain) -> PointDomain {
     }
 }
 
-fn lower_law_kind(k: ShigureLawKind) -> LawKind {
+pub(super) fn lower_law_kind(k: ShigureLawKind) -> LawKind {
     match k {
         ShigureLawKind::Semantic => LawKind::Semantic,
         ShigureLawKind::Representation => LawKind::Representation,
     }
 }
 
-fn lower_presentation(
+pub(super) fn lower_presentation(
     decl: &ShigurePresentation,
     archmap: &CheckedArchMap,
     snapshot_id: Option<&str>,
@@ -328,6 +328,25 @@ fn lower_presentation(
                     context: format!("{}.{}", decl.name, op.name),
                 })?;
         let arg_set: BTreeSet<String> = op.args.iter().map(|(a, _)| a.clone()).collect();
+        let mut domain_laws = Vec::with_capacity(op.domain_laws.len());
+        for dl in &op.domain_laws {
+            let ctx = format!("{}.{}.domain_law.{}", decl.name, op.name, dl.name);
+            let polynomial = lower_poly_expr(
+                &dl.expr,
+                &coeff_domain,
+                src_coords,
+                &arg_set,
+                allowed_params,
+                forbidden_params,
+                &ctx,
+            )?;
+            domain_laws.push(StateLaw {
+                name: dl.name.clone(),
+                kind: lower_law_kind(dl.kind),
+                polynomial,
+                provenance: Some(pres_ref.clone()),
+            });
+        }
         let mut updates = BTreeMap::new();
         for (coord, expr) in &op.updates {
             let ctx = format!("{}.{}.{coord}", decl.name, op.name);
@@ -347,7 +366,7 @@ fn lower_presentation(
             source_phase: op.source_phase.clone(),
             target_phase: op.target_phase.clone(),
             args: op.args.clone(),
-            domain_laws: vec![],
+            domain_laws,
             updates,
             provenance: Some(pres_ref.clone()),
         });
@@ -399,7 +418,7 @@ fn lower_presentation(
     })
 }
 
-fn lower_comparison_pair(
+pub(super) fn lower_comparison_pair(
     decl: &ShigureComparison,
     before: Presentation,
     after: Presentation,
@@ -499,7 +518,7 @@ fn lower_comparison_pair(
     })
 }
 
-fn lower_change_spec(decl: &ShigureChangeSpec) -> ChangeSpec {
+pub(super) fn lower_change_spec(decl: &ShigureChangeSpec) -> ChangeSpec {
     let spec_ref = law_source_ref(&decl.name);
     let parameters = decl
         .parameters
@@ -598,7 +617,7 @@ fn lower_change_spec(decl: &ShigureChangeSpec) -> ChangeSpec {
     }
 }
 
-fn lower_eval_condition(
+pub(super) fn lower_eval_condition(
     decl: &ShigureEvalCondition,
     coeff_domain: &CoeffDomain,
     param_names: &BTreeSet<String>,
