@@ -1,0 +1,278 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading PathSuite {
+  use vocabulary Phase2Vocab version "1" digest "sha256:3c4d12e5b45460e139353d29832053551ec840b1e905e3c876476d9db9b7bd69";
+
+  shigure presentation LedgerParam {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord B: D;
+      coord C: D;
+    }
+    op transact(u: D): Idle -> Idle {
+      B = B + (1 - d) * u + m * C;
+      C = C + d * u - m * ((1 - r) * (C + d * u) + r * C);
+    }
+    obs read on Idle = (B + C);
+  }
+
+  shigure presentation Single {
+    domain Q;
+    sort D;
+    phase Idle { coord x: D; }
+    op apply(u: D): Idle -> Idle { x = x + u; }
+    obs read on Idle = (x);
+  }
+
+  shigure presentation Proto {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord b: D;
+      coord c: D;
+      coord d: D;
+      coord m: D;
+      coord r: D;
+      law representation inv: m * d * (1 - r) = 0;
+    }
+    phase Busy {
+      coord b: D;
+      coord c: D;
+      coord h: D;
+      coord d: D;
+      coord m: D;
+      coord r: D;
+      law representation inv: m * d * (1 - r) = 0;
+      law representation busy_inv: m * (1 - r) * (h - c) = 0;
+    }
+    op apply_idle(u: D): Idle -> Idle { b = b + (1 - d) * u; c = c + d * u; d = d; m = m; r = r; }
+    op apply_busy(u: D): Busy -> Busy { b = b + (1 - d) * u; c = c + d * u; h = h; d = d; m = m; r = r; }
+    op begin(): Idle -> Busy { b = b; c = c; h = c; d = d; m = m; r = r; }
+    op finish(): Busy -> Idle { b = b + m * h; c = c - m * ((1 - r) * c + r * h); d = d; m = m; r = r; }
+    op sw_d(): Idle -> Idle {
+      law representation pre_d: d = 0;
+      law representation post_f: m * (1 - r) = 0;
+      b = b; c = c; d = 1; m = m; r = r;
+    }
+    op sw_m(): Idle -> Idle {
+      law representation pre_m: m = 0;
+      law representation post_f: d * (1 - r) = 0;
+      b = b; c = c; d = d; m = 1; r = r;
+    }
+    op sw_r(): Idle -> Idle {
+      law representation pre_r: r = 0;
+      b = b; c = c; d = d; m = m; r = 1;
+    }
+    obs read on Idle = (b + c);
+    obs read on Busy = (b + c);
+  }
+
+  shigure presentation TwoSlot {
+    domain Q;
+    sort D;
+    phase S { coord a: D; coord b: D; }
+    op step(u: D): S -> S { a = a + u; b = b; }
+    obs read on S = (a + b);
+  }
+
+  shigure comparison CmpP52 {
+    before Single;
+    after Proto;
+    state_map Idle -> Idle { x = b + c; }
+    state_map Busy -> Idle { x = b + c; }
+    translate apply_idle -> [apply(u)];
+    translate apply_busy -> [apply(u)];
+    translate begin -> [];
+    translate finish -> [];
+    translate sw_d -> [];
+    translate sw_m -> [];
+    translate sw_r -> [];
+  }
+
+  shigure change_spec HL {
+    domain Q;
+    param m: Q;
+    param d: Q;
+    param r: Q;
+  }
+
+  shigure change_spec HP52 {
+    domain Q;
+    editable operation Proto.sw_d;
+    editable operation Proto.sw_m;
+    editable operation Proto.sw_r;
+  }
+
+  shigure change_spec HSub {
+    domain Q;
+    param a1: Q;
+    param a2: Q;
+  }
+
+  shigure change_spec HEmpty {
+    domain Q;
+  }
+
+  shigure path LedgerP51Paths {
+    kind fixed_protocol_change_path;
+    direction time_order;
+    mode find;
+    length 3;
+    vertex S: LedgerParam;
+    start S { m = 0; d = 0; r = 0; }
+    end S { m = 1; d = 1; r = 1; }
+    rule set_m: S -> S {
+      guard g0: m = 0;
+      update m = 1;
+      state_map Idle -> Idle { B = (1 - d) * (B + C); C = d * (B + C); }
+      translate transact -> [transact(u)];
+    }
+    rule set_d: S -> S {
+      guard g0: d = 0;
+      update d = 1;
+      state_map Idle -> Idle { B = B + C; C = 0; }
+      translate transact -> [transact(u)];
+    }
+    rule set_r: S -> S {
+      guard g0: r = 0;
+      update r = 1;
+      state_map Idle -> Idle { B = (1 - d) * (B + C); C = d * (B + C); }
+      translate transact -> [transact(u)];
+    }
+    change_spec HL;
+  }
+
+  shigure path LedgerP52ProtocolPaths {
+    kind enlarged_protocol_execution_path;
+    direction time_order;
+    length 3;
+    protocol {
+      comparison CmpP52;
+      start_phase Idle;
+      start_law representation sd: d = 0;
+      start_law representation sm: m = 0;
+      start_law representation sr: r = 0;
+      end_phase Idle;
+      end_law representation ed: d - 1 = 0;
+      end_law representation em: m - 1 = 0;
+      end_law representation er: r - 1 = 0;
+      allowed_ops [sw_d, sw_m, sw_r];
+    }
+    change_spec HP52;
+  }
+
+  shigure path ZeroLengthMatch {
+    kind fixed_protocol_change_path;
+    direction state_map;
+    length 0;
+    vertex S: LedgerParam;
+    start S { m = 0; d = 0; r = 0; }
+    end S { m = 0; d = 0; r = 0; }
+    change_spec HL;
+  }
+
+  shigure path ZeroLengthMismatch {
+    kind fixed_protocol_change_path;
+    direction state_map;
+    length 0;
+    vertex S: LedgerParam;
+    start S { m = 0; d = 0; r = 0; }
+    end S { m = 1; d = 0; r = 0; }
+    change_spec HL;
+  }
+
+  shigure path ConcatPath {
+    kind fixed_protocol_change_path;
+    direction time_order;
+    mode concatenate {
+      first [set_r];
+      second [set_d, set_m];
+    }
+    vertex S: LedgerParam;
+    start S { m = 0; d = 0; r = 0; }
+    end S { m = 1; d = 1; r = 1; }
+    rule set_m: S -> S {
+      guard g0: m = 0;
+      update m = 1;
+      state_map Idle -> Idle { B = (1 - d) * (B + C); C = d * (B + C); }
+      translate transact -> [transact(u)];
+    }
+    rule set_d: S -> S {
+      guard g0: d = 0;
+      update d = 1;
+      state_map Idle -> Idle { B = B + C; C = 0; }
+      translate transact -> [transact(u)];
+    }
+    rule set_r: S -> S {
+      guard g0: r = 0;
+      update r = 1;
+      state_map Idle -> Idle { B = (1 - d) * (B + C); C = d * (B + C); }
+      translate transact -> [transact(u)];
+    }
+    change_spec HL;
+  }
+
+  shigure path SubdivideOk {
+    kind fixed_protocol_change_path;
+    direction state_map;
+    mode subdivide {
+      state_map S -> S { a = a + 2; b = b - 2; }
+      translate step -> [step(u)];
+    }
+    length 2;
+    vertex V: TwoSlot;
+    start V { a1 = 1; a2 = 1; }
+    end V { a1 = 1; a2 = 1; }
+    rule s1: V -> V {
+      state_map S -> S { a = a + a1; b = b - a1; }
+      translate step -> [step(u)];
+    }
+    rule s2: V -> V {
+      state_map S -> S { a = a + a2; b = b - a2; }
+      translate step -> [step(u)];
+    }
+    change_spec HSub;
+  }
+
+  shigure path SubdivideFail {
+    kind fixed_protocol_change_path;
+    direction state_map;
+    mode subdivide {
+      state_map S -> S { a = 2 * a; b = b; }
+      translate step -> [step(u)];
+    }
+    length 1;
+    vertex V: TwoSlot;
+    start V;
+    end V;
+    rule keep: V -> V { identity; }
+    change_spec HEmpty;
+  }
+
+  shigure path F31IdentityOnlyRefuted {
+    kind fixed_protocol_change_path;
+    direction time_order;
+    length 1;
+    vertex S: LedgerParam;
+    start S { m = 0; d = 0; r = 0; }
+    end S { m = 1; d = 0; r = 0; }
+    rule only_id: S -> S { identity; }
+    change_spec HL;
+  }
+
+  shigure path UnboundedPathSilence {
+    kind fixed_protocol_change_path;
+    direction time_order;
+    vertex S: LedgerParam;
+    start S { m = 0; d = 0; r = 0; }
+    end S { m = 1; d = 1; r = 1; }
+    rule set_r: S -> S {
+      guard g0: r = 0;
+      update r = 1;
+      state_map Idle -> Idle { B = (1 - d) * (B + C); C = d * (B + C); }
+      translate transact -> [transact(u)];
+    }
+    change_spec HL;
+  }
+}

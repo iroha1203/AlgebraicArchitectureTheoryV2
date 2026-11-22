@@ -1,0 +1,361 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading TransferSuite {
+  use vocabulary Phase2Vocab version "1" digest "sha256:3c4d12e5b45460e139353d29832053551ec840b1e905e3c876476d9db9b7bd69";
+
+  shigure presentation X0 {
+    domain Q;
+    sort D;
+    phase Idle { coord x: D; }
+    op add(u: D): Idle -> Idle { x = x + u; }
+    op shift10(): Idle -> Idle { x = x + 10; }
+    obs read on Idle = (x);
+  }
+
+  shigure presentation X1 {
+    domain Q;
+    sort D;
+    phase Idle { coord b: D; coord c: D; }
+    phase Busy {
+      coord b: D; coord c: D; coord h: D;
+      law representation busy_rho_zero: h - c - 1 = 0;
+    }
+    op add_idle(u: D): Idle -> Idle { b = b + u; c = c; }
+    op add_busy(u: D): Busy -> Busy { b = b + u; c = c; h = h; }
+    op begin(): Idle -> Busy { b = b; c = c; h = c + 1; }
+    op finish(): Busy -> Idle { b = b + c; c = 0; }
+    obs read on Idle = (b + c);
+    obs read on Busy = (b + c);
+  }
+
+  shigure presentation X2 {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord b: D; coord c: D; coord aux: D;
+      law representation az: aux = 0;
+    }
+    op add_idle(u: D): Idle -> Idle { b = b + u; c = c; aux = aux; }
+    op scale_twice(u: D): Idle -> Idle { b = b + 2 * u; c = c; aux = aux; }
+    obs read on Idle = (b + c);
+  }
+
+  shigure presentation X3 {
+    domain Q;
+    sort D;
+    phase Idle {
+      coord b: D; coord c: D; coord aux: D; coord z: D;
+      law representation az: aux = 0;
+      law representation zz: z = 0;
+    }
+    op add_idle(u: D): Idle -> Idle { b = b + u; c = c; aux = aux; z = z; }
+    obs read on Idle = (b + c);
+  }
+
+  shigure presentation M100 {
+    domain Q;
+    sort D;
+    phase Idle { coord B: D; coord C: D; }
+    phase Busy {
+      coord B: D; coord C: D; coord h: D;
+      law representation busy_law: 0 = 0;
+    }
+    op step(): Busy -> Busy { B = B; C = C; h = h; }
+    obs read on Idle = (B + C);
+    obs read on Busy = (B + C);
+  }
+
+  shigure presentation M000 {
+    domain Q;
+    sort D;
+    phase Idle { coord B: D; coord C: D; }
+    phase Busy {
+      coord B: D; coord C: D; coord h: D;
+      law representation busy_law: 0 = 0;
+    }
+    op step(): Busy -> Busy { B = B; C = C; h = h; }
+    obs read on Idle = (B + C);
+    obs read on Busy = (B + C);
+  }
+
+  shigure presentation M010 {
+    domain Q;
+    sort D;
+    phase Idle { coord B: D; coord C: D; }
+    phase Busy {
+      coord B: D; coord C: D; coord h: D;
+      law representation busy_law: (h - C) = 0;
+    }
+    op step(): Busy -> Busy { B = B; C = C; h = h; }
+    obs read on Idle = (B + C);
+    obs read on Busy = (B + C);
+  }
+
+  shigure presentation Z0 {
+    domain Z;
+    sort D;
+    phase Idle { coord x: D; }
+    op add(u: D): Idle -> Idle { x = x + u; }
+    obs read on Idle = (x);
+  }
+
+  shigure presentation Z1 {
+    domain Z;
+    sort D;
+    phase Idle {
+      coord b: D; coord c: D;
+      law representation c0: c = 0;
+    }
+    op add_idle(u: D): Idle -> Idle { b = b + u; c = c; }
+    obs read on Idle = (b + c);
+  }
+
+  shigure comparison H01 {
+    before X0;
+    after X1;
+    state_map Idle -> Idle { x = b + c; }
+    state_map Busy -> Idle { x = b + c; }
+    translate add_idle -> [add(u)];
+    translate add_busy -> [add(u)];
+    translate begin -> [];
+    translate finish -> [];
+  }
+
+  shigure change_spec HQ { domain Q; }
+
+  shigure change_spec HZ { domain Z; param k: Z; }
+
+  shigure eval_condition ZPts { point_domain Z_points; }
+
+  shigure transfer G1G2LiftAndWords {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x; c = 0; }
+    }
+    word_check keep_add(u) = [add_idle(u)];
+    old_word_lift lift_add(u) {
+      target [add(u)];
+      max_length 1;
+    }
+    old_word_lift missing_lift() {
+      target [shift10()];
+      max_length 2;
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer G1ObsOnlyRefuted {
+    step s1 {
+      before X0;
+      after X1;
+      state_map Idle -> Idle { x = b; }
+      state_map Busy -> Idle { x = b; }
+      translate add_idle -> [add(u)];
+      translate add_busy -> [add(u)];
+      translate begin -> [];
+      translate finish -> [];
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x + 1; c = -1; }
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer G3TwoStepFull {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      domain_law semantic d0: x - 1 = 0;
+      lift { b = x; c = 0; }
+    }
+    step s2 {
+      before X1;
+      after X2;
+      state_map Idle -> Idle { b = b; c = c; }
+      translate add_idle -> [add_idle(u)];
+      translate scale_twice -> [add_idle(2 * u)];
+      source_phase Idle;
+      target_phase Idle;
+      domain_law semantic d1: b - 1 = 0;
+      lift { b = b; c = c; aux = 0; }
+    }
+    change_spec HQ;
+    require_full_domain true;
+  }
+
+  shigure transfer G3TwoStepProperSubdomain {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x; c = 0; }
+    }
+    step s2 {
+      before X1;
+      after X2;
+      state_map Idle -> Idle { b = b; c = c; }
+      translate add_idle -> [add_idle(u)];
+      translate scale_twice -> [add_idle(2 * u)];
+      source_phase Idle;
+      target_phase Idle;
+      domain_law representation restrict_b: b = 0;
+      lift { b = b; c = c; aux = 0; }
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer G3TwoStepRequireFull {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x; c = 0; }
+    }
+    step s2 {
+      before X1;
+      after X2;
+      state_map Idle -> Idle { b = b; c = c; }
+      translate add_idle -> [add_idle(u)];
+      translate scale_twice -> [add_idle(2 * u)];
+      source_phase Idle;
+      target_phase Idle;
+      domain_law representation restrict_b: b = 0;
+      lift { b = b; c = c; aux = 0; }
+    }
+    change_spec HQ;
+    require_full_domain true;
+  }
+
+  shigure transfer G3TwoStepEmpty {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      domain_law semantic d0: x - 1 = 0;
+      lift { b = x; c = 0; }
+    }
+    step s2 {
+      before X1;
+      after X2;
+      state_map Idle -> Idle { b = b; c = c; }
+      translate add_idle -> [add_idle(u)];
+      translate scale_twice -> [add_idle(2 * u)];
+      source_phase Idle;
+      target_phase Idle;
+      domain_law semantic d1: b - 2 = 0;
+      lift { b = b; c = c; aux = 0; }
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer G3ThreeStepChain {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x; c = 0; }
+    }
+    step s2 {
+      before X1;
+      after X2;
+      state_map Idle -> Idle { b = b; c = c; }
+      translate add_idle -> [add_idle(u)];
+      translate scale_twice -> [add_idle(2 * u)];
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = b; c = c; aux = 0; }
+    }
+    step s3 {
+      before X2;
+      after X3;
+      state_map Idle -> Idle { b = b; c = c; aux = aux; }
+      translate add_idle -> [add_idle(u)];
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = b; c = c; aux = aux; z = 0; }
+    }
+    word_check keep_3step(u) = [add_idle(u)];
+    change_spec HQ;
+    require_full_domain true;
+  }
+
+  shigure transfer P53BusyRefuted {
+    step s1 {
+      before M100;
+      after M000;
+      identity;
+      source_phase Busy;
+      target_phase Busy;
+      domain_law semantic pb: B = 0;
+      domain_law semantic pc: C - 1 = 0;
+      domain_law semantic ph: h = 0;
+      lift { B = B; C = C; h = h; }
+    }
+    step s2 {
+      before M000;
+      after M010;
+      identity;
+      source_phase Busy;
+      target_phase Busy;
+      domain_law semantic pb: B = 0;
+      domain_law semantic pc: C - 1 = 0;
+      domain_law semantic ph: h = 0;
+      lift { B = B; C = C; h = h; }
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer P53IdleOk {
+    step s1 {
+      before M100;
+      after M000;
+      identity;
+      source_phase Idle;
+      target_phase Idle;
+      domain_law semantic pb: B = 0;
+      domain_law semantic pc: C - 1 = 0;
+      lift { B = B; C = C; }
+    }
+    step s2 {
+      before M000;
+      after M010;
+      identity;
+      source_phase Idle;
+      target_phase Idle;
+      domain_law semantic pb: B = 0;
+      domain_law semantic pc: C - 1 = 0;
+      lift { B = B; C = C; }
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer UnboundedOldWordLiftSilence {
+    step s1 {
+      comparison H01;
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x; c = 0; }
+    }
+    old_word_lift lift_add(u) {
+      target [add(u)];
+    }
+    change_spec HQ;
+  }
+
+  shigure transfer ZQuotientSilence {
+    step s1 {
+      before Z0;
+      after Z1;
+      state_map Idle -> Idle { x = b + c; }
+      translate add_idle -> [add(u)];
+      source_phase Idle;
+      target_phase Idle;
+      lift { b = x + k; c = 0; }
+    }
+    change_spec HZ;
+    eval_condition ZPts;
+  }
+}
