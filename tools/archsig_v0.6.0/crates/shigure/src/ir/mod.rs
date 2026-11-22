@@ -4,22 +4,42 @@
 //! - `term`: 係数域（Z / Q / F_p）・スカラー定数・型付き affine / 多項式構文木
 //! - `presentation`: 原始表示 IR・守る意味 Law と編集可能な表示 Law・状態比較 h・語翻訳 τ
 //! - `change`: 許容変換仕様 H と評価条件 P（V(f), D(g), PointDomain）
-//! - `result`: 適用条件検査・沈黙理由・空性 witness・復元と再評価検算・出力 JSON
+//! - `morphism`: 射の向き（状態比較射と時間順）の型レベル統一と合成
+//! - `diagram`: 固定図式の全補完 IR (`DiagramSpec` / `CheckedDiagramTask`)
+//! - `path`: 一段変更経路・細分化 IR (`PathSpec` / `CheckedPathTask`)
+//! - `transfer`: 合法状態移送・共通操作語保存・合成 IR (`TransferSpec` / `CheckedTransferTask`)
+//! - `result` / `result_ext`: 適用条件検査・沈黙理由・空性 witness・復元と再評価検算・出力 JSON
 //! - `validate`: 型・参照・係数域・意味 Law 保護・未観測検出の検証済み構築経路
 
 pub mod change;
+pub mod diagram;
+pub mod morphism;
+pub mod path;
 pub mod presentation;
 pub mod provenance;
 pub mod result;
+pub mod result_ext;
 pub mod term;
+pub mod transfer;
 pub mod validate;
 mod validate_change;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_phase2;
 
 pub use change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,
+};
+pub use diagram::{CheckedDiagramTask, DiagramEdge, DiagramRelation, DiagramSpec, DiagramVertex};
+pub use morphism::{
+    MorphismDirection, StateMorphism, TimeStepMorphism, compose_state_order, compose_time_order,
+    identity_state_morphism,
+};
+pub use path::{
+    CheckedPathTask, ModelEndpoint, OneStepRule, PathKind, PathQueryMode, PathSpec,
+    ProtocolExecutionSpec,
 };
 pub use presentation::{
     ComparisonPair, CoordDecl, CoordValue, LawKind, ObservationDecl, OperationDecl, PhaseDecl,
@@ -31,7 +51,16 @@ pub use result::{
     ApplicabilityCheck, EmptyWitness, InteractionSummary, ReevalCheck, RestoredArtifact,
     ShigureOutcome, SilenceReason, Verdict,
 };
+pub use result_ext::{
+    DiagramOutcomeDetail, DomainRelation, OldWordLiftResult, PathOutcomeDetail, PathOutcomeKind,
+    RejectedPathCandidate, RestoredDiagram, RestoredEdge, RestoredPath, RestoredTransfer,
+    RestoredVertex, TransferOutcomeDetail, TransferStepDiagnostic, WordPreservationCheck,
+};
 pub use term::{CoeffDomain, PolyExpr, ScalarLit};
+pub use transfer::{
+    CheckedTransferTask, OldWordLiftSpec, TransferSpec, TransferStepSpec, WordCheckSpec,
+    WordStepExpr,
+};
 pub use validate::{
     CheckedChangeSpec, CheckedComparisonPair, CheckedEvalCondition, CheckedPresentation,
     CheckedShigureTask, ValidationError, validate_change_spec, validate_coeff_domain,

@@ -45,6 +45,9 @@ impl SolveCtx {
             empty_witness: None,
             restored,
             interaction,
+            diagram: None,
+            path: None,
+            transfer: None,
         }
     }
 
@@ -63,6 +66,9 @@ impl SolveCtx {
             empty_witness,
             restored: None,
             interaction: None,
+            diagram: None,
+            path: None,
+            transfer: None,
         }
     }
 
@@ -81,6 +87,9 @@ impl SolveCtx {
             empty_witness: None,
             restored: None,
             interaction: None,
+            diagram: None,
+            path: None,
+            transfer: None,
         }
     }
 }

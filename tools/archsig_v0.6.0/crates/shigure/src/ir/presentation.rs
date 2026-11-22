@@ -111,6 +111,8 @@ pub struct OperationDecl {
     pub target_phase: String,
     /// 引数 `(arg_name, sort_name)` の宣言順リスト。
     pub args: Vec<(String, String)>,
+    /// 操作の事前定義域（例: P5.2 の partial flag operation における切替後 `f = 0` 条件、G2 の `Dom(op)`）。
+    pub domain_laws: Vec<StateLaw>,
     /// 遷移先 phase の各座標名に対する更新式。
     pub updates: BTreeMap<String, PolyExpr>,
     pub provenance: Option<SourceRef>,

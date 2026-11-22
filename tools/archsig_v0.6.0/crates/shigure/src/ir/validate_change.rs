@@ -339,6 +339,9 @@ fn collect_presentation_params(pres: &Presentation, out: &mut BTreeSet<String>) 
         }
     }
     for op in &pres.operations {
+        for dlaw in &op.domain_laws {
+            dlaw.polynomial.collect_params(out);
+        }
         for expr in op.updates.values() {
             expr.collect_params(out);
         }
@@ -426,6 +429,38 @@ pub(crate) fn validate_change_spec_checked_params(
         }
     }
 
+    Ok(CheckedChangeSpec::from_validated(spec))
+}
+
+/// 複数の比較・図式・経路・移送をまたぐ `ChangeSpec` 自体の構造不変条件（係数域・パラメータ名重複・fixed/editable 衝突）を検査する。
+pub(crate) fn validate_change_spec_struct_only(
+    spec: ChangeSpec,
+) -> Result<CheckedChangeSpec, ValidationError> {
+    let _ = collect_and_check_param_names(&spec)?;
+    let mut seen_fixed = BTreeSet::new();
+    for fixed in &spec.fixed {
+        if !seen_fixed.insert(fixed) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "fixed target",
+                name: format!("{fixed:?}"),
+            });
+        }
+    }
+    let mut seen_editable = BTreeSet::new();
+    for editable in &spec.editable {
+        if !seen_editable.insert(editable) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "editable target",
+                name: format!("{editable:?}"),
+            });
+        }
+        let counterpart = fixed_counterpart(editable);
+        if seen_fixed.contains(&counterpart) {
+            return Err(ValidationError::FixedEditableConflict {
+                target: format!("{editable:?}"),
+            });
+        }
+    }
     Ok(CheckedChangeSpec::from_validated(spec))
 }
 

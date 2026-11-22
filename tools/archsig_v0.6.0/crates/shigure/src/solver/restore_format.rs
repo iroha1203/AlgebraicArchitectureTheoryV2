@@ -56,6 +56,21 @@ pub fn substitute_comparison_pair(
                 source_phase: op.source_phase.clone(),
                 target_phase: op.target_phase.clone(),
                 args: op.args.clone(),
+                domain_laws: op
+                    .domain_laws
+                    .iter()
+                    .map(|l| StateLaw {
+                        name: l.name.clone(),
+                        kind: l.kind,
+                        polynomial: substitute_poly_expr(
+                            &l.polynomial,
+                            &empty,
+                            &empty,
+                            param_subst,
+                        ),
+                        provenance: l.provenance.clone(),
+                    })
+                    .collect(),
                 updates: op
                     .updates
                     .iter()

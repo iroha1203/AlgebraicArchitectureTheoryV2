@@ -2,6 +2,7 @@
 
 use crate::ir::change::PointDomain;
 use crate::ir::provenance::{MathClause, Provenance};
+use crate::ir::result_ext::{DiagramOutcomeDetail, PathOutcomeDetail, TransferOutcomeDetail};
 use crate::ir::term::CoeffDomain;
 use archsig_common::canonical::{Json, JsonObject};
 use std::collections::BTreeMap;
@@ -69,6 +70,8 @@ pub enum SilenceReason {
     QuotientIdealOutOfScope { detail: String },
     /// 相互作用解析（F10–F12）において開条件が本質的に絡むため閉条件へ丸めない。
     OpenConditionInInteraction { detail: String },
+    /// 無界の経路長探索や無界の旧語 lift 探索など有限還元不能な無界探索。
+    UnboundedSearchOutOfScope { detail: String },
     /// その他の適用条件未充足。
     ApplicabilityConditionNotMet { condition: String, detail: String },
 }
@@ -86,6 +89,7 @@ impl SilenceReason {
             SilenceReason::UnsupportedCoeffRing { .. } => "unsupported_coeff_ring",
             SilenceReason::QuotientIdealOutOfScope { .. } => "quotient_ideal_out_of_scope",
             SilenceReason::OpenConditionInInteraction { .. } => "open_condition_in_interaction",
+            SilenceReason::UnboundedSearchOutOfScope { .. } => "unbounded_search_out_of_scope",
             SilenceReason::ApplicabilityConditionNotMet { .. } => "applicability_condition_not_met",
         }
     }
@@ -108,7 +112,8 @@ impl SilenceReason {
             }
             SilenceReason::InfinitePresentationNotFinitelyReducible { detail }
             | SilenceReason::QuotientIdealOutOfScope { detail }
-            | SilenceReason::OpenConditionInInteraction { detail } => {
+            | SilenceReason::OpenConditionInInteraction { detail }
+            | SilenceReason::UnboundedSearchOutOfScope { detail } => {
                 obj.insert("detail".into(), Json::str(detail));
             }
             SilenceReason::UnsupportedCoeffRing { domain, detail } => {
@@ -316,6 +321,9 @@ pub struct ShigureOutcome {
     pub empty_witness: Option<EmptyWitness>,
     pub restored: Option<RestoredArtifact>,
     pub interaction: Option<InteractionSummary>,
+    pub diagram: Option<DiagramOutcomeDetail>,
+    pub path: Option<PathOutcomeDetail>,
+    pub transfer: Option<TransferOutcomeDetail>,
 }
 
 impl ShigureOutcome {
@@ -351,6 +359,15 @@ impl ShigureOutcome {
         }
         if let Some(interaction) = &self.interaction {
             obj.insert("interaction".into(), interaction.to_json());
+        }
+        if let Some(diagram) = &self.diagram {
+            obj.insert("diagram".into(), diagram.to_json());
+        }
+        if let Some(path) = &self.path {
+            obj.insert("path".into(), path.to_json());
+        }
+        if let Some(transfer) = &self.transfer {
+            obj.insert("transfer".into(), transfer.to_json());
         }
         Json::Obj(obj)
     }

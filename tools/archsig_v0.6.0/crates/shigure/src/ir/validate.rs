@@ -374,21 +374,24 @@ impl CheckedShigureTask {
             }
         }
         if let Some(cond) = &self.eval_condition {
-            for item in cond
-                .0
-                .evaluations
-                .iter()
-                .chain(&cond.0.equations)
-                .chain(&cond.0.invertibles)
-            {
-                item.expr.collect_unobserved(&mut slots);
-            }
+            collect_eval_unobserved(&cond.0, &mut slots);
         }
         slots.into_iter().collect()
     }
 }
 
-fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<String>) {
+pub(crate) fn collect_eval_unobserved(cond: &EvalCondition, out: &mut BTreeSet<String>) {
+    for item in cond
+        .evaluations
+        .iter()
+        .chain(&cond.equations)
+        .chain(&cond.invertibles)
+    {
+        item.expr.collect_unobserved(out);
+    }
+}
+
+pub(crate) fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<String>) {
     for phase in &pres.phases {
         for coord in &phase.coords {
             if coord.is_missing() {
@@ -400,6 +403,9 @@ fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<Strin
         }
     }
     for op in &pres.operations {
+        for law in &op.domain_laws {
+            law.polynomial.collect_unobserved(out);
+        }
         for expr in op.updates.values() {
             expr.collect_unobserved(out);
         }
@@ -492,7 +498,7 @@ pub fn validate_coeff_domain(domain: &CoeffDomain, context: &str) -> Result<(), 
     Ok(())
 }
 
-fn validate_scalar_lit(
+pub(crate) fn validate_scalar_lit(
     lit: &ScalarLit,
     expected: &CoeffDomain,
     context: &str,
@@ -742,6 +748,28 @@ pub(crate) fn validate_presentation_checked_params(
                     context: format!("operation `{}` argument `{arg_name}`", op.name),
                 });
             }
+        }
+        let mut domain_law_names = BTreeSet::new();
+        for dlaw in &op.domain_laws {
+            require_non_empty(&dlaw.name, &format!("operation `{}` domain_law", op.name))?;
+            validate_opt_source_ref(
+                dlaw.provenance.as_ref(),
+                &format!("domain_law `{}.{}`", op.name, dlaw.name),
+            )?;
+            if !domain_law_names.insert(dlaw.name.clone()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "domain_law",
+                    name: format!("{}.{}", op.name, dlaw.name),
+                });
+            }
+            validate_poly_expr(
+                &dlaw.polynomial,
+                &pres.coeff_domain,
+                src_coords,
+                &arg_names,
+                allowed_params,
+                &format!("operation `{}` domain_law `{}`", op.name, dlaw.name),
+            )?;
         }
         for dst in dst_coords {
             if !op.updates.contains_key(dst) {

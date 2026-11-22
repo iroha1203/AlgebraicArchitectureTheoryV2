@@ -347,6 +347,7 @@ fn lower_presentation(
             source_phase: op.source_phase.clone(),
             target_phase: op.target_phase.clone(),
             args: op.args.clone(),
+            domain_laws: vec![],
             updates,
             provenance: Some(pres_ref.clone()),
         });
