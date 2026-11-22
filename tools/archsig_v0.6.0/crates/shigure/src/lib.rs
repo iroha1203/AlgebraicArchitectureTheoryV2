@@ -7,3 +7,5 @@ pub mod algebra;
 pub mod convert;
 pub mod ir;
 pub mod solver;
+
+pub use solver::{solve_diagram_task, solve_path_task, solve_transfer_task};

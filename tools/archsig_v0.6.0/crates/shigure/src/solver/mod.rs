@@ -8,20 +8,48 @@
 //! - `solve` / `domain_solve` / `interaction_query`: 適用条件検査、係数域・点集合域ごとの計算分岐、
 //!   沈黙（`Verdict::Undetermined`）規律、座標面支持による相互作用解析の統合実行
 
+mod common_format;
+mod common_morph;
+mod common_solve;
+mod common_solve_q;
 mod context;
+mod diagram;
 mod domain_solve;
 mod interaction_query;
+mod path;
+mod path_fixed;
+mod path_protocol;
 pub(crate) mod preservation;
 pub(crate) mod restore;
 mod restore_format;
 pub(crate) mod solve;
+mod transfer;
+mod transfer_compose;
+mod transfer_lift;
+mod transfer_words;
 
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod tests_diagram;
+#[cfg(test)]
+mod tests_diagram_extra;
+#[cfg(test)]
 mod tests_extra;
 #[cfg(test)]
+mod tests_path;
+#[cfg(test)]
+mod tests_path_extra;
+#[cfg(test)]
 mod tests_regressions;
+#[cfg(test)]
+mod tests_transfer;
+#[cfg(test)]
+mod tests_transfer_extra;
+
+pub use diagram::solve_diagram_task;
+pub use path::solve_path_task;
+pub use transfer::solve_transfer_task;
 
 use crate::ir::result::ShigureOutcome;
 use crate::ir::validate::CheckedShigureTask;

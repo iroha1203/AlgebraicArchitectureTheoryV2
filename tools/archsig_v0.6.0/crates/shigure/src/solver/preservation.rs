@@ -10,7 +10,7 @@ use crate::algebra::{
     AlgebraError, ExprBindings, FpElem, GroebnerBasis, Monomial, MonomialOrder, Poly,
     QuotientStratum, Rat, RingCoeff, VarOrder, quotient_membership_locus, rabinowitsch_solve,
 };
-use crate::ir::presentation::{ComparisonPair, CoordValue, OperationDecl, PhaseDecl};
+use crate::ir::presentation::{ComparisonPair, CoordValue, OperationDecl, PhaseDecl, Presentation};
 use crate::ir::result::{EmptyWitness, SilenceReason};
 use crate::ir::term::PolyExpr;
 use num_bigint::{BigInt, BigUint};
@@ -236,11 +236,19 @@ pub fn build_preservation_obligations(
 
         let (state_vars, src_obs_map) = phase_state_env(src_phase);
         let arg_vars: Vec<String> = after_op.args.iter().map(|(a, _)| a.clone()).collect();
-        let src_laws: Vec<PolyExpr> = src_phase
+        let mut src_laws: Vec<PolyExpr> = src_phase
             .state_laws
             .iter()
             .map(|l| substitute_poly_expr(&l.polynomial, &src_obs_map, &empty, &empty))
             .collect();
+        for dlaw in &after_op.domain_laws {
+            src_laws.push(substitute_poly_expr(
+                &dlaw.polynomial,
+                &src_obs_map,
+                &empty,
+                &empty,
+            ));
+        }
         let after_updates: BTreeMap<String, PolyExpr> = after_op
             .updates
             .iter()
@@ -252,32 +260,18 @@ pub fn build_preservation_obligations(
             })
             .collect();
 
-        // 3a. dst_phase の固定観測座標があれば更新結果と一致する義務。
-        for d_coord in &dst_phase.coords {
-            if let CoordValue::Observed(lit) = &d_coord.value
-                && let Some(upd) = after_updates.get(&d_coord.name)
-            {
-                obligations.push(PreservationObligation {
-                    state_vars: state_vars.clone(),
-                    arg_vars: arg_vars.clone(),
-                    source_laws: src_laws.clone(),
-                    target: PolyExpr::diff(upd.clone(), PolyExpr::Const(lit.clone())),
-                });
-            }
-        }
+        // 3a & 3b. dst_phase の固定観測値一致と状態 Law 閉性
+        collect_op_closure_obligations(
+            after_op,
+            dst_phase,
+            &state_vars,
+            &arg_vars,
+            &src_laws,
+            &after_updates,
+            &mut obligations,
+        );
 
-        // 3b. 状態 Law 閉性: op_after^*(dst_law) in (src_laws)。
-        for dst_law in &dst_phase.state_laws {
-            let pulled = substitute_poly_expr(&dst_law.polynomial, &after_updates, &empty, &empty);
-            obligations.push(PreservationObligation {
-                state_vars: state_vars.clone(),
-                arg_vars: arg_vars.clone(),
-                source_laws: src_laws.clone(),
-                target: pulled,
-            });
-        }
-
-        // 4. 操作可換性: h_dst(op_after(s, u)) == eval_before(tau(op_after), h_src(s), u)。
+        // 4. 操作可換性および翻訳先操作の事前定義域（domain_laws）引き戻し義務:
         let mut before_state: BTreeMap<String, PolyExpr> = sc_src
             .map
             .iter()
@@ -301,6 +295,16 @@ pub fn build_preservation_obligations(
                     arg_name.clone(),
                     substitute_poly_expr(expr, &src_obs_map, &empty, &empty),
                 );
+            }
+            for b_dlaw in &b_op.domain_laws {
+                let pulled =
+                    substitute_poly_expr(&b_dlaw.polynomial, &before_state, &step_args, &empty);
+                obligations.push(PreservationObligation {
+                    state_vars: state_vars.clone(),
+                    arg_vars: arg_vars.clone(),
+                    source_laws: src_laws.clone(),
+                    target: pulled,
+                });
             }
             let mut next_before = BTreeMap::new();
             for (coord, upd) in &b_op.updates {
@@ -329,6 +333,99 @@ pub fn build_preservation_obligations(
         }
     }
 
+    Ok(obligations)
+}
+
+fn collect_op_closure_obligations(
+    op: &OperationDecl,
+    dst_phase: &PhaseDecl,
+    state_vars: &[String],
+    arg_vars: &[String],
+    src_laws: &[PolyExpr],
+    op_updates: &BTreeMap<String, PolyExpr>,
+    obligations: &mut Vec<PreservationObligation>,
+) {
+    let empty = BTreeMap::new();
+    let _ = op;
+    for d_coord in &dst_phase.coords {
+        if let CoordValue::Observed(lit) = &d_coord.value
+            && let Some(upd) = op_updates.get(&d_coord.name)
+        {
+            obligations.push(PreservationObligation {
+                state_vars: state_vars.to_vec(),
+                arg_vars: arg_vars.to_vec(),
+                source_laws: src_laws.to_vec(),
+                target: PolyExpr::diff(upd.clone(), PolyExpr::Const(lit.clone())),
+            });
+        }
+    }
+    for dst_law in &dst_phase.state_laws {
+        let pulled = substitute_poly_expr(&dst_law.polynomial, op_updates, &empty, &empty);
+        obligations.push(PreservationObligation {
+            state_vars: state_vars.to_vec(),
+            arg_vars: arg_vars.to_vec(),
+            source_laws: src_laws.to_vec(),
+            target: pulled,
+        });
+    }
+}
+
+/// 単一 `Presentation` 上の全操作について遷移先状態 Law 閉性・観測座標一致義務を生成する。
+pub(crate) fn build_presentation_closure_obligations(
+    pres: &Presentation,
+) -> Result<Vec<PreservationObligation>, SilenceReason> {
+    let empty = BTreeMap::new();
+    let phases: BTreeMap<&str, &PhaseDecl> =
+        pres.phases.iter().map(|p| (p.name.as_str(), p)).collect();
+    let mut obligations = Vec::new();
+    for op in &pres.operations {
+        let src_phase = phases.get(op.source_phase.as_str()).ok_or_else(|| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "presentation_source_phase_present".to_owned(),
+                detail: format!("missing phase `{}` in `{}`", op.source_phase, pres.name),
+            }
+        })?;
+        let dst_phase = phases.get(op.target_phase.as_str()).ok_or_else(|| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "presentation_target_phase_present".to_owned(),
+                detail: format!("missing phase `{}` in `{}`", op.target_phase, pres.name),
+            }
+        })?;
+        let (state_vars, src_obs_map) = phase_state_env(src_phase);
+        let arg_vars: Vec<String> = op.args.iter().map(|(a, _)| a.clone()).collect();
+        let mut src_laws: Vec<PolyExpr> = src_phase
+            .state_laws
+            .iter()
+            .map(|l| substitute_poly_expr(&l.polynomial, &src_obs_map, &empty, &empty))
+            .collect();
+        for dlaw in &op.domain_laws {
+            src_laws.push(substitute_poly_expr(
+                &dlaw.polynomial,
+                &src_obs_map,
+                &empty,
+                &empty,
+            ));
+        }
+        let op_updates: BTreeMap<String, PolyExpr> = op
+            .updates
+            .iter()
+            .map(|(k, v)| {
+                (
+                    k.clone(),
+                    substitute_poly_expr(v, &src_obs_map, &empty, &empty),
+                )
+            })
+            .collect();
+        collect_op_closure_obligations(
+            op,
+            dst_phase,
+            &state_vars,
+            &arg_vars,
+            &src_laws,
+            &op_updates,
+            &mut obligations,
+        );
+    }
     Ok(obligations)
 }
 

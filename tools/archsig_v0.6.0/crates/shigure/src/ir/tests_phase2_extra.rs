@@ -132,27 +132,106 @@ fn f1_enlarged_protocol_unobserved_in_comparison_h_and_tau_collected() {
 }
 
 #[test]
-fn f2_phase1_solver_fails_closed_when_operation_domain_laws_nonempty() {
+fn f2_operation_domain_laws_participate_in_preservation_and_param_free_check() {
     let mut before = base_pres("BeforeDL");
     let after = base_pres("AfterDL");
 
-    // 1. after 側の domain_laws が非空なら Phase 1 solver は黙って判定せず沈黙する
-    let mut after_with_dl = after.clone();
-    after_with_dl.operations[0].domain_laws.push(StateLaw {
-        name: "pre".into(),
+    // 1. after 側の domain_laws が src_laws に組み込まれ、保存判定に効くことを Z + AlgebraicClosure で確認
+    let mut after_need_dl = after.clone();
+    after_need_dl.phases[0].state_laws.push(StateLaw {
+        name: "x_must_stay_zero_after".into(),
         kind: LawKind::Representation,
         polynomial: PolyExpr::state("x"),
         provenance: None,
     });
-    let pair = id_edge("AfterDL", "BeforeDL").to_comparison_pair(&after_with_dl, &before);
-    let task = CheckedShigureTask::validate(pair, empty_change("H", vec![]), None)
-        .expect("IR accepts domain_laws");
-    let out = execute_shigure_task(&task, ShigureQueryKind::SemanticPreservation);
-    assert!(matches!(
-        out.verdict,
-        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. })
-        if condition == "operation_domain_laws_unsupported_in_single_task"
-    ));
+    let mut pair_no_dl = id_edge("AfterDL", "BeforeDL").to_comparison_pair(&after_need_dl, &before);
+    // before は x 任意で apply が x->x+u。after の apply に y->y+x（y=0 が不変条件）を追加すると、
+    // after.domain_laws が空なら y=0 閉性が破れ Refuted、domain_laws:[x] があれば Established。
+    pair_no_dl.after.phases[0].state_laws.pop();
+    pair_no_dl.after.phases[0]
+        .coords
+        .push(CoordDecl::symbolic("y", "D"));
+    pair_no_dl.after.phases[0].state_laws.push(StateLaw {
+        name: "y_zero".into(),
+        kind: LawKind::Representation,
+        polynomial: PolyExpr::state("y"),
+        provenance: None,
+    });
+    pair_no_dl.after.operations[0]
+        .updates
+        .insert("y".into(), PolyExpr::state("y") + PolyExpr::state("x"));
+
+    let cond_closure = EvalCondition {
+        name: "closure".into(),
+        evaluations: vec![],
+        equations: vec![],
+        invertibles: vec![],
+        point_domain: PointDomain::AlgebraicClosure,
+        provenance: Provenance::new(vec![origin()], vec![MathClause::G140G2]),
+    };
+
+    let task_without_dl = CheckedShigureTask::validate(
+        pair_no_dl.clone(),
+        empty_change("H", vec![]),
+        Some(cond_closure.clone()),
+    )
+    .expect("valid task without dl");
+    let out_without =
+        execute_shigure_task(&task_without_dl, ShigureQueryKind::ConditionalSolutionSpace);
+    assert_eq!(out_without.verdict, Verdict::Refuted);
+
+    let mut pair_with_dl = pair_no_dl;
+    pair_with_dl.after.operations[0].domain_laws.push(StateLaw {
+        name: "pre_x_zero".into(),
+        kind: LawKind::Representation,
+        polynomial: PolyExpr::state("x"),
+        provenance: None,
+    });
+    let task_with_dl = CheckedShigureTask::validate(
+        pair_with_dl,
+        empty_change("H", vec![]),
+        Some(cond_closure.clone()),
+    )
+    .expect("valid task with after domain_laws");
+    let out_with = execute_shigure_task(&task_with_dl, ShigureQueryKind::ConditionalSolutionSpace);
+    assert_eq!(out_with.verdict, Verdict::Established);
+
+    // 1b. before 側の操作 domain_laws の引き戻しも after.domain_laws なしで Refuted・ありで Established
+    let mut before_with_dl = before.clone();
+    before_with_dl.operations[0].domain_laws.push(StateLaw {
+        name: "before_req_x_zero".into(),
+        kind: LawKind::Semantic,
+        polynomial: PolyExpr::state("x"),
+        provenance: None,
+    });
+    let mut after_pullback = after.clone();
+    let pair_pb_fail =
+        id_edge("AfterDL", "BeforeDL").to_comparison_pair(&after_pullback, &before_with_dl);
+    let task_pb_fail = CheckedShigureTask::validate(
+        pair_pb_fail,
+        empty_change("H", vec![]),
+        Some(cond_closure.clone()),
+    )
+    .expect("valid task for before domain pullback failure");
+    assert_eq!(
+        execute_shigure_task(&task_pb_fail, ShigureQueryKind::ConditionalSolutionSpace).verdict,
+        Verdict::Refuted
+    );
+    after_pullback.operations[0].domain_laws.push(StateLaw {
+        name: "after_req_x_zero".into(),
+        kind: LawKind::Representation,
+        polynomial: PolyExpr::state("x"),
+        provenance: None,
+    });
+    let pair_pb_ok =
+        id_edge("AfterDL", "BeforeDL").to_comparison_pair(&after_pullback, &before_with_dl);
+    let task_pb_ok =
+        CheckedShigureTask::validate(pair_pb_ok, empty_change("H", vec![]), Some(cond_closure))
+            .expect("valid task for before domain pullback match");
+    assert_eq!(
+        execute_shigure_task(&task_pb_ok, ShigureQueryKind::ConditionalSolutionSpace).verdict,
+        Verdict::Established
+    );
 
     // 2. before 側の domain_laws に ParamVar が含まれる場合もパラメータフリー検査で沈黙する
     before.operations[0].domain_laws.push(StateLaw {
