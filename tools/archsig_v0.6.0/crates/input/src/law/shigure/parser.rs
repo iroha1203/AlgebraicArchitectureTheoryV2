@@ -16,7 +16,7 @@ use num_traits::Zero;
 const RED_ZONE: usize = 128 * 1024;
 const STACK_STEP: usize = 4 * 1024 * 1024;
 
-type PResult<T, E> = Result<T, E>;
+pub(super) type PResult<T, E> = Result<T, E>;
 
 impl<E: InputError> Parser<E> {
     /// `shigure <kind> <Name> { ... }` を解析する（`shigure` は未消費）。
@@ -25,7 +25,7 @@ impl<E: InputError> Parser<E> {
         self.expect_kw("shigure")?;
         let Some(tok) = self.peek().cloned() else {
             return self.err(
-                "expected `presentation`, `comparison`, `change_spec`, `eval_condition`, or `task` after `shigure`",
+                "expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, or `transfer` after `shigure`",
             );
         };
         if tok.kind != TokenKind::Name {
@@ -51,13 +51,22 @@ impl<E: InputError> Parser<E> {
                 .parse_shigure_eval_condition(start)
                 .map(ShigureDeclAst::EvalCondition),
             "task" => self.parse_shigure_task(start).map(ShigureDeclAst::Task),
+            "diagram" => self
+                .parse_shigure_diagram(start)
+                .map(ShigureDeclAst::Diagram),
+            "path" => self
+                .parse_shigure_path(start)
+                .map(|p| ShigureDeclAst::Path(Box::new(p))),
+            "transfer" => self
+                .parse_shigure_transfer(start)
+                .map(ShigureDeclAst::Transfer),
             other => self.err(format!(
-                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, or `task`"
+                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, or `transfer`"
             )),
         }
     }
 
-    fn reject_conclusion_or_unknown(&self, context: &str) -> PResult<(), E> {
+    pub(super) fn reject_conclusion_or_unknown(&self, context: &str) -> PResult<(), E> {
         if let Some(t) = self.peek()
             && t.kind == TokenKind::Name
             && is_forbidden_conclusion_field(&t.text)
@@ -116,7 +125,7 @@ impl<E: InputError> Parser<E> {
         self.err("expected point domain `algebraic_closure`, `rational_points`, `integer_points`, `finite_field_points(<prime>)`, or `universal_ring`")
     }
 
-    fn expect_int_token(&mut self) -> PResult<String, E> {
+    pub(super) fn expect_int_token(&mut self) -> PResult<String, E> {
         match self.peek().cloned() {
             Some(t) if t.kind == TokenKind::Int => {
                 self.advance();
@@ -226,26 +235,7 @@ impl<E: InputError> Parser<E> {
                     span: (c_start, self.prev_end()),
                 });
             } else if self.eat_kw("law") {
-                let l_start = self.prev_span().0;
-                let kind = if self.eat_kw("semantic") || self.eat_kw("required") {
-                    ShigureLawKind::Semantic
-                } else if self.eat_kw("representation") {
-                    ShigureLawKind::Representation
-                } else {
-                    return self.err(
-                        "expected `semantic` (or `required`) or `representation` after `law` in `phase`",
-                    );
-                };
-                let l_name = self.ident()?;
-                self.expect_sym(":")?;
-                let expr = self.parse_shigure_equation_poly()?;
-                self.expect_sym(";")?;
-                state_laws.push(RawStateLawDecl {
-                    name: l_name,
-                    kind,
-                    expr,
-                    span: (l_start, self.prev_end()),
-                });
+                state_laws.push(self.parse_shigure_law_decl_after_kw("`phase`")?);
             } else {
                 self.reject_conclusion_or_unknown("`phase`")?;
             }
@@ -256,6 +246,32 @@ impl<E: InputError> Parser<E> {
             coords,
             state_laws,
             span: (start, self.prev_end()),
+        })
+    }
+
+    pub(super) fn parse_shigure_law_decl_after_kw(
+        &mut self,
+        context: &str,
+    ) -> PResult<RawStateLawDecl, E> {
+        let l_start = self.prev_span().0;
+        let kind = if self.eat_kw("semantic") || self.eat_kw("required") {
+            ShigureLawKind::Semantic
+        } else if self.eat_kw("representation") {
+            ShigureLawKind::Representation
+        } else {
+            return self.err(format!(
+                "expected `semantic` (or `required`) or `representation` in {context} law declaration"
+            ));
+        };
+        let l_name = self.ident()?;
+        self.expect_sym(":")?;
+        let expr = self.parse_shigure_equation_poly()?;
+        self.expect_sym(";")?;
+        Ok(RawStateLawDecl {
+            name: l_name,
+            kind,
+            expr,
+            span: (l_start, self.prev_end()),
         })
     }
 
@@ -282,14 +298,25 @@ impl<E: InputError> Parser<E> {
         self.expect_sym("->")?;
         let target_phase = self.ident()?;
         self.expect_sym("{")?;
+        let mut domain_laws = Vec::new();
         let mut updates = Vec::new();
         while !self.is_sym("}") {
             self.checkpoint_here()?;
-            let coord = self.ident()?;
-            self.expect_sym("=")?;
-            let expr = self.parse_shigure_poly_expr()?;
-            self.expect_sym(";")?;
-            updates.push((coord, expr));
+            if self.eat_kw("law") {
+                domain_laws.push(self.parse_shigure_law_decl_after_kw("`op`")?);
+            } else {
+                if let Some(t) = self.peek()
+                    && t.kind == TokenKind::Name
+                    && is_forbidden_conclusion_field(&t.text)
+                {
+                    self.reject_conclusion_or_unknown("`op`")?;
+                }
+                let coord = self.ident()?;
+                self.expect_sym("=")?;
+                let expr = self.parse_shigure_poly_expr()?;
+                self.expect_sym(";")?;
+                updates.push((coord, expr));
+            }
         }
         self.expect_sym("}")?;
         Ok(RawOperationDecl {
@@ -297,6 +324,7 @@ impl<E: InputError> Parser<E> {
             source_phase,
             target_phase,
             args,
+            domain_laws,
             updates,
             span: (start, self.prev_end()),
         })
@@ -353,67 +381,9 @@ impl<E: InputError> Parser<E> {
                 after = Some(self.qname()?);
                 self.expect_sym(";")?;
             } else if self.eat_kw("state_map") {
-                let s_start = self.prev_span().0;
-                let after_phase = self.ident()?;
-                self.expect_sym("->")?;
-                let before_phase = self.ident()?;
-                self.expect_sym("{")?;
-                let mut map = Vec::new();
-                while !self.is_sym("}") {
-                    self.checkpoint_here()?;
-                    let target_coord = self.ident()?;
-                    self.expect_sym("=")?;
-                    let expr = self.parse_shigure_poly_expr()?;
-                    self.expect_sym(";")?;
-                    map.push((target_coord, expr));
-                }
-                self.expect_sym("}")?;
-                state_comparisons.push(RawStateComparison {
-                    after_phase,
-                    before_phase,
-                    map,
-                    span: (s_start, self.prev_end()),
-                });
+                state_comparisons.push(self.parse_shigure_state_comparison_after_kw()?);
             } else if self.eat_kw("translate") {
-                let t_start = self.prev_span().0;
-                let after_operation = self.ident()?;
-                self.expect_sym("->")?;
-                self.expect_sym("[")?;
-                let mut steps = Vec::new();
-                if !self.is_sym("]") {
-                    loop {
-                        self.checkpoint_here()?;
-                        let st_start = self.here().0;
-                        let before_operation = self.ident()?;
-                        self.expect_sym("(")?;
-                        let mut arg_exprs = Vec::new();
-                        if !self.is_sym(")") {
-                            loop {
-                                self.checkpoint_here()?;
-                                arg_exprs.push(self.parse_shigure_poly_expr()?);
-                                if !self.eat_sym(",") {
-                                    break;
-                                }
-                            }
-                        }
-                        self.expect_sym(")")?;
-                        steps.push(RawTranslatedStep {
-                            before_operation,
-                            arg_exprs,
-                            span: (st_start, self.prev_end()),
-                        });
-                        if !self.eat_sym(",") {
-                            break;
-                        }
-                    }
-                }
-                self.expect_sym("]")?;
-                self.expect_sym(";")?;
-                word_translation.push(RawTranslatedWord {
-                    after_operation,
-                    steps,
-                    span: (t_start, self.prev_end()),
-                });
+                word_translation.push(self.parse_shigure_translated_word_after_kw()?);
             } else {
                 self.reject_conclusion_or_unknown("`shigure comparison`")?;
             }
@@ -442,6 +412,81 @@ impl<E: InputError> Parser<E> {
             state_comparisons,
             word_translation,
             span: (start, self.prev_end()),
+        })
+    }
+
+    pub(super) fn parse_shigure_state_comparison_after_kw(
+        &mut self,
+    ) -> PResult<RawStateComparison, E> {
+        let s_start = self.prev_span().0;
+        let after_phase = self.ident()?;
+        self.expect_sym("->")?;
+        let before_phase = self.ident()?;
+        self.expect_sym("{")?;
+        let mut map = Vec::new();
+        while !self.is_sym("}") {
+            self.checkpoint_here()?;
+            let target_coord = self.ident()?;
+            self.expect_sym("=")?;
+            let expr = self.parse_shigure_poly_expr()?;
+            self.expect_sym(";")?;
+            map.push((target_coord, expr));
+        }
+        self.expect_sym("}")?;
+        Ok(RawStateComparison {
+            after_phase,
+            before_phase,
+            map,
+            span: (s_start, self.prev_end()),
+        })
+    }
+
+    pub(super) fn parse_shigure_word_step_list(&mut self) -> PResult<Vec<RawTranslatedStep>, E> {
+        self.expect_sym("[")?;
+        let mut steps = Vec::new();
+        if !self.is_sym("]") {
+            loop {
+                self.checkpoint_here()?;
+                let st_start = self.here().0;
+                let before_operation = self.ident()?;
+                self.expect_sym("(")?;
+                let mut arg_exprs = Vec::new();
+                if !self.is_sym(")") {
+                    loop {
+                        self.checkpoint_here()?;
+                        arg_exprs.push(self.parse_shigure_poly_expr()?);
+                        if !self.eat_sym(",") {
+                            break;
+                        }
+                    }
+                }
+                self.expect_sym(")")?;
+                steps.push(RawTranslatedStep {
+                    before_operation,
+                    arg_exprs,
+                    span: (st_start, self.prev_end()),
+                });
+                if !self.eat_sym(",") {
+                    break;
+                }
+            }
+        }
+        self.expect_sym("]")?;
+        Ok(steps)
+    }
+
+    pub(super) fn parse_shigure_translated_word_after_kw(
+        &mut self,
+    ) -> PResult<RawTranslatedWord, E> {
+        let t_start = self.prev_span().0;
+        let after_operation = self.ident()?;
+        self.expect_sym("->")?;
+        let steps = self.parse_shigure_word_step_list()?;
+        self.expect_sym(";")?;
+        Ok(RawTranslatedWord {
+            after_operation,
+            steps,
+            span: (t_start, self.prev_end()),
         })
     }
 
@@ -672,7 +717,7 @@ impl<E: InputError> Parser<E> {
     }
 
     /// 等式 `lhs = rhs` を `lhs - rhs`（`rhs` が定数 0 なら `lhs`）として解析する。
-    fn parse_shigure_equation_poly(&mut self) -> PResult<ShigurePolyExpr, E> {
+    pub(super) fn parse_shigure_equation_poly(&mut self) -> PResult<ShigurePolyExpr, E> {
         let lhs = self.parse_shigure_poly_expr()?;
         self.expect_sym("=")?;
         let rhs = self.parse_shigure_poly_expr()?;
@@ -683,7 +728,7 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn parse_shigure_poly_expr(&mut self) -> PResult<ShigurePolyExpr, E> {
+    pub(super) fn parse_shigure_poly_expr(&mut self) -> PResult<ShigurePolyExpr, E> {
         stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
             let mut acc = self.parse_shigure_poly_term()?;
             loop {

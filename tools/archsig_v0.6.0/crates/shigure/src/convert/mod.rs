@@ -6,12 +6,23 @@
 //! - `Origin`（静的解析・実行観測・LLM 読解候補・人間採用）と参照位置・欠測スロットの完全な保持
 
 mod lower;
+mod lower_diagram;
 mod lower_expr;
+mod lower_morphism;
+mod lower_path;
+mod lower_transfer;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod tests_extra;
+#[cfg(test)]
+mod tests_phase2;
+#[cfg(test)]
+mod tests_phase2_neg;
 
+use crate::ir::diagram::CheckedDiagramTask;
+use crate::ir::path::CheckedPathTask;
+use crate::ir::transfer::CheckedTransferTask;
 use crate::ir::validate::{CheckedShigureTask, ValidationError};
 use archsig_input::input::CheckedInputs;
 
@@ -21,6 +32,27 @@ use archsig_input::input::CheckedInputs;
 /// 異なる Atom 定義で検査された Law と ArchMap の混在を型レベルで防ぐ。
 pub trait ToShigureTask {
     fn convert(&self, inputs: &CheckedInputs) -> Result<CheckedShigureTask, ValidationError>;
+}
+
+/// `CheckedInputs` から図式補完タスク `CheckedDiagramTask` への変換境界。
+pub trait ToShigureDiagramTask {
+    fn convert_diagram(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedDiagramTask, ValidationError>;
+}
+
+/// `CheckedInputs` から一段変更経路タスク `CheckedPathTask` への変換境界。
+pub trait ToShigurePathTask {
+    fn convert_path(&self, inputs: &CheckedInputs) -> Result<CheckedPathTask, ValidationError>;
+}
+
+/// `CheckedInputs` から合法状態移送タスク `CheckedTransferTask` への変換境界。
+pub trait ToShigureTransferTask {
+    fn convert_transfer(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedTransferTask, ValidationError>;
 }
 
 /// `CheckedInputs` から指定 SHIGURE タスクを抽出して `CheckedShigureTask` へ変換する標準変換器。
@@ -58,7 +90,58 @@ impl ToShigureTask for ShigureConverter {
     }
 }
 
+impl ToShigureDiagramTask for ShigureConverter {
+    fn convert_diagram(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedDiagramTask, ValidationError> {
+        lower_diagram::convert_diagram_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigurePathTask for ShigureConverter {
+    fn convert_path(&self, inputs: &CheckedInputs) -> Result<CheckedPathTask, ValidationError> {
+        lower_path::convert_path_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureTransferTask for ShigureConverter {
+    fn convert_transfer(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedTransferTask, ValidationError> {
+        lower_transfer::convert_transfer_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
 /// `CheckedInputs` 内の Law に宣言されている全 `shigure task` の完全名一覧を返す。
 pub fn list_shigure_tasks(inputs: &CheckedInputs) -> Vec<String> {
     inputs.law().shigure().tasks.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure diagram` の完全名一覧を返す。
+pub fn list_shigure_diagrams(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().diagrams.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure path` の完全名一覧を返す。
+pub fn list_shigure_paths(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().paths.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure transfer` の完全名一覧を返す。
+pub fn list_shigure_transfers(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().transfers.keys().cloned().collect()
 }

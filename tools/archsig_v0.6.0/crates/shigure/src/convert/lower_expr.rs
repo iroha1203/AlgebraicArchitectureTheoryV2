@@ -7,7 +7,7 @@ use crate::ir::validate::ValidationError;
 use archsig_input::archmap::{
     CheckedArchMap, Origin, OriginKind as InputOriginKind, Slot, Snapshot, Subject, Value,
 };
-use archsig_input::law::shigure::ShigurePolyExpr;
+use archsig_input::law::shigure::{ShigurePolyExpr, ShigureScalarLit};
 use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::{One, Zero};
@@ -16,6 +16,71 @@ use std::collections::BTreeSet;
 pub(super) fn conv_err(detail: impl Into<String>) -> ValidationError {
     ValidationError::ConversionError {
         detail: detail.into(),
+    }
+}
+
+pub(super) fn lower_scalar_lit(
+    lit: &ShigureScalarLit,
+    domain: &CoeffDomain,
+    context: &str,
+) -> Result<ScalarLit, ValidationError> {
+    match (lit, domain) {
+        (ShigureScalarLit::Int(n), CoeffDomain::Z) => Ok(ScalarLit::Z(n.clone())),
+        (ShigureScalarLit::Int(n), CoeffDomain::Q) => Ok(ScalarLit::Q {
+            num: n.clone(),
+            den: BigInt::one(),
+        }),
+        (ShigureScalarLit::Int(n), CoeffDomain::Fp(p)) => {
+            let Some(u) = n.to_biguint() else {
+                return Err(ValidationError::InvalidFpLiteral {
+                    context: context.to_owned(),
+                });
+            };
+            if &u >= p {
+                return Err(ValidationError::InvalidFpLiteral {
+                    context: context.to_owned(),
+                });
+            }
+            Ok(ScalarLit::Fp {
+                value: u,
+                modulus: p.clone(),
+            })
+        }
+        (ShigureScalarLit::Rat { num, den }, CoeffDomain::Q) => {
+            if *den <= BigInt::zero() {
+                return Err(ValidationError::InvalidRational {
+                    context: context.to_owned(),
+                });
+            }
+            let g = num.gcd(den);
+            Ok(ScalarLit::Q {
+                num: num / &g,
+                den: den / g,
+            })
+        }
+        (ShigureScalarLit::Rat { .. }, _) => Err(ValidationError::DomainMismatch {
+            expected: domain.clone(),
+            actual: CoeffDomain::Q,
+            context: context.to_owned(),
+        }),
+        (ShigureScalarLit::Fp { value, modulus }, CoeffDomain::Fp(expected))
+            if expected == modulus =>
+        {
+            if value >= modulus {
+                return Err(ValidationError::InvalidFpLiteral {
+                    context: context.to_owned(),
+                });
+            }
+            Ok(ScalarLit::Fp {
+                value: value.clone(),
+                modulus: modulus.clone(),
+            })
+        }
+        (ShigureScalarLit::Fp { modulus, .. }, _) => Err(ValidationError::DomainMismatch {
+            expected: domain.clone(),
+            actual: CoeffDomain::Fp(modulus.clone()),
+            context: context.to_owned(),
+        }),
     }
 }
 

@@ -2,6 +2,7 @@
 
 mod comparison;
 mod comparison_shigure;
+mod comparison_shigure_ext;
 
 use crate::result::Signal;
 use crate::{
