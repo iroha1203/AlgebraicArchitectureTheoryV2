@@ -151,7 +151,7 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 
 で計算できる。実際、右辺の級数は2進位相で収束し、$`a=d(c)`$ の和は望遠鏡和により $`c_0\in\mathbb Z`$ となる。逆に和が整数 $`m`$ に等しければ、$`c_n=(m-\sum_{i<n}2^ia_i)/2^n`$ はすべて整数となり $`d(c)=a`$ を満たす。全射性は任意の2進整数の2進展開から直ちに従う。今考えている交互列 $`a`$ に対しては、和は $`1+4+4^2+\cdots=-1/3\in\mathbb Z_2`$ である。
 
-これを式(13.5)の Čech 類と比較するため、単射準同型 $`\mathbb Z[1/6]/\mathbb Z[1/2]\hookrightarrow\mathbb Z_2/\mathbb Z`$ を次のように構成する。任意の $`x\in\mathbb Z[1/6]`$ に対し、$`x-b\in\mathbb Z_2`$ を満たす $`b\in\mathbb Z[1/2]`$ を選び、$`[x]\mapsto[x-b]\in\mathbb Z_2/\mathbb Z`$ と送る（$`x=n/(2^r3^s)`$ ならば、$`n-m3^s\equiv0\pmod{2^r}`$ となる整数 $`m`$ を選んで $`b=m/2^r`$ とすればよい）。二つの選択の差は $`\mathbb Z[1/2]\cap\mathbb Z_2=\mathbb Z`$ に属するためこの写像はよく定まり、像が $`0`$ ならば $`x-b\in\mathbb Z`$ より $`x\in\mathbb Z[1/2]`$ となるため単射である。特に式(13.5)の類 $`[-1/3]`$ は、この単射によって式(13.6)の同名の類 $`[-1/3]\in\mathbb Z_2/\mathbb Z`$ へそのまま送られる。
+これを式(13.5)の Čech 類と比較するため、単射準同型 $`\mathbb Z[1/6]/\mathbb Z[1/2]\hookrightarrow\mathbb Z_2/\mathbb Z`$ を次のように構成する。任意の $`x\in\mathbb Z[1/6]`$ に対し、$`x-b\in\mathbb Z_2`$ を満たす $`b\in\mathbb Z[1/2]`$ を選び、$`[x]\mapsto[x-b]\in\mathbb Z_2/\mathbb Z`$ と送る（$`x=n/(2^r3^s)`$ ならば、$`n-m3^s\equiv0\pmod{2^r}`$ となる整数 $`m`$ を選んで $`b=m/2^r`$ とすればよい）。二つの選択の差は $`\mathbb Z[1/2]\cap\mathbb Z_2=\mathbb Z`$ に属し、また $`x`$ の代表を $`\mathbb Z[1/2]`$ の元だけ取り替えても同じ商 $`\mathbb Z_2/\mathbb Z`$ の中で消えるため、この写像はよく定まる。像が $`0`$ ならば $`x-b\in\mathbb Z`$ より $`x\in\mathbb Z[1/2]`$ となるため単射である。特に式(13.5)の類 $`[-1/3]`$ は、この単射によって式(13.6)の同名の類 $`[-1/3]\in\mathbb Z_2/\mathbb Z`$ へそのまま送られる。
 
 この一致は数値の偶然ではない。各次数での係数の短完全列の直積を取り、ここでは差写像を $`r_V-r_U`$ として複体の短完全列
 
