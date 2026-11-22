@@ -497,3 +497,229 @@ fn diagram_quotient_ideal_and_silence_disciplines() {
         Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. }) if condition == "universal_ring_solution_space_out_of_scope"
     ));
 }
+
+#[test]
+fn diagram_review_regressions_m03_m01_m02() {
+    use crate::algebra::VarOrder;
+    use crate::solver::common_solve::try_decide_unit_z_quotients;
+    use crate::solver::preservation::PreservationObligation;
+
+    let q = CoeffDomain::Q;
+    let eval_contradiction_spec = DiagramSpec {
+        name: "m03_eval_eq_contradiction".into(),
+        direction: MorphismDirection::StateMap,
+        vertices: vec![
+            DiagramVertex {
+                name: "B".into(),
+                presentation: weighted_branch("B", q.clone(), PolyExpr::param("k")),
+                is_fixed: false,
+                provenance: None,
+            },
+            DiagramVertex {
+                name: "A".into(),
+                presentation: ledger_base("A", q.clone()),
+                is_fixed: true,
+                provenance: None,
+            },
+        ],
+        edges: vec![DiagramEdge {
+            name: "e".into(),
+            source: "B".into(),
+            target: "A".into(),
+            morphism: sum_to_x_morphism("B", "A"),
+            is_fixed: false,
+            provenance: None,
+        }],
+        relations: vec![],
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: q.clone(),
+            parameters: vec![ParamDecl {
+                name: "k".into(),
+                coeff_domain: q.clone(),
+                provenance: None,
+            }],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G141D5]),
+        },
+        eval_condition: Some(EvalCondition {
+            name: "ev1".into(),
+            evaluations: vec![],
+            equations: vec![NamedPoly {
+                name: "k1".into(),
+                expr: PolyExpr::param("k") - clit(&q, 1),
+                provenance: None,
+            }],
+            invertibles: vec![],
+            point_domain: PointDomain::AlgebraicClosure,
+            provenance: Provenance::new(vec![orig("ev1")], vec![MathClause::G141D5]),
+        }),
+        edge_eval_conditions: BTreeMap::from([(
+            "e".into(),
+            EvalCondition {
+                name: "ev2".into(),
+                evaluations: vec![],
+                equations: vec![NamedPoly {
+                    name: "k2".into(),
+                    expr: PolyExpr::param("k") - clit(&q, 2),
+                    provenance: None,
+                }],
+                invertibles: vec![],
+                point_domain: PointDomain::AlgebraicClosure,
+                provenance: Provenance::new(vec![orig("ev2")], vec![MathClause::G141D5]),
+            },
+        )]),
+        provenance: Provenance::new(vec![orig("m03a")], vec![MathClause::G141D5]),
+    };
+    let out_m03a =
+        solve_diagram_task(&CheckedDiagramTask::validate(eval_contradiction_spec).unwrap());
+    assert_eq!(out_m03a.verdict, Verdict::Refuted);
+    assert!(out_m03a.empty_witness.is_some());
+    assert!(!out_m03a.residual_ideal.is_empty());
+
+    let inv_contradiction_spec = DiagramSpec {
+        name: "m03_inv_contradiction".into(),
+        direction: MorphismDirection::StateMap,
+        vertices: vec![
+            DiagramVertex {
+                name: "B".into(),
+                presentation: weighted_branch("B", q.clone(), PolyExpr::param("k")),
+                is_fixed: false,
+                provenance: None,
+            },
+            DiagramVertex {
+                name: "A".into(),
+                presentation: weighted_branch("A", q.clone(), clit(&q, 1)),
+                is_fixed: true,
+                provenance: None,
+            },
+        ],
+        edges: vec![DiagramEdge {
+            name: "e".into(),
+            source: "B".into(),
+            target: "A".into(),
+            morphism: id_bc_morphism("B", "A"),
+            is_fixed: false,
+            provenance: None,
+        }],
+        relations: vec![],
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: q.clone(),
+            parameters: vec![ParamDecl {
+                name: "k".into(),
+                coeff_domain: q.clone(),
+                provenance: None,
+            }],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G141D5]),
+        },
+        eval_condition: Some(EvalCondition {
+            name: "ev_inv".into(),
+            evaluations: vec![],
+            equations: vec![],
+            invertibles: vec![NamedPoly {
+                name: "k_minus_1_nz".into(),
+                expr: PolyExpr::param("k") - clit(&q, 1),
+                provenance: None,
+            }],
+            point_domain: PointDomain::AlgebraicClosure,
+            provenance: Provenance::new(vec![orig("ev_inv")], vec![MathClause::G141D5]),
+        }),
+        edge_eval_conditions: BTreeMap::new(),
+        provenance: Provenance::new(vec![orig("m03b")], vec![MathClause::G141D5]),
+    };
+    let out_m03b =
+        solve_diagram_task(&CheckedDiagramTask::validate(inv_contradiction_spec).unwrap());
+    assert_eq!(out_m03b.verdict, Verdict::Refuted);
+    assert!(out_m03b.empty_witness.is_some());
+    assert!(!out_m03b.residual_ideal.is_empty());
+
+    let nl_inv_spec = DiagramSpec {
+        name: "m01_affine_eq_nonlinear_inv".into(),
+        direction: MorphismDirection::StateMap,
+        vertices: vec![
+            DiagramVertex {
+                name: "B".into(),
+                presentation: weighted_branch("B", q.clone(), PolyExpr::param("k")),
+                is_fixed: false,
+                provenance: None,
+            },
+            DiagramVertex {
+                name: "A".into(),
+                presentation: ledger_base("A", q.clone()),
+                is_fixed: true,
+                provenance: None,
+            },
+        ],
+        edges: vec![DiagramEdge {
+            name: "e".into(),
+            source: "B".into(),
+            target: "A".into(),
+            morphism: sum_to_x_morphism("B", "A"),
+            is_fixed: false,
+            provenance: None,
+        }],
+        relations: vec![],
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: q.clone(),
+            parameters: vec![ParamDecl {
+                name: "k".into(),
+                coeff_domain: q.clone(),
+                provenance: None,
+            }],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G141D4]),
+        },
+        eval_condition: Some(EvalCondition {
+            name: "rat_nl_inv".into(),
+            evaluations: vec![],
+            equations: vec![NamedPoly {
+                name: "pick2".into(),
+                expr: PolyExpr::param("k") - clit(&q, 2),
+                provenance: None,
+            }],
+            invertibles: vec![NamedPoly {
+                name: "k2_minus_1".into(),
+                expr: PolyExpr::pow(PolyExpr::param("k"), 2) - clit(&q, 1),
+                provenance: None,
+            }],
+            point_domain: PointDomain::RationalPoints,
+            provenance: Provenance::new(vec![orig("rat_nl_inv")], vec![MathClause::G141D4]),
+        }),
+        edge_eval_conditions: BTreeMap::new(),
+        provenance: Provenance::new(vec![orig("m01")], vec![MathClause::G141D4]),
+    };
+    let out_nl_inv = solve_diagram_task(&CheckedDiagramTask::validate(nl_inv_spec).unwrap());
+    assert_eq!(out_nl_inv.verdict, Verdict::Established);
+    assert_eq!(
+        out_nl_inv
+            .diagram
+            .unwrap()
+            .restored_diagram
+            .unwrap()
+            .parameter_assignments
+            .get("k")
+            .map(String::as_str),
+        Some("2")
+    );
+
+    let empty_order = VarOrder::new(vec![]).unwrap();
+    let bad_q_extra = PolyExpr::rat(1, 2).unwrap();
+    let ob = PreservationObligation {
+        state_vars: vec!["x".into()],
+        arg_vars: vec![],
+        source_laws: vec![PolyExpr::state("x")],
+        target: PolyExpr::state("x"),
+    };
+    let mut checks = Vec::new();
+    let err = try_decide_unit_z_quotients(&[ob], &[bad_q_extra], &[], &empty_order, &mut checks);
+    assert!(matches!(
+        err,
+        Err(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+}

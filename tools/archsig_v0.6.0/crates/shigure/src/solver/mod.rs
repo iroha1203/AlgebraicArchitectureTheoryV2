@@ -25,6 +25,7 @@ mod restore_format;
 pub(crate) mod solve;
 mod transfer;
 mod transfer_compose;
+mod transfer_lift;
 mod transfer_words;
 
 #[cfg(test)]
@@ -43,6 +44,8 @@ mod tests_path_extra;
 mod tests_regressions;
 #[cfg(test)]
 mod tests_transfer;
+#[cfg(test)]
+mod tests_transfer_extra;
 
 pub use diagram::solve_diagram_task;
 pub use path::solve_path_task;

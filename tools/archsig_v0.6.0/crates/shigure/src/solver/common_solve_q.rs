@@ -1,15 +1,15 @@
 //! Phase 2 Q／代数閉包・商環層別・具体点／アフィン代入ソルバ。
 
 use crate::algebra::{
-    AffineSolutionQ, ExprBindings, GroebnerBasis, MonomialOrder, Poly, QuotientStratum, Rat,
-    VarOrder, rabinowitsch_solve, solve_affine_q,
+    AffineSolutionQ, DEFAULT_MAX_FP_POINTS, ExprBindings, GroebnerBasis, MonomialOrder, Poly,
+    QuotientStratum, Rat, VarOrder, rabinowitsch_solve, solve_affine_q, solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
 use crate::ir::result::{ApplicabilityCheck, EmptyWitness, SilenceReason, Verdict};
-use crate::ir::term::PolyExpr;
+use crate::ir::term::{CoeffDomain, PolyExpr};
 use crate::solver::common_solve::{
-    ParamWitness, SystemSolveOutcome, collect_eval_and_extra, refuted_system,
+    ParamWitness, SystemSolveOutcome, collect_eval_and_extra, lift_z_to_q, refuted_system,
     solve_affine_or_nonlinear_z, undetermined_system,
 };
 use crate::solver::context::{clear_denominators_to_z, display_polys};
@@ -90,7 +90,7 @@ pub(crate) fn solve_q_system(
             Err(r) => return undetermined_system(checks, vec![], r),
         };
     let base_strata = vec![QuotientStratum {
-        equations: base_eqs,
+        equations: base_eqs.clone(),
         invertibles: base_invs.clone(),
     }];
     let combined = match intersect_strata_lists(&locus.strata, &base_strata, param_vars) {
@@ -120,7 +120,32 @@ pub(crate) fn solve_q_system(
             "rabinowitsch_emptiness_verified",
             MathClause::G141D5,
         ));
-        let disp = display_polys(&locus.closure_ideal, param_vars);
+        if first_witness.is_none() {
+            if locus.strata.len() == 1 {
+                let mut eqs = locus.strata[0].equations.clone();
+                eqs.extend(base_eqs.iter().cloned());
+                let mut invs = locus.strata[0].invertibles.clone();
+                for iv in &base_invs {
+                    if !invs.contains(iv) {
+                        invs.push(iv.clone());
+                    }
+                }
+                first_witness = compute_empty_witness_q(&eqs, &invs, param_vars);
+            } else {
+                let mut eqs = locus.closure_ideal.clone();
+                eqs.extend(base_eqs.iter().cloned());
+                first_witness = compute_empty_witness_q(&eqs, &base_invs, param_vars);
+            }
+        }
+        let mut combined_disp = locus.closure_ideal.clone();
+        combined_disp.extend(base_eqs);
+        let disp =
+            GroebnerBasis::compute(&combined_disp, param_vars.clone(), MonomialOrder::Grevlex)
+                .map(|gb| {
+                    let basis: Vec<Poly<Rat>> = gb.basis_polys().into_iter().cloned().collect();
+                    display_polys(&basis, param_vars)
+                })
+                .unwrap_or_else(|_| display_polys(&combined_disp, param_vars));
         return refuted_system(checks, disp, first_witness);
     }
 
@@ -212,8 +237,7 @@ fn solve_single_stratum_q(
     mut checks: Vec<ApplicabilityCheck>,
 ) -> SystemSolveOutcome {
     let residual_display = residual_display.to_vec();
-    let all_affine = chosen.equations.iter().all(Poly::is_affine)
-        && chosen.invertibles.iter().all(Poly::is_affine);
+    let all_affine = chosen.equations.iter().all(Poly::is_affine);
 
     let has_implicit_open = if chosen.invertibles.is_empty() {
         false
@@ -465,5 +489,192 @@ fn compute_empty_witness_q(
     } else {
         let rab = rabinowitsch_solve(eqs, invs, param_vars).ok()?;
         rab.empty_witness
+    }
+}
+
+/// 共通定義域・状態定義域イデアル `(laws)` が係数域・点域・評価開条件のもとで非空かを厳密判定する。
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn is_ideal_nonempty(
+    laws: &[PolyExpr],
+    state_vars: &[String],
+    arg_vars: &[String],
+    free_vars: &VarOrder,
+    witness: &ParamWitness,
+    eval_conds: &[&EvalCondition],
+    coeff_domain: &CoeffDomain,
+    point_domain: &PointDomain,
+) -> Result<bool, SilenceReason> {
+    let (order, bind) = ExprBindings::from_slices(state_vars, arg_vars, free_vars.vars())
+        .map_err(map_algebra_silence)?;
+    let sa = state_vars.len() + arg_vars.len();
+    let param_bind = ExprBindings::params_only(free_vars);
+    match coeff_domain {
+        CoeffDomain::Q => {
+            let mut eqs_q: Vec<Poly<Rat>> = laws
+                .iter()
+                .map(|l| Poly::from_expr_q(l, &bind).map_err(map_algebra_silence))
+                .collect::<Result<Vec<_>, _>>()?;
+            for nl in witness.remaining_nonlinear() {
+                eqs_q.push(nl.lift_vars(sa));
+            }
+            let (ev_eqs, ev_invs) =
+                collect_eval_and_extra(&[], eval_conds, &param_bind, Poly::from_expr_q)?;
+            for eq in ev_eqs {
+                eqs_q.push(eq.lift_vars(sa));
+            }
+            let invs_q: Vec<Poly<Rat>> = ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
+            is_q_system_nonempty_on_point_domain(&eqs_q, &invs_q, &order, point_domain)
+        }
+        CoeffDomain::Z => {
+            if *point_domain == PointDomain::UniversalRing {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "universal_ring_solution_space_out_of_scope".to_owned(),
+                    detail: "UniversalRing non-emptiness over Z cannot be decided by Q-sections"
+                        .to_owned(),
+                });
+            }
+            if matches!(point_domain, PointDomain::FiniteFieldPoints(_)) {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "point_domain_matches_coeff_domain".to_owned(),
+                    detail: "Fp point domain requires Fp coefficient domain".to_owned(),
+                });
+            }
+            let mut eqs_z: Vec<Poly<num_bigint::BigInt>> = laws
+                .iter()
+                .map(|l| Poly::from_expr_z(l, &bind).map_err(map_algebra_silence))
+                .collect::<Result<Vec<_>, _>>()?;
+            let (ev_eqs, ev_invs) =
+                collect_eval_and_extra(&[], eval_conds, &param_bind, Poly::from_expr_z)?;
+            for eq in ev_eqs {
+                eqs_z.push(eq.lift_vars(sa));
+            }
+            let invs_z: Vec<Poly<num_bigint::BigInt>> =
+                ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
+            if *point_domain == PointDomain::IntegerPoints {
+                for nl in clear_denominators_to_z(witness.remaining_nonlinear()) {
+                    eqs_z.push(nl.lift_vars(sa));
+                }
+                let eqs_nz: Vec<_> = eqs_z.into_iter().filter(|p| !p.is_zero()).collect();
+                let res = solve_affine_or_nonlinear_z(&eqs_nz, &invs_z, &order, vec![]);
+                return match res.verdict {
+                    Verdict::Established => Ok(true),
+                    Verdict::Refuted => Ok(false),
+                    Verdict::Undetermined(r) => Err(r),
+                };
+            }
+            let mut eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
+            for nl in witness.remaining_nonlinear() {
+                eqs_q.push(nl.lift_vars(sa));
+            }
+            let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();
+            is_q_system_nonempty_on_point_domain(&eqs_q, &invs_q, &order, point_domain)
+        }
+        CoeffDomain::Fp(m) => {
+            if *point_domain != PointDomain::FiniteFieldPoints(m.clone()) {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "point_domain_matches_coeff_domain".to_owned(),
+                    detail: format!("point domain `{point_domain}` cannot be decided over Fp({m})"),
+                });
+            }
+            let mut eqs_fp: Vec<Poly<_>> = laws
+                .iter()
+                .map(|l| Poly::from_expr_fp(l, &bind, m).map_err(map_algebra_silence))
+                .filter(|r| r.as_ref().map_or(true, |p| !p.is_zero()))
+                .collect::<Result<Vec<_>, _>>()?;
+            let (ev_eqs, ev_invs) =
+                collect_eval_and_extra(&[], eval_conds, &param_bind, |e, b| {
+                    Poly::from_expr_fp(e, b, m)
+                })?;
+            for eq in ev_eqs {
+                if !eq.is_zero() {
+                    eqs_fp.push(eq.lift_vars(sa));
+                }
+            }
+            let invs_fp: Vec<Poly<_>> = ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
+            let res =
+                solve_fp_enumeration(&eqs_fp, &invs_fp, order.len(), m, DEFAULT_MAX_FP_POINTS)?;
+            Ok(!res.solutions.is_empty())
+        }
+    }
+}
+
+fn is_q_system_nonempty_on_point_domain(
+    eqs_q: &[Poly<Rat>],
+    invs_q: &[Poly<Rat>],
+    order: &VarOrder,
+    point_domain: &PointDomain,
+) -> Result<bool, SilenceReason> {
+    if *point_domain == PointDomain::UniversalRing && !invs_q.is_empty() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "universal_ring_closed_equations_only".to_owned(),
+            detail: "open/invertible conditions cannot be evaluated uniformly over all rings including the zero ring".to_owned(),
+        });
+    }
+    let rab = rabinowitsch_solve(eqs_q, invs_q, order).map_err(map_algebra_silence)?;
+    if rab.is_empty_over_closure {
+        return Ok(false);
+    }
+    match point_domain {
+        PointDomain::UniversalRing | PointDomain::AlgebraicClosure => Ok(true),
+        PointDomain::RationalPoints => {
+            if !rab.parameter_equations.iter().all(Poly::is_affine) {
+                return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
+                    point_domain: PointDomain::RationalPoints,
+                    detail: "nonlinear rational point existence is out of scope".to_owned(),
+                });
+            }
+            let (mat, rhs) = polys_to_affine_system_q(&rab.parameter_equations, order.len())?;
+            match solve_affine_q(&mat, &rhs, order.len()).map_err(map_algebra_silence)? {
+                AffineSolutionQ::Consistent {
+                    particular,
+                    kernel_basis,
+                    verified: true,
+                } => {
+                    if invs_q.is_empty() {
+                        return Ok(true);
+                    }
+                    match find_witness_point_q(
+                        &particular,
+                        &kernel_basis,
+                        &rab.parameter_equations,
+                        invs_q,
+                    )? {
+                        Some(_) => Ok(true),
+                        None if kernel_basis.is_empty() => Ok(false),
+                        None => Err(SilenceReason::NonLinearRationalOrIntegerExistence {
+                            point_domain: PointDomain::RationalPoints,
+                            detail: "no rational witness point found".to_owned(),
+                        }),
+                    }
+                }
+                AffineSolutionQ::Inconsistent { .. } => Ok(false),
+                _ => Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "affine_verification".to_owned(),
+                    detail: "affine Q verification failed".to_owned(),
+                }),
+            }
+        }
+        PointDomain::IntegerPoints => {
+            if !rab.parameter_equations.iter().all(Poly::is_affine) {
+                return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
+                    point_domain: PointDomain::IntegerPoints,
+                    detail:
+                        "general integer-point existence for nonlinear equations is out of scope"
+                            .to_owned(),
+                });
+            }
+            let eqs_z = clear_denominators_to_z(&rab.parameter_equations);
+            let invs_z = clear_denominators_to_z(invs_q);
+            let res = solve_affine_or_nonlinear_z(&eqs_z, &invs_z, order, vec![]);
+            match res.verdict {
+                Verdict::Established => Ok(true),
+                Verdict::Refuted => Ok(false),
+                Verdict::Undetermined(r) => Err(r),
+            }
+        }
+        PointDomain::FiniteFieldPoints(_) => Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "point_domain_matches_coeff_domain".to_owned(),
+            detail: "Fp point domain requires Fp coefficient domain".to_owned(),
+        }),
     }
 }

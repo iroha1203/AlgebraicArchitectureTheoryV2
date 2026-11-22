@@ -406,7 +406,7 @@ pub(crate) fn display_polys<C: RingCoeff>(polys: &[Poly<C>], vars: &VarOrder) ->
         .collect()
 }
 
-fn collect_presentation_params(pres: &Presentation) -> BTreeSet<String> {
+pub(crate) fn collect_presentation_params(pres: &Presentation) -> BTreeSet<String> {
     let mut params = BTreeSet::new();
     for ph in &pres.phases {
         for l in &ph.state_laws {

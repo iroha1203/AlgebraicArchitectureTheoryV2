@@ -12,10 +12,12 @@ use crate::ir::presentation::{
 use crate::ir::provenance::SourceRef;
 use crate::ir::result::{ReevalCheck, SilenceReason};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
-use crate::solver::common_solve::{ParamWitness, decide_z_quotient_unit_safe};
+use crate::solver::common_solve::{
+    ParamWitness, decide_z_quotient_unit_safe, decide_zero_param_fp_quotient,
+};
 use crate::solver::preservation::{
-    PreservationObligation, compute_preservation_locus_q, extract_closed_residuals_fp,
-    is_stratum_covered_by_union, map_algebra_silence, substitute_poly_expr,
+    PreservationObligation, compute_preservation_locus_q, is_stratum_covered_by_union,
+    map_algebra_silence, substitute_poly_expr,
 };
 use num_traits::{One, Signed, Zero};
 use std::collections::{BTreeMap, BTreeSet};
@@ -371,15 +373,22 @@ pub(crate) fn reeval_obligations_and_constraints(
         ParamWitness::FpPoint { modulus, .. } => {
             let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
             let empty_bind = ExprBindings::params_only(&empty_order);
-            let Some(residuals) = extract_closed_residuals_fp(obligations, &[], modulus)? else {
-                return Err(SilenceReason::QuotientIdealOutOfScope {
-                    detail: "quotient state-law re-evaluation over Fp is out of scope".to_owned(),
-                });
-            };
-            if residuals.iter().any(|p| !p.is_zero()) {
-                return Ok(fail_reeval(format!(
-                    "restored {context_label} has nonzero Fp preservation residual"
-                )));
+            for ob in obligations {
+                if ob.source_laws.is_empty() {
+                    let (_, ob_bind) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
+                        .map_err(map_algebra_silence)?;
+                    let p = Poly::from_expr_fp(&ob.target, &ob_bind, modulus)
+                        .map_err(map_algebra_silence)?;
+                    if !p.is_zero() {
+                        return Ok(fail_reeval(format!(
+                            "restored {context_label} has nonzero Fp preservation residual"
+                        )));
+                    }
+                } else if !decide_zero_param_fp_quotient(ob, modulus)? {
+                    return Ok(fail_reeval(format!(
+                        "restored {context_label} failed Fp quotient state-law check"
+                    )));
+                }
             }
             for ex in extra_eqs {
                 let p =

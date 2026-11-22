@@ -1,7 +1,7 @@
 //! 一段変更経路探索・連結・細分化の固定図式変更経路計算（G-140 F2–F3・F3.1・P5.1）。
 
-use crate::algebra::{ExprBindings, VarOrder};
-use crate::ir::change::EvalCondition;
+use crate::algebra::{ExprBindings, Poly, VarOrder, rabinowitsch_solve};
+use crate::ir::change::{EvalCondition, NamedPoly, PointDomain};
 use crate::ir::morphism::{MorphismDirection, StateMorphism, identity_state_morphism};
 use crate::ir::path::{CheckedPathTask, OneStepRule, PathQueryMode};
 use crate::ir::presentation::Presentation;
@@ -14,14 +14,17 @@ use crate::solver::common_format::{
     substitute_eval_condition, substitute_presentation, substitute_state_morphism,
 };
 use crate::solver::common_morph::{compare_morphisms, compose_morphism_step_chain};
-use crate::solver::common_solve::{ParamWitness, SystemSolveOutcome, solve_obligations_and_evals};
+use crate::solver::common_solve::{
+    ParamWitness, SystemSolveOutcome, collect_eval_and_extra, solve_obligations_and_evals,
+};
 use crate::solver::path::{
     MAX_PATH_CANDIDATES, established_path, path_query_mode_wire, refuted_path, undetermined_path,
 };
 use crate::solver::preservation::{
-    build_presentation_closure_obligations, build_preservation_obligations, map_algebra_silence,
-    substitute_poly_expr,
+    PreservationObligation, build_presentation_closure_obligations, build_preservation_obligations,
+    map_algebra_silence, substitute_poly_expr,
 };
+use num_traits::{One, Signed, Zero};
 use std::collections::BTreeMap;
 
 pub(crate) fn solve_fixed_change_path(
@@ -658,9 +661,28 @@ fn is_reproducible_in_one_step(
         if rule.from_vertex != start.vertex || rule.to_vertex != end.vertex {
             continue;
         }
-        let mut req_eqs = path_extra_eqs.to_vec();
+        let morph_subst = match spec.direction {
+            MorphismDirection::StateMap => state_0,
+            MorphismDirection::TimeOrder => state_end,
+        };
+        let rule_m = substitute_state_morphism(&rule.morphism, morph_subst);
+        let (mut cmp_obs, _, mm) = compare_morphisms(
+            &rule_m,
+            composed_m,
+            dom_pres,
+            &free_vars,
+            &spec.change_spec.coeff_domain,
+        )?;
+        if mm.is_some() {
+            continue;
+        }
         for g in &rule.param_guards {
-            req_eqs.push(substitute_poly_expr(&g.expr, &empty, &empty, state_0));
+            cmp_obs.push(PreservationObligation {
+                state_vars: vec![],
+                arg_vars: vec![],
+                source_laws: vec![],
+                target: substitute_poly_expr(&g.expr, &empty, &empty, state_0),
+            });
         }
         for (p, end_expr) in state_end {
             let updated = rule
@@ -673,45 +695,129 @@ fn is_reproducible_in_one_step(
                         .cloned()
                         .unwrap_or_else(|| PolyExpr::ParamVar(p.clone()))
                 });
-            req_eqs.push(PolyExpr::diff(updated, end_expr.clone()));
+            cmp_obs.push(PreservationObligation {
+                state_vars: vec![],
+                arg_vars: vec![],
+                source_laws: vec![],
+                target: PolyExpr::diff(updated, end_expr.clone()),
+            });
         }
-        let morph_subst = match spec.direction {
-            MorphismDirection::StateMap => state_0,
-            MorphismDirection::TimeOrder => state_end,
-        };
-        let rule_m = substitute_state_morphism(&rule.morphism, morph_subst);
-        let (cmp_obs, _, mm) = compare_morphisms(
-            &rule_m,
-            composed_m,
-            dom_pres,
-            &free_vars,
-            &spec.change_spec.coeff_domain,
-        )?;
-        if mm.is_some() {
-            continue;
-        }
-        let mut eval_owned = Vec::new();
-        let mut evals: Vec<&EvalCondition> = path_eval_refs.to_vec();
-        if let Some(rec) = &rule.eval_condition {
-            eval_owned.push(substitute_eval_condition(rec, state_end));
-        }
-        for e in &eval_owned {
-            evals.push(e);
+        let rec_sub = rule
+            .eval_condition
+            .as_ref()
+            .map(|rec| substitute_eval_condition(rec, state_end));
+        if let Some(rc) = &rec_sub {
+            for eq in &rc.equations {
+                cmp_obs.push(PreservationObligation {
+                    state_vars: vec![],
+                    arg_vars: vec![],
+                    source_laws: vec![],
+                    target: eq.expr.clone(),
+                });
+            }
         }
         let check = reeval_obligations_and_constraints(
             &cmp_obs,
-            &req_eqs,
-            &evals,
+            path_extra_eqs,
+            path_eval_refs,
             witness,
             &spec.change_spec.coeff_domain,
             point_domain,
             "one_step_closure",
         )?;
-        if check.matched {
-            return Ok(true);
+        if !check.matched {
+            continue;
         }
+        if let Some(rc) = &rec_sub
+            && !rc.invertibles.is_empty()
+            && !invertibles_hold_on_locus(
+                &rc.invertibles,
+                &free_vars,
+                path_extra_eqs,
+                path_eval_refs,
+                witness,
+                point_domain,
+            )?
+        {
+            continue;
+        }
+        return Ok(true);
     }
     Ok(false)
+}
+
+fn invertibles_hold_on_locus(
+    invs: &[NamedPoly],
+    free_vars: &VarOrder,
+    path_extra_eqs: &[PolyExpr],
+    path_eval_refs: &[&EvalCondition],
+    witness: &ParamWitness,
+    point_domain: &PointDomain,
+) -> Result<bool, SilenceReason> {
+    let free_bind = ExprBindings::params_only(free_vars);
+    match witness {
+        ParamWitness::QPoint { .. } => {
+            let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
+            let empty_bind = ExprBindings::params_only(&empty_order);
+            for iv in invs {
+                let p = Poly::from_expr_q(&iv.expr, &empty_bind).map_err(map_algebra_silence)?;
+                if p.is_zero() {
+                    return Ok(false);
+                }
+            }
+            Ok(true)
+        }
+        ParamWitness::ZPoint { .. } => {
+            let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
+            let empty_bind = ExprBindings::params_only(&empty_order);
+            for iv in invs {
+                let p = Poly::from_expr_z(&iv.expr, &empty_bind).map_err(map_algebra_silence)?;
+                let val = p.constant_value();
+                if val.is_zero() || !val.abs().is_one() {
+                    return Ok(false);
+                }
+            }
+            Ok(true)
+        }
+        ParamWitness::FpPoint { modulus, .. } => {
+            let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
+            let empty_bind = ExprBindings::params_only(&empty_order);
+            for iv in invs {
+                let p = Poly::from_expr_fp(&iv.expr, &empty_bind, modulus)
+                    .map_err(map_algebra_silence)?;
+                if p.is_zero() {
+                    return Ok(false);
+                }
+            }
+            Ok(true)
+        }
+        ParamWitness::QSubst { subst } => {
+            let (mut ante_eqs, ante_invs) = collect_eval_and_extra(
+                path_extra_eqs,
+                path_eval_refs,
+                &free_bind,
+                Poly::from_expr_q,
+            )?;
+            ante_eqs.extend(subst.remaining_nonlinear.iter().cloned());
+            for iv in invs {
+                let ip = Poly::from_expr_q(&iv.expr, &free_bind).map_err(map_algebra_silence)?;
+                if *point_domain == PointDomain::UniversalRing {
+                    if !ip.is_constant() || ip.is_zero() {
+                        return Ok(false);
+                    }
+                } else {
+                    let mut eqs_with_inv = ante_eqs.clone();
+                    eqs_with_inv.push(ip);
+                    let rab = rabinowitsch_solve(&eqs_with_inv, &ante_invs, free_vars)
+                        .map_err(map_algebra_silence)?;
+                    if !rab.is_empty_over_closure {
+                        return Ok(false);
+                    }
+                }
+            }
+            Ok(true)
+        }
+    }
 }
 
 fn enumerate_rule_paths<'a>(

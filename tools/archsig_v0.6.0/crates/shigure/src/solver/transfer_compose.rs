@@ -1,7 +1,10 @@
 //! 状態移送の義務収集・段合成・fiber product 定義域分類・復元整形（G-140 G1・G3）。
 
-use crate::algebra::{ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder};
-use crate::ir::change::PointDomain;
+use crate::algebra::{
+    DEFAULT_MAX_FP_POINTS, ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, RingCoeff,
+    VarOrder, rabinowitsch_solve, solve_fp_enumeration,
+};
+use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::morphism::{StateMorphism, compose_state_order};
 use crate::ir::presentation::{ComparisonPair, CoordValue, PhaseDecl, StateLaw};
 use crate::ir::result::SilenceReason;
@@ -13,14 +16,17 @@ use crate::solver::common_format::{
     substitute_presentation, substitute_state_morphism,
 };
 use crate::solver::common_morph::compare_morphisms;
-use crate::solver::common_solve::{ParamWitness, decide_z_quotient_unit_safe};
+use crate::solver::common_solve::{
+    ParamWitness, collect_eval_and_extra, decide_z_quotient_unit_safe,
+};
+use crate::solver::common_solve_q::is_ideal_nonempty;
 use crate::solver::context::display_polys;
 use crate::solver::preservation::{
     PreservationObligation, build_preservation_obligations, map_algebra_silence,
     substitute_poly_expr,
 };
 use crate::solver::transfer::step_domain_env;
-use crate::solver::transfer_words::{eval_poly_q_or_format, is_ideal_nonempty};
+use crate::solver::transfer_words::eval_poly_q_or_format;
 use std::collections::BTreeMap;
 
 fn collect_single_step_lift_obligations(
@@ -215,6 +221,7 @@ pub(crate) fn compose_and_classify_transfer(
     steps: &[TransferStepSpec],
     free_vars: &VarOrder,
     witness: &ParamWitness,
+    eval_conds: &[&EvalCondition],
     coeff_domain: &CoeffDomain,
     point_domain: &PointDomain,
 ) -> Result<ComposedTransferData, SilenceReason> {
@@ -271,7 +278,7 @@ pub(crate) fn compose_and_classify_transfer(
             || !reeval_obligations_and_constraints(
                 &a_obs,
                 &[],
-                &[],
+                eval_conds,
                 witness,
                 coeff_domain,
                 point_domain,
@@ -348,6 +355,7 @@ pub(crate) fn compose_and_classify_transfer(
         &d0k_laws,
         free_vars,
         witness,
+        eval_conds,
         coeff_domain,
         point_domain,
     )?;
@@ -370,37 +378,87 @@ fn classify_domain_relation(
     d0k_laws: &[PolyExpr],
     free_vars: &VarOrder,
     witness: &ParamWitness,
+    eval_conds: &[&EvalCondition],
     coeff_domain: &CoeffDomain,
     point_domain: &PointDomain,
 ) -> Result<(DomainRelation, Vec<String>), SilenceReason> {
     let (order, bind) =
         ExprBindings::from_slices(d0_sv, &[], free_vars.vars()).map_err(map_algebra_silence)?;
-    if matches!(coeff_domain, CoeffDomain::Q)
+    let param_bind = ExprBindings::params_only(free_vars);
+    let state_count = d0_sv.len();
+
+    let nonempty = is_ideal_nonempty(
+        d0k_laws,
+        d0_sv,
+        &[],
+        free_vars,
+        witness,
+        eval_conds,
+        coeff_domain,
+        point_domain,
+    )?;
+
+    let q_like = matches!(coeff_domain, CoeffDomain::Q)
         || (matches!(coeff_domain, CoeffDomain::Z)
-            && *point_domain == PointDomain::AlgebraicClosure)
-    {
+            && matches!(
+                point_domain,
+                PointDomain::AlgebraicClosure | PointDomain::RationalPoints
+            ));
+
+    if q_like {
         let to_q = |list: &[PolyExpr]| -> Result<Vec<Poly<Rat>>, SilenceReason> {
             list.iter()
                 .map(|e| Poly::from_expr_q(e, &bind).map_err(map_algebra_silence))
                 .collect()
         };
-        let d0_q = to_q(d0_laws)?;
+        let mut d0_q = to_q(d0_laws)?;
         let mut d0k_q = to_q(d0k_laws)?;
-        let state_count = d0_sv.len();
         for nl in witness.remaining_nonlinear() {
-            d0k_q.push(nl.lift_vars(state_count));
+            let lifted = nl.lift_vars(state_count);
+            d0_q.push(lifted.clone());
+            d0k_q.push(lifted);
         }
+        let (ev_eqs, ev_invs) =
+            collect_eval_and_extra(&[], eval_conds, &param_bind, Poly::from_expr_q)?;
+        for eq in ev_eqs {
+            let lifted = eq.lift_vars(state_count);
+            d0_q.push(lifted.clone());
+            d0k_q.push(lifted);
+        }
+        let ev_invs_lifted: Vec<Poly<Rat>> = ev_invs
+            .into_iter()
+            .map(|iv| iv.lift_vars(state_count))
+            .collect();
+
         let d0k_gb = GroebnerBasis::compute(&d0k_q, order.clone(), MonomialOrder::Grevlex)
             .map_err(map_algebra_silence)?;
         let basis_owned: Vec<Poly<Rat>> = d0k_gb.basis_polys().into_iter().cloned().collect();
         let disp = display_polys(&basis_owned, &order);
-        if d0k_gb.contains_one() {
-            return Ok((DomainRelation::Empty, disp));
+        if !nonempty || d0k_gb.contains_one() {
+            return Ok((
+                DomainRelation::Empty,
+                if disp.is_empty() {
+                    vec!["1".to_owned()]
+                } else {
+                    disp
+                },
+            ));
         }
         if extra_pb_laws.is_empty() {
             return Ok((DomainRelation::FullIsomorphic, disp));
         }
-        let d0_gb = GroebnerBasis::compute(&d0_q, order, MonomialOrder::Grevlex)
+
+        let d0_gens = if ev_invs_lifted.is_empty() {
+            d0_q
+        } else {
+            let rab =
+                rabinowitsch_solve(&d0_q, &ev_invs_lifted, &order).map_err(map_algebra_silence)?;
+            if rab.is_empty_over_closure {
+                return Ok((DomainRelation::Empty, vec!["1".to_owned()]));
+            }
+            rab.parameter_equations
+        };
+        let d0_gb = GroebnerBasis::compute(&d0_gens, order, MonomialOrder::Grevlex)
             .map_err(map_algebra_silence)?;
         if d0_gb.contains_one() {
             return Ok((DomainRelation::Empty, vec!["1".to_owned()]));
@@ -426,15 +484,6 @@ fn classify_domain_relation(
         ));
     }
 
-    let nonempty = is_ideal_nonempty(
-        d0k_laws,
-        d0_sv,
-        &[],
-        free_vars,
-        witness,
-        coeff_domain,
-        point_domain,
-    )?;
     let disp = d0k_laws
         .iter()
         .filter_map(|e| fmt_poly_expr(e, &bind, &order, coeff_domain).ok())
@@ -453,33 +502,93 @@ fn classify_domain_relation(
     if extra_pb_laws.is_empty() {
         return Ok((DomainRelation::FullIsomorphic, disp));
     }
-    let mut all_in_d0 = true;
-    if *coeff_domain == CoeffDomain::Z {
-        for ex in extra_pb_laws {
-            let ob = PreservationObligation {
-                state_vars: d0_sv.to_vec(),
-                arg_vars: vec![],
-                source_laws: d0_laws.to_vec(),
-                target: ex.clone(),
-            };
-            match decide_z_quotient_unit_safe(&ob, free_vars)? {
-                Some(true) => {}
-                Some(false) => {
-                    all_in_d0 = false;
-                    break;
+
+    let all_in_d0 = match coeff_domain {
+        CoeffDomain::Z => {
+            let mut covered = true;
+            for ex in extra_pb_laws {
+                let ob = PreservationObligation {
+                    state_vars: d0_sv.to_vec(),
+                    arg_vars: vec![],
+                    source_laws: d0_laws.to_vec(),
+                    target: ex.clone(),
+                };
+                match decide_z_quotient_unit_safe(&ob, free_vars)? {
+                    Some(true) => {}
+                    Some(false) => {
+                        covered = false;
+                        break;
+                    }
+                    None => {
+                        return Err(SilenceReason::QuotientIdealOutOfScope {
+                            detail:
+                                "cannot classify Z pullback domain relation outside unit-pivot scope"
+                                    .to_owned(),
+                        });
+                    }
                 }
-                None => {
-                    return Err(SilenceReason::QuotientIdealOutOfScope {
-                        detail:
-                            "cannot classify Z pullback domain relation outside unit-pivot scope"
-                                .to_owned(),
-                    });
+            }
+            covered
+        }
+        CoeffDomain::Fp(m) => {
+            let mut d0_fp: Vec<Poly<_>> = d0_laws
+                .iter()
+                .map(|e| Poly::from_expr_fp(e, &bind, m).map_err(map_algebra_silence))
+                .filter(|r| r.as_ref().map_or(true, |p| !p.is_zero()))
+                .collect::<Result<Vec<_>, _>>()?;
+            let extra_fp: Vec<Poly<_>> = extra_pb_laws
+                .iter()
+                .map(|e| Poly::from_expr_fp(e, &bind, m).map_err(map_algebra_silence))
+                .collect::<Result<Vec<_>, _>>()?;
+            if extra_fp.iter().all(Poly::is_zero) {
+                true
+            } else {
+                let (ev_eqs, ev_invs) =
+                    collect_eval_and_extra(&[], eval_conds, &param_bind, |e, b| {
+                        Poly::from_expr_fp(e, b, m)
+                    })?;
+                for eq in ev_eqs {
+                    if !eq.is_zero() {
+                        d0_fp.push(eq.lift_vars(state_count));
+                    }
+                }
+                let ev_invs_lifted: Vec<Poly<_>> = ev_invs
+                    .into_iter()
+                    .map(|iv| iv.lift_vars(state_count))
+                    .collect();
+                match solve_fp_enumeration(
+                    &d0_fp,
+                    &ev_invs_lifted,
+                    order.len(),
+                    m,
+                    DEFAULT_MAX_FP_POINTS,
+                ) {
+                    Ok(d0_res) => {
+                        let mut covered = true;
+                        'pts: for pt in &d0_res.solutions {
+                            for ep in &extra_fp {
+                                if !ep.is_zero()
+                                    && !ep.eval_at(pt).map_err(map_algebra_silence)?.coeff_is_zero()
+                                {
+                                    covered = false;
+                                    break 'pts;
+                                }
+                            }
+                        }
+                        covered
+                    }
+                    Err(reason) => {
+                        if extra_fp.iter().all(|ep| ep.is_zero() || d0_fp.contains(ep)) {
+                            true
+                        } else {
+                            return Err(reason);
+                        }
+                    }
                 }
             }
         }
-    } else {
-        all_in_d0 = false;
-    }
+        CoeffDomain::Q => unreachable!("handled above"),
+    };
     Ok((
         if all_in_d0 {
             DomainRelation::FullIsomorphic

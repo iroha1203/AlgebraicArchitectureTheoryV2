@@ -297,8 +297,28 @@ fn solve_fp_system(
 
     let param_bind = ExprBindings::params_only(param_vars);
     let mut eqs_fp = Vec::new();
+    let Some(fp_zero) = FpElem::zero(modulus.clone()) else {
+        return undetermined_system(
+            checks,
+            vec![],
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "valid_fp_modulus".to_owned(),
+                detail: format!("modulus {modulus} is below 2"),
+            },
+        );
+    };
     for ob in obligations {
         if !ob.source_laws.is_empty() {
+            if param_vars.is_empty() {
+                match decide_zero_param_fp_quotient(ob, modulus) {
+                    Ok(true) => continue,
+                    Ok(false) => {
+                        eqs_fp.push(Poly::one(0, fp_zero.clone()));
+                        continue;
+                    }
+                    Err(reason) => return undetermined_system(checks, vec![], reason),
+                }
+            }
             let reason = SilenceReason::QuotientIdealOutOfScope {
                 detail: "parametric quotient state-law stratification over F_p is out of scope"
                     .to_owned(),
@@ -381,6 +401,35 @@ fn solve_fp_system(
         }
         Err(reason) => undetermined_system(checks, residual_display, reason),
     }
+}
+
+/// 0 パラメータの `Fp` 商環所属義務 `target in (source_laws)` を有限点列挙で厳密検査する。
+pub(crate) fn decide_zero_param_fp_quotient(
+    ob: &PreservationObligation,
+    modulus: &BigUint,
+) -> Result<bool, SilenceReason> {
+    let sa = ob.state_vars.len() + ob.arg_vars.len();
+    let (_, bindings) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
+        .map_err(map_algebra_silence)?;
+    let tgt = Poly::from_expr_fp(&ob.target, &bindings, modulus).map_err(map_algebra_silence)?;
+    if tgt.is_zero() {
+        return Ok(true);
+    }
+    let mut src_polys = Vec::with_capacity(ob.source_laws.len());
+    for l in &ob.source_laws {
+        let p = Poly::from_expr_fp(l, &bindings, modulus).map_err(map_algebra_silence)?;
+        if !p.is_zero() {
+            src_polys.push(p);
+        }
+    }
+    let res = solve_fp_enumeration(&src_polys, &[], sa, modulus, DEFAULT_MAX_FP_POINTS)?;
+    for pt in &res.solutions {
+        let val = tgt.eval_at(pt).map_err(map_algebra_silence)?;
+        if !val.coeff_is_zero() {
+            return Ok(false);
+        }
+    }
+    Ok(true)
 }
 
 /// 0 パラメータの `Z` 商環所属義務 `target in (source_laws)` が単位ピボット代入・整数 cofactor で厳密判定できるか検査する。
@@ -548,14 +597,16 @@ fn solve_z_system(
     }
 
     if has_source_laws {
-        if let Some(res) = try_decide_unit_z_quotients(
+        match try_decide_unit_z_quotients(
             obligations,
             extra_param_eqs,
             eval_conds,
             param_vars,
             &mut checks,
         ) {
-            return res;
+            Ok(Some(res)) => return res,
+            Ok(None) => {}
+            Err(reason) => return undetermined_system(checks, vec![], reason),
         }
         let reason = SilenceReason::QuotientIdealOutOfScope {
             detail: "parametric quotient state-law membership over Z is out of scope; use Q or algebraic_closure".to_owned(),
@@ -604,40 +655,41 @@ fn solve_z_system(
     solve_affine_or_nonlinear_z(&eqs_z, &invs_z, param_vars, checks)
 }
 
-fn try_decide_unit_z_quotients(
+pub(crate) fn try_decide_unit_z_quotients(
     obligations: &[PreservationObligation],
     extra_param_eqs: &[PolyExpr],
     eval_conds: &[&EvalCondition],
     param_vars: &VarOrder,
     checks: &mut Vec<ApplicabilityCheck>,
-) -> Option<SystemSolveOutcome> {
+) -> Result<Option<SystemSolveOutcome>, SilenceReason> {
     if !param_vars.is_empty() {
-        return None;
+        return Ok(None);
     }
     let param_bind = ExprBindings::params_only(param_vars);
     let (mut eqs_z, invs_z) =
-        collect_eval_and_extra(extra_param_eqs, eval_conds, &param_bind, Poly::from_expr_z).ok()?;
+        collect_eval_and_extra(extra_param_eqs, eval_conds, &param_bind, Poly::from_expr_z)?;
     for ob in obligations {
         if ob.source_laws.is_empty() {
-            let (_, ob_bind) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[]).ok()?;
-            let p = Poly::from_expr_z(&ob.target, &ob_bind).ok()?;
+            let (_, ob_bind) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
+                .map_err(map_algebra_silence)?;
+            let p = Poly::from_expr_z(&ob.target, &ob_bind).map_err(map_algebra_silence)?;
             if !p.is_zero() {
                 eqs_z.push(Poly::one(0, BigInt::zero()));
             }
         } else {
-            match decide_z_quotient_unit_safe(ob, param_vars).ok()? {
+            match decide_z_quotient_unit_safe(ob, param_vars)? {
                 Some(true) => {}
                 Some(false) => eqs_z.push(Poly::one(0, BigInt::zero())),
-                None => return None,
+                None => return Ok(None),
             }
         }
     }
-    Some(solve_affine_or_nonlinear_z(
+    Ok(Some(solve_affine_or_nonlinear_z(
         &eqs_z,
         &invs_z,
         param_vars,
         std::mem::take(checks),
-    ))
+    )))
 }
 
 pub(crate) fn solve_affine_or_nonlinear_z(
@@ -647,7 +699,7 @@ pub(crate) fn solve_affine_or_nonlinear_z(
     mut checks: Vec<ApplicabilityCheck>,
 ) -> SystemSolveOutcome {
     let residual_display = display_polys(eqs_z, param_vars);
-    let all_affine = eqs_z.iter().all(Poly::is_affine) && invs_z.iter().all(Poly::is_affine);
+    let all_affine = eqs_z.iter().all(Poly::is_affine);
     if !all_affine {
         let eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
         let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();

@@ -14,7 +14,9 @@ use crate::solver::common_format::{
     substitute_eval_condition, substitute_presentation, substitute_state_morphism,
     symbolic_and_observed,
 };
-use crate::solver::common_solve::solve_obligations_and_evals;
+use crate::solver::common_solve::{ParamWitness, solve_obligations_and_evals};
+use crate::solver::common_solve_q::is_ideal_nonempty;
+use crate::solver::context::collect_presentation_params;
 use crate::solver::path::{
     MAX_PATH_CANDIDATES, established_path, path_query_mode_wire, refuted_path, undetermined_path,
 };
@@ -22,8 +24,7 @@ use crate::solver::preservation::{
     PreservationObligation, build_preservation_obligations, map_algebra_silence,
     substitute_poly_expr,
 };
-use crate::solver::transfer_words::is_ideal_nonempty;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 /// 拡大 protocol の全許可語保存と `allowed_ops` からの長さ `n` 実行経路を検証する。
 pub(crate) fn solve_enlarged_protocol_path(
@@ -64,6 +65,42 @@ pub(crate) fn solve_enlarged_protocol_path(
             );
         }
     };
+
+    let before_params = collect_presentation_params(&proto.comparison.before);
+    if !before_params.is_empty() {
+        let detail = format!(
+            "fixed reference presentation `{}` must not depend on search parameters: {}",
+            proto.comparison.before.name,
+            before_params.into_iter().collect::<Vec<_>>().join(", ")
+        );
+        checks.push(ApplicabilityCheck::failed(
+            "before_presentation_must_be_parameter_free",
+            MathClause::G140E1E2,
+            detail.clone(),
+        ));
+        return undetermined_path(
+            coeff_domain,
+            point_domain,
+            checks,
+            provenance,
+            vec![],
+            PathOutcomeKind::EnlargedProtocolExecutionPath,
+            spec.direction,
+            mode_wire,
+            Some(length),
+            Some(false),
+            vec![],
+            vec![],
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "before_presentation_must_be_parameter_free".to_owned(),
+                detail,
+            },
+        );
+    }
+    checks.push(ApplicabilityCheck::passed(
+        "before_presentation_must_be_parameter_free",
+        MathClause::G140E1E2,
+    ));
 
     let cmp_obs = match build_preservation_obligations(&proto.comparison) {
         Ok(o) => o,
@@ -273,6 +310,7 @@ pub(crate) fn solve_enlarged_protocol_path(
             &restored_morph,
             proto,
             seq,
+            &param_vars,
             &param_subst,
             &witness,
             &free_vars,
@@ -401,8 +439,9 @@ fn evaluate_execution_sequence(
     restored_morph: &StateMorphism,
     proto: &ProtocolExecutionSpec,
     seq: &[&OperationDecl],
+    param_vars: &VarOrder,
     param_subst: &BTreeMap<String, PolyExpr>,
-    witness: &crate::solver::common_solve::ParamWitness,
+    witness: &ParamWitness,
     free_vars: &VarOrder,
     eval_cond: Option<&EvalCondition>,
     point_domain: &PointDomain,
@@ -438,12 +477,14 @@ fn evaluate_execution_sequence(
             }
         })
         .collect();
+    let eval_refs: Vec<&EvalCondition> = eval_cond.into_iter().collect();
     if !is_ideal_nonempty(
         &init_laws,
         &start_sv,
         &[],
         free_vars,
         witness,
+        &eval_refs,
         domain,
         point_domain,
     )? {
@@ -461,12 +502,20 @@ fn evaluate_execution_sequence(
     let mut phases_visited = vec![proto.start_phase.clone()];
     let mut all_arg_vars = Vec::new();
     let mut obligations = Vec::new();
-    let eval_refs: Vec<&EvalCondition> = eval_cond.into_iter().collect();
     let extra_nl: Vec<PolyExpr> = witness
         .remaining_nonlinear()
         .iter()
         .map(|p| poly_q_to_expr(p, free_vars))
         .collect();
+    let mut step_extra_eqs = extra_nl.clone();
+    for il in &init_laws {
+        let (mut svs, mut avs, mut pvs) = (BTreeSet::new(), BTreeSet::new(), BTreeSet::new());
+        il.collect_vars(&mut svs, &mut avs, &mut pvs);
+        if svs.is_empty() && avs.is_empty() {
+            step_extra_eqs.push(il.clone());
+        }
+    }
+    let mut seq_witness: Option<ParamWitness> = None;
 
     for (k, op) in seq.iter().enumerate() {
         let mut arg_map = BTreeMap::new();
@@ -528,7 +577,7 @@ fn evaluate_execution_sequence(
 
         let step_solve = solve_obligations_and_evals(
             &obligations,
-            &extra_nl,
+            &step_extra_eqs,
             &eval_refs,
             domain,
             point_domain,
@@ -553,7 +602,9 @@ fn evaluate_execution_sequence(
                     reason: format!("execution step `{}` violated domain or state law", op.name),
                 }));
             }
-            Verdict::Established => {}
+            Verdict::Established => {
+                seq_witness = step_solve.witness;
+            }
         }
     }
 
@@ -568,7 +619,7 @@ fn evaluate_execution_sequence(
         }
         let step_solve = solve_obligations_and_evals(
             &obligations,
-            &extra_nl,
+            &step_extra_eqs,
             &eval_refs,
             domain,
             point_domain,
@@ -593,39 +644,132 @@ fn evaluate_execution_sequence(
                     reason: "zero-step execution violated start/end laws".to_owned(),
                 }));
             }
-            Verdict::Established => {}
+            Verdict::Established => {
+                seq_witness = step_solve.witness;
+            }
         }
     }
 
-    let reeval = reeval_obligations_and_constraints(
-        &obligations,
+    let cand_witness = seq_witness.unwrap_or_else(|| witness.clone());
+    let cand_subst = cand_witness.to_param_subst(free_vars);
+    let cand_free_names = cand_witness.unassigned_parameters();
+    let cand_free_vars = VarOrder::new(cand_free_names).map_err(map_algebra_silence)?;
+    let cand_init_laws: Vec<PolyExpr> = init_laws
+        .iter()
+        .map(|l| substitute_poly_expr(l, &empty, &empty, &cand_subst))
+        .collect();
+    let mut re_obligations: Vec<PreservationObligation> = obligations
+        .iter()
+        .map(|ob| PreservationObligation {
+            state_vars: ob.state_vars.clone(),
+            arg_vars: ob.arg_vars.clone(),
+            source_laws: ob
+                .source_laws
+                .iter()
+                .map(|l| substitute_poly_expr(l, &empty, &empty, &cand_subst))
+                .collect(),
+            target: substitute_poly_expr(&ob.target, &empty, &empty, &cand_subst),
+        })
+        .collect();
+    for nl_expr in &extra_nl {
+        re_obligations.push(PreservationObligation {
+            state_vars: vec![],
+            arg_vars: vec![],
+            source_laws: vec![],
+            target: substitute_poly_expr(nl_expr, &empty, &empty, &cand_subst),
+        });
+    }
+    let cand_eval_owned: Option<EvalCondition> =
+        eval_cond.map(|ec| substitute_eval_condition(ec, &cand_subst));
+    let cand_eval_refs: Vec<&EvalCondition> = cand_eval_owned.iter().collect();
+    let cand_states: Vec<BTreeMap<String, PolyExpr>> = state_history
+        .iter()
+        .map(|st| {
+            st.iter()
+                .map(|(k, v)| {
+                    (
+                        k.clone(),
+                        substitute_poly_expr(v, &empty, &empty, &cand_subst),
+                    )
+                })
+                .collect()
+        })
+        .collect();
+
+    if !is_ideal_nonempty(
+        &cand_init_laws,
+        &start_sv,
         &[],
-        &eval_refs,
-        witness,
+        &cand_free_vars,
+        &cand_witness,
+        &cand_eval_refs,
+        domain,
+        point_domain,
+    )? {
+        let disp = format_state_modulo_laws(
+            cand_states.last().expect("last state"),
+            &cand_init_laws,
+            &start_sv,
+            &all_arg_vars,
+            &cand_free_vars,
+            domain,
+        )?;
+        return Ok(Err(RejectedPathCandidate {
+            steps: seq_names,
+            failed_step: seq.len(),
+            intermediate_state: disp,
+            residuals: vec!["1".to_owned()],
+            reason:
+                "protocol start domain D_0 becomes empty under candidate parameter specialization"
+                    .to_owned(),
+        }));
+    }
+
+    let reeval = reeval_obligations_and_constraints(
+        &re_obligations,
+        &[],
+        &cand_eval_refs,
+        &cand_witness,
         domain,
         point_domain,
         "protocol_execution_path",
     )?;
     if !reeval.matched {
-        return Err(SilenceReason::ApplicabilityConditionNotMet {
-            condition: "protocol_execution_reeval".to_owned(),
-            detail: reeval.detail,
-        });
-    }
-
-    let mut formatted_states = Vec::with_capacity(state_history.len());
-    for st in &state_history {
-        formatted_states.push(format_state_modulo_laws(
-            st,
-            &init_laws,
+        let disp = format_state_modulo_laws(
+            cand_states.last().expect("last state"),
+            &cand_init_laws,
             &start_sv,
             &all_arg_vars,
-            free_vars,
+            &cand_free_vars,
+            domain,
+        )?;
+        return Ok(Err(RejectedPathCandidate {
+            steps: seq_names,
+            failed_step: seq.len(),
+            intermediate_state: disp,
+            residuals: vec![reeval.detail.clone()],
+            reason: format!(
+                "candidate failed protocol execution re-evaluation: {}",
+                reeval.detail
+            ),
+        }));
+    }
+
+    let mut formatted_states = Vec::with_capacity(cand_states.len());
+    for st in &cand_states {
+        formatted_states.push(format_state_modulo_laws(
+            st,
+            &cand_init_laws,
+            &start_sv,
+            &all_arg_vars,
+            &cand_free_vars,
             domain,
         )?);
     }
+    let cand_after = substitute_presentation(after_pres, &cand_subst);
+    let cand_morph = substitute_state_morphism(restored_morph, &cand_subst);
     let (comp_sc, mut comp_wt) =
-        format_state_morphism(restored_morph, after_pres, free_vars.vars())?;
+        format_state_morphism(&cand_morph, &cand_after, cand_free_vars.vars())?;
     let mut seq_translated = Vec::new();
     for name in &seq_names {
         if let Some(ws) = comp_wt.get(name) {
@@ -634,11 +778,33 @@ fn evaluate_execution_sequence(
     }
     comp_wt.insert("sequence".to_owned(), seq_translated);
 
+    let cand_free_bind = ExprBindings::params_only(&cand_free_vars);
+    let mut combined_assignments = BTreeMap::new();
+    let orig_assigns = witness.display_assignments();
+    let cand_assigns = cand_witness.display_assignments();
+    for p in param_vars.vars() {
+        if let Some(v) = cand_assigns.get(p) {
+            combined_assignments.insert(p.clone(), v.clone());
+        } else if let Some(orig_disp) = orig_assigns.get(p) {
+            if cand_subst.is_empty() {
+                combined_assignments.insert(p.clone(), orig_disp.clone());
+            } else if let Some(orig_expr) = param_subst.get(p) {
+                let sub_expr = substitute_poly_expr(orig_expr, &empty, &empty, &cand_subst);
+                combined_assignments.insert(
+                    p.clone(),
+                    fmt_poly_expr(&sub_expr, &cand_free_bind, &cand_free_vars, domain)?,
+                );
+            } else {
+                combined_assignments.insert(p.clone(), orig_disp.clone());
+            }
+        }
+    }
+
     Ok(Ok(RestoredPath {
         steps: seq_names,
         intermediate_vertices: phases_visited,
-        parameter_assignments: witness.display_assignments(),
-        free_parameters: witness.free_parameters(),
+        parameter_assignments: combined_assignments,
+        free_parameters: cand_witness.free_parameters(),
         step_states: formatted_states,
         composite_state_comparisons: comp_sc,
         composite_word_translation: comp_wt,

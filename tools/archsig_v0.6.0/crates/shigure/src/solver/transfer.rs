@@ -20,7 +20,8 @@ use crate::solver::transfer_compose::{
     append_composite_transfer_obligations, collect_transfer_obligations,
     compose_and_classify_transfer, format_restored_transfer, substitute_transfer_steps,
 };
-use crate::solver::transfer_words::{check_word_preservation, search_old_word_lift};
+use crate::solver::transfer_lift::search_old_word_lift;
+use crate::solver::transfer_words::check_word_preservation;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 検証済み状態移送タスク `CheckedTransferTask` を解き、`TransferOutcomeDetail` 付き `ShigureOutcome` を返す。
@@ -253,6 +254,12 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
         }
     };
 
+    let re_eval_owned: Vec<EvalCondition> = eval_refs
+        .iter()
+        .map(|ec| substitute_eval_condition(ec, &param_subst))
+        .collect();
+    let re_eval_refs: Vec<&EvalCondition> = re_eval_owned.iter().collect();
+
     let restored_steps = substitute_transfer_steps(&spec.steps, &param_subst);
     let (re_step_obs, re_step_diags) =
         match collect_transfer_obligations(&restored_steps, &free_vars, coeff_domain) {
@@ -276,6 +283,7 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
         &restored_steps,
         &free_vars,
         &witness,
+        &re_eval_refs,
         coeff_domain,
         &point_domain,
     ) {
@@ -316,11 +324,6 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
         );
     }
 
-    let re_eval_owned: Vec<EvalCondition> = eval_refs
-        .iter()
-        .map(|ec| substitute_eval_condition(ec, &param_subst))
-        .collect();
-    let re_eval_refs: Vec<&EvalCondition> = re_eval_owned.iter().collect();
     let reeval = match reeval_obligations_and_constraints(
         &re_obs,
         &[],
@@ -392,6 +395,7 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
             &param_subst,
             &free_vars,
             &witness,
+            &re_eval_refs,
             coeff_domain,
             &point_domain,
         ) {
@@ -423,6 +427,7 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
             &param_subst,
             &free_vars,
             &witness,
+            &re_eval_refs,
             coeff_domain,
             &point_domain,
         ) {

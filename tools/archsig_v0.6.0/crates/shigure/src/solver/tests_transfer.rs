@@ -14,7 +14,7 @@ use crate::ir::transfer::{
 use crate::solver::solve_transfer_task;
 use std::collections::BTreeMap;
 
-fn orig(id: &str) -> SourceRef {
+pub(super) fn orig(id: &str) -> SourceRef {
     SourceRef::new(id, OriginKind::HumanAdopted).with_location(
         "transfer-test",
         "tr.law",
@@ -22,7 +22,7 @@ fn orig(id: &str) -> SourceRef {
     )
 }
 
-fn clit(d: &CoeffDomain, n: i64) -> PolyExpr {
+pub(super) fn clit(d: &CoeffDomain, n: i64) -> PolyExpr {
     match d {
         CoeffDomain::Z => PolyExpr::int(n),
         CoeffDomain::Q => PolyExpr::rat(n, 1).expect("rat"),
@@ -32,7 +32,7 @@ fn clit(d: &CoeffDomain, n: i64) -> PolyExpr {
     }
 }
 
-fn empty_cs(domain: CoeffDomain, params: Vec<&str>) -> ChangeSpec {
+pub(super) fn empty_cs(domain: CoeffDomain, params: Vec<&str>) -> ChangeSpec {
     ChangeSpec {
         name: "H".into(),
         coeff_domain: domain.clone(),
@@ -50,7 +50,12 @@ fn empty_cs(domain: CoeffDomain, params: Vec<&str>) -> ChangeSpec {
     }
 }
 
-fn pair_bc(name_old: &str, name_new: &str, domain: CoeffDomain, has_op: bool) -> ComparisonPair {
+pub(super) fn pair_bc(
+    name_old: &str,
+    name_new: &str,
+    domain: CoeffDomain,
+    has_op: bool,
+) -> ComparisonPair {
     let old_ops = if has_op {
         vec![OperationDecl {
             name: "apply".into(),
