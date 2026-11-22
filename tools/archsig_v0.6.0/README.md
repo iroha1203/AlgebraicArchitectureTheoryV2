@@ -26,7 +26,7 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
-| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/ideal 計算核・意味保存変更/条件付き解空間/相互作用エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/ideal 計算核・意味保存変更/条件付き解空間/相互作用/図式補完/変更経路/状態移送エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
 下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
@@ -87,8 +87,8 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
 
 ### SHIGURE の実行例
 
-SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction` の各問いで
-意味保存変更・条件付き解空間と操作式復元・座標面支持による相互作用解析を実行できます。
+SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
+`shigure_diagram`・`shigure_path`・`shigure_transfer` の 6 種別の問いを実行できます。
 
 ```bash
 archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.atoms.json \
@@ -100,6 +100,31 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger
 
 この例では `p6c` が `established`（`rho = 1`・`finish` と Busy Law を復元し再評価一致）、
 `p6d` が `refuted`（検算済み空性 witness 付き）となり、反証を含むため終了コードは 1 です。
+
+図式補完・変更経路・合法状態移送は対応する問いで実行します。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/diagrams.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.archmap.json \
+  --ask 'sq=shigure_diagram(DiagSuite.ForkSquareStateMap)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/paths.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.archmap.json \
+  --ask 'p51=shigure_path(PathSuite.LedgerP51Paths)' \
+  --ask 'p52=shigure_path(PathSuite.LedgerP52ProtocolPaths)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/transfers.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.archmap.json \
+  --ask 'g3=shigure_transfer(TransferSuite.G3ThreeStepChain)' \
+  --ask 'p53=shigure_transfer(TransferSuite.P53BusyRefuted)'
+```
+
+1 つ目の例は四角形補完（`k = "1"`, `established`, 終了コード 0）、
+2 つ目の例は固定 protocol 間 4 順序と拡大 protocol 4 実行経路（両件 `established`, 終了コード 0）、
+3 つ目の例は 3 段移送合成（`domain_relation = "full_isomorphic"`, `established`）と Busy 状態移送反証（`p53` が `refuted`, 終了コード 1）を返します。
 
 ## 仕様
 

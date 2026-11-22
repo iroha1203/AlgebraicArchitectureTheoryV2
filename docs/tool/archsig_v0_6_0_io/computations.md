@@ -880,8 +880,8 @@ CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)�
 
 ## 11. SHIGURE の標準構成・適用条件・沈黙規律
 
-独立クレート `archsig-shigure` は、[Law §7](law.md#7-shigure-宣言原始表示比較変更仕様評価条件タスク) の
-原始表示・比較・変更仕様・評価条件から、次の 4 構成を有限特殊化として計算する。
+独立クレート `archsig-shigure` は、[Law §7](law.md#7-shigure-宣言原始表示比較変更仕様評価条件タスク図式経路移送) の
+原始表示・比較・変更仕様・評価条件・図式・経路・移送宣言から、次の 7 構成を有限特殊化として計算する。
 
 | 構成 | 入力と計算内容 | 適用条件（コード上で明示検査） | 条件外時の振る舞い |
 | --- | --- | --- | --- |
@@ -889,13 +889,19 @@ CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)�
 | 意味保存変更（`shigure_preservation`） | 状態比較 $h$ と操作語翻訳 $\tau$ に対し、(1) 状態 Law の `after`→`before` 保存、(2) 生成操作ごとの状態 Law 閉性（商環上の ideal 所属）、(3) 遷移可換性 $h \circ \mathrm{op}' = \tau(\mathrm{op}) \circ h$、(4) 観測保存の 4 族から保存残差 ideal を生成し全許可有限語の保存根拠を得る | 有限還元可能な保存義務、`before` の探索パラメータ非混入、`editable` 対象の `after` 限定、商環上の ideal 所属判定の適用域内 | 商環上の所属判定を ambient 零へ暗黙に強めない。有限還元不能・商環適用外は `undetermined`（`infinite_presentation_not_finitely_reducible` / `quotient_ideal_out_of_scope`） |
 | 条件付き解空間 $\mathcal{F}_{a,H,P}$ と復元（`shigure_solve`） | 保存残差 ideal に評価条件の等式 $V(f)$ と Rabinowitsch 補助式 $ug-1=0$ による可逆条件 $D(g)$ を加え、$\mathbb{Q}$ 上の Gröbner 基底・空性証明 witness（$1 = \sum h_i f_i$ の展開検算一致）・アフィン座標抽出・$\mathbb{F}_p$ 全列挙から、元の操作式・状態 Law・状態比較 $h$・語翻訳 $\tau$ を復元し独立した数学モデル再評価検算を行う | 係数域と点集合域（`algebraic_closure` / `universal_ring` / `Q_points` / `Z_points` / `Fp_points`）ごとの有効算法の成立 | $\mathbb{Q}$ / $\mathbb{Z}$ 非線形系の有理点・整数点存在判定（例: $x^2+1=0$ の代数閉包非空・有理点不在）、非対応係数環、または非単元整数座標面などは `undetermined`（`nonlinear_point_existence_out_of_scope` / `unsupported_coeff_ring` / `applicability_condition_not_met`） |
 | 相互作用解析（`shigure_interaction`） | 閉条件の自由パラメータ座標環 $k[t_1,\ldots,t_n]$ における残差 ideal の座標面支持から、最大零化部分集合サイズ $r$（$\forall |S| \le r,\, i_S^* J = 0$）、相互作用に参加する最小変数数、包含極小の不成立部分族を算出する | 閉条件のみで構成される自由パラメータ空間、有効な係数零判定、有限個の残差多項式への有限還元 | 開条件 $D(g)$ が本質的に絡む場合は閉条件へ丸めず `undetermined`（`open_condition_in_interaction`） |
+| 固定図式の全補完（`shigure_diagram`） | 有限図式形 $J$ と固定部分図式 $K \hookrightarrow J$（四角形・鎖・一般有限図式）に対し、射の向き（`state_map` / `time_order`）に応じた全辺の保存義務、および全関係式について状態射合成一致と操作語翻訳合成一致を生成し、商環上の ideal 所属判定と Rabinowitsch 空性 witness・全頂点/全辺復元・数学モデル再評価検算を行う | 有限な頂点・生成射・関係表示、固定部分図式 $K$ の閉性と不変、商環所属・点集合域の有効算法成立、未観測値不在 | 2 枝の観測一致や係数条件だけで可換性を成立扱いせず、商環も ambient 零へ強めない。条件外は `undetermined` |
+| 一段変更経路と細分化（`shigure_path`） | 明示段数 $n \ge 0$ と有限な一段許容変更規則から固定 protocol 間変更経路（`fixed_protocol_change_path`）の `find` / `concatenate` / `subdivide` を計算し、各段の保存・評価条件と細分化合成一致を検証・復元する。また係数を状態に含み切替前の全許可有限語保存を伴う拡大 protocol 実行経路（`enlarged_protocol_execution_path`）を `path_kind` により区別して導出する | 明示された有限長 $n \ge 0$（`mode find` / `mode subdivide` で省略時は無界探索として `undetermined`、`mode concatenate` は `first`・`second` の連結長で有限長確定のため省略可）、統一された射の向き、一段規則（`find`/`subdivide`）または部分列（`concatenate`）の有限還元成立、未観測値不在 | 射・翻訳のない係数点列だけから経路を作らず、恒等一段規則のみの異なる 2 点間は `refuted` とする。`mode find` / `mode subdivide` で `length` を省略した無界探索等は `undetermined`（`unbounded_search_out_of_scope`） |
+| 合法状態移送と合成（`shigure_transfer`） | 意味保存射列 $h$・開始域 $\iota_0$（`op.domain_laws`・`step.domain_laws` 含む）に対する厳密な lift 条件 $h_{01} m_{01} = \iota_0$ と目標 phase Law を生成し、共通定義域 $D_w$ 上での新語観測保存（`word_checks`）、旧語 $v$ の lift 探索（`old_word_lifts`）、および多段引き戻し定義域 $D_{0k}$（`full_isomorphic` / `proper_subdomain` / `empty`）と `require_full_domain` を計算する | 初段基準表示 $X_0$ のパラメータフリー／編集不可、連鎖整合、有限 `max_length` 指定（`old_word_lift` 探索時）、有効算法成立、未観測値不在 | 観測一致だけで $h_{01} m_{01} = \iota_0$ を代用せず、$h_{01}$ の意味保存性から旧語 lift 存在を自動帰結させない。`max_length` 未指定無界探索は `undetermined`（`unbounded_search_out_of_scope`） |
 
-### 沈黙規律と再評価のスコープ区別
+### 沈黙規律と射の向き・再評価のスコープ区別
 
 1. **係数域と点集合域を混同しない**: 代数閉包上の幾何点存在（`algebraic_closure`）と、
    $\mathbb{Q}$ 点（`Q_points`）・$\mathbb{Z}$ 点（`Z_points`）・$\mathbb{F}_p$ 点（`Fp_points`）・
    普遍環（`universal_ring`）の判定を型と出力欄で常に区別する。
-2. **判断不能（沈黙）は正常出力**: 適用条件を外れる入力に対し、誤った `established` / `refuted` や暗黙の近似を返さず、
-   理由コード・不足スロット・適用外詳細を添えた `verdict: "undetermined"` を正常出力（CLI では `status: "partial"`, exit 2）として返す。
-3. **数学モデル再評価と実コード再観測の分離**: 復元した操作式・状態 Law・$h$・$\tau$ の元式への検算結果（`reevaluation`）は
+2. **判断不能（沈黙）は正常出力**: 適用条件を外れる入力（無界経路探索・無界旧語 lift 探索を含む）に対し、
+   誤った `established` / `refuted` や暗黙の近似を返さず、理由コード（`unbounded_search_out_of_scope` 等）・
+   不足スロット・適用外詳細を添えた `verdict: "undetermined"` を正常出力（CLI では `status: "partial"`, exit 2）として返す。
+3. **射の向きと合成順の型レベル区別**: 図式および経路では、状態比較射の向き（`state_map`: `after -> before`、合成 $h_{01} \circ h_{12}$）と
+   変更の時間順（`time_order`: `before -> after`）を `MorphismDirection` として明示的に区別し、逆転混在を許さない。
+4. **数学モデル再評価と実コード再観測の分離**: 復元した操作式・状態 Law・$h$・$\tau$・経路・移送の元式への検算結果（`reevaluation`）は
    `scope: "mathematical_model_reevaluation"` として記録し、実コードへの変更適用と再観測（ArchMap 再抽出）の確認とは明確に区別する。

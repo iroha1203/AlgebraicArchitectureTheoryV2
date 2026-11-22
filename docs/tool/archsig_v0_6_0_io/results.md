@@ -1276,7 +1276,7 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 
 ## 8. SHIGURE の型付き結果（`ShigureOutcome`）
 
-`shigure_preservation`・`shigure_solve`・`shigure_interaction` の回答は、
+`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer` の回答は、
 標準出力の `archsig.summary/1` では `answers[].outputs.shigure` に直接保持し、
 `--out` 保存時の `archsig.result/4` では `type: "ShigureOutcome"` の `SavedNode`（`answers[].outputs.shigure = {"node": ...}`、
 `scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
@@ -1284,6 +1284,7 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 ```text
 ShigurePointDomain = "algebraic_closure" | "universal_ring" | "Q_points" | "Z_points"
                    | ["Fp_points", DecimalPrime]
+MorphismDirection  = "state_map" | "time_order"
 
 ShigureOutcome = {
   verdict: "established" | "refuted" | "undetermined",
@@ -1302,17 +1303,110 @@ ShigureOutcome = {
     state_laws: { [PhaseName]: String[] },
     state_comparisons: { [PhaseName]: { [CoordName]: String } },
     word_translation: { [OpName]: String[] },
-    reevaluation: {
-      checked: Bool, matched: Bool, detail: String,
-      scope: "mathematical_model_reevaluation"
-    }
+    reevaluation: ReevalCheck
   },
   interaction?: {
     parameters: String[],
     minimal_failing_subsets: String[][],
     min_interacting_variables?: Nat,
     max_vanishing_subset_size?: Nat
-  }
+  },
+  diagram?: DiagramOutcomeDetail,
+  path?: PathOutcomeDetail,
+  transfer?: TransferOutcomeDetail
+}
+
+ReevalCheck = {
+  checked: Bool, matched: Bool, detail: String,
+  scope: "mathematical_model_reevaluation"
+}
+
+DiagramOutcomeDetail = {
+  direction: MorphismDirection,
+  commutativity_residuals: { [RelName]: String[] },
+  structural_mismatches?: { [Key]: String },
+  restored_diagram?: RestoredDiagram
+}
+
+RestoredDiagram = {
+  parameter_assignments: { [Name]: String },
+  free_parameters: String[],
+  vertices: {
+    name: String, is_fixed: Bool,
+    operations: { [OpName]: { [CoordName]: String } },
+    state_laws: { [PhaseName]: String[] }
+  }[],
+  edges: {
+    name: String, source: String, target: String, is_fixed: Bool,
+    state_comparisons: { [PhaseName]: { [CoordName]: String } },
+    word_translation: { [OpName]: String[] }
+  }[],
+  reevaluation: ReevalCheck
+}
+
+PathOutcomeDetail = {
+  path_kind: "fixed_protocol_change_path" | "enlarged_protocol_execution_path",
+  direction: MorphismDirection,
+  query_mode: "find" | "concatenate" | "subdivide",
+  length?: Nat,
+  protocol_preservation_verified?: Bool,
+  valid_paths: {
+    steps: String[],
+    intermediate_vertices: String[],
+    parameter_assignments: { [Name]: String },
+    free_parameters: String[],
+    step_states: { [Param | CoordName]: String }[],
+    composite_state_comparisons: { [PhaseName]: { [CoordName]: String } },
+    composite_word_translation: { [OpName | "sequence"]: String[] },
+    composite_is_one_step?: Bool,
+    reevaluation: ReevalCheck
+  }[],
+  rejected_candidates: {
+    steps: String[],
+    failed_step: Nat,
+    intermediate_state: { [Param | CoordName]: String },
+    residuals: String[],
+    reason: String
+  }[]
+}
+
+TransferOutcomeDetail = {
+  domain_relation: "full_isomorphic" | "proper_subdomain" | "empty",
+  composed_domain_equations: String[],
+  step_diagnostics: {
+    step_name: String,
+    source_phase: String,
+    target_phase: String,
+    target_law_residuals: String[],
+    lift_residuals: String[]
+  }[],
+  restored_transfer?: {
+    parameter_assignments: { [Name]: String },
+    free_parameters: String[],
+    step_lifts: { step_name: String, map: { [CoordName]: String } }[],
+    composed_lift: { [CoordName]: String },
+    composed_state_comparison: { [PhaseName]: { [CoordName]: String } },
+    composed_word_translation: { [OpName]: String[] },
+    reevaluation: ReevalCheck
+  },
+  word_checks: {
+    word_name: String,
+    new_word: String[],
+    translated_old_word: String[],
+    common_domain_equations: String[],
+    domain_nonempty: Bool,
+    state_commutativity_matched: Bool,
+    observation_preserved: Bool,
+    detail: String
+  }[],
+  old_word_lifts: {
+    check_name: String,
+    target_old_word: String[],
+    lift_found: Bool,
+    lifted_new_word?: String[],
+    common_domain_equations: String[],
+    detail: String
+  }[]
 }
 
 ApplicabilityCheck = { condition: String, clause: String, satisfied: Bool, detail?: String }
@@ -1326,7 +1420,7 @@ SilenceReason = {
   code: "unobserved_dependency" | "nonlinear_point_existence_out_of_scope"
       | "infinite_presentation_not_finitely_reducible" | "unsupported_coeff_ring"
       | "quotient_ideal_out_of_scope" | "open_condition_in_interaction"
-      | "applicability_condition_not_met",
+      | "unbounded_search_out_of_scope" | "applicability_condition_not_met",
   missing_slots?: String[],
   point_domain?: ShigurePointDomain,
   coeff_domain?: "Z" | "Q" | ["Fp", DecimalPrime],
@@ -1339,4 +1433,6 @@ SilenceReason = {
 `code: "unobserved"`（`unobserved_dependency` の場合）または `code: "unsupported_algorithm"`（その他の適用条件外の場合）の
 Issue を付与し、`details` へ `silence_reason` の構造体をそのまま保持する。
 `provenance.origins` には、当該タスクが参照した Law 宣言と、実際に参照された `observed` 座標の ArchMap `Origin`（全 `SourceLocation`）だけを収集し、未参照の `Origin` は混入させない。
-`restored.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
+`path.valid_paths[].step_states` と `path.rejected_candidates[].intermediate_state` のキーには、`fixed_protocol_change_path` では `change_spec` のパラメータ名、`enlarged_protocol_execution_path` では対象位相の状態座標名を格納する。
+`path.valid_paths[].intermediate_vertices` には、`fixed_protocol_change_path` では経路上の頂点名列、`enlarged_protocol_execution_path` では実行経路が通過した位相名列を格納し、`enlarged_protocol_execution_path` の `path.valid_paths[].composite_word_translation` には各操作名 `OpName` に加えて、`steps` 全体に対応する翻訳語列を予約キー `"sequence"` で格納する。
+`restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
