@@ -233,6 +233,18 @@ fn shigure_phase2_ac3_diagram_completion_via_cli() {
             && s(get(o, "path")) == "src/phase2_model.rs"
     }));
 
+    let alg = get(get(&answers[5], "outputs"), "shigure");
+    assert_eq!(s(get(alg, "verdict")), "established");
+    assert_eq!(s(get(alg, "point_domain")), "algebraic_closure");
+    assert_eq!(str_list(get(alg, "residual_ideal")), vec!["k^2 + 1"]);
+    assert!(arr(get(alg, "applicability")).iter().any(|c| {
+        s(get(c, "condition")) == "closure_stratum_nonempty_verified"
+            && bool_val(get(c, "satisfied"))
+    }));
+    let alg_rd = get(get(alg, "diagram"), "restored_diagram");
+    assert!(arr(get(alg_rd, "free_parameters")).is_empty());
+    assert!(bool_val(get(get(alg_rd, "reevaluation"), "matched")));
+
     // --out の archsig.result/4 と cross-reading `scope.readings`
     let saved = parse(&std::fs::read(dir.join("ac3_ok/result.json")).unwrap()).unwrap();
     assert_eq!(s(get(&saved, "format")), "archsig.result/4");
@@ -381,15 +393,39 @@ fn shigure_phase2_ac4_paths_and_subdivision_via_cli() {
         s(get(get(get(&answers[2], "outputs"), "shigure"), "verdict")),
         "established"
     );
-    let cat_det = get(get(get(&answers[3], "outputs"), "shigure"), "path");
+    let cat_sh = get(get(&answers[3], "outputs"), "shigure");
+    assert_eq!(s(get(cat_sh, "verdict")), "established");
+    let cat_det = get(cat_sh, "path");
     assert_eq!(s(get(cat_det, "query_mode")), "concatenate");
-    assert!(!bool_val(get(
-        &arr(get(cat_det, "valid_paths"))[0],
-        "composite_is_one_step"
-    )));
+    let cat_valid = arr(get(cat_det, "valid_paths"));
+    assert_eq!(cat_valid.len(), 1);
+    assert_eq!(
+        str_list(get(&cat_valid[0], "steps")),
+        vec!["set_r", "set_d", "set_m"]
+    );
+    assert!(!bool_val(get(&cat_valid[0], "composite_is_one_step")));
+    assert!(bool_val(get(get(&cat_valid[0], "reevaluation"), "matched")));
+    let cat_idle = get(get(&cat_valid[0], "composite_state_comparisons"), "Idle");
+    assert_eq!(s(get(cat_idle, "B")), "B + C");
+    assert_eq!(s(get(cat_idle, "C")), "0");
+
     let sub_ok = get(get(&answers[4], "outputs"), "shigure");
     assert_eq!(s(get(sub_ok, "verdict")), "established");
-    assert_eq!(s(get(get(sub_ok, "path"), "query_mode")), "subdivide");
+    let sub_det = get(sub_ok, "path");
+    assert_eq!(s(get(sub_det, "query_mode")), "subdivide");
+    let sub_valid = arr(get(sub_det, "valid_paths"));
+    assert_eq!(sub_valid.len(), 4);
+    for vp in sub_valid {
+        assert!(bool_val(get(get(vp, "reevaluation"), "matched")));
+        let st = get(get(vp, "composite_state_comparisons"), "S");
+        assert_eq!(s(get(st, "a")), "a + 2");
+        assert_eq!(s(get(st, "b")), "b - 2");
+    }
+    let s1_s1 = sub_valid
+        .iter()
+        .find(|vp| str_list(get(vp, "steps")) == vec!["s1", "s1"])
+        .expect("missing [s1, s1] subdivision path");
+    assert_eq!(s(get(get(s1_s1, "parameter_assignments"), "a1")), "1");
 
     let saved = parse(&std::fs::read(dir.join("ac4_ok/result.json")).unwrap()).unwrap();
     assert_eq!(s(get(&saved, "format")), "archsig.result/4");
@@ -536,6 +572,21 @@ fn shigure_phase2_ac5_transfer_and_composition_via_cli() {
     for a in ans_ref {
         assert_eq!(s(get(a, "status")), "refuted");
     }
+    let obs_only = get(get(&ans_ref[0], "outputs"), "shigure");
+    assert_eq!(s(get(obs_only, "verdict")), "refuted");
+    let obs_wit = get(obs_only, "empty_witness");
+    assert!(bool_val(get(obs_wit, "verified")));
+    let obs_gens = str_list(get(obs_wit, "generators"));
+    assert_eq!(obs_gens.len(), 1, "obs_gens={obs_gens:?}");
+    assert!(obs_gens[0] == "1" || obs_gens[0] == "-1");
+    let obs_diags = arr(get(get(obs_only, "transfer"), "step_diagnostics"));
+    assert_eq!(obs_diags.len(), 1);
+    assert!(arr(get(&obs_diags[0], "target_law_residuals")).is_empty());
+    let obs_lift_res = str_list(get(&obs_diags[0], "lift_residuals"));
+    assert!(
+        obs_lift_res.iter().any(|x| *x == "1" || *x == "-1"),
+        "obs_lift_res={obs_lift_res:?}"
+    );
     let p53 = get(get(&ans_ref[2], "outputs"), "shigure");
     assert!(bool_val(get(get(p53, "empty_witness"), "verified")));
     let diags = arr(get(get(p53, "transfer"), "step_diagnostics"));
@@ -559,31 +610,42 @@ fn shigure_phase2_ac6_silence_multi_ask_and_cli_guards() {
     let path_law = phase2_fixture("paths.law");
     let tr_law = phase2_fixture("transfers.law");
 
-    // 1. 非線形 Q_points / 無界 path length / 無界 old_word_lift / Z 商環 の各沈黙（exit 2 / partial）
-    for (label, law, ask, expected_code) in [
+    // 1. 非線形 Q_points / 無界 path length / 無界 old_word_lift / Z 商環 / universal_ring の各沈黙（exit 2 / partial）
+    for (label, law, ask, expected_silence_code, expected_issue_code) in [
         (
             "qpts",
             &diag_law,
             "q=shigure_diagram(DiagSuite.NonlinearQPointsSilence)",
             "nonlinear_point_existence_out_of_scope",
+            "unsupported_algorithm",
         ),
         (
             "unb_path",
             &path_law,
             "p=shigure_path(PathSuite.UnboundedPathSilence)",
             "unbounded_search_out_of_scope",
+            "unsupported_algorithm",
         ),
         (
             "unb_lift",
             &tr_law,
             "t=shigure_transfer(TransferSuite.UnboundedOldWordLiftSilence)",
             "unbounded_search_out_of_scope",
+            "unsupported_algorithm",
         ),
         (
             "z_quot",
             &tr_law,
             "z=shigure_transfer(TransferSuite.ZQuotientSilence)",
             "quotient_ideal_out_of_scope",
+            "unsupported_algorithm",
+        ),
+        (
+            "univ_ring",
+            &diag_law,
+            "u=shigure_diagram(DiagSuite.UniversalRingSilence)",
+            "applicability_condition_not_met",
+            "unsupported_algorithm",
         ),
     ] {
         let r = run_p2(&dir, &def, law, &map, &["--ask", ask]);
@@ -599,9 +661,20 @@ fn shigure_phase2_ac6_silence_multi_ask_and_cli_guards() {
         );
         let sum = parse(r.stdout.as_bytes()).unwrap();
         assert_eq!(s(get(&sum, "status")), "partial");
-        let sh = get(get(&arr(get(&sum, "answers"))[0], "outputs"), "shigure");
+        let ans0 = &arr(get(&sum, "answers"))[0];
+        let sh = get(get(ans0, "outputs"), "shigure");
         assert_eq!(s(get(sh, "verdict")), "undetermined");
-        assert_eq!(s(get(get(sh, "silence_reason"), "code")), expected_code);
+        assert_eq!(
+            s(get(get(sh, "silence_reason"), "code")),
+            expected_silence_code
+        );
+        let reasons = arr(get(ans0, "reasons"));
+        assert_eq!(reasons.len(), 1, "{label}: reasons={}", reasons.len());
+        assert_eq!(s(get(&reasons[0], "code")), expected_issue_code);
+        assert_eq!(
+            s(get(get(&reasons[0], "details"), "code")),
+            expected_silence_code
+        );
     }
 
     // 2. 未観測座標（balance 欠落 ArchMap）-> unobserved_dependency / exit 2
@@ -636,13 +709,18 @@ fn shigure_phase2_ac6_silence_multi_ask_and_cli_guards() {
         r_miss.stdout, r_miss.stderr
     );
     let r_miss_doc = parse(r_miss.stdout.as_bytes()).unwrap();
-    let miss_sh = get(
-        get(&arr(get(&r_miss_doc, "answers"))[0], "outputs"),
-        "shigure",
-    );
+    let miss_ans0 = &arr(get(&r_miss_doc, "answers"))[0];
+    let miss_sh = get(get(miss_ans0, "outputs"), "shigure");
     assert_eq!(s(get(miss_sh, "verdict")), "undetermined");
     assert_eq!(
         s(get(get(miss_sh, "silence_reason"), "code")),
+        "unobserved_dependency"
+    );
+    let miss_reasons = arr(get(miss_ans0, "reasons"));
+    assert_eq!(miss_reasons.len(), 1);
+    assert_eq!(s(get(&miss_reasons[0], "code")), "unobserved");
+    assert_eq!(
+        s(get(get(&miss_reasons[0], "details"), "code")),
         "unobserved_dependency"
     );
 

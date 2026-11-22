@@ -52,6 +52,14 @@ reading TransferSuite {
     obs read on Idle = (b + c);
   }
 
+  shigure presentation ObsPair {
+    domain Q;
+    sort D;
+    phase Idle { coord x: D; coord z: D; }
+    op add(u: D): Idle -> Idle { x = x + u; z = z; }
+    obs read on Idle = (x);
+  }
+
   shigure presentation M100 {
     domain Q;
     sort D;
@@ -148,17 +156,13 @@ reading TransferSuite {
 
   shigure transfer G1ObsOnlyRefuted {
     step s1 {
-      before X0;
-      after X1;
-      state_map Idle -> Idle { x = b; }
-      state_map Busy -> Idle { x = b; }
-      translate add_idle -> [add(u)];
-      translate add_busy -> [add(u)];
-      translate begin -> [];
-      translate finish -> [];
+      before ObsPair;
+      after ObsPair;
+      state_map Idle -> Idle { x = x; z = z; }
+      translate add -> [add(u)];
       source_phase Idle;
       target_phase Idle;
-      lift { b = x + 1; c = -1; }
+      lift { x = x; z = z + 1; }
     }
     change_spec HQ;
   }

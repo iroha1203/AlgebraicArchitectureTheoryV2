@@ -222,8 +222,8 @@ reading PathSuite {
     }
     length 2;
     vertex V: TwoSlot;
-    start V { a1 = 1; a2 = 1; }
-    end V { a1 = 1; a2 = 1; }
+    start V;
+    end V;
     rule s1: V -> V {
       state_map S -> S { a = a + a1; b = b - a1; }
       translate step -> [step(u)];

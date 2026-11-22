@@ -271,4 +271,30 @@ reading DiagSuite {
     change_spec HQ;
     eval_condition AlgClosureCond;
   }
+
+  shigure presentation ZUnit {
+    domain Z;
+    sort D;
+    phase S { coord x: D; }
+    op nop(): S -> S { x = x; }
+    obs read on S = (x);
+  }
+
+  shigure change_spec HZ {
+    domain Z;
+    param k: Z;
+  }
+
+  shigure eval_condition UnivRingCond {
+    point_domain universal_ring;
+  }
+
+  shigure diagram UniversalRingSilence {
+    direction state_map;
+    vertex V: ZUnit;
+    edge e: V -> V { identity; }
+    relation id_rel: [e] = [e];
+    change_spec HZ;
+    eval_condition UnivRingCond;
+  }
 }
