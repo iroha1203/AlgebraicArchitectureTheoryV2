@@ -10,11 +10,11 @@
 有限arityの署名と有限長のLawからなる小さい理論を、filteredな部分理論族
 $`(\mathbb T_i)_{i\in I}`$ の和として与える。
 各宣言・式はどれかの部分理論に入り、操作domain、量化sort、witness、翻訳と導出の参照も保持する。
-部分理論ごとのモデル圏を $`\mathcal A_i`$、包含による制限を $`r_{ji}`$ とする。
-対象・全射・固定条件・許容規則を同時に制限する。
+部分理論ごとの第2章のnativeモデル圏を $`\mathcal A_i`$、包含による制限を $`r_{ji}`$ とする。
+各sortの全担体を保持し、対象・すべての射・固定条件・許容規則を同時に制限する。
 固定図式・許容条件が無限個の宣言を使う場合も、その全てをこの族で覆うものとする。
 
-**定理13.2（全対象・全射の復元）.**
+**定理13.2（全対象・すべての射の復元）.**
 設定13.1の厳密な整合局所モデルと整合局所射の圏への比較
 
 ```math
@@ -80,6 +80,10 @@ coneの頂点の任意の元を各対象へ送り、残りの座標を任意に�
 可算な閉部分表示 $`K_0\subseteq K_1\subseteq\cdots`$ が全セルを覆うとする。
 同じ実核・輸送・固定部分を制限して複体 $`D_n`$ を作る。
 例えば全核修復では第11章の相対複体、線形な状態変更では変数と保存式の二項複体である。
+ここで第11章の実操作構成を小さい無限表示へ使うときも、経路と書換え列は有限とする。
+式(11.1)–(11.3)と補題11.3の証明は各有限語だけを使うためそのまま成立し、
+cochainを全セルの核の積にすれば定理11.5の実修復との対応も成分ごとに成立する。
+有限行列の消去や有限列挙に依存する定理11.7以後は、この拡張だけでは適用しない。
 大域複体 $`D`$ は全原始セル上の値の積から同じ式で作る。
 各式は有限個のセルしか参照しないので制限は微分と可換し、
 $`D\cong\lim D_n`$ は各成分の一意な復元から得られる。
@@ -146,17 +150,18 @@ c_n-2c_{n+1}=a_n.\qquad\text{(13.4)}
 ```
 
 逆にこの式の全解は、全操作と観測を保つ全意味射を与える。
-全代数に自然な係数族でも一般元への同じ評価が成立し、解関手は
+固定列 $`a\in R^{\mathbb N}`$ を各 $`R`$-代数へ運ぶ。
+全 $`R`$-代数に自然な係数族でも一般元への同じ評価が成立し、解関手は
 
 ```math
-Y_a=\mathop{\mathrm{Spec}}\nolimits\mathbb Z[c_0,c_1,\ldots]/(c_n-2c_{n+1}-a_n)
+Y_a=\mathop{\mathrm{Spec}}\nolimits R[c_0,c_1,\ldots]/(c_n-2c_{n+1}-a_n)
 ```
 
 で表される。有限段は最後の $`c_n`$ を自由変数とするaffine直線であり、
 その遷移は $`c_n=2c_{n+1}+a_n`$ である。
 
 **命題13.7（同じ指定類の三つの表示）.**
-$`a_{2j}=1,a_{2j+1}=0`$ とする。全有限段に整数解があり、
+ここから $`R=\mathbb Z`$、$`a_{2j}=1,a_{2j+1}=0`$ とする。全有限段に整数解があり、
 $`D(2),D(3)`$ 上には全段の解があるが、整数上の大域解はない。
 その失敗は、以下のČech類、$`\lim^1`$ の類、実際の平方零liftの障害で対応する。
 
@@ -212,7 +217,12 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 逆に和が整数 $`m`$ なら
 $`c_n=(m-\sum_{i<n}2^ia_i)/2^n`$ は整数であり $`d(c)=a`$ を満たす。
 全射性は2進展開で示せる。交互列の和は $`1+4+4^2+\cdots=-1/3`$ だから
-式(13.5)と同じ値を得る。
+式(13.5)の類との比較には、次の単射を使う。
+$`x\in\mathbb Z[1/6]`$ に対し、$`x-b\in\mathbb Z_2`$ となる $`b\in\mathbb Z[1/2]`$ を選び、
+$`[x]\mapsto[x-b]\in\mathbb Z_2/\mathbb Z`$ とする。
+$`x=n/(2^r3^s)`$ なら $`n-m3^s\equiv0\pmod{2^r}`$ となる $`m`$ を選び $`b=m/2^r`$ とすればよい。
+二つの選択の差は $`\mathbb Z[1/2]\cap\mathbb Z_2=\mathbb Z`$ に入り、代表の変更も同じ商に消える。
+像が0なら $`x-b\in\mathbb Z`$ なので単射である。特に $`[-1/3]`$ はそのまま同名の類へ送られる。
 
 この一致は値の偶然ではない。各次数での係数の完全列を積に取り、
 差写像をここでは $`r_V-r_U`$ として
@@ -239,17 +249,43 @@ $`0\to\mathbb Zz\to E_a\to\mathbb Z[1/2]\to0`$ を得る。
 $`z\mapsto1,e_n\mapsto c_n`$ というretractionは式(13.4)の解と相互に対応する。
 自由分解 $`e_n\mapsto e_n-2e_{n+1}`$ でこの拡大を計算すると、同じ類 $`[a]`$ を得る。
 
-さらに普遍変更写像 $`a=d(c)`$ を考え、
-$`R'=\mathbb Z[\epsilon]/\epsilon^2\to R=\mathbb Z`$ 上の固定した基底liftを
-$`a'_n=\epsilon a_n`$、還元点を $`c=0`$ とする。
+さらに、整数列 $`a`$ と普遍parameterを区別して
+
+```math
+S=\mathbb Z[y_0,y_1,\ldots],\quad P=S[c_0,c_1,\ldots],\quad
+f_n=y_n-c_n+2c_{n+1},\quad A=P/(f_n:n\ge0)
+```
+
+を作る。$`A\cong\mathbb Z[c_0,c_1,\ldots]`$ であり、基礎写像は
+$`S\to A,\ y_n\mapsto c_n-2c_{n+1}`$ である。
+例13.6の実操作の評価と抽出が、全 $`S`$-代数上でこの普遍変更族を表すことを直接示す。
+平方零拡大 $`R'=\mathbb Z[\epsilon]/(\epsilon^2)\to R=\mathbb Z`$ に
+$`S\to R',\ y_n\mapsto\epsilon a_n`$ を指定し、還元点を $`x:A\to R,\ c_n\mapsto0`$ とする。
+定理12.2は $`k=S`$ として適用する。この還元点は $`y=0`$ のfiberの点である。
 全liftは $`c'_n=\epsilon x_n`$ であり、その実操作保存は $`d(x)=a`$ と同値になる。
-原始Lawを $`f_n=a_n-c_n+2c_{n+1}`$ と向きづけると、
-ambient lift $`\widetilde c=0`$ の残差は $`\epsilon a`$、補正微分は $`-d`$ である。
+ambient lift $`\widetilde c=0`$ の残差は $`r([f_n])=\epsilon a_n`$、補正微分は $`-d`$ である。
 従って定理12.2の規約でも障害は同じ $`[a]\in\mathop{\mathrm{coker}}\nolimits d`$ となる。
-相対余接複体をこの零点に引くと
-$`[\bigoplus\mathbb Z\xrightarrow{-d^\vee}\bigoplus\mathbb Z]`$（次数 $`-1,0`$）であり、
-$`d^\vee(e_n)=e_n-2e_{n+1}`$ は有限support上で単射、余核は $`\mathbb Z[1/2]`$ である。
-したがって $`\mathop{\mathrm{Ext}}\nolimits^1_{\mathbb Z}(\mathbb Z[1/2],\mathbb Z)`$ の同じ類を得る。
+全余接複体もこの例では計算できる。変数 $`t_n=f_n`$ を用いれば
+$`P\cong\mathbb Z[c_n,t_n:n\ge0]`$、$`I=(t_n)`$ なので、一次の $`t`$ 係数を取ることで
+$`I/I^2=\bigoplus_n A[f_n]`$ を得る。
+さらに $`S`$ と $`A`$ はともに $`\mathbb Z`$ 上の多項式環である。
+付録C.1の多項式環の計算と $`\mathbb Z\to S\to A`$ の推移三角は、
+$`dy_n\mapsto dc_n-2dc_{n+1}`$ のconeとして全 $`L_{A/S}`$ を表す。
+従って次数 $`-2`$ 以下のコホモロジーは消え、低次数比較によって
+$`L_{A/S}\simeq[\bigoplus_n A[f_n]\to\bigoplus_n A\,dc_n]`$、
+$`[f_n]\mapsto-dc_n+2dc_{n+1}`$ を得る。
+
+零点への導来引戻し $`\mathbb Z\otimes_A^{\mathbf L}L_{A/S}`$ は、両項が自由なので
+$`K=[\bigoplus\mathbb Z\xrightarrow{-b}\bigoplus\mathbb Z]`$（次数 $`-1,0`$）、
+$`b(e_n)=e_n-2e_{n+1}`$ で計算できる。
+導来Homの標準微分 $`d_{\mathrm{Hom}}u=d_Mu-(-1)^{|u|}u d_K`$ を使うと、
+$`R\mathop{\mathrm{Hom}}\nolimits_A(L_{A/S},\mathbb Z)\simeq R\mathop{\mathrm{Hom}}\nolimits_{\mathbb Z}(K,\mathbb Z)`$ は先の積複体 $`D`$ となり、
+残差cocycleは $`a`$ そのものである。
+$`b`$ は有限support上で単射、余核は $`\mathbb Z[1/2]`$ である。
+この余核との同定を $`dc_n\mapsto-2^{-n}`$ と指定する。
+上の拡大を計算した自由分解への鎖同型は、次数 $`-1`$ で $`[f_n]\mapsto e_n`$、
+次数0で $`dc_n\mapsto-e_n`$ である。従って残差列を変えずに $`E_a`$ のcocycleへ送り、
+$`\mathop{\mathrm{Ext}}\nolimits^1_{\mathbb Z}(\mathbb Z[1/2],\mathbb Z)`$ の同じ指定類を得る。
 各有限段は最後の変数を自由に持ち上げて解けるが、この全体のliftは存在しない。□
 
 ## 13.5 安定性と有限決定への条件
