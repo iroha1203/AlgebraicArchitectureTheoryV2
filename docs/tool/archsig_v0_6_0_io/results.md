@@ -1357,7 +1357,7 @@ PathOutcomeDetail = {
     free_parameters: String[],
     step_states: { [Param | CoordName]: String }[],
     composite_state_comparisons: { [PhaseName]: { [CoordName]: String } },
-    composite_word_translation: { [OpName]: String[] },
+    composite_word_translation: { [OpName | "sequence"]: String[] },
     composite_is_one_step?: Bool,
     reevaluation: ReevalCheck
   }[],
@@ -1434,4 +1434,5 @@ SilenceReason = {
 Issue を付与し、`details` へ `silence_reason` の構造体をそのまま保持する。
 `provenance.origins` には、当該タスクが参照した Law 宣言と、実際に参照された `observed` 座標の ArchMap `Origin`（全 `SourceLocation`）だけを収集し、未参照の `Origin` は混入させない。
 `path.valid_paths[].step_states` と `path.rejected_candidates[].intermediate_state` のキーには、`fixed_protocol_change_path` では `change_spec` のパラメータ名、`enlarged_protocol_execution_path` では対象位相の状態座標名を格納する。
+`path.valid_paths[].intermediate_vertices` には、`fixed_protocol_change_path` では経路上の頂点名列、`enlarged_protocol_execution_path` では実行経路が通過した位相名列を格納し、`enlarged_protocol_execution_path` の `path.valid_paths[].composite_word_translation` には各操作名 `OpName` に加えて、`steps` 全体に対応する翻訳語列を予約キー `"sequence"` で格納する。
 `restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
