@@ -71,7 +71,7 @@ pub(super) fn convert_transfer_task(
     collect_eval_origins(eval_condition.as_ref(), &mut origins);
 
     let mut steps = Vec::with_capacity(decl.steps.len());
-    for st in &decl.steps {
+    for (idx, st) in decl.steps.iter().enumerate() {
         let comparison = match &st.source {
             ShigureTransferStepSource::Comparison(cmp_name) => {
                 let cmp = resolve_decl(
@@ -106,7 +106,11 @@ pub(super) fn convert_transfer_task(
                     resolve_decl(&shigure.presentations, b_name, "presentation", &decl.name)?;
                 let a_decl =
                     resolve_decl(&shigure.presentations, a_name, "presentation", &decl.name)?;
-                let before = lower_presentation(b_decl, archmap, snapshot_id, &param_names, None)?;
+                let before = if idx == 0 {
+                    lower_presentation(b_decl, archmap, snapshot_id, &empty, Some(&param_names))?
+                } else {
+                    lower_presentation(b_decl, archmap, snapshot_id, &param_names, None)?
+                };
                 let after = lower_presentation(a_decl, archmap, snapshot_id, &param_names, None)?;
                 let morph = lower_morphism_body(
                     morphism,

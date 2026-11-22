@@ -6,8 +6,9 @@ use super::check::{
     check_presentation_vars, resolve_shigure_ref,
 };
 use super::check_ext_common::{
-    ScopedMorphismMeta, check_eval_cond_against_domain_params, check_morphism_body,
-    check_morphism_vars_against_pres, check_scoped_change_spec_targets, check_state_law_list,
+    ScopedMorphismMeta, check_coords_disjoint_from_params, check_eval_cond_against_domain_params,
+    check_morphism_body, check_morphism_vars_against_pres, check_scoped_change_spec_targets,
+    check_state_law_list,
 };
 use super::*;
 use crate::law::ast::Span;
@@ -170,7 +171,11 @@ pub(super) fn check_transfer<E: InputError>(
                     ))
                     .into());
                 }
-                check_presentation_vars(b_p, Some(&param_set), control)?;
+                check_presentation_vars(
+                    b_p,
+                    if idx == 0 { None } else { Some(&param_set) },
+                    control,
+                )?;
                 check_presentation_vars(a_p, Some(&param_set), control)?;
                 let body = check_morphism_body(
                     morphism,
@@ -281,6 +286,14 @@ pub(super) fn check_transfer<E: InputError>(
         }
         prev_after = Some((after_p, tgt_ph.name.as_str()));
 
+        check_coords_disjoint_from_params(
+            &src_ph.coords,
+            &param_set,
+            &before_p.name,
+            &src_ph.name,
+            &format!("transfer step `{}`", st.name.name),
+            control,
+        )?;
         let mut src_allowed: HashSet<&str> =
             src_ph.coords.iter().map(|c| c.name.as_str()).collect();
         src_allowed.extend(param_set.iter().copied());
@@ -342,7 +355,7 @@ pub(super) fn check_transfer<E: InputError>(
         pres_map
             .entry(before_p.name.as_str())
             .or_default()
-            .push((before_p, false));
+            .push((before_p, idx == 0));
         pres_map
             .entry(after_p.name.as_str())
             .or_default()

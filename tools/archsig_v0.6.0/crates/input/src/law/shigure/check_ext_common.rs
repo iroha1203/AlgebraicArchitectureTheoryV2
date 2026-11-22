@@ -635,6 +635,29 @@ fn check_inline_morphism_parts<E: InputError>(
     Ok((scs, wt))
 }
 
+pub(super) fn check_coords_disjoint_from_params<E: InputError>(
+    coords: &[ShigureCoordDecl],
+    params: &HashSet<&str>,
+    pres_name: &str,
+    phase_name: &str,
+    context: &str,
+    control: &Control,
+) -> CResult<(), E> {
+    for c in coords {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        if params.contains(c.name.as_str()) {
+            return duplicate(
+                c.span,
+                format!(
+                    "coordinate `{}` in `{pres_name}.{phase_name}` collides with change_spec parameter in {context}",
+                    c.name
+                ),
+            );
+        }
+    }
+    Ok(())
+}
+
 pub(super) fn check_morphism_vars_against_pres<E: InputError>(
     scs: &[ShigureStateComparison],
     wt: &[ShigureTranslatedWord],
@@ -653,6 +676,14 @@ pub(super) fn check_morphism_vars_against_pres<E: InputError>(
             .expect("checked src_phase");
         let mut allowed: HashSet<&str> = src_ph.coords.iter().map(|c| c.name.as_str()).collect();
         if let Some(ps) = params {
+            check_coords_disjoint_from_params(
+                &src_ph.coords,
+                ps,
+                &src_pres.name,
+                &src_ph.name,
+                context,
+                control,
+            )?;
             allowed.extend(ps.iter().copied());
         }
         for (coord, expr) in &sc.map {
@@ -675,6 +706,26 @@ pub(super) fn check_morphism_vars_against_pres<E: InputError>(
         let mut allowed: HashSet<&str> = src_ph.coords.iter().map(|c| c.name.as_str()).collect();
         allowed.extend(src_op.args.iter().map(|(a, _)| a.as_str()));
         if let Some(ps) = params {
+            check_coords_disjoint_from_params(
+                &src_ph.coords,
+                ps,
+                &src_pres.name,
+                &src_ph.name,
+                context,
+                control,
+            )?;
+            for (a_name, _) in &src_op.args {
+                E::checkpoint(control, Checkpoint::LawSemantics)?;
+                if ps.contains(a_name.as_str()) {
+                    return duplicate(
+                        src_op.span,
+                        format!(
+                            "argument `{a_name}` in `{}.{}` collides with change_spec parameter in {context}",
+                            src_pres.name, src_op.name
+                        ),
+                    );
+                }
+            }
             allowed.extend(ps.iter().copied());
         }
         for st in &tw.steps {
@@ -747,6 +798,22 @@ impl<'a> ScopedMorphismMeta<'a> {
     }
 }
 
+fn scoped_pres<'a, E: InputError>(
+    pres_map: &'a BTreeMap<&str, Vec<(&'a ShigurePresentation, bool)>>,
+    presentation: &str,
+    span: Span,
+    kind: &str,
+    label: &str,
+) -> CResult<&'a [(&'a ShigurePresentation, bool)], E> {
+    match pres_map.get(presentation) {
+        Some(vs) => Ok(vs.as_slice()),
+        None => reference(
+            span,
+            format!("{kind} target references presentation `{presentation}` outside {label}"),
+        ),
+    }
+}
+
 pub(super) fn check_scoped_change_spec_targets<E: InputError>(
     spec: &ShigureChangeSpec,
     pres_map: &BTreeMap<&str, Vec<(&ShigurePresentation, bool)>>,
@@ -767,14 +834,7 @@ pub(super) fn check_scoped_change_spec_targets<E: InputError>(
                 phase,
                 law,
             } => {
-                let Some(vs) = pres_map.get(presentation.as_str()) else {
-                    return reference(
-                        *span,
-                        format!(
-                            "fixed target references presentation `{presentation}` outside {label}"
-                        ),
-                    );
-                };
+                let vs = scoped_pres(pres_map, presentation, *span, "fixed", label)?;
                 if !vs.iter().any(|(p, _)| {
                     p.phases
                         .iter()
@@ -791,14 +851,7 @@ pub(super) fn check_scoped_change_spec_targets<E: InputError>(
                 presentation,
                 operation,
             } => {
-                let Some(vs) = pres_map.get(presentation.as_str()) else {
-                    return reference(
-                        *span,
-                        format!(
-                            "fixed target references presentation `{presentation}` outside {label}"
-                        ),
-                    );
-                };
+                let vs = scoped_pres(pres_map, presentation, *span, "fixed", label)?;
                 if !vs
                     .iter()
                     .any(|(p, _)| p.operations.iter().any(|o| o.name == *operation))
@@ -814,14 +867,7 @@ pub(super) fn check_scoped_change_spec_targets<E: InputError>(
                 phase,
                 observation,
             } => {
-                let Some(vs) = pres_map.get(presentation.as_str()) else {
-                    return reference(
-                        *span,
-                        format!(
-                            "fixed target references presentation `{presentation}` outside {label}"
-                        ),
-                    );
-                };
+                let vs = scoped_pres(pres_map, presentation, *span, "fixed", label)?;
                 if !vs.iter().any(|(p, _)| {
                     p.observations
                         .iter()
@@ -867,14 +913,7 @@ pub(super) fn check_scoped_change_spec_targets<E: InputError>(
                 presentation,
                 operation,
             } => {
-                let Some(vs) = pres_map.get(presentation.as_str()) else {
-                    return reference(
-                        *span,
-                        format!(
-                            "editable target references presentation `{presentation}` outside {label}"
-                        ),
-                    );
-                };
+                let vs = scoped_pres(pres_map, presentation, *span, "editable", label)?;
                 if !vs
                     .iter()
                     .any(|(p, _)| p.operations.iter().any(|o| o.name == *operation))
@@ -900,14 +939,7 @@ pub(super) fn check_scoped_change_spec_targets<E: InputError>(
                 phase,
                 law,
             } => {
-                let Some(vs) = pres_map.get(presentation.as_str()) else {
-                    return reference(
-                        *span,
-                        format!(
-                            "editable target references presentation `{presentation}` outside {label}"
-                        ),
-                    );
-                };
+                let vs = scoped_pres(pres_map, presentation, *span, "editable", label)?;
                 if !vs.iter().any(|(p, _)| {
                     p.phases
                         .iter()

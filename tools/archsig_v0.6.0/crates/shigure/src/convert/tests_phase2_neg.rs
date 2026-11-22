@@ -349,3 +349,190 @@ reading NormalCompat {{
         .unwrap_err();
     assert!(matches!(err, ValidationError::ConversionError { .. }));
 }
+
+#[test]
+fn rejects_namespace_collisions_and_step0_baseline_mutations_with_step1_contrast() {
+    let d = counter_digest();
+
+    // 1a. Diagram namespace collisions against fixed vertex coords / op args
+    expect_input_err(
+        r#"
+  shigure presentation PFixed { domain Z; sort D; phase S { coord k: D; } op act(): S -> S { k = k; } obs r on S = (k); }
+  shigure presentation PVar { domain Z; sort D; phase S { coord y: D; } op act(): S -> S { y = y; } obs r on S = (y); }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure diagram Dg { direction state_map; vertex fixed V0: PFixed; vertex V1: PVar; edge e: V0 -> V1 { state_map S -> S { y = 0; } translate act -> [act()]; } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation PFixed { domain Z; sort D; phase S { coord k: D; } op act(): S -> S { k = k; } obs r on S = (k); }
+  shigure presentation PVar { domain Z; sort D; phase S { coord y: D; } op act(): S -> S { y = y; } obs r on S = (y); }
+  shigure comparison C { before PVar; after PFixed; state_map S -> S { y = 0; } translate act -> [act()]; }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure diagram Dg { direction state_map; vertex fixed V0: PFixed; vertex V1: PVar; edge e: V0 -> V1 { comparison C; } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation PFixed { domain Z; sort D; phase S { coord k: D; } op act(): S -> S { k = k; } obs r on S = (k); }
+  shigure presentation PVar { domain Z; sort D; phase S { coord y: D; } op act(): S -> S { y = y; } obs r on S = (y); }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure diagram Dg { direction time_order; vertex fixed V0: PFixed; vertex V1: PVar; edge e: V1 -> V0 { state_map S -> S { y = 0; } translate act -> [act()]; } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation POpArg { domain Z; sort D; phase S { coord x: D; } op act(k: D): S -> S { x = x + k; } obs r on S = (x); }
+  shigure presentation PVar { domain Z; sort D; phase S { coord y: D; } op act(u: D): S -> S { y = y + u; } obs r on S = (y); }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure diagram Dg { direction state_map; vertex fixed V0: POpArg; vertex V1: PVar; edge e: V0 -> V1 { state_map S -> S { y = x; } translate act -> [act(k)]; } change_spec H; }
+"#,
+    );
+
+    // 1b. Transfer `before` source_phase coordinate colliding with `param k` (Comparison & Inline, even when `lift` ignores `k`)
+    expect_input_err(
+        r#"
+  shigure presentation PB { domain Z; sort D; phase S { coord k: D; } op act(): S -> S { k = k; } obs r on S = (k); }
+  shigure presentation PA { domain Z; sort D; phase S { coord y: D; } op act(): S -> S { y = y; } obs r on S = (y); }
+  shigure comparison C { before PB; after PA; state_map S -> S { k = 0; } translate act -> [act()]; }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure transfer Tr { step s1 { comparison C; source_phase S; target_phase S; lift { y = 0; } } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation PB { domain Z; sort D; phase S { coord k: D; } op act(): S -> S { k = k; } obs r on S = (k); }
+  shigure presentation PA { domain Z; sort D; phase S { coord y: D; } op act(): S -> S { y = y; } obs r on S = (y); }
+  shigure comparison C { before PB; after PA; state_map S -> S { k = 0; } translate act -> [act()]; }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure transfer Tr { step s1 { comparison C; source_phase S; target_phase S; lift { y = k; } } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation PB { domain Z; sort D; phase S { coord k: D; } op act(): S -> S { k = k; } obs r on S = (k); }
+  shigure presentation PA { domain Z; sort D; phase S { coord y: D; } op act(): S -> S { y = y; } obs r on S = (y); }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure transfer Tr { step s1 { before PB; after PA; state_map S -> S { k = 0; } translate act -> [act()]; source_phase S; target_phase S; lift { y = 0; } } change_spec H; }
+"#,
+    );
+
+    // 2a. Transfer Inline step 0 `before` cannot use parameters
+    expect_input_err(
+        r#"
+  shigure presentation X0 { domain Z; sort D; phase S { coord x: D; law representation rep: x - k = 0; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation X1 { domain Z; sort D; phase S { coord x: D; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure change_spec H { domain Z; param k: Z; }
+  shigure transfer Tr { step s1 { before X0; after X1; identity; source_phase S; target_phase S; lift { x = x; } } change_spec H; }
+"#,
+    );
+
+    // 2b. Transfer step 0 `before` (X0) cannot be marked editable in either Inline or Comparison steps
+    expect_input_err(
+        r#"
+  shigure presentation X0 { domain Z; sort D; phase S { coord x: D; law representation rep: x = 0; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation X1 { domain Z; sort D; phase S { coord x: D; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure change_spec H { domain Z; editable operation X0.act; }
+  shigure transfer Tr { step s1 { before X0; after X1; identity; source_phase S; target_phase S; lift { x = x; } } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation X0 { domain Z; sort D; phase S { coord x: D; law representation rep: x = 0; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation X1 { domain Z; sort D; phase S { coord x: D; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure change_spec H { domain Z; editable representation_law X0.S.rep; }
+  shigure transfer Tr { step s1 { before X0; after X1; identity; source_phase S; target_phase S; lift { x = x; } } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation X0 { domain Z; sort D; phase S { coord x: D; law representation rep: x = 0; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation X1 { domain Z; sort D; phase S { coord x: D; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison C { before X0; after X1; state_map S -> S { x = x; } translate act -> [act()]; }
+  shigure change_spec H { domain Z; editable operation X0.act; }
+  shigure transfer Tr { step s1 { comparison C; source_phase S; target_phase S; lift { x = x; } } change_spec H; }
+"#,
+    );
+    expect_input_err(
+        r#"
+  shigure presentation X0 { domain Z; sort D; phase S { coord x: D; law representation rep: x = 0; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure presentation X1 { domain Z; sort D; phase S { coord x: D; } op act(): S -> S { x = x; } obs r on S = (x); }
+  shigure comparison C { before X0; after X1; state_map S -> S { x = x; } translate act -> [act()]; }
+  shigure change_spec H { domain Z; editable representation_law X0.S.rep; }
+  shigure transfer Tr { step s1 { comparison C; source_phase S; target_phase S; lift { x = x; } } change_spec H; }
+"#,
+    );
+
+    // 2c. Positive contrast: 2-step Inline transfer where X0 is baseline-fixed and intermediate X1 (step 1 `before`) uses `k` and is `editable`
+    let ok_2step = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading TwoStepMidParam {{
+  use vocabulary Counter version "1" digest "{d}";
+  shigure presentation X0 {{
+    domain Z; sort D;
+    phase S {{ coord x: D observed Counter.State.count; law semantic inv: x - 3 = 0; }}
+    op act(): S -> S {{ x = x; }}
+    obs r on S = (x);
+  }}
+  shigure presentation X1 {{
+    domain Z; sort D;
+    phase S {{ coord x: D observed Counter.State.count; law semantic inv: x - 3 = 0; }}
+    op act(): S -> S {{ x = x + k; }}
+    obs r on S = (x);
+  }}
+  shigure presentation X2 {{
+    domain Z; sort D;
+    phase S {{ coord x: D observed Counter.State.count; law semantic inv: x - 3 = 0; }}
+    op act(): S -> S {{ x = x + k; }}
+    obs r on S = (x);
+  }}
+  shigure change_spec H {{
+    domain Z;
+    param k: Z;
+    editable operation X1.act;
+    editable operation X2.act;
+  }}
+  shigure transfer Tr {{
+    step s1 {{
+      before X0; after X1;
+      state_map S -> S {{ x = x; }}
+      translate act -> [act()];
+      source_phase S; target_phase S;
+      lift {{ x = x; }}
+    }}
+    step s2 {{
+      before X1; after X2;
+      identity;
+      source_phase S; target_phase S;
+      lift {{ x = x; }}
+    }}
+    change_spec H;
+  }}
+}}
+"#
+    );
+    let inputs = check_inputs(
+        InputSources::from_bytes(
+            vec![ATOMS_JSON.as_bytes().to_vec()],
+            ok_2step.into_bytes(),
+            counter_archmap(&d, true).into_bytes(),
+        ),
+        &Control::unlimited(),
+    )
+    .unwrap();
+    let task = ShigureConverter::default()
+        .convert_transfer(&inputs)
+        .unwrap();
+    let out = crate::solver::solve_transfer_task(&task);
+    assert_eq!(out.verdict, crate::ir::result::Verdict::Established);
+    let det = out.transfer.expect("transfer detail");
+    assert_eq!(
+        det.domain_relation,
+        crate::ir::result_ext::DomainRelation::FullIsomorphic
+    );
+    let restored = det.restored_transfer.expect("restored transfer");
+    assert_eq!(
+        restored.parameter_assignments.get("k").map(String::as_str),
+        Some("0")
+    );
+}
