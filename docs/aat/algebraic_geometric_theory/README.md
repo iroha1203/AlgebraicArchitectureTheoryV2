@@ -19,8 +19,8 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 - [第VI部 観測・必要情報・再構成](#第vi部-観測必要情報再構成)：第17–19章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる正の論理の導出規則と健全性。
 - [付録B 係数・アフィン構成・descent](appendix_b_coefficients_and_descent.md)：第II部で用いる係数変更、アフィン構成、および局所からの組み立て。
-- [付録C 関係・解消・逆極限](appendix_c_homological_constructions.md)：余接複体、正則列と滑らかさ、Tor、複体の塔の比較。
-- [付録D 有限根スキームと茎](appendix_d_finite_roots_and_stalks.md)：実現族上の診断層と幾何点における Law 値複体。
+- [付録C 関係・解消・逆極限・整数障害](appendix_c_homological_constructions.md)：余接複体、Tor と交差、整数修復の有限算術判定、調和レギュレータ。
+- [付録D 有限根スキーム・診断次元・降下](appendix_d_finite_roots_and_stalks.md)：診断次元の原始実現、幾何点の茎、スペクトル根診断の降下と選択。
 - [付録E 変更経路と費用の問題](appendix_e_change_paths_and_costs.md)：許容経路の費用と最適経路の再構成。
 
 ## 全体の構成
@@ -70,6 +70,17 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 17. [観測の十分性と選択](part_6/chapter_17_observation_sufficiency_and_selection.md)
 18. [修復と観測](part_6/chapter_18_repair_and_observation.md)
 19. [局所再構成と有限決定](part_6/chapter_19_local_reconstruction_and_finite_determination.md)
+
+## 問いから定理へ
+
+| 問い | 主な構成と証明 |
+| --- | --- |
+| 指定した補正や修復全体を比較先から戻せるか | [指定補正・全解・残差](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#167-指定した補正をそのまま持ち上げる)、[原始比較と修復のファイバー](part_4/chapter_11_ariadne_relative_repairs.md#1110-原始操作の比較と指定修復のファイバー) |
+| 診断は表示変更や局所貼り合わせでどう変わるか | [支持付き細分と実セル交差](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#168-支持と整合する表示変更)、[安全性と有限観測幅](part_6/chapter_17_observation_sufficiency_and_selection.md#176-全-law-族に対する安全性と有限幅観測) |
+| 修復に必要な情報は構造と範囲によってどう変わるか | [構成可能な層別化](part_6/chapter_18_repair_and_observation.md#186-構造パラメータと必要情報の層別化)、[凍結範囲の保存則](part_6/chapter_18_repair_and_observation.md#189-凍結範囲と必要情報の三項保存則) |
+| 未定義状態・係数変更・Law の変更は何を変えるか | [単項部分操作の商](part_3/chapter_9_quotients_symmetry_and_lifts.md)、[線形定義域と Tor](part_5/chapter_14_transport_along_readings_and_coefficients.md)、[Law 生成余法係数](part_4/chapter_12_deformations_and_obstructions.md#127-lawが生成する余法係数と指定切断の一次持ち上げ) |
+| 有限の公開語から実現とモジュライを構成できるか | [有限ハンケル表](part_6/chapter_19_local_reconstruction_and_finite_determination.md#196-有限ハンケル表からの最小実現)、[内在的生成元と Grassmann 表示](part_2/chapter_6_families_and_moduli.md#66-入力語による内在的生成元と最小実現) |
+| 整数障害や実現族上の診断をどう読むか | [整数障害と指定比較](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1612-整数障害有限素数冪指定比較)、[診断次元の実現](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1611-診断次元を実現する幾何)、[根診断の降下と選択](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1613-固有値の根診断と商上の選択) |
 
 ## 数学本文の自立性（hard rule）
 
