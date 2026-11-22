@@ -896,6 +896,10 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
             "unsupported_algorithm",
             format!("open condition in interaction analysis: {detail}"),
         ),
+        SilenceReason::UnboundedSearchOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("unbounded search out of scope: {detail}"),
+        ),
         SilenceReason::ApplicabilityConditionNotMet { condition, detail } => (
             "unsupported_algorithm",
             format!("applicability condition `{condition}` not met: {detail}"),

@@ -4,7 +4,9 @@
 //! 不正な参照・型不一致・意味 Law の編集許可・固定/編集衝突・未観測値の暗黙零補完を防ぐ。
 
 use crate::ir::change::{ChangeSpec, EvalCondition, PointDomain};
-use crate::ir::presentation::{ComparisonPair, CoordValue, Presentation};
+use crate::ir::presentation::{
+    ComparisonPair, CoordValue, Presentation, StateComparison, WordTranslation,
+};
 use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use crate::ir::validate_change::{
@@ -361,34 +363,49 @@ impl CheckedShigureTask {
         let mut slots = BTreeSet::new();
         collect_presentation_unobserved(&self.pair.0.before, &mut slots);
         collect_presentation_unobserved(&self.pair.0.after, &mut slots);
-        for sc in &self.pair.0.state_comparisons {
-            for expr in sc.map.values() {
-                expr.collect_unobserved(&mut slots);
-            }
-        }
-        for tw in &self.pair.0.word_translation.entries {
-            for step in &tw.steps {
-                for expr in &step.arg_exprs {
-                    expr.collect_unobserved(&mut slots);
-                }
-            }
-        }
+        collect_morphism_unobserved(
+            &self.pair.0.state_comparisons,
+            &self.pair.0.word_translation,
+            &mut slots,
+        );
         if let Some(cond) = &self.eval_condition {
-            for item in cond
-                .0
-                .evaluations
-                .iter()
-                .chain(&cond.0.equations)
-                .chain(&cond.0.invertibles)
-            {
-                item.expr.collect_unobserved(&mut slots);
-            }
+            collect_eval_unobserved(&cond.0, &mut slots);
         }
         slots.into_iter().collect()
     }
 }
 
-fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<String>) {
+pub(crate) fn collect_morphism_unobserved(
+    scs: &[StateComparison],
+    wt: &WordTranslation,
+    out: &mut BTreeSet<String>,
+) {
+    for sc in scs {
+        for expr in sc.map.values() {
+            expr.collect_unobserved(out);
+        }
+    }
+    for tw in &wt.entries {
+        for step in &tw.steps {
+            for expr in &step.arg_exprs {
+                expr.collect_unobserved(out);
+            }
+        }
+    }
+}
+
+pub(crate) fn collect_eval_unobserved(cond: &EvalCondition, out: &mut BTreeSet<String>) {
+    for item in cond
+        .evaluations
+        .iter()
+        .chain(&cond.equations)
+        .chain(&cond.invertibles)
+    {
+        item.expr.collect_unobserved(out);
+    }
+}
+
+pub(crate) fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<String>) {
     for phase in &pres.phases {
         for coord in &phase.coords {
             if coord.is_missing() {
@@ -400,6 +417,9 @@ fn collect_presentation_unobserved(pres: &Presentation, out: &mut BTreeSet<Strin
         }
     }
     for op in &pres.operations {
+        for law in &op.domain_laws {
+            law.polynomial.collect_unobserved(out);
+        }
         for expr in op.updates.values() {
             expr.collect_unobserved(out);
         }
@@ -492,7 +512,7 @@ pub fn validate_coeff_domain(domain: &CoeffDomain, context: &str) -> Result<(), 
     Ok(())
 }
 
-fn validate_scalar_lit(
+pub(crate) fn validate_scalar_lit(
     lit: &ScalarLit,
     expected: &CoeffDomain,
     context: &str,
@@ -606,6 +626,14 @@ pub(crate) fn validate_presentation_checked_params(
     pres: Presentation,
     allowed_params: &BTreeSet<String>,
 ) -> Result<CheckedPresentation, ValidationError> {
+    validate_presentation_ref_checked_params(&pres, allowed_params)?;
+    Ok(CheckedPresentation(pres))
+}
+
+pub(crate) fn validate_presentation_ref_checked_params(
+    pres: &Presentation,
+    allowed_params: &BTreeSet<String>,
+) -> Result<(), ValidationError> {
     require_non_empty(&pres.name, "presentation.name")?;
     validate_coeff_domain(&pres.coeff_domain, &format!("presentation `{}`", pres.name))?;
     validate_provenance(&pres.provenance, &format!("presentation `{}`", pres.name))?;
@@ -743,6 +771,28 @@ pub(crate) fn validate_presentation_checked_params(
                 });
             }
         }
+        let mut domain_law_names = BTreeSet::new();
+        for dlaw in &op.domain_laws {
+            require_non_empty(&dlaw.name, &format!("operation `{}` domain_law", op.name))?;
+            validate_opt_source_ref(
+                dlaw.provenance.as_ref(),
+                &format!("domain_law `{}.{}`", op.name, dlaw.name),
+            )?;
+            if !domain_law_names.insert(dlaw.name.clone()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "domain_law",
+                    name: format!("{}.{}", op.name, dlaw.name),
+                });
+            }
+            validate_poly_expr(
+                &dlaw.polynomial,
+                &pres.coeff_domain,
+                src_coords,
+                &arg_names,
+                allowed_params,
+                &format!("operation `{}` domain_law `{}`", op.name, dlaw.name),
+            )?;
+        }
         for dst in dst_coords {
             if !op.updates.contains_key(dst) {
                 return Err(ValidationError::MissingCoordUpdate {
@@ -807,5 +857,5 @@ pub(crate) fn validate_presentation_checked_params(
         }
     }
 
-    Ok(CheckedPresentation(pres))
+    Ok(())
 }

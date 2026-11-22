@@ -41,6 +41,7 @@ pub(super) fn single_ledger_before(domain: CoeffDomain) -> Presentation {
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u"))]),
             provenance: Some(origin("map:before_apply", OriginKind::StaticAnalysis)),
         }],
@@ -81,6 +82,7 @@ fn build_ledger_p1_task(eval_cond: Option<EvalCondition>) -> CheckedShigureTask 
                 source_phase: "Split".to_owned(),
                 target_phase: "Split".to_owned(),
                 args: vec![("u".to_owned(), "D".to_owned())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".to_owned(),
@@ -98,6 +100,7 @@ fn build_ledger_p1_task(eval_cond: Option<EvalCondition>) -> CheckedShigureTask 
                 source_phase: "Split".to_owned(),
                 target_phase: "Split".to_owned(),
                 args: vec![("t".to_owned(), "D".to_owned())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".to_owned(),
@@ -258,6 +261,7 @@ pub(super) fn build_ledger_snapshot_task(
                 source_phase: "Idle".to_owned(),
                 target_phase: "Busy".to_owned(),
                 args: vec![],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     ("B".to_owned(), PolyExpr::state("B")),
                     ("C".to_owned(), PolyExpr::state("C")),
@@ -270,6 +274,7 @@ pub(super) fn build_ledger_snapshot_task(
                 source_phase: "Idle".to_owned(),
                 target_phase: "Idle".to_owned(),
                 args: vec![("u".to_owned(), "D".to_owned())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".to_owned(),
@@ -287,6 +292,7 @@ pub(super) fn build_ledger_snapshot_task(
                 source_phase: "Busy".to_owned(),
                 target_phase: "Busy".to_owned(),
                 args: vec![("u".to_owned(), "D".to_owned())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".to_owned(),
@@ -305,6 +311,7 @@ pub(super) fn build_ledger_snapshot_task(
                 source_phase: "Busy".to_owned(),
                 target_phase: "Idle".to_owned(),
                 args: vec![],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".to_owned(),
@@ -491,6 +498,7 @@ pub(super) fn build_single_param_residual_task(
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([(
                 "x".to_owned(),
                 PolyExpr::state("x") + PolyExpr::arg("u") + residual_poly,

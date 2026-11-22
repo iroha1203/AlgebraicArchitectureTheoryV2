@@ -156,6 +156,7 @@ fn ac4_interaction_analysis_distinguishes_mu_delta_t_pow_m_faces_and_open_silenc
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([
                 ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
                 ("y".to_owned(), PolyExpr::state("y")),
@@ -613,6 +614,7 @@ fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_transl
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([
                 ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
                 ("y".to_owned(), PolyExpr::state("y")),
@@ -717,6 +719,7 @@ fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_transl
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([
                 ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
                 ("y".to_owned(), PolyExpr::state("y")),
@@ -856,6 +859,7 @@ fn review_regressions_multistratum_z_torsion_universal_ring_and_multistep_transl
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([
                 (
                     "x".to_owned(),

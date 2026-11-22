@@ -131,6 +131,22 @@ pub enum MathClause {
     G141D5,
     /// G-141 F10–F12: 座標面支持による相互作用参加変数数 r と極小不成立部分族。
     G141F10F12,
+    /// G-140 F1, F1.1–F1.2: 固定図式の独立全補完と 2-fiber（四角形・鎖・一般有限図式）。
+    G140F1,
+    G140F1Dot1,
+    G140F1Dot2,
+    /// G-140 F2, F3, F3.1: 一段変更から生成する経路、細分化 fiber、係数曲線反例。
+    G140F2,
+    G140F3,
+    G140F3Dot1,
+    /// G-140 台帳特殊化 P5.1–P5.3: Boolean 4 順序、Idle 切替 phase protocol、Busy 状態移送失敗。
+    G140P5Dot1,
+    G140P5Dot2,
+    G140P5Dot3,
+    /// G-140 G1–G3: 合法状態移送 lift、共通操作語保存、fiber product 移送合成。
+    G140G1,
+    G140G2,
+    G140G3,
 }
 
 impl MathClause {
@@ -147,6 +163,18 @@ impl MathClause {
             MathClause::G141D4 => "shigure:G-141:D4",
             MathClause::G141D5 => "shigure:G-141:D5",
             MathClause::G141F10F12 => "shigure:G-141:F10-F12",
+            MathClause::G140F1 => "shigure:G-140:F1",
+            MathClause::G140F1Dot1 => "shigure:G-140:F1.1",
+            MathClause::G140F1Dot2 => "shigure:G-140:F1.2",
+            MathClause::G140F2 => "shigure:G-140:F2",
+            MathClause::G140F3 => "shigure:G-140:F3",
+            MathClause::G140F3Dot1 => "shigure:G-140:F3.1",
+            MathClause::G140P5Dot1 => "shigure:G-140:P5.1",
+            MathClause::G140P5Dot2 => "shigure:G-140:P5.2",
+            MathClause::G140P5Dot3 => "shigure:G-140:P5.3",
+            MathClause::G140G1 => "shigure:G-140:G1",
+            MathClause::G140G2 => "shigure:G-140:G2",
+            MathClause::G140G3 => "shigure:G-140:G3",
         }
     }
 }

@@ -42,6 +42,7 @@ fn rerun1_f1_nilpotent_interaction_f2_implicit_open_f3_real_witness_f4_domain_an
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([
                 ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
                 ("y".to_owned(), PolyExpr::state("y")),
@@ -138,6 +139,7 @@ fn rerun1_f1_nilpotent_interaction_f2_implicit_open_f3_real_witness_f4_domain_an
                 source_phase: "Active".to_owned(),
                 target_phase: "Active".to_owned(),
                 args: vec![("u".to_owned(), "D".to_owned())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     ("x".to_owned(), PolyExpr::state("x") + PolyExpr::arg("u")),
                     ("y".to_owned(), PolyExpr::state("y")),
@@ -242,6 +244,7 @@ fn rerun1_f1_nilpotent_interaction_f2_implicit_open_f3_real_witness_f4_domain_an
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([(
                 "x".to_owned(),
                 PolyExpr::state("x")
@@ -502,6 +505,7 @@ fn rerun2_f1_z_unit_face_f2_nilpotent_reeval_f3_universal_ring_open() {
             source_phase: "Active".to_owned(),
             target_phase: "Active".to_owned(),
             args: vec![("u".to_owned(), "D".to_owned())],
+            domain_laws: vec![],
             updates: BTreeMap::from([
                 (
                     "x".to_owned(),

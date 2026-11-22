@@ -39,6 +39,7 @@ fn ledger_snapshot_task() -> (ComparisonPair, ChangeSpec, EvalCondition) {
             source_phase: "Single".into(),
             target_phase: "Single".into(),
             args: vec![("u".into(), "D".into())],
+            domain_laws: vec![],
             updates: BTreeMap::from([(
                 "x".into(),
                 PolyExpr::add(PolyExpr::state("x"), PolyExpr::arg("u")),
@@ -116,6 +117,7 @@ fn ledger_snapshot_task() -> (ComparisonPair, ChangeSpec, EvalCondition) {
                 source_phase: "Idle".into(),
                 target_phase: "Busy".into(),
                 args: vec![],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     ("B".into(), PolyExpr::state("B")),
                     ("C".into(), PolyExpr::state("C")),
@@ -128,6 +130,7 @@ fn ledger_snapshot_task() -> (ComparisonPair, ChangeSpec, EvalCondition) {
                 source_phase: "Idle".into(),
                 target_phase: "Idle".into(),
                 args: vec![("u".into(), "D".into())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".into(),
@@ -154,6 +157,7 @@ fn ledger_snapshot_task() -> (ComparisonPair, ChangeSpec, EvalCondition) {
                 source_phase: "Busy".into(),
                 target_phase: "Busy".into(),
                 args: vec![("u".into(), "D".into())],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".into(),
@@ -181,6 +185,7 @@ fn ledger_snapshot_task() -> (ComparisonPair, ChangeSpec, EvalCondition) {
                 source_phase: "Busy".into(),
                 target_phase: "Idle".into(),
                 args: vec![],
+                domain_laws: vec![],
                 updates: BTreeMap::from([
                     (
                         "B".into(),
@@ -526,6 +531,9 @@ fn outcome_json_preserves_domains_silence_and_origin_kinds() {
         empty_witness: None,
         restored: None,
         interaction: None,
+        diagram: None,
+        path: None,
+        transfer: None,
     };
     let rendered = outcome.to_json().canonical();
     assert!(rendered.contains(r#""verdict":"undetermined""#));
@@ -924,6 +932,7 @@ fn multistep_word_translation_phase_chain_and_fixed_law_kind_mismatches_are_reje
         source_phase: "Single".into(),
         target_phase: "Alt".into(),
         args: vec![],
+        domain_laws: vec![],
         updates: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
         provenance: None,
     });
