@@ -12,18 +12,18 @@ AGENTS.md を正とする。細かな作業規律は各ガイドラインにあ�
 - [Tooling guideline](docs/tool/guideline.md)
 - [Website guideline](docs/website/guideline.md)
 - [PRD guideline](docs/prd/guideline.md)
+- [Paper guideline](docs/paper/guideline.md)
+- [ブログ執筆ガイドライン](docs/outreach/guideline.md)
 
-## Claude の役割分担
+## Claude の役割
 
-このリポジトリの開発パイプラインは役割分担で進めている。
+このリポジトリのエージェント役割分担は [Workflow guideline](docs/workflow/guideline.md#エージェントの役割分担) に定める。
+Claude は主に **PR 経由のレビュー** を担当する（数学・Lean・論文執筆は Codex、ツール・ブログ・website は Gemini、受け入れ確認と最終判断はユーザー）。
 
-- **Codex**: 数学設計、Lean 実装。
-- **Claude**: ツールの設計・実装、website の実装。
-- **ユーザー**: 受け入れテストと最終判断。
+PR のレビューは `.codex/skills/review-pr` および各分野のレビュー SKILL で行う（全エージェントの SKILL は `.codex/skills/` に一本化している）。
+別モデルレビューの PR 経由規則・コマンド呼び出し禁止および PR 本文・レビューコメント末尾への使用モデル名明記は、[Workflow guideline](docs/workflow/guideline.md) に従う。
 
-実装は PRD を起点に `.codex/skills/prd-loop` で進め、PR のレビューは `.codex/skills/review-pr` で行う（全エージェントの SKILL は `.codex/skills/` に一本化している）。
-
-PRD を書くときは冒頭に「## 問い」節を置き、その問いを採否の判断基準として使う。
+明示的な依頼により PRD を書く場合は、冒頭に「## 問い」節を置き、その問いを採否の判断基準として使う。
 問いの立て方やスコープの切り方については複数案を提示し、ユーザーに選んでもらう。
 
 ## 作業時の注意
