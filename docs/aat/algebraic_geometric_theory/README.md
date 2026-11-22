@@ -15,8 +15,10 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 - [第I部 Lawと意味の基礎](#第i部-lawと意味の基礎)：第1–3章。
 - [第II部 実現の族とLawの幾何](#第ii部-実現の族とlawの幾何)：第4–6章。
 - [第III部 意味を保つ変更の全体](#第iii部-意味を保つ変更の全体)：第7–9章。
+- [第IV部 局所変更・修復・障害](#第iv部-局所変更修復障害)：第10–13章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる導出規則。
 - [付録B 係数・affine構成・descent](appendix_b_coefficients_and_descent.md)：第II部で使う係数変更と局所からの組立て。
+- [付録C 関係・解消・逆極限](appendix_c_homological_constructions.md)：余接複体、Tor、複体の塔の比較。
 
 ## 全体の構成
 
@@ -25,6 +27,8 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 第I部の証明は第1–3章と付録Aの中で閉じる。
 第II部はこの結果を使い、第4–6章と付録Bで実現の表示と係数descentを構成する。
 第III部は第7–9章で全変更と条件付き変更族を構成し、商・代表選択・持ち上げを分類する。
+第IV部は第10–13章で二方向のdescent、アリアドネの全修復、変形と交差の障害、
+有限fragmentからの大域復元を構成する。
 
 ### 第I部 Lawと意味の基礎
 
@@ -46,10 +50,10 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 
 ### 第IV部 局所変更・修復・障害
 
-10. 実現と変更のdescent
-11. 固定部分と変更範囲に相対的な全修復――アリアドネ
-12. 変形・特異性・修復の障害
-13. 有限部分から大域へ
+10. [実現と変更のdescent](part_4/chapter_10_descent_of_realizations_and_changes.md)
+11. [固定部分と変更範囲に相対的な全修復――アリアドネ](part_4/chapter_11_ariadne_relative_repairs.md)
+12. [変形・特異性・修復の障害](part_4/chapter_12_deformations_and_obstructions.md)
+13. [有限部分から大域へ](part_4/chapter_13_fragments_and_globalization.md)
 
 ### 第V部 輸送・比較・診断
 

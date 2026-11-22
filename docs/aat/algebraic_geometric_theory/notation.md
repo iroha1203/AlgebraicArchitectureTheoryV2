@@ -5,6 +5,15 @@
 各担体、宣言の族、Lawの族は小さいものとする。有限性は式の長さと各操作のarityに課し、
 族全体の有限性は必要な命題で指定する。空の担体も許す。
 集合とその部分集合は外延的に、写像は点ごとの等号で比較する。
+基礎は選択公理を含む通常の集合論とする。担体の代表、自由生成元のlift、基底の選択にこれを用いる。
+可算塔での再帰的持上げと積の完全性には可算の従属選択が十分であり、
+有限集合の逆極限では第13章でBoolean prime ideal theoremによるコンパクト性を明記する。
+これらは構成的な有限計算の主張とは区別する。
+局所的な記号は、各設定・定理・例で指定した範囲で用いる。第11章の $`p,q`$ は塔の関手、
+$`\pi_i,\pi_{\mathrm{ob}}`$ は線形商写像、$`B_i`$ は頂点補正空間、$`B_i^{\mathrm{par}}`$ はparameterの係数行列である。
+同章で $`S\subseteq T`$ と書く $`T`$ は許可範囲、参照変更 $`h\mapsto h-a`$ の $`a`$ は基準の差を表す。
+領域 $`U,V,W`$、評価条件 $`V\subseteq E`$、parameter集合 $`\mathsf V`$ は、それぞれの設定で区別する。
+具体例の頂点名 $`p`$ は、その例で宣言した頂点を指す。
 
 | 記号 | 意味 | 定義 |
 | --- | --- | --- |
@@ -61,6 +70,17 @@
 | $`q,s,N`$ | 操作・観測を保つ商、保存section、保存冪等射 $`N=sq`$ | [9.3](part_3/chapter_9_quotients_symmetry_and_lifts.md#93-保存section冪等射分裂) |
 | $`\mathrm{Hol}_j`$、$`\mathrm{Lift}(g)`$、$`K`$ | 根のholonomy群、可視変更の全lift、垂直変更群 | [9.4](part_3/chapter_9_quotients_symmetry_and_lifts.md#94-holonomyと中心化群) |
 | $`G_{\mathrm{chg}}\to G_{\mathrm{vis}}`$、$`G_{\mathrm{lift}}`$ | 全変更群の可視群への射影、その像 | [9.5](part_3/chapter_9_quotients_symmetry_and_lifts.md#95-持ち上げのfiberと選択の整合) |
+| $`\mathrm{Desc}`$、$`\theta_{ij},\eta_{ab},\Xi`$ | descent圏、文脈・係数の同定、二方向の交換同型 | [10.1–10.3](part_4/chapter_10_descent_of_realizations_and_changes.md#101-文脈係数それぞれのdescent) |
+| $`K,P=K_{\mathrm{fix}},E_0,\mathsf E,S`$ | 型付きセル表示、固定部分、常時許容辺、候補辺、許可範囲 | [11.1–11.2](part_4/chapter_11_ariadne_relative_repairs.md#111-原始実操作全核固定部分) |
+| $`A_v,\rho_e,\delta,d^0,d^1,d^2`$ | 実射影の全核、実核輸送、実defect、セルの微分 | [11.1](part_4/chapter_11_ariadne_relative_repairs.md#111-原始実操作全核固定部分) |
+| $`C_S^\bullet,\mathscr R_S(K),\Omega,\omega`$ | 範囲付き相対複体、実修復groupoid、局所案の統合障害の群と指定類 | [11.2–11.3](part_4/chapter_11_ariadne_relative_repairs.md#112-範囲付き実修復とコホモロジー分類) |
+| $`\mathcal I_i,R_i,N_i,s_i,\mathrm{Glue}_S`$ | 一度生成する局所表現、公開関係、内部kernel、復元section、厳密合成 | [11.4](part_4/chapter_11_ariadne_relative_repairs.md#114-全範囲に共通する局所生成と厳密な組立て) |
+| $`\mathsf O,o,B_e,\mathsf R_S,\mathcal H_o`$ | 常時許容補正の余核、要求類、候補写像、許可範囲の像、双対証拠の支持族 | [11.5](part_4/chapter_11_ariadne_relative_repairs.md#115-可否不能証拠極小範囲) |
+| $`C_U(S),\mathop{\mathrm{Pair}}\nolimits(A_w)`$ | 内部候補を消去した共有関係、分割で生じる可縮なgroupoid | [11.6–11.8](part_4/chapter_11_ariadne_relative_repairs.md#116-表示比較内部置換文脈同値) |
+| $`R'\to R,M,L_{A/k},\mathrm{ob}`$ | 平方零拡大、その核、余接複体、固定データに相対的なlift障害 | [12.1–12.2](part_4/chapter_12_deformations_and_obstructions.md#121-変形対象と固定データ) |
+| $`M_{\mathrm{sem}},Q_E,\Phi,\beta`$ | repair wordの関係商、方程式の生成商 $`O_E/I_{\mathrm{Ob}}^E`$、係数同型、実状態と方程式liftの対応 | [12.4](part_4/chapter_12_deformations_and_obstructions.md#124-局所lift後の貼り合わせと意味比較) |
+| $`B,I_1,I_2,\mathop{\mathrm{Tor}}\nolimits`$ | 共通ambient環、二つの残差イデアル、導来交差のコホモロジー | [12.5](part_4/chapter_12_deformations_and_obstructions.md#125-複数lawの導来交差とtor) |
+| $`D_n,R\!\lim D_n,\lim^1`$ | 原始修正複体の塔、その導来逆極限、追加の整合障害を持つ導来関手 | [13.3](part_4/chapter_13_fragments_and_globalization.md#133-導来逆極限と追加障害) |
 
 合成は $`(g\circ f)(x)=g(f(x))`$ の順で書く。
 $`u:\mathbb T\to\mathbb T'`$ のモデル引戻しは
@@ -97,3 +117,10 @@ $`E`$ は第8章では評価対象、第9章では名前付き操作の集合で
 第9章の保存冪等射 $`N`$ と、第7章のnerve $`N_n`$ は添字と型で区別する。
 第9章の $`r_j`$ は連結成分 $`j`$ の根、$`\omega_v`$ は頂点 $`v`$ の追加観測である。
 中心化群 $`C_L(M)`$ の $`L,M`$ は群とその部分群を表す。
+
+第11章の $`P`$ は固定部分であり、第12章の $`P=k[x_1,\ldots,x_n]`$ はambient多項式環である。
+第11章の $`A_v`$ は実核の可換群、第12章の $`A`$ はchartの座標環である。
+第11章の $`S\subseteq\mathsf E`$ は許可範囲、第13章の $`S_i`$ は解集合である。
+第11章の $`R_i`$ は公開アフィン関係で、係数環 $`R`$ と区別する。
+第12章の $`R_{\mathrm{rep}}(U)`$ はrepair wordの関係群である。
+第13章の $`D_n`$ は複体であり、部分操作のdomainとは型で区別する。
