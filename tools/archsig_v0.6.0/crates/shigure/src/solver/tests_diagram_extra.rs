@@ -7,7 +7,8 @@ use crate::ir::diagram::{
 };
 use crate::ir::morphism::{MorphismDirection, StateMorphism};
 use crate::ir::presentation::{
-    CoordDecl, LawKind, OperationDecl, StateComparison, StateLaw, TranslatedStep, TranslatedWord,
+    CoordDecl, LawKind, OperationDecl, PhaseDecl, Presentation, SortDecl, StateComparison,
+    StateLaw, TranslatedStep, TranslatedWord, WordTranslation,
 };
 use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{SilenceReason, Verdict};
@@ -721,5 +722,232 @@ fn diagram_review_regressions_m03_m01_m02() {
     assert!(matches!(
         err,
         Err(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+}
+
+#[test]
+fn diagram_r01_fp_quotient_ideal_membership_not_point_vanishing() {
+    let fp3 = CoeffDomain::Fp(num_bigint::BigUint::from(3u32));
+    let mut z3 = ledger_base("Z3", fp3.clone());
+    z3.phases[0].state_laws = vec![StateLaw {
+        name: "irred".into(),
+        kind: LawKind::Representation,
+        polynomial: PolyExpr::pow(PolyExpr::state("x"), 2) + clit(&fp3, 1),
+        provenance: None,
+    }];
+    z3.operations[0].updates = BTreeMap::from([("x".into(), clit(&fp3, 0))]);
+    let spec_fp3_empty_pts = DiagramSpec {
+        name: "r01_fp3_irred_op_breaks_law".into(),
+        direction: MorphismDirection::StateMap,
+        vertices: vec![DiagramVertex {
+            name: "Z".into(),
+            presentation: z3,
+            is_fixed: true,
+            provenance: None,
+        }],
+        edges: vec![],
+        relations: vec![],
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: fp3,
+            parameters: vec![],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G141D5]),
+        },
+        eval_condition: None,
+        edge_eval_conditions: BTreeMap::new(),
+        provenance: Provenance::new(vec![orig("fp3")], vec![MathClause::G141D5]),
+    };
+    assert_eq!(
+        solve_diagram_task(&CheckedDiagramTask::validate(spec_fp3_empty_pts).unwrap()).verdict,
+        Verdict::Refuted
+    );
+
+    let fp5 = CoeffDomain::Fp(num_bigint::BigUint::from(5u32));
+    let make_fp5 = |name: &str, laws: Vec<StateLaw>| Presentation {
+        name: name.into(),
+        coeff_domain: fp5.clone(),
+        sorts: vec![SortDecl {
+            name: "D".into(),
+            rank: 1,
+            coeff_domain: fp5.clone(),
+            provenance: Some(orig("d")),
+        }],
+        phases: vec![PhaseDecl {
+            name: "S".into(),
+            coords: vec![CoordDecl::symbolic("x", "D")],
+            state_laws: laws,
+            provenance: None,
+        }],
+        operations: vec![],
+        observations: vec![],
+        provenance: Provenance::new(vec![orig(name)], vec![MathClause::G141D5]),
+    };
+    let after_nil = make_fp5(
+        "A5",
+        vec![StateLaw {
+            name: "x2".into(),
+            kind: LawKind::Representation,
+            polynomial: PolyExpr::pow(PolyExpr::state("x"), 2),
+            provenance: None,
+        }],
+    );
+    let before_rad = make_fp5(
+        "B5",
+        vec![StateLaw {
+            name: "x1".into(),
+            kind: LawKind::Representation,
+            polynomial: PolyExpr::state("x"),
+            provenance: None,
+        }],
+    );
+    let spec_nil = DiagramSpec {
+        name: "r01_fp5_non_radical".into(),
+        direction: MorphismDirection::StateMap,
+        vertices: vec![
+            DiagramVertex {
+                name: "Z".into(),
+                presentation: after_nil,
+                is_fixed: true,
+                provenance: None,
+            },
+            DiagramVertex {
+                name: "B".into(),
+                presentation: before_rad,
+                is_fixed: true,
+                provenance: None,
+            },
+        ],
+        edges: vec![DiagramEdge {
+            name: "h".into(),
+            source: "Z".into(),
+            target: "B".into(),
+            morphism: StateMorphism {
+                source: "A5".into(),
+                target: "B5".into(),
+                state_comparisons: vec![StateComparison {
+                    after_phase: "S".into(),
+                    before_phase: "S".into(),
+                    map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+                    provenance: None,
+                }],
+                word_translation: WordTranslation { entries: vec![] },
+                provenance: None,
+            },
+            is_fixed: true,
+            provenance: None,
+        }],
+        relations: vec![],
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: fp5.clone(),
+            parameters: vec![],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G141D5]),
+        },
+        eval_condition: None,
+        edge_eval_conditions: BTreeMap::new(),
+        provenance: Provenance::new(vec![orig("nil")], vec![MathClause::G141D5]),
+    };
+    assert_eq!(
+        solve_diagram_task(&CheckedDiagramTask::validate(spec_nil).unwrap()).verdict,
+        Verdict::Refuted
+    );
+
+    let after_multi = Presentation {
+        name: "AM5".into(),
+        coeff_domain: fp5.clone(),
+        sorts: vec![SortDecl {
+            name: "D".into(),
+            rank: 1,
+            coeff_domain: fp5.clone(),
+            provenance: Some(orig("d")),
+        }],
+        phases: vec![PhaseDecl {
+            name: "S".into(),
+            coords: vec![CoordDecl::symbolic("x", "D"), CoordDecl::symbolic("y", "D")],
+            state_laws: vec![
+                StateLaw {
+                    name: "x2".into(),
+                    kind: LawKind::Representation,
+                    polynomial: PolyExpr::pow(PolyExpr::state("x"), 2),
+                    provenance: None,
+                },
+                StateLaw {
+                    name: "y2".into(),
+                    kind: LawKind::Representation,
+                    polynomial: PolyExpr::pow(PolyExpr::state("y"), 2),
+                    provenance: None,
+                },
+            ],
+            provenance: None,
+        }],
+        operations: vec![],
+        observations: vec![],
+        provenance: Provenance::new(vec![orig("am5")], vec![MathClause::G141D5]),
+    };
+    let before_multi = make_fp5(
+        "BM5",
+        vec![StateLaw {
+            name: "x1".into(),
+            kind: LawKind::Representation,
+            polynomial: PolyExpr::state("x"),
+            provenance: None,
+        }],
+    );
+    let spec_multi = DiagramSpec {
+        name: "r01_fp5_multi_nl_out_of_scope".into(),
+        direction: MorphismDirection::StateMap,
+        vertices: vec![
+            DiagramVertex {
+                name: "Z".into(),
+                presentation: after_multi,
+                is_fixed: true,
+                provenance: None,
+            },
+            DiagramVertex {
+                name: "B".into(),
+                presentation: before_multi,
+                is_fixed: true,
+                provenance: None,
+            },
+        ],
+        edges: vec![DiagramEdge {
+            name: "h".into(),
+            source: "Z".into(),
+            target: "B".into(),
+            morphism: StateMorphism {
+                source: "AM5".into(),
+                target: "BM5".into(),
+                state_comparisons: vec![StateComparison {
+                    after_phase: "S".into(),
+                    before_phase: "S".into(),
+                    map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+                    provenance: None,
+                }],
+                word_translation: WordTranslation { entries: vec![] },
+                provenance: None,
+            },
+            is_fixed: true,
+            provenance: None,
+        }],
+        relations: vec![],
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: fp5,
+            parameters: vec![],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G141D5]),
+        },
+        eval_condition: None,
+        edge_eval_conditions: BTreeMap::new(),
+        provenance: Provenance::new(vec![orig("mlt")], vec![MathClause::G141D5]),
+    };
+    assert!(matches!(
+        solve_diagram_task(&CheckedDiagramTask::validate(spec_multi).unwrap()).verdict,
+        Verdict::Undetermined(SilenceReason::QuotientIdealOutOfScope { .. })
     ));
 }

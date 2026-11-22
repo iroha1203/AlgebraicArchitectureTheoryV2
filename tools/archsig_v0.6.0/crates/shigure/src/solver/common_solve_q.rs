@@ -9,7 +9,7 @@ use crate::ir::provenance::MathClause;
 use crate::ir::result::{ApplicabilityCheck, EmptyWitness, SilenceReason, Verdict};
 use crate::ir::term::{CoeffDomain, PolyExpr};
 use crate::solver::common_solve::{
-    ParamWitness, SystemSolveOutcome, collect_eval_and_extra, lift_z_to_q, refuted_system,
+    ParamWitness, SystemSolveOutcome, collect_eval_and_extra, refuted_system,
     solve_affine_or_nonlinear_z, undetermined_system,
 };
 use crate::solver::context::{clear_denominators_to_z, display_polys};
@@ -509,7 +509,43 @@ pub(crate) fn is_ideal_nonempty(
     let sa = state_vars.len() + arg_vars.len();
     let param_bind = ExprBindings::params_only(free_vars);
     match coeff_domain {
-        CoeffDomain::Q => {
+        CoeffDomain::Z if *point_domain == PointDomain::UniversalRing => {
+            Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "universal_ring_solution_space_out_of_scope".to_owned(),
+                detail: "UniversalRing non-emptiness over Z cannot be decided by Q-sections"
+                    .to_owned(),
+            })
+        }
+        CoeffDomain::Q | CoeffDomain::Z => {
+            if matches!(point_domain, PointDomain::FiniteFieldPoints(_)) {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "point_domain_matches_coeff_domain".to_owned(),
+                    detail: "Fp point domain requires Fp coefficient domain".to_owned(),
+                });
+            }
+            if *coeff_domain == CoeffDomain::Z && *point_domain == PointDomain::IntegerPoints {
+                let mut eqs_z: Vec<Poly<num_bigint::BigInt>> = laws
+                    .iter()
+                    .map(|l| Poly::from_expr_z(l, &bind).map_err(map_algebra_silence))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let (ev_eqs, ev_invs) =
+                    collect_eval_and_extra(&[], eval_conds, &param_bind, Poly::from_expr_z)?;
+                for eq in ev_eqs {
+                    eqs_z.push(eq.lift_vars(sa));
+                }
+                let invs_z: Vec<Poly<num_bigint::BigInt>> =
+                    ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
+                for nl in clear_denominators_to_z(witness.remaining_nonlinear()) {
+                    eqs_z.push(nl.lift_vars(sa));
+                }
+                let eqs_nz: Vec<_> = eqs_z.into_iter().filter(|p| !p.is_zero()).collect();
+                let res = solve_affine_or_nonlinear_z(&eqs_nz, &invs_z, &order, vec![]);
+                return match res.verdict {
+                    Verdict::Established => Ok(true),
+                    Verdict::Refuted => Ok(false),
+                    Verdict::Undetermined(r) => Err(r),
+                };
+            }
             let mut eqs_q: Vec<Poly<Rat>> = laws
                 .iter()
                 .map(|l| Poly::from_expr_q(l, &bind).map_err(map_algebra_silence))
@@ -523,50 +559,6 @@ pub(crate) fn is_ideal_nonempty(
                 eqs_q.push(eq.lift_vars(sa));
             }
             let invs_q: Vec<Poly<Rat>> = ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
-            is_q_system_nonempty_on_point_domain(&eqs_q, &invs_q, &order, point_domain)
-        }
-        CoeffDomain::Z => {
-            if *point_domain == PointDomain::UniversalRing {
-                return Err(SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "universal_ring_solution_space_out_of_scope".to_owned(),
-                    detail: "UniversalRing non-emptiness over Z cannot be decided by Q-sections"
-                        .to_owned(),
-                });
-            }
-            if matches!(point_domain, PointDomain::FiniteFieldPoints(_)) {
-                return Err(SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "point_domain_matches_coeff_domain".to_owned(),
-                    detail: "Fp point domain requires Fp coefficient domain".to_owned(),
-                });
-            }
-            let mut eqs_z: Vec<Poly<num_bigint::BigInt>> = laws
-                .iter()
-                .map(|l| Poly::from_expr_z(l, &bind).map_err(map_algebra_silence))
-                .collect::<Result<Vec<_>, _>>()?;
-            let (ev_eqs, ev_invs) =
-                collect_eval_and_extra(&[], eval_conds, &param_bind, Poly::from_expr_z)?;
-            for eq in ev_eqs {
-                eqs_z.push(eq.lift_vars(sa));
-            }
-            let invs_z: Vec<Poly<num_bigint::BigInt>> =
-                ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
-            if *point_domain == PointDomain::IntegerPoints {
-                for nl in clear_denominators_to_z(witness.remaining_nonlinear()) {
-                    eqs_z.push(nl.lift_vars(sa));
-                }
-                let eqs_nz: Vec<_> = eqs_z.into_iter().filter(|p| !p.is_zero()).collect();
-                let res = solve_affine_or_nonlinear_z(&eqs_nz, &invs_z, &order, vec![]);
-                return match res.verdict {
-                    Verdict::Established => Ok(true),
-                    Verdict::Refuted => Ok(false),
-                    Verdict::Undetermined(r) => Err(r),
-                };
-            }
-            let mut eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
-            for nl in witness.remaining_nonlinear() {
-                eqs_q.push(nl.lift_vars(sa));
-            }
-            let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();
             is_q_system_nonempty_on_point_domain(&eqs_q, &invs_q, &order, point_domain)
         }
         CoeffDomain::Fp(m) => {

@@ -1,8 +1,7 @@
 //! 状態移送の義務収集・段合成・fiber product 定義域分類・復元整形（G-140 G1・G3）。
 
 use crate::algebra::{
-    DEFAULT_MAX_FP_POINTS, ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, RingCoeff,
-    VarOrder, rabinowitsch_solve, solve_fp_enumeration,
+    ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::morphism::{StateMorphism, compose_state_order};
@@ -17,7 +16,7 @@ use crate::solver::common_format::{
 };
 use crate::solver::common_morph::compare_morphisms;
 use crate::solver::common_solve::{
-    ParamWitness, collect_eval_and_extra, decide_z_quotient_unit_safe,
+    ParamWitness, collect_eval_and_extra, decide_fp_quotient_exact, decide_z_quotient_unit_safe,
 };
 use crate::solver::common_solve_q::is_ideal_nonempty;
 use crate::solver::context::display_polys;
@@ -531,61 +530,30 @@ fn classify_domain_relation(
             covered
         }
         CoeffDomain::Fp(m) => {
-            let mut d0_fp: Vec<Poly<_>> = d0_laws
-                .iter()
-                .map(|e| Poly::from_expr_fp(e, &bind, m).map_err(map_algebra_silence))
-                .filter(|r| r.as_ref().map_or(true, |p| !p.is_zero()))
-                .collect::<Result<Vec<_>, _>>()?;
-            let extra_fp: Vec<Poly<_>> = extra_pb_laws
-                .iter()
-                .map(|e| Poly::from_expr_fp(e, &bind, m).map_err(map_algebra_silence))
-                .collect::<Result<Vec<_>, _>>()?;
-            if extra_fp.iter().all(Poly::is_zero) {
-                true
-            } else {
-                let (ev_eqs, ev_invs) =
-                    collect_eval_and_extra(&[], eval_conds, &param_bind, |e, b| {
-                        Poly::from_expr_fp(e, b, m)
-                    })?;
-                for eq in ev_eqs {
-                    if !eq.is_zero() {
-                        d0_fp.push(eq.lift_vars(state_count));
+            let mut covered = true;
+            for ex in extra_pb_laws {
+                let ob = PreservationObligation {
+                    state_vars: d0_sv.to_vec(),
+                    arg_vars: vec![],
+                    source_laws: d0_laws.to_vec(),
+                    target: ex.clone(),
+                };
+                match decide_fp_quotient_exact(&ob, m)? {
+                    Some(true) => {}
+                    Some(false) => {
+                        covered = false;
+                        break;
                     }
-                }
-                let ev_invs_lifted: Vec<Poly<_>> = ev_invs
-                    .into_iter()
-                    .map(|iv| iv.lift_vars(state_count))
-                    .collect();
-                match solve_fp_enumeration(
-                    &d0_fp,
-                    &ev_invs_lifted,
-                    order.len(),
-                    m,
-                    DEFAULT_MAX_FP_POINTS,
-                ) {
-                    Ok(d0_res) => {
-                        let mut covered = true;
-                        'pts: for pt in &d0_res.solutions {
-                            for ep in &extra_fp {
-                                if !ep.is_zero()
-                                    && !ep.eval_at(pt).map_err(map_algebra_silence)?.coeff_is_zero()
-                                {
-                                    covered = false;
-                                    break 'pts;
-                                }
-                            }
-                        }
-                        covered
-                    }
-                    Err(reason) => {
-                        if extra_fp.iter().all(|ep| ep.is_zero() || d0_fp.contains(ep)) {
-                            true
-                        } else {
-                            return Err(reason);
-                        }
+                    None => {
+                        return Err(SilenceReason::QuotientIdealOutOfScope {
+                            detail:
+                                "cannot classify nonlinear multi-generator Fp pullback domain relation"
+                                    .to_owned(),
+                        });
                     }
                 }
             }
+            covered
         }
         CoeffDomain::Q => unreachable!("handled above"),
     };

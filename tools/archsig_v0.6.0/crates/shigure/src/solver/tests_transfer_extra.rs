@@ -540,3 +540,145 @@ fn transfer_m06_fp_classification_and_q_remaining_nonlinear() {
         DomainRelation::FullIsomorphic
     );
 }
+
+#[test]
+fn transfer_r01_fp_non_radical_and_r02_z_closure_fractional_subst() {
+    let fp = CoeffDomain::Fp(num_bigint::BigUint::from(5u32));
+    let f0 = id_single_pres("F0", fp.clone(), vec![]);
+    let f1 = id_single_pres("F1", fp.clone(), vec![]);
+    let f2 = id_single_pres("F2", fp.clone(), vec![]);
+    let fp_cmp = |a: &Presentation, b: &Presentation| ComparisonPair {
+        before: a.clone(),
+        after: b.clone(),
+        state_comparisons: vec![StateComparison {
+            after_phase: "S".into(),
+            before_phase: "S".into(),
+            map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+            provenance: None,
+        }],
+        word_translation: WordTranslation { entries: vec![] },
+    };
+    let fp_non_rad = TransferSpec {
+        name: "r01_fp_x2_vs_x".into(),
+        steps: vec![
+            TransferStepSpec {
+                name: "s1".into(),
+                comparison: fp_cmp(&f0, &f1),
+                source_phase: "S".into(),
+                domain_laws: vec![StateLaw {
+                    name: "x2".into(),
+                    kind: LawKind::Semantic,
+                    polynomial: PolyExpr::pow(PolyExpr::state("x"), 2),
+                    provenance: None,
+                }],
+                target_phase: "S".into(),
+                lift_map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+                provenance: None,
+            },
+            TransferStepSpec {
+                name: "s2".into(),
+                comparison: fp_cmp(&f1, &f2),
+                source_phase: "S".into(),
+                domain_laws: vec![StateLaw {
+                    name: "x1".into(),
+                    kind: LawKind::Semantic,
+                    polynomial: PolyExpr::state("x"),
+                    provenance: None,
+                }],
+                target_phase: "S".into(),
+                lift_map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+                provenance: None,
+            },
+        ],
+        word_checks: vec![],
+        old_word_lifts: vec![],
+        change_spec: empty_cs(fp, vec![]),
+        eval_condition: None,
+        require_full_domain: false,
+        provenance: Provenance::new(vec![orig("r01tr")], vec![MathClause::G140G3]),
+    };
+    let out_fp_nr =
+        solve_transfer_task(&CheckedTransferTask::validate(fp_non_rad.clone()).unwrap());
+    assert_eq!(out_fp_nr.verdict, Verdict::Established);
+    assert_eq!(
+        out_fp_nr.transfer.unwrap().domain_relation,
+        DomainRelation::ProperSubdomain
+    );
+    let mut fp_req = fp_non_rad;
+    fp_req.require_full_domain = true;
+    assert_eq!(
+        solve_transfer_task(&CheckedTransferTask::validate(fp_req).unwrap()).verdict,
+        Verdict::Refuted
+    );
+
+    // R-02: Z + AlgebraicClosure with rational assignment a = 1/2
+    let z = CoeffDomain::Z;
+    let mut cmp_z_frac = pair_bc("Z0", "Z1", z.clone(), true);
+    cmp_z_frac.after.observations[0].components = vec![PolyExpr::state("b")];
+    cmp_z_frac.state_comparisons[0].map = BTreeMap::from([("x".into(), PolyExpr::state("b"))]);
+    cmp_z_frac.after.operations[0].updates = BTreeMap::from([
+        (
+            "b".into(),
+            PolyExpr::state("b") + clit(&z, 2) * PolyExpr::param("a") * PolyExpr::arg("u"),
+        ),
+        ("c".into(), PolyExpr::state("c")),
+    ]);
+    let spec_z_frac = TransferSpec {
+        name: "r02_z_frac".into(),
+        steps: vec![TransferStepSpec {
+            name: "s1".into(),
+            comparison: cmp_z_frac,
+            source_phase: "Idle".into(),
+            domain_laws: vec![StateLaw {
+                name: "x_plus_a".into(),
+                kind: LawKind::Semantic,
+                polynomial: PolyExpr::state("x") - PolyExpr::param("a"),
+                provenance: None,
+            }],
+            target_phase: "Idle".into(),
+            lift_map: BTreeMap::from([
+                ("b".into(), PolyExpr::state("x")),
+                ("c".into(), clit(&z, 0)),
+            ]),
+            provenance: None,
+        }],
+        word_checks: vec![WordCheckSpec {
+            name: "w_frac".into(),
+            args: vec!["v".into()],
+            steps: vec![WordStepExpr {
+                operation: "apply".into(),
+                arg_exprs: vec![PolyExpr::arg("v")],
+            }],
+            provenance: None,
+        }],
+        old_word_lifts: vec![],
+        change_spec: empty_cs(z, vec!["a"]),
+        eval_condition: Some(EvalCondition {
+            name: "a_inv".into(),
+            evaluations: vec![],
+            equations: vec![],
+            invertibles: vec![NamedPoly {
+                name: "a_nz".into(),
+                expr: PolyExpr::param("a"),
+                provenance: None,
+            }],
+            point_domain: PointDomain::AlgebraicClosure,
+            provenance: Provenance::new(vec![orig("r02ev")], vec![MathClause::G141D5]),
+        }),
+        require_full_domain: false,
+        provenance: Provenance::new(vec![orig("r02tr")], vec![MathClause::G140G1]),
+    };
+    let out_r02 = solve_transfer_task(&CheckedTransferTask::validate(spec_z_frac).unwrap());
+    assert_eq!(out_r02.verdict, Verdict::Established, "out={out_r02:?}");
+    let tr_r02 = out_r02.transfer.unwrap();
+    assert_eq!(
+        tr_r02
+            .restored_transfer
+            .unwrap()
+            .parameter_assignments
+            .get("a")
+            .map(String::as_str),
+        Some("1/2")
+    );
+    assert!(tr_r02.word_checks[0].domain_nonempty);
+}

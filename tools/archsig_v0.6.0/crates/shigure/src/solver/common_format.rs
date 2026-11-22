@@ -1,7 +1,8 @@
 //! Phase 2 復元済み表現・射のパラメータ代入、整形、および独立再評価検算ヘルパ。
 
 use crate::algebra::{
-    ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve,
+    AlgebraError, ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder,
+    rabinowitsch_solve,
 };
 use crate::ir::change::{ChangeSpec, EvalCondition, NamedPoly, PointDomain};
 use crate::ir::morphism::StateMorphism;
@@ -13,7 +14,7 @@ use crate::ir::provenance::SourceRef;
 use crate::ir::result::{ReevalCheck, SilenceReason};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use crate::solver::common_solve::{
-    ParamWitness, decide_z_quotient_unit_safe, decide_zero_param_fp_quotient,
+    ParamWitness, decide_fp_quotient_exact, decide_z_quotient_unit_safe,
 };
 use crate::solver::preservation::{
     PreservationObligation, compute_preservation_locus_q, is_stratum_covered_by_union,
@@ -301,9 +302,13 @@ pub(crate) fn fmt_poly_expr(
         CoeffDomain::Q => Ok(Poly::from_expr_q(expr, bind)
             .map_err(map_algebra_silence)?
             .display(order, MonomialOrder::Grevlex)),
-        CoeffDomain::Z => Ok(Poly::from_expr_z(expr, bind)
-            .map_err(map_algebra_silence)?
-            .display(order, MonomialOrder::Grevlex)),
+        CoeffDomain::Z => match Poly::from_expr_z(expr, bind) {
+            Ok(p) => Ok(p.display(order, MonomialOrder::Grevlex)),
+            Err(AlgebraError::DomainMismatch { .. }) => Ok(Poly::from_expr_q(expr, bind)
+                .map_err(map_algebra_silence)?
+                .display(order, MonomialOrder::Grevlex)),
+            Err(e) => Err(map_algebra_silence(e)),
+        },
         CoeffDomain::Fp(m) => Ok(Poly::from_expr_fp(expr, bind, m)
             .map_err(map_algebra_silence)?
             .display(order, MonomialOrder::Grevlex)),
@@ -384,10 +389,20 @@ pub(crate) fn reeval_obligations_and_constraints(
                             "restored {context_label} has nonzero Fp preservation residual"
                         )));
                     }
-                } else if !decide_zero_param_fp_quotient(ob, modulus)? {
-                    return Ok(fail_reeval(format!(
-                        "restored {context_label} failed Fp quotient state-law check"
-                    )));
+                } else {
+                    match decide_fp_quotient_exact(ob, modulus)? {
+                        Some(true) => {}
+                        Some(false) => {
+                            return Ok(fail_reeval(format!(
+                                "restored {context_label} failed Fp quotient state-law check"
+                            )));
+                        }
+                        None => {
+                            return Err(SilenceReason::QuotientIdealOutOfScope {
+                                detail: "nonlinear multi-generator Fp quotient re-evaluation is out of scope".to_owned(),
+                            });
+                        }
+                    }
                 }
             }
             for ex in extra_eqs {

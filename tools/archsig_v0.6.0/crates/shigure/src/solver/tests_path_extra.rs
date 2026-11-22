@@ -834,3 +834,114 @@ fn path_review_regressions_m01_m02_m04() {
             if condition == "before_presentation_must_be_parameter_free"
     ));
 }
+
+#[test]
+fn path_r02_r03_coupled_start_law_projection_and_z_fractional_subst() {
+    let z = CoeffDomain::Z;
+    let base_p = Presentation {
+        name: "ZR03Old".into(),
+        coeff_domain: z.clone(),
+        sorts: vec![SortDecl {
+            name: "D".into(),
+            rank: 1,
+            coeff_domain: z.clone(),
+            provenance: Some(orig("d")),
+        }],
+        phases: vec![PhaseDecl {
+            name: "Idle".into(),
+            coords: vec![CoordDecl::symbolic("x", "D")],
+            state_laws: vec![],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "noop".into(),
+            source_phase: "Idle".into(),
+            target_phase: "Idle".into(),
+            args: vec![],
+            domain_laws: vec![],
+            updates: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+            provenance: None,
+        }],
+        observations: vec![],
+        provenance: Provenance::new(vec![orig("zr03")], vec![MathClause::G140P5Dot2]),
+    };
+    let mut after_p = base_p.clone();
+    after_p.name = "ZR03New".into();
+
+    let spec = PathSpec {
+        name: "r02_r03_coupled_z_frac".into(),
+        kind: PathKind::EnlargedProtocolExecutionPath,
+        direction: MorphismDirection::TimeOrder,
+        query_mode: PathQueryMode::Find,
+        length: Some(1),
+        vertices: BTreeMap::new(),
+        rules: vec![],
+        start: None,
+        end: None,
+        protocol: Some(ProtocolExecutionSpec {
+            comparison: ComparisonPair {
+                before: base_p,
+                after: after_p,
+                state_comparisons: vec![StateComparison {
+                    after_phase: "Idle".into(),
+                    before_phase: "Idle".into(),
+                    map: BTreeMap::from([("x".into(), PolyExpr::state("x"))]),
+                    provenance: None,
+                }],
+                word_translation: WordTranslation {
+                    entries: vec![TranslatedWord {
+                        after_operation: "noop".into(),
+                        steps: vec![],
+                        provenance: None,
+                    }],
+                },
+            },
+            start_phase: "Idle".into(),
+            start_laws: vec![
+                StateLaw {
+                    name: "x1".into(),
+                    kind: LawKind::Representation,
+                    polynomial: PolyExpr::state("x") - clit(&z, 1),
+                    provenance: None,
+                },
+                StateLaw {
+                    name: "coupled_frac".into(),
+                    kind: LawKind::Representation,
+                    polynomial: clit(&z, 2) * PolyExpr::param("a") * PolyExpr::state("x")
+                        - clit(&z, 1),
+                    provenance: None,
+                },
+            ],
+            end_phase: "Idle".into(),
+            end_laws: vec![],
+            allowed_ops: vec!["noop".into()],
+        }),
+        change_spec: ChangeSpec {
+            name: "H".into(),
+            coeff_domain: z,
+            parameters: vec![ParamDecl {
+                name: "a".into(),
+                coeff_domain: CoeffDomain::Z,
+                provenance: None,
+            }],
+            fixed: vec![],
+            editable: vec![],
+            provenance: Provenance::new(vec![orig("h")], vec![MathClause::G140P5Dot2]),
+        },
+        eval_condition: None,
+        provenance: Provenance::new(vec![orig("r02r03")], vec![MathClause::G140P5Dot2]),
+    };
+    let out = solve_path_task(&CheckedPathTask::validate(spec).unwrap());
+    assert_eq!(out.verdict, Verdict::Established, "out={out:?}");
+    let vp = &out.path.unwrap().valid_paths[0];
+    assert!(
+        vp.free_parameters.is_empty(),
+        "free={:?}",
+        vp.free_parameters
+    );
+    assert_eq!(
+        vp.parameter_assignments.get("a").map(String::as_str),
+        Some("1/2")
+    );
+    assert!(vp.reeval.matched);
+}

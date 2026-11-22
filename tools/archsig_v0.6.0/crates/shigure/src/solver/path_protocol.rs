@@ -508,11 +508,39 @@ fn evaluate_execution_sequence(
         .map(|p| poly_q_to_expr(p, free_vars))
         .collect();
     let mut step_extra_eqs = extra_nl.clone();
-    for il in &init_laws {
-        let (mut svs, mut avs, mut pvs) = (BTreeSet::new(), BTreeSet::new(), BTreeSet::new());
-        il.collect_vars(&mut svs, &mut avs, &mut pvs);
-        if svs.is_empty() && avs.is_empty() {
-            step_extra_eqs.push(il.clone());
+    let mut projected_ok = false;
+    if !free_vars.is_empty()
+        && !init_laws.is_empty()
+        && (matches!(domain, CoeffDomain::Q)
+            || (matches!(domain, CoeffDomain::Z) && *point_domain != PointDomain::IntegerPoints))
+    {
+        let (elim_order, elim_bind) = ExprBindings::from_slices(&start_sv, &[], free_vars.vars())
+            .map_err(map_algebra_silence)?;
+        let mut init_q: Vec<Poly<Rat>> = init_laws
+            .iter()
+            .map(|l| Poly::from_expr_q(l, &elim_bind).map_err(map_algebra_silence))
+            .collect::<Result<Vec<_>, _>>()?;
+        for nl in witness.remaining_nonlinear() {
+            init_q.push(nl.lift_vars(start_sv.len()));
+        }
+        if let Ok(gb) = GroebnerBasis::compute(&init_q, elim_order, MonomialOrder::Lex) {
+            projected_ok = true;
+            for p in gb.basis_polys() {
+                if let Some(param_poly) = p.drop_prefix_vars(start_sv.len())
+                    && !param_poly.is_zero()
+                {
+                    step_extra_eqs.push(poly_q_to_expr(&param_poly, free_vars));
+                }
+            }
+        }
+    }
+    if !projected_ok {
+        for il in &init_laws {
+            let (mut svs, mut avs, mut pvs) = (BTreeSet::new(), BTreeSet::new(), BTreeSet::new());
+            il.collect_vars(&mut svs, &mut avs, &mut pvs);
+            if svs.is_empty() && avs.is_empty() {
+                step_extra_eqs.push(il.clone());
+            }
         }
     }
     let mut seq_witness: Option<ParamWitness> = None;

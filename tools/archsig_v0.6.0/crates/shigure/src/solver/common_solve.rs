@@ -228,6 +228,14 @@ pub(crate) fn solve_obligations_and_evals(
         for item in &cond.evaluations {
             let err = match coeff_domain {
                 CoeffDomain::Q => Poly::from_expr_q(&item.expr, &param_bind).err(),
+                CoeffDomain::Z
+                    if !matches!(
+                        point_domain,
+                        PointDomain::IntegerPoints | PointDomain::UniversalRing
+                    ) =>
+                {
+                    Poly::from_expr_q(&item.expr, &param_bind).err()
+                }
                 CoeffDomain::Z => Poly::from_expr_z(&item.expr, &param_bind).err(),
                 CoeffDomain::Fp(m) => Poly::from_expr_fp(&item.expr, &param_bind, m).err(),
             };
@@ -310,11 +318,22 @@ fn solve_fp_system(
     for ob in obligations {
         if !ob.source_laws.is_empty() {
             if param_vars.is_empty() {
-                match decide_zero_param_fp_quotient(ob, modulus) {
-                    Ok(true) => continue,
-                    Ok(false) => {
+                match decide_fp_quotient_exact(ob, modulus) {
+                    Ok(Some(true)) => continue,
+                    Ok(Some(false)) => {
                         eqs_fp.push(Poly::one(0, fp_zero.clone()));
                         continue;
+                    }
+                    Ok(None) => {
+                        let reason = SilenceReason::QuotientIdealOutOfScope {
+                            detail: "nonlinear multi-generator quotient state-law membership over F_p is out of scope".to_owned(),
+                        };
+                        checks.push(ApplicabilityCheck::failed(
+                            "fp_quotient_out_of_scope",
+                            MathClause::G141D4,
+                            reason.code(),
+                        ));
+                        return undetermined_system(checks, vec![], reason);
                     }
                     Err(reason) => return undetermined_system(checks, vec![], reason),
                 }
@@ -403,33 +422,140 @@ fn solve_fp_system(
     }
 }
 
-/// 0 パラメータの `Fp` 商環所属義務 `target in (source_laws)` を有限点列挙で厳密検査する。
-pub(crate) fn decide_zero_param_fp_quotient(
+/// 0 パラメータの `Fp` 商環所属義務 `target in (source_laws)` を
+/// 線形ピボット消去と Grevlex 多変数除算で厳密判定する（単元非判定の多生成元非線形系は `Ok(None)` で沈黙）。
+pub(crate) fn decide_fp_quotient_exact(
     ob: &PreservationObligation,
     modulus: &BigUint,
-) -> Result<bool, SilenceReason> {
-    let sa = ob.state_vars.len() + ob.arg_vars.len();
+) -> Result<Option<bool>, SilenceReason> {
+    let n = ob.state_vars.len() + ob.arg_vars.len();
     let (_, bindings) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
         .map_err(map_algebra_silence)?;
-    let tgt = Poly::from_expr_fp(&ob.target, &bindings, modulus).map_err(map_algebra_silence)?;
-    if tgt.is_zero() {
-        return Ok(true);
-    }
-    let mut src_polys = Vec::with_capacity(ob.source_laws.len());
+    let mut cur_target =
+        Poly::from_expr_fp(&ob.target, &bindings, modulus).map_err(map_algebra_silence)?;
+    let mut cur_laws: Vec<Poly<FpElem>> = Vec::with_capacity(ob.source_laws.len());
     for l in &ob.source_laws {
         let p = Poly::from_expr_fp(l, &bindings, modulus).map_err(map_algebra_silence)?;
         if !p.is_zero() {
-            src_polys.push(p);
+            cur_laws.push(p);
         }
     }
-    let res = solve_fp_enumeration(&src_polys, &[], sa, modulus, DEFAULT_MAX_FP_POINTS)?;
-    for pt in &res.solutions {
-        let val = tgt.eval_at(pt).map_err(map_algebra_silence)?;
-        if !val.coeff_is_zero() {
-            return Ok(false);
+    if cur_laws
+        .iter()
+        .any(|l| l.is_constant() && l.constant_value().inv().is_some())
+    {
+        return Ok(Some(true));
+    }
+
+    let mut changed = true;
+    while changed && !cur_laws.is_empty() {
+        changed = false;
+        let found = cur_laws.iter().enumerate().find_map(|(idx, law)| {
+            if !law.is_affine() {
+                return None;
+            }
+            (0..n).find_map(|v| {
+                let c = affine_linear_coeff(law, v)?;
+                let inv = c.inv()?;
+                let neg_inv = inv.neg_elem();
+                let mut rhs = Poly::zero(n, law.zero_coeff().clone());
+                for (m, coeff) in law.terms() {
+                    if m.exps()[v] == 0 {
+                        rhs.add_term(m.clone(), neg_inv.mul_ref(coeff));
+                    }
+                }
+                Some((idx, v, rhs))
+            })
+        });
+        if let Some((idx, v, rhs)) = found {
+            changed = true;
+            cur_laws.remove(idx);
+            cur_target = substitute_single_var(&cur_target, v, &rhs)?;
+            let mut next = Vec::with_capacity(cur_laws.len());
+            for l in cur_laws {
+                let sl = substitute_single_var(&l, v, &rhs)?;
+                if !sl.is_zero() {
+                    next.push(sl);
+                }
+            }
+            cur_laws = next;
         }
     }
-    Ok(true)
+
+    if cur_laws
+        .iter()
+        .any(|l| l.is_constant() && l.constant_value().inv().is_some())
+    {
+        return Ok(Some(true));
+    }
+    if cur_laws.is_empty() {
+        return Ok(Some(cur_target.is_zero()));
+    }
+    if cur_target.is_zero() {
+        return Ok(Some(true));
+    }
+
+    let Some(rem) = multivariate_div_rem_fp(&cur_target, &cur_laws, 4_096)? else {
+        return Ok(None);
+    };
+    if rem.is_zero() {
+        return Ok(Some(true));
+    }
+    if cur_laws.len() == 1
+        && cur_laws[0]
+            .leading_term(MonomialOrder::Grevlex)
+            .is_some_and(|(_, lc)| lc.inv().is_some())
+    {
+        return Ok(Some(false));
+    }
+    Ok(None)
+}
+
+fn multivariate_div_rem_fp(
+    target: &Poly<FpElem>,
+    divisors: &[Poly<FpElem>],
+    max_steps: usize,
+) -> Result<Option<Poly<FpElem>>, SilenceReason> {
+    let mut p = target.clone();
+    let mut rem = Poly::zero(target.num_vars(), target.zero_coeff().clone());
+    let mut steps = 0usize;
+    while !p.is_zero() {
+        steps += 1;
+        if steps > max_steps {
+            return Ok(None);
+        }
+        let Some((lm_p, lc_p)) = p.leading_term(MonomialOrder::Grevlex) else {
+            break;
+        };
+        let lm_p = lm_p.clone();
+        let lc_p = lc_p.clone();
+        let mut reduced = false;
+        for g in divisors {
+            let Some((lm_g, lc_g)) = g.leading_term(MonomialOrder::Grevlex) else {
+                continue;
+            };
+            if let Some(quot_m) = lm_p.div_exact(lm_g) {
+                let Some(inv) = lc_g.inv() else {
+                    return Ok(None);
+                };
+                let Some(factor) = lc_p.mul_checked(&inv) else {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "fp_ring_match".to_owned(),
+                        detail: "coefficient modulus mismatch during Fp division".to_owned(),
+                    });
+                };
+                p.checked_sub_mul_term_assign(g, &quot_m, &factor)
+                    .map_err(map_algebra_silence)?;
+                reduced = true;
+                break;
+            }
+        }
+        if !reduced {
+            p.remove_term(&lm_p);
+            rem.add_term(lm_p, lc_p);
+        }
+    }
+    Ok(Some(rem))
 }
 
 /// 0 パラメータの `Z` 商環所属義務 `target in (source_laws)` が単位ピボット代入・整数 cofactor で厳密判定できるか検査する。
@@ -463,7 +589,7 @@ pub(crate) fn decide_z_quotient_unit_safe(
                 return None;
             }
             (0..n).find_map(|v| {
-                let c = affine_linear_coeff_z(law, v)?;
+                let c = affine_linear_coeff(law, v)?;
                 if !c.abs().is_one() {
                     return None;
                 }
@@ -479,10 +605,10 @@ pub(crate) fn decide_z_quotient_unit_safe(
         if let Some((idx, v, rhs)) = found {
             changed = true;
             cur_laws.remove(idx);
-            cur_target = substitute_single_var_z(&cur_target, v, &rhs)?;
+            cur_target = substitute_single_var(&cur_target, v, &rhs)?;
             let mut next = Vec::with_capacity(cur_laws.len());
             for l in cur_laws {
-                let sl = substitute_single_var_z(&l, v, &rhs)?;
+                let sl = substitute_single_var(&l, v, &rhs)?;
                 if !sl.is_zero() {
                     next.push(sl);
                 }
@@ -515,24 +641,24 @@ pub(crate) fn decide_z_quotient_unit_safe(
     Ok(Some(false))
 }
 
-fn affine_linear_coeff_z(poly: &Poly<BigInt>, var: usize) -> Option<BigInt> {
+fn affine_linear_coeff<C: RingCoeff>(poly: &Poly<C>, var: usize) -> Option<C> {
     poly.terms()
         .iter()
         .find(|(m, _)| m.total_degree() == 1 && m.exps()[var] == 1)
         .map(|(_, c)| c.clone())
 }
 
-fn substitute_single_var_z(
-    poly: &Poly<BigInt>,
+fn substitute_single_var<C: RingCoeff>(
+    poly: &Poly<C>,
     var: usize,
-    rhs: &Poly<BigInt>,
-) -> Result<Poly<BigInt>, SilenceReason> {
-    let mut acc = Poly::zero(poly.num_vars(), BigInt::zero());
+    rhs: &Poly<C>,
+) -> Result<Poly<C>, SilenceReason> {
+    let mut acc = Poly::zero(poly.num_vars(), poly.zero_coeff().clone());
     for (mono, coeff) in poly.terms() {
         let mut exps = mono.exps().to_vec();
         let power = exps[var];
         exps[var] = 0;
-        let mut term = Poly::zero(poly.num_vars(), BigInt::zero());
+        let mut term = Poly::zero(poly.num_vars(), poly.zero_coeff().clone());
         term.add_term(Monomial::from_exps(exps), coeff.clone());
         for _ in 0..power {
             term = term.checked_mul(rhs).map_err(map_algebra_silence)?;
