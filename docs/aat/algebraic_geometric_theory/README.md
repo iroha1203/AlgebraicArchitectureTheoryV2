@@ -1,41 +1,38 @@
 # 代数幾何的アーキテクチャ論
 
-Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対象と射を定め、
-その実現・変更・修復の全体を調べる数学である。共通の語彙で何を区別するかを指定し、
-実際の状態・操作・関係・量を持つモデルを構成する。その後に、モデルの族の幾何、
-局所からの組立て、障害、観測に必要な情報を扱う。
+Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の対象と射を定め、その実現・変更・修復の全体を調べる純粋数学の理論である。まず共通の語彙によって何を区別するかを指定し、実際の状態・操作・関係・量をもつモデルを構成する。そのうえで、モデルの族が定める幾何、局所データからの組み立て、修復や変形の障害、そして判断と再構成に必要な情報を体系的に扱う。
 
-中心となる問いは次である。
+本書の中心となる問いは次の二つである。
 
 > Law・操作・観測を指定すると、どのような実現と変更が可能になるか。
-> その全体の幾何から、修復の存在と自由度、判断と構成に必要な情報をどう導けるか。
+> その全体の幾何から、修復の存在と自由度、および判断と構成に必要な情報をどのように導けるか。
 
-- [序論](introduction.md)：三つの到達点と、そこへ至る論証の順序。
-- [共通記号](notation.md)：対象、写像、係数、文脈の記号。
+## 目次と入口
+
+- [序論](introduction.md)：本書が目指す三つの到達点と、そこへ至る論証の順序。
+- [共通記号](notation.md)：対象、写像、係数、文脈に用いる記号の一覧と使い分け。
 - [第I部 Lawと意味の基礎](#第i部-lawと意味の基礎)：第1–3章。
 - [第II部 実現の族とLawの幾何](#第ii部-実現の族とlawの幾何)：第4–6章。
 - [第III部 意味を保つ変更の全体](#第iii部-意味を保つ変更の全体)：第7–9章。
 - [第IV部 局所変更・修復・障害](#第iv部-局所変更修復障害)：第10–13章。
 - [第V部 輸送・比較・診断](#第v部-輸送比較診断)：第14–16章。
 - [第VI部 観測・必要情報・再構成](#第vi部-観測必要情報再構成)：第17–19章。
-- [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる導出規則。
-- [付録B 係数・affine構成・descent](appendix_b_coefficients_and_descent.md)：第II部で使う係数変更と局所からの組立て。
-- [付録C 関係・解消・逆極限](appendix_c_homological_constructions.md)：余接複体、Tor、複体の塔の比較。
-- [付録D 有限root schemeとstalk](appendix_d_finite_roots_and_stalks.md)：実現族上の診断層と幾何点のLaw値複体。
+- [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる正の論理の導出規則と健全性。
+- [付録B 係数・アフィン構成・descent](appendix_b_coefficients_and_descent.md)：第II部で用いる係数変更、アフィン構成、および局所からの組み立て。
+- [付録C 関係・解消・逆極限](appendix_c_homological_constructions.md)：余接複体、正則列と滑らかさ、Tor、複体の塔の比較。
+- [付録D 有限根スキームと茎](appendix_d_finite_roots_and_stalks.md)：実現族上の診断層と幾何点における Law 値複体。
 - [付録E 変更経路と費用の問題](appendix_e_change_paths_and_costs.md)：許容経路の費用と最適経路の再構成。
 
 ## 全体の構成
 
-全6部19章の論証は、原始宣言から全変更を作り、その修復・観測・再構成へ進む。
-[序論](introduction.md)から三つの主結果と四つの接続を辿れる。
-第I部の証明は第1–3章と付録Aの中で閉じる。
-第II部はこの結果を使い、第4–6章と付録Bで実現の表示と係数descentを構成する。
-第III部は第7–9章で全変更と条件付き変更族を構成し、商・代表選択・持ち上げを分類する。
-第IV部は第10–13章で二方向のdescent、アリアドネの全修復、変形と交差の障害、
-有限fragmentからの大域復元を構成する。
-第V部は第14–16章でreadingと係数の輸送、生成比較と正規化、診断の族と指定障害の比較を構成する。
-第VI部は第17–19章で状態からの観測、判定と数値補正の必要情報、
-局所読取りからの条件付き全変更・全修復の回復、有限決定と算法を構成する。
+全6部19章の論証は、原始的な宣言から意味を保つ変更の全体を構成し、さらにその修復・観測・再構成へと進む。全体の見通しとなる三つの主結果と四つの接続は、[序論](introduction.md)からたどることができる。
+
+- **第I部（第1–3章、付録A）**：証明はこの部と付録Aの中で閉じる。Atom 語彙、署名、Law、モデルと射、および宣言の文脈による制限と局所モデルを定める。
+- **第II部（第4–6章、付録B）**：第I部の結果を用い、係数環上の実現の表示、量と Law が定める相対幾何、モデルの族のモジュライ、および係数の descent を構成する。
+- **第III部（第7–9章）**：意味を保つ変更の全体と条件付きの変更族を構成し、さらに商、対称性、代表の選択、持ち上げの分類を行う。
+- **第IV部（第10–13章、付録C）**：文脈と係数の 2 方向の descent、固定部分と許可範囲に相対的な修復の全体（アリアドネ）、変形と交差の障害、および有限断片からの大域的な復元を構成する。
+- **第V部（第14–16章、付録D）**：reading と係数に沿う輸送、生成される比較と正規化、および診断の族と指定された障害の比較を構成する。
+- **第VI部（第17–19章、付録E）**：状態からの観測、判定と数値補正に必要な情報、局所読み取りからの条件付き変更の全体および修復の全体の回復、ならびに有限決定と実行可能な復元算法を構成する。
 
 ### 第I部 Lawと意味の基礎
 
@@ -58,13 +55,13 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 ### 第IV部 局所変更・修復・障害
 
 10. [実現と変更のdescent](part_4/chapter_10_descent_of_realizations_and_changes.md)
-11. [固定部分と変更範囲に相対的な全修復――アリアドネ](part_4/chapter_11_ariadne_relative_repairs.md)
+11. [固定部分と変更範囲に相対的な修復の全体――アリアドネ](part_4/chapter_11_ariadne_relative_repairs.md)
 12. [変形・特異性・修復の障害](part_4/chapter_12_deformations_and_obstructions.md)
 13. [有限部分から大域へ](part_4/chapter_13_fragments_and_globalization.md)
 
 ### 第V部 輸送・比較・診断
 
-14. [readingと係数に沿う輸送](part_5/chapter_14_transport_along_readings_and_coefficients.md)
+14. [reading と係数に沿う輸送](part_5/chapter_14_transport_along_readings_and_coefficients.md)
 15. [生成比較と正規化](part_5/chapter_15_generated_comparisons_and_normalization.md)
 16. [診断の族と障害の比較](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md)
 
