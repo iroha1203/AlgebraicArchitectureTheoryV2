@@ -773,3 +773,5 @@ Hodge表示は選んだ実・複素内積の下でこの指定類を読む一つ
 **問題16.19.**
 有限root schemeによる診断を、chart間の比較と生成元を忘れる商stack上へ降下させよ。
 原始readoutの不変性を満たす族について構成し、満たさない場合は必要な表示データを特定すること。
+
+[次章：観測の十分性と選択](../part_6/chapter_17_observation_sufficiency_and_selection.md)

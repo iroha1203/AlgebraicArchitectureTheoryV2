@@ -17,21 +17,25 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 - [第III部 意味を保つ変更の全体](#第iii部-意味を保つ変更の全体)：第7–9章。
 - [第IV部 局所変更・修復・障害](#第iv部-局所変更修復障害)：第10–13章。
 - [第V部 輸送・比較・診断](#第v部-輸送比較診断)：第14–16章。
+- [第VI部 観測・必要情報・再構成](#第vi部-観測必要情報再構成)：第17–19章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる導出規則。
 - [付録B 係数・affine構成・descent](appendix_b_coefficients_and_descent.md)：第II部で使う係数変更と局所からの組立て。
 - [付録C 関係・解消・逆極限](appendix_c_homological_constructions.md)：余接複体、Tor、複体の塔の比較。
 - [付録D 有限root schemeとstalk](appendix_d_finite_roots_and_stalks.md)：実現族上の診断層と幾何点のLaw値複体。
+- [付録E 変更経路と費用の問題](appendix_e_change_paths_and_costs.md)：許容経路の費用と最適経路の再構成。
 
 ## 全体の構成
 
-以下の章名は全体の構成を示す。後続の結果の予告は、
-[序論](introduction.md)で各結果の問いと入力を述べるために用いる。
+全6部19章の論証は、原始宣言から全変更を作り、その修復・観測・再構成へ進む。
+[序論](introduction.md)から三つの主結果と四つの接続を辿れる。
 第I部の証明は第1–3章と付録Aの中で閉じる。
 第II部はこの結果を使い、第4–6章と付録Bで実現の表示と係数descentを構成する。
 第III部は第7–9章で全変更と条件付き変更族を構成し、商・代表選択・持ち上げを分類する。
 第IV部は第10–13章で二方向のdescent、アリアドネの全修復、変形と交差の障害、
 有限fragmentからの大域復元を構成する。
 第V部は第14–16章でreadingと係数の輸送、生成比較と正規化、診断の族と指定障害の比較を構成する。
+第VI部は第17–19章で状態からの観測、判定と数値補正の必要情報、
+局所読取りからの条件付き全変更・全修復の回復、有限決定と算法を構成する。
 
 ### 第I部 Lawと意味の基礎
 
@@ -66,9 +70,9 @@ Algebraic Architecture Theory（AAT）は、AtomとLawによって意味の対�
 
 ### 第VI部 観測・必要情報・再構成
 
-17. 観測の十分性と選択
-18. 修復と観測
-19. 局所再構成と有限決定
+17. [観測の十分性と選択](part_6/chapter_17_observation_sufficiency_and_selection.md)
+18. [修復と観測](part_6/chapter_18_repair_and_observation.md)
+19. [局所再構成と有限決定](part_6/chapter_19_local_reconstruction_and_finite_determination.md)
 
 ## 数学本文の自立性（hard rule）
 
