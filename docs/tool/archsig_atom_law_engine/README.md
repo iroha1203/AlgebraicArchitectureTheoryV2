@@ -50,7 +50,7 @@ D を L から生成される従属 artifact としない。複数 L は同じ D
 
 ### 2.1 型と事実
 
-[AAT 第I部](../../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
+[旧本文 AAT 第I部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
 定義1.1の五成分を採用する。
 
 ```text
@@ -344,10 +344,10 @@ SAGA の意味状態との対応は、それらに加えて別途構成する対
 | 根拠 | この設計で具体化する内容 |
 | --- | --- |
 | [製品コンセプト](../archsig_v0_6_0_concept.md) §§2–4・7 | 定義・法・観測、導出の連鎖、候補と射の区別、DSL、言語独立、数学との対応 |
-| [AAT 第I部](../../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md) 定義1.1、§§4–7、定義10.2・10.4A、定理10.5、原則10.6 | Atom、configuration、equation residual、実際の configuration map、生成 core |
-| [AAT 第II部](../../aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md) §§3–7 | Context、pullback overlap、coverage requirements、generated topology と adequacy |
-| [AAT 第III部](../../aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md) | Law algebra、ideal、lawful locus の接続条件 |
-| [AAT 第IV部](../../aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md) §§2–5 | 係数、Čech complex、具体的障害類 |
-| [AAT 第X部](../../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md) §§3–8・10 | 原始生成元からの両側構成、SAGA 比較、actual repair、有限行列による確認 |
+| [旧本文 AAT 第I部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md) 定義1.1、§§4–7、定義10.2・10.4A、定理10.5、原則10.6 | Atom、configuration、equation residual、実際の configuration map、生成 core |
+| [旧本文 AAT 第II部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md) §§3–7 | Context、pullback overlap、coverage requirements、generated topology と adequacy |
+| [旧本文 AAT 第III部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md) | Law algebra、ideal、lawful locus の接続条件 |
+| [旧本文 AAT 第IV部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md) §§2–5 | 係数、Čech complex、具体的障害類 |
+| [旧本文 AAT 第X部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md) §§3–8・10 | 原始生成元からの両側構成、SAGA 比較、actual repair、有限行列による確認 |
 
 研究上の具体的な拡張接続点と、採否の判断は [設計判断](decisions.md) にまとめる。

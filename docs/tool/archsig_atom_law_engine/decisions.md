@@ -29,9 +29,9 @@
 最初の実装では、有限な閉包が停止する場合、または項として記号表示できる場合を扱う。
 全操作語の等値や全対象の性質を、探索深さだけで決定しない。
 
-[AAT 第VIII部](../../aat/algebraic_geometric_theory/part_8_measurement_theory.md)
+[旧本文 AAT 第VIII部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_8_measurement_theory.md)
 定義4.1・定理4.2は、使用する係数・kernel・image・quotient 等に明示的な算法を要求する。
-[第X部](../../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+[旧本文 第X部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 §10は、一般 SAGA 定理の有限実現として原始表示から比較条件を確認する。
 この区別に従い、有限計算の結果は選択した実行可能な読みについて返す。
 数学本文の一般的な対象・量化を、有限実装の都合に合わせて変更しない。
@@ -46,7 +46,7 @@ Law の評価タプルが同じであることと、被覆・係数を含む診�
 
 ### 2.3 SAGA では二つの側を独立に構成する
 
-[AAT 第X部](../../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+[旧本文 AAT 第X部](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 §§3–8に従い、意味側は生成元・関係・作用から、方程式側は equation から構成する。
 同じ計算結果を二つの名前で包んで比較同型としない。
 原始対応から誘導する係数写像について、kernel/image、制限との可換性を確認する。

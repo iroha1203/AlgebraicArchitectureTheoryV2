@@ -6,19 +6,19 @@ AAT の次目標「Atom 基礎論の補強」に向けた最初の考察とし�
 Codex・有識者・マルチエージェント探索との議論往復と敵対レビューを
 反映済み(経緯はコミットログと PR の記録)。
 
-第I部本文([part_1_atoms_objects_laws.md](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
+第I部本文([旧本文 part_1_atoms_objects_laws.md](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md))は
 保護ファイルであり、本ノートは本文を改訂しない。本文への反映は
 3条件ゲート(人間の明示指示・相互レビュー・人間 merge)を通る将来作業とする。
 
 参照:
 
-- [第I部 Atom・対象・法則](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
+- [旧本文 第I部 Atom・対象・法則](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
   (定義1.1、semantic Atom、公理A0–A8、命題A9、ExtractionDoctrine)
-- [第III部 Law Algebra / Obstruction Ideal](../aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md)
+- [旧本文 第III部 Law Algebra / Obstruction Ideal](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md)
   (law の equation system 化、nu/epsilon 二族)
-- [第IV部 Obstruction / Cohomology](../aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
+- [旧本文 第IV部 Obstruction / Cohomology](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
   (H^0 visible defect / H^1 gluing obstruction / H^2 coherence obstruction の区分)
-- [第X部 Semantic Repair / Descent / SAGA](../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+- [旧本文 第X部 Semantic Repair / Descent / SAGA](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 - [one-cent ドリフト実例](../../tools/archsig/examples/practical-rust-service/README.md)
 - `Formal/AG/Atom/`(AtomCarrier / AtomAxiomSystem / Atomizes)、
   `Formal/AG/Atom/AATCore.lean`(CoreReading / AATCorePackage)、

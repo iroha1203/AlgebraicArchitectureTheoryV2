@@ -34,7 +34,7 @@ Issue を正本とし、本ノートには持ち込まない。
 - [G-107 report](../../research/reports/G-107-aat-uniform-invariance-characterization.md)(完了判定)
 - [G-105 report](../../research/reports/G-105-aat-structural-cover-invariance.md)(反証)
 - [G-106 カード](../../research/goals/G-106-aat-transport-coherence.md)
-- [第X部 Semantic Repair / Descent / SAGA](../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+- [旧本文 第X部 Semantic Repair / Descent / SAGA](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
 
 **上流考察ノート**(定義・分割の初出。正本ではない):
 

@@ -154,7 +154,7 @@ SQLAlchemyでは、定義やLawを保持しながら変更箇所を再観測し�
 全体へ組み立てるという構成を与える。AATは、圏論・層理論にまたがるこの数学を、
 Atomから構成するアーキテクチャの共通構造として採用している。
 [AAT数学本文](../aat/algebraic_geometric_theory/README.md)、
-[Architecture Geometry・Site・Sheaf](../aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)
+[旧本文 Architecture Geometry・Site・Sheaf](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)
 
 今回直接使われた計算には、公開情報への射影、有限候補の局所化、整合する局所案の列挙、
 大域候補への前像、操作や対応の保存がある。

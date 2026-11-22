@@ -1,7 +1,7 @@
 # アーキテクチャの表示的意味論としてのAAT — 再読ノート
 
 本ノートは考察ノートである。新しい公理・定義・定理は導入しない。
-現行AAT数学本文(第I部〜第X部)を「アーキテクチャの表示的意味論」という一つの視座で
+旧AAT数学本文(第I部〜第X部)を「アーキテクチャの表示的意味論」という一つの視座で
 再読し、既存の構成要素がその意味論の部品として実現されていることを固定する。
 動機は、実務の設計議論において可換図式による整理が議論を収束させたという観察である。
 可換であるべき箇所と可換でない箇所の分離が、そのまま設計上の合意点と判断点の分離になった。
@@ -10,18 +10,18 @@
 
 参照:
 
-- [第I部 Atom・対象・法則](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
+- [旧本文 第I部 Atom・対象・法則](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)
   (定義1.1、§5、§7、例7.4、定義8.1)
-- [第II部 Architecture Geometry・Site・Sheaf](../aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)
+- [旧本文 第II部 Architecture Geometry・Site・Sheaf](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_2_architecture_geometry_sites_sheaves.md)
   (定義8.1、定義10.1)
-- [第III部 Law Algebra・Obstruction Ideal・Lawful Locus](../aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md)
-- [第IV部 Obstruction / Cohomology](../aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
-- [第V部 Derived Law Geometry / Repair](../aat/algebraic_geometric_theory/part_5_derived_law_geometry_repair.md)
-- [第VI部 Singularity・Monodromy・Stack](../aat/algebraic_geometric_theory/part_6_singularity_monodromy_stack.md)
-- [第IX部 Evolution Geometry](../aat/algebraic_geometric_theory/part_9_evolution_geometry.md)
-- [第VII部 Representation・Periods・Analysis](../aat/algebraic_geometric_theory/part_7_representation_periods_analysis.md)
+- [旧本文 第III部 Law Algebra・Obstruction Ideal・Lawful Locus](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_3_law_algebra_obstruction_ideal_lawful_locus.md)
+- [旧本文 第IV部 Obstruction / Cohomology](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
+- [旧本文 第V部 Derived Law Geometry / Repair](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_5_derived_law_geometry_repair.md)
+- [旧本文 第VI部 Singularity・Monodromy・Stack](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_6_singularity_monodromy_stack.md)
+- [旧本文 第IX部 Evolution Geometry](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_9_evolution_geometry.md)
+- [旧本文 第VII部 Representation・Periods・Analysis](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_7_representation_periods_analysis.md)
   (定義2.1、原則2.2、§4、定理6.1、例6.2)
-- [第X部 Semantic Repair / Descent / SAGA](../aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
+- [旧本文 第X部 Semantic Repair / Descent / SAGA](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
   (§3、定理8.2、系8.3、原則8.4)
 - [Conormal first-order descent 設計ノート](aat_descent_theorem_value_and_route.md)
 
@@ -37,7 +37,7 @@
 > この枠組みに含まれる。
 
 この命題は新定理ではなく読みである。以下では、この読みを支える対応が
-現行本文のどの構成要素で実現済みかを部品単位で示し、そのうえで古典版との差分を
+参照版のどの構成要素で実現済みかを部品単位で示し、そのうえで古典版との差分を
 三つの転回として言語化する。
 
 ---

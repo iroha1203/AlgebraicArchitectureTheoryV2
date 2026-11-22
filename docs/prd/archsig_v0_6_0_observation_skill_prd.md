@@ -66,7 +66,7 @@ AST や機械的抽出器で生成した関係を、そのまま意味観測の�
 ふるまいから読んだ関係を変更後も保つ要求に採用する際も、明示された要求との対応を示すか、
 人間の判断を求める。Atom 定義の意味と Law の要求を説明し、両者と実装の観測を独立に照合する。
 
-[AAT の意味観測](../aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)と
+[旧本文 AAT の意味観測](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_1_atoms_objects_laws.md)と
 [Rising Sea 第1章 §§1.8–1.10](../../outreach/paper/rising-sea/ja/04-relative-architecture.md)に従い、
 ここでのふるまいは、操作の作用と使用文脈を持つ意味関係として読む。
 [製品コンセプト §3](../tool/archsig_v0_6_0_concept.md#3-実コードとの接続archmapとlawpolicyによる抽象化)の範囲で、
