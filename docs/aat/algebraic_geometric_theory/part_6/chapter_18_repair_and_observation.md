@@ -36,7 +36,7 @@ b_0=-\delta_0,\quad B_{\mathrm{in}}=-C_{\mathrm{in}}
 
 ```math
 D_Sh=b_0+B_{\mathrm{in}}v,\qquad
-\pi_S:Y\longrightarrow Y/\operatorname{im}D_S
+\pi_S:Y\longrightarrow Y/\mathop{\mathrm{im}}\nolimits D_S
 \qquad\text{(18.1)}
 ```
 
@@ -124,7 +124,7 @@ $`A_S=\pi_SB_{\mathrm{in}}`$ と置く。
 
 ```math
 o_S(v_*+n)=A_Sn,\qquad
-P_{\mathrm{in}}/\ker A_S\xrightarrow{\sim}\operatorname{im}A_S,\quad
+P_{\mathrm{in}}/\ker A_S\xrightarrow{\sim}\mathop{\mathrm{im}}\nolimits A_S,\quad
 [n]\longmapsto A_Sn
 \qquad\text{(18.3)}
 ```
@@ -133,10 +133,10 @@ P_{\mathrm{in}}/\ker A_S\xrightarrow{\sim}\operatorname{im}A_S,\quad
 $`\psi D_S=0`$、$`\psi(r(v))\ne0`$ を満たすことと同値である。
 
 **証明.**
-$`\pi_Sr(v)=0`$ は $`r(v)\in\operatorname{im}D_S`$ と同値であり、これが可解性である。
+$`\pi_Sr(v)=0`$ は $`r(v)\in\mathop{\mathrm{im}}\nolimits D_S`$ と同値であり、これが可解性である。
 $`o_S(v_*)=0`$ を使うと平行移動の式を得る。
 商から像への写像は同じ核を持つため単射で、像の定義から全射である。
-不能なら、$`\operatorname{im}D_S`$ を消す商で非零元 $`[r(v)]`$ を得る。
+不能なら、$`\mathop{\mathrm{im}}\nolimits D_S`$ を消す商で非零元 $`[r(v)]`$ を得る。
 この元を基底に含め、その値を1、他の基底の値を0とする線形汎関数を作り、$`\pi_S`$ と合成する。
 逆に可解なら $`\psi(r(v))=\psi D_Sh=0`$ となり矛盾する。□
 
@@ -155,8 +155,8 @@ $`J\subseteq J_0`$ に対し $`O_Jv=(\lambda_j(v))_{j\in J}`$ と書く。
 有効性は
 
 ```math
-\operatorname{Valid}(v,h)\iff D_Sh=r(v),\qquad
-\operatorname{Valid}(v,\bot)\iff r(v)\notin\operatorname{im}D_S
+\mathop{\mathrm{Valid}}\nolimits(v,h)\iff D_Sh=r(v),\qquad
+\mathop{\mathrm{Valid}}\nolimits(v,\bot)\iff r(v)\notin\mathop{\mathrm{im}}\nolimits D_S
 \qquad\text{(18.4)}
 ```
 
@@ -206,20 +206,20 @@ $`J`$ が有限なら、任意の線形写像 $`C:P_{\mathrm{in}}\to W`$ につ�
 N\cap\ker O_J\subseteq\ker C
 \iff
 \{\phi C|_N:\phi\in W^*\}
- \subseteq\operatorname{span}\{\lambda_j|_N:j\in J\}.
+ \subseteq\mathop{\mathrm{span}}\nolimits\{\lambda_j|_N:j\in J\}.
 \qquad\text{(18.6)}
 ```
 
 有限次元座標では、これは
-$`\operatorname{row}(C)\subseteq\operatorname{row}(L)+\operatorname{span}\{\lambda_j\}`$ という行空間条件になる。
+$`\mathop{\mathrm{row}}\nolimits(C)\subseteq\mathop{\mathrm{row}}\nolimits(L)+\mathop{\mathrm{span}}\nolimits\{\lambda_j\}`$ という行空間条件になる。
 $`C=\pi_SB_{\mathrm{in}}`$ と $`C=B_{\mathrm{in}}`$ を代入すると二出力の条件を得る。
 
 **証明.**
-$`\ker(O_J|_N)`$ 上で消える汎関数は $`\operatorname{im}(O_J|_N)`$ 上へ因子化する。
+$`\ker(O_J|_N)`$ 上で消える汎関数は $`\mathop{\mathrm{im}}\nolimits(O_J|_N)`$ 上へ因子化する。
 この像から有限次元 $`k^J`$ へ汎関数を延長すると、座標汎関数の線形結合になる。
 逆にそのような線形結合は共通kernel上で消える。
 $`C(n)\ne0`$ はある $`\phi\in W^*`$ で検出できるため、全 $`\phi`$ の消滅と $`C(n)=0`$ が同値となる。
-有限次元では $`(\ker L)^\perp=\operatorname{row}(L)`$ なので行空間表示を得る。□
+有限次元では $`(\ker L)^\perp=\mathop{\mathrm{row}}\nolimits(L)`$ なので行空間表示を得る。□
 
 無限集合 $`J`$ に対する核条件自体は定理18.4の形で成立する。
 式(18.6)で有限線形結合のspanを用いた証明は、有限な観測集合に対して使う。

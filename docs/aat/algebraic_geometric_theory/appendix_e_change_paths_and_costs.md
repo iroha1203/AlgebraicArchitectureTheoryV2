@@ -2,7 +2,7 @@
 
 [第8章](part_3/chapter_8_constrained_changes_and_completions.md#84-許された一段変更と経路)の
 許された一段変更とその接続同型から、有限長の経路を作る。
-一段の費用を、比較同型で不変な関数 $`c:\operatorname{Ob}\mathcal E\to[0,\infty]`$ で指定する。
+一段の費用を、比較同型で不変な関数 $`c:\mathop{\mathrm{Ob}}\nolimits\mathcal E\to[0,\infty]`$ で指定する。
 経路 $`\gamma=(e_1,\ldots,e_n)`$ の費用は $`c(\gamma)=\sum_i c(e_i)`$、
 長さ0の経路の費用は0とする。
 固定した端点、固定図式、途中と終端の評価条件を持つ全経路から、

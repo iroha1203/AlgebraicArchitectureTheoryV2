@@ -70,9 +70,9 @@ G_{k h}(x,z)\iff
 特に対象を同型まで回復し、任意の固定端点 $`A,B`$ で
 
 ```math
-\operatorname{Hom}_{\mathcal A}(A,B)
+\mathop{\mathrm{Hom}}\nolimits_{\mathcal A}(A,B)
 \xrightarrow{\sim}
-\operatorname{Hom}_{\mathcal L}(NA,NB)
+\mathop{\mathrm{Hom}}\nolimits_{\mathcal L}(NA,NB)
 \qquad\text{(19.2)}
 ```
 
@@ -155,8 +155,8 @@ a_{yx}a_{zx}=0\quad(y\ne z)
 全域lensではgetとputのgraphを戻し、GetPut・PutGet・PutPutを原始表で評価する。
 第2章の独立なlensの対象と射がこの全データであるため、全Homも同じ式で回復する。
 基準view $`v_0`$ があれば
-$`x\mapsto(\operatorname{get}x,\operatorname{put}(x,v_0))`$ と
-$`(v,c)\mapsto\operatorname{put}(c,v)`$ が互いに逆で、
+$`x\mapsto(\mathop{\mathrm{get}}\nolimits x,\mathop{\mathrm{put}}\nolimits(x,v_0))`$ と
+$`(v,c)\mapsto\mathop{\mathrm{put}}\nolimits(c,v)`$ が互いに逆で、
 状態はviewと基準fiberの積になる。三法則への代入が往復を証明する。
 この基準fiber全体の読取りは、有限個の状態標本を読むこととは異なる。
 
@@ -213,8 +213,8 @@ $`R_Hc_{\mathrm{loc}}`$ を作る。規則の各適用は、入力tuple、domain
 許容条件 $`Q_*`$ はその独立な原始条件を同じ表で評価しているため、
 
 ```math
-c\in\operatorname{Adm}_H
- \iff N_Hc\in\operatorname{Adm}_{H^{\mathrm{loc}}},
+c\in\mathop{\mathrm{Adm}}\nolimits_H
+ \iff N_Hc\in\mathop{\mathrm{Adm}}\nolimits_{H^{\mathrm{loc}}},
 \qquad
 \widetilde v^{\mathrm{loc}}(N_Hc,N\alpha)
  =\widetilde v(c,\alpha).
@@ -322,7 +322,7 @@ $`L_e(x)=M_ex+t_e+h_e`$ として戻す。
 第18章の $`(u,h,z,w)`$ は同じ二面の式(18.8)を満たし、
 局所公開値と内部kernel $`h`$ を残す第11章の全解になる。
 辺を内部頂点で分割した表示では、新頂点の全平行移動も残すので、
-$`\operatorname{Pair}(A)`$ の因子を含む全修復を回復する。
+$`\mathop{\mathrm{Pair}}\nolimits(A)`$ の因子を含む全修復を回復する。
 一つの代表または同型類だけを残す読取りとは、全Homの量化が異なる。
 
 ## 19.4 有限決定と実行可能な復元
@@ -358,8 +358,8 @@ $`j:\pi_0(G[F])\to\pi_0(G)`$ について
 **証明.**
 変更は $`h(v,x)=(u(v),p_v(x))`$ と書ける。
 辺との可換式は $`p_v=p_w`$ なので、全変更は
-$`\operatorname{Perm}(K)^{\pi_0(G)}`$ と一対一に対応する。
-局所整合表も同様に $`\operatorname{Perm}(K)^{\pi_0(G[F])}`$ となり、
+$`\mathop{\mathrm{Perm}}\nolimits(K)^{\pi_0(G)}`$ と一対一に対応する。
+局所整合表も同様に $`\mathop{\mathrm{Perm}}\nolimits(K)^{\pi_0(G[F])}`$ となり、
 読取りは $`j`$ による前合成である。
 未観測の大域成分があれば、その成分だけ恒等置換と二元の交換を使い分け、
 同じ読取りを持つ二変更を得る。全成分を読めば各成分の置換は一意に決まる。

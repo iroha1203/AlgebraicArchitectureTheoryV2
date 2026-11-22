@@ -38,7 +38,7 @@ $`q_\ell(A)=r_A(v_\ell(A))`$ とする。
 どの量と輸送・readoutを使うかは、原始式と評価入力をqueryに含めて指定する。
 
 自然な $`s_j`$ を持たない場合には、語 $`w_j`$ の定義域内の許された印
-$`M_j(A)\subseteq\operatorname{dom}(w_{j,A})`$ を入力に含める。
+$`M_j(A)\subseteq\mathop{\mathrm{dom}}\nolimits(w_{j,A})`$ を入力に含める。
 同型は $`M_j(A)`$ を $`M_j(A')`$ へ全単射に運ぶものとし、
 印付き族のqueryを $`(A,x)\mapsto o_A(w_{j,A}(x))`$ とする。
 印を忘れる写像の像、すなわち $`M_j(A)\ne\varnothing`$ の実現からなる部分族上では、
@@ -73,8 +73,8 @@ $`r_{A'}v_\ell(A')=r_{A'}T_\phi v_\ell(A)=r_Av_\ell(A)`$ を使う。
 恒等と二段の比較は原始データの比較と一致するので自然性の整合も得る。□
 
 有限自由加群の線形自己準同型 $`M`$ のtraceは、基底変更 $`M\mapsto gMg^{-1}`$ に不変である。
-実際、可換環上で $`\operatorname{tr}(AB)=\sum_{i,j}A_{ij}B_{ji}=\operatorname{tr}(BA)`$ なので、
-$`\operatorname{tr}(gMg^{-1})=\operatorname{tr}(M)`$ となる。
+実際、可換環上で $`\mathop{\mathrm{tr}}\nolimits(AB)=\sum_{i,j}A_{ij}B_{ji}=\mathop{\mathrm{tr}}\nolimits(BA)`$ なので、
+$`\mathop{\mathrm{tr}}\nolimits(gMg^{-1})=\mathop{\mathrm{tr}}\nolimits(M)`$ となる。
 一方、行列の一成分は基底変更で一般に変わる。
 成分を読むqueryは基底を印として持つchart上に置き、その変換則も保持する。
 traceのような不変readoutと、座標を指定したreadoutをこのように区別する。
@@ -82,8 +82,8 @@ traceのような不変readoutと、座標を指定したreadoutをこのよう�
 **例17.3（台帳の状態と未知係数）.**
 [例8.7](../part_3/chapter_8_constrained_changes_and_completions.md#82-候補生成と条件付き変更族)の
 $`p(B,C)=B+C`$、
-$`\operatorname{apply}_u(B,C)=(B+\lambda u,C+(1-\lambda)u)`$、
-$`\operatorname{compact}_t(B,C)=(B+\mu t,C-\mu t)`$ を用いる。
+$`\mathop{\mathrm{apply}}\nolimits_u(B,C)=(B+\lambda u,C+(1-\lambda)u)`$、
+$`\mathop{\mathrm{compact}}\nolimits_t(B,C)=(B+\mu t,C-\mu t)`$ を用いる。
 印 $`(B,C)`$ と外部入力 $`u`$ でのapply後の公開queryは $`B+C+u`$ であり、
 $`\lambda,\mu`$ に依存しない。compact後の公開値も $`B+C`$ である。
 これに対し、基底と零状態を固定してapplyとcompactを入力1で評価し、
@@ -257,7 +257,7 @@ F_{R,A}:C^\bullet(K^R_A;\mathbb Q)
 全 $`A`$ で $`H^1(F_{R,A})`$ が同型となる候補を安全と定める。
 
 すべての分割対と部分集合 $`A`$ は有限個である。
-端点差行列から $`H^1=C^1/\operatorname{im}d^0`$ の基底と比較行列を有理数の消去で作り、
+端点差行列から $`H^1=C^1/\mathop{\mathrm{im}}\nolimits d^0`$ の基底と比較行列を有理数の消去で作り、
 その核・余核が零かを検査する。これにより安全集合、包含極大の安全元をすべて生成できる。
 恒等分割では式(17.4)が恒等なので安全集合は非空であり、有限性から極大元が存在する。
 
@@ -270,7 +270,7 @@ F_{R,A}:C^\bullet(K^R_A;\mathbb Q)
 **定理17.9（自然な極大安全元と固定元）.**
 構成17.8の入力 $`M`$ と同型な全入力のgroupoid上で、
 全同型に自然な極大安全元を一つずつ選べることは、
-$`M`$ の極大安全元のうち全 $`\operatorname{Aut}(M)`$ に固定されるものが存在することと同値である。
+$`M`$ の極大安全元のうち全 $`\mathop{\mathrm{Aut}}\nolimits(M)`$ に固定されるものが存在することと同値である。
 その存在と元の入力での選択は、構成17.8の有限表から判定・生成できる。
 
 **証明.**
