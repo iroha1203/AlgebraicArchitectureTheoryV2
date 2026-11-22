@@ -33,7 +33,7 @@ $`X'\otimes R\cong X`$ を持ち、その同型を保つ全比較射を持つgro
 \mathop{\mathrm{Ext}}\nolimits^1_A(L_{A/k},M)
 =\frac{\mathop{\mathrm{Hom}}\nolimits_A(I/I^2,M)}
  {\mathop{\mathrm{im}}\nolimits(\mathop{\mathrm{Hom}}\nolimits_A(\Omega_{P/k}\otimes_PA,M))}
-\tag{12.1}
+\qquad\text{(12.1)}
 ```
 
 を構成できる。$`A`$ は $`x`$ を通じて $`M`$ に作用する。
@@ -50,7 +50,7 @@ $`\widetilde x(gf)=x(g)r(f)`$ なので $`A`$-線形である。
 
 ```math
 r'(f)=r(f)+\sum_i\frac{\partial f}{\partial x_i}(x)u_i.
-\tag{12.2}
+\qquad\text{(12.2)}
 ```
 
 この差は $`\Omega_{P/k}\otimes A\to M`$ を経由するので式(12.1)の類は不変である。
@@ -287,7 +287,7 @@ $`d_{\mathrm{Tot}}=\check d+(-1)^p d`$ とする。
 ```math
 d h_i=-\delta_i,\qquad h_j-h_i=d b_{ij},\qquad
 b_{ij}+b_{jk}=b_{ik}
-\tag{12.3}
+\qquad\text{(12.3)}
 ```
 
 という一つの式 $`d_{\mathrm{Tot}}(h,b)=-\delta`$ になる。
@@ -358,7 +358,7 @@ $`A_1\otimes_B^{\mathbf L}A_2`$ を構成でき、
 H^0=B/(I_1+I_2),\qquad
 H^{-j}=\mathop{\mathrm{Tor}}\nolimits_j^B(A_1,A_2),\qquad
 \mathop{\mathrm{Tor}}\nolimits_1^B(A_1,A_2)\cong(I_1\cap I_2)/(I_1I_2).
-\tag{12.4}
+\qquad\text{(12.4)}
 ```
 
 全正次数Torが消えるとき、古典交差への比較はquasi-isomorphismになる。
@@ -410,7 +410,7 @@ Lawが恒等的に成立することと
 
 ```math
 J\subseteq\left(\prod_{i\in T}t_i:\ |T|=r+1\right)
-\tag{12.5}
+\qquad\text{(12.5)}
 ```
 
 は同値である。$`r=m`$ の右辺は零イデアルとする。

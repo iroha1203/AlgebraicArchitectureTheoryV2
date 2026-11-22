@@ -13,7 +13,7 @@ $`d(I^2)\subseteq I\Omega_{P/k}`$ なので
 
 ```math
 N_{A/k}=[I/I^2\xrightarrow d\Omega_{P/k}\otimes_PA]
-\tag{C.1}
+\qquad\text{(C.1)}
 ```
 
 を次数 $`-1,0`$ に作れる。

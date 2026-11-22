@@ -19,7 +19,7 @@ $`(\mathbb T_i)_{i\in I}`$ の和として与える。
 
 ```math
 \mathcal A_{\mathbb T}\longrightarrow\varprojlim_i\mathcal A_i
-\tag{13.1}
+\qquad\text{(13.1)}
 ```
 
 は圏同型である。指定した固定データと、全参照を覆う局所規則も保つ。
@@ -97,7 +97,7 @@ $`D\simeq R\!\lim D_n`$ があり、全 $`q`$ について
 0\longrightarrow\lim\nolimits^1 H^{q-1}(D_n)
  \longrightarrow H^q(D)
  \longrightarrow\lim H^q(D_n)\longrightarrow0
-\tag{13.2}
+\qquad\text{(13.2)}
 ```
 
 が成り立つ。特に各有限段で指定障害が消えても、左の追加項に非零の大域障害が残りうる。
@@ -111,7 +111,7 @@ $`\Phi(x)_n=x_n-r_{n,n+1}x_{n+1}`$ を作る。
 ```math
 (R\!\lim D_n)^q=P^q\oplus P^{q-1},\qquad
 d(x,y)=(dx,\Phi x-dy).
-\tag{13.3}
+\qquad\text{(13.3)}
 ```
 
 各次数の全射性から $`\Phi`$ は全射である。
@@ -142,7 +142,7 @@ $`A^0\to A^a`$ の意味射は全平行移動を保つため $`h_n(x)=x+c_n`$ �
 残る可換式は正確に
 
 ```math
-c_n-2c_{n+1}=a_n.\tag{13.4}
+c_n-2c_{n+1}=a_n.\qquad\text{(13.4)}
 ```
 
 逆にこの式の全解は、全操作と観測を保つ全意味射を与える。
@@ -181,7 +181,7 @@ $`G(U)=\mathbb Z[1/2]`$、$`G(V)=0`$、$`G(U\cap V)=\mathbb Z[1/6]`$ である�
 ```math
 [c^V-c^U]=[-1/3]\in
 \check H^1(\{U,V\},G)=\mathbb Z[1/6]/\mathbb Z[1/2]
-\tag{13.5}
+\qquad\text{(13.5)}
 ```
 
 となり、位数3の非零類である。
@@ -205,7 +205,7 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 ```math
 \mathop{\mathrm{coker}}\nolimits d\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
 [a]\longmapsto\left[\sum_{n\ge0}2^na_n\right].
-\tag{13.6}
+\qquad\text{(13.6)}
 ```
 
 和は2進位相で収束し、$`d(c)`$ の和は望遠鏡和から $`c_0`$ となる。

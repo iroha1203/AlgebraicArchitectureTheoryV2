@@ -109,7 +109,7 @@ $`x_a\in X_a(O\cap T_a)`$ で $`\theta_{ab}(x_b)=x_a`$ を満たす族として�
 
 ```math
 \theta^a_{ij}\eta^j_{ab}=\eta^i_{ab}\theta^b_{ij}
-\tag{10.1}
+\qquad\text{(10.1)}
 ```
 
 を課す。引戻しの標準比較はこの式に挿入する。

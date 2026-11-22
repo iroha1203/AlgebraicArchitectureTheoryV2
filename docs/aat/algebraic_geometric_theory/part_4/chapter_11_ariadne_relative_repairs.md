@@ -45,7 +45,7 @@ A_v=\ker\bigl(\mathop{\mathrm{Aut}}\nolimits_{qp}(X_v)\to
 
 ```math
 \iota_t(\rho_e a)\widetilde L_e=\widetilde L_e\iota_s(a)
-\tag{11.1}
+\qquad\text{(11.1)}
 ```
 
 が同型であることを仮定する。実際、強さで因子を作り、逆の元でも同じ操作をして
@@ -61,7 +61,7 @@ A_v=\ker\bigl(\mathop{\mathrm{Aut}}\nolimits_{qp}(X_v)\to
 
 ```math
 u_f\widetilde L_{\ell_f}=\iota_{t(f)}(\delta_f)\widetilde L_{r_f}
-\tag{11.2}
+\qquad\text{(11.2)}
 ```
 
 となる唯一の $`\delta_f\in A_{t(f)}`$ を得る。
@@ -74,7 +74,7 @@ cochain $`C^0,C^1,C^2,C^3`$ は、それぞれ頂点、辺の終点、面の終�
 T_{\varnothing}(h)=0,\quad T_{vw}(h)=\rho_wT_v(h)+T_w(h),\qquad
 (d^0b)_e=b_t-\rho_e b_s,\quad
 (d^1h)_f=T_{\ell_f}(h)-T_{r_f}(h)
-\tag{11.3}
+\qquad\text{(11.3)}
 ```
 
 で定める。面 $`f`$ を前経路 $`v`$、後経路 $`w`$ の中で正向きに使う一歩には
@@ -122,7 +122,7 @@ $`L'_e=b_tL_eb_s^{-1}`$ を満たすものとする。
 C_S^1=\{h\in C_{\mathrm{fix}}^1:h_e=0\ (e\in\mathsf E\setminus S)\},\quad
 C_S^0=\{b\in C_{\mathrm{fix}}^0:d^0b\in C_S^1\},\quad
 C_S^j=C_{\mathrm{fix}}^j\ (j=2,3).
-\tag{11.4}
+\qquad\text{(11.4)}
 ```
 
 **定理11.5（アリアドネ：実修復の分類）.**
@@ -135,7 +135,7 @@ C_S^j=C_{\mathrm{fix}}^j\ (j=2,3).
 \pi_0\mathscr R_S(K)\text{ は非空なら }H^1(C_S^\bullet)\text{ のtorsor},
 \qquad
 \mathop{\mathrm{Aut}}\nolimits(h)=H^0(C_S^\bullet)=H^0(C_{\mathrm{fix}}^\bullet).
-\tag{11.5}
+\qquad\text{(11.5)}
 ```
 
 **証明.**
@@ -234,7 +234,7 @@ $`P_X=P\cap X`$ とすると、同じ制限から
  \xrightarrow{r_U-r_V}C^\bullet(W,P_W)\to0,
 \qquad
 \mathscr R(K)\simeq\mathscr R(U)\times^h_{\mathscr R(W)}\mathscr R(V)
-\tag{11.6}
+\qquad\text{(11.6)}
 ```
 
 を構成できる。局所修復 $`h_U,h_V`$ があるとき
@@ -245,7 +245,7 @@ $`z=h_V|_W-h_U|_W`$ は1-cocycleである。
 ```math
 \omega=[z]=0\quad\text{in}\quad
 \Omega=H^1(W,P_W)/(\mathop{\mathrm{im}}\nolimits H^1(U,P_U)+\mathop{\mathrm{im}}\nolimits H^1(V,P_V))
-\tag{11.7}
+\qquad\text{(11.7)}
 ```
 
 と同値であり、$`\omega`$ は案によらない。
@@ -282,7 +282,7 @@ homotopy pullbackの対象の重なり同型 $`b_W`$ を0-cochainとして一方
 ```math
 \mathscr R_S(K)\ \underset{\mathrm{rec}_{\mathcal U,S}}{\overset{\mathrm{coord}_{\mathcal U,S}}{\rightleftarrows}}
 \mathrm{Glue}_S(\mathcal I_i)
-\tag{11.8}
+\qquad\text{(11.8)}
 ```
 
 を構成できる。候補名・値、実辺、全再同定、範囲包含を保ち、
@@ -308,7 +308,7 @@ R_i=\{z:q_iF_iz=q_ir_i\},\qquad \mathop{\mathrm{Ob}}\nolimits\mathcal I_i=R_i\ti
 \mathrm{rec}_i(z,k)=(s_i(r_i-F_iz)+k,z),
 \qquad
 \mathrm{coord}_i(x,z)=(z,x-s_i(r_i-F_iz))
-\tag{11.9}
+\qquad\text{(11.9)}
 ```
 
 と定める。$`R_i`$ は空でもよい。
@@ -319,7 +319,7 @@ R_i=\{z:q_iF_iz=q_ir_i\},\qquad \mathop{\mathrm{Ob}}\nolimits\mathcal I_i=R_i\ti
 ```math
 b:(z,k)\longmapsto(z+c_ib,k+\gamma_ib),\qquad
 \gamma_ib=a_ib-s_iD_ia_ib\in N_i
-\tag{11.10}
+\qquad\text{(11.10)}
 ```
 
 で作用させる。$`F_ic_i=-D_ia_i`$ から
@@ -549,7 +549,7 @@ $`\widetilde c=\widetilde L(L^{\mathrm{orig}})^{-1}`$ がcore再選択の持上�
 ```math
 \delta_f=c_f+t_{\ell_f}-t_{r_f},\qquad
 L_e^h(x)=M_ex+t_e+h_e
-\tag{11.11}
+\qquad\text{(11.11)}
 ```
 
 である。実経路の合成で式(11.3)を得て、指定3-cellの平行移動比較の等号が
