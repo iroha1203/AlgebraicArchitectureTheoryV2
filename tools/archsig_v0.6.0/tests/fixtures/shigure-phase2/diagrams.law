@@ -1,0 +1,300 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading DiagBase {
+  use vocabulary Phase2Vocab version "1" digest "sha256:3c4d12e5b45460e139353d29832053551ec840b1e905e3c876476d9db9b7bd69";
+
+  shigure presentation BaseA {
+    domain Q;
+    sort D;
+    phase P {
+      coord x: D;
+      coord bal: D observed Phase2Vocab.Account.balance;
+      law semantic id_keep: bal - 2 = 0;
+    }
+    op apply(u: D): P -> P { x = x + u; bal = bal; }
+    obs read on P = (x);
+  }
+
+  shigure presentation BranchB {
+    domain Q;
+    sort D;
+    phase P { coord x: D; }
+    op apply(u: D): P -> P { x = x + u; }
+    obs read on P = (x);
+  }
+
+  shigure presentation BranchC {
+    domain Q;
+    sort D;
+    phase P { coord x: D; }
+    op apply(u: D): P -> P { x = x + u; }
+    obs read on P = (x);
+  }
+
+  shigure comparison CmpBA {
+    before BaseA;
+    after BranchB;
+    state_map P -> P { x = x; bal = 2; }
+    translate apply -> [apply(u)];
+  }
+
+  shigure comparison CmpCA {
+    before BaseA;
+    after BranchC;
+    state_map P -> P { x = x; bal = 2; }
+    translate apply -> [apply(u)];
+  }
+}
+
+reading DiagSuite {
+  use DiagBase as Base;
+
+  shigure presentation JoinZ {
+    domain Q;
+    sort D;
+    phase P { coord x: D; }
+    op apply(u: D): P -> P { x = x + k * u; }
+    obs read on P = (x);
+  }
+
+  shigure presentation MidM {
+    domain Q;
+    sort D;
+    phase P { coord x: D; }
+    op apply(u: D): P -> P { x = x + u; }
+    obs read on P = (x);
+  }
+
+  shigure presentation WeightedA {
+    domain Q;
+    sort D;
+    phase S { coord b: D; coord c: D; }
+    op apply(u: D): S -> S { b = b + u; c = c; }
+    obs read on S = (b + c);
+  }
+
+  shigure presentation QuotBase {
+    domain Q;
+    sort D;
+    phase S {
+      coord x: D;
+      law representation unit_x: x - 1 = 0;
+    }
+    op step(): S -> S { x = x * x; }
+    obs read on S = (x);
+  }
+
+  shigure presentation PureParam {
+    domain Q;
+    sort D;
+    phase S {
+      coord x: D;
+      law representation qk: k * k + 1 = 0;
+    }
+    op nop(): S -> S { x = x; }
+    obs read on S = (x);
+  }
+
+  shigure change_spec HDiag {
+    domain Q;
+    param k: Q;
+    param c_shift: Q;
+    fixed semantic_law Base.BaseA.P.id_keep;
+    editable operation JoinZ.apply;
+  }
+
+  shigure change_spec HChain {
+    domain Q;
+    param k: Q;
+    param c_shift: Q;
+    editable operation JoinZ.apply;
+  }
+
+  shigure change_spec HObs {
+    domain Q;
+    fixed semantic_law Base.BaseA.P.id_keep;
+  }
+
+  shigure change_spec HQ {
+    domain Q;
+    param k: Q;
+  }
+
+  shigure eval_condition FixK {
+    point_domain algebraic_closure;
+    equation eq_k: k - 1 = 0;
+  }
+
+  shigure eval_condition BadK {
+    point_domain algebraic_closure;
+    equation eq_k: k - 2 = 0;
+  }
+
+  shigure eval_condition QPointsCond {
+    point_domain Q_points;
+    equation eq_nonlin: k * k + 1 = 0;
+  }
+
+  shigure eval_condition AlgClosureCond {
+    point_domain algebraic_closure;
+    equation eq_nonlin: k * k + 1 = 0;
+  }
+
+  shigure diagram ForkSquareStateMap {
+    direction state_map;
+    vertex fixed A: Base.BaseA;
+    vertex fixed B: Base.BranchB;
+    vertex fixed C: Base.BranchC;
+    vertex VZ: JoinZ;
+    edge fixed f: B -> A { comparison Base.CmpBA; }
+    edge fixed g: C -> A { comparison Base.CmpCA; }
+    edge u: VZ -> B {
+      state_map P -> P { x = k * x; }
+      translate apply -> [apply(u)];
+    }
+    edge v: VZ -> C {
+      state_map P -> P { x = x; }
+      translate apply -> [apply(u)];
+    }
+    relation sq: [u, f] = [v, g];
+    change_spec HDiag;
+  }
+
+  shigure diagram ForkSquareTimeOrder {
+    direction time_order;
+    vertex fixed A: Base.BaseA;
+    vertex fixed B: Base.BranchB;
+    vertex fixed C: Base.BranchC;
+    vertex VZ: JoinZ;
+    edge fixed f: A -> B { comparison Base.CmpBA; }
+    edge fixed g: A -> C { comparison Base.CmpCA; }
+    edge u: B -> VZ {
+      state_map P -> P { x = k * x; }
+      translate apply -> [apply(u)];
+    }
+    edge v: C -> VZ {
+      state_map P -> P { x = x; }
+      translate apply -> [apply(u)];
+    }
+    relation sq: [f, u] = [g, v];
+    change_spec HDiag;
+    edge_eval_condition u: FixK;
+  }
+
+  shigure diagram IncompatibleSquare {
+    direction state_map;
+    vertex fixed A: Base.BaseA;
+    vertex fixed B: Base.BranchB;
+    vertex fixed C: Base.BranchC;
+    vertex VZ: JoinZ;
+    edge fixed f: B -> A { comparison Base.CmpBA; }
+    edge fixed g: C -> A { comparison Base.CmpCA; }
+    edge u: VZ -> B {
+      state_map P -> P { x = x; }
+      translate apply -> [apply(u)];
+    }
+    edge v: VZ -> C {
+      state_map P -> P { x = k * x; }
+      translate apply -> [apply(u)];
+    }
+    relation sq: [u, f] = [v, g];
+    change_spec HDiag;
+    edge_eval_condition v: BadK;
+  }
+
+  shigure diagram ChainCompletion {
+    direction state_map;
+    vertex fixed EndA: Base.BranchC;
+    vertex Mid: MidM;
+    vertex StartZ: JoinZ;
+    edge right: Mid -> EndA {
+      state_map P -> P { x = x + c_shift; }
+      translate apply -> [apply(u)];
+    }
+    edge left: StartZ -> Mid {
+      state_map P -> P { x = k * x; }
+      translate apply -> [apply(u)];
+    }
+    edge direct: StartZ -> EndA {
+      state_map P -> P { x = x; }
+      translate apply -> [apply(u)];
+    }
+    relation chain: [left, right] = [direct];
+    change_spec HChain;
+  }
+
+  shigure diagram ObsOnlyFakeContrast {
+    direction state_map;
+    vertex fixed VA: WeightedA;
+    vertex fixed VB: WeightedA;
+    vertex fixed VZ: WeightedA;
+    edge fixed f: VB -> VA { identity; }
+    edge fixed u: VZ -> VB { identity; }
+    edge fixed v: VZ -> VA {
+      state_map S -> S { b = b + 1; c = c - 1; }
+      translate apply -> [apply(u)];
+    }
+    relation comm: [u, f] = [v];
+    change_spec HQ;
+  }
+
+  shigure diagram QuotientIdealSquare {
+    direction state_map;
+    vertex fixed VQ: QuotBase;
+    edge fixed e: VQ -> VQ { identity; }
+    relation self_comm: [e] = [e];
+    change_spec HQ;
+  }
+
+  shigure diagram ObservedCoordDiagram {
+    direction state_map;
+    vertex fixed A: Base.BaseA;
+    edge fixed e: A -> A { identity; }
+    relation id_rel: [e] = [e];
+    change_spec HObs;
+  }
+
+  shigure diagram NonlinearQPointsSilence {
+    direction state_map;
+    vertex VP: PureParam;
+    edge e: VP -> VP { identity; }
+    relation id_rel: [e] = [e];
+    change_spec HQ;
+    eval_condition QPointsCond;
+  }
+
+  shigure diagram NonlinearAlgClosureOk {
+    direction state_map;
+    vertex VP: PureParam;
+    edge e: VP -> VP { identity; }
+    relation id_rel: [e] = [e];
+    change_spec HQ;
+    eval_condition AlgClosureCond;
+  }
+
+  shigure presentation ZUnit {
+    domain Z;
+    sort D;
+    phase S { coord x: D; }
+    op nop(): S -> S { x = x; }
+    obs read on S = (x);
+  }
+
+  shigure change_spec HZ {
+    domain Z;
+    param k: Z;
+  }
+
+  shigure eval_condition UnivRingCond {
+    point_domain universal_ring;
+  }
+
+  shigure diagram UniversalRingSilence {
+    direction state_map;
+    vertex V: ZUnit;
+    edge e: V -> V { identity; }
+    relation id_rel: [e] = [e];
+    change_spec HZ;
+    eval_condition UnivRingCond;
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Phase2Vocab",
+      "version": "1",
+      "digest": "sha256:3c4d12e5b45460e139353d29832053551ec840b1e905e3c876476d9db9b7bd69"
+    }
+  ],
+  "sources": [
+    {
+      "id": "src_p2",
+      "uri": "file://phase2_model.rs",
+      "revision": "rev1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000002"
+    }
+  ],
+  "origins": [
+    {
+      "id": "o_static",
+      "mode": "observed",
+      "method": "ast-extractor",
+      "kind": "static_analysis",
+      "locations": [
+        {
+          "source": "src_p2",
+          "path": "src/phase2_model.rs",
+          "span": [1, 48]
+        }
+      ]
+    },
+    {
+      "id": "o_human",
+      "mode": "specification",
+      "method": "design-review",
+      "kind": "human_adopted",
+      "locations": [],
+      "note": "adopted phase2 model"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "snap1",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "acc1",
+          "type": "Phase2Vocab.Account",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_bal",
+          "subject": "acc1",
+          "field": "Phase2Vocab.Account.balance",
+          "value": ["2", "1"],
+          "origin": "o_static"
+        },
+        {
+          "id": "a_cnt",
+          "subject": "acc1",
+          "field": "Phase2Vocab.Account.count",
+          "value": "3",
+          "origin": "o_static"
+        },
+        {
+          "id": "a_tag",
+          "subject": "acc1",
+          "field": "Phase2Vocab.Account.tag",
+          "value": "primary",
+          "origin": "o_static"
+        }
+      ]
+    }
+  ]
+}

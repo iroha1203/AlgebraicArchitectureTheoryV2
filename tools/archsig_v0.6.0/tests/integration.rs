@@ -49,6 +49,7 @@ mod cli_reuse;
 mod cli_run;
 mod cli_shell_expansion;
 mod cli_shigure;
+mod cli_shigure_phase2;
 mod cli_signals;
 mod cli_summary;
 mod cli_validation_english;
