@@ -786,6 +786,9 @@ $`\Omega=A`$、局所差も $`b_2-b_1`$ である。
 加法の式(11.3)を実合成の作用へ置き換え、重なりの同型・三重整合と
 内部置換・値更新に沿う比較を同時に求める。
 可換な本章の結果は、第12章へ実作用と指定障害、第18章へ記号的方程式、
-第19章へ全範囲の実修復groupoidと復元写像を渡す。
+[第19章](../part_6/chapter_19_local_reconstruction_and_finite_determination.md#193-条件付き変更と全修復の相対再構成)へ
+全範囲の実修復groupoidと復元写像を渡す。
+[第18章](../part_6/chapter_18_repair_and_observation.md#181-実操作からの補正方程式)では、
+同じ原始実入力・固定部分・許可範囲から判定と数値補正の情報条件を導く。
 
 [前章](chapter_10_descent_of_realizations_and_changes.md) · [全体の構成](../README.md) · [次章](chapter_12_deformations_and_obstructions.md)

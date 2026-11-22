@@ -141,3 +141,32 @@ $`E`$ は第8章では評価対象、第9章では名前付き操作の集合で
 $`\mathscr R`$ はfiber類の適合部分空間である。16.5節の $`G`$ は実被覆のグラフ、
 $`P=L\times S`$ は実係数の原始生成元集合であり、各節で型を指定し直す。
 $`T`$ は16.1節ではreadingの値集合、16.3節では直接比較の $`H^1`$ 射である。
+
+
+## 観測・修復・再構成の記号
+
+第17–19章では、入力の実現族を $`\mathcal U`$、宣言文脈を $`U`$ と書き分ける。
+$`s`$ は既知情報の値、$`\partial=s,t`$ は変更の固定端点の指定であり、型と使用箇所で区別する。
+
+| 記号 | 意味 | 定義 |
+| --- | --- | --- |
+| $`\mathcal X_s\to\mathcal U,\ w_j,s_j,\ q:\mathcal U\to B`$ | 状態を印として持つ族、評価語とsection、実現族の観測 | [17.1](part_6/chapter_17_observation_sufficiency_and_selection.md#171-状態観測law-readoutから実現族の観測へ) |
+| $`\eta,s,U_s,U_{s,b}`$ | 既知情報、その値、入力制限、観測fiber | [17.2](part_6/chapter_17_observation_sufficiency_and_selection.md#172-既知情報観測fiberと出力十分性) |
+| $`p:\mathcal F\to\mathcal U,\ C_b,\mathrm{Valid}(u,c)`$ | 全変更元にわたる解族、共通候補の型、有効性の関係 | [17.2–17.3](part_6/chapter_17_observation_sufficiency_and_selection.md#173-共通候補と解の選択) |
+| $`a(\tau),E(\tau),V(\tau),T_\tau,\beta_{\tau,c}`$ | 入力射の実現、評価先と合格値の輸送、可変規則の記録輸送と端点比較 | [17.2 構成17.5](part_6/chapter_17_observation_sufficiency_and_selection.md#172-既知情報観測fiberと出力十分性) |
+| $`G_{(J)},R_T,R_V,F_{R,A}`$ | 観測点の安定化群、値とchartの分割、粗視化の診断比較 | [17.4–17.5](part_6/chapter_17_observation_sufficiency_and_selection.md#175-安全な解像度と選択の三つの問題) |
+| $`P_S,P_{\mathrm{in}},Y,D_S,B_{\mathrm{in}},b_0`$ | 補正空間、未知入力空間、defectの空間、同じ実修復から生成する補正式 | [18.1](part_6/chapter_18_repair_and_observation.md#181-実操作からの補正方程式) |
+| $`\pi_S,o_S,A_S`$ | 補正像で割る商写像、指定残存障害、入力方向の障害写像 | [18.2](part_6/chapter_18_repair_and_observation.md#182-残存障害と双対観測) |
+| $`L,F_s,N,O_J,\lambda_j,m_C`$ | 線形な既知情報、そのfiberとkernel、query評価、最適追加query数 | [18.3–18.4](part_6/chapter_18_repair_and_observation.md#183-既知情報を条件とする十分性) |
+| $`\Lambda_X,\mathcal L_{\mathbb T},N,\mathsf{Asm}`$ | 原始項目、整合局所表の圏、読取り関手と組立て関手 | [19.1–19.2](part_6/chapter_19_local_reconstruction_and_finite_determination.md#191-原始読取りと局所モデル) |
+| $`\mathcal L_{\mathbb T,\sigma}(R),N_\sigma,\mathsf{Asm}_\sigma`$ | 係数方式ごとの局所表、全対象・すべての射の読取りと組立て | [19.2](part_6/chapter_19_local_reconstruction_and_finite_determination.md#192-対象射の組立て) |
+| $`\mathcal F^{\mathrm{loc}},N_H,\mathsf{Asm}_H`$ | 局所全解族、許容記録の読取りと復元 | [19.3](part_6/chapter_19_local_reconstruction_and_finite_determination.md#193-条件付き変更と全修復の相対再構成) |
+| $`F,j:\pi_0(G[F])\to\pi_0(G)`$ | 有限頂点読取り、誘導部分グラフから全体への成分写像 | [19.4](part_6/chapter_19_local_reconstruction_and_finite_determination.md#194-有限決定と実行可能な復元) |
+| $`A,\mathfrak m_a,J,B,r`$ | 基点の局所環、極大ideal、消去後の残差ideal、次数上界、Artin試験次数 | [19.5](part_6/chapter_19_local_reconstruction_and_finite_determination.md#195-全有限片有限次数試験と大域的回復) |
+
+第18章の $`N=\ker L`$ と第19章の読取り関手 $`N`$ は別の記号である。
+第19章の組立て関手は $`\mathsf{Asm},\mathsf{Asm}_\sigma,\mathsf{Asm}_H`$ と書く。
+第18章の $`S`$ は候補辺の許可範囲、$`P_S`$ は補正空間であり、原始表示 $`\mathcal P`$ と異なる。
+第19章の $`J`$ はArtin試験では残差ideal、図式補完では小圏を表す。
+付録Eの $`c(\gamma),d(a,b)`$ は変更経路の費用とその下限であり、
+第11–18章のcochain微分 $`d^i`$、固定図式 $`d`$ とは区別する。

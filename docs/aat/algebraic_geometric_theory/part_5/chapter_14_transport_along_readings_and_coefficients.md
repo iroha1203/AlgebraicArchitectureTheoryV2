@@ -259,9 +259,9 @@ descentで作る対象の比較は局所同定を固定する一意性、本節�
 単一の可変sortへ向かう全域多重線形操作とする。入力0個の操作も許す。
 Lawは共通のtensor入力から単一の可変sortへ向かうtensor式の等号とし、
 そのスカラーは $`k`$ から取る。固定係数sortへの量、関係、部分操作domain、担体の階数条件は含めない。
-可換 $`k`$-代数 $`R`$ 上のこの圏を $`\operatorname{Alg}_{\mathbb T}(R)`$ と書く。
+可換 $`k`$-代数 $`R`$ 上のこの圏を $`\mathop{\mathrm{Alg}}\nolimits_{\mathbb T}(R)`$ と書く。
 $`k`$-代数射 $`b:R\to R'`$ について
-$`B_b:\operatorname{Alg}_{\mathbb T}(R)\to\operatorname{Alg}_{\mathbb T}(R')`$ は
+$`B_b:\mathop{\mathrm{Alg}}\nolimits_{\mathbb T}(R)\to\mathop{\mathrm{Alg}}\nolimits_{\mathbb T}(R')`$ は
 スカラー制限 $`U_b`$ の左随伴である。
 
 **証明.**
@@ -294,7 +294,7 @@ $`\bar h(x\otimes r')=r'h(x)`$ を作る。balancedな関係で定まり、
 三角恒等式は純tensorで直ちに成立する。□
 
 この出力条件は必要である。$`\mathbb R\to\mathbb C`$ とLaw
-$`\operatorname{swap}_{E,E}=1_{E\otimes E}`$ を取ると、$`E=\mathbb C`$ は複素数上でLawを満たすが、
+$`\mathop{\mathrm{swap}}\nolimits_{E,E}=1_{E\otimes E}`$ を取ると、$`E=\mathbb C`$ は複素数上でLawを満たすが、
 実数上では $`1\otimes i\ne i\otimes1`$ なので満たさない。
 また $`\mathbb Q`$ 値の量をスカラー制限だけで $`\mathbb Z`$ 値の量にはできない。
 定理14.2の一般のtensor輸送は成立するが、これだけではスカラー制限の随伴は得られない。
@@ -305,7 +305,7 @@ $`u:\mathbb T\to\mathbb T'`$ を取る。全可変sortを任意の加群に取�
 引戻し $`u_R^*`$ の左随伴 $`L_u^R`$ を生成元と関係から構成できる。
 
 **構成と証明.**
-$`A\in\operatorname{Alg}_{\mathbb T}(R)`$ に対し、目標sort $`t`$ の生成元を
+$`A\in\mathop{\mathrm{Alg}}\nolimits_{\mathbb T}(R)`$ に対し、目標sort $`t`$ の生成元を
 $`P_t(A)=\coprod_{s:u(s)=t}|A_s|`$ とし、その元を $`[s,a]`$ と記す。
 これらを葉、目標の原始操作を節とする有限な型付き木を作る。
 入力0個の操作も木とし、各sortで木を基底とする自由 $`R`$-加群を取る。
@@ -539,7 +539,7 @@ E=\prod_{v\in J}O_v,\quad V=\prod_{v\in J}V_v,\qquad
 \widetilde v(A,B,h,x)=\bigl(o_{B,v}(h_vx_v)\bigr)_{v\in J}
 ```
 
-とする。目標側は $`J_0=J\cap\operatorname{Ob}C_0`$ の積を取り、$`j:E\to E'`$ は射影とする。
+とする。目標側は $`J_0=J\cap\mathop{\mathrm{Ob}}\nolimits C_0`$ の積を取り、$`j:E\to E'`$ は射影とする。
 これらは設定14.9を満たし、非可逆なreadingに沿う解族関手を与える。
 
 **証明.**
