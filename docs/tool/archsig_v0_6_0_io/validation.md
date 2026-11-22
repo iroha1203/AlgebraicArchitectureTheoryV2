@@ -443,7 +443,8 @@ Pair.totalの一解だけを持つ再利用候補からRepair/objectを採用し
 
 ## 7. SHIGURE の適合条件
 
-SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction`）の実装は、
+SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
+`shigure_diagram`・`shigure_path`・`shigure_transfer`）の実装は、
 題材固有の特例分岐やハードコードではなく、一般の原始表示 IR と多項式／ideal 計算核から次を満たすことを検証する。
 
 | 検証項目 | 期待する結果・証拠 |
@@ -452,6 +453,9 @@ SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction
 | snapshot 方式の非線形保存族と可逆評価条件 | 非線形残差 $V(\mu\delta)$ に対し、$D(\mu)$ で $\delta=0$、$D(\delta)$ で $\mu=0$ を導出し、$D(\mu\delta)$ で `refuted` と検算一致済み（`verified = true`）の空性 witness $1 = \sum h_i f_i$ を返す |
 | 許容変換 $H$ の拡張と旧表示 Law 固定の対照 | $\mathrm{finish}_\rho$ と Busy 表示 Law 編集可の $V(\mu\delta(1-\rho)) \cap D(\mu\delta)$ から $\rho=1$ を導出して `finish_snap` と全状態 Busy を復元・再評価一致させ、旧 Busy 表示 Law 固定の対照条件では依然 `refuted`（空性 witness 検算一致）を返す |
 | 座標面支持による相互作用解析 | 閉条件の $\mu\delta$ で `min_interacting_variables = 2`・極小不成立部分族 `[["delta","mu"]]`、単変数 $t^3$ で `1`・`[["t"]]`、$\mu\delta(1-\rho)$ の $\rho=0$ 面で不成立・$\rho=1$ 面で解消を区別し、開条件 $D(\mu\delta)$ を伴う場合は `open_condition_in_interaction` で沈黙する |
-| 商環上の ideal 所属判定 | 商環 $R[y]/(ay)$ で $y=0$ の条件を ambient 多項式零へ強めず商環上の ideal 所属として扱う |
-| 係数域・点集合域の区別と沈黙規律 | $p^2+1=0$ を `algebraic_closure` では `established`、`Q_points` / `Z_points` では `nonlinear_point_existence_out_of_scope` で `undetermined`（exit 2 / `partial`）とする。ArchMap の欠測座標は零補完せず `unobserved_dependency` で沈黙する |
-| 入力保護・由来分離 | 結論注入（`residual_ideal` 等）、`editable semantic_law`、非素数 `Fp(4)`、`observed` 座標の `Origin.kind` 欠落は入力／変換検査で拒否（exit 65）し、通常問いと SHIGURE 問いの混在や未知タスクは `usage`（exit 64）で拒否する |
+| 商環上の ideal 所属判定 | 商環 $R[y]/(ay)$ で $y=0$ の条件を ambient 多項式零へ強めず商環上の ideal 所属として扱う（図式上の商環辺保存でも同様） |
+| 係数域・点集合域の区別と沈黙規律 | $p^2+1=0$ を `algebraic_closure` では `established`、`Q_points` / `Z_points` では `nonlinear_point_existence_out_of_scope`、`universal_ring` 対象や非適合構成では `applicability_condition_not_met`、`length`/`max_length` 未指定無界探索では `unbounded_search_out_of_scope` で `undetermined`（exit 2 / `partial`）とする。ArchMap の欠測座標は零補完せず `unobserved_dependency` で沈黙する |
+| 固定図式の全補完（四角形・鎖・対照例） | `state_map` / `time_order` 両向きの四角形・鎖補完で全頂点・全辺（$h$/$\tau$）を復元し `reevaluation.matched = true` を返す。両立不能四角形では検算済み空性 witness 付き `refuted`、観測一致のみの偽装可換では `commutativity_residuals` 非空で `refuted` を返す |
+| 一段変更経路・細分化と台帳 4 順序 | 台帳 $V(\mu\delta(1-\rho))$ の $(0,0,0) \to (1,1,1)$ で合法 4 順序を復元・再評価一致させ、誤順 2 例を 2 段目残差 1 で拒否する。係数を状態に含む Idle 切替では全許可語保存検証付き 4 実行経路（`enlarged_protocol_execution_path`）を導出し、`fixed_protocol_change_path` と区別する。`n=0` 恒等一致/不一致、経路連結（`composite_is_one_step` 識別含む）、自由パラメータ細分化 fiber の成立と不成立、恒等一段規則の 2 点間 `refuted` を得る |
+| 合法状態移送・共通操作語・合成・Busy 対照 | 意味保存 $h_{01}$ 下での $h_{01} m_{01} = \iota_0$ 復元・再評価一致と、観測一致のみの偽装 lift（`ObsPair` 等、保存残差 0 で `lift_residuals` のみ失敗）の拒否を得る。共通定義域 $D_w$ の `word_checks` と独立な `old_word_lifts`（成立/不成立）を検証し、多段合成 $D_{0k}$ で `full_isomorphic` / `proper_subdomain`（`require_full_domain` で `refuted`）/ `empty` を区別する。台帳の Busy 状態 $(0,1,0)$ 移送では最終段 Busy Law 残差で `refuted`（空性 witness 検算一致）となる |
+| 入力保護・由来分離 | 結論注入（`residual_ideal` / `completed_diagram` / `restored_path` / `restored_transfer` 等）、`editable semantic_law`、非素数 `Fp(4)`、図式固定頂点編集、移送初段基準表示 $X_0$ 編集、名前空間衝突、`observed` 座標の `Origin.kind` 欠落は入力／変換検査で拒否（exit 65）し、通常問いと SHIGURE 問いの混在や未知宣言は `usage`（exit 64）で拒否する |

@@ -309,25 +309,47 @@ Bool の false and x、true or x、同じ未知整数 h の h−h は補完に�
 未観測値の全補完が空になる提示は `inconsistent_observation` として拒否し、空虚な成立を返さない。
 change の自由 parameter と未観測 slot は異なる。修復・探索で後者を決定変数にしない。
 
-## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク）
+## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク・図式・経路・移送）
 
-`reading` 本体の中に、文脈キーワード `shigure` で始まる 5 種類の宣言を置ける。
+`reading` 本体の中に、文脈キーワード `shigure` で始まる 8 種類の宣言を置ける。
 `shigure` は予約語一覧へ追加しないため、既存の宣言名・view 名・変数名と衝突しない。
 通常の `view` / `law` / `local` / `change` / `relation` 宣言と同一 `reading` 内で共存できる。
 
 ```text
 ShigureDecl ::=
   "shigure" (ShigurePresentation | ShigureComparison | ShigureChangeSpec
-           | ShigureEvalCondition | ShigureTask)
+           | ShigureEvalCondition | ShigureTask
+           | ShigureDiagram | ShigurePath | ShigureTransfer)
+
+ShigureDirection ::= "state_map" | "time_order"
+
+ShigureScalarLit ::=
+    ("-")? Integer
+  | "rat" "(" ("-")? Integer "," Integer ")"
+  | "fp" "(" Integer "," Integer ")"
+
+ShigureMorphismClause ::=
+    "comparison" QName ";"
+  | "identity" ";"
+  | ( "state_map" Name "->" Name "{" (Name "=" PolyExpr ";")* "}"
+    | "translate" Name "->" ShigureWordExpr ";" )+
+
+ShigureWordExpr ::=
+  "[" (Name "(" (PolyExpr ("," PolyExpr)*)? ")"
+    ("," Name "(" (PolyExpr ("," PolyExpr)*)? ")")*)? "]"
+
+ShigureLawClause ::=
+  ("semantic" | "required" | "representation") Name ":" PolyExpr "=" PolyExpr ";"
 
 ShigurePresentation ::= "presentation" Name "{"
   "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
   ("sort" Name ("rank" Integer)? ";")*
   ("phase" Name "{"
     ("coord" Name ":" Name ("observed" QName)? ";")*
-    ("law" ("semantic" | "required" | "representation") Name ":" PolyExpr "=" PolyExpr ";")*
+    ("law" ShigureLawClause)*
   "}")*
   (("op" | "operation") Name "(" (Name ":" Name ("," Name ":" Name)*)? ")" ":" Name "->" Name "{"
+    ("law" ShigureLawClause)*
     (Name "=" PolyExpr ";")*
   "}")*
   (("obs" | "observation") Name "on" Name "=" "(" PolyExpr ("," PolyExpr)* ")" ";")*
@@ -337,8 +359,7 @@ ShigureComparison ::= "comparison" Name "{"
   "before" QName ";"
   "after" QName ";"
   ("state_map" Name "->" Name "{" (Name "=" PolyExpr ";")* "}")*
-  ("translate" Name "->" "[" (Name "(" (PolyExpr ("," PolyExpr)*)? ")"
-    ("," Name "(" (PolyExpr ("," PolyExpr)*)? ")")*)? "]" ";")*
+  ("translate" Name "->" ShigureWordExpr ";")*
 "}"
 
 ShigureChangeSpec ::= "change_spec" Name "{"
@@ -371,27 +392,102 @@ ShigureTask ::= "task" Name "{"
   "change_spec" QName ";"
   ("eval_condition" QName ";")?
 "}"
+
+ShigureDiagram ::= "diagram" Name "{"
+  "direction" ShigureDirection ";"
+  ("vertex" ("fixed")? Name ":" QName ";")*
+  ("edge" ("fixed")? Name ":" Name "->" Name "{" ShigureMorphismClause "}")*
+  ("relation" Name ":" "[" (Name ("," Name)*)? "]" "=" "[" (Name ("," Name)*)? "]" ";")*
+  "change_spec" QName ";"
+  ("eval_condition" QName ";")?
+  ("edge_eval_condition" Name ":" QName ";")*
+"}"
+
+ShigurePath ::= "path" Name "{"
+  "kind" ("fixed_protocol_change_path" | "enlarged_protocol_execution_path") ";"
+  "direction" ShigureDirection ";"
+  ("mode" (
+      "find" ";"
+    | "concatenate" "{"
+        "first" "[" (Name ("," Name)*)? "]" ";"
+        "second" "[" (Name ("," Name)*)? "]" ";"
+      "}"
+    | "subdivide" "{" ShigureMorphismClause "}"
+  ))?
+  ("length" Integer ";")?
+  ("vertex" Name ":" QName ";")*
+  ("start" Name ( "{" (Name "=" ShigureScalarLit ";")* "}" | ";" ))?
+  ("end" Name ( "{" (Name "=" ShigureScalarLit ";")* "}" | ";" ))?
+  ("rule" Name ":" Name "->" Name "{"
+    ("guard" Name ":" PolyExpr "=" PolyExpr ";")*
+    ("update" Name "=" PolyExpr ";")*
+    ("eval_condition" QName ";")?
+    ShigureMorphismClause
+  "}")*
+  ("protocol" "{"
+    "comparison" QName ";"
+    "start_phase" Name ";"
+    ("start_law" ShigureLawClause)*
+    "end_phase" Name ";"
+    ("end_law" ShigureLawClause)*
+    "allowed_ops" "[" (Name ("," Name)*)? "]" ";"
+  "}")?
+  "change_spec" QName ";"
+  ("eval_condition" QName ";")?
+"}"
+
+ShigureTransfer ::= "transfer" Name "{"
+  ("step" Name "{"
+    ("before" QName ";")?
+    ("after" QName ";")?
+    ("source_phase" Name ";")
+    ("target_phase" Name ";")
+    ("domain_law" ShigureLawClause)*
+    "lift" "{" (Name "=" PolyExpr ";")* "}"
+    ShigureMorphismClause
+  "}")+
+  ("word_check" Name ("(" (Name ("," Name)*)? ")")? "=" ShigureWordExpr ";")*
+  ("old_word_lift" Name ("(" (Name ("," Name)*)? ")")? "{"
+    "target" ShigureWordExpr ";"
+    ("max_length" Integer ";")?
+  "}")*
+  "change_spec" QName ";"
+  ("eval_condition" QName ";")?
+  ("require_full_domain" ("true" | "false") ";")?
+"}"
 ```
 
 `PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
 `+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
-各 `shigure` 宣言ブロックおよび `phase` ブロック内の句は任意の順序で記述できる（`domain`・`before`・`after`・`point_domain`・`comparison`・`change_spec` は必須 1 回、`eval_condition` は任意最大 1 回とし重複を拒否する）。
+`shigure path` の `mode` 省略時は `find`、`shigure transfer` の `require_full_domain` 省略時は `false` を既定とする。
+各 `rule`・`edge`・`subdivide`・移送 `step` における射本体 `ShigureMorphismClause` では、`comparison`・`identity`・インライン（`state_map` / `translate`）の混在を禁止する（`step` では `comparison` と `before`/`after` の混在も禁止する）。
+`shigure diagram` / `shigure path` / `shigure transfer` の各ブロックおよび `phase` ブロック内の句は上記の多重度制約のもと任意の順序で記述できる。
 
 静的検査と変換検査では次を強制する。
 
 - **結論注入の拒否**: `residual_ideal`、`residuals`、`empty_witness`、`witness`、`solution`、`solutions`、
   `interaction`、`interaction_summary`、`participating_variables`、`minimal_failing_subsets`、
-  `verdict`、`restored`、`reeval`、`groebner_basis` などの計算結論相当の欄や宣言を Law 入力に含めた場合、構文検査で拒否する。
-- **守る意味 Law の保護**: `editable semantic_law` は構文・型検査で拒否する。
+  `verdict`、`restored`、`reeval`、`groebner_basis` に加え、`completed_diagram`、`restored_diagram`、
+  `commutativity_residuals`、`computed_path`、`restored_path`、`rejected_candidates`、`subdivision_fiber`、
+  `transfer_verdict`、`restored_transfer`、`common_domain`、`composed_domain`、`word_check_results`、
+  `old_word_lift_results`、`lift_found`、`domain_nonempty` などの計算結論相当の欄や宣言を
+  Law 入力（各宣言本体・`op`・`rule`・`lift`・endpoint を含む）に含めた場合、構文検査で拒否する。
+- **守る意味 Law と固定部分圏・初段基準の保護**: `editable semantic_law` は構文・型検査で拒否する。
   `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
-  `editable` による `before` 表示の変更、および `before` 表示への探索パラメータ混入も拒否する。
-- **名前・参照・型・循環検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
-  reading 間の循環参照、未宣言の phase・座標・操作・変数、`state`/`arg`/`param` の名前空間衝突、
+  `editable` による `shigure task` の `before` 表示変更・探索パラメータ混入も拒否する。
+  `shigure diagram` では固定部分圏 $K$ の頂点・辺および意味 Law への編集指定と、固定辺が非固定頂点を結ぶ非閉指定を拒否する。
+  `shigure transfer` では多段連鎖（`step[i].after == step[i+1].before`）を要求し、
+  初段 `step[0]` の始端表示 $X_0$ をパラメータフリーかつ編集不可に制限する（2 段目以降の共有中間表示における編集・パラメータ指定は許容する）。
+- **名前・参照・型・循環・無界境界の検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
+  `shigure` reading 間の循環参照、未宣言の phase・座標・操作・変数、
+  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数とパラメータ・操作名の衝突を含む）、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
   （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
   `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
-  法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル）を拒否する。
+  法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル）、
+  および `direction` と射端点の不整合を拒否する。
   なお `domain Z` と `rational_points` は $\mathbb{Z} \hookrightarrow \mathbb{Q}$ による $\mathbb{Q}$ 点評価として受理する。
+  また `shigure path` の `length` および `old_word_lift` の `max_length` の省略は構文上受理し、実行時に `unbounded_search_out_of_scope` の `undetermined` として扱う。
 - **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合、
   零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` で沈黙する。
   参照した観測座標の `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。
