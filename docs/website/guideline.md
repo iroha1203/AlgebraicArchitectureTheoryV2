@@ -71,7 +71,7 @@ npx @11ty/eleventy --serve       # ローカルプレビュー（ビルド＋監
 （または `python3 -m http.server 0 --directory website/_site`）経由で確認する。
 PR 前には `npx @11ty/eleventy` が警告なく完了することを確認する。
 
-Codex から Playwright を実行する場合、macOS のブラウザ起動権限により通常のサンドボックス内実行で
+エージェントから Playwright を実行する場合、macOS のブラウザ起動権限により通常のサンドボックス内実行で
 Chromium が固まることがある。必要に応じてサンドボックス外実行を使う。
 
 PR 前の共通チェックは [Workflow guideline](../workflow/guideline.md) の「PR 前の共通確認」に従う。

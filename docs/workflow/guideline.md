@@ -1,11 +1,12 @@
 # 横断作業ガイドライン（workflow）
 
 この文書は、分野を問わず適用される作業規律を定める。
-言語、Issue 運用、ブランチと PR、保護対象、CI、完了レビューの判定範囲、
+言語、エージェントの役割分担、Issue 運用、ブランチと PR、保護対象、CI、完了レビューの判定範囲、
 レビュー体制、PR 前の共通確認を扱う。分野固有の規律は各分野のガイドライン
 （[AAT / Lean](../aat/guideline.md) / [SFT](../sft/guideline.md) /
 [Tooling](../tool/guideline.md) / [Website](../website/guideline.md) /
-[PRD](../prd/guideline.md)）に従う。
+[PRD](../prd/guideline.md) / [Paper](../paper/guideline.md) /
+[ブログ執筆](../outreach/guideline.md)）に従う。
 
 ## 文書構成
 
@@ -25,6 +26,21 @@
 - ユーザーへの応答、commit message、PR / Issue のタイトルと本文は日本語で書く。
   Lean 識別子、ファイル名、コマンド名、定理名、既存の英語技術用語はそのまま扱う。
 - 語彙の分類と禁止・置換の基準は [語彙ルール](vocabulary.md) に従う。
+
+## エージェントの役割分担
+
+このリポジトリの開発・研究は、次の役割分担で進める。
+
+- **Codex**: 数学、Lean 形式化、論文執筆
+- **Gemini**: ツール（ArchSig / ArchView / FieldSig）、ブログ（`outreach/blog/`）、website（`website/`）
+- **Claude**: レビュー（PR 経由）
+- **ユーザー（人間）**: 方向づけ、受け入れ確認、最終判断とマージ
+
+全エージェントの SKILL は `.codex/skills/` に一本化している。
+
+- **使用モデル名の明記**: AI エージェントが作成する PR 本文およびレビューコメントの末尾には、
+  実行に使用したモデル名を明記する（例: `Gemini 4 Neon`）。単なるツール名ではなく、
+  使用したモデル名が判別できる形で末尾に記す。
 
 ## Issue 起点の作業
 
@@ -58,8 +74,9 @@
 `docs/sft/aat_interface.md`、`outreach/paper/**` の更新は、次の3条件がすべて揃う場合に限る。
 
 1. 人間が対象文書と変更方針を明示する。
-2. 実装者以外の LLM がレビューする（Codex 実装なら Claude レビュー、
-   Claude 実装なら Codex レビュー）。
+2. 実装者とは別の LLM モデルが PR 経由でレビューする（既定では Claude がレビューを担う。
+   Claude が実装した場合は Codex または Gemini など別の LLM モデルがレビューする。
+   実施経路は「レビュー体制」の別モデルレビュー規則に従う）。
 3. 人間が差分を確認してマージする。
 
 ## CI への恒久追加の禁止
@@ -79,6 +96,13 @@
 
 ## レビュー体制
 
+- **別モデルレビューの必須規則（PR 経由の義務とコマンド呼び出しの禁止）**:
+  - 実装者とは別の LLM モデルによるレビュー（既定の Claude レビュー、および保護対象や
+    Tier 1 文書更新時の別モデルレビューを含む）は、**必ず GitHub PR 経由**で行う。
+  - AI エージェントがシェルコマンドや CLI 等（`claude`、`codex`、`gemini` などのコマンド実行や
+    外部 AI 呼び出し）で別の AI を直接呼び出してレビューを実行することは**禁止**する。
+  - 実装担当エージェントは PR の作成（および必要な検証・CI 確認）までを行い、
+    別モデルのレビュー担当エージェントが別セッションで PR を対象にレビューを実施し、結果を PR 上に記録する。
 - レビューは分野別の敵対レビュー SKILL
   （`.codex/skills/` 配下の `math-lean-review` / `tool-review` / `website-review` / `docs-review`）で行う。
   共通の反証観点は `.codex/skills/_shared/refutation-checklist.md` にまとめている。

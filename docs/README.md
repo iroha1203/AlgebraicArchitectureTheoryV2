@@ -51,7 +51,7 @@ website 側の文章は、ここに置いた研究上の主張規律を参照し
 
 ## 更新ルール
 
-- **Tier 1** の文書を更新するには、人間の明示的な編集指示、実装者とは別の LLM モデルによる敵対レビュー、人間の判断によるマージを必要とする。
+- **Tier 1** の文書を更新するには、人間の明示的な編集指示、実装者とは別の LLM モデルによる PR 経由の敵対レビュー、人間の判断によるマージを必要とする（詳細は [Workflow guideline](workflow/guideline.md#保護対象3条件) および [レビュー体制](workflow/guideline.md#レビュー体制) を参照）。
 - **Tier 2** の文書を更新するには、人間の明示的な編集指示を必要とする。
 - **Tier 3 以下** の文書には、共通の更新ルールを定めない。ただし、実装中の PRD など、個別の作業規律が定められている文書はその規律に従う。
 
@@ -127,7 +127,7 @@ Lean で証明済みの構造的事実、定義のみの概念、将来の証明
 
 ## 編集ガイドライン
 
-- [Workflow guideline](workflow/guideline.md): 言語、Issue 運用、ブランチ・PR、保護対象、CI、完了レビューの判定範囲、レビュー体制、PR 前の共通確認の横断規律。
+- [Workflow guideline](workflow/guideline.md): 言語、エージェントの役割分担、Issue 運用、ブランチ・PR、保護対象、CI、完了レビューの判定範囲、レビュー体制、PR 前の共通確認の横断規律。
 - [PRD guideline](prd/guideline.md): PRD の責務、参照禁止、完了後削除の規律。
 - [AAT / Lean guideline](aat/guideline.md): `Formal/AG`、AAT 数学本文、Lean の状態管理、証明義務の編集方針。
 - [SFT guideline](sft/guideline.md): SFT 本文、AAT / SFT インタフェース、予測・ガバナンスの主張範囲に関する編集方針。

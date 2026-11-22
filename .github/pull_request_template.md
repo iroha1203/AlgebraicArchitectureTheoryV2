@@ -42,3 +42,5 @@
 - [ ] 明示的な相談なしに `axiom`, `admit`, `sorry`, `unsafe` を導入していない
 - [ ] Architecture Signature を単一スコアではなく多軸診断として扱っている
 - [ ] ArchSig と FieldSig の責務を混同していない
+
+<!-- PR を作成した AI エージェントの使用モデル名を末尾に記載する（例: Gemini 4 Neon）。 -->
