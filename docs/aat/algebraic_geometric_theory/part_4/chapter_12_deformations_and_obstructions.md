@@ -30,15 +30,15 @@ $`X'\otimes R\cong X`$ を持ち、その同型を保つ全比較射を持つgro
 
 ```math
 \mathrm{ob}(x,R')\in
-\operatorname{Ext}^1_A(L_{A/k},M)
-=\frac{\operatorname{Hom}_A(I/I^2,M)}
- {\operatorname{im}(\operatorname{Hom}_A(\Omega_{P/k}\otimes_PA,M))}
+\mathop{\mathrm{Ext}}\nolimits^1_A(L_{A/k},M)
+=\frac{\mathop{\mathrm{Hom}}\nolimits_A(I/I^2,M)}
+ {\mathop{\mathrm{im}}\nolimits(\mathop{\mathrm{Hom}}\nolimits_A(\Omega_{P/k}\otimes_PA,M))}
 \tag{12.1}
 ```
 
 を構成できる。$`A`$ は $`x`$ を通じて $`M`$ に作用する。
 この類の零性とlawfulなscheme点liftの存在は同値であり、
-非空な全lift集合は $`\operatorname{Der}_k(A,M)`$ のtorsorである。
+非空な全lift集合は $`\mathop{\mathrm{Der}}\nolimits_k(A,M)`$ のtorsorである。
 この対応は固定データを保つ意味のliftと自然に一致する。
 
 **構成と証明.**
@@ -89,13 +89,13 @@ $`t\,[t^2]-[t^3]=0`$ が残差を結ぶ。独立な二本の障害として数�
 その近傍で $`I`$ が正則列 $`f_1,\ldots,f_r`$ によって生成され、変数が $`n`$ 個であるとする。
 固定データを保つ意味の一次変形は $`\ker J_x`$ と自然に一対一であり、
 ここで $`J_x=(\partial f_i/\partial x_j)(x)`$ である。
-chartが $`x`$ でsmoothであることと $`\operatorname{rank}J_x=r`$ は同値である。
+chartが $`x`$ でsmoothであることと $`\mathop{\mathrm{rank}}\nolimitsJ_x=r`$ は同値である。
 
 **証明.**
 双対数環 $`k[\epsilon]/\epsilon^2`$ へのliftを $`x_j+\epsilon u_j`$ と書く。
 Lawの展開は $`f_i(x)+\epsilon\sum_jJ_{ij}u_j`$ であるから、全liftは $`J_xu=0`$ に一致する。
 意味への評価と一般元からの抽出は定理12.2と同じである。
-正則列による局所環の次元は $`n-r`$、接空間の次元は $`n-\operatorname{rank}J_x`$ である。
+正則列による局所環の次元は $`n-r`$、接空間の次元は $`n-\mathop{\mathrm{rank}}\nolimitsJ_x`$ である。
 [補題C.2](../appendix_c_homological_constructions.md#c2-正則列とsmoothness)の局所判定により、
 完全体上の有理点では、この二次元の一致とsmoothnessが同値となる。
 
@@ -155,7 +155,7 @@ $`\beta(\lambda p)=\chi(\lambda)+\beta(p)`$ を満たすとする。
 
 ```math
 \ker\widetilde\chi\subseteq R_{\mathrm{rep}},\qquad
-\operatorname{im}\widetilde\chi=Q_E.
+\mathop{\mathrm{im}}\nolimits\widetilde\chi=Q_E.
 ```
 
 空交差の両係数は0、両状態集合は一点とする。このとき自然同型
@@ -356,8 +356,8 @@ $`A_1\otimes_B^{\mathbf L}A_2`$ を構成でき、
 
 ```math
 H^0=B/(I_1+I_2),\qquad
-H^{-j}=\operatorname{Tor}_j^B(A_1,A_2),\qquad
-\operatorname{Tor}_1^B(A_1,A_2)\cong(I_1\cap I_2)/(I_1I_2).
+H^{-j}=\mathop{\mathrm{Tor}}\nolimits_j^B(A_1,A_2),\qquad
+\mathop{\mathrm{Tor}}\nolimits_1^B(A_1,A_2)\cong(I_1\cap I_2)/(I_1I_2).
 \tag{12.4}
 ```
 
@@ -375,7 +375,7 @@ flatな $`B\to B'`$ による変更は、この全比較と可換する。
 次数0は通常のtensor積であり、両イデアルを消す環射の普遍性から $`B/(I_1+I_2)`$ になる。
 
 $`0\to I_1\to B\to A_1\to0`$ を $`A_2`$ とtensorした長完全列で
-$`\operatorname{Tor}_1`$ は $`I_1/I_1I_2\to B/I_2`$ のkernelになる。
+$`\mathop{\mathrm{Tor}}\nolimits_1`$ は $`I_1/I_1I_2\to B/I_2`$ のkernelになる。
 このkernelは式(12.4)の交差商である。
 全正次数が0であることは、増大写像が全コホモロジーで同型になることそのものである。
 一方がflatなら、他方の解消をtensorしても完全なので正次数は0になる。
@@ -395,7 +395,7 @@ AAT側では $`B`$ の点は元の量・操作の同じambientデータである
 $`B=k[t]`$、$`I_1=I_2=(t)`$ とする。
 自由解消 $`[B\xrightarrow{t}B]`$ を $`B/(t)`$ とtensorすると微分0の
 $`[k\xrightarrow0 k]`$ を得る。
-古典交差は点 $`t=0`$ を持ち、同時に $`\operatorname{Tor}_1\cong k`$ も持つ。
+古典交差は点 $`t=0`$ を持ち、同時に $`\mathop{\mathrm{Tor}}\nolimits_1\cong k`$ も持つ。
 Torは交差の追加構造であり、この例の共通解の不存在を表す量ではない。
 $`B=k[x,y]`$、$`I_1=(x),I_2=(y)`$ では、$`x`$ は $`B/(y)`$ 上でも非零因子なので
 正次数Torは消え、古典交差の一点だけを得る。

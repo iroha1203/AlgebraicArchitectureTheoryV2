@@ -67,10 +67,10 @@
 | $`C_S^\bullet,\mathscr R_S(K),\Omega,\omega`$ | 範囲付き相対複体、実修復groupoid、局所案の統合障害の群と指定類 | [11.2–11.3](part_4/chapter_11_ariadne_relative_repairs.md#112-範囲付き実修復とコホモロジー分類) |
 | $`\mathcal I_i,R_i,N_i,s_i,\mathrm{Glue}_S`$ | 一度生成する局所表現、公開関係、内部kernel、復元section、厳密合成 | [11.4](part_4/chapter_11_ariadne_relative_repairs.md#114-全範囲に共通する局所生成と厳密な組立て) |
 | $`\mathsf O,o,B_e,\mathsf R_S,\mathcal H_o`$ | 常時許容補正の余核、要求類、候補写像、許可範囲の像、双対証拠の支持族 | [11.5](part_4/chapter_11_ariadne_relative_repairs.md#115-可否不能証拠極小範囲) |
-| $`C_U(S),\operatorname{Pair}(A_w)`$ | 内部候補を消去した共有関係、分割で生じる可縮なgroupoid | [11.6–11.8](part_4/chapter_11_ariadne_relative_repairs.md#116-表示比較内部置換文脈同値) |
+| $`C_U(S),\mathop{\mathrm{Pair}}\nolimits(A_w)`$ | 内部候補を消去した共有関係、分割で生じる可縮なgroupoid | [11.6–11.8](part_4/chapter_11_ariadne_relative_repairs.md#116-表示比較内部置換文脈同値) |
 | $`R'\to R,M,L_{A/k},\mathrm{ob}`$ | 平方零拡大、その核、余接複体、固定データに相対的なlift障害 | [12.1–12.2](part_4/chapter_12_deformations_and_obstructions.md#121-変形対象と固定データ) |
 | $`M_{\mathrm{sem}},Q_E,\Phi,\beta`$ | repair wordの関係商、方程式の生成商 $`O_E/I_{\mathrm{Ob}}^E`$、係数同型、実状態と方程式liftの対応 | [12.4](part_4/chapter_12_deformations_and_obstructions.md#124-局所lift後の貼り合わせと意味比較) |
-| $`B,I_1,I_2,\operatorname{Tor}`$ | 共通ambient環、二つの残差イデアル、導来交差のコホモロジー | [12.5](part_4/chapter_12_deformations_and_obstructions.md#125-複数lawの導来交差とtor) |
+| $`B,I_1,I_2,\mathop{\mathrm{Tor}}\nolimits`$ | 共通ambient環、二つの残差イデアル、導来交差のコホモロジー | [12.5](part_4/chapter_12_deformations_and_obstructions.md#125-複数lawの導来交差とtor) |
 | $`D_n,R\!\lim D_n,\lim^1`$ | 原始修正複体の塔、その導来逆極限、追加の整合障害を持つ導来関手 | [13.3](part_4/chapter_13_fragments_and_globalization.md#133-導来逆極限と追加障害) |
 
 合成は $`(g\circ f)(x)=g(f(x))`$ の順で書く。

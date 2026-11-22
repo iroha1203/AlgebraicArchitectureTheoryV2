@@ -31,10 +31,10 @@ faceは隣接する自由代数の評価、degeneracyは自由生成元への挿
 任意の $`A`$-加群 $`M`$ に対して
 
 ```math
-\operatorname{Ext}^0_A(L_{A/k},M)=\operatorname{Der}_k(A,M),\qquad
-\operatorname{Ext}^1_A(L_{A/k},M)=
-\operatorname{coker}\bigl(\operatorname{Hom}_A(\Omega_{P/k}\otimes A,M)
- \to\operatorname{Hom}_A(I/I^2,M)\bigr).
+\mathop{\mathrm{Ext}}\nolimits^0_A(L_{A/k},M)=\mathop{\mathrm{Der}}\nolimits_k(A,M),\qquad
+\mathop{\mathrm{Ext}}\nolimits^1_A(L_{A/k},M)=
+\mathop{\mathrm{coker}}\nolimits\bigl(\mathop{\mathrm{Hom}}\nolimits_A(\Omega_{P/k}\otimes A,M)
+ \to\mathop{\mathrm{Hom}}\nolimits_A(I/I^2,M)\bigr).
 ```
 
 **証明.**
@@ -42,7 +42,7 @@ $`I/I^2`$ の自由解消 $`\cdots\to F_1\to F_0\to I/I^2\to0`$ を取り、
 その末尾を式(C.1)の次数0の自由加群へ接続する。
 Hom複体の次数1のcocycleは $`F_0\to M`$ で $`F_1`$ を消すもの、
 すなわち $`I/I^2\to M`$ であり、0からの微分は表示した写像である。
-次数0のkernelは $`I`$ を消す $`k`$-導分なので $`\operatorname{Der}_k(A,M)`$ になる。
+次数0のkernelは $`I`$ を消す $`k`$-導分なので $`\mathop{\mathrm{Der}}\nolimits_k(A,M)`$ になる。
 全余接複体と式(C.1)の差は次数 $`-2`$ 以下にあり、加群 $`M[0]`$ への導来Homでは
 次数2以上にしか寄与しない。従ってこの計算で次数0,1を得る。
 
@@ -91,7 +91,7 @@ $`\Omega_{A/k}\otimes_Ak\cong\mathfrak m/\mathfrak m^2`$ を与える。
 二つの解消の間の比較は、各自由生成元の像を全射に沿って持ち上げて順に構成する。
 二比較の差は各段で次の微分像に入るので、同じ持上げで鎖homotopyを作れる。
 従って解消 $`F_\bullet\to N`$ から作る $`F_\bullet\otimes_BM`$ の
-導来同型型とhomologyは選択に依存しない。後者を $`\operatorname{Tor}^B_j(N,M)`$ と定義する。
+導来同型型とhomologyは選択に依存しない。後者を $`\mathop{\mathrm{Tor}}\nolimits^B_j(N,M)`$ と定義する。
 短完全列を自由解消で持ち上げてconeを取ると、対応するTorの長完全列を得る。
 flatな加群でtensorする場合には元の完全性が保たれるので正次数は消える。
 

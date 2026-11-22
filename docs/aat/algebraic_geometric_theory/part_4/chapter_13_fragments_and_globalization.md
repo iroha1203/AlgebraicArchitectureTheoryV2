@@ -121,7 +121,7 @@ $`x\mapsto(x,0)`$ は全コホモロジーで同型になる。
 構成13.4の原始復元と合成して所期の比較を得る。
 
 積の完全性により $`H^q(P)=\prod_nH^q(D_n)`$ である。
-coneの長完全列で $`\ker\Phi=\lim`$、$`\operatorname{coker}\Phi=\lim^1`$ と読むと式(13.2)を得る。
+coneの長完全列で $`\ker\Phi=\lim`$、$`\mathop{\mathrm{coker}}\nolimits\Phi=\lim^1`$ と読むと式(13.2)を得る。
 Mittag–Lefflerとは、各段への後段の像がいずれ安定することをいう。
 安定像の塔は全射となり、その商の塔は各固定段への写像が十分後で0となる。
 前者では再帰的持上げ、後者では有限和で $`\Phi x=z`$ を解けるので、元の塔でも余核は0となる。
@@ -149,7 +149,7 @@ c_n-2c_{n+1}=a_n.\tag{13.4}
 全代数に自然な係数族でも一般元への同じ評価が成立し、解関手は
 
 ```math
-Y_a=\operatorname{Spec}\mathbb Z[c_0,c_1,\ldots]/(c_n-2c_{n+1}-a_n)
+Y_a=\mathop{\mathrm{Spec}}\nolimits\mathbb Z[c_0,c_1,\ldots]/(c_n-2c_{n+1}-a_n)
 ```
 
 で表される。有限段は最後の $`c_n`$ を自由変数とするaffine直線であり、
@@ -203,7 +203,7 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 具体的な同型は
 
 ```math
-\operatorname{coker}d\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
+\mathop{\mathrm{coker}}\nolimitsd\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
 [a]\longmapsto\left[\sum_{n\ge0}2^na_n\right].
 \tag{13.6}
 ```
@@ -245,11 +245,11 @@ $`a'_n=\epsilon a_n`$、還元点を $`c=0`$ とする。
 全liftは $`c'_n=\epsilon x_n`$ であり、その実操作保存は $`d(x)=a`$ と同値になる。
 原始Lawを $`f_n=a_n-c_n+2c_{n+1}`$ と向きづけると、
 ambient lift $`\widetilde c=0`$ の残差は $`\epsilon a`$、補正微分は $`-d`$ である。
-従って定理12.2の規約でも障害は同じ $`[a]\in\operatorname{coker}d`$ となる。
+従って定理12.2の規約でも障害は同じ $`[a]\in\mathop{\mathrm{coker}}\nolimitsd`$ となる。
 相対余接複体をこの零点に引くと
 $`[\bigoplus\mathbb Z\xrightarrow{-d^\vee}\bigoplus\mathbb Z]`$（次数 $`-1,0`$）であり、
 $`d^\vee(e_n)=e_n-2e_{n+1}`$ は有限support上で単射、余核は $`\mathbb Z[1/2]`$ である。
-したがって $`\operatorname{Ext}^1_{\mathbb Z}(\mathbb Z[1/2],\mathbb Z)`$ の同じ類を得る。
+したがって $`\mathop{\mathrm{Ext}}\nolimits^1_{\mathbb Z}(\mathbb Z[1/2],\mathbb Z)`$ の同じ類を得る。
 各有限段は最後の変数を自由に持ち上げて解けるが、この全体のliftは存在しない。□
 
 ## 13.5 安定性と有限決定への条件

@@ -24,20 +24,20 @@ $`F(h)=u`$ の射と $`F(g)=uF(l)`$ の射を全単射にするものをいう�
 fiber自己同型は $`F(a)=1`$ を満たす自己同型とし、
 
 ```math
-\kappa_e\in\operatorname{Aut}_q(pX_t),\qquad
-\widetilde c_e\in\operatorname{Aut}_{qp}(X_t),\qquad
+\kappa_e\in\mathop{\mathrm{Aut}}\nolimits_q(pX_t),\qquad
+\widetilde c_e\in\mathop{\mathrm{Aut}}\nolimits_{qp}(X_t),\qquad
 p(\widetilde c_e)=\kappa_e,\qquad
 \widetilde L_e=\widetilde c_eL_e^{\mathrm{orig}}
 ```
 
 を指定する。これをcore再選択と基準持ち上げと呼ぶ。
-面ごとに $`u_f\in\operatorname{Aut}_{qp}(X_{t(f)})`$ を指定し、
+面ごとに $`u_f\in\mathop{\mathrm{Aut}}\nolimits_{qp}(X_{t(f)})`$ を指定し、
 $`p(u_f)p(\widetilde L_{\ell_f})=p(\widetilde L_{r_f})`$ を課す。
 全核は
 
 ```math
-A_v=\ker\bigl(\operatorname{Aut}_{qp}(X_v)\to
-                         \operatorname{Aut}_q(pX_v)\bigr)
+A_v=\ker\bigl(\mathop{\mathrm{Aut}}\nolimits_{qp}(X_v)\to
+                         \mathop{\mathrm{Aut}}\nolimits_q(pX_v)\bigr)
 ```
 
 であり、これを可換群と仮定して加法で書く。包含を $`\iota_v`$ とする。
@@ -110,7 +110,7 @@ $`C_{\mathrm{fix}}^\bullet=\ker(C^\bullet(K)\to C^\bullet(P))`$ と置く。
 
 **定義11.4（独立な実修復）.**
 $`S\subseteq\mathsf E`$ に対し、実修復は $`p(c_e)=\kappa_e`$ を満たす
-$`c_e\in\operatorname{Aut}_{qp}(X_t)`$ と実辺 $`L_e=c_eL_e^{\mathrm{orig}}`$ の族で、
+$`c_e\in\mathop{\mathrm{Aut}}\nolimits_{qp}(X_t)`$ と実辺 $`L_e=c_eL_e^{\mathrm{orig}}`$ の族で、
 全ての $`u_fL_{\ell_f}=L_{r_f}`$、$`P`$ 上の指定実辺、
 候補 $`e\notin S`$ での $`L_e=\widetilde L_e`$ を満たすものとする。
 射は $`p(b_v)=1`$ を満たす全頂点自己同型で、$`P`$ の頂点では恒等、かつ
@@ -134,7 +134,7 @@ C_S^j=C_{\mathrm{fix}}^j\ (j=2,3).
 \qquad
 \pi_0\mathscr R_S(K)\text{ は非空なら }H^1(C_S^\bullet)\text{ のtorsor},
 \qquad
-\operatorname{Aut}(h)=H^0(C_S^\bullet)=H^0(C_{\mathrm{fix}}^\bullet).
+\mathop{\mathrm{Aut}}\nolimits(h)=H^0(C_S^\bullet)=H^0(C_{\mathrm{fix}}^\bullet).
 \tag{11.5}
 ```
 
@@ -149,7 +149,7 @@ $`c_e\widetilde c_e^{-1}`$ は全核に入り唯一の $`h_e`$ を与える。
 これが式(11.4)の全射である。
 
 存在の条件は $`\delta`$ が微分像であること、二解の差は $`\ker d^1`$、
-同型を与える差は $`\operatorname{im}d^0`$、自己同型は $`\ker d^0`$ である。
+同型を与える差は $`\mathop{\mathrm{im}}\nolimitsd^0`$、自己同型は $`\ker d^0`$ である。
 $`d^0b=0`$ は全 $`C_S^0`$ に入るので最後の等号も得る。
 $`S\subseteq T`$ の包含は同じ $`h,b`$ を保ち、上の全対応と可換する。□
 
@@ -244,7 +244,7 @@ $`z=h_V|_W-h_U|_W`$ は1-cocycleである。
 
 ```math
 \omega=[z]=0\quad\text{in}\quad
-\Omega=H^1(W,P_W)/(\operatorname{im}H^1(U,P_U)+\operatorname{im}H^1(V,P_V))
+\Omega=H^1(W,P_W)/(\mathop{\mathrm{im}}\nolimitsH^1(U,P_U)+\mathop{\mathrm{im}}\nolimitsH^1(V,P_V))
 \tag{11.7}
 ```
 
@@ -299,11 +299,11 @@ d_i^1(x,z)=D_ix+F_iz,\qquad d_i^0b=(a_ib,c_ib),\qquad D_ia_i+F_ic_i=0
 ```
 
 と書く。像の基底を原始行列の独立な列から選び、その列の逆像を送る線形写像
-$`s_i:\operatorname{im}D_i\to X_i`$ を作る。$`D_is_i=1`$ である。
-$`q_i:V_i\to\operatorname{coker}D_i`$、$`N_i=\ker D_i`$ とし、
+$`s_i:\mathop{\mathrm{im}}\nolimitsD_i\to X_i`$ を作る。$`D_is_i=1`$ である。
+$`q_i:V_i\to\mathop{\mathrm{coker}}\nolimitsD_i`$、$`N_i=\ker D_i`$ とし、
 
 ```math
-R_i=\{z:q_iF_iz=q_ir_i\},\qquad \operatorname{Ob}\mathcal I_i=R_i\times N_i,
+R_i=\{z:q_iF_iz=q_ir_i\},\qquad \mathop{\mathrm{Ob}}\nolimits\mathcal I_i=R_i\times N_i,
 \qquad
 \mathrm{rec}_i(z,k)=(s_i(r_i-F_iz)+k,z),
 \qquad
@@ -364,9 +364,9 @@ $`Dx+\sum_{e\in\mathsf E}E_ey_e=-\delta`$ と分ける。
 $`D`$ は全常時許容辺を含む。次を構成する。
 
 ```math
-q:C_{\mathrm{fix}}^2\to\mathsf O=\operatorname{coker}D,\quad
+q:C_{\mathrm{fix}}^2\to\mathsf O=\mathop{\mathrm{coker}}\nolimitsD,\quad
 o=q(-\delta),\quad B_e=qE_e,\quad
-\mathsf R_S=\sum_{e\in S}\operatorname{im}B_e.
+\mathsf R_S=\sum_{e\in S}\mathop{\mathrm{im}}\nolimitsB_e.
 ```
 
 すると全 $`S`$ で $`\mathscr R_S(K)\ne\varnothing\iff o\in\mathsf R_S`$ である。
@@ -390,7 +390,7 @@ $`o=0`$ なら証拠族は空で、唯一の極小範囲は $`\varnothing`$ で�
 全候補でも不能なら上の分離を $`S=\mathsf E`$ に使い、空の証拠支持を得る。
 
 同じ商写像が
-$`\mathsf O/\mathsf R_{\mathsf E}\cong C_{\mathrm{fix}}^2/\operatorname{im}d^1`$ を与え、
+$`\mathsf O/\mathsf R_{\mathsf E}\cong C_{\mathrm{fix}}^2/\mathop{\mathrm{im}}\nolimitsd^1`$ を与え、
 この商上の誘導 $`\bar d^2`$ のkernelが $`H^2(C_{\mathrm{fix}})`$ になる。
 $`o`$ の像は $`[-\delta]`$ であり補題11.3によりそのkernelに入る。
 全候補が有限なので範囲は全列挙できる。有限体なら双対証拠ベクトルと全解も全列挙できる。
@@ -515,11 +515,11 @@ C_S^\bullet(K')\cong C_S^\bullet(K)\oplus[A_w\xrightarrow{1}A_w]_{0,1},
 追加複体は恒等を逆に使うhomotopyで可縮なので全コホモロジーと障害を保つ。
 全分割修復は任意の $`a\in A_w`$ による $`h_1=a,h_2=h_e-\rho_2a`$ である。
 これらは一意な新頂点再同定で結ばれ、groupoidは
-$`\mathscr R_S(K)\times\operatorname{Pair}(A_w)`$ と同型になる。
-ここで $`\operatorname{Pair}(A_w)`$ は任意の二対象間に一つの射を持つgroupoidである。
+$`\mathscr R_S(K)\times\mathop{\mathrm{Pair}}\nolimits(A_w)`$ と同型になる。
+ここで $`\mathop{\mathrm{Pair}}\nolimits(A_w)`$ は任意の二対象間に一つの射を持つgroupoidである。
 
 線形生成では常時許容列について $`D'=DF_{E_0}`$、$`F_{E_0}`$ は全射なので
-$`\operatorname{im}D'=\operatorname{im}D`$ である。
+$`\mathop{\mathrm{im}}\nolimitsD'=\mathop{\mathrm{im}}\nolimitsD`$ である。
 同じ面座標で $`\mathsf O,o,B_e,\mathcal H_o`$、極小範囲が一致する。
 分割辺が非共有なので公開関係も同じであり、全復元だけに上の自由な $`a`$ が加わる。
 $`F,G`$ と自然同型は共有部で恒等であり、外部へ恒等で延長できる。
@@ -529,7 +529,7 @@ $`F,G`$ と自然同型は共有部で恒等であり、外部へ恒等で延長
 
 **定理11.13（アリアドネ：実アフィン操作の全経路）.**
 任意体 $`k`$ と有限次元空間 $`A`$ に対し、全可逆アフィン写像から塔
-$`B\operatorname{Aff}_k(A)\to B\operatorname{GL}_k(A)\to\mathbf1`$ を作る。
+$`B\mathop{\mathrm{Aff}}\nolimits_k(A)\to B\mathop{\mathrm{GL}}\nolimits_k(A)\to\mathbf1`$ を作る。
 元辺・基準辺を可逆アフィン写像、面比較を平行移動として与え、
 面の線形成分と3-cellの実比較を整合させると、設定11.1の全仮定を満たす。
 原始写像の評価・合成から定理11.5–11.12の全入力と復元を生成できる。
@@ -664,7 +664,7 @@ d^0(b_s,b_t)=(b_t-b_s,b_s-Tb_t),\qquad
 w=v+Tu\longmapsto w+(1-T)b_s.
 ```
 
-全許可では $`u=0`$ に再同定でき、同型類は $`\operatorname{coker}(1-T)`$、
+全許可では $`u=0`$ に再同定でき、同型類は $`\mathop{\mathrm{coker}}\nolimits(1-T)`$、
 自己同型は $`\ker(1-T)`$ である。
 $`T(x,y)=(x+y,y)`$ と $`T=1`$ で、解空間は同じでも次の数が異なる。
 
@@ -714,7 +714,7 @@ $`d^0=0,d^1u=(u,u),\delta=(-b_1,-b_2)`$ となる。
 | $`(1,0)`$ | $`(1,0)`$ | なし | 0 |
 | $`(1,1)`$ | $`(1,1)`$ | $`u=1`$ | 1 |
 
-$`H^2(K,P)=A^2/\operatorname{diag}A`$ を $`[(r_1,r_2)]\mapsto r_1-r_2`$ で同定すると、
+$`H^2(K,P)=A^2/\mathop{\mathrm{diag}}\nolimitsA`$ を $`[(r_1,r_2)]\mapsto r_1-r_2`$ で同定すると、
 指定類は $`b_2-b_1`$ となる。
 重なりは両端を固定した辺 $`e`$ であり、$`H^1(W,P_W)=A`$、両側の $`H^1`$ は0なので
 $`\Omega=A`$、局所差も $`b_2-b_1`$ である。
