@@ -84,7 +84,7 @@
 | $`S,q,\lambda_\ell,K_a,D_q,\Lambda`$ | 有限 Source、reading、Law 値の読み出し、ラベルの可視セル、診断複体、および診断係数 | [16.1](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#161-指定修復問題と-law-評価からの診断複体) |
 | $`\mathrm{Cone}(F),J(f),\delta`$ | 比較の写像錐、次数 1 の核・余核の次元対、および六項列の相殺写像 | [16.2](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#162-核余核写像錐と合成) |
 | $`\Phi_c,\Gamma_e,\Psi_F,G,P,L_\bullet,\mathscr R,\tau`$ | セルの持ち上げ、順像係数とその複体、退化部分複体、およびファイバー適合空間と連結射 | [16.3](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#163-係数ファイバー局所貼り合わせによる分解) |
-| $`Z_{\sigma,\ell},\mathscr D_B`$ | 正則な読み出しの有限根スキーム、および定数 étale 層の順像から作る診断の族 | [16.4](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#164-実現族と値の合流)、[付録D](appendix_d_finite_roots_and_stalks.md) |
+| $`Z_{\sigma,\ell},\mathscr D_B,\mathscr D_{\mathrm{sp}}`$ | 支持ごとの有限根スキームと、定数 étale 層の順像から作る診断の族。スカラー読み出しによる $`\mathscr D_B`$ は、原始自己準同型の特性多項式による $`\mathscr D_{\mathrm{sp}}`$ の階数1の場合 | [16.4](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#164-実現族と値の合流)、構成16.31・定理16.32、[付録DのD.5–D.6節](appendix_d_finite_roots_and_stalks.md#d5-一般のモニック多項式とスペクトル根) |
 | $`M,g,[g],\mathrm{diag}(g)`$ | 原始関係商、実際の不一致、および指定された実際の障害とその診断類 | [16.5](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#165-実際の障害の比較と零性反映) |
 | $`D^\vee,\Delta_n,\mathcal H^n,h(g)`$ | 双対チェイン、Laplacian、調和空間、および指定コサイクルの調和射影 | [16.6](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#166-双対評価と有限-hilbert-複体による読取り) |
 
@@ -118,13 +118,12 @@
 | $`Q_c,Q_f,q,Z`$ | 二領域の交差の零次余核とその比較、および一次比較で失われる交差の像 | 定理16.25。この $`Z`$ は閉補正の群とは別に定義する |
 | $`\mathcal N=\mathcal I/\mathcal I^2,\ \partial_{\mathcal U}(s)`$ | Law 生成余法係数と、指定切断の一次持ち上げ障害 | 定理12.13 |
 | $`T=\mathop{\mathrm{Spec}}\nolimits A,\ K_t=\kappa(t)`$ | 既知の構造パラメータの空間と、各点の剰余体 | 設定18.11 |
-| $`Q_J=(L,O_J),\ m_{\rm dec},m_{\rm num}`$ | 既知情報と問い合わせの行列、判定と数値補正の最適問い合わせ数 | 定理18.12・18.15。$`Q_J`$ は縦の並置 |
+| $`Q_J=(L,O_J),\ m_{\mathrm{dec}},m_{\mathrm{num}}`$ | 既知情報と問い合わせの行列、判定と数値補正の最適問い合わせ数 | 定理18.12・18.15。$`Q_J`$ は縦の並置 |
 | $`P_{s,r},Q_{s,r},R_{s,r},O_{s,r}`$ | 長さ $`r`$ 以下の入力語・出力語の加群と、到達・観測写像 | 設定19.12 |
 | $`N=\sum_s n_s,\ H_s,H_e`$ | 総階数、有限ハンケル写像、1操作を挿入したハンケル写像 | 定理19.14–19.15 |
 | $`M_{\boldsymbol n}^{\min}`$ | 到達と双対観測が全射な最小実現のモジュライ | 定理6.12 |
 | $`g_n=\det'((d^{n-1})^\top d^{n-1})`$ | 指定整数基底から作るねじれ消去整数・有理解の分母上界 | 補題C.4・定理C.5。非零固有値の空積は1 |
 | $`R_n,t_n,\nu_n`$ | 調和レギュレータ、整数コホモロジーのねじれの位数、整数格子の共体積 | 定理C.7 |
-| $`\mathscr D_{\rm sp},Z_{\sigma,\ell}`$ | 同変な原始自己準同型から作るスペクトル診断複体と有限根スキーム | 構成16.31・定理16.32、付録D.5–D.6 |
 
 ここで実現の係数環 $`k`$ と診断の係数環 $`\Lambda`$ は別々に指定する。整数基底に関する転置 $`(-)^\top`$ と、選んだ内積に関する随伴 $`(-)^*`$ も区別する。観測範囲の有限幅、公開語の長さ、問い合わせ集合の濃度は異なる量である。
 
@@ -156,8 +155,11 @@
 - **第14–16章（輸送・正規化・診断）**：
   - 第15章の $`\Gamma,\Delta`$ は適合する変更の部分群であり、変数文脈や第16章の Laplacian $`\Delta_n`$ とは別である。
   - 第16章の $`S`$ は Source、$`L`$ は読み出しの有限添字集合、$`L_\bullet`$ は退化部分複体を表す。同章16.3節の $`G`$ はセル係数系、$`P`$ はそのコチェイン複体、$`\Gamma_e`$ は辺の持ち上げの関係グラフ、$`\mathscr R`$ はファイバー類の適合部分空間である。16.5節の $`G`$ は実際の被覆グラフ、$`P=L\times S`$ は実際の係数の原始生成元集合であり、各節で型を指定し直す。$`T`$ は16.1節では reading の値集合、16.3節では直接比較の $`H^1`$ 射である。
+  - $`D_q`$ の添字 $`q`$ は reading である。定理16.25で局所的に使う $`q:Q_c\to Q_f`$ は交差余核の比較写像を表す。そこでの $`Z`$ は交差からの像であり、定理11.23・18.17の閉補正 $`Z=\ker d^1`$、次数付きコサイクル群 $`Z^n`$、根スキーム $`Z_{\sigma,\ell}`$ とは定義域と添字で区別する。
+  - 付録Dでは、係数スキームの変更 $`B'\to B`$ による引き戻しと、同じ担体のフレーム変更を区別する。後者の共役は式(6.4)の右作用 $`A\mapsto g^{-1}Ag`$ に従う。
 - **第17–19章・付録E（観測・修復方程式・再構成・費用）**：
   - 第18章の $`N=\ker L`$ と第19章の読み取り関手 $`N`$ は別の記号である。第19章の組み立て関手は $`\mathsf{Asm},\mathsf{Asm}_\sigma,\mathsf{Asm}_H`$ と書く。
   - 第18章の $`S`$ は候補辺の許可範囲、$`P_S`$ は補正空間であり、原始表示 $`\mathcal P`$ とは異なる。
   - 第19章の $`J`$ は Artin 試験では残差イデアル、図式補完では小圏を表す。
+  - 第18章の階数計算や第19章のハンケル表で使うブロック行列の文字は、各設定・証明内で定義する。小行列式の開集合上で選ぶブロックや逆行列は局所的な計算用であり、実現の大域的な基底を指定するものではない。
   - 付録Eの $`c(\gamma),d(a,b)`$ は変更経路の費用とその下限であり、第11–18章のコチェイン微分 $`d^i`$ や固定図式 $`d`$ とは区別する。

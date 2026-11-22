@@ -146,7 +146,7 @@ $`u/g_n`$ は $`\mathop{\mathrm{im}}A^\top=(\ker A)^\perp`$ に属するので�
 &\exists a\in C^{n-1},\quad d^{n-1}a=z;\\
 &h_n(z)=0\quad\text{かつ}\quad
 [z\bmod p^\alpha]=0\in H^n(C\otimes\mathbb Z/p^\alpha\mathbb Z)
-\quad\text{for every }p^\alpha\parallel g_n.
+\quad(\forall p^\alpha\parallel g_n).
 \end{aligned}
 ```
 
@@ -159,7 +159,7 @@ $`u/g_n`$ は $`\mathop{\mathrm{im}}A^\top=(\ker A)^\perp`$ に属するので�
 z-Aa=g_n y\qquad(y\in C^n)
 ```
 
-と書ける。$`d^nz=d^nA=0`$ および $`C^{n+1}`$ の無ねじれ性から $`d^ny=0`$ である。実調和射影を取ると $`g_n h_n(y)=h_n(z)=0`$ なので $`h_n(y)=0`$ であり、補題C.4から整数元 $`v`$ を $`Av=g_ny`$ と構成できる。よって $`A(a+v)=z`$ が求める整数修復を与える。存在だけでなく、この証明は合同方程式の解から実際の整数解を復元する。□
+と書ける。$`d^nz=d^nAa=0`$ および $`C^{n+1}`$ の無ねじれ性から $`d^ny=0`$ である。実調和射影を取ると $`g_n h_n(y)=h_n(z)=0`$ なので $`h_n(y)=0`$ であり、補題C.4から整数元 $`v`$ を $`Av=g_ny`$ と構成できる。よって $`A(a+v)=z`$ が求める整数修復を与える。存在だけでなく、この証明は合同方程式の解から実際の整数解を復元する。□
 
 素数集合は、固定した行列から得た有限の検査集合である。ある素数が $`g_n`$ を割るだけでは、その素数のねじれ類が実際に存在するとは結論しない。例えば $`A=(1,1)^\top`$ では $`g_n=2`$ である一方、像は飽和しており、余核は自由である。
 
