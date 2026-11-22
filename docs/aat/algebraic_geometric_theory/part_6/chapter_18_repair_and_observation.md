@@ -219,7 +219,7 @@ N\cap\ker O_J\subseteq\ker C
 
 が成り立つ。有限次元座標表示では、これは行空間の包含条件
 $`\mathop{\mathrm{row}}\nolimits(C)\subseteq\mathop{\mathrm{row}}\nolimits(L)+\mathop{\mathrm{span}}\nolimits\{\lambda_j:j\in J\}`$ に等しい。
-特に $`C=\pi_SB_{\mathrm{in}}`$ と $`C=B_{\mathrm{in}}`$ をそれぞれ代入すれば、可否判定と数値補正それぞれの必要十分条件（同値条件）が得られる。
+特に、定理18.4の仮定（非空ファイバー $`F_s`$ における可解な基準点 $`v_*`$ の存在）のもとで $`C=\pi_SB_{\mathrm{in}}`$ と $`C=B_{\mathrm{in}}`$ をそれぞれ代入すれば、可否判定と数値補正それぞれの必要十分条件（同値条件）が得られる。
 
 **証明.**
 左辺から右辺を示す。

@@ -21,14 +21,14 @@ N_{A/k}=[I/I^2\xrightarrow d\Omega_{P/k}\otimes_PA]
 2. 多項式 $`k`$-代数 $`B`$ については、変数の個数によらず $`L_{B/k}\simeq\Omega_{B/k}[0]`$ が成り立つ。
 3. 任意の環準同型の合成 $`k\to B\to A`$ について、推移三角
 
-```math
-L_{B/k}\otimes_B^{\mathbf L}A\longrightarrow L_{A/k}\longrightarrow L_{A/B}
- \longrightarrow (L_{B/k}\otimes_B^{\mathbf L}A)[1]
-```
+   ```math
+   L_{B/k}\otimes_B^{\mathbf L}A\longrightarrow L_{A/k}\longrightarrow L_{A/B}
+    \longrightarrow (L_{B/k}\otimes_B^{\mathbf L}A)[1]
+   ```
 
-が成り立つ。
+   が成り立つ。
 
-第12章で用いる低次数の導来 $`\mathrm{Hom}`$ 計算および表示間の比較は、以下の通り加群の計算によって直接証明できる。
+第IV部（第12・13章）で用いる低次数の導来 $`\mathrm{Hom}`$ 計算および表示間の比較は、以下の通り加群の計算によって直接証明できる。
 
 **補題C.1（持ち上げに必要な2次数と表示比較）.**
 任意の $`A`$-加群 $`M`$ に対して次が成り立つ：
