@@ -610,7 +610,7 @@ fn check_goodness<E: InputError>(
             let seq = raw_sequence
                 .as_ref()
                 .map(|s| {
-                    check_raw_sequence(
+                    super::check_phase3_tasks::check_raw_sequence(
                         s,
                         real_space,
                         coeff_domain,
@@ -633,8 +633,16 @@ fn check_goodness<E: InputError>(
             equations,
             invertibles,
             preservation,
-            ..
+            span,
         } => {
+            if witness_vars.is_empty() {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    *span,
+                    format!("`goodness existential` in `{full_name}` requires at least one witness variable"),
+                ))
+                .into());
+            }
             let w_vars = collect_unique_vars(
                 witness_vars,
                 &format!("{full_name}.goodness.witness_vars"),
@@ -785,132 +793,6 @@ fn check_preservation_source<E: InputError>(
         comparison,
         change_spec,
         param_bindings,
-        span: raw.span,
-    })
-}
-
-fn check_raw_sequence<E: InputError>(
-    raw: &RawSequenceSpec,
-    real_space: &ShigureRealizationSpace,
-    coeff_domain: &ShigureCoeffDomain,
-    decls: &CheckedShigureDecls,
-    parent_span: Span,
-    full_name: &str,
-    control: &Control,
-) -> CResult<ShigureRawSequenceSpec, E> {
-    let ShigureRealizationSpace::FiniteMembers(members) = real_space else {
-        return Err(Box::new(Issue::law(
-            Code::Type,
-            parent_span,
-            "`raw_sequence` requires `realizations` to use finite `member` declarations",
-        ))
-        .into());
-    };
-    if raw.steps.is_empty() {
-        return Err(Box::new(Issue::law(
-            Code::Syntax,
-            raw.span,
-            "`raw_sequence` requires at least one `step`",
-        ))
-        .into());
-    }
-    if let Some(idx) = raw.baseline_step_index
-        && idx >= raw.steps.len()
-    {
-        return Err(Box::new(Issue::law(
-            Code::Type,
-            raw.span,
-            format!(
-                "`baseline_step_index` ({idx}) out of bounds (steps: {})",
-                raw.steps.len()
-            ),
-        ))
-        .into());
-    }
-    let mut start_state = BTreeMap::new();
-    for (coord, lit, span) in &raw.start_state {
-        if start_state.contains_key(&coord.name) {
-            return duplicate(
-                coord.span,
-                format!("duplicate start_state `{}`", coord.name),
-            );
-        }
-        check_scalar_lit(lit, coeff_domain, *span, control)?;
-        start_state.insert(coord.name.clone(), lit.clone());
-    }
-    let mut steps = Vec::with_capacity(raw.steps.len());
-    for st in &raw.steps {
-        for arg in &st.args {
-            check_scalar_lit(arg, coeff_domain, st.span, control)?;
-        }
-        steps.push((st.operation.name.clone(), st.args.clone()));
-    }
-    for m in members {
-        if let Some(p_name) = &m.presentation {
-            let pres = &decls.presentations[p_name];
-            check_presentation_vars(pres, None, control)?;
-            let Some(ph) = pres.phases.iter().find(|p| p.name == raw.start_phase.name) else {
-                return reference(
-                    raw.start_phase.span,
-                    format!(
-                        "unknown phase `{}` in presentation `{p_name}`",
-                        raw.start_phase.name
-                    ),
-                );
-            };
-            let ph_coords: HashSet<&str> = ph.coords.iter().map(|c| c.name.as_str()).collect();
-            for k in start_state.keys() {
-                if !ph_coords.contains(k.as_str()) {
-                    return reference(
-                        raw.span,
-                        format!(
-                            "unknown start_state coordinate `{k}` for `{p_name}.{}` in `{full_name}`",
-                            ph.name
-                        ),
-                    );
-                }
-            }
-            for (op_name, args) in &steps {
-                let Some(op) = pres.operations.iter().find(|o| &o.name == op_name) else {
-                    return reference(
-                        raw.span,
-                        format!("unknown step operation `{op_name}` in `{p_name}`"),
-                    );
-                };
-                if op.args.len() != args.len() {
-                    return Err(Box::new(Issue::law(
-                        Code::Type,
-                        raw.span,
-                        format!(
-                            "step operation `{op_name}` expects {} args, got {}",
-                            op.args.len(),
-                            args.len()
-                        ),
-                    ))
-                    .into());
-                }
-            }
-            if !pres
-                .observations
-                .iter()
-                .any(|o| o.name == raw.observation_name.name)
-            {
-                return reference(
-                    raw.observation_name.span,
-                    format!(
-                        "unknown observation `{}` in `{p_name}`",
-                        raw.observation_name.name
-                    ),
-                );
-            }
-        }
-    }
-    Ok(ShigureRawSequenceSpec {
-        start_phase: raw.start_phase.name.clone(),
-        start_state,
-        steps,
-        observation_name: raw.observation_name.name.clone(),
-        baseline_step_index: raw.baseline_step_index,
         span: raw.span,
     })
 }

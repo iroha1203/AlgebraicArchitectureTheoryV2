@@ -392,7 +392,11 @@ impl ControlledEq for CheckedShigureDecls {
         c.eq(&self.tasks, &other.tasks)?;
         c.eq(&self.diagrams, &other.diagrams)?;
         c.eq(&self.paths, &other.paths)?;
-        c.eq(&self.transfers, &other.transfers)
+        c.eq(&self.transfers, &other.transfers)?;
+        c.eq(&self.families, &other.families)?;
+        c.eq(&self.robustness_tasks, &other.robustness_tasks)?;
+        c.eq(&self.chevalley_tasks, &other.chevalley_tasks)?;
+        c.eq(&self.observation_tasks, &other.observation_tasks)
     }
 }
 

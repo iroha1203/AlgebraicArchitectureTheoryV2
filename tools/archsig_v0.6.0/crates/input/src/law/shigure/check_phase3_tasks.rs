@@ -2,7 +2,9 @@
 
 use super::ast_ext::ShigureScalarLit;
 use super::ast_phase3::*;
-use super::check::{CResult, DeclCategory, check_point_domain, resolve_shigure_ref};
+use super::check::{
+    CResult, DeclCategory, check_point_domain, check_presentation_vars, resolve_shigure_ref,
+};
 use super::check_ext_common::check_scalar_lit;
 use super::check_family::{check_family, check_named_polys_in_scope, check_origin_ref};
 use super::*;
@@ -574,6 +576,207 @@ fn check_observations<E: InputError>(
         base_value: raw.base_value.clone(),
         observations,
         law_readout,
+        span: raw.span,
+    })
+}
+
+pub(super) fn check_raw_sequence<E: InputError>(
+    raw: &RawSequenceSpec,
+    real_space: &ShigureRealizationSpace,
+    coeff_domain: &ShigureCoeffDomain,
+    decls: &CheckedShigureDecls,
+    parent_span: Span,
+    full_name: &str,
+    control: &Control,
+) -> CResult<ShigureRawSequenceSpec, E> {
+    let ShigureRealizationSpace::FiniteMembers(members) = real_space else {
+        return Err(Box::new(Issue::law(
+            Code::Type,
+            parent_span,
+            "`raw_sequence` requires `realizations` to use finite `member` declarations",
+        ))
+        .into());
+    };
+    if raw.steps.is_empty() {
+        return Err(Box::new(Issue::law(
+            Code::Syntax,
+            raw.span,
+            "`raw_sequence` requires at least one `step`",
+        ))
+        .into());
+    }
+    if let Some(idx) = raw.baseline_step_index
+        && idx >= raw.steps.len()
+    {
+        return Err(Box::new(Issue::law(
+            Code::Type,
+            raw.span,
+            format!(
+                "`baseline_step_index` ({idx}) out of bounds (steps: {})",
+                raw.steps.len()
+            ),
+        ))
+        .into());
+    }
+    let mut start_state = BTreeMap::new();
+    for (coord, lit, span) in &raw.start_state {
+        if start_state.contains_key(&coord.name) {
+            return duplicate(
+                coord.span,
+                format!("duplicate start_state `{}`", coord.name),
+            );
+        }
+        check_scalar_lit(lit, coeff_domain, *span, control)?;
+        start_state.insert(coord.name.clone(), lit.clone());
+    }
+    let mut steps = Vec::with_capacity(raw.steps.len());
+    for st in &raw.steps {
+        for arg in &st.args {
+            check_scalar_lit(arg, coeff_domain, st.span, control)?;
+        }
+        steps.push((st.operation.name.clone(), st.args.clone()));
+    }
+    for m in members {
+        let Some(p_name) = &m.presentation else {
+            return Err(Box::new(Issue::law(
+                Code::Type,
+                m.span,
+                format!(
+                    "`raw_sequence` in `{full_name}` requires realization member `{}` to specify `presentation`",
+                    m.id
+                ),
+            ))
+            .into());
+        };
+        let pres = &decls.presentations[p_name];
+        check_presentation_vars(pres, None, control)?;
+        let Some(start_ph) = pres.phases.iter().find(|p| p.name == raw.start_phase.name) else {
+            return reference(
+                raw.start_phase.span,
+                format!(
+                    "unknown phase `{}` in presentation `{p_name}`",
+                    raw.start_phase.name
+                ),
+            );
+        };
+        let ph_coords: HashSet<&str> = start_ph.coords.iter().map(|c| c.name.as_str()).collect();
+        for k in start_state.keys() {
+            if !ph_coords.contains(k.as_str()) {
+                return reference(
+                    raw.span,
+                    format!(
+                        "unknown start_state coordinate `{k}` for `{p_name}.{}` in `{full_name}`",
+                        start_ph.name
+                    ),
+                );
+            }
+        }
+        for c in &start_ph.coords {
+            if matches!(c.binding, ShigureCoordBinding::Symbolic)
+                && !start_state.contains_key(&c.name)
+            {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    raw.span,
+                    format!(
+                        "start_state in `{full_name}` is missing symbolic coordinate `{}` of `{p_name}.{}`",
+                        c.name, start_ph.name
+                    ),
+                ))
+                .into());
+            }
+        }
+        let mut cur_phase = raw.start_phase.name.as_str();
+        let mut baseline_phase: Option<&str> = match raw.baseline_step_index {
+            None if steps.len() == 1 => Some(raw.start_phase.name.as_str()),
+            _ => None,
+        };
+        let effective_baseline_idx = raw
+            .baseline_step_index
+            .unwrap_or_else(|| steps.len().saturating_sub(2));
+        for (idx, (op_name, args)) in steps.iter().enumerate() {
+            let Some(op) = pres.operations.iter().find(|o| &o.name == op_name) else {
+                return reference(
+                    raw.span,
+                    format!("unknown step operation `{op_name}` in `{p_name}`"),
+                );
+            };
+            if op.source_phase != cur_phase {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    raw.span,
+                    format!(
+                        "`raw_sequence` step {idx} (`{op_name}`) in `{full_name}` expects source phase `{}`, got `{cur_phase}`",
+                        op.source_phase
+                    ),
+                ))
+                .into());
+            }
+            if op.args.len() != args.len() {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    raw.span,
+                    format!(
+                        "step operation `{op_name}` expects {} args, got {}",
+                        op.args.len(),
+                        args.len()
+                    ),
+                ))
+                .into());
+            }
+            cur_phase = op.target_phase.as_str();
+            if baseline_phase.is_none() && idx == effective_baseline_idx {
+                baseline_phase = Some(cur_phase);
+            }
+        }
+        let Some(final_obs) = pres
+            .observations
+            .iter()
+            .find(|o| o.name == raw.observation_name.name && o.phase == cur_phase)
+        else {
+            return reference(
+                raw.observation_name.span,
+                format!(
+                    "unknown observation `{}` on terminal phase `{cur_phase}` in `{p_name}`",
+                    raw.observation_name.name
+                ),
+            );
+        };
+        if let Some(b_phase) = baseline_phase {
+            let Some(base_obs) = pres
+                .observations
+                .iter()
+                .find(|o| o.name == raw.observation_name.name && o.phase == b_phase)
+            else {
+                return reference(
+                    raw.observation_name.span,
+                    format!(
+                        "unknown observation `{}` on baseline phase `{b_phase}` in `{p_name}`",
+                        raw.observation_name.name
+                    ),
+                );
+            };
+            if final_obs.components.len() != base_obs.components.len() {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    raw.span,
+                    format!(
+                        "observation `{}` arity mismatch between baseline `{b_phase}` ({}) and terminal `{cur_phase}` ({}) in `{p_name}`",
+                        raw.observation_name.name,
+                        base_obs.components.len(),
+                        final_obs.components.len()
+                    ),
+                ))
+                .into());
+            }
+        }
+    }
+    Ok(ShigureRawSequenceSpec {
+        start_phase: raw.start_phase.name.clone(),
+        start_state,
+        steps,
+        observation_name: raw.observation_name.name.clone(),
+        baseline_step_index: raw.baseline_step_index,
         span: raw.span,
     })
 }

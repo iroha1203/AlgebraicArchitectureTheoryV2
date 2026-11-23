@@ -325,6 +325,7 @@ impl<E: InputError> Parser<E> {
 
     fn parse_realization_member(&mut self, start: usize) -> PResult<RawRealizationMember, E> {
         let id = self.ident()?;
+        self.reject_forbidden_ident(&id, "realization `member`")?;
         self.expect_sym("{")?;
         let mut assignments = Vec::new();
         let mut is_raw_candidate = None;
@@ -486,6 +487,7 @@ impl<E: InputError> Parser<E> {
 
     fn parse_candidate_member(&mut self, start: usize) -> PResult<RawCandidateMember, E> {
         let id = self.ident()?;
+        self.reject_forbidden_ident(&id, "candidate `member`")?;
         self.expect_sym("{")?;
         let mut assignments = Vec::new();
         let mut origin = None;

@@ -441,3 +441,108 @@ reading Compat {{
     .expect("contextual Phase 3 keywords must not reserve normal identifiers");
     assert!(checked.law().shigure().is_empty());
 }
+
+#[test]
+fn rejects_empty_witness_vars_invalid_raw_sequence_and_forbidden_member_ids() {
+    // Finding 3: forbidden conclusion field name in member id definition position
+    expect_input_err(
+        r#"
+  shigure family BadRealId {
+    domain Z;
+    realizations U {
+      u_vars [u]; b_vars []; reading_q [];
+      member mixed { origin static_analysis "o"; set u = 0; }
+    }
+    candidates C { c_vars []; pi []; members []; }
+    goodness direct {}
+  }"#,
+    );
+    expect_input_err(
+        r#"
+  shigure family BadCandId {
+    domain Z;
+    realizations U { u_vars [u]; b_vars []; reading_q []; members []; }
+    candidates C {
+      c_vars [c]; pi [];
+      member mixed { origin human_adopted "o"; set c = 0; }
+    }
+    goodness direct {}
+  }"#,
+    );
+
+    // Finding 2a: empty witness_vars in existential goodness
+    expect_input_err(
+        r#"
+  shigure family EmptyWitness {
+    domain Z;
+    realizations U { u_vars [u]; b_vars []; reading_q []; members []; }
+    candidates C { c_vars []; pi []; members []; }
+    goodness existential { witness_vars []; }
+  }"#,
+    );
+
+    // Finding 2b: raw_sequence member missing presentation
+    expect_input_err(
+        r#"
+  shigure family RawNoPres {
+    domain Z;
+    realizations U {
+      u_vars [u]; b_vars []; reading_q [];
+      member u0 { origin static_analysis "o"; set u = 0; }
+    }
+    candidates C { c_vars []; pi []; members []; }
+    goodness direct {
+      raw_sequence { start_phase P0; start_state x = 0; step go; observation r; }
+    }
+  }"#,
+    );
+
+    let two_phase_pres = r#"
+  shigure presentation TwoPhase {
+    domain Z;
+    sort N;
+    phase A { coord x: N; coord y: N; }
+    phase B { coord x: N; coord y: N; }
+    op a_to_b(): A -> B { x = x; y = y; }
+    op b_to_a(): B -> A { x = x; y = y; }
+    obs r on A = (x);
+    obs r on B = (x, y);
+  }
+"#;
+    // Finding 2c: start_state missing symbolic coordinate `y`
+    expect_input_err(&format!(
+        r#"{two_phase_pres}
+  shigure family RawMissingCoord {{
+    domain Z;
+    realizations U {{ u_vars [u]; b_vars []; reading_q []; member u0 {{ origin static_analysis "o"; presentation TwoPhase; set u = 0; }} }}
+    candidates C {{ c_vars []; pi []; members []; }}
+    goodness direct {{
+      raw_sequence {{ start_phase A; start_state x = 1; step a_to_b; observation r; }}
+    }}
+  }}"#
+    ));
+    // Finding 2d: broken phase chain (b_to_a starts in A)
+    expect_input_err(&format!(
+        r#"{two_phase_pres}
+  shigure family RawBrokenChain {{
+    domain Z;
+    realizations U {{ u_vars [u]; b_vars []; reading_q []; member u0 {{ origin static_analysis "o"; presentation TwoPhase; set u = 0; }} }}
+    candidates C {{ c_vars []; pi []; members []; }}
+    goodness direct {{
+      raw_sequence {{ start_phase A; start_state x = 1; start_state y = 2; step b_to_a; observation r; }}
+    }}
+  }}"#
+    ));
+    // Finding 2e: baseline `A` (arity 1) vs terminal `B` (arity 2) observation arity mismatch
+    expect_input_err(&format!(
+        r#"{two_phase_pres}
+  shigure family RawObsArityMismatch {{
+    domain Z;
+    realizations U {{ u_vars [u]; b_vars []; reading_q []; member u0 {{ origin static_analysis "o"; presentation TwoPhase; set u = 0; }} }}
+    candidates C {{ c_vars []; pi []; members []; }}
+    goodness direct {{
+      raw_sequence {{ start_phase A; start_state x = 1; start_state y = 2; step a_to_b; observation r; }}
+    }}
+  }}"#
+    ));
+}
