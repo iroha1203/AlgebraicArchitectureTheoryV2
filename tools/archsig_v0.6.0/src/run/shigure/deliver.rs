@@ -6,7 +6,8 @@ use archsig_common::canonical::{Json, JsonObject};
 use archsig_common::control::Control;
 use archsig_input::input::CheckedInputs;
 use archsig_input::law::shigure::{
-    CheckedShigureDecls, ShigureMorphismBody, ShigurePathQueryMode, ShigureTransferStepSource,
+    CheckedShigureDecls, ShigureGoodnessSpec, ShigureMorphismBody, ShigurePathQueryMode,
+    ShigureRealizationSpace, ShigureTransferStepSource,
 };
 use archsig_input::result::{Signal, Status, exit_code};
 use archsig_shigure::ir::result::{ShigureOutcome, SilenceReason, Verdict};
@@ -129,8 +130,7 @@ pub(super) fn deliver_shigure(
         let mut mode_set = BTreeSet::from(["specification"]);
         if let Some(outcome) = &outcome_opt {
             for origin_ref in &outcome.provenance.origins {
-                if origin_ref.atom_ref.is_some()
-                    && origin_ref.law_declaration.is_none()
+                if origin_ref.law_declaration.is_none()
                     && let Some(&mode_str) = origin_modes.get(origin_ref.origin_id.as_str())
                 {
                     mode_set.insert(mode_str);
@@ -391,6 +391,26 @@ fn collect_decl_readings(
             push_cmp(c, out_r);
         }
     };
+    let push_family = |fam_name: &str, out_r: &mut BTreeSet<String>| {
+        push_decl(fam_name, out_r);
+        if let Some(fam) = decls.families.get(fam_name) {
+            if let ShigureRealizationSpace::FiniteMembers(members) = &fam.realizations.space {
+                for m in members {
+                    if let Some(pres) = &m.presentation {
+                        push_decl(pres, out_r);
+                    }
+                }
+            }
+            let pres_opt = match &fam.goodness {
+                ShigureGoodnessSpec::Direct { preservation, .. }
+                | ShigureGoodnessSpec::Existential { preservation, .. } => preservation.as_ref(),
+            };
+            if let Some(p) = pres_opt {
+                push_cmp(&p.comparison, out_r);
+                push_decl(&p.change_spec, out_r);
+            }
+        }
+    };
     match query {
         ShigureCliQuery::Task(_) => {
             if let Some(task) = decls.tasks.get(task_name) {
@@ -461,6 +481,21 @@ fn collect_decl_readings(
                         }
                     }
                 }
+            }
+        }
+        ShigureCliQuery::Robustness => {
+            if let Some(rob) = decls.robustness_tasks.get(task_name) {
+                push_family(&rob.family, readings);
+            }
+        }
+        ShigureCliQuery::Chevalley => {
+            if let Some(chev) = decls.chevalley_tasks.get(task_name) {
+                push_family(&chev.family, readings);
+            }
+        }
+        ShigureCliQuery::Observations => {
+            if let Some(obs) = decls.observation_tasks.get(task_name) {
+                push_family(&obs.family, readings);
             }
         }
     }

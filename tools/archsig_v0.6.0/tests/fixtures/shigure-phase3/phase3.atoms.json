@@ -1,0 +1,38 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Phase3Vocab",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Phase3Vocab.Service",
+          "meaning": "Service observation subject for SHIGURE family, robustness, Chevalley, and observation checks.",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "weight",
+              "type": "Q",
+              "meaning": "Observed rational weight coordinate."
+            },
+            {
+              "name": "quota",
+              "type": "Q",
+              "meaning": "Observed rational quota coordinate."
+            },
+            {
+              "name": "tag",
+              "type": "Text",
+              "meaning": "Service label."
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,6 @@
 //! `archsig run` から SHIGURE 計算（`shigure_preservation` / `shigure_solve` / `shigure_interaction` /
-//! `shigure_diagram` / `shigure_path` / `shigure_transfer`）を実行する最小入口。
+//! `shigure_diagram` / `shigure_path` / `shigure_transfer` / `shigure_robustness` /
+//! `shigure_chevalley` / `shigure_observations`）を実行する最小入口。
 //!
 //! 責務:
 //! - 既存の `crates/computation/src/observed/` へ一切触れずに、`archsig-input::input::check_inputs` →
@@ -20,13 +21,15 @@ use archsig_common::control::{Checkpoint, Control};
 use archsig_input::input::{InputSources, InputStatus, check_inputs};
 use archsig_input::result::{ResultIssue, Status};
 use archsig_shigure::ir::diagram::CheckedDiagramTask;
+use archsig_shigure::ir::observation::CheckedObservationTask;
 use archsig_shigure::ir::path::CheckedPathTask;
 use archsig_shigure::ir::result::ShigureOutcome;
+use archsig_shigure::ir::robustness::{CheckedChevalleyTask, CheckedRobustnessTask};
 use archsig_shigure::ir::transfer::CheckedTransferTask;
 use archsig_shigure::ir::validate::CheckedShigureTask;
 use archsig_shigure::solver::{
-    ShigureQueryKind, execute_shigure_task, solve_diagram_task, solve_path_task,
-    solve_transfer_task,
+    ShigureQueryKind, execute_shigure_task, solve_chevalley_task, solve_diagram_task,
+    solve_observation_task, solve_path_task, solve_robustness_task, solve_transfer_task,
 };
 
 pub(super) use parse::classify_asks;
@@ -48,6 +51,9 @@ enum ShigureCliQuery {
     Diagram,
     Path,
     Transfer,
+    Robustness,
+    Chevalley,
+    Observations,
 }
 
 impl ShigureCliQuery {
@@ -59,6 +65,9 @@ impl ShigureCliQuery {
             ShigureCliQuery::Diagram => "shigure_diagram",
             ShigureCliQuery::Path => "shigure_path",
             ShigureCliQuery::Transfer => "shigure_transfer",
+            ShigureCliQuery::Robustness => "shigure_robustness",
+            ShigureCliQuery::Chevalley => "shigure_chevalley",
+            ShigureCliQuery::Observations => "shigure_observations",
         }
     }
 }
@@ -77,6 +86,9 @@ enum ResolvedShigurePayload {
     Diagram(CheckedDiagramTask),
     Path(Box<CheckedPathTask>),
     Transfer(CheckedTransferTask),
+    Robustness(Box<CheckedRobustnessTask>),
+    Chevalley(Box<CheckedChevalleyTask>),
+    Observations(Box<CheckedObservationTask>),
 }
 
 impl ResolvedShigurePayload {
@@ -86,6 +98,9 @@ impl ResolvedShigurePayload {
             ResolvedShigurePayload::Diagram(task) => solve_diagram_task(task),
             ResolvedShigurePayload::Path(task) => solve_path_task(task),
             ResolvedShigurePayload::Transfer(task) => solve_transfer_task(task),
+            ResolvedShigurePayload::Robustness(task) => solve_robustness_task(task),
+            ResolvedShigurePayload::Chevalley(task) => solve_chevalley_task(task),
+            ResolvedShigurePayload::Observations(task) => solve_observation_task(task),
         }
     }
 }
@@ -106,7 +121,7 @@ pub(super) fn mixed_asks_outcome(signals: &mut dyn Signals, control: &Control) -
         control.stop_reason(),
         vec![deliver::usage_issue(
             None,
-            "SHIGURE queries (`shigure_preservation`, `shigure_solve`, `shigure_interaction`, `shigure_diagram`, `shigure_path`, `shigure_transfer`) cannot be combined with standard observed queries in the same `archsig run`; invoke them separately",
+            "SHIGURE queries (`shigure_preservation`, `shigure_solve`, `shigure_interaction`, `shigure_diagram`, `shigure_path`, `shigure_transfer`, `shigure_robustness`, `shigure_chevalley`, `shigure_observations`) cannot be combined with standard observed queries in the same `archsig run`; invoke them separately",
         )],
     )
 }

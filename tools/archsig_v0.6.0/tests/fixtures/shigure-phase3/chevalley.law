@@ -1,0 +1,113 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading ChevalleySuite {
+  use vocabulary Phase3Vocab version "1" digest "sha256:9ca606765399fff56548db031f6bec968722a0d2c8ef573bd3a4426f148b1a41";
+
+  shigure family D6Hyp {
+    domain Q;
+    realizations U {
+      u_vars [x];
+      b_vars [];
+      reading_q [];
+      scheme { origin static_analysis "d6-u"; }
+    }
+    candidates C {
+      c_vars [c];
+      pi [];
+      member c0 { origin human_adopted "d6-c0"; set c = 0; }
+    }
+    goodness existential {
+      witness_vars [y];
+      equation hyp: x * y - 1 = 0;
+    }
+  }
+
+  shigure chevalley D6Chev {
+    family D6Hyp;
+    point_domain algebraic_closure;
+  }
+
+  shigure family FourRegionsFam {
+    domain Q;
+    realizations U {
+      u_vars [u, s, inv];
+      b_vars [b];
+      reading_q [s];
+      scheme {
+        origin static_analysis "four-u";
+        equation bool_u: u * (u - 1) = 0;
+        equation fiber_rule: (s - 2) * (u - s) = 0;
+        equation empty_at_3: (s - 3) * inv - 1 = 0;
+      }
+    }
+    candidates C {
+      c_vars [c];
+      pi [c];
+      scheme { origin human_adopted "four-c"; }
+    }
+    goodness direct {
+      equation ok: u = 0;
+    }
+  }
+
+  shigure chevalley FourRegionsChev {
+    family FourRegionsFam;
+    point_domain algebraic_closure;
+  }
+
+  shigure family W5Fam {
+    domain Q;
+    realizations Gm {
+      u_vars [t];
+      b_vars [];
+      reading_q [];
+      scheme { origin static_analysis "w5-u"; invertible t_nz: t; }
+    }
+    candidates C {
+      c_vars [c];
+      pi [];
+      member c0 { origin human_adopted "w5-c0"; set c = 0; }
+    }
+    goodness existential {
+      witness_vars [z];
+      equation cov: pow(z, 2) - t = 0;
+    }
+  }
+
+  shigure chevalley W5Chev {
+    family W5Fam;
+    point_domain algebraic_closure;
+    probe t_eq_4 { t = 4; c = 0; }
+    probe t_eq_2 { t = 2; c = 0; }
+    check_global_regular_section true;
+  }
+
+  shigure family W6Fam {
+    domain Q;
+    realizations U {
+      u_vars [rho];
+      b_vars [b];
+      reading_q [pow(rho - 1, 2)];
+      scheme {
+        origin static_analysis "w6-u";
+        equation nilp: pow(rho - 1, 2) = 0;
+      }
+    }
+    candidates C {
+      c_vars [c];
+      pi [c];
+      member c0 { origin human_adopted "w6-c0"; set c = 0; }
+    }
+    goodness direct {
+      equation exact_one: rho - 1 = 0;
+    }
+  }
+
+  shigure chevalley W6Chev {
+    family W6Fam;
+    point_domain algebraic_closure;
+    base_value [0];
+    designated_candidate id c0;
+    check_universal_ring true;
+  }
+}

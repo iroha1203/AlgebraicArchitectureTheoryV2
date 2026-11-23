@@ -1,0 +1,224 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading Phase3Base {
+  use vocabulary Phase3Vocab version "1" digest "sha256:9ca606765399fff56548db031f6bec968722a0d2c8ef573bd3a4426f148b1a41";
+
+  shigure family W4Fam {
+    domain Fp(2);
+    realizations U {
+      u_vars [u];
+      b_vars [b];
+      reading_q [0];
+      member u0 { origin static_analysis "w4-u0"; set u = fp(0, 2); }
+      member u1 { origin runtime_observation "w4-u1"; set u = fp(1, 2); }
+    }
+    candidates C {
+      c_vars [c];
+      pi [0];
+      member c0 { origin human_adopted "w4-c0"; set c = fp(0, 2); }
+      member c1 { origin llm_candidate "w4-c1"; set c = fp(1, 2); }
+    }
+    goodness direct {
+      equation agree: u = c;
+    }
+  }
+}
+
+reading RobustnessSuite {
+  use vocabulary Phase3Vocab version "1" digest "sha256:9ca606765399fff56548db031f6bec968722a0d2c8ef573bd3a4426f148b1a41";
+  use Phase3Base as Base;
+
+  shigure robustness W4Separation {
+    family Base.W4Fam;
+    point_domain Fp_points(2);
+    base_value [fp(0, 2)];
+    designated_candidate id c0;
+  }
+
+  shigure family EmptyFiberFam {
+    domain Q;
+    realizations U {
+      u_vars [u];
+      b_vars [b];
+      reading_q [u];
+      member u1 { origin static_analysis "ef-u1"; set u = 1; }
+    }
+    candidates C {
+      c_vars [c];
+      pi [0];
+      member c0 { origin human_adopted "ef-c0"; set c = 0; }
+    }
+    goodness direct {
+      equation ok: u - c = 0;
+    }
+  }
+
+  shigure robustness EmptyFiberRob {
+    family EmptyFiberFam;
+    point_domain rational_points;
+    base_value [0];
+    designated_candidate id c0;
+  }
+
+  shigure family ExistentialFam {
+    domain Q;
+    realizations U {
+      u_vars [u];
+      b_vars [];
+      reading_q [];
+      member u0 { origin static_analysis "ex-u0"; set u = 2; }
+    }
+    candidates C {
+      c_vars [c];
+      pi [];
+      member c0 { origin human_adopted "ex-c0"; set c = 4; }
+    }
+    goodness existential {
+      witness_vars [w];
+      equation eq: u * w - c = 0;
+    }
+  }
+
+  shigure robustness ExistentialRob {
+    family ExistentialFam;
+    point_domain rational_points;
+    base_value [];
+    designated_candidate id c0;
+  }
+
+  shigure family UnivFpFam {
+    domain Fp(2);
+    realizations U {
+      u_vars [u];
+      b_vars [b];
+      reading_q [0];
+      scheme { origin static_analysis "ufp-scheme"; }
+    }
+    candidates C {
+      c_vars [c];
+      pi [0];
+      member c0 { origin human_adopted "ufp-c0"; set c = fp(0, 2); }
+    }
+    goodness direct {
+      equation fermat: pow(u, 2) - u = 0;
+    }
+  }
+
+  shigure robustness UnivFpRob {
+    family UnivFpFam;
+    point_domain Fp_points(2);
+    base_value [fp(0, 2)];
+    designated_candidate id c0;
+    check_universal_ring true;
+  }
+
+  shigure family W6DualFam {
+    domain Q;
+    realizations U {
+      u_vars [rho];
+      b_vars [b];
+      reading_q [pow(rho - 1, 2)];
+      scheme {
+        origin static_analysis "w6d-scheme";
+        equation nilp: pow(rho - 1, 2) = 0;
+      }
+    }
+    candidates C {
+      c_vars [c];
+      pi [c];
+      member c0 { origin human_adopted "w6d-c0"; set c = 0; }
+    }
+    goodness direct {
+      equation exact_one: rho - 1 = 0;
+    }
+  }
+
+  shigure robustness W6DualRob {
+    family W6DualFam;
+    point_domain rational_points;
+    base_value [0];
+    designated_candidate id c0;
+    check_universal_ring true;
+  }
+
+  shigure presentation OldFin {
+    domain Q;
+    sort N;
+    phase S { coord k: N; }
+    op finish(): S -> S { k = k - 1; }
+    obs r on S = (k);
+  }
+
+  shigure presentation SnapFin {
+    domain Q;
+    sort N;
+    phase S { coord k: N; }
+    op finish(): S -> S { k = k; }
+    obs r on S = (k);
+  }
+
+  shigure family P7Fam {
+    domain Q;
+    realizations U {
+      u_vars [u];
+      b_vars [bt];
+      reading_q [0];
+      member u_old { origin llm_candidate "p7-raw-old"; is_raw_candidate true; presentation OldFin; set u = 0; }
+      member u_snap { origin human_adopted "p7-raw-snap"; is_raw_candidate true; presentation SnapFin; set u = 1; }
+    }
+    candidates C {
+      c_vars [];
+      pi [0];
+      member c0 { origin human_adopted "p7-c0"; }
+    }
+    goodness direct {
+      raw_sequence {
+        start_phase S;
+        start_state k = 5;
+        step finish;
+        observation r;
+      }
+    }
+    reading_comparison FineB {
+      fine_b_vars [bf];
+      fine_q [u];
+      coarsen_r [0];
+    }
+  }
+
+  shigure robustness P7Rob {
+    family P7Fam;
+    point_domain rational_points;
+    base_value [0];
+    fine_base_value [1];
+  }
+
+  shigure family ProvenanceFam {
+    domain Q;
+    realizations U {
+      u_vars [w, q_slot];
+      b_vars [b];
+      reading_q [0];
+      member u_obs {
+        origin archmap "o_llm";
+        set w = observed Service.weight;
+        set q_slot = observed Service.quota;
+      }
+    }
+    candidates C {
+      c_vars [c];
+      pi [0];
+      member c0 { origin human_adopted "prov-c0"; set c = rat(3, 2); }
+    }
+    goodness direct {
+      equation match_w: w - c = 0;
+    }
+  }
+
+  shigure robustness ProvenanceRob {
+    family ProvenanceFam;
+    point_domain rational_points;
+    base_value [0];
+    designated_candidate id c0;
+  }
+}
