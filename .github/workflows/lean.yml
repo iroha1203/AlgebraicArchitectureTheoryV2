@@ -217,7 +217,8 @@ jobs:
           changed_paths="$(git diff --name-only "$base" "$HEAD_SHA" -- \
             Formal/SHIGURE/ Formal/SHIGURE.lean lakefile.toml lake-manifest.json lean-toolchain \
             .github/lean_quality/check_shigure_imports.lean \
-            .github/lean_quality/check_shigure_primitives.py \
+            .github/lean_quality/check_shigure_declarations.lean \
+            .github/lean_quality/test_shigure_declarations.sh \
             .github/workflows/lean.yml)"
           if [ -n "$changed_paths" ]; then
             echo "run=true" >>"$GITHUB_OUTPUT"
@@ -234,15 +235,19 @@ jobs:
           lint: false
           use-github-cache: false
 
-      - name: Check SHIGURE imports and forbidden source tokens
+      - name: Check SHIGURE imports
         if: steps.shigure-changes.outputs.run == 'true'
-        run: |
-          lean --run .github/lean_quality/check_shigure_imports.lean
-          python3 .github/lean_quality/check_shigure_primitives.py
+        run: lean --run .github/lean_quality/check_shigure_imports.lean
 
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'
         run: lake build +Formal.SHIGURE
+
+      - name: Check SHIGURE syntax and declaration dependencies
+        if: steps.shigure-changes.outputs.run == 'true'
+        run: |
+          lake env lean --run .github/lean_quality/check_shigure_declarations.lean
+          bash .github/lean_quality/test_shigure_declarations.sh
 
       - name: Audit SHIGURE kernel dependencies
         if: steps.shigure-changes.outputs.run == 'true'

@@ -12,14 +12,16 @@ open Lean Elab Command
 
 namespace SHIGURE
 
-/-- Kernel assumptions permitted in audited declarations. -/
-private def standardAxioms : Array Name :=
-  #[``propext, ``Classical.choice, ``Quot.sound]
+/-- Recognize the three standard kernel assumptions permitted in SHIGURE. -/
+def isStandardAxiom (name : Name) : Bool :=
+  #[``propext, ``Classical.choice, ``Quot.sound].contains name
 
 /-- Reject an empty audit or a declaration depending on a nonstandard kernel assumption. -/
 elab "#shigure_assert_standard_axioms_only " target:ident : command => do
   let namespaceName := target.getId
   let env ← getEnv
+  if env.header.isModule then
+    throwErrorAt target "Run the kernel audit in a file without a module header to load imported proofs"
   -- Stage two contains the current module's declarations, including pending proofs.
   let declarations := env.constants.foldStage2 (s := #[]) fun names name _ =>
     let userName := privateToUserName name
@@ -27,7 +29,7 @@ elab "#shigure_assert_standard_axioms_only " target:ident : command => do
   if declarations.isEmpty then
     throwErrorAt target "No declarations in namespace '{namespaceName}' in the current module"
   for name in declarations do
-    let unexpected := (← collectAxioms name).filter (!standardAxioms.contains ·)
+    let unexpected := (← collectAxioms name).filter (!isStandardAxiom ·)
     unless unexpected.isEmpty do
       let unexpectedNames := unexpected.toList.map privateToUserName
       throwErrorAt target

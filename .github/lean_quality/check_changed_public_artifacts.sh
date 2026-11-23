@@ -75,9 +75,10 @@ for raw in open(sys.argv[1], encoding="utf-8", errors="replace"):
         violations.append((path, line_number, "E_PRIVATE_LOCAL_PATH"))
     if any(token in payload for token in machine_patterns):
         violations.append((path, line_number, "E_MACHINE_IDENTIFIER"))
-    # The SHIGURE job scans complete sources so comments and the single negative fixture are handled in context.
+    # The SHIGURE job checks complete sources with Lean's frontend.
     shigure_source = path == "Formal/SHIGURE.lean" or path.startswith("Formal/SHIGURE/")
-    if path.endswith(".lean") and not shigure_source and primitive.search(payload):
+    shigure_checker = path == ".github/lean_quality/check_shigure_declarations.lean"
+    if path.endswith(".lean") and not (shigure_source or shigure_checker) and primitive.search(payload):
         violations.append((path, line_number, "E_FORBIDDEN_LEAN_PRIMITIVE"))
 
 if violations:
