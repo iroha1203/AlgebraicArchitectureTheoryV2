@@ -27,6 +27,9 @@ use crate::solver::preservation::{
     substitute_poly_expr,
 };
 use crate::solver::restore::{find_witness_point_q, polys_to_affine_system_q};
+use crate::solver::robustness_symbolic::{
+    format_stratum_desc, match_candidate_meta, rat_to_scalar_vals,
+};
 use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::One;
@@ -131,17 +134,17 @@ pub(super) fn build_mixed_witness_pair(
     if let Some(cand) = chosen_in_mixed {
         return try_cand(cand);
     }
+    let fallback_origin =
+        default_candidate_origin(&family.inner().candidates.space, &family.inner().provenance);
     for st in sets.mixed.strata() {
         if let Some(pt) = pick_rational_point_in_stratum(st, &sets.c_vars)? {
-            let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
+            let vals = rat_to_scalar_vals(pt, family.coeff_domain());
+            let (cid, corig) = match_candidate_meta(family, &vals, &fallback_origin);
             let cand = EnumCandidate {
-                candidate_id: None,
+                candidate_id: cid,
                 assignments: build_assignment_map(family.c_vars(), &vals),
                 values: vals,
-                origin: default_candidate_origin(
-                    &family.inner().candidates.space,
-                    &family.inner().provenance,
-                ),
+                origin: corig,
             };
             if let Some(pair) = try_cand(cand)? {
                 return Ok(Some(pair));
@@ -217,13 +220,10 @@ fn build_u_witness_from_slice(
     if is_existential_pass {
         return Ok(None);
     }
-    let eq_disp = display_polys(&first_st.equations, u_vars);
+    let desc = format_stratum_desc(first_st, u_vars);
     let mut assign = BTreeMap::new();
     for u in u_vars.vars() {
-        assign.insert(
-            u.clone(),
-            format!("geom_point({u}; {} = 0)", eq_disp.join(", ")),
-        );
+        assign.insert(u.clone(), format!("geom_point({u}; {desc})"));
     }
     Ok(Some(PairEvaluationWitness {
         realization: RealizationWitness {
@@ -236,7 +236,11 @@ fn build_u_witness_from_slice(
         candidate_assignments: cand.assignments.clone(),
         passed: expected_pass,
         legal_execution_exists: None,
-        residuals: if expected_pass { vec![] } else { eq_disp },
+        residuals: if expected_pass || desc == "unconstrained" {
+            vec![]
+        } else {
+            vec![desc]
+        },
         empty_witness: None,
         restored_completion: None,
     }))
@@ -253,15 +257,15 @@ pub(super) fn resolve_universal_candidate(
     if let Some(c) = chosen {
         return Ok(Some(c.clone()));
     }
+    let fallback_origin =
+        default_candidate_origin(&family.inner().candidates.space, &family.inner().provenance);
     if family.c_vars().is_empty() {
+        let (cid, corig) = match_candidate_meta(family, &[], &fallback_origin);
         return Ok(Some(EnumCandidate {
-            candidate_id: None,
+            candidate_id: cid,
             values: vec![],
             assignments: BTreeMap::new(),
-            origin: default_candidate_origin(
-                &family.inner().candidates.space,
-                &family.inner().provenance,
-            ),
+            origin: corig,
         }));
     }
     for st in sets
@@ -271,15 +275,13 @@ pub(super) fn resolve_universal_candidate(
         .chain(sets.c_space.strata())
     {
         if let Some(pt) = pick_rational_point_in_stratum(st, &sets.c_vars)? {
-            let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
+            let vals = rat_to_scalar_vals(pt, family.coeff_domain());
+            let (cid, corig) = match_candidate_meta(family, &vals, &fallback_origin);
             return Ok(Some(EnumCandidate {
-                candidate_id: None,
+                candidate_id: cid,
                 assignments: build_assignment_map(family.c_vars(), &vals),
                 values: vals,
-                origin: default_candidate_origin(
-                    &family.inner().candidates.space,
-                    &family.inner().provenance,
-                ),
+                origin: corig,
             }));
         }
     }

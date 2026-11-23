@@ -75,7 +75,7 @@ fn swap_uc_to_cu(
     ConstructibleSet::from_strata(cu_vars.clone(), strata)
 }
 
-fn rat_to_scalar_vals(pts: Vec<Rat>, domain: &CoeffDomain) -> Vec<ScalarVal> {
+pub(crate) fn rat_to_scalar_vals(pts: Vec<Rat>, domain: &CoeffDomain) -> Vec<ScalarVal> {
     pts.into_iter()
         .map(|r| match domain {
             CoeffDomain::Z if r.den().is_one() => ScalarVal::Z(r.num().clone()),
@@ -84,7 +84,7 @@ fn rat_to_scalar_vals(pts: Vec<Rat>, domain: &CoeffDomain) -> Vec<ScalarVal> {
         .collect()
 }
 
-fn format_stratum_desc(st: &LocallyClosedStratum, vars: &VarOrder) -> String {
+pub(crate) fn format_stratum_desc(st: &LocallyClosedStratum, vars: &VarOrder) -> String {
     let eqs = display_polys(&st.equations, vars);
     let invs = display_polys(&st.invertibles, vars);
     match (eqs.is_empty(), invs.is_empty()) {
@@ -135,7 +135,7 @@ fn match_realization_meta(
     }
 }
 
-fn match_candidate_meta(
+pub(crate) fn match_candidate_meta(
     family: &CheckedFamilySpec,
     vals: &[ScalarVal],
     fallback_origin: &SourceRef,
@@ -411,11 +411,12 @@ pub(super) fn eval_symbolic_closure_quantifiers(
     let mut common_cand_opt: Option<EnumCandidate> = None;
     let cand_assign = if common_sat {
         if sets.c_vars.is_empty() {
+            let (cid, corig) = match_candidate_meta(family, &[], &cand_origin);
             common_cand_opt = Some(EnumCandidate {
-                candidate_id: None,
+                candidate_id: cid,
                 values: vec![],
                 assignments: BTreeMap::new(),
-                origin: cand_origin.clone(),
+                origin: corig,
             });
             Some(BTreeMap::new())
         } else {

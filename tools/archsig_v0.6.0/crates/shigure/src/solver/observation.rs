@@ -2,7 +2,7 @@
 
 use crate::algebra::VarOrder;
 use crate::ir::change::PointDomain;
-use crate::ir::family::{FamilySpec, RealizationSpace};
+use crate::ir::family::CheckedFamilySpec;
 use crate::ir::observation::CheckedObservationTask;
 use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason, Verdict};
@@ -16,7 +16,7 @@ use crate::solver::family_direct::{
     check_family_presentations_applicability, evaluate_goodness_at_point,
 };
 use crate::solver::family_eval::{
-    CandidateFiberEnum, EnumRealization, RealizationFiberEnum, ScalarVal,
+    CandidateFiberEnum, EnumRealization, RealizationFiberEnum, ScalarVal, collect_family_origins,
     enumerate_candidates_for_base, enumerate_realizations_for_base, eval_expr_at,
 };
 use crate::solver::preservation::map_algebra_silence;
@@ -34,7 +34,7 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
     let family = task.family();
     let coeff_domain = family.coeff_domain().clone();
     let point_domain = task.point_domain().clone();
-    let provenance = build_obs_provenance(task, family.inner());
+    let provenance = build_obs_provenance(task, family);
     let mut checks = Vec::new();
 
     let missing = task.unobserved_slots();
@@ -546,15 +546,16 @@ fn compute_law_readout_comparison(
     }))
 }
 
-fn build_obs_provenance(task: &CheckedObservationTask, family: &FamilySpec) -> Provenance {
-    let mut origins = family.provenance.origins.clone();
-    origins.extend(task.provenance().origins.clone());
-    for o in task.observations() {
-        origins.push(o.origin.clone());
+fn build_obs_provenance(task: &CheckedObservationTask, family: &CheckedFamilySpec) -> Provenance {
+    let mut origins = collect_family_origins(family);
+    for src in &task.provenance().origins {
+        if !origins.contains(src) {
+            origins.push(src.clone());
+        }
     }
-    if let RealizationSpace::FiniteMembers(ms) = &family.realizations.space {
-        for m in ms {
-            origins.push(m.origin.clone());
+    for o in task.observations() {
+        if !origins.contains(&o.origin) {
+            origins.push(o.origin.clone());
         }
     }
     Provenance::new(origins, vec![MathClause::G142G5, MathClause::G142G6])

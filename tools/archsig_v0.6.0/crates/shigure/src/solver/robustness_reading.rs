@@ -139,50 +139,13 @@ pub(super) fn compute_reading_comparison(
         }
     }
 
-    let mut raw_evals = Vec::new();
-    let mut coarse_ce = None;
-    if let RealizationFiberEnum::Finite(u_list) = real_enum {
-        let eval_cand = designated
-            .cloned()
-            .or_else(|| common_cand.cloned())
-            .or_else(|| match cand_enum {
-                CandidateFiberEnum::Finite(cs) if !cs.is_empty() => Some(cs[0].clone()),
-                _ => None,
-            });
-        if let Some(c_use) = &eval_cand {
-            for u in u_list {
-                let qv = family
-                    .inner()
-                    .realizations
-                    .reading_q
-                    .iter()
-                    .map(|q| eval_expr_at(q, &u_vars, &u.values, domain).map(|s| s.to_display()))
-                    .collect::<Result<Vec<_>, _>>()?;
-                let w = evaluate_goodness_at_point(family, u, c_use, point_domain)?;
-                if !w.passed && coarse_ce.is_none() {
-                    coarse_ce = Some(w.clone());
-                }
-                raw_evals.push(RawCandidateEvaluationSummary {
-                    member_id: u
-                        .member_id
-                        .clone()
-                        .unwrap_or_else(|| "scheme_pt".to_owned()),
-                    origin: u.origin.clone(),
-                    q_value: qv,
-                    passed: w.passed,
-                    legal_execution_exists: w.legal_execution_exists,
-                    residuals: w.residuals,
-                });
-            }
-        }
-    }
-
     let coarse_robust = valid_des
         .as_ref()
         .map(|v| v.satisfied)
         .or_else(|| common.as_ref().map(|c| c.satisfied))
         .unwrap_or(false);
 
+    let mut fine_winner: Option<EnumCandidate> = None;
     let fine_robust = match fine_b_opt {
         None => coarse_robust,
         Some(fine_b_vals) => {
@@ -229,6 +192,7 @@ pub(super) fn compute_reading_comparison(
                         }
                         if all_ok {
                             found_common = true;
+                            fine_winner = Some(c.clone());
                             break;
                         }
                     }
@@ -255,6 +219,45 @@ pub(super) fn compute_reading_comparison(
             }
         }
     };
+
+    let mut raw_evals = Vec::new();
+    let mut coarse_ce = None;
+    if let RealizationFiberEnum::Finite(u_list) = real_enum {
+        let eval_cand = designated
+            .cloned()
+            .or_else(|| common_cand.cloned())
+            .or(fine_winner)
+            .or_else(|| match cand_enum {
+                CandidateFiberEnum::Finite(cs) if !cs.is_empty() => Some(cs[0].clone()),
+                _ => None,
+            });
+        if let Some(c_use) = &eval_cand {
+            for u in u_list {
+                let qv = family
+                    .inner()
+                    .realizations
+                    .reading_q
+                    .iter()
+                    .map(|q| eval_expr_at(q, &u_vars, &u.values, domain).map(|s| s.to_display()))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let w = evaluate_goodness_at_point(family, u, c_use, point_domain)?;
+                if !w.passed && coarse_ce.is_none() {
+                    coarse_ce = Some(w.clone());
+                }
+                raw_evals.push(RawCandidateEvaluationSummary {
+                    member_id: u
+                        .member_id
+                        .clone()
+                        .unwrap_or_else(|| "scheme_pt".to_owned()),
+                    origin: u.origin.clone(),
+                    q_value: qv,
+                    passed: w.passed,
+                    legal_execution_exists: w.legal_execution_exists,
+                    residuals: w.residuals,
+                });
+            }
+        }
+    }
 
     let preserved = !coarse_robust || fine_robust;
     let fine_only_ce = if !coarse_robust && fine_robust {
