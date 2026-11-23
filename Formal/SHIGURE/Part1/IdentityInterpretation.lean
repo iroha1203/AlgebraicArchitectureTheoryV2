@@ -45,14 +45,14 @@ def identityAtomic (a : Atomic T.signature Γ) :
     have same : (identity T.signature).atomic (.rel r inputs) =
         (Formula.atom (.rel r inputs)).rename (retype T) := by
       simp only [atomic_rel, identity_relation, Formula.rename, Atomic.rename, retype,
-        Renaming.mapSorts, Var.reindex_mapSorts]
+        Renaming.mapSorts_apply]
     rw [same]
     exact ⟨.refl _, .refl _⟩
   | domain p inputs =>
     have same : (identity T.signature).atomic (.domain p inputs) =
         (Formula.atom (.domain p inputs)).rename (retype T) := by
       simp only [atomic_domain, identity_domain, Formula.rename, Atomic.rename, retype,
-        Renaming.mapSorts, Var.reindex_mapSorts]
+        Renaming.mapSorts_apply]
     rw [same]
     exact ⟨.refl _, .refl _⟩
   | graph op inputs y =>
@@ -61,10 +61,10 @@ def identityAtomic (a : Atomic T.signature Γ) :
     have forward := Derivation.rename ρ (identityGraph T op).1
     have backward := Derivation.rename ρ (identityGraph T op).2
     exact ⟨by
-      simpa only [atomic_graph, ρ, Formula.rename, Atomic.rename, Renaming.cons,
-        Renaming.mapSorts, Var.reindex_mapSorts, retype] using forward,
-      by simpa only [atomic_graph, ρ, Formula.rename, Atomic.rename, Renaming.cons,
-        Renaming.mapSorts, Var.reindex_mapSorts, retype] using backward⟩
+      simpa only [atomic_graph, ρ, Formula.rename_atom, Atomic.rename_graph, Renaming.cons_here,
+        Renaming.cons_there, Renaming.mapSorts_apply, retype] using forward,
+      by simpa only [atomic_graph, ρ, Formula.rename_atom, Atomic.rename_graph, Renaming.cons_here,
+        Renaming.cons_there, Renaming.mapSorts_apply, retype] using backward⟩
 
 /-- Identity translation is mutually derivable with the retyped original formula. -/
 def identityFormula : {Γ : List T.signature.SortType} → (p : Formula T.signature Γ) →

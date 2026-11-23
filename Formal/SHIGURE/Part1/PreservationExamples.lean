@@ -214,6 +214,19 @@ theorem constant_without_its_sort_is_not_closed :
   rw [onlyConstant] at hs
   cases Set.mem_singleton_iff.1 hs
 
+/-- The full declaration selection contains the interpreted graph of the constant. -/
+private def whole : DeclarationContext withDerivedLaw :=
+  ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+
+/-- Local graph evaluation reads the retained constant's actual value at one. -/
+theorem restricted_constant_holds :
+    let e : Assignment A.carrier [()] := Assignment.cons true Assignment.empty
+    let a : Atomic signature [()] := .graph (.total ()) (fun i => nomatch i) .here
+    (RestrictedEvaluation.restrict whole A).atomic e a (fun _ _ => Set.mem_univ _) := by
+  dsimp only
+  apply (RestrictedEvaluation.restrict_atomic_iff _ _ _ _ _).2
+  exact (Structure.graph_total_iff (sig := signature) A () _ _).2 rfl
+
 /-- A source variable is replaced by the partial term at the constant one. -/
 private def substituteAtOne : Substitution signature [()] [] where
   get
@@ -346,7 +359,7 @@ def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) 
       localSupport := by
         intros
         exact ⟨(), Set.mem_univ _, Set.mem_univ _⟩ }
-  coefficientChange := .unparameterized
+  coefficientChange := PUnit.unit
   value := Bool.not
   commutes := fun _ => rfl
 
@@ -391,37 +404,65 @@ end SHIGURE.Chapter1.Observation
 
 namespace SHIGURE.Chapter1.CoefficientTransport
 
-/-- Direct forms evaluate to their value in the chosen ring. -/
-private def readRing (R : Type) [CommRing R] : CoefficientReading where
+/-- Give the observation signature the carrier of the chosen realization. -/
+private def statesOf (R : Type) : Structure Observation.signature where
+  carrier := fun _ => R
+  total := fun f => nomatch f
+  relation := fun r => nomatch r
+  partialDomain := fun p => nomatch p
+  partialValue := fun p => nomatch p
+  quantity := fun q => nomatch q
+
+/-- A realization datum specifies the offset used when evaluating a state. -/
+private def readRing (R : Type) [CommRing R] (offset : R) :
+    CoefficientReading (statesOf R) [()] where
   Carrier := R
   ring := inferInstance
-  Realization := fun _ _ => Unit
-  realization := ()
-  Form := R
-  evaluate := id
+  Realization := R
+  structureOf := fun _ => statesOf R
+  realization := offset
+  realizes := rfl
+  evaluateOn data e := @Add.add R _ e.head data
 
-/-- An identity coefficient map commutes with direct integer evaluation. -/
-def integerIdentity : CoefficientReading.Change (readRing Int) (readRing Int) where
+/-- An identity coefficient map commutes with evaluation in the same realization. -/
+def integerIdentity :
+    CoefficientReading.Change (readRing Int 0) (readRing Int 0) id where
   coefficients := RingHom.id Int
-  forms := id
+  realizations := id
+  realization_commutes := rfl
   evaluate_commutes := fun _ => rfl
 
-/-- Extending integers diagonally to a product ring commutes with evaluation. -/
-def integerDiagonal : CoefficientReading.Change (readRing Int) (readRing (Int × Int)) where
+/-- Send both coordinates of the realized state to the same integer. -/
+private def diagonalStates (e : Assignment (statesOf Int).carrier [()]) :
+    Assignment (statesOf (Int × Int)).carrier [()] :=
+  Assignment.cons (e.head, e.head) Assignment.empty
+
+/-- Extending integers diagonally to a product ring commutes with realized evaluation. -/
+def integerDiagonal :
+    CoefficientReading.Change (readRing Int 0) (readRing (Int × Int) (0, 0)) diagonalStates where
   coefficients := (RingHom.id Int).prod (RingHom.id Int)
-  forms := fun n => (n, n)
+  realizations := fun offset => (offset, offset)
+  realization_commutes := rfl
   evaluate_commutes := fun _ => rfl
 
-/-- The zero ring cannot be sent to the integers by a unit-preserving coefficient change. -/
+/-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
 theorem zero_ring_to_integer_fails :
-    ¬ Nonempty (CoefficientReading.Comparison (some (readRing PUnit)) (some (readRing Int))) := by
-  rintro ⟨comparison⟩
-  cases comparison with
-  | transport data =>
-    let h : PUnit →+* Int := data.coefficients
-    have hz : (0 : PUnit) = 1 := Subsingleton.elim _ _
-    have bad : (0 : Int) = 1 := h.map_zero.symm.trans ((congrArg (fun x => h x) hz).trans h.map_one)
-    exact (by decide : (0 : Int) ≠ 1) bad
+    ¬ Nonempty (CoefficientReading.Change (readRing PUnit PUnit.unit) (readRing Int 0)
+      (fun _ => Assignment.cons (0 : Int) Assignment.empty)) := by
+  rintro ⟨data⟩
+  let h : PUnit →+* Int := data.coefficients
+  have hz : (0 : PUnit) = 1 := Subsingleton.elim _ _
+  have bad : (0 : Int) = 1 := h.map_zero.symm.trans ((congrArg (fun x => h x) hz).trans h.map_one)
+  exact (by decide : (0 : Int) ≠ 1) bad
+
+/-- The selected offset cannot be changed while transporting the zero state by identity. -/
+theorem offset_change_fails :
+    ¬ Nonempty (CoefficientReading.Change (readRing Int 0) (readRing Int 1) id) := by
+  rintro ⟨data⟩
+  let h : Int →+* Int := data.coefficients
+  have bad : (1 : Int) = h 0 :=
+    data.evaluate_commutes (Assignment.cons (0 : Int) Assignment.empty)
+  exact (by decide : (1 : Int) ≠ 0) (bad.trans h.map_zero)
 
 end SHIGURE.Chapter1.CoefficientTransport
 
@@ -536,3 +577,67 @@ theorem residual_commutes_with_projection :
     (realization_scalarLaws Int Int) productInput
 
 end SHIGURE.Chapter1.ResidualTransport
+
+namespace SHIGURE.Chapter1.TranslationSupport
+
+/-- The source names only a total constant. -/
+private def sourceSignature : Signature where
+  SortType := Unit
+  Total := Unit
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity := fun _ => ⟨[], ()⟩
+  relInputs := fun r => nomatch r
+  partialArity := fun p => nomatch p
+  quantityArity := fun q => nomatch q
+
+/-- The source places no further Laws on the constant. -/
+private def source : PrimitivePresentation where
+  signature := sourceSignature
+  laws :=
+    { LawName := Empty
+      statement := fun n => nomatch n
+      role := fun n => nomatch n }
+  derived n := nomatch n
+
+/-- A required Law gives totality to the target's sole partial constant. -/
+private def target : PrimitivePresentation where
+  signature := Partial.signature
+  laws :=
+    { LawName := Unit
+      statement := fun _ => ⟨[], .truth, (Partial.missing (Γ := [])).defined⟩
+      role := fun _ => .required }
+  derived _ h := by cases h
+
+/-- The target premise used to translate the source's total constant. -/
+private def totalityPremise : target.theory.LawName := ⟨(), rfl⟩
+
+/-- Translate the source constant to the partial constant whose totality is a required Law. -/
+private def translate : Interpretation source.theory target.theory where
+  onSort := id
+  translation :=
+    { operation := fun op => match op with
+        | .total _ => Partial.missing
+        | .partialOp p => nomatch p
+        | .quantity q => nomatch q
+      relation := fun r => nomatch r
+      partialDomain := fun p => nomatch p }
+  total _ := .required totalityPremise
+  quantity q := nomatch q
+  partialDefined p := nomatch p
+  definedPartial p := nomatch p
+  preserves n := nomatch n.val
+
+/-- Keeping the translated constant's syntax alone would lose its totality premise. -/
+theorem totality_premise_is_retained :
+    Declaration.law () ∈ Declaration.translatedSupport translate (.total ()) :=
+  Or.inr (Or.inr (Or.inr (Set.mem_singleton _)))
+
+/-- A selection excluding that required Law cannot support the constant's translation. -/
+theorem selection_without_totality_fails :
+    ¬ Declaration.translatedSupport translate (.total ()) ⊆
+      {d | d ≠ Declaration.law ()} :=
+  fun h => h totality_premise_is_retained rfl
+
+end SHIGURE.Chapter1.TranslationSupport

@@ -1,6 +1,6 @@
 import Formal.SHIGURE.Part1.Interpretation
 import Formal.SHIGURE.Part1.StructureMaps
-import Formal.SHIGURE.Part1.DeclarationContexts
+import Formal.SHIGURE.Part1.RestrictedEvaluation
 
 /-! # Observations and readings
 
@@ -26,10 +26,11 @@ pieces. Restriction to the retained source declarations controls which
 facts can be transported.
 
 A coefficient comparison between two chosen rings includes a ring
-homomorphism and a map between the two systems of evaluation forms.
-This records the evaluation square for the chosen realization, including
-when that realization changes. A reading with no coefficients has no
-coefficient ring to use as the endpoint of a ring homomorphism.
+homomorphism and a map between the chosen realization data. The evaluator
+uses that data's structure and the reading's state tuple, so the
+coefficient square uses the same state map as (1.12). Introducing or
+forgetting coefficients compares this evaluation with the ordinary
+observation at the endpoint that has no coefficient ring.
 -/
 
 universe u
@@ -69,7 +70,7 @@ theorem mapSorts_pull (f : S → T) {Δ : List S}
     (xs.mapSorts f).pull (ρ.mapSorts f) = (xs.pull ρ).mapSorts f := by
   apply ext_mapSorts f
   intro s i
-  simp only [pull_apply, Renaming.mapSorts, Var.reindex_mapSorts, mapSorts_apply]
+  simp only [pull_apply, Renaming.mapSorts_apply, mapSorts_apply]
 
 end Assignment
 
@@ -212,48 +213,52 @@ structure FamilyObservation (Realization : Type u) where
   /-- The function on the family of realizations. -/
   read : Realization → Output
 
-/-- A coefficient choice records the actual coefficient ring and the chosen realization data. -/
-structure CoefficientReading where
+/-- A coefficient choice realizes the actual structure and evaluates its selected state context. -/
+structure CoefficientReading {sig : Signature.{u}} (A : Structure sig) (Γ : List sig.SortType) where
   /-- The carrier of the coefficient ring. -/
   Carrier : Type u
   /-- The commutative ring structure used for coefficients. -/
   ring : CommRing Carrier
-  /-- The type of coefficient realization specifications. -/
-  Realization : (R : Type u) → CommRing R → Type u
-  /-- The coefficient realization specification used by this reading. -/
-  realization : Realization Carrier ring
-  /-- The forms evaluated in the chosen coefficient realization. -/
-  Form : Type u
-  /-- Evaluation of a form at the coefficients of this reading. -/
-  evaluate : Form → Carrier
+  /-- The realization data at the chosen coefficient ring. -/
+  Realization : Type u
+  /-- Interpret each realization datum as a structure in the reading's signature. -/
+  structureOf : Realization → Structure sig
+  /-- The chosen realization data. -/
+  realization : Realization
+  /-- The realized structure is the structure being read. -/
+  realizes : structureOf realization = A
+  /-- The evaluation rule of the realization, on its own state tuples. -/
+  evaluateOn (data : Realization) : Assignment (structureOf data).carrier Γ → Carrier
 
 namespace CoefficientReading
 
-/-- A structure-preserving coefficient map has the two chosen rings as its endpoints. -/
-abbrev Hom (source target : CoefficientReading.{u}) :=
+variable {sig τ : Signature.{u}} {A : Structure sig} {B : Structure τ}
+  {Γ : List sig.SortType} {Δ : List τ.SortType}
+
+/-- The coefficient evaluation comes from the chosen realization on the actual state tuple. -/
+def evaluate (reading : CoefficientReading A Γ) (e : Assignment A.carrier Γ) : reading.Carrier :=
+  reading.evaluateOn reading.realization (reading.realizes.symm ▸ e)
+
+/-- A coefficient map has the two chosen rings as its endpoints. -/
+abbrev Hom (source : CoefficientReading A Γ) (target : CoefficientReading B Δ) :=
   letI := source.ring
   letI := target.ring
   source.Carrier →+* target.Carrier
 
-/-- With coefficients at both endpoints, change the ring and commute with form evaluation. -/
-structure Change (source target : CoefficientReading.{u}) where
+/-- Change the coefficient ring and realization along the state map of the reading. -/
+structure Change (source : CoefficientReading A Γ) (target : CoefficientReading B Δ)
+    (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
   /-- The map of commutative rings. -/
   coefficients : Hom source target
-  /-- The corresponding map of coefficient forms. -/
-  forms : source.Form → target.Form
-  /-- Transporting evaluation agrees with evaluating the transported form. -/
-  evaluate_commutes (form : source.Form) :
+  /-- Transport realization data between the chosen realization schemes. -/
+  realizations : source.Realization → target.Realization
+  /-- The transported realization is the selected target realization. -/
+  realization_commutes : realizations source.realization = target.realization
+  /-- Evaluate the selected realizations along the actual state and coefficient maps. -/
+  evaluate_commutes (e : Assignment A.carrier Γ) :
     letI := source.ring
     letI := target.ring
-    target.evaluate (forms form) = coefficients (source.evaluate form)
-
-/-- Comparison distinguishes retaining coefficients from introducing or forgetting them. -/
-inductive Comparison : Option (CoefficientReading.{u}) → Option (CoefficientReading.{u}) → Type (u + 1)
-  | unparameterized : Comparison none none
-  | introduce (target : CoefficientReading.{u}) : Comparison none (some target)
-  | forget (source : CoefficientReading.{u}) : Comparison (some source) none
-  | transport {source target : CoefficientReading.{u}} :
-      Change source target → Comparison (some source) (some target)
+    target.evaluate (states e) = coefficients (source.evaluate e)
 
 end CoefficientReading
 
@@ -280,7 +285,7 @@ structure Reading where
   /-- The chosen value-structure data. -/
   valueStructure : ValueStructure observation.Output
   /-- The coefficient data, when the reading uses coefficients. -/
-  coefficients : Option (CoefficientReading.{u})
+  coefficients : Option (CoefficientReading structureData observation.context)
 
 namespace Declaration
 
@@ -292,14 +297,15 @@ def translatedSupport (u : Interpretation P.theory Q.theory) :
   | .sort s => {.sort (u.onSort s)}
   | .total f =>
     sorts ((P.signature.totalArity f).inputs.map u.onSort) ∪
-      formula (u.translation.operation (.total f)).graph
+      (formula (u.translation.operation (.total f)).graph ∪ derivation (u.total f))
   | .partialOp p =>
     sorts ((P.signature.partialArity p).inputs.map u.onSort) ∪
-      formula (u.translation.operation (.partialOp p)).graph ∪
-      formula (u.translation.partialDomain p)
+      (formula (u.translation.operation (.partialOp p)).graph ∪
+        (formula (u.translation.partialDomain p) ∪
+          (derivation (u.partialDefined p) ∪ derivation (u.definedPartial p))))
   | .quantity q =>
     sorts ((P.signature.quantityArity q).inputs.map u.onSort) ∪
-      formula (u.translation.operation (.quantity q)).graph
+      (formula (u.translation.operation (.quantity q)).graph ∪ derivation (u.quantity q))
   | .relation r =>
     sorts ((P.signature.relInputs r).map u.onSort) ∪ formula (u.translation.relation r)
   | .law i =>
@@ -309,6 +315,34 @@ def translatedSupport (u : Interpretation P.theory Q.theory) :
       match role : P.laws.role i with
       | .required => derivation (u.preserves ⟨i, role⟩)
       | .additional | .derived => ∅
+
+/-- A translated atom references only declarations in the image support of the source atom. -/
+theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
+    {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
+    (V : Set (Declaration Q))
+    (supported : ∀ d ∈ atomic a, translatedSupport u d ⊆ V) :
+    formula (u.translation.atomic a) ⊆ V := by
+  cases a with
+  | eq x y =>
+    exact Set.empty_subset V
+  | rel r vars =>
+    rw [Translation.atomic_rel (S := P.signature) (T := Q.signature) u.translation r vars,
+      formula_rename]
+    intro d hd
+    exact supported (.relation r) (Set.mem_singleton _) (Or.inr hd)
+  | domain p vars =>
+    rw [Translation.atomic_domain (S := P.signature) (T := Q.signature) u.translation p vars,
+      formula_rename]
+    intro d hd
+    exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inr (Or.inl hd)))
+  | graph op vars y =>
+    rw [Translation.atomic_graph (S := P.signature) (T := Q.signature) u.translation op vars y,
+      formula_rename]
+    intro d hd
+    cases op with
+    | total f => exact supported (.total f) (Set.mem_singleton _) (Or.inr (Or.inl hd))
+    | partialOp p => exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inl hd))
+    | quantity q => exact supported (.quantity q) (Set.mem_singleton _) (Or.inr (Or.inl hd))
 
 /-- The declared name underlying an evaluated state, relation, operation, or domain fact. -/
 def ofFact {A : Structure P.signature} : EvaluationAtom A → Declaration P
@@ -359,6 +393,13 @@ theorem support_subset (transition : ReadingContextChange source target u)
   obtain ⟨j, _, hj⟩ := transition.localSupport i ha hi hd
   exact target.cover.subset j hj
 
+/-- A supported source atom translates into the actual selected target context. -/
+theorem target_support (transition : ReadingContextChange source target u)
+    {Γ : List source.presentation.signature.SortType} (a : Atomic source.presentation.signature Γ)
+    (retained : Declaration.atomic a ⊆ transition.retained.declarations) :
+    Declaration.formula (u.translation.atomic a) ⊆ target.context.declarations :=
+  Declaration.translated_atomic_support u a _ (fun _ hd => transition.support_subset (retained hd))
+
 /-- Evaluated facts restricted to the declaration names retained by the comparison. -/
 def Facts (transition : ReadingContextChange source target u)
     (A : Structure source.presentation.signature) : Type u :=
@@ -384,6 +425,21 @@ def Assignment.castContext {sig : Signature.{u}} {A : Structure sig}
     Assignment A.carrier Δ :=
   same ▸ e
 
+/-- The coefficient part of a comparison uses the same states as (1.12).
+When one endpoint has no coefficients, the corresponding observation values are used. -/
+def Reading.CoefficientCompatibility (source target : Reading.{u})
+    (states : Assignment source.structureData.carrier source.observation.context →
+      Assignment target.structureData.carrier target.observation.context) : Type u :=
+  match source.coefficients, target.coefficients with
+  | none, none => PUnit
+  | some c, some d => CoefficientReading.Change c d states
+  | none, some d =>
+    {v : source.observation.Output → d.Carrier //
+      ∀ e, d.evaluate (states e) = v (source.observation.read e)}
+  | some c, none =>
+    {v : c.Carrier → target.observation.Output //
+      ∀ e, target.observation.read (states e) = v (c.evaluate e)}
+
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
 structure ReadingComparison (source target : Reading.{u}) where
   /-- A theory interpretation of the language used by the source. -/
@@ -398,7 +454,8 @@ structure ReadingComparison (source target : Reading.{u}) where
   /-- The declaration restriction and the comparison of the two selected covers. -/
   declarationChange : ReadingContextChange source target interpretation
   /-- Any change of the coefficients and their evaluation. -/
-  coefficientChange : CoefficientReading.Comparison source.coefficients target.coefficients
+  coefficientChange : source.CoefficientCompatibility target
+    (fun e => Assignment.castContext contexts (interpretation.mapStates state e))
   /-- The function between the two sets of observed values. -/
   value : source.observation.Output → target.observation.Output
   /-- Equation (1.12), imposed at every source state tuple. -/
@@ -429,5 +486,37 @@ theorem ReadingComparison.holds_retained_atom {source target : Reading.{u}}
   refine ⟨fun d hd => comparison.declarationChange.support_subset (retained hd), ?_⟩
   exact (comparison.interpretation.pullback_atomic_iff _ _ _ _).1
     (comparison.state.atomic_holds_map a e held)
+
+/-- The target path through restricted evaluation computes the translated formula of a
+retained fact. This equality compares it to the global structural transport path. -/
+theorem ReadingComparison.restricted_evaluation_commutes {source target : Reading.{u}}
+    (comparison : ReadingComparison source target) {Γ : List source.presentation.signature.SortType}
+    (a : Atomic source.presentation.signature Γ)
+    (retained : Declaration.atomic a ⊆ comparison.declarationChange.retained.declarations)
+    (e : Assignment source.structureData.carrier Γ) :
+    (RestrictedEvaluation.restrict target.context target.structureData).holds
+      (comparison.interpretation.translation.atomic a)
+      (comparison.declarationChange.target_support a retained)
+      (comparison.interpretation.mapStates comparison.state e) ↔
+    a.Holds (comparison.interpretation.pullbackStructure target.structureData comparison.targetModel)
+      (e.map comparison.state.onSort) :=
+  (RestrictedEvaluation.restrict_holds_iff _ _ _ _ _).trans
+    (comparison.interpretation.pullback_atomic_iff _ _ _ _).symm
+
+/-- Start with a fact evaluated in the retained source context and evaluate its transport
+in the selected target context. -/
+theorem ReadingComparison.transport_restricted_atom {source target : Reading.{u}}
+    (comparison : ReadingComparison source target) {Γ : List source.presentation.signature.SortType}
+    (a : Atomic source.presentation.signature Γ)
+    (retained : Declaration.atomic a ⊆ comparison.declarationChange.retained.declarations)
+    (e : Assignment source.structureData.carrier Γ)
+    (held : (RestrictedEvaluation.restrict comparison.declarationChange.retained
+      source.structureData).atomic e a retained) :
+    (RestrictedEvaluation.restrict target.context target.structureData).holds
+      (comparison.interpretation.translation.atomic a)
+      (comparison.declarationChange.target_support a retained)
+      (comparison.interpretation.mapStates comparison.state e) :=
+  (comparison.restricted_evaluation_commutes a retained e).2
+    (comparison.state.atomic_holds_map a e ((RestrictedEvaluation.restrict_atomic_iff _ _ _ _ _).1 held))
 
 end SHIGURE

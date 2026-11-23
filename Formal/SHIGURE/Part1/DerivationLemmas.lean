@@ -338,6 +338,7 @@ def primitiveGraph (op : Operation T.signature) (inputs : Renaming op.arity.inpu
   have reflexiveTuple : Derivation T graphAtom (Formula.equalArguments Λ inputs inputs) :=
     conjoinIntro (fun i => .atom (.eq (inputs i) (inputs i)))
       (fun i => .cut (.truth _) (.eqRefl (inputs i)))
+  rw [Term.graphAt_app_vars]
   change Derivation T (Formula.existsMany Λ body) graphAtom ×
     Derivation T graphAtom (Formula.existsMany Λ body)
   exact ⟨existsManyElim toAtom, .cut (.andIntro reflexiveTuple (.refl _)) introBlock⟩

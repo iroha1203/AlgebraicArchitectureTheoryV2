@@ -63,6 +63,16 @@ def cons (head : Var Δ s) (tail : Renaming Γ Δ) : Renaming (s :: Γ) Δ
   | _, .here => head
   | _, .there i => tail i
 
+/-- Selecting the head of a cons renaming reads its distinguished variable. -/
+@[simp] theorem cons_here (head : Var Δ s) (tail : Renaming Γ Δ) :
+    cons head tail .here = head :=
+  rfl
+
+/-- Selecting an older coordinate of a cons renaming applies the older map. -/
+@[simp] theorem cons_there (head : Var Δ s) (tail : Renaming Γ Δ) {t : S} (i : Var Γ t) :
+    cons head tail (.there i) = tail i :=
+  rfl
+
 /-- Add an older variable after the selected prefix. -/
 def insertAfter : (Λ : List S) → Renaming (Λ ++ Γ) (Λ ++ s :: Γ)
   | [] => fun i => .there i

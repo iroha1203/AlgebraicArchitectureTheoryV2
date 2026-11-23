@@ -58,6 +58,11 @@ variable {S T : Type u} {Γ Δ : List S}
 def mapSorts (f : S → T) (ρ : Renaming Γ Δ) : Renaming (Γ.map f) (Δ.map f) :=
   Var.reindex f (fun i => (ρ i).mapSorts f)
 
+/-- Retyping a variable map acts on the original typed position. -/
+@[simp] theorem mapSorts_apply (f : S → T) (ρ : Renaming Γ Δ) {s : S} (i : Var Γ s) :
+    ρ.mapSorts f (i.mapSorts f) = (ρ i).mapSorts f :=
+  Var.reindex_mapSorts f (fun j => (ρ j).mapSorts f) i
+
 end Renaming
 
 namespace Assignment

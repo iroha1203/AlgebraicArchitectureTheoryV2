@@ -1,0 +1,117 @@
+import Formal.SHIGURE.Part1.DeclarationContexts
+
+/-! # Evaluation in a retained declaration context
+
+The reading comparison evaluates supported formulas from the relation,
+domain, and graph data retained by a closed context.
+
+## Implementation notes
+
+The original sort names are used to index assignments. Existence binds a
+retained sort and primitive lookup takes a proof that its declaration is
+retained. A restricted evaluator keeps one entry for each retained
+primitive. A filter applied after evaluating in a full structure would
+still use that full structure for lookups. Here the restricted evaluation
+has its own recursion and only reads the retained entries.
+-/
+
+universe u
+
+namespace SHIGURE
+
+namespace Declaration
+
+variable {P : PrimitivePresentation.{u}} {Γ Δ : List P.signature.SortType}
+
+/-- Renaming a formula's free positions preserves its referenced declarations. -/
+theorem formula_rename (p : Formula P.signature Γ) :
+    ∀ {Δ : List P.signature.SortType} (ρ : Renaming Γ Δ),
+      formula (P := P) (p.rename ρ) = formula p := by
+  induction p with
+  | atom a => intro Δ ρ; cases a <;> rfl
+  | truth => intros; rfl
+  | falsehood => intros; rfl
+  | conj p q hp hq => intro Δ ρ; simp only [Formula.rename, formula, hp, hq]
+  | disj p q hp hq => intro Δ ρ; simp only [Formula.rename, formula, hp, hq]
+  | ex p hp => intro Δ ρ; simp only [Formula.rename, formula, hp]
+
+end Declaration
+
+/-- The primitive evaluation data at the retained declarations of a context. -/
+structure RestrictedEvaluation {P : PrimitivePresentation.{u}}
+    (U : DeclarationContext P) (X : P.signature.SortType → Type u) where
+  /-- Read a retained relation on its input tuple. -/
+  relation (r : P.signature.Rel) : Declaration.relation r ∈ U.declarations →
+    Assignment X (P.signature.relInputs r) → Prop
+  /-- Read the retained domain of a partial operation. -/
+  domain (p : P.signature.Partial) : Declaration.partialOp p ∈ U.declarations →
+    Assignment X (P.signature.partialArity p).inputs → Prop
+  /-- Read the graph of a retained operation. -/
+  graph (op : Operation P.signature) : Declaration.ofOperation op ∈ U.declarations →
+    Assignment X op.arity.inputs → X op.arity.output → Prop
+
+namespace RestrictedEvaluation
+
+variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+  {X : P.signature.SortType → Type u} {Γ : List P.signature.SortType}
+
+/-- Restrict each primitive interpretation by indexing it with its retained declaration. -/
+def restrict (U : DeclarationContext P) (A : Structure P.signature) :
+    RestrictedEvaluation U A.carrier where
+  relation r _ xs := xs ∈ A.relation r
+  domain p _ xs := xs ∈ A.partialDomain p
+  graph op _ xs y := A.Graph op xs y
+
+/-- An atomic fact reads only its own retained declaration and the supplied values. -/
+def atomic (R : RestrictedEvaluation U X) (e : Assignment X Γ) :
+    (a : Atomic P.signature Γ) → Declaration.atomic a ⊆ U.declarations → Prop
+  | .eq x y, _ => e x = e y
+  | .rel r vars, h => R.relation r (h (Set.mem_singleton _)) (e.pull vars)
+  | .domain p vars, h => R.domain p (h (Set.mem_singleton _)) (e.pull vars)
+  | .graph op vars y, h => R.graph op (h (Set.mem_singleton _)) (e.pull vars) (e y)
+
+/-- Evaluate a positive formula using only retained primitives and bound sorts. -/
+def holds (R : RestrictedEvaluation U X) :
+    {Γ : List P.signature.SortType} → (p : Formula P.signature Γ) →
+    Declaration.formula p ⊆ U.declarations → Assignment X Γ → Prop
+  | _, .atom a, supported, e => R.atomic e a supported
+  | _, .truth, _, _ => True
+  | _, .falsehood, _, _ => False
+  | _, .conj p q, supported, e =>
+    R.holds p (fun _ h => supported (Or.inl h)) e ∧ R.holds q (fun _ h => supported (Or.inr h)) e
+  | _, .disj p q, supported, e =>
+    R.holds p (fun _ h => supported (Or.inl h)) e ∨ R.holds q (fun _ h => supported (Or.inr h)) e
+  | _, @Formula.ex _ _ s p, supported, e =>
+    ∃ value : X s, R.holds p (fun _ h => supported (Or.inr h)) (Assignment.cons value e)
+
+/-- The two evaluations use the same interpreted entry for a retained primitive. -/
+theorem restrict_atomic_iff (U : DeclarationContext P) (A : Structure P.signature)
+    (a : Atomic P.signature Γ) (supported : Declaration.atomic a ⊆ U.declarations)
+    (e : Assignment A.carrier Γ) :
+    (restrict U A).atomic e a supported ↔ a.Holds A e := by
+  cases a <;> rfl
+
+/-- Restricting primitive data and then evaluating a supported formula agrees with evaluating it
+before restricting. The induction uses the restricted evaluator's own clauses. -/
+theorem restrict_holds_iff (U : DeclarationContext P) (A : Structure P.signature)
+    (p : Formula P.signature Γ) :
+    ∀ (supported : Declaration.formula p ⊆ U.declarations) (e : Assignment A.carrier Γ),
+      (restrict U A).holds p supported e ↔ p.Holds A e := by
+  induction p with
+  | atom a => exact fun support e => restrict_atomic_iff U A a support e
+  | truth => intros; rfl
+  | falsehood => intros; rfl
+  | conj p q hp hq =>
+    intro support e
+    rw [holds, Formula.holds_conj, hp, hq]
+  | disj p q hp hq =>
+    intro support e
+    rw [holds, Formula.holds_disj, hp, hq]
+  | ex p hp =>
+    intro support e
+    rw [holds, Formula.holds_ex]
+    exact exists_congr fun x => hp _ (Assignment.cons x e)
+
+end RestrictedEvaluation
+
+end SHIGURE
