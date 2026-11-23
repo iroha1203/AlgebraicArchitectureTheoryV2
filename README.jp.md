@@ -25,7 +25,6 @@ ArchSig makes selected architecture evidence measurable.
 SFT makes software evolution computable.
 ```
 
-プロジェクトの基本方針は [AGENTS.md](AGENTS.md) の「PHILOSOPHY」節にまとめています。
 研究全体の目標は [研究の全体目標](docs/research_goal.md) にあり、現状ではなく目指す姿を
 記述しています。理論はこの目標に追いつくように進め、目標を現在の理論に合わせて弱めることはしません。
 研究ループの運用方法は [research/README.md](research/README.md) に、各 GOAL の定義は

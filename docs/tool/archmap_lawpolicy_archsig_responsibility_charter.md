@@ -168,4 +168,4 @@ ArchSig は入力トライアドに含まれない比較写像・修理複体・
 
 - [guideline.md](guideline.md) —— tooling の編集方針と検証コマンド。
 - [README.md](README.md) —— 入力契約と現行 boundary statement の一覧。
-- [AGENTS.md](../../AGENTS.md) の「PHILOSOPHY」節 —— プロジェクト全体の思想基盤(底)。
+- [AGENTS.md](../../AGENTS.md) —— モノレポ全体の作業ガイド。

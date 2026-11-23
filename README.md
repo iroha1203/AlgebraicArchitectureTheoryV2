@@ -18,7 +18,6 @@ ArchSig makes selected architecture evidence measurable.
 SFT makes software evolution computable.
 ```
 
-The project's guiding principles are stated in the PHILOSOPHY section of [AGENTS.md](AGENTS.md).
 The overall research goal is in [docs/research_goal.md](docs/research_goal.md) (Japanese),
 which sets out the target state of the theory rather than its current status; the goal is
 not scaled back to fit what is already proved.
