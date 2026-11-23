@@ -8,6 +8,14 @@ public meta import Lean.Util.CollectAxioms
 Audit declarations in a named namespace of the current module, including
 private declarations and nested namespaces. Lean computes their transitive
 kernel dependencies, including dependencies from imported modules.
+
+## Implementation notes
+
+Start from the current environment, which contains the bodies of local
+declarations. A walk using only that environment can report an imported
+theorem as an assumption when its module exports the statement alone. A
+private import supplies the original proof bodies for those reported
+dependencies.
 -/
 
 open Lean Elab Command

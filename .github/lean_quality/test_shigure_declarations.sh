@@ -25,6 +25,8 @@ def withHole : String := s! "{(show Nat from sorry)}"
 def withDebug : Nat := dbg_trace "{(show Nat from sorry)}"; 0
 theorem withNativeConfig : True := by decide (native := id true)
 unsafe def testUnsafe : Nat := 42
+set_option debug.skipKernelTC true in
+theorem kernelCheckDisabled : True := True.intro
 LEAN
 if lake env lean --run "$checker" "$tmp/Rejected.lean" >"$tmp/diagnostics" 2>&1; then
   echo "SHIGURE declaration checker accepted the rejection fixture" >&2
@@ -32,7 +34,17 @@ if lake env lean --run "$checker" "$tmp/Rejected.lean" >"$tmp/diagnostics" 2>&1;
 fi
 test "$(grep -c 'disallowed syntax sorry' "$tmp/diagnostics")" -eq 2
 grep -Fq 'disallowed syntax unsafe' "$tmp/diagnostics"
+grep -Fq 'disallowed syntax debug.skipKernelTC' "$tmp/diagnostics"
 grep -Fq 'nonstandard kernel assumption Lean.ofReduceBool' "$tmp/diagnostics"
+
+cat >"$tmp/AnonymousReduction.lean" <<'LEAN'
+example := Lean.ofReduceNat
+LEAN
+if lake env lean --run "$checker" "$tmp/AnonymousReduction.lean" >"$tmp/diagnostics" 2>&1; then
+  echo "SHIGURE declaration checker accepted a nonstandard anonymous reduction proof" >&2
+  exit 1
+fi
+grep -Fq 'nonstandard kernel assumption Lean.ofReduceNat' "$tmp/diagnostics"
 
 cat >"$tmp/Anonymous.lean" <<'LEAN'
 import Lean.Elab.Tactic
