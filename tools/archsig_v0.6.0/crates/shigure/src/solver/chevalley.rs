@@ -26,7 +26,8 @@ use crate::solver::family_direct::{
     substitute_preservation_pair,
 };
 use crate::solver::family_eval::{
-    EnumCandidate, EnumRealization, ScalarVal, map_scalar_assignments,
+    EnumCandidate, EnumRealization, ScalarVal, collect_family_origins, eval_expr_at,
+    map_scalar_assignments,
 };
 use crate::solver::preservation::{
     build_preservation_obligations, compute_preservation_locus_q, map_algebra_silence,
@@ -39,8 +40,14 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
     let family = task.family();
     let coeff_domain = family.coeff_domain().clone();
     let point_domain = task.point_domain().clone();
+    let mut origins = collect_family_origins(family);
+    for src in &task.provenance().origins {
+        if !origins.contains(src) {
+            origins.push(src.clone());
+        }
+    }
     let provenance = Provenance::new(
-        family.inner().provenance.origins.clone(),
+        origins,
         vec![MathClause::G141D6, MathClause::G141D7, MathClause::G142G7],
     );
     let mut checks = Vec::new();
@@ -174,15 +181,36 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
     };
 
     let universal_contrast = if task.check_universal_ring() {
-        let bv = task.base_value().unwrap_or(&[]);
         match resolve_universal_candidate(family, &sets, chosen_cand.as_ref()) {
             Ok(Some(cand)) => {
+                let effective_bv: Vec<ScalarLit> = if let Some(bv) = task.base_value() {
+                    bv.to_vec()
+                } else {
+                    let mut out = Vec::with_capacity(family.inner().candidates.pi.len());
+                    for pi_expr in &family.inner().candidates.pi {
+                        let sv = match eval_expr_at(pi_expr, &sets.c_vars, &cand.values, &coeff_domain)
+                        {
+                            Ok(v) => v,
+                            Err(reason) => {
+                                return undetermined_chevalley(
+                                    coeff_domain,
+                                    point_domain,
+                                    checks,
+                                    provenance,
+                                    reason,
+                                );
+                            }
+                        };
+                        out.push(sv.to_lit());
+                    }
+                    out
+                };
                 let nonempty_for_c =
                     match slice_set_at_c(&sets.w_total, &sets.c_vars, &cand, &sets.u_vars) {
                         Ok(sliced) => !sliced.is_empty(),
                         Err(_) => false,
                     };
-                match evaluate_universal_ring(family, bv, &cand, nonempty_for_c) {
+                match evaluate_universal_ring(family, &effective_bv, &cand, nonempty_for_c) {
                     Ok(ur) => Some(ur),
                     Err(reason) => {
                         return undetermined_chevalley(

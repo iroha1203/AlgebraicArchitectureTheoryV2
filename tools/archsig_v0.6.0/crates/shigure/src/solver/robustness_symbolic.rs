@@ -21,7 +21,10 @@ use crate::solver::chevalley::{
 use crate::solver::chevalley_sections::pick_rational_point_in_stratum;
 use crate::solver::context::display_polys;
 use crate::solver::family_direct::evaluate_goodness_at_point;
-use crate::solver::family_eval::{EnumCandidate, EnumRealization, ScalarVal, build_assignment_map};
+use crate::solver::family_eval::{
+    EnumCandidate, EnumRealization, ScalarVal, build_assignment_map, map_scalar_assignments,
+    scalar_eq,
+};
 use crate::solver::preservation::map_algebra_silence;
 use num_traits::One;
 use std::collections::BTreeMap;
@@ -105,6 +108,54 @@ fn stratum_geom_assignments(
         .collect()
 }
 
+fn match_realization_meta(
+    family: &CheckedFamilySpec,
+    vals: &[ScalarVal],
+    fallback_origin: &SourceRef,
+) -> (Option<String>, bool, SourceRef) {
+    match &family.inner().realizations.space {
+        RealizationSpace::FiniteMembers(ms) => {
+            for m in ms {
+                if let Ok((mv, _)) =
+                    map_scalar_assignments(family.u_vars(), &m.assignments, family.coeff_domain())
+                    && mv.len() == vals.len()
+                    && mv.iter().zip(vals).all(|(a, b)| scalar_eq(a, b))
+                {
+                    return (Some(m.id.clone()), m.is_raw_candidate, m.origin.clone());
+                }
+            }
+            (None, false, fallback_origin.clone())
+        }
+        RealizationSpace::PolynomialScheme {
+            is_raw_candidate,
+            origin,
+            ..
+        } => (None, *is_raw_candidate, origin.clone()),
+    }
+}
+
+fn match_candidate_meta(
+    family: &CheckedFamilySpec,
+    vals: &[ScalarVal],
+    fallback_origin: &SourceRef,
+) -> (Option<String>, SourceRef) {
+    match &family.inner().candidates.space {
+        CandidateSpace::FiniteMembers(ms) => {
+            for m in ms {
+                if let Ok((mv, _)) =
+                    map_scalar_assignments(family.c_vars(), &m.assignments, family.coeff_domain())
+                    && mv.len() == vals.len()
+                    && mv.iter().zip(vals).all(|(a, b)| scalar_eq(a, b))
+                {
+                    return (Some(m.id.clone()), m.origin.clone());
+                }
+            }
+            (None, fallback_origin.clone())
+        }
+        CandidateSpace::PolynomialScheme { origin, .. } => (None, origin.clone()),
+    }
+}
+
 fn extract_u_witness_for_cand(
     family: &CheckedFamilySpec,
     slice: &ConstructibleSet,
@@ -117,29 +168,21 @@ fn extract_u_witness_for_cand(
     for st in slice.strata() {
         if let Some(pt_q) = pick_rational_point_in_stratum(st, u_vars)? {
             let vals = rat_to_scalar_vals(pt_q, domain);
+            let (member_id, is_raw_candidate, mem_origin) =
+                match_realization_meta(family, &vals, origin);
             let mut enum_u = EnumRealization {
-                member_id: None,
+                member_id,
                 assignments: build_assignment_map(u_vars.vars(), &vals),
-                values: vals.clone(),
-                is_raw_candidate: false,
-                origin: origin.clone(),
+                values: vals,
+                is_raw_candidate,
+                origin: mem_origin,
                 presentation: None,
             };
-            if let RealizationSpace::FiniteMembers(ms) = &family.inner().realizations.space {
-                for m in ms {
-                    if let Ok((m_vals, _)) = crate::solver::family_eval::map_scalar_assignments(
-                        u_vars.vars(),
-                        &m.assignments,
-                        domain,
-                    ) && m_vals == vals
-                    {
-                        enum_u.member_id = Some(m.id.clone());
-                        enum_u.is_raw_candidate = m.is_raw_candidate;
-                        enum_u.origin = m.origin.clone();
-                        enum_u.presentation = m.presentation.clone();
-                        break;
-                    }
-                }
+            if let RealizationSpace::FiniteMembers(ms) = &family.inner().realizations.space
+                && let Some(id) = &enum_u.member_id
+                && let Some(m) = ms.iter().find(|m| &m.id == id)
+            {
+                enum_u.presentation = m.presentation.clone();
             }
             let w =
                 evaluate_goodness_at_point(family, &enum_u, cand, &PointDomain::AlgebraicClosure)?;
@@ -165,19 +208,27 @@ fn extract_uc_witness(
         if let Some(pt_q) = pick_rational_point_in_stratum(st, uc_vars)? {
             let u_vals = rat_to_scalar_vals(pt_q[..u_len].to_vec(), family.coeff_domain());
             let c_vals = rat_to_scalar_vals(pt_q[u_len..].to_vec(), family.coeff_domain());
-            let enum_u = EnumRealization {
-                member_id: None,
+            let (u_id, u_raw, u_mem_origin) = match_realization_meta(family, &u_vals, u_origin);
+            let mut enum_u = EnumRealization {
+                member_id: u_id,
                 assignments: build_assignment_map(u_vars.vars(), &u_vals),
                 values: u_vals,
-                is_raw_candidate: false,
-                origin: u_origin.clone(),
+                is_raw_candidate: u_raw,
+                origin: u_mem_origin,
                 presentation: None,
             };
+            if let RealizationSpace::FiniteMembers(ms) = &family.inner().realizations.space
+                && let Some(id) = &enum_u.member_id
+                && let Some(m) = ms.iter().find(|m| &m.id == id)
+            {
+                enum_u.presentation = m.presentation.clone();
+            }
+            let (c_id, c_mem_origin) = match_candidate_meta(family, &c_vals, c_origin);
             let enum_c = EnumCandidate {
-                candidate_id: None,
+                candidate_id: c_id,
                 assignments: build_assignment_map(c_vars.vars(), &c_vals),
                 values: c_vals,
-                origin: c_origin.clone(),
+                origin: c_mem_origin,
             };
             let w = evaluate_goodness_at_point(
                 family,
@@ -319,19 +370,31 @@ pub(super) fn eval_symbolic_closure_quantifiers(
         vec![]
     };
     let pw_counterexample = if !pw_sat {
-        let assign = if let Some(first_st) = pw_uncovered.strata().first()
+        let (member_id, is_raw_candidate, ce_origin, assign) = if let Some(first_st) =
+            pw_uncovered.strata().first()
             && let Some(pt) = pick_rational_point_in_stratum(first_st, &sets.u_vars)?
         {
             let vals = rat_to_scalar_vals(pt, family.coeff_domain());
-            build_assignment_map(sets.u_vars.vars(), &vals)
+            let (id, is_raw, orig) = match_realization_meta(family, &vals, &real_origin);
+            (
+                id,
+                is_raw,
+                orig,
+                build_assignment_map(sets.u_vars.vars(), &vals),
+            )
         } else {
-            stratum_geom_assignments(pw_uncovered.strata(), &sets.u_vars)
+            (
+                None,
+                false,
+                real_origin.clone(),
+                stratum_geom_assignments(pw_uncovered.strata(), &sets.u_vars),
+            )
         };
         Some(RealizationWitness {
-            member_id: None,
+            member_id,
             assignments: assign,
-            is_raw_candidate: false,
-            origin: real_origin.clone(),
+            is_raw_candidate,
+            origin: ce_origin,
         })
     } else {
         None
@@ -360,27 +423,12 @@ pub(super) fn eval_symbolic_closure_quantifiers(
                 if let Some(pt) = pick_rational_point_in_stratum(st, &sets.c_vars)? {
                     let vals = rat_to_scalar_vals(pt, family.coeff_domain());
                     let assign = build_assignment_map(sets.c_vars.vars(), &vals);
-                    let id = if let CandidateSpace::FiniteMembers(ms) =
-                        &family.inner().candidates.space
-                    {
-                        ms.iter()
-                            .find(|m| {
-                                crate::solver::family_eval::map_scalar_assignments(
-                                    family.c_vars(),
-                                    &m.assignments,
-                                    family.coeff_domain(),
-                                )
-                                .is_ok_and(|(mv, _)| mv == vals)
-                            })
-                            .map(|m| m.id.clone())
-                    } else {
-                        None
-                    };
+                    let (id, orig) = match_candidate_meta(family, &vals, &cand_origin);
                     extracted_cand = Some(EnumCandidate {
                         candidate_id: id,
                         values: vals,
                         assignments: assign.clone(),
-                        origin: cand_origin.clone(),
+                        origin: orig,
                     });
                     break;
                 }

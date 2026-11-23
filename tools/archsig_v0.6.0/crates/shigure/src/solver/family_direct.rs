@@ -256,6 +256,18 @@ fn evaluate_raw_sequence_on_presentation(
 
     let final_obs = eval_phase_observation(pres, cur_phase, &seq.observation_name, &state, domain)?;
     let base_obs = baseline_obs.unwrap_or_else(|| final_obs.clone());
+    if final_obs.len() != base_obs.len() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "raw_sequence_observation_arity_match".to_owned(),
+            detail: format!(
+                "observation `{}` has {} components at baseline vs {} at final phase `{}`",
+                seq.observation_name,
+                base_obs.len(),
+                final_obs.len(),
+                cur_phase.name
+            ),
+        });
+    }
     let mut obs_matched = true;
     for (i, (f_val, b_val)) in final_obs.iter().zip(&base_obs).enumerate() {
         let diff_expr = PolyExpr::diff(f_val.to_expr(), b_val.to_expr());

@@ -215,40 +215,55 @@ fn evaluate_existential_q_or_z(
             .map_err(map_algebra_silence)?;
         if eqs_z.iter().all(Poly::is_affine)
             && let Ok((mat, rhs)) = polys_to_affine_system_z(&eqs_z, w_names.len())
-            && let Ok(AffineSolutionZ::Consistent {
-                particular,
-                kernel_basis,
-                verified: true,
-                ..
-            }) = solve_affine_z(&mat, &rhs, w_names.len())
         {
-            if let Some(pt) = find_witness_point_z(&particular, &kernel_basis, &eqs_z, &invs_z)? {
-                let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Z).collect();
-                return Ok(pass_pair(
-                    realization,
-                    candidate,
-                    None,
-                    build_assignment_map(w_names, &vals),
-                    None,
-                    ReevalCheck {
-                        checked: true,
-                        matched: true,
-                        detail: "verified integer existential witness".to_owned(),
-                    },
-                ));
+            match solve_affine_z(&mat, &rhs, w_names.len()) {
+                Ok(AffineSolutionZ::Consistent {
+                    particular,
+                    kernel_basis,
+                    verified: true,
+                    ..
+                }) => {
+                    if let Some(pt) =
+                        find_witness_point_z(&particular, &kernel_basis, &eqs_z, &invs_z)?
+                    {
+                        let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Z).collect();
+                        return Ok(pass_pair(
+                            realization,
+                            candidate,
+                            None,
+                            build_assignment_map(w_names, &vals),
+                            None,
+                            ReevalCheck {
+                                checked: true,
+                                matched: true,
+                                detail: "verified integer existential witness".to_owned(),
+                            },
+                        ));
+                    }
+                    if !kernel_basis.is_empty() && !invs_z.is_empty() {
+                        return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                            detail: "affine Z witness search with invertible constraints exceeded finite search box".to_owned(),
+                        });
+                    }
+                    return Ok(fail_pair(
+                        realization,
+                        candidate,
+                        None,
+                        display_polys(&eqs_z, w_vars),
+                        None,
+                    ));
+                }
+                Ok(AffineSolutionZ::Inconsistent { verified: true, .. }) => {
+                    return Ok(fail_pair(
+                        realization,
+                        candidate,
+                        None,
+                        display_polys(&eqs_z, w_vars),
+                        None,
+                    ));
+                }
+                _ => {}
             }
-            if !kernel_basis.is_empty() && !invs_z.is_empty() {
-                return Err(SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: "affine Z witness search with invertible constraints exceeded finite search box".to_owned(),
-                });
-            }
-            return Ok(fail_pair(
-                realization,
-                candidate,
-                None,
-                display_polys(&eqs_z, w_vars),
-                None,
-            ));
         }
         return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
             point_domain: PointDomain::IntegerPoints,

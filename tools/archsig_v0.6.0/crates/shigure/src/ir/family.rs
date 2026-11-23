@@ -762,28 +762,35 @@ fn validate_raw_sequence_against_presentation(
         }
     }
 
-    if !pres
+    let final_obs = pres
         .observations
         .iter()
-        .any(|o| o.name == seq.observation_name && o.phase == cur_phase)
-    {
-        return Err(ValidationError::UnknownRef {
+        .find(|o| o.name == seq.observation_name && o.phase == cur_phase)
+        .ok_or_else(|| ValidationError::UnknownRef {
             kind: "observation",
             name: seq.observation_name.clone(),
             context: format!("{ctx} final phase `{cur_phase}`"),
-        });
-    }
-    if let Some(b_phase) = baseline_phase
-        && !pres
+        })?;
+    if let Some(b_phase) = baseline_phase {
+        let base_obs = pres
             .observations
             .iter()
-            .any(|o| o.name == seq.observation_name && o.phase == b_phase)
-    {
-        return Err(ValidationError::UnknownRef {
-            kind: "observation",
-            name: seq.observation_name.clone(),
-            context: format!("{ctx} baseline phase `{b_phase}`"),
-        });
+            .find(|o| o.name == seq.observation_name && o.phase == b_phase)
+            .ok_or_else(|| ValidationError::UnknownRef {
+                kind: "observation",
+                name: seq.observation_name.clone(),
+                context: format!("{ctx} baseline phase `{b_phase}`"),
+            })?;
+        if final_obs.components.len() != base_obs.components.len() {
+            return Err(ValidationError::ArityMismatch {
+                context: format!(
+                    "{ctx} observation `{}` component count across baseline `{b_phase}` and final `{cur_phase}`",
+                    seq.observation_name
+                ),
+                expected: base_obs.components.len(),
+                actual: final_obs.components.len(),
+            });
+        }
     }
     Ok(())
 }

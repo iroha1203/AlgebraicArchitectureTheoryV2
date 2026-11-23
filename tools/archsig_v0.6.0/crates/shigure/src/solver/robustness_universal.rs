@@ -64,8 +64,19 @@ pub(crate) fn evaluate_universal_ring(
             Err(other) => return Err(other),
         };
 
+    let reading_q = &family.inner().realizations.reading_q;
+    if base_value.len() != reading_q.len() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "universal_ring_base_arity".to_owned(),
+            detail: format!(
+                "expected {} base coordinates for universal-ring fiber, got {}",
+                reading_q.len(),
+                base_value.len()
+            ),
+        });
+    }
     let mut scheme_eq_exprs = u_eq_exprs;
-    for (q_expr, b_lit) in family.inner().realizations.reading_q.iter().zip(base_value) {
+    for (q_expr, b_lit) in reading_q.iter().zip(base_value) {
         scheme_eq_exprs.push(PolyExpr::diff(
             q_expr.clone(),
             PolyExpr::Const(b_lit.clone()),

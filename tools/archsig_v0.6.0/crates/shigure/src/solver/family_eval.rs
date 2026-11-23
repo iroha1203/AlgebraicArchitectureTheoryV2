@@ -1,8 +1,9 @@
 //! 複数解釈族・共有規則族の有限点列挙と 1 変数有理根定理。
 
 use crate::algebra::{
-    AffineSolutionQ, AffineSolutionZ, ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly,
-    Rat, VarOrder, rabinowitsch_solve, solve_affine_q, solve_affine_z, solve_fp_enumeration,
+    AffineSolutionQ, AffineSolutionZ, ExprBindings, FpElem, GroebnerBasis, LocallyClosedStratum,
+    MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve, solve_affine_q, solve_affine_z,
+    solve_fp_enumeration,
 };
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::family::{CandidateSpace, CheckedFamilySpec, RealizationSpace};
@@ -11,9 +12,10 @@ use crate::ir::provenance::SourceRef;
 use crate::ir::result::{EmptyWitness, SilenceReason};
 use crate::ir::result_phase3::RealizationWitness;
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
+use crate::solver::chevalley_sections::pick_rational_point_in_stratum;
 use crate::solver::context::{clear_denominators_to_z, display_polys};
 use crate::solver::preservation::map_algebra_silence;
-use crate::solver::restore::polys_to_affine_system_q;
+use crate::solver::restore::{find_witness_point_q, polys_to_affine_system_q};
 use archsig_common::prime::is_prime;
 use num_bigint::BigInt;
 use num_integer::Integer;
@@ -751,6 +753,7 @@ fn enumerate_scheme_realizations(
         u_names,
         u_vars,
         &rab.parameter_equations,
+        &invs_q,
         is_raw_candidate,
         origin,
     ));
@@ -764,16 +767,34 @@ fn build_symbolic_realization_witness(
     u_names: &[String],
     u_vars: &VarOrder,
     param_eqs: &[Poly<Rat>],
+    invs_q: &[Poly<Rat>],
     is_raw_candidate: bool,
     origin: &SourceRef,
 ) -> RealizationWitness {
-    let mut assignments = BTreeMap::new();
+    let mut concrete_pt: Option<Vec<Rat>> = None;
     if param_eqs.iter().all(Poly::is_affine)
         && let Ok((mat, rhs)) = polys_to_affine_system_q(param_eqs, u_names.len())
-        && let Ok(AffineSolutionQ::Consistent { particular, .. }) =
-            solve_affine_q(&mat, &rhs, u_names.len())
+        && let Ok(AffineSolutionQ::Consistent {
+            particular,
+            kernel_basis,
+            verified: true,
+        }) = solve_affine_q(&mat, &rhs, u_names.len())
+        && let Ok(Some(pt)) = find_witness_point_q(&particular, &kernel_basis, param_eqs, invs_q)
     {
-        for (n, v) in u_names.iter().zip(&particular) {
+        concrete_pt = Some(pt);
+    }
+    if concrete_pt.is_none() {
+        let stratum = LocallyClosedStratum {
+            equations: param_eqs.to_vec(),
+            invertibles: invs_q.to_vec(),
+        };
+        if let Ok(Some(pt)) = pick_rational_point_in_stratum(&stratum, u_vars) {
+            concrete_pt = Some(pt);
+        }
+    }
+    if let Some(pt) = concrete_pt {
+        let mut assignments = BTreeMap::new();
+        for (n, v) in u_names.iter().zip(&pt) {
             assignments.insert(n.clone(), v.to_string());
         }
         return RealizationWitness {
@@ -783,12 +804,22 @@ fn build_symbolic_realization_witness(
             origin: origin.clone(),
         };
     }
+
     let eqs_str = display_polys(param_eqs, u_vars);
+    let invs_str = display_polys(invs_q, u_vars);
+    let mut parts = Vec::new();
+    if !eqs_str.is_empty() {
+        parts.push(format!("{} = 0", eqs_str.join(", ")));
+    }
+    if !invs_str.is_empty() {
+        parts.push(format!("{} != 0", invs_str.join(", ")));
+    }
+    let mut assignments = BTreeMap::new();
     for n in u_names {
-        let desc = if eqs_str.is_empty() {
+        let desc = if parts.is_empty() {
             n.clone()
         } else {
-            format!("generic({n}; {} = 0)", eqs_str.join(", "))
+            format!("generic({n}; {})", parts.join("; "))
         };
         assignments.insert(n.clone(), desc);
     }
@@ -798,6 +829,35 @@ fn build_symbolic_realization_witness(
         is_raw_candidate,
         origin: origin.clone(),
     }
+}
+
+pub(crate) fn collect_family_origins(family: &CheckedFamilySpec) -> Vec<SourceRef> {
+    let mut origins = Vec::new();
+    let mut push_unique = |src: &SourceRef| {
+        if !origins.contains(src) {
+            origins.push(src.clone());
+        }
+    };
+    for src in &family.inner().provenance.origins {
+        push_unique(src);
+    }
+    match &family.inner().realizations.space {
+        RealizationSpace::FiniteMembers(ms) => {
+            for m in ms {
+                push_unique(&m.origin);
+            }
+        }
+        RealizationSpace::PolynomialScheme { origin, .. } => push_unique(origin),
+    }
+    match &family.inner().candidates.space {
+        CandidateSpace::FiniteMembers(ms) => {
+            for m in ms {
+                push_unique(&m.origin);
+            }
+        }
+        CandidateSpace::PolynomialScheme { origin, .. } => push_unique(origin),
+    }
+    origins
 }
 
 pub(crate) fn enumerate_candidates_for_base(

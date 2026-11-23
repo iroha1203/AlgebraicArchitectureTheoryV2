@@ -719,9 +719,10 @@ pub(super) fn check_laurent_global_section(
         );
     }
     let u_bind = ExprBindings::params_only(u_vars);
+    let mut inv_polys = Vec::with_capacity(invertibles.len());
     for inv in invertibles {
         match Poly::from_expr_q(&inv.expr, &u_bind) {
-            Ok(p) if !p.is_zero() => {}
+            Ok(p) if !p.is_zero() => inv_polys.push(p),
             _ => {
                 return not_applicable(
                     "laurent_nonempty_open_base_required",
@@ -731,6 +732,7 @@ pub(super) fn check_laurent_global_section(
             }
         }
     }
+    let inv_strs = display_polys(&inv_polys, u_vars);
 
     let w_vars = family.witness_vars();
     let section_var = if w_vars.len() == 1 {
@@ -796,11 +798,20 @@ pub(super) fn check_laurent_global_section(
             );
         }
     };
+    let ring_desc = if inv_strs.is_empty() {
+        format!("k[{t_name}]")
+    } else if inv_strs.len() == 1 && inv_strs[0] == *t_name {
+        format!("k[{t_name}, {t_name}^(-1)]")
+    } else {
+        format!("k[{t_name}, ({})^(-1)]", inv_strs.join(", "))
+    };
     for eq in good_eqs {
         let Ok(p) = Poly::from_expr_q(&eq.expr, &ts_bind) else {
             continue;
         };
-        if let Some(obs_detail) = laurent_newton_polygon_obstruction(&p, t_name, &section_var) {
+        if let Some(obs_detail) =
+            laurent_newton_polygon_obstruction(&p, t_name, &section_var, &ring_desc)
+        {
             return GlobalRegularSectionResult {
                 checked: true,
                 exists: Some(false),
@@ -819,6 +830,7 @@ fn laurent_newton_polygon_obstruction(
     poly: &Poly<Rat>,
     t_name: &str,
     s_name: &str,
+    ring_desc: &str,
 ) -> Option<String> {
     if poly.is_zero() {
         return None;
@@ -870,7 +882,7 @@ fn laurent_newton_polygon_obstruction(
         None
     } else {
         Some(format!(
-            "no global regular section {s_name} in k[{t_name}, {t_name}^(-1)]: Newton polygon edge valuations require {} (no integer n in Z)",
+            "no global regular section {s_name} in {ring_desc}: Newton polygon edge valuations in k(({t_name})) require {} (no integer n in Z)",
             non_int_reqs.join(" or ")
         ))
     }

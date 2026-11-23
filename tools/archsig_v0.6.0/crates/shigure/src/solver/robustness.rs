@@ -2,7 +2,7 @@
 
 use crate::algebra::VarOrder;
 use crate::ir::change::PointDomain;
-use crate::ir::family::{CandidateSpace, CheckedFamilySpec, RealizationSpace};
+use crate::ir::family::{CandidateSpace, CheckedFamilySpec};
 use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, EmptyWitness, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::result_phase3::{
@@ -18,7 +18,7 @@ use crate::solver::family_direct::{
 };
 use crate::solver::family_eval::{
     CandidateFiberEnum, DEFAULT_MAX_ENUM_POINTS, EnumCandidate, EnumRealization,
-    RealizationFiberEnum, ScalarVal, enumerate_candidates_for_base,
+    RealizationFiberEnum, ScalarVal, collect_family_origins, enumerate_candidates_for_base,
     enumerate_realizations_for_base, eval_expr_at, map_scalar_assignments, scalar_eq,
 };
 use crate::solver::preservation::map_algebra_silence;
@@ -261,15 +261,7 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
 }
 
 fn build_robustness_provenance(family: &CheckedFamilySpec) -> Provenance {
-    let mut origins = family.inner().provenance.origins.clone();
-    match &family.inner().realizations.space {
-        RealizationSpace::FiniteMembers(ms) => {
-            for m in ms {
-                origins.push(m.origin.clone());
-            }
-        }
-        RealizationSpace::PolynomialScheme { origin, .. } => origins.push(origin.clone()),
-    }
+    let origins = collect_family_origins(family);
     let mut clauses = vec![
         MathClause::G140E3,
         MathClause::G140E4,
@@ -546,6 +538,11 @@ fn finish_empty_fiber_outcome(
     } else {
         None
     };
+    if let Some(ur) = &universal_ring
+        && let Some(sr) = ur.silence_reason.clone()
+    {
+        return undetermined_robustness(coeff_domain, point_domain, checks, provenance, sr);
+    }
 
     let reading_comparison = match compute_reading_comparison(
         task,
@@ -553,8 +550,8 @@ fn finish_empty_fiber_outcome(
         real_enum,
         cand_enum,
         designated,
-        &None,
-        &None,
+        &valid_designated,
+        &common_candidate,
         &point_domain,
     ) {
         Ok(rc) => rc,
