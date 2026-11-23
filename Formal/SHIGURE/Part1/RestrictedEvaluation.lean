@@ -64,29 +64,39 @@ def restrict (U : DeclarationContext P) (A : Structure P.signature) :
 
 /-- An atomic fact reads only its own retained declaration and the supplied values. -/
 def atomic (R : RestrictedEvaluation U X) (e : Assignment X Γ) :
-    (a : Atomic P.signature Γ) → Declaration.atomic a ⊆ U.declarations → Prop
+    (a : Atomic P.signature Γ) → Declaration.atomicSupport a ⊆ U.declarations → Prop
   | .eq x y, _ => e x = e y
-  | .rel r vars, h => R.relation r (h (Set.mem_singleton _)) (e.pull vars)
-  | .domain p vars, h => R.domain p (h (Set.mem_singleton _)) (e.pull vars)
-  | .graph op vars y, h => R.graph op (h (Set.mem_singleton _)) (e.pull vars) (e y)
+  | .rel r vars, h => R.relation r (h (Or.inr (Set.mem_singleton _))) (e.pull vars)
+  | .domain p vars, h => R.domain p (h (Or.inr (Set.mem_singleton _))) (e.pull vars)
+  | .graph op vars y, h => R.graph op (h (Or.inr (Set.mem_singleton _))) (e.pull vars) (e y)
 
 /-- Evaluate a positive formula using only retained primitives and bound sorts. -/
 def holds (R : RestrictedEvaluation U X) :
     {Γ : List P.signature.SortType} → (p : Formula P.signature Γ) →
-    Declaration.formula p ⊆ U.declarations → Assignment X Γ → Prop
+    Declaration.formulaSupport p ⊆ U.declarations → Assignment X Γ → Prop
   | _, .atom a, supported, e => R.atomic e a supported
   | _, .truth, _, _ => True
   | _, .falsehood, _, _ => False
   | _, .conj p q, supported, e =>
-    R.holds p (fun _ h => supported (Or.inl h)) e ∧ R.holds q (fun _ h => supported (Or.inr h)) e
+    R.holds p (fun _ h => h.elim (fun h => supported (Or.inl h))
+      (fun h => supported (Or.inr (Or.inl h)))) e ∧
+    R.holds q (fun _ h => h.elim (fun h => supported (Or.inl h))
+      (fun h => supported (Or.inr (Or.inr h)))) e
   | _, .disj p q, supported, e =>
-    R.holds p (fun _ h => supported (Or.inl h)) e ∨ R.holds q (fun _ h => supported (Or.inr h)) e
+    R.holds p (fun _ h => h.elim (fun h => supported (Or.inl h))
+      (fun h => supported (Or.inr (Or.inl h)))) e ∨
+    R.holds q (fun _ h => h.elim (fun h => supported (Or.inl h))
+      (fun h => supported (Or.inr (Or.inr h)))) e
   | _, @Formula.ex _ _ s p, supported, e =>
-    ∃ value : X s, R.holds p (fun _ h => supported (Or.inr h)) (Assignment.cons value e)
+    let sorts := Declaration.sorts_cons_subset (s := s)
+      (supported (Or.inr (Or.inl (Set.mem_singleton _)))) (fun _ h => supported (Or.inl h))
+    ∃ value : X s, R.holds p
+      (fun _ h => h.elim (fun h => sorts h) (fun h => supported (Or.inr (Or.inr h))))
+      (Assignment.cons value e)
 
 /-- The two evaluations use the same interpreted entry for a retained primitive. -/
 theorem restrict_atomic_iff (U : DeclarationContext P) (A : Structure P.signature)
-    (a : Atomic P.signature Γ) (supported : Declaration.atomic a ⊆ U.declarations)
+    (a : Atomic P.signature Γ) (supported : Declaration.atomicSupport a ⊆ U.declarations)
     (e : Assignment A.carrier Γ) :
     (restrict U A).atomic e a supported ↔ a.Holds A e := by
   cases a <;> rfl
@@ -95,7 +105,7 @@ theorem restrict_atomic_iff (U : DeclarationContext P) (A : Structure P.signatur
 before restricting. The induction uses the restricted evaluator's own clauses. -/
 theorem restrict_holds_iff (U : DeclarationContext P) (A : Structure P.signature)
     (p : Formula P.signature Γ) :
-    ∀ (supported : Declaration.formula p ⊆ U.declarations) (e : Assignment A.carrier Γ),
+    ∀ (supported : Declaration.formulaSupport p ⊆ U.declarations) (e : Assignment A.carrier Γ),
       (restrict U A).holds p supported e ↔ p.Holds A e := by
   induction p with
   | atom a => exact fun support e => restrict_atomic_iff U A a support e

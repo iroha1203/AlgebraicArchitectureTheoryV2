@@ -35,6 +35,15 @@ variable {P : PrimitivePresentation.{u}}
 def sorts (Γ : List P.signature.SortType) : Set (Declaration P) :=
   Declaration.sort '' {s | s ∈ Γ}
 
+/-- The extended context retains its new sort and every previous sort. -/
+theorem sorts_cons_subset {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    {V : Set (Declaration P)} (head : Declaration.sort s ∈ V) (tail : sorts Γ ⊆ V) :
+    sorts (s :: Γ) ⊆ V := by
+  rintro _ ⟨t, ht, rfl⟩
+  rcases List.mem_cons.mp ht with rfl | ht
+  · exact head
+  · exact tail ⟨t, ht, rfl⟩
+
 /-- The name referred to by a graph symbol. -/
 def ofOperation : Operation P.signature → Declaration P
   | .total f => .total f
@@ -56,6 +65,16 @@ def formula : {Γ : List P.signature.SortType} → Formula P.signature Γ → Se
   | _, .conj p q => formula p ∪ formula q
   | _, .disj p q => formula p ∪ formula q
   | _, @Formula.ex _ _ s p => {Declaration.sort s} ∪ formula p
+
+/-- An atom's support includes all its free context, even positions unused by the atom. -/
+def atomicSupport {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
+    Set (Declaration P) :=
+  sorts Γ ∪ atomic a
+
+/-- A formula's direct support. Dependency-closed contexts also contain its indirect support. -/
+def formulaSupport {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
+    Set (Declaration P) :=
+  sorts Γ ∪ formula p
 
 /-- Every position and primitive mentioned by a written Law. -/
 def lawBody (law : Law P.signature) : Set (Declaration P) :=

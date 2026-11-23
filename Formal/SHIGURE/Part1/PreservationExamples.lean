@@ -4,6 +4,7 @@ import Formal.SHIGURE.Part1.Chapter1Examples
 import Formal.SHIGURE.Part1.Reading
 import Mathlib.Algebra.Ring.PUnit
 import Mathlib.Algebra.Ring.Prod
+import Mathlib.Data.Int.Cast.Lemmas
 
 /-! # Example 1.10: partial domains and Law antecedents -/
 
@@ -351,14 +352,7 @@ def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) 
   targetModel := model
   state := state
   contexts := rfl
-  declarationChange :=
-    { retained := whole
-      inside := fun _ h => h
-      observed := fun _ _ => Set.mem_univ _
-      pieces := fun _ => Set.univ
-      localSupport := by
-        intros
-        exact ⟨(), Set.mem_univ _, Set.mem_univ _⟩ }
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl
   coefficientChange := PUnit.unit
   value := Bool.not
   commutes := fun _ => rfl
@@ -369,7 +363,7 @@ theorem empty_cover_fails : ¬ ∃ cover : DeclarationCover whole, IsEmpty cover
   obtain ⟨i, _⟩ := cover.covers (a := .sort ()) (Set.mem_univ _)
   exact hempty.false i
 
-/-- Omitting the sole declaration from the target cannot transport the state observation. -/
+/-- The global state observation can be selected independently of the declarations. -/
 private def missingSort : Reading :=
   let emptyContext : DeclarationContext presentation := ⟨∅, fun ha => ha.elim⟩
   { (reading Bool.not) with
@@ -378,17 +372,103 @@ private def missingSort : Reading :=
       { Index := Empty
         piece := fun i => nomatch i
         subset := fun i => nomatch i
-        covers := fun h => h.elim } }
+        covers := fun h => h.elim }
+    coefficients := none }
 
-/-- Translation support for the compared observation cannot land in an empty target context. -/
+/-- With fixed declarations the state observation still reads its actual structure. -/
+def sameEmptyContext : ReadingComparison missingSort missingSort where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel := model
+  state := state
+  contexts := rfl
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl
+  coefficientChange := PUnit.unit
+  value := id
+  commutes := fun _ => rfl
+
+/-- A retained declaration must translate into the selected target declarations. -/
 theorem missing_target_sort_fails :
-    ¬ Nonempty (ReadingContextChange (reading id) missingSort
-      (Interpretation.identity presentation.theory)) := by
-  rintro ⟨transition⟩
-  have hs := transition.observed () List.mem_cons_self
+    ¬ ∃ transition : ReadingContextChange (reading id) missingSort
+        (Interpretation.identity presentation.theory),
+      Declaration.sort () ∈ transition.retained.declarations := by
+  rintro ⟨transition, hs⟩
   have ht : Declaration.sort () ∈ missingSort.context.declarations :=
     transition.support_subset hs (Set.mem_singleton _)
   exact ht.elim
+
+/-- Equality in a context of two states reads both variables of the retained sort. -/
+private def twoStatesEqual : Atomic signature [(), ()] := .eq .here (.there .here)
+
+/-- Even a symbol-free equality cannot be evaluated on variables of a forgotten sort. -/
+theorem forgotten_sort_equality_fails :
+    ¬ Declaration.atomicSupport twoStatesEqual ⊆ missingSort.context.declarations := by
+  intro support
+  have h : Declaration.sort () ∈ missingSort.context.declarations :=
+    support (Or.inl ⟨(), List.mem_cons_self, rfl⟩)
+  exact h.elim
+
+/-- Formula support accounts for unused free positions and for the sort of an existential. -/
+theorem forgotten_sort_formula_fails :
+    (¬ Declaration.formulaSupport (.truth : Formula signature [()]) ⊆
+      missingSort.context.declarations) ∧
+    (¬ Declaration.formulaSupport (.ex (.truth : Formula signature [()])) ⊆
+      missingSort.context.declarations) := by
+  constructor
+  · intro support
+    have h : Declaration.sort () ∈ missingSort.context.declarations :=
+      support (Or.inl ⟨(), List.mem_cons_self, rfl⟩)
+    exact h.elim
+  · intro support
+    have h : Declaration.sort () ∈ missingSort.context.declarations :=
+      support (Or.inr (Or.inl (Set.mem_singleton _)))
+    exact h.elim
+
+/-- Cover the same declarations with a new family of pieces. -/
+private def secondCover : Reading :=
+  { (reading Bool.not) with
+    cover :=
+      { Index := Bool
+        piece := fun _ => whole
+        subset := fun _ _ h => h
+        covers := fun h => ⟨true, h⟩ } }
+
+/-- Send the original cover piece to the true-indexed piece of the new cover. -/
+private def coverChange : ReadingContextChange (reading id) secondCover
+    (Interpretation.identity presentation.theory) where
+  retained := whole
+  inside := fun _ h => h
+  supporting := Interpretation.identity presentation.theory
+  sameSorts := rfl
+  sameTranslation := HEq.rfl
+  pieces := fun _ => {true}
+  localSupport := by
+    intros
+    exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩
+
+/-- The state observation and the change of cover are compared together. -/
+def comparisonWithCover : ReadingComparison (reading id) secondCover where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel := model
+  state := state
+  contexts := rfl
+  declarationChange := .changed coverChange
+  coefficientChange := PUnit.unit
+  value := Bool.not
+  commutes := fun _ => rfl
+
+/-- The comparison transports a concrete equality through the two restricted evaluations. -/
+theorem retained_equality_transport :
+    let a := twoStatesEqual
+    let e : Assignment points.carrier [(), ()] :=
+      Assignment.cons false (Assignment.cons false Assignment.empty)
+    let supported : Declaration.atomicSupport a ⊆ coverChange.retained.declarations :=
+      fun _ _ => Set.mem_univ _
+    (RestrictedEvaluation.restrict secondCover.context secondCover.structureData).holds
+      (comparisonWithCover.interpretation.translation.atomic a)
+      (coverChange.target_support a supported)
+      (comparisonWithCover.interpretation.mapStates comparisonWithCover.state e) :=
+  comparisonWithCover.transport_restricted_atom coverChange _
+    (fun _ _ => Set.mem_univ _) _ rfl
 
 /-- Fixing observed values along the same state map fails (1.12) at the point false. -/
 theorem identityValue_fails :
@@ -413,37 +493,108 @@ private def statesOf (R : Type) : Structure Observation.signature where
   partialValue := fun p => nomatch p
   quantity := fun q => nomatch q
 
-/-- A realization datum specifies the offset used when evaluating a state. -/
+/-- Equip a concrete scalar type with its named coefficient ring. -/
+private def ringOf (R : Type) [CommRing R] : CoefficientRing := ⟨R, inferInstance⟩
+
+/-- The scalar scheme uses the integer base and records an offset in each realization. -/
+private def offsetScheme : CoefficientScheme Observation.whole (ringOf Int) where
+  Realization R := R.scalars.Carrier
+  structureOf R _ := statesOf R.scalars.Carrier
+  Morphism R _ _ := R.scalars.Carrier → R.scalars.Carrier
+  mapPoints f _ x := f x
+  Native := Int
+  nativeStructure _ := statesOf Int
+  realizeNative R offset := R.fromBase offset
+  nativePoints R _ _ x := R.fromBase x
+  lawHolds _ _ name := nomatch name
+  change f offset := f offset
+  changePoints f _ _ x := f x
+
+/-- The specified coefficient algebra and realization evaluate each state at its chosen offset. -/
 private def readRing (R : Type) [CommRing R] (offset : R) :
-    CoefficientReading (statesOf R) [()] where
-  Carrier := R
-  ring := inferInstance
-  Realization := R
-  structureOf := fun _ => statesOf R
+    CoefficientReading Observation.whole (statesOf R) [()] where
+  base := ringOf Int
+  algebra := ⟨ringOf R, Int.castRingHom R⟩
+  scheme := offsetScheme
   realization := offset
   realizes := rfl
-  evaluateOn data e := @Add.add R _ e.head data
+  evaluateOn coefficients data e :=
+    letI := coefficients.scalars.ring
+    (show coefficients.scalars.Carrier from e.head) +
+      (show coefficients.scalars.Carrier from data)
 
 /-- An identity coefficient map commutes with evaluation in the same realization. -/
 def integerIdentity :
     CoefficientReading.Change (readRing Int 0) (readRing Int 0) id where
   coefficients := RingHom.id Int
-  realizations := id
-  realization_commutes := rfl
-  evaluate_commutes := fun _ => rfl
+  toTarget := id
+  state_commutes := fun _ => rfl
+  change_commutes := fun _ => rfl
+  target_commutes := fun _ => rfl
 
 /-- Send both coordinates of the realized state to the same integer. -/
 private def diagonalStates (e : Assignment (statesOf Int).carrier [()]) :
     Assignment (statesOf (Int × Int)).carrier [()] :=
-  Assignment.cons (e.head, e.head) Assignment.empty
+  e.map (fun _ x => (x, x))
 
-/-- Extending integers diagonally to a product ring commutes with realized evaluation. -/
+/-- The scheme transports both the nonzero offset and each state along the diagonal map. -/
 def integerDiagonal :
-    CoefficientReading.Change (readRing Int 0) (readRing (Int × Int) (0, 0)) diagonalStates where
+    CoefficientReading.Change (readRing Int 4) (readRing (Int × Int) (4, 4)) diagonalStates where
   coefficients := (RingHom.id Int).prod (RingHom.id Int)
-  realizations := fun offset => (offset, offset)
-  realization_commutes := rfl
-  evaluate_commutes := fun _ => rfl
+  toTarget := id
+  state_commutes := fun _ => rfl
+  change_commutes := fun _ => rfl
+  target_commutes := fun _ => rfl
+
+/-- The actual reading returns the state, with an additional selected coefficient evaluation. -/
+private def readingOf (R : Type) [CommRing R] (offset : R) : Reading where
+  presentation := Observation.presentation
+  structureData := statesOf R
+  observation := StateObservation.ofSort () R id
+  context := Observation.whole
+  cover := (Observation.reading id).cover
+  Family := Unit
+  realize := fun _ => statesOf R
+  familyObservation := none
+  ValueStructure := fun _ => Unit
+  valueStructure := ()
+  coefficients := some (readRing R offset)
+
+/-- Both the observation and the coefficient evaluation use the structural state map. -/
+def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int × Int) (4, 4)) where
+  interpretation := Interpretation.identity Observation.presentation.theory
+  targetModel := fun name => nomatch name.val
+  state :=
+    { onSort := fun _ x => (x, x)
+      total_comm := fun f => nomatch f
+      relation_mem := fun r => nomatch r
+      partial_mem := fun p => nomatch p
+      partial_comm := fun p => nomatch p
+      quantity_comm := fun q => nomatch q }
+  contexts := rfl
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl
+  coefficientChange :=
+    { integerDiagonal with
+      state_commutes := by
+        intro e
+        apply Assignment.ext
+        intro _ i
+        cases i with
+        | here => rfl
+        | there i => nomatch i }
+  value := fun x => (x, x)
+  commutes := fun _ => rfl
+
+/-- The comparison reads the transported value six at the state two with offset four. -/
+theorem coefficient_comparison_at_two :
+    (readRing (Int × Int) (4, 4)).evaluate
+      (Assignment.castContext coefficientComparison.contexts
+        (coefficientComparison.interpretation.mapStates coefficientComparison.state
+          (Assignment.cons (2 : Int) Assignment.empty))) = ((6, 6) : Int × Int) := by
+  have h := (coefficientComparison.coefficientChange : CoefficientReading.Change
+    (readRing Int 4) (readRing (Int × Int) (4, 4)) _).evaluate_commutes
+      (Assignment.cons (2 : Int) Assignment.empty)
+  exact h
 
 /-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
 theorem zero_ring_to_integer_fails :

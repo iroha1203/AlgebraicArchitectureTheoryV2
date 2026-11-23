@@ -68,6 +68,16 @@ def rename (ρ : Renaming Γ Δ) : Atomic sig Γ → Atomic sig Δ
   | .domain p vars => .domain p (fun v => ρ (vars v))
   | .graph op vars y => .graph op (fun v => ρ (vars v)) (ρ y)
 
+/-- Rename a relation atom by mapping its selected arguments. -/
+@[simp] theorem rename_rel (r : sig.Rel) (vars : Renaming (sig.relInputs r) Γ)
+    (ρ : Renaming Γ Δ) : (Atomic.rel r vars).rename ρ = .rel r (fun i => ρ (vars i)) :=
+  rfl
+
+/-- Rename a domain atom by mapping its selected arguments. -/
+@[simp] theorem rename_domain (p : sig.Partial) (vars : Renaming (sig.partialArity p).inputs Γ)
+    (ρ : Renaming Γ Δ) : (Atomic.domain p vars).rename ρ = .domain p (fun i => ρ (vars i)) :=
+  rfl
+
 /-- Rename a graph atom by mapping its selected arguments and output. -/
 @[simp] theorem rename_graph (op : Operation sig) (vars : Renaming op.arity.inputs Γ)
     (y : Var Γ op.arity.output) (ρ : Renaming Γ Δ) :
@@ -124,6 +134,11 @@ def rename : {Γ Δ : List sig.SortType} → Renaming Γ Δ → Formula sig Γ �
 /-- Renaming an atomic formula acts on the underlying atom. -/
 @[simp] theorem rename_atom (a : Atomic sig Γ) (ρ : Renaming Γ Δ) :
     (Formula.atom a).rename ρ = .atom (a.rename ρ) :=
+  rfl
+
+/-- Renaming an existential formula retains its binder and lifts the free-variable map. -/
+@[simp] theorem rename_ex {s : sig.SortType} (p : Formula sig (s :: Γ)) (ρ : Renaming Γ Δ) :
+    p.ex.rename ρ = (p.rename (Renaming.lift ρ)).ex :=
   rfl
 
 /-- Satisfaction interprets the positive connectives and uses the full carrier for a witness. -/

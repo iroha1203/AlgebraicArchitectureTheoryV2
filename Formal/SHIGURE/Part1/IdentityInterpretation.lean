@@ -44,14 +44,14 @@ def identityAtomic (a : Atomic T.signature Γ) :
   | rel r inputs =>
     have same : (identity T.signature).atomic (.rel r inputs) =
         (Formula.atom (.rel r inputs)).rename (retype T) := by
-      simp only [atomic_rel, identity_relation, Formula.rename, Atomic.rename, retype,
+      simp only [atomic_rel, identity_relation, Formula.rename_atom, Atomic.rename_rel, retype,
         Renaming.mapSorts_apply]
     rw [same]
     exact ⟨.refl _, .refl _⟩
   | domain p inputs =>
     have same : (identity T.signature).atomic (.domain p inputs) =
         (Formula.atom (.domain p inputs)).rename (retype T) := by
-      simp only [atomic_domain, identity_domain, Formula.rename, Atomic.rename, retype,
+      simp only [atomic_domain, identity_domain, Formula.rename_atom, Atomic.rename_domain, retype,
         Renaming.mapSorts_apply]
     rw [same]
     exact ⟨.refl _, .refl _⟩
@@ -83,8 +83,8 @@ def identityFormula : {Γ : List T.signature.SortType} → (p : Formula T.signat
     ⟨hp.1.orMono hq.1, hp.2.orMono hq.2⟩
   | _, .ex p =>
     let hp := identityFormula p
-    ⟨by simpa only [formula_ex, Formula.rename, retype_lift] using hp.1.existsMono,
-      by simpa only [formula_ex, Formula.rename, retype_lift] using hp.2.existsMono⟩
+    ⟨by simpa only [formula_ex, Formula.rename_ex, retype_lift] using hp.1.existsMono,
+      by simpa only [formula_ex, Formula.rename_ex, retype_lift] using hp.2.existsMono⟩
 
 /-- Compare the replacement's definedness with existence of a primitive graph output. -/
 def identityDefined (op : Operation T.signature) :
