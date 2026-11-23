@@ -280,6 +280,7 @@ inductive SortName
   | input
   | included
 
+/-- A unary inclusion and a unary partial operation suffice to test both conditions of (1.2). -/
 private def signature : Signature where
   SortType := SortName
   Total := Unit
@@ -291,6 +292,7 @@ private def signature : Signature where
   partialArity := fun _ => ⟨[.input], .input⟩
   quantityArity := fun q => nomatch q
 
+/-- Use the sole total symbol as the coordinate of the inclusion. -/
 private def inclusion : DomainInclusions (sig := signature) () where
   domainSort := .included
   symbol := fun _ => .ordinary ()
@@ -300,6 +302,7 @@ private def inclusion : DomainInclusions (sig := signature) () where
     | here => rfl
     | there previous => nomatch previous
 
+/-- The inclusion map and the partial domain vary independently in the test structures. -/
 private def realization {C : Type} (inclusionMap : C → Bool) (domain : Set Bool) :
     Structure signature where
   carrier
@@ -311,6 +314,7 @@ private def realization {C : Type} (inclusionMap : C → Bool) (domain : Set Boo
   partialValue := fun _ e => e.val.head
   quantity := fun q => nomatch q
 
+/-- A named singleton can be sent to either point while the operation is defined only at true. -/
 private def singletonRealization (point : Bool) : Structure signature :=
   realization (fun (_ : Unit) => point) {true}
 

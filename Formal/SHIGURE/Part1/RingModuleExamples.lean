@@ -6,6 +6,19 @@ import Mathlib.Algebra.Ring.Int.Defs
 
 The scalar sort and the module sort have distinct addition and zero symbols.
 The scalar action is a total operation with one argument of each sort.
+
+## Implementation notes
+
+The algebraic example and the partial residual example use the same
+ordinary operation names and interpretations. Parameterizing only the family
+of partial symbols keeps that correspondence definitional. Separate copies
+of the ring and module signatures would require comparing their profiles
+and interpretations before reusing the scalar identities.
+
+The marked example reuses the same profiles and functions in the quantity
+family and has no ordinary symbols. Mixing marked and ordinary symbols
+would allow an example whose residual never exercises the quantity
+interpretation of one of the five operations.
 -/
 
 namespace SHIGURE.Chapter1.RingModule
@@ -27,6 +40,7 @@ inductive Symbol
   | vectorNeg
   | action
 
+/-- Share the total profiles across the algebraic example and its partial extension. -/
 private def signatureWithPartial (P : Type) : Signature where
   SortType := SortName
   Total := Symbol
@@ -50,6 +64,7 @@ private def signatureWithPartial (P : Type) : Signature where
 /-- The sort profiles of the operations in Example 1.6. -/
 def signature : Signature := signatureWithPartial Empty
 
+/-- Select the five ordinary scalar operations independently of the partial symbol family. -/
 private def scalarVocabularyFor (P : Type) : RingVocabulary (signatureWithPartial P) .scalar where
   zero := ⟨.ordinary Symbol.scalarZero, rfl⟩
   one := ⟨.ordinary Symbol.scalarOne, rfl⟩
@@ -184,10 +199,12 @@ def theory : Theory where
   LawName := LawName
   law := law
 
+/-- Make the scalar and module carriers reduce at the corresponding concrete sorts. -/
 private abbrev carrier (R M : Type) : SortName → Type
   | .scalar => R
   | .vector => M
 
+/-- Use the same interpretation of the total profiles for all partial extensions. -/
 private def total (P R M : Type) [CommRing R] [AddCommGroup M] [Module R M] :
     (f : Symbol) → Assignment (carrier R M) ((signatureWithPartial P).totalArity f).inputs →
       carrier R M ((signatureWithPartial P).totalArity f).output
@@ -301,6 +318,7 @@ theorem wrongZero_not_model : ¬ theory.Holds wrongZero := by
   change (1 : Int) + 0 = 0 at bad
   exact (by decide : (1 : Int) + 0 ≠ 0) bad
 
+/-- Matching carriers and total interpretations suffice to verify the scalar ring Laws. -/
 private theorem scalarLaws (P R M : Type) [CommRing R] [AddCommGroup M] [Module R M]
     (A : Structure (signatureWithPartial P))
     (hCarrier : A.carrier = carrier R M) (hTotal : hCarrier ▸ A.total = total P R M) :
@@ -338,12 +356,14 @@ def partialInteger : Structure partialSignature where
   partialValue := fun _ x => x.val.head
   quantity := fun q => nomatch q
 
+/-- Use the scalar variable as the sole input of the partial identity. -/
 private def zeroOnlyArgs {s : SortName} (i : Var [.scalar] s) :
     Term partialSignature [.scalar] s :=
   match i with
   | .here => .var .here
   | .there previous => nomatch previous
 
+/-- Compare the partial identity and the variable on the full designated input set. -/
 private def zeroOnly : RingEquation partialSignature where
   context := [.scalar]
   input := .truth
@@ -352,6 +372,7 @@ private def zeroOnly : RingEquation partialSignature where
   left := Term.app (sig := partialSignature) (.partialOp ()) zeroOnlyArgs
   right := .var .here
 
+/-- Interpret the partial identity via its graph and the variable evaluation. -/
 private theorem zeroOnly_evaluates (e : Assignment partialInteger.carrier [.scalar]) (y : Int) :
     zeroOnly.left.Evaluates partialInteger e y ↔ e.head = (0 : Int) ∧ e.head = y := by
   have hArgs : ∀ {s} (i : Var [SortName.scalar] s),
@@ -391,6 +412,7 @@ theorem zeroOnly_residual_and_missing_input :
     obtain ⟨y, hy⟩ := joint.2.1
     exact (by decide : (1 : Int) ≠ 0) ((zeroOnly_evaluates e y).1 hy).1
 
+/-- Form the closed equation between the two declared constants. -/
 private def oneEqualsZero {sig : Signature} {s : sig.SortType} (ring : RingVocabulary sig s) :
     RingEquation sig where
   context := []
@@ -400,6 +422,7 @@ private def oneEqualsZero {sig : Signature} {s : sig.SortType} (ring : RingVocab
   left := ring.one.term Term.argsNil
   right := ring.zero.term Term.argsNil
 
+/-- Compute the residual using the evaluated constants and the declared addition and inverse. -/
 private theorem oneEqualsZero_residual {sig : Signature} {s : sig.SortType}
     (ring : RingVocabulary sig s) (A : Structure sig)
     (h : ∀ name, (ring.law name).Holds A) :
@@ -436,6 +459,7 @@ theorem oneEqualsZero_total_nonzero :
         (realization_scalarLaws Int Int) e = (1 : Int) :=
   oneEqualsZero_residual scalarVocabulary (realization Int Int) (realization_scalarLaws Int Int)
 
+/-- Move the operation names and profiles to the quantity family for the marked example. -/
 private def quantitySignature : Signature :=
   { signature with
     Total := Empty
@@ -443,6 +467,7 @@ private def quantitySignature : Signature :=
     Quantity := Symbol
     quantityArity := signature.totalArity }
 
+/-- Interpret each marked operation using the same integer function as the ordinary symbol. -/
 private def quantityInteger : Structure quantitySignature where
   carrier := carrier Int Int
   total := fun f => nomatch f
@@ -451,6 +476,7 @@ private def quantityInteger : Structure quantitySignature where
   partialValue := fun p => nomatch p
   quantity := total Empty Int Int
 
+/-- Choose each of the five scalar operations from the marked quantity family. -/
 private def quantityVocabulary : RingVocabulary quantitySignature .scalar where
   zero := ⟨.quantity Symbol.scalarZero, rfl⟩
   one := ⟨.quantity Symbol.scalarOne, rfl⟩
@@ -458,6 +484,7 @@ private def quantityVocabulary : RingVocabulary quantitySignature .scalar where
   neg := ⟨.quantity Symbol.scalarNeg, rfl⟩
   mul := ⟨.quantity Symbol.scalarMul, rfl⟩
 
+/-- Transfer satisfaction along the agreement of the evaluated ring expressions. -/
 private theorem quantityLaws : ∀ name, (quantityVocabulary.law name).Holds quantityInteger := by
   have laws := realization_scalarLaws Int Int
   intro name

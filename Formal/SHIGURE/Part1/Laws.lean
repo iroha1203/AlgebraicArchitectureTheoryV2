@@ -1,7 +1,7 @@
 import Formal.SHIGURE.Part1.Syntax
 import Mathlib.Algebra.Ring.Basic
 
-/-! # Law declarations, Atom facts, and residuals
+/-! # Law declarations, Atom facts, and inclusion domains
 
 Definitions 1.1 and 1.5, and the domain presentation of (1.2).
 
@@ -12,8 +12,16 @@ names still give different declaration Atoms. An occurrence is a typed
 route through a formula tree. An evaluation fact records its input tuple
 and the evidence for the stated output, relation, or domain membership.
 
-An ordered ring equation retains its two terms as data. Its Law conclusion
-is constructed using the shared-output graph formula of (1.4).
+The role tag classifies each named Law. Derivation evidence belongs to the
+primitive presentation of Definition 1.7, where the relevant premise family
+is available. Putting proof trees in the role tag would make the
+classification of declarations depend on that family.
+
+The domain presentation picks one typed declared symbol per input position.
+A single map into an interpreted product would describe the image in one
+model, but the three Laws of (1.2) require a family of symbols in the syntax.
+Reusing `TypedTotal` makes the same arity check serve both term construction
+and evaluation of the chosen symbols.
 -/
 
 universe u
@@ -40,6 +48,11 @@ def inputSet (law : Law sig) (A : Structure sig) : Set (Assignment A.carrier law
 /-- A structure satisfies a Law when its conclusion holds at each designated input. -/
 def Holds (law : Law sig) (A : Structure sig) : Prop :=
   ∀ e ∈ law.inputSet A, law.conclusion.Holds A e
+
+/-- Law satisfaction interprets the sequent as an implication at each assignment. -/
+theorem holds_iff (law : Law sig) (A : Structure sig) :
+    law.Holds A ↔ ∀ e, law.input.Holds A e → law.conclusion.Holds A e :=
+  Iff.rfl
 
 /-- The input set reads the Law's antecedent. -/
 @[simp] theorem mem_inputSet_iff (law : Law sig) (A : Structure sig)
@@ -266,6 +279,7 @@ def inclusion (d : DomainInclusions p) (A : Structure sig) (x : A.carrier d.doma
   ⟨fun index => (TypedTotal.mk (d.symbol index) (d.arity_eq index)).value A
     (Assignment.cons x Assignment.empty)⟩
 
+/-- The inclusion term evaluates by applying the selected coordinate operation to its argument. -/
 private theorem evaluates_inclusionTerm (d : DomainInclusions p) {Γ : List sig.SortType}
     {s : sig.SortType} (index : Var (sig.partialArity p).inputs s)
     (A : Structure sig) (e : Assignment A.carrier Γ) (x : Term sig Γ d.domainSort)
@@ -277,6 +291,7 @@ private theorem evaluates_inclusionTerm (d : DomainInclusions p) {Γ : List sig.
   | here => exact hx
   | there previous => nomatch previous
 
+/-- With evaluations of both terms available, (1.4) tests equality of their values. -/
 private theorem holds_termEq_of_evaluates {Γ : List sig.SortType} {s : sig.SortType}
     {A : Structure sig} {e : Assignment A.carrier Γ} {t₁ t₂ : Term sig Γ s}
     {v₁ v₂ : A.carrier s} (h₁ : t₁.Evaluates A e v₁) (h₂ : t₂.Evaluates A e v₂) :
@@ -359,9 +374,8 @@ theorem holds_injectivityLaw (d : DomainInclusions p) (A : Structure sig) :
 theorem holds_domainLaws (d : DomainInclusions p) (A : Structure sig) :
     d.domainSubsetImage.Holds A ∧ d.imageSubsetDomain.Holds A ↔
       A.partialDomain p = Set.range (d.inclusion A) := by
-  change (∀ e, e ∈ A.partialDomain p → d.imageFormula.Holds A e) ∧
-    (∀ e, d.imageFormula.Holds A e → e ∈ A.partialDomain p) ↔ _
-  simp only [holds_imageFormula]
+  simp only [Law.holds_iff, domainSubsetImage, imageSubsetDomain, Formula.holds_atom,
+    Atomic.holds_domain, Assignment.pull_id, holds_imageFormula]
   exact ⟨fun h => Set.Subset.antisymm h.1 h.2, fun h => by simp [h]⟩
 
 end DomainInclusions

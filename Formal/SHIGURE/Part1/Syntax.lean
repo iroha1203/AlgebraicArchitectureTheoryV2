@@ -76,6 +76,18 @@ def Holds (a : Atomic sig Γ) (A : Structure sig) (e : Assignment A.carrier Γ) 
   | .domain p vars => e.pull vars ∈ A.partialDomain p
   | .graph op vars y => A.Graph op (e.pull vars) (e y)
 
+/-- A relation atom reduces to membership of the selected tuple in the interpreted relation. -/
+@[simp] theorem holds_rel (r : sig.Rel) (vars : Renaming (sig.relInputs r) Γ)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Atomic.rel r vars).Holds A e ↔ e.pull vars ∈ A.relation r :=
+  Iff.rfl
+
+/-- A domain atom reduces to membership of the selected tuple in the partial domain. -/
+@[simp] theorem holds_domain (p : sig.Partial) (vars : Renaming (sig.partialArity p).inputs Γ)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Atomic.domain p vars).Holds A e ↔ e.pull vars ∈ A.partialDomain p :=
+  Iff.rfl
+
 /-- A graph atom tests the interpreted graph on its selected coordinates. -/
 @[simp] theorem holds_graph (op : Operation sig) (vars : Renaming op.arity.inputs Γ)
     (y : Var Γ op.arity.output) (A : Structure sig) (e : Assignment A.carrier Γ) :
@@ -123,6 +135,11 @@ def Holds : {Γ : List sig.SortType} → Formula sig Γ → (A : Structure sig) 
     (e : Assignment A.carrier Γ) : (p.conj q).Holds A e ↔ p.Holds A e ∧ q.Holds A e :=
   Iff.rfl
 
+/-- Disjunction reduces to either of the two satisfaction conditions. -/
+@[simp] theorem holds_disj (p q : Formula sig Γ) (A : Structure sig)
+    (e : Assignment A.carrier Γ) : (p.disj q).Holds A e ↔ p.Holds A e ∨ q.Holds A e :=
+  Iff.rfl
+
 /-- Existential satisfaction is witnessed in the declared sort. -/
 @[simp] theorem holds_ex {s : sig.SortType} (p : Formula sig (s :: Γ)) (A : Structure sig)
     (e : Assignment A.carrier Γ) :
@@ -144,7 +161,7 @@ def Holds : {Γ : List sig.SortType} → Formula sig Γ → (A : Structure sig) 
     simp [rename, hp, hq]
   | disj p q hp hq =>
     intro Δ ρ e
-    simp [rename, Holds, hp, hq]
+    simp only [rename, holds_disj, hp, hq]
   | ex p hp =>
     intro Δ ρ e
     simp [rename, hp]
@@ -362,7 +379,7 @@ theorem holds_graphAt (A : Structure sig) (t : Term sig Γ s) :
   | app op terms ih =>
     intro Δ ρ out e
     simp only [graphAt, Formula.holds_existsMany, Formula.holds_conj, Formula.holds_conjoin,
-      ih, Formula.holds_atom, Atomic.Holds, Assignment.pull_append_left,
+      ih, Formula.holds_atom, Atomic.holds_graph, Assignment.pull_append_left,
       Assignment.pull_append_shift, Assignment.append_inLeft, Assignment.append_shift, Evaluates]
   | letBind init body hi hb =>
     intro Δ ρ out e
@@ -523,7 +540,7 @@ theorem holds_termRel (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s �
       ∃ xs : Assignment A.carrier (sig.relInputs r),
         (∀ {s} (index : Var (sig.relInputs r) s), xs index ∈ (terms index).eval A e) ∧
         xs ∈ A.relation r := by
-  simp only [termRel, holds_bindArguments, Holds, Atomic.Holds, Assignment.pull_append_left]
+  simp only [termRel, holds_bindArguments, holds_atom, Atomic.holds_rel, Assignment.pull_append_left]
 
 /-- A domain atom tests the tuple of evaluated argument values. -/
 theorem holds_termDomain (p : sig.Partial)
@@ -533,7 +550,8 @@ theorem holds_termDomain (p : sig.Partial)
       ∃ xs : Assignment A.carrier (sig.partialArity p).inputs,
         (∀ {s} (index : Var (sig.partialArity p).inputs s), xs index ∈ (terms index).eval A e) ∧
         xs ∈ A.partialDomain p := by
-  simp only [termDomain, holds_bindArguments, Holds, Atomic.Holds, Assignment.pull_append_left]
+  simp only [termDomain, holds_bindArguments, holds_atom, Atomic.holds_domain,
+    Assignment.pull_append_left]
 
 /-- A term graph tests the graph on the evaluated arguments and output. -/
 theorem holds_termGraph (op : Operation sig)
@@ -550,8 +568,7 @@ theorem holds_termGraph (op : Operation sig)
       apply Assignment.ext
       intro t i
       exact Assignment.append_inLeft (.there i) ys e
-    change A.Graph op _ ((ys.append e) (Var.here.inLeft Γ)) at hg
-    rw [hp, Assignment.append_inLeft] at hg
+    rw [holds_atom, Atomic.holds_graph, hp, Assignment.append_inLeft] at hg
     exact ⟨ys.tail, ys.head, fun index => hy (.there index), hy .here, hg⟩
   · rintro ⟨xs, y, hx, hy, hg⟩
     refine ⟨Assignment.cons y xs, ?_, ?_⟩
@@ -559,13 +576,12 @@ theorem holds_termGraph (op : Operation sig)
       cases index with
       | here => exact hy
       | there previous => exact hx previous
-    · change A.Graph op _ _
-      have hp : ((Assignment.cons y xs).append e).pull
+    · have hp : ((Assignment.cons y xs).append e).pull
           (fun i => (Var.there i).inLeft Γ) = xs := by
         apply Assignment.ext
         intro t i
         exact Assignment.append_inLeft (.there i) (Assignment.cons y xs) e
-      rw [hp, Assignment.append_inLeft]
+      rw [holds_atom, Atomic.holds_graph, hp, Assignment.append_inLeft]
       exact hg
 
 end Formula
