@@ -36,6 +36,9 @@ def signature : Signature where
   partialArity := fun p => nomatch p
   quantityArity := fun q => nomatch q
 
+/-- The lens signature has no partial operation symbols. -/
+instance : IsEmpty signature.Partial := ⟨fun p => nomatch p⟩
+
 /-- Read the view of a source term. -/
 def getTerm {Γ : List SortName} (state : Term signature Γ .source) : Term signature Γ .view :=
   Term.app (sig := signature) (.total Symbol.get) (Term.argsCons state Term.argsNil)
@@ -150,6 +153,22 @@ theorem product_holds (V C : Type) : theory.Holds (product V C) := by
         (v := e (Var.there (Var.there Var.here))) hinner hw
     · exact evaluates_put (a := e Var.here) (v := e (Var.there (Var.there Var.here))) ha hw
 
+/-- On the Boolean product, change put to leave the original state untouched. -/
+def unchangedPut : Structure signature :=
+  { product Bool Unit with
+    total
+      | .get => (product Bool Unit).total Symbol.get
+      | .put => fun xs => xs .here }
+
+/-- Leaving the old view untouched violates put-get when the requested view changes. -/
+theorem unchangedPut_not_model : ¬ theory.Holds unchangedPut := by
+  intro holds
+  let e : Assignment unchangedPut.carrier [.source, .view] :=
+    Assignment.cons (false, ()) (Assignment.cons true Assignment.empty)
+  have bad := (Law.holds_equality_totalValue_iff _ _ unchangedPut).1 (holds .putGet) e
+  change false = true at bad
+  cases bad
+
 end Lens
 
 namespace Partial
@@ -217,6 +236,26 @@ theorem empty_graph_not_total :
   intro h
   exact (h.2 ()).choose_spec
 
+/-- The Boolean identity relation satisfies the total graph axioms. -/
+theorem bool_identity_graph_total : GraphPresentation.IsTotal (fun (x y : Bool) => x = y) :=
+  ⟨by
+    intro x y z h₁ h₂
+    exact h₁.symm.trans h₂, fun x => ⟨x, rfl⟩⟩
+
+/-- The relation with the single edge `true → true` defines a map on a proper domain. -/
+theorem singleton_graph_partial :
+    GraphPresentation.IsPartial ({true} : Set Bool) (fun (x y : Bool) => x = true ∧ y = true) :=
+  ⟨by
+    intro x y z h₁ h₂
+    exact h₁.2.trans h₂.2.symm, fun _ _ h => h.1, fun _ hx => ⟨true, hx, rfl⟩⟩
+
+/-- Claiming an additional domain point for the same graph violates existence in (1.1). -/
+theorem singleton_graph_not_total :
+    ¬ GraphPresentation.IsPartial Set.univ (fun (x y : Bool) => x = true ∧ y = true) := by
+  intro h
+  obtain ⟨_, bad, _⟩ := h.2.2 false (Set.mem_univ _)
+  cases bad
+
 /-- The empty relation represents a partial map on the empty domain. -/
 theorem empty_graph_partial :
     GraphPresentation.IsPartial (∅ : Set Unit) (fun (_ : Unit) (_ : Bool) => False) := by
@@ -233,5 +272,74 @@ theorem multivalued_graph_not_partial :
   cases bad
 
 end Partial
+
+namespace Domain
+
+/-- The Boolean input sort and a distinct sort naming the included points. -/
+inductive SortName
+  | input
+  | included
+
+private def signature : Signature where
+  SortType := SortName
+  Total := Unit
+  Rel := Empty
+  Partial := Unit
+  Quantity := Empty
+  totalArity := fun _ => ⟨[.included], .input⟩
+  relInputs := fun r => nomatch r
+  partialArity := fun _ => ⟨[.input], .input⟩
+  quantityArity := fun q => nomatch q
+
+private def inclusion : DomainInclusions (sig := signature) () where
+  domainSort := .included
+  symbol := fun _ => ()
+  arity_eq := by
+    intro s i
+    cases i with
+    | here => rfl
+    | there previous => nomatch previous
+
+private def realization (point : Bool) : Structure signature where
+  carrier
+    | .input => Bool
+    | .included => Unit
+  total := fun _ _ => point
+  relation := fun r => nomatch r
+  partialDomain := fun _ => {e | e.head = true}
+  partialValue := fun _ e => e.val.head
+  quantity := fun q => nomatch q
+
+/-- A singleton sort mapped to true describes the true-only partial operation. -/
+theorem true_inclusion_holds :
+    inclusion.injectivityLaw.Holds (realization true) ∧
+      inclusion.domainSubsetImage.Holds (realization true) ∧
+      inclusion.imageSubsetDomain.Holds (realization true) := by
+  refine ⟨(inclusion.holds_injectivityLaw _).2 ?_, (inclusion.holds_domainLaws _).2 ?_⟩
+  · intro x y _
+    exact Subsingleton.elim (α := Unit) x y
+  · ext e
+    constructor
+    · intro he
+      refine ⟨(), Assignment.ext ?_⟩
+      intro s i
+      cases i with
+      | here => exact he.symm
+      | there previous => nomatch previous
+    · rintro ⟨x, hx⟩
+      exact (congrArg Assignment.head hx).symm
+
+/-- Moving the inclusion's image to false violates the domain specification. -/
+theorem false_inclusion_fails :
+    ¬ (inclusion.domainSubsetImage.Holds (realization false) ∧
+      inclusion.imageSubsetDomain.Holds (realization false)) := by
+  intro h
+  let e := inclusion.inclusion (realization false) ()
+  have hr : e ∈ Set.range (inclusion.inclusion (realization false)) := ⟨(), rfl⟩
+  have hd := h.2 e ((inclusion.holds_imageFormula _ _).2 hr)
+  change false = true at hd
+  cases hd
+
+end Domain
 
 end SHIGURE.Chapter1

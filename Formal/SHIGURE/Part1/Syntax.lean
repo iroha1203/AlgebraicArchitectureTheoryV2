@@ -396,6 +396,44 @@ theorem defined_locus (t : Term sig Γ s) (A : Structure sig) :
 
 end Term
 
+/-- A declared total symbol whose input and output profile has been identified. -/
+structure TypedTotal (sig : Signature.{u}) (profile : Arity sig.SortType) : Type u where
+  /-- The existing symbol in the signature. -/
+  symbol : sig.Total
+  /-- Its declared profile agrees with the selected profile. -/
+  arity_eq : sig.totalArity symbol = profile
+
+namespace TypedTotal
+
+variable {sig : Signature.{u}} {profile : Arity sig.SortType}
+
+/-- Apply the declared total symbol to a well-sorted family of terms. -/
+def term (op : TypedTotal sig profile) {Γ : List sig.SortType}
+    (args : ∀ {s}, Var profile.inputs s → Term sig Γ s) : Term sig Γ profile.output := by
+  obtain ⟨symbol, h⟩ := op
+  subst profile
+  exact .app (.total symbol) args
+
+/-- Evaluate the interpretation of a declared total symbol on its typed input tuple. -/
+def value (op : TypedTotal sig profile) (A : Structure sig)
+    (xs : Assignment A.carrier profile.inputs) : A.carrier profile.output := by
+  obtain ⟨symbol, h⟩ := op
+  subst profile
+  exact A.total symbol xs
+
+/-- Applying the selected symbol after evaluating the arguments gives its interpreted value. -/
+theorem evaluates_term (op : TypedTotal sig profile) {Γ : List sig.SortType}
+    (args : ∀ {s}, Var profile.inputs s → Term sig Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) (xs : Assignment A.carrier profile.inputs)
+    (h : ∀ {s} (index : Var profile.inputs s), (args index).Evaluates A e (xs index)) :
+    (op.term args).Evaluates A e (op.value A xs) := by
+  obtain ⟨symbol, hprofile⟩ := op
+  subst profile
+  exact (Term.evaluates_app_at (.total symbol) args A e xs h _).2
+    ((A.graph_total_iff symbol xs _).2 rfl)
+
+end TypedTotal
+
 namespace Formula
 
 variable {sig : Signature.{u}} {Γ : List sig.SortType} {s : sig.SortType}
@@ -447,6 +485,58 @@ def termGraph (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → T
       | .here => out
       | .there previous => terms previous)
     (.atom (.graph op (fun index => (Var.there index).inLeft Γ) (Var.here.inLeft Γ)))
+
+/-- A term relation tests the tuple of evaluated argument values. -/
+theorem holds_termRel (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s → Term sig Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (termRel r terms).Holds A e ↔
+      ∃ xs : Assignment A.carrier (sig.relInputs r),
+        (∀ {s} (index : Var (sig.relInputs r) s), xs index ∈ (terms index).eval A e) ∧
+        xs ∈ A.relation r := by
+  simp only [termRel, holds_bindArguments, Holds, Atomic.Holds, Assignment.pull_append_left]
+
+/-- A domain atom tests the tuple of evaluated argument values. -/
+theorem holds_termDomain (p : sig.Partial)
+    (terms : ∀ {s}, Var (sig.partialArity p).inputs s → Term sig Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (termDomain p terms).Holds A e ↔
+      ∃ xs : Assignment A.carrier (sig.partialArity p).inputs,
+        (∀ {s} (index : Var (sig.partialArity p).inputs s), xs index ∈ (terms index).eval A e) ∧
+        xs ∈ A.partialDomain p := by
+  simp only [termDomain, holds_bindArguments, Holds, Atomic.Holds, Assignment.pull_append_left]
+
+/-- A term graph tests the graph on the evaluated arguments and output. -/
+theorem holds_termGraph (op : Operation sig)
+    (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s) (out : Term sig Γ op.arity.output)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (termGraph op terms out).Holds A e ↔
+      ∃ (xs : Assignment A.carrier op.arity.inputs) (y : A.carrier op.arity.output),
+        (∀ {s} (index : Var op.arity.inputs s), xs index ∈ (terms index).eval A e) ∧
+        y ∈ out.eval A e ∧ A.Graph op xs y := by
+  rw [termGraph, holds_bindArguments]
+  constructor
+  · rintro ⟨ys, hy, hg⟩
+    have hp : (ys.append e).pull (fun i => (Var.there i).inLeft Γ) = ys.tail := by
+      apply Assignment.ext
+      intro t i
+      exact Assignment.append_inLeft (.there i) ys e
+    change A.Graph op _ ((ys.append e) (Var.here.inLeft Γ)) at hg
+    rw [hp, Assignment.append_inLeft] at hg
+    exact ⟨ys.tail, ys.head, fun index => hy (.there index), hy .here, hg⟩
+  · rintro ⟨xs, y, hx, hy, hg⟩
+    refine ⟨Assignment.cons y xs, ?_, ?_⟩
+    · intro t index
+      cases index with
+      | here => exact hy
+      | there previous => exact hx previous
+    · change A.Graph op _ _
+      have hp : ((Assignment.cons y xs).append e).pull
+          (fun i => (Var.there i).inLeft Γ) = xs := by
+        apply Assignment.ext
+        intro t i
+        exact Assignment.append_inLeft (.there i) (Assignment.cons y xs) e
+      rw [hp, Assignment.append_inLeft]
+      exact hg
 
 end Formula
 

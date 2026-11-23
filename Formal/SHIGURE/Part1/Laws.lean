@@ -241,84 +241,6 @@ inductive EvaluationAtom {sig : Signature.{u}} (A : Structure sig) : Type u
       (value : A.carrier (sig.quantityArity q).output) :
       A.quantity q xs = value → EvaluationAtom A
 
-/-- An ordered equality of two terms whose common result sort may carry a ring. -/
-structure RingEquation (sig : Signature.{u}) where
-  /-- The Law's context. -/
-  context : List sig.SortType
-  /-- The sort at which the subtraction is taken. -/
-  result : sig.SortType
-  /-- The designated inputs. -/
-  input : Formula sig context
-  /-- First term in the ordered equality. -/
-  left : Term sig context result
-  /-- Second term in the ordered equality. -/
-  right : Term sig context result
-
-namespace RingEquation
-
-variable {sig : Signature.{u}}
-
-/-- Form the Law whose conclusion is the expanded equality of the ordered terms. -/
-def toLaw (eqn : RingEquation sig) : Law sig :=
-  ⟨eqn.context, eqn.input, Formula.termEq eqn.left eqn.right⟩
-
-/-- The set `J` of designated inputs at which both terms are defined. -/
-def jointInputs (eqn : RingEquation sig) (A : Structure sig) :
-    Set (Assignment A.carrier eqn.context) :=
-  eqn.toLaw.inputSet A ∩ (eqn.left.domain A ∩ eqn.right.domain A)
-
-/-- The first evaluated term on the joint input set. -/
-noncomputable def leftValue (eqn : RingEquation sig) (A : Structure sig)
-    (e : eqn.jointInputs A) : A.carrier eqn.result :=
-  (eqn.left.eval A e.val).get ((eqn.left.mem_domain_iff A e.val).1 e.property.2.1)
-
-/-- The second evaluated term on the joint input set. -/
-noncomputable def rightValue (eqn : RingEquation sig) (A : Structure sig)
-    (e : eqn.jointInputs A) : A.carrier eqn.result :=
-  (eqn.right.eval A e.val).get ((eqn.right.mem_domain_iff A e.val).1 e.property.2.2)
-
-/-- The residual (1.6) in the order declared by the equality. -/
-noncomputable def residual (eqn : RingEquation sig) (A : Structure sig)
-    [CommRing (A.carrier eqn.result)] (e : eqn.jointInputs A) : A.carrier eqn.result :=
-  eqn.leftValue A e - eqn.rightValue A e
-
-/-- The evaluated left value belongs to the left term's partial value. -/
-theorem leftValue_mem (eqn : RingEquation sig) (A : Structure sig) (e : eqn.jointInputs A) :
-    eqn.leftValue A e ∈ eqn.left.eval A e.val := ⟨_, rfl⟩
-
-/-- The evaluated right value belongs to the right term's partial value. -/
-theorem rightValue_mem (eqn : RingEquation sig) (A : Structure sig) (e : eqn.jointInputs A) :
-    eqn.rightValue A e ∈ eqn.right.eval A e.val := ⟨_, rfl⟩
-
-/-- A ring-valued equality Law requires totality on the input set and a zero residual. -/
-theorem holds_iff_jointInputs_and_residual_zero (eqn : RingEquation sig)
-    (A : Structure sig) [CommRing (A.carrier eqn.result)] :
-    eqn.toLaw.Holds A ↔ eqn.jointInputs A = eqn.toLaw.inputSet A ∧
-      ∀ e : eqn.jointInputs A, eqn.residual A e = 0 := by
-  constructor
-  · intro h
-    constructor
-    · apply Set.Subset.antisymm
-      · exact fun _ he => he.1
-      · intro e he
-        obtain ⟨value, hleft, hright⟩ :=
-          (Formula.holds_termEq eqn.left eqn.right A e).1 (h e he)
-        exact ⟨he, (eqn.left.mem_domain_iff A e).2 hleft.choose,
-          (eqn.right.mem_domain_iff A e).2 hright.choose⟩
-    · intro e
-      obtain ⟨value, hleft, hright⟩ :=
-        (Formula.holds_termEq eqn.left eqn.right A e.val).1 (h e.val e.property.1)
-      apply sub_eq_zero.mpr
-      exact (Part.mem_unique (eqn.leftValue_mem A e) hleft).trans
-        (Part.mem_unique hright (eqn.rightValue_mem A e))
-  · rintro ⟨hjoint, hzero⟩ e he
-    let x : eqn.jointInputs A := ⟨e, hjoint.symm ▸ he⟩
-    have heq : eqn.leftValue A x = eqn.rightValue A x := sub_eq_zero.mp (hzero x)
-    exact (Formula.holds_termEq eqn.left eqn.right A e).2
-      ⟨eqn.leftValue A x, eqn.leftValue_mem A x, heq.symm ▸ eqn.rightValue_mem A x⟩
-
-end RingEquation
-
 /-- Data for specifying a partial operation's domain via an inclusion sort as in (1.2). -/
 structure DomainInclusions {sig : Signature.{u}} (p : sig.Partial) where
   /-- A sort intended to name domain points. -/
@@ -335,18 +257,36 @@ variable {sig : Signature.{u}} {p : sig.Partial}
 
 /-- Apply an inclusion symbol to a term of the inclusion sort. -/
 def inclusionTerm (d : DomainInclusions p) {Γ : List sig.SortType} {s : sig.SortType}
-    (index : Var (sig.partialArity p).inputs s) (x : Term sig Γ d.domainSort) : Term sig Γ s := by
-  let op := Operation.total (d.symbol index)
-  have shape : op.arity = ⟨[d.domainSort], s⟩ := d.arity_eq index
-  have terms : ∀ {t}, Var op.arity.inputs t → Term sig Γ t := by
-    rw [congrArg Arity.inputs shape]
-    intro t arg
-    cases arg with
-    | here => exact x
-    | there previous => nomatch previous
-  have output_eq : op.arity.output = s := congrArg Arity.output shape
-  rw [← output_eq]
-  exact Term.app op terms
+    (index : Var (sig.partialArity p).inputs s) (x : Term sig Γ d.domainSort) : Term sig Γ s :=
+  (TypedTotal.mk (d.symbol index) (d.arity_eq index)).term (x.argsCons Term.argsNil)
+
+/-- Interpret the declared inclusion symbols together as a map into the input product. -/
+def inclusion (d : DomainInclusions p) (A : Structure sig) (x : A.carrier d.domainSort) :
+    Assignment A.carrier (sig.partialArity p).inputs :=
+  ⟨fun index => (TypedTotal.mk (d.symbol index) (d.arity_eq index)).value A
+    (Assignment.cons x Assignment.empty)⟩
+
+private theorem evaluates_inclusionTerm (d : DomainInclusions p) {Γ : List sig.SortType}
+    {s : sig.SortType} (index : Var (sig.partialArity p).inputs s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) (x : Term sig Γ d.domainSort)
+    (v : A.carrier d.domainSort) (hx : x.Evaluates A e v) :
+    (d.inclusionTerm index x).Evaluates A e (d.inclusion A v index) := by
+  apply TypedTotal.evaluates_term
+  intro t arg
+  cases arg with
+  | here => exact hx
+  | there previous => nomatch previous
+
+private theorem holds_termEq_of_evaluates {Γ : List sig.SortType} {s : sig.SortType}
+    {A : Structure sig} {e : Assignment A.carrier Γ} {t₁ t₂ : Term sig Γ s}
+    {v₁ v₂ : A.carrier s} (h₁ : t₁.Evaluates A e v₁) (h₂ : t₂.Evaluates A e v₂) :
+    (Formula.termEq t₁ t₂).Holds A e ↔ v₁ = v₂ := by
+  simp only [Formula.holds_termEq, Term.mem_eval_iff]
+  constructor
+  · rintro ⟨v, hv₁, hv₂⟩
+    exact (Term.evaluates_unique A t₁ e h₁ hv₁).trans (Term.evaluates_unique A t₂ e hv₂ h₂)
+  · rintro rfl
+    exact ⟨v₁, h₁, h₂⟩
 
 /-- The joint injectivity Law in the first line of (1.2). -/
 def injectivityLaw (d : DomainInclusions p) : Law sig where
@@ -368,6 +308,61 @@ def domainSubsetImage (d : DomainInclusions p) : Law sig :=
 /-- The inclusion image is contained in the domain, the reverse direction of (1.2). -/
 def imageSubsetDomain (d : DomainInclusions p) : Law sig :=
   ⟨(sig.partialArity p).inputs, d.imageFormula, .atom (.domain p (fun index => index))⟩
+
+/-- The image formula has exactly the image of the interpreted inclusion as its locus. -/
+theorem holds_imageFormula (d : DomainInclusions p) (A : Structure sig)
+    (e : Assignment A.carrier (sig.partialArity p).inputs) :
+    d.imageFormula.Holds A e ↔ e ∈ Set.range (d.inclusion A) := by
+  simp only [imageFormula, Formula.holds_ex, Formula.holds_conjoin, Set.mem_range]
+  apply exists_congr
+  intro x
+  constructor
+  · intro h
+    apply Assignment.ext
+    intro s i
+    exact (holds_termEq_of_evaluates (d.evaluates_inclusionTerm i A
+      (Assignment.cons x e) (.var .here) x rfl)
+      (show (Term.var (.there i)).Evaluates A (Assignment.cons x e) (e i) from rfl)).1 (h i)
+  · intro h s i
+    exact (holds_termEq_of_evaluates (d.evaluates_inclusionTerm i A
+      (Assignment.cons x e) (.var .here) x rfl)
+      (show (Term.var (.there i)).Evaluates A (Assignment.cons x e) (e i) from rfl)).2
+      (congrArg (fun a : Assignment A.carrier _ => a i) h)
+
+/-- The first inclusion Law is equivalent to injectivity of the inclusion map. -/
+theorem holds_injectivityLaw (d : DomainInclusions p) (A : Structure sig) :
+    d.injectivityLaw.Holds A ↔ Function.Injective (d.inclusion A) := by
+  have holdsPremise (e : Assignment A.carrier [d.domainSort, d.domainSort]) :
+      d.injectivityLaw.input.Holds A e ↔ d.inclusion A (e .here) = d.inclusion A (e (.there .here)) := by
+    change (Formula.conjoin _ (fun i =>
+      Formula.termEq (d.inclusionTerm i (.var .here))
+        (d.inclusionTerm i (.var (.there .here))))).Holds A e ↔ _
+    rw [Formula.holds_conjoin]
+    constructor
+    · intro h
+      exact Assignment.ext fun i => (holds_termEq_of_evaluates
+        (d.evaluates_inclusionTerm i A e (.var .here) (e .here) rfl)
+        (d.evaluates_inclusionTerm i A e (.var (.there .here)) (e (.there .here)) rfl)).1 (h i)
+    · intro h _ i
+      exact (holds_termEq_of_evaluates
+        (d.evaluates_inclusionTerm i A e (.var .here) (e .here) rfl)
+        (d.evaluates_inclusionTerm i A e (.var (.there .here)) (e (.there .here)) rfl)).2
+          (congrArg (fun a : Assignment A.carrier _ => a i) h)
+  constructor
+  · intro h x y hxy
+    let e := Assignment.cons x (Assignment.cons y Assignment.empty)
+    exact h e ((holdsPremise e).2 hxy)
+  · intro h e he
+    exact h ((holdsPremise e).1 he)
+
+/-- The two containment Laws specify the domain as the inclusion image. -/
+theorem holds_domainLaws (d : DomainInclusions p) (A : Structure sig) :
+    d.domainSubsetImage.Holds A ∧ d.imageSubsetDomain.Holds A ↔
+      A.partialDomain p = Set.range (d.inclusion A) := by
+  change (∀ e, e ∈ A.partialDomain p → d.imageFormula.Holds A e) ∧
+    (∀ e, d.imageFormula.Holds A e → e ∈ A.partialDomain p) ↔ _
+  simp only [holds_imageFormula]
+  exact ⟨fun h => Set.Subset.antisymm h.1 h.2, fun h => by simp [h]⟩
 
 end DomainInclusions
 
