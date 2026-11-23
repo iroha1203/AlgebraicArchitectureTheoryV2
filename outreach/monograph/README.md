@@ -10,20 +10,20 @@
 ## 構成ファイル
 
 - `manifest.json`: 構成順（序論 → 共通記号 → 第I–VI部（第1–19章）→ 付録A–F）、除外ファイル（`README.md`）、`README.md` の部アンカー対応、TeX 処理系の固定版を定めるマニフェスト。
-- `preamble.tex`: XeTeX / `xeCJK` 用の LaTeX プリアンブル（A4、原ノ味フォント `HaranoAjiMincho` / `HaranoAjiGothic`、`amsmath`/`amssymb`/`mathrsfs`/`xltabular`/`hyperref`/`bookmark`、宣言・証明・QED・式幅調整マクロ）。
+- `preamble.tex`: XeTeX / `xeCJK` 用の LaTeX プリアンブル（A4、IPAex TrueType フォント `ipaexm.ttf` / `ipaexg.ttf`、`amsmath`/`amssymb`/`mathrsfs`/`xltabular`/`hyperref`/`bookmark`、宣言・証明・QED・式幅調整マクロ）。
 - `monograph.py`: 静的検査（`check`）、TeX 生成（`generate`）、PDF ビルドおよびログ／テキスト検証（`build`）を実行する CLI。
 - `test_monograph.py`: 変換の忠実性・リンク解決・失敗ケース検出（未閉じ数式、不在リンク／アンカー、未登録ファイル、上書き拒否、TeX ログエラー、PDF ハッシュ不一致）の `unittest` 回帰テスト。
 
 ## TeX 処理系の選定と環境固定
 
-既存の論文ビルド基盤（`outreach/paper/_tools/paper.py` および `outreach/paper/_tools/texlive-macos.lock.json`）との統一と OS 非依存の再現性を優先し、**XeTeX 系（`xeCJK` + 同梱 OTF 和文フォント `HaranoAjiMincho` / `HaranoAjiGothic`）**を採用する。これにより、以下の両処理系で同一の LaTeX ソースをビルドできる。
+既存の論文ビルド基盤（`outreach/paper/_tools/paper.py` および `outreach/paper/_tools/texlive-macos.lock.json`）との統一と OS 非依存の再現性、および PDF.js（IDE 内蔵ビューア・ブラウザ）・macOS プレビュー等の幅広いビューア互換性を優先し、**XeTeX 系（`xeCJK` + 同梱 TrueType 和文フォント `ipaexm.ttf` / `ipaexg.ttf`、`CID TrueType` + `ToUnicode` 埋め込み）**を採用する。これにより、以下の両処理系で同一の LaTeX ソースをビルドできる。
 
 1. **Tectonic 0.16.9（既定 `--engine tectonic`）**:
    - 初回のみ `--allow-network` を付けて TeX 資源をローカルキャッシュへ取得する。
    - 2回目以降は `--only-cached`（既定）でオフライン再現ビルドを行う。
 2. **TeX Live 2025 `xelatex`（`--engine xelatex`）**:
    - macOS では [texlive-macos.lock.json](../paper/_tools/texlive-macos.lock.json) で SHA-256 固定された TinyTeX-1 v2025.08 を [paper tools README](../paper/_tools/README.md#macos-の固定-tex-live-環境) の手順で `.tmp/paper-env/` へ展開し、`PATH` を通して実行する。
-   - `xeCJK` や `haranoaji` が未導入の場合は、その展開済み環境に対する差分を記録したうえで導入する。
+   - `xeCJK` や `ipaex` が未導入の場合は、その展開済み環境に対する差分を記録したうえで導入する。
 
 PDF テキスト検証には Poppler の `pdftotext`、代表ページの目視確認画像出力には `pdftoppm` を使用する。
 

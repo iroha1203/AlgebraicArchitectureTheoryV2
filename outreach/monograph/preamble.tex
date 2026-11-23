@@ -7,7 +7,7 @@
   bottom=23mm,
   left=21mm,
   right=21mm,
-  headheight=14pt,
+  headheight=16pt,
   headsep=8mm,
   footskip=10mm
 ]{geometry}
@@ -26,16 +26,16 @@
 \usepackage{xcolor}
 \usepackage{xeCJK}
 
-% Bundled open-source Japanese fonts (OS-independent, reproducible across macOS/Linux)
+% Bundled open-source Japanese TrueType fonts (OS-independent, CID TrueType + ToUnicode CMap for PDF.js/Preview/Acrobat)
 \setCJKmainfont[
-  BoldFont=HaranoAjiMincho-Bold.otf,
-  ItalicFont=HaranoAjiMincho-Regular.otf,
-  BoldItalicFont=HaranoAjiMincho-Bold.otf
-]{HaranoAjiMincho-Regular.otf}
+  BoldFont=ipaexg.ttf,
+  ItalicFont=ipaexm.ttf,
+  BoldItalicFont=ipaexg.ttf
+]{ipaexm.ttf}
 \setCJKsansfont[
-  BoldFont=HaranoAjiGothic-Bold.otf
-]{HaranoAjiGothic-Medium.otf}
-\setCJKmonofont{HaranoAjiGothic-Regular.otf}
+  BoldFont=ipaexg.ttf
+]{ipaexg.ttf}
+\setCJKmonofont{ipaexg.ttf}
 \xeCJKsetup{
   CJKmath=true,
   PunctStyle=quanjiao
@@ -156,7 +156,7 @@
   \clearpage
   \thispagestyle{empty}
   \phantomsection\label{#1}
-  \addcontentsline{toc}{part}{#2\quad #3}
+  \addcontentsline{toc}{part}{#2\texorpdfstring{\quad}{ }#3}
   \markboth{#2\quad #3}{}
   \vspace*{0.28\textheight}
   \begin{center}
