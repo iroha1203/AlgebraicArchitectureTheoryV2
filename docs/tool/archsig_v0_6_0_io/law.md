@@ -601,9 +601,9 @@ ShigureObservations ::= "observations" Name "{"
   `transfer_verdict`、`restored_transfer`、`common_domain`、`composed_domain`、`word_check_results`、
   `old_word_lift_results`、`lift_found`、`domain_nonempty`、`quantifiers`、`valid_designated`、`pointwise`、
   `common_candidate`、`fiber_non_empty`、`robust_all_pass`、`all_fail`、`mixed`、`empty_realizations`、
-  `effective_image`、`effective_image_e`、`mixed_witness_pair`、`distinguishing_pairs`、
-  `minimal_sufficient_sets`、`cost_ranked_sets`、`insufficiency_witness`、`removal_counterexamples`
-  などの計算結論相当の欄や宣言・識別子を Law 入力（各宣言本体・`op`・`rule`・`lift`・endpoint・`member` ID・`probe`・`observe`・`law_readout`・変数名を含む）に含めた場合、構文検査で拒否する。
+  `effective_image_e`、`p_plus`、`p_minus`、`chevalley_partition`、`mixed_witness_pair`、`distinguishing_pairs`、
+  `minimal_sufficient_sets`、`minimal_sufficient_observations`、`insufficiency_witness`、`raw_candidate_evaluations`、`reevaluation`
+  などの計算結論相当の語を、`shigure <種別>` の宣言種別位置、各宣言本体の句（フィールド）位置、および内部識別子・変数位置（`op`・`rule`・`lift`・endpoint・`u_vars`/`b_vars`/`c_vars`/`witness_vars`/`fine_b_vars`・`member` ID・名前付き `equation`/`invertible`/`component`・`preservation` `bind`・`raw_sequence` `start_state`・`designated_candidate`・`probe`・`observe`・`law_readout`）に含めた場合、構文検査で拒否する。
 - **守る意味 Law と固定部分圏・初段基準の保護**: `editable semantic_law` は構文・型検査で拒否する。
   `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
   `editable` による `shigure task` や `shigure family` `preservation` の `before` 表示変更・探索パラメータ混入も拒否する。
@@ -612,7 +612,7 @@ ShigureObservations ::= "observations" Name "{"
   初段 `step[0]` の始端表示 $X_0$ をパラメータフリーかつ編集不可に制限する（2 段目以降の共有中間表示における編集・パラメータ指定は許容する）。
 - **名前・参照・型・循環・無界境界の検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
   `shigure` reading 間の循環参照、未宣言の phase・座標・操作・変数、
-  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数重複およびパラメータとの衝突、`u_vars`/`c_vars`/`w_vars`/`b_vars`/`fine_b_vars` 間の名前衝突を含む）、
+  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数重複およびパラメータとの衝突、`u_vars`/`b_vars`/`c_vars` 間の名前衝突および `witness_vars`・`fine_b_vars` と `u_vars`/`b_vars`/`c_vars` の名前衝突を含む）、
   `goodness existential` の空 `witness_vars`、`raw_sequence` 指定時の必須 `presentation`・フェーズ連結・`start_state` 網羅・終端/基準フェーズ観測不整合、
   `observe.cost` の負数または小数、`realization`・`candidate`・`observe` における `origin` 欠如および空 `ArchMap` origin ID 参照、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合

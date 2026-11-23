@@ -1285,6 +1285,7 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 ShigurePointDomain = "algebraic_closure" | "universal_ring" | "Q_points" | "Z_points"
                    | ["Fp_points", DecimalPrime]
 MorphismDirection  = "state_map" | "time_order"
+EmptyWitness       = { generators: String[], cofactors: String[], verified: Bool }
 
 ShigureOutcome = {
   verdict: "established" | "refuted" | "undetermined",
@@ -1295,7 +1296,7 @@ ShigureOutcome = {
   residual_ideal: String[],
   result_kind: "mathematical_computation",
   silence_reason?: SilenceReason,
-  empty_witness?: { generators: String[], cofactors: String[], verified: Bool },
+  empty_witness?: EmptyWitness,
   restored?: {
     parameter_assignments: { [Name]: String },
     free_parameters: String[],
@@ -1449,8 +1450,8 @@ UniversalRingStabilityResult = {
   stable?: Bool,
   inhabited_stable?: Bool,
   counterexample_ring?: String,
-  counterexample_point?: { [Name]: String },
-  counterexample_residuals?: String[],
+  counterexample_point: { [Name]: String },
+  counterexample_residuals: String[],
   dual_number_counterexample?: {
     ring_description: String,
     assignments: { [Name]: String },
@@ -1485,7 +1486,7 @@ RobustnessOutcomeDetail = {
     satisfied: Bool,
     vacuously_true_empty_fiber: Bool,
     candidate_id?: String,
-    candidate_assignments: { [Name]: String },
+    candidate_assignments?: { [Name]: String },
     witnesses: PairEvaluationWitness[],
     counterexample_witnesses: PairEvaluationWitness[],
     counterexample_detail?: String
