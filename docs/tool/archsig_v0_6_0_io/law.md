@@ -603,7 +603,7 @@ ShigureObservations ::= "observations" Name "{"
   `common_candidate`、`fiber_non_empty`、`robust_all_pass`、`all_fail`、`mixed`、`empty_realizations`、
   `effective_image_e`、`p_plus`、`p_minus`、`chevalley_partition`、`mixed_witness_pair`、`distinguishing_pairs`、
   `minimal_sufficient_sets`、`minimal_sufficient_observations`、`insufficiency_witness`、`raw_candidate_evaluations`、`reevaluation`
-  などの計算結論相当の語を、`shigure <種別>` の宣言種別位置、各宣言本体の句（フィールド）位置、および内部識別子・変数位置（`op`・`rule`・`lift`・endpoint・`u_vars`/`b_vars`/`c_vars`/`witness_vars`/`fine_b_vars`・`member` ID・名前付き `equation`/`invertible`/`component`・`preservation` `bind`・`raw_sequence` `start_state`・`designated_candidate`・`probe`・`observe`・`law_readout`）に含めた場合、構文検査で拒否する。
+  などの計算結論相当の語を、`shigure <種別>` の宣言種別位置、各宣言本体・下位ブロックの句（フィールド）位置、および内部識別子・変数位置（`op`/`lift` の代入先座標・`endpoint` のパラメータ代入先・`u_vars`/`b_vars`/`c_vars`/`witness_vars`/`fine_b_vars`・`member` ID・`shigure family` の名前付き `equation`/`invertible`・`observe`/`law_readout` の名前付き `component`・`preservation` `bind`・`raw_sequence` `start_state`・`designated_candidate` の ID/変数・`probe` の名前/変数・`observe` ID・`law_readout` 名）に含めた場合、構文検査で拒否する。
 - **守る意味 Law と固定部分圏・初段基準の保護**: `editable semantic_law` は構文・型検査で拒否する。
   `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
   `editable` による `shigure task` や `shigure family` `preservation` の `before` 表示変更・探索パラメータ混入も拒否する。
