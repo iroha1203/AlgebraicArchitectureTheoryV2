@@ -5,19 +5,25 @@
 //! 残差 ideal・空性 witness・解・相互作用要約などの結論注入は構文・検査段階で明示拒否する。
 
 pub mod ast_ext;
+pub mod ast_phase3;
 pub mod check;
 mod check_diagram;
 mod check_ext_common;
 mod check_ext_morphism;
 mod check_ext_scope;
+mod check_family;
 mod check_path;
+mod check_phase3_tasks;
 mod check_relations;
 mod check_transfer;
 pub mod parser;
 mod parser_diagram_path;
+mod parser_family;
+mod parser_phase3_tasks;
 mod parser_transfer;
 
 pub use ast_ext::*;
+pub use ast_phase3::*;
 
 use super::ast::{Ident, QName, Span};
 use num_bigint::{BigInt, BigUint};
@@ -67,6 +73,43 @@ pub const FORBIDDEN_CONCLUSION_FIELDS: &[&str] = &[
     "old_word_lift_results",
     "lift_found",
     "domain_nonempty",
+    "fiber_non_empty",
+    "valid_designated",
+    "pointwise",
+    "common_candidate",
+    "quantifiers",
+    "vacuously_true_empty_fiber",
+    "universal_ring_stability",
+    "universal_ring_contrast",
+    "dual_number_counterexample",
+    "robust_all_pass",
+    "all_fail",
+    "mixed",
+    "empty_realizations",
+    "chevalley_class",
+    "chevalley_partition",
+    "designated_candidate_class",
+    "effective_image_e",
+    "p_plus",
+    "p_minus",
+    "mixed_witness_pair",
+    "distinguishing_pairs",
+    "minimal_sufficient_sets",
+    "minimal_sufficient_observations",
+    "sufficiency",
+    "sufficient",
+    "insufficiency_witness",
+    "coarse_robust",
+    "fine_robust",
+    "fine_only_counterexample",
+    "global_regular_section",
+    "global_regular_section_exists",
+    "law_readout_adequate",
+    "chi_e_adequate",
+    "counterexample",
+    "counterexamples",
+    "raw_candidate_evaluations",
+    "reevaluation",
 ];
 
 pub fn is_forbidden_conclusion_field(name: &str) -> bool {
@@ -397,6 +440,10 @@ pub enum ShigureDeclAst {
     Diagram(RawDiagramTask),
     Path(Box<RawPathTask>),
     Transfer(RawTransferTask),
+    Family(Box<RawFamilySpec>),
+    Robustness(RawRobustnessTask),
+    Chevalley(RawChevalleyTask),
+    Observations(RawObservationTask),
 }
 
 impl ShigureDeclAst {
@@ -410,6 +457,10 @@ impl ShigureDeclAst {
             ShigureDeclAst::Diagram(d) => &d.name,
             ShigureDeclAst::Path(p) => &p.name,
             ShigureDeclAst::Transfer(t) => &t.name,
+            ShigureDeclAst::Family(f) => &f.name,
+            ShigureDeclAst::Robustness(r) => &r.name,
+            ShigureDeclAst::Chevalley(c) => &c.name,
+            ShigureDeclAst::Observations(o) => &o.name,
         }
     }
 
@@ -423,6 +474,10 @@ impl ShigureDeclAst {
             ShigureDeclAst::Diagram(d) => d.span,
             ShigureDeclAst::Path(p) => p.span,
             ShigureDeclAst::Transfer(t) => t.span,
+            ShigureDeclAst::Family(f) => f.span,
+            ShigureDeclAst::Robustness(r) => r.span,
+            ShigureDeclAst::Chevalley(c) => c.span,
+            ShigureDeclAst::Observations(o) => o.span,
         }
     }
 }
@@ -637,6 +692,10 @@ pub struct CheckedShigureDecls {
     pub diagrams: BTreeMap<String, ShigureDiagramTask>,
     pub paths: BTreeMap<String, ShigurePathTask>,
     pub transfers: BTreeMap<String, ShigureTransferTask>,
+    pub families: BTreeMap<String, ShigureFamilySpec>,
+    pub robustness_tasks: BTreeMap<String, ShigureRobustnessTask>,
+    pub chevalley_tasks: BTreeMap<String, ShigureChevalleyTask>,
+    pub observation_tasks: BTreeMap<String, ShigureObservationTask>,
 }
 
 impl CheckedShigureDecls {
@@ -649,5 +708,9 @@ impl CheckedShigureDecls {
             && self.diagrams.is_empty()
             && self.paths.is_empty()
             && self.transfers.is_empty()
+            && self.families.is_empty()
+            && self.robustness_tasks.is_empty()
+            && self.chevalley_tasks.is_empty()
+            && self.observation_tasks.is_empty()
     }
 }

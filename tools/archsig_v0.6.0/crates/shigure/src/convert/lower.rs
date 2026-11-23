@@ -90,20 +90,7 @@ pub(super) fn convert_checked_inputs(
     let change_spec = lower_change_spec(selected.change_spec);
 
     // task 省略経路でも明示 task 経路と同じく `editable` は `after` 側限定であることを強制する。
-    for target in &change_spec.editable {
-        match target {
-            EditableTarget::OperationExpr { presentation, .. }
-            | EditableTarget::RepresentationLaw { presentation, .. }
-                if presentation != &pair.after.name =>
-            {
-                return Err(conv_err(format!(
-                    "editable target must belong to `after` presentation `{}` (got `{presentation}`)",
-                    pair.after.name
-                )));
-            }
-            _ => {}
-        }
-    }
+    ensure_editable_only_after(&change_spec, &pair.after.name)?;
 
     let eval_condition = selected
         .eval_condition
@@ -216,7 +203,27 @@ pub(super) fn lower_coeff_domain(d: &ShigureCoeffDomain) -> CoeffDomain {
     }
 }
 
-fn lower_point_domain(d: &ShigurePointDomain) -> PointDomain {
+pub(super) fn ensure_editable_only_after(
+    change_spec: &ChangeSpec,
+    after_name: &str,
+) -> Result<(), ValidationError> {
+    for target in &change_spec.editable {
+        match target {
+            EditableTarget::OperationExpr { presentation, .. }
+            | EditableTarget::RepresentationLaw { presentation, .. }
+                if presentation != after_name =>
+            {
+                return Err(conv_err(format!(
+                    "editable target must belong to `after` presentation `{after_name}` (got `{presentation}`)"
+                )));
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
+pub(super) fn lower_point_domain(d: &ShigurePointDomain) -> PointDomain {
     match d {
         ShigurePointDomain::AlgebraicClosure => PointDomain::AlgebraicClosure,
         ShigurePointDomain::RationalPoints => PointDomain::RationalPoints,

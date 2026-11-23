@@ -25,7 +25,7 @@ impl<E: InputError> Parser<E> {
         self.expect_kw("shigure")?;
         let Some(tok) = self.peek().cloned() else {
             return self.err(
-                "expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, or `transfer` after `shigure`",
+                "expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, or `observations` after `shigure`",
             );
         };
         if tok.kind != TokenKind::Name {
@@ -60,8 +60,20 @@ impl<E: InputError> Parser<E> {
             "transfer" => self
                 .parse_shigure_transfer(start)
                 .map(ShigureDeclAst::Transfer),
+            "family" => self
+                .parse_shigure_family(start)
+                .map(|f| ShigureDeclAst::Family(Box::new(f))),
+            "robustness" => self
+                .parse_shigure_robustness(start)
+                .map(ShigureDeclAst::Robustness),
+            "chevalley" => self
+                .parse_shigure_chevalley(start)
+                .map(ShigureDeclAst::Chevalley),
+            "observations" => self
+                .parse_shigure_observations(start)
+                .map(ShigureDeclAst::Observations),
             other => self.err(format!(
-                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, or `transfer`"
+                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, or `observations`"
             )),
         }
     }
@@ -79,7 +91,7 @@ impl<E: InputError> Parser<E> {
         self.err(format!("unexpected clause in {context}"))
     }
 
-    fn parse_shigure_coeff_domain(&mut self) -> PResult<RawCoeffDomain, E> {
+    pub(super) fn parse_shigure_coeff_domain(&mut self) -> PResult<RawCoeffDomain, E> {
         let start = self.here().0;
         if self.eat_kw("Z") {
             return Ok(RawCoeffDomain::Z((start, self.prev_end())));
@@ -99,7 +111,7 @@ impl<E: InputError> Parser<E> {
         self.err("expected coefficient domain `Z`, `Q`, or `Fp(<prime>)`")
     }
 
-    fn parse_shigure_point_domain(&mut self) -> PResult<RawPointDomain, E> {
+    pub(super) fn parse_shigure_point_domain(&mut self) -> PResult<RawPointDomain, E> {
         let start = self.here().0;
         if self.eat_kw("algebraic_closure") {
             return Ok(RawPointDomain::AlgebraicClosure((start, self.prev_end())));

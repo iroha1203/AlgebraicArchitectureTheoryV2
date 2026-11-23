@@ -97,7 +97,22 @@ fn lower_origin_kind(k: InputOriginKind) -> OriginKind {
     }
 }
 
-fn origin_to_source_refs(
+pub(super) fn lower_shigure_origin_kind(
+    k: archsig_input::law::shigure::ShigureOriginKind,
+) -> OriginKind {
+    match k {
+        archsig_input::law::shigure::ShigureOriginKind::StaticAnalysis => {
+            OriginKind::StaticAnalysis
+        }
+        archsig_input::law::shigure::ShigureOriginKind::RuntimeObservation => {
+            OriginKind::RuntimeObservation
+        }
+        archsig_input::law::shigure::ShigureOriginKind::LlmCandidate => OriginKind::LlmCandidate,
+        archsig_input::law::shigure::ShigureOriginKind::HumanAdopted => OriginKind::HumanAdopted,
+    }
+}
+
+pub(super) fn origin_to_source_refs(
     origin: &Origin,
     atom_ref: Option<String>,
 ) -> Result<Vec<SourceRef>, ValidationError> {
@@ -125,6 +140,23 @@ fn origin_to_source_refs(
         out.push(r);
     }
     Ok(out)
+}
+
+pub(super) fn resolve_archmap_origin(
+    archmap: &CheckedArchMap,
+    origin_id: &str,
+    context: &str,
+) -> Result<Vec<SourceRef>, ValidationError> {
+    let origin = archmap
+        .origins()
+        .iter()
+        .find(|o| o.id == origin_id)
+        .ok_or_else(|| ValidationError::UnknownRef {
+            kind: "origin",
+            name: origin_id.to_owned(),
+            context: context.to_owned(),
+        })?;
+    origin_to_source_refs(origin, None)
 }
 
 /// `observed <Entity.field>` 座標を ArchMap から解決し、値と全 `SourceLocation` 由来の
