@@ -15,7 +15,7 @@ use crate::solver::chevalley::build_family_constructible_sets;
 use crate::solver::family_direct::evaluate_goodness_at_point;
 use crate::solver::family_eval::{
     CandidateFiberEnum, EnumCandidate, RealizationFiberEnum, ScalarVal, eval_expr_at,
-    map_scalar_assignments,
+    map_scalar_assignments, scalar_eq,
 };
 use crate::solver::preservation::{map_algebra_silence, substitute_poly_expr};
 use std::collections::BTreeMap;
@@ -67,7 +67,7 @@ pub(super) fn compute_reading_comparison(
                     let comp = substitute_poly_expr(r_expr, &empty, &empty, &q_subst);
                     let lhs = eval_expr_at(&comp, &u_vars, &vals, domain)?;
                     let rhs = eval_expr_at(q_expr, &u_vars, &vals, domain)?;
-                    if lhs != rhs {
+                    if !scalar_eq(&lhs, &rhs) {
                         commutativity_verified = false;
                         break;
                     }
@@ -127,7 +127,10 @@ pub(super) fn compute_reading_comparison(
             .map(|l| ScalarVal::from_lit(l, domain))
             .collect::<Result<Vec<_>, _>>()?;
         for (r_expr, b_val) in rc.coarsen_r.iter().zip(&target_b) {
-            if &eval_expr_at(r_expr, &fine_vars, &fv_scalar, domain)? != b_val {
+            if !scalar_eq(
+                &eval_expr_at(r_expr, &fine_vars, &fv_scalar, domain)?,
+                b_val,
+            ) {
                 return Err(SilenceReason::ApplicabilityConditionNotMet {
                     condition: "reading_comparison_base_commutes".to_owned(),
                     detail: "r(fine_base_value) does not match coarse base_value".to_owned(),
@@ -188,7 +191,7 @@ pub(super) fn compute_reading_comparison(
         for u in u_list {
             let mut eq_all = true;
             for (fq, fv) in rc.fine_q.iter().zip(&target_f) {
-                if &eval_expr_at(fq, &u_vars, &u.values, domain)? != fv {
+                if !scalar_eq(&eval_expr_at(fq, &u_vars, &u.values, domain)?, fv) {
                     eq_all = false;
                     break;
                 }
@@ -198,7 +201,8 @@ pub(super) fn compute_reading_comparison(
             }
         }
         if fine_us.is_empty() {
-            false
+            designated.is_some()
+                || matches!(cand_enum, CandidateFiberEnum::Finite(c_list) if !c_list.is_empty())
         } else if let Some(dc) = designated {
             let mut ok = true;
             for u in &fine_us {
@@ -277,7 +281,7 @@ pub(super) fn compute_reading_comparison(
                         map_scalar_assignments(family.c_vars(), &m.assignments, domain)?;
                     let mut ok = true;
                     for (pe, bv) in family.inner().candidates.pi.iter().zip(&target_b) {
-                        if &eval_expr_at(pe, &c_vars_ord, &vals, domain)? != bv {
+                        if !scalar_eq(&eval_expr_at(pe, &c_vars_ord, &vals, domain)?, bv) {
                             ok = false;
                             break;
                         }
@@ -299,11 +303,12 @@ pub(super) fn compute_reading_comparison(
             }
         })?;
         let fine_sets = build_family_constructible_sets(&checked_fine, None)?;
+        let no_fail_candidates = fine_sets.c_space.difference(&fine_sets.p_minus)?;
         if let Some(dc) = designated {
             let pt: Vec<_> = dc.values.iter().map(ScalarVal::as_rat).collect();
-            fine_sets.robust_all_pass.contains_point(&pt)?
+            no_fail_candidates.contains_point(&pt)?
         } else {
-            !fine_sets.robust_all_pass.is_empty()
+            !no_fail_candidates.is_empty()
         }
     };
 

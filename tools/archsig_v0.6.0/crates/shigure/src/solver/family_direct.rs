@@ -382,6 +382,14 @@ fn eval_direct_preservation(
             Ok((nonzero.is_empty(), nonzero, None))
         }
         CoeffDomain::Q | CoeffDomain::Z => {
+            if *domain == CoeffDomain::Z
+                && *point_domain == PointDomain::RationalPoints
+                && obligations.iter().any(|o| !o.source_laws.is_empty())
+            {
+                return Err(SilenceReason::QuotientIdealOutOfScope {
+                    detail: "parametric quotient state-law membership over Z with RationalPoints (possible Z-torsion) is out of scope; use Q or algebraic_closure".to_owned(),
+                });
+            }
             let locus = compute_preservation_locus_q(&obligations, &empty_vars)?;
             let disp = display_polys(&locus.closure_ideal, &empty_vars);
             Ok((!locus.strata.is_empty(), disp, locus.empty_witness))

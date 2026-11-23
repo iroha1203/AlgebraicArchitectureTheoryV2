@@ -265,6 +265,45 @@ fn evaluate_existential_q_or_z(
             )
             .map_err(map_algebra_silence)?;
             let gens = gb.basis_polys();
+            if gens.is_empty() {
+                if invs_q.iter().any(Poly::is_zero) {
+                    return Ok(fail_pair(
+                        realization,
+                        candidate,
+                        None,
+                        display_polys(&eqs_q, w_vars),
+                        None,
+                    ));
+                }
+                let max_deg: usize = invs_q.iter().map(|iv| iv.total_degree() as usize).sum();
+                for k in 0..=(max_deg + 1) {
+                    let r = crate::algebra::Rat::from_int(BigInt::from(k));
+                    if invs_q.iter().all(|iv| {
+                        iv.eval_at(std::slice::from_ref(&r))
+                            .is_ok_and(|v| !v.is_zero())
+                    }) {
+                        return Ok(pass_pair(
+                            realization,
+                            candidate,
+                            None,
+                            BTreeMap::from([(w_names[0].clone(), r.to_string())]),
+                            None,
+                            ReevalCheck {
+                                checked: true,
+                                matched: true,
+                                detail: "verified rational existential witness on unconstrained 1D fiber".to_owned(),
+                            },
+                        ));
+                    }
+                }
+                return Ok(fail_pair(
+                    realization,
+                    candidate,
+                    None,
+                    display_polys(&eqs_q, w_vars),
+                    None,
+                ));
+            }
             if gens.len() == 1 && !gens[0].is_zero() {
                 let (roots, _) = univariate_rational_roots(gens[0])?;
                 if let Some(pt_r) = roots.into_iter().find(|r| {
@@ -470,6 +509,14 @@ fn solve_existential_with_preservation(
             ))
         }
         CoeffDomain::Q | CoeffDomain::Z => {
+            if *domain == CoeffDomain::Z
+                && *point_domain == PointDomain::RationalPoints
+                && obligations.iter().any(|o| !o.source_laws.is_empty())
+            {
+                return Err(SilenceReason::QuotientIdealOutOfScope {
+                    detail: "parametric quotient state-law preservation over Z with RationalPoints (possible Z-torsion) is out of scope; use Q or algebraic_closure".to_owned(),
+                });
+            }
             let locus = compute_preservation_locus_q(&obligations, w_vars)?;
             let cond_slice: Vec<&_> = cond_ref.into_iter().collect();
             let (ceqs, cinvs) = collect_eval_and_extra(

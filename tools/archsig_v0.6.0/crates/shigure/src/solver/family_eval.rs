@@ -112,6 +112,21 @@ impl ScalarVal {
     }
 }
 
+pub(crate) fn scalar_from_rat_in_domain(r: Rat, domain: &CoeffDomain) -> ScalarVal {
+    match domain {
+        CoeffDomain::Z if r.den().is_one() => ScalarVal::Z(r.num().clone()),
+        _ => ScalarVal::Q(r),
+    }
+}
+
+pub(crate) fn scalar_eq(a: &ScalarVal, b: &ScalarVal) -> bool {
+    match (a, b) {
+        (ScalarVal::Fp(fa), ScalarVal::Fp(fb)) => fa == fb,
+        (ScalarVal::Fp(_), _) | (_, ScalarVal::Fp(_)) => false,
+        _ => a.as_rat() == b.as_rat(),
+    }
+}
+
 /// 有限点または有限メンバーとして具象化された実現 $u \in U_b$。
 #[derive(Clone, Debug)]
 pub(crate) struct EnumRealization {
@@ -182,25 +197,35 @@ pub(crate) fn eval_expr_at(
             Ok(ScalarVal::Q(p.eval_at(&rs).map_err(map_algebra_silence)?))
         }
         CoeffDomain::Z => {
-            let p = Poly::from_expr_z(expr, &bind).map_err(map_algebra_silence)?;
-            let zs: Vec<BigInt> = vals
-                .iter()
-                .map(|v| match v {
-                    ScalarVal::Z(z) => z.clone(),
-                    _ => unreachable!("Z domain expected"),
-                })
-                .collect();
-            Ok(ScalarVal::Z(p.eval_at(&zs).map_err(map_algebra_silence)?))
+            if vals.iter().all(|v| matches!(v, ScalarVal::Z(_)))
+                && let Ok(p) = Poly::from_expr_z(expr, &bind)
+            {
+                let zs: Vec<BigInt> = vals
+                    .iter()
+                    .filter_map(|v| match v {
+                        ScalarVal::Z(z) => Some(z.clone()),
+                        _ => None,
+                    })
+                    .collect();
+                return Ok(ScalarVal::Z(p.eval_at(&zs).map_err(map_algebra_silence)?));
+            }
+            let p = Poly::from_expr_q(expr, &bind).map_err(map_algebra_silence)?;
+            let rs: Vec<Rat> = vals.iter().map(ScalarVal::as_rat).collect();
+            let val = p.eval_at(&rs).map_err(map_algebra_silence)?;
+            Ok(scalar_from_rat_in_domain(val, domain))
         }
         CoeffDomain::Fp(m) => {
             let p = Poly::from_expr_fp(expr, &bind, m).map_err(map_algebra_silence)?;
-            let fs: Vec<FpElem> = vals
-                .iter()
-                .map(|v| match v {
-                    ScalarVal::Fp(f) => f.clone(),
-                    _ => unreachable!("Fp domain expected"),
-                })
-                .collect();
+            let mut fs = Vec::with_capacity(vals.len());
+            for v in vals {
+                let ScalarVal::Fp(f) = v else {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "eval_expr_domain_match".to_owned(),
+                        detail: "expected Fp scalar value in Fp evaluation".to_owned(),
+                    });
+                };
+                fs.push(f.clone());
+            }
             Ok(ScalarVal::Fp(p.eval_at(&fs).map_err(map_algebra_silence)?))
         }
     }
@@ -403,7 +428,7 @@ pub(crate) fn enumerate_realizations_for_base(
                 let (vals, disp) = map_scalar_assignments(u_names, &m.assignments, domain)?;
                 let mut matches = true;
                 for (q_expr, b_val) in inner.realizations.reading_q.iter().zip(&target_b) {
-                    if &eval_expr_at(q_expr, &u_vars, &vals, domain)? != b_val {
+                    if !scalar_eq(&eval_expr_at(q_expr, &u_vars, &vals, domain)?, b_val) {
                         matches = false;
                         break;
                     }
@@ -456,6 +481,11 @@ fn enumerate_scheme_realizations(
     origin: &SourceRef,
     max_points: usize,
 ) -> Result<(RealizationFiberEnum, Option<EmptyWitness>), SilenceReason> {
+    if *point_domain == PointDomain::UniversalRing {
+        return Err(SilenceReason::UniversalRingOutOfScope {
+            detail: "point fiber enumeration does not evaluate over UniversalRing; use algebraic_closure, rational_points, integer_points, or finite_field_points".to_owned(),
+        });
+    }
     let bind = ExprBindings::params_only(u_vars);
     let mut eq_exprs: Vec<PolyExpr> = equations.iter().map(|e| e.expr.clone()).collect();
     for (q_expr, b_lit) in reading_q.iter().zip(base_value) {
@@ -577,10 +607,7 @@ fn enumerate_scheme_realizations(
             }
             let vals: Vec<ScalarVal> = particular
                 .iter()
-                .map(|r| match domain {
-                    CoeffDomain::Z => ScalarVal::Z(r.num().clone()),
-                    _ => ScalarVal::Q(r.clone()),
-                })
+                .map(|r| scalar_from_rat_in_domain(r.clone(), domain))
                 .collect();
             let assignments = build_assignment_map(u_names, &vals);
             return Ok((
@@ -627,10 +654,7 @@ fn enumerate_scheme_realizations(
                 let members = valid_roots
                     .into_iter()
                     .map(|r| {
-                        let sv = match domain {
-                            CoeffDomain::Z => ScalarVal::Z(r.num().clone()),
-                            _ => ScalarVal::Q(r),
-                        };
+                        let sv = scalar_from_rat_in_domain(r, domain);
                         let vals = vec![sv];
                         let assignments = build_assignment_map(u_names, &vals);
                         EnumRealization {
@@ -806,7 +830,7 @@ pub(crate) fn enumerate_candidates_for_base(
                 let (vals, disp) = map_scalar_assignments(c_names, &m.assignments, domain)?;
                 let mut matches = true;
                 for (pi_expr, b_val) in inner.candidates.pi.iter().zip(&target_b) {
-                    if &eval_expr_at(pi_expr, &c_vars, &vals, domain)? != b_val {
+                    if !scalar_eq(&eval_expr_at(pi_expr, &c_vars, &vals, domain)?, b_val) {
                         matches = false;
                         break;
                     }

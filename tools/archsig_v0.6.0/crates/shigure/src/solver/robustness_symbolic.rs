@@ -299,11 +299,9 @@ pub(super) fn eval_symbolic_closure_quantifiers(
     let mut cu_names = sets.c_vars.vars().to_vec();
     cu_names.extend(sets.u_vars.vars().iter().cloned());
     let cu_vars = VarOrder::new(cu_names).map_err(map_algebra_silence)?;
-    let w_total_cu = swap_uc_to_cu(&sets.w_total, sets.u_vars.len(), &cu_vars)?;
     let w_pass_cu = swap_uc_to_cu(&sets.w_pass, sets.u_vars.len(), &cu_vars)?;
-    let u_proj_total = project_constructible_set(&w_total_cu, sets.c_vars.len(), &sets.u_vars)?;
     let u_proj_pass = project_constructible_set(&w_pass_cu, sets.c_vars.len(), &sets.u_vars)?;
-    let pw_uncovered = u_proj_total.difference(&u_proj_pass)?;
+    let pw_uncovered = sets.u_space.difference(&u_proj_pass)?;
     let pw_sat = pw_uncovered.is_empty();
 
     let pw_witnesses = if pw_sat && is_existential {

@@ -113,21 +113,27 @@ pub(super) fn build_mixed_witness_pair(
     };
     let cand = if let Some(c) = chosen_in_mixed {
         c
-    } else if let Some(first_st) = sets.mixed.strata().first()
-        && let Some(pt) = pick_rational_point_in_stratum(first_st, &sets.c_vars)?
-    {
-        let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
-        EnumCandidate {
-            candidate_id: None,
-            assignments: build_assignment_map(family.c_vars(), &vals),
-            values: vals,
-            origin: default_candidate_origin(
-                &family.inner().candidates.space,
-                &family.inner().provenance,
-            ),
-        }
     } else {
-        return Ok(None);
+        let mut found = None;
+        for st in sets.mixed.strata() {
+            if let Some(pt) = pick_rational_point_in_stratum(st, &sets.c_vars)? {
+                let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
+                found = Some(EnumCandidate {
+                    candidate_id: None,
+                    assignments: build_assignment_map(family.c_vars(), &vals),
+                    values: vals,
+                    origin: default_candidate_origin(
+                        &family.inner().candidates.space,
+                        &family.inner().provenance,
+                    ),
+                });
+                break;
+            }
+        }
+        let Some(c) = found else {
+            return Ok(None);
+        };
+        c
     };
 
     let u_pass_set = slice_set_at_c(&sets.w_pass, &sets.c_vars, &cand, &sets.u_vars)?;
@@ -152,7 +158,7 @@ fn build_u_witness_from_slice(
     cand: &EnumCandidate,
     expected_pass: bool,
 ) -> Result<Option<PairEvaluationWitness>, SilenceReason> {
-    let Some(st) = slice.strata().first() else {
+    let Some(first_st) = slice.strata().first() else {
         return Ok(None);
     };
     let domain = family.coeff_domain();
@@ -163,44 +169,46 @@ fn build_u_witness_from_slice(
             .unwrap_or_else(|| SourceRef::new("realization", OriginKind::StaticAnalysis)),
         RealizationSpace::PolynomialScheme { origin, .. } => origin.clone(),
     };
-    if let Some(pt_q) = pick_rational_point_in_stratum(st, u_vars)? {
-        let vals: Vec<ScalarVal> = pt_q
-            .into_iter()
-            .map(|r| match domain {
-                CoeffDomain::Z if r.den().is_one() => ScalarVal::Z(r.num().clone()),
-                _ => ScalarVal::Q(r),
-            })
-            .collect();
-        let mut enum_u = EnumRealization {
-            member_id: None,
-            assignments: build_assignment_map(u_vars.vars(), &vals),
-            values: vals.clone(),
-            is_raw_candidate: false,
-            origin: origin.clone(),
-            presentation: None,
-        };
-        if let RealizationSpace::FiniteMembers(ms) = &family.inner().realizations.space {
-            for m in ms {
-                if let Ok((m_vals, _)) =
-                    map_scalar_assignments(u_vars.vars(), &m.assignments, domain)
-                    && m_vals == vals
-                {
-                    enum_u.member_id = Some(m.id.clone());
-                    enum_u.is_raw_candidate = m.is_raw_candidate;
-                    enum_u.origin = m.origin.clone();
-                    enum_u.presentation = m.presentation.clone();
-                    break;
+    for st in slice.strata() {
+        if let Some(pt_q) = pick_rational_point_in_stratum(st, u_vars)? {
+            let vals: Vec<ScalarVal> = pt_q
+                .into_iter()
+                .map(|r| match domain {
+                    CoeffDomain::Z if r.den().is_one() => ScalarVal::Z(r.num().clone()),
+                    _ => ScalarVal::Q(r),
+                })
+                .collect();
+            let mut enum_u = EnumRealization {
+                member_id: None,
+                assignments: build_assignment_map(u_vars.vars(), &vals),
+                values: vals.clone(),
+                is_raw_candidate: false,
+                origin: origin.clone(),
+                presentation: None,
+            };
+            if let RealizationSpace::FiniteMembers(ms) = &family.inner().realizations.space {
+                for m in ms {
+                    if let Ok((m_vals, _)) =
+                        map_scalar_assignments(u_vars.vars(), &m.assignments, domain)
+                        && m_vals == vals
+                    {
+                        enum_u.member_id = Some(m.id.clone());
+                        enum_u.is_raw_candidate = m.is_raw_candidate;
+                        enum_u.origin = m.origin.clone();
+                        enum_u.presentation = m.presentation.clone();
+                        break;
+                    }
                 }
             }
-        }
-        if let Ok(w) =
-            evaluate_goodness_at_point(family, &enum_u, cand, &PointDomain::AlgebraicClosure)
-            && w.passed == expected_pass
-        {
-            return Ok(Some(w));
+            if let Ok(w) =
+                evaluate_goodness_at_point(family, &enum_u, cand, &PointDomain::AlgebraicClosure)
+                && w.passed == expected_pass
+            {
+                return Ok(Some(w));
+            }
         }
     }
-    let eq_disp = display_polys(&st.equations, u_vars);
+    let eq_disp = display_polys(&first_st.equations, u_vars);
     let mut assign = BTreeMap::new();
     for u in u_vars.vars() {
         assign.insert(

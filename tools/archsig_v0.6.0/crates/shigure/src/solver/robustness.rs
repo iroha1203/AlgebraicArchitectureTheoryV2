@@ -19,7 +19,7 @@ use crate::solver::family_direct::{
 use crate::solver::family_eval::{
     CandidateFiberEnum, DEFAULT_MAX_ENUM_POINTS, EnumCandidate, EnumRealization,
     RealizationFiberEnum, ScalarVal, enumerate_candidates_for_base,
-    enumerate_realizations_for_base, eval_expr_at, map_scalar_assignments,
+    enumerate_realizations_for_base, eval_expr_at, map_scalar_assignments, scalar_eq,
 };
 use crate::solver::preservation::map_algebra_silence;
 use crate::solver::robustness_reading::compute_reading_comparison;
@@ -125,6 +125,7 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
             checks,
             provenance,
             fiber_non_empty,
+            &real_enum,
             &cand_enum,
             designated.as_ref(),
         );
@@ -299,6 +300,17 @@ fn check_robustness_applicability(
         "unobserved_slots_absent",
         MathClause::G140P0Dot1,
     ));
+    if *task.point_domain() == PointDomain::UniversalRing {
+        let reason = SilenceReason::UniversalRingOutOfScope {
+            detail: "shigure_robustness point quantifiers cannot run with point_domain = universal_ring; use check_universal_ring: true for R(R) base-change stability".to_owned(),
+        };
+        checks.push(ApplicabilityCheck::failed(
+            "point_quantifier_domain_concrete",
+            MathClause::G140E5,
+            reason.code(),
+        ));
+        return Err(reason);
+    }
     check_family_presentations_applicability(task.family(), checks)
 }
 
@@ -342,7 +354,10 @@ fn resolve_and_check_cand_fiber(
         .map(|l| ScalarVal::from_lit(l, domain))
         .collect::<Result<_, _>>()?;
     for (pi_expr, b_val) in family.inner().candidates.pi.iter().zip(&target_b) {
-        if &eval_expr_at(pi_expr, &c_vars, &cand.values, domain)? != b_val {
+        if !scalar_eq(
+            &eval_expr_at(pi_expr, &c_vars, &cand.values, domain)?,
+            b_val,
+        ) {
             return Err(SilenceReason::ApplicabilityConditionNotMet {
                 condition: "designated_candidate_in_base_fiber".to_owned(),
                 detail: "designated candidate projection pi(c) does not match base_value"
@@ -387,8 +402,12 @@ fn resolve_and_check_cand_fiber(
         && matches!(sel, crate::ir::robustness::CandidateSelector::ByValues(_))
     {
         let matched = ms.iter().any(|m| {
-            map_scalar_assignments(family.c_vars(), &m.assignments, domain)
-                .is_ok_and(|(vals, _)| vals == cand.values)
+            map_scalar_assignments(family.c_vars(), &m.assignments, domain).is_ok_and(
+                |(vals, _)| {
+                    vals.len() == cand.values.len()
+                        && vals.iter().zip(&cand.values).all(|(a, b)| scalar_eq(a, b))
+                },
+            )
         });
         if !matched {
             return Err(SilenceReason::ApplicabilityConditionNotMet {
@@ -472,9 +491,10 @@ fn finish_empty_fiber_outcome(
     family: &CheckedFamilySpec,
     coeff_domain: CoeffDomain,
     point_domain: PointDomain,
-    checks: Vec<ApplicabilityCheck>,
+    mut checks: Vec<ApplicabilityCheck>,
     provenance: Provenance,
     fiber_non_empty: FiberNonEmptinessResult,
+    real_enum: &RealizationFiberEnum,
     cand_enum: &CandidateFiberEnum,
     designated: Option<&EnumCandidate>,
 ) -> ShigureOutcome {
@@ -527,6 +547,27 @@ fn finish_empty_fiber_outcome(
         None
     };
 
+    let reading_comparison = match compute_reading_comparison(
+        task,
+        family,
+        real_enum,
+        cand_enum,
+        designated,
+        &None,
+        &None,
+        &point_domain,
+    ) {
+        Ok(rc) => rc,
+        Err(reason) => {
+            checks.push(ApplicabilityCheck::failed(
+                "reading_comparison_valid",
+                MathClause::G140E5Dot1,
+                reason.code(),
+            ));
+            return undetermined_robustness(coeff_domain, point_domain, checks, provenance, reason);
+        }
+    };
+
     ShigureOutcome {
         verdict: Verdict::Refuted,
         coeff_domain,
@@ -547,7 +588,7 @@ fn finish_empty_fiber_outcome(
             pointwise,
             common_candidate,
             universal_ring,
-            reading_comparison: None,
+            reading_comparison,
         }),
         chevalley: None,
         observations: None,

@@ -55,6 +55,8 @@ mod tests_path;
 #[cfg(test)]
 mod tests_path_extra;
 #[cfg(test)]
+mod tests_phase3_regressions;
+#[cfg(test)]
 mod tests_regressions;
 #[cfg(test)]
 mod tests_robustness;

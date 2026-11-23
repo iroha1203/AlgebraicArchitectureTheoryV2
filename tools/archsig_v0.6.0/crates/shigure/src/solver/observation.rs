@@ -79,6 +79,18 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
     if let Err(reason) = check_family_presentations_applicability(family, &mut checks) {
         return undetermined_obs(coeff_domain, point_domain, checks, provenance, reason);
     }
+    if point_domain == PointDomain::UniversalRing {
+        let reason = SilenceReason::UniversalRingOutOfScope {
+            detail: "shigure_observations requires a concrete point domain, not universal_ring"
+                .to_owned(),
+        };
+        checks.push(ApplicabilityCheck::failed(
+            "observation_point_domain_concrete",
+            MathClause::G142G6,
+            reason.code(),
+        ));
+        return undetermined_obs(coeff_domain, point_domain, checks, provenance, reason);
+    }
 
     let u_list = match enumerate_realizations_for_base(
         family,

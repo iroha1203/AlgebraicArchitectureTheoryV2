@@ -11,7 +11,9 @@ use crate::ir::family::{
 };
 use crate::ir::provenance::{MathClause, OriginKind, Provenance, SourceRef};
 use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason, Verdict};
-use crate::ir::result_phase3::{ChevalleyOutcomeDetail, ChevalleyRegionSummary};
+use crate::ir::result_phase3::{
+    ChevalleyOutcomeDetail, ChevalleyRegionSummary, UniversalRingStabilityResult,
+};
 use crate::ir::robustness::{CandidateSelector, CheckedChevalleyTask};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use crate::solver::chevalley_sections::{
@@ -193,7 +195,18 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
                     }
                 }
             }
-            Ok(None) => None,
+            Ok(None) => Some(UniversalRingStabilityResult {
+                evaluated: false,
+                stable: None,
+                inhabited_stable: None,
+                counterexample_ring: None,
+                counterexample_point: BTreeMap::new(),
+                counterexample_residuals: vec![],
+                dual_number_counterexample: None,
+                silence_reason: Some(SilenceReason::UniversalRingOutOfScope {
+                    detail: "cannot select rational universal-ring test candidate in non-rational candidate scheme".to_owned(),
+                }),
+            }),
             Err(reason) => {
                 return undetermined_chevalley(
                     coeff_domain,
@@ -280,6 +293,7 @@ pub(crate) struct FamilyConstructibleSets {
     pub u_vars: VarOrder,
     pub c_vars: VarOrder,
     pub uc_vars: VarOrder,
+    pub u_space: ConstructibleSet,
     pub c_space: ConstructibleSet,
     pub w_total: ConstructibleSet,
     pub effective_image_e: Option<ConstructibleSet>,
@@ -484,6 +498,7 @@ pub(crate) fn build_family_constructible_sets(
         u_vars,
         c_vars,
         uc_vars,
+        u_space: u_set,
         c_space,
         w_total,
         effective_image_e,
