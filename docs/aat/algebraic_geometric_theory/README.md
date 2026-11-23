@@ -19,9 +19,10 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 - [第VI部 観測・必要情報・再構成](#第vi部-観測必要情報再構成)：第17–19章。
 - [付録A 正の論理の導出と健全性](appendix_a_positive_logic.md)：理論解釈に用いる正の論理の導出規則と健全性。
 - [付録B 係数・アフィン構成・descent](appendix_b_coefficients_and_descent.md)：第II部で用いる係数変更、アフィン構成、および局所からの組み立て。
-- [付録C 関係・解消・逆極限・整数障害](appendix_c_homological_constructions.md)：余接複体、正則列と形式的滑らかさ、導来逆極限、Tor と交差、整数修復の有限算術判定、調和レギュレータ。
+- [付録C 関係・解消・逆極限・整数障害](appendix_c_homological_constructions.md)：余接複体、正則列と形式的滑らかさ、導来逆極限、Tor と交差、整数修復の有限算術判定、調和レギュレータ、Fittingイデアルと単純根。
 - [付録D 有限根スキーム・診断次元・降下](appendix_d_finite_roots_and_stalks.md)：診断次元の原始実現、幾何点の茎、スペクトル根診断の降下と選択。
-- [付録E 変更経路と費用の問題](appendix_e_change_paths_and_costs.md)：許容経路の費用と最適経路の再構成。
+- [付録E 変更経路・移行幅・費用](appendix_e_change_paths_and_costs.md)：移行の一時資源、有限グラフの最適語、時間を含む局所費用合成と全比較の再構成。
+- [付録F 普遍係数と有限停止](appendix_f_universal_coefficients_and_termination.md)：Noether性の証明、係数に依存しない計算可能語長、任意の環への特殊化。
 
 ## 全体の構成
 
@@ -32,7 +33,7 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 - **第III部（第7–9章）**：意味を保つ変更の全体と条件付きの変更族を構成し、さらに商、対称性、代表の選択、持ち上げの分類を行う。
 - **第IV部（第10–13章、付録C）**：文脈と係数の 2 方向の descent、固定部分と許可範囲に相対的な修復の全体（アリアドネ）、変形と交差の障害、および有限断片からの大域的な復元を構成する。
 - **第V部（第14–16章、付録D）**：reading と係数に沿う輸送、生成される比較と正規化、および診断の族と指定された障害の比較を構成する。
-- **第VI部（第17–19章、付録E）**：状態からの観測、判定と数値補正に必要な情報、局所読み取りからの条件付き変更の全体および修復の全体の回復、ならびに有限決定と実行可能な復元算法を構成する。
+- **第VI部（第17–19章、付録E・F）**：状態からの観測、判定と数値補正に必要な情報、局所読み取りからの条件付き変更の全体および修復の全体の回復、有限決定と全域多項式操作の一様語長、および有限移行と最適経路の復元算法を構成する。
 
 ### 第I部 Lawと意味の基礎
 
@@ -81,6 +82,10 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 | 未定義状態・係数変更・Law の変更は何を変えるか | [単項部分操作の商](part_3/chapter_9_quotients_symmetry_and_lifts.md#96-単項部分操作の商と保存切断)、[線形定義域と Tor](part_5/chapter_14_transport_along_readings_and_coefficients.md#146-線形定義域の交差と値写像)、[Law 生成余法係数](part_4/chapter_12_deformations_and_obstructions.md#127-lawが生成する余法係数と指定切断の一次持ち上げ) |
 | 有限の公開語から実現とモジュライを構成できるか | [有限ハンケル表](part_6/chapter_19_local_reconstruction_and_finite_determination.md#196-有限ハンケル表からの最小実現)、[内在的生成元と Grassmann 表示](part_2/chapter_6_families_and_moduli.md#66-入力語による内在的生成元と最小実現) |
 | 整数障害や実現族上の診断をどう読むか | [整数障害と指定比較](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1612-整数障害有限素数冪指定比較)、[診断次元の実現](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1611-診断次元を実現する幾何)、[根診断の降下と選択](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1613-固有値の根診断と商上の選択) |
+| 複数の変更や次の要求を同時に実現できるか | [混合・三重障害](part_4/chapter_12_deformations_and_obstructions.md#128-二変更の混合障害と三重持ち上げ)、[要求の持ち上げ](part_4/chapter_12_deformations_and_obstructions.md#1210-指定要求の持ち上げと滑らかな開集合) |
+| 部分観測だけで不能性や外部への置換を保証できるか | [閉部分表示と共有宣言](part_4/chapter_11_ariadne_relative_repairs.md#1112-部分観測の不能証拠と任意の外部への置換)、[重み付き問い合わせ](part_6/chapter_18_repair_and_observation.md#1810-有限候補の重み付き観測) |
+| 非線形操作のすべての語を有限に判定できるか | [一様語長と安全スキーム](part_6/chapter_19_local_reconstruction_and_finite_determination.md#198-非線形操作の全語判定と一様有限性)、[普遍係数の停止算法](appendix_f_universal_coefficients_and_termination.md#f2-係数を固定しない操作語の恒等式) |
+| どの幅と資源で移行でき、最適経路をどう戻せるか | [移行幅と接続資源](appendix_e_change_paths_and_costs.md#e2-law同時変更数一時資源)、[最適経路groupoid](appendix_e_change_paths_and_costs.md#e4-時間を含む局所合成と全最小解) |
 
 ## 数学本文の自立性（hard rule）
 
