@@ -87,6 +87,13 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   permitsPoints (R : CoefficientAlgebra base) (a : Realization R)
     (X : RestrictedStructure U) (sorts : Set P.signature.SortType)
     (points : ∀ s : P.signature.SortType, s ∈ sorts → X.carrier s → (structureOf R a).carrier s) : Prop
+  /-- Permissions depend only on the retained source data and the selected point correspondence. -/
+  permitsPoints_congr (R : CoefficientAlgebra base) (a : Realization R)
+    {X Y : RestrictedStructure U} (same : X.Agrees Y)
+    {sorts : Set P.signature.SortType} (kept : ∀ s ∈ sorts, Declaration.sort s ∈ U.declarations)
+    (points : ∀ s : P.signature.SortType, s ∈ sorts → Y.carrier s → (structureOf R a).carrier s) :
+    permitsPoints R a X sorts (fun s hs x => points s hs (same.carrier_eq s (kept s hs) ▸ x)) ↔
+      permitsPoints R a Y sorts points
   /-- Admissible native input data for the realization scheme. -/
   Native : Type v
   /-- The native structure whose points are used in the realization rule. -/
@@ -369,9 +376,16 @@ abbrev ring (reading : CoefficientReading U A Γ) : CoefficientRing.{u} :=
   reading.algebra.scalars
 
 /-- Realize the selected inputs. -/
+def selectedPoint (reading : CoefficientReading U A Γ) (i : reading.selection.selected.Index) :
+    A.carrier (reading.selection.selected.sort i) →
+      (reading.scheme.structureOf reading.algebra reading.realization).carrier
+        (reading.selection.selected.sort i) :=
+  reading.realizePoint _ ⟨i, rfl⟩
+
+/-- Realize the tuple at the selected inputs. -/
 def selectedTuple (reading : CoefficientReading U A Γ) (e : reading.selection.used.Values A.carrier) :
     reading.selection.selected.Values (reading.scheme.structureOf reading.algebra reading.realization).carrier :=
-  fun i => reading.realizePoint _ ⟨i, rfl⟩ (reading.selection.tuple e i)
+  fun i => reading.selectedPoint i (reading.selection.tuple e i)
 
 /-- Use the actual reading's state at the specified positions of the chosen realization. -/
 def inputTuple (reading : CoefficientReading U A Γ) (e : Γ.product.Values A.carrier) :
@@ -445,6 +459,15 @@ def Change.alongScheme {source : CoefficientReading U A Γ} {target : Coefficien
   evaluate_commutes e := (congrArg target.evaluate (state_commutes e)).symm.trans
     ((target_commutes e).trans (change_commutes e))
 
+/-- Two ambient models have the same source data for a fixed retained coefficient scheme. -/
+inductive SameRetainedSource : {P Q : PrimitivePresentation.{u}} →
+    (U : DeclarationContext P) → (V : DeclarationContext Q) →
+    Structure P.signature → Structure Q.signature → Prop
+  | ofAgreement {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+      {A B : Structure P.signature}
+      (same : (RestrictedStructure.restrict U A).Agrees (RestrictedStructure.restrict U B)) :
+      SameRetainedSource U U A B
+
 /-- An unchanged choice of coefficient algebra, scheme, and evaluation rule. -/
 structure SameParameters (source : CoefficientReading.{u, v} U A Γ)
     (target : CoefficientReading.{u, v} V B Δ) : Prop where
@@ -460,10 +483,12 @@ structure SameParameters (source : CoefficientReading.{u, v} U A Γ)
   names : HEq source.selection.selectedSlots target.selection.selectedSlots
   /-- In a common original product, both inputs select the same coordinates. -/
   positions : HEq Γ Δ → HEq source.selection.inputs target.selection.inputs
-  /-- Keep the same realization and correspondence, or apply the common native rule to different objects. -/
+  /-- Keep the same application on a retained source, or apply the common native rule to changed
+  retained source data. -/
   application : (source.pointOrigin.isNative ∧ target.pointOrigin.isNative ∧
-      (HEq A B → HEq source.realization target.realization ∧ HEq source.realizePoint target.realizePoint)) ∨
-    (HEq source.realization target.realization ∧ HEq source.realizePoint target.realizePoint)
+      (SameRetainedSource U V A B →
+        HEq source.realization target.realization ∧ HEq source.selectedPoint target.selectedPoint)) ∨
+    (HEq source.realization target.realization ∧ HEq source.selectedPoint target.selectedPoint)
   /-- The rule over the selected scheme is unchanged. -/
   rule : HEq source.evaluateOn target.evaluateOn
 
