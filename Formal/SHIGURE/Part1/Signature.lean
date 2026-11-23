@@ -37,6 +37,12 @@ namespace Var
 
 variable {S : Type u} {Γ : List S} {s : S}
 
+/-- The sort of a position occurs in its context. -/
+theorem sort_mem (i : Var Γ s) : s ∈ Γ := by
+  induction i with
+  | here => exact List.mem_cons_self
+  | there _ ih => exact List.mem_cons_of_mem _ ih
+
 /-- Include a variable from the first block of an appended context. -/
 def inLeft (Δ : List S) : {Γ : List S} → {s : S} → Var Γ s → Var (Γ ++ Δ) s
   | _, _, .here => .here

@@ -248,9 +248,10 @@ private def selected : CoefficientReading retained ordinary [false, true] where
   inputs
     | .here => .here
     | .there i => nomatch i
-  realizeInputs
-    | .here => id
-    | .there i => nomatch i
+  realizePoint s hs := by
+    have same : s = false := List.mem_singleton.1 hs
+    subst s
+    exact id
   evaluateOn R _ e := R.fromBase (show Int from e.head)
 
 /-- The realized value is the first coordinate for any values of the forgotten coordinate. -/

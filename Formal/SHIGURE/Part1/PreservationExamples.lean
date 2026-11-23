@@ -496,8 +496,8 @@ private def statesOf (R : Type) : Structure Observation.signature where
 /-- Equip a concrete scalar type with its named coefficient ring. -/
 private def ringOf (R : Type) [CommRing R] : CoefficientRing := ⟨R, inferInstance⟩
 
-/-- The scalar scheme uses the integer base and records an offset in each realization. -/
-private def offsetScheme : CoefficientScheme Observation.whole (ringOf Int) where
+/-- The scalar scheme records an offset in each realization. -/
+private def offsetScheme (base : CoefficientRing) : CoefficientScheme Observation.whole base where
   Realization R := R.scalars.Carrier
   structureOf R _ := RestrictedStructure.restrict Observation.whole (statesOf R.scalars.Carrier)
   Morphism R _ _ := R.scalars.Carrier → R.scalars.Carrier
@@ -509,8 +509,8 @@ private def offsetScheme : CoefficientScheme Observation.whole (ringOf Int) wher
     | rel r _ => exact nomatch r
     | domain p _ => exact nomatch p
     | graph op _ _ => cases op <;> rename_i symbol <;> exact nomatch symbol
-  Native := Int
-  nativeStructure _ := RestrictedStructure.restrict Observation.whole (statesOf Int)
+  Native := base.Carrier
+  nativeStructure _ := RestrictedStructure.restrict Observation.whole (statesOf base.Carrier)
   realizeNative R offset := R.fromBase offset
   nativePoints R _ _ _ x := R.fromBase x
   interpretLaw R _ :=
@@ -523,12 +523,12 @@ private def readRing (R : Type) [CommRing R] (offset : R) :
     CoefficientReading Observation.whole (statesOf R) [()] where
   base := ringOf Int
   algebra := ⟨ringOf R, Int.castRingHom R⟩
-  scheme := offsetScheme
+  scheme := offsetScheme (ringOf Int)
   realization := offset
   context := [()]
   supported := fun _ _ => Set.mem_univ _
   inputs := fun i => i
-  realizeInputs _ x := x
+  realizePoint _ _ x := x
   evaluateOn coefficients data e :=
     letI := coefficients.scalars.ring
     (show coefficients.scalars.Carrier from e.head) +
@@ -537,7 +537,11 @@ private def readRing (R : Type) [CommRing R] (offset : R) :
 /-- An identity coefficient map commutes with evaluation in the same realization. -/
 def integerIdentity :
     CoefficientReading.Change (readRing Int 0) (readRing Int 0) id where
+  baseMap := RingHom.id Int
   coefficients := RingHom.id Int
+  algebra_commutes := by
+    change (_ : Int →+* Int) = _
+    exact Subsingleton.elim _ _
   evaluate_commutes := fun _ => rfl
 
 /-- Send both coordinates of the realized state to the same integer. -/
@@ -547,7 +551,7 @@ private def diagonalStates (e : Assignment (statesOf Int).carrier [()]) :
 
 /-- This scheme's own scalar change sends the designated states to zero. -/
 private def collapsedScheme : CoefficientScheme Observation.whole (ringOf Int) :=
-  { offsetScheme with
+  { offsetScheme (ringOf Int) with
     changePoints := fun {_} {target} _ _ _ _ _ =>
       letI := target.ring
       (0 : target.Carrier) }
@@ -559,7 +563,11 @@ private def collapsedReading : CoefficientReading Observation.whole (statesOf In
 /-- The direct square allows a state map different from the scheme's own scalar change. -/
 def directDiagonal :
     CoefficientReading.Change collapsedReading (readRing (Int × Int) (4, 4)) diagonalStates where
+  baseMap := RingHom.id Int
   coefficients := (RingHom.id Int).prod (RingHom.id Int)
+  algebra_commutes := by
+    change (_ : Int →+* (Int × Int)) = _
+    exact Subsingleton.elim _ _
   evaluate_commutes := fun _ => rfl
 
 /-- The direct diagonal state map cannot factor through the collapsed states. -/
@@ -580,7 +588,10 @@ theorem direct_diagonal_does_not_factor :
 /-- The scheme transports both the nonzero offset and each state along the diagonal map. -/
 def integerDiagonal :
     CoefficientReading.Change (readRing Int 4) (readRing (Int × Int) (4, 4)) diagonalStates :=
-  CoefficientReading.Change.alongScheme ((RingHom.id Int).prod (RingHom.id Int))
+  CoefficientReading.Change.alongScheme (RingHom.id Int) ((RingHom.id Int).prod (RingHom.id Int))
+    (by
+      change (_ : Int →+* (Int × Int)) = _
+      exact Subsingleton.elim _ _)
     id (fun _ => rfl) (fun _ => rfl) (fun _ => rfl)
 
 /-- The actual reading returns the state, with an additional selected coefficient evaluation. -/
@@ -637,7 +648,7 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
       quantity_comm := fun q => nomatch q }
   contexts := rfl
   declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
-  coefficientChange := .fixed rfl
+  coefficientChange := .fixed rfl rfl
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
 
@@ -651,6 +662,93 @@ theorem fixed_comparison_has_no_scalar_change :
   have impossible : (1 : Int) = h 0 :=
     data.evaluate_commutes (Assignment.cons (0 : Int) Assignment.empty)
   exact (by decide : (1 : Int) ≠ 0) (impossible.trans h.map_zero)
+
+/-- The two projections give distinct algebras with the same underlying coefficient ring. -/
+private def projectionReading (f : (Int × Int) →+* Int) :
+    CoefficientReading Observation.whole (statesOf Int) [()] where
+  base := ringOf (Int × Int)
+  algebra := ⟨ringOf Int, f⟩
+  scheme := offsetScheme (ringOf (Int × Int))
+  realization := (0 : Int)
+  context := [()]
+  supported := fun _ _ => Set.mem_univ _
+  inputs := fun i => i
+  realizePoint _ _ x := x
+  evaluateOn R _ e :=
+    letI := R.scalars.ring
+    (show R.scalars.Carrier from e.head) + R.fromBase ((0, 1) : Int × Int)
+
+/-- Varying only the algebra structure map cannot bypass evaluation compatibility. -/
+theorem projection_algebras_cannot_compare :
+    ¬ Nonempty (CoefficientReading.Comparison (projectionReading (RingHom.fst Int Int))
+      (projectionReading (RingHom.snd Int Int)) id) := by
+  rintro ⟨comparison⟩
+  cases comparison with
+  | fixed sameBase sameAlgebra =>
+    have sameBase_eq : sameBase = rfl := Subsingleton.elim _ _
+    cases sameBase_eq
+    classical
+    let value (R : CoefficientAlgebra (ringOf (Int × Int))) : Int :=
+      if h : R.scalars = ringOf Int then
+        (show (ringOf Int).Carrier from h ▸ (R.fromBase ((0, 1) : Int × Int)))
+      else 0
+    have mapped := congrArg value sameAlgebra
+    have impossible : (0 : Int) = 1 := by
+      simpa only [value, projectionReading, dif_pos rfl] using mapped
+    exact (by decide : (0 : Int) ≠ 1) impossible
+  | changed comparison =>
+    let f : Int →+* Int := comparison.coefficients
+    have impossible : (1 : Int) = f 0 :=
+      comparison.evaluate_commutes (Assignment.cons (0 : Int) Assignment.empty)
+    exact (by decide : (1 : Int) ≠ 0) (impossible.trans f.map_zero)
+
+/-- Use the constant evaluation to test base compatibility independently of the evaluation square. -/
+private def zeroProjectionReading (f : (Int × Int) →+* Int) :
+    CoefficientReading Observation.whole (statesOf Int) [()] :=
+  { projectionReading f with
+    evaluateOn R _ _ :=
+      letI := R.scalars.ring
+      0 }
+
+/-- The projections compare on constant evaluations when the base coordinates are exchanged. -/
+def projection_swap_comparison :
+    CoefficientReading.Change (zeroProjectionReading (RingHom.fst Int Int))
+      (zeroProjectionReading (RingHom.snd Int Int)) id where
+  baseMap := (RingHom.snd Int Int).prod (RingHom.fst Int Int)
+  coefficients := RingHom.id Int
+  algebra_commutes := RingHom.ext fun _ => rfl
+  evaluate_commutes := fun _ => rfl
+
+/-- Even equal evaluations cannot justify the projection change over an unchanged base map. -/
+theorem projection_change_cannot_keep_base_map
+    (change : CoefficientReading.Change (zeroProjectionReading (RingHom.fst Int Int))
+      (zeroProjectionReading (RingHom.snd Int Int)) id) :
+    change.baseMap ≠ RingHom.id (Int × Int) := by
+  intro same
+  have point := DFunLike.congr_fun change.algebra_commutes ((0, 1) : Int × Int)
+  change change.coefficients (0 : Int) = (show Int × Int from change.baseMap (0, 1)).2 at point
+  rw [same] at point
+  let f : Int →+* Int := change.coefficients
+  exact (by decide : (0 : Int) ≠ 1) (f.map_zero.symm.trans point)
+
+/-- Two mentions of a state read the same point even in a longer coefficient context. -/
+theorem repeated_coefficient_input :
+    let base := readRing Int 0
+    let repeated : CoefficientReading Observation.whole (statesOf Int) [()] :=
+      { base with
+        context := [(), ()]
+        supported := fun _ _ => Set.mem_univ _
+        inputs := fun {s} _ => match s with
+          | () => .here
+        realizePoint := fun _ _ x => x
+        evaluateOn := fun _ _ e => e.head }
+    ∀ e : Assignment (statesOf Int).carrier [()],
+      repeated.inputTuple e .here = repeated.inputTuple e (.there .here) :=
+  by
+    dsimp only
+    intro e
+    apply CoefficientReading.inputTuple_eq_of_same_position
+    rfl
 
 /-- The ordinary reading has the same observation and no selected coefficient evaluation. -/
 private def plainInteger : Reading := { readingOf Int 0 with coefficients := none }
@@ -800,25 +898,56 @@ private def equation : RingEquation signature where
   left := scalarOne
   right := scalarZero
 
-/-- The name keeps the raw Law and its ordered terms together. -/
+/-- Register the additional equation and each of the required ring Laws. -/
+private def equationLaws : LawDeclarations signature where
+  LawName := Sum Unit RingVocabulary.LawName
+  statement
+    | .inl _ => equation.toLaw
+    | .inr i => scalarVocabulary.law i
+  role
+    | .inl _ => .additional
+    | .inr _ => .required
+
+/-- The named equation refers to the exact declarations that supply its ring. -/
+private def equationDeclaration : NamedRingEquation equationLaws (.inl ()) where
+  written := equation.write
+  statement_eq := rfl
+  axiomName := Sum.inr
+  axiom_statement _ := rfl
+  axiom_role _ := Or.inl rfl
+
+/-- The presentation retains the ordered equality under its registered name. -/
 private def namedEquation : PrimitivePresentation where
   signature := signature
-  laws :=
-    { LawName := Unit
-      statement := fun _ => equation.toLaw
-      role := fun _ => .additional }
-  ringEquation _ := some ⟨equation.write, rfl⟩
-  derived _ h := by cases h
+  laws := equationLaws
+  ringEquation
+    | .inl () => some equationDeclaration
+    | .inr _ => none
+  derived i h := by cases i <;> cases h
 
 /-- Reading the attached equation and applying two substitutions preserves the exact Law. -/
 theorem named_equation_keeps_literal_substitutions :
     let θ : Substitution signature [] [] := ⟨fun i => nomatch i⟩
     let data := (equation.write.substitute θ).substitute θ
-    namedEquation.ringEquation () = some ⟨equation.write, rfl⟩ ∧
-      data.toLaw = ((namedEquation.laws.statement ()).substitute θ).substitute θ ∧
+    namedEquation.ringEquation (.inl ()) = some equationDeclaration ∧
+      data.toLaw = ((namedEquation.laws.statement (.inl ())).substitute θ).substitute θ ∧
       data.equation.left = (equation.left.substitute θ).substitute θ ∧
       data.equation.right = (equation.right.substitute θ).substitute θ :=
   ⟨rfl, rfl, rfl, rfl⟩
+
+/-- Reading the residual retains even the ring Laws absent from the written equality. -/
+theorem residual_retains_named_ring_laws (U : DeclarationContext namedEquation)
+    (kept : Declaration.law (P := namedEquation) (.inl ()) ∈ U.declarations)
+    (i : RingVocabulary.LawName) :
+    Declaration.law (P := namedEquation) (.inr i) ∈ U.declarations :=
+  U.closed kept (Or.inr (Or.inl (Or.inr ⟨i, rfl⟩)))
+
+/-- The named Laws supply the ring axioms on the integer model. -/
+theorem named_integer_ring_laws :
+    ∀ i, (equationDeclaration.written.equation.ring.law i).Holds (realization Int Int) :=
+  NamedRingEquation.axioms_hold (P := namedEquation) equationDeclaration (realization Int Int)
+    (fun i => match i with
+      | ⟨.inr law, _⟩ => realization_scalarLaws Int Int law)
 
 /-- A truth formula cannot be attached to any ordered equality as its written conclusion. -/
 theorem truth_without_equality_has_no_expansion (eqn : RingEquation signature) :
@@ -965,7 +1094,7 @@ def selection : CoefficientReading sortOnly A [()] where
     cases s
     exact Set.mem_singleton _
   inputs := fun i => i
-  realizeInputs _ x := x
+  realizePoint _ _ x := x
   evaluateOn R _ _ :=
     letI := R.scalars.ring
     0
@@ -985,7 +1114,7 @@ def emptySelection : CoefficientReading sortOnly A [()] where
     rintro _ ⟨_, h, _⟩
     cases h
   inputs i := nomatch i
-  realizeInputs i := nomatch i
+  realizePoint _ h := nomatch h
   evaluateOn R _ _ :=
     letI := R.scalars.ring
     0

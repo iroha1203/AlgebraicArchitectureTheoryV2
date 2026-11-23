@@ -150,12 +150,6 @@ namespace RestrictedStructure
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
-/-- The declared sort of a typed position occurs in its context. -/
-private theorem var_sort_mem {S : Type u} {Γ : List S} {s : S} (i : Var Γ s) : s ∈ Γ := by
-  induction i with
-  | here => exact List.mem_cons_self
-  | there _ ih => exact List.mem_cons_of_mem _ ih
-
 /-- A point map is defined on the retained sort carriers. -/
 abbrev PointMap (A B : RestrictedStructure U) :=
   ∀ s, Declaration.sort s ∈ U.declarations → A.carrier s → B.carrier s
@@ -164,7 +158,7 @@ abbrev PointMap (A B : RestrictedStructure U) :=
 def mapAssignment {A B : RestrictedStructure U} (f : PointMap A B)
     {Γ : List P.signature.SortType} (supported : Declaration.sorts (P := P) Γ ⊆ U.declarations)
     (e : Assignment A.carrier Γ) : Assignment B.carrier Γ :=
-  ⟨fun i => f _ (supported ⟨_, var_sort_mem i, rfl⟩) (e i)⟩
+  ⟨fun i => f _ (supported ⟨_, i.sort_mem, rfl⟩) (e i)⟩
 
 /-- Forget the operations outside the selected declarations. -/
 def restrict (U : DeclarationContext P) (A : Structure P.signature) : RestrictedStructure U where

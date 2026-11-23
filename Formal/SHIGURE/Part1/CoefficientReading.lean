@@ -13,10 +13,11 @@ actual reading comparison is checked on its selected realizations and inputs.
 ## Implementation notes
 
 A coefficient algebra is a commutative ring with a unital map from the base
-ring. A comparison with different coefficients tests the selected evaluations
-along the scalar map and the state map of Equation (1.12). When the states
-are transported using a scheme's own scalar-change rule, that rule supplies
-an intermediate realization and yields the comparison by composition.
+ring. A comparison that changes coefficients makes the base and scalar
+maps commute, and tests the selected evaluations along the scalar map and
+the state map of Equation (1.12). When the states are transported using a
+scheme's own scalar-change rule, that rule supplies an intermediate
+realization and yields the comparison by composition.
 -/
 
 universe u
@@ -123,8 +124,8 @@ structure CoefficientReading {P : PrimitivePresentation.{u}} (U : DeclarationCon
   supported : Declaration.sorts (P := P) context ⊆ U.declarations
   /-- Select these inputs from the actual reading's state tuple. -/
   inputs : Renaming context Γ
-  /-- Send each selected input to the designated points of the chosen realization. -/
-  realizeInputs {s : P.signature.SortType} (i : Var context s) :
+  /-- Map points at each sort used by the coefficient inputs. -/
+  realizePoint (s : P.signature.SortType) : s ∈ context →
     A.carrier s → (scheme.structureOf algebra realization).carrier s
   /-- Evaluate on the designated states at the selected positions in the scheme. -/
   evaluateOn (R : CoefficientAlgebra base) (a : scheme.Realization R) :
@@ -143,7 +144,7 @@ abbrev ring (reading : CoefficientReading U A Γ) : CoefficientRing.{u} :=
 /-- Use the actual reading's state at the specified positions of the chosen realization. -/
 def inputTuple (reading : CoefficientReading U A Γ) (e : Assignment A.carrier Γ) :
     Assignment (reading.scheme.structureOf reading.algebra reading.realization).carrier reading.context :=
-  ⟨fun i => reading.realizeInputs i (e (reading.inputs i))⟩
+  ⟨fun i => reading.realizePoint _ i.sort_mem (e (reading.inputs i))⟩
 
 /-- Evaluate the chosen realization at the supplied state of the reading. -/
 def evaluate (reading : CoefficientReading U A Γ) (e : Assignment A.carrier Γ) :
@@ -156,7 +157,13 @@ theorem evaluate_eq_of_inputs (reading : CoefficientReading U A Γ)
     (same : ∀ {s} (i : Var reading.context s), e (reading.inputs i) = e' (reading.inputs i)) :
     reading.evaluate e = reading.evaluate e' := by
   apply congrArg (reading.evaluateOn reading.algebra reading.realization)
-  exact Assignment.ext (fun i => congrArg (reading.realizeInputs i) (same i))
+  exact Assignment.ext (fun i => congrArg (reading.realizePoint _ i.sort_mem) (same i))
+
+/-- Repeated references to one input have the same designated point. -/
+theorem inputTuple_eq_of_same_position (reading : CoefficientReading U A Γ)
+    (e : Assignment A.carrier Γ) {s : P.signature.SortType} (i j : Var reading.context s)
+    (same : reading.inputs i = reading.inputs j) : reading.inputTuple e i = reading.inputTuple e j :=
+  congrArg (reading.realizePoint s i.sort_mem) (congrArg (fun v => e v) same)
 
 /-- The changed structure comes from the selected realization by the scheme's rule. -/
 def changedStructure (reading : CoefficientReading U A Γ) {target : CoefficientRing.{u}}
@@ -179,8 +186,12 @@ def changedEvaluation (reading : CoefficientReading U A Γ) {target : Coefficien
 /-- Compare coefficient evaluation along the specified state map between two readings. -/
 structure Change (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
     (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
+  /-- The unital map on the chosen base rings. -/
+  baseMap : source.base.Hom target.base
   /-- The unital map on coefficients. -/
   coefficients : source.ring.Hom target.ring
+  /-- The coefficient map respects the two algebra structure maps. -/
+  algebra_commutes : coefficients.comp source.algebra.fromBase = target.algebra.fromBase.comp baseMap
   /-- Compare the two chosen evaluations along the actual state and scalar maps. -/
   evaluate_commutes (e : Assignment A.carrier Γ) :
     target.evaluate (states e) = coefficients (source.evaluate e)
@@ -188,20 +199,25 @@ structure Change (source : CoefficientReading U A Γ) (target : CoefficientReadi
 /-- Obtain the comparison by transporting first along the source scheme's scalar rule. -/
 def Change.alongScheme {source : CoefficientReading U A Γ} {target : CoefficientReading V B Δ}
     {states : Assignment A.carrier Γ → Assignment B.carrier Δ}
+    (baseMap : source.base.Hom target.base)
     (f : source.ring.Hom target.ring)
+    (algebra_commutes : f.comp source.algebra.fromBase = target.algebra.fromBase.comp baseMap)
     (toTarget : Assignment (source.changedStructure f).carrier source.context → Assignment B.carrier Δ)
     (state_commutes : ∀ e, toTarget (source.changedState f e) = states e)
     (change_commutes : ∀ e, source.changedEvaluation f e = f (source.evaluate e))
     (target_commutes : ∀ e, target.evaluate (toTarget (source.changedState f e)) =
       source.changedEvaluation f e) : Change source target states where
+  baseMap := baseMap
   coefficients := f
+  algebra_commutes := algebra_commutes
   evaluate_commutes e := (congrArg target.evaluate (state_commutes e)).symm.trans
     ((target_commutes e).trans (change_commutes e))
 
 /-- The reading can hold its coefficient choices fixed or compare two choices by a scalar map. -/
 inductive Comparison (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
     (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
-  | fixed : source.ring = target.ring → Comparison source target states
+  | fixed (sameBase : source.base = target.base) :
+      (sameBase ▸ source.algebra) = target.algebra → Comparison source target states
   | changed : Change source target states → Comparison source target states
 
 end CoefficientReading

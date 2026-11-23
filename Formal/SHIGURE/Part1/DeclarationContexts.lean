@@ -91,6 +91,15 @@ def derivation :
     | .refl _ | .graph _ | .truth _ | .falsehood _ | .andLeft _ _ | .andRight _ _ |
         .orLeft _ _ | .orRight _ _ | .existsIntro _ _ | .eqRefl _ | .eqSubst _ _ _ => ∅
 
+/-- The declarations needed to read an ordered ring residual. -/
+def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
+  match P.ringEquation name with
+  | none => ∅
+  | some equation =>
+    formula equation.written.equation.left.graph ∪
+      formula equation.written.equation.right.graph ∪
+      Set.range (fun i => Declaration.law (equation.axiomName i))
+
 /-- The immediate references of a declaration in Definition 3.1. -/
 def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declaration P)
   | .sort _ => ∅
@@ -106,9 +115,10 @@ def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declarati
           a = ofOperation (data.symbol i).operation}
   | .law name =>
     lawBody (P.laws.statement name) ∪
-      match role : P.laws.role name with
-      | .derived => derivation (P.derived name role)
-      | .required | .additional => ∅
+      (ringEquationSupport name ∪
+        match role : P.laws.role name with
+        | .derived => derivation (P.derived name role)
+        | .required | .additional => ∅)
 
 end Declaration
 
