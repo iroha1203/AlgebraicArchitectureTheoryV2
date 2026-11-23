@@ -19,7 +19,10 @@ use crate::solver::chevalley_sections::{
     run_rational_fiber_probes,
 };
 use crate::solver::context::display_polys;
-use crate::solver::family_direct::{evaluate_goodness_at_point, substitute_preservation_pair};
+use crate::solver::family_direct::{
+    check_family_presentations_applicability, evaluate_goodness_at_point,
+    substitute_preservation_pair,
+};
 use crate::solver::family_eval::{
     EnumCandidate, EnumRealization, ScalarVal, map_scalar_assignments,
 };
@@ -27,7 +30,7 @@ use crate::solver::preservation::{
     build_preservation_obligations, compute_preservation_locus_q, map_algebra_silence,
 };
 use crate::solver::robustness_universal::evaluate_universal_ring;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 /// `shigure_chevalley` の計算核入口（G-141 D6–D7 / G-142 G7）。
 pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
@@ -80,6 +83,10 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
         "chevalley_q_algebraic_closure_required",
         MathClause::G141D6,
     ));
+
+    if let Err(reason) = check_family_presentations_applicability(family, &mut checks) {
+        return undetermined_chevalley(coeff_domain, point_domain, checks, provenance, reason);
+    }
 
     let sets = match build_family_constructible_sets(family, task.base_value()) {
         Ok(s) => s,
@@ -139,16 +146,24 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
         }
     };
 
-    let probes = match run_rational_fiber_probes(family, task.rational_fiber_probes()) {
-        Ok(p) => p,
-        Err(reason) => {
-            return undetermined_chevalley(coeff_domain, point_domain, checks, provenance, reason);
-        }
-    };
+    let probes =
+        match run_rational_fiber_probes(family, task.base_value(), task.rational_fiber_probes()) {
+            Ok(p) => p,
+            Err(reason) => {
+                return undetermined_chevalley(
+                    coeff_domain,
+                    point_domain,
+                    checks,
+                    provenance,
+                    reason,
+                );
+            }
+        };
 
     let global_section = if task.check_global_regular_section() {
         Some(check_laurent_global_section(
             family,
+            task.base_value(),
             &sets.u_vars,
             &sets.c_vars,
         ))
@@ -537,6 +552,7 @@ fn finite_raw_pass_set(
     let domain = family.coeff_domain();
     let mut acc = ConstructibleSet::empty(uc_vars.clone());
     let u_len = family.u_vars().len();
+    let mut seen_u_coords: BTreeSet<Vec<Rat>> = BTreeSet::new();
     let c_list: Vec<EnumCandidate> = if family.c_vars().is_empty() {
         vec![EnumCandidate {
             candidate_id: None,
@@ -569,6 +585,13 @@ fn finite_raw_pass_set(
     };
     for um in u_ms {
         let (u_vals, u_disp) = map_scalar_assignments(family.u_vars(), &um.assignments, domain)?;
+        let u_rats: Vec<Rat> = u_vals.iter().map(ScalarVal::as_rat).collect();
+        if !seen_u_coords.insert(u_rats) {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "raw_sequence_distinct_realization_coords".to_owned(),
+                detail: "Chevalley raw_sequence requires distinct realization u coordinates per member presentation".to_owned(),
+            });
+        }
         let enum_u = EnumRealization {
             member_id: Some(um.id.clone()),
             values: u_vals.clone(),
@@ -752,7 +775,7 @@ pub(super) fn default_candidate_origin(space: &CandidateSpace, fallback: &Proven
     }
 }
 
-pub(super) fn slice_set_at_c(
+pub(crate) fn slice_set_at_c(
     uc_set: &ConstructibleSet,
     c_vars: &VarOrder,
     cand: &EnumCandidate,

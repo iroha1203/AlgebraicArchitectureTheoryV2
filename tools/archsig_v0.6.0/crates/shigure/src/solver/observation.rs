@@ -12,7 +12,9 @@ use crate::ir::result_phase3::{
     RemovalCounterexample,
 };
 use crate::ir::term::CoeffDomain;
-use crate::solver::family_direct::evaluate_goodness_at_point;
+use crate::solver::family_direct::{
+    check_family_presentations_applicability, evaluate_goodness_at_point,
+};
 use crate::solver::family_eval::{
     CandidateFiberEnum, EnumRealization, RealizationFiberEnum, ScalarVal,
     enumerate_candidates_for_base, enumerate_realizations_for_base, eval_expr_at,
@@ -73,6 +75,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
         "observation_indices_within_limit",
         MathClause::G142G6,
     ));
+
+    if let Err(reason) = check_family_presentations_applicability(family, &mut checks) {
+        return undetermined_obs(coeff_domain, point_domain, checks, provenance, reason);
+    }
 
     let u_list = match enumerate_realizations_for_base(
         family,

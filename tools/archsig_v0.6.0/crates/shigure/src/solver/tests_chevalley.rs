@@ -90,13 +90,12 @@ fn chevalley_d6_hyperbola_existential_projection_exposes_open_locus_not_closure(
         .as_ref()
         .expect("existential effective image");
     assert!(!eff.is_empty);
-    // Effective image E has non-trivial invertible x without equating x to 0 (never A^1 closure).
+    // Effective image E equals open locus D(x) (c = 0, x != 0), never A^1 closure.
     assert!(
         eff.strata
             .iter()
-            .any(|(eqs, invs)| !eqs.iter().any(|s| s.contains('x'))
-                && invs.iter().any(|s| s.contains('x'))),
-        "expected open stratum D(x), got {:?}",
+            .any(|(eqs, invs)| eqs == &vec!["c".to_owned()] && invs == &vec!["x".to_owned()]),
+        "expected exact open stratum ([\"c\"], [\"x\"]), got {:?}",
         eff.strata
     );
     assert!(!det.mixed.is_empty);
@@ -105,7 +104,23 @@ fn chevalley_d6_hyperbola_existential_projection_exposes_open_locus_not_closure(
     assert!(det.empty_realizations.is_empty);
     let mw = det.mixed_witness_pair.as_ref().expect("mixed witness pair");
     assert!(mw.pass_witness.passed);
+    assert_ne!(
+        mw.pass_witness
+            .realization
+            .assignments
+            .get("x")
+            .map(String::as_str),
+        Some("0")
+    );
     assert!(!mw.fail_witness.passed);
+    assert_eq!(
+        mw.fail_witness
+            .realization
+            .assignments
+            .get("x")
+            .map(String::as_str),
+        Some("0")
+    );
 }
 
 #[test]
@@ -414,6 +429,12 @@ fn chevalley_w5_etale_cover_and_w6_geometric_vs_universal_ring_contrast() {
         w5_det.rational_fiber_probes[0].verdict,
         Verdict::Established
     );
+    let rw_4 = w5_det.rational_fiber_probes[0]
+        .rational_witness
+        .as_ref()
+        .and_then(|m| m.get("z"))
+        .map(String::as_str);
+    assert!(matches!(rw_4, Some("2" | "-2")));
     assert_eq!(w5_det.rational_fiber_probes[1].verdict, Verdict::Refuted);
     assert!(
         w5_det.rational_fiber_probes[1]
@@ -545,5 +566,290 @@ fn chevalley_silences_on_unobserved_slot() {
     assert!(matches!(
         out.verdict,
         Verdict::Undetermined(SilenceReason::UnobservedDependency { .. })
+    ));
+}
+
+#[test]
+fn chevalley_m1_m2_m4_m7_review_regressions() {
+    use crate::ir::family::{RawSequenceCheck, RealizationMember};
+    use crate::ir::presentation::{
+        CoordDecl, ObservationDecl, OperationDecl, PhaseDecl, Presentation, SortDecl,
+    };
+
+    // 1. M1 + W5 fixed candidate z0 on G_m:
+    //    (a) probe outside G_m (t = 0 violates t invertible) must be Refuted, never Established (z=0)!
+    //    (b) fixed candidate z0 = 2 on G_m is mixed (passes t=4, fails otherwise).
+    //    (c) unconstrained 1D z != 0 probe chooses verified nonzero z (never "0").
+    let t = PolyExpr::param("t");
+    let z = PolyExpr::param("z");
+    let w5_fixed_fam = FamilySpec {
+        name: "W5Fixed".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        realizations: RealizationFamilySpec {
+            name: "Gm".to_owned(),
+            u_vars: vec!["t".to_owned()],
+            b_vars: vec![],
+            reading_q: vec![],
+            space: RealizationSpace::PolynomialScheme {
+                equations: vec![],
+                invertibles: vec![NamedPoly::new("t_unit", t.clone())],
+                is_raw_candidate: false,
+                origin: src("w5-gm", OriginKind::StaticAnalysis),
+            },
+        },
+        candidates: CandidateFamilySpec {
+            name: "C".to_owned(),
+            c_vars: vec!["z0".to_owned()],
+            pi: vec![],
+            space: CandidateSpace::FiniteMembers(vec![CandidateMember {
+                id: "z_fixed".to_owned(),
+                assignments: BTreeMap::from([("z0".to_owned(), CoordValue::Observed(q(2)))]),
+                origin: src("z2", OriginKind::HumanAdopted),
+            }]),
+        },
+        goodness: GoodnessSpec::Direct {
+            equations: vec![NamedPoly::new(
+                "cover_at_z0",
+                PolyExpr::diff(PolyExpr::pow(PolyExpr::param("z0"), 2), t.clone()),
+            )],
+            invertibles: vec![],
+            preservation: None,
+            raw_sequence: None,
+        },
+        reading_comparison: None,
+        provenance: Provenance::default(),
+    };
+    let t_w5_fix = CheckedChevalleyTask::validate(ChevalleyTaskSpec {
+        name: "w5_fixed".to_owned(),
+        family: w5_fixed_fam.clone(),
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: None,
+        designated_candidate: Some(CandidateSelector::ById("z_fixed".to_owned())),
+        rational_fiber_probes: vec![RationalFiberProbe {
+            name: "outside_gm_t0".to_owned(),
+            u_assignments: BTreeMap::from([("t".to_owned(), q(0))]),
+            c_assignments: BTreeMap::new(),
+        }],
+        check_global_regular_section: true,
+        check_universal_ring: false,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    let o_w5_fix = solve_chevalley_task(&t_w5_fix);
+    assert_eq!(o_w5_fix.verdict, Verdict::Refuted);
+    let det_f = o_w5_fix.chevalley.unwrap();
+    assert_eq!(det_f.designated_candidate_class.as_deref(), Some("mixed"));
+    assert_eq!(det_f.rational_fiber_probes[0].verdict, Verdict::Refuted);
+
+    // 2. M1 unconstrained 1D z != 0 probe must never return z = "0"
+    let inv_only_fam = FamilySpec {
+        name: "InvOnly1D".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        realizations: RealizationFamilySpec {
+            name: "U".to_owned(),
+            u_vars: vec!["t".to_owned()],
+            b_vars: vec![],
+            reading_q: vec![],
+            space: RealizationSpace::PolynomialScheme {
+                equations: vec![],
+                invertibles: vec![],
+                is_raw_candidate: false,
+                origin: src("u", OriginKind::StaticAnalysis),
+            },
+        },
+        candidates: CandidateFamilySpec {
+            name: "C".to_owned(),
+            c_vars: vec![],
+            pi: vec![],
+            space: CandidateSpace::FiniteMembers(vec![]),
+        },
+        goodness: GoodnessSpec::Existential {
+            witness_vars: vec!["z".to_owned()],
+            equations: vec![],
+            invertibles: vec![NamedPoly::new("z_nz", z)],
+            preservation: None,
+        },
+        reading_comparison: None,
+        provenance: Provenance::default(),
+    };
+    let t_inv = CheckedChevalleyTask::validate(ChevalleyTaskSpec {
+        name: "inv1d".to_owned(),
+        family: inv_only_fam,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: None,
+        designated_candidate: None,
+        rational_fiber_probes: vec![RationalFiberProbe {
+            name: "p1".to_owned(),
+            u_assignments: BTreeMap::from([("t".to_owned(), q(1))]),
+            c_assignments: BTreeMap::new(),
+        }],
+        check_global_regular_section: false,
+        check_universal_ring: false,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    let o_inv = solve_chevalley_task(&t_inv);
+    let p_res = &o_inv.chevalley.unwrap().rational_fiber_probes[0];
+    assert_eq!(p_res.verdict, Verdict::Established);
+    assert_ne!(
+        p_res
+            .rational_witness
+            .as_ref()
+            .and_then(|w| w.get("z"))
+            .map(String::as_str),
+        Some("0")
+    );
+
+    // 3. M2: Closed curve V(t - 4) where z^2 = t HAS section z = 2 must return exists: None (ApplicabilityConditionNotMet)
+    let mut closed_v_fam = w5_fixed_fam;
+    closed_v_fam.realizations.space = RealizationSpace::PolynomialScheme {
+        equations: vec![NamedPoly::new(
+            "t4",
+            PolyExpr::diff(t, PolyExpr::rat(4, 1).unwrap()),
+        )],
+        invertibles: vec![],
+        is_raw_candidate: false,
+        origin: src("v4", OriginKind::StaticAnalysis),
+    };
+    let t_closed_v = CheckedChevalleyTask::validate(ChevalleyTaskSpec {
+        name: "m2_closed_v".to_owned(),
+        family: closed_v_fam,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: None,
+        designated_candidate: None,
+        rational_fiber_probes: vec![],
+        check_global_regular_section: true,
+        check_universal_ring: false,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    let gs_closed = solve_chevalley_task(&t_closed_v)
+        .chevalley
+        .unwrap()
+        .global_regular_section
+        .unwrap();
+    assert_eq!(gs_closed.exists, None);
+    assert!(matches!(
+        gs_closed.silence_reason,
+        Some(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    // 4. M4(2) & M7: duplicate u coords on raw_sequence AND sort.rank = 2 both silence with ApplicabilityConditionNotMet
+    let make_min_pres = |name: &str, rank: usize| Presentation {
+        name: name.to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        sorts: vec![SortDecl {
+            name: "S".to_owned(),
+            rank,
+            coeff_domain: CoeffDomain::Q,
+            provenance: None,
+        }],
+        phases: vec![PhaseDecl {
+            name: "Idle".to_owned(),
+            coords: vec![CoordDecl::symbolic("B", "S")],
+            state_laws: vec![],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "nop".to_owned(),
+            source_phase: "Idle".to_owned(),
+            target_phase: "Idle".to_owned(),
+            args: vec![],
+            domain_laws: vec![],
+            updates: BTreeMap::from([("B".to_owned(), PolyExpr::state("B"))]),
+            provenance: None,
+        }],
+        observations: vec![ObservationDecl {
+            name: "read".to_owned(),
+            phase: "Idle".to_owned(),
+            components: vec![PolyExpr::state("B")],
+            provenance: None,
+        }],
+        provenance: Provenance::default(),
+    };
+    let dup_raw_fam = FamilySpec {
+        name: "DupRaw".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        realizations: RealizationFamilySpec {
+            name: "U".to_owned(),
+            u_vars: vec!["u".to_owned()],
+            b_vars: vec![],
+            reading_q: vec![],
+            space: RealizationSpace::FiniteMembers(vec![
+                RealizationMember {
+                    id: "u_a".to_owned(),
+                    assignments: BTreeMap::from([("u".to_owned(), CoordValue::Observed(q(0)))]),
+                    is_raw_candidate: false,
+                    presentation: Some(make_min_pres("P1", 1)),
+                    origin: src("ua", OriginKind::StaticAnalysis),
+                },
+                RealizationMember {
+                    id: "u_b".to_owned(),
+                    assignments: BTreeMap::from([("u".to_owned(), CoordValue::Observed(q(0)))]),
+                    is_raw_candidate: true,
+                    presentation: Some(make_min_pres("P2", 1)),
+                    origin: src("ub", OriginKind::LlmCandidate),
+                },
+            ]),
+        },
+        candidates: CandidateFamilySpec {
+            name: "C".to_owned(),
+            c_vars: vec![],
+            pi: vec![],
+            space: CandidateSpace::FiniteMembers(vec![]),
+        },
+        goodness: GoodnessSpec::Direct {
+            equations: vec![],
+            invertibles: vec![],
+            preservation: None,
+            raw_sequence: Some(RawSequenceCheck {
+                start_phase: "Idle".to_owned(),
+                start_state: BTreeMap::from([("B".to_owned(), q(0))]),
+                steps: vec![("nop".to_owned(), vec![])],
+                observation_name: "read".to_owned(),
+                baseline_step_index: None,
+                provenance: Provenance::default(),
+            }),
+        },
+        reading_comparison: None,
+        provenance: Provenance::default(),
+    };
+    let t_dup = CheckedChevalleyTask::validate(ChevalleyTaskSpec {
+        name: "dup_raw".to_owned(),
+        family: dup_raw_fam.clone(),
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: None,
+        designated_candidate: None,
+        rational_fiber_probes: vec![],
+        check_global_regular_section: false,
+        check_universal_ring: false,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_chevalley_task(&t_dup).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    let mut r2_fam = dup_raw_fam;
+    if let RealizationSpace::FiniteMembers(ref mut ms) = r2_fam.realizations.space {
+        ms.pop();
+        ms[0].presentation = Some(make_min_pres("P_r2", 2));
+    }
+    let t_r2 = CheckedChevalleyTask::validate(ChevalleyTaskSpec {
+        name: "m7_rank2".to_owned(),
+        family: r2_fam,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: None,
+        designated_candidate: None,
+        rational_fiber_probes: vec![],
+        check_global_regular_section: false,
+        check_universal_ring: false,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_chevalley_task(&t_r2).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
     ));
 }

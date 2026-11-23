@@ -1,31 +1,30 @@
 //! 複数解釈族上の非空性分離・3 量化・全係数移送 $\mathcal{R}(R)$・reading 比較計算核（G-140 E3–E5.1・P7 / G-142 G1–G4）。
 
-use crate::algebra::{ConstructibleSet, LocallyClosedStratum, Poly, Rat, VarOrder};
+use crate::algebra::VarOrder;
 use crate::ir::change::PointDomain;
-use crate::ir::family::{CandidateSpace, CheckedFamilySpec, GoodnessSpec, RealizationSpace};
-use crate::ir::provenance::{MathClause, OriginKind, Provenance, SourceRef};
+use crate::ir::family::{CandidateSpace, CheckedFamilySpec, RealizationSpace};
+use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, EmptyWitness, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::result_phase3::{
     CommonQuantifierResult, DesignatedValidityResult, FiberNonEmptinessResult,
-    PairEvaluationWitness, PointwiseQuantifierResult, RealizationWitness, RobustnessOutcomeDetail,
+    PairEvaluationWitness, PointwiseQuantifierResult, RobustnessOutcomeDetail,
+    UniversalRingStabilityResult,
 };
 use crate::ir::robustness::CheckedRobustnessTask;
 use crate::ir::term::{CoeffDomain, ScalarLit};
-use crate::solver::chevalley::{
-    FamilyConstructibleSets, build_family_constructible_sets, resolve_candidate_selector,
+use crate::solver::chevalley::resolve_candidate_selector;
+use crate::solver::family_direct::{
+    check_family_presentations_applicability, evaluate_goodness_at_point,
 };
-use crate::solver::chevalley_sections::pick_rational_point_in_stratum;
-use crate::solver::context::collect_presentation_params;
-use crate::solver::family_direct::evaluate_goodness_at_point;
 use crate::solver::family_eval::{
     CandidateFiberEnum, DEFAULT_MAX_ENUM_POINTS, EnumCandidate, EnumRealization,
-    RealizationFiberEnum, ScalarVal, build_assignment_map, enumerate_candidates_for_base,
-    enumerate_realizations_for_base, eval_expr_at,
+    RealizationFiberEnum, ScalarVal, enumerate_candidates_for_base,
+    enumerate_realizations_for_base, eval_expr_at, map_scalar_assignments,
 };
 use crate::solver::preservation::map_algebra_silence;
 use crate::solver::robustness_reading::compute_reading_comparison;
+use crate::solver::robustness_symbolic::{QuantifiersTuple, eval_symbolic_closure_quantifiers};
 use crate::solver::robustness_universal::evaluate_universal_ring;
-use std::collections::BTreeMap;
 
 /// `shigure_robustness` の計算核入口（G-140 E3–E5.1・P7 / G-142 G1–G4）。
 pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
@@ -159,27 +158,25 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
         return undetermined_robustness(coeff_domain, point_domain, checks, provenance, reason);
     }
 
-    // 4. 全係数移送安定性 R(R) / R_dec(R)（G-140 E5 / G-142 G3 / W6）。
+    // 4. 全係数移送安定性 R(R) / R_dec(R)（G-140 E5 / G-142 G3 / W6 / M3）。
     let universal_ring = if task.check_universal_ring() {
-        let ur_cand = designated.clone().or_else(|| match &cand_enum {
-            CandidateFiberEnum::Finite(cs) if cs.len() == 1 => Some(cs[0].clone()),
-            _ => None,
-        });
-        if let Some(cand) = ur_cand {
-            match evaluate_universal_ring(family, task.base_value(), &cand, true) {
-                Ok(ur) => Some(ur),
-                Err(reason) => {
-                    return undetermined_robustness(
-                        coeff_domain,
-                        point_domain,
-                        checks,
-                        provenance,
-                        reason,
-                    );
-                }
+        match evaluate_universal_for_task(
+            family,
+            task.base_value(),
+            &cand_enum,
+            designated.as_ref(),
+            true,
+        ) {
+            Ok(ur) => ur,
+            Err(reason) => {
+                return undetermined_robustness(
+                    coeff_domain,
+                    point_domain,
+                    checks,
+                    provenance,
+                    reason,
+                );
             }
-        } else {
-            None
         }
     } else {
         None
@@ -302,53 +299,7 @@ fn check_robustness_applicability(
         "unobserved_slots_absent",
         MathClause::G140P0Dot1,
     ));
-
-    if let RealizationSpace::FiniteMembers(ms) = &task.family().inner().realizations.space {
-        for m in ms {
-            if let Some(pres) = &m.presentation {
-                for s in &pres.sorts {
-                    if s.rank != 1 {
-                        return Err(SilenceReason::ApplicabilityConditionNotMet {
-                            condition: "sort_rank_one_required".to_owned(),
-                            detail: format!("sort `{}` in `{}` has rank != 1", s.name, pres.name),
-                        });
-                    }
-                }
-            }
-        }
-    }
-    if let GoodnessSpec::Direct {
-        preservation: Some(src),
-        ..
-    }
-    | GoodnessSpec::Existential {
-        preservation: Some(src),
-        ..
-    } = &task.family().inner().goodness
-    {
-        for pres in [&src.pair.before, &src.pair.after] {
-            for s in &pres.sorts {
-                if s.rank != 1 {
-                    return Err(SilenceReason::ApplicabilityConditionNotMet {
-                        condition: "sort_rank_one_required".to_owned(),
-                        detail: format!("sort `{}` in `{}` has rank != 1", s.name, pres.name),
-                    });
-                }
-            }
-        }
-        if !collect_presentation_params(&src.pair.before).is_empty() {
-            return Err(SilenceReason::ApplicabilityConditionNotMet {
-                condition: "before_presentation_must_be_parameter_free".to_owned(),
-                detail: "reference presentation `before` must not contain search parameters"
-                    .to_owned(),
-            });
-        }
-    }
-    checks.push(ApplicabilityCheck::passed(
-        "family_presentations_well_formed",
-        MathClause::G139P0P1,
-    ));
-    Ok(())
+    check_family_presentations_applicability(task.family(), checks)
 }
 
 fn undetermined_robustness(
@@ -432,8 +383,56 @@ fn resolve_and_check_cand_fiber(
                 });
             }
         }
+    } else if let CandidateSpace::FiniteMembers(ms) = &family.inner().candidates.space
+        && matches!(sel, crate::ir::robustness::CandidateSelector::ByValues(_))
+    {
+        let matched = ms.iter().any(|m| {
+            map_scalar_assignments(family.c_vars(), &m.assignments, domain)
+                .is_ok_and(|(vals, _)| vals == cand.values)
+        });
+        if !matched {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "designated_candidate_in_candidate_space".to_owned(),
+                detail: "designated candidate values do not match any FiniteMembers candidate"
+                    .to_owned(),
+            });
+        }
     }
     Ok(cand)
+}
+
+fn evaluate_universal_for_task(
+    family: &CheckedFamilySpec,
+    base_value: &[crate::ir::term::ScalarLit],
+    cand_enum: &CandidateFiberEnum,
+    designated: Option<&EnumCandidate>,
+    fiber_non_empty: bool,
+) -> Result<Option<UniversalRingStabilityResult>, SilenceReason> {
+    if let Some(dc) = designated {
+        return evaluate_universal_ring(family, base_value, dc, fiber_non_empty).map(Some);
+    }
+    match cand_enum {
+        CandidateFiberEnum::Finite(cs) if cs.is_empty() => Ok(None),
+        CandidateFiberEnum::Finite(cs) => {
+            let mut first_fail: Option<UniversalRingStabilityResult> = None;
+            for c in cs {
+                let ur = evaluate_universal_ring(family, base_value, c, fiber_non_empty)?;
+                if let Some(sr) = &ur.silence_reason {
+                    return Err(sr.clone());
+                }
+                if ur.stable == Some(true) {
+                    return Ok(Some(ur));
+                }
+                if first_fail.is_none() {
+                    first_fail = Some(ur);
+                }
+            }
+            Ok(first_fail)
+        }
+        CandidateFiberEnum::NonFiniteScheme => Err(SilenceReason::UniversalRingOutOfScope {
+            detail: "check_universal_ring with non-finite candidate scheme requires explicit designated_candidate".to_owned(),
+        }),
+    }
 }
 
 fn build_fiber_non_emptiness(
@@ -511,10 +510,19 @@ fn finish_empty_fiber_outcome(
             None
         },
     });
-    let universal_ring = if task.check_universal_ring()
-        && let Some(cand) = designated
-    {
-        evaluate_universal_ring(family, task.base_value(), cand, false).ok()
+    let universal_ring = if task.check_universal_ring() {
+        match evaluate_universal_for_task(family, task.base_value(), cand_enum, designated, false) {
+            Ok(ur) => ur,
+            Err(reason) => {
+                return undetermined_robustness(
+                    coeff_domain,
+                    point_domain,
+                    checks,
+                    provenance,
+                    reason,
+                );
+            }
+        }
     } else {
         None
     };
@@ -545,12 +553,6 @@ fn finish_empty_fiber_outcome(
         observations: None,
     }
 }
-
-type QuantifiersTuple = (
-    Option<DesignatedValidityResult>,
-    PointwiseQuantifierResult,
-    CommonQuantifierResult,
-);
 
 fn eval_finite_quantifiers(
     family: &CheckedFamilySpec,
@@ -655,158 +657,6 @@ fn eval_finite_quantifiers(
                 "no candidate in C_b succeeds across all realizations in U_b".to_owned()
             }),
         }
-    };
-
-    Ok((valid_des, pointwise, common))
-}
-
-fn default_realization_origin(family: &CheckedFamilySpec) -> SourceRef {
-    match &family.inner().realizations.space {
-        RealizationSpace::PolynomialScheme { origin, .. } => origin.clone(),
-        RealizationSpace::FiniteMembers(ms) => ms
-            .first()
-            .map(|m| m.origin.clone())
-            .or_else(|| family.inner().provenance.origins.first().cloned())
-            .unwrap_or_else(|| SourceRef::new("realization", OriginKind::StaticAnalysis)),
-    }
-}
-
-fn swap_uc_to_cu(
-    set: &ConstructibleSet,
-    u_len: usize,
-    cu_vars: &VarOrder,
-) -> Result<ConstructibleSet, SilenceReason> {
-    let n_tot = cu_vars.len();
-    let swap_poly = |p: &Poly<Rat>| -> Poly<Rat> {
-        let mut out = Poly::zero(n_tot, Rat::zero());
-        for (mono, coeff) in p.terms() {
-            let exps = mono.exps();
-            let mut reordered = Vec::with_capacity(n_tot);
-            reordered.extend_from_slice(&exps[u_len..]);
-            reordered.extend_from_slice(&exps[..u_len]);
-            out.add_term(
-                crate::algebra::Monomial::from_exps(reordered),
-                coeff.clone(),
-            );
-        }
-        out
-    };
-    let strata = set
-        .strata()
-        .iter()
-        .map(|st| LocallyClosedStratum {
-            equations: st.equations.iter().map(swap_poly).collect(),
-            invertibles: st.invertibles.iter().map(swap_poly).collect(),
-        })
-        .collect();
-    ConstructibleSet::from_strata(cu_vars.clone(), strata)
-}
-
-fn eval_symbolic_closure_quantifiers(
-    family: &CheckedFamilySpec,
-    base_value: &[ScalarLit],
-    designated: Option<&EnumCandidate>,
-    point_domain: &PointDomain,
-) -> Result<QuantifiersTuple, SilenceReason> {
-    if *point_domain != PointDomain::AlgebraicClosure {
-        return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
-            point_domain: point_domain.clone(),
-            detail: "symbolic positive-dimensional quantifier evaluation requires AlgebraicClosure"
-                .to_owned(),
-        });
-    }
-    let sets: FamilyConstructibleSets = build_family_constructible_sets(family, Some(base_value))?;
-    let real_origin = default_realization_origin(family);
-
-    let valid_des = if let Some(dc) = designated {
-        let pt: Vec<Rat> = dc.values.iter().map(ScalarVal::as_rat).collect();
-        let sat = sets.robust_all_pass.contains_point(&pt)?;
-        Some(DesignatedValidityResult {
-            candidate_id: dc.candidate_id.clone(),
-            candidate_assignments: dc.assignments.clone(),
-            satisfied: sat,
-            vacuously_true_empty_fiber: false,
-            supporting_witnesses: vec![],
-            counterexample: (!sat).then(|| PairEvaluationWitness {
-                realization: RealizationWitness {
-                    member_id: None,
-                    assignments: BTreeMap::from([(
-                        "fiber".to_owned(),
-                        "non-passing geometric point exists in W_fail".to_owned(),
-                    )]),
-                    is_raw_candidate: false,
-                    origin: real_origin.clone(),
-                },
-                candidate_id: dc.candidate_id.clone(),
-                candidate_assignments: dc.assignments.clone(),
-                passed: false,
-                legal_execution_exists: None,
-                residuals: vec!["W_fail non-empty for designated candidate".to_owned()],
-                empty_witness: None,
-                restored_completion: None,
-            }),
-        })
-    } else {
-        None
-    };
-
-    // W_total, W_pass は [u_vars, c_vars] 順なので [c_vars, u_vars] へ並べ替えて先頭 |C| 変数を消去する。
-    let mut cu_names = sets.c_vars.vars().to_vec();
-    cu_names.extend(sets.u_vars.vars().iter().cloned());
-    let cu_vars = VarOrder::new(cu_names).map_err(map_algebra_silence)?;
-    let w_total_cu = swap_uc_to_cu(&sets.w_total, sets.u_vars.len(), &cu_vars)?;
-    let w_pass_cu = swap_uc_to_cu(&sets.w_pass, sets.u_vars.len(), &cu_vars)?;
-    let u_proj_total =
-        crate::algebra::project_constructible_set(&w_total_cu, sets.c_vars.len(), &sets.u_vars)?;
-    let u_proj_pass =
-        crate::algebra::project_constructible_set(&w_pass_cu, sets.c_vars.len(), &sets.u_vars)?;
-    let pw_uncovered = u_proj_total.difference(&u_proj_pass)?;
-
-    let pointwise = PointwiseQuantifierResult {
-        satisfied: pw_uncovered.is_empty(),
-        vacuously_true_empty_fiber: false,
-        witnesses: vec![],
-        counterexample: (!pw_uncovered.is_empty()).then(|| RealizationWitness {
-            member_id: None,
-            assignments: BTreeMap::from([(
-                "uncovered_u".to_owned(),
-                "geometric u exists without satisfying c".to_owned(),
-            )]),
-            is_raw_candidate: false,
-            origin: real_origin,
-        }),
-    };
-
-    let common_sat = !sets.robust_all_pass.is_empty();
-    let cand_assign = if common_sat {
-        if sets.c_vars.is_empty() {
-            Some(BTreeMap::new())
-        } else if let Some(first_st) = sets.robust_all_pass.strata().first()
-            && let Some(pt) = pick_rational_point_in_stratum(first_st, &sets.c_vars)?
-        {
-            let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
-            Some(build_assignment_map(sets.c_vars.vars(), &vals))
-        } else {
-            let geom: BTreeMap<String, String> = sets
-                .c_vars
-                .vars()
-                .iter()
-                .map(|c| (c.clone(), format!("geom_point({c})")))
-                .collect();
-            Some(geom)
-        }
-    } else {
-        None
-    };
-    let common = CommonQuantifierResult {
-        satisfied: common_sat,
-        vacuously_true_empty_fiber: false,
-        candidate_id: None,
-        candidate_assignments: cand_assign,
-        witnesses: vec![],
-        counterexample_witnesses: vec![],
-        counterexample_detail: (!common_sat)
-            .then(|| "Chevalley robust_all_pass (P_+ \\ P_-) is empty over closure".to_owned()),
     };
 
     Ok((valid_des, pointwise, common))

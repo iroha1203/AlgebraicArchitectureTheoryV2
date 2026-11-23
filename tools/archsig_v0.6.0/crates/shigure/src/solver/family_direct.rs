@@ -1,12 +1,13 @@
 //! 複数解釈族の直接型良否 $E_{\mathrm{dir}}$（等式・可逆条件・保存義務・生操作列評価 P7）の評価器。
 
 use crate::algebra::{MonomialOrder, VarOrder};
-use crate::ir::change::PointDomain;
+use crate::ir::change::{EditableTarget, PointDomain};
 use crate::ir::family::{
-    CheckedFamilySpec, GoodnessSpec, PreservationGoodnessSource, RawSequenceCheck,
+    CheckedFamilySpec, GoodnessSpec, PreservationGoodnessSource, RawSequenceCheck, RealizationSpace,
 };
 use crate::ir::presentation::{ComparisonPair, CoordValue, PhaseDecl, Presentation};
-use crate::ir::result::{EmptyWitness, SilenceReason};
+use crate::ir::provenance::MathClause;
+use crate::ir::result::{ApplicabilityCheck, EmptyWitness, SilenceReason};
 use crate::ir::result_phase3::PairEvaluationWitness;
 use crate::ir::term::{CoeffDomain, PolyExpr};
 use crate::solver::context::{collect_presentation_params, display_polys};
@@ -386,4 +387,99 @@ fn eval_direct_preservation(
             Ok((!locus.strata.is_empty(), disp, locus.empty_witness))
         }
     }
+}
+
+/// Phase 3 タスクに埋め込まれた全 Presentation / Preservation の共通適用条件検査（M7）。
+pub(crate) fn check_family_presentations_applicability(
+    family: &CheckedFamilySpec,
+    checks: &mut Vec<ApplicabilityCheck>,
+) -> Result<(), SilenceReason> {
+    if let RealizationSpace::FiniteMembers(ms) = &family.inner().realizations.space {
+        for m in ms {
+            if let Some(pres) = &m.presentation {
+                for s in &pres.sorts {
+                    if s.rank != 1 {
+                        let detail = format!("sort `{}` in `{}` has rank != 1", s.name, pres.name);
+                        checks.push(ApplicabilityCheck::failed(
+                            "sort_rank_one_required",
+                            MathClause::G139P0P1,
+                            detail.clone(),
+                        ));
+                        return Err(SilenceReason::ApplicabilityConditionNotMet {
+                            condition: "sort_rank_one_required".to_owned(),
+                            detail,
+                        });
+                    }
+                }
+            }
+        }
+    }
+    if let GoodnessSpec::Direct {
+        preservation: Some(src),
+        ..
+    }
+    | GoodnessSpec::Existential {
+        preservation: Some(src),
+        ..
+    } = &family.inner().goodness
+    {
+        for pres in [&src.pair.before, &src.pair.after] {
+            for s in &pres.sorts {
+                if s.rank != 1 {
+                    let detail = format!("sort `{}` in `{}` has rank != 1", s.name, pres.name);
+                    checks.push(ApplicabilityCheck::failed(
+                        "sort_rank_one_required",
+                        MathClause::G139P0P1,
+                        detail.clone(),
+                    ));
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "sort_rank_one_required".to_owned(),
+                        detail,
+                    });
+                }
+            }
+        }
+        if !collect_presentation_params(&src.pair.before).is_empty() {
+            let detail =
+                "reference presentation `before` must not contain search parameters".to_owned();
+            checks.push(ApplicabilityCheck::failed(
+                "before_presentation_must_be_parameter_free",
+                MathClause::G140E1E2,
+                detail.clone(),
+            ));
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "before_presentation_must_be_parameter_free".to_owned(),
+                detail,
+            });
+        }
+        for target in &src.change_spec.editable {
+            let target_pres = match target {
+                EditableTarget::OperationExpr { presentation, .. }
+                | EditableTarget::RepresentationLaw { presentation, .. } => {
+                    Some(presentation.as_str())
+                }
+                EditableTarget::StateComparisonExpr { .. } => None,
+            };
+            if target_pres == Some(src.pair.before.name.as_str()) {
+                let detail = format!(
+                    "editable target references fixed reference presentation `{}`",
+                    src.pair.before.name
+                );
+                checks.push(ApplicabilityCheck::failed(
+                    "editable_target_must_be_after",
+                    MathClause::G140E1E2,
+                    detail.clone(),
+                ));
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "editable_target_must_be_after".to_owned(),
+                    detail,
+                });
+            }
+        }
+    }
+    checks.push(ApplicabilityCheck::passed(
+        "family_presentations_well_formed",
+        MathClause::G139P0P1,
+    ));
+    Ok(())
 }

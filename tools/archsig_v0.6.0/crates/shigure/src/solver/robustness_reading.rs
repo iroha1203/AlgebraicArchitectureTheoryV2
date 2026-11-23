@@ -2,8 +2,8 @@
 //! extracted from `robustness.rs` to keep every module compact.
 
 use crate::algebra::{ExprBindings, Poly, VarOrder};
-use crate::ir::change::PointDomain;
-use crate::ir::family::{CheckedFamilySpec, RealizationSpace};
+use crate::ir::change::{NamedPoly, PointDomain};
+use crate::ir::family::{CandidateSpace, CheckedFamilySpec, FamilySpec, RealizationSpace};
 use crate::ir::result::SilenceReason;
 use crate::ir::result_phase3::{
     CommonQuantifierResult, DesignatedValidityResult, RawCandidateEvaluationSummary,
@@ -11,10 +11,11 @@ use crate::ir::result_phase3::{
 };
 use crate::ir::robustness::CheckedRobustnessTask;
 use crate::ir::term::{CoeffDomain, PolyExpr};
+use crate::solver::chevalley::build_family_constructible_sets;
 use crate::solver::family_direct::evaluate_goodness_at_point;
 use crate::solver::family_eval::{
-    CandidateFiberEnum, EnumCandidate, EnumRealization, RealizationFiberEnum, ScalarVal,
-    eval_expr_at, map_scalar_assignments,
+    CandidateFiberEnum, EnumCandidate, RealizationFiberEnum, ScalarVal, eval_expr_at,
+    map_scalar_assignments,
 };
 use crate::solver::preservation::{map_algebra_silence, substitute_poly_expr};
 use std::collections::BTreeMap;
@@ -75,23 +76,34 @@ pub(super) fn compute_reading_comparison(
         }
         RealizationSpace::PolynomialScheme { .. } => {
             let u_bind = ExprBindings::params_only(&u_vars);
-            if matches!(domain, CoeffDomain::Q | CoeffDomain::Z) {
-                for (q_expr, r_expr) in family
-                    .inner()
-                    .realizations
-                    .reading_q
-                    .iter()
-                    .zip(&rc.coarsen_r)
-                {
-                    let comp = substitute_poly_expr(r_expr, &empty, &empty, &q_subst);
-                    let diff_p = Poly::from_expr_q(&PolyExpr::diff(comp, q_expr.clone()), &u_bind)
-                        .map_err(map_algebra_silence)?;
-                    if !diff_p.is_zero() {
-                        commutativity_verified = false;
-                    }
+            for (q_expr, r_expr) in family
+                .inner()
+                .realizations
+                .reading_q
+                .iter()
+                .zip(&rc.coarsen_r)
+            {
+                let comp = substitute_poly_expr(r_expr, &empty, &empty, &q_subst);
+                let diff = PolyExpr::diff(comp, q_expr.clone());
+                let is_zero_diff = match domain {
+                    CoeffDomain::Fp(p) => Poly::from_expr_fp(&diff, &u_bind, p)
+                        .map_err(map_algebra_silence)?
+                        .is_zero(),
+                    CoeffDomain::Q | CoeffDomain::Z => Poly::from_expr_q(&diff, &u_bind)
+                        .map_err(map_algebra_silence)?
+                        .is_zero(),
+                };
+                if !is_zero_diff {
+                    commutativity_verified = false;
                 }
             }
         }
+    }
+    if !commutativity_verified {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "reading_comparison_commutes".to_owned(),
+            detail: "coarse/fine reading diagram r o q' != q on realization space".to_owned(),
+        });
     }
 
     let coarse_b_str: Vec<String> = task
@@ -172,15 +184,22 @@ pub(super) fn compute_reading_comparison(
             .iter()
             .map(|l| ScalarVal::from_lit(l, domain))
             .collect::<Result<Vec<_>, _>>()?;
-        let fine_us: Vec<&EnumRealization> = u_list
-            .iter()
-            .filter(|u| {
-                rc.fine_q.iter().zip(&target_f).all(|(fq, fv)| {
-                    eval_expr_at(fq, &u_vars, &u.values, domain).ok().as_ref() == Some(fv)
-                })
-            })
-            .collect();
-        if let Some(dc) = designated {
+        let mut fine_us = Vec::new();
+        for u in u_list {
+            let mut eq_all = true;
+            for (fq, fv) in rc.fine_q.iter().zip(&target_f) {
+                if &eval_expr_at(fq, &u_vars, &u.values, domain)? != fv {
+                    eq_all = false;
+                    break;
+                }
+            }
+            if eq_all {
+                fine_us.push(u);
+            }
+        }
+        if fine_us.is_empty() {
+            false
+        } else if let Some(dc) = designated {
             let mut ok = true;
             for u in &fine_us {
                 if !evaluate_goodness_at_point(family, u, dc, point_domain)?.passed {
@@ -190,16 +209,102 @@ pub(super) fn compute_reading_comparison(
             }
             ok
         } else if let CandidateFiberEnum::Finite(c_list) = cand_enum {
-            c_list.iter().any(|c| {
-                fine_us.iter().all(|u| {
-                    evaluate_goodness_at_point(family, u, c, point_domain).is_ok_and(|w| w.passed)
-                })
-            })
+            let mut found_common = false;
+            for c in c_list {
+                let mut all_ok = true;
+                for u in &fine_us {
+                    if !evaluate_goodness_at_point(family, u, c, point_domain)?.passed {
+                        all_ok = false;
+                        break;
+                    }
+                }
+                if all_ok {
+                    found_common = true;
+                    break;
+                }
+            }
+            found_common
         } else {
-            false
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "fine_reading_comparison_scheme_candidates".to_owned(),
+                detail: "fine_base_value comparison with FiniteMembers realizations and NonFiniteScheme candidates requires AlgebraicClosure constructible path".to_owned(),
+            });
         }
     } else {
-        coarse_robust
+        if *point_domain != PointDomain::AlgebraicClosure || matches!(domain, CoeffDomain::Fp(_)) {
+            return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                detail: "fine_base_value comparison on non-finite realization scheme requires AlgebraicClosure over Q/Z".to_owned(),
+            });
+        }
+        let mut fine_spec: FamilySpec = family.inner().clone();
+        fine_spec.reading_comparison = None;
+        if let RealizationSpace::PolynomialScheme { equations, .. } =
+            &mut fine_spec.realizations.space
+        {
+            for (i, (fq, fl)) in rc.fine_q.iter().zip(&fine_b_vals).enumerate() {
+                equations.push(NamedPoly::new(
+                    format!("fine_fiber_{i}"),
+                    PolyExpr::diff(fq.clone(), PolyExpr::Const(fl.clone())),
+                ));
+            }
+        }
+        let c_vars_ord = VarOrder::new(family.c_vars().to_vec()).map_err(map_algebra_silence)?;
+        let target_b: Vec<ScalarVal> = task
+            .base_value()
+            .iter()
+            .map(|l| ScalarVal::from_lit(l, domain))
+            .collect::<Result<Vec<_>, _>>()?;
+        match &mut fine_spec.candidates.space {
+            CandidateSpace::PolynomialScheme { equations, .. } => {
+                for (i, (pe, bl)) in family
+                    .inner()
+                    .candidates
+                    .pi
+                    .iter()
+                    .zip(task.base_value())
+                    .enumerate()
+                {
+                    equations.push(NamedPoly::new(
+                        format!("cand_fiber_{i}"),
+                        PolyExpr::diff(pe.clone(), PolyExpr::Const(bl.clone())),
+                    ));
+                }
+            }
+            CandidateSpace::FiniteMembers(ms) => {
+                let mut filtered = Vec::with_capacity(ms.len());
+                for m in ms.drain(..) {
+                    let (vals, _) =
+                        map_scalar_assignments(family.c_vars(), &m.assignments, domain)?;
+                    let mut ok = true;
+                    for (pe, bv) in family.inner().candidates.pi.iter().zip(&target_b) {
+                        if &eval_expr_at(pe, &c_vars_ord, &vals, domain)? != bv {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if ok {
+                        filtered.push(m);
+                    }
+                }
+                *ms = filtered;
+            }
+        }
+        fine_spec.realizations.b_vars.clear();
+        fine_spec.realizations.reading_q.clear();
+        fine_spec.candidates.pi.clear();
+        let checked_fine = CheckedFamilySpec::validate(fine_spec).map_err(|e| {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "fine_reading_family_valid".to_owned(),
+                detail: e.to_string(),
+            }
+        })?;
+        let fine_sets = build_family_constructible_sets(&checked_fine, None)?;
+        if let Some(dc) = designated {
+            let pt: Vec<_> = dc.values.iter().map(ScalarVal::as_rat).collect();
+            fine_sets.robust_all_pass.contains_point(&pt)?
+        } else {
+            !fine_sets.robust_all_pass.is_empty()
+        }
     };
 
     let preserved = !coarse_robust || fine_robust;

@@ -237,6 +237,11 @@ fn evaluate_existential_q_or_z(
                     },
                 ));
             }
+            if !kernel_basis.is_empty() && !invs_z.is_empty() {
+                return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                    detail: "affine Z witness search with invertible constraints exceeded finite search box".to_owned(),
+                });
+            }
             return Ok(fail_pair(
                 realization,
                 candidate,

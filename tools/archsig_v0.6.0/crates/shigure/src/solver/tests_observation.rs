@@ -392,3 +392,159 @@ fn observation_silences_on_unobserved_slots_and_index_limit() {
         Verdict::Undetermined(SilenceReason::FiniteEnumerationOutOfScope { .. })
     ));
 }
+
+#[test]
+fn observation_scheme_zero_root_existential_rank2_and_realization_cap() {
+    use crate::ir::presentation::{
+        CoordDecl, ObservationDecl, OperationDecl, PhaseDecl, Presentation, SortDecl,
+    };
+
+    // 1. M5(1) + Existential: PolynomialScheme u*(u-1)=0 over AlgebraicClosure enumerates finitely [0, 1]
+    // and Existential goodness w - u = 0 cleanly builds distinguishing pairs & finds {e_u}.
+    let fam_scheme = FamilySpec {
+        name: "ObsZeroRoot".to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        realizations: RealizationFamilySpec {
+            name: "U".to_owned(),
+            u_vars: vec!["u".to_owned()],
+            b_vars: vec![],
+            reading_q: vec![],
+            space: RealizationSpace::PolynomialScheme {
+                equations: vec![NamedPoly::new(
+                    "bool_u",
+                    PolyExpr::prod(
+                        PolyExpr::param("u"),
+                        PolyExpr::diff(PolyExpr::param("u"), PolyExpr::rat(1, 1).unwrap()),
+                    ),
+                )],
+                invertibles: vec![],
+                is_raw_candidate: false,
+                origin: src("zr-u", OriginKind::StaticAnalysis),
+            },
+        },
+        candidates: CandidateFamilySpec {
+            name: "C".to_owned(),
+            c_vars: vec!["c".to_owned()],
+            pi: vec![],
+            space: CandidateSpace::FiniteMembers(vec![CandidateMember {
+                id: "c0".to_owned(),
+                assignments: BTreeMap::from([("c".to_owned(), CoordValue::Observed(q(0)))]),
+                origin: src("c0", OriginKind::HumanAdopted),
+            }]),
+        },
+        goodness: GoodnessSpec::Existential {
+            witness_vars: vec!["w".to_owned()],
+            equations: vec![
+                NamedPoly::new("w0", PolyExpr::param("w")),
+                NamedPoly::new(
+                    "u_ok",
+                    PolyExpr::diff(PolyExpr::param("u"), PolyExpr::param("c")),
+                ),
+            ],
+            invertibles: vec![],
+            preservation: None,
+        },
+        reading_comparison: None,
+        provenance: Provenance::default(),
+    };
+    let t_zr = CheckedObservationTask::validate(ObservationTaskSpec {
+        name: "obs_zr".to_owned(),
+        family: fam_scheme,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: vec![],
+        observations: vec![CandidateObservationDecl {
+            id: "e_u".to_owned(),
+            components: vec![NamedPoly::new("u_val", PolyExpr::param("u"))],
+            cost: None,
+            origin: src("e_u", OriginKind::StaticAnalysis),
+        }],
+        law_readout: None,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    let o_zr = solve_observation_task(&t_zr);
+    assert_eq!(o_zr.verdict, Verdict::Established);
+    let det_zr = o_zr.observations.unwrap();
+    assert_eq!(det_zr.distinguishing_pair_count, 1);
+    assert_eq!(
+        det_zr.minimal_sufficient_sets[0].observations,
+        vec!["e_u".to_owned()]
+    );
+
+    // 2. M7 sort.rank = 2 -> ApplicabilityConditionNotMet
+    let mut fam_r2 = w4_obs_family();
+    if let RealizationSpace::FiniteMembers(ref mut ms) = fam_r2.realizations.space {
+        ms[0].presentation = Some(Presentation {
+            name: "P_r2".to_owned(),
+            coeff_domain: CoeffDomain::Q,
+            sorts: vec![SortDecl {
+                name: "S".to_owned(),
+                rank: 2,
+                coeff_domain: CoeffDomain::Q,
+                provenance: None,
+            }],
+            phases: vec![PhaseDecl {
+                name: "Idle".to_owned(),
+                coords: vec![CoordDecl::symbolic("x", "S")],
+                state_laws: vec![],
+                provenance: None,
+            }],
+            operations: vec![OperationDecl {
+                name: "nop".to_owned(),
+                source_phase: "Idle".to_owned(),
+                target_phase: "Idle".to_owned(),
+                args: vec![],
+                domain_laws: vec![],
+                updates: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                provenance: None,
+            }],
+            observations: vec![ObservationDecl {
+                name: "r".to_owned(),
+                phase: "Idle".to_owned(),
+                components: vec![PolyExpr::state("x")],
+                provenance: None,
+            }],
+            provenance: Provenance::default(),
+        });
+    }
+    let t_r2 = CheckedObservationTask::validate(ObservationTaskSpec {
+        name: "obs_r2".to_owned(),
+        family: fam_r2,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: vec![],
+        observations: vec![],
+        law_readout: None,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_observation_task(&t_r2).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    // 3. > 256 realizations -> FiniteEnumerationOutOfScope
+    let mut fam_cap = w4_obs_family();
+    if let RealizationSpace::FiniteMembers(ref mut ms) = fam_cap.realizations.space {
+        let base_m = ms[0].clone();
+        *ms = (0..260)
+            .map(|i| RealizationMember {
+                id: format!("m_{i}"),
+                ..base_m.clone()
+            })
+            .collect();
+    }
+    let t_cap = CheckedObservationTask::validate(ObservationTaskSpec {
+        name: "obs_cap".to_owned(),
+        family: fam_cap,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: vec![],
+        observations: vec![],
+        law_readout: None,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_observation_task(&t_cap).verdict,
+        Verdict::Undetermined(SilenceReason::FiniteEnumerationOutOfScope { .. })
+    ));
+}

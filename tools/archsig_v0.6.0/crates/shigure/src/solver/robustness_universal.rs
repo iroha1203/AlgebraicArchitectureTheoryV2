@@ -533,7 +533,9 @@ fn derive_univariate_dual_counterexample(
             rep_poly.add_term(Monomial::from_exps(vec![deg as u32]), c.clone());
         }
     }
-    let (roots, _) = univariate_rational_roots(&rep_poly)?;
+    let Ok((roots, _)) = univariate_rational_roots(&rep_poly) else {
+        return Ok(None);
+    };
     for a in roots {
         if u_loc_invs
             .iter()

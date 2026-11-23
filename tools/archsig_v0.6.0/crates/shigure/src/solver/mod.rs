@@ -30,6 +30,7 @@ pub(crate) mod restore;
 mod restore_format;
 mod robustness;
 mod robustness_reading;
+mod robustness_symbolic;
 mod robustness_universal;
 pub(crate) mod solve;
 mod transfer;
@@ -57,6 +58,8 @@ mod tests_path_extra;
 mod tests_regressions;
 #[cfg(test)]
 mod tests_robustness;
+#[cfg(test)]
+mod tests_robustness_extra;
 #[cfg(test)]
 mod tests_transfer;
 #[cfg(test)]

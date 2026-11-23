@@ -276,7 +276,7 @@ pub(crate) fn univariate_rational_roots(
         }
     }
 
-    let mut poly_coeffs: Vec<Rat> = coeffs.iter().map(|z| Rat::from_int(z.clone())).collect();
+    let mut poly_coeffs: Vec<Rat> = trimmed.iter().map(|z| Rat::from_int(z.clone())).collect();
     for cand in candidates {
         if eval_univariate_horner(&poly_coeffs, &cand).is_zero() {
             roots.push(cand.clone());
@@ -529,6 +529,16 @@ fn enumerate_scheme_realizations(
     }
 
     if u_names.is_empty() {
+        let inv_ok = invs_q.iter().all(|iv| {
+            let v = iv.constant_value();
+            match point_domain {
+                PointDomain::IntegerPoints => v.den().is_one() && v.num().abs().is_one(),
+                _ => !v.is_zero(),
+            }
+        });
+        if !inv_ok {
+            return Ok((RealizationFiberEnum::Finite(vec![]), None));
+        }
         let assignments = BTreeMap::new();
         return Ok((
             RealizationFiberEnum::Finite(vec![EnumRealization {
@@ -676,9 +686,34 @@ fn enumerate_scheme_realizations(
                     Ok(AffineSolutionZ::Inconsistent { verified: true, .. }) => {
                         return Ok((RealizationFiberEnum::Finite(vec![]), None));
                     }
+                    Ok(AffineSolutionZ::Consistent {
+                        kernel_basis,
+                        verified: true,
+                        ..
+                    }) if !kernel_basis.is_empty() => {
+                        return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                            detail: "cannot finitely enumerate infinite affine integer realization fiber".to_owned(),
+                        });
+                    }
                     _ => {}
                 }
             }
+        }
+        if rab.parameter_equations.iter().all(Poly::is_affine)
+            && invs_q.iter().all(Poly::is_affine)
+            && let Ok((mat, rhs)) =
+                polys_to_affine_system_q(&rab.parameter_equations, u_names.len())
+            && let Ok(AffineSolutionQ::Consistent {
+                kernel_basis,
+                verified: true,
+                ..
+            }) = solve_affine_q(&mat, &rhs, u_names.len())
+            && !kernel_basis.is_empty()
+        {
+            return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                detail: "cannot finitely enumerate infinite affine rational/integer fiber"
+                    .to_owned(),
+            });
         }
         return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
             point_domain: point_domain.clone(),
