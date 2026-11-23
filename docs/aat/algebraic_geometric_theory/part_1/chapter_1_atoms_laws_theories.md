@@ -244,7 +244,7 @@ p(p(a,v),w)=p(a,w)
 次に、代入と評価の整合性および構造を保つ写像による保存性質をまとめる。
 
 **定理1.8（代入・評価・構造射による保存）.**
-任意の署名、構造 $`A,B`$、有限の型付き項 $`t`$、および正の式 $`\varphi`$ について、次の (1)–(3) が成り立つ。
+任意の署名、構造 $`A,B`$、有限の型付き項 $`t:s`$、および正の式 $`\varphi`$ について、次の (1)–(3) が成り立つ。
 
 **(1)** 任意の入力 $`\delta\in D_{\theta,A}`$ に対して、$`t[\theta]`$ が $`\delta`$ で定義されることと、$`t`$ が $`\theta_A(\delta)`$ で定義されることは同値であり、定義されるとき
 $`\mathrm{ev}_A(t[\theta],\delta)=\mathrm{ev}_A(t,\theta_A(\delta))`$
@@ -259,12 +259,12 @@ $`A\models\varphi[\theta](\delta)\Longleftrightarrow A\models\varphi(\theta_A(\d
 ```math
 \begin{aligned}
 h_{\boldsymbol s}(D_p^A)&\subseteq D_p^B,\\
-h_t(p_A(\boldsymbol a))&=p_B(h_{\boldsymbol s}(\boldsymbol a))
+h_r(p_A(\boldsymbol a))&=p_B(h_{\boldsymbol s}(\boldsymbol a))
 \quad(\boldsymbol a\in D_p^A)
 \end{aligned}
 ```
 
-を満たすとする。ここで $`h_{\boldsymbol s}`$ は入力 sort 列に対応する成分写像の直積である。このとき、$`\gamma\in\mathrm{Dom}_A(t)`$ ならば $`h_\Gamma\gamma\in\mathrm{Dom}_B(t)`$ であり、
+を満たすとする。ここで $`r`$ は部分操作 $`p`$ の出力 sort、$`h_{\boldsymbol s}`$ はその入力 sort 列に対応する成分写像の直積である。このとき、$`\gamma\in\mathrm{Dom}_A(t)`$ ならば $`h_\Gamma\gamma\in\mathrm{Dom}_B(t)`$ であり、
 
 **式(1.10)**
 

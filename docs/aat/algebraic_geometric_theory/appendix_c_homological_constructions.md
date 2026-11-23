@@ -6,9 +6,10 @@
 
 任意の可換環 $`k`$ と小さい添字集合 $`\Lambda`$ に対し、多項式環からの全射 $`P=k[x_\lambda\mid\lambda\in\Lambda]\twoheadrightarrow A`$ の核を $`I`$ とする。導分を表現する微分加群 $`\Omega_{P/k}`$ は $`dx_\lambda`$ を基底とする自由 $`P`$-加群であり、微分は $`df=\sum_\lambda(\partial f/\partial x_\lambda)dx_\lambda`$ で定められる（各多項式は有限個の変数しか含まないため、この和は有限和である）。ライプニッツ則より $`d(I^2)\subseteq I\Omega_{P/k}`$ が成り立つため、次数 $`-1,0`$ に置かれた二項複体
 
+**式(C.1)**
+
 ```math
 N_{A/k}=[I/I^2\xrightarrow d\Omega_{P/k}\otimes_PA]
-\qquad\text{(C.1)}
 ```
 
 が定まる。

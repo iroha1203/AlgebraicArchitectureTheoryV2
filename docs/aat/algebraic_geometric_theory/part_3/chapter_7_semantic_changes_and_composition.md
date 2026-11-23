@@ -197,12 +197,12 @@ r_0(\boldsymbol x)&\ \Longrightarrow\ u(r)_1(H_{\boldsymbol s}\boldsymbol x),\\
 D_p^0(\boldsymbol x)&\ \Longrightarrow\ u(D_p)_1(H_{\boldsymbol s}\boldsymbol x),\\
 D_p^0(\boldsymbol x)&\ \Longrightarrow\
  H_t p_0(\boldsymbol x)=\tau_p{}_1(H_{\boldsymbol s}\boldsymbol x),\\
-H_q q_0(\boldsymbol x)&=u(q)_1(H_{\boldsymbol s}\boldsymbol x),\\
+H_r q_0(\boldsymbol x)&=u(q)_1(H_{\boldsymbol s}\boldsymbol x),\\
 o_{1,u(s)}H_s&=o_{0,s}.
 \end{aligned}
 ```
 
-ここで第五式は量の保存を表し、量の値 sort を固定する場合は $`H_q=\mathrm{id}`$ と読む。
+ここで第五式は値 sort $`r`$ を持つ量 $`q_0`$ の保存を表し、その値 sort を固定する場合は $`H_r=\mathrm{id}`$ と読む。
 部分的な量については、その定義域の前向き保存もあわせて課し、第五式を定義域上で読む。
 また、部分項の等式は第1章の値グラフによって解釈する。
 翻訳された定義域と項の定義可能性の一致は理論解釈 $`u`$ の導出に含まれるため、第四式の右辺はその入力において確実に定義される。

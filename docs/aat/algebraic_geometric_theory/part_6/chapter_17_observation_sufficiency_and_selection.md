@@ -17,9 +17,10 @@
 一つの問い合わせ $`j`$ は、型付きの有限操作語 $`w_j:s\to t`$ と、その定義域に入る評価状態 $`s_j(A)\in X_s(A)`$ の指定からなる。
 評価状態の指定には、任意の実現の同型 $`\phi:A\to A'`$ について $`\phi_s(s_j(A))=s_j(A')`$ という自然性を要求し、観測値を
 
+**式(17.1)**
+
 ```math
 q_j(A)=o_A\bigl(w_{j,A}(s_j(A))\bigr)
-\qquad\text{(17.1)}
 ```
 
 と置く。複数入力を持つ操作語の場合には、状態の sort を対応する有限積に置き換える。
@@ -136,10 +137,11 @@ $`O`$ が $`g\in\Gamma`$ の判定に十分であれば、単位元 $`1\in\Gamma
 評価先となる集合値関手 $`E:\mathcal U\to\mathbf{Set}`$ とその部分関手 $`V\hookrightarrow E`$ を指定する。
 すべての組 $`(u,c,\alpha:\partial c\cong a(u))`$ の上の評価写像 $`\widetilde v_u(c,\alpha)\in E(u)`$ は、固定された入力上の比較に対して不変であり、さらに任意の入力同型 $`\tau:u\to u'`$ に対して輸送条件
 
+**式(17.2a)**
+
 ```math
 \widetilde v_{u'}(c,a(\tau)\alpha)
  =E(\tau)\widetilde v_u(c,\alpha)
- \qquad\text{(17.2a)}
 ```
 
 を満たすものとする。
@@ -148,11 +150,12 @@ $`O`$ が $`g\in\Gamma`$ の判定に十分であれば、単位元 $`1\in\Gamma
 
 これらのデータから、すべての解からなる族 $`\mathcal F`$ の対象を四つ組
 
+**式(17.2)**
+
 ```math
 (u,c,\alpha,e),\qquad
 \alpha:\partial c\xrightarrow{\sim}a(u),\quad
 e\in V(u),\quad \widetilde v_u(c,\alpha)=e
-\qquad\text{(17.2)}
 ```
 
 で定める。ここで $`\partial=s,t`$ のどちらの端点を固定するかもあらかじめ指定する。
@@ -204,11 +207,12 @@ $`(u,c,\alpha,e)\mapsto(u',c,a(\tau)\alpha,E(\tau)e)`$ で定めると、式(17.
 
 一つの非空な観測ファイバー $`U_{s,b}`$ について、次の三つの量化の順序を区別する。
 
+**式(17.3)**
+
 ```math
 \forall u\,\mathrm{Valid}(u,c),\qquad
 \forall u\,\exists c\,\mathrm{Valid}(u,c),\qquad
 \exists c\,\forall u\,\mathrm{Valid}(u,c)
-\qquad\text{(17.3)}
 ```
 
 式(17.3)の三つの論理式は順に、指定した候補 $`c`$ の共通の有効性、各実現における解の存在、そしてファイバー全体に共通する候補の存在を表す。
@@ -305,10 +309,11 @@ $`R_T`$ による商写像を $`r_T:T_0\to T_0/R_T`$ と書く（これは元の
 縮約される辺の端点差は商側で $`0`$ であり、支持の証人も商へ送れるため、この写像は微分と可換する。
 双対を取ることにより、コチェイン複体の比較射
 
+**式(17.4)**
+
 ```math
 F_{R,A}:C^\bullet(K^R_A;\mathbb Q)
  \longrightarrow C^\bullet(K_{r_T^{-1}A};\mathbb Q)
-\qquad\text{(17.4)}
 ```
 
 が得られる。これは[命題16.2](../part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#161-指定修復問題と-law-評価からの診断複体)における面を持たない場合の構成にほかならない。
@@ -514,6 +519,8 @@ $`r_Y(b)=r_Y(cac^{-1})`$ を意味し、単射性によって $`bc=ca`$ に戻�
 従って実現可能な観測対からは端点変更も一意に回復される。
 
 ## 17.8 有限語による実現の公開観測
+
+本節は、19.6節の設定19.12と定理19.14–19.15を先に用いる。同節の構成と証明は第6章・第17章に依存しないため、19.6節の有限再構成を読んでから、この帰結としての公開観測へ戻ることができる。
 
 **系17.17（最小線形実現を決定する有限問い合わせ）.**
 [設定19.12](chapter_19_local_reconstruction_and_finite_determination.md#196-有限ハンケル表からの最小実現)の最小実現の族において、長さ $`2N-1`$ 以下の各型付き語 $`w:u\to t`$、入力の標準基底ベクトル $`a`$、出力座標 $`b`$ に対する問い合わせ
