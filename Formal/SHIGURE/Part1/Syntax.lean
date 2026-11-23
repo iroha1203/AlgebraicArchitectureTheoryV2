@@ -15,9 +15,18 @@ Context extensions keep the innermost binder at position zero. Block
 quantification removes positions in that order, and its semantics recovers
 the argument tuple in the original context order.
 
+Using named variable syntax would require a separate freshness and
+capture-avoidance invariant. The position indices put those obligations in
+the constructors of renamings. The finite-scope graph expansion keeps the
+context order and abstracts its head first, so an input block is written with
+its last coordinate outermost in the resulting formula. The semantic
+comparison recovers the original tuple.
+
 Term evaluation is first defined by its input–output relation. A uniqueness
 proof yields a partial value in mathlib's `Part`, with the same domain. Its
 definition is independent of the formula that expresses its graph.
+An executable `Option` evaluator would require deciding membership in the
+interpreted partial domains, which Definition 1.3 does not require.
 -/
 
 universe u
@@ -66,6 +75,12 @@ def Holds (a : Atomic sig Γ) (A : Structure sig) (e : Assignment A.carrier Γ) 
   | .rel r vars => e.pull vars ∈ A.relation r
   | .domain p vars => e.pull vars ∈ A.partialDomain p
   | .graph op vars y => A.Graph op (e.pull vars) (e y)
+
+/-- A graph atom tests the interpreted graph on its selected coordinates. -/
+@[simp] theorem holds_graph (op : Operation sig) (vars : Renaming op.arity.inputs Γ)
+    (y : Var Γ op.arity.output) (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Atomic.graph op vars y).Holds A e ↔ A.Graph op (e.pull vars) (e y) :=
+  Iff.rfl
 
 /-- Renaming an atom is evaluated by pulling the assignment back. -/
 @[simp] theorem holds_rename (a : Atomic sig Γ) (ρ : Renaming Γ Δ)
@@ -396,12 +411,22 @@ theorem defined_locus (t : Term sig Γ s) (A : Structure sig) :
 
 end Term
 
+/-- A total operation, with its ordinary or quantity declaration tag. -/
+inductive TotalSymbol (sig : Signature.{u}) : Type u
+  | ordinary : sig.Total → TotalSymbol sig
+  | quantity : sig.Quantity → TotalSymbol sig
+
+/-- Read the symbol as an operation in the term language. -/
+def TotalSymbol.operation {sig : Signature.{u}} : TotalSymbol sig → Operation sig
+  | .ordinary f => .total f
+  | .quantity q => .quantity q
+
 /-- A declared total symbol whose input and output profile has been identified. -/
 structure TypedTotal (sig : Signature.{u}) (profile : Arity sig.SortType) : Type u where
   /-- The existing symbol in the signature. -/
-  symbol : sig.Total
+  symbol : TotalSymbol sig
   /-- Its declared profile agrees with the selected profile. -/
-  arity_eq : sig.totalArity symbol = profile
+  arity_eq : symbol.operation.arity = profile
 
 namespace TypedTotal
 
@@ -412,14 +437,16 @@ def term (op : TypedTotal sig profile) {Γ : List sig.SortType}
     (args : ∀ {s}, Var profile.inputs s → Term sig Γ s) : Term sig Γ profile.output := by
   obtain ⟨symbol, h⟩ := op
   subst profile
-  exact .app (.total symbol) args
+  exact .app symbol.operation args
 
 /-- Evaluate the interpretation of a declared total symbol on its typed input tuple. -/
 def value (op : TypedTotal sig profile) (A : Structure sig)
     (xs : Assignment A.carrier profile.inputs) : A.carrier profile.output := by
   obtain ⟨symbol, h⟩ := op
   subst profile
-  exact A.total symbol xs
+  cases symbol with
+  | ordinary f => exact A.total f xs
+  | quantity q => exact A.quantity q xs
 
 /-- Applying the selected symbol after evaluating the arguments gives its interpreted value. -/
 theorem evaluates_term (op : TypedTotal sig profile) {Γ : List sig.SortType}
@@ -429,8 +456,11 @@ theorem evaluates_term (op : TypedTotal sig profile) {Γ : List sig.SortType}
     (op.term args).Evaluates A e (op.value A xs) := by
   obtain ⟨symbol, hprofile⟩ := op
   subst profile
-  exact (Term.evaluates_app_at (.total symbol) args A e xs h _).2
-    ((A.graph_total_iff symbol xs _).2 rfl)
+  cases symbol with
+  | ordinary f =>
+    exact (Term.evaluates_app_at (.total f) args A e xs h _).2 ((A.graph_total_iff f xs _).2 rfl)
+  | quantity q =>
+    exact (Term.evaluates_app_at (.quantity q) args A e xs h _).2 ((A.graph_quantity_iff q xs _).2 rfl)
 
 end TypedTotal
 

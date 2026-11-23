@@ -293,28 +293,32 @@ private def signature : Signature where
 
 private def inclusion : DomainInclusions (sig := signature) () where
   domainSort := .included
-  symbol := fun _ => ()
+  symbol := fun _ => .ordinary ()
   arity_eq := by
     intro s i
     cases i with
     | here => rfl
     | there previous => nomatch previous
 
-private def realization (point : Bool) : Structure signature where
+private def realization {C : Type} (inclusionMap : C → Bool) (domain : Set Bool) :
+    Structure signature where
   carrier
     | .input => Bool
-    | .included => Unit
-  total := fun _ _ => point
+    | .included => C
+  total := fun _ e => inclusionMap e.head
   relation := fun r => nomatch r
-  partialDomain := fun _ => {e | e.head = true}
+  partialDomain := fun _ => {e | e.head ∈ domain}
   partialValue := fun _ e => e.val.head
   quantity := fun q => nomatch q
 
+private def singletonRealization (point : Bool) : Structure signature :=
+  realization (fun (_ : Unit) => point) {true}
+
 /-- A singleton sort mapped to true describes the true-only partial operation. -/
 theorem true_inclusion_holds :
-    inclusion.injectivityLaw.Holds (realization true) ∧
-      inclusion.domainSubsetImage.Holds (realization true) ∧
-      inclusion.imageSubsetDomain.Holds (realization true) := by
+    inclusion.injectivityLaw.Holds (singletonRealization true) ∧
+      inclusion.domainSubsetImage.Holds (singletonRealization true) ∧
+      inclusion.imageSubsetDomain.Holds (singletonRealization true) := by
   refine ⟨(inclusion.holds_injectivityLaw _).2 ?_, (inclusion.holds_domainLaws _).2 ?_⟩
   · intro x y _
     exact Subsingleton.elim (α := Unit) x y
@@ -331,14 +335,35 @@ theorem true_inclusion_holds :
 
 /-- Moving the inclusion's image to false violates the domain specification. -/
 theorem false_inclusion_fails :
-    ¬ (inclusion.domainSubsetImage.Holds (realization false) ∧
-      inclusion.imageSubsetDomain.Holds (realization false)) := by
+    ¬ (inclusion.domainSubsetImage.Holds (singletonRealization false) ∧
+      inclusion.imageSubsetDomain.Holds (singletonRealization false)) := by
   intro h
-  let e := inclusion.inclusion (realization false) ()
-  have hr : e ∈ Set.range (inclusion.inclusion (realization false)) := ⟨(), rfl⟩
+  let e := inclusion.inclusion (singletonRealization false) ()
+  have hr : e ∈ Set.range (inclusion.inclusion (singletonRealization false)) := ⟨(), rfl⟩
   have hd := h.2 e ((inclusion.holds_imageFormula _ _).2 hr)
   change false = true at hd
   cases hd
+
+/-- An identity inclusion distinguishes the two points of the Boolean inclusion sort. -/
+theorem bool_identity_inclusion_injective :
+    inclusion.injectivityLaw.Holds (realization (id : Bool → Bool) Set.univ) := by
+  apply (inclusion.holds_injectivityLaw _).2
+  intro x y h
+  exact congrArg Assignment.head h
+
+/-- A constant inclusion identifies the two points and violates the injectivity Law. -/
+theorem bool_constant_inclusion_fails :
+    ¬ inclusion.injectivityLaw.Holds (realization (fun (_ : Bool) => true) Set.univ) := by
+  intro h
+  let A := realization (fun (_ : Bool) => true) Set.univ
+  have equalImages : inclusion.inclusion A false = inclusion.inclusion A true := by
+    apply Assignment.ext
+    intro s i
+    cases i with
+    | here => rfl
+    | there previous => nomatch previous
+  have bad : false = true := (inclusion.holds_injectivityLaw A).1 h equalImages
+  cases bad
 
 end Domain
 

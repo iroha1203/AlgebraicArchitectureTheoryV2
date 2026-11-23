@@ -104,7 +104,7 @@ def hasOutput (op : Operation sig) : Formula sig op.arity.inputs :=
 theorem holds_hasOutput (op : Operation sig) (A : Structure sig)
     (xs : Assignment A.carrier op.arity.inputs) :
     (hasOutput op).Holds A xs ↔ ∃ y, A.Graph op xs y := by
-  simp only [hasOutput, Formula.holds_ex, Formula.holds_atom, Atomic.Holds,
+  simp only [hasOutput, Formula.holds_ex, Formula.holds_atom, Atomic.holds_graph,
     Assignment.pull_cons_there, Assignment.pull_id, Assignment.cons_here]
 
 /-- The variable contexts and positive sequents of (1.1). -/
@@ -246,10 +246,10 @@ structure DomainInclusions {sig : Signature.{u}} (p : sig.Partial) where
   /-- A sort intended to name domain points. -/
   domainSort : sig.SortType
   /-- One total inclusion symbol for each input position. -/
-  symbol : ∀ {s}, Var (sig.partialArity p).inputs s → sig.Total
+  symbol : ∀ {s}, Var (sig.partialArity p).inputs s → TotalSymbol sig
   /-- Each inclusion symbol goes from the domain sort to that input position's sort. -/
   arity_eq : ∀ {s} (index : Var (sig.partialArity p).inputs s),
-    sig.totalArity (symbol index) = ⟨[domainSort], s⟩
+    (symbol index).operation.arity = ⟨[domainSort], s⟩
 
 namespace DomainInclusions
 

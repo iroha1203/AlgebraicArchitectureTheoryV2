@@ -13,13 +13,23 @@ general term language. Its direct interpretation uses the functions named
 by the signature, which gives a comparison from Law satisfaction to
 mathlib's algebraic identities. The mathlib constructor supplies derived
 operations such as subtraction from these functions.
+
+An external `CommRing` instance on the carrier would also supply subtraction,
+but its operations could differ from the ones interpreted by the structure.
+The selected symbols keep their declaration tags and may include quantities
+because Definition 1.2 treats them as marked total operations. The associated
+profile equality rules out symbols of the wrong arity or sort.
+Writing each ring identity directly with general terms would require proving
+total evaluation for each displayed term separately. The small expression
+grammar lets one induction supply those proofs and translates every identity
+back into the general syntax before forming its Law.
 -/
 
 universe u
 
 namespace SHIGURE
 
-/-- The declared symbols of a commutative ring at a specified sort. -/
+/-- The declared ordinary operations or quantities of a commutative ring at a specified sort. -/
 structure RingVocabulary (sig : Signature.{u}) (s : sig.SortType) where
   /-- The zero symbol. -/
   zero : TypedTotal sig ⟨[], s⟩

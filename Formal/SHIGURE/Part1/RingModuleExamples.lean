@@ -51,11 +51,11 @@ private def signatureWithPartial (P : Type) : Signature where
 def signature : Signature := signatureWithPartial Empty
 
 private def scalarVocabularyFor (P : Type) : RingVocabulary (signatureWithPartial P) .scalar where
-  zero := ⟨Symbol.scalarZero, rfl⟩
-  one := ⟨Symbol.scalarOne, rfl⟩
-  add := ⟨Symbol.scalarAdd, rfl⟩
-  neg := ⟨Symbol.scalarNeg, rfl⟩
-  mul := ⟨Symbol.scalarMul, rfl⟩
+  zero := ⟨.ordinary Symbol.scalarZero, rfl⟩
+  one := ⟨.ordinary Symbol.scalarOne, rfl⟩
+  add := ⟨.ordinary Symbol.scalarAdd, rfl⟩
+  neg := ⟨.ordinary Symbol.scalarNeg, rfl⟩
+  mul := ⟨.ordinary Symbol.scalarMul, rfl⟩
 
 /-- The scalar ring vocabulary of the ring and module signature. -/
 def scalarVocabulary : RingVocabulary signature .scalar := scalarVocabularyFor Empty
@@ -354,20 +354,16 @@ private def zeroOnly : RingEquation partialSignature where
 
 private theorem zeroOnly_evaluates (e : Assignment partialInteger.carrier [.scalar]) (y : Int) :
     zeroOnly.left.Evaluates partialInteger e y ↔ e.head = (0 : Int) ∧ e.head = y := by
-  change (∃ xs, (∀ {s} (i : Var [SortName.scalar] s),
-    (zeroOnlyArgs i).Evaluates partialInteger e (xs i)) ∧
-    partialInteger.Graph (.partialOp ()) xs y) ↔ _
-  constructor
-  · rintro ⟨xs, h, hg⟩
-    have he : e.head = xs.head := h .here
-    obtain ⟨hd, hv⟩ := (partialInteger.graph_partial_iff () xs y).1 hg
-    exact ⟨he.trans hd, he.trans hv⟩
-  · rintro ⟨hd, hv⟩
-    refine ⟨e, ?_, (partialInteger.graph_partial_iff () e y).2 ⟨hd, hv⟩⟩
+  have hArgs : ∀ {s} (i : Var [SortName.scalar] s),
+      (zeroOnlyArgs i).Evaluates partialInteger e (e i) := by
     intro s i
     cases i with
     | here => rfl
     | there previous => nomatch previous
+  refine (Term.evaluates_app_at (sig := partialSignature) (.partialOp ())
+    zeroOnlyArgs partialInteger e e hArgs y).trans ?_
+  rw [partialInteger.graph_partial_iff]
+  exact ⟨fun ⟨hd, hv⟩ => ⟨hd, hv⟩, fun ⟨hd, hv⟩ => ⟨hd, hv⟩⟩
 
 /-- The partially defined equation has a joint input at zero. -/
 theorem zeroOnly_joint_nonempty : (zeroOnly.jointInputs partialInteger).Nonempty := by
@@ -395,34 +391,91 @@ theorem zeroOnly_residual_and_missing_input :
     obtain ⟨y, hy⟩ := joint.2.1
     exact (by decide : (1 : Int) ≠ 0) ((zeroOnly_evaluates e y).1 hy).1
 
-private def oneEqualsZero : RingEquation signature where
+private def oneEqualsZero {sig : Signature} {s : sig.SortType} (ring : RingVocabulary sig s) :
+    RingEquation sig where
   context := []
   input := .truth
-  result := .scalar
-  ring := scalarVocabulary
-  left := scalarOne
-  right := scalarZero
+  result := s
+  ring := ring
+  left := ring.one.term Term.argsNil
+  right := ring.zero.term Term.argsNil
 
-/-- Both closed terms are defined on the full input set, but the ordered residual is one. -/
-theorem oneEqualsZero_total_nonzero :
-    oneEqualsZero.jointInputs (realization Int Int) =
-      oneEqualsZero.toLaw.inputSet (realization Int Int) ∧
-    ∃ e : oneEqualsZero.jointInputs (realization Int Int),
-      oneEqualsZero.residual (realization Int Int) (realization_scalarLaws Int Int) e = (1 : Int) := by
-  let A := realization Int Int
-  have joint (e : Assignment A.carrier []) : e ∈ oneEqualsZero.jointInputs A :=
-    ⟨True.intro, ⟨(1 : Int), Term.evaluates_totalValue A scalarOne e⟩,
-      ⟨(0 : Int), Term.evaluates_totalValue A scalarZero e⟩⟩
-  refine ⟨Set.Subset.antisymm (fun _ h => h.1) (fun e _ => joint e), ?_⟩
-  let e : oneEqualsZero.jointInputs A := ⟨Assignment.empty, joint Assignment.empty⟩
-  have left : oneEqualsZero.leftValue A e = (1 : Int) :=
-    Part.mem_unique (oneEqualsZero.leftValue_mem A e)
-      (Term.mem_eval_iff _ _ _ _ |>.2 (Term.evaluates_totalValue A scalarOne e.val))
-  have right : oneEqualsZero.rightValue A e = (0 : Int) :=
-    Part.mem_unique (oneEqualsZero.rightValue_mem A e)
-      (Term.mem_eval_iff _ _ _ _ |>.2 (Term.evaluates_totalValue A scalarZero e.val))
+private theorem oneEqualsZero_residual {sig : Signature} {s : sig.SortType}
+    (ring : RingVocabulary sig s) (A : Structure sig)
+    (h : ∀ name, (ring.law name).Holds A) :
+    (oneEqualsZero ring).jointInputs A = (oneEqualsZero ring).toLaw.inputSet A ∧
+    ∃ e : (oneEqualsZero ring).jointInputs A,
+      (oneEqualsZero ring).residual A h e = ring.addValue A (ring.oneValue A)
+        (ring.negValue A (ring.zeroValue A)) := by
+  have evalOne (e : Assignment A.carrier []) :
+      (oneEqualsZero ring).left.Evaluates A e (ring.oneValue A) :=
+    ring.one.evaluates_term Term.argsNil A e Assignment.empty (fun i => nomatch i)
+  have evalZero (e : Assignment A.carrier []) :
+      (oneEqualsZero ring).right.Evaluates A e (ring.zeroValue A) :=
+    ring.zero.evaluates_term Term.argsNil A e Assignment.empty (fun i => nomatch i)
+  have joint (e : Assignment A.carrier []) : e ∈ (oneEqualsZero ring).jointInputs A :=
+    ⟨True.intro, ⟨ring.oneValue A, evalOne e⟩, ⟨ring.zeroValue A, evalZero e⟩⟩
+  refine ⟨Set.Subset.antisymm (fun _ he => he.1) (fun e _ => joint e), ?_⟩
+  let e : (oneEqualsZero ring).jointInputs A := ⟨Assignment.empty, joint Assignment.empty⟩
+  have left : (oneEqualsZero ring).leftValue A e = ring.oneValue A :=
+    Part.mem_unique ((oneEqualsZero ring).leftValue_mem A e)
+      ((Term.mem_eval_iff _ _ _ _).2 (evalOne e.val))
+  have right : (oneEqualsZero ring).rightValue A e = ring.zeroValue A :=
+    Part.mem_unique ((oneEqualsZero ring).rightValue_mem A e)
+      ((Term.mem_eval_iff _ _ _ _).2 (evalZero e.val))
   refine ⟨e, ?_⟩
   rw [RingEquation.residual_eq_add_neg, left, right]
   rfl
+
+/-- Both closed terms are defined on the full input set, but the ordered residual is one. -/
+theorem oneEqualsZero_total_nonzero :
+    (oneEqualsZero scalarVocabulary).jointInputs (realization Int Int) =
+      (oneEqualsZero scalarVocabulary).toLaw.inputSet (realization Int Int) ∧
+    ∃ e : (oneEqualsZero scalarVocabulary).jointInputs (realization Int Int),
+      (oneEqualsZero scalarVocabulary).residual (realization Int Int)
+        (realization_scalarLaws Int Int) e = (1 : Int) :=
+  oneEqualsZero_residual scalarVocabulary (realization Int Int) (realization_scalarLaws Int Int)
+
+private def quantitySignature : Signature :=
+  { signature with
+    Total := Empty
+    totalArity := fun f => nomatch f
+    Quantity := Symbol
+    quantityArity := signature.totalArity }
+
+private def quantityInteger : Structure quantitySignature where
+  carrier := carrier Int Int
+  total := fun f => nomatch f
+  relation := fun r => nomatch r
+  partialDomain := fun p => nomatch p
+  partialValue := fun p => nomatch p
+  quantity := total Empty Int Int
+
+private def quantityVocabulary : RingVocabulary quantitySignature .scalar where
+  zero := ⟨.quantity Symbol.scalarZero, rfl⟩
+  one := ⟨.quantity Symbol.scalarOne, rfl⟩
+  add := ⟨.quantity Symbol.scalarAdd, rfl⟩
+  neg := ⟨.quantity Symbol.scalarNeg, rfl⟩
+  mul := ⟨.quantity Symbol.scalarMul, rfl⟩
+
+private theorem quantityLaws : ∀ name, (quantityVocabulary.law name).Holds quantityInteger := by
+  have laws := realization_scalarLaws Int Int
+  intro name
+  cases name <;> apply (RingVocabulary.Expr.holds_equality_iff _ _ _ _).2 <;> intro e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .addAssoc) e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .zeroAdd) e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .negAdd) e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .mulAssoc) e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .mulComm) e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .oneMul) e
+  · exact (RingVocabulary.Expr.holds_equality_iff _ _ _ _).1 (laws .mulAdd) e
+
+/-- The ordered residual is also one when every ring operation is declared as a quantity. -/
+theorem quantity_oneEqualsZero_total_nonzero :
+    (oneEqualsZero quantityVocabulary).jointInputs quantityInteger =
+      (oneEqualsZero quantityVocabulary).toLaw.inputSet quantityInteger ∧
+    ∃ e : (oneEqualsZero quantityVocabulary).jointInputs quantityInteger,
+      (oneEqualsZero quantityVocabulary).residual quantityInteger quantityLaws e = (1 : Int) :=
+  oneEqualsZero_residual quantityVocabulary quantityInteger quantityLaws
 
 end SHIGURE.Chapter1.RingModule
