@@ -620,6 +620,29 @@ private def readRing (R : Type) [CommRing R] (offset : R) :
     (show coefficients.scalars.Carrier from e ⟨(), .here⟩) +
       (show coefficients.scalars.Carrier from data)
 
+/-- Keeping the sort alone cannot determine an evaluator that uses an additional realization
+parameter. The coefficient reading may keep the full realization at its original context. -/
+theorem offset_not_determined_by_retained_structure :
+    ¬ (readRing Int 0).RespectsRestriction Observation.whole (fun _ h => h) := by
+  intro locality
+  let reading := readRing Int 0
+  let left : reading.RealizedInput reading.algebra := ⟨(0 : Int), fun _ => (0 : Int)⟩
+  let right : reading.RealizedInput reading.algebra := ⟨(1 : Int), fun _ => (0 : Int)⟩
+  have same : reading.AgreeOn (fun _ h => h) locality.supported left right :=
+    ⟨RestrictedStructure.Agrees.refl _, rfl⟩
+  have equal := locality.agrees reading.algebra left right same
+  exact (by decide : (0 : Int) + 0 ≠ 0 + 1) equal
+
+/-- Reading the designated point factors through the retained structure and tuple. -/
+theorem point_evaluation_respects_restriction :
+    let reading := { readRing Int 0 with evaluateOn := fun _ _ e => e ⟨(), .here⟩ }
+    reading.RespectsRestriction Observation.whole (fun _ h => h) := by
+  dsimp only
+  refine ⟨(fun _ => Set.mem_univ _), ?_⟩
+  rintro R left right ⟨same, tuple⟩
+  have eq := congrFun tuple ⟨(), .here⟩
+  exact eq.symm
+
 /-- An identity coefficient map commutes with evaluation in the same realization. -/
 def integerIdentity :
     CoefficientReading.Change (readRing Int 0) (readRing Int 0) id where
@@ -712,7 +735,7 @@ def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int 
     { integerDiagonal with
       evaluate_commutes := fun e => integerDiagonal.evaluate_commutes
         (fun _ => e.1 ⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩) }
-  coefficientInputs := ReadingInputMap.identity_respectsOrdinary _ _
+  coefficientInputs := ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _⟩
   value := fun x => (x, x)
   commutes := fun _ => rfl
 
@@ -735,10 +758,10 @@ theorem cannot_discard_coefficient_sort
     cases chosen : comparison.coefficientChange with
     | fixed same =>
       rw [chosen] at support
-      exact support input
+      exact support.1 input
     | changed inputs square =>
       rw [chosen] at support
-      exact support.1 input
+      exact support.1.1 input
   rw [empty] at kept
   exact kept.elim
 
@@ -870,7 +893,9 @@ def fixed_coefficients_across_cover_change :
         pieces := fun _ => {true}
         localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
     observationSupport := ⟨False.elim, False.elim⟩
-    coefficientSupport := fun _ => Set.mem_univ _ }
+    coefficientSupport :=
+      ⟨(fun _ => Set.mem_univ _), Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
+        ⟨PUnit.unit, true, Set.mem_singleton _, Set.mem_univ _⟩))⟩ }
 
 /-- The target lists an extra integer state that the evaluation never uses. -/
 private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
@@ -948,6 +973,15 @@ private def relabeledInput :
   coordinate j := ⟨.inl ⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩, by cases j.val.1; rfl⟩
   extra_used i := nomatch i
 
+/-- A name shared only by the coefficient products also keeps its original position. -/
+theorem cannot_relabel_coefficient_position :
+    ¬ ReadingInputMap.UsesCoefficientNames paddedIntegerInput.selection relabeledInput := by
+  intro keeps
+  let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
+  have same := keeps second second.val (by decide) rfl HEq.rfl rfl
+  exact Nat.zero_ne_one
+    (congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index => i.2.position) same)
+
 /-- The ordinary identity correspondence rules out that relabeling even though the two
 positions have the same sort. -/
 theorem cannot_relabel_shared_position :
@@ -959,8 +993,7 @@ theorem cannot_relabel_shared_position :
   let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
   have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
   rcases same.2 with ⟨_, _, _, same⟩ | ⟨same, _, _⟩
-  · exact Nat.zero_ne_one (congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index =>
-      i.2.position) (eq_of_heq same))
+  · exact Nat.zero_ne_one (congrArg ULift.down (eq_of_heq same))
   · cases same
 
 /-- The target can forget the second ordinary coordinate while preserving the first. -/
@@ -979,13 +1012,7 @@ def projected_state_comparison :
   contexts :=
     { position _ := ⟨(), .here⟩
       sort_eq _ := rfl
-      keepsNamed _ _ _ _ same _ := by
-        have indexEq : (ObservationProduct.ofList [(), ()]).Index = PUnit := type_eq_of_heq same
-        have small : Subsingleton (ObservationProduct.ofList [(), ()]).Index :=
-          indexEq.symm ▸ (inferInstanceAs (Subsingleton PUnit))
-        have sameSlots := @Subsingleton.elim _ small
-          (⟨(), .here⟩ : (ObservationProduct.ofList [(), ()]).Index) ⟨(), .there .here⟩
-        exact (Nat.zero_ne_one (congrArg (fun j => j.2.position) sameSlots)).elim }
+      keepsNamed _ _ _ differentScopes _ _ := by cases differentScopes }
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := PUnit.unit
   value := id
@@ -993,16 +1020,30 @@ def projected_state_comparison :
 
 /-- Distinct names in a common product read distinct inputs. -/
 theorem cannot_repeat_common_named_position :
-    let product : ObservationProduct Unit := ⟨Bool, fun _ => (), some "boolean pair"⟩
+    let product : ObservationProduct Unit := { Index := Bool, sort := fun _ => (), nameScope := some "boolean pair" }
     ¬ ∃ positions : product.Correspondence product id, positions.position true = false := by
   dsimp only
   rintro ⟨positions, repeated⟩
   have kept : positions.position true = true := positions.keepsNamed true true (by decide) rfl HEq.rfl rfl
   exact Bool.noConfusion (kept.symm.trans repeated)
 
+/-- A restriction to a singleton keeps its original position in the larger named product. -/
+theorem named_subset_keeps_original_position :
+    let source : ObservationProduct Unit := { Index := Bool, sort := fun _ => (), nameScope := some "pair" }
+    let target := source.restrict ({false} : Set Bool)
+    ∀ positions : source.Correspondence target id, positions.position ⟨false, Set.mem_singleton _⟩ = false := by
+  dsimp only
+  intro positions
+  exact positions.keepsNamed _ false (by decide) rfl HEq.rfl rfl
+
+/-- Padding the ordinary product leaves its shared first coordinate at the same name. -/
+theorem padded_ordinary_product_keeps_first_name :
+    (sharedObservation paddedIntegerInput).SharesInput (.ofList [()]) ⟨(), .here⟩ ⟨(), .here⟩ :=
+  ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
+
 private def reindexedObservation (right : Bool) : Reading.{0, 0, 0, 0} :=
   { Observation.reading id with
-    observation := ⟨⟨Bool, fun _ => (), none⟩, Bool, fun e => e right⟩
+    observation := ⟨{ Index := Bool, sort := fun _ => () }, Bool, fun e => e right⟩
     sharedInputs := .empty _
     observationPlacement := .external }
 
@@ -1129,7 +1170,8 @@ theorem native_realizations_compute_different_values :
   ⟨rfl, rfl⟩
 
 /-- Infinitely many original positions can use the same integer sort. -/
-private def integerSequence : ObservationProduct Observation.signature.SortType := ⟨Nat, fun _ => (), some "integer sequence"⟩
+private def integerSequence : ObservationProduct Observation.signature.SortType :=
+  { Index := Nat, sort := fun _ => (), nameScope := some "integer sequence" }
 
 /-- This coefficient observation tests whether every coordinate is zero. -/
 private noncomputable def coefficientSequence :
@@ -1197,7 +1239,7 @@ noncomputable def infinite_coefficient_comparison : ReadingComparison sequenceRe
       coefficients := RingHom.id Int
       algebra_commutes := rfl
       evaluate_commutes _ := rfl }
-  coefficientInputs := ReadingInputMap.identity_respectsOrdinary _ _
+  coefficientInputs := ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _⟩
   value := id
   commutes _ := rfl
 

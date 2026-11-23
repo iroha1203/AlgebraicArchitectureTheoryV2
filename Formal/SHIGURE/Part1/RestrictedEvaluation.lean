@@ -179,6 +179,16 @@ def restrict (U : DeclarationContext P) (A : Structure P.signature) : Restricted
   partialValue p _ := A.partialValue p
   quantity q _ := A.quantity q
 
+/-- Restrict the primitive interpretations of a realized structure to a smaller context. -/
+def restrictWithin {V : DeclarationContext P} (A : RestrictedStructure U)
+    (inside : V.declarations ⊆ U.declarations) : RestrictedStructure V where
+  carrier := A.carrier
+  total f kept := A.total f (inside kept)
+  relation r kept := A.relation r (inside kept)
+  partialDomain p kept := A.partialDomain p (inside kept)
+  partialValue p kept := A.partialValue p (inside kept)
+  quantity q kept := A.quantity q (inside kept)
+
 /-- Read the graph of a retained total or partial operation on its inputs. -/
 def graph (A : RestrictedStructure U) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) (e : Assignment A.carrier op.arity.inputs)

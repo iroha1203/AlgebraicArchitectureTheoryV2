@@ -58,6 +58,27 @@ def position : {Γ : List S} → {s : S} → Var Γ s → Nat
   | _, _, .here => 0
   | _, _, .there i => i.position.succ
 
+/-- Two variables in the same finite context have distinct position numbers. -/
+theorem position_injective (Γ : List S) :
+    Function.Injective (fun i : (Σ s, Var Γ s) => i.2.position) := by
+  induction Γ with
+  | nil =>
+    intro i
+    exact nomatch i.2
+  | cons s Γ ih =>
+    rintro ⟨a, i⟩ ⟨b, j⟩ eq
+    cases i with
+    | here =>
+      cases j with
+      | here => rfl
+      | there j => exact (Nat.noConfusion eq)
+    | there i =>
+      cases j with
+      | here => exact (Nat.noConfusion eq)
+      | there j =>
+        have tail : (⟨_, i⟩ : Σ s, Var Γ s) = ⟨_, j⟩ := ih (Nat.succ.inj eq)
+        exact congrArg (fun i : Σ t, Var Γ t => (⟨i.1, .there i.2⟩ : Σ t, Var (s :: Γ) t)) tail
+
 end Var
 
 namespace Renaming

@@ -644,7 +644,7 @@ private def separateReading (R : Type) [CommRing R] : Reading.{0, 0, 0, 0} where
   valueStructure := ()
   coefficients := some ⟨.ofList [false], scalarInputs R⟩
 
-private def twoOrdinarySorts : ObservationProduct signature.SortType := ⟨Bool, id, some "two sorts"⟩
+private def twoOrdinarySorts : ObservationProduct signature.SortType := { Index := Bool, sort := id, nameScope := some "two sorts" }
 
 private def differentlyNamedInput : CoefficientProduct signature.SortType :=
   .indexed Bool {true} (fun _ => false) (some "two sorts")
@@ -769,6 +769,12 @@ def independent_coefficient_comparison :
         exact Subsingleton.elim _ _
       evaluate_commutes _ := rfl }
   coefficientInputs := by
+    constructor
+    · intro j i _ _ _ _
+      obtain ⟨s, v⟩ := i
+      cases v with
+      | here => rfl
+      | there v => exact nomatch v
     refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), ?_⟩
     intro j i share
     obtain ⟨k, hk⟩ := j.property
@@ -852,7 +858,7 @@ private def presentation : PrimitivePresentation where
 private def reading : Reading.{0, 0, 0, 0} where
   presentation := presentation
   structureData := states
-  observation := ⟨⟨Nat, id, none⟩, Nat → Bool, id⟩
+  observation := ⟨{ Index := Nat, sort := id }, Nat → Bool, id⟩
   context := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
   cover := ⟨Unit, fun _ => ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩,
     fun _ _ h => h, fun h => ⟨(), h⟩⟩

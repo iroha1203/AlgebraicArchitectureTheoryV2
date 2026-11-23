@@ -132,6 +132,8 @@ structure ObservationProduct (S : Type u) where
   sort : Index → S
   /-- Only explicitly named products identify positions across two observations. -/
   nameScope : Option String := none
+  /-- The original coordinate names, with no repetitions in this product. -/
+  names : Σ Name : Type u, Index ↪ Name := ⟨Index, Function.Embedding.refl Index⟩
 
 namespace ObservationProduct
 
@@ -142,18 +144,32 @@ abbrev Values (product : ObservationProduct S) (X : S → Type u) :=
   (i : product.Index) → X (product.sort i)
 
 /-- One position of the indicated sort. -/
-def ofSort (s : S) : ObservationProduct S := ⟨PUnit, fun _ => s, none⟩
+def ofSort (s : S) : ObservationProduct S := { Index := PUnit, sort := fun _ => s }
 
 /-- Regard the positions of a finite typed context as the canonical named variable positions. -/
-def ofList (Γ : List S) : ObservationProduct S :=
-  ⟨Σ s : S, Var Γ s, Sigma.fst, some "typed variables"⟩
+def ofList (Γ : List S) : ObservationProduct S where
+  Index := Σ s : S, Var Γ s
+  sort := Sigma.fst
+  nameScope := some "typed variables"
+  names := ⟨ULift Nat, ⟨fun i => ⟨i.2.position⟩, by
+    intro i j eq
+    exact Var.position_injective Γ (congrArg ULift.down eq)⟩⟩
 
 /-- The empty product of state sorts. -/
-def empty : ObservationProduct S := ⟨PEmpty, (fun i => nomatch i), none⟩
+def empty : ObservationProduct S := { Index := PEmpty, sort := fun i => nomatch i }
 
 /-- Name the coordinates of this product for comparisons with other products. -/
 def withName (product : ObservationProduct S) (name : String) : ObservationProduct S :=
   { product with nameScope := some name }
+
+/-- Select a subset of a product and keep the names of its original coordinates. -/
+def restrict (product : ObservationProduct S) (kept : Set product.Index) : ObservationProduct S where
+  Index := kept
+  sort i := product.sort i.val
+  nameScope := product.nameScope
+  names := ⟨product.names.1, ⟨fun i => product.names.2 i.val, by
+    intro i j eq
+    exact Subtype.ext (product.names.2.injective eq)⟩⟩
 
 /-- Read a finite context assignment as a dependent product. -/
 def ofAssignment {Γ : List S} {X : S → Type u} (e : Assignment X Γ) : (ofList Γ).Values X :=
@@ -173,12 +189,12 @@ structure Correspondence (source : ObservationProduct S) (target : ObservationPr
   /-- A compatible common name identifies the same position in both products. -/
   keepsNamed (j : target.Index) (i : source.Index) :
     source.nameScope ≠ none → source.nameScope = target.nameScope →
-    HEq i j → onSort (source.sort i) = target.sort j → position j = i
+    HEq (source.names.2 i) (target.names.2 j) → onSort (source.sort i) = target.sort j → position j = i
 
 /-- The identity sort map acts on each position of the same product. -/
 def Correspondence.identity (product : ObservationProduct S) :
     Correspondence product product id :=
-  ⟨id, fun _ => rfl, fun _ _ _ _ same _ => eq_of_heq same.symm⟩
+  ⟨id, fun _ => rfl, fun _ _ _ _ same _ => product.names.2.injective (eq_of_heq same.symm)⟩
 
 /-- Apply the pointwise state map at the corresponding coordinates. -/
 def Correspondence.mapValues {source : ObservationProduct S} {target : ObservationProduct T}
@@ -189,38 +205,13 @@ def Correspondence.mapValues {source : ObservationProduct S} {target : Observati
 
 end ObservationProduct
 
-namespace Var
-
-variable {S : Type u}
-
-/-- Two variables in the same finite context have distinct position numbers. -/
-theorem position_injective (Γ : List S) :
-    Function.Injective (fun i : (Σ s, Var Γ s) => i.2.position) := by
-  induction Γ with
-  | nil =>
-    intro i
-    exact nomatch i.2
-  | cons s Γ ih =>
-    rintro ⟨a, i⟩ ⟨b, j⟩ eq
-    cases i with
-    | here =>
-      cases j with
-      | here => rfl
-      | there j => exact (Nat.noConfusion eq)
-    | there i =>
-      cases j with
-      | here => exact (Nat.noConfusion eq)
-      | there j =>
-        have tail : (⟨_, i⟩ : Σ s, Var Γ s) = ⟨_, j⟩ := ih (Nat.succ.inj eq)
-        exact congrArg (fun i : Σ t, Var Γ t => (⟨i.1, .there i.2⟩ : Σ t, Var (s :: Γ) t)) tail
-
-end Var
-
 /-- A coefficient product uses typed variable positions or a specified subset of indices.
 An explicitly shared namespace identifies compatible positions across products. -/
 inductive CoefficientProduct (S : Type u) where
   | ofList (context : List S) (nameScope : Option String := some "typed variables")
   | indexed (Index : Type u) (present : Set Index) (sort : present → S) (nameScope : Option String := none)
+      (names : Σ Name : Type u, (present : Type u) ↪ Name :=
+        ⟨Index, ⟨Subtype.val, Subtype.val_injective⟩⟩)
 
 namespace CoefficientProduct
 
@@ -229,29 +220,21 @@ variable {S : Type u}
 /-- The carriers supplied to the reading are indexed by the original positions. -/
 def product : CoefficientProduct S → ObservationProduct S
   | .ofList Γ nameScope => { ObservationProduct.ofList Γ with nameScope := nameScope }
-  | .indexed _ present sort nameScope => ⟨present, sort, nameScope⟩
+  | .indexed _ present sort nameScope names => ⟨present, sort, nameScope, names⟩
 
 /-- The original slot namespace, independent of the available subset of slots. -/
-def Slot : CoefficientProduct S → Type u
-  | .ofList _ _ => ULift Nat
-  | .indexed Index _ _ _ => Index
+abbrev Slot (raw : CoefficientProduct S) : Type u := raw.product.names.1
 
 /-- Each original position has its actual slot, unaffected by the selected evaluation. -/
-def slot : (raw : CoefficientProduct S) → raw.product.Index → raw.Slot
-  | .ofList _ _, i => ⟨i.2.position⟩
-  | .indexed _ _ _ _, i => i.val
+def slot (raw : CoefficientProduct S) : raw.product.Index → raw.Slot := raw.product.names.2
 
 /-- The original product has only one position for each slot. -/
-theorem slot_injective (raw : CoefficientProduct S) : Function.Injective raw.slot := by
-  cases raw with
-  | ofList Γ _ =>
-    intro i j h
-    exact Var.position_injective Γ (congrArg ULift.down h)
-  | indexed _ _ _ _ => exact Subtype.val_injective
+theorem slot_injective (raw : CoefficientProduct S) : Function.Injective raw.slot :=
+  raw.product.names.2.injective
 
 /-- Make all positions of a general indexed product available. -/
 def all (p : ObservationProduct S) : CoefficientProduct S :=
-  .indexed p.Index Set.univ (fun i => p.sort i.val) p.nameScope
+  .indexed p.Index Set.univ (fun i => p.sort i.val) p.nameScope (p.restrict Set.univ).names
 
 end CoefficientProduct
 
@@ -270,7 +253,7 @@ variable {S : Type u} {raw : CoefficientProduct S}
 
 /-- The product of used original positions, with one coordinate for each shared input. -/
 def used (selection : InputSelection raw) : ObservationProduct S :=
-  ⟨Set.range selection.inputs, fun i => raw.product.sort i.val, raw.product.nameScope⟩
+  raw.product.restrict (Set.range selection.inputs)
 
 /-- Read each input at its selected position, preserving repeated references. -/
 def tuple (selection : InputSelection raw) {X : S → Type u} (e : selection.used.Values X) :
@@ -428,6 +411,52 @@ theorem evaluate_eq_of_inputs (reading : CoefficientReading U A Γ) {e e' : Γ.p
     (same : ∀ i : reading.selection.used.Index, e i.val = e' i.val) :
     reading.evaluate e = reading.evaluate e' :=
   congrArg reading.evaluateSelected (funext same)
+
+/-- A realized input consists of a realization and the values at its selected state positions. -/
+abbrev RealizedInput (reading : CoefficientReading U A Γ) (R : CoefficientAlgebra reading.base) :=
+  Σ a : reading.scheme.Realization R,
+    reading.selection.selected.Values (reading.scheme.structureOf R a).carrier
+
+/-- Two inputs have the same retained primitive data and the same retained tuple. -/
+def AgreeOn (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    (inside : W.declarations ⊆ U.declarations)
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
+    {R : CoefficientAlgebra reading.base} (left right : reading.RealizedInput R) : Prop :=
+  ∃ same : ((reading.scheme.structureOf R left.1).restrictWithin inside).Agrees
+      ((reading.scheme.structureOf R right.1).restrictWithin inside),
+    right.2 = fun i => same.carrier_eq _ (supported i) ▸ left.2 i
+
+/-- Evaluation respects each identification of realized inputs made by the restriction. -/
+structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : DeclarationContext P)
+    (inside : W.declarations ⊆ U.declarations) : Prop where
+  /-- Every coordinate used in the evaluation belongs to the smaller context. -/
+  supported (i : reading.selection.selected.Index) :
+    Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations
+  /-- Retained data determines the value uniformly over realizations. -/
+  agrees (R : CoefficientAlgebra reading.base) (left right : reading.RealizedInput R) :
+    reading.AgreeOn inside supported left right →
+      reading.evaluateOn R left.1 left.2 = reading.evaluateOn R right.1 right.2
+
+/-- A restricted input is the class of a realized input with the same retained data. -/
+abbrev RetainedInput (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    (inside : W.declarations ⊆ U.declarations) (locality : reading.RespectsRestriction W inside)
+    (R : CoefficientAlgebra reading.base) :=
+  Quot (reading.AgreeOn inside locality.supported (R := R))
+
+/-- Evaluate on the retained data alone. -/
+def evaluateRetained (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
+    (R : CoefficientAlgebra reading.base) : reading.RetainedInput inside locality R → R.scalars.Carrier :=
+  Quot.lift (fun input : reading.RealizedInput R => reading.evaluateOn R input.1 input.2)
+    (locality.agrees R)
+
+/-- Restricting the actual input and evaluating gives the reading's original value. -/
+theorem evaluateRetained_mk (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
+    (e : reading.selection.used.Values A.carrier) :
+    reading.evaluateRetained locality reading.algebra
+      (Quot.mk _ ⟨reading.realization, reading.selectedTuple e⟩) = reading.evaluateSelected e :=
+  rfl
 
 /-- The changed structure comes from the selected realization by the scheme's rule. -/
 def changedStructure (reading : CoefficientReading U A Γ) {target : CoefficientRing.{u}}
