@@ -148,3 +148,123 @@ theorem other_relation_is_not_assigned :
   rcases h with impossible | impossible <;> cases impossible
 
 end SHIGURE.Chapter1.CoverTransport
+
+namespace SHIGURE.Chapter1.RetainedCoefficientInputs
+
+/-- The two sorts have independent carriers and no symbols. -/
+private def signature : Signature where
+  SortType := Bool
+  Total := Empty
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity f := nomatch f
+  relInputs r := nomatch r
+  partialArity p := nomatch p
+  quantityArity q := nomatch q
+
+/-- There are no Law declarations. -/
+private def presentation : PrimitivePresentation where
+  signature := signature
+  laws :=
+    { LawName := Empty
+      statement := fun name => nomatch name
+      role := fun name => nomatch name }
+  derived name := nomatch name
+
+/-- The ordinary reading keeps states of both sorts. -/
+private def ordinary : Structure signature where
+  carrier _ := Int
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- The coefficient scheme retains the first sort. -/
+private def retained : DeclarationContext presentation where
+  declarations := {.sort false}
+  closed := by
+    intro d hd e he
+    have same : d = .sort false := Set.mem_singleton_iff.1 hd
+    subst d
+    exact he.elim
+
+/-- The realized retained sort is unchanged across both choices. -/
+private def realized (full : Bool) : RestrictedStructure retained where
+  carrier := fun
+    | false => Int
+    | true => if full then Int else Empty
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- The retention certificate suffices to map every designated point. -/
+private def retainedMap (source target : Bool) :
+    RestrictedStructure.PointMap (realized source) (realized target) := by
+  intro sort keep point
+  have same : sort = false := by
+    have h : Declaration.sort (P := presentation) sort = .sort false := Set.mem_singleton_iff.1 keep
+    cases h
+    rfl
+  subst sort
+  exact point
+
+/-- Use the integers as the base and the initial coefficients. -/
+private def integers : CoefficientRing := ⟨Int, inferInstance⟩
+
+/-- Changing coefficients sends the designated states by the retained-sort map. -/
+private def scheme : CoefficientScheme retained integers where
+  Realization _ := Bool
+  structureOf _ := realized
+  Morphism _ a b := PLift (a = b)
+  mapPoints f s _ x := f.down ▸ x
+  mapPoints_preserves f := by
+    rcases f with ⟨rfl⟩
+    intro Γ a supported e held
+    exact held
+  Native := Bool
+  nativeStructure := realized
+  realizeNative _ := id
+  nativePoints _ _ _ _ := id
+  interpretLaw _ a := (realized a).satisfies
+  change _ _ := false
+  changePoints _ a := retainedMap a false
+
+/-- Observe the retained coordinate only, even though the ordinary tuple has two coordinates. -/
+private def selected : CoefficientReading retained ordinary [false, true] where
+  base := integers
+  algebra := ⟨integers, RingHom.id Int⟩
+  scheme := scheme
+  realization := false
+  context := [false]
+  supported := by
+    rintro _ ⟨s, hs, rfl⟩
+    have same : s = false := List.mem_singleton.1 hs
+    subst s
+    exact Set.mem_singleton _
+  inputs
+    | .here => .here
+    | .there i => nomatch i
+  realizeInputs
+    | .here => id
+    | .there i => nomatch i
+  evaluateOn R _ e := R.fromBase (show Int from e.head)
+
+/-- The realized value is the first coordinate for any values of the forgotten coordinate. -/
+theorem evaluation_reads_retained_input (s t : Int) :
+    selected.evaluate (Assignment.cons s (Assignment.cons t Assignment.empty)) = s :=
+  rfl
+
+/-- The scalar rule maps the retained points even when the forgotten target carrier is empty. -/
+theorem change_without_forgotten_map :
+    ((scheme.changePoints (R := selected.algebra) (target := integers) (RingHom.id Int) true)
+      false (Set.mem_singleton _) (2 : Int)) = (2 : Int) ∧
+    ¬ Nonempty (∀ s, (realized true).carrier s → (realized false).carrier s) := by
+  refine ⟨rfl, ?_⟩
+  rintro ⟨f⟩
+  exact nomatch f true (0 : Int)
+
+end SHIGURE.Chapter1.RetainedCoefficientInputs

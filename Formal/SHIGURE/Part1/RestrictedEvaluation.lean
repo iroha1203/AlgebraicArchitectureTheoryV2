@@ -150,6 +150,22 @@ namespace RestrictedStructure
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
+/-- The declared sort of a typed position occurs in its context. -/
+private theorem var_sort_mem {S : Type u} {Γ : List S} {s : S} (i : Var Γ s) : s ∈ Γ := by
+  induction i with
+  | here => exact List.mem_cons_self
+  | there _ ih => exact List.mem_cons_of_mem _ ih
+
+/-- A point map is defined on the retained sort carriers. -/
+abbrev PointMap (A B : RestrictedStructure U) :=
+  ∀ s, Declaration.sort s ∈ U.declarations → A.carrier s → B.carrier s
+
+/-- Transport a tuple by using the point map at its supported positions. -/
+def mapAssignment {A B : RestrictedStructure U} (f : PointMap A B)
+    {Γ : List P.signature.SortType} (supported : Declaration.sorts (P := P) Γ ⊆ U.declarations)
+    (e : Assignment A.carrier Γ) : Assignment B.carrier Γ :=
+  ⟨fun i => f _ (supported ⟨_, var_sort_mem i, rfl⟩) (e i)⟩
+
 /-- Forget the operations outside the selected declarations. -/
 def restrict (U : DeclarationContext P) (A : Structure P.signature) : RestrictedStructure U where
   carrier := A.carrier
@@ -186,10 +202,11 @@ def satisfies (A : RestrictedStructure U) (law : Law P.signature)
         (fun h => supported (Or.inr h))) e
 
 /-- A point map transports every primitive fact supported on the retained declarations. -/
-def Preserves (A B : RestrictedStructure U) (f : ∀ s, A.carrier s → B.carrier s) : Prop :=
+def Preserves (A B : RestrictedStructure U) (f : PointMap A B) : Prop :=
   ∀ {Γ} (a : Atomic P.signature Γ) (supported : Declaration.atomicSupport a ⊆ U.declarations)
     (e : Assignment A.carrier Γ),
-    A.evaluation.atomic e a supported → B.evaluation.atomic (e.map f) a supported
+    A.evaluation.atomic e a supported →
+      B.evaluation.atomic (mapAssignment f (fun _ h => supported (Or.inl h)) e) a supported
 
 end RestrictedStructure
 

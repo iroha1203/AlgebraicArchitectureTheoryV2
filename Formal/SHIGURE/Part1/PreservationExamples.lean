@@ -352,7 +352,7 @@ def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) 
   targetModel := model
   state := state
   contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
   coefficientChange := PUnit.unit
   value := Bool.not
   commutes := fun _ => rfl
@@ -381,7 +381,7 @@ def sameEmptyContext : ReadingComparison missingSort missingSort where
   targetModel := model
   state := state
   contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
   coefficientChange := PUnit.unit
   value := id
   commutes := fun _ => rfl
@@ -501,7 +501,7 @@ private def offsetScheme : CoefficientScheme Observation.whole (ringOf Int) wher
   Realization R := R.scalars.Carrier
   structureOf R _ := RestrictedStructure.restrict Observation.whole (statesOf R.scalars.Carrier)
   Morphism R _ _ := R.scalars.Carrier → R.scalars.Carrier
-  mapPoints f _ x := f x
+  mapPoints f _ _ x := f x
   mapPoints_preserves f := by
     intro Γ a _ e held
     cases a with
@@ -512,11 +512,11 @@ private def offsetScheme : CoefficientScheme Observation.whole (ringOf Int) wher
   Native := Int
   nativeStructure _ := RestrictedStructure.restrict Observation.whole (statesOf Int)
   realizeNative R offset := R.fromBase offset
-  nativePoints R _ _ x := R.fromBase x
+  nativePoints R _ _ _ x := R.fromBase x
   interpretLaw R _ :=
     (RestrictedStructure.restrict Observation.whole (statesOf R.scalars.Carrier)).satisfies
   change f offset := f offset
-  changePoints f _ _ x := f x
+  changePoints f _ _ _ x := f x
 
 /-- The specified coefficient algebra and realization evaluate each state at its chosen offset. -/
 private def readRing (R : Type) [CommRing R] (offset : R) :
@@ -525,7 +525,10 @@ private def readRing (R : Type) [CommRing R] (offset : R) :
   algebra := ⟨ringOf R, Int.castRingHom R⟩
   scheme := offsetScheme
   realization := offset
-  realizes := rfl
+  context := [()]
+  supported := fun _ _ => Set.mem_univ _
+  inputs := fun i => i
+  realizeInputs _ x := x
   evaluateOn coefficients data e :=
     letI := coefficients.scalars.ring
     (show coefficients.scalars.Carrier from e.head) +
@@ -545,7 +548,7 @@ private def diagonalStates (e : Assignment (statesOf Int).carrier [()]) :
 /-- This scheme's own scalar change sends the designated states to zero. -/
 private def collapsedScheme : CoefficientScheme Observation.whole (ringOf Int) :=
   { offsetScheme with
-    changePoints := fun {_} {target} _ _ _ _ =>
+    changePoints := fun {_} {target} _ _ _ _ _ =>
       letI := target.ring
       (0 : target.Carrier) }
 
@@ -606,7 +609,7 @@ def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int 
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
   contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
   coefficientChange := .changed
     { integerDiagonal with
       evaluate_commutes := fun e => integerDiagonal.evaluate_commutes e }
@@ -633,8 +636,8 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
   contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl
-  coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
+  coefficientChange := .fixed rfl
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
 
@@ -648,6 +651,39 @@ theorem fixed_comparison_has_no_scalar_change :
   have impossible : (1 : Int) = h 0 :=
     data.evaluate_commutes (Assignment.cons (0 : Int) Assignment.empty)
   exact (by decide : (1 : Int) ≠ 0) (impossible.trans h.map_zero)
+
+/-- The ordinary reading has the same observation and no selected coefficient evaluation. -/
+private def plainInteger : Reading := { readingOf Int 0 with coefficients := none }
+
+/-- Forgetting coefficients gives an explicit map from the old evaluation to the ordinary value. -/
+def forgetCoefficients : Reading.CoefficientCompatibility (readingOf Int 0) plainInteger id :=
+  ⟨id, fun e => by
+    let x : Int := e.head
+    change x = x + 0
+    exact (Int.add_zero x).symm⟩
+
+/-- Introducing coefficients supplies the corresponding map in the other direction. -/
+def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readingOf Int 0) id :=
+  ⟨id, fun e => by
+    let x : Int := e.head
+    change x + 0 = x
+    exact Int.add_zero x⟩
+
+/-- This coefficient evaluation gives the same result at different observed states. -/
+private def constantCoefficient : Reading :=
+  { readingOf Int 0 with
+    coefficients := some { readRing Int 0 with
+      evaluateOn R _ _ :=
+        letI := R.scalars.ring
+        0 } }
+
+/-- The forgotten coefficient value cannot distinguish the two ordinary observations. -/
+theorem forgetting_requires_a_value_map :
+    ¬ Nonempty (Reading.CoefficientCompatibility constantCoefficient plainInteger id) := by
+  rintro ⟨⟨value, commutes⟩⟩
+  have zero : (0 : Int) = value (0 : Int) := commutes (Assignment.cons (0 : Int) Assignment.empty)
+  have one : (1 : Int) = value (0 : Int) := commutes (Assignment.cons (1 : Int) Assignment.empty)
+  exact (by decide : (0 : Int) ≠ 1) (zero.trans one.symm)
 
 /-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
 theorem zero_ring_to_integer_fails :
@@ -771,17 +807,25 @@ private def namedEquation : PrimitivePresentation where
     { LawName := Unit
       statement := fun _ => equation.toLaw
       role := fun _ => .additional }
-  ringEquation _ := some ⟨equation, rfl⟩
+  ringEquation _ := some ⟨equation.write, rfl⟩
   derived _ h := by cases h
 
 /-- Reading the attached equation and applying two substitutions preserves the exact Law. -/
 theorem named_equation_keeps_literal_substitutions :
     let θ : Substitution signature [] [] := ⟨fun i => nomatch i⟩
-    ∃ data, namedEquation.ringEquation () = some data ∧
-      ((equation.substitute θ).substitute θ).toLaw = ((namedEquation.laws.statement ()).substitute θ).substitute θ ∧
-      ((equation.substitute θ).substitute θ).left = (equation.left.substitute θ).substitute θ ∧
-      ((equation.substitute θ).substitute θ).right = (equation.right.substitute θ).substitute θ :=
-  ⟨⟨equation, rfl⟩, rfl, rfl, rfl, rfl⟩
+    let data := (equation.write.substitute θ).substitute θ
+    namedEquation.ringEquation () = some ⟨equation.write, rfl⟩ ∧
+      data.toLaw = ((namedEquation.laws.statement ()).substitute θ).substitute θ ∧
+      data.equation.left = (equation.left.substitute θ).substitute θ ∧
+      data.equation.right = (equation.right.substitute θ).substitute θ :=
+  ⟨rfl, rfl, rfl, rfl⟩
+
+/-- A truth formula cannot be attached to any ordered equality as its written conclusion. -/
+theorem truth_without_equality_has_no_expansion (eqn : RingEquation signature) :
+    ¬ Nonempty (RingEquation.Expansion eqn .truth) := by
+  rintro ⟨expansion⟩
+  obtain ⟨_, _, impossible⟩ := expansion.has_exists
+  cases impossible
 
 /-- The product ring joint input carries the ordinary declared constants. -/
 private def productInput : equation.jointInputs (realization (Int × Int) (Int × Int)) := by
@@ -896,20 +940,18 @@ private def scheme : CoefficientScheme sortOnly (CoefficientTransport.ringOf Int
   Realization _ := Bool
   structureOf _ := points
   Morphism _ a b := PLift (a = b)
-  mapPoints f s x := f.down ▸ x
+  mapPoints f s _ x := f.down ▸ x
   mapPoints_preserves f := by
     rcases f with ⟨rfl⟩
     intro Γ a supported e held
-    have same : e.map (fun _ x => x) = e := Assignment.ext (fun _ => rfl)
-    rw [same]
     exact held
   Native := Bool
   nativeStructure := points
   realizeNative _ := id
-  nativePoints _ _ _ := id
+  nativePoints _ _ _ _ := id
   interpretLaw _ a := (points a).satisfies
   change _ := id
-  changePoints _ _ _ := id
+  changePoints _ _ _ _ := id
 
 /-- Choose the original points of the scheme on the actual reading structure. -/
 def selection : CoefficientReading sortOnly A [()] where
@@ -917,7 +959,13 @@ def selection : CoefficientReading sortOnly A [()] where
   algebra := ⟨CoefficientTransport.ringOf Int, RingHom.id Int⟩
   scheme := scheme
   realization := true
-  realizes := rfl
+  context := [()]
+  supported := by
+    rintro _ ⟨s, _, rfl⟩
+    cases s
+    exact Set.mem_singleton _
+  inputs := fun i => i
+  realizeInputs _ x := x
   evaluateOn R _ _ :=
     letI := R.scalars.ring
     0
@@ -925,6 +973,42 @@ def selection : CoefficientReading sortOnly A [()] where
 /-- The retained structure of the other realization is empty. -/
 theorem empty_alternative : IsEmpty ((scheme.structureOf selection.algebra false).carrier ()) :=
   ⟨fun x => nomatch x⟩
+
+/-- The same reading can select the local empty realization and read no coefficient inputs. -/
+def emptySelection : CoefficientReading sortOnly A [()] where
+  base := CoefficientTransport.ringOf Int
+  algebra := selection.algebra
+  scheme := scheme
+  realization := false
+  context := []
+  supported := by
+    rintro _ ⟨_, h, _⟩
+    cases h
+  inputs i := nomatch i
+  realizeInputs i := nomatch i
+  evaluateOn R _ _ :=
+    letI := R.scalars.ring
+    0
+
+/-- The global observation uses Bool, alongside the selected local empty realization. -/
+def readingWithEmptyRealization : Reading where
+  presentation := withDerivedLaw
+  structureData := A
+  observation := StateObservation.ofSort () Bool id
+  context := sortOnly
+  cover := ⟨Unit, fun _ => sortOnly, fun _ _ h => h, fun h => ⟨(), h⟩⟩
+  Family := Unit
+  realize _ := A
+  familyObservation := none
+  ValueStructure := fun _ => Unit
+  valueStructure := ()
+  coefficients := some emptySelection
+
+/-- The selected local realization is empty even though the original reading has a constant. -/
+theorem selected_empty_and_unread :
+    IsEmpty ((emptySelection.scheme.structureOf emptySelection.algebra emptySelection.realization).carrier ()) ∧
+      ∀ e e', emptySelection.evaluate e = emptySelection.evaluate e' :=
+  ⟨empty_alternative, fun _ _ => emptySelection.evaluate_eq_of_inputs (fun i => nomatch i)⟩
 
 /-- Keeping the old total constant would force an element of that same sort. -/
 theorem no_empty_full_structure : ¬ ∃ B : Structure signature, IsEmpty (B.carrier ()) := by

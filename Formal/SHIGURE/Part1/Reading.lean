@@ -473,12 +473,14 @@ theorem mapFact_forget (transition : ReadingContextChange source target u)
 
 end ReadingContextChange
 
-/-- A comparison with fixed declarations and cover only needs the state observation square.
-A change to the selected declarations or cover supplies the restriction and support maps. -/
+/-- The fixed selection uses the original syntax. A comparison with replacement syntax,
+different declarations or a different cover supplies a restriction and support maps. -/
 inductive Reading.ContextCompatibility (source target : Reading.{u})
     (u : Interpretation source.presentation.theory target.presentation.theory) where
   | fixed : source.presentation = target.presentation →
       HEq source.context target.context → HEq source.cover target.cover →
+      HEq u.onSort (@id source.presentation.signature.SortType) →
+      HEq u.translation (Translation.identity source.presentation.signature) →
       ContextCompatibility source target u
   | changed : ReadingContextChange source target u → ContextCompatibility source target u
 
@@ -489,7 +491,7 @@ def Assignment.castContext {sig : Signature.{u}} {A : Structure sig}
   same ▸ e
 
 /-- The coefficient part of a comparison uses the same states as (1.12).
-At an endpoint without coefficients one may compare its observation values with the other evaluation. -/
+Introducing or forgetting coefficients specifies a map at the ordinary-observation endpoint. -/
 def Reading.CoefficientCompatibility (source target : Reading.{u})
     (states : Assignment source.structureData.carrier source.observation.context →
       Assignment target.structureData.carrier target.observation.context) : Type u :=
@@ -497,10 +499,10 @@ def Reading.CoefficientCompatibility (source target : Reading.{u})
   | none, none => PUnit
   | some c, some d => CoefficientReading.Comparison c d states
   | none, some d =>
-    Option {v : source.observation.Output → d.ring.Carrier //
+    {v : source.observation.Output → d.ring.Carrier //
       ∀ e, d.evaluate (states e) = v (source.observation.read e)}
   | some c, none =>
-    Option {v : c.ring.Carrier → target.observation.Output //
+    {v : c.ring.Carrier → target.observation.Output //
       ∀ e, target.observation.read (states e) = v (c.evaluate e)}
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/

@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part1.RingEquations
+import Formal.SHIGURE.Part1.Substitution
 
 /-! # Positive sequent derivations
 
@@ -134,7 +134,7 @@ structure PrimitivePresentation where
   laws : LawDeclarations signature
   /-- The ordered terms of a ring-valued equality, attached to that exact written Law. -/
   ringEquation (i : laws.LawName) :
-    Option {eqn : RingEquation signature // eqn.toLaw = laws.statement i} := none
+    Option {eqn : RingEquation.Written signature // eqn.toLaw = laws.statement i} := none
   /-- An inclusion presentation for a partial domain, when the declaration provides one. -/
   domainInclusions (p : signature.Partial) : Option (DomainInclusions p) := none
   /-- Each derived Law has a proof from the required Laws and structural graph axioms. -/

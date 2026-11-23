@@ -241,30 +241,14 @@ structure RingEquation (sig : Signature.{u}) where
   left : Term sig context result
   /-- Second term in the ordered equality. -/
   right : Term sig context result
-  /-- An expanded conclusion retained through syntactic changes, with its guarded meaning. -/
-  written : Option {p : Formula sig context //
-    ∀ (A : Structure sig) (e : Assignment A.carrier context),
-      input.Holds A e → (p.Holds A e ↔ (Formula.termEq left right).Holds A e)} := none
 
 namespace RingEquation
 
 variable {sig : Signature.{u}}
 
-/-- Read the literal Law, using the canonical expansion for a newly written equation. -/
+/-- Form the Law whose conclusion is the expanded equality of the ordered terms. -/
 def toLaw (eqn : RingEquation sig) : Law sig :=
-  ⟨eqn.context, eqn.input, match eqn.written with
-    | none => Formula.termEq eqn.left eqn.right
-    | some text => text.val⟩
-
-/-- On its designated inputs the written conclusion tests the ordered equality. -/
-theorem holds_conclusion_iff (eqn : RingEquation sig) (A : Structure sig)
-    (e : Assignment A.carrier eqn.context) (held : eqn.input.Holds A e) :
-    eqn.toLaw.conclusion.Holds A e ↔ (Formula.termEq eqn.left eqn.right).Holds A e := by
-  unfold toLaw
-  split
-  · rfl
-  · rename_i text _
-    exact text.property A e held
+  ⟨eqn.context, eqn.input, Formula.termEq eqn.left eqn.right⟩
 
 /-- The set `J` of designated inputs at which both terms are defined. -/
 def jointInputs (eqn : RingEquation sig) (A : Structure sig) :
@@ -316,7 +300,8 @@ theorem holds_at_iff_residual_zero (eqn : RingEquation sig) (A : Structure sig)
     (ringLaws : ∀ name, (eqn.ring.law name).Holds A) (e : eqn.jointInputs A) :
     eqn.toLaw.conclusion.Holds A e.val ↔ eqn.residual A ringLaws e = eqn.ring.zeroValue A := by
   rw [residual_zero_iff_values]
-  rw [eqn.holds_conclusion_iff A e.val e.property.1, Formula.holds_termEq]
+  change (Formula.termEq eqn.left eqn.right).Holds A e.val ↔ _
+  rw [Formula.holds_termEq]
   constructor
   · rintro ⟨value, hleft, hright⟩
     exact (Part.mem_unique (eqn.leftValue_mem A e) hleft).trans
@@ -336,8 +321,7 @@ theorem holds_iff_jointInputs_and_residual_zero (eqn : RingEquation sig)
       · exact fun _ he => he.1
       · intro e he
         obtain ⟨value, hleft, hright⟩ :=
-          (Formula.holds_termEq eqn.left eqn.right A e).1
-            ((eqn.holds_conclusion_iff A e he).1 (h e he))
+          (Formula.holds_termEq eqn.left eqn.right A e).1 (h e he)
         exact ⟨he, (eqn.left.mem_domain_iff A e).2 hleft.choose,
           (eqn.right.mem_domain_iff A e).2 hright.choose⟩
     · intro e
