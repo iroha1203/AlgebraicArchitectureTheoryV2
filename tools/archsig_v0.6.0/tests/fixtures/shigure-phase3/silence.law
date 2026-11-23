@@ -1,0 +1,60 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading SilenceSuite {
+  use vocabulary Phase3Vocab version "1" digest "sha256:9ca606765399fff56548db031f6bec968722a0d2c8ef573bd3a4426f148b1a41";
+
+  shigure family MissingObsFam {
+    domain Q;
+    realizations U {
+      u_vars [w, q_slot];
+      b_vars [b];
+      reading_q [0];
+      member u_obs {
+        origin archmap "o_llm";
+        set w = observed Service.weight;
+        set q_slot = observed Service.quota;
+      }
+    }
+    candidates C {
+      c_vars [c];
+      pi [0];
+      member c0 { origin human_adopted "miss-c0"; set c = rat(3, 2); }
+    }
+    goodness direct {
+      equation eq: w + q_slot - c = 0;
+    }
+  }
+
+  shigure robustness MissingObsRob {
+    family MissingObsFam;
+    point_domain rational_points;
+    base_value [0];
+    designated_candidate id c0;
+  }
+
+  shigure family NonlinearFam {
+    domain Q;
+    realizations U {
+      u_vars [u];
+      b_vars [b];
+      reading_q [0];
+      member u0 { origin static_analysis "nl-u0"; set u = 0; }
+    }
+    candidates C {
+      c_vars [c];
+      pi [0];
+      member c0 { origin human_adopted "nl-c0"; set c = 0; }
+    }
+    goodness existential {
+      witness_vars [x, y];
+      equation ellipse: pow(x, 2) + pow(y, 2) - 3 = 0;
+    }
+  }
+
+  shigure robustness NonlinearRob {
+    family NonlinearFam;
+    point_domain rational_points;
+    base_value [0];
+    designated_candidate id c0;
+  }
+}

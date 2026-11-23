@@ -1,0 +1,95 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading ObsSuite {
+  use vocabulary Phase3Vocab version "1" digest "sha256:9ca606765399fff56548db031f6bec968722a0d2c8ef573bd3a4426f148b1a41";
+
+  shigure family W4ObsFam {
+    domain Fp(2);
+    realizations U2 {
+      u_vars [u1, u2];
+      b_vars [];
+      reading_q [];
+      member m00 { origin static_analysis "o-00"; set u1 = fp(0, 2); set u2 = fp(0, 2); }
+      member m01 { origin static_analysis "o-01"; set u1 = fp(0, 2); set u2 = fp(1, 2); }
+      member m10 { origin static_analysis "o-10"; set u1 = fp(1, 2); set u2 = fp(0, 2); }
+      member m11 { origin static_analysis "o-11"; set u1 = fp(1, 2); set u2 = fp(1, 2); }
+    }
+    candidates C0 {
+      c_vars [];
+      pi [];
+      member c0 { origin human_adopted "o-c0"; }
+    }
+    goodness direct {
+      equation ok: u1 = 0;
+    }
+  }
+
+  shigure observations W4Obs {
+    family W4ObsFam;
+    point_domain Fp_points(2);
+    base_value [];
+    observe e1 { origin static_analysis "o-e1"; cost 10; component v: u1; }
+    observe e2 { origin runtime_observation "o-e2"; cost 2; component v: u2; }
+    observe e3 { origin human_adopted "o-e3"; cost 3; component v: u1 + u2; }
+  }
+
+  shigure observations InsufficientObs {
+    family W4ObsFam;
+    point_domain Fp_points(2);
+    base_value [];
+    observe e_only_u2 { origin static_analysis "o-only-u2"; cost 1; component v: u2; }
+  }
+
+  shigure family NoDiffFam {
+    domain Q;
+    realizations U {
+      u_vars [u];
+      b_vars [b];
+      reading_q [0];
+      member m0 { origin static_analysis "nd-0"; set u = 0; }
+      member m1 { origin static_analysis "nd-1"; set u = 1; }
+    }
+    candidates C {
+      c_vars [];
+      pi [0];
+      member c0 { origin human_adopted "nd-c"; }
+    }
+    goodness direct {
+      equation trivial: 0 = 0;
+    }
+  }
+
+  shigure observations NoDiffObs {
+    family NoDiffFam;
+    point_domain rational_points;
+    base_value [0];
+    observe e_unused { origin static_analysis "nd-e"; cost 4; component v: u; }
+  }
+
+  shigure family W6ObsFam {
+    domain Q;
+    realizations U {
+      u_vars [rho];
+      b_vars [b];
+      reading_q [0];
+      member r_ok { origin static_analysis "w6-ok"; set rho = 1; }
+      member r_bad { origin llm_candidate "w6-bad"; set rho = 2; }
+    }
+    candidates C {
+      c_vars [];
+      pi [0];
+      member c0 { origin human_adopted "w6-c"; }
+    }
+    goodness direct {
+      equation ok: rho - 1 = 0;
+    }
+  }
+
+  shigure observations W6ObsInsuff {
+    family W6ObsFam;
+    point_domain rational_points;
+    base_value [0];
+    observe const_e { origin static_analysis "o-const"; component c0: 0; }
+    law_readout const_readout { component k: 0; }
+  }
+}

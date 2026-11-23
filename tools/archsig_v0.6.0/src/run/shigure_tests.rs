@@ -2,7 +2,11 @@ use super::*;
 use crate::run::{CheckArgs, FileIo};
 use archsig_common::canonical::Json;
 use archsig_shigure::convert::{
-    ShigureConverter, ToShigureDiagramTask, ToShigurePathTask, ToShigureTask, ToShigureTransferTask,
+    ShigureConverter, ToShigureChevalleyTask, ToShigureDiagramTask, ToShigureObservationTask,
+    ToShigurePathTask, ToShigureRobustnessTask, ToShigureTask, ToShigureTransferTask,
+};
+use archsig_shigure::solver::{
+    solve_chevalley_task, solve_observation_task, solve_robustness_task,
 };
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -110,6 +114,9 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "shigure_diagram(Base.Sq, snapshot=snap1)",
         "shigure_path(Base.P, snapshot=snap1)",
         "shigure_transfer(Base.T, snapshot=snap1)",
+        "shigure_robustness(Base.Rob, snapshot=snap1)",
+        "shigure_chevalley(Base.Ch, snapshot=snap1)",
+        "shigure_observations(Base.Obs, snapshot=snap1)",
     ] {
         let valid_ask = "p=shigure_solve(LedgerMigration.P1AtomicMarked)".to_owned();
         assert_eq!(
@@ -125,6 +132,9 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "a=shigure_diagram([0])",
         "a=shigure_path(.p)",
         "a=shigure_transfer([1])",
+        "a=shigure_robustness(.r)",
+        "a=shigure_chevalley([2])",
+        "a=shigure_observations(.o)",
     ] {
         let msg = parse::parse_single_ask(bad).unwrap_err();
         assert!(
@@ -133,7 +143,7 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         );
     }
 
-    // Phase 2 問い 3 種の正当解析・境界非誤認・混在・不正引数
+    // Phase 2・Phase 3 問い 6 種の正当解析・境界非誤認・混在・不正引数
     for (ask, kind, decl, snap) in [
         (
             "d=shigure_diagram(R.Sq)",
@@ -153,6 +163,24 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
             "R.Tr",
             Some("snap.a-2"),
         ),
+        (
+            "r=shigure_robustness(R.Rob)",
+            ShigureCliQuery::Robustness,
+            "R.Rob",
+            None,
+        ),
+        (
+            "c=shigure_chevalley(Ch, snapshot=snap_2)",
+            ShigureCliQuery::Chevalley,
+            "Ch",
+            Some("snap_2"),
+        ),
+        (
+            "o=shigure_observations(R.Obs, snapshot=snap.b-1)",
+            ShigureCliQuery::Observations,
+            "R.Obs",
+            Some("snap.b-1"),
+        ),
     ] {
         assert_eq!(classify_asks(&[ask.to_owned()]), AskPartition::AllShigure);
         let parsed = parse::parse_single_ask(ask).unwrap();
@@ -160,18 +188,32 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         assert_eq!(parsed.task_name, decl);
         assert_eq!(parsed.snapshot.as_deref(), snap);
     }
-    assert_eq!(
-        classify_asks(&["x=shigure_diagram_extra(Foo)".to_owned()]),
-        AskPartition::None
-    );
-    assert_eq!(
-        classify_asks(&[
-            "a=evaluate(Mod.v, s=@v/s)".to_owned(),
-            "b=shigure_diagram(R.Sq)".to_owned()
-        ]),
-        AskPartition::Mixed
-    );
+    for extra in [
+        "x=shigure_diagram_extra(Foo)",
+        "x=shigure_robustness_extra(Foo)",
+        "x=shigure_chevalley_extra(Foo)",
+        "x=shigure_observations_extra(Foo)",
+    ] {
+        assert_eq!(classify_asks(&[extra.to_owned()]), AskPartition::None);
+    }
+    for mixed_shig in [
+        "b=shigure_diagram(R.Sq)",
+        "b=shigure_robustness(R.Rob)",
+        "b=shigure_chevalley(R.Ch)",
+        "b=shigure_observations(R.Obs)",
+    ] {
+        assert_eq!(
+            classify_asks(&[
+                "a=evaluate(Mod.v, s=@v/s)".to_owned(),
+                mixed_shig.to_owned()
+            ]),
+            AskPartition::Mixed
+        );
+    }
     assert!(parse::parse_single_ask("d=shigure_diagram(R.Sq, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("r=shigure_robustness(R.Rob, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("c=shigure_chevalley(R.Ch, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("o=shigure_observations(R.Obs, foo=bar)").is_err());
 }
 
 #[test]
@@ -379,4 +421,224 @@ reading Queries {{
         assert_eq!(rnames, vec!["BasePres", "Queries"]);
     }
     let _ = std::fs::remove_dir_all(&out_dir);
+}
+
+#[test]
+fn mid_batch_cancellation_on_phase3_cross_reading_collects_scope_readings() {
+    let atoms = br#"{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{
+    "semantics": "archsig/0.6.0",
+    "namespace": "CrossP3",
+    "version": "1",
+    "dependencies": [],
+    "declarations": [{
+      "kind": "entity",
+      "name": "CrossP3.Item",
+      "meaning": "Cross reading scope test entity for Phase 3.",
+      "parameters": [],
+      "fields": [{ "name": "x", "type": "Z", "meaning": "State coord." }],
+      "alignments": []
+    }]
+  }]
+}"#;
+    let defs = archsig_input::definition::check_definitions(&[("def0", atoms)]).unwrap();
+    let digest = &defs.vocabularies()["CrossP3"].digest;
+    let map = format!(
+        r#"{{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{{"namespace":"CrossP3","version":"1","digest":"{digest}"}}],
+  "sources": [],
+  "origins": [{{"id":"o1","mode":"specification","method":"spec","kind":"human_adopted","locations":[],"note":"n"}}],
+  "snapshots": [{{"id":"s1","origin":"o1","subjects":[],"atoms":[]}}]
+}}"#
+    );
+    let law = format!(
+        r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading BaseFam {{
+  use vocabulary CrossP3 version "1" digest "{digest}";
+  shigure family F {{
+    domain Q;
+    realizations U {{
+      u_vars [u];
+      b_vars [b];
+      reading_q [0];
+      member u0 {{ origin static_analysis "o-u0"; set u = 0; }}
+    }}
+    candidates C {{
+      c_vars [c];
+      pi [0];
+      member c0 {{ origin human_adopted "o-c0"; set c = 0; }}
+    }}
+    goodness direct {{
+      equation ok: u - c = 0;
+    }}
+  }}
+}}
+reading Queries {{
+  use BaseFam as B;
+  shigure robustness Rob {{
+    family B.F;
+    point_domain rational_points;
+    base_value [0];
+  }}
+  shigure chevalley Ch {{
+    family B.F;
+    point_domain algebraic_closure;
+  }}
+  shigure observations Obs {{
+    family B.F;
+    point_domain rational_points;
+    base_value [0];
+    observe e0 {{ origin static_analysis "o-e0"; component v: u; }}
+  }}
+}}
+"#
+    );
+    let checked = check_inputs(
+        InputSources::from_bytes(vec![atoms.to_vec()], law.into_bytes(), map.into_bytes()),
+        &Control::unlimited(),
+    )
+    .unwrap();
+
+    let rob = ShigureConverter::for_task("Queries.Rob")
+        .convert_robustness(&checked)
+        .unwrap();
+    let ch = ShigureConverter::for_task("Queries.Ch")
+        .convert_chevalley(&checked)
+        .unwrap();
+    let obs = ShigureConverter::for_task("Queries.Obs")
+        .convert_observation(&checked)
+        .unwrap();
+
+    let out_dir =
+        std::env::temp_dir().join(format!("archsig-phase3-cancel-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&out_dir);
+
+    let flag = Arc::new(AtomicI32::new(15));
+    let control = Control::from_signal_flag(flag, 2, 15);
+    let ok_outcome = solve_robustness_task(&rob);
+    let executed = vec![
+        (
+            ResolvedShigureRequest {
+                parsed: ParsedShigureRequest {
+                    id: "r".into(),
+                    text: "r=shigure_robustness(Queries.Rob)".into(),
+                    query: ShigureCliQuery::Robustness,
+                    task_name: "Queries.Rob".into(),
+                    snapshot: None,
+                },
+                resolved_task_name: "Queries.Rob".into(),
+                reading_name: "Queries".into(),
+                payload: ResolvedShigurePayload::Robustness(Box::new(rob)),
+            },
+            Some(ok_outcome),
+        ),
+        (
+            ResolvedShigureRequest {
+                parsed: ParsedShigureRequest {
+                    id: "c".into(),
+                    text: "c=shigure_chevalley(Queries.Ch)".into(),
+                    query: ShigureCliQuery::Chevalley,
+                    task_name: "Queries.Ch".into(),
+                    snapshot: None,
+                },
+                resolved_task_name: "Queries.Ch".into(),
+                reading_name: "Queries".into(),
+                payload: ResolvedShigurePayload::Chevalley(Box::new(ch)),
+            },
+            None,
+        ),
+        (
+            ResolvedShigureRequest {
+                parsed: ParsedShigureRequest {
+                    id: "o".into(),
+                    text: "o=shigure_observations(Queries.Obs)".into(),
+                    query: ShigureCliQuery::Observations,
+                    task_name: "Queries.Obs".into(),
+                    snapshot: None,
+                },
+                resolved_task_name: "Queries.Obs".into(),
+                reading_name: "Queries".into(),
+                payload: ResolvedShigurePayload::Observations(Box::new(obs)),
+            },
+            None,
+        ),
+    ];
+
+    let args = RunArgs {
+        inputs: CheckArgs {
+            atom_definitions: vec![],
+            law: PathBuf::new(),
+            archmap: None,
+            out: Some(out_dir.clone()),
+        },
+        asks: vec![
+            "r=shigure_robustness(Queries.Rob)".into(),
+            "c=shigure_chevalley(Queries.Ch)".into(),
+            "o=shigure_observations(Queries.Obs)".into(),
+        ],
+        reuse: None,
+    };
+    let mut io = FileIo;
+    let mut sigs = NoFreezeSignals;
+    let delivered = deliver::deliver_shigure(
+        &mut io,
+        &mut sigs,
+        &args,
+        &checked,
+        executed,
+        vec![],
+        Some(archsig_input::result::Signal::Term),
+        &control,
+    );
+    assert_eq!(delivered.status, Status::Interrupted);
+    let saved_bytes = std::fs::read(out_dir.join("result.json")).unwrap();
+    let parsed_doc = archsig_common::json::parse(&saved_bytes).unwrap();
+    let archsig_common::json::JValue::Obj(doc_fields) = &parsed_doc.value else {
+        panic!("expected object");
+    };
+    let answers_node = doc_fields
+        .iter()
+        .find(|(k, _)| k == "answers")
+        .map(|(_, v)| v)
+        .unwrap();
+    let archsig_common::json::JValue::Arr(ans_arr) = &answers_node.value else {
+        panic!("answers must be array");
+    };
+    assert_eq!(ans_arr.len(), 3);
+    for ans in ans_arr {
+        let archsig_common::json::JValue::Obj(af) = &ans.value else {
+            panic!("answer must be obj");
+        };
+        let scope = af
+            .iter()
+            .find(|(k, _)| k == "scope")
+            .map(|(_, v)| v)
+            .unwrap();
+        let archsig_common::json::JValue::Obj(sf) = &scope.value else {
+            panic!("scope must be obj");
+        };
+        let readings = sf
+            .iter()
+            .find(|(k, _)| k == "readings")
+            .map(|(_, v)| v)
+            .unwrap();
+        let archsig_common::json::JValue::Arr(rarr) = &readings.value else {
+            panic!("readings must be arr");
+        };
+        let rnames: Vec<&str> = rarr
+            .iter()
+            .map(|n| match &n.value {
+                archsig_common::json::JValue::Str(s) => s.as_str(),
+                _ => panic!("reading must be str"),
+            })
+            .collect();
+        assert_eq!(rnames, vec!["BaseFam", "Queries"]);
+    }
+    let _ = std::fs::remove_dir_all(&out_dir);
+    let _ = solve_chevalley_task;
+    let _ = solve_observation_task;
 }

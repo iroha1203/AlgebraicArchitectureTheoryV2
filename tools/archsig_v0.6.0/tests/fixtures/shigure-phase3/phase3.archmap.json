@@ -1,0 +1,119 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Phase3Vocab",
+      "version": "1",
+      "digest": "sha256:9ca606765399fff56548db031f6bec968722a0d2c8ef573bd3a4426f148b1a41"
+    }
+  ],
+  "sources": [
+    {
+      "id": "svc_src",
+      "uri": "file://service.rs",
+      "revision": "rev1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000003"
+    }
+  ],
+  "origins": [
+    {
+      "id": "o_static",
+      "mode": "observed",
+      "method": "ast-extractor",
+      "kind": "static_analysis",
+      "locations": [
+        {
+          "source": "svc_src",
+          "path": "src/service.rs",
+          "span": [1, 40]
+        }
+      ]
+    },
+    {
+      "id": "o_rt",
+      "mode": "observed",
+      "method": "runtime-probe",
+      "kind": "runtime_observation",
+      "locations": [
+        {
+          "source": "svc_src",
+          "path": "src/runtime.rs",
+          "span": [10, 25]
+        }
+      ]
+    },
+    {
+      "id": "o_llm",
+      "mode": "proposed",
+      "method": "llm-reader",
+      "kind": "llm_candidate",
+      "locations": [],
+      "note": "llm candidate realization"
+    },
+    {
+      "id": "o_human",
+      "mode": "specification",
+      "method": "design-review",
+      "kind": "human_adopted",
+      "locations": [],
+      "note": "human adopted constraint"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "snap1",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "svc1",
+          "type": "Phase3Vocab.Service",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_weight",
+          "subject": "svc1",
+          "field": "Phase3Vocab.Service.weight",
+          "value": ["3", "2"],
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_quota",
+          "subject": "svc1",
+          "field": "Phase3Vocab.Service.quota",
+          "value": ["5", "1"],
+          "origin": "o_static"
+        },
+        {
+          "id": "a_tag",
+          "subject": "svc1",
+          "field": "Phase3Vocab.Service.tag",
+          "value": "core",
+          "origin": "o_static"
+        }
+      ]
+    },
+    {
+      "id": "snap_missing",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "svc1",
+          "type": "Phase3Vocab.Service",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_weight_m",
+          "subject": "svc1",
+          "field": "Phase3Vocab.Service.weight",
+          "value": ["3", "2"],
+          "origin": "o_rt"
+        }
+      ]
+    }
+  ]
+}

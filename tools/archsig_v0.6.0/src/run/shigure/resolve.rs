@@ -9,7 +9,8 @@ use archsig_common::control::{Checkpoint, Control};
 use archsig_input::input::CheckedInputs;
 use archsig_input::result::Status;
 use archsig_shigure::convert::{
-    ShigureConverter, ToShigureDiagramTask, ToShigurePathTask, ToShigureTask, ToShigureTransferTask,
+    ShigureConverter, ToShigureChevalleyTask, ToShigureDiagramTask, ToShigureObservationTask,
+    ToShigurePathTask, ToShigureRobustnessTask, ToShigureTask, ToShigureTransferTask,
 };
 use std::collections::BTreeMap;
 
@@ -46,6 +47,21 @@ pub(super) fn resolve_and_convert(
             ShigureCliQuery::Transfer => {
                 resolve_decl_name(&shigure_decls.transfers, "shigure transfer", &req.task_name)
             }
+            ShigureCliQuery::Robustness => resolve_decl_name(
+                &shigure_decls.robustness_tasks,
+                "shigure robustness",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Chevalley => resolve_decl_name(
+                &shigure_decls.chevalley_tasks,
+                "shigure chevalley",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Observations => resolve_decl_name(
+                &shigure_decls.observation_tasks,
+                "shigure observations",
+                &req.task_name,
+            ),
         };
         let resolved_task_name = name_res.map_err(|msg| {
             output::notify(
@@ -92,6 +108,15 @@ pub(super) fn resolve_and_convert(
             ShigureCliQuery::Transfer => converter
                 .convert_transfer(checked)
                 .map(ResolvedShigurePayload::Transfer),
+            ShigureCliQuery::Robustness => converter
+                .convert_robustness(checked)
+                .map(|t| ResolvedShigurePayload::Robustness(Box::new(t))),
+            ShigureCliQuery::Chevalley => converter
+                .convert_chevalley(checked)
+                .map(|t| ResolvedShigurePayload::Chevalley(Box::new(t))),
+            ShigureCliQuery::Observations => converter
+                .convert_observation(checked)
+                .map(|t| ResolvedShigurePayload::Observations(Box::new(t))),
         }
         .map_err(|err| {
             let issue = conversion_error_issue(&req.id, &err);
