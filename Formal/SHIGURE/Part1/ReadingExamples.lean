@@ -281,7 +281,7 @@ private def lawTestingReading (satisfies : Bool) : Reading.{0, 0, 0, 0} where
   coefficients := none
 
 /-- A false required relation on the source precludes a comparison of models. -/
-theorem reading_comparison_requires_source_model :
+theorem model_reading_comparison_requires_source_model :
     ¬ Nonempty (ModelReadingComparison (lawTestingReading false) (lawTestingReading true)) := by
   rintro ⟨comparison⟩
   exact (comparison.sourceModel ⟨(), rfl⟩ Assignment.empty True.intro).elim
@@ -691,7 +691,7 @@ def independent_coefficient_comparison :
         exact Subsingleton.elim _ _
       evaluate_commutes _ := rfl }
   coefficientInputs := by
-    refine ⟨(fun i => nomatch i), (fun i => nomatch i), ?_⟩
+    refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), ?_⟩
     intro j i share
     obtain ⟨k, hk⟩ := j.property
     have sortEq : j.val.1 = false := by
@@ -716,7 +716,7 @@ private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofLi
 def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
     ({ separateReading Int with coefficients := some ⟨.ofList [false, true], zeroInputs⟩ } : Reading.{0, 0, 0, 0})
     id (fun _ x => x) :=
-  some
+  .compare
     ⟨{ extra := .ofSort false
        coordinate := fun j => ⟨.inr PUnit.unit, by
          obtain ⟨i, hi⟩ := j.property
@@ -730,7 +730,7 @@ def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainR
 def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedReading Int)
     ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading.{0, 0, 0, 0})
     id (fun _ x => x) :=
-  some
+  .compare
     ⟨{ extra := .ofSort true
        coordinate := fun i => ⟨.inr i, rfl⟩
        extra_used := fun i => ⟨i, rfl⟩ },

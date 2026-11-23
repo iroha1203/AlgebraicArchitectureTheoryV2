@@ -164,10 +164,14 @@ structure Correspondence (source : ObservationProduct S) (target : ObservationPr
   position : target.Index → source.Index
   /-- The source and target positions have the prescribed corresponding sorts. -/
   sort_eq (j : target.Index) : onSort (source.sort (position j)) = target.sort j
+  /-- A compatible common name identifies the same position in both products. -/
+  keepsNamed (j : target.Index) (i : source.Index) :
+    HEq i j → onSort (source.sort i) = target.sort j → position j = i
 
 /-- The identity sort map acts on each position of the same product. -/
 def Correspondence.identity (product : ObservationProduct S) :
-    Correspondence product product id := ⟨id, fun _ => rfl⟩
+    Correspondence product product id :=
+  ⟨id, fun _ => rfl, fun _ _ same _ => eq_of_heq same.symm⟩
 
 /-- Apply the pointwise state map at the corresponding coordinates. -/
 def Correspondence.mapValues {source : ObservationProduct S} {target : ObservationProduct T}

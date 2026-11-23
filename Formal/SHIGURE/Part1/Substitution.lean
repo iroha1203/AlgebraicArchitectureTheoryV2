@@ -511,41 +511,49 @@ variable {sig : Signature.{u}} {Δ : List sig.SortType}
 def substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : RingEquation sig :=
   ⟨eqn.toOrderedEquation.substitute θ, eqn.ring⟩
 
+@[inherit_doc OrderedEquation.substitutedLaw]
 abbrev substitutedLaw (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) :=
   eqn.toOrderedEquation.substitutedLaw θ
 
+@[inherit_doc OrderedEquation.substitutedLaw_inputSet]
 theorem substitutedLaw_inputSet (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) :
     (eqn.substitutedLaw θ).inputSet A = (eqn.substitute θ).toLaw.inputSet A :=
   eqn.toOrderedEquation.substitutedLaw_inputSet θ A
 
+@[inherit_doc OrderedEquation.substitutedLaw_conclusion_iff]
 theorem substitutedLaw_conclusion_iff (eqn : RingEquation sig)
     (θ : Substitution sig eqn.context Δ) (A : Structure sig) (e : θ.domain A) :
     (eqn.substitutedLaw θ).conclusion.Holds A e.val ↔
       (eqn.substitute θ).toLaw.conclusion.Holds A e.val :=
   eqn.toOrderedEquation.substitutedLaw_conclusion_iff θ A e
 
+@[inherit_doc OrderedEquation.substitutedLaw_holds_iff]
 theorem substitutedLaw_holds_iff (eqn : RingEquation sig)
     (θ : Substitution sig eqn.context Δ) (A : Structure sig) :
     (eqn.substitutedLaw θ).Holds A ↔ (eqn.substitute θ).toLaw.Holds A :=
   eqn.toOrderedEquation.substitutedLaw_holds_iff θ A
 
+@[inherit_doc OrderedEquation.mem_jointInputs_substitute]
 theorem mem_jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) (e : Assignment A.carrier Δ) :
     e ∈ (eqn.substitute θ).jointInputs A ↔ ∃ h : e ∈ θ.domain A,
       θ.value A ⟨e, h⟩ ∈ eqn.jointInputs A :=
   eqn.toOrderedEquation.mem_jointInputs_substitute θ A e
 
+@[inherit_doc OrderedEquation.jointInputs_substitute]
 theorem jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) :
     (eqn.substitute θ).jointInputs A = {e | ∃ h : e ∈ θ.domain A,
       θ.value A ⟨e, h⟩ ∈ eqn.jointInputs A} :=
   eqn.toOrderedEquation.jointInputs_substitute θ A
 
+@[inherit_doc OrderedEquation.substituteInput]
 noncomputable def substituteInput (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) (e : (eqn.substitute θ).jointInputs A) : eqn.jointInputs A :=
   eqn.toOrderedEquation.substituteInput θ A e
 
+@[inherit_doc OrderedEquation.residual_substitute]
 theorem residual_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) (h : ∀ name, (eqn.ring.law name).Holds A)
     (e : (eqn.substitute θ).jointInputs A) :
@@ -553,6 +561,7 @@ theorem residual_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.
   letI := eqn.ring.commRing A h
   exact eqn.toOrderedEquation.residual_substitute θ A e
 
+@[inherit_doc OrderedEquation.substitutedLaw_holds_iff_residual]
 theorem substitutedLaw_holds_iff_residual (eqn : RingEquation sig)
     (θ : Substitution sig eqn.context Δ) (A : Structure sig)
     (h : ∀ name, (eqn.ring.law name).Holds A) :

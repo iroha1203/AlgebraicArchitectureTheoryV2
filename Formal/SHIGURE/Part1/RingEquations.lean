@@ -331,13 +331,17 @@ namespace RingEquation
 
 variable {sig : Signature.{u}}
 
+@[inherit_doc OrderedEquation.toLaw]
 abbrev toLaw (eqn : RingEquation sig) : Law sig := eqn.toOrderedEquation.toLaw
 
+@[inherit_doc OrderedEquation.jointInputs]
 abbrev jointInputs (eqn : RingEquation sig) (A : Structure sig) := eqn.toOrderedEquation.jointInputs A
 
+@[inherit_doc OrderedEquation.leftValue]
 noncomputable abbrev leftValue (eqn : RingEquation sig) (A : Structure sig)
     (e : eqn.jointInputs A) := eqn.toOrderedEquation.leftValue A e
 
+@[inherit_doc OrderedEquation.rightValue]
 noncomputable abbrev rightValue (eqn : RingEquation sig) (A : Structure sig)
     (e : eqn.jointInputs A) := eqn.toOrderedEquation.rightValue A e
 
@@ -348,26 +352,31 @@ noncomputable def residual (eqn : RingEquation sig) (A : Structure sig)
   letI := eqn.ring.commRing A ringLaws
   eqn.toOrderedEquation.residual A e
 
+@[inherit_doc OrderedEquation.leftValue_mem]
 theorem leftValue_mem (eqn : RingEquation sig) (A : Structure sig) (e : eqn.jointInputs A) :
     eqn.leftValue A e ∈ eqn.left.eval A e.val :=
   eqn.toOrderedEquation.leftValue_mem A e
 
+@[inherit_doc OrderedEquation.rightValue_mem]
 theorem rightValue_mem (eqn : RingEquation sig) (A : Structure sig) (e : eqn.jointInputs A) :
     eqn.rightValue A e ∈ eqn.right.eval A e.val :=
   eqn.toOrderedEquation.rightValue_mem A e
 
+@[inherit_doc OrderedEquation.residual_zero_iff_values]
 theorem residual_zero_iff_values (eqn : RingEquation sig) (A : Structure sig)
     (ringLaws : ∀ name, (eqn.ring.law name).Holds A) (e : eqn.jointInputs A) :
     eqn.residual A ringLaws e = eqn.ring.zeroValue A ↔ eqn.leftValue A e = eqn.rightValue A e := by
   letI := eqn.ring.commRing A ringLaws
   exact eqn.toOrderedEquation.residual_zero_iff_values A e
 
+@[inherit_doc OrderedEquation.holds_at_iff_residual_zero]
 theorem holds_at_iff_residual_zero (eqn : RingEquation sig) (A : Structure sig)
     (ringLaws : ∀ name, (eqn.ring.law name).Holds A) (e : eqn.jointInputs A) :
     eqn.toLaw.conclusion.Holds A e.val ↔ eqn.residual A ringLaws e = eqn.ring.zeroValue A := by
   letI := eqn.ring.commRing A ringLaws
   exact eqn.toOrderedEquation.holds_at_iff_residual_zero A e
 
+@[inherit_doc OrderedEquation.holds_iff_jointInputs_and_residual_zero]
 theorem holds_iff_jointInputs_and_residual_zero (eqn : RingEquation sig)
     (A : Structure sig) (ringLaws : ∀ name, (eqn.ring.law name).Holds A) :
     eqn.toLaw.Holds A ↔ eqn.jointInputs A = eqn.toLaw.inputSet A ∧

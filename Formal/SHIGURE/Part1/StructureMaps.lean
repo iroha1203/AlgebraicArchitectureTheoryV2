@@ -285,9 +285,11 @@ namespace RingEquation
 
 variable {sig : Signature.{u}} {A B : Structure sig}
 
+@[inherit_doc OrderedEquation.mapInput]
 abbrev mapInput (eqn : RingEquation sig) (h : StructureMap A B) (e : eqn.jointInputs A) :=
   eqn.toOrderedEquation.mapInput h e
 
+@[inherit_doc OrderedEquation.jointInputs_image_subset]
 theorem jointInputs_image_subset (eqn : RingEquation sig) (h : StructureMap A B) :
     (fun e => e.map h.onSort) '' eqn.jointInputs A ⊆ eqn.jointInputs B :=
   eqn.toOrderedEquation.jointInputs_image_subset h
