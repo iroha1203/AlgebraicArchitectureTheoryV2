@@ -1,5 +1,5 @@
 import Lean.Elab.Frontend
-import Lean.Util.CollectAxioms
+import Lean.Server.InfoUtils
 import Formal.SHIGURE.AssertStandardAxioms
 
 /-! # SHIGURE source and kernel validation
@@ -24,6 +24,26 @@ private partial def forbiddenSyntax : Syntax → Array (String × String.Pos.Raw
 private def isAuditTest (moduleName : Name) : Bool :=
   moduleName == `Formal.SHIGURE.AssertStandardAxiomsTest
 
+/-- Test declarations deliberately responsible for the custom assumption. -/
+private def isRejectionFixture (moduleName name : Name) : Bool :=
+  isAuditTest moduleName && isPrivateName name &&
+    [`SHIGURE.KernelAuditTest.nonstandard, `SHIGURE.KernelAuditTest.Rejected.derived].contains
+      (privateToUserName name)
+
+/-- Check that the frontend processed the whole file and ran the final audit command directly. -/
+private def checkTermination (fileName : String) (moduleName : Name) (commands : Array Syntax) :
+    IO Bool := do
+  unless commands.back?.any (·.isOfKind `Lean.Parser.Command.eoi) do
+    IO.eprintln s!"{fileName}: the Lean frontend did not reach the end of the file"
+    return false
+  if moduleName == `Formal.SHIGURE.AxiomAudit then
+    let lastCommand := commands[commands.size - 2]?.getD .missing
+    unless lastCommand.isOfKind `SHIGURE.assertStandardAxiomsOnly &&
+        lastCommand[1].getId == `SHIGURE.AxiomAudit do
+      IO.eprintln s!"{fileName}: the final command must run the SHIGURE audit at top level"
+      return false
+  return true
+
 /-- Reject forbidden command and term syntax, with one exact fixture exception. -/
 private def checkSyntax (input : Parser.InputContext) (moduleName : Name)
     (commands : Array Syntax) : IO Bool := do
@@ -41,29 +61,45 @@ private def checkSyntax (input : Parser.InputContext) (moduleName : Name)
       valid := false
   return valid
 
-/-- Follow transitive kernel dependencies for every declaration defined by the source. -/
-private def checkDependencies (fileName : String) (moduleName : Name) (env : Environment) :
+/-- Check proof terms in temporary environments that do not survive their command. -/
+private def transientAxioms (state : Frontend.State) (proofImports : Option Environment) :
+    NameSet := Id.run do
+  let env := state.commandState.env
+  let mut found : NameSet := {}
+  for tree in state.commandState.infoState.trees do
+    found := tree.foldInfo (init := found) fun ctx info found =>
+      if ctx.parentDecl?.any (fun parent => (env.find? parent).isSome) then found
+      else
+        let expressions := match info with
+          | .ofTermInfo term => #[(instantiateMVarsCore ctx.mctx term.expr).1]
+          | .ofTacticInfo tactic => tactic.goalsBefore.toArray.map fun goal =>
+              (instantiateMVarsCore tactic.mctxAfter (.mvar goal)).1
+          | _ => #[]
+        let referenced := expressions.flatMap Expr.getUsedConstants
+        let temporary := referenced.filter fun name =>
+          (env.find? name).isNone ||
+            [``sorryAx, ``Lean.ofReduceBool, ``Lean.trustCompiler].contains name
+        let discovered := SHIGURE.kernelAxioms ctx.env proofImports temporary
+        discovered.foldl (fun acc name => acc.insert name) found
+  return found
+
+/-- Follow transitive kernel dependencies for named declarations and anonymous proofs. -/
+private def checkDependencies (fileName : String) (moduleName : Name) (state : Frontend.State) :
     IO Bool := do
+  let env := state.commandState.env
   let declarations := env.constants.foldStage2 (fun names name _ => names.push name) #[]
-  -- A module import at the exported level can omit the bodies of proved theorems.
-  let completeEnv ← if env.header.isModule then
-    importModules #[{ module := moduleName }] {} (level := .private)
-  else pure env
+  let proofImports ← SHIGURE.importProofEnvironment env
   let mut valid := true
   for name in declarations do
-    match completeEnv.find? name with
-    | none =>
-      IO.eprintln s!"{fileName}: missing kernel declaration {name}"
+    if (env.find? name).any (·.isUnsafe) then
+      IO.eprintln s!"{fileName}: unsafe declaration {name}"
       valid := false
-    | some info =>
-      if info.isUnsafe then
-        IO.eprintln s!"{fileName}: unsafe declaration {name}"
-        valid := false
-  let (_, dependencies) := ((declarations.forM CollectAxioms.collect).run completeEnv).run {}
-  for dependency in dependencies.axioms do
-    let allowedFixture := isAuditTest moduleName && isPrivateName dependency &&
-      privateToUserName dependency == `SHIGURE.KernelAuditTest.nonstandard
-    unless SHIGURE.isStandardAxiom dependency || allowedFixture do
+  let (fixtures, production) := declarations.partition (isRejectionFixture moduleName)
+  let named := SHIGURE.kernelAxioms env proofImports production
+  let fixtureDependencies := (SHIGURE.kernelAxioms env proofImports fixtures).filter fun name =>
+    !(isPrivateName name && privateToUserName name == `SHIGURE.KernelAuditTest.nonstandard)
+  for dependency in named ++ fixtureDependencies ++ (transientAxioms state proofImports).toArray do
+    unless SHIGURE.isStandardAxiom dependency do
       IO.eprintln s!"{fileName}: nonstandard kernel assumption {dependency}"
       valid := false
   return valid
@@ -79,9 +115,10 @@ private def checkFile (file : System.FilePath) : IO Bool := do
   for message in messages.toList do
     if message.severity == .error then
       IO.eprint (← message.toString)
+  let complete ← checkTermination file.toString moduleName state.commands
   let syntaxValid ← checkSyntax input moduleName state.commands
-  let kernelValid ← checkDependencies file.toString moduleName state.commandState.env
-  return !messages.hasErrors && syntaxValid && kernelValid
+  let kernelValid ← checkDependencies file.toString moduleName state
+  return !messages.hasErrors && complete && syntaxValid && kernelValid
 
 /-- Run from the repository root after the SHIGURE build. Paths optionally select local fixtures. -/
 def main (args : List String) : IO UInt32 := do

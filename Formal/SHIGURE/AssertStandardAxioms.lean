@@ -1,5 +1,7 @@
-import Lean.Elab.Command
-import Lean.Util.CollectAxioms
+module
+
+public meta import Lean.Elab.Command
+public meta import Lean.Util.CollectAxioms
 
 /-! # Standard kernel axioms
 
@@ -10,26 +12,44 @@ kernel dependencies, including dependencies from imported modules.
 
 open Lean Elab Command
 
+public meta section
+
 namespace SHIGURE
 
 /-- Recognize the three standard kernel assumptions permitted in SHIGURE. -/
 def isStandardAxiom (name : Name) : Bool :=
   #[``propext, ``Classical.choice, ``Quot.sound].contains name
 
+/-- Load the proof bodies of imported modules when the current view exports only statements. -/
+def importProofEnvironment (env : Environment) : IO (Option Environment) :=
+  if env.header.isModule then
+    some <$> importModules env.header.imports {} (level := .private)
+  else pure none
+
+/-- Collect kernel dependencies and follow imported theorem bodies hidden by module exports. -/
+def kernelAxioms (env : Environment) (proofImports : Option Environment) (names : Array Name) :
+    Array Name := Id.run do
+  let (_, dependencies) := ((names.forM CollectAxioms.collect).run env).run {}
+  let some proofImports := proofImports | return dependencies.axioms
+  let (imported, retained) := dependencies.axioms.partition fun name =>
+    env.isImportedConst name && (proofImports.find? name).isSome
+  let (_, resolved) := ((imported.forM CollectAxioms.collect).run proofImports).run {}
+  return retained ++ resolved.axioms
+
 /-- Reject an empty audit or a declaration depending on a nonstandard kernel assumption. -/
-elab "#shigure_assert_standard_axioms_only " target:ident : command => do
+elab (name := assertStandardAxiomsOnly) "#shigure_assert_standard_axioms_only " target:ident :
+    command => do
   let namespaceName := target.getId
   let env ← getEnv
-  if env.header.isModule then
-    throwErrorAt target "Run the kernel audit in a file without a module header to load imported proofs"
   -- Stage two contains the current module's declarations, including pending proofs.
   let declarations := env.constants.foldStage2 (s := #[]) fun names name _ =>
     let userName := privateToUserName name
     if namespaceName != userName && namespaceName.isPrefixOf userName then names.push name else names
   if declarations.isEmpty then
     throwErrorAt target "No declarations in namespace '{namespaceName}' in the current module"
+  let proofImports ← importProofEnvironment env
   for name in declarations do
-    let unexpected := (← collectAxioms name).filter (!isStandardAxiom ·)
+    let unexpected := (kernelAxioms env proofImports #[name]).filter (!isStandardAxiom ·)
     unless unexpected.isEmpty do
       let unexpectedNames := unexpected.toList.map privateToUserName
       throwErrorAt target
