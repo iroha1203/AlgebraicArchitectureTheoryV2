@@ -185,6 +185,25 @@ def atomic (tr : Translation S T f) {Γ : List S.SortType} :
   | .graph op inputs y =>
     (tr.operation op).graph.rename (Renaming.cons (y.mapSorts f) (inputs.mapSorts f))
 
+/-- Translation of a relation atom applies the translated variable arguments. -/
+@[simp] theorem atomic_rel (tr : Translation S T f) {Γ : List S.SortType}
+    (r : S.Rel) (inputs : Renaming (S.relInputs r) Γ) :
+    tr.atomic (.rel r inputs) = (tr.relation r).rename (inputs.mapSorts f) :=
+  rfl
+
+/-- Translation of a domain atom reads the selected partial domain formula. -/
+@[simp] theorem atomic_domain (tr : Translation S T f) {Γ : List S.SortType}
+    (p : S.Partial) (inputs : Renaming (S.partialArity p).inputs Γ) :
+    tr.atomic (.domain p inputs) = (tr.partialDomain p).rename (inputs.mapSorts f) :=
+  rfl
+
+/-- Translation of a graph atom selects the arguments and output of the replacement term. -/
+@[simp] theorem atomic_graph (tr : Translation S T f) {Γ : List S.SortType}
+    (op : Operation S) (inputs : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
+    tr.atomic (.graph op inputs y) =
+      (tr.operation op).graph.rename (Renaming.cons (y.mapSorts f) (inputs.mapSorts f)) :=
+  rfl
+
 /-- Translate a positive formula after its term arguments have been expanded. -/
 def formula (tr : Translation S T f) : {Γ : List S.SortType} → Formula S Γ → Formula T (Γ.map f)
   | _, .atom a => tr.atomic a
@@ -194,11 +213,26 @@ def formula (tr : Translation S T f) : {Γ : List S.SortType} → Formula S Γ �
   | _, .disj p q => .disj (tr.formula p) (tr.formula q)
   | _, .ex p => .ex (tr.formula p)
 
+/-- Translating an existential formula retains its binder at the translated sort. -/
+@[simp] theorem formula_ex (tr : Translation S T f) {Γ : List S.SortType} {s : S.SortType}
+    (p : Formula S (s :: Γ)) : tr.formula p.ex = (tr.formula p).ex :=
+  rfl
+
 /-- The raw identity sends each symbol to its own term or atom on variable inputs. -/
 def identity (S : Signature.{u}) : Translation S S id where
   operation op := .app op (fun i => .var (i.mapSorts id))
   relation r := .atom (.rel r (fun i => i.mapSorts id))
   partialDomain p := .atom (.domain p (fun i => i.mapSorts id))
+
+/-- Identity sends a declared relation to the same relation on the mapped positions. -/
+@[simp] theorem identity_relation (r : S.Rel) :
+    (identity S).relation r = .atom (.rel r (fun i => i.mapSorts id)) :=
+  rfl
+
+/-- Identity sends a declared domain to the same domain on the mapped positions. -/
+@[simp] theorem identity_domain (p : S.Partial) :
+    (identity S).partialDomain p = .atom (.domain p (fun i => i.mapSorts id)) :=
+  rfl
 
 /-- Compose replacement data by translation into the final signature. -/
 def comp (v : Translation T U g) (u : Translation S T f) : Translation S U (g ∘ f) where
@@ -211,6 +245,13 @@ end Translation
 namespace Derivation
 
 variable {T : Theory.{u}} {Γ : List T.signature.SortType}
+
+/-- A derivation of the substitution guard from the antecedent makes the explicit guard redundant. -/
+def underDefinedness {law : Law T.signature} (θ : Substitution T.signature law.context Γ)
+    {antecedent : Formula T.signature Γ} (guard : Derivation T antecedent θ.defined)
+    (proof : Derivation T (law.substitute θ).input (law.substitute θ).conclusion) :
+    Derivation T (antecedent.conj (law.input.substitute θ)) (law.conclusion.substitute θ) :=
+  .cut (.andIntro (.cut (.andLeft _ _) guard) (.andRight _ _)) proof
 
 /-- Mutual derivability, forgetting the concrete choice of the two proof trees. -/
 def Equivalent (T : Theory.{u}) {Γ : List T.signature.SortType}

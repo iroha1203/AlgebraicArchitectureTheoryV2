@@ -2,6 +2,8 @@ import Formal.SHIGURE.Part1.IdentityInterpretation
 import Formal.SHIGURE.Part1.StructureMaps
 import Formal.SHIGURE.Part1.Chapter1Examples
 import Formal.SHIGURE.Part1.Reading
+import Mathlib.Algebra.Ring.PUnit
+import Mathlib.Algebra.Ring.Prod
 
 /-! # Example 1.10: partial domains and Law antecedents -/
 
@@ -95,6 +97,25 @@ theorem identity_cannot_preserve_domain :
   rw [onPoints] at member
   rcases member with impossible | impossible <;> cases impossible
 
+/-- The reverse map keeps the two states and preserves both clauses of (1.9) at zero. -/
+def includePartialDomain : StructureMap B A where
+  onSort := fun _ x => x
+  total_comm _ _ := rfl
+  relation_mem r := nomatch r
+  partial_mem _ _ _ := Or.inl rfl
+  partial_comm _ _ := rfl
+  quantity_comm q := nomatch q
+
+/-- The reversed state map preserves the existing partial value at zero. -/
+theorem zero_evaluation_transports :
+    (partialTerm (.var .here)).Evaluates A
+      ((Assignment.cons (X := B.carrier) false Assignment.empty).map includePartialDomain.onSort)
+      (includePartialDomain.onSort () false) := by
+  let e : Assignment B.carrier [()] := Assignment.cons false Assignment.empty
+  have hv : (Term.var Var.here).Evaluates B e false := rfl
+  exact includePartialDomain.evaluates_map _ e false
+    ((evaluates_partial_from_value false hv).2 ⟨Or.inr rfl, rfl⟩)
+
 /-- The Law in the target theory only requires equality on the designated domain. -/
 def guarded : Law signature :=
   ⟨[()], .atom (.domain () (fun i => i)),
@@ -160,6 +181,38 @@ theorem identity_translation_not_interpretation :
 /-- Keeping the guarded Law on both sides gives an actual identity interpretation. -/
 def guardedIdentity : Interpretation (theoryOf guarded) (theoryOf guarded) :=
   Interpretation.identity _
+
+/-- Two declared Laws record the unrestricted premise and its guarded consequence. -/
+private def lawDeclarations : LawDeclarations signature where
+  LawName := Bool
+  statement := fun name => if name then guarded else unrestricted
+  role := fun name => if name then .derived else .required
+
+/-- The unrestricted Law derives its guarded version using one required premise. -/
+private def withDerivedLaw : PrimitivePresentation where
+  signature := signature
+  laws := lawDeclarations
+  derived name h := by
+    cases name
+    · cases h
+    · let name : lawDeclarations.toTheory.LawName := ⟨false, rfl⟩
+      exact .cut (.truth _) (.required name)
+
+/-- The guarded Law has a derivation from the designated theory of its presentation. -/
+def guardedDerived :
+    Derivation withDerivedLaw.theory guarded.input guarded.conclusion :=
+  withDerivedLaw.derived true rfl
+
+/-- A declaration context cannot retain the constant while omitting its output sort. -/
+theorem constant_without_its_sort_is_not_closed :
+    ¬ ∃ U : DeclarationContext withDerivedLaw,
+      U.declarations = ({Declaration.total ()} : Set (Declaration withDerivedLaw)) := by
+  rintro ⟨U, onlyConstant⟩
+  have hf : Declaration.total () ∈ U.declarations := onlyConstant.symm ▸ (Set.mem_singleton _)
+  have hs : Declaration.sort () ∈ U.declarations :=
+    U.closed hf ⟨(), List.mem_cons_self, rfl⟩
+  rw [onlyConstant] at hs
+  cases Set.mem_singleton_iff.1 hs
 
 /-- A source variable is replaced by the partial term at the constant one. -/
 private def substituteAtOne : Substitution signature [()] [] where
@@ -285,8 +338,44 @@ def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) 
   targetModel := model
   state := state
   contexts := rfl
+  declarationChange :=
+    { retained := whole
+      inside := fun _ h => h
+      observed := fun _ _ => Set.mem_univ _
+      pieces := fun _ => Set.univ
+      localSupport := by
+        intros
+        exact ⟨(), Set.mem_univ _, Set.mem_univ _⟩ }
+  coefficientChange := .unparameterized
   value := Bool.not
   commutes := fun _ => rfl
+
+/-- No family with an empty index covers the declared Boolean sort. -/
+theorem empty_cover_fails : ¬ ∃ cover : DeclarationCover whole, IsEmpty cover.Index := by
+  rintro ⟨cover, hempty⟩
+  obtain ⟨i, _⟩ := cover.covers (a := .sort ()) (Set.mem_univ _)
+  exact hempty.false i
+
+/-- Omitting the sole declaration from the target cannot transport the state observation. -/
+private def missingSort : Reading :=
+  let emptyContext : DeclarationContext presentation := ⟨∅, fun ha => ha.elim⟩
+  { (reading Bool.not) with
+    context := emptyContext
+    cover :=
+      { Index := Empty
+        piece := fun i => nomatch i
+        subset := fun i => nomatch i
+        covers := fun h => h.elim } }
+
+/-- Translation support for the compared observation cannot land in an empty target context. -/
+theorem missing_target_sort_fails :
+    ¬ Nonempty (ReadingContextChange (reading id) missingSort
+      (Interpretation.identity presentation.theory)) := by
+  rintro ⟨transition⟩
+  have hs := transition.observed () List.mem_cons_self
+  have ht : Declaration.sort () ∈ missingSort.context.declarations :=
+    transition.support_subset hs (Set.mem_singleton _)
+  exact ht.elim
 
 /-- Fixing observed values along the same state map fails (1.12) at the point false. -/
 theorem identityValue_fails :
@@ -299,3 +388,151 @@ theorem identityValue_fails :
   cases bad
 
 end SHIGURE.Chapter1.Observation
+
+namespace SHIGURE.Chapter1.CoefficientTransport
+
+/-- Direct forms evaluate to their value in the chosen ring. -/
+private def readRing (R : Type) [CommRing R] : CoefficientReading where
+  Carrier := R
+  ring := inferInstance
+  Realization := fun _ _ => Unit
+  realization := ()
+  Form := R
+  evaluate := id
+
+/-- An identity coefficient map commutes with direct integer evaluation. -/
+def integerIdentity : CoefficientReading.Change (readRing Int) (readRing Int) where
+  coefficients := RingHom.id Int
+  forms := id
+  evaluate_commutes := fun _ => rfl
+
+/-- Extending integers diagonally to a product ring commutes with evaluation. -/
+def integerDiagonal : CoefficientReading.Change (readRing Int) (readRing (Int × Int)) where
+  coefficients := (RingHom.id Int).prod (RingHom.id Int)
+  forms := fun n => (n, n)
+  evaluate_commutes := fun _ => rfl
+
+/-- The zero ring cannot be sent to the integers by a unit-preserving coefficient change. -/
+theorem zero_ring_to_integer_fails :
+    ¬ Nonempty (CoefficientReading.Comparison (some (readRing PUnit)) (some (readRing Int))) := by
+  rintro ⟨comparison⟩
+  cases comparison with
+  | transport data =>
+    let h : PUnit →+* Int := data.coefficients
+    have hz : (0 : PUnit) = 1 := Subsingleton.elim _ _
+    have bad : (0 : Int) = 1 := h.map_zero.symm.trans ((congrArg (fun x => h x) hz).trans h.map_one)
+    exact (by decide : (0 : Int) ≠ 1) bad
+
+end SHIGURE.Chapter1.CoefficientTransport
+
+namespace SHIGURE.Chapter1.InterpretationComparison
+
+/-- A nullary relation can be interpreted by either closed truth value. -/
+private def signature : Signature where
+  SortType := Unit
+  Total := Empty
+  Rel := Unit
+  Partial := Empty
+  Quantity := Empty
+  totalArity := fun f => nomatch f
+  relInputs := fun _ => []
+  partialArity := fun p => nomatch p
+  quantityArity := fun q => nomatch q
+
+/-- With no Laws, both replacements satisfy every interpretation obligation. -/
+private def theory : Theory where
+  signature := signature
+  LawName := Empty
+  law := fun n => nomatch n
+
+/-- A concrete model with a Boolean sort and a false nullary relation. -/
+private def modelData : Structure signature where
+  carrier := fun _ => Bool
+  total := fun f => nomatch f
+  relation := fun _ => ∅
+  partialDomain := fun p => nomatch p
+  partialValue := fun p => nomatch p
+  quantity := fun q => nomatch q
+
+/-- An empty family of required Laws holds in the concrete model. -/
+private theorem model : theory.Holds modelData :=
+  fun n => nomatch n
+
+/-- Keep the sort map fixed while replacing the only relation with a closed formula. -/
+private def interpretation (replacement : Formula signature []) : Interpretation theory theory where
+  onSort := id
+  translation :=
+    { operation := fun op => match op with
+        | .total f => nomatch f
+        | .partialOp p => nomatch p
+        | .quantity q => nomatch q
+      relation := fun _ => replacement
+      partialDomain := fun p => nomatch p }
+  total f := nomatch f
+  quantity q := nomatch q
+  partialDefined p := nomatch p
+  definedPartial p := nomatch p
+  preserves n := nomatch n
+
+/-- Soundness excludes mutual derivability of the two closed truth values. -/
+theorem truth_falsehood_not_equivalent :
+    ¬ Derivation.Equivalent theory (Γ := []) .truth .falsehood := by
+  rintro ⟨⟨d⟩, _⟩
+  exact d.sound modelData model Assignment.empty True.intro
+
+/-- The primitive translations fail mutual derivability even with the same sort map. -/
+theorem translations_not_equivalent :
+    ¬ Translation.Equivalent (S := theory) (T := theory)
+      (interpretation .truth).translation (interpretation .falsehood).translation :=
+  fun h => truth_falsehood_not_equivalent (h.2.1 ())
+
+/-- The two certified interpretations are distinct under the equivalence in Definition 1.9. -/
+theorem interpretations_not_equivalent :
+    ¬ Interpretation.Equivalent (interpretation .truth) (interpretation .falsehood) := by
+  rintro ⟨equal, h⟩
+  have rfl : equal = rfl := Subsingleton.elim _ _
+  exact translations_not_equivalent h
+
+end SHIGURE.Chapter1.InterpretationComparison
+
+namespace SHIGURE.Chapter1.ResidualTransport
+
+open RingModule
+
+/-- Coordinate projection preserves the interpreted scalar and vector operations. -/
+private def project : StructureMap (realization (Int × Int) (Int × Int)) (realization Int Int) where
+  onSort
+    | .scalar => Prod.fst
+    | .vector => Prod.fst
+  total_comm f e := by cases f <;> rfl
+  relation_mem r := nomatch r
+  partial_mem p := nomatch p
+  partial_comm p := nomatch p
+  quantity_comm q := nomatch q
+
+/-- The closed value equation compares the declared one and zero. -/
+private def equation : RingEquation signature where
+  context := []
+  result := .scalar
+  ring := scalarVocabulary
+  input := .truth
+  left := scalarOne
+  right := scalarZero
+
+/-- The product ring joint input carries the ordinary declared constants. -/
+private def productInput : equation.jointInputs (realization (Int × Int) (Int × Int)) := by
+  let A := realization (Int × Int) (Int × Int)
+  let e : Assignment A.carrier [] := Assignment.empty
+  exact ⟨e, True.intro, ⟨((1 : Int), (1 : Int)), Term.evaluates_totalValue A scalarOne e⟩,
+    ⟨((0 : Int), (0 : Int)), Term.evaluates_totalValue A scalarZero e⟩⟩
+
+/-- The non-injective coordinate projection transports the residual of the declared constants. -/
+theorem residual_commutes_with_projection :
+    Prod.fst (equation.residual (realization (Int × Int) (Int × Int))
+      (realization_scalarLaws (Int × Int) (Int × Int)) productInput) =
+    equation.residual (realization Int Int) (realization_scalarLaws Int Int)
+      (equation.mapInput project productInput) :=
+  equation.residual_map project (realization_scalarLaws (Int × Int) (Int × Int))
+    (realization_scalarLaws Int Int) productInput
+
+end SHIGURE.Chapter1.ResidualTransport

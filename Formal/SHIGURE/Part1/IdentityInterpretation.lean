@@ -44,14 +44,14 @@ def identityAtomic (a : Atomic T.signature Γ) :
   | rel r inputs =>
     have same : (identity T.signature).atomic (.rel r inputs) =
         (Formula.atom (.rel r inputs)).rename (retype T) := by
-      simp only [atomic, identity, Formula.rename, Atomic.rename, retype,
+      simp only [atomic_rel, identity_relation, Formula.rename, Atomic.rename, retype,
         Renaming.mapSorts, Var.reindex_mapSorts]
     rw [same]
     exact ⟨.refl _, .refl _⟩
   | domain p inputs =>
     have same : (identity T.signature).atomic (.domain p inputs) =
         (Formula.atom (.domain p inputs)).rename (retype T) := by
-      simp only [atomic, identity, Formula.rename, Atomic.rename, retype,
+      simp only [atomic_domain, identity_domain, Formula.rename, Atomic.rename, retype,
         Renaming.mapSorts, Var.reindex_mapSorts]
     rw [same]
     exact ⟨.refl _, .refl _⟩
@@ -61,9 +61,9 @@ def identityAtomic (a : Atomic T.signature Γ) :
     have forward := Derivation.rename ρ (identityGraph T op).1
     have backward := Derivation.rename ρ (identityGraph T op).2
     exact ⟨by
-      simpa only [atomic, ρ, Formula.rename, Atomic.rename, Renaming.cons,
+      simpa only [atomic_graph, ρ, Formula.rename, Atomic.rename, Renaming.cons,
         Renaming.mapSorts, Var.reindex_mapSorts, retype] using forward,
-      by simpa only [atomic, ρ, Formula.rename, Atomic.rename, Renaming.cons,
+      by simpa only [atomic_graph, ρ, Formula.rename, Atomic.rename, Renaming.cons,
         Renaming.mapSorts, Var.reindex_mapSorts, retype] using backward⟩
 
 /-- Identity translation is mutually derivable with the retyped original formula. -/
@@ -83,8 +83,8 @@ def identityFormula : {Γ : List T.signature.SortType} → (p : Formula T.signat
     ⟨hp.1.orMono hq.1, hp.2.orMono hq.2⟩
   | _, .ex p =>
     let hp := identityFormula p
-    ⟨by simpa only [formula, Formula.rename, retype_lift] using hp.1.existsMono,
-      by simpa only [formula, Formula.rename, retype_lift] using hp.2.existsMono⟩
+    ⟨by simpa only [formula_ex, Formula.rename, retype_lift] using hp.1.existsMono,
+      by simpa only [formula_ex, Formula.rename, retype_lift] using hp.2.existsMono⟩
 
 /-- Compare the replacement's definedness with existence of a primitive graph output. -/
 def identityDefined (op : Operation T.signature) :
