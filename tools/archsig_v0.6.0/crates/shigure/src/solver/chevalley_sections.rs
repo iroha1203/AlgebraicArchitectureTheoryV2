@@ -111,44 +111,44 @@ pub(super) fn build_mixed_witness_pair(
     } else {
         None
     };
-    let cand = if let Some(c) = chosen_in_mixed {
-        c
-    } else {
-        let mut found = None;
-        for st in sets.mixed.strata() {
-            if let Some(pt) = pick_rational_point_in_stratum(st, &sets.c_vars)? {
-                let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
-                found = Some(EnumCandidate {
-                    candidate_id: None,
-                    assignments: build_assignment_map(family.c_vars(), &vals),
-                    values: vals,
-                    origin: default_candidate_origin(
-                        &family.inner().candidates.space,
-                        &family.inner().provenance,
-                    ),
-                });
-                break;
-            }
-        }
-        let Some(c) = found else {
+    let try_cand = |cand: EnumCandidate| -> Result<Option<MixedWitnessPair>, SilenceReason> {
+        let u_pass_set = slice_set_at_c(&sets.w_pass, &sets.c_vars, &cand, &sets.u_vars)?;
+        let u_fail_set = slice_set_at_c(&sets.w_fail, &sets.c_vars, &cand, &sets.u_vars)?;
+        let pass_witness =
+            build_u_witness_from_slice(family, &sets.u_vars, &u_pass_set, &cand, true)?;
+        let fail_witness =
+            build_u_witness_from_slice(family, &sets.u_vars, &u_fail_set, &cand, false)?;
+        let (Some(pw), Some(fw)) = (pass_witness, fail_witness) else {
             return Ok(None);
         };
-        c
+        Ok(Some(MixedWitnessPair {
+            candidate_id: cand.candidate_id,
+            candidate_assignments: cand.assignments,
+            pass_witness: pw,
+            fail_witness: fw,
+        }))
     };
-
-    let u_pass_set = slice_set_at_c(&sets.w_pass, &sets.c_vars, &cand, &sets.u_vars)?;
-    let u_fail_set = slice_set_at_c(&sets.w_fail, &sets.c_vars, &cand, &sets.u_vars)?;
-    let pass_witness = build_u_witness_from_slice(family, &sets.u_vars, &u_pass_set, &cand, true)?;
-    let fail_witness = build_u_witness_from_slice(family, &sets.u_vars, &u_fail_set, &cand, false)?;
-    let (Some(pw), Some(fw)) = (pass_witness, fail_witness) else {
-        return Ok(None);
-    };
-    Ok(Some(MixedWitnessPair {
-        candidate_id: cand.candidate_id,
-        candidate_assignments: cand.assignments,
-        pass_witness: pw,
-        fail_witness: fw,
-    }))
+    if let Some(cand) = chosen_in_mixed {
+        return try_cand(cand);
+    }
+    for st in sets.mixed.strata() {
+        if let Some(pt) = pick_rational_point_in_stratum(st, &sets.c_vars)? {
+            let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
+            let cand = EnumCandidate {
+                candidate_id: None,
+                assignments: build_assignment_map(family.c_vars(), &vals),
+                values: vals,
+                origin: default_candidate_origin(
+                    &family.inner().candidates.space,
+                    &family.inner().provenance,
+                ),
+            };
+            if let Some(pair) = try_cand(cand)? {
+                return Ok(Some(pair));
+            }
+        }
+    }
+    Ok(None)
 }
 
 fn build_u_witness_from_slice(
@@ -162,6 +162,8 @@ fn build_u_witness_from_slice(
         return Ok(None);
     };
     let domain = family.coeff_domain();
+    let is_existential_pass =
+        expected_pass && matches!(family.inner().goodness, GoodnessSpec::Existential { .. });
     let origin = match &family.inner().realizations.space {
         RealizationSpace::FiniteMembers(ms) => ms
             .first()
@@ -203,10 +205,17 @@ fn build_u_witness_from_slice(
             if let Ok(w) =
                 evaluate_goodness_at_point(family, &enum_u, cand, &PointDomain::AlgebraicClosure)
                 && w.passed == expected_pass
+                && (!is_existential_pass
+                    || w.restored_completion
+                        .as_ref()
+                        .is_some_and(|rc| rc.reeval.matched))
             {
                 return Ok(Some(w));
             }
         }
+    }
+    if is_existential_pass {
+        return Ok(None);
     }
     let eq_disp = display_polys(&first_st.equations, u_vars);
     let mut assign = BTreeMap::new();
@@ -238,6 +247,9 @@ pub(super) fn resolve_universal_candidate(
     sets: &FamilyConstructibleSets,
     chosen: Option<&EnumCandidate>,
 ) -> Result<Option<EnumCandidate>, SilenceReason> {
+    if sets.c_space.is_empty() {
+        return Ok(None);
+    }
     if let Some(c) = chosen {
         return Ok(Some(c.clone()));
     }
@@ -413,6 +425,9 @@ pub(super) fn run_rational_fiber_probes(
     base_value: Option<&[ScalarLit]>,
     probes: &[RationalFiberProbe],
 ) -> Result<Vec<RationalFiberProbeResult>, SilenceReason> {
+    if probes.is_empty() {
+        return Ok(Vec::new());
+    }
     let domain = family.coeff_domain();
     let u_names = family.u_vars();
     let c_names = family.c_vars();
@@ -506,9 +521,6 @@ pub(super) fn run_rational_fiber_probes(
         };
         let c_branches: Vec<BTreeMap<String, PolyExpr>> = match &family.inner().candidates.space {
             CandidateSpace::PolynomialScheme { .. } => vec![BTreeMap::new()],
-            CandidateSpace::FiniteMembers(ms) if c_names.is_empty() && ms.is_empty() => {
-                vec![BTreeMap::new()]
-            }
             CandidateSpace::FiniteMembers(ms) => {
                 let mut out = Vec::new();
                 for m in ms {

@@ -713,14 +713,24 @@ fn validate_raw_sequence_against_presentation(
         }
     }
     for coord in &start_phase.coords {
-        if matches!(coord.value, CoordValue::Symbolic) && !seq.start_state.contains_key(&coord.name)
-        {
-            return Err(ValidationError::ConversionError {
-                detail: format!(
-                    "{ctx}: start_state is missing initial value for coordinate `{}` of phase `{}`",
-                    coord.name, start_phase.name
-                ),
-            });
+        match (&coord.value, seq.start_state.get(&coord.name)) {
+            (CoordValue::Symbolic, None) => {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "{ctx}: start_state is missing initial value for coordinate `{}` of phase `{}`",
+                        coord.name, start_phase.name
+                    ),
+                });
+            }
+            (CoordValue::Observed(obs_lit), Some(start_lit)) if start_lit != obs_lit => {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "{ctx}: start_state cannot overwrite Observed coordinate `{}` ({obs_lit}) of phase `{}` with `{start_lit}`",
+                        coord.name, start_phase.name
+                    ),
+                });
+            }
+            _ => {}
         }
     }
 

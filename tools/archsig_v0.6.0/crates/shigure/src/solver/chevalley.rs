@@ -188,8 +188,12 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
                 } else {
                     let mut out = Vec::with_capacity(family.inner().candidates.pi.len());
                     for pi_expr in &family.inner().candidates.pi {
-                        let sv = match eval_expr_at(pi_expr, &sets.c_vars, &cand.values, &coeff_domain)
-                        {
+                        let sv = match eval_expr_at(
+                            pi_expr,
+                            &sets.c_vars,
+                            &cand.values,
+                            &coeff_domain,
+                        ) {
                             Ok(v) => v,
                             Err(reason) => {
                                 return undetermined_chevalley(
@@ -208,7 +212,15 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
                 let nonempty_for_c =
                     match slice_set_at_c(&sets.w_total, &sets.c_vars, &cand, &sets.u_vars) {
                         Ok(sliced) => !sliced.is_empty(),
-                        Err(_) => false,
+                        Err(reason) => {
+                            return undetermined_chevalley(
+                                coeff_domain,
+                                point_domain,
+                                checks,
+                                provenance,
+                                reason,
+                            );
+                        }
                     };
                 match evaluate_universal_ring(family, &effective_bv, &cand, nonempty_for_c) {
                     Ok(ur) => Some(ur),
@@ -232,7 +244,12 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
                 counterexample_residuals: vec![],
                 dual_number_counterexample: None,
                 silence_reason: Some(SilenceReason::UniversalRingOutOfScope {
-                    detail: "cannot select rational universal-ring test candidate in non-rational candidate scheme".to_owned(),
+                    detail: if sets.c_space.is_empty() {
+                        "candidate space C_b is empty; no universal-ring test candidate exists"
+                            .to_owned()
+                    } else {
+                        "cannot select rational universal-ring test candidate in non-rational candidate scheme".to_owned()
+                    },
                 }),
             }),
             Err(reason) => {
@@ -596,35 +613,60 @@ fn finite_raw_pass_set(
     let mut acc = ConstructibleSet::empty(uc_vars.clone());
     let u_len = family.u_vars().len();
     let mut seen_u_coords: BTreeSet<Vec<Rat>> = BTreeSet::new();
-    let c_list: Vec<EnumCandidate> = if family.c_vars().is_empty() {
-        vec![EnumCandidate {
-            candidate_id: None,
-            values: vec![],
-            assignments: BTreeMap::new(),
-            origin: default_candidate_origin(
-                &family.inner().candidates.space,
-                &family.inner().provenance,
-            ),
-        }]
-    } else {
-        let CandidateSpace::FiniteMembers(c_ms) = &family.inner().candidates.space else {
+    let zero_vars = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
+    let c_list: Vec<EnumCandidate> = match &family.inner().candidates.space {
+        CandidateSpace::FiniteMembers(c_ms) => {
+            let mut out = Vec::with_capacity(c_ms.len());
+            for cm in c_ms {
+                let (c_vals, c_disp) =
+                    map_scalar_assignments(family.c_vars(), &cm.assignments, domain)?;
+                out.push(EnumCandidate {
+                    candidate_id: Some(cm.id.clone()),
+                    values: c_vals,
+                    assignments: c_disp,
+                    origin: cm.origin.clone(),
+                });
+            }
+            out
+        }
+        CandidateSpace::PolynomialScheme {
+            equations,
+            invertibles,
+            origin,
+        } if family.c_vars().is_empty() => {
+            let mut eq_ok = true;
+            for eq in equations {
+                if !eval_expr_at(&eq.expr, &zero_vars, &[], domain)?.is_zero() {
+                    eq_ok = false;
+                    break;
+                }
+            }
+            let mut inv_ok = eq_ok;
+            if inv_ok {
+                for inv in invertibles {
+                    if eval_expr_at(&inv.expr, &zero_vars, &[], domain)?.is_zero() {
+                        inv_ok = false;
+                        break;
+                    }
+                }
+            }
+            if inv_ok {
+                vec![EnumCandidate {
+                    candidate_id: None,
+                    values: vec![],
+                    assignments: BTreeMap::new(),
+                    origin: origin.clone(),
+                }]
+            } else {
+                vec![]
+            }
+        }
+        CandidateSpace::PolynomialScheme { .. } => {
             return Err(SilenceReason::ApplicabilityConditionNotMet {
                 condition: "raw_sequence_finite_candidates".to_owned(),
                 detail: "raw_sequence Chevalley with candidate coordinates requires FiniteMembers candidates".to_owned(),
             });
-        };
-        let mut out = Vec::with_capacity(c_ms.len());
-        for cm in c_ms {
-            let (c_vals, c_disp) =
-                map_scalar_assignments(family.c_vars(), &cm.assignments, domain)?;
-            out.push(EnumCandidate {
-                candidate_id: Some(cm.id.clone()),
-                values: c_vals,
-                assignments: c_disp,
-                origin: cm.origin.clone(),
-            });
         }
-        out
     };
     for um in u_ms {
         let (u_vals, u_disp) = map_scalar_assignments(family.u_vars(), &um.assignments, domain)?;

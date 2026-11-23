@@ -154,7 +154,20 @@ fn evaluate_raw_sequence_on_presentation(
         }
     }
     for (k, lit) in &seq.start_state {
-        state.insert(k.clone(), ScalarVal::from_lit(lit, domain)?);
+        let sv = ScalarVal::from_lit(lit, domain)?;
+        if let Some(existing) = state.get(k)
+            && !crate::solver::family_eval::scalar_eq(existing, &sv)
+        {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "raw_sequence_observed_start_state_consistent".to_owned(),
+                detail: format!(
+                    "start_state contradicts Observed coordinate `{k}` ({} != {})",
+                    existing.to_display(),
+                    sv.to_display()
+                ),
+            });
+        }
+        state.insert(k.clone(), sv);
     }
 
     let empty = BTreeMap::new();

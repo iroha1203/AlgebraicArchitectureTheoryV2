@@ -59,6 +59,8 @@ mod tests_phase3_audit_regressions;
 #[cfg(test)]
 mod tests_phase3_regressions;
 #[cfg(test)]
+mod tests_phase3_rerun3_regressions;
+#[cfg(test)]
 mod tests_regressions;
 #[cfg(test)]
 mod tests_robustness;

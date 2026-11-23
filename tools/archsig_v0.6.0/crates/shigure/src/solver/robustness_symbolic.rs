@@ -33,6 +33,7 @@ pub(super) type QuantifiersTuple = (
     Option<DesignatedValidityResult>,
     PointwiseQuantifierResult,
     CommonQuantifierResult,
+    Option<EnumCandidate>,
 );
 
 fn default_realization_origin(family: &CheckedFamilySpec) -> SourceRef {
@@ -481,5 +482,5 @@ pub(super) fn eval_symbolic_closure_quantifiers(
             .then(|| "Chevalley robust_all_pass (P_+ \\ P_-) is empty over closure".to_owned()),
     };
 
-    Ok((valid_des, pointwise, common))
+    Ok((valid_des, pointwise, common, common_cand_opt))
 }

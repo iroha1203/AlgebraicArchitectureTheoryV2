@@ -20,7 +20,7 @@ use crate::solver::family_eval::{
     map_scalar_assignments, scalar_eq,
 };
 use crate::solver::preservation::{map_algebra_silence, substitute_poly_expr};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 #[allow(clippy::too_many_arguments)]
 pub(super) fn compute_reading_comparison(
@@ -31,6 +31,7 @@ pub(super) fn compute_reading_comparison(
     designated: Option<&EnumCandidate>,
     valid_des: &Option<DesignatedValidityResult>,
     common: &Option<CommonQuantifierResult>,
+    common_cand: Option<&EnumCandidate>,
     point_domain: &PointDomain,
 ) -> Result<Option<ReadingComparisonResult>, SilenceReason> {
     let Some(rc) = family.reading_comparison() else {
@@ -41,11 +42,7 @@ pub(super) fn compute_reading_comparison(
     let u_vars = VarOrder::new(u_names.to_vec()).map_err(map_algebra_silence)?;
     let fine_vars = VarOrder::new(rc.fine_b_vars.clone()).map_err(map_algebra_silence)?;
 
-    let fine_b_vals = if let Some(fv) = task.fine_base_value() {
-        fv.to_vec()
-    } else {
-        Vec::new()
-    };
+    let fine_b_opt = task.fine_base_value();
 
     let empty = BTreeMap::new();
     let q_subst: BTreeMap<String, PolyExpr> = rc
@@ -113,12 +110,13 @@ pub(super) fn compute_reading_comparison(
         .iter()
         .map(|l| ScalarVal::from_lit(l, domain).map(|v| v.to_display()))
         .collect::<Result<Vec<_>, _>>()?;
-    let fine_b_str: Vec<String> = fine_b_vals
+    let fine_b_str: Vec<String> = fine_b_opt
+        .unwrap_or(&[])
         .iter()
         .map(|l| ScalarVal::from_lit(l, domain).map(|v| v.to_display()))
         .collect::<Result<Vec<_>, _>>()?;
 
-    if !fine_b_vals.is_empty() {
+    if let Some(fine_b_vals) = fine_b_opt {
         let fv_scalar: Vec<ScalarVal> = fine_b_vals
             .iter()
             .map(|l| ScalarVal::from_lit(l, domain))
@@ -144,10 +142,13 @@ pub(super) fn compute_reading_comparison(
     let mut raw_evals = Vec::new();
     let mut coarse_ce = None;
     if let RealizationFiberEnum::Finite(u_list) = real_enum {
-        let eval_cand = designated.cloned().or_else(|| match cand_enum {
-            CandidateFiberEnum::Finite(cs) if !cs.is_empty() => Some(cs[0].clone()),
-            _ => None,
-        });
+        let eval_cand = designated
+            .cloned()
+            .or_else(|| common_cand.cloned())
+            .or_else(|| match cand_enum {
+                CandidateFiberEnum::Finite(cs) if !cs.is_empty() => Some(cs[0].clone()),
+                _ => None,
+            });
         if let Some(c_use) = &eval_cand {
             for u in u_list {
                 let qv = family
@@ -182,67 +183,77 @@ pub(super) fn compute_reading_comparison(
         .or_else(|| common.as_ref().map(|c| c.satisfied))
         .unwrap_or(false);
 
-    let fine_robust = if fine_b_vals.is_empty() {
-        coarse_robust
-    } else if let RealizationFiberEnum::Finite(u_list) = real_enum {
-        let target_f: Vec<ScalarVal> = fine_b_vals
-            .iter()
-            .map(|l| ScalarVal::from_lit(l, domain))
-            .collect::<Result<Vec<_>, _>>()?;
-        let mut fine_us = Vec::new();
-        for u in u_list {
-            let mut eq_all = true;
-            for (fq, fv) in rc.fine_q.iter().zip(&target_f) {
-                if !scalar_eq(&eval_expr_at(fq, &u_vars, &u.values, domain)?, fv) {
-                    eq_all = false;
-                    break;
-                }
-            }
-            if eq_all {
-                fine_us.push(u);
-            }
-        }
-        if fine_us.is_empty() {
-            designated.is_some()
-                || matches!(cand_enum, CandidateFiberEnum::NonFiniteScheme)
-                || matches!(cand_enum, CandidateFiberEnum::Finite(c_list) if !c_list.is_empty())
-        } else if let Some(dc) = designated {
-            let mut ok = true;
-            for u in &fine_us {
-                if !evaluate_goodness_at_point(family, u, dc, point_domain)?.passed {
-                    ok = false;
-                    break;
-                }
-            }
-            ok
-        } else if let CandidateFiberEnum::Finite(c_list) = cand_enum {
-            let mut found_common = false;
-            for c in c_list {
-                let mut all_ok = true;
-                for u in &fine_us {
-                    if !evaluate_goodness_at_point(family, u, c, point_domain)?.passed {
-                        all_ok = false;
-                        break;
+    let fine_robust = match fine_b_opt {
+        None => coarse_robust,
+        Some(fine_b_vals) => {
+            if let RealizationFiberEnum::Finite(u_list) = real_enum {
+                let target_f: Vec<ScalarVal> = fine_b_vals
+                    .iter()
+                    .map(|l| ScalarVal::from_lit(l, domain))
+                    .collect::<Result<Vec<_>, _>>()?;
+                let mut fine_us = Vec::new();
+                for u in u_list {
+                    let mut eq_all = true;
+                    for (fq, fv) in rc.fine_q.iter().zip(&target_f) {
+                        if !scalar_eq(&eval_expr_at(fq, &u_vars, &u.values, domain)?, fv) {
+                            eq_all = false;
+                            break;
+                        }
+                    }
+                    if eq_all {
+                        fine_us.push(u);
                     }
                 }
-                if all_ok {
-                    found_common = true;
-                    break;
+                if fine_us.is_empty() {
+                    designated.is_some()
+                        || matches!(cand_enum, CandidateFiberEnum::NonFiniteScheme)
+                        || matches!(cand_enum, CandidateFiberEnum::Finite(c_list) if !c_list.is_empty())
+                } else if let Some(dc) = designated {
+                    let mut ok = true;
+                    for u in &fine_us {
+                        if !evaluate_goodness_at_point(family, u, dc, point_domain)?.passed {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    ok
+                } else if let CandidateFiberEnum::Finite(c_list) = cand_enum {
+                    let mut found_common = false;
+                    for c in c_list {
+                        let mut all_ok = true;
+                        for u in &fine_us {
+                            if !evaluate_goodness_at_point(family, u, c, point_domain)?.passed {
+                                all_ok = false;
+                                break;
+                            }
+                        }
+                        if all_ok {
+                            found_common = true;
+                            break;
+                        }
+                    }
+                    found_common
+                } else {
+                    eval_fine_robust_constructible(
+                        task,
+                        family,
+                        rc,
+                        fine_b_vals,
+                        designated,
+                        point_domain,
+                    )?
                 }
+            } else {
+                eval_fine_robust_constructible(
+                    task,
+                    family,
+                    rc,
+                    fine_b_vals,
+                    designated,
+                    point_domain,
+                )?
             }
-            found_common
-        } else {
-            eval_fine_robust_constructible(
-                task,
-                family,
-                rc,
-                &fine_b_vals,
-                designated,
-                point_domain,
-            )?
         }
-    } else {
-        eval_fine_robust_constructible(task, family, rc, &fine_b_vals, designated, point_domain)?
     };
 
     let preserved = !coarse_robust || fine_robust;
@@ -263,6 +274,21 @@ pub(super) fn compute_reading_comparison(
         fine_only_counterexample: fine_only_ce,
         raw_candidate_evaluations: raw_evals,
     }))
+}
+
+fn fresh_poly_name(used: &mut BTreeSet<String>, prefix: &str, idx: usize) -> String {
+    let base = format!("__archsig_{prefix}_{idx}");
+    if used.insert(base.clone()) {
+        return base;
+    }
+    let mut suffix = 0usize;
+    loop {
+        let cand = format!("{base}_{suffix}");
+        if used.insert(cand.clone()) {
+            return cand;
+        }
+        suffix += 1;
+    }
 }
 
 fn eval_fine_robust_constructible(
@@ -290,9 +316,10 @@ fn eval_fine_robust_constructible(
         .collect::<Result<Vec<_>, _>>()?;
     match &mut fine_spec.realizations.space {
         RealizationSpace::PolynomialScheme { equations, .. } => {
+            let mut used: BTreeSet<String> = equations.iter().map(|e| e.name.clone()).collect();
             for (i, (fq, fl)) in rc.fine_q.iter().zip(fine_b_vals).enumerate() {
                 equations.push(NamedPoly::new(
-                    format!("fine_fiber_{i}"),
+                    fresh_poly_name(&mut used, "fine_fiber", i),
                     PolyExpr::diff(fq.clone(), PolyExpr::Const(fl.clone())),
                 ));
             }
@@ -323,6 +350,7 @@ fn eval_fine_robust_constructible(
         .collect::<Result<Vec<_>, _>>()?;
     match &mut fine_spec.candidates.space {
         CandidateSpace::PolynomialScheme { equations, .. } => {
+            let mut used: BTreeSet<String> = equations.iter().map(|e| e.name.clone()).collect();
             for (i, (pe, bl)) in family
                 .inner()
                 .candidates
@@ -332,7 +360,7 @@ fn eval_fine_robust_constructible(
                 .enumerate()
             {
                 equations.push(NamedPoly::new(
-                    format!("cand_fiber_{i}"),
+                    fresh_poly_name(&mut used, "cand_fiber", i),
                     PolyExpr::diff(pe.clone(), PolyExpr::Const(bl.clone())),
                 ));
             }

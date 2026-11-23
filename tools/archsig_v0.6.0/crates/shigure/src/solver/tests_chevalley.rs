@@ -661,7 +661,11 @@ fn chevalley_m1_m2_m4_m7_review_regressions() {
             name: "C".to_owned(),
             c_vars: vec![],
             pi: vec![],
-            space: CandidateSpace::FiniteMembers(vec![]),
+            space: CandidateSpace::PolynomialScheme {
+                equations: vec![],
+                invertibles: vec![],
+                origin: src("c", OriginKind::StaticAnalysis),
+            },
         },
         goodness: GoodnessSpec::Existential {
             witness_vars: vec!["z".to_owned()],
@@ -689,6 +693,7 @@ fn chevalley_m1_m2_m4_m7_review_regressions() {
     })
     .unwrap();
     let o_inv = solve_chevalley_task(&t_inv);
+    assert_eq!(o_inv.verdict, Verdict::Established);
     let p_res = &o_inv.chevalley.unwrap().rational_fiber_probes[0];
     assert_eq!(p_res.verdict, Verdict::Established);
     assert_ne!(
@@ -796,7 +801,11 @@ fn chevalley_m1_m2_m4_m7_review_regressions() {
             name: "C".to_owned(),
             c_vars: vec![],
             pi: vec![],
-            space: CandidateSpace::FiniteMembers(vec![]),
+            space: CandidateSpace::PolynomialScheme {
+                equations: vec![],
+                invertibles: vec![],
+                origin: src("c", OriginKind::StaticAnalysis),
+            },
         },
         goodness: GoodnessSpec::Direct {
             equations: vec![],

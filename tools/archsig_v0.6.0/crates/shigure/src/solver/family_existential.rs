@@ -551,6 +551,7 @@ fn solve_existential_with_preservation(
                 }],
                 w_vars,
             )?;
+            let mut deferred_silence: Option<SilenceReason> = None;
             for st in combined {
                 let rab = rabinowitsch_solve(&st.equations, &st.invertibles, w_vars)
                     .map_err(map_algebra_silence)?;
@@ -560,51 +561,109 @@ fn solve_existential_with_preservation(
                     }
                     continue;
                 }
-                if let Some(extracted) =
+                let Some(extracted) =
                     extract_affine_substitution_q(&rab.parameter_equations, w_vars, false)?
-                {
-                    if *point_domain == PointDomain::RationalPoints
-                        && !extracted.remaining_nonlinear.is_empty()
-                    {
-                        return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
-                            point_domain: PointDomain::RationalPoints,
-                            detail: "nonlinear rational existential preservation fiber".to_owned(),
+                else {
+                    if deferred_silence.is_none() {
+                        deferred_silence = Some(match point_domain {
+                            PointDomain::RationalPoints => {
+                                SilenceReason::NonLinearRationalOrIntegerExistence {
+                                    point_domain: PointDomain::RationalPoints,
+                                    detail: "nonlinear existential preservation fiber without rational extraction".to_owned(),
+                                }
+                            }
+                            _ => SilenceReason::ApplicabilityConditionNotMet {
+                                condition: "existential_preservation_substitution".to_owned(),
+                                detail: "non-empty existential preservation stratum could not extract witness substitution".to_owned(),
+                            },
                         });
                     }
-                    let art = if extracted.remaining_nonlinear.is_empty()
-                        && let Ok((mat, rhs)) =
-                            polys_to_affine_system_q(&rab.parameter_equations, w_vars.len())
-                        && let Ok(AffineSolutionQ::Consistent {
-                            particular,
-                            kernel_basis,
-                            verified: true,
-                        }) = solve_affine_q(&mat, &rhs, w_vars.len())
-                        && let Some(pt) = find_witness_point_q(
-                            &particular,
-                            &kernel_basis,
-                            &st.equations,
-                            &st.invertibles,
-                        )? {
-                        restore_and_reeval_q_point(&pair, cond_ref, w_vars, &pt)?
-                    } else {
-                        restore_and_reeval_q(
-                            &pair,
-                            cond_ref,
-                            &st.invertibles,
-                            w_vars,
-                            &extracted,
-                            false,
-                        )?
-                    };
-                    return Ok(pass_pair(
-                        realization,
-                        candidate,
-                        Some(true),
-                        art.parameter_assignments.clone(),
-                        Some(art.clone()),
-                        art.reeval,
-                    ));
+                    continue;
+                };
+                if *point_domain == PointDomain::RationalPoints
+                    && !extracted.remaining_nonlinear.is_empty()
+                {
+                    return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
+                        point_domain: PointDomain::RationalPoints,
+                        detail: "nonlinear rational existential preservation fiber".to_owned(),
+                    });
                 }
+                let art = if *point_domain == PointDomain::RationalPoints {
+                    let pt = match polys_to_affine_system_q(&rab.parameter_equations, w_vars.len())
+                    {
+                        Ok((mat, rhs)) => match solve_affine_q(&mat, &rhs, w_vars.len()) {
+                            Ok(AffineSolutionQ::Consistent {
+                                particular,
+                                kernel_basis,
+                                verified: true,
+                            }) => find_witness_point_q(
+                                &particular,
+                                &kernel_basis,
+                                &st.equations,
+                                &st.invertibles,
+                            )?,
+                            _ => None,
+                        },
+                        Err(_) => None,
+                    };
+                    let Some(pt) = pt else {
+                        if deferred_silence.is_none() {
+                            deferred_silence = Some(
+                                SilenceReason::NonLinearRationalOrIntegerExistence {
+                                    point_domain: PointDomain::RationalPoints,
+                                    detail: "rational existential preservation could not verify concrete Q witness satisfying open constraints".to_owned(),
+                                },
+                            );
+                        }
+                        continue;
+                    };
+                    restore_and_reeval_q_point(&pair, cond_ref, w_vars, &pt)?
+                } else if extracted.remaining_nonlinear.is_empty()
+                    && let Ok((mat, rhs)) =
+                        polys_to_affine_system_q(&rab.parameter_equations, w_vars.len())
+                    && let Ok(AffineSolutionQ::Consistent {
+                        particular,
+                        kernel_basis,
+                        verified: true,
+                    }) = solve_affine_q(&mat, &rhs, w_vars.len())
+                    && let Some(pt) = find_witness_point_q(
+                        &particular,
+                        &kernel_basis,
+                        &st.equations,
+                        &st.invertibles,
+                    )?
+                {
+                    restore_and_reeval_q_point(&pair, cond_ref, w_vars, &pt)?
+                } else {
+                    restore_and_reeval_q(
+                        &pair,
+                        cond_ref,
+                        &st.invertibles,
+                        w_vars,
+                        &extracted,
+                        false,
+                    )?
+                };
+                if !art.reeval.matched {
+                    if deferred_silence.is_none() {
+                        deferred_silence = Some(SilenceReason::ApplicabilityConditionNotMet {
+                            condition: "existential_reevaluation_matched".to_owned(),
+                            detail: art.reeval.detail.clone(),
+                        });
+                    }
+                    continue;
+                }
+                return Ok(pass_pair(
+                    realization,
+                    candidate,
+                    Some(true),
+                    art.parameter_assignments.clone(),
+                    Some(art.clone()),
+                    art.reeval,
+                ));
+            }
+            if let Some(reason) = deferred_silence {
+                return Err(reason);
             }
             let residuals = display_polys(&all_failed_eqs, w_vars);
             let ew = last_empty_witness.or(locus.empty_witness).or_else(|| {

@@ -132,29 +132,30 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
     }
 
     // 3. 有限列挙 fiber か代数閉包記号 scheme かで 3 量化を算出する。
-    let (valid_des, pointwise, common, symbolic_silenced) = match (&real_enum, &cand_enum) {
-        (RealizationFiberEnum::Finite(u_list), CandidateFiberEnum::Finite(c_list)) => {
-            match eval_finite_quantifiers(
+    let (valid_des, pointwise, common, common_cand, symbolic_silenced) =
+        match (&real_enum, &cand_enum) {
+            (RealizationFiberEnum::Finite(u_list), CandidateFiberEnum::Finite(c_list)) => {
+                match eval_finite_quantifiers(
+                    family,
+                    u_list,
+                    c_list,
+                    designated.as_ref(),
+                    &point_domain,
+                ) {
+                    Ok((vd, pw, cm, cc_opt)) => (vd, Some(pw), Some(cm), cc_opt, None),
+                    Err(reason) => (None, None, None, None, Some(reason)),
+                }
+            }
+            _ => match eval_symbolic_closure_quantifiers(
                 family,
-                u_list,
-                c_list,
+                task.base_value(),
                 designated.as_ref(),
                 &point_domain,
             ) {
-                Ok((vd, pw, cm)) => (vd, Some(pw), Some(cm), None),
-                Err(reason) => (None, None, None, Some(reason)),
-            }
-        }
-        _ => match eval_symbolic_closure_quantifiers(
-            family,
-            task.base_value(),
-            designated.as_ref(),
-            &point_domain,
-        ) {
-            Ok((vd, pw, cm)) => (vd, Some(pw), Some(cm), None),
-            Err(reason) => (None, None, None, Some(reason)),
-        },
-    };
+                Ok((vd, pw, cm, cc_opt)) => (vd, Some(pw), Some(cm), cc_opt, None),
+                Err(reason) => (None, None, None, None, Some(reason)),
+            },
+        };
     if let Some(reason) = symbolic_silenced {
         return undetermined_robustness(coeff_domain, point_domain, checks, provenance, reason);
     }
@@ -192,6 +193,7 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
         designated.as_ref(),
         &valid_des,
         &common,
+        common_cand.as_ref(),
         &point_domain,
     ) {
         Ok(rc) => rc,
@@ -552,6 +554,7 @@ fn finish_empty_fiber_outcome(
         designated,
         &valid_designated,
         &common_candidate,
+        None,
         &point_domain,
     ) {
         Ok(rc) => rc,
@@ -671,31 +674,37 @@ fn eval_finite_quantifiers(
         }
     }
 
-    let common = if let Some((c, ws)) = chosen_common {
-        CommonQuantifierResult {
-            satisfied: true,
-            vacuously_true_empty_fiber: false,
-            candidate_id: c.candidate_id.clone(),
-            candidate_assignments: Some(c.assignments.clone()),
-            witnesses: ws,
-            counterexample_witnesses: vec![],
-            counterexample_detail: None,
-        }
+    let (common, common_cand_out) = if let Some((c, ws)) = chosen_common {
+        (
+            CommonQuantifierResult {
+                satisfied: true,
+                vacuously_true_empty_fiber: false,
+                candidate_id: c.candidate_id.clone(),
+                candidate_assignments: Some(c.assignments.clone()),
+                witnesses: ws,
+                counterexample_witnesses: vec![],
+                counterexample_detail: None,
+            },
+            Some(c.clone()),
+        )
     } else {
-        CommonQuantifierResult {
-            satisfied: false,
-            vacuously_true_empty_fiber: false,
-            candidate_id: None,
-            candidate_assignments: None,
-            witnesses: vec![],
-            counterexample_witnesses: cand_fails,
-            counterexample_detail: Some(if c_list.is_empty() {
-                "candidate fiber C_b is empty".to_owned()
-            } else {
-                "no candidate in C_b succeeds across all realizations in U_b".to_owned()
-            }),
-        }
+        (
+            CommonQuantifierResult {
+                satisfied: false,
+                vacuously_true_empty_fiber: false,
+                candidate_id: None,
+                candidate_assignments: None,
+                witnesses: vec![],
+                counterexample_witnesses: cand_fails,
+                counterexample_detail: Some(if c_list.is_empty() {
+                    "candidate fiber C_b is empty".to_owned()
+                } else {
+                    "no candidate in C_b succeeds across all realizations in U_b".to_owned()
+                }),
+            },
+            None,
+        )
     };
 
-    Ok((valid_des, pointwise, common))
+    Ok((valid_des, pointwise, common, common_cand_out))
 }
