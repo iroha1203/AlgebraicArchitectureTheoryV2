@@ -707,9 +707,70 @@ fn unobserved_slots_in_family_and_raw_sequence_reading_comparison_validate() {
             &raw_fam,
             RawSequenceCheck {
                 observation_name: "no_obs".to_owned(),
-                ..valid_seq
+                ..valid_seq.clone()
             }
         ),
+        Err(ValidationError::UnknownRef {
+            kind: "observation",
+            ..
+        })
+    ));
+
+    // Omitted baseline_step_index (None) checks observation at pre-final state:
+    // 1) multi-step checks phase after penultimate step (`Busy`)
+    assert!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                baseline_step_index: None,
+                ..valid_seq.clone()
+            }
+        )
+        .is_ok()
+    );
+    let mut no_busy_obs = raw_fam.clone();
+    if let RealizationSpace::FiniteMembers(ref mut ms) = no_busy_obs.realizations.space {
+        for m in ms.iter_mut() {
+            m.presentation
+                .as_mut()
+                .unwrap()
+                .observations
+                .retain(|o| o.phase != "Busy");
+        }
+    }
+    assert!(matches!(
+        set_seq(
+            &no_busy_obs,
+            RawSequenceCheck {
+                baseline_step_index: None,
+                ..valid_seq.clone()
+            }
+        ),
+        Err(ValidationError::UnknownRef {
+            kind: "observation",
+            ..
+        })
+    ));
+
+    // 2) 1-step sequence with baseline_step_index = None checks start_phase (`Idle`)
+    let single_step_seq = RawSequenceCheck {
+        steps: vec![("begin".to_owned(), vec![])],
+        baseline_step_index: None,
+        ..valid_seq
+    };
+    assert!(set_seq(&raw_fam, single_step_seq.clone()).is_ok());
+    let mut no_idle_obs = raw_fam;
+    if let RealizationSpace::FiniteMembers(ref mut ms) = no_idle_obs.realizations.space {
+        for m in ms.iter_mut() {
+            m.presentation
+                .as_mut()
+                .unwrap()
+                .observations
+                .retain(|o| o.phase != "Idle");
+        }
+    }
+    assert!(matches!(
+        set_seq(&no_idle_obs, single_step_seq),
         Err(ValidationError::UnknownRef {
             kind: "observation",
             ..

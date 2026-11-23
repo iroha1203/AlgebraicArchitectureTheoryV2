@@ -725,7 +725,13 @@ fn validate_raw_sequence_against_presentation(
     }
 
     let mut cur_phase = seq.start_phase.as_str();
-    let mut baseline_phase: Option<&str> = None;
+    let mut baseline_phase: Option<&str> = match seq.baseline_step_index {
+        None if seq.steps.len() == 1 => Some(seq.start_phase.as_str()),
+        _ => None,
+    };
+    let effective_baseline_idx = seq
+        .baseline_step_index
+        .unwrap_or_else(|| seq.steps.len().saturating_sub(2));
     for (idx, (op_name, args)) in seq.steps.iter().enumerate() {
         let op = pres
             .operation(op_name)
@@ -751,7 +757,7 @@ fn validate_raw_sequence_against_presentation(
             });
         }
         cur_phase = op.target_phase.as_str();
-        if seq.baseline_step_index == Some(idx) {
+        if baseline_phase.is_none() && idx == effective_baseline_idx {
             baseline_phase = Some(cur_phase);
         }
     }
