@@ -1276,7 +1276,7 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 
 ## 8. SHIGURE の型付き結果（`ShigureOutcome`）
 
-`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer` の回答は、
+`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations` の回答は、
 標準出力の `archsig.summary/1` では `answers[].outputs.shigure` に直接保持し、
 `--out` 保存時の `archsig.result/4` では `type: "ShigureOutcome"` の `SavedNode`（`answers[].outputs.shigure = {"node": ...}`、
 `scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
@@ -1313,7 +1313,10 @@ ShigureOutcome = {
   },
   diagram?: DiagramOutcomeDetail,
   path?: PathOutcomeDetail,
-  transfer?: TransferOutcomeDetail
+  transfer?: TransferOutcomeDetail,
+  robustness?: RobustnessOutcomeDetail,
+  chevalley?: ChevalleyOutcomeDetail,
+  observations?: ObservationOutcomeDetail
 }
 
 ReevalCheck = {
@@ -1409,6 +1412,179 @@ TransferOutcomeDetail = {
   }[]
 }
 
+RealizationWitness = {
+  member_id?: String,
+  assignments: { [Name]: String },
+  is_raw_candidate: Bool,
+  origin: ShigureOriginRef
+}
+
+RestoredCompletionWitness = {
+  witness_assignments: { [Name]: String },
+  restored_artifact?: {
+    parameter_assignments: { [Name]: String },
+    free_parameters: String[],
+    operations: { [OpName]: { [CoordName]: String } },
+    state_laws: { [PhaseName]: String[] },
+    state_comparisons: { [PhaseName]: { [CoordName]: String } },
+    word_translation: { [OpName]: String[] },
+    reevaluation: ReevalCheck
+  },
+  reevaluation: ReevalCheck
+}
+
+PairEvaluationWitness = {
+  realization: RealizationWitness,
+  candidate_id?: String,
+  candidate_assignments: { [Name]: String },
+  passed: Bool,
+  legal_execution_exists?: Bool,
+  residuals: String[],
+  empty_witness?: EmptyWitness,
+  restored_completion?: RestoredCompletionWitness
+}
+
+UniversalRingStabilityResult = {
+  evaluated: Bool,
+  stable?: Bool,
+  inhabited_stable?: Bool,
+  counterexample_ring?: String,
+  counterexample_point?: { [Name]: String },
+  counterexample_residuals?: String[],
+  dual_number_counterexample?: {
+    ring_description: String,
+    assignments: { [Name]: String },
+    nonzero_residuals: String[]
+  },
+  silence_reason?: SilenceReason
+}
+
+RobustnessOutcomeDetail = {
+  goodness_kind: "direct" | "existential",
+  fiber_non_empty: {
+    non_empty: Bool,
+    status: String,
+    witness?: RealizationWitness,
+    empty_witness?: EmptyWitness
+  },
+  valid_designated?: {
+    candidate_id?: String,
+    candidate_assignments: { [Name]: String },
+    satisfied: Bool,
+    vacuously_true_empty_fiber: Bool,
+    supporting_witnesses: PairEvaluationWitness[],
+    counterexample?: PairEvaluationWitness
+  },
+  pointwise?: {
+    satisfied: Bool,
+    vacuously_true_empty_fiber: Bool,
+    witnesses: PairEvaluationWitness[],
+    counterexample?: RealizationWitness
+  },
+  common_candidate?: {
+    satisfied: Bool,
+    vacuously_true_empty_fiber: Bool,
+    candidate_id?: String,
+    candidate_assignments: { [Name]: String },
+    witnesses: PairEvaluationWitness[],
+    counterexample_witnesses: PairEvaluationWitness[],
+    counterexample_detail?: String
+  },
+  universal_ring?: UniversalRingStabilityResult,
+  reading_comparison?: {
+    name: String,
+    coarse_b: String[],
+    fine_b: String[],
+    commutativity_verified: Bool,
+    coarse_robust: Bool,
+    fine_robust: Bool,
+    coarse_implies_fine_preserved: Bool,
+    reverse_implication_not_claimed: Bool,
+    fine_only_counterexample?: PairEvaluationWitness,
+    raw_candidate_evaluations: {
+      member_id: String,
+      origin: ShigureOriginRef,
+      q_value: String[],
+      passed: Bool,
+      legal_execution_exists?: Bool,
+      residuals: String[]
+    }[]
+  }
+}
+
+ChevalleyRegionSummary = {
+  is_empty: Bool,
+  strata: { equations: String[], invertibles: String[] }[]
+}
+
+ChevalleyOutcomeDetail = {
+  goodness_kind: "direct" | "existential",
+  point_domain: ShigurePointDomain,
+  effective_image_e?: ChevalleyRegionSummary,
+  p_plus: ChevalleyRegionSummary,
+  p_minus: ChevalleyRegionSummary,
+  robust_all_pass: ChevalleyRegionSummary,
+  all_fail: ChevalleyRegionSummary,
+  mixed: ChevalleyRegionSummary,
+  empty_realizations: ChevalleyRegionSummary,
+  designated_candidate_class?: String,
+  mixed_witness_pair?: {
+    candidate_id?: String,
+    candidate_assignments: { [Name]: String },
+    pass_witness: PairEvaluationWitness,
+    fail_witness: PairEvaluationWitness
+  },
+  rational_fiber_probes: {
+    probe_name: String,
+    u_assignments: { [Name]: String },
+    c_assignments: { [Name]: String },
+    verdict: "established" | "refuted" | "undetermined",
+    detail: String,
+    rational_witness?: { [Name]: String },
+    silence_reason?: SilenceReason
+  }[],
+  global_regular_section?: {
+    checked: Bool,
+    exists?: Bool,
+    obstruction_detail?: String,
+    silence_reason?: SilenceReason
+  },
+  universal_ring_contrast?: UniversalRingStabilityResult
+}
+
+DistinguishingPairSummary = {
+  u_pass: RealizationWitness,
+  u_fail: RealizationWitness,
+  candidate_id?: String,
+  candidate_assignments: { [Name]: String },
+  separating_observations: String[]
+}
+
+ObservationOutcomeDetail = {
+  sufficient: Bool,
+  distinguishing_pair_count: Nat,
+  distinguishing_pairs: DistinguishingPairSummary[],
+  insufficiency_witness?: {
+    pair: DistinguishingPairSummary,
+    identical_observation_values: { [ObsId]: String[] }
+  },
+  minimal_sufficient_sets: {
+    observations: String[],
+    total_cost?: String,
+    removal_counterexamples: {
+      removed_observation: String,
+      unseparated_pair: DistinguishingPairSummary
+    }[]
+  }[],
+  cost_ranked_sets: { rank: Nat, observations: String[], total_cost: String }[],
+  law_readout_comparison?: {
+    readout_name: String,
+    coarse_adequate_for_law_readout: Bool,
+    coarse_adequate_for_decision: Bool,
+    detail: String
+  }
+}
+
 ApplicabilityCheck = { condition: String, clause: String, satisfied: Bool, detail?: String }
 ShigureOriginRef = {
   origin_id: String,
@@ -1420,7 +1596,9 @@ SilenceReason = {
   code: "unobserved_dependency" | "nonlinear_point_existence_out_of_scope"
       | "infinite_presentation_not_finitely_reducible" | "unsupported_coeff_ring"
       | "quotient_ideal_out_of_scope" | "open_condition_in_interaction"
-      | "unbounded_search_out_of_scope" | "applicability_condition_not_met",
+      | "unbounded_search_out_of_scope" | "constructible_stratification_out_of_scope"
+      | "finite_enumeration_out_of_scope" | "universal_ring_out_of_scope"
+      | "applicability_condition_not_met",
   missing_slots?: String[],
   point_domain?: ShigurePointDomain,
   coeff_domain?: "Z" | "Q" | ["Fp", DecimalPrime],
