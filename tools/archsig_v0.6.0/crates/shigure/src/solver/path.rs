@@ -289,6 +289,9 @@ pub(crate) fn undetermined_path(
             rejected_candidates,
         }),
         transfer: None,
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }
 
@@ -328,6 +331,9 @@ pub(crate) fn refuted_path(
             rejected_candidates,
         }),
         transfer: None,
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }
 
@@ -367,5 +373,8 @@ pub(crate) fn established_path(
             rejected_candidates,
         }),
         transfer: None,
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }

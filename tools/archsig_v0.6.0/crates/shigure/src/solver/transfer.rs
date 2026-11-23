@@ -504,6 +504,9 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
             word_checks,
             old_word_lifts,
         }),
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }
 
@@ -619,6 +622,9 @@ fn undetermined_transfer(
             word_checks: vec![],
             old_word_lifts: vec![],
         }),
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }
 
@@ -654,5 +660,8 @@ fn refuted_transfer(
             word_checks: vec![],
             old_word_lifts: vec![],
         }),
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }

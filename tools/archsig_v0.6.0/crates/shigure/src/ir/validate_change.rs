@@ -496,7 +496,7 @@ pub(crate) fn validate_eval_condition_checked_params(
     Ok(CheckedEvalCondition::from_validated(cond))
 }
 
-fn validate_point_domain_compatibility(
+pub(crate) fn validate_point_domain_compatibility(
     coeff_domain: &CoeffDomain,
     point_domain: &PointDomain,
 ) -> Result<(), ValidationError> {
@@ -525,7 +525,7 @@ fn validate_point_domain_compatibility(
     Ok(())
 }
 
-fn validate_named_polys(
+pub(crate) fn validate_named_polys(
     items: &[NamedPoly],
     kind: &'static str,
     coeff_domain: &CoeffDomain,

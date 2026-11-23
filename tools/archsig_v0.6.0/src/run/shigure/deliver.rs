@@ -534,6 +534,18 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
             "unsupported_algorithm",
             format!("unbounded search out of scope: {detail}"),
         ),
+        SilenceReason::ConstructibleStratificationOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("constructible stratification out of scope: {detail}"),
+        ),
+        SilenceReason::FiniteEnumerationOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("finite enumeration out of scope: {detail}"),
+        ),
+        SilenceReason::UniversalRingOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("universal ring stability out of scope: {detail}"),
+        ),
         SilenceReason::ApplicabilityConditionNotMet { condition, detail } => (
             "unsupported_algorithm",
             format!("applicability condition `{condition}` not met: {detail}"),

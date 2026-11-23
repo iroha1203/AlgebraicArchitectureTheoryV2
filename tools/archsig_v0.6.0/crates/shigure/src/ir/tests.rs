@@ -534,6 +534,9 @@ fn outcome_json_preserves_domains_silence_and_origin_kinds() {
         diagram: None,
         path: None,
         transfer: None,
+        robustness: None,
+        chevalley: None,
+        observations: None,
     };
     let rendered = outcome.to_json().canonical();
     assert!(rendered.contains(r#""verdict":"undetermined""#));

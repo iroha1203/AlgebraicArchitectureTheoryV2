@@ -9,6 +9,8 @@
 //!   および係数域・点集合域に応じた沈黙判定（G-141 D4–D6）
 //! - `interaction`: 座標面支持による相互作用参加変数数 r と極小不成立部分族（G-141 F10–F12）
 
+pub mod constructible;
+pub mod constructible_image;
 pub mod groebner;
 pub mod interaction;
 pub mod linear;
@@ -18,6 +20,14 @@ pub mod scalar;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_constructible;
+
+pub use constructible::{ConstructibleSet, DEFAULT_MAX_CONSTRUCTIBLE_STRATA, LocallyClosedStratum};
+pub use constructible_image::{
+    DEFAULT_MAX_IMAGE_BRANCHES, DEFAULT_MAX_IMAGE_Y_PAIRS, project_constructible_set,
+    project_stratum_image,
+};
 
 pub use groebner::{
     DEFAULT_MAX_BUCHBERGER_PAIRS, GroebnerBasis, MembershipResult, RabinowitschResult, TrackedPoly,

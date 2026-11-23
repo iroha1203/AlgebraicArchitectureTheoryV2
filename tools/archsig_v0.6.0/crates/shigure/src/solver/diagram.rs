@@ -455,6 +455,9 @@ pub fn solve_diagram_task(task: &CheckedDiagramTask) -> ShigureOutcome {
                 }),
                 path: None,
                 transfer: None,
+                robustness: None,
+                chevalley: None,
+                observations: None,
             }
         }
     }
@@ -490,6 +493,9 @@ fn undetermined_diagram(
         }),
         path: None,
         transfer: None,
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }
 
@@ -523,6 +529,9 @@ fn refuted_diagram(
         }),
         path: None,
         transfer: None,
+        robustness: None,
+        chevalley: None,
+        observations: None,
     }
 }
 

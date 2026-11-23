@@ -3,6 +3,9 @@
 use crate::ir::change::PointDomain;
 use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result_ext::{DiagramOutcomeDetail, PathOutcomeDetail, TransferOutcomeDetail};
+use crate::ir::result_phase3::{
+    ChevalleyOutcomeDetail, ObservationOutcomeDetail, RobustnessOutcomeDetail,
+};
 use crate::ir::term::CoeffDomain;
 use archsig_common::canonical::{Json, JsonObject};
 use std::collections::BTreeMap;
@@ -72,6 +75,12 @@ pub enum SilenceReason {
     OpenConditionInInteraction { detail: String },
     /// 無界の経路長探索や無界の旧語 lift 探索など有限還元不能な無界探索。
     UnboundedSearchOutOfScope { detail: String },
+    /// 構成可能集合・D6 射影層別の分岐／S-pair 上限超過または適用域外。
+    ConstructibleStratificationOutOfScope { detail: String },
+    /// 有限列挙・観測候補数・部分集合探索上限超過。
+    FiniteEnumerationOutOfScope { detail: String },
+    /// 全係数移送安定性 $\mathcal{R}(R)$ 検査が適用域外（例: 存在型・未対応非線形）。
+    UniversalRingOutOfScope { detail: String },
     /// その他の適用条件未充足。
     ApplicabilityConditionNotMet { condition: String, detail: String },
 }
@@ -90,6 +99,11 @@ impl SilenceReason {
             SilenceReason::QuotientIdealOutOfScope { .. } => "quotient_ideal_out_of_scope",
             SilenceReason::OpenConditionInInteraction { .. } => "open_condition_in_interaction",
             SilenceReason::UnboundedSearchOutOfScope { .. } => "unbounded_search_out_of_scope",
+            SilenceReason::ConstructibleStratificationOutOfScope { .. } => {
+                "constructible_stratification_out_of_scope"
+            }
+            SilenceReason::FiniteEnumerationOutOfScope { .. } => "finite_enumeration_out_of_scope",
+            SilenceReason::UniversalRingOutOfScope { .. } => "universal_ring_out_of_scope",
             SilenceReason::ApplicabilityConditionNotMet { .. } => "applicability_condition_not_met",
         }
     }
@@ -113,7 +127,10 @@ impl SilenceReason {
             SilenceReason::InfinitePresentationNotFinitelyReducible { detail }
             | SilenceReason::QuotientIdealOutOfScope { detail }
             | SilenceReason::OpenConditionInInteraction { detail }
-            | SilenceReason::UnboundedSearchOutOfScope { detail } => {
+            | SilenceReason::UnboundedSearchOutOfScope { detail }
+            | SilenceReason::ConstructibleStratificationOutOfScope { detail }
+            | SilenceReason::FiniteEnumerationOutOfScope { detail }
+            | SilenceReason::UniversalRingOutOfScope { detail } => {
                 obj.insert("detail".into(), Json::str(detail));
             }
             SilenceReason::UnsupportedCoeffRing { domain, detail } => {
@@ -324,6 +341,9 @@ pub struct ShigureOutcome {
     pub diagram: Option<DiagramOutcomeDetail>,
     pub path: Option<PathOutcomeDetail>,
     pub transfer: Option<TransferOutcomeDetail>,
+    pub robustness: Option<RobustnessOutcomeDetail>,
+    pub chevalley: Option<ChevalleyOutcomeDetail>,
+    pub observations: Option<ObservationOutcomeDetail>,
 }
 
 impl ShigureOutcome {
@@ -368,6 +388,15 @@ impl ShigureOutcome {
         }
         if let Some(transfer) = &self.transfer {
             obj.insert("transfer".into(), transfer.to_json());
+        }
+        if let Some(robustness) = &self.robustness {
+            obj.insert("robustness".into(), robustness.to_json());
+        }
+        if let Some(chevalley) = &self.chevalley {
+            obj.insert("chevalley".into(), chevalley.to_json());
+        }
+        if let Some(observations) = &self.observations {
+            obj.insert("observations".into(), observations.to_json());
         }
         Json::Obj(obj)
     }

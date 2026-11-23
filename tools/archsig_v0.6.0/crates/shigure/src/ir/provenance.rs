@@ -147,6 +147,23 @@ pub enum MathClause {
     G140G1,
     G140G2,
     G140G3,
+    /// G-140 E3–E5.1, P7: 複数解釈族、共有規則候補、3 量化、全係数移送安定性、reading 比較。
+    G140E3,
+    G140E4,
+    G140E5,
+    G140E5Dot1,
+    G140P7,
+    /// G-141 D6–D7: 構成可能な幾何的像、共有候補の Chevalley 四分類。
+    G141D6,
+    G141D7,
+    /// G-142 G1–G7: 観測に相対的な判定、全係数移送、reading 比較、追加観測 kernel 条件、全包含極小観測、四分類。
+    G142G1,
+    G142G2,
+    G142G3,
+    G142G4,
+    G142G5,
+    G142G6,
+    G142G7,
 }
 
 impl MathClause {
@@ -175,6 +192,20 @@ impl MathClause {
             MathClause::G140G1 => "shigure:G-140:G1",
             MathClause::G140G2 => "shigure:G-140:G2",
             MathClause::G140G3 => "shigure:G-140:G3",
+            MathClause::G140E3 => "shigure:G-140:E3",
+            MathClause::G140E4 => "shigure:G-140:E4",
+            MathClause::G140E5 => "shigure:G-140:E5",
+            MathClause::G140E5Dot1 => "shigure:G-140:E5.1",
+            MathClause::G140P7 => "shigure:G-140:P7",
+            MathClause::G141D6 => "shigure:G-141:D6",
+            MathClause::G141D7 => "shigure:G-141:D7",
+            MathClause::G142G1 => "shigure:G-142:G1",
+            MathClause::G142G2 => "shigure:G-142:G2",
+            MathClause::G142G3 => "shigure:G-142:G3",
+            MathClause::G142G4 => "shigure:G-142:G4",
+            MathClause::G142G5 => "shigure:G-142:G5",
+            MathClause::G142G6 => "shigure:G-142:G6",
+            MathClause::G142G7 => "shigure:G-142:G7",
         }
     }
 }
