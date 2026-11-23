@@ -1,7 +1,9 @@
 {
   "schema": "aat-monograph-manifest/v1",
-  "title": "代数幾何的アーキテクチャ論",
-  "subtitle": "Algebraic Architecture Theory",
+  "title": "Algebraic Architecture Theory",
+  "subtitle": "代数的アーキテクチャ論",
+  "author": "Hiroyuki Nakahata",
+  "orcid": "0009-0008-5928-0234",
   "main": "aat_monograph.tex",
   "source_dir": "docs/aat/algebraic_geometric_theory",
   "environment": {

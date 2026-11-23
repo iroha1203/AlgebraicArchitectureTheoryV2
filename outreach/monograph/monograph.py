@@ -1153,11 +1153,13 @@ def build_tex_bundle(
     # main.tex 組み立て
     title_tex = escape_latex_text(cfg['title'])
     subtitle_tex = escape_latex_text(cfg.get('subtitle', ''))
+    author_tex = escape_latex_text(cfg.get('author', ''))
+    orcid_tex = escape_latex_text(cfg.get('orcid', ''))
     main_lines = [
         '% Auto-generated from docs/aat/algebraic_geometric_theory/ -- DO NOT EDIT DIRECTLY.',
         r'\input{preamble.tex}',
         r'\begin{document}',
-        f'\\aattitlepage{{{title_tex}}}{{{subtitle_tex}}}',
+        f'\\aattitlepage{{{title_tex}}}{{{subtitle_tex}}}{{{author_tex}}}{{{orcid_tex}}}',
         r'\aattoc',
     ]
     for item in cfg['structure']:

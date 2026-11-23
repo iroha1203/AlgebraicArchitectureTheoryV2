@@ -116,8 +116,9 @@
   citecolor=linkblue,
   urlcolor=linkblue,
   pdfborder={0 0 0},
-  pdftitle={代数幾何的アーキテクチャ論},
-  pdfsubject={Algebraic Architecture Theory}
+  pdftitle={Algebraic Architecture Theory},
+  pdfsubject={代数的アーキテクチャ論},
+  pdfauthor={Hiroyuki Nakahata}
 ]{hyperref}
 \usepackage{bookmark}
 
@@ -125,20 +126,24 @@
 % Monograph structural macros (preserve exact fixed numbering from Markdown)
 % ---------------------------------------------------------------------------
 
-\newcommand{\aattitlepage}[2]{%
+\newcommand{\aattitlepage}[4]{%
   \begin{titlepage}
     \thispagestyle{empty}
-    \vspace*{0.18\textheight}
+    \vspace*{0.22\textheight}
     \begin{center}
       {\sffamily\bfseries\fontsize{26}{34}\selectfont #1\par}
-      \vspace{1.0em}
-      {\large\color{partgray} #2\par}
+      \vspace{0.9em}
+      {\Large\color{partgray} #2\par}
       \vspace{2.2em}
       {\color{rulegray}\rule{0.45\linewidth}{0.8pt}\par}
       \vspace{2.2em}
-      {\normalsize
-        Law・操作・観測を指定すると、どのような実現と変更が可能になるか。\\[0.4em]
-        その全体の幾何から、修復の存在と自由度、および判断と構成に必要な情報をどのように導けるか。\par}
+      \if\relax\detokenize{#3}\relax\else
+        {\large #3\par}
+      \fi
+      \if\relax\detokenize{#4}\relax\else
+        \vspace{0.5em}
+        {\normalsize\color{partgray} ORCID~\href{https://orcid.org/#4}{#4}\par}
+      \fi
     \end{center}
     \vfill
   \end{titlepage}

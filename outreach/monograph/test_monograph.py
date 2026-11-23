@@ -283,6 +283,11 @@ class RealCorpusIntegrationTests(unittest.TestCase):
         self.assertEqual(stats.equations, 132)
         self.assertEqual(stats.tables, 18)
         self.assertIn('chapters/appendix_f.tex', tex_files)
+        main_tex = tex_files['aat_monograph.tex'].decode('utf-8')
+        self.assertIn(
+            r'\aattitlepage{Algebraic Architecture Theory}{代数的アーキテクチャ論}{Hiroyuki Nakahata}{0009-0008-5928-0234}',
+            main_tex,
+        )
         ch11 = tex_files['chapters/chapter_11.tex'].decode('utf-8')
         ch14 = tex_files['chapters/chapter_14.tex'].decode('utf-8')
         ch16 = tex_files['chapters/chapter_16.tex'].decode('utf-8')
