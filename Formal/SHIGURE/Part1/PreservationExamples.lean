@@ -374,6 +374,7 @@ private def missingSort : Reading.{0, 0, 0, 0} :=
         subset := fun i => nomatch i
         covers := fun h => h.elim }
     observationPlacement := .external
+    observationDeclared := fun _ named => nomatch named
     coefficients := none }
 
 /-- With fixed declarations the state observation still reads its actual structure. -/
@@ -396,6 +397,53 @@ theorem missing_target_sort_fails :
   have ht : Declaration.sort () ∈ missingSort.context.declarations :=
     transition.support_subset hs (Set.mem_singleton _)
   exact ht.elim
+
+/-- A comparison cannot keep distinguishing observed states through an empty target cover. -/
+theorem cannot_compare_external_after_forgetting_input
+    (comparison : ReadingComparison (reading id) missingSort) :
+    IsEmpty comparison.ContextChange := by
+  refine ⟨fun change => ?_⟩
+  obtain ⟨localRead, _, sourceSquare, _, _⟩ := comparison.observation_square_on_retained change
+  have noInput (i : change.val.observationInputs) : False := by
+    obtain ⟨_, j, _, _⟩ := change.val.sort_is_covered _ i.property
+    exact nomatch j
+  have localInputs :
+      (fun _ : change.val.observationInputs => false) = (fun _ => true) :=
+    funext (fun i => (noInput i).elim)
+  exact Bool.noConfusion
+    ((sourceSquare (fun _ => false)).symm.trans
+      ((congrArg localRead localInputs).trans (sourceSquare (fun _ => true))))
+
+/-- The target can produce a constant entirely independently of the forgotten states. -/
+private def constantWithEmptyCover : Reading.{0, 0, 0, 0} :=
+  { missingSort with
+    observation := StateObservation.ofSort () Bool (fun _ => true)
+    observationDeclared := fun _ h => nomatch h }
+
+/-- All declarations are forgotten in this comparison of constant observations. -/
+private def emptyCoverChange :
+    ReadingContextChange (reading (fun _ => false)) constantWithEmptyCover
+      (Interpretation.identity presentation.theory) where
+  retained := missingSort.context
+  inside _ absent := absent.elim
+  supporting := Interpretation.identity presentation.theory
+  equivalent := Interpretation.Equivalent.refl _
+  pieces _ := ∅
+  localSupport _ _ absent := absent.elim
+
+/-- The retained empty tuple still has a well-defined comparison of constant observations. -/
+def constant_observations_compare_through_empty_cover :
+    ReadingComparison (reading (fun _ => false)) constantWithEmptyCover where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel := model
+  state := state
+  contexts := .identity _
+  declarationChange := .changed emptyCoverChange
+  coefficientChange := PUnit.unit
+  value := Bool.not
+  commutes _ := rfl
+  restrictedObservations :=
+    ⟨fun _ => false, fun _ => true, fun _ => rfl, fun _ => rfl, fun _ => rfl⟩
 
 /-- Equality in a context of two states reads both variables of the retained sort. -/
 private def twoStatesEqual : Atomic signature [(), ()] := .eq .here (.there .here)
@@ -439,8 +487,7 @@ private def coverChange : ReadingContextChange (reading id) secondCover
   retained := whole
   inside := fun _ h => h
   supporting := Interpretation.identity presentation.theory
-  sameSorts := rfl
-  sameTranslation := HEq.rfl
+  equivalent := Interpretation.Equivalent.refl _
   pieces := fun _ => {true}
   localSupport := by
     intros
@@ -456,6 +503,8 @@ def comparisonWithCover : ReadingComparison (reading id) secondCover where
   coefficientChange := PUnit.unit
   value := Bool.not
   commutes := fun _ => rfl
+  restrictedObservations := coverChange.observationSquare_of_all _ _ _
+    (fun _ => Set.mem_univ _) (fun _ => rfl)
 
 /-- The comparison transports a quantified formula through the two assigned pieces. -/
 theorem retained_equality_transport :
@@ -735,7 +784,7 @@ def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int 
     { integerDiagonal with
       evaluate_commutes := fun e => integerDiagonal.evaluate_commutes
         (fun _ => e.1 ⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩) }
-  coefficientInputs := ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _⟩
+  coefficientInputs := ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _ _⟩
   value := fun x => (x, x)
   commutes := fun _ => rfl
 
@@ -888,14 +937,15 @@ def fixed_coefficients_across_cover_change :
       { retained := Observation.whole
         inside := fun _ h => h
         supporting := Interpretation.identity Observation.presentation.theory
-        sameSorts := rfl
-        sameTranslation := HEq.rfl
+        equivalent := Interpretation.Equivalent.refl _
         pieces := fun _ => {true}
         localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
     observationSupport := ⟨False.elim, False.elim⟩
     coefficientSupport :=
       ⟨(fun _ => Set.mem_univ _), Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
-        ⟨PUnit.unit, true, Set.mem_singleton _, Set.mem_univ _⟩))⟩ }
+        ⟨PUnit.unit, true, Set.mem_singleton _, Set.mem_univ _⟩))⟩
+    restrictedObservations := ReadingContextChange.observationSquare_of_all _ _ _ _
+      (fun _ => Set.mem_univ _) (fun _ => rfl) }
 
 /-- The target lists an extra integer state that the evaluation never uses. -/
 private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
@@ -978,7 +1028,7 @@ theorem cannot_relabel_coefficient_position :
     ¬ ReadingInputMap.UsesCoefficientNames paddedIntegerInput.selection relabeledInput := by
   intro keeps
   let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
-  have same := keeps second second.val (by decide) rfl HEq.rfl rfl
+  have same := keeps second second.val ⟨by decide, rfl, HEq.rfl, rfl⟩
   exact Nat.zero_ne_one
     (congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index => i.2.position) same)
 
@@ -987,9 +1037,10 @@ positions have the same sort. -/
 theorem cannot_relabel_shared_position :
     ¬ relabeledInput.RespectsOrdinary
       (.identity (sharedObservation paddedIntegerInput).observation.product)
-      (fun j i => (sharedObservation paddedIntegerInput).SharesInput (.ofList [(), ()]) j.val i)
+      (CoefficientProduct.ofList [(), ()]).product Subtype.val
+      ((sharedObservation paddedIntegerInput).SharesInput (.ofList [(), ()]))
       (fun j i => (sharedObservation secondIntegerInput).SharesInput (.ofList [(), ()]) j.val i) := by
-  rintro ⟨extra, extraSort, extraUnique, respects⟩
+  rintro ⟨extra, extraSort, extraUnique, originalShares, respects⟩
   let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
   have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
   rcases same.2 with ⟨_, _, _, same⟩ | ⟨same, _, _⟩
@@ -1043,7 +1094,7 @@ theorem padded_ordinary_product_keeps_first_name :
 
 private def reindexedObservation (right : Bool) : Reading.{0, 0, 0, 0} :=
   { Observation.reading id with
-    observation := ⟨{ Index := Bool, sort := fun _ => () }, Bool, fun e => e right⟩
+    observation := .ofFunction { Index := Bool, sort := fun _ => () } Bool (fun e => e right)
     sharedInputs := .empty _
     observationPlacement := .external }
 
@@ -1205,7 +1256,7 @@ theorem every_coordinate_changes_coefficient (n : Nat) :
 /-- The ordinary coefficient-valued observation uses the very same infinite evaluation. -/
 private noncomputable def sequenceReading : Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with
-    observation := ⟨integerSequence, Int, fun e => coefficientSequence.evaluate (fun i => e i.val)⟩
+    observation := .ofFunction integerSequence Int (fun e => coefficientSequence.evaluate (fun i => e i.val))
     coefficients := some ⟨CoefficientProduct.all integerSequence, coefficientSequence⟩
     sharedInputs := .empty _
     observationPlacement := .external }
@@ -1239,7 +1290,7 @@ noncomputable def infinite_coefficient_comparison : ReadingComparison sequenceRe
       coefficients := RingHom.id Int
       algebra_commutes := rfl
       evaluate_commutes _ := rfl }
-  coefficientInputs := ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _⟩
+  coefficientInputs := ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _ _⟩
   value := id
   commutes _ := rfl
 

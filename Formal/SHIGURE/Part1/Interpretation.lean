@@ -279,6 +279,13 @@ theorem Equivalent.trans {p q r : Formula T.signature Γ} (h₁ : Equivalent T p
   obtain ⟨⟨qr⟩, ⟨rq⟩⟩ := h₂
   exact ⟨⟨.cut pq qr⟩, ⟨.cut rq qp⟩⟩
 
+/-- Mutual derivability gives the same truth value in each target model. -/
+theorem Equivalent.holds_iff {p q : Formula T.signature Γ} (same : Equivalent T p q)
+    (B : Structure T.signature) (model : T.Holds B) (e : Assignment B.carrier Γ) :
+    p.Holds B e ↔ q.Holds B e := by
+  obtain ⟨⟨forward⟩, ⟨backward⟩⟩ := same
+  exact ⟨forward.sound B model e, backward.sound B model e⟩
+
 end Derivation
 
 /-- A translation into a theory that proves the clauses of Definition 1.9. -/
@@ -330,6 +337,45 @@ theorem Equivalent.trans {left middle right : Translation S.signature T.signatur
   ⟨fun op => (h₁.1 op).trans (h₂.1 op), fun r => (h₁.2.1 r).trans (h₂.2.1 r),
     fun p => (h₁.2.2 p).trans (h₂.2.2 p)⟩
 
+/-- Evaluating a translated formula in a model is independent of mutually derivable replacements. -/
+theorem Equivalent.formula_holds_iff {left right : Translation S.signature T.signature f}
+    (same : Equivalent (S := S) (T := T) left right) (B : Structure T.signature)
+    (model : T.Holds B) {Γ : List S.signature.SortType} (p : Formula S.signature Γ) :
+    ∀ e : Assignment B.carrier (Γ.map f), (left.formula p).Holds B e ↔ (right.formula p).Holds B e := by
+  induction p with
+  | atom a =>
+    intro e
+    change (left.atomic a).Holds B e ↔ (right.atomic a).Holds B e
+    cases a with
+    | eq x y => rfl
+    | rel r vars =>
+      rw [Translation.atomic_rel, Translation.atomic_rel, Formula.holds_rename, Formula.holds_rename]
+      exact (same.2.1 r).holds_iff B model _
+    | domain p vars =>
+      rw [Translation.atomic_domain, Translation.atomic_domain, Formula.holds_rename, Formula.holds_rename]
+      exact (same.2.2 p).holds_iff B model _
+    | graph op vars y =>
+      rw [Translation.atomic_graph, Translation.atomic_graph, Formula.holds_rename, Formula.holds_rename]
+      exact (same.1 op).holds_iff B model _
+  | truth => intro; rfl
+  | falsehood => intro; rfl
+  | conj p q hp hq =>
+    intro e
+    change ((left.formula p).conj (left.formula q)).Holds B e ↔
+      ((right.formula p).conj (right.formula q)).Holds B e
+    rw [Formula.holds_conj, Formula.holds_conj]
+    exact and_congr (hp e) (hq e)
+  | disj p q hp hq =>
+    intro e
+    change ((left.formula p).disj (left.formula q)).Holds B e ↔
+      ((right.formula p).disj (right.formula q)).Holds B e
+    rw [Formula.holds_disj, Formula.holds_disj]
+    exact or_congr (hp e) (hq e)
+  | ex p ih =>
+    intro e
+    rw [Translation.formula_ex, Translation.formula_ex, Formula.holds_ex, Formula.holds_ex]
+    exact exists_congr fun x => ih (Assignment.cons x e)
+
 end Translation
 
 namespace Interpretation
@@ -339,6 +385,24 @@ variable {S T U : Theory.{u}}
 /-- Definition 1.9 identifies equal sort maps with mutually derivable primitive replacements. -/
 def Equivalent (u v : Interpretation S T) : Prop :=
   ∃ h : u.onSort = v.onSort, Translation.Equivalent (S := S) (T := T) (h ▸ u.translation) v.translation
+
+/-- Equivalent interpretations retype the same translated state tuple. -/
+def Equivalent.retype {left right : Interpretation S T} (same : left.Equivalent right)
+    {X : T.signature.SortType → Type u} {Γ : List S.signature.SortType}
+    (e : Assignment X (Γ.map right.onSort)) : Assignment X (Γ.map left.onSort) :=
+  (congrArg (List.map · Γ) same.choose).symm ▸ e
+
+/-- The target model agrees on translated formulas after retyping the input. -/
+theorem Equivalent.formula_holds_iff {left right : Interpretation S T}
+    (same : left.Equivalent right) (B : Structure T.signature) (model : T.Holds B)
+    {Γ : List S.signature.SortType} (p : Formula S.signature Γ)
+    (e : Assignment B.carrier (Γ.map right.onSort)) :
+    (left.translation.formula p).Holds B (same.retype e) ↔ (right.translation.formula p).Holds B e := by
+  obtain ⟨sorts, replacements⟩ := same
+  cases left
+  cases right
+  cases sorts
+  exact replacements.formula_holds_iff B model p e
 
 /-- Each interpretation is equivalent to itself. -/
 theorem Equivalent.refl (u : Interpretation S T) : Equivalent u u :=

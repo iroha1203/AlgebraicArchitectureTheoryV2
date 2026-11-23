@@ -56,10 +56,20 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.Chapter1.CoefficientTransport.point_evaluation_respects_restriction,
   SHIGURE.Chapter1.RetainedCoefficientInputs.compatible_explicit_sharing_survives_name_collision,
   SHIGURE.Chapter1.RetainedCoefficientInputs.declared_observation_covers_both_sorts,
+  SHIGURE.Chapter1.RetainedCoefficientInputs.declared_observation_cannot_use_sort_only_assignment,
   ReadingComparison.target_input_is_covered,
   ReadingContextChange.target_evaluation_input_is_covered,
-  DeclaredReadingComparison.covered_commutes,
-  DeclaredReadingComparison.target_observation_is_assigned,
+  ReadingComparison.covered_commutes,
+  ReadingComparison.target_observation_is_assigned,
+  ReadingComparison.observation_square_on_retained,
+  Interpretation.Equivalent.formula_holds_iff,
+  SHIGURE.Chapter1.CoverTransport.equivalent_representative_transports_in_assigned_piece,
+  SHIGURE.Chapter1.AdditionalCoefficientInputs.extra_cannot_change_original_sort,
+  SHIGURE.Chapter1.AdditionalCoefficientInputs.extra_can_restore_unused_name,
+  SHIGURE.Chapter1.AdditionalCoefficientInputs.extra_keeps_original_sharing,
+  SHIGURE.Chapter1.AdditionalCoefficientInputs.extra_cannot_reassign_original_sharing,
+  SHIGURE.Chapter1.Observation.cannot_compare_external_after_forgetting_input,
+  SHIGURE.Chapter1.Observation.constant_observations_compare_through_empty_cover,
   CoefficientReading.evaluateRetained_mk
 ]
 

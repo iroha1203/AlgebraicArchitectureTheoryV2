@@ -100,8 +100,7 @@ private def coverChange : ReadingContextChange source target (Interpretation.ide
   retained := piece
   inside := fun _ _ => Set.mem_univ _
   supporting := Interpretation.identity presentation.theory
-  sameSorts := rfl
-  sameTranslation := HEq.rfl
+  equivalent := Interpretation.Equivalent.refl _
   pieces := fun _ => {true}
   localSupport := by
     intro i a ha _ d hd
@@ -134,8 +133,10 @@ private def comparison : ReadingComparison source target where
   coefficientChange := PUnit.unit
   value := id
   commutes := fun _ => rfl
+  restrictedObservations := coverChange.observationSquare_of_all _ _ _
+    (fun _ => Or.inl rfl) (fun _ => rfl)
 
-/-- An equivalent representative conjoins truth with both original relations. -/
+/-- An equivalent representative mentions the relation outside the selected piece. -/
 private def alternateIdentity : Interpretation presentation.theory presentation.theory where
   onSort := id
   translation :=
@@ -143,7 +144,8 @@ private def alternateIdentity : Interpretation presentation.theory presentation.
         | .total f => nomatch f
         | .quantity q => nomatch q
         | .partialOp p => nomatch p
-      relation := fun r => ((Translation.identity signature).relation r).conj .truth
+      relation := fun r => ((Translation.identity signature).relation r).conj
+        (Formula.truth.disj ((Translation.identity signature).relation true))
       partialDomain p := nomatch p }
   total f := nomatch f
   quantity q := nomatch q
@@ -158,13 +160,43 @@ private theorem alternateIdentity_equivalent :
   · intro op
     cases op <;> rename_i name <;> exact nomatch name
   · intro r
-    exact ⟨⟨.andLeft _ _⟩, ⟨.andIntro (.refl _) (.truth _)⟩⟩
+    exact ⟨⟨.andLeft _ _⟩, ⟨.andIntro (.refl _) (.cut (.truth _) (.orLeft _ _))⟩⟩
   · intro p
     exact nomatch p
 
 /-- Changing the representative of the identity still admits a fixed declaration comparison. -/
 def alternate_fixed_context : source.ContextCompatibility source alternateIdentity :=
   .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ alternateIdentity_equivalent
+
+/-- The selected context uses the supported representative of this same interpretation. -/
+private def alternateCoverChange : ReadingContextChange source target alternateIdentity where
+  retained := coverChange.retained
+  inside := coverChange.inside
+  supporting := coverChange.supporting
+  equivalent := alternateIdentity_equivalent.symm
+  pieces := coverChange.pieces
+  localSupport := coverChange.localSupport
+
+/-- The alternative representative uses the same state and covered evaluation. -/
+private def alternateComparison : ReadingComparison source target where
+  interpretation := alternateIdentity
+  targetModel := comparison.targetModel
+  state :=
+    { onSort := fun _ x => x
+      total_comm f := nomatch f
+      relation_mem := by
+        intro r e held
+        exact ⟨comparison.state.relation_mem r e held, Or.inl True.intro⟩
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .changed alternateCoverChange
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
+  restrictedObservations := alternateCoverChange.observationSquare_of_all _ _ _
+    (fun _ => Or.inl rfl) (fun _ => rfl)
 
 /-- An existential can use the actual value of the retained nullary relation. -/
 private def formula : Formula signature [] :=
@@ -187,6 +219,16 @@ theorem existential_transports_in_assigned_piece :
       (coverChange.local_formula_support () formula formulaSupported)
       (comparison.interpretation.mapStates comparison.state Assignment.empty) :=
   comparison.transport_restricted_formula ⟨coverChange, rfl⟩ () formula formulaSupported
+    Assignment.empty ⟨false, Set.mem_univ _⟩
+
+/-- The same local evaluator works for the equivalent representative that mentions a forgotten relation. -/
+theorem equivalent_representative_transports_in_assigned_piece :
+    (RestrictedEvaluation.restrict (alternateCoverChange.targetPiece ()) data).holds
+      (coverChange.supporting.translation.formula formula)
+      (alternateCoverChange.local_formula_support () formula formulaSupported)
+      (alternateCoverChange.equivalent.retype
+        (alternateComparison.interpretation.mapStates alternateComparison.state Assignment.empty)) :=
+  alternateComparison.transport_restricted_formula ⟨alternateCoverChange, rfl⟩ () formula formulaSupported
     Assignment.empty ⟨false, Set.mem_univ _⟩
 
 /-- The deliberately unassigned relation cannot be read in the assigned target pieces. -/
@@ -662,7 +704,7 @@ private noncomputable def explicitFalsePosition : SharedInputNames twoOrdinarySo
 
 private noncomputable def sameNameDifferentSort : Reading.{0, 0, 0, 0} :=
   { separateReading Int with
-    observation := ⟨twoOrdinarySorts, Int, fun states => states false⟩
+    observation := .ofFunction twoOrdinarySorts Int (fun states => states false)
     sharedInputs := explicitFalsePosition
     observationPlacement := .external }
 
@@ -722,6 +764,42 @@ theorem declared_observation_covers_both_sorts :
   rintro _ ⟨s, kept, rfl⟩
   exact arity ⟨s, List.mem_cons_of_mem _ kept, rfl⟩
 
+/-- Both state sorts remain available while the operation declaration is forgotten. -/
+private def pairedSorts : DeclarationContext observationPresentation where
+  declarations := {d | ∃ s, d = .sort s}
+  closed := by
+    rintro _ ⟨s, rfl⟩ d source
+    exact source.elim
+
+/-- The target has a covering piece for the operation and a separate sorts-only piece. -/
+private def splitPairedReading : Reading.{0, 0, 0, 0} :=
+  { pairedReading with
+    cover :=
+      { Index := Bool
+        piece := fun full => if full then pairedReading.context else pairedSorts
+        subset := fun _ _ _ => Set.mem_univ _
+        covers := fun kept => ⟨true, kept⟩ } }
+
+private def forgetPairedOperation : ReadingContextChange pairedReading splitPairedReading
+    (Interpretation.identity observationPresentation.theory) where
+  retained := pairedSorts
+  inside := fun _ _ => Set.mem_univ _
+  supporting := Interpretation.identity observationPresentation.theory
+  equivalent := Interpretation.Equivalent.refl _
+  pieces := fun _ => {false}
+  localSupport := by
+    rintro _ _ ⟨s, rfl⟩ _ d supported
+    exact ⟨false, Set.mem_singleton _, ⟨s, Set.mem_singleton_iff.1 supported⟩⟩
+
+/-- Covering the two inputs still does not permit forgetting the selected observation operation. -/
+theorem declared_observation_cannot_use_sort_only_assignment :
+    ¬ (Reading.ContextCompatibility.changed forgetPairedOperation).retainsChosenSymbols (.identity _) := by
+  rintro ⟨i, j, assigned, _, kept⟩
+  have choosesFalse : j = false := Set.mem_singleton_iff.1 assigned
+  subst j
+  obtain ⟨s, impossible⟩ := (kept (.ordinary ()) rfl).1
+  cases impossible
+
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
 private def paddedScalarInputs (R : Type) [CommRing R] :
     CoefficientReading retained (separateStates R) (.ofList [false, true]) :=
@@ -770,12 +848,12 @@ def independent_coefficient_comparison :
       evaluate_commutes _ := rfl }
   coefficientInputs := by
     constructor
-    · intro j i _ _ _ _
+    · intro j i _
       obtain ⟨s, v⟩ := i
       cases v with
       | here => rfl
       | there v => exact nomatch v
-    refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), ?_⟩
+    refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), (fun _ _ k => nomatch k), ?_⟩
     intro j i share
     obtain ⟨k, hk⟩ := j.property
     have sortEq : j.val.1 = false := by
@@ -822,6 +900,68 @@ def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedRe
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
 
+namespace SHIGURE.Chapter1.AdditionalCoefficientInputs
+
+/-- A single original named position with the specified source sort. -/
+private def slot {S : Type} (s : S) : ObservationProduct S where
+  Index := Unit
+  sort := fun _ => s
+  nameScope := some "coefficient"
+
+/-- Supply the only target position from an additional original input. -/
+private def additional {S T : Type} {s : S} (f : S → T) :
+    ReadingInputMap (ObservationProduct.empty : ObservationProduct S) (slot (f s)) f where
+  extra := slot s
+  coordinate _ := ⟨.inr (), rfl⟩
+  extra_used _ := ⟨(), rfl⟩
+
+/-- Even when two sorts have the same image, a name cannot change its original sort. -/
+theorem extra_cannot_change_original_sort :
+    ¬ (additional (s := true) (fun _ => ())).PreservesNames (slot false) (fun i => nomatch i) := by
+  intro preserves
+  have same := preserves () () ⟨by decide, rfl, HEq.rfl, rfl⟩
+  exact Bool.noConfusion same.2.1
+
+private def ordinaryPair : ObservationProduct Unit where
+  Index := Bool
+  sort := fun _ => ()
+
+private def sharesFirst (_ : Unit) (j : ordinaryPair.Index) : Prop := j = false
+private def sharesSecond (_ : Unit) (j : ordinaryPair.Index) : Prop := j = true
+
+/-- An additional input can restore the original named coordinate with its original sort. -/
+theorem extra_can_restore_unused_name :
+    (additional (s := ()) id).PreservesNames (slot ()) (fun i => nomatch i) := by
+  rintro ⟨⟩ ⟨⟩ _
+  refine ⟨?_, rfl, rfl, HEq.rfl⟩
+  rintro ⟨i, _⟩
+  exact nomatch i
+
+/-- Restoring an unused coordinate still shares its actual original ordinary position. -/
+theorem extra_keeps_original_sharing :
+    (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
+      (fun i => nomatch i) sharesFirst sharesFirst := by
+  refine ⟨fun _ => some false, (fun _ _ _ => rfl), ?_, ?_, ?_⟩
+  · rintro ⟨⟩ ⟨⟩ _ _ _
+    rfl
+  · intro j i k _ _ o
+    exact ⟨fun h => (Option.some.inj h).symm, fun h => congrArg some h.symm⟩
+  · intro j i h
+    refine ⟨congrArg some h.symm, ?_⟩
+    rintro ⟨x, _⟩
+    exact nomatch x
+
+/-- Sharing with the second ordinary position contradicts the original share with the first. -/
+theorem extra_cannot_reassign_original_sharing :
+    ¬ (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
+      (fun i => nomatch i) sharesFirst sharesSecond := by
+  rintro ⟨extraShares, _, _, original, follows⟩
+  have wrong := (follows () true rfl).1
+  have same := original () () () ⟨by decide, rfl, HEq.rfl, rfl⟩ rfl true
+  exact Bool.noConfusion (same.mp wrong)
+
+end SHIGURE.Chapter1.AdditionalCoefficientInputs
+
 namespace SHIGURE.Chapter1.IndexedObservation
 
 /-- Countably many state sorts without primitive operations or Laws. -/
@@ -858,7 +998,7 @@ private def presentation : PrimitivePresentation where
 private def reading : Reading.{0, 0, 0, 0} where
   presentation := presentation
   structureData := states
-  observation := ⟨{ Index := Nat, sort := id }, Nat → Bool, id⟩
+  observation := .ofFunction { Index := Nat, sort := id } (Nat → Bool) id
   context := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
   cover := ⟨Unit, fun _ => ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩,
     fun _ _ h => h, fun h => ⟨(), h⟩⟩
