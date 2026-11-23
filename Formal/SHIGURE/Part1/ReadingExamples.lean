@@ -76,6 +76,13 @@ private def target : Reading.{0, 0} :=
         subset := fun _ _ _ => Set.mem_univ _
         covers := fun h => ⟨false, h⟩ } }
 
+/-- The two-piece target cover differs from the original one-piece cover. -/
+theorem cover_change_is_not_fixed : ¬ source.SameContext target := by
+  intro same
+  have index : Unit = Bool := congrArg DeclarationCover.Index (eq_of_heq same.cover)
+  have small : Subsingleton Bool := index ▸ (inferInstance : Subsingleton Unit)
+  exact (by decide : false ≠ true) (@Subsingleton.elim Bool small false true)
+
 /-- Restrict the source to one relation and transport its support to the assigned piece. -/
 private def coverChange : ReadingContextChange source target (Interpretation.identity presentation.theory) where
   retained := piece
@@ -98,6 +105,7 @@ private def coverChange : ReadingContextChange source target (Interpretation.ide
 /-- The identity state map and the selected cover change belong to one comparison. -/
 private def comparison : ReadingComparison source target where
   interpretation := Interpretation.identity presentation.theory
+  sourceModel := fun name => nomatch name.val
   targetModel := fun name => nomatch name.val
   state :=
     { onSort := fun _ x => x
@@ -197,9 +205,12 @@ private def modelContext : DeclarationContext modelPresentation :=
 private def lawModelBase : CoefficientRing := ⟨Int, inferInstance⟩
 
 /-- Choose a realization whose required relation holds exactly when the flag is true. -/
+private def lawTestingStructure (satisfies : Bool) : Structure signature :=
+  if satisfies then data else { data with relation := fun _ => ∅ }
+
+/-- The interpreted Law on the retained declarations uses the same test structure. -/
 private def retainedModel (satisfies : Bool) : RestrictedStructure modelContext :=
-  RestrictedStructure.restrict modelContext
-    (if satisfies then data else { data with relation := fun _ => ∅ })
+  RestrictedStructure.restrict modelContext (lawTestingStructure satisfies)
 
 /-- Use set-valued evaluation of the declared Law in both realized structures. -/
 private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
@@ -240,6 +251,26 @@ theorem coefficient_scheme_evaluates_required_law (R : CoefficientAlgebra lawMod
     exact Set.mem_univ _
   · intro model
     exact (model ⟨(), rfl⟩ (Set.mem_univ _) Assignment.empty True.intro).elim
+
+/-- The state observation exists even when the structure fails a required Law. -/
+private def lawTestingReading (satisfies : Bool) : Reading.{0, 0} where
+  presentation := modelPresentation
+  structureData := lawTestingStructure satisfies
+  observation := StateObservation.ofSort () Unit (fun _ => ())
+  context := modelContext
+  cover := ⟨Unit, fun _ => modelContext, fun _ _ h => h, fun h => ⟨(), h⟩⟩
+  Family := Unit
+  realize _ := lawTestingStructure satisfies
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := none
+
+/-- A false required relation on the source precludes a comparison of models. -/
+theorem reading_comparison_requires_source_model :
+    ¬ Nonempty (ReadingComparison (lawTestingReading false) (lawTestingReading true)) := by
+  rintro ⟨comparison⟩
+  exact (comparison.sourceModel ⟨(), rfl⟩ Assignment.empty True.intro).elim
 
 end SHIGURE.Chapter1.CoverTransport
 
@@ -341,31 +372,38 @@ private def scheme : CoefficientScheme retained integers where
   changePoints _ a := retainedMap a false
 
 /-- Observe the retained coordinate only, even though the ordinary tuple has two coordinates. -/
-private def selected : CoefficientReading retained ordinary [false, true] where
+private def selected : CoefficientReading retained ordinary (.ofList [false, true]) where
   base := integers
   algebra := ⟨integers, RingHom.id Int⟩
   scheme := scheme
   realization := false
-  context := [false]
-  supported := by
-    rintro _ ⟨s, hs, rfl⟩
-    have same : s = false := List.mem_singleton.1 hs
-    subst s
-    exact Set.mem_singleton _
-  inputs
+  selection := .ofRenaming (Δ := [false]) (fun
     | .here => .here
-    | .there i => nomatch i
+    | .there i => nomatch i)
+  supported i := Set.mem_singleton_iff.2 (congrArg Declaration.sort (List.mem_singleton.1 i.2.sort_mem))
   realizePoint s hs := by
-    have same : s = false := List.mem_singleton.1 hs
-    subst s
-    exact id
-  point_permitted := True.intro
-  evaluateOn R _ e := R.fromBase (show Int from e.head)
+    cases s
+    · exact id
+    · exact False.elim (by
+        obtain ⟨i, hi⟩ := hs
+        exact (by decide : true ≠ false) (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
+  pointOrigin := .declared True.intro
+  evaluateOn R _ e := R.fromBase (e ⟨false, .here⟩)
 
 /-- The realized value is the first coordinate for any values of the forgotten coordinate. -/
 theorem evaluation_reads_retained_input (s t : Int) :
-    selected.evaluate (Assignment.cons s (Assignment.cons t Assignment.empty)) = s :=
+    selected.evaluate (ObservationProduct.ofAssignment
+      (Assignment.cons s (Assignment.cons t Assignment.empty))) = s :=
   rfl
+
+/-- The second original position is outside the selected coefficient inputs. -/
+theorem forgotten_coordinate_unread :
+    (⟨true, .there .here⟩ : (ObservationProduct.ofList [false, true]).Index) ∉
+      Set.range selected.selection.inputs := by
+  rintro ⟨⟨s, i⟩, h⟩
+  cases i with
+  | here => cases h
+  | there i => exact nomatch i
 
 /-- The scalar rule maps the retained points even when the forgotten target carrier is empty. -/
 theorem change_without_forgotten_map :
@@ -422,21 +460,16 @@ private def scalarScheme : CoefficientScheme retained integers where
 
 /-- Select the scalar input in its own product. -/
 private def scalarInputs (R : Type) [CommRing R] :
-    CoefficientReading retained (separateStates R) [false] where
+    CoefficientReading retained (separateStates R) (.ofList [false]) where
   base := integers
   algebra := ⟨⟨R, inferInstance⟩, Int.castRingHom R⟩
   scheme := scalarScheme
   realization := ()
-  context := [false]
-  supported := by
-    rintro _ ⟨s, hs, rfl⟩
-    have same : s = false := List.mem_singleton.1 hs
-    subst s
-    exact Set.mem_singleton _
-  inputs := fun i => i
+  selection := .ofRenaming (Δ := [false]) (fun i => i)
+  supported i := Set.mem_singleton_iff.2 (congrArg Declaration.sort (List.mem_singleton.1 i.2.sort_mem))
   realizePoint _ _ := id
-  point_permitted := True.intro
-  evaluateOn _ _ e := e.head
+  pointOrigin := .declared True.intro
+  evaluateOn _ _ e := e ⟨false, .here⟩
 
 /-- Read coefficients at the first sort and take the ordinary observation at the second. -/
 private def separateReading (R : Type) [CommRing R] : Reading.{0, 0} where
@@ -450,33 +483,36 @@ private def separateReading (R : Type) [CommRing R] : Reading.{0, 0} where
   familyObservation := none
   ValueStructure := fun _ => Unit
   valueStructure := ()
-  coefficients := some ⟨[false], scalarInputs R⟩
+  coefficients := some ⟨.ofList [false], scalarInputs R⟩
 
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
 private def paddedScalarInputs (R : Type) [CommRing R] :
-    CoefficientReading retained (separateStates R) [false, true] :=
+    CoefficientReading retained (separateStates R) (.ofList [false, true]) :=
   { scalarInputs R with
-    inputs := fun
+    selection := .ofRenaming (Δ := [false]) (fun
       | .here => .here
-      | .there i => nomatch i }
+      | .there i => nomatch i) }
 
 /-- The reading with a longer outer coefficient product still uses only the scalar position. -/
 private def paddedReading (R : Type) [CommRing R] : Reading.{0, 0} :=
-  { separateReading R with coefficients := some ⟨[false, true], paddedScalarInputs R⟩ }
+  { separateReading R with coefficients := some ⟨.ofList [false, true], paddedScalarInputs R⟩ }
 
 /-- Transport the scalar occurrence without supplying the unread Bool position. -/
 private def scalarInputMap :
-    ReadingInputMap (scalarInputs Int).selection.product (paddedScalarInputs (Int × Int)).selection.product id where
+    ReadingInputMap (scalarInputs Int).selection.used (paddedScalarInputs (Int × Int)).selection.used id where
   extra := .empty
-  coordinate j := ⟨.inl ⟨false, .here, .here, rfl⟩, by
-    obtain ⟨i, _⟩ := j.2.property
-    exact (List.mem_singleton.1 i.sort_mem).symm⟩
+  coordinate j := ⟨.inl ⟨⟨false, .here⟩, ⟨false, .here⟩, rfl⟩, by
+    obtain ⟨i, hi⟩ := j.property
+    change false = j.val.1
+    rw [← hi]
+    exact (List.mem_singleton.1 i.2.sort_mem).symm⟩
   extra_used i := nomatch i
 
 /-- One structural map induces both squares on their respective input products. -/
 def independent_coefficient_comparison :
     ReadingComparison (separateReading Int) (paddedReading (Int × Int)) where
   interpretation := Interpretation.identity presentation.theory
+  sourceModel := fun name => nomatch name.val
   targetModel := fun name => nomatch name.val
   state :=
     { onSort := fun
@@ -503,7 +539,7 @@ def independent_coefficient_comparison :
 private def plainReading : Reading.{0, 0} := { separateReading Int with coefficients := none }
 
 /-- The new scalar observation evaluates to zero on the selected sort. -/
-private def zeroInputs : CoefficientReading retained (separateStates Int) [false, true] :=
+private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofList [false, true]) :=
   { paddedScalarInputs Int with
     evaluateOn R _ _ :=
       letI := R.scalars.ring
@@ -511,13 +547,15 @@ private def zeroInputs : CoefficientReading retained (separateStates Int) [false
 
 /-- Introduce a scalar evaluation independent of the originally observed Bool. -/
 def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
-    ({ separateReading Int with coefficients := some ⟨[false, true], zeroInputs⟩ } : Reading.{0, 0})
+    ({ separateReading Int with coefficients := some ⟨.ofList [false, true], zeroInputs⟩ } : Reading.{0, 0})
     id (fun _ x => x) True :=
   ⟨{ extra := .ofSort false
      coordinate := fun j => ⟨.inr PUnit.unit, by
-       obtain ⟨i, _⟩ := j.2.property
-       exact (List.mem_singleton.1 i.sort_mem).symm⟩
-     extra_used := fun _ => ⟨⟨false, .here, .here, rfl⟩, rfl⟩ },
+       obtain ⟨i, hi⟩ := j.property
+       change false = j.val.1
+       rw [← hi]
+       exact (List.mem_singleton.1 i.2.sort_mem).symm⟩
+     extra_used := fun _ => ⟨⟨⟨false, .here⟩, ⟨false, .here⟩, rfl⟩, rfl⟩ },
     fun _ => (0 : Int), fun _ => rfl⟩
 
 /-- Forget scalar evaluation while reading the independently selected Bool position. -/
@@ -581,6 +619,7 @@ private def reading : Reading.{0, 0} where
 /-- The comparison acts on the Boolean state at every natural-number position. -/
 def all_sorts_comparison : ReadingComparison reading reading where
   interpretation := Interpretation.identity presentation.theory
+  sourceModel n := nomatch n.val
   targetModel n := nomatch n.val
   state :=
     { onSort := fun _ => Bool.not

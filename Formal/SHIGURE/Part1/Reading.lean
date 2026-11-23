@@ -203,6 +203,14 @@ theorem pullback_formula_iff (u : Interpretation S T) (B : Structure T.signature
     rw [Formula.holds_ex, Translation.formula_ex, Formula.holds_ex]
     exact exists_congr fun x => by simpa only [Assignment.mapSorts_cons] using ih (Assignment.cons x e)
 
+/-- Interpreting a model yields a model of the source theory. -/
+theorem pullback_isModel (u : Interpretation S T) (B : Structure T.signature)
+    (model : T.Holds B) : S.Holds (u.pullbackStructure B model) := by
+  intro name e held
+  apply (u.pullback_formula_iff B model (S.law name).conclusion e).2
+  apply (u.preserves name).sound B model _
+  exact (u.pullback_formula_iff B model (S.law name).input e).1 held
+
 /-- Pullback and retyping send a tuple of states through the given structural map. -/
 def mapStates (u : Interpretation S T) {A : Structure S.signature}
     {B : Structure T.signature} {model : T.Holds B}
@@ -276,7 +284,8 @@ structure Reading where
   /-- The chosen value-structure data. -/
   valueStructure : ValueStructure observation.Output
   /-- The coefficient input context and its evaluation, when the reading uses coefficients. -/
-  coefficients : Option (Σ Γ, CoefficientReading.{u, v} context structureData Γ)
+  coefficients : Option (Σ Γ : ObservationProduct presentation.signature.SortType,
+    CoefficientReading.{u, v} context structureData Γ)
 
 namespace Declaration
 
@@ -306,6 +315,11 @@ def translatedSupport (u : Interpretation P.theory Q.theory) :
       match role : P.laws.role i with
       | .required => derivation (u.preserves ⟨i, role⟩)
       | .additional | .derived => ∅
+
+/-- The translation of a total symbol retains every declaration in its totality proof. -/
+theorem totality_derivation_support (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :
+    derivation (u.total f) ⊆ translatedSupport u (.total f) :=
+  fun _ used => Or.inr (Or.inr used)
 
 /-- A translated atom references only declarations in the image support of the source atom. -/
 theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
@@ -561,15 +575,15 @@ end ReadingInputMap
 /-- Compare two coefficient selections, keeping fixed settings or supplying an evaluation square. -/
 inductive CoefficientComparison {P Q : PrimitivePresentation.{u}} {U : DeclarationContext P}
     {V : DeclarationContext Q} {A : Structure P.signature} {B : Structure Q.signature}
-    {Γ : List P.signature.SortType} {Δ : List Q.signature.SortType}
+    {Γ : ObservationProduct P.signature.SortType} {Δ : ObservationProduct Q.signature.SortType}
     (c : CoefficientReading.{u, v} U A Γ) (d : CoefficientReading.{u, v} V B Δ)
     (onSort : P.signature.SortType → Q.signature.SortType)
     (state : ∀ s, A.carrier s → B.carrier (onSort s)) (contextFixed : Prop) where
   | fixed : contextFixed → c.SameParameters d → CoefficientComparison c d onSort state contextFixed
-  | changed (inputs : ReadingInputMap c.selection.product d.selection.product onSort) :
+  | changed (inputs : ReadingInputMap c.selection.used d.selection.used onSort) :
     CoefficientReading.EvaluationComparison c d
-        (fun e : inputs.Values A.carrier => c.evaluateSelected (.ofProduct e.1))
-        (fun e => d.evaluateSelected (.ofProduct (inputs.mapValues state e))) →
+        (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
+        (fun e => d.evaluateSelected (inputs.mapValues state e)) →
     CoefficientComparison c d onSort state contextFixed
 
 /-- Transport the actual inputs of the ordinary or coefficient evaluations at both endpoints. -/
@@ -581,20 +595,22 @@ def Reading.CoefficientCompatibility (source target : Reading.{u, v})
   | none, none => PUnit
   | some c, some d => CoefficientComparison c.2 d.2 onSort state contextFixed
   | none, some d =>
-    Σ inputs : ReadingInputMap source.observation.product d.2.selection.product onSort,
+    Σ inputs : ReadingInputMap source.observation.product d.2.selection.used onSort,
       {value : source.observation.Output → d.2.ring.Carrier //
         ∀ e : inputs.Values source.structureData.carrier,
-          d.2.evaluateSelected (.ofProduct (inputs.mapValues state e)) = value (source.observation.read e.1)}
+          d.2.evaluateSelected (inputs.mapValues state e) = value (source.observation.read e.1)}
   | some c, none =>
-    Σ inputs : ReadingInputMap c.2.selection.product target.observation.product onSort,
+    Σ inputs : ReadingInputMap c.2.selection.used target.observation.product onSort,
       {value : c.2.ring.Carrier → target.observation.Output //
         ∀ e : inputs.Values source.structureData.carrier,
-          target.observation.read (inputs.mapValues state e) = value (c.2.evaluateSelected (.ofProduct e.1))}
+          target.observation.read (inputs.mapValues state e) = value (c.2.evaluateSelected e.1)}
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
 structure ReadingComparison (source target : Reading.{u, v}) where
   /-- A theory interpretation of the language used by the source. -/
   interpretation : Interpretation source.presentation.theory target.presentation.theory
+  /-- The source structure satisfies the required Laws of its reading. -/
+  sourceModel : source.presentation.theory.Holds source.structureData
   /-- The target observation's structure satisfies its required Laws. -/
   targetModel : target.presentation.theory.Holds target.structureData
   /-- The source state map ends in the structure pulled back from the target. -/
@@ -619,6 +635,13 @@ theorem ReadingComparison.commutes_eq {source target : Reading.{u, v}}
     target.observation.read ∘ comparison.contexts.mapValues comparison.state.onSort =
       comparison.value ∘ source.observation.read :=
   funext comparison.commutes
+
+/-- The codomain of the comparison's state map satisfies the source theory. -/
+theorem ReadingComparison.pullback_isModel {source target : Reading.{u, v}}
+    (comparison : ReadingComparison source target) :
+    source.presentation.theory.Holds
+      (comparison.interpretation.pullbackStructure target.structureData comparison.targetModel) :=
+  comparison.interpretation.pullback_isModel target.structureData comparison.targetModel
 
 /-- The contextual data carried by this particular comparison. -/
 abbrev ReadingComparison.ContextChange {source target : Reading.{u, v}}
