@@ -951,6 +951,9 @@ fn outcome_wire_format_includes_phase2_fields_and_unbounded_silence() {
             word_checks: vec![],
             old_word_lifts: vec![],
         }),
+        robustness: None,
+        chevalley: None,
+        observations: None,
     };
 
     let json = outcome.to_json();

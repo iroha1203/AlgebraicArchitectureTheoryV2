@@ -8,6 +8,8 @@ pub mod ast_ext;
 pub mod check;
 mod check_diagram;
 mod check_ext_common;
+mod check_ext_morphism;
+mod check_ext_scope;
 mod check_path;
 mod check_relations;
 mod check_transfer;

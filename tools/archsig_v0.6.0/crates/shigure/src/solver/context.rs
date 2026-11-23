@@ -48,6 +48,9 @@ impl SolveCtx {
             diagram: None,
             path: None,
             transfer: None,
+            robustness: None,
+            chevalley: None,
+            observations: None,
         }
     }
 
@@ -69,6 +72,9 @@ impl SolveCtx {
             diagram: None,
             path: None,
             transfer: None,
+            robustness: None,
+            chevalley: None,
+            observations: None,
         }
     }
 
@@ -90,6 +96,9 @@ impl SolveCtx {
             diagram: None,
             path: None,
             transfer: None,
+            robustness: None,
+            chevalley: None,
+            observations: None,
         }
     }
 }
