@@ -817,9 +817,10 @@ e_i(F)=d_o&\iff
 **証明.**
 鎖写像 $`r:C_\bullet(K')\to C_\bullet(K)`$、$`s:C_\bullet(K)\to C_\bullet(K')`$ と次数 $`+1`$ の写像 $`h`$ を構成し、
 
+**式(16.22a)**
+
 ```math
 rs=1,\qquad 1-sr=\partial h+h\partial
-\qquad\text{(16.22a)}
 ```
 
 を基底で確かめる。支持付きの基底式がすべての $`K[A]`$ に制限できるための十分条件は、非零係数で現れる各像セルの支持が元セルの支持を含むことである。
@@ -886,13 +887,14 @@ r=(1,0).
 
 $`C_{s,X}=C_\bullet(K_{s,X};\Lambda)^\vee`$ と書く。制限写像と差制限により
 
+**式(16.24a)**
+
 ```math
 0\longrightarrow C_{s,U}
  \xrightarrow{i_s} C_{s,A}\oplus C_{s,B}
  \xrightarrow{r_s}C_{s,I}\longrightarrow0,
 \qquad
 r_s(x,y)=x|_I-y|_I
-\qquad\text{(16.24a)}
 ```
 
 は複体の短完全列となる。実際、$`U`$ 上の関数は交差で一致する二つの関数に一意に貼り合い、$`I`$ 上の関数を次数ごとに $`A`$ へ零延長し、$`B`$ 側を零とすれば $`r_s`$ の全射性を得る。この零延長は次数ごとの線形切断である。複体の射である制限写像の可換性は、選んだセル系が face で閉じることから従う。
@@ -902,12 +904,13 @@ r_s(x,y)=x|_I-y|_I
 **定理16.24（Mayer–Vietoris 列と比較）.**
 原始セルから構成した式(16.24a)には、比較 $`u`$ と可換する長完全列
 
+**式(16.24b)**
+
 ```math
 \cdots\to H^n(C_{s,A})\oplus H^n(C_{s,B})
  \xrightarrow{r_s^n}H^n(C_{s,I})
  \xrightarrow{\delta_s}H^{n+1}(C_{s,U})
  \to H^{n+1}(C_{s,A})\oplus H^{n+1}(C_{s,B})\to\cdots
-\qquad\text{(16.24b)}
 ```
 
 がある。$`r_s^n`$ は差制限が誘導する写像である。また、同じ領域の比較錐 $`\mathop{\mathrm{Cone}}\nolimits (u_X)`$ に対しても、式(16.24a)の各写像を二座標へ適用して短完全列と長完全列が得られる。
@@ -937,12 +940,13 @@ Z=\mathop{\mathrm{im}}\nolimits r_c^1\cap\ker H^1(u_I)
 
 と置く。ここで $`Q_s,q,Z`$ はこの定理内の記号であり、$`q`$ は零次差制限の余核間の写像、$`Z`$ は交差上の一次コホモロジーの部分空間を表す。命題16.2の reading は引き続き $`q_c,q_f`$ と書く。このとき自然な同型と短完全列
 
+**式(16.25a)**
+
 ```math
 \ker T_U\cong\ker q,\qquad
 0\longrightarrow\mathop{\mathrm{coker}}\nolimits q
  \longrightarrow\mathop{\mathrm{coker}}\nolimits T_U
  \longrightarrow Z\longrightarrow0
-\qquad\text{(16.25a)}
 ```
 
 がある。従って $`T_U`$ が同型であることは、$`q`$ が同型かつ $`Z=0`$ であることと同値である。特に有限次元の欠損は

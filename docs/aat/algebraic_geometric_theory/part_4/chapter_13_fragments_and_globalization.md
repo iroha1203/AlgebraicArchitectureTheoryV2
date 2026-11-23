@@ -12,9 +12,10 @@
 **定理13.2（すべての対象・すべての射の復元）.**
 設定13.1の下で、大域モデル圏から厳密に整合する局所モデルと整合局所射の圏（逆極限圏）への比較関手
 
+**式(13.1)**
+
 ```math
 \mathcal A_{\mathbb T}\longrightarrow\varprojlim_i\mathcal A_i
-\qquad\text{(13.1)}
 ```
 
 は圏同型である。さらにこの同型は、指定された固定データと、すべての参照を覆う局所的な許容規則も保つ。
@@ -62,11 +63,12 @@
 $`D\simeq R\!\lim D_n`$
 が存在し、すべての次数 $`q`$ について短完全列
 
+**式(13.2)**
+
 ```math
 0\longrightarrow\lim\nolimits^1 H^{q-1}(D_n)
  \longrightarrow H^q(D)
  \longrightarrow\lim H^q(D_n)\longrightarrow0
-\qquad\text{(13.2)}
 ```
 
 が成り立つ。特に、各有限段で指定障害がすべて消えても（右項の像が $`0`$ であっても）、左項の $`\lim^1 H^{q-1}(D_n)`$ に非零の大域障害が残りうる。一方、コホモロジー群の塔 $`(H^{q-1}(D_n))`$ が Mittag–Leffler 条件を満たすならば、この追加障害の項は $`0`$ になる。
@@ -74,10 +76,11 @@ $`D\simeq R\!\lim D_n`$
 **証明.**
 直積複体 $`P^\bullet=\prod_n D_n^\bullet`$ を取り、シフト差写像 $`\Phi:P^\bullet\to P^\bullet`$ を $`\Phi(x)_n=x_n-r_{n,n+1}x_{n+1}`$ で定める。導来逆極限 $`R\!\lim D_n`$ の標準モデルは
 
+**式(13.3)**
+
 ```math
 (R\!\lim D_n)^q=P^q\oplus P^{q-1},\qquad
 d(x,y)=(dx,\Phi x-dy)
-\qquad\text{(13.3)}
 ```
 
 で与えられる。各次数での遷移の全射性から、写像 $`\Phi`$ は各次数で全射である。実際、任意の $`z=(z_n)\in P^q`$ に対し、$`x_0`$ を任意に選んだのち方程式 $`r_{n,n+1}x_{n+1}=x_n-z_n`$ を順次持ち上げて解けば $`\Phi x=z`$ を満たす $`x`$ が得られる。$`\Phi`$ の核は $`\lim D_n`$ であるから、短完全列 $`0\to\lim D_n\to P\xrightarrow{\Phi}P\to0`$ より、核を式(13.3)へ埋め込む写像 $`x\mapsto(x,0)`$ はすべてのコホモロジーで同型（擬同型）になる。これを構成13.4の同型 $`D\cong\lim D_n`$ と合成すれば、求める比較 $`D\simeq R\!\lim D_n`$ を得る。
@@ -97,9 +100,10 @@ Mittag–Leffler 条件とは、各段 $`n`$ への後段 $`m\ge n`$ からの�
 
 モデル $`A^0`$ から $`A^a`$ への意味保存射 $`h=(h_n)`$ はすべての平行移動を保つため $`h_n(x)=x+c_n`$ の形に限られ、操作 $`d_n`$ との可換性として残る条件式は正確に
 
+**式(13.4)**
+
 ```math
 c_n-2c_{n+1}=a_n
-\qquad\text{(13.4)}
 ```
 
 となる。逆に、式(13.4)のすべての解 $`(c_n)`$ は、すべての操作と観測を保つ意味保存射を与える。固定された数列 $`a\in R^{\mathbb N}`$ を各 $`R`$-代数へ送ると、すべての $`R`$-代数に自然な係数族においても一般元での同じ評価が成り立ち、解関手はアフィンスキーム
@@ -125,10 +129,11 @@ $`c_{2j}-4c_{2j+2}=1`$、すなわち $`3c_{2j}+1=4(3c_{2j+2}+1)`$
 $`G(U)=\mathbb Z[1/2]`$、$`G(V)=0`$、$`G(U\cap V)=\mathbb Z[1/6]`$
 となる（第二の等式は $`\bigcap_{n\ge0}2^n\mathbb Z[1/3]=0`$ による）。二つの局所解の差 $`c^V-c^U`$ の初項は $`-1/3-0=-1/3`$ であるから、Čech コホモロジー類は
 
+**式(13.5)**
+
 ```math
 [c^V-c^U]=[-1/3]\in
 \check H^1(\{U,V\},G)=\mathbb Z[1/6]/\mathbb Z[1/2]
-\qquad\text{(13.5)}
 ```
 
 となり、位数 $`3`$ の非零の類を与える。
@@ -143,10 +148,11 @@ D=\left[\prod_{n\ge0}\mathbb Z\xrightarrow d\prod_{n\ge0}\mathbb Z\right],
 
 である。定理13.5の短完全列(13.2)により、すべての有限段で $`0`$ となる指定類 $`[a]\in H^1(D)`$ は左項の $`\lim^1(\mathbb Z,\times2)`$ に入る。この余核は2進整数環 $`\mathbb Z_2`$ を用いた具体的な同型
 
+**式(13.6)**
+
 ```math
 \mathop{\mathrm{coker}}\nolimits d\longrightarrow\mathbb Z_2/\mathbb Z,\qquad
 [a]\longmapsto\left[\sum_{n\ge0}2^na_n\right]
-\qquad\text{(13.6)}
 ```
 
 で計算できる。実際、右辺の級数は2進位相で収束し、$`a=d(c)`$ の和は望遠鏡和により $`c_0\in\mathbb Z`$ となる。逆に和が整数 $`m`$ に等しければ、$`c_n=(m-\sum_{i<n}2^ia_i)/2^n`$ はすべて整数となり $`d(c)=a`$ を満たす。全射性は任意の2進整数の2進展開から直ちに従う。今考えている交互列 $`a`$ に対しては、和は $`1+4+4^2+\cdots=-1/3\in\mathbb Z_2`$ である。

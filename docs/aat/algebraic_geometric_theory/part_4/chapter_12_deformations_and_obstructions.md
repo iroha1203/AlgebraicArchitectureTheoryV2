@@ -28,12 +28,13 @@ $`0\to M\to R'\xrightarrow\pi R\to0`$
 **定理12.2（局所的な持ち上げと指定障害）.**
 設定12.1の任意の商環 $`A=P/I`$ と還元点 $`x:A\to R`$ に対し、原始残差から周囲での持ち上げの選び方によらない指定障害類
 
+**式(12.1)**
+
 ```math
 \mathrm{ob}(x,R')\in
 \mathop{\mathrm{Ext}}\nolimits^1_A(L_{A/k},M)
 =\frac{\mathop{\mathrm{Hom}}\nolimits_A(I/I^2,M)}
  {\mathop{\mathrm{im}}\nolimits(\mathop{\mathrm{Hom}}\nolimits_A(\Omega_{P/k}\otimes_PA,M))}
-\qquad\text{(12.1)}
 ```
 
 を構成できる。ここで $`A`$ は還元点 $`x`$ を通じて $`M`$ に作用する。この障害類が $`0`$ であることと、Law を満たすスキーム点の持ち上げ $`x':A\to R'`$ が存在することとは同値であり、すべての持ち上げの集合は非空であるとき $`\mathop{\mathrm{Der}}\nolimits_k(A,M)`$ の torsor になる。さらに、設定12.1の有限意味チャートでは、この対応は基底と同定を含む固定データを保つ意味の持ち上げと自然に一致する。
@@ -43,9 +44,10 @@ $`0\to M\to R'\xrightarrow\pi R\to0`$
 
 次に、変数の持ち上げを $`u=(u_\lambda)\in\prod_{\lambda\in\Lambda}M`$ だけ変更して $`\widetilde x'(x_\lambda)=\widetilde x(x_\lambda)+u_\lambda`$ とすると、$`M^2=0`$ により2次以上の項がすべて消え、残差は
 
+**式(12.2)**
+
 ```math
 r'(f)=r(f)+\sum_{\lambda\in\Lambda}\frac{\partial f}{\partial x_\lambda}(x)u_\lambda
-\qquad\text{(12.2)}
 ```
 
 と変化する。各多項式 $`f`$ は有限個の変数しか含まないため、この和は有限和である。微分加群は $`\Omega_{P/k}\otimes_PA=\bigoplus_{\lambda\in\Lambda}A\,dx_\lambda`$ であるため、上の差は $`A`$-線形写像 $`\Omega_{P/k}\otimes_PA\to M`$ と標準微分 $`d:I/I^2\to\Omega_{P/k}\otimes_PA`$ の合成として表される。よって式(12.1)の商加群における類 $`\mathrm{ob}(x,R')=[r]`$ は周囲での持ち上げの選び方によらない。
@@ -171,6 +173,7 @@ Q_E(U)=O_E(U)/mO_E(U)
 持ち上げの対象が集合ではなく非自明な自己同型を持つ groupoid をなすとき、二重交差上で同型が存在しても三重交差での整合に失敗しうる。その障害は自己同型層の Čech 2-コサイクルとして現れる。
 
 **命題12.7（可換自己同型と二重次数）.**
+定理12.5と同じ有限の包含被覆 $`\mathcal U=(U_i\subseteq W)`$ を用いる。被覆添字に全順序を固定し、Čech コチェインは $`i_0<\cdots<i_p`$ の交差上で取る。$`g_{ij}`$ は $`i<j`$ で指定し、$`g_{ji}=g_{ij}^{-1}`$、$`g_{ii}=1`$ と延長する。自己同型層の同定を $`\iota_{p_i}:A|_{U_i}\xrightarrow{\sim}\mathrm{Aut}(p_i)`$ と書くと、下の共役整合は重なり上の任意の切断 $`a`$ に対する $`g_{ij}\iota_{p_j}(a)g_{ij}^{-1}=\iota_{p_i}(a)`$ を意味する。
 実際の持ち上げの groupoid が有効 descent を満たし、各被覆元上の局所対象 $`p_i`$ と二重交差上の同型 $`g_{ij}:p_j\to p_i`$ が与えられているとする。自己同型層を可換群の層 $`A`$ と同定でき、共役による同定がこの層の制限と整合するとき、三重交差上の元 $`c_{ijk}=g_{ij}g_{jk}g_{ik}^{-1}`$ は $`A`$ に係数を持つ Čech 2-コサイクルを定める。そのコホモロジー類が $`0`$ であることと、局所対象 $`p_i`$ は固定したまま重なり同型 $`g_{ij}`$ を補正して大域対象を構成できることとは同値である。
 
 **証明.**
@@ -178,10 +181,11 @@ Q_E(U)=O_E(U)/mO_E(U)
 
 第11章の射影の核によるすべての修復では、内部次数 $`q`$ と被覆次数 $`p`$ からなる二重複体 $`\check C^p(\mathcal U,C^q)`$ を構成し、総微分を $`d_{\mathrm{Tot}}=\check d+(-1)^p d`$ と定める。局所補正 $`h_i`$ と重なり上の再同定 $`b_{ij}`$ は総次数 $`1`$ の元であり、
 
+**式(12.3)**
+
 ```math
 d h_i=-\delta_i,\qquad h_j-h_i=d b_{ij},\qquad
 b_{ij}+b_{jk}=b_{ik}
-\qquad\text{(12.3)}
 ```
 
 という三つの条件は、単一の方程式 $`d_{\mathrm{Tot}}(h,b)=-\delta`$ にまとめられる。各セルを含む被覆添字の集合は単体の頂点集合の全体をなし、そのうち1頂点への縮約によって増大 Čech 複体が可縮になる。したがって、すべてのセル上の値の直積である各次数 $`C^q`$ について増大列は完全であり、内部複体から総複体への比較写像は擬同型（quasi-isomorphism）になる。これにより、第11章の同じ指定障害類 $`[\delta]`$、すべての解、およびすべての再同定を総複体上で比較できる。一方、範囲付きの $`C_S^0`$ は禁止辺上の条件 $`(d^0b)_e=0`$ を持つため、この次数別可縮性は一般には使えない。その場合の復元は定理11.7の厳密 matching による。
@@ -216,11 +220,12 @@ $`D^{-1}=C_M^0,\ D^0=C_M^1,\ D^1=C_M^2,\ D^2=C_M^3`$
 **定理12.9（原始Lawの導来交差）.**
 第5章の共通の周囲環 $`B`$ 上に二つの原始 Law 族を与え、それぞれのすべての残差が生成するイデアルを $`I_1,I_2\subseteq B`$ とする。$`A_i=B/I_i`$（$`i=1,2`$）に対し、自由解消から導来テンソル積 $`A_1\otimes_B^{\mathbf L}A_2`$ を構成でき、そのコホモロジー群は次で与えられる：
 
+**式(12.4)**
+
 ```math
 H^0=B/(I_1+I_2),\qquad
 H^{-j}=\mathop{\mathrm{Tor}}\nolimits_j^B(A_1,A_2),\qquad
 \mathop{\mathrm{Tor}}\nolimits_1^B(A_1,A_2)\cong(I_1\cap I_2)/(I_1I_2).
-\qquad\text{(12.4)}
 ```
 
 すべての正の次数の $`\mathop{\mathrm{Tor}}\nolimits_j^B(A_1,A_2)`$（$`j\ge1`$）が消えることと、古典的交差 $`B/(I_1+I_2)`$ への比較写像が擬同型になることとは同値である。一方の商 $`A_i`$ の $`B`$-平坦性はこのための十分条件である。また、$`I_1`$ の有限生成列が $`B`$ と $`B/I_2`$ の双方で正則列であれば、すべての正の次数の Tor が消える。さらに、平坦な環準同型 $`B\to B'`$ による係数変更は、これらの比較全体と可換である。
@@ -244,9 +249,10 @@ AAT の意味論側では、周囲環 $`B`$ の点は元の量および操作の
 **定理12.11（部分変更での恒等的保存）.**
 自由パラメータチャート $`k[t_1,\ldots,t_m]`$ 上に原始残差イデアル $`J`$ を置き、未変更の基準値を $`t_1=\cdots=t_m=0`$ とする。任意の整数 $`0\le r\le m`$ に対し、高々 $`r`$ 個の変更パラメータだけを残して他を $`0`$ に戻したすべての部分チャート上で Law が恒等的に成立することと、包含関係
 
+**式(12.5)**
+
 ```math
 J\subseteq\left(\prod_{i\in T}t_i:\ |T|=r+1\right)
-\qquad\text{(12.5)}
 ```
 
 とは同値である。ただし $`r=m`$ のとき右辺は零イデアルとする。
@@ -265,12 +271,13 @@ J\subseteq\left(\prod_{i\in T}t_i:\ |T|=r+1\right)
 
 以下の商は層の商であり、一般に $`(\mathcal O/\mathcal I)(V)=\mathcal O(V)/\mathcal I(V)`$ とは仮定しない。原始残差から、平方零イデアルを核とする環の層の列
 
+**式(12.6)**
+
 ```math
 0\longrightarrow\mathcal N:=\mathcal I/\mathcal I^2
 \xrightarrow{\iota}\mathcal E:=\mathcal O/\mathcal I^2
 \xrightarrow{\pi}\mathcal Q:=\mathcal O/\mathcal I
 \longrightarrow0
-\qquad\text{(12.6)}
 ```
 
 が得られる。加法群の層としてこの列は完全である。実際、$`\mathcal Q`$ の切断は局所的に $`\mathcal O`$ の切断を代表に持つので、$`\pi`$ は層として全射である。$`\mathcal E`$ の切断の像が零ならば、その局所代表はさらに局所的に $`\mathcal I`$ に属する。その代表の差は $`\mathcal I^2`$ に属するため、$`\ker\pi=\mathcal I/\mathcal I^2`$ となる。また核の二つの元の積は $`\mathcal I^2`$ に属して零となる。これにより余法係数 $`\mathcal N`$ と比較写像をともに生成できる。
@@ -287,10 +294,11 @@ J\subseteq\left(\prod_{i\in T}t_i:\ |T|=r+1\right)
 **証明.**
 $`\pi(t_i)=s|_{U_i}`$ を満たす局所持ち上げ $`t_i\in\mathcal E(U_i)`$ を選ぶ。核の同定は任意の領域の切断上でも成り立つので、$`U_{ij}=U_i\times_W U_j`$ 上で
 
+**式(12.7)**
+
 ```math
 \iota(n_{ij})=t_j|_{U_{ij}}-t_i|_{U_{ij}}
 \qquad\text{(各順序付き対 }(i,j)\text{)}
-\qquad\text{(12.7)}
 ```
 
 となる $`n_{ij}\in\mathcal N(U_{ij})`$ が一意に存在する。三重交差上では $`\iota(n_{jk}-n_{ik}+n_{ij})=0`$ となり、$`\iota`$ の単射性から $`\check d n=0`$ を得る。従って $`\partial_{\mathcal U}(s)=[n]`$ と定められる。
@@ -332,12 +340,13 @@ $`e^2=e`$ より $`\mathcal I_e^2=\mathcal I_e`$ であるから、$`\mathcal I_
 
 に帰着する。右側の座標順は $`01,02,12`$ である。線形写像 $`p(c)=c_{01}-c_{02}+c_{12}`$ は微分の像を消す。逆に $`p(c)=0`$ ならば $`a_0=0,a_1=c_{01},a_2=c_{02}`$ として $`\check d^0a=c`$ となるので、$`\ker p=\mathop{\mathrm{im}}\nolimits \check d^0`$ である。$`p(1,0,0)=1`$ であるから
 
+**式(12.8)**
+
 ```math
 \check H^1(\mathcal U,\mathcal I_e/\mathcal I_e^2)=0,
 \qquad
 \check H^1(\mathcal U,\mathcal I_\eta/\mathcal I_\eta^2)
 \cong\mathbb F_2
-\qquad\text{(12.8)}
 ```
 
 を得る。これは Law 残差の生成元を変えたときの係数群の零／非零の対である。

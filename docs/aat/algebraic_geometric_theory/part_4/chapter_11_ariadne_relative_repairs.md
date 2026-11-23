@@ -44,9 +44,10 @@ A_v=\ker\bigl(\mathop{\mathrm{Aut}}\nolimits_{qp}(X_v)\to
 
 このとき、各辺 $`e:s\to t`$ と $`a\in A_s`$ に対し、$`\widetilde L_e`$ の強い opcartesian 性によって一意に定まる核の輸送 $`\rho_e:A_s\to A_t`$ が存在し、
 
+**式(11.1)**
+
 ```math
 \iota_t(\rho_e a)\widetilde L_e=\widetilde L_e\iota_s(a)
-\qquad\text{(11.1)}
 ```
 
 を満たす。実際、$`qp(\widetilde L_e\iota_s(a))=qp(\widetilde L_e)`$ であるから、$`\widetilde L_e`$ の $`qp`$ に関する強い opcartesian 性を用いて因子分解を構成すると、$`\alpha\widetilde L_e=\widetilde L_e\iota_s(a)`$ かつ $`qp(\alpha)=1`$ を満たす射 $`\alpha:X_t\to X_t`$ が一意に定まる。入力 $`a`$ の逆元 $`-a`$ についても同じ因子分解を構成すると、因子の一意性から二つの因子の合成が両側で恒等射となるため、$`\alpha`$ は自己同型であることが分かる。さらに $`p`$ で射影すれば $`p(\alpha)p(\widetilde L_e)=p(\widetilde L_e)`$ となり、$`p\widetilde L_e`$ の $`q`$ に関する強い opcartesian 性から $`p(\alpha)=1`$ が従う。したがって $`\alpha`$ は射影の核 $`A_t`$ に属し、一意な元 $`\rho_e a\in A_t`$ を定める。$`\rho_e`$ が群準同型であることも因子分解の一意性から従う。
@@ -58,20 +59,22 @@ A_v=\ker\bigl(\mathop{\mathrm{Aut}}\nolimits_{qp}(X_v)\to
 **構成11.2（実際の欠陥と複体）.**
 各面 $`f`$ において、$`p(u_f\widetilde L_{\ell_f})=p(\widetilde L_{r_f})`$ より、2本の経路の射 $`u_f\widetilde L_{\ell_f}`$ と $`\widetilde L_{r_f}`$ は同じ core を持つ。したがって、強い opcartesian 因子分解により両者を比較すると、
 
+**式(11.2)**
+
 ```math
 u_f\widetilde L_{\ell_f}=\iota_{t(f)}(\delta_f)\widetilde L_{r_f}
-\qquad\text{(11.2)}
 ```
 
 を満たす唯一の元 $`\delta_f\in A_{t(f)}`$ が定まる。この $`\delta_f`$ を面 $`f`$ の**欠陥（defect）**と呼ぶ。式(11.1)を面の2本の経路 $`\ell_f,r_f`$ に沿って合成し、式(11.2)、射影の核の可換性、および $`u_f`$ による中央化を用いると、輸送の一致 $`\rho_{\ell_f}=\rho_{r_f}`$ が得られる。
 
 コチェイン群 $`C^0,C^1,C^2,C^3`$ を、それぞれすべての頂点、すべての辺の終点、すべての面の終点、すべての 3-セルの終点における射影の核の直積として定める。経路に沿う補正 $`T_w(h)`$ と最初の二つの微分 $`d^0,d^1`$ を、
 
+**式(11.3)**
+
 ```math
 T_{\varnothing}(h)=0,\quad T_e(h)=h_e,\quad T_{vw}(h)=\rho_wT_v(h)+T_w(h),\qquad
 (d^0b)_e=b_t-\rho_e b_s,\quad
 (d^1h)_f=T_{\ell_f}(h)-T_{r_f}(h)
-\qquad\text{(11.3)}
 ```
 
 によって定義する。また、3-セルにおける面書換え列に対し、前経路 $`v`$ と後経路 $`w`$ の間で面 $`f`$ を正向きに適用する一歩には $`\rho_wc_f`$ を、逆向きに適用する一歩には $`-\rho_wc_f`$ を割り当てる。書換え列 $`\gamma`$ に沿ってこれらを加え合わせた値を $`P_\gamma(c)`$ と書き、2次微分を
@@ -90,7 +93,7 @@ $`L_w^h=\iota(T_w(h))\widetilde L_w`$
 
 次に $`d^2d^1=0`$ を示す。前経路 $`v`$ と後経路 $`w`$ の間で面 $`f`$ を適用する一歩の書換えによって生じる経路補正の差は、式(11.3)の展開によりちょうど $`\rho_w(d^1h)_f`$ に等しい。書換え列に沿ってこれらの差を加え合わせると途中の経路の寄与が互いに相殺されるため、同じ始点経路と終点経路を持つ二つの書換え列の差は $`0`$ になる。これが $`d^2d^1=0`$ である。
 
-最後に、式(11.2)を 3-セルの二つの書換え列に沿って逐次代入すると、二つの書換え列が誘導する実際の比較射の差は、射影の核の元 $`\iota(P_{\gamma_g}(\delta)-P_{\gamma'_g}(\delta))`$ として現れる。設定11.1における 3-セルの実際の比較射の等号と、opcartesian 因子分解の一意性から、この核の元は $`0`$ である。すなわち $`d^2\delta=0`$ が成り立つ。□
+最後に、面比較 $`u_f`$ を後経路 $`w`$ に沿って運んだ比較を $`U_{w,f}`$ とする。式(11.1)と $`u_f`$ の中央化から、$`U_{w,f}`$ は $`\iota(\rho_w a)`$ と可換する。実際、両合成を $`\widetilde L_w`$ に前合成すれば同じ射となり、強い opcartesian 因子分解の一意性で等号が従う。$`\rho_w`$ は各辺の群同型の合成なので全射であり、$`U_{w,f}`$ は終点の核のすべての元、特に先行する書換えの欠陥とも可換する。よって式(11.2)を 3-セルの二つの書換え列に沿って逐次代入すると、二つの書換え列が誘導する実際の比較射の差は、射影の核の元 $`\iota(P_{\gamma_g}(\delta)-P_{\gamma'_g}(\delta))`$ として現れる。設定11.1における 3-セルの実際の比較射の等号と、opcartesian 因子分解の一意性から、この核の元は $`0`$ である。すなわち $`d^2\delta=0`$ が成り立つ。□
 
 以下では、表示の部分構造と固定部分を導入する。部分表示が、それに属するセルのすべての端点・すべての経路・すべての書換えを含むとき、これを**閉部分表示**と呼ぶ。**閉被覆**とは閉部分表示の族であって 0 次から 3 次までのすべてのセルを覆うものをいい、**有限閉被覆**の有限性は被覆元の個数が有限であることに課す。
 
@@ -113,15 +116,18 @@ $`C_{\mathrm{fix}}^\bullet=\ker(C^\bullet(K)\to C^\bullet(P))`$
 
 これに対応する範囲付き相対複体 $`C_S^\bullet`$ を次のように定める：
 
+**式(11.4)**
+
 ```math
 C_S^1=\{h\in C_{\mathrm{fix}}^1:h_e=0\ (e\in\mathsf E\setminus S)\},\quad
 C_S^0=\{b\in C_{\mathrm{fix}}^0:d^0b\in C_S^1\},\quad
 C_S^j=C_{\mathrm{fix}}^j\ (j=2,3).
-\qquad\text{(11.4)}
 ```
 
 **定理11.5（アリアドネ：修復の分類）.**
 設定11.1の下で、すべての許可範囲 $`S\subseteq\mathsf E`$ について、実際の修復の集合と方程式 $`d^1h=-\delta`$（$`h\in C_S^1`$）の解集合、および実際の再同定の集合と射 $`b:h\to h+d^0b`$（$`b\in C_S^0`$）の集合を相互に復元できる。したがって次が成り立つ：
+
+**式(11.5)**
 
 ```math
 \mathscr R_S(K)\ne\varnothing\ \Longleftrightarrow\ [\delta]=0\in H^2(C_S^\bullet),
@@ -129,7 +135,6 @@ C_S^j=C_{\mathrm{fix}}^j\ (j=2,3).
 \pi_0\mathscr R_S(K)\text{ は非空なら }H^1(C_S^\bullet)\text{ のtorsor},
 \qquad
 \mathop{\mathrm{Aut}}\nolimits(h)=H^0(C_S^\bullet)=H^0(C_{\mathrm{fix}}^\bullet).
-\qquad\text{(11.5)}
 ```
 
 **証明.**
@@ -176,22 +181,25 @@ $`\tau_{\delta_f}L_{\ell_f}=L_{r_f}`$
 すべての候補辺の変更を許す場合、閉被覆に対する修復の貼り合わせはホモトピー引き戻し（homotopy pullback）として記述され、局所修復どうしの不整合を測る統合障害群 $`\Omega`$ が長完全列から自然に現れる。
 
 **定理11.6（アリアドネ：射影の核による補正の貼り合わせ）.**
+この定理では $`C^\bullet(X,P_X):=\ker(C^\bullet(X)\to C^\bullet(P_X))`$、$`\mathscr R(X):=\mathscr R_{\mathsf E\cap X}(X)`$ と略記する。特に $`X=K`$ では、前者は $`C_{\mathrm{fix}}^\bullet`$、後者は $`\mathscr R_{\mathsf E}(K)`$ である。
 すべての候補辺の変更を許し、閉被覆 $`K=U\cup V`$ と重なり $`W=U\cap V`$ を取る。$`P_X=P\cap X`$ と置くと、同じ制限写像から複体の短完全列と修復 groupoid のホモトピー引き戻しによる同値
+
+**式(11.6)**
 
 ```math
 0\to C^\bullet(K,P)\to C^\bullet(U,P_U)\oplus C^\bullet(V,P_V)
  \xrightarrow{r_U-r_V}C^\bullet(W,P_W)\to0,
 \qquad
 \mathscr R(K)\simeq\mathscr R(U)\times^h_{\mathscr R(W)}\mathscr R(V)
-\qquad\text{(11.6)}
 ```
 
 を構成できる。局所修復 $`h_U,h_V`$ が存在するとき、その差 $`z=h_V|_W-h_U|_W`$ は 1-コサイクルである。指定した二つの局所案を再同定で結べるための必要十分条件は $`[z]=0\in H^1(W,P_W)`$ であり、局所案を選び直してよい場合に大域修復が存在するための必要十分条件は
 
+**式(11.7)**
+
 ```math
 \omega=[z]=0\quad\text{in}\quad
 \Omega=H^1(W,P_W)/(\mathop{\mathrm{im}}\nolimits H^1(U,P_U)+\mathop{\mathrm{im}}\nolimits H^1(V,P_V))
-\qquad\text{(11.7)}
 ```
 
 である。ここで類 $`\omega`$ は局所案 $`h_U,h_V`$ の選び方によらない。さらに、長完全列の接続準同型について $`\partial[z]=[\delta]`$ が成り立ち、同型
@@ -214,10 +222,11 @@ $`\Omega\cong\ker(H^2(K,P)\to H^2(U,P_U)\oplus H^2(V,P_V))`$
 **定理11.7（アリアドネ：任意体での一度の生成と完全な復元）.**
 体 $`k`$ を任意とする。各射影の核 $`A_v`$ を有限次元 $`k`$-ベクトル空間、輸送 $`\rho_e`$ を線形とし、各核の基底、射影の核からファイバー自己同型群への包含 $`\iota_v`$、および原始的な操作から得られる輸送と欠陥の座標を与える。さらに有限閉被覆 $`(U_i)`$ を取る。この入力から、すべての許可範囲 $`S\subseteq\mathsf E`$ に共用する局所表現 $`\mathcal I_i`$ と、相互逆関手
 
+**式(11.8)**
+
 ```math
 \mathscr R_S(K)\ \underset{\mathrm{rec}_{\mathcal U,S}}{\overset{\mathrm{coord}_{\mathcal U,S}}{\rightleftarrows}}
 \mathrm{Glue}_S(\mathcal I_i)
-\qquad\text{(11.8)}
 ```
 
 を構成できる。この対応は候補辺の名前と値、実際の辺の射、すべての再同定、および許可範囲の包含関係を保つ。さらに、被覆細分、組立て順序や括弧づけの変更、ならびに基底・切断・参照の変更に伴う比較関手は、いずれも同じ実際の操作への復元と可換になる。
@@ -238,23 +247,25 @@ d_i^1(x,z)=D_ix+F_iz,\qquad d_i^0b=(a_ib,c_ib),\qquad D_ia_i+F_ic_i=0
 $`s_i:\mathop{\mathrm{im}}\nolimits D_i\to X_i`$
 を構成する（したがって $`D_is_i=1`$ である）。商写像を $`\pi_i:V_i\to\mathop{\mathrm{coker}}\nolimits D_i`$、内部核を $`N_i=\ker D_i`$ と置き、
 
+**式(11.9)**
+
 ```math
 R_i=\{z:\pi_iF_iz=\pi_ir_i\},\qquad \mathop{\mathrm{Ob}}\nolimits\mathcal I_i=R_i\times N_i,
 \qquad
 \mathrm{rec}_i(z,k)=(s_i(r_i-F_iz)+k,z),
 \qquad
 \mathrm{coord}_i(x,z)=(z,x-s_i(r_i-F_iz))
-\qquad\text{(11.9)}
 ```
 
 と定める。公開関係 $`R_i`$ は空であってもよい。関係式 $`\pi_iF_iz=\pi_ir_i`$ により $`r_i-F_iz\in\mathop{\mathrm{im}}\nolimits D_i`$ が保証されるので切断 $`s_i`$ を適用でき、また $`D_ix+F_iz=r_i`$ を満たす解 $`(x,z)`$ に対して第二式の差 $`x-s_i(r_i-F_iz)`$ は $`N_i=\ker D_i`$ に入る。両者を代入すれば、$`\mathrm{rec}_i`$ と $`\mathrm{coord}_i`$ の両合成が恒等写像になることが確かめられる。
 
 射については、元のすべての頂点補正 $`b\in B_i`$ をそのまま残し、対象への作用を
 
+**式(11.10)**
+
 ```math
 b:(z,k)\longmapsto(z+c_ib,k+\gamma_ib),\qquad
 \gamma_ib=a_ib-s_iD_ia_ib\in N_i
-\qquad\text{(11.10)}
 ```
 
 と定める。関係 $`F_ic_i=-D_ia_i`$ により
@@ -290,6 +301,7 @@ $`k_A=x_A-s_A(r_A-F_Az_A)\in\ker D_A`$
 局所生成された関係から常時許容辺をすべて消去して得られる商空間（余核）を用いると、任意の許可範囲 $`S`$ での修復可能性、不能であることの双対証拠、および包含極小な修復可能範囲が、ハイパーグラフの横断集合として完全に特徴づけられる。
 
 **定理11.8（アリアドネ：すべての許可範囲の双対分類）.**
+体 $`k`$ 上で各射影の核 $`A_v`$ を有限次元 $`k`$-ベクトル空間とし、核輸送 $`\rho_e`$ は $`k`$-線形同型とする。
 定理11.7と同じ大域の原始微分を、常時許容辺と候補辺に分けて
 $`Dx+\sum_{e\in\mathsf E}E_ey_e=-\delta`$
 と書く。ここで $`D`$ はすべての常時許容辺を含む。このとき、商空間と写像を
@@ -433,10 +445,11 @@ $`B\mathop{\mathrm{Aff}}\nolimits_k(A)\to B\mathop{\mathrm{GL}}\nolimits_k(A)\to
 
 元の辺 $`L^{\mathrm{orig}}`$ と基準辺 $`\widetilde L`$ の比 $`\widetilde c=\widetilde L(L^{\mathrm{orig}})^{-1}`$ が core 再選択の基準持ち上げを与える。各面で2本の経路の線形成分が等しければ、欠陥と補正後の操作は
 
+**式(11.11)**
+
 ```math
 \delta_f=c_f+t_{\ell_f}-t_{r_f},\qquad
 L_e^h(x)=M_ex+t_e+h_e
-\qquad\text{(11.11)}
 ```
 
 で与えられる。経路の実際の合成から式(11.3)の微分式が得られ、3-セルにおける平行移動の比較等号が補題11.3の整合条件を与える。再同定は射影の核のすべての平行移動からなるため、すべての射も完全に回復される。

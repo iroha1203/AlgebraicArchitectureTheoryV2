@@ -36,10 +36,11 @@ b_0=-\delta_0,\quad B_{\mathrm{in}}=-C_{\mathrm{in}}
 
 すると、原始修復がすべての Law を満たす条件は線形方程式
 
+**式(18.1)**
+
 ```math
 D_Sh=b_0+B_{\mathrm{in}}v,\qquad
 \pi_S:Y\longrightarrow Y/\mathop{\mathrm{im}}\nolimits D_S
-\qquad\text{(18.1)}
 ```
 
 で表される。ここで、禁止された候補辺 $`e\in\mathsf E\setminus S`$ の補正は $`h_e=0`$ であり、再同定の全体からなる空間は
@@ -49,10 +50,11 @@ $`C_S^0=\{b\in C_{\mathrm{fix}}^0:d^0b\in P_S\}`$ のまま保持する。
 **具体的なアフィン網での生成.**
 有限表示 $`K`$ と線形空間 $`A`$ を取り、各辺の可逆な線形成分 $`M_e`$ を固定した上で、基準となる辺と面の比較を
 
+**式(18.2)**
+
 ```math
 \widetilde L_e(v)(x)=M_ex+t_e^0+T_ev,\qquad
 u_f(v)=\tau_{c_f^0+C_fv}
-\qquad\text{(18.2)}
 ```
 
 によって指定する。ここで $`T_e,C_f`$ は線形写像である。
@@ -118,11 +120,12 @@ u_f(v)=\tau_{c_f^0+C_fv}
 このとき、式(18.1)が可解であることは $`o_S(v)=0`$ と同値である。
 また、可解な入力 $`v_*`$ を一つ取ると、任意の入力変位 $`n\in P_{\mathrm{in}}`$ に対して
 
+**式(18.3)**
+
 ```math
 o_S(v_*+n)=A_Sn,\qquad
 P_{\mathrm{in}}/\ker A_S\xrightarrow{\sim}\mathop{\mathrm{im}}\nolimits A_S,\quad
 [n]\longmapsto A_Sn
-\qquad\text{(18.3)}
 ```
 
 が成り立つ。さらに、式(18.1)が不能であることは、ある双対元 $`\psi\in Y^*`$ が $`\psi D_S=0`$ かつ $`\psi(r(v))\ne0`$ を満たすことと同値である。
@@ -160,10 +163,11 @@ $`\langle o_S(v),[\psi]\rangle=\psi b_0+\psi B_{\mathrm{in}}v`$ となる。
 数値補正の出力は、すべての成分を具体的な値として評価した一つの補正ベクトル $`h\in P_S`$、または不能を表す記号 $`\bot`$ とする。
 入力 $`v\in F_s`$ に対する出力の有効性を
 
+**式(18.4)**
+
 ```math
 \mathop{\mathrm{Valid}}\nolimits(v,h)\iff D_Sh=r(v),\qquad
 \mathop{\mathrm{Valid}}\nolimits(v,\bot)\iff r(v)\notin\mathop{\mathrm{im}}\nolimits D_S
-\qquad\text{(18.4)}
 ```
 
 で定める。
@@ -174,6 +178,8 @@ $`\langle o_S(v),[\psi]\rangle=\psi b_0+\psi B_{\mathrm{in}}v`$ となる。
 非空なファイバー $`F_s`$ の中に可解な入力 $`v_*`$ が少なくとも一つ存在すると仮定する。
 このとき、任意の部分集合 $`J\subseteq J_0`$ について、次の二つの同値が成り立つ。
 
+**式(18.5)**
+
 ```math
 \begin{aligned}
 O_J\text{ が判定に十分}
@@ -181,7 +187,6 @@ O_J\text{ が判定に十分}
 O_J\text{ が数値補正に十分}
 &\iff N\cap\ker O_J\subseteq\ker B_{\mathrm{in}}.
 \end{aligned}
-\qquad\text{(18.5)}
 ```
 
 **証明.**
@@ -210,12 +215,13 @@ $`v_*`$ は可解であるからその共通の出力は一つの補正ベクト
 **系18.5（有限観測の双対表示）.**
 $`J\subseteq J_0`$ が有限集合であるとき、任意の線形写像 $`C:P_{\mathrm{in}}\to W`$ について
 
+**式(18.6)**
+
 ```math
 N\cap\ker O_J\subseteq\ker C
 \iff
 \{\phi C|_N:\phi\in W^*\}
  \subseteq\mathop{\mathrm{span}}\nolimits\{\lambda_j|_N:j\in J\}
-\qquad\text{(18.6)}
 ```
 
 が成り立つ。有限次元座標表示では、これは行空間の包含条件
@@ -246,11 +252,12 @@ $`\lambda_j|_N`$ の任意の線形結合は共通の核 $`N\cap\ker O_J`$ 上�
 
 このとき、$`F_s`$ に可解な入力が存在する場合、可否判定と数値補正のそれぞれについて、最適な最悪時追加問い合わせ数は
 
+**式(18.7)**
+
 ```math
 m_C=\min\{|J|:J\subseteq J_0\text{ は有限},\
               N\cap\ker O_J\subseteq\ker C\},
 \quad C=\pi_SB_{\mathrm{in}},\ B_{\mathrm{in}}
-\qquad\text{(18.7)}
 ```
 
 で与えられる。候補となる有限集合が空であれば $`m_C=\infty`$ と定め、その場合、対応する出力についてすべての入力で停止して正答する決定的手続きは存在しない。
@@ -280,9 +287,10 @@ m_C=\min\{|J|:J\subseteq J_0\text{ は有限},\
 固定ループは $`r_x(t)=t+x,\ r_y(t)=t+y`$、常時許容辺は $`e,a`$、候補辺は $`b,c`$ である。
 補正方程式を再掲すると、
 
+**式(18.8)**
+
 ```math
 D(u,h,z,w)=(u+z,\ u-z+w),\qquad r(v)=(x,y)
-\qquad\text{(18.8)}
 ```
 
 である。問い合わせ $`x=r_x(0)`$、$`y=r_y(0)`$ は原始操作の正確な評価値である。
@@ -401,16 +409,17 @@ $`L_e^{v,h}=\iota(h_e)\widetilde L_e(v)`$
 体 $`k`$ 上の有限型アフィンスキーム $`T=\mathop{\mathrm{Spec}}\nolimits A`$ と、固定した有限セル表示・固定部分・常時許容辺・候補辺集合 $`\mathsf E`$ を取る。
 各射影の核には有限自由 $`A`$-加群の座標を指定し、式(18.2)の線形成分 $`M_e`$ とその逆、平行移動の定数部および入力係数を $`A`$ の行列で与える。
 面の線形成分の一致と3-セルの比較等式は、この原始族の等式として課す。
-未知入力 $`v`$ は固定した $`A^n`$ の座標を持ち、固定部分の Law、入力条件、および既知情報を連立した式を $`Lv=s`$ と書く。
+未知入力 $`v`$ は固定した $`A^n`$ の座標を持つ。既知情報と入力条件は有限個の線形評価で与え、固定部分の Law も合わせた有限の連立式を $`Lv=s`$ と書く。したがって $`L`$ はある有限な $`m`$ に対する $`m\times n`$ 行列である。
 名前付きの有限問い合わせ集合 $`J_0`$ を固定し、各問い合わせは原始操作の評価から定数部を除いた線形な値とする。
 
 各 $`t\in |T|`$ では構造パラメータ $`t`$ を既知とし、剰余体 $`K_t=\kappa(t)`$ 上で
+
+**式(18.9)**
 
 ```math
 D_{S,t}h=b_{0,t}+B_tv,\qquad L_tv=s_t,\qquad
 O_{J,t}v=(\lambda_{j,t}(v))_{j\in J},
 \quad S\subseteq\mathsf E,\ J\subseteq J_0
-\qquad\text{(18.9)}
 ```
 
 を考える。$`D_S`$ は同じ $`d^1`$ の許可座標に属する列を取った行列であり、$`B`$ はこの節での $`B_{\mathrm{in}}`$ である。
@@ -433,12 +442,13 @@ $`\infty`$ は可解な入力が存在し、全問い合わせを使っても十
 **証明.**
 以下の行列をすべて $`A`$ 上で作る。各ブロックは表示された上下または左右の順に並置する。
 
+**式(18.10)**
+
 ```math
 Q_J=\binom{L}{O_J},\qquad
 M_S=\begin{pmatrix}L&0\\-B&D_S\end{pmatrix},\qquad
 c=\binom{s}{b_0},\qquad
 K_{S,J}=\begin{pmatrix}D_S&B\\0&Q_J\end{pmatrix}.
-\qquad\text{(18.10)}
 ```
 
 まず $`F_t\ne\varnothing`$ は $`\mathop{\mathrm{rank}}\nolimits L_t=\mathop{\mathrm{rank}}\nolimits [L_t\ s_t]`$ と同値である。
@@ -447,6 +457,8 @@ $`\mathop{\mathrm{rank}}\nolimits M_{S,t}=\mathop{\mathrm{rank}}\nolimits [M_{S,
 である。前者だけが成り立ち後者が成り立たなければ、非空な入力ファイバー全体が不能である。
 
 可解な入力が存在するとき、定理18.4の核条件は次の階数等式に一致する。
+
+**式(18.11)**
 
 ```math
 \begin{aligned}
@@ -457,7 +469,6 @@ J\text{ が数値補正に十分}
 &\iff \mathop{\mathrm{rank}}\nolimits \binom{Q_{J,t}}{B_t}
        =\mathop{\mathrm{rank}}\nolimits Q_{J,t}.
 \end{aligned}
-\qquad\text{(18.11)}
 ```
 
 第二式は行空間の包含そのものである。
@@ -490,10 +501,11 @@ $`r=0`$ のときは零次小行列式を $`1`$ とする。
 可換環上の行列 $`H`$ に可逆な $`r\times r`$ 部分行列 $`P`$ があるとする。
 行・列の順を変えて $`H=\left(\begin{smallmatrix}P&Q\\R&S\end{smallmatrix}\right)`$ と書き、可逆な行・列変形をすると、
 
+**式(18.12)**
+
 ```math
 H\sim
 \begin{pmatrix}I_r&0\\0&S-RP^{-1}Q\end{pmatrix}.
-\qquad\text{(18.12)}
 ```
 
 右下の各成分に $`\det P`$ を掛けた値は、対応する $`(r+1)`$ 次小行列式である。
@@ -548,6 +560,8 @@ $`\mathcal J_{\mathrm{dec}}(S)\subseteq\mathcal J_{\mathrm{dec}}(S')`$
 
 さらに、問い合わせ候補を全線形汎関数 $`P_{\mathrm{in}}^*`$、各評価の費用を1とすると、可解な基準入力のある範囲について
 
+**式(18.13)**
+
 ```math
 \begin{aligned}
 m_{\mathrm{dec}}(S)
@@ -558,7 +572,6 @@ m_{\mathrm{num}}(S)
  &=\mathop{\mathrm{rank}}\nolimits (B|_{\ker L})
   =\mathop{\mathrm{rank}}\nolimits \binom{L}{B}-\mathop{\mathrm{rank}}\nolimits L.
 \end{aligned}
-\qquad\text{(18.13)}
 ```
 
 **証明.**
