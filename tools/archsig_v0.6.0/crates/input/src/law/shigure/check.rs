@@ -33,6 +33,10 @@ pub(super) enum DeclCategory {
     Diagram,
     Path,
     Transfer,
+    Family,
+    Robustness,
+    Chevalley,
+    Observations,
 }
 
 /// 既存の `Checker` 状態（reading・alias・vocabulary import・通常宣言名）を使って
@@ -80,6 +84,10 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 ShigureDeclAst::Diagram(_) => DeclCategory::Diagram,
                 ShigureDeclAst::Path(_) => DeclCategory::Path,
                 ShigureDeclAst::Transfer(_) => DeclCategory::Transfer,
+                ShigureDeclAst::Family(_) => DeclCategory::Family,
+                ShigureDeclAst::Robustness(_) => DeclCategory::Robustness,
+                ShigureDeclAst::Chevalley(_) => DeclCategory::Chevalley,
+                ShigureDeclAst::Observations(_) => DeclCategory::Observations,
             };
             index.insert(name, (cat, d.span(), r_idx));
         }
@@ -143,12 +151,25 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 | ShigureDeclAst::Task(_)
                 | ShigureDeclAst::Diagram(_)
                 | ShigureDeclAst::Path(_)
-                | ShigureDeclAst::Transfer(_) => {}
+                | ShigureDeclAst::Transfer(_)
+                | ShigureDeclAst::Family(_)
+                | ShigureDeclAst::Robustness(_)
+                | ShigureDeclAst::Chevalley(_)
+                | ShigureDeclAst::Observations(_) => {}
             }
         }
     }
 
-    // Pass 4: tasks, diagrams, paths, transfers
+    // Pass 3.5: Phase 3 families (depends on presentations, comparisons, change_specs)
+    super::check_phase3_tasks::check_all_families(
+        checker,
+        &index,
+        &mut out,
+        &mut shigure_edges,
+        control,
+    )?;
+
+    // Pass 4: tasks, diagrams, paths, transfers, and Phase 3 tasks
     for (r_idx, r) in readings.iter().enumerate() {
         for d in &r.shigure_decls {
             match d {
@@ -211,10 +232,21 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 ShigureDeclAst::Presentation(_)
                 | ShigureDeclAst::Comparison(_)
                 | ShigureDeclAst::ChangeSpec(_)
-                | ShigureDeclAst::EvalCondition(_) => {}
+                | ShigureDeclAst::EvalCondition(_)
+                | ShigureDeclAst::Family(_)
+                | ShigureDeclAst::Robustness(_)
+                | ShigureDeclAst::Chevalley(_)
+                | ShigureDeclAst::Observations(_) => {}
             }
         }
     }
+    super::check_phase3_tasks::check_all_phase3_tasks(
+        checker,
+        &index,
+        &mut out,
+        &mut shigure_edges,
+        control,
+    )?;
 
     // reading 間の依存グラフ非循環性（通常宣言と SHIGURE 宣言の混合循環も含む）を検査する。
     if !shigure_edges.is_empty() {
@@ -650,7 +682,7 @@ fn check_presentation<E: InputError>(
     })
 }
 
-fn resolve_observed_field<E: InputError>(
+pub(super) fn resolve_observed_field<E: InputError>(
     qname: &QName,
     span: Span,
     domain: &ShigureCoeffDomain,

@@ -736,6 +736,65 @@ pub(super) fn check_task<E: InputError>(
         ))
         .into());
     }
+    check_comparison_against_change_spec(cmp, after_p, spec, control)?;
+
+    let param_set: HashSet<&str> = spec.parameters.iter().map(|p| p.name.as_str()).collect();
+    if let Some(ec_name) = &eval_condition {
+        let ec = &decls.eval_conditions[ec_name];
+        let compatible = match (&spec.coeff_domain, &ec.point_domain) {
+            (ShigureCoeffDomain::Q, ShigurePointDomain::AlgebraicClosure)
+            | (ShigureCoeffDomain::Q, ShigurePointDomain::RationalPoints)
+            | (ShigureCoeffDomain::Q, ShigurePointDomain::UniversalRing)
+            | (ShigureCoeffDomain::Z, ShigurePointDomain::AlgebraicClosure)
+            | (ShigureCoeffDomain::Z, ShigurePointDomain::RationalPoints)
+            | (ShigureCoeffDomain::Z, ShigurePointDomain::IntegerPoints)
+            | (ShigureCoeffDomain::Z, ShigurePointDomain::UniversalRing) => true,
+            (ShigureCoeffDomain::Fp(p1), ShigurePointDomain::FiniteFieldPoints(p2)) => p1 == p2,
+            (ShigureCoeffDomain::Fp(_), ShigurePointDomain::UniversalRing) => true,
+            _ => false,
+        };
+        if !compatible {
+            return Err(Box::new(Issue::law(
+                Code::Type,
+                raw.span,
+                "`eval_condition` point_domain is incompatible with `change_spec` coefficient domain",
+            ))
+            .into());
+        }
+        for item in ec
+            .evaluations
+            .iter()
+            .chain(&ec.equations)
+            .chain(&ec.invertibles)
+        {
+            E::checkpoint(control, Checkpoint::LawSemantics)?;
+            check_poly_literals(
+                &item.expr,
+                LiteralDomainRule::Exact(&spec.coeff_domain),
+                item.span,
+                control,
+            )?;
+            let ctx = format!("{}.{}", ec.name, item.name);
+            check_poly_vars(&item.expr, &param_set, item.span, &ctx, control)?;
+        }
+    }
+
+    Ok(ShigureTask {
+        name: full_name,
+        reading: reading_name.to_owned(),
+        comparison,
+        change_spec,
+        eval_condition,
+        span: raw.span,
+    })
+}
+
+pub(super) fn check_comparison_against_change_spec<E: InputError>(
+    cmp: &ShigureComparison,
+    after_p: &ShigurePresentation,
+    spec: &ShigureChangeSpec,
+    control: &Control,
+) -> CResult<(), E> {
     for (target, span) in &spec.fixed {
         E::checkpoint(control, Checkpoint::LawSemantics)?;
         match target {
@@ -747,7 +806,8 @@ pub(super) fn check_task<E: InputError>(
                     return reference(
                         *span,
                         format!(
-                            "fixed target references presentation `{presentation}` outside comparison `{comparison}`"
+                            "fixed target references presentation `{presentation}` outside comparison `{}`",
+                            cmp.name
                         ),
                     );
                 }
@@ -803,8 +863,6 @@ pub(super) fn check_task<E: InputError>(
             }
         }
     }
-    // `after` 表示・`state_map`・`translate`・`eval_condition` の全式に対し、
-    // パラメータ名前空間衝突と変数参照の静的検査を行う。
     let param_set: HashSet<&str> = spec.parameters.iter().map(|p| p.name.as_str()).collect();
     check_presentation_vars(after_p, Some(&param_set), control)?;
     for sc in &cmp.state_comparisons {
@@ -846,53 +904,5 @@ pub(super) fn check_task<E: InputError>(
             }
         }
     }
-
-    if let Some(ec_name) = &eval_condition {
-        let ec = &decls.eval_conditions[ec_name];
-        let compatible = match (&spec.coeff_domain, &ec.point_domain) {
-            (ShigureCoeffDomain::Q, ShigurePointDomain::AlgebraicClosure)
-            | (ShigureCoeffDomain::Q, ShigurePointDomain::RationalPoints)
-            | (ShigureCoeffDomain::Q, ShigurePointDomain::UniversalRing)
-            | (ShigureCoeffDomain::Z, ShigurePointDomain::AlgebraicClosure)
-            | (ShigureCoeffDomain::Z, ShigurePointDomain::RationalPoints)
-            | (ShigureCoeffDomain::Z, ShigurePointDomain::IntegerPoints)
-            | (ShigureCoeffDomain::Z, ShigurePointDomain::UniversalRing) => true,
-            (ShigureCoeffDomain::Fp(p1), ShigurePointDomain::FiniteFieldPoints(p2)) => p1 == p2,
-            (ShigureCoeffDomain::Fp(_), ShigurePointDomain::UniversalRing) => true,
-            _ => false,
-        };
-        if !compatible {
-            return Err(Box::new(Issue::law(
-                Code::Type,
-                raw.span,
-                "`eval_condition` point_domain is incompatible with `change_spec` coefficient domain",
-            ))
-            .into());
-        }
-        for item in ec
-            .evaluations
-            .iter()
-            .chain(&ec.equations)
-            .chain(&ec.invertibles)
-        {
-            E::checkpoint(control, Checkpoint::LawSemantics)?;
-            check_poly_literals(
-                &item.expr,
-                LiteralDomainRule::Exact(&spec.coeff_domain),
-                item.span,
-                control,
-            )?;
-            let ctx = format!("{}.{}", ec.name, item.name);
-            check_poly_vars(&item.expr, &param_set, item.span, &ctx, control)?;
-        }
-    }
-
-    Ok(ShigureTask {
-        name: full_name,
-        reading: reading_name.to_owned(),
-        comparison,
-        change_spec,
-        eval_condition,
-        span: raw.span,
-    })
+    Ok(())
 }

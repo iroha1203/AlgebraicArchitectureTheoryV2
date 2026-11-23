@@ -165,7 +165,7 @@ impl<E: InputError> Parser<E> {
         }
     }
 
-    fn string(&mut self) -> PResult<String, E> {
+    pub(super) fn string(&mut self) -> PResult<String, E> {
         match self.peek() {
             Some(t) if t.kind == TokenKind::Str => {
                 let s = t.text.clone();

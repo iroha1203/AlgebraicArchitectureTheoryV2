@@ -3,6 +3,7 @@
 mod comparison;
 mod comparison_shigure;
 mod comparison_shigure_ext;
+mod comparison_shigure_phase3;
 
 use crate::result::Signal;
 use crate::{

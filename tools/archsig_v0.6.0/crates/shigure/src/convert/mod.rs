@@ -8,8 +8,10 @@
 mod lower;
 mod lower_diagram;
 mod lower_expr;
+mod lower_family;
 mod lower_morphism;
 mod lower_path;
+mod lower_phase3;
 mod lower_transfer;
 #[cfg(test)]
 mod tests;
@@ -19,9 +21,15 @@ mod tests_extra;
 mod tests_phase2;
 #[cfg(test)]
 mod tests_phase2_neg;
+#[cfg(test)]
+mod tests_phase3;
+#[cfg(test)]
+mod tests_phase3_neg;
 
 use crate::ir::diagram::CheckedDiagramTask;
+use crate::ir::observation::CheckedObservationTask;
 use crate::ir::path::CheckedPathTask;
+use crate::ir::robustness::{CheckedChevalleyTask, CheckedRobustnessTask};
 use crate::ir::transfer::CheckedTransferTask;
 use crate::ir::validate::{CheckedShigureTask, ValidationError};
 use archsig_input::input::CheckedInputs;
@@ -53,6 +61,30 @@ pub trait ToShigureTransferTask {
         &self,
         inputs: &CheckedInputs,
     ) -> Result<CheckedTransferTask, ValidationError>;
+}
+
+/// `CheckedInputs` から頑健判定タスク `CheckedRobustnessTask` への変換境界。
+pub trait ToShigureRobustnessTask {
+    fn convert_robustness(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedRobustnessTask, ValidationError>;
+}
+
+/// `CheckedInputs` から Chevalley 四分類タスク `CheckedChevalleyTask` への変換境界。
+pub trait ToShigureChevalleyTask {
+    fn convert_chevalley(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedChevalleyTask, ValidationError>;
+}
+
+/// `CheckedInputs` から追加観測タスク `CheckedObservationTask` への変換境界。
+pub trait ToShigureObservationTask {
+    fn convert_observation(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedObservationTask, ValidationError>;
 }
 
 /// `CheckedInputs` から指定 SHIGURE タスクを抽出して `CheckedShigureTask` へ変換する標準変換器。
@@ -124,6 +156,83 @@ impl ToShigureTransferTask for ShigureConverter {
             self.snapshot_id.as_deref(),
         )
     }
+}
+
+impl ToShigureRobustnessTask for ShigureConverter {
+    fn convert_robustness(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedRobustnessTask, ValidationError> {
+        lower_phase3::convert_robustness_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureChevalleyTask for ShigureConverter {
+    fn convert_chevalley(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedChevalleyTask, ValidationError> {
+        lower_phase3::convert_chevalley_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureObservationTask for ShigureConverter {
+    fn convert_observation(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedObservationTask, ValidationError> {
+        lower_phase3::convert_observation_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure family` の完全名一覧を返す。
+pub fn list_shigure_families(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().families.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure robustness` の完全名一覧を返す。
+pub fn list_shigure_robustness_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .robustness_tasks
+        .keys()
+        .cloned()
+        .collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure chevalley` の完全名一覧を返す。
+pub fn list_shigure_chevalley_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .chevalley_tasks
+        .keys()
+        .cloned()
+        .collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure observations` の完全名一覧を返す。
+pub fn list_shigure_observation_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .observation_tasks
+        .keys()
+        .cloned()
+        .collect()
 }
 
 /// `CheckedInputs` 内の Law に宣言されている全 `shigure task` の完全名一覧を返す。
