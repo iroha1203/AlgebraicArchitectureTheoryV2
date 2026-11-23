@@ -98,7 +98,7 @@ def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
   | some equation =>
     formula equation.written.equation.left.graph ∪
       formula equation.written.equation.right.graph ∪
-      Set.range (fun i => Declaration.law (equation.axiomName i))
+      Declaration.law '' equation.axiomNames
 
 /-- The immediate references of a declaration in Definition 3.1. -/
 def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declaration P)

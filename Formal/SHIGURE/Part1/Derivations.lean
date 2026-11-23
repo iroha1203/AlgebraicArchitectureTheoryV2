@@ -133,14 +133,43 @@ structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
   written : RingEquation.Written sig
   /-- The literal equality is the Law registered at this name. -/
   statement_eq : written.toLaw = laws.statement name
-  /-- The declared name of each ring Law. -/
-  axiomName : RingVocabulary.LawName → laws.LawName
-  /-- Each name supplies the corresponding ring Law on exactly the chosen operations. -/
-  axiom_statement (i : RingVocabulary.LawName) :
-    laws.statement (axiomName i) = written.equation.ring.law i
-  /-- Every model is required to satisfy each ring Law, directly or by derivation. -/
-  axiom_role (i : RingVocabulary.LawName) :
-    laws.role (axiomName i) = .required ∨ laws.role (axiomName i) = .derived
+  /-- The named Laws chosen to specify the ring, independently of their declaration roles. -/
+  axiomNames : Set laws.LawName
+  /-- Satisfaction of the chosen named Laws supplies the ring axioms on the chosen operations. -/
+  axioms_imply (A : Structure sig)
+    (holds : ∀ i ∈ axiomNames, (laws.statement i).Holds A) :
+    ∀ i, (written.equation.ring.law i).Holds A
+
+namespace NamedRingEquation
+
+variable {sig : Signature.{u}} {laws : LawDeclarations sig} {name : laws.LawName}
+
+/-- Attach the names of ring Laws written in the canonical form. -/
+def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw = laws.statement name)
+    (axiomName : RingVocabulary.LawName → laws.LawName)
+    (axiom_statement : ∀ i, laws.statement (axiomName i) = written.equation.ring.law i) :
+    NamedRingEquation laws name where
+  written := written
+  statement_eq := statement_eq
+  axiomNames := Set.range axiomName
+  axioms_imply _ holds i := axiom_statement i ▸ holds (axiomName i) ⟨i, rfl⟩
+
+/-- The structure satisfies the named Laws that specify the ring. -/
+def AxiomsHold (data : NamedRingEquation laws name) (A : Structure sig) : Prop :=
+  ∀ i ∈ data.axiomNames, (laws.statement i).Holds A
+
+/-- The named Law holds exactly when both terms evaluate and their residual vanishes. -/
+theorem holds_iff_residual_zero (data : NamedRingEquation laws name) (A : Structure sig)
+    (holds : data.AxiomsHold A) :
+    (laws.statement name).Holds A ↔
+      data.written.equation.jointInputs A = data.written.toLaw.inputSet A ∧
+      ∀ e : data.written.equation.jointInputs A,
+        data.written.equation.residual A (data.axioms_imply A holds) e =
+          data.written.equation.ring.zeroValue A := by
+  have written := data.written.holds_iff_residual A (data.axioms_imply A holds)
+  exact data.statement_eq ▸ written
+
+end NamedRingEquation
 
 /-- A primitive presentation also retains the derivation of each declaration marked derived. -/
 structure PrimitivePresentation where
@@ -160,27 +189,16 @@ structure PrimitivePresentation where
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=
   P.laws.toTheory
 
-/-- In a model of the presentation, the named declarations supply every ring Law. -/
-theorem NamedRingEquation.axioms_hold {P : PrimitivePresentation.{u}} {name : P.laws.LawName}
-    (data : NamedRingEquation P.laws name) (A : Structure P.signature) (model : P.theory.Holds A) :
-    ∀ i, (data.written.equation.ring.law i).Holds A := by
-  intro i
-  rw [← data.axiom_statement i]
-  rcases data.axiom_role i with required | derived
-  · exact model ⟨data.axiomName i, required⟩
+/-- A model satisfies the chosen ring Laws if they were declared required or derived. -/
+theorem NamedRingEquation.axioms_hold_of_model {P : PrimitivePresentation.{u}}
+    {name : P.laws.LawName} (data : NamedRingEquation P.laws name) (A : Structure P.signature)
+    (model : P.theory.Holds A)
+    (roles : ∀ i ∈ data.axiomNames, P.laws.role i = .required ∨ P.laws.role i = .derived) :
+    data.AxiomsHold A := by
+  intro i member
+  rcases roles i member with required | derived
+  · exact model ⟨i, required⟩
   · intro e held
-    exact (P.derived (data.axiomName i) derived).sound A model e held
-
-/-- The named Law holds exactly when both terms evaluate and their residual vanishes. -/
-theorem NamedRingEquation.holds_iff_residual_zero
-    {P : PrimitivePresentation.{u}} {name : P.laws.LawName}
-    (data : NamedRingEquation P.laws name) (A : Structure P.signature) (model : P.theory.Holds A) :
-    (P.laws.statement name).Holds A ↔
-      data.written.equation.jointInputs A = data.written.toLaw.inputSet A ∧
-      ∀ e : data.written.equation.jointInputs A,
-        data.written.equation.residual A (data.axioms_hold (P := P) A model) e =
-          data.written.equation.ring.zeroValue A := by
-  have written := data.written.holds_iff_residual A (data.axioms_hold (P := P) A model)
-  exact data.statement_eq ▸ written
+    exact (P.derived i derived).sound A model e held
 
 end SHIGURE

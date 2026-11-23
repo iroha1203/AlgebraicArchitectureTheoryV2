@@ -26,8 +26,9 @@ support is set-valued and a source cover piece may use several target
 pieces. Restriction to the retained source declarations controls which
 facts can be transported.
 
-A comparison can hold its coefficients and realization rule fixed. A
-scalar change compares the chosen evaluations along the state map of (1.12).
+A comparison can hold its coefficient algebra fixed, with each reading
+keeping its own realization rule. A scalar change compares the chosen
+evaluations using the structural map on the selected coefficient inputs.
 The two-endpoint square is also obtained when a chosen realization rule
 supplies the scalar-change map on states.
 -/
@@ -265,8 +266,8 @@ structure Reading where
   ValueStructure : Type u → Type u
   /-- The chosen value-structure data. -/
   valueStructure : ValueStructure observation.Output
-  /-- The coefficient data, when the reading uses coefficients. -/
-  coefficients : Option (CoefficientReading context structureData observation.context)
+  /-- The coefficient input context and its evaluation, when the reading uses coefficients. -/
+  coefficients : Option (Σ Γ, CoefficientReading context structureData Γ)
 
 namespace Declaration
 
@@ -490,20 +491,23 @@ def Assignment.castContext {sig : Signature.{u}} {A : Structure sig}
     Assignment A.carrier Δ :=
   same ▸ e
 
-/-- The coefficient part of a comparison uses the same states as (1.12).
-Introducing or forgetting coefficients specifies a map at the ordinary-observation endpoint. -/
+/-- Transport the inputs chosen by the coefficient or ordinary observation at each endpoint. -/
 def Reading.CoefficientCompatibility (source target : Reading.{u})
-    (states : Assignment source.structureData.carrier source.observation.context →
-      Assignment target.structureData.carrier target.observation.context) : Type u :=
+    (onSort : source.presentation.signature.SortType → target.presentation.signature.SortType)
+    (states : ∀ {Γ : List source.presentation.signature.SortType},
+      Assignment source.structureData.carrier Γ →
+      Assignment target.structureData.carrier (Γ.map onSort)) : Type u :=
   match source.coefficients, target.coefficients with
   | none, none => PUnit
-  | some c, some d => CoefficientReading.Comparison c d states
+  | some c, some d => CoefficientReading.Transport c.2 d.2 onSort states
   | none, some d =>
-    {v : source.observation.Output → d.ring.Carrier //
-      ∀ e, d.evaluate (states e) = v (source.observation.read e)}
+    Σ inputs : Renaming d.1 (source.observation.context.map onSort),
+      {v : source.observation.Output → d.2.ring.Carrier //
+        ∀ e, d.2.evaluate ((states e).pull inputs) = v (source.observation.read e)}
   | some c, none =>
-    {v : c.ring.Carrier → target.observation.Output //
-      ∀ e, target.observation.read (states e) = v (c.evaluate e)}
+    Σ inputs : Renaming target.observation.context (c.1.map onSort),
+      {v : c.2.ring.Carrier → target.observation.Output //
+        ∀ e, target.observation.read ((states e).pull inputs) = v (c.2.evaluate e)}
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
 structure ReadingComparison (source target : Reading.{u}) where
@@ -519,8 +523,8 @@ structure ReadingComparison (source target : Reading.{u}) where
   /-- Fixed declarations and cover, or the selected restriction and cover maps. -/
   declarationChange : source.ContextCompatibility target interpretation
   /-- Any change of the coefficients and their evaluation. -/
-  coefficientChange : source.CoefficientCompatibility target
-    (fun e => Assignment.castContext contexts (interpretation.mapStates state e))
+  coefficientChange : source.CoefficientCompatibility target interpretation.onSort
+    (fun e => interpretation.mapStates state e)
   /-- The function between the two sets of observed values. -/
   value : source.observation.Output → target.observation.Output
   /-- Equation (1.12), imposed at every source state tuple. -/

@@ -213,12 +213,14 @@ def Change.alongScheme {source : CoefficientReading U A Γ} {target : Coefficien
   evaluate_commutes e := (congrArg target.evaluate (state_commutes e)).symm.trans
     ((target_commutes e).trans (change_commutes e))
 
-/-- The reading can hold its coefficient choices fixed or compare two choices by a scalar map. -/
-inductive Comparison (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
-    (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
+/-- Use the structural state map on coefficient inputs, independently of the ordinary observation. -/
+inductive Transport (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
+    (onSort : P.signature.SortType → Q.signature.SortType)
+    (states : Assignment A.carrier Γ → Assignment B.carrier (Γ.map onSort)) where
   | fixed (sameBase : source.base = target.base) :
-      (sameBase ▸ source.algebra) = target.algebra → Comparison source target states
-  | changed : Change source target states → Comparison source target states
+      (sameBase ▸ source.algebra) = target.algebra → Transport source target onSort states
+  | changed (inputs : Renaming Δ (Γ.map onSort)) :
+      Change source target (fun e => (states e).pull inputs) → Transport source target onSort states
 
 end CoefficientReading
 

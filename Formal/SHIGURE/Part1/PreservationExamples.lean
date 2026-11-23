@@ -606,7 +606,7 @@ private def readingOf (R : Type) [CommRing R] (offset : R) : Reading where
   familyObservation := none
   ValueStructure := fun _ => Unit
   valueStructure := ()
-  coefficients := some (readRing R offset)
+  coefficients := some ⟨[()], readRing R offset⟩
 
 /-- Both the observation and the coefficient evaluation use the structural state map. -/
 def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int × Int) (4, 4)) where
@@ -621,7 +621,7 @@ def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int 
       quantity_comm := fun q => nomatch q }
   contexts := rfl
   declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
-  coefficientChange := .changed
+  coefficientChange := .changed (fun i => i)
     { integerDiagonal with
       evaluate_commutes := fun e => integerDiagonal.evaluate_commutes e }
   value := fun x => (x, x)
@@ -680,8 +680,8 @@ private def projectionReading (f : (Int × Int) →+* Int) :
 
 /-- Varying only the algebra structure map cannot bypass evaluation compatibility. -/
 theorem projection_algebras_cannot_compare :
-    ¬ Nonempty (CoefficientReading.Comparison (projectionReading (RingHom.fst Int Int))
-      (projectionReading (RingHom.snd Int Int)) id) := by
+    ¬ Nonempty (CoefficientReading.Transport (projectionReading (RingHom.fst Int Int))
+      (projectionReading (RingHom.snd Int Int)) id id) := by
   rintro ⟨comparison⟩
   cases comparison with
   | fixed sameBase sameAlgebra =>
@@ -696,10 +696,10 @@ theorem projection_algebras_cannot_compare :
     have impossible : (0 : Int) = 1 := by
       simpa only [value, projectionReading, dif_pos rfl] using mapped
     exact (by decide : (0 : Int) ≠ 1) impossible
-  | changed comparison =>
+  | changed _ comparison =>
     let f : Int →+* Int := comparison.coefficients
     have impossible : (1 : Int) = f 0 :=
-      comparison.evaluate_commutes (Assignment.cons (0 : Int) Assignment.empty)
+      comparison.evaluate_commutes ⟨fun _ => (0 : Int)⟩
     exact (by decide : (1 : Int) ≠ 0) (impossible.trans f.map_zero)
 
 /-- Use the constant evaluation to test base compatibility independently of the evaluation square. -/
@@ -754,15 +754,17 @@ theorem repeated_coefficient_input :
 private def plainInteger : Reading := { readingOf Int 0 with coefficients := none }
 
 /-- Forgetting coefficients gives an explicit map from the old evaluation to the ordinary value. -/
-def forgetCoefficients : Reading.CoefficientCompatibility (readingOf Int 0) plainInteger id :=
-  ⟨id, fun e => by
+def forgetCoefficients : Reading.CoefficientCompatibility (readingOf Int 0) plainInteger id
+    (fun e => e.mapSorts id) :=
+  ⟨(fun i => i), id, fun e => by
     let x : Int := e.head
     change x = x + 0
     exact (Int.add_zero x).symm⟩
 
 /-- Introducing coefficients supplies the corresponding map in the other direction. -/
-def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readingOf Int 0) id :=
-  ⟨id, fun e => by
+def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readingOf Int 0) id
+    (fun e => e.mapSorts id) :=
+  ⟨(fun i => i), id, fun e => by
     let x : Int := e.head
     change x + 0 = x
     exact Int.add_zero x⟩
@@ -770,17 +772,30 @@ def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readi
 /-- This coefficient evaluation gives the same result at different observed states. -/
 private def constantCoefficient : Reading :=
   { readingOf Int 0 with
-    coefficients := some { readRing Int 0 with
+    coefficients := some ⟨[()], { readRing Int 0 with
       evaluateOn R _ _ :=
         letI := R.scalars.ring
-        0 } }
+        0 }⟩ }
 
 /-- The forgotten coefficient value cannot distinguish the two ordinary observations. -/
 theorem forgetting_requires_a_value_map :
-    ¬ Nonempty (Reading.CoefficientCompatibility constantCoefficient plainInteger id) := by
-  rintro ⟨⟨value, commutes⟩⟩
-  have zero : (0 : Int) = value (0 : Int) := commutes (Assignment.cons (0 : Int) Assignment.empty)
-  have one : (1 : Int) = value (0 : Int) := commutes (Assignment.cons (1 : Int) Assignment.empty)
+    ¬ Nonempty (Reading.CoefficientCompatibility constantCoefficient plainInteger id
+      (fun e => e.mapSorts id)) := by
+  rintro ⟨⟨inputs, value, commutes⟩⟩
+  have head : inputs .here = .here := by
+    generalize inputs (.here : Var [()] ()) = i
+    cases i with
+    | here => rfl
+    | there i => exact nomatch i
+  let zeroState : Assignment (statesOf Int).carrier [()] := Assignment.cons (0 : Int) Assignment.empty
+  let oneState : Assignment (statesOf Int).carrier [()] := Assignment.cons (1 : Int) Assignment.empty
+  have atZero := commutes zeroState
+  have atOne := commutes oneState
+  change (zeroState.mapSorts id) (inputs .here) = value (0 : Int) at atZero
+  change (oneState.mapSorts id) (inputs .here) = value (0 : Int) at atOne
+  rw [head] at atZero atOne
+  have zero : (0 : Int) = value (0 : Int) := atZero
+  have one : (1 : Int) = value (0 : Int) := atOne
   exact (by decide : (0 : Int) ≠ 1) (zero.trans one.symm)
 
 /-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
@@ -793,7 +808,7 @@ theorem zero_ring_to_integer_fails :
   have bad : (0 : Int) = 1 := h.map_zero.symm.trans ((congrArg (fun x => h x) hz).trans h.map_one)
   exact (by decide : (0 : Int) ≠ 1) bad
 
-/-- The selected offset cannot be changed while transporting the zero state by identity. -/
+/-- An explicit coefficient-change square fails for the different offsets and the identity state map. -/
 theorem offset_change_fails :
     ¬ Nonempty (CoefficientReading.Change (readRing Int 0) (readRing Int 1) id) := by
   rintro ⟨data⟩
@@ -909,12 +924,8 @@ private def equationLaws : LawDeclarations signature where
     | .inr _ => .required
 
 /-- The named equation refers to the exact declarations that supply its ring. -/
-private def equationDeclaration : NamedRingEquation equationLaws (.inl ()) where
-  written := equation.write
-  statement_eq := rfl
-  axiomName := Sum.inr
-  axiom_statement _ := rfl
-  axiom_role _ := Or.inl rfl
+private def equationDeclaration : NamedRingEquation equationLaws (.inl ()) :=
+  NamedRingEquation.ofAxioms equation.write rfl Sum.inr (fun _ => rfl)
 
 /-- The presentation retains the ordered equality under its registered name. -/
 private def namedEquation : PrimitivePresentation where
@@ -940,14 +951,68 @@ theorem residual_retains_named_ring_laws (U : DeclarationContext namedEquation)
     (kept : Declaration.law (P := namedEquation) (.inl ()) ∈ U.declarations)
     (i : RingVocabulary.LawName) :
     Declaration.law (P := namedEquation) (.inr i) ∈ U.declarations :=
-  U.closed kept (Or.inr (Or.inl (Or.inr ⟨i, rfl⟩)))
+  U.closed kept (Or.inr (Or.inl (Or.inr ⟨.inr i, ⟨i, rfl⟩, rfl⟩)))
 
 /-- The named Laws supply the ring axioms on the integer model. -/
 theorem named_integer_ring_laws :
     ∀ i, (equationDeclaration.written.equation.ring.law i).Holds (realization Int Int) :=
-  NamedRingEquation.axioms_hold (P := namedEquation) equationDeclaration (realization Int Int)
-    (fun i => match i with
-      | ⟨.inr law, _⟩ => realization_scalarLaws Int Int law)
+  equationDeclaration.axioms_imply (realization Int Int)
+    (NamedRingEquation.axioms_hold_of_model (P := namedEquation) equationDeclaration (realization Int Int)
+      (fun i => match i with
+        | ⟨.inr law, _⟩ => realization_scalarLaws Int Int law)
+      (by
+        rintro _ ⟨law, rfl⟩
+        exact Or.inl rfl))
+
+/-- Add an unused scalar variable to each of the named ring Laws. -/
+private def paddedAxiom (i : RingVocabulary.LawName) : Law signature :=
+  let law := scalarVocabulary.law i
+  ⟨.scalar :: law.context, law.input.rename (fun j => .there j),
+    law.conclusion.rename (fun j => .there j)⟩
+
+/-- The unused variable may be filled by the declared zero, even when other carriers are empty. -/
+private theorem paddedAxiom_holds_iff (A : Structure signature) (i : RingVocabulary.LawName) :
+    (paddedAxiom i).Holds A ↔ (scalarVocabulary.law i).Holds A := by
+  let law := scalarVocabulary.law i
+  constructor
+  · intro holds e he
+    let extended := Assignment.cons (scalarVocabulary.zeroValue A) e
+    have input : (law.input.rename (fun j => .there j)).Holds A extended :=
+      (Formula.holds_rename A _ _ _).2 (by simpa only [extended, Assignment.pull_cons_there] using he)
+    have result := (Formula.holds_rename A law.conclusion (fun j => .there j) extended).1 (holds extended input)
+    simpa only [extended, Assignment.pull_cons_there] using result
+  · intro holds e he
+    exact (Formula.holds_rename A law.conclusion (fun j => .there j) e).2
+      (holds _ ((Formula.holds_rename A law.input (fun j => .there j) e).1 he))
+
+/-- The padded ring Laws remain additional Laws in the original presentation. -/
+private def paddedLaws : LawDeclarations signature where
+  LawName := Sum Unit RingVocabulary.LawName
+  statement
+    | .inl _ => equation.toLaw
+    | .inr i => paddedAxiom i
+  role _ := .additional
+
+/-- The ordered literal can refer to the chosen additional Laws with their original syntax. -/
+private def paddedEquation : NamedRingEquation paddedLaws (.inl ()) where
+  written := equation.write
+  statement_eq := rfl
+  axiomNames := Set.range Sum.inr
+  axioms_imply A holds i := (paddedAxiom_holds_iff A i).1 (holds (.inr i) ⟨i, rfl⟩)
+
+/-- The name and its padded ring Laws belong to the same primitive presentation. -/
+def paddedPresentation : PrimitivePresentation where
+  signature := signature
+  laws := paddedLaws
+  ringEquation
+    | .inl () => some paddedEquation
+    | .inr _ => none
+  derived _ h := by cases h
+
+/-- The selected integer structure satisfies the additional declarations. -/
+theorem padded_integer_axioms : paddedEquation.AxiomsHold (realization Int Int) := by
+  rintro _ ⟨i, rfl⟩
+  exact (paddedAxiom_holds_iff _ i).2 (realization_scalarLaws Int Int i)
 
 /-- A truth formula cannot be attached to any ordered equality as its written conclusion. -/
 theorem truth_without_equality_has_no_expansion (eqn : RingEquation signature) :
@@ -1131,7 +1196,7 @@ def readingWithEmptyRealization : Reading where
   familyObservation := none
   ValueStructure := fun _ => Unit
   valueStructure := ()
-  coefficients := some emptySelection
+  coefficients := some ⟨[()], emptySelection⟩
 
 /-- The selected local realization is empty even though the original reading has a constant. -/
 theorem selected_empty_and_unread :

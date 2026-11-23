@@ -1,5 +1,7 @@
 import Formal.SHIGURE.Part1.IdentityInterpretation
 import Formal.SHIGURE.Part1.Reading
+import Mathlib.Algebra.Ring.Prod
+import Mathlib.Data.Int.Cast.Lemmas
 
 /-! # Evaluation in the assigned cover pieces
 
@@ -147,6 +149,51 @@ theorem other_relation_is_not_assigned :
     Declaration.relation (P := presentation) true = Declaration.relation false at h
   rcases h with impossible | impossible <;> cases impossible
 
+/-- Require the selected nullary relation in the presentation of a coefficient scheme. -/
+private def modelPresentation : PrimitivePresentation where
+  signature := signature
+  laws :=
+    { LawName := Unit
+      statement := fun _ => ⟨[], .truth, .atom (.rel false (fun i => nomatch i))⟩
+      role := fun _ => .required }
+  derived _ h := by cases h
+
+private def modelContext : DeclarationContext modelPresentation :=
+  ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+
+private def lawModelBase : CoefficientRing := ⟨Int, inferInstance⟩
+
+private def retainedModel (satisfies : Bool) : RestrictedStructure modelContext :=
+  RestrictedStructure.restrict modelContext
+    (if satisfies then data else { data with relation := fun _ => ∅ })
+
+/-- Use set-valued evaluation of the declared Law in both realized structures. -/
+private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
+  Realization _ := Bool
+  structureOf _ := retainedModel
+  Morphism _ a b := PLift (a = b)
+  mapPoints f _ _ x := f.down ▸ x
+  mapPoints_preserves f := by
+    rcases f with ⟨rfl⟩
+    intro _ _ _ _ held
+    exact held
+  Native := Bool
+  nativeStructure := retainedModel
+  realizeNative _ := id
+  nativePoints _ _ _ _ := id
+  interpretLaw _ a := (retainedModel a).satisfies
+  change _ := id
+  changePoints _ _ _ _ := id
+
+/-- With the same coefficients and rule, the required relation distinguishes two realizations. -/
+theorem coefficient_scheme_evaluates_required_law (R : CoefficientAlgebra lawModelBase) :
+    lawModelScheme.IsModel R true ∧ ¬ lawModelScheme.IsModel R false := by
+  constructor
+  · intro name kept e holds
+    exact Set.mem_univ _
+  · intro model
+    exact (model ⟨(), rfl⟩ (Set.mem_univ _) Assignment.empty True.intro).elim
+
 end SHIGURE.Chapter1.CoverTransport
 
 namespace SHIGURE.Chapter1.RetainedCoefficientInputs
@@ -267,5 +314,92 @@ theorem change_without_forgotten_map :
   refine ⟨rfl, ?_⟩
   rintro ⟨f⟩
   exact nomatch f true (0 : Int)
+
+/-- The coefficient carrier and the ordinarily observed carrier use different sorts. -/
+private def separateStates (R : Type) : Structure signature where
+  carrier
+    | false => R
+    | true => Bool
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- Realize the retained sort over the selected ring. -/
+private def scalarScheme : CoefficientScheme retained integers where
+  Realization _ := Unit
+  structureOf R _ := RestrictedStructure.restrict retained (separateStates R.scalars.Carrier)
+  Morphism _ _ _ := Unit
+  mapPoints _ _ _ := id
+  mapPoints_preserves _ := by
+    intro _ _ _ _ held
+    exact held
+  Native := Unit
+  nativeStructure _ := RestrictedStructure.restrict retained (separateStates Int)
+  realizeNative _ _ := ()
+  nativePoints R _ s kept := by
+    cases s
+    · exact fun x => R.fromBase x
+    · cases Set.mem_singleton_iff.1 kept
+  interpretLaw R _ := (RestrictedStructure.restrict retained (separateStates R.scalars.Carrier)).satisfies
+  change _ _ := ()
+  changePoints f _ s kept := by
+    cases s
+    · exact fun x => f x
+    · cases Set.mem_singleton_iff.1 kept
+
+/-- Read coefficients at the first sort and take the ordinary observation at the second. -/
+private def separateReading (R : Type) [CommRing R] : Reading where
+  presentation := presentation
+  structureData := separateStates R
+  observation := StateObservation.ofSort true Bool id
+  context := retained
+  cover := ⟨Unit, fun _ => retained, fun _ _ h => h, fun h => ⟨(), h⟩⟩
+  Family := Unit
+  realize _ := separateStates R
+  familyObservation := none
+  ValueStructure := fun _ => Unit
+  valueStructure := ()
+  coefficients := some ⟨[false],
+    { base := integers
+      algebra := ⟨⟨R, inferInstance⟩, Int.castRingHom R⟩
+      scheme := scalarScheme
+      realization := ()
+      context := [false]
+      supported := by
+        rintro _ ⟨s, hs, rfl⟩
+        have same : s = false := List.mem_singleton.1 hs
+        subst s
+        exact Set.mem_singleton _
+      inputs := fun i => i
+      realizePoint _ _ := id
+      evaluateOn _ _ e := e.head }⟩
+
+/-- One structural map induces both squares on their respective input products. -/
+def independent_coefficient_comparison :
+    ReadingComparison (separateReading Int) (separateReading (Int × Int)) where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel := fun name => nomatch name.val
+  state :=
+    { onSort := fun
+        | false => fun x => (x, x)
+        | true => id
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := rfl
+  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
+  coefficientChange := .changed (fun i => i)
+    { baseMap := RingHom.id Int
+      coefficients := (RingHom.id Int).prod (RingHom.id Int)
+      algebra_commutes := by
+        change (_ : Int →+* (Int × Int)) = _
+        exact Subsingleton.elim _ _
+      evaluate_commutes _ := rfl }
+  value := id
+  commutes _ := rfl
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
