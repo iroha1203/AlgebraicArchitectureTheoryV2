@@ -19,9 +19,9 @@ decidability assumption on any carrier.
 
 For an ordered ring equation, the written substituted Law retains the
 literal formula substitution. The equation presentation keeps the two
-substituted terms so the residual can read their values in order. A second
-expansion of the term equation can yield a different formula tree. The
-guarded comparison proves their equality of input sets and satisfaction.
+substituted terms so the residual can read their values in order. The
+guarded comparison certifies the retained expansion at every input. This
+keeps the written formula available for any subsequent substitution.
 -/
 
 universe u
@@ -306,49 +306,33 @@ namespace RingEquation
 
 variable {sig : Signature.{u}} {Δ : List sig.SortType}
 
-/-- Substitute an ordered equation, keeping its ring and adding the full definedness antecedent. -/
+/-- Substitute the written Law and the ordered terms together. -/
 def substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : RingEquation sig :=
+  let law := eqn.toLaw.substitute θ
   { context := Δ
-    input := θ.defined.conj (eqn.input.substitute θ)
+    input := law.input
     result := eqn.result
     ring := eqn.ring
     left := eqn.left.substitute θ
-    right := eqn.right.substitute θ }
+    right := eqn.right.substitute θ
+    written := some ⟨law.conclusion, by
+      intro A e held
+      obtain ⟨h, hinput⟩ := (eqn.toLaw.mem_inputSet_substitute θ A e).1 held
+      change (eqn.toLaw.conclusion.substitute θ).Holds A e ↔
+        (Formula.termEq (eqn.left.substitute θ) (eqn.right.substitute θ)).Holds A e
+      rw [Formula.holds_substitute _ θ A ⟨e, h⟩,
+        eqn.holds_conclusion_iff A (θ.value A ⟨e, h⟩) hinput, Formula.holds_termEq,
+        Formula.holds_termEq, ← eqn.left.eval_substitute θ A ⟨e, h⟩,
+        ← eqn.right.eval_substitute θ A ⟨e, h⟩]⟩ }
 
-/-- The written Law retains the original expanded conclusion after Formula substitution. -/
-def substitutedLaw (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : Law sig :=
-  eqn.toLaw.substitute θ
-
-/-- Both views of the substituted equation have the same guarded input set. -/
-theorem substitutedLaw_inputSet (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
-    (A : Structure sig) :
-    (eqn.substitutedLaw θ).inputSet A = (eqn.substitute θ).toLaw.inputSet A :=
+/-- The substituted presentation retains literal substitution of its entire written Law. -/
+@[simp] theorem toLaw_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) :
+    (eqn.substitute θ).toLaw = eqn.toLaw.substitute θ :=
   rfl
 
-/-- On the substitution domain, the written conclusion tests the substituted ordered terms. -/
-theorem substitutedLaw_conclusion_iff (eqn : RingEquation sig)
-    (θ : Substitution sig eqn.context Δ) (A : Structure sig) (e : θ.domain A) :
-    (eqn.substitutedLaw θ).conclusion.Holds A e.val ↔
-      (eqn.substitute θ).toLaw.conclusion.Holds A e.val := by
-  change ((Formula.termEq eqn.left eqn.right).substitute θ).Holds A e.val ↔
-    (Formula.termEq (eqn.left.substitute θ) (eqn.right.substitute θ)).Holds A e.val
-  rw [Formula.holds_substitute _ θ A e, Formula.holds_termEq, Formula.holds_termEq,
-    ← eqn.left.eval_substitute θ A e, ← eqn.right.eval_substitute θ A e]
-
-/-- The written substitution Law and its ordered term presentation have the same models. -/
-theorem substitutedLaw_holds_iff (eqn : RingEquation sig)
-    (θ : Substitution sig eqn.context Δ) (A : Structure sig) :
-    (eqn.substitutedLaw θ).Holds A ↔ (eqn.substitute θ).toLaw.Holds A := by
-  have dom (e : Assignment A.carrier Δ) (h : e ∈ (eqn.substitutedLaw θ).inputSet A) :
-      e ∈ θ.domain A :=
-    ((eqn.toLaw.mem_inputSet_substitute θ A e).1 h).elim fun h _ => h
-  constructor
-  · intro h e he
-    have hd : e ∈ θ.domain A := dom e he
-    exact (eqn.substitutedLaw_conclusion_iff θ A ⟨e, hd⟩).1 (h e he)
-  · intro h e he
-    have hd : e ∈ θ.domain A := dom e he
-    exact (eqn.substitutedLaw_conclusion_iff θ A ⟨e, hd⟩).2 (h e he)
+/-- Read the exact written Law of the substituted ordered equation. -/
+abbrev substitutedLaw (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : Law sig :=
+  (eqn.substitute θ).toLaw
 
 /-- The joint locus after substitution is the preimage of the original locus on the domain. -/
 theorem mem_jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
@@ -411,8 +395,7 @@ theorem substitutedLaw_holds_iff_residual (eqn : RingEquation sig)
       (eqn.substitute θ).jointInputs A = (eqn.substitutedLaw θ).inputSet A ∧
       ∀ e : (eqn.substitute θ).jointInputs A,
         (eqn.substitute θ).residual A h e = eqn.ring.zeroValue A :=
-  (eqn.substitutedLaw_holds_iff θ A).trans
-    ((eqn.substitute θ).holds_iff_jointInputs_and_residual_zero A h)
+  (eqn.substitute θ).holds_iff_jointInputs_and_residual_zero A h
 
 end RingEquation
 

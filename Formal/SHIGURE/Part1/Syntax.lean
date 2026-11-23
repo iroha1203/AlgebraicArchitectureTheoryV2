@@ -68,6 +68,11 @@ def rename (ρ : Renaming Γ Δ) : Atomic sig Γ → Atomic sig Δ
   | .domain p vars => .domain p (fun v => ρ (vars v))
   | .graph op vars y => .graph op (fun v => ρ (vars v)) (ρ y)
 
+/-- Renaming equality selects both of its named positions. -/
+@[simp] theorem rename_eq {s : sig.SortType} (x y : Var Γ s) (ρ : Renaming Γ Δ) :
+    (Atomic.eq (sig := sig) x y).rename ρ = .eq (ρ x) (ρ y) :=
+  rfl
+
 /-- Rename a relation atom by mapping its selected arguments. -/
 @[simp] theorem rename_rel (r : sig.Rel) (vars : Renaming (sig.relInputs r) Γ)
     (ρ : Renaming Γ Δ) : (Atomic.rel r vars).rename ρ = .rel r (fun i => ρ (vars i)) :=
@@ -134,6 +139,16 @@ def rename : {Γ Δ : List sig.SortType} → Renaming Γ Δ → Formula sig Γ �
 /-- Renaming an atomic formula acts on the underlying atom. -/
 @[simp] theorem rename_atom (a : Atomic sig Γ) (ρ : Renaming Γ Δ) :
     (Formula.atom a).rename ρ = .atom (a.rename ρ) :=
+  rfl
+
+/-- Renaming a conjunction acts on each conjunct. -/
+@[simp] theorem rename_conj (p q : Formula sig Γ) (ρ : Renaming Γ Δ) :
+    (p.conj q).rename ρ = (p.rename ρ).conj (q.rename ρ) :=
+  rfl
+
+/-- Renaming a disjunction acts on each disjunct. -/
+@[simp] theorem rename_disj (p q : Formula sig Γ) (ρ : Renaming Γ Δ) :
+    (p.disj q).rename ρ = (p.rename ρ).disj (q.rename ρ) :=
   rfl
 
 /-- Renaming an existential formula retains its binder and lifts the free-variable map. -/

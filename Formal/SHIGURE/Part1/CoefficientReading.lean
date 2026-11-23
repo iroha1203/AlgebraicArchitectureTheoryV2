@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part1.DeclarationContexts
+import Formal.SHIGURE.Part1.RestrictedEvaluation
 import Formal.SHIGURE.Part1.StructureMaps
 import Mathlib.Algebra.Algebra.Defs
 
@@ -13,10 +13,10 @@ actual reading comparison is checked on its selected realizations and inputs.
 ## Implementation notes
 
 A coefficient algebra is a commutative ring with a unital map from the base
-ring. To compare two choices, first apply the source scheme's coefficient
-change along the declared ring map. Then transport states from that changed
-realization to the selected target realization, which can use another scheme
-or signature. These two steps must induce the state map of Equation (1.12).
+ring. A comparison with different coefficients tests the selected evaluations
+along the scalar map and the state map of Equation (1.12). When the states
+are transported using a scheme's own scalar-change rule, that rule supplies
+an intermediate realization and yields the comparison by composition.
 -/
 
 universe u
@@ -63,24 +63,27 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   /-- The available objects at each coefficient algebra. -/
   Realization : CoefficientAlgebra base → Type u
   /-- The carriers of designated points and the primitive maps they interpret. -/
-  structureOf (R : CoefficientAlgebra base) : Realization R → Structure P.signature
+  structureOf (R : CoefficientAlgebra base) : Realization R → RestrictedStructure U
   /-- The admissible structural morphisms at each coefficient algebra. -/
   Morphism (R : CoefficientAlgebra base) : Realization R → Realization R → Type u
   /-- The action of each admissible morphism on the designated points. -/
   mapPoints {R : CoefficientAlgebra base} {a b : Realization R} (f : Morphism R a b) :
     ∀ s, (structureOf R a).carrier s → (structureOf R b).carrier s
+  /-- The point map of an admissible morphism preserves the retained primitive data. -/
+  mapPoints_preserves {R : CoefficientAlgebra base} {a b : Realization R} (f : Morphism R a b) :
+    (structureOf R a).Preserves (structureOf R b) (mapPoints f)
   /-- Admissible native input data for the realization scheme. -/
   Native : Type u
   /-- The native structure whose points are used in the realization rule. -/
-  nativeStructure : Native → Structure P.signature
+  nativeStructure : Native → RestrictedStructure U
   /-- Construct a realization from the native input. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Realization R
   /-- The correspondence between native and realized points. -/
   nativePoints (R : CoefficientAlgebra base) (a : Native) :
     ∀ s, (nativeStructure a).carrier s → (structureOf R (realizeNative R a)).carrier s
   /-- The interpretation rule for each retained Law. -/
-  lawHolds (R : CoefficientAlgebra base) (a : Realization R)
-    (name : P.laws.LawName) : Declaration.law name ∈ U.declarations → Prop
+  interpretLaw (R : CoefficientAlgebra base) (a : Realization R)
+    (law : Law P.signature) : Declaration.lawBody (P := P) law ⊆ U.declarations → Prop
   /-- Change the realized carriers and primitive operations along the given scalar map. -/
   change {R : CoefficientAlgebra base} {target : CoefficientRing.{u}}
     (f : R.scalars.Hom target) : Realization R → Realization (R.extend f)
@@ -88,6 +91,20 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   changePoints {R : CoefficientAlgebra base} {target : CoefficientRing.{u}}
     (f : R.scalars.Hom target) (a : Realization R) :
     ∀ s, (structureOf R a).carrier s → (structureOf (R.extend f) (change f a)).carrier s
+
+/-- Interpret a selected declaration by its written Law in the scheme. -/
+def CoefficientScheme.holdsLaw {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {base : CoefficientRing.{u}} (scheme : CoefficientScheme U base) (R : CoefficientAlgebra base)
+    (realization : scheme.Realization R) (name : P.laws.LawName)
+    (kept : Declaration.law name ∈ U.declarations) : Prop :=
+  scheme.interpretLaw R realization (P.laws.statement name) (fun _ hd => U.closed kept (Or.inl hd))
+
+/-- A realized model satisfies each retained required Law in its own scheme. -/
+def CoefficientScheme.IsModel {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {base : CoefficientRing.{u}} (scheme : CoefficientScheme U base) (R : CoefficientAlgebra base)
+    (realization : scheme.Realization R) : Prop :=
+  ∀ name : P.theory.LawName, ∀ kept : Declaration.law name.val ∈ U.declarations,
+    scheme.holdsLaw R realization name.val kept
 
 /-- A choice of coefficients, scheme and evaluation at the actual reading structure. -/
 structure CoefficientReading {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
@@ -100,8 +117,8 @@ structure CoefficientReading {P : PrimitivePresentation.{u}} (U : DeclarationCon
   scheme : CoefficientScheme U base
   /-- The chosen realization belongs to this scheme at the selected coefficients. -/
   realization : scheme.Realization algebra
-  /-- The designated points and primitive operations give the actual reading structure. -/
-  realizes : scheme.structureOf algebra realization = A
+  /-- The chosen realization agrees with the actual reading on the retained structure. -/
+  realizes : scheme.structureOf algebra realization = RestrictedStructure.restrict U A
   /-- Evaluate the reading on the designated states of the realizations in this scheme. -/
   evaluateOn (R : CoefficientAlgebra base) (a : scheme.Realization R) :
     Assignment (scheme.structureOf R a).carrier Γ → R.scalars.Carrier
@@ -123,7 +140,7 @@ def evaluate (reading : CoefficientReading U A Γ) (e : Assignment A.carrier Γ)
 
 /-- The changed structure comes from the selected realization by the scheme's rule. -/
 def changedStructure (reading : CoefficientReading U A Γ) {target : CoefficientRing.{u}}
-    (f : reading.ring.Hom target) : Structure P.signature :=
+    (f : reading.ring.Hom target) : RestrictedStructure U :=
   reading.scheme.structureOf (reading.algebra.extend f) (reading.scheme.change f reading.realization)
 
 /-- Transport the selected state's coordinates by the scheme's coefficient change. -/
@@ -144,25 +161,32 @@ structure Change (source : CoefficientReading U A Γ) (target : CoefficientReadi
     (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
   /-- The unital map on coefficients. -/
   coefficients : source.ring.Hom target.ring
-  /-- Continue from the scalar-changed source realization to the selected target states. -/
-  toTarget : Assignment (source.changedStructure coefficients).carrier Γ → Assignment B.carrier Δ
-  /-- These two steps on states give exactly the state map of the comparison. -/
-  state_commutes (e : Assignment A.carrier Γ) :
-    toTarget (source.changedState coefficients e) = states e
-  /-- The source scheme's change of coefficients transports the coefficient evaluation. -/
-  change_commutes (e : Assignment A.carrier Γ) :
-    source.changedEvaluation coefficients e = coefficients (source.evaluate e)
-  /-- Transport from the changed realization agrees with the chosen target evaluation. -/
-  target_commutes (e : Assignment A.carrier Γ) :
-    target.evaluate (toTarget (source.changedState coefficients e)) =
-      source.changedEvaluation coefficients e
+  /-- Compare the two chosen evaluations along the actual state and scalar maps. -/
+  evaluate_commutes (e : Assignment A.carrier Γ) :
+    target.evaluate (states e) = coefficients (source.evaluate e)
 
-/-- The chosen evaluations commute on the actual states of the comparison. -/
-theorem Change.evaluate_commutes {source : CoefficientReading U A Γ} {target : CoefficientReading V B Δ}
-    {states : Assignment A.carrier Γ → Assignment B.carrier Δ} (change : Change source target states)
-    (e : Assignment A.carrier Γ) : target.evaluate (states e) = change.coefficients (source.evaluate e) :=
-  (congrArg target.evaluate (change.state_commutes e)).symm.trans
-    ((change.target_commutes e).trans (change.change_commutes e))
+/-- Obtain the comparison by transporting first along the source scheme's scalar rule. -/
+def Change.alongScheme {source : CoefficientReading U A Γ} {target : CoefficientReading V B Δ}
+    {states : Assignment A.carrier Γ → Assignment B.carrier Δ}
+    (f : source.ring.Hom target.ring)
+    (toTarget : Assignment (source.changedStructure f).carrier Γ → Assignment B.carrier Δ)
+    (state_commutes : ∀ e, toTarget (source.changedState f e) = states e)
+    (change_commutes : ∀ e, source.changedEvaluation f e = f (source.evaluate e))
+    (target_commutes : ∀ e, target.evaluate (toTarget (source.changedState f e)) =
+      source.changedEvaluation f e) : Change source target states where
+  coefficients := f
+  evaluate_commutes e := (congrArg target.evaluate (state_commutes e)).symm.trans
+    ((target_commutes e).trans (change_commutes e))
+
+/-- The same coefficient algebra and realization rule may be used at both readings. -/
+def SameChoice (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ) : Prop :=
+  source.base = target.base ∧ HEq source.algebra target.algebra ∧ HEq source.scheme target.scheme
+
+/-- The reading can hold its coefficient choices fixed or compare two choices by a scalar map. -/
+inductive Comparison (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
+    (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
+  | fixed : SameChoice source target → Comparison source target states
+  | changed : Change source target states → Comparison source target states
 
 end CoefficientReading
 

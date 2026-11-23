@@ -135,13 +135,13 @@ theorem rename_comp (p : Formula sig Γ) :
   | falsehood => intros; rfl
   | conj p q hp hq =>
     intro Δ E ρ σ
-    rw [Formula.rename, Formula.rename, Formula.rename, hp, hq]
+    simp only [Formula.rename_conj, hp, hq]
   | disj p q hp hq =>
     intro Δ E ρ σ
-    rw [Formula.rename, Formula.rename, Formula.rename, hp, hq]
+    simp only [Formula.rename_disj, hp, hq]
   | ex p hp =>
     intro Δ E ρ σ
-    simp only [rename, hp, Renaming.lift_comp]
+    simp only [rename_ex, hp, Renaming.lift_comp]
 
 /-- Renaming positions by the identity leaves the formula unchanged. -/
 @[simp] theorem rename_id (p : Formula sig Γ) : p.rename (fun i => i) = p := by
@@ -149,13 +149,13 @@ theorem rename_comp (p : Formula sig Γ) :
   | atom a => cases a <;> rfl
   | truth => rfl
   | falsehood => rfl
-  | conj p q hp hq => simp only [rename, hp, hq]
-  | disj p q hp hq => simp only [rename, hp, hq]
+  | conj p q hp hq => simp only [rename_conj, hp, hq]
+  | disj p q hp hq => simp only [rename_disj, hp, hq]
   | @ex Γ s p hp =>
     have eq : @Renaming.lift sig.SortType Γ Γ s (fun i => i) = (fun {_} i => i) := by
       funext t i
       cases i <;> rfl
-    simp only [rename, eq, hp]
+    simp only [rename_ex, eq, hp]
 
 /-- A block of equality conditions compares two tuples of variables in the same context. -/
 def equalArguments (Λ : List sig.SortType) (left right : Renaming Λ Γ) :
@@ -202,7 +202,7 @@ def existsMono {body target : Formula T.signature (s :: Γ)}
   refine .cut d ?_
   have introRule := (Derivation.existsIntro (T := T)
     (target.rename (Renaming.lift (fun i => Var.there (t := s) i))) Var.here)
-  simpa only [Formula.rename_comp, Renaming.openHead_lift_shift, Formula.rename_id, Formula.rename]
+  simpa only [Formula.rename_comp, Renaming.openHead_lift_shift, Formula.rename_id, Formula.rename_ex]
     using introRule
 
 /-- Parallel implication remains valid when a whole block is existentially bound. -/
@@ -315,7 +315,7 @@ def primitiveGraph (op : Operation T.signature) (inputs : Renaming op.arity.inpu
   let body := (Formula.equalArguments Λ right left).conj atomOnWitnesses
   have atomAfterChange : atomOnWitnesses.rename (Renaming.append right lift) =
       graphAtom.rename lift := by
-    simp only [atomOnWitnesses, graphAtom, Formula.rename, Atomic.rename, left, right,
+    simp only [atomOnWitnesses, graphAtom, Formula.rename_atom, Atomic.rename_graph, left, right,
       Renaming.append_inLeft, lift, Renaming.append_shift]
   have d := renameAlongEqual (T := T) (Γ := Λ ++ Γ) atomOnWitnesses left right lift
   rw [atomAfterChange] at d
@@ -331,8 +331,8 @@ def primitiveGraph (op : Operation T.signature) (inputs : Renaming op.arity.inpu
     Renaming.append_id_shift inputs i
   have filled : body.rename (Renaming.append inputs (fun i => i)) =
       (Formula.equalArguments Λ inputs inputs).conj graphAtom := by
-    simp only [body, Formula.rename, Formula.equalArguments, Formula.rename_conjoin,
-      Atomic.rename, atomOnWitnesses, graphAtom, right, left, lift,
+    simp only [body, Formula.rename_conj, Formula.rename_atom, Formula.equalArguments,
+      Formula.rename_conjoin, Atomic.rename_eq, Atomic.rename_graph, atomOnWitnesses, graphAtom, right, left, lift,
       filledOld, Renaming.append_inLeft]
   rw [filled] at introBlock
   have reflexiveTuple : Derivation T graphAtom (Formula.equalArguments Λ inputs inputs) :=

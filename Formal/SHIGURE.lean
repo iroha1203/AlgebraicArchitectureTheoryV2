@@ -2,6 +2,7 @@ import Formal.SHIGURE.AssertStandardAxioms
 import Formal.SHIGURE.Part1.Chapter1Examples
 import Formal.SHIGURE.Part1.PreservationExamples
 import Formal.SHIGURE.Part1.Reading
+import Formal.SHIGURE.Part1.ReadingExamples
 
 /-! # SHIGURE
 

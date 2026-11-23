@@ -26,12 +26,10 @@ support is set-valued and a source cover piece may use several target
 pieces. Restriction to the retained source declarations controls which
 facts can be transported.
 
-A coefficient comparison between two chosen rings includes a ring
-homomorphism and a map between the chosen realization data. The evaluator
-uses that data's structure and the reading's state tuple, so the
-coefficient square uses the same state map as (1.12). Introducing or
-forgetting coefficients compares this evaluation with the ordinary
-observation at the endpoint that has no coefficient ring.
+A comparison can hold its coefficients and realization rule fixed. A
+scalar change compares the chosen evaluations along the state map of (1.12).
+The two-endpoint square is also obtained when a chosen realization rule
+supplies the scalar-change map on states.
 -/
 
 universe u
@@ -72,6 +70,15 @@ theorem mapSorts_pull (f : S → T) {Δ : List S}
   apply ext_mapSorts f
   intro s i
   simp only [pull_apply, Renaming.mapSorts_apply, mapSorts_apply]
+
+/-- Retyping an extended assignment leaves its bound value in the first coordinate. -/
+theorem mapSorts_cons (f : S → T) {s : S} (x : X (f s))
+    (xs : Assignment (fun s => X (f s)) Γ) :
+    (Assignment.cons (X := fun t => X (f t)) (s := s) x xs).mapSorts f =
+      Assignment.cons x (xs.mapSorts f) := by
+  apply Assignment.ext
+  intro _ i
+  cases i <;> rfl
 
 end Assignment
 
@@ -172,6 +179,28 @@ theorem pullback_atomic_iff (u : Interpretation S T) (B : Structure T.signature)
       | there i =>
         exact congrArg (fun a => a i) (Assignment.mapSorts_pull u.onSort e vars)
     rw [same, Term.holds_graph_iff, Term.mem_eval_iff]
+
+/-- A positive formula in the pulled-back structure has its translated truth value. -/
+theorem pullback_formula_iff (u : Interpretation S T) (B : Structure T.signature)
+    (model : T.Holds B) {Γ : List S.signature.SortType} (p : Formula S.signature Γ) :
+    ∀ e : Assignment (u.pullbackStructure B model).carrier Γ,
+      p.Holds (u.pullbackStructure B model) e ↔ (u.translation.formula p).Holds B (e.mapSorts u.onSort) := by
+  induction p with
+  | atom a => exact u.pullback_atomic_iff B model a
+  | truth => intro; rfl
+  | falsehood => intro; rfl
+  | conj p q hp hq =>
+    intro e
+    exact (Formula.holds_conj _ _ _ _).trans
+      ((and_congr (hp e) (hq e)).trans (Formula.holds_conj _ _ _ _).symm)
+  | disj p q hp hq =>
+    intro e
+    exact (Formula.holds_disj _ _ _ _).trans
+      ((or_congr (hp e) (hq e)).trans (Formula.holds_disj _ _ _ _).symm)
+  | ex p ih =>
+    intro e
+    rw [Formula.holds_ex, Translation.formula_ex, Formula.holds_ex]
+    exact exists_congr fun x => by simpa only [Assignment.mapSorts_cons] using ih (Assignment.cons x e)
 
 /-- Pullback and retyping send a tuple of states through the given structural map. -/
 def mapStates (u : Interpretation S T) {A : Structure S.signature}
@@ -296,13 +325,34 @@ theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
     | partialOp p => exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inl hd))
     | quantity q => exact supported (.quantity q) (Set.mem_singleton _) (Or.inr (Or.inl hd))
 
-/-- The support of a translated formula depends on the translation data, not its proofs. -/
-theorem atomic_support_of_same_translation
+/-- A formula's translation uses the translated support of all its bound sorts and symbols. -/
+theorem translated_formula_support (u : Interpretation P.theory Q.theory)
+    {Γ : List P.signature.SortType} (p : Formula P.signature Γ) (V : Set (Declaration Q)) :
+    (∀ d ∈ formula p, translatedSupport u d ⊆ V) → formula (u.translation.formula p) ⊆ V := by
+  induction p with
+  | atom a => exact translated_atomic_support u a V
+  | truth => intro; exact Set.empty_subset V
+  | falsehood => intro; exact Set.empty_subset V
+  | conj p q hp hq =>
+    intro keep d hd
+    exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
+      (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
+  | disj p q hp hq =>
+    intro keep d hd
+    exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
+      (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
+  | @ex Γ s p ih =>
+    intro keep d hd
+    exact hd.elim (fun h => keep (.sort s) (Or.inl (Set.mem_singleton _)) h)
+      (fun h => ih (fun x hx => keep x (Or.inr hx)) h)
+
+/-- The support of a translated formula depends on the translation data. -/
+theorem formula_support_of_same_translation
     {f g : P.signature.SortType → Q.signature.SortType}
     {left : Translation P.signature Q.signature f}
     {right : Translation P.signature Q.signature g} (sortsEqual : f = g)
-    (translationEqual : HEq left right) {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
-    formulaSupport (P := Q) (left.atomic a) = formulaSupport (P := Q) (right.atomic a) := by
+    (translationEqual : HEq left right) {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
+    formulaSupport (P := Q) (left.formula p) = formulaSupport (P := Q) (right.formula p) := by
   subst g
   cases eq_of_heq translationEqual
   rfl
@@ -359,19 +409,50 @@ theorem support_subset (transition : ReadingContextChange source target u)
   obtain ⟨j, _, hj⟩ := transition.localSupport i ha hi hd
   exact target.cover.subset j hj
 
-/-- A supported source atom translates into the actual selected target context. -/
-theorem target_support (transition : ReadingContextChange source target u)
-    {Γ : List source.presentation.signature.SortType} (a : Atomic source.presentation.signature Γ)
-    (retained : Declaration.atomicSupport a ⊆ transition.retained.declarations) :
-    Declaration.formulaSupport (u.translation.atomic a) ⊆ target.context.declarations := by
-  rw [← Declaration.atomic_support_of_same_translation transition.sameSorts transition.sameTranslation a]
+/-- Restrict a source piece to the declarations selected for this comparison. -/
+def sourcePiece (transition : ReadingContextChange source target u) (i : source.cover.Index) :
+    DeclarationContext source.presentation where
+  declarations := transition.retained.declarations ∩ (source.cover.piece i).declarations
+  closed h _ hd := ⟨transition.retained.closed h.1 hd, (source.cover.piece i).closed h.2 hd⟩
+
+/-- The union of the target pieces actually assigned to a source piece. -/
+def targetPiece (transition : ReadingContextChange source target u) (i : source.cover.Index) :
+    DeclarationContext target.presentation where
+  declarations := {d | ∃ j ∈ transition.pieces i, d ∈ (target.cover.piece j).declarations}
+  closed := by
+    rintro d ⟨j, assigned, mentioned⟩ e he
+    exact ⟨j, assigned, (target.cover.piece j).closed mentioned he⟩
+
+/-- Translate formula support using the specified target context for each declaration. -/
+private theorem formula_support_in (transition : ReadingContextChange source target u)
+    {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
+    (V : Set (Declaration target.presentation)) (keep : ∀ d ∈ Declaration.formulaSupport p,
+      Declaration.translatedSupport transition.supporting d ⊆ V) :
+    Declaration.formulaSupport (u.translation.formula p) ⊆ V := by
+  rw [← Declaration.formula_support_of_same_translation transition.sameSorts transition.sameTranslation p]
   intro d hd
   rcases hd with hsort | hformula
   · obtain ⟨t, ht, rfl⟩ := hsort
     obtain ⟨s, hs, rfl⟩ := List.mem_map.mp ht
-    exact transition.support_subset (retained (Or.inl ⟨s, hs, rfl⟩)) (Set.mem_singleton _)
-  · exact Declaration.translated_atomic_support transition.supporting a _
-      (fun _ hd => transition.support_subset (retained (Or.inr hd))) hformula
+    exact keep (.sort s) (Or.inl ⟨s, hs, rfl⟩) (Set.mem_singleton _)
+  · exact Declaration.translated_formula_support transition.supporting p V
+      (fun d hd => keep d (Or.inr hd)) hformula
+
+/-- A supported formula translates inside the declarations of the target reading. -/
+theorem target_support (transition : ReadingContextChange source target u)
+    {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
+    (retained : Declaration.formulaSupport p ⊆ transition.retained.declarations) :
+    Declaration.formulaSupport (u.translation.formula p) ⊆ target.context.declarations :=
+  transition.formula_support_in p _ (fun _ h => transition.support_subset (retained h))
+
+/-- All translated support fits inside the assigned target pieces of the comparison. -/
+theorem local_formula_support (transition : ReadingContextChange source target u)
+    (i : source.cover.Index) {Γ : List source.presentation.signature.SortType}
+    (p : Formula source.presentation.signature Γ)
+    (retained : Declaration.formulaSupport p ⊆ (transition.sourcePiece i).declarations) :
+    Declaration.formulaSupport (u.translation.formula p) ⊆ (transition.targetPiece i).declarations :=
+  transition.formula_support_in p _ fun _ h _ hd =>
+    transition.localSupport i (retained h).1 (retained h).2 hd
 
 /-- Evaluated facts restricted to the declaration names retained by the comparison. -/
 def Facts (transition : ReadingContextChange source target u)
@@ -408,18 +489,18 @@ def Assignment.castContext {sig : Signature.{u}} {A : Structure sig}
   same ▸ e
 
 /-- The coefficient part of a comparison uses the same states as (1.12).
-When one endpoint has no coefficients, the corresponding observation values are used. -/
+At an endpoint without coefficients one may compare its observation values with the other evaluation. -/
 def Reading.CoefficientCompatibility (source target : Reading.{u})
     (states : Assignment source.structureData.carrier source.observation.context →
       Assignment target.structureData.carrier target.observation.context) : Type u :=
   match source.coefficients, target.coefficients with
   | none, none => PUnit
-  | some c, some d => CoefficientReading.Change c d states
+  | some c, some d => CoefficientReading.Comparison c d states
   | none, some d =>
-    {v : source.observation.Output → d.ring.Carrier //
+    Option {v : source.observation.Output → d.ring.Carrier //
       ∀ e, d.evaluate (states e) = v (source.observation.read e)}
   | some c, none =>
-    {v : c.ring.Carrier → target.observation.Output //
+    Option {v : c.ring.Carrier → target.observation.Output //
       ∀ e, target.observation.read (states e) = v (c.evaluate e)}
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
@@ -454,38 +535,42 @@ theorem ReadingComparison.commutes_eq {source target : Reading.{u}}
       comparison.value ∘ source.observation.read :=
   funext comparison.commutes
 
-/-- The target path through restricted evaluation computes the translated formula of a
-retained fact. This equality compares it to the global structural transport path. -/
+/-- The contextual data carried by this particular comparison. -/
+abbrev ReadingComparison.ContextChange {source target : Reading.{u}}
+    (comparison : ReadingComparison source target) :=
+  {transition : ReadingContextChange source target comparison.interpretation //
+    comparison.declarationChange = .changed transition}
+
+/-- The target path in the assigned cover pieces computes the translated formula's truth value. -/
 theorem ReadingComparison.restricted_evaluation_commutes {source target : Reading.{u}}
     (comparison : ReadingComparison source target) {Γ : List source.presentation.signature.SortType}
-    (transition : ReadingContextChange source target comparison.interpretation)
-    (a : Atomic source.presentation.signature Γ)
-    (retained : Declaration.atomicSupport a ⊆ transition.retained.declarations)
+    (change : comparison.ContextChange) (i : source.cover.Index)
+    (p : Formula source.presentation.signature Γ)
+    (retained : Declaration.formulaSupport p ⊆ (change.val.sourcePiece i).declarations)
     (e : Assignment source.structureData.carrier Γ) :
-    (RestrictedEvaluation.restrict target.context target.structureData).holds
-      (comparison.interpretation.translation.atomic a)
-      (transition.target_support a retained)
+    (RestrictedEvaluation.restrict (change.val.targetPiece i) target.structureData).holds
+      (comparison.interpretation.translation.formula p)
+      (change.val.local_formula_support i p retained)
       (comparison.interpretation.mapStates comparison.state e) ↔
-    a.Holds (comparison.interpretation.pullbackStructure target.structureData comparison.targetModel)
+    p.Holds (comparison.interpretation.pullbackStructure target.structureData comparison.targetModel)
       (e.map comparison.state.onSort) :=
   (RestrictedEvaluation.restrict_holds_iff _ _ _ _ _).trans
-    (comparison.interpretation.pullback_atomic_iff _ _ _ _).symm
+    (comparison.interpretation.pullback_formula_iff _ _ _ _).symm
 
-/-- Start with a fact evaluated in the retained source context and evaluate its transport
-in the selected target context. -/
-theorem ReadingComparison.transport_restricted_atom {source target : Reading.{u}}
+/-- Transport a formula evaluated in a retained source piece to its assigned target pieces. -/
+theorem ReadingComparison.transport_restricted_formula {source target : Reading.{u}}
     (comparison : ReadingComparison source target) {Γ : List source.presentation.signature.SortType}
-    (transition : ReadingContextChange source target comparison.interpretation)
-    (a : Atomic source.presentation.signature Γ)
-    (retained : Declaration.atomicSupport a ⊆ transition.retained.declarations)
+    (change : comparison.ContextChange) (i : source.cover.Index)
+    (p : Formula source.presentation.signature Γ)
+    (retained : Declaration.formulaSupport p ⊆ (change.val.sourcePiece i).declarations)
     (e : Assignment source.structureData.carrier Γ)
-    (held : (RestrictedEvaluation.restrict transition.retained
-      source.structureData).atomic e a retained) :
-    (RestrictedEvaluation.restrict target.context target.structureData).holds
-      (comparison.interpretation.translation.atomic a)
-      (transition.target_support a retained)
+    (held : (RestrictedEvaluation.restrict (change.val.sourcePiece i)
+      source.structureData).holds p retained e) :
+    (RestrictedEvaluation.restrict (change.val.targetPiece i) target.structureData).holds
+      (comparison.interpretation.translation.formula p)
+      (change.val.local_formula_support i p retained)
       (comparison.interpretation.mapStates comparison.state e) :=
-  (comparison.restricted_evaluation_commutes transition a retained e).2
-    (comparison.state.atomic_holds_map a e ((RestrictedEvaluation.restrict_atomic_iff _ _ _ _ _).1 held))
+  (comparison.restricted_evaluation_commutes change i p retained e).2
+    (comparison.state.holds_map p e ((RestrictedEvaluation.restrict_holds_iff _ _ _ _ _).1 held))
 
 end SHIGURE
