@@ -126,6 +126,13 @@ theorem sound (d : Derivation T p q) (A : Structure T.signature) (model : T.Hold
 
 end Derivation
 
+/-- Use the selected declarations as hypotheses, independently of their original roles. -/
+def LawDeclarations.select {sig : Signature.{u}} (laws : LawDeclarations sig)
+    (names : Set laws.LawName) : Theory.{u} where
+  signature := sig
+  LawName := {n // n ∈ names}
+  law n := laws.statement n.val
+
 /-- A written ring equality and the names of the Laws that give its value sort a ring. -/
 structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
     (name : laws.LawName) where
@@ -135,10 +142,10 @@ structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
   statement_eq : written.toLaw = laws.statement name
   /-- The named Laws chosen to specify the ring, independently of their declaration roles. -/
   axiomNames : Set laws.LawName
-  /-- Satisfaction of the chosen named Laws supplies the ring axioms on the chosen operations. -/
-  axioms_imply (A : Structure sig)
-    (holds : ∀ i ∈ axiomNames, (laws.statement i).Holds A) :
-    ∀ i, (written.equation.ring.law i).Holds A
+  /-- Derive each ring axiom from the selected Laws, retaining its primitive proof dependencies. -/
+  axioms_derive (i : RingVocabulary.LawName) :
+    Derivation (laws.select axiomNames) (written.equation.ring.law i).input
+      (written.equation.ring.law i).conclusion
 
 namespace NamedRingEquation
 
@@ -152,11 +159,23 @@ def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw 
   written := written
   statement_eq := statement_eq
   axiomNames := Set.range axiomName
-  axioms_imply _ holds i := axiom_statement i ▸ holds (axiomName i) ⟨i, rfl⟩
+  axioms_derive i := by
+    let name : {n : laws.LawName // n ∈ Set.range axiomName} := ⟨axiomName i, ⟨i, rfl⟩⟩
+    have proof : Derivation (laws.select (Set.range axiomName))
+        (laws.statement (axiomName i)).input (laws.statement (axiomName i)).conclusion :=
+      Derivation.required (T := laws.select (Set.range axiomName)) name
+    rw [axiom_statement i] at proof
+    exact proof
 
 /-- The structure satisfies the named Laws that specify the ring. -/
 def AxiomsHold (data : NamedRingEquation laws name) (A : Structure sig) : Prop :=
   ∀ i ∈ data.axiomNames, (laws.statement i).Holds A
+
+/-- The selected Laws imply the ring axioms by soundness of the recorded derivations. -/
+theorem axioms_imply (data : NamedRingEquation laws name) (A : Structure sig)
+    (holds : data.AxiomsHold A) (i : RingVocabulary.LawName) :
+    (data.written.equation.ring.law i).Holds A :=
+  (data.axioms_derive i).sound A (fun n => holds n.val n.property)
 
 /-- The named Law holds exactly when both terms evaluate and their residual vanishes. -/
 theorem holds_iff_residual_zero (data : NamedRingEquation laws name) (A : Structure sig)

@@ -80,25 +80,41 @@ def formulaSupport {Γ : List P.signature.SortType} (p : Formula P.signature Γ)
 def lawBody (law : Law P.signature) : Set (Declaration P) :=
   sorts law.context ∪ formula law.input ∪ formula law.conclusion
 
+private def sequentSupport {sig : Signature.{u}} (same : sig = P.signature)
+    {Γ : List sig.SortType} (p q : Formula sig Γ) : Set (Declaration P) := by
+  subst sig
+  exact sorts Γ ∪ formula p ∪ formula q
+
 /-- The Law declarations, sorts, and symbols used anywhere in the proof tree. -/
-def derivation :
-    {Γ : List P.signature.SortType} → {p q : Formula P.signature Γ} →
-    Derivation P.theory p q → Set (Declaration P)
-  | Γ, p, q, proof => sorts Γ ∪ formula p ∪ formula q ∪ match proof with
-    | .required name => {Declaration.law name.val}
-    | .cut d e | .andIntro d e | .orElim d e => derivation d ∪ derivation e
-    | .rename _ d | .existsElim d => derivation d
+def derivationOf {T : Theory.{u}} (same : T.signature = P.signature)
+    (lawName : T.LawName → P.laws.LawName) :
+    {Γ : List T.signature.SortType} → {p q : Formula T.signature Γ} →
+    Derivation T p q → Set (Declaration P)
+  | _, p, q, proof => sequentSupport same p q ∪ match proof with
+    | .required name => {Declaration.law (lawName name)}
+    | .cut d e | .andIntro d e | .orElim d e => derivationOf same lawName d ∪ derivationOf same lawName e
+    | .rename _ d | .existsElim d => derivationOf same lawName d
     | .refl _ | .graph _ | .truth _ | .falsehood _ | .andLeft _ _ | .andRight _ _ |
         .orLeft _ _ | .orRight _ _ | .existsIntro _ _ | .eqRefl _ | .eqSubst _ _ _ => ∅
+
+/-- The support of a derivation in the theory presented here. -/
+abbrev derivation {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
+    (proof : Derivation P.theory p q) : Set (Declaration P) :=
+  derivationOf rfl Subtype.val proof
 
 /-- The declarations needed to read an ordered ring residual. -/
 def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
   match P.ringEquation name with
   | none => ∅
   | some equation =>
+    let ring := equation.written.equation.ring
     formula equation.written.equation.left.graph ∪
       formula equation.written.equation.right.graph ∪
-      Declaration.law '' equation.axiomNames
+      ((Declaration.law '' equation.axiomNames ∪
+        {ofOperation ring.zero.symbol.operation, ofOperation ring.one.symbol.operation,
+          ofOperation ring.add.symbol.operation, ofOperation ring.neg.symbol.operation,
+          ofOperation ring.mul.symbol.operation}) ∪
+        {a | ∃ i, a ∈ derivationOf rfl Subtype.val (equation.axioms_derive i)})
 
 /-- The immediate references of a declaration in Definition 3.1. -/
 def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declaration P)

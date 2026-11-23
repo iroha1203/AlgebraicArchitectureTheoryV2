@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part1.RestrictedEvaluation
 import Formal.SHIGURE.Part1.StructureMaps
 import Mathlib.Algebra.Algebra.Defs
+import Mathlib.CategoryTheory.Category.Basic
 
 /-! # Coefficients chosen by a reading
 
@@ -65,14 +66,23 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   Realization : CoefficientAlgebra base → Type u
   /-- The carriers of designated points and the primitive maps they interpret. -/
   structureOf (R : CoefficientAlgebra base) : Realization R → RestrictedStructure U
-  /-- The admissible structural morphisms at each coefficient algebra. -/
-  Morphism (R : CoefficientAlgebra base) : Realization R → Realization R → Type u
+  /-- The admissible structural morphisms at each coefficient algebra, with identity and composition. -/
+  category (R : CoefficientAlgebra base) : CategoryTheory.Category.{u} (Realization R)
   /-- The action of each admissible morphism on the designated points. -/
-  mapPoints {R : CoefficientAlgebra base} {a b : Realization R} (f : Morphism R a b) :
+  mapPoints {R : CoefficientAlgebra base} {a b : Realization R} (f : (category R).Hom a b) :
     RestrictedStructure.PointMap (structureOf R a) (structureOf R b)
   /-- The point map of an admissible morphism preserves the retained primitive data. -/
-  mapPoints_preserves {R : CoefficientAlgebra base} {a b : Realization R} (f : Morphism R a b) :
+  mapPoints_preserves {R : CoefficientAlgebra base} {a b : Realization R} (f : (category R).Hom a b) :
     (structureOf R a).Preserves (structureOf R b) (mapPoints f)
+  /-- Identity acts as the identity at each retained sort. -/
+  mapPoints_id {R : CoefficientAlgebra base} (a : Realization R) (s : P.signature.SortType)
+    (kept : Declaration.sort s ∈ U.declarations) (x : (structureOf R a).carrier s) :
+    mapPoints ((category R).id a) s kept x = x
+  /-- The action on retained points respects composition. -/
+  mapPoints_comp {R : CoefficientAlgebra base} {a b c : Realization R}
+    (f : (category R).Hom a b) (g : (category R).Hom b c) (s : P.signature.SortType)
+    (kept : Declaration.sort s ∈ U.declarations) (x : (structureOf R a).carrier s) :
+    mapPoints ((category R).comp f g) s kept x = mapPoints g s kept (mapPoints f s kept x)
   /-- Admissible native input data for the realization scheme. -/
   Native : Type u
   /-- The native structure whose points are used in the realization rule. -/
@@ -92,6 +102,39 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   changePoints {R : CoefficientAlgebra base} {target : CoefficientRing.{u}}
     (f : R.scalars.Hom target) (a : Realization R) :
     RestrictedStructure.PointMap (structureOf R a) (structureOf (R.extend f) (change f a))
+
+/-- The positions of a product read by a selected evaluation. -/
+structure InputSelection {S : Type u} (Γ : List S) where
+  /-- The actual input context, allowing repeated references. -/
+  context : List S
+  /-- Each reference selects an original position. -/
+  inputs : Renaming context Γ
+
+namespace InputSelection
+
+variable {S : Type u} {Γ : List S}
+
+/-- Select all the positions of a product. -/
+def all (Γ : List S) : InputSelection Γ := ⟨Γ, fun i => i⟩
+
+/-- A position is used if some input refers to it. -/
+def Uses (selection : InputSelection Γ) {s : S} (i : Var Γ s) : Prop :=
+  ∃ j : Var selection.context s, selection.inputs j = i
+
+/-- States at the original positions used by the evaluation. -/
+structure Values (selection : InputSelection Γ) (X : S → Type u) where
+  /-- One value per used position, even when several inputs refer to it. -/
+  get : ∀ {s} (i : Var Γ s), selection.Uses i → X s
+
+/-- Restrict an assignment to the used positions. -/
+def Values.restrict {selection : InputSelection Γ} {X : S → Type u} (e : Assignment X Γ) :
+    selection.Values X := ⟨fun i _ => e i⟩
+
+/-- Read the value at each selected input, repeating values as specified. -/
+def Values.tuple {selection : InputSelection Γ} {X : S → Type u} (e : selection.Values X) :
+    Assignment X selection.context := ⟨fun i => e.get (selection.inputs i) ⟨i, rfl⟩⟩
+
+end InputSelection
 
 /-- Interpret a selected declaration by its written Law in the scheme. -/
 def CoefficientScheme.holdsLaw {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
@@ -141,10 +184,24 @@ variable {P Q : PrimitivePresentation.{u}} {U : DeclarationContext P} {V : Decla
 abbrev ring (reading : CoefficientReading U A Γ) : CoefficientRing.{u} :=
   reading.algebra.scalars
 
+/-- The input positions selected by this reading. -/
+def selection (reading : CoefficientReading U A Γ) : InputSelection Γ :=
+  ⟨reading.context, reading.inputs⟩
+
+/-- Realize the selected inputs. -/
+def selectedTuple (reading : CoefficientReading U A Γ) (e : reading.selection.Values A.carrier) :
+    Assignment (reading.scheme.structureOf reading.algebra reading.realization).carrier reading.context :=
+  ⟨fun i => reading.realizePoint _ i.sort_mem (e.tuple i)⟩
+
 /-- Use the actual reading's state at the specified positions of the chosen realization. -/
 def inputTuple (reading : CoefficientReading U A Γ) (e : Assignment A.carrier Γ) :
     Assignment (reading.scheme.structureOf reading.algebra reading.realization).carrier reading.context :=
-  ⟨fun i => reading.realizePoint _ i.sort_mem (e (reading.inputs i))⟩
+  reading.selectedTuple (InputSelection.Values.restrict e)
+
+/-- Evaluate from values at the used positions. -/
+def evaluateSelected (reading : CoefficientReading U A Γ) (e : reading.selection.Values A.carrier) :
+    reading.ring.Carrier :=
+  reading.evaluateOn reading.algebra reading.realization (reading.selectedTuple e)
 
 /-- Evaluate the chosen realization at the supplied state of the reading. -/
 def evaluate (reading : CoefficientReading U A Γ) (e : Assignment A.carrier Γ) :
@@ -183,18 +240,22 @@ def changedEvaluation (reading : CoefficientReading U A Γ) {target : Coefficien
   reading.evaluateOn (reading.algebra.extend f) (reading.scheme.change f reading.realization)
     (reading.changedState f e)
 
-/-- Compare coefficient evaluation along the specified state map between two readings. -/
-structure Change (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
-    (states : Assignment A.carrier Γ → Assignment B.carrier Δ) where
+/-- Compare coefficient evaluations on one common input domain. -/
+structure EvaluationComparison (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
+    {E : Type u} (readSource : E → source.ring.Carrier) (readTarget : E → target.ring.Carrier) where
   /-- The unital map on the chosen base rings. -/
   baseMap : source.base.Hom target.base
   /-- The unital map on coefficients. -/
   coefficients : source.ring.Hom target.ring
   /-- The coefficient map respects the two algebra structure maps. -/
   algebra_commutes : coefficients.comp source.algebra.fromBase = target.algebra.fromBase.comp baseMap
-  /-- Compare the two chosen evaluations along the actual state and scalar maps. -/
-  evaluate_commutes (e : Assignment A.carrier Γ) :
-    target.evaluate (states e) = coefficients (source.evaluate e)
+  /-- Both evaluation paths give the same value at every common input. -/
+  evaluate_commutes (e : E) : readTarget e = coefficients (readSource e)
+
+/-- Compare coefficient evaluations along a map between the readings' state products. -/
+abbrev Change (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
+    (states : Assignment A.carrier Γ → Assignment B.carrier Δ) :=
+  EvaluationComparison source target source.evaluate (target.evaluate ∘ states)
 
 /-- Obtain the comparison by transporting first along the source scheme's scalar rule. -/
 def Change.alongScheme {source : CoefficientReading U A Γ} {target : CoefficientReading V B Δ}
@@ -213,14 +274,21 @@ def Change.alongScheme {source : CoefficientReading U A Γ} {target : Coefficien
   evaluate_commutes e := (congrArg target.evaluate (state_commutes e)).symm.trans
     ((target_commutes e).trans (change_commutes e))
 
-/-- Use the structural state map on coefficient inputs, independently of the ordinary observation. -/
-inductive Transport (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ)
-    (onSort : P.signature.SortType → Q.signature.SortType)
-    (states : Assignment A.carrier Γ → Assignment B.carrier (Γ.map onSort)) where
-  | fixed (sameBase : source.base = target.base) :
-      (sameBase ▸ source.algebra) = target.algebra → Transport source target onSort states
-  | changed (inputs : Renaming Δ (Γ.map onSort)) :
-      Change source target (fun e => (states e).pull inputs) → Transport source target onSort states
+/-- An unchanged choice of coefficient algebra, scheme, and evaluation rule. -/
+structure SameParameters (source : CoefficientReading U A Γ) (target : CoefficientReading V B Δ) : Prop where
+  /-- The chosen base ring is unchanged. -/
+  base : source.base = target.base
+  /-- The chosen algebra, including its structure map, is unchanged. -/
+  algebra : (base ▸ source.algebra) = target.algebra
+  /-- The same scheme is used at both endpoints. -/
+  scheme : HEq source.scheme target.scheme
+  /-- The evaluation uses the same sorts and order. -/
+  context : HEq source.context target.context
+  /-- The same positions supply those inputs. -/
+  inputs : HEq (show Renaming source.context Γ from source.inputs)
+    (show Renaming target.context Δ from target.inputs)
+  /-- The rule over the selected scheme is unchanged. -/
+  rule : HEq source.evaluateOn target.evaluateOn
 
 end CoefficientReading
 

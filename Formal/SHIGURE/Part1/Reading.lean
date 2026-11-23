@@ -26,11 +26,12 @@ support is set-valued and a source cover piece may use several target
 pieces. Restriction to the retained source declarations controls which
 facts can be transported.
 
-A comparison can hold its coefficient algebra fixed, with each reading
-keeping its own realization rule. A scalar change compares the chosen
-evaluations using the structural map on the selected coefficient inputs.
-The two-endpoint square is also obtained when a chosen realization rule
-supplies the scalar-change map on states.
+A comparison with unchanged context and coefficient settings can use
+the same evaluation rule in both realizations. Otherwise it compares the
+chosen evaluations along the structural state map. The common input has
+all used source positions and may include further positions that feed
+the target evaluation. Sharing a position in a reading continues to
+share its value in the comparison.
 -/
 
 universe u
@@ -491,23 +492,93 @@ def Assignment.castContext {sig : Signature.{u}} {A : Structure sig}
     Assignment A.carrier Δ :=
   same ▸ e
 
-/-- Transport the inputs chosen by the coefficient or ordinary observation at each endpoint. -/
+/-- A coordinate for a target input is sourced from a selected position or a further state. -/
+structure ReadingInputMap {S T : Type u} {Γ : List S} {Δ : List T}
+    (source : InputSelection Γ) (target : InputSelection Δ) (onSort : S → T) where
+  /-- Further source positions read only along the target path. -/
+  extra : List S
+  /-- Assign one well-typed source coordinate to each used target position. -/
+  coordinate {t : T} (j : Var Δ t) (used : target.Uses j) :
+    Σ s : {s // onSort s = t}, {i : Var Γ s.val // source.Uses i} ⊕ Var extra s.val
+  /-- Each further source position feeds an actual target input. -/
+  extra_used {s : S} (i : Var extra s) :
+    ∃ (j : Var Δ (onSort s)) (used : target.Uses j), coordinate j used = ⟨⟨s, rfl⟩, .inr i⟩
+
+namespace ReadingInputMap
+
+variable {S T : Type u} {Γ : List S} {Δ : List T}
+  {source : InputSelection Γ} {target : InputSelection Δ} {onSort : S → T}
+
+/-- The common input includes all selected source positions and the further positions used by the target. -/
+abbrev Values (inputs : ReadingInputMap source target onSort) (X : S → Type u) :=
+  source.Values X × Assignment X inputs.extra
+
+/-- Use the structural state map on each source coordinate selected by the target. -/
+def mapValues (inputs : ReadingInputMap source target onSort)
+    {X : S → Type u} {Y : T → Type u} (h : ∀ s, X s → Y (onSort s))
+    (e : inputs.Values X) : target.Values Y :=
+  ⟨fun j used =>
+    match inputs.coordinate j used with
+    | ⟨⟨s, same⟩, .inl i⟩ => same ▸ h s (e.1.get i.val i.property)
+    | ⟨⟨s, same⟩, .inr i⟩ => same ▸ h s (e.2 i)⟩
+
+/-- On states constant within each sort, every used target coordinate gets the mapped sort value. -/
+theorem mapValues_ofSort (inputs : ReadingInputMap source target onSort)
+    {X : S → Type u} {Y : T → Type u} (h : ∀ s, X s → Y (onSort s))
+    (x : ∀ s, X s) (y : ∀ t, Y t) (maps : ∀ s, h s (x s) = y (onSort s))
+    {t : T} (j : Var Δ t) (used : target.Uses j) :
+    (inputs.mapValues h (⟨fun {s} _ _ => x s⟩, ⟨fun {s} _ => x s⟩)).get j used = y t := by
+  dsimp only [mapValues]
+  generalize inputs.coordinate j used = coord
+  rcases coord with ⟨⟨s, rfl⟩, i⟩
+  cases i <;> exact maps s
+
+/-- Select the same positions under the identity sort map. -/
+def identity (selection : InputSelection Γ) : ReadingInputMap selection selection id where
+  extra := []
+  coordinate j used := ⟨⟨_, rfl⟩, .inl ⟨j, used⟩⟩
+  extra_used i := nomatch i
+
+end ReadingInputMap
+
+/-- Compare two coefficient selections, keeping fixed settings or supplying an evaluation square. -/
+inductive CoefficientComparison {P Q : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {V : DeclarationContext Q} {A : Structure P.signature} {B : Structure Q.signature}
+    {Γ : List P.signature.SortType} {Δ : List Q.signature.SortType}
+    (c : CoefficientReading U A Γ) (d : CoefficientReading V B Δ)
+    (onSort : P.signature.SortType → Q.signature.SortType)
+    (state : ∀ s, A.carrier s → B.carrier (onSort s)) (contextFixed : Prop) where
+  | fixed : contextFixed → c.SameParameters d → CoefficientComparison c d onSort state contextFixed
+  | changed (inputs : ReadingInputMap c.selection d.selection onSort) :
+    CoefficientReading.EvaluationComparison c d (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
+      (fun e => d.evaluateSelected (inputs.mapValues state e)) →
+    CoefficientComparison c d onSort state contextFixed
+
+/-- Transport the actual inputs of the ordinary or coefficient evaluations chosen at each endpoint. -/
 def Reading.CoefficientCompatibility (source target : Reading.{u})
     (onSort : source.presentation.signature.SortType → target.presentation.signature.SortType)
-    (states : ∀ {Γ : List source.presentation.signature.SortType},
-      Assignment source.structureData.carrier Γ →
-      Assignment target.structureData.carrier (Γ.map onSort)) : Type u :=
+    (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s))
+    (contextFixed : Prop) : Type u :=
   match source.coefficients, target.coefficients with
   | none, none => PUnit
-  | some c, some d => CoefficientReading.Transport c.2 d.2 onSort states
+  | some c, some d => CoefficientComparison c.2 d.2 onSort state contextFixed
   | none, some d =>
-    Σ inputs : Renaming d.1 (source.observation.context.map onSort),
+    Σ inputs : ReadingInputMap (.all source.observation.context) d.2.selection onSort,
       {v : source.observation.Output → d.2.ring.Carrier //
-        ∀ e, d.2.evaluate ((states e).pull inputs) = v (source.observation.read e)}
+        ∀ e : inputs.Values source.structureData.carrier,
+          d.2.evaluateSelected (inputs.mapValues state e) = v (source.observation.read e.1.tuple)}
   | some c, none =>
-    Σ inputs : Renaming target.observation.context (c.1.map onSort),
+    Σ inputs : ReadingInputMap c.2.selection (.all target.observation.context) onSort,
       {v : c.2.ring.Carrier → target.observation.Output //
-        ∀ e, target.observation.read ((states e).pull inputs) = v (c.2.evaluate e)}
+        ∀ e : inputs.Values source.structureData.carrier,
+          target.observation.read (inputs.mapValues state e).tuple = v (c.2.evaluateSelected e.1)}
+
+/-- Whether the comparison keeps its presentation, declarations, syntax, and cover. -/
+def Reading.ContextCompatibility.isFixed {source target : Reading.{u}}
+    {u : Interpretation source.presentation.theory target.presentation.theory} :
+    source.ContextCompatibility target u → Prop
+  | .fixed .. => True
+  | .changed _ => False
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
 structure ReadingComparison (source target : Reading.{u}) where
@@ -523,8 +594,8 @@ structure ReadingComparison (source target : Reading.{u}) where
   /-- Fixed declarations and cover, or the selected restriction and cover maps. -/
   declarationChange : source.ContextCompatibility target interpretation
   /-- Any change of the coefficients and their evaluation. -/
-  coefficientChange : source.CoefficientCompatibility target interpretation.onSort
-    (fun e => interpretation.mapStates state e)
+  coefficientChange : source.CoefficientCompatibility target interpretation.onSort state.onSort
+    declarationChange.isFixed
   /-- The function between the two sets of observed values. -/
   value : source.observation.Output → target.observation.Output
   /-- Equation (1.12), imposed at every source state tuple. -/

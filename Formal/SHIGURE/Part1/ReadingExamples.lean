@@ -171,12 +171,23 @@ private def retainedModel (satisfies : Bool) : RestrictedStructure modelContext 
 private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
   Realization _ := Bool
   structureOf _ := retainedModel
-  Morphism _ a b := PLift (a = b)
+  category _ :=
+    { Hom := fun a b => PLift (a = b)
+      id := fun _ => ⟨rfl⟩
+      comp := fun f g => ⟨f.down.trans g.down⟩
+      id_comp := fun _ => Subsingleton.elim _ _
+      comp_id := fun _ => Subsingleton.elim _ _
+      assoc := fun _ _ _ => Subsingleton.elim _ _ }
   mapPoints f _ _ x := f.down ▸ x
   mapPoints_preserves f := by
     rcases f with ⟨rfl⟩
     intro _ _ _ _ held
     exact held
+  mapPoints_id _ _ _ _ := rfl
+  mapPoints_comp f g _ _ _ := by
+    rcases f with ⟨rfl⟩
+    rcases g with ⟨rfl⟩
+    rfl
   Native := Bool
   nativeStructure := retainedModel
   realizeNative _ := id
@@ -266,12 +277,23 @@ private def integers : CoefficientRing := ⟨Int, inferInstance⟩
 private def scheme : CoefficientScheme retained integers where
   Realization _ := Bool
   structureOf _ := realized
-  Morphism _ a b := PLift (a = b)
+  category _ :=
+    { Hom := fun a b => PLift (a = b)
+      id := fun _ => ⟨rfl⟩
+      comp := fun f g => ⟨f.down.trans g.down⟩
+      id_comp := fun _ => Subsingleton.elim _ _
+      comp_id := fun _ => Subsingleton.elim _ _
+      assoc := fun _ _ _ => Subsingleton.elim _ _ }
   mapPoints f s _ x := f.down ▸ x
   mapPoints_preserves f := by
     rcases f with ⟨rfl⟩
     intro Γ a supported e held
     exact held
+  mapPoints_id _ _ _ _ := rfl
+  mapPoints_comp f g _ _ _ := by
+    rcases f with ⟨rfl⟩
+    rcases g with ⟨rfl⟩
+    rfl
   Native := Bool
   nativeStructure := realized
   realizeNative _ := id
@@ -330,11 +352,19 @@ private def separateStates (R : Type) : Structure signature where
 private def scalarScheme : CoefficientScheme retained integers where
   Realization _ := Unit
   structureOf R _ := RestrictedStructure.restrict retained (separateStates R.scalars.Carrier)
-  Morphism _ _ _ := Unit
+  category _ :=
+    { Hom := fun _ _ => Unit
+      id := fun _ => ()
+      comp := fun _ _ => ()
+      id_comp := fun _ => Subsingleton.elim _ _
+      comp_id := fun _ => Subsingleton.elim _ _
+      assoc := fun _ _ _ => Subsingleton.elim _ _ }
   mapPoints _ _ _ := id
   mapPoints_preserves _ := by
     intro _ _ _ _ held
     exact held
+  mapPoints_id _ _ _ _ := rfl
+  mapPoints_comp _ _ _ _ _ := rfl
   Native := Unit
   nativeStructure _ := RestrictedStructure.restrict retained (separateStates Int)
   realizeNative _ _ := ()
@@ -349,6 +379,23 @@ private def scalarScheme : CoefficientScheme retained integers where
     · exact fun x => f x
     · cases Set.mem_singleton_iff.1 kept
 
+/-- Select the scalar input in its own product. -/
+private def scalarInputs (R : Type) [CommRing R] :
+    CoefficientReading retained (separateStates R) [false] where
+  base := integers
+  algebra := ⟨⟨R, inferInstance⟩, Int.castRingHom R⟩
+  scheme := scalarScheme
+  realization := ()
+  context := [false]
+  supported := by
+    rintro _ ⟨s, hs, rfl⟩
+    have same : s = false := List.mem_singleton.1 hs
+    subst s
+    exact Set.mem_singleton _
+  inputs := fun i => i
+  realizePoint _ _ := id
+  evaluateOn _ _ e := e.head
+
 /-- Read coefficients at the first sort and take the ordinary observation at the second. -/
 private def separateReading (R : Type) [CommRing R] : Reading where
   presentation := presentation
@@ -361,24 +408,33 @@ private def separateReading (R : Type) [CommRing R] : Reading where
   familyObservation := none
   ValueStructure := fun _ => Unit
   valueStructure := ()
-  coefficients := some ⟨[false],
-    { base := integers
-      algebra := ⟨⟨R, inferInstance⟩, Int.castRingHom R⟩
-      scheme := scalarScheme
-      realization := ()
-      context := [false]
-      supported := by
-        rintro _ ⟨s, hs, rfl⟩
-        have same : s = false := List.mem_singleton.1 hs
-        subst s
-        exact Set.mem_singleton _
-      inputs := fun i => i
-      realizePoint _ _ := id
-      evaluateOn _ _ e := e.head }⟩
+  coefficients := some ⟨[false], scalarInputs R⟩
+
+/-- The outer product adds a position that the coefficient evaluation never reads. -/
+private def paddedScalarInputs (R : Type) [CommRing R] :
+    CoefficientReading retained (separateStates R) [false, true] :=
+  { scalarInputs R with
+    inputs := fun
+      | .here => .here
+      | .there i => nomatch i }
+
+/-- The reading with a longer outer coefficient product still uses only the scalar position. -/
+private def paddedReading (R : Type) [CommRing R] : Reading :=
+  { separateReading R with coefficients := some ⟨[false, true], paddedScalarInputs R⟩ }
+
+/-- Transport the scalar occurrence without supplying the unread Bool position. -/
+private def scalarInputMap :
+    ReadingInputMap (scalarInputs Int).selection (paddedScalarInputs (Int × Int)).selection id where
+  extra := []
+  coordinate
+    | .here, _ => ⟨⟨false, rfl⟩, .inl ⟨.here, .here, rfl⟩⟩
+    | .there .here, used => False.elim (by obtain ⟨i, _⟩ := used; exact nomatch i)
+    | .there (.there i), _ => nomatch i
+  extra_used i := nomatch i
 
 /-- One structural map induces both squares on their respective input products. -/
 def independent_coefficient_comparison :
-    ReadingComparison (separateReading Int) (separateReading (Int × Int)) where
+    ReadingComparison (separateReading Int) (paddedReading (Int × Int)) where
   interpretation := Interpretation.identity presentation.theory
   targetModel := fun name => nomatch name.val
   state :=
@@ -392,7 +448,7 @@ def independent_coefficient_comparison :
       quantity_comm q := nomatch q }
   contexts := rfl
   declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
-  coefficientChange := .changed (fun i => i)
+  coefficientChange := .changed scalarInputMap
     { baseMap := RingHom.id Int
       coefficients := (RingHom.id Int).prod (RingHom.id Int)
       algebra_commutes := by
@@ -401,5 +457,42 @@ def independent_coefficient_comparison :
       evaluate_commutes _ := rfl }
   value := id
   commutes _ := rfl
+
+/-- The plain reading has no coefficient evaluation. -/
+private def plainReading : Reading := { separateReading Int with coefficients := none }
+
+/-- The new scalar observation evaluates to zero on the selected sort. -/
+private def zeroInputs : CoefficientReading retained (separateStates Int) [false, true] :=
+  { paddedScalarInputs Int with
+    evaluateOn R _ _ :=
+      letI := R.scalars.ring
+      0 }
+
+/-- Introduce a scalar evaluation independent of the originally observed Bool. -/
+def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
+    ({ separateReading Int with coefficients := some ⟨[false, true], zeroInputs⟩ } : Reading)
+    id (fun _ x => x) True :=
+  ⟨{ extra := [false]
+     coordinate := fun
+       | .here, _ => ⟨⟨false, rfl⟩, .inr .here⟩
+       | .there .here, used => False.elim (by obtain ⟨i, _⟩ := used; exact nomatch i)
+       | .there (.there i), _ => nomatch i
+     extra_used := fun
+       | .here => ⟨.here, ⟨.here, rfl⟩, rfl⟩
+       | .there i => nomatch i },
+    fun _ => (0 : Int), fun _ => rfl⟩
+
+/-- Forget scalar evaluation while reading the independently selected Bool position. -/
+def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedReading Int)
+    ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading)
+    id (fun _ x => x) True :=
+  ⟨{ extra := [true]
+     coordinate := fun
+       | .here, _ => ⟨⟨true, rfl⟩, .inr .here⟩
+       | .there i, _ => nomatch i
+     extra_used := fun
+       | .here => ⟨.here, ⟨.here, rfl⟩, rfl⟩
+       | .there i => nomatch i },
+    fun _ => false, fun _ => rfl⟩
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
