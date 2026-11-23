@@ -598,7 +598,7 @@ private def nativeCoefficient (full shifted : Bool) :
 /-- Forgetting a carrier preserves the fixed application of the same native rule. -/
 theorem fixed_native_ignores_forgotten_carrier :
     (nativeCoefficient true false).SameParameters (nativeCoefficient false false) := by
-  refine ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, ?_⟩, HEq.rfl⟩
+  refine ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, ?_⟩, HEq.rfl⟩
   -- Both selected positions have the same native carrier and point map.
   rfl
 
@@ -644,10 +644,10 @@ private def separateReading (R : Type) [CommRing R] : Reading.{0, 0, 0, 0} where
   valueStructure := ()
   coefficients := some ⟨.ofList [false], scalarInputs R⟩
 
-private def twoOrdinarySorts : ObservationProduct signature.SortType := ⟨Bool, id⟩
+private def twoOrdinarySorts : ObservationProduct signature.SortType := ⟨Bool, id, some "two sorts"⟩
 
 private def differentlyNamedInput : CoefficientProduct signature.SortType :=
-  .indexed Bool {true} (fun _ => false)
+  .indexed Bool {true} (fun _ => false) (some "two sorts")
 
 private noncomputable def explicitFalsePosition : SharedInputNames twoOrdinarySorts := by
   classical
@@ -674,11 +674,53 @@ theorem compatible_explicit_sharing_survives_name_collision :
     simp [sameNameDifferentSort, explicitFalsePosition]
   · rintro ⟨i, named⟩
     cases i
-    · exact Bool.noConfusion (eq_of_heq named.2)
+    · exact Bool.noConfusion (eq_of_heq named.2.2.2)
     · exact Bool.noConfusion named.1
   · rintro ⟨j, named⟩
     have position : j.val = true := Set.mem_singleton_iff.1 j.property
-    exact Bool.noConfusion (position.symm.trans (eq_of_heq named.2))
+    exact Bool.noConfusion (position.symm.trans (eq_of_heq named.2.2.2))
+
+private def observationSignature : Signature :=
+  { signature with Total := Unit, totalArity _ := ⟨[false, true], false⟩ }
+
+private def observationPresentation : PrimitivePresentation where
+  signature := observationSignature
+  laws :=
+    { LawName := Empty
+      statement := fun n => nomatch n
+      role := fun n => nomatch n }
+  derived n := nomatch n
+
+private def pairedStates : Structure observationSignature where
+  carrier _ := Bool
+  total _ e := e .here && e (.there .here)
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+private def pairedReading : Reading.{0, 0, 0, 0} where
+  presentation := observationPresentation
+  structureData := pairedStates
+  observation := .ofTotalSymbol (.ordinary ())
+  context := ReadingOrigin.whole observationPresentation
+  cover := ⟨Unit, fun _ => ReadingOrigin.whole observationPresentation, fun _ _ h => h, fun h => ⟨(), h⟩⟩
+  Family := Unit
+  realize _ := pairedStates
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := none
+
+/-- A declared observation of two different sorts is covered together with both inputs. -/
+theorem declared_observation_covers_both_sorts :
+    ∃ i, Declaration.total () ∈ (pairedReading.cover.piece i).declarations ∧
+      Declaration.sorts [false, true] ⊆ (pairedReading.cover.piece i).declarations := by
+  let declared : pairedReading.DeclaredObservation := ⟨.ordinary (), Set.mem_univ _, rfl⟩
+  obtain ⟨i, symbol, arity⟩ := declared.covered
+  refine ⟨i, symbol, ?_⟩
+  rintro _ ⟨s, kept, rfl⟩
+  exact arity ⟨s, List.mem_cons_of_mem _ kept, rfl⟩
 
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
 private def paddedScalarInputs (R : Type) [CommRing R] :
@@ -810,7 +852,7 @@ private def presentation : PrimitivePresentation where
 private def reading : Reading.{0, 0, 0, 0} where
   presentation := presentation
   structureData := states
-  observation := ⟨⟨Nat, id⟩, Nat → Bool, id⟩
+  observation := ⟨⟨Nat, id, none⟩, Nat → Bool, id⟩
   context := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
   cover := ⟨Unit, fun _ => ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩,
     fun _ _ h => h, fun h => ⟨(), h⟩⟩

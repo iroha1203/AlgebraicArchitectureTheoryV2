@@ -130,6 +130,8 @@ structure ObservationProduct (S : Type u) where
   Index : Type u
   /-- The state sort read at each position. -/
   sort : Index → S
+  /-- Only explicitly named products identify positions across two observations. -/
+  nameScope : Option String := none
 
 namespace ObservationProduct
 
@@ -140,14 +142,18 @@ abbrev Values (product : ObservationProduct S) (X : S → Type u) :=
   (i : product.Index) → X (product.sort i)
 
 /-- One position of the indicated sort. -/
-def ofSort (s : S) : ObservationProduct S := ⟨PUnit, fun _ => s⟩
+def ofSort (s : S) : ObservationProduct S := ⟨PUnit, fun _ => s, none⟩
 
-/-- Regard the positions of a finite typed context as an index set. -/
+/-- Regard the positions of a finite typed context as the canonical named variable positions. -/
 def ofList (Γ : List S) : ObservationProduct S :=
-  ⟨Σ s : S, Var Γ s, Sigma.fst⟩
+  ⟨Σ s : S, Var Γ s, Sigma.fst, some "typed variables"⟩
 
 /-- The empty product of state sorts. -/
-def empty : ObservationProduct S := ⟨PEmpty, fun i => nomatch i⟩
+def empty : ObservationProduct S := ⟨PEmpty, (fun i => nomatch i), none⟩
+
+/-- Name the coordinates of this product for comparisons with other products. -/
+def withName (product : ObservationProduct S) (name : String) : ObservationProduct S :=
+  { product with nameScope := some name }
 
 /-- Read a finite context assignment as a dependent product. -/
 def ofAssignment {Γ : List S} {X : S → Type u} (e : Assignment X Γ) : (ofList Γ).Values X :=
@@ -166,12 +172,13 @@ structure Correspondence (source : ObservationProduct S) (target : ObservationPr
   sort_eq (j : target.Index) : onSort (source.sort (position j)) = target.sort j
   /-- A compatible common name identifies the same position in both products. -/
   keepsNamed (j : target.Index) (i : source.Index) :
+    source.nameScope ≠ none → source.nameScope = target.nameScope →
     HEq i j → onSort (source.sort i) = target.sort j → position j = i
 
 /-- The identity sort map acts on each position of the same product. -/
 def Correspondence.identity (product : ObservationProduct S) :
     Correspondence product product id :=
-  ⟨id, fun _ => rfl, fun _ _ same _ => eq_of_heq same.symm⟩
+  ⟨id, fun _ => rfl, fun _ _ _ _ same _ => eq_of_heq same.symm⟩
 
 /-- Apply the pointwise state map at the corresponding coordinates. -/
 def Correspondence.mapValues {source : ObservationProduct S} {target : ObservationProduct T}
@@ -209,10 +216,11 @@ theorem position_injective (Γ : List S) :
 
 end Var
 
-/-- An original coefficient product uses numbered finite positions or a specified subset of indices. -/
+/-- A coefficient product uses typed variable positions or a specified subset of indices.
+An explicitly shared namespace identifies compatible positions across products. -/
 inductive CoefficientProduct (S : Type u) where
-  | ofList (context : List S)
-  | indexed (Index : Type u) (present : Set Index) (sort : present → S)
+  | ofList (context : List S) (nameScope : Option String := some "typed variables")
+  | indexed (Index : Type u) (present : Set Index) (sort : present → S) (nameScope : Option String := none)
 
 namespace CoefficientProduct
 
@@ -220,30 +228,30 @@ variable {S : Type u}
 
 /-- The carriers supplied to the reading are indexed by the original positions. -/
 def product : CoefficientProduct S → ObservationProduct S
-  | .ofList Γ => .ofList Γ
-  | .indexed _ present sort => ⟨present, sort⟩
+  | .ofList Γ nameScope => { ObservationProduct.ofList Γ with nameScope := nameScope }
+  | .indexed _ present sort nameScope => ⟨present, sort, nameScope⟩
 
 /-- The original slot namespace, independent of the available subset of slots. -/
 def Slot : CoefficientProduct S → Type u
-  | .ofList _ => ULift Nat
-  | .indexed Index _ _ => Index
+  | .ofList _ _ => ULift Nat
+  | .indexed Index _ _ _ => Index
 
 /-- Each original position has its actual slot, unaffected by the selected evaluation. -/
 def slot : (raw : CoefficientProduct S) → raw.product.Index → raw.Slot
-  | .ofList _, i => ⟨i.2.position⟩
-  | .indexed _ _ _, i => i.val
+  | .ofList _ _, i => ⟨i.2.position⟩
+  | .indexed _ _ _ _, i => i.val
 
 /-- The original product has only one position for each slot. -/
 theorem slot_injective (raw : CoefficientProduct S) : Function.Injective raw.slot := by
   cases raw with
-  | ofList Γ =>
+  | ofList Γ _ =>
     intro i j h
     exact Var.position_injective Γ (congrArg ULift.down h)
-  | indexed _ _ _ => exact Subtype.val_injective
+  | indexed _ _ _ _ => exact Subtype.val_injective
 
 /-- Make all positions of a general indexed product available. -/
 def all (p : ObservationProduct S) : CoefficientProduct S :=
-  .indexed p.Index Set.univ (fun i => p.sort i.val)
+  .indexed p.Index Set.univ (fun i => p.sort i.val) p.nameScope
 
 end CoefficientProduct
 
@@ -262,7 +270,7 @@ variable {S : Type u} {raw : CoefficientProduct S}
 
 /-- The product of used original positions, with one coordinate for each shared input. -/
 def used (selection : InputSelection raw) : ObservationProduct S :=
-  ⟨Set.range selection.inputs, fun i => raw.product.sort i.val⟩
+  ⟨Set.range selection.inputs, fun i => raw.product.sort i.val, raw.product.nameScope⟩
 
 /-- Read each input at its selected position, preserving repeated references. -/
 def tuple (selection : InputSelection raw) {X : S → Type u} (e : selection.used.Values X) :
@@ -274,7 +282,8 @@ def selectedSlots (selection : InputSelection raw) : selection.selected.Index �
   raw.slot ∘ selection.inputs
 
 /-- Select typed positions of a finite context. -/
-def ofRenaming {Γ Δ : List S} (ρ : Renaming Δ Γ) : InputSelection (.ofList Γ) where
+def ofRenaming {Γ Δ : List S} {nameScope : Option String} (ρ : Renaming Δ Γ) :
+    InputSelection (.ofList Γ nameScope) where
   selected := .ofList Δ
   inputs i := ⟨i.1, ρ i.2⟩
   sort_eq _ := rfl
@@ -493,6 +502,8 @@ structure SameParameters (source : CoefficientReading.{u, v} U A Γ)
   context : HEq source.selection.selected target.selection.selected
   /-- The selected inputs refer to the same named original positions. -/
   names : HEq source.selection.selectedSlots target.selection.selectedSlots
+  /-- The raw coordinate namespace is unchanged. -/
+  nameScope : Γ.product.nameScope = Δ.product.nameScope
   /-- In a common original product, both inputs select the same coordinates. -/
   positions : HEq Γ Δ → HEq source.selection.inputs target.selection.inputs
   /-- Keep the same application on a retained source, or apply the common native rule to changed

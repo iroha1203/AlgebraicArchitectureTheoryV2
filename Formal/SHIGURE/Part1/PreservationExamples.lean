@@ -723,6 +723,25 @@ theorem coefficient_comparison_at_two :
         (Assignment.cons (2 : Int) Assignment.empty))) = ((6, 6) : Int × Int) := by
   exact integerDiagonal.evaluate_commutes (fun _ => (2 : Int))
 
+/-- Comparing these coefficient evaluations requires keeping their integer state sort. -/
+theorem cannot_discard_coefficient_sort
+    (comparison : ReadingComparison (readingOf Int 4) (readingOf (Int × Int) (4, 4)))
+    (change : comparison.ContextChange) : change.val.retained.declarations ≠ ∅ := by
+  intro empty
+  have support := comparison.coefficientSupport
+  rw [change.property] at support
+  let input : (readRing Int 4).selection.used.Index := ⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩
+  have kept : Declaration.sort () ∈ change.val.retained.declarations := by
+    cases chosen : comparison.coefficientChange with
+    | fixed same =>
+      rw [chosen] at support
+      exact support input
+    | changed inputs square =>
+      rw [chosen] at support
+      exact support.1 input
+  rw [empty] at kept
+  exact kept.elim
+
 /-- Fixed coefficients do not require the coefficient evaluator to be preserved by a state change. -/
 def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf Int 0) where
   interpretation := Interpretation.identity Observation.presentation.theory
@@ -737,7 +756,7 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
   contexts := .identity _
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := .fixed
-    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
+    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
   coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
@@ -850,7 +869,8 @@ def fixed_coefficients_across_cover_change :
         sameTranslation := HEq.rfl
         pieces := fun _ => {true}
         localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
-    observationSupport := ⟨False.elim, False.elim⟩ }
+    observationSupport := ⟨False.elim, False.elim⟩
+    coefficientSupport := fun _ => Set.mem_univ _ }
 
 /-- The target lists an extra integer state that the evaluation never uses. -/
 private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
@@ -861,7 +881,7 @@ def fixed_comparison_with_unused_input : ReadingComparison (readingOf Int 0) pad
   { fixedCoefficientComparison with
     declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
     coefficientChange := .fixed
-      ⟨rfl, rfl, HEq.rfl, HEq.rfl, paddedInteger_names,
+      ⟨rfl, rfl, HEq.rfl, HEq.rfl, paddedInteger_names, rfl,
         fun h => (padded_integer_product_differs h).elim, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
     coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _ }
 
@@ -915,7 +935,7 @@ private def sharedObservation
     (coefficients : CoefficientReading Observation.whole (statesOf Int) (.ofList [(), ()])) :
     Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with
-    observation := StateObservation.ofContext [(), ()] Int (fun e => e .here)
+    observation := StateObservation.ofContext [(), ()] Int (fun e => e .here) (some "typed variables")
     coefficients := some ⟨.ofList [(), ()], coefficients⟩
     sharedInputs := .empty _
     observationPlacement := .external }
@@ -937,8 +957,8 @@ theorem cannot_relabel_shared_position :
       (fun j i => (sharedObservation secondIntegerInput).SharesInput (.ofList [(), ()]) j.val i) := by
   rintro ⟨extra, extraSort, extraUnique, respects⟩
   let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
-  have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, rfl, HEq.rfl⟩⟩
-  rcases same.2 with ⟨_, _, same⟩ | ⟨same, _, _⟩
+  have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
+  rcases same.2 with ⟨_, _, _, same⟩ | ⟨same, _, _⟩
   · exact Nat.zero_ne_one (congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index =>
       i.2.position) (eq_of_heq same))
   · cases same
@@ -959,7 +979,7 @@ def projected_state_comparison :
   contexts :=
     { position _ := ⟨(), .here⟩
       sort_eq _ := rfl
-      keepsNamed _ _ same _ := by
+      keepsNamed _ _ _ _ same _ := by
         have indexEq : (ObservationProduct.ofList [(), ()]).Index = PUnit := type_eq_of_heq same
         have small : Subsingleton (ObservationProduct.ofList [(), ()]).Index :=
           indexEq.symm ▸ (inferInstanceAs (Subsingleton PUnit))
@@ -973,12 +993,36 @@ def projected_state_comparison :
 
 /-- Distinct names in a common product read distinct inputs. -/
 theorem cannot_repeat_common_named_position :
-    let product : ObservationProduct Unit := ⟨Bool, fun _ => ()⟩
+    let product : ObservationProduct Unit := ⟨Bool, fun _ => (), some "boolean pair"⟩
     ¬ ∃ positions : product.Correspondence product id, positions.position true = false := by
   dsimp only
   rintro ⟨positions, repeated⟩
-  have kept : positions.position true = true := positions.keepsNamed true true HEq.rfl rfl
+  have kept : positions.position true = true := positions.keepsNamed true true (by decide) rfl HEq.rfl rfl
   exact Bool.noConfusion (kept.symm.trans repeated)
+
+private def reindexedObservation (right : Bool) : Reading.{0, 0, 0, 0} :=
+  { Observation.reading id with
+    observation := ⟨⟨Bool, fun _ => (), none⟩, Bool, fun e => e right⟩
+    sharedInputs := .empty _
+    observationPlacement := .external }
+
+/-- Independent observations can explicitly exchange positions of the same index type. -/
+def independently_reindexed_comparison : ReadingComparison (reindexedObservation false) (reindexedObservation true) where
+  interpretation := Interpretation.identity Observation.presentation.theory
+  targetModel := Observation.complementaryComparison.targetModel
+  state := Observation.complementaryComparison.state
+  contexts := ⟨Bool.not, fun _ => rfl, fun _ _ unnamed _ _ _ => (unnamed rfl).elim⟩
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
+
+/-- Ordinary and coefficient singleton inputs without a shared name can carry different values. -/
+def independent_singleton_inputs : (readingOf Int 0).JointInput (.all (.ofSort ())) where
+  ordinary _ := (0 : Int)
+  coefficient _ := (1 : Int)
+  agrees _ _ shared :=
+    shared.2.elim (fun named => (named.2.1 rfl).elim) (fun explicit => by cases explicit.1)
 
 /-- The first `size` positions of the common natural-number slot set are available. -/
 private def initialSlots (size : Nat) : CoefficientProduct Observation.signature.SortType :=
@@ -1072,7 +1116,7 @@ def same_native_rule_comparison : ReadingComparison (nativeReading false) (nativ
   contexts := .identity _
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := .fixed
-    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl,
+    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl,
       Or.inl ⟨True.intro, True.intro, fun h => (native_structures_differ h).elim⟩, HEq.rfl⟩
   coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _
   value := id
@@ -1085,7 +1129,7 @@ theorem native_realizations_compute_different_values :
   ⟨rfl, rfl⟩
 
 /-- Infinitely many original positions can use the same integer sort. -/
-private def integerSequence : ObservationProduct Observation.signature.SortType := ⟨Nat, fun _ => ()⟩
+private def integerSequence : ObservationProduct Observation.signature.SortType := ⟨Nat, fun _ => (), some "integer sequence"⟩
 
 /-- This coefficient observation tests whether every coordinate is zero. -/
 private noncomputable def coefficientSequence :
@@ -1126,13 +1170,13 @@ private noncomputable def sequenceReading : Reading.{0, 0, 0, 0} :=
 
 /-- Restricting the coefficient product to a subset does not rename its indexed slots. -/
 theorem proper_subset_keeps_shared_slot :
-    let product : CoefficientProduct Observation.signature.SortType := .indexed Nat {i | i < 2} (fun _ => ())
+    let product : CoefficientProduct Observation.signature.SortType := .indexed Nat {i | i < 2} (fun _ => ()) (some "integer sequence")
     let first : product.product.Index := ⟨0, by decide⟩
     sequenceReading.SharesInput product first (0 : Nat) ∧
       ¬ sequenceReading.SharesInput product first (1 : Nat) := by
   dsimp only
-  have shared : sequenceReading.SharesInput (.indexed Nat {i | i < 2} (fun _ => ()))
-      ⟨0, by decide⟩ (0 : Nat) := ⟨rfl, Or.inl ⟨rfl, HEq.rfl⟩⟩
+  have shared : sequenceReading.SharesInput (.indexed Nat {i | i < 2} (fun _ => ()) (some "integer sequence"))
+      ⟨0, by decide⟩ (0 : Nat) := ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
   exact ⟨shared, fun second => Nat.zero_ne_one (Reading.sharedInput_unique _ _ _ shared second)⟩
 
 /-- The coefficient comparison evaluates the selected infinite product. -/
@@ -1179,7 +1223,7 @@ theorem projection_algebras_cannot_compare :
   rintro ⟨comparison⟩
   cases comparison with
   | fixed same =>
-    rcases same with ⟨sameBase, sameAlgebra, _, _, _, _, _, _⟩
+    rcases same with ⟨sameBase, sameAlgebra, _, _, _, _, _, _, _⟩
     have sameBase_eq : sameBase = rfl := Subsingleton.elim _ _
     cases sameBase_eq
     classical

@@ -47,8 +47,13 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.Chapter1.RestrictedCoefficients.cannot_replace_retained_derivation,
   SHIGURE.Chapter1.RestrictedCoefficients.cannot_discard_declared_observation_sort,
   SHIGURE.Chapter1.CoefficientTransport.cannot_repeat_common_named_position,
+  SHIGURE.Chapter1.CoefficientTransport.independently_reindexed_comparison,
+  SHIGURE.Chapter1.CoefficientTransport.cannot_discard_coefficient_sort,
   SHIGURE.Chapter1.RetainedCoefficientInputs.compatible_explicit_sharing_survives_name_collision,
-  ReadingComparison.target_input_is_covered
+  SHIGURE.Chapter1.RetainedCoefficientInputs.declared_observation_covers_both_sorts,
+  ReadingComparison.target_input_is_covered,
+  ReadingContextChange.target_evaluation_input_is_covered,
+  DeclaredReadingComparison.covered_commutes
 ]
 
 end SHIGURE.AxiomAudit
