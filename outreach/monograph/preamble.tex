@@ -1,0 +1,250 @@
+% AAT Monograph LaTeX preamble (XeTeX / xeCJK compatible with Tectonic 0.16.9 and TeX Live 2025 xelatex)
+\documentclass[10pt,a4paper,openany]{book}
+
+\usepackage[
+  a4paper,
+  top=23mm,
+  bottom=23mm,
+  left=21mm,
+  right=21mm,
+  headheight=16pt,
+  headsep=8mm,
+  footskip=10mm
+]{geometry}
+
+\usepackage{amsmath,amssymb,mathrsfs,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{needspace}
+\usepackage{xcolor}
+\usepackage{xeCJK}
+
+% Bundled open-source Japanese TrueType fonts (OS-independent, CID TrueType + ToUnicode CMap for PDF.js/Preview/Acrobat)
+\setCJKmainfont[
+  BoldFont=ipaexg.ttf,
+  ItalicFont=ipaexm.ttf,
+  BoldItalicFont=ipaexg.ttf
+]{ipaexm.ttf}
+\setCJKsansfont[
+  BoldFont=ipaexg.ttf
+]{ipaexg.ttf}
+\setCJKmonofont{ipaexg.ttf}
+\xeCJKsetup{
+  CJKmath=true,
+  PunctStyle=quanjiao
+}
+% U+2015 HORIZONTAL BAR (―) を和文フォントで描画し、欧文フォントでの文字欠落を防ぐ
+\xeCJKDeclareCharClass{CJK}{"2015}
+
+\linespread{1.22}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0.25\baselineskip}
+\setlength{\emergencystretch}{3em}
+\allowdisplaybreaks[2]
+
+% Colors
+\definecolor{linkblue}{RGB}{20,60,150}
+\definecolor{partgray}{RGB}{85,95,110}
+\definecolor{rulegray}{RGB}{185,190,200}
+
+% Table helpers
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\renewcommand{\arraystretch}{1.18}
+
+% List spacing
+\setlist{topsep=4pt,itemsep=2pt,parsep=2pt,leftmargin=1.8em}
+
+% Do not auto-renumber parts, chapters, sections, theorems, or equations.
+\setcounter{secnumdepth}{-2}
+\setcounter{tocdepth}{2}
+\renewcommand{\contentsname}{目次}
+
+% Heading styles (for unnumbered commands with explicit numbering from Markdown)
+\titleformat{\chapter}[display]
+  {\normalfont\sffamily\bfseries\LARGE}
+  {}
+  {0pt}
+  {\vspace*{-1.2\baselineskip}}
+  [\vspace{0.35\baselineskip}{\color{rulegray}\titlerule[0.8pt]}]
+\titlespacing*{\chapter}{0pt}{0pt}{1.4\baselineskip}
+
+\titleformat{\section}
+  {\normalfont\sffamily\bfseries\large}
+  {}
+  {0pt}
+  {}
+\titlespacing*{\section}{0pt}{1.5\baselineskip}{0.5\baselineskip}
+
+\titleformat{\subsection}
+  {\normalfont\sffamily\bfseries\normalsize}
+  {}
+  {0pt}
+  {}
+\titlespacing*{\subsection}{0pt}{1.1\baselineskip}{0.35\baselineskip}
+
+% Running headers & footers
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\small\sffamily\color{partgray}\leftmark}
+\fancyhead[RO]{\small\sffamily\color{partgray}\rightmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{rulegray}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrulewidth}{0pt}
+
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \fancyfoot[C]{\small\thepage}%
+  \renewcommand{\headrulewidth}{0pt}%
+}
+
+\usepackage[
+  unicode=true,
+  bookmarks=true,
+  bookmarksopen=true,
+  bookmarksopenlevel=1,
+  colorlinks=true,
+  linkcolor=linkblue,
+  citecolor=linkblue,
+  urlcolor=linkblue,
+  pdfborder={0 0 0},
+  pdftitle={Algebraic Architecture Theory},
+  pdfsubject={代数的アーキテクチャ論},
+  pdfauthor={Hiroyuki Nakahata}
+]{hyperref}
+\usepackage{bookmark}
+
+% ---------------------------------------------------------------------------
+% Monograph structural macros (preserve exact fixed numbering from Markdown)
+% ---------------------------------------------------------------------------
+
+\newcommand{\aattitlepage}[4]{%
+  \begin{titlepage}
+    \thispagestyle{empty}
+    \vspace*{0.22\textheight}
+    \begin{center}
+      {\sffamily\bfseries\fontsize{26}{34}\selectfont #1\par}
+      \vspace{0.9em}
+      {\Large\color{partgray} #2\par}
+      \vspace{2.2em}
+      {\color{rulegray}\rule{0.45\linewidth}{0.8pt}\par}
+      \vspace{2.2em}
+      \if\relax\detokenize{#3}\relax\else
+        {\large #3\par}
+      \fi
+      \if\relax\detokenize{#4}\relax\else
+        \vspace{0.5em}
+        {\normalsize\color{partgray} ORCID~\href{https://orcid.org/#4}{#4}\par}
+      \fi
+    \end{center}
+    \vfill
+  \end{titlepage}
+}
+
+\newcommand{\aattoc}{%
+  \clearpage
+  \phantomsection\label{doc:toc}
+  \markboth{\contentsname}{\contentsname}
+  \tableofcontents
+  \clearpage
+}
+
+\newcommand{\aatpart}[4]{%
+  \clearpage
+  \thispagestyle{empty}
+  \phantomsection\label{#1}
+  \addcontentsline{toc}{part}{#2\texorpdfstring{\quad}{ }#3}
+  \markboth{#2\quad #3}{}
+  \vspace*{0.28\textheight}
+  \begin{center}
+    {\sffamily\bfseries\Large\color{partgray} #2\par}
+    \vspace{0.8em}
+    {\sffamily\bfseries\Huge #3\par}
+    \vspace{1.0em}
+    {\color{rulegray}\rule{0.35\linewidth}{0.6pt}\par}
+    \vspace{0.9em}
+    {\large\color{partgray} #4\par}
+  \end{center}
+  \clearpage
+}
+
+\newcommand{\aatappendices}{%
+  \bookmarksetup{startatroot}
+}
+
+\newcommand{\aatchapter}[2]{%
+  \clearpage
+  \phantomsection\label{#1}
+  \chapter*{#2}
+  \addcontentsline{toc}{chapter}{#2}
+  \markboth{#2}{#2}
+}
+
+\newcommand{\aatsection}[2]{%
+  \needspace{4\baselineskip}
+  \phantomsection\label{#1}
+  \section*{#2}
+  \addcontentsline{toc}{section}{#2}
+  \markright{#2}
+}
+
+\newcommand{\aatsubsection}[2]{%
+  \needspace{3\baselineskip}
+  \phantomsection\label{#1}
+  \subsection*{#2}
+  \addcontentsline{toc}{subsection}{#2}
+}
+
+\newcommand{\aatdecl}[2]{%
+  \par\addvspace{0.85\baselineskip}%
+  \needspace{3\baselineskip}%
+  \noindent\phantomsection\label{#1}%
+  {\sffamily\bfseries #2}\hspace{0.55em}\ignorespaces
+}
+
+\newcommand{\aatdeclstandalone}[2]{%
+  \par\addvspace{0.85\baselineskip}%
+  \needspace{4\baselineskip}%
+  \noindent\phantomsection\label{#1}%
+  {\sffamily\bfseries #2}\par\nopagebreak\smallskip
+}
+
+\newcommand{\aatproof}[1]{%
+  \par\addvspace{0.55\baselineskip}%
+  \needspace{2\baselineskip}%
+  \noindent{\sffamily\bfseries #1}\hspace{0.55em}\ignorespaces
+}
+
+\newcommand{\aatproofstandalone}[1]{%
+  \par\addvspace{0.55\baselineskip}%
+  \needspace{3\baselineskip}%
+  \noindent{\sffamily\bfseries #1}\par\nopagebreak\smallskip
+}
+
+\newcommand{\aatqed}{%
+  {\unskip\nobreak\hfil\penalty50\hskip1em\hbox{}%
+   \nobreak\hfil$\square$\parfillskip=0pt\finalhyphendemerits=0\par}%
+}
+
+\newcommand{\aathrule}{%
+  \par\addvspace{0.8\baselineskip}%
+  \noindent{\color{rulegray}\rule{\linewidth}{0.5pt}}%
+  \par\addvspace{0.6\baselineskip}%
+}
+
+\newcommand{\aatfitmath}[2]{%
+  \sbox0{$\displaystyle #2$}%
+  \ifdim\wd0>#1\relax
+    \resizebox{#1}{!}{\usebox0}%
+  \else
+    \usebox0%
+  \fi
+}
