@@ -8,14 +8,15 @@ use crate::ir::observation::{
     CandidateObservationDecl, CheckedObservationTask, LawReadoutSpec, ObservationTaskSpec,
 };
 use crate::ir::presentation::{
-    ComparisonPair, CoordDecl, CoordValue, LawKind, PhaseDecl, Presentation, SortDecl,
-    StateComparison, StateLaw, WordTranslation,
+    ComparisonPair, CoordDecl, CoordValue, LawKind, ObservationDecl, OperationDecl, PhaseDecl,
+    Presentation, SortDecl, StateComparison, StateLaw, TranslatedStep, TranslatedWord,
+    WordTranslation,
 };
 use crate::ir::provenance::{MathClause, OriginKind, Provenance, SourceRef};
 use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::result_phase3::{
-    ChevalleyOutcomeDetail, ChevalleyRegionSummary, FiberNonEmptinessResult,
-    ObservationOutcomeDetail, RobustnessOutcomeDetail,
+    ChevalleyOutcomeDetail, ChevalleyRegionSummary, CommonQuantifierResult,
+    FiberNonEmptinessResult, ObservationOutcomeDetail, RobustnessOutcomeDetail,
 };
 use crate::ir::robustness::{
     CandidateSelector, CheckedChevalleyTask, CheckedRobustnessTask, ChevalleyTaskSpec,
@@ -390,6 +391,80 @@ fn checked_phase3_ir_rejects_domain_overlap_missing_origin_and_partial_costs() {
     ));
 }
 
+fn raw_ledger_pres(name: &str) -> Presentation {
+    Presentation {
+        name: name.to_owned(),
+        coeff_domain: CoeffDomain::Q,
+        sorts: vec![SortDecl {
+            name: "S".to_owned(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Q,
+            provenance: None,
+        }],
+        phases: vec![
+            PhaseDecl {
+                name: "Idle".to_owned(),
+                coords: vec![CoordDecl::symbolic("B", "S")],
+                state_laws: vec![],
+                provenance: None,
+            },
+            PhaseDecl {
+                name: "Busy".to_owned(),
+                coords: vec![CoordDecl::symbolic("B", "S")],
+                state_laws: vec![],
+                provenance: None,
+            },
+        ],
+        operations: vec![
+            OperationDecl {
+                name: "begin".to_owned(),
+                source_phase: "Idle".to_owned(),
+                target_phase: "Busy".to_owned(),
+                args: vec![],
+                domain_laws: vec![],
+                updates: BTreeMap::from([("B".to_owned(), PolyExpr::state("B"))]),
+                provenance: None,
+            },
+            OperationDecl {
+                name: "apply_1".to_owned(),
+                source_phase: "Busy".to_owned(),
+                target_phase: "Busy".to_owned(),
+                args: vec![("x".to_owned(), "S".to_owned())],
+                domain_laws: vec![],
+                updates: BTreeMap::from([(
+                    "B".to_owned(),
+                    PolyExpr::sum(PolyExpr::state("B"), PolyExpr::arg("x")),
+                )]),
+                provenance: None,
+            },
+            OperationDecl {
+                name: "finish".to_owned(),
+                source_phase: "Busy".to_owned(),
+                target_phase: "Idle".to_owned(),
+                args: vec![],
+                domain_laws: vec![],
+                updates: BTreeMap::from([("B".to_owned(), PolyExpr::state("B"))]),
+                provenance: None,
+            },
+        ],
+        observations: vec![
+            ObservationDecl {
+                name: "read".to_owned(),
+                phase: "Idle".to_owned(),
+                components: vec![PolyExpr::state("B")],
+                provenance: None,
+            },
+            ObservationDecl {
+                name: "read".to_owned(),
+                phase: "Busy".to_owned(),
+                components: vec![PolyExpr::state("B")],
+                provenance: None,
+            },
+        ],
+        provenance: Provenance::default(),
+    }
+}
+
 #[test]
 fn unobserved_slots_in_family_and_raw_sequence_reading_comparison_validate() {
     let mut fam = w4_family();
@@ -401,31 +476,245 @@ fn unobserved_slots_in_family_and_raw_sequence_reading_comparison_validate() {
     fam.reading_comparison = Some(ReadingComparisonSpec {
         name: "fine_vs_coarse".to_owned(),
         fine_b_vars: vec!["bf".to_owned()],
-        fine_q: vec![PolyExpr::param("u")],
+        fine_q: vec![PolyExpr::unobserved("fine_u", None)],
         coarsen_r: vec![],
         provenance: Provenance::default(),
     });
-    let checked = CheckedFamilySpec::validate(fam).expect("valid missing assignment");
-    assert_eq!(
-        checked.unobserved_slots(),
-        vec!["W4.realization.u0.u".to_owned()]
-    );
+    fam.goodness = GoodnessSpec::Direct {
+        equations: vec![NamedPoly::new(
+            "g_unobs",
+            PolyExpr::unobserved("goodness_u", None),
+        )],
+        invertibles: vec![],
+        preservation: Some(PreservationGoodnessSource {
+            pair: ComparisonPair {
+                before: raw_ledger_pres("Before"),
+                after: raw_ledger_pres("After"),
+                state_comparisons: vec![
+                    StateComparison {
+                        after_phase: "Idle".to_owned(),
+                        before_phase: "Idle".to_owned(),
+                        map: BTreeMap::from([(
+                            "B".to_owned(),
+                            PolyExpr::unobserved("h_unobs", None),
+                        )]),
+                        provenance: None,
+                    },
+                    StateComparison {
+                        after_phase: "Busy".to_owned(),
+                        before_phase: "Busy".to_owned(),
+                        map: BTreeMap::from([("B".to_owned(), PolyExpr::state("B"))]),
+                        provenance: None,
+                    },
+                ],
+                word_translation: WordTranslation {
+                    entries: vec![
+                        TranslatedWord {
+                            after_operation: "begin".to_owned(),
+                            steps: vec![TranslatedStep {
+                                before_operation: "begin".to_owned(),
+                                arg_exprs: vec![],
+                            }],
+                            provenance: None,
+                        },
+                        TranslatedWord {
+                            after_operation: "apply_1".to_owned(),
+                            steps: vec![TranslatedStep {
+                                before_operation: "apply_1".to_owned(),
+                                arg_exprs: vec![PolyExpr::unobserved("tau_unobs", None)],
+                            }],
+                            provenance: None,
+                        },
+                        TranslatedWord {
+                            after_operation: "finish".to_owned(),
+                            steps: vec![TranslatedStep {
+                                before_operation: "finish".to_owned(),
+                                arg_exprs: vec![],
+                            }],
+                            provenance: None,
+                        },
+                    ],
+                },
+            },
+            change_spec: ChangeSpec {
+                name: "H".to_owned(),
+                coeff_domain: CoeffDomain::Q,
+                parameters: vec![],
+                fixed: vec![],
+                editable: vec![],
+                provenance: Provenance::default(),
+            },
+            param_bindings: BTreeMap::new(),
+        }),
+        raw_sequence: None,
+    };
+    let checked = CheckedFamilySpec::validate(fam.clone()).expect("valid unobserved collection");
+    let slots = checked.unobserved_slots();
+    assert!(slots.contains(&"W4.realization.u0.u".to_owned()));
+    assert!(slots.contains(&"fine_u".to_owned()));
+    assert!(slots.contains(&"goodness_u".to_owned()));
+    assert!(slots.contains(&"h_unobs".to_owned()));
+    assert!(slots.contains(&"tau_unobs".to_owned()));
 
+    let obs_task = CheckedObservationTask::validate(ObservationTaskSpec {
+        name: "obs_unobs".to_owned(),
+        family: fam,
+        point_domain: PointDomain::AlgebraicClosure,
+        base_value: vec![],
+        observations: vec![CandidateObservationDecl {
+            id: "e1".to_owned(),
+            components: vec![NamedPoly::new(
+                "v",
+                PolyExpr::unobserved("obs_e1_unobs", None),
+            )],
+            cost: None,
+            origin: origin("o1", OriginKind::StaticAnalysis),
+        }],
+        law_readout: Some(LawReadoutSpec {
+            name: "lr".to_owned(),
+            components: vec![NamedPoly::new(
+                "v",
+                PolyExpr::unobserved("readout_unobs", None),
+            )],
+            provenance: Provenance::default(),
+        }),
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    let obs_slots = obs_task.unobserved_slots();
+    assert!(obs_slots.contains(&"obs_e1_unobs".to_owned()));
+    assert!(obs_slots.contains(&"readout_unobs".to_owned()));
+
+    // Raw sequence validation: valid presentation passes; missing/invalid references rejected
+    let valid_seq = RawSequenceCheck {
+        start_phase: "Idle".to_owned(),
+        start_state: BTreeMap::from([("B".to_owned(), q(0))]),
+        steps: vec![
+            ("begin".to_owned(), vec![]),
+            ("apply_1".to_owned(), vec![q(1)]),
+            ("finish".to_owned(), vec![]),
+        ],
+        observation_name: "read".to_owned(),
+        baseline_step_index: Some(1),
+        provenance: Provenance::default(),
+    };
     let mut raw_fam = w4_family();
     raw_fam.goodness = GoodnessSpec::Direct {
         equations: vec![],
         invertibles: vec![],
         preservation: None,
-        raw_sequence: Some(RawSequenceCheck {
-            start_phase: "Idle".to_owned(),
-            start_state: BTreeMap::from([("B".to_owned(), q(0))]),
-            steps: vec![("begin".to_owned(), vec![]), ("finish".to_owned(), vec![])],
-            observation_name: "read".to_owned(),
-            baseline_step_index: Some(0),
-            provenance: Provenance::default(),
-        }),
+        raw_sequence: Some(valid_seq.clone()),
     };
-    assert!(CheckedFamilySpec::validate(raw_fam).is_ok());
+    // Member presentation: None is rejected
+    assert!(matches!(
+        CheckedFamilySpec::validate(raw_fam.clone()),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // Attach real presentations -> passes
+    if let RealizationSpace::FiniteMembers(ref mut ms) = raw_fam.realizations.space {
+        for (i, m) in ms.iter_mut().enumerate() {
+            m.presentation = Some(raw_ledger_pres(&format!("M{i}")));
+        }
+    }
+    assert!(CheckedFamilySpec::validate(raw_fam.clone()).is_ok());
+
+    // PolynomialScheme with raw_sequence is rejected
+    let mut raw_scheme = raw_fam.clone();
+    raw_scheme.realizations.space = RealizationSpace::PolynomialScheme {
+        equations: vec![],
+        invertibles: vec![],
+        is_raw_candidate: true,
+        origin: origin("scheme", OriginKind::StaticAnalysis),
+    };
+    assert!(matches!(
+        CheckedFamilySpec::validate(raw_scheme),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // Unknown start_phase / coord / operation / phase chain / arity / observation rejected
+    let set_seq = |base: &FamilySpec, seq: RawSequenceCheck| {
+        let mut f = base.clone();
+        f.goodness = GoodnessSpec::Direct {
+            equations: vec![],
+            invertibles: vec![],
+            preservation: None,
+            raw_sequence: Some(seq),
+        };
+        CheckedFamilySpec::validate(f)
+    };
+    assert!(matches!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                start_phase: "NoSuchPhase".to_owned(),
+                ..valid_seq.clone()
+            }
+        ),
+        Err(ValidationError::UnknownRef { kind: "phase", .. })
+    ));
+    assert!(matches!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                start_state: BTreeMap::from([("UnknownCoord".to_owned(), q(0))]),
+                ..valid_seq.clone()
+            }
+        ),
+        Err(ValidationError::UnknownRef {
+            kind: "state coordinate",
+            ..
+        })
+    ));
+    assert!(matches!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                steps: vec![("no_op".to_owned(), vec![])],
+                baseline_step_index: None,
+                ..valid_seq.clone()
+            }
+        ),
+        Err(ValidationError::UnknownRef {
+            kind: "operation",
+            ..
+        })
+    ));
+    assert!(matches!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                steps: vec![("finish".to_owned(), vec![])],
+                baseline_step_index: None,
+                ..valid_seq.clone()
+            }
+        ),
+        Err(ValidationError::PhasePathMismatch { .. })
+    ));
+    assert!(matches!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                steps: vec![("begin".to_owned(), vec![]), ("apply_1".to_owned(), vec![])],
+                baseline_step_index: None,
+                ..valid_seq.clone()
+            }
+        ),
+        Err(ValidationError::ArityMismatch { .. })
+    ));
+    assert!(matches!(
+        set_seq(
+            &raw_fam,
+            RawSequenceCheck {
+                observation_name: "no_obs".to_owned(),
+                ..valid_seq
+            }
+        ),
+        Err(ValidationError::UnknownRef {
+            kind: "observation",
+            ..
+        })
+    ));
 }
 
 #[test]
@@ -474,7 +763,15 @@ fn phase3_math_clauses_and_outcome_json_render_cleanly() {
             },
             valid_designated: None,
             pointwise: None,
-            common_candidate: None,
+            common_candidate: Some(CommonQuantifierResult {
+                satisfied: false,
+                vacuously_true_empty_fiber: false,
+                candidate_id: None,
+                candidate_assignments: None,
+                witnesses: vec![],
+                counterexample_witnesses: vec![],
+                counterexample_detail: Some("no common candidate".to_owned()),
+            }),
             universal_ring: None,
             reading_comparison: None,
         }),
@@ -511,6 +808,14 @@ fn phase3_math_clauses_and_outcome_json_render_cleanly() {
     assert!(map.contains_key("robustness"));
     assert!(map.contains_key("chevalley"));
     assert!(map.contains_key("observations"));
+    if let Some(Json::Obj(rob)) = map.get("robustness")
+        && let Some(Json::Obj(common)) = rob.get("common_candidate")
+    {
+        assert!(!common.contains_key("candidate_assignments"));
+        assert!(common.contains_key("counterexample_witnesses"));
+    } else {
+        panic!("expected robustness.common_candidate object");
+    }
     assert_eq!(
         ReevalCheck {
             checked: true,

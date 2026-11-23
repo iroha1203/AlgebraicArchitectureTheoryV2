@@ -6,9 +6,10 @@ use crate::ir::presentation::{ComparisonPair, CoordValue, Presentation};
 use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use crate::ir::validate::{
-    ValidationError, collect_presentation_unobserved, require_non_empty, validate_coeff_domain,
-    validate_poly_expr, validate_presentation_ref_checked_params, validate_provenance,
-    validate_scalar_lit, validate_source_ref,
+    ValidationError, collect_morphism_unobserved, collect_presentation_unobserved,
+    require_non_empty, validate_coeff_domain, validate_poly_expr,
+    validate_presentation_ref_checked_params, validate_provenance, validate_scalar_lit,
+    validate_source_ref,
 };
 use crate::ir::validate_change::{
     collect_and_check_param_names, validate_change_spec_checked_params,
@@ -199,7 +200,13 @@ impl CheckedFamilySpec {
         validate_candidates(&spec.candidates, &spec.coeff_domain, &c_set, &b_set)?;
 
         let uc_set: BTreeSet<String> = u_set.union(&c_set).cloned().collect();
-        validate_goodness(&spec.goodness, &spec.coeff_domain, &uc_set, &w_set)?;
+        validate_goodness(
+            &spec.goodness,
+            &spec.coeff_domain,
+            &spec.realizations,
+            &uc_set,
+            &w_set,
+        )?;
 
         if let Some(rc) = &spec.reading_comparison {
             validate_reading_comparison(
@@ -312,6 +319,11 @@ impl CheckedFamilySpec {
                 if let Some(p) = preservation {
                     collect_presentation_unobserved(&p.pair.before, &mut slots);
                     collect_presentation_unobserved(&p.pair.after, &mut slots);
+                    collect_morphism_unobserved(
+                        &p.pair.state_comparisons,
+                        &p.pair.word_translation,
+                        &mut slots,
+                    );
                     for expr in p.param_bindings.values() {
                         expr.collect_unobserved(&mut slots);
                     }
@@ -527,6 +539,7 @@ fn validate_candidates(
 fn validate_goodness(
     goodness: &GoodnessSpec,
     coeff_domain: &CoeffDomain,
+    realizations: &RealizationFamilySpec,
     uc_set: &BTreeSet<String>,
     w_set: &BTreeSet<String>,
 ) -> Result<(), ValidationError> {
@@ -543,7 +556,7 @@ fn validate_goodness(
                 validate_preservation_source(pres_src, coeff_domain, uc_set)?;
             }
             if let Some(raw_seq) = raw_sequence {
-                validate_raw_sequence(raw_seq, coeff_domain)?;
+                validate_raw_sequence(raw_seq, coeff_domain, realizations)?;
             }
         }
         GoodnessSpec::Existential {
@@ -617,6 +630,7 @@ fn validate_preservation_source(
 fn validate_raw_sequence(
     seq: &RawSequenceCheck,
     coeff_domain: &CoeffDomain,
+    realizations: &RealizationFamilySpec,
 ) -> Result<(), ValidationError> {
     require_non_empty(&seq.start_phase, "raw_sequence.start_phase")?;
     require_non_empty(&seq.observation_name, "raw_sequence.observation_name")?;
@@ -644,6 +658,125 @@ fn validate_raw_sequence(
                 "raw_sequence baseline_step_index {idx} out of bounds (steps = {})",
                 seq.steps.len()
             ),
+        });
+    }
+    let members = match &realizations.space {
+        RealizationSpace::FiniteMembers(members) => members,
+        RealizationSpace::PolynomialScheme { .. } => {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "raw_sequence goodness requires FiniteMembers realization space with per-member Presentation, got PolynomialScheme on `{}`",
+                    realizations.name
+                ),
+            });
+        }
+    };
+    for m in members {
+        let Some(pres) = &m.presentation else {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "raw_sequence goodness requires realization member `{}` to carry a Presentation",
+                    m.id
+                ),
+            });
+        };
+        validate_raw_sequence_against_presentation(seq, pres, &m.id)?;
+    }
+    Ok(())
+}
+
+fn validate_raw_sequence_against_presentation(
+    seq: &RawSequenceCheck,
+    pres: &Presentation,
+    member_id: &str,
+) -> Result<(), ValidationError> {
+    let ctx = format!(
+        "raw_sequence on member `{member_id}` (presentation `{}`)",
+        pres.name
+    );
+    let start_phase = pres
+        .phase(&seq.start_phase)
+        .ok_or_else(|| ValidationError::UnknownRef {
+            kind: "phase",
+            name: seq.start_phase.clone(),
+            context: ctx.clone(),
+        })?;
+    let phase_coord_names: BTreeSet<&str> =
+        start_phase.coords.iter().map(|c| c.name.as_str()).collect();
+    for k in seq.start_state.keys() {
+        if !phase_coord_names.contains(k.as_str()) {
+            return Err(ValidationError::UnknownRef {
+                kind: "state coordinate",
+                name: k.clone(),
+                context: format!("{ctx} phase `{}`", start_phase.name),
+            });
+        }
+    }
+    for coord in &start_phase.coords {
+        if matches!(coord.value, CoordValue::Symbolic) && !seq.start_state.contains_key(&coord.name)
+        {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "{ctx}: start_state is missing initial value for coordinate `{}` of phase `{}`",
+                    coord.name, start_phase.name
+                ),
+            });
+        }
+    }
+
+    let mut cur_phase = seq.start_phase.as_str();
+    let mut baseline_phase: Option<&str> = None;
+    for (idx, (op_name, args)) in seq.steps.iter().enumerate() {
+        let op = pres
+            .operation(op_name)
+            .ok_or_else(|| ValidationError::UnknownRef {
+                kind: "operation",
+                name: op_name.clone(),
+                context: format!("{ctx} step {idx}"),
+            })?;
+        if op.source_phase != cur_phase {
+            return Err(ValidationError::PhasePathMismatch {
+                after_operation: op_name.clone(),
+                detail: format!(
+                    "{ctx} step {idx}: operation `{}` expects source phase `{}`, got `{cur_phase}`",
+                    op.name, op.source_phase
+                ),
+            });
+        }
+        if args.len() != op.args.len() {
+            return Err(ValidationError::ArityMismatch {
+                context: format!("{ctx} step {idx} (`{op_name}`)"),
+                expected: op.args.len(),
+                actual: args.len(),
+            });
+        }
+        cur_phase = op.target_phase.as_str();
+        if seq.baseline_step_index == Some(idx) {
+            baseline_phase = Some(cur_phase);
+        }
+    }
+
+    if !pres
+        .observations
+        .iter()
+        .any(|o| o.name == seq.observation_name && o.phase == cur_phase)
+    {
+        return Err(ValidationError::UnknownRef {
+            kind: "observation",
+            name: seq.observation_name.clone(),
+            context: format!("{ctx} final phase `{cur_phase}`"),
+        });
+    }
+    if let Some(b_phase) = baseline_phase
+        && !pres
+            .observations
+            .iter()
+            .any(|o| o.name == seq.observation_name && o.phase == b_phase)
+    {
+        return Err(ValidationError::UnknownRef {
+            kind: "observation",
+            name: seq.observation_name.clone(),
+            context: format!("{ctx} baseline phase `{b_phase}`"),
         });
     }
     Ok(())

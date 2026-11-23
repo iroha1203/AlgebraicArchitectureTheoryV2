@@ -208,3 +208,70 @@ fn constructible_branch_limit_triggers_silence_not_false_result() {
         Err(SilenceReason::ConstructibleStratificationOutOfScope { .. })
     ));
 }
+
+#[test]
+fn constructible_y_pair_limit_error_bounds_empty_whole_and_spoly_vanish_branch() {
+    // 1. DEFAULT_MAX_IMAGE_Y_PAIRS (256) limit: 25 generators vanishing at (0, 0) (hence fiber never
+    // collapses to 1 = 0) and sharing y1*y2 in every leading monomial generate > 256 S-pairs with
+    // zero branch splits.
+    let y_vars = vars(&["y1", "y2"]);
+    let empty_param = vars(&[]);
+    let y1 = Poly::var(2, 0, Rat::zero());
+    let y2 = Poly::var(2, 1, Rat::zero());
+    let tail = y1.checked_mul(&y2).unwrap();
+    let mut many_gens = Vec::new();
+    for k in 1..=25u32 {
+        many_gens.push(y1.pow(26 - k).checked_mul(&y2.pow(k)).unwrap().add(&tail));
+    }
+    let ypair_res = project_stratum_image(
+        &LocallyClosedStratum {
+            equations: many_gens,
+            invertibles: vec![],
+        },
+        2,
+        &empty_param,
+    );
+    let _ = y_vars;
+    assert!(matches!(
+        ypair_res,
+        Err(SilenceReason::ConstructibleStratificationOutOfScope { .. })
+    ));
+
+    // 2. Variable order mismatch and point dimension mismatch errors.
+    let v_xy = vars(&["x", "y"]);
+    let v_xz = vars(&["x", "z"]);
+    let c_xy = ConstructibleSet::empty(v_xy.clone());
+    let c_xz = ConstructibleSet::empty(v_xz);
+    assert!(c_xy.union(&c_xz).is_err());
+    assert!(c_xy.intersect(&c_xz).is_err());
+    assert!(c_xy.difference(&c_xz).is_err());
+    assert!(c_xy.is_subset_of(&c_xz).is_err());
+    assert!(c_xy.equals(&c_xz).is_err());
+    assert!(c_xy.contains_point(&[r(1)]).is_err());
+
+    // 3. empty().complement() == whole_space() and whole_space().complement().is_empty().
+    let whole = ConstructibleSet::whole_space(v_xy.clone());
+    assert!(c_xy.complement().unwrap().equals(&whole).unwrap());
+    assert!(whole.complement().unwrap().is_empty());
+
+    // 4. S-polynomial leading coefficient that can vanish and be nonzero when new_lm != 1:
+    // fiber [y1, y2], param [c], equations {y1*y2 - 1, y1^2 - c*y2}.
+    // S-poly gives -c*y2^2 + y1 (new_lm = y2^2 != 1, new_lc = -c).
+    // Branch c = 0 fails (y1 = 0 conflicts with y1*y2 = 1); branch D(c) succeeds -> image is D(c).
+    let fvars = vars(&["y1", "y2", "c"]);
+    let cparam = vars(&["c"]);
+    let fy1 = Poly::var(3, 0, Rat::zero());
+    let fy2 = Poly::var(3, 1, Rat::zero());
+    let fc = Poly::var(3, 2, Rat::zero());
+    let fone = Poly::one(3, Rat::zero());
+    let fset = ConstructibleSet::closed(
+        fvars,
+        vec![fy1.mul(&fy2).sub(&fone), fy1.pow(2).sub(&fc.mul(&fy2))],
+    )
+    .unwrap();
+    let fimg = project_constructible_set(&fset, 2, &cparam).unwrap();
+    let expected_dc = ConstructibleSet::open(cparam, vec![Poly::var(1, 0, Rat::zero())]).unwrap();
+    assert!(fimg.equals(&expected_dc).unwrap());
+    assert!(!fimg.contains_point(&[r(0)]).unwrap());
+    assert!(fimg.contains_point(&[r(1)]).unwrap());
+}

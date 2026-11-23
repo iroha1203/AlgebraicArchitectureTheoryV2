@@ -209,8 +209,9 @@ pub struct CommonQuantifierResult {
     pub satisfied: bool,
     pub vacuously_true_empty_fiber: bool,
     pub candidate_id: Option<String>,
-    pub candidate_assignments: BTreeMap<String, String>,
+    pub candidate_assignments: Option<BTreeMap<String, String>>,
     pub witnesses: Vec<PairEvaluationWitness>,
+    pub counterexample_witnesses: Vec<PairEvaluationWitness>,
     pub counterexample_detail: Option<String>,
 }
 
@@ -223,10 +224,6 @@ impl CommonQuantifierResult {
                 Json::Bool(self.vacuously_true_empty_fiber),
             ),
             (
-                "candidate_assignments".into(),
-                str_map_to_json(&self.candidate_assignments),
-            ),
-            (
                 "witnesses".into(),
                 Json::Arr(
                     self.witnesses
@@ -235,9 +232,21 @@ impl CommonQuantifierResult {
                         .collect(),
                 ),
             ),
+            (
+                "counterexample_witnesses".into(),
+                Json::Arr(
+                    self.counterexample_witnesses
+                        .iter()
+                        .map(PairEvaluationWitness::to_json)
+                        .collect(),
+                ),
+            ),
         ]);
         if let Some(cid) = &self.candidate_id {
             obj.insert("candidate_id".into(), Json::str(cid));
+        }
+        if let Some(assign) = &self.candidate_assignments {
+            obj.insert("candidate_assignments".into(), str_map_to_json(assign));
         }
         if let Some(detail) = &self.counterexample_detail {
             obj.insert("counterexample_detail".into(), Json::str(detail));
