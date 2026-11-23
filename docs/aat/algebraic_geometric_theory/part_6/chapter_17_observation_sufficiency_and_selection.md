@@ -171,7 +171,7 @@ $`(u,c,\alpha,e)\mapsto(u',c,a(\tau)\alpha,E(\tau)e)`$ で定めると、式(17.
 
 許容規則も入力 $`u`$ とともに動かす場合には、記録の輸送 $`T_\tau:\mathcal C_{H(u)}\to\mathcal C_{H(u')}`$ と自然な端点比較 $`\beta_{\tau,c}:\partial T_\tau c\cong\partial c`$ を、元の原始規則・パラメータ・証人の輸送から指定し、恒等および合成に関する比較とその整合条件も保持する。
 この場合には、$`(c,\alpha,e)`$ を $`(T_\tau c,a(\tau)\alpha\beta_{\tau,c},E(\tau)e)`$ へ送り、式(17.2a)にもこの輸送された記録と同定を代入する。
-また射の第二成分は $`T_\tau c\to c'`$ とする。
+また射の第二成分は $`\gamma:T_\tau c\to c'`$ とし、可換条件を $`\alpha'\partial\gamma=a(\tau)\alpha\beta_{\tau,c}`$ および $`e'=E(\tau)e`$ とする。
 同様の計算と輸送の合成比較により、この場合にもすべての解からなる族 $`\mathcal F\to\mathcal U`$ と2-ファイバーの同値が得られる。
 
 構成17.5で得た解の族 $`p:\mathcal F\to\mathcal U`$ に対して、観測から回復しようとする出力の粒度として、次の五つを明確に区別する。
