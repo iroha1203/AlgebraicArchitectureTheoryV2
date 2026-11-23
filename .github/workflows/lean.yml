@@ -214,8 +214,12 @@ jobs:
             echo "run=true" >>"$GITHUB_OUTPUT"
             exit 0
           fi
-          changed_paths="$(git diff --name-only "$base" "$HEAD_SHA")"
-          if grep -Eq '^(Formal/SHIGURE/|Formal/SHIGURE\.lean$|lakefile\.toml$|lake-manifest\.json$|lean-toolchain$|\.github/lean_quality/check_shigure_sources\.lean$|\.github/workflows/lean\.yml$)' <<<"$changed_paths"; then
+          changed_paths="$(git diff --name-only "$base" "$HEAD_SHA" -- \
+            Formal/SHIGURE/ Formal/SHIGURE.lean lakefile.toml lake-manifest.json lean-toolchain \
+            .github/lean_quality/check_shigure_imports.lean \
+            .github/lean_quality/check_shigure_primitives.py \
+            .github/workflows/lean.yml)"
+          if [ -n "$changed_paths" ]; then
             echo "run=true" >>"$GITHUB_OUTPUT"
           else
             echo "run=false" >>"$GITHUB_OUTPUT"
@@ -232,7 +236,9 @@ jobs:
 
       - name: Check SHIGURE imports and forbidden source tokens
         if: steps.shigure-changes.outputs.run == 'true'
-        run: lean --run .github/lean_quality/check_shigure_sources.lean
+        run: |
+          lean --run .github/lean_quality/check_shigure_imports.lean
+          python3 .github/lean_quality/check_shigure_primitives.py
 
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'

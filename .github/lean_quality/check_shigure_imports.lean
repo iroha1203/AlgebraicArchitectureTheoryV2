@@ -1,14 +1,16 @@
 import Lean.Elab.Import
 
+/-! # SHIGURE import validation -/
+
 open Lean
 
+/-- Allow dependencies on the toolchain, mathlib, and production SHIGURE modules. -/
 private def allowedImport (name : Name) : Bool :=
-  [`Mathlib, `Std, `Lean, `Formal.SHIGURE].any (fun root =>
-    root.isPrefixOf name && root != name)
+  name != `Formal.SHIGURE.AssertStandardAxiomsTest &&
+    [`Mathlib, `Std, `Lean, `Formal.SHIGURE].any (fun root =>
+      root.isPrefixOf name && root != name)
 
-private def forbiddenWords : List String :=
-  ["sorry", "admit", "axiom", "unsafe", "native_decide"]
-
+/-- Validate explicit imports using the same header parser as the Lean frontend. -/
 private def checkSource (file : System.FilePath) : IO Bool := do
   let text ← IO.FS.readFile file
   let fileName := file.toString
@@ -20,15 +22,6 @@ private def checkSource (file : System.FilePath) : IO Bool := do
     unless allowedImport entry.module do
       IO.eprintln s!"{file}: disallowed import {entry.module}"
       valid := false
-  for (line, index) in (text.splitOn "\n").zipIdx do
-    -- A single named declaration is reserved for the rejection regression.
-    unless fileName == "Formal/SHIGURE/AssertStandardAxiomsTest.lean" &&
-        line == "axiom SHIGURE.KernelAuditTest.nonstandard : False" do
-      let words := line.splitToList (fun ch => !(ch.isAlphanum || ch == '_'))
-      for word in forbiddenWords do
-        if words.contains word then
-          IO.eprintln s!"{file}:{index + 1}: disallowed source token {word}"
-          valid := false
   return valid
 
 /-- Run from the repository root with `lean --run`. -/
