@@ -315,7 +315,7 @@ private def whole : DeclarationContext presentation :=
   ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
 
 /-- The readings share the structure and differ only in what their state observation returns. -/
-private def reading (observe : Bool → Bool) : Reading.{0, 0} where
+private def reading (observe : Bool → Bool) : Reading.{0, 0, 0} where
   presentation := presentation
   structureData := points
   observation := StateObservation.ofSort () Bool observe
@@ -365,7 +365,7 @@ theorem empty_cover_fails : ¬ ∃ cover : DeclarationCover whole, IsEmpty cover
   exact hempty.false i
 
 /-- The global state observation can be selected independently of the declarations. -/
-private def missingSort : Reading.{0, 0} :=
+private def missingSort : Reading.{0, 0, 0} :=
   let emptyContext : DeclarationContext presentation := ⟨∅, fun ha => ha.elim⟩
   { (reading Bool.not) with
     context := emptyContext
@@ -426,7 +426,7 @@ theorem forgotten_sort_formula_fails :
     exact h.elim
 
 /-- Cover the same declarations with a new family of pieces. -/
-private def secondCover : Reading.{0, 0} :=
+private def secondCover : Reading.{0, 0, 0} :=
   { (reading Bool.not) with
     cover :=
       { Index := Bool
@@ -557,15 +557,15 @@ def allSmallRealizations : CoefficientScheme.{0, 1} Observation.whole (ringOf In
   changePoints _ _ _ _ := id
 
 /-- Select a Boolean realization from the large class while observing small Boolean states. -/
-def all_small_realizations_reading : Reading.{0, 1} where
+def all_small_realizations_reading : Reading.{0, 1, 1} where
   presentation := Observation.presentation
   structureData := statesOf Bool
   observation := StateObservation.ofSort () Bool id
   context := Observation.whole
   cover := (Observation.reading id).cover
-  Family := Unit
-  realize _ := statesOf Bool
-  familyObservation := none
+  Family := Type
+  realize := statesOf
+  familyObservation := some ⟨Bool, fun _ => true⟩
   ValueStructure _ := Unit
   valueStructure := ()
   coefficients := some ⟨.ofList [()],
@@ -580,6 +580,10 @@ def all_small_realizations_reading : Reading.{0, 1} where
       evaluateOn R _ _ :=
         letI := R.scalars.ring
         0 }⟩
+
+/-- Every small carrier is represented by its own structure in the observed family. -/
+theorem observed_family_has_every_small_carrier (X : Type) :
+    (all_small_realizations_reading.realize X).carrier () = X := rfl
 
 /-- The specified coefficient algebra and realization evaluate each state at its chosen offset. -/
 private def readRing (R : Type) [CommRing R] (offset : R) :
@@ -659,7 +663,7 @@ def integerDiagonal :
     id (fun _ => rfl) (fun _ => rfl) (fun _ => rfl)
 
 /-- The actual reading returns the state, with an additional selected coefficient evaluation. -/
-private def readingOf (R : Type) [CommRing R] (offset : R) : Reading.{0, 0} where
+private def readingOf (R : Type) [CommRing R] (offset : R) : Reading.{0, 0, 0} where
   presentation := Observation.presentation
   structureData := statesOf R
   observation := StateObservation.ofSort () R id
@@ -715,7 +719,7 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
   contexts := .identity _
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
-    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl, Or.inr HEq.rfl, HEq.rfl⟩
+    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
 
@@ -727,7 +731,7 @@ private def paddedIntegerInput : CoefficientReading Observation.whole (statesOf 
 
 /-- Both presentations describe the same single used position. -/
 private theorem paddedInteger_names :
-    HEq (readRing Int 0).selection.selectedNames paddedIntegerInput.selection.selectedNames := by
+    HEq (readRing Int 0).selection.selectedSlots paddedIntegerInput.selection.selectedSlots := by
   apply heq_of_eq
   funext pos
   obtain ⟨s, x⟩ := pos
@@ -737,9 +741,10 @@ private theorem paddedInteger_names :
 
 /-- The padded product has an additional original position. -/
 private theorem padded_integer_product_differs :
-    ¬ HEq (ObservationProduct.ofList [()]) (ObservationProduct.ofList [(), ()]) := by
+    ¬ HEq (CoefficientProduct.ofList [()]) (CoefficientProduct.ofList [(), ()]) := by
   intro same
-  have index_eq := congrArg ObservationProduct.Index (eq_of_heq same)
+  have index_eq : (ObservationProduct.ofList [()]).Index = (ObservationProduct.ofList [(), ()]).Index :=
+    congrArg (fun raw : CoefficientProduct Unit => raw.product.Index) (eq_of_heq same)
   have small : Subsingleton (ObservationProduct.ofList [()]).Index := by
     refine ⟨?_⟩
     rintro ⟨_, i⟩ ⟨_, j⟩
@@ -754,7 +759,7 @@ private theorem padded_integer_product_differs :
   exact (by decide : (0 : Nat) ≠ 1) position
 
 /-- The target lists an extra integer state that the evaluation never uses. -/
-private def paddedIntegerReading : Reading.{0, 0} :=
+private def paddedIntegerReading : Reading.{0, 0, 0} :=
   { readingOf Int 0 with coefficients := some ⟨.ofList [(), ()], paddedIntegerInput⟩ }
 
 /-- Padding the outer product preserves the fixed comparison along the non-linear state map. -/
@@ -762,8 +767,8 @@ def fixed_comparison_with_unused_input : ReadingComparison (readingOf Int 0) pad
   { fixedCoefficientComparison with
     declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
     coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
-      ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, paddedInteger_names,
-        fun h => (padded_integer_product_differs h).elim, Or.inr HEq.rfl, HEq.rfl⟩ }
+      ⟨rfl, rfl, HEq.rfl, HEq.rfl, paddedInteger_names,
+        fun h => (padded_integer_product_differs h).elim, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩ }
 
 /-- Sending zero to one in the fixed comparison would fail a coefficient-change square. -/
 theorem fixed_comparison_has_no_scalar_change :
@@ -784,17 +789,19 @@ private def shiftedPoint : CoefficientReading Observation.whole (statesOf Int) (
 /-- A changed point correspondence cannot be hidden in the fixed comparison. -/
 theorem point_change_is_not_fixed : ¬ (readRing Int 0).SameParameters shiftedPoint := by
   intro same
-  rcases same.points with h | h
+  rcases same.application with h | h
   · exact h.1
   have used : () ∈ Set.range (readRing Int 0).selection.selected.sort := ⟨⟨(), .here⟩, rfl⟩
   have impossible : (0 : Int) = 1 :=
-    congrFun (congrFun (congrFun (eq_of_heq h) ()) used) (0 : Int)
+    congrFun (congrFun (congrFun (eq_of_heq h.2) ()) used) (0 : Int)
   exact (by decide : (0 : Int) ≠ 1) impossible
 
 /-- Changing only the chosen offset still changes the realization. -/
 theorem realization_change_is_not_fixed : ¬ (readRing Int 0).SameParameters (readRing Int 1) := by
   intro same
-  exact (by decide : (0 : Int) ≠ 1) (eq_of_heq same.realization)
+  rcases same.application with h | h
+  · exact h.1
+  exact (by decide : (0 : Int) ≠ 1) (eq_of_heq h.1)
 
 /-- Read the second position of the same two-position integer product. -/
 private def secondIntegerInput : CoefficientReading Observation.whole (statesOf Int) (.ofList [(), ()]) :=
@@ -809,6 +816,29 @@ theorem different_positions_are_not_fixed : ¬ paddedIntegerInput.SameParameters
     congrArg ULift.down (congrFun (eq_of_heq same.names) ⟨(), .here⟩)
   exact Nat.zero_ne_one impossible
 
+/-- The first `size` positions of the common natural-number slot set are available. -/
+private def initialSlots (size : Nat) : CoefficientProduct Observation.signature.SortType :=
+  .indexed Nat {i | i < size} (fun _ => ())
+
+/-- Select one actual slot from the available positions. -/
+private def readSlot (size index : Nat) (kept : index < size) :
+    CoefficientReading Observation.whole (statesOf Int) (initialSlots size) :=
+  { readRing Int 0 with
+    selection :=
+      { selected := .ofSort ()
+        inputs _ := ⟨index, kept⟩
+        sort_eq _ := rfl }
+    supported _ := Set.mem_univ _
+    realizePoint _ _ x := x
+    pointOrigin := .declared True.intro
+    evaluateOn _ _ e := e PUnit.unit }
+
+/-- Padding the raw product cannot hide a change of slot in its common coordinate set. -/
+theorem different_indexed_slots_are_not_fixed :
+    ¬ (readSlot 2 0 (by decide)).SameParameters (readSlot 3 1 (by decide)) := by
+  intro same
+  exact Nat.zero_ne_one (congrFun (eq_of_heq same.names) PUnit.unit)
+
 /-- The chosen native subsets have either one point or both Boolean points. -/
 private def nativeCarrier (full : Bool) := {x : Bool // full = true ∨ x = false}
 
@@ -817,7 +847,7 @@ private def nativeScheme : CoefficientScheme Observation.whole (ringOf Int) :=
   { offsetScheme (ringOf Int) with
     Native := Bool
     nativeStructure full := RestrictedStructure.restrict Observation.whole (statesOf (nativeCarrier full))
-    realizeNative R _ := R.fromBase (0 : Int)
+    realizeNative R full := R.fromBase (if full then (1 : Int) else (0 : Int))
     nativePoints R _ _ _ x := R.fromBase (if x.val then (1 : Int) else (0 : Int))
     nativePoints_permitted _ _ _ _ := True.intro }
 
@@ -827,15 +857,15 @@ private def nativeCoefficients (full : Bool) :
   base := ringOf Int
   algebra := ⟨ringOf Int, RingHom.id Int⟩
   scheme := nativeScheme
-  realization := (0 : Int)
+  realization := if full then (1 : Int) else (0 : Int)
   selection := .ofRenaming (Δ := [()]) (fun i => i)
   supported _ := Set.mem_univ _
   realizePoint _ _ x := if x.val then (1 : Int) else (0 : Int)
-  pointOrigin := .native full rfl (fun _ _ => Set.mem_univ _) (fun _ _ => rfl) (fun _ _ _ => rfl)
-  evaluateOn _ _ e := e ⟨(), .here⟩
+  pointOrigin := .native full rfl (fun _ _ => Set.mem_univ _) (.refl _) True.intro (fun _ _ _ => rfl)
+  evaluateOn _ offset _ := offset
 
 /-- The ordinary observation uses the false-only or the full native subset. -/
-private def nativeReading (full : Bool) : Reading.{0, 0} where
+private def nativeReading (full : Bool) : Reading.{0, 0, 0} where
   presentation := Observation.presentation
   structureData := statesOf (nativeCarrier full)
   observation := StateObservation.ofSort () Bool (fun x => if full then x.val else true)
@@ -878,19 +908,25 @@ def same_native_rule_comparison : ReadingComparison (nativeReading false) (nativ
   contexts := .identity _
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
-    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl,
+    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl,
       Or.inl ⟨True.intro, True.intro, fun h => (native_structures_differ h).elim⟩, HEq.rfl⟩
   value := id
   commutes _ := rfl
+
+/-- The same native rule produces different selected realizations and evaluated coefficients. -/
+theorem native_realizations_compute_different_values :
+    (nativeCoefficients false).evaluate (fun _ => ⟨false, Or.inr rfl⟩) = (0 : Int) ∧
+      (nativeCoefficients true).evaluate (fun _ => ⟨true, Or.inl rfl⟩) = (1 : Int) :=
+  ⟨rfl, rfl⟩
 
 /-- Infinitely many original positions can use the same integer sort. -/
 private def integerSequence : ObservationProduct Observation.signature.SortType := ⟨Nat, fun _ => ()⟩
 
 /-- This coefficient observation tests whether every coordinate is zero. -/
 private noncomputable def coefficientSequence :
-    CoefficientReading Observation.whole (statesOf Int) integerSequence :=
+    CoefficientReading Observation.whole (statesOf Int) (CoefficientProduct.all integerSequence) :=
   { readRing Int 0 with
-    selection := .identity integerSequence
+    selection := .all integerSequence
     supported _ := Set.mem_univ _
     realizePoint _ _ x := x
     pointOrigin := .declared True.intro
@@ -902,7 +938,7 @@ private noncomputable def coefficientSequence :
 /-- Changing any one coordinate of the all-zero input changes the coefficient evaluation. -/
 theorem every_coordinate_changes_coefficient (n : Nat) :
     coefficientSequence.evaluate (fun _ => (0 : Int)) = (1 : Int) ∧
-      coefficientSequence.evaluate (fun j => if (show Nat from j) = n then (1 : Int) else (0 : Int)) =
+      coefficientSequence.evaluate (fun j => if (show Nat from j.val) = n then (1 : Int) else (0 : Int)) =
         (0 : Int) := by
   classical
   change (if ∀ _ : Nat, (0 : Int) = 0 then (1 : Int) else 0) = 1 ∧
@@ -916,10 +952,10 @@ theorem every_coordinate_changes_coefficient (n : Nat) :
     rw [if_neg notAll]
 
 /-- The ordinary coefficient-valued observation uses the very same infinite evaluation. -/
-private noncomputable def sequenceReading : Reading.{0, 0} :=
+private noncomputable def sequenceReading : Reading.{0, 0, 0} :=
   { readingOf Int 0 with
-    observation := ⟨integerSequence, Int, coefficientSequence.evaluate⟩
-    coefficients := some ⟨integerSequence, coefficientSequence⟩ }
+    observation := ⟨integerSequence, Int, fun e => coefficientSequence.evaluate (fun i => e i.val)⟩
+    coefficients := some ⟨CoefficientProduct.all integerSequence, coefficientSequence⟩ }
 
 /-- The coefficient comparison evaluates the selected infinite product. -/
 noncomputable def infinite_coefficient_comparison : ReadingComparison sequenceReading sequenceReading where
@@ -965,7 +1001,7 @@ theorem projection_algebras_cannot_compare :
   rintro ⟨comparison⟩
   cases comparison with
   | fixed _ same =>
-    rcases same with ⟨sameBase, sameAlgebra, _, _, _, _, _, _, _⟩
+    rcases same with ⟨sameBase, sameAlgebra, _, _, _, _, _, _⟩
     have sameBase_eq : sameBase = rfl := Subsingleton.elim _ _
     cases sameBase_eq
     classical
@@ -1035,7 +1071,7 @@ theorem repeated_coefficient_input :
   fun _ => rfl
 
 /-- The ordinary reading has the same observation and no selected coefficient evaluation. -/
-private def plainInteger : Reading.{0, 0} := { readingOf Int 0 with coefficients := none }
+private def plainInteger : Reading.{0, 0, 0} := { readingOf Int 0 with coefficients := none }
 
 /-- The singleton observation and the coefficient input use the same integer state. -/
 private def toOrdinaryInput :
@@ -1068,7 +1104,7 @@ def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readi
     exact Int.add_zero x⟩
 
 /-- This coefficient evaluation gives the same result at different observed states. -/
-private def constantCoefficient : Reading.{0, 0} :=
+private def constantCoefficient : Reading.{0, 0, 0} :=
   { readingOf Int 0 with
     coefficients := some ⟨.ofList [()], { readRing Int 0 with
       evaluateOn R _ _ :=
@@ -1570,7 +1606,7 @@ def emptySelection : CoefficientReading sortOnly A (.ofList [()]) where
     0
 
 /-- The global observation uses Bool, alongside the selected local empty realization. -/
-def readingWithEmptyRealization : Reading.{0, 0} where
+def readingWithEmptyRealization : Reading.{0, 0, 0} where
   presentation := withDerivedLaw
   structureData := A
   observation := StateObservation.ofSort () Bool id

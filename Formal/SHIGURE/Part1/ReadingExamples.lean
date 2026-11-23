@@ -54,7 +54,7 @@ private def piece : DeclarationContext presentation where
 private def whole : DeclarationContext presentation := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
 
 /-- The original cover consists of the whole context. -/
-private def source : Reading.{0, 0} where
+private def source : Reading.{0, 0, 0} where
   presentation := presentation
   structureData := data
   observation := StateObservation.ofSort () Bool id
@@ -68,7 +68,7 @@ private def source : Reading.{0, 0} where
   coefficients := none
 
 /-- The two target pieces cover the whole context, but only one is assigned. -/
-private def target : Reading.{0, 0} :=
+private def target : Reading.{0, 0, 0} :=
   { source with
     cover :=
       { Index := Bool
@@ -82,6 +82,18 @@ theorem cover_change_is_not_fixed : ¬ source.SameContext target := by
   have index : Unit = Bool := congrArg DeclarationCover.Index (eq_of_heq same.cover)
   have small : Subsingleton Bool := index ▸ (inferInstance : Subsingleton Unit)
   exact (by decide : false ≠ true) (@Subsingleton.elim Bool small false true)
+
+/-- Emptying the retained relation cannot be certified as the same native source. -/
+theorem different_relations_disagree_on_retained_structure :
+    ¬ (RestrictedStructure.restrict whole data).Agrees
+      (RestrictedStructure.restrict whole { data with relation := fun _ => ∅ }) := by
+  intro same
+  let atom : Atomic signature [] := .rel false (fun i => nomatch i)
+  have supported : Declaration.atomicSupport (P := presentation) atom ⊆ whole.declarations :=
+    fun _ _ => Set.mem_univ _
+  have fact : (RestrictedStructure.restrict whole data).evaluation.atomic Assignment.empty atom supported :=
+    Set.mem_univ _
+  exact (same.preserves atom supported Assignment.empty fact).elim
 
 /-- Restrict the source to one relation and transport its support to the assigned piece. -/
 private def coverChange : ReadingContextChange source target (Interpretation.identity presentation.theory) where
@@ -253,7 +265,7 @@ theorem coefficient_scheme_evaluates_required_law (R : CoefficientAlgebra lawMod
     exact (model ⟨(), rfl⟩ (Set.mem_univ _) Assignment.empty True.intro).elim
 
 /-- The state observation exists even when the structure fails a required Law. -/
-private def lawTestingReading (satisfies : Bool) : Reading.{0, 0} where
+private def lawTestingReading (satisfies : Bool) : Reading.{0, 0, 0} where
   presentation := modelPresentation
   structureData := lawTestingStructure satisfies
   observation := StateObservation.ofSort () Unit (fun _ => ())
@@ -472,7 +484,7 @@ private def scalarInputs (R : Type) [CommRing R] :
   evaluateOn _ _ e := e ⟨false, .here⟩
 
 /-- Read coefficients at the first sort and take the ordinary observation at the second. -/
-private def separateReading (R : Type) [CommRing R] : Reading.{0, 0} where
+private def separateReading (R : Type) [CommRing R] : Reading.{0, 0, 0} where
   presentation := presentation
   structureData := separateStates R
   observation := StateObservation.ofSort true Bool id
@@ -494,7 +506,7 @@ private def paddedScalarInputs (R : Type) [CommRing R] :
       | .there i => nomatch i) }
 
 /-- The reading with a longer outer coefficient product still uses only the scalar position. -/
-private def paddedReading (R : Type) [CommRing R] : Reading.{0, 0} :=
+private def paddedReading (R : Type) [CommRing R] : Reading.{0, 0, 0} :=
   { separateReading R with coefficients := some ⟨.ofList [false, true], paddedScalarInputs R⟩ }
 
 /-- Transport the scalar occurrence without supplying the unread Bool position. -/
@@ -536,7 +548,7 @@ def independent_coefficient_comparison :
   commutes _ := rfl
 
 /-- The plain reading has no coefficient evaluation. -/
-private def plainReading : Reading.{0, 0} := { separateReading Int with coefficients := none }
+private def plainReading : Reading.{0, 0, 0} := { separateReading Int with coefficients := none }
 
 /-- The new scalar observation evaluates to zero on the selected sort. -/
 private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofList [false, true]) :=
@@ -547,7 +559,7 @@ private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofLi
 
 /-- Introduce a scalar evaluation independent of the originally observed Bool. -/
 def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
-    ({ separateReading Int with coefficients := some ⟨.ofList [false, true], zeroInputs⟩ } : Reading.{0, 0})
+    ({ separateReading Int with coefficients := some ⟨.ofList [false, true], zeroInputs⟩ } : Reading.{0, 0, 0})
     id (fun _ x => x) True :=
   ⟨{ extra := .ofSort false
      coordinate := fun j => ⟨.inr PUnit.unit, by
@@ -560,7 +572,7 @@ def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainR
 
 /-- Forget scalar evaluation while reading the independently selected Bool position. -/
 def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedReading Int)
-    ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading.{0, 0})
+    ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading.{0, 0, 0})
     id (fun _ x => x) True :=
   ⟨{ extra := .ofSort true
      coordinate := fun i => ⟨.inr i, rfl⟩
@@ -602,7 +614,7 @@ private def presentation : PrimitivePresentation where
   derived n := nomatch n
 
 /-- Observe the whole function of Boolean states, with one position of every sort. -/
-private def reading : Reading.{0, 0} where
+private def reading : Reading.{0, 0, 0} where
   presentation := presentation
   structureData := states
   observation := ⟨⟨Nat, id⟩, Nat → Bool, id⟩

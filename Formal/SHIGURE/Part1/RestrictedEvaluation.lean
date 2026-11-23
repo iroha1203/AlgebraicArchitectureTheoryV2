@@ -204,4 +204,27 @@ def Preserves (A B : RestrictedStructure U) (f : PointMap A B) : Prop :=
 
 end RestrictedStructure
 
+/-- The retained carriers and the truth of their supported primitive facts agree. -/
+structure RestrictedStructure.Agrees {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    (A B : RestrictedStructure U) : Prop where
+  /-- Identify the carriers of the retained sorts. -/
+  carrier_eq (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations) :
+    A.carrier s = B.carrier s
+  /-- The carrier identifications preserve the retained facts. -/
+  preserves : A.Preserves B (fun s kept x => carrier_eq s kept ▸ x)
+  /-- The inverse identifications preserve the retained facts. -/
+  reflects : B.Preserves A (fun s kept x => (carrier_eq s kept).symm ▸ x)
+
+/-- A restricted structure agrees with itself. -/
+theorem RestrictedStructure.Agrees.refl {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    (A : RestrictedStructure U) : A.Agrees A where
+  carrier_eq _ _ := rfl
+  preserves := by
+    intro Γ atom supported assignment held
+    exact held
+  reflects := by
+    intro Γ atom supported assignment held
+    exact held
+
+
 end SHIGURE

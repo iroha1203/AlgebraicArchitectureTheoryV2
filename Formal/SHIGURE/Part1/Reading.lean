@@ -33,7 +33,7 @@ the target evaluation. Sharing a position in a reading continues to
 share its value in the comparison.
 -/
 
-universe u v
+universe u v w
 
 namespace SHIGURE
 
@@ -255,7 +255,7 @@ def ofContext (Γ : List sig.SortType) (O : Type u) (f : Assignment A.carrier Γ
 end StateObservation
 
 /-- A family observation reads the family index, independently of any individual state. -/
-structure FamilyObservation (Realization : Type u) where
+structure FamilyObservation (Realization : Type v) where
   /-- The values used for distinguishing members of the family. -/
   Output : Type u
   /-- The function on the family of realizations. -/
@@ -274,17 +274,17 @@ structure Reading where
   /-- The selected cover of those declarations. -/
   cover : DeclarationCover context
   /-- A family of structures that may also be observed. -/
-  Family : Type u
+  Family : Type w
   /-- The structure associated to each family member. -/
   realize : Family → Structure presentation.signature
   /-- An observation on the family, when one is specified. -/
-  familyObservation : Option (FamilyObservation Family)
+  familyObservation : Option (FamilyObservation.{u, w} Family)
   /-- The type of value-structure choices on the observation values. -/
   ValueStructure : Type u → Type u
   /-- The chosen value-structure data. -/
   valueStructure : ValueStructure observation.Output
   /-- The coefficient input context and its evaluation, when the reading uses coefficients. -/
-  coefficients : Option (Σ Γ : ObservationProduct presentation.signature.SortType,
+  coefficients : Option (Σ Γ : CoefficientProduct presentation.signature.SortType,
     CoefficientReading.{u, v} context structureData Γ)
 
 namespace Declaration
@@ -399,7 +399,7 @@ end Declaration
 
 /-- The context comparison retains a source subcontext and assigns its translation support
 to the selected target cover. Each source piece can use a family of target pieces. -/
-structure ReadingContextChange (source target : Reading.{u, v})
+structure ReadingContextChange (source target : Reading.{u, v, w})
     (u : Interpretation source.presentation.theory target.presentation.theory) where
   /-- The source declarations still being compared. -/
   retained : DeclarationContext source.presentation
@@ -421,7 +421,7 @@ structure ReadingContextChange (source target : Reading.{u, v})
 
 namespace ReadingContextChange
 
-variable {source target : Reading.{u, v}}
+variable {source target : Reading.{u, v, w}}
   {u : Interpretation source.presentation.theory target.presentation.theory}
 
 /-- The retained source declaration translates entirely inside the target context. -/
@@ -498,7 +498,7 @@ theorem mapFact_forget (transition : ReadingContextChange source target u)
 end ReadingContextChange
 
 /-- The readings select the same presentation, declarations, and cover. -/
-structure Reading.SameContext (source target : Reading.{u, v}) : Prop where
+structure Reading.SameContext (source target : Reading.{u, v, w}) : Prop where
   /-- The same symbols and written Laws are available. -/
   presentation : source.presentation = target.presentation
   /-- The same declarations are selected. -/
@@ -512,7 +512,7 @@ def Interpretation.isIdentityAlong {S T : Theory.{u}} (same : S = T) (u : Interp
   exact u.Equivalent (Interpretation.identity S)
 
 /-- A fixed selection admits any representative of the identity interpretation. -/
-inductive Reading.ContextCompatibility (source target : Reading.{u, v})
+inductive Reading.ContextCompatibility (source target : Reading.{u, v, w})
     (u : Interpretation source.presentation.theory target.presentation.theory) where
   | fixed (same : source.SameContext target) :
       u.isIdentityAlong (congrArg PrimitivePresentation.theory same.presentation) →
@@ -575,7 +575,7 @@ end ReadingInputMap
 /-- Compare two coefficient selections, keeping fixed settings or supplying an evaluation square. -/
 inductive CoefficientComparison {P Q : PrimitivePresentation.{u}} {U : DeclarationContext P}
     {V : DeclarationContext Q} {A : Structure P.signature} {B : Structure Q.signature}
-    {Γ : ObservationProduct P.signature.SortType} {Δ : ObservationProduct Q.signature.SortType}
+    {Γ : CoefficientProduct P.signature.SortType} {Δ : CoefficientProduct Q.signature.SortType}
     (c : CoefficientReading.{u, v} U A Γ) (d : CoefficientReading.{u, v} V B Δ)
     (onSort : P.signature.SortType → Q.signature.SortType)
     (state : ∀ s, A.carrier s → B.carrier (onSort s)) (contextFixed : Prop) where
@@ -587,7 +587,7 @@ inductive CoefficientComparison {P Q : PrimitivePresentation.{u}} {U : Declarati
     CoefficientComparison c d onSort state contextFixed
 
 /-- Transport the actual inputs of the ordinary or coefficient evaluations at both endpoints. -/
-def Reading.CoefficientCompatibility (source target : Reading.{u, v})
+def Reading.CoefficientCompatibility (source target : Reading.{u, v, w})
     (onSort : source.presentation.signature.SortType → target.presentation.signature.SortType)
     (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s))
     (contextFixed : Prop) : Type (u + 1) :=
@@ -606,7 +606,7 @@ def Reading.CoefficientCompatibility (source target : Reading.{u, v})
           target.observation.read (inputs.mapValues state e) = value (c.2.evaluateSelected e.1)}
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
-structure ReadingComparison (source target : Reading.{u, v}) where
+structure ReadingComparison (source target : Reading.{u, v, w}) where
   /-- A theory interpretation of the language used by the source. -/
   interpretation : Interpretation source.presentation.theory target.presentation.theory
   /-- The source structure satisfies the required Laws of its reading. -/
@@ -630,27 +630,27 @@ structure ReadingComparison (source target : Reading.{u, v}) where
     target.observation.read (contexts.mapValues state.onSort e) = value (source.observation.read e)
 
 /-- Equation (1.12) as an equality of composites on the entire selected product. -/
-theorem ReadingComparison.commutes_eq {source target : Reading.{u, v}}
+theorem ReadingComparison.commutes_eq {source target : Reading.{u, v, w}}
     (comparison : ReadingComparison source target) :
     target.observation.read ∘ comparison.contexts.mapValues comparison.state.onSort =
       comparison.value ∘ source.observation.read :=
   funext comparison.commutes
 
 /-- The codomain of the comparison's state map satisfies the source theory. -/
-theorem ReadingComparison.pullback_isModel {source target : Reading.{u, v}}
+theorem ReadingComparison.pullback_isModel {source target : Reading.{u, v, w}}
     (comparison : ReadingComparison source target) :
     source.presentation.theory.Holds
       (comparison.interpretation.pullbackStructure target.structureData comparison.targetModel) :=
   comparison.interpretation.pullback_isModel target.structureData comparison.targetModel
 
 /-- The contextual data carried by this particular comparison. -/
-abbrev ReadingComparison.ContextChange {source target : Reading.{u, v}}
+abbrev ReadingComparison.ContextChange {source target : Reading.{u, v, w}}
     (comparison : ReadingComparison source target) :=
   {transition : ReadingContextChange source target comparison.interpretation //
     comparison.declarationChange = .changed transition}
 
 /-- The target path in the assigned cover pieces computes the translated formula's truth value. -/
-theorem ReadingComparison.restricted_evaluation_commutes {source target : Reading.{u, v}}
+theorem ReadingComparison.restricted_evaluation_commutes {source target : Reading.{u, v, w}}
     (comparison : ReadingComparison source target) {Γ : List source.presentation.signature.SortType}
     (change : comparison.ContextChange) (i : source.cover.Index)
     (p : Formula source.presentation.signature Γ)
@@ -666,7 +666,7 @@ theorem ReadingComparison.restricted_evaluation_commutes {source target : Readin
     (comparison.interpretation.pullback_formula_iff _ _ _ _).symm
 
 /-- Transport a formula evaluated in a retained source piece to its assigned target pieces. -/
-theorem ReadingComparison.transport_restricted_formula {source target : Reading.{u, v}}
+theorem ReadingComparison.transport_restricted_formula {source target : Reading.{u, v, w}}
     (comparison : ReadingComparison source target) {Γ : List source.presentation.signature.SortType}
     (change : comparison.ContextChange) (i : source.cover.Index)
     (p : Formula source.presentation.signature Γ)
