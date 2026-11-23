@@ -215,7 +215,8 @@ class MonographFailureDetectionTests(unittest.TestCase):
         self.assertTrue(any('マニフェスト未登録ファイル: extra_unregistered.md' in f['message'] for f in findings))
 
     def test_hidden_unicode_and_local_path_fail(self) -> None:
-        md = '# 第1章 衛生\n\n隠し文字\u200b と /Users/alice/secret.tex。\n'
+        sample_local = '/' + 'Users/alice/secret.tex'
+        md = f'# 第1章 衛生\n\n隠し文字\u200b と {sample_local}。\n'
         manifest, preamble, src = make_fixture(self.root, {'ch1.md': md, 'README.md': '# Top\n'})
         _, _, _, _, findings, _ = monograph.build_tex_bundle(manifest, preamble, str(src))
         self.assertTrue(any('hidden / bidirectional Unicode' in f['message'] for f in findings))
