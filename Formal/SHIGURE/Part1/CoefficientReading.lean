@@ -186,11 +186,6 @@ namespace Var
 
 variable {S : Type u}
 
-/-- Position number in the finite context. -/
-def position : {Γ : List S} → {s : S} → Var Γ s → Nat
-  | _, _, .here => 0
-  | _, _, .there i => i.position.succ
-
 /-- Two variables in the same finite context have distinct position numbers. -/
 theorem position_injective (Γ : List S) :
     Function.Injective (fun i : (Σ s, Var Γ s) => i.2.position) := by

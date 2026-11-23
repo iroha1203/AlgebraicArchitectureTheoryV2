@@ -373,6 +373,7 @@ private def missingSort : Reading.{0, 0, 0, 0} :=
         piece := fun i => nomatch i
         subset := fun i => nomatch i
         covers := fun h => h.elim }
+    observationPlacement := .external
     coefficients := none }
 
 /-- With fixed declarations the state observation still reads its actual structure. -/
@@ -848,7 +849,8 @@ def fixed_coefficients_across_cover_change :
         sameSorts := rfl
         sameTranslation := HEq.rfl
         pieces := fun _ => {true}
-        localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ } }
+        localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
+    observationSupport := ⟨False.elim, False.elim⟩ }
 
 /-- The target lists an extra integer state that the evaluation never uses. -/
 private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
@@ -915,7 +917,8 @@ private def sharedObservation
   { readingOf Int 0 with
     observation := StateObservation.ofContext [(), ()] Int (fun e => e .here)
     coefficients := some ⟨.ofList [(), ()], coefficients⟩
-    sharedInputs := .empty _ }
+    sharedInputs := .empty _
+    observationPlacement := .external }
 
 /-- Relabeling the sole used source position as the second target position would make the
 coefficient values agree on that relabeled input. -/
@@ -934,8 +937,8 @@ theorem cannot_relabel_shared_position :
       (fun j i => (sharedObservation secondIntegerInput).SharesInput (.ofList [(), ()]) j.val i) := by
   rintro ⟨extra, extraSort, extraUnique, respects⟩
   let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
-  have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, HEq.rfl⟩⟩
-  rcases same.2 with ⟨_, same⟩ | ⟨same, _, _⟩
+  have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, rfl, HEq.rfl⟩⟩
+  rcases same.2 with ⟨_, _, same⟩ | ⟨same, _, _⟩
   · exact Nat.zero_ne_one (congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index =>
       i.2.position) (eq_of_heq same))
   · cases same
@@ -1118,7 +1121,8 @@ private noncomputable def sequenceReading : Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with
     observation := ⟨integerSequence, Int, fun e => coefficientSequence.evaluate (fun i => e i.val)⟩
     coefficients := some ⟨CoefficientProduct.all integerSequence, coefficientSequence⟩
-    sharedInputs := .empty _ }
+    sharedInputs := .empty _
+    observationPlacement := .external }
 
 /-- Restricting the coefficient product to a subset does not rename its indexed slots. -/
 theorem proper_subset_keeps_shared_slot :
@@ -1128,7 +1132,7 @@ theorem proper_subset_keeps_shared_slot :
       ¬ sequenceReading.SharesInput product first (1 : Nat) := by
   dsimp only
   have shared : sequenceReading.SharesInput (.indexed Nat {i | i < 2} (fun _ => ()))
-      ⟨0, by decide⟩ (0 : Nat) := ⟨rfl, Or.inl HEq.rfl⟩
+      ⟨0, by decide⟩ (0 : Nat) := ⟨rfl, Or.inl ⟨rfl, HEq.rfl⟩⟩
   exact ⟨shared, fun second => Nat.zero_ne_one (Reading.sharedInput_unique _ _ _ shared second)⟩
 
 /-- The coefficient comparison evaluates the selected infinite product. -/
@@ -1844,6 +1848,8 @@ private def singleRetainedSort {P : PrimitivePresentation} {U : DeclarationConte
   lawName n := nomatch n
   law_eq n := nomatch n
   law_role n := nomatch n
+  lawAttachments_eq n := nomatch n
+  domainAttachment_eq p := nomatch p
   names :=
     { toFun := fun _ => ⟨.sort sort, kept.symm ▸ Set.mem_singleton _⟩
       invFun := fun _ => .sort ()
@@ -1890,6 +1896,7 @@ private def emptyLocalReading : Reading.{0, 0, 0, 0} where
   ValueStructure _ := Unit
   valueStructure := ()
   coefficients := none
+  observationPlacement := .retained (fun _ => Set.mem_univ _)
   origin := some ⟨withDerivedLaw, sortOnly, selectedOrigin⟩
 
 /-- Equation (1.12) compares the local model in the selected language. -/
@@ -1959,6 +1966,17 @@ def compares_after_restricting_ambient_readings : ReadingComparison (selectedRea
   value := id
   commutes _ := rfl
 
+/-- A declared observation cannot be compared by discarding its whole declaration support. -/
+theorem cannot_discard_declared_observation_sort
+    (comparison : ReadingComparison (selectedReading A) (selectedReading B))
+    (change : comparison.ContextChange) : change.val.retained.declarations ≠ ∅ := by
+  intro empty
+  have support := comparison.observationSupport
+  rw [change.property] at support
+  have member := support.1 True.intro PUnit.unit
+  rw [empty] at member
+  exact member.elim
+
 /-- Keeping a Law's name and changing its formula does not produce a selected presentation. -/
 theorem cannot_change_retained_law :
     ¬ Nonempty (ReadingOrigin (ambientLawPresentation true) (ambientLawPresentation false)
@@ -1968,5 +1986,47 @@ theorem cannot_change_retained_law :
   have bad : (⟨[], .truth, .falsehood⟩ : Law signature).Holds A :=
     Eq.mp h (fun _ _ => True.intro)
   exact (bad Assignment.empty True.intro).elim
+
+private def withoutOrderedTerms : PrimitivePresentation :=
+  { CoefficientTransport.externalRingPresentation with otherOrderedEquation _ := none }
+
+/-- Keeping a written Law also keeps its registered ordered terms. -/
+theorem cannot_erase_retained_ordered_terms :
+    ¬ Nonempty (ReadingOrigin withoutOrderedTerms CoefficientTransport.externalRingPresentation
+      (ReadingOrigin.whole CoefficientTransport.externalRingPresentation)) := by
+  rintro ⟨origin⟩
+  have same := congrArg LawAttachments.equation (origin.lawAttachments_eq ())
+  cases same
+
+private def proofTreePresentation (usesCut : Bool) : PrimitivePresentation where
+  signature := Observation.signature
+  laws :=
+    { LawName := Unit
+      statement _ := ⟨[], .truth, .truth⟩
+      role _ := .derived }
+  derived _ _ := if usesCut then .cut (.refl .truth) (.refl .truth) else .refl .truth
+
+/-- A selected presentation can keep the exact derivation even when the proof uses a cut. -/
+def keeps_derived_tree : ReadingOrigin (proofTreePresentation true) (proofTreePresentation true)
+    (ReadingOrigin.whole (proofTreePresentation true)) where
+  signature := .identity _
+  lawName := id
+  names := ⟨fun d => ⟨d, Set.mem_univ _⟩, Subtype.val, fun _ => rfl, fun d => Subtype.ext rfl⟩
+  names_eq d := by cases d <;> rfl
+  law_eq _ := rfl
+  law_role _ := rfl
+  lawAttachments_eq _ := rfl
+  domainAttachment_eq p := nomatch p
+  dependencies _ _ := Iff.rfl
+
+/-- Equal support and the same conclusion cannot justify replacing the attached proof tree. -/
+theorem cannot_replace_retained_derivation :
+    ¬ Nonempty (ReadingOrigin (proofTreePresentation false) (proofTreePresentation true)
+      (ReadingOrigin.whole (proofTreePresentation true))) := by
+  rintro ⟨origin⟩
+  have same := Option.some.inj (congrArg LawAttachments.proof (origin.lawAttachments_eq ()))
+  have rules := congrArg (fun | RecordedDerivation.node _ rule _ => rule) same
+  change (ProofRuleData.refl : ProofRuleData Observation.signature Unit) = .cut at rules
+  cases rules
 
 end SHIGURE.Chapter1.RestrictedCoefficients

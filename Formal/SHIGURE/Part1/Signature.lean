@@ -53,6 +53,11 @@ def shift : (Δ : List S) → Var Γ s → Var (Δ ++ Γ) s
   | [], var => var
   | _ :: Δ, var => .there (shift Δ var)
 
+/-- Position number in the finite context. -/
+def position : {Γ : List S} → {s : S} → Var Γ s → Nat
+  | _, _, .here => 0
+  | _, _, .there i => i.position.succ
+
 end Var
 
 namespace Renaming

@@ -644,6 +644,42 @@ private def separateReading (R : Type) [CommRing R] : Reading.{0, 0, 0, 0} where
   valueStructure := ()
   coefficients := some ⟨.ofList [false], scalarInputs R⟩
 
+private def twoOrdinarySorts : ObservationProduct signature.SortType := ⟨Bool, id⟩
+
+private def differentlyNamedInput : CoefficientProduct signature.SortType :=
+  .indexed Bool {true} (fun _ => false)
+
+private noncomputable def explicitFalsePosition : SharedInputNames twoOrdinarySorts := by
+  classical
+  refine ⟨fun Γ _ => if Γ = differentlyNamedInput then some false else none, ?_⟩
+  intro Γ j k i first second
+  by_cases matched : Γ = differentlyNamedInput
+  · subst Γ
+    exact Subtype.ext ((Set.mem_singleton_iff.1 j.property).trans (Set.mem_singleton_iff.1 k.property).symm)
+  · change (if Γ = differentlyNamedInput then some (false : twoOrdinarySorts.Index) else none) = some i at first
+    rw [if_neg matched] at first
+    cases first
+
+private noncomputable def sameNameDifferentSort : Reading.{0, 0, 0, 0} :=
+  { separateReading Int with
+    observation := ⟨twoOrdinarySorts, Int, fun states => states false⟩
+    sharedInputs := explicitFalsePosition
+    observationPlacement := .external }
+
+/-- A same-slot coordinate of another sort leaves the compatible explicit sharing available. -/
+theorem compatible_explicit_sharing_survives_name_collision :
+    sameNameDifferentSort.SharesInput differentlyNamedInput ⟨true, Set.mem_singleton _⟩ false := by
+  refine ⟨rfl, Or.inr ⟨?_, ?_, ?_⟩⟩
+  · classical
+    simp [sameNameDifferentSort, explicitFalsePosition]
+  · rintro ⟨i, named⟩
+    cases i
+    · exact Bool.noConfusion (eq_of_heq named.2)
+    · exact Bool.noConfusion named.1
+  · rintro ⟨j, named⟩
+    have position : j.val = true := Set.mem_singleton_iff.1 j.property
+    exact Bool.noConfusion (position.symm.trans (eq_of_heq named.2))
+
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
 private def paddedScalarInputs (R : Type) [CommRing R] :
     CoefficientReading retained (separateStates R) (.ofList [false, true]) :=

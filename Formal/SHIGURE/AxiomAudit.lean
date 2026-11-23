@@ -24,6 +24,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   OrderedEquation.jointInputs_substitute,
   OrderedEquation.residual_substitute,
   OrderedEquation.Written.holds_iff_residual,
+  OrderedEquation.Written.toLaw_substitute,
+  Law.mem_inputSet_substitute,
   SHIGURE.Chapter1.DomainTransport.atConstant_holds_A,
   SHIGURE.Chapter1.DomainTransport.atConstant_fails_B,
   SHIGURE.Chapter1.DomainTransport.identity_cannot_preserve_domain,
@@ -41,7 +43,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Reading.sharedInput_injective,
   SHIGURE.Chapter1.RestrictedCoefficients.compares_after_restricting_ambient_readings,
   SHIGURE.Chapter1.RestrictedCoefficients.cannot_change_retained_law,
-  SHIGURE.Chapter1.CoefficientTransport.cannot_repeat_common_named_position
+  SHIGURE.Chapter1.RestrictedCoefficients.cannot_erase_retained_ordered_terms,
+  SHIGURE.Chapter1.RestrictedCoefficients.cannot_replace_retained_derivation,
+  SHIGURE.Chapter1.RestrictedCoefficients.cannot_discard_declared_observation_sort,
+  SHIGURE.Chapter1.CoefficientTransport.cannot_repeat_common_named_position,
+  SHIGURE.Chapter1.RetainedCoefficientInputs.compatible_explicit_sharing_survives_name_collision,
+  ReadingComparison.target_input_is_covered
 ]
 
 end SHIGURE.AxiomAudit
