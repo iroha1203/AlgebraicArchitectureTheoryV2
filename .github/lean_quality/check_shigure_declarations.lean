@@ -13,13 +13,16 @@ open Lean Elab
 
 /-- Find forbidden syntax and changes to kernel checking, preserving source positions. -/
 private partial def forbiddenSyntax : Syntax → Array (String × String.Pos.Raw)
-  | .node _ _ children => children.flatMap forbiddenSyntax
+  | .node _ _ children =>
+    if children[0]?.any (·.getAtomVal == "set_option") &&
+        children[1]?.any (fun stx => stx.getId.eraseMacroScopes == `debug.skipKernelTC) &&
+        children[3]?.any (·.getAtomVal == "true") then
+      #[("debug.skipKernelTC", children[1]!.getPos?.getD 0)] ++ children.flatMap forbiddenSyntax
+    else children.flatMap forbiddenSyntax
   | stx@(.atom _ value) =>
     if ["axiom", "admit", "sorry", "unsafe", "native_decide"].contains value then
       #[(value, stx.getPos?.getD 0)]
     else #[]
-  | stx@(.ident _ _ name _) =>
-    if name == `debug.skipKernelTC then #[(name.toString, stx.getPos?.getD 0)] else #[]
   | _ => #[]
 
 /-- The scope of the single negative fixture allowed by the source check. -/
@@ -63,6 +66,15 @@ private def checkSyntax (input : Parser.InputContext) (moduleName : Name)
       valid := false
   return valid
 
+/-- A name reused after an anonymous declaration can refer to a different kernel proof. -/
+private def survives (current final : Environment) (name : Name) : Bool :=
+  if final.isImportedConst name then true
+  else
+    match current.checked.get.find? name, final.checked.get.find? name with
+    | some earlier, some later =>
+      earlier.type == later.type && earlier.value? true == later.value? true
+    | _, _ => false
+
 /-- Check proof terms in temporary environments that do not survive their command. -/
 private def transientAxioms (state : Frontend.State) (proofImports : Option Environment) :
     NameSet := Id.run do
@@ -70,7 +82,7 @@ private def transientAxioms (state : Frontend.State) (proofImports : Option Envi
   let mut found : NameSet := {}
   for tree in state.commandState.infoState.trees do
     found := tree.foldInfo (init := found) fun ctx info found =>
-      if ctx.parentDecl?.any (fun parent => (env.find? parent).isSome) then found
+      if ctx.parentDecl?.any (survives ctx.env env) then found
       else
         let expressions := match info with
           | .ofTermInfo term => #[(instantiateMVarsCore ctx.mctx term.expr).1]
@@ -78,10 +90,18 @@ private def transientAxioms (state : Frontend.State) (proofImports : Option Envi
               (instantiateMVarsCore tactic.mctxAfter (.mvar goal)).1
           | _ => #[]
         let referenced := expressions.flatMap Expr.getUsedConstants
-        let temporary := referenced.filter fun name => (env.find? name).isNone
+        let temporary := referenced.filter (!survives ctx.env env ·)
         let discovered := SHIGURE.kernelAxioms ctx.env proofImports temporary
         discovered.foldl (fun acc name => acc.insert name) found
   return found
+
+/-- Check the effective kernel setting during elaboration, including options set by macros. -/
+private def keepsKernelChecking (fileName : String) (state : Frontend.State) : IO Bool := do
+  let disabled := state.commandState.infoState.trees.any fun tree =>
+    tree.foldInfo (init := false) fun ctx _ found => found || debug.skipKernelTC.get ctx.options
+  if disabled then
+    IO.eprintln s!"{fileName}: kernel checking was disabled during elaboration"
+  return !disabled
 
 /-- Follow transitive kernel dependencies for named declarations and anonymous proofs. -/
 private def checkDependencies (fileName : String) (moduleName : Name) (state : Frontend.State) :
@@ -117,8 +137,9 @@ private def checkFile (file : System.FilePath) : IO Bool := do
       IO.eprint (← message.toString)
   let complete ← checkTermination file.toString moduleName state.commands
   let syntaxValid ← checkSyntax input moduleName state.commands
+  let kernelEnabled ← keepsKernelChecking file.toString state
   let kernelValid ← checkDependencies file.toString moduleName state
-  return !messages.hasErrors && complete && syntaxValid && kernelValid
+  return !messages.hasErrors && complete && syntaxValid && kernelEnabled && kernelValid
 
 /-- Run from the repository root after the SHIGURE build. Paths optionally select local fixtures. -/
 def main (args : List String) : IO UInt32 := do

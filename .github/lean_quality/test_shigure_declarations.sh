@@ -14,6 +14,7 @@ def literal : String := "unsafe"
 def interpolated : String := s!"axiom{(1 : Nat)}"
 def sorry! : Nat := 1
 def nativeArithmetic (native : Nat) : Nat := 1 + native
+set_option debug.skipKernelTC false in
 theorem ordinaryDecide : (1 : Nat) = 1 := by decide
 LEAN
 lake env lean --run "$checker" "$tmp/Accepted.lean"
@@ -38,7 +39,12 @@ grep -Fq 'disallowed syntax debug.skipKernelTC' "$tmp/diagnostics"
 grep -Fq 'nonstandard kernel assumption Lean.ofReduceBool' "$tmp/diagnostics"
 
 cat >"$tmp/AnonymousReduction.lean" <<'LEAN'
+namespace SHIGURE.AnonymousProof
+
 example := Lean.ofReduceNat
+def _example : Nat := 0
+
+end SHIGURE.AnonymousProof
 LEAN
 if lake env lean --run "$checker" "$tmp/AnonymousReduction.lean" >"$tmp/diagnostics" 2>&1; then
   echo "SHIGURE declaration checker accepted a nonstandard anonymous reduction proof" >&2
