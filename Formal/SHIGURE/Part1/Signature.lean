@@ -58,6 +58,21 @@ def lift (ρ : Renaming Γ Δ) : Renaming (s :: Γ) (s :: Δ)
   | _, .here => .here
   | _, .there var => .there (ρ var)
 
+/-- Map a new head position to a selected variable while applying the older variable map. -/
+def cons (head : Var Δ s) (tail : Renaming Γ Δ) : Renaming (s :: Γ) Δ
+  | _, .here => head
+  | _, .there i => tail i
+
+/-- Add an older variable after the selected prefix. -/
+def insertAfter : (Λ : List S) → Renaming (Λ ++ Γ) (Λ ++ s :: Γ)
+  | [] => fun i => .there i
+  | _ :: Λ => lift (insertAfter Λ)
+
+/-- Move the newest variable past a block while keeping all other positions. -/
+def moveHead (Λ : List S) : Renaming (s :: (Λ ++ Γ)) (Λ ++ s :: Γ)
+  | _, .here => (Var.here : Var (s :: Γ) s).shift Λ
+  | _, .there i => insertAfter Λ i
+
 end Renaming
 
 /-- The finite product of the carriers of a context. -/

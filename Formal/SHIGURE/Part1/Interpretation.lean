@@ -1,0 +1,330 @@
+import Formal.SHIGURE.Part1.Substitution
+import Formal.SHIGURE.Part1.Derivations
+
+/-! # Translations and theory interpretations
+
+Definition 1.9. A translation gives syntactic replacements, and an
+interpretation also carries the specified derivations in the target
+theory.
+
+## Implementation notes
+
+Translation data is indexed by its sort map. This aligns the domains of
+the formulas being compared before requiring mutual derivability.
+Keeping the syntax and proof trees in one uninterpreted record would
+leave their end formulas unconnected.
+
+Operation arguments are translated with a left-to-right block of strict
+bindings. Direct syntactic substitution in an operation replacement
+could discard an undefined argument if that replacement did not use the
+corresponding variable.
+-/
+
+universe u v
+
+namespace SHIGURE
+
+namespace Var
+
+variable {S T : Type u} {Γ : List S} {s : S}
+
+/-- Keep a variable position while mapping its sort and those of its context. -/
+def mapSorts (f : S → T) : {Γ : List S} → {s : S} → Var Γ s → Var (Γ.map f) (f s)
+  | _, _, .here => .here
+  | _, _, .there i => .there (mapSorts f i)
+
+/-- Transport a family indexed by the variable positions to the retyped context. -/
+def reindex (f : S → T) {C : T → Type v} :
+    {Γ : List S} → (∀ {s}, Var Γ s → C (f s)) → ∀ {t}, Var (Γ.map f) t → C t
+  | [], _, _, i => nomatch i
+  | _ :: _, values, _, .here => values .here
+  | _ :: _, values, _, .there i => reindex f (fun j => values (.there j)) i
+
+/-- Retyping a family retains each position's value. -/
+@[simp] theorem reindex_mapSorts (f : S → T) {C : T → Type v}
+    (values : ∀ {t}, Var Γ t → C (f t)) (i : Var Γ s) :
+    reindex f values (i.mapSorts f) = values i := by
+  induction i with
+  | here => rfl
+  | there i ih => exact ih (fun j => values (.there j))
+
+end Var
+
+namespace Renaming
+
+variable {S T : Type u} {Γ Δ : List S}
+
+/-- Retype both the source and target of a variable map. -/
+def mapSorts (f : S → T) (ρ : Renaming Γ Δ) : Renaming (Γ.map f) (Δ.map f) :=
+  Var.reindex f (fun i => (ρ i).mapSorts f)
+
+end Renaming
+
+namespace Assignment
+
+variable {S : Type u} {X : S → Type v} {Γ : List S} {s : S}
+
+/-- Inserting a value after a prefix leaves the selected old coordinate unchanged. -/
+theorem append_insertAfter {Λ : List S} (first : Assignment X Λ) (x : X s) (e : Assignment X Γ)
+    {t : S} (i : Var (Λ ++ Γ) t) :
+    (first.append (cons x e)) (Renaming.insertAfter Λ i) = (first.append e) i := by
+  induction Λ with
+  | nil => rfl
+  | cons a Λ ih =>
+    cases i with
+    | here => rfl
+    | there i => exact ih first.tail i
+
+/-- Reading a moved head restores its value ahead of the original input list. -/
+theorem pull_moveHead {Λ : List S} (first : Assignment X Λ) (x : X s) (e : Assignment X Γ) :
+    (first.append (cons x e)).pull (Renaming.moveHead Λ) = cons x (first.append e) := by
+  apply ext
+  intro t i
+  cases i with
+  | here => exact append_shift first (cons x e) .here
+  | there i => exact append_insertAfter first x e i
+
+end Assignment
+
+namespace Term
+
+variable {sig : Signature.{u}} {Γ : List sig.SortType} {s : sig.SortType}
+
+/-- Bind the argument tuple in context order before interpreting the supplied body. -/
+def letArguments : {Γ Λ : List sig.SortType} →
+    (∀ {t}, Var Λ t → Term sig Γ t) → Term sig (Λ ++ Γ) s → Term sig Γ s
+  | _, [], _, body => body
+  | Γ, _ :: Λ, args, body =>
+    .letBind (args .here) (letArguments (fun i => (args (.there i)).rename (fun j => .there j))
+      (body.rename (Renaming.moveHead (Γ := Γ) Λ)))
+
+/-- Supply a term in the argument-variable context to a tuple of strict arguments. -/
+def applyStrict {Λ : List sig.SortType} (body : Term sig Λ s)
+    (args : ∀ {t}, Var Λ t → Term sig Γ t) : Term sig Γ s :=
+  letArguments args (body.rename (Var.inLeft Γ))
+
+/-- A strict block evaluates every argument and then the body at the extended assignment. -/
+theorem evaluates_letArguments {Λ : List sig.SortType} (A : Structure sig) :
+    ∀ {Γ : List sig.SortType} (args : ∀ {t}, Var Λ t → Term sig Γ t)
+      (body : Term sig (Λ ++ Γ) s) (e : Assignment A.carrier Γ) (y : A.carrier s),
+      (letArguments args body).Evaluates A e y ↔
+        ∃ xs : Assignment A.carrier Λ, (∀ {t} (i : Var Λ t), (args i).Evaluates A e (xs i)) ∧
+          body.Evaluates A (xs.append e) y := by
+  induction Λ with
+  | nil =>
+    intro Γ args body e y
+    constructor
+    · intro h
+      refine ⟨Assignment.empty, ?_, h⟩
+      intro t i
+      nomatch i
+    · exact fun ⟨_, _, h⟩ => h
+  | cons a Λ ih =>
+    intro Γ args body e y
+    rw [letArguments, evaluates_let_iff]
+    have compare (x : A.carrier a) :
+        (letArguments (fun i => (args (.there i)).rename (fun j => .there j))
+          (body.rename (Renaming.moveHead Λ))).Evaluates A (Assignment.cons x e) y ↔
+        ∃ xs : Assignment A.carrier Λ,
+          (∀ {t} (i : Var Λ t), (args (.there i)).Evaluates A e (xs i)) ∧
+            body.Evaluates A (Assignment.cons x (xs.append e)) y := by
+      rw [ih]
+      simp only [evaluates_rename, Assignment.pull_cons_there, Assignment.pull_id,
+        Assignment.pull_moveHead]
+    constructor
+    · rintro ⟨x, hx, hb⟩
+      obtain ⟨xs, hArgs, hBody⟩ := (compare x).1 hb
+      refine ⟨Assignment.cons x xs, ?_, hBody⟩
+      intro t i
+      cases i with
+      | here => exact hx
+      | there i => exact hArgs i
+    · rintro ⟨xs, hArgs, hBody⟩
+      refine ⟨xs.head, hArgs .here, (compare xs.head).2 ?_⟩
+      exact ⟨xs.tail, fun i => hArgs (.there i), hBody⟩
+
+/-- Strict argument evaluation restricts the body to exactly the values of its argument tuple. -/
+theorem evaluates_applyStrict {Λ : List sig.SortType} (A : Structure sig)
+    (body : Term sig Λ s) (args : ∀ {t}, Var Λ t → Term sig Γ t)
+    (e : Assignment A.carrier Γ) (y : A.carrier s) :
+    (body.applyStrict args).Evaluates A e y ↔
+      ∃ xs : Assignment A.carrier Λ, (∀ {t} (i : Var Λ t), (args i).Evaluates A e (xs i)) ∧
+        body.Evaluates A xs y := by
+  simp only [applyStrict, evaluates_letArguments, evaluates_rename, Assignment.pull_append_left]
+
+end Term
+
+/-- The replacement data of Definition 1.9, before imposing the derivation conditions. -/
+structure Translation (S T : Signature.{u}) (onSort : S.SortType → T.SortType) where
+  /-- One well-typed replacement term for every ordinary, marked, or partial operation. -/
+  operation (op : Operation S) :
+    Term T (op.arity.inputs.map onSort) (onSort op.arity.output)
+  /-- A positive formula on the retyped arguments of every relation symbol. -/
+  relation (r : S.Rel) : Formula T ((S.relInputs r).map onSort)
+  /-- The designated domain formula for every partial operation. -/
+  partialDomain (p : S.Partial) : Formula T ((S.partialArity p).inputs.map onSort)
+
+namespace Translation
+
+variable {S T U : Signature.{u}} {f : S.SortType → T.SortType}
+  {g : T.SortType → U.SortType}
+
+/-- Translate terms, using strict bindings for every operation's arguments. -/
+def term (tr : Translation S T f) :
+    {Γ : List S.SortType} → {s : S.SortType} → Term S Γ s → Term T (Γ.map f) (f s)
+  | _, _, .var i => .var (i.mapSorts f)
+  | _, _, .app op args => (tr.operation op).applyStrict (Var.reindex f (fun i => tr.term (args i)))
+  | _, _, .letBind init body => .letBind (tr.term init) (tr.term body)
+
+/-- Translate a primitive atom by its designated formula or value graph. -/
+def atomic (tr : Translation S T f) {Γ : List S.SortType} :
+    Atomic S Γ → Formula T (Γ.map f)
+  | .eq x y => .atom (.eq (x.mapSorts f) (y.mapSorts f))
+  | .rel r inputs => (tr.relation r).rename (inputs.mapSorts f)
+  | .domain p inputs => (tr.partialDomain p).rename (inputs.mapSorts f)
+  | .graph op inputs y =>
+    (tr.operation op).graph.rename (Renaming.cons (y.mapSorts f) (inputs.mapSorts f))
+
+/-- Translate a positive formula after its term arguments have been expanded. -/
+def formula (tr : Translation S T f) : {Γ : List S.SortType} → Formula S Γ → Formula T (Γ.map f)
+  | _, .atom a => tr.atomic a
+  | _, .truth => .truth
+  | _, .falsehood => .falsehood
+  | _, .conj p q => .conj (tr.formula p) (tr.formula q)
+  | _, .disj p q => .disj (tr.formula p) (tr.formula q)
+  | _, .ex p => .ex (tr.formula p)
+
+/-- The raw identity sends each symbol to its own term or atom on variable inputs. -/
+def identity (S : Signature.{u}) : Translation S S id where
+  operation op := .app op (fun i => .var (i.mapSorts id))
+  relation r := .atom (.rel r (fun i => i.mapSorts id))
+  partialDomain p := .atom (.domain p (fun i => i.mapSorts id))
+
+/-- Compose replacement data by translation into the final signature. -/
+def comp (v : Translation T U g) (u : Translation S T f) : Translation S U (g ∘ f) where
+  operation op := by simpa only [List.map_map] using v.term (u.operation op)
+  relation r := by simpa only [List.map_map] using v.formula (u.relation r)
+  partialDomain p := by simpa only [List.map_map] using v.formula (u.partialDomain p)
+
+end Translation
+
+namespace Derivation
+
+variable {T : Theory.{u}} {Γ : List T.signature.SortType}
+
+/-- Mutual derivability, forgetting the concrete choice of the two proof trees. -/
+def Equivalent (T : Theory.{u}) {Γ : List T.signature.SortType}
+    (p q : Formula T.signature Γ) : Prop :=
+  Nonempty (Derivation T p q) ∧ Nonempty (Derivation T q p)
+
+/-- A formula is mutually derivable with itself. -/
+theorem Equivalent.refl (p : Formula T.signature Γ) : Equivalent T p p :=
+  ⟨⟨.refl p⟩, ⟨.refl p⟩⟩
+
+/-- Mutual derivability is symmetric. -/
+theorem Equivalent.symm {p q : Formula T.signature Γ} (h : Equivalent T p q) :
+    Equivalent T q p :=
+  ⟨h.2, h.1⟩
+
+/-- Cutting the proof trees gives transitivity of mutual derivability. -/
+theorem Equivalent.trans {p q r : Formula T.signature Γ} (h₁ : Equivalent T p q)
+    (h₂ : Equivalent T q r) : Equivalent T p r := by
+  obtain ⟨⟨pq⟩, ⟨qp⟩⟩ := h₁
+  obtain ⟨⟨qr⟩, ⟨rq⟩⟩ := h₂
+  exact ⟨⟨.cut pq qr⟩, ⟨.cut rq qp⟩⟩
+
+end Derivation
+
+/-- A translation into a theory that proves the clauses of Definition 1.9. -/
+structure Interpretation (S T : Theory.{u}) where
+  /-- The retyping of every source sort. -/
+  onSort : S.signature.SortType → T.signature.SortType
+  /-- The replacement terms and formulas at the selected sort map. -/
+  translation : Translation S.signature T.signature onSort
+  /-- Every ordinary operation replacement is provably total. -/
+  total (f : S.signature.Total) :
+    Derivation T .truth (translation.operation (.total f)).defined
+  /-- Every marked operation replacement is provably total. -/
+  quantity (q : S.signature.Quantity) :
+    Derivation T .truth (translation.operation (.quantity q)).defined
+  /-- The designated domain implies that the corresponding partial term is defined. -/
+  partialDefined (p : S.signature.Partial) :
+    Derivation T (translation.partialDomain p) (translation.operation (.partialOp p)).defined
+  /-- Every defined value of a partial term is on the designated domain. -/
+  definedPartial (p : S.signature.Partial) :
+    Derivation T (translation.operation (.partialOp p)).defined (translation.partialDomain p)
+  /-- Every required Law has its translated derivation in the target. -/
+  preserves (name : S.LawName) :
+    Derivation T (translation.formula (S.law name).input)
+      (translation.formula (S.law name).conclusion)
+
+namespace Translation
+
+variable {S T U : Theory.{u}} {f : S.signature.SortType → T.signature.SortType}
+
+/-- On the same sort map, compare the value graphs and all other primitive formulas. -/
+def Equivalent (left right : Translation S.signature T.signature f) : Prop :=
+  (∀ op, Derivation.Equivalent T (left.operation op).graph (right.operation op).graph) ∧
+  (∀ r, Derivation.Equivalent T (left.relation r) (right.relation r)) ∧
+  ∀ p, Derivation.Equivalent T (left.partialDomain p) (right.partialDomain p)
+
+/-- Reflection of all three families of formula comparisons. -/
+theorem Equivalent.refl (tr : Translation S.signature T.signature f) : Equivalent tr tr :=
+  ⟨fun _ => Derivation.Equivalent.refl _, fun _ => Derivation.Equivalent.refl _,
+    fun _ => Derivation.Equivalent.refl _⟩
+
+/-- Symmetry is applied componentwise. -/
+theorem Equivalent.symm {left right : Translation S.signature T.signature f}
+    (h : Equivalent left right) : Equivalent right left :=
+  ⟨fun op => h.1 op |>.symm, fun r => h.2.1 r |>.symm, fun p => h.2.2 p |>.symm⟩
+
+/-- Transitivity follows by cutting the derivations of the primitive comparisons. -/
+theorem Equivalent.trans {left middle right : Translation S.signature T.signature f}
+    (h₁ : Equivalent left middle) (h₂ : Equivalent middle right) : Equivalent left right :=
+  ⟨fun op => (h₁.1 op).trans (h₂.1 op), fun r => (h₁.2.1 r).trans (h₂.2.1 r),
+    fun p => (h₁.2.2 p).trans (h₂.2.2 p)⟩
+
+end Translation
+
+namespace Interpretation
+
+variable {S T U : Theory.{u}}
+
+/-- Definition 1.9 identifies equal sort maps with mutually derivable primitive replacements. -/
+def Equivalent (u v : Interpretation S T) : Prop :=
+  ∃ h : u.onSort = v.onSort, Translation.Equivalent (S := S) (T := T) (h ▸ u.translation) v.translation
+
+/-- Each interpretation is equivalent to itself. -/
+theorem Equivalent.refl (u : Interpretation S T) : Equivalent u u :=
+  ⟨rfl, Translation.Equivalent.refl _⟩
+
+/-- Comparison of interpretations is symmetric. -/
+theorem Equivalent.symm {u v : Interpretation S T} (h : Equivalent u v) : Equivalent v u := by
+  obtain ⟨equalSorts, comparing⟩ := h
+  refine ⟨equalSorts.symm, ?_⟩
+  cases u
+  cases v
+  cases equalSorts
+  exact comparing.symm
+
+/-- Comparison of interpretations is transitive. -/
+theorem Equivalent.trans {u v w : Interpretation S T} (h₁ : Equivalent u v)
+    (h₂ : Equivalent v w) : Equivalent u w := by
+  obtain ⟨h₁, uv⟩ := h₁
+  obtain ⟨h₂, vw⟩ := h₂
+  refine ⟨h₁.trans h₂, ?_⟩
+  cases u
+  cases v
+  cases w
+  cases h₁
+  cases h₂
+  exact uv.trans vw
+
+/-- The composite replacement data; Appendix A.3 supplies its transported derivations. -/
+def compCandidate (v : Interpretation T U) (u : Interpretation S T) :
+    Translation S.signature U.signature (v.onSort ∘ u.onSort) :=
+  v.translation.comp u.translation
+
+end Interpretation
+
+end SHIGURE

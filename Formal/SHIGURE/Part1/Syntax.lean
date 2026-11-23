@@ -276,6 +276,14 @@ theorem evaluates_unique (A : Structure sig) (t : Term sig Γ s) :
     (Term.var index).Evaluates A e y ↔ e index = y :=
   Iff.rfl
 
+/-- Application evaluation consists of evaluated arguments and an edge of the operation graph. -/
+theorem evaluates_app_iff (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) (y : A.carrier op.arity.output) :
+    (Term.app op terms).Evaluates A e y ↔
+      ∃ xs : Assignment A.carrier op.arity.inputs,
+        (∀ {t} (i : Var op.arity.inputs t), (terms i).Evaluates A e (xs i)) ∧ A.Graph op xs y :=
+  Iff.rfl
+
 /-- With evaluated arguments, application evaluates precisely on the operation graph. -/
 theorem evaluates_app_at (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
     (A : Structure sig) (e : Assignment A.carrier Γ) (xs : Assignment A.carrier op.arity.inputs)
