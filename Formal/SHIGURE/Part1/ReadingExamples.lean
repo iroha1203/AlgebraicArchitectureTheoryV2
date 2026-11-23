@@ -54,7 +54,7 @@ private def piece : DeclarationContext presentation where
 private def whole : DeclarationContext presentation := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
 
 /-- The original cover consists of the whole context. -/
-private def source : Reading where
+private def source : Reading.{0, 0} where
   presentation := presentation
   structureData := data
   observation := StateObservation.ofSort () Bool id
@@ -68,7 +68,7 @@ private def source : Reading where
   coefficients := none
 
 /-- The two target pieces cover the whole context, but only one is assigned. -/
-private def target : Reading :=
+private def target : Reading.{0, 0} :=
   { source with
     cover :=
       { Index := Bool
@@ -110,11 +110,42 @@ private def comparison : ReadingComparison source target where
       partial_mem := fun p => nomatch p
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
-  contexts := rfl
+  contexts := .identity _
   declarationChange := .changed coverChange
   coefficientChange := PUnit.unit
   value := id
   commutes := fun _ => rfl
+
+/-- An equivalent representative conjoins truth with both original relations. -/
+private def alternateIdentity : Interpretation presentation.theory presentation.theory where
+  onSort := id
+  translation :=
+    { operation := fun op => match op with
+        | .total f => nomatch f
+        | .quantity q => nomatch q
+        | .partialOp p => nomatch p
+      relation := fun r => ((Translation.identity signature).relation r).conj .truth
+      partialDomain p := nomatch p }
+  total f := nomatch f
+  quantity q := nomatch q
+  partialDefined p := nomatch p
+  definedPartial p := nomatch p
+  preserves n := nomatch n.val
+
+/-- Each relation replacement is mutually derivable with its original expression. -/
+private theorem alternateIdentity_equivalent :
+    alternateIdentity.Equivalent (Interpretation.identity presentation.theory) := by
+  refine ⟨rfl, ?_, ?_, ?_⟩
+  · intro op
+    cases op <;> rename_i name <;> exact nomatch name
+  · intro r
+    exact ⟨⟨.andLeft _ _⟩, ⟨.andIntro (.refl _) (.truth _)⟩⟩
+  · intro p
+    exact nomatch p
+
+/-- Changing the representative of the identity still admits a fixed declaration comparison. -/
+def alternate_fixed_context : source.ContextCompatibility source alternateIdentity :=
+  .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ alternateIdentity_equivalent
 
 /-- An existential can use the actual value of the retained nullary relation. -/
 private def formula : Formula signature [] :=
@@ -158,11 +189,14 @@ private def modelPresentation : PrimitivePresentation where
       role := fun _ => .required }
   derived _ h := by cases h
 
+/-- Retain the complete presentation used to test coefficient Law satisfaction. -/
 private def modelContext : DeclarationContext modelPresentation :=
   ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
 
+/-- The two Law-testing realizations share the integer base ring. -/
 private def lawModelBase : CoefficientRing := ⟨Int, inferInstance⟩
 
+/-- Choose a realization whose required relation holds exactly when the flag is true. -/
 private def retainedModel (satisfies : Bool) : RestrictedStructure modelContext :=
   RestrictedStructure.restrict modelContext
     (if satisfies then data else { data with relation := fun _ => ∅ })
@@ -188,10 +222,12 @@ private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
     rcases f with ⟨rfl⟩
     rcases g with ⟨rfl⟩
     rfl
+  permitsPoints _ _ _ _ _ := True
   Native := Bool
   nativeStructure := retainedModel
   realizeNative _ := id
   nativePoints _ _ _ _ := id
+  nativePoints_permitted _ _ _ _ := True.intro
   interpretLaw _ a := (retainedModel a).satisfies
   change _ := id
   changePoints _ _ _ _ := id
@@ -294,10 +330,12 @@ private def scheme : CoefficientScheme retained integers where
     rcases f with ⟨rfl⟩
     rcases g with ⟨rfl⟩
     rfl
+  permitsPoints _ _ _ _ _ := True
   Native := Bool
   nativeStructure := realized
   realizeNative _ := id
   nativePoints _ _ _ _ := id
+  nativePoints_permitted _ _ _ _ := True.intro
   interpretLaw _ a := (realized a).satisfies
   change _ _ := false
   changePoints _ a := retainedMap a false
@@ -321,6 +359,7 @@ private def selected : CoefficientReading retained ordinary [false, true] where
     have same : s = false := List.mem_singleton.1 hs
     subst s
     exact id
+  point_permitted := True.intro
   evaluateOn R _ e := R.fromBase (show Int from e.head)
 
 /-- The realized value is the first coordinate for any values of the forgotten coordinate. -/
@@ -365,6 +404,7 @@ private def scalarScheme : CoefficientScheme retained integers where
     exact held
   mapPoints_id _ _ _ _ := rfl
   mapPoints_comp _ _ _ _ _ := rfl
+  permitsPoints _ _ _ _ _ := True
   Native := Unit
   nativeStructure _ := RestrictedStructure.restrict retained (separateStates Int)
   realizeNative _ _ := ()
@@ -372,6 +412,7 @@ private def scalarScheme : CoefficientScheme retained integers where
     cases s
     · exact fun x => R.fromBase x
     · cases Set.mem_singleton_iff.1 kept
+  nativePoints_permitted _ _ _ _ := True.intro
   interpretLaw R _ := (RestrictedStructure.restrict retained (separateStates R.scalars.Carrier)).satisfies
   change _ _ := ()
   changePoints f _ s kept := by
@@ -394,10 +435,11 @@ private def scalarInputs (R : Type) [CommRing R] :
     exact Set.mem_singleton _
   inputs := fun i => i
   realizePoint _ _ := id
+  point_permitted := True.intro
   evaluateOn _ _ e := e.head
 
 /-- Read coefficients at the first sort and take the ordinary observation at the second. -/
-private def separateReading (R : Type) [CommRing R] : Reading where
+private def separateReading (R : Type) [CommRing R] : Reading.{0, 0} where
   presentation := presentation
   structureData := separateStates R
   observation := StateObservation.ofSort true Bool id
@@ -419,17 +461,16 @@ private def paddedScalarInputs (R : Type) [CommRing R] :
       | .there i => nomatch i }
 
 /-- The reading with a longer outer coefficient product still uses only the scalar position. -/
-private def paddedReading (R : Type) [CommRing R] : Reading :=
+private def paddedReading (R : Type) [CommRing R] : Reading.{0, 0} :=
   { separateReading R with coefficients := some ⟨[false, true], paddedScalarInputs R⟩ }
 
 /-- Transport the scalar occurrence without supplying the unread Bool position. -/
 private def scalarInputMap :
-    ReadingInputMap (scalarInputs Int).selection (paddedScalarInputs (Int × Int)).selection id where
-  extra := []
-  coordinate
-    | .here, _ => ⟨⟨false, rfl⟩, .inl ⟨.here, .here, rfl⟩⟩
-    | .there .here, used => False.elim (by obtain ⟨i, _⟩ := used; exact nomatch i)
-    | .there (.there i), _ => nomatch i
+    ReadingInputMap (scalarInputs Int).selection.product (paddedScalarInputs (Int × Int)).selection.product id where
+  extra := .empty
+  coordinate j := ⟨.inl ⟨false, .here, .here, rfl⟩, by
+    obtain ⟨i, _⟩ := j.2.property
+    exact (List.mem_singleton.1 i.sort_mem).symm⟩
   extra_used i := nomatch i
 
 /-- One structural map induces both squares on their respective input products. -/
@@ -446,8 +487,8 @@ def independent_coefficient_comparison :
       partial_mem p := nomatch p
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
-  contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := .changed scalarInputMap
     { baseMap := RingHom.id Int
       coefficients := (RingHom.id Int).prod (RingHom.id Int)
@@ -459,7 +500,7 @@ def independent_coefficient_comparison :
   commutes _ := rfl
 
 /-- The plain reading has no coefficient evaluation. -/
-private def plainReading : Reading := { separateReading Int with coefficients := none }
+private def plainReading : Reading.{0, 0} := { separateReading Int with coefficients := none }
 
 /-- The new scalar observation evaluates to zero on the selected sort. -/
 private def zeroInputs : CoefficientReading retained (separateStates Int) [false, true] :=
@@ -470,29 +511,94 @@ private def zeroInputs : CoefficientReading retained (separateStates Int) [false
 
 /-- Introduce a scalar evaluation independent of the originally observed Bool. -/
 def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
-    ({ separateReading Int with coefficients := some ⟨[false, true], zeroInputs⟩ } : Reading)
+    ({ separateReading Int with coefficients := some ⟨[false, true], zeroInputs⟩ } : Reading.{0, 0})
     id (fun _ x => x) True :=
-  ⟨{ extra := [false]
-     coordinate := fun
-       | .here, _ => ⟨⟨false, rfl⟩, .inr .here⟩
-       | .there .here, used => False.elim (by obtain ⟨i, _⟩ := used; exact nomatch i)
-       | .there (.there i), _ => nomatch i
-     extra_used := fun
-       | .here => ⟨.here, ⟨.here, rfl⟩, rfl⟩
-       | .there i => nomatch i },
+  ⟨{ extra := .ofSort false
+     coordinate := fun j => ⟨.inr PUnit.unit, by
+       obtain ⟨i, _⟩ := j.2.property
+       exact (List.mem_singleton.1 i.sort_mem).symm⟩
+     extra_used := fun _ => ⟨⟨false, .here, .here, rfl⟩, rfl⟩ },
     fun _ => (0 : Int), fun _ => rfl⟩
 
 /-- Forget scalar evaluation while reading the independently selected Bool position. -/
 def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedReading Int)
-    ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading)
+    ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading.{0, 0})
     id (fun _ x => x) True :=
-  ⟨{ extra := [true]
-     coordinate := fun
-       | .here, _ => ⟨⟨true, rfl⟩, .inr .here⟩
-       | .there i, _ => nomatch i
-     extra_used := fun
-       | .here => ⟨.here, ⟨.here, rfl⟩, rfl⟩
-       | .there i => nomatch i },
+  ⟨{ extra := .ofSort true
+     coordinate := fun i => ⟨.inr i, rfl⟩
+     extra_used := fun i => ⟨i, rfl⟩ },
     fun _ => false, fun _ => rfl⟩
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
+
+namespace SHIGURE.Chapter1.IndexedObservation
+
+/-- Countably many state sorts without primitive operations or Laws. -/
+private def signature : Signature where
+  SortType := Nat
+  Total := Empty
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity f := nomatch f
+  relInputs r := nomatch r
+  partialArity p := nomatch p
+  quantityArity q := nomatch q
+
+/-- Each state sort has two independently observable values. -/
+private def states : Structure signature where
+  carrier _ := Bool
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- No Laws constrain these coordinates. -/
+private def presentation : PrimitivePresentation where
+  signature := signature
+  laws :=
+    { LawName := Empty
+      statement n := nomatch n
+      role n := nomatch n }
+  derived n := nomatch n
+
+/-- Observe the whole function of Boolean states, with one position of every sort. -/
+private def reading : Reading.{0, 0} where
+  presentation := presentation
+  structureData := states
+  observation := ⟨⟨Nat, id⟩, Nat → Bool, id⟩
+  context := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+  cover := ⟨Unit, fun _ => ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩,
+    fun _ _ h => h, fun h => ⟨(), h⟩⟩
+  Family := Unit
+  realize _ := states
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := none
+
+/-- The comparison acts on the Boolean state at every natural-number position. -/
+def all_sorts_comparison : ReadingComparison reading reading where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel n := nomatch n.val
+  state :=
+    { onSort := fun _ => Bool.not
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := PUnit.unit
+  value e := fun n => !(e n)
+  commutes _ := rfl
+
+/-- The observed comparison computes the complement at every coordinate. -/
+theorem all_sorts_comparison_at (e : Nat → Bool) (n : Nat) :
+    (reading.observation.read (all_sorts_comparison.contexts.mapValues all_sorts_comparison.state.onSort e)) n =
+      !(e n) :=
+  congrFun (all_sorts_comparison.commutes e) n
+
+end SHIGURE.Chapter1.IndexedObservation

@@ -80,6 +80,7 @@ def formulaSupport {Γ : List P.signature.SortType} (p : Formula P.signature Γ)
 def lawBody (law : Law P.signature) : Set (Declaration P) :=
   sorts law.context ∪ formula law.input ∪ formula law.conclusion
 
+/-- Read the contexts and formulas of a sequent in the presentation with the same signature. -/
 private def sequentSupport {sig : Signature.{u}} (same : sig = P.signature)
     {Γ : List sig.SortType} (p q : Formula sig Γ) : Set (Declaration P) := by
   subst sig

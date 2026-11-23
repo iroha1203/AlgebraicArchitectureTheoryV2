@@ -315,7 +315,7 @@ private def whole : DeclarationContext presentation :=
   ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
 
 /-- The readings share the structure and differ only in what their state observation returns. -/
-private def reading (observe : Bool → Bool) : Reading where
+private def reading (observe : Bool → Bool) : Reading.{0, 0} where
   presentation := presentation
   structureData := points
   observation := StateObservation.ofSort () Bool observe
@@ -351,8 +351,8 @@ def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) 
   interpretation := Interpretation.identity presentation.theory
   targetModel := model
   state := state
-  contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := PUnit.unit
   value := Bool.not
   commutes := fun _ => rfl
@@ -364,7 +364,7 @@ theorem empty_cover_fails : ¬ ∃ cover : DeclarationCover whole, IsEmpty cover
   exact hempty.false i
 
 /-- The global state observation can be selected independently of the declarations. -/
-private def missingSort : Reading :=
+private def missingSort : Reading.{0, 0} :=
   let emptyContext : DeclarationContext presentation := ⟨∅, fun ha => ha.elim⟩
   { (reading Bool.not) with
     context := emptyContext
@@ -380,8 +380,8 @@ def sameEmptyContext : ReadingComparison missingSort missingSort where
   interpretation := Interpretation.identity presentation.theory
   targetModel := model
   state := state
-  contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
   coefficientChange := PUnit.unit
   value := id
   commutes := fun _ => rfl
@@ -424,7 +424,7 @@ theorem forgotten_sort_formula_fails :
     exact h.elim
 
 /-- Cover the same declarations with a new family of pieces. -/
-private def secondCover : Reading :=
+private def secondCover : Reading.{0, 0} :=
   { (reading Bool.not) with
     cover :=
       { Index := Bool
@@ -450,7 +450,7 @@ def comparisonWithCover : ReadingComparison (reading id) secondCover where
   interpretation := Interpretation.identity presentation.theory
   targetModel := model
   state := state
-  contexts := rfl
+  contexts := .identity _
   declarationChange := .changed coverChange
   coefficientChange := PUnit.unit
   value := Bool.not
@@ -472,12 +472,12 @@ theorem retained_equality_transport :
 
 /-- Fixing observed values along the same state map fails (1.12) at the point false. -/
 theorem identityValue_fails :
-    ¬ ∀ e : Assignment points.carrier [()],
+    ¬ ∀ e : (reading id).observation.product.Values points.carrier,
       (reading Bool.not).observation.read
-        ((Interpretation.identity presentation.theory).mapStates state e) =
+        (complementaryComparison.contexts.mapValues state.onSort e) =
       (reading id).observation.read e := by
   intro h
-  have bad : true = false := h (Assignment.cons false Assignment.empty)
+  have bad : true = false := h (fun _ => false)
   cases bad
 
 end SHIGURE.Chapter1.Observation
@@ -514,14 +514,70 @@ private def offsetScheme (base : CoefficientRing) : CoefficientScheme Observatio
     | graph op _ _ => cases op <;> rename_i symbol <;> exact nomatch symbol
   mapPoints_id _ _ _ _ := rfl
   mapPoints_comp _ _ _ _ _ := rfl
+  permitsPoints _ _ _ _ _ := True
   Native := base.Carrier
   nativeStructure _ := RestrictedStructure.restrict Observation.whole (statesOf base.Carrier)
   realizeNative R offset := R.fromBase offset
   nativePoints R _ _ _ x := R.fromBase x
+  nativePoints_permitted _ _ _ _ := True.intro
   interpretLaw R _ :=
     (RestrictedStructure.restrict Observation.whole (statesOf R.scalars.Carrier)).satisfies
   change f offset := f offset
   changePoints f _ _ _ x := f x
+
+/-- A realization class can contain every small carrier at the selected coefficient algebra. -/
+def allSmallRealizations : CoefficientScheme.{0, 1} Observation.whole (ringOf Int) where
+  Realization _ := Type
+  structureOf _ X := RestrictedStructure.restrict Observation.whole (statesOf X)
+  category _ :=
+    { Hom := fun X Y => X → Y
+      id := fun _ => id
+      comp := fun f g => g ∘ f }
+  mapPoints f _ _ := f
+  mapPoints_preserves f := by
+    intro Γ a _ e held
+    cases a with
+    | eq x y => exact congrArg f held
+    | rel r _ => exact nomatch r
+    | domain p _ => exact nomatch p
+    | graph op _ _ => cases op <;> rename_i symbol <;> exact nomatch symbol
+  mapPoints_id _ _ _ _ := rfl
+  mapPoints_comp _ _ _ _ _ := rfl
+  permitsPoints _ _ _ Γ points := ∀ s (kept : s ∈ Γ), Function.Injective (points s kept)
+  Native := Type
+  nativeStructure X := RestrictedStructure.restrict Observation.whole (statesOf X)
+  realizeNative _ := id
+  nativePoints _ _ _ _ := id
+  nativePoints_permitted _ _ _ _ := fun _ _ => Function.injective_id
+  interpretLaw _ X := (RestrictedStructure.restrict Observation.whole (statesOf X)).satisfies
+  change _ := id
+  changePoints _ _ _ _ := id
+
+/-- Select a Boolean realization from the large class while observing small Boolean states. -/
+def all_small_realizations_reading : Reading.{0, 1} where
+  presentation := Observation.presentation
+  structureData := statesOf Bool
+  observation := StateObservation.ofSort () Bool id
+  context := Observation.whole
+  cover := (Observation.reading id).cover
+  Family := Unit
+  realize _ := statesOf Bool
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := some ⟨[()],
+    { base := ringOf Int
+      algebra := ⟨ringOf Int, RingHom.id Int⟩
+      scheme := allSmallRealizations
+      realization := Bool
+      context := [()]
+      supported := fun _ _ => Set.mem_univ _
+      inputs := fun i => i
+      realizePoint _ _ := id
+      point_permitted := fun _ _ => Function.injective_id
+      evaluateOn R _ _ :=
+        letI := R.scalars.ring
+        0 }⟩
 
 /-- The specified coefficient algebra and realization evaluate each state at its chosen offset. -/
 private def readRing (R : Type) [CommRing R] (offset : R) :
@@ -534,6 +590,7 @@ private def readRing (R : Type) [CommRing R] (offset : R) :
   supported := fun _ _ => Set.mem_univ _
   inputs := fun i => i
   realizePoint _ _ x := x
+  point_permitted := True.intro
   evaluateOn coefficients data e :=
     letI := coefficients.scalars.ring
     (show coefficients.scalars.Carrier from e.head) +
@@ -600,7 +657,7 @@ def integerDiagonal :
     id (fun _ => rfl) (fun _ => rfl) (fun _ => rfl)
 
 /-- The actual reading returns the state, with an additional selected coefficient evaluation. -/
-private def readingOf (R : Type) [CommRing R] (offset : R) : Reading where
+private def readingOf (R : Type) [CommRing R] (offset : R) : Reading.{0, 0} where
   presentation := Observation.presentation
   structureData := statesOf R
   observation := StateObservation.ofSort () R id
@@ -624,20 +681,20 @@ def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int 
       partial_mem := fun p => nomatch p
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
-  contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
-  coefficientChange := .changed (ReadingInputMap.identity (.all [()]))
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := .changed (ReadingInputMap.identity (readRing Int 4).selection.product)
     { integerDiagonal with
-      evaluate_commutes := fun e => integerDiagonal.evaluate_commutes e.1.tuple }
+      evaluate_commutes := fun e => integerDiagonal.evaluate_commutes
+        (InputSelection.Values.ofProduct (selection := (readRing Int 4).selection) e.1).tuple }
   value := fun x => (x, x)
   commutes := fun _ => rfl
 
 /-- The comparison reads the transported value six at the state two with offset four. -/
 theorem coefficient_comparison_at_two :
     (readRing (Int × Int) (4, 4)).evaluate
-      (Assignment.castContext coefficientComparison.contexts
-        (coefficientComparison.interpretation.mapStates coefficientComparison.state
-          (Assignment.cons (2 : Int) Assignment.empty))) = ((6, 6) : Int × Int) := by
+      (coefficientComparison.interpretation.mapStates coefficientComparison.state
+        (Assignment.cons (2 : Int) Assignment.empty)) = ((6, 6) : Int × Int) := by
   exact integerDiagonal.evaluate_commutes (Assignment.cons (2 : Int) Assignment.empty)
 
 /-- Fixed coefficients do not require the coefficient evaluator to be preserved by a state change. -/
@@ -651,22 +708,71 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
       partial_mem := fun p => nomatch p
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
-  contexts := rfl
-  declarationChange := .fixed rfl HEq.rfl HEq.rfl HEq.rfl HEq.rfl
-  coefficientChange := .fixed True.intro ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl⟩
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+    ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl, HEq.rfl⟩
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
+
+/-- An unused extra copy of the integer sort does not change the selected state. -/
+private def paddedIntegerInput : CoefficientReading Observation.whole (statesOf Int) [(), ()] :=
+  { readRing Int 0 with
+    inputs := fun {s} _ => match s with
+      | () => .here }
+
+/-- Both presentations describe the same single used position. -/
+private theorem paddedInteger_aliases :
+    HEq (readRing Int 0).selection.aliases paddedIntegerInput.selection.aliases := by
+  apply heq_of_eq
+  funext pos
+  obtain ⟨s, x, y⟩ := pos
+  cases s
+  cases x with
+  | here =>
+    cases y with
+    | here => exact propext ⟨fun _ => rfl, fun _ => rfl⟩
+    | there y => exact nomatch y
+  | there x => exact nomatch x
+
+/-- The target lists an extra integer state that the evaluation never uses. -/
+private def paddedIntegerReading : Reading.{0, 0} :=
+  { readingOf Int 0 with coefficients := some ⟨[(), ()], paddedIntegerInput⟩ }
+
+/-- Padding the outer product preserves the fixed comparison along the non-linear state map. -/
+def fixed_comparison_with_unused_input : ReadingComparison (readingOf Int 0) paddedIntegerReading :=
+  { fixedCoefficientComparison with
+    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+    coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+      ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, paddedInteger_aliases, HEq.rfl, HEq.rfl⟩ }
 
 /-- Sending zero to one in the fixed comparison would fail a coefficient-change square. -/
 theorem fixed_comparison_has_no_scalar_change :
     ¬ Nonempty (CoefficientReading.Change (readRing Int 0) (readRing Int 0)
-      (fun e => Assignment.castContext fixedCoefficientComparison.contexts
-        (fixedCoefficientComparison.interpretation.mapStates fixedCoefficientComparison.state e))) := by
+      (fun e => fixedCoefficientComparison.interpretation.mapStates fixedCoefficientComparison.state e)) := by
   rintro ⟨data⟩
   let h : Int →+* Int := data.coefficients
   have impossible : (1 : Int) = h 0 :=
     data.evaluate_commutes (Assignment.cons (0 : Int) Assignment.empty)
   exact (by decide : (1 : Int) ≠ 0) (impossible.trans h.map_zero)
+
+/-- This selection changes only the point correspondence used to feed the evaluation rule. -/
+private def shiftedPoint : CoefficientReading Observation.whole (statesOf Int) [()] :=
+  { readRing Int 0 with
+    realizePoint := fun _ _ x => (show Int from x) + (1 : Int)
+    point_permitted := True.intro }
+
+/-- A changed point correspondence cannot be hidden in the fixed comparison. -/
+theorem point_change_is_not_fixed : ¬ (readRing Int 0).SameParameters shiftedPoint := by
+  intro same
+  have impossible : (0 : Int) = 1 :=
+    congrFun (congrFun (congrFun (eq_of_heq same.points) ()) (List.mem_cons_self)) (0 : Int)
+  exact (by decide : (0 : Int) ≠ 1) impossible
+
+/-- Changing only the chosen offset still changes the realization. -/
+theorem realization_change_is_not_fixed : ¬ (readRing Int 0).SameParameters (readRing Int 1) := by
+  intro same
+  exact (by decide : (0 : Int) ≠ 1) (eq_of_heq same.realization)
 
 /-- The two projections give distinct algebras with the same underlying coefficient ring. -/
 private def projectionReading (f : (Int × Int) →+* Int) :
@@ -679,6 +785,7 @@ private def projectionReading (f : (Int × Int) →+* Int) :
   supported := fun _ _ => Set.mem_univ _
   inputs := fun i => i
   realizePoint _ _ x := x
+  point_permitted := True.intro
   evaluateOn R _ e :=
     letI := R.scalars.ring
     (show R.scalars.Carrier from e.head) + R.fromBase ((0, 1) : Int × Int)
@@ -690,7 +797,7 @@ theorem projection_algebras_cannot_compare :
   rintro ⟨comparison⟩
   cases comparison with
   | fixed _ same =>
-    rcases same with ⟨sameBase, sameAlgebra, _, _, _, _⟩
+    rcases same with ⟨sameBase, sameAlgebra, _, _, _, _, _, _⟩
     have sameBase_eq : sameBase = rfl := Subsingleton.elim _ _
     cases sameBase_eq
     classical
@@ -704,13 +811,14 @@ theorem projection_algebras_cannot_compare :
     exact (by decide : (0 : Int) ≠ 1) impossible
   | changed inputs comparison =>
     let f : Int →+* Int := comparison.coefficients
-    let e := (⟨⟨fun _ _ => (0 : Int)⟩, ⟨fun _ => (0 : Int)⟩⟩ : inputs.Values (statesOf Int).carrier)
+    let e : inputs.Values (statesOf Int).carrier := ⟨fun _ => (0 : Int), fun _ => (0 : Int)⟩
+    let j : (projectionReading (RingHom.snd Int Int)).selection.product.Index := ⟨(), .here, .here, rfl⟩
     have square := comparison.evaluate_commutes e
-    change (show Int from (inputs.mapValues (fun _ x => x) e).get (.here : Var [()] ()) ⟨.here, rfl⟩) +
+    change (show Int from inputs.mapValues (fun _ x => x) e j) +
       (1 : Int) = f 0 at square
     have zero := inputs.mapValues_ofSort (fun _ (x : Int) => x) (fun _ => (0 : Int))
-      (fun _ => (0 : Int)) (fun _ => rfl) (.here : Var [()] ()) ⟨.here, rfl⟩
-    change (inputs.mapValues (fun _ x => x) e).get (.here : Var [()] ()) ⟨.here, rfl⟩ = (0 : Int) at zero
+      (fun _ => (0 : Int)) (fun _ => rfl) j
+    change inputs.mapValues (fun _ x => x) e j = (0 : Int) at zero
     have impossible : (1 : Int) = f 0 := by simpa only [zero, zero_add] using square
     exact (by decide : (1 : Int) ≠ 0) (impossible.trans f.map_zero)
 
@@ -753,6 +861,7 @@ theorem repeated_coefficient_input :
         inputs := fun {s} _ => match s with
           | () => .here
         realizePoint := fun _ _ x => x
+        point_permitted := True.intro
         evaluateOn := fun _ _ e => e.head }
     ∀ e : Assignment (statesOf Int).carrier [()],
       repeated.inputTuple e .here = repeated.inputTuple e (.there .here) :=
@@ -763,26 +872,40 @@ theorem repeated_coefficient_input :
     rfl
 
 /-- The ordinary reading has the same observation and no selected coefficient evaluation. -/
-private def plainInteger : Reading := { readingOf Int 0 with coefficients := none }
+private def plainInteger : Reading.{0, 0} := { readingOf Int 0 with coefficients := none }
+
+/-- The singleton observation and the coefficient input use the same integer state. -/
+private def toOrdinaryInput :
+    ReadingInputMap (readRing Int 0).selection.product (.ofSort ()) id where
+  extra := .empty
+  coordinate _ := ⟨.inl ⟨(), .here, .here, rfl⟩, rfl⟩
+  extra_used i := nomatch i
+
+/-- Read the same state when adding the singleton coefficient evaluation. -/
+private def toCoefficientInput :
+    ReadingInputMap (.ofSort ()) (readRing Int 0).selection.product id where
+  extra := .empty
+  coordinate j := ⟨.inl PUnit.unit, by cases j.1; rfl⟩
+  extra_used i := nomatch i
 
 /-- Forgetting coefficients gives an explicit map from the old evaluation to the ordinary value. -/
 def forgetCoefficients : Reading.CoefficientCompatibility (readingOf Int 0) plainInteger id
     (fun _ x => x) True :=
-  ⟨ReadingInputMap.identity (.all [()]), id, fun e => by
-    let x : Int := e.1.tuple.head
+  ⟨toOrdinaryInput, id, fun e => by
+    let x : Int := e.1 ⟨(), .here, .here, rfl⟩
     change x = x + 0
     exact (Int.add_zero x).symm⟩
 
 /-- Introducing coefficients supplies the corresponding map in the other direction. -/
 def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readingOf Int 0) id
     (fun _ x => x) True :=
-  ⟨ReadingInputMap.identity (.all [()]), id, fun e => by
-    let x : Int := e.1.tuple.head
+  ⟨toCoefficientInput, id, fun e => by
+    let x : Int := e.1 PUnit.unit
     change x + 0 = x
     exact Int.add_zero x⟩
 
 /-- This coefficient evaluation gives the same result at different observed states. -/
-private def constantCoefficient : Reading :=
+private def constantCoefficient : Reading.{0, 0} :=
   { readingOf Int 0 with
     coefficients := some ⟨[()], { readRing Int 0 with
       evaluateOn R _ _ :=
@@ -812,7 +935,7 @@ theorem incompatible_coefficient_rules :
   | changed _ comparison =>
     let f : Int →+* Int := comparison.coefficients
     have impossible : (1 : Int) = f 0 :=
-      comparison.evaluate_commutes ⟨⟨fun _ _ => (0 : Int)⟩, ⟨fun _ => (0 : Int)⟩⟩
+      comparison.evaluate_commutes ⟨fun _ => (0 : Int), fun _ => (0 : Int)⟩
     exact (by decide : (1 : Int) ≠ 0) (impossible.trans f.map_zero)
 
 /-- The forgotten coefficient value cannot distinguish the two ordinary observations. -/
@@ -821,12 +944,11 @@ theorem forgetting_requires_a_value_map :
       (fun _ x => x) True) := by
   rintro ⟨⟨inputs, value, commutes⟩⟩
   have atValue (x : Int) : x = value (0 : Int) := by
-    let e := (⟨⟨fun _ _ => x⟩, ⟨fun _ => x⟩⟩ : inputs.Values (statesOf Int).carrier)
+    let e : inputs.Values (statesOf Int).carrier := ⟨fun _ => x, fun _ => x⟩
     have square := commutes e
-    change (inputs.mapValues (fun _ x => x) e).get (.here : Var [()] ()) ⟨.here, rfl⟩ =
-      value (0 : Int) at square
+    change inputs.mapValues (fun _ x => x) e PUnit.unit = value (0 : Int) at square
     have mapped := inputs.mapValues_ofSort (fun _ (a : Int) => a) (fun _ => x) (fun _ => x)
-      (fun _ => rfl) (.here : Var [()] ()) ⟨.here, rfl⟩
+      (fun _ => rfl) PUnit.unit
     exact mapped.symm.trans square
   exact (by decide : (0 : Int) ≠ 1) ((atValue 0).trans (atValue 1).symm)
 
@@ -1081,8 +1203,35 @@ theorem padded_integer_axioms : paddedEquation.AxiomsHold (realization Int Int) 
 theorem truth_without_equality_has_no_expansion (eqn : RingEquation signature) :
     ¬ Nonempty (RingEquation.Expansion eqn .truth) := by
   rintro ⟨expansion⟩
-  obtain ⟨_, _, impossible⟩ := expansion.has_exists
-  cases impossible
+  rcases expansion.shape with ⟨_, _, _, impossible⟩ | ⟨_, _, impossible⟩ <;> cases impossible
+
+/-- Register the scalar variable equality using its original atomic notation. -/
+private def variableEquation : RingEquation signature where
+  context := [.scalar, .scalar]
+  result := .scalar
+  ring := scalarVocabulary
+  input := .truth
+  left := .var .here
+  right := .var (.there .here)
+
+/-- The scalar ring Laws accompany the atom without changing its written conclusion. -/
+private def variableLaws : LawDeclarations signature :=
+  { equationLaws with
+    statement := fun
+      | .inl _ => ⟨[.scalar, .scalar], .truth, .atom (.eq .here (.there .here))⟩
+      | .inr i => scalarVocabulary.law i }
+
+/-- The atomic equality records both terms in their original order. -/
+def variableEquationDeclaration : NamedRingEquation variableLaws (.inl ()) :=
+  .ofAxioms (variableEquation.writeVariables .here (.there .here) rfl rfl) rfl Sum.inr (fun _ => rfl)
+
+/-- Substitution transports the atom's literal Law and the ordered terms together. -/
+theorem variable_equation_substitutes (θ : Substitution signature [.scalar, .scalar] []) :
+    let written := variableEquationDeclaration.written
+    (written.substitute θ).toLaw = (variableLaws.statement (.inl ())).substitute θ ∧
+      (written.substitute θ).equation.left = θ .here ∧
+      (written.substitute θ).equation.right = θ (.there .here) :=
+  ⟨rfl, rfl, rfl⟩
 
 /-- The product ring joint input carries the ordinary declared constants. -/
 private def productInput : equation.jointInputs (realization (Int × Int) (Int × Int)) := by
@@ -1213,10 +1362,12 @@ private def scheme : CoefficientScheme sortOnly (CoefficientTransport.ringOf Int
     rcases f with ⟨rfl⟩
     rcases g with ⟨rfl⟩
     rfl
+  permitsPoints _ _ _ _ _ := True
   Native := Bool
   nativeStructure := points
   realizeNative _ := id
   nativePoints _ _ _ _ := id
+  nativePoints_permitted _ _ _ _ := True.intro
   interpretLaw _ a := (points a).satisfies
   change _ := id
   changePoints _ _ _ _ := id
@@ -1234,6 +1385,7 @@ def selection : CoefficientReading sortOnly A [()] where
     exact Set.mem_singleton _
   inputs := fun i => i
   realizePoint _ _ x := x
+  point_permitted := True.intro
   evaluateOn R _ _ :=
     letI := R.scalars.ring
     0
@@ -1254,12 +1406,13 @@ def emptySelection : CoefficientReading sortOnly A [()] where
     cases h
   inputs i := nomatch i
   realizePoint _ h := nomatch h
+  point_permitted := True.intro
   evaluateOn R _ _ :=
     letI := R.scalars.ring
     0
 
 /-- The global observation uses Bool, alongside the selected local empty realization. -/
-def readingWithEmptyRealization : Reading where
+def readingWithEmptyRealization : Reading.{0, 0} where
   presentation := withDerivedLaw
   structureData := A
   observation := StateObservation.ofSort () Bool id
