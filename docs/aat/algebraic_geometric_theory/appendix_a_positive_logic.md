@@ -4,6 +4,8 @@
 
 ## A.1 導出規則
 
+式は束縛変数の $`\alpha`$-同値を除いて扱う。以下のすべての置換は捕獲を避けて行い、特に規則6の $`\varphi[y/x]`$ では、$`\varphi`$ 内の束縛変数を $`y`$ と衝突しないように改名する。
+
 シークエント（sequent） $`\varphi\vdash_\Gamma\psi`$ は、型付き変数文脈 $`\Gamma`$ の任意の割当てにおいて、$`\varphi`$ の成立が $`\psi`$ の成立を含意することを表す。次の 7 種類の規則から有限回で構成される導出が存在するとき、それを $`\mathbb T\vdash(\varphi\vdash_\Gamma\psi)`$ と書く。
 
 1. **前提と切断.** 反射律 $`\varphi\vdash\varphi`$ を許す。また、$`\varphi\vdash\psi`$ と $`\psi\vdash\theta`$ から $`\varphi\vdash\theta`$ を導く（切断）。さらに、理論 $`\mathbb T`$ の必須 Law と、署名のグラフの構造公理（式(1.1)）を前提として用いることを許す。
@@ -15,6 +17,7 @@
 7. **等号.** 反射律 $`\top\vdash_x x=x`$ を許す。また、同じ sort の変数 $`x,y`$ について、捕獲を避けた置換により $`x=y\wedge\varphi(x,\boldsymbol z)\vdash\varphi(y,\boldsymbol z)`$ を許す。
 
 有限個の連言と選言は、二項の規則と真偽定数 $`\top,\bot`$ を組み合わせて扱う。
+以下で使う一般項の値グラフの一価性は、A.3節の命題A.2の証明第1段で、上の基本規則とグラフの構造公理だけから導出する。その帰納的導出は部分項の代入規則にも導出の翻訳にも依存しないため、先に用いてよい。
 
 部分項の代入 $`\theta=(\theta_i)`$ については、第1章の定義1.7と同様に、すべての代入項 $`\theta_i`$ の定義可能性 $`\mathrm{Def}_\theta`$ を Law の入力条件へ加える。導出の上では、新しい変数 $`x_i`$ と値グラフの連言 $`\bigwedge_iE_{\theta_i}(\boldsymbol d,x_i)`$ を用い、元のシークエントへ変数置換を施した後、その値を存在量化して扱う。グラフの一価性と式の構文帰納法により、$`\exists\boldsymbol x\,(\bigwedge_iE_{\theta_i}\wedge\varphi(\boldsymbol x))`$ は $`\mathrm{Def}_\theta\wedge\varphi[\theta]`$ と相互に導出できる。実際、原子式では一価性により同じ値を等号置換し、連言では一価性によって 2 組の証人を一致させ、選言では成立する枝へ、存在量化では変数の捕獲を避けて証人を移せばよい。したがって、$`\varphi\vdash_\Gamma\psi`$ の導出から $`\mathrm{Def}_\theta\wedge\varphi[\theta]\vdash_\Delta\psi[\theta]`$ の導出が得られる。なお、すべての $`\theta_i`$ について全域性が導出できる場合には、$`\mathrm{Def}_\theta`$ を導出してこの前提を落とすことができる。
 
