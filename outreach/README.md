@@ -12,6 +12,7 @@
 - `blog/medium/`: 思想系記事(Medium「Spec Z」向け、日本語原稿+英語公開版)
 - `blog/assets/`: 記事用画像
 - `paper/saga/`: SAGA 論文(Zenodo 出版素材・LaTeX 原稿・bundle スクリプト)
+- `monograph/`: AAT 数学本文（`docs/aat/algebraic_geometric_theory/`）から 1 本のモノグラフ PDF を自動生成するパイプライン（公開論文 `paper/` とは分離して管理）
 
 公開 website の `/outreach/` は `website/src/outreach/` で管理する。ここにある記事本文は公開サイトの実装そのものではなく、外部媒体向けの原稿・素材である。
 

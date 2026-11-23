@@ -1,6 +1,7 @@
 # AAT 数学本文モノグラフ PDF 生成パイプライン
 
-[代数幾何的アーキテクチャ論](../../../docs/aat/algebraic_geometric_theory/README.md)（`docs/aat/algebraic_geometric_theory/`）の Markdown 群を唯一の編集元（Single Source of Truth）として保ち、ゼロ依存の Python 3.10+ スクリプトで決定的・一方向に LaTeX ソースを生成し、1 本のモノグラフ PDF を組版するツール群である。
+[代数幾何的アーキテクチャ論](../../docs/aat/algebraic_geometric_theory/README.md)（`docs/aat/algebraic_geometric_theory/`）の Markdown 群を唯一の編集元（Single Source of Truth）として保ち、ゼロ依存の Python 3.10+ スクリプトで決定的・一方向に LaTeX ソースを生成し、1 本のモノグラフ PDF を組版するツール群である。
+査読前・公開論文を管理する `outreach/paper/`（[論文作成ガイドライン](../../docs/paper/guideline.md) の適用対象）とは分離し、`outreach/monograph/` に配置している。
 
 - 数学本文（`docs/aat/algebraic_geometric_theory/`）は読み取り専用入力として扱い、このツールから変更しない。
 - 生成される `.tex`・`.pdf`・ログ・メタデータはすべて `--out` で指定した作業ディレクトリ（既定運用では `.tmp/` 配下）へ隔離出力し、リポジトリへコミットしない。
@@ -21,7 +22,7 @@
    - 初回のみ `--allow-network` を付けて TeX 資源をローカルキャッシュへ取得する。
    - 2回目以降は `--only-cached`（既定）でオフライン再現ビルドを行う。
 2. **TeX Live 2025 `xelatex`（`--engine xelatex`）**:
-   - macOS では [texlive-macos.lock.json](../_tools/texlive-macos.lock.json) で SHA-256 固定された TinyTeX-1 v2025.08 を [paper tools README](../_tools/README.md#macos-の固定-tex-live-環境) の手順で `.tmp/paper-env/` へ展開し、`PATH` を通して実行する。
+   - macOS では [texlive-macos.lock.json](../paper/_tools/texlive-macos.lock.json) で SHA-256 固定された TinyTeX-1 v2025.08 を [paper tools README](../paper/_tools/README.md#macos-の固定-tex-live-環境) の手順で `.tmp/paper-env/` へ展開し、`PATH` を通して実行する。
    - `xeCJK` や `haranoaji` が未導入の場合は、その展開済み環境に対する差分を記録したうえで導入する。
 
 PDF テキスト検証には Poppler の `pdftotext`、代表ページの目視確認画像出力には `pdftoppm` を使用する。
@@ -32,23 +33,23 @@ PDF テキスト検証には Poppler の `pdftotext`、代表ページの目視�
 
 ```bash
 # 1. Markdown 構文・リンク・アンカー・未登録ファイル・衛生検査（TeX ビルドなし）
-python3 outreach/paper/aat_monograph/monograph.py check
+python3 outreach/monograph/monograph.py check
 
 # 2. LaTeX ソースのみ隔離出力
-python3 outreach/paper/aat_monograph/monograph.py generate --out .tmp/aat-monograph-tex
+python3 outreach/monograph/monograph.py generate --out .tmp/aat-monograph-tex
 
 # 3. Tectonic で PDF ビルド（初回キャッシュ取得時は --allow-network を付与）
-python3 outreach/paper/aat_monograph/monograph.py build --allow-network --out .tmp/aat-monograph-pdf
+python3 outreach/monograph/monograph.py build --allow-network --out .tmp/aat-monograph-pdf
 
 # 4. キャッシュ済み環境でのオフライン再現ビルド（既定: --only-cached）
-python3 outreach/paper/aat_monograph/monograph.py build --out .tmp/aat-monograph-pdf-cached
+python3 outreach/monograph/monograph.py build --out .tmp/aat-monograph-pdf-cached
 
 # 5. 生成済み PDF と build.json のハッシュ・抽出テキスト照合
-python3 outreach/paper/aat_monograph/monograph.py check \
+python3 outreach/monograph/monograph.py check \
   --pdf .tmp/aat-monograph-pdf-cached/build/aat_monograph.pdf
 
 # 6. TeX Live 2025 xelatex でのビルド
-python3 outreach/paper/aat_monograph/monograph.py build --engine xelatex --out .tmp/aat-monograph-xelatex
+python3 outreach/monograph/monograph.py build --engine xelatex --out .tmp/aat-monograph-xelatex
 ```
 
 ### 出力物（`--out` 配下）
@@ -78,7 +79,7 @@ pdftoppm -png -r 150 -f 1 -l 5 \
 単体テスト・回帰テストの実行：
 
 ```bash
-python3 -m unittest discover -s outreach/paper/aat_monograph -p 'test_*.py' -v
+python3 -m unittest discover -s outreach/monograph -p 'test_*.py' -v
 ```
 
 ## 検査範囲と終了コード
