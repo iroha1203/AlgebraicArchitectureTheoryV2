@@ -25,7 +25,12 @@ support is set-valued and a source cover piece may use several target
 pieces. Restriction to the retained source declarations controls which
 facts can be transported.
 
-A comparison with unchanged context and coefficient settings can use
+The reading's structure is typed over its selected presentation. Retained
+names can be traced to an ambient presentation through `ReadingOrigin`.
+An empty carrier in the selected presentation can therefore be read even
+when an omitted constant would force it to be inhabited.
+
+A comparison with unchanged coefficient settings can use
 the same evaluation rule in both realizations. Otherwise it compares the
 chosen evaluations along the structural state map. The common input has
 all used source positions and may include further positions that feed
@@ -261,6 +266,19 @@ structure FamilyObservation (Realization : Type v) where
   /-- The function on the family of realizations. -/
   read : Realization → Output
 
+/-- Declaration provenance for a reading on a selected presentation.
+The model and comparison use the selected presentation's own signature and Laws. -/
+structure ReadingOrigin (selected : PrimitivePresentation.{u}) where
+  /-- The presentation from which the declarations were selected. -/
+  ambient : PrimitivePresentation.{u}
+  /-- The declaration context of the selected presentation in the ambient language. -/
+  retained : DeclarationContext ambient
+  /-- Identify every selected declaration with its retained ambient name. -/
+  names : Declaration selected ≃ retained.declarations
+  /-- The identification preserves all of the declaration dependencies. -/
+  dependencies (a b : Declaration selected) :
+    b ∈ Declaration.dependsOn selected a ↔ (names b).val ∈ Declaration.dependsOn ambient (names a).val
+
 /-- The theory, observations, contexts and value choices of Definition 1.11. -/
 structure Reading where
   /-- The declared language, Law roles and derivations. -/
@@ -286,19 +304,45 @@ structure Reading where
   /-- The coefficient input context and its evaluation, when the reading uses coefficients. -/
   coefficients : Option (Σ Γ : CoefficientProduct presentation.signature.SortType,
     CoefficientReading.{u, v} context structureData Γ)
-  /-- Further identifications of coefficient positions with ordinary observation positions. -/
+  /-- Identifications between independently named products, used at positions without a common name. -/
   sharedInputs : (Γ : CoefficientProduct presentation.signature.SortType) →
-    Γ.product.Index → observation.product.Index → Prop := fun _ _ _ => False
+    Γ.product.Index → Option observation.product.Index := fun _ _ => none
+  /-- A selected presentation can originate in an ambient context, without requiring an
+  ambient expansion of its structures. -/
+  origin : Option (ReadingOrigin presentation) := none
 
-/-- Shared positions include the identical positions of a common product and the declared
-identifications between different products. -/
+/-- Finite lists have their typed coordinates, and indexed products use their original slots
+even when only a proper subset of those slots occurs in the coefficient product. -/
+def Reading.namedInput (reading : Reading.{u, v, w, x})
+    (Γ : CoefficientProduct reading.presentation.signature.SortType) :
+    Γ.product.Index → reading.observation.product.Index → Prop :=
+  match Γ with
+  | .ofList _ => fun j i => Γ.product = reading.observation.product ∧ HEq j i
+  | .indexed _ _ _ => fun j i => HEq j.val i
+
+/-- A shared coefficient coordinate uses its named ordinary position when it has one.
+An explicit identification can supply a position for differently named products. -/
 def Reading.SharesInput (reading : Reading.{u, v, w, x})
     (Γ : CoefficientProduct reading.presentation.signature.SortType)
     (j : Γ.product.Index) (i : reading.observation.product.Index) : Prop :=
   Γ.product.sort j = reading.observation.product.sort i ∧
-    ((Γ.product = reading.observation.product ∧ HEq j i) ∨
-      (Γ = .all reading.observation.product ∧ HEq (Γ.slot j) i) ∨
-      reading.sharedInputs Γ j i)
+    (reading.namedInput Γ j i ∨
+      (reading.sharedInputs Γ j = some i ∧ ¬ ∃ k, reading.namedInput Γ j k))
+
+/-- One coefficient position cannot alias two independently supplied ordinary positions. -/
+theorem Reading.sharedInput_unique (reading : Reading.{u, v, w, x})
+    (Γ : CoefficientProduct reading.presentation.signature.SortType) (j : Γ.product.Index)
+    {i k : reading.observation.product.Index}
+    (hi : reading.SharesInput Γ j i) (hk : reading.SharesInput Γ j k) : i = k := by
+  rcases hi.2 with namedI | ⟨explicitI, noNameI⟩
+  · rcases hk.2 with namedK | ⟨_, noNameK⟩
+    · cases Γ with
+      | ofList _ => exact eq_of_heq (namedI.2.symm.trans namedK.2)
+      | indexed _ _ _ => exact eq_of_heq (namedI.symm.trans namedK)
+    · exact (noNameK ⟨i, namedI⟩).elim
+  · rcases hk.2 with namedK | ⟨explicitK, _⟩
+    · exact (noNameI ⟨k, namedK⟩).elim
+    · exact Option.some.inj (explicitI.symm.trans explicitK)
 
 namespace Declaration
 
@@ -615,63 +659,66 @@ inductive CoefficientComparison {P Q : PrimitivePresentation.{u}} {U : Declarati
     {Γ : CoefficientProduct P.signature.SortType} {Δ : CoefficientProduct Q.signature.SortType}
     (c : CoefficientReading.{u, v} U A Γ) (d : CoefficientReading.{u, v} V B Δ)
     (onSort : P.signature.SortType → Q.signature.SortType)
-    (state : ∀ s, A.carrier s → B.carrier (onSort s)) (contextFixed : Prop) where
-  | fixed : contextFixed → c.SameParameters d → CoefficientComparison c d onSort state contextFixed
+    (state : ∀ s, A.carrier s → B.carrier (onSort s)) where
+  | fixed : c.SameParameters d → CoefficientComparison c d onSort state
   | changed (inputs : ReadingInputMap c.selection.used d.selection.used onSort) :
     CoefficientReading.EvaluationComparison c d
         (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
         (fun e => d.evaluateSelected (inputs.mapValues state e)) →
-    CoefficientComparison c d onSort state contextFixed
+    CoefficientComparison c d onSort state
 
 /-- Transport the actual inputs of the ordinary or coefficient evaluations at both endpoints. -/
 def Reading.CoefficientCompatibility (source target : Reading.{u, v, w, x})
     (onSort : source.presentation.signature.SortType → target.presentation.signature.SortType)
-    (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s))
-    (contextFixed : Prop) : Type (u + 1) :=
+    (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s)) : Type (u + 1) :=
   match source.coefficients, target.coefficients with
   | none, none => PUnit
-  | some c, some d => CoefficientComparison c.2 d.2 onSort state contextFixed
+  | some c, some d => CoefficientComparison c.2 d.2 onSort state
   | none, some d =>
-    Σ inputs : ReadingInputMap source.observation.product d.2.selection.used onSort,
+    Option (Σ inputs : ReadingInputMap source.observation.product d.2.selection.used onSort,
       {value : source.observation.Output → d.2.ring.Carrier //
         ∀ e : inputs.Values source.structureData.carrier,
-          d.2.evaluateSelected (inputs.mapValues state e) = value (source.observation.read e.1)}
+          d.2.evaluateSelected (inputs.mapValues state e) = value (source.observation.read e.1)})
   | some c, none =>
-    Σ inputs : ReadingInputMap c.2.selection.used target.observation.product onSort,
+    Option (Σ inputs : ReadingInputMap c.2.selection.used target.observation.product onSort,
       {value : c.2.ring.Carrier → target.observation.Output //
         ∀ e : inputs.Values source.structureData.carrier,
-          target.observation.read (inputs.mapValues state e) = value (c.2.evaluateSelected e.1)}
+          target.observation.read (inputs.mapValues state e) = value (c.2.evaluateSelected e.1)})
 
 /-- The coefficient comparison uses the ordinary correspondence at shared state positions. -/
 def Reading.CoefficientCompatibility.respectsOrdinary {source target : Reading.{u, v, w, x}}
     {onSort : source.presentation.signature.SortType → target.presentation.signature.SortType}
     {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s)}
-    {contextFixed : Prop}
     (positions : source.observation.product.Correspondence target.observation.product onSort) :
-    source.CoefficientCompatibility target onSort state contextFixed → Prop := by
+    source.CoefficientCompatibility target onSort state → Prop := by
   unfold Reading.CoefficientCompatibility
   split
   · exact fun _ => True
   · rename_i c d _ _
     intro comparison
     cases comparison with
-    | fixed => exact True
+    | fixed =>
+      exact ∀ (j : c.2.selection.used.Index) (k : d.2.selection.used.Index)
+        (i : source.observation.product.Index) (l : target.observation.product.Index),
+        HEq (c.1.slot j.val) (d.1.slot k.val) →
+        source.SharesInput c.1 j.val i → target.SharesInput d.1 k.val l →
+        i = positions.position l
     | changed inputs _ =>
       exact inputs.RespectsOrdinary positions
         (fun j i => source.SharesInput c.1 j.val i) (fun j i => target.SharesInput d.1 j.val i)
   · rename_i d _ _
-    exact fun comparison => comparison.1.RespectsOrdinary positions
-      (· = ·) (fun j i => target.SharesInput d.1 j.val i)
+    exact fun comparison => match comparison with
+      | none => True
+      | some data => data.1.RespectsOrdinary positions (· = ·) (fun j i => target.SharesInput d.1 j.val i)
   · rename_i c _ _
-    exact fun comparison => comparison.1.RespectsOrdinary positions
-      (fun j i => source.SharesInput c.1 j.val i) (· = ·)
+    exact fun comparison => match comparison with
+      | none => True
+      | some data => data.1.RespectsOrdinary positions (fun j i => source.SharesInput c.1 j.val i) (· = ·)
 
 /-- A comparison gives the data of (1.12) between the selected state observations. -/
 structure ReadingComparison (source target : Reading.{u, v, w, x}) where
   /-- A theory interpretation of the language used by the source. -/
   interpretation : Interpretation source.presentation.theory target.presentation.theory
-  /-- The source structure satisfies the required Laws of its reading. -/
-  sourceModel : source.presentation.theory.Holds source.structureData
   /-- The target observation's structure satisfies its required Laws. -/
   targetModel : target.presentation.theory.Holds target.structureData
   /-- The source state map ends in the structure pulled back from the target. -/
@@ -681,9 +728,9 @@ structure ReadingComparison (source target : Reading.{u, v, w, x}) where
   contexts : source.observation.product.Correspondence target.observation.product interpretation.onSort
   /-- Fixed declarations and cover, or the selected restriction and cover maps. -/
   declarationChange : source.ContextCompatibility target interpretation
-  /-- Any change of the coefficients and their evaluation. -/
+  /-- Coefficient transport when both readings use coefficients, with an optional cross-evaluation
+  map when just one uses them. -/
   coefficientChange : source.CoefficientCompatibility target interpretation.onSort state.onSort
-    (source.SameContext target)
   /-- When coefficient inputs and ordinary inputs share positions, both squares use the same states. -/
   coefficientInputs : coefficientChange.respectsOrdinary contexts := by trivial
   /-- The function between the two sets of observed values. -/
@@ -691,6 +738,12 @@ structure ReadingComparison (source target : Reading.{u, v, w, x}) where
   /-- Equation (1.12), imposed at every source state tuple. -/
   commutes (e : source.observation.product.Values source.structureData.carrier) :
     target.observation.read (contexts.mapValues state.onSort e) = value (source.observation.read e)
+
+/-- A reading comparison between models, with the additional source condition of Construction 2.5. -/
+structure ModelReadingComparison (source target : Reading.{u, v, w, x}) extends
+    ReadingComparison source target where
+  /-- The source structure is a model of its chosen theory. -/
+  sourceModel : source.presentation.theory.Holds source.structureData
 
 /-- Equation (1.12) as an equality of composites on the entire selected product. -/
 theorem ReadingComparison.commutes_eq {source target : Reading.{u, v, w, x}}

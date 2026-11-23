@@ -349,7 +349,6 @@ private def state : StructureMap points
 /-- A complementary value observation commutes with the Boolean complement on values. -/
 def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) where
   interpretation := Interpretation.identity presentation.theory
-  sourceModel := model
   targetModel := model
   state := state
   contexts := .identity _
@@ -379,7 +378,6 @@ private def missingSort : Reading.{0, 0, 0, 0} :=
 /-- With fixed declarations the state observation still reads its actual structure. -/
 def sameEmptyContext : ReadingComparison missingSort missingSort where
   interpretation := Interpretation.identity presentation.theory
-  sourceModel := model
   targetModel := model
   state := state
   contexts := .identity _
@@ -450,7 +448,6 @@ private def coverChange : ReadingContextChange (reading id) secondCover
 /-- The state observation and the change of cover are compared together. -/
 def comparisonWithCover : ReadingComparison (reading id) secondCover where
   interpretation := Interpretation.identity presentation.theory
-  sourceModel := model
   targetModel := model
   state := state
   contexts := .identity _
@@ -503,6 +500,7 @@ private def ringOf (R : Type) [CommRing R] : CoefficientRing := ⟨R, inferInsta
 private def offsetScheme (base : CoefficientRing) : CoefficientScheme Observation.whole base where
   Realization R := R.scalars.Carrier
   structureOf R _ := RestrictedStructure.restrict Observation.whole (statesOf R.scalars.Carrier)
+  structure_retained _ _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _ (fun s => Set.mem_univ (Declaration.sort s))
   category R :=
     { Hom := fun _ _ => R.scalars.Carrier → R.scalars.Carrier
       id := fun _ => id
@@ -521,6 +519,7 @@ private def offsetScheme (base : CoefficientRing) : CoefficientScheme Observatio
   permitsPoints_congr := by intros; rfl
   Native := base.Carrier
   nativeStructure _ := RestrictedStructure.restrict Observation.whole (statesOf base.Carrier)
+  native_retained _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _ (fun s => Set.mem_univ (Declaration.sort s))
   realizeNative R offset := R.fromBase offset
   nativePoints R _ _ _ x := R.fromBase x
   nativePoints_permitted _ _ _ _ := True.intro
@@ -533,6 +532,7 @@ private def offsetScheme (base : CoefficientRing) : CoefficientScheme Observatio
 def allSmallRealizations : CoefficientScheme.{0, 1} Observation.whole (ringOf Int) where
   Realization _ := Type
   structureOf _ X := RestrictedStructure.restrict Observation.whole (statesOf X)
+  structure_retained _ _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _ (fun s => Set.mem_univ (Declaration.sort s))
   category _ :=
     { Hom := fun X Y => X → Y
       id := fun _ => id
@@ -566,6 +566,7 @@ def allSmallRealizations : CoefficientScheme.{0, 1} Observation.whole (ringOf In
       simpa using congrArg (cast e.symm) h
   Native := Type
   nativeStructure X := RestrictedStructure.restrict Observation.whole (statesOf X)
+  native_retained _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _ (fun s => Set.mem_univ (Declaration.sort s))
   realizeNative _ := id
   nativePoints _ _ _ _ := id
   nativePoints_permitted _ _ _ _ := fun _ _ => Function.injective_id
@@ -696,7 +697,6 @@ private def readingOf (R : Type) [CommRing R] (offset : R) : Reading.{0, 0, 0, 0
 /-- Both the observation and the coefficient evaluation use the structural state map. -/
 def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int × Int) (4, 4)) where
   interpretation := Interpretation.identity Observation.presentation.theory
-  sourceModel := fun name => nomatch name.val
   targetModel := fun name => nomatch name.val
   state :=
     { onSort := fun _ x => (x, x)
@@ -725,7 +725,6 @@ theorem coefficient_comparison_at_two :
 /-- Fixed coefficients do not require the coefficient evaluator to be preserved by a state change. -/
 def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf Int 0) where
   interpretation := Interpretation.identity Observation.presentation.theory
-  sourceModel := fun name => nomatch name.val
   targetModel := fun name => nomatch name.val
   state :=
     { onSort := fun _ x => (show Int from x) + (1 : Int)
@@ -736,8 +735,9 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
       quantity_comm := fun q => nomatch q }
   contexts := .identity _
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
-  coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+  coefficientChange := .fixed
     ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
+  coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
 
@@ -776,6 +776,80 @@ private theorem padded_integer_product_differs :
   have position := congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index => i.2.position) impossible
   exact (by decide : (0 : Nat) ≠ 1) position
 
+/-- This signature has a value sort without primitive ring operations. -/
+private def orderedStateEquation : OrderedEquation Observation.signature where
+  context := [(), ()]
+  result := ()
+  input := .truth
+  left := .var .here
+  right := .var (.there .here)
+
+private def writtenStateEquation : OrderedEquation.Written Observation.signature :=
+  orderedStateEquation.writeVariables .here (.there .here) rfl rfl
+
+private def externalRingPresentation : PrimitivePresentation where
+  signature := Observation.signature
+  laws :=
+    { LawName := Unit
+      statement _ := writtenStateEquation.toLaw
+      role _ := .additional }
+  otherOrderedEquation _ := some ⟨writtenStateEquation, rfl⟩
+  derived _ isDerived := by cases isDerived
+
+/-- Literal syntax and its ordering can be registered independently of canonical ring symbols. -/
+theorem ordered_state_equation_registered :
+    externalRingPresentation.orderedEquation () = some ⟨writtenStateEquation, rfl⟩ :=
+  rfl
+
+private def identityIntegerState : StructureMap (statesOf Int) (statesOf Int) where
+  onSort _ := id
+  total_comm f := nomatch f
+  relation_mem r := nomatch r
+  partial_mem p := nomatch p
+  partial_comm p := nomatch p
+  quantity_comm q := nomatch q
+
+section
+
+local instance : CommRing ((statesOf Int).carrier orderedStateEquation.result) :=
+  inferInstanceAs (CommRing Int)
+
+/-- Residual transport works directly with the ring homomorphism on the state sort. -/
+theorem semantic_ring_residual_map (e : orderedStateEquation.jointInputs (statesOf Int)) :
+    orderedStateEquation.residual (statesOf Int) e =
+      orderedStateEquation.residual (statesOf Int)
+        (orderedStateEquation.mapInput identityIntegerState e) :=
+  orderedStateEquation.residual_map identityIntegerState (RingHom.id Int) (fun _ => rfl) e
+
+/-- The same value ring evaluates a substituted equation and the original ordered equation. -/
+theorem semantic_ring_residual_substitution
+    (θ : Substitution Observation.signature orderedStateEquation.context [()])
+    (e : (orderedStateEquation.substitute θ).jointInputs (statesOf Int)) :
+    (orderedStateEquation.substitute θ).residual (statesOf Int) e =
+      orderedStateEquation.residual (statesOf Int)
+        (orderedStateEquation.substituteInput θ (statesOf Int) e) :=
+  orderedStateEquation.residual_substitute θ (statesOf Int) e
+
+end
+
+/-- The same declarations can have a different cover at fixed coefficients. -/
+private def secondIntegerCover : Reading.{0, 0, 0, 0} :=
+  { readingOf Int 0 with
+    cover := ⟨Bool, fun _ => Observation.whole, fun _ _ h => h, fun h => ⟨true, h⟩⟩ }
+
+/-- Changing only the cover leaves coefficients fixed even along a non-linear state map. -/
+def fixed_coefficients_across_cover_change :
+    ReadingComparison (readingOf Int 0) secondIntegerCover :=
+  { fixedCoefficientComparison with
+    declarationChange := .changed
+      { retained := Observation.whole
+        inside := fun _ h => h
+        supporting := Interpretation.identity Observation.presentation.theory
+        sameSorts := rfl
+        sameTranslation := HEq.rfl
+        pieces := fun _ => {true}
+        localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ } }
+
 /-- The target lists an extra integer state that the evaluation never uses. -/
 private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with coefficients := some ⟨.ofList [(), ()], paddedIntegerInput⟩ }
@@ -784,9 +858,10 @@ private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
 def fixed_comparison_with_unused_input : ReadingComparison (readingOf Int 0) paddedIntegerReading :=
   { fixedCoefficientComparison with
     declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
-    coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+    coefficientChange := .fixed
       ⟨rfl, rfl, HEq.rfl, HEq.rfl, paddedInteger_names,
-        fun h => (padded_integer_product_differs h).elim, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩ }
+        fun h => (padded_integer_product_differs h).elim, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
+    coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _ }
 
 /-- Sending zero to one in the fixed comparison would fail a coefficient-change square. -/
 theorem fixed_comparison_has_no_scalar_change :
@@ -840,7 +915,7 @@ private def sharedObservation
   { readingOf Int 0 with
     observation := StateObservation.ofContext [(), ()] Int (fun e => e .here)
     coefficients := some ⟨.ofList [(), ()], coefficients⟩
-    sharedInputs := fun _ _ _ => False }
+    sharedInputs := fun _ _ => none }
 
 /-- Relabeling the sole used source position as the second target position would make the
 coefficient values agree on that relabeled input. -/
@@ -860,11 +935,29 @@ theorem cannot_relabel_shared_position :
   rintro ⟨extra, extraSort, respects⟩
   let second : secondIntegerInput.selection.used.Index := ⟨⟨(), .there .here⟩, ⟨(), .here⟩, rfl⟩
   have same := respects second second.val ⟨rfl, Or.inl ⟨rfl, HEq.rfl⟩⟩
-  rcases same.2 with ⟨_, same⟩ | ⟨same, _⟩ | same
+  rcases same.2 with ⟨_, same⟩ | ⟨same, _⟩
   · exact Nat.zero_ne_one (congrArg (fun i : (ObservationProduct.ofList [(), ()]).Index =>
       i.2.position) (eq_of_heq same))
   · cases same
-  · exact same
+
+/-- The target can forget the second ordinary coordinate while preserving the first. -/
+def projected_state_comparison :
+    ReadingComparison { sharedObservation paddedIntegerInput with coefficients := none }
+      { readingOf Int 0 with coefficients := none } where
+  interpretation := Interpretation.identity Observation.presentation.theory
+  targetModel := fixedCoefficientComparison.targetModel
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := ⟨fun _ => ⟨(), .here⟩, fun _ => rfl⟩
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
 
 /-- The first `size` positions of the common natural-number slot set are available. -/
 private def initialSlots (size : Nat) : CoefficientProduct Observation.signature.SortType :=
@@ -897,6 +990,7 @@ private def nativeScheme : CoefficientScheme Observation.whole (ringOf Int) :=
   { offsetScheme (ringOf Int) with
     Native := Bool
     nativeStructure full := RestrictedStructure.restrict Observation.whole (statesOf (nativeCarrier full))
+    native_retained _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _ (fun s => Set.mem_univ (Declaration.sort s))
     realizeNative R full := R.fromBase (if full then (1 : Int) else (0 : Int))
     nativePoints R _ _ _ x := R.fromBase (if x.val then (1 : Int) else (0 : Int))
     nativePoints_permitted _ _ _ _ := True.intro }
@@ -911,7 +1005,7 @@ private def nativeCoefficients (full : Bool) :
   selection := .ofRenaming (Δ := [()]) (fun i => i)
   supported _ := Set.mem_univ _
   realizePoint _ _ x := if x.val then (1 : Int) else (0 : Int)
-  pointOrigin := .native full rfl (fun _ _ => Set.mem_univ _) (.refl _) True.intro (fun _ _ _ => rfl)
+  pointOrigin := .native full rfl (fun _ _ => Set.mem_univ _) (.refl _) (fun _ _ _ => rfl)
   evaluateOn _ offset _ := offset
 
 /-- The ordinary observation uses the false-only or the full native subset. -/
@@ -946,7 +1040,6 @@ private theorem native_structures_differ :
 /-- The fixed coefficient rule can be applied to different native carriers. -/
 def same_native_rule_comparison : ReadingComparison (nativeReading false) (nativeReading true) where
   interpretation := Interpretation.identity Observation.presentation.theory
-  sourceModel n := nomatch n.val
   targetModel n := nomatch n.val
   state :=
     { onSort := fun _ _ => ⟨true, Or.inl rfl⟩
@@ -957,9 +1050,10 @@ def same_native_rule_comparison : ReadingComparison (nativeReading false) (nativ
       quantity_comm q := nomatch q }
   contexts := .identity _
   declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
-  coefficientChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+  coefficientChange := .fixed
     ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, fun _ => HEq.rfl,
       Or.inl ⟨True.intro, True.intro, fun h => (native_structures_differ h).elim⟩, HEq.rfl⟩
+  coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _
   value := id
   commutes _ := rfl
 
@@ -1006,12 +1100,25 @@ private noncomputable def sequenceReading : Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with
     observation := ⟨integerSequence, Int, fun e => coefficientSequence.evaluate (fun i => e i.val)⟩
     coefficients := some ⟨CoefficientProduct.all integerSequence, coefficientSequence⟩
-    sharedInputs := fun _ _ _ => False }
+    sharedInputs := fun _ _ => none }
+
+/-- Restricting the coefficient product to a subset does not rename its indexed slots. -/
+theorem proper_subset_keeps_shared_slot :
+    let source : Reading.{0, 0, 0, 0} :=
+      { sequenceReading with sharedInputs := fun _ _ => some (1 : Nat) }
+    let product : CoefficientProduct Observation.signature.SortType := .indexed Nat {i | i < 2} (fun _ => ())
+    let first : product.product.Index := ⟨0, by decide⟩
+    source.SharesInput product first (0 : Nat) ∧ ¬ source.SharesInput product first (1 : Nat) := by
+  dsimp only
+  have shared :
+      ({ sequenceReading with sharedInputs := fun _ _ => some (1 : Nat) } : Reading.{0, 0, 0, 0}).SharesInput
+        (.indexed Nat {i | i < 2} (fun _ => ())) ⟨0, by decide⟩ (0 : Nat) :=
+    ⟨rfl, Or.inl HEq.rfl⟩
+  exact ⟨shared, fun second => Nat.zero_ne_one (Reading.sharedInput_unique _ _ _ shared second)⟩
 
 /-- The coefficient comparison evaluates the selected infinite product. -/
 noncomputable def infinite_coefficient_comparison : ReadingComparison sequenceReading sequenceReading where
   interpretation := Interpretation.identity Observation.presentation.theory
-  sourceModel n := nomatch n.val
   targetModel n := nomatch n.val
   state :=
     { onSort := fun _ => id
@@ -1049,10 +1156,10 @@ private def projectionReading (f : (Int × Int) →+* Int) :
 /-- Varying only the algebra structure map cannot bypass evaluation compatibility. -/
 theorem projection_algebras_cannot_compare :
     ¬ Nonempty (CoefficientComparison (projectionReading (RingHom.fst Int Int))
-      (projectionReading (RingHom.snd Int Int)) id (fun _ x => x) True) := by
+      (projectionReading (RingHom.snd Int Int)) id (fun _ x => x)) := by
   rintro ⟨comparison⟩
   cases comparison with
-  | fixed _ same =>
+  | fixed same =>
     rcases same with ⟨sameBase, sameAlgebra, _, _, _, _, _, _⟩
     have sameBase_eq : sameBase = rfl := Subsingleton.elim _ _
     cases sameBase_eq
@@ -1141,16 +1248,16 @@ private def toCoefficientInput :
 
 /-- Forgetting coefficients gives an explicit map from the old evaluation to the ordinary value. -/
 def forgetCoefficients : Reading.CoefficientCompatibility (readingOf Int 0) plainInteger id
-    (fun _ x => x) True :=
-  ⟨toOrdinaryInput, id, fun e => by
+    (fun _ x => x) :=
+  some ⟨toOrdinaryInput, id, fun e => by
     let x : Int := e.1 ⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩
     change x = x + 0
     exact (Int.add_zero x).symm⟩
 
 /-- Introducing coefficients supplies the corresponding map in the other direction. -/
 def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readingOf Int 0) id
-    (fun _ x => x) True :=
-  ⟨toCoefficientInput, id, fun e => by
+    (fun _ x => x) :=
+  some ⟨toCoefficientInput, id, fun e => by
     let x : Int := e.1 PUnit.unit
     change x + 0 = x
     exact Int.add_zero x⟩
@@ -1174,10 +1281,10 @@ private def scalarRule (reading : CoefficientReading Observation.whole (statesOf
 /-- Fixed coefficients cannot bypass a change from a constant zero rule to a constant one rule. -/
 theorem incompatible_coefficient_rules :
     ¬ Nonempty (CoefficientComparison
-      (scalarRule (readRing Int 0) 0) (scalarRule collapsedReading 1) id (fun _ x => x) True) := by
+      (scalarRule (readRing Int 0) 0) (scalarRule collapsedReading 1) id (fun _ x => x)) := by
   rintro ⟨comparison⟩
   cases comparison with
-  | fixed _ same =>
+  | fixed same =>
     have equal := eq_of_heq same.rule
     have impossible : (0 : Int) = 1 :=
       congrFun (congrFun (congrFun equal (readRing Int 0).algebra) (0 : Int))
@@ -1190,10 +1297,12 @@ theorem incompatible_coefficient_rules :
     exact (by decide : (1 : Int) ≠ 0) (impossible.trans f.map_zero)
 
 /-- The forgotten coefficient value cannot distinguish the two ordinary observations. -/
-theorem forgetting_requires_a_value_map :
-    ¬ Nonempty (Reading.CoefficientCompatibility constantCoefficient plainInteger id
-      (fun _ x => x) True) := by
-  rintro ⟨⟨inputs, value, commutes⟩⟩
+theorem forgetting_does_not_factor_through_scalar :
+    ∀ comparison : Reading.CoefficientCompatibility constantCoefficient plainInteger id (fun _ x => x),
+      comparison = none := by
+  rintro (_ | ⟨inputs, value, commutes⟩)
+  · rfl
+  exfalso
   have atValue (x : Int) : x = value (0 : Int) := by
     let e : inputs.Values (statesOf Int).carrier := ⟨fun _ => x, fun _ => x⟩
     have square := commutes e
@@ -1202,6 +1311,13 @@ theorem forgetting_requires_a_value_map :
       (fun _ => rfl) PUnit.unit
     exact mapped.symm.trans square
   exact (by decide : (0 : Int) ≠ 1) ((atValue 0).trans (atValue 1).symm)
+
+/-- Forgetting the constant coefficient output leaves the ordinary comparison available. -/
+def forget_independent_scalar : ReadingComparison constantCoefficient plainInteger :=
+  { fixedCoefficientComparison with
+    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+    coefficientChange := none
+    coefficientInputs := True.intro }
 
 /-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
 theorem zero_ring_to_integer_fails :
@@ -1596,6 +1712,8 @@ private def points (original : Bool) : RestrictedStructure sortOnly :=
 private def scheme : CoefficientScheme sortOnly (CoefficientTransport.ringOf Int) where
   Realization _ := Bool
   structureOf _ := points
+  structure_retained _ _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _
+    (fun s => by cases s; exact Set.mem_singleton _)
   category _ :=
     { Hom := fun a b => PLift (a = b)
       id := fun _ => ⟨rfl⟩
@@ -1617,6 +1735,8 @@ private def scheme : CoefficientScheme sortOnly (CoefficientTransport.ringOf Int
   permitsPoints_congr := by intros; rfl
   Native := Bool
   nativeStructure := points
+  native_retained _ := RestrictedStructure.hasOnlyRetainedSorts_of_all _
+    (fun s => by cases s; exact Set.mem_singleton _)
   realizeNative _ := id
   nativePoints _ _ _ _ := id
   nativePoints_permitted _ _ _ _ := True.intro
@@ -1682,5 +1802,63 @@ theorem selected_empty_and_unread :
 theorem no_empty_full_structure : ¬ ∃ B : Structure signature, IsEmpty (B.carrier ()) := by
   rintro ⟨B, noPoint⟩
   exact noPoint.false (B.total () Assignment.empty)
+
+/-- After forgetting the constant and the other declarations, only the state sort remains. -/
+private def selectedOrigin : ReadingOrigin Observation.presentation where
+  ambient := withDerivedLaw
+  retained := sortOnly
+  names :=
+    { toFun := fun _ => ⟨.sort (), Set.mem_singleton _⟩
+      invFun := fun _ => .sort ()
+      left_inv := by
+        intro d
+        cases d with
+        | sort s => cases s; rfl
+        | total f => exact nomatch f
+        | relation r => exact nomatch r
+        | partialOp p => exact nomatch p
+        | quantity q => exact nomatch q
+        | law n => exact nomatch n
+      right_inv := fun d => Subtype.ext (Set.mem_singleton_iff.1 d.property).symm }
+  dependencies a _ := by
+    cases a with
+    | sort _ => rfl
+    | total f => exact nomatch f
+    | relation r => exact nomatch r
+    | partialOp p => exact nomatch p
+    | quantity q => exact nomatch q
+    | law n => exact nomatch n
+
+/-- The local state observation uses the empty carrier of the selected presentation. -/
+private def emptyLocalReading : Reading.{0, 0, 0, 0} where
+  presentation := Observation.presentation
+  structureData := CoefficientTransport.statesOf Empty
+  observation := StateObservation.ofSort () PUnit Empty.elim
+  context := Observation.whole
+  cover := (Observation.reading id).cover
+  Family := Unit
+  realize _ := CoefficientTransport.statesOf Empty
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := none
+  origin := some selectedOrigin
+
+/-- Equation (1.12) compares the local model in the selected language. -/
+def empty_local_reading_comparison : ReadingComparison emptyLocalReading emptyLocalReading where
+  interpretation := Interpretation.identity Observation.presentation.theory
+  targetModel n := nomatch n.val
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
 
 end SHIGURE.Chapter1.RestrictedCoefficients

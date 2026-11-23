@@ -66,6 +66,9 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   Realization : CoefficientAlgebra base → Type v
   /-- The carriers of designated points and the primitive maps they interpret. -/
   structureOf (R : CoefficientAlgebra base) : Realization R → RestrictedStructure U
+  /-- A realized structure exposes carriers only for the retained sort declarations. -/
+  structure_retained (R : CoefficientAlgebra base) (a : Realization R) :
+    (structureOf R a).HasOnlyRetainedSorts
   /-- The admissible structural morphisms at each coefficient algebra, with identity and composition. -/
   category (R : CoefficientAlgebra base) : CategoryTheory.Category.{u} (Realization R)
   /-- The action of each admissible morphism on the designated points. -/
@@ -98,6 +101,8 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   Native : Type v
   /-- The native structure whose points are used in the realization rule. -/
   nativeStructure : Native → RestrictedStructure U
+  /-- The native input uses the same retained sort declarations. -/
+  native_retained (a : Native) : (nativeStructure a).HasOnlyRetainedSorts
   /-- Construct a realization from the native input. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Realization R
   /-- The correspondence between native and realized points. -/
@@ -152,17 +157,17 @@ def ofAssignment {Γ : List S} {X : S → Type u} (e : Assignment X Γ) : (ofLis
 def toAssignment {Γ : List S} {X : S → Type u} (e : (ofList Γ).Values X) : Assignment X Γ :=
   ⟨fun {s} i => e ⟨s, i⟩⟩
 
-/-- A common product shape with the sorts retyped by the interpretation. -/
+/-- A typed choice of source positions for the target observation. -/
 structure Correspondence (source : ObservationProduct S) (target : ObservationProduct T)
     (onSort : S → T) where
   /-- Locate each target position in the source product. -/
-  position : target.Index ≃ source.Index
+  position : target.Index → source.Index
   /-- The source and target positions have the prescribed corresponding sorts. -/
   sort_eq (j : target.Index) : onSort (source.sort (position j)) = target.sort j
 
 /-- The identity sort map acts on each position of the same product. -/
 def Correspondence.identity (product : ObservationProduct S) :
-    Correspondence product product id := ⟨Equiv.refl _, fun _ => rfl⟩
+    Correspondence product product id := ⟨id, fun _ => rfl⟩
 
 /-- Apply the pointwise state map at the corresponding coordinates. -/
 def Correspondence.mapValues {source : ObservationProduct S} {target : ObservationProduct T}
@@ -315,7 +320,6 @@ inductive CoefficientScheme.PointOrigin {P : PrimitivePresentation.{u}} {U : Dec
   | native (origin : scheme.Native) (same : scheme.realizeNative R origin = a)
       (kept : ∀ s ∈ sorts, Declaration.sort s ∈ U.declarations)
       (retained : (RestrictedStructure.restrict U A).Agrees (scheme.nativeStructure origin))
-      (permitted : scheme.permitsPoints R a (RestrictedStructure.restrict U A) sorts points)
       (agrees : ∀ s hs x, points s hs x =
         (same ▸ scheme.nativePoints R origin s (kept s hs) (retained.carrier_eq s (kept s hs) ▸ x))) :
       PointOrigin scheme R a A sorts points
@@ -340,7 +344,16 @@ theorem CoefficientScheme.PointOrigin.permitted {P : PrimitivePresentation.{u}} 
     scheme.permitsPoints R a (RestrictedStructure.restrict U A) sorts points := by
   cases origin with
   | declared permitted => exact permitted
-  | native _ _ _ _ permitted _ => exact permitted
+  | native origin same kept retained agrees =>
+    subst a
+    have point_eq : points =
+        (fun s hs x => scheme.nativePoints R origin s (kept s hs)
+          (retained.carrier_eq s (kept s hs) ▸ x)) := funext fun s =>
+      funext fun hs => funext (agrees s hs)
+    rw [point_eq]
+    exact (scheme.permitsPoints_congr R _ retained kept
+      (fun s hs => scheme.nativePoints R origin s (kept s hs))).2
+        (scheme.nativePoints_permitted R origin sorts kept)
 
 /-- A choice of coefficients, scheme and evaluation at the actual reading structure. -/
 structure CoefficientReading {P : PrimitivePresentation.{u}} (U : DeclarationContext P)

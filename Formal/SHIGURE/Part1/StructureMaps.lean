@@ -244,23 +244,55 @@ theorem ringHom_apply (ring : RingVocabulary sig s) (h : StructureMap A B)
 
 end RingVocabulary
 
-namespace RingEquation
+namespace OrderedEquation
 
 variable {A B : Structure sig}
 
 /-- Joint inputs map to joint inputs because both evaluability and the antecedent are preserved. -/
-def mapInput (eqn : RingEquation sig) (h : StructureMap A B) (e : eqn.jointInputs A) :
+def mapInput (eqn : OrderedEquation sig) (h : StructureMap A B) (e : eqn.jointInputs A) :
     eqn.jointInputs B :=
   ⟨e.val.map h.onSort, h.inputSet_image_subset eqn.toLaw ⟨e.val, e.property.1, rfl⟩,
     h.mem_domain_map eqn.left e.val e.property.2.1, h.mem_domain_map eqn.right e.val e.property.2.2⟩
 
 /-- Theorem 1.8(3): the image of the joint locus is contained in the target joint locus. -/
-theorem jointInputs_image_subset (eqn : RingEquation sig) (h : StructureMap A B) :
+theorem jointInputs_image_subset (eqn : OrderedEquation sig) (h : StructureMap A B) :
     (fun e => e.map h.onSort) '' eqn.jointInputs A ⊆ eqn.jointInputs B := by
   rintro _ ⟨e, he, rfl⟩
   exact (eqn.mapInput h ⟨e, he⟩).property
 
-/-- Residual transport (1.11) through the homomorphism of declared value rings. -/
+/-- Residual transport (1.11) through the ring homomorphism on the value sort. -/
+theorem residual_map (eqn : OrderedEquation sig) (h : StructureMap A B)
+    [CommRing (A.carrier eqn.result)] [CommRing (B.carrier eqn.result)]
+    (f : A.carrier eqn.result →+* B.carrier eqn.result)
+    (onValue : ∀ x, f x = h.onSort eqn.result x) (e : eqn.jointInputs A) :
+    h.onSort eqn.result (eqn.residual A e) = eqn.residual B (eqn.mapInput h e) := by
+  have hl : f (eqn.leftValue A e) = eqn.leftValue B (eqn.mapInput h e) := by
+    apply Part.mem_unique _ (eqn.leftValue_mem B (eqn.mapInput h e))
+    apply (Term.mem_eval_iff _ _ _ _).2
+    rw [onValue]
+    exact h.evaluates_map eqn.left e.val _ ((Term.mem_eval_iff _ _ _ _).1 (eqn.leftValue_mem A e))
+  have hr : f (eqn.rightValue A e) = eqn.rightValue B (eqn.mapInput h e) := by
+    apply Part.mem_unique _ (eqn.rightValue_mem B (eqn.mapInput h e))
+    apply (Term.mem_eval_iff _ _ _ _).2
+    rw [onValue]
+    exact h.evaluates_map eqn.right e.val _ ((Term.mem_eval_iff _ _ _ _).1 (eqn.rightValue_mem A e))
+  rw [← onValue, OrderedEquation.residual, map_sub, hl, hr]
+  rfl
+
+end OrderedEquation
+
+namespace RingEquation
+
+variable {sig : Signature.{u}} {A B : Structure sig}
+
+abbrev mapInput (eqn : RingEquation sig) (h : StructureMap A B) (e : eqn.jointInputs A) :=
+  eqn.toOrderedEquation.mapInput h e
+
+theorem jointInputs_image_subset (eqn : RingEquation sig) (h : StructureMap A B) :
+    (fun e => e.map h.onSort) '' eqn.jointInputs A ⊆ eqn.jointInputs B :=
+  eqn.toOrderedEquation.jointInputs_image_subset h
+
+/-- Naming and interpreting the ring operations supplies the value-sort homomorphism. -/
 theorem residual_map (eqn : RingEquation sig) (h : StructureMap A B)
     (sourceLaws : ∀ name, (eqn.ring.law name).Holds A)
     (targetLaws : ∀ name, (eqn.ring.law name).Holds B) (e : eqn.jointInputs A) :
@@ -268,18 +300,7 @@ theorem residual_map (eqn : RingEquation sig) (h : StructureMap A B)
       eqn.residual B targetLaws (eqn.mapInput h e) := by
   letI := eqn.ring.commRing A sourceLaws
   letI := eqn.ring.commRing B targetLaws
-  let f := eqn.ring.ringHom h sourceLaws targetLaws
-  have hl : f (eqn.leftValue A e) = eqn.leftValue B (eqn.mapInput h e) := by
-    apply Part.mem_unique _ (eqn.leftValue_mem B (eqn.mapInput h e))
-    apply (Term.mem_eval_iff _ _ _ _).2
-    exact h.evaluates_map eqn.left e.val _ ((Term.mem_eval_iff _ _ _ _).1 (eqn.leftValue_mem A e))
-  have hr : f (eqn.rightValue A e) = eqn.rightValue B (eqn.mapInput h e) := by
-    apply Part.mem_unique _ (eqn.rightValue_mem B (eqn.mapInput h e))
-    apply (Term.mem_eval_iff _ _ _ _).2
-    exact h.evaluates_map eqn.right e.val _ ((Term.mem_eval_iff _ _ _ _).1 (eqn.rightValue_mem A e))
-  change f (eqn.leftValue A e - eqn.rightValue A e) = _
-  rw [map_sub, hl, hr]
-  rfl
+  exact eqn.toOrderedEquation.residual_map h (eqn.ring.ringHom h sourceLaws targetLaws) (fun _ => rfl) e
 
 end RingEquation
 

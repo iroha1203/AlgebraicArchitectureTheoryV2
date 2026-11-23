@@ -150,6 +150,16 @@ namespace RestrictedStructure
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
+/-- A schematic structure gives every forgotten name the same inert carrier.
+This presentation uses the original sort indices so typed terms remain reusable. -/
+def HasOnlyRetainedSorts (A : RestrictedStructure U) : Prop :=
+  ∀ s, Declaration.sort s ∉ U.declarations → A.carrier s = PUnit
+
+/-- A context that keeps all sort names has no carriers to erase. -/
+theorem hasOnlyRetainedSorts_of_all (A : RestrictedStructure U)
+    (kept : ∀ s, Declaration.sort s ∈ U.declarations) : A.HasOnlyRetainedSorts :=
+  fun s omitted => (omitted (kept s)).elim
+
 /-- A point map is defined on the retained sort carriers. -/
 abbrev PointMap (A B : RestrictedStructure U) :=
   ∀ s, Declaration.sort s ∈ U.declarations → A.carrier s → B.carrier s

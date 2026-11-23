@@ -302,31 +302,30 @@ theorem mem_inputSet_substitute (law : Law sig) (θ : Substitution sig law.conte
 
 end Law
 
-namespace RingEquation
+namespace OrderedEquation
 
 variable {sig : Signature.{u}} {Δ : List sig.SortType}
 
-/-- Substitute an ordered equation, keeping its ring and adding the full definedness antecedent. -/
-def substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : RingEquation sig :=
+/-- Substitute an ordered equation, keeping its result sort and adding the full definedness antecedent. -/
+abbrev substitute (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ) : OrderedEquation sig :=
   { context := Δ
     input := θ.defined.conj (eqn.input.substitute θ)
     result := eqn.result
-    ring := eqn.ring
     left := eqn.left.substitute θ
     right := eqn.right.substitute θ }
 
 /-- The written Law retains the original expanded conclusion after Formula substitution. -/
-def substitutedLaw (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : Law sig :=
+def substitutedLaw (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ) : Law sig :=
   eqn.toLaw.substitute θ
 
 /-- Both views of the substituted equation have the same guarded input set. -/
-theorem substitutedLaw_inputSet (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+theorem substitutedLaw_inputSet (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) :
     (eqn.substitutedLaw θ).inputSet A = (eqn.substitute θ).toLaw.inputSet A :=
   rfl
 
 /-- On the substitution domain, the written conclusion tests the substituted ordered terms. -/
-theorem substitutedLaw_conclusion_iff (eqn : RingEquation sig)
+theorem substitutedLaw_conclusion_iff (eqn : OrderedEquation sig)
     (θ : Substitution sig eqn.context Δ) (A : Structure sig) (e : θ.domain A) :
     (eqn.substitutedLaw θ).conclusion.Holds A e.val ↔
       (eqn.substitute θ).toLaw.conclusion.Holds A e.val := by
@@ -336,7 +335,7 @@ theorem substitutedLaw_conclusion_iff (eqn : RingEquation sig)
     ← eqn.left.eval_substitute θ A e, ← eqn.right.eval_substitute θ A e]
 
 /-- The written substitution Law and its ordered term presentation have the same models. -/
-theorem substitutedLaw_holds_iff (eqn : RingEquation sig)
+theorem substitutedLaw_holds_iff (eqn : OrderedEquation sig)
     (θ : Substitution sig eqn.context Δ) (A : Structure sig) :
     (eqn.substitutedLaw θ).Holds A ↔ (eqn.substitute θ).toLaw.Holds A := by
   have dom (e : Assignment A.carrier Δ) (h : e ∈ (eqn.substitutedLaw θ).inputSet A) :
@@ -351,7 +350,7 @@ theorem substitutedLaw_holds_iff (eqn : RingEquation sig)
     exact (eqn.substitutedLaw_conclusion_iff θ A ⟨e, hd⟩).2 (h e he)
 
 /-- The joint locus after substitution is the preimage of the original locus on the domain. -/
-theorem mem_jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+theorem mem_jointInputs_substitute (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) (e : Assignment A.carrier Δ) :
     e ∈ (eqn.substitute θ).jointInputs A ↔ ∃ h : e ∈ θ.domain A,
       θ.value A ⟨e, h⟩ ∈ eqn.jointInputs A := by
@@ -366,14 +365,14 @@ theorem mem_jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution s
       (eqn.right.mem_domain_substitute θ A ⟨e, h⟩).2 hr⟩
 
 /-- The joint input sets are related by the substitution preimage in Theorem 1.8(3). -/
-theorem jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+theorem jointInputs_substitute (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) :
     (eqn.substitute θ).jointInputs A = {e | ∃ h : e ∈ θ.domain A,
       θ.value A ⟨e, h⟩ ∈ eqn.jointInputs A} :=
   Set.ext (eqn.mem_jointInputs_substitute θ A)
 
 /-- Evaluate a joint input of the substituted equation as a joint input of the original one. -/
-noncomputable def substituteInput (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+noncomputable def substituteInput (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ)
     (A : Structure sig) (e : (eqn.substitute θ).jointInputs A) : eqn.jointInputs A := by
   have he := (eqn.mem_jointInputs_substitute θ A e.val).1 e.property
   have hd : e.val ∈ θ.domain A := he.elim fun h _ => h
@@ -382,10 +381,10 @@ noncomputable def substituteInput (eqn : RingEquation sig) (θ : Substitution si
   exact h
 
 /-- The substitution clause of Theorem 1.8(3): residual values agree at corresponding joint inputs. -/
-theorem residual_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
-    (A : Structure sig) (h : ∀ name, (eqn.ring.law name).Holds A)
+theorem residual_substitute (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ)
+    (A : Structure sig) [CommRing (A.carrier eqn.result)]
     (e : (eqn.substitute θ).jointInputs A) :
-    (eqn.substitute θ).residual A h e = eqn.residual A h (eqn.substituteInput θ A e) := by
+    (eqn.substitute θ).residual A e = eqn.residual A (eqn.substituteInput θ A e) := by
   have hd : e.val ∈ θ.domain A :=
     ((eqn.mem_jointInputs_substitute θ A e.val).1 e.property).elim fun h _ => h
   let d : θ.domain A := ⟨e.val, hd⟩
@@ -400,32 +399,31 @@ theorem residual_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.
     apply (eqn.right.mem_eval_iff A original.val _).2
     exact (eqn.right.evaluates_substitute θ A d _).1
       ((Term.mem_eval_iff _ _ _ _).1 ((eqn.substitute θ).rightValue_mem A e))
-  rw [residual_eq_add_neg, residual_eq_add_neg, hl, hr]
-  rfl
+  exact congrArg₂ (· - ·) hl hr
 
 /-- Satisfaction of the written substituted Law is the full-domain, zero-residual condition. -/
-theorem substitutedLaw_holds_iff_residual (eqn : RingEquation sig)
+theorem substitutedLaw_holds_iff_residual (eqn : OrderedEquation sig)
     (θ : Substitution sig eqn.context Δ) (A : Structure sig)
-    (h : ∀ name, (eqn.ring.law name).Holds A) :
+    [CommRing (A.carrier eqn.result)] :
     (eqn.substitutedLaw θ).Holds A ↔
       (eqn.substitute θ).jointInputs A = (eqn.substitutedLaw θ).inputSet A ∧
       ∀ e : (eqn.substitute θ).jointInputs A,
-        (eqn.substitute θ).residual A h e = eqn.ring.zeroValue A :=
+        (eqn.substitute θ).residual A e = 0 :=
   (eqn.substitutedLaw_holds_iff θ A).trans
-    ((eqn.substitute θ).holds_iff_jointInputs_and_residual_zero A h)
+    ((eqn.substitute θ).holds_iff_jointInputs_and_residual_zero A)
 
 /-- Written expansions are generated by the ordered equality and literal substitutions. -/
-inductive Expansion : (eqn : RingEquation sig) → Formula sig eqn.context → Type u
-  | original (eqn : RingEquation sig) : Expansion eqn (Formula.termEq eqn.left eqn.right)
-  | variablePair {eqn : RingEquation sig} (x y : Var eqn.context eqn.result)
+inductive Expansion : (eqn : OrderedEquation sig) → Formula sig eqn.context → Type u
+  | original (eqn : OrderedEquation sig) : Expansion eqn (Formula.termEq eqn.left eqn.right)
+  | variablePair {eqn : OrderedEquation sig} (x y : Var eqn.context eqn.result)
       (left : eqn.left = .var x) (right : eqn.right = .var y) :
       Expansion eqn (.atom (.eq x y))
-  | substitute {eqn : RingEquation sig} {p : Formula sig eqn.context}
+  | substitute {eqn : OrderedEquation sig} {p : Formula sig eqn.context}
       (prior : Expansion eqn p) {Δ : List sig.SortType} (θ : Substitution sig eqn.context Δ) :
       Expansion (eqn.substitute θ) (p.substitute θ)
 
 /-- A generated expansion and its ordered terms agree on every designated input. -/
-theorem Expansion.holds_iff {eqn : RingEquation sig} {p : Formula sig eqn.context}
+theorem Expansion.holds_iff {eqn : OrderedEquation sig} {p : Formula sig eqn.context}
     (expansion : Expansion eqn p) (A : Structure sig) :
     ∀ (e : Assignment A.carrier eqn.context), eqn.input.Holds A e →
       (p.Holds A e ↔ (Formula.termEq eqn.left eqn.right).Holds A e) := by
@@ -447,7 +445,7 @@ theorem Expansion.holds_iff {eqn : RingEquation sig} {p : Formula sig eqn.contex
           (eqn.substitutedLaw_conclusion_iff θ A d)))
 
 /-- A written equality is an atomic variable equality or starts with its value witness. -/
-theorem Expansion.shape {eqn : RingEquation sig} {p : Formula sig eqn.context}
+theorem Expansion.shape {eqn : OrderedEquation sig} {p : Formula sig eqn.context}
     (expansion : Expansion eqn p) :
     (∃ (s : sig.SortType) (x y : Var eqn.context s), p = .atom (.eq x y)) ∨
       ∃ (s : sig.SortType) (body : Formula sig (s :: eqn.context)), p = body.ex := by
@@ -461,6 +459,116 @@ theorem Expansion.shape {eqn : RingEquation sig} {p : Formula sig eqn.context}
 
 /-- A single written Law retains its ordered terms and the origin of its expansion. -/
 structure Written (sig : Signature.{u}) where
+  /-- The ordered pair and written input. -/
+  equation : OrderedEquation sig
+  /-- The literal written conclusion. -/
+  conclusion : Formula sig equation.context
+  /-- The syntax history fixes the expansion and the order of the terms. -/
+  expansion : Expansion equation conclusion
+
+/-- The usual form of a newly written equality. -/
+def write (eqn : OrderedEquation sig) : Written sig :=
+  ⟨eqn, Formula.termEq eqn.left eqn.right, .original eqn⟩
+
+/-- Keep the original atomic notation when the ordered terms are variables. -/
+def writeVariables (eqn : OrderedEquation sig) (x y : Var eqn.context eqn.result)
+    (left : eqn.left = .var x) (right : eqn.right = .var y) : Written sig :=
+  ⟨eqn, .atom (.eq x y), .variablePair x y left right⟩
+
+/-- The very same Law, with its exact conclusion, can be used in the presentation. -/
+def Written.toLaw (written : Written sig) : Law sig :=
+  ⟨written.equation.context, written.equation.input, written.conclusion⟩
+
+/-- Apply another substitution to both the literal text and the ordered terms. -/
+def Written.substitute (written : Written sig) (θ : Substitution sig written.equation.context Δ) :
+    Written sig :=
+  ⟨written.equation.substitute θ, written.conclusion.substitute θ, written.expansion.substitute θ⟩
+
+/-- The stored syntax after substitution is literal Law substitution. -/
+@[simp] theorem Written.toLaw_substitute (written : Written sig)
+    (θ : Substitution sig written.equation.context Δ) :
+    (written.substitute θ).toLaw = written.toLaw.substitute θ :=
+  rfl
+
+/-- The literal Law tests the ordered residual on the entire designated input set. -/
+theorem Written.holds_iff_residual (written : Written sig) (A : Structure sig)
+    [CommRing (A.carrier written.equation.result)] :
+    written.toLaw.Holds A ↔ written.equation.jointInputs A = written.toLaw.inputSet A ∧
+      ∀ e : written.equation.jointInputs A,
+        written.equation.residual A e = 0 := by
+  have equivalent : written.toLaw.Holds A ↔ written.equation.toLaw.Holds A :=
+    ⟨fun holds e he => (written.expansion.holds_iff A e he).1 (holds e he),
+      fun holds e he => (written.expansion.holds_iff A e he).2 (holds e he)⟩
+  exact equivalent.trans (written.equation.holds_iff_jointInputs_and_residual_zero A)
+
+end OrderedEquation
+
+namespace RingEquation
+
+variable {sig : Signature.{u}} {Δ : List sig.SortType}
+
+/-- Substitution preserves the declared value-ring vocabulary. -/
+def substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) : RingEquation sig :=
+  ⟨eqn.toOrderedEquation.substitute θ, eqn.ring⟩
+
+abbrev substitutedLaw (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ) :=
+  eqn.toOrderedEquation.substitutedLaw θ
+
+theorem substitutedLaw_inputSet (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+    (A : Structure sig) :
+    (eqn.substitutedLaw θ).inputSet A = (eqn.substitute θ).toLaw.inputSet A :=
+  eqn.toOrderedEquation.substitutedLaw_inputSet θ A
+
+theorem substitutedLaw_conclusion_iff (eqn : RingEquation sig)
+    (θ : Substitution sig eqn.context Δ) (A : Structure sig) (e : θ.domain A) :
+    (eqn.substitutedLaw θ).conclusion.Holds A e.val ↔
+      (eqn.substitute θ).toLaw.conclusion.Holds A e.val :=
+  eqn.toOrderedEquation.substitutedLaw_conclusion_iff θ A e
+
+theorem substitutedLaw_holds_iff (eqn : RingEquation sig)
+    (θ : Substitution sig eqn.context Δ) (A : Structure sig) :
+    (eqn.substitutedLaw θ).Holds A ↔ (eqn.substitute θ).toLaw.Holds A :=
+  eqn.toOrderedEquation.substitutedLaw_holds_iff θ A
+
+theorem mem_jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+    (A : Structure sig) (e : Assignment A.carrier Δ) :
+    e ∈ (eqn.substitute θ).jointInputs A ↔ ∃ h : e ∈ θ.domain A,
+      θ.value A ⟨e, h⟩ ∈ eqn.jointInputs A :=
+  eqn.toOrderedEquation.mem_jointInputs_substitute θ A e
+
+theorem jointInputs_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+    (A : Structure sig) :
+    (eqn.substitute θ).jointInputs A = {e | ∃ h : e ∈ θ.domain A,
+      θ.value A ⟨e, h⟩ ∈ eqn.jointInputs A} :=
+  eqn.toOrderedEquation.jointInputs_substitute θ A
+
+noncomputable def substituteInput (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+    (A : Structure sig) (e : (eqn.substitute θ).jointInputs A) : eqn.jointInputs A :=
+  eqn.toOrderedEquation.substituteInput θ A e
+
+theorem residual_substitute (eqn : RingEquation sig) (θ : Substitution sig eqn.context Δ)
+    (A : Structure sig) (h : ∀ name, (eqn.ring.law name).Holds A)
+    (e : (eqn.substitute θ).jointInputs A) :
+    (eqn.substitute θ).residual A h e = eqn.residual A h (eqn.substituteInput θ A e) := by
+  letI := eqn.ring.commRing A h
+  exact eqn.toOrderedEquation.residual_substitute θ A e
+
+theorem substitutedLaw_holds_iff_residual (eqn : RingEquation sig)
+    (θ : Substitution sig eqn.context Δ) (A : Structure sig)
+    (h : ∀ name, (eqn.ring.law name).Holds A) :
+    (eqn.substitutedLaw θ).Holds A ↔
+      (eqn.substitute θ).jointInputs A = (eqn.substitutedLaw θ).inputSet A ∧
+      ∀ e : (eqn.substitute θ).jointInputs A,
+        (eqn.substitute θ).residual A h e = eqn.ring.zeroValue A := by
+  letI := eqn.ring.commRing A h
+  exact eqn.toOrderedEquation.substitutedLaw_holds_iff_residual θ A
+
+/-- The named-ring form uses the same written syntax as any ordered equation. -/
+abbrev Expansion (eqn : RingEquation sig) (p : Formula sig eqn.context) :=
+  OrderedEquation.Expansion eqn.toOrderedEquation p
+
+/-- A single written Law retains its ordered terms and the origin of its expansion. -/
+structure Written (sig : Signature.{u}) where
   /-- The ordered pair, ring and written input. -/
   equation : RingEquation sig
   /-- The literal written conclusion. -/
@@ -470,7 +578,7 @@ structure Written (sig : Signature.{u}) where
 
 /-- The usual form of a newly written equality. -/
 def write (eqn : RingEquation sig) : Written sig :=
-  ⟨eqn, Formula.termEq eqn.left eqn.right, .original eqn⟩
+  ⟨eqn, Formula.termEq eqn.left eqn.right, .original eqn.toOrderedEquation⟩
 
 /-- Keep the original atomic notation when the ordered terms are variables. -/
 def writeVariables (eqn : RingEquation sig) (x y : Var eqn.context eqn.result)

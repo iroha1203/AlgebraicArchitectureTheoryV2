@@ -133,6 +133,14 @@ def LawDeclarations.select {sig : Signature.{u}} (laws : LawDeclarations sig)
   LawName := {n // n ∈ names}
   law n := laws.statement n.val
 
+/-- The literal text and ordered terms attached to a named Law. -/
+structure NamedOrderedEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
+    (name : laws.LawName) where
+  /-- The written equality with its ordered terms. -/
+  written : OrderedEquation.Written sig
+  /-- The literal equality is the Law registered at this name. -/
+  statement_eq : written.toLaw = laws.statement name
+
 /-- A written ring equality and the names of the Laws that give its value sort a ring. -/
 structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
     (name : laws.LawName) where
@@ -150,6 +158,11 @@ structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
 namespace NamedRingEquation
 
 variable {sig : Signature.{u}} {laws : LawDeclarations sig} {name : laws.LawName}
+
+/-- Forget the presentation-specific ring symbols while retaining the literal equality. -/
+def toNamedOrderedEquation (data : NamedRingEquation laws name) : NamedOrderedEquation laws name :=
+  ⟨⟨data.written.equation.toOrderedEquation, data.written.conclusion, data.written.expansion⟩,
+    data.statement_eq⟩
 
 /-- Attach the names of ring Laws written in the canonical form. -/
 def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw = laws.statement name)
@@ -190,6 +203,15 @@ theorem holds_iff_residual_zero (data : NamedRingEquation laws name) (A : Struct
 
 end NamedRingEquation
 
+private def defaultOtherEquation {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {name : laws.LawName} (named : Option (NamedRingEquation laws name)) :
+    match named with
+    | none => Option (NamedOrderedEquation laws name)
+    | some _ => PUnit :=
+  match named with
+  | none => none
+  | some _ => PUnit.unit
+
 /-- A primitive presentation also retains the derivation of each declaration marked derived. -/
 structure PrimitivePresentation where
   /-- The named sort, operation and relation families. -/
@@ -198,11 +220,26 @@ structure PrimitivePresentation where
   laws : LawDeclarations signature
   /-- The ordered terms of a ring-valued equality, attached to that exact written Law. -/
   ringEquation (i : laws.LawName) : Option (NamedRingEquation laws i) := none
+  /-- The ordered text when no canonical primitive ring vocabulary is attached. -/
+  otherOrderedEquation (i : laws.LawName) :
+    match ringEquation i with
+    | none => Option (NamedOrderedEquation laws i)
+    | some _ => PUnit := defaultOtherEquation (ringEquation i)
   /-- An inclusion presentation for a partial domain, when the declaration provides one. -/
   domainInclusions (p : signature.Partial) : Option (DomainInclusions p) := none
   /-- Each derived Law has a proof from the required Laws and structural graph axioms. -/
   derived (i : laws.LawName) : laws.role i = .derived →
     Derivation laws.toTheory (laws.statement i).input (laws.statement i).conclusion
+
+/-- Read the registered ordered terms for either form of value-ring presentation. -/
+def PrimitivePresentation.orderedEquation (P : PrimitivePresentation.{u}) (i : P.laws.LawName) :
+    Option (NamedOrderedEquation P.laws i) := by
+  cases h : P.ringEquation i with
+  | some data => exact some data.toNamedOrderedEquation
+  | none =>
+    have other := P.otherOrderedEquation i
+    rw [h] at other
+    exact other
 
 /-- The theory presented by the required declarations, as in Definition 1.7. -/
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=

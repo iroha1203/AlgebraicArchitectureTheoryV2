@@ -117,7 +117,6 @@ private def coverChange : ReadingContextChange source target (Interpretation.ide
 /-- The identity state map and the selected cover change belong to one comparison. -/
 private def comparison : ReadingComparison source target where
   interpretation := Interpretation.identity presentation.theory
-  sourceModel := fun name => nomatch name.val
   targetModel := fun name => nomatch name.val
   state :=
     { onSort := fun _ x => x
@@ -228,6 +227,7 @@ private def retainedModel (satisfies : Bool) : RestrictedStructure modelContext 
 private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
   Realization _ := Bool
   structureOf _ := retainedModel
+  structure_retained _ a := (retainedModel a).hasOnlyRetainedSorts_of_all (fun s => Set.mem_univ (Declaration.sort s))
   category _ :=
     { Hom := fun a b => PLift (a = b)
       id := fun _ => ⟨rfl⟩
@@ -249,6 +249,7 @@ private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
   permitsPoints_congr := by intros; rfl
   Native := Bool
   nativeStructure := retainedModel
+  native_retained a := (retainedModel a).hasOnlyRetainedSorts_of_all (fun s => Set.mem_univ (Declaration.sort s))
   realizeNative _ := id
   nativePoints _ _ _ _ := id
   nativePoints_permitted _ _ _ _ := True.intro
@@ -281,9 +282,26 @@ private def lawTestingReading (satisfies : Bool) : Reading.{0, 0, 0, 0} where
 
 /-- A false required relation on the source precludes a comparison of models. -/
 theorem reading_comparison_requires_source_model :
-    ¬ Nonempty (ReadingComparison (lawTestingReading false) (lawTestingReading true)) := by
+    ¬ Nonempty (ModelReadingComparison (lawTestingReading false) (lawTestingReading true)) := by
   rintro ⟨comparison⟩
   exact (comparison.sourceModel ⟨(), rfl⟩ Assignment.empty True.intro).elim
+
+/-- The structure reading still compares to a model when its source fails a required Law. -/
+def nonmodel_state_comparison : ReadingComparison (lawTestingReading false) (lawTestingReading true) where
+  interpretation := Interpretation.identity modelPresentation.theory
+  targetModel _ _ _ := Set.mem_univ _
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem _ _ held := held.elim
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
 
 end SHIGURE.Chapter1.CoverTransport
 
@@ -348,12 +366,32 @@ private theorem retained_sort (s : signature.SortType) (kept : Declaration.sort 
   cases same
   rfl
 
-/-- The retention certificate suffices to map every designated point. -/
-private def retainedMap (source target : Bool) :
-    RestrictedStructure.PointMap (realized source) (realized target) := by
-  intro sort keep point
-  cases retained_sort sort keep
-  exact point
+/-- Both the native and the realized carrier in the scheme use only the retained sort. -/
+private def scalarRealization (R : Type) : RestrictedStructure retained where
+  carrier
+    | false => R
+    | true => PUnit
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+private theorem scalarRealization_retained (R : Type) : (scalarRealization R).HasOnlyRetainedSorts := by
+  intro s forgotten
+  cases s
+  · exact (forgotten (Set.mem_singleton _)).elim
+  · rfl
+
+/-- A hidden integer carrier cannot be installed as part of a schematic structure. -/
+theorem scheme_cannot_keep_forgotten_carrier : ¬ (realized true).HasOnlyRetainedSorts := by
+  intro retainedOnly
+  have omitted : Declaration.sort true ∉ retained.declarations := by
+    intro member
+    exact Bool.noConfusion (retained_sort true member)
+  have same : Int = PUnit := retainedOnly true omitted
+  have singleton : Subsingleton Int := same.symm ▸ (inferInstanceAs (Subsingleton PUnit))
+  exact (by decide : (0 : Int) ≠ 1) (@Subsingleton.elim Int singleton 0 1)
 
 private theorem retained_carrier_eq (source target : Bool) (s : signature.SortType)
     (kept : Declaration.sort s ∈ retained.declarations) :
@@ -361,21 +399,28 @@ private theorem retained_carrier_eq (source target : Bool) (s : signature.SortTy
   cases retained_sort s kept
   rfl
 
-private theorem retained_preserves (source target : Bool) :
-    (realized source).Preserves (realized target)
-      (fun s kept x => retained_carrier_eq source target s kept ▸ x) := by
+private theorem retained_preserves (source target : RestrictedStructure retained)
+    (same : ∀ s (_kept : Declaration.sort s ∈ retained.declarations), source.carrier s = target.carrier s) :
+    source.Preserves target (fun s kept x => same s kept ▸ x) := by
   intro Γ a supported e held
   cases a with
   | @eq s i j =>
     have kept : Declaration.sort s ∈ retained.declarations :=
       supported (Or.inl ⟨s, i.sort_mem, rfl⟩)
-    exact congrArg (fun x => retained_carrier_eq source target s kept ▸ x) held
+    exact congrArg (fun x => same s kept ▸ x) held
   | rel r _ => exact nomatch r
   | domain p _ => exact nomatch p
   | graph op _ _ => cases op <;> rename_i symbol <;> exact nomatch symbol
 
 private theorem ambient_agrees (source target : Bool) : (realized source).Agrees (realized target) :=
-  ⟨retained_carrier_eq source target, retained_preserves source target, retained_preserves target source⟩
+  ⟨retained_carrier_eq source target, retained_preserves _ _ _, retained_preserves _ _ _⟩
+
+private theorem ambient_agrees_scheme (full : Bool) : (realized full).Agrees (scalarRealization Int) := by
+  have same (s : signature.SortType) (kept : Declaration.sort s ∈ retained.declarations) :
+      (realized full).carrier s = (scalarRealization Int).carrier s := by
+    cases retained_sort s kept
+    rfl
+  exact ⟨same, retained_preserves _ _ _, retained_preserves _ _ _⟩
 
 /-- Use the integers as the base and the initial coefficients. -/
 private def integers : CoefficientRing := ⟨Int, inferInstance⟩
@@ -400,7 +445,8 @@ theorem permission_cannot_test_forgotten_carrier (scheme : CoefficientScheme ret
 /-- Changing coefficients sends the designated states by the retained-sort map. -/
 private def scheme : CoefficientScheme retained integers where
   Realization _ := Bool
-  structureOf _ := realized
+  structureOf _ _ := scalarRealization Int
+  structure_retained _ _ := scalarRealization_retained Int
   category _ :=
     { Hom := fun a b => PLift (a = b)
       id := fun _ => ⟨rfl⟩
@@ -408,26 +454,23 @@ private def scheme : CoefficientScheme retained integers where
       id_comp := fun _ => Subsingleton.elim _ _
       comp_id := fun _ => Subsingleton.elim _ _
       assoc := fun _ _ _ => Subsingleton.elim _ _ }
-  mapPoints f s _ x := f.down ▸ x
-  mapPoints_preserves f := by
-    rcases f with ⟨rfl⟩
+  mapPoints _ _ _ := id
+  mapPoints_preserves _ := by
     intro Γ a supported e held
     exact held
   mapPoints_id _ _ _ _ := rfl
-  mapPoints_comp f g _ _ _ := by
-    rcases f with ⟨rfl⟩
-    rcases g with ⟨rfl⟩
-    rfl
+  mapPoints_comp _ _ _ _ _ := rfl
   permitsPoints _ _ _ _ _ := True
   permitsPoints_congr := by intros; rfl
   Native := Bool
-  nativeStructure := realized
+  nativeStructure _ := scalarRealization Int
+  native_retained _ := scalarRealization_retained Int
   realizeNative _ := id
   nativePoints _ _ _ _ := id
   nativePoints_permitted _ _ _ _ := True.intro
-  interpretLaw _ a := (realized a).satisfies
+  interpretLaw _ _ := (scalarRealization Int).satisfies
   change _ _ := false
-  changePoints _ a := retainedMap a false
+  changePoints _ _ _ _ := id
 
 /-- Observe the retained coordinate only, even though the ordinary tuple has two coordinates. -/
 private def selected : CoefficientReading retained ordinary (.ofList [false, true]) where
@@ -486,7 +529,8 @@ private def separateStates (R : Type) : Structure signature where
 /-- Realize the retained sort over the selected ring. -/
 private def scalarScheme : CoefficientScheme retained integers where
   Realization _ := Unit
-  structureOf R _ := RestrictedStructure.restrict retained (separateStates R.scalars.Carrier)
+  structureOf R _ := scalarRealization R.scalars.Carrier
+  structure_retained R _ := scalarRealization_retained R.scalars.Carrier
   category _ :=
     { Hom := fun _ _ => Unit
       id := fun _ => ()
@@ -503,14 +547,15 @@ private def scalarScheme : CoefficientScheme retained integers where
   permitsPoints _ _ _ _ _ := True
   permitsPoints_congr := by intros; rfl
   Native := Unit
-  nativeStructure _ := RestrictedStructure.restrict retained (separateStates Int)
+  nativeStructure _ := scalarRealization Int
+  native_retained _ := scalarRealization_retained Int
   realizeNative _ _ := ()
   nativePoints R _ s kept := by
     cases s
     · exact fun x => R.fromBase x
     · cases Set.mem_singleton_iff.1 kept
   nativePoints_permitted _ _ _ _ := True.intro
-  interpretLaw R _ := (RestrictedStructure.restrict retained (separateStates R.scalars.Carrier)).satisfies
+  interpretLaw R _ := (scalarRealization R.scalars.Carrier).satisfies
   change _ _ := ()
   changePoints f _ s kept := by
     cases s
@@ -521,7 +566,8 @@ private def scalarScheme : CoefficientScheme retained integers where
 private def shiftedNativeScheme : CoefficientScheme retained integers :=
   { scalarScheme with
     Native := Bool
-    nativeStructure _ := realized true
+    nativeStructure _ := scalarRealization Int
+    native_retained _ := scalarRealization_retained Int
     realizeNative _ _ := ()
     nativePoints R shifted s kept := by
       cases retained_sort s kept
@@ -543,10 +589,10 @@ private def nativeCoefficient (full shifted : Bool) :
       obtain ⟨i, rfl⟩ := hs
       exact Set.mem_singleton _
     shiftedNativeScheme.nativePoints ⟨integers, RingHom.id Int⟩ shifted s kept
-      ((ambient_agrees full true).carrier_eq s kept ▸ x)
+      ((ambient_agrees_scheme full).carrier_eq s kept ▸ x)
   pointOrigin := .native shifted rfl (by
     rintro _ ⟨i, rfl⟩
-    exact Set.mem_singleton _) (ambient_agrees full true) True.intro (fun _ _ _ => rfl)
+    exact Set.mem_singleton _) (ambient_agrees_scheme full) (fun _ _ _ => rfl)
   evaluateOn _ _ e := e PUnit.unit
 
 /-- Forgetting a carrier preserves the fixed application of the same native rule. -/
@@ -575,7 +621,12 @@ private def scalarInputs (R : Type) [CommRing R] :
   realization := ()
   selection := .ofRenaming (Δ := [false]) (fun i => i)
   supported i := Set.mem_singleton_iff.2 (congrArg Declaration.sort (List.mem_singleton.1 i.2.sort_mem))
-  realizePoint _ _ := id
+  realizePoint s hs := by
+    cases s
+    · exact id
+    · exact False.elim (by
+        obtain ⟨i, hi⟩ := hs
+        exact Bool.noConfusion (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
   pointOrigin := .declared True.intro
   evaluateOn _ _ e := e ⟨false, .here⟩
 
@@ -620,7 +671,6 @@ private def scalarInputMap :
 def independent_coefficient_comparison :
     ReadingComparison (separateReading Int) (paddedReading (Int × Int)) where
   interpretation := Interpretation.identity presentation.theory
-  sourceModel := fun name => nomatch name.val
   targetModel := fun name => nomatch name.val
   state :=
     { onSort := fun
@@ -665,24 +715,26 @@ private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofLi
 /-- Introduce a scalar evaluation independent of the originally observed Bool. -/
 def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
     ({ separateReading Int with coefficients := some ⟨.ofList [false, true], zeroInputs⟩ } : Reading.{0, 0, 0, 0})
-    id (fun _ x => x) True :=
-  ⟨{ extra := .ofSort false
-     coordinate := fun j => ⟨.inr PUnit.unit, by
-       obtain ⟨i, hi⟩ := j.property
-       change false = j.val.1
-       rw [← hi]
-       exact (List.mem_singleton.1 i.2.sort_mem).symm⟩
-     extra_used := fun _ => ⟨⟨⟨false, .here⟩, ⟨false, .here⟩, rfl⟩, rfl⟩ },
-    fun _ => (0 : Int), fun _ => rfl⟩
+    id (fun _ x => x) :=
+  some
+    ⟨{ extra := .ofSort false
+       coordinate := fun j => ⟨.inr PUnit.unit, by
+         obtain ⟨i, hi⟩ := j.property
+         change false = j.val.1
+         rw [← hi]
+         exact (List.mem_singleton.1 i.2.sort_mem).symm⟩
+       extra_used := fun _ => ⟨⟨⟨false, .here⟩, ⟨false, .here⟩, rfl⟩, rfl⟩ },
+     fun _ => (0 : Int), fun _ => rfl⟩
 
 /-- Forget scalar evaluation while reading the independently selected Bool position. -/
 def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedReading Int)
     ({ plainReading with observation := StateObservation.ofSort true Bool (fun _ => false) } : Reading.{0, 0, 0, 0})
-    id (fun _ x => x) True :=
-  ⟨{ extra := .ofSort true
-     coordinate := fun i => ⟨.inr i, rfl⟩
-     extra_used := fun i => ⟨i, rfl⟩ },
-    fun _ => false, fun _ => rfl⟩
+    id (fun _ x => x) :=
+  some
+    ⟨{ extra := .ofSort true
+       coordinate := fun i => ⟨.inr i, rfl⟩
+       extra_used := fun i => ⟨i, rfl⟩ },
+     fun _ => false, fun _ => rfl⟩
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
 
@@ -736,7 +788,6 @@ private def reading : Reading.{0, 0, 0, 0} where
 /-- The comparison acts on the Boolean state at every natural-number position. -/
 def all_sorts_comparison : ReadingComparison reading reading where
   interpretation := Interpretation.identity presentation.theory
-  sourceModel n := nomatch n.val
   targetModel n := nomatch n.val
   state :=
     { onSort := fun _ => Bool.not
