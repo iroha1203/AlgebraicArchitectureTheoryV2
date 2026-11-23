@@ -53,6 +53,7 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
            | prepare | scopes | candidate | apply | observe
            | shigure_preservation | shigure_solve | shigure_interaction
            | shigure_diagram | shigure_path | shigure_transfer
+           | shigure_robustness | shigure_chevalley | shigure_observations
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
@@ -148,6 +149,9 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `shigure_diagram(Diagram,snapshot=Id?)` | 指定した `shigure diagram` について固定図式補完（四角形・鎖・一般有限図式）を計算し、可換残差・構造不一致・空性証明 witness または復元図式（全頂点・全辺の $h$/$\tau$）と再評価検算を返す。`shigure:ShigureOutcome` |
 | `shigure_path(Path,snapshot=Id?)` | 指定した `shigure path` について一段変更経路探索（`find` / `concatenate` / `subdivide`・拡大 protocol 実行経路）を計算し、合法経路群と再評価検算・ステップ拒否診断を返す。`shigure:ShigureOutcome` |
 | `shigure_transfer(Transfer,snapshot=Id?)` | 指定した `shigure transfer` について合法状態移送 lift・共通操作語保存（`word_checks`）・旧語 lift（`old_word_lifts`）・多段合成定義域関係（`domain_relation`）と再評価検算を返す。`shigure:ShigureOutcome` |
+| `shigure_robustness(Robustness,snapshot=Id?)` | 指定した `shigure robustness` について複数解釈族 $U_b$ と候補族 $C_b$ の fiber 非空性・3 量化・存在型補完 witness 復元・全係数移送安定性・粗/細 reading 比較を計算する。`shigure:ShigureOutcome` |
+| `shigure_chevalley(Chevalley,snapshot=Id?)` | 指定した `shigure chevalley` について代数閉包上の構成可能幾何像と Chevalley 四分類（`robust_all_pass` / `all_fail` / `mixed` / `empty_realizations`）・`mixed` witness 対・有理点 probe・大域正則切断・全係数移送対照を計算する。`shigure:ShigureOutcome` |
+| `shigure_observations(Observations,snapshot=Id?)` | 指定した `shigure observations` について異判定対 $\mathcal{D}_R$ に対する十分性判定・不足 witness・全包含極小十分観測集合（1 要素削除反例対付き）・費用比較・`law_readout` adequacy 対比を計算する。`shigure:ShigureOutcome` |
 
 各行にない固定引数を拒否する。evaluateのBはviewの全parameterを束縛する。
 LawのBは部分束縛を許し、未束縛parameterは[Lawの適用](law.md#5-law-の表示と適用)に従って全称化する。
@@ -161,12 +165,12 @@ checkに対象選択がない場合は現在のArchMap全体、localize/solve/re
 未観測fieldの補完をBで与えることはできない。
 `build/map/compose/compare/diagnose/needed`にはBを指定しない。
 
-SHIGURE の 6 種別の問い（`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
-`shigure_diagram`・`shigure_path`・`shigure_transfer`）では、
-対象頭語に Law ファイル内の対応する `shigure` 宣言（`task` / `diagram` / `path` / `transfer`）の
+SHIGURE の 9 種別の問い（`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
+`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations`）では、
+対象頭語に Law ファイル内の対応する `shigure` 宣言（`task` / `diagram` / `path` / `transfer` / `robustness` / `chevalley` / `observations`）の
 完全名（`Reading.Decl`）または読む範囲で一意な短名を指定する（別種別の宣言名や曖昧・未宣言名は `usage` / exit 64）。
 任意の `snapshot=Id` で `observed` 座標参照の対象 ArchMap snapshot を絞れる。
-同一の `archsig run` に上記 6 種別を含む複数の SHIGURE 問いを並べて実行できるが、通常の観測評価系の問いとは混在できない（混在は `usage` / exit 64）。
+同一の `archsig run` に上記 9 種別を含む複数の SHIGURE 問いを並べて実行できるが、通常の観測評価系の問いとは混在できない（混在は `usage` / exit 64）。
 SHIGURE 問いへ `--reuse` を渡した場合はキャッシュを再利用せず、`warnings`（`details.argument: "--reuse"`）を添えて現在入力から再計算する。
 出力は通常と同じ `archsig.summary/1`（stdout）および `archsig.result/4`（`--out` 保存時）に従い、
 1 件以上の `undetermined`（沈黙）があれば `partial` / exit 2、全件確定かつ 1 件以上の `refuted` があれば `complete` / exit 1、

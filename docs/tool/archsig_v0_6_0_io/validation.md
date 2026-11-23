@@ -444,8 +444,9 @@ Pair.totalの一解だけを持つ再利用候補からRepair/objectを採用し
 ## 7. SHIGURE の適合条件
 
 SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
-`shigure_diagram`・`shigure_path`・`shigure_transfer`）の実装は、
-題材固有の特例分岐やハードコードではなく、一般の原始表示 IR と多項式／ideal 計算核から次を満たすことを検証する。
+`shigure_diagram`・`shigure_path`・`shigure_transfer`・
+`shigure_robustness`・`shigure_chevalley`・`shigure_observations`）の実装は、
+題材固有の特例分岐やハードコードではなく、一般の原始表示 IR と多項式／ideal／構成可能集合／有限列挙計算核から次を満たすことを検証する。
 
 | 検証項目 | 期待する結果・証拠 |
 | --- | --- |
@@ -458,4 +459,7 @@ SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction
 | 固定図式の全補完（四角形・鎖・対照例） | `state_map` / `time_order` 両向きの四角形・鎖補完で全頂点・全辺（$h$/$\tau$）を復元し `reevaluation.matched = true` を返す。両立不能四角形では検算済み空性 witness 付き `refuted`、観測一致のみの偽装可換では `commutativity_residuals` 非空で `refuted` を返す |
 | 一段変更経路・細分化と台帳 4 順序 | 台帳 $V(\mu\delta(1-\rho))$ の $(0,0,0) \to (1,1,1)$ で合法 4 順序を復元・再評価一致させ、誤順 2 例を 2 段目残差 1 で拒否する。係数を状態に含む Idle 切替では全許可語保存検証付き 4 実行経路（`enlarged_protocol_execution_path`）を導出し、`fixed_protocol_change_path` と区別する。`n=0` 恒等一致/不一致、経路連結（`composite_is_one_step` 識別含む）、自由パラメータ細分化 fiber の成立と不成立、恒等一段規則の 2 点間 `refuted` を得る |
 | 合法状態移送・共通操作語・合成・Busy 対照 | 意味保存 $h_{01}$ 下での $h_{01} m_{01} = \iota_0$ 復元・再評価一致と、観測一致のみの偽装 lift（`ObsPair` 等、保存残差 0 で `lift_residuals` のみ失敗）の拒否を得る。共通定義域 $D_w$ の `word_checks` と独立な `old_word_lifts`（成立/不成立）を検証し、多段合成 $D_{0k}$ で `full_isomorphic` / `proper_subdomain`（`require_full_domain` で `refuted`）/ `empty` を区別する。台帳の Busy 状態 $(0,1,0)$ 移送では最終段 Busy Law 残差で `refuted`（空性 witness 検算一致）となる |
-| 入力保護・由来分離 | 結論注入（`residual_ideal` / `completed_diagram` / `restored_path` / `restored_transfer` 等）、`editable semantic_law`、非素数 `Fp(4)`、図式固定頂点編集、移送初段基準表示 $X_0$ 編集、名前空間衝突、`observed` 座標の `Origin.kind` 欠落は入力／変換検査で拒否（exit 65）し、通常問いと SHIGURE 問いの混在や未知宣言は `usage`（exit 64）で拒否する |
+| 複数解釈族・3 量化分離・存在型補完・$\mathcal{R}(R)$・粗細 reading | W4 で fiber 非空性・指定候補（`false`）・$\forall u\,\exists c$（`true`）・$\exists c\,\forall u$（`false`）を分離し、空 fiber を `vacuously_true_empty_fiber = true` / `refuted` として区別する。存在型 $E_{\mathrm{exists}}$ では補完 witness と `reevaluation.matched = true` を復元し、$\mathbb{F}_p$ 上 $u^p = u$ や $\mathbb{Q}[\rho]/((\rho-1)^2)$（双対数反例 $\rho = 1 + \varepsilon$）で有理点/幾何点成立と全係数移送 $\mathcal{R}(R)$ 反証を分離する。粗/細 reading 比較（可換性検算付き）と raw 候補（`OldFin` vs `SnapFin`）の残差差 `-1` vs `0` を得る |
+| 構成可能幾何像・Chevalley 四分類・有理 probe・大域切断 | D6 $xy = 1$ の射影で閉包 $\mathbb{A}^1$ ではなく構成可能像 $D(x)$（`equations = ["c"], invertibles = ["x"]`）を得る。`robust_all_pass` / `all_fail` / `mixed`（成立・不成立対 `mixed_witness_pair` 付き）/ `empty_realizations` の 4 領域を計算し、W5 $z^2 = t$ で幾何点成立と $t = 2$ 有理点 fiber 空・Laurent 環上大域正則切断非存在を分離する。$\mathbb{Q}[\rho]/((\rho-1)^2)$ の幾何点分類 `robust_all_pass` と `universal_ring_contrast` 反証を混同しない |
+| 包含極小十分観測・費用比較・`law_readout` 対比 | W4（$U = \mathbb{F}_2^2$, $e_1 = u_1$, $e_2 = u_2$, $e_3 = u_1 + u_2$）で 1 解へ潰さず `{e1}` と `{e2, e3}` の両包含極小集合と全 1 要素削除反例対を返し、費用指定時は `cost_ranked_sets` で費用順に比較する。$D_d = \varnothing$ では `insufficiency_witness` 付き `refuted`、$\mathcal{D}_R = \varnothing$ では空集合 `[]` 唯一解、W6 定数 `law_readout` 例では `coarse_adequate_for_law_readout = true` と `coarse_adequate_for_decision = false` を分離する |
+| 入力保護・由来分離 | 結論注入（`residual_ideal` / `completed_diagram` / `restored_path` / `restored_transfer` / `robust_all_pass` / `minimal_sufficient_sets` / `distinguishing_pairs` 等）、`editable semantic_law`、非素数 `Fp(4)`、図式固定頂点編集、移送初段基準表示 $X_0$ 編集、トップレベル `point_domain universal_ring`、`chevalley` の非 `algebraic_closure`、負 `cost`、空 `witness_vars`、名前空間衝突、`observed` 座標の `Origin.kind` 欠落は入力／変換検査で拒否（exit 65）し、通常問いと SHIGURE 問いの混在や未知宣言は `usage`（exit 64）で拒否する。4 種 `OriginKind`（`static_analysis` / `runtime_observation` / `llm_candidate` / `human_adopted`）および全 `SourceLocation` を `provenance.origins` へ区別保持し、`--out` 保存時は由来モード（`OriginMode`: `observed` / `proposed` / `specification`）を `scope.modes` へ記録する |

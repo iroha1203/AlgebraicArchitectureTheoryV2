@@ -26,7 +26,7 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
-| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/ideal 計算核・意味保存変更/条件付き解空間/相互作用/図式補完/変更経路/状態移送エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合計算核・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
 下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
@@ -88,7 +88,8 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
 ### SHIGURE の実行例
 
 SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
-`shigure_diagram`・`shigure_path`・`shigure_transfer` の 6 種別の問いを実行できます。
+`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・
+`shigure_observations` の 9 種別の問いを実行できます。
 
 ```bash
 archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.atoms.json \
@@ -125,6 +126,40 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase2
 1 つ目の例は四角形補完（`k = "1"`, `established`, 終了コード 0）、
 2 つ目の例は固定 protocol 間 4 順序と拡大 protocol 4 実行経路（両件 `established`, 終了コード 0）、
 3 つ目の例は 3 段移送合成（`domain_relation = "full_isomorphic"`, `established`）と Busy 状態移送反証（`p53` が `refuted`, 終了コード 1）を返します。
+
+複数解釈族の頑健性判定・Chevalley 四分類・包含極小の追加観測は次のように実行します。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/robustness.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.archmap.json \
+  --ask 'ex=shigure_robustness(RobustnessSuite.ExistentialRob)' \
+  --ask 'prov=shigure_robustness(RobustnessSuite.ProvenanceRob, snapshot=snap1)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/chevalley.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.archmap.json \
+  --ask 'four=shigure_chevalley(ChevalleySuite.FourRegionsChev)' \
+  --ask 'w5=shigure_chevalley(ChevalleySuite.W5Chev)' \
+  --ask 'w6=shigure_chevalley(ChevalleySuite.W6Chev)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/observations.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.archmap.json \
+  --ask 'w4=shigure_observations(ObsSuite.W4Obs)' \
+  --ask 'nd=shigure_observations(ObsSuite.NoDiffObs)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/silence.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase3/phase3.archmap.json \
+  --ask 'miss=shigure_robustness(SilenceSuite.MissingObsRob, snapshot=snap_missing)' \
+  --ask 'nl=shigure_robustness(SilenceSuite.NonlinearRob, snapshot=snap1)'
+```
+
+1 つ目の例は存在型 witness 復元（`w = "2"`, `reevaluation.matched = true`）と 4 種由来保持の頑健成立（両件 `established`, 終了コード 0）、
+2 つ目の例は Chevalley 4 領域分類・有理 fiber probe / Laurent 障害・双対数全係数移送対照（全件 `established`, 終了コード 0）、
+3 つ目の例は W4 の両包含極小集合（`["e1"]` と `["e2", "e3"]`）＋費用順位と差なし空集合解（両件 `established`, 終了コード 0）、
+4 つ目の例は未観測座標依存（`unobserved_dependency`）と非線形有理点範囲外（`nonlinear_point_existence_out_of_scope`）を理由付き `undetermined`（`status = "partial"`, 終了コード 2）として返します。
 
 ## 仕様
 

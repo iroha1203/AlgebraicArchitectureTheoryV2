@@ -309,9 +309,9 @@ Bool の false and x、true or x、同じ未知整数 h の h−h は補完に�
 未観測値の全補完が空になる提示は `inconsistent_observation` として拒否し、空虚な成立を返さない。
 change の自由 parameter と未観測 slot は異なる。修復・探索で後者を決定変数にしない。
 
-## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク・図式・経路・移送）
+## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク・図式・経路・移送・複数解釈族）
 
-`reading` 本体の中に、文脈キーワード `shigure` で始まる 8 種類の宣言を置ける。
+`reading` 本体の中に、文脈キーワード `shigure` で始まる 12 種類の宣言を置ける。
 `shigure` は予約語一覧へ追加しないため、既存の宣言名・view 名・変数名と衝突しない。
 通常の `view` / `law` / `local` / `change` / `relation` 宣言と同一 `reading` 内で共存できる。
 
@@ -319,7 +319,8 @@ change の自由 parameter と未観測 slot は異なる。修復・探索で�
 ShigureDecl ::=
   "shigure" (ShigurePresentation | ShigureComparison | ShigureChangeSpec
            | ShigureEvalCondition | ShigureTask
-           | ShigureDiagram | ShigurePath | ShigureTransfer)
+           | ShigureDiagram | ShigurePath | ShigureTransfer
+           | ShigureFamily | ShigureRobustness | ShigureChevalley | ShigureObservations)
 
 ShigureDirection ::= "state_map" | "time_order"
 
@@ -455,13 +456,141 @@ ShigureTransfer ::= "transfer" Name "{"
   ("eval_condition" QName ";")?
   ("require_full_domain" ("true" | "false") ";")?
 "}"
+
+ShigurePointDomain ::=
+    "algebraic_closure"
+  | "universal_ring"
+  | "rational_points" | "Q_points"
+  | "integer_points" | "Z_points"
+  | ("finite_field_points" | "Fp_points") "(" Integer ")"
+
+ShigureOriginRef ::=
+  "origin" (
+      ("static_analysis" | "runtime_observation" | "llm_candidate" | "human_adopted" | "archmap") String ";"
+  )
+
+ShigureMemberValue ::=
+    ShigureScalarLit
+  | "observed" QName
+  | "missing"
+
+ShigureNamedPoly ::= Name ":" PolyExpr ";"
+ShigureNamedEq   ::= Name ":" PolyExpr "=" PolyExpr ";"
+
+ShigureFamily ::= "family" Name "{"
+  "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+  "realizations" Name "{"
+    "u_vars" "[" (Name ("," Name)*)? "]" ";"
+    ("b_vars" "[" (Name ("," Name)*)? "]" ";")?
+    ("reading_q" "[" (PolyExpr ("," PolyExpr)*)? "]" ";")?
+    ( "members" "[" "]" ";"
+    | ("member" Name "{"
+        ShigureOriginRef
+        ("is_raw_candidate" ("true" | "false") ";")?
+        ("presentation" QName ";")?
+        ("set" Name "=" ShigureMemberValue ";")*
+      "}")+
+    | "scheme" "{"
+        ShigureOriginRef
+        ("is_raw_candidate" ("true" | "false") ";")?
+        ("equation" ShigureNamedEq)*
+        ("invertible" ShigureNamedPoly)*
+      "}"
+    )
+  "}"
+  "candidates" Name "{"
+    ("c_vars" "[" (Name ("," Name)*)? "]" ";")?
+    ("pi" "[" (PolyExpr ("," PolyExpr)*)? "]" ";")?
+    ( "members" "[" "]" ";"
+    | ("member" Name "{"
+        ShigureOriginRef
+        ("set" Name "=" ShigureMemberValue ";")*
+      "}")+
+    | "scheme" "{"
+        ShigureOriginRef
+        ("equation" ShigureNamedEq)*
+        ("invertible" ShigureNamedPoly)*
+      "}"
+    )
+  "}"
+  "goodness" (
+      "direct" "{"
+        ("equation" ShigureNamedEq)*
+        ("invertible" ShigureNamedPoly)*
+        (ShigurePreservationBlock)?
+        (ShigureRawSequenceBlock)?
+      "}"
+    | "existential" "{"
+        "witness_vars" "[" Name ("," Name)* "]" ";"
+        ("equation" ShigureNamedEq)*
+        ("invertible" ShigureNamedPoly)*
+        (ShigurePreservationBlock)?
+      "}"
+  )
+  ("reading_comparison" Name "{"
+    "fine_b_vars" "[" (Name ("," Name)*)? "]" ";"
+    "fine_q" "[" (PolyExpr ("," PolyExpr)*)? "]" ";"
+    "coarsen_r" "[" (PolyExpr ("," PolyExpr)*)? "]" ";"
+  "}")?
+"}"
+
+ShigurePreservationBlock ::= "preservation" "{"
+  "comparison" QName ";"
+  "change_spec" QName ";"
+  ("bind" Name "=" PolyExpr ";")*
+"}"
+
+ShigureRawSequenceBlock ::= "raw_sequence" "{"
+  "start_phase" Name ";"
+  ("start_state" Name "=" ShigureScalarLit ";")*
+  ("step" Name ("(" (ShigureScalarLit ("," ShigureScalarLit)*)? ")")? ";")*
+  "observation" Name ";"
+  ("baseline_step_index" Integer ";")?
+"}"
+
+ShigureCandidateSelector ::=
+  "designated_candidate" (
+      "id" Name ";"
+    | "values" "{" (Name "=" ShigureScalarLit ";")* "}"
+  )
+
+ShigureRobustness ::= "robustness" Name "{"
+  "family" QName ";"
+  "point_domain" ShigurePointDomain ";"
+  ("base_value" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")?
+  (ShigureCandidateSelector)?
+  ("check_universal_ring" ("true" | "false") ";")?
+  ("fine_base_value" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")?
+"}"
+
+ShigureChevalley ::= "chevalley" Name "{"
+  "family" QName ";"
+  "point_domain" "algebraic_closure" ";"
+  ("base_value" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")?
+  (ShigureCandidateSelector)?
+  ("probe" Name "{" (Name "=" ShigureScalarLit ";")* "}")*
+  ("check_global_regular_section" ("true" | "false") ";")?
+  ("check_universal_ring" ("true" | "false") ";")?
+"}"
+
+ShigureObservations ::= "observations" Name "{"
+  "family" QName ";"
+  "point_domain" ShigurePointDomain ";"
+  ("base_value" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")?
+  ("observe" Name "{"
+    ShigureOriginRef
+    ("cost" Integer ";")?
+    ("component" ShigureNamedPoly)*
+  "}")*
+  ("law_readout" Name "{" ("component" ShigureNamedPoly)* "}")?
+"}"
 ```
 
 `PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
 `+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
 `shigure path` の `mode` 省略時は `find`、`shigure transfer` の `require_full_domain` 省略時は `false` を既定とする。
 各 `rule`・`edge`・`subdivide`・移送 `step` における射本体 `ShigureMorphismClause` では、`comparison`・`identity`・インライン（`state_map` / `translate`）の混在を禁止する（`step` では `comparison` と `before`/`after` の混在も禁止する）。
-`shigure diagram` / `shigure path` / `shigure transfer` の各ブロックおよび `phase` ブロック内の句は上記の多重度制約のもと任意の順序で記述できる。
+`shigure diagram` / `shigure path` / `shigure transfer` / `shigure family` / `shigure robustness` / `shigure chevalley` / `shigure observations` の各ブロックおよび `phase` ブロック内の句は上記の多重度制約のもと任意の順序で記述できる。
 
 静的検査と変換検査では次を強制する。
 
@@ -470,24 +599,31 @@ ShigureTransfer ::= "transfer" Name "{"
   `verdict`、`restored`、`reeval`、`groebner_basis` に加え、`completed_diagram`、`restored_diagram`、
   `commutativity_residuals`、`computed_path`、`restored_path`、`rejected_candidates`、`subdivision_fiber`、
   `transfer_verdict`、`restored_transfer`、`common_domain`、`composed_domain`、`word_check_results`、
-  `old_word_lift_results`、`lift_found`、`domain_nonempty` などの計算結論相当の欄や宣言を
-  Law 入力（各宣言本体・`op`・`rule`・`lift`・endpoint を含む）に含めた場合、構文検査で拒否する。
+  `old_word_lift_results`、`lift_found`、`domain_nonempty`、`quantifiers`、`valid_designated`、`pointwise`、
+  `common_candidate`、`fiber_non_empty`、`robust_all_pass`、`all_fail`、`mixed`、`empty_realizations`、
+  `effective_image_e`、`p_plus`、`p_minus`、`chevalley_partition`、`mixed_witness_pair`、`distinguishing_pairs`、
+  `minimal_sufficient_sets`、`minimal_sufficient_observations`、`insufficiency_witness`、`raw_candidate_evaluations`、`reevaluation`
+  などの計算結論相当の語を、`shigure <種別>` の宣言種別位置、各宣言本体・下位ブロックの句（フィールド）位置、および内部識別子・変数位置（`op`/`lift` の代入先座標・`endpoint` のパラメータ代入先・`u_vars`/`b_vars`/`c_vars`/`witness_vars`/`fine_b_vars`・`member` ID・`shigure family` の名前付き `equation`/`invertible`・`observe`/`law_readout` の名前付き `component`・`preservation` `bind`・`raw_sequence` `start_state`・`designated_candidate` の ID/変数・`probe` の名前/変数・`observe` ID・`law_readout` 名）に含めた場合、構文検査で拒否する。
 - **守る意味 Law と固定部分圏・初段基準の保護**: `editable semantic_law` は構文・型検査で拒否する。
   `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
-  `editable` による `shigure task` の `before` 表示変更・探索パラメータ混入も拒否する。
+  `editable` による `shigure task` や `shigure family` `preservation` の `before` 表示変更・探索パラメータ混入も拒否する。
   `shigure diagram` では固定部分圏 $K$ の頂点・辺および意味 Law への編集指定と、固定辺が非固定頂点を結ぶ非閉指定を拒否する。
   `shigure transfer` では多段連鎖（`step[i].after == step[i+1].before`）を要求し、
   初段 `step[0]` の始端表示 $X_0$ をパラメータフリーかつ編集不可に制限する（2 段目以降の共有中間表示における編集・パラメータ指定は許容する）。
 - **名前・参照・型・循環・無界境界の検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
   `shigure` reading 間の循環参照、未宣言の phase・座標・操作・変数、
-  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数重複およびパラメータとの衝突を含む）、
+  `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数重複およびパラメータとの衝突、`u_vars`/`b_vars`/`c_vars` 間の名前衝突および `witness_vars`・`fine_b_vars` と `u_vars`/`b_vars`/`c_vars` の名前衝突を含む）、
+  `goodness existential` の空 `witness_vars`、`raw_sequence` 指定時の必須 `presentation`・フェーズ連結・`start_state` 網羅・終端/基準フェーズ観測不整合、
+  `observe.cost` の負数または小数、`realization`・`candidate`・`observe` における `origin` 欠如および空 `ArchMap` origin ID 参照、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
   （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
   `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
-  法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル）、
+  法不一致の `Fp(p)` と `finite_field_points(q)`、`Fp(p)` での範囲外リテラル、
+  `shigure robustness` / `shigure chevalley` / `shigure observations` でのトップレベル `point_domain universal_ring` 指定、
+  `shigure chevalley` での非 `algebraic_closure` 指定および `domain Fp(p)` 指定）、
   および `direction` と射端点の不整合を拒否する。
   なお `domain Z` と `rational_points` は $\mathbb{Z} \hookrightarrow \mathbb{Q}$ による $\mathbb{Q}$ 点評価として受理する。
   また `shigure path` の `mode find` / `mode subdivide` における `length` 省略および `old_word_lift` の `max_length` 省略は構文上受理し、実行時に `unbounded_search_out_of_scope` の `undetermined` として扱う（`mode concatenate` は `first`・`second` の列長から経路長が定まるため `length` 省略を通常評価する）。
-- **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合、
+- **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合や `member` 座標に `missing` を明示した場合は、
   零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` で沈黙する。
-  参照した観測座標の `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。
+  参照した観測座標や `origin archmap` が指す ArchMap `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。また `origin` で指定した 4 種（`static_analysis`・`runtime_observation`・`llm_candidate`・`human_adopted`）および複数 `SourceLocation` を結果まで区別保持する。
