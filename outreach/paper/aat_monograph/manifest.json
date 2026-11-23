@@ -1,0 +1,200 @@
+{
+  "schema": "aat-monograph-manifest/v1",
+  "title": "代数幾何的アーキテクチャ論",
+  "subtitle": "Algebraic Architecture Theory",
+  "main": "aat_monograph.tex",
+  "source_dir": "docs/aat/algebraic_geometric_theory",
+  "environment": {
+    "tectonic": "Tectonic 0.16.9",
+    "texlive": "2025"
+  },
+  "excluded_files": [
+    "README.md"
+  ],
+  "readme_anchor_map": {
+    "": "doc:toc",
+    "第i部-lawと意味の基礎": "part:1",
+    "第ii部-実現の族とlawの幾何": "part:2",
+    "第iii部-意味を保つ変更の全体": "part:3",
+    "第iv部-局所変更修復障害": "part:4",
+    "第v部-輸送比較診断": "part:5",
+    "第vi部-観測必要情報再構成": "part:6"
+  },
+  "structure": [
+    {
+      "kind": "chapter",
+      "id": "introduction",
+      "source": "introduction.md"
+    },
+    {
+      "kind": "chapter",
+      "id": "notation",
+      "source": "notation.md"
+    },
+    {
+      "kind": "part",
+      "id": "part_1",
+      "label": "part:1",
+      "part_num": "第I部",
+      "title": "Lawと意味の基礎",
+      "subtitle": "第1–3章",
+      "chapters": [
+        {
+          "id": "chapter_01",
+          "source": "part_1/chapter_1_atoms_laws_theories.md"
+        },
+        {
+          "id": "chapter_02",
+          "source": "part_1/chapter_2_models_and_morphisms.md"
+        },
+        {
+          "id": "chapter_03",
+          "source": "part_1/chapter_3_contexts_and_local_models.md"
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "id": "part_2",
+      "label": "part:2",
+      "part_num": "第II部",
+      "title": "実現の族とLawの幾何",
+      "subtitle": "第4–6章",
+      "chapters": [
+        {
+          "id": "chapter_04",
+          "source": "part_2/chapter_4_coefficient_realizations.md"
+        },
+        {
+          "id": "chapter_05",
+          "source": "part_2/chapter_5_quantities_and_law_geometry.md"
+        },
+        {
+          "id": "chapter_06",
+          "source": "part_2/chapter_6_families_and_moduli.md"
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "id": "part_3",
+      "label": "part:3",
+      "part_num": "第III部",
+      "title": "意味を保つ変更の全体",
+      "subtitle": "第7–9章",
+      "chapters": [
+        {
+          "id": "chapter_07",
+          "source": "part_3/chapter_7_semantic_changes_and_composition.md"
+        },
+        {
+          "id": "chapter_08",
+          "source": "part_3/chapter_8_constrained_changes_and_completions.md"
+        },
+        {
+          "id": "chapter_09",
+          "source": "part_3/chapter_9_quotients_symmetry_and_lifts.md"
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "id": "part_4",
+      "label": "part:4",
+      "part_num": "第IV部",
+      "title": "局所変更・修復・障害",
+      "subtitle": "第10–13章",
+      "chapters": [
+        {
+          "id": "chapter_10",
+          "source": "part_4/chapter_10_descent_of_realizations_and_changes.md"
+        },
+        {
+          "id": "chapter_11",
+          "source": "part_4/chapter_11_ariadne_relative_repairs.md"
+        },
+        {
+          "id": "chapter_12",
+          "source": "part_4/chapter_12_deformations_and_obstructions.md"
+        },
+        {
+          "id": "chapter_13",
+          "source": "part_4/chapter_13_fragments_and_globalization.md"
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "id": "part_5",
+      "label": "part:5",
+      "part_num": "第V部",
+      "title": "輸送・比較・診断",
+      "subtitle": "第14–16章",
+      "chapters": [
+        {
+          "id": "chapter_14",
+          "source": "part_5/chapter_14_transport_along_readings_and_coefficients.md"
+        },
+        {
+          "id": "chapter_15",
+          "source": "part_5/chapter_15_generated_comparisons_and_normalization.md"
+        },
+        {
+          "id": "chapter_16",
+          "source": "part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md"
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "id": "part_6",
+      "label": "part:6",
+      "part_num": "第VI部",
+      "title": "観測・必要情報・再構成",
+      "subtitle": "第17–19章",
+      "chapters": [
+        {
+          "id": "chapter_17",
+          "source": "part_6/chapter_17_observation_sufficiency_and_selection.md"
+        },
+        {
+          "id": "chapter_18",
+          "source": "part_6/chapter_18_repair_and_observation.md"
+        },
+        {
+          "id": "chapter_19",
+          "source": "part_6/chapter_19_local_reconstruction_and_finite_determination.md"
+        }
+      ]
+    },
+    {
+      "kind": "appendices",
+      "chapters": [
+        {
+          "id": "appendix_a",
+          "source": "appendix_a_positive_logic.md"
+        },
+        {
+          "id": "appendix_b",
+          "source": "appendix_b_coefficients_and_descent.md"
+        },
+        {
+          "id": "appendix_c",
+          "source": "appendix_c_homological_constructions.md"
+        },
+        {
+          "id": "appendix_d",
+          "source": "appendix_d_finite_roots_and_stalks.md"
+        },
+        {
+          "id": "appendix_e",
+          "source": "appendix_e_change_paths_and_costs.md"
+        },
+        {
+          "id": "appendix_f",
+          "source": "appendix_f_universal_coefficients_and_termination.md"
+        }
+      ]
+    }
+  ]
+}

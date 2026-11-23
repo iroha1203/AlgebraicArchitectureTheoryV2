@@ -6,6 +6,7 @@
 - [arXiv 要件](../../docs/paper/arxiv.md): 公式出典と投稿前の再確認
 - [記録用の雛形](../../docs/paper/templates/): 企画、主張・証拠、文献、AI 利用、投稿記録
 - [共通ツール](_tools/README.md): ビルド、検査、投稿用 source 作成
+- [AAT 数学本文モノグラフ](aat_monograph/README.md): `docs/aat/algebraic_geometric_theory/` から 1 本のモノグラフ PDF を自動生成するパイプライン
 - [SAGA](saga/README.md): 日英原稿・公開記録・再現資料
 
 新しい論文は `<paper-id>/` に作成し、README で編集元と公開版を指定する。
