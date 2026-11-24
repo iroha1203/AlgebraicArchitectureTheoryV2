@@ -110,4 +110,87 @@ if check_audit_fixture >"$tmp/diagnostics" 2>&1; then
 fi
 grep -Fq 'the final command must run the SHIGURE audit at top level' "$tmp/diagnostics"
 
+cat >"$tmp/CompiledAccepted.lean" <<'LEAN'
+theorem checkedTogether : True := True.intro
+LEAN
+cat >"$tmp/CompiledRejected.lean" <<'LEAN'
+module
+import Lean.Elab.Tactic
+private theorem compiledDependency : True := by decide (native := id true)
+LEAN
+lake env bash -e -c '
+  cd "$1"
+  export LEAN_PATH="$LEAN_PATH:$PWD"
+  lean -o CompiledAccepted.olean CompiledAccepted.lean
+  lean -o CompiledRejected.olean CompiledRejected.lean
+  test -f CompiledRejected.olean.private
+  lean --run "$2" --compiled CompiledAccepted.lean
+  if lean --run "$2" --compiled CompiledAccepted.lean CompiledRejected.lean > diagnostics 2>&1; then
+    echo "SHIGURE compiled declaration checker accepted a nonstandard assumption" >&2
+    exit 1
+  fi
+  grep -Fq "nonstandard kernel assumption Lean.ofReduceBool" diagnostics
+' bash "$tmp" "$PWD/$checker"
+
+cat >"$tmp/AdjacentExit.lean" <<'LEAN'
+theorem beforeExit : True := True.intro#exit
+LEAN
+if lake env lean --run "$checker" "$tmp/AdjacentExit.lean" >"$tmp/diagnostics" 2>&1; then
+  echo "SHIGURE declaration checker accepted an adjacent early exit" >&2
+  exit 1
+fi
+grep -Fq 'the Lean frontend did not reach the end of the file' "$tmp/diagnostics"
+
+if [[ $# -eq 1 ]]; then
+  cat >"$tmp/Formal/SHIGURE/MacroSource.lean" <<'LEAN'
+import Lean.Elab.Tactic
+macro "temporary_proof" : command => `(example := Lean.ofReduceNat)
+LEAN
+  cat >"$tmp/Formal/SHIGURE/MacroClient.lean" <<'LEAN'
+import Formal.SHIGURE.MacroSource
+temporary_proof
+LEAN
+  cat >"$tmp/Formal/SHIGURE/RunCommand.lean" <<'LEAN'
+import Lean.Elab.Tactic
+run_cmd do
+  let _proof : True := by decide (native := id true)
+  pure ()
+LEAN
+  cp "$tmp/AdjacentExit.lean" "$tmp/Formal/SHIGURE/AdjacentExit.lean"
+  cp "$tmp/Rejected.lean" "$tmp/Formal/SHIGURE/RejectedSyntax.lean"
+  cat >"$tmp/Formal/SHIGURE/Guarded.lean" <<'LEAN'
+#guard_msgs in
+theorem succeeds : True := True.intro
+LEAN
+  lake env bash -e -c '
+    cd "$1"
+    export LEAN_PATH="$PWD:$LEAN_PATH"
+    export SHIGURE_AUDIT_STAMPS="$PWD/stamps"
+    mkdir -p "$SHIGURE_AUDIT_STAMPS"
+    lean --plugin="$2" -o Formal/SHIGURE/MacroSource.olean Formal/SHIGURE/MacroSource.lean
+    test "$(cat stamps/Formal.SHIGURE.MacroSource)" = checked
+    lean --plugin="$2" Formal/SHIGURE/Guarded.lean
+    test "$(cat stamps/Formal.SHIGURE.Guarded)" = frontend
+    if lean --plugin="$2" Formal/SHIGURE/RejectedSyntax.lean > syntax.log 2>&1; then
+      echo "SHIGURE build audit accepted prohibited syntax" >&2
+      exit 1
+    fi
+    test "$(grep -c "disallowed syntax sorry" syntax.log)" -eq 2
+    grep -Fq "disallowed syntax unsafe" syntax.log
+    grep -Fq "disallowed syntax debug.skipKernelTC" syntax.log
+    if lean --plugin="$2" Formal/SHIGURE/MacroClient.lean > macro.log 2>&1; then
+      echo "SHIGURE build audit accepted a nonstandard proof from an imported macro" >&2
+      exit 1
+    fi
+    grep -Fq "nonstandard kernel assumption Lean.ofReduceNat" macro.log
+    if lean --plugin="$2" Formal/SHIGURE/RunCommand.lean > command.log 2>&1; then
+      echo "SHIGURE build audit accepted a nonstandard proof in run_cmd" >&2
+      exit 1
+    fi
+    grep -Fq "nonstandard kernel assumption Lean.ofReduceBool" command.log
+    lean --plugin="$2" Formal/SHIGURE/AdjacentExit.lean > exit.log 2>&1
+    test ! -e stamps/Formal.SHIGURE.AdjacentExit
+  ' bash "$tmp" "$1"
+fi
+
 echo "SHIGURE declaration checker fixtures passed."
