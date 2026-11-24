@@ -54,19 +54,45 @@ impl CohomologyGroup {
 }
 
 /// 次数 0–2 の有限自由加群コチェーン複体 `C^0 --d0--> C^1 --d1--> C^2`。
+/// 構築時（`CochainComplex::new`）にサイズ・環一致・`d1 * d0 == 0` を検証し、
+/// フィールドを非公開とすることで不変条件を型レベルで維持する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CochainComplex<C: RingCoeff> {
-    pub dim0: usize,
-    pub dim1: usize,
-    pub dim2: usize,
+    dim0: usize,
+    dim1: usize,
+    dim2: usize,
     /// `dim1 x dim0` 行列。
-    pub d0: Vec<Vec<C>>,
+    d0: Vec<Vec<C>>,
     /// `dim2 x dim1` 行列。
-    pub d1: Vec<Vec<C>>,
-    pub zero_coeff: C,
+    d1: Vec<Vec<C>>,
+    zero_coeff: C,
 }
 
 impl<C: RingCoeff> CochainComplex<C> {
+    pub fn dim0(&self) -> usize {
+        self.dim0
+    }
+
+    pub fn dim1(&self) -> usize {
+        self.dim1
+    }
+
+    pub fn dim2(&self) -> usize {
+        self.dim2
+    }
+
+    pub fn d0(&self) -> &[Vec<C>] {
+        &self.d0
+    }
+
+    pub fn d1(&self) -> &[Vec<C>] {
+        &self.d1
+    }
+
+    pub fn zero_coeff(&self) -> &C {
+        &self.zero_coeff
+    }
+
     /// 複体条件 `d1 * d0 == 0` と行列サイズを検証して構築する。
     pub fn new(
         dim0: usize,
@@ -436,11 +462,12 @@ impl CochainComplex<BigInt> {
 }
 
 /// 次数 0–2 の cochain 射 `f = (f^0, f^1, f^2): C^\bullet -> D^\bullet`。
+/// 構築時（`CochainMap::new`）および `induced_field` 適用時に可換性を検証する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CochainMap<C: RingCoeff> {
-    pub f0: Vec<Vec<C>>,
-    pub f1: Vec<Vec<C>>,
-    pub f2: Vec<Vec<C>>,
+    f0: Vec<Vec<C>>,
+    f1: Vec<Vec<C>>,
+    f2: Vec<Vec<C>>,
 }
 
 /// 誘導コホモロジー写像 `H^i(f)` の核・像・余核の次元と単射/全射/同型判定。
@@ -463,7 +490,67 @@ pub struct InducedCohomologyMapField {
     pub h2: InducedDegreeMap,
 }
 
+fn validate_cochain_map<C: RingCoeff>(
+    src: &CochainComplex<C>,
+    dst: &CochainComplex<C>,
+    f0: &[Vec<C>],
+    f1: &[Vec<C>],
+    f2: &[Vec<C>],
+) -> Result<(), AlgebraError> {
+    check_same_ring(&src.zero_coeff, &dst.zero_coeff)?;
+    for (mat, exp_rows, exp_cols) in [
+        (f0, dst.dim0, src.dim0),
+        (f1, dst.dim1, src.dim1),
+        (f2, dst.dim2, src.dim2),
+    ] {
+        if mat.len() != exp_rows {
+            return Err(AlgebraError::ArityMismatch {
+                expected: exp_rows,
+                actual: mat.len(),
+            });
+        }
+        for row in mat {
+            if row.len() != exp_cols {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: exp_cols,
+                    actual: row.len(),
+                });
+            }
+            for v in row {
+                check_same_ring(&src.zero_coeff, v)?;
+            }
+        }
+    }
+    let lhs0 = mat_mul(&dst.d0, f0, src.dim0, &src.zero_coeff);
+    let rhs0 = mat_mul(f1, &src.d0, src.dim0, &src.zero_coeff);
+    if lhs0 != rhs0 {
+        return Err(AlgebraError::OutOfScope {
+            detail: "cochain map commutativity d_dst^0 * f^0 = f^1 * d_src^0 violated".to_owned(),
+        });
+    }
+    let lhs1 = mat_mul(&dst.d1, f1, src.dim1, &src.zero_coeff);
+    let rhs1 = mat_mul(f2, &src.d1, src.dim1, &src.zero_coeff);
+    if lhs1 != rhs1 {
+        return Err(AlgebraError::OutOfScope {
+            detail: "cochain map commutativity d_dst^1 * f^1 = f^2 * d_src^1 violated".to_owned(),
+        });
+    }
+    Ok(())
+}
+
 impl<C: RingCoeff> CochainMap<C> {
+    pub fn f0(&self) -> &[Vec<C>] {
+        &self.f0
+    }
+
+    pub fn f1(&self) -> &[Vec<C>] {
+        &self.f1
+    }
+
+    pub fn f2(&self) -> &[Vec<C>] {
+        &self.f2
+    }
+
     /// 可換性 `d_D^0 f^0 = f^1 d_C^0` と `d_D^1 f^1 = f^2 d_C^1` を検証して構築する。
     pub fn new(
         src: &CochainComplex<C>,
@@ -472,81 +559,20 @@ impl<C: RingCoeff> CochainMap<C> {
         f1: Vec<Vec<C>>,
         f2: Vec<Vec<C>>,
     ) -> Result<Self, AlgebraError> {
-        check_same_ring(&src.zero_coeff, &dst.zero_coeff)?;
-        for (mat, exp_rows, exp_cols) in [
-            (&f0, dst.dim0, src.dim0),
-            (&f1, dst.dim1, src.dim1),
-            (&f2, dst.dim2, src.dim2),
-        ] {
-            if mat.len() != exp_rows {
-                return Err(AlgebraError::ArityMismatch {
-                    expected: exp_rows,
-                    actual: mat.len(),
-                });
-            }
-            for row in mat {
-                if row.len() != exp_cols {
-                    return Err(AlgebraError::ArityMismatch {
-                        expected: exp_cols,
-                        actual: row.len(),
-                    });
-                }
-                for v in row {
-                    check_same_ring(&src.zero_coeff, v)?;
-                }
-            }
-        }
-        let lhs0 = mat_mul(&dst.d0, &f0, src.dim0, &src.zero_coeff);
-        let rhs0 = mat_mul(&f1, &src.d0, src.dim0, &src.zero_coeff);
-        if lhs0 != rhs0 {
-            return Err(AlgebraError::OutOfScope {
-                detail: "cochain map commutativity d_dst^0 * f^0 = f^1 * d_src^0 violated"
-                    .to_owned(),
-            });
-        }
-        let lhs1 = mat_mul(&dst.d1, &f1, src.dim1, &src.zero_coeff);
-        let rhs1 = mat_mul(&f2, &src.d1, src.dim1, &src.zero_coeff);
-        if lhs1 != rhs1 {
-            return Err(AlgebraError::OutOfScope {
-                detail: "cochain map commutativity d_dst^1 * f^1 = f^2 * d_src^1 violated"
-                    .to_owned(),
-            });
-        }
+        validate_cochain_map(src, dst, &f0, &f1, &f2)?;
         Ok(Self { f0, f1, f2 })
     }
 }
 
 impl<C: FieldCoeff> CochainMap<C> {
     /// 体係数上の誘導写像 `H^0(f), H^1(f), H^2(f)` の核・像・余核を厳密計算する。
+    /// 別の複体対が渡された場合も fail-closed に可換性を再検証する。
     pub fn induced_field(
         &self,
         src: &CochainComplex<C>,
         dst: &CochainComplex<C>,
     ) -> Result<InducedCohomologyMapField, AlgebraError> {
-        check_same_ring(&src.zero_coeff, &dst.zero_coeff)?;
-        for (mat, exp_rows, exp_cols) in [
-            (&self.f0, dst.dim0, src.dim0),
-            (&self.f1, dst.dim1, src.dim1),
-            (&self.f2, dst.dim2, src.dim2),
-        ] {
-            if mat.len() != exp_rows {
-                return Err(AlgebraError::ArityMismatch {
-                    expected: exp_rows,
-                    actual: mat.len(),
-                });
-            }
-            for row in mat {
-                if row.len() != exp_cols {
-                    return Err(AlgebraError::ArityMismatch {
-                        expected: exp_cols,
-                        actual: row.len(),
-                    });
-                }
-                for v in row {
-                    check_same_ring(&src.zero_coeff, v)?;
-                }
-            }
-        }
+        validate_cochain_map(src, dst, &self.f0, &self.f1, &self.f2)?;
         let z = src.zero_coeff.zero_like();
         let sc = src.cohomology_field()?;
         let dc = dst.cohomology_field()?;

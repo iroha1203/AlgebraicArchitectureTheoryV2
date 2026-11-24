@@ -157,7 +157,14 @@ pub fn validate_atlas_task(spec: AtlasTaskSpec) -> Result<CheckedAtlasTask, Vali
 
     let dom = &spec.coeff_domain;
     let empty_vars = BTreeSet::new();
-    check_expr_refs(&spec.mu, dom, &empty_vars, &format!("{ctx} mu"))?;
+    check_expr_refs(
+        &spec.mu,
+        dom,
+        &empty_vars,
+        &empty_vars,
+        &empty_vars,
+        &format!("{ctx} mu"),
+    )?;
 
     let (v_set, e_set) = validate_simple_graph(&spec.vertices, &spec.edges, dom, &ctx)?;
 
@@ -176,7 +183,14 @@ pub fn validate_atlas_task(spec: AtlasTaskSpec) -> Result<CheckedAtlasTask, Vali
                 name: v.clone(),
             });
         }
-        check_expr_refs(expr, dom, &empty_vars, &format!("{ctx} base_lambda `{v}`"))?;
+        check_expr_refs(
+            expr,
+            dom,
+            &empty_vars,
+            &empty_vars,
+            &empty_vars,
+            &format!("{ctx} base_lambda `{v}`"),
+        )?;
     }
     if lam_seen.len() != v_set.len() {
         return Err(ValidationError::ConversionError {
@@ -308,6 +322,8 @@ fn validate_simple_graph<'a>(
         check_expr_refs(
             &e.offset,
             domain,
+            &empty_vars,
+            &empty_vars,
             &empty_vars,
             &format!("{context} edge `{}` offset", e.name),
         )?;
@@ -474,7 +490,14 @@ fn validate_refinement(
         "refinement.nerve_face_map",
     )?;
 
+    let empty = BTreeSet::new();
     if let Some(ec) = &r.eval_condition {
+        if let Some(dup) = coarse_v.intersection(coarse_e).next() {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "eval_condition_var",
+                name: (*dup).to_owned(),
+            });
+        }
         let mut allowed_vars: BTreeSet<&str> = BTreeSet::new();
         allowed_vars.extend(coarse_v.iter().copied());
         allowed_vars.extend(coarse_e.iter().copied());
@@ -500,6 +523,8 @@ fn validate_refinement(
                     item,
                     domain,
                     &allowed_vars,
+                    &empty,
+                    &empty,
                     &format!("{kind} `{}`", item.name),
                 )?;
             }
@@ -518,16 +543,31 @@ fn validate_refinement(
             });
         }
         let fg_vars: BTreeSet<&str> = [fg.forgotten_var.as_str()].into_iter().collect();
-        check_expr_refs(&fg.eval_expr, domain, &fg_vars, "forgetful_reading.eval_expr")?;
+        check_expr_refs(
+            &fg.eval_expr,
+            domain,
+            &fg_vars,
+            &empty,
+            &empty,
+            "forgetful_reading.eval_expr",
+        )?;
         check_expr_refs(
             &fg.condition_eq,
             domain,
             &fg_vars,
+            &empty,
+            &empty,
             "forgetful_reading.condition_eq",
         )?;
-        let empty = BTreeSet::new();
         for sv in &fg.sample_values {
-            check_expr_refs(sv, domain, &empty, "forgetful_reading.sample_values")?;
+            check_expr_refs(
+                sv,
+                domain,
+                &empty,
+                &empty,
+                &empty,
+                "forgetful_reading.sample_values",
+            )?;
         }
     }
     Ok(())
@@ -597,7 +637,16 @@ fn validate_extended_language_check(
             });
         }
     }
-    validate_total_var_map(&ext.adapter_map, &s_set, &s_set, domain, "adapter_map")?;
+    let empty = BTreeSet::new();
+    validate_total_var_map(
+        &ext.adapter_map,
+        &s_set,
+        &s_set,
+        &empty,
+        &empty,
+        domain,
+        "adapter_map",
+    )?;
 
     let mut op_names = BTreeSet::new();
     for op in &ext.atomic_ops {
@@ -612,14 +661,14 @@ fn validate_extended_language_check(
                 name: op.name.clone(),
             });
         }
-        let mut allowed = s_set.clone();
+        let mut arg_set = BTreeSet::new();
         for a in &op.arg_vars {
             if a.trim().is_empty() {
                 return Err(ValidationError::EmptyName {
                     context: "atomic_op.arg_var".to_owned(),
                 });
             }
-            if !allowed.insert(a.as_str()) {
+            if s_set.contains(a.as_str()) || !arg_set.insert(a.as_str()) {
                 return Err(ValidationError::DuplicateDecl {
                     kind: "atomic_op_arg",
                     name: a.clone(),
@@ -629,20 +678,23 @@ fn validate_extended_language_check(
         validate_total_var_map(
             &op.before_updates,
             &s_set,
-            &allowed,
+            &s_set,
+            &arg_set,
+            &empty,
             domain,
             "atomic_op.before",
         )?;
         validate_total_var_map(
             &op.after_updates,
             &s_set,
-            &allowed,
+            &s_set,
+            &arg_set,
+            &empty,
             domain,
             "atomic_op.after",
         )?;
     }
 
-    let empty = BTreeSet::new();
     let mut chk_names = BTreeSet::new();
     for chk in &ext.extended_checks {
         match chk {
@@ -679,14 +731,38 @@ fn validate_extended_language_check(
                     initial_state,
                     &ext_set,
                     &empty,
+                    &empty,
+                    &empty,
                     domain,
                     "protocol.initial_state",
                 )?;
                 for st in before_steps.iter().chain(after_steps) {
-                    validate_total_var_map(st, &ext_set, &ext_set, domain, "protocol.step")?;
+                    validate_total_var_map(
+                        st,
+                        &ext_set,
+                        &ext_set,
+                        &empty,
+                        &empty,
+                        domain,
+                        "protocol.step",
+                    )?;
                 }
-                check_expr_refs(before_read, domain, &ext_set, "protocol.before_read")?;
-                check_expr_refs(after_read, domain, &ext_set, "protocol.after_read")?;
+                check_expr_refs(
+                    before_read,
+                    domain,
+                    &ext_set,
+                    &empty,
+                    &empty,
+                    "protocol.before_read",
+                )?;
+                check_expr_refs(
+                    after_read,
+                    domain,
+                    &ext_set,
+                    &empty,
+                    &empty,
+                    "protocol.after_read",
+                )?;
                 let mut il_seen = BTreeSet::new();
                 for law in intermediate_laws {
                     if law.name.trim().is_empty() {
@@ -704,6 +780,8 @@ fn validate_extended_language_check(
                         law,
                         domain,
                         &ext_set,
+                        &empty,
+                        &empty,
                         &format!("protocol.intermediate_law `{}`", law.name),
                     )?;
                 }
@@ -729,13 +807,25 @@ fn validate_extended_language_check(
                     before_updates,
                     &s_set,
                     &s_set,
+                    &empty,
+                    &empty,
                     domain,
                     "runtime_op.before",
                 )?;
-                validate_total_var_map(after_updates, &s_set, &s_set, domain, "runtime_op.after")?;
+                validate_total_var_map(
+                    after_updates,
+                    &s_set,
+                    &s_set,
+                    &empty,
+                    &empty,
+                    domain,
+                    "runtime_op.after",
+                )?;
                 validate_total_var_map(
                     sample_state,
                     &s_set,
+                    &empty,
+                    &empty,
                     &empty,
                     domain,
                     "runtime_op.sample_state",
@@ -749,7 +839,9 @@ fn validate_extended_language_check(
 fn validate_total_var_map(
     entries: &[(String, PolyExpr)],
     targets: &BTreeSet<&str>,
-    allowed_refs: &BTreeSet<&str>,
+    allowed_states: &BTreeSet<&str>,
+    allowed_args: &BTreeSet<&str>,
+    allowed_params: &BTreeSet<&str>,
     domain: &CoeffDomain,
     context: &str,
 ) -> Result<(), ValidationError> {
@@ -768,7 +860,14 @@ fn validate_total_var_map(
                 name: v.clone(),
             });
         }
-        check_expr_refs(expr, domain, allowed_refs, context)?;
+        check_expr_refs(
+            expr,
+            domain,
+            allowed_states,
+            allowed_args,
+            allowed_params,
+            context,
+        )?;
     }
     if seen.len() != targets.len() {
         return Err(ValidationError::ConversionError {

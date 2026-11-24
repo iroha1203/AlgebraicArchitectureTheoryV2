@@ -305,8 +305,24 @@ impl<C: RingCoeff> FiniteAlgebra<C> {
     }
 
     /// 1 変数打ち切り冪零商環 `C[var]/(var^{max_deg + 1})`（基底 `1, var, ..., var^{max_deg}`）。
-    pub fn truncated_univariate(var_name: &str, max_deg: usize, zero_coeff: C) -> Self {
-        let dim = max_deg + 1;
+    /// `max_deg + 1 > DEFAULT_MAX_ARTIN_DIM`（またはオーバーフロー）時は fail-closed に `OutOfScope` を返す。
+    pub fn truncated_univariate(
+        var_name: &str,
+        max_deg: usize,
+        zero_coeff: C,
+    ) -> Result<Self, AlgebraError> {
+        let Some(dim) = max_deg.checked_add(1) else {
+            return Err(AlgebraError::OutOfScope {
+                detail: "truncated_univariate max_deg overflow".to_owned(),
+            });
+        };
+        if dim > DEFAULT_MAX_ARTIN_DIM {
+            return Err(AlgebraError::OutOfScope {
+                detail: format!(
+                    "truncated_univariate dimension {dim} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                ),
+            });
+        }
         let z = zero_coeff.zero_like();
         let o = z.one_like();
         let basis_names: Vec<String> = (0..dim)
@@ -326,12 +342,12 @@ impl<C: RingCoeff> FiniteAlgebra<C> {
                 }
             }
         }
-        Self {
+        Ok(Self {
             basis_names,
             zero_coeff: z,
             one,
             mul_table,
-        }
+        })
     }
 
     pub fn dim(&self) -> usize {

@@ -47,6 +47,8 @@ mod tests_phase2_extra;
 mod tests_phase3;
 #[cfg(test)]
 mod tests_phase4;
+#[cfg(test)]
+mod tests_phase4_edge;
 
 pub use artin::{
     ArtinTaskSpec, AuxiliaryDefSpec, BaseChangeSpec, CheckedArtinTask, CompositeStageSpec,

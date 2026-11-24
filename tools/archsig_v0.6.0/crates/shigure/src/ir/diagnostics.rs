@@ -2,6 +2,7 @@
 //! 診断層 $B_\pi$ 層別・値合流 Mayer–Vietoris・診断次元実現の検証済み IR
 //! （G-142 A1–A3・B1–B6・C1–C4・D1–D3・W1–W2）。
 
+use crate::algebra::artin::DEFAULT_MAX_ARTIN_DIM;
 use crate::ir::artin::{check_expr_refs, check_named_poly};
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
@@ -448,6 +449,7 @@ pub fn validate_diagnostics_task(
                     });
                 }
             }
+            let empty = BTreeSet::new();
             let mut br_seen = BTreeSet::new();
             for rel in base_relations {
                 if rel.name.trim().is_empty() {
@@ -465,6 +467,8 @@ pub fn validate_diagnostics_task(
                     rel,
                     base_domain,
                     &bv_set,
+                    &empty,
+                    &empty,
                     &format!("base_relation `{}`", rel.name),
                 )?;
             }
@@ -514,6 +518,8 @@ pub fn validate_diagnostics_task(
                         expr,
                         base_domain,
                         &bv_set,
+                        &empty,
+                        &empty,
                         &format!("poly law `{}` source `{s}`", law.law_name),
                     )?;
                 }
@@ -612,7 +618,18 @@ pub fn validate_diagnostics_task(
                 context: "r_point_probe.ring_var".to_owned(),
             });
         }
-        let expected_len = rp.ring_max_deg + 1;
+        let Some(expected_len) = rp.ring_max_deg.checked_add(1) else {
+            return Err(ValidationError::ConversionError {
+                detail: "r_point_probe.ring_max_deg overflow".to_owned(),
+            });
+        };
+        if expected_len > DEFAULT_MAX_ARTIN_DIM {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "r_point_probe ring dimension {expected_len} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                ),
+            });
+        }
         let empty = BTreeSet::new();
         let mut pt_labels = BTreeSet::new();
         for pt in &rp.points {
@@ -656,6 +673,8 @@ pub fn validate_diagnostics_task(
                         c,
                         poly_domain,
                         &empty,
+                        &empty,
+                        &empty,
                         &format!("r_point `{}` coord `{v}`", pt.label),
                     )?;
                 }
@@ -684,6 +703,7 @@ pub fn validate_diagnostics_task(
                 });
             }
         }
+        let empty = BTreeSet::new();
         let mut vp_seen = BTreeSet::new();
         for vp in &dr.vanishing_polys {
             if vp.name.trim().is_empty() {
@@ -701,6 +721,8 @@ pub fn validate_diagnostics_task(
                 vp,
                 &dr.base_domain,
                 &dr_vars,
+                &empty,
+                &empty,
                 &format!("dimension_realization vanishing `{}`", vp.name),
             )?;
         }
@@ -713,9 +735,10 @@ pub fn validate_diagnostics_task(
             &dr.invertible_poly,
             &dr.base_domain,
             &dr_vars,
+            &empty,
+            &empty,
             "dimension_realization.invertible_poly",
         )?;
-        let empty = BTreeSet::new();
         let mut probe_seen = BTreeSet::new();
         for pt in &dr.probe_points {
             if pt.label.trim().is_empty() {
@@ -747,6 +770,8 @@ pub fn validate_diagnostics_task(
                 check_expr_refs(
                     expr,
                     &dr.base_domain,
+                    &empty,
+                    &empty,
                     &empty,
                     &format!("probe_point `{}` `{v}`", pt.label),
                 )?;

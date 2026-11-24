@@ -234,7 +234,7 @@ fn partial_derivative_and_jacobian_respect_characteristic() {
 fn square_zero_extension_field_z_and_rejections() {
     // Field 正常: Q[ε]/(ε^3) ->> Q[ε]/(ε^2)
     let ok = SquareZeroExtension::truncated_step_field("eps", 1, Rat::zero()).unwrap();
-    assert!(ok.square_zero_verified);
+    assert!(ok.square_zero_verified());
     assert_eq!(ok.kernel_dim(), 1);
     let eps2 = vec![Rat::zero(), Rat::zero(), Rat::one()];
     assert_eq!(
@@ -244,7 +244,7 @@ fn square_zero_extension_field_z_and_rejections() {
 
     // Z 正常: Z[ε]/(ε^3) ->> Z[ε]/(ε^2)
     let ok_z = SquareZeroExtension::truncated_step_z("eps", 1).unwrap();
-    assert!(ok_z.square_zero_verified);
+    assert!(ok_z.square_zero_verified());
     assert_eq!(ok_z.kernel_dim(), 1);
     let eps2_z = vec![BigInt::zero(), BigInt::zero(), BigInt::from(5)];
     assert_eq!(
@@ -253,7 +253,7 @@ fn square_zero_extension_field_z_and_rejections() {
     );
 
     // 失敗 1: M^2 != 0 (Q[ε]/(ε^3) ->> Q)
-    let rp = FiniteAlgebra::truncated_univariate("eps", 2, Rat::zero());
+    let rp = FiniteAlgebra::truncated_univariate("eps", 2, Rat::zero()).unwrap();
     let rb = FiniteAlgebra::base_ring(Rat::zero());
     let proj = vec![vec![Rat::one(), Rat::zero(), Rat::zero()]];
     assert!(matches!(
@@ -262,7 +262,7 @@ fn square_zero_extension_field_z_and_rejections() {
     ));
 
     // 失敗 2: 非全射射影 (Z[ε]/(ε^2) -> Z で 1 -> 2)
-    let rp_z = FiniteAlgebra::truncated_univariate("eps", 1, BigInt::zero());
+    let rp_z = FiniteAlgebra::truncated_univariate("eps", 1, BigInt::zero()).unwrap();
     let rb_z = FiniteAlgebra::base_ring(BigInt::zero());
     assert!(matches!(
         SquareZeroExtension::new_z(rp_z, rb_z, vec![vec![BigInt::from(2), BigInt::zero()]]),
@@ -272,10 +272,24 @@ fn square_zero_extension_field_z_and_rejections() {
     // 失敗 3: 異なる F_p 法の混在は panic せず DomainMismatch
     let z2 = FpElem::zero(BigUint::from(2u32)).unwrap();
     let z3 = FpElem::zero(BigUint::from(3u32)).unwrap();
-    let rp_2 = FiniteAlgebra::truncated_univariate("e", 1, z2.clone());
+    let rp_2 = FiniteAlgebra::truncated_univariate("e", 1, z2.clone()).unwrap();
     let rb_3 = FiniteAlgebra::base_ring(z3);
     let err = SquareZeroExtension::new_field(rp_2, rb_3, vec![vec![z2.one_like(), z2]]).unwrap_err();
     assert!(matches!(err, AlgebraError::DomainMismatch { .. }));
+
+    // 失敗 4: 次元上限超過・オーバーフローは fail-closed に OutOfScope
+    assert!(matches!(
+        FiniteAlgebra::truncated_univariate("e", DEFAULT_MAX_ARTIN_DIM, Rat::zero()),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+    assert!(matches!(
+        SquareZeroExtension::truncated_step_field("e", usize::MAX, Rat::zero()),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
+    assert!(matches!(
+        SquareZeroExtension::truncated_step_z("e", DEFAULT_MAX_ARTIN_DIM),
+        Err(AlgebraError::OutOfScope { .. })
+    ));
 }
 
 #[test]
@@ -446,17 +460,35 @@ fn boundary_checks_z_kernel_arity_and_cochain_map_ring_mismatch() {
         })
     );
 
-    // CochainMap::induced_field は pub フィールド経由の異なる法 Fp 混入を panic せず DomainMismatch にする
+    // CochainMap::new は異なる法 Fp の成分混入を panic せず DomainMismatch にする
     let z2 = FpElem::zero(BigUint::from(2u32)).unwrap();
     let one3 = FpElem::one(BigUint::from(3u32)).unwrap();
     let c2 = CochainComplex::new(1, 0, 0, vec![], vec![], z2).unwrap();
-    let bad_map = CochainMap {
-        f0: vec![vec![one3]],
-        f1: vec![],
-        f2: vec![],
-    };
     assert!(matches!(
-        bad_map.induced_field(&c2, &c2),
+        CochainMap::new(&c2, &c2, vec![vec![one3]], vec![], vec![]),
         Err(AlgebraError::DomainMismatch { .. })
+    ));
+
+    // CochainMap::induced_field は別複体対で可換性が破れる場合に fail-closed に OutOfScope を返す
+    let c_zero =
+        CochainComplex::new(1, 2, 0, vec![vec![Rat::zero()], vec![Rat::zero()]], vec![], Rat::zero())
+            .unwrap();
+    let c_nonzero =
+        CochainComplex::new(1, 2, 0, vec![vec![Rat::one()], vec![Rat::zero()]], vec![], Rat::zero())
+            .unwrap();
+    let f_for_zero = CochainMap::new(
+        &c_zero,
+        &c_zero,
+        vec![vec![Rat::zero()]],
+        vec![
+            vec![Rat::zero(), Rat::zero()],
+            vec![Rat::one(), Rat::zero()],
+        ],
+        vec![],
+    )
+    .unwrap();
+    assert!(matches!(
+        f_for_zero.induced_field(&c_nonzero, &c_nonzero),
+        Err(AlgebraError::OutOfScope { .. })
     ));
 }

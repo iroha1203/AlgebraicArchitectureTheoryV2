@@ -115,6 +115,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
 
     // 既存関係 I_O は重複名を禁じ、obs_vars のみ参照可能
     let dom = &spec.coeff_domain;
+    let empty_vars = BTreeSet::new();
     let mut rel_seen = BTreeSet::new();
     for rel in &spec.obs_relations {
         if rel.name.trim().is_empty() {
@@ -128,7 +129,14 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                 name: rel.name.clone(),
             });
         }
-        check_named_poly(rel, dom, &obs_set, &format!("obs_relation `{}`", rel.name))?;
+        check_named_poly(
+            rel,
+            dom,
+            &obs_set,
+            &empty_vars,
+            &empty_vars,
+            &format!("obs_relation `{}`", rel.name),
+        )?;
     }
 
     // 定義的補助演算 Y_j = F_j(O, Y_1, ..., Y_{j-1}) の非循環依存順を厳密検査する（F1）。
@@ -150,6 +158,8 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
             &aux.expr,
             dom,
             &available,
+            &empty_vars,
+            &empty_vars,
             &format!("aux_def `{}` (must depend only on earlier vars)", aux.name),
         )?;
         available.insert(aux.name.as_str());
@@ -168,11 +178,17 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                 name: law.name.clone(),
             });
         }
-        check_named_poly(law, dom, &available, &format!("extra_law `{}`", law.name))?;
+        check_named_poly(
+            law,
+            dom,
+            &available,
+            &empty_vars,
+            &empty_vars,
+            &format!("extra_law `{}`", law.name),
+        )?;
     }
 
     // base_point 検査（全観測変数を網羅し、自由変数を含まない定数式／未観測スロットのみ許可）
-    let empty_vars = BTreeSet::new();
     let mut bp_seen = BTreeSet::new();
     for (v, expr) in &spec.base_point {
         if !obs_set.contains(v.as_str()) {
@@ -191,6 +207,8 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
         check_expr_refs(
             expr,
             dom,
+            &empty_vars,
+            &empty_vars,
             &empty_vars,
             &format!("{ctx} base_point `{v}` (must be constant or unobserved)"),
         )?;
@@ -222,6 +240,8 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                 &aux.expr,
                 dom,
                 &stage_avail,
+                &empty_vars,
+                &empty_vars,
                 &format!("composite aux_def `{}`", aux.name),
             )?;
             stage_avail.insert(aux.name.as_str());
@@ -243,6 +263,8 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                 law,
                 dom,
                 &stage_avail,
+                &empty_vars,
+                &empty_vars,
                 &format!("composite extra_law `{}`", law.name),
             )?;
         }
@@ -269,17 +291,28 @@ pub(crate) fn validate_lit_for_domain(
 pub(crate) fn check_named_poly(
     item: &NamedPoly,
     expected_domain: &CoeffDomain,
-    allowed: &BTreeSet<&str>,
+    allowed_states: &BTreeSet<&str>,
+    allowed_args: &BTreeSet<&str>,
+    allowed_params: &BTreeSet<&str>,
     context: &str,
 ) -> Result<(), ValidationError> {
     validate_opt_source_ref(item.provenance.as_ref(), context)?;
-    check_expr_refs(&item.expr, expected_domain, allowed, context)
+    check_expr_refs(
+        &item.expr,
+        expected_domain,
+        allowed_states,
+        allowed_args,
+        allowed_params,
+        context,
+    )
 }
 
 pub(crate) fn check_expr_refs(
     expr: &PolyExpr,
     expected_domain: &CoeffDomain,
-    allowed: &BTreeSet<&str>,
+    allowed_states: &BTreeSet<&str>,
+    allowed_args: &BTreeSet<&str>,
+    allowed_params: &BTreeSet<&str>,
     context: &str,
 ) -> Result<(), ValidationError> {
     let mut stack = vec![expr];
@@ -294,10 +327,28 @@ pub(crate) fn check_expr_refs(
                 }
                 validate_opt_source_ref(origin.as_ref(), context)?;
             }
-            PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
-                if !allowed.contains(v.as_str()) {
+            PolyExpr::StateVar(v) => {
+                if !allowed_states.contains(v.as_str()) {
                     return Err(ValidationError::UnknownRef {
-                        kind: "variable",
+                        kind: "state coordinate",
+                        name: v.clone(),
+                        context: context.to_owned(),
+                    });
+                }
+            }
+            PolyExpr::ArgVar(v) => {
+                if !allowed_args.contains(v.as_str()) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "operation argument",
+                        name: v.clone(),
+                        context: context.to_owned(),
+                    });
+                }
+            }
+            PolyExpr::ParamVar(v) => {
+                if !allowed_params.contains(v.as_str()) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "parameter",
                         name: v.clone(),
                         context: context.to_owned(),
                     });

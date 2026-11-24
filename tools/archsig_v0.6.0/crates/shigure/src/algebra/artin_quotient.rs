@@ -13,19 +13,40 @@ use num_traits::{One, Zero};
 use std::collections::BTreeMap;
 
 /// 平方零拡大 `R' ↠ R`（kernel `M = ker(π)`、`M² = 0` を実検査済み）（G-141 E1–E5）。
+/// 構築時（`new_field` / `new_z`）の不変条件を維持するため、内部フィールドは非公開としアクセサのみ提供する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SquareZeroExtension<C: RingCoeff> {
-    pub r_prime: FiniteAlgebra<C>,
-    pub r_base: FiniteAlgebra<C>,
+    r_prime: FiniteAlgebra<C>,
+    r_base: FiniteAlgebra<C>,
     /// 射影 `π: R' -> R`（`dim(R) x dim(R')` 行列）。
-    pub projection: Vec<Vec<C>>,
+    projection: Vec<Vec<C>>,
     /// `M = ker(π)` の `R'` 内基底（各要素は長さ `dim(R')`）。
-    pub kernel_basis: Vec<Vec<C>>,
+    kernel_basis: Vec<Vec<C>>,
     /// 基底環上での `M² = 0` 検証済みフラグ。
-    pub square_zero_verified: bool,
+    square_zero_verified: bool,
 }
 
 impl<C: RingCoeff> SquareZeroExtension<C> {
+    pub fn r_prime(&self) -> &FiniteAlgebra<C> {
+        &self.r_prime
+    }
+
+    pub fn r_base(&self) -> &FiniteAlgebra<C> {
+        &self.r_base
+    }
+
+    pub fn projection(&self) -> &[Vec<C>] {
+        &self.projection
+    }
+
+    pub fn kernel_basis(&self) -> &[Vec<C>] {
+        &self.kernel_basis
+    }
+
+    pub fn square_zero_verified(&self) -> bool {
+        self.square_zero_verified
+    }
+
     pub fn kernel_dim(&self) -> usize {
         self.kernel_basis.len()
     }
@@ -164,8 +185,13 @@ impl<C: FieldCoeff> SquareZeroExtension<C> {
         deg_r: usize,
         zero_coeff: C,
     ) -> Result<Self, AlgebraError> {
-        let r_base = FiniteAlgebra::truncated_univariate(var_name, deg_r, zero_coeff.clone());
-        let r_prime = FiniteAlgebra::truncated_univariate(var_name, deg_r + 1, zero_coeff.clone());
+        let Some(deg_rp) = deg_r.checked_add(1) else {
+            return Err(AlgebraError::OutOfScope {
+                detail: "truncated_step_field deg_r overflow".to_owned(),
+            });
+        };
+        let r_base = FiniteAlgebra::truncated_univariate(var_name, deg_r, zero_coeff.clone())?;
+        let r_prime = FiniteAlgebra::truncated_univariate(var_name, deg_rp, zero_coeff.clone())?;
         let dr = r_base.dim();
         let dp = r_prime.dim();
         let z = zero_coeff.zero_like();
@@ -249,8 +275,13 @@ impl SquareZeroExtension<BigInt> {
 
     /// 整数係数 1 変数冪零商の 1 段拡大 `Z[var]/(var^{deg_r + 2}) ↠ Z[var]/(var^{deg_r + 1})`。
     pub fn truncated_step_z(var_name: &str, deg_r: usize) -> Result<Self, AlgebraError> {
-        let r_base = FiniteAlgebra::truncated_univariate(var_name, deg_r, BigInt::zero());
-        let r_prime = FiniteAlgebra::truncated_univariate(var_name, deg_r + 1, BigInt::zero());
+        let Some(deg_rp) = deg_r.checked_add(1) else {
+            return Err(AlgebraError::OutOfScope {
+                detail: "truncated_step_z deg_r overflow".to_owned(),
+            });
+        };
+        let r_base = FiniteAlgebra::truncated_univariate(var_name, deg_r, BigInt::zero())?;
+        let r_prime = FiniteAlgebra::truncated_univariate(var_name, deg_rp, BigInt::zero())?;
         let dr = r_base.dim();
         let dp = r_prime.dim();
         let mut projection = vec![vec![BigInt::zero(); dp]; dr];

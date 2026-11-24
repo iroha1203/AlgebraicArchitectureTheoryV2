@@ -1,6 +1,7 @@
 //! 全 syzygy 平方零 lift・相対障害・宣言被覆比較・有限 étale 被覆 cocycle descent の検証済み IR
 //! （G-141 E1–E8・C8–C9・H1–H4・H10 / W5）。
 
+use crate::algebra::artin::DEFAULT_MAX_ARTIN_DIM;
 use crate::ir::artin::{check_expr_refs, check_named_poly, validate_lit_for_domain};
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
@@ -26,17 +27,17 @@ pub enum SquareZeroSpec {
 }
 
 impl SquareZeroSpec {
-    pub fn r_base_dim(&self) -> usize {
+    pub fn r_base_dim(&self) -> Option<usize> {
         match self {
-            SquareZeroSpec::TruncatedPoly { base_degree, .. } => base_degree + 1,
-            SquareZeroSpec::ExplicitTable { r_base_basis, .. } => r_base_basis.len(),
+            SquareZeroSpec::TruncatedPoly { base_degree, .. } => base_degree.checked_add(1),
+            SquareZeroSpec::ExplicitTable { r_base_basis, .. } => Some(r_base_basis.len()),
         }
     }
 
-    pub fn r_prime_dim(&self) -> usize {
+    pub fn r_prime_dim(&self) -> Option<usize> {
         match self {
-            SquareZeroSpec::TruncatedPoly { base_degree, .. } => base_degree + 2,
-            SquareZeroSpec::ExplicitTable { r_prime_basis, .. } => r_prime_basis.len(),
+            SquareZeroSpec::TruncatedPoly { base_degree, .. } => base_degree.checked_add(2),
+            SquareZeroSpec::ExplicitTable { r_prime_basis, .. } => Some(r_prime_basis.len()),
         }
     }
 }
@@ -187,8 +188,18 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
     }
 
     validate_square_zero_spec(&spec.extension, &spec.coeff_domain, &ctx)?;
-    let r_dim = spec.extension.r_base_dim();
-    let rp_dim = spec.extension.r_prime_dim();
+    let r_dim = spec
+        .extension
+        .r_base_dim()
+        .ok_or_else(|| ValidationError::ConversionError {
+            detail: format!("{ctx} extension base dimension overflow"),
+        })?;
+    let rp_dim =
+        spec.extension
+            .r_prime_dim()
+            .ok_or_else(|| ValidationError::ConversionError {
+                detail: format!("{ctx} extension prime dimension overflow"),
+            })?;
     let empty_vars = BTreeSet::new();
 
     let dom = &spec.coeff_domain;
@@ -215,12 +226,16 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
             });
         }
         for expr in &rp.value_in_r_prime {
-            check_expr_refs(expr, dom, &empty_vars, &format!("ring_param `{}`", rp.name))?;
+            check_expr_refs(
+                expr,
+                dom,
+                &empty_vars,
+                &empty_vars,
+                &empty_vars,
+                &format!("ring_param `{}`", rp.name),
+            )?;
         }
     }
-
-    let mut law_allowed = var_set.clone();
-    law_allowed.extend(param_set.iter().copied());
 
     let mut law_names = BTreeSet::new();
     for law in &spec.laws {
@@ -235,7 +250,14 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 name: law.name.clone(),
             });
         }
-        check_named_poly(law, dom, &law_allowed, &format!("law `{}`", law.name))?;
+        check_named_poly(
+            law,
+            dom,
+            &var_set,
+            &empty_vars,
+            &param_set,
+            &format!("law `{}`", law.name),
+        )?;
     }
 
     // base_point 整合検査
@@ -263,7 +285,14 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
             });
         }
         for expr in coords {
-            check_expr_refs(expr, dom, &empty_vars, &format!("base_point `{v}`"))?;
+            check_expr_refs(
+                expr,
+                dom,
+                &empty_vars,
+                &empty_vars,
+                &empty_vars,
+                &format!("base_point `{v}`"),
+            )?;
         }
     }
     if bp_seen.len() != var_set.len() {
@@ -298,7 +327,14 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 });
             }
             for expr in coords {
-                check_expr_refs(expr, dom, &empty_vars, &format!("ambient_lift `{v}`"))?;
+                check_expr_refs(
+                    expr,
+                    dom,
+                    &empty_vars,
+                    &empty_vars,
+                    &empty_vars,
+                    &format!("ambient_lift `{v}`"),
+                )?;
             }
         }
         if lift_seen.len() != var_set.len() {
@@ -324,8 +360,6 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 });
             }
         }
-        let mut obs_allowed = obs_set.clone();
-        obs_allowed.extend(param_set.iter().copied());
         let mut obs_law_seen = BTreeSet::new();
         for ol in &rel.obs_laws {
             if ol.name.trim().is_empty() {
@@ -339,7 +373,14 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     name: ol.name.clone(),
                 });
             }
-            check_named_poly(ol, dom, &obs_allowed, &format!("obs_law `{}`", ol.name))?;
+            check_named_poly(
+                ol,
+                dom,
+                &obs_set,
+                &empty_vars,
+                &param_set,
+                &format!("obs_law `{}`", ol.name),
+            )?;
         }
         let mut rm_seen = BTreeSet::new();
         for (ov, expr) in &rel.reading_map {
@@ -356,7 +397,14 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     name: ov.clone(),
                 });
             }
-            check_expr_refs(expr, dom, &law_allowed, &format!("reading_map `{ov}`"))?;
+            check_expr_refs(
+                expr,
+                dom,
+                &var_set,
+                &empty_vars,
+                &param_set,
+                &format!("reading_map `{ov}`"),
+            )?;
         }
         if rm_seen.len() != obs_set.len() {
             return Err(ValidationError::ConversionError {
@@ -391,6 +439,8 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     expr,
                     dom,
                     &empty_vars,
+                    &empty_vars,
+                    &empty_vars,
                     &format!("designated_obs_lift `{ov}`"),
                 )?;
             }
@@ -409,7 +459,9 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
             check_expr_refs(
                 &rr.expr,
                 dom,
-                &law_allowed,
+                &var_set,
+                &empty_vars,
+                &param_set,
                 &format!("raw_read_diff `{}`", rr.label),
             )?;
         }
@@ -479,7 +531,9 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 check_named_poly(
                     obs,
                     dom,
-                    &law_allowed,
+                    &var_set,
+                    &empty_vars,
+                    &param_set,
                     &format!("declaration_context `{}` obs `{}`", c.name, obs.name),
                 )?;
             }
@@ -564,7 +618,9 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
             check_named_poly(
                 rl,
                 dom,
-                &law_allowed,
+                &var_set,
+                &empty_vars,
+                &param_set,
                 &format!("redundant_comparison `{}`", rl.name),
             )?;
         }
@@ -598,10 +654,25 @@ fn validate_square_zero_spec(
     context: &str,
 ) -> Result<(), ValidationError> {
     match ext {
-        SquareZeroSpec::TruncatedPoly { var_name, .. } => {
+        SquareZeroSpec::TruncatedPoly {
+            var_name,
+            base_degree,
+        } => {
             if var_name.trim().is_empty() {
                 return Err(ValidationError::EmptyName {
                     context: "extension_var".to_owned(),
+                });
+            }
+            let Some(rp_dim) = base_degree.checked_add(2) else {
+                return Err(ValidationError::ConversionError {
+                    detail: format!("{context} extension base_degree overflow"),
+                });
+            };
+            if rp_dim > DEFAULT_MAX_ARTIN_DIM {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "{context} extension dimension {rp_dim} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                    ),
                 });
             }
             Ok(())
@@ -620,6 +691,13 @@ fn validate_square_zero_spec(
             if dp == 0 || dr == 0 {
                 return Err(ValidationError::ConversionError {
                     detail: format!("{context} explicit algebras must have positive dimension"),
+                });
+            }
+            if dp > DEFAULT_MAX_ARTIN_DIM || dr > DEFAULT_MAX_ARTIN_DIM {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "{context} explicit algebra dimension exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                    ),
                 });
             }
             check_unique_basis(r_prime_basis, "r_prime_basis")?;
