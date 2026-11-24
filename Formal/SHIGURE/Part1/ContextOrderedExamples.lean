@@ -250,7 +250,7 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
     let A := paddedPresentation.lawAttachments (SignatureNames.identity _) id (.inl ())
     change equalityPresentation.lawAttachments (SignatureNames.identity _) (fun _ => .inl ()) () =
       A.withSupportedRing (equalityContext.RetainsRingSupport (.inl ()))
-    simp [LawAttachments.withSupportedRing, equality_lacks_ring_support]
+    rw [LawAttachments.withSupportedRing_of_unsupported A equality_lacks_ring_support]
     rfl
   domainAttachment_eq p := nomatch p
   dependencies := equalityDependencies

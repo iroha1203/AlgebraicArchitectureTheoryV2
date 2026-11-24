@@ -438,6 +438,15 @@ theorem LawAttachments.withSupportedRing_of_supported {S : Signature.{u}} {L : T
   | mk equation ring proof =>
     cases ring <;> simp [LawAttachments.withSupportedRing, h]
 
+/-- When a ring reference is omitted, the ordered equality and proof are retained. -/
+theorem LawAttachments.withSupportedRing_of_unsupported {S : Signature.{u}} {L : Type u}
+    (data : LawAttachments S L) {supported : Prop} (h : ¬ supported) :
+    data.withSupportedRing supported = { data with ring := none } := by
+  classical
+  cases data with
+  | mk equation ring proof =>
+    cases ring <;> simp [LawAttachments.withSupportedRing, h]
+
 namespace PrimitivePresentation
 
 variable {P : PrimitivePresentation.{u}} {S : Signature.{u}} {L : Type u}

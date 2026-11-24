@@ -1478,6 +1478,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Reading.selectedRing_residual_iff,
   LawAttachments.withSupportedRing,
   LawAttachments.withSupportedRing_of_supported,
+  LawAttachments.withSupportedRing_of_unsupported,
   ReadingOrigin,
   NamedRingEquation.OtherOrdered,
   NamedRingEquation.otherOrdered,
