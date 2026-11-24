@@ -7,6 +7,7 @@
 pub mod ast_ext;
 pub mod ast_phase3;
 pub mod check;
+mod check_comparison;
 mod check_diagram;
 mod check_ext_common;
 mod check_ext_morphism;
@@ -14,6 +15,7 @@ mod check_ext_scope;
 mod check_family;
 mod check_path;
 mod check_phase3_tasks;
+mod check_presentation;
 mod check_relations;
 mod check_transfer;
 pub mod parser;

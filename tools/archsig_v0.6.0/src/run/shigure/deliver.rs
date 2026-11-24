@@ -581,6 +581,30 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
             "unsupported_algorithm",
             format!("universal ring stability out of scope: {detail}"),
         ),
+        SilenceReason::NonNoetherianInfinitePresentation { detail } => (
+            "unsupported_algorithm",
+            format!("non-Noetherian infinite presentation: {detail}"),
+        ),
+        SilenceReason::SquareZeroConditionViolated { detail } => (
+            "unsupported_algorithm",
+            format!("square-zero condition violated: {detail}"),
+        ),
+        SilenceReason::SyzygyOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("syzygy computation out of scope: {detail}"),
+        ),
+        SilenceReason::ArtinOrderOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("Artin order computation out of scope: {detail}"),
+        ),
+        SilenceReason::DiagnosticsStratificationOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("diagnostics stratification out of scope: {detail}"),
+        ),
+        SilenceReason::DisconnectedGraphOutOfScope { detail } => (
+            "unsupported_algorithm",
+            format!("disconnected graph out of scope: {detail}"),
+        ),
         SilenceReason::ApplicabilityConditionNotMet { condition, detail } => (
             "unsupported_algorithm",
             format!("applicability condition `{condition}` not met: {detail}"),

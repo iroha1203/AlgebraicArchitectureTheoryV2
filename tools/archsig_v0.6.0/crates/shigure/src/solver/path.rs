@@ -292,6 +292,10 @@ pub(crate) fn undetermined_path(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -334,6 +338,10 @@ pub(crate) fn refuted_path(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -376,5 +384,9 @@ pub(crate) fn established_path(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }

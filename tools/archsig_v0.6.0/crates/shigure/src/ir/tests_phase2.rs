@@ -954,6 +954,10 @@ fn outcome_wire_format_includes_phase2_fields_and_unbounded_silence() {
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     };
 
     let json = outcome.to_json();

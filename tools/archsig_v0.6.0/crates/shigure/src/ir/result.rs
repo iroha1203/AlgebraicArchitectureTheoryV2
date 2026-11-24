@@ -6,6 +6,9 @@ use crate::ir::result_ext::{DiagramOutcomeDetail, PathOutcomeDetail, TransferOut
 use crate::ir::result_phase3::{
     ChevalleyOutcomeDetail, ObservationOutcomeDetail, RobustnessOutcomeDetail,
 };
+use crate::ir::result_phase4::{
+    ArtinOutcomeDetail, AtlasOutcomeDetail, DiagnosticsOutcomeDetail, LiftOutcomeDetail,
+};
 use crate::ir::term::CoeffDomain;
 use archsig_common::canonical::{Json, JsonObject};
 use std::collections::BTreeMap;
@@ -81,6 +84,18 @@ pub enum SilenceReason {
     FiniteEnumerationOutOfScope { detail: String },
     /// 全係数移送安定性 $\mathcal{R}(R)$ 検査が適用域外（例: 存在型・未対応非線形）。
     UniversalRingOutOfScope { detail: String },
+    /// 非 Noetherian 無限表示（例: G-141 H7 `T_i = T_{i+1}^2`）により全 Artin 試験から局所同型を主張不能。
+    NonNoetherianInfinitePresentation { detail: String },
+    /// 平方零条件 `M^2 = 0` または拡大準同型条件の未充足。
+    SquareZeroConditionViolated { detail: String },
+    /// syzygy 生成族計算の適用域外・上限超過（未検証 Z 族や S-pair 上限超過）。
+    SyzygyOutOfScope { detail: String },
+    /// Artin 試験の探索次数・次元上限超過または適用域外。
+    ArtinOrderOutOfScope { detail: String },
+    /// 診断層 partition 層別の上限超過または適用域外。
+    DiagnosticsStratificationOutOfScope { detail: String },
+    /// 非連結グラフまたは単純グラフ適用条件外。
+    DisconnectedGraphOutOfScope { detail: String },
     /// その他の適用条件未充足。
     ApplicabilityConditionNotMet { condition: String, detail: String },
 }
@@ -104,6 +119,16 @@ impl SilenceReason {
             }
             SilenceReason::FiniteEnumerationOutOfScope { .. } => "finite_enumeration_out_of_scope",
             SilenceReason::UniversalRingOutOfScope { .. } => "universal_ring_out_of_scope",
+            SilenceReason::NonNoetherianInfinitePresentation { .. } => {
+                "non_noetherian_infinite_presentation"
+            }
+            SilenceReason::SquareZeroConditionViolated { .. } => "square_zero_condition_violated",
+            SilenceReason::SyzygyOutOfScope { .. } => "syzygy_out_of_scope",
+            SilenceReason::ArtinOrderOutOfScope { .. } => "artin_order_out_of_scope",
+            SilenceReason::DiagnosticsStratificationOutOfScope { .. } => {
+                "diagnostics_stratification_out_of_scope"
+            }
+            SilenceReason::DisconnectedGraphOutOfScope { .. } => "disconnected_graph_out_of_scope",
             SilenceReason::ApplicabilityConditionNotMet { .. } => "applicability_condition_not_met",
         }
     }
@@ -130,7 +155,13 @@ impl SilenceReason {
             | SilenceReason::UnboundedSearchOutOfScope { detail }
             | SilenceReason::ConstructibleStratificationOutOfScope { detail }
             | SilenceReason::FiniteEnumerationOutOfScope { detail }
-            | SilenceReason::UniversalRingOutOfScope { detail } => {
+            | SilenceReason::UniversalRingOutOfScope { detail }
+            | SilenceReason::NonNoetherianInfinitePresentation { detail }
+            | SilenceReason::SquareZeroConditionViolated { detail }
+            | SilenceReason::SyzygyOutOfScope { detail }
+            | SilenceReason::ArtinOrderOutOfScope { detail }
+            | SilenceReason::DiagnosticsStratificationOutOfScope { detail }
+            | SilenceReason::DisconnectedGraphOutOfScope { detail } => {
                 obj.insert("detail".into(), Json::str(detail));
             }
             SilenceReason::UnsupportedCoeffRing { domain, detail } => {
@@ -344,6 +375,10 @@ pub struct ShigureOutcome {
     pub robustness: Option<RobustnessOutcomeDetail>,
     pub chevalley: Option<ChevalleyOutcomeDetail>,
     pub observations: Option<ObservationOutcomeDetail>,
+    pub lift: Option<LiftOutcomeDetail>,
+    pub artin: Option<ArtinOutcomeDetail>,
+    pub diagnostics: Option<DiagnosticsOutcomeDetail>,
+    pub atlas: Option<AtlasOutcomeDetail>,
 }
 
 impl ShigureOutcome {
@@ -397,6 +432,18 @@ impl ShigureOutcome {
         }
         if let Some(observations) = &self.observations {
             obj.insert("observations".into(), observations.to_json());
+        }
+        if let Some(lift) = &self.lift {
+            obj.insert("lift".into(), lift.to_json());
+        }
+        if let Some(artin) = &self.artin {
+            obj.insert("artin".into(), artin.to_json());
+        }
+        if let Some(diagnostics) = &self.diagnostics {
+            obj.insert("diagnostics".into(), diagnostics.to_json());
+        }
+        if let Some(atlas) = &self.atlas {
+            obj.insert("atlas".into(), atlas.to_json());
         }
         Json::Obj(obj)
     }
