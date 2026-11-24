@@ -26,6 +26,7 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
 /-- The nullary operation has no input sort declarations to retain. -/
 private theorem noSorts : Declaration.sorts (P := P) [] ⊆ U.declarations := by
+  rw [Declaration.sorts_eq_image]
   rintro _ ⟨s, h, rfl⟩
   cases h
 

@@ -96,6 +96,13 @@ theorem lift_here (θ : Substitution sig Γ Δ) :
 theorem lift_there (θ : Substitution sig Γ Δ) {t : sig.SortType} (i : Var Γ t) :
     θ.lift (Var.there (t := s) i) = (θ i).rename (fun j => .there j) := rfl
 
+/-- The terms assigned at every original position determine a substitution. -/
+theorem ext {θ η : Substitution sig Γ Δ} (same : ∀ {t} (i : Var Γ t), θ i = η i) :
+    θ = η := by
+  cases θ
+  cases η
+  exact congrArg Substitution.mk (funext fun t => funext fun i => same i)
+
 /-- All substituted positions have the values of one target assignment. -/
 def EvaluatesAt (θ : Substitution sig Γ Δ) (A : Structure sig)
     (e : Assignment A.carrier Δ) (values : Assignment A.carrier Γ) : Prop :=
@@ -161,6 +168,23 @@ def substitute : {Γ Δ : List sig.SortType} → {s : sig.SortType} →
   | _, _, _, θ, .var i => θ i
   | _, _, _, θ, .app op args => .app op (fun i => substitute θ (args i))
   | _, _, _, θ, .letBind init body => .letBind (substitute θ init) (substitute θ.lift body)
+
+/-- Substitution reads the assigned term at an original variable position. -/
+theorem substitute_var (θ : Substitution sig Γ Δ) (i : Var Γ s) :
+    (Term.var i).substitute θ = θ i :=
+  rfl
+
+/-- Substitution applies independently to every argument of an operation. -/
+theorem substitute_app (θ : Substitution sig Γ Δ) (op : Operation sig)
+    (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t) :
+    (Term.app op args).substitute θ = .app op (fun i => (args i).substitute θ) :=
+  rfl
+
+/-- Substitution lifts under the bound variable of a strict let term. -/
+theorem substitute_letBind (θ : Substitution sig Γ Δ) {a : sig.SortType}
+    (init : Term sig Γ a) (body : Term sig (a :: Γ) s) :
+    (init.letBind body).substitute θ = (init.substitute θ).letBind (body.substitute θ.lift) :=
+  rfl
 
 /-- Theorem 1.8(1) for a tuple of arbitrary evaluated substitution values. -/
 theorem evaluates_substitute_of_evaluatesAt (t : Term sig Γ s) (A : Structure sig) :

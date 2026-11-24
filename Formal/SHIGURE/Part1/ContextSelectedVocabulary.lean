@@ -36,8 +36,20 @@ variable {U}
 /-- Select a list of retained sort names in exactly its original order. -/
 def context : (Γ : List P.signature.SortType) → Declaration.sorts Γ ⊆ U.declarations → List (SortName U)
   | [], _ => []
-  | s :: Γ, kept => ⟨s, kept ⟨s, List.mem_cons_self, rfl⟩⟩ ::
+  | s :: Γ, kept => ⟨s, kept (Declaration.sort_mem_sorts List.mem_cons_self)⟩ ::
     context Γ ((tailSortsSubset s Γ).trans kept)
+
+/-- Selecting an empty context yields the empty list of sort names. -/
+theorem context_nil (kept : Declaration.sorts (P := P) [] ⊆ U.declarations) :
+    context [] kept = [] :=
+  rfl
+
+/-- Selecting a nonempty context preserves its head before selecting the tail. -/
+theorem context_cons (s : P.signature.SortType) (Γ : List P.signature.SortType)
+    (kept : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
+    context (s :: Γ) kept = ⟨s, kept (Declaration.sort_mem_sorts List.mem_cons_self)⟩ ::
+      context Γ ((tailSortsSubset s Γ).trans kept) :=
+  rfl
 
 /-- Forgetting the retention proofs recovers the original input list. -/
 @[simp] theorem map_context (Γ : List P.signature.SortType) (kept : Declaration.sorts Γ ⊆ U.declarations) :
@@ -106,7 +118,7 @@ def selectTotalSymbol : (f : TotalSymbol P.signature) → Declaration.ofOperatio
 /-- The selected total symbol has the arity read from its original declaration. -/
 theorem selectTotalSymbol_arity (f : TotalSymbol P.signature) (keep : Declaration.ofOperation f.operation ∈ U.declarations) :
     (selectTotalSymbol f keep).operation.arity = arity f.operation keep := by
-  cases f <;> rfl
+  cases f <;> simp only [selectTotalSymbol, TotalSymbol.operation_ordinary, TotalSymbol.operation_quantity] <;> rfl
 
 /-- Selection preserves a declared total symbol's explicitly named profile. -/
 def selectTypedTotal {profile : Arity P.signature.SortType} (f : TypedTotal P.signature profile)

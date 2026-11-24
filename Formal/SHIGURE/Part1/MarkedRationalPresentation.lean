@@ -141,7 +141,7 @@ private theorem kept_total_support (right : Bool) (name : vocabulary.Symbol)
     · rw [Set.mem_singleton_iff.mp same]
       exact True.intro
   | multilinear name =>
-    rw [vocabulary.multilinear_dependencies]
+    rw [vocabulary.multilinear_dependencies, Declaration.sorts_eq_image]
     rintro _ ⟨s, occurs, rfl⟩
     cases name <;> cases right <;>
       simp_all [vocabulary, keeps, Op.source, Op.target, Op.right, keepsModule] <;> aesop
@@ -152,6 +152,7 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
     Declaration.sorts (P := presentation) op.arity.inputs ⊆ {d | keeps right d} := by
   cases op with
   | total name =>
+    rw [Declaration.sorts_eq_image]
     rintro _ ⟨s, occurs, rfl⟩
     have support := kept_total_support right name kept
     rw [Declaration.total_dependencies, Declaration.sorts_eq_image] at support
@@ -163,6 +164,7 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
 private theorem kept_sorts (right : Bool) {Γ : List (Option SortName)}
     (all : ∀ s ∈ Γ, keeps right (.sort s)) :
     Declaration.sorts (P := presentation) Γ ⊆ {d | keeps right d} := by
+  rw [Declaration.sorts_eq_image]
   rintro _ ⟨s, occurs, rfl⟩
   exact all s occurs
 

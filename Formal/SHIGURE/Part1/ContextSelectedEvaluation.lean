@@ -32,6 +32,20 @@ def ambientAssignment (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
     (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment Y (context Γ keep)) : Assignment X Γ :=
   ⟨fun i => (e _ (varKept keep i)).symm (a (selectVar keep i))⟩
 
+/-- Selecting an assignment reads its ambient coordinate through the carrier equivalence. -/
+theorem selectAssignment_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ)
+    {s : SortName U} (i : Var (context Γ keep) s) :
+    selectAssignment e keep a i = e s.val s.property (a (ambientVar keep i)) :=
+  rfl
+
+/-- Reading an ambient assignment takes the inverse carrier equivalence at the selected coordinate. -/
+theorem ambientAssignment_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment Y (context Γ keep))
+    {s : P.signature.SortType} (i : Var Γ s) :
+    ambientAssignment e keep a i = (e s (varKept keep i)).symm (a (selectVar keep i)) :=
+  rfl
+
 /-- The selected value at a retained variable is its original value under the carrier equivalence. -/
 @[simp] theorem selectAssignment_selectVar (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
     (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) {s : P.signature.SortType} (i : Var Γ s) :

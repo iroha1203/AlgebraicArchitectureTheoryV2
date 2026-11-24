@@ -18,8 +18,9 @@ variable {P : PrimitivePresentation.{u}} {D : Set (Declaration P)}
 variable {Γ : List P.signature.SortType} {s : P.signature.SortType}
 
 /-- A variable contributes no operation or bound-sort references. -/
-theorem variable_refs (i : Var Γ s) : termReferences (Term.var (sig := P.signature) i) ⊆ D :=
-  Set.empty_subset _
+theorem variable_refs (i : Var Γ s) : termReferences (Term.var (sig := P.signature) i) ⊆ D := by
+  rw [termReferences_var]
+  exact Set.empty_subset _
 
 /-- Keeping an application requires its graph symbol and the references of its arguments. -/
 theorem app_refs (op : Operation P.signature)
@@ -27,6 +28,7 @@ theorem app_refs (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ D)
     (args : ∀ {t} (i : Var op.arity.inputs t), termReferences (xs i) ⊆ D) :
     termReferences (Term.app op xs) ⊆ D := by
+  rw [termReferences_app]
   intro d used
   rcases used with hd | ⟨_, i, hd⟩
   · simpa only [Set.mem_singleton_iff.mp hd] using kept
@@ -58,7 +60,7 @@ private theorem bound_support (Λ : List P.signature.SortType) (p : Formula P.si
     apply ih p.ex ((DeclarationContext.tailSortsSubset s more).trans sorts)
     rw [Declaration.formula_ex]
     refine Set.union_subset ?_ kept
-    exact Set.singleton_subset_iff.mpr (sorts ⟨s, List.mem_cons_self, rfl⟩)
+    exact Set.singleton_subset_iff.mpr (sorts (Declaration.sort_mem_sorts List.mem_cons_self))
 
 /-- Track all typed names used by a term's value graph. -/
 private theorem graphAt_support (t : Term P.signature Γ s)
@@ -74,6 +76,7 @@ private theorem graphAt_support (t : Term P.signature Γ s)
   | app op xs ih =>
     intro Δ names out
     rw [Term.graphAt_app]
+    rw [termReferences_app] at references
     have kept := references (Or.inl (Set.mem_singleton _))
     apply bound_support _ _ (types op kept)
     rw [Declaration.formula_conj, Declaration.formula_atom, Declaration.atomic_graph]
@@ -82,6 +85,7 @@ private theorem graphAt_support (t : Term P.signature Γ s)
   | letBind init body initIH bodyIH =>
     intro Δ names out
     rw [Term.graphAt_letBind, Declaration.formula_ex, Declaration.formula_conj]
+    rw [termReferences_letBind] at references
     refine Set.union_subset (Set.singleton_subset_iff.mpr (references (Or.inl (Set.mem_singleton _)))) ?_
     exact Set.union_subset (initIH (fun _ used => references (Or.inr (Or.inl used))) _ _)
       (bodyIH (fun _ used => references (Or.inr (Or.inr used))) _ _)
@@ -105,10 +109,10 @@ private theorem two_arg_ref {t : P.signature.SortType} (x : Term P.signature Γ 
     {a : P.signature.SortType} (i : Var [s, t] a) :
     termReferences (x.argsCons (y.argsCons Term.argsNil) i) ⊆ D := by
   cases i with
-  | here => exact hx
+  | here => simpa only [Term.argsCons_here] using hx
   | there tail =>
     cases tail with
-    | here => exact hy
+    | here => simpa only [Term.argsCons_here, Term.argsCons_there] using hy
     | there empty => cases empty
 
 section Arithmetic

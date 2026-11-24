@@ -68,14 +68,21 @@ theorem substitute_term_kept {Γ : List P.signature.SortType} {s : P.signature.S
       (∀ {s} (i : Var Γ s), termReferences (θ i) ⊆ U.declarations) →
       termReferences (t.substitute θ) ⊆ U.declarations := by
   induction t with
-  | var i => exact fun θ _ hθ => hθ i
+  | var i =>
+    intro Δ θ _ hθ
+    rw [Term.substitute_var]
+    exact hθ i
   | app op ts ih =>
     intro Δ θ ht hθ d hd
+    rw [Term.substitute_app, termReferences_app] at hd
+    rw [termReferences_app] at ht
     rcases hd with hd | ⟨s, i, hd⟩
     · exact ht (Or.inl hd)
     · exact ih i θ (fun _ h => ht (Or.inr ⟨_, i, h⟩)) hθ hd
   | letBind init body hi hb =>
     intro Δ θ ht hθ d hd
+    rw [Term.substitute_letBind, termReferences_letBind] at hd
+    rw [termReferences_letBind] at ht
     rcases hd with hd | hd | hd
     · exact ht (Or.inl hd)
     · exact hi θ (fun _ h => ht (Or.inr (Or.inl h))) hθ hd
@@ -106,7 +113,7 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
     apply congrArg (fun (ts : ∀ {s}, Var (context (P.signature.relInputs r) hΛ) s →
       Term (signature U) (context Δ hΔ) s) => Formula.termRel (sig := signature U) ⟨r, kept⟩ ts)
     funext s i
-    exact (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
+    simpa only [selectRenaming_apply] using (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
   | domain p ρ =>
     simp only [Atomic.substitute_domain] at h ⊢
     simp only [selectAtomic_domain, Atomic.substitute_domain]
@@ -116,7 +123,7 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
     apply congrArg (fun (ts : ∀ {s}, Var (context (P.signature.partialArity p).inputs hΛ) s →
       Term (signature U) (context Δ hΔ) s) => Formula.termDomain (sig := signature U) ⟨p, kept⟩ ts)
     funext s i
-    exact (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
+    simpa only [selectRenaming_apply] using (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
   | graph op ρ y =>
     simp only [Atomic.substitute_graph] at h ⊢
     rw [selectAtomic_graph]
@@ -126,7 +133,7 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
         selectTerm (θ (ρ (ambientVar hΛ i))) hΔ s.property (hθ _)) =
         (fun {s} (i : Var (context op.arity.inputs hΛ) s) => θ' (selectRenaming hΛ hΓ ρ i)) := by
       funext s i
-      exact (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
+      simpa only [selectRenaming_apply] using (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
     have atOutput := (selectSubstitution_apply θ hΓ hΔ hθ y).symm
     refine (selectFormula_termGraph op (fun i => θ (ρ i)) (θ y) hΔ kept (fun i => hθ (ρ i)) (hθ y) h).trans ?_
     cases op <;> simp only [selectGraph_total, selectGraph_partialOp, selectGraph_quantity, Atomic.substitute_graph]

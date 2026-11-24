@@ -96,10 +96,8 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       selectAssignment (readCarrierEquiv (writeStructure B)) keep (ambientAssignment (extendedEquiv B) keep x) := by
   apply Assignment.ext
   intro s i
-  change cast (congrFun (read_write_carriers B).symm s) (x i) =
-    readCarrierEquiv (writeStructure B) s.val s.property
-      ((extendedEquiv B s.val s.property).symm (x (selectVar keep (ambientVar keep i))))
-  rw [selectVar_ambientVar keep i, readCarrierEquiv_eq_refl, extendedEquiv_eq_cast]
+  rw [Assignment.map_apply, selectAssignment_apply, ambientAssignment_apply, selectVar_ambientVar,
+    readCarrierEquiv_eq_refl, extendedEquiv_eq_cast]
   rfl
 
 /-- Recover the given ordinary selected structure by writing and reading it,

@@ -252,7 +252,7 @@ abbrev PointMap (A B : RestrictedStructure U) :=
 def mapAssignment {A B : RestrictedStructure U} (f : PointMap A B)
     {Γ : List P.signature.SortType} (supported : Declaration.sorts (P := P) Γ ⊆ U.declarations)
     (e : Assignment A.carrier Γ) : Assignment B.carrier Γ :=
-  ⟨fun i => f _ (supported ⟨_, i.sort_mem, rfl⟩) (e i)⟩
+  ⟨fun i => f _ (supported (Declaration.sort_mem_sorts i.sort_mem)) (e i)⟩
 
 /-- Forget the operations outside the selected declarations. -/
 def restrict (U : DeclarationContext P) (A : Structure P.signature) : RestrictedStructure U where

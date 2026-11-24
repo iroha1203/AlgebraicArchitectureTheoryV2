@@ -40,6 +40,11 @@ theorem sorts_eq_image (Γ : List P.signature.SortType) :
     sorts (P := P) Γ = Declaration.sort '' {s | s ∈ Γ} :=
   rfl
 
+/-- A sort occurring at any position is in the support of the variable context. -/
+theorem sort_mem_sorts {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (mem : s ∈ Γ) : Declaration.sort s ∈ sorts (P := P) Γ :=
+  ⟨s, mem, rfl⟩
+
 /-- The extended context retains its new sort and every previous sort. -/
 theorem sorts_cons_subset {Γ : List P.signature.SortType} {s : P.signature.SortType}
     {V : Set (Declaration P)} (head : Declaration.sort s ∈ V) (tail : sorts Γ ⊆ V) :

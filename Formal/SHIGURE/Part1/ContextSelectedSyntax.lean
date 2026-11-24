@@ -336,9 +336,9 @@ theorem selectFormula_there {Γ : List P.signature.SortType} {s : P.signature.So
     (after : Declaration.formulaSupport (p.rename (fun i => Var.there (t := s) i)) ⊆ U.declarations) :
     selectFormula (p.rename (fun i => Var.there (t := s) i)) after =
       (selectFormula p keep).rename (fun i => Var.there
-        (t := (⟨s, after (Declaration.sorts_subset_formulaSupport _ ⟨s, List.mem_cons_self, rfl⟩)⟩ : SortName U)) i) := by
+        (t := (⟨s, after (Declaration.sorts_subset_formulaSupport _ (Declaration.sort_mem_sorts List.mem_cons_self))⟩ : SortName U)) i) := by
   let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport p).trans keep
-  let head : Declaration.sort s ∈ U.declarations := after (Declaration.sorts_subset_formulaSupport _ ⟨s, List.mem_cons_self, rfl⟩)
+  let head : Declaration.sort s ∈ U.declarations := after (Declaration.sorts_subset_formulaSupport _ (Declaration.sort_mem_sorts List.mem_cons_self))
   have changeMap := congrArg (fun r : Renaming (context Γ free)
       (context (s :: Γ) (Declaration.sorts_cons_subset head free)) => (selectFormula p keep).rename r)
     (selectRenaming_there head free)

@@ -46,8 +46,10 @@ private def piece : DeclarationContext presentation where
   declarations := {d | d = .sort () ∨ d = .relation false}
   closed := by
     rintro a (rfl | rfl) d hd
-    · exact hd.elim
-    · obtain ⟨_, h, _⟩ := hd
+    · rw [Declaration.sort_dependencies] at hd
+      exact hd.elim
+    · rw [Declaration.relation_dependencies, Declaration.sorts_eq_image] at hd
+      obtain ⟨_, h, _⟩ := hd
       cases h
 
 /-- The whole context retains both relations. -/
@@ -109,9 +111,13 @@ private def coverChange : ReadingContextChange source target (Interpretation.ide
     rcases ha with rfl | rfl
     · exact Or.inl (Set.mem_singleton_iff.1 hd)
     · rcases hd with hsort | hrelation
-      · obtain ⟨_, h, _⟩ := hsort
+      · rw [Declaration.sorts_eq_image] at hsort
+        obtain ⟨_, h, _⟩ := hsort
         cases h
-      · exact Or.inr (Set.mem_singleton_iff.1 hrelation)
+      · change d ∈ Declaration.formula (.atom (.rel false _)) at hrelation
+        rw [Declaration.formula_atom] at hrelation
+        erw [Declaration.atomic_rel (P := target.presentation)] at hrelation
+        exact Or.inr (Set.mem_singleton_iff.1 hrelation)
 
 /-- The identity state map and the selected cover change belong to one comparison. -/
 private def comparison : ReadingComparison source target where
@@ -205,12 +211,16 @@ private def formula : Formula signature [] :=
 /-- The support of that existential fits inside the retained source piece. -/
 private theorem formulaSupported :
     Declaration.formulaSupport formula ⊆ (coverChange.sourcePiece ()).declarations := by
+  rw [Declaration.formulaSupport_eq]
   intro d hd
   refine ⟨?_, Set.mem_univ _⟩
   rcases hd with hsort | hformula
-  · obtain ⟨_, h, _⟩ := hsort
+  · rw [Declaration.sorts_eq_image] at hsort
+    obtain ⟨_, h, _⟩ := hsort
     cases h
-  · exact hformula.imp Set.mem_singleton_iff.1 Set.mem_singleton_iff.1
+  · rw [formula, Declaration.formula_ex, Declaration.formula_atom] at hformula
+    erw [Declaration.atomic_rel (P := presentation)] at hformula
+    exact hformula.imp Set.mem_singleton_iff.1 Set.mem_singleton_iff.1
 
 /-- The local comparison really evaluates the relation in the assigned target piece. -/
 theorem existential_transports_in_assigned_piece :
@@ -297,8 +307,10 @@ private def interchangeablePiece (r : Bool) : DeclarationContext interchangeable
   declarations := {d | d = .sort () ∨ d = .relation r}
   closed := by
     rintro a (rfl | rfl) d hd
-    · exact hd.elim
-    · obtain ⟨_, h, _⟩ := hd
+    · rw [Declaration.sort_dependencies] at hd
+      exact hd.elim
+    · rw [Declaration.relation_dependencies, Declaration.sorts_eq_image] at hd
+      obtain ⟨_, h, _⟩ := hd
       cases h
 
 /-- The Laws are present in a separate piece that the comparison does not select. -/
@@ -336,9 +348,13 @@ private def piecewiseTranslation : ReadingContextChange sourceWithOverlap target
     rcases kept with rfl | rfl
     · exact Or.inl (Set.mem_singleton_iff.1 above)
     · rcases above with hsort | hrelation
-      · obtain ⟨_, h, _⟩ := hsort
+      · rw [Declaration.sorts_eq_image] at hsort
+        obtain ⟨_, h, _⟩ := hsort
         cases h
-      · exact Or.inr (Set.mem_singleton_iff.1 hrelation)
+      · change d ∈ Declaration.formula (.atom (.rel i _)) at hrelation
+        rw [Declaration.formula_atom] at hrelation
+        erw [Declaration.atomic_rel (P := targetWithSeparatePieces.presentation)] at hrelation
+        exact Or.inr (Set.mem_singleton_iff.1 hrelation)
 
 /-- Different supported translation representatives give a comparison on the actual model. -/
 def locally_distinct_translations_compare :
@@ -525,6 +541,7 @@ private def retained : DeclarationContext presentation where
     intro d hd e he
     have same : d = .sort false := Set.mem_singleton_iff.1 hd
     subst d
+    rw [Declaration.sort_dependencies] at he
     exact he.elim
 
 /-- Vary the forgotten carrier while keeping the retained integer carrier. -/
@@ -592,7 +609,7 @@ private theorem retained_preserves (source target : RestrictedStructure retained
   cases a with
   | @eq s i j =>
     have kept : Declaration.sort s ∈ retained.declarations :=
-      supported (Or.inl ⟨s, i.sort_mem, rfl⟩)
+      supported (Declaration.sorts_subset_atomicSupport _ (Declaration.sort_mem_sorts i.sort_mem))
     exact congrArg (fun x => same s kept ▸ x) held
   | rel r _ => exact nomatch r
   | domain p _ => exact nomatch p
@@ -995,14 +1012,16 @@ theorem declared_observation_covers_both_sorts :
   let declared : pairedReading.DeclaredObservation := ⟨.ordinary (), Set.mem_univ _, rfl⟩
   obtain ⟨i, symbol, arity⟩ := declared.covered
   refine ⟨i, symbol, ?_⟩
+  rw [Declaration.sorts_eq_image]
   rintro _ ⟨s, kept, rfl⟩
-  exact arity ⟨s, List.mem_cons_of_mem _ kept, rfl⟩
+  exact arity (Declaration.sort_mem_sorts (List.mem_cons_of_mem _ kept))
 
 /-- Both state sorts remain available while the operation declaration is forgotten. -/
 private def pairedSorts : DeclarationContext observationPresentation where
   declarations := {d | ∃ s, d = .sort s}
   closed := by
     rintro _ ⟨s, rfl⟩ d source
+    rw [Declaration.sort_dependencies] at source
     exact source.elim
 
 /-- The target has a covering piece for the operation and a separate sorts-only piece. -/
@@ -1626,6 +1645,7 @@ private def U : DeclarationContext P where
   declarations := Set.range Declaration.sort
   closed seen _ dependency := by
     obtain ⟨s, rfl⟩ := seen
+    rw [Declaration.sort_dependencies] at dependency
     exact dependency.elim
 
 /-- Both sort declarations belong to the method's context. -/
@@ -1643,6 +1663,7 @@ private def W : DeclarationContext P where
   closed seen d hd := by
     have same := Set.mem_singleton_iff.1 seen
     rw [same] at hd
+    rw [Declaration.sort_dependencies] at hd
     exact hd.elim
 
 /-- The selected Boolean declaration lies in the full context. -/
@@ -1897,9 +1918,9 @@ private theorem sameBooleanSource :
     | eq x y => exact congrArg (fun a => cast _ a) held
     | rel r => nomatch r
     | domain p => nomatch p
-    | graph op _ _ =>
+    | graph op vars y =>
       cases op with
-      | total f => exact (omitsTotal f (inside (support (Or.inr (Set.mem_singleton _))))).elim
+      | total f => exact (omitsTotal f (inside (support (Declaration.graph_mem_atomicSupport (.total f) vars y)))).elim
       | partialOp p => nomatch p
       | quantity q => nomatch q
 

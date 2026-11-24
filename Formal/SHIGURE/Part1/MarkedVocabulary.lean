@@ -343,7 +343,7 @@ theorem multilinear_input_kept {U : DeclarationContext (V.presentation L)} {f : 
     Declaration.sort i.1 ∈ U.declarations :=
   DeclarationContext.operationInputs (P := V.presentation L) (U := U)
     (.total (Symbol.multilinear f)) kept
-    ⟨_, i.2.sort_mem, rfl⟩
+    (Declaration.sort_mem_sorts i.2.sort_mem)
 
 /-- A retained multilinear symbol forces retention of its coefficient or module result sort. -/
 theorem multilinear_output_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}

@@ -423,11 +423,8 @@ theorem Reading.DeclaredObservation.covered {reading : Reading.{u, v, w, x}}
   obtain ⟨symbol, retained, reads⟩ := declared
   obtain ⟨i, kept⟩ := reading.cover.covers retained
   refine ⟨i, kept, ?_⟩
-  rintro _ ⟨s, input, rfl⟩
-  apply (reading.cover.piece i).closed kept
-  cases symbol with
-  | ordinary f => exact ⟨s, input, rfl⟩
-  | quantity q => exact ⟨s, input, rfl⟩
+  exact (Declaration.operationSorts_subset_dependsOn symbol.operation).trans ((reading.cover.piece i).closed kept)
+
 
 namespace Reading.DeclaredObservation
 
@@ -615,20 +612,24 @@ theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
     formula (u.translation.atomic a) ⊆ V := by
   cases a with
   | eq x y =>
+    rw [Translation.atomic_eq, formula_atom, atomic_eq]
     exact Set.empty_subset V
   | rel r vars =>
     rw [Translation.atomic_rel (S := P.signature) (T := Q.signature) u.translation r vars,
       formula_rename]
+    rw [atomic_rel] at supported
     intro d hd
     exact supported (.relation r) (Set.mem_singleton _) (Or.inr hd)
   | domain p vars =>
     rw [Translation.atomic_domain (S := P.signature) (T := Q.signature) u.translation p vars,
       formula_rename]
+    rw [atomic_domain] at supported
     intro d hd
     exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inr (Or.inl hd)))
   | graph op vars y =>
     rw [Translation.atomic_graph (S := P.signature) (T := Q.signature) u.translation op vars y,
       formula_rename]
+    rw [atomic_graph] at supported
     intro d hd
     cases op with
     | total f => exact supported (.total f) (Set.mem_singleton _) (Or.inr (Or.inl hd))
@@ -640,21 +641,21 @@ theorem translated_formula_support (u : Interpretation P.theory Q.theory)
     {Γ : List P.signature.SortType} (p : Formula P.signature Γ) (V : Set (Declaration Q)) :
     (∀ d ∈ formula p, translatedSupport u d ⊆ V) → formula (u.translation.formula p) ⊆ V := by
   induction p with
-  | atom a => rw [Translation.formula_atom]; exact translated_atomic_support u a V
-  | truth => rw [Translation.formula_truth]; intro; exact Set.empty_subset V
-  | falsehood => rw [Translation.formula_falsehood]; intro; exact Set.empty_subset V
+  | atom a => rw [Translation.formula_atom, formula_atom]; exact translated_atomic_support u a V
+  | truth => simp only [Translation.formula_truth, formula_truth]; intro; exact Set.empty_subset V
+  | falsehood => simp only [Translation.formula_falsehood, formula_falsehood]; intro; exact Set.empty_subset V
   | conj p q hp hq =>
-    rw [Translation.formula_conj]
+    simp only [Translation.formula_conj, formula_conj]
     intro keep d hd
     exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
       (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
   | disj p q hp hq =>
-    rw [Translation.formula_disj]
+    simp only [Translation.formula_disj, formula_disj]
     intro keep d hd
     exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
       (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
   | @ex Γ s p ih =>
-    rw [Translation.formula_ex]
+    simp only [Translation.formula_ex, formula_ex]
     intro keep d hd
     exact hd.elim (fun h => keep (.sort s) (Or.inl (Set.mem_singleton _)) h)
       (fun h => ih (fun x hx => keep x (Or.inr hx)) h)
@@ -762,11 +763,13 @@ private theorem formula_support_in (transition : ReadingContextChange source tar
     (V : Set (Declaration target.presentation)) (keep : ∀ d ∈ Declaration.formulaSupport p,
       Declaration.translatedSupport (transition.supporting i) d ⊆ V) :
     Declaration.formulaSupport ((transition.supporting i).translation.formula p) ⊆ V := by
+  simp only [Declaration.formulaSupport_eq] at keep ⊢
   intro d hd
   rcases hd with hsort | hformula
-  · obtain ⟨t, ht, rfl⟩ := hsort
+  · rw [Declaration.sorts_eq_image] at hsort
+    obtain ⟨t, ht, rfl⟩ := hsort
     obtain ⟨s, hs, rfl⟩ := List.mem_map.mp ht
-    exact keep (.sort s) (Or.inl ⟨s, hs, rfl⟩) (Set.mem_singleton _)
+    exact keep (.sort s) (Or.inl (Declaration.sort_mem_sorts hs)) (Set.mem_singleton _)
   · exact Declaration.translated_formula_support (transition.supporting i) p V
       (fun d hd => keep d (Or.inr hd)) hformula
 
@@ -1683,7 +1686,8 @@ def Reading.coefficientContext (reading : Reading.{u, v, w, x})
   closed membership d dependency := by
     rcases membership with keptName | ⟨i, j, _, _, rfl, _⟩
     · exact Or.inl (kept.closed keptName dependency)
-    · exact dependency.elim
+    · rw [Declaration.sort_dependencies] at dependency
+      exact dependency.elim
 
 /-- Added carrier slots already belonged to the original realization. -/
 theorem Reading.coefficientContext_inside (reading : Reading.{u, v, w, x})

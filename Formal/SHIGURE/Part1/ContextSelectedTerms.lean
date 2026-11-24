@@ -22,6 +22,26 @@ def termReferences : {Γ : List P.signature.SortType} → {s : P.signature.SortT
       d ∈ termReferences (args i)}
   | _, _, @Term.letBind _ _ s _ x y => {Declaration.sort s} ∪ (termReferences x ∪ termReferences y)
 
+/-- A variable contributes no primitive or binder references. -/
+theorem termReferences_var {Γ : List P.signature.SortType} {s : P.signature.SortType} (i : Var Γ s) :
+    termReferences (Term.var (sig := P.signature) i) = ∅ :=
+  rfl
+
+/-- An application references its operation and every argument term. -/
+theorem termReferences_app {Γ : List P.signature.SortType} (op : Operation P.signature)
+    (args : ∀ {s}, Var op.arity.inputs s → Term P.signature Γ s) :
+    termReferences (Term.app op args) =
+      {Declaration.ofOperation op} ∪
+        {d | ∃ (s : P.signature.SortType) (i : Var op.arity.inputs s), d ∈ termReferences (args i)} :=
+  rfl
+
+/-- A strict let references its bound sort, initial value and body. -/
+theorem termReferences_letBind {Γ : List P.signature.SortType} {a s : P.signature.SortType}
+    (init : Term P.signature Γ a) (body : Term P.signature (a :: Γ) s) :
+    termReferences (init.letBind body) =
+      {Declaration.sort a} ∪ (termReferences init ∪ termReferences body) :=
+  rfl
+
 /-- Read the primitive references of a member of a conjunction from the conjunction's support. -/
 private theorem formula_conjoin_subset {Γ Λ : List P.signature.SortType}
     (ps : ∀ {s}, Var Λ s → Formula P.signature Γ) {s} (i : Var Λ s) :
@@ -102,6 +122,13 @@ def selectTerm : {Γ : List P.signature.SortType} → {s : P.signature.SortType}
       (selectTerm y (Declaration.sorts_cons_subset keepA keepΓ) keepS (fun _ hd => keep (Or.inr (Or.inr hd))))
 
 
+/-- Selecting a variable term keeps the position selected in its context. -/
+theorem selectTerm_var {Γ : List P.signature.SortType} {s : P.signature.SortType} (i : Var Γ s)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepS : Declaration.sort s ∈ U.declarations)
+    (keep : termReferences (Term.var (sig := P.signature) i) ⊆ U.declarations) :
+    selectTerm (.var i) keepΓ keepS keep = .var (selectVar keepΓ i) :=
+  rfl
+
 /-- An application of a typed total symbol refers to its primitive and all its argument terms. -/
 theorem typedTermReferences {Γ : List P.signature.SortType} {profile : Arity P.signature.SortType}
     (f : TypedTotal P.signature profile) (args : ∀ {s}, Var profile.inputs s → Term P.signature Γ s) :
@@ -140,8 +167,10 @@ private theorem context_append {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations) :
     context (Γ ++ Δ) (appendSupport hΓ hΔ) = context Γ hΓ ++ context Δ hΔ := by
   induction Γ with
-  | nil => rfl
+  | nil =>
+    simp only [List.nil_append, context_nil]
   | cons s Γ ih =>
+    simp only [List.cons_append, context_cons]
     exact congrArg (List.cons _) (ih ((tailSortsSubset s Γ).trans hΓ))
 
 /-- Transport the first variable when the remainder of its context is reindexed. -/
@@ -174,7 +203,7 @@ private theorem selectVar_shift {Γ Δ : List P.signature.SortType}
   | cons t Γ ih =>
     let keepΓ := (tailSortsSubset t Γ).trans hΓ
     have right : (selectVar hΔ i).shift (context (t :: Γ) hΓ) =
-        Var.there (t := (⟨t, hΓ ⟨t, List.mem_cons_self, rfl⟩⟩ : SortName U))
+        Var.there (t := (⟨t, hΓ (Declaration.sort_mem_sorts List.mem_cons_self)⟩ : SortName U))
           ((selectVar hΔ i).shift (context Γ keepΓ)) :=
       Var.shift_cons (context Γ keepΓ) (selectVar hΔ i)
     rw [Var.shift_cons, selectVar_there, right]
@@ -230,7 +259,7 @@ private theorem selectFormula_existsMany {Γ Λ : List P.signature.SortType}
     exact (Formula.existsMany_nil _).symm
   | cons s Λ ih =>
     let tail := (tailSortsSubset s Λ).trans hΛ
-    let selected : SortName U := ⟨s, hΛ ⟨s, List.mem_cons_self, rfl⟩⟩
+    let selected : SortName U := ⟨s, hΛ (Declaration.sort_mem_sorts List.mem_cons_self)⟩
     let body : Formula (signature U) (selected :: context (Λ ++ Γ) (appendSupport tail hΓ)) :=
       selectFormula p (keepExistsMany (Λ := s :: Λ) p kept)
     have crossed := cast_formula_ex (sig := signature U) (s := selected) (context_append tail hΓ) body
@@ -279,7 +308,7 @@ private theorem selectFormula_conjoin {Γ Λ : List P.signature.SortType} (ps : 
     exact (Formula.conjoin_nil _).symm
   | cons s Λ ih =>
     let tail := (tailSortsSubset s Λ).trans hΛ
-    let selected : SortName U := ⟨s, hΛ ⟨s, List.mem_cons_self, rfl⟩⟩
+    let selected : SortName U := ⟨s, hΛ (Declaration.sort_mem_sorts List.mem_cons_self)⟩
     let hΓ := (Declaration.sorts_subset_formulaSupport _).trans keep
     have written := Formula.conjoin_cons ps
     have rewritten : Declaration.formulaSupport ((ps .here).conj (Formula.conjoin Λ (fun i => ps (.there i)))) ⊆ U.declarations := by
@@ -802,6 +831,15 @@ def selectSubstitution {Γ Δ : List P.signature.SortType} (θ : Substitution P.
     Substitution (signature U) (context Γ hΓ) (context Δ hΔ) :=
   ⟨fun {s} i => selectTerm (θ (ambientVar hΓ i)) hΔ s.property (hθ (ambientVar hΓ i))⟩
 
+/-- A selected position reads the retyped term at its ambient position. -/
+theorem selectSubstitution_at {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
+    (hθ : ∀ {s} (i : Var Γ s), termReferences (θ i) ⊆ U.declarations)
+    {s : SortName U} (i : Var (context Γ hΓ) s) :
+    selectSubstitution θ hΓ hΔ hθ i =
+      selectTerm (θ (ambientVar hΓ i)) hΔ s.property (hθ (ambientVar hΓ i)) :=
+  rfl
+
 /-- The selected substitution at a selected position is the original substituted term retyped. -/
 theorem selectSubstitution_apply {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -817,7 +855,7 @@ theorem liftTermReferences {Γ Δ : List P.signature.SortType} (θ : Substitutio
     (hθ : ∀ {s} (i : Var Γ s), termReferences (θ i) ⊆ U.declarations)
     {a s} (i : Var (a :: Γ) s) : termReferences (θ.lift i) ⊆ U.declarations := by
   cases i with
-  | here => exact Set.empty_subset _
+  | here => rw [Substitution.lift_here, termReferences_var]; exact Set.empty_subset _
   | there i =>
     rw [Substitution.lift_there, termReferences_rename]
     exact hθ i
@@ -830,17 +868,23 @@ theorem selectSubstitution_lift {Γ Δ : List P.signature.SortType} (θ : Substi
     selectSubstitution (θ.lift (s := a)) (Declaration.sorts_cons_subset ha hΓ)
       (Declaration.sorts_cons_subset ha hΔ) (liftTermReferences θ hθ) =
       (selectSubstitution θ hΓ hΔ hθ).lift (s := (⟨a, ha⟩ : SortName U)) := by
-  apply congrArg (Substitution.mk (sig := signature U)
-    (Γ := context (a :: Γ) (Declaration.sorts_cons_subset ha hΓ))
-    (Δ := context (a :: Δ) (Declaration.sorts_cons_subset ha hΔ)))
-  funext s v
+  apply Substitution.ext
+  intro s v
   cases v with
-  | here => rfl
+  | here =>
+    simp only [selectSubstitution_at, ambientVar_here, Substitution.lift_here, selectTerm_var, selectVar_here]
+    exact (Substitution.lift_here (s := (⟨a, ha⟩ : SortName U)) (selectSubstitution θ hΓ hΔ hθ)).symm
   | there v =>
+    have atOld := Substitution.lift_there (s := (⟨a, ha⟩ : SortName U)) (selectSubstitution θ hΓ hΔ hθ) v
+    rw [atOld]
+    simp only [selectSubstitution_at, ambientVar_there, Substitution.lift_there]
     let i := ambientVar hΓ v
     let t := selectTerm (θ i) hΔ s.property (hθ i)
+    have moved : termReferences ((θ i).rename (fun j => Var.there (t := a) j)) ⊆ U.declarations := by
+      rw [termReferences_rename]
+      exact hθ i
     exact (selectTerm_rename (θ i) (fun j => .there j) hΔ (Declaration.sorts_cons_subset ha hΔ)
-      s.property (hθ i) (liftTermReferences θ hθ (.there (t := a) i))).trans
+      s.property (hθ i) moved).trans
       (congrArg (fun (mapVars : Renaming (context Δ hΔ) (context (a :: Δ) (Declaration.sorts_cons_subset ha hΔ))) =>
         t.rename mapVars) (selectRenaming_there ha hΔ))
 
@@ -850,7 +894,8 @@ private theorem substitute_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.
     (θ : Substitution sig Γ Δ) :
     (reindexedApp op same args).substitute θ = reindexedApp op same (fun i => (args i).substitute θ) := by
   cases same
-  rfl
+  change (Term.app op args).substitute θ = Term.app op (fun i => (args i).substitute θ)
+  rw [Term.substitute_app]
 
 /-- Selection commutes with capture-free substitution in a supported term. -/
 theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.SortType} (t : Term P.signature Γ s) :
@@ -863,9 +908,12 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
   induction t with
   | var i =>
     intro Δ θ hΓ hΔ hs ht hθ hSub
+    simp only [Term.substitute_var] at hSub ⊢
+    simp only [selectTerm_var, Term.substitute_var]
     exact (selectSubstitution_apply θ hΓ hΔ hθ i).symm
   | @app Γ op args ih =>
     intro Δ θ hΓ hΔ hs ht hθ hSub
+    simp only [Term.substitute_app] at hSub ⊢
     have keepOp := ht (Or.inl (Set.mem_singleton (Declaration.ofOperation op)))
     let hΛ := operationInputs op keepOp
     let ts : ∀ {s}, Var (context op.arity.inputs hΛ) s → Term (signature U) (context Γ hΓ) s :=
@@ -883,6 +931,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     exact ih (ambientVar hΛ i) θ hΓ hΔ s.property _ hθ _
   | @letBind Γ a s init body hi hb =>
     intro Δ θ hΓ hΔ hs ht hθ hSub
+    simp only [Term.substitute_letBind] at hSub ⊢
     let ha := ht (Or.inl (Set.mem_singleton (Declaration.sort a)))
     let hΓ' := Declaration.sorts_cons_subset ha hΓ
     let hΔ' := Declaration.sorts_cons_subset ha hΔ
@@ -890,6 +939,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     have first := hi θ hΓ hΔ ha (fun _ hd => ht (Or.inr (Or.inl hd))) hθ (fun _ hd => hSub (Or.inr (Or.inl hd)))
     have second := hb θ.lift hΓ' hΔ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
       (liftTermReferences θ hθ) (fun _ hd => hSub (Or.inr (Or.inr hd)))
+    simp only [selectTerm, Term.substitute_letBind]
     exact congrArg₂ (Term.letBind (sig := signature U)) first (second.trans
       (congrArg (fun replacement => Term.substitute replacement body') (selectSubstitution_lift θ hΓ hΔ hθ ha)))
 

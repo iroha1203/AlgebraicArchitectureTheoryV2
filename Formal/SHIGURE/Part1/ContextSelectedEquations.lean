@@ -64,9 +64,9 @@ private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Fo
   | @variablePair eqn x y left right =>
     intro h
     refine ⟨varKept (lawSortSupport h) x, ?_, ?_⟩
-    · rw [left]
+    · rw [left, termReferences_var]
       exact Set.empty_subset _
-    · rw [right]
+    · rw [right, termReferences_var]
       exact Set.empty_subset _
   | @substitute eqn p prior Γ θ ih =>
     intro h
@@ -103,12 +103,13 @@ private theorem selectEquation_substitute {eqn : OrderedEquation P.signature} {p
   have inputSame := congrArg₂ (Formula.conj (sig := signature U))
     (selectSubstitution_defined θ hOld hΓ hTerms (guard_kept (eqn := eqn) (p := p) θ h))
     (selectFormula_substitute eqn.input θ hOld hΓ hTerms (lawInputSupport prev) (substitutedInput_kept (eqn := eqn) (p := p) θ h))
+  have inputClause := selectFormula_conj θ.defined (eqn.input.substitute θ) (lawInputSupport h)
   have leftSame := selectTerm_substitute eqn.left θ hOld hΓ hs (expansion_terms_kept prior prev).2.1 hTerms
     (expansion_terms_kept (prior.substitute θ) h).2.1
   have rightSame := selectTerm_substitute eqn.right θ hOld hΓ hs (expansion_terms_kept prior prev).2.2 hTerms
     (expansion_terms_kept (prior.substitute θ) h).2.2
   let make := OrderedEquation.mk (sig := signature U) (context Γ hΓ) ⟨eqn.result, hs⟩
-  exact (congrArg (fun input => make input _ _) inputSame).trans
+  exact (congrArg (fun input => make input _ _) (inputClause.trans inputSame)).trans
     (congrArg₂ (make _) leftSame rightSame)
 
 /-- Transport the type of a writing certificate when its equation and conclusion agree. -/
@@ -125,7 +126,7 @@ private theorem selectTerm_of_var {Γ : List P.signature.SortType} {s : P.signat
     (ht : termReferences t ⊆ U.declarations) :
     selectTerm t hΓ hs ht = .var (selectVar hΓ x) := by
   subst t
-  rfl
+  exact selectTerm_var x hΓ hs ht
 
 /-- Replay the entire writing certificate over the genuinely selected signature. -/
 private noncomputable def selectExpansion {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
@@ -141,9 +142,10 @@ private noncomputable def selectExpansion {eqn : OrderedEquation P.signature} {p
   | @variablePair eqn x y left right =>
     let hΓ := lawSortSupport h
     let data : OrderedEquation.Expansion eqn (.atom (.eq x y)) := .variablePair x y left right
-    exact OrderedEquation.Expansion.variablePair (eqn := selectEquation data h)
-      (selectVar hΓ x) (selectVar hΓ y)
-      (selectTerm_of_var x left hΓ _ _) (selectTerm_of_var y right hΓ _ _)
+    simpa only [selectFormula_atom, selectAtomic_eq] using
+      (OrderedEquation.Expansion.variablePair (eqn := selectEquation data h)
+        (selectVar hΓ x) (selectVar hΓ y)
+        (selectTerm_of_var x left hΓ _ _) (selectTerm_of_var y right hΓ _ _))
   | @substitute eqn p prior Γ θ ih =>
     let prev := priorLaw_kept θ h
     let hTerms := fun {s} (i : Var eqn.context s) =>
@@ -164,7 +166,8 @@ noncomputable def selectWritten (w : OrderedEquation.Written P.signature)
 /-- The selected ordered text is attached to the selected literal Law. -/
 theorem selectWritten_toLaw (w : OrderedEquation.Written P.signature)
     (h : Declaration.lawBody w.toLaw ⊆ U.declarations) :
-    (selectWritten w h).toLaw = selectLaw w.toLaw h :=
+    (selectWritten w h).toLaw = selectLaw w.toLaw h := by
+  rw [selectLaw_eq]
   rfl
 
 /-- An equality of written Laws identifies their selected Laws as well. -/

@@ -2279,6 +2279,9 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.graphRuleName_quantityTotality,
   Declaration.graphRuleName_graphImpliesDomain,
   Declaration.graphRuleName_domainImpliesGraph,
+  -- ContextSelectedEvaluation
+  DeclarationContext.Selected.selectAssignment_apply,
+  DeclarationContext.Selected.ambientAssignment_apply,
   -- ContextSelectedMorphisms
   DeclarationContext.Selected.writeOnSort_apply,
   -- ContextSelectedStructures
@@ -2303,8 +2306,15 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectFormula_ex,
   DeclarationContext.Selected.selectLaw_eq,
   -- ContextSelectedTerms
+  DeclarationContext.Selected.termReferences_var,
+  DeclarationContext.Selected.termReferences_app,
+  DeclarationContext.Selected.termReferences_letBind,
+  DeclarationContext.Selected.selectTerm_var,
   DeclarationContext.Selected.termEq_support,
+  DeclarationContext.Selected.selectSubstitution_at,
   -- ContextSelectedVocabulary
+  DeclarationContext.Selected.context_nil,
+  DeclarationContext.Selected.context_cons,
   DeclarationContext.Selected.selectVar_here,
   DeclarationContext.Selected.selectVar_there,
   DeclarationContext.Selected.ambientVar_here,
@@ -2312,6 +2322,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectRenaming_apply,
   -- DeclarationContexts
   Declaration.sorts_eq_image,
+  Declaration.sort_mem_sorts,
   Declaration.ofOperation_total,
   Declaration.ofOperation_partialOp,
   Declaration.ofOperation_quantity,
@@ -2393,6 +2404,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SignatureNames.law_eq,
   -- Substitution
   Term.rename_var,
+  Substitution.ext,
+  Term.substitute_var,
+  Term.substitute_app,
+  Term.substitute_letBind,
   -- Syntax
   Formula.rename_truth,
   Formula.rename_falsehood,
