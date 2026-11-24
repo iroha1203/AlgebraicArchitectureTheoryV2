@@ -6,10 +6,9 @@
 use crate::algebra::artin::{
     AffineSolutionField, check_same_ring, rref_field, solve_affine_field,
 };
-use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
 pub use crate::algebra::linear::{SmithFormZ, smith_normal_form_z};
 use crate::algebra::poly::AlgebraError;
-use crate::algebra::scalar::{Rat, RingCoeff};
+use crate::algebra::scalar::RingCoeff;
 use crate::algebra::syzygy::FieldCoeff;
 use num_bigint::BigInt;
 use num_integer::Integer;
@@ -276,7 +275,14 @@ impl<C: FieldCoeff> CochainComplex<C> {
             .chain(&coh.h1_rep_basis)
             .enumerate()
         {
+            if v.len() != self.dim1 {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: self.dim1,
+                    actual: v.len(),
+                });
+            }
             for (row, val) in v.iter().enumerate() {
+                check_same_ring(&self.zero_coeff, val)?;
                 mat[row][col] = val.clone();
             }
         }
@@ -353,20 +359,30 @@ impl CochainComplex<BigInt> {
                     basis_mat[row][col] = val.clone();
                 }
             }
+            // 不変行列 `basis_mat` の Smith 標準形をループ外で 1 回だけ計算し、各列を変換する。
+            let snf_basis = smith_normal_form_z(&basis_mat, z1_rank)?;
             let mut b_in_z1 = vec![vec![BigInt::zero(); self.dim0]; z1_rank];
             for col in 0..self.dim0 {
                 let d0_col: Vec<BigInt> = self.d0.iter().map(|r| r[col].clone()).collect();
-                match solve_affine_z(&basis_mat, &d0_col, z1_rank)? {
-                    AffineSolutionZ::Consistent { particular, .. } => {
-                        for row in 0..z1_rank {
-                            b_in_z1[row][col] = particular[row].clone();
-                        }
-                    }
-                    AffineSolutionZ::Inconsistent { .. } => {
+                let u_rhs = mat_vec(&snf_basis.u, &d0_col, &BigInt::zero());
+                if u_rhs[snf_basis.rank..].iter().any(|v| !v.is_zero()) {
+                    return Err(AlgebraError::OutOfScope {
+                        detail: "im(d^0) is not contained in ker(d^1) over Z".to_owned(),
+                    });
+                }
+                let mut y = vec![BigInt::zero(); z1_rank];
+                for i in 0..snf_basis.rank {
+                    let diag = &snf_basis.diagonals[i];
+                    if !(&u_rhs[i] % diag).is_zero() {
                         return Err(AlgebraError::OutOfScope {
                             detail: "im(d^0) is not contained in ker(d^1) over Z".to_owned(),
                         });
                     }
+                    y[i] = &u_rhs[i] / diag;
+                }
+                let particular = mat_vec(&snf_basis.v, &y, &BigInt::zero());
+                for row in 0..z1_rank {
+                    b_in_z1[row][col] = particular[row].clone();
                 }
             }
             let snf_b = smith_normal_form_z(&b_in_z1, self.dim0)?;
@@ -415,48 +431,50 @@ impl CochainComplex<BigInt> {
                 torsion_order: None,
             });
         }
-        let coboundary_witness_z = match solve_affine_z(&self.d0, z_vec, self.dim0)? {
-            AffineSolutionZ::Consistent { particular, .. } => Some(particular),
-            AffineSolutionZ::Inconsistent { .. } => None,
-        };
-        if coboundary_witness_z.is_some() {
+        // 単一の Smith 標準形 U * d^0 * V = D から Z 零性・Q 零性・最小 torsion 位数を一括判定する。
+        let snf0 = smith_normal_form_z(&self.d0, self.dim0)?;
+        let uz = mat_vec(&snf0.u, z_vec, &BigInt::zero());
+        if uz[snf0.rank..].iter().any(|v| !v.is_zero()) {
+            return Ok(CocycleCheckZ {
+                is_cocycle: true,
+                is_zero_in_z: false,
+                coboundary_witness_z: None,
+                is_zero_in_q: false,
+                torsion_order: None,
+            });
+        }
+        let mut y = vec![BigInt::zero(); self.dim0];
+        let mut divisible_over_z = true;
+        for (i, diag) in snf0.diagonals.iter().enumerate() {
+            if !(&uz[i] % diag).is_zero() {
+                divisible_over_z = false;
+                break;
+            }
+            y[i] = &uz[i] / diag;
+        }
+        if divisible_over_z {
+            let witness = mat_vec(&snf0.v, &y, &BigInt::zero());
             return Ok(CocycleCheckZ {
                 is_cocycle: true,
                 is_zero_in_z: true,
-                coboundary_witness_z,
+                coboundary_witness_z: Some(witness),
                 is_zero_in_q: true,
                 torsion_order: None,
             });
         }
-        // Q 上で解があるか判定し、解があれば分母の LCM が正確な torsion 位数になる。
-        let d0_q: Vec<Vec<Rat>> = self
-            .d0
-            .iter()
-            .map(|r| r.iter().map(|v| Rat::from_int(v.clone())).collect())
-            .collect();
-        let z_q: Vec<Rat> = z_vec.iter().map(|v| Rat::from_int(v.clone())).collect();
-        let (is_zero_in_q, torsion_order) =
-            match solve_affine_field(&d0_q, &z_q, self.dim0, &Rat::zero())? {
-                AffineSolutionField::Consistent { .. } => {
-                    // 最小正整数 m > 1 で m * z_vec ∈ im_Z(d^0) を Smith 標準形で厳密に求める。
-                    let snf0 = smith_normal_form_z(&self.d0, self.dim0)?;
-                    let uz = mat_vec(&snf0.u, z_vec, &BigInt::zero());
-                    let mut order = BigInt::one();
-                    for (i, diag) in snf0.diagonals.iter().enumerate() {
-                        let g = diag.gcd(&uz[i]);
-                        let factor = diag / g;
-                        order = order.lcm(&factor);
-                    }
-                    (true, Some(order))
-                }
-                AffineSolutionField::Inconsistent { .. } => (false, None),
-            };
+        // Q 上では可解だが Z 上では非可解: 最小正整数位数 m = lcm_i (d_i / gcd(d_i, (Uz)_i)) > 1
+        let mut order = BigInt::one();
+        for (i, diag) in snf0.diagonals.iter().enumerate() {
+            let g = diag.gcd(&uz[i]);
+            let factor = diag / g;
+            order = order.lcm(&factor);
+        }
         Ok(CocycleCheckZ {
             is_cocycle: true,
             is_zero_in_z: false,
             coboundary_witness_z: None,
-            is_zero_in_q,
-            torsion_order,
+            is_zero_in_q: true,
+            torsion_order: Some(order),
         })
     }
 }

@@ -71,6 +71,9 @@ impl<C: RingCoeff> SquareZeroExtension<C> {
                 actual: m_coords.len(),
             });
         }
+        for c in m_coords {
+            check_same_ring(&self.r_prime.zero_coeff, c)?;
+        }
         let mut out = self.r_prime.zero_elem();
         for (c, kb) in m_coords.iter().zip(&self.kernel_basis) {
             if !c.coeff_is_zero() {

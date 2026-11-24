@@ -463,7 +463,7 @@ fn boundary_checks_z_kernel_arity_and_cochain_map_ring_mismatch() {
     // CochainMap::new は異なる法 Fp の成分混入を panic せず DomainMismatch にする
     let z2 = FpElem::zero(BigUint::from(2u32)).unwrap();
     let one3 = FpElem::one(BigUint::from(3u32)).unwrap();
-    let c2 = CochainComplex::new(1, 0, 0, vec![], vec![], z2).unwrap();
+    let c2 = CochainComplex::new(1, 0, 0, vec![], vec![], z2.clone()).unwrap();
     assert!(matches!(
         CochainMap::new(&c2, &c2, vec![vec![one3]], vec![], vec![]),
         Err(AlgebraError::DomainMismatch { .. })
@@ -491,4 +491,28 @@ fn boundary_checks_z_kernel_arity_and_cochain_map_ring_mismatch() {
         f_for_zero.induced_field(&c_nonzero, &c_nonzero),
         Err(AlgebraError::OutOfScope { .. })
     ));
+
+    // embed_kernel は異法 FpElem（非零・零の双方）を panic/黙過せず DomainMismatch にする
+    let ext_f2 = SquareZeroExtension::truncated_step_field("eps", 0, z2).unwrap();
+    let one3_b = FpElem::one(BigUint::from(3u32)).unwrap();
+    let zero3_b = FpElem::zero(BigUint::from(3u32)).unwrap();
+    assert!(matches!(
+        ext_f2.embed_kernel(&[one3_b]),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+    assert!(matches!(
+        ext_f2.embed_kernel(&[zero3_b]),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+
+    // check_h1_cocycle_field は別次元複体の FieldCohomology を panic せず ArityMismatch にする
+    let c_dim1 = CochainComplex::new(0, 1, 0, vec![vec![]], vec![], Rat::zero()).unwrap();
+    let coh_dim2 = c_zero.cohomology_field().unwrap();
+    assert_eq!(
+        c_dim1.check_h1_cocycle_field(&coh_dim2, &[Rat::one()]),
+        Err(AlgebraError::ArityMismatch {
+            expected: 1,
+            actual: 2
+        })
+    );
 }
