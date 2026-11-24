@@ -188,6 +188,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Renaming.openHead_here,
   Renaming.openHead_there,
   -- GraphDerivations
+  Renaming.liftMany_cons,
   Renaming.liftMany_inLeft,
   Renaming.liftMany_shift,
   Formula.rename_existsMany,
@@ -257,8 +258,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Translation.formula_conjoin,
   Translation.formula_existsMany,
   -- Signature
+  Var.inLeft_here,
+  Var.inLeft_there,
   Var.shift_nil,
   Var.shift_cons,
+  Renaming.lift_here,
+  Renaming.lift_there,
   -- StrictArguments
   Renaming.insertAfter_inLeft,
   Renaming.insertAfter_shift,
@@ -297,6 +302,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Formula.conjoin_cons,
   Formula.existsMany_nil,
   Formula.existsMany_cons,
+  Formula.existsMany_singleton,
   Term.graphAt_var,
   Term.graphAt_app,
   Term.graphAt_letBind,

@@ -249,15 +249,9 @@ theorem liftMany_moveHead (ambient : Renaming Γ Δ) (Λ : List S) :
   · intro t i
     cases i with
     | here =>
-      simp only [comp_apply, liftMany_inLeft]
-      change liftMany (lift ambient) Λ (moveHead (Γ := Γ) (s := s) Λ .here) =
-        moveHead (Γ := Δ) (s := s) Λ .here
-      rw [moveHead_here (Γ := Γ), moveHead_here (Γ := Δ), liftMany_shift]
-      rfl
+      simp only [comp_apply, Var.inLeft_here, liftMany_cons, lift_here, moveHead_here, liftMany_shift]
     | there j =>
-      simp only [comp_apply, liftMany_inLeft]
-      change liftMany (lift ambient) Λ (moveHead Λ (.there (j.inLeft Γ))) = moveHead Λ (.there (j.inLeft Δ))
-      simp only [moveHead_witness, liftMany_inLeft]
+      simp only [comp_apply, Var.inLeft_there, liftMany_cons, lift_there, moveHead_witness, liftMany_inLeft]
   · intro t i
     simp only [comp_apply, liftMany_shift, moveHead_outer]
     rfl

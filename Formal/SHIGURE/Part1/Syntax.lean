@@ -251,6 +251,10 @@ theorem existsMany_nil (p : Formula sig Γ) : existsMany [] p = p := rfl
 theorem existsMany_cons {s : sig.SortType} {Λ : List sig.SortType}
     (p : Formula sig (s :: (Λ ++ Γ))) : existsMany (s :: Λ) p = existsMany Λ p.ex := rfl
 
+/-- A singleton witness block is one existential quantifier. -/
+theorem existsMany_singleton {s : sig.SortType} (p : Formula sig (s :: Γ)) :
+    existsMany [s] p = p.ex := rfl
+
 /-- A block of bound variables is witnessed by a single tuple of its specified sorts. -/
 @[simp] theorem holds_existsMany (Λ : List sig.SortType) (p : Formula sig (Λ ++ Γ))
     (A : Structure sig) (e : Assignment A.carrier Γ) :

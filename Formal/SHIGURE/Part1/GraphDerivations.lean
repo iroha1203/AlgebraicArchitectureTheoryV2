@@ -44,6 +44,10 @@ def liftMany (ρ : Renaming Γ Δ) : (Λ : List S) → Renaming (Λ ++ Γ) (Λ +
   | [], _, i => ρ i
   | _ :: Λ, _, i => lift (liftMany ρ Λ) i
 
+/-- Lifting past a nonempty block keeps the head and lifts past the remaining positions. -/
+theorem liftMany_cons (ρ : Renaming Γ Δ) (s : S) (Λ : List S) :
+    @liftMany S Γ Δ ρ (s :: Λ) = @lift S (Λ ++ Γ) (Λ ++ Δ) s (liftMany ρ Λ) := rfl
+
 /-- A lifted map retains the positions of the bound block. -/
 @[simp] theorem liftMany_inLeft (ρ : Renaming Γ Δ) {Λ : List S} {s : S}
     (i : Var Λ s) : liftMany ρ Λ (i.inLeft Γ) = i.inLeft Δ := by
@@ -275,7 +279,7 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
       .cut (.andIntro (.cut (.andLeft _ _) (.andRight _ _)) bodyOnLeft)
         (ihBody (Renaming.cons left args) (old y) (old z))
     simp only [Term.graphAt_letBind]
-    change Derivation T ((Formula.existsMany [b] (graph y)).conj (Formula.existsMany [b] (graph z))) _
+    rw [← Formula.existsMany_singleton (graph y), ← Formula.existsMany_singleton (graph z)]
     apply existsManyBothElim
     rw [reduceLeft, reduceRight]
     exact conclude

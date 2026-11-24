@@ -47,11 +47,13 @@ theorem castContext_mapSorts_twice (f : S → T) (g : T → U)
       i.mapSorts (g ∘ f) := by
   induction i with
   | @here Γ s =>
+    simp only [Var.mapSorts_here]
     change castContext (congrArg (List.cons (g (f s))) (List.map_map (g := g) (f := f) (l := Γ)))
       Var.here = Var.here
     rw [castContext_cons (List.map_map (g := g) (f := f) (l := Γ))]
     rfl
   | @there Γ s t i ih =>
+    simp only [Var.mapSorts_there]
     change castContext (congrArg (List.cons (g (f t))) (List.map_map (g := g) (f := f) (l := Γ)))
       ((i.mapSorts f).mapSorts g).there = (i.mapSorts (g ∘ f)).there
     rw [castContext_cons (List.map_map (g := g) (f := f) (l := Γ))]
@@ -77,10 +79,12 @@ theorem mapSorts_id_eq_castContext {S : Type u} {Γ : List S} :
   funext s i
   induction i with
   | @here Γ s =>
+    simp only [Var.mapSorts_here]
     change Var.here = castContext (congrArg (List.cons s) (List.map_id Γ).symm) Var.here
     rw [castContext_cons (List.map_id Γ).symm]
     rfl
   | @there Γ s t i ih =>
+    simp only [Var.mapSorts_there]
     change (i.mapSorts id).there = castContext (congrArg (List.cons t) (List.map_id Γ).symm) i.there
     rw [castContext_cons (List.map_id Γ).symm]
     exact congrArg Var.there ih
@@ -201,9 +205,7 @@ theorem comp_atomic_equivalent (v : Translation T.signature U.signature g)
       ((v.formula (u.atomic a)).castContext List.map_map) := by
   cases a with
   | eq x y =>
-    change Derivation.Equivalent U (.atom (.eq (x.mapSorts (g ∘ f)) (y.mapSorts (g ∘ f))))
-      ((Formula.atom (.eq ((x.mapSorts f).mapSorts g) ((y.mapSorts f).mapSorts g))).castContext List.map_map)
-    simp only [Formula.castContext_eq_rename, Formula.rename_atom, Atomic.rename_eq,
+    simp only [atomic_eq, formula_atom, Formula.castContext_eq_rename, Formula.rename_atom, Atomic.rename_eq,
       Renaming.castContext_mapSorts_twice]
     exact .refl _
   | rel r inputs =>

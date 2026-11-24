@@ -50,10 +50,12 @@ theorem mapSorts_lift {s : S} (ρ : Renaming Γ Δ) :
   apply ext_mapSorts f
   intro t i
   cases i with
-  | here => rw [mapSorts_apply]; rfl
+  | here =>
+    rw [mapSorts_apply]
+    simp only [Var.mapSorts_here, lift_here]
   | there i =>
-    change _ = Var.there (t := f s) (mapSorts f ρ (i.mapSorts f))
-    rw [mapSorts_apply, mapSorts_apply]; rfl
+    rw [mapSorts_apply]
+    simp only [Var.mapSorts_there, lift_there, mapSorts_apply]
 
 /-- Translating a substitution for the head position substitutes its translated variable. -/
 theorem mapSorts_openHead {s : S} (x : Var Γ s) :
@@ -76,11 +78,11 @@ theorem mapSorts_cons (f : S → T) {s : S} (head : Var Δ s) (tail : Renaming �
       @cons T (Γ.map f) (Δ.map f) (f s) (head.mapSorts f) (mapSorts f tail) := by
   apply ext_mapSorts f
   intro t i
+  rw [mapSorts_apply]
   cases i with
-  | here => rw [mapSorts_apply]; rfl
+  | here => simp only [Var.mapSorts_here, cons_here]
   | there i =>
-    change _ = mapSorts f tail (i.mapSorts f)
-    rw [mapSorts_apply, mapSorts_apply]; rfl
+    simp only [Var.mapSorts_there, cons_there, mapSorts_apply]
 
 end SHIGURE.Renaming
 
@@ -96,19 +98,22 @@ theorem atomic_rename (tr : Translation S T f) {Γ Δ : List S.SortType}
   | eq x y =>
     simp only [Atomic.rename_eq, atomic_eq, Formula.rename_atom, Renaming.mapSorts_apply]
   | rel r inputs =>
-    change (tr.relation r).rename (Renaming.mapSorts f (Renaming.comp ρ inputs)) =
-      ((tr.relation r).rename (Renaming.mapSorts f inputs)).rename (Renaming.mapSorts f ρ)
-    rw [Formula.rename_comp, Renaming.mapSorts_comp]
+    simp only [Atomic.rename_rel, atomic_rel]
+    rw [Formula.rename_comp]
+    exact congrArg (fun σ : Renaming ((S.relInputs r).map f) (Δ.map f) => (tr.relation r).rename σ)
+      (Renaming.mapSorts_comp f ρ inputs)
   | domain p inputs =>
-    change (tr.partialDomain p).rename (Renaming.mapSorts f (Renaming.comp ρ inputs)) =
-      ((tr.partialDomain p).rename (Renaming.mapSorts f inputs)).rename (Renaming.mapSorts f ρ)
-    rw [Formula.rename_comp, Renaming.mapSorts_comp]
+    simp only [Atomic.rename_domain, atomic_domain]
+    rw [Formula.rename_comp]
+    exact congrArg (fun σ : Renaming ((S.partialArity p).inputs.map f) (Δ.map f) => (tr.partialDomain p).rename σ)
+      (Renaming.mapSorts_comp f ρ inputs)
   | graph op inputs y =>
-    change (tr.operation op).graph.rename
-        (Renaming.cons ((ρ y).mapSorts f) (Renaming.mapSorts f (Renaming.comp ρ inputs))) =
-      ((tr.operation op).graph.rename
-        (Renaming.cons (y.mapSorts f) (Renaming.mapSorts f inputs))).rename (Renaming.mapSorts f ρ)
-    rw [Formula.rename_comp, Renaming.comp_cons, Renaming.mapSorts_comp, Renaming.mapSorts_apply]
+    simp only [Atomic.rename_graph, atomic_graph]
+    rw [Formula.rename_comp, Renaming.comp_cons, Renaming.mapSorts_apply]
+    exact congrArg
+      (fun σ : Renaming (op.arity.inputs.map f) (Δ.map f) =>
+        (tr.operation op).graph.rename (Renaming.cons ((ρ y).mapSorts f) σ))
+      (Renaming.mapSorts_comp f ρ inputs)
 
 /-- Translating a formula commutes with free-variable renaming. -/
 theorem formula_rename (tr : Translation S T f) {Γ Δ : List S.SortType}
