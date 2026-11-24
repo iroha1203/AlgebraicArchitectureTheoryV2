@@ -238,15 +238,50 @@ structure PrimitivePresentation where
   derived (i : laws.LawName) : laws.role i = .derived →
     Derivation laws.toTheory (laws.statement i).input (laws.statement i).conclusion
 
+/-- The type of the separately written equality, available without a named ring certificate. -/
+abbrev NamedRingEquation.OtherOrdered {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {i : laws.LawName} (ring : Option (NamedRingEquation laws i)) : Type u :=
+  match ring with
+  | none => Option (NamedOrderedEquation laws i)
+  | some _ => PUnit
+
+/-- Keep a separately written equality when a named ring certificate is unavailable. -/
+def NamedRingEquation.otherOrdered {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {i : laws.LawName} (ring : Option (NamedRingEquation laws i)) (order : Option (NamedOrderedEquation laws i)) :
+    NamedRingEquation.OtherOrdered ring :=
+  match ring with
+  | none => order
+  | some _ => PUnit.unit
+
+/-- Read the ordered text from the named ring certificate or the separately written equality. -/
+def NamedRingEquation.ordered {sig : Signature.{u}} {laws : LawDeclarations sig} {i : laws.LawName}
+    (ring : Option (NamedRingEquation laws i)) :
+    NamedRingEquation.OtherOrdered ring → Option (NamedOrderedEquation laws i) :=
+  match ring with
+  | none => id
+  | some data => fun _ => some data.toNamedOrderedEquation
+
+/-- Reading a supported ring's order gives the pair supplied by its certificate. -/
+theorem NamedRingEquation.ordered_of_some {sig : Signature.{u}} {laws : LawDeclarations sig} {i : laws.LawName}
+    {ring : Option (NamedRingEquation laws i)} {data : NamedRingEquation laws i}
+    (same : ring = some data) (other : NamedRingEquation.OtherOrdered ring) :
+    NamedRingEquation.ordered ring other = some data.toNamedOrderedEquation := by
+  subst ring
+  rfl
+
+/-- The fallback retains the original ordered syntax when a ring certificate is omitted. -/
+theorem NamedRingEquation.ordered_otherOrdered {sig : Signature.{u}} {laws : LawDeclarations sig} {i : laws.LawName}
+    (ring : Option (NamedRingEquation laws i)) (text : Option (NamedOrderedEquation laws i))
+    (agrees : ∀ data, ring = some data → text = some data.toNamedOrderedEquation) :
+    NamedRingEquation.ordered ring (NamedRingEquation.otherOrdered ring text) = text := by
+  cases ring with
+  | none => rfl
+  | some data => exact (agrees data rfl).symm
+
 /-- Read the registered ordered terms for either form of value-ring presentation. -/
 def PrimitivePresentation.orderedEquation (P : PrimitivePresentation.{u}) (i : P.laws.LawName) :
-    Option (NamedOrderedEquation P.laws i) := by
-  cases h : P.ringEquation i with
-  | some data => exact some data.toNamedOrderedEquation
-  | none =>
-    have other := P.otherOrderedEquation i
-    rw [h] at other
-    exact other
+    Option (NamedOrderedEquation P.laws i) :=
+  NamedRingEquation.ordered (P.ringEquation i) (P.otherOrderedEquation i)
 
 /-- The theory presented by the required declarations, as in Definition 1.7. -/
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=

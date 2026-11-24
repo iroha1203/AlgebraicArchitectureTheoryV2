@@ -423,6 +423,30 @@ structure LawAttachments (S : Signature.{u}) (L : Type u) where
   ring : Option (RingLawRecord S L)
   proof : Option (RecordedDerivation S L)
 
+/-- The ordered syntax and proof stay available, with a ring record when its references are retained. -/
+noncomputable def LawAttachments.withSupportedRing {S : Signature.{u}} {L : Type u}
+    (data : LawAttachments S L) (supported : Prop) : LawAttachments S L := by
+  classical
+  exact { data with ring := data.ring.filter (fun _ => decide supported) }
+
+/-- With all of its references present, the original attachment is retained exactly. -/
+theorem LawAttachments.withSupportedRing_of_supported {S : Signature.{u}} {L : Type u}
+    (data : LawAttachments S L) {supported : Prop} (h : supported) :
+    data.withSupportedRing supported = data := by
+  classical
+  cases data with
+  | mk equation ring proof =>
+    cases ring <;> simp [LawAttachments.withSupportedRing, h]
+
+/-- When a ring reference is omitted, the ordered equality and proof are retained. -/
+theorem LawAttachments.withSupportedRing_of_unsupported {S : Signature.{u}} {L : Type u}
+    (data : LawAttachments S L) {supported : Prop} (h : ¬ supported) :
+    data.withSupportedRing supported = { data with ring := none } := by
+  classical
+  cases data with
+  | mk equation ring proof =>
+    cases ring <;> simp [LawAttachments.withSupportedRing, h]
+
 namespace PrimitivePresentation
 
 variable {P : PrimitivePresentation.{u}} {S : Signature.{u}} {L : Type u}
@@ -473,10 +497,11 @@ structure ReadingOrigin (selected ambient : PrimitivePresentation.{u})
     signature.law (selected.laws.statement i) = ambient.laws.statement (lawName i)
   /-- The selected Law has the same role. -/
   law_role (i : selected.laws.LawName) : selected.laws.role i = ambient.laws.role (lawName i)
-  /-- Ordered terms, ring provenance and the actual derivation tree are retained. -/
+  /-- The ordered terms and derivation stay intact. Ring provenance is retained when its references fit. -/
   lawAttachments_eq (i : selected.laws.LawName) :
     selected.lawAttachments signature lawName i =
-      ambient.lawAttachments (SignatureNames.identity _) id (lawName i)
+      (ambient.lawAttachments (SignatureNames.identity _) id (lawName i)).withSupportedRing
+        (retained.RetainsRingSupport (lawName i))
   /-- Retain each inclusion-domain declaration with its ordered inclusion symbols. -/
   domainAttachment_eq (p : selected.signature.Partial) :
     selected.domainAttachment signature p = ambient.domainAttachment (SignatureNames.identity _) (signature.onPartial p)
