@@ -143,6 +143,18 @@ noncomputable def writeStructure (B : Structure (signature U)) : ContextStructur
   structural rule keep := ((extendedEvaluation_matches B).law_iff rule.toLaw (graphRuleSupport rule keep)).1
     ((selectRule_toLaw rule keep).symm ▸ (selectRule rule keep).holds_toLaw B)
 
+/-- The written structure has the original-name carrier family of the selected structure. -/
+theorem writeStructure_carrier_eq (B : Structure (signature U)) :
+    (writeStructure B).carrier = extendedCarrier B :=
+  rfl
+
+/-- Compare the evaluation of a written structure on any propositionally equal carrier family. -/
+theorem writeStructure_cast_evaluation (B : Structure (signature U))
+    {X : P.signature.SortType → Type u} (h : (writeStructure B).carrier = X) :
+    cast (congrArg (RestrictedEvaluation U) h) (writeStructure B).evaluation =
+      cast (congrArg (RestrictedEvaluation U) ((writeStructure_carrier_eq B).symm.trans h)) (extendedEvaluation B) :=
+  rfl
+
 /-- Reading the selected names sends a context model to a model of the ordinary restricted theory. -/
 noncomputable def readModel (A : Models U) : Model (theory U) :=
   ⟨readStructure A.obj, fun name => by

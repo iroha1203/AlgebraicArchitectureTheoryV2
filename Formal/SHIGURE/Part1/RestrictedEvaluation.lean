@@ -192,18 +192,25 @@ theorem restrict_holds_iff (U : DeclarationContext P) (A : Structure P.signature
     ∀ (supported : Declaration.formulaSupport p ⊆ U.declarations) (e : Assignment A.carrier Γ),
       (restrict U A).holds p supported e ↔ p.Holds A e := by
   induction p with
-  | atom a => exact fun support e => restrict_atomic_iff U A a support e
-  | truth => intros; rfl
-  | falsehood => intros; rfl
+  | atom a =>
+    intro support e
+    rw [holds_atom_iff, Formula.holds_atom]
+    exact restrict_atomic_iff U A a support e
+  | truth =>
+    intro support e
+    simp only [holds_truth_iff, Formula.holds_truth_iff]
+  | falsehood =>
+    intro support e
+    simp only [holds_falsehood_iff, Formula.holds_falsehood_iff]
   | conj p q hp hq =>
     intro support e
-    rw [holds, Formula.holds_conj, hp, hq]
+    rw [holds_conj_iff, Formula.holds_conj, hp, hq]
   | disj p q hp hq =>
     intro support e
-    rw [holds, Formula.holds_disj, hp, hq]
+    rw [holds_disj_iff, Formula.holds_disj, hp, hq]
   | ex p hp =>
     intro support e
-    rw [holds, Formula.holds_ex]
+    rw [holds_ex_iff, Formula.holds_ex]
     exact exists_congr fun x => hp _ (Assignment.cons x e)
 
 end RestrictedEvaluation

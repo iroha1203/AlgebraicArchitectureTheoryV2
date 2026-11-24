@@ -147,11 +147,13 @@ def presentation : PrimitivePresentation where
 private theorem true_not_referenced :
     Declaration.total (P := presentation) true ∉ Declaration.lawBody identityLaw := by
   intro used
-  change Declaration.total (P := presentation) true ∈
-    Declaration.sorts [()] ∪ (∅ : Set (Declaration presentation)) ∪
-      ({Declaration.sort ()} ∪
-        (({Declaration.sort ()} ∪ ((∅ ∪ ∅) ∪ {Declaration.total false})) ∪ ∅)) at used
+  simp only [identityLaw, Declaration.lawBody_eq, Law.equality_eq, Formula.termEq_eq_ex,
+    Term.graph_eq_graphAt, OmittedLaw.applySymbol_graphAt, Term.graphAt_var,
+    Declaration.formula_truth, Declaration.formula_ex, Declaration.formula_conj,
+    Declaration.formula_atom, Declaration.atomic_eq] at used
   simp [Declaration.sorts_eq_image] at used
+  erw [Declaration.atomic_graph (P := presentation) (.total false), Declaration.ofOperation_total] at used
+  simp at used
 
 /-- The left piece retains the Law, its operation and the entire common sort. -/
 def left : DeclarationContext presentation where

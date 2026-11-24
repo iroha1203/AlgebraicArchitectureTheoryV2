@@ -122,7 +122,7 @@ theorem selectedMap_restrictOnSort (f : Hom A B) (inside : V ≤ U) (s : P.signa
     (keep : Declaration.sort s ∈ V.declarations) (x : (A.restrict inside).carrier s) :
     selectedMap V B.carrier s keep (f.restrictOnSort inside s keep x) =
       f.onSort s (inside keep) (selectedMap V A.carrier s keep x) := by
-  simp only [restrictOnSort, selectedMap_apply, cast_cast]
+  simp only [restrictOnSort_apply, selectedMap_apply, cast_cast]
   rfl
 
 /-- The corresponding square of maps on retained tuples commutes. -/

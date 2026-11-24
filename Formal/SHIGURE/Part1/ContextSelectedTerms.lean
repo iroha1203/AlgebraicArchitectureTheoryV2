@@ -208,6 +208,7 @@ private theorem selectFormula_existsMany {Γ Λ : List P.signature.SortType}
       selectFormula p (keepExistsMany (Λ := s :: Λ) p kept)
     have crossed := cast_formula_ex (sig := signature U) (s := selected) (context_append tail hΓ) body
     refine (ih p.ex kept tail).trans ?_
+    erw [selectFormula_ex]
     change Formula.existsMany (sig := signature U) (context Λ tail) (cast _ body.ex) =
       Formula.existsMany (sig := signature U) (context Λ tail) (Formula.ex (cast _ body))
     exact congrArg (Formula.existsMany (sig := signature U) (context Λ tail)) crossed
@@ -218,6 +219,13 @@ private theorem keepConjoin {Γ Λ : List P.signature.SortType} (ps : ∀ {s}, V
     Declaration.formulaSupport (ps i) ⊆ U.declarations :=
   fun _ hd => hd.elim (fun h => keep (Or.inl h)) (fun h => keep (Or.inr (formula_conjoin_subset ps i h)))
 
+/-- Equal formulas select to equal formulas regardless of their support proofs. -/
+private theorem selectFormula_congr {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
+    (same : p = q) {hp : Declaration.formulaSupport p ⊆ U.declarations}
+    {hq : Declaration.formulaSupport q ⊆ U.declarations} : selectFormula p hp = selectFormula q hq := by
+  subst q
+  rfl
+
 /-- Select every formula of a finite conjunction and combine them in the selected signature. -/
 private theorem selectFormula_conjoin {Γ Λ : List P.signature.SortType} (ps : ∀ {s}, Var Λ s → Formula P.signature Γ)
     (keep : Declaration.formulaSupport (Formula.conjoin Λ ps) ⊆ U.declarations)
@@ -226,9 +234,25 @@ private theorem selectFormula_conjoin {Γ Λ : List P.signature.SortType} (ps : 
       Formula.conjoin (context Λ hΛ) (fun i =>
         selectFormula (ps (ambientVar hΛ i)) (keepConjoin ps keep (ambientVar hΛ i))) := by
   induction Λ with
-  | nil => rfl
+  | nil =>
+    simp only [Formula.conjoin_nil, selectFormula_truth]
+    exact (Formula.conjoin_nil _).symm
   | cons s Λ ih =>
-    exact congrArg (Formula.conj _) (ih (fun i => ps (.there i)) (rightSupport keep) ((tailSortsSubset s Λ).trans hΛ))
+    simp only [Formula.conjoin_cons, selectFormula_conj]
+    let tail := (tailSortsSubset s Λ).trans hΛ
+    let selected : SortName U := ⟨s, hΛ ⟨s, List.mem_cons_self, rfl⟩⟩
+    let hΓ : Declaration.sorts Γ ⊆ U.declarations := fun _ d => keep (Or.inl d)
+    let lowered : ∀ {t}, Var (selected :: context Λ tail) t → Formula (signature U) (context Γ hΓ) :=
+      fun i => selectFormula (ps (ambientVar hΛ i)) (keepConjoin ps keep (ambientVar hΛ i))
+    refine (congrArg (Formula.conj _) (ih (fun i => ps (.there i)) (rightSupport keep) tail)).trans ?_
+    change _ = Formula.conjoin (selected :: context Λ tail) (fun {t} i => lowered (t := t) i)
+    rw [Formula.conjoin_cons]
+    dsimp only [lowered]
+    apply congrArg₂ Formula.conj
+    · exact selectFormula_congr (congrArg (fun i : Var (s :: Λ) s => ps i) (ambientVar_here hΛ).symm)
+    · apply congrArg (Formula.conjoin (sig := signature U) (context Λ tail))
+      funext t i
+      exact selectFormula_congr (congrArg (fun j : Var (s :: Λ) t.val => ps j) (ambientVar_there hΛ i).symm)
 
 
 /-- Reindex each side of a binary conjunction along the same context equality. -/
@@ -327,6 +351,12 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
   induction t with
   | var i =>
     intro Δ ρ y hΓ hΔ hTerm hGraph
+    have support : Declaration.formulaSupport (Formula.atom (.eq (ρ i) y)) ⊆ U.declarations := by
+      simpa only [← Term.graphAt_var i ρ y] using hGraph
+    refine (selectFormula_congr (Term.graphAt_var i ρ y) (hq := support)).trans ?_
+    rw [selectFormula_atom, selectAtomic_eq]
+    refine Eq.trans ?_ (Term.graphAt_var (sig := signature U) (selectVar hΓ i)
+      (selectRenaming hΓ hΔ ρ) (selectVar hΔ y)).symm
     exact congrArg (fun (v : Var (context Δ hΔ) _) => Formula.atom (sig := signature U) (.eq v (selectVar hΔ y)))
       (renaming_selectVar hΓ hΔ ρ i).symm
   | @app Γ op ts ih =>
@@ -338,17 +368,23 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
     let p : Formula P.signature (op.arity.inputs ++ Δ) :=
       .atom (.graph op (Var.inLeft Δ) (y.shift op.arity.inputs))
     let body := (Formula.conjoin op.arity.inputs fs).conj p
-    have hBody := keepExistsMany body hGraph
+    have written : (Term.app op ts).graphAt ρ y = Formula.existsMany op.arity.inputs body :=
+      Term.graphAt_app op ts ρ y
+    have support : Declaration.formulaSupport (Formula.existsMany op.arity.inputs body) ⊆ U.declarations := by
+      rw [← written]
+      exact hGraph
+    have hBody := keepExistsMany body support
     let hArgs := leftSupport hBody
     let hAtom := rightSupport hBody
     let hAppend := appendSupport hΛ hΔ
     let crossing := context_append hΛ hΔ
     let lowerArgs : ∀ {s}, Var (context op.arity.inputs hΛ) s → Term (signature U) (context Γ hΓ) s :=
       fun {s} i => selectTerm (ts (ambientVar hΛ i)) hΓ s.property (fun _ hd => hTerm (Or.inr ⟨_, _, hd⟩))
-    change selectFormula (Formula.existsMany op.arity.inputs body) hGraph =
-      (reindexedApp (operation op hOp) (operation_arity op hOp) lowerArgs).graphAt
+    refine (selectFormula_congr written (hq := support)).trans ?_
+    change _ = (reindexedApp (operation op hOp) (operation_arity op hOp) lowerArgs).graphAt
         (selectRenaming hΓ hΔ ρ) (selectVar hΔ y)
-    rw [selectFormula_existsMany body hGraph hΔ hΛ, graphAt_reindexedApp]
+    rw [selectFormula_existsMany body support hΔ hΛ, graphAt_reindexedApp]
+    erw [selectFormula_conj]
     change Formula.existsMany (context op.arity.inputs hΛ)
         (cast (congrArg (Formula (signature U)) crossing)
           ((selectFormula (Formula.conjoin op.arity.inputs fs) hArgs).conj (selectFormula p hAtom))) = _
@@ -368,7 +404,8 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
         (out : Var (context op.arity.inputs hΛ ++ context Δ hΔ) s) => (lowerArgs i).graphAt mapVars out)
         (shiftedRenaming hΓ hΔ hΛ ρ) ((selectVar_inLeft hΛ hΔ j).trans
           (congrArg (Var.inLeft (context Δ hΔ)) (selectVar_ambientVar hΛ i)))
-    · change cast (congrArg (Formula (signature U)) crossing)
+    · erw [selectFormula_atom, selectAtomic_graph]
+      change cast (congrArg (Formula (signature U)) crossing)
         (.atom (selectGraph hAppend op hOp (Var.inLeft Δ) (y.shift op.arity.inputs))) = _
       rw [selectGraph_reindexed]
       refine (cast_reindexedGraph crossing (operation op hOp) (operation_arity op hOp) _ _).trans ?_
@@ -378,10 +415,20 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
         (inLeftRenaming hΔ hΛ) (selectVar_shift hΛ hΔ y)
   | @letBind Γ a s init body hi hb =>
     intro Δ ρ y hΓ hΔ hTerm hGraph
+    have written := Term.graphAt_letBind init body ρ y
+    have support : Declaration.formulaSupport
+        (((init.graphAt (fun i => .there (ρ i)) .here).conj (body.graphAt ρ.lift (.there y))).ex) ⊆
+        U.declarations := by simpa only [← written] using hGraph
+    refine (selectFormula_congr written (hq := support)).trans ?_
+    rw [selectFormula_ex, selectFormula_conj]
     let hA : Declaration.sort a ∈ U.declarations := hTerm (Or.inl (Set.mem_singleton _))
     let hΓ' := Declaration.sorts_cons_subset hA hΓ
     let hΔ' := Declaration.sorts_cons_subset hA hΔ
-    let hBody := existsSupport hGraph
+    let retainedInit := selectTerm init hΓ hA (fun _ hd => hTerm (Or.inr (Or.inl hd)))
+    let retainedBody := selectTerm body hΓ' (varKept hΔ y) (fun _ hd => hTerm (Or.inr (Or.inr hd)))
+    refine Eq.trans ?_ (Term.graphAt_letBind retainedInit retainedBody
+      (selectRenaming hΓ hΔ ρ) (selectVar hΔ y)).symm
+    let hBody := existsSupport support
     have l := hi (fun i => .there (ρ i)) .here hΓ hΔ'
       (fun _ hd => hTerm (Or.inr (Or.inl hd))) (leftSupport hBody)
     have r := hb ρ.lift (.there y) hΓ' hΔ'
@@ -392,10 +439,9 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
       rfl
     refine congrArg (Formula.ex (sig := signature U)) (congrArg₂ Formula.conj ?_ ?_)
     · exact l.trans (congrArg (fun (newMap : Renaming (context Γ hΓ) (context (a :: Δ) hΔ')) =>
-        (selectTerm init hΓ hA (fun _ hd => hTerm (Or.inr (Or.inl hd)))).graphAt newMap .here) weaken)
+        retainedInit.graphAt newMap .here) weaken)
     · exact r.trans (congrArg (fun (newMap : Renaming (context (a :: Γ) hΓ') (context (a :: Δ) hΔ')) =>
-        (selectTerm body hΓ' (varKept hΔ y) (fun _ hd => hTerm (Or.inr (Or.inr hd)))).graphAt newMap
-          (.there (selectVar hΔ y))) (selectRenaming_lift hA hΓ hΔ ρ))
+        retainedBody.graphAt newMap (.there (selectVar hΔ y))) (selectRenaming_lift hA hΓ hΔ ρ))
 
 
 /-- Selecting a term's value graph agrees with taking the graph of the selected term. -/
@@ -500,8 +546,9 @@ theorem formula_subset_bindArguments {Γ : List P.signature.SortType} (Λ : List
 private theorem bindArguments_body_kept {Γ Λ : List P.signature.SortType}
     (ts : ∀ {s}, Var Λ s → Term P.signature Γ s) (p : Formula P.signature (Λ ++ Γ))
     (h : Declaration.formulaSupport (Formula.bindArguments Λ ts p) ⊆ U.declarations) :
-    Declaration.formulaSupport p ⊆ U.declarations :=
-  rightSupport (keepExistsMany _ h)
+    Declaration.formulaSupport p ⊆ U.declarations := by
+  rw [Formula.bindArguments_eq_existsMany] at h
+  exact rightSupport (keepExistsMany _ h)
 
 /-- Retyping the strict argument witnesses commutes with binding those arguments. -/
 private theorem selectFormula_bindArguments {Γ Λ : List P.signature.SortType}
@@ -516,11 +563,18 @@ private theorem selectFormula_bindArguments {Γ Λ : List P.signature.SortType}
           (selectFormula p (bindArguments_body_kept ts p h))) := by
   let fs : ∀ {s}, Var Λ s → Formula P.signature (Λ ++ Γ) := fun i => (ts i).graphAt (Var.shift Λ) (i.inLeft Γ)
   let body := (Formula.conjoin Λ fs).conj p
-  have hBody := keepExistsMany body h
+  have written : Formula.bindArguments Λ ts p = Formula.existsMany Λ body :=
+    Formula.bindArguments_eq_existsMany Λ ts p
+  have support : Declaration.formulaSupport (Formula.existsMany Λ body) ⊆ U.declarations := by
+    rw [← written]
+    exact h
+  have hBody := keepExistsMany body support
   let hArgs := leftSupport hBody
   let crossing := context_append hΛ hΓ
-  change selectFormula (Formula.existsMany Λ body) h = _
-  rw [selectFormula_existsMany body h hΓ hΛ]
+  refine (selectFormula_congr written (hq := support)).trans ?_
+  conv_rhs => rw [Formula.bindArguments_eq_existsMany]
+  rw [selectFormula_existsMany body support hΓ hΛ]
+  erw [selectFormula_conj]
   change Formula.existsMany (context Λ hΛ) (cast (congrArg (Formula (signature U)) crossing)
     ((selectFormula (Formula.conjoin Λ fs) hArgs).conj (selectFormula p (rightSupport hBody)))) = _
   rw [cast_formula_conj crossing, selectFormula_conjoin fs hArgs hΛ, cast_formula_conjoin crossing]

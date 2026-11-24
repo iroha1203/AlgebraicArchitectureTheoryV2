@@ -52,7 +52,8 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
 /-- The round trip through an ordinary structure keeps every context carrier type. -/
 theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStructure A)).carrier = A.carrier :=
-  ContextStructure.carrier_ext (fun s keep => extendedCarrier_kept (readStructure A) s keep)
+  ContextStructure.carrier_ext fun s keep =>
+    (congrFun (writeStructure_carrier_eq (readStructure A)) s).trans (extendedCarrier_kept (readStructure A) s keep)
 
 /-- Recover the given context structure by reading and writing it, as used
 in the model comparison for Proposition 3.2. The carrier identification comes
@@ -60,31 +61,25 @@ from the retained sorts, and the retained facts determine the structure. -/
 @[simp] theorem write_read_structure (A : ContextStructure U) : writeStructure (readStructure A) = A := by
   let B := readStructure A
   let h := write_read_carriers A
-  let f : CarrierMap U A.carrier (writeStructure B).carrier := fun s _ => cast (congrFun h.symm s)
+  let carriers := (writeStructure_carrier_eq B).symm.trans h
+  let f : CarrierMap U A.carrier (extendedCarrier B) := fun s _ => cast (congrFun carriers.symm s)
   have component : ∀ s keep x, extendedEquiv B s keep (f s keep x) = readCarrierEquiv A s keep x := by
     intro s keep x
     simp only [extendedEquiv_eq_cast, Equiv.cast_apply, f, readCarrierEquiv_eq_refl, Equiv.refl_apply, cast_cast]
     rfl
   apply ContextStructure.ext h
-  rw [RestrictedEvaluation.cast_evaluation _ h]
+  rw [writeStructure_cast_evaluation B h, RestrictedEvaluation.cast_evaluation (extendedEvaluation B) carriers]
   apply RestrictedEvaluation.ext
   · intro r keep a
-    rw [RestrictedEvaluation.pullback_relation]
-    change B.relation ⟨r, keep⟩ (selectAssignment (extendedEquiv B) (relationInputs r keep)
-      (mapAssignment f (relationInputs r keep) a)) ↔ A.evaluation.relation r keep a
+    rw [RestrictedEvaluation.pullback_relation, ← (extendedEvaluation_matches B).relation r keep]
     rw [selectAssignment_mapCarrier _ _ _ component]
     exact (readStructure_matches A).relation r keep a
   · intro p keep a
-    rw [RestrictedEvaluation.pullback_domain]
-    change B.partialDomain ⟨p, keep⟩ (selectAssignment (extendedEquiv B) (operationInputs (.partialOp p) keep)
-      (mapAssignment f (operationInputs (.partialOp p) keep) a)) ↔ A.evaluation.domain p keep a
+    rw [RestrictedEvaluation.pullback_domain, ← (extendedEvaluation_matches B).domain p keep]
     rw [selectAssignment_mapCarrier _ _ _ component]
     exact (readStructure_matches A).domain p keep a
   · intro op keep a y
-    rw [RestrictedEvaluation.pullback_graph]
-    change B.Graph (operation op keep) (selectArgs (extendedEquiv B) op keep
-      (mapAssignment f (operationInputs op keep) a)) (selectResult (extendedEquiv B) op keep
-        (f op.arity.output (operationOutput op keep) y)) ↔ _
+    rw [RestrictedEvaluation.pullback_graph, ← (extendedEvaluation_matches B).graph op keep]
     rw [selectArgs_mapCarrier _ _ _ component, selectResult_mapCarrier _ _ _ component]
     exact (readStructure_matches A).graph op keep a y
 

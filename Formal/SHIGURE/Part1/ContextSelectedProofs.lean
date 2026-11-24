@@ -47,8 +47,7 @@ theorem selectRenaming_there_there {Γ : List P.signature.SortType} {s t : P.sig
       (fun i => .there (.there i)) : Renaming _ _) =
       (fun {_} i => Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) := by
   funext _ i
-  change Var.there (Var.there (selectVar kept (ambientVar kept i))) = _
-  rw [selectVar_ambientVar]
+  simp only [selectRenaming_apply, selectVar_there, selectVar_ambientVar]
 
 /-- A graph axiom remains the same structural axiom of the selected signature. -/
 theorem selectRule_toLaw (rule : GraphAxiom P.signature)
@@ -152,7 +151,7 @@ private noncomputable def selectDerivationUsing {I J : Type u}
         selectLaw (P.laws.statement (source name)) (Declaration.lawBody_subset_of_mem named) :=
       congrArg (laws U).statement (chosen name named)
     have proof := Derivation.required (T := namedTheory (laws U) target) (choose name named)
-    rw [chosenLaw] at proof
+    rw [chosenLaw, selectLaw_eq] at proof
     exact proof
   | graph rule =>
     let present : Declaration.graphRuleName rule ∈ U.declarations := keep (Or.inl (Declaration.graphRuleName_mem_lawBody rule))
@@ -160,7 +159,7 @@ private noncomputable def selectDerivationUsing {I J : Type u}
         (selectLaw rule.toLaw (graphRuleSupport rule present)).conclusion := by
       rw [selectRule_toLaw rule present]
       exact Derivation.graph (T := namedTheory (laws U) target) (selectRule rule present)
-    exact h
+    simpa only [selectLaw_eq] using h
   | @rename Γ Δ p q ρ prior ih =>
     let sub : Declaration.derivationOf rfl source prior ⊆ U.declarations := fun _ h => keep (Or.inr h)
     let node := Derivation.rename (T := namedTheory P.laws source) ρ prior
@@ -168,23 +167,39 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     have rhs := selectFormula_rename q ρ (derivationOf_result source prior sub) (derivationOf_result source node keep)
     erw [lhs, rhs]
     exact Derivation.rename (T := namedTheory (laws U) target) _ (ih sub)
-  | truth p => exact Derivation.truth (T := namedTheory (laws U) target) _
-  | falsehood q => exact Derivation.falsehood (T := namedTheory (laws U) target) _
-  | andLeft p q => exact Derivation.andLeft (T := namedTheory (laws U) target) _ _
-  | andRight p q => exact Derivation.andRight (T := namedTheory (laws U) target) _ _
+  | truth p =>
+    rw [selectFormula_truth]
+    exact Derivation.truth (T := namedTheory (laws U) target) _
+  | falsehood q =>
+    rw [selectFormula_falsehood]
+    exact Derivation.falsehood (T := namedTheory (laws U) target) _
+  | andLeft p q =>
+    rw [selectFormula_conj]
+    exact Derivation.andLeft (T := namedTheory (laws U) target) _ _
+  | andRight p q =>
+    rw [selectFormula_conj]
+    exact Derivation.andRight (T := namedTheory (laws U) target) _ _
   | andIntro l r lh rh =>
+    rw [selectFormula_conj]
     exact Derivation.andIntro (T := namedTheory (laws U) target) (lh (fun _ h => keep (Or.inr (Or.inl h))))
       (rh (fun _ h => keep (Or.inr (Or.inr h))))
-  | orLeft p q => exact Derivation.orLeft (T := namedTheory (laws U) target) _ _
-  | orRight p q => exact Derivation.orRight (T := namedTheory (laws U) target) _ _
+  | orLeft p q =>
+    rw [selectFormula_disj]
+    exact Derivation.orLeft (T := namedTheory (laws U) target) _ _
+  | orRight p q =>
+    rw [selectFormula_disj]
+    exact Derivation.orRight (T := namedTheory (laws U) target) _ _
   | orElim l r lh rh =>
-    exact Derivation.orElim (T := namedTheory (laws U) target) (lh (fun _ h => keep (Or.inr (Or.inl h))))
-      (rh (fun _ h => keep (Or.inr (Or.inr h))))
+    rw [selectFormula_conj, selectFormula_disj]
+    have left := lh (fun _ h => keep (Or.inr (Or.inl h)))
+    have right := rh (fun _ h => keep (Or.inr (Or.inr h)))
+    rw [selectFormula_conj] at left right
+    exact Derivation.orElim (T := namedTheory (laws U) target) left right
   | existsIntro p x =>
     let node := Derivation.existsIntro (T := namedTheory P.laws source) p x
     let body := existsSupport (derivationOf_result source node keep)
     have lhs := selectFormula_openHead p x body (derivationOf_input source node keep)
-    erw [lhs]
+    erw [lhs, selectFormula_ex]
     exact Derivation.existsIntro (T := namedTheory (laws U) target) (selectFormula p body) _
   | @existsElim Γ s p c q child ih =>
     let node := Derivation.existsElim (T := namedTheory P.laws source) child
@@ -196,8 +211,11 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     have lhs := selectFormula_there c (leftSupport input) (leftSupport (derivationOf_input source child sub))
     have rhs := selectFormula_there q output (derivationOf_result source child sub)
     erw [lhs, rhs] at inner
+    rw [selectFormula_conj, selectFormula_ex]
     exact Derivation.existsElim (T := namedTheory (laws U) target) (p := selectFormula p (existsSupport (rightSupport input))) inner
-  | eqRefl x => exact Derivation.eqRefl (T := namedTheory (laws U) target) _
+  | eqRefl x =>
+    rw [selectFormula_truth, selectFormula_atom, selectAtomic_eq]
+    exact Derivation.eqRefl (T := namedTheory (laws U) target) _
   | eqSubst p x y =>
     let node := Derivation.eqSubst (T := namedTheory P.laws source) p x y
     let out := derivationOf_result source node keep

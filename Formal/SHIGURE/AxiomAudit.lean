@@ -2262,6 +2262,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 #shigure_assert_standard_axioms_of [
   -- CoefficientReading
   CoefficientReading.LocalPointRule.agreesOnNative_iff,
+  -- ContextExamples
+  Chapter3.OmittedLaw.applySymbol_graphAt,
   -- ContextGluing
   DeclarationContext.Match.toPieceCarrier_apply,
   DeclarationContext.Match.localView_eq_pullback,
@@ -2274,6 +2276,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedStructures
   DeclarationContext.Selected.readCarrierEquiv_eq_refl,
   DeclarationContext.Selected.extendedEquiv_eq_cast,
+  DeclarationContext.Selected.writeStructure_carrier_eq,
+  DeclarationContext.Selected.writeStructure_cast_evaluation,
   -- ContextSelectedSyntax
   DeclarationContext.Selected.selectGraph_total,
   DeclarationContext.Selected.selectGraph_partialOp,
@@ -2290,6 +2294,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectFormula_ex,
   DeclarationContext.Selected.selectLaw_eq,
   -- ContextSelectedVocabulary
+  DeclarationContext.Selected.selectVar_here,
+  DeclarationContext.Selected.selectVar_there,
+  DeclarationContext.Selected.ambientVar_here,
+  DeclarationContext.Selected.ambientVar_there,
   DeclarationContext.Selected.selectRenaming_apply,
   -- DeclarationContexts
   Declaration.sorts_eq_image,
@@ -2306,14 +2314,26 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.formula_conj,
   Declaration.formula_disj,
   Declaration.formula_ex,
+  Declaration.atomicSupport_eq,
+  Declaration.relation_mem_atomicSupport,
+  Declaration.domain_mem_atomicSupport,
+  Declaration.graph_mem_atomicSupport,
+  Declaration.formulaSupport_eq,
+  Declaration.boundSort_mem_formulaSupport,
   Declaration.lawBody_eq,
   Declaration.ringVocabularySupport_eq,
   Declaration.total_dependencies,
+  Declaration.operationSorts_subset_dependsOn,
+  Declaration.relation_dependencies,
   Declaration.partial_domainSort_mem_dependsOn,
   Declaration.partial_domainSymbol_mem_dependsOn,
+  -- Laws
+  Law.equality_eq,
   -- MarkedVocabulary
   Marked.Vocabulary.LinearityLaw.symbol_add,
   Marked.Vocabulary.LinearityLaw.symbol_smul,
+  -- Reading
+  ReadingInputMap.retainsSourceSorts_iff,
   -- ReadingExamples
   Chapter1.AdditionalCoefficientInputs.additional_retains_source_sort,
   Chapter1.AdditionalCoefficientInputs.additional_not_retaining_source_sort,
@@ -2331,7 +2351,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- SelectedPresentation
   SignatureNames.formula_atom,
   SignatureNames.formula_truth,
+  SignatureNames.formula_falsehood,
   SignatureNames.formula_conj,
+  SignatureNames.formula_disj,
+  SignatureNames.formula_ex,
+  SignatureNames.law_eq,
   -- Substitution
   Term.rename_var,
   -- Syntax

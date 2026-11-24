@@ -812,6 +812,7 @@ theorem native_same_retained_data_with_distinct_maps_fails :
     ¬ (nativeCoefficient true false).RespectsRestriction retained (fun _ h => h) := by
   intro locality
   obtain ⟨rule, _, native⟩ := locality.points
+  simp only [CoefficientReading.LocalPointRule.agreesOnNative_iff] at native
   have agreement (b : Bool) := native PUnit.unit b
     (ambient_agrees_scheme true) (RestrictedStructure.Agrees.refl _)
   have bad := congrFun (Option.some.inj ((agreement false).symm.trans (agreement true))) (0 : Int)
@@ -1331,13 +1332,13 @@ private def additional {S T : Type} {s : S} (f : S → T) :
 actual source sort is retained. Here the only source sort used is `true`. -/
 theorem additional_retains_source_sort :
     (additional (s := true) (id : Bool → Bool)).RetainsSourceSorts (· = true) :=
-  fun _ => rfl
+  (ReadingInputMap.retainsSourceSorts_iff _ _).2 (fun _ => rfl)
 
 /-- Retaining only `false` cannot supply the same additional input of sort `true`. -/
 theorem additional_not_retaining_source_sort :
     ¬ (additional (s := true) (id : Bool → Bool)).RetainsSourceSorts (· = false) := by
   intro retained
-  have wrongSort : true = false := retained ()
+  have wrongSort : true = false := (ReadingInputMap.retainsSourceSorts_iff _ _).1 retained ()
   cases wrongSort
 
 /-- Even when two sorts have the same image, a name cannot change its original sort. -/

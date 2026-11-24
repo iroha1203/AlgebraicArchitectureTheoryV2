@@ -126,12 +126,38 @@ def selectVar : {Γ : List P.signature.SortType} → (kept : Declaration.sorts �
   | _, _, _, .here => .here
   | t :: Γ, kept, _, .there v => .there (selectVar ((tailSortsSubset t Γ).trans kept) v)
 
+/-- The first retained variable stays first when selecting its context. -/
+theorem selectVar_here {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
+    selectVar keep (Var.here : Var (s :: Γ) s) = .here :=
+  rfl
+
+/-- A retained variable following the head stays in the selected tail. -/
+theorem selectVar_there {Γ : List P.signature.SortType} {s t : P.signature.SortType}
+    (keep : Declaration.sorts (t :: Γ) ⊆ U.declarations) (i : Var Γ s) :
+    selectVar keep (Var.there (t := t) i) = .there (selectVar ((tailSortsSubset t Γ).trans keep) i) :=
+  rfl
+
 /-- Erase the retention proof from a selected variable without changing its position. -/
 def ambientVar : {Γ : List P.signature.SortType} → (kept : Declaration.sorts Γ ⊆ U.declarations) →
     {s : SortName U} → Var (context Γ kept) s → Var Γ s.val
   | [], _, _, v => nomatch v
   | _ :: _, _, _, .here => .here
   | t :: Γ, kept, _, .there v => .there (ambientVar ((tailSortsSubset t Γ).trans kept) v)
+
+/-- Erasing the selected first position recovers the original first position. -/
+theorem ambientVar_here {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
+    ambientVar keep (Var.here : Var (context (s :: Γ) keep) _) = .here :=
+  rfl
+
+/-- Erasing a selected position past the head keeps it past the original head. -/
+theorem ambientVar_there {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) {t : SortName U}
+    (i : Var (context Γ ((tailSortsSubset s Γ).trans keep)) t) :
+    ambientVar keep (Var.there i : Var (context (s :: Γ) keep) t) =
+      .there (ambientVar ((tailSortsSubset s Γ).trans keep) i) :=
+  rfl
 
 /-- A selected variable reads back to its original position. -/
 @[simp] theorem ambientVar_selectVar {Γ : List P.signature.SortType}

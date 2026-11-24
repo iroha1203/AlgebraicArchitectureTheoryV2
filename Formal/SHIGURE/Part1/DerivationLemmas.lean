@@ -217,10 +217,18 @@ def existsManyElim : {Λ : List T.signature.SortType} →
     {body : Formula T.signature (Λ ++ Γ)} →
     Derivation T body (q.rename (Var.shift Λ)) → Derivation T (Formula.existsMany Λ body) q
   | [], _, d => by simpa only [Var.shift_nil, Formula.rename_id] using d
-  | _ :: Λ, _, d => by
+  | s :: Λ, _, d => by
     apply existsManyElim (Λ := Λ)
     apply existsElimPlain
-    simpa only [Formula.rename_comp, Renaming.comp, Var.shift_cons] using d
+    have shifted : (fun {t} (i : Var Γ t) => Var.shift (s :: Λ) i) =
+        (fun {t} (i : Var Γ t) => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i) := by
+      funext _ i
+      rw [Renaming.comp_apply]
+      exact Var.shift_cons Λ i
+    rw [Formula.rename_comp]
+    change Derivation T _ (q.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i))
+    rw [← shifted]
+    exact d
 
 /-- Introduce a block of witnesses taken from variables in the ambient context. -/
 def existsManyIntro : {Λ : List T.signature.SortType} →

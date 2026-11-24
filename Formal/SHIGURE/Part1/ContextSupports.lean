@@ -145,6 +145,7 @@ theorem law_notMem_formula (name : P.laws.LawName) (p : Formula P.signature Γ) 
 theorem law_notMem_lawBody (name : P.laws.LawName) (law : Law P.signature) :
     Declaration.law name ∉ lawBody law := by
   have notSort : Declaration.law name ∉ sorts (P := P) law.context := by
+    rw [sorts_eq_image]
     rintro ⟨s, _, h⟩
     cases h
   simp only [lawBody_eq, Set.mem_union, not_or, notSort, law_notMem_formula, and_self, not_false_eq_true]

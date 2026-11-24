@@ -1076,6 +1076,13 @@ def mapToRestrictedTarget (inputs : ReadingInputMap source target onSort)
 def RetainsSourceSorts (inputs : ReadingInputMap source target onSort) (retains : S → Prop) : Prop :=
   ∀ j, retains (Sum.elim source.sort inputs.extra.sort (inputs.coordinate j).val)
 
+/-- The support condition for Definition 1.11 checks the actual source sort
+of each target coordinate, from the original or the additional input. -/
+theorem retainsSourceSorts_iff (inputs : ReadingInputMap source target onSort) (retains : S → Prop) :
+    inputs.RetainsSourceSorts retains ↔
+      ∀ j, retains (Sum.elim source.sort inputs.extra.sort (inputs.coordinate j).val) :=
+  Iff.rfl
+
 /-- On states constant within each sort, a target input gets the mapped sort value. -/
 theorem mapValues_ofSort (inputs : ReadingInputMap source target onSort)
     {X : S → Type u} {Y : T → Type u} (h : ∀ s, X s → Y (onSort s))
@@ -1346,7 +1353,8 @@ theorem ReadingContextChange.target_evaluation_input_is_covered {source target :
     (supports : inputs.RetainsSourceSorts (fun s => Declaration.sort s ∈ change.retained.declarations))
     (j : q.Index) :
     ∃ i k, k ∈ change.pieces i ∧ Declaration.sort (q.sort j) ∈ (target.cover.piece k).declarations := by
-  obtain ⟨i, k, chosen, covered⟩ := change.sort_is_covered _ (supports j)
+  obtain ⟨i, k, chosen, covered⟩ := change.sort_is_covered _
+    ((inputs.retainsSourceSorts_iff _).1 supports j)
   exact ⟨i, k, chosen, (inputs.coordinate j).property ▸ covered⟩
 
 /-- Compare two coefficient selections, keeping fixed settings or supplying an evaluation square. -/

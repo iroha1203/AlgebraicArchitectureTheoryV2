@@ -210,17 +210,17 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     rw [selectAssignment_selectVar, selectAssignment_selectVar]
     exact ⟨fun h => (e _ _).injective h, fun h => congrArg (e _ _) h⟩
   | rel r vars =>
-    let k : Declaration.relation r ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
+    let k : Declaration.relation r ∈ U.declarations := keep (Declaration.relation_mem_atomicSupport r vars)
     rw [selectAtomic_rel, Atomic.holds_rel, RestrictedEvaluation.atomic_rel_iff]
     erw [selectAssignment_pull e (relationInputs r k) free x vars]
     exact same.relation r k (x.pull vars)
   | domain p vars =>
-    let k : Declaration.partialOp p ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
+    let k : Declaration.partialOp p ∈ U.declarations := keep (Declaration.domain_mem_atomicSupport p vars)
     rw [selectAtomic_domain, Atomic.holds_domain, RestrictedEvaluation.atomic_domain_iff]
     erw [selectAssignment_pull e (operationInputs (.partialOp p) k) free x vars]
     exact same.domain p k (x.pull vars)
   | graph op vars y =>
-    let k : Declaration.ofOperation op ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
+    let k : Declaration.ofOperation op ∈ U.declarations := keep (Declaration.graph_mem_atomicSupport op vars y)
     have args := selectAssignment_pull e (operationInputs op k) free x vars
     have out := selectAssignment_selectVar e free x y
     rw [selectAtomic_graph, RestrictedEvaluation.atomic_graph_iff]
@@ -255,7 +255,7 @@ theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ
     exact or_congr (hp (leftSupport keep) x) (hq (rightSupport keep) x)
   | @ex Γ s p ih =>
     intro keep x
-    let kept : Declaration.sort s ∈ U.declarations := keep (Or.inr (Or.inl (Set.mem_singleton _)))
+    let kept : Declaration.sort s ∈ U.declarations := keep (Declaration.boundSort_mem_formulaSupport p)
     let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
     rw [selectFormula_ex, Formula.holds_ex, RestrictedEvaluation.holds_ex_iff]
     constructor

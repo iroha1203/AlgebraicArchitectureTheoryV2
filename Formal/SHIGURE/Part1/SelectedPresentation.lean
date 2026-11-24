@@ -141,14 +141,34 @@ theorem formula_truth (names : SignatureNames S T) {Γ : List S.SortType} :
     names.formula (Formula.truth (Γ := Γ)) = .truth :=
   rfl
 
+/-- Renaming falsehood preserves the logical connective in the target context. -/
+theorem formula_falsehood (names : SignatureNames S T) {Γ : List S.SortType} :
+    names.formula (Formula.falsehood (Γ := Γ)) = .falsehood :=
+  rfl
+
 /-- Renaming a conjunction renames both parts in the same context. -/
 theorem formula_conj (names : SignatureNames S T) {Γ : List S.SortType} (p q : Formula S Γ) :
     names.formula (p.conj q) = (names.formula p).conj (names.formula q) :=
   rfl
 
+/-- Renaming a disjunction renames both parts in the same context. -/
+theorem formula_disj (names : SignatureNames S T) {Γ : List S.SortType} (p q : Formula S Γ) :
+    names.formula (p.disj q) = (names.formula p).disj (names.formula q) :=
+  rfl
+
+/-- Renaming an existential renames the witnessed sort and the body together. -/
+theorem formula_ex (names : SignatureNames S T) {Γ : List S.SortType} {s : S.SortType}
+    (p : Formula S (s :: Γ)) : names.formula p.ex = (names.formula p).ex :=
+  rfl
+
 /-- Rename the context, antecedent and conclusion of a written Law. -/
 def law (names : SignatureNames S T) (ℓ : Law S) : Law T :=
   ⟨ℓ.context.map names.onSort, names.formula ℓ.input, names.formula ℓ.conclusion⟩
+
+/-- A renamed Law keeps its two written formulas in the renamed free context. -/
+theorem law_eq (names : SignatureNames S T) (ℓ : Law S) :
+    names.law ℓ = ⟨ℓ.context.map names.onSort, names.formula ℓ.input, names.formula ℓ.conclusion⟩ :=
+  rfl
 
 /-- Rename a term through its exact typed primitive operations. -/
 def term (names : SignatureNames S T) :
@@ -332,19 +352,24 @@ theorem restrict_formula_iff (names : SignatureNames S T) (A : Structure T)
     ∀ e : Assignment (names.restrict A).carrier Γ,
       p.Holds (names.restrict A) e ↔ (names.formula p).Holds A (e.mapSorts names.onSort) := by
   induction p with
-  | atom a => exact names.restrict_atomic_iff A a
-  | truth => intro; rfl
-  | falsehood => intro; rfl
+  | atom a =>
+    rw [formula_atom]
+    exact names.restrict_atomic_iff A a
+  | truth => simp only [formula_truth, Formula.holds_truth_iff, implies_true]
+  | falsehood => simp only [formula_falsehood, Formula.holds_falsehood_iff, implies_true]
   | conj p q hp hq =>
     intro e
+    rw [formula_conj]
     exact (Formula.holds_conj _ _ _ _).trans
       ((and_congr (hp e) (hq e)).trans (Formula.holds_conj _ _ _ _).symm)
   | disj p q hp hq =>
     intro e
+    rw [formula_disj]
     exact (Formula.holds_disj _ _ _ _).trans
       ((or_congr (hp e) (hq e)).trans (Formula.holds_disj _ _ _ _).symm)
   | ex p ih =>
     intro e
+    rw [formula_ex]
     refine (Formula.holds_ex _ _ _).trans ((exists_congr fun x => ?_).trans
       (Formula.holds_ex (names.formula p) A (e.mapSorts names.onSort)).symm)
     simpa only [Assignment.mapSorts_cons] using ih (Assignment.cons x e)

@@ -69,6 +69,11 @@ theorem holds_at {law : Law sig} {A : Structure sig} (h : law.Holds A)
 def equality {Γ : List sig.SortType} {s : sig.SortType} (lhs rhs : Term sig Γ s) : Law sig :=
   ⟨Γ, .truth, Formula.termEq lhs rhs⟩
 
+/-- An unconditional equality has truth as its input and the written term equation as its conclusion. -/
+theorem equality_eq {Γ : List sig.SortType} {s : sig.SortType} (lhs rhs : Term sig Γ s) :
+    equality lhs rhs = ⟨Γ, .truth, Formula.termEq lhs rhs⟩ :=
+  rfl
+
 /-- An unconditional equality holds exactly when each input gives the same value on both sides. -/
 theorem holds_equality_iff {Γ : List sig.SortType} {s : sig.SortType} (lhs rhs : Term sig Γ s)
     (A : Structure sig) : (equality lhs rhs).Holds A ↔

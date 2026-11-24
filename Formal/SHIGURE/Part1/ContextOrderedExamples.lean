@@ -276,9 +276,8 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
   law_eq _ := by
     change (SignatureNames.identity signature).law ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩ =
       ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
-    change Law.mk [] .truth
-      (((SignatureNames.identity signature).formula oneGraph).conj
-        ((SignatureNames.identity signature).formula zeroGraph)).ex = _
+    simp only [SignatureNames.law_eq, SignatureNames.formula_truth,
+      SignatureNames.formula_ex, SignatureNames.formula_conj, List.map_nil]
     suffices h : (SignatureNames.identity signature).formula oneGraph = oneGraph ∧
         (SignatureNames.identity signature).formula zeroGraph = zeroGraph by
       rw [h.1, h.2]

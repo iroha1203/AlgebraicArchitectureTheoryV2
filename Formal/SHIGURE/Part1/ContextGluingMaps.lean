@@ -46,7 +46,7 @@ theorem arrowView_overlap (i j : cover.Index) (s : P.signature.SortType)
   have transported := congrArg (fun z : ((B.pieceModel j).restrict R).obj.carrier s =>
     cast (B.glueCarrier_eq_piece cover j s right).symm
       (cast ((B.pieceModel j).obj.restrict_carrier R (s := s) shared) z)) agree
-  simpa only [arrowView, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, selectedMap_apply, toPieceCarrier_apply,
+  simpa only [arrowView_apply, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, selectedMap_apply, toPieceCarrier_apply,
     localX, a, cast_cast] using transported
 
 /-- Each retained sort supplies one covering piece for its global component map. -/
@@ -73,7 +73,7 @@ theorem toPieceCarrier_arrowView (i : cover.Index) (s : P.signature.SortType)
     (kept : Declaration.sort s ∈ (cover.piece i).declarations) (x : A.glueCarrier cover s) :
     B.toPieceCarrier cover i s kept (arrowView cover f i s kept x) =
       Models.onSort (f.pieceMap i) s kept (A.toPieceCarrier cover i s kept x) := by
-  simp only [arrowView, toPieceCarrier_apply, cast_cast]
+  simp only [arrowView_apply, toPieceCarrier_apply, cast_cast]
   rfl
 
 /-- Identifying an image tuple with the target piece agrees with mapping it there. -/
@@ -163,7 +163,7 @@ theorem glueMap_restrict (i : cover.Index) :
   apply Models.hom_ext
   intro s keep x
   simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, glueMap_onSort,
-    glueOnSort_eq_piece cover f i s keep, arrowView, toPieceCarrier_apply, selectedMap_apply, cast_cast]
+    glueOnSort_eq_piece cover f i s keep, arrowView_apply, toPieceCarrier_apply, selectedMap_apply, cast_cast]
   rfl
 
 end Match

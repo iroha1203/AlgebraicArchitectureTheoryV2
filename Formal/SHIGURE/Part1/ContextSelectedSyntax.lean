@@ -208,7 +208,9 @@ theorem selectRenaming_lift {Γ Δ : List P.signature.SortType} {s : P.signature
       Renaming _ _) = (Renaming.lift (selectRenaming keepΓ keepΔ ρ) (s := (⟨s, kept⟩ : SortName U)) :
         Renaming _ _) := by
   funext t i
-  cases i <;> rfl
+  cases i with
+  | here => simp only [selectRenaming_apply, ambientVar_here, Renaming.lift_here, selectVar_here]
+  | there i => simp only [selectRenaming_apply, ambientVar_there, Renaming.lift_there, selectVar_there]
 
 /-- Select a weakening into a context extended by one new sort. -/
 theorem selectRenaming_there {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -216,8 +218,7 @@ theorem selectRenaming_there {Γ : List P.signature.SortType} {s : P.signature.S
     (selectRenaming keepΓ (Declaration.sorts_cons_subset kept keepΓ) (fun i => .there i) : Renaming _ _) =
       (fun {_} i => Var.there (t := (⟨s, kept⟩ : SortName U)) i) := by
   funext t i
-  change Var.there (selectVar keepΓ (ambientVar keepΓ i)) = Var.there i
-  rw [selectVar_ambientVar]
+  simp only [selectRenaming_apply, selectVar_there, selectVar_ambientVar]
 
 /-- Select the variable map that substitutes an existing variable for a new head. -/
 theorem selectRenaming_openHead {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -237,17 +238,23 @@ theorem selectAtomic_rename {Γ Δ : List P.signature.SortType} (a : Atomic P.si
     selectAtomic (a.rename ρ) renamed = (selectAtomic a keep).rename
       (selectRenaming (fun _ h => keep (Or.inl h)) (fun _ h => renamed (Or.inl h)) ρ) := by
   cases a with
-  | eq x y => simp only [Atomic.rename_eq, selectAtomic, renaming_selectVar]
+  | eq x y =>
+    simp only [Atomic.rename_eq] at renamed ⊢
+    simp only [selectAtomic_eq, Atomic.rename_eq, renaming_selectVar]
   | rel r vars =>
-    simp only [Atomic.rename_rel, selectAtomic]
+    simp only [Atomic.rename_rel] at renamed ⊢
+    simp only [selectAtomic_rel, Atomic.rename_rel]
     congr 1
     exact (selectRenaming_comp _ _ _ vars ρ).symm
   | domain p vars =>
-    simp only [Atomic.rename_domain, selectAtomic]
+    simp only [Atomic.rename_domain] at renamed ⊢
+    simp only [selectAtomic_domain, Atomic.rename_domain]
     congr 1
     exact (selectRenaming_comp _ _ _ vars ρ).symm
   | graph op vars y =>
-    cases op <;> simp only [Atomic.rename_graph, selectAtomic, selectGraph, renaming_selectVar]
+    cases op <;> simp only [Atomic.rename_graph] at renamed ⊢
+    all_goals simp only [selectAtomic_graph, selectGraph_total, selectGraph_partialOp,
+      selectGraph_quantity, Atomic.rename_graph, renaming_selectVar]
     all_goals
       congr 1
       exact (selectRenaming_comp _ _ _ vars ρ).symm
@@ -262,18 +269,27 @@ theorem selectFormula_rename {Γ : List P.signature.SortType} (p : Formula P.sig
   induction p with
   | atom a =>
     intro Δ ρ keep renamed
+    simp only [Formula.rename_atom, selectFormula_atom] at renamed ⊢
     exact congrArg Formula.atom (selectAtomic_rename a ρ keep renamed)
-  | truth | falsehood => intros; rfl
+  | truth =>
+    intro Δ ρ keep renamed
+    simp only [Formula.rename_truth, selectFormula_truth] at renamed ⊢
+  | falsehood =>
+    intro Δ ρ keep renamed
+    simp only [Formula.rename_falsehood, selectFormula_falsehood] at renamed ⊢
   | conj p q hp hq =>
     intro Δ ρ keep renamed
+    simp only [Formula.rename_conj, selectFormula_conj] at renamed ⊢
     exact congrArg₂ Formula.conj (hp ρ (leftSupport keep) (leftSupport renamed))
       (hq ρ (rightSupport keep) (rightSupport renamed))
   | disj p q hp hq =>
     intro Δ ρ keep renamed
+    simp only [Formula.rename_disj, selectFormula_disj] at renamed ⊢
     exact congrArg₂ Formula.disj (hp ρ (leftSupport keep) (leftSupport renamed))
       (hq ρ (rightSupport keep) (rightSupport renamed))
   | @ex Γ s body ih =>
     intro Δ ρ keep renamed
+    simp only [Formula.rename_ex, selectFormula_ex] at renamed ⊢
     let kept : Declaration.sort s ∈ U.declarations := keep (Or.inr (Or.inl (Set.mem_singleton _)))
     let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
     let target : Declaration.sorts Δ ⊆ U.declarations := fun _ h => renamed (Or.inl h)

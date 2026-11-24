@@ -93,10 +93,10 @@ theorem localView_overlap (i j : cover.Index) :
     (fun s keep x => cast (X.restrict_carrier left (s := s) keep).symm (f s keep x))
     (fun s keep x => cast (Y.restrict_carrier right (s := s) keep).symm (g s keep x)) (by
       intro s keep x
-      simp only [f, g, toPieceCarrier, cast_cast])
+      simp only [f, g, toPieceCarrier_apply, cast_cast])
   rw [ContextStructure.restrict_evaluation_view X left f, ContextStructure.restrict_evaluation_view Y right g]
     at views
-  simpa only [localView, RestrictedEvaluation.pullback_comp] using views
+  simpa only [localView_eq_pullback, RestrictedEvaluation.pullback_comp] using views
 
 /-- Assemble primitive facts from a covering piece for each symbol. -/
 noncomputable def glueEvaluation : RestrictedEvaluation U (A.glueCarrier cover) where
@@ -132,9 +132,10 @@ theorem glueEvaluation_satisfies (i : cover.Index) (law : Law P.signature)
     (support : Declaration.lawBody law ⊆ (cover.piece i).declarations)
     (localHolds : (A.pieceModel i).obj.evaluation.satisfies law support) :
     (A.glueEvaluation cover).satisfies law (fun _ used => cover.subset i (support used)) := by
-  have held : (A.localView cover i).satisfies law support :=
-    ((A.pieceModel i).obj.evaluation.satisfies_pullback_iff (le_refl _) (A.toPieceCarrier cover i)
-      (A.toPieceCarrier_bijective cover i) law support).2 localHolds
+  have held : (A.localView cover i).satisfies law support := by
+    rw [localView_eq_pullback]
+    exact ((A.pieceModel i).obj.evaluation.satisfies_pullback_iff (le_refl _) (A.toPieceCarrier cover i)
+        (A.toPieceCarrier_bijective cover i) law support).2 localHolds
   rw [← A.glueEvaluation_view cover i] at held
   exact ((A.glueEvaluation cover).satisfies_pullback_iff (cover.subset i) (fun _ _ x => x)
     (fun _ _ => Function.bijective_id) law support).1 held

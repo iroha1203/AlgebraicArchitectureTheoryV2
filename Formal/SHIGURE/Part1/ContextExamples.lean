@@ -30,6 +30,14 @@ instance noPartial : IsEmpty signature.Partial := inferInstanceAs (IsEmpty PEmpt
 def applySymbol (f : Bool) (t : Term signature [()] ()) : Term signature [()] () :=
   .app (.total f) (fun i => match i with | .here => t)
 
+/-- The graph of a unary application binds the sole argument before using the named symbol. -/
+theorem applySymbol_graphAt (f : Bool) (t : Term signature [()] ())
+    {Δ : List signature.SortType} (ρ : Renaming [()] Δ) (out : Var Δ ()) :
+    (applySymbol f t).graphAt ρ out =
+      (((t.graphAt (fun i => (ρ i).shift [()]) .here).conj .truth).conj
+        (.atom (.graph (.total f) (Var.inLeft Δ) (out.shift [()])))).ex :=
+  rfl
+
 /-- The Law requires `g(f(x)) = x` at every value. -/
 def inverseLaw : Law signature :=
   Law.equality (applySymbol true (applySymbol false (.var .here))) (.var .here)

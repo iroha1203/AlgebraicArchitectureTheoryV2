@@ -145,10 +145,49 @@ def atomicSupport {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
     Set (Declaration P) :=
   sorts Γ ∪ atomic a
 
+/-- Atomic support in Definition 3.1 contains both the free context and the
+primitive names of the atom. -/
+theorem atomicSupport_eq {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
+    atomicSupport (P := P) a = sorts Γ ∪ atomic a :=
+  rfl
+
+/-- The support of a relation atom includes its relation declaration. -/
+theorem relation_mem_atomicSupport {Γ : List P.signature.SortType} (r : P.signature.Rel)
+    (vars : Renaming (P.signature.relInputs r) Γ) :
+    Declaration.relation r ∈ atomicSupport (.rel r vars) := by
+  rw [atomicSupport_eq, atomic_rel]
+  exact Or.inr (Set.mem_singleton _)
+
+/-- The support of a domain atom includes its partial-operation declaration. -/
+theorem domain_mem_atomicSupport {Γ : List P.signature.SortType} (p : P.signature.Partial)
+    (vars : Renaming (P.signature.partialArity p).inputs Γ) :
+    Declaration.partialOp p ∈ atomicSupport (.domain p vars) := by
+  rw [atomicSupport_eq, atomic_domain]
+  exact Or.inr (Set.mem_singleton _)
+
+/-- The support of a graph atom includes its tagged operation declaration. -/
+theorem graph_mem_atomicSupport {Γ : List P.signature.SortType} (op : Operation P.signature)
+    (vars : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
+    ofOperation op ∈ atomicSupport (.graph op vars y) := by
+  rw [atomicSupport_eq, atomic_graph]
+  exact Or.inr (Set.mem_singleton _)
+
 /-- A formula's direct support. Dependency-closed contexts also contain its indirect support. -/
 def formulaSupport {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
     Set (Declaration P) :=
   sorts Γ ∪ formula p
+
+/-- Formula support in Definition 3.1 joins the free context and direct references. -/
+theorem formulaSupport_eq {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
+    formulaSupport (P := P) p = sorts Γ ∪ formula p :=
+  rfl
+
+/-- The bound sort of an existential belongs to its formula support. -/
+theorem boundSort_mem_formulaSupport {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (p : Formula P.signature (s :: Γ)) :
+    Declaration.sort s ∈ formulaSupport p.ex := by
+  rw [formulaSupport_eq, formula_ex]
+  exact Or.inr (Or.inl (Set.mem_singleton _))
 
 /-- Every position and primitive mentioned by a written Law. -/
 def lawBody (law : Law P.signature) : Set (Declaration P) :=
@@ -262,6 +301,19 @@ theorem partial_dependencies (p : P.signature.Partial) :
         | some data => {Declaration.sort data.domainSort} ∪
           {a | ∃ (s : P.signature.SortType) (i : Var (P.signature.partialArity p).inputs s),
             a = ofOperation (data.symbol i).operation} :=
+  rfl
+
+/-- The input and output sorts of a graph operation belong to its dependencies. -/
+theorem operationSorts_subset_dependsOn (op : Operation P.signature) :
+    sorts (op.arity.output :: op.arity.inputs) ⊆ dependsOn P (ofOperation op) := by
+  cases op with
+  | total => exact Set.Subset.rfl
+  | partialOp => exact fun _ member => Or.inl member
+  | quantity => exact Set.Subset.rfl
+
+/-- A relation depends on the sorts of its input context. -/
+theorem relation_dependencies (r : P.signature.Rel) :
+    dependsOn P (.relation r) = sorts (P.signature.relInputs r) :=
   rfl
 
 /-- A declared domain inclusion adds its stated sort to the operation's dependencies. -/
