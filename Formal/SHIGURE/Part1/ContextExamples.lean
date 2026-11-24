@@ -171,7 +171,7 @@ noncomputable def collapseStructure : ContextStructure.Hom
     | total f =>
       apply (ContextStructure.ofStructure_graph_iff whole constants (.total f) kept _ _).2
       rw [Structure.graph_total_iff, constants_total]
-      simp only [selectedMap, cast_cast]
+      simp only [selectedMap_apply, cast_cast]
       rfl
     | partialOp p => exact nomatch p
     | quantity q => exact nomatch q
@@ -192,7 +192,7 @@ theorem collapse_ne_id : collapse ≠ 𝟙 primitiveModel := by
     cast equality (Models.onSort f () sort_covered one)) same
   have forbidden : false = true := by
     simpa only [collapse, Models.onSort, ObjectProperty.homMk_hom, ContextStructure.Hom.restrict_onSort,
-      ContextStructure.Hom.restrictOnSort, collapseStructure, Models.id_onSort, equality, one, selectedMap,
+      ContextStructure.Hom.restrictOnSort, collapseStructure, Models.id_onSort, equality, one, selectedMap_apply,
       cast_cast] using h
   cases forbidden
 
@@ -201,5 +201,94 @@ theorem assemble_collapse : primitiveCover.assemble
     (show Match.Hom (primitiveCover.read primitiveModel) (primitiveCover.read primitiveModel) from
       primitiveCover.readFunctor.map collapse) = collapse :=
   primitiveCover.assemble_read collapse
+
+/-- Both identity operations satisfy the retained inverse Law. -/
+def identities : Structure signature :=
+  { constants with total := fun _ e => e .here }
+
+/-- The inverse Law fires with both operations interpreted as the Boolean identity. -/
+theorem identities_hold_inverseLaw : inverseLaw.Holds identities := by
+  apply (Law.holds_equality_totalValue_iff _ _ identities).2
+  intro e
+  rfl
+
+/-- The whole presentation has a model satisfying its actual required Law. -/
+noncomputable def fullModel : Models whole :=
+  ⟨ContextStructure.ofStructure whole identities, fun name =>
+    (ContextStructure.ofStructure_satisfies_iff whole identities inverseLaw
+      (Declaration.lawBody_subset_of_mem name.property)).2 identities_hold_inverseLaw⟩
+
+/-- A cover with a piece retaining the inverse Law assembles its family back to a model of that Law. -/
+theorem glue_retained_inverseLaw :
+    ((DeclarationCover.identity whole).read fullModel).glue (DeclarationCover.identity whole) = fullModel :=
+  (DeclarationCover.identity whole).glue_read fullModel
+
+/-- Raw graph data with no edges omit the output of a total operation. -/
+def missingGraph : RestrictedEvaluation whole (fun _ => Bool) where
+  relation _ _ _ := False
+  domain _ _ _ := False
+  graph _ _ _ _ := False
+
+/-- The graph laws reject raw evaluation data missing a total output. -/
+theorem missingGraph_not_structural : ¬ missingGraph.Structural := by
+  intro structural
+  have output := structural (.totality false) (Set.mem_univ _)
+    (Assignment.cons false Assignment.empty) True.intro
+  change ∃ _ : Bool, False at output
+  exact output.elim (fun _ h => h)
+
+/-- Unit supplies a different, valid carrier for the two constant operations. -/
+def unitConstants : Structure signature where
+  carrier _ := Unit
+  total _ _ := ()
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- A local model with a different interpretation of the shared sort. -/
+noncomputable def unitPiece : Models (piece true) :=
+  ⟨ContextStructure.ofStructure (piece true) unitConstants, fun name =>
+    (piece_omits_law true name.val.val name.property).elim⟩
+
+/-- Two valid local models fail strict matching when their shared carriers differ. -/
+theorem different_carriers_no_overlap :
+    (localModel false).restrict (overlapLeft piece false true) ≠
+      unitPiece.restrict (overlapRight piece false true) := by
+  intro same
+  have shared : Declaration.sort () ∈ (inter (piece false) (piece true)).declarations := ⟨Or.inl rfl, Or.inl rfl⟩
+  have left : ((localModel false).restrict (overlapLeft piece false true)).obj.carrier () = Bool :=
+    ((localModel false).obj.restrict_carrier (overlapLeft piece false true) shared).trans
+      (((ContextStructure.ofStructure whole constants).restrict_carrier (piece_le_whole false) shared.1).trans
+        (selectedCarrier_kept (U := whole) constants.carrier (Set.mem_univ _)))
+  have right : (unitPiece.restrict (overlapRight piece false true)).obj.carrier () = Unit :=
+    (unitPiece.obj.restrict_carrier (overlapRight piece false true) shared).trans
+      (selectedCarrier_kept (U := piece true) unitConstants.carrier shared.2)
+  have both : Bool = Unit := left.symm.trans ((congrArg (fun M => M.obj.carrier ()) same).trans right)
+  exact Bool.noConfusion ((Equiv.cast both).injective (Subsingleton.elim ((Equiv.cast both) false) ((Equiv.cast both) true)))
+
+/-- On the primitive example, either piece reads the shared sort's entire arrow. -/
+theorem arrow_eq_from_piece (i : Bool) (f g : primitiveModel ⟶ primitiveModel)
+    (same : (res (primitiveCover.subset i)).map f = (res (primitiveCover.subset i)).map g) : f = g := by
+  apply Models.hom_ext
+  intro s keep x
+  cases s
+  let localKept : Declaration.sort () ∈ (piece i).declarations := Or.inl rfl
+  let eq := primitiveModel.obj.restrict_carrier (primitiveCover.subset i) localKept
+  have component := congrArg (fun h => Models.onSort h () localKept (cast eq.symm x)) same
+  apply (Equiv.cast eq.symm).injective
+  simpa only [res_onSort, selectedMap_apply, cast_cast, Equiv.cast_apply] using component
+
+/-- The locally valid collapse and identity arrows do not agree on the common sort. -/
+theorem different_arrows_no_match :
+    ¬ ∃ f : Match.Hom (primitiveCover.read primitiveModel) (primitiveCover.read primitiveModel),
+      f.pieceMap false = (res (primitiveCover.subset false)).map collapse ∧
+        f.pieceMap true = 𝟙 ((primitiveCover.read primitiveModel).pieceModel true) := by
+  rintro ⟨f, left, right⟩
+  have a := arrow_eq_from_piece false (primitiveCover.assemble f) collapse
+    ((primitiveCover.assemble_restrict f false).trans left)
+  have b := arrow_eq_from_piece true (primitiveCover.assemble f) (𝟙 primitiveModel)
+    ((primitiveCover.assemble_restrict f true).trans (right.trans ((res (primitiveCover.subset true)).map_id _).symm))
+  exact collapse_ne_id (a.symm.trans b)
 
 end SHIGURE.Chapter3.OmittedLaw

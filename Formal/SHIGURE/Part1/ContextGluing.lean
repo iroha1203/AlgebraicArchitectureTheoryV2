@@ -145,7 +145,7 @@ noncomputable def glue : Models U :=
   ⟨A.glueStructure cover, fun name => by
     let i := cover.index name.property
     have localKept : Declaration.law name.val.val ∈ (cover.piece i).declarations := cover.mem_index name.property
-    exact A.glueEvaluation_satisfies cover i (U.requiredTheory.law name)
+    exact A.glueEvaluation_satisfies cover i (U.scopedTheory.law name)
       (Declaration.lawBody_subset_of_mem localKept)
       ((A.pieceModel i).satisfies_required ⟨name.val, localKept⟩)⟩
 

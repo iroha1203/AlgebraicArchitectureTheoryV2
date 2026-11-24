@@ -20,8 +20,8 @@ variable {P : PrimitivePresentation.{u}} {U V W : DeclarationContext P}
 
 /-- A structure models the required Laws of the restricted presentation. -/
 def ModelCondition (U : DeclarationContext P) : ObjectProperty (ContextStructure U) :=
-  fun A => ∀ name : U.requiredTheory.LawName,
-    A.evaluation.satisfies (U.requiredTheory.law name) (Declaration.lawBody_subset_of_mem name.property)
+  fun A => ∀ name : U.scopedTheory.LawName,
+    A.evaluation.satisfies (U.scopedTheory.law name) (Declaration.lawBody_subset_of_mem name.property)
 
 /-- The category of models of the restricted presentation includes all its structural arrows. -/
 abbrev Models (U : DeclarationContext P) := (ModelCondition U).FullSubcategory
@@ -29,14 +29,14 @@ abbrev Models (U : DeclarationContext P) := (ModelCondition U).FullSubcategory
 namespace Models
 
 /-- A model gives satisfaction of every retained required Law. -/
-theorem satisfies_required (A : Models U) (name : U.requiredTheory.LawName) :
-    A.obj.evaluation.satisfies (U.requiredTheory.law name) (Declaration.lawBody_subset_of_mem name.property) :=
+theorem satisfies_required (A : Models U) (name : U.scopedTheory.LawName) :
+    A.obj.evaluation.satisfies (U.scopedTheory.law name) (Declaration.lawBody_subset_of_mem name.property) :=
   A.property name
 
 /-- Restricting a model keeps the required Laws that belong to the smaller presentation. -/
 noncomputable def restrict (A : Models U) (inside : V ≤ U) : Models V :=
   ⟨A.obj.restrict inside, fun name =>
-    (A.obj.restrict_satisfies_iff inside (V.requiredTheory.law name)
+    (A.obj.restrict_satisfies_iff inside (V.scopedTheory.law name)
       (Declaration.lawBody_subset_of_mem name.property)).2
       (A.satisfies_required ⟨name.val, inside name.property⟩)⟩
 
@@ -111,7 +111,7 @@ theorem res_id : res (le_refl U) = 𝟭 (Models U) := by
   intro A B f
   apply Models.hom_ext
   intro s kept x
-  simp only [res_onSort, selectedMap, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map]
+  simp only [res_onSort, selectedMap_apply, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map]
 
 /-- Model reducts compose strictly along successive inclusions. -/
 theorem res_comp (inside : V ≤ U) (smaller : W ≤ V) :
@@ -120,7 +120,7 @@ theorem res_comp (inside : V ≤ U) (smaller : W ≤ V) :
   intro A B f
   apply Models.hom_ext
   intro s kept x
-  simp only [Functor.comp_map, res_onSort, selectedMap, Models.comp_onSort, Models.eqToHom_onSort, cast_cast]
+  simp only [Functor.comp_map, res_onSort, selectedMap_apply, Models.comp_onSort, Models.eqToHom_onSort, cast_cast]
 
 /-- The presheaf of model categories takes every declaration inclusion to the corresponding reduct. -/
 noncomputable def modelPresheaf (P : PrimitivePresentation.{u}) :

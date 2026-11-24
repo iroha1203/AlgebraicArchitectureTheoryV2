@@ -38,7 +38,7 @@ theorem arrowView_overlap (i j : cover.Index) (s : P.signature.SortType)
   have transported := congrArg (fun z : ((B.pieceModel j).restrict R).obj.carrier s =>
     cast (B.glueCarrier_eq_piece cover j s right).symm
       (cast ((B.pieceModel j).obj.restrict_carrier R (s := s) shared) z)) agree
-  simpa only [arrowView, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, selectedMap, toPieceCarrier,
+  simpa only [arrowView, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, selectedMap_apply, toPieceCarrier,
     localX, a, cast_cast] using transported
 
 /-- Each retained sort supplies one covering piece for its global component map. -/
@@ -155,7 +155,7 @@ theorem glueMap_restrict (i : cover.Index) :
   apply Models.hom_ext
   intro s keep x
   simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, glueMap_onSort,
-    glueOnSort_eq_piece cover f i s keep, arrowView, toPieceCarrier, selectedMap, cast_cast]
+    glueOnSort_eq_piece cover f i s keep, arrowView, toPieceCarrier, selectedMap_apply, cast_cast]
   rfl
 
 end Match

@@ -114,7 +114,7 @@ theorem selectedMap_restrictOnSort (f : Hom A B) (inside : V ≤ U) (s : P.signa
     (keep : Declaration.sort s ∈ V.declarations) (x : (A.restrict inside).carrier s) :
     selectedMap V B.carrier s keep (f.restrictOnSort inside s keep x) =
       f.onSort s (inside keep) (selectedMap V A.carrier s keep x) := by
-  simp only [restrictOnSort, selectedMap, cast_cast]
+  simp only [restrictOnSort, selectedMap_apply, cast_cast]
   rfl
 
 /-- The corresponding square of maps on retained tuples commutes. -/
@@ -174,7 +174,7 @@ theorem restrictFunctor_id : restrictFunctor (le_refl U) = 𝟭 (ContextStructur
   intro A B f
   apply Hom.ext
   intro s kept x
-  simp only [restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort, selectedMap, comp_onSort,
+  simp only [restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort, selectedMap_apply, comp_onSort,
     Functor.id_map, eqToHom_onSort]
 
 /-- Successive structure reducts compose strictly as functors. -/
@@ -184,7 +184,7 @@ theorem restrictFunctor_comp (inside : V ≤ U) (smaller : W ≤ V) :
   intro A B f
   apply Hom.ext
   intro s kept x
-  simp only [Functor.comp_map, restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort, selectedMap,
+  simp only [Functor.comp_map, restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort, selectedMap_apply,
     comp_onSort, eqToHom_onSort, cast_cast]
 
 end ContextStructure

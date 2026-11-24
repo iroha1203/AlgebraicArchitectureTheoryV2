@@ -23,7 +23,7 @@ noncomputable def readFunctor : Models U ⥤ Match cover.piece where
     overlap_comm i j := by
       apply Models.hom_ext
       intro s keep x
-      simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, selectedMap, cast_cast] }
+      simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, selectedMap_apply, cast_cast] }
   map_id A := Match.Hom.ext fun i => (res (cover.subset i)).map_id A
   map_comp f g := Match.Hom.ext fun i => (res (cover.subset i)).map_comp f g
 
@@ -69,7 +69,7 @@ theorem read_comp_glue : cover.readFunctor ⋙ cover.glueFunctor = 𝟭 (Models 
   have localKept := cover.mem_index keep
   simp only [Functor.comp_map, glueFunctor_map, Match.glueMap_onSort,
     Match.glueOnSort_eq_piece cover _ i s localKept, Match.arrowView, readFunctor_pieceMap, res_onSort,
-    Match.toPieceCarrier, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map, selectedMap, cast_cast]
+    Match.toPieceCarrier, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map, selectedMap_apply, cast_cast]
 
 /-- Assembly before reading is strictly the identity on all objects and arrows of the matching category. -/
 theorem glue_comp_read : cover.glueFunctor ⋙ cover.readFunctor = 𝟭 (Match cover.piece) := by
@@ -82,7 +82,7 @@ theorem glue_comp_read : cover.glueFunctor ⋙ cover.readFunctor = 𝟭 (Match c
   simp only [Functor.comp_map, glueFunctor_map, readFunctor_pieceMap, Match.comp_pieceMap,
     Match.eqToHom_pieceMap, res_onSort, Match.glueMap_onSort, Match.glueOnSort_eq_piece cover f i s keep,
     Match.arrowView, Match.toPieceCarrier, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map,
-    selectedMap, cast_cast]
+    selectedMap_apply, cast_cast]
 
 /-- Equation (3.3): restriction and assembly give an isomorphism in the category of categories. -/
 noncomputable def modelIso : Cat.of (Models U) ≅ Cat.of (Match cover.piece) where
@@ -101,7 +101,7 @@ theorem maps_eq_of_restrict_eq {A B : Models U} {f g : A ⟶ B}
   let localX := cast (A.obj.restrict_carrier (cover.subset i) (s := s) localKept).symm x
   have component := congrArg (fun h => Models.onSort h s localKept localX) (same i)
   apply (Equiv.cast (B.obj.restrict_carrier (cover.subset i) (s := s) localKept).symm).injective
-  simpa only [res_onSort, selectedMap, localX, cast_cast, Equiv.cast_apply] using component
+  simpa only [res_onSort, selectedMap_apply, localX, cast_cast, Equiv.cast_apply] using component
 
 /-- A matching family of maps between restrictions of two fixed models determines a global map. -/
 noncomputable def assemble {A B : Models U} (f : Match.Hom (cover.read A) (cover.read B)) : A ⟶ B :=
@@ -113,7 +113,7 @@ noncomputable def assemble {A B : Models U} (f : Match.Hom (cover.read A) (cover
   apply Models.hom_ext
   intro s keep x
   simp only [assemble, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, Match.glueMap_onSort,
-    Match.glueOnSort_eq_piece cover f i s keep, Match.arrowView, Match.toPieceCarrier, selectedMap, cast_cast]
+    Match.glueOnSort_eq_piece cover f i s keep, Match.arrowView, Match.toPieceCarrier, selectedMap_apply, cast_cast]
   rfl
 
 /-- Theorem 3.5: strictly compatible local arrows extend to exactly one global arrow. -/

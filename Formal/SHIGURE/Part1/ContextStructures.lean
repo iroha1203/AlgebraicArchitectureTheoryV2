@@ -6,6 +6,13 @@ Only retained primitive data occur in a context structure. Graphs encode the
 actual operations by functionality and existence on their domains. The
 ambient sort index lets us reuse typed syntax and quantifiers. Every erased
 sort is assigned the same inert carrier, so it contributes no object data.
+
+## Implementation notes
+
+Using the ordinary structure directly would require transporting dependent
+partial-value functions at each overlap. Graphs can be assembled as facts;
+their unique functions and the ordinary selected-signature structure are
+recovered in ContextPrimitiveValues and ContextSelectedStructures.
 -/
 
 universe u
@@ -100,6 +107,12 @@ theorem selectedCarrier_omitted (X : P.signature.SortType → Type u) {s : P.sig
 noncomputable def selectedMap (U : DeclarationContext P) (X : P.signature.SortType → Type u) :
     CarrierMap U (selectedCarrier U X) X :=
   fun _ kept => cast (selectedCarrier_kept X kept)
+
+/-- The retained carrier identification computes by transport along its exact type equality. -/
+theorem selectedMap_apply (U : DeclarationContext P) (X : P.signature.SortType → Type u)
+    (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations) (x : selectedCarrier U X s) :
+    selectedMap U X s kept x = cast (selectedCarrier_kept X kept) x :=
+  rfl
 
 /-- Retention does not omit any element of a selected carrier. -/
 theorem selectedMap_bijective (X : P.signature.SortType → Type u) (s : P.signature.SortType)
@@ -252,7 +265,7 @@ theorem restrict_id (A : ContextStructure U) : A.restrict (le_refl U) = A := by
   rw [RestrictedEvaluation.cast_evaluation _ same, restrict_evaluation, RestrictedEvaluation.pullback_comp]
   refine (RestrictedEvaluation.pullback_congr _ _ ?_).trans A.evaluation.pullback_id
   intro s kept x
-  simp only [selectedMap, cast_cast]
+  simp only [selectedMap_apply, cast_cast]
   rfl
 
 /-- Repeated restrictions are strictly equal to their composite restriction. -/
@@ -268,7 +281,7 @@ theorem restrict_comp (A : ContextStructure U) (inside : V ≤ U) (smaller : W �
   simp only [restrict_evaluation, RestrictedEvaluation.pullback_comp]
   apply RestrictedEvaluation.pullback_congr
   intro s kept x
-  simp only [selectedMap, cast_cast]
+  simp only [selectedMap_apply, cast_cast]
 
 /-- Equal structures give equal evaluations when pulled back along the corresponding carrier maps. -/
 theorem pullback_along_eq {A B : ContextStructure U} (same : A = B) (inside : V ≤ U)
@@ -287,7 +300,7 @@ theorem restrict_evaluation_view (A : ContextStructure U) (inside : V ≤ U)
   rw [restrict_evaluation, RestrictedEvaluation.pullback_comp]
   apply RestrictedEvaluation.pullback_congr
   intro s keep x
-  simp only [selectedMap, cast_cast]
+  simp only [selectedMap_apply, cast_cast]
   rfl
 
 /-- Equality with a reduct follows from carrier equality and equality of the aligned primitive views. -/
@@ -306,7 +319,7 @@ theorem restrict_eq_of_view (A : ContextStructure U) (B : ContextStructure V) (i
         RestrictedEvaluation.pullback_comp, RestrictedEvaluation.pullback_comp]
       apply RestrictedEvaluation.pullback_congr
       intro s keep x
-      simp only [selectedMap, cast_cast]
+      simp only [selectedMap_apply, cast_cast]
     _ = B.evaluation := by
       rw [view, RestrictedEvaluation.pullback_comp]
       refine (RestrictedEvaluation.pullback_congr _ _ ?_).trans B.evaluation.pullback_id

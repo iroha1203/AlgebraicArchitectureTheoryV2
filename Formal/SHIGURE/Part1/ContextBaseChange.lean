@@ -57,7 +57,7 @@ theorem restrict_assemble_piece {A B : Models U} (f : Match.Hom (cover.read A) (
   rw [← cover.assemble_restrict f i]
   apply Models.hom_ext
   intro s kept x
-  simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, selectedMap, cast_cast]
+  simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, selectedMap_apply, cast_cast]
 
 /-- The restricted local arrows form a matching family on the pulled-back cover. -/
 noncomputable def pullbackMatchingMap {A B : Models U} (f : Match.Hom (cover.read A) (cover.read B))
