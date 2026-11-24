@@ -33,6 +33,7 @@ def swap : Structure signature where
   partialValue p := nomatch p
   quantity q := nomatch q
 
+/-- Form the unary operation application used to write the idempotence Law. -/
 private def f (t : Term signature [()] ()) : Term signature [()] () :=
   .app (.total ()) (t.argsCons Term.argsNil)
 
@@ -47,6 +48,7 @@ def extended : LawExtension unrestricted :=
 /-- The two-point swap is a model of the unrestricted theory. -/
 def swapModel : Model unrestricted := ⟨swap, fun n => nomatch n⟩
 
+/-- An evaluated input gives an evaluated unary application in any structure of this signature. -/
 private theorem applies {A : Structure signature} {t : Term signature [()] ()}
     {xs : Assignment A.carrier [()]} {y : A.carrier ()} (evaluated : t.Evaluates A xs y) :
     (f t).Evaluates A xs (A.total () (Assignment.cons y Assignment.empty)) := by
@@ -105,10 +107,39 @@ theorem swap_not_mem_essImage : ¬ extended.forget.essImage swapModel := by
 theorem forget_not_essSurj : ¬ extended.forget.EssSurj :=
   fun h => swap_not_mem_essImage (h.mem_essImage swapModel)
 
+/-- The extra Law requires a witness in the original sort. -/
+private def inhabitedLaw : Law signature :=
+  ⟨[], .truth, .ex (s := ()) (.atom (.eq .here .here))⟩
+
+/-- Add inhabitance to a theory already requiring idempotence. -/
+private def addsInhabited : LawExtension extended.theory :=
+  ⟨Bool, fun | false => idempotence | true => inhabitedLaw, fun _ => ⟨false, rfl⟩⟩
+
+/-- Identity on two points satisfies both required Laws after the addition. -/
+private def modelOfBoth : Model addsInhabited.theory :=
+  ⟨identityStructure, fun name => by
+    cases name
+    · exact identity_satisfies_idempotence
+    · exact fun _ _ => ⟨false, rfl⟩⟩
+
+/-- Forgetting the added Law preserves the earlier idempotence Law on this model. -/
+theorem retains_old_law_after_extension : idempotence.Holds (addsInhabited.forget.obj modelOfBoth).obj :=
+  (addsInhabited.forget.obj modelOfBoth).property ()
+
+/-- Replacing idempotence by inhabitance alone fails the requirement to retain the old Law. -/
+theorem inhabitance_alone_does_not_extend :
+    ¬ ∃ candidate : LawExtension extended.theory, ∀ name, candidate.law name = inhabitedLaw := by
+  rintro ⟨candidate, allInhabited⟩
+  obtain ⟨name, keepsOld⟩ := candidate.includes ()
+  have lawEq : inhabitedLaw = idempotence := (allInhabited name).symm.trans keepsOld
+  have inhabitance : inhabitedLaw.Holds swap := fun _ _ => ⟨false, rfl⟩
+  exact swap_fails_idempotence (lawEq ▸ inhabitance)
+
 end Chapter2.IdempotentSwap
 
 namespace Chapter2.ReflectionWitnesses
 
+/-- Use unary relation and partial operation symbols to test the two reflection conditions independently. -/
 private def signature : Signature.{0} where
   SortType := Unit
   Total := Empty
@@ -120,6 +151,7 @@ private def signature : Signature.{0} where
   partialArity _ := ⟨[()], ()⟩
   quantityArity n := nomatch n
 
+/-- Choose independently whether the relation and the partial domain contain every input. -/
 private def structureWith (related defined : Bool) : Structure signature where
   carrier _ := Bool
   total n := nomatch n
@@ -128,6 +160,7 @@ private def structureWith (related defined : Bool) : Structure signature where
   partialValue _ xs := xs.val .here
   quantity n := nomatch n
 
+/-- The map from the empty relation and domain sends each point to itself. -/
 private def promote (r p : Bool) : StructureMap (structureWith false false) (structureWith r p) where
   onSort _ := id
   total_comm n := nomatch n
@@ -136,6 +169,7 @@ private def promote (r p : Bool) : StructureMap (structureWith false false) (str
   partial_comm _ _ := rfl
   quantity_comm n := nomatch n
 
+/-- A tuple on which to test whether the promoted structure reflects membership. -/
 private def tuple : Assignment (structureWith false false).carrier [()] :=
   Assignment.cons false Assignment.empty
 
@@ -155,6 +189,7 @@ theorem only_relation_reflected :
   intro reflects
   exact Bool.noConfusion (show false = true from reflects () tuple rfl)
 
+/-- Exchange the points in a structure where the relation and domain are full. -/
 private def swap : StructureMap (structureWith true true) (structureWith true true) where
   onSort _ := Bool.not
   total_comm n := nomatch n
@@ -169,19 +204,57 @@ theorem swap_isIso :
   (Structure.isIso_iff_bijective_reflects swap).2
     ⟨fun _ => Function.Involutive.bijective Bool.not_not, fun _ _ _ => rfl, fun _ _ _ => rfl⟩
 
+/-- Keep the whole signature so that its partial domain is part of the fixed reduct. -/
+private def whole : Subsignature signature signature :=
+  ⟨SignatureNames.identity signature,
+    ⟨Function.injective_id, Function.injective_id, Function.injective_id,
+      Function.injective_id, Function.injective_id⟩⟩
+
+/-- Both choices of partial domain are models of the theory with no Laws. -/
+private def unrestricted : Theory.{0} := ⟨signature, Empty, fun name => nomatch name⟩
+
+/-- Interpret the same carrier with either the empty or the full partial domain. -/
+private def domainModel (defined : Bool) : Model unrestricted :=
+  ⟨structureWith false defined, fun name => nomatch name⟩
+
+/-- Fix the whole reduct of the model with the empty domain. -/
+private def fixedData : Structure signature :=
+  whole.val.restrict (domainModel false).obj
+
+/-- The model with the empty partial domain has exactly the prescribed reduct. -/
+theorem empty_domain_is_fixed : Nonempty (FixedModel unrestricted whole fixedData) :=
+  ⟨⟨domainModel false, rfl⟩⟩
+
+/-- The full-domain model cannot be a fixed object with the prescribed empty domain. -/
+theorem full_domain_fails_fixed_reduct :
+    ¬ ∃ A : FixedModel unrestricted whole fixedData, A.model = domainModel true := by
+  rintro ⟨A, sameModel⟩
+  have same : whole.val.restrict (domainModel true).obj = fixedData :=
+    (congrArg (fun M : Model unrestricted => whole.val.restrict M.obj) sameModel).symm.trans A.fixed
+  have domains : (whole.val.restrict (domainModel true).obj).partialDomain = fixedData.partialDomain := by
+    have carried := congrArg (fun X : Structure signature => HEq X.partialDomain fixedData.partialDomain) same
+    exact eq_of_heq (Eq.mpr carried HEq.rfl)
+  have present : tuple ∈ (whole.val.restrict (domainModel true).obj).partialDomain () := rfl
+  rw [domains] at present
+  exact Bool.noConfusion (show false = true from present)
+
 end Chapter2.ReflectionWitnesses
 
 namespace Chapter2.ObservationWitnesses
 
 open IdempotentSwap
 
+/-- Place two Boolean observations on the same original carrier. -/
 private def shape : ObservationShape unrestricted.signature :=
   ⟨Bool, fun _ => (), fun _ => Bool⟩
 
+/-- In this model both observations forget the point. -/
 private def constant : ObservedModel unrestricted shape := ⟨swapModel, fun _ _ => true⟩
 
+/-- In this model both observations return the point. -/
 private def identity : ObservedModel unrestricted shape := ⟨swapModel, fun _ x => x⟩
 
+/-- The two-point exchange commutes with the original unary operation. -/
 private def originalSwap : StructureMap swapModel.obj swapModel.obj where
   onSort _ := Bool.not
   total_comm _ _ := rfl
@@ -190,6 +263,7 @@ private def originalSwap : StructureMap swapModel.obj swapModel.obj where
   partial_comm p := nomatch p
   quantity_comm q := nomatch q
 
+/-- The exchange is an observed arrow when both observations are constant. -/
 private def constantSwap : ObservedModel.Hom constant constant :=
   ObservedModel.Hom.mk (ObjectProperty.homMk originalSwap) (fun _ _ => rfl)
 
@@ -214,6 +288,7 @@ theorem encoded_swap_fixes_values :
       (ObservedModel.encodeHom constantSwap).modelHom :=
   (ObservedModel.encodeHom constantSwap).fixes
 
+/-- Move only the first value carrier while preserving the two constant operations. -/
 private def movesOneValue : StructureMap constant.extendStructure constant.extendStructure where
   onSort
     | .inl _ => id
@@ -234,6 +309,7 @@ theorem moving_value_fails_fixed :
   intro fixed
   exact Bool.noConfusion (show true = false from fixed false false)
 
+/-- Keep the arities of the discrete value signature and identify its two sort names. -/
 private def collapseValues : SignatureNames shape.valueSignature shape.valueSignature where
   onSort _ := false
   onTotal := id

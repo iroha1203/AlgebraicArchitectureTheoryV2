@@ -29,6 +29,12 @@ theorem Model.hom_ext {T : Theory.{u}} {A B : Model T} {f g : A ⟶ B}
     (same : ∀ s x, f.hom.onSort s x = g.hom.onSort s x) : f = g :=
   ObjectProperty.hom_ext T.modelProperty (StructureMap.ext same)
 
+/-- The identity of the full model subcategory fixes every carrier element. -/
+@[simp] theorem Model.id_apply {T : Theory.{u}} (A : Model T)
+    (s : T.signature.SortType) (x : A.obj.carrier s) :
+    (InducedCategory.Hom.hom (𝟙 A)).onSort s x = x :=
+  Structure.id_apply A.obj s x
+
 /-- The carrier maps of a composite in the full model category compose componentwise. -/
 theorem Model.comp_apply {T : Theory.{u}} {A B C : Model T} (f : A ⟶ B) (g : B ⟶ C)
     (s : T.signature.SortType) (x : A.obj.carrier s) :
@@ -38,8 +44,11 @@ theorem Model.comp_apply {T : Theory.{u}} {A B C : Model T} (f : A ⟶ B) (g : B
 
 /-- A possibly larger family of required Laws on the original signature. -/
 structure LawExtension (T : Theory.{u}) where
+  /-- Names in the extended required family. -/
   LawName : Type u
+  /-- Each required Law on the original signature. -/
   law : LawName → Law T.signature
+  /-- Every old written Law appears in the extended family, as in Proposition 2.3. -/
   includes (name : T.LawName) : ∃ larger, law larger = T.law name
 
 namespace LawExtension

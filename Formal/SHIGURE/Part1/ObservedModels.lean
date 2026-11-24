@@ -25,13 +25,18 @@ open CategoryTheory
 
 /-- A family of observations with source sorts and independently fixed value types. -/
 structure ObservationShape (sig : Signature.{u}) where
+  /-- A separate index for each observation. -/
   Index : Type u
+  /-- The original carrier read by each observation. -/
   source : Index → sig.SortType
+  /-- The prescribed value type for each observation. -/
   Value : Index → Type u
 
 /-- The observations are maps on the model's specified carriers. -/
 structure ObservedModel (T : Theory.{u}) (shape : ObservationShape T.signature) where
+  /-- The underlying theory model in Definition 2.2. -/
   model : Model T
+  /-- The specified readout on each source carrier. -/
   observe (i : shape.Index) : model.obj.carrier (shape.source i) → shape.Value i
 
 namespace ObservedModel
@@ -42,9 +47,11 @@ variable {T : Theory.{u}} {shape : ObservationShape T.signature}
 def Preserves (A B : ObservedModel T shape) (f : A.model ⟶ B.model) : Prop :=
   ∀ i x, B.observe i (f.hom.onSort (shape.source i) x) = A.observe i x
 
+/-- Retain the observations at both endpoints of an underlying theory arrow. -/
 private abbrev Ambient :=
   InducedCategory (Model T) (ObservedModel.model (T := T) (shape := shape))
 
+/-- Restrict the induced arrows by the observation squares from equation (2.2). -/
 private def condition : MorphismProperty (Ambient (T := T) (shape := shape)) :=
   fun A B f => Preserves A B f.hom
 
@@ -52,11 +59,11 @@ private def condition : MorphismProperty (Ambient (T := T) (shape := shape)) :=
 private instance condition_multiplicative :
     (condition (T := T) (shape := shape)).IsMultiplicative where
   id_mem _ := fun _ _ => rfl
-  comp_mem {A B C} f g hf hg := by
+  comp_mem f g hf hg := by
     intro i x
-    change C.observe i ((f.hom ≫ g.hom).hom.onSort (shape.source i) x) = A.observe i x
-    rw [Model.comp_apply, hg i, hf i]
+    rw [InducedCategory.comp_hom, Model.comp_apply, hg i, hf i]
 
+/-- Present the same object in the induced category used by the wide subcategory. -/
 private def includeAmbient (A : ObservedModel T shape) : Ambient (T := T) (shape := shape) := A
 
 /-- Observation-preserving model arrows form mathlib's wide subcategory. -/
@@ -85,6 +92,14 @@ theorem commutes (f : Hom A B) : Preserves A B f.modelHom :=
 /-- A map of observed models is determined by the underlying model map. -/
 @[ext] theorem ext {f g : Hom A B} (same : f.modelHom = g.modelHom) : f = g :=
   Subtype.ext (InducedCategory.hom_ext same)
+
+/-- The model arrow underlying an identity is the model identity. -/
+@[simp] theorem modelHom_id (A : ObservedModel T shape) :
+    (show Hom A A from 𝟙 A).modelHom = 𝟙 A.model := rfl
+
+/-- Composition of underlying model arrows follows the order of the restricted arrows. -/
+@[simp] theorem modelHom_comp {C : ObservedModel T shape} (f : Hom A B) (g : Hom B C) :
+    (show Hom A C from f ≫ g).modelHom = f.modelHom ≫ g.modelHom := rfl
 
 end Hom
 
@@ -197,6 +212,24 @@ def extendStructure (A : ObservedModel T shape) : Structure (shape.theory T).sig
     A.extendStructure.total (.inr i) (Assignment.cons x Assignment.empty) = A.observe i x :=
   rfl
 
+/-- An old total operation uses the original tuple in the source model. -/
+theorem extendStructure_total (A : ObservedModel T shape) (f : T.signature.Total)
+    (xs : Assignment A.extendStructure.carrier ((T.signature.totalArity f).inputs.map Sum.inl)) :
+    A.extendStructure.total (.inl f) xs = A.model.obj.total f (originalTuple xs) :=
+  rfl
+
+/-- An old relation is tested on the original tuple in the source model. -/
+theorem extendStructure_relation_iff (A : ObservedModel T shape) (r : T.signature.Rel)
+    (xs : Assignment A.extendStructure.carrier ((T.signature.relInputs r).map Sum.inl)) :
+    xs ∈ A.extendStructure.relation r ↔ originalTuple xs ∈ A.model.obj.relation r :=
+  Iff.rfl
+
+/-- An old quantity uses the original tuple in the source model. -/
+theorem extendStructure_quantity (A : ObservedModel T shape) (q : T.signature.Quantity)
+    (xs : Assignment A.extendStructure.carrier ((T.signature.quantityArity q).inputs.map Sum.inl)) :
+    A.extendStructure.quantity q xs = A.model.obj.quantity q (originalTuple xs) :=
+  rfl
+
 /-- Membership in an old partial domain is read on the original tuple. -/
 theorem extendStructure_partialDomain_iff (A : ObservedModel T shape) (p : T.signature.Partial)
     (xs : Assignment A.extendStructure.carrier ((T.signature.partialArity p).inputs.map Sum.inl)) :
@@ -306,12 +339,23 @@ def embedding (T : Theory.{u}) (shape : ObservationShape T.signature) :
     ObservedModel T shape ⥤ FixedModel (shape.theory T) shape.values shape.valueData where
   obj := encode
   map f := encodeHom f
-  map_id A := FixedModel.Hom.ext (Model.hom_ext (by
+  map_id A := by
+    apply FixedModel.Hom.ext (Model.hom_ext _)
     intro s x
-    cases s <;> rfl))
-  map_comp f g := FixedModel.Hom.ext (Model.hom_ext (by
+    cases s with
+    | inl s =>
+      simp only [encodeHom_original, Hom.modelHom_id, FixedModel.Hom.modelHom_id, Model.id_apply]
+    | inr i =>
+      simp only [encodeHom_value, FixedModel.Hom.modelHom_id, Model.id_apply]
+  map_comp f g := by
+    apply FixedModel.Hom.ext (Model.hom_ext _)
     intro s x
-    cases s <;> rfl))
+    rw [FixedModel.Hom.modelHom_comp, Model.comp_apply]
+    cases s with
+    | inl s =>
+      simp only [encodeHom_original, Hom.modelHom_comp, Model.comp_apply]
+    | inr i =>
+      simp only [encodeHom_value]
 
 /-- Retyping followed by mapping and reading back applies the original carrier maps. -/
 private theorem originalTuple_extended_map (f : StructureMap A.extendStructure B.extendStructure)
@@ -325,17 +369,14 @@ private def originalMap (f : StructureMap A.extendStructure B.extendStructure) :
     StructureMap A.model.obj B.model.obj where
   onSort s := f.onSort (.inl s)
   total_comm g xs := by
-    have commutes :
-        f.onSort (.inl (T.signature.totalArity g).output)
-          (A.model.obj.total g (originalTuple (A.extendedTuple xs))) =
-        B.model.obj.total g (originalTuple ((A.extendedTuple xs).map f.onSort)) :=
-      f.total_comm (.inl g) (A.extendedTuple xs)
-    rwa [originalTuple_roundtrip A, originalTuple_extended_map] at commutes
+    have commutes := f.total_comm (.inl g) (A.extendedTuple xs)
+    rwa [A.extendStructure_total, B.extendStructure_total, originalTuple_roundtrip A,
+      originalTuple_extended_map] at commutes
   relation_mem r xs held := by
-    have source : originalTuple (A.extendedTuple xs) ∈ A.model.obj.relation r :=
+    have original : originalTuple (A.extendedTuple xs) ∈ A.model.obj.relation r :=
       (originalTuple_roundtrip A xs).symm ▸ held
-    have target : originalTuple ((A.extendedTuple xs).map f.onSort) ∈ B.model.obj.relation r :=
-      f.relation_mem r _ source
+    have source := (A.extendStructure_relation_iff r _).2 original
+    have target := (B.extendStructure_relation_iff r _).1 (f.relation_mem r _ source)
     rwa [originalTuple_extended_map] at target
   partial_mem p xs held := by
     have original : originalTuple (A.extendedTuple xs) ∈ A.model.obj.partialDomain p :=
@@ -354,12 +395,9 @@ private def originalMap (f : StructureMap A.extendStructure B.extendStructure) :
     obtain ⟨_, value⟩ := (B.model.obj.graph_partial_iff p _ _).1 target
     exact value.symm
   quantity_comm q xs := by
-    have commutes :
-        f.onSort (.inl (T.signature.quantityArity q).output)
-          (A.model.obj.quantity q (originalTuple (A.extendedTuple xs))) =
-        B.model.obj.quantity q (originalTuple ((A.extendedTuple xs).map f.onSort)) :=
-      f.quantity_comm q (A.extendedTuple xs)
-    rwa [originalTuple_roundtrip A, originalTuple_extended_map] at commutes
+    have commutes := f.quantity_comm q (A.extendedTuple xs)
+    rwa [A.extendStructure_quantity, B.extendStructure_quantity, originalTuple_roundtrip A,
+      originalTuple_extended_map] at commutes
 
 /-- A fixed arrow between encodings recovers precisely the observation-preserving arrow. -/
 def decodeHom (f : FixedModel.Hom A.encode B.encode) : Hom A B :=

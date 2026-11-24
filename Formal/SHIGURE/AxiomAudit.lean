@@ -334,6 +334,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 #shigure_assert_standard_axioms_of [
   -- Signature
   Structure.ext,
+  -- Syntax
+  Atomic.holds_eq,
   -- StructureMaps
   Assignment.map_id,
   Assignment.map_map,
@@ -357,6 +359,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SignatureNames.restrict_law_iff,
   -- Models
   Model.hom_ext,
+  Model.id_apply,
   Model.comp_apply,
   LawExtension.model_le,
   LawExtension.forget_obj,
@@ -364,11 +367,18 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   FixedModel.carrier_eq,
   FixedModel.Hom.fixes,
   FixedModel.Hom.ext,
+  FixedModel.Hom.modelHom_id,
+  FixedModel.Hom.modelHom_comp,
   -- ObservedModels
   ObservedModel.Hom.commutes,
   ObservedModel.Hom.ext,
+  ObservedModel.Hom.modelHom_id,
+  ObservedModel.Hom.modelHom_comp,
   ObservationShape.original_isInclusion,
   ObservedModel.extendStructure_observe,
+  ObservedModel.extendStructure_total,
+  ObservedModel.extendStructure_relation_iff,
+  ObservedModel.extendStructure_quantity,
   ObservedModel.extendStructure_partialDomain_iff,
   ObservedModel.extendStructure_graph_partial_iff,
   ObservedModel.restrict_extendStructure,
@@ -383,9 +393,13 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Chapter2.IdempotentSwap.swap_fails_idempotence,
   Chapter2.IdempotentSwap.swap_not_mem_essImage,
   Chapter2.IdempotentSwap.forget_not_essSurj,
+  Chapter2.IdempotentSwap.retains_old_law_after_extension,
+  Chapter2.IdempotentSwap.inhabitance_alone_does_not_extend,
   Chapter2.ReflectionWitnesses.only_domain_reflected,
   Chapter2.ReflectionWitnesses.only_relation_reflected,
   Chapter2.ReflectionWitnesses.swap_isIso,
+  Chapter2.ReflectionWitnesses.empty_domain_is_fixed,
+  Chapter2.ReflectionWitnesses.full_domain_fails_fixed_reduct,
   Chapter2.ObservationWitnesses.constant_observation_agrees,
   Chapter2.ObservationWitnesses.swap_preserves_constant,
   Chapter2.ObservationWitnesses.swap_fails_identity_observation,

@@ -97,6 +97,12 @@ def Holds (a : Atomic sig Γ) (A : Structure sig) (e : Assignment A.carrier Γ) 
   | .domain p vars => e.pull vars ∈ A.partialDomain p
   | .graph op vars y => A.Graph op (e.pull vars) (e y)
 
+/-- Equality of two variables tests equality of their assigned values. -/
+@[simp] theorem holds_eq {s : sig.SortType} (x y : Var Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Atomic.eq (sig := sig) x y).Holds A e ↔ e x = e y :=
+  Iff.rfl
+
 /-- A relation atom reduces to membership of the selected tuple in the interpreted relation. -/
 @[simp] theorem holds_rel (r : sig.Rel) (vars : Renaming (sig.relInputs r) Γ)
     (A : Structure sig) (e : Assignment A.carrier Γ) :

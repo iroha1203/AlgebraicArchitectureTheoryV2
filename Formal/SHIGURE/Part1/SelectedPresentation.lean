@@ -92,6 +92,34 @@ private def atomic (names : SignatureNames S T) {Γ : List S.SortType} :
       (congrArg Arity.inputs (names.operationArity op) ▸ args.mapSorts names.onSort)
       (congrArg Arity.output (names.operationArity op) ▸ y.mapSorts names.onSort)
 
+/-- Renaming an equality atom sends both variable positions along the sort map. -/
+private theorem atomic_eq (names : SignatureNames S T) {Γ : List S.SortType}
+    {s : S.SortType} (x y : Var Γ s) :
+    names.atomic (.eq x y) = .eq (x.mapSorts names.onSort) (y.mapSorts names.onSort) :=
+  rfl
+
+/-- Renaming a relation atom transports its selected input positions along the declared arity. -/
+private theorem atomic_rel (names : SignatureNames S T) {Γ : List S.SortType}
+    (r : S.Rel) (args : Renaming (S.relInputs r) Γ) :
+    names.atomic (.rel r args) = .rel (names.onRel r) (names.relInputs r ▸ args.mapSorts names.onSort) :=
+  rfl
+
+/-- Renaming a domain atom transports its selected input positions along the declared arity. -/
+private theorem atomic_domain (names : SignatureNames S T) {Γ : List S.SortType}
+    (p : S.Partial) (args : Renaming (S.partialArity p).inputs Γ) :
+    names.atomic (.domain p args) =
+      .domain (names.onPartial p) (congrArg Arity.inputs (names.partialArity p) ▸ args.mapSorts names.onSort) :=
+  rfl
+
+/-- Renaming a graph atom transports both the selected inputs and the output position. -/
+private theorem atomic_graph (names : SignatureNames S T) {Γ : List S.SortType}
+    (op : Operation S) (args : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
+    names.atomic (.graph op args y) =
+      .graph (names.operation op)
+        (congrArg Arity.inputs (names.operationArity op) ▸ args.mapSorts names.onSort)
+        (congrArg Arity.output (names.operationArity op) ▸ y.mapSorts names.onSort) :=
+  rfl
+
 /-- Rename the literal positive syntax. Each atom retains its kind. -/
 def formula (names : SignatureNames S T) :
     {Γ : List S.SortType} → Formula S Γ → Formula T (Γ.map names.onSort)
@@ -155,6 +183,20 @@ def restrict (names : SignatureNames S T) (A : Structure T) : Structure S where
   quantity q xs := cast (congrArg (fun arity => A.carrier arity.output) (names.quantityArity q).symm)
     (A.quantity (names.onQuantity q) (names.arguments (congrArg Arity.inputs (names.quantityArity q)) xs))
 
+/-- Relation membership in the reduct tests the transported tuple in the ambient relation. -/
+private theorem restrict_relation_iff (names : SignatureNames S T) (A : Structure T)
+    (r : S.Rel) (xs : Assignment (names.restrict A).carrier (S.relInputs r)) :
+    xs ∈ (names.restrict A).relation r ↔
+      names.arguments (names.relInputs r) xs ∈ A.relation (names.onRel r) :=
+  Iff.rfl
+
+/-- Partial domain membership in the reduct tests the transported tuple in the ambient domain. -/
+private theorem restrict_partialDomain_iff (names : SignatureNames S T) (A : Structure T)
+    (p : S.Partial) (xs : Assignment (names.restrict A).carrier (S.partialArity p).inputs) :
+    xs ∈ (names.restrict A).partialDomain p ↔
+      names.arguments (congrArg Arity.inputs (names.partialArity p)) xs ∈ A.partialDomain (names.onPartial p) :=
+  Iff.rfl
+
 /-- A retyped assignment can be read at its original positions without losing any coordinates. -/
 private theorem arguments_surjective (names : SignatureNames S T) {X : T.SortType → Type u}
     {Γ : List S.SortType} :
@@ -215,24 +257,14 @@ private theorem restrict_atomic_iff (names : SignatureNames S T) (A : Structure 
     a.Holds (names.restrict A) e ↔ (names.atomic a).Holds A (e.mapSorts names.onSort) := by
   cases a with
   | eq x y =>
-    change (e x = e y) ↔ (e.mapSorts names.onSort) (x.mapSorts names.onSort) =
-      (e.mapSorts names.onSort) (y.mapSorts names.onSort)
-    simp only [Assignment.mapSorts_apply]
+    simp only [names.atomic_eq, Atomic.holds_eq, Assignment.mapSorts_apply]
   | rel r ρ =>
-    rw [Atomic.holds_rel]
-    change names.arguments (names.relInputs r) (e.pull ρ) ∈ A.relation (names.onRel r) ↔
-      (Atomic.rel (names.onRel r) _).Holds A (e.mapSorts names.onSort)
-    rw [Atomic.holds_rel, names.arguments_pull]
+    simp only [names.atomic_rel, Atomic.holds_rel, names.restrict_relation_iff, names.arguments_pull]
   | domain p ρ =>
-    rw [Atomic.holds_domain]
-    change names.arguments (congrArg Arity.inputs (names.partialArity p)) (e.pull ρ) ∈
-      A.partialDomain (names.onPartial p) ↔
-      (Atomic.domain (names.onPartial p) _).Holds A (e.mapSorts names.onSort)
-    rw [Atomic.holds_domain, names.arguments_pull]
+    simp only [names.atomic_domain, Atomic.holds_domain, names.restrict_partialDomain_iff, names.arguments_pull]
   | graph op ρ y =>
-    rw [Atomic.holds_graph, names.restrict_graph_iff]
-    change _ ↔ (Atomic.graph (names.operation op) _ _).Holds A (e.mapSorts names.onSort)
-    rw [Atomic.holds_graph, names.arguments_pull, names.arguments_read]
+    simp only [names.atomic_graph, Atomic.holds_graph, names.restrict_graph_iff,
+      names.arguments_pull, names.arguments_read]
 
 /-- A positive formula is satisfied in a reduct exactly when its renamed formula holds
 at the corresponding assignment in the ambient structure. -/

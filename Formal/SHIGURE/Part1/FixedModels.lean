@@ -33,7 +33,9 @@ abbrev Subsignature (S T : Signature.{u}) := { n : SignatureNames S T // n.IsInc
 /-- A model whose restriction to the specified subsignature is the specified structure. -/
 structure FixedModel (T : Theory.{u}) {S : Signature.{u}}
     (names : Subsignature S T.signature) (data : Structure S) where
+  /-- The underlying theory model. -/
   model : Model T
+  /-- Definition 2.2 fixes the entire restricted structure. -/
   fixed : names.val.restrict model.obj = data
 
 namespace FixedModel
@@ -50,9 +52,11 @@ def FixesCarriers (A B : FixedModel T names data) (f : A.model ⟶ B.model) : Pr
   ∀ s (x : A.model.obj.carrier (names.val.onSort s)),
     f.hom.onSort (names.val.onSort s) x = cast ((A.carrier_eq s).trans (B.carrier_eq s).symm) x
 
+/-- Retain the fixed-model endpoints when reading the underlying theory arrow. -/
 private abbrev Ambient :=
   InducedCategory (Model T) (FixedModel.model (T := T) (names := names) (data := data))
 
+/-- Restrict the induced arrows by the identity condition on the fixed reduct. -/
 private def condition : MorphismProperty (Ambient (T := T) (names := names) (data := data)) :=
   fun A B f => FixesCarriers A B f.hom
 
@@ -60,12 +64,11 @@ private def condition : MorphismProperty (Ambient (T := T) (names := names) (dat
 private instance condition_multiplicative :
     (condition (T := T) (names := names) (data := data)).IsMultiplicative where
   id_mem _ := fun _ _ => rfl
-  comp_mem {A B C} f g hf hg := by
+  comp_mem f g hf hg := by
     intro s x
-    change (f.hom ≫ g.hom).hom.onSort (names.val.onSort s) x =
-      cast ((A.carrier_eq s).trans (C.carrier_eq s).symm) x
-    rw [Model.comp_apply, hf s, hg s, cast_cast]
+    rw [InducedCategory.comp_hom, Model.comp_apply, hf s, hg s, cast_cast]
 
+/-- Present the same object in the induced category used by the wide subcategory. -/
 private def includeAmbient (A : FixedModel T names data) :
     Ambient (T := T) (names := names) (data := data) := A
 
@@ -95,6 +98,14 @@ theorem fixes (f : Hom A B) : FixesCarriers A B f.modelHom :=
 /-- A map with fixed carriers is determined by its underlying model map. -/
 @[ext] theorem ext {f g : Hom A B} (same : f.modelHom = g.modelHom) : f = g :=
   Subtype.ext (InducedCategory.hom_ext same)
+
+/-- The model arrow underlying an identity is the model identity. -/
+@[simp] theorem modelHom_id (A : FixedModel T names data) :
+    (show Hom A A from 𝟙 A).modelHom = 𝟙 A.model := rfl
+
+/-- Composition of underlying model arrows follows the order of the restricted arrows. -/
+@[simp] theorem modelHom_comp {C : FixedModel T names data} (f : Hom A B) (g : Hom B C) :
+    (show Hom A C from f ≫ g).modelHom = f.modelHom ≫ g.modelHom := rfl
 
 end Hom
 
