@@ -1,9 +1,16 @@
-import Formal.SHIGURE.Part1.MarkedVocabulary
+import Formal.SHIGURE.Part1.MarkedLawSupport
 
 /-! # The two declaration contexts of Example 3.7
 
 The two pieces independently retain p,q and q,r. Each piece carries its
 own two unary symbols and their two unconditional round-trip Laws.
+
+## Implementation notes
+
+Use the outer operation as the name of its round-trip Law. Its side then
+controls both its own declaration and that Law, without a duplicate side
+table. The Boolean index represents the two pieces of Example 3.7. The
+generated equations on each piece use the side of their own operation.
 -/
 
 namespace SHIGURE.Marked.RationalExample
@@ -50,12 +57,20 @@ def vocabulary : Vocabulary where
   generators := generatorCount
   rank _ := 1
   Multilinear := Op
-  inputs name := [name.source]
-  output := Op.target
+  inputs name := [some name.source]
+  output name := some name.target
 
-/-- The example has no partial operations, so the equational Law uses total term evaluation. -/
-instance signature_noPartial : IsEmpty vocabulary.signature.Partial :=
-  inferInstanceAs (IsEmpty PEmpty)
+/-- The one written argument position of a rational operation. -/
+def argument (name : Op) : vocabulary.Position name :=
+  ⟨some name.source, .here⟩
+
+/-- Every argument position in a unary profile is its one written position. -/
+theorem argument_eq (name : Op) (i : vocabulary.Position name) : i = argument name := by
+  obtain ⟨s, var⟩ := i
+  change Var [some name.source] s at var
+  cases var with
+  | here => rfl
+  | there i => cases i
 
 variable {Γ : List (Option SortName)}
 
@@ -71,13 +86,29 @@ def roundTrip : Op → Law vocabulary.signature
   | .u => Law.equality (Γ := [some .r]) (unary .u (unary .v (.var .here))) (.var .here)
   | .v => Law.equality (Γ := [some .q]) (unary .v (unary .u (.var .here))) (.var .here)
 
+/-- The left round trip starting on q is the equation fg = id. -/
+theorem roundTrip_f : roundTrip .f =
+    Law.equality (Γ := [some .q]) (unary .f (unary .g (.var .here))) (.var .here) := rfl
+
+/-- The left round trip starting on p is the equation gf = id. -/
+theorem roundTrip_g : roundTrip .g =
+    Law.equality (Γ := [some .p]) (unary .g (unary .f (.var .here))) (.var .here) := rfl
+
+/-- The right round trip starting on r is the equation uv = id. -/
+theorem roundTrip_u : roundTrip .u =
+    Law.equality (Γ := [some .r]) (unary .u (unary .v (.var .here))) (.var .here) := rfl
+
+/-- The right round trip starting on q is the equation vu = id. -/
+theorem roundTrip_v : roundTrip .v =
+    Law.equality (Γ := [some .q]) (unary .v (unary .u (.var .here))) (.var .here) := rfl
+
 /-- The four literal, required round-trip Laws of Example 3.7. -/
 def laws : vocabulary.Laws where
   declarations := ⟨Op, roundTrip, fun _ => .required⟩
   derived _ role := by cases role
 
 /-- The ordinary SHIGURE presentation of the rational example. -/
-abbrev presentation := vocabulary.presentation laws
+noncomputable abbrev presentation := vocabulary.presentation laws
 
 /-- p and r belong to separate pieces, and q is shared. -/
 def keepsModule (right : Bool) : SortName → Prop
@@ -92,32 +123,109 @@ def keeps (right : Bool) : Declaration presentation → Prop
   | .total (.coefficient _) => True
   | .total (.moduleOp s _) => keepsModule right s
   | .total (.multilinear name) => name.right = right
-  | .law name => name.right = right
+  | .law (.inl name) => name.right = right
+  | .law (.inr name) => (LinearityLaw.symbol vocabulary name).right = right
   | .relation p | .partialOp p | .quantity p => nomatch p
 
 private theorem kept_total_support (right : Bool) (name : vocabulary.Symbol)
     (kept : keeps right (.total name)) : Declaration.dependsOn presentation (.total name) ⊆ {d | keeps right d} := by
-  rintro _ ⟨s, occurs, rfl⟩
   cases name with
   | coefficient op =>
-    cases op <;> simp_all [Vocabulary.presentation, vocabulary, Vocabulary.signature, Vocabulary.arity, keeps]
+    rw [vocabulary.coefficient_dependency]
+    exact Set.singleton_subset_iff.mpr True.intro
   | moduleOp s op =>
-    cases op <;> simp_all [Vocabulary.presentation, vocabulary, Vocabulary.signature, Vocabulary.arity, keeps]
-    aesop
+    refine (vocabulary.module_dependencies laws s op).trans ?_
+    rintro d (rfl | same)
+    · exact kept
+    · rw [Set.mem_singleton_iff.mp same]
+      exact True.intro
   | multilinear name =>
-    cases name <;> cases right <;> simp_all [Vocabulary.presentation, vocabulary, Vocabulary.signature, Vocabulary.arity, keeps,
-      Op.source, Op.target, Op.right, keepsModule] <;> aesop
+    rw [vocabulary.multilinear_dependencies]
+    rintro _ ⟨s, occurs, rfl⟩
+    cases name <;> cases right <;>
+      simp_all [vocabulary, keeps, Op.source, Op.target, Op.right, keepsModule] <;> aesop
 
-private theorem kept_law_support (right : Bool) (name : Op) (kept : keeps right (.law name)) :
+private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signature)
+    (kept : keeps right (Declaration.ofOperation (P := presentation) op)) :
+    Declaration.sorts (P := presentation) op.arity.inputs ⊆ {d | keeps right d} := by
+  cases op with
+  | total name =>
+    rintro _ ⟨s, occurs, rfl⟩
+    exact kept_total_support right name kept ⟨s, List.mem_cons_of_mem _ occurs, rfl⟩
+  | partialOp p => exact nomatch p
+  | quantity q => exact nomatch q
+
+private theorem kept_sorts (right : Bool) {Γ : List (Option SortName)}
+    (all : ∀ s ∈ Γ, keeps right (.sort s)) :
+    Declaration.sorts (P := presentation) Γ ⊆ {d | keeps right d} := by
+  rintro _ ⟨s, occurs, rfl⟩
+  exact all s occurs
+
+private theorem unary_refs (right : Bool) {Γ : List (Option SortName)} (name : Op)
+    (x : Term vocabulary.signature Γ (some name.source))
+    (kept : keeps right (vocabulary.multilinearDecl laws name))
+    (refs : Selected.termReferences (P := presentation) x ⊆ {d | keeps right d}) :
+    Selected.termReferences (P := presentation) (unary name x) ⊆ {d | keeps right d} := by
+  unfold unary
+  apply app_refs (P := presentation) (.total (Symbol.multilinear name)) _ kept
+  intro t position
+  cases position with
+  | here => exact refs
+  | there empty => cases empty
+
+private theorem unary_updated {Γ : List (Option SortName)} (name : Op)
+    (names : Renaming (vocabulary.inputs name) Γ)
+    (x : Term vocabulary.signature Γ (some name.source)) :
+    vocabulary.updatedTerm names (argument name) x = unary name x := by
+  apply congrArg (fun (args : ∀ {s}, Var [some name.source] s → Term vocabulary.signature Γ s) =>
+    Term.app (sig := vocabulary.signature) (.total (Symbol.multilinear name)) args)
+  funext s position
+  cases position with
+  | here => exact vocabulary.updatedTerms_same names (argument name) x
+  | there empty => cases empty
+
+private theorem roundTrip_supported (right : Bool) (name : Op) (side : name.right = right) :
+    Declaration.lawBody (P := presentation) (roundTrip name) ⊆ {d | keeps right d} := by
+  cases name <;> cases right <;> simp [Op.right] at side
+  all_goals
+    first | rw [roundTrip_f] | rw [roundTrip_g] | rw [roundTrip_u] | rw [roundTrip_v]
+    refine equality_law_support _ _ (kept_input_sorts _) ?_ (by first | exact rfl | exact True.intro) ?_ ?_
+    · apply kept_sorts
+      intro s occurs
+      simp_all [keeps, keepsModule]
+    all_goals
+      repeat first
+        | exact variable_refs (P := presentation) _
+        | refine unary_refs _ _ _ (by rfl) ?_
+
+private theorem linearity_supported (right : Bool) (linearity : vocabulary.LinearityLaw)
+    (side : (LinearityLaw.symbol vocabulary linearity).right = right) :
+    Declaration.lawBody (P := presentation) (LinearityLaw.statement vocabulary linearity) ⊆ {d | keeps right d} := by
+  cases linearity with
+  | add name i | smul name i =>
+    obtain rfl := argument_eq name i
+    cases name <;> cases right <;> simp [LinearityLaw.symbol, Op.right] at side
+    all_goals
+      simp only [LinearityLaw.statement, addLinearityLaw, smulLinearityLaw, unary_updated]
+      refine equality_law_support _ _ (kept_input_sorts _) ?_ (by first | exact rfl | exact True.intro) ?_ ?_
+      · apply kept_sorts
+        intro s occurs
+        simp_all [keeps, keepsModule, Op.source, argument, vocabulary] <;> aesop
+      all_goals
+        repeat first
+          | exact variable_refs (P := presentation) _
+          | refine unary_refs _ _ _ (by rfl) ?_
+          | refine addTerm_refs (V := vocabulary) (L := laws) _ _ _ (by first | exact rfl | exact True.intro) ?_ ?_
+          | refine smulTerm_refs (V := vocabulary) (L := laws) _ _ _ (by first | exact rfl | exact True.intro) ?_ ?_
+
+private theorem kept_law_support (right : Bool) (name : presentation.laws.LawName) (kept : keeps right (.law name)) :
     Declaration.dependsOn presentation (.law name) ⊆ {d | keeps right d} := by
-  rw [Declaration.nonderived_dependencies (P := presentation) name (by intro h; cases h)]
-  intro d used
-  cases name <;> cases right <;>
-    simp_all [Vocabulary.presentation, laws, vocabulary, Vocabulary.signature, Vocabulary.arity, Operation.arity,
-      roundTrip, unary, keeps, keepsModule, Op.right, Op.source, Op.target, Law.equality,
-      Formula.termEq, Term.graph, Term.graphAt, Formula.existsMany, Formula.conjoin, Term.argsCons,
-      Declaration.lawBody, Declaration.formula,
-      Declaration.atomic, Declaration.ofOperation, Declaration.sorts] <;> aesop
+  rw [Declaration.nonderived_dependencies (P := presentation) name (by cases name <;> intro h <;> cases h)]
+  cases name with
+  | inl name => exact roundTrip_supported right name kept
+  | inr name =>
+    rw [vocabulary.linearity_statement]
+    exact linearity_supported right name kept
 
 /-- The left and right contexts with all supports of their actual declarations. -/
 def piece (right : Bool) : DeclarationContext presentation where
@@ -160,7 +268,10 @@ def cover : DeclarationCover (DeclarationContext.full presentation) where
         · exact ⟨false, True.intro⟩
         · exact ⟨true, rfl⟩
       | multilinear name => exact ⟨name.right, rfl⟩
-    | law name => exact ⟨name.right, rfl⟩
+    | law name =>
+      cases name with
+      | inl name => exact ⟨name.right, rfl⟩
+      | inr name => exact ⟨(LinearityLaw.symbol vocabulary name).right, rfl⟩
     | relation p => exact nomatch p
     | partialOp p => exact nomatch p
     | quantity p => exact nomatch p

@@ -1,6 +1,5 @@
 import Formal.SHIGURE.Part1.ContextEvaluation
-import Formal.SHIGURE.Part1.FixedModels
-import Mathlib.LinearAlgebra.Multilinear.Basic
+import Mathlib.Data.Fintype.EquivFin
 
 /-! # Marked module vocabulary
 
@@ -11,8 +10,9 @@ generator counts and ranks, and the profiles of the multilinear symbols.
 
 Each module sort has a block of canonical operation names, including a
 distinct nullary operation for each coordinate generator. A user-specified
-multilinear symbol has a list of input sorts, so two occurrences of the same
-sort are distinct input positions. This is the existing SHIGURE argument
+multilinear symbol has a list of declared input sorts, so two occurrences of
+the same sort are distinct input positions. Both the coefficient and module
+sorts are permitted at every input and output. This is the existing SHIGURE argument
 syntax with no arity bound. A predicate adds block closure to the existing
 declaration context, leaving the dependency closure for Laws and operations
 to DeclarationContext.
@@ -41,10 +41,10 @@ structure Vocabulary where
   rank : SortName → ℕ
   /-- The extra multilinear operation names. -/
   Multilinear : Type u
-  /-- The ordered module sort of each input position. -/
-  inputs : Multilinear → List SortName
-  /-- The module sort returned by each multilinear operation. -/
-  output : Multilinear → SortName
+  /-- The ordered coefficient or module sort of each input position. -/
+  inputs : Multilinear → List (Option SortName)
+  /-- The coefficient or module sort returned by each multilinear operation. -/
+  output : Multilinear → Option SortName
 
 namespace Vocabulary
 
@@ -65,7 +65,7 @@ def arity : V.Symbol → Arity (Option V.SortName)
   | .moduleOp s .add => ⟨[some s, some s], some s⟩
   | .moduleOp s .neg => ⟨[some s], some s⟩
   | .moduleOp s .smul => ⟨[none, some s], some s⟩
-  | .multilinear f => ⟨(V.inputs f).map some, some (V.output f)⟩
+  | .multilinear f => ⟨V.inputs f, V.output f⟩
 
 /-- The marked language is an ordinary total SHIGURE signature. -/
 def signature : Signature.{u} where
@@ -78,6 +78,10 @@ def signature : Signature.{u} where
   relInputs r := nomatch r
   partialArity p := nomatch p
   quantityArity q := nomatch q
+
+/-- All terms of the marked vocabulary are total. -/
+instance noPartial : IsEmpty V.signature.Partial :=
+  inferInstanceAs (IsEmpty PEmpty)
 
 /-- A finite-arity position with its declared module sort. -/
 abbrev Position (f : V.Multilinear) := Σ s, Var (V.inputs f) s
@@ -97,20 +101,114 @@ instance finitePosition (f : V.Multilinear) : Finite (V.Position f) :=
   Finite.of_injective (V.positionIndex f) (fun _ _ h =>
     Var.position_injective (V.inputs f) (congrArg Fin.val h))
 
+/-- Addition in either a coefficient or module sort, as a written term. -/
+def addTerm {Γ : List (Option V.SortName)} : (s : Option V.SortName) →
+    Term V.signature Γ s → Term V.signature Γ s → Term V.signature Γ s
+  | none, x, y => Term.app (sig := V.signature) (.total (Symbol.coefficient .add))
+      (x.argsCons (y.argsCons Term.argsNil))
+  | some s, x, y => Term.app (sig := V.signature) (.total (Symbol.moduleOp s .add))
+      (x.argsCons (y.argsCons Term.argsNil))
+
+/-- Scalar multiplication in either sort. On the coefficient sort it is ring multiplication. -/
+def smulTerm {Γ : List (Option V.SortName)} : (s : Option V.SortName) →
+    Term V.signature Γ none → Term V.signature Γ s → Term V.signature Γ s
+  | none, a, x => Term.app (sig := V.signature) (.total (Symbol.coefficient .mul))
+      (a.argsCons (x.argsCons Term.argsNil))
+  | some s, a, x => Term.app (sig := V.signature) (.total (Symbol.moduleOp s .smul))
+      (a.argsCons (x.argsCons Term.argsNil))
+
+/-- Replace just one typed argument in the variable tuple of a multilinear symbol. -/
+noncomputable def updatedTerms {Γ : List (Option V.SortName)} {f : V.Multilinear}
+    (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :
+    (j : V.Position f) → Term V.signature Γ j.1 := by
+  classical
+  exact Function.update (fun j => Term.var (names j.2)) i x
+
+/-- The replaced position has the new term. -/
+theorem updatedTerms_same {Γ : List (Option V.SortName)} {f : V.Multilinear}
+    (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :
+    V.updatedTerms names i x i = x := by
+  classical
+  simp [updatedTerms]
+
+/-- All other positions retain their original variable term. -/
+theorem updatedTerms_other {Γ : List (Option V.SortName)} {f : V.Multilinear}
+    (names : Renaming (V.inputs f) Γ) (i j : V.Position f) (x : Term V.signature Γ i.1) (different : j ≠ i) :
+    V.updatedTerms names i x j = .var (names j.2) := by
+  classical
+  simp [updatedTerms, Function.update_of_ne different]
+
+/-- Apply the symbol to a variable tuple with its indicated argument replaced. -/
+noncomputable def updatedTerm {Γ : List (Option V.SortName)} {f : V.Multilinear}
+    (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :
+    Term V.signature Γ (V.output f) :=
+  Term.app (sig := V.signature) (.total (Symbol.multilinear f))
+    (fun j => V.updatedTerms names i x ⟨_, j⟩)
+
+/-- Proposition 3.6 imposes additivity as a literal equality Law at each argument. -/
+noncomputable def addLinearityLaw {f : V.Multilinear} (i : V.Position f) : Law V.signature :=
+  let Γ := i.1 :: i.1 :: V.inputs f
+  let names : Renaming (V.inputs f) Γ := fun j => j.there.there
+  let x : Term V.signature Γ i.1 := .var .here
+  let y : Term V.signature Γ i.1 := .var (.there .here)
+  Law.equality (V.updatedTerm names i (V.addTerm i.1 x y))
+    (V.addTerm (V.output f) (V.updatedTerm names i x) (V.updatedTerm names i y))
+
+/-- Proposition 3.6 imposes scalar homogeneity as a literal equality Law at each argument. -/
+noncomputable def smulLinearityLaw {f : V.Multilinear} (i : V.Position f) : Law V.signature :=
+  let Γ := (none : Option V.SortName) :: i.1 :: V.inputs f
+  let names : Renaming (V.inputs f) Γ := fun j => j.there.there
+  let a : Term V.signature Γ none := .var .here
+  let x : Term V.signature Γ i.1 := .var (.there .here)
+  Law.equality (V.updatedTerm names i (V.smulTerm i.1 a x))
+    (V.smulTerm (V.output f) a (V.updatedTerm names i x))
+
+/-- The names of the two required Laws at each written argument position. -/
+inductive LinearityLaw
+  | add (f : V.Multilinear) (position : V.Position f)
+  | smul (f : V.Multilinear) (position : V.Position f)
+
+/-- The multilinear symbol named in this required Law. -/
+def LinearityLaw.symbol : V.LinearityLaw → V.Multilinear
+  | .add f _ | .smul f _ => f
+
+/-- The SHIGURE equality imposed by each generated Law. -/
+noncomputable def LinearityLaw.statement : V.LinearityLaw → Law V.signature
+  | .add _ i => V.addLinearityLaw i
+  | .smul _ i => V.smulLinearityLaw i
+
+/-- Add the literal multilinearity Laws to the written Law declarations. -/
+noncomputable def withLinearity (written : LawDeclarations V.signature) : LawDeclarations V.signature where
+  LawName := written.LawName ⊕ V.LinearityLaw
+  statement := Sum.elim written.statement (LinearityLaw.statement V)
+  role := Sum.elim written.role (fun _ => .required)
+
 /-- The Law declarations and any derived proof data of a marked signature. -/
 structure Laws where
   /-- Proposition 3.6 permits arbitrary Laws over the declared operations. -/
   declarations : LawDeclarations V.signature
   /-- A derived Law keeps its original checked derivation. -/
   derived (i : declarations.LawName) : declarations.role i = .derived →
-    Derivation declarations.toTheory (declarations.statement i).input
+    Derivation (V.withLinearity declarations).toTheory (declarations.statement i).input
       (declarations.statement i).conclusion
 
-/-- The marked vocabulary and Laws form an ordinary declaration presentation. -/
-def presentation (L : V.Laws) : PrimitivePresentation.{u} where
+/-- The marked vocabulary includes the written and generated Laws in its ordinary presentation. -/
+noncomputable def presentation (L : V.Laws) : PrimitivePresentation.{u} where
   signature := V.signature
-  laws := L.declarations
-  derived := L.derived
+  laws := V.withLinearity L.declarations
+  derived
+    | .inl name => L.derived name
+    | .inr _ => fun h => nomatch h
+
+/-- Each generated statement is actually required in the ordinary presentation. -/
+theorem linearity_role (L : V.Laws) (name : V.LinearityLaw) :
+    (V.presentation L).laws.role (.inr name) = .required :=
+  rfl
+
+/-- The registered generated statement is the original equality Law. -/
+theorem linearity_statement (L : V.Laws) (name : V.LinearityLaw) :
+    (V.presentation L).laws.statement (.inr name) = LinearityLaw.statement V name :=
+  rfl
 
 /-- A coefficient operation as a declaration in this marked presentation. -/
 abbrev coefficientDecl (L : V.Laws) (f : CoefficientOp.{u}) : Declaration (V.presentation L) :=
@@ -124,6 +222,35 @@ abbrev moduleDecl (L : V.Laws) (s : V.SortName) (f : ModuleOp.{u} (V.generators 
 /-- A multilinear symbol as a declaration in this marked presentation. -/
 abbrev multilinearDecl (L : V.Laws) (f : V.Multilinear) : Declaration (V.presentation L) :=
   .total (Symbol.multilinear f)
+
+/-- The type of every input or result of a primitive coefficient operation is the coefficient sort. -/
+theorem coefficient_dependency (L : V.Laws) (f : CoefficientOp.{u}) :
+    Declaration.dependsOn (V.presentation L) (V.coefficientDecl L f) = {Declaration.sort none} := by
+  ext d
+  constructor
+  · rintro ⟨s, within, rfl⟩
+    have same : s = none := by
+      cases f <;> simpa [presentation, signature, arity] using within
+    rw [same]
+    exact Set.mem_singleton _
+  · intro kept
+    have same := Set.mem_singleton_iff.mp kept
+    subst d
+    cases f <;> exact ⟨none, List.mem_cons_self, rfl⟩
+
+/-- A module operation refers only to that module and the fixed coefficient sort. -/
+theorem module_dependencies (L : V.Laws) (s : V.SortName) (f : ModuleOp.{u} (V.generators s)) :
+    Declaration.dependsOn (V.presentation L) (V.moduleDecl L s f) ⊆
+      {Declaration.sort (some s), Declaration.sort none} := by
+  rintro _ ⟨t, occurs, rfl⟩
+  cases f <;> simp_all [presentation, signature, arity]
+  aesop
+
+/-- The references of a multilinear declaration are its declared input and output sorts. -/
+theorem multilinear_dependencies (L : V.Laws) (f : V.Multilinear) :
+    Declaration.dependsOn (V.presentation L) (V.multilinearDecl L f) =
+      Declaration.sorts (V.output f :: V.inputs f) :=
+  rfl
 
 variable {V} {L : V.Laws}
 
@@ -167,18 +294,18 @@ theorem BlockClosed.of_cover {U : DeclarationContext (V.presentation L)}
     obtain ⟨i, localKeep⟩ := cover.covers keep
     exact cover.subset i ((h i).moduleOp s localKeep f)
 
-/-- An input sort of a retained multilinear symbol is retained by ordinary dependency closure. -/
+/-- Any coefficient or module input of a retained multilinear symbol is retained. -/
 theorem multilinear_input_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}
     (kept : V.multilinearDecl L f ∈ U.declarations) (i : V.Position f) :
-    Declaration.sort (some i.1) ∈ U.declarations :=
+    Declaration.sort i.1 ∈ U.declarations :=
   DeclarationContext.operationInputs (P := V.presentation L) (U := U)
     (.total (Symbol.multilinear f)) kept
-    ⟨_, List.mem_map_of_mem i.2.sort_mem, rfl⟩
+    ⟨_, i.2.sort_mem, rfl⟩
 
-/-- A retained multilinear symbol forces retention of its output module sort. -/
+/-- A retained multilinear symbol forces retention of its coefficient or module result sort. -/
 theorem multilinear_output_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}
     (kept : V.multilinearDecl L f ∈ U.declarations) :
-    Declaration.sort (some (V.output f)) ∈ U.declarations :=
+    Declaration.sort (V.output f) ∈ U.declarations :=
   DeclarationContext.operationOutput (P := V.presentation L) (U := U)
     (.total (Symbol.multilinear f)) kept
 

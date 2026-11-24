@@ -86,8 +86,7 @@ noncomputable def e : Quotient sharedKernel :=
 /-- In positive coordinates the two named q generators are two and three times e. -/
 theorem shared_generators :
     generator sharedKernel 0 = (2 : ℚ) • e ∧ generator sharedKernel 1 = (3 : ℚ) • e := by
-  constructor <;> apply phi.injective <;>
-    simp [generator, smul_eq_mul]
+  constructor <;> rw [← projection_single] <;> apply phi.injective <;> simp [smul_eq_mul]
 
 /-- The q functional used on the changed right piece. -/
 def changedRow : Coordinates ℚ 2 →ₗ[ℚ] ℚ :=

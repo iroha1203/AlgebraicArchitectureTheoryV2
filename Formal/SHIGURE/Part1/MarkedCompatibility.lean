@@ -49,10 +49,10 @@ private theorem cast_generator {m : ℕ} {K J : Kernel R m} (h : K = J) (i : Fin
 private theorem cast_map_apply {f : V.Multilinear}
     {p q : OperationKernels (V := V) R f}
     (same : p = q) {F : p.Map} {G : q.Map} (maps : HEq F G)
-    (xs : ∀ i, Quotient (p.inputs i)) :
-    cast (congrArg (fun k : OperationKernels (V := V) R f => Quotient k.output) same) (F xs) =
+    (xs : ∀ i, SortCarrier R (p.inputs i)) :
+    cast (congrArg (fun k : OperationKernels (V := V) R f => SortCarrier R k.output) same) (F xs) =
       G (fun i : V.Position f => cast
-        (congrArg (fun k : OperationKernels (V := V) R f => Quotient (k.inputs i)) same) (xs i)) := by
+        (congrArg (fun k : OperationKernels (V := V) R f => SortCarrier R (k.inputs i)) same) (xs i)) := by
   subst q
   cases eq_of_heq maps
   rfl
@@ -109,7 +109,7 @@ theorem Agree.totalValue_cast (same : a.Agree b) (inside : W ≤ U)
     | generator i => exact cast_generator eq i
   | multilinear f =>
     exact cast_map_apply (same.ambientOperationKernels_eq (inside keep) keep)
-      (same.ambientOperation_heq (inside keep) keep) (fun i => xs (i.2.mapSorts some))
+      (same.ambientOperation_heq (inside keep) keep) (fun i => xs i.2)
 
 /-- The ordinary graphs of shared operations are the same after identifying their carriers. -/
 theorem Agree.graph_iff (same : a.Agree b) (inside : W ≤ U)
@@ -139,7 +139,7 @@ theorem Agree.contextStructure_restrict_eq (same : a.Agree b) (inside : W ≤ U)
     same.carrier_eq s (inside hs) hs
   let compare (s : Option V.SortName) (hs : Declaration.sort s ∈ W.declarations) :
       a.contextStructure.carrier s = b.contextStructure.carrier s := by
-    change selectedCarrier U a.carrier s = selectedCarrier W b.carrier s
+    rw [a.contextStructure_carrier s, b.contextStructure_carrier s]
     exact (selectedCarrier_kept (P := V.presentation L) (U := U) a.carrier (s := s) (inside hs)).trans
       ((c s hs).trans (selectedCarrier_kept (P := V.presentation L) (U := W) b.carrier (s := s) hs).symm)
   apply ContextStructure.restrict_eq_of_view a.contextStructure b.contextStructure inside compare
@@ -151,7 +151,7 @@ theorem Agree.contextStructure_restrict_eq (same : a.Agree b) (inside : W ≤ U)
   · intro op keep xs y
     rw [RestrictedEvaluation.pullback_graph, RestrictedEvaluation.pullback_graph,
       mapAssignment_id]
-    simp only [contextStructure, ContextStructure.ofStructure_graph_iff]
+    simp only [contextStructure_graph_iff]
     have align (s : Option V.SortName) (hs : Declaration.sort s ∈ W.declarations)
         (x : a.contextStructure.carrier s) :
         selectedMap W b.carrier s hs (cast (compare s hs) x) =
@@ -180,7 +180,7 @@ theorem Agree.contextStructure_restrict_eq (same : a.Agree b) (inside : W ≤ U)
 
 /-- Restriction of the data is one such agreement, with terms interpreted on the same values. -/
 theorem restrict_agree (a : Data R U) (inside : W ≤ U) : a.Agree (a.restrict inside) :=
-  ⟨fun _ _ _ => rfl, fun _ _ _ => HEq.rfl⟩
+  ⟨fun _ _ _ => rfl, fun f _ keep => (a.restrict_operation inside f keep).symm⟩
 
 /-- Interpreting and restricting the retained marked data commute strictly. -/
 theorem contextStructure_restrict (a : Data R U) (inside : W ≤ U) :

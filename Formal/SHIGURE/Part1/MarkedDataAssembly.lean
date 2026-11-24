@@ -45,12 +45,20 @@ theorem glueKernel_eq_piece (i : cover.Index) (s : V.SortName)
     A.glueKernel s (cover.subset i keep) = (A.piece i).kernel s keep :=
   (A.overlap (cover.index (cover.subset i keep)) i).kernel s (cover.mem_index (cover.subset i keep)) keep
 
+/-- A shared coefficient or module slot agrees with the original local slot. -/
+theorem glueKernelAt_eq_piece (i : cover.Index) (s : Option V.SortName)
+    (keep : Declaration.sort s ∈ (cover.piece i).declarations) :
+    kernelAt A.glueKernel s (cover.subset i keep) = kernelAt (A.piece i).kernel s keep := by
+  cases s with
+  | none => rfl
+  | some s => exact A.glueKernel_eq_piece i s keep
+
 /-- A retained local operation has the same input and output kernels after assembly. -/
 theorem glueOperationKernels_eq_piece (i : cover.Index) {f : V.Multilinear}
     (keep : V.multilinearDecl L f ∈ (cover.piece i).declarations) :
     operationKernels A.glueKernel (cover.subset i keep) = operationKernels (A.piece i).kernel keep :=
-  OperationKernels.ext (fun p => A.glueKernel_eq_piece i p.1 (V.multilinear_input_kept keep p))
-    (A.glueKernel_eq_piece i (V.output f) (V.multilinear_output_kept keep))
+  OperationKernels.ext (fun p => A.glueKernelAt_eq_piece i p.1 (V.multilinear_input_kept keep p))
+    (A.glueKernelAt_eq_piece i (V.output f) (V.multilinear_output_kept keep))
 
 /-- Assemble the canonical marked carriers and operation interpretations on the cover. -/
 noncomputable def glue : Data R U where

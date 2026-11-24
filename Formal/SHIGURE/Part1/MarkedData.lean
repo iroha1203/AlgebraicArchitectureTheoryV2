@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part1.MarkedQuotients
 import Formal.SHIGURE.Part1.MarkedVocabulary
+import Mathlib.LinearAlgebra.Multilinear.Basic
 
 /-! # Restricting marked kernels and operations
 
@@ -31,12 +32,39 @@ variable (R : Type u) [CommRing R]
 abbrev KernelFamily (U : DeclarationContext (V.presentation L)) :=
   ∀ s : V.SortName, Declaration.sort (some s) ∈ U.declarations → Kernel R (V.generators s)
 
+/-- Only a module sort needs a kernel. The coefficient carrier is already fixed by `R`. -/
+abbrev SortKernel (V : Vocabulary.{u}) (R : Type u) [CommRing R] : Option V.SortName → Type u
+  | none => PUnit
+  | some s => Kernel R (V.generators s)
+
+/-- Interpret a declared sort as the fixed coefficients or the canonical module quotient. -/
+abbrev SortCarrier {V : Vocabulary.{u}} {s : Option V.SortName} : SortKernel V R s → Type u :=
+  match s with
+  | none => fun _ => R
+  | some _ => Quotient
+
+/-- The coefficient ring and the canonical quotient both carry their existing addition. -/
+instance sortCarrierAddCommGroup {s : Option V.SortName} (K : SortKernel V R s) :
+    AddCommGroup (SortCarrier R K) := by
+  cases s <;> infer_instance
+
+/-- Both sorts use the native action of the fixed coefficient ring. -/
+instance sortCarrierModule {s : Option V.SortName} (K : SortKernel V R s) :
+    Module R (SortCarrier R K) := by
+  cases s <;> infer_instance
+
+/-- The appropriate kernel data at a retained coefficient or module sort. -/
+def kernelAt {R : Type u} [CommRing R] (K : KernelFamily R U) :
+    (s : Option V.SortName) → Declaration.sort s ∈ U.declarations → SortKernel V R s
+  | none, _ => ⟨⟩
+  | some s, keep => K s keep
+
 /-- The kernels used to type one multilinear operation. -/
 structure OperationKernels (f : V.Multilinear) where
-  /-- There is one input kernel per argument position. -/
-  inputs (i : V.Position f) : Kernel R (V.generators i.1)
-  /-- The kernel of the result's marked quotient. -/
-  output : Kernel R (V.generators (V.output f))
+  /-- There is one slot per argument position, including coefficient positions. -/
+  inputs (i : V.Position f) : SortKernel V R i.1
+  /-- The result slot uses the fixed coefficient ring or a quotient. -/
+  output : SortKernel V R (V.output f)
 
 namespace OperationKernels
 
@@ -44,7 +72,7 @@ variable {R} {f : V.Multilinear}
 
 /-- These kernels determine the exact mathlib multilinear map type. -/
 abbrev Map (profile : OperationKernels (V := V) R f) :=
-  MultilinearMap R (fun i => Quotient (profile.inputs i)) (Quotient profile.output)
+  MultilinearMap R (fun i => SortCarrier R (profile.inputs i)) (SortCarrier R profile.output)
 
 /-- Equality is determined by the typed input and output kernels. -/
 @[ext] theorem ext {a b : OperationKernels (V := V) R f}
@@ -61,8 +89,8 @@ end OperationKernels
 def operationKernels {R : Type u} [CommRing R] (K : KernelFamily R U) {f : V.Multilinear}
     (keep : V.multilinearDecl L f ∈ U.declarations) :
     OperationKernels (V := V) R f where
-  inputs i := K i.1 (V.multilinear_input_kept keep i)
-  output := K (V.output f) (V.multilinear_output_kept keep)
+  inputs i := kernelAt K i.1 (V.multilinear_input_kept keep i)
+  output := kernelAt K (V.output f) (V.multilinear_output_kept keep)
 
 /-- The kernel and multilinear interpretation data of Proposition 3.6. -/
 structure Data (U : DeclarationContext (V.presentation L)) where
@@ -86,12 +114,21 @@ structure Agree (a : Data R U) (b : Data R W) : Prop where
     (right : V.multilinearDecl L f ∈ W.declarations) :
     HEq (a.operation f left) (b.operation f right)
 
+/-- At the coefficient sort there is no kernel choice, and at shared module sorts the kernels agree. -/
+theorem Agree.kernelAt_eq {a : Data R U} {b : Data R W} (h : a.Agree b)
+    (s : Option V.SortName) (left : Declaration.sort s ∈ U.declarations)
+    (right : Declaration.sort s ∈ W.declarations) :
+    kernelAt a.kernel s left = kernelAt b.kernel s right := by
+  cases s with
+  | none => rfl
+  | some s => exact h.kernel s left right
+
 /-- Agreement of kernels identifies the full input and output profile of a shared symbol. -/
 theorem Agree.operationKernels_eq {a : Data R U} {b : Data R W} (h : a.Agree b)
     {f : V.Multilinear} (left : V.multilinearDecl L f ∈ U.declarations)
     (right : V.multilinearDecl L f ∈ W.declarations) :
     operationKernels a.kernel left = operationKernels b.kernel right :=
-  OperationKernels.ext (fun i => h.kernel i.1 _ _) (h.kernel (V.output f) _ _)
+  OperationKernels.ext (fun i => h.kernelAt_eq i.1 _ _) (h.kernelAt_eq (V.output f) _ _)
 
 /-- The overlap agreement is equality of the maps transported by the actual kernel equality. -/
 theorem Agree.cast_operation {a : Data R U} {b : Data R W} (h : a.Agree b)
@@ -101,10 +138,22 @@ theorem Agree.cast_operation {a : Data R U} {b : Data R W} (h : a.Agree b)
       (a.operation f left) = b.operation f right :=
   eq_of_heq ((cast_heq _ _).trans (h.operation f left right))
 
+private theorem kernelAt_restrict (K : KernelFamily R U) (inside : W ≤ U) (s : Option V.SortName)
+    (keep : Declaration.sort s ∈ W.declarations) :
+    kernelAt (fun t ht => K t (inside ht)) s keep = kernelAt K s (inside keep) := by
+  cases s <;> rfl
+
+private theorem operationKernels_restrict (K : KernelFamily R U) (inside : W ≤ U) {f : V.Multilinear}
+    (keep : V.multilinearDecl L f ∈ W.declarations) :
+    operationKernels (fun s hs => K s (inside hs)) keep = operationKernels K (inside keep) :=
+  OperationKernels.ext (fun i => kernelAt_restrict K inside i.1 _)
+    (kernelAt_restrict K inside (V.output f) _)
+
 /-- Restriction keeps only the declared kernel and multilinear data. -/
 def restrict (a : Data R U) (inside : W ≤ U) : Data R W where
   kernel s keep := a.kernel s (inside keep)
-  operation f keep := a.operation f (inside keep)
+  operation f keep := cast (congrArg OperationKernels.Map (operationKernels_restrict a.kernel inside keep).symm)
+    (a.operation f (inside keep))
 
 /-- Restriction keeps exactly the original kernel at a retained module sort. -/
 theorem restrict_kernel (a : Data R U) (inside : W ≤ U) (s : V.SortName)
@@ -116,7 +165,7 @@ theorem restrict_kernel (a : Data R U) (inside : W ≤ U) (s : V.SortName)
 theorem restrict_operation (a : Data R U) (inside : W ≤ U) (f : V.Multilinear)
     (keep : V.multilinearDecl L f ∈ W.declarations) :
     HEq ((a.restrict inside).operation f keep) (a.operation f (inside keep)) :=
-  HEq.rfl
+  cast_heq _ _
 
 /-- Data at a fixed context are determined by their kernels and operation interpretations. -/
 @[ext] theorem ext {a b : Data R U}

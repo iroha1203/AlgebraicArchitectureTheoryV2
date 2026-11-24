@@ -7,6 +7,13 @@ import Formal.SHIGURE.Part1.MarkedRationalQuotients
 The coordinate isomorphisms identify p and r with the single rational
 coordinate and q with either of the two specified quotient coordinates.
 The four named operations are actual linear maps in these coordinates.
+
+## Implementation notes
+
+Build each unary multilinear map directly on its dependent argument
+family. Mathlib's constant-family unary comparison would first require
+an equality of that family with a constant type. The written position
+already determines the one input to the given linear map.
 -/
 
 namespace SHIGURE.Marked.RationalExample
@@ -71,17 +78,6 @@ theorem v_formula {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) (basis
     rw [map_smul, basisCoord, smul_eq_mul, mul_one]
     ring)
 
-/-- The one written argument position of the operation. -/
-def argument (name : Op) : vocabulary.Position name :=
-  ⟨name.source, .here⟩
-
-private theorem argument_eq (name : Op) (i : vocabulary.Position name) : i = argument name := by
-  obtain ⟨s, var⟩ := i
-  change Var [name.source] s at var
-  cases var with
-  | here => rfl
-  | there i => cases i
-
 /-- The typed unary linear operation is multilinear on the one declared position. -/
 noncomputable def multilinearOperation {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) (name : Op) :
     (kernelsOf (V := vocabulary) (kernels K) name).Map where
@@ -96,7 +92,7 @@ noncomputable def multilinearOperation {K : Kernel ℚ 2} (coord : Quotient K �
 /-- Evaluation of a typed unary map reads its linear map at its one argument. -/
 theorem multilinearOperation_apply {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ)
     (name : Op) (inputs : ∀ i,
-      Quotient ((kernelsOf (V := vocabulary) (kernels K) name).inputs i)) :
+      SortCarrier ℚ ((kernelsOf (V := vocabulary) (kernels K) name).inputs i)) :
     multilinearOperation coord name inputs = linearOperation coord name (inputs (argument name)) :=
   rfl
 
@@ -117,26 +113,34 @@ theorem unary_totalValue {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ)
 /-- Both left round trips and both right round trips are the identity on their full carriers. -/
 theorem all_roundTrips {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) (name : Op) :
     (roundTrip name).Holds (coordinateStructure coord) := by
-  cases name <;> simp only [roundTrip, Law.holds_equality_totalValue_iff, unary_totalValue, Term.totalValue_var]
-  · intro xs
+  cases name with
+  | f =>
+    simp only [roundTrip_f, Law.holds_equality_totalValue_iff, unary_totalValue, Term.totalValue_var]
+    intro xs
     apply (coordinates coord .q).injective
     exact (coordinate_linearOperation coord .f _).trans
       ((congrArg (factor .f * ·) (coordinate_linearOperation coord .g (xs .here))).trans (by
         change 2 * ((1 / 2 : ℚ) * coord (xs .here)) = coord (xs .here)
         ring))
-  · intro xs
+  | g =>
+    simp only [roundTrip_g, Law.holds_equality_totalValue_iff, unary_totalValue, Term.totalValue_var]
+    intro xs
     apply (coordinates coord .p).injective
     exact (coordinate_linearOperation coord .g _).trans
       ((congrArg (factor .g * ·) (coordinate_linearOperation coord .f (xs .here))).trans (by
         change (1 / 2 : ℚ) * (2 * unitEquiv (xs .here)) = unitEquiv (xs .here)
         ring))
-  · intro xs
+  | u =>
+    simp only [roundTrip_u, Law.holds_equality_totalValue_iff, unary_totalValue, Term.totalValue_var]
+    intro xs
     apply (coordinates coord .r).injective
     exact (coordinate_linearOperation coord .u _).trans
       ((congrArg (factor .u * ·) (coordinate_linearOperation coord .v (xs .here))).trans (by
         change 3 * ((1 / 3 : ℚ) * unitEquiv (xs .here)) = unitEquiv (xs .here)
         ring))
-  · intro xs
+  | v =>
+    simp only [roundTrip_v, Law.holds_equality_totalValue_iff, unary_totalValue, Term.totalValue_var]
+    intro xs
     apply (coordinates coord .q).injective
     exact (coordinate_linearOperation coord .v _).trans
       ((congrArg (factor .v * ·) (coordinate_linearOperation coord .u (xs .here))).trans (by
@@ -147,7 +151,14 @@ theorem all_roundTrips {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) (
 noncomputable def coordinateData (C : DeclarationContext presentation) {K : Kernel ℚ 2}
     (coord : Quotient K ≃ₗ[ℚ] ℚ) : Data ℚ C where
   kernel s _ := kernels K s
-  operation name _ := multilinearOperation coord name
+  operation name keep := cast (congrArg OperationKernels.Map (operationKernels_complete (kernels K) keep).symm)
+    (multilinearOperation coord name)
+
+/-- Interpreting one retained symbol uses the indicated linear map. -/
+theorem coordinateData_operation (C : DeclarationContext presentation) {K : Kernel ℚ 2}
+    (coord : Quotient K ≃ₗ[ℚ] ℚ) (name : Op) (keep : vocabulary.multilinearDecl laws name ∈ C.declarations) :
+    HEq ((coordinateData C coord).operation name keep) (multilinearOperation coord name) :=
+  cast_heq _ _
 
 /-- The full-context calculation agrees with the explicit numerical interpretations. -/
 theorem coordinateData_full_structure {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) :
@@ -156,12 +167,25 @@ theorem coordinateData_full_structure {K : Kernel ℚ 2} (coord : Quotient K ≃
   · funext s
     exact (coordinateData (DeclarationContext.full presentation) coord).ambientKernel_kept (Set.mem_univ _)
   · intro name
-    exact (coordinateData (DeclarationContext.full presentation) coord).ambientOperation_kept (Set.mem_univ _)
+    exact ((coordinateData (DeclarationContext.full presentation) coord).ambientOperation_kept (Set.mem_univ _)).trans
+      (coordinateData_operation _ coord name (Set.mem_univ _))
 
 /-- Restricting these written data keeps exactly the interpretations of the smaller context. -/
 theorem coordinateData_restrict {C D : DeclarationContext presentation} (inside : D ≤ C)
     {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) :
-    (coordinateData C coord).restrict inside = coordinateData D coord :=
-  rfl
+    (coordinateData C coord).restrict inside = coordinateData D coord := by
+  apply Data.ext
+  · intro s keep
+    rfl
+  · intro name keep
+    exact ((coordinateData C coord).restrict_operation inside name keep).trans
+      ((coordinateData_operation C coord name (inside keep)).trans (coordinateData_operation D coord name keep).symm)
+
+/-- The same indicated coordinate on two pieces gives actual overlap agreement. -/
+theorem coordinateData_agree (C D : DeclarationContext presentation)
+    {K : Kernel ℚ 2} (coord : Quotient K ≃ₗ[ℚ] ℚ) : (coordinateData C coord).Agree (coordinateData D coord) where
+  kernel _ _ _ := rfl
+  operation name left right :=
+    (coordinateData_operation C coord name left).trans (coordinateData_operation D coord name right).symm
 
 end SHIGURE.Marked.RationalExample

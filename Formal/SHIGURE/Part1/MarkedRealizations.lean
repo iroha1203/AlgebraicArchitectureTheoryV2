@@ -73,7 +73,7 @@ theorem restrict_model (A : Realization R U) (inside : W ≤ U) (blocks : BlockC
     (A.restrict inside blocks).model = A.model.restrict inside :=
   ObjectProperty.FullSubcategory.ext (A.data.contextStructure_restrict inside).symm
 
-/-- The two proofs of the realization conditions do not affect the chosen data. -/
+/-- The block, rank and Law proofs are determined up to proof irrelevance by the marked data. -/
 @[ext] theorem ext {A B : Realization R U} (same : A.data = B.data) : A = B := by
   cases A
   cases B
@@ -151,9 +151,8 @@ theorem glue_ordinaryModel :
   · intro i
     have localEq := congrArg Realization.model (A.glue_restrict i)
     rw [Realization.restrict_model] at localEq
-    change Selected.readModel ((Selected.writeModel (Selected.readModel A.glue.model)).restrict (cover.subset i)) =
-      Selected.readModel (A.piece i).model
-    rw [Selected.write_read_model, localEq]
+    rw [Selected.modelRestriction_obj, Realization.ordinaryModel, Selected.write_read_model, localEq]
+    rfl
   · intro i
     exact congrArg (fun B => B.pieceModel i) (cover.ordinaryGlue_read A.ordinaryMatch)
 

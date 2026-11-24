@@ -32,11 +32,9 @@ def coefficients (L : V.Laws) : DeclarationContext (V.presentation L) where
     · subst same
       exact Set.empty_subset _
     · subst same
-      rintro _ ⟨s, occurs, rfl⟩
-      left
-      have eq : s = none := by
-        cases f <;> simpa [presentation, signature, arity] using occurs
-      rw [eq]
+      intro d used
+      rw [V.coefficient_dependency] at used
+      exact Or.inl (Set.mem_singleton_iff.mp used)
 
 /-- Retaining the coefficient block makes the fixed scalar context available. -/
 theorem coefficients_le (kept : RetainsCoefficients U) : coefficients L ≤ U := by
@@ -74,9 +72,7 @@ theorem Realization.coefficient_restriction (A : Realization R U) (kept : Retain
     ((Selected.modelRestriction (coefficients_le kept)).obj A.ordinaryModel).obj = coefficientStructure R L := by
   have agree : A.data.Agree (coefficientData R L) :=
     ⟨fun s _ hs => (no_module s hs).elim, fun f _ hf => (no_multilinear f hf).elim⟩
-  change Selected.readStructure ((Selected.writeModel (Selected.readModel A.model)).restrict
-    (coefficients_le kept)).obj = _
-  rw [Selected.write_read_model]
+  rw [Selected.modelRestriction_obj, Realization.ordinaryModel, Selected.write_read_model]
   exact congrArg Selected.readStructure (agree.contextStructure_restrict_eq (coefficients_le kept))
 
 /-- Each retained module guarantees the fixed scalar reduct by its block condition. -/

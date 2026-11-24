@@ -25,15 +25,32 @@ open Vocabulary DeclarationContext
 variable {V : Vocabulary.{u}} {L : V.Laws} {R : Type u} [CommRing R]
 variable {U W : DeclarationContext (V.presentation L)}
 
+/-- The complete coefficient and module slots given a family of module kernels. -/
+def completeKernelAt (K : ∀ s : V.SortName, Kernel R (V.generators s)) :
+    (s : Option V.SortName) → SortKernel V R s
+  | none => ⟨⟩
+  | some s => K s
+
 /-- The carrier family determined by a coefficient ring and a kernel per module sort. -/
-abbrev quotientCarriers (K : ∀ s : V.SortName, Kernel R (V.generators s)) : Option V.SortName → Type u
-  | none => R
-  | some s => Quotient (K s)
+abbrev quotientCarriers (K : ∀ s : V.SortName, Kernel R (V.generators s)) (s : Option V.SortName) : Type u :=
+  SortCarrier R (completeKernelAt K s)
 
 /-- The input and output kernels of a symbol in a complete family of quotients. -/
 def kernelsOf (K : ∀ s : V.SortName, Kernel R (V.generators s)) (f : V.Multilinear) :
     OperationKernels (V := V) R f :=
-  ⟨fun i => K i.1, K (V.output f)⟩
+  ⟨fun i => completeKernelAt K i.1, completeKernelAt K (V.output f)⟩
+
+private theorem kernelAt_complete (K : ∀ s : V.SortName, Kernel R (V.generators s)) (s : Option V.SortName)
+    (kept : Declaration.sort s ∈ U.declarations) :
+    kernelAt (fun t _ => K t) s kept = completeKernelAt K s := by
+  cases s <;> rfl
+
+/-- Reading a complete family at the retained slots gives the same operation map type. -/
+theorem operationKernels_complete (K : ∀ s : V.SortName, Kernel R (V.generators s)) {f : V.Multilinear}
+    (kept : V.multilinearDecl L f ∈ U.declarations) :
+    operationKernels (fun s _ => K s) kept = kernelsOf K f :=
+  OperationKernels.ext (fun i => kernelAt_complete K i.1 _)
+    (kernelAt_complete K (V.output f) _)
 
 private def operationValue (K : ∀ s : V.SortName, Kernel R (V.generators s))
     (maps : ∀ f, (kernelsOf K f).Map) :
@@ -49,7 +66,7 @@ private def operationValue (K : ∀ s : V.SortName, Kernel R (V.generators s))
   | .moduleOp s .neg => fun xs => -(xs .here : Quotient (K s))
   | .moduleOp s .smul => fun xs => (xs .here : R) • (xs (.there .here) : Quotient (K s))
   | .moduleOp s (.generator i) => fun _ => generator (K s) i
-  | .multilinear f => fun xs => maps f (fun i => xs (i.2.mapSorts some))
+  | .multilinear f => fun xs => maps f (fun i => xs i.2)
 
 /-- The ordinary SHIGURE structure of a family of canonical quotients and typed maps. -/
 def quotientStructure (K : ∀ s : V.SortName, Kernel R (V.generators s))
@@ -66,7 +83,7 @@ theorem quotientStructure_total_multilinear (K : ∀ s : V.SortName, Kernel R (V
     (maps : ∀ f, (kernelsOf K f).Map) (f : V.Multilinear)
     (xs : Assignment (quotientCarriers K) (V.arity (.multilinear f)).inputs) :
     (quotientStructure K maps).total (.multilinear f) xs =
-      maps f (fun i => xs (i.2.mapSorts some)) :=
+      maps f (fun i => xs i.2) :=
   rfl
 
 /-- Equality of kernels and transported maps determines the canonical ordinary structure. -/
@@ -106,6 +123,14 @@ theorem carrier_module (a : Data R U) {s : V.SortName}
     (keep : Declaration.sort (some s) ∈ U.declarations) : a.carrier (some s) = Quotient (a.kernel s keep) :=
   congrArg Quotient (a.ambientKernel_kept keep)
 
+/-- The complete ambient slot agrees with the original kernel data at a retained sort. -/
+theorem ambientKernelAt_kept (a : Data R U) (s : Option V.SortName)
+    (keep : Declaration.sort s ∈ U.declarations) :
+    completeKernelAt a.ambientKernel s = kernelAt a.kernel s keep := by
+  cases s with
+  | none => rfl
+  | some s => exact a.ambientKernel_kept keep
+
 /-- The ambient input and result kernels of a multilinear operation. -/
 noncomputable def ambientOperationKernels (a : Data R U) (f : V.Multilinear) : OperationKernels (V := V) R f :=
   kernelsOf a.ambientKernel f
@@ -114,8 +139,8 @@ noncomputable def ambientOperationKernels (a : Data R U) (f : V.Multilinear) : O
 theorem ambientOperationKernels_kept (a : Data R U) {f : V.Multilinear}
     (keep : V.multilinearDecl L f ∈ U.declarations) :
     a.ambientOperationKernels f = operationKernels a.kernel keep :=
-  OperationKernels.ext (fun i => a.ambientKernel_kept (V.multilinear_input_kept keep i))
-    (a.ambientKernel_kept (V.multilinear_output_kept keep))
+  OperationKernels.ext (fun i => a.ambientKernelAt_kept i.1 (V.multilinear_input_kept keep i))
+    (a.ambientKernelAt_kept (V.output f) (V.multilinear_output_kept keep))
 
 /-- Read the actual multilinear map at a retained symbol, with zero on omitted symbols. -/
 noncomputable def ambientOperation (a : Data R U) (f : V.Multilinear) : (a.ambientOperationKernels f).Map := by
@@ -149,6 +174,21 @@ theorem structure_total (a : Data R U) (f : V.Symbol) (xs : Assignment a.carrier
 /-- The selected context structure reads just the retained part of the marked value data. -/
 noncomputable def contextStructure (a : Data R U) : ContextStructure U :=
   ContextStructure.ofStructure U a.structureData
+
+/-- The context carrier keeps the marked structure on the selected declared sorts. -/
+theorem contextStructure_carrier (a : Data R U) (s : Option V.SortName) :
+    a.contextStructure.carrier s = selectedCarrier U a.carrier s :=
+  rfl
+
+/-- A retained value graph is read on the original quotient and coefficient values. -/
+theorem contextStructure_graph_iff (a : Data R U) (op : Operation V.signature)
+    (keep : Declaration.ofOperation (P := V.presentation L) op ∈ U.declarations)
+    (e : Assignment a.contextStructure.carrier op.arity.inputs) (y : a.contextStructure.carrier op.arity.output) :
+    a.contextStructure.evaluation.graph op keep e y ↔ a.structureData.Graph op
+      (mapAssignment (selectedMap U a.structureData.carrier)
+        (operationInputs (P := V.presentation L) (U := U) op keep) e)
+      (selectedMap U a.structureData.carrier _ (operationOutput (P := V.presentation L) (U := U) op keep) y) :=
+  ContextStructure.ofStructure_graph_iff U a.structureData op keep e y
 
 /-- The semantic reading of a supported Law is its ordinary satisfaction on the marked values. -/
 theorem contextStructure_satisfies_iff (a : Data R U) (law : Law V.signature)

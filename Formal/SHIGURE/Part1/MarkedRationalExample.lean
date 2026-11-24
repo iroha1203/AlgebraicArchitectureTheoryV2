@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part1.MarkedRationalOperations
 import Formal.SHIGURE.Part1.MarkedRealizations
+import Formal.SHIGURE.Part1.MarkedLinearity
 
 /-! # Strict gluing and failure for the rational marked modules
 
@@ -7,6 +8,14 @@ Example 3.7 supplies each piece with its own marked data and Laws. With
 the kernel of Equation (3.5) on both pieces there is a unique assembly.
 Replacing the right q kernel preserves both right Laws, but rules out
 a mark-preserving identification and hence a shared marked realization.
+
+## Implementation notes
+
+Give each piece its own retained data with the selected q coordinate.
+For a round-trip Law, evaluate its terms in the full coordinate structure
+to avoid separate proofs for the erased slots of each piece, and transport
+that calculation by restriction. The local data are supplied before any
+gluing, and its generated multilinearity Laws follow from the actual maps.
 -/
 
 namespace SHIGURE.Marked.RationalExample
@@ -26,9 +35,13 @@ noncomputable def localRealization (right : Bool) {K : Kernel ℚ 2}
     have localSupport := Declaration.lawBody_subset_of_mem name.property
     have fullSupport : Declaration.lawBody (P := presentation) law ⊆ whole.declarations := Set.subset_univ _
     have primitiveHolds : law.Holds fullData.structureData := by
-      change (roundTrip name.val.val).Holds (coordinateData whole coord).structureData
-      rw [coordinateData_full_structure]
-      exact all_roundTrips coord name.val.val
+      change (presentation.laws.statement name.val.val).Holds fullData.structureData
+      cases h : name.val.val with
+      | inl roundTripName =>
+        change (roundTrip roundTripName).Holds (coordinateData whole coord).structureData
+        rw [coordinateData_full_structure]
+        exact all_roundTrips coord roundTripName
+      | inr linearity => exact holds_linearity fullData linearity
     have fullHolds := (fullData.contextStructure_satisfies_iff law fullSupport).2 primitiveHolds
     have localHolds := (fullData.contextStructure.restrict_satisfies_iff (cover.subset right) law localSupport).2 fullHolds
     rw [fullData.contextStructure_restrict, coordinateData_restrict] at localHolds
@@ -37,7 +50,7 @@ noncomputable def localRealization (right : Bool) {K : Kernel ℚ 2}
 /-- Both pieces independently use the concrete positive marked data. -/
 noncomputable def positiveFamily : MatchingRealizations ℚ cover where
   piece right := localRealization right phi
-  overlap _ _ := ⟨fun _ _ _ => rfl, fun _ _ _ => HEq.rfl⟩
+  overlap left right := coordinateData_agree (cover.piece left) (cover.piece right) phi
 
 /-- The positive gluing is the actual result of Proposition 3.6. -/
 noncomputable def assembled : Realization ℚ (DeclarationContext.full presentation) :=
@@ -50,7 +63,12 @@ theorem assembled_restricts (right : Bool) :
 
 /-- All four written round-trip Laws hold in the assembled global marked structure. -/
 theorem assembled_all_laws (name : Op) : (roundTrip name).Holds assembled.data.structureData :=
-  assembled.holds ⟨⟨name, rfl⟩, Set.mem_univ _⟩
+  assembled.holds ⟨⟨.inl name, rfl⟩, Set.mem_univ _⟩
+
+/-- The ordinary theory's generated equality Laws also hold after marked assembly. -/
+theorem assembled_all_linearity (name : vocabulary.LinearityLaw) :
+    (presentation.laws.statement (.inr name)).Holds assembled.data.structureData :=
+  assembled.holds ⟨⟨.inr name, rfl⟩, Set.mem_univ _⟩
 
 /-- Equation (3.5) is the shared kernel of the actual positive assembly. -/
 theorem assembled_q_kernel (kept : Declaration.sort (some SortName.q) ∈
@@ -68,8 +86,14 @@ theorem positive_existsUnique :
 theorem changed_right_laws :
     (roundTrip .u).Holds (localRealization true phiChanged).data.structureData ∧
       (roundTrip .v).Holds (localRealization true phiChanged).data.structureData :=
-  ⟨(localRealization true phiChanged).holds ⟨⟨.u, rfl⟩, rfl⟩,
-    (localRealization true phiChanged).holds ⟨⟨.v, rfl⟩, rfl⟩⟩
+  ⟨(localRealization true phiChanged).holds ⟨⟨.inl .u, rfl⟩, rfl⟩,
+    (localRealization true phiChanged).holds ⟨⟨.inl .v, rfl⟩, rfl⟩⟩
+
+/-- The changed right kernel directly fails the agreement predicate on the shared q sort. -/
+theorem changed_overlap_not_agree :
+    ¬ (localRealization false phi).data.Agree (localRealization true phiChanged).data := by
+  intro agrees
+  exact sharedKernel_ne_changedKernel (agrees.kernel .q True.intro True.intro)
 
 /-- The changed right piece cannot be glued to the original left piece. -/
 theorem no_glue_changed :
@@ -87,6 +111,12 @@ def qSortAlone : DeclarationContext presentation where
     have same := Set.mem_singleton_iff.mp kept
     subst same
     exact Set.empty_subset _
+
+/-- The dependency-closed context of q alone omits the fixed coefficient sort. -/
+theorem qSortAlone_not_retainsCoefficients : ¬ RetainsCoefficients qSortAlone := by
+  intro retained
+  have impossible := Set.mem_singleton_iff.mp retained.sort
+  cases impossible
 
 /-- Such a context fails the extra module block condition of Proposition 3.6. -/
 theorem qSortAlone_not_blockClosed : ¬ BlockClosed qSortAlone := by
