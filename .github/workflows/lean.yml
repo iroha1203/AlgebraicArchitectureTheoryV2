@@ -241,30 +241,16 @@ jobs:
 
       - name: Check SHIGURE imports
         if: steps.shigure-changes.outputs.run == 'true'
-        id: shigure-imports
         run: |
           imports_file="$RUNNER_TEMP/shigure-mathlib-imports"
           lean --run .github/lean_quality/check_shigure_imports.lean --mathlib-imports > "$imports_file"
           # The declaration checker fixtures also import NormNum directly.
           printf '%s\n' Mathlib.Tactic.NormNum >> "$imports_file"
           sort -u -o "$imports_file" "$imports_file"
-          sha="$(sha256sum "$imports_file" | cut -d ' ' -f 1)"
-          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
-
-      - name: Restore SHIGURE build cache
-        if: steps.shigure-changes.outputs.run == 'true'
-        id: shigure-cache
-        uses: actions/cache/restore@v5
-        with:
-          path: |
-            .lake/packages
-            .lake/build
-          key: shigure-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json') }}-${{ steps.shigure-imports.outputs.sha }}-${{ github.sha }}
-          restore-keys: |
-            shigure-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json') }}-${{ steps.shigure-imports.outputs.sha }}-
+          git ls-files -z -- ':(glob)Formal/SHIGURE/**/*.lean' Formal/SHIGURE.lean > "$RUNNER_TEMP/shigure-files"
 
       - name: Fetch SHIGURE Mathlib dependencies
-        if: steps.shigure-changes.outputs.run == 'true' && steps.shigure-cache.outputs.cache-matched-key == ''
+        if: steps.shigure-changes.outputs.run == 'true'
         run: |
           # Lake can use the pinned Mathlib checkout without downloading its history.
           if [[ ! -e .lake/packages/mathlib ]]; then
@@ -283,7 +269,17 @@ jobs:
 
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'
-        run: lake build +Formal.SHIGURE
+        run: |
+          targets=(+Formal.SHIGURE)
+          while IFS= read -r -d '' file; do
+            case "$file" in
+              Formal/SHIGURE.lean|Formal/SHIGURE/AxiomAudit.lean|Formal/SHIGURE/AssertStandardAxiomsTest.lean)
+                continue ;;
+            esac
+            module="${file%.lean}"
+            targets+=("+${module//\//.}")
+          done < "$RUNNER_TEMP/shigure-files"
+          lake build "${targets[@]}"
 
       - name: Check SHIGURE syntax and declaration dependencies
         if: steps.shigure-changes.outputs.run == 'true'
@@ -292,12 +288,12 @@ jobs:
           checker_dir="$(mktemp -d "$RUNNER_TEMP/shigure-checker.XXXXXX")"
           lake env lean -o "$checker_dir/ShigureDeclarationCheck.olean" .github/lean_quality/check_shigure_declarations.lean
           printf 'import ShigureDeclarationCheck\n' > "$checker_dir/Run.lean"
-          # Separate workers release each file's elaboration environment when they exit.
-          git ls-files -z -- ':(glob)Formal/SHIGURE/**/*.lean' Formal/SHIGURE.lean |
-            lake env bash -c '
-              export LEAN_PATH="$1:$LEAN_PATH"
+          lake env bash -e -o pipefail -c '
+            export LEAN_PATH="$1:$LEAN_PATH"
+            xargs -0 -r lean --run "$1/Run.lean" --compiled < "$2"
+            xargs -0 -r lean --run "$1/Run.lean" --select-source-checks < "$2" |
               xargs -0 -r -n 1 -P "$(nproc)" -t lean -j 1 --run "$1/Run.lean"
-            ' bash "$checker_dir"
+          ' bash "$checker_dir" "$RUNNER_TEMP/shigure-files"
           bash .github/lean_quality/test_shigure_declarations.sh
 
       - name: Audit SHIGURE kernel dependencies
@@ -306,15 +302,3 @@ jobs:
           test "$(grep -v '^[[:space:]]*$' Formal/SHIGURE/AxiomAudit.lean | tail -n 1)" = '#shigure_assert_standard_axioms_only SHIGURE.AxiomAudit'
           lake env lean Formal/SHIGURE/AssertStandardAxiomsTest.lean
           lake env lean Formal/SHIGURE/AxiomAudit.lean
-
-      - name: Save SHIGURE build cache
-        if: >
-          steps.shigure-changes.outputs.run == 'true' &&
-          steps.shigure-cache.outputs.cache-hit != 'true' &&
-          (steps.shigure-cache.outputs.cache-matched-key == '' || github.event_name == 'push')
-        uses: actions/cache/save@v5
-        with:
-          path: |
-            .lake/packages
-            .lake/build
-          key: ${{ steps.shigure-cache.outputs.cache-primary-key }}

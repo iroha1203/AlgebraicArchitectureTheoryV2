@@ -110,4 +110,31 @@ if check_audit_fixture >"$tmp/diagnostics" 2>&1; then
 fi
 grep -Fq 'the final command must run the SHIGURE audit at top level' "$tmp/diagnostics"
 
+cat >"$tmp/CompiledAccepted.lean" <<'LEAN'
+theorem checkedTogether : True := True.intro
+LEAN
+cat >"$tmp/CompiledRejected.lean" <<'LEAN'
+private axiom nonstandard : False
+theorem compiledDependency : False := nonstandard
+LEAN
+lake env bash -e -c '
+  cd "$1"
+  export LEAN_PATH="$LEAN_PATH:$PWD"
+  lean -o CompiledAccepted.olean CompiledAccepted.lean
+  lean -o CompiledRejected.olean CompiledRejected.lean
+  lean --run "$2" --compiled CompiledAccepted.lean
+  if lean --run "$2" --compiled CompiledAccepted.lean CompiledRejected.lean > diagnostics 2>&1; then
+    echo "SHIGURE compiled declaration checker accepted a nonstandard assumption" >&2
+    exit 1
+  fi
+  grep -Eq "nonstandard kernel assumption .*CompiledRejected.*nonstandard" diagnostics
+' bash "$tmp" "$PWD/$checker"
+
+lake env lean --run "$checker" --select-source-checks \
+  "$tmp/CompiledAccepted.lean" "$tmp/Rejected.lean" "$tmp/Anonymous.lean" \
+  "$tmp/AnonymousReduction.lean" "$audit_fixture" |
+  tr '\0' '\n' >"$tmp/selected"
+printf '%s\n' "$tmp/Rejected.lean" "$tmp/Anonymous.lean" \
+  "$tmp/AnonymousReduction.lean" "$audit_fixture" | diff -u - "$tmp/selected"
+
 echo "SHIGURE declaration checker fixtures passed."
