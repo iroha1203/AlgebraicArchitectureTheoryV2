@@ -435,12 +435,17 @@ private def lawModelScheme : CoefficientScheme modelContext lawModelBase where
 
 /-- With the same coefficients and rule, the required relation distinguishes two realizations. -/
 theorem coefficient_scheme_evaluates_required_law (R : CoefficientAlgebra lawModelBase) :
-    lawModelScheme.IsModel R true ∧ ¬ lawModelScheme.IsModel R false := by
+    lawModelScheme.IsPointModel R true ∧ ¬ lawModelScheme.IsPointModel R false := by
   constructor
   · intro name kept e holds
     exact Set.mem_univ _
   · intro model
     exact (model ⟨(), rfl⟩ (Set.mem_univ _) Assignment.empty True.intro).elim
+
+/-- An arbitrary Law interpretation cannot certify an invalid set-valued point model. -/
+theorem point_model_depends_on_actual_structure (R : CoefficientAlgebra lawModelBase) :
+    ¬ ({ lawModelScheme with interpretLaw := fun _ _ _ _ => True }).IsPointModel R false :=
+  (coefficient_scheme_evaluates_required_law R).2
 
 /-- The state observation exists even when the structure fails a required Law. -/
 private def lawTestingReading (satisfies : Bool) : Reading.{0, 0, 0, 0} where
@@ -671,7 +676,12 @@ private def selected : CoefficientReading retained ordinary (.ofList [false, tru
     · exact False.elim (by
         obtain ⟨i, hi⟩ := hs
         exact (by decide : true ≠ false) (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
-  pointOrigin := .declared True.intro
+  pointOrigin := .declared True.intro (by
+    intro spot chosen
+    cases spot
+    · exact ⟨rfl, rfl⟩
+    · obtain ⟨i, hi⟩ := chosen
+      exact Bool.noConfusion (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
   evaluateOn _ R _ e := R.fromBase (e ⟨false, .here⟩)
 
 /-- The realized value is the first coordinate for any values of the forgotten coordinate. -/
@@ -797,6 +807,73 @@ theorem fixed_native_requires_same_retained_application :
     congrFun (congrFun (eq_of_heq application.2) PUnit.unit) (0 : Int)
   exact (by decide : (0 : Int) ≠ 1) bad
 
+/-- Equal retained native data cannot select two different point maps through one local rule. -/
+theorem native_same_retained_data_with_distinct_maps_fails :
+    ¬ (nativeCoefficient true false).RespectsRestriction retained (fun _ h => h) := by
+  intro locality
+  obtain ⟨rule, _, native⟩ := locality.points
+  have agreement (b : Bool) := native PUnit.unit b
+    (ambient_agrees_scheme true) (RestrictedStructure.Agrees.refl _)
+  have bad := congrFun (Option.some.inj ((agreement false).symm.trans (agreement true))) (0 : Int)
+  exact Int.zero_ne_one bad
+
+/-- A permitted native shift is not a map described by this scheme's declared identity policy. -/
+theorem shifted_native_map_cannot_use_declared_identity :
+    let reading := nativeCoefficient true true
+    ¬ reading.scheme.declaredPoints reading.algebra reading.choice
+      (RestrictedStructure.restrict retained (ambient true))
+      (reading.scheme.structureOf reading.algebra reading.realization) false
+      (reading.realizePoint false ⟨PUnit.unit, rfl⟩) := by
+  dsimp only
+  rintro ⟨castType, claimed⟩
+  have impossible : (1 : Int) = 0 := congrFun claimed (0 : Int)
+  exact Int.one_ne_zero impossible
+
+/-- Use the unique native entry of the unshifted scalar scheme. -/
+private def uniformNativeCoefficient : CoefficientReading retained (ambient true) retainedProduct :=
+  { nativeCoefficient true false with
+    scheme := scalarScheme
+    realizePoint s hs x :=
+      have kept : Declaration.sort s ∈ retained.declarations := by
+        obtain ⟨i, rfl⟩ := hs
+        exact Set.mem_singleton _
+      scalarScheme.nativePoints ⟨integers, RingHom.id Int⟩ () s kept
+        ((ambient_agrees_scheme true).carrier_eq s kept ▸ x)
+    pointOrigin := .native () rfl (by
+      rintro _ ⟨i, rfl⟩
+      exact Set.mem_singleton _) (ambient_agrees_scheme true) (fun _ _ _ => rfl) }
+
+/-- A comparison can certify the local rule of a native realization at every retained input. -/
+theorem uniform_native_points_have_local_rule :
+    uniformNativeCoefficient.RespectsRestriction retained (fun _ h => h) := by
+  classical
+  let rule : CoefficientReading.LocalPointRule retained :=
+    fun X Y s _ => if same : X.carrier s = Y.carrier s then some (cast same) else none
+  refine ⟨(fun _ => Set.mem_singleton _), ⟨rule, ?_, ?_⟩, ?_⟩
+  · intro i X Y left right
+    cases i
+    have xs : Int = X.carrier false := left.carrier_eq _ (Set.mem_singleton _)
+    have ys : Int = Y.carrier false := right.carrier_eq _ (Set.mem_singleton _)
+    change (if same : X.carrier false = Y.carrier false then some (cast same) else none) =
+      some (fun x => cast ys (cast xs.symm x))
+    rw [dif_pos (xs.symm.trans ys)]
+    have composed {K L M : Type} (left : K = L) (right : K = M) (x : L) :
+        cast (left.symm.trans right) x = cast right (cast left.symm x) := by
+      cases left
+      cases right
+      rfl
+    exact congrArg some (funext (composed xs ys))
+  · dsimp only [CoefficientReading.LocalPointRule.AgreesOnNative]
+    intro i a
+    cases i
+    cases a
+    intro _ _
+    change (if same : Int = Int then some (cast same) else none) = some (fun (x : Int) => x)
+    rw [dif_pos rfl]
+    rfl
+  · rintro left right ⟨same, tuple⟩
+    exact (congrFun tuple PUnit.unit).symm
+
 /-- Select the scalar input in its own product. -/
 private def scalarInputs (R : Type) [CommRing R] :
     CoefficientReading retained (separateStates R) (.ofList [false]) where
@@ -812,7 +889,12 @@ private def scalarInputs (R : Type) [CommRing R] :
     · exact False.elim (by
         obtain ⟨i, hi⟩ := hs
         exact Bool.noConfusion (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
-  pointOrigin := .declared True.intro
+  pointOrigin := .declared True.intro (by
+    intro spot chosen
+    cases spot
+    · exact ⟨rfl, rfl⟩
+    · obtain ⟨i, hi⟩ := chosen
+      exact Bool.noConfusion (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
   evaluateOn _ _ _ e := e ⟨false, .here⟩
 
 /-- Read coefficients at the first sort and take the ordinary observation at the second. -/

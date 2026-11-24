@@ -218,6 +218,26 @@ def formula (tr : Translation S T f) : {Γ : List S.SortType} → Formula S Γ �
   | _, .disj p q => .disj (tr.formula p) (tr.formula q)
   | _, .ex p => .ex (tr.formula p)
 
+/-- Translation of an atomic formula evaluates the atomic replacement. -/
+@[simp] theorem formula_atom (tr : Translation S T f) {Γ : List S.SortType} (a : Atomic S Γ) :
+    tr.formula (.atom a) = tr.atomic a := rfl
+
+/-- Translation preserves the truth formula. -/
+@[simp] theorem formula_truth (tr : Translation S T f) {Γ : List S.SortType} :
+    tr.formula (.truth : Formula S Γ) = .truth := rfl
+
+/-- Translation preserves the falsehood formula. -/
+@[simp] theorem formula_falsehood (tr : Translation S T f) {Γ : List S.SortType} :
+    tr.formula (.falsehood : Formula S Γ) = .falsehood := rfl
+
+/-- Translation acts on each conjunct. -/
+@[simp] theorem formula_conj (tr : Translation S T f) {Γ : List S.SortType} (p q : Formula S Γ) :
+    tr.formula (p.conj q) = (tr.formula p).conj (tr.formula q) := rfl
+
+/-- Translation acts on each disjunct. -/
+@[simp] theorem formula_disj (tr : Translation S T f) {Γ : List S.SortType} (p q : Formula S Γ) :
+    tr.formula (p.disj q) = (tr.formula p).disj (tr.formula q) := rfl
+
 /-- Translating an existential formula retains its binder at the translated sort. -/
 @[simp] theorem formula_ex (tr : Translation S T f) {Γ : List S.SortType} {s : S.SortType}
     (p : Formula S (s :: Γ)) : tr.formula p.ex = (tr.formula p).ex :=
@@ -345,7 +365,7 @@ theorem Equivalent.formula_holds_iff {left right : Translation S.signature T.sig
   induction p with
   | atom a =>
     intro e
-    change (left.atomic a).Holds B e ↔ (right.atomic a).Holds B e
+    simp only [Translation.formula_atom]
     cases a with
     | eq x y => rfl
     | rel r vars =>
@@ -361,15 +381,11 @@ theorem Equivalent.formula_holds_iff {left right : Translation S.signature T.sig
   | falsehood => intro; rfl
   | conj p q hp hq =>
     intro e
-    change ((left.formula p).conj (left.formula q)).Holds B e ↔
-      ((right.formula p).conj (right.formula q)).Holds B e
-    rw [Formula.holds_conj, Formula.holds_conj]
+    simp only [Translation.formula_conj, Formula.holds_conj]
     exact and_congr (hp e) (hq e)
   | disj p q hp hq =>
     intro e
-    change ((left.formula p).disj (left.formula q)).Holds B e ↔
-      ((right.formula p).disj (right.formula q)).Holds B e
-    rw [Formula.holds_disj, Formula.holds_disj]
+    simp only [Translation.formula_disj, Formula.holds_disj]
     exact or_congr (hp e) (hq e)
   | ex p ih =>
     intro e

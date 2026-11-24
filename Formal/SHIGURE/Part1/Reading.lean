@@ -611,18 +611,21 @@ theorem translated_formula_support (u : Interpretation P.theory Q.theory)
     {Γ : List P.signature.SortType} (p : Formula P.signature Γ) (V : Set (Declaration Q)) :
     (∀ d ∈ formula p, translatedSupport u d ⊆ V) → formula (u.translation.formula p) ⊆ V := by
   induction p with
-  | atom a => exact translated_atomic_support u a V
-  | truth => intro; exact Set.empty_subset V
-  | falsehood => intro; exact Set.empty_subset V
+  | atom a => rw [Translation.formula_atom]; exact translated_atomic_support u a V
+  | truth => rw [Translation.formula_truth]; intro; exact Set.empty_subset V
+  | falsehood => rw [Translation.formula_falsehood]; intro; exact Set.empty_subset V
   | conj p q hp hq =>
+    rw [Translation.formula_conj]
     intro keep d hd
     exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
       (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
   | disj p q hp hq =>
+    rw [Translation.formula_disj]
     intro keep d hd
     exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
       (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
   | @ex Γ s p ih =>
+    rw [Translation.formula_ex]
     intro keep d hd
     exact hd.elim (fun h => keep (.sort s) (Or.inl (Set.mem_singleton _)) h)
       (fun h => ih (fun x hx => keep x (Or.inr hx)) h)
@@ -1639,25 +1642,26 @@ def Reading.CoefficientCompatibility.retainsEvaluation {source target : Reading.
       | .project => True
       | .compare _ => sourceLocal
 
-/-- The primitive restriction and the carriers of the surviving external observation states.
-Added carrier slots allow those states to be typed without restoring primitive operations. -/
+/-- Restrict primitive data while keeping the carrier for an actual shared coefficient input. -/
 def Reading.coefficientContext (reading : Reading.{u, v, w, x})
-    (kept : DeclarationContext reading.presentation) (available : Set reading.observation.product.Index) :
+    (kept : DeclarationContext reading.presentation) (available : Set reading.observation.product.Index)
+    {Γ : CoefficientProduct reading.presentation.signature.SortType} (selected : InputSelection Γ) :
     DeclarationContext reading.presentation where
   declarations := kept.declarations ∪
-    {d | ∃ i ∈ available, d = Declaration.sort (reading.observation.product.sort i) ∧
-      d ∈ reading.context.declarations}
+    {d | ∃ i : selected.used.Index, ∃ j ∈ available, reading.SharesInput Γ i.val j ∧
+      d = Declaration.sort (reading.observation.product.sort j) ∧ d ∈ reading.context.declarations}
   closed membership d dependency := by
-    rcases membership with keptName | ⟨i, _, rfl, _⟩
+    rcases membership with keptName | ⟨i, j, _, _, rfl, _⟩
     · exact Or.inl (kept.closed keptName dependency)
     · exact dependency.elim
 
-/-- The extra carrier slots already belonged to the original realization. -/
+/-- Added carrier slots already belonged to the original realization. -/
 theorem Reading.coefficientContext_inside (reading : Reading.{u, v, w, x})
     {kept : DeclarationContext reading.presentation} (available : Set reading.observation.product.Index)
+    {Γ : CoefficientProduct reading.presentation.signature.SortType} (selected : InputSelection Γ)
     (inside : kept.declarations ⊆ reading.context.declarations) :
-    (reading.coefficientContext kept available).declarations ⊆ reading.context.declarations := by
-  rintro d (retained | ⟨_, _, _, inContext⟩)
+    (reading.coefficientContext kept available selected).declarations ⊆ reading.context.declarations := by
+  rintro d (retained | ⟨_, _, _, _, _, inContext⟩)
   · exact inside retained
   · exact inContext
 
@@ -1677,8 +1681,8 @@ def Reading.respectsCoefficientRestriction (reading : Reading.{u, v, w, x})
   | none => True
   | some c => (∀ i : c.2.selection.used.Index, reading.keepsCoefficientInput kept available c.1 i.val) ∧
       (kept.declarations = reading.context.declarations ∨
-        c.2.RespectsRestriction (reading.coefficientContext kept available)
-          (reading.coefficientContext_inside available inside))
+        c.2.RespectsRestriction (reading.coefficientContext kept available c.2.selection)
+          (reading.coefficientContext_inside available c.2.selection inside))
 
 /-- Relate the coefficient square to the actual available states at each endpoint. -/
 def Reading.ContextCompatibility.retainsCoefficients {source target : Reading.{u, v, w, x}}
