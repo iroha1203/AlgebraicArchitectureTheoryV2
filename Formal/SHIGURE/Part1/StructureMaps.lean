@@ -15,13 +15,13 @@ individual conditions of (1.9) implicit. The theorem `StructureMap.map_graph`
 connects the displayed data to that presentation.
 -/
 
-universe u v w
+universe u v w x
 
 namespace SHIGURE
 
 namespace Assignment
 
-variable {S : Type u} {X : S → Type v} {Y : S → Type w} {Γ Δ : List S} {s : S}
+variable {S : Type u} {X : S → Type v} {Y : S → Type w} {Z : S → Type x} {Γ Δ : List S} {s : S}
 
 /-- Apply a family of maps to each coordinate of an assignment. -/
 def map (f : ∀ s, X s → Y s) (e : Assignment X Γ) : Assignment Y Γ :=
@@ -48,6 +48,15 @@ def map (f : ∀ s, X s → Y s) (e : Assignment X Γ) : Assignment Y Γ :=
 @[simp] theorem map_empty (f : ∀ s, X s → Y s) :
     (empty (X := X)).map f = empty :=
   eq_empty _
+
+/-- Mapping all coordinates by identity leaves the assignment unchanged. -/
+@[simp] theorem map_id (a : Assignment X Γ) : a.map (fun _ => id) = a :=
+  ext (fun _ => rfl)
+
+/-- Mapping two families of functions is pointwise composition. -/
+theorem map_map (a : Assignment X Γ) (f : ∀ s, X s → Y s) (g : ∀ s, Y s → Z s) :
+    (a.map f).map g = a.map (fun s => g s ∘ f s) :=
+  rfl
 
 end Assignment
 
@@ -77,6 +86,14 @@ structure StructureMap (A B : Structure sig) where
 namespace StructureMap
 
 variable {A B : Structure sig} {Γ : List sig.SortType} {s : sig.SortType}
+
+/-- Structure maps with equal components are equal. -/
+@[ext] theorem ext {f g : StructureMap A B} (h : ∀ s x, f.onSort s x = g.onSort s x) : f = g := by
+  have same : f.onSort = g.onSort := funext fun s => funext (h s)
+  cases f
+  cases g
+  cases same
+  rfl
 
 /-- Every edge of an interpreted operation graph maps to an edge. -/
 theorem map_graph (h : StructureMap A B) (op : Operation sig)

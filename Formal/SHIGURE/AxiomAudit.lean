@@ -1,4 +1,6 @@
 import Formal.SHIGURE.AssertStandardAxioms
+import Formal.SHIGURE.Part1.Chapter2Examples
+import Formal.SHIGURE.Part1.ObservedModels
 import Formal.SHIGURE.Part1.PositiveLogic
 import Formal.SHIGURE.Part1.PreservationExamples
 import Formal.SHIGURE.Part1.ReadingExamples
@@ -326,6 +328,51 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Translation.Equivalent.formula,
   Translation.graphAt_equivalent,
   Translation.Equivalent.graph
+]
+
+-- Explicit public theorem roots for Chapter 2 definitions 2.1–2.2 and proposition 2.3.
+#shigure_assert_standard_axioms_of [
+  -- Signature
+  Structure.ext,
+  -- StructureMaps
+  Assignment.map_id,
+  Assignment.map_map,
+  StructureMap.ext,
+  -- StructureCategory
+  StructureMap.id_comp,
+  StructureMap.comp_id,
+  StructureMap.comp_assoc,
+  StructureMap.forward_inverseFamily,
+  StructureMap.inverseFamily_forward,
+  StructureMap.map_inverseFamily_forward,
+  Structure.assignment_hom_inv,
+  Structure.reflects_relations,
+  Structure.reflects_domains,
+  Structure.isIso_iff_bijective_reflects,
+  Structure.law_holds_of_iso,
+  -- SelectedPresentation
+  SignatureNames.restrict_formula_iff,
+  SignatureNames.restrict_law_iff,
+  -- Models
+  Model.hom_ext,
+  Model.comp_apply,
+  LawExtension.model_le,
+  LawExtension.forget_obj,
+  -- FixedModels
+  FixedModel.carrier_eq,
+  FixedModel.Hom.ext,
+  -- ObservedModels
+  ObservedModel.Hom.ext,
+  ObservationShape.original_isInclusion,
+  ObservedModel.extendStructure_observe,
+  ObservedModel.restrict_extendStructure,
+  ObservedModel.restrict_values_extendStructure,
+  ObservedModel.encodeHom_original,
+  ObservedModel.encodeHom_value,
+  -- Chapter2Examples
+  Chapter2.IdempotentSwap.swap_fails_idempotence,
+  Chapter2.IdempotentSwap.swap_not_mem_essImage,
+  Chapter2.IdempotentSwap.forget_not_essSurj
 ]
 
 end SHIGURE.AxiomAudit

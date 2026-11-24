@@ -57,52 +57,6 @@ universe u v w x
 
 namespace SHIGURE
 
-namespace Assignment
-
-variable {S T : Type u} {X : T → Type u} {Γ : List S}
-
-/-- Retype each coordinate to the named sort of the translated context. -/
-def mapSorts (f : S → T) (xs : Assignment (fun s => X (f s)) Γ) :
-    Assignment X (Γ.map f) :=
-  ⟨Var.reindex f (fun i => xs i)⟩
-
-/-- The retyped assignment reads the original value at its mapped position. -/
-@[simp] theorem mapSorts_apply (f : S → T) (xs : Assignment (fun s => X (f s)) Γ)
-    {s : S} (i : Var Γ s) : xs.mapSorts f (i.mapSorts f) = xs i :=
-  Var.reindex_mapSorts f (fun j => xs j) i
-
-/-- Equality on retyped variable positions determines the entire retyped assignment. -/
-theorem ext_mapSorts (f : S → T) {xs ys : Assignment X (Γ.map f)}
-    (h : ∀ {s} (i : Var Γ s), xs (i.mapSorts f) = ys (i.mapSorts f)) : xs = ys := by
-  induction Γ with
-  | nil => exact (eq_empty xs).trans (eq_empty ys).symm
-  | cons s Γ ih =>
-    have tail := ih (xs := xs.tail) (ys := ys.tail) (fun i => h (.there i))
-    apply Assignment.ext
-    intro t i
-    cases i with
-    | here => exact h .here
-    | there j => exact congrArg (fun a : Assignment X (Γ.map f) => a j) tail
-
-/-- Retyping an assignment commutes with selecting the variables of a subcontext. -/
-theorem mapSorts_pull (f : S → T) {Δ : List S}
-    (xs : Assignment (fun s => X (f s)) Δ) (ρ : Renaming Γ Δ) :
-    (xs.mapSorts f).pull (ρ.mapSorts f) = (xs.pull ρ).mapSorts f := by
-  apply ext_mapSorts f
-  intro s i
-  simp only [pull_apply, Renaming.mapSorts_apply, mapSorts_apply]
-
-/-- Retyping an extended assignment leaves its bound value in the first coordinate. -/
-theorem mapSorts_cons (f : S → T) {s : S} (x : X (f s))
-    (xs : Assignment (fun s => X (f s)) Γ) :
-    (Assignment.cons (X := fun t => X (f t)) (s := s) x xs).mapSorts f =
-      Assignment.cons x (xs.mapSorts f) := by
-  apply Assignment.ext
-  intro _ i
-  cases i <;> rfl
-
-end Assignment
-
 namespace Interpretation
 
 variable {S T : Theory.{u}}

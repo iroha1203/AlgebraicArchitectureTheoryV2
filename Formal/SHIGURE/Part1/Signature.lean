@@ -328,6 +328,22 @@ structure Structure (sig : Signature.{u}) where
 
 namespace Structure
 
+/-- A structure is determined by its carriers and its primitive interpretations.
+The types of those interpretations depend on the carrier family and the partial domains. -/
+theorem ext {sig : Signature.{u}} {A B : Structure sig} (carrier : A.carrier = B.carrier)
+    (total : HEq A.total B.total) (relation : HEq A.relation B.relation)
+    (domain : HEq A.partialDomain B.partialDomain) (partialValue : HEq A.partialValue B.partialValue)
+    (quantity : HEq A.quantity B.quantity) : A = B := by
+  cases A
+  cases B
+  cases carrier
+  cases total
+  cases relation
+  cases domain
+  cases partialValue
+  cases quantity
+  rfl
+
 variable {sig : Signature.{u}} (A : Structure sig)
 
 /-- Evaluate an operation on a tuple, preserving its possibly partial domain. -/
