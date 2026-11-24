@@ -109,7 +109,7 @@ theorem full_ring_some :
   rw [Selected.ringEquation_of_supported name data registered full_retains_ring_support]
   rfl
 
-open Chapter1.RingModule (realization scalarOne scalarZero)
+open Chapter1.RingModule (realization scalarOne scalarZero Symbol SortName signature)
 
 private def sourceRing : NamedRingEquation paddedPresentation.laws (.inl ()) :=
   (paddedPresentation.ringEquation (.inl ())).get (by rfl)
@@ -145,5 +145,136 @@ theorem integerReading_fails_equation :
     Assignment.empty
   change (1 : Int) = 0 at bad
   exact Int.one_ne_zero bad
+
+/-- A caller-supplied presentation retains every primitive and the ordered equality Law. -/
+private def equalityPresentation : PrimitivePresentation where
+  signature := paddedPresentation.signature
+  laws := ⟨Unit, fun _ => paddedPresentation.laws.statement (.inl ()), fun _ => .additional⟩
+  otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written, sourceRing.statement_eq⟩
+  derived _ role := by cases role
+
+private def toName (d : Declaration equalityPresentation) : Declaration paddedPresentation :=
+  d.renameNames (P := equalityPresentation) (Q := paddedPresentation) (.identity _) (fun _ => .inl ())
+
+private theorem toName_kept (d : Declaration equalityPresentation) : toName d ∈ equalityContext.declarations := by
+  intro i h
+  cases d <;> cases h
+
+private def fromName : equalityContext.Retained → Declaration equalityPresentation
+  | ⟨.sort s, _⟩ => .sort s
+  | ⟨.total f, _⟩ => .total f
+  | ⟨.relation r, _⟩ => .relation r
+  | ⟨.partialOp p, _⟩ => .partialOp p
+  | ⟨.quantity q, _⟩ => .quantity q
+  | ⟨.law (.inl _), _⟩ => .law ()
+  | ⟨.law (.inr i), kept⟩ => (kept i rfl).elim
+
+private def equalityNames : Declaration equalityPresentation ≃ equalityContext.Retained where
+  toFun d := ⟨toName d, toName_kept d⟩
+  invFun := fromName
+  left_inv d := by cases d <;> rfl
+  right_inv := by
+    rintro ⟨d, hd⟩
+    cases d with
+    | law n =>
+      cases n with
+      | inl n =>
+        cases n
+        rfl
+      | inr n => exact (hd n rfl).elim
+    | sort s => rfl
+    | total f => rfl
+    | relation r => rfl
+    | partialOp p => rfl
+    | quantity q => rfl
+
+private def oneGraph : Formula signature [SortName.scalar] :=
+  .conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarOne)
+    (Var.inLeft [SortName.scalar]) .here))
+
+private def zeroGraph : Formula signature [SortName.scalar] :=
+  .conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarZero)
+    (Var.inLeft [SortName.scalar]) .here))
+
+private def literalLaw : Law signature := ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
+
+private theorem equalityDependencies (a b : Declaration equalityPresentation) :
+    b ∈ Declaration.dependsOn equalityPresentation a ↔
+      toName b ∈ Declaration.dependsOn paddedPresentation (toName a) := by
+  cases a with
+  | sort s => exact Iff.rfl
+  | relation r => exact nomatch r
+  | partialOp p => exact nomatch p
+  | quantity q => exact nomatch q
+  | total f =>
+    cases b <;> simp [Declaration.dependsOn, Declaration.sorts, toName,
+      Declaration.renameNames, SignatureNames.identity, equalityPresentation]
+  | law n =>
+    change b ∈ Declaration.dependsOn equalityPresentation (.law n) ↔
+      toName b ∈ Declaration.dependsOn paddedPresentation (.law (.inl ()))
+    rw [Declaration.nonderived_dependencies n (fun h => LawRole.noConfusion h),
+      Declaration.nonderived_dependencies (P := paddedPresentation) (.inl ()) (fun h => LawRole.noConfusion h)]
+    change b ∈ Declaration.lawBody (P := equalityPresentation) literalLaw ↔
+      toName b ∈ Declaration.lawBody (P := paddedPresentation) literalLaw
+    cases b <;>
+      simp [literalLaw, oneGraph, zeroGraph, Declaration.lawBody, Declaration.sorts, Declaration.formula,
+        Declaration.atomic, Declaration.ofOperation, Declaration.renameNames, SignatureNames.identity, toName]
+
+/-- The named equality can be selected as a reading when its optional ring axioms are omitted. -/
+noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation paddedPresentation equalityContext where
+  signature := .identity _
+  lawName _ := .inl ()
+  names := equalityNames
+  names_eq _ := rfl
+  law_eq _ := by
+    change (SignatureNames.identity signature).law ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩ =
+      ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
+    change Law.mk [] .truth
+      (((SignatureNames.identity signature).formula oneGraph).conj
+        ((SignatureNames.identity signature).formula zeroGraph)).ex = _
+    suffices h : (SignatureNames.identity signature).formula oneGraph = oneGraph ∧
+        (SignatureNames.identity signature).formula zeroGraph = zeroGraph by
+      rw [h.1, h.2]
+    constructor <;> simp [oneGraph, zeroGraph, SignatureNames.formula]
+    all_goals
+      first
+      | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>
+          Atomic.graph (sig := signature) (.total Symbol.scalarOne) ρ .here)
+      | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>
+          Atomic.graph (sig := signature) (.total Symbol.scalarZero) ρ .here)
+    all_goals
+      funext s i
+      exact nomatch i
+  law_role _ := rfl
+  lawAttachments_eq _ := by
+    let A := paddedPresentation.lawAttachments (SignatureNames.identity _) id (.inl ())
+    change equalityPresentation.lawAttachments (SignatureNames.identity _) (fun _ => .inl ()) () =
+      A.withSupportedRing (equalityContext.RetainsRingSupport (.inl ()))
+    simp [LawAttachments.withSupportedRing, equality_lacks_ring_support]
+    rfl
+  domainAttachment_eq p := nomatch p
+  dependencies := equalityDependencies
+
+private def ambientEqualityReading : Reading.{0, 0, 0, 0} :=
+  { integerReading with
+    context := equalityContext
+    cover := DeclarationCover.identity equalityContext
+    coefficients := none
+    observationPlacement := .external
+    observationDeclared := by
+      intro f h
+      cases h }
+
+/-- The usual reading restriction carries the observation and family into the selected presentation. -/
+noncomputable def restrictedIntegerReading : Reading.{0, 0, 0, 0} :=
+  ambientEqualityReading.restrict equalityReadingOrigin
+    (StateObservation.ofSort SortName.scalar Int id) PUnit.unit
+
+/-- The restricted reading keeps the ordered equality and records its source context. -/
+theorem restrictedIntegerReading_attachment :
+    (restrictedIntegerReading.presentation.orderedEquation ()).isSome ∧
+      restrictedIntegerReading.presentation.ringEquation () = none ∧
+      restrictedIntegerReading.origin.isSome :=
+  ⟨rfl, rfl, rfl⟩
 
 end SHIGURE.Chapter3.OrderedRestriction

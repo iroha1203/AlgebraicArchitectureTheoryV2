@@ -10,13 +10,12 @@ their support, even when those names declare additional Laws.
 
 ## Implementation notes
 
-`Reading.restrict` accepts a caller-supplied presentation with an exact
-`ReadingOrigin` certificate for the named attachments. The computed
-selection here uses the declaration names, context and cover already present
-in the reading. This lets a context retain a written Law and its ordered
-terms when some references of its optional ring certificate are outside the
-context. Requiring full attachment equality for this computation would ask
-the context to retain those references as well.
+`Reading.restrict` accepts a caller-supplied presentation with a
+`ReadingOrigin` certificate. The certificate compares the literal text and
+derivation and accounts for the support of optional ring data. The computed
+selection here directly uses the context and cover already present in the
+reading. Both can retain a written Law and its ordered terms when some
+references of its optional ring certificate are outside the context.
 -/
 
 universe u v w x
