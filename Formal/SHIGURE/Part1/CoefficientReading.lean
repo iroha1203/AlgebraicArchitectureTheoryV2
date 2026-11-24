@@ -19,6 +19,13 @@ maps commute, and tests the selected evaluations along the scalar map and
 the state map of Equation (1.12). When the states are transported using a
 scheme's own scalar-change rule, that rule supplies an intermediate
 realization and yields the comparison by composition.
+
+Restriction fixes the selected coefficient algebra and the explicit coefficient choice
+before comparing realizations. The evaluation descends through the quotient by
+agreement of retained primitive structures and selected points. To produce those
+points, the scheme supplies a separate rule on the two restricted structures.
+Agreement with the original point map ensures this rule computes the same input
+without having to extend either structure to the original context.
 -/
 
 universe u v
@@ -123,14 +130,10 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
   changePoints {R : CoefficientAlgebra base} {target : CoefficientRing.{u}}
     (f : R.scalars.Hom target) (a : Realization R) :
     RestrictedStructure.PointMap (structureOf R a) (structureOf (R.extend f) (change f a))
-  /-- Coefficient data kept independently of the primitive declarations. -/
-  RetainedParameter : CoefficientAlgebra base → Type v := fun _ => PUnit
-  /-- Obtain the retained coefficient datum from a realization. -/
-  retainedParameter (R : CoefficientAlgebra base) : Realization R → RetainedParameter R := by
-    intro _ _
-    exact PUnit.unit
-  /-- A point correspondence computed from the retained structures and coefficient datum. -/
-  pointsWithin (R : CoefficientAlgebra base) (parameter : RetainedParameter R)
+  /-- The independently selectable data of the coefficient method. -/
+  Choice : Type v := PUnit
+  /-- A point correspondence computed from the retained structures and the chosen data. -/
+  pointsWithin (R : CoefficientAlgebra base) (choice : Choice)
     (W : DeclarationContext P) (X Y : RestrictedStructure W)
     (s : P.signature.SortType) (kept : Declaration.sort s ∈ W.declarations) :
     Option (X.carrier s → Y.carrier s) := none
@@ -366,6 +369,8 @@ structure CoefficientReading {P : PrimitivePresentation.{u}} (U : DeclarationCon
   algebra : CoefficientAlgebra base
   /-- The chosen realization scheme for the selected declarations. -/
   scheme : CoefficientScheme.{u, v} U base
+  /-- The chosen coefficient data is an input of the evaluation, independent of its realized structure. -/
+  choice : scheme.Choice := by exact PUnit.unit
   /-- The chosen realization belongs to this scheme at the selected coefficients. -/
   realization : scheme.Realization algebra
   /-- The independently selected positions actually used for coefficient evaluation. -/
@@ -377,7 +382,7 @@ structure CoefficientReading {P : PrimitivePresentation.{u}} (U : DeclarationCon
   /-- The specified rule that supplies the actual correspondence. -/
   pointOrigin : scheme.PointOrigin algebra realization A (Set.range selection.selected.sort) realizePoint
   /-- Evaluate on the designated states at the selected positions in the scheme. -/
-  evaluateOn (R : CoefficientAlgebra base) (a : scheme.Realization R) :
+  evaluateOn (choice : scheme.Choice) (R : CoefficientAlgebra base) (a : scheme.Realization R) :
     selection.selected.Values (scheme.structureOf R a).carrier → R.scalars.Carrier
 
 namespace CoefficientReading
@@ -410,7 +415,7 @@ def inputTuple (reading : CoefficientReading U A Γ) (e : Γ.product.Values A.ca
 /-- Evaluate from values at the used positions. -/
 def evaluateSelected (reading : CoefficientReading U A Γ) (e : reading.selection.used.Values A.carrier) :
     reading.ring.Carrier :=
-  reading.evaluateOn reading.algebra reading.realization (reading.selectedTuple e)
+  reading.evaluateOn reading.choice reading.algebra reading.realization (reading.selectedTuple e)
 
 /-- Evaluate the chosen realization at the supplied state of the reading. -/
 def evaluate (reading : CoefficientReading U A Γ) (e : Γ.product.Values A.carrier) :
@@ -428,21 +433,14 @@ abbrev RealizedInput (reading : CoefficientReading U A Γ) (R : CoefficientAlgeb
   Σ a : reading.scheme.Realization R,
     reading.selection.selected.Values (reading.scheme.structureOf R a).carrier
 
-/-- The realized inputs at the chosen algebra and retained coefficient datum. -/
-abbrev SelectedRealizedInput (reading : CoefficientReading U A Γ) :=
-  {e : reading.RealizedInput reading.algebra //
-    reading.scheme.retainedParameter reading.algebra e.1 =
-      reading.scheme.retainedParameter reading.algebra reading.realization}
-
-/-- The retained data of a realized input includes the scheme's selected coefficient parameter. -/
+/-- Compare only retained primitive data and chosen states at the same coefficient algebra. -/
 def AgreeOn (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     (inside : W.declarations ⊆ U.declarations)
     (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
     {R : CoefficientAlgebra reading.base} (left right : reading.RealizedInput R) : Prop :=
-  reading.scheme.retainedParameter R left.1 = reading.scheme.retainedParameter R right.1 ∧
-    ∃ same : ((reading.scheme.structureOf R left.1).restrictWithin inside).Agrees
-        ((reading.scheme.structureOf R right.1).restrictWithin inside),
-      right.2 = fun i => same.carrier_eq _ (supported i) ▸ left.2 i
+  ∃ same : ((reading.scheme.structureOf R left.1).restrictWithin inside).Agrees
+      ((reading.scheme.structureOf R right.1).restrictWithin inside),
+    right.2 = fun i => same.carrier_eq _ (supported i) ▸ left.2 i
 
 /-- Restrict the actual point correspondence and evaluation at the chosen coefficient algebra. -/
 structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : DeclarationContext P)
@@ -454,28 +452,27 @@ structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : Declara
   points (i : reading.selection.selected.Index) (X Y : RestrictedStructure W)
     (sourceAgree : ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees X)
     (targetAgree : ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees Y) :
-    reading.scheme.pointsWithin reading.algebra (reading.scheme.retainedParameter reading.algebra reading.realization)
+    reading.scheme.pointsWithin reading.algebra reading.choice
         W X Y (reading.selection.selected.sort i) (supported i) =
       some (fun x => cast (targetAgree.carrier_eq _ (supported i))
         (reading.selectedPoint i (cast (sourceAgree.carrier_eq _ (supported i)).symm x)))
   /-- Retained primitive data, coefficient data and points determine the value at the chosen algebra. -/
-  agrees (left right : reading.SelectedRealizedInput) :
-    reading.AgreeOn inside supported left.val right.val →
-      reading.evaluateOn reading.algebra left.val.1 left.val.2 =
-        reading.evaluateOn reading.algebra right.val.1 right.val.2
+  agrees (left right : reading.RealizedInput reading.algebra) :
+    reading.AgreeOn inside supported left right →
+      reading.evaluateOn reading.choice reading.algebra left.1 left.2 =
+        reading.evaluateOn reading.choice reading.algebra right.1 right.2
 
 /-- A restricted input is the class of a realized input with the same retained data. -/
 abbrev RetainedInput (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     (inside : W.declarations ⊆ U.declarations) (locality : reading.RespectsRestriction W inside) :=
-  Quot (fun a b : reading.SelectedRealizedInput =>
-    reading.AgreeOn inside locality.supported a.val b.val)
+  Quot (reading.AgreeOn inside locality.supported (R := reading.algebra))
 
 /-- Evaluate on the retained data alone. -/
 def evaluateRetained (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     : reading.RetainedInput inside locality → reading.ring.Carrier :=
-  Quot.lift (fun input : reading.SelectedRealizedInput =>
-    reading.evaluateOn reading.algebra input.val.1 input.val.2) locality.agrees
+  Quot.lift (fun input : reading.RealizedInput reading.algebra =>
+    reading.evaluateOn reading.choice reading.algebra input.1 input.2) locality.agrees
 
 /-- Recover the selected point map from the scheme's local rule on the actual restrictions. -/
 private def localPointRule (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
@@ -484,8 +481,7 @@ private def localPointRule (reading : CoefficientReading U A Γ) {W : Declaratio
     Option (A.carrier (reading.selection.selected.sort i) →
       (reading.scheme.structureOf reading.algebra reading.realization).carrier
         (reading.selection.selected.sort i)) :=
-  reading.scheme.pointsWithin reading.algebra
-    (reading.scheme.retainedParameter reading.algebra reading.realization)
+  reading.scheme.pointsWithin reading.algebra reading.choice
     W ((RestrictedStructure.restrict U A).restrictWithin inside)
     ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside)
     _ (locality.supported i)
@@ -501,10 +497,10 @@ private theorem localPointRule_eq (reading : CoefficientReading U A Γ) {W : Dec
 def restrictSelected (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     (e : reading.selection.used.Values A.carrier) : reading.RetainedInput inside locality :=
-  Quot.mk _ ⟨⟨reading.realization, fun i =>
+  Quot.mk _ ⟨reading.realization, fun i =>
     (reading.localPointRule locality i).get
       (congrArg Option.isSome (reading.localPointRule_eq locality i))
-      (reading.selection.tuple e i)⟩, rfl⟩
+      (reading.selection.tuple e i)⟩
 
 /-- Restricting the actual input and evaluating gives the reading's original value. -/
 theorem evaluateRetained_mk (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
@@ -512,9 +508,9 @@ theorem evaluateRetained_mk (reading : CoefficientReading U A Γ) {W : Declarati
     (e : reading.selection.used.Values A.carrier) :
     reading.evaluateRetained locality (reading.restrictSelected locality e) =
       reading.evaluateSelected e := by
-  change reading.evaluateOn reading.algebra reading.realization _ =
-    reading.evaluateOn reading.algebra reading.realization (reading.selectedTuple e)
-  apply congrArg (reading.evaluateOn reading.algebra reading.realization)
+  change reading.evaluateOn reading.choice reading.algebra reading.realization _ =
+    reading.evaluateOn reading.choice reading.algebra reading.realization (reading.selectedTuple e)
+  apply congrArg (reading.evaluateOn reading.choice reading.algebra reading.realization)
   funext i
   exact congrFun (Option.get_of_eq_some _ (reading.localPointRule_eq locality i)) _
 
@@ -558,7 +554,7 @@ def changedState (reading : CoefficientReading U A Γ) {target : CoefficientRing
 /-- Evaluate on the actual realization and state produced by the coefficient-change rule. -/
 def changedEvaluation (reading : CoefficientReading U A Γ) {target : CoefficientRing.{u}}
     (f : reading.ring.Hom target) (e : Γ.product.Values A.carrier) : target.Carrier :=
-  reading.evaluateOn (reading.algebra.extend f) (reading.scheme.change f reading.realization)
+  reading.evaluateOn reading.choice (reading.algebra.extend f) (reading.scheme.change f reading.realization)
     (reading.changedState f e)
 
 /-- Compare coefficient evaluations on one common input domain. -/
@@ -629,6 +625,8 @@ structure SameParameters (source : CoefficientReading.{u, v} U A Γ)
     (HEq source.realization target.realization ∧ HEq source.selectedPoint target.selectedPoint)
   /-- The rule over the selected scheme is unchanged. -/
   rule : HEq source.evaluateOn target.evaluateOn
+  /-- The selected coefficient data is unchanged. -/
+  choice : HEq source.choice target.choice
 
 end CoefficientReading
 

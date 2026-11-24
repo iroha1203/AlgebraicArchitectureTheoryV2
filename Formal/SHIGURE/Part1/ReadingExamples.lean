@@ -538,7 +538,7 @@ private def selected : CoefficientReading retained ordinary (.ofList [false, tru
         obtain ⟨i, hi⟩ := hs
         exact (by decide : true ≠ false) (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
   pointOrigin := .declared True.intro
-  evaluateOn R _ e := R.fromBase (e ⟨false, .here⟩)
+  evaluateOn _ R _ e := R.fromBase (e ⟨false, .here⟩)
 
 /-- The realized value is the first coordinate for any values of the forgotten coordinate. -/
 theorem evaluation_reads_retained_input (s t : Int) :
@@ -644,12 +644,12 @@ private def nativeCoefficient (full shifted : Bool) :
   pointOrigin := .native shifted rfl (by
     rintro _ ⟨i, rfl⟩
     exact Set.mem_singleton _) (ambient_agrees_scheme full) (fun _ _ _ => rfl)
-  evaluateOn _ _ e := e PUnit.unit
+  evaluateOn _ _ _ e := e PUnit.unit
 
 /-- Forgetting a carrier preserves the fixed application of the same native rule. -/
 theorem fixed_native_ignores_forgotten_carrier :
     (nativeCoefficient true false).SameParameters (nativeCoefficient false false) := by
-  refine ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, ?_⟩, HEq.rfl⟩
+  refine ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, ?_⟩, HEq.rfl, HEq.rfl⟩
   -- Both selected positions have the same native carrier and point map.
   rfl
 
@@ -679,7 +679,7 @@ private def scalarInputs (R : Type) [CommRing R] :
         obtain ⟨i, hi⟩ := hs
         exact Bool.noConfusion (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
   pointOrigin := .declared True.intro
-  evaluateOn _ _ e := e ⟨false, .here⟩
+  evaluateOn _ _ _ e := e ⟨false, .here⟩
 
 /-- Read coefficients at the first sort and take the ordinary observation at the second. -/
 private def separateReading (R : Type) [CommRing R] : Reading.{0, 0, 0, 0} where
@@ -939,7 +939,8 @@ def independent_coefficient_comparison :
       cases v with
       | here => rfl
       | there v => exact nomatch v
-    refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), (fun _ _ k => nomatch k), ?_⟩
+    refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), (fun _ _ k => nomatch k),
+      ?_, (fun k => nomatch k)⟩
     intro j i share
     obtain ⟨k, hk⟩ := j.property
     have sortEq : j.val.1 = false := by
@@ -956,7 +957,7 @@ private def plainReading : Reading.{0, 0, 0, 0} := { separateReading Int with co
 /-- The new scalar observation evaluates to zero on the selected sort. -/
 private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofList [false, true]) :=
   { paddedScalarInputs Int with
-    evaluateOn R _ _ :=
+    evaluateOn _ R _ _ :=
       letI := R.scalars.ring
       0 }
 
@@ -1068,13 +1069,13 @@ def external_state_feeds_new_coefficient_evaluation :
   coefficientInputs := by
     refine ⟨(fun _ _ common => (common.1 rfl).elim), ?_⟩
     refine ⟨(fun k => nomatch k), (fun k => nomatch k), (fun k => nomatch k),
-      (fun _ _ k => nomatch k), ?_⟩
+      (fun _ _ k => nomatch k), ?_, (fun k => nomatch k)⟩
     intro _ _ shared
     rcases shared.2 with named | explicit
     · cases named.2.2.1
     · cases explicit.1
   coefficientSupport := by
-    refine ⟨(fun k => nomatch k), Or.inl ?_⟩
+    refine Or.inl ?_
     exact Set.Subset.antisymm introduceScalarContext.targetRetained_inside
       (fun _ kept => ⟨(), Or.inr (Set.mem_univ _), kept⟩)
   value := id
@@ -1135,8 +1136,8 @@ theorem unavailable_source_position_cannot_be_used :
 /-- Restoring an unused coordinate still shares its actual original ordinary position. -/
 theorem extra_keeps_original_sharing :
     (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
-      (fun i => nomatch i) sharesFirst sharesFirst := by
-  refine ⟨fun _ => some false, (fun _ _ _ => rfl), ?_, ?_, ?_⟩
+      (fun i => nomatch i) sharesFirst sharesFirst (fun _ retained => retained = some false) := by
+  refine ⟨fun _ => some false, (fun _ _ _ => rfl), ?_, ?_, ?_, fun _ => rfl⟩
   · rintro ⟨⟩ ⟨⟩ _ _ _
     rfl
   · intro j i k _ _ o
@@ -1150,10 +1151,17 @@ theorem extra_keeps_original_sharing :
 theorem extra_cannot_reassign_original_sharing :
     ¬ (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
       (fun i => nomatch i) sharesFirst sharesSecond := by
-  rintro ⟨extraShares, _, _, original, follows⟩
+  rintro ⟨extraShares, _, _, original, follows, _⟩
   have wrong := (follows () true rfl).1
   have same := original () () () ⟨by decide, rfl, HEq.rfl, rfl⟩ rfl true
   exact Bool.noConfusion (same.mp wrong)
+
+/-- Access to another coordinate of the same sort cannot justify the actual share. -/
+theorem extra_cannot_borrow_access_from_other_coordinate :
+    ¬ (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
+      (fun i => nomatch i) sharesFirst sharesFirst (fun _ retained => retained = some true) := by
+  rintro ⟨extraShares, _, _, _, follows, available⟩
+  exact Bool.noConfusion (Option.some.inj ((follows () false rfl).1.symm.trans (available ())))
 
 /-- The second target coordinate uses an additional state of the other sort. -/
 private def twoTargetInputs : ObservationProduct Bool :=
