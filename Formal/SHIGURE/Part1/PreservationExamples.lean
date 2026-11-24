@@ -352,7 +352,7 @@ def complementaryComparison : ReadingComparison (reading id) (reading Bool.not) 
   targetModel := model
   state := state
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := Bool.not
   commutes := fun _ => rfl
@@ -383,7 +383,7 @@ def sameEmptyContext : ReadingComparison missingSort missingSort where
   targetModel := model
   state := state
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := id
   commutes := fun _ => rfl
@@ -405,8 +405,10 @@ theorem cannot_compare_external_after_forgetting_input
   refine ⟨fun change => ?_⟩
   obtain ⟨localRead, _, sourceSquare, _, _⟩ := comparison.observation_square_on_retained change
   have noInput (i : change.val.observationInputs) : False := by
-    obtain ⟨_, j, _, _⟩ := change.val.sort_is_covered _ i.property
-    exact nomatch j
+    rcases i.property with kept | ⟨_, external⟩
+    · obtain ⟨_, j, _, _⟩ := change.val.sort_is_covered _ kept
+      exact nomatch j
+    · exact external (Set.mem_univ _)
   have localInputs :
       (fun _ : change.val.observationInputs => false) = (fun _ => true) :=
     funext (fun i => (noInput i).elim)
@@ -779,7 +781,7 @@ def coefficientComparison : ReadingComparison (readingOf Int 4) (readingOf (Int 
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := .changed (ReadingInputMap.identity (readRing Int 4).selection.used)
     { integerDiagonal with
       evaluate_commutes := fun e => integerDiagonal.evaluate_commutes
@@ -807,7 +809,7 @@ theorem cannot_discard_coefficient_sort
     cases chosen : comparison.coefficientChange with
     | fixed same =>
       rw [chosen] at support
-      exact support.1 input
+      exact support.elim
     | changed inputs square =>
       rw [chosen] at support
       exact support.1.1 input
@@ -826,10 +828,10 @@ def fixedCoefficientComparison : ReadingComparison (readingOf Int 0) (readingOf 
       partial_comm := fun p => nomatch p
       quantity_comm := fun q => nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := .fixed
     ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
-  coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _
+  coefficientInputs := fun _ _ shared => shared.2.elim (fun h => by cases h.2.2.1) (fun h => by cases h.1)
   value := fun x => (show Int from x) + (1 : Int)
   commutes := fun _ => rfl
 
@@ -929,10 +931,17 @@ private def secondIntegerCover : Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with
     cover := ⟨Bool, fun _ => Observation.whole, fun _ _ h => h, fun h => ⟨true, h⟩⟩ }
 
-/-- Changing only the cover leaves coefficients fixed even along a non-linear state map. -/
-def fixed_coefficients_across_cover_change :
+/-- The identity coefficient map preserves the actual evaluation across a cover change. -/
+def identity_coefficients_across_cover_change :
     ReadingComparison (readingOf Int 0) secondIntegerCover :=
   { fixedCoefficientComparison with
+    state :=
+      { onSort _ := id
+        total_comm f := nomatch f
+        relation_mem r := nomatch r
+        partial_mem p := nomatch p
+        partial_comm p := nomatch p
+        quantity_comm q := nomatch q }
     declarationChange := .changed
       { retained := Observation.whole
         inside := fun _ h => h
@@ -941,9 +950,19 @@ def fixed_coefficients_across_cover_change :
         pieces := fun _ => {true}
         localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
     observationSupport := ⟨False.elim, False.elim⟩
+    declaredObservations := Or.inl ⟨rfl, rfl⟩
+    coefficientChange := .changed (.identity _)
+      { baseMap := RingHom.id Int
+        coefficients := RingHom.id Int
+        algebra_commutes := rfl
+        evaluate_commutes _ := rfl }
+    coefficientInputs :=
+      ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _ _⟩
     coefficientSupport :=
-      ⟨(fun _ => Set.mem_univ _), Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
+      ⟨⟨(fun _ => Set.mem_univ _), (fun _ => Set.mem_univ _)⟩, Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
         ⟨PUnit.unit, true, Set.mem_singleton _, Set.mem_univ _⟩))⟩
+    value := id
+    commutes _ := rfl
     restrictedObservations := ReadingContextChange.observationSquare_of_all _ _ _ _
       (fun _ => Set.mem_univ _) (fun _ => rfl) }
 
@@ -954,11 +973,11 @@ private def paddedIntegerReading : Reading.{0, 0, 0, 0} :=
 /-- Padding the outer product preserves the fixed comparison along the non-linear state map. -/
 def fixed_comparison_with_unused_input : ReadingComparison (readingOf Int 0) paddedIntegerReading :=
   { fixedCoefficientComparison with
-    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
     coefficientChange := .fixed
       ⟨rfl, rfl, HEq.rfl, HEq.rfl, paddedInteger_names, rfl,
         fun h => (padded_integer_product_differs h).elim, Or.inr ⟨HEq.rfl, HEq.rfl⟩, HEq.rfl⟩
-    coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _ }
+    coefficientInputs := fun _ _ shared => shared.2.elim (fun h => by cases h.2.2.1) (fun h => by cases h.1) }
 
 /-- Sending zero to one in the fixed comparison would fail a coefficient-change square. -/
 theorem fixed_comparison_has_no_scalar_change :
@@ -1064,7 +1083,7 @@ def projected_state_comparison :
     { position _ := ⟨(), .here⟩
       sort_eq _ := rfl
       keepsNamed _ _ _ differentScopes _ _ := by cases differentScopes }
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := id
   commutes _ := rfl
@@ -1104,7 +1123,7 @@ def independently_reindexed_comparison : ReadingComparison (reindexedObservation
   targetModel := Observation.complementaryComparison.targetModel
   state := Observation.complementaryComparison.state
   contexts := ⟨Bool.not, fun _ => rfl, fun _ _ unnamed _ _ _ => (unnamed rfl).elim⟩
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := id
   commutes _ := rfl
@@ -1206,11 +1225,11 @@ def same_native_rule_comparison : ReadingComparison (nativeReading false) (nativ
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := .fixed
     ⟨rfl, rfl, HEq.rfl, HEq.rfl, HEq.rfl, rfl, fun _ => HEq.rfl,
       Or.inl ⟨True.intro, True.intro, fun h => (native_structures_differ h).elim⟩, HEq.rfl⟩
-  coefficientInputs := fun _ _ _ _ _ _ _ => @Subsingleton.elim PUnit _ _ _
+  coefficientInputs := fun _ _ shared => shared.2.elim (fun h => by cases h.2.2.1) (fun h => by cases h.1)
   value := id
   commutes _ := rfl
 
@@ -1284,7 +1303,7 @@ noncomputable def infinite_coefficient_comparison : ReadingComparison sequenceRe
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := .changed (ReadingInputMap.identity coefficientSequence.selection.used)
     { baseMap := RingHom.id Int
       coefficients := RingHom.id Int
@@ -1471,7 +1490,7 @@ theorem forgetting_does_not_factor_through_scalar :
 /-- Forgetting the constant coefficient output leaves the ordinary comparison available. -/
 def forget_independent_scalar : ReadingComparison constantCoefficient plainInteger :=
   { fixedCoefficientComparison with
-    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
     coefficientChange := .project
     coefficientInputs := True.intro
     coefficientProjection := fun _ => rfl }
@@ -1479,7 +1498,7 @@ def forget_independent_scalar : ReadingComparison constantCoefficient plainInteg
 /-- Introducing an independent coefficient output compares the retained ordinary projection. -/
 def introduce_independent_scalar : ReadingComparison plainInteger constantCoefficient :=
   { fixedCoefficientComparison with
-    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+    declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
     coefficientChange := .project
     coefficientInputs := True.intro
     coefficientProjection := fun _ _ same => congrArg (fun states => states PUnit.unit) same }
@@ -2048,7 +2067,7 @@ def empty_local_reading_comparison : ReadingComparison emptyLocalReading emptyLo
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := id
   commutes _ := rfl
@@ -2098,7 +2117,7 @@ def compares_after_restricting_ambient_readings : ReadingComparison (selectedRea
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := id
   commutes _ := rfl

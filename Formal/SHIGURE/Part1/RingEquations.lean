@@ -270,6 +270,11 @@ noncomputable def residual (eqn : OrderedEquation sig) (A : Structure sig)
     A.carrier eqn.result :=
   eqn.leftValue A e - eqn.rightValue A e
 
+/-- The residual is the difference of the two evaluated sides in their declared order. -/
+theorem residual_eq_sub (eqn : OrderedEquation sig) (A : Structure sig)
+    [CommRing (A.carrier eqn.result)] (e : eqn.jointInputs A) :
+    eqn.residual A e = eqn.leftValue A e - eqn.rightValue A e := rfl
+
 /-- The evaluated left value belongs to the left term's partial value. -/
 theorem leftValue_mem (eqn : OrderedEquation sig) (A : Structure sig) (e : eqn.jointInputs A) :
     eqn.leftValue A e ∈ eqn.left.eval A e.val := ⟨_, rfl⟩

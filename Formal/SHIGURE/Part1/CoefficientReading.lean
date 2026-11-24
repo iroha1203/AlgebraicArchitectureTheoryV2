@@ -450,12 +450,18 @@ def evaluateRetained (reading : CoefficientReading U A Γ) {W : DeclarationConte
   Quot.lift (fun input : reading.RealizedInput R => reading.evaluateOn R input.1 input.2)
     (locality.agrees R)
 
+/-- Restrict the actual realized input at the selected state tuple. -/
+def restrictSelected (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
+    (e : reading.selection.used.Values A.carrier) : reading.RetainedInput inside locality reading.algebra :=
+  Quot.mk _ ⟨reading.realization, reading.selectedTuple e⟩
+
 /-- Restricting the actual input and evaluating gives the reading's original value. -/
 theorem evaluateRetained_mk (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     (e : reading.selection.used.Values A.carrier) :
-    reading.evaluateRetained locality reading.algebra
-      (Quot.mk _ ⟨reading.realization, reading.selectedTuple e⟩) = reading.evaluateSelected e :=
+    reading.evaluateRetained locality reading.algebra (reading.restrictSelected locality e) =
+      reading.evaluateSelected e :=
   rfl
 
 /-- The changed structure comes from the selected realization by the scheme's rule. -/

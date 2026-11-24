@@ -30,17 +30,18 @@ The reading's structure is typed over its selected presentation. Retained
 names can be traced to an ambient presentation through `ReadingOrigin`.
 An empty carrier in the selected presentation can therefore be read even
 when an omitted constant would force it to be inhabited.
-An external observation reads states in the chosen signature. A reading
-can also retain its input sorts for the context comparison. If an
-observation is a primitive declaration, its operation and full arity
-belong to a single cover piece.
+An external observation reads states in the chosen signature. Coordinates
+that were external to the selection remain available independently of the
+cover. A context restriction must still account for the evaluation at any
+coordinates it forgets. A primitive observation keeps its actual operation
+and full arity in a single cover piece.
 
 A comparison with unchanged coefficient settings can use
-the same evaluation rule in both realizations. Otherwise it compares the
-chosen evaluations along the structural state map. The common input has
-all used source positions and may include further positions that feed
-the target evaluation. Sharing a position in a reading continues to
-share its value in the comparison.
+the same evaluation rule in both realizations. A comparison of changed
+coefficient settings or a changed context compares the chosen evaluations
+along the structural state map. The common input has all used source
+positions and may include further positions that feed the target evaluation.
+Shared target positions must get their value from the same source state.
 -/
 
 universe u v w x
@@ -765,17 +766,10 @@ structure Reading.SameContext (source target : Reading.{u, v, w, x}) : Prop wher
   /-- The readings use the same cover of those declarations. -/
   cover : HEq source.cover target.cover
 
-/-- The interpretation is equivalent to the identity across the identified theories. -/
-def Interpretation.isIdentityAlong {S T : Theory.{u}} (same : S = T) (u : Interpretation S T) : Prop := by
-  subst T
-  exact u.Equivalent (Interpretation.identity S)
-
-/-- A fixed selection admits any representative of the identity interpretation. -/
+/-- Keeping the selection fixed is independent of the theory interpretation used in (1.12). -/
 inductive Reading.ContextCompatibility (source target : Reading.{u, v, w, x})
     (u : Interpretation source.presentation.theory target.presentation.theory) where
-  | fixed (same : source.SameContext target) :
-      u.isIdentityAlong (congrArg PrimitivePresentation.theory same.presentation) →
-      ContextCompatibility source target u
+  | fixed (same : source.SameContext target) : ContextCompatibility source target u
   | changed : ReadingContextChange source target u → ContextCompatibility source target u
 
 /-- A changed context compares only the target pieces assigned to a source piece. -/
@@ -784,7 +778,7 @@ def Reading.ContextCompatibility.assignsPiece {source target : Reading.{u, v, w,
     (contextChange : source.ContextCompatibility target u)
     (i : source.cover.Index) (j : target.cover.Index) : Prop :=
   match contextChange with
-  | .fixed _ _ => True
+  | .fixed _ => True
   | .changed change => j ∈ change.pieces i
 
 /-- The source piece after applying the context choice used by the comparison. -/
@@ -793,7 +787,7 @@ def Reading.ContextCompatibility.comparedSourcePiece {source target : Reading.{u
     (contextChange : source.ContextCompatibility target u)
     (i : source.cover.Index) : DeclarationContext source.presentation :=
   match contextChange with
-  | .fixed _ _ => source.cover.piece i
+  | .fixed _ => source.cover.piece i
   | .changed change => change.sourcePiece i
 
 /-- A restriction transports the chosen observation input supports of either reading. -/
@@ -801,45 +795,47 @@ def Reading.ContextCompatibility.retainsObservations {source target : Reading.{u
     {u : Interpretation source.presentation.theory target.presentation.theory}
     (positions : source.observation.product.Correspondence target.observation.product u.onSort) :
     source.ContextCompatibility target u → Prop
-  | .fixed _ _ => True
+  | .fixed _ => True
   | .changed change =>
     (source.observationPlacement.isRetained →
       ∀ i, Declaration.sort (source.observation.product.sort i) ∈ change.retained.declarations) ∧
     (target.observationPlacement.isRetained →
       ∀ j, Declaration.sort (source.observation.product.sort (positions.position j)) ∈ change.retained.declarations)
 
-/-- A context change keeps the declarations of the observations actually selected by the endpoints. -/
-def Reading.ContextCompatibility.retainsChosenSymbols {source target : Reading.{u, v, w, x}}
-    {u : Interpretation source.presentation.theory target.presentation.theory}
-    (positions : source.observation.product.Correspondence target.observation.product u.onSort) :
-    source.ContextCompatibility target u → Prop
-  | .fixed .. => True
-  | .changed change =>
-    match source.observation.symbol, target.observation.symbol with
-    | none, none => True
-    | left, right =>
-      ∃ i j, j ∈ change.pieces i ∧
-        (∀ f, left = some f → Declaration.ofOperation f.operation ∈ (change.sourcePiece i).declarations) ∧
-        ∀ f, right = some f →
-          Declaration.ofOperation f.operation ∈ (target.cover.piece j).declarations ∧
-          ∀ k, Declaration.sort (source.observation.product.sort (positions.position k)) ∈
-            change.retained.declarations
-
 namespace ReadingContextChange
 
 variable {source target : Reading.{u, v, w, x}}
   {u : Interpretation source.presentation.theory target.presentation.theory}
 
-/-- The source observation coordinates still available after restricting the declarations. -/
+/-- An assigned pair supports the declared observations and the source of each target input. -/
+structure ObservationsAt (change : ReadingContextChange source target u)
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
+    (i : source.cover.Index) (j : target.cover.Index) : Prop where
+  assigned : j ∈ change.pieces i
+  sourceKept (f : TotalSymbol source.presentation.signature) (named : source.observation.symbol = some f) :
+    Declaration.ofOperation f.operation ∈ (change.sourcePiece i).declarations
+  targetKept (f : TotalSymbol target.presentation.signature) (named : target.observation.symbol = some f) :
+    Declaration.ofOperation f.operation ∈ (target.cover.piece j).declarations
+  targetInputs (f : TotalSymbol target.presentation.signature) (named : target.observation.symbol = some f)
+      (k : target.observation.product.Index) :
+    Declaration.sort (source.observation.product.sort (positions.position k)) ∈ change.retained.declarations
+
+/-- A source coordinate is either kept in the restriction or was already external to it. -/
 def observationInputs (change : ReadingContextChange source target u) :
     Set source.observation.product.Index :=
-  {i | Declaration.sort (source.observation.product.sort i) ∈ change.retained.declarations}
+  {i | let d := Declaration.sort (source.observation.product.sort i)
+       d ∈ change.retained.declarations ∨
+         (source.observation.symbol = none ∧ d ∉ source.context.declarations)}
 
-/-- Each locally evaluable target coordinate comes from a retained source input. -/
+/-- A target coordinate is usable when the source coordinate is usable and its sort belongs
+to the assigned declarations or is external to the target selection. -/
 def targetObservationInputs (change : ReadingContextChange source target u)
     (positions : source.observation.product.Correspondence target.observation.product u.onSort) :
     Set target.observation.product.Index :=
-  {j | positions.position j ∈ change.observationInputs}
+  {j | let d := Declaration.sort (target.observation.product.sort j)
+       positions.position j ∈ change.observationInputs ∧
+         (d ∈ change.targetRetained.declarations ∨
+           (target.observation.symbol = none ∧ d ∉ target.context.declarations))}
 
 /-- The structural map on the retained coordinates of the ordinary observation. -/
 def mapObservationInputs (change : ReadingContextChange source target u)
@@ -848,7 +844,7 @@ def mapObservationInputs (change : ReadingContextChange source target u)
     (e : (source.observation.product.restrict change.observationInputs).Values source.structureData.carrier) :
     (target.observation.product.restrict (change.targetObservationInputs positions)).Values
       target.structureData.carrier :=
-  fun j => positions.sort_eq j.val ▸ state _ (e ⟨positions.position j.val, j.property⟩)
+  fun j => positions.sort_eq j.val ▸ state _ (e ⟨positions.position j.val, j.property.1⟩)
 
 /-- The actual observations factor through the retained tuples. Their local square is
 required on every retained tuple, including tuples with no ambient extension. -/
@@ -864,19 +860,56 @@ def ObservationSquare (change : ReadingContextChange source target u)
     (∀ e, readTarget (fun j => e j.val) = target.observation.read e) ∧
     ∀ e, readTarget (change.mapObservationInputs positions state e) = value (readSource e)
 
-/-- When all source positions are retained, the local square is the original square. -/
+/-- When all positions are available, the local square is the original square. -/
+theorem observationSquare_of_available (change : ReadingContextChange source target u)
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
+    (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s))
+    (value : source.observation.Output → target.observation.Output)
+    (left : ∀ i, i ∈ change.observationInputs)
+    (right : ∀ j, j ∈ change.targetObservationInputs positions)
+    (square : ∀ e, target.observation.read (positions.mapValues state e) = value (source.observation.read e)) :
+    change.ObservationSquare positions state value :=
+  ⟨fun e => source.observation.read (fun i => e ⟨i, left i⟩),
+    fun e => target.observation.read (fun j => e ⟨j, right j⟩),
+    fun _ => rfl, fun _ => rfl, fun e => square (fun i => e ⟨i, left i⟩)⟩
+
+/-- Retaining every source sort makes all the observation inputs available for its square. -/
 theorem observationSquare_of_all (change : ReadingContextChange source target u)
     (positions : source.observation.product.Correspondence target.observation.product u.onSort)
     (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s))
     (value : source.observation.Output → target.observation.Output)
-    (kept : ∀ i, i ∈ change.observationInputs)
+    (kept : ∀ i, Declaration.sort (source.observation.product.sort i) ∈ change.retained.declarations)
     (square : ∀ e, target.observation.read (positions.mapValues state e) = value (source.observation.read e)) :
-    change.ObservationSquare positions state value :=
-  ⟨fun e => source.observation.read (fun i => e ⟨i, kept i⟩),
-    fun e => target.observation.read (fun j => e ⟨j, kept (positions.position j)⟩),
-    fun _ => rfl, fun _ => rfl, fun e => square (fun i => e ⟨i, kept i⟩)⟩
+    change.ObservationSquare positions state value := by
+  have left (i) : i ∈ change.observationInputs := Or.inl (kept i)
+  apply change.observationSquare_of_available positions state value left _ square
+  intro j
+  obtain ⟨i, k, assigned, covered⟩ := change.sort_is_covered _ (kept (positions.position j))
+  exact ⟨left _, Or.inl ⟨i, k, assigned, positions.sort_eq j ▸ covered⟩⟩
 
 end ReadingContextChange
+
+/-- A change of context keeps the primitive observations selected by either endpoint. -/
+def Reading.ContextCompatibility.retainsChosenSymbols {source target : Reading.{u, v, w, x}}
+    {u : Interpretation source.presentation.theory target.presentation.theory}
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort) :
+    source.ContextCompatibility target u → Prop
+  | .fixed .. => True
+  | .changed change =>
+    (source.observation.symbol = none ∧ target.observation.symbol = none) ∨
+      ∃ i j, change.ObservationsAt positions i j
+
+/-- The selected piece assignments cover either declared observation that is present. -/
+theorem ReadingContextChange.observation_assignment {source target : Reading.{u, v, w, x}}
+    {u : Interpretation source.presentation.theory target.presentation.theory}
+    (change : ReadingContextChange source target u)
+    {positions : source.observation.product.Correspondence target.observation.product u.onSort}
+    (support : (Reading.ContextCompatibility.changed change).retainsChosenSymbols positions)
+    (named : source.observation.symbol ≠ none ∨ target.observation.symbol ≠ none) :
+    ∃ i j, change.ObservationsAt positions i j := by
+  rcases support with ⟨left, right⟩ | assigned
+  · exact (named.elim (fun h => h left) (fun h => h right)).elim
+  · exact assigned
 
 /-- A comparison that changes declarations evaluates the ordinary observations locally. -/
 def Reading.ContextCompatibility.restrictedSquare {source target : Reading.{u, v, w, x}}
@@ -1031,6 +1064,65 @@ inductive CoefficientComparison {P Q : PrimitivePresentation.{u}} {U : Declarati
         (fun e => d.evaluateSelected (inputs.mapValues state e)) →
     CoefficientComparison c d onSort state
 
+namespace CoefficientComparison
+
+variable {P Q : PrimitivePresentation.{u}} {U : DeclarationContext P} {V : DeclarationContext Q}
+  {A : Structure P.signature} {B : Structure Q.signature}
+  {Γ : CoefficientProduct P.signature.SortType} {Δ : CoefficientProduct Q.signature.SortType}
+  {c : CoefficientReading.{u, v} U A Γ} {d : CoefficientReading.{u, v} V B Δ}
+  {onSort : P.signature.SortType → Q.signature.SortType}
+  {state : ∀ s, A.carrier s → B.carrier (onSort s)}
+
+/-- The correspondence of state inputs for the chosen coefficient transport. -/
+def UsesInputs {ordinarySource : ObservationProduct P.signature.SortType}
+    {ordinaryTarget : ObservationProduct Q.signature.SortType}
+    (positions : ordinarySource.Correspondence ordinaryTarget onSort)
+    (sourceShares : Γ.product.Index → ordinarySource.Index → Prop)
+    (targetShares : Δ.product.Index → ordinaryTarget.Index → Prop) :
+    CoefficientComparison c d onSort state → Prop
+  | .fixed _ =>
+    ∀ (k : d.selection.used.Index) (l : ordinaryTarget.Index),
+      targetShares k.val l → ∃ j : c.selection.used.Index,
+        HEq (Γ.slot j.val) (Δ.slot k.val) ∧ sourceShares j.val (positions.position l)
+  | .changed inputs _ =>
+    inputs.UsesCoefficientNames c.selection ∧
+      inputs.RespectsOrdinary positions Γ.product Subtype.val sourceShares (fun j i => targetShares j.val i)
+
+/-- A contextual change supplies an evaluation map, retains its inputs, and localizes each evaluation. -/
+def SupportsEvaluation (retains : P.signature.SortType → Prop) (sourceLocal targetLocal : Prop) :
+    CoefficientComparison c d onSort state → Prop
+  | .fixed _ => False
+  | .changed inputs _ =>
+    ((∀ i, retains (c.selection.used.sort i)) ∧ inputs.RetainsSourceSorts retains) ∧
+      sourceLocal ∧ targetLocal
+
+/-- With a supplied evaluation map, support is exactly locality and retention of the actual inputs. -/
+theorem supportsEvaluation_changed (retains : P.signature.SortType → Prop) (sourceLocal targetLocal : Prop)
+    (inputs : ReadingInputMap c.selection.used d.selection.used onSort)
+    (square : CoefficientReading.EvaluationComparison c d
+      (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
+      (fun e => d.evaluateSelected (inputs.mapValues state e))) :
+    (CoefficientComparison.changed inputs square).SupportsEvaluation retains sourceLocal targetLocal ↔
+      ((∀ i, retains (c.selection.used.sort i)) ∧ inputs.RetainsSourceSorts retains) ∧
+        sourceLocal ∧ targetLocal :=
+  Iff.rfl
+
+/-- Evaluate the actual retained inputs at both ends of a coefficient square. -/
+theorem restricted_evaluation_commutes
+    (inputs : ReadingInputMap c.selection.used d.selection.used onSort)
+    (square : CoefficientReading.EvaluationComparison c d
+      (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
+      (fun e => d.evaluateSelected (inputs.mapValues state e)))
+    {W : DeclarationContext P} {Z : DeclarationContext Q}
+    {left : W.declarations ⊆ U.declarations} {right : Z.declarations ⊆ V.declarations}
+    (sourceLocal : c.RespectsRestriction W left) (targetLocal : d.RespectsRestriction Z right)
+    (e : inputs.Values A.carrier) :
+    d.evaluateRetained targetLocal d.algebra (d.restrictSelected targetLocal (inputs.mapValues state e)) =
+      square.coefficients (c.evaluateRetained sourceLocal c.algebra (c.restrictSelected sourceLocal e.1)) := by
+  simpa only [CoefficientReading.evaluateRetained_mk] using square.evaluate_commutes e
+
+end CoefficientComparison
+
 /-- With one coefficient evaluation, compare it directly or project to the ordinary output. -/
 inductive OneSidedCoefficientComparison (CrossEvaluation : Type u) where
   | project
@@ -1065,17 +1157,7 @@ def Reading.CoefficientCompatibility.respectsOrdinary {source target : Reading.{
   split
   · exact fun _ => True
   · rename_i c d _ _
-    intro comparison
-    cases comparison with
-    | fixed =>
-      exact ∀ (j : c.2.selection.used.Index) (k : d.2.selection.used.Index)
-        (i : source.observation.product.Index) (l : target.observation.product.Index),
-        HEq (c.1.slot j.val) (d.1.slot k.val) →
-        source.SharesInput c.1 j.val i → target.SharesInput d.1 k.val l →
-        i = positions.position l
-    | changed inputs _ =>
-      exact ReadingInputMap.UsesCoefficientNames c.2.selection inputs ∧ inputs.RespectsOrdinary positions
-        c.1.product Subtype.val (source.SharesInput c.1) (fun j i => target.SharesInput d.1 j.val i)
+    exact CoefficientComparison.UsesInputs positions (source.SharesInput c.1) (target.SharesInput d.1)
   · rename_i d _ _
     exact fun comparison => match comparison with
       | .project => True
@@ -1098,13 +1180,7 @@ def Reading.CoefficientCompatibility.retainsEvaluation {source target : Reading.
   unfold Reading.CoefficientCompatibility
   split
   · exact fun _ => True
-  · rename_i c _ _ _
-    intro comparison
-    cases comparison with
-    | fixed => exact (∀ i, retains (c.2.selection.used.sort i)) ∧ sourceLocal ∧ targetLocal
-    | changed inputs _ =>
-      exact ((∀ i, retains (c.2.selection.used.sort i)) ∧ inputs.RetainsSourceSorts retains) ∧
-        sourceLocal ∧ targetLocal
+  · exact CoefficientComparison.SupportsEvaluation retains sourceLocal targetLocal
   · exact fun comparison => match comparison with
       | .project => True
       | .compare data => data.1.RetainsSourceSorts retains ∧ targetLocal
@@ -1131,7 +1207,7 @@ def Reading.ContextCompatibility.retainsCoefficients {source target : Reading.{u
     (contextChange : source.ContextCompatibility target u)
     (coefficientChange : source.CoefficientCompatibility target u.onSort state) : Prop :=
   match contextChange with
-  | .fixed _ _ => True
+  | .fixed _ => True
   | .changed change =>
     coefficientChange.retainsEvaluation (fun s => Declaration.sort s ∈ change.retained.declarations)
       (source.respectsCoefficientRestriction change.retained change.inside)
@@ -1180,7 +1256,8 @@ structure ReadingComparison (source target : Reading.{u, v, w, x}) where
   observationSupport : declarationChange.retainsObservations contexts := by
     first | trivial | exact ⟨False.elim, False.elim⟩
   /-- Named observations are evaluated in the paired pieces of this comparison. -/
-  declaredObservations : declarationChange.retainsChosenSymbols contexts := by trivial
+  declaredObservations : declarationChange.retainsChosenSymbols contexts := by
+    first | trivial | exact Or.inl ⟨rfl, rfl⟩
   /-- Coefficient transport when both readings use coefficients, with an optional cross-evaluation
   map when just one uses them. -/
   coefficientChange : source.CoefficientCompatibility target interpretation.onSort state.onSort
@@ -1222,7 +1299,7 @@ theorem ReadingComparison.covered_commutes {source target : Reading.{u, v, w, x}
       comparison.declarationChange.assignsPiece i j ∧
       Declaration.ofOperation right.symbol.operation ∈ (target.cover.piece j).declarations := by
     cases selected : comparison.declarationChange with
-    | fixed _ _ =>
+    | fixed _ =>
       obtain ⟨i, sourceKept⟩ := source.cover.covers left.kept
       obtain ⟨j, targetKept⟩ := target.cover.covers right.kept
       exact ⟨i, j, sourceKept, True.intro, targetKept⟩
@@ -1230,9 +1307,10 @@ theorem ReadingComparison.covered_commutes {source target : Reading.{u, v, w, x}
       have support := comparison.declaredObservations
       have leftNamed : source.observation.symbol = some left.symbol := by rw [left.reads]; rfl
       have rightNamed : target.observation.symbol = some right.symbol := by rw [right.reads]; rfl
-      simp only [selected, Reading.ContextCompatibility.retainsChosenSymbols, leftNamed, rightNamed] at support
-      obtain ⟨i, j, assigned, sourceKept, targetKept⟩ := support
-      exact ⟨i, j, sourceKept _ rfl, assigned, (targetKept _ rfl).1⟩
+      rw [selected] at support
+      obtain ⟨i, j, piece⟩ := change.observation_assignment support
+        (Or.inl (leftNamed ▸ Option.some_ne_none _))
+      exact ⟨i, j, piece.sourceKept _ leftNamed, piece.assigned, piece.targetKept _ rightNamed⟩
   obtain ⟨i, j, sourceKept, assigned, targetKept⟩ := locates
   refine ⟨i, j, sourceKept, targetKept, assigned, ?_⟩
   intro e
@@ -1265,10 +1343,10 @@ theorem ReadingComparison.target_observation_is_assigned {source target : Readin
     ∃ i j, j ∈ change.val.pieces i ∧
       Declaration.ofOperation f.operation ∈ (target.cover.piece j).declarations := by
   have holds := comparison.declaredObservations
-  cases origin : source.observation.symbol <;>
-    simp only [change.property, Reading.ContextCompatibility.retainsChosenSymbols, origin, named] at holds <;>
-    obtain ⟨i, j, assigned, _, kept⟩ := holds <;>
-    exact ⟨i, j, assigned, (kept f rfl).1⟩
+  rw [change.property] at holds
+  obtain ⟨i, j, piece⟩ := change.val.observation_assignment holds
+    (Or.inr (named ▸ Option.some_ne_none _))
+  exact ⟨i, j, piece.assigned, piece.targetKept f named⟩
 
 /-- The actual retention and observation maps commute on the whole retained state product. -/
 theorem ReadingComparison.observation_square_on_retained {source target : Reading.{u, v, w, x}}

@@ -166,7 +166,7 @@ private theorem alternateIdentity_equivalent :
 
 /-- Changing the representative of the identity still admits a fixed declaration comparison. -/
 def alternate_fixed_context : source.ContextCompatibility source alternateIdentity :=
-  .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ alternateIdentity_equivalent
+  .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
 
 /-- The selected context uses the supported representative of this same interpretation. -/
 private def alternateCoverChange : ReadingContextChange source target alternateIdentity where
@@ -340,7 +340,7 @@ def nonmodel_state_comparison : ReadingComparison (lawTestingReading false) (law
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value := id
   commutes _ := rfl
@@ -794,10 +794,12 @@ private def forgetPairedOperation : ReadingContextChange pairedReading splitPair
 /-- Covering the two inputs still does not permit forgetting the selected observation operation. -/
 theorem declared_observation_cannot_use_sort_only_assignment :
     ¬ (Reading.ContextCompatibility.changed forgetPairedOperation).retainsChosenSymbols (.identity _) := by
-  rintro ⟨i, j, assigned, _, kept⟩
-  have choosesFalse : j = false := Set.mem_singleton_iff.1 assigned
+  intro support
+  obtain ⟨i, j, piece⟩ := forgetPairedOperation.observation_assignment support
+    (Or.inr (by intro impossible; cases impossible))
+  have choosesFalse : j = false := Set.mem_singleton_iff.1 piece.assigned
   subst j
-  obtain ⟨s, impossible⟩ := (kept (.ordinary ()) rfl).1
+  obtain ⟨s, impossible⟩ := piece.targetKept (.ordinary ()) rfl
   cases impossible
 
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
@@ -838,7 +840,7 @@ def independent_coefficient_comparison :
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := .changed scalarInputMap
     { baseMap := RingHom.id Int
       coefficients := (RingHom.id Int).prod (RingHom.id Int)
@@ -897,6 +899,38 @@ def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedRe
        coordinate := fun i => ⟨.inr i, rfl⟩
        extra_used := fun i => ⟨i, rfl⟩ },
      fun _ => false, fun _ => rfl⟩
+
+/-- Choose the same coefficient rule while varying the ordinary position's name. -/
+private def scalarWithOrdinaryName (scope : Option String) : Reading.{0, 0, 0, 0} :=
+  { separateReading Int with
+    observation := StateObservation.ofContext [false] Int (fun e => e .here) scope
+    coefficients := some ⟨.ofList [false], scalarInputs Int⟩
+    sharedInputs := .empty _
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+private def independentToShared : (scalarWithOrdinaryName none).observation.product.Correspondence
+    (scalarWithOrdinaryName (some "typed variables")).observation.product id where
+  position := id
+  sort_eq _ := rfl
+  keepsNamed _ _ named _ _ _ := (named rfl).elim
+
+/-- Fixed coefficient settings cannot make two independent source states supply one shared target state. -/
+theorem fixed_parameters_cannot_invent_ordinary_share
+    (same : (scalarInputs Int).SameParameters (scalarInputs Int)) :
+    ¬ (CoefficientComparison.fixed (onSort := id) (state := fun _ => id) same).UsesInputs
+      independentToShared
+      ((scalarWithOrdinaryName none).SharesInput (.ofList [false]))
+      ((scalarWithOrdinaryName (some "typed variables")).SharesInput (.ofList [false])) := by
+  intro shares
+  let original : (CoefficientProduct.ofList [false]).product.Index := ⟨false, .here⟩
+  let selected : (scalarInputs Int).selection.used.Index := ⟨original, ⟨false, .here⟩, rfl⟩
+  have shared : (scalarWithOrdinaryName (some "typed variables")).SharesInput (.ofList [false]) original
+      ⟨false, .here⟩ := ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
+  obtain ⟨_, _, _, named | explicit⟩ := shares selected ⟨false, .here⟩ shared
+  · have impossible : (some "typed variables" : Option String) = none := named.2.2.1
+    cases impossible
+  · cases explicit.1
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
 
@@ -1021,7 +1055,7 @@ def all_sorts_comparison : ReadingComparison reading reading where
       partial_comm p := nomatch p
       quantity_comm q := nomatch q }
   contexts := .identity _
-  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩ (Interpretation.Equivalent.refl _)
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
   coefficientChange := PUnit.unit
   value e := fun n => !(e n)
   commutes _ := rfl
@@ -1031,5 +1065,70 @@ theorem all_sorts_comparison_at (e : Nat → Bool) (n : Nat) :
     (reading.observation.read (all_sorts_comparison.contexts.mapValues all_sorts_comparison.state.onSort e)) n =
       !(e n) :=
   congrFun (all_sorts_comparison.commutes e) n
+
+private def emptyContext : DeclarationContext presentation :=
+  ⟨∅, fun absent => absent.elim⟩
+
+/-- Observe an external state without making its sort part of the declaration selection. -/
+private def externalReading (s : Nat) : Reading.{0, 0, 0, 0} :=
+  { reading with
+    observation := StateObservation.ofSort s Bool id
+    context := emptyContext
+    cover := ⟨Empty, (fun i => nomatch i), (fun i => nomatch i), (fun absent => absent.elim)⟩
+    coefficients := none
+    sharedInputs := .empty _
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+private def successor : Interpretation presentation.theory presentation.theory where
+  onSort := Nat.succ
+  translation :=
+    { operation op := match op with
+        | .total f => nomatch f
+        | .partialOp p => nomatch p
+        | .quantity q => nomatch q
+      relation r := nomatch r
+      partialDomain p := nomatch p }
+  total f := nomatch f
+  quantity q := nomatch q
+  partialDefined p := nomatch p
+  definedPartial p := nomatch p
+  preserves n := nomatch n.val
+
+/-- A comparison can move the observed sort by a nonidentity interpretation at fixed selections. -/
+def nonidentity_at_fixed_context : ReadingComparison (externalReading 0) (externalReading 1) where
+  interpretation := successor
+  targetModel n := nomatch n.val
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := ⟨id, fun _ => rfl, fun _ _ named => (named rfl).elim⟩
+  declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
+
+/-- A change of cover does not forget a state that was already external at both endpoints. -/
+def external_stays_available_when_cover_changes :
+    ReadingComparison (externalReading 0)
+      { externalReading 1 with
+        cover := ⟨PUnit, (fun _ => emptyContext), (fun _ _ h => h), (fun absent => absent.elim)⟩ } :=
+  { nonidentity_at_fixed_context with
+    declarationChange := .changed
+      { retained := emptyContext
+        inside _ h := h
+        supporting := successor
+        equivalent := Interpretation.Equivalent.refl _
+        pieces i := nomatch i
+        localSupport i := nomatch i }
+    observationSupport := ⟨False.elim, False.elim⟩
+    declaredObservations := Or.inl ⟨rfl, rfl⟩
+    restrictedObservations := ReadingContextChange.observationSquare_of_available _ _ _ _
+      (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩)
+      (fun _ => ⟨Or.inr ⟨rfl, fun h => h.elim⟩, Or.inr ⟨rfl, fun h => h.elim⟩⟩) (fun _ => rfl) }
 
 end SHIGURE.Chapter1.IndexedObservation

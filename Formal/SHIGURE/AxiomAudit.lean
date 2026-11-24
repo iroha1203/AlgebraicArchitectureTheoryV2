@@ -70,6 +70,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.Chapter1.AdditionalCoefficientInputs.extra_cannot_reassign_original_sharing,
   SHIGURE.Chapter1.Observation.cannot_compare_external_after_forgetting_input,
   SHIGURE.Chapter1.Observation.constant_observations_compare_through_empty_cover,
+  SHIGURE.Chapter1.CoefficientTransport.identity_coefficients_across_cover_change,
+  SHIGURE.Chapter1.RetainedCoefficientInputs.fixed_parameters_cannot_invent_ordinary_share,
+  SHIGURE.Chapter1.IndexedObservation.nonidentity_at_fixed_context,
+  SHIGURE.Chapter1.IndexedObservation.external_stays_available_when_cover_changes,
+  CoefficientComparison.restricted_evaluation_commutes,
   CoefficientReading.evaluateRetained_mk
 ]
 

@@ -276,8 +276,7 @@ theorem residual_map (eqn : OrderedEquation sig) (h : StructureMap A B)
     apply (Term.mem_eval_iff _ _ _ _).2
     rw [onValue]
     exact h.evaluates_map eqn.right e.val _ ((Term.mem_eval_iff _ _ _ _).1 (eqn.rightValue_mem A e))
-  rw [← onValue, OrderedEquation.residual, map_sub, hl, hr]
-  rfl
+  rw [← onValue, eqn.residual_eq_sub A, eqn.residual_eq_sub B, map_sub, hl, hr]
 
 end OrderedEquation
 
