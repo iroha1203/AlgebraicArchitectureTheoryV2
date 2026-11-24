@@ -103,7 +103,7 @@ theorem termReferences_subset_graph {Γ : List P.signature.SortType} {s : P.sign
   exact termReferences_subset_graphAt t _ _
 
 /-- Form an application using an arity identified with the operation's declared arity. -/
-private def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
+def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
     Term sig Γ a.output :=
   cast (congrArg (Term sig Γ) (congrArg Arity.output same))
@@ -132,6 +132,31 @@ theorem selectTerm_var {Γ : List P.signature.SortType} {s : P.signature.SortTyp
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepS : Declaration.sort s ∈ U.declarations)
     (keep : termReferences (Term.var (sig := P.signature) i) ⊆ U.declarations) :
     selectTerm (.var i) keepΓ keepS keep = .var (selectVar keepΓ i) :=
+  rfl
+
+/-- Selecting an application selects its operation and all of its arguments in order. -/
+theorem selectTerm_app {Γ : List P.signature.SortType} (op : Operation P.signature)
+    (args : ∀ {s}, Var op.arity.inputs s → Term P.signature Γ s)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations)
+    (keepS : Declaration.sort op.arity.output ∈ U.declarations)
+    (keep : termReferences (Term.app op args) ⊆ U.declarations) :
+    selectTerm (.app op args) keepΓ keepS keep =
+      let keepOp := keep (Or.inl (Set.mem_singleton (Declaration.ofOperation op)))
+      reindexedApp (operation op keepOp) (operation_arity op keepOp) (fun {s} j =>
+        let i := ambientVar (operationInputs op keepOp) j
+        selectTerm (args i) keepΓ s.property (fun _ hd => keep (Or.inr ⟨_, i, hd⟩))) :=
+  rfl
+
+/-- Selecting a binding selects its initializer and extends the context for its body. -/
+theorem selectTerm_letBind {Γ : List P.signature.SortType} {a s : P.signature.SortType}
+    (init : Term P.signature Γ a) (body : Term P.signature (a :: Γ) s)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepS : Declaration.sort s ∈ U.declarations)
+    (keep : termReferences (init.letBind body) ⊆ U.declarations) :
+    selectTerm (init.letBind body) keepΓ keepS keep =
+      let keepA := keep (Or.inl (Set.mem_singleton (Declaration.sort a)))
+      .letBind (selectTerm init keepΓ keepA (fun _ hd => keep (Or.inr (Or.inl hd))))
+        (selectTerm body (Declaration.sorts_cons_subset keepA keepΓ) keepS
+          (fun _ hd => keep (Or.inr (Or.inr hd)))) :=
   rfl
 
 /-- An application of a typed total symbol refers to its primitive and all its argument terms. -/
@@ -932,7 +957,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     let op' := operation op keepOp
     let same := operation_arity op keepOp
     let θ' := selectSubstitution θ hΓ hΔ hθ
-    simp only [selectTerm.eq_2]
+    simp only [selectTerm_app]
     change reindexedApp op' same ts' = (reindexedApp op' same ts).substitute θ'
     refine (congrArg (fun (as' : ∀ {s}, Var (context op.arity.inputs hΛ) s →
         Term (signature U) (context Δ hΔ) s) => reindexedApp op' same as') ?_).trans
@@ -950,7 +975,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     have first := hi θ hΓ hΔ ha (fun _ hd => ht (Or.inr (Or.inl hd))) hθ (fun _ hd => hSub (Or.inr (Or.inl hd)))
     have second := hb θ.lift hΓ' hΔ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
       (liftTermReferences θ hθ) (fun _ hd => hSub (Or.inr (Or.inr hd)))
-    simp only [selectTerm.eq_3, Term.substitute_letBind]
+    simp only [selectTerm_letBind, Term.substitute_letBind]
     exact congrArg₂ (Term.letBind (sig := signature U)) first (second.trans
       (congrArg (fun replacement => Term.substitute replacement body') (selectSubstitution_lift θ hΓ hΔ hθ ha)))
 

@@ -93,13 +93,14 @@ theorem equality_ordered_some :
 
 /-- All names of the optional residual presentation are available in the full context. -/
 theorem full_retains_ring_support : (full paddedPresentation).RetainsRingSupport (.inl ()) :=
-  Set.subset_univ _
+  ((full paddedPresentation).retainsRingSupport_iff (.inl ())).2 (Set.subset_univ _)
 
 /-- The exact logical context does not supply this optional residual presentation. -/
 theorem equality_lacks_ring_support : ¬ equalityContext.RetainsRingSupport (.inl ()) := by
   intro support
+  have kept := (equalityContext.retainsRingSupport_iff (.inl ())).1 support
   apply ringLaw_omitted
-  exact support (Declaration.ringLaw_mem_ringEquationSupport (P := paddedPresentation)
+  exact kept (Declaration.ringLaw_mem_ringEquationSupport (P := paddedPresentation)
     (name := .inl ()) rfl (by exact ⟨.zeroAdd, rfl⟩))
 
 /-- The omitted ring axiom rules out the named certificate while the ordered text survives. -/
@@ -160,7 +161,8 @@ theorem integerReading_fails_equation :
 private def equalityPresentation : PrimitivePresentation where
   signature := paddedPresentation.signature
   laws := ⟨Unit, fun _ => paddedPresentation.laws.statement (.inl ()), fun _ => .additional⟩
-  otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written, sourceRing.statement_eq⟩
+  otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written,
+    sourceRing.toNamedOrderedEquation.statement_eq⟩
   derived _ role := by cases role
 
 /-- Send the one-law presentation's names to the matching names of the padded presentation. -/

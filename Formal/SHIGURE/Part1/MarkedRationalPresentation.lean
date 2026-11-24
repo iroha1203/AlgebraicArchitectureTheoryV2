@@ -186,6 +186,7 @@ private theorem unary_updated {Γ : List (Option SortName)} (name : Op)
     (names : Renaming (vocabulary.inputs name) Γ)
     (x : Term vocabulary.signature Γ (some name.source)) :
     vocabulary.updatedTerm names (argument name) x = unary name x := by
+  rw [Vocabulary.updatedTerm_eq]
   apply congrArg (fun (args : ∀ {s}, Var [some name.source] s → Term vocabulary.signature Γ s) =>
     Term.app (sig := vocabulary.signature) (.total (Symbol.multilinear name)) args)
   funext s position

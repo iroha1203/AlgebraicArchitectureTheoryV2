@@ -2279,6 +2279,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.graphRuleName_quantityTotality,
   Declaration.graphRuleName_graphImpliesDomain,
   Declaration.graphRuleName_domainImpliesGraph,
+  -- ContextSelectedEquations
+  DeclarationContext.Selected.selectNamedEquation_result,
   -- ContextSelectedEvaluation
   DeclarationContext.Selected.selectAssignment_apply,
   DeclarationContext.Selected.ambientAssignment_apply,
@@ -2311,6 +2313,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.termReferences_app,
   DeclarationContext.Selected.termReferences_letBind,
   DeclarationContext.Selected.selectTerm_var,
+  DeclarationContext.Selected.selectTerm_app,
+  DeclarationContext.Selected.selectTerm_letBind,
   DeclarationContext.Selected.termEq_support,
   DeclarationContext.Selected.selectSubstitution_at,
   -- ContextSelectedVocabulary
@@ -2374,8 +2378,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.relation_dependencies,
   Declaration.partial_domainSort_mem_dependsOn,
   Declaration.partial_domainSymbol_mem_dependsOn,
+  DeclarationContext.retainsRingSupport_iff,
   -- DerivationLemmas
   Renaming.shift_cons_comp,
+  -- Derivations
+  NamedOrderedEquation.eq_of_written_eq,
+  NamedRingEquation.toNamedOrderedEquation_written,
   -- Laws
   Law.equality_eq,
   -- MarkedVocabulary
@@ -2383,6 +2391,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Marked.Vocabulary.addTerm_some,
   Marked.Vocabulary.smulTerm_none,
   Marked.Vocabulary.smulTerm_some,
+  Marked.Vocabulary.updatedTerm_eq,
   Marked.Vocabulary.LinearityLaw.symbol_add,
   Marked.Vocabulary.LinearityLaw.symbol_smul,
   -- Reading
@@ -2402,7 +2411,21 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RestrictedEvaluation.holds_disj_iff,
   RestrictedEvaluation.holds_ex_iff,
   -- RingEquations
+  RingVocabulary.Expr.toTerm_var,
+  RingVocabulary.Expr.toTerm_zero,
+  RingVocabulary.Expr.toTerm_one,
+  RingVocabulary.Expr.toTerm_add,
+  RingVocabulary.Expr.toTerm_neg,
+  RingVocabulary.Expr.toTerm_mul,
   RingVocabulary.Expr.equality_eq,
+  RingVocabulary.law_addAssoc,
+  RingVocabulary.law_zeroAdd,
+  RingVocabulary.law_negAdd,
+  RingVocabulary.law_mulAssoc,
+  RingVocabulary.law_mulComm,
+  RingVocabulary.law_oneMul,
+  RingVocabulary.law_mulAdd,
+  RingVocabulary.law_cast,
   -- SelectedPresentation
   SignatureNames.formula_atom,
   SignatureNames.formula_truth,
@@ -2419,11 +2442,15 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Term.substitute_letBind,
   OrderedEquation.substitute_eq,
   OrderedEquation.Written.toLaw_eq,
+  RingEquation.Written.toOrdered_result,
+  RingEquation.Written.toOrdered_mk,
+  RingEquation.Written.toLaw_eq_ordered,
   -- Syntax
   Formula.rename_truth,
   Formula.rename_falsehood,
   Formula.holds_truth_iff,
   Formula.holds_falsehood_iff,
+  Term.totalValue_total,
   TotalSymbol.operation_ordinary,
   TotalSymbol.operation_quantity
 ]

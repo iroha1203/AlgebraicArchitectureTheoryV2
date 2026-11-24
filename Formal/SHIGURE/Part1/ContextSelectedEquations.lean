@@ -113,10 +113,14 @@ private theorem selectEquation_substitute {eqn : OrderedEquation P.signature} {p
     (selectFormula_substitute eqn.input θ hOld hΓ hTerms (lawInputSupport prev) (substitutedInput_kept (eqn := eqn) (p := p) θ h))
   have inputClause := selectFormula_conj θ.defined (eqn.input.substitute θ)
     (guardedInput_kept (eqn := eqn) (p := p) θ h)
+  have leftKept : termReferences (eqn.left.substitute θ) ⊆ U.declarations := by
+    simpa only [OrderedEquation.substitute_eq] using (expansion_terms_kept (prior.substitute θ) h).2.1
+  have rightKept : termReferences (eqn.right.substitute θ) ⊆ U.declarations := by
+    simpa only [OrderedEquation.substitute_eq] using (expansion_terms_kept (prior.substitute θ) h).2.2
   have leftSame := selectTerm_substitute eqn.left θ hOld hΓ hs (expansion_terms_kept prior prev).2.1 hTerms
-    (expansion_terms_kept (prior.substitute θ) h).2.1
+    leftKept
   have rightSame := selectTerm_substitute eqn.right θ hOld hΓ hs (expansion_terms_kept prior prev).2.2 hTerms
-    (expansion_terms_kept (prior.substitute θ) h).2.2
+    rightKept
   let make := OrderedEquation.mk (sig := signature U) (context Γ hΓ) ⟨eqn.result, hs⟩
   change selectEquation (prior.substitute θ) h = (selectEquation prior prev).substitute θ'
   rw [OrderedEquation.substitute_eq (selectEquation prior prev) θ']
@@ -189,6 +193,11 @@ noncomputable def selectNamedEquation (name : U.RetainedLaw) (w : NamedOrderedEq
   have hw : Declaration.lawBody w.written.toLaw ⊆ U.declarations := w.statement_eq.symm ▸ h
   exact ⟨selectWritten w.written hw, (selectWritten_toLaw w.written hw).trans
     (selectLaw_congr w.statement_eq hw h)⟩
+
+/-- Selection keeps an ordered equation's result sort under the retained-name subtype. -/
+theorem selectNamedEquation_result (name : U.RetainedLaw) (w : NamedOrderedEquation P.laws name.val) :
+    (selectNamedEquation name w).written.equation.result.val = w.written.equation.result :=
+  rfl
 
 end DeclarationContext.Selected
 end SHIGURE

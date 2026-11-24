@@ -174,6 +174,14 @@ noncomputable def updatedTerm {Γ : List (Option V.SortName)} {f : V.Multilinear
   Term.app (sig := V.signature) (.total (Symbol.multilinear f))
     (fun j => V.updatedTerms names i x ⟨_, j⟩)
 
+/-- An updated term applies the same symbol to the updated tuple. -/
+theorem updatedTerm_eq {Γ : List (Option V.SortName)} {f : V.Multilinear}
+    (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :
+    V.updatedTerm names i x =
+      Term.app (sig := V.signature) (.total (Symbol.multilinear f))
+        (fun j => V.updatedTerms names i x ⟨_, j⟩) :=
+  rfl
+
 /-- Proposition 3.6 imposes additivity as a literal equality Law at each argument. -/
 noncomputable def addLinearityLaw {f : V.Multilinear} (i : V.Position f) : Law V.signature :=
   let Γ := i.1 :: i.1 :: V.inputs f

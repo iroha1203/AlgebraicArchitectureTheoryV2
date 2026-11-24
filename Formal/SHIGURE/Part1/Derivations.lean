@@ -147,6 +147,15 @@ structure NamedOrderedEquation {sig : Signature.{u}} (laws : LawDeclarations sig
   /-- The literal equality is the Law registered at this name. -/
   statement_eq : written.toLaw = laws.statement name
 
+/-- The writing determines the attachment at a fixed Law name. -/
+theorem NamedOrderedEquation.eq_of_written_eq {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {name : laws.LawName} {left right : NamedOrderedEquation laws name}
+    (same : left.written = right.written) : left = right := by
+  cases left
+  cases right
+  cases same
+  rfl
+
 /-- A written ring equality and the names of the Laws that give its value sort a ring. -/
 structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
     (name : laws.LawName) where
@@ -167,8 +176,12 @@ variable {sig : Signature.{u}} {laws : LawDeclarations sig} {name : laws.LawName
 
 /-- Forget the presentation-specific ring symbols while retaining the literal equality. -/
 def toNamedOrderedEquation (data : NamedRingEquation laws name) : NamedOrderedEquation laws name :=
-  ⟨⟨data.written.equation.toOrderedEquation, data.written.conclusion, data.written.expansion⟩,
-    data.statement_eq⟩
+  ⟨data.written.toOrdered, data.written.toLaw_eq_ordered.symm.trans data.statement_eq⟩
+
+/-- Forgetting the named ring certificate retains its writing. -/
+theorem toNamedOrderedEquation_written (data : NamedRingEquation laws name) :
+    data.toNamedOrderedEquation.written = data.written.toOrdered :=
+  rfl
 
 /-- Attach the names of ring Laws written in the canonical form. -/
 def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw = laws.statement name)

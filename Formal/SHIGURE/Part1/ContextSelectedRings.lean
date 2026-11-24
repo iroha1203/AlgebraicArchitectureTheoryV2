@@ -177,10 +177,25 @@ private theorem selectRingExpr_term {Γ : List P.signature.SortType} {s : P.sign
     (expr : RingVocabulary.Expr Γ s) (h : termReferences (expr.toTerm r) ⊆ U.declarations) :
     selectTerm (expr.toTerm r) hΓ hs h = (selectRingExpr hΓ hs expr).toTerm (selectRingVocabulary r hs keep) := by
   induction expr with
-  | var i => exact selectTerm_var i hΓ hs h
-  | zero => exact selectNullary r.zero (keepsZero keep) hΓ hs h
-  | one => exact selectNullary r.one (keepsOne keep) hΓ hs h
+  | var i =>
+    simp only [RingVocabulary.Expr.toTerm_var] at h ⊢
+    simp only [selectRingExpr]
+    simp only [RingVocabulary.Expr.toTerm_var (selectRingVocabulary r hs keep)]
+    exact selectTerm_var i hΓ hs h
+  | zero =>
+    simp only [RingVocabulary.Expr.toTerm_zero] at h ⊢
+    simp only [selectRingExpr]
+    simp only [RingVocabulary.Expr.toTerm_zero (selectRingVocabulary r hs keep)]
+    exact selectNullary r.zero (keepsZero keep) hΓ hs h
+  | one =>
+    simp only [RingVocabulary.Expr.toTerm_one] at h ⊢
+    simp only [selectRingExpr]
+    simp only [RingVocabulary.Expr.toTerm_one (selectRingVocabulary r hs keep)]
+    exact selectNullary r.one (keepsOne keep) hΓ hs h
   | add x y hx hy =>
+    simp only [RingVocabulary.Expr.toTerm_add] at h ⊢
+    simp only [selectRingExpr]
+    simp only [RingVocabulary.Expr.toTerm_add (selectRingVocabulary r hs keep)]
     let args : ∀ {t}, Var [s, s] t → Term P.signature Γ t :=
       (x.toTerm r).argsCons ((y.toTerm r).argsCons Term.argsNil)
     have a : termReferences (x.toTerm r) ⊆ U.declarations := by
@@ -192,12 +207,18 @@ private theorem selectRingExpr_term {Γ : List P.signature.SortType} {s : P.sign
     exact congrArg₂ (fun (a b : Term (signature U) (context Γ hΓ) ⟨s, hs⟩) => (selectRingVocabulary r hs keep).add.term
       (a.argsCons (b.argsCons Term.argsNil))) (hx a) (hy b)
   | neg x hx =>
+    simp only [RingVocabulary.Expr.toTerm_neg] at h ⊢
+    simp only [selectRingExpr]
+    simp only [RingVocabulary.Expr.toTerm_neg (selectRingVocabulary r hs keep)]
     let args : ∀ {t}, Var [s] t → Term P.signature Γ t := (x.toTerm r).argsCons Term.argsNil
     have a : termReferences (x.toTerm r) ⊆ U.declarations := by
       simpa only [args, Term.argsCons_here] using typedArgumentKept r.neg args h .here
     refine (selectUnary r.neg _ (keepsNeg keep) hΓ hs h a).trans ?_
     exact congrArg (fun (a : Term (signature U) (context Γ hΓ) ⟨s, hs⟩) => (selectRingVocabulary r hs keep).neg.term (a.argsCons Term.argsNil)) (hx a)
   | mul x y hx hy =>
+    simp only [RingVocabulary.Expr.toTerm_mul] at h ⊢
+    simp only [selectRingExpr]
+    simp only [RingVocabulary.Expr.toTerm_mul (selectRingVocabulary r hs keep)]
     let args : ∀ {t}, Var [s, s] t → Term P.signature Γ t :=
       (x.toTerm r).argsCons ((y.toTerm r).argsCons Term.argsNil)
     have a : termReferences (x.toTerm r) ⊆ U.declarations := by
@@ -249,7 +270,28 @@ theorem selectRingVocabulary_law {s : P.signature.SortType} (r : RingVocabulary 
     (hs : Declaration.sort s ∈ U.declarations) (keep : Declaration.ringVocabularySupport r ⊆ U.declarations)
     (i : RingVocabulary.LawName) (h : Declaration.lawBody (r.law i) ⊆ U.declarations) :
     selectLaw (r.law i) h = (selectRingVocabulary r hs keep).law i := by
-  cases i <;> exact selectRingEquality r hs keep _ _ h
+  cases i with
+  | addAssoc =>
+    simp only [RingVocabulary.law_addAssoc] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
+  | zeroAdd =>
+    simp only [RingVocabulary.law_zeroAdd] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
+  | negAdd =>
+    simp only [RingVocabulary.law_negAdd] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
+  | mulAssoc =>
+    simp only [RingVocabulary.law_mulAssoc] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
+  | mulComm =>
+    simp only [RingVocabulary.law_mulComm] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
+  | oneMul =>
+    simp only [RingVocabulary.law_oneMul] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
+  | mulAdd =>
+    simp only [RingVocabulary.law_mulAdd] at h ⊢
+    exact selectRingEquality r hs keep _ _ h
 
 /-- Selection retains the orders, declared ring operations and original named axiom proofs of the residual. -/
 noncomputable def selectNamedRingEquation (name : U.RetainedLaw)
@@ -258,20 +300,33 @@ noncomputable def selectNamedRingEquation (name : U.RetainedLaw)
   let ordered := selectNamedEquation name equation.toNamedOrderedEquation
   let original := equation.written.equation.ring
   let selectedSort := ordered.written.equation.result
-  have hs : Declaration.sort equation.written.equation.result ∈ U.declarations := selectedSort.property
+  have sameSort : selectedSort.val = equation.written.equation.result := by
+    rw [selectNamedEquation_result, NamedRingEquation.toNamedOrderedEquation_written,
+      RingEquation.Written.toOrdered_result]
+  have hs : Declaration.sort equation.written.equation.result ∈ U.declarations :=
+    sameSort ▸ selectedSort.property
+  have supported := (U.retainsRingSupport_iff name.val).1 support
   let keep : Declaration.ringVocabularySupport original ⊆ U.declarations :=
-    (Declaration.ringVocabulary_subset_ringEquationSupport attached).trans support
+    (Declaration.ringVocabulary_subset_ringEquationSupport attached).trans supported
   let ring := selectRingVocabulary original hs keep
+  have sortTransport : (⟨equation.written.equation.result, hs⟩ : SortName U) = selectedSort :=
+    (Subtype.ext sameSort).symm
+  let selectedRing := cast (congrArg (RingVocabulary (signature U)) sortTransport) ring
   let writing : RingEquation.Written (signature U) :=
-    ⟨⟨ordered.written.equation, ring⟩, ordered.written.conclusion, ordered.written.expansion⟩
-  refine ⟨writing, ordered.statement_eq, Subtype.val ⁻¹' equation.axiomNames, fun i => ?_⟩
+    ⟨⟨ordered.written.equation, selectedRing⟩, ordered.written.conclusion, ordered.written.expansion⟩
+  have statement : writing.toLaw = (laws U).statement name := by
+    simpa only [RingEquation.Written.toLaw_eq_ordered, writing, RingEquation.Written.toOrdered_mk]
+      using ordered.statement_eq
+  refine ⟨writing, statement, Subtype.val ⁻¹' equation.axiomNames, fun i => ?_⟩
   have retains : Declaration.derivationOf rfl Subtype.val (equation.axioms_derive i) ⊆ U.declarations :=
-    fun _ used => support (Declaration.ringProof_mem_ringEquationSupport attached used)
+    fun _ used => supported (Declaration.ringProof_mem_ringEquationSupport attached used)
   have body := (namedDerivation_lawBody equation.axiomNames (original.law i) (equation.axioms_derive i)).trans retains
   have lawSame := selectRingVocabulary_law original hs keep i body
   let proof := selectNamedDerivation equation.axiomNames (equation.axioms_derive i) retains
-  change Derivation ((laws U).select (Subtype.val ⁻¹' equation.axiomNames)) (ring.law i).input (ring.law i).conclusion
-  rw [← lawSame]
+  change Derivation ((laws U).select (Subtype.val ⁻¹' equation.axiomNames))
+    (selectedRing.law i).input (selectedRing.law i).conclusion
+  have selectedLaw : selectedRing.law i = ring.law i := RingVocabulary.law_cast sortTransport ring i
+  rw [selectedLaw, ← lawSame]
   simp only [selectLaw_eq]
   exact proof
 
@@ -280,8 +335,10 @@ theorem selectNamedRingEquation_toOrdered (name : U.RetainedLaw)
     (equation : NamedRingEquation P.laws name.val) (attached : P.ringEquation name.val = some equation)
     (support : U.RetainsRingSupport name.val) :
     (selectNamedRingEquation name equation attached support).toNamedOrderedEquation =
-      selectNamedEquation name equation.toNamedOrderedEquation :=
-  rfl
+      selectNamedEquation name equation.toNamedOrderedEquation := by
+  apply NamedOrderedEquation.eq_of_written_eq
+  rw [NamedRingEquation.toNamedOrderedEquation_written, selectNamedRingEquation,
+    RingEquation.Written.toOrdered_mk]
 
 /-- The selected residual uses exactly the same set of named ring axioms. -/
 theorem selectNamedRingEquation_axiomNames (name : U.RetainedLaw)
@@ -291,9 +348,11 @@ theorem selectNamedRingEquation_axiomNames (name : U.RetainedLaw)
   ext axiomName
   constructor
   · rintro ⟨i, retained, rfl⟩
+    change i.val ∈ equation.axiomNames at retained
     exact retained
   · intro used
-    exact ⟨⟨axiomName, support (Declaration.ringLaw_mem_ringEquationSupport attached used)⟩, used, rfl⟩
+    have supported := (U.retainsRingSupport_iff name.val).1 support
+    exact ⟨⟨axiomName, supported (Declaration.ringLaw_mem_ringEquationSupport attached used)⟩, used, rfl⟩
 
 /-- The restriction keeps a named residual ring exactly when the attachment has all its declared support. -/
 noncomputable def ringEquation (name : U.RetainedLaw) : Option (NamedRingEquation (laws U) name) := by

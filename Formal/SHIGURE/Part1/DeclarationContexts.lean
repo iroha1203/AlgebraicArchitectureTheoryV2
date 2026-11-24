@@ -573,6 +573,12 @@ def DeclarationContext.RetainsRingSupport {P : PrimitivePresentation.{u}} (U : D
     (name : P.laws.LawName) : Prop :=
   Declaration.ringEquationSupport (P := P) name ⊆ U.declarations
 
+/-- A retained ring certificate has all of its recorded support in the context. -/
+theorem DeclarationContext.retainsRingSupport_iff {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
+    (name : P.laws.LawName) :
+    U.RetainsRingSupport name ↔ Declaration.ringEquationSupport (P := P) name ⊆ U.declarations :=
+  Iff.rfl
+
 /-- A family of subcontexts whose union is the selected context. -/
 structure DeclarationCover {P : PrimitivePresentation.{u}} (U : DeclarationContext P) where
   /-- The index type of the cover. -/

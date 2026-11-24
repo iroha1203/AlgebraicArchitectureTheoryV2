@@ -702,6 +702,28 @@ def writeVariables (eqn : RingEquation sig) (x y : Var eqn.context eqn.result)
 def Written.toLaw (written : Written sig) : Law sig :=
   ⟨written.equation.context, written.equation.input, written.conclusion⟩
 
+/-- Forget the ring symbols and keep the same ordered equation and literal conclusion. -/
+def Written.toOrdered (written : Written sig) : OrderedEquation.Written sig :=
+  ⟨written.equation.toOrderedEquation, written.conclusion, written.expansion⟩
+
+/-- The ordered writing has the same result sort. -/
+theorem Written.toOrdered_result (written : Written sig) :
+    written.toOrdered.equation.result = written.equation.result :=
+  rfl
+
+/-- Adding a ring to a writing and then forgetting it recovers the original writing. -/
+theorem Written.toOrdered_mk (written : OrderedEquation.Written sig)
+    (ring : RingVocabulary sig written.equation.result) :
+    (Written.mk ⟨written.equation, ring⟩ written.conclusion written.expansion).toOrdered = written := by
+  cases written
+  rfl
+
+/-- Forgetting the ring leaves the Law exactly as written. -/
+theorem Written.toLaw_eq_ordered (written : Written sig) :
+    written.toLaw = written.toOrdered.toLaw := by
+  rw [OrderedEquation.Written.toLaw_eq]
+  rfl
+
 /-- Apply another substitution to both the literal text and the ordered terms. -/
 def Written.substitute (written : Written sig) (θ : Substitution sig written.equation.context Δ) :
     Written sig :=

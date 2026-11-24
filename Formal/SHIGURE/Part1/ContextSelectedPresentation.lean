@@ -108,8 +108,7 @@ theorem presentation_orderedEquation (name : U.RetainedLaw) :
     have oldText := NamedRingEquation.ordered_of_some attached (P.otherOrderedEquation name.val)
     change (NamedRingEquation.ordered (P.ringEquation name.val) (P.otherOrderedEquation name.val)).map
       (selectNamedEquation name) = _
-    rw [oldText]
-    rfl)
+    rw [oldText, Option.map_some, selectNamedRingEquation_toOrdered])
 
 end DeclarationContext.Selected
 end SHIGURE

@@ -410,6 +410,14 @@ theorem totalValue_var [IsEmpty sig.Partial] (index : Var Γ s)
     (A : Structure sig) (e : Assignment A.carrier Γ) : (Term.var index).totalValue A e = e index :=
   rfl
 
+/-- Evaluate a total operation at the values of its argument terms. -/
+theorem totalValue_total [IsEmpty sig.Partial] (f : sig.Total)
+    (args : ∀ {t}, Var (sig.totalArity f).inputs t → Term sig Γ t)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Term.app (.total f) args).totalValue A e =
+      A.total f ⟨fun i => (args i).totalValue A e⟩ :=
+  rfl
+
 /-- The total evaluator yields the value of the general partial evaluation relation. -/
 theorem evaluates_totalValue [IsEmpty sig.Partial] (A : Structure sig) (term : Term sig Γ s) :
     ∀ e : Assignment A.carrier Γ, term.Evaluates A e (term.totalValue A e) := by

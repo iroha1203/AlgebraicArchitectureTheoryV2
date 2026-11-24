@@ -92,6 +92,36 @@ def toTerm (ring : RingVocabulary sig s) : Expr Γ s → Term sig Γ s
   | .neg x => ring.neg.term ((toTerm ring x).argsCons Term.argsNil)
   | .mul x y => ring.mul.term ((toTerm ring x).argsCons ((toTerm ring y).argsCons Term.argsNil))
 
+/-- A ring variable translates to the same typed variable. -/
+theorem toTerm_var (ring : RingVocabulary sig s) (i : Var Γ s) :
+    toTerm ring (.var i) = .var i :=
+  rfl
+
+/-- The zero expression translates to the declared nullary symbol. -/
+theorem toTerm_zero (ring : RingVocabulary sig s) :
+    toTerm (Γ := Γ) ring .zero = ring.zero.term Term.argsNil :=
+  rfl
+
+/-- The unit expression translates to the declared nullary symbol. -/
+theorem toTerm_one (ring : RingVocabulary sig s) :
+    toTerm (Γ := Γ) ring .one = ring.one.term Term.argsNil :=
+  rfl
+
+/-- Addition translates to the declared binary symbol with its arguments in order. -/
+theorem toTerm_add (ring : RingVocabulary sig s) (x y : Expr Γ s) :
+    toTerm ring (.add x y) = ring.add.term ((toTerm ring x).argsCons ((toTerm ring y).argsCons Term.argsNil)) :=
+  rfl
+
+/-- Negation translates to the declared unary symbol. -/
+theorem toTerm_neg (ring : RingVocabulary sig s) (x : Expr Γ s) :
+    toTerm ring (.neg x) = ring.neg.term ((toTerm ring x).argsCons Term.argsNil) :=
+  rfl
+
+/-- Multiplication translates to the declared binary symbol with its arguments in order. -/
+theorem toTerm_mul (ring : RingVocabulary sig s) (x y : Expr Γ s) :
+    toTerm ring (.mul x y) = ring.mul.term ((toTerm ring x).argsCons ((toTerm ring y).argsCons Term.argsNil)) :=
+  rfl
+
 /-- Evaluate an expression using the interpreted functions of the declared ring. -/
 def value (ring : RingVocabulary sig s) (A : Structure sig) (e : Assignment A.carrier Γ) :
     Expr Γ s → A.carrier s
@@ -202,6 +232,61 @@ def law (ring : RingVocabulary sig s) : LawName → Law sig
     let y : Expr [s, s, s] s := .var (.there .here)
     let z : Expr [s, s, s] s := .var (.there (.there .here))
     Expr.equality ring (.mul x (.add y z)) (.add (.mul x y) (.mul x z))
+
+/-- Associativity of addition is the literal equality of the displayed expressions. -/
+theorem law_addAssoc (ring : RingVocabulary sig s) : ring.law .addAssoc =
+    let x : Expr [s, s, s] s := .var .here
+    let y : Expr [s, s, s] s := .var (.there .here)
+    let z : Expr [s, s, s] s := .var (.there (.there .here))
+    Expr.equality ring (.add (.add x y) z) (.add x (.add y z)) :=
+  rfl
+
+/-- The additive left unit is the literal equality of the displayed expressions. -/
+theorem law_zeroAdd (ring : RingVocabulary sig s) : ring.law .zeroAdd =
+    let x : Expr [s] s := .var .here
+    Expr.equality ring (.add .zero x) x :=
+  rfl
+
+/-- The additive left inverse is the literal equality of the displayed expressions. -/
+theorem law_negAdd (ring : RingVocabulary sig s) : ring.law .negAdd =
+    let x : Expr [s] s := .var .here
+    Expr.equality ring (.add (.neg x) x) .zero :=
+  rfl
+
+/-- Associativity of multiplication is the literal equality of the displayed expressions. -/
+theorem law_mulAssoc (ring : RingVocabulary sig s) : ring.law .mulAssoc =
+    let x : Expr [s, s, s] s := .var .here
+    let y : Expr [s, s, s] s := .var (.there .here)
+    let z : Expr [s, s, s] s := .var (.there (.there .here))
+    Expr.equality ring (.mul (.mul x y) z) (.mul x (.mul y z)) :=
+  rfl
+
+/-- Commutativity of multiplication is the literal equality of the displayed expressions. -/
+theorem law_mulComm (ring : RingVocabulary sig s) : ring.law .mulComm =
+    let x : Expr [s, s] s := .var .here
+    let y : Expr [s, s] s := .var (.there .here)
+    Expr.equality ring (.mul x y) (.mul y x) :=
+  rfl
+
+/-- The multiplicative left unit is the literal equality of the displayed expressions. -/
+theorem law_oneMul (ring : RingVocabulary sig s) : ring.law .oneMul =
+    let x : Expr [s] s := .var .here
+    Expr.equality ring (.mul .one x) x :=
+  rfl
+
+/-- Left distributivity is the literal equality of the displayed expressions. -/
+theorem law_mulAdd (ring : RingVocabulary sig s) : ring.law .mulAdd =
+    let x : Expr [s, s, s] s := .var .here
+    let y : Expr [s, s, s] s := .var (.there .here)
+    let z : Expr [s, s, s] s := .var (.there (.there .here))
+    Expr.equality ring (.mul x (.add y z)) (.add (.mul x y) (.mul x z)) :=
+  rfl
+
+/-- Transporting the vocabulary along an equality of result sorts preserves each written axiom. -/
+theorem law_cast {t : sig.SortType} (same : s = t) (ring : RingVocabulary sig s) (i : LawName) :
+    (cast (congrArg (RingVocabulary sig) same) ring).law i = ring.law i := by
+  cases same
+  rfl
 
 /-- The commutative ring reconstructed from the declared functions and satisfied Laws. -/
 def commRing (ring : RingVocabulary sig s) (A : Structure sig)

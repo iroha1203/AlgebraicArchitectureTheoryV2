@@ -41,9 +41,10 @@ theorem updatedTerm_totalValue {f : V.Multilinear} [DecidableEq (V.Position f)]
     (e : Assignment (quotientCarriers K) Γ) :
     (V.updatedTerm names i x).totalValue (quotientStructure K maps) e =
       maps f (Function.update (fun j => e (names j.2)) i (x.totalValue (quotientStructure K maps) e)) := by
-  change maps f (fun j => (V.updatedTerms names i x j).totalValue (quotientStructure K maps) e) = _
+  rw [Vocabulary.updatedTerm_eq, Term.totalValue_total, quotientStructure_total_multilinear]
   apply congrArg (maps f)
   funext j
+  change (V.updatedTerms names i x j).totalValue (quotientStructure K maps) e = _
   by_cases same : j = i
   · subst j
     rw [V.updatedTerms_same, Function.update_self]
