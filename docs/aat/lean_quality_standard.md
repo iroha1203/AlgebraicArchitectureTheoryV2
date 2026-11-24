@@ -152,9 +152,9 @@ module docstring（`/-! -/`）を置く。docstring には主張の単なる言�
 
 ### 4.1 公理検査 [機械]
 
-- 新規の定理は `#print axioms` で公理依存を確認し、標準公理のみであることを
-  AxiomAudit（`#assert_standard_axioms_only`、
-  `Formal/AG/AxiomAudit.lean` / `Formal/Util/AssertStandardAxioms.lean`）に記録する。
+- 新規の定理は `#print axioms` で公理依存を確認し、標準公理のみであることを対応する監査に記録する。
+  `Formal/AG` では `Formal/AG/AxiomAudit.lean` の `#assert_standard_axioms_only` を使う。
+  `Formal/SHIGURE` の入口と検証手順は [SHIGURE の形式化](guideline.md#shigure-の形式化) に従う。
 - `axiom`、`admit`、`sorry`、`unsafe` は明示的な相談なしに導入しない。
 
 ### 4.2 rename の deprecation 規律 [査読]

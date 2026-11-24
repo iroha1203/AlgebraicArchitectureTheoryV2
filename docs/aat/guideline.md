@@ -1,6 +1,6 @@
 # AAT / Lean 編集ガイドライン
 
-この文書は、`Formal/AG` と `docs/aat` を編集するときの作業方針を定める。
+この文書は、`Formal/AG`、`Formal/SHIGURE`、`docs/aat` を編集するときの作業方針を定める。
 
 ## Claim discipline
 
@@ -52,6 +52,17 @@
   ArchMap やツール側の入力生成の仕様（contract）として管理する。
 - Lean 側は AAT で語れる命題の形式化を担い、ArchSig は観測（ArchMap）と法・方程式（LawPolicy）から
   診断結果を計算するツールとして、それぞれの価値と責務を独立に説明する。
+
+## SHIGURE の形式化
+
+- SHIGURE の定義と証明は `SHIGURE` 名前空間に置き、`Formal/SHIGURE.lean` から利用できるようにする。
+  [理論本文](algebraic_geometric_theory/README.md)の仮定と結論を保ち、mathlib の圏、環、多項式環、商環、局所化を用いる。
+- `Formal/SHIGURE` とその入口は独立した import 系統とし、`Mathlib`、`Std`、`Lean`、
+  `Formal.SHIGURE` の import に限る。
+- 主定理、命題、補題、系、具体例の定理は `Formal/SHIGURE/AxiomAudit.lean` に登録する。
+  専用の GitHub Actions ジョブ `SHIGURE build and kernel audit` で
+  `lake build +Formal.SHIGURE`、import と全宣言の検査、公理監査を実行する。
+  証明で使える公理は `propext`、`Classical.choice`、`Quot.sound` に限る。
 
 ## 「境界」という言葉の使用を禁止する
 
