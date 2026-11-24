@@ -91,6 +91,19 @@ theorem evaluates_applyUnary_iff (body : Term sig [s] t) (arg : Term sig Γ s)
   evaluates_applyStrict_of_evaluatesAt body (Substitution.singleton arg) A xs _
     (Substitution.singleton_evaluatesAt arg A xs value held) y
 
+/-- Strict unary application first evaluates its argument and then the body at that value. -/
+theorem evaluates_applyUnary_exists_iff (body : Term sig [s] t) (arg : Term sig Γ s)
+    (A : Structure sig) (xs : Assignment A.carrier Γ) (y : A.carrier t) :
+    (body.applyUnary arg).Evaluates A xs y ↔
+      ∃ value, arg.Evaluates A xs value ∧ body.Evaluates A (Assignment.cons value Assignment.empty) y := by
+  constructor
+  · intro held
+    obtain ⟨values, arguments, _⟩ := (evaluates_applyStrict A body (fun i => Substitution.singleton arg i) xs y).1 held
+    have evaluated : arg.Evaluates A xs (values .here) := arguments .here
+    exact ⟨values .here, evaluated, (evaluates_applyUnary_iff body arg A xs _ evaluated y).1 held⟩
+  · rintro ⟨value, evaluated, result⟩
+    exact (evaluates_applyUnary_iff body arg A xs value evaluated y).2 result
+
 end SHIGURE.Term
 
 namespace SHIGURE.Formula
