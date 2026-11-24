@@ -1790,7 +1790,7 @@ theorem selected_recipe_restricts_on_its_realizations : r.RespectsRestriction W 
         rfl
       exact congrArg some (funext (composed leftType rightType))
     | there i => exact nomatch i
-  · dsimp only [CoefficientReading.LocalPointRule.AgreesOnDeclared]
+  · apply (CoefficientReading.LocalPointRule.agreesOnDeclared_iff localPoint r inside local_evaluation ()).2
     intro X a points admissible describes _ _ i
     obtain ⟨s, value⟩ := i
     cases value with
@@ -1807,12 +1807,12 @@ theorem restricted_recipe_reads_both_states :
   simp only [CoefficientReading.evaluateRetained_mk]
   exact ⟨rfl, rfl⟩
 
-/-- The member with an empty second carrier is outside the declared recipe's domain. -/
+/-- The declared recipe does not describe the identity at a target with an empty second carrier. -/
 theorem recipe_remains_undefined_outside_its_realizations :
     ¬ programs.describes () (full Unit) (full Empty) false id :=
   fun h => h.2.1.elim (fun x => x.elim)
 
-/-- A source that the method cannot read is outside the domain of the declared rule. -/
+/-- The declared recipe does not describe the identity at the unpermitted source. -/
 theorem recipe_remains_undefined_at_unpermitted_source :
     ¬ programs.describes () (full Empty) (full Unit) false id :=
   fun h => h.1.elim (fun x => x.elim)
@@ -1914,8 +1914,10 @@ theorem cannot_restrict_recipe_with_unextendable_source : ¬ nonlocalReading.Res
       change (!x) = if Nonempty Empty then x else !x
       rw [if_neg (fun h => h.elim Empty.elim)]
     | there i => exact nomatch i
-  change rule.AgreesOnDeclared nonlocalReading inside locality.supported () at matchesMethod
-  have sameAtLocalSource := matchesMethod (full Empty) () flippedPoints True.intro describes
+  have agreesRule : rule.AgreesOnDeclared nonlocalReading inside locality.supported () := matchesMethod
+  have appliesRule := (CoefficientReading.LocalPointRule.agreesOnDeclared_iff rule nonlocalReading inside
+    locality.supported ()).1 agreesRule
+  have sameAtLocalSource := appliesRule (full Empty) () flippedPoints True.intro describes
     sameBooleanSource (RestrictedStructure.Agrees.refl _) ⟨false, .here⟩
   change rule ((full Empty).restrictWithin inside) ((full Unit).restrictWithin inside)
     false (locality.supported ⟨false, .here⟩) = some (id : Bool → Bool) at sameAtReading
@@ -1924,7 +1926,7 @@ theorem cannot_restrict_recipe_with_unextendable_source : ¬ nonlocalReading.Res
   have contradiction := congrFun (Option.some.inj (sameAtReading.symm.trans sameAtLocalSource)) false
   cases contradiction
 
-/-- Once the extra sort is outside the method's context, even a declared recipe cannot inspect it. -/
+/-- Changing a forgotten source carrier cannot change the described Boolean point map. -/
 theorem forgotten_carrier_cannot_change_declared_points
     (recipes : CoefficientPointPrograms.{0, 0} W) (selected : recipes.Selector) :
     let target := (full PUnit).restrictWithin inside

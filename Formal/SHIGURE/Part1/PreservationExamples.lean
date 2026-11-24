@@ -772,7 +772,7 @@ private theorem pointReading_local {W : DeclarationContext Observation.presentat
       some (fun z => cast y (cast x.symm z))
     rw [dif_pos (show X.carrier i.1 = Y.carrier i.1 from x.symm.trans y)]
     exact congrArg some (funext (cast_via_common_carrier x y))
-  · dsimp only [CoefficientReading.LocalPointRule.AgreesOnDeclared]
+  · apply (CoefficientReading.LocalPointRule.agreesOnDeclared_iff localIdentityRule pointReading inside kept false).2
     intro X a points _ describes _ _ i
     classical
     let Y := pointReading.scheme.structureOf pointReading.algebra a

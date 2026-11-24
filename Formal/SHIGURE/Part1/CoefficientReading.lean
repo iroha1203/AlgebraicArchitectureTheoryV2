@@ -541,6 +541,26 @@ def LocalPointRule.AgreesOnDeclared {W : DeclarationContext P} (rule : LocalPoin
         rule (X.restrictWithin inside) (Y.restrictWithin inside) (reading.selection.selected.sort i) (supported i) =
           some (points _ ⟨i, rfl⟩)
 
+/-- Introduce or apply declared agreement using the method's admissible point correspondences. -/
+theorem LocalPointRule.agreesOnDeclared_iff {W : DeclarationContext P} (rule : LocalPointRule W)
+    (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
+    (selected : (reading.scheme.pointPrograms reading.algebra reading.choice).Selector) :
+    rule.AgreesOnDeclared reading inside supported selected ↔
+      ∀ (X : RestrictedStructure U) (a : reading.scheme.Realization reading.algebra),
+        ∀ points : reading.scheme.SelectedPointMap reading.algebra a X.carrier
+            (Set.range reading.selection.selected.sort),
+          reading.scheme.permitsPoints reading.algebra a X (Set.range reading.selection.selected.sort) points →
+          (∀ s hs, (reading.scheme.pointPrograms reading.algebra reading.choice).describes selected X
+            (reading.scheme.structureOf reading.algebra a) s (points s hs)) →
+          ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees (X.restrictWithin inside) →
+          ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees
+            ((reading.scheme.structureOf reading.algebra a).restrictWithin inside) →
+          ∀ i : reading.selection.selected.Index,
+            rule (X.restrictWithin inside) ((reading.scheme.structureOf reading.algebra a).restrictWithin inside)
+              (reading.selection.selected.sort i) (supported i) = some (points _ ⟨i, rfl⟩) :=
+  Iff.rfl
+
 /-- Restrict the actual point correspondence and evaluation at the chosen coefficient algebra. -/
 structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : DeclarationContext P)
     (inside : W.declarations ⊆ U.declarations) : Prop where
