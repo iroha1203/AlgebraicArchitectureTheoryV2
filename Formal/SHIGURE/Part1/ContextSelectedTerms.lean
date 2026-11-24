@@ -92,6 +92,31 @@ def selectTerm : {Γ : List P.signature.SortType} → {s : P.signature.SortType}
       (selectTerm y (Declaration.sorts_cons_subset keepA keepΓ) keepS (fun _ hd => keep (Or.inr (Or.inr hd))))
 
 
+/-- An application of a typed total symbol refers to its primitive and all its argument terms. -/
+theorem typedTermReferences {Γ : List P.signature.SortType} {profile : Arity P.signature.SortType}
+    (f : TypedTotal P.signature profile) (args : ∀ {s}, Var profile.inputs s → Term P.signature Γ s) :
+    termReferences (f.term args) =
+      {Declaration.ofOperation f.symbol.operation} ∪
+        {d | ∃ (s : P.signature.SortType) (i : Var profile.inputs s), d ∈ termReferences (args i)} := by
+  rcases f with ⟨symbol, same⟩
+  cases same
+  rfl
+
+/-- Selection commutes with applying a typed total symbol to supported terms. -/
+theorem selectTypedTotal_term {Γ : List P.signature.SortType} {profile : Arity P.signature.SortType}
+    (f : TypedTotal P.signature profile) (args : ∀ {s}, Var profile.inputs s → Term P.signature Γ s)
+    (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations)
+    (inputs : Declaration.sorts profile.inputs ⊆ U.declarations)
+    (output : Declaration.sort profile.output ∈ U.declarations)
+    (ht : termReferences (f.term args) ⊆ U.declarations)
+    (ha : ∀ {s} (i : Var profile.inputs s), termReferences (args i) ⊆ U.declarations) :
+    selectTerm (f.term args) hΓ output ht = (selectTypedTotal f keep inputs output).term
+      (fun {s} i => selectTerm (args (ambientVar inputs i)) hΓ s.property (ha _)) := by
+  rcases f with ⟨symbol, same⟩
+  cases same
+  cases symbol <;> rfl
+
 private theorem appendSupport {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations) :
     Declaration.sorts (Γ ++ Δ) ⊆ U.declarations := by

@@ -1,5 +1,5 @@
 import Formal.SHIGURE.Part1.ContextSelectedProofs
-import Formal.SHIGURE.Part1.ContextSelectedEquations
+import Formal.SHIGURE.Part1.ContextSelectedRings
 import Mathlib.Data.List.Basic
 
 /-! # The restricted primitive presentation
@@ -30,17 +30,6 @@ theorem ambientArity_injective : Function.Injective (ambientArity (U := U)) := b
       have inputs : xs.map Subtype.val = ys.map Subtype.val := congrArg Arity.inputs same
       have output : x.val = y.val := congrArg Arity.output same
       exact congrArg₂ Arity.mk (List.map_injective_iff.2 Subtype.val_injective inputs) (Subtype.ext output)
-
-/-- A named total symbol remains total and retains its original tag. -/
-def selectTotalSymbol : (f : TotalSymbol P.signature) → Declaration.ofOperation f.operation ∈ U.declarations →
-    TotalSymbol (signature U)
-  | .ordinary f, keep => .ordinary ⟨f, keep⟩
-  | .quantity q, keep => .quantity ⟨q, keep⟩
-
-/-- The selected total symbol has the arity read from its original declaration. -/
-theorem selectTotalSymbol_arity (f : TotalSymbol P.signature) (keep : Declaration.ofOperation f.operation ∈ U.declarations) :
-    (selectTotalSymbol f keep).operation.arity = arity f.operation keep := by
-  cases f <;> rfl
 
 /-- A retained partial declaration also retains its explicitly declared domain sort. -/
 theorem domainSortKept (p : Partial U) (data : DomainInclusions p.val)
@@ -79,7 +68,9 @@ theorem keepsDerived (name : U.RetainedLaw) (role : P.laws.role name.val = .deri
 noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentation.{u} where
   signature := signature U
   laws := laws U
-  otherOrderedEquation name := (P.orderedEquation name.val).map (selectNamedEquation name)
+  ringEquation := Selected.ringEquation
+  otherOrderedEquation name := NamedRingEquation.otherOrdered (Selected.ringEquation name)
+    ((P.orderedEquation name.val).map (selectNamedEquation name))
   domainInclusions p := match attached : P.domainInclusions p.val with
     | none => none
     | some data => some (selectDomainInclusions p data attached)
@@ -89,10 +80,40 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
 theorem presentation_theory : (presentation U).theory = theory U :=
   rfl
 
+/-- The selected presentation has exactly the original retained declaration names. -/
+def declarationNames (U : DeclarationContext P) : Declaration (presentation U) ≃ U.Retained where
+  toFun
+    | .sort s => ⟨.sort s.val, s.property⟩
+    | .total f => ⟨.total f.val, f.property⟩
+    | .relation r => ⟨.relation r.val, r.property⟩
+    | .partialOp p => ⟨.partialOp p.val, p.property⟩
+    | .quantity q => ⟨.quantity q.val, q.property⟩
+    | .law n => ⟨.law n.val, n.property⟩
+  invFun
+    | ⟨.sort s, kept⟩ => .sort ⟨s, kept⟩
+    | ⟨.total f, kept⟩ => .total ⟨f, kept⟩
+    | ⟨.relation r, kept⟩ => .relation ⟨r, kept⟩
+    | ⟨.partialOp p, kept⟩ => .partialOp ⟨p, kept⟩
+    | ⟨.quantity q, kept⟩ => .quantity ⟨q, kept⟩
+    | ⟨.law n, kept⟩ => .law ⟨n, kept⟩
+  left_inv d := by cases d <;> rfl
+  right_inv d := by rcases d with ⟨d, kept⟩; cases d <;> rfl
+
+/-- The declaration equivalence agrees with the typed signature and Law name map of the selection. -/
+theorem declarationNames_eq (d : Declaration (presentation U)) :
+    (declarationNames U d).val = d.renameNames (names U) Subtype.val := by
+  cases d <;> rfl
+
 /-- The selected Law has exactly the original ordered text read into the selected signature. -/
 theorem presentation_orderedEquation (name : U.RetainedLaw) :
     (presentation U).orderedEquation name = (P.orderedEquation name.val).map (selectNamedEquation name) :=
-  rfl
+  NamedRingEquation.ordered_otherOrdered _ _ (fun data h => by
+    obtain ⟨original, attached, support, rfl⟩ := ringEquation_some name h
+    have oldText := NamedRingEquation.ordered_of_some attached (P.otherOrderedEquation name.val)
+    change (NamedRingEquation.ordered (P.ringEquation name.val) (P.otherOrderedEquation name.val)).map
+      (selectNamedEquation name) = _
+    rw [oldText]
+    rfl)
 
 end DeclarationContext.Selected
 end SHIGURE

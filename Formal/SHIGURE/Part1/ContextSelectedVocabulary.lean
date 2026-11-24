@@ -97,6 +97,29 @@ theorem names_operation (op : Operation P.signature) (kept : Declaration.ofOpera
     (names U).operation (operation op kept) = op := by
   cases op <;> rfl
 
+/-- A named total symbol remains total and retains its original tag. -/
+def selectTotalSymbol : (f : TotalSymbol P.signature) → Declaration.ofOperation f.operation ∈ U.declarations →
+    TotalSymbol (signature U)
+  | .ordinary f, keep => .ordinary ⟨f, keep⟩
+  | .quantity q, keep => .quantity ⟨q, keep⟩
+
+/-- The selected total symbol has the arity read from its original declaration. -/
+theorem selectTotalSymbol_arity (f : TotalSymbol P.signature) (keep : Declaration.ofOperation f.operation ∈ U.declarations) :
+    (selectTotalSymbol f keep).operation.arity = arity f.operation keep := by
+  cases f <;> rfl
+
+/-- Selection preserves a declared total symbol's explicitly named profile. -/
+def selectTypedTotal {profile : Arity P.signature.SortType} (f : TypedTotal P.signature profile)
+    (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
+    (inputs : Declaration.sorts profile.inputs ⊆ U.declarations)
+    (output : Declaration.sort profile.output ∈ U.declarations) :
+    TypedTotal (signature U) ⟨context profile.inputs inputs, ⟨profile.output, output⟩⟩ where
+  symbol := selectTotalSymbol f.symbol keep
+  arity_eq := by
+    rcases f with ⟨symbol, same⟩
+    cases same
+    exact selectTotalSymbol_arity symbol keep
+
 /-- Select the type of a variable and keep its position. -/
 def selectVar : {Γ : List P.signature.SortType} → (kept : Declaration.sorts Γ ⊆ U.declarations) →
     {s : P.signature.SortType} → (v : Var Γ s) → Var (context Γ kept) ⟨s, varKept kept v⟩

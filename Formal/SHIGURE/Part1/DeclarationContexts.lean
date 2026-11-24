@@ -103,6 +103,13 @@ abbrev derivation {Γ : List P.signature.SortType} {p q : Formula P.signature Γ
     (proof : Derivation P.theory p q) : Set (Declaration P) :=
   derivationOf rfl Subtype.val proof
 
+/-- The five named operations of a declared value ring. -/
+def ringVocabularySupport {s : P.signature.SortType} (ring : RingVocabulary P.signature s) :
+    Set (Declaration P) :=
+  {ofOperation ring.zero.symbol.operation, ofOperation ring.one.symbol.operation,
+    ofOperation ring.add.symbol.operation, ofOperation ring.neg.symbol.operation,
+    ofOperation ring.mul.symbol.operation}
+
 /-- The declarations needed to read an ordered ring residual. -/
 def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
   match P.ringEquation name with
@@ -111,10 +118,7 @@ def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
     let ring := equation.written.equation.ring
     formula equation.written.equation.left.graph ∪
       formula equation.written.equation.right.graph ∪
-      ((Declaration.law '' equation.axiomNames ∪
-        {ofOperation ring.zero.symbol.operation, ofOperation ring.one.symbol.operation,
-          ofOperation ring.add.symbol.operation, ofOperation ring.neg.symbol.operation,
-          ofOperation ring.mul.symbol.operation}) ∪
+      ((Declaration.law '' equation.axiomNames ∪ ringVocabularySupport ring) ∪
         {a | ∃ i, a ∈ derivationOf rfl Subtype.val (equation.axioms_derive i)})
 
 /-- The immediate references of a declaration in Definition 3.1. -/
@@ -179,6 +183,14 @@ theorem ringProof_mem_ringEquationSupport {name : P.laws.LawName} {equation : Na
     d ∈ ringEquationSupport (P := P) name := by
   simp only [ringEquationSupport, attached]
   exact Or.inr (Or.inr ⟨i, used⟩)
+
+/-- The declared operations of an attached residual ring are part of its support. -/
+theorem ringVocabulary_subset_ringEquationSupport {name : P.laws.LawName}
+    {equation : NamedRingEquation P.laws name} (attached : P.ringEquation name = some equation) :
+    ringVocabularySupport (P := P) equation.written.equation.ring ⊆ ringEquationSupport (P := P) name := by
+  intro d keeps
+  simp only [ringEquationSupport, attached]
+  exact Or.inr (Or.inl (Or.inr keeps))
 
 end Declaration
 

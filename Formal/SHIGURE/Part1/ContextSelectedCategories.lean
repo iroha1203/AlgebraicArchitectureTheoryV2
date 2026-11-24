@@ -123,5 +123,14 @@ theorem write_res {U V : DeclarationContext P} (inside : V ≤ U) :
     writeFunctor U ⋙ res inside = modelRestriction inside ⋙ writeFunctor V := by
   rw [modelRestriction, Functor.assoc, Functor.assoc, read_comp_write, Functor.comp_id]
 
+/-- The ordinary model categories and their literal reducts form a contravariant functor. -/
+noncomputable def modelPresheaf (P : PrimitivePresentation.{u}) :
+    (DeclarationContext P)ᵒᵖ ⥤ Cat.{u, u + 1} where
+  obj U := Cat.of (Model (theory (Opposite.unop U)))
+  map f := (modelRestriction (leOfHom f.unop)).toCatHom
+  map_id U := congrArg Functor.toCatHom (modelRestriction_id (Opposite.unop U))
+  map_comp f g := congrArg Functor.toCatHom
+    (modelRestriction_comp (leOfHom f.unop) (leOfHom g.unop)).symm
+
 end DeclarationContext.Selected
 end SHIGURE

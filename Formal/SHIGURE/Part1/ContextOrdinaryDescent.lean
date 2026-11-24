@@ -101,20 +101,86 @@ theorem ordinaryAssemble_read {A B : Model (Selected.theory U)}
   rw [h]
   simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl, Category.id_comp, Category.comp_id]
 
+/-- A piece of the assembled ordinary arrow is exactly its original local component. -/
+theorem ordinaryAssemble_piece {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) (i : cover.Index) :
+    (Selected.modelRestriction (cover.subset i)).map (cover.ordinaryAssemble f) = f.pieceMap i :=
+  congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) (cover.ordinaryAssemble_read f)
+
 /-- Theorem 3.5 for arbitrary compatible arrows of the ordinary local models. -/
 theorem existsUnique_ordinary_assemble {A B : Model (Selected.theory U)}
     (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) :
     ∃! h : A ⟶ B, ∀ i, (Selected.modelRestriction (cover.subset i)).map h = f.pieceMap i := by
-  refine ⟨cover.ordinaryAssemble f, ?_, ?_⟩
-  · intro i
-    exact congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) (cover.ordinaryAssemble_read f)
-  · intro h components
-    have matching : cover.ordinaryRead.map h = f :=
-      OrdinaryMatch.Hom.ext components
-    unfold ordinaryAssemble
-    rw [← matching]
-    change h = _ ≫ (cover.ordinaryRead ⋙ cover.ordinaryGlue).map h ≫ _
-    rw [Functor.congr_hom cover.ordinaryRead_comp_glue h]
-    simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl, Category.id_comp, Category.comp_id]
+  refine ⟨cover.ordinaryAssemble f, cover.ordinaryAssemble_piece f, fun h components => ?_⟩
+  have matching : cover.ordinaryRead.map h = f :=
+    OrdinaryMatch.Hom.ext components
+  unfold ordinaryAssemble
+  rw [← matching]
+  change h = _ ≫ (cover.ordinaryRead ⋙ cover.ordinaryGlue).map h ≫ _
+  rw [Functor.congr_hom cover.ordinaryRead_comp_glue h]
+  simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl, Category.id_comp, Category.comp_id]
+
+/-- Ordinary assembly takes the tuple of local identities to the global identity. -/
+theorem ordinaryAssemble_id (A : Model (Selected.theory U)) :
+    cover.ordinaryAssemble (show OrdinaryMatch.Hom _ _ from 𝟙 (cover.ordinaryRead.obj A)) = 𝟙 A := by
+  let f := (show OrdinaryMatch.Hom _ _ from 𝟙 (cover.ordinaryRead.obj A))
+  obtain ⟨g, _, unique⟩ := cover.existsUnique_ordinary_assemble f
+  exact (unique _ (cover.ordinaryAssemble_piece f)).trans
+    (unique _ (fun i => (Selected.modelRestriction (cover.subset i)).map_id A)).symm
+
+/-- Ordinary assembly commutes with composition of ordinary matching arrows. -/
+theorem ordinaryAssemble_comp {A B C : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B))
+    (g : OrdinaryMatch.Hom (cover.ordinaryRead.obj B) (cover.ordinaryRead.obj C)) :
+    cover.ordinaryAssemble (f.comp g) = cover.ordinaryAssemble f ≫ cover.ordinaryAssemble g := by
+  obtain ⟨h, _, unique⟩ := cover.existsUnique_ordinary_assemble (f.comp g)
+  refine (unique _ (cover.ordinaryAssemble_piece (f.comp g))).trans (unique _ ?_).symm
+  intro i
+  rw [Functor.map_comp, cover.ordinaryAssemble_piece f, cover.ordinaryAssemble_piece g]
+  rfl
+
+/-- The ordinary restriction to an intersection is independent of the route to it. -/
+theorem ordinaryPullback_restrictions {V : DeclarationContext P} (inside : V ≤ U) (i : cover.Index) :
+    Selected.modelRestriction inside ⋙ Selected.modelRestriction ((cover.pullback inside).subset i) =
+      Selected.modelRestriction (cover.subset i) ⋙ Selected.modelRestriction (inter_le_left (cover.piece i) V) :=
+  (Selected.modelRestriction_comp inside ((cover.pullback inside).subset i)).trans
+    (Selected.modelRestriction_comp (cover.subset i) (inter_le_left (cover.piece i) V)).symm
+
+/-- At a pullback piece the assembled ordinary arrow restricts to the given local map's restriction. -/
+theorem ordinaryPullback_component {V : DeclarationContext P} {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B))
+    (inside : V ≤ U) (i : cover.Index) :
+    (Selected.modelRestriction ((cover.pullback inside).subset i)).map
+      ((Selected.modelRestriction inside).map (cover.ordinaryAssemble f)) =
+    eqToHom (Functor.congr_obj (cover.ordinaryPullback_restrictions inside i) A) ≫
+      (Selected.modelRestriction (inter_le_left (cover.piece i) V)).map (f.pieceMap i) ≫
+      eqToHom (Functor.congr_obj (cover.ordinaryPullback_restrictions inside i) B).symm := by
+  rw [← cover.ordinaryAssemble_piece f i]
+  exact Functor.congr_hom (cover.ordinaryPullback_restrictions inside i) (cover.ordinaryAssemble f)
+
+/-- Ordinary matching arrows restrict along the pullback cover of a smaller context. -/
+noncomputable def ordinaryPullback_matchingMap {V : DeclarationContext P} {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B))
+    (inside : V ≤ U) : OrdinaryMatch.Hom
+      ((cover.pullback inside).ordinaryRead.obj ((Selected.modelRestriction inside).obj A))
+      ((cover.pullback inside).ordinaryRead.obj ((Selected.modelRestriction inside).obj B)) where
+  pieceMap i := eqToHom (Functor.congr_obj (cover.ordinaryPullback_restrictions inside i) A) ≫
+    (Selected.modelRestriction (inter_le_left (cover.piece i) V)).map (f.pieceMap i) ≫
+    eqToHom (Functor.congr_obj (cover.ordinaryPullback_restrictions inside i) B).symm
+  overlap_comm i j := by
+    rw [← cover.ordinaryPullback_component f inside i, ← cover.ordinaryPullback_component f inside j]
+    exact ((cover.pullback inside).ordinaryRead.map
+      ((Selected.modelRestriction inside).map (cover.ordinaryAssemble f))).overlap_comm i j
+
+/-- Ordinary assembly commutes strictly with restriction to any smaller context. -/
+theorem ordinaryAssemble_pullback {V : DeclarationContext P} {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B))
+    (inside : V ≤ U) :
+    (Selected.modelRestriction inside).map (cover.ordinaryAssemble f) =
+      (cover.pullback inside).ordinaryAssemble (cover.ordinaryPullback_matchingMap f inside) := by
+  let localMap := cover.ordinaryPullback_matchingMap f inside
+  obtain ⟨g, _, unique⟩ := (cover.pullback inside).existsUnique_ordinary_assemble localMap
+  exact (unique _ (cover.ordinaryPullback_component f inside)).trans
+    (unique _ ((cover.pullback inside).ordinaryAssemble_piece localMap)).symm
 
 end SHIGURE.DeclarationCover
