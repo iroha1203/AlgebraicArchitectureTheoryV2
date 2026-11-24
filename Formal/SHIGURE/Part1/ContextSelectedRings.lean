@@ -5,6 +5,16 @@ import Formal.SHIGURE.Part1.ContextSelectedEquations
 When a logical context also keeps the names of an attached residual ring,
 its five typed symbols, named axioms, and original derivations all select
 to the smaller signature.
+
+## Implementation notes
+
+The declaration dependency rules apply to the written Law and to any
+derivation registered with a derived Law. The ring certificate has its own
+support, including the five ring symbols and the original named proofs.
+Putting this support in the declaration dependency rules would prevent a
+context from keeping the written equality on its own. The selection keeps
+the ring certificate when this separate support fits in the context, and
+the presentation reads the ordered text in either case.
 -/
 
 universe u

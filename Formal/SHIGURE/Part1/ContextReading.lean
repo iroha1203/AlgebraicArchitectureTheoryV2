@@ -7,6 +7,16 @@ A reading uses the declaration context and cover it already specifies.
 Its restriction lives over the actual selected presentation. An attached
 residual uses the original proof names and equations when the reading has
 their support, even when those names declare additional Laws.
+
+## Implementation notes
+
+`Reading.restrict` accepts a caller-supplied presentation with an exact
+`ReadingOrigin` certificate for the named attachments. The computed
+selection here uses the declaration names, context and cover already present
+in the reading. This lets a context retain a written Law and its ordered
+terms when some references of its optional ring certificate are outside the
+context. Requiring full attachment equality for this computation would ask
+the context to retain those references as well.
 -/
 
 universe u v w x
@@ -35,14 +45,23 @@ theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
   exact ((Selected.readStructure_matches A).law_iff original kept).trans
     (ContextStructure.ofStructure_satisfies_iff reading.context reading.structureData original kept)
 
-/-- An ambient model gives the selected ordinary model of the same reading. -/
-noncomputable def selectedModel (model : reading.presentation.theory.Holds reading.structureData) :
+/-- The selected model condition tests the original Laws that are both retained and required. -/
+theorem selectedTheory_holds_iff :
+    reading.selectedPresentation.theory.Holds reading.selectedStructure ↔
+      ∀ name : reading.selectedPresentation.theory.LawName,
+        (reading.presentation.laws.statement name.val.val).Holds reading.structureData := by
+  constructor
+  · exact fun model name => (reading.selectedLaw_iff name.val).1 (model name)
+  · exact fun model name => (reading.selectedLaw_iff name.val).2 (model name)
+
+/-- The reading determines its ordinary model when the retained required Laws hold. -/
+noncomputable def selectedModel (model : reading.selectedPresentation.theory.Holds reading.selectedStructure) :
     Model reading.selectedPresentation.theory :=
-  ⟨reading.selectedStructure, fun name =>
-    (reading.selectedLaw_iff name.val).2 (model ⟨name.val.val, name.property⟩)⟩
+  ⟨reading.selectedStructure, model⟩
 
 /-- The reading's actual cover restricts the selected model to all its ordinary local models. -/
-noncomputable def selectedLocalModels (model : reading.presentation.theory.Holds reading.structureData) :
+noncomputable def selectedLocalModels
+    (model : reading.selectedPresentation.theory.Holds reading.selectedStructure) :
     OrdinaryMatch reading.cover.piece :=
   reading.cover.ordinaryRead.obj (reading.selectedModel model)
 

@@ -1,5 +1,5 @@
 import Formal.SHIGURE.Part1.ContextExamples
-import Formal.SHIGURE.Part1.ContextOrdinaryDescent
+import Formal.SHIGURE.Part1.ContextReading
 
 /-! # Local input for a declaration cover with a retained Law -/
 
@@ -8,6 +8,32 @@ namespace SHIGURE.Chapter3
 open CategoryTheory DeclarationContext
 
 namespace OmittedLaw
+
+/-- The reading of the two constant operations selects the context without the inverse Law. -/
+def constantsReading : Reading.{0, 0, 0, 0} where
+  presentation := presentation
+  structureData := constants
+  observation := StateObservation.ofSort () Bool id
+  context := withoutLaw
+  cover := primitiveCover
+  Family := Unit
+  realize _ := constants
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := none
+
+/-- The reading of the primitive context yields its ordinary local models. -/
+noncomputable def constantsReadingLocalModels : OrdinaryMatch constantsReading.cover.piece :=
+  constantsReading.selectedLocalModels
+    (constantsReading.selectedTheory_holds_iff.2 fun name =>
+      (law_omitted name.val.val name.val.property).elim)
+
+/-- The same underlying reading fails the inverse Law in the original full theory. -/
+theorem constantsReading_ambient_fails :
+    ¬ constantsReading.presentation.theory.Holds constantsReading.structureData := by
+  intro holds
+  exact constants_fail_inverseLaw (holds ⟨(), rfl⟩)
 
 private def constantOrdinary : Structure (Selected.signature whole) where
   carrier _ := Bool

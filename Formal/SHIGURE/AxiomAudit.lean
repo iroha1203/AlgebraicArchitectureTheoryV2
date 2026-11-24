@@ -1420,6 +1420,9 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectWritten_toLaw,
   DeclarationContext.Selected.selectNamedEquation,
   -- ContextDescentExamples
+  Chapter3.OmittedLaw.constantsReading,
+  Chapter3.OmittedLaw.constantsReadingLocalModels,
+  Chapter3.OmittedLaw.constantsReading_ambient_fails,
   Chapter3.OmittedLaw.missingGraph_not_matching,
   Chapter3.OmittedLaw.no_ordinary_global_model,
   Chapter3.OmittedLaw.different_ordinary_carriers_no_overlap,
@@ -1463,6 +1466,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Reading.selectedPresentation,
   Reading.selectedStructure,
   Reading.selectedLaw_iff,
+  Reading.selectedTheory_holds_iff,
   Reading.selectedModel,
   Reading.selectedLocalModels,
   Reading.selectedRing_attached,
