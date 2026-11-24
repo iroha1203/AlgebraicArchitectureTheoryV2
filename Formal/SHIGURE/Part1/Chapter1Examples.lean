@@ -71,6 +71,24 @@ def law : LawName.{u} → Law signature.{u}
     let w : Term signature [.source, .view, .view] .view := .var (.there (.there .here))
     Law.equality (putTerm (putTerm a v) w) (putTerm a w)
 
+/-- The first Law updates with the original view. -/
+theorem law_getPut :
+    let a : Term signature.{u} [.source] .source := .var .here
+    law .getPut = Law.equality (putTerm a (getTerm a)) a := rfl
+
+/-- The second Law reads the view supplied by the last update. -/
+theorem law_putGet :
+    let a : Term signature.{u} [.source, .view] .source := .var .here
+    let v : Term signature.{u} [.source, .view] .view := .var (.there .here)
+    law .putGet = Law.equality (getTerm (putTerm a v)) v := rfl
+
+/-- The third Law removes the first of two successive view updates. -/
+theorem law_putPut :
+    let a : Term signature.{u} [.source, .view, .view] .source := .var .here
+    let v : Term signature.{u} [.source, .view, .view] .view := .var (.there .here)
+    let w : Term signature.{u} [.source, .view, .view] .view := .var (.there (.there .here))
+    law .putPut = Law.equality (putTerm (putTerm a v) w) (putTerm a w) := rfl
+
 /-- The required equations of a total lens. -/
 def theory : Theory.{u} where
   signature := signature

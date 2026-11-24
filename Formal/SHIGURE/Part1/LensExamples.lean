@@ -30,7 +30,8 @@ def fixedFlip : fixed ⟶ fixed :=
 
 /-- On an actual fixed-model arrow the complement flip changes a state. -/
 theorem fixedFlip_model_value :
-    (FixedModel.Hom.modelHom (Fixed.toFixedHom fixedFlip)).hom.onSort .source (false, false) = (false, true) :=
+    (FixedModel.Hom.modelHom (Fixed.toFixedHom fixedFlip)).hom.onSort .source (false, false) = (false, true) := by
+  rw [Fixed.toFixedHom_modelHom, Lens.toModelHom_source_apply]
   rfl
 
 /-- Flipping the view and leaving the complement unchanged is an ordinary lens arrow. -/

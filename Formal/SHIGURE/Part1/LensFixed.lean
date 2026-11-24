@@ -165,6 +165,14 @@ def ofFixedHom {A B : Semantic V} (f : FixedModel.Hom A B) : ofFixedModel A ⟶ 
   ⟨underlying, (view_lift_iff (A := ofFixedModel A) (B := ofFixedModel B) underlying).2
     fun v => FixedModel.Hom.fixes f PUnit.unit v⟩
 
+/-- Encoding a fiber arrow uses the model map of the original lens arrow. -/
+theorem toFixedHom_modelHom {A B : Fixed V} (f : A ⟶ B) :
+    FixedModel.Hom.modelHom (toFixedHom f) = Lens.toModelHom (Functor.Fiber.fiberInclusion.map f) := rfl
+
+/-- Reading a fixed-model arrow uses the lens map of the original model arrow. -/
+theorem ofFixedHom_fiberInclusion {A B : Semantic V} (f : FixedModel.Hom A B) :
+    Functor.Fiber.fiberInclusion.map (ofFixedHom f) = Lens.ofModelHom (FixedModel.Hom.modelHom f) := rfl
+
 /-- Encode the fixed lens category into the fixed semantic category. -/
 def toModels (V : Type u) : Fixed V ⥤ Semantic V where
   obj := toFixedModel
@@ -191,9 +199,15 @@ theorem toModels_comp_ofModels (V : Type u) : toModels V ⋙ ofModels V = 𝟭 (
   apply Lens.hom_ext
   · intro a
     simp only [Lens.comp_state, Lens.eqToHom_state, Function.comp_apply, cast_eq]
+    change (Functor.Fiber.fiberInclusion.map (ofFixedHom (toFixedHom f))).state a = _
+    rw [ofFixedHom_fiberInclusion, toFixedHom_modelHom,
+      Lens.ofModelHom_state_apply, Lens.toModelHom_source_apply]
     rfl
   · intro v
     simp only [Lens.comp_view, Lens.eqToHom_view, Function.comp_apply, cast_eq]
+    change (Functor.Fiber.fiberInclusion.map (ofFixedHom (toFixedHom f))).view v = _
+    rw [ofFixedHom_fiberInclusion, toFixedHom_modelHom,
+      Lens.ofModelHom_view_apply, Lens.toModelHom_view_apply]
     rfl
 
 /-- The fixed lens functors compose to the identity on fixed semantic models. -/
@@ -211,7 +225,15 @@ theorem ofModels_comp_toModels (V : Type u) : ofModels V ⋙ toModels V = 𝟭 (
   apply Model.hom_ext
   intro s x
   rw [Model.comp_apply, Model.comp_apply, Model.eqToHom_apply, Model.eqToHom_apply]
-  cases s <;> rfl
+  change (FixedModel.Hom.modelHom (toFixedHom (ofFixedHom f))).hom.onSort s x = _
+  rw [toFixedHom_modelHom, ofFixedHom_fiberInclusion]
+  cases s with
+  | source =>
+    exact (Lens.toModelHom_source_apply (Lens.ofModelHom (FixedModel.Hom.modelHom f)) x).trans
+      (Lens.ofModelHom_state_apply (FixedModel.Hom.modelHom f) x)
+  | view =>
+    exact (Lens.toModelHom_view_apply (Lens.ofModelHom (FixedModel.Hom.modelHom f)) x).trans
+      (Lens.ofModelHom_view_apply (FixedModel.Hom.modelHom f) x)
 
 /-- Theorem 2.9 with a fixed view, as a strict isomorphism of categories. -/
 def modelIso (V : Type u) : Cat.of (Fixed V) ≅ Cat.of (Semantic V) where

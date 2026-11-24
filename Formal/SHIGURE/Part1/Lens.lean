@@ -166,15 +166,15 @@ private theorem putTerm_totalValue {Γ : List SortName.{u}}
 /-- The first Law of Example 1.6 is exactly the update-by-current-view law. -/
 private theorem getPut_law_iff (A : Structure Chapter1.Lens.signature.{u}) :
     (Chapter1.Lens.law .getPut).Holds A ↔ ∀ a, structurePut A a (structureGet A a) = a := by
-  rw [Chapter1.Lens.law, Law.holds_equality_totalValue_iff]
-  simp only [getTerm_totalValue, putTerm_totalValue, Term.totalValue]
+  rw [Chapter1.Lens.law_getPut, Law.holds_equality_totalValue_iff]
+  simp only [getTerm_totalValue, putTerm_totalValue, Term.totalValue_var]
   exact ⟨fun h a => h (Assignment.cons a Assignment.empty), fun h e => h (e .here)⟩
 
 /-- The second Law of Example 1.6 is exactly the read-after-update law. -/
 private theorem putGet_law_iff (A : Structure Chapter1.Lens.signature.{u}) :
     (Chapter1.Lens.law .putGet).Holds A ↔ ∀ a v, structureGet A (structurePut A a v) = v := by
-  rw [Chapter1.Lens.law, Law.holds_equality_totalValue_iff]
-  simp only [getTerm_totalValue, putTerm_totalValue, Term.totalValue]
+  rw [Chapter1.Lens.law_putGet, Law.holds_equality_totalValue_iff]
+  simp only [getTerm_totalValue, putTerm_totalValue, Term.totalValue_var]
   exact ⟨fun h a v => h (Assignment.cons a (Assignment.cons v Assignment.empty)),
     fun h e => h (e .here) (e (.there .here))⟩
 
@@ -182,8 +182,8 @@ private theorem putGet_law_iff (A : Structure Chapter1.Lens.signature.{u}) :
 private theorem putPut_law_iff (A : Structure Chapter1.Lens.signature.{u}) :
     (Chapter1.Lens.law .putPut).Holds A ↔
       ∀ a v w, structurePut A (structurePut A a v) w = structurePut A a w := by
-  rw [Chapter1.Lens.law, Law.holds_equality_totalValue_iff]
-  simp only [putTerm_totalValue, Term.totalValue]
+  rw [Chapter1.Lens.law_putPut, Law.holds_equality_totalValue_iff]
+  simp only [putTerm_totalValue, Term.totalValue_var]
   exact ⟨fun h a v w => h (Assignment.cons a (Assignment.cons v (Assignment.cons w Assignment.empty))),
     fun h e => h (e .here) (e (.there .here)) (e (.there (.there .here)))⟩
 
@@ -261,6 +261,14 @@ def toModelHom (f : L ⟶ M) : L.toModel ⟶ M.toModel :=
     partial_comm p := nomatch p
     quantity_comm q := nomatch q }
 
+/-- Encoding a lens arrow retains its original state map. -/
+theorem toModelHom_source_apply (f : L ⟶ M) (a : L.State) :
+    (toModelHom f).hom.onSort .source a = f.state a := rfl
+
+/-- Encoding a lens arrow retains its original view map. -/
+theorem toModelHom_view_apply (f : L ⟶ M) (v : L.View) :
+    (toModelHom f).hom.onSort .view v = f.view v := rfl
+
 /-- A model arrow gives the two maps and both preservation squares of a lens arrow. -/
 def ofModelHom {A B : Model Chapter1.Lens.theory.{u}} (f : A ⟶ B) : ofModel A ⟶ ofModel B where
   state := f.hom.onSort .source
@@ -271,6 +279,14 @@ def ofModelHom {A B : Model Chapter1.Lens.theory.{u}} (f : A ⟶ B) : ofModel A 
   put_comm a v := by
     simpa only [Assignment.map_cons, Assignment.map_empty] using
       f.hom.total_comm .put (Assignment.cons a (Assignment.cons v Assignment.empty))
+
+/-- Reading a model arrow takes its state component at the source sort. -/
+theorem ofModelHom_state_apply {A B : Model Chapter1.Lens.theory.{u}} (f : A ⟶ B)
+    (a : (ofModel A).State) : (ofModelHom f).state a = f.hom.onSort .source a := rfl
+
+/-- Reading a model arrow takes its view component at the view sort. -/
+theorem ofModelHom_view_apply {A B : Model Chapter1.Lens.theory.{u}} (f : A ⟶ B)
+    (v : (ofModel A).View) : (ofModelHom f).view v = f.hom.onSort .view v := rfl
 
 /-- Encode total lenses and both components of every arrow as models. -/
 def toModels : Lens.{u} ⥤ Model Chapter1.Lens.theory.{u} where
@@ -293,10 +309,10 @@ theorem toModels_comp_ofModels : toModels.{u} ⋙ ofModels.{u} = 𝟭 Lens.{u} :
   apply hom_ext
   · intro a
     simp only [comp_state, eqToHom_state, Function.comp_apply, cast_eq]
-    rfl
+    exact (ofModelHom_state_apply (toModelHom f) a).trans (toModelHom_source_apply f a)
   · intro v
     simp only [comp_view, eqToHom_view, Function.comp_apply, cast_eq]
-    rfl
+    exact (ofModelHom_view_apply (toModelHom f) v).trans (toModelHom_view_apply f v)
 
 /-- Reading and encoding is the identity functor on all models and all arrows. -/
 theorem ofModels_comp_toModels : ofModels.{u} ⋙ toModels.{u} = 𝟭 (Model Chapter1.Lens.theory.{u}) := by
@@ -305,7 +321,9 @@ theorem ofModels_comp_toModels : ofModels.{u} ⋙ toModels.{u} = 𝟭 (Model Cha
   apply Model.hom_ext
   intro s x
   rw [Model.comp_apply, Model.comp_apply, Model.eqToHom_apply, Model.eqToHom_apply]
-  cases s <;> rfl
+  cases s with
+  | source => exact (toModelHom_source_apply (ofModelHom f) x).trans (ofModelHom_state_apply f x)
+  | view => exact (toModelHom_view_apply (ofModelHom f) x).trans (ofModelHom_view_apply f x)
 
 /-- Equation (2.11) as a strict isomorphism in mathlib's category of categories. -/
 def modelIso : Cat.of Lens.{u} ≅ Cat.of (Model Chapter1.Lens.theory.{u}) where
