@@ -2,7 +2,10 @@ import Formal.SHIGURE.Part1.FixedModels
 
 /-! # Models with observations
 
-Equation (2.2) determines the arrows in the observed-model category.
+Equation (2.2) determines the arrows in the observed-model category. Giving
+observed objects the induced category of underlying model maps retains both
+endpoint observations. The wide subcategory restricts those maps by equation
+(2.2); a predicate on the original model arrows would lose the observations.
 
 ## Implementation notes
 
@@ -35,43 +38,55 @@ namespace ObservedModel
 
 variable {T : Theory.{u}} {shape : ObservationShape T.signature}
 
-/-- An observed map preserves each specified observation pointwise, as in equation (2.2). -/
-structure Hom (A B : ObservedModel T shape) where
-  modelHom : A.model ⟶ B.model
-  commutes (i : shape.Index) (x : A.model.obj.carrier (shape.source i)) :
-    B.observe i (modelHom.hom.onSort (shape.source i) x) = A.observe i x
+/-- Equation (2.2) as a predicate on the underlying model arrow. -/
+def Preserves (A B : ObservedModel T shape) (f : A.model ⟶ B.model) : Prop :=
+  ∀ i x, B.observe i (f.hom.onSort (shape.source i) x) = A.observe i x
+
+private abbrev Ambient :=
+  InducedCategory (Model T) (ObservedModel.model (T := T) (shape := shape))
+
+private def condition : MorphismProperty (Ambient (T := T) (shape := shape)) :=
+  fun A B f => Preserves A B f.hom
+
+/-- Identity and composition preserve all observations. -/
+private instance condition_multiplicative :
+    (condition (T := T) (shape := shape)).IsMultiplicative where
+  id_mem _ := fun _ _ => rfl
+  comp_mem {A B C} f g hf hg := by
+    intro i x
+    change C.observe i ((f.hom ≫ g.hom).hom.onSort (shape.source i) x) = A.observe i x
+    rw [Model.comp_apply, hg i, hf i]
+
+private def includeAmbient (A : ObservedModel T shape) : Ambient (T := T) (shape := shape) := A
+
+/-- Observation-preserving model arrows form mathlib's wide subcategory. -/
+instance category : Category.{u} (ObservedModel T shape) :=
+  InducedWideCategory.category includeAmbient condition
+
+/-- An arrow of the observed-model category. -/
+abbrev Hom (A B : ObservedModel T shape) := A ⟶ B
 
 namespace Hom
 
-variable {A B C : ObservedModel T shape}
+variable {A B : ObservedModel T shape}
+
+/-- A model map satisfying equation (2.2) is an observed-model arrow. -/
+def mk (f : A.model ⟶ B.model) (preserves : Preserves A B f) : Hom A B :=
+  ⟨InducedCategory.homMk f, preserves⟩
+
+/-- The model arrow underlying an observed-model arrow. -/
+def modelHom (f : Hom A B) : A.model ⟶ B.model :=
+  f.val.hom
+
+/-- The underlying arrow commutes with every specified observation. -/
+theorem commutes (f : Hom A B) : Preserves A B f.modelHom :=
+  f.property
 
 /-- A map of observed models is determined by the underlying model map. -/
-@[ext] theorem ext {f g : Hom A B} (same : f.modelHom = g.modelHom) : f = g := by
-  cases f
-  cases g
-  cases same
-  rfl
-
-/-- Identity preserves each observation. -/
-def id (A : ObservedModel T shape) : Hom A A :=
-  ⟨𝟙 A.model, fun _ _ => rfl⟩
-
-/-- The composite preserves an observation by applying the two observation squares in order. -/
-def comp (f : Hom A B) (g : Hom B C) : Hom A C where
-  modelHom := f.modelHom ≫ g.modelHom
-  commutes i x := by
-    rw [Model.comp_apply, g.commutes, f.commutes]
+@[ext] theorem ext {f g : Hom A B} (same : f.modelHom = g.modelHom) : f = g :=
+  Subtype.ext (InducedCategory.hom_ext same)
 
 end Hom
-
-/-- Observed models and the arrows preserving their observations form a category. -/
-instance category : Category.{u} (ObservedModel T shape) where
-  Hom := Hom
-  id := Hom.id
-  comp := Hom.comp
-  id_comp f := Hom.ext (Category.id_comp f.modelHom)
-  comp_id f := Hom.ext (Category.comp_id f.modelHom)
-  assoc f g h := Hom.ext (Category.assoc f.modelHom g.modelHom h.modelHom)
 
 end ObservedModel
 
@@ -160,7 +175,7 @@ namespace ObservedModel
 variable {T : Theory.{u}} {shape : ObservationShape T.signature}
 
 /-- Read a tuple of original sorts in the extended structure at its original positions. -/
-private def originalTuple {X : (T.signature.SortType ⊕ shape.Index) → Type u}
+def originalTuple {X : (T.signature.SortType ⊕ shape.Index) → Type u}
     {Γ : List T.signature.SortType} (xs : Assignment X (Γ.map Sum.inl)) :
     Assignment (X ∘ Sum.inl) Γ :=
   ⟨fun i => xs (i.mapSorts Sum.inl)⟩
@@ -181,6 +196,19 @@ def extendStructure (A : ObservedModel T shape) : Structure (shape.theory T).sig
     (x : A.model.obj.carrier (shape.source i)) :
     A.extendStructure.total (.inr i) (Assignment.cons x Assignment.empty) = A.observe i x :=
   rfl
+
+/-- Membership in an old partial domain is read on the original tuple. -/
+theorem extendStructure_partialDomain_iff (A : ObservedModel T shape) (p : T.signature.Partial)
+    (xs : Assignment A.extendStructure.carrier ((T.signature.partialArity p).inputs.map Sum.inl)) :
+    xs ∈ A.extendStructure.partialDomain p ↔ originalTuple xs ∈ A.model.obj.partialDomain p :=
+  Iff.rfl
+
+/-- The graph of an old partial operation is read on the original tuple and carrier. -/
+theorem extendStructure_graph_partial_iff (A : ObservedModel T shape) (p : T.signature.Partial)
+    (xs : Assignment A.extendStructure.carrier ((T.signature.partialArity p).inputs.map Sum.inl))
+    (y : A.model.obj.carrier (T.signature.partialArity p).output) :
+    A.extendStructure.Graph (.partialOp p) xs y ↔ A.model.obj.Graph (.partialOp p) (originalTuple xs) y :=
+  (A.extendStructure.graph_partial_iff p xs y).trans (A.model.obj.graph_partial_iff p (originalTuple xs) y).symm
 
 /-- Retype an original tuple for use in the extended signature. -/
 private def extendedTuple (A : ObservedModel T shape)
@@ -262,9 +290,8 @@ private def extendMap (f : Hom A B) : StructureMap A.extendStructure B.extendStr
   quantity_comm q xs := f.modelHom.hom.quantity_comm q (originalTuple xs)
 
 /-- Observation-preserving arrows become the corresponding fixed-data arrows. -/
-def encodeHom (f : Hom A B) : FixedModel.Hom A.encode B.encode where
-  modelHom := ObjectProperty.homMk (extendMap f)
-  fixes _ _ := rfl
+def encodeHom (f : Hom A B) : FixedModel.Hom A.encode B.encode :=
+  FixedModel.Hom.mk (ObjectProperty.homMk (extendMap f)) (fun _ _ => rfl)
 
 /-- The original components of an encoded arrow are its source model maps. -/
 @[simp] theorem encodeHom_original (f : Hom A B) (s : T.signature.SortType) (x : A.model.obj.carrier s) :
@@ -311,28 +338,21 @@ private def originalMap (f : StructureMap A.extendStructure B.extendStructure) :
       f.relation_mem r _ source
     rwa [originalTuple_extended_map] at target
   partial_mem p xs held := by
-    have source : originalTuple (A.extendedTuple xs) ∈ A.model.obj.partialDomain p :=
+    have original : originalTuple (A.extendedTuple xs) ∈ A.model.obj.partialDomain p :=
       (originalTuple_roundtrip A xs).symm ▸ held
-    have target : originalTuple ((A.extendedTuple xs).map f.onSort) ∈ B.model.obj.partialDomain p :=
-      f.partial_mem p _ source
+    have source := (A.extendStructure_partialDomain_iff p _).2 original
+    have target := (B.extendStructure_partialDomain_iff p _).1 (f.partial_mem p _ source)
     rwa [originalTuple_extended_map] at target
   partial_comm p xs := by
-    let tuple := A.extendedTuple xs.val
-    have source : originalTuple tuple ∈ A.model.obj.partialDomain p :=
-      (originalTuple_roundtrip A xs.val).symm ▸ xs.property
-    have target : originalTuple (tuple.map f.onSort) ∈ B.model.obj.partialDomain p :=
-      f.partial_mem p _ source
-    have commutes : f.onSort (.inl (T.signature.partialArity p).output)
-          (A.model.obj.partialValue p ⟨originalTuple tuple, source⟩) =
-        B.model.obj.partialValue p ⟨originalTuple (tuple.map f.onSort), target⟩ :=
-      f.partial_comm p ⟨tuple, source⟩
-    have source_eq : (⟨originalTuple tuple, source⟩ : A.model.obj.partialDomain p) = xs :=
-      Subtype.ext (originalTuple_roundtrip A xs.val)
-    have target_eq : (⟨originalTuple (tuple.map f.onSort), target⟩ : B.model.obj.partialDomain p) =
-        ⟨xs.val.map (fun s => f.onSort (.inl s)), by
-          rwa [originalTuple_extended_map] at target⟩ :=
-      Subtype.ext (originalTuple_extended_map f xs.val)
-    rwa [source_eq, target_eq] at commutes
+    have original : A.model.obj.Graph (.partialOp p) xs.val (A.model.obj.partialValue p xs) :=
+      (A.model.obj.graph_partial_iff p _ _).2 ⟨xs.property, rfl⟩
+    have source := (A.extendStructure_graph_partial_iff p (A.extendedTuple xs.val) _).2
+      ((originalTuple_roundtrip A xs.val).symm ▸ original)
+    have mapped := f.map_graph (.partialOp p) _ _ source
+    have target := (B.extendStructure_graph_partial_iff p _ _).1 mapped
+    rw [originalTuple_extended_map] at target
+    obtain ⟨_, value⟩ := (B.model.obj.graph_partial_iff p _ _).1 target
+    exact value.symm
   quantity_comm q xs := by
     have commutes :
         f.onSort (.inl (T.signature.quantityArity q).output)
@@ -342,9 +362,9 @@ private def originalMap (f : StructureMap A.extendStructure B.extendStructure) :
     rwa [originalTuple_roundtrip A, originalTuple_extended_map] at commutes
 
 /-- A fixed arrow between encodings recovers precisely the observation-preserving arrow. -/
-def decodeHom (f : FixedModel.Hom A.encode B.encode) : Hom A B where
-  modelHom := ObjectProperty.homMk (originalMap f.modelHom.hom)
-  commutes i x := by
+def decodeHom (f : FixedModel.Hom A.encode B.encode) : Hom A B :=
+  Hom.mk (ObjectProperty.homMk (originalMap f.modelHom.hom)) (by
+    intro i x
     have fixed : f.modelHom.hom.onSort (.inr i) (A.observe i x) = A.observe i x :=
       f.fixes i (A.observe i x)
     let input : Assignment A.extendStructure.carrier [.inl (shape.source i)] :=
@@ -355,22 +375,41 @@ def decodeHom (f : FixedModel.Hom A.encode B.encode) : Hom A B where
     dsimp only [input] at square
     rw [extendStructure_observe, fixed, Assignment.map_cons, Assignment.map_empty,
       extendStructure_observe] at square
-    exact square.symm
+    exact square.symm)
+
+/-- Decoding retains the component on every original sort. -/
+@[simp] theorem decodeHom_original (f : FixedModel.Hom A.encode B.encode)
+    (s : T.signature.SortType) (x : A.model.obj.carrier s) :
+    (decodeHom f).modelHom.hom.onSort s x = f.modelHom.hom.onSort (.inl s) x :=
+  rfl
+
+/-- Decoding an encoded arrow recovers the source arrow on all original sorts. -/
+@[simp] theorem decodeHom_encodeHom (f : Hom A B) : decodeHom (encodeHom f) = f := by
+  apply Hom.ext (Model.hom_ext _)
+  intro s x
+  rw [decodeHom_original, encodeHom_original]
+
+/-- Encoding a decoded fixed arrow recovers its original and fixed components. -/
+@[simp] theorem encodeHom_decodeHom (f : FixedModel.Hom A.encode B.encode) :
+    encodeHom (decodeHom f) = f := by
+  apply FixedModel.Hom.ext (Model.hom_ext _)
+  intro s x
+  cases s with
+  | inl s => rw [encodeHom_original, decodeHom_original]
+  | inr i => exact (encodeHom_value (decodeHom f) i x).trans (f.fixes i x).symm
 
 /-- Encoding and decoding are inverse on the Hom types of encoded objects. -/
 def embeddingFullyFaithful (T : Theory.{u}) (shape : ObservationShape T.signature) :
     (embedding T shape).FullyFaithful where
   preimage f := decodeHom f
-  map_preimage f := FixedModel.Hom.ext (Model.hom_ext (by
-    intro s x
-    cases s with
-    | inl s => rfl
-    | inr i => exact (f.fixes i x).symm))
-  preimage_map f := Hom.ext (Model.hom_ext (fun _ _ => rfl))
+  map_preimage f := encodeHom_decodeHom f
+  preimage_map f := decodeHom_encodeHom f
 
-instance : (embedding T shape).Full := (embeddingFullyFaithful T shape).full
+/-- Decoding supplies a preimage for every fixed-data arrow between the encoded objects. -/
+instance embeddingFull : (embedding T shape).Full := (embeddingFullyFaithful T shape).full
 
-instance : (embedding T shape).Faithful := (embeddingFullyFaithful T shape).faithful
+/-- Encoding is injective on arrows by recovering every source component. -/
+instance embeddingFaithful : (embedding T shape).Faithful := (embeddingFullyFaithful T shape).faithful
 
 end ObservedModel
 

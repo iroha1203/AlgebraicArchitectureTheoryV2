@@ -66,6 +66,8 @@ end SHIGURE.StructureMap
 
 namespace SHIGURE.Structure
 
+open CategoryTheory
+
 variable {sig : Signature.{u}}
 
 /-- The category of structures and structure-preserving maps of a fixed signature. -/
@@ -76,6 +78,16 @@ instance category : CategoryTheory.Category.{u} (Structure sig) where
   id_comp := StructureMap.comp_id
   comp_id := StructureMap.id_comp
   assoc f g h := h.comp_assoc g f
+
+/-- The identity arrow acts as the identity on every carrier. -/
+@[simp] theorem id_apply (A : Structure sig) (s : sig.SortType) (x : A.carrier s) :
+    (show StructureMap A A from 𝟙 A).onSort s x = x := rfl
+
+/-- A composite arrow acts by applying the source and target carrier maps in order. -/
+theorem comp_apply {A B C : Structure sig} (f : A ⟶ B) (g : B ⟶ C)
+    (s : sig.SortType) (x : A.carrier s) :
+    (show StructureMap A C from f ≫ g).onSort s x =
+      (show StructureMap B C from g).onSort s ((show StructureMap A B from f).onSort s x) := rfl
 
 end SHIGURE.Structure
 

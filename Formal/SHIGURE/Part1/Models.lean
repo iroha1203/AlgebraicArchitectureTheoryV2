@@ -1,7 +1,16 @@
 import Formal.SHIGURE.Part1.StructureCategory
 import Mathlib.CategoryTheory.ObjectProperty.FullSubcategory
 
-/-! # The semantic category and forgetting added Laws -/
+/-! # The semantic category and forgetting added Laws
+
+## Implementation notes
+
+Proposition 2.3 is about extending a written family of required Laws.
+Each old Law must occur in the new family, which allows the declarations to
+be renamed or repeated. Mere semantic implication would also allow replacing
+the written Laws by unrelated syntax, while requiring a map of distinct
+Law names would distinguish repeated copies.
+-/
 
 universe u
 
@@ -23,7 +32,9 @@ theorem Model.hom_ext {T : Theory.{u}} {A B : Model T} {f g : A ⟶ B}
 /-- The carrier maps of a composite in the full model category compose componentwise. -/
 theorem Model.comp_apply {T : Theory.{u}} {A B C : Model T} (f : A ⟶ B) (g : B ⟶ C)
     (s : T.signature.SortType) (x : A.obj.carrier s) :
-    (f ≫ g).hom.onSort s x = g.hom.onSort s (f.hom.onSort s x) := rfl
+    (f ≫ g).hom.onSort s x = g.hom.onSort s (f.hom.onSort s x) := by
+  rw [ObjectProperty.FullSubcategory.comp_hom]
+  exact Structure.comp_apply f.hom g.hom s x
 
 /-- A possibly larger family of required Laws on the original signature. -/
 structure LawExtension (T : Theory.{u}) where
@@ -51,10 +62,12 @@ theorem model_le (extension : LawExtension T) :
 def forget (extension : LawExtension T) : Model extension.theory ⥤ Model T :=
   ObjectProperty.ιOfLE extension.model_le
 
-instance (extension : LawExtension T) : extension.forget.Full :=
+/-- The inclusion between two full model subcategories is full. -/
+instance forgetFull (extension : LawExtension T) : extension.forget.Full :=
   ObjectProperty.full_ιOfLE extension.model_le
 
-instance (extension : LawExtension T) : extension.forget.Faithful :=
+/-- The forgetful inclusion retains the underlying model arrow. -/
+instance forgetFaithful (extension : LawExtension T) : extension.forget.Faithful :=
   ObjectProperty.faithful_ιOfLE extension.model_le
 
 /-- The functor leaves the underlying structure unchanged. -/
