@@ -194,7 +194,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Select SHIGURE validation
         id: shigure-changes
@@ -213,6 +213,9 @@ jobs:
           if printf '%s' "$base" | grep -Eq '^0+$'; then
             echo "run=true" >>"$GITHUB_OUTPUT"
             exit 0
+          fi
+          if ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            git fetch --no-tags --depth=1 origin "$base"
           fi
           changed_paths="$(git diff --name-only "$base" "$HEAD_SHA" -- \
             Formal/SHIGURE/ Formal/SHIGURE.lean lakefile.toml lake-manifest.json lean-toolchain \
@@ -238,14 +241,45 @@ jobs:
 
       - name: Check SHIGURE imports
         if: steps.shigure-changes.outputs.run == 'true'
-        run: lean --run .github/lean_quality/check_shigure_imports.lean --mathlib-imports > "$RUNNER_TEMP/shigure-mathlib-imports"
+        id: shigure-imports
+        run: |
+          imports_file="$RUNNER_TEMP/shigure-mathlib-imports"
+          lean --run .github/lean_quality/check_shigure_imports.lean --mathlib-imports > "$imports_file"
+          # The declaration checker fixtures also import NormNum directly.
+          printf '%s\n' Mathlib.Tactic.NormNum >> "$imports_file"
+          sort -u -o "$imports_file" "$imports_file"
+          sha="$(sha256sum "$imports_file" | cut -d ' ' -f 1)"
+          printf 'sha=%s\n' "$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Restore SHIGURE build cache
+        if: steps.shigure-changes.outputs.run == 'true'
+        id: shigure-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            .lake/packages
+            .lake/build
+          key: shigure-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json') }}-${{ steps.shigure-imports.outputs.sha }}-${{ github.sha }}
+          restore-keys: |
+            shigure-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json') }}-${{ steps.shigure-imports.outputs.sha }}-
 
       - name: Fetch SHIGURE Mathlib dependencies
-        if: steps.shigure-changes.outputs.run == 'true'
+        if: steps.shigure-changes.outputs.run == 'true' && steps.shigure-cache.outputs.cache-matched-key == ''
         run: |
+          # Lake can use the pinned Mathlib checkout without downloading its history.
+          if [[ ! -e .lake/packages/mathlib ]]; then
+            url="$(jq -er '.packages[] | select(.name == "mathlib" and .type == "git") | .url' lake-manifest.json)"
+            revision="$(jq -er '.packages[] | select(.name == "mathlib" and .type == "git") | .rev' lake-manifest.json)"
+            mathlib="$(mktemp -d "$RUNNER_TEMP/shigure-mathlib.XXXXXX")"
+            git init -q "$mathlib"
+            git -C "$mathlib" remote add origin "$url"
+            git -C "$mathlib" fetch -q --no-tags --depth=1 origin "$revision"
+            git -C "$mathlib" checkout -q --detach "$revision"
+            mkdir -p .lake/packages
+            mv "$mathlib" .lake/packages/mathlib
+          fi
           mapfile -t imports < "$RUNNER_TEMP/shigure-mathlib-imports"
-          # The declaration checker fixtures also import NormNum directly.
-          lake exe cache get Mathlib.Tactic.NormNum "${imports[@]}"
+          lake exe cache get "${imports[@]}"
 
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'
@@ -262,7 +296,7 @@ jobs:
           git ls-files -z -- ':(glob)Formal/SHIGURE/**/*.lean' Formal/SHIGURE.lean |
             lake env bash -c '
               export LEAN_PATH="$1:$LEAN_PATH"
-              xargs -0 -r -n 1 -P "$(nproc)" -t lean --run "$1/Run.lean"
+              xargs -0 -r -n 1 -P "$(nproc)" -t lean -j 1 --run "$1/Run.lean"
             ' bash "$checker_dir"
           bash .github/lean_quality/test_shigure_declarations.sh
 
@@ -272,3 +306,15 @@ jobs:
           test "$(grep -v '^[[:space:]]*$' Formal/SHIGURE/AxiomAudit.lean | tail -n 1)" = '#shigure_assert_standard_axioms_only SHIGURE.AxiomAudit'
           lake env lean Formal/SHIGURE/AssertStandardAxiomsTest.lean
           lake env lean Formal/SHIGURE/AxiomAudit.lean
+
+      - name: Save SHIGURE build cache
+        if: >
+          steps.shigure-changes.outputs.run == 'true' &&
+          steps.shigure-cache.outputs.cache-hit != 'true' &&
+          (steps.shigure-cache.outputs.cache-matched-key == '' || github.event_name == 'push')
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .lake/packages
+            .lake/build
+          key: ${{ steps.shigure-cache.outputs.cache-primary-key }}
