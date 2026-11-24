@@ -27,6 +27,8 @@ supplies a rule on the two restricted structures and proves that it computes the
 actual point map. For a native realization the rule must also agree whenever the
 native recipe uses the same retained data. This permits a comparison to supply
 its own local rule while preserving the provenance of native points.
+For declared points, a selector identifies the recipe to restrict. The method's
+admissibility relation can authorize more than one such recipe.
 -/
 
 universe u v
@@ -66,6 +68,28 @@ abbrev CoefficientAlgebra.toAlgebra {base : CoefficientRing.{u}} (R : Coefficien
 def CoefficientAlgebra.extend {base : CoefficientRing.{u}} (R : CoefficientAlgebra base)
     {target : CoefficientRing.{u}} (f : R.scalars.Hom target) : CoefficientAlgebra base :=
   ⟨target, f.comp R.fromBase⟩
+
+/-- A family of point recipes. Choosing a recipe determines at most one map on the
+given structures; the admissibility predicate of the realization may allow several recipes. -/
+structure CoefficientPointPrograms {P : PrimitivePresentation.{u}} (U : DeclarationContext P) where
+  /-- Choices of distinct point recipes, independently of the realized objects. -/
+  Selector : Type v
+  /-- The chosen recipe's point map on the supplied primitive data. -/
+  describes (selected : Selector) (X Y : RestrictedStructure U) (s : P.signature.SortType)
+    (points : X.carrier s → Y.carrier s) : Prop
+  /-- A fixed recipe computes a single map on each pair of structures where it applies. -/
+  unique (selected : Selector) (X Y : RestrictedStructure U) (s : P.signature.SortType)
+    {f g : X.carrier s → Y.carrier s} :
+    describes selected X Y s f → describes selected X Y s g → f = g
+
+/-- The identity recipe applies between equal carriers. -/
+def CoefficientPointPrograms.identity {P : PrimitivePresentation.{u}} (U : DeclarationContext P) :
+    CoefficientPointPrograms.{u, v} U where
+  Selector := PUnit
+  describes _ X Y s points := ∃ same : X.carrier s = Y.carrier s, points = cast same
+  unique := by
+    rintro _ _ _ _ _ _ ⟨_, h⟩ ⟨_, h'⟩
+    exact h.trans h'.symm
 
 /-- The realization rules on a selected declaration context, indexed by the coefficients. -/
 structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
@@ -133,12 +157,9 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
     RestrictedStructure.PointMap (structureOf R a) (structureOf (R.extend f) (change f a))
   /-- The independently selectable data of the coefficient method. -/
   Choice : Type v := PUnit
-  /-- How the method declares a designated point map at its fixed coefficient data.
-  The default is the identity transport between equal carriers. -/
-  declaredPoints (R : CoefficientAlgebra base) (choice : Choice)
-    (X Y : RestrictedStructure U) (s : P.signature.SortType)
-    (points : X.carrier s → Y.carrier s) : Prop :=
-    ∃ same : X.carrier s = Y.carrier s, points = cast same
+  /-- The available recipes for declared points, chosen at the specified coefficients. -/
+  pointPrograms (R : CoefficientAlgebra base) (choice : Choice) :
+    CoefficientPointPrograms.{u, v} U := .identity U
 
 /-- A small indexed family of state sorts. -/
 structure ObservationProduct (S : Type u) where
@@ -323,9 +344,10 @@ inductive CoefficientScheme.PointOrigin {P : PrimitivePresentation.{u}} {U : Dec
     (R : CoefficientAlgebra base) (choice : scheme.Choice) (a : scheme.Realization R)
     (A : Structure P.signature) (sorts : Set P.signature.SortType)
     (points : scheme.SelectedPointMap R a A.carrier sorts) where
-  | declared (permitted : scheme.permitsPoints R a (RestrictedStructure.restrict U A) sorts points)
-      (described : ∀ s hs, scheme.declaredPoints R choice (RestrictedStructure.restrict U A)
-        (scheme.structureOf R a) s (points s hs)) :
+  | declared (selected : (scheme.pointPrograms R choice).Selector)
+      (permitted : scheme.permitsPoints R a (RestrictedStructure.restrict U A) sorts points)
+      (described : ∀ s hs, (scheme.pointPrograms R choice).describes selected
+        (RestrictedStructure.restrict U A) (scheme.structureOf R a) s (points s hs)) :
       PointOrigin scheme R choice a A sorts points
   | native (origin : scheme.Native) (same : scheme.realizeNative R origin = a)
       (kept : ∀ s ∈ sorts, Declaration.sort s ∈ U.declarations)
@@ -353,7 +375,7 @@ theorem CoefficientScheme.PointOrigin.permitted {P : PrimitivePresentation.{u}} 
     (origin : scheme.PointOrigin R choice a A sorts points) :
     scheme.permitsPoints R a (RestrictedStructure.restrict U A) sorts points := by
   cases origin with
-  | declared permitted _ => exact permitted
+  | declared _ permitted _ => exact permitted
   | native origin same kept retained agrees =>
     subst a
     have point_eq : points =
@@ -481,14 +503,15 @@ def LocalPointRule.AgreesOnNative {W : DeclarationContext P} (rule : LocalPointR
 of the same retained data. -/
 def LocalPointRule.AgreesOnDeclared {W : DeclarationContext P} (rule : LocalPointRule W)
     (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
-    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations) : Prop :=
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
+    (selected : (reading.scheme.pointPrograms reading.algebra reading.choice).Selector) : Prop :=
   ∀ (i : reading.selection.selected.Index) (X Y : RestrictedStructure U),
     let s := reading.selection.selected.sort i
     ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees (X.restrictWithin inside) →
     ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees
       (Y.restrictWithin inside) →
     ∀ points : X.carrier s → Y.carrier s,
-      reading.scheme.declaredPoints reading.algebra reading.choice X Y s points ↔
+      (reading.scheme.pointPrograms reading.algebra reading.choice).describes selected X Y s points ↔
         rule (X.restrictWithin inside) (Y.restrictWithin inside) s (supported i) = some points
 
 /-- Restrict the actual point correspondence and evaluation at the chosen coefficient algebra. -/
@@ -501,7 +524,7 @@ structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : Declara
   were independently specified or computed by the native recipe. -/
   points : ∃ rule : LocalPointRule W, rule.AgreesWith reading inside supported ∧
     (match reading.pointOrigin with
-    | .declared .. => rule.AgreesOnDeclared reading inside supported
+    | .declared selected .. => rule.AgreesOnDeclared reading inside supported selected
     | .native .. => rule.AgreesOnNative reading inside supported)
   /-- Retained primitive data, coefficient data and points determine the value at the chosen algebra. -/
   agrees (left right : reading.RealizedInput reading.algebra) :

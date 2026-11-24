@@ -676,7 +676,7 @@ private def selected : CoefficientReading retained ordinary (.ofList [false, tru
     · exact False.elim (by
         obtain ⟨i, hi⟩ := hs
         exact (by decide : true ≠ false) (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
-  pointOrigin := .declared True.intro (by
+  pointOrigin := .declared PUnit.unit True.intro (by
     intro spot chosen
     cases spot
     · exact ⟨rfl, rfl⟩
@@ -820,7 +820,7 @@ theorem native_same_retained_data_with_distinct_maps_fails :
 /-- A permitted native shift is not a map described by this scheme's declared identity policy. -/
 theorem shifted_native_map_cannot_use_declared_identity :
     let reading := nativeCoefficient true true
-    ¬ reading.scheme.declaredPoints reading.algebra reading.choice
+    ¬ (reading.scheme.pointPrograms reading.algebra reading.choice).describes PUnit.unit
       (RestrictedStructure.restrict retained (ambient true))
       (reading.scheme.structureOf reading.algebra reading.realization) false
       (reading.realizePoint false ⟨PUnit.unit, rfl⟩) := by
@@ -889,7 +889,7 @@ private def scalarInputs (R : Type) [CommRing R] :
     · exact False.elim (by
         obtain ⟨i, hi⟩ := hs
         exact Bool.noConfusion (hi.symm.trans (List.mem_singleton.1 i.2.sort_mem)))
-  pointOrigin := .declared True.intro (by
+  pointOrigin := .declared PUnit.unit True.intro (by
     intro spot chosen
     cases spot
     · exact ⟨rfl, rfl⟩
@@ -1181,15 +1181,14 @@ private def zeroInputs : CoefficientReading retained (separateStates Int) (.ofLi
 def independentlyIntroduceCoefficients : Reading.CoefficientCompatibility plainReading
     ({ separateReading Int with coefficients := some ⟨.ofList [false, true], zeroInputs⟩ } : Reading.{0, 0, 0, 0})
     id (fun _ x => x) :=
-  .compare
-    ⟨{ extra := .ofSort false
-       coordinate := fun j => ⟨.inr PUnit.unit, by
-         obtain ⟨i, hi⟩ := j.property
-         change false = j.val.1
-         rw [← hi]
-         exact (List.mem_singleton.1 i.2.sort_mem).symm⟩
-       extra_used := fun _ => ⟨⟨⟨false, .here⟩, ⟨false, .here⟩, rfl⟩, rfl⟩ },
-     fun _ => (0 : Int), fun _ => rfl⟩
+  ⟨{ extra := .ofSort false
+     coordinate := fun j => ⟨.inr PUnit.unit, by
+       obtain ⟨i, hi⟩ := j.property
+       change false = j.val.1
+       rw [← hi]
+       exact (List.mem_singleton.1 i.2.sort_mem).symm⟩
+     extra_used := fun _ => ⟨⟨⟨false, .here⟩, ⟨false, .here⟩, rfl⟩, rfl⟩ },
+    fun _ => (0 : Int), fun _ => rfl⟩
 
 /-- Forget scalar evaluation while reading the independently selected Bool position. -/
 def independentlyForgetCoefficients : Reading.CoefficientCompatibility (paddedReading Int)
@@ -1281,7 +1280,7 @@ def external_state_feeds_new_coefficient_evaluation :
       quantity_comm q := nomatch q }
   contexts := .identity _
   declarationChange := .changed introduceScalarContext
-  coefficientChange := .compare ⟨externalScalarInputs, id, fun _ => rfl⟩
+  coefficientChange := ⟨externalScalarInputs, id, fun _ => rfl⟩
   coefficientInputs := by
     refine ⟨(fun _ _ common => (common.1 rfl).elim), ?_⟩
     refine ⟨(fun k => nomatch k), (fun k => nomatch k), (fun k => nomatch k),
@@ -1305,8 +1304,11 @@ def external_state_feeds_new_coefficient_evaluation :
   restrictedObservations :=
     ⟨fun e => e ⟨⟨false, .here⟩, externalScalarInputAvailable _⟩,
       fun e => e ⟨⟨false, .here⟩, externalScalarInputAvailable _⟩,
-      fun _ => rfl, fun _ => rfl, (fun _ => rfl),
-      ⟨(fun _ i _ => externalScalarInputAvailable i), fun _ => rfl⟩⟩
+      ⟨(fun _ => rfl), Or.inl (StateObservation.restriction_surjective_of_nonempty _ _
+        ⟨ObservationProduct.ofAssignment (Assignment.cons (0 : Int) Assignment.empty)⟩)⟩,
+      ⟨(fun _ => rfl), Or.inl (StateObservation.restriction_surjective_of_nonempty _ _
+        ⟨ObservationProduct.ofAssignment (Assignment.cons (0 : Int) Assignment.empty)⟩)⟩,
+      (fun _ => rfl), ⟨(fun _ i _ => externalScalarInputAvailable i), fun _ => rfl⟩⟩
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
 

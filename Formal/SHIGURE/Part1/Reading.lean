@@ -35,6 +35,9 @@ that were external to the selection remain available independently of the
 cover. A context restriction must still account for the evaluation at any
 coordinates it forgets. A primitive observation keeps its actual operation
 and full arity in a single cover piece.
+When the original input product is empty and the retained product is not,
+the selected observation supplies its restriction explicitly. Agreement on
+ambient tuples alone would leave all its retained values undetermined.
 
 A comparison with unchanged coefficient settings can use
 the same evaluation rule in both realizations. A comparison of changed
@@ -241,6 +244,9 @@ end Interpretation
 inductive StateObservation {sig : Signature.{u}} (A : Structure sig) where
   | ofFunction (product : ObservationProduct sig.SortType) (output : Type u)
       (read : product.Values A.carrier → output)
+      (specifiedRestriction : (kept : Set product.Index) →
+        Option {localRead : (product.restrict kept).Values A.carrier → output //
+          ∀ e, localRead (fun i => e i.val) = read e} := fun _ => none)
   | ofTotalSymbol (symbol : TotalSymbol sig)
 
 namespace StateObservation
@@ -249,21 +255,64 @@ variable {sig : Signature.{u}} {A : Structure sig}
 
 /-- The input product selected by the observer. -/
 def product : StateObservation A → ObservationProduct sig.SortType
-  | .ofFunction product _ _ => product
+  | .ofFunction product _ _ _ => product
   | .ofTotalSymbol symbol => { ObservationProduct.ofList symbol.operation.arity.inputs with nameScope := none }
 
 /-- The selected set of observation values. -/
 def Output : StateObservation A → Type u
-  | .ofFunction _ output _ => output
+  | .ofFunction _ output _ _ => output
   | .ofTotalSymbol symbol => A.carrier symbol.operation.arity.output
 
 /-- Evaluate the actual function or the actual declared operation. -/
 def read (observation : StateObservation A) : observation.product.Values A.carrier → observation.Output :=
   match observation with
-  | .ofFunction _ _ read => read
+  | .ofFunction _ _ read _ => read
   | .ofTotalSymbol symbol =>
     fun e => (⟨symbol, rfl⟩ : TypedTotal sig symbol.operation.arity).value A
       (ObservationProduct.toAssignment e)
+
+/-- Its independently chosen evaluator on a restricted tuple, when one is specified. -/
+def localRead (observation : StateObservation A) (kept : Set observation.product.Index) :
+    Option ((observation.product.restrict kept).Values A.carrier → observation.Output) :=
+  match observation with
+  | .ofFunction _ _ _ specified => (specified kept).map Subtype.val
+  | .ofTotalSymbol _ => none
+
+/-- Forgetting positions gives this evaluator on the retained tuple. A value outside the
+image of the ambient tuple must come from the observation's selected restriction. -/
+def RespectsRestriction (observation : StateObservation A) (kept : Set observation.product.Index)
+    (read : (observation.product.restrict kept).Values A.carrier → observation.Output) : Prop :=
+  (∀ e, read (fun i => e i.val) = observation.read e) ∧
+    ((Function.Surjective fun e : observation.product.Values A.carrier => fun i : kept => e i.val) ∨
+      observation.localRead kept = some read)
+
+/-- A fixed observation has a unique certified evaluation on a given retained input product. -/
+theorem RespectsRestriction.unique {observation : StateObservation A} {kept : Set observation.product.Index}
+    {f g : (observation.product.restrict kept).Values A.carrier → observation.Output}
+    (left : observation.RespectsRestriction kept f)
+    (right : observation.RespectsRestriction kept g) : f = g := by
+  rcases left.2 with full | recorded
+  · funext e
+    obtain ⟨original, rfl⟩ := full e
+    exact (left.1 original).trans (right.1 original).symm
+  · rcases right.2 with full | recorded'
+    · funext e
+      obtain ⟨original, rfl⟩ := full e
+      exact (left.1 original).trans (right.1 original).symm
+    · exact Option.some.inj (recorded.symm.trans recorded')
+
+/-- If any ambient tuple exists, every retained tuple can extend by using its omitted positions. -/
+theorem restriction_surjective_of_nonempty (observation : StateObservation A)
+    (kept : Set observation.product.Index)
+    (ambient : Nonempty (observation.product.Values A.carrier)) :
+    Function.Surjective (fun e : observation.product.Values A.carrier => fun i : kept => e i.val) := by
+  classical
+  obtain ⟨defaultInput⟩ := ambient
+  intro retained
+  let mixed : observation.product.Values A.carrier := fun i =>
+    if h : i ∈ kept then retained ⟨i, h⟩ else defaultInput i
+  refine ⟨mixed, funext fun i => ?_⟩
+  exact dif_pos i.property
 
 /-- The declaration used to evaluate a primitive observation. -/
 def symbol : StateObservation A → Option (TotalSymbol sig)
@@ -374,6 +423,10 @@ structure Reading where
   ambient expansion of its structures. -/
   origin : Option (Σ ambient : PrimitivePresentation.{u}, Σ retained : DeclarationContext ambient,
     ReadingOrigin presentation ambient retained) := none
+
+/-- Expose the ordinary part of a reading by projecting out its coefficient evaluation. -/
+def Reading.ordinaryPart (reading : Reading.{u, v, w, x}) : Reading.{u, v, w, x} :=
+  { reading with coefficients := none }
 
 /-- The ordinary observation is the interpretation of a retained primitive declaration. -/
 structure Reading.DeclaredObservation (reading : Reading.{u, v, w, x}) where
@@ -896,8 +949,8 @@ def ObservationSquare (change : ReadingContextChange source target u)
       (change.TargetObservationValues positions → target.observation.Output) → Prop := fun _ _ => True) : Prop :=
   ∃ (readSource : change.SourceObservationValues → source.observation.Output)
     (readTarget : change.TargetObservationValues positions → target.observation.Output),
-    (∀ e, readSource (fun i => e i.val) = source.observation.read e) ∧
-    (∀ e, readTarget (fun j => e j.val) = target.observation.read e) ∧
+    source.observation.RespectsRestriction change.observationInputs readSource ∧
+    target.observation.RespectsRestriction (change.targetObservationInputs positions) readTarget ∧
     (∀ e, readTarget (change.mapObservationInputs positions state e) = value (readSource e)) ∧
     also readSource readTarget
 
@@ -912,7 +965,9 @@ theorem observationSquare_of_available (change : ReadingContextChange source tar
     change.ObservationSquare positions state value :=
   ⟨fun e => source.observation.read (fun i => e ⟨i, left i⟩),
     fun e => target.observation.read (fun j => e ⟨j, right j⟩),
-    fun _ => rfl, fun _ => rfl, (fun e => square (fun i => e ⟨i, left i⟩)), True.intro⟩
+    ⟨(fun _ => rfl), Or.inl (fun e => ⟨fun i => e ⟨i, left i⟩, rfl⟩)⟩,
+    ⟨(fun _ => rfl), Or.inl (fun e => ⟨fun j => e ⟨j, right j⟩, rfl⟩)⟩,
+    (fun e => square (fun i => e ⟨i, left i⟩)), True.intro⟩
 
 /-- Retaining every source sort makes all the observation inputs available for its square. -/
 theorem observationSquare_of_all (change : ReadingContextChange source target u)
@@ -1460,10 +1515,10 @@ def Reading.CoefficientCompatibility.At (source target : Reading.{u, v, w, x})
   | none, none => PUnit
   | some c, some d => CoefficientComparison c.2 d.2 onSort state
   | none, some d =>
-    OneSidedCoefficientComparison (Σ inputs : ReadingInputMap source.observation.product d.2.selection.used onSort,
+    Σ inputs : ReadingInputMap source.observation.product d.2.selection.used onSort,
       {value : source.observation.Output → d.2.ring.Carrier //
         ∀ e : inputs.Values source.structureData.carrier,
-          d.2.evaluateSelected (inputs.mapValues state e) = value (source.observation.read e.1)})
+          d.2.evaluateSelected (inputs.mapValues state e) = value (source.observation.read e.1)}
   | some c, none =>
     OneSidedCoefficientComparison (Σ inputs : ReadingInputMap c.2.selection.used target.observation.product onSort,
       {value : c.2.ring.Carrier → target.observation.Output //
@@ -1532,11 +1587,9 @@ private def respectsOrdinaryAt {source target : Reading.{u, v, w, x}}
   | some c, some d =>
     CoefficientComparison.UsesInputs positions (source.SharesInput c.1) (target.SharesInput d.1)
       contextChange.extraStateAvailable
-  | none, some d => fun comparison => match comparison with
-      | .project => True
-      | .compare data => data.1.PreservesNames source.observation.product id ∧
-          data.1.RespectsOrdinary positions source.observation.product id (· = ·)
-            (fun j i => target.SharesInput d.1 j.val i) (fun i => contextChange.extraStateAvailable (data.1.extra.sort i))
+  | none, some d => fun data => data.1.PreservesNames source.observation.product id ∧
+      data.1.RespectsOrdinary positions source.observation.product id (· = ·)
+        (fun j i => target.SharesInput d.1 j.val i) (fun i => contextChange.extraStateAvailable (data.1.extra.sort i))
   | some c, none => fun comparison => match comparison with
       | .project => True
       | .compare data => data.1.UsesCoefficientNames c.2.selection ∧
@@ -1570,13 +1623,11 @@ private def sharesEvaluationAt {source target : Reading.{u, v, w, x}}
       available
       (source.SharesInput c.1) (target.SharesInput d.1) contextChange.extraStateAvailable
   | none, none => fun _ => True
-  | none, some d => fun comparison => match comparison with
-      | .project => True
-      | .compare data =>
-        data.1.SharedSquare positions available source.observation.product id (· = ·)
-          (fun j i => target.SharesInput d.1 j.val i)
-          (fun i => contextChange.extraStateAvailable (data.1.extra.sort i)) state
-          (fun e => d.2.evaluateSelected (data.1.mapValues state e) = data.2.val (source.observation.read e.1))
+  | none, some d => fun data =>
+    data.1.SharedSquare positions available source.observation.product id (· = ·)
+      (fun j i => target.SharesInput d.1 j.val i)
+      (fun i => contextChange.extraStateAvailable (data.1.extra.sort i)) state
+      (fun e => d.2.evaluateSelected (data.1.mapValues state e) = data.2.val (source.observation.read e.1))
   | some c, none => fun comparison => match comparison with
       | .project => True
       | .compare data =>
@@ -1611,11 +1662,8 @@ theorem Reading.CoefficientCompatibility.sharesEvaluation_of_respectsOrdinary
   generalize target.coefficients = right
   cases left <;> cases right <;> intro k sharing
   · trivial
-  · cases k with
-    | project => trivial
-    | compare data =>
-      exact data.1.sharedSquare_of_respectsOrdinary _ sharing.2
-        (fun _ _ eq => congrArg source.observation.product.sort eq) state data.2.property
+  · exact k.1.sharedSquare_of_respectsOrdinary _ sharing.2
+      (fun _ _ eq => congrArg source.observation.product.sort eq) state k.2.property
   · cases k with
     | project => trivial
     | compare data =>
@@ -1635,9 +1683,7 @@ def Reading.CoefficientCompatibility.retainsEvaluation {source target : Reading.
       source.coefficients, target.coefficients with
   | none, none => fun _ => True
   | some _, some _ => CoefficientComparison.SupportsEvaluation sourceLocal targetLocal
-  | none, some _ => fun comparison => match comparison with
-      | .project => True
-      | .compare _ => targetLocal
+  | none, some _ => fun _ => targetLocal
   | some _, none => fun comparison => match comparison with
       | .project => True
       | .compare _ => sourceLocal
@@ -1711,13 +1757,7 @@ def Reading.CoefficientCompatibility.projectionCommutes {source target : Reading
       source.coefficients, target.coefficients with
   | none, none => fun _ => True
   | some _, some _ => fun _ => True
-  | none, some d => fun comparison => match comparison with
-      | .compare _ => True
-      | .project => ∀ (e : source.observation.product.Values source.structureData.carrier)
-          (t : target.JointInput d.2.selection),
-          t.ordinary = positions.mapValues state e →
-          (Reading.JointInput.evaluate d.2 t).1 =
-            value (source.observation.read e)
+  | none, some _ => fun _ => True
   | some c, none => fun comparison => match comparison with
       | .compare _ => True
       | .project => ∀ e : source.JointInput c.2.selection,
@@ -1738,12 +1778,10 @@ def Reading.CoefficientCompatibility.respectsRestrictedOrdinary {source target :
       source.coefficients, target.coefficients with
   | none, none => fun _ => True
   | some _, some _ => fun _ => True
-  | none, some d => fun comparison => match comparison with
-      | .project => True
-      | .compare data =>
-        ∃ kept : data.1.UsesOnly change.observationInputs,
-          ∀ e : change.SourceObservationValues × data.1.extra.Values source.structureData.carrier,
-            d.2.evaluateSelected (data.1.mapRestrictedValues state kept e) = data.2.val (readSource e.1)
+  | none, some d => fun data =>
+    ∃ kept : data.1.UsesOnly change.observationInputs,
+      ∀ e : change.SourceObservationValues × data.1.extra.Values source.structureData.carrier,
+        d.2.evaluateSelected (data.1.mapRestrictedValues state kept e) = data.2.val (readSource e.1)
   | some c, none => fun comparison => match comparison with
       | .project => True
       | .compare data =>
@@ -1783,8 +1821,8 @@ structure ReadingComparison (source target : Reading.{u, v, w, x}) where
   /-- Named observations are evaluated in the paired pieces of this comparison. -/
   declaredObservations : declarationChange.retainsChosenSymbols contexts := by
     first | trivial | exact .external
-  /-- Coefficient transport when both readings use coefficients, with an optional cross-evaluation
-  map when just one uses them. -/
+  /-- Coefficient evaluations have a comparison map when introduced. They may be projected out
+  when the target has only ordinary output. -/
   coefficientChange : source.CoefficientCompatibility target interpretation.onSort state.onSort
   /-- Both squares use the same shared states, and coefficient names keep their original positions. -/
   coefficientInputs : coefficientChange.respectsOrdinary contexts declarationChange := by trivial
@@ -1928,9 +1966,9 @@ theorem ReadingComparison.target_local_observation_commutes {source target : Rea
   obtain ⟨j, selected, kept, available⟩ := comparison.target_observation_is_selected change named
   obtain ⟨readSource, readTarget, sourceFactor, targetFactor, square, _⟩ :=
     comparison.observation_square_on_retained change
-  refine ⟨j, selected, kept, available, readSource, sourceFactor, ?_⟩
+  refine ⟨j, selected, kept, available, readSource, sourceFactor.1, ?_⟩
   intro e
-  rw [Reading.DeclaredObservation.readWithin_eq, ← targetFactor]
+  rw [Reading.DeclaredObservation.readWithin_eq, ← targetFactor.1]
   exact square e
 
 /-- A retained target observation input is available in a selected target cover piece. -/

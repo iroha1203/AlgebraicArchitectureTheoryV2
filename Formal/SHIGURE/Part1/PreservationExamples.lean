@@ -413,8 +413,8 @@ theorem cannot_compare_external_after_forgetting_input
       (fun _ : change.val.observationInputs => false) = (fun _ => true) :=
     funext (fun i => (noInput i).elim)
   exact Bool.noConfusion
-    ((sourceSquare (fun _ => false)).symm.trans
-      ((congrArg localRead localInputs).trans (sourceSquare (fun _ => true))))
+    ((sourceSquare.1 (fun _ => false)).symm.trans
+      ((congrArg localRead localInputs).trans (sourceSquare.1 (fun _ => true))))
 
 /-- The target can produce a constant entirely independently of the forgotten states. -/
 private def constantWithEmptyCover : Reading.{0, 0, 0, 0} :=
@@ -445,7 +445,10 @@ def constant_observations_compare_through_empty_cover :
   value := Bool.not
   commutes _ := rfl
   restrictedObservations :=
-    ⟨fun _ => false, fun _ => true, fun _ => rfl, fun _ => rfl, (fun _ => rfl), True.intro⟩
+    ⟨fun _ => false, fun _ => true,
+      ⟨(fun _ => rfl), Or.inl (StateObservation.restriction_surjective_of_nonempty _ _ ⟨fun _ => false⟩)⟩,
+      ⟨(fun _ => rfl), Or.inl (StateObservation.restriction_surjective_of_nonempty _ _ ⟨fun _ => false⟩)⟩,
+      (fun _ => rfl), True.intro⟩
 
 /-- The declaration is forgotten while the comparison explicitly retains the external Boolean state. -/
 private def forgetSortKeepExternal : ReadingContextChange (reading id) missingSort
@@ -671,7 +674,7 @@ def all_small_realizations_reading : Reading.{0, 1, 1, 1} where
       selection := .ofRenaming (Δ := [()]) (fun i => i)
       supported _ := Set.mem_univ _
       realizePoint _ _ := id
-      pointOrigin := .declared (fun _ _ => Function.injective_id) (fun _ _ => ⟨rfl, rfl⟩)
+      pointOrigin := .declared PUnit.unit (fun _ _ => Function.injective_id) (fun _ _ => ⟨rfl, rfl⟩)
       evaluateOn _ R _ _ :=
         letI := R.scalars.ring
         0 }⟩
@@ -690,7 +693,7 @@ private def readRing (R : Type) [CommRing R] (offset : R) :
   selection := .ofRenaming (Δ := [()]) (fun i => i)
   supported _ := Set.mem_univ _
   realizePoint _ _ x := x
-  pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+  pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
   evaluateOn _ coefficients data e :=
     letI := coefficients.scalars.ring
     (show coefficients.scalars.Carrier from e ⟨(), .here⟩) +
@@ -723,10 +726,27 @@ private theorem cast_via_common_carrier {X Y Z : Type} (left : X = Y) (right : X
   cases right
   rfl
 
+/-- The coefficient method offers independent identity and integer-shift recipes. -/
+private def shiftedPointScheme : CoefficientScheme Observation.whole (ringOf Int) :=
+  { offsetScheme (ringOf Int) with
+    pointPrograms _ _ :=
+      { Selector := Bool
+        describes selected X Y s f := if selected then
+          ∃ (source : X.carrier s = Int) (target : Y.carrier s = Int),
+            f = fun x => cast target.symm (cast source x + 1)
+          else (CoefficientPointPrograms.identity.{0, 0} Observation.whole).describes PUnit.unit X Y s f
+        unique := by
+          rintro choice X Y s f g
+          cases choice
+          · exact (CoefficientPointPrograms.identity.{0, 0} _).unique PUnit.unit X Y s
+          · rintro ⟨_, _, same⟩ ⟨_, _, same'⟩
+            exact same.trans same'.symm } }
+
 /-- Evaluate the designated integer point at the selected coordinate. -/
 private def pointReading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) :=
   { readRing Int 0 with
-    pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+    scheme := shiftedPointScheme
+    pointOrigin := .declared false True.intro (fun _ _ => ⟨rfl, rfl⟩)
     evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }
 
 /-- Reading the designated point factors through the retained carrier and tuple. -/
@@ -763,19 +783,12 @@ theorem point_evaluation_respects_restriction :
     pointReading.RespectsRestriction Observation.whole (fun _ h => h) :=
   pointReading_local _ (fun _ => Set.mem_univ _)
 
-/-- The declared shift recipe uses only an integer carrier and its stated offset. -/
-private def shiftedPointScheme : CoefficientScheme Observation.whole (ringOf Int) :=
-  { offsetScheme (ringOf Int) with
-    declaredPoints _ _ X Y s f :=
-      ∃ (source : X.carrier s = Int) (target : Y.carrier s = Int),
-        f = fun x => cast target.symm (cast source x + 1) }
-
 /-- A purported local identity rule cannot justify a different designated point correspondence. -/
 theorem local_point_rule_cannot_hide_shift :
     let reading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) := { readRing Int 0 with
       scheme := shiftedPointScheme
       realizePoint := fun _ _ x => (show Int from x) + 1
-      pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl, rfl⟩)
+      pointOrigin := .declared true True.intro (fun _ _ => ⟨rfl, rfl, rfl⟩)
       evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }
     ¬ localIdentityRule.AgreesWith reading (fun _ h => h) (fun _ => Set.mem_univ _) := by
   classical
@@ -813,7 +826,7 @@ private def collapsedScheme : CoefficientScheme Observation.whole (ringOf Int) :
 
 /-- At the chosen integer algebra the underlying realization still reads its actual state. -/
 private def collapsedReading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) :=
-  { readRing Int 4 with scheme := collapsedScheme, pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩) }
+  { readRing Int 4 with scheme := collapsedScheme, pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩) }
 
 /-- The direct square allows a state map different from the scheme's own scalar change. -/
 def directDiagonal :
@@ -1096,13 +1109,12 @@ theorem fixed_comparison_has_no_scalar_change :
 
 /-- This selection changes only the point correspondence used to feed the evaluation rule. -/
 private def shiftedPoint : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) :=
-  { readRing Int 0 with
-    scheme := shiftedPointScheme
+  { pointReading with
     realizePoint := fun _ _ x => (show Int from x) + (1 : Int)
-    pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl, rfl⟩) }
+    pointOrigin := .declared true True.intro (fun _ _ => ⟨rfl, rfl, rfl⟩) }
 
 /-- A changed point correspondence cannot be hidden in the fixed comparison. -/
-theorem point_change_is_not_fixed : ¬ (readRing Int 0).SameParameters shiftedPoint := by
+theorem point_change_is_not_fixed : ¬ pointReading.SameParameters shiftedPoint := by
   intro same
   rcases same.application with h | h
   · exact h.1
@@ -1256,7 +1268,7 @@ private def readSlot (size index : Nat) (kept : index < size) :
         sort_eq _ := rfl }
     supported _ := Set.mem_univ _
     realizePoint _ _ x := x
-    pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+    pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
     evaluateOn _ _ _ e := e PUnit.unit }
 
 /-- Padding the raw product cannot hide a change of slot in its common coordinate set. -/
@@ -1357,7 +1369,7 @@ private noncomputable def coefficientSequence :
     selection := .all integerSequence
     supported _ := Set.mem_univ _
     realizePoint _ _ x := x
-    pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+    pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
     evaluateOn _ R _ e := by
       classical
       letI := R.scalars.ring
@@ -1430,7 +1442,7 @@ private def projectionReading (f : (Int × Int) →+* Int) :
   selection := .ofRenaming (Δ := [()]) (fun i => i)
   supported _ := Set.mem_univ _
   realizePoint _ _ x := x
-  pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+  pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
   evaluateOn _ R _ e :=
     letI := R.scalars.ring
     (show R.scalars.Carrier from e ⟨(), .here⟩) + R.fromBase ((0, 1) : Int × Int)
@@ -1505,7 +1517,7 @@ theorem repeated_coefficient_input :
           | () => .here)
         supported _ := Set.mem_univ _
         realizePoint := fun _ _ x => x
-        pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+        pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
         evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }
     ∀ e : (ObservationProduct.ofList [()]).Values (statesOf Int).carrier,
       repeated.inputTuple e ⟨(), .here⟩ = repeated.inputTuple e ⟨(), .there .here⟩ :=
@@ -1539,7 +1551,7 @@ def forgetCoefficients : Reading.CoefficientCompatibility (readingOf Int 0) plai
 /-- Introducing coefficients supplies the corresponding map in the other direction. -/
 def introduceCoefficients : Reading.CoefficientCompatibility plainInteger (readingOf Int 0) id
     (fun _ x => x) :=
-  .compare ⟨toCoefficientInput, id, fun e => by
+  ⟨toCoefficientInput, id, fun e => by
     let x : Int := e.1 PUnit.unit
     change x + 0 = x
     exact Int.add_zero x⟩
@@ -1602,13 +1614,42 @@ def forget_independent_scalar : ReadingComparison constantCoefficient plainInteg
     coefficientInputs := True.intro
     coefficientProjection := fun _ => rfl }
 
-/-- Introducing an independent coefficient output compares the retained ordinary projection. -/
-def introduce_independent_scalar : ReadingComparison plainInteger constantCoefficient :=
+/-- Compare the ordinary view of an independently specified coefficient reading. -/
+def compare_independent_scalar_ordinary_view :
+    ReadingComparison plainInteger constantCoefficient.ordinaryPart :=
   { fixedCoefficientComparison with
     declarationChange := .fixed ⟨rfl, HEq.rfl, HEq.rfl⟩
-    coefficientChange := .project
+    coefficientChange := PUnit.unit
     coefficientInputs := True.intro
-    coefficientProjection := fun _ _ same => congrArg (fun states => states PUnit.unit) same }
+    coefficientProjection := True.intro }
+
+/-- The ordinary projection of either side carries a single observable value. -/
+private def unitObservation (r : Reading.{0, 0, 0, 0}) (s : r.presentation.signature.SortType) :
+    Reading.{0, 0, 0, 0} :=
+  { r with
+    observation := .ofSort s PUnit (fun _ => PUnit.unit)
+    ValueStructure _ := Unit
+    valueStructure := ()
+    sharedInputs := .empty _
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+/-- A variable scalar cannot be introduced by a value map from a single ordinary value. -/
+theorem varying_scalar_introduction_needs_value_map :
+    IsEmpty ((unitObservation plainInteger ()).CoefficientCompatibility (unitObservation (readingOf Int 0) ())
+      id (fun _ x => x)) := by
+  constructor
+  rintro ⟨inputs, map, square⟩
+  have forced (x : Int) : x = map PUnit.unit := by
+    let e : inputs.Values (statesOf Int).carrier := ⟨fun _ => x, fun _ => x⟩
+    have commutes := square e
+    let j : (readRing Int 0).selection.used.Index := ⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩
+    change (show Int from inputs.mapValues (fun _ y => y) e j) + (0 : Int) = map PUnit.unit at commutes
+    rw [Int.add_zero] at commutes
+    have mapped := inputs.mapValues_ofSort (X := (statesOf Int).carrier) (Y := (statesOf Int).carrier)
+      (fun _ y => y) (fun _ => x) (fun _ => x) (fun _ => rfl) j
+    exact mapped.symm.trans commutes
+  exact Int.zero_ne_one ((forced 0).trans (forced 1).symm)
 
 /-- The scalar comparison needs no input once its chosen evaluation is constant. -/
 private def nullaryCoefficient : CoefficientReading Observation.whole (statesOf Int) (.ofList []) where
@@ -1619,7 +1660,7 @@ private def nullaryCoefficient : CoefficientReading Observation.whole (statesOf 
   selection := .ofRenaming fun i => i
   supported i := nomatch i.2
   realizePoint _ _ := id
-  pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+  pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
   evaluateOn _ R _ _ :=
     letI := R.scalars.ring
     1
@@ -1629,9 +1670,9 @@ private def taggedNullaryCoefficient : CoefficientReading Observation.whole (sta
   { nullaryCoefficient with
     scheme := { offsetScheme (ringOf Int) with
       Choice := Int
-      declaredPoints _ _ X Y s f := ∃ same : X.carrier s = Y.carrier s, f = cast same }
+      pointPrograms _ _ := .identity _ }
     choice := 1
-    pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+    pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
     evaluateOn parameter R _ _ := R.fromBase parameter }
 
 /-- A coefficient parameter survives the declaration restriction and determines the evaluation. -/
@@ -1658,7 +1699,7 @@ private def selectedCoefficientAlgebra : CoefficientReading Observation.whole (s
   selection := .ofRenaming fun i => i
   supported i := nomatch i.2
   realizePoint _ _ := id
-  pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+  pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
   evaluateOn _ R offset _ :=
     letI := R.scalars.ring
     R.fromBase ((0, 1) : Int × Int) * (show R.scalars.Carrier from offset)
@@ -1680,12 +1721,26 @@ theorem restriction_uses_only_selected_coefficient_algebra :
 private def emptyOrdinaryReading : Reading.{0, 0, 0, 0} :=
   { Observation.reading id with
     structureData := statesOf Empty
-    observation := StateObservation.ofSort () PUnit (fun _ => PUnit.unit)
+    observation := .ofFunction (.ofSort ()) PUnit (fun _ => PUnit.unit)
+      (fun _ => some ⟨(fun _ => PUnit.unit), fun _ => rfl⟩)
     realize _ := statesOf Empty
     coefficients := none
     sharedInputs := .empty _
     observationPlacement := .external
     observationDeclared _ named := nomatch named }
+
+/-- A Boolean observation specifies its value even when the original input is empty. -/
+private def emptyBoolObservation : StateObservation (statesOf Empty) :=
+  .ofFunction (.ofSort ()) Bool (fun _ => false) (fun _ => some ⟨(fun _ => false), fun _ => rfl⟩)
+
+/-- A comparison cannot choose a different value at the only retained empty tuple. -/
+theorem restricted_empty_observation_keeps_specified_value :
+    ¬ emptyBoolObservation.RespectsRestriction ∅ (fun _ => true) := by
+  intro wrong
+  have correct : emptyBoolObservation.RespectsRestriction ∅ (fun _ => false) :=
+    ⟨(fun _ => rfl), Or.inr rfl⟩
+  have maps := correct.unique wrong
+  exact Bool.noConfusion (congrFun maps (fun i => i.property.elim))
 
 /-- Read a constant ordinary value and the selected nullary coefficient evaluation. -/
 private def nullaryCoefficientReading : Reading.{0, 0, 0, 0} :=
@@ -1902,7 +1957,7 @@ private def nullaryInputs : ReadingInputMap emptyOrdinaryReading.observation.pro
 private def initialCoefficientValue (value : Int) :
     Reading.CoefficientCompatibility emptyOrdinaryReading nullaryCoefficientReading id
       (fun _ a => nomatch a) :=
-  .compare ⟨nullaryInputs, (fun _ => value), fun e => nomatch e.1 PUnit.unit⟩
+  ⟨nullaryInputs, (fun _ => value), fun e => nomatch e.1 PUnit.unit⟩
 
 /-- Even without an ambient tuple, the retained tuple detects the wrong scalar value. -/
 theorem cannot_use_empty_ambient_to_skip_coefficient_square
@@ -1945,8 +2000,10 @@ def introduces_scalar_at_retained_tuple :
   value := id
   commutes e := nomatch e PUnit.unit
   restrictedObservations :=
-    ⟨fun _ => PUnit.unit, fun _ => PUnit.unit, fun _ => rfl, fun _ => rfl, (fun _ => rfl),
-      ⟨(fun j => nomatch j.val.2), fun _ => rfl⟩⟩
+    ⟨fun _ => PUnit.unit, fun _ => PUnit.unit,
+      ⟨(fun _ => rfl), Or.inr rfl⟩,
+      ⟨(fun _ => rfl), Or.inl (StateObservation.restriction_surjective_of_nonempty _ _ ⟨fun i => nomatch i⟩)⟩,
+      (fun _ => rfl), ⟨(fun j => nomatch j.val.2), fun _ => rfl⟩⟩
 
 /-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
 theorem zero_ring_to_integer_fails :
@@ -2384,7 +2441,7 @@ def selection : CoefficientReading sortOnly A (.ofList [()]) where
     cases i.1
     exact Set.mem_singleton _
   realizePoint _ _ x := x
-  pointOrigin := .declared True.intro (fun _ _ => ⟨rfl, rfl⟩)
+  pointOrigin := .declared PUnit.unit True.intro (fun _ _ => ⟨rfl, rfl⟩)
   evaluateOn _ R _ _ :=
     letI := R.scalars.ring
     0
@@ -2402,7 +2459,7 @@ def emptySelection : CoefficientReading sortOnly A (.ofList [()]) where
   selection := .ofRenaming (Δ := []) (fun i => nomatch i)
   supported i := nomatch i.2
   realizePoint _ h := False.elim (by obtain ⟨i, _⟩ := h; exact nomatch i.2)
-  pointOrigin := .declared True.intro (by
+  pointOrigin := .declared PUnit.unit True.intro (by
     rintro _ ⟨i, _⟩
     exact nomatch i.2)
   evaluateOn _ R _ _ :=
