@@ -2,7 +2,9 @@ import Formal.SHIGURE.AssertStandardAxioms
 import Formal.SHIGURE.Part1.Chapter2Examples
 import Formal.SHIGURE.Part1.ContextBaseChange
 import Formal.SHIGURE.Part1.ContextDerivedExample
+import Formal.SHIGURE.Part1.ContextDescentExamples
 import Formal.SHIGURE.Part1.ContextExamples
+import Formal.SHIGURE.Part1.ContextOrderedExamples
 import Formal.SHIGURE.Part1.ContextPrimitiveValues
 import Formal.SHIGURE.Part1.ContextSelectedExamples
 import Formal.SHIGURE.Part1.LensExamples
@@ -1201,13 +1203,6 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Chapter3.DerivedNonempty.constant_used_by_derivation,
   Chapter3.DerivedNonempty.derived_keeps_constant,
   Chapter3.DerivedNonempty.retainedProof,
-  -- ContextLogicalCore
-  PrimitivePresentation.logicalCore,
-  PrimitivePresentation.logicalNames,
-  PrimitivePresentation.logicalCore_derived,
-  PrimitivePresentation.logicalCore_law_dependencies,
-  PrimitivePresentation.logicalCore_nonderived_dependencies,
-  ChapterContext,
   -- ContextSelectedVocabulary
   DeclarationContext.Selected.SortName,
   DeclarationContext.Selected.Total,
@@ -1267,7 +1262,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.keepsDerived,
   DeclarationContext.Selected.presentation,
   DeclarationContext.Selected.presentation_theory,
-  ChapterContext.restrict,
+  DeclarationContext.Selected.presentation_orderedEquation,
   -- ContextSelectedEvaluation
   DeclarationContext.Selected.CarrierEquiv,
   DeclarationContext.Selected.selectAssignment,
@@ -1337,10 +1332,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.modelRestriction_id,
   DeclarationContext.Selected.modelRestriction_comp,
   DeclarationContext.Selected.modelRestriction_obj,
-  ChapterContext.Models,
-  ChapterContext.res,
-  DeclarationCover.ordinaryModelIso,
-  DeclarationCover.existsUnique_ordinary_glue,
+  DeclarationContext.Selected.write_res,
   -- ContextSelectedExamples
   Chapter3.DerivedNonempty.sortOnly,
   Chapter3.DerivedNonempty.sortOnly_noTotal,
@@ -1348,7 +1340,103 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Chapter3.DerivedNonempty.emptyStructure,
   Chapter3.DerivedNonempty.emptyModel,
   Chapter3.DerivedNonempty.emptyModel_carrier,
-  Chapter3.DerivedNonempty.actualRetainedProof
+  Chapter3.DerivedNonempty.actualRetainedProof,
+  -- ContextOrdinaryMatching
+  DeclarationContext.OrdinaryMatch,
+  DeclarationContext.OrdinaryMatch.ext,
+  DeclarationContext.OrdinaryMatch.ext_iff,
+  DeclarationContext.OrdinaryMatch.Hom,
+  DeclarationContext.OrdinaryMatch.Hom.ext,
+  DeclarationContext.OrdinaryMatch.Hom.ext_iff,
+  DeclarationContext.OrdinaryMatch.Hom.identity,
+  DeclarationContext.OrdinaryMatch.Hom.comp,
+  DeclarationContext.OrdinaryMatch.category,
+  DeclarationContext.OrdinaryMatch.project,
+  DeclarationContext.OrdinaryMatch.readObj,
+  DeclarationContext.OrdinaryMatch.writeObj,
+  DeclarationContext.OrdinaryMatch.readFunctor,
+  DeclarationContext.OrdinaryMatch.writeFunctor,
+  DeclarationContext.OrdinaryMatch.read_comp_write,
+  DeclarationContext.OrdinaryMatch.comp_pieceMap,
+  DeclarationContext.OrdinaryMatch.write_comp_read,
+  DeclarationContext.OrdinaryMatch.categoryIso,
+  -- ContextOrdinaryDescent
+  DeclarationCover.ordinaryRead,
+  DeclarationCover.ordinaryGlue,
+  DeclarationCover.ordinaryRead_project,
+  DeclarationCover.ordinaryRead_obj,
+  DeclarationCover.ordinaryRead_map,
+  DeclarationCover.ordinaryRead_comp_glue,
+  DeclarationCover.ordinaryGlue_comp_read,
+  DeclarationCover.ordinaryModelIso,
+  DeclarationCover.ordinaryGlue_read,
+  DeclarationCover.existsUnique_ordinary_glue,
+  DeclarationCover.ordinaryAssemble,
+  DeclarationCover.ordinaryAssemble_read,
+  DeclarationCover.existsUnique_ordinary_assemble,
+  -- ContextSelectedTerms
+  DeclarationContext.Selected.termReferences,
+  DeclarationContext.Selected.termReferences_subset_graphAt,
+  DeclarationContext.Selected.termReferences_subset_graph,
+  DeclarationContext.Selected.selectTerm,
+  DeclarationContext.Selected.selectFormula_graphAt,
+  DeclarationContext.Selected.selectFormula_defined,
+  DeclarationContext.Selected.selectFormula_termEq,
+  DeclarationContext.Selected.termReferences_rename,
+  DeclarationContext.Selected.selectTerm_rename,
+  DeclarationContext.Selected.formula_subset_bindArguments,
+  DeclarationContext.Selected.selectFormula_termRel,
+  DeclarationContext.Selected.selectFormula_termDomain,
+  DeclarationContext.Selected.selectFormula_termGraph,
+  DeclarationContext.Selected.selectSubstitution,
+  DeclarationContext.Selected.selectSubstitution_apply,
+  DeclarationContext.Selected.liftTermReferences,
+  DeclarationContext.Selected.selectSubstitution_lift,
+  DeclarationContext.Selected.selectTerm_substitute,
+  DeclarationContext.Selected.substitution_term_kept,
+  DeclarationContext.Selected.substitution_source_kept,
+  DeclarationContext.Selected.selectSubstitution_defined,
+  -- ContextSelectedSubstitution
+  DeclarationContext.Selected.formulaReferences_subset_substitute,
+  DeclarationContext.Selected.substitute_term_kept,
+  DeclarationContext.Selected.selectFormula_substitute,
+  -- ContextSelectedEquations
+  DeclarationContext.Selected.selectWritten,
+  DeclarationContext.Selected.selectWritten_toLaw,
+  DeclarationContext.Selected.selectNamedEquation,
+  -- ContextDescentExamples
+  Chapter3.OmittedLaw.missingGraph_not_matching,
+  Chapter3.OmittedLaw.no_ordinary_global_model,
+  Chapter3.OmittedLaw.different_ordinary_carriers_no_overlap,
+  Chapter3.OmittedLaw.different_ordinary_arrows_no_match,
+  Chapter3.RetainedLaw.identityLaw,
+  Chapter3.RetainedLaw.presentation,
+  Chapter3.RetainedLaw.left,
+  Chapter3.RetainedLaw.right,
+  Chapter3.RetainedLaw.piece,
+  Chapter3.RetainedLaw.cover,
+  Chapter3.RetainedLaw.proper,
+  Chapter3.RetainedLaw.identities_hold,
+  Chapter3.RetainedLaw.localModel,
+  Chapter3.RetainedLaw.matching,
+  Chapter3.RetainedLaw.assembles_ordinary,
+  -- ContextOrderedExamples
+  Chapter3.OrderedRestriction.twicePresentation,
+  Chapter3.OrderedRestriction.twice_ordered_some,
+  Chapter3.OrderedRestriction.positions_unchanged,
+  Chapter3.OrderedRestriction.equalityContext,
+  Chapter3.OrderedRestriction.ringLaw_omitted,
+  Chapter3.OrderedRestriction.equality_ordered_some,
+  Chapter3.OrderedRestriction.full_retains_ring_support,
+  Chapter3.OrderedRestriction.equality_lacks_ring_support,
+  Declaration.dependsOn,
+  Declaration.derivation_subset_dependsOn,
+  Declaration.nonderived_dependencies,
+  Declaration.ringLaw_mem_ringEquationSupport,
+  Declaration.ringProof_mem_ringEquationSupport,
+  DeclarationContext.RetainsRingSupport,
+  Chapter1.ResidualTransport.residual_retains_named_ring_laws,
+  Chapter1.ResidualTransport.residual_retains_witness_operation
 ]
 
 end SHIGURE.AxiomAudit

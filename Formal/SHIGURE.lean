@@ -3,7 +3,9 @@ import Formal.SHIGURE.Part1.Chapter1Examples
 import Formal.SHIGURE.Part1.Chapter2Examples
 import Formal.SHIGURE.Part1.ContextBaseChange
 import Formal.SHIGURE.Part1.ContextDerivedExample
+import Formal.SHIGURE.Part1.ContextDescentExamples
 import Formal.SHIGURE.Part1.ContextExamples
+import Formal.SHIGURE.Part1.ContextOrderedExamples
 import Formal.SHIGURE.Part1.ContextPrimitiveValues
 import Formal.SHIGURE.Part1.ContextSelectedExamples
 import Formal.SHIGURE.Part1.LensExamples

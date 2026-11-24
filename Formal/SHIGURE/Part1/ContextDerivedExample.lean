@@ -70,9 +70,8 @@ theorem constant_used_by_derivation :
 
 /-- A closed context that keeps the derived Law also keeps the constant used in its proof. -/
 theorem derived_keeps_constant (U : DeclarationContext presentation)
-    (kept : Declaration.law () ∈ U.declarations) : Declaration.total () ∈ U.declarations := by
-  apply U.closed kept
-  exact Or.inr (Or.inr constant_used_by_derivation)
+    (kept : Declaration.law () ∈ U.declarations) : Declaration.total () ∈ U.declarations :=
+  U.closed kept (Declaration.derivation_subset_dependsOn () rfl constant_used_by_derivation)
 
 /-- The original proof is available as a checked derivation in the restricted presentation. -/
 noncomputable def retainedProof (U : DeclarationContext presentation)

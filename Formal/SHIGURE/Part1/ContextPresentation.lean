@@ -149,17 +149,8 @@ noncomputable def restrictDerivation {Γ : List P.theory.signature.SortType} {p 
 /-- A retained derived Law's original derivation is valid in the restricted language. -/
 noncomputable def derived (name : U.RetainedLaw) (role : P.laws.role name.val = .derived) :
     U.DerivationIn (P.laws.statement name.val).input (P.laws.statement name.val).conclusion :=
-  U.restrictDerivation (P.derived name.val role) (by
-    intro a used
-    apply U.closed name.property
-    rw [Declaration.dependsOn]
-    refine Or.inr (Or.inr ?_)
-    split
-    · exact used
-    · rename_i otherRole
-      cases role.symm.trans otherRole
-    · rename_i otherRole
-      cases role.symm.trans otherRole)
+  U.restrictDerivation (P.derived name.val role)
+    ((Declaration.derivation_subset_dependsOn name.val role).trans (U.closed name.property))
 
 end DeclarationContext
 end SHIGURE

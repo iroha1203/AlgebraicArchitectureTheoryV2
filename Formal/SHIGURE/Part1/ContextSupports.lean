@@ -158,7 +158,7 @@ def termContext (t : Term P.signature Γ s) : DeclarationContext P :=
 def lawContext (law : Law P.signature) : DeclarationContext P :=
   DeclarationContext.closure (lawBody law)
 
-/-- The support of a retained Law declaration also includes proof and attachment dependencies. -/
+/-- The support of a retained Law declaration also includes any registered derivation's references. -/
 def namedLawContext (name : P.laws.LawName) : DeclarationContext P :=
   DeclarationContext.closure {Declaration.law name}
 

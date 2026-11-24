@@ -132,30 +132,53 @@ def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declarati
           a = ofOperation (data.symbol i).operation}
   | .law name =>
     lawBody (P.laws.statement name) ∪
-      (ringEquationSupport name ∪
-        match role : P.laws.role name with
-        | .derived => derivation (P.derived name role)
-        | .required | .additional => ∅)
+      match role : P.laws.role name with
+      | .derived => derivation (P.derived name role)
+      | .required | .additional => ∅
+
+/-- A retained derived Law keeps the actual references of its registered derivation. -/
+theorem derivation_subset_dependsOn (name : P.laws.LawName) (role : P.laws.role name = .derived) :
+    derivation (P.derived name role) ⊆ dependsOn P (.law name) := by
+  intro d used
+  rw [dependsOn]
+  refine Or.inr ?_
+  split
+  · exact used
+  · rename_i otherRole
+    cases role.symm.trans otherRole
+  · rename_i otherRole
+    cases role.symm.trans otherRole
+
+/-- Required and additional Laws refer to their written support. -/
+theorem nonderived_dependencies (name : P.laws.LawName) (role : P.laws.role name ≠ .derived) :
+    dependsOn P (.law name) = lawBody (P.laws.statement name) := by
+  rw [dependsOn]
+  split
+  · rename_i h
+    exact (role h).elim
+  · exact Set.union_empty _
+  · exact Set.union_empty _
 
 /-- A required Law used by a derivation is among that derivation's declarations. -/
 theorem required_mem_derivation (name : P.theory.LawName) :
     Declaration.law name.val ∈ derivation (Derivation.required name) :=
   Or.inr (Set.mem_singleton _)
 
-/-- The named ring Laws are dependencies of the Law with the attached residual. -/
-theorem ringLaw_mem_dependsOn {name : P.laws.LawName} {equation : NamedRingEquation P.laws name}
+/-- The named ring Laws support the attached residual presentation. -/
+theorem ringLaw_mem_ringEquationSupport {name : P.laws.LawName} {equation : NamedRingEquation P.laws name}
     (attached : P.ringEquation name = some equation) {axiomName : P.laws.LawName}
     (selected : axiomName ∈ equation.axiomNames) :
-    Declaration.law axiomName ∈ dependsOn P (.law name) := by
-  simp only [dependsOn, ringEquationSupport, attached]
-  exact Or.inr (Or.inl (Or.inr (Or.inl (Or.inl ⟨axiomName, selected, rfl⟩))))
+    Declaration.law axiomName ∈ ringEquationSupport (P := P) name := by
+  simp only [ringEquationSupport, attached]
+  exact Or.inr (Or.inl (Or.inl ⟨axiomName, selected, rfl⟩))
 
-/-- Every declaration in a proof of the attached ring axioms is a dependency of the Law. -/
-theorem ringProof_mem_dependsOn {name : P.laws.LawName} {equation : NamedRingEquation P.laws name}
+/-- Every declaration used in an attached ring proof supports that residual presentation. -/
+theorem ringProof_mem_ringEquationSupport {name : P.laws.LawName} {equation : NamedRingEquation P.laws name}
     (attached : P.ringEquation name = some equation) {i : RingVocabulary.LawName} {d : Declaration P}
-    (used : d ∈ derivationOf rfl Subtype.val (equation.axioms_derive i)) : d ∈ dependsOn P (.law name) := by
-  simp only [dependsOn, ringEquationSupport, attached]
-  exact Or.inr (Or.inl (Or.inr (Or.inr ⟨i, used⟩)))
+    (used : d ∈ derivationOf rfl Subtype.val (equation.axioms_derive i)) :
+    d ∈ ringEquationSupport (P := P) name := by
+  simp only [ringEquationSupport, attached]
+  exact Or.inr (Or.inr ⟨i, used⟩)
 
 end Declaration
 
@@ -165,6 +188,11 @@ structure DeclarationContext (P : PrimitivePresentation.{u}) where
   declarations : Set (Declaration P)
   /-- Each retained declaration retains every reference. -/
   closed {a : Declaration P} : a ∈ declarations → Declaration.dependsOn P a ⊆ declarations
+
+/-- A reading of a particular attached residual retains the names needed by that presentation. -/
+def DeclarationContext.RetainsRingSupport {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
+    (name : P.laws.LawName) : Prop :=
+  Declaration.ringEquationSupport (P := P) name ⊆ U.declarations
 
 /-- A family of subcontexts whose union is the selected context. -/
 structure DeclarationCover {P : PrimitivePresentation.{u}} (U : DeclarationContext P) where

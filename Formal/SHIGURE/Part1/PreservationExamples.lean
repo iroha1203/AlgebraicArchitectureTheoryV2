@@ -2162,10 +2162,10 @@ theorem named_equation_keeps_literal_substitutions :
 
 /-- Reading the residual retains even the ring Laws absent from the written equality. -/
 theorem residual_retains_named_ring_laws (U : DeclarationContext namedEquation)
-    (kept : Declaration.law (P := namedEquation) (.inl ()) ∈ U.declarations)
+    (support : U.RetainsRingSupport (.inl ()))
     (i : RingVocabulary.LawName) :
     Declaration.law (P := namedEquation) (.inr i) ∈ U.declarations :=
-  U.closed kept (Declaration.ringLaw_mem_dependsOn (equation := equationDeclaration) rfl (by exact ⟨i, rfl⟩))
+  support (Declaration.ringLaw_mem_ringEquationSupport (equation := equationDeclaration) rfl (by exact ⟨i, rfl⟩))
 
 /-- The named Laws supply the ring axioms on the integer model. -/
 theorem named_integer_ring_laws :
@@ -2245,10 +2245,10 @@ def paddedPresentation : PrimitivePresentation where
 
 /-- A retained residual keeps a constant used in its proof, even when no written ring Law names it. -/
 theorem residual_retains_witness_operation (U : DeclarationContext paddedPresentation)
-    (kept : Declaration.law (P := paddedPresentation) (.inl ()) ∈ U.declarations) :
+    (support : U.RetainsRingSupport (.inl ())) :
     Declaration.total (P := paddedPresentation) Symbol.vectorZero ∈ U.declarations := by
-  apply U.closed kept
-  apply Declaration.ringProof_mem_dependsOn (equation := paddedEquation) (i := .zeroAdd) rfl
+  apply support
+  apply Declaration.ringProof_mem_ringEquationSupport (equation := paddedEquation) (i := .zeroAdd) rfl
   have derivation_eq : paddedEquation.axioms_derive .zeroAdd = derivePaddedAxiom .zeroAdd := rfl
   rw [derivation_eq]
   unfold derivePaddedAxiom

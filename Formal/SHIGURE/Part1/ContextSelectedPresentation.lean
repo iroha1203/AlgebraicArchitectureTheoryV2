@@ -1,14 +1,12 @@
-import Formal.SHIGURE.Part1.ContextLogicalCore
 import Formal.SHIGURE.Part1.ContextSelectedProofs
+import Formal.SHIGURE.Part1.ContextSelectedEquations
 import Mathlib.Data.List.Basic
 
 /-! # The restricted primitive presentation
 
 The ordinary presentation retains the actual typed symbols, named written
-Laws and their roles, the selected derivations, and the inclusion maps of
-retained partial domains. The logical contexts use `PrimitivePresentation.logicalCore`,
-so optional residual metadata does not impose declarations unrelated to a
-Law's logical support.
+Laws and their roles, the ordered syntax attached to each equality, the
+selected derivations, and the inclusion maps of retained partial domains.
 -/
 
 universe u
@@ -74,22 +72,14 @@ def selectDomainInclusions (p : Partial U) (data : DomainInclusions p.val)
 
 /-- Closedness supplies all the references of a retained derived Law's original proof. -/
 theorem keepsDerived (name : U.RetainedLaw) (role : P.laws.role name.val = .derived) :
-    Declaration.derivation (P.derived name.val role) ⊆ U.declarations := by
-  intro a used
-  apply U.closed name.property
-  rw [Declaration.dependsOn]
-  refine Or.inr (Or.inr ?_)
-  split
-  · exact used
-  · rename_i otherRole
-    cases role.symm.trans otherRole
-  · rename_i otherRole
-    cases role.symm.trans otherRole
+    Declaration.derivation (P.derived name.val role) ⊆ U.declarations :=
+  (Declaration.derivation_subset_dependsOn name.val role).trans (U.closed name.property)
 
 /-- The selected names and proofs form an ordinary primitive presentation. -/
 noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentation.{u} where
   signature := signature U
   laws := laws U
+  otherOrderedEquation name := (P.orderedEquation name.val).map (selectNamedEquation name)
   domainInclusions p := match attached : P.domainInclusions p.val with
     | none => none
     | some data => some (selectDomainInclusions p data attached)
@@ -99,13 +89,10 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
 theorem presentation_theory : (presentation U).theory = theory U :=
   rfl
 
+/-- The selected Law has exactly the original ordered text read into the selected signature. -/
+theorem presentation_orderedEquation (name : U.RetainedLaw) :
+    (presentation U).orderedEquation name = (P.orderedEquation name.val).map (selectNamedEquation name) :=
+  rfl
+
 end DeclarationContext.Selected
-
-namespace ChapterContext
-
-/-- The Chapter 3 restriction of a primitive presentation to a dependency-closed context. -/
-noncomputable def restrict {P : PrimitivePresentation.{u}} (U : ChapterContext P) : PrimitivePresentation.{u} :=
-  DeclarationContext.Selected.presentation U
-
-end ChapterContext
 end SHIGURE

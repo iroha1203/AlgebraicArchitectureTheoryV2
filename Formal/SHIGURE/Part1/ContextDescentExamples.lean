@@ -1,0 +1,235 @@
+import Formal.SHIGURE.Part1.ContextExamples
+import Formal.SHIGURE.Part1.ContextOrdinaryDescent
+
+/-! # Local input for a declaration cover with a retained Law -/
+
+namespace SHIGURE.Chapter3
+
+open CategoryTheory DeclarationContext
+
+namespace OmittedLaw
+
+private def constantOrdinary : Structure (Selected.signature whole) where
+  carrier _ := Bool
+  total _ _ := false
+  relation r := nomatch r.val
+  partialDomain p := nomatch p.val
+  partialValue p := nomatch p.val
+  quantity q := nomatch q.val
+
+private def alignment : Selected.CarrierEquiv whole (fun _ => Bool) constantOrdinary.carrier :=
+  fun _ _ => Equiv.refl Bool
+
+/-- A proposed comparison cannot identify a missing graph with the ordinary total interpretation. -/
+theorem missingGraph_not_matching : ¬ Selected.EvaluationMatches missingGraph constantOrdinary alignment := by
+  intro impossible
+  let keeps : Declaration.total (P := presentation) false ∈ whole.declarations := Set.mem_univ _
+  let input : Assignment (fun _ => Bool) (presentation.signature.totalArity false).inputs :=
+    Assignment.cons false Assignment.empty
+  apply (impossible.graph (.total false) keeps input false).1
+  change constantOrdinary.Graph (.total _) _ _
+  rw [Structure.graph_total_iff]
+  change false = _
+  simp only [Selected.selectResult, alignment, cast_eq]
+  rfl
+
+private theorem pieces_inside (i : Bool) : piece i ≤ whole :=
+  Set.subset_univ _
+
+/-- The two ordinary local models still cannot extend across the omitted required Law. -/
+theorem no_ordinary_global_model :
+    ¬ ∃ A : Model (Selected.theory whole), ∀ i,
+      (Selected.modelRestriction (pieces_inside i)).obj A = (OrdinaryMatch.readObj matching).pieceModel i := by
+  rintro ⟨A, restricts⟩
+  apply no_global_model
+  refine ⟨Selected.writeModel A, fun i => ?_⟩
+  have localEq := congrArg (fun B : Model (Selected.theory (piece i)) => Selected.writeModel B) (restricts i)
+  change Selected.writeModel (Selected.readModel ((Selected.writeModel A).restrict (pieces_inside i))) =
+    Selected.writeModel (Selected.readModel (matching.pieceModel i)) at localEq
+  simpa only [Selected.write_read_model] using localEq
+
+/-- Equality of ordinary overlap reducts detects a disagreement of retained carriers. -/
+theorem different_ordinary_carriers_no_overlap :
+    (Selected.modelRestriction (overlapLeft piece false true)).obj (Selected.readModel (localModel false)) ≠
+    (Selected.modelRestriction (overlapRight piece false true)).obj (Selected.readModel unitPiece) := by
+  intro same
+  apply different_carriers_no_overlap
+  have localEq := congrArg (fun B : Model (Selected.theory (inter (piece false) (piece true))) =>
+    Selected.writeModel B) same
+  change Selected.writeModel (Selected.readModel ((Selected.writeModel (Selected.readModel (localModel false))).restrict
+      (overlapLeft piece false true))) =
+    Selected.writeModel (Selected.readModel ((Selected.writeModel (Selected.readModel unitPiece)).restrict
+      (overlapRight piece false true))) at localEq
+  simpa only [Selected.write_read_model] using localEq
+
+private noncomputable def ordinaryFamily : OrdinaryMatch primitiveCover.piece :=
+  OrdinaryMatch.readObj (primitiveCover.read primitiveModel)
+
+/-- The ordinary collapse on one piece and identity on the other cannot form a matching map. -/
+theorem different_ordinary_arrows_no_match :
+    ¬ ∃ f : OrdinaryMatch.Hom ordinaryFamily ordinaryFamily,
+      f.pieceMap false = (Selected.readFunctor (piece false)).map
+        ((res (primitiveCover.subset false)).map collapse) ∧
+      f.pieceMap true = 𝟙 (ordinaryFamily.pieceModel true) := by
+  rintro ⟨f, left, right⟩
+  let raw := primitiveCover.read primitiveModel
+  have same : OrdinaryMatch.writeFunctor.obj ordinaryFamily = raw :=
+    Functor.congr_obj OrdinaryMatch.read_comp_write raw
+  let written : raw ⟶ raw := eqToHom same.symm ≫
+    OrdinaryMatch.writeFunctor.map (show ordinaryFamily ⟶ ordinaryFamily from f) ≫ eqToHom same
+  apply different_arrows_no_match
+  refine ⟨(show Match.Hom raw raw from written), ?_, ?_⟩
+  · let F := Selected.readFunctor (piece false)
+    let G := Selected.writeFunctor (piece false)
+    let g := (res (primitiveCover.subset false)).map collapse
+    have collapseWritten := Functor.congr_hom (Selected.read_comp_write (piece false)) g
+    simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap]
+    change _ ≫ G.map (f.pieceMap false) ≫ _ = _
+    rw [left]
+    change _ ≫ (F ⋙ G).map g ≫ _ = g
+    rw [collapseWritten]
+    simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl,
+      Category.id_comp, Category.comp_id]
+  · let G := Selected.writeFunctor (piece true)
+    simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap]
+    change _ ≫ G.map (f.pieceMap true) ≫ _ = _
+    rw [right, G.map_id]
+    simp only [Category.id_comp, eqToHom_trans, eqToHom_refl]
+
+end OmittedLaw
+
+namespace RetainedLaw
+
+open OmittedLaw (signature applySymbol constants identities)
+
+/-- The first piece's Law forces the first operation to be the identity. -/
+def identityLaw : Law signature := Law.equality (applySymbol false (.var .here)) (.var .here)
+
+/-- The other operation does not occur in the required Law. -/
+def presentation : PrimitivePresentation where
+  signature := signature
+  laws := ⟨Unit, fun _ => identityLaw, fun _ => .required⟩
+  derived _ role := by cases role
+
+private theorem true_not_referenced :
+    Declaration.total (P := presentation) true ∉ Declaration.lawBody identityLaw := by
+  intro used
+  change Declaration.total (P := presentation) true ∈
+    Declaration.sorts [()] ∪ (∅ : Set (Declaration presentation)) ∪
+      ({Declaration.sort ()} ∪
+        (({Declaration.sort ()} ∪ ((∅ ∪ ∅) ∪ {Declaration.total false})) ∪ ∅)) at used
+  simp [Declaration.sorts] at used
+
+/-- The left piece retains the Law, its operation and the entire common sort. -/
+def left : DeclarationContext presentation where
+  declarations := {d | d ≠ .total true}
+  closed {a} kept := by
+    intro d used forbidden
+    subst d
+    cases a with
+    | sort _ => exact used
+    | total f => rcases used with ⟨s, hs, same⟩; cases same
+    | relation r => exact nomatch r
+    | partialOp p => exact nomatch p
+    | quantity q => exact nomatch q
+    | law n =>
+      exact true_not_referenced (by
+        have support := Declaration.nonderived_dependencies (P := presentation) n (fun h => LawRole.noConfusion h)
+        rw [support] at used
+        exact used)
+
+/-- The right piece has the second operation and the same common sort. -/
+def right : DeclarationContext presentation where
+  declarations := {d | d = .sort () ∨ d = .total true}
+  closed kept := by
+    rcases kept with rfl | rfl
+    · exact Set.empty_subset _
+    · rintro _ ⟨s, _, rfl⟩
+      cases s
+      exact Or.inl rfl
+
+/-- The Boolean cover has the Law-bearing left piece and the operation-bearing right piece. -/
+def piece : Bool → DeclarationContext presentation
+  | false => left
+  | true => right
+
+/-- Both pieces are proper subcontexts, and together they cover the complete presentation. -/
+def cover : DeclarationCover (full presentation) where
+  Index := Bool
+  piece := piece
+  subset _ := Set.subset_univ _
+  covers {d} _ := by
+    classical
+    by_cases dTrue : d = .total true
+    · exact ⟨true, Or.inr dTrue⟩
+    · exact ⟨false, dTrue⟩
+
+/-- Each piece really omits a declaration of the whole presentation. -/
+theorem proper (i : Bool) : cover.piece i ≠ full presentation := by
+  cases i
+  · intro same
+    have keeps : Declaration.total true ∈ (cover.piece false).declarations :=
+      same.symm ▸ Set.mem_univ _
+    exact keeps rfl
+  · intro same
+    have keeps : Declaration.law () ∈ (cover.piece true).declarations :=
+      same.symm ▸ Set.mem_univ _
+    rcases keeps with h | h <;> cases h
+
+/-- On the left the identity law holds for all Boolean assignments. -/
+theorem identities_hold : identityLaw.Holds identities := by
+  apply (Law.holds_equality_totalValue_iff _ _ identities).2
+  intro e
+  rfl
+
+private def localStructure (W : DeclarationContext presentation) (kept : Declaration.sort () ∈ W.declarations)
+    (value : Bool → Bool → Bool) : ContextStructure W :=
+  let A : Structure signature := {constants with total := fun f e => value f (e .here)}
+  { carrier := fun _ => Bool
+    omitted := fun s omitted => False.elim (omitted (by cases s; exact kept))
+    evaluation := RestrictedEvaluation.restrict W A
+    structural := RestrictedEvaluation.restrict_structural W A }
+
+/-- The left local model supplies its Law, and the right local model supplies a constant. -/
+noncomputable def localModel : (i : Bool) → Models (piece i)
+  | false => ⟨localStructure left (by intro h; cases h) (fun _ x => x), fun n =>
+      (RestrictedEvaluation.satisfies_restrict_iff left identities identityLaw
+        (Declaration.lawBody_subset_of_mem n.property)).2 identities_hold⟩
+  | true => ⟨localStructure right (Or.inl rfl) (fun _ _ => false), fun n =>
+      False.elim (by
+        have kept : Declaration.law n.val.val ∈ right.declarations := n.property
+        rcases kept with h | h <;> cases h)⟩
+
+/-- The independently given models agree on their shared Boolean sort. -/
+noncomputable def matching : Match cover.piece where
+  pieceModel := localModel
+  overlap_eq i j := by
+    cases i <;> cases j
+    all_goals try rfl
+    all_goals
+      apply CategoryTheory.ObjectProperty.FullSubcategory.ext
+      refine ContextStructure.ext (by rfl) ?_
+      apply RestrictedEvaluation.ext
+      · intro r
+        exact nomatch r
+      · intro p
+        exact nomatch p
+      · intro op kept
+        cases op with
+        | total f =>
+          have absent : Declaration.total f ∉ (inter left right).declarations := by
+            intro h
+            rcases h.2 with impossible | same
+            · cases impossible
+            · exact h.1 same
+          first | exact (absent kept).elim | exact (absent ⟨kept.2, kept.1⟩).elim
+        | partialOp p => exact nomatch p
+        | quantity q => exact nomatch q
+
+/-- The ordinary local inputs uniquely assemble to a model of the required identity Law. -/
+theorem assembles_ordinary : ∃! A : Model (Selected.presentation (full presentation)).theory, ∀ i,
+    (Selected.modelRestriction (cover.subset i)).obj A = (OrdinaryMatch.readObj matching).pieceModel i :=
+  cover.existsUnique_ordinary_glue (OrdinaryMatch.readObj matching)
+
+end RetainedLaw
+end SHIGURE.Chapter3

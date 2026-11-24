@@ -118,46 +118,10 @@ theorem modelRestriction_obj {U V : DeclarationContext P} (inside : V ≤ U) (A 
     (modelRestriction inside).obj A = readModel ((writeModel A).restrict inside) :=
   rfl
 
+/-- Restriction also commutes strictly with writing the retained graph data. -/
+theorem write_res {U V : DeclarationContext P} (inside : V ≤ U) :
+    writeFunctor U ⋙ res inside = modelRestriction inside ⋙ writeFunctor V := by
+  rw [modelRestriction, Functor.assoc, Functor.assoc, read_comp_write, Functor.comp_id]
+
 end DeclarationContext.Selected
-
-namespace ChapterContext
-
-open CategoryTheory DeclarationContext
-
-/-- The ordinary model category of the actual restricted primitive presentation. -/
-abbrev Models {P : PrimitivePresentation.{u}} (U : ChapterContext P) := Model U.restrict.theory
-
-/-- The ordinary model reduct along a logical declaration inclusion. -/
-noncomputable def res {P : PrimitivePresentation.{u}} {U V : ChapterContext P} (inside : V ≤ U) :
-    Models U ⥤ Models V :=
-  Selected.modelRestriction inside
-
-end ChapterContext
-
-namespace DeclarationCover
-
-open CategoryTheory DeclarationContext
-
-/-- The ordinary semantic category of the actual restricted presentation satisfies (3.3). -/
-noncomputable def ordinaryModelIso {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
-    (cover : DeclarationCover U) : Cat.of (Model (Selected.presentation U).theory) ≅ Cat.of (Match cover.piece) :=
-  (Selected.modelIso U).symm ≪≫ cover.modelIso
-
-/-- Theorem 3.4 in the ordinary semantic category of the genuinely restricted theory. -/
-theorem existsUnique_ordinary_glue {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
-    (cover : DeclarationCover U) (A : Match cover.piece) :
-    ∃! X : Model (Selected.theory U), ∀ i,
-      (Selected.modelRestriction (cover.subset i)).obj X = Selected.readModel (A.pieceModel i) := by
-  refine ⟨Selected.readModel (A.glue cover), ?_, ?_⟩
-  · intro i
-    rw [Selected.modelRestriction_obj, Selected.write_read_model, A.glue_restrict cover i]
-  · intro X restrictions
-    have same : Selected.writeModel X = A.glue cover :=
-      cover.models_eq_of_restrict_eq fun i => by
-        have localEq := congrArg Selected.writeModel (restrictions i)
-        rw [Selected.modelRestriction_obj, Selected.write_read_model, Selected.write_read_model] at localEq
-        exact localEq.trans (A.glue_restrict cover i).symm
-    rw [← Selected.read_write_model X, same]
-
-end DeclarationCover
 end SHIGURE
