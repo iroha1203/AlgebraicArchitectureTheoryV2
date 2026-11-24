@@ -765,8 +765,9 @@ private theorem pointReading_local {W : DeclarationContext Observation.presentat
     rw [dif_pos (show X.carrier i.1 = Y.carrier i.1 from x.symm.trans y)]
     exact congrArg some (funext (cast_via_common_carrier x y))
   · dsimp only [CoefficientReading.LocalPointRule.AgreesOnDeclared]
-    intro i X Y left right points
+    intro i X realized left right points
     classical
+    let Y := pointReading.scheme.structureOf pointReading.algebra realized
     have x : Int = X.carrier i.1 := left.carrier_eq _ (kept i)
     have y : Int = Y.carrier i.1 := right.carrier_eq _ (kept i)
     have same : X.carrier i.1 = Y.carrier i.1 := x.symm.trans y

@@ -1585,3 +1585,200 @@ def external_stays_available_when_declarations_are_added :
       (fun _ => Or.inr (Or.inl ⟨rfl, fun h => h.elim⟩)) (fun _ => rfl) }
 
 end SHIGURE.Chapter1.IndexedObservation
+
+namespace SHIGURE.Chapter1.DeclaredCoefficientPoints
+/-- Two sorts let the restriction forget an unused carrier. -/
+private def sig : Signature.{0} where
+  SortType := Bool
+  Total := Empty
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity n := nomatch n
+  relInputs n := nomatch n
+  partialArity n := nomatch n
+  quantityArity n := nomatch n
+
+/-- The presentation has no operations or required Laws. -/
+private def P : PrimitivePresentation.{0} where
+  signature := sig
+  laws := { LawName := Empty
+            statement e := nomatch e
+            role e := nomatch e }
+  derived n := nomatch n
+
+/-- The realization method starts with both carrier declarations. -/
+private def U : DeclarationContext P := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+
+/-- Keep only the Boolean state used by the evaluation. -/
+private def W : DeclarationContext P where
+  declarations := {Declaration.sort false}
+  closed seen d hd := by
+    have same := Set.mem_singleton_iff.1 seen
+    rw [same] at hd
+    exact hd.elim
+
+/-- The selected Boolean declaration lies in the full context. -/
+private theorem inside : W.declarations ⊆ U.declarations := fun _ _ => Set.mem_univ _
+
+/-- Read Bool at the retained sort and a freely specified carrier at the other. -/
+private def model (O : Type) : Structure sig where
+  carrier
+    | false => Bool
+    | true => O
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- Read the model in the full declaration context. -/
+private def full (O : Type) : RestrictedStructure U := .restrict U (model O)
+
+/-- Use the integers for the Boolean evaluation's values. -/
+private def Z : CoefficientRing := ⟨Int, inferInstance⟩
+
+/-- This declared recipe applies to the method's inhabited second carrier. -/
+private def programs : CoefficientPointPrograms.{0, 0} U where
+  Selector := Unit
+  describes _ X Y s f := Nonempty (Y.carrier true) ∧
+    ∃ h : X.carrier s = Y.carrier s, f = cast h
+  unique := by
+    rintro _ _ _ _ _ _ ⟨_, ⟨_, h⟩⟩ ⟨_, ⟨_, h'⟩⟩
+    exact h.trans h'.symm
+
+/-- The method realizes a fixed structure with an inhabited second sort. -/
+private def scheme : CoefficientScheme.{0, 0} U Z where
+  Realization _ := Unit
+  structureOf _ _ := full Unit
+  structure_retained _ _ := fun _ h => (h (Set.mem_univ _)).elim
+  category _ :=
+    { Hom := fun _ _ => Unit
+      id := fun _ => ()
+      comp := fun _ _ => ()
+      id_comp := fun _ => Subsingleton.elim _ _
+      comp_id := fun _ => Subsingleton.elim _ _
+      assoc := fun _ _ _ => Subsingleton.elim _ _ }
+  mapPoints _ _ _ := id
+  mapPoints_preserves _ := fun _ _ _ h => h
+  mapPoints_id _ _ _ _ := rfl
+  mapPoints_comp _ _ _ _ _ := rfl
+  permitsPoints _ _ _ _ _ := True
+  permitsPoints_congr := by intros; rfl
+  Native := Unit
+  nativeStructure _ := full Unit
+  native_retained _ := fun _ h => (h (Set.mem_univ _)).elim
+  realizeNative _ := id
+  nativePoints _ _ _ _ := id
+  nativePoints_permitted _ _ _ _ := True.intro
+  interpretLaw _ _ := (full Unit).satisfies
+  change _ _ := ()
+  changePoints _ _ _ _ := id
+  pointPrograms _ _ := programs
+
+/-- The chosen recipe reads the original Boolean state. -/
+private def r : CoefficientReading.{0, 0} U (model Unit) (.ofList [false]) where
+  base := Z
+  algebra := ⟨Z, RingHom.id Int⟩
+  scheme := scheme
+  realization := ()
+  selection := .ofRenaming fun i => i
+  supported _ := Set.mem_univ _
+  realizePoint _ _ := id
+  pointOrigin := .declared () True.intro (fun _ _ => ⟨⟨()⟩, rfl, rfl⟩)
+  evaluateOn _ R _ e := R.fromBase (if (show Bool from e ⟨false, .here⟩) then (1 : Int) else (0 : Int))
+
+/-- Supply the chosen Boolean state at the selected position. -/
+private def input (b : Bool) : r.selection.used.Values (model Unit).carrier :=
+  by
+    rintro ⟨⟨s, i⟩, _⟩
+    change (model Unit).carrier s
+    cases i with
+    | here => exact b
+    | there i => exact nomatch i
+/-- The local recipe transports a state between equal retained carriers. -/
+private noncomputable def localPoint : CoefficientReading.LocalPointRule W :=
+  fun X Y s _ => by
+    classical
+    exact if h : X.carrier s = Y.carrier s then some (cast h) else none
+
+/-- The local recipe computes the selected point map on every permitted realization. -/
+private theorem local_matches_every_realization
+    (X : RestrictedStructure U) (a : scheme.Realization r.algebra)
+    (points : X.carrier false → (scheme.structureOf r.algebra a).carrier false) :
+    programs.describes () X (scheme.structureOf r.algebra a) false points ↔
+      localPoint (X.restrictWithin inside) ((scheme.structureOf r.algebra a).restrictWithin inside)
+        false (Set.mem_singleton _) = some points := by
+  classical
+  change (Nonempty Unit ∧ ∃ h : X.carrier false = Bool, points = cast h) ↔
+    (if h : X.carrier false = Bool then some (cast h) else none) = some points
+  by_cases h : X.carrier false = Bool
+  · rw [dif_pos h]
+    exact ⟨fun ⟨_, _, eq⟩ => congrArg some eq.symm,
+      fun eq => ⟨⟨()⟩, h, (Option.some.inj eq).symm⟩⟩
+  · rw [dif_neg h]
+    exact ⟨fun ⟨_, same, _⟩ => (h same).elim, fun eq => nomatch eq⟩
+
+/-- Every actual coefficient position has its carrier in the selected context. -/
+private theorem local_evaluation (i : r.selection.selected.Index) :
+    Declaration.sort (r.selection.selected.sort i) ∈ W.declarations := by
+  rcases i with ⟨s, i⟩
+  cases i with
+  | here => exact Set.mem_singleton _
+  | there i => exact nomatch i
+
+/-- Equal retained input states give equal coefficient values. -/
+private theorem value_depends_on_retained_data
+    (left right : r.RealizedInput r.algebra)
+    (same : r.AgreeOn inside local_evaluation left right) :
+    r.evaluateOn r.choice r.algebra left.1 left.2 =
+      r.evaluateOn r.choice r.algebra right.1 right.2 := by
+  obtain ⟨agree, tuple⟩ := same
+  have eq : right.2 ⟨false, .here⟩ = left.2 ⟨false, .here⟩ := congrFun tuple ⟨false, .here⟩
+  change (if (show Bool from left.2 ⟨false, .here⟩) then (1 : Int) else 0) =
+    (if (show Bool from right.2 ⟨false, .here⟩) then 1 else 0)
+  rw [eq]
+
+/-- The selected recipe restricts on its method's realized objects, even though the
+method has no realization with an empty second carrier. -/
+theorem selected_recipe_restricts_on_its_realizations : r.RespectsRestriction W inside := by
+  refine ⟨local_evaluation, ⟨localPoint, ?_, ?_⟩, value_depends_on_retained_data⟩
+  · intro i X Y left right
+    obtain ⟨s, value⟩ := i
+    cases value with
+    | here =>
+      classical
+      have leftType : Bool = X.carrier false := left.carrier_eq _ (Set.mem_singleton _)
+      have rightType : Bool = Y.carrier false := right.carrier_eq _ (Set.mem_singleton _)
+      change (if eq : X.carrier false = Y.carrier false then some (cast eq) else none) =
+        some (fun x => cast rightType (cast leftType.symm x))
+      rw [dif_pos (leftType.symm.trans rightType)]
+      have composed {K L M : Type} (eq : K = L) (same : K = M) (x : L) :
+          cast (eq.symm.trans same) x = cast same (cast eq.symm x) := by
+        cases eq
+        cases same
+        rfl
+      exact congrArg some (funext (composed leftType rightType))
+    | there i => exact nomatch i
+  · dsimp only [CoefficientReading.LocalPointRule.AgreesOnDeclared]
+    intro i X a _ _ points
+    obtain ⟨s, value⟩ := i
+    cases value with
+    | here => exact local_matches_every_realization (RestrictedStructure.restrict U X) a points
+    | there i => exact nomatch i
+
+/-- Evaluation after restricting uses the two actual Boolean points. -/
+theorem restricted_recipe_reads_both_states :
+    r.evaluateRetained selected_recipe_restricts_on_its_realizations
+      (r.restrictSelected selected_recipe_restricts_on_its_realizations (input false)) = (0 : Int) ∧
+    r.evaluateRetained selected_recipe_restricts_on_its_realizations
+      (r.restrictSelected selected_recipe_restricts_on_its_realizations (input true)) = (1 : Int) := by
+  simp only [CoefficientReading.evaluateRetained_mk]
+  exact ⟨rfl, rfl⟩
+
+/-- The member with an empty second carrier is outside the declared recipe's domain. -/
+theorem recipe_remains_undefined_outside_its_realizations :
+    ¬ programs.describes () (full Unit) (full Empty) false id :=
+  fun h => h.1.elim (fun x => x.elim)
+
+end SHIGURE.Chapter1.DeclaredCoefficientPoints

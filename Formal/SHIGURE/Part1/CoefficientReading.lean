@@ -499,14 +499,17 @@ def LocalPointRule.AgreesOnNative {W : DeclarationContext P} (rule : LocalPointR
     rule X Y (reading.selection.selected.sort i) (supported i) =
       some (reading.scheme.nativePoints reading.algebra a _ (inside (supported i)))
 
-/-- The comparison restricts the selected declaration policy on all presentations
-of the same retained data. -/
+/-- The selected declared recipe restricts on structures and realizations that present
+the same retained data. The target ranges over the selected method's realizations. -/
 def LocalPointRule.AgreesOnDeclared {W : DeclarationContext P} (rule : LocalPointRule W)
     (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
     (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
     (selected : (reading.scheme.pointPrograms reading.algebra reading.choice).Selector) : Prop :=
-  ∀ (i : reading.selection.selected.Index) (X Y : RestrictedStructure U),
+  ∀ (i : reading.selection.selected.Index) (structureData : Structure P.signature)
+    (a : reading.scheme.Realization reading.algebra),
     let s := reading.selection.selected.sort i
+    let X := RestrictedStructure.restrict U structureData
+    let Y := reading.scheme.structureOf reading.algebra a
     ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees (X.restrictWithin inside) →
     ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees
       (Y.restrictWithin inside) →
