@@ -72,7 +72,7 @@ theorem Realization.coefficient_restriction (A : Realization R U) (kept : Retain
     ((Selected.modelRestriction (coefficients_le kept)).obj A.ordinaryModel).obj = coefficientStructure R L := by
   have agree : A.data.Agree (coefficientData R L) :=
     ⟨fun s _ hs => (no_module s hs).elim, fun f _ hf => (no_multilinear f hf).elim⟩
-  rw [Selected.modelRestriction_obj, Realization.ordinaryModel, Selected.write_read_model]
+  rw [Selected.modelRestriction_obj, Realization.writeModel_ordinaryModel]
   exact congrArg Selected.readStructure (agree.contextStructure_restrict_eq (coefficients_le kept))
 
 /-- Each retained module guarantees the fixed scalar reduct by its block condition. -/

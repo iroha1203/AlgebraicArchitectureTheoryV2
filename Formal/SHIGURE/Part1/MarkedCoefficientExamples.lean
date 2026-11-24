@@ -19,7 +19,7 @@ without adding a duplicate module sort for it.
 namespace SHIGURE.Marked.CoefficientExample
 
 open Vocabulary
-open RationalExample (unitKernel unitEquiv unitRow unitRow_surjective fixedRank_one)
+open RationalExample (unitKernel unitEquiv unitEquiv_projection fixedRank_one)
 
 /-- One operation returns a coefficient and the other takes one as an argument. -/
 inductive Op
@@ -43,8 +43,7 @@ def kernels (_ : vocabulary.SortName) : Kernel ℚ 1 := unitKernel
 
 /-- The marked generator has coordinate one in the canonical one-coordinate quotient. -/
 theorem unitEquiv_mark : unitEquiv (generator unitKernel 0) = 1 := by
-  rw [← projection_single]
-  exact (unitRow.quotKerEquivOfSurjective_apply_mk unitRow_surjective (Pi.single 0 1)).trans (by simp [unitRow])
+  rw [← projection_single, unitEquiv_projection, Pi.single_eq_same]
 
 /-- Each input is read in the coefficient ring through the indicated coordinate. -/
 noncomputable def inputCoordinate : (s : Option vocabulary.SortName) →
@@ -150,9 +149,9 @@ def pairingAdditivity : vocabulary.LinearityLaw :=
 theorem constantPairing_fails_additivity :
     ¬ ((vocabulary.presentation written).laws.statement (.inr pairingAdditivity)).Holds constantPairing := by
   intro held
-  change (vocabulary.addLinearityLaw (f := .pairing) ⟨some (), .here⟩).Holds constantPairing at held
-  unfold addLinearityLaw at held
-  rw [Law.holds_equality_totalValue_iff] at held
+  letI : IsEmpty (vocabulary.presentation written).signature.Partial := vocabulary.noPartial
+  rw [vocabulary.linearity_statement, pairingAdditivity, LinearityLaw.statement_add, addLinearityLaw_eq,
+    Law.holds_equality_totalValue_iff] at held
   have eq := held ⟨fun {s} _ => coordinateOne s⟩
   change (1 : ℚ) = 1 + 1 at eq
   norm_num at eq

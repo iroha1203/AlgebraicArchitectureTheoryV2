@@ -206,7 +206,8 @@ private theorem linearity_supported (right : Bool) (linearity : vocabulary.Linea
     obtain rfl := argument_eq name i
     cases name <;> cases right <;> simp [LinearityLaw.symbol, Op.right] at side
     all_goals
-      simp only [LinearityLaw.statement, addLinearityLaw, smulLinearityLaw, unary_updated]
+      simp only [LinearityLaw.statement_add, LinearityLaw.statement_smul, addLinearityLaw_eq,
+        smulLinearityLaw_eq, unary_updated]
       refine equality_law_support _ _ (kept_input_sorts _) ?_ (by first | exact rfl | exact True.intro) ?_ ?_
       · apply kept_sorts
         intro s occurs

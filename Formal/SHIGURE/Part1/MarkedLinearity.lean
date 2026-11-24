@@ -53,7 +53,7 @@ theorem updatedTerm_totalValue {f : V.Multilinear} [DecidableEq (V.Position f)]
 theorem holds_addLinearityLaw {f : V.Multilinear} (i : V.Position f) :
     (V.addLinearityLaw i).Holds (quotientStructure K maps) := by
   classical
-  simp only [addLinearityLaw, Law.holds_equality_totalValue_iff, addTerm_totalValue, updatedTerm_totalValue,
+  simp only [addLinearityLaw_eq, Law.holds_equality_totalValue_iff, addTerm_totalValue, updatedTerm_totalValue,
     Term.totalValue_var]
   intro e
   exact (maps f).map_update_add (fun j => e (j.2.there.there)) i (e .here) (e (.there .here))
@@ -62,7 +62,7 @@ theorem holds_addLinearityLaw {f : V.Multilinear} (i : V.Position f) :
 theorem holds_smulLinearityLaw {f : V.Multilinear} (i : V.Position f) :
     (V.smulLinearityLaw i).Holds (quotientStructure K maps) := by
   classical
-  simp only [smulLinearityLaw, Law.holds_equality_totalValue_iff, smulTerm_totalValue, updatedTerm_totalValue,
+  simp only [smulLinearityLaw_eq, Law.holds_equality_totalValue_iff, smulTerm_totalValue, updatedTerm_totalValue,
     Term.totalValue_var]
   intro e
   exact (maps f).map_update_smul (fun j => e (j.2.there.there)) i (e .here) (e (.there .here))

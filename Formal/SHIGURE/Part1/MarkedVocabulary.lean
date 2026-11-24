@@ -83,7 +83,7 @@ def signature : Signature.{u} where
 instance noPartial : IsEmpty V.signature.Partial :=
   inferInstanceAs (IsEmpty PEmpty)
 
-/-- A finite-arity position with its declared module sort. -/
+/-- A finite-arity position with its declared coefficient or module sort. -/
 abbrev Position (f : V.Multilinear) := Σ s, Var (V.inputs f) s
 
 private theorem position_lt {S : Type u} {Γ : List S} {s : S} (i : Var Γ s) :
@@ -163,6 +163,26 @@ noncomputable def smulLinearityLaw {f : V.Multilinear} (i : V.Position f) : Law 
   Law.equality (V.updatedTerm names i (V.smulTerm i.1 a x))
     (V.smulTerm (V.output f) a (V.updatedTerm names i x))
 
+/-- Read the two terms of a position's addition Law through its public constructor. -/
+theorem addLinearityLaw_eq {f : V.Multilinear} (i : V.Position f) :
+    let Γ := i.1 :: i.1 :: V.inputs f
+    let names : Renaming (V.inputs f) Γ := fun j => j.there.there
+    let x : Term V.signature Γ i.1 := .var .here
+    let y : Term V.signature Γ i.1 := .var (.there .here)
+    V.addLinearityLaw i = Law.equality (V.updatedTerm names i (V.addTerm i.1 x y))
+      (V.addTerm (V.output f) (V.updatedTerm names i x) (V.updatedTerm names i y)) :=
+  rfl
+
+/-- Read the two terms of a position's scalar Law through its public constructor. -/
+theorem smulLinearityLaw_eq {f : V.Multilinear} (i : V.Position f) :
+    let Γ := (none : Option V.SortName) :: i.1 :: V.inputs f
+    let names : Renaming (V.inputs f) Γ := fun j => j.there.there
+    let a : Term V.signature Γ none := .var .here
+    let x : Term V.signature Γ i.1 := .var (.there .here)
+    V.smulLinearityLaw i = Law.equality (V.updatedTerm names i (V.smulTerm i.1 a x))
+      (V.smulTerm (V.output f) a (V.updatedTerm names i x)) :=
+  rfl
+
 /-- The names of the two required Laws at each written argument position. -/
 inductive LinearityLaw
   | add (f : V.Multilinear) (position : V.Position f)
@@ -176,6 +196,16 @@ def LinearityLaw.symbol : V.LinearityLaw → V.Multilinear
 noncomputable def LinearityLaw.statement : V.LinearityLaw → Law V.signature
   | .add _ i => V.addLinearityLaw i
   | .smul _ i => V.smulLinearityLaw i
+
+/-- An addition name selects its position's written addition Law. -/
+theorem LinearityLaw.statement_add {f : V.Multilinear} (i : V.Position f) :
+    LinearityLaw.statement V (.add f i) = V.addLinearityLaw i :=
+  rfl
+
+/-- A scalar multiplication name selects its position's written scalar Law. -/
+theorem LinearityLaw.statement_smul {f : V.Multilinear} (i : V.Position f) :
+    LinearityLaw.statement V (.smul f i) = V.smulLinearityLaw i :=
+  rfl
 
 /-- Add the literal multilinearity Laws to the written Law declarations. -/
 noncomputable def withLinearity (written : LawDeclarations V.signature) : LawDeclarations V.signature where
@@ -254,7 +284,7 @@ theorem multilinear_dependencies (L : V.Laws) (f : V.Multilinear) :
 
 variable {V} {L : V.Laws}
 
-/-- A context keeps the full coefficient signature whenever it contains a module. -/
+/-- A context containing the coefficient sort and all five primitive coefficient operations. -/
 structure RetainsCoefficients (U : DeclarationContext (V.presentation L)) : Prop where
   /-- The coefficient sort is retained. -/
   sort : Declaration.sort none ∈ U.declarations

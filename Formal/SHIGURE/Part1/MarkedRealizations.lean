@@ -52,6 +52,10 @@ noncomputable def model (A : Realization R U) : Models U :=
 noncomputable def ordinaryModel (A : Realization R U) : Model (Selected.theory U) :=
   Selected.readModel A.model
 
+/-- Writing the ordinary marked model gives its original context interpretation. -/
+theorem writeModel_ordinaryModel (A : Realization R U) : Selected.writeModel A.ordinaryModel = A.model :=
+  Selected.write_read_model A.model
+
 /-- An existing realization satisfies its retained Laws on the given marked values. -/
 theorem holds (A : Realization R U) (name : U.scopedTheory.LawName) :
     (U.scopedTheory.law name).Holds A.data.structureData :=
@@ -151,7 +155,7 @@ theorem glue_ordinaryModel :
   · intro i
     have localEq := congrArg Realization.model (A.glue_restrict i)
     rw [Realization.restrict_model] at localEq
-    rw [Selected.modelRestriction_obj, Realization.ordinaryModel, Selected.write_read_model, localEq]
+    rw [Selected.modelRestriction_obj, Realization.writeModel_ordinaryModel, localEq]
     rfl
   · intro i
     exact congrArg (fun B => B.pieceModel i) (cover.ordinaryGlue_read A.ordinaryMatch)

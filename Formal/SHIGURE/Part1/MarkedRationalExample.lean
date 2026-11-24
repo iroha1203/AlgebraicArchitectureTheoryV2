@@ -70,7 +70,9 @@ theorem assembled_all_linearity (name : vocabulary.LinearityLaw) :
     (presentation.laws.statement (.inr name)).Holds assembled.data.structureData :=
   assembled.holds ⟨⟨.inr name, rfl⟩, Set.mem_univ _⟩
 
-/-- Equation (3.5) is the shared kernel of the actual positive assembly. -/
+/-- Equation (3.5) is the shared kernel of the positive assembly. The retained
+sort proof is the explicit index of the kernel field. The full context supplies
+it, and proof irrelevance identifies any two choices of that proof. -/
 theorem assembled_q_kernel (kept : Declaration.sort (some SortName.q) ∈
     (DeclarationContext.full presentation).declarations) :
     assembled.data.kernel SortName.q kept = Submodule.span ℚ {(![3, -2] : Coordinates ℚ 2)} :=

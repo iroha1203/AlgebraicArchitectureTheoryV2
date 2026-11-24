@@ -29,6 +29,10 @@ def unitKernel : Kernel ℚ 1 := LinearMap.ker unitRow
 noncomputable def unitEquiv : Quotient unitKernel ≃ₗ[ℚ] ℚ :=
   unitRow.quotKerEquivOfSurjective unitRow_surjective
 
+/-- The single-coordinate quotient equivalence reads the coordinate of any representative. -/
+theorem unitEquiv_projection (x : Coordinates ℚ 1) : unitEquiv (projection unitKernel x) = x 0 :=
+  unitRow.quotKerEquivOfSurjective_apply_mk unitRow_surjective x
+
 /-- The functional of Equation (3.5) defining the positive overlap kernel. -/
 def row : Coordinates ℚ 2 →ₗ[ℚ] ℚ :=
   2 • LinearMap.proj (0 : Fin 2) + 3 • LinearMap.proj (1 : Fin 2)
