@@ -221,6 +221,7 @@ jobs:
             Formal/SHIGURE/ Formal/SHIGURE.lean lakefile.toml lake-manifest.json lean-toolchain \
             .github/lean_quality/check_shigure_imports.lean \
             .github/lean_quality/check_shigure_declarations.lean \
+            .github/lean_quality/ShigureBuildAudit.lean \
             .github/lean_quality/test_shigure_declarations.sh \
             .github/workflows/lean.yml)"
           if [ -n "$changed_paths" ]; then
@@ -270,6 +271,21 @@ jobs:
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'
         run: |
+          audit_dir="$RUNNER_TEMP/shigure-build-audit"
+          export SHIGURE_AUDIT_STAMPS="$audit_dir/stamps"
+          mkdir -p "$SHIGURE_AUDIT_STAMPS"
+          cp .github/lean_quality/ShigureBuildAudit.lean "$audit_dir"
+          (
+            cd "$audit_dir"
+            lean -c ShigureBuildAudit.c ShigureBuildAudit.lean
+            leanc -shared -DLEAN_EXPORTING -o libShigureBuildAudit.so ShigureBuildAudit.c
+          )
+          plugin="$audit_dir/libShigureBuildAudit.so"
+          awk -v plugin="$plugin" '
+            { print }
+            $0 == "name = \"Formal\"" { print "moreLeanArgs = [\"--plugin=" plugin "\"]" }
+          ' lakefile.toml > "$audit_dir/lakefile.toml"
+
           targets=(+Formal.SHIGURE)
           while IFS= read -r -d '' file; do
             case "$file" in
@@ -279,7 +295,7 @@ jobs:
             module="${file%.lean}"
             targets+=("+${module//\//.}")
           done < "$RUNNER_TEMP/shigure-files"
-          lake build "${targets[@]}"
+          lake -f "$audit_dir/lakefile.toml" build "${targets[@]}"
 
       - name: Check SHIGURE syntax and declaration dependencies
         if: steps.shigure-changes.outputs.run == 'true'
@@ -288,13 +304,33 @@ jobs:
           checker_dir="$(mktemp -d "$RUNNER_TEMP/shigure-checker.XXXXXX")"
           lake env lean -o "$checker_dir/ShigureDeclarationCheck.olean" .github/lean_quality/check_shigure_declarations.lean
           printf 'import ShigureDeclarationCheck\n' > "$checker_dir/Run.lean"
+          audit_dir="$RUNNER_TEMP/shigure-build-audit"
+          source_checks=()
+          while IFS= read -r -d '' file; do
+            case "$file" in
+              Formal/SHIGURE/AxiomAudit.lean|Formal/SHIGURE/AssertStandardAxiomsTest.lean)
+                source_checks+=("$file")
+                continue ;;
+            esac
+            module="${file%.lean}"
+            stamp="$audit_dir/stamps/${module//\//.}"
+            if [[ ! -f "$stamp" ]]; then
+              echo "$file: the source audit did not reach the end of the file" >&2
+              exit 1
+            fi
+            if [[ $(cat "$stamp") == frontend ]]; then
+              source_checks+=("$file")
+            fi
+          done < "$RUNNER_TEMP/shigure-files"
           lake env bash -e -o pipefail -c '
             export LEAN_PATH="$1:$LEAN_PATH"
             xargs -0 -r lean --run "$1/Run.lean" --compiled < "$2"
-            xargs -0 -r lean --run "$1/Run.lean" --select-source-checks < "$2" |
-              xargs -0 -r -n 1 -P "$(nproc)" -t lean -j 1 --run "$1/Run.lean"
-          ' bash "$checker_dir" "$RUNNER_TEMP/shigure-files"
-          bash .github/lean_quality/test_shigure_declarations.sh
+            runner="$1/Run.lean"
+            shift 2
+            printf "%s\0" "$@" |
+              xargs -0 -r -n 1 -P "$(nproc)" -t lean -j 1 --run "$runner"
+          ' bash "$checker_dir" "$RUNNER_TEMP/shigure-files" "${source_checks[@]}"
+          bash .github/lean_quality/test_shigure_declarations.sh "$audit_dir/libShigureBuildAudit.so"
 
       - name: Audit SHIGURE kernel dependencies
         if: steps.shigure-changes.outputs.run == 'true'

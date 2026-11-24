@@ -5,10 +5,9 @@ import Formal.SHIGURE.AssertStandardAxioms
 /-! # SHIGURE source and kernel validation
 
 Audit named production declarations in the build outputs, including private declarations.
-Use the frontend for sources that may contain forbidden syntax, transient proofs,
-or elaboration controls. The parsed commands distinguish prose from code and inspect
-terms inside string interpolations. The audit and its negative fixtures always use
-the frontend.
+The standalone frontend also checks source syntax, transient proofs, and
+elaboration controls. Use it for the independent audit, its negative fixtures,
+and sources that need an exact elaboration environment.
 -/
 
 open Lean Elab
@@ -149,23 +148,6 @@ private unsafe def checkFile (file : System.FilePath) : IO Bool := do
 private def isAuditSource (name : Name) : Bool :=
   name == `Formal.SHIGURE.AxiomAudit || isAuditTest name
 
-/-- Conservatively select source checks before importing any elaboration environment. -/
-private def needsFrontend (text : String) : Bool :=
-  let triggers := ["axiom", "admit", "sorry", "unsafe", "native_decide", "example",
-    "set_option", "skipKernelTC", "macro", "macro_rules", "elab", "elab_rules", "run_tac"]
-  let tokens := text.splitToList fun c => !(c.isAlphanum || c == '_')
-  let directives := (text.splitOn "#").drop 1
-  tokens.any triggers.contains ||
-    directives.any fun tail => tail.front.isAlpha || tail.front == '_'
-
-/-- Write selected paths with NUL delimiters for the isolated frontend workers. -/
-private def selectSourceChecks (files : List String) : IO Unit := do
-  let output ← IO.getStdout
-  for file in files do
-    let path := System.FilePath.mk file
-    if isAuditSource (← moduleNameOfFileName path none) || needsFrontend (← IO.FS.readFile path) then
-      output.putStr (file.push '\x00')
-
 /-- Audit all production declarations from the same build in one private import. -/
 private unsafe def checkCompiled (files : List String) : IO Bool := do
   let mut sources : NameMap System.FilePath := {}
@@ -217,9 +199,6 @@ private unsafe def checkCompiled (files : List String) : IO Bool := do
 unsafe def main (args : List String) : IO UInt32 := do
   if let "--compiled" :: files := args then
     return if ← checkCompiled files then 0 else 1
-  if let "--select-source-checks" :: files := args then
-    selectSourceChecks files
-    return 0
   if let [file] := args then
     return if ← checkFile file then 0 else 1
   let files ← if args.isEmpty then do
