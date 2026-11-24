@@ -153,11 +153,10 @@ private def isAuditSource (name : Name) : Bool :=
 private def needsFrontend (text : String) : Bool :=
   let triggers := ["axiom", "admit", "sorry", "unsafe", "native_decide", "example",
     "set_option", "skipKernelTC", "macro", "macro_rules", "elab", "elab_rules", "run_tac"]
-  let tokens := text.splitToList fun c => !(c.isAlphanum || c == '_' || c == '#')
-  tokens.any fun token =>
-    triggers.contains token || match token.toList with
-      | '#' :: head :: _ => head.isAlpha || head == '_'
-      | _ => false
+  let tokens := text.splitToList fun c => !(c.isAlphanum || c == '_')
+  let directives := (text.splitOn "#").drop 1
+  tokens.any triggers.contains ||
+    directives.any fun tail => tail.front.isAlpha || tail.front == '_'
 
 /-- Write selected paths with NUL delimiters for the isolated frontend workers. -/
 private def selectSourceChecks (files : List String) : IO Unit := do
@@ -168,20 +167,32 @@ private def selectSourceChecks (files : List String) : IO Unit := do
       output.putStr (file.push '\x00')
 
 /-- Audit all production declarations from the same build in one private import. -/
-private def checkCompiled (files : List String) : IO Bool := do
-  let modules ← files.toArray.mapM fun file => moduleNameOfFileName (System.FilePath.mk file) none
-  let modules := modules.filter (!isAuditSource ·)
+private unsafe def checkCompiled (files : List String) : IO Bool := do
+  let mut sources : NameMap System.FilePath := {}
+  for file in files do
+    let path := System.FilePath.mk file
+    let name ← moduleNameOfFileName path none
+    unless isAuditSource name do
+      sources := sources.insert name path
+  let modules := sources.toList.toArray.map Prod.fst
   if modules.isEmpty then
     IO.eprintln "no SHIGURE production modules to audit"
     return false
   let env ← importModules (modules.map fun name => {module := name}) {} (level := .private)
   let mut seen : NameSet := {}
   let mut roots := #[]
+  let mut separate := #[]
   for index in [:env.header.modules.size] do
     let name := env.header.modules[index]!.module
-    if modules.contains name then
+    if let some path := sources.find? name then
       seen := seen.insert name
-      roots := roots ++ env.header.moduleData[index]!.constNames
+      let data := env.header.moduleData[index]!
+      roots := roots ++ data.constNames
+      -- Lean can merge synthesized theorems with the same name and different proofs.
+      if data.constants.any (fun original =>
+          !(env.find? original.name).any (fun combined =>
+            original.type == combined.type && original.value? true == combined.value? true)) then
+        separate := separate.push path
   let absent := modules.filter (!seen.contains ·)
   if !absent.isEmpty then
     IO.eprintln s!"missing compiled SHIGURE modules: {absent}"
@@ -194,6 +205,10 @@ private def checkCompiled (files : List String) : IO Bool := do
   for dependency in SHIGURE.kernelAxioms env none roots do
     unless SHIGURE.isStandardAxiom dependency do
       IO.eprintln s!"nonstandard kernel assumption {dependency}"
+      valid := false
+  for path in separate do
+    IO.println s!"Checking the original proof environment for {path}."
+    unless ← checkFile path do
       valid := false
   IO.println s!"Checked {modules.size} compiled modules and {roots.size} declarations."
   return valid

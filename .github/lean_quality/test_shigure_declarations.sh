@@ -130,11 +130,20 @@ lake env bash -e -c '
   grep -Eq "nonstandard kernel assumption .*CompiledRejected.*nonstandard" diagnostics
 ' bash "$tmp" "$PWD/$checker"
 
+cat >"$tmp/AdjacentExit.lean" <<'LEAN'
+theorem beforeExit : True := True.intro#exit
+LEAN
+if lake env lean --run "$checker" "$tmp/AdjacentExit.lean" >"$tmp/diagnostics" 2>&1; then
+  echo "SHIGURE declaration checker accepted an adjacent early exit" >&2
+  exit 1
+fi
+grep -Fq 'the Lean frontend did not reach the end of the file' "$tmp/diagnostics"
+
 lake env lean --run "$checker" --select-source-checks \
   "$tmp/CompiledAccepted.lean" "$tmp/Rejected.lean" "$tmp/Anonymous.lean" \
-  "$tmp/AnonymousReduction.lean" "$audit_fixture" |
+  "$tmp/AnonymousReduction.lean" "$audit_fixture" "$tmp/AdjacentExit.lean" |
   tr '\0' '\n' >"$tmp/selected"
 printf '%s\n' "$tmp/Rejected.lean" "$tmp/Anonymous.lean" \
-  "$tmp/AnonymousReduction.lean" "$audit_fixture" | diff -u - "$tmp/selected"
+  "$tmp/AnonymousReduction.lean" "$audit_fixture" "$tmp/AdjacentExit.lean" | diff -u - "$tmp/selected"
 
 echo "SHIGURE declaration checker fixtures passed."
