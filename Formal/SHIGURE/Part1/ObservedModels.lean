@@ -255,14 +255,6 @@ private theorem originalTuple_roundtrip (A : ObservedModel T shape)
     originalTuple (A.extendedTuple xs) = xs :=
   Assignment.ext (fun i => Assignment.mapSorts_apply (X := A.extendStructure.carrier) Sum.inl xs i)
 
-/-- Partial operations on equal domains agree if they return equal values on each input. -/
-private theorem partialValue_heq {ι : Type u} {Inputs Output : ι → Type u}
-    {D E : (p : ι) → Set (Inputs p)} (domains : D = E)
-    (f : (p : ι) → D p → Output p) (g : (p : ι) → E p → Output p)
-    (values : ∀ p (xs : D p) (hx : xs.val ∈ E p), f p xs = g p ⟨xs.val, hx⟩) : HEq f g := by
-  cases domains
-  exact heq_of_eq (funext fun p => funext fun xs => values p xs xs.property)
-
 /-- The original reduct of an extended structure recovers the source structure. -/
 theorem restrict_extendStructure (A : ObservedModel T shape) :
     shape.original.restrict A.extendStructure = A.model.obj := by
@@ -292,7 +284,7 @@ theorem restrict_extendStructure (A : ObservedModel T shape) :
       shape.original.restrict_relation_mem_iff A.extendStructure r xs
     rw [restricted, A.extendStructure_relation_iff, originalTuple_roundtrip A]
   · exact heq_of_eq domains
-  · apply partialValue_heq domains
+  · apply Structure.partialValue_heq domains
     intro p xs _
     let extendedInput : A.extendStructure.partialDomain p :=
       ⟨A.extendedTuple xs.val,
