@@ -426,3 +426,37 @@ fn poly_substitute_and_truncate() {
     assert_eq!(sub.truncate_degree(3), const_q(2, 1));
     let _ = Monomial::one(2);
 }
+
+#[test]
+fn boundary_checks_z_kernel_arity_and_cochain_map_ring_mismatch() {
+    // extract_kernel_coords_z は次元不一致を ArityMismatch として返す
+    let ext_z = SquareZeroExtension::truncated_step_z("eps", 0).unwrap();
+    assert_eq!(
+        ext_z.extract_kernel_coords_z(&[BigInt::from(1)]),
+        Err(AlgebraError::ArityMismatch {
+            expected: 2,
+            actual: 1
+        })
+    );
+    assert_eq!(
+        ext_z.extract_kernel_coords_z(&[BigInt::from(1), BigInt::from(0), BigInt::from(9)]),
+        Err(AlgebraError::ArityMismatch {
+            expected: 2,
+            actual: 3
+        })
+    );
+
+    // CochainMap::induced_field は pub フィールド経由の異なる法 Fp 混入を panic せず DomainMismatch にする
+    let z2 = FpElem::zero(BigUint::from(2u32)).unwrap();
+    let one3 = FpElem::one(BigUint::from(3u32)).unwrap();
+    let c2 = CochainComplex::new(1, 0, 0, vec![], vec![], z2).unwrap();
+    let bad_map = CochainMap {
+        f0: vec![vec![one3]],
+        f1: vec![],
+        f2: vec![],
+    };
+    assert!(matches!(
+        bad_map.induced_field(&c2, &c2),
+        Err(AlgebraError::DomainMismatch { .. })
+    ));
+}

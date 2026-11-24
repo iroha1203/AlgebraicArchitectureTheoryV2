@@ -3,8 +3,11 @@
 
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
-use crate::ir::term::{CoeffDomain, PolyExpr};
-use crate::ir::validate::{ValidationError, validate_coeff_domain, validate_provenance};
+use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
+use crate::ir::validate::{
+    ValidationError, validate_coeff_domain, validate_opt_source_ref, validate_provenance,
+    validate_scalar_lit,
+};
 use std::collections::BTreeSet;
 
 /// 定義的補助演算 `Y_j = F_j(O, Y_1, ..., Y_{j-1})`（G-141 F1）。
@@ -111,6 +114,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
     }
 
     // 既存関係 I_O は重複名を禁じ、obs_vars のみ参照可能
+    let dom = &spec.coeff_domain;
     let mut rel_seen = BTreeSet::new();
     for rel in &spec.obs_relations {
         if rel.name.trim().is_empty() {
@@ -124,7 +128,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                 name: rel.name.clone(),
             });
         }
-        check_expr_refs(&rel.expr, &obs_set, &format!("obs_relation `{}`", rel.name))?;
+        check_named_poly(rel, dom, &obs_set, &format!("obs_relation `{}`", rel.name))?;
     }
 
     // 定義的補助演算 Y_j = F_j(O, Y_1, ..., Y_{j-1}) の非循環依存順を厳密検査する（F1）。
@@ -144,6 +148,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
         }
         check_expr_refs(
             &aux.expr,
+            dom,
             &available,
             &format!("aux_def `{}` (must depend only on earlier vars)", aux.name),
         )?;
@@ -163,7 +168,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                 name: law.name.clone(),
             });
         }
-        check_expr_refs(&law.expr, &available, &format!("extra_law `{}`", law.name))?;
+        check_named_poly(law, dom, &available, &format!("extra_law `{}`", law.name))?;
     }
 
     // base_point 検査（全観測変数を網羅し、自由変数を含まない定数式／未観測スロットのみ許可）
@@ -185,6 +190,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
         }
         check_expr_refs(
             expr,
+            dom,
             &empty_vars,
             &format!("{ctx} base_point `{v}` (must be constant or unobserved)"),
         )?;
@@ -214,6 +220,7 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
             }
             check_expr_refs(
                 &aux.expr,
+                dom,
                 &stage_avail,
                 &format!("composite aux_def `{}`", aux.name),
             )?;
@@ -232,8 +239,9 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
                     name: law.name.clone(),
                 });
             }
-            check_expr_refs(
-                &law.expr,
+            check_named_poly(
+                law,
+                dom,
                 &stage_avail,
                 &format!("composite extra_law `{}`", law.name),
             )?;
@@ -247,27 +255,60 @@ pub fn validate_artin_task(spec: ArtinTaskSpec) -> Result<CheckedArtinTask, Vali
     Ok(CheckedArtinTask { spec })
 }
 
-pub(crate) fn check_expr_refs(
-    expr: &PolyExpr,
+pub(crate) fn validate_lit_for_domain(
+    lit: &ScalarLit,
+    domain: &CoeffDomain,
+    context: &str,
+) -> Result<(), ValidationError> {
+    if matches!((lit, domain), (ScalarLit::Z(_), CoeffDomain::Q)) {
+        return Ok(());
+    }
+    validate_scalar_lit(lit, domain, context)
+}
+
+pub(crate) fn check_named_poly(
+    item: &NamedPoly,
+    expected_domain: &CoeffDomain,
     allowed: &BTreeSet<&str>,
     context: &str,
 ) -> Result<(), ValidationError> {
-    match expr {
-        PolyExpr::Const(_) | PolyExpr::Unobserved { .. } => Ok(()),
-        PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
-            if !allowed.contains(v.as_str()) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "variable",
-                    name: v.clone(),
-                    context: context.to_owned(),
-                });
+    validate_opt_source_ref(item.provenance.as_ref(), context)?;
+    check_expr_refs(&item.expr, expected_domain, allowed, context)
+}
+
+pub(crate) fn check_expr_refs(
+    expr: &PolyExpr,
+    expected_domain: &CoeffDomain,
+    allowed: &BTreeSet<&str>,
+    context: &str,
+) -> Result<(), ValidationError> {
+    let mut stack = vec![expr];
+    while let Some(node) = stack.pop() {
+        match node {
+            PolyExpr::Const(lit) => validate_lit_for_domain(lit, expected_domain, context)?,
+            PolyExpr::Unobserved { slot, origin } => {
+                if slot.trim().is_empty() {
+                    return Err(ValidationError::EmptyName {
+                        context: format!("{context}.unobserved_slot"),
+                    });
+                }
+                validate_opt_source_ref(origin.as_ref(), context)?;
             }
-            Ok(())
-        }
-        PolyExpr::Neg(a) | PolyExpr::Pow(a, _) => check_expr_refs(a, allowed, context),
-        PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
-            check_expr_refs(a, allowed, context)?;
-            check_expr_refs(b, allowed, context)
+            PolyExpr::StateVar(v) | PolyExpr::ArgVar(v) | PolyExpr::ParamVar(v) => {
+                if !allowed.contains(v.as_str()) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "variable",
+                        name: v.clone(),
+                        context: context.to_owned(),
+                    });
+                }
+            }
+            PolyExpr::Neg(a) | PolyExpr::Pow(a, _) => stack.push(a),
+            PolyExpr::Add(a, b) | PolyExpr::Sub(a, b) | PolyExpr::Mul(a, b) => {
+                stack.push(b);
+                stack.push(a);
+            }
         }
     }
+    Ok(())
 }

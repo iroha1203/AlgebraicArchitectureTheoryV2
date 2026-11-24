@@ -262,6 +262,12 @@ impl SquareZeroExtension<BigInt> {
 
     /// `R'` の元が `M = ker π` に属することを検査し、`kernel_basis` 上の整数座標を返す。
     pub fn extract_kernel_coords_z(&self, elem: &[BigInt]) -> Result<Vec<BigInt>, AlgebraError> {
+        if elem.len() != self.r_prime.dim() {
+            return Err(AlgebraError::ArityMismatch {
+                expected: self.r_prime.dim(),
+                actual: elem.len(),
+            });
+        }
         if !self.r_base.is_zero_elem(&self.project(elem)) {
             return Err(AlgebraError::OutOfScope {
                 detail: "element does not lie in Z kernel M = ker(R' -> R)".to_owned(),

@@ -1,13 +1,11 @@
 //! 全 syzygy 平方零 lift・相対障害・宣言被覆比較・有限 étale 被覆 cocycle descent の検証済み IR
 //! （G-141 E1–E8・C8–C9・H1–H4・H10 / W5）。
 
-use crate::ir::artin::check_expr_refs;
+use crate::ir::artin::{check_expr_refs, check_named_poly, validate_lit_for_domain};
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
-use crate::ir::validate::{
-    ValidationError, validate_coeff_domain, validate_provenance, validate_scalar_lit,
-};
+use crate::ir::validate::{ValidationError, validate_coeff_domain, validate_provenance};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 平方零拡大 `R' ↠ R` の入力仕様。
@@ -193,6 +191,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
     let rp_dim = spec.extension.r_prime_dim();
     let empty_vars = BTreeSet::new();
 
+    let dom = &spec.coeff_domain;
     let mut param_set = BTreeSet::new();
     for rp in &spec.ring_params {
         if rp.name.trim().is_empty() {
@@ -216,7 +215,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
             });
         }
         for expr in &rp.value_in_r_prime {
-            check_expr_refs(expr, &empty_vars, &format!("ring_param `{}`", rp.name))?;
+            check_expr_refs(expr, dom, &empty_vars, &format!("ring_param `{}`", rp.name))?;
         }
     }
 
@@ -236,7 +235,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 name: law.name.clone(),
             });
         }
-        check_expr_refs(&law.expr, &law_allowed, &format!("law `{}`", law.name))?;
+        check_named_poly(law, dom, &law_allowed, &format!("law `{}`", law.name))?;
     }
 
     // base_point 整合検査
@@ -264,7 +263,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
             });
         }
         for expr in coords {
-            check_expr_refs(expr, &empty_vars, &format!("base_point `{v}`"))?;
+            check_expr_refs(expr, dom, &empty_vars, &format!("base_point `{v}`"))?;
         }
     }
     if bp_seen.len() != var_set.len() {
@@ -299,7 +298,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 });
             }
             for expr in coords {
-                check_expr_refs(expr, &empty_vars, &format!("ambient_lift `{v}`"))?;
+                check_expr_refs(expr, dom, &empty_vars, &format!("ambient_lift `{v}`"))?;
             }
         }
         if lift_seen.len() != var_set.len() {
@@ -318,7 +317,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     context: "obs_var".to_owned(),
                 });
             }
-            if !obs_set.insert(v.as_str()) {
+            if param_set.contains(v.as_str()) || !obs_set.insert(v.as_str()) {
                 return Err(ValidationError::DuplicateDecl {
                     kind: "obs_var",
                     name: v.clone(),
@@ -340,7 +339,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     name: ol.name.clone(),
                 });
             }
-            check_expr_refs(&ol.expr, &obs_allowed, &format!("obs_law `{}`", ol.name))?;
+            check_named_poly(ol, dom, &obs_allowed, &format!("obs_law `{}`", ol.name))?;
         }
         let mut rm_seen = BTreeSet::new();
         for (ov, expr) in &rel.reading_map {
@@ -357,7 +356,7 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     name: ov.clone(),
                 });
             }
-            check_expr_refs(expr, &law_allowed, &format!("reading_map `{ov}`"))?;
+            check_expr_refs(expr, dom, &law_allowed, &format!("reading_map `{ov}`"))?;
         }
         if rm_seen.len() != obs_set.len() {
             return Err(ValidationError::ConversionError {
@@ -388,7 +387,12 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                 });
             }
             for expr in coords {
-                check_expr_refs(expr, &empty_vars, &format!("designated_obs_lift `{ov}`"))?;
+                check_expr_refs(
+                    expr,
+                    dom,
+                    &empty_vars,
+                    &format!("designated_obs_lift `{ov}`"),
+                )?;
             }
         }
         if dl_seen.len() != obs_set.len() {
@@ -402,7 +406,12 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     context: "raw_read_diff.label".to_owned(),
                 });
             }
-            check_expr_refs(&rr.expr, &law_allowed, &format!("raw_read_diff `{}`", rr.label))?;
+            check_expr_refs(
+                &rr.expr,
+                dom,
+                &law_allowed,
+                &format!("raw_read_diff `{}`", rr.label),
+            )?;
         }
     }
 
@@ -467,35 +476,44 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     });
                 }
                 // 観測式は全体変数集合に対して整合すること（個別文脈内での参照閉包性は E7 検査対象）。
-                check_expr_refs(
-                    &obs.expr,
+                check_named_poly(
+                    obs,
+                    dom,
                     &law_allowed,
                     &format!("declaration_context `{}` obs `{}`", c.name, obs.name),
                 )?;
             }
         }
         if let Some(cech) = &cover.two_context_cech {
-            if !ctx_map.contains_key(cech.left_context.as_str()) {
+            let Some(left_ctx) = ctx_map.get(cech.left_context.as_str()) else {
                 return Err(ValidationError::UnknownRef {
                     kind: "declaration_context",
                     name: cech.left_context.clone(),
                     context: "two_context_cech.left_context".to_owned(),
                 });
-            }
-            if !ctx_map.contains_key(cech.right_context.as_str()) {
+            };
+            let Some(right_ctx) = ctx_map.get(cech.right_context.as_str()) else {
                 return Err(ValidationError::UnknownRef {
                     kind: "declaration_context",
                     name: cech.right_context.clone(),
                     context: "two_context_cech.right_context".to_owned(),
                 });
-            }
+            };
+            let left_vars: BTreeSet<&str> = left_ctx.vars.iter().map(String::as_str).collect();
+            let right_vars: BTreeSet<&str> = right_ctx.vars.iter().map(String::as_str).collect();
             let mut sv_seen = BTreeSet::new();
             for sv in &cech.shared_vars {
-                if !var_set.contains(sv.as_str()) {
+                if !var_set.contains(sv.as_str())
+                    || !left_vars.contains(sv.as_str())
+                    || !right_vars.contains(sv.as_str())
+                {
                     return Err(ValidationError::UnknownRef {
                         kind: "variable",
                         name: sv.clone(),
-                        context: "two_context_cech.shared_vars".to_owned(),
+                        context: format!(
+                            "two_context_cech.shared_vars (must belong to both `{}` and `{}`)",
+                            cech.left_context, cech.right_context
+                        ),
                     });
                 }
                 if !sv_seen.insert(sv.as_str()) {
@@ -543,8 +561,9 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
                     name: rl.name.clone(),
                 });
             }
-            check_expr_refs(
-                &rl.expr,
+            check_named_poly(
+                rl,
+                dom,
                 &law_allowed,
                 &format!("redundant_comparison `{}`", rl.name),
             )?;
@@ -671,15 +690,4 @@ fn validate_mul_table_shape(
         }
     }
     Ok(())
-}
-
-fn validate_lit_for_domain(
-    lit: &ScalarLit,
-    domain: &CoeffDomain,
-    context: &str,
-) -> Result<(), ValidationError> {
-    if matches!((lit, domain), (ScalarLit::Z(_), CoeffDomain::Q)) {
-        return Ok(());
-    }
-    validate_scalar_lit(lit, domain, context)
 }

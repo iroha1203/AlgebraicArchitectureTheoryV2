@@ -542,6 +542,9 @@ impl<C: FieldCoeff> CochainMap<C> {
                         actual: row.len(),
                     });
                 }
+                for v in row {
+                    check_same_ring(&src.zero_coeff, v)?;
+                }
             }
         }
         let z = src.zero_coeff.zero_like();

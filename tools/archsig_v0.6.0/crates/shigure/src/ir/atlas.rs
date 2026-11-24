@@ -2,7 +2,7 @@
 //! 指定診断類 $\kappa_b$・Atlas 細分化 Condition C0–C6 と評価条件付き全修復 fiber 比較の検証済み IR
 //! （G-141 G1–G5・H8・H12 / G-142 E1–E6・F1–F7・W3）。
 
-use crate::ir::artin::check_expr_refs;
+use crate::ir::artin::{check_expr_refs, check_named_poly};
 use crate::ir::change::NamedPoly;
 use crate::ir::diagnostics::{SupportedNerveSpec, validate_supported_nerve};
 use crate::ir::provenance::Provenance;
@@ -155,10 +155,11 @@ pub fn validate_atlas_task(spec: AtlasTaskSpec) -> Result<CheckedAtlasTask, Vali
     }
     validate_provenance(&spec.provenance, &ctx)?;
 
+    let dom = &spec.coeff_domain;
     let empty_vars = BTreeSet::new();
-    check_expr_refs(&spec.mu, &empty_vars, &format!("{ctx} mu"))?;
+    check_expr_refs(&spec.mu, dom, &empty_vars, &format!("{ctx} mu"))?;
 
-    let (v_set, e_set) = validate_simple_graph(&spec.vertices, &spec.edges, &ctx)?;
+    let (v_set, e_set) = validate_simple_graph(&spec.vertices, &spec.edges, dom, &ctx)?;
 
     let mut lam_seen = BTreeSet::new();
     for (v, expr) in &spec.base_lambdas {
@@ -175,7 +176,7 @@ pub fn validate_atlas_task(spec: AtlasTaskSpec) -> Result<CheckedAtlasTask, Vali
                 name: v.clone(),
             });
         }
-        check_expr_refs(expr, &empty_vars, &format!("{ctx} base_lambda `{v}`"))?;
+        check_expr_refs(expr, dom, &empty_vars, &format!("{ctx} base_lambda `{v}`"))?;
     }
     if lam_seen.len() != v_set.len() {
         return Err(ValidationError::ConversionError {
@@ -217,11 +218,11 @@ pub fn validate_atlas_task(spec: AtlasTaskSpec) -> Result<CheckedAtlasTask, Vali
     }
 
     if let Some(ref_spec) = &spec.refinement {
-        validate_refinement(ref_spec, &v_set, &e_set, &spec.name)?;
+        validate_refinement(ref_spec, &v_set, &e_set, dom, &spec.name)?;
     }
 
     if let Some(ext) = &spec.extended_language_check {
-        validate_extended_language_check(ext, &ctx)?;
+        validate_extended_language_check(ext, dom, &ctx)?;
     }
 
     Ok(CheckedAtlasTask { spec })
@@ -230,6 +231,7 @@ pub fn validate_atlas_task(spec: AtlasTaskSpec) -> Result<CheckedAtlasTask, Vali
 fn validate_simple_graph<'a>(
     vertices: &'a [String],
     edges: &'a [GraphEdgeSpec],
+    domain: &CoeffDomain,
     context: &str,
 ) -> Result<(BTreeSet<&'a str>, BTreeSet<&'a str>), ValidationError> {
     if vertices.is_empty() {
@@ -305,6 +307,7 @@ fn validate_simple_graph<'a>(
         }
         check_expr_refs(
             &e.offset,
+            domain,
             &empty_vars,
             &format!("{context} edge `{}` offset", e.name),
         )?;
@@ -316,11 +319,13 @@ fn validate_refinement(
     r: &AtlasRefinementSpec,
     coarse_v: &BTreeSet<&str>,
     coarse_e: &BTreeSet<&str>,
+    domain: &CoeffDomain,
     task_name: &str,
 ) -> Result<(), ValidationError> {
     let (fine_v, fine_e) = validate_simple_graph(
         &r.fine_vertices,
         &r.fine_edges,
+        domain,
         &format!("atlas `{task_name}` fine_graph"),
     )?;
 
@@ -384,11 +389,24 @@ fn validate_refinement(
         });
     }
 
-    let src_set: BTreeSet<&str> = r.common_sources.iter().map(String::as_str).collect();
-    if src_set.len() != r.common_sources.len() || src_set.is_empty() {
+    if r.common_sources.is_empty() {
         return Err(ValidationError::ConversionError {
-            detail: "refinement.common_sources must be nonempty and duplicate-free".to_owned(),
+            detail: "refinement.common_sources must be nonempty".to_owned(),
         });
+    }
+    let mut src_set = BTreeSet::new();
+    for s in &r.common_sources {
+        if s.trim().is_empty() {
+            return Err(ValidationError::EmptyName {
+                context: "refinement.common_source".to_owned(),
+            });
+        }
+        if !src_set.insert(s.as_str()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "common_source",
+                name: s.clone(),
+            });
+        }
     }
     let coarse_t = validate_reading_map(&r.coarse_reading, &src_set, "coarse_reading")?;
     let fine_t = validate_reading_map(&r.fine_reading, &src_set, "fine_reading")?;
@@ -478,7 +496,12 @@ fn validate_refinement(
                         name: item.name.clone(),
                     });
                 }
-                check_expr_refs(&item.expr, &allowed_vars, &format!("{kind} `{}`", item.name))?;
+                check_named_poly(
+                    item,
+                    domain,
+                    &allowed_vars,
+                    &format!("{kind} `{}`", item.name),
+                )?;
             }
         }
     }
@@ -495,15 +518,16 @@ fn validate_refinement(
             });
         }
         let fg_vars: BTreeSet<&str> = [fg.forgotten_var.as_str()].into_iter().collect();
-        check_expr_refs(&fg.eval_expr, &fg_vars, "forgetful_reading.eval_expr")?;
+        check_expr_refs(&fg.eval_expr, domain, &fg_vars, "forgetful_reading.eval_expr")?;
         check_expr_refs(
             &fg.condition_eq,
+            domain,
             &fg_vars,
             "forgetful_reading.condition_eq",
         )?;
         let empty = BTreeSet::new();
         for sv in &fg.sample_values {
-            check_expr_refs(sv, &empty, "forgetful_reading.sample_values")?;
+            check_expr_refs(sv, domain, &empty, "forgetful_reading.sample_values")?;
         }
     }
     Ok(())
@@ -551,6 +575,7 @@ fn validate_partial_nerve_map(
 
 fn validate_extended_language_check(
     ext: &ExtendedLanguageCheckSpec,
+    domain: &CoeffDomain,
     context: &str,
 ) -> Result<(), ValidationError> {
     if ext.state_vars.is_empty() {
@@ -572,7 +597,7 @@ fn validate_extended_language_check(
             });
         }
     }
-    validate_total_var_map(&ext.adapter_map, &s_set, &s_set, "adapter_map")?;
+    validate_total_var_map(&ext.adapter_map, &s_set, &s_set, domain, "adapter_map")?;
 
     let mut op_names = BTreeSet::new();
     for op in &ext.atomic_ops {
@@ -601,8 +626,20 @@ fn validate_extended_language_check(
                 });
             }
         }
-        validate_total_var_map(&op.before_updates, &s_set, &allowed, "atomic_op.before")?;
-        validate_total_var_map(&op.after_updates, &s_set, &allowed, "atomic_op.after")?;
+        validate_total_var_map(
+            &op.before_updates,
+            &s_set,
+            &allowed,
+            domain,
+            "atomic_op.before",
+        )?;
+        validate_total_var_map(
+            &op.after_updates,
+            &s_set,
+            &allowed,
+            domain,
+            "atomic_op.after",
+        )?;
     }
 
     let empty = BTreeSet::new();
@@ -638,14 +675,37 @@ fn validate_extended_language_check(
                         });
                     }
                 }
-                validate_total_var_map(initial_state, &ext_set, &empty, "protocol.initial_state")?;
+                validate_total_var_map(
+                    initial_state,
+                    &ext_set,
+                    &empty,
+                    domain,
+                    "protocol.initial_state",
+                )?;
                 for st in before_steps.iter().chain(after_steps) {
-                    validate_total_var_map(st, &ext_set, &ext_set, "protocol.step")?;
+                    validate_total_var_map(st, &ext_set, &ext_set, domain, "protocol.step")?;
                 }
-                check_expr_refs(before_read, &ext_set, "protocol.before_read")?;
-                check_expr_refs(after_read, &ext_set, "protocol.after_read")?;
+                check_expr_refs(before_read, domain, &ext_set, "protocol.before_read")?;
+                check_expr_refs(after_read, domain, &ext_set, "protocol.after_read")?;
+                let mut il_seen = BTreeSet::new();
                 for law in intermediate_laws {
-                    check_expr_refs(&law.expr, &ext_set, "protocol.intermediate_law")?;
+                    if law.name.trim().is_empty() {
+                        return Err(ValidationError::EmptyName {
+                            context: "protocol.intermediate_law".to_owned(),
+                        });
+                    }
+                    if !il_seen.insert(law.name.as_str()) {
+                        return Err(ValidationError::DuplicateDecl {
+                            kind: "intermediate_law",
+                            name: law.name.clone(),
+                        });
+                    }
+                    check_named_poly(
+                        law,
+                        domain,
+                        &ext_set,
+                        &format!("protocol.intermediate_law `{}`", law.name),
+                    )?;
                 }
             }
             ExtendedOperationCheckSpec::RuntimeArgOp {
@@ -665,9 +725,21 @@ fn validate_extended_language_check(
                         name: name.clone(),
                     });
                 }
-                validate_total_var_map(before_updates, &s_set, &s_set, "runtime_op.before")?;
-                validate_total_var_map(after_updates, &s_set, &s_set, "runtime_op.after")?;
-                validate_total_var_map(sample_state, &s_set, &empty, "runtime_op.sample_state")?;
+                validate_total_var_map(
+                    before_updates,
+                    &s_set,
+                    &s_set,
+                    domain,
+                    "runtime_op.before",
+                )?;
+                validate_total_var_map(after_updates, &s_set, &s_set, domain, "runtime_op.after")?;
+                validate_total_var_map(
+                    sample_state,
+                    &s_set,
+                    &empty,
+                    domain,
+                    "runtime_op.sample_state",
+                )?;
             }
         }
     }
@@ -678,6 +750,7 @@ fn validate_total_var_map(
     entries: &[(String, PolyExpr)],
     targets: &BTreeSet<&str>,
     allowed_refs: &BTreeSet<&str>,
+    domain: &CoeffDomain,
     context: &str,
 ) -> Result<(), ValidationError> {
     let mut seen = BTreeSet::new();
@@ -695,7 +768,7 @@ fn validate_total_var_map(
                 name: v.clone(),
             });
         }
-        check_expr_refs(expr, allowed_refs, context)?;
+        check_expr_refs(expr, domain, allowed_refs, context)?;
     }
     if seen.len() != targets.len() {
         return Err(ValidationError::ConversionError {
@@ -718,6 +791,11 @@ fn validate_reading_map<'a>(
                 kind: "source",
                 name: s.clone(),
                 context: context.to_owned(),
+            });
+        }
+        if t.trim().is_empty() {
+            return Err(ValidationError::EmptyName {
+                context: format!("{context}.target"),
             });
         }
         if !seen.insert(s.as_str()) {

@@ -2,7 +2,7 @@
 //! 診断層 $B_\pi$ 層別・値合流 Mayer–Vietoris・診断次元実現の検証済み IR
 //! （G-142 A1–A3・B1–B6・C1–C4・D1–D3・W1–W2）。
 
-use crate::ir::artin::check_expr_refs;
+use crate::ir::artin::{check_expr_refs, check_named_poly};
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
@@ -155,7 +155,7 @@ pub struct DiagnosticsTaskSpec {
 }
 
 /// 型・参照・K1 nerve 端点・全射 reading・partition 粗化整合を検証済みの診断タスク。
-/// （注意: `Static` reading の adequacy 自体は計算核で判定し、`reading_adequate` と沈黙契約へ反映する。）
+/// （注意: `Static` reading の adequacy 自体は計算核で判定し、`reading_adequate` と沈黙規律へ反映する。）
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CheckedDiagnosticsTask {
     spec: DiagnosticsTaskSpec,
@@ -186,12 +186,19 @@ pub fn validate_supported_nerve(
                 name: ch.name.clone(),
             });
         }
+        let mut sup_seen = BTreeSet::new();
         for s in &ch.support {
             if !valid_targets.contains(s.as_str()) {
                 return Err(ValidationError::UnknownRef {
                     kind: "target",
                     name: s.clone(),
                     context: format!("{context} chart `{}`", ch.name),
+                });
+            }
+            if !sup_seen.insert(s.as_str()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "nerve_chart_support",
+                    name: s.clone(),
                 });
             }
         }
@@ -377,6 +384,7 @@ pub fn validate_diagnostics_task(
                     });
                 }
                 let mut v_seen = BTreeSet::new();
+                let mut law_dom: Option<CoeffDomain> = None;
                 for (s, lit) in &law.values {
                     if !s_set.contains(s.as_str()) {
                         return Err(ValidationError::UnknownRef {
@@ -392,8 +400,20 @@ pub fn validate_diagnostics_task(
                         });
                     }
                     let lit_dom = lit.domain();
-                    validate_coeff_domain(&lit_dom, &format!("law `{}` value `{s}`", law.law_name))?;
-                    validate_scalar_lit(lit, &lit_dom, &format!("law `{}` value `{s}`", law.law_name))?;
+                    let val_ctx = format!("law `{}` value `{s}`", law.law_name);
+                    validate_coeff_domain(&lit_dom, &val_ctx)?;
+                    if let Some(ref expected) = law_dom {
+                        if expected != &lit_dom {
+                            return Err(ValidationError::DomainMismatch {
+                                expected: expected.clone(),
+                                actual: lit_dom,
+                                context: val_ctx,
+                            });
+                        }
+                    } else {
+                        law_dom = Some(lit_dom.clone());
+                    }
+                    validate_scalar_lit(lit, &lit_dom, &val_ctx)?;
                 }
                 if v_seen.len() != s_set.len() {
                     return Err(ValidationError::ConversionError {
@@ -441,8 +461,9 @@ pub fn validate_diagnostics_task(
                         name: rel.name.clone(),
                     });
                 }
-                check_expr_refs(
-                    &rel.expr,
+                check_named_poly(
+                    rel,
+                    base_domain,
                     &bv_set,
                     &format!("base_relation `{}`", rel.name),
                 )?;
@@ -491,6 +512,7 @@ pub fn validate_diagnostics_task(
                     }
                     check_expr_refs(
                         expr,
+                        base_domain,
                         &bv_set,
                         &format!("poly law `{}` source `{s}`", law.law_name),
                     )?;
@@ -504,7 +526,7 @@ pub fn validate_diagnostics_task(
                     });
                 }
             }
-            (s_set.clone(), s_set, l_names, Some(bv_set))
+            (s_set.clone(), s_set, l_names, Some((bv_set, base_domain)))
         }
     };
 
@@ -528,10 +550,17 @@ pub fn validate_diagnostics_task(
         }
     }
 
+    let mut col_labels = BTreeSet::new();
     for col in &spec.collisions {
         if col.label.trim().is_empty() {
             return Err(ValidationError::EmptyName {
                 context: "collision.label".to_owned(),
+            });
+        }
+        if !col_labels.insert(col.label.as_str()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "collision",
+                name: col.label.clone(),
             });
         }
         if !law_names.contains(col.law_name.as_str()) {
@@ -573,7 +602,7 @@ pub fn validate_diagnostics_task(
     }
 
     if let Some(rp) = &spec.r_point_probe {
-        let Some(bv_set) = &poly_base_vars else {
+        let Some((bv_set, poly_domain)) = &poly_base_vars else {
             return Err(ValidationError::ConversionError {
                 detail: "r_point_probe requires Polynomial readout".to_owned(),
             });
@@ -623,7 +652,12 @@ pub fn validate_diagnostics_task(
                     });
                 }
                 for c in coords {
-                    check_expr_refs(c, &empty, &format!("r_point `{}` coord `{v}`", pt.label))?;
+                    check_expr_refs(
+                        c,
+                        poly_domain,
+                        &empty,
+                        &format!("r_point `{}` coord `{v}`", pt.label),
+                    )?;
                 }
             }
             if seen_vars.len() != bv_set.len() {
@@ -663,8 +697,9 @@ pub fn validate_diagnostics_task(
                     name: vp.name.clone(),
                 });
             }
-            check_expr_refs(
-                &vp.expr,
+            check_named_poly(
+                vp,
+                &dr.base_domain,
                 &dr_vars,
                 &format!("dimension_realization vanishing `{}`", vp.name),
             )?;
@@ -674,8 +709,9 @@ pub fn validate_diagnostics_task(
                 context: "dimension_realization.invertible_poly".to_owned(),
             });
         }
-        check_expr_refs(
-            &dr.invertible_poly.expr,
+        check_named_poly(
+            &dr.invertible_poly,
+            &dr.base_domain,
             &dr_vars,
             "dimension_realization.invertible_poly",
         )?;
@@ -708,7 +744,12 @@ pub fn validate_diagnostics_task(
                         name: v.clone(),
                     });
                 }
-                check_expr_refs(expr, &empty, &format!("probe_point `{}` `{v}`", pt.label))?;
+                check_expr_refs(
+                    expr,
+                    &dr.base_domain,
+                    &empty,
+                    &format!("probe_point `{}` `{v}`", pt.label),
+                )?;
             }
             if seen_vars.len() != dr_vars.len() {
                 return Err(ValidationError::ConversionError {
