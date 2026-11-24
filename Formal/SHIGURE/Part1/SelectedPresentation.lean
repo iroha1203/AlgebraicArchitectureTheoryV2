@@ -92,6 +92,34 @@ private def atomic (names : SignatureNames S T) {Γ : List S.SortType} :
       (congrArg Arity.inputs (names.operationArity op) ▸ args.mapSorts names.onSort)
       (congrArg Arity.output (names.operationArity op) ▸ y.mapSorts names.onSort)
 
+/-- Renaming an equality atom sends both variable positions along the sort map. -/
+private theorem atomic_eq (names : SignatureNames S T) {Γ : List S.SortType}
+    {s : S.SortType} (x y : Var Γ s) :
+    names.atomic (.eq x y) = .eq (x.mapSorts names.onSort) (y.mapSorts names.onSort) :=
+  rfl
+
+/-- Renaming a relation atom transports its selected input positions along the declared arity. -/
+private theorem atomic_rel (names : SignatureNames S T) {Γ : List S.SortType}
+    (r : S.Rel) (args : Renaming (S.relInputs r) Γ) :
+    names.atomic (.rel r args) = .rel (names.onRel r) (names.relInputs r ▸ args.mapSorts names.onSort) :=
+  rfl
+
+/-- Renaming a domain atom transports its selected input positions along the declared arity. -/
+private theorem atomic_domain (names : SignatureNames S T) {Γ : List S.SortType}
+    (p : S.Partial) (args : Renaming (S.partialArity p).inputs Γ) :
+    names.atomic (.domain p args) =
+      .domain (names.onPartial p) (congrArg Arity.inputs (names.partialArity p) ▸ args.mapSorts names.onSort) :=
+  rfl
+
+/-- Renaming a graph atom transports both the selected inputs and the output position. -/
+private theorem atomic_graph (names : SignatureNames S T) {Γ : List S.SortType}
+    (op : Operation S) (args : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
+    names.atomic (.graph op args y) =
+      .graph (names.operation op)
+        (congrArg Arity.inputs (names.operationArity op) ▸ args.mapSorts names.onSort)
+        (congrArg Arity.output (names.operationArity op) ▸ y.mapSorts names.onSort) :=
+  rfl
+
 /-- Rename the literal positive syntax. Each atom retains its kind. -/
 def formula (names : SignatureNames S T) :
     {Γ : List S.SortType} → Formula S Γ → Formula T (Γ.map names.onSort)
@@ -139,7 +167,7 @@ def graphAxiom (names : SignatureNames S T) : GraphAxiom S → GraphAxiom T
 private def arguments (names : SignatureNames S T) {X : T.SortType → Type u}
     {Γ : List S.SortType} {Δ : List T.SortType} (same : Γ.map names.onSort = Δ)
     (e : Assignment (X ∘ names.onSort) Γ) : Assignment X Δ :=
-  same ▸ ⟨Var.reindex names.onSort (fun i => e i)⟩
+  same ▸ e.mapSorts names.onSort
 
 /-- Restrict an interpreted structure to the typed names in the selection. -/
 def restrict (names : SignatureNames S T) (A : Structure T) : Structure S where
@@ -154,6 +182,168 @@ def restrict (names : SignatureNames S T) (A : Structure T) : Structure S where
       ⟨names.arguments (congrArg Arity.inputs (names.partialArity p)) xs.val, xs.property⟩)
   quantity q xs := cast (congrArg (fun arity => A.carrier arity.output) (names.quantityArity q).symm)
     (A.quantity (names.onQuantity q) (names.arguments (congrArg Arity.inputs (names.quantityArity q)) xs))
+
+/-- Relation membership in the reduct tests the transported tuple in the ambient relation. -/
+private theorem restrict_relation_iff (names : SignatureNames S T) (A : Structure T)
+    (r : S.Rel) (xs : Assignment (names.restrict A).carrier (S.relInputs r)) :
+    xs ∈ (names.restrict A).relation r ↔
+      names.arguments (names.relInputs r) xs ∈ A.relation (names.onRel r) :=
+  Iff.rfl
+
+/-- Partial domain membership in the reduct tests the transported tuple in the ambient domain. -/
+private theorem restrict_partialDomain_iff (names : SignatureNames S T) (A : Structure T)
+    (p : S.Partial) (xs : Assignment (names.restrict A).carrier (S.partialArity p).inputs) :
+    xs ∈ (names.restrict A).partialDomain p ↔
+      names.arguments (congrArg Arity.inputs (names.partialArity p)) xs ∈ A.partialDomain (names.onPartial p) :=
+  Iff.rfl
+
+/-- The total interpretation in a named reduct uses the ambient function on the transported tuple. -/
+theorem restrict_total_apply (names : SignatureNames S T) (A : Structure T) (f : S.Total)
+    (xs : Assignment (names.restrict A).carrier (S.totalArity f).inputs) :
+    (names.restrict A).total f xs =
+      cast (congrArg (fun arity => A.carrier arity.output) (names.totalArity f).symm)
+        (A.total (names.onTotal f)
+          (congrArg Arity.inputs (names.totalArity f) ▸ xs.mapSorts names.onSort)) :=
+  rfl
+
+/-- Relation membership in a named reduct uses the ambient relation on the mapped tuple. -/
+theorem restrict_relation_mem_iff (names : SignatureNames S T) (A : Structure T) (r : S.Rel)
+    (xs : Assignment (names.restrict A).carrier (S.relInputs r)) :
+    xs ∈ (names.restrict A).relation r ↔
+      (names.relInputs r ▸ xs.mapSorts names.onSort) ∈ A.relation (names.onRel r) :=
+  names.restrict_relation_iff A r xs
+
+/-- Domain membership in a named reduct uses the ambient domain on the mapped tuple. -/
+theorem restrict_partialDomain_mem_iff (names : SignatureNames S T) (A : Structure T) (p : S.Partial)
+    (xs : Assignment (names.restrict A).carrier (S.partialArity p).inputs) :
+    xs ∈ (names.restrict A).partialDomain p ↔
+      (congrArg Arity.inputs (names.partialArity p) ▸ xs.mapSorts names.onSort) ∈
+        A.partialDomain (names.onPartial p) :=
+  names.restrict_partialDomain_iff A p xs
+
+/-- The partial value in a named reduct is transported back from the ambient operation on its domain. -/
+theorem restrict_partialValue_apply (names : SignatureNames S T) (A : Structure T) (p : S.Partial)
+    (xs : (names.restrict A).partialDomain p) :
+    (names.restrict A).partialValue p xs =
+      cast (congrArg (fun arity => A.carrier arity.output) (names.partialArity p).symm)
+        (A.partialValue (names.onPartial p)
+          ⟨congrArg Arity.inputs (names.partialArity p) ▸ xs.val.mapSorts names.onSort,
+            (names.restrict_partialDomain_mem_iff A p xs.val).1 xs.property⟩) :=
+  rfl
+
+/-- A quantity in a named reduct uses the ambient quantity on the transported tuple. -/
+theorem restrict_quantity_apply (names : SignatureNames S T) (A : Structure T) (q : S.Quantity)
+    (xs : Assignment (names.restrict A).carrier (S.quantityArity q).inputs) :
+    (names.restrict A).quantity q xs =
+      cast (congrArg (fun arity => A.carrier arity.output) (names.quantityArity q).symm)
+        (A.quantity (names.onQuantity q)
+          (congrArg Arity.inputs (names.quantityArity q) ▸ xs.mapSorts names.onSort)) :=
+  rfl
+
+/-- A retyped assignment can be read at its original positions without losing any coordinates. -/
+private theorem arguments_surjective (names : SignatureNames S T) {X : T.SortType → Type u}
+    {Γ : List S.SortType} :
+    Function.Surjective (names.arguments (X := X) (Γ := Γ) rfl) := by
+  intro e
+  use ⟨fun i => e (i.mapSorts names.onSort)⟩
+  apply Assignment.ext_mapSorts names.onSort
+  intro s i
+  exact Assignment.mapSorts_apply names.onSort ⟨fun j => e (j.mapSorts names.onSort)⟩ i
+
+/-- Selecting positions in the mapped context gives the mapped subtuple. -/
+private theorem arguments_pull (names : SignatureNames S T) {X : T.SortType → Type u}
+    {Γ Λ : List S.SortType} {Δ : List T.SortType} (same : Λ.map names.onSort = Δ)
+    (e : Assignment (X ∘ names.onSort) Γ) (ρ : Renaming Λ Γ) :
+    (e.mapSorts names.onSort).pull (same ▸ ρ.mapSorts names.onSort) = names.arguments same (e.pull ρ) := by
+  cases same
+  exact Assignment.mapSorts_pull names.onSort e ρ
+
+/-- A transported position selects the transported value. -/
+private theorem arguments_read (names : SignatureNames S T) {X : T.SortType → Type u}
+    {Γ : List S.SortType} {s : S.SortType} {t : T.SortType}
+    (same : names.onSort s = t) (e : Assignment (X ∘ names.onSort) Γ) (i : Var Γ s) :
+    (e.mapSorts names.onSort) (same ▸ i.mapSorts names.onSort) = cast (congrArg X same) (e i) := by
+  cases same
+  exact Assignment.mapSorts_apply names.onSort e i
+
+/-- The equality of an operation's values is independent of the direction of transport. -/
+private theorem cast_output_eq {X : T.SortType → Type u} {s t : T.SortType} (same : s = t)
+    (x : X t) (y : X s) :
+    cast (congrArg X same.symm) x = y ↔ x = cast (congrArg X same) y := by
+  cases same
+  rfl
+
+/-- A primitive graph in a reduct is the ambient graph on the retyped tuple and value. -/
+private theorem restrict_graph_iff (names : SignatureNames S T) (A : Structure T)
+    (op : Operation S) (xs : Assignment (names.restrict A).carrier op.arity.inputs)
+    (y : (names.restrict A).carrier op.arity.output) :
+    (names.restrict A).Graph op xs y ↔ A.Graph (names.operation op)
+      (names.arguments (congrArg Arity.inputs (names.operationArity op)) xs)
+      (cast (congrArg (fun s => A.carrier s) (congrArg Arity.output (names.operationArity op))) y) := by
+  cases op with
+  | total f =>
+    rw [Structure.graph_total_iff]
+    exact (cast_output_eq (congrArg Arity.output (names.totalArity f)) _ _).trans
+      (A.graph_total_iff _ _ _).symm
+  | partialOp p =>
+    rw [Structure.graph_partial_iff]
+    refine (exists_congr fun hx => ?_).trans (A.graph_partial_iff _ _ _).symm
+    exact cast_output_eq (congrArg Arity.output (names.partialArity p)) _ _
+  | quantity q =>
+    rw [Structure.graph_quantity_iff]
+    exact (cast_output_eq (congrArg Arity.output (names.quantityArity q)) _ _).trans
+      (A.graph_quantity_iff _ _ _).symm
+
+/-- Atomic satisfaction in the reduct agrees with the renamed atom in the ambient structure. -/
+private theorem restrict_atomic_iff (names : SignatureNames S T) (A : Structure T)
+    {Γ : List S.SortType} (a : Atomic S Γ) (e : Assignment (names.restrict A).carrier Γ) :
+    a.Holds (names.restrict A) e ↔ (names.atomic a).Holds A (e.mapSorts names.onSort) := by
+  cases a with
+  | eq x y =>
+    simp only [names.atomic_eq, Atomic.holds_eq, Assignment.mapSorts_apply]
+  | rel r ρ =>
+    simp only [names.atomic_rel, Atomic.holds_rel, names.restrict_relation_iff, names.arguments_pull]
+  | domain p ρ =>
+    simp only [names.atomic_domain, Atomic.holds_domain, names.restrict_partialDomain_iff, names.arguments_pull]
+  | graph op ρ y =>
+    simp only [names.atomic_graph, Atomic.holds_graph, names.restrict_graph_iff,
+      names.arguments_pull, names.arguments_read]
+
+/-- A positive formula is satisfied in a reduct exactly when its renamed formula holds
+at the corresponding assignment in the ambient structure. -/
+theorem restrict_formula_iff (names : SignatureNames S T) (A : Structure T)
+    {Γ : List S.SortType} (p : Formula S Γ) :
+    ∀ e : Assignment (names.restrict A).carrier Γ,
+      p.Holds (names.restrict A) e ↔ (names.formula p).Holds A (e.mapSorts names.onSort) := by
+  induction p with
+  | atom a => exact names.restrict_atomic_iff A a
+  | truth => intro; rfl
+  | falsehood => intro; rfl
+  | conj p q hp hq =>
+    intro e
+    exact (Formula.holds_conj _ _ _ _).trans
+      ((and_congr (hp e) (hq e)).trans (Formula.holds_conj _ _ _ _).symm)
+  | disj p q hp hq =>
+    intro e
+    exact (Formula.holds_disj _ _ _ _).trans
+      ((or_congr (hp e) (hq e)).trans (Formula.holds_disj _ _ _ _).symm)
+  | ex p ih =>
+    intro e
+    refine (Formula.holds_ex _ _ _).trans ((exists_congr fun x => ?_).trans
+      (Formula.holds_ex (names.formula p) A (e.mapSorts names.onSort)).symm)
+    simpa only [Assignment.mapSorts_cons] using ih (Assignment.cons x e)
+
+/-- An original Law holds in a reduct exactly when the renamed Law holds in the ambient structure. -/
+theorem restrict_law_iff (names : SignatureNames S T) (A : Structure T) (ℓ : Law S) :
+    ℓ.Holds (names.restrict A) ↔ (names.law ℓ).Holds A := by
+  constructor
+  · intro holds e input
+    obtain ⟨original, rfl⟩ := names.arguments_surjective e
+    exact (names.restrict_formula_iff A ℓ.conclusion original).1
+      (holds original ((names.restrict_formula_iff A ℓ.input original).2 input))
+  · intro holds e input
+    exact (names.restrict_formula_iff A ℓ.conclusion e).2
+      (holds (e.mapSorts names.onSort) ((names.restrict_formula_iff A ℓ.input e).1 input))
 
 end SignatureNames
 

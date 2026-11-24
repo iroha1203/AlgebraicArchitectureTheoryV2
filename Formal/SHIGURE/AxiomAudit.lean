@@ -1,4 +1,6 @@
 import Formal.SHIGURE.AssertStandardAxioms
+import Formal.SHIGURE.Part1.Chapter2Examples
+import Formal.SHIGURE.Part1.ObservedModels
 import Formal.SHIGURE.Part1.PositiveLogic
 import Formal.SHIGURE.Part1.PreservationExamples
 import Formal.SHIGURE.Part1.ReadingExamples
@@ -326,6 +328,123 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Translation.Equivalent.formula,
   Translation.graphAt_equivalent,
   Translation.Equivalent.graph
+]
+
+-- Explicit public theorem roots for Chapter 2 definitions 2.1–2.2 and proposition 2.3.
+#shigure_assert_standard_axioms_of [
+  -- Signature
+  Structure.ext,
+  -- Syntax
+  Atomic.holds_eq,
+  -- StructureMaps
+  Assignment.map_id,
+  Assignment.map_map,
+  StructureMap.ext,
+  -- StructureCategory
+  StructureMap.id_comp,
+  StructureMap.comp_id,
+  StructureMap.comp_assoc,
+  Structure.id_apply,
+  Structure.comp_apply,
+  StructureMap.forward_inverseFamily,
+  StructureMap.inverseFamily_forward,
+  StructureMap.map_inverseFamily_forward,
+  Structure.assignment_hom_inv,
+  Structure.reflects_relations,
+  Structure.reflects_domains,
+  Structure.isIso_iff_bijective_reflects,
+  Structure.law_holds_of_iso,
+  -- SelectedPresentation
+  SignatureNames.restrict_total_apply,
+  SignatureNames.restrict_relation_mem_iff,
+  SignatureNames.restrict_partialDomain_mem_iff,
+  SignatureNames.restrict_partialValue_apply,
+  SignatureNames.restrict_quantity_apply,
+  SignatureNames.restrict_formula_iff,
+  SignatureNames.restrict_law_iff,
+  -- Models
+  Model.hom_ext,
+  Model.id_apply,
+  Model.comp_apply,
+  LawExtension.model_le,
+  LawExtension.forget_obj,
+  -- FixedModels
+  FixedModel.carrier_eq,
+  FixedModel.Hom.fixes,
+  FixedModel.Hom.ext,
+  FixedModel.Hom.modelHom_id,
+  FixedModel.Hom.modelHom_comp,
+  -- ObservedModels
+  ObservedModel.Hom.commutes,
+  ObservedModel.Hom.ext,
+  ObservedModel.Hom.modelHom_id,
+  ObservedModel.Hom.modelHom_comp,
+  ObservationShape.original_isInclusion,
+  ObservedModel.extendStructure_observe,
+  ObservedModel.extendStructure_total,
+  ObservedModel.extendStructure_relation_iff,
+  ObservedModel.extendStructure_quantity,
+  ObservedModel.extendStructure_partialDomain_iff,
+  ObservedModel.extendStructure_graph_partial_iff,
+  ObservedModel.restrict_extendStructure,
+  ObservedModel.restrict_values_extendStructure,
+  ObservedModel.encodeHom_original,
+  ObservedModel.encodeHom_value,
+  ObservedModel.decodeHom_original,
+  ObservedModel.decodeHom_encodeHom,
+  ObservedModel.encodeHom_decodeHom,
+  -- Chapter2Examples
+  Chapter2.IdempotentSwap.identity_satisfies_idempotence,
+  Chapter2.IdempotentSwap.swap_fails_idempotence,
+  Chapter2.IdempotentSwap.swap_not_mem_essImage,
+  Chapter2.IdempotentSwap.forget_not_essSurj,
+  Chapter2.IdempotentSwap.retains_old_law_after_extension,
+  Chapter2.IdempotentSwap.inhabitance_alone_does_not_extend,
+  Chapter2.ReflectionWitnesses.only_domain_reflected,
+  Chapter2.ReflectionWitnesses.only_relation_reflected,
+  Chapter2.ReflectionWitnesses.swap_isIso,
+  Chapter2.ReflectionWitnesses.empty_domain_is_fixed,
+  Chapter2.ReflectionWitnesses.full_domain_fails_fixed_reduct,
+  Chapter2.ObservationWitnesses.constant_observation_agrees,
+  Chapter2.ObservationWitnesses.swap_preserves_constant,
+  Chapter2.ObservationWitnesses.swap_fails_identity_observation,
+  Chapter2.ObservationWitnesses.encoded_swap_fixes_values,
+  Chapter2.ObservationWitnesses.moving_value_fails_fixed,
+  Chapter2.ObservationWitnesses.values_are_included,
+  Chapter2.ObservationWitnesses.collapsing_names_fails_inclusion,
+  -- Generated extensionality, main category and functor constructions, and instances
+  StructureMap.ext_iff,
+  FixedModel.Hom.ext_iff,
+  ObservedModel.Hom.ext_iff,
+  Structure.category,
+  StructureMap.id,
+  StructureMap.comp,
+  StructureMap.ReflectsRelations,
+  StructureMap.ReflectsDomains,
+  StructureMap.inverse,
+  StructureMap.iso_of_bijective_reflects,
+  Structure.isoComponent,
+  Theory.modelProperty,
+  LawExtension.forget,
+  LawExtension.forgetFull,
+  LawExtension.forgetFaithful,
+  FixedModel.FixesCarriers,
+  FixedModel.category,
+  FixedModel.forget,
+  FixedModel.forgetFaithful,
+  ObservedModel.Preserves,
+  ObservedModel.category,
+  ObservationShape.original,
+  ObservationShape.values,
+  ObservedModel.extendStructure,
+  ObservedModel.encode,
+  ObservedModel.encodeHom,
+  ObservedModel.decodeHom,
+  ObservedModel.embedding,
+  ObservedModel.embeddingFullyFaithful,
+  ObservedModel.embeddingFull,
+  ObservedModel.embeddingFaithful,
+  Chapter2.IdempotentSwap.identityModel
 ]
 
 end SHIGURE.AxiomAudit
