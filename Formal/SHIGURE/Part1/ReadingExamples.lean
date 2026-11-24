@@ -109,13 +109,15 @@ private def coverChange : ReadingContextChange source target (Interpretation.ide
     refine ⟨true, Set.mem_singleton _, ?_⟩
     change d = .sort () ∨ d = .relation false
     rcases ha with rfl | rfl
-    · exact Or.inl (Set.mem_singleton_iff.1 hd)
-    · rcases hd with hsort | hrelation
+    · rw [Declaration.translatedSupport_sort, Interpretation.identity_onSort] at hd
+      exact Or.inl (Set.mem_singleton_iff.1 hd)
+    · rw [Declaration.translatedSupport_relation] at hd
+      rcases hd with hsort | hrelation
       · rw [Declaration.sorts_eq_image] at hsort
         obtain ⟨_, h, _⟩ := hsort
         cases h
-      · change d ∈ Declaration.formula (.atom (.rel false _)) at hrelation
-        rw [Declaration.formula_atom] at hrelation
+      · rw [Interpretation.identity_translation, Translation.identity_relation,
+          Declaration.formula_atom] at hrelation
         erw [Declaration.atomic_rel (P := target.presentation)] at hrelation
         exact Or.inr (Set.mem_singleton_iff.1 hrelation)
 
@@ -346,8 +348,10 @@ private def piecewiseTranslation : ReadingContextChange sourceWithOverlap target
     refine ⟨some i, Set.mem_singleton _, ?_⟩
     change d = .sort () ∨ d = .relation i
     rcases kept with rfl | rfl
-    · exact Or.inl (Set.mem_singleton_iff.1 above)
-    · rcases above with hsort | hrelation
+    · rw [Declaration.translatedSupport_sort] at above
+      exact Or.inl (Set.mem_singleton_iff.1 above)
+    · rw [Declaration.translatedSupport_relation] at above
+      rcases above with hsort | hrelation
       · rw [Declaration.sorts_eq_image] at hsort
         obtain ⟨_, h, _⟩ := hsort
         cases h
@@ -1043,6 +1047,7 @@ private def forgetPairedOperation : ReadingContextChange pairedReading splitPair
   pieces := fun _ => {false}
   localSupport := by
     rintro _ _ ⟨s, rfl⟩ _ d supported
+    rw [Declaration.translatedSupport_sort, Interpretation.identity_onSort] at supported
     exact ⟨false, Set.mem_singleton _, ⟨s, Set.mem_singleton_iff.1 supported⟩⟩
 
 /-- Covering the two inputs still does not permit forgetting the selected observation operation. -/

@@ -67,6 +67,10 @@ def identity (S : Signature.{u}) : SignatureNames S S where
     change ⟨(S.quantityArity q).inputs.map id, (S.quantityArity q).output⟩ = S.quantityArity q
     rw [List.map_id]
 
+/-- The identity name map keeps each total primitive. -/
+theorem identity_onTotal (S : Signature.{u}) (f : S.Total) : (identity S).onTotal f = f :=
+  rfl
+
 /-- Map a tagged operation to the same kind of operation in the other signature. -/
 def operation (names : SignatureNames S T) : Operation S → Operation T
   | .total f => .total (names.onTotal f)
@@ -134,6 +138,15 @@ def formula (names : SignatureNames S T) :
 renamed in the target signature. -/
 theorem formula_atom (names : SignatureNames S T) {Γ : List S.SortType} (a : Atomic S Γ) :
     names.formula (.atom a) = .atom (names.atomic a) :=
+  rfl
+
+/-- The renamed graph of a total operation uses the renamed primitive and the same positions. -/
+theorem formula_totalGraph (names : SignatureNames S T) {Γ : List S.SortType}
+    (f : S.Total) (args : Renaming (S.totalArity f).inputs Γ) (y : Var Γ (S.totalArity f).output) :
+    names.formula (.atom (.graph (.total f) args y)) =
+      .atom (.graph (.total (names.onTotal f))
+        (congrArg Arity.inputs (names.totalArity f) ▸ args.mapSorts names.onSort)
+        (congrArg Arity.output (names.totalArity f) ▸ y.mapSorts names.onSort)) :=
   rfl
 
 /-- Renaming truth preserves the logical connective and reindexes its context. -/
@@ -464,6 +477,17 @@ structure LawAttachments (S : Signature.{u}) (L : Type u) where
   ring : Option (RingLawRecord S L)
   proof : Option (RecordedDerivation S L)
 
+/-- Equal ordered text, ring data, and proofs determine the same attachment record. -/
+theorem LawAttachments.ext {S : Signature.{u}} {L : Type u} {left right : LawAttachments S L}
+    (equation : left.equation = right.equation) (ring : left.ring = right.ring)
+    (proof : left.proof = right.proof) : left = right := by
+  cases left
+  cases right
+  cases equation
+  cases ring
+  cases proof
+  rfl
+
 /-- The ordered syntax and proof stay available, with a ring record when its references are retained. -/
 noncomputable def LawAttachments.withSupportedRing {S : Signature.{u}} {L : Type u}
     (data : LawAttachments S L) (supported : Prop) : LawAttachments S L := by
@@ -505,6 +529,13 @@ def lawAttachments (P : PrimitivePresentation.{u}) (signature : SignatureNames P
   proof := match h : P.laws.role name with
     | .derived => some (Derivation.record (T := P.theory) signature (fun n => lawName n.val) (P.derived name h))
     | .required | .additional => none
+
+/-- An attachment record keeps the ordered text transported along the name map. -/
+theorem lawAttachments_equation (P : PrimitivePresentation.{u}) (signature : SignatureNames P.signature S)
+    (lawName : P.laws.LawName → L) (name : P.laws.LawName) :
+    (P.lawAttachments signature lawName name).equation =
+      (P.orderedEquation name).map (fun eqn => signature.equation eqn.written.equation) :=
+  rfl
 
 /-- Record inclusion operations in the order of the partial operation's inputs. -/
 private def inclusionOperations (names : SignatureNames P.signature S) :

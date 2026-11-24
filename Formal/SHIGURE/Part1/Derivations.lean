@@ -274,6 +274,12 @@ def NamedRingEquation.ordered {sig : Signature.{u}} {laws : LawDeclarations sig}
   | none => id
   | some data => fun _ => some data.toNamedOrderedEquation
 
+/-- With no ring attachment, the supplied ordered writing is returned directly. -/
+theorem NamedRingEquation.ordered_none {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {i : laws.LawName} (text : Option (NamedOrderedEquation laws i)) :
+    NamedRingEquation.ordered none text = text :=
+  rfl
+
 /-- Reading a supported ring's order gives the pair supplied by its certificate. -/
 theorem NamedRingEquation.ordered_of_some {sig : Signature.{u}} {laws : LawDeclarations sig} {i : laws.LawName}
     {ring : Option (NamedRingEquation laws i)} {data : NamedRingEquation laws i}
@@ -295,6 +301,11 @@ theorem NamedRingEquation.ordered_otherOrdered {sig : Signature.{u}} {laws : Law
 def PrimitivePresentation.orderedEquation (P : PrimitivePresentation.{u}) (i : P.laws.LawName) :
     Option (NamedOrderedEquation P.laws i) :=
   NamedRingEquation.ordered (P.ringEquation i) (P.otherOrderedEquation i)
+
+/-- The order of a written Law is read from the registered ring or its separately supplied text. -/
+theorem PrimitivePresentation.orderedEquation_eq (P : PrimitivePresentation.{u}) (i : P.laws.LawName) :
+    P.orderedEquation i = NamedRingEquation.ordered (P.ringEquation i) (P.otherOrderedEquation i) :=
+  rfl
 
 /-- The theory presented by the required declarations, as in Definition 1.7. -/
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=

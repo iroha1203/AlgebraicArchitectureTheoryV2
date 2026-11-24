@@ -505,6 +505,31 @@ def Reading.restrict (reading : Reading.{u, v, w, x}) {P : PrimitivePresentation
   observationDeclared _ _ := Set.mem_univ _
   origin := some ⟨reading.presentation, reading.context, selection⟩
 
+/-- A restricted reading uses the ordered and ring attachments in its selected presentation. -/
+theorem Reading.restrict_equations (reading : Reading.{u, v, w, x}) {P : PrimitivePresentation.{u}}
+    (selection : ReadingOrigin P reading.presentation reading.context)
+    (observation : StateObservation (selection.signature.restrict reading.structureData))
+    (valueStructure : reading.ValueStructure observation.Output)
+    (coefficients : Option (Σ Γ : CoefficientProduct P.signature.SortType,
+      CoefficientReading.{u, v} (ReadingOrigin.whole P) (selection.signature.restrict reading.structureData) Γ))
+    (sharedInputs : SharedInputNames observation.product) (name : P.laws.LawName) :
+    let restricted := reading.restrict selection observation valueStructure coefficients sharedInputs
+    restricted.presentation.orderedEquation name = P.orderedEquation name ∧
+      restricted.presentation.ringEquation name = P.ringEquation name :=
+  ⟨rfl, rfl⟩
+
+/-- A restricted reading records the original presentation and its actual selection. -/
+theorem Reading.restrict_origin (reading : Reading.{u, v, w, x}) {P : PrimitivePresentation.{u}}
+    (selection : ReadingOrigin P reading.presentation reading.context)
+    (observation : StateObservation (selection.signature.restrict reading.structureData))
+    (valueStructure : reading.ValueStructure observation.Output)
+    (coefficients : Option (Σ Γ : CoefficientProduct P.signature.SortType,
+      CoefficientReading.{u, v} (ReadingOrigin.whole P) (selection.signature.restrict reading.structureData) Γ))
+    (sharedInputs : SharedInputNames observation.product) :
+    (reading.restrict selection observation valueStructure coefficients sharedInputs).origin =
+      some ⟨reading.presentation, reading.context, selection⟩ :=
+  rfl
+
 /-- Use original position names, including when the products keep different subsets of them. -/
 def Reading.namedInput (reading : Reading.{u, v, w, x})
     (Γ : CoefficientProduct reading.presentation.signature.SortType)
@@ -598,6 +623,17 @@ def translatedSupport (u : Interpretation P.theory Q.theory) :
       match role : P.laws.role i with
       | .required => derivation (u.preserves ⟨i, role⟩)
       | .additional | .derived => ∅
+
+/-- A translated sort contributes the single sort selected by the interpretation. -/
+theorem translatedSupport_sort (u : Interpretation P.theory Q.theory) (s : P.signature.SortType) :
+    translatedSupport u (.sort s) = {.sort (u.onSort s)} :=
+  rfl
+
+/-- A translated relation contributes its input sorts and the names in its defining formula. -/
+theorem translatedSupport_relation (u : Interpretation P.theory Q.theory) (r : P.signature.Rel) :
+    translatedSupport u (.relation r) =
+      sorts ((P.signature.relInputs r).map u.onSort) ∪ formula (u.translation.relation r) :=
+  rfl
 
 /-- The translation of a total symbol retains every declaration in its totality proof. -/
 theorem totality_derivation_support (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :

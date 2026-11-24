@@ -2258,6 +2258,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   PolynomialPresentation.InverseVariableExample.declarationMap_eq_localization
 ]
 
+-- Public reindexing of an application and the ordered view of an attached equality.
+#shigure_assert_standard_axioms_of [
+  Term.reindexedApp,
+  RingEquation.Written.toOrdered
+]
+
 -- Public constructor, comparison and example theorems used without unfolding their definitions.
 #shigure_assert_standard_axioms_of [
   -- CoefficientReading
@@ -2279,7 +2285,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.graphRuleName_quantityTotality,
   Declaration.graphRuleName_graphImpliesDomain,
   Declaration.graphRuleName_domainImpliesGraph,
+  -- ContextSelectedCategories
+  DeclarationContext.Selected.readFunctor_obj,
   -- ContextSelectedEquations
+  DeclarationContext.Selected.selectWritten_left,
+  DeclarationContext.Selected.selectWritten_right,
   DeclarationContext.Selected.selectNamedEquation_result,
   -- ContextSelectedEvaluation
   DeclarationContext.Selected.selectAssignment_apply,
@@ -2315,11 +2325,16 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectTerm_var,
   DeclarationContext.Selected.selectTerm_app,
   DeclarationContext.Selected.selectTerm_letBind,
+  DeclarationContext.Selected.selectTerm_congr,
   DeclarationContext.Selected.termEq_support,
   DeclarationContext.Selected.selectSubstitution_at,
   -- ContextSelectedVocabulary
   DeclarationContext.Selected.context_nil,
   DeclarationContext.Selected.context_cons,
+  DeclarationContext.Selected.operation_total,
+  DeclarationContext.Selected.operation_partialOp,
+  DeclarationContext.Selected.operation_quantity,
+  DeclarationContext.Selected.selectTypedTotal_operation,
   DeclarationContext.Selected.selectVar_here,
   DeclarationContext.Selected.selectVar_there,
   DeclarationContext.Selected.ambientVar_here,
@@ -2384,8 +2399,18 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- Derivations
   NamedOrderedEquation.eq_of_written_eq,
   NamedRingEquation.toNamedOrderedEquation_written,
+  NamedRingEquation.ordered_none,
+  PrimitivePresentation.orderedEquation_eq,
+  -- IdentityInterpretation
+  Interpretation.identity_onSort,
+  Interpretation.identity_translation,
   -- Laws
   Law.equality_eq,
+  -- MarkedInterpretation
+  Marked.quotientStructure_total_coefficient_add,
+  Marked.quotientStructure_total_coefficient_mul,
+  Marked.quotientStructure_total_module_add,
+  Marked.quotientStructure_total_module_smul,
   -- MarkedVocabulary
   Marked.Vocabulary.addTerm_none,
   Marked.Vocabulary.addTerm_some,
@@ -2395,6 +2420,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Marked.Vocabulary.LinearityLaw.symbol_add,
   Marked.Vocabulary.LinearityLaw.symbol_smul,
   -- Reading
+  Reading.restrict_equations,
+  Reading.restrict_origin,
+  Declaration.translatedSupport_sort,
+  Declaration.translatedSupport_relation,
   ReadingInputMap.retainsSourceSorts_iff,
   -- ReadingExamples
   Chapter1.AdditionalCoefficientInputs.additional_retains_source_sort,
@@ -2427,13 +2456,17 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RingVocabulary.law_mulAdd,
   RingVocabulary.law_cast,
   -- SelectedPresentation
+  SignatureNames.identity_onTotal,
   SignatureNames.formula_atom,
+  SignatureNames.formula_totalGraph,
   SignatureNames.formula_truth,
   SignatureNames.formula_falsehood,
   SignatureNames.formula_conj,
   SignatureNames.formula_disj,
   SignatureNames.formula_ex,
   SignatureNames.law_eq,
+  LawAttachments.ext,
+  PrimitivePresentation.lawAttachments_equation,
   -- Substitution
   Term.rename_var,
   Substitution.ext,
@@ -2452,7 +2485,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Formula.holds_falsehood_iff,
   Term.totalValue_total,
   TotalSymbol.operation_ordinary,
-  TotalSymbol.operation_quantity
+  TotalSymbol.operation_quantity,
+  Term.reindexedApp_rfl,
+  Term.reindexedApp_congr,
+  TypedTotal.term_eq_reindexedApp
 ]
 
 end SHIGURE.AxiomAudit

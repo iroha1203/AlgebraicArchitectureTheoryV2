@@ -138,7 +138,7 @@ noncomputable def readObj (A : Match piece) : OrdinaryMatch piece where
 /-- Reading a matching object reads the retained model of each piece. -/
 theorem readObj_pieceModel (A : Match piece) (i : I) :
     (readObj A).pieceModel i = Selected.readModel (A.pieceModel i) :=
-  rfl
+  Selected.readFunctor_obj (A.pieceModel i)
 
 /-- Translate the ordinary model in each piece into its retained graph. -/
 noncomputable def writeObj (A : OrdinaryMatch piece) : Match piece where
@@ -189,7 +189,7 @@ noncomputable def writeFunctor : OrdinaryMatch piece ⥤ Match piece where
 /-- Reading and writing a family recovers the original graph family, including every arrow. -/
 theorem read_comp_write : readFunctor (piece := piece) ⋙ writeFunctor = 𝟭 (Match piece) := by
   have objects (A : Match piece) : (readFunctor ⋙ writeFunctor).obj A = (𝟭 _).obj A :=
-    Match.ext (fun i => Selected.write_read_model (A.pieceModel i))
+    Match.ext (fun i => Functor.congr_obj (Selected.read_comp_write (piece i)) (A.pieceModel i))
   refine CategoryTheory.Functor.ext objects ?_
   intro A B f
   apply Match.Hom.ext
@@ -213,7 +213,7 @@ private theorem eqToHom_pieceMap {A B : OrdinaryMatch piece} (same : A = B) (i :
 /-- Writing and reading a family recovers the original ordinary family, including every arrow. -/
 theorem write_comp_read : writeFunctor (piece := piece) ⋙ readFunctor = 𝟭 (OrdinaryMatch piece) := by
   have objects (A : OrdinaryMatch piece) : (writeFunctor ⋙ readFunctor).obj A = (𝟭 _).obj A :=
-    OrdinaryMatch.ext (fun i => Selected.read_write_model (A.pieceModel i))
+    OrdinaryMatch.ext (fun i => Functor.congr_obj (Selected.write_comp_read (piece i)) (A.pieceModel i))
   refine CategoryTheory.Functor.ext objects ?_
   intro A B f
   apply Hom.ext

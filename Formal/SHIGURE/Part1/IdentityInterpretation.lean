@@ -121,6 +121,15 @@ def identity (T : Theory.{u}) : Interpretation T T where
       (.cut (.rename (Translation.retype T) (.required name))
         (Translation.identityFormula T (T.law name).conclusion).2)
 
+/-- An identity interpretation retains the original name of each sort. -/
+theorem identity_onSort (T : Theory.{u}) (s : T.signature.SortType) : (identity T).onSort s = s :=
+  rfl
+
+/-- The raw translation of an identity interpretation is the identity translation. -/
+theorem identity_translation (T : Theory.{u}) :
+    (identity T).translation = Translation.identity T.signature :=
+  rfl
+
 end Interpretation
 
 end SHIGURE

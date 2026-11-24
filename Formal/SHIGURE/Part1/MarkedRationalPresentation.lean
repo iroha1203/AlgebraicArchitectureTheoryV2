@@ -152,6 +152,7 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
     Declaration.sorts (P := presentation) op.arity.inputs ⊆ {d | keeps right d} := by
   cases op with
   | total name =>
+    rw [Declaration.ofOperation_total] at kept
     rw [Declaration.sorts_eq_image]
     rintro _ ⟨s, occurs, rfl⟩
     have support := kept_total_support right name kept
@@ -175,7 +176,9 @@ private theorem unary_refs (right : Bool) {Γ : List (Option SortName)} (name : 
     (refs : Selected.termReferences (P := presentation) x ⊆ {d | keeps right d}) :
     Selected.termReferences (P := presentation) (unary name x) ⊆ {d | keeps right d} := by
   unfold unary
-  apply app_refs (P := presentation) (.total (Symbol.multilinear name)) _ kept
+  apply app_refs (P := presentation) (.total (Symbol.multilinear name)) _ (by
+    rw [Declaration.ofOperation_total]
+    exact kept)
   intro t position
   cases position with
   | here => simpa only [Term.argsCons_here] using refs

@@ -102,12 +102,12 @@ theorem declarationNames_eq (d : Declaration (presentation U)) :
 
 /-- The selected Law has exactly the original ordered text read into the selected signature. -/
 theorem presentation_orderedEquation (name : U.RetainedLaw) :
-    (presentation U).orderedEquation name = (P.orderedEquation name.val).map (selectNamedEquation name) :=
-  NamedRingEquation.ordered_otherOrdered _ _ (fun data h => by
+    (presentation U).orderedEquation name = (P.orderedEquation name.val).map (selectNamedEquation name) := by
+  rw [PrimitivePresentation.orderedEquation_eq (presentation U)]
+  exact NamedRingEquation.ordered_otherOrdered _ _ (fun data h => by
     obtain ⟨original, attached, support, rfl⟩ := ringEquation_some name h
-    have oldText := NamedRingEquation.ordered_of_some attached (P.otherOrderedEquation name.val)
-    change (NamedRingEquation.ordered (P.ringEquation name.val) (P.otherOrderedEquation name.val)).map
-      (selectNamedEquation name) = _
+    have oldText := (PrimitivePresentation.orderedEquation_eq P name.val).trans
+      (NamedRingEquation.ordered_of_some attached (P.otherOrderedEquation name.val))
     rw [oldText, Option.map_some, selectNamedRingEquation_toOrdered])
 
 end DeclarationContext.Selected

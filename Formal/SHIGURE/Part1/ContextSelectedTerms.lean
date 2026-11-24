@@ -102,12 +102,7 @@ theorem termReferences_subset_graph {Γ : List P.signature.SortType} {s : P.sign
   rw [Term.graph_eq_graphAt]
   exact termReferences_subset_graphAt t _ _
 
-/-- Form an application using an arity identified with the operation's declared arity. -/
-def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
-    {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
-    Term sig Γ a.output :=
-  cast (congrArg (Term sig Γ) (congrArg Arity.output same))
-    (.app op (fun {s} j => args (cast (congrArg (fun arity => Var arity.inputs s) same) j)))
+open Term (reindexedApp reindexedApp_rfl)
 
 /-- Select the operations and variable positions of a supported term. -/
 def selectTerm : {Γ : List P.signature.SortType} → {s : P.signature.SortType} →
@@ -159,6 +154,15 @@ theorem selectTerm_letBind {Γ : List P.signature.SortType} {a s : P.signature.S
           (fun _ hd => keep (Or.inr (Or.inr hd)))) :=
   rfl
 
+/-- Selection respects equality of the original terms, independently of how support was shown. -/
+theorem selectTerm_congr {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    {left right : Term P.signature Γ s} (same : left = right)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepS : Declaration.sort s ∈ U.declarations)
+    (keptLeft : termReferences left ⊆ U.declarations) (keptRight : termReferences right ⊆ U.declarations) :
+    selectTerm left keepΓ keepS keptLeft = selectTerm right keepΓ keepS keptRight := by
+  subst right
+  rfl
+
 /-- An application of a typed total symbol refers to its primitive and all its argument terms. -/
 theorem typedTermReferences {Γ : List P.signature.SortType} {profile : Arity P.signature.SortType}
     (f : TypedTotal P.signature profile) (args : ∀ {s}, Var profile.inputs s → Term P.signature Γ s) :
@@ -167,7 +171,7 @@ theorem typedTermReferences {Γ : List P.signature.SortType} {profile : Arity P.
         {d | ∃ (s : P.signature.SortType) (i : Var profile.inputs s), d ∈ termReferences (args i)} := by
   rcases f with ⟨symbol, same⟩
   cases same
-  rfl
+  rw [TypedTotal.term_eq_reindexedApp, reindexedApp_rfl, termReferences_app]
 
 /-- Selection commutes with applying a typed total symbol to supported terms. -/
 theorem selectTypedTotal_term {Γ : List P.signature.SortType} {profile : Arity P.signature.SortType}
@@ -182,7 +186,13 @@ theorem selectTypedTotal_term {Γ : List P.signature.SortType} {profile : Arity 
       (fun {s} i => selectTerm (args (ambientVar inputs i)) hΓ s.property (ha _)) := by
   rcases f with ⟨symbol, same⟩
   cases same
-  cases symbol <;> rfl
+  let original : TypedTotal P.signature symbol.operation.arity := ⟨symbol, rfl⟩
+  have originalApp : original.term args = .app symbol.operation args :=
+    (TypedTotal.term_eq_reindexedApp original args).trans (reindexedApp_rfl symbol.operation args)
+  have keptApp : termReferences (.app symbol.operation args) ⊆ U.declarations := originalApp ▸ ht
+  refine (selectTerm_congr originalApp hΓ output ht keptApp).trans ?_
+  rw [selectTerm_app, TypedTotal.term_eq_reindexedApp]
+  exact Term.reindexedApp_congr (selectTypedTotal_operation original keep inputs output).symm _ _ _
 
 /-- Retain the sort names of both parts of a concatenated context. -/
 private theorem appendSupport {Γ Δ : List P.signature.SortType}
@@ -381,13 +391,30 @@ private def reindexedGraph {sig : Signature.{u}} {Γ : List sig.SortType} (op : 
   .graph op (fun {s} i => ρ (cast (congrArg (fun arity => Var arity.inputs s) same) i))
     (cast (congrArg (Var Γ) (congrArg Arity.output same.symm)) y)
 
+/-- Renaming the operation along equality does not change its graph at the common arity. -/
+private theorem reindexedGraph_congr {sig : Signature.{u}} {Γ : List sig.SortType} {op op' : Operation sig}
+    (equal : op = op') {a : Arity sig.SortType} (shape : op.arity = a) (shape' : op'.arity = a)
+    (ρ : Renaming a.inputs Γ) (y : Var Γ a.output) :
+    reindexedGraph op shape ρ y = reindexedGraph op' shape' ρ y := by
+  subst op'
+  rfl
+
 /-- The selected graph atom uses the same named input and output positions as its reindexed form. -/
 private theorem selectGraph_reindexed {Γ : List P.signature.SortType} (op : Operation P.signature)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hOp : Declaration.ofOperation op ∈ U.declarations)
     (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
     selectGraph hΓ op hOp ρ y = reindexedGraph (operation op hOp) (operation_arity op hOp)
       (selectRenaming (operationInputs op hOp) hΓ ρ) (selectVar hΓ y) := by
-  cases op <;> rfl
+  cases op with
+  | total f =>
+    refine (selectGraph_total hΓ f hOp ρ y).trans ?_
+    exact (reindexedGraph_congr (operation_total f hOp) (operation_arity (.total f) hOp) rfl _ _).symm
+  | partialOp p =>
+    refine (selectGraph_partialOp hΓ p hOp ρ y).trans ?_
+    exact (reindexedGraph_congr (operation_partialOp p hOp) (operation_arity (.partialOp p) hOp) rfl _ _).symm
+  | quantity q =>
+    refine (selectGraph_quantity hΓ q hOp ρ y).trans ?_
+    exact (reindexedGraph_congr (operation_quantity q hOp) (operation_arity (.quantity q) hOp) rfl _ _).symm
 
 /-- Expand the value graph of an application whose arguments are indexed by an equal arity. -/
 private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType}
@@ -398,7 +425,7 @@ private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.Sor
         (args i).graphAt (fun j => (ρ j).shift a.inputs) (i.inLeft Δ)).conj
         (.atom (reindexedGraph op same (Var.inLeft Δ) (y.shift a.inputs)))) := by
   cases same
-  rfl
+  simpa only [reindexedApp_rfl, reindexedGraph] using Term.graphAt_app op args ρ y
 
 /-- Relate a term's value graph before and after transport of its free context. -/
 private theorem cast_graphAt {sig : Signature.{u}} {Γ Δ Ξ : List sig.SortType} {s : sig.SortType}
@@ -460,12 +487,14 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
       simpa only [← Term.graphAt_var i ρ y] using hGraph
     refine (selectFormula_congr (Term.graphAt_var i ρ y) (hq := support)).trans ?_
     rw [selectFormula_atom, selectAtomic_eq]
+    rw [selectTerm_var]
     refine Eq.trans ?_ (Term.graphAt_var (sig := signature U) (selectVar hΓ i)
       (selectRenaming hΓ hΔ ρ) (selectVar hΔ y)).symm
     exact congrArg (fun (v : Var (context Δ hΔ) _) => Formula.atom (sig := signature U) (.eq v (selectVar hΔ y)))
       (renaming_selectVar hΓ hΔ ρ i).symm
   | @app Γ op ts ih =>
     intro Δ ρ y hΓ hΔ hTerm hGraph
+    rw [termReferences_app] at hTerm
     let hOp : Declaration.ofOperation op ∈ U.declarations := hTerm (Or.inl (Set.mem_singleton _))
     let hΛ := operationInputs op hOp
     let fs : ∀ {s}, Var op.arity.inputs s → Formula P.signature (op.arity.inputs ++ Δ) :=
@@ -487,6 +516,7 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
     let lowerArgs : ∀ {s}, Var (context op.arity.inputs hΛ) s → Term (signature U) (context Γ hΓ) s :=
       fun {s} i => selectTerm (ts (ambientVar hΛ i)) hΓ s.property (fun _ hd => hTerm (Or.inr ⟨_, _, hd⟩))
     refine (selectFormula_congr written (hq := support)).trans ?_
+    rw [selectTerm_app]
     change _ = (reindexedApp (operation op hOp) (operation_arity op hOp) lowerArgs).graphAt
         (selectRenaming hΓ hΔ ρ) (selectVar hΔ y)
     rw [selectFormula_existsMany body support hΔ hΛ, graphAt_reindexedApp]
@@ -521,12 +551,14 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
         (inLeftRenaming hΔ hΛ) (selectVar_shift hΛ hΔ y)
   | @letBind Γ a s init body hi hb =>
     intro Δ ρ y hΓ hΔ hTerm hGraph
+    rw [termReferences_letBind] at hTerm
     have written := Term.graphAt_letBind init body ρ y
     have support : Declaration.formulaSupport
         (((init.graphAt (fun i => .there (ρ i)) .here).conj (body.graphAt ρ.lift (.there y))).ex) ⊆
         U.declarations := by simpa only [← written] using hGraph
     refine (selectFormula_congr written (hq := support)).trans ?_
     rw [selectFormula_ex, selectFormula_conj]
+    rw [selectTerm_letBind]
     let hA : Declaration.sort a ∈ U.declarations := hTerm (Or.inl (Set.mem_singleton _))
     let hΓ' := Declaration.sorts_cons_subset hA hΓ
     let hΔ' := Declaration.sorts_cons_subset hA hΔ
@@ -609,11 +641,11 @@ theorem termEq_support {Γ : List P.signature.SortType} {s : P.signature.SortTyp
 theorem termReferences_rename {Γ Δ : List P.signature.SortType} {s : P.signature.SortType}
     (t : Term P.signature Γ s) (ρ : Renaming Γ Δ) : termReferences (t.rename ρ) = termReferences t := by
   induction t generalizing Δ with
-  | var i => simp only [Term.rename_var, termReferences]
+  | var i => simp only [Term.rename_var, termReferences_var]
   | app op args ih =>
-    simp only [Term.rename_app, termReferences, ih]
+    simp only [Term.rename_app, termReferences_app, ih]
   | letBind init body hi hb =>
-    simp only [Term.rename_letBind, termReferences, hi, hb]
+    simp only [Term.rename_letBind, termReferences_letBind, hi, hb]
 
 /-- Rename each argument of an application indexed by an equal arity. -/
 private theorem rename_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)
@@ -621,8 +653,7 @@ private theorem rename_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.Sort
     (ρ : Renaming Γ Δ) :
     (reindexedApp op same args).rename ρ = reindexedApp op same (fun i => (args i).rename ρ) := by
   cases same
-  change (Term.app op args).rename ρ = Term.app op (fun i => (args i).rename ρ)
-  rw [Term.rename_app]
+  simp only [reindexedApp_rfl, Term.rename_app]
 
 /-- Selection commutes with the renaming of variables in a supported term. -/
 theorem selectTerm_rename {Γ : List P.signature.SortType} {s : P.signature.SortType} (t : Term P.signature Γ s) :
@@ -635,11 +666,12 @@ theorem selectTerm_rename {Γ : List P.signature.SortType} {s : P.signature.Sort
   | var i =>
     intro Δ ρ hΓ hΔ hs ht hRen
     simp only [Term.rename_var] at hRen ⊢
-    simp only [selectTerm, Term.rename_var]
+    simp only [selectTerm_var, Term.rename_var]
     exact congrArg (Term.var (sig := signature U)) (renaming_selectVar hΓ hΔ ρ i).symm
   | @app Γ op args ih =>
     intro Δ ρ hΓ hΔ hs ht hRen
     simp only [Term.rename_app] at hRen ⊢
+    rw [termReferences_app] at ht hRen
     have keepOp := ht (Or.inl (Set.mem_singleton (Declaration.ofOperation op)))
     let hΛ := operationInputs op keepOp
     let ts : ∀ {s}, Var (context op.arity.inputs hΛ) s → Term (signature U) (context Γ hΓ) s :=
@@ -648,6 +680,7 @@ theorem selectTerm_rename {Γ : List P.signature.SortType} {s : P.signature.Sort
       fun {s} i => selectTerm ((args (ambientVar hΛ i)).rename ρ) hΔ s.property (fun _ hd => hRen (Or.inr ⟨_, _, hd⟩))
     let op' := operation op keepOp
     let same := operation_arity op keepOp
+    simp only [selectTerm_app]
     change reindexedApp op' same ts' = (reindexedApp op' same ts).rename (selectRenaming hΓ hΔ ρ)
     refine (congrArg (fun (as' : ∀ {s}, Var (context op.arity.inputs hΛ) s →
         Term (signature U) (context Δ hΔ) s) => reindexedApp op' same as') ?_).trans
@@ -657,6 +690,7 @@ theorem selectTerm_rename {Γ : List P.signature.SortType} {s : P.signature.Sort
   | @letBind Γ a s init body hi hb =>
     intro Δ ρ hΓ hΔ hs ht hRen
     simp only [Term.rename_letBind] at hRen ⊢
+    rw [termReferences_letBind] at ht hRen
     let ha := ht (Or.inl (Set.mem_singleton (Declaration.sort a)))
     let hΓ' := Declaration.sorts_cons_subset ha hΓ
     let hΔ' := Declaration.sorts_cons_subset ha hΔ
@@ -665,7 +699,7 @@ theorem selectTerm_rename {Γ : List P.signature.SortType} {s : P.signature.Sort
     have second := hb ρ.lift hΓ' hΔ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
       (fun _ hd => hRen (Or.inr (Or.inr hd)))
     have lifted := selectRenaming_lift ha hΓ hΔ ρ
-    simp only [selectTerm, Term.rename_letBind]
+    simp only [selectTerm_letBind, Term.rename_letBind]
     exact congrArg₂ (Term.letBind (sig := signature U)) first (second.trans
       (congrArg (fun (mapVars : Renaming (context (a :: Γ) hΓ') (context (a :: Δ) hΔ')) =>
         body'.rename mapVars) lifted))
@@ -927,8 +961,7 @@ private theorem substitute_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.
     (θ : Substitution sig Γ Δ) :
     (reindexedApp op same args).substitute θ = reindexedApp op same (fun i => (args i).substitute θ) := by
   cases same
-  change (Term.app op args).substitute θ = Term.app op (fun i => (args i).substitute θ)
-  rw [Term.substitute_app]
+  simp only [reindexedApp_rfl, Term.substitute_app]
 
 /-- Selection commutes with capture-free substitution in a supported term. -/
 theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.SortType} (t : Term P.signature Γ s) :

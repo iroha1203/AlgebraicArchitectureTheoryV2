@@ -179,6 +179,22 @@ noncomputable def selectWritten (w : OrderedEquation.Written P.signature)
   exact ⟨selectEquation w.expansion kept, selectFormula w.conclusion (lawConclusionSupport kept),
     selectExpansion w.expansion kept⟩
 
+/-- The selected left member is obtained by reindexing its own term and context. -/
+theorem selectWritten_left (w : OrderedEquation.Written P.signature)
+    (h : Declaration.lawBody w.toLaw ⊆ U.declarations)
+    (hs : Declaration.sort w.equation.result ∈ U.declarations)
+    (hl : termReferences w.equation.left ⊆ U.declarations) :
+    (selectWritten w h).equation.left ≍ selectTerm w.equation.left (lawSortSupport h) hs hl :=
+  HEq.rfl
+
+/-- The selected right member is obtained by reindexing its own term and context. -/
+theorem selectWritten_right (w : OrderedEquation.Written P.signature)
+    (h : Declaration.lawBody w.toLaw ⊆ U.declarations)
+    (hs : Declaration.sort w.equation.result ∈ U.declarations)
+    (hr : termReferences w.equation.right ⊆ U.declarations) :
+    (selectWritten w h).equation.right ≍ selectTerm w.equation.right (lawSortSupport h) hs hr :=
+  HEq.rfl
+
 /-- The selected ordered text is attached to the selected literal Law. -/
 theorem selectWritten_toLaw (w : OrderedEquation.Written P.signature)
     (h : Declaration.lawBody w.toLaw ⊆ U.declarations) :

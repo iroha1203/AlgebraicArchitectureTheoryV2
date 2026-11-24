@@ -600,6 +600,35 @@ structure TypedTotal (sig : Signature.{u}) (profile : Arity sig.SortType) : Type
   /-- Its declared profile agrees with the selected profile. -/
   arity_eq : symbol.operation.arity = profile
 
+namespace Term
+
+/-- Form an application using an arity identified with the operation's declared arity.
+
+Implementation notes: the equality of arities transports typed argument positions
+and the result sort. Using unrestricted argument lists would discard the input
+and output typing preserved by selection. -/
+def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
+    {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
+    Term sig Γ a.output :=
+  cast (congrArg (Term sig Γ) (congrArg Arity.output same))
+    (.app op (fun {s} j => args (cast (congrArg (fun arity => Var arity.inputs s) same) j)))
+
+/-- When the arity needs no transport, the application is the original constructor. -/
+theorem reindexedApp_rfl {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
+    (args : ∀ {s}, Var op.arity.inputs s → Term sig Γ s) :
+    reindexedApp op rfl args = .app op args :=
+  rfl
+
+/-- Two equal operations give the same application at a common arity. -/
+theorem reindexedApp_congr {sig : Signature.{u}} {Γ : List sig.SortType} {op op' : Operation sig}
+    (equal : op = op') {a : Arity sig.SortType} (shape : op.arity = a) (shape' : op'.arity = a)
+    (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
+    reindexedApp op shape args = reindexedApp op' shape' args := by
+  subst op'
+  rfl
+
+end Term
+
 namespace TypedTotal
 
 variable {sig : Signature.{u}} {profile : Arity sig.SortType}
@@ -610,6 +639,14 @@ def term (op : TypedTotal sig profile) {Γ : List sig.SortType}
   obtain ⟨symbol, h⟩ := op
   subst profile
   exact .app symbol.operation args
+
+/-- A typed total term is an application reindexed to its specified arity. -/
+theorem term_eq_reindexedApp (op : TypedTotal sig profile) {Γ : List sig.SortType}
+    (args : ∀ {s}, Var profile.inputs s → Term sig Γ s) :
+    op.term args = Term.reindexedApp op.symbol.operation op.arity_eq args := by
+  rcases op with ⟨symbol, same⟩
+  cases same
+  exact (Term.reindexedApp_rfl symbol.operation args).symm
 
 /-- Evaluate the interpretation of a declared total symbol on its typed input tuple. -/
 def value (op : TypedTotal sig profile) (A : Structure sig)

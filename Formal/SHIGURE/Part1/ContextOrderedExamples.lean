@@ -40,14 +40,23 @@ def twicePresentation : PrimitivePresentation where
 
 /-- The complete substitution history still produces a registered ordered equality. -/
 theorem twice_ordered_some :
-    ((Selected.presentation (full twicePresentation)).orderedEquation ⟨(), Set.mem_univ _⟩).isSome :=
-  rfl
+    ((Selected.presentation (full twicePresentation)).orderedEquation ⟨(), Set.mem_univ _⟩).isSome := by
+  rw [Selected.presentation_orderedEquation, PrimitivePresentation.orderedEquation_eq]
+  simp only [twicePresentation, NamedRingEquation.ordered_none, Option.map_some, Option.isSome_some]
 
 /-- The two different starting positions remain in their original order after selection. -/
 theorem positions_unchanged :
     let selected := Selected.selectWritten (U := full twicePresentation) atomicWriting (Set.subset_univ _)
-    selected.equation.left = .var .here ∧ selected.equation.right = .var (.there .here) :=
-  ⟨rfl, rfl⟩
+    selected.equation.left = .var .here ∧ selected.equation.right = .var (.there .here) := by
+  let hs : Declaration.sort atomicWriting.equation.result ∈ (full twicePresentation).declarations :=
+    Set.mem_univ _
+  constructor
+  · refine (eq_of_heq (Selected.selectWritten_left atomicWriting (Set.subset_univ _) hs (Set.subset_univ _))).trans ?_
+    change Selected.selectTerm (.var .here) _ _ _ = _
+    rw [Selected.selectTerm_var, Selected.selectVar_here]
+  · refine (eq_of_heq (Selected.selectWritten_right atomicWriting (Set.subset_univ _) hs (Set.subset_univ _))).trans ?_
+    change Selected.selectTerm (.var (.there .here)) _ _ _ = _
+    rw [Selected.selectTerm_var, Selected.selectVar_there, Selected.selectVar_here]
 
 open Chapter1.ResidualTransport (paddedPresentation padded_integer_axioms)
 
@@ -88,7 +97,8 @@ theorem ringLaw_omitted : Declaration.law (P := paddedPresentation) (.inr .zeroA
 /-- Retaining only the logical dependencies still keeps the ordered equality itself. -/
 theorem equality_ordered_some :
     ((Selected.presentation equalityContext).orderedEquation ⟨.inl (), equalityKept⟩).isSome := by
-  rw [Selected.presentation_orderedEquation]
+  rw [Selected.presentation_orderedEquation, PrimitivePresentation.orderedEquation_eq,
+    NamedRingEquation.ordered_of_some (by rfl), Option.map_some]
   rfl
 
 /-- All names of the optional residual presentation are available in the full context. -/
@@ -164,6 +174,12 @@ private def equalityPresentation : PrimitivePresentation where
   otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written,
     sourceRing.toNamedOrderedEquation.statement_eq⟩
   derived _ role := by cases role
+
+/-- The one-law presentation attaches the ordered view of the original equality. -/
+private theorem equalityPresentation_ordered :
+    equalityPresentation.orderedEquation () =
+      some ⟨sourceRing.toNamedOrderedEquation.written, sourceRing.toNamedOrderedEquation.statement_eq⟩ :=
+  (PrimitivePresentation.orderedEquation_eq equalityPresentation ()).trans (NamedRingEquation.ordered_none _)
 
 /-- Send the one-law presentation's names to the matching names of the padded presentation. -/
 private def toName (d : Declaration equalityPresentation) : Declaration paddedPresentation :=
@@ -287,13 +303,8 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
         (SignatureNames.identity signature).formula zeroGraph = zeroGraph by
       rw [h.1, h.2]
     constructor <;> simp [oneGraph, zeroGraph, SignatureNames.formula_conj,
-      SignatureNames.formula_truth, SignatureNames.formula_atom]
-    all_goals
-      first
-      | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>
-          Atomic.graph (sig := signature) (.total Symbol.scalarOne) ρ .here)
-      | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>
-          Atomic.graph (sig := signature) (.total Symbol.scalarZero) ρ .here)
+      SignatureNames.formula_truth, SignatureNames.formula_totalGraph, SignatureNames.identity_onTotal,
+      Var.mapSorts_here]
     all_goals
       funext s i
       exact nomatch i
@@ -303,7 +314,15 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
     change equalityPresentation.lawAttachments (SignatureNames.identity _) (fun _ => .inl ()) () =
       A.withSupportedRing (equalityContext.RetainsRingSupport (.inl ()))
     rw [LawAttachments.withSupportedRing_of_unsupported A equality_lacks_ring_support]
-    rfl
+    apply LawAttachments.ext
+    · change (equalityPresentation.lawAttachments (SignatureNames.identity _) (fun _ => .inl ()) ()).equation =
+        A.equation
+      have original := (PrimitivePresentation.orderedEquation_eq paddedPresentation (.inl ())).trans
+        (NamedRingEquation.ordered_of_some (data := sourceRing) rfl _)
+      simp only [A, PrimitivePresentation.lawAttachments_equation, equalityPresentation_ordered, original]
+      rfl
+    · rfl
+    · rfl
   domainAttachment_eq p := nomatch p
   dependencies := equalityDependencies
 
@@ -327,7 +346,14 @@ noncomputable def restrictedIntegerReading : Reading.{0, 0, 0, 0} :=
 theorem restrictedIntegerReading_attachment :
     (restrictedIntegerReading.presentation.orderedEquation ()).isSome ∧
       restrictedIntegerReading.presentation.ringEquation () = none ∧
-      restrictedIntegerReading.origin.isSome :=
-  ⟨rfl, rfl, rfl⟩
+      restrictedIntegerReading.origin.isSome := by
+  have attachments := Reading.restrict_equations ambientEqualityReading equalityReadingOrigin
+    (StateObservation.ofSort SortName.scalar Int id) PUnit.unit none (.empty _) ()
+  have ordered : restrictedIntegerReading.presentation.orderedEquation () = equalityPresentation.orderedEquation () :=
+    attachments.1
+  refine ⟨?_, attachments.2, ?_⟩
+  · rw [ordered, equalityPresentation_ordered]
+    rfl
+  · simp only [restrictedIntegerReading, Reading.restrict_origin, Option.isSome_some]
 
 end SHIGURE.Chapter3.OrderedRestriction

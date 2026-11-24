@@ -66,13 +66,13 @@ def arity (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.
 def signature (U : DeclarationContext P) : Signature.{u} where
   SortType := SortName U
   Total := Total U
-  totalArity f := arity (.total f.val) f.property
+  totalArity f := arity (.total f.val) (by simpa only [Declaration.ofOperation_total] using f.property)
   Rel := Rel U
   relInputs r := context (P.signature.relInputs r.val) (relationInputs r.val r.property)
   Partial := Partial U
-  partialArity p := arity (.partialOp p.val) p.property
+  partialArity p := arity (.partialOp p.val) (by simpa only [Declaration.ofOperation_partialOp] using p.property)
   Quantity := Quantity U
-  quantityArity q := arity (.quantity q.val) q.property
+  quantityArity q := arity (.quantity q.val) (by simpa only [Declaration.ofOperation_quantity] using q.property)
 
 /-- Erasing the retention proofs recovers the original operation arity. -/
 theorem map_arity (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
@@ -88,16 +88,33 @@ def names (U : DeclarationContext P) : SignatureNames (signature U) P.signature 
   onRel := Subtype.val
   onPartial := Subtype.val
   onQuantity := Subtype.val
-  totalArity f := map_arity (.total f.val) f.property
+  totalArity f := map_arity (.total f.val) (by simpa only [Declaration.ofOperation_total] using f.property)
   relInputs _ := map_context _ _
-  partialArity p := map_arity (.partialOp p.val) p.property
-  quantityArity q := map_arity (.quantity q.val) q.property
+  partialArity p := map_arity (.partialOp p.val) (by simpa only [Declaration.ofOperation_partialOp] using p.property)
+  quantityArity q := map_arity (.quantity q.val) (by simpa only [Declaration.ofOperation_quantity] using q.property)
 
 /-- Select an operation without changing whether it is total, partial, or a quantity. -/
 def operation : (op : Operation P.signature) → Declaration.ofOperation op ∈ U.declarations → Operation (signature U)
-  | .total f, kept => .total ⟨f, kept⟩
-  | .partialOp p, kept => .partialOp ⟨p, kept⟩
-  | .quantity q, kept => .quantity ⟨q, kept⟩
+  | .total f, kept => .total ⟨f, by simpa only [Declaration.ofOperation_total] using kept⟩
+  | .partialOp p, kept => .partialOp ⟨p, by simpa only [Declaration.ofOperation_partialOp] using kept⟩
+  | .quantity q, kept => .quantity ⟨q, by simpa only [Declaration.ofOperation_quantity] using kept⟩
+
+/-- Selecting a total operation retains its primitive tag and name. -/
+theorem operation_total (f : P.signature.Total) (keep : Declaration.ofOperation (.total f) ∈ U.declarations) :
+    operation (.total f) keep = .total ⟨f, by simpa only [Declaration.ofOperation_total] using keep⟩ :=
+  rfl
+
+/-- Selecting a partial operation retains its primitive tag and name. -/
+theorem operation_partialOp (p : P.signature.Partial)
+    (keep : Declaration.ofOperation (.partialOp p) ∈ U.declarations) :
+    operation (.partialOp p) keep = .partialOp ⟨p, by simpa only [Declaration.ofOperation_partialOp] using keep⟩ :=
+  rfl
+
+/-- Selecting a quantity retains its primitive tag and name. -/
+theorem operation_quantity (q : P.signature.Quantity)
+    (keep : Declaration.ofOperation (.quantity q) ∈ U.declarations) :
+    operation (.quantity q) keep = .quantity ⟨q, by simpa only [Declaration.ofOperation_quantity] using keep⟩ :=
+  rfl
 
 /-- The selected operation has exactly the corresponding selected arity. -/
 theorem operation_arity (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
@@ -131,6 +148,17 @@ def selectTypedTotal {profile : Arity P.signature.SortType} (f : TypedTotal P.si
     rcases f with ⟨symbol, same⟩
     cases same
     exact selectTotalSymbol_arity symbol keep
+
+/-- Selecting a typed total symbol selects the operation with the same primitive tag. -/
+theorem selectTypedTotal_operation {profile : Arity P.signature.SortType} (f : TypedTotal P.signature profile)
+    (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
+    (inputs : Declaration.sorts profile.inputs ⊆ U.declarations)
+    (output : Declaration.sort profile.output ∈ U.declarations) :
+    (selectTypedTotal f keep inputs output).symbol.operation = operation f.symbol.operation keep := by
+  rcases f with ⟨symbol, same⟩
+  cases symbol <;>
+    simp only [selectTypedTotal, TotalSymbol.operation_ordinary, TotalSymbol.operation_quantity,
+      selectTotalSymbol, operation_total, operation_quantity]
 
 /-- Select the type of a variable and keep its position. -/
 def selectVar : {Γ : List P.signature.SortType} → (kept : Declaration.sorts Γ ⊆ U.declarations) →

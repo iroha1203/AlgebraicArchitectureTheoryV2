@@ -23,14 +23,29 @@ variable {P : PrimitivePresentation.{u}}
 noncomputable def readFunctor (U : DeclarationContext P) : Models U ⥤ Model (theory U) where
   obj := readModel
   map f := ObjectProperty.homMk (readStructureMap f.hom)
-  map_id _ := Model.hom_ext (fun _ _ => rfl)
-  map_comp _ _ := Model.hom_ext (fun _ _ => rfl)
+  map_id A := by
+    apply Model.hom_ext
+    intro s x
+    change (readStructureMap (InducedCategory.Hom.hom (𝟙 A))).onSort s x = x
+    exact (readStructureMap_onSort (InducedCategory.Hom.hom (𝟙 A)) s x).trans
+      (Models.id_onSort A s.val s.property x)
+  map_comp f g := by
+    apply Model.hom_ext
+    intro s x
+    change (readStructureMap (f ≫ g).hom).onSort s x =
+      (readStructureMap g.hom).onSort s ((readStructureMap f.hom).onSort s x)
+    simpa only [readStructureMap_onSort] using Models.comp_onSort f g s.val s.property x
+
+/-- The object part of reading is the ordinary model on the selected signature. -/
+theorem readFunctor_obj {U : DeclarationContext P} (A : Models U) :
+    (readFunctor U).obj A = readModel A :=
+  rfl
 
 /-- The ordinary component of a read map is the original retained component. -/
 theorem readFunctor_onSort {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
     (s : SortName U) (x : A.obj.carrier s.val) :
     ((readFunctor U).map f).hom.onSort s x = Models.onSort f s.val s.property x :=
-  rfl
+  readStructureMap_onSort f.hom s x
 
 /-- Write ordinary models and arrows as the original-name model data. -/
 noncomputable def writeFunctor (U : DeclarationContext P) : Model (theory U) ⥤ Models U where
@@ -39,19 +54,20 @@ noncomputable def writeFunctor (U : DeclarationContext P) : Model (theory U) ⥤
   map_id A := by
     apply Models.hom_ext
     intro s keep x
-    change writeOnSort (InducedCategory.Hom.hom (𝟙 A)) s keep x = x
-    simp only [writeOnSort_apply, Model.id_apply, Equiv.symm_apply_apply]
+    change (writeStructureMap (InducedCategory.Hom.hom (𝟙 A))).onSort s keep x = x
+    simp only [writeStructureMap_onSort, writeOnSort_apply, Model.id_apply, Equiv.symm_apply_apply]
   map_comp f g := by
     apply Models.hom_ext
     intro s keep x
-    change writeOnSort (f ≫ g).hom s keep x = writeOnSort g.hom s keep (writeOnSort f.hom s keep x)
-    simp only [writeOnSort_apply, Model.comp_apply, Equiv.apply_symm_apply]
+    change (writeStructureMap (f ≫ g).hom).onSort s keep x =
+      (writeStructureMap g.hom).onSort s keep ((writeStructureMap f.hom).onSort s keep x)
+    simp only [writeStructureMap_onSort, writeOnSort_apply, Model.comp_apply, Equiv.apply_symm_apply]
 
 /-- The written point map is the ordinary point map under the retained carrier identification. -/
 theorem writeFunctor_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
     (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier A.obj s) :
     Models.onSort ((writeFunctor U).map f) s keep x = writeOnSort f.hom s keep x :=
-  rfl
+  writeStructureMap_onSort f.hom s keep x
 
 /-- Equality transport of ordinary model arrows only transports the corresponding point value. -/
 theorem ordinary_eqToHom_onSort {U : DeclarationContext P} {A B : Model (theory U)} (h : A = B)
