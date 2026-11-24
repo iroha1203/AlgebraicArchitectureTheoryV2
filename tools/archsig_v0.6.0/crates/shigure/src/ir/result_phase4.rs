@@ -474,8 +474,8 @@ pub use crate::ir::result_phase4_diag_atlas::{
     AtlasOutcomeDetail, AtlasRefinementResult, CoeffChangeResult, CollisionMayerVietorisResult,
     ConditionCResult, ConstrainedRepairSummary, DiagnosticsOutcomeDetail,
     DimensionProbePointResult, DimensionRealizationResult, ExplicitComplexChangeResult,
-    ExtendedLanguageResult, ForgetfulReadingResult, LawValueBlockSummary, PartitionStratumSummary,
-    RPointContrastResult, UpperSemicontinuityRefutation,
+    ExtendedCheckOutcome, ExtendedLanguageResult, ForgetfulReadingResult, LawValueBlockSummary,
+    PartitionStratumSummary, RPointContrastResult, UpperSemicontinuityRefutation,
 };
 
 fn str_map_json(map: &BTreeMap<String, String>) -> Json {

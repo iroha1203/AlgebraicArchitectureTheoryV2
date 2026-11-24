@@ -34,6 +34,19 @@ pub struct RrefResult<C: FieldCoeff> {
     pub rank: usize,
 }
 
+pub(crate) fn check_same_ring<C: RingCoeff>(
+    expected: &C,
+    actual: &C,
+) -> Result<(), AlgebraError> {
+    if !expected.same_ring(actual) {
+        return Err(AlgebraError::DomainMismatch {
+            expected: format!("{expected:?}"),
+            actual: format!("{actual:?}"),
+        });
+    }
+    Ok(())
+}
+
 /// 体 `K` 上の行列の簡約行階段形（RREF）を計算する。
 pub fn rref_field<C: FieldCoeff>(
     matrix: &[Vec<C>],
@@ -47,6 +60,9 @@ pub fn rref_field<C: FieldCoeff>(
                 expected: num_cols,
                 actual: row.len(),
             });
+        }
+        for val in row {
+            check_same_ring(zero_c, val)?;
         }
     }
     let mut a = matrix.to_vec();
@@ -109,6 +125,12 @@ pub fn solve_affine_field<C: FieldCoeff>(
                 actual: row.len(),
             });
         }
+        for val in row {
+            check_same_ring(zero_c, val)?;
+        }
+    }
+    for val in rhs {
+        check_same_ring(zero_c, val)?;
     }
     let z = zero_c.zero_like();
     let o = zero_c.one_like();
@@ -403,12 +425,16 @@ impl<C: RingCoeff> FiniteAlgebra<C> {
                 actual: values.len(),
             });
         }
+        check_same_ring(&self.zero_coeff, poly.zero_coeff())?;
         for v in values {
             if v.len() != self.dim() {
                 return Err(AlgebraError::ArityMismatch {
                     expected: self.dim(),
                     actual: v.len(),
                 });
+            }
+            for c in v {
+                check_same_ring(&self.zero_coeff, c)?;
             }
         }
         let mut acc = self.zero_elem();
@@ -433,11 +459,19 @@ impl<C: RingCoeff> FiniteAlgebra<C> {
                 detail: "finite algebra dimension or identity vector is malformed".to_owned(),
             });
         }
+        for c in &self.one {
+            check_same_ring(&self.zero_coeff, c)?;
+        }
         for row in &self.mul_table {
             if row.len() != d || row.iter().any(|v| v.len() != d) {
                 return Err(AlgebraError::OutOfScope {
                     detail: "finite algebra multiplication table shape mismatch".to_owned(),
                 });
+            }
+            for vec in row {
+                for c in vec {
+                    check_same_ring(&self.zero_coeff, c)?;
+                }
             }
         }
         for i in 0..d {

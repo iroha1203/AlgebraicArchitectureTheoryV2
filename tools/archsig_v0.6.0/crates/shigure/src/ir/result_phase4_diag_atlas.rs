@@ -434,15 +434,23 @@ pub struct ForgetfulReadingResult {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ExtendedCheckOutcome {
+    pub name: String,
+    /// `"protocol_sequence"` または `"runtime_arg_op"`。
+    pub kind: String,
+    pub transport_preserved: bool,
+    pub before_values: Vec<String>,
+    pub after_values: Vec<String>,
+    pub law_residuals: Vec<String>,
+    pub detail: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ExtendedLanguageResult {
-    pub atomic_apply_compact_commutes: bool,
-    pub snapshot_final_read_before: Option<String>,
-    pub snapshot_final_read_after: Option<String>,
-    pub snapshot_busy_law_residual: Option<String>,
-    pub snapshot_transport_fails: Option<bool>,
-    pub compact_all_lhs: Option<Vec<String>>,
-    pub compact_all_rhs: Option<Vec<String>>,
-    pub compact_all_transport_fails: Option<bool>,
+    pub atomic_ops_commute: BTreeMap<String, bool>,
+    pub all_atomic_ops_commute: bool,
+    pub extended_check_results: Vec<ExtendedCheckOutcome>,
+    pub all_extended_checks_preserved: bool,
 }
 
 impl AtlasOutcomeDetail {
@@ -609,38 +617,50 @@ impl AtlasOutcomeDetail {
             obj.insert("refinement".into(), Json::Obj(ro));
         }
         if let Some(ext) = &self.extended_language_non_transport {
-            let mut eo = JsonObject::from([(
-                "atomic_apply_compact_commutes".into(),
-                Json::Bool(ext.atomic_apply_compact_commutes),
-            )]);
-            if let Some(v) = &ext.snapshot_final_read_before {
-                eo.insert("snapshot_final_read_before".into(), Json::str(v));
-            }
-            if let Some(v) = &ext.snapshot_final_read_after {
-                eo.insert("snapshot_final_read_after".into(), Json::str(v));
-            }
-            if let Some(v) = &ext.snapshot_busy_law_residual {
-                eo.insert("snapshot_busy_law_residual".into(), Json::str(v));
-            }
-            if let Some(b) = ext.snapshot_transport_fails {
-                eo.insert("snapshot_transport_fails".into(), Json::Bool(b));
-            }
-            if let Some(v) = &ext.compact_all_lhs {
-                eo.insert(
-                    "compact_all_lhs".into(),
-                    Json::Arr(v.iter().map(Json::str).collect()),
-                );
-            }
-            if let Some(v) = &ext.compact_all_rhs {
-                eo.insert(
-                    "compact_all_rhs".into(),
-                    Json::Arr(v.iter().map(Json::str).collect()),
-                );
-            }
-            if let Some(b) = ext.compact_all_transport_fails {
-                eo.insert("compact_all_transport_fails".into(), Json::Bool(b));
-            }
-            obj.insert("extended_language_non_transport".into(), Json::Obj(eo));
+            let atomic_map = ext
+                .atomic_ops_commute
+                .iter()
+                .map(|(k, &v)| (k.clone(), Json::Bool(v)))
+                .collect();
+            let checks = ext
+                .extended_check_results
+                .iter()
+                .map(|c| {
+                    Json::obj([
+                        ("name", Json::str(&c.name)),
+                        ("kind", Json::str(&c.kind)),
+                        ("transport_preserved", Json::Bool(c.transport_preserved)),
+                        (
+                            "before_values",
+                            Json::Arr(c.before_values.iter().map(Json::str).collect()),
+                        ),
+                        (
+                            "after_values",
+                            Json::Arr(c.after_values.iter().map(Json::str).collect()),
+                        ),
+                        (
+                            "law_residuals",
+                            Json::Arr(c.law_residuals.iter().map(Json::str).collect()),
+                        ),
+                        ("detail", Json::str(&c.detail)),
+                    ])
+                })
+                .collect();
+            obj.insert(
+                "extended_language_non_transport".into(),
+                Json::obj([
+                    ("atomic_ops_commute", Json::Obj(atomic_map)),
+                    (
+                        "all_atomic_ops_commute",
+                        Json::Bool(ext.all_atomic_ops_commute),
+                    ),
+                    ("extended_check_results", Json::Arr(checks)),
+                    (
+                        "all_extended_checks_preserved",
+                        Json::Bool(ext.all_extended_checks_preserved),
+                    ),
+                ]),
+            );
         }
         Json::Obj(obj)
     }

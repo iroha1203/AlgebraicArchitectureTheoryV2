@@ -3,14 +3,17 @@
 //! $H^0/H^1/H^2$（自由階数＋$\mathbb{Z}$ torsion）・cocycle 零性判定・cochain 射誘導写像核/余核
 //! （G-141 E2–E5・G1–G5 / G-142 A1–A3・C1–C4・E1–E6・F3）。
 
-use crate::algebra::artin::{AffineSolutionField, rref_field, solve_affine_field};
+use crate::algebra::artin::{
+    AffineSolutionField, check_same_ring, rref_field, solve_affine_field,
+};
 use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
+pub use crate::algebra::linear::{SmithFormZ, smith_normal_form_z};
 use crate::algebra::poly::AlgebraError;
 use crate::algebra::scalar::{Rat, RingCoeff};
 use crate::algebra::syzygy::FieldCoeff;
 use num_bigint::BigInt;
 use num_integer::Integer;
-use num_traits::{One, Signed, Zero};
+use num_traits::{One, Zero};
 
 /// 有限生成可換群 / 有限次元ベクトル空間のコホモロジー群構造（自由階数＋`Z` torsion 不変因子）。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -73,17 +76,39 @@ impl<C: RingCoeff> CochainComplex<C> {
         d1: Vec<Vec<C>>,
         zero_coeff: C,
     ) -> Result<Self, AlgebraError> {
-        if d0.len() != dim1 || d0.iter().any(|r| r.len() != dim0) {
+        if d0.len() != dim1 {
             return Err(AlgebraError::ArityMismatch {
                 expected: dim1,
                 actual: d0.len(),
             });
         }
-        if d1.len() != dim2 || d1.iter().any(|r| r.len() != dim1) {
+        for r in &d0 {
+            if r.len() != dim0 {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: dim0,
+                    actual: r.len(),
+                });
+            }
+            for v in r {
+                check_same_ring(&zero_coeff, v)?;
+            }
+        }
+        if d1.len() != dim2 {
             return Err(AlgebraError::ArityMismatch {
                 expected: dim2,
                 actual: d1.len(),
             });
+        }
+        for r in &d1 {
+            if r.len() != dim1 {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: dim1,
+                    actual: r.len(),
+                });
+            }
+            for v in r {
+                check_same_ring(&zero_coeff, v)?;
+            }
         }
         let prod = mat_mul(&d1, &d0, dim0, &zero_coeff);
         for row in &prod {
@@ -112,6 +137,9 @@ impl<C: RingCoeff> CochainComplex<C> {
                 actual: x.len(),
             });
         }
+        for v in x {
+            check_same_ring(&self.zero_coeff, v)?;
+        }
         Ok(mat_vec(&self.d0, x, &self.zero_coeff))
     }
 
@@ -121,6 +149,9 @@ impl<C: RingCoeff> CochainComplex<C> {
                 expected: self.dim1,
                 actual: y.len(),
             });
+        }
+        for v in y {
+            check_same_ring(&self.zero_coeff, v)?;
         }
         Ok(mat_vec(&self.d1, y, &self.zero_coeff))
     }
@@ -263,114 +294,6 @@ pub struct CocycleCheckZ {
     pub is_zero_in_q: bool,
     /// `is_zero_in_z == false && is_zero_in_q == true` のときの最小正整数位数 `m > 1`。
     pub torsion_order: Option<BigInt>,
-}
-
-/// 整数行列の Smith 標準形 `U * A * V = diag(d_1, ..., d_r, 0, ...)`。
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct SmithFormZ {
-    pub u: Vec<Vec<BigInt>>,
-    pub v: Vec<Vec<BigInt>>,
-    pub diagonals: Vec<BigInt>,
-    pub rank: usize,
-}
-
-/// 整数行列 `matrix` (`m x n`) の Smith 標準形を計算する。
-pub fn smith_normal_form_z(
-    matrix: &[Vec<BigInt>],
-    num_cols: usize,
-) -> Result<SmithFormZ, AlgebraError> {
-    let m = matrix.len();
-    for row in matrix {
-        if row.len() != num_cols {
-            return Err(AlgebraError::ArityMismatch {
-                expected: num_cols,
-                actual: row.len(),
-            });
-        }
-    }
-    let mut d = matrix.to_vec();
-    let mut u = identity_z(m);
-    let mut v = identity_z(num_cols);
-    let mut k = 0usize;
-    while k < m && k < num_cols {
-        let Some((pr, pc)) = find_min_nonzero_z(&d, k, m, num_cols) else {
-            break;
-        };
-        if pr != k {
-            d.swap(k, pr);
-            u.swap(k, pr);
-        }
-        if pc != k {
-            swap_cols_z(&mut d, k, pc);
-            swap_cols_z(&mut v, k, pc);
-        }
-        loop {
-            if d[k][k].is_negative() {
-                negate_row_z(&mut d, k);
-                negate_row_z(&mut u, k);
-            }
-            let mut changed = false;
-            for r in (k + 1)..m {
-                if !d[r][k].is_zero() {
-                    let q = d[r][k].div_floor(&d[k][k]);
-                    row_sub_mul_z(&mut d, r, k, &q);
-                    row_sub_mul_z(&mut u, r, k, &q);
-                    if !d[r][k].is_zero() {
-                        d.swap(k, r);
-                        u.swap(k, r);
-                        changed = true;
-                        break;
-                    }
-                }
-            }
-            if changed {
-                continue;
-            }
-            for c in (k + 1)..num_cols {
-                if !d[k][c].is_zero() {
-                    let q = d[k][c].div_floor(&d[k][k]);
-                    col_sub_mul_z(&mut d, c, k, &q);
-                    col_sub_mul_z(&mut v, c, k, &q);
-                    if !d[k][c].is_zero() {
-                        swap_cols_z(&mut d, k, c);
-                        swap_cols_z(&mut v, k, c);
-                        changed = true;
-                        break;
-                    }
-                }
-            }
-            if changed {
-                continue;
-            }
-            if d[k][k].is_negative() {
-                negate_row_z(&mut d, k);
-                negate_row_z(&mut u, k);
-            }
-            let mut non_div = None;
-            'outer: for r in (k + 1)..m {
-                for c in (k + 1)..num_cols {
-                    if !(&d[r][c] % &d[k][k]).is_zero() {
-                        non_div = Some(r);
-                        break 'outer;
-                    }
-                }
-            }
-            if let Some(r) = non_div {
-                row_add_z(&mut d, k, r);
-                row_add_z(&mut u, k, r);
-                continue;
-            }
-            break;
-        }
-        k += 1;
-    }
-    let diagonals: Vec<BigInt> = (0..k).map(|i| d[i][i].clone()).collect();
-    Ok(SmithFormZ {
-        u,
-        v,
-        diagonals,
-        rank: k,
-    })
 }
 
 impl CochainComplex<BigInt> {
@@ -549,23 +472,29 @@ impl<C: RingCoeff> CochainMap<C> {
         f1: Vec<Vec<C>>,
         f2: Vec<Vec<C>>,
     ) -> Result<Self, AlgebraError> {
-        if f0.len() != dst.dim0 || f0.iter().any(|r| r.len() != src.dim0) {
-            return Err(AlgebraError::ArityMismatch {
-                expected: dst.dim0,
-                actual: f0.len(),
-            });
-        }
-        if f1.len() != dst.dim1 || f1.iter().any(|r| r.len() != src.dim1) {
-            return Err(AlgebraError::ArityMismatch {
-                expected: dst.dim1,
-                actual: f1.len(),
-            });
-        }
-        if f2.len() != dst.dim2 || f2.iter().any(|r| r.len() != src.dim2) {
-            return Err(AlgebraError::ArityMismatch {
-                expected: dst.dim2,
-                actual: f2.len(),
-            });
+        check_same_ring(&src.zero_coeff, &dst.zero_coeff)?;
+        for (mat, exp_rows, exp_cols) in [
+            (&f0, dst.dim0, src.dim0),
+            (&f1, dst.dim1, src.dim1),
+            (&f2, dst.dim2, src.dim2),
+        ] {
+            if mat.len() != exp_rows {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: exp_rows,
+                    actual: mat.len(),
+                });
+            }
+            for row in mat {
+                if row.len() != exp_cols {
+                    return Err(AlgebraError::ArityMismatch {
+                        expected: exp_cols,
+                        actual: row.len(),
+                    });
+                }
+                for v in row {
+                    check_same_ring(&src.zero_coeff, v)?;
+                }
+            }
         }
         let lhs0 = mat_mul(&dst.d0, &f0, src.dim0, &src.zero_coeff);
         let rhs0 = mat_mul(&f1, &src.d0, src.dim0, &src.zero_coeff);
@@ -594,6 +523,27 @@ impl<C: FieldCoeff> CochainMap<C> {
         src: &CochainComplex<C>,
         dst: &CochainComplex<C>,
     ) -> Result<InducedCohomologyMapField, AlgebraError> {
+        check_same_ring(&src.zero_coeff, &dst.zero_coeff)?;
+        for (mat, exp_rows, exp_cols) in [
+            (&self.f0, dst.dim0, src.dim0),
+            (&self.f1, dst.dim1, src.dim1),
+            (&self.f2, dst.dim2, src.dim2),
+        ] {
+            if mat.len() != exp_rows {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: exp_rows,
+                    actual: mat.len(),
+                });
+            }
+            for row in mat {
+                if row.len() != exp_cols {
+                    return Err(AlgebraError::ArityMismatch {
+                        expected: exp_cols,
+                        actual: row.len(),
+                    });
+                }
+            }
+        }
         let z = src.zero_coeff.zero_like();
         let sc = src.cohomology_field()?;
         let dc = dst.cohomology_field()?;
@@ -813,67 +763,4 @@ pub fn mat_mul<C: RingCoeff>(
         }
     }
     out
-}
-
-fn identity_z(n: usize) -> Vec<Vec<BigInt>> {
-    (0..n)
-        .map(|i| {
-            let mut r = vec![BigInt::zero(); n];
-            r[i] = BigInt::one();
-            r
-        })
-        .collect()
-}
-
-fn find_min_nonzero_z(
-    d: &[Vec<BigInt>],
-    start: usize,
-    m: usize,
-    n: usize,
-) -> Option<(usize, usize)> {
-    let mut best: Option<(usize, usize, BigInt)> = None;
-    for (r, row) in d.iter().enumerate().take(m).skip(start) {
-        for (c, val) in row.iter().enumerate().take(n).skip(start) {
-            if !val.is_zero() {
-                let abs = val.abs();
-                if best.as_ref().is_none_or(|(_, _, b)| abs < *b) {
-                    best = Some((r, c, abs));
-                }
-            }
-        }
-    }
-    best.map(|(r, c, _)| (r, c))
-}
-
-fn swap_cols_z(mat: &mut [Vec<BigInt>], c1: usize, c2: usize) {
-    for row in mat.iter_mut() {
-        row.swap(c1, c2);
-    }
-}
-
-fn row_sub_mul_z(mat: &mut [Vec<BigInt>], target: usize, src: usize, factor: &BigInt) {
-    let src_row = mat[src].clone();
-    for (dst, s) in mat[target].iter_mut().zip(&src_row) {
-        *dst -= factor * s;
-    }
-}
-
-fn row_add_z(mat: &mut [Vec<BigInt>], target: usize, src: usize) {
-    let src_row = mat[src].clone();
-    for (dst, s) in mat[target].iter_mut().zip(&src_row) {
-        *dst += s;
-    }
-}
-
-fn col_sub_mul_z(mat: &mut [Vec<BigInt>], target: usize, src: usize, factor: &BigInt) {
-    for row in mat.iter_mut() {
-        let sub = factor * &row[src];
-        row[target] -= sub;
-    }
-}
-
-fn negate_row_z(mat: &mut [Vec<BigInt>], row_idx: usize) {
-    for v in &mut mat[row_idx] {
-        *v = -v.clone();
-    }
 }

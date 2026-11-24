@@ -2,7 +2,7 @@
 //! 局所 Artin 商環 $A/\mathfrak{m}^{r+1}$ の構成（G-141 E1–E5・F2–F4）。
 
 use crate::algebra::artin::{
-    AffineSolutionField, FiniteAlgebra, rref_field, solve_affine_field,
+    AffineSolutionField, FiniteAlgebra, check_same_ring, rref_field, solve_affine_field,
 };
 use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
 use crate::algebra::poly::{AlgebraError, Monomial, Poly, VarOrder};
@@ -127,6 +127,12 @@ impl<C: FieldCoeff> SquareZeroExtension<C> {
         let dp = r_prime.dim();
         let dr = r_base.dim();
         let z = r_prime.zero_coeff.zero_like();
+        check_same_ring(&z, &r_base.zero_coeff)?;
+        for row in &projection {
+            for val in row {
+                check_same_ring(&z, val)?;
+            }
+        }
         let rref = rref_field(&projection, dp, &z)?;
         if rref.rank != dr {
             return Err(AlgebraError::OutOfScope {
@@ -173,6 +179,15 @@ impl<C: FieldCoeff> SquareZeroExtension<C> {
 
     /// `R'` の元 `elem` が `M = ker π` に属することを検査し、`kernel_basis` の座標へ展開する。
     pub fn extract_kernel_coords_field(&self, elem: &[C]) -> Result<Vec<C>, AlgebraError> {
+        if elem.len() != self.r_prime.dim() {
+            return Err(AlgebraError::ArityMismatch {
+                expected: self.r_prime.dim(),
+                actual: elem.len(),
+            });
+        }
+        for c in elem {
+            check_same_ring(&self.r_prime.zero_coeff, c)?;
+        }
         if !self.r_base.is_zero_elem(&self.project(elem)) {
             return Err(AlgebraError::OutOfScope {
                 detail: "element does not lie in kernel M = ker(R' -> R)".to_owned(),
@@ -302,6 +317,9 @@ impl<C: FieldCoeff> LocalArtinQuotient<C> {
                 actual: base_point.len(),
             });
         }
+        for c in base_point {
+            check_same_ring(&zero_coeff, c)?;
+        }
         for g in ideal_gens {
             if g.num_vars() != d {
                 return Err(AlgebraError::ArityMismatch {
@@ -309,6 +327,7 @@ impl<C: FieldCoeff> LocalArtinQuotient<C> {
                     actual: g.num_vars(),
                 });
             }
+            check_same_ring(&zero_coeff, g.zero_coeff())?;
             let val = g.eval_at(base_point)?;
             if !val.coeff_is_zero() {
                 return Err(AlgebraError::OutOfScope {
@@ -438,6 +457,7 @@ impl<C: FieldCoeff> LocalArtinQuotient<C> {
                 actual: poly.num_vars(),
             });
         }
+        check_same_ring(&self.algebra.zero_coeff, poly.zero_coeff())?;
         let shift_polys = make_shift_polys(d, &self.base_point, &self.algebra.zero_coeff);
         let shifted = poly
             .substitute(&shift_polys)?
@@ -464,10 +484,21 @@ pub fn enumerate_monomials_up_to(
     max_deg: usize,
     max_dim: usize,
 ) -> Result<Vec<Monomial>, AlgebraError> {
+    if num_vars == 0 {
+        if max_dim == 0 {
+            return Err(AlgebraError::OutOfScope {
+                detail: "local Artin quotient dimension exceeds safety bound (0)".to_owned(),
+            });
+        }
+        return Ok(vec![Monomial::one(0)]);
+    }
+    let max_deg_u32 = u32::try_from(max_deg).map_err(|_| AlgebraError::OutOfScope {
+        detail: format!("local Artin degree {max_deg} exceeds u32 bound"),
+    })?;
     let mut out = Vec::new();
     let mut current = vec![0u32; num_vars];
-    for deg in 0..=max_deg {
-        enumerate_degree_rec(num_vars, 0, deg as u32, &mut current, &mut out, max_dim)?;
+    for deg in 0..=max_deg_u32 {
+        enumerate_degree_rec(num_vars, 0, deg, &mut current, &mut out, max_dim)?;
     }
     Ok(out)
 }

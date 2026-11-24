@@ -2,10 +2,13 @@
 //! 診断層 $B_\pi$ 層別・値合流 Mayer–Vietoris・診断次元実現の検証済み IR
 //! （G-142 A1–A3・B1–B6・C1–C4・D1–D3・W1–W2）。
 
+use crate::ir::artin::check_expr_refs;
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
-use crate::ir::validate::{ValidationError, validate_coeff_domain};
+use crate::ir::validate::{
+    ValidationError, validate_coeff_domain, validate_provenance, validate_scalar_lit,
+};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// `TargetSupportedNerve` の 1 chart 支持仕様（G-142 A1・B1）。
@@ -60,7 +63,7 @@ pub enum DiagnosticsReadoutSpec {
     Static {
         sources: Vec<String>,
         targets: Vec<String>,
-        /// 全射 reading `q: Source -> T`（省略時は恒等 `S = T`）。
+        /// 全射 reading `q: Source -> T`（全 source を target へ全射に割り当てる）。
         reading: Vec<(String, String)>,
         laws: Vec<StaticLawReadoutSpec>,
     },
@@ -151,7 +154,8 @@ pub struct DiagnosticsTaskSpec {
     pub provenance: Provenance,
 }
 
-/// 型・K1 nerve 端点・adequacy 構造を検証済みの診断タスク。
+/// 型・参照・K1 nerve 端点・全射 reading・partition 粗化整合を検証済みの診断タスク。
+/// （注意: `Static` reading の adequacy 自体は計算核で判定し、`reading_adequate` と沈黙契約へ反映する。）
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CheckedDiagnosticsTask {
     spec: DiagnosticsTaskSpec,
@@ -172,7 +176,9 @@ pub fn validate_supported_nerve(
     let mut chart_names = BTreeSet::new();
     for ch in &nerve.charts {
         if ch.name.trim().is_empty() {
-            return Err(ValidationError::EmptyName { context: "nerve_chart".to_owned() });
+            return Err(ValidationError::EmptyName {
+                context: "nerve_chart".to_owned(),
+            });
         }
         if !chart_names.insert(ch.name.as_str()) {
             return Err(ValidationError::DuplicateDecl {
@@ -194,7 +200,9 @@ pub fn validate_supported_nerve(
     let mut edge_map: BTreeMap<&str, (&str, &str)> = BTreeMap::new();
     for e in &nerve.edges {
         if e.name.trim().is_empty() {
-            return Err(ValidationError::EmptyName { context: "nerve_edge".to_owned() });
+            return Err(ValidationError::EmptyName {
+                context: "nerve_edge".to_owned(),
+            });
         }
         if !chart_names.contains(e.left.as_str()) {
             return Err(ValidationError::UnknownRef {
@@ -224,7 +232,9 @@ pub fn validate_supported_nerve(
     let mut face_names = BTreeSet::new();
     for f in &nerve.faces {
         if f.name.trim().is_empty() {
-            return Err(ValidationError::EmptyName { context: "nerve_face".to_owned() });
+            return Err(ValidationError::EmptyName {
+                context: "nerve_face".to_owned(),
+            });
         }
         if !face_names.insert(f.name.as_str()) {
             return Err(ValidationError::DuplicateDecl {
@@ -253,7 +263,6 @@ pub fn validate_supported_nerve(
                 context: format!("{context} face `{}` e2", f.name),
             });
         };
-        // K1 face 端点等式: l(e0) == l(e1), r(e0) == l(e2), r(e1) == r(e2)
         if l0 != l1 || r0 != l2 || r1 != r2 {
             return Err(ValidationError::ConversionError {
                 detail: format!(
@@ -271,16 +280,20 @@ pub fn validate_diagnostics_task(
     spec: DiagnosticsTaskSpec,
 ) -> Result<CheckedDiagnosticsTask, ValidationError> {
     if spec.name.trim().is_empty() {
-        return Err(ValidationError::EmptyName { context: "diagnostics_task".to_owned() });
-    }
-    validate_coeff_domain(&spec.diagnostic_coeff, "phase4_ir")?;
-    if spec.provenance.origins.is_empty() {
-        return Err(ValidationError::ConversionError {
-            detail: format!("missing provenance in diagnostics_task `{}`", spec.name),
+        return Err(ValidationError::EmptyName {
+            context: "diagnostics_task".to_owned(),
         });
     }
+    let ctx = format!("diagnostics_task `{}`", spec.name);
+    validate_coeff_domain(&spec.diagnostic_coeff, &ctx)?;
+    if spec.provenance.origins.is_empty() {
+        return Err(ValidationError::ConversionError {
+            detail: format!("missing provenance in {ctx}"),
+        });
+    }
+    validate_provenance(&spec.provenance, &ctx)?;
 
-    let (source_set, target_set, law_names) = match &spec.readout {
+    let (source_set, target_set, law_names, poly_base_vars) = match &spec.readout {
         DiagnosticsReadoutSpec::Static {
             sources,
             targets,
@@ -290,7 +303,9 @@ pub fn validate_diagnostics_task(
             let mut s_set = BTreeSet::new();
             for s in sources {
                 if s.trim().is_empty() {
-                    return Err(ValidationError::EmptyName { context: "source".to_owned() });
+                    return Err(ValidationError::EmptyName {
+                        context: "source".to_owned(),
+                    });
                 }
                 if !s_set.insert(s.as_str()) {
                     return Err(ValidationError::DuplicateDecl {
@@ -302,7 +317,9 @@ pub fn validate_diagnostics_task(
             let mut t_set = BTreeSet::new();
             for t in targets {
                 if t.trim().is_empty() {
-                    return Err(ValidationError::EmptyName { context: "target".to_owned() });
+                    return Err(ValidationError::EmptyName {
+                        context: "target".to_owned(),
+                    });
                 }
                 if !t_set.insert(t.as_str()) {
                     return Err(ValidationError::DuplicateDecl {
@@ -349,7 +366,9 @@ pub fn validate_diagnostics_task(
             let mut l_names = BTreeSet::new();
             for law in laws {
                 if law.law_name.trim().is_empty() {
-                    return Err(ValidationError::EmptyName { context: "law".to_owned() });
+                    return Err(ValidationError::EmptyName {
+                        context: "law".to_owned(),
+                    });
                 }
                 if !l_names.insert(law.law_name.as_str()) {
                     return Err(ValidationError::DuplicateDecl {
@@ -358,7 +377,7 @@ pub fn validate_diagnostics_task(
                     });
                 }
                 let mut v_seen = BTreeSet::new();
-                for (s, _) in &law.values {
+                for (s, lit) in &law.values {
                     if !s_set.contains(s.as_str()) {
                         return Err(ValidationError::UnknownRef {
                             kind: "source",
@@ -372,27 +391,35 @@ pub fn validate_diagnostics_task(
                             name: s.clone(),
                         });
                     }
+                    let lit_dom = lit.domain();
+                    validate_coeff_domain(&lit_dom, &format!("law `{}` value `{s}`", law.law_name))?;
+                    validate_scalar_lit(lit, &lit_dom, &format!("law `{}` value `{s}`", law.law_name))?;
                 }
                 if v_seen.len() != s_set.len() {
                     return Err(ValidationError::ConversionError {
-                        detail: format!("law `{}` must assign a value to every source", law.law_name),
+                        detail: format!(
+                            "law `{}` must assign a value to every source",
+                            law.law_name
+                        ),
                     });
                 }
             }
-            (s_set, t_set, l_names)
+            (s_set, t_set, l_names, None)
         }
         DiagnosticsReadoutSpec::Polynomial {
             base_domain,
             base_vars,
+            base_relations,
             sources,
             laws,
-            ..
         } => {
-            validate_coeff_domain(base_domain, "phase4_ir")?;
+            validate_coeff_domain(base_domain, &format!("{ctx} base_domain"))?;
             let mut bv_set = BTreeSet::new();
             for v in base_vars {
                 if v.trim().is_empty() {
-                    return Err(ValidationError::EmptyName { context: "base_var".to_owned() });
+                    return Err(ValidationError::EmptyName {
+                        context: "base_var".to_owned(),
+                    });
                 }
                 if !bv_set.insert(v.as_str()) {
                     return Err(ValidationError::DuplicateDecl {
@@ -401,10 +428,31 @@ pub fn validate_diagnostics_task(
                     });
                 }
             }
+            let mut br_seen = BTreeSet::new();
+            for rel in base_relations {
+                if rel.name.trim().is_empty() {
+                    return Err(ValidationError::EmptyName {
+                        context: "base_relation".to_owned(),
+                    });
+                }
+                if !br_seen.insert(rel.name.as_str()) {
+                    return Err(ValidationError::DuplicateDecl {
+                        kind: "base_relation",
+                        name: rel.name.clone(),
+                    });
+                }
+                check_expr_refs(
+                    &rel.expr,
+                    &bv_set,
+                    &format!("base_relation `{}`", rel.name),
+                )?;
+            }
             let mut s_set = BTreeSet::new();
             for s in sources {
                 if s.trim().is_empty() {
-                    return Err(ValidationError::EmptyName { context: "source".to_owned() });
+                    return Err(ValidationError::EmptyName {
+                        context: "source".to_owned(),
+                    });
                 }
                 if !s_set.insert(s.as_str()) {
                     return Err(ValidationError::DuplicateDecl {
@@ -416,7 +464,9 @@ pub fn validate_diagnostics_task(
             let mut l_names = BTreeSet::new();
             for law in laws {
                 if law.law_name.trim().is_empty() {
-                    return Err(ValidationError::EmptyName { context: "law".to_owned() });
+                    return Err(ValidationError::EmptyName {
+                        context: "law".to_owned(),
+                    });
                 }
                 if !l_names.insert(law.law_name.as_str()) {
                     return Err(ValidationError::DuplicateDecl {
@@ -425,7 +475,7 @@ pub fn validate_diagnostics_task(
                     });
                 }
                 let mut v_seen = BTreeSet::new();
-                for (s, _) in &law.values {
+                for (s, expr) in &law.values {
                     if !s_set.contains(s.as_str()) {
                         return Err(ValidationError::UnknownRef {
                             kind: "source",
@@ -439,6 +489,11 @@ pub fn validate_diagnostics_task(
                             name: s.clone(),
                         });
                     }
+                    check_expr_refs(
+                        expr,
+                        &bv_set,
+                        &format!("poly law `{}` source `{s}`", law.law_name),
+                    )?;
                 }
                 if v_seen.len() != s_set.len() {
                     return Err(ValidationError::ConversionError {
@@ -449,14 +504,14 @@ pub fn validate_diagnostics_task(
                     });
                 }
             }
-            (s_set.clone(), s_set, l_names)
+            (s_set.clone(), s_set, l_names, Some(bv_set))
         }
     };
 
-    validate_supported_nerve(&spec.nerve, &target_set, &format!("diagnostics `{}`", spec.name))?;
+    validate_supported_nerve(&spec.nerve, &target_set, &ctx)?;
 
     if let Some(cc) = &spec.coeff_change {
-        validate_coeff_domain(&cc.target_domain, "phase4_ir")?;
+        validate_coeff_domain(&cc.target_domain, &format!("{ctx} coeff_change"))?;
         if let Some(zc) = &cc.explicit_z_complex {
             if zc.d0.len() != zc.dim1 || zc.d0.iter().any(|r| r.len() != zc.dim0) {
                 return Err(ValidationError::ConversionError {
@@ -474,6 +529,11 @@ pub fn validate_diagnostics_task(
     }
 
     for col in &spec.collisions {
+        if col.label.trim().is_empty() {
+            return Err(ValidationError::EmptyName {
+                context: "collision.label".to_owned(),
+            });
+        }
         if !law_names.contains(col.law_name.as_str()) {
             return Err(ValidationError::UnknownRef {
                 kind: "law",
@@ -481,12 +541,181 @@ pub fn validate_diagnostics_task(
                 context: format!("collision `{}`", col.label),
             });
         }
-        validate_partition(&col.fine_partition, &source_set, &format!("collision `{}` fine", col.label))?;
-        validate_partition(&col.coarse_partition, &source_set, &format!("collision `{}` coarse", col.label))?;
+        validate_partition(
+            &col.fine_partition,
+            &source_set,
+            &format!("collision `{}` fine", col.label),
+        )?;
+        validate_partition(
+            &col.coarse_partition,
+            &source_set,
+            &format!("collision `{}` coarse", col.label),
+        )?;
+        check_coarsening(
+            &col.fine_partition,
+            &col.coarse_partition,
+            &format!("collision `{}`", col.label),
+        )?;
+        for (p_idx, path) in col.alternative_merge_paths.iter().enumerate() {
+            let mut prev: &[Vec<String>] = &col.fine_partition;
+            for (s_idx, step) in path.iter().enumerate() {
+                let p_ctx = format!("collision `{}` path[{p_idx}][{s_idx}]", col.label);
+                validate_partition(step, &source_set, &p_ctx)?;
+                check_coarsening(prev, step, &p_ctx)?;
+                prev = step;
+            }
+            check_coarsening(
+                prev,
+                &col.coarse_partition,
+                &format!("collision `{}` path[{p_idx}] -> coarse", col.label),
+            )?;
+        }
+    }
+
+    if let Some(rp) = &spec.r_point_probe {
+        let Some(bv_set) = &poly_base_vars else {
+            return Err(ValidationError::ConversionError {
+                detail: "r_point_probe requires Polynomial readout".to_owned(),
+            });
+        };
+        if rp.ring_var.trim().is_empty() {
+            return Err(ValidationError::EmptyName {
+                context: "r_point_probe.ring_var".to_owned(),
+            });
+        }
+        let expected_len = rp.ring_max_deg + 1;
+        let empty = BTreeSet::new();
+        let mut pt_labels = BTreeSet::new();
+        for pt in &rp.points {
+            if pt.label.trim().is_empty() {
+                return Err(ValidationError::EmptyName {
+                    context: "r_point_probe.point".to_owned(),
+                });
+            }
+            if !pt_labels.insert(pt.label.as_str()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "r_point",
+                    name: pt.label.clone(),
+                });
+            }
+            let mut seen_vars = BTreeSet::new();
+            for (v, coords) in &pt.coords {
+                if !bv_set.contains(v.as_str()) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "base_var",
+                        name: v.clone(),
+                        context: format!("r_point `{}`", pt.label),
+                    });
+                }
+                if !seen_vars.insert(v.as_str()) {
+                    return Err(ValidationError::DuplicateDecl {
+                        kind: "r_point_coord",
+                        name: v.clone(),
+                    });
+                }
+                if coords.len() != expected_len {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "r_point `{}` coord `{v}` has length {}, expected {expected_len}",
+                            pt.label,
+                            coords.len()
+                        ),
+                    });
+                }
+                for c in coords {
+                    check_expr_refs(c, &empty, &format!("r_point `{}` coord `{v}`", pt.label))?;
+                }
+            }
+            if seen_vars.len() != bv_set.len() {
+                return Err(ValidationError::ConversionError {
+                    detail: format!("r_point `{}` must assign every base_var", pt.label),
+                });
+            }
+        }
     }
 
     if let Some(dr) = &spec.dimension_realization {
-        validate_coeff_domain(&dr.base_domain, "phase4_ir")?;
+        validate_coeff_domain(&dr.base_domain, &format!("{ctx} dimension_realization"))?;
+        let mut dr_vars = BTreeSet::new();
+        for v in &dr.base_vars {
+            if v.trim().is_empty() {
+                return Err(ValidationError::EmptyName {
+                    context: "dimension_realization.base_var".to_owned(),
+                });
+            }
+            if !dr_vars.insert(v.as_str()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "dimension_realization_var",
+                    name: v.clone(),
+                });
+            }
+        }
+        let mut vp_seen = BTreeSet::new();
+        for vp in &dr.vanishing_polys {
+            if vp.name.trim().is_empty() {
+                return Err(ValidationError::EmptyName {
+                    context: "dimension_realization.vanishing_poly".to_owned(),
+                });
+            }
+            if !vp_seen.insert(vp.name.as_str()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "vanishing_poly",
+                    name: vp.name.clone(),
+                });
+            }
+            check_expr_refs(
+                &vp.expr,
+                &dr_vars,
+                &format!("dimension_realization vanishing `{}`", vp.name),
+            )?;
+        }
+        if dr.invertible_poly.name.trim().is_empty() {
+            return Err(ValidationError::EmptyName {
+                context: "dimension_realization.invertible_poly".to_owned(),
+            });
+        }
+        check_expr_refs(
+            &dr.invertible_poly.expr,
+            &dr_vars,
+            "dimension_realization.invertible_poly",
+        )?;
+        let empty = BTreeSet::new();
+        let mut probe_seen = BTreeSet::new();
+        for pt in &dr.probe_points {
+            if pt.label.trim().is_empty() {
+                return Err(ValidationError::EmptyName {
+                    context: "dimension_realization.probe_point".to_owned(),
+                });
+            }
+            if !probe_seen.insert(pt.label.as_str()) {
+                return Err(ValidationError::DuplicateDecl {
+                    kind: "probe_point",
+                    name: pt.label.clone(),
+                });
+            }
+            let mut seen_vars = BTreeSet::new();
+            for (v, expr) in &pt.coords {
+                if !dr_vars.contains(v.as_str()) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "base_var",
+                        name: v.clone(),
+                        context: format!("probe_point `{}`", pt.label),
+                    });
+                }
+                if !seen_vars.insert(v.as_str()) {
+                    return Err(ValidationError::DuplicateDecl {
+                        kind: "probe_point_coord",
+                        name: v.clone(),
+                    });
+                }
+                check_expr_refs(expr, &empty, &format!("probe_point `{}` `{v}`", pt.label))?;
+            }
+            if seen_vars.len() != dr_vars.len() {
+                return Err(ValidationError::ConversionError {
+                    detail: format!("probe_point `{}` must assign every base_var", pt.label),
+                });
+            }
+        }
     }
 
     Ok(CheckedDiagnosticsTask { spec })
@@ -524,6 +753,33 @@ fn validate_partition(
         return Err(ValidationError::ConversionError {
             detail: format!("{context} partition does not cover all sources"),
         });
+    }
+    Ok(())
+}
+
+/// `coarse` が `fine` の粗化（各細ブロックが単一の粗ブロックに含まれる）であることを検査する。
+fn check_coarsening(
+    fine: &[Vec<String>],
+    coarse: &[Vec<String>],
+    context: &str,
+) -> Result<(), ValidationError> {
+    let mut elem_to_coarse: BTreeMap<&str, usize> = BTreeMap::new();
+    for (idx, block) in coarse.iter().enumerate() {
+        for s in block {
+            elem_to_coarse.insert(s.as_str(), idx);
+        }
+    }
+    for block in fine {
+        let first_idx = elem_to_coarse.get(block[0].as_str()).copied();
+        for s in block.iter().skip(1) {
+            if elem_to_coarse.get(s.as_str()).copied() != first_idx {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "{context}: coarse partition is not a coarsening of fine partition"
+                    ),
+                });
+            }
+        }
     }
     Ok(())
 }

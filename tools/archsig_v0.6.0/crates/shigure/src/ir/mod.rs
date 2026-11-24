@@ -53,8 +53,9 @@ pub use artin::{
     validate_artin_task,
 };
 pub use atlas::{
-    AtlasEvalConditionSpec, AtlasRefinementSpec, AtlasTaskSpec, CheckedAtlasTask,
-    ExtendedLanguageCheckSpec, ForgetfulReadingSpec, GraphEdgeSpec, validate_atlas_task,
+    AtlasEvalConditionSpec, AtlasRefinementSpec, AtlasTaskSpec, AtomicOpCompareSpec,
+    CheckedAtlasTask, ExtendedLanguageCheckSpec, ExtendedOperationCheckSpec, ForgetfulReadingSpec,
+    GraphEdgeSpec, validate_atlas_task,
 };
 pub use change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,
@@ -118,7 +119,7 @@ pub use result_phase4::{
     AtlasRefinementResult, CoeffChangeResult, CollisionMayerVietorisResult, ConditionCResult,
     ConstrainedRepairSummary, DeclarationCoverResult, DiagnosticsOutcomeDetail,
     DimensionProbePointResult, DimensionRealizationResult, ExplicitComplexChangeResult,
-    ExtendedLanguageResult, FiniteEtaleDescentResult, ForgetfulReadingResult,
+    ExtendedCheckOutcome, ExtendedLanguageResult, FiniteEtaleDescentResult, ForgetfulReadingResult,
     LawValueBlockSummary, LiftOutcomeDetail, NilpotentBaseChangeResult, PartitionStratumSummary,
     RPointContrastResult, RawCechComparisonResult, RedundantComparisonResult, RelativeConeResult,
     UniversalObstructionSummary, UpperSemicontinuityRefutation,
