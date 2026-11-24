@@ -31,6 +31,31 @@ def graphRuleName : GraphAxiom P.signature → Declaration P
   | .quantityTotality q => .quantity q
   | .graphImpliesDomain p | .domainImpliesGraph p => .partialOp p
 
+/-- The functional rule uses the tagged operation. -/
+theorem graphRuleName_functional (op : Operation P.signature) :
+    graphRuleName (P := P) (.functional op) = ofOperation op :=
+  rfl
+
+/-- The totality rule uses the total operation. -/
+theorem graphRuleName_totality (f : P.signature.Total) :
+    graphRuleName (P := P) (.totality f) = .total f :=
+  rfl
+
+/-- The quantityTotality rule uses the quantity. -/
+theorem graphRuleName_quantityTotality (q : P.signature.Quantity) :
+    graphRuleName (P := P) (.quantityTotality q) = .quantity q :=
+  rfl
+
+/-- The graphImpliesDomain rule uses the partial operation. -/
+theorem graphRuleName_graphImpliesDomain (p : P.signature.Partial) :
+    graphRuleName (P := P) (.graphImpliesDomain p) = .partialOp p :=
+  rfl
+
+/-- The domainImpliesGraph rule uses the partial operation. -/
+theorem graphRuleName_domainImpliesGraph (p : P.signature.Partial) :
+    graphRuleName (P := P) (.domainImpliesGraph p) = .partialOp p :=
+  rfl
+
 /-- Every structural graph rule refers to its primitive in its written sequent. -/
 theorem graphRuleName_mem_lawBody (rule : GraphAxiom P.signature) :
     graphRuleName (P := P) rule ∈ lawBody rule.toLaw := by
@@ -42,19 +67,20 @@ theorem graphRuleName_mem_lawBody (rule : GraphAxiom P.signature) :
 /-- The proof of a graph rule uses the primitive in that structural rule. -/
 theorem graphRuleName_mem_derivation (rule : GraphAxiom P.signature) :
     graphRuleName (P := P) rule ∈ derivation (Derivation.graph (T := P.theory) rule) :=
-  Or.inl (graphRuleName_mem_lawBody rule)
+  lawBody_subset_derivationOf Subtype.val (Derivation.graph (T := P.theory) rule)
+    (graphRuleName_mem_lawBody rule)
 
 /-- Cutting two proofs retains every declaration from the first proof. -/
 theorem derivation_cut_left {Γ : List P.signature.SortType} {p q r : Formula P.signature Γ}
     (left : Derivation P.theory p q) (right : Derivation P.theory q r) :
     derivation left ⊆ derivation (.cut left right) :=
-  fun _ kept => Or.inr (Or.inl kept)
+  derivationOf_cut_left rfl Subtype.val left right
 
 /-- Conjunction introduction retains every declaration from its second proof. -/
 theorem derivation_andIntro_right {Γ : List P.signature.SortType} {p q r : Formula P.signature Γ}
     (left : Derivation P.theory p q) (right : Derivation P.theory p r) :
     derivation right ⊆ derivation (.andIntro left right) :=
-  fun _ kept => Or.inr (Or.inr kept)
+  derivationOf_andIntro_right rfl Subtype.val left right
 
 end Declaration
 

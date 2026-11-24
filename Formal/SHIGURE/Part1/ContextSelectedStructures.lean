@@ -43,6 +43,11 @@ noncomputable def readStructure (A : ContextStructure U) : Structure (signature 
   quantity q e := A.toRestrictedStructure.quantity q.val q.property
     (ambientAssignment (readCarrierEquiv A) (operationInputs (.quantity q.val) q.property) e)
 
+/-- Reading a structure takes the original carrier at each retained sort. -/
+theorem readStructure_carrier_eq (A : ContextStructure U) (s : SortName U) :
+    (readStructure A).carrier s = A.carrier s.val :=
+  rfl
+
 /-- Construct the primitive comparisons used by Proposition 3.2 from any
 context structure. The selected relations, domains and graphs use exactly
 the declarations and input and output sorts retained by the context. -/

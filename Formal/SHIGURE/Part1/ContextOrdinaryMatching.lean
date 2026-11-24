@@ -135,6 +135,11 @@ noncomputable def readObj (A : Match piece) : OrdinaryMatch piece where
       ((congrArg (Selected.readFunctor (inter (piece i) (piece j))).obj (A.overlap_eq i j)).trans
         (Functor.congr_obj R (A.pieceModel j)))
 
+/-- Reading a matching object reads the retained model of each piece. -/
+theorem readObj_pieceModel (A : Match piece) (i : I) :
+    (readObj A).pieceModel i = Selected.readModel (A.pieceModel i) :=
+  rfl
+
 /-- Translate the ordinary model in each piece into its retained graph. -/
 noncomputable def writeObj (A : OrdinaryMatch piece) : Match piece where
   pieceModel i := (Selected.writeFunctor (piece i)).obj (A.pieceModel i)

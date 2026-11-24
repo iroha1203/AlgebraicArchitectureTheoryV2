@@ -58,8 +58,11 @@ def equalityContext : DeclarationContext paddedPresentation where
     intro d used i banned
     subst d
     cases a with
-    | sort s => exact used
-    | total f => rcases used with ⟨s, hs, same⟩; cases same
+    | sort s => rw [Declaration.sort_dependencies] at used; exact used
+    | total f =>
+      rw [Declaration.total_dependencies] at used
+      rcases used with ⟨s, hs, same⟩
+      cases same
     | relation r => exact nomatch r
     | partialOp p => exact nomatch p
     | quantity q => exact nomatch q
@@ -232,7 +235,7 @@ private theorem equalityDependencies (a b : Declaration equalityPresentation) :
     b ∈ Declaration.dependsOn equalityPresentation a ↔
       toName b ∈ Declaration.dependsOn paddedPresentation (toName a) := by
   cases a with
-  | sort s => exact Iff.rfl
+  | sort s => simp only [toName_sort, Declaration.sort_dependencies, Set.mem_empty_iff_false]
   | relation r => exact nomatch r
   | partialOp p => exact nomatch p
   | quantity q => exact nomatch q

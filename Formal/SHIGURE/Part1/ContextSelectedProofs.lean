@@ -27,11 +27,11 @@ def theory (U : DeclarationContext P) : Theory.{u} := (laws U).toTheory
 /-- The selected structural rule retains its original rule and primitive name. -/
 def selectRule : (rule : GraphAxiom P.signature) → Declaration.graphRuleName rule ∈ U.declarations →
     GraphAxiom (signature U)
-  | .functional op, keep => .functional (operation op keep)
-  | .totality f, keep => .totality ⟨f, keep⟩
-  | .quantityTotality q, keep => .quantityTotality ⟨q, keep⟩
-  | .graphImpliesDomain p, keep => .graphImpliesDomain ⟨p, keep⟩
-  | .domainImpliesGraph p, keep => .domainImpliesGraph ⟨p, keep⟩
+  | .functional op, keep => .functional (operation op (by simpa only [Declaration.graphRuleName_functional] using keep))
+  | .totality f, keep => .totality ⟨f, by simpa only [Declaration.graphRuleName_totality] using keep⟩
+  | .quantityTotality q, keep => .quantityTotality ⟨q, by simpa only [Declaration.graphRuleName_quantityTotality] using keep⟩
+  | .graphImpliesDomain p, keep => .graphImpliesDomain ⟨p, by simpa only [Declaration.graphRuleName_graphImpliesDomain] using keep⟩
+  | .domainImpliesGraph p, keep => .domainImpliesGraph ⟨p, by simpa only [Declaration.graphRuleName_domainImpliesGraph] using keep⟩
 
 /-- The selected variable map of an identity is an identity. -/
 theorem selectRenaming_id {Γ : List P.signature.SortType} (kept : Declaration.sorts Γ ⊆ U.declarations) :
@@ -58,31 +58,31 @@ theorem selectRule_toLaw (rule : GraphAxiom P.signature)
     cases op <;>
       simp only [GraphAxiom.toLaw_functional, selectLaw_eq, selectFormula_conj, selectFormula_atom,
         selectAtomic_graph, selectAtomic_eq, selectGraph_total, selectGraph_partialOp, selectGraph_quantity,
-        selectRule] <;>
+        selectRule, selectVar_here, selectVar_there] <;>
       congr 6 <;> exact selectRenaming_there_there _ _ _
   | totality f =>
     simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq, selectFormula_truth,
-      selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_total, selectRule]
+      selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_total, selectRule, selectVar_here]
     congr 6
     exact selectRenaming_there _ _
   | quantityTotality q =>
     simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
-      selectFormula_truth, selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_quantity, selectRule]
+      selectFormula_truth, selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_quantity, selectRule, selectVar_here]
     congr 6
     exact selectRenaming_there _ _
   | graphImpliesDomain p =>
     simp only [GraphAxiom.toLaw_graphImpliesDomain, selectLaw_eq, selectFormula_atom, selectAtomic_graph,
-      selectAtomic_domain, selectGraph_partialOp, selectRule]
+      selectAtomic_domain, selectGraph_partialOp, selectRule, selectVar_here]
     congr 6 <;> exact selectRenaming_there _ _
   | domainImpliesGraph p =>
     simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
-      selectFormula_atom, selectFormula_ex, selectAtomic_domain, selectAtomic_graph, selectGraph_partialOp, selectRule]
+      selectFormula_atom, selectFormula_ex, selectAtomic_domain, selectAtomic_graph, selectGraph_partialOp, selectRule, selectVar_here]
     congr 6 <;> first | exact selectRenaming_id _ | exact selectRenaming_there _ _
 
 /-- The root sequent is included among the references of any original derivation. -/
 theorem derivation_root {Γ : List P.theory.signature.SortType} {p q : Formula P.theory.signature Γ}
-    (d : Derivation P.theory p q) : Declaration.lawBody (P := P) ⟨Γ, p, q⟩ ⊆ Declaration.derivation d := by
-  cases d <;> exact fun _ h => Or.inl h
+    (d : Derivation P.theory p q) : Declaration.lawBody (P := P) ⟨Γ, p, q⟩ ⊆ Declaration.derivation d :=
+  Declaration.lawBody_subset_derivationOf Subtype.val d
 
 /-- A supported proof has a supported antecedent at its root. -/
 theorem derivation_input {Γ : List P.theory.signature.SortType} {p q : Formula P.theory.signature Γ}
@@ -106,8 +106,8 @@ private theorem derivationOf_root {I : Type u} (source : I → P.laws.LawName)
     {Γ : List (namedTheory P.laws source).signature.SortType}
     {p q : Formula (namedTheory P.laws source).signature Γ}
     (d : Derivation (namedTheory P.laws source) p q) :
-    Declaration.lawBody (P := P) ⟨Γ, p, q⟩ ⊆ Declaration.derivationOf rfl source d := by
-  cases d <;> exact fun _ h => Or.inl h
+    Declaration.lawBody (P := P) ⟨Γ, p, q⟩ ⊆ Declaration.derivationOf rfl source d :=
+  Declaration.lawBody_subset_derivationOf source d
 
 /-- A retained proof tree retains the syntax of its input formula. -/
 private theorem derivationOf_input {I : Type u} (source : I → P.laws.LawName)
@@ -142,11 +142,12 @@ private noncomputable def selectDerivationUsing {I J : Type u}
   induction d with
   | refl p => exact Derivation.refl (T := namedTheory (laws U) target) _
   | cut l r lh rh =>
-    exact Derivation.cut (T := namedTheory (laws U) target) (lh (fun _ h => keep (Or.inr (Or.inl h))))
-      (rh (fun _ h => keep (Or.inr (Or.inr h))))
+    exact Derivation.cut (T := namedTheory (laws U) target)
+      (lh ((Declaration.derivationOf_cut_left rfl source l r).trans keep))
+      (rh ((Declaration.derivationOf_cut_right rfl source l r).trans keep))
   | required name =>
     have named : Declaration.law (source name) ∈ U.declarations :=
-      keep (Or.inr (Set.mem_singleton _))
+      keep (Declaration.law_mem_derivationOf_required rfl source name)
     have chosenLaw : (namedTheory (laws U) target).law (choose name named) =
         selectLaw (P.laws.statement (source name)) (Declaration.lawBody_subset_of_mem named) :=
       congrArg (laws U).statement (chosen name named)
@@ -154,14 +155,15 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     rw [chosenLaw, selectLaw_eq] at proof
     exact proof
   | graph rule =>
-    let present : Declaration.graphRuleName rule ∈ U.declarations := keep (Or.inl (Declaration.graphRuleName_mem_lawBody rule))
+    let present : Declaration.graphRuleName rule ∈ U.declarations := keep (derivationOf_root source (Derivation.graph (T := namedTheory P.laws source) rule)
+      (Declaration.graphRuleName_mem_lawBody rule))
     have h : Derivation (namedTheory (laws U) target) (selectLaw rule.toLaw (graphRuleSupport rule present)).input
         (selectLaw rule.toLaw (graphRuleSupport rule present)).conclusion := by
       rw [selectRule_toLaw rule present]
       exact Derivation.graph (T := namedTheory (laws U) target) (selectRule rule present)
     simpa only [selectLaw_eq] using h
   | @rename Γ Δ p q ρ prior ih =>
-    let sub : Declaration.derivationOf rfl source prior ⊆ U.declarations := fun _ h => keep (Or.inr h)
+    let sub := (Declaration.derivationOf_rename rfl source ρ prior).trans keep
     let node := Derivation.rename (T := namedTheory P.laws source) ρ prior
     have lhs := selectFormula_rename p ρ (derivationOf_input source prior sub) (derivationOf_input source node keep)
     have rhs := selectFormula_rename q ρ (derivationOf_result source prior sub) (derivationOf_result source node keep)
@@ -181,8 +183,9 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     exact Derivation.andRight (T := namedTheory (laws U) target) _ _
   | andIntro l r lh rh =>
     rw [selectFormula_conj]
-    exact Derivation.andIntro (T := namedTheory (laws U) target) (lh (fun _ h => keep (Or.inr (Or.inl h))))
-      (rh (fun _ h => keep (Or.inr (Or.inr h))))
+    exact Derivation.andIntro (T := namedTheory (laws U) target)
+      (lh ((Declaration.derivationOf_andIntro_left rfl source l r).trans keep))
+      (rh ((Declaration.derivationOf_andIntro_right rfl source l r).trans keep))
   | orLeft p q =>
     rw [selectFormula_disj]
     exact Derivation.orLeft (T := namedTheory (laws U) target) _ _
@@ -191,8 +194,8 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     exact Derivation.orRight (T := namedTheory (laws U) target) _ _
   | orElim l r lh rh =>
     rw [selectFormula_conj, selectFormula_disj]
-    have left := lh (fun _ h => keep (Or.inr (Or.inl h)))
-    have right := rh (fun _ h => keep (Or.inr (Or.inr h)))
+    have left := lh ((Declaration.derivationOf_orElim_left rfl source l r).trans keep)
+    have right := rh ((Declaration.derivationOf_orElim_right rfl source l r).trans keep)
     rw [selectFormula_conj] at left right
     exact Derivation.orElim (T := namedTheory (laws U) target) left right
   | existsIntro p x =>
@@ -205,14 +208,19 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     let node := Derivation.existsElim (T := namedTheory P.laws source) child
     let input := derivationOf_input source node keep
     let output := derivationOf_result source node keep
-    let sub : Declaration.derivationOf rfl source child ⊆ U.declarations := fun _ h => keep (Or.inr h)
+    let sub := (Declaration.derivationOf_existsElim rfl source child).trans keep
     have inner := ih sub
     simp only [selectFormula_conj] at inner
-    have lhs := selectFormula_there c (leftSupport input) (leftSupport (derivationOf_input source child sub))
+    let keepLeft := (Declaration.binarySupport_left (Declaration.formula_conj c p.ex)).trans input
+    let keepInner := (Declaration.binarySupport_left
+      (Declaration.formula_conj (c.rename (fun i => Var.there i)) p)).trans (derivationOf_input source child sub)
+    have lhs := selectFormula_there c keepLeft keepInner
     have rhs := selectFormula_there q output (derivationOf_result source child sub)
     erw [lhs, rhs] at inner
     rw [selectFormula_conj, selectFormula_ex]
-    exact Derivation.existsElim (T := namedTheory (laws U) target) (p := selectFormula p (existsSupport (rightSupport input))) inner
+    let keepRight := (Declaration.binarySupport_right (Declaration.formula_conj c p.ex)).trans input
+    exact Derivation.existsElim (T := namedTheory (laws U) target)
+      (p := selectFormula p (existsSupport keepRight)) inner
   | eqRefl x =>
     rw [selectFormula_truth, selectFormula_atom, selectAtomic_eq]
     exact Derivation.eqRefl (T := namedTheory (laws U) target) _
@@ -220,15 +228,18 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     let node := Derivation.eqSubst (T := namedTheory P.laws source) p x y
     let out := derivationOf_result source node keep
     have body : Declaration.formulaSupport p ⊆ U.declarations := by
-      intro a used
-      rcases used with sorts | ref
-      · refine Declaration.sorts_cons_subset (varKept (U := U) (fun _ h => out (Or.inl h)) y)
-          (fun _ h => out (Or.inl h)) sorts
-      · apply out (Or.inr ?_)
-        erw [Declaration.formula_rename (P := P) p (Renaming.openHead y)]
-        exact ref
+      let free := (Declaration.sorts_subset_formulaSupport (p.rename (Renaming.openHead y))).trans out
+      rw [Declaration.formulaSupport_eq]
+      refine Set.union_subset (Declaration.sorts_cons_subset (varKept free y) free) ?_
+      have written : Declaration.formula p ⊆ Declaration.formulaSupport (p.rename (Renaming.openHead y)) := by
+        rw [Declaration.formulaSupport_eq, Declaration.formula_rename]
+        exact Set.subset_union_right
+      exact written.trans out
     simp only [selectFormula_conj, selectFormula_atom, selectAtomic_eq]
-    have lhs := selectFormula_openHead p x body (rightSupport (derivationOf_input source node keep))
+    let left := Formula.atom (Atomic.eq x y)
+    let keepInput := (Declaration.binarySupport_right (Declaration.formula_conj left
+      (p.rename (Renaming.openHead x)))).trans (derivationOf_input source node keep)
+    have lhs := selectFormula_openHead p x body keepInput
     have rhs := selectFormula_openHead p y body out
     erw [lhs, rhs]
     exact Derivation.eqSubst (T := namedTheory (laws U) target) (selectFormula p body) _ _

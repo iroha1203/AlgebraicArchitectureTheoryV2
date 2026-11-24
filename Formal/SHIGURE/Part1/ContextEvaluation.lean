@@ -196,32 +196,33 @@ theorem atomic_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f
     (inj : ∀ s kept, Function.Injective (f s kept)) {Γ : List P.signature.SortType}
     (a : Atomic P.signature Γ) (support : Declaration.atomicSupport a ⊆ V.declarations) (e : Assignment X Γ) :
     (A.pullback inside f).atomic e a support ↔ A.atomic
-      (mapAssignment f (fun _ hd => support (Or.inl hd)) e) a (fun _ hd => inside (support hd)) := by
+      (mapAssignment f ((Declaration.sorts_subset_atomicSupport a).trans support) e) a (fun _ hd => inside (support hd)) := by
   cases a with
   | eq x y =>
     rw [atomic_eq_iff, atomic_eq_iff]
     exact ⟨fun same => congrArg (f _ _) same, fun same => inj _ _ same⟩
   | rel r vars =>
     simp only [atomic_rel_iff, pullback_relation]
-    rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
+    rw [mapAssignment_pull f _ ((Declaration.sorts_subset_atomicSupport (.rel r vars)).trans support) vars e]
   | domain p vars =>
     simp only [atomic_domain_iff, pullback_domain]
-    rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
+    rw [mapAssignment_pull f _ ((Declaration.sorts_subset_atomicSupport (.domain p vars)).trans support) vars e]
   | graph op vars y =>
     simp only [atomic_graph_iff, pullback_graph, mapAssignment_apply]
-    rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
+    rw [mapAssignment_pull f _ ((Declaration.sorts_subset_atomicSupport (.graph op vars y)).trans support) vars e]
 
 /-- Every supported formula agrees with its original evaluation on the mapped assignment. -/
 theorem holds_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V X Y)
     (bij : ∀ s kept, Function.Bijective (f s kept)) {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
     ∀ (support : Declaration.formulaSupport p ⊆ V.declarations) (e : Assignment X Γ),
       (A.pullback inside f).holds p support e ↔ A.holds p (fun _ hd => inside (support hd))
-        (mapAssignment f (fun _ hd => support (Or.inl hd)) e) := by
+        (mapAssignment f ((Declaration.sorts_subset_formulaSupport p).trans support) e) := by
   induction p with
   | atom a =>
     intro support e
     rw [holds_atom_iff, holds_atom_iff]
-    exact atomic_pullback_iff A inside f (fun s kept => (bij s kept).1) a support e
+    exact atomic_pullback_iff A inside f (fun s kept => (bij s kept).1) a
+      ((Declaration.formulaSupport_atom a).ge.trans support) e
   | truth =>
     intro support e
     simp only [holds_truth_iff]
@@ -236,8 +237,8 @@ theorem holds_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f 
     rw [holds_disj_iff, holds_disj_iff, hp, hq]
   | @ex Γ s p ih =>
     intro support e
-    have kept : Declaration.sort s ∈ V.declarations := support (Or.inr (Or.inl (Set.mem_singleton _)))
-    let keepΓ : Declaration.sorts Γ ⊆ V.declarations := fun _ hd => support (Or.inl hd)
+    have kept : Declaration.sort s ∈ V.declarations := support (Declaration.boundSort_mem_formulaSupport p)
+    let keepΓ : Declaration.sorts Γ ⊆ V.declarations := (Declaration.sorts_subset_formulaSupport p.ex).trans support
     rw [holds_ex_iff, holds_ex_iff]
     constructor
     · rintro ⟨x, hx⟩

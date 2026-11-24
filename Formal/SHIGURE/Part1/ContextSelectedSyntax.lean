@@ -17,22 +17,22 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 /-- Split support of the left side of a binary formula. -/
 theorem leftSupport {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
     (h : Declaration.sorts Γ ∪ (Declaration.formula p ∪ Declaration.formula q) ⊆ U.declarations) :
-    Declaration.formulaSupport p ⊆ U.declarations :=
-  fun _ x => x.elim (fun x => h (Or.inl x)) (fun x => h (Or.inr (Or.inl x)))
+    Declaration.formulaSupport p ⊆ U.declarations := by
+  rw [Declaration.formulaSupport_eq]
+  exact fun _ x => x.elim (fun x => h (Or.inl x)) (fun x => h (Or.inr (Or.inl x)))
 
 /-- Split support of the right side of a binary formula. -/
 theorem rightSupport {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
     (h : Declaration.sorts Γ ∪ (Declaration.formula p ∪ Declaration.formula q) ⊆ U.declarations) :
-    Declaration.formulaSupport q ⊆ U.declarations :=
-  fun _ x => x.elim (fun x => h (Or.inl x)) (fun x => h (Or.inr (Or.inr x)))
+    Declaration.formulaSupport q ⊆ U.declarations := by
+  rw [Declaration.formulaSupport_eq]
+  exact fun _ x => x.elim (fun x => h (Or.inl x)) (fun x => h (Or.inr (Or.inr x)))
 
 /-- Include the bound sort and the free context of an existential body. -/
 theorem existsSupport {Γ : List P.signature.SortType} {s : P.signature.SortType}
     {p : Formula P.signature (s :: Γ)} (h : Declaration.formulaSupport p.ex ⊆ U.declarations) :
     Declaration.formulaSupport p ⊆ U.declarations :=
-  fun _ x => x.elim (fun x => Declaration.sorts_cons_subset
-    (h (Or.inr (Or.inl (Set.mem_singleton _)))) (fun _ t => h (Or.inl t)) x)
-      (fun x => h (Or.inr (Or.inr x)))
+  (Declaration.formulaSupport_ex_body p).trans h
 
 /-- Select a graph atom with exactly the original operation and variable positions. -/
 def selectGraph {Γ : List P.signature.SortType} (keepΓ : Declaration.sorts Γ ⊆ U.declarations)
@@ -76,31 +76,33 @@ theorem selectGraph_quantity {Γ : List P.signature.SortType}
 /-- Read an atomic formula over the actual selected signature. -/
 def selectAtomic {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (keep : Declaration.atomicSupport a ⊆ U.declarations) :
-    Atomic (signature U) (context Γ (fun _ t => keep (Or.inl t))) := by
-  let keepΓ : Declaration.sorts Γ ⊆ U.declarations := fun _ t => keep (Or.inl t)
+    Atomic (signature U) (context Γ ((Declaration.sorts_subset_atomicSupport a).trans keep)) := by
+  let keepΓ : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_atomicSupport a).trans keep
   cases a with
   | eq x y => exact .eq (selectVar keepΓ x) (selectVar keepΓ y)
   | rel r ρ =>
-    have keepR : Declaration.relation r ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
+    have keepR : Declaration.relation r ∈ U.declarations := keep (Declaration.relation_mem_atomicSupport r ρ)
     exact .rel ⟨r, keepR⟩ (selectRenaming (relationInputs r keepR) keepΓ ρ)
   | domain p ρ =>
-    have keepP : Declaration.partialOp p ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
+    have keepP : Declaration.partialOp p ∈ U.declarations := keep (Declaration.domain_mem_atomicSupport p ρ)
     exact .domain ⟨p, keepP⟩ (selectRenaming (operationInputs (.partialOp p) keepP) keepΓ ρ)
-  | graph op ρ y => exact selectGraph keepΓ op (keep (Or.inr (Set.mem_singleton _))) ρ y
+  | graph op ρ y => exact selectGraph keepΓ op (keep (Declaration.graph_mem_atomicSupport op ρ y)) ρ y
 
 /-- Selecting an equality retains the compared positions in the selected context. -/
 theorem selectAtomic_eq {Γ : List P.signature.SortType} {s : P.signature.SortType} (x y : Var Γ s)
     (keep : Declaration.atomicSupport (Atomic.eq (sig := P.signature) x y) ⊆ U.declarations) :
     selectAtomic (.eq x y) keep =
-      .eq (selectVar (fun _ h => keep (Or.inl h)) x) (selectVar (fun _ h => keep (Or.inl h)) y) :=
+      .eq (selectVar ((Declaration.sorts_subset_atomicSupport (.eq x y)).trans keep) x)
+        (selectVar ((Declaration.sorts_subset_atomicSupport (.eq x y)).trans keep) y) :=
   rfl
 
 /-- Selecting a relation reads its retained name and reindexes its arguments. -/
 theorem selectAtomic_rel {Γ : List P.signature.SortType} (r : P.signature.Rel)
     (ρ : Renaming (P.signature.relInputs r) Γ) (keep : Declaration.atomicSupport (.rel r ρ) ⊆ U.declarations) :
     selectAtomic (.rel r ρ) keep =
-      .rel ⟨r, keep (Or.inr (Set.mem_singleton _))⟩
-        (selectRenaming (relationInputs r (keep (Or.inr (Set.mem_singleton _)))) (fun _ h => keep (Or.inl h)) ρ) :=
+      .rel ⟨r, keep (Declaration.relation_mem_atomicSupport r ρ)⟩
+        (selectRenaming (relationInputs r (keep (Declaration.relation_mem_atomicSupport r ρ)))
+          ((Declaration.sorts_subset_atomicSupport (.rel r ρ)).trans keep) ρ) :=
   rfl
 
 /-- Selecting a domain atom reindexes the retained partial operation's arguments. -/
@@ -108,9 +110,9 @@ theorem selectAtomic_domain {Γ : List P.signature.SortType} (p : P.signature.Pa
     (ρ : Renaming (P.signature.partialArity p).inputs Γ)
     (keep : Declaration.atomicSupport (.domain p ρ) ⊆ U.declarations) :
     selectAtomic (.domain p ρ) keep =
-      .domain ⟨p, keep (Or.inr (Set.mem_singleton _))⟩
-        (selectRenaming (operationInputs (.partialOp p) (keep (Or.inr (Set.mem_singleton _))))
-          (fun _ h => keep (Or.inl h)) ρ) :=
+      .domain ⟨p, keep (Declaration.domain_mem_atomicSupport p ρ)⟩
+        (selectRenaming (operationInputs (.partialOp p) (keep (Declaration.domain_mem_atomicSupport p ρ)))
+          ((Declaration.sorts_subset_atomicSupport (.domain p ρ)).trans keep) ρ) :=
   rfl
 
 /-- A selected graph atom uses the retained operation and its reindexed positions. -/
@@ -118,25 +120,30 @@ theorem selectAtomic_graph {Γ : List P.signature.SortType} (op : Operation P.si
     (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output)
     (keep : Declaration.atomicSupport (.graph op ρ y) ⊆ U.declarations) :
     selectAtomic (.graph op ρ y) keep =
-      selectGraph (fun _ h => keep (Or.inl h)) op (keep (Or.inr (Set.mem_singleton _))) ρ y :=
+      selectGraph ((Declaration.sorts_subset_atomicSupport (.graph op ρ y)).trans keep) op
+        (keep (Declaration.graph_mem_atomicSupport op ρ y)) ρ y :=
   rfl
 
 /-- Read an arbitrary supported positive formula over the selected signature. -/
 def selectFormula : {Γ : List P.signature.SortType} → (p : Formula P.signature Γ) →
     (keep : Declaration.formulaSupport p ⊆ U.declarations) →
-    Formula (signature U) (context Γ (fun _ t => keep (Or.inl t)))
-  | _, .atom a, keep => .atom (selectAtomic a keep)
+    Formula (signature U) (context Γ ((Declaration.sorts_subset_formulaSupport p).trans keep))
+  | _, .atom a, keep => .atom (selectAtomic a ((Declaration.formulaSupport_atom a).ge.trans keep))
   | _, .truth, _ => .truth
   | _, .falsehood, _ => .falsehood
-  | _, .conj p q, keep => .conj (selectFormula p (leftSupport keep)) (selectFormula q (rightSupport keep))
-  | _, .disj p q, keep => .disj (selectFormula p (leftSupport keep)) (selectFormula q (rightSupport keep))
+  | _, .conj p q, keep =>
+    .conj (selectFormula p ((Declaration.binarySupport_left (Declaration.formula_conj p q)).trans keep))
+      (selectFormula q ((Declaration.binarySupport_right (Declaration.formula_conj p q)).trans keep))
+  | _, .disj p q, keep =>
+    .disj (selectFormula p ((Declaration.binarySupport_left (Declaration.formula_disj p q)).trans keep))
+      (selectFormula q ((Declaration.binarySupport_right (Declaration.formula_disj p q)).trans keep))
   | _, @Formula.ex _ _ s body, keep =>
-    .ex (s := ⟨s, keep (Or.inr (Or.inl (Set.mem_singleton _)))⟩) (selectFormula body (existsSupport keep))
+    .ex (s := ⟨s, keep (Declaration.boundSort_mem_formulaSupport body)⟩) (selectFormula body (existsSupport keep))
 
 /-- Selecting an atomic formula uses the primitive comparison in Proposition 3.2. -/
 theorem selectFormula_atom {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (keep : Declaration.formulaSupport (.atom a) ⊆ U.declarations) :
-    selectFormula (.atom a) keep = .atom (selectAtomic a keep) :=
+    selectFormula (.atom a) keep = .atom (selectAtomic a ((Declaration.formulaSupport_atom a).ge.trans keep)) :=
   rfl
 
 /-- Truth in the selected context has no further primitive dependency. -/
@@ -154,39 +161,39 @@ theorem selectFormula_falsehood {Γ : List P.signature.SortType}
 /-- Selection keeps a conjunction by selecting each supported part. -/
 theorem selectFormula_conj {Γ : List P.signature.SortType} (p q : Formula P.signature Γ)
     (keep : Declaration.formulaSupport (p.conj q) ⊆ U.declarations) :
-    selectFormula (p.conj q) keep = .conj (selectFormula p (leftSupport keep)) (selectFormula q (rightSupport keep)) :=
+    selectFormula (p.conj q) keep =
+      .conj (selectFormula p ((Declaration.binarySupport_left (Declaration.formula_conj p q)).trans keep))
+      (selectFormula q ((Declaration.binarySupport_right (Declaration.formula_conj p q)).trans keep)) :=
   rfl
 
 /-- Selection keeps a disjunction by selecting each supported alternative. -/
 theorem selectFormula_disj {Γ : List P.signature.SortType} (p q : Formula P.signature Γ)
     (keep : Declaration.formulaSupport (p.disj q) ⊆ U.declarations) :
-    selectFormula (p.disj q) keep = .disj (selectFormula p (leftSupport keep)) (selectFormula q (rightSupport keep)) :=
+    selectFormula (p.disj q) keep =
+      .disj (selectFormula p ((Declaration.binarySupport_left (Declaration.formula_disj p q)).trans keep))
+      (selectFormula q ((Declaration.binarySupport_right (Declaration.formula_disj p q)).trans keep)) :=
   rfl
 
 /-- Selection retains the bound sort and the body's typed positions of an existential. -/
 theorem selectFormula_ex {Γ : List P.signature.SortType} {s : P.signature.SortType} (p : Formula P.signature (s :: Γ))
     (keep : Declaration.formulaSupport p.ex ⊆ U.declarations) :
     selectFormula p.ex keep =
-      .ex (s := ⟨s, keep (Or.inr (Or.inl (Set.mem_singleton _)))⟩) (selectFormula p (existsSupport keep)) :=
+      .ex (s := ⟨s, keep (Declaration.boundSort_mem_formulaSupport p)⟩) (selectFormula p (existsSupport keep)) :=
   rfl
 
 /-- The same literal Law has a writing in the genuinely smaller vocabulary. -/
 def selectLaw (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) : Law (signature U) :=
-  ⟨context law.context (fun _ t => keep (Or.inl (Or.inl t))),
-    selectFormula law.input (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
-      (fun h => keep (Or.inl (Or.inr h)))),
-    selectFormula law.conclusion (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
-      (fun h => keep (Or.inr h)))⟩
+  ⟨context law.context ((Declaration.sorts_subset_lawBody law).trans keep),
+    selectFormula law.input ((Declaration.formulaSupport_input_subset_lawBody law).trans keep),
+    selectFormula law.conclusion ((Declaration.formulaSupport_conclusion_subset_lawBody law).trans keep)⟩
 
 /-- The selected Law in Definition 3.1 uses exactly the retained context
 sorts, input and conclusion of its written Law. -/
 theorem selectLaw_eq (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) :
     selectLaw law keep =
-      ⟨context law.context (fun _ t => keep (Or.inl (Or.inl t))),
-        selectFormula law.input (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
-          (fun h => keep (Or.inl (Or.inr h)))),
-        selectFormula law.conclusion (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
-          (fun h => keep (Or.inr h)))⟩ :=
+      ⟨context law.context ((Declaration.sorts_subset_lawBody law).trans keep),
+        selectFormula law.input ((Declaration.formulaSupport_input_subset_lawBody law).trans keep),
+        selectFormula law.conclusion ((Declaration.formulaSupport_conclusion_subset_lawBody law).trans keep)⟩ :=
   rfl
 
 /-- Retyping two successive renamings retypes their composite. -/
@@ -236,7 +243,8 @@ theorem selectAtomic_rename {Γ Δ : List P.signature.SortType} (a : Atomic P.si
     (keep : Declaration.atomicSupport a ⊆ U.declarations)
     (renamed : Declaration.atomicSupport (a.rename ρ) ⊆ U.declarations) :
     selectAtomic (a.rename ρ) renamed = (selectAtomic a keep).rename
-      (selectRenaming (fun _ h => keep (Or.inl h)) (fun _ h => renamed (Or.inl h)) ρ) := by
+      (selectRenaming ((Declaration.sorts_subset_atomicSupport a).trans keep)
+        ((Declaration.sorts_subset_atomicSupport (a.rename ρ)).trans renamed) ρ) := by
   cases a with
   | eq x y =>
     simp only [Atomic.rename_eq] at renamed ⊢
@@ -265,12 +273,15 @@ theorem selectFormula_rename {Γ : List P.signature.SortType} (p : Formula P.sig
       (keep : Declaration.formulaSupport p ⊆ U.declarations)
       (renamed : Declaration.formulaSupport (p.rename ρ) ⊆ U.declarations),
       selectFormula (p.rename ρ) renamed = (selectFormula p keep).rename
-        (selectRenaming (fun _ h => keep (Or.inl h)) (fun _ h => renamed (Or.inl h)) ρ) := by
+        (selectRenaming ((Declaration.sorts_subset_formulaSupport p).trans keep)
+          ((Declaration.sorts_subset_formulaSupport (p.rename ρ)).trans renamed) ρ) := by
   induction p with
   | atom a =>
     intro Δ ρ keep renamed
     simp only [Formula.rename_atom, selectFormula_atom] at renamed ⊢
-    exact congrArg Formula.atom (selectAtomic_rename a ρ keep renamed)
+    exact congrArg Formula.atom (selectAtomic_rename a ρ
+      ((Declaration.formulaSupport_atom a).ge.trans keep)
+      ((Declaration.formulaSupport_atom (a.rename ρ)).ge.trans renamed))
   | truth =>
     intro Δ ρ keep renamed
     simp only [Formula.rename_truth, selectFormula_truth] at renamed ⊢
@@ -280,19 +291,25 @@ theorem selectFormula_rename {Γ : List P.signature.SortType} (p : Formula P.sig
   | conj p q hp hq =>
     intro Δ ρ keep renamed
     simp only [Formula.rename_conj, selectFormula_conj] at renamed ⊢
-    exact congrArg₂ Formula.conj (hp ρ (leftSupport keep) (leftSupport renamed))
-      (hq ρ (rightSupport keep) (rightSupport renamed))
+    have written := Declaration.formula_conj (P := P) p q
+    have moved := Declaration.formula_conj (P := P) (p.rename ρ) (q.rename ρ)
+    exact congrArg₂ Formula.conj
+      (hp ρ ((Declaration.binarySupport_left written).trans keep) ((Declaration.binarySupport_left moved).trans renamed))
+      (hq ρ ((Declaration.binarySupport_right written).trans keep) ((Declaration.binarySupport_right moved).trans renamed))
   | disj p q hp hq =>
     intro Δ ρ keep renamed
     simp only [Formula.rename_disj, selectFormula_disj] at renamed ⊢
-    exact congrArg₂ Formula.disj (hp ρ (leftSupport keep) (leftSupport renamed))
-      (hq ρ (rightSupport keep) (rightSupport renamed))
+    have written := Declaration.formula_disj (P := P) p q
+    have moved := Declaration.formula_disj (P := P) (p.rename ρ) (q.rename ρ)
+    exact congrArg₂ Formula.disj
+      (hp ρ ((Declaration.binarySupport_left written).trans keep) ((Declaration.binarySupport_left moved).trans renamed))
+      (hq ρ ((Declaration.binarySupport_right written).trans keep) ((Declaration.binarySupport_right moved).trans renamed))
   | @ex Γ s body ih =>
     intro Δ ρ keep renamed
     simp only [Formula.rename_ex, selectFormula_ex] at renamed ⊢
-    let kept : Declaration.sort s ∈ U.declarations := keep (Or.inr (Or.inl (Set.mem_singleton _)))
-    let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
-    let target : Declaration.sorts Δ ⊆ U.declarations := fun _ h => renamed (Or.inl h)
+    let kept : Declaration.sort s ∈ U.declarations := keep (Declaration.boundSort_mem_formulaSupport body)
+    let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport body.ex).trans keep
+    let target : Declaration.sorts Δ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport (body.rename ρ.lift).ex).trans renamed
     have inside := ih ρ.lift (existsSupport keep) (existsSupport renamed)
     have underBinder := congrArg (fun r : Renaming
         (context (s :: Γ) (Declaration.sorts_cons_subset kept free))
@@ -305,8 +322,9 @@ theorem selectFormula_openHead {Γ : List P.signature.SortType} {s : P.signature
     (p : Formula P.signature (s :: Γ)) (x : Var Γ s) (keep : Declaration.formulaSupport p ⊆ U.declarations)
     (after : Declaration.formulaSupport (p.rename (Renaming.openHead x)) ⊆ U.declarations) :
     selectFormula (p.rename (Renaming.openHead x)) after =
-      (selectFormula p keep).rename (Renaming.openHead (selectVar (fun _ h => after (Or.inl h)) x)) := by
-  let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => after (Or.inl h)
+      (selectFormula p keep).rename (Renaming.openHead
+        (selectVar ((Declaration.sorts_subset_formulaSupport (p.rename (Renaming.openHead x))).trans after) x)) := by
+  let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport (p.rename (Renaming.openHead x))).trans after
   have changeMap := congrArg (fun r : Renaming
       (context (s :: Γ) (Declaration.sorts_cons_subset (varKept free x) free)) (context Γ free) =>
     (selectFormula p keep).rename r) (selectRenaming_openHead free x)
@@ -318,9 +336,9 @@ theorem selectFormula_there {Γ : List P.signature.SortType} {s : P.signature.So
     (after : Declaration.formulaSupport (p.rename (fun i => Var.there (t := s) i)) ⊆ U.declarations) :
     selectFormula (p.rename (fun i => Var.there (t := s) i)) after =
       (selectFormula p keep).rename (fun i => Var.there
-        (t := (⟨s, after (Or.inl ⟨s, List.mem_cons_self, rfl⟩)⟩ : SortName U)) i) := by
-  let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
-  let head : Declaration.sort s ∈ U.declarations := after (Or.inl ⟨s, List.mem_cons_self, rfl⟩)
+        (t := (⟨s, after (Declaration.sorts_subset_formulaSupport _ ⟨s, List.mem_cons_self, rfl⟩)⟩ : SortName U)) i) := by
+  let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport p).trans keep
+  let head : Declaration.sort s ∈ U.declarations := after (Declaration.sorts_subset_formulaSupport _ ⟨s, List.mem_cons_self, rfl⟩)
   have changeMap := congrArg (fun r : Renaming (context Γ free)
       (context (s :: Γ) (Declaration.sorts_cons_subset head free)) => (selectFormula p keep).rename r)
     (selectRenaming_there head free)

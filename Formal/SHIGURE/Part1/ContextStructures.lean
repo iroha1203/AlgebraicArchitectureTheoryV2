@@ -25,17 +25,17 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 /-- A Law's written support includes the support of its input formula. -/
 theorem lawInputSupport {law : Law P.signature} (support : Declaration.lawBody law ⊆ U.declarations) :
     Declaration.formulaSupport law.input ⊆ U.declarations :=
-  fun _ h => h.elim (fun h => support (Or.inl (Or.inl h))) (fun h => support (Or.inl (Or.inr h)))
+  (Declaration.formulaSupport_input_subset_lawBody law).trans support
 
 /-- A Law's written support includes the support of its conclusion. -/
 theorem lawConclusionSupport {law : Law P.signature} (support : Declaration.lawBody law ⊆ U.declarations) :
     Declaration.formulaSupport law.conclusion ⊆ U.declarations :=
-  fun _ h => h.elim (fun h => support (Or.inl (Or.inl h))) (fun h => support (Or.inr h))
+  (Declaration.formulaSupport_conclusion_subset_lawBody law).trans support
 
 /-- The Law's assignment context is part of both of its sides' supports. -/
 theorem lawSortSupport {law : Law P.signature} (support : Declaration.lawBody law ⊆ U.declarations) :
     Declaration.sorts law.context ⊆ U.declarations :=
-  fun _ h => support (Or.inl (Or.inl h))
+  (Declaration.sorts_subset_lawBody law).trans support
 
 /-- A graph axiom can be written in any context keeping its primitive symbol. -/
 theorem graphRuleSupport (rule : GraphAxiom P.signature)
@@ -43,6 +43,7 @@ theorem graphRuleSupport (rule : GraphAxiom P.signature)
     Declaration.lawBody rule.toLaw ⊆ U.declarations := by
   cases rule with
   | functional op =>
+    rw [Declaration.graphRuleName_functional] at kept
     have inputs := operationInputs op kept
     have output := operationOutput op kept
     simp only [GraphAxiom.toLaw_functional, Declaration.lawBody_eq, Declaration.formula_conj,
@@ -51,6 +52,7 @@ theorem graphRuleSupport (rule : GraphAxiom P.signature)
     exact Set.union_subset (Declaration.sorts_cons_subset output (Declaration.sorts_cons_subset output inputs))
       (Set.singleton_subset_iff.mpr kept)
   | totality f =>
+    rw [Declaration.graphRuleName_totality, ← Declaration.ofOperation_total] at kept
     have inputs := operationInputs (.total f) kept
     have output := operationOutput (.total f) kept
     simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody_eq,
@@ -58,6 +60,7 @@ theorem graphRuleSupport (rule : GraphAxiom P.signature)
       Set.union_empty, Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨inputs, output, kept⟩
   | quantityTotality q =>
+    rw [Declaration.graphRuleName_quantityTotality, ← Declaration.ofOperation_quantity] at kept
     have inputs := operationInputs (.quantity q) kept
     have output := operationOutput (.quantity q) kept
     simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody_eq,
@@ -65,16 +68,18 @@ theorem graphRuleSupport (rule : GraphAxiom P.signature)
       Set.union_empty, Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨inputs, output, kept⟩
   | graphImpliesDomain p =>
-    have inputs := operationInputs (.partialOp p) kept
-    have output := operationOutput (.partialOp p) kept
+    rw [Declaration.graphRuleName_graphImpliesDomain] at kept
+    have inputs := operationInputs (.partialOp p) (by rwa [Declaration.ofOperation_partialOp])
+    have output := operationOutput (.partialOp p) (by rwa [Declaration.ofOperation_partialOp])
     simp only [GraphAxiom.toLaw_graphImpliesDomain, Declaration.lawBody_eq, Declaration.formula_atom,
-      Declaration.atomic_graph, Declaration.atomic_domain, Set.union_subset_iff, Set.singleton_subset_iff]
+      Declaration.atomic_graph, Declaration.atomic_domain, Declaration.ofOperation_partialOp, Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨⟨Declaration.sorts_cons_subset output inputs, kept⟩, kept⟩
   | domainImpliesGraph p =>
-    have inputs := operationInputs (.partialOp p) kept
-    have output := operationOutput (.partialOp p) kept
+    rw [Declaration.graphRuleName_domainImpliesGraph] at kept
+    have inputs := operationInputs (.partialOp p) (by rwa [Declaration.ofOperation_partialOp])
+    have output := operationOutput (.partialOp p) (by rwa [Declaration.ofOperation_partialOp])
     simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody_eq,
-      Declaration.formula_atom, Declaration.formula_ex, Declaration.atomic_graph, Declaration.atomic_domain,
+      Declaration.formula_atom, Declaration.formula_ex, Declaration.atomic_graph, Declaration.atomic_domain, Declaration.ofOperation_partialOp,
       Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨⟨inputs, kept⟩, output, kept⟩
 

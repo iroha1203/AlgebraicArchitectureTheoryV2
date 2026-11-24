@@ -202,8 +202,8 @@ include same
 and the supplied primitive comparisons for retained relation, domain and graph atoms. -/
 theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (keep : Declaration.atomicSupport a ⊆ U.declarations) (x : Assignment X Γ) :
-    (selectAtomic a keep).Holds B (selectAssignment e (fun _ h => keep (Or.inl h)) x) ↔ E.atomic x a keep := by
-  let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
+    (selectAtomic a keep).Holds B (selectAssignment e ((Declaration.sorts_subset_atomicSupport a).trans keep) x) ↔ E.atomic x a keep := by
+  let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_atomicSupport a).trans keep
   cases a with
   | eq l r =>
     rw [selectAtomic_eq, Atomic.holds_eq, RestrictedEvaluation.atomic_eq_iff]
@@ -233,12 +233,12 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
 /-- Any supported formula has the same truth in the actual selected structure. -/
 theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
     ∀ (keep : Declaration.formulaSupport p ⊆ U.declarations) (x : Assignment X Γ),
-      (selectFormula p keep).Holds B (selectAssignment e (fun _ h => keep (Or.inl h)) x) ↔ E.holds p keep x := by
+      (selectFormula p keep).Holds B (selectAssignment e ((Declaration.sorts_subset_formulaSupport p).trans keep) x) ↔ E.holds p keep x := by
   induction p with
   | atom a =>
     intro keep x
     rw [selectFormula_atom, Formula.holds_atom, RestrictedEvaluation.holds_atom_iff]
-    exact same.atomic_iff a keep x
+    exact same.atomic_iff a ((Declaration.formulaSupport_atom a).ge.trans keep) x
   | truth =>
     intro keep x
     rw [selectFormula_truth, Formula.holds_truth_iff, RestrictedEvaluation.holds_truth_iff]
@@ -248,15 +248,17 @@ theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ
   | conj p q hp hq =>
     intro keep x
     rw [selectFormula_conj, Formula.holds_conj, RestrictedEvaluation.holds_conj_iff]
-    exact and_congr (hp (leftSupport keep) x) (hq (rightSupport keep) x)
+    exact and_congr (hp ((Declaration.binarySupport_left (Declaration.formula_conj p q)).trans keep) x)
+      (hq ((Declaration.binarySupport_right (Declaration.formula_conj p q)).trans keep) x)
   | disj p q hp hq =>
     intro keep x
     rw [selectFormula_disj, Formula.holds_disj, RestrictedEvaluation.holds_disj_iff]
-    exact or_congr (hp (leftSupport keep) x) (hq (rightSupport keep) x)
+    exact or_congr (hp ((Declaration.binarySupport_left (Declaration.formula_disj p q)).trans keep) x)
+      (hq ((Declaration.binarySupport_right (Declaration.formula_disj p q)).trans keep) x)
   | @ex Γ s p ih =>
     intro keep x
     let kept : Declaration.sort s ∈ U.declarations := keep (Declaration.boundSort_mem_formulaSupport p)
-    let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
+    let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport p.ex).trans keep
     rw [selectFormula_ex, Formula.holds_ex, RestrictedEvaluation.holds_ex_iff]
     constructor
     · rintro ⟨y, truth⟩

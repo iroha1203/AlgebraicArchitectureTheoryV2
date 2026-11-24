@@ -75,8 +75,7 @@ theorem no_ordinary_global_model :
   apply no_global_model
   refine ⟨Selected.writeModel A, fun i => ?_⟩
   have localEq := congrArg (fun B : Model (Selected.theory (piece i)) => Selected.writeModel B) (restricts i)
-  change Selected.writeModel (Selected.readModel ((Selected.writeModel A).restrict (pieces_inside i))) =
-    Selected.writeModel (Selected.readModel (matching.pieceModel i)) at localEq
+  rw [Selected.modelRestriction_obj, OrdinaryMatch.readObj_pieceModel] at localEq
   simpa only [Selected.write_read_model] using localEq
 
 /-- Equality of ordinary overlap reducts detects a disagreement of retained carriers. -/
@@ -162,8 +161,11 @@ def left : DeclarationContext presentation where
     intro d used forbidden
     subst d
     cases a with
-    | sort _ => exact used
-    | total f => rcases used with ⟨s, hs, same⟩; cases same
+    | sort _ => rw [Declaration.sort_dependencies] at used; exact used
+    | total f =>
+      rw [Declaration.total_dependencies] at used
+      rcases used with ⟨s, hs, same⟩
+      cases same
     | relation r => exact nomatch r
     | partialOp p => exact nomatch p
     | quantity q => exact nomatch q
@@ -178,8 +180,10 @@ def right : DeclarationContext presentation where
   declarations := {d | d = .sort () ∨ d = .total true}
   closed kept := by
     rcases kept with rfl | rfl
-    · exact Set.empty_subset _
-    · rintro _ ⟨s, _, rfl⟩
+    · rw [Declaration.sort_dependencies]
+      exact Set.empty_subset _
+    · rw [Declaration.total_dependencies]
+      rintro _ ⟨s, _, rfl⟩
       cases s
       exact Or.inl rfl
 

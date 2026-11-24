@@ -182,12 +182,49 @@ theorem formulaSupport_eq {Γ : List P.signature.SortType} (p : Formula P.signat
     formulaSupport (P := P) p = sorts Γ ∪ formula p :=
   rfl
 
+/-- All free sorts of an atom occur in its support. -/
+theorem sorts_subset_atomicSupport {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
+    sorts Γ ⊆ atomicSupport (P := P) a :=
+  Set.subset_union_left
+
+/-- All free sorts of a formula occur in its support. -/
+theorem sorts_subset_formulaSupport {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
+    sorts Γ ⊆ formulaSupport (P := P) p :=
+  Set.subset_union_left
+
+/-- The atom and the formula it generates have identical support. -/
+theorem formulaSupport_atom {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
+    formulaSupport (P := P) (.atom a) = atomicSupport a :=
+  rfl
+
+/-- The support of either binary connective contains the support of its left operand. -/
+theorem binarySupport_left {Γ : List P.signature.SortType} {p q r : Formula P.signature Γ}
+    (body : formula (P := P) r = formula p ∪ formula q) :
+    formulaSupport p ⊆ formulaSupport r := by
+  rw [formulaSupport_eq, formulaSupport_eq, body]
+  exact Set.union_subset (Set.subset_union_left) (Set.subset_union_left.trans Set.subset_union_right)
+
+/-- The support of either binary connective contains the support of its right operand. -/
+theorem binarySupport_right {Γ : List P.signature.SortType} {p q r : Formula P.signature Γ}
+    (body : formula (P := P) r = formula p ∪ formula q) :
+    formulaSupport q ⊆ formulaSupport r := by
+  rw [formulaSupport_eq, formulaSupport_eq, body]
+  exact Set.union_subset (Set.subset_union_left) (Set.subset_union_right.trans Set.subset_union_right)
+
 /-- The bound sort of an existential belongs to its formula support. -/
 theorem boundSort_mem_formulaSupport {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (p : Formula P.signature (s :: Γ)) :
     Declaration.sort s ∈ formulaSupport p.ex := by
   rw [formulaSupport_eq, formula_ex]
   exact Or.inr (Or.inl (Set.mem_singleton _))
+
+/-- The support of an existential contains the support of its body in the extended context. -/
+theorem formulaSupport_ex_body {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (p : Formula P.signature (s :: Γ)) : formulaSupport (P := P) p ⊆ formulaSupport p.ex := by
+  apply Set.union_subset
+  · exact sorts_cons_subset (boundSort_mem_formulaSupport p) (sorts_subset_formulaSupport p.ex)
+  · rw [formulaSupport_eq, formula_ex]
+    exact Set.subset_union_right.trans Set.subset_union_right
 
 /-- Every position and primitive mentioned by a written Law. -/
 def lawBody (law : Law P.signature) : Set (Declaration P) :=
@@ -197,6 +234,20 @@ def lawBody (law : Law P.signature) : Set (Declaration P) :=
 theorem lawBody_eq (law : Law P.signature) :
     lawBody (P := P) law = sorts law.context ∪ formula law.input ∪ formula law.conclusion :=
   rfl
+
+/-- The free sorts of a Law belong to its written support. -/
+theorem sorts_subset_lawBody (law : Law P.signature) : sorts law.context ⊆ lawBody (P := P) law :=
+  Set.subset_union_left.trans Set.subset_union_left
+
+/-- Its antecedent uses only the written support of the Law. -/
+theorem formulaSupport_input_subset_lawBody (law : Law P.signature) :
+    formulaSupport (P := P) law.input ⊆ lawBody law :=
+  Set.subset_union_left
+
+/-- Its conclusion uses only the written support of the Law. -/
+theorem formulaSupport_conclusion_subset_lawBody (law : Law P.signature) :
+    formulaSupport (P := P) law.conclusion ⊆ lawBody law :=
+  Set.union_subset (sorts_subset_lawBody law) Set.subset_union_right
 
 /-- Read the contexts and formulas of a sequent in the presentation with the same signature. -/
 private def sequentSupport {sig : Signature.{u}} (same : sig = P.signature)
@@ -215,6 +266,87 @@ def derivationOf {T : Theory.{u}} (same : T.signature = P.signature)
     | .rename _ d | .existsElim d => derivationOf same lawName d
     | .refl _ | .graph _ | .truth _ | .falsehood _ | .andLeft _ _ | .andRight _ _ |
         .orLeft _ _ | .orRight _ _ | .existsIntro _ _ | .eqRefl _ | .eqSubst _ _ _ => ∅
+
+/-- A derivation records the written support of its root sequent. -/
+theorem lawBody_subset_derivationOf {I : Type u} {statement : I → Law P.signature}
+    {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
+    (name : I → P.laws.LawName) (d : Derivation (⟨P.signature, I, statement⟩ : Theory) p q) :
+    lawBody (P := P) ⟨Γ, p, q⟩ ⊆ derivationOf rfl name d := by
+  rw [derivationOf.eq_def]
+  exact Set.subset_union_left
+
+/-- A required leaf retains the declaration name of its premise. -/
+theorem law_mem_derivationOf_required {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName) (i : T.LawName) :
+    Declaration.law (name i) ∈ derivationOf same name (Derivation.required (T := T) i) :=
+  Or.inr (Set.mem_singleton _)
+
+/-- Cut retains all references from its left premise. -/
+theorem derivationOf_cut_left {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {p q r : Formula T.signature Γ}
+    (left : Derivation T p q) (right : Derivation T q r) :
+    derivationOf same name left ⊆ derivationOf same name (Derivation.cut left right) :=
+  fun _ member => Or.inr (Or.inl member)
+
+/-- Cut retains all references from its right premise. -/
+theorem derivationOf_cut_right {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {p q r : Formula T.signature Γ}
+    (left : Derivation T p q) (right : Derivation T q r) :
+    derivationOf same name right ⊆ derivationOf same name (Derivation.cut left right) :=
+  fun _ member => Or.inr (Or.inr member)
+
+/-- Conjunction introduction retains all references from its left premise. -/
+theorem derivationOf_andIntro_left {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {p q r : Formula T.signature Γ}
+    (left : Derivation T p q) (right : Derivation T p r) :
+    derivationOf same name left ⊆ derivationOf same name (Derivation.andIntro left right) :=
+  fun _ member => Or.inr (Or.inl member)
+
+/-- Conjunction introduction retains all references from its right premise. -/
+theorem derivationOf_andIntro_right {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {p q r : Formula T.signature Γ}
+    (left : Derivation T p q) (right : Derivation T p r) :
+    derivationOf same name right ⊆ derivationOf same name (Derivation.andIntro left right) :=
+  fun _ member => Or.inr (Or.inr member)
+
+/-- Disjunction elimination retains all references from its left premise. -/
+theorem derivationOf_orElim_left {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {p q r q' : Formula T.signature Γ}
+    (left : Derivation T (p.conj q) r) (right : Derivation T (p.conj q') r) :
+    derivationOf same name left ⊆ derivationOf same name (Derivation.orElim left right) :=
+  fun _ member => Or.inr (Or.inl member)
+
+/-- Disjunction elimination retains all references from its right premise. -/
+theorem derivationOf_orElim_right {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {p q r q' : Formula T.signature Γ}
+    (left : Derivation T (p.conj q) r) (right : Derivation T (p.conj q') r) :
+    derivationOf same name right ⊆ derivationOf same name (Derivation.orElim left right) :=
+  fun _ member => Or.inr (Or.inr member)
+
+/-- A renaming retains all references from its premise. -/
+theorem derivationOf_rename {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ Δ : List T.signature.SortType} {p q : Formula T.signature Γ}
+    (ρ : Renaming Γ Δ) (child : Derivation T p q) :
+    derivationOf same name child ⊆ derivationOf same name (Derivation.rename ρ child) :=
+  Set.subset_union_right
+
+/-- Existential elimination retains all references from its premise. -/
+theorem derivationOf_existsElim {T : Theory.{u}} (same : T.signature = P.signature)
+    (name : T.LawName → P.laws.LawName)
+    {Γ : List T.signature.SortType} {s : T.signature.SortType} {p : Formula T.signature (s :: Γ)}
+    {c q : Formula T.signature Γ}
+    (child : Derivation T ((c.rename (fun i => Var.there i)).conj p)
+      (q.rename (fun i => Var.there i))) :
+    derivationOf same name child ⊆ derivationOf same name
+      (Derivation.existsElim (p := p) (c := c) (q := q) child) :=
+  Set.subset_union_right
 
 /-- The support of a derivation in the theory presented here. -/
 abbrev derivation {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
@@ -285,6 +417,16 @@ def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declarati
       match role : P.laws.role name with
       | .derived => derivation (P.derived name role)
       | .required | .additional => ∅
+
+/-- A sort declaration has no immediate dependencies. -/
+theorem sort_dependencies (s : P.signature.SortType) : dependsOn P (.sort s) = ∅ :=
+  rfl
+
+/-- A quantity depends on its input and output sorts. -/
+theorem quantity_dependencies (q : P.signature.Quantity) :
+    dependsOn P (.quantity q) =
+      sorts ((P.signature.quantityArity q).output :: (P.signature.quantityArity q).inputs) :=
+  rfl
 
 /-- A total operation in Definition 3.1 depends on its input and output sorts. -/
 theorem total_dependencies (f : P.signature.Total) :

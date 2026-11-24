@@ -86,18 +86,29 @@ theorem append_moveHead {s : S} {Λ : List S} (x : Var E s)
   | here => exact append_shift left (cons x right) Var.here
   | there j => exact append_insertAfter x right left j
 
+/-- Shifting a variable by a nonempty block is the composite of two shifts. -/
+theorem shift_cons_comp {s : S} (Λ : List S) :
+    (fun {t} (i : Var Γ t) => Var.shift (s :: Λ) i) =
+      (fun {t} (i : Var Γ t) => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i) := by
+  funext _ i
+  rw [Renaming.comp_apply]
+  exact Var.shift_cons Λ i
+
 /-- Joining the inclusions of both blocks recovers the identity on the full context. -/
 theorem append_blocks {Λ : List S} :
     @append S Γ (Λ ++ Γ) Λ (Var.inLeft Γ) (Var.shift Λ) = (fun {_} i => i) := by
+  funext t i
   induction Λ with
-  | nil => rfl
+  | nil =>
+    rw [Var.shift_nil]
+    rfl
   | cons s Λ ih =>
-    funext t i
     cases i with
-    | here => rfl
+    | here => exact Var.inLeft_here Γ
     | there j =>
-      change append (fun k => Var.there (k.inLeft Γ))
-        (fun k => Var.there (k.shift Λ)) j = Var.there j
+      change append (fun k => (Var.there (t := s) k).inLeft Γ)
+        (fun k => Var.shift (s :: Λ) k) j = Var.there j
+      simp only [Var.inLeft_there, Var.shift_cons]
       have go : ∀ {Θ : List S} (left : Renaming Θ (Λ ++ Γ))
           (right : Renaming Γ (Λ ++ Γ)) {r : S} (k : Var (Θ ++ Γ) r),
           append (fun i => Var.there (t := s) (left i)) (fun i => Var.there (t := s) (right i)) k =
@@ -110,9 +121,7 @@ theorem append_blocks {Λ : List S} :
           cases k with
           | here => rfl
           | there old => exact inner (fun i => left (.there i)) right old
-      have h := congrArg (fun (ρ : Renaming (Λ ++ Γ) (Λ ++ Γ)) => ρ j) ih
-      rw [go]
-      exact congrArg (fun x => Var.there (t := s) x) h
+      rw [go, ih j]
 
 /-- Selecting an old position while leaving it fixed recovers that position. -/
 @[simp] theorem append_id_shift {Λ : List S} (left : Renaming Λ Γ)
@@ -220,14 +229,9 @@ def existsManyElim : {Λ : List T.signature.SortType} →
   | s :: Λ, _, d => by
     apply existsManyElim (Λ := Λ)
     apply existsElimPlain
-    have shifted : (fun {t} (i : Var Γ t) => Var.shift (s :: Λ) i) =
-        (fun {t} (i : Var Γ t) => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i) := by
-      funext _ i
-      rw [Renaming.comp_apply]
-      exact Var.shift_cons Λ i
     rw [Formula.rename_comp]
     change Derivation T _ (q.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i))
-    rw [← shifted]
+    rw [← Renaming.shift_cons_comp]
     exact d
 
 /-- Introduce a block of witnesses taken from variables in the ambient context. -/

@@ -28,10 +28,15 @@ def existsManyElimWith : {Λ : List T.signature.SortType} →
     Derivation T (c.conj (Formula.existsMany Λ body)) q
   | [], _, _, _, d => by
     simpa only [Var.shift_nil, Formula.rename_id, Formula.existsMany_nil] using d
-  | _ :: Λ, _, _, body, d => by
+  | s :: Λ, c, q, body, d => by
     apply existsManyElimWith (Λ := Λ) (body := body.ex)
     apply Derivation.existsElim
-    simpa only [Formula.rename_comp, Renaming.comp_apply, Var.shift_cons] using d
+    rw [Formula.rename_comp, Formula.rename_comp]
+    change Derivation T
+      ((c.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i)).conj body)
+      (q.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i))
+    rw [← Renaming.shift_cons_comp]
+    exact d
 
 end SHIGURE.Derivation
 

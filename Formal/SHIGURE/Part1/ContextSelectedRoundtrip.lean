@@ -53,7 +53,8 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 /-- The round trip through an ordinary structure keeps every context carrier type. -/
 theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStructure A)).carrier = A.carrier :=
   ContextStructure.carrier_ext fun s keep =>
-    (congrFun (writeStructure_carrier_eq (readStructure A)) s).trans (extendedCarrier_kept (readStructure A) s keep)
+    (congrFun (writeStructure_carrier_eq (readStructure A)) s).trans
+      ((extendedCarrier_kept (readStructure A) s keep).trans (readStructure_carrier_eq A ⟨s, keep⟩))
 
 /-- Recover the given context structure by reading and writing it, as used
 in the model comparison for Proposition 3.2. The carrier identification comes
@@ -85,7 +86,8 @@ from the retained sorts, and the retained facts determine the structure. -/
 
 /-- Writing then reading keeps every actual selected carrier type. -/
 theorem read_write_carriers (B : Structure (signature U)) : (readStructure (writeStructure B)).carrier = B.carrier :=
-  funext fun s => extendedCarrier_kept B s.val s.property
+  funext fun s => ((readStructure_carrier_eq (writeStructure B) s).trans
+    (congrFun (writeStructure_carrier_eq B) s.val)).trans (extendedCarrier_kept B s.val s.property)
 
 /-- The inverse carrier casts take a selected tuple back to its tuple of original values. -/
 theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.SortType}
