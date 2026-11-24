@@ -171,12 +171,18 @@ theorem f_path (a b : ℤ) :
 /-- The actual path `e` followed by `f`. -/
 def ef : Quiver.Path Stage.zero Stage.two := (Quiver.Hom.toPath Link.e).cons Link.f
 
+/-- The two-edge path is the composite of the two generating arrows. -/
+theorem ef_eq_comp : ef = ((Paths.of Stage).map Link.e ≫ (Paths.of Stage).map Link.f) :=
+  rfl
+
 /-- The length-two path acts by both updates in order. -/
 theorem ef_path (a b : ℤ) :
     pairs.map ef (a, b) = (2 * a + 2, b + 1) ∧ integers.map ef a = 2 * a + 2 := by
-  change (2 * (a + 1), b + 1) = (2 * a + 2, b + 1) ∧ 2 * (a + 1) = 2 * a + 2
-  rw [mul_add, mul_one]
-  exact ⟨rfl, rfl⟩
+  constructor
+  · simp only [ef_eq_comp, FunctorToTypes.map_comp_apply, Paths.of_map, (e_path a b).1,
+      (f_path (a + 1) b).1, mul_add, mul_one]
+  · simp only [ef_eq_comp, FunctorToTypes.map_comp_apply, Paths.of_map, (e_path a b).2,
+      (f_path (a + 1) b).2, mul_add, mul_one]
 
 /-- Evaluation followed by readout agrees after applying the protocol arrow, for every path. -/
 theorem observe_all_paths {i j : Stage} (p : Quiver.Path i j) (a b : ℤ) :

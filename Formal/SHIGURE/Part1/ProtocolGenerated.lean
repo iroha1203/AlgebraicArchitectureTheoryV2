@@ -36,10 +36,26 @@ def edges (relations : HomRel (Paths V)) : V ⥤q Execution relations :=
 def observations {relations : HomRel (Paths V)} (O : Execution relations ⥤ Type u) : V ⥤q Type u :=
   edges relations ⋙q O.toPrefunctor
 
+/-- On a generating edge, observation applies the functor to its length-one path in the quotient. -/
+theorem observations_map {relations : HomRel (Paths V)} (O : Execution relations ⥤ Type u)
+    {i j : V} (e : i ⟶ j) :
+    (observations O).map e = O.map ((CategoryTheory.Quotient.functor relations).map e.toPath) :=
+  rfl
+
 /-- The term of a path uses the original state variable and each successive named edge. -/
 def pathTerm {i : V} : {j : V} → Quiver.Path i j → Term (signature V) [.inl i] (.inl j)
   | _, .nil => .var .here
   | _, .cons p e => applySymbol (.step e) (pathTerm p)
+
+/-- The empty path has the term of the original state variable. -/
+theorem pathTerm_nil (i : V) :
+    pathTerm (Quiver.Path.nil : Quiver.Path i i) = .var .here :=
+  rfl
+
+/-- Appending a generator applies its named step to the term of the prefix. -/
+theorem pathTerm_cons {i j k : V} (p : Quiver.Path i j) (e : j ⟶ k) :
+    pathTerm (p.cons e) = applySymbol (.step e) (pathTerm p) :=
+  rfl
 
 /-- The action on generating edges as a prefunctor. -/
 def stateEdges {O : V ⥤q Type u} (X : Action O) : V ⥤q Type u where
@@ -75,10 +91,9 @@ theorem totalValue_pathTerm {O : V ⥤q Type u} (X : Action O) {i j : V} (p : Qu
     (xs : Assignment X.toStructure.carrier [.inl i]) :
     (pathTerm p).totalValue X.toStructure xs = pathValue X p (xs .here) := by
   induction p with
-  | nil => rfl
+  | nil => rw [pathTerm_nil, Term.totalValue_var, pathValue_nil]
   | cons p e ih =>
-    rw [show pathTerm (p.cons e) = applySymbol (.step e) (pathTerm p) from rfl,
-      totalValue_applySymbol, Action.symbolValue_toStructure, ih, pathValue_cons]
+    rw [pathTerm_cons, totalValue_applySymbol, Action.symbolValue_toStructure, ih, pathValue_cons]
     rfl
 
 /-- A path equation is a Law comparing the two actual state terms at every input. -/
@@ -149,9 +164,9 @@ theorem path_observe (X : Actions O) {i j : V} (p : Quiver.Path i j) (x : X.obj.
       O.map ((CategoryTheory.Quotient.functor relations).map (𝟙 ((Paths.of V).obj i))) _
     rw [Functor.map_id, Functor.map_id, types_id_apply]
   | cons p e ih =>
-    rw [pathValue_cons, (observationLaw_holds_iff X.obj e).1 (X.property (.naturality e)), ih]
-    change O.map ((CategoryTheory.Quotient.functor relations).map e.toPath)
-        (O.map ((CategoryTheory.Quotient.functor relations).map p) (X.obj.observe i x)) =
+    rw [pathValue_cons, (observationLaw_holds_iff X.obj e).1 (X.property (.naturality e)),
+      observations_map, ih]
+    change _ =
       O.map ((CategoryTheory.Quotient.functor relations).map (p ≫ e.toPath : _ ⟶ _)) (X.obj.observe i x)
     rw [Functor.map_comp, Functor.map_comp, types_comp_apply]
 

@@ -824,7 +824,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Protocol.Generated.Execution,
   Protocol.Generated.edges,
   Protocol.Generated.observations,
+  Protocol.Generated.observations_map,
   Protocol.Generated.pathTerm,
+  Protocol.Generated.pathTerm_nil,
+  Protocol.Generated.pathTerm_cons,
   Protocol.Generated.stateEdges,
   Protocol.Generated.pathValue,
   Protocol.Generated.pathValue_nil,
@@ -893,6 +896,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Protocol.IntegerPaths.e_path,
   Protocol.IntegerPaths.f_path,
   Protocol.IntegerPaths.ef,
+  Protocol.IntegerPaths.ef_eq_comp,
   Protocol.IntegerPaths.ef_path,
   Protocol.IntegerPaths.observe_all_paths,
   Protocol.IntegerPaths.observe_ef
