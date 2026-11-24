@@ -276,9 +276,10 @@ jobs:
           mkdir -p "$SHIGURE_AUDIT_STAMPS"
           cp .github/lean_quality/ShigureBuildAudit.lean "$audit_dir"
           (
+            export ELAN_TOOLCHAIN="$(cat lean-toolchain)"
             cd "$audit_dir"
             lean -c ShigureBuildAudit.c ShigureBuildAudit.lean
-            leanc -shared -DLEAN_EXPORTING -o libShigureBuildAudit.so ShigureBuildAudit.c
+            leanc -shared -fPIC -DLEAN_EXPORTING -o libShigureBuildAudit.so ShigureBuildAudit.c
           )
           plugin="$audit_dir/libShigureBuildAudit.so"
           awk -v plugin="$plugin" '
@@ -318,9 +319,14 @@ jobs:
               echo "$file: the source audit did not reach the end of the file" >&2
               exit 1
             fi
-            if [[ $(cat "$stamp") == frontend ]]; then
-              source_checks+=("$file")
-            fi
+            audit_status="$(cat "$stamp")"
+            case "$audit_status" in
+              checked) ;;
+              frontend) source_checks+=("$file") ;;
+              *)
+                echo "$file: invalid source audit result" >&2
+                exit 1 ;;
+            esac
           done < "$RUNNER_TEMP/shigure-files"
           lake env bash -e -o pipefail -c '
             export LEAN_PATH="$1:$LEAN_PATH"

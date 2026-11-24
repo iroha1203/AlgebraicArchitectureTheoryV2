@@ -115,8 +115,8 @@ theorem checkedTogether : True := True.intro
 LEAN
 cat >"$tmp/CompiledRejected.lean" <<'LEAN'
 module
-private axiom nonstandard : False
-private theorem compiledDependency : False := nonstandard
+import Lean.Elab.Tactic
+private theorem compiledDependency : True := by decide (native := id true)
 LEAN
 lake env bash -e -c '
   cd "$1"
@@ -129,7 +129,7 @@ lake env bash -e -c '
     echo "SHIGURE compiled declaration checker accepted a nonstandard assumption" >&2
     exit 1
   fi
-  grep -Eq "nonstandard kernel assumption .*CompiledRejected.*nonstandard" diagnostics
+  grep -Fq "nonstandard kernel assumption Lean.ofReduceBool" diagnostics
 ' bash "$tmp" "$PWD/$checker"
 
 cat >"$tmp/AdjacentExit.lean" <<'LEAN'
@@ -157,6 +157,11 @@ run_cmd do
   pure ()
 LEAN
   cp "$tmp/AdjacentExit.lean" "$tmp/Formal/SHIGURE/AdjacentExit.lean"
+  cp "$tmp/Rejected.lean" "$tmp/Formal/SHIGURE/RejectedSyntax.lean"
+  cat >"$tmp/Formal/SHIGURE/Guarded.lean" <<'LEAN'
+#guard_msgs in
+theorem succeeds : True := True.intro
+LEAN
   lake env bash -e -c '
     cd "$1"
     export LEAN_PATH="$PWD:$LEAN_PATH"
@@ -164,6 +169,15 @@ LEAN
     mkdir -p "$SHIGURE_AUDIT_STAMPS"
     lean --plugin="$2" -o Formal/SHIGURE/MacroSource.olean Formal/SHIGURE/MacroSource.lean
     test "$(cat stamps/Formal.SHIGURE.MacroSource)" = checked
+    lean --plugin="$2" Formal/SHIGURE/Guarded.lean
+    test "$(cat stamps/Formal.SHIGURE.Guarded)" = frontend
+    if lean --plugin="$2" Formal/SHIGURE/RejectedSyntax.lean > syntax.log 2>&1; then
+      echo "SHIGURE build audit accepted prohibited syntax" >&2
+      exit 1
+    fi
+    test "$(grep -c "disallowed syntax sorry" syntax.log)" -eq 2
+    grep -Fq "disallowed syntax unsafe" syntax.log
+    grep -Fq "disallowed syntax debug.skipKernelTC" syntax.log
     if lean --plugin="$2" Formal/SHIGURE/MacroClient.lean > macro.log 2>&1; then
       echo "SHIGURE build audit accepted a nonstandard proof from an imported macro" >&2
       exit 1
