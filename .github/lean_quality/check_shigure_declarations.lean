@@ -124,12 +124,14 @@ private def checkDependencies (fileName : String) (moduleName : Name) (state : F
       valid := false
   return valid
 
-/-- Elaborate one source and apply the independent syntax and kernel checks. -/
-private def checkFile (file : System.FilePath) : IO Bool := do
+/-- Run the Lean frontend and syntax and kernel checks for one file in a disposable process. -/
+private unsafe def checkFile (file : System.FilePath) : IO Bool := do
   let input := Parser.mkInputContext (← IO.FS.readFile file) file.toString
   let moduleName ← moduleNameOfFileName file none
   let (header, parserState, messages) ← Parser.parseHeader input
-  let (env, messages) ← processHeader header {} messages input (mainModule := moduleName)
+  -- This is the frontend's startup step. Imported tactic extensions need their initializers.
+  Lean.enableInitializersExecution
+  let (env, messages) ← processHeader header {} messages input (leakEnv := true) (mainModule := moduleName)
   let state ← Elab.IO.processCommands input parserState (Command.mkState env messages {})
   let messages := state.commandState.messages
   for message in messages.toList do
@@ -142,13 +144,21 @@ private def checkFile (file : System.FilePath) : IO Bool := do
   return !messages.hasErrors && complete && syntaxValid && kernelEnabled && kernelValid
 
 /-- Run from the repository root after the SHIGURE build. Paths optionally select local fixtures. -/
-def main (args : List String) : IO UInt32 := do
+unsafe def main (args : List String) : IO UInt32 := do
+  if let [file] := args then
+    return if ← checkFile file then 0 else 1
   let files ← if args.isEmpty then do
     let files ← (System.FilePath.mk "Formal/SHIGURE").walkDir
     pure ((files.filter (·.extension == some "lean")).push "Formal/SHIGURE.lean")
   else pure (args.toArray.map System.FilePath.mk)
+  let exe ← IO.appPath
   let mut valid := true
   for file in files do
-    unless ← checkFile file do
+    -- Extension caches can keep imported environments alive. Release them at process exit.
+    let child ← IO.Process.spawn {
+      cmd := exe.toString
+      args := #["--run", ".github/lean_quality/check_shigure_declarations.lean", file.toString]
+    }
+    unless (← child.wait) == 0 do
       valid := false
   return if valid then 0 else 1
