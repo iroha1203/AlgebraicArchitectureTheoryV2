@@ -60,7 +60,7 @@ def equalityContext : DeclarationContext paddedPresentation where
     cases a with
     | sort s => rw [Declaration.sort_dependencies] at used; exact used
     | total f =>
-      rw [Declaration.total_dependencies] at used
+      rw [Declaration.total_dependencies, Declaration.sorts_eq_image] at used
       rcases used with ⟨s, hs, same⟩
       cases same
     | relation r => exact nomatch r

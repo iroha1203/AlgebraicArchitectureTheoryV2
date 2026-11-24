@@ -100,8 +100,8 @@ theorem names_operation (op : Operation P.signature) (kept : Declaration.ofOpera
 /-- A named total symbol remains total and retains its original tag. -/
 def selectTotalSymbol : (f : TotalSymbol P.signature) → Declaration.ofOperation f.operation ∈ U.declarations →
     TotalSymbol (signature U)
-  | .ordinary f, keep => .ordinary ⟨f, keep⟩
-  | .quantity q, keep => .quantity ⟨q, keep⟩
+  | .ordinary f, keep => .ordinary ⟨f, by simpa only [TotalSymbol.operation_ordinary, Declaration.ofOperation_total] using keep⟩
+  | .quantity q, keep => .quantity ⟨q, by simpa only [TotalSymbol.operation_quantity, Declaration.ofOperation_quantity] using keep⟩
 
 /-- The selected total symbol has the arity read from its original declaration. -/
 theorem selectTotalSymbol_arity (f : TotalSymbol P.signature) (keep : Declaration.ofOperation f.operation ∈ U.declarations) :

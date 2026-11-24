@@ -19,29 +19,46 @@ private theorem atomicReferences_subset_substitute {Γ Δ : List P.signature.Sor
     (a : Atomic P.signature Γ) (θ : Substitution P.signature Γ Δ) :
     Declaration.atomic a ⊆ Declaration.formula (a.substitute θ) := by
   cases a with
-  | eq x y => exact Set.empty_subset _
-  | rel r ρ => exact formula_subset_bindArguments _ (fun i => θ (ρ i)) (.atom (.rel r (Var.inLeft Δ)))
-  | domain p ρ => exact formula_subset_bindArguments _ (fun i => θ (ρ i)) (.atom (.domain p (Var.inLeft Δ)))
+  | eq x y => rw [Declaration.atomic_eq]; exact Set.empty_subset _
+  | rel r ρ =>
+    rw [Atomic.substitute_rel, Formula.termRel_eq_bindArguments, Declaration.atomic_rel]
+    simpa only [Declaration.formula_atom, Declaration.atomic_rel] using
+      (formula_subset_bindArguments _ (fun i => θ (ρ i)) (.atom (.rel r (Var.inLeft Δ))))
+  | domain p ρ =>
+    rw [Atomic.substitute_domain, Formula.termDomain_eq_bindArguments, Declaration.atomic_domain]
+    simpa only [Declaration.formula_atom, Declaration.atomic_domain] using
+      (formula_subset_bindArguments _ (fun i => θ (ρ i)) (.atom (.domain p (Var.inLeft Δ))))
   | graph op ρ y =>
-    exact formula_subset_bindArguments _ (Term.argsCons (θ y) (fun i => θ (ρ i)))
-      (.atom (.graph op (fun i => (Var.there i).inLeft Δ) (Var.here.inLeft Δ)))
+    rw [Atomic.substitute_graph, Formula.termGraph_eq_bindArguments, Declaration.atomic_graph]
+    simpa only [Declaration.formula_atom, Declaration.atomic_graph] using
+      (formula_subset_bindArguments _ (Term.argsCons (θ y) (fun i => θ (ρ i)))
+        (.atom (.graph op (fun i => (Var.there i).inLeft Δ) (Var.here.inLeft Δ))))
 
 /-- Literal substitution preserves all original primitive symbols and bound sorts of a formula. -/
 theorem formulaReferences_subset_substitute {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
     ∀ {Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ),
       Declaration.formula p ⊆ Declaration.formula (p.substitute θ) := by
   induction p with
-  | atom a => exact fun θ => atomicReferences_subset_substitute a θ
-  | truth => intro Δ θ; exact Set.empty_subset _
-  | falsehood => intro Δ θ; exact Set.empty_subset _
+  | atom a =>
+    intro Δ θ
+    rw [Formula.substitute_atom, Declaration.formula_atom]
+    exact atomicReferences_subset_substitute a θ
+  | truth => intro Δ θ; rw [Declaration.formula_truth]; exact Set.empty_subset _
+  | falsehood => intro Δ θ; rw [Declaration.formula_falsehood]; exact Set.empty_subset _
   | conj p q hp hq =>
-    intro Δ θ d hd
+    intro Δ θ
+    simp only [Formula.substitute_conj, Declaration.formula_conj]
+    intro d hd
     exact hd.elim (fun h => Or.inl (hp θ h)) (fun h => Or.inr (hq θ h))
   | disj p q hp hq =>
-    intro Δ θ d hd
+    intro Δ θ
+    simp only [Formula.substitute_disj, Declaration.formula_disj]
+    intro d hd
     exact hd.elim (fun h => Or.inl (hp θ h)) (fun h => Or.inr (hq θ h))
   | ex p hp =>
-    intro Δ θ d hd
+    intro Δ θ
+    simp only [Formula.substitute_ex, Declaration.formula_ex]
+    intro d hd
     exact hd.elim Or.inl (fun h => Or.inr (hp θ.lift h))
 
 /-- A substituted term uses only references from the original term and the substitution. -/
@@ -75,11 +92,15 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
   let θ' := selectSubstitution θ hΓ hΔ hθ
   cases a with
   | @eq s x y =>
+    simp only [Atomic.substitute_eq] at h ⊢
+    simp only [selectAtomic_eq, Atomic.substitute_eq]
     refine (selectFormula_termEq (θ x) (θ y) hΔ (varKept hΓ x) (hθ x) (hθ y) h).trans ?_
     exact congrArg₂ (Formula.termEq (sig := signature U))
       (selectSubstitution_apply θ hΓ hΔ hθ x).symm (selectSubstitution_apply θ hΓ hΔ hθ y).symm
   | rel r ρ =>
-    let kept := ha (Or.inr (Set.mem_singleton (Declaration.relation r)))
+    simp only [Atomic.substitute_rel] at h ⊢
+    simp only [selectAtomic_rel, Atomic.substitute_rel]
+    let kept := ha (Declaration.relation_mem_atomicSupport r ρ)
     let hΛ := relationInputs r kept
     refine (selectFormula_termRel r (fun i => θ (ρ i)) hΔ kept (fun i => hθ (ρ i)) h).trans ?_
     apply congrArg (fun (ts : ∀ {s}, Var (context (P.signature.relInputs r) hΛ) s →
@@ -87,7 +108,9 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
     funext s i
     exact (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
   | domain p ρ =>
-    let kept := ha (Or.inr (Set.mem_singleton (Declaration.partialOp p)))
+    simp only [Atomic.substitute_domain] at h ⊢
+    simp only [selectAtomic_domain, Atomic.substitute_domain]
+    let kept := ha (Declaration.domain_mem_atomicSupport p ρ)
     let hΛ := operationInputs (.partialOp p) kept
     refine (selectFormula_termDomain p (fun i => θ (ρ i)) hΔ kept (fun i => hθ (ρ i)) h).trans ?_
     apply congrArg (fun (ts : ∀ {s}, Var (context (P.signature.partialArity p).inputs hΛ) s →
@@ -95,7 +118,9 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
     funext s i
     exact (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
   | graph op ρ y =>
-    let kept := ha (Or.inr (Set.mem_singleton (Declaration.ofOperation op)))
+    simp only [Atomic.substitute_graph] at h ⊢
+    rw [selectAtomic_graph]
+    let kept := ha (Declaration.graph_mem_atomicSupport op ρ y)
     let hΛ := operationInputs op kept
     have atInputs : (fun {s} (i : Var (context op.arity.inputs hΛ) s) =>
         selectTerm (θ (ρ (ambientVar hΛ i))) hΔ s.property (hθ _)) =
@@ -104,7 +129,8 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
       exact (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
     have atOutput := (selectSubstitution_apply θ hΓ hΔ hθ y).symm
     refine (selectFormula_termGraph op (fun i => θ (ρ i)) (θ y) hΔ kept (fun i => hθ (ρ i)) (hθ y) h).trans ?_
-    cases op <;> exact congrArg₂ (Formula.termGraph (operation _ kept)) atInputs atOutput
+    cases op <;> simp only [selectGraph_total, selectGraph_partialOp, selectGraph_quantity, Atomic.substitute_graph]
+    all_goals exact congrArg₂ (Formula.termGraph (operation _ kept)) atInputs atOutput
 
 /-- Selection preserves literal positive-formula substitution, including binder lifts and expanded atoms. -/
 theorem selectFormula_substitute {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
@@ -116,22 +142,40 @@ theorem selectFormula_substitute {Γ : List P.signature.SortType} (p : Formula P
       selectFormula (p.substitute θ) hSub =
         (selectFormula p hp).substitute (selectSubstitution θ hΓ hΔ hθ) := by
   induction p with
-  | atom a => exact fun θ hΓ hΔ hθ hp hSub => selectFormula_substitute_atom a θ hΓ hΔ hθ hp hSub
-  | truth => intros; rfl
-  | falsehood => intros; rfl
+  | atom a =>
+    intro Δ θ hΓ hΔ hθ hp hSub
+    simp only [Formula.substitute_atom, selectFormula_atom] at hSub ⊢
+    exact selectFormula_substitute_atom a θ hΓ hΔ hθ ((Declaration.formulaSupport_atom a).ge.trans hp) hSub
+  | truth =>
+    intro Δ θ hΓ hΔ hθ hp hSub
+    simp only [Formula.substitute_truth, selectFormula_truth] at hSub ⊢
+  | falsehood =>
+    intro Δ θ hΓ hΔ hθ hp hSub
+    simp only [Formula.substitute_falsehood, selectFormula_falsehood] at hSub ⊢
   | conj p q ihp ihq =>
     intro Δ θ hΓ hΔ hθ hp hSub
-    exact congrArg₂ (Formula.conj (sig := signature U))
-      (ihp θ hΓ hΔ hθ (leftSupport hp) (leftSupport hSub))
-      (ihq θ hΓ hΔ hθ (rightSupport hp) (rightSupport hSub))
+    simp only [Formula.substitute_conj, selectFormula_conj] at hSub ⊢
+    have written := Declaration.formula_conj (P := P) p q
+    have moved := Declaration.formula_conj (P := P) (p.substitute θ) (q.substitute θ)
+    exact congrArg₂ Formula.conj
+      (ihp θ hΓ hΔ hθ ((Declaration.binarySupport_left written).trans hp)
+        ((Declaration.binarySupport_left moved).trans hSub))
+      (ihq θ hΓ hΔ hθ ((Declaration.binarySupport_right written).trans hp)
+        ((Declaration.binarySupport_right moved).trans hSub))
   | disj p q ihp ihq =>
     intro Δ θ hΓ hΔ hθ hp hSub
-    exact congrArg₂ (Formula.disj (sig := signature U))
-      (ihp θ hΓ hΔ hθ (leftSupport hp) (leftSupport hSub))
-      (ihq θ hΓ hΔ hθ (rightSupport hp) (rightSupport hSub))
+    simp only [Formula.substitute_disj, selectFormula_disj] at hSub ⊢
+    have written := Declaration.formula_disj (P := P) p q
+    have moved := Declaration.formula_disj (P := P) (p.substitute θ) (q.substitute θ)
+    exact congrArg₂ Formula.disj
+      (ihp θ hΓ hΔ hθ ((Declaration.binarySupport_left written).trans hp)
+        ((Declaration.binarySupport_left moved).trans hSub))
+      (ihq θ hΓ hΔ hθ ((Declaration.binarySupport_right written).trans hp)
+        ((Declaration.binarySupport_right moved).trans hSub))
   | @ex Γ s p ih =>
     intro Δ θ hΓ hΔ hθ hp hSub
-    let hs := hp (Or.inr (Or.inl (Set.mem_singleton (Declaration.sort s))))
+    simp only [Formula.substitute_ex, selectFormula_ex] at hSub ⊢
+    let hs := hp (Declaration.boundSort_mem_formulaSupport p)
     let hΓ' := Declaration.sorts_cons_subset hs hΓ
     let hΔ' := Declaration.sorts_cons_subset hs hΔ
     have selected := ih (θ.lift (s := s)) hΓ' hΔ' (liftTermReferences θ hθ)

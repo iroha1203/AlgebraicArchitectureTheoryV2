@@ -38,9 +38,11 @@ private theorem conjoined_support (Λ : List P.signature.SortType)
     (kept : ∀ {t} (i : Var Λ t), Declaration.formula (ps i) ⊆ D) :
     Declaration.formula (Formula.conjoin Λ ps) ⊆ D := by
   induction Λ with
-  | nil => exact Set.empty_subset _
+  | nil =>
+    rw [Formula.conjoin_nil, Declaration.formula_truth]
+    exact Set.empty_subset _
   | cons s more ih =>
-    rw [Formula.conjoin_cons]
+    rw [Formula.conjoin_cons, Declaration.formula_conj]
     exact Set.union_subset (kept .here) (ih (fun i => ps (.there i)) (fun i => kept (.there i)))
 
 /-- Record the bound sort together with the support of the existential body. -/
@@ -48,10 +50,13 @@ private theorem bound_support (Λ : List P.signature.SortType) (p : Formula P.si
     (sorts : Declaration.sorts Λ ⊆ D) (kept : Declaration.formula p ⊆ D) :
     Declaration.formula (Formula.existsMany Λ p) ⊆ D := by
   induction Λ with
-  | nil => exact kept
+  | nil =>
+    rw [Formula.existsMany_nil]
+    exact kept
   | cons s more ih =>
     rw [Formula.existsMany_cons]
     apply ih p.ex ((DeclarationContext.tailSortsSubset s more).trans sorts)
+    rw [Declaration.formula_ex]
     refine Set.union_subset ?_ kept
     exact Set.singleton_subset_iff.mpr (sorts ⟨s, List.mem_cons_self, rfl⟩)
 
@@ -64,18 +69,19 @@ private theorem graphAt_support (t : Term P.signature Γ s)
   induction t with
   | var i =>
     intro Δ names out
-    rw [Term.graphAt_var]
+    rw [Term.graphAt_var, Declaration.formula_atom, Declaration.atomic_eq]
     exact Set.empty_subset _
   | app op xs ih =>
     intro Δ names out
     rw [Term.graphAt_app]
     have kept := references (Or.inl (Set.mem_singleton _))
     apply bound_support _ _ (types op kept)
+    rw [Declaration.formula_conj, Declaration.formula_atom, Declaration.atomic_graph]
     refine Set.union_subset (conjoined_support _ _ (fun i => ?_)) (Set.singleton_subset_iff.mpr kept)
     exact ih i (fun _ used => references (Or.inr ⟨_, i, used⟩)) _ _
   | letBind init body initIH bodyIH =>
     intro Δ names out
-    rw [Term.graphAt_letBind]
+    rw [Term.graphAt_letBind, Declaration.formula_ex, Declaration.formula_conj]
     refine Set.union_subset (Set.singleton_subset_iff.mpr (references (Or.inl (Set.mem_singleton _)))) ?_
     exact Set.union_subset (initIH (fun _ used => references (Or.inr (Or.inl used))) _ _)
       (bodyIH (fun _ used => references (Or.inr (Or.inr used))) _ _)
@@ -86,6 +92,9 @@ theorem equality_law_support (left right : Term P.signature Γ s)
     (context : Declaration.sorts Γ ⊆ D) (result : Declaration.sort s ∈ D)
     (leftRefs : termReferences left ⊆ D) (rightRefs : termReferences right ⊆ D) :
     Declaration.lawBody (Law.equality left right) ⊆ D := by
+  rw [Law.equality_eq, Declaration.lawBody_eq]
+  simp only [Declaration.formula_truth, Formula.termEq_eq_ex, Declaration.formula_ex,
+    Declaration.formula_conj, Term.graph_eq_graphAt]
   refine Set.union_subset (Set.union_subset context (Set.empty_subset _)) ?_
   exact Set.union_subset (Set.singleton_subset_iff.mpr result)
     (Set.union_subset (graphAt_support left types leftRefs _ _) (graphAt_support right types rightRefs _ _))

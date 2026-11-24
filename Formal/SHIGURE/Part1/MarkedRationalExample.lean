@@ -112,6 +112,7 @@ def qSortAlone : DeclarationContext presentation where
   closed kept := by
     have same := Set.mem_singleton_iff.mp kept
     subst same
+    rw [Declaration.sort_dependencies]
     exact Set.empty_subset _
 
 /-- The dependency-closed context of q alone omits the fixed coefficient sort. -/

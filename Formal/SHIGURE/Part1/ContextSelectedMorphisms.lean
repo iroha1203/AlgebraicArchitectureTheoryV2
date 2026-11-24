@@ -104,6 +104,13 @@ def readOnSort (f : ContextStructure.Hom A B) (s : SortName U) :
     (readStructure A).carrier s → (readStructure B).carrier s :=
   f.onSort s.val s.property
 
+/-- Reading a carrier commutes with the map at every retained sort. -/
+private theorem readOnSort_equiv (f : ContextStructure.Hom A B) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) (x : A.carrier s) :
+    readOnSort f ⟨s, keep⟩ (readCarrierEquiv A s keep x) = readCarrierEquiv B s keep (f.onSort s keep x) := by
+  rw [readCarrierEquiv_eq_refl, readCarrierEquiv_eq_refl]
+  rfl
+
 /-- Transport the graph-preservation component of a context arrow to the
 selected signature for Proposition 3.2. The retained operation supplies the
 input and output support for the two carrier comparisons. -/
@@ -117,9 +124,9 @@ theorem readGraph (f : ContextStructure.Hom A B) (op : Operation P.signature)
   obtain ⟨z, hz⟩ := (resultEquiv (readCarrierEquiv A) op keep).surjective y
   rw [← hx, ← hz, argsEquiv_apply, resultEquiv_apply] at held ⊢
   rw [map_selectArgs (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)
-      (fun _ _ _ => rfl) op keep x,
+      (readOnSort_equiv f) op keep x,
     map_selectResult (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)
-      (fun _ _ _ => rfl) op keep z]
+      (readOnSort_equiv f) op keep z]
   exact ((readStructure_matches B).graph op keep _ _).2
     (f.graph_mem op keep x z (((readStructure_matches A).graph op keep x z).1 held))
 
@@ -130,14 +137,14 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
     let keep := relationInputs r.val r.property
     obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
     rw [← hx, assignmentEquiv_apply] at held ⊢
-    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (fun _ _ _ => rfl)]
+    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
     exact ((readStructure_matches B).relation r.val r.property _).2
       (f.relation_mem r.val r.property x (((readStructure_matches A).relation r.val r.property x).1 held))) (by
     intro p xs held
     let keep := operationInputs (.partialOp p.val) p.property
     obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
     rw [← hx, assignmentEquiv_apply] at held ⊢
-    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (fun _ _ _ => rfl)]
+    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
     exact ((readStructure_matches B).domain p.val p.property _).2
       (f.domain_mem p.val p.property x (((readStructure_matches A).domain p.val p.property x).1 held))) (by
     intro op xs y held

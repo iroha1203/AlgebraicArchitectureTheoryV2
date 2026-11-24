@@ -56,8 +56,10 @@ def piece (f : Bool) : DeclarationContext presentation where
   declarations := {d | d = .sort () ∨ d = .total f}
   closed kept := by
     rcases kept with rfl | rfl
-    · exact Set.empty_subset _
-    · rintro _ ⟨s, _, rfl⟩
+    · rw [Declaration.sort_dependencies]
+      exact Set.empty_subset _
+    · rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
+      rintro _ ⟨s, _, rfl⟩
       cases s
       exact Or.inl rfl
 

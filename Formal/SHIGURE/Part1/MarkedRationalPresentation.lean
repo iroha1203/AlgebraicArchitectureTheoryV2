@@ -153,7 +153,9 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
   cases op with
   | total name =>
     rintro _ ⟨s, occurs, rfl⟩
-    exact kept_total_support right name kept ⟨s, List.mem_cons_of_mem _ occurs, rfl⟩
+    have support := kept_total_support right name kept
+    rw [Declaration.total_dependencies, Declaration.sorts_eq_image] at support
+    exact support ⟨s, List.mem_cons_of_mem _ occurs, rfl⟩
   | partialOp p => exact nomatch p
   | quantity q => exact nomatch q
 
@@ -241,7 +243,7 @@ def piece (right : Bool) : DeclarationContext presentation where
   declarations := {d | keeps right d}
   closed {a} kept := by
     cases a with
-    | sort s => exact Set.empty_subset _
+    | sort s => rw [Declaration.sort_dependencies]; exact Set.empty_subset _
     | total name => exact kept_total_support right name kept
     | law n => exact kept_law_support right n kept
     | relation p => exact nomatch p

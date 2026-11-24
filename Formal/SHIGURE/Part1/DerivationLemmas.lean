@@ -36,8 +36,13 @@ def append : {Λ : List S} → Renaming Λ E → Renaming Γ E → Renaming (Λ 
 @[simp] theorem append_shift {Λ : List S} (left : Renaming Λ E) (right : Renaming Γ E)
     {s : S} (i : Var Γ s) : append left right (i.shift Λ) = right i := by
   induction Λ with
-  | nil => rfl
-  | cons s Λ ih => exact ih (fun j => left (.there j))
+  | nil =>
+    have same : i.shift [] = i := congrArg (fun f : Renaming Γ Γ => f i) Var.shift_nil
+    rw [same]
+    rfl
+  | cons s Λ ih =>
+    rw [Var.shift_cons]
+    exact ih (fun j => left (.there j))
 
 /-- Composition is determined coordinatewise. -/
 @[simp] theorem comp_apply (σ : Renaming Δ E) (ρ : Renaming Γ Δ) {s : S} (i : Var Γ s) :

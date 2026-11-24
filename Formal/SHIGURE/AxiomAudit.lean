@@ -2302,6 +2302,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectFormula_disj,
   DeclarationContext.Selected.selectFormula_ex,
   DeclarationContext.Selected.selectLaw_eq,
+  -- ContextSelectedTerms
+  DeclarationContext.Selected.termEq_support,
   -- ContextSelectedVocabulary
   DeclarationContext.Selected.selectVar_here,
   DeclarationContext.Selected.selectVar_there,
@@ -2339,6 +2341,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.sorts_subset_lawBody,
   Declaration.formulaSupport_input_subset_lawBody,
   Declaration.formulaSupport_conclusion_subset_lawBody,
+  Declaration.derivationOf_support_eq,
   Declaration.lawBody_subset_derivationOf,
   Declaration.law_mem_derivationOf_required,
   Declaration.derivationOf_cut_left,

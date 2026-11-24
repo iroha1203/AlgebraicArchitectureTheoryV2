@@ -20,20 +20,36 @@ private abbrev writtenLaw (eqn : OrderedEquation P.signature) (p : Formula P.sig
     Law P.signature :=
   ⟨eqn.context, eqn.input, p⟩
 
+/-- The antecedent of the written substitution includes its strict definedness guard. -/
+private theorem guard_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
+    {Γ : List P.signature.SortType} (θ : Substitution P.signature eqn.context Γ)
+    (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
+    Declaration.formulaSupport θ.defined ⊆ U.declarations :=
+  (Declaration.binarySupport_left (Declaration.formula_conj θ.defined (eqn.input.substitute θ))).trans
+    (lawInputSupport h)
+
+/-- The guarded antecedent still retains the substituted original formula. -/
+private theorem substitutedInput_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
+    {Γ : List P.signature.SortType} (θ : Substitution P.signature eqn.context Γ)
+    (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
+    Declaration.formulaSupport (eqn.input.substitute θ) ⊆ U.declarations :=
+  (Declaration.binarySupport_right (Declaration.formula_conj θ.defined (eqn.input.substitute θ))).trans
+    (lawInputSupport h)
+
 /-- Recover the support of the prior writing from a retained guarded substitution. -/
 private theorem priorLaw_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     {Γ : List P.signature.SortType} (θ : Substitution P.signature eqn.context Γ)
     (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
     Declaration.lawBody (writtenLaw eqn p) ⊆ U.declarations := by
-  have hInput := lawInputSupport h
-  have hGuard := leftSupport hInput
-  have hPriorInput := rightSupport hInput
+  have hGuard := guard_kept (eqn := eqn) (p := p) θ h
+  have hPriorInput := substitutedInput_kept (eqn := eqn) (p := p) θ h
   have hFinalConclusion := lawConclusionSupport h
-  intro d used
-  rcases used with (hd | hd) | hd
-  · exact substitution_source_kept θ hGuard hd
-  · exact hPriorInput (Or.inr (formulaReferences_subset_substitute eqn.input θ hd))
-  · exact hFinalConclusion (Or.inr (formulaReferences_subset_substitute p θ hd))
+  rw [Declaration.lawBody_eq]
+  simp only [Declaration.formulaSupport_eq] at hPriorInput hFinalConclusion
+  exact Set.union_subset
+    (Set.union_subset (substitution_source_kept θ hGuard)
+      ((formulaReferences_subset_substitute eqn.input θ).trans (Set.subset_union_right.trans hPriorInput)))
+    ((formulaReferences_subset_substitute p θ).trans (Set.subset_union_right.trans hFinalConclusion))
 
 /-- Follow the writing history to obtain support for both ordered terms and their value sort. -/
 private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
@@ -44,12 +60,7 @@ private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Fo
   induction data with
   | original eqn =>
     intro h
-    have hConclusion := lawConclusionSupport h
-    refine ⟨hConclusion (Or.inr (Or.inl (Set.mem_singleton _))), ?_, ?_⟩
-    · intro d used
-      exact hConclusion (Or.inr (Or.inr (Or.inl (termReferences_subset_graph eqn.left used))))
-    · intro d used
-      exact hConclusion (Or.inr (Or.inr (Or.inr (termReferences_subset_graph eqn.right used))))
+    exact termEq_support eqn.left eqn.right (lawConclusionSupport h)
   | @variablePair eqn x y left right =>
     intro h
     refine ⟨varKept (lawSortSupport h) x, ?_, ?_⟩
@@ -61,7 +72,7 @@ private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Fo
     intro h
     obtain ⟨hs, left, right⟩ := ih (priorLaw_kept θ h)
     have terms := fun {s} (i : Var eqn.context s) =>
-      (substitution_term_kept θ (leftSupport (lawInputSupport h)) i).2
+      (substitution_term_kept θ (guard_kept (eqn := eqn) (p := p) θ h) i).2
     exact ⟨hs, substitute_term_kept eqn.left θ left terms, substitute_term_kept eqn.right θ right terms⟩
 
 /-- Retype both terms and the input formula in the selected signature. -/
@@ -81,18 +92,17 @@ private theorem selectEquation_substitute {eqn : OrderedEquation P.signature} {p
     (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
     let prev := priorLaw_kept θ h
     let θ' := selectSubstitution θ (lawSortSupport prev) (lawSortSupport h)
-      (fun i => (substitution_term_kept θ (leftSupport (lawInputSupport h)) i).2)
+      (fun i => (substitution_term_kept θ (guard_kept (eqn := eqn) (p := p) θ h) i).2)
     selectEquation (prior.substitute θ) h = (selectEquation prior prev).substitute θ' := by
   let prev := priorLaw_kept θ h
   let hΓ := lawSortSupport h
   let hOld := lawSortSupport prev
-  let hInput := lawInputSupport h
-  let hTerms := fun {s} (i : Var eqn.context s) => (substitution_term_kept θ (leftSupport hInput) i).2
+  let hTerms := fun {s} (i : Var eqn.context s) => (substitution_term_kept θ (guard_kept (eqn := eqn) (p := p) θ h) i).2
   let θ' := selectSubstitution θ hOld hΓ hTerms
   let hs := (expansion_terms_kept prior prev).1
   have inputSame := congrArg₂ (Formula.conj (sig := signature U))
-    (selectSubstitution_defined θ hOld hΓ hTerms (leftSupport hInput))
-    (selectFormula_substitute eqn.input θ hOld hΓ hTerms (lawInputSupport prev) (rightSupport hInput))
+    (selectSubstitution_defined θ hOld hΓ hTerms (guard_kept (eqn := eqn) (p := p) θ h))
+    (selectFormula_substitute eqn.input θ hOld hΓ hTerms (lawInputSupport prev) (substitutedInput_kept (eqn := eqn) (p := p) θ h))
   have leftSame := selectTerm_substitute eqn.left θ hOld hΓ hs (expansion_terms_kept prior prev).2.1 hTerms
     (expansion_terms_kept (prior.substitute θ) h).2.1
   have rightSame := selectTerm_substitute eqn.right θ hOld hΓ hs (expansion_terms_kept prior prev).2.2 hTerms
@@ -137,7 +147,7 @@ private noncomputable def selectExpansion {eqn : OrderedEquation P.signature} {p
   | @substitute eqn p prior Γ θ ih =>
     let prev := priorLaw_kept θ h
     let hTerms := fun {s} (i : Var eqn.context s) =>
-      (substitution_term_kept θ (leftSupport (lawInputSupport h)) i).2
+      (substitution_term_kept θ (guard_kept (eqn := eqn) (p := p) θ h) i).2
     let θ' := selectSubstitution θ (lawSortSupport prev) (lawSortSupport h) hTerms
     have eqnSame := selectEquation_substitute prior θ h
     have conclusionSame := selectFormula_substitute p θ (lawSortSupport prev) (lawSortSupport h) hTerms

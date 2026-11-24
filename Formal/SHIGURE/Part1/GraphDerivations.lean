@@ -64,8 +64,14 @@ theorem liftMany_cons (ρ : Renaming Γ Δ) (s : S) (Λ : List S) :
 @[simp] theorem liftMany_shift (ρ : Renaming Γ Δ) (Λ : List S) {s : S}
     (i : Var Γ s) : liftMany ρ Λ (i.shift Λ) = (ρ i).shift Λ := by
   induction Λ with
-  | nil => rfl
-  | cons t Λ ih => exact congrArg Var.there ih
+  | nil =>
+    have source : i.shift [] = i := congrArg (fun f : Renaming Γ Γ => f i) Var.shift_nil
+    have target : (ρ i).shift [] = ρ i := congrArg (fun f : Renaming Δ Δ => f (ρ i)) Var.shift_nil
+    rw [source, target]
+    rfl
+  | cons t Λ ih =>
+    rw [Var.shift_cons, Var.shift_cons]
+    exact congrArg Var.there ih
 
 end SHIGURE.Renaming
 
@@ -259,14 +265,20 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
     let rightInit := init.graphAt args right
     let leftBody := body.graphAt (Renaming.cons left args) (old y)
     let rightBody := body.graphAt (Renaming.cons right args) (old z)
+    have singleton {Ω : List T.signature.SortType} :
+        (fun {a} (v : Var Ω a) => Var.shift [b] v) =
+          (fun {a} (v : Var Ω a) => Var.there (t := b) v) := by
+      funext a v
+      rw [Var.shift_cons]
+      exact congrArg Var.there (congrArg (fun f : Renaming Ω Ω => f v) Var.shift_nil)
     have reduceLeft : (graph y).rename (Var.shift [b]) = leftInit.conj leftBody := by
       simp only [graph, Formula.rename_conj, Term.graphAt_rename, Renaming.comp_lift,
-        leftInit, leftBody, args, left]
+        leftInit, leftBody, args, left, singleton]
       rfl
     have reduceRight : (graph z).rename (Renaming.liftMany (Var.shift [b]) [b]) =
         rightInit.conj rightBody := by
       simp only [graph, Formula.rename_conj, Term.graphAt_rename, Renaming.comp_lift,
-        rightInit, rightBody, args, right]
+        rightInit, rightBody, args, right, singleton]
       rfl
     let premises := (leftInit.conj leftBody).conj (rightInit.conj rightBody)
     have equate : Derivation T premises (.atom (.eq right left)) :=
@@ -287,6 +299,9 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
     rw [← Formula.existsMany_singleton (graph y), ← Formula.existsMany_singleton (graph z)]
     apply existsManyBothElim
     rw [reduceLeft, reduceRight]
-    exact conclude
+    have singletonAt {Ω : List T.signature.SortType} {a} (v : Var Ω a) :
+        Var.shift [b] v = .there v :=
+      congrArg (fun f : Renaming Ω (b :: Ω) => f v) singleton
+    simpa only [Formula.rename_atom, Atomic.rename_eq, singletonAt, old] using conclude
 
 end SHIGURE.Derivation

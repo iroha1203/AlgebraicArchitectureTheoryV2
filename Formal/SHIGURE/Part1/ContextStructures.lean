@@ -352,7 +352,7 @@ theorem restrict_holds_iff (A : ContextStructure U) (inside : V ≤ U) {Γ : Lis
     (p : Formula P.signature Γ) (keep : Declaration.formulaSupport p ⊆ V.declarations)
     (e : Assignment (A.restrict inside).carrier Γ) :
     (A.restrict inside).evaluation.holds p keep e ↔ A.evaluation.holds p (fun _ hd => inside (keep hd))
-      (mapAssignment (selectedMap V A.carrier) (fun _ hd => keep (Or.inl hd)) e) :=
+      (mapAssignment (selectedMap V A.carrier) ((Declaration.sorts_subset_formulaSupport p).trans keep) e) :=
   A.evaluation.holds_pullback_iff inside _ (selectedMap_bijective A.carrier) p keep e
 
 /-- A supported Law has the same satisfaction before and after forgetting. -/
@@ -364,7 +364,7 @@ theorem restrict_satisfies_iff (A : ContextStructure U) (inside : V ≤ U) (law 
 /-- All the assignments and the result sort of a supported term survive restriction. -/
 theorem termSortSupport {Γ : List P.signature.SortType} {s : P.signature.SortType} (t : U.TermIn Γ s) :
     Declaration.sorts (s :: Γ) ⊆ U.declarations :=
-  fun _ h => (Declaration.termContext_le_iff t.val).1 t.property (Or.inl h)
+  (Declaration.sorts_subset_formulaSupport t.val.graph).trans ((Declaration.termContext_le_iff t.val).1 t.property)
 
 /-- Term evaluation commutes with restriction on every input and result. -/
 theorem restrict_evaluates_iff (A : ContextStructure U) (inside : V ≤ U)

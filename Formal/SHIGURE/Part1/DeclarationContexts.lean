@@ -267,12 +267,30 @@ def derivationOf {T : Theory.{u}} (same : T.signature = P.signature)
     | .refl _ | .graph _ | .truth _ | .falsehood _ | .andLeft _ _ | .andRight _ _ |
         .orLeft _ _ | .orRight _ _ | .existsIntro _ _ | .eqRefl _ | .eqSubst _ _ _ => ∅
 
+/-- The support of each rule combines its written sequent and the references of its premises. -/
+theorem derivationOf_support_eq {I : Type u} {statement : I → Law P.signature}
+    (name : I → P.laws.LawName) :
+    {Γ : List P.signature.SortType} → {p q : Formula P.signature Γ} →
+    (d : Derivation (⟨P.signature, I, statement⟩ : Theory) p q) →
+    derivationOf rfl name d = match Γ, p, q, d with
+    | Γ, p, q, proof => lawBody (P := P) ⟨Γ, p, q⟩ ∪ match proof with
+      | .required i => {Declaration.law (name i)}
+      | .cut l r | .andIntro l r | .orElim l r => derivationOf rfl name l ∪ derivationOf rfl name r
+      | .rename _ child | .existsElim child => derivationOf rfl name child
+      | .refl _ | .graph _ | .truth _ | .falsehood _ | .andLeft _ _ | .andRight _ _ |
+          .orLeft _ _ | .orRight _ _ | .existsIntro _ _ | .eqRefl _ | .eqSubst _ _ _ => ∅
+  | _, _, _, .required _ | _, _, _, .cut _ _ | _, _, _, .andIntro _ _ | _, _, _, .orElim _ _ |
+    _, _, _, .rename _ _ | _, _, _, .existsElim _ | _, _, _, .refl _ | _, _, _, .graph _ |
+    _, _, _, .truth _ | _, _, _, .falsehood _ | _, _, _, .andLeft _ _ | _, _, _, .andRight _ _ |
+    _, _, _, .orLeft _ _ | _, _, _, .orRight _ _ | _, _, _, .existsIntro _ _ |
+    _, _, _, .eqRefl _ | _, _, _, .eqSubst _ _ _ => rfl
+
 /-- A derivation records the written support of its root sequent. -/
 theorem lawBody_subset_derivationOf {I : Type u} {statement : I → Law P.signature}
     {Γ : List P.signature.SortType} {p q : Formula P.signature Γ}
     (name : I → P.laws.LawName) (d : Derivation (⟨P.signature, I, statement⟩ : Theory) p q) :
     lawBody (P := P) ⟨Γ, p, q⟩ ⊆ derivationOf rfl name d := by
-  rw [derivationOf.eq_def]
+  rw [derivationOf_support_eq]
   exact Set.subset_union_left
 
 /-- A required leaf retains the declaration name of its premise. -/

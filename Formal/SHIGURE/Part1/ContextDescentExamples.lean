@@ -163,7 +163,7 @@ def left : DeclarationContext presentation where
     cases a with
     | sort _ => rw [Declaration.sort_dependencies] at used; exact used
     | total f =>
-      rw [Declaration.total_dependencies] at used
+      rw [Declaration.total_dependencies, Declaration.sorts_eq_image] at used
       rcases used with ⟨s, hs, same⟩
       cases same
     | relation r => exact nomatch r
@@ -182,7 +182,7 @@ def right : DeclarationContext presentation where
     rcases kept with rfl | rfl
     · rw [Declaration.sort_dependencies]
       exact Set.empty_subset _
-    · rw [Declaration.total_dependencies]
+    · rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
       rintro _ ⟨s, _, rfl⟩
       cases s
       exact Or.inl rfl

@@ -184,8 +184,12 @@ theorem lawContext_le_iff {U : DeclarationContext P} (law : Law P.signature) :
 /-- A declared Law in a context has its entire written support in that context. -/
 theorem lawBody_subset_of_mem {U : DeclarationContext P} {name : P.laws.LawName}
     (kept : Declaration.law name ∈ U.declarations) :
-    lawBody (P.laws.statement name) ⊆ U.declarations :=
-  fun _ used => U.closed kept (Or.inl used)
+    lawBody (P.laws.statement name) ⊆ U.declarations := by
+  refine Set.Subset.trans ?_ (U.closed kept)
+  by_cases role : P.laws.role name = .derived
+  · rw [derived_dependencies name role]
+    exact Set.subset_union_left
+  · rw [nonderived_dependencies name role]
 
 end Declaration
 

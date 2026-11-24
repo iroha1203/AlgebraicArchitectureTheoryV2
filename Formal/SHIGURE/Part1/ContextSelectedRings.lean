@@ -207,10 +207,7 @@ private theorem selectRingEquality {Γ : List P.signature.SortType} {s : P.signa
         (selectRingExpr (lawSortSupport h) hs x) (selectRingExpr (lawSortSupport h) hs y) := by
   let hΓ := lawSortSupport h
   let conclusion := lawConclusionSupport h
-  have hx : termReferences (x.toTerm r) ⊆ U.declarations :=
-    fun _ hd => conclusion (Or.inr (Or.inr (Or.inl (termReferences_subset_graph _ hd))))
-  have hy : termReferences (y.toTerm r) ⊆ U.declarations :=
-    fun _ hd => conclusion (Or.inr (Or.inr (Or.inr (termReferences_subset_graph _ hd))))
+  obtain ⟨_, hx, hy⟩ := termEq_support (x.toTerm r) (y.toTerm r) conclusion
   have same := (selectFormula_termEq _ _ hΓ hs hx hy conclusion).trans
     (congrArg₂ (Formula.termEq (sig := signature U))
       (selectRingExpr_term r hΓ hs keep x hx) (selectRingExpr_term r hΓ hs keep y hy))

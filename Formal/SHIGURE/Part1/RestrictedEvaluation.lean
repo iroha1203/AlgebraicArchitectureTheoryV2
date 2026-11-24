@@ -292,19 +292,15 @@ def evaluation (A : RestrictedStructure U) : RestrictedEvaluation U A.carrier wh
 def satisfies (A : RestrictedStructure U) (law : Law P.signature)
     (supported : Declaration.lawBody (P := P) law ⊆ U.declarations) : Prop :=
   ∀ e : Assignment A.carrier law.context,
-    A.evaluation.holds law.input
-      (fun _ h => h.elim (fun h => supported (Or.inl (Or.inl h)))
-        (fun h => supported (Or.inl (Or.inr h)))) e →
-    A.evaluation.holds law.conclusion
-      (fun _ h => h.elim (fun h => supported (Or.inl (Or.inl h)))
-        (fun h => supported (Or.inr h))) e
+    A.evaluation.holds law.input ((Declaration.formulaSupport_input_subset_lawBody law).trans supported) e →
+    A.evaluation.holds law.conclusion ((Declaration.formulaSupport_conclusion_subset_lawBody law).trans supported) e
 
 /-- A point map transports every primitive fact supported on the retained declarations. -/
 def Preserves (A B : RestrictedStructure U) (f : PointMap A B) : Prop :=
   ∀ {Γ} (a : Atomic P.signature Γ) (supported : Declaration.atomicSupport a ⊆ U.declarations)
     (e : Assignment A.carrier Γ),
     A.evaluation.atomic e a supported →
-      B.evaluation.atomic (mapAssignment f (fun _ h => supported (Or.inl h)) e) a supported
+      B.evaluation.atomic (mapAssignment f ((Declaration.sorts_subset_atomicSupport a).trans supported) e) a supported
 
 end RestrictedStructure
 

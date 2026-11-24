@@ -37,6 +37,7 @@ def selectRule : (rule : GraphAxiom P.signature) → Declaration.graphRuleName r
 theorem selectRenaming_id {Γ : List P.signature.SortType} (kept : Declaration.sorts Γ ⊆ U.declarations) :
     (selectRenaming kept kept (fun i => i) : Renaming _ _) = (fun {_} i => i) := by
   funext _ i
+  rw [selectRenaming_apply]
   exact selectVar_ambientVar kept i
 
 /-- A selected variable map shifted by two head variables is the same double shift. -/

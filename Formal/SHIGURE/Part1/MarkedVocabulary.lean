@@ -267,6 +267,7 @@ abbrev multilinearDecl (L : V.Laws) (f : V.Multilinear) : Declaration (V.present
 /-- The type of every input or result of a primitive coefficient operation is the coefficient sort. -/
 theorem coefficient_dependency (L : V.Laws) (f : CoefficientOp.{u}) :
     Declaration.dependsOn (V.presentation L) (V.coefficientDecl L f) = {Declaration.sort none} := by
+  rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
   ext d
   constructor
   · rintro ⟨s, within, rfl⟩
@@ -283,6 +284,7 @@ theorem coefficient_dependency (L : V.Laws) (f : CoefficientOp.{u}) :
 theorem module_dependencies (L : V.Laws) (s : V.SortName) (f : ModuleOp.{u} (V.generators s)) :
     Declaration.dependsOn (V.presentation L) (V.moduleDecl L s f) ⊆
       {Declaration.sort (some s), Declaration.sort none} := by
+  rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
   rintro _ ⟨t, occurs, rfl⟩
   cases f <;> simp_all [presentation, signature, arity]
   aesop
@@ -291,7 +293,7 @@ theorem module_dependencies (L : V.Laws) (s : V.SortName) (f : ModuleOp.{u} (V.g
 theorem multilinear_dependencies (L : V.Laws) (f : V.Multilinear) :
     Declaration.dependsOn (V.presentation L) (V.multilinearDecl L f) =
       Declaration.sorts (V.output f :: V.inputs f) :=
-  rfl
+  Declaration.total_dependencies (P := V.presentation L) (.multilinear f)
 
 variable {V} {L : V.Laws}
 

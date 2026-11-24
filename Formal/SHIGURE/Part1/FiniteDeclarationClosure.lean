@@ -25,8 +25,9 @@ namespace SHIGURE.Declaration
 variable {P : PrimitivePresentation.{u}} {Γ : List P.signature.SortType}
 
 /-- Each arity is a finite list of sort names. -/
-private theorem sorts_finite (Γ : List P.signature.SortType) : (sorts (P := P) Γ).Finite :=
-  Γ.finite_toSet.image _
+private theorem sorts_finite (Γ : List P.signature.SortType) : (sorts (P := P) Γ).Finite := by
+  rw [sorts_eq_image]
+  exact Γ.finite_toSet.image _
 
 /-- A positive atom uses at most one primitive symbol in addition to its context. -/
 private theorem atomic_finite (a : Atomic P.signature Γ) : (atomic a).Finite := by
@@ -127,6 +128,7 @@ private theorem derivation_law_required {Γ : List P.theory.signature.SortType}
     ?_ ?_ ?_ ?_ ?_ proof
   · exact fun impossible => (Set.notMem_empty _ impossible).elim
   · intro Γ
+    rw [sorts_eq_image]
     rintro ⟨_, _, eq⟩
     cases eq
   · exact fun p uses => (law_notMem_formula name p uses).elim
@@ -153,6 +155,7 @@ private theorem derivation_height {p q : Formula P.signature Γ}
 /-- Arity references have the bottom declaration height. -/
 private theorem sort_height {d : Declaration P} {Γ : List P.signature.SortType}
     (uses : d ∈ sorts Γ) : d.height = 0 := by
+  rw [sorts_eq_image] at uses
   rcases uses with ⟨_, _, rfl⟩
   rfl
 
