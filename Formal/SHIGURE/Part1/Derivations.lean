@@ -29,6 +29,12 @@ def openHead (x : Var Γ s) : Renaming (s :: Γ) Γ
   | _, .here => x
   | _, .there i => i
 
+/-- Instantiating the newest position returns the chosen variable. -/
+theorem openHead_here (x : Var Γ s) : openHead x .here = x := rfl
+
+/-- Instantiating the newest position leaves each old variable unchanged. -/
+theorem openHead_there (x : Var Γ s) {t : S} (i : Var Γ t) : openHead x (.there i) = i := rfl
+
 /-- Reading an assignment along head instantiation inserts the supplied value. -/
 @[simp] theorem pull_openHead {C : S → Type u} (e : Assignment C Γ) (x : Var Γ s) :
     e.pull (openHead x) = Assignment.cons (e x) e := by

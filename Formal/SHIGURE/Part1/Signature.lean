@@ -48,10 +48,25 @@ def inLeft (Δ : List S) : {Γ : List S} → {s : S} → Var Γ s → Var (Γ ++
   | _, _, .here => .here
   | _, _, .there var => .there (inLeft Δ var)
 
+/-- The leading block's head stays at the head of the combined context. -/
+theorem inLeft_here (Δ : List S) : (Var.here : Var (s :: Γ) s).inLeft Δ = .here := rfl
+
+/-- A position in the leading block retains its depth after appending a context. -/
+theorem inLeft_there (Δ : List S) {t : S} (i : Var Γ s) :
+    (Var.there (t := t) i).inLeft Δ = .there (i.inLeft Δ) := rfl
+
 /-- Include a variable following an added prefix of variables. -/
 def shift : (Δ : List S) → Var Γ s → Var (Δ ++ Γ) s
   | [], var => var
   | _ :: Δ, var => .there (shift Δ var)
+
+/-- Shifting by an empty block leaves the original variable map. -/
+theorem shift_nil : (fun {t : S} (i : Var Γ t) => i.shift []) =
+    (fun {t : S} (i : Var Γ t) => i) := rfl
+
+/-- Shifting past a nonempty block moves past its head and its tail. -/
+theorem shift_cons (Λ : List S) {t : S} (i : Var Γ s) :
+    i.shift (t :: Λ) = Var.there (i.shift Λ) := rfl
 
 /-- Position number in the finite context. -/
 def position : {Γ : List S} → {s : S} → Var Γ s → Nat
@@ -89,6 +104,13 @@ variable {S : Type u} {Γ Δ : List S} {s : S}
 def lift (ρ : Renaming Γ Δ) : Renaming (s :: Γ) (s :: Δ)
   | _, .here => .here
   | _, .there var => .there (ρ var)
+
+/-- Lifting the free-variable map retains the new head variable. -/
+theorem lift_here (ρ : Renaming Γ Δ) : (lift ρ) (Var.here : Var (s :: Γ) s) = .here := rfl
+
+/-- Lifting the free-variable map applies the original map below the head. -/
+theorem lift_there (ρ : Renaming Γ Δ) {t : S} (i : Var Γ t) :
+    (lift ρ) (Var.there (t := s) i) = .there (ρ i) := rfl
 
 /-- Map a new head position to a selected variable while applying the older variable map. -/
 def cons (head : Var Δ s) (tail : Renaming Γ Δ) : Renaming (s :: Γ) Δ
