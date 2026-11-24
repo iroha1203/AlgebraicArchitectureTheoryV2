@@ -1,6 +1,7 @@
 //! Z / Q アフィン系解法（Q の RREF、Z の Smith 標準形）、F_p 有限全列挙、
 //! および係数域・点集合域に応じた沈黙（`SilenceReason`）判定（G-141 D4–D6 / AC5）。
 
+use crate::algebra::artin::{AffineSolutionField, solve_affine_field};
 use crate::algebra::groebner::rabinowitsch_solve;
 use crate::algebra::poly::{AlgebraError, Poly, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat};
@@ -72,200 +73,36 @@ pub enum SystemPointOutcome {
     Undetermined(SilenceReason),
 }
 
-/// Q 上の線形系 `L x = b` を拡大行列の行基本変形（RREF + 変換行列追跡）で解き、独立検算する。
-pub fn solve_affine_q(
-    matrix: &[Vec<Rat>],
-    rhs: &[Rat],
-    num_vars: usize,
-) -> Result<AffineSolutionQ, AlgebraError> {
-    let m = matrix.len();
-    if rhs.len() != m {
-        return Err(AlgebraError::ArityMismatch {
-            expected: m,
-            actual: rhs.len(),
-        });
-    }
-    for row in matrix {
-        if row.len() != num_vars {
-            return Err(AlgebraError::ArityMismatch {
-                expected: num_vars,
-                actual: row.len(),
-            });
-        }
-    }
-
-    let mut a: Vec<Vec<Rat>> = matrix.to_vec();
-    let mut b: Vec<Rat> = rhs.to_vec();
-    // 元の行の線形結合を追跡する行列 `T`（不変条件: `T * L_orig == a` かつ `T * b_orig == b`）。
-    let mut t: Vec<Vec<Rat>> = (0..m)
-        .map(|i| {
-            let mut row = vec![Rat::zero(); m];
-            row[i] = Rat::one();
-            row
-        })
-        .collect();
-
-    let mut pivot_cols: Vec<(usize, usize)> = Vec::new();
-    let mut pivot_row = 0usize;
-    for col in 0..num_vars {
-        if pivot_row >= m {
-            break;
-        }
-        let Some(found) = (pivot_row..m).find(|&r| !a[r][col].is_zero()) else {
-            continue;
-        };
-        a.swap(pivot_row, found);
-        b.swap(pivot_row, found);
-        t.swap(pivot_row, found);
-
-        let inv = a[pivot_row][col].inv().expect("pivot is nonzero");
-        for val in &mut a[pivot_row] {
-            *val = &*val * &inv;
-        }
-        b[pivot_row] = &b[pivot_row] * &inv;
-        for val in &mut t[pivot_row] {
-            *val = &*val * &inv;
-        }
-
-        for r in 0..m {
-            if r == pivot_row || a[r][col].is_zero() {
-                continue;
-            }
-            let factor = a[r][col].clone();
-            let pivot_a = a[pivot_row][col..num_vars].to_vec();
-            for (dst, pv) in a[r][col..num_vars].iter_mut().zip(&pivot_a) {
-                let sub = &factor * pv;
-                *dst = &*dst - &sub;
-            }
-            let sub_b = &factor * &b[pivot_row];
-            b[r] = &b[r] - &sub_b;
-            let pivot_t = t[pivot_row].clone();
-            for (dst, pv) in t[r].iter_mut().zip(&pivot_t) {
-                let sub_t = &factor * pv;
-                *dst = &*dst - &sub_t;
-            }
-        }
-        pivot_cols.push((pivot_row, col));
-        pivot_row += 1;
-    }
-
-    // 零行で右辺非零があれば不存在 certificate。
-    for r in pivot_row..m {
-        if !b[r].is_zero() {
-            let cert = t[r].clone();
-            let verified = verify_inconsistent_q(matrix, rhs, &cert, num_vars);
-            return Ok(AffineSolutionQ::Inconsistent {
-                certificate: cert,
-                verified,
-            });
-        }
-    }
-
-    let is_pivot: Vec<bool> = (0..num_vars)
-        .map(|c| pivot_cols.iter().any(|&(_, pc)| pc == c))
-        .collect();
-    let mut particular = vec![Rat::zero(); num_vars];
-    for &(r, col) in &pivot_cols {
-        particular[col] = b[r].clone();
-    }
-
-    let mut kernel_basis = Vec::new();
-    for free_col in 0..num_vars {
-        if is_pivot[free_col] {
-            continue;
-        }
-        let mut vec = vec![Rat::zero(); num_vars];
-        vec[free_col] = Rat::one();
-        for &(r, pcol) in &pivot_cols {
-            vec[pcol] = -&a[r][free_col];
-        }
-        kernel_basis.push(vec);
-    }
-
-    let verified = verify_consistent_q(matrix, rhs, &particular, &kernel_basis);
-    Ok(AffineSolutionQ::Consistent {
-        particular,
-        kernel_basis,
-        verified,
-    })
+/// 整数行列の Smith 標準形 `U * A * V = diag(d_1, ..., d_r, 0, ...)`。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SmithFormZ {
+    pub u: Vec<Vec<BigInt>>,
+    pub v: Vec<Vec<BigInt>>,
+    pub diagonals: Vec<BigInt>,
+    pub rank: usize,
 }
 
-fn verify_consistent_q(
-    matrix: &[Vec<Rat>],
-    rhs: &[Rat],
-    particular: &[Rat],
-    kernel_basis: &[Vec<Rat>],
-) -> bool {
-    for (row, target) in matrix.iter().zip(rhs) {
-        let mut acc = Rat::zero();
-        for (a, x) in row.iter().zip(particular) {
-            acc = &acc + &(a * x);
-        }
-        if acc != *target {
-            return false;
-        }
-    }
-    for v in kernel_basis {
-        for row in matrix {
-            let mut acc = Rat::zero();
-            for (a, x) in row.iter().zip(v) {
-                acc = &acc + &(a * x);
-            }
-            if !acc.is_zero() {
-                return false;
-            }
-        }
-    }
-    true
-}
-
-fn verify_inconsistent_q(matrix: &[Vec<Rat>], rhs: &[Rat], cert: &[Rat], num_vars: usize) -> bool {
-    for col in 0..num_vars {
-        let mut acc = Rat::zero();
-        for (row_idx, row) in matrix.iter().enumerate() {
-            acc = &acc + &(&cert[row_idx] * &row[col]);
-        }
-        if !acc.is_zero() {
-            return false;
-        }
-    }
-    let mut rhs_acc = Rat::zero();
-    for (c, b) in cert.iter().zip(rhs) {
-        rhs_acc = &rhs_acc + &(c * b);
-    }
-    !rhs_acc.is_zero()
-}
-
-/// Z 上の線形系 `L x = b` を Smith 標準形 `U L V = diag(d_1, ..., d_r, 0, ...)` で解き、独立検算する（G-141 D4）。
-pub fn solve_affine_z(
+/// 整数行列 `matrix` (`m x num_cols`) の Smith 標準形を計算する。
+pub fn smith_normal_form_z(
     matrix: &[Vec<BigInt>],
-    rhs: &[BigInt],
-    num_vars: usize,
-) -> Result<AffineSolutionZ, AlgebraError> {
+    num_cols: usize,
+) -> Result<SmithFormZ, AlgebraError> {
     let m = matrix.len();
-    if rhs.len() != m {
-        return Err(AlgebraError::ArityMismatch {
-            expected: m,
-            actual: rhs.len(),
-        });
-    }
     for row in matrix {
-        if row.len() != num_vars {
+        if row.len() != num_cols {
             return Err(AlgebraError::ArityMismatch {
-                expected: num_vars,
+                expected: num_cols,
                 actual: row.len(),
             });
         }
     }
-
     let mut d: Vec<Vec<BigInt>> = matrix.to_vec();
     let mut u = identity_z(m);
-    let mut v = identity_z(num_vars);
+    let mut v = identity_z(num_cols);
 
     let mut k = 0usize;
-    while k < m && k < num_vars {
-        // 残余部分行列から最小の非零絶対値要素をピボットに選ぶ。
-        let Some((pr, pc)) = find_min_nonzero_pivot(&d, k, m, num_vars) else {
+    while k < m && k < num_cols {
+        let Some((pr, pc)) = find_min_nonzero_pivot(&d, k, m, num_cols) else {
             break;
         };
         if pr != k {
@@ -276,9 +113,6 @@ pub fn solve_affine_z(
             swap_cols(&mut d, k, pc);
             swap_cols(&mut v, k, pc);
         }
-
-        // ピボット行・列の非零要素をユークリッド互除法で完全に消去し、
-        // さらに残余部分行列全体が d[k][k] で割り切れるまで繰り返す。
         loop {
             if d[k][k].is_negative() {
                 negate_row(&mut d, k);
@@ -301,7 +135,7 @@ pub fn solve_affine_z(
             if changed {
                 continue;
             }
-            for c in (k + 1)..num_vars {
+            for c in (k + 1)..num_cols {
                 if !d[k][c].is_zero() {
                     let q = d[k][c].div_floor(&d[k][k]);
                     col_sub_mul(&mut d, c, k, &q);
@@ -321,10 +155,9 @@ pub fn solve_affine_z(
                 negate_row(&mut d, k);
                 negate_row(&mut u, k);
             }
-            // Smith 整除条件: 残余部分行列に d[k][k] で割り切れない要素があればその行を k 行へ足す。
             let mut non_div = None;
             'outer: for r in (k + 1)..m {
-                for c in (k + 1)..num_vars {
+                for c in (k + 1)..num_cols {
                     if !(&d[r][c] % &d[k][k]).is_zero() {
                         non_div = Some(r);
                         break 'outer;
@@ -340,8 +173,58 @@ pub fn solve_affine_z(
         }
         k += 1;
     }
+    let diagonals: Vec<BigInt> = (0..k).map(|i| d[i][i].clone()).collect();
+    Ok(SmithFormZ {
+        u,
+        v,
+        diagonals,
+        rank: k,
+    })
+}
 
-    let rank = k;
+/// Q 上の線形系 `L x = b` を共通体 RREF エンジン（`solve_affine_field`）で解き、独立検算する。
+pub fn solve_affine_q(
+    matrix: &[Vec<Rat>],
+    rhs: &[Rat],
+    num_vars: usize,
+) -> Result<AffineSolutionQ, AlgebraError> {
+    match solve_affine_field(matrix, rhs, num_vars, &Rat::zero())? {
+        AffineSolutionField::Consistent {
+            particular,
+            kernel_basis,
+            verified,
+        } => Ok(AffineSolutionQ::Consistent {
+            particular,
+            kernel_basis,
+            verified,
+        }),
+        AffineSolutionField::Inconsistent {
+            certificate,
+            verified,
+        } => Ok(AffineSolutionQ::Inconsistent {
+            certificate,
+            verified,
+        }),
+    }
+}
+
+/// Z 上の線形系 `L x = b` を Smith 標準形 `U L V = diag(d_1, ..., d_r, 0, ...)` で解き、独立検算する（G-141 D4）。
+pub fn solve_affine_z(
+    matrix: &[Vec<BigInt>],
+    rhs: &[BigInt],
+    num_vars: usize,
+) -> Result<AffineSolutionZ, AlgebraError> {
+    let m = matrix.len();
+    if rhs.len() != m {
+        return Err(AlgebraError::ArityMismatch {
+            expected: m,
+            actual: rhs.len(),
+        });
+    }
+    let snf = smith_normal_form_z(matrix, num_vars)?;
+    let rank = snf.rank;
+    let u = snf.u;
+    let v = snf.v;
     let beta: Vec<BigInt> = (0..m)
         .map(|r| {
             let mut acc = BigInt::zero();
@@ -353,8 +236,7 @@ pub fn solve_affine_z(
         .collect();
 
     // 不整合検査: d_i ∤ beta_i または零行で beta_j != 0。
-    for i in 0..rank {
-        let diag = &d[i][i];
+    for (i, diag) in snf.diagonals.iter().enumerate() {
         if !(&beta[i] % diag).is_zero() {
             let cert = u[i].clone();
             let verified =
@@ -381,11 +263,10 @@ pub fn solve_affine_z(
     }
 
     let mut y0 = vec![BigInt::zero(); num_vars];
-    let mut smith_diagonals = Vec::with_capacity(rank);
-    for i in 0..rank {
-        smith_diagonals.push(d[i][i].clone());
-        y0[i] = &beta[i] / &d[i][i];
+    for (i, diag) in snf.diagonals.iter().enumerate() {
+        y0[i] = &beta[i] / diag;
     }
+    let smith_diagonals = snf.diagonals;
 
     let particular: Vec<BigInt> = (0..num_vars)
         .map(|row| {

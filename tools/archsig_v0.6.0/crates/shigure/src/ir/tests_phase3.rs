@@ -861,6 +861,10 @@ fn phase3_math_clauses_and_outcome_json_render_cleanly() {
             cost_ranked_sets: vec![],
             law_readout_comparison: None,
         }),
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     };
     let json = outcome.to_json();
     let Json::Obj(map) = &json else {
