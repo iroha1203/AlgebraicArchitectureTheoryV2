@@ -203,6 +203,7 @@ theorem holds_iff_residual_zero (data : NamedRingEquation laws name) (A : Struct
 
 end NamedRingEquation
 
+/-- Use no extra ordered terms unless the presentation explicitly records them. -/
 private def defaultOtherEquation {sig : Signature.{u}} {laws : LawDeclarations sig}
     {name : laws.LawName} (named : Option (NamedRingEquation laws name)) :
     match named with

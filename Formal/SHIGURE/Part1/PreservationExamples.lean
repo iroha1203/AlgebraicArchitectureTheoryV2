@@ -878,9 +878,11 @@ private def orderedStateEquation : OrderedEquation Observation.signature where
   left := .var .here
   right := .var (.there .here)
 
+/-- Write the equality with its two variables in their designated order. -/
 private def writtenStateEquation : OrderedEquation.Written Observation.signature :=
   orderedStateEquation.writeVariables .here (.there .here) rfl rfl
 
+/-- Register an ordered equality with the ring supplied by its interpreted carrier. -/
 private def externalRingPresentation : PrimitivePresentation where
   signature := Observation.signature
   laws :=
@@ -895,6 +897,7 @@ theorem ordered_state_equation_registered :
     externalRingPresentation.orderedEquation () = some ⟨writtenStateEquation, rfl⟩ :=
   rfl
 
+/-- Use the identity structure map on the integer states. -/
 private def identityIntegerState : StructureMap (statesOf Int) (statesOf Int) where
   onSort _ := id
   total_comm f := nomatch f
@@ -950,7 +953,7 @@ def identity_coefficients_across_cover_change :
         pieces := fun _ => {true}
         localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
     observationSupport := ⟨False.elim, False.elim⟩
-    declaredObservations := Or.inl ⟨rfl, rfl⟩
+    declaredObservations := .external
     coefficientChange := .changed (.identity _)
       { baseMap := RingHom.id Int
         coefficients := RingHom.id Int
@@ -959,8 +962,8 @@ def identity_coefficients_across_cover_change :
     coefficientInputs :=
       ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _ _⟩
     coefficientSupport :=
-      ⟨⟨(fun _ => Set.mem_univ _), (fun _ => Set.mem_univ _)⟩, Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
-        ⟨PUnit.unit, true, Set.mem_singleton _, Set.mem_univ _⟩))⟩
+      ⟨⟨(fun _ => Set.mem_univ _), (fun i => nomatch i)⟩, Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
+        ⟨true, Or.inl ⟨PUnit.unit, Set.mem_singleton _⟩, Set.mem_univ _⟩))⟩
     value := id
     commutes _ := rfl
     restrictedObservations := ReadingContextChange.observationSquare_of_all _ _ _ _
@@ -1111,6 +1114,7 @@ theorem padded_ordinary_product_keeps_first_name :
     (sharedObservation paddedIntegerInput).SharesInput (.ofList [()]) ⟨(), .here⟩ ⟨(), .here⟩ :=
   ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
 
+/-- Read the selected position from two independent Boolean states. -/
 private def reindexedObservation (right : Bool) : Reading.{0, 0, 0, 0} :=
   { Observation.reading id with
     observation := .ofFunction { Index := Bool, sort := fun _ => () } Bool (fun e => e right)
@@ -1517,6 +1521,7 @@ private def nullaryCoefficient : CoefficientReading Observation.whole (statesOf 
     letI := R.scalars.ring
     1
 
+/-- Read a constant output from an ordinary product with an empty carrier. -/
 private def emptyOrdinaryReading : Reading.{0, 0, 0, 0} :=
   { Observation.reading id with
     structureData := statesOf Empty
@@ -1527,6 +1532,7 @@ private def emptyOrdinaryReading : Reading.{0, 0, 0, 0} :=
     observationPlacement := .external
     observationDeclared _ named := nomatch named }
 
+/-- Read a constant ordinary value and the selected nullary coefficient evaluation. -/
 private def nullaryCoefficientReading : Reading.{0, 0, 0, 0} :=
   { readingOf Int 1 with
     observation := .ofFunction .empty PUnit (fun _ => PUnit.unit)
@@ -1535,6 +1541,7 @@ private def nullaryCoefficientReading : Reading.{0, 0, 0, 0} :=
     observationPlacement := .external
     observationDeclared _ named := nomatch named }
 
+/-- Keep the theory fixed while changing the observation and the coefficients. -/
 private def emptyToScalarInterpretation := Interpretation.identity Observation.presentation.theory
 
 /-- Unused empty carriers impose no requirement on the joint evaluation input. -/
@@ -1559,6 +1566,7 @@ theorem joint_input_ignores_unused_empty_position :
   · intro j i
     exact nomatch i
 
+/-- Forget the empty source sort and use the selected target coefficient cover. -/
 private def forgetEmptyState : ReadingContextChange emptyOrdinaryReading nullaryCoefficientReading
     emptyToScalarInterpretation where
   retained := Observation.missingSort.context
@@ -1568,16 +1576,19 @@ private def forgetEmptyState : ReadingContextChange emptyOrdinaryReading nullary
   pieces _ := Set.univ
   localSupport _ _ absent := absent.elim
 
+/-- The nullary target ordinary observation requires no source position. -/
 private def forgetEmptyPositions : emptyOrdinaryReading.observation.product.Correspondence
     nullaryCoefficientReading.observation.product id :=
   ⟨(fun j => nomatch j), (fun j => nomatch j), (fun j => nomatch j)⟩
 
+/-- The target coefficient evaluation has neither state inputs nor additional positions. -/
 private def nullaryInputs : ReadingInputMap emptyOrdinaryReading.observation.product
     nullaryCoefficient.selection.used id where
   extra := .empty
   coordinate i := nomatch i.val.2
   extra_used i := nomatch i
 
+/-- Specify a scalar value map whose ambient equation has an empty domain. -/
 private def initialCoefficientValue (value : Int) :
     Reading.CoefficientCompatibility emptyOrdinaryReading nullaryCoefficientReading id
       (fun _ a => nomatch a) :=
@@ -1615,8 +1626,8 @@ def introduces_scalar_at_retained_tuple :
     exact ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i),
       (fun j => nomatch j.val.2), (fun j => nomatch j.val.2)⟩
   coefficientSupport := by
-    refine ⟨(fun j => nomatch j.val.2), Or.inl ?_⟩
-    exact Set.eq_univ_of_forall (fun d => ⟨PUnit.unit, PUnit.unit, Set.mem_univ _, Set.mem_univ _⟩)
+    refine ⟨(fun j => nomatch j), Or.inl ?_⟩
+    exact Set.eq_univ_of_forall (fun d => ⟨PUnit.unit, Or.inl ⟨PUnit.unit, Set.mem_univ _⟩, Set.mem_univ _⟩)
   value := id
   commutes e := nomatch e PUnit.unit
   restrictedObservations :=
@@ -2156,6 +2167,7 @@ private def singleRetainedSort {P : PrimitivePresentation} {U : DeclarationConte
     | quantity q => exact nomatch q
     | law n => exact nomatch n
 
+/-- Present the retained sort as a typed selection of the ambient declarations. -/
 private def selectedOrigin : ReadingOrigin Observation.presentation withDerivedLaw sortOnly :=
   singleRetainedSort () rfl
 
@@ -2192,6 +2204,7 @@ def empty_local_reading_comparison : ReadingComparison emptyLocalReading emptyLo
   value := id
   commutes _ := rfl
 
+/-- Choose a presentation with a required Law whose conclusion depends on the parameter. -/
 private def ambientLawPresentation (conclusion : Bool) : PrimitivePresentation where
   signature := signature
   laws :=
@@ -2200,6 +2213,7 @@ private def ambientLawPresentation (conclusion : Bool) : PrimitivePresentation w
       role _ := .required }
   derived _ h := by cases h
 
+/-- Select only the sort, omitting the ambient Law and operations. -/
 private def ambientSortOnly : DeclarationContext (ambientLawPresentation false) where
   declarations := {.sort ()}
   closed := by
@@ -2207,6 +2221,7 @@ private def ambientSortOnly : DeclarationContext (ambientLawPresentation false) 
     cases Set.mem_singleton_iff.1 ha
     exact Set.empty_subset _
 
+/-- Read the selected sort of either ambient structure. -/
 private def ambientReading (M : Structure signature) : Reading.{0, 0, 0, 0} where
   presentation := ambientLawPresentation false
   structureData := M
@@ -2220,6 +2235,7 @@ private def ambientReading (M : Structure signature) : Reading.{0, 0, 0, 0} wher
   valueStructure := ()
   coefficients := none
 
+/-- Restrict the ambient reading to the typed sort-only presentation. -/
 private def selectedReading (M : Structure signature) : Reading.{0, 0, 0, 0} :=
   (ambientReading M).restrict (singleRetainedSort () rfl)
     (StateObservation.ofSort () Bool (fun _ => false)) ()
@@ -2263,6 +2279,7 @@ theorem cannot_change_retained_law :
     Eq.mp h (fun _ _ => True.intro)
   exact (bad Assignment.empty True.intro).elim
 
+/-- Keep the literal Law while removing the attached ordered terms. -/
 private def withoutOrderedTerms : PrimitivePresentation :=
   { CoefficientTransport.externalRingPresentation with otherOrderedEquation _ := none }
 
@@ -2274,6 +2291,7 @@ theorem cannot_erase_retained_ordered_terms :
   have same := congrArg LawAttachments.equation (origin.lawAttachments_eq ())
   cases same
 
+/-- Choose one of two derivation trees for the same Law. -/
 private def proofTreePresentation (usesCut : Bool) : PrimitivePresentation where
   signature := Observation.signature
   laws :=

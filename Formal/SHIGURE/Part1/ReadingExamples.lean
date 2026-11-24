@@ -388,6 +388,7 @@ private def retained : DeclarationContext presentation where
     subst d
     exact he.elim
 
+/-- Vary the forgotten carrier while keeping the retained integer carrier. -/
 private def ambient (full : Bool) : Structure signature where
   carrier := fun
     | false => Int
@@ -402,6 +403,7 @@ private def ambient (full : Bool) : Structure signature where
 private def realized (full : Bool) : RestrictedStructure retained :=
   RestrictedStructure.restrict retained (ambient full)
 
+/-- The context retains only the false sort. -/
 private theorem retained_sort (s : signature.SortType) (kept : Declaration.sort s ∈ retained.declarations) :
     s = false := by
   have same : Declaration.sort (P := presentation) s = .sort false := Set.mem_singleton_iff.1 kept
@@ -419,6 +421,7 @@ private def scalarRealization (R : Type) : RestrictedStructure retained where
   partialValue p := nomatch p
   quantity q := nomatch q
 
+/-- The forgotten sort has the designated inert carrier. -/
 private theorem scalarRealization_retained (R : Type) : (scalarRealization R).HasOnlyRetainedSorts := by
   intro s forgotten
   cases s
@@ -435,12 +438,14 @@ theorem scheme_cannot_keep_forgotten_carrier : ¬ (realized true).HasOnlyRetaine
   have singleton : Subsingleton Int := same.symm ▸ (inferInstanceAs (Subsingleton PUnit))
   exact (by decide : (0 : Int) ≠ 1) (@Subsingleton.elim Int singleton 0 1)
 
+/-- The kept carrier agrees across the two ambient structures. -/
 private theorem retained_carrier_eq (source target : Bool) (s : signature.SortType)
     (kept : Declaration.sort s ∈ retained.declarations) :
     (realized source).carrier s = (realized target).carrier s := by
   cases retained_sort s kept
   rfl
 
+/-- Retained facts transport along the supplied carrier identifications. -/
 private theorem retained_preserves (source target : RestrictedStructure retained)
     (same : ∀ s (_kept : Declaration.sort s ∈ retained.declarations), source.carrier s = target.carrier s) :
     source.Preserves target (fun s kept x => same s kept ▸ x) := by
@@ -454,9 +459,11 @@ private theorem retained_preserves (source target : RestrictedStructure retained
   | domain p _ => exact nomatch p
   | graph op _ _ => cases op <;> rename_i symbol <;> exact nomatch symbol
 
+/-- The ambient structures agree after restricting to the kept sort. -/
 private theorem ambient_agrees (source target : Bool) : (realized source).Agrees (realized target) :=
   ⟨retained_carrier_eq source target, retained_preserves _ _ _, retained_preserves _ _ _⟩
 
+/-- The ambient and schematic structures agree at the kept declarations. -/
 private theorem ambient_agrees_scheme (full : Bool) : (realized full).Agrees (scalarRealization Int) := by
   have same (s : signature.SortType) (kept : Declaration.sort s ∈ retained.declarations) :
       (realized full).carrier s = (scalarRealization Int).carrier s := by
@@ -616,8 +623,10 @@ private def shiftedNativeScheme : CoefficientScheme retained integers :=
       exact fun x => R.fromBase ((show Int from x) + if shifted then 1 else 0)
     nativePoints_permitted _ _ _ _ := True.intro }
 
+/-- Use a single coefficient coordinate at the retained sort. -/
 private def retainedProduct : CoefficientProduct signature.SortType := .all (.ofSort false)
 
+/-- Read coefficients using the specified native realization and its designated points. -/
 private def nativeCoefficient (full shifted : Bool) :
     CoefficientReading retained (ambient full) retainedProduct where
   base := integers
@@ -686,11 +695,14 @@ private def separateReading (R : Type) [CommRing R] : Reading.{0, 0, 0, 0} where
   valueStructure := ()
   coefficients := some ⟨.ofList [false], scalarInputs R⟩
 
+/-- Assign distinct ordinary positions to the two sorts. -/
 private def twoOrdinarySorts : ObservationProduct signature.SortType := { Index := Bool, sort := id, nameScope := some "two sorts" }
 
+/-- Choose a coefficient position in an independent namespace. -/
 private def differentlyNamedInput : CoefficientProduct signature.SortType :=
   .indexed Bool {true} (fun _ => false) (some "two sorts")
 
+/-- Explicitly share the false-sort position across otherwise independent names. -/
 private noncomputable def explicitFalsePosition : SharedInputNames twoOrdinarySorts := by
   classical
   refine ⟨fun Γ _ => if Γ = differentlyNamedInput then some false else none, ?_⟩
@@ -702,6 +714,7 @@ private noncomputable def explicitFalsePosition : SharedInputNames twoOrdinarySo
     rw [if_neg matched] at first
     cases first
 
+/-- Use a common position name on an incompatible sort. -/
 private noncomputable def sameNameDifferentSort : Reading.{0, 0, 0, 0} :=
   { separateReading Int with
     observation := .ofFunction twoOrdinarySorts Int (fun states => states false)
@@ -722,9 +735,11 @@ theorem compatible_explicit_sharing_survives_name_collision :
     have position : j.val = true := Set.mem_singleton_iff.1 j.property
     exact Bool.noConfusion (position.symm.trans (eq_of_heq named.2.2.2))
 
+/-- Declare a binary total observation on two distinct input sorts. -/
 private def observationSignature : Signature :=
   { signature with Total := Unit, totalArity _ := ⟨[false, true], false⟩ }
 
+/-- Use the observation signature without any Law declarations. -/
 private def observationPresentation : PrimitivePresentation where
   signature := observationSignature
   laws :=
@@ -733,6 +748,7 @@ private def observationPresentation : PrimitivePresentation where
       role := fun n => nomatch n }
   derived n := nomatch n
 
+/-- Interpret the binary observation as Boolean conjunction. -/
 private def pairedStates : Structure observationSignature where
   carrier _ := Bool
   total _ e := e .here && e (.there .here)
@@ -741,6 +757,7 @@ private def pairedStates : Structure observationSignature where
   partialValue p := nomatch p
   quantity q := nomatch q
 
+/-- Read the declared binary operation by name. -/
 private def pairedReading : Reading.{0, 0, 0, 0} where
   presentation := observationPresentation
   structureData := pairedStates
@@ -780,6 +797,7 @@ private def splitPairedReading : Reading.{0, 0, 0, 0} :=
         subset := fun _ _ _ => Set.mem_univ _
         covers := fun kept => ⟨true, kept⟩ } }
 
+/-- Assign the sorts-only piece while omitting the declared observation operation. -/
 private def forgetPairedOperation : ReadingContextChange pairedReading splitPairedReading
     (Interpretation.identity observationPresentation.theory) where
   retained := pairedSorts
@@ -795,12 +813,78 @@ private def forgetPairedOperation : ReadingContextChange pairedReading splitPair
 theorem declared_observation_cannot_use_sort_only_assignment :
     ¬ (Reading.ContextCompatibility.changed forgetPairedOperation).retainsChosenSymbols (.identity _) := by
   intro support
-  obtain ⟨i, j, piece⟩ := forgetPairedOperation.observation_assignment support
-    (Or.inr (by intro impossible; cases impossible))
-  have choosesFalse : j = false := Set.mem_singleton_iff.1 piece.assigned
-  subst j
-  obtain ⟨s, impossible⟩ := piece.targetKept (.ordinary ()) rfl
-  cases impossible
+  have actual : forgetPairedOperation.ObservationLocations (.identity _) (some (.ordinary ()))
+      (some (.ordinary ())) := support
+  obtain ⟨j, selected, kept, _⟩ := actual.targetPiece
+  rcases selected with ⟨i, assigned⟩ | impossible
+  · have choosesFalse : j = false := Set.mem_singleton_iff.1 assigned
+    subst j
+    obtain ⟨s, impossible⟩ := kept
+    cases impossible
+  · exact impossible.elim
+
+/-- Use the same binary state function externally, without selecting any declarations. -/
+private def externalPairReading : Reading.{0, 0, 0, 0} :=
+  { pairedReading with
+    observation := StateObservation.ofContext [false, true] Bool (pairedStates.total ())
+    context := ⟨∅, fun absent => absent.elim⟩
+    cover := ⟨Empty, (fun i => nomatch i), (fun i => nomatch i), (fun absent => absent.elim)⟩
+    coefficients := none
+    sharedInputs := .empty _
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+/-- The new operation is selected in a target piece, with no source piece to assign. -/
+private def declarePairObservation : ReadingContextChange externalPairReading pairedReading
+    (Interpretation.identity observationPresentation.theory) where
+  retained := externalPairReading.context
+  inside _ kept := kept
+  supporting := Interpretation.identity observationPresentation.theory
+  equivalent := Interpretation.Equivalent.refl _
+  pieces i := nomatch i
+  addedTargetPieces := Set.univ
+  localSupport i := nomatch i
+
+/-- The actual target primitive reads the two external source states on its selected piece. -/
+def external_states_feed_new_declared_observation : ReadingComparison externalPairReading pairedReading where
+  interpretation := Interpretation.identity observationPresentation.theory
+  targetModel n := nomatch n.val
+  state :=
+    { onSort _ := id
+      total_comm := by
+        intro f e
+        let u := Interpretation.identity observationPresentation.theory
+        have model : observationPresentation.theory.Holds pairedStates := fun n => nomatch n.val
+        have graph : (u.pullbackStructure pairedStates model).Graph (.total f)
+            (e.map (fun _ => id)) (pairedStates.total f e) := by
+          apply (u.pullback_graph_iff pairedStates model _ _ _).2
+          apply (Term.mem_eval_iff _ _ _ _).1
+          apply (Term.holds_graph_iff _ _ _ _).1
+          apply (Translation.identityGraph observationPresentation.theory (.total f)).2.sound pairedStates model
+          apply (Formula.holds_atom _ _ _).2
+          apply (Atomic.holds_graph _ _ _ _ _).2
+          exact (pairedStates.graph_total_iff _ _ _).2 rfl
+        exact ((Structure.graph_total_iff _ _ _ _).1 graph).symm
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .changed declarePairObservation
+  declaredObservations := by
+    change declarePairObservation.ObservationLocations (.identity _) none (some (.ordinary ()))
+    refine ReadingContextChange.ObservationLocations.targetOnly
+      (change := declarePairObservation) (positions := .identity _) (.ordinary ()) () ?_ ?_ ?_
+    · exact Or.inr (Set.mem_univ _)
+    · exact Set.mem_univ _
+    · intro i
+      exact Or.inr ⟨rfl, fun absent => absent.elim⟩
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
+  restrictedObservations := declarePairObservation.observationSquare_of_available _ _ _
+    (fun _ => Or.inr ⟨rfl, fun absent => absent.elim⟩)
+    (fun _ => Or.inr ⟨rfl, fun absent => absent.elim⟩) (fun _ => rfl)
 
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
 private def paddedScalarInputs (R : Type) [CommRing R] :
@@ -909,6 +993,7 @@ private def scalarWithOrdinaryName (scope : Option String) : Reading.{0, 0, 0, 0
     observationPlacement := .external
     observationDeclared _ named := nomatch named }
 
+/-- Match corresponding ordinary positions before changing their sharing specification. -/
 private def independentToShared : (scalarWithOrdinaryName none).observation.product.Correspondence
     (scalarWithOrdinaryName (some "typed variables")).observation.product id where
   position := id
@@ -931,6 +1016,74 @@ theorem fixed_parameters_cannot_invent_ordinary_share
   · have impossible : (some "typed variables" : Option String) = none := named.2.2.1
     cases impossible
   · cases explicit.1
+
+/-- Keep the actual ordinary state as an external input to the coefficient introduction. -/
+private def externalScalarSource : Reading.{0, 0, 0, 0} :=
+  { scalarWithOrdinaryName none with
+    context := ⟨∅, fun absent => absent.elim⟩
+    cover := ⟨Empty, (fun i => nomatch i), (fun i => nomatch i), (fun absent => absent.elim)⟩
+    coefficients := none
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+/-- Select the target context independently, without retaining any source declarations. -/
+private def introduceScalarContext :
+    ReadingContextChange externalScalarSource (scalarWithOrdinaryName none)
+      (Interpretation.identity presentation.theory) where
+  retained := externalScalarSource.context
+  inside _ kept := kept
+  supporting := Interpretation.identity presentation.theory
+  equivalent := Interpretation.Equivalent.refl _
+  pieces i := nomatch i
+  addedTargetPieces := Set.univ
+  localSupport i := nomatch i
+
+/-- Both evaluations use the original source coordinate, with no additional states. -/
+private def externalScalarInputs : ReadingInputMap externalScalarSource.observation.product
+    (scalarInputs Int).selection.used id where
+  extra := .empty
+  coordinate j := ⟨.inl j.val, rfl⟩
+  extra_used i := nomatch i
+
+/-- The ordinary positions remain available while the target selects a coefficient realization. -/
+private theorem externalScalarInputAvailable (i : externalScalarSource.observation.product.Index) :
+    i ∈ introduceScalarContext.observationInputs :=
+  Or.inr ⟨rfl, fun absent => absent.elim⟩
+
+/-- Introduce an actual coefficient evaluation on the external input, using its selected target cover. -/
+def external_state_feeds_new_coefficient_evaluation :
+    ReadingComparison externalScalarSource (scalarWithOrdinaryName none) where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel n := nomatch n.val
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .changed introduceScalarContext
+  coefficientChange := .compare ⟨externalScalarInputs, id, fun _ => rfl⟩
+  coefficientInputs := by
+    refine ⟨(fun _ _ common => (common.1 rfl).elim), ?_⟩
+    refine ⟨(fun k => nomatch k), (fun k => nomatch k), (fun k => nomatch k),
+      (fun _ _ k => nomatch k), ?_⟩
+    intro _ _ shared
+    rcases shared.2 with named | explicit
+    · cases named.2.2.1
+    · cases explicit.1
+  coefficientSupport := by
+    refine ⟨(fun k => nomatch k), Or.inl ?_⟩
+    exact Set.Subset.antisymm introduceScalarContext.targetRetained_inside
+      (fun _ kept => ⟨(), Or.inr (Set.mem_univ _), kept⟩)
+  value := id
+  commutes _ := rfl
+  restrictedObservations :=
+    ⟨fun e => e ⟨⟨false, .here⟩, externalScalarInputAvailable _⟩,
+      fun e => e ⟨⟨false, .here⟩, externalScalarInputAvailable _⟩,
+      fun _ => rfl, fun _ => rfl, (fun _ => rfl),
+      ⟨(fun _ i _ => externalScalarInputAvailable i), fun _ => rfl⟩⟩
 
 end SHIGURE.Chapter1.RetainedCoefficientInputs
 
@@ -956,11 +1109,14 @@ theorem extra_cannot_change_original_sort :
   have same := preserves () () ⟨by decide, rfl, HEq.rfl, rfl⟩
   exact Bool.noConfusion same.2.1
 
+/-- Use two independent ordinary positions of the same sort. -/
 private def ordinaryPair : ObservationProduct Unit where
   Index := Bool
   sort := fun _ => ()
 
+/-- Identify the original coefficient position with the first ordinary position. -/
 private def sharesFirst (_ : Unit) (j : ordinaryPair.Index) : Prop := j = false
+/-- Identify the target coefficient position with the second ordinary position. -/
 private def sharesSecond (_ : Unit) (j : ordinaryPair.Index) : Prop := j = true
 
 /-- An additional input can restore the original named coordinate with its original sort. -/
@@ -993,6 +1149,38 @@ theorem extra_cannot_reassign_original_sharing :
   have wrong := (follows () true rfl).1
   have same := original () () () ⟨by decide, rfl, HEq.rfl, rfl⟩ rfl true
   exact Bool.noConfusion (same.mp wrong)
+
+/-- The second target coordinate uses an additional state of the other sort. -/
+private def twoTargetInputs : ObservationProduct Bool :=
+  { Index := Bool, sort := id }
+
+/-- Use the left source state for the retained target coordinate and an extra for the other. -/
+private def additionalForSecond : ReadingInputMap (.ofSort false) twoTargetInputs id where
+  extra := .ofSort true
+  coordinate
+    | false => ⟨.inl PUnit.unit, rfl⟩
+    | true => ⟨.inr PUnit.unit, rfl⟩
+  extra_used i := by cases i; exact ⟨true, rfl⟩
+
+/-- The unused additional state has an empty carrier. -/
+private def inputCarrier : Bool → Type
+  | false => Int
+  | true => Empty
+
+/-- The retained target coordinate still has a value when the excluded extra carrier is empty. -/
+theorem discarded_target_needs_no_extra_state :
+    IsEmpty (additionalForSecond.Values inputCarrier) ∧
+      ∃ extra : (additionalForSecond.extra.restrict (additionalForSecond.usedExtra {false})).Values inputCarrier,
+        additionalForSecond.mapToRestrictedTarget (fun _ => id) ((fun _ => (7 : Int)), extra)
+          ⟨false, Set.mem_singleton _⟩ = (7 : Int) := by
+  refine ⟨⟨fun input => (input.2 PUnit.unit).elim⟩, ?_⟩
+  let extra : (additionalForSecond.extra.restrict (additionalForSecond.usedExtra {false})).Values inputCarrier :=
+    fun i => False.elim (by
+      obtain ⟨j, kept, supplied⟩ := i.property
+      have first : j = false := Set.mem_singleton_iff.1 kept
+      subst j
+      cases supplied)
+  exact ⟨extra, rfl⟩
 
 end SHIGURE.Chapter1.AdditionalCoefficientInputs
 
@@ -1066,6 +1254,7 @@ theorem all_sorts_comparison_at (e : Nat → Bool) (n : Nat) :
       !(e n) :=
   congrFun (all_sorts_comparison.commutes e) n
 
+/-- Select no declarations for the external observation. -/
 private def emptyContext : DeclarationContext presentation :=
   ⟨∅, fun absent => absent.elim⟩
 
@@ -1080,6 +1269,7 @@ private def externalReading (s : Nat) : Reading.{0, 0, 0, 0} :=
     observationPlacement := .external
     observationDeclared _ named := nomatch named }
 
+/-- Interpret the signature by shifting every natural-number sort to its successor. -/
 private def successor : Interpretation presentation.theory presentation.theory where
   onSort := Nat.succ
   translation :=
@@ -1119,7 +1309,7 @@ def external_stays_available_when_declarations_are_added :
         context := reading.context
         cover := reading.cover
         coefficients := none
-        observationPlacement := .external
+        observationPlacement := .retained (fun _ => Set.mem_univ _)
         observationDeclared _ named := nomatch named } :=
   { nonidentity_at_fixed_context with
     declarationChange := .changed
@@ -1127,10 +1317,12 @@ def external_stays_available_when_declarations_are_added :
         inside _ h := h
         supporting := successor
         equivalent := Interpretation.Equivalent.refl _
+        addedTargetPieces := Set.univ
         pieces i := nomatch i
         localSupport i := nomatch i }
-    observationSupport := ⟨False.elim, False.elim⟩
-    declaredObservations := Or.inl ⟨rfl, rfl⟩
+    observationSupport := ⟨False.elim, fun _ _ =>
+      ⟨Or.inr ⟨rfl, fun h => h.elim⟩, ⟨(), Or.inr (Set.mem_univ _), Set.mem_univ _⟩⟩⟩
+    declaredObservations := .external
     restrictedObservations := ReadingContextChange.observationSquare_of_available _ _ _ _
       (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩)
       (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩) (fun _ => rfl) }

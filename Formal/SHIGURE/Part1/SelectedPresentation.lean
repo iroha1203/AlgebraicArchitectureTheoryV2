@@ -73,6 +73,7 @@ def operation (names : SignatureNames S T) : Operation S → Operation T
   | .partialOp p => .partialOp (names.onPartial p)
   | .quantity q => .quantity (names.onQuantity q)
 
+/-- Renaming preserves the input and output sorts of each tagged operation. -/
 private theorem operationArity (names : SignatureNames S T) (op : Operation S) :
     ⟨op.arity.inputs.map names.onSort, names.onSort op.arity.output⟩ = (names.operation op).arity := by
   cases op with
@@ -80,6 +81,7 @@ private theorem operationArity (names : SignatureNames S T) (op : Operation S) :
   | partialOp p => exact names.partialArity p
   | quantity q => exact names.quantityArity q
 
+/-- Rename the variables and symbols of one typed atom. -/
 private def atomic (names : SignatureNames S T) {Γ : List S.SortType} :
     Atomic S Γ → Atomic T (Γ.map names.onSort)
   | .eq x y => .eq (x.mapSorts names.onSort) (y.mapSorts names.onSort)
@@ -133,6 +135,7 @@ def graphAxiom (names : SignatureNames S T) : GraphAxiom S → GraphAxiom T
   | .domainImpliesGraph p => .domainImpliesGraph (names.onPartial p)
 
 
+/-- Read a renamed assignment in the required target context. -/
 private def arguments (names : SignatureNames S T) {X : T.SortType → Type u}
     {Γ : List S.SortType} {Δ : List T.SortType} (same : Γ.map names.onSort = Δ)
     (e : Assignment (X ∘ names.onSort) Γ) : Assignment X Δ :=
@@ -184,6 +187,7 @@ inductive RecordedDerivation (S : Signature.{u}) (LawName : Type v) where
 namespace Derivation
 variable {T : Theory.{u}} {S : Signature.{u}} {L : Type v}
 
+/-- Record the target position of each variable in the source context's order. -/
 private def renamingPositions {Δ : List T.signature.SortType} :
     {Γ : List T.signature.SortType} → Renaming Γ Δ → List Nat
   | [], _ => []
@@ -247,6 +251,7 @@ def lawAttachments (P : PrimitivePresentation.{u}) (signature : SignatureNames P
     | .derived => some (Derivation.record (T := P.theory) signature (fun n => lawName n.val) (P.derived name h))
     | .required | .additional => none
 
+/-- Record inclusion operations in the order of the partial operation's inputs. -/
 private def inclusionOperations (names : SignatureNames P.signature S) :
     {Γ : List P.signature.SortType} →
     (∀ {s}, Var Γ s → TotalSymbol P.signature) → List (Operation S)

@@ -44,6 +44,7 @@ def kernelAxioms (env : Environment) (proofImports : Option Environment) (names 
   let (_, resolved) := ((imported.forM CollectAxioms.collect).run proofImports).run {}
   return retained ++ resolved.axioms
 
+/-- Reject each root whose transitive kernel dependencies include a nonstandard axiom. -/
 private def checkStandardAxioms (origin : Syntax) (env : Environment) (declarations : Array Name) :
     CommandElabM Unit := do
   let proofImports ← importProofEnvironment env
