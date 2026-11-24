@@ -61,23 +61,25 @@ theorem identity_word_evaluates (X : Type) {t : identitySignature.SortType}
     (w : OperationWord identitySignature () t) (x : X) : w.Evaluates (identityStructure X) x x := by
   induction w with
   | nil => exact (OperationWord.evaluates_nil_iff (source := ()) (identityStructure X) x x).2 rfl
-  | snoc w op unary ih =>
-    apply (w.evaluates_snoc_iff op unary (identityStructure X) x x).2
-    refine ⟨x, ih, ?_⟩
-    cases op with
-    | total f =>
-      have inputSort : () = _ := List.cons.inj unary |>.1
-      cases inputSort
-      exact ((identityStructure X).graph_total_iff f _ _).2 rfl
-    | partialOp p => exact nomatch p
-    | quantity q => exact nomatch q
+  | cons w edge ih =>
+    cases edge with
+    | of op unary =>
+      apply (OperationWord.evaluates_snoc_iff w op unary (identityStructure X) x x).2
+      refine ⟨x, ih, ?_⟩
+      cases op with
+      | total f =>
+        have inputSort : () = _ := List.cons.inj unary |>.1
+        cases inputSort
+        exact ((identityStructure X).graph_total_iff f _ _).2 rfl
+      | partialOp p => exact nomatch p
+      | quantity q => exact nomatch q
 
 /-- Both structures have the constant observation of Example 2.7. -/
 private def observe {X : Type} (_ : X) : Unit := ()
 
 /-- The noninjective map preserves the observation of every word at every input. -/
 theorem collapse_preserves_observation (w : OperationWord identitySignature () ()) (x : Bool) :
-    let hx : x ∈ w.domain (identityStructure Bool) := ⟨x, identity_word_evaluates Bool w x⟩
+    let hx := (w.mem_domain_iff (identityStructure Bool) x).2 ⟨x, identity_word_evaluates Bool w x⟩
     observe ((w.eval (identityStructure Unit) (collapse.onSort () x)).get
       (w.domain_image_subset collapse ⟨x, hx, rfl⟩)) =
         observe ((w.eval (identityStructure Bool) x).get hx) := by
@@ -85,7 +87,7 @@ theorem collapse_preserves_observation (w : OperationWord identitySignature () (
 
 /-- The nonsurjective map preserves the observation of every word at every input. -/
 theorem includePoint_preserves_observation (w : OperationWord identitySignature () ()) (x : Unit) :
-    let hx : x ∈ w.domain (identityStructure Unit) := ⟨x, identity_word_evaluates Unit w x⟩
+    let hx := (w.mem_domain_iff (identityStructure Unit) x).2 ⟨x, identity_word_evaluates Unit w x⟩
     observe ((w.eval (identityStructure Bool) (includePoint.onSort () x)).get
       (w.domain_image_subset includePoint ⟨x, hx, rfl⟩)) =
         observe ((w.eval (identityStructure Unit) x).get hx) := by
@@ -135,7 +137,8 @@ theorem nullary_quantity_cannot_append : ¬ ∃ s : partialSignature.SortType,
 theorem partialWord_source_domain : partialWord.domain (partialStructure false) = ∅ := by
   ext x
   constructor
-  · rintro ⟨y, evaluated⟩
+  · intro defined
+    obtain ⟨y, evaluated⟩ := (partialWord.mem_domain_iff (partialStructure false) x).1 defined
     obtain ⟨z, _, edge⟩ := (OperationWord.evaluates_snoc_iff .nil (.partialOp (sig := partialSignature) ())
       rfl (partialStructure false) x y).1 evaluated
     exact ((partialStructure false).graph_partial_iff () _ _).1 edge |>.1
@@ -172,7 +175,7 @@ theorem partialWord_domain_enlarges :
   refine ⟨partialWord.domain_image_subset enlarge, ?_⟩
   intro same
   have target : () ∈ enlarge.onSort () ⁻¹' partialWord.domain (partialStructure true) :=
-    ⟨(), partialWord_target_value⟩
+    (partialWord.mem_domain_iff (partialStructure true) ()).2 ⟨(), partialWord_target_value⟩
   rw [← same, partialWord_source_domain] at target
   exact target
 

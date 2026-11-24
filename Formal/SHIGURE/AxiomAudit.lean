@@ -562,6 +562,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 -- Explicit roots for Theorem 2.6 and Example 2.7.
 #shigure_assert_standard_axioms_of [
   OperationWord,
+  OperationWord.Edge,
+  OperationWord.quiver,
+  OperationWord.nil,
+  OperationWord.snoc,
+  Term.evaluates_applyUnary_exists_iff,
   -- OperationWords
   OperationWord.term,
   OperationWord.Evaluates,
@@ -583,6 +588,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   OperationWord.translatedEval,
   OperationWord.mem_translated_eval_iff,
   OperationWord.translatedDomain,
+  OperationWord.mem_translated_domain_iff,
   OperationWord.translated_evaluates_iff,
   OperationWord.eval_pullback_eq_translated,
   OperationWord.domain_pullback_eq_translated,

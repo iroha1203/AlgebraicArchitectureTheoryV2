@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part1.Pullback
 import Formal.SHIGURE.Part1.SyntacticComparison
+import Mathlib.Combinatorics.Quiver.Path
 
 /-! # Finite unary operation words
 
@@ -9,34 +10,61 @@ The translated word is a term in the target theory and can contain binders.
 
 ## Implementation notes
 
-The word stores named operations and the singleton-input equalities that make
-successive operations composable. An arbitrary unary term would also allow
-other syntax, so the inductive word records exactly the chains of the theorem.
-Evaluation reuses the term evaluator and strict unary application. Each snoc
-requires a value of the prefix before consulting the next operation's graph.
+A word is a mathlib quiver path. Its vertices are the sorts of the given
+signature. An edge stores a named operation whose declared input is a singleton
+of the source sort, and its declared output determines the target sort.
+An arbitrary term in a unary context can express other syntax, so paths keep
+exactly the chains of the theorem. The quiver is passed by signature so two
+signatures using the same sort type can have different edges.
+
+Evaluation reuses the term evaluator and strict unary application. A path edge
+requires a value of the preceding path before consulting the operation's graph.
 -/
 
 universe u v
 
 namespace SHIGURE
 
-/-- A finite chain of named unary operations from `source` to the indexed output sort. -/
-inductive OperationWord (sig : Signature.{u}) (source : sig.SortType) : sig.SortType → Type u
-  /-- The empty word leaves the input unchanged. -/
-  | nil : OperationWord sig source source
-  /-- Append a primitive with exactly the preceding output sort as its sole input. -/
-  | snoc {middle : sig.SortType} (earlier : OperationWord sig source middle)
-      (op : Operation sig) (unary : op.arity.inputs = [middle]) :
-      OperationWord sig source op.arity.output
+namespace OperationWord
+
+/-- An edge is a named primitive with the specified sole input sort. -/
+inductive Edge (sig : Signature.{u}) (source : sig.SortType) : sig.SortType → Type u
+  /-- A primitive with singleton input has its declared output sort as target. -/
+  | of (op : Operation sig) (unary : op.arity.inputs = [source]) : Edge sig source op.arity.output
+
+/-- The quiver of sorts and named unary primitives of a signature. -/
+def quiver (sig : Signature.{u}) : Quiver.{u} sig.SortType := ⟨Edge sig⟩
+
+end OperationWord
+
+/-- A finite chain of named unary operations is a path in its signature's quiver. -/
+abbrev OperationWord (sig : Signature.{u}) (source target : sig.SortType) :=
+  @Quiver.Path sig.SortType (OperationWord.quiver sig) source target
 
 namespace OperationWord
 
 variable {sig : Signature.{u}} {source target : sig.SortType}
 
+/-- The empty word leaves the input unchanged. -/
+abbrev nil : OperationWord sig source source := @Quiver.Path.nil sig.SortType (quiver sig) source
+
+/-- Append a primitive with exactly the preceding output sort as its sole input. -/
+abbrev snoc (earlier : OperationWord sig source target) (op : Operation sig) (unary : op.arity.inputs = [target]) :
+    OperationWord sig source op.arity.output :=
+  @Quiver.Path.cons sig.SortType (quiver sig) source target _ earlier (.of op unary)
+
+section Term
+
+/-- Use the signature-specific quiver when elaborating the path patterns. -/
+local instance : Quiver.{u} sig.SortType := quiver sig
+
 /-- Regard a word as the term obtained by applying its operations to one variable. -/
 def term : {target : sig.SortType} → OperationWord sig source target → Term sig [source] target
   | _, .nil => .var .here
-  | _, .snoc earlier op unary => ((Term.primitive op).castContext unary).applyUnary (term earlier)
+  | _, .cons earlier (.of op unary) =>
+    ((Term.primitive op).castContext unary).applyUnary (term earlier)
+
+end Term
 
 /-- The value graph of a word at a single input. -/
 def Evaluates (w : OperationWord sig source target) (A : Structure sig)
@@ -108,19 +136,9 @@ theorem evaluates_snoc_iff {middle : sig.SortType} (w : OperationWord sig source
       ∃ z, w.Evaluates A x z ∧ A.Graph op (unaryInput unary z) y := by
   let body := (Term.primitive op).castContext unary
   change (body.applyUnary w.term).Evaluates A (Assignment.cons x Assignment.empty) y ↔ _
-  constructor
-  · intro output
-    obtain ⟨xs, arguments, _⟩ :=
-      (Term.evaluates_applyStrict A body (fun i => Substitution.singleton w.term i) _ y).1 output
-    have prefixValue : w.Evaluates A x (xs .here) := arguments .here
-    refine ⟨xs .here, prefixValue, ?_⟩
-    have evaluated := (Term.evaluates_applyUnary_iff body w.term A _ _ prefixValue y).1 output
-    exact (Term.primitive_evaluates_iff A op _ y).1
-      ((evaluates_cast_unary (Term.primitive op) A unary _ y).1 evaluated)
-  · rintro ⟨z, prefixValue, primitiveValue⟩
-    exact (Term.evaluates_applyUnary_iff body w.term A _ z prefixValue y).2
-      ((evaluates_cast_unary (Term.primitive op) A unary z y).2
-        ((Term.primitive_evaluates_iff A op _ y).2 primitiveValue))
+  rw [Term.evaluates_applyUnary_exists_iff]
+  refine exists_congr fun z => and_congr_right fun _ => ?_
+  exact (evaluates_cast_unary (Term.primitive op) A unary z y).trans (Term.primitive_evaluates_iff A op _ y)
 
 /-- A structural map takes an evaluation to the evaluation of the image value. -/
 theorem evaluates_map {A B : Structure sig} (w : OperationWord sig source target)
@@ -167,16 +185,18 @@ theorem mem_domain_of_map {A B : Structure sig} (w : OperationWord sig source ta
     (h : StructureMap A B) (reflects : h.ReflectsDomains) (x : A.carrier source)
     (defined : h.onSort source x ∈ w.domain B) : x ∈ w.domain A := by
   induction w with
-  | nil => rw [domain_nil]; trivial
-  | snoc w op unary ih =>
-    obtain ⟨y, value⟩ := defined
-    obtain ⟨imagePrefix, imageEval, imageStep⟩ := (evaluates_snoc_iff w op unary B _ y).1 value
-    obtain ⟨middleValue, prefixEval⟩ := ih ⟨imagePrefix, imageEval⟩
-    have imageEq := w.term.evaluates_unique B _ (w.evaluates_map h prefixEval) imageEval
-    have mappedStep : B.Graph op ((unaryInput (A := A) unary middleValue).map h.onSort) y := by
-      simpa only [unaryInput_map, imageEq] using imageStep
-    obtain ⟨original, originalStep⟩ := graph_input_reflected h reflects op _ ⟨y, mappedStep⟩
-    exact ⟨original, (evaluates_snoc_iff w op unary A _ original).2 ⟨middleValue, prefixEval, originalStep⟩⟩
+  | nil => exact (mem_domain_iff OperationWord.nil A x).2 ⟨x, (evaluates_nil_iff A x x).2 rfl⟩
+  | cons w edge ih =>
+    cases edge with
+    | of op unary =>
+      obtain ⟨y, value⟩ := defined
+      obtain ⟨imagePrefix, imageEval, imageStep⟩ := (evaluates_snoc_iff w op unary B _ y).1 value
+      obtain ⟨middleValue, prefixEval⟩ := ih ⟨imagePrefix, imageEval⟩
+      have imageEq := (term w).evaluates_unique B _ (evaluates_map w h prefixEval) imageEval
+      have mappedStep : B.Graph op ((unaryInput (A := A) unary middleValue).map h.onSort) y := by
+        simpa only [unaryInput_map, imageEq] using imageStep
+      obtain ⟨original, originalStep⟩ := graph_input_reflected h reflects op _ ⟨y, mappedStep⟩
+      exact ⟨original, (evaluates_snoc_iff w op unary A _ original).2 ⟨middleValue, prefixEval, originalStep⟩⟩
 
 /-- Under (2.9), the original domain is exactly the preimage of the target domain. -/
 theorem domain_eq_preimage {A B : Structure sig} (w : OperationWord sig source target)
@@ -206,6 +226,13 @@ def translatedDomain (w : OperationWord S.signature s t) (u : Interpretation S T
     (B : Structure T.signature) : Set (B.carrier (u.onSort s)) :=
   {x | (w.translatedEval u B x).Dom}
 
+/-- The translated term is defined at an input exactly when its graph has a value there. -/
+theorem mem_translated_domain_iff (w : OperationWord S.signature s t) (u : Interpretation S T)
+    (B : Structure T.signature) (x : B.carrier (u.onSort s)) :
+    x ∈ w.translatedDomain u B ↔
+      ∃ y, (u.translation.term w.term).Evaluates B (Assignment.cons x Assignment.empty) y :=
+  Iff.rfl
+
 /-- A word evaluation in the pullback is precisely its translated graph evaluation in the target. -/
 theorem translated_evaluates_iff (w : OperationWord S.signature s t) (u : Interpretation S T)
     (B : Structure T.signature) (model : T.Holds B) (x : B.carrier (u.onSort s))
@@ -227,8 +254,8 @@ theorem domain_pullback_eq_translated (w : OperationWord S.signature s t) (u : I
     (B : Structure T.signature) (model : T.Holds B) :
     w.domain (u.pullbackStructure B model) = w.translatedDomain u B := by
   ext x
-  change (w.eval (u.pullbackStructure B model) x).Dom ↔ (w.translatedEval u B x).Dom
-  rw [w.eval_pullback_eq_translated u B model x]
+  rw [mem_domain_iff, mem_translated_domain_iff]
+  exact exists_congr (w.translated_evaluates_iff u B model x)
 
 /-- Equation (2.8) for the translated domain, along a structural map to the pullback. -/
 theorem translated_domain_image_subset {A : Structure S.signature} (w : OperationWord S.signature s t)
