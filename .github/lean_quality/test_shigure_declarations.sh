@@ -8,6 +8,7 @@ checker=.github/lean_quality/check_shigure_declarations.lean
 
 cat >"$tmp/Accepted.lean" <<'LEAN'
 import Lean.Elab.Tactic
+import Mathlib.Tactic.NormNum
 
 /- These words appear in prose: axiom, sorry, admit, unsafe. -/
 def literal : String := "unsafe"
@@ -16,6 +17,7 @@ def sorry! : Nat := 1
 def nativeArithmetic (native : Nat) : Nat := 1 + native
 set_option debug.skipKernelTC false in
 theorem ordinaryDecide : (1 : Nat) = 1 := by decide
+theorem rationalNormalizes : (2 / 3 : ℚ) * 3 = 2 := by norm_num
 LEAN
 lake env lean --run "$checker" "$tmp/Accepted.lean"
 
@@ -77,7 +79,7 @@ end SHIGURE.ModuleClient
 
 #shigure_assert_standard_axioms_only SHIGURE.ModuleClient
 LEAN
-lake env lean --run "$checker" "$tmp/ModuleClient.lean"
+lake env lean --run "$checker" "$tmp/Accepted.lean" "$tmp/ModuleClient.lean"
 
 mkdir -p "$tmp/Formal/SHIGURE"
 audit_fixture="$tmp/Formal/SHIGURE/AxiomAudit.lean"

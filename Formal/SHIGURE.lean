@@ -9,6 +9,9 @@ import Formal.SHIGURE.Part1.ContextOrderedExamples
 import Formal.SHIGURE.Part1.ContextPrimitiveValues
 import Formal.SHIGURE.Part1.ContextSelectedExamples
 import Formal.SHIGURE.Part1.LensExamples
+import Formal.SHIGURE.Part1.MarkedCoefficientExamples
+import Formal.SHIGURE.Part1.MarkedCoefficients
+import Formal.SHIGURE.Part1.MarkedRationalExample
 import Formal.SHIGURE.Part1.ObservedModels
 import Formal.SHIGURE.Part1.OperationWordExamples
 import Formal.SHIGURE.Part1.PositiveLogic
