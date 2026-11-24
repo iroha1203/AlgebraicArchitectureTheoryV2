@@ -34,7 +34,7 @@ private theorem formula_conjoin_subset {Γ Λ : List P.signature.SortType}
     intro d hd
     exact Or.inr (ih (fun j => ps (.there j)) hd)
 
-/-- Keep the body's primitive references when its context is existentially closed. -/
+/-- Keep the body's primitive references after existentially quantifying the context prefix. -/
 private theorem formula_existsMany_subset {Γ : List P.signature.SortType}
     (Λ : List P.signature.SortType) (p : Formula P.signature (Λ ++ Γ)) :
     Declaration.formula p ⊆ Declaration.formula (Formula.existsMany Λ p) := by

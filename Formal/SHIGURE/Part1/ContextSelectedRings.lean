@@ -79,7 +79,8 @@ def selectRingVocabulary {s : P.signature.SortType} (r : RingVocabulary P.signat
   neg := selectTypedTotal r.neg (keepsNeg keep) (oneSort hs) hs
   mul := selectTypedTotal r.mul (keepsMul keep) (twoSorts hs) hs
 
-/-- Retype a ring expression using the selected coefficient operations in every node. -/
+/-- Reindex the variables of a ring expression in the selected context,
+keeping its coefficient-operation nodes as syntax for later interpretation. -/
 private def selectRingExpr {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hs : Declaration.sort s ∈ U.declarations) :
     RingVocabulary.Expr Γ s → RingVocabulary.Expr (context Γ hΓ) (⟨s, hs⟩ : SortName U)

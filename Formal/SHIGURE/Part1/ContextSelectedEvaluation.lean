@@ -132,13 +132,18 @@ section CarrierTransport
 
 variable {X Y : P.signature.SortType → Type u} {Z : SortName U → Type u}
 
-/-- Moving along equal source carrier values commutes with reindexing assignments. -/
+/-- Compare the assignments used in Proposition 3.2 when the two carrier
+transports agree pointwise. In the structure round trip this agreement comes
+from the equality of the original and round-trip carriers. -/
 theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
     (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) {Γ : List P.signature.SortType}
     (kept : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
     selectAssignment e kept (mapAssignment f kept a) = selectAssignment g kept a := by
   apply Assignment.ext
   intro s i
+  change e s.val s.property (mapAssignment f kept a (ambientVar kept i)) =
+    g s.val s.property (a (ambientVar kept i))
+  rw [mapAssignment_apply]
   exact agree s.val s.property (a (ambientVar kept i))
 
 /-- Transport the input side of the graph comparison in Proposition 3.2.
@@ -186,7 +191,8 @@ variable {E : RestrictedEvaluation U X} {B : Structure (signature U)} {e : Carri
 
 include same
 
-/-- Equality and all retained primitive facts agree on the corresponding assignments. -/
+/-- The atomic step of Proposition 3.2 uses the carrier equivalences for equality
+and the supplied primitive comparisons for retained relation, domain and graph atoms. -/
 theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (keep : Declaration.atomicSupport a ⊆ U.declarations) (x : Assignment X Γ) :
     (selectAtomic a keep).Holds B (selectAssignment e (fun _ h => keep (Or.inl h)) x) ↔ E.atomic x a keep := by
@@ -214,7 +220,8 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     cases op <;> simp only [selectAtomic, selectGraph, Atomic.holds_graph]
     all_goals
       erw [args, out]
-      exact same.graph _ k (x.pull vars) (x y)
+      simpa only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] using
+        same.graph _ k (x.pull vars) (x y)
 
 /-- Any supported formula has the same truth in the actual selected structure. -/
 theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :

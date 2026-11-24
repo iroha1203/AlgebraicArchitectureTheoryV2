@@ -33,7 +33,8 @@ namespace DeclarationContext.Selected
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
   {X X' : P.signature.SortType → Type u} {Y Y' : SortName U → Type u}
 
-/-- Moving all tuple values by a structural arrow commutes with the reindexing of positions. -/
+/-- Reindex the assignments in the graph comparison of Proposition 3.2
+when the structural arrow commutes with the carrier identifications pointwise. -/
 theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
@@ -41,9 +42,14 @@ theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y'
     (selectAssignment e kept a).map g = selectAssignment e' kept (mapAssignment f kept a) := by
   apply Assignment.ext
   intro s i
+  change g s (e s.val s.property (a (ambientVar kept i))) =
+    e' s.val s.property (mapAssignment f kept a (ambientVar kept i))
+  rw [mapAssignment_apply]
   exact same s.val s.property (a (ambientVar kept i))
 
-/-- Moving all input values of an operation agrees before and after selecting its arity. -/
+/-- Transport the input tuple in the graph comparison of Proposition 3.2.
+The pointwise square `same` is definitional for the read structural arrow
+and is proved by `writeOnSort_comm` for the written arrow. -/
 theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
@@ -53,7 +59,9 @@ theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
   rw [selectArgs_eq_cast, selectArgs_eq_cast]
   cases op <;> simpa only [cast_eq] using map_selectAssignment e e' f g same _ a
 
-/-- Moving the output value of an operation agrees before and after selecting its arity. -/
+/-- Transport the output in the graph comparison of Proposition 3.2.
+The pointwise square `same` is definitional for the read structural arrow
+and is proved by `writeOnSort_comm` for the written arrow. -/
 theorem map_selectResult (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
@@ -79,14 +87,16 @@ def resultEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
 of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
 theorem argsEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
-    argsEquiv e op keep a = selectArgs e op keep a :=
+    argsEquiv e op keep a = selectArgs e op keep a := by
+  rw [selectArgs_eq_cast]
   rfl
 
 /-- The outcome equivalence for a retained operation acts by the output selection
 of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
 theorem resultEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
-    resultEquiv e op keep x = selectResult e op keep x :=
+    resultEquiv e op keep x = selectResult e op keep x := by
+  rw [selectResult_eq_cast]
   rfl
 
 variable {A B : ContextStructure U}
