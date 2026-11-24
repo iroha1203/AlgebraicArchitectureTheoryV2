@@ -457,6 +457,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Interpretation.pullback_carrier,
   Interpretation.pullback_relation_iff,
   Interpretation.pullback_partialDomain_iff,
+  Interpretation.pullback_formula_iff,
+  Interpretation.pullback_isModel,
   -- Pullback
   Assignment.mapSorts_map,
   Interpretation.pullback_evaluates_iff,

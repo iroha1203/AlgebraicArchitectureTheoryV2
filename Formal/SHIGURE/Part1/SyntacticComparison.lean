@@ -8,11 +8,17 @@ their own such data.
 
 ## Implementation notes
 
-The comparison records derivation trees for the sequents in the text.
-Term applications use the existing strict evaluation of arguments,
-including when a partial operation provides an argument. For relation
-and domain formulas, the comparison substitutes the unary terms. The
-proofs of totality allow that substitution at every original input.
+A semantic natural isomorphism supplied as input would leave the
+unary terms and their compatibility sequents unaccounted for. The
+comparison records the terms and sequent derivations from the corollary,
+with existence of derivations in both directions for relation and domain
+equivalences. Soundness constructs the model isomorphisms.
+
+Ordinary term substitution can discard an undefined argument when
+the body omits its variable. The operation equations therefore use
+strict application, including when a partial operation supplies the
+argument. In relation and domain formulas the proofs of totality
+justify substituting the unary terms at every original input.
 -/
 
 universe u

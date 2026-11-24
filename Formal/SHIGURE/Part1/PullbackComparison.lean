@@ -54,8 +54,9 @@ namespace SHIGURE.Structure
 
 variable {sig : Signature.{u}}
 
-/-- Equal carriers and equal satisfaction of the primitive facts determine a structure.
-Theorem 2.4 applies this to the identity, composition and representative comparisons. -/
+/-- Theorem 2.4 uses equal carriers and equivalent satisfaction of all positive
+formulas at corresponding assignments. The atomic instances of the comparison
+recover the relations, domains and values that determine the structure. -/
 theorem eq_of_formula_holds_iff {A B : Structure sig} (carriers : A.carrier = B.carrier)
     (same : ∀ {Γ : List sig.SortType} (p : Formula sig Γ) (xs : Assignment A.carrier Γ),
       p.Holds A xs ↔ p.Holds B (cast (congrArg (fun X => Assignment X Γ) carriers) xs)) :
