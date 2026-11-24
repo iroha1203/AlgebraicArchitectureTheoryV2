@@ -740,7 +740,15 @@ private def shiftedPointScheme : CoefficientScheme Observation.whole (ringOf Int
           cases choice
           · exact (CoefficientPointPrograms.identity.{0, 0} _).unique PUnit.unit X Y s
           · rintro ⟨_, _, same⟩ ⟨_, _, same'⟩
-            exact same.trans same'.symm } }
+            exact same.trans same'.symm
+        source_congr := by
+          intro choice X X' Y same s kept f described
+          cases choice
+          · exact (CoefficientPointPrograms.identity.{0, 0} _).source_congr PUnit.unit same s kept described
+          · obtain ⟨source, target, rfl⟩ := described
+            refine ⟨(same.carrier_eq s kept).symm.trans source, target, ?_⟩
+            funext x
+            simp only [cast_cast] } }
 
 /-- Evaluate the designated integer point at the selected coordinate. -/
 private def pointReading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) :=

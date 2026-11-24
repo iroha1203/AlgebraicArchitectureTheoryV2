@@ -81,6 +81,22 @@ structure CoefficientPointPrograms {P : PrimitivePresentation.{u}} (U : Declarat
   unique (selected : Selector) (X Y : RestrictedStructure U) (s : P.signature.SortType)
     {f g : X.carrier s → Y.carrier s} :
     describes selected X Y s f → describes selected X Y s g → f = g
+  /-- Replacing the source by the same retained data transports the described map. -/
+  source_congr (selected : Selector) {X X' Y : RestrictedStructure U} (same : X.Agrees X')
+    (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations)
+    {f : X.carrier s → Y.carrier s} :
+    describes selected X Y s f →
+      describes selected X' Y s (fun x => f (cast (same.carrier_eq s kept).symm x))
+
+/-- For one recipe and realization, agreeing sources give the same points after transport. -/
+theorem CoefficientPointPrograms.eq_on_agreeing_sources {P : PrimitivePresentation.{u}}
+    {U : DeclarationContext P} (programs : CoefficientPointPrograms.{u, v} U)
+    (selected : programs.Selector) {X X' Y : RestrictedStructure U} (same : X.Agrees X')
+    (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations)
+    {f : X.carrier s → Y.carrier s} {g : X'.carrier s → Y.carrier s}
+    (left : programs.describes selected X Y s f) (right : programs.describes selected X' Y s g) :
+    (fun x => f (cast (same.carrier_eq s kept).symm x)) = g :=
+  programs.unique selected X' Y s (programs.source_congr selected same s kept left) right
 
 /-- The identity recipe applies between equal carriers. -/
 def CoefficientPointPrograms.identity {P : PrimitivePresentation.{u}} (U : DeclarationContext P) :
@@ -90,6 +106,11 @@ def CoefficientPointPrograms.identity {P : PrimitivePresentation.{u}} (U : Decla
   unique := by
     rintro _ _ _ _ _ _ ⟨_, h⟩ ⟨_, h'⟩
     exact h.trans h'.symm
+  source_congr := by
+    rintro _ X X' Y same s kept _ ⟨eq, rfl⟩
+    refine ⟨(same.carrier_eq s kept).symm.trans eq, funext ?_⟩
+    intro x
+    exact cast_cast _ _ x
 
 /-- The realization rules on a selected declaration context, indexed by the coefficients. -/
 structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
@@ -500,16 +521,15 @@ def LocalPointRule.AgreesOnNative {W : DeclarationContext P} (rule : LocalPointR
       some (reading.scheme.nativePoints reading.algebra a _ (inside (supported i)))
 
 /-- The selected declared recipe restricts on every admissible application with the same
-retained data. An admissible application uses a realized target and a point assignment
-described by the same recipe and permitted by the method. -/
+retained data. Its source is a structure over the method's declarations, which can
+exist without an ambient extension. Its target is a realization of the method. -/
 def LocalPointRule.AgreesOnDeclared {W : DeclarationContext P} (rule : LocalPointRule W)
     (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
     (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
     (selected : (reading.scheme.pointPrograms reading.algebra reading.choice).Selector) : Prop :=
-  ∀ (source : Structure P.signature) (a : reading.scheme.Realization reading.algebra),
-    let X := RestrictedStructure.restrict U source
+  ∀ (X : RestrictedStructure U) (a : reading.scheme.Realization reading.algebra),
     let Y := reading.scheme.structureOf reading.algebra a
-    ∀ points : reading.scheme.SelectedPointMap reading.algebra a source.carrier
+    ∀ points : reading.scheme.SelectedPointMap reading.algebra a X.carrier
         (Set.range reading.selection.selected.sort),
       reading.scheme.permitsPoints reading.algebra a X (Set.range reading.selection.selected.sort) points →
       (∀ s hs, (reading.scheme.pointPrograms reading.algebra reading.choice).describes selected X Y s

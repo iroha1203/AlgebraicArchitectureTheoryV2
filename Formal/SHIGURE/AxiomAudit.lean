@@ -121,11 +121,15 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   ReadingComparison.coefficient_evaluation_on_shared_inputs,
   ReadingInputMap.SharedValues.assemble,
   ReadingInputMap.OrdinarySharing.map_shared,
+  CoefficientPointPrograms.eq_on_agreeing_sources,
   CoefficientReading.evaluateRetained_mk,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.selected_recipe_restricts_on_its_realizations,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.restricted_recipe_reads_both_states,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_outside_its_realizations,
-  SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_at_unpermitted_source
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_at_unpermitted_source,
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.permitted_source_has_no_extension,
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.cannot_restrict_recipe_with_unextendable_source,
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.forgotten_carrier_cannot_change_declared_points
 ]
 
 end SHIGURE.AxiomAudit

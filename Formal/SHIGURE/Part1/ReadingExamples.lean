@@ -1587,19 +1587,19 @@ def external_stays_available_when_declarations_are_added :
 end SHIGURE.Chapter1.IndexedObservation
 
 namespace SHIGURE.Chapter1.DeclaredCoefficientPoints
-/-- Two sorts let the restriction forget an unused carrier. -/
+/-- The ambient signature has a nullary operation in the second sort. -/
 private def sig : Signature.{0} where
   SortType := Bool
-  Total := Empty
+  Total := Unit
   Rel := Empty
   Partial := Empty
   Quantity := Empty
-  totalArity n := nomatch n
+  totalArity _ := ⟨[], true⟩
   relInputs n := nomatch n
   partialArity n := nomatch n
   quantityArity n := nomatch n
 
-/-- The presentation has no operations or required Laws. -/
+/-- The ambient presentation imposes no required Laws. -/
 private def P : PrimitivePresentation.{0} where
   signature := sig
   laws := { LawName := Empty
@@ -1607,8 +1607,21 @@ private def P : PrimitivePresentation.{0} where
             role e := nomatch e }
   derived n := nomatch n
 
-/-- The realization method starts with both carrier declarations. -/
-private def U : DeclarationContext P := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+/-- The realization method retains both sorts but omits the nullary operation. -/
+private def U : DeclarationContext P where
+  declarations := Set.range Declaration.sort
+  closed seen _ dependency := by
+    obtain ⟨s, rfl⟩ := seen
+    exact dependency.elim
+
+/-- Both sort declarations belong to the method's context. -/
+private theorem keepsSort (s : P.signature.SortType) : Declaration.sort s ∈ U.declarations :=
+  ⟨s, rfl⟩
+
+/-- The nullary operation is absent from the method's context. -/
+private theorem omitsTotal (f : sig.Total) : Declaration.total f ∉ U.declarations := by
+  rintro ⟨_, impossible⟩
+  cases impossible
 
 /-- Keep only the Boolean state used by the evaluation. -/
 private def W : DeclarationContext P where
@@ -1619,21 +1632,32 @@ private def W : DeclarationContext P where
     exact hd.elim
 
 /-- The selected Boolean declaration lies in the full context. -/
-private theorem inside : W.declarations ⊆ U.declarations := fun _ _ => Set.mem_univ _
+private theorem inside : W.declarations ⊆ U.declarations := by
+  intro declaration kept
+  rw [Set.mem_singleton_iff.1 kept]
+  exact keepsSort false
 
-/-- Read Bool at the retained sort and a freely specified carrier at the other. -/
-private def model (O : Type) : Structure sig where
+/-- The ambient model uses the unique Unit value for the nullary operation. -/
+private def model : Structure sig where
   carrier
     | false => Bool
-    | true => O
-  total f := nomatch f
+    | true => Unit
+  total _ _ := ()
   relation r := nomatch r
   partialDomain p := nomatch p
   partialValue p := nomatch p
   quantity q := nomatch q
 
-/-- Read the model in the full declaration context. -/
-private def full (O : Type) : RestrictedStructure U := .restrict U (model O)
+/-- The selected declarations allow any second carrier, including Empty. -/
+private def full (O : Type) : RestrictedStructure U where
+  carrier
+    | false => Bool
+    | true => O
+  total f kept := (omitsTotal f kept).elim
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
 
 /-- Use the integers for the Boolean evaluation's values. -/
 private def Z : CoefficientRing := ⟨Int, inferInstance⟩
@@ -1646,12 +1670,16 @@ private def programs : CoefficientPointPrograms.{0, 0} U where
   unique := by
     rintro _ _ _ _ _ _ ⟨_, _, _, h⟩ ⟨_, _, _, h'⟩
     exact h.trans h'.symm
+  source_congr := by
+    rintro _ X X' Y same s kept _ ⟨inhabited, target, eq, rfl⟩
+    have transported : Nonempty (X'.carrier true) := same.carrier_eq true (keepsSort true) ▸ inhabited
+    exact ⟨transported, target, (same.carrier_eq s kept).symm.trans eq, funext (cast_cast _ _)⟩
 
 /-- The method realizes a fixed structure with an inhabited second sort. -/
 private def scheme : CoefficientScheme.{0, 0} U Z where
   Realization _ := Unit
   structureOf _ _ := full Unit
-  structure_retained _ _ := fun _ h => (h (Set.mem_univ _)).elim
+  structure_retained _ _ := fun s h => (h (keepsSort s)).elim
   category _ :=
     { Hom := fun _ _ => Unit
       id := fun _ => ()
@@ -1666,10 +1694,10 @@ private def scheme : CoefficientScheme.{0, 0} U Z where
   permitsPoints _ _ X _ _ := Nonempty (X.carrier true)
   permitsPoints_congr := by
     intro R a X Y agreement _ _ _
-    rw [agreement.carrier_eq true (Set.mem_univ _)]
+    rw [agreement.carrier_eq true (keepsSort true)]
   Native := Unit
   nativeStructure _ := full Unit
-  native_retained _ := fun _ h => (h (Set.mem_univ _)).elim
+  native_retained _ := fun s h => (h (keepsSort s)).elim
   realizeNative _ := id
   nativePoints _ _ _ _ := id
   nativePoints_permitted _ _ _ _ := ⟨()⟩
@@ -1679,22 +1707,22 @@ private def scheme : CoefficientScheme.{0, 0} U Z where
   pointPrograms _ _ := programs
 
 /-- The chosen recipe reads the original Boolean state. -/
-private def r : CoefficientReading.{0, 0} U (model Unit) (.ofList [false]) where
+private def r : CoefficientReading.{0, 0} U model (.ofList [false]) where
   base := Z
   algebra := ⟨Z, RingHom.id Int⟩
   scheme := scheme
   realization := ()
   selection := .ofRenaming fun i => i
-  supported _ := Set.mem_univ _
+  supported i := keepsSort i.1
   realizePoint _ _ := id
   pointOrigin := .declared () ⟨()⟩ (fun _ _ => ⟨⟨()⟩, ⟨()⟩, rfl, rfl⟩)
   evaluateOn _ R _ e := R.fromBase (if (show Bool from e ⟨false, .here⟩) then (1 : Int) else (0 : Int))
 
 /-- Supply the chosen Boolean state at the selected position. -/
-private def input (b : Bool) : r.selection.used.Values (model Unit).carrier :=
+private def input (b : Bool) : r.selection.used.Values model.carrier :=
   by
     rintro ⟨⟨s, i⟩, _⟩
-    change (model Unit).carrier s
+    change model.carrier s
     cases i with
     | here => exact b
     | there i => exact nomatch i
@@ -1767,8 +1795,7 @@ theorem selected_recipe_restricts_on_its_realizations : r.RespectsRestriction W 
     obtain ⟨s, value⟩ := i
     cases value with
     | here =>
-      exact (local_matches_every_realization (RestrictedStructure.restrict U X) a admissible _).1
-        (describes _ _)
+      exact (local_matches_every_realization X a admissible _).1 (describes _ _)
     | there i => exact nomatch i
 
 /-- Evaluation after restricting uses the two actual Boolean points. -/
@@ -1789,5 +1816,127 @@ theorem recipe_remains_undefined_outside_its_realizations :
 theorem recipe_remains_undefined_at_unpermitted_source :
     ¬ programs.describes () (full Empty) (full Unit) false id :=
   fun h => h.1.elim (fun x => x.elim)
+
+/-- A second point recipe inspects the forgotten source carrier when reading Bool. -/
+private noncomputable def pointsByCarrier (X Y : RestrictedStructure U) (s : sig.SortType)
+    (source : X.carrier s = Bool) (target : Y.carrier s = Bool) : X.carrier s → Y.carrier s := by
+  classical
+  exact fun x => cast target.symm (if Nonempty (X.carrier true) then cast source x else !(cast source x))
+
+/-- This variant allows the nonlocal recipe on every source structure. -/
+private noncomputable def nonlocalScheme : CoefficientScheme.{0, 0} U Z :=
+  { scheme with
+    permitsPoints _ _ _ _ _ := True
+    permitsPoints_congr := by intros; rfl
+    nativePoints_permitted _ _ _ _ := True.intro
+    pointPrograms _ _ :=
+      { Selector := Unit
+        describes _ X Y s f := ∃ (source : X.carrier s = Bool) (target : Y.carrier s = Bool),
+          f = pointsByCarrier X Y s source target
+        unique := by
+          rintro _ _ _ _ _ _ ⟨_, _, h⟩ ⟨_, _, other⟩
+          exact h.trans other.symm
+        source_congr := by
+          rintro _ X X' Y same s kept _ ⟨source, target, rfl⟩
+          refine ⟨(same.carrier_eq s kept).symm.trans source, target, ?_⟩
+          funext x
+          have second := same.carrier_eq true (keepsSort true)
+          by_cases inhabited : Nonempty (X.carrier true)
+          · have transported : Nonempty (X'.carrier true) := second ▸ inhabited
+            simp only [pointsByCarrier, if_pos inhabited, if_pos transported, cast_cast]
+          · have transported : ¬ Nonempty (X'.carrier true) := fun h => inhabited (second.symm ▸ h)
+            simp only [pointsByCarrier, if_neg inhabited, if_neg transported, cast_cast] } }
+
+/-- At the original ambient points, the nonlocal recipe returns the identity. -/
+private noncomputable def nonlocalReading : CoefficientReading.{0, 0} U model (.ofList [false]) :=
+  { r with
+    scheme := nonlocalScheme
+    pointOrigin := .declared () True.intro (by
+      classical
+      rintro s ⟨⟨t, i⟩, rfl⟩
+      cases i with
+      | here =>
+        refine ⟨rfl, rfl, ?_⟩
+        funext x
+        change x = if Nonempty Unit then x else !x
+        rw [if_pos ⟨()⟩]
+      | there i => exact nomatch i) }
+
+/-- The ambient constant prevents any extension of the permitted empty local source. -/
+theorem permitted_source_has_no_extension :
+    ¬ ∃ M : Structure P.signature, (RestrictedStructure.restrict U M).Agrees (full Empty) := by
+  rintro ⟨M, agrees⟩
+  exact (cast (agrees.carrier_eq true (keepsSort true)) (M.total () Assignment.empty)).elim
+
+/-- The two source structures agree on the retained Boolean declaration. -/
+private theorem sameBooleanSource :
+    ((RestrictedStructure.restrict U model).restrictWithin inside).Agrees ((full Empty).restrictWithin inside) := by
+  have carrierEq (s : sig.SortType) (hs : Declaration.sort s ∈ W.declarations) :
+      model.carrier s = (full Empty).carrier s := by
+    have same := Set.mem_singleton_iff.1 hs
+    cases same
+    rfl
+  refine ⟨carrierEq, ?_, ?_⟩
+  all_goals
+    intro _ atom support e held
+    cases atom with
+    | eq x y => exact congrArg (fun a => cast _ a) held
+    | rel r => nomatch r
+    | domain p => nomatch p
+    | graph op _ _ =>
+      cases op with
+      | total f => exact (omitsTotal f (inside (support (Or.inr (Set.mem_singleton _))))).elim
+      | partialOp p => nomatch p
+      | quantity q => nomatch q
+
+/-- On the permitted source without an ambient extension, the selected recipe negates Bool. -/
+private def flippedPoints : nonlocalReading.scheme.SelectedPointMap nonlocalReading.algebra
+    nonlocalReading.realization (full Empty).carrier (Set.range nonlocalReading.selection.selected.sort) := by
+  intro s _
+  cases s
+  · exact Bool.not
+  · exact Empty.elim
+
+/-- A selected recipe that changes on the admissible empty source cannot be localized to Bool. -/
+theorem cannot_restrict_recipe_with_unextendable_source : ¬ nonlocalReading.RespectsRestriction W inside := by
+  intro locality
+  obtain ⟨rule, matchesReading, matchesMethod⟩ := locality.points
+  have sameAtReading := matchesReading ⟨false, .here⟩ _ _ sameBooleanSource
+    (RestrictedStructure.Agrees.refl _)
+  have describes s hs : (nonlocalReading.scheme.pointPrograms nonlocalReading.algebra
+      nonlocalReading.choice).describes () (full Empty) (full Unit) s (flippedPoints s hs) := by
+    classical
+    obtain ⟨⟨t, i⟩, rfl⟩ := hs
+    cases i with
+    | here =>
+      refine ⟨rfl, rfl, ?_⟩
+      funext x
+      change (!x) = if Nonempty Empty then x else !x
+      rw [if_neg (fun h => h.elim Empty.elim)]
+    | there i => exact nomatch i
+  change rule.AgreesOnDeclared nonlocalReading inside locality.supported () at matchesMethod
+  have sameAtLocalSource := matchesMethod (full Empty) () flippedPoints True.intro describes
+    sameBooleanSource (RestrictedStructure.Agrees.refl _) ⟨false, .here⟩
+  change rule ((full Empty).restrictWithin inside) ((full Unit).restrictWithin inside)
+    false (locality.supported ⟨false, .here⟩) = some (id : Bool → Bool) at sameAtReading
+  change rule ((full Empty).restrictWithin inside) ((full Unit).restrictWithin inside)
+    false (locality.supported ⟨false, .here⟩) = some Bool.not at sameAtLocalSource
+  have contradiction := congrFun (Option.some.inj (sameAtReading.symm.trans sameAtLocalSource)) false
+  cases contradiction
+
+/-- Once the extra sort is outside the method's context, even a declared recipe cannot inspect it. -/
+theorem forgotten_carrier_cannot_change_declared_points
+    (recipes : CoefficientPointPrograms.{0, 0} W) (selected : recipes.Selector) :
+    let target := (full PUnit).restrictWithin inside
+    ¬ (recipes.describes selected ((RestrictedStructure.restrict U model).restrictWithin inside)
+          target false id ∧
+        recipes.describes selected ((full Empty).restrictWithin inside) target false Bool.not) := by
+  dsimp only
+  rintro ⟨left, right⟩
+  have mapsEqual := recipes.eq_on_agreeing_sources selected sameBooleanSource false
+    (Set.mem_singleton _) left right
+  have contradiction := congrFun mapsEqual false
+  change false = true at contradiction
+  cases contradiction
 
 end SHIGURE.Chapter1.DeclaredCoefficientPoints
