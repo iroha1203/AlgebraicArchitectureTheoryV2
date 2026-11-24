@@ -101,7 +101,7 @@ def univariate : small.CoordinateRing ≃ₐ[ℚ] LeftRing :=
 
 /-- Under the univariate identification the named generator is the polynomial X. -/
 theorem univariate_generator : univariate (small.generator PUnit.unit) = Polynomial.X := by
-  change univariate (Ideal.Quotient.mk small.lawIdeal (X PUnit.unit)) = _
+  rw [generator_eq_quotient_mk]
   simp only [univariate, AlgEquiv.trans_apply, Ideal.quotientEquivAlg_mk,
     AlgEquiv.quotientBot_mk]
   change MvPolynomial.pUnitAlgEquiv ℚ (X (PUnit.unit : PUnit)) = Polynomial.X
@@ -127,14 +127,12 @@ theorem declarationMap_X : declarationMap Polynomial.X = barX := by
 
 /-- The images of the two variables multiply to one in the quotient. -/
 theorem barX_mul_barY : barX * barY = 1 := by
-  let mk := Ideal.Quotient.mkₐ ℚ large.lawIdeal
   have rel : X (some PUnit.unit) * X none - 1 ∈ large.lawIdeal :=
     large.law_sub_mem PUnit.unit
-  have zero : mk (X (some PUnit.unit) * X none - 1) = 0 :=
+  have zero : Ideal.Quotient.mk large.lawIdeal (X (some PUnit.unit) * X none - 1) = 0 :=
     Ideal.Quotient.eq_zero_iff_mem.mpr rel
-  change mk (X (some PUnit.unit)) * mk (X none) = 1
   rw [map_sub, map_mul, map_one, sub_eq_zero] at zero
-  exact zero
+  simpa only [barX, barY, generator_eq_quotient_mk] using zero
 
 /-- There is no reverse algebra map keeping the shared x. Evaluate a putative inverse relation at zero. -/
 theorem no_reverse_preserving_X :
@@ -145,28 +143,39 @@ theorem no_reverse_preserving_X :
   have zero := congrArg (Polynomial.evalRingHom (0 : ℚ)) relation
   simp at zero
 
+/-- Identify the shared variable in the coefficient ring and the inverse as the outer polynomial variable. -/
 private def bivariate : MvPolynomial (Option PUnit.{1}) ℚ ≃ₐ[ℚ] Polynomial LeftRing :=
   (MvPolynomial.optionEquivLeft ℚ PUnit).trans
     (Polynomial.mapAlgEquiv (MvPolynomial.pUnitAlgEquiv ℚ))
 
+/-- Identify the shared variable as the constant polynomial with coefficient X. -/
 private theorem bivariate_x :
     bivariate (X (some PUnit.unit)) = Polynomial.C (Polynomial.X : LeftRing) := by
   simp [bivariate, MvPolynomial.pUnitAlgEquiv_apply]
 
+/-- Identify the inverse variable with the outer polynomial generator. -/
 private theorem bivariate_y : bivariate (X none) = Polynomial.X := by
   simp [bivariate]
 
+/-- Write the relation xy − 1 in the nested polynomial ring. -/
 private abbrev inversionLaw : Polynomial LeftRing :=
   Polynomial.C (Polynomial.X : LeftRing) * Polynomial.X - 1
 
+/-- Transport the generated inverse Law ideal along the bivariate equivalence. -/
 private theorem mappedIdeal : Ideal.span {inversionLaw} = large.lawIdeal.map bivariate.toRingHom := by
   rw [large_lawIdeal, Ideal.map_span, Set.image_singleton]
   change Ideal.span {inversionLaw} =
     Ideal.span {bivariate (X (some PUnit.unit) * X none - 1)}
   rw [map_sub, map_mul, map_one, bivariate_x, bivariate_y]
 
+/-- Pass the polynomial equivalence through the two equal Law ideals. -/
 private def quotientEquiv : large.CoordinateRing ≃ₐ[ℚ] AdjoinRoot inversionLaw :=
   Ideal.quotientEquivAlg _ _ bivariate mappedIdeal
+
+/-- The bivariate equivalence descends by taking the quotient class of its polynomial image. -/
+private theorem quotientEquiv_mk (p : MvPolynomial large.Variable ℚ) :
+    quotientEquiv (Ideal.Quotient.mk large.lawIdeal p) = AdjoinRoot.mk inversionLaw (bivariate p) :=
+  rfl
 
 /-- The exact coordinate ring of the large presentation is the localization away from x. -/
 def localization : large.CoordinateRing ≃ₐ[ℚ] Localization.Away (Polynomial.X : LeftRing) :=
@@ -176,12 +185,8 @@ def localization : large.CoordinateRing ≃ₐ[ℚ] Localization.Away (Polynomia
 theorem localization_barX :
     localization barX = algebraMap LeftRing (Localization.Away (Polynomial.X : LeftRing)) Polynomial.X := by
   change (Localization.awayEquivAdjoin (Polynomial.X : LeftRing)).symm
-    (quotientEquiv (Ideal.Quotient.mk large.lawIdeal (X (some PUnit.unit)))) = _
-  rw [show quotientEquiv (Ideal.Quotient.mk large.lawIdeal (X (some PUnit.unit))) =
-      algebraMap LeftRing (AdjoinRoot inversionLaw) Polynomial.X by
-    change Ideal.Quotient.mk (Ideal.span {inversionLaw}) (bivariate (X (some PUnit.unit))) = _
-    rw [bivariate_x, AdjoinRoot.algebraMap_eq]
-    rfl]
+    (quotientEquiv (large.generator (some PUnit.unit))) = _
+  rw [generator_eq_quotient_mk, quotientEquiv_mk, bivariate_x]
   exact (Localization.awayEquivAdjoin (Polynomial.X : LeftRing)).symm.commutes _
 
 /-- The localization identification sends the new generator y to the inverse of x. -/
@@ -189,10 +194,8 @@ theorem localization_barY :
     localization barY = IsLocalization.Away.invSelf (S := Localization.Away (Polynomial.X : LeftRing))
       (Polynomial.X : LeftRing) := by
   change (Localization.awayEquivAdjoin (Polynomial.X : LeftRing)).symm
-    (quotientEquiv (Ideal.Quotient.mk large.lawIdeal (X none))) = _
-  change (Localization.awayEquivAdjoin (Polynomial.X : LeftRing)).symm
-    (Ideal.Quotient.mk (Ideal.span {inversionLaw}) (bivariate (X none))) = _
-  rw [bivariate_y]
+    (quotientEquiv (large.generator none)) = _
+  rw [generator_eq_quotient_mk, quotientEquiv_mk, bivariate_y]
   let L := Localization.Away (Polynomial.X : LeftRing)
   let inverse := IsLocalization.Away.invSelf (S := L) (Polynomial.X : LeftRing)
   have satisfies : Polynomial.eval₂ (Algebra.ofId LeftRing L) inverse inversionLaw = 0 := by

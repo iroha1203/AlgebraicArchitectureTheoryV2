@@ -111,6 +111,12 @@ def Samples.tuple {Carrier : sig.SortType → Type u} (sample : Samples Name Car
     {Γ : List sig.SortType} (inputs : Assignment Name Γ) : Assignment Carrier Γ :=
   ⟨fun {s} i => sample s (inputs i)⟩
 
+/-- Each coordinate of a named tuple is read from its sample at the coordinate's sort. -/
+theorem Samples.tuple_apply {Carrier : sig.SortType → Type u} (sample : Samples Name Carrier)
+    {Γ : List sig.SortType} (inputs : Assignment Name Γ) {s : sig.SortType} (i : Var Γ s) :
+    sample.tuple inputs i = sample s (inputs i) :=
+  rfl
+
 /-- The names at each fixed sort sit inside the finite collection of all names. -/
 theorem Samples.finiteNamesAt (Name : sig.SortType → Type v) [Finite (Σ s, Name s)]
     (s : sig.SortType) : Finite (Name s) :=
@@ -124,6 +130,25 @@ def AtomicQuery.holds (A : Structure sig) (sample : Samples Name A.carrier) :
   | .graph op inputs output => A.Graph op (sample.tuple inputs) (sample _ output)
   | .relation r inputs => sample.tuple inputs ∈ A.relation r
   | .domain p inputs => sample.tuple inputs ∈ A.partialDomain p
+
+/-- A graph query is true precisely when the named tuple and output belong to the ordinary graph. -/
+theorem AtomicQuery.holds_graph_iff (A : Structure sig) (sample : Samples Name A.carrier)
+    (op : Operation sig) (inputs : Assignment Name op.arity.inputs) (output : Name op.arity.output) :
+    (AtomicQuery.graph op inputs output).holds A sample ↔
+      A.Graph op (sample.tuple inputs) (sample _ output) :=
+  Iff.rfl
+
+/-- A relation query reads membership of the named tuple in the ordinary relation. -/
+theorem AtomicQuery.holds_relation_iff (A : Structure sig) (sample : Samples Name A.carrier)
+    (r : sig.Rel) (inputs : Assignment Name (sig.relInputs r)) :
+    (AtomicQuery.relation r inputs).holds A sample ↔ sample.tuple inputs ∈ A.relation r :=
+  Iff.rfl
+
+/-- A domain query reads membership of the named tuple in the specified partial domain. -/
+theorem AtomicQuery.holds_domain_iff (A : Structure sig) (sample : Samples Name A.carrier)
+    (p : sig.Partial) (inputs : Assignment Name (sig.partialArity p).inputs) :
+    (AtomicQuery.domain p inputs).holds A sample ↔ sample.tuple inputs ∈ A.partialDomain p :=
+  Iff.rfl
 
 /-- The record for a defined result, with the output type determined by the policy. -/
 def OutputRecording.Answer (Name : Type v) (Value : Type u) : OutputRecording → Type (max u v)

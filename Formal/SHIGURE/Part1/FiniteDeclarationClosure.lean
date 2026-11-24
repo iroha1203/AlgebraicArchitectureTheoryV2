@@ -24,9 +24,11 @@ namespace SHIGURE.Declaration
 
 variable {P : PrimitivePresentation.{u}} {Γ : List P.signature.SortType}
 
+/-- Each arity is a finite list of sort names. -/
 private theorem sorts_finite (Γ : List P.signature.SortType) : (sorts (P := P) Γ).Finite :=
   Γ.finite_toSet.image _
 
+/-- A positive atom uses at most one primitive symbol in addition to its context. -/
 private theorem atomic_finite (a : Atomic P.signature Γ) : (atomic a).Finite := by
   cases a
   · exact Set.finite_empty
@@ -34,6 +36,7 @@ private theorem atomic_finite (a : Atomic P.signature Γ) : (atomic a).Finite :=
   · exact Set.finite_singleton _
   · exact Set.finite_singleton _
 
+/-- The support of a finite formula collects the supports at its finitely many nodes. -/
 private theorem formula_finite (p : Formula P.signature Γ) : (formula p).Finite := by
   induction p with
   | atom a => exact atomic_finite a
@@ -41,25 +44,30 @@ private theorem formula_finite (p : Formula P.signature Γ) : (formula p).Finite
   | conj _ _ p q | disj _ _ p q => exact p.union q
   | ex _ h => exact (Set.finite_singleton _).union h
 
+/-- The written Law takes its declaration support from its context and two formulas. -/
 private theorem lawBody_finite (law : Law P.signature) : (lawBody law).Finite :=
   ((sorts_finite law.context).union (formula_finite law.input)).union (formula_finite law.conclusion)
 
+/-- A finite derivation contributes finitely many declarations through its support rules. -/
 private theorem derivation_finite {Γ : List P.theory.signature.SortType}
     {p q : Formula P.theory.signature Γ}
     (proof : Derivation P.theory p q) : (derivation proof).Finite :=
   derivation_support_induction Set.finite_empty sorts_finite
     (fun p => formula_finite p) (fun _ => Set.finite_singleton _) Set.Finite.union proof
 
+/-- Every typed variable points to a position within its finite context. -/
 private theorem position_lt_length {s : P.signature.SortType} (i : Var Γ s) :
     i.position < Γ.length := by
   induction i with
   | here => exact Nat.succ_pos _
   | there _ ih => exact Nat.succ_lt_succ ih
 
+/-- The context length bounds the number of typed variable positions. -/
 private theorem finite_positions (Γ : List P.signature.SortType) : Finite (Σ s, Var Γ s) :=
   Finite.of_injective (fun i => (⟨i.2.position, position_lt_length i.2⟩ : Fin Γ.length))
     fun _ _ eq => Var.position_injective Γ (congrArg Fin.val eq)
 
+/-- The inclusion of a partial domain contributes one operation at each input position. -/
 private theorem inclusions_finite (p : P.signature.Partial) (data : DomainInclusions p) :
     {a | ∃ (s : P.signature.SortType) (i : Var (P.signature.partialArity p).inputs s),
       a = (ofOperation (data.symbol i).operation : Declaration P)}.Finite := by
@@ -95,6 +103,7 @@ theorem dependsOn_finite (d : Declaration P) : (dependsOn P d).Finite := by
     · rw [nonderived_dependencies name role]
       exact lawBody_finite _
 
+/-- Assign heights that decrease along primitive declaration dependencies. -/
 private def height : Declaration P → ℕ
   | .sort _ => 0
   | .total _ | .relation _ | .quantity _ => 1
@@ -103,6 +112,7 @@ private def height : Declaration P → ℕ
     | .derived => 4
     | .required | .additional => 3
 
+/-- The only named Law leaves of the derived proof tree come from the required theory. -/
 private theorem derivation_law_required {Γ : List P.theory.signature.SortType}
     {p q : Formula P.theory.signature Γ}
     (proof : Derivation P.theory p q) (name : P.laws.LawName) :
@@ -121,11 +131,13 @@ private theorem derivation_law_required {Γ : List P.theory.signature.SortType}
     exact required.property
   · exact fun left right uses => uses.elim left right
 
+/-- The declarations of a written Law fit below the height of either written Law role. -/
 private theorem lawBody_height {d : Declaration P} {law : Law P.signature}
     (uses : d ∈ lawBody law) : d.height < 3 := by
   cases d <;> try simp only [height, Nat.reduceLT]
   exact (law_notMem_lawBody _ _ uses).elim
 
+/-- Every primitive and required Law used in a derivation fits below a derived Law. -/
 private theorem derivation_height {p q : Formula P.signature Γ}
     (proof : Derivation P.theory p q) {d : Declaration P}
     (uses : d ∈ derivation proof) : d.height < 4 := by
@@ -133,11 +145,13 @@ private theorem derivation_height {p q : Formula P.signature Γ}
   have role := derivation_law_required proof _ uses
   simp [role]
 
+/-- Arity references have the bottom declaration height. -/
 private theorem sort_height {d : Declaration P} {Γ : List P.signature.SortType}
     (uses : d ∈ sorts Γ) : d.height = 0 := by
   rcases uses with ⟨_, _, rfl⟩
   rfl
 
+/-- The decrease along each immediate dependency rules out infinite dependency chains. -/
 private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
     d.height < e.height := by
   cases e with

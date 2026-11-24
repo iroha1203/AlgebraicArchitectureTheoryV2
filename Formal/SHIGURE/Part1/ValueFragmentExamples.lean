@@ -19,6 +19,7 @@ would also require translating its evaluations into the ordinary structure.
 
 namespace SHIGURE.ValueFragment
 
+/-- A single sort contributes exactly one copy of its finite collection of sample names. -/
 private theorem finite_names_one_sort (Name : Type) [Finite Name] :
     Finite (Σ _ : PUnit, Name) := by
   apply Finite.of_injective (fun x : Σ _ : PUnit, Name => x.2)
@@ -128,13 +129,19 @@ theorem observe_true_iff (f : ℕ → ℕ) (n : ℕ) (q : Grid n) :
   unfold observe
   rw [Schema.read_answer]
   letI : Finite (Σ s, (schema n).Name s) := (schema n).finiteNames
-  let atom : AtomicQuery signature (schema n).Name :=
-    .graph (.total PUnit.unit) (.cons q.1 .empty) q.2
+  let inputs : Assignment (schema n).Name [PUnit.unit] := .cons q.1 .empty
+  let atom : AtomicQuery signature (schema n).Name := .graph (.total PUnit.unit) inputs q.2
   have observes := Query.read_truth (A := structureOf f) (samples n) .both atom
   change ((Query.truth .both atom).read (structureOf f) (samples n)).down = true ↔ _
   rw [observes]
-  exact (TruthRecording.record_both_eq_true _).trans
-    ((structureOf f).graph_total_iff PUnit.unit _ _)
+  change TruthRecording.record .both
+    ((AtomicQuery.graph (sig := signature) (.total PUnit.unit) inputs q.2).holds
+      (structureOf f) (samples n)) = true ↔ _
+  rw [TruthRecording.record_both_eq_true, AtomicQuery.holds_graph_iff, Structure.graph_total_iff]
+  change f ((samples n).tuple inputs .here) = q.2.val ↔ _
+  rw [Samples.tuple_apply]
+  simp only [inputs, Assignment.cons_here]
+  rfl
 
 /-- The prescribed table: exactly the nonzero diagonal pairs are true. -/
 def table (n : ℕ) (q : Grid n) : Bool :=
@@ -223,10 +230,12 @@ def structureOf (f : ℕ → Bool) : Structure signature where
   partialValue := fun name => PEmpty.elim name
   quantity _ xs := f xs.head
 
+/-- The initial index interval is sampled and the Boolean results are read as raw outputs. -/
 private def sampleNames (n : ℕ) : SequenceSort → Type
   | .index => Fin (n + 1)
   | .bit => PEmpty
 
+/-- All sample names in the binary example lie in the finite initial index interval. -/
 private theorem sampleNames_finite (n : ℕ) : Finite (Σ s, sampleNames n s) := by
   let index : (Σ s, sampleNames n s) → Fin (n + 1)
     | ⟨.index, i⟩ => i

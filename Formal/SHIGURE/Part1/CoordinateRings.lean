@@ -77,6 +77,11 @@ abbrev CoordinateRing := MvPolynomial V.Variable k ⧸ V.lawIdeal
 /-- The class of a named variable in the coordinate ring. -/
 def generator (z : V.Variable) : V.CoordinateRing := Ideal.Quotient.mkₐ k V.lawIdeal (X z)
 
+/-- The named coordinate generator is the quotient image of the polynomial variable. -/
+theorem generator_eq_quotient_mk (z : V.Variable) :
+    V.generator z = Ideal.Quotient.mk V.lawIdeal (X z) :=
+  rfl
+
 variable (R : Type w) [CommRing R] [Algebra k R]
 
 /-- An assignment in a commutative algebra satisfying every polynomial Law. -/
@@ -89,6 +94,7 @@ structure Assignment (V : PolynomialPresentation.{u,v} k) (R : Type w)
 
 variable {V R}
 
+/-- Satisfaction sends each generating Law difference to zero, so evaluation descends to the quotient. -/
 private theorem Assignment.ideal_le_ker (a : V.Assignment R) :
     V.lawIdeal ≤ RingHom.ker (aeval a.value).toRingHom := by
   apply Ideal.span_le.mpr
