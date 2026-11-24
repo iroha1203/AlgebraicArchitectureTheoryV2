@@ -499,23 +499,27 @@ def LocalPointRule.AgreesOnNative {W : DeclarationContext P} (rule : LocalPointR
     rule X Y (reading.selection.selected.sort i) (supported i) =
       some (reading.scheme.nativePoints reading.algebra a _ (inside (supported i)))
 
-/-- The selected declared recipe restricts on structures and realizations that present
-the same retained data. The target ranges over the selected method's realizations. -/
+/-- The selected declared recipe restricts on every admissible application with the same
+retained data. An admissible application uses a realized target and a point assignment
+described by the same recipe and permitted by the method. -/
 def LocalPointRule.AgreesOnDeclared {W : DeclarationContext P} (rule : LocalPointRule W)
     (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
     (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations)
     (selected : (reading.scheme.pointPrograms reading.algebra reading.choice).Selector) : Prop :=
-  ∀ (i : reading.selection.selected.Index) (structureData : Structure P.signature)
-    (a : reading.scheme.Realization reading.algebra),
-    let s := reading.selection.selected.sort i
-    let X := RestrictedStructure.restrict U structureData
+  ∀ (source : Structure P.signature) (a : reading.scheme.Realization reading.algebra),
+    let X := RestrictedStructure.restrict U source
     let Y := reading.scheme.structureOf reading.algebra a
-    ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees (X.restrictWithin inside) →
-    ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees
-      (Y.restrictWithin inside) →
-    ∀ points : X.carrier s → Y.carrier s,
-      (reading.scheme.pointPrograms reading.algebra reading.choice).describes selected X Y s points ↔
-        rule (X.restrictWithin inside) (Y.restrictWithin inside) s (supported i) = some points
+    ∀ points : reading.scheme.SelectedPointMap reading.algebra a source.carrier
+        (Set.range reading.selection.selected.sort),
+      reading.scheme.permitsPoints reading.algebra a X (Set.range reading.selection.selected.sort) points →
+      (∀ s hs, (reading.scheme.pointPrograms reading.algebra reading.choice).describes selected X Y s
+        (points s hs)) →
+      ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees (X.restrictWithin inside) →
+      ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees
+        (Y.restrictWithin inside) →
+      ∀ i : reading.selection.selected.Index,
+        rule (X.restrictWithin inside) (Y.restrictWithin inside) (reading.selection.selected.sort i) (supported i) =
+          some (points _ ⟨i, rfl⟩)
 
 /-- Restrict the actual point correspondence and evaluation at the chosen coefficient algebra. -/
 structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : DeclarationContext P)

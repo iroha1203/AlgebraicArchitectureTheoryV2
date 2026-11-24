@@ -124,7 +124,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientReading.evaluateRetained_mk,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.selected_recipe_restricts_on_its_realizations,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.restricted_recipe_reads_both_states,
-  SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_outside_its_realizations
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_outside_its_realizations,
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_at_unpermitted_source
 ]
 
 end SHIGURE.AxiomAudit

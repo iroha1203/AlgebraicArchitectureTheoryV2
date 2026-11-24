@@ -765,16 +765,14 @@ private theorem pointReading_local {W : DeclarationContext Observation.presentat
     rw [dif_pos (show X.carrier i.1 = Y.carrier i.1 from x.symm.trans y)]
     exact congrArg some (funext (cast_via_common_carrier x y))
   · dsimp only [CoefficientReading.LocalPointRule.AgreesOnDeclared]
-    intro i X realized left right points
+    intro X a points _ describes _ _ i
     classical
-    let Y := pointReading.scheme.structureOf pointReading.algebra realized
-    have x : Int = X.carrier i.1 := left.carrier_eq _ (kept i)
-    have y : Int = Y.carrier i.1 := right.carrier_eq _ (kept i)
-    have same : X.carrier i.1 = Y.carrier i.1 := x.symm.trans y
-    change (∃ eq : X.carrier i.1 = Y.carrier i.1, points = cast eq) ↔
-      (if eq : X.carrier i.1 = Y.carrier i.1 then some (cast eq) else none) = some points
-    rw [dif_pos same]
-    exact ⟨fun ⟨_, h⟩ => congrArg some h.symm, fun h => ⟨same, (Option.some.inj h).symm⟩⟩
+    let Y := pointReading.scheme.structureOf pointReading.algebra a
+    obtain ⟨same, exactPoint⟩ := describes (pointReading.selection.selected.sort i) ⟨i, rfl⟩
+    change (if eq : X.carrier i.1 = Y.carrier i.1 then some (cast eq) else none) =
+      some (points i.1 ⟨i, rfl⟩)
+    rw [dif_pos (show X.carrier i.1 = Y.carrier i.1 from same)]
+    exact congrArg some exactPoint.symm
   · rintro left right ⟨same, tuple⟩
     have eq := congrFun tuple ⟨(), .here⟩
     exact eq.symm
@@ -1679,7 +1677,7 @@ private def taggedNullaryCoefficient : CoefficientReading Observation.whole (sta
 /-- A coefficient parameter survives the declaration restriction and determines the evaluation. -/
 theorem restricted_evaluation_keeps_coefficient_parameter :
     taggedNullaryCoefficient.RespectsRestriction Observation.missingSort.context (fun _ h => h.elim) :=
-  ⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun i => nomatch i.2)⟩, (fun _ _ _ => rfl)⟩
+  ⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun _ _ _ _ _ _ _ i => nomatch i.2)⟩, (fun _ _ _ => rfl)⟩
 
 /-- A fixed coefficient parameter cannot make an ambient realization offset local. -/
 theorem coefficient_choice_does_not_hide_realization :
@@ -1711,7 +1709,7 @@ theorem restriction_uses_only_selected_coefficient_algebra :
       let unused : CoefficientAlgebra selectedCoefficientAlgebra.base := ⟨ringOf Int, RingHom.snd Int Int⟩
       selectedCoefficientAlgebra.evaluateOn PUnit.unit unused (0 : Int) (fun j => nomatch j.2) ≠
         selectedCoefficientAlgebra.evaluateOn PUnit.unit unused (1 : Int) (fun j => nomatch j.2) := by
-  refine ⟨⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun i => nomatch i.2)⟩, ?_⟩, ?_⟩
+  refine ⟨⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun _ _ _ _ _ _ _ i => nomatch i.2)⟩, ?_⟩, ?_⟩
   · intro left right _
     change (0 : Int) * (show Int from left.1) = 0 * (show Int from right.1)
     simp
@@ -1841,7 +1839,7 @@ noncomputable def retained_external_state_feeds_coefficient_square :
         ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩, rfl, rfl⟩
   coefficientSupport := by
     refine ⟨⟨(fun input => nomatch input.val.2), Or.inr ?_⟩, ⟨?_, Or.inl ?_⟩⟩
-    · exact ⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun i => nomatch i.2)⟩, (fun _ _ _ => rfl)⟩
+    · exact ⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun _ _ _ _ _ _ _ i => nomatch i.2)⟩, (fun _ _ _ => rfl)⟩
     · exact fun _ => Or.inl ⟨PUnit.unit, Or.inr (Set.mem_univ _), Set.mem_univ _⟩
     · exact Set.eq_univ_of_forall (fun _ => ⟨PUnit.unit, Or.inr (Set.mem_univ _), Set.mem_univ _⟩)
   value _ := (1 : Int)

@@ -1641,10 +1641,10 @@ private def Z : CoefficientRing := ⟨Int, inferInstance⟩
 /-- This declared recipe applies to the method's inhabited second carrier. -/
 private def programs : CoefficientPointPrograms.{0, 0} U where
   Selector := Unit
-  describes _ X Y s f := Nonempty (Y.carrier true) ∧
+  describes _ X Y s f := Nonempty (X.carrier true) ∧ Nonempty (Y.carrier true) ∧
     ∃ h : X.carrier s = Y.carrier s, f = cast h
   unique := by
-    rintro _ _ _ _ _ _ ⟨_, ⟨_, h⟩⟩ ⟨_, ⟨_, h'⟩⟩
+    rintro _ _ _ _ _ _ ⟨_, _, _, h⟩ ⟨_, _, _, h'⟩
     exact h.trans h'.symm
 
 /-- The method realizes a fixed structure with an inhabited second sort. -/
@@ -1663,14 +1663,16 @@ private def scheme : CoefficientScheme.{0, 0} U Z where
   mapPoints_preserves _ := fun _ _ _ h => h
   mapPoints_id _ _ _ _ := rfl
   mapPoints_comp _ _ _ _ _ := rfl
-  permitsPoints _ _ _ _ _ := True
-  permitsPoints_congr := by intros; rfl
+  permitsPoints _ _ X _ _ := Nonempty (X.carrier true)
+  permitsPoints_congr := by
+    intro R a X Y agreement _ _ _
+    rw [agreement.carrier_eq true (Set.mem_univ _)]
   Native := Unit
   nativeStructure _ := full Unit
   native_retained _ := fun _ h => (h (Set.mem_univ _)).elim
   realizeNative _ := id
   nativePoints _ _ _ _ := id
-  nativePoints_permitted _ _ _ _ := True.intro
+  nativePoints_permitted _ _ _ _ := ⟨()⟩
   interpretLaw _ _ := (full Unit).satisfies
   change _ _ := ()
   changePoints _ _ _ _ := id
@@ -1685,7 +1687,7 @@ private def r : CoefficientReading.{0, 0} U (model Unit) (.ofList [false]) where
   selection := .ofRenaming fun i => i
   supported _ := Set.mem_univ _
   realizePoint _ _ := id
-  pointOrigin := .declared () True.intro (fun _ _ => ⟨⟨()⟩, rfl, rfl⟩)
+  pointOrigin := .declared () ⟨()⟩ (fun _ _ => ⟨⟨()⟩, ⟨()⟩, rfl, rfl⟩)
   evaluateOn _ R _ e := R.fromBase (if (show Bool from e ⟨false, .here⟩) then (1 : Int) else (0 : Int))
 
 /-- Supply the chosen Boolean state at the selected position. -/
@@ -1704,20 +1706,20 @@ private noncomputable def localPoint : CoefficientReading.LocalPointRule W :=
 
 /-- The local recipe computes the selected point map on every permitted realization. -/
 private theorem local_matches_every_realization
-    (X : RestrictedStructure U) (a : scheme.Realization r.algebra)
+    (X : RestrictedStructure U) (a : scheme.Realization r.algebra) (admissible : Nonempty (X.carrier true))
     (points : X.carrier false → (scheme.structureOf r.algebra a).carrier false) :
     programs.describes () X (scheme.structureOf r.algebra a) false points ↔
       localPoint (X.restrictWithin inside) ((scheme.structureOf r.algebra a).restrictWithin inside)
         false (Set.mem_singleton _) = some points := by
   classical
-  change (Nonempty Unit ∧ ∃ h : X.carrier false = Bool, points = cast h) ↔
+  change (Nonempty (X.carrier true) ∧ Nonempty Unit ∧ ∃ h : X.carrier false = Bool, points = cast h) ↔
     (if h : X.carrier false = Bool then some (cast h) else none) = some points
   by_cases h : X.carrier false = Bool
   · rw [dif_pos h]
-    exact ⟨fun ⟨_, _, eq⟩ => congrArg some eq.symm,
-      fun eq => ⟨⟨()⟩, h, (Option.some.inj eq).symm⟩⟩
+    exact ⟨fun ⟨_, _, _, eq⟩ => congrArg some eq.symm,
+      fun eq => ⟨admissible, ⟨()⟩, h, (Option.some.inj eq).symm⟩⟩
   · rw [dif_neg h]
-    exact ⟨fun ⟨_, same, _⟩ => (h same).elim, fun eq => nomatch eq⟩
+    exact ⟨fun ⟨_, _, same, _⟩ => (h same).elim, fun eq => nomatch eq⟩
 
 /-- Every actual coefficient position has its carrier in the selected context. -/
 private theorem local_evaluation (i : r.selection.selected.Index) :
@@ -1761,10 +1763,12 @@ theorem selected_recipe_restricts_on_its_realizations : r.RespectsRestriction W 
       exact congrArg some (funext (composed leftType rightType))
     | there i => exact nomatch i
   · dsimp only [CoefficientReading.LocalPointRule.AgreesOnDeclared]
-    intro i X a _ _ points
+    intro X a points admissible describes _ _ i
     obtain ⟨s, value⟩ := i
     cases value with
-    | here => exact local_matches_every_realization (RestrictedStructure.restrict U X) a points
+    | here =>
+      exact (local_matches_every_realization (RestrictedStructure.restrict U X) a admissible _).1
+        (describes _ _)
     | there i => exact nomatch i
 
 /-- Evaluation after restricting uses the two actual Boolean points. -/
@@ -1779,6 +1783,11 @@ theorem restricted_recipe_reads_both_states :
 /-- The member with an empty second carrier is outside the declared recipe's domain. -/
 theorem recipe_remains_undefined_outside_its_realizations :
     ¬ programs.describes () (full Unit) (full Empty) false id :=
+  fun h => h.2.1.elim (fun x => x.elim)
+
+/-- A source that the method cannot read is outside the domain of the declared rule. -/
+theorem recipe_remains_undefined_at_unpermitted_source :
+    ¬ programs.describes () (full Empty) (full Unit) false id :=
   fun h => h.1.elim (fun x => x.elim)
 
 end SHIGURE.Chapter1.DeclaredCoefficientPoints

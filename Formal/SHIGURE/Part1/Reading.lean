@@ -1911,7 +1911,7 @@ theorem ReadingComparison.coefficient_support_on_retained {source target : Readi
   rw [change.property] at support
   exact support
 
-/-- The actual coefficient square respects sharing at every retained ordinary input. -/
+/-- A supplied coefficient square respects sharing at every retained ordinary input. -/
 theorem ReadingComparison.coefficient_evaluation_on_shared_inputs {source target : Reading.{u, v, w, x}}
     (comparison : ReadingComparison source target) :
     comparison.coefficientChange.sharesEvaluation comparison.contexts comparison.declarationChange :=
