@@ -100,7 +100,26 @@ def selectResult (e : CarrierEquiv U X Y) (op : Operation P.signature)
   cast (congrArg (fun profile => Y profile.output) (operation_arity op keep).symm)
     (e op.arity.output (operationOutput op keep) x)
 
-/-- A selected total operation reads its output through the equivalence of that output sort. -/
+/-- In the graph comparison for Proposition 3.2, select the input values and
+transport the tuple along the arity equality for the retained operation. -/
+theorem selectArgs_eq_cast (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    selectArgs e op keep a =
+      cast (congrArg (fun profile => Assignment Y profile.inputs) (operation_arity op keep).symm)
+        (selectAssignment e (operationInputs op keep) a) :=
+  rfl
+
+/-- In the graph comparison for Proposition 3.2, select the output value and
+transport it along the arity equality for the retained operation. -/
+theorem selectResult_eq_cast (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    selectResult e op keep x =
+      cast (congrArg (fun profile => Y profile.output) (operation_arity op keep).symm)
+        (e op.arity.output (operationOutput op keep) x) :=
+  rfl
+
+/-- For a retained total operation, the output comparison of Proposition 3.2
+is the equivalence on its output carrier. The missing-graph example uses this form. -/
 theorem selectResult_total (e : CarrierEquiv U X Y) (f : P.signature.Total)
     (keep : Declaration.total f ∈ U.declarations) (x : X (P.signature.totalArity f).output) :
     selectResult e (.total f) keep x =
@@ -122,14 +141,18 @@ theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X
   intro s i
   exact agree s.val s.property (a (ambientVar kept i))
 
-/-- Transporting the ambient carrier values and then selecting the inputs agrees with selecting them directly. -/
+/-- Transport the input side of the graph comparison in Proposition 3.2.
+The retained operation supplies its input support. The structure round trip
+proves `agree` by identifying the carrier transports at every kept sort. -/
 theorem selectArgs_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
     (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
     selectArgs e op kept (mapAssignment f (operationInputs op kept) a) = selectArgs g op kept a := by
   simp only [selectArgs, selectAssignment_mapCarrier e f g agree]
 
-/-- Transporting the ambient result and then selecting it agrees with selecting that result directly. -/
+/-- Transport the output side of the graph comparison in Proposition 3.2.
+The retained operation supplies its output support. The structure round trip
+proves `agree` by identifying the carrier transports at every kept sort. -/
 theorem selectResult_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
     (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :

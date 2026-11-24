@@ -70,7 +70,7 @@ theorem termReferences_subset_graph {Γ : List P.signature.SortType} {s : P.sign
     (t : Term P.signature Γ s) : termReferences t ⊆ Declaration.formula t.graph :=
   termReferences_subset_graphAt t _ _
 
-/-- Build an application in the selected signature using its actual typed input positions. -/
+/-- Form an application using an arity identified with the operation's declared arity. -/
 private def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
     Term sig Γ a.output :=
@@ -239,7 +239,7 @@ private theorem cast_formula_conj {sig : Signature.{u}} {Γ Δ : List sig.SortTy
   cases h
   rfl
 
-/-- Transport all terms of the finite conjunction to the same reindexed context. -/
+/-- Transport all conjuncts to the same reindexed context. -/
 private theorem cast_formula_conjoin {sig : Signature.{u}} {Γ Δ Λ : List sig.SortType}
     (h : Γ = Δ) (ps : ∀ {s}, Var Λ s → Formula sig Γ) :
     cast (congrArg (Formula sig) h) (Formula.conjoin Λ ps) =
@@ -247,7 +247,7 @@ private theorem cast_formula_conjoin {sig : Signature.{u}} {Γ Δ Λ : List sig.
   cases h
   rfl
 
-/-- Write the graph application with the selected operation and its reindexed variables. -/
+/-- Form the graph atom from variables indexed by an equal presentation of the operation's arity. -/
 private def reindexedGraph {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (ρ : Renaming a.inputs Γ) (y : Var Γ a.output) :
     Atomic sig Γ :=
@@ -262,7 +262,7 @@ private theorem selectGraph_reindexed {Γ : List P.signature.SortType} (op : Ope
       (selectRenaming (operationInputs op hOp) hΓ ρ) (selectVar hΓ y) := by
   cases op <;> rfl
 
-/-- Expand the value graph of the selected application at the reindexed result variable. -/
+/-- Expand the value graph of an application whose arguments are indexed by an equal arity. -/
 private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (op : Operation sig) {a : Arity sig.SortType} (same : op.arity = a)
     (args : ∀ {s}, Var a.inputs s → Term sig Γ s) (ρ : Renaming Γ Δ) (y : Var Δ a.output) :
@@ -282,7 +282,7 @@ private theorem cast_graphAt {sig : Signature.{u}} {Γ Δ Ξ : List sig.SortType
   cases h
   rfl
 
-/-- Transport the selected graph atom without changing the name of its operation. -/
+/-- Transport the variable context of a reindexed graph atom while retaining its operation. -/
 private theorem cast_reindexedGraph {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (h : Γ = Δ) (op : Operation sig) {a : Arity sig.SortType} (same : op.arity = a)
     (ρ : Renaming a.inputs Γ) (y : Var Γ a.output) :
@@ -440,7 +440,7 @@ theorem termReferences_rename {Γ Δ : List P.signature.SortType} {s : P.signatu
   | letBind init body hi hb =>
     simp only [Term.rename, termReferences, hi, hb]
 
-/-- Rename the free variables inside each typed argument of a selected application. -/
+/-- Rename each argument of an application indexed by an equal arity. -/
 private theorem rename_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s)
     (ρ : Renaming Γ Δ) :
@@ -597,7 +597,7 @@ theorem selectFormula_termDomain {Γ : List P.signature.SortType} (p : P.signatu
     (inLeftRenaming hΓ hΛ)
 
 
-/-- Compare the selected graph of a term argument with its reindexed graph expansion. -/
+/-- Expand the graph atom with term inputs and a term output along an equal arity. -/
 private theorem termGraph_reindexed {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (terms : ∀ {s}, Var a.inputs s → Term sig Γ s)
     (out : Term sig Γ a.output) :
@@ -707,7 +707,7 @@ theorem selectSubstitution_lift {Γ Δ : List P.signature.SortType} (θ : Substi
       (congrArg (fun (mapVars : Renaming (context Δ hΔ) (context (a :: Δ) (Declaration.sorts_cons_subset ha hΔ))) =>
         t.rename mapVars) (selectRenaming_there ha hΔ))
 
-/-- Compose a selected application with the selected substitution at every input position. -/
+/-- Substitute in each argument of an application indexed by an equal arity. -/
 private theorem substitute_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s)
     (θ : Substitution sig Γ Δ) :

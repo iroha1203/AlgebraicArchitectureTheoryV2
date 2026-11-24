@@ -134,8 +134,7 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       rw [read_write_args B keep x]
       have left := (readStructure_matches A).graph (.total f.val) f.property a z
       have right := (extendedEvaluation_matches B).graph (.total f.val) f.property a z
-      change B.Graph (.total f) (selectAssignment (extendedEquiv B) keep a)
-        (extendedEquiv B _ _ z) ↔ A.evaluation.graph (.total f.val) f.property a z at right
+      simp only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
     | partialOp p =>
@@ -145,8 +144,7 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       rw [read_write_args B keep x]
       have left := (readStructure_matches A).graph (.partialOp p.val) p.property a z
       have right := (extendedEvaluation_matches B).graph (.partialOp p.val) p.property a z
-      change B.Graph (.partialOp p) (selectAssignment (extendedEquiv B) keep a)
-        (extendedEquiv B _ _ z) ↔ A.evaluation.graph (.partialOp p.val) p.property a z at right
+      simp only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
     | quantity q =>
@@ -156,8 +154,7 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       rw [read_write_args B keep x]
       have left := (readStructure_matches A).graph (.quantity q.val) q.property a z
       have right := (extendedEvaluation_matches B).graph (.quantity q.val) q.property a z
-      change B.Graph (.quantity q) (selectAssignment (extendedEquiv B) keep a)
-        (extendedEquiv B _ _ z) ↔ A.evaluation.graph (.quantity q.val) q.property a z at right
+      simp only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
 

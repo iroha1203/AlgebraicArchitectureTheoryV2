@@ -53,7 +53,8 @@ theorem operationKernels_complete (K : ∀ s : V.SortName, Kernel R (V.generator
   OperationKernels.ext (fun i => kernelAt_complete K i.1 _)
     (kernelAt_complete K (V.output f) _)
 
-/-- Interpret the ring, module, named generators and multilinear symbols on their actual quotient carriers. -/
+/-- Interpret coefficients in the fixed ring and interpret module operations, generators
+and multilinear maps on the specified quotients. -/
 private def operationValue (K : ∀ s : V.SortName, Kernel R (V.generators s))
     (maps : ∀ f, (kernelsOf K f).Map) :
     (f : V.Symbol) → Assignment (quotientCarriers K) (V.arity f).inputs →

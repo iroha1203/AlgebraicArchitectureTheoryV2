@@ -85,7 +85,7 @@ private theorem Agree.ambientOperationKernels_eq (same : a.Agree b) {f : V.Multi
   (a.ambientOperationKernels_kept left).trans
     ((same.operationKernels_eq left right).trans (b.ambientOperationKernels_kept right).symm)
 
-/-- Use the shared kernels to compare the two ambient multilinear evaluations. -/
+/-- Agreement on a retained multilinear operation identifies its two ambient readings along the shared kernels. -/
 private theorem Agree.ambientOperation_heq (same : a.Agree b) {f : V.Multilinear}
     (left : V.multilinearDecl L f ∈ U.declarations) (right : V.multilinearDecl L f ∈ W.declarations) :
     HEq (a.ambientOperation f) (b.ambientOperation f) :=

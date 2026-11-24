@@ -50,7 +50,8 @@ theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations)
     (a : Assignment X op.arity.inputs) :
     (selectArgs e op kept a).map g = selectArgs e' op kept (mapAssignment f (operationInputs op kept) a) := by
-  cases op <;> exact map_selectAssignment e e' f g same _ a
+  rw [selectArgs_eq_cast, selectArgs_eq_cast]
+  cases op <;> simpa only [cast_eq] using map_selectAssignment e e' f g same _ a
 
 /-- Moving the output value of an operation agrees before and after selecting its arity. -/
 theorem map_selectResult (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
@@ -58,7 +59,8 @@ theorem map_selectResult (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
     (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
     g _ (selectResult e op kept x) = selectResult e' op kept (f _ (operationOutput op kept) x) := by
-  cases op <;> exact same _ _ x
+  rw [selectResult_eq_cast, selectResult_eq_cast]
+  cases op <;> simpa only [cast_eq] using same _ _ x
 
 /-- Every tuple of the selected arity comes from a unique ambient tuple of the retained carriers. -/
 def argsEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
@@ -72,6 +74,20 @@ def resultEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) : X op.arity.output ≃ Y (operation op kept).arity.output :=
   (e _ (operationOutput op kept)).trans
     (Equiv.cast (congrArg (fun profile => Y profile.output) (operation_arity op kept).symm))
+
+/-- The input equivalence for a retained operation acts by the input selection
+of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
+theorem argsEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    argsEquiv e op keep a = selectArgs e op keep a :=
+  rfl
+
+/-- The outcome equivalence for a retained operation acts by the output selection
+of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
+theorem resultEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    resultEquiv e op keep x = selectResult e op keep x :=
+  rfl
 
 variable {A B : ContextStructure U}
 
@@ -87,12 +103,9 @@ theorem readGraph (f : ContextStructure.Hom A B) (op : Operation P.signature)
     (y : (readStructure A).carrier (operation op keep).arity.output)
     (held : (readStructure A).Graph (operation op keep) xs y) :
     (readStructure B).Graph (operation op keep) (xs.map (readOnSort f)) (readOnSort f _ y) := by
-  obtain ⟨x, rfl⟩ := (argsEquiv (readCarrierEquiv A) op keep).surjective xs
-  obtain ⟨z, rfl⟩ := (resultEquiv (readCarrierEquiv A) op keep).surjective y
-  change (readStructure A).Graph (operation op keep) (selectArgs (readCarrierEquiv A) op keep x)
-      (selectResult (readCarrierEquiv A) op keep z) at held
-  change (readStructure B).Graph (operation op keep) ((selectArgs (readCarrierEquiv A) op keep x).map (readOnSort f))
-      (readOnSort f _ (selectResult (readCarrierEquiv A) op keep z))
+  obtain ⟨x, hx⟩ := (argsEquiv (readCarrierEquiv A) op keep).surjective xs
+  obtain ⟨z, hz⟩ := (resultEquiv (readCarrierEquiv A) op keep).surjective y
+  rw [← hx, ← hz, argsEquiv_apply, resultEquiv_apply] at held ⊢
   rw [map_selectArgs (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)
       (fun _ _ _ => rfl) op keep x,
     map_selectResult (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)

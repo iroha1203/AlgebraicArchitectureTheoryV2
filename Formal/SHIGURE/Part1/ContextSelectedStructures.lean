@@ -51,16 +51,17 @@ theorem readStructure_matches (A : ContextStructure U) :
       A.evaluation.domain p keep e
     rw [ambientAssignment_selectAssignment (readCarrierEquiv A) (operationInputs (.partialOp p) keep) e]
   graph op keep e y := by
+    rw [selectArgs_eq_cast, selectResult_eq_cast]
     cases op with
     | total f =>
-      erw [Structure.graph_total_iff]
+      erw [cast_eq, Structure.graph_total_iff]
       change A.toRestrictedStructure.total f keep
         (ambientAssignment (readCarrierEquiv A) (operationInputs (.total f) keep)
           (selectAssignment (readCarrierEquiv A) (operationInputs (.total f) keep) e)) = y ↔ _
       rw [ambientAssignment_selectAssignment (readCarrierEquiv A) (operationInputs (.total f) keep) e]
       exact Iff.of_eq (congrArg (fun R => R.graph (.total f) keep e y) A.toRestrictedStructure_evaluation)
     | partialOp p =>
-      erw [Structure.graph_partial_iff]
+      erw [cast_eq, Structure.graph_partial_iff]
       have input := ambientAssignment_selectAssignment (readCarrierEquiv A) (operationInputs (.partialOp p) keep) e
       change (∃ he : A.evaluation.domain p keep
           (ambientAssignment (readCarrierEquiv A) (operationInputs (.partialOp p) keep)
@@ -69,7 +70,7 @@ theorem readStructure_matches (A : ContextStructure U) :
       rw [input]
       exact Iff.of_eq (congrArg (fun R => R.graph (.partialOp p) keep e y) A.toRestrictedStructure_evaluation)
     | quantity q =>
-      erw [Structure.graph_quantity_iff]
+      erw [cast_eq, Structure.graph_quantity_iff]
       change A.toRestrictedStructure.quantity q keep
         (ambientAssignment (readCarrierEquiv A) (operationInputs (.quantity q) keep)
           (selectAssignment (readCarrierEquiv A) (operationInputs (.quantity q) keep) e)) = y ↔ _

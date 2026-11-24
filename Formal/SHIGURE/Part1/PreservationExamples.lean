@@ -1028,6 +1028,7 @@ private def identityIntegerState : StructureMap (statesOf Int) (statesOf Int) wh
 
 section
 
+/-- Use the integer ring structure on the result carrier in the residual transport example. -/
 local instance : CommRing ((statesOf Int).carrier orderedStateEquation.result) :=
   inferInstanceAs (CommRing Int)
 

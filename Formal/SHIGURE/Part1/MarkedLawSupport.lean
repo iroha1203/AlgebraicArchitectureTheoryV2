@@ -32,7 +32,7 @@ theorem app_refs (op : Operation P.signature)
   · simpa only [Set.mem_singleton_iff.mp hd] using kept
   · exact args i hd
 
-/-- A conjunction retains the declaration support of each of its formulas. -/
+/-- If the declaration set supports each conjunct, it also supports the conjunction. -/
 private theorem conjoined_support (Λ : List P.signature.SortType)
     (ps : ∀ {t}, Var Λ t → Formula P.signature Γ)
     (kept : ∀ {t} (i : Var Λ t), Declaration.formula (ps i) ⊆ D) :
