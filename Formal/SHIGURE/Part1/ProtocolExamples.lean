@@ -179,10 +179,20 @@ theorem ef_eq_comp : ef = ((Paths.of Stage).map Link.e ≫ (Paths.of Stage).map 
 theorem ef_path (a b : ℤ) :
     pairs.map ef (a, b) = (2 * a + 2, b + 1) ∧ integers.map ef a = 2 * a + 2 := by
   constructor
-  · simp only [ef_eq_comp, FunctorToTypes.map_comp_apply, Paths.of_map, (e_path a b).1,
-      (f_path (a + 1) b).1, mul_add, mul_one]
-  · simp only [ef_eq_comp, FunctorToTypes.map_comp_apply, Paths.of_map, (e_path a b).2,
-      (f_path (a + 1) b).2, mul_add, mul_one]
+  · calc
+      pairs.map ef (a, b) =
+          pairs.map ((Paths.of Stage).map Link.e ≫ (Paths.of Stage).map Link.f) (a, b) :=
+        congrArg (fun p => pairs.map p (a, b)) ef_eq_comp
+      _ = (2 * a + 2, b + 1) := by
+        simp only [FunctorToTypes.map_comp_apply, Paths.of_map, (e_path a b).1,
+          (f_path (a + 1) b).1, mul_add, mul_one]
+  · calc
+      integers.map ef a =
+          integers.map ((Paths.of Stage).map Link.e ≫ (Paths.of Stage).map Link.f) a :=
+        congrArg (fun p => integers.map p a) ef_eq_comp
+      _ = 2 * a + 2 := by
+        simp only [FunctorToTypes.map_comp_apply, Paths.of_map, (e_path a b).2,
+          (f_path (a + 1) b).2, mul_add, mul_one]
 
 /-- Evaluation followed by readout agrees after applying the protocol arrow, for every path. -/
 theorem observe_all_paths {i j : Stage} (p : Quiver.Path i j) (a b : ℤ) :
