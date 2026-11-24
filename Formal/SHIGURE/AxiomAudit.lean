@@ -2258,8 +2258,6 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   PolynomialPresentation.InverseVariableExample.declarationMap_eq_localization
 ]
 
-end SHIGURE.AxiomAudit
-
 -- Public constructor, comparison and example theorems used without unfolding their definitions.
 #shigure_assert_standard_axioms_of [
   -- CoefficientReading
@@ -2344,5 +2342,7 @@ end SHIGURE.AxiomAudit
   TotalSymbol.operation_ordinary,
   TotalSymbol.operation_quantity
 ]
+
+end SHIGURE.AxiomAudit
 
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit
