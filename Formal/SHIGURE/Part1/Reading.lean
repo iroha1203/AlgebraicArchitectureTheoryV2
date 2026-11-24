@@ -653,6 +653,8 @@ structure ReadingContextChange (source target : Reading.{u, v, w, x})
   pieces : source.cover.Index → Set target.cover.Index
   /-- Target pieces independently chosen for declarations added by the comparison. -/
   addedTargetPieces : Set target.cover.Index := ∅
+  /-- Source states kept externally even when their sort declaration is forgotten. -/
+  keptExternalInputs : Set source.observation.product.Index := ∅
   /-- Each declaration's translated support is contained in the assigned target pieces. -/
   localSupport (i : source.cover.Index) {a : Declaration source.presentation} :
     a ∈ retained.declarations → a ∈ (source.cover.piece i).declarations →
@@ -803,12 +805,14 @@ namespace ReadingContextChange
 variable {source target : Reading.{u, v, w, x}}
   {u : Interpretation source.presentation.theory target.presentation.theory}
 
-/-- A source coordinate is either kept in the restriction or was already external to it. -/
+/-- A source coordinate survives through its declaration or as a chosen external input. -/
 def observationInputs (change : ReadingContextChange source target u) :
     Set source.observation.product.Index :=
   {i | let d := Declaration.sort (source.observation.product.sort i)
        d ∈ change.retained.declarations ∨
-         (source.observation.symbol = none ∧ d ∉ source.context.declarations)}
+         ((source.observation.symbol = none ∧ d ∉ source.context.declarations) ∨
+           (i ∈ change.keptExternalInputs ∧ source.observation.symbol = none ∧
+             ¬ source.observationPlacement.isRetained))}
 
 /-- The local target uses exactly the observation coordinates with an available source. A
 declared observation additionally requires its entire arity and its assigned declaration. -/
@@ -1196,8 +1200,8 @@ theorem restricted_evaluation_commutes
     {left : W.declarations ⊆ U.declarations} {right : Z.declarations ⊆ V.declarations}
     (sourceLocal : c.RespectsRestriction W left) (targetLocal : d.RespectsRestriction Z right)
     (e : inputs.Values A.carrier) :
-    d.evaluateRetained targetLocal d.algebra (d.restrictSelected targetLocal (inputs.mapValues state e)) =
-      square.coefficients (c.evaluateRetained sourceLocal c.algebra (c.restrictSelected sourceLocal e.1)) := by
+    d.evaluateRetained targetLocal (d.restrictSelected targetLocal (inputs.mapValues state e)) =
+      square.coefficients (c.evaluateRetained sourceLocal (c.restrictSelected sourceLocal e.1)) := by
   simpa only [CoefficientReading.evaluateRetained_mk] using square.evaluate_commutes e
 
 /-- Extract the actual comparison and its commuting evaluations on the chosen retained contexts. -/
@@ -1212,6 +1216,7 @@ theorem evaluation_from_support (comparison : CoefficientComparison c d onSort s
         (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
         (fun e => d.evaluateSelected (inputs.mapValues state e))),
       comparison = .changed inputs square ∧
+      ((∀ i, retains (c.selection.used.sort i)) ∧ (∀ i, extraAvailable (inputs.extra.sort i))) ∧
       ∃ (sourceLocal : c.RestrictionAllowed W left) (targetLocal : d.RestrictionAllowed Z right),
         ∀ e, d.evaluateWithin targetLocal (inputs.mapValues state e) =
           square.coefficients (c.evaluateWithin sourceLocal e.1) := by
@@ -1219,7 +1224,7 @@ theorem evaluation_from_support (comparison : CoefficientComparison c d onSort s
   | fixed _ => exact support.elim
   | changed inputs square =>
     have localSupport := (supportsEvaluation_changed retains extraAvailable _ _ inputs square).1 support
-    refine ⟨inputs, square, rfl, localSupport.2.1, localSupport.2.2, ?_⟩
+    refine ⟨inputs, square, rfl, localSupport.1, localSupport.2.1, localSupport.2.2, ?_⟩
     intro e
     simpa only [CoefficientReading.evaluateWithin_eq] using square.evaluate_commutes e
 

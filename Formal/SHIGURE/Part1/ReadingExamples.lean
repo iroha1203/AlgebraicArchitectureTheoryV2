@@ -878,13 +878,13 @@ def external_states_feed_new_declared_observation : ReadingComparison externalPa
     · exact Or.inr (Set.mem_univ _)
     · exact Set.mem_univ _
     · intro i
-      exact Or.inr ⟨rfl, fun absent => absent.elim⟩
+      exact Or.inr (Or.inl ⟨rfl, fun absent => absent.elim⟩)
   coefficientChange := PUnit.unit
   value := id
   commutes _ := rfl
   restrictedObservations := declarePairObservation.observationSquare_of_available _ _ _
-    (fun _ => Or.inr ⟨rfl, fun absent => absent.elim⟩)
-    (fun _ => Or.inr ⟨rfl, fun absent => absent.elim⟩) (fun _ => rfl)
+    (fun _ => Or.inr (Or.inl ⟨rfl, fun absent => absent.elim⟩))
+    (fun _ => Or.inr (Or.inl ⟨rfl, fun absent => absent.elim⟩)) (fun _ => rfl)
 
 /-- The outer product adds a position that the coefficient evaluation never reads. -/
 private def paddedScalarInputs (R : Type) [CommRing R] :
@@ -1048,7 +1048,7 @@ private def externalScalarInputs : ReadingInputMap externalScalarSource.observat
 /-- The ordinary positions remain available while the target selects a coefficient realization. -/
 private theorem externalScalarInputAvailable (i : externalScalarSource.observation.product.Index) :
     i ∈ introduceScalarContext.observationInputs :=
-  Or.inr ⟨rfl, fun absent => absent.elim⟩
+  Or.inr (Or.inl ⟨rfl, fun absent => absent.elim⟩)
 
 /-- Introduce an actual coefficient evaluation on the external input, using its selected target cover. -/
 def external_state_feeds_new_coefficient_evaluation :
@@ -1126,6 +1126,11 @@ theorem extra_can_restore_unused_name :
   refine ⟨?_, rfl, rfl, HEq.rfl⟩
   rintro ⟨i, _⟩
   exact nomatch i
+
+/-- The identity input map needs its actual source coordinate. -/
+theorem unavailable_source_position_cannot_be_used :
+    ¬ (ReadingInputMap.identity (slot ())).UsesOnly ∅ :=
+  fun uses => (uses () () rfl).elim
 
 /-- Restoring an unused coordinate still shares its actual original ordinary position. -/
 theorem extra_keeps_original_sharing :
@@ -1321,10 +1326,10 @@ def external_stays_available_when_declarations_are_added :
         pieces i := nomatch i
         localSupport i := nomatch i }
     observationSupport := ⟨False.elim, fun _ _ =>
-      ⟨Or.inr ⟨rfl, fun h => h.elim⟩, ⟨(), Or.inr (Set.mem_univ _), Set.mem_univ _⟩⟩⟩
+      ⟨Or.inr (Or.inl ⟨rfl, fun h => h.elim⟩), ⟨(), Or.inr (Set.mem_univ _), Set.mem_univ _⟩⟩⟩
     declaredObservations := .external
     restrictedObservations := ReadingContextChange.observationSquare_of_available _ _ _ _
-      (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩)
-      (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩) (fun _ => rfl) }
+      (fun _ => Or.inr (Or.inl ⟨rfl, fun h => h.elim⟩))
+      (fun _ => Or.inr (Or.inl ⟨rfl, fun h => h.elim⟩)) (fun _ => rfl) }
 
 end SHIGURE.Chapter1.IndexedObservation

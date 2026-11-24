@@ -400,15 +400,16 @@ theorem missing_target_sort_fails :
 
 /-- A comparison cannot keep distinguishing observed states through an empty target cover. -/
 theorem cannot_compare_external_after_forgetting_input
-    (comparison : ReadingComparison (reading id) missingSort) :
-    IsEmpty comparison.ContextChange := by
-  refine ⟨fun change => ?_⟩
+    (comparison : ReadingComparison (reading id) missingSort) (change : comparison.ContextChange)
+    (noneKeptExternally : change.val.keptExternalInputs = ∅) : False := by
   obtain ⟨localRead, _, sourceSquare, _, _⟩ := comparison.observation_square_on_retained change
   have noInput (i : change.val.observationInputs) : False := by
-    rcases i.property with kept | ⟨_, external⟩
+    rcases i.property with kept | ⟨_, outside⟩ | ⟨external, _, _⟩
     · obtain ⟨_, j, _, _⟩ := change.val.sort_is_covered _ kept
       exact nomatch j
-    · exact external (Set.mem_univ _)
+    · exact outside (Set.mem_univ _)
+    · rw [noneKeptExternally] at external
+      exact external.elim
   have localInputs :
       (fun _ : change.val.observationInputs => false) = (fun _ => true) :=
     funext (fun i => (noInput i).elim)
@@ -446,6 +447,31 @@ def constant_observations_compare_through_empty_cover :
   commutes _ := rfl
   restrictedObservations :=
     ⟨fun _ => false, fun _ => true, fun _ => rfl, fun _ => rfl, (fun _ => rfl), True.intro⟩
+
+/-- The declaration is forgotten while the comparison explicitly retains the external Boolean state. -/
+private def forgetSortKeepExternal : ReadingContextChange (reading id) missingSort
+    (Interpretation.identity presentation.theory) where
+  retained := missingSort.context
+  inside _ absent := absent.elim
+  supporting := Interpretation.identity presentation.theory
+  equivalent := Interpretation.Equivalent.refl _
+  keptExternalInputs := Set.univ
+  pieces _ := ∅
+  localSupport _ _ absent := absent.elim
+
+/-- The original external observation remains nonconstant after its sort declaration is forgotten. -/
+def forget_declaration_keep_external_state : ReadingComparison (reading id) missingSort where
+  interpretation := Interpretation.identity presentation.theory
+  targetModel := model
+  state := state
+  contexts := .identity _
+  declarationChange := .changed forgetSortKeepExternal
+  coefficientChange := PUnit.unit
+  value := Bool.not
+  commutes _ := rfl
+  restrictedObservations := forgetSortKeepExternal.observationSquare_of_available _ _ _
+    (fun _ => Or.inr (Or.inr ⟨Set.mem_univ _, rfl, False.elim⟩))
+    (fun _ => Or.inr (Or.inr ⟨Set.mem_univ _, rfl, False.elim⟩)) (fun _ => rfl)
 
 /-- Equality in a context of two states reads both variables of the retained sort. -/
 private def twoStatesEqual : Atomic signature [(), ()] := .eq .here (.there .here)
@@ -677,22 +703,66 @@ theorem offset_not_determined_by_retained_structure :
     ¬ (readRing Int 0).RespectsRestriction Observation.whole (fun _ h => h) := by
   intro locality
   let reading := readRing Int 0
-  let left : reading.RealizedInput reading.algebra := ⟨(0 : Int), fun _ => (0 : Int)⟩
-  let right : reading.RealizedInput reading.algebra := ⟨(1 : Int), fun _ => (0 : Int)⟩
-  have same : reading.AgreeOn (fun _ h => h) locality.supported left right :=
-    ⟨RestrictedStructure.Agrees.refl _, rfl⟩
-  have equal := locality.agrees reading.algebra left right same
+  let left : reading.SelectedRealizedInput := ⟨⟨(0 : Int), fun _ => (0 : Int)⟩, rfl⟩
+  let right : reading.SelectedRealizedInput := ⟨⟨(1 : Int), fun _ => (0 : Int)⟩, rfl⟩
+  have same : reading.AgreeOn (fun _ h => h) locality.supported left.val right.val :=
+    ⟨rfl, RestrictedStructure.Agrees.refl _, rfl⟩
+  have equal := locality.agrees left right same
   exact (by decide : (0 : Int) + 0 ≠ 0 + 1) equal
+
+/-- Use the identity point rule on the carriers of the two retained structures. -/
+private noncomputable def localIdentityScheme : CoefficientScheme Observation.whole (ringOf Int) :=
+  { offsetScheme (ringOf Int) with
+    pointsWithin _ _ _ X Y s _ := by
+      classical
+      exact if same : X.carrier s = Y.carrier s then some (cast same) else none }
+
+/-- Compare a direct carrier transport with transport via the common carrier. -/
+private theorem cast_via_common_carrier {X Y Z : Type} (left : X = Y) (right : X = Z) (y : Y) :
+    cast (left.symm.trans right) y = cast right (cast left.symm y) := by
+  cases left
+  cases right
+  rfl
 
 /-- Reading the designated point factors through the retained structure and tuple. -/
 theorem point_evaluation_respects_restriction :
-    let reading := { readRing Int 0 with evaluateOn := fun _ _ e => e ⟨(), .here⟩ }
+    let reading := { readRing Int 0 with
+      scheme := localIdentityScheme
+      pointOrigin := .declared True.intro
+      evaluateOn := fun _ _ e => e ⟨(), .here⟩ }
     reading.RespectsRestriction Observation.whole (fun _ h => h) := by
   dsimp only
-  refine ⟨(fun _ => Set.mem_univ _), ?_⟩
-  rintro R left right ⟨same, tuple⟩
-  have eq := congrFun tuple ⟨(), .here⟩
-  exact eq.symm
+  refine ⟨(fun _ => Set.mem_univ _), ?_, ?_⟩
+  · intro i X Y left right
+    classical
+    have x := left.carrier_eq _ (Set.mem_univ (Declaration.sort i.1))
+    have y := right.carrier_eq _ (Set.mem_univ (Declaration.sort i.1))
+    change (if same : X.carrier i.1 = Y.carrier i.1 then some (cast same) else none) =
+      some (fun z => cast y (cast x.symm z))
+    rw [dif_pos (x.symm.trans y)]
+    exact congrArg some (funext (cast_via_common_carrier x y))
+  · rintro left right ⟨_, same, tuple⟩
+    have eq := congrFun tuple ⟨(), .here⟩
+    exact eq.symm
+
+/-- A purported local identity rule cannot justify a different designated point correspondence. -/
+theorem local_point_rule_cannot_hide_shift :
+    let reading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) := { readRing Int 0 with
+      scheme := localIdentityScheme
+      realizePoint := fun _ _ x => (show Int from x) + 1
+      pointOrigin := .declared True.intro
+      evaluateOn := fun _ _ e => e ⟨(), .here⟩ }
+    ¬ reading.RespectsRestriction Observation.whole (fun _ h => h) := by
+  classical
+  dsimp only
+  intro locality
+  have agrees := locality.points ⟨(), .here⟩ _ _
+    (RestrictedStructure.Agrees.refl _) (RestrictedStructure.Agrees.refl _)
+  change (if same : Int = Int then some (cast same) else none) = some (fun x : Int => x + 1) at agrees
+  have functions : some (id : Int → Int) = some (fun x : Int => x + 1) := by
+    rw [dif_pos (rfl : Int = Int)] at agrees
+    exact agrees
+  exact (by decide : (0 : Int) ≠ 1) (congrFun (Option.some.inj functions) 0)
 
 /-- An identity coefficient map commutes with evaluation in the same realization. -/
 def integerIdentity :
@@ -1521,6 +1591,48 @@ private def nullaryCoefficient : CoefficientReading Observation.whole (statesOf 
     letI := R.scalars.ring
     1
 
+/-- The nullary evaluation retains its offset as explicit coefficient data. -/
+private def taggedNullaryCoefficient : CoefficientReading Observation.whole (statesOf Int) (.ofList []) :=
+  { nullaryCoefficient with
+    scheme := { offsetScheme (ringOf Int) with
+      RetainedParameter := fun R => R.scalars.Carrier
+      retainedParameter _ := id
+      pointsWithin _ _ _ _ _ _ _ := none }
+    pointOrigin := .declared True.intro
+    evaluateOn _ parameter _ := parameter }
+
+/-- A coefficient parameter survives the declaration restriction and determines the evaluation. -/
+theorem restricted_evaluation_keeps_coefficient_parameter :
+    taggedNullaryCoefficient.RespectsRestriction Observation.missingSort.context (fun _ h => h.elim) :=
+  ⟨(fun i => nomatch i.2), (fun i => nomatch i.2), (fun _ _ same => same.1)⟩
+
+/-- One coefficient algebra can localize an evaluation even when another algebra distinguishes offsets. -/
+private def selectedCoefficientAlgebra : CoefficientReading Observation.whole (statesOf Int) (.ofList []) where
+  base := ringOf (Int × Int)
+  algebra := ⟨ringOf Int, RingHom.fst Int Int⟩
+  scheme := offsetScheme (ringOf (Int × Int))
+  realization := (0 : Int)
+  selection := .ofRenaming fun i => i
+  supported i := nomatch i.2
+  realizePoint _ _ := id
+  pointOrigin := .declared True.intro
+  evaluateOn R offset _ :=
+    letI := R.scalars.ring
+    R.fromBase ((0, 1) : Int × Int) * (show R.scalars.Carrier from offset)
+
+/-- The selected evaluation localizes without imposing equality on the unused second projection. -/
+theorem restriction_uses_only_selected_coefficient_algebra :
+    selectedCoefficientAlgebra.RespectsRestriction Observation.missingSort.context (fun _ h => h.elim) ∧
+      let unused : CoefficientAlgebra selectedCoefficientAlgebra.base := ⟨ringOf Int, RingHom.snd Int Int⟩
+      selectedCoefficientAlgebra.evaluateOn unused (0 : Int) (fun j => nomatch j.2) ≠
+        selectedCoefficientAlgebra.evaluateOn unused (1 : Int) (fun j => nomatch j.2) := by
+  refine ⟨⟨(fun i => nomatch i.2), (fun i => nomatch i.2), ?_⟩, ?_⟩
+  · intro left right _
+    change (0 : Int) * (show Int from left.val.1) = 0 * (show Int from right.val.1)
+    simp
+  · change (1 : Int) * 0 ≠ 1 * 1
+    decide
+
 /-- Read a constant output from an ordinary product with an empty carrier. -/
 private def emptyOrdinaryReading : Reading.{0, 0, 0, 0} :=
   { Observation.reading id with
@@ -1602,7 +1714,11 @@ theorem cannot_use_empty_ambient_to_skip_coefficient_square
       forgetEmptyState forgetEmptyPositions left right := by
   rintro ⟨_, square⟩
   have tuple : forgetEmptyState.SourceObservationValues := fun i =>
-    False.elim (i.property.elim id (fun h => h.2 (Set.mem_univ _)))
+    False.elim (by
+      rcases i.property with kept | ⟨_, outside⟩ | ⟨external, _, _⟩
+      · exact kept.elim
+      · exact outside (Set.mem_univ _)
+      · exact external.elim)
   have bad : (1 : Int) = 0 := square (tuple, fun i => nomatch i)
   exact (by decide : (1 : Int) ≠ 0) bad
 
