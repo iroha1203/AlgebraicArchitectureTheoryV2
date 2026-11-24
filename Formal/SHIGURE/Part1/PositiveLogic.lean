@@ -13,7 +13,9 @@ primitive replacements, with the sort maps kept as part of the data.
 Composition uses proof-tree transport and the comparisons of translated
 formulas to satisfy every field of an interpretation. The hom quotient
 identifies representatives using their primitive replacements and sort maps.
-The category laws then follow from mutual derivability.
+The category laws then follow from mutual derivability. A category with
+raw interpretations as morphisms would distinguish equivalent primitive
+replacements and different proof trees for the same required Laws.
 -/
 
 universe u
@@ -25,7 +27,7 @@ variable {T : Theory.{u}} {Γ Δ : List T.signature.SortType}
 /-- The witness form and guarded substitution of Appendix A.1 are mutually derivable. -/
 theorem bindFormula_equivalent (θ : Substitution T.signature Γ Δ) (p : Formula T.signature Γ) :
     Equivalent T (θ.bindFormula p) (θ.defined.conj (p.substitute θ)) :=
-  .ofDerivations (bindFormulaDerivations θ p).1 (bindFormulaDerivations θ p).2
+  .of_derivations (bindFormulaDerivations θ p).1 (bindFormulaDerivations θ p).2
 
 end SHIGURE.Derivation
 
@@ -34,18 +36,19 @@ namespace SHIGURE.Interpretation
 variable {S T U V : Theory.{u}}
 
 /-- The translation of mutually derivable formulas again gives mutual derivability. -/
-theorem translateEquivalent (v : Interpretation S T) {Γ : List S.signature.SortType}
+theorem translate_equivalent (v : Interpretation S T) {Γ : List S.signature.SortType}
     {p q : Formula S.signature Γ} (same : Derivation.Equivalent S p q) :
     Derivation.Equivalent T (v.translation.formula p) (v.translation.formula q) := by
-  obtain ⟨⟨forward⟩, ⟨backward⟩⟩ := same
-  exact .ofDerivations (v.translateDerivation forward) (v.translateDerivation backward)
+  obtain ⟨forward⟩ := same.forward
+  obtain ⟨backward⟩ := same.backward
+  exact .of_derivations (v.translateDerivation forward) (v.translateDerivation backward)
 
 /-- A proof of totality translates to a proof of the replacement's totality. -/
 private noncomputable def translateTotal (v : Interpretation T U)
     {Γ : List T.signature.SortType} {s : T.signature.SortType} (t : Term T.signature Γ s)
     (total : Derivation T .truth t.defined) :
     Derivation U .truth (v.translation.term t).defined :=
-  .cut (v.translateDerivation total) (Classical.choice (v.translation.defined_equivalent t).2)
+  .cut (v.translateDerivation total) (Classical.choice (v.translation.defined_equivalent t).backward)
 
 /-- Proposition A.4: the composite candidate is an interpretation. -/
 noncomputable def comp (v : Interpretation T U) (u : Interpretation S T) :
@@ -53,27 +56,27 @@ noncomputable def comp (v : Interpretation T U) (u : Interpretation S T) :
   onSort := v.onSort ∘ u.onSort
   translation := v.compCandidate u
   total f := by
-    simpa only [compCandidate, Translation.comp_operation, Term.castContext_defined, Formula.castContext_truth] using
+    simpa only [compCandidate_eq_translation_comp, Translation.comp_operation, Term.castContext_defined, Formula.castContext_truth] using
       ((v.translateTotal _ (u.total f)).castContext List.map_map)
   quantity q := by
-    simpa only [compCandidate, Translation.comp_operation, Term.castContext_defined, Formula.castContext_truth] using
+    simpa only [compCandidate_eq_translation_comp, Translation.comp_operation, Term.castContext_defined, Formula.castContext_truth] using
       ((v.translateTotal _ (u.quantity q)).castContext List.map_map)
   partialDefined p := by
     have transported := Derivation.cut (v.translateDerivation (u.partialDefined p))
-      (Classical.choice (v.translation.defined_equivalent (u.translation.operation (.partialOp p))).2)
-    simpa only [compCandidate, Translation.comp_partialDomain, Translation.comp_operation,
+      (Classical.choice (v.translation.defined_equivalent (u.translation.operation (.partialOp p))).backward)
+    simpa only [compCandidate_eq_translation_comp, Translation.comp_partialDomain, Translation.comp_operation,
       Term.castContext_defined] using transported.castContext List.map_map
   definedPartial p := by
     have transported := Derivation.cut
-      (Classical.choice (v.translation.defined_equivalent (u.translation.operation (.partialOp p))).1)
+      (Classical.choice (v.translation.defined_equivalent (u.translation.operation (.partialOp p))).forward)
       (v.translateDerivation (u.definedPartial p))
-    simpa only [compCandidate, Translation.comp_partialDomain, Translation.comp_operation,
+    simpa only [compCandidate_eq_translation_comp, Translation.comp_partialDomain, Translation.comp_operation,
       Term.castContext_defined] using transported.castContext List.map_map
   preserves name := by
     have input := v.translation.comp_formula_equivalent u.translation (S.law name).input
     have output := v.translation.comp_formula_equivalent u.translation (S.law name).conclusion
-    exact .cut (Classical.choice input.1)
-      (.cut ((v.translateDerivation (u.preserves name)).castContext List.map_map) (Classical.choice output.2))
+    exact .cut (Classical.choice input.forward)
+      (.cut ((v.translateDerivation (u.preserves name)).castContext List.map_map) (Classical.choice output.backward))
 
 end SHIGURE.Interpretation
 
@@ -83,14 +86,14 @@ variable {S T U V : Theory.{u}}
   {f : S.signature.SortType → T.signature.SortType} {g : T.signature.SortType → U.signature.SortType}
 
 /-- Comparing all positive formulas in particular compares every primitive replacement. -/
-theorem Equivalent.ofFormula {left right : Translation S.signature T.signature f}
+theorem Equivalent.of_formula {left right : Translation S.signature T.signature f}
     (all : ∀ {Γ : List S.signature.SortType} (p : Formula S.signature Γ),
       Derivation.Equivalent T (left.formula p) (right.formula p)) : Equivalent left right := by
-  refine ⟨?_, ?_, ?_⟩
+  apply Equivalent.of_primitives
   · intro op
     let p : Formula S.signature (op.arity.output :: op.arity.inputs) :=
       .atom (.graph op (fun i => .there i) .here)
-    simpa only [p, formula_atom, atomic_graphAt, Renaming.mapSorts_there, Var.mapSorts, Term.graph] using all p
+    simpa only [p, formula_atom, atomic_graphAt, Renaming.mapSorts_there, Var.mapSorts_here, Term.graph_eq_graphAt] using all p
   · intro r
     let p : Formula S.signature (S.signature.relInputs r) := .atom (.rel r (fun i => i))
     simpa only [p, formula_atom, atomic_rel, Renaming.mapSorts_id, Formula.rename_id] using all p
@@ -115,17 +118,17 @@ variable {S T U : Theory.{u}}
 theorem Equivalent.comp_inner (w : Interpretation T U) {left right : Translation S.signature T.signature f}
     (same : Equivalent left right) :
     Equivalent (w.translation.comp left) (w.translation.comp right) := by
-  apply Equivalent.ofFormula
+  apply Equivalent.of_formula
   intro Γ p
   exact (w.translation.comp_formula_equivalent left p).trans
-    (((w.translateEquivalent (same.formula p)).castContext _).trans
+    (((w.translate_equivalent (same.formula p)).castContext _).trans
       (w.translation.comp_formula_equivalent right p).symm)
 
 /-- Equivalent outer replacements preserve a common inner translation. -/
 theorem Equivalent.comp_outer {left right : Translation T.signature U.signature g}
     (same : Equivalent left right) (u : Translation S.signature T.signature f) :
     Equivalent (left.comp u) (right.comp u) := by
-  apply Equivalent.ofFormula
+  apply Equivalent.of_formula
   intro Γ p
   exact (left.comp_formula_equivalent u p).trans
     (((same.formula (u.formula p)).castContext _).trans (right.comp_formula_equivalent u p).symm)
@@ -137,7 +140,7 @@ namespace SHIGURE.Formula
 variable {sig : Signature.{u}} {Γ : List sig.SortType}
 
 /-- Transport along any equality from a context to itself leaves the formula fixed. -/
-theorem castContext_self (same : Γ = Γ) (p : Formula sig Γ) : p.castContext same = p := rfl
+theorem castContext_self (same : Γ = Γ) (p : Formula sig Γ) : p.castContext same = p := Formula.castContext_rfl p
 
 end SHIGURE.Formula
 
@@ -148,20 +151,22 @@ variable {S T U V : Theory.{u}}
 /-- Equivalent inner interpretations yield equivalent composites with a fixed outer interpretation. -/
 theorem comp_congr_inner (w : Interpretation T U) {l r : Interpretation S T} (h : l.Equivalent r) :
     (w.comp l).Equivalent (w.comp r) := by
-  obtain ⟨same, replacements⟩ := h
+  have same := h.onSort_eq
+  have replacements := h.translation_equivalent
   cases l
   cases r
   cases same
-  exact ⟨rfl, replacements.comp_inner w⟩
+  exact Equivalent.of_translation rfl (replacements.comp_inner w)
 
 /-- Equivalent outer interpretations yield equivalent composites with a fixed inner interpretation. -/
 theorem comp_congr_outer {l r : Interpretation T U} (h : l.Equivalent r) (w : Interpretation S T) :
     (l.comp w).Equivalent (r.comp w) := by
-  obtain ⟨same, replacements⟩ := h
+  have same := h.onSort_eq
+  have replacements := h.translation_equivalent
   cases l
   cases r
   cases same
-  exact ⟨rfl, replacements.comp_outer w.translation⟩
+  exact Equivalent.of_translation rfl (replacements.comp_outer w.translation)
 
 /-- Composition respects equivalence of representatives at both ends. -/
 theorem comp_congr {l r : Interpretation S T} {l' r' : Interpretation T U}
@@ -171,16 +176,16 @@ theorem comp_congr {l r : Interpretation S T} {l' r' : Interpretation T U}
 
 /-- The identity at the source is a unit for composition of interpretations. -/
 theorem comp_id (u : Interpretation S T) : (u.comp (identity S)).Equivalent u := by
-  refine ⟨rfl, Translation.Equivalent.ofFormula ?_⟩
+  refine Equivalent.of_translation rfl (Translation.Equivalent.of_formula ?_)
   intro Γ p
   refine (u.translation.comp_formula_equivalent (identity S).translation p).trans ?_
-  have preservesIdentity := u.translateEquivalent (Translation.identityFormula_cast_equivalent (T := S) p)
+  have preservesIdentity := u.translate_equivalent (Translation.identityFormula_cast_equivalent (T := S) p)
   simpa only [Translation.formula_castContext, Formula.castContext_trans, Formula.castContext_self] using
     (preservesIdentity.castContext (List.map_map (l := Γ) (g := u.onSort) (f := id)))
 
 /-- The identity at the target is a unit for composition of interpretations. -/
 theorem id_comp (u : Interpretation S T) : ((identity T).comp u).Equivalent u := by
-  refine ⟨rfl, Translation.Equivalent.ofFormula ?_⟩
+  refine Equivalent.of_translation rfl (Translation.Equivalent.of_formula ?_)
   intro Γ p
   refine ((identity T).translation.comp_formula_equivalent u.translation p).trans ?_
   have compareIdentity := Translation.identityFormula_cast_equivalent (u.translation.formula p)
@@ -190,13 +195,13 @@ theorem id_comp (u : Interpretation S T) : ((identity T).comp u).Equivalent u :=
 /-- Both composites of three interpretations translate to the same formula up to mutual derivability. -/
 theorem comp_assoc (w : Interpretation U V) (v : Interpretation T U) (u : Interpretation S T) :
     (w.comp (v.comp u)).Equivalent ((w.comp v).comp u) := by
-  refine ⟨rfl, Translation.Equivalent.ofFormula ?_⟩
+  refine Equivalent.of_translation rfl (Translation.Equivalent.of_formula ?_)
   intro Γ p
   let nested := w.translation.formula (v.translation.formula (u.translation.formula p))
   let flatten : Formula V.signature (Γ.map (w.onSort ∘ v.onSort ∘ u.onSort)) :=
     nested.castContext ((List.map_map (l := Γ.map u.onSort) (g := w.onSort) (f := v.onSort)).trans
       (List.map_map (l := Γ) (g := w.onSort ∘ v.onSort) (f := u.onSort)))
-  have rightNested := w.translateEquivalent (v.translation.comp_formula_equivalent u.translation p)
+  have rightNested := w.translate_equivalent (v.translation.comp_formula_equivalent u.translation p)
   have leftSide : Derivation.Equivalent V ((w.comp (v.comp u)).translation.formula p) flatten :=
     (w.translation.comp_formula_equivalent (v.comp u).translation p).trans (by
       simpa only [flatten, nested, Translation.formula_castContext, Formula.castContext_trans] using

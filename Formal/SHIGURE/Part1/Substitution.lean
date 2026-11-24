@@ -39,6 +39,16 @@ def rename : {Γ Δ : List sig.SortType} → {s : sig.SortType} →
   | _, _, _, ρ, .app op args => .app op (fun i => rename ρ (args i))
   | _, _, _, ρ, .letBind init body => .letBind (rename ρ init) (rename ρ.lift body)
 
+/-- Renaming an application renames each argument in place. -/
+theorem rename_app (ρ : Renaming Γ Δ) (op : Operation sig)
+    (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t) :
+    (Term.app op args).rename ρ = .app op (fun i => (args i).rename ρ) := rfl
+
+/-- Renaming under a binding lifts the free-variable map in the body. -/
+theorem rename_letBind {a : sig.SortType} (ρ : Renaming Γ Δ)
+    (init : Term sig Γ a) (body : Term sig (a :: Γ) s) :
+    (Term.letBind init body).rename ρ = .letBind (init.rename ρ) (body.rename ρ.lift) := rfl
+
 /-- Renaming is interpreted by reading the corresponding coordinates of the assignment. -/
 theorem evaluates_rename (t : Term sig Γ s) (A : Structure sig) :
     ∀ {Δ : List sig.SortType} (ρ : Renaming Γ Δ) (e : Assignment A.carrier Δ) (y : A.carrier s),
@@ -73,6 +83,14 @@ def lift (θ : Substitution sig Γ Δ) : Substitution sig (s :: Γ) (s :: Δ) :=
     | .here => .var .here
     | .there previous => (θ previous).rename (fun j => .there j)⟩
 
+/-- A lifted substitution uses the new variable at the head. -/
+theorem lift_here (θ : Substitution sig Γ Δ) :
+    θ.lift (Var.here : Var (s :: Γ) s) = .var .here := rfl
+
+/-- A lifted substitution weakens the substituted term at each old position. -/
+theorem lift_there (θ : Substitution sig Γ Δ) {t : sig.SortType} (i : Var Γ t) :
+    θ.lift (Var.there (t := s) i) = (θ i).rename (fun j => .there j) := rfl
+
 /-- All substituted positions have the values of one target assignment. -/
 def EvaluatesAt (θ : Substitution sig Γ Δ) (A : Structure sig)
     (e : Assignment A.carrier Δ) (values : Assignment A.carrier Γ) : Prop :=
@@ -95,6 +113,10 @@ theorem lift_evaluatesAt {θ : Substitution sig Γ Δ} {A : Structure sig}
 /-- The conjunction requiring every substitution term to be defined. -/
 def defined (θ : Substitution sig Γ Δ) : Formula sig Δ :=
   Formula.conjoin Γ (fun i => (θ i).defined)
+
+/-- The substitution guard consists of the definedness formula at every position. -/
+theorem defined_eq_conjoin (θ : Substitution sig Γ Δ) :
+    θ.defined = Formula.conjoin Γ (fun i => (θ i).defined) := rfl
 
 /-- The intersection of the domains of all substituted terms. -/
 def domain (θ : Substitution sig Γ Δ) (A : Structure sig) : Set (Assignment A.carrier Δ) :=
@@ -187,6 +209,24 @@ def substitute (θ : Substitution sig Γ Δ) : Atomic sig Γ → Formula sig Δ
   | .domain p inputs => Formula.termDomain p (fun i => θ (inputs i))
   | .graph op inputs output => Formula.termGraph op (fun i => θ (inputs i)) (θ output)
 
+/-- Substitution in equality compares the substituted terms. -/
+theorem substitute_eq (θ : Substitution sig Γ Δ) {s : sig.SortType} (x y : Var Γ s) :
+    (Atomic.eq x y).substitute θ = Formula.termEq (θ x) (θ y) := rfl
+
+/-- Substitution in a relation uses the substituted argument terms. -/
+theorem substitute_rel (θ : Substitution sig Γ Δ) (r : sig.Rel) (inputs : Renaming (sig.relInputs r) Γ) :
+    (Atomic.rel r inputs).substitute θ = Formula.termRel r (fun i => θ (inputs i)) := rfl
+
+/-- Substitution in a domain atom uses the substituted argument terms. -/
+theorem substitute_domain (θ : Substitution sig Γ Δ) (p : sig.Partial)
+    (inputs : Renaming (sig.partialArity p).inputs Γ) :
+    (Atomic.domain p inputs).substitute θ = Formula.termDomain p (fun i => θ (inputs i)) := rfl
+
+/-- Substitution in a graph atom uses the substituted inputs and result. -/
+theorem substitute_graph (θ : Substitution sig Γ Δ) (op : Operation sig)
+    (inputs : Renaming op.arity.inputs Γ) (out : Var Γ op.arity.output) :
+    (Atomic.graph op inputs out).substitute θ = Formula.termGraph op (fun i => θ (inputs i)) (θ out) := rfl
+
 /-- The graph of an evaluated substitution term has one output value. -/
 private theorem evaluated_eq {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (θ : Substitution sig Γ Δ) (A : Structure sig) (e : Assignment A.carrier Δ)
@@ -247,6 +287,30 @@ def substitute : {Γ Δ : List sig.SortType} → Substitution sig Γ Δ → Form
   | _, _, θ, .conj p q => .conj (substitute θ p) (substitute θ q)
   | _, _, θ, .disj p q => .disj (substitute θ p) (substitute θ q)
   | _, _, θ, .ex p => .ex (substitute θ.lift p)
+
+/-- Substitution in an atomic formula applies the atom's substitution rule. -/
+theorem substitute_atom (θ : Substitution sig Γ Δ) (a : Atomic sig Γ) :
+    (Formula.atom a).substitute θ = a.substitute θ := rfl
+
+/-- Substitution keeps the truth formula. -/
+theorem substitute_truth (θ : Substitution sig Γ Δ) :
+    (Formula.truth : Formula sig Γ).substitute θ = .truth := rfl
+
+/-- Substitution keeps the falsehood formula. -/
+theorem substitute_falsehood (θ : Substitution sig Γ Δ) :
+    (Formula.falsehood : Formula sig Γ).substitute θ = .falsehood := rfl
+
+/-- Substitution acts on both conjuncts. -/
+theorem substitute_conj (θ : Substitution sig Γ Δ) (p q : Formula sig Γ) :
+    (p.conj q).substitute θ = (p.substitute θ).conj (q.substitute θ) := rfl
+
+/-- Substitution acts on both disjuncts. -/
+theorem substitute_disj (θ : Substitution sig Γ Δ) (p q : Formula sig Γ) :
+    (p.disj q).substitute θ = (p.substitute θ).disj (q.substitute θ) := rfl
+
+/-- Substitution under an existential binder lifts the substitution in the body. -/
+theorem substitute_ex (θ : Substitution sig Γ Δ) {s : sig.SortType} (p : Formula sig (s :: Γ)) :
+    p.ex.substitute θ = (p.substitute θ.lift).ex := rfl
 
 /-- Formula substitution preserves satisfaction at any evaluated assignment. -/
 theorem holds_substitute_of_evaluatesAt (p : Formula sig Γ) (A : Structure sig) :

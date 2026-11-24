@@ -17,41 +17,48 @@ variable {T : Theory.{u}} {Γ Δ : List T.signature.SortType}
   {p q r z : Formula T.signature Γ}
 
 /-- Pair two proof trees to obtain mutual derivability. -/
-theorem ofDerivations (forward : Derivation T p q) (backward : Derivation T q p) :
+theorem of_derivations (forward : Derivation T p q) (backward : Derivation T q p) :
     Equivalent T p q :=
   ⟨⟨forward⟩, ⟨backward⟩⟩
 
 /-- Mutual derivability is stable under renaming its variables. -/
 theorem rename (h : Equivalent T p q) (ρ : Renaming Γ Δ) :
     Equivalent T (p.rename ρ) (q.rename ρ) := by
-  obtain ⟨⟨pq⟩, ⟨qp⟩⟩ := h
-  exact ofDerivations (.rename ρ pq) (.rename ρ qp)
+  obtain ⟨pq⟩ := h.forward
+  obtain ⟨qp⟩ := h.backward
+  exact of_derivations (.rename ρ pq) (.rename ρ qp)
 
 /-- Conjunction preserves mutual derivability of both conjuncts. -/
 theorem conj (hp : Equivalent T p q) (hr : Equivalent T r z) :
     Equivalent T (p.conj r) (q.conj z) := by
-  obtain ⟨⟨pq⟩, ⟨qp⟩⟩ := hp
-  obtain ⟨⟨rz⟩, ⟨zr⟩⟩ := hr
-  exact ofDerivations (andMono pq rz) (andMono qp zr)
+  obtain ⟨pq⟩ := hp.forward
+  obtain ⟨qp⟩ := hp.backward
+  obtain ⟨rz⟩ := hr.forward
+  obtain ⟨zr⟩ := hr.backward
+  exact of_derivations (andMono pq rz) (andMono qp zr)
 
 /-- Disjunction preserves mutual derivability of both alternatives. -/
 theorem disj (hp : Equivalent T p q) (hr : Equivalent T r z) :
     Equivalent T (p.disj r) (q.disj z) := by
-  obtain ⟨⟨pq⟩, ⟨qp⟩⟩ := hp
-  obtain ⟨⟨rz⟩, ⟨zr⟩⟩ := hr
-  exact ofDerivations (orMono pq rz) (orMono qp zr)
+  obtain ⟨pq⟩ := hp.forward
+  obtain ⟨qp⟩ := hp.backward
+  obtain ⟨rz⟩ := hr.forward
+  obtain ⟨zr⟩ := hr.backward
+  exact of_derivations (orMono pq rz) (orMono qp zr)
 
 /-- Existential quantification preserves mutual derivability of the bodies. -/
 theorem ex {s : T.signature.SortType} {p q : Formula T.signature (s :: Γ)} (h : Equivalent T p q) :
     Equivalent T p.ex q.ex := by
-  obtain ⟨⟨pq⟩, ⟨qp⟩⟩ := h
-  exact ofDerivations pq.existsMono qp.existsMono
+  obtain ⟨pq⟩ := h.forward
+  obtain ⟨qp⟩ := h.backward
+  exact of_derivations pq.existsMono qp.existsMono
 
 /-- Binding a finite witness block preserves mutual derivability of the bodies. -/
 theorem existsMany {Λ : List T.signature.SortType} {p q : Formula T.signature (Λ ++ Γ)}
     (h : Equivalent T p q) : Equivalent T (Formula.existsMany Λ p) (Formula.existsMany Λ q) := by
-  obtain ⟨⟨pq⟩, ⟨qp⟩⟩ := h
-  exact ofDerivations pq.existsManyMono qp.existsManyMono
+  obtain ⟨pq⟩ := h.forward
+  obtain ⟨qp⟩ := h.backward
+  exact of_derivations pq.existsManyMono qp.existsManyMono
 
 /-- Finite conjunction compares its components at every typed position. -/
 theorem conjoin {Λ : List T.signature.SortType} {p q : ∀ {s}, Var Λ s → Formula T.signature Γ}
@@ -70,7 +77,7 @@ variable {S T : Theory.{u}} {f : S.signature.SortType → T.signature.SortType}
 /-- Appendix A.3: identity translation preserves formulas up to mutual derivability. -/
 theorem identityFormula_equivalent {Γ : List T.signature.SortType} (p : Formula T.signature Γ) :
     Derivation.Equivalent T ((identity T.signature).formula p) (p.rename (fun i => i.mapSorts id)) :=
-  .ofDerivations (identityFormula T p).1 (identityFormula T p).2
+  .of_derivations (identityFormula T p).1 (identityFormula T p).2
 
 /-- Equivalent translations give mutual derivations for every original atom. -/
 theorem Equivalent.atomic {l r : Translation S.signature T.signature f} (same : Equivalent l r)
@@ -78,9 +85,9 @@ theorem Equivalent.atomic {l r : Translation S.signature T.signature f} (same : 
     Derivation.Equivalent T (l.atomic a) (r.atomic a) := by
   cases a with
   | eq x y => exact .refl _
-  | rel rel args => exact (same.2.1 rel).rename (args.mapSorts f)
-  | domain op args => exact (same.2.2 op).rename (args.mapSorts f)
-  | graph op args out => exact (same.1 op).rename (Renaming.cons (out.mapSorts f) (args.mapSorts f))
+  | rel rel args => exact (same.relation rel).rename (args.mapSorts f)
+  | domain op args => exact (same.partialDomain op).rename (args.mapSorts f)
+  | graph op args out => exact (same.operation_graph op).rename (Renaming.cons (out.mapSorts f) (args.mapSorts f))
 
 /-- Appendix A.3: equivalent translations of primitives give equivalent translations of formulas. -/
 theorem Equivalent.formula {l r : Translation S.signature T.signature f} (same : Equivalent l r)
@@ -109,7 +116,7 @@ theorem graphAt_equivalent (tr : Translation S.signature T.signature f)
   induction t with
   | var i =>
     intro E ambient out
-    simp only [term, Term.graphAt, formula_atom, atomic, Renaming.mapSorts_apply]
+    simp only [term_var, Term.graphAt_var, formula_atom, atomic_eq, Renaming.mapSorts_apply]
     exact .refl _
   | @app Γ op args ih =>
     intro E ambient out
@@ -118,8 +125,9 @@ theorem graphAt_equivalent (tr : Translation S.signature T.signature f)
       Var.reindex f (fun i => tr.term (args i))
     have strict := Derivation.strictGraph_equivalent (T := T) (tr.operation op) images
       (ambient.mapSorts f) (out.mapSorts f)
+    rw [term_app]
     refine strict.trans ?_
-    simp only [Term.graphAt, formula_existsMany, formula_conj, Formula.rename_conj]
+    simp only [Term.graphAt_app, formula_existsMany, formula_conj, Formula.rename_conj]
     apply Derivation.Equivalent.existsMany
     apply Derivation.Equivalent.conj
     · rw [formula_conjoin, Formula.rename_conjoin]
@@ -148,17 +156,17 @@ theorem graphAt_equivalent (tr : Translation S.signature T.signature f)
       intro t i
       simp only [Renaming.mapSorts_apply]
       rfl
-    simp only [term, Term.graphAt, formula_ex, formula_conj]
+    simp only [term_letBind, Term.graphAt_letBind, formula_ex, formula_conj]
     apply Derivation.Equivalent.ex
     apply Derivation.Equivalent.conj
-    · simpa only [shifted, Var.mapSorts] using hi (fun i => .there (ambient i)) .here
-    · simpa only [Renaming.mapSorts_lift, Var.mapSorts] using hb (Renaming.lift ambient) (.there out)
+    · simpa only [shifted, Var.mapSorts_here] using hi (fun i => .there (ambient i)) .here
+    · simpa only [Renaming.mapSorts_lift, Var.mapSorts_there] using hb (Renaming.lift ambient) (.there out)
 
 /-- Appendix A.3: the canonical value graph commutes with translation up to mutual derivability. -/
 theorem graph_equivalent (tr : Translation S.signature T.signature f)
     {Γ : List S.signature.SortType} {s : S.signature.SortType} (t : Term S.signature Γ s) :
     Derivation.Equivalent T (tr.term t).graph (tr.formula t.graph) := by
-  simpa only [Term.graph, Renaming.mapSorts_there, Var.mapSorts] using
+  simpa only [Term.graph_eq_graphAt, Renaming.mapSorts_there, Var.mapSorts_here] using
     (tr.graphAt_equivalent t (fun i => .there i) .here)
 
 /-- Appendix A.3: definedness commutes with translation up to mutual derivability. -/
@@ -183,9 +191,10 @@ variable {S T : Theory.{u}}
 theorem Equivalent.formula {l r : Interpretation S T} (same : l.Equivalent r)
     {Γ : List S.signature.SortType} (p : Formula S.signature Γ) :
     Derivation.Equivalent T
-      ((congrArg (List.map · Γ) same.choose) ▸ l.translation.formula p)
+      ((l.translation.formula p).castContext (congrArg (List.map · Γ) same.onSort_eq))
       (r.translation.formula p) := by
-  obtain ⟨sorts, replaced⟩ := same
+  have sorts := same.onSort_eq
+  have replaced := same.translation_equivalent
   cases l
   cases r
   cases sorts
@@ -195,10 +204,10 @@ theorem Equivalent.formula {l r : Interpretation S T} (same : l.Equivalent r)
 theorem Equivalent.graph {l r : Interpretation S T} (same : l.Equivalent r)
     {Γ : List S.signature.SortType} {s : S.signature.SortType} (t : Term S.signature Γ s) :
     Derivation.Equivalent T
-      (cast (congrArg (fun f => Formula T.signature ((s :: Γ).map f)) same.choose)
-        (l.translation.term t).graph)
+      ((l.translation.term t).graph.castContext (congrArg (List.map · (s :: Γ)) same.onSort_eq))
       (r.translation.term t).graph := by
-  obtain ⟨sorts, replaced⟩ := same
+  have sorts := same.onSort_eq
+  have replaced := same.translation_equivalent
   cases l
   cases r
   cases sorts

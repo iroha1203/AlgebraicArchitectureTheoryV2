@@ -28,14 +28,15 @@ noncomputable def substituteAtomicAt (a : Atomic T.signature Γ) (θ : Substitut
       Derivation T (guards.conj (.atom (a.rename values))) ((a.substitute θ).rename ambient) := by
   cases a with
   | eq x y =>
+    rw [Atomic.substitute_eq]
     exact useTermEquality (θ x) (θ y) ambient (values x) (values y) guards (value x) (value y)
   | rel r inputs =>
-    simpa only [Atomic.substitute, Formula.termRel, Formula.rename_atom, Atomic.rename_rel,
+    simpa only [Atomic.substitute_rel, Formula.termRel_eq_bindArguments, Formula.rename_atom, Atomic.rename_rel,
       Renaming.append_inLeft, Renaming.comp_apply] using
       (useBoundValuesAlong (fun i => θ (inputs i)) ambient (Renaming.comp values inputs)
         guards (fun i => value (inputs i)) (.atom (.rel r (Var.inLeft Δ))))
   | domain p inputs =>
-    simpa only [Atomic.substitute, Formula.termDomain, Formula.rename_atom, Atomic.rename_domain,
+    simpa only [Atomic.substitute_domain, Formula.termDomain_eq_bindArguments, Formula.rename_atom, Atomic.rename_domain,
       Renaming.append_inLeft, Renaming.comp_apply] using
       (useBoundValuesAlong (fun i => θ (inputs i)) ambient (Renaming.comp values inputs)
         guards (fun i => value (inputs i)) (.atom (.domain p (Var.inLeft Δ))))
@@ -50,7 +51,7 @@ noncomputable def substituteAtomicAt (a : Atomic T.signature Γ) (θ : Substitut
       cases i with
       | here => exact value output
       | there i => exact value (inputs i)
-    simpa only [Atomic.substitute, Formula.termGraph, Formula.rename_atom, Atomic.rename_graph,
+    simpa only [Atomic.substitute_graph, Formula.termGraph_eq_bindArguments, Formula.rename_atom, Atomic.rename_graph,
       Renaming.append_inLeft, selected, Renaming.cons_here, Renaming.cons_there, Renaming.comp_apply] using
       (useBoundValuesAlong terms ambient selected guards evaluate
         (.atom (.graph op (fun i => (Var.there i).inLeft Δ) (Var.here.inLeft Δ))))
@@ -74,11 +75,11 @@ def liftSubstitutionValues {s : T.signature.SortType} (θ : Substitution T.signa
     Derivation T (guards.rename (fun j => .there j))
       ((θ.lift i).graphAt (Renaming.lift ambient) ((Renaming.lift values) i)) := by
   cases i with
-  | here => exact .cut (.truth _) (.eqRefl .here)
+  | here =>
+    rw [Substitution.lift_here, Term.graphAt_var]
+    exact .cut (.truth _) (.eqRefl .here)
   | there j =>
-    change Derivation T (guards.rename (fun i => .there i))
-      (((θ j).rename (fun i => .there i)).graphAt (Renaming.lift ambient) (.there (values j)))
-    rw [Term.graphAt_renameTerm]
+    rw [Substitution.lift_there, Term.graphAt_renameTerm]
     simpa only [Term.graphAt_rename] using (Derivation.rename (fun i => Var.there (t := s) i) (value j))
 
 /-- Under a complete tuple of value graphs, formulas and their partial substitutions imply each other. -/
@@ -89,14 +90,23 @@ noncomputable def substituteFormulaAt (p : Formula T.signature Γ) :
       Derivation T (guards.conj ((p.substitute θ).rename ambient)) (p.rename values) ×
         Derivation T (guards.conj (p.rename values)) ((p.substitute θ).rename ambient) := by
   induction p with
-  | atom a => exact substituteAtomicAt a
-  | truth => intros; exact ⟨.andRight _ _, .andRight _ _⟩
-  | falsehood => intros; exact ⟨.andRight _ _, .andRight _ _⟩
+  | atom a =>
+    intro Δ E θ ambient values guards value
+    simp only [Formula.substitute_atom, Formula.rename_atom]
+    exact substituteAtomicAt a θ ambient values guards value
+  | truth =>
+    intros
+    rw [Formula.substitute_truth]
+    exact ⟨.andRight _ _, .andRight _ _⟩
+  | falsehood =>
+    intros
+    rw [Formula.substitute_falsehood]
+    exact ⟨.andRight _ _, .andRight _ _⟩
   | conj p q hp hq =>
     intro Δ E θ ambient values guards value
     let pProof := hp θ ambient values guards value
     let qProof := hq θ ambient values guards value
-    simp only [Formula.substitute, Formula.rename_conj]
+    simp only [Formula.substitute_conj, Formula.rename_conj]
     exact ⟨.andIntro
       (.cut (.andIntro (.andLeft _ _) (.cut (.andRight _ _) (.andLeft _ _))) pProof.1)
       (.cut (.andIntro (.andLeft _ _) (.cut (.andRight _ _) (.andRight _ _))) qProof.1),
@@ -107,14 +117,14 @@ noncomputable def substituteFormulaAt (p : Formula T.signature Γ) :
     intro Δ E θ ambient values guards value
     let pProof := hp θ ambient values guards value
     let qProof := hq θ ambient values guards value
-    simp only [Formula.substitute, Formula.rename_disj]
+    simp only [Formula.substitute_disj, Formula.rename_disj]
     exact ⟨.orElim (.cut pProof.1 (.orLeft _ _)) (.cut qProof.1 (.orRight _ _)),
       .orElim (.cut pProof.2 (.orLeft _ _)) (.cut qProof.2 (.orRight _ _))⟩
   | @ex Γ s p ih =>
     intro Δ E θ ambient values guards value
     let body := ih θ.lift (Renaming.lift ambient) (Renaming.lift values)
       (guards.rename (fun i => Var.there (t := s) i)) (liftSubstitutionValues θ ambient values guards value)
-    simp only [Formula.substitute, Formula.rename_ex]
+    simp only [Formula.substitute_ex, Formula.rename_ex]
     exact ⟨existsUnder body.1, existsUnder body.2⟩
 
 end SHIGURE.Derivation
@@ -131,10 +141,14 @@ def valueGraphs (θ : Substitution sig Γ Δ) : Formula sig (Γ ++ Δ) :=
 def bindFormula (θ : Substitution sig Γ Δ) (p : Formula sig Γ) : Formula sig Δ :=
   Formula.existsMany Γ (θ.valueGraphs.conj (p.rename (Var.inLeft Δ)))
 
+/-- Binding a substitution introduces a value variable for every position before reading the formula. -/
+theorem bindFormula_eq_existsMany (θ : Substitution sig Γ Δ) (p : Formula sig Γ) :
+    θ.bindFormula p = Formula.existsMany Γ (θ.valueGraphs.conj (p.rename (Var.inLeft Δ))) := rfl
+
 /-- The block of value graphs uses the term graphs as its individual witness conditions. -/
 theorem valueGraphs_eq_witnessConjunction (θ : Substitution sig Γ Δ) :
     θ.valueGraphs = Formula.witnessConjunction Γ (fun i => (θ i).graph) := by
-  simp only [valueGraphs, Formula.witnessConjunction, Term.graphAt_eq_rename_graph]
+  simp only [valueGraphs, Formula.witnessConjunction_eq_conjoin, Term.graphAt_eq_rename_graph]
 
 end SHIGURE.Substitution
 
@@ -145,7 +159,7 @@ variable {T : Theory.{u}} {Γ Δ : List T.signature.SortType}
 /-- The definedness of every substituted term supplies a single complete tuple of witnesses. -/
 def substitutionWitnesses (θ : Substitution T.signature Γ Δ) :
     Derivation T θ.defined (Formula.existsMany Γ θ.valueGraphs) := by
-  rw [Substitution.valueGraphs_eq_witnessConjunction]
+  rw [Substitution.defined_eq_conjoin, Substitution.valueGraphs_eq_witnessConjunction]
   exact packExistences (fun i => (θ i).graph)
 
 /-- Appendix A.1: binding the substitution values is mutually derivable with guarded substitution. -/
@@ -159,12 +173,13 @@ noncomputable def bindFormulaDerivations (θ : Substitution T.signature Γ Δ) (
   let expanded := p.substitute θ
   let comparison := substituteFormulaAt p θ lift witnesses graphs (fun i => conjoinAt _ i)
   have definedAtValues : Derivation T (graphs.conj pAtValues) (θ.defined.rename lift) := by
-    simp only [Substitution.defined, Formula.rename_conjoin]
+    simp only [Substitution.defined_eq_conjoin, Formula.rename_conjoin]
     exact conjoinIntro _ (fun i => .cut (.cut (.andLeft _ _) (conjoinAt _ i))
       (graphAtDefined (θ i) lift (witnesses i)))
   have forward : Derivation T (θ.bindFormula p) (θ.defined.conj expanded) :=
     .andIntro (existsManyElim definedAtValues) (existsManyElim comparison.2)
   have pack : Derivation T (graphs.conj pAtValues) ((θ.bindFormula p).rename lift) := by
+    rw [Substitution.bindFormula_eq_existsMany]
     simpa only [witnesses, lift, Renaming.append_blocks, Formula.rename_id] using
       (existsManyIntroAlong (T := T) witnesses lift (graphs.conj pAtValues))
   have withWitnesses : Derivation T ((expanded.rename lift).conj graphs) ((θ.bindFormula p).rename lift) :=
@@ -180,5 +195,11 @@ noncomputable def substitutePartial (θ : Substitution T.signature Γ Δ) {p q :
   .cut (bindFormulaDerivations θ p).2
     (.cut (existsManyMono (andMono (.refl _) (.rename (Var.inLeft Δ) d)))
       (.cut (bindFormulaDerivations θ q).1 (.andRight _ _)))
+
+/-- Derived totality of every substituted term discharges the partial substitution guard. -/
+noncomputable def substituteTotal (θ : Substitution T.signature Γ Δ) {p q : Formula T.signature Γ}
+    (d : Derivation T p q) (total : ∀ {s} (i : Var Γ s), Derivation T .truth (θ i).defined) :
+    Derivation T (p.substitute θ) (q.substitute θ) :=
+  .cut (.andIntro (.cut (.truth _) (conjoinIntro _ total)) (.refl _)) (substitutePartial θ d)
 
 end SHIGURE.Derivation

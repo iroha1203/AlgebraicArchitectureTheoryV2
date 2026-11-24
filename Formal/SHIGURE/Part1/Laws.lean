@@ -113,6 +113,10 @@ variable {sig : Signature.{u}}
 def hasOutput (op : Operation sig) : Formula sig op.arity.inputs :=
   .ex (.atom (.graph op (fun index => .there index) .here))
 
+/-- Output existence quantifies the result of the graph over its input variables. -/
+theorem hasOutput_eq_ex_graph (op : Operation sig) :
+    hasOutput op = .ex (.atom (.graph op (fun index => .there index) .here)) := rfl
+
 /-- The formula for output existence reads the graph on the original tuple. -/
 theorem holds_hasOutput (op : Operation sig) (A : Structure sig)
     (xs : Assignment A.carrier op.arity.inputs) :
@@ -138,6 +142,31 @@ def toLaw : GraphAxiom sig → Law sig
   | .domainImpliesGraph p =>
     ⟨(sig.partialArity p).inputs, .atom (.domain p (fun index => index)),
       hasOutput (.partialOp p)⟩
+
+/-- Functionality compares two results at the same input variables. -/
+theorem toLaw_functional (op : Operation sig) : (GraphAxiom.functional op).toLaw =
+    ⟨op.arity.output :: op.arity.output :: op.arity.inputs,
+      .conj (.atom (.graph op (fun i => .there (.there i)) .here))
+        (.atom (.graph op (fun i => .there (.there i)) (.there .here))),
+      .atom (.eq .here (.there .here))⟩ := rfl
+
+/-- The totality sequent has an output at every input. -/
+theorem toLaw_totality (f : sig.Total) : (GraphAxiom.totality f).toLaw =
+    ⟨(sig.totalArity f).inputs, .truth, hasOutput (.total f)⟩ := rfl
+
+/-- The totality sequent for a quantity has an output at every input. -/
+theorem toLaw_quantityTotality (q : sig.Quantity) : (GraphAxiom.quantityTotality q).toLaw =
+    ⟨(sig.quantityArity q).inputs, .truth, hasOutput (.quantity q)⟩ := rfl
+
+/-- A partial graph edge implies that its input belongs to the same operation's domain. -/
+theorem toLaw_graphImpliesDomain (p : sig.Partial) : (GraphAxiom.graphImpliesDomain p).toLaw =
+    ⟨(sig.partialArity p).output :: (sig.partialArity p).inputs,
+      .atom (.graph (.partialOp p) (fun i => .there i) .here),
+      .atom (.domain p (fun i => .there i))⟩ := rfl
+
+/-- A partial operation has an output wherever its domain formula holds. -/
+theorem toLaw_domainImpliesGraph (p : sig.Partial) : (GraphAxiom.domainImpliesGraph p).toLaw =
+    ⟨(sig.partialArity p).inputs, .atom (.domain p (fun i => i)), hasOutput (.partialOp p)⟩ := rfl
 
 /-- Every structure satisfies the structural graph sequents of its signature. -/
 theorem holds_toLaw (ax : GraphAxiom sig) (A : Structure sig) : ax.toLaw.Holds A := by

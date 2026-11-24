@@ -81,6 +81,21 @@ def sequentialWitnesses : {Γ : List sig.SortType} → (Λ : List sig.SortType) 
         (fun i => (condition (.there i)).rename (Renaming.lift (fun j => .there j)))
         (body.rename (Renaming.moveHead Λ)))).ex
 
+/-- An empty sequential witness list leaves only the body. -/
+theorem sequentialWitnesses_nil
+    (condition : ∀ {s}, Var ([] : List sig.SortType) s → Formula sig (s :: Γ)) (body : Formula sig Γ) :
+    sequentialWitnesses [] condition body = body := rfl
+
+/-- A nonempty sequential witness list binds its head outside the rest. -/
+theorem sequentialWitnesses_cons {Λ : List sig.SortType} {s : sig.SortType}
+    (condition : ∀ {t}, Var (s :: Λ) t → Formula sig (t :: Γ))
+    (body : Formula sig (s :: (Λ ++ Γ))) :
+    sequentialWitnesses (s :: Λ) condition body =
+      ((condition .here).conj
+        (sequentialWitnesses Λ
+          (fun i => (condition (.there i)).rename (Renaming.lift (fun j => .there j)))
+          (body.rename (Renaming.moveHead Λ)))).ex := rfl
+
 /-- Moving the head separates its own condition from the conditions on the tail. -/
 theorem witnessConjunction_moveHead {Λ : List sig.SortType} {s : sig.SortType}
     (condition : ∀ {t}, Var (s :: Λ) t → Formula sig (t :: Γ)) :
@@ -104,7 +119,7 @@ theorem witnessConjunction_moveHead {Λ : List sig.SortType} {s : sig.SortType}
     cases j with
     | here => exact Renaming.moveHead_witness (s := s) (Γ := Γ) Λ i
     | there j => exact Renaming.moveHead_outer (s := s) Λ j
-  simp only [witnessConjunction, conjoin, rename_conj, rename_conjoin, rename_comp, headMap, otherMap]
+  simp only [witnessConjunction_eq_conjoin, conjoin_cons, rename_conj, rename_conjoin, rename_comp, headMap, otherMap]
 
 end SHIGURE.Formula
 
@@ -168,7 +183,7 @@ def sequentialElimWith : ∀ {Γ : List T.signature.SortType} (Λ : List T.signa
   induction Λ generalizing Γ with
   | nil =>
     intro condition body guards goal d
-    simp only [Var.shift, Formula.rename_id] at d
+    simp only [Var.shift_nil, Formula.rename_id] at d
     exact .cut (.andIntro (.andLeft _ _) (.andIntro (.truth _) (.andRight _ _))) d
   | cons s Λ ih =>
     intro condition body guards goal d
@@ -235,9 +250,9 @@ theorem liftMany_moveHead (ambient : Renaming Γ Δ) (Λ : List S) :
     cases i with
     | here =>
       simp only [comp_apply, liftMany_inLeft]
-      change liftMany (lift ambient) Λ ((Var.here : Var (s :: Γ) s).shift Λ) =
-        (Var.here : Var (s :: Δ) s).shift Λ
-      rw [liftMany_shift]
+      change liftMany (lift ambient) Λ (moveHead (Γ := Γ) (s := s) Λ .here) =
+        moveHead (Γ := Δ) (s := s) Λ .here
+      rw [moveHead_here (Γ := Γ), moveHead_here (Γ := Δ), liftMany_shift]
       rfl
     | there j =>
       simp only [comp_apply, liftMany_inLeft]
@@ -263,10 +278,10 @@ theorem letArguments_graphAt (Λ : List sig.SortType) :
           (fun i => (args i).graphAt (fun j => .there (ambient j)) .here)
           (body.graphAt (Renaming.liftMany ambient Λ) (y.shift Λ)) := by
   induction Λ with
-  | nil => intros; rfl
+  | nil => intros; rw [letArguments_nil, Formula.sequentialWitnesses_nil]; rfl
   | cons t Λ ih =>
     intro Γ E s args body ambient y
-    simp only [letArguments, graphAt, ih, Formula.sequentialWitnesses, graphAt_rename,
+    simp only [letArguments_cons, graphAt_letBind, ih, Formula.sequentialWitnesses_cons, graphAt_rename,
       graphAt_renameTerm, Renaming.liftMany_moveHead, Renaming.moveHead_outer]
     rfl
 
@@ -284,7 +299,7 @@ theorem strictGraph_equivalent (replacement : Term T.signature Λ s)
       (Formula.existsMany Λ
         ((Formula.conjoin Λ fun i => (args i).graphAt (Renaming.comp (Var.shift Λ) ambient) (i.inLeft E)).conj
           (replacement.graphAt (Var.inLeft E) (y.shift Λ)))) := by
-  rw [Term.applyStrict, Term.letArguments_graphAt]
+  rw [Term.applyStrict_eq_letArguments, Term.letArguments_graphAt]
   have compare := sequentialWitnesses_equivalent (T := T) Λ
     (fun i => (args i).graphAt (fun j => .there (ambient j)) .here)
     ((replacement.rename (Var.inLeft Γ)).graphAt (Renaming.liftMany ambient Λ) (y.shift Λ))
@@ -293,6 +308,6 @@ theorem strictGraph_equivalent (replacement : Term T.signature Λ s)
         (Renaming.liftMany ambient Λ) (Var.inLeft Γ) = (fun {_} i => i.inLeft E) := by
     funext t i
     exact Renaming.liftMany_inLeft ambient i
-  simpa only [Formula.witnessConjunction, Term.graphAt_rename, Term.graphAt_renameTerm, sameBody] using compare
+  simpa only [Formula.witnessConjunction_eq_conjoin, Term.graphAt_rename, Term.graphAt_renameTerm, sameBody] using compare
 
 end SHIGURE.Derivation

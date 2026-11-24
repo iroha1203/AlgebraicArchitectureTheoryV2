@@ -94,7 +94,7 @@ theorem atomic_rename (tr : Translation S T f) {Γ Δ : List S.SortType}
     tr.atomic (a.rename ρ) = (tr.atomic a).rename (Renaming.mapSorts f ρ) := by
   cases a with
   | eq x y =>
-    simp only [Atomic.rename_eq, atomic, Formula.rename_atom, Renaming.mapSorts_apply]
+    simp only [Atomic.rename_eq, atomic_eq, Formula.rename_atom, Renaming.mapSorts_apply]
   | rel r inputs =>
     change (tr.relation r).rename (Renaming.mapSorts f (Renaming.comp ρ inputs)) =
       ((tr.relation r).rename (Renaming.mapSorts f inputs)).rename (Renaming.mapSorts f ρ)
@@ -119,9 +119,9 @@ theorem formula_rename (tr : Translation S T f) {Γ Δ : List S.SortType}
   | truth => rfl
   | falsehood => rfl
   | conj p q hp hq =>
-    simp only [Formula.rename_conj, formula, hp ρ, hq ρ]
+    simp only [Formula.rename_conj, formula_conj, hp ρ, hq ρ]
   | disj p q hp hq =>
-    simp only [Formula.rename_disj, formula, hp ρ, hq ρ]
+    simp only [Formula.rename_disj, formula_disj, hp ρ, hq ρ]
   | ex p ih =>
     simp only [Formula.rename_ex, formula_ex, ih, Renaming.mapSorts_lift]
 
@@ -164,9 +164,8 @@ theorem atomic_graphAt (tr : Translation S T f) {Γ : List S.SortType}
 /-- A translated output-existence formula asks for the definedness of the replacement term. -/
 theorem formula_hasOutput (tr : Translation S T f) (op : Operation S) :
     tr.formula (GraphAxiom.hasOutput op) = (tr.operation op).defined := by
-  unfold GraphAxiom.hasOutput
-  rw [formula_ex, formula_atom, atomic_graphAt, Renaming.mapSorts_there]
-  rfl
+  rw [GraphAxiom.hasOutput_eq_ex_graph, formula_ex, formula_atom, atomic_graphAt, Renaming.mapSorts_there,
+    Var.mapSorts_here, Term.defined_eq_ex_graph, Term.graph_eq_graphAt]
 
 end SHIGURE.Translation
 
@@ -179,18 +178,18 @@ noncomputable def translateGraphAxiom (u : Interpretation S T) (ax : GraphAxiom 
     Derivation T (u.translation.formula ax.toLaw.input) (u.translation.formula ax.toLaw.conclusion) := by
   cases ax with
   | functional op =>
-    simp only [GraphAxiom.toLaw, Translation.formula_conj, Translation.formula_atom, Translation.atomic_graphAt]
+    simp only [GraphAxiom.toLaw_functional, Translation.formula_conj, Translation.formula_atom, Translation.atomic_graphAt]
     exact Derivation.termGraphFunctional _ _ _ _
   | totality f =>
-    simpa only [GraphAxiom.toLaw, Translation.formula_truth, Translation.formula_hasOutput] using u.total f
+    simpa only [GraphAxiom.toLaw_totality, Translation.formula_truth, Translation.formula_hasOutput] using u.total f
   | quantityTotality q =>
-    simpa only [GraphAxiom.toLaw, Translation.formula_truth, Translation.formula_hasOutput] using u.quantity q
+    simpa only [GraphAxiom.toLaw_quantityTotality, Translation.formula_truth, Translation.formula_hasOutput] using u.quantity q
   | graphImpliesDomain p =>
-    simp only [GraphAxiom.toLaw, Translation.formula_atom, Translation.atomic_graphAt,
+    simp only [GraphAxiom.toLaw_graphImpliesDomain, Translation.formula_atom, Translation.atomic_graphAt,
       Translation.atomic_domain, Renaming.mapSorts_there]
     exact .cut (Derivation.graphAtDefined _ _ .here) (.rename (fun i => .there i) (u.definedPartial p))
   | domainImpliesGraph p =>
-    simpa only [GraphAxiom.toLaw, Translation.formula_atom, Translation.atomic_domain,
+    simpa only [GraphAxiom.toLaw_domainImpliesGraph, Translation.formula_atom, Translation.atomic_domain,
       Renaming.mapSorts_id, Formula.rename_id, Translation.formula_hasOutput] using u.partialDefined p
 
 /-- Proposition A.2: an interpretation sends every source derivation to a target derivation. -/
@@ -252,6 +251,14 @@ def mapAppend (f : S → T) : (Λ : List S) → Renaming ((Λ ++ Γ).map f) (Λ.
   | [] => fun i => i
   | _ :: Λ => lift (mapAppend f Λ)
 
+/-- Splitting off an empty block changes no variable positions. -/
+theorem mapAppend_nil (f : S → T) : @mapAppend S T Γ f [] = (fun {_} i => i) := rfl
+
+/-- Splitting a nonempty block preserves its head and splits the tail. -/
+theorem mapAppend_cons (f : S → T) (s : S) (Λ : List S) :
+    @mapAppend S T Γ f (s :: Λ) =
+      @lift T ((Λ ++ Γ).map f) (Λ.map f ++ Γ.map f) (f s) (mapAppend f Λ) := rfl
+
 /-- Retyping and splitting a concatenation leaves a leading position at its original index. -/
 @[simp] theorem mapAppend_inLeft (f : S → T) {Λ : List S} {s : S} (i : Var Λ s) :
     mapAppend f Λ ((i.inLeft Γ).mapSorts f) = (i.mapSorts f).inLeft (Γ.map f) := by
@@ -295,8 +302,9 @@ theorem formula_conjoin (tr : Translation S T f) {Γ : List S.SortType} (Λ : Li
     tr.formula (Formula.conjoin Λ p) =
       Formula.conjoin (Λ.map f) (Var.reindex f (C := fun _ => Formula T (Γ.map f)) (fun i => tr.formula (p i))) := by
   induction Λ with
-  | nil => rfl
-  | cons s Λ ih => simp only [Formula.conjoin, formula_conj, List.map_cons, Var.reindex, ih]
+  | nil => simp only [Formula.conjoin_nil, formula_truth, List.map_nil]
+  | cons s Λ ih =>
+    simp only [Formula.conjoin_cons, formula_conj, List.map_cons, Var.reindex_here, Var.reindex_there, ih]
 
 /-- Translating a block of existentials only retypes the witness and ambient positions. -/
 theorem formula_existsMany (tr : Translation S T f) {Γ : List S.SortType} (Λ : List S.SortType)
@@ -304,9 +312,8 @@ theorem formula_existsMany (tr : Translation S T f) {Γ : List S.SortType} (Λ :
     tr.formula (Formula.existsMany Λ p) =
       Formula.existsMany (Λ.map f) ((tr.formula p).rename (Renaming.mapAppend f Λ)) := by
   induction Λ with
-  | nil => simp only [Formula.existsMany, List.map_nil, Renaming.mapAppend, Formula.rename_id]
+  | nil => simp only [Formula.existsMany_nil, List.map_nil, Renaming.mapAppend_nil, Formula.rename_id]
   | cons s Λ ih =>
-    rw [Formula.existsMany, ih, formula_ex, Formula.rename_ex]
-    rfl
+    simp only [Formula.existsMany_cons, ih, formula_ex, Formula.rename_ex, List.map_cons, Renaming.mapAppend_cons]
 
 end SHIGURE.Translation

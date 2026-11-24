@@ -53,6 +53,14 @@ def shift : (Δ : List S) → Var Γ s → Var (Δ ++ Γ) s
   | [], var => var
   | _ :: Δ, var => .there (shift Δ var)
 
+/-- Shifting by an empty block leaves the original variable map. -/
+theorem shift_nil : (fun {t : S} (i : Var Γ t) => i.shift []) =
+    (fun {t : S} (i : Var Γ t) => i) := rfl
+
+/-- Shifting past a nonempty block moves past its head and its tail. -/
+theorem shift_cons (Λ : List S) {t : S} (i : Var Γ s) :
+    i.shift (t :: Λ) = Var.there (i.shift Λ) := rfl
+
 /-- Position number in the finite context. -/
 def position : {Γ : List S} → {s : S} → Var Γ s → Nat
   | _, _, .here => 0

@@ -33,12 +33,29 @@ def mapSorts (f : S → T) : {Γ : List S} → {s : S} → Var Γ s → Var (Γ.
   | _, _, .here => .here
   | _, _, .there i => .there (mapSorts f i)
 
+/-- Retyping the newest variable keeps its position. -/
+theorem mapSorts_here (f : S → T) : (Var.here : Var (s :: Γ) s).mapSorts f = .here := rfl
+
+/-- Retyping a variable below the head retains its depth. -/
+theorem mapSorts_there (f : S → T) (i : Var Γ s) {t : S} :
+    (Var.there (t := t) i).mapSorts f = .there (i.mapSorts f) := rfl
+
 /-- Transport a family indexed by the variable positions to the retyped context. -/
 def reindex (f : S → T) {C : T → Type v} :
     {Γ : List S} → (∀ {s}, Var Γ s → C (f s)) → ∀ {t}, Var (Γ.map f) t → C t
   | [], _, _, i => nomatch i
   | _ :: _, values, _, .here => values .here
   | _ :: _, values, _, .there i => reindex f (fun j => values (.there j)) i
+
+/-- A reindexed family reads its original head value at the new head. -/
+theorem reindex_here (f : S → T) {C : T → Type v}
+    (values : ∀ {t}, Var (s :: Γ) t → C (f t)) :
+    reindex f values .here = values .here := rfl
+
+/-- A reindexed family reads its original tail at each older position. -/
+theorem reindex_there (f : S → T) {C : T → Type v}
+    (values : ∀ {t}, Var (s :: Γ) t → C (f t)) {t : T} (i : Var (Γ.map f) t) :
+    reindex f values (.there i) = reindex f (fun j => values (.there j)) i := rfl
 
 /-- Retyping a family retains each position's value. -/
 @[simp] theorem reindex_mapSorts (f : S → T) {C : T → Type v}
@@ -117,10 +134,26 @@ def letArguments : {Γ Λ : List sig.SortType} →
     .letBind (args .here) (letArguments (fun i => (args (.there i)).rename (fun j => .there j))
       (body.rename (Renaming.moveHead (Γ := Γ) Λ)))
 
+/-- Binding an empty argument block returns the body. -/
+theorem letArguments_nil (args : ∀ {t}, Var ([] : List sig.SortType) t → Term sig Γ t)
+    (body : Term sig Γ s) : letArguments args body = body := rfl
+
+/-- A strict argument block binds the head before evaluating every remaining argument. -/
+theorem letArguments_cons {Λ : List sig.SortType} {a : sig.SortType}
+    (args : ∀ {t}, Var (a :: Λ) t → Term sig Γ t) (body : Term sig (a :: (Λ ++ Γ)) s) :
+    letArguments args body = .letBind (args .here)
+      (letArguments (fun i => (args (.there i)).rename (fun j => .there j))
+        (body.rename (Renaming.moveHead (Γ := Γ) Λ))) := rfl
+
 /-- Supply a term in the argument-variable context to a tuple of strict arguments. -/
 def applyStrict {Λ : List sig.SortType} (body : Term sig Λ s)
     (args : ∀ {t}, Var Λ t → Term sig Γ t) : Term sig Γ s :=
   letArguments args (body.rename (Var.inLeft Γ))
+
+/-- Strict application binds the arguments and reads the replacement at their new positions. -/
+theorem applyStrict_eq_letArguments {Λ : List sig.SortType} (body : Term sig Λ s)
+    (args : ∀ {t}, Var Λ t → Term sig Γ t) :
+    body.applyStrict args = letArguments args (body.rename (Var.inLeft Γ)) := rfl
 
 /-- A strict block evaluates every argument and then the body at the extended assignment. -/
 theorem evaluates_letArguments {Λ : List sig.SortType} (A : Structure sig) :
@@ -195,6 +228,20 @@ def term (tr : Translation S T f) :
   | _, _, .app op args => (tr.operation op).applyStrict (Var.reindex f (fun i => tr.term (args i)))
   | _, _, .letBind init body => .letBind (tr.term init) (tr.term body)
 
+/-- The translation of a term variable is the variable at the retyped position. -/
+theorem term_var (tr : Translation S T f) {Γ : List S.SortType} {s : S.SortType} (i : Var Γ s) :
+    tr.term (.var i) = .var (i.mapSorts f) := rfl
+
+/-- An operation replacement is applied strictly to all translated arguments. -/
+theorem term_app (tr : Translation S T f) {Γ : List S.SortType} (op : Operation S)
+    (args : ∀ {s}, Var op.arity.inputs s → Term S Γ s) :
+    tr.term (.app op args) = (tr.operation op).applyStrict (Var.reindex f (fun i => tr.term (args i))) := rfl
+
+/-- Translation retains a strict binding and translates both of its terms. -/
+theorem term_letBind (tr : Translation S T f) {Γ : List S.SortType} {s a : S.SortType}
+    (init : Term S Γ a) (body : Term S (a :: Γ) s) :
+    tr.term (.letBind init body) = .letBind (tr.term init) (tr.term body) := rfl
+
 /-- Translate a primitive atom by its designated formula or value graph. -/
 def atomic (tr : Translation S T f) {Γ : List S.SortType} :
     Atomic S Γ → Formula T (Γ.map f)
@@ -203,6 +250,10 @@ def atomic (tr : Translation S T f) {Γ : List S.SortType} :
   | .domain p inputs => (tr.partialDomain p).rename (inputs.mapSorts f)
   | .graph op inputs y =>
     (tr.operation op).graph.rename (Renaming.cons (y.mapSorts f) (inputs.mapSorts f))
+
+/-- Equality is translated by retyping its two variable positions. -/
+theorem atomic_eq (tr : Translation S T f) {Γ : List S.SortType} {s : S.SortType} (x y : Var Γ s) :
+    tr.atomic (.eq x y) = .atom (.eq (x.mapSorts f) (y.mapSorts f)) := rfl
 
 /-- Translation of a relation atom applies the translated variable arguments. -/
 @[simp] theorem atomic_rel (tr : Translation S T f) {Γ : List S.SortType}
@@ -312,6 +363,14 @@ def Equivalent (T : Theory.{u}) {Γ : List T.signature.SortType}
     (p q : Formula T.signature Γ) : Prop :=
   Nonempty (Derivation T p q) ∧ Nonempty (Derivation T q p)
 
+/-- Mutual derivability supplies a proof tree in the forward direction. -/
+theorem Equivalent.forward {p q : Formula T.signature Γ} (same : Equivalent T p q) :
+    Nonempty (Derivation T p q) := same.1
+
+/-- Mutual derivability supplies a proof tree in the reverse direction. -/
+theorem Equivalent.backward {p q : Formula T.signature Γ} (same : Equivalent T p q) :
+    Nonempty (Derivation T q p) := same.2
+
 /-- A formula is mutually derivable with itself. -/
 theorem Equivalent.refl (p : Formula T.signature Γ) : Equivalent T p p :=
   ⟨⟨.refl p⟩, ⟨.refl p⟩⟩
@@ -369,6 +428,28 @@ def Equivalent (left right : Translation S.signature T.signature f) : Prop :=
   (∀ op, Derivation.Equivalent T (left.operation op).graph (right.operation op).graph) ∧
   (∀ r, Derivation.Equivalent T (left.relation r) (right.relation r)) ∧
   ∀ p, Derivation.Equivalent T (left.partialDomain p) (right.partialDomain p)
+
+/-- Equivalent translations give equivalent value graphs for each replacement term. -/
+theorem Equivalent.operation_graph {l r : Translation S.signature T.signature f}
+    (same : Equivalent l r) (op : Operation S.signature) :
+    Derivation.Equivalent T (l.operation op).graph (r.operation op).graph := same.1 op
+
+/-- Equivalent translations give equivalent formulas for each relation. -/
+theorem Equivalent.relation {l r : Translation S.signature T.signature f}
+    (same : Equivalent l r) (rel : S.signature.Rel) :
+    Derivation.Equivalent T (l.relation rel) (r.relation rel) := same.2.1 rel
+
+/-- Equivalent translations give equivalent formulas for each partial domain. -/
+theorem Equivalent.partialDomain {l r : Translation S.signature T.signature f}
+    (same : Equivalent l r) (p : S.signature.Partial) :
+    Derivation.Equivalent T (l.partialDomain p) (r.partialDomain p) := same.2.2 p
+
+/-- The three families of primitive comparisons determine equivalence of translations. -/
+theorem Equivalent.of_primitives {l r : Translation S.signature T.signature f}
+    (ops : ∀ op, Derivation.Equivalent T (l.operation op).graph (r.operation op).graph)
+    (rel : ∀ a, Derivation.Equivalent T (l.relation a) (r.relation a))
+    (dom : ∀ p, Derivation.Equivalent T (l.partialDomain p) (r.partialDomain p)) : Equivalent l r :=
+  ⟨ops, rel, dom⟩
 
 /-- Reflection of all three families of formula comparisons. -/
 theorem Equivalent.refl (tr : Translation S.signature T.signature f) : Equivalent tr tr :=
@@ -431,6 +512,20 @@ variable {S T U : Theory.{u}}
 def Equivalent (u v : Interpretation S T) : Prop :=
   ∃ h : u.onSort = v.onSort, Translation.Equivalent (S := S) (T := T) (h ▸ u.translation) v.translation
 
+/-- Equivalent interpretations have the same sort map. -/
+theorem Equivalent.onSort_eq {l r : Interpretation S T} (same : Equivalent l r) : l.onSort = r.onSort :=
+  same.choose
+
+/-- Equivalent interpretations compare replacements on their common sort map. -/
+theorem Equivalent.translation_equivalent {l r : Interpretation S T} (same : Equivalent l r) :
+    Translation.Equivalent (S := S) (T := T) (same.onSort_eq ▸ l.translation) r.translation :=
+  same.choose_spec
+
+/-- Equal sort maps and equivalent replacements give equivalent interpretations. -/
+theorem Equivalent.of_translation {l r : Interpretation S T} (sorts : l.onSort = r.onSort)
+    (replacements : Translation.Equivalent (S := S) (T := T) (sorts ▸ l.translation) r.translation) :
+    Equivalent l r := ⟨sorts, replacements⟩
+
 /-- Equivalent interpretations retype the same translated state tuple. -/
 def Equivalent.retype {left right : Interpretation S T} (same : left.Equivalent right)
     {X : T.signature.SortType → Type u} {Γ : List S.signature.SortType}
@@ -479,6 +574,10 @@ theorem Equivalent.trans {u v w : Interpretation S T} (h₁ : Equivalent u v)
 def compCandidate (v : Interpretation T U) (u : Interpretation S T) :
     Translation S.signature U.signature (v.onSort ∘ u.onSort) :=
   v.translation.comp u.translation
+
+/-- The candidate uses the composition of the two underlying translations. -/
+theorem compCandidate_eq_translation_comp (v : Interpretation T U) (u : Interpretation S T) :
+    v.compCandidate u = v.translation.comp u.translation := rfl
 
 end Interpretation
 

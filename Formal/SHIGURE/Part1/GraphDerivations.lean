@@ -27,11 +27,11 @@ def existsManyElimWith : {Λ : List T.signature.SortType} →
     Derivation T ((c.rename (Var.shift Λ)).conj body) (q.rename (Var.shift Λ)) →
     Derivation T (c.conj (Formula.existsMany Λ body)) q
   | [], _, _, _, d => by
-    simpa only [Var.shift, Formula.rename_id, Formula.existsMany] using d
+    simpa only [Var.shift_nil, Formula.rename_id, Formula.existsMany_nil] using d
   | _ :: Λ, _, _, body, d => by
     apply existsManyElimWith (Λ := Λ) (body := body.ex)
     apply Derivation.existsElim
-    simpa only [Formula.rename_comp, Renaming.comp, Var.shift] using d
+    simpa only [Formula.rename_comp, Renaming.comp_apply, Var.shift_cons] using d
 
 end SHIGURE.Derivation
 
@@ -70,7 +70,7 @@ theorem rename_existsMany (ρ : Renaming Γ Δ) : (Λ : List sig.SortType) →
     (existsMany Λ p).rename ρ = existsMany Λ (p.rename (Renaming.liftMany ρ Λ))
   | [], p => rfl
   | _ :: Λ, p => by
-    rw [existsMany, rename_existsMany ρ Λ p.ex]
+    rw [existsMany_cons, rename_existsMany ρ Λ p.ex]
     rfl
 
 end SHIGURE.Formula
@@ -93,18 +93,18 @@ theorem graphAt_rename (t : Term sig Γ s) :
         (fun {_} i => (σ (ρ i)).shift op.arity.inputs) := by
       funext t i
       exact Renaming.liftMany_shift σ op.arity.inputs (ρ i)
-    simp only [graphAt, Formula.rename_existsMany, Formula.rename_conj, Formula.rename_conjoin,
+    simp only [graphAt_app, Formula.rename_existsMany, Formula.rename_conj, Formula.rename_conjoin,
       ih, Formula.rename_atom, Atomic.rename_graph, Renaming.liftMany_inLeft,
       Renaming.liftMany_shift, shiftComp, Renaming.comp_apply]
   | letBind init body hi hb =>
     intro Δ E ρ y σ
-    simp only [graphAt, Formula.rename_ex, Formula.rename_conj, hi, hb, ← Renaming.lift_comp]
+    simp only [graphAt_letBind, Formula.rename_ex, Formula.rename_conj, hi, hb, ← Renaming.lift_comp]
     rfl
 
 /-- The canonical value graph can be instantiated with any variables of the required types. -/
 theorem graphAt_eq_rename_graph (t : Term sig Γ s) {Δ : List sig.SortType}
     (ρ : Renaming Γ Δ) (y : Var Δ s) : t.graphAt ρ y = t.graph.rename (Renaming.cons y ρ) := by
-  rw [graph, graphAt_rename]
+  rw [graph_eq_graphAt, graphAt_rename]
   rfl
 
 end SHIGURE.Term
@@ -125,7 +125,7 @@ def existsManyBothElim
       (r.rename (Var.shift Λ)) := by
     rw [Formula.rename_existsMany]
     apply existsManyElimWith
-    simpa only [Formula.rename_comp, Renaming.comp] using d
+    simpa only [Formula.rename_comp, Renaming.comp_apply] using d
   have reverseInside : Derivation T (((Formula.existsMany Θ q).rename (Var.shift Λ)).conj p)
       (r.rename (Var.shift Λ)) :=
     .cut (.andIntro (.andRight _ _) (.andLeft _ _)) inside
@@ -160,7 +160,7 @@ variable {T : Theory.{u}} {Γ : List T.signature.SortType}
 def graphAtDefined {Δ : List T.signature.SortType} {s : T.signature.SortType}
     (t : Term T.signature Γ s) (ρ : Renaming Γ Δ) (y : Var Δ s) :
     Derivation T (t.graphAt ρ y) (t.defined.rename ρ) := by
-  rw [t.graphAt_eq_rename_graph, Term.defined, Formula.rename_ex]
+  rw [t.graphAt_eq_rename_graph, Term.defined_eq_ex_graph, Formula.rename_ex]
   simpa only [Formula.rename_comp, Renaming.openHead_comp_lift] using
     (Derivation.existsIntro (T := T) (t.graph.rename (Renaming.lift ρ)) y)
 
@@ -189,6 +189,7 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
   induction t with
   | var x =>
     intro Δ ρ y z
+    simp only [Term.graphAt_var]
     exact .eqSubst (.atom (.eq .here (.there z))) (ρ x) y
   | @app Γ op terms ih =>
     intro Δ ρ y z
@@ -231,6 +232,7 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
       .cut (.andIntro equate (.cut (.andRight _ _) (.andRight _ _))) (primitiveGraphCongr op right left (old z))
     have conclude : Derivation T premises (.atom (.eq (old y) (old z))) :=
       .cut (.andIntro (.cut (.andLeft _ _) (.andRight _ _)) onLeft) (primitiveFunctional op left (old y) (old z))
+    simp only [Term.graphAt_app]
     change Derivation T ((Formula.existsMany Λ (body y)).conj (Formula.existsMany Λ (body z))) _
     apply existsManyBothElim
     rw [reduceLeft, reduceRight]
@@ -264,14 +266,15 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
     let changingWitness := body.graphAt (Renaming.cons .here (fun i => .there (args i))) (.there (old z))
     have rewritten : Derivation T ((Formula.atom (.eq right left)).conj rightBody)
         (body.graphAt (Renaming.cons left args) (old z)) := by
-      simpa only [changingWitness, Term.graphAt_rename, Renaming.comp_cons, Renaming.openHead,
-        rightBody, Renaming.comp] using
+      simpa only [changingWitness, Term.graphAt_rename, Renaming.comp_cons,
+        Renaming.openHead_here, Renaming.openHead_there, rightBody, Renaming.comp_apply] using
         (Derivation.eqSubst (T := T) changingWitness right left)
     have bodyOnLeft := Derivation.cut
       (Derivation.andIntro equate (Derivation.cut (.andRight _ _) (.andRight _ _))) rewritten
     have conclude : Derivation T premises (.atom (.eq (old y) (old z))) :=
       .cut (.andIntro (.cut (.andLeft _ _) (.andRight _ _)) bodyOnLeft)
         (ihBody (Renaming.cons left args) (old y) (old z))
+    simp only [Term.graphAt_letBind]
     change Derivation T ((Formula.existsMany [b] (graph y)).conj (Formula.existsMany [b] (graph z))) _
     apply existsManyBothElim
     rw [reduceLeft, reduceRight]

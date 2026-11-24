@@ -12,6 +12,8 @@ graphs are already derived in the ambient context.
 The premises supply proof trees for each argument graph. Graph functionality
 compares those values with the existential witnesses, so the same arguments
 can be supplied to any body in the bound context.
+A semantic comparison would only give equal values in models. The
+local proof in the witness context can be cut into a later derivation.
 -/
 
 universe u
@@ -77,11 +79,11 @@ theorem graphAt_renameTerm (t : Term sig Γ s) :
   | var i => intros; rfl
   | app op terms ih =>
     intro Δ E first second out
-    simp only [Term.rename, graphAt, ih]
+    simp only [rename_app, graphAt_app, ih]
     rfl
   | letBind init body hi hb =>
     intro Δ E first second out
-    simp only [Term.rename, graphAt, hi, hb, ← Renaming.lift_comp]
+    simp only [rename_letBind, graphAt_letBind, hi, hb, ← Renaming.lift_comp]
     rfl
 
 end SHIGURE.Term
@@ -162,7 +164,7 @@ noncomputable def useBoundValuesAlong {Λ : List T.signature.SortType}
       @Renaming.comp T.signature.SortType Δ Γ (Λ ++ Γ) (Var.shift Λ) ambient := by
     funext s i
     exact Renaming.liftMany_shift ambient Λ i
-  simp only [Formula.bindArguments, Formula.rename_existsMany, Formula.rename_conj,
+  simp only [Formula.bindArguments_eq_existsMany, Formula.rename_existsMany, Formula.rename_conj,
     Formula.rename_conjoin, Term.graphAt_rename, Renaming.liftMany_inLeft, liftShift]
   simpa only [Formula.rename_comp, Renaming.fill_liftMany] using
     (useBoundValues terms ambient values assumption value (body.rename (Renaming.liftMany ambient Λ)))
@@ -196,7 +198,7 @@ noncomputable def useTermEquality {s : T.signature.SortType} (t t' : Term T.sign
         @Renaming.cons T.signature.SortType Δ (s :: Γ) s .here read := by
       funext sort i
       cases i <;> rfl
-    rw [Formula.termEq, Formula.rename_ex, Formula.rename_conj, lifted, ← t.graphAt_eq_rename_graph,
+    rw [Formula.termEq_eq_ex, Formula.rename_ex, Formula.rename_conj, lifted, ← t.graphAt_eq_rename_graph,
       ← t'.graphAt_eq_rename_graph]
   rw [expanded]
   let inside := (assumption.rename weaken).conj body
@@ -233,13 +235,19 @@ def witnessConjunction (Λ : List sig.SortType)
     (condition : ∀ {s}, Var Λ s → Formula sig (s :: Γ)) : Formula sig (Λ ++ Γ) :=
   conjoin Λ fun i => (condition i).rename (Renaming.cons (i.inLeft Γ) (Var.shift Λ))
 
+/-- Each condition of the witness conjunction uses the corresponding leading variable. -/
+theorem witnessConjunction_eq_conjoin (Λ : List sig.SortType)
+    (condition : ∀ {s}, Var Λ s → Formula sig (s :: Γ)) :
+    witnessConjunction Λ condition =
+      conjoin Λ (fun i => (condition i).rename (Renaming.cons (i.inLeft Γ) (Var.shift Λ))) := rfl
+
 /-- The head condition introduces the head witness and the rest share the existing ambient positions. -/
 theorem witnessConjunction_cons {Λ : List sig.SortType} {s : sig.SortType}
     (condition : ∀ {t}, Var (s :: Λ) t → Formula sig (t :: Γ)) :
     witnessConjunction (s :: Λ) condition =
       ((condition .here).rename (Renaming.lift (Var.shift Λ))).conj
         ((witnessConjunction Λ fun i => condition (.there i)).rename (fun i => .there i)) := by
-  simp only [witnessConjunction, conjoin, rename_conjoin, rename_comp, Renaming.comp_cons]
+  simp only [witnessConjunction_eq_conjoin, conjoin_cons, rename_conjoin, rename_comp, Renaming.comp_cons]
   rfl
 
 end SHIGURE.Formula

@@ -212,6 +212,15 @@ def conjoin : (Λ : List sig.SortType) → (∀ {s}, Var Λ s → Formula sig Γ
   | [], _ => .truth
   | _ :: Λ, fs => .conj (fs .here) (conjoin Λ (fun var => fs (.there var)))
 
+/-- An empty conjunction is the truth formula. -/
+theorem conjoin_nil (fs : ∀ {s}, Var ([] : List sig.SortType) s → Formula sig Γ) :
+    conjoin [] fs = .truth := rfl
+
+/-- A nonempty conjunction separates its first formula from the remaining formulas. -/
+theorem conjoin_cons {s : sig.SortType} {Λ : List sig.SortType}
+    (fs : ∀ {t}, Var (s :: Λ) t → Formula sig Γ) :
+    conjoin (s :: Λ) fs = (fs .here).conj (conjoin Λ (fun i => fs (.there i))) := rfl
+
 /-- The finite conjunction is satisfied exactly when each indexed component is satisfied. -/
 @[simp] theorem holds_conjoin (Λ : List sig.SortType) (fs : ∀ {s}, Var Λ s → Formula sig Γ)
     (A : Structure sig) (e : Assignment A.carrier Γ) :
@@ -234,6 +243,13 @@ def conjoin : (Λ : List sig.SortType) → (∀ {s}, Var Λ s → Formula sig Γ
 def existsMany : (Λ : List sig.SortType) → Formula sig (Λ ++ Γ) → Formula sig Γ
   | [], p => p
   | _ :: Λ, p => existsMany Λ (.ex p)
+
+/-- An empty witness block leaves its body in the ambient context. -/
+theorem existsMany_nil (p : Formula sig Γ) : existsMany [] p = p := rfl
+
+/-- A nonempty witness block binds the head within the remaining witnesses. -/
+theorem existsMany_cons {s : sig.SortType} {Λ : List sig.SortType}
+    (p : Formula sig (s :: (Λ ++ Γ))) : existsMany (s :: Λ) p = existsMany Λ p.ex := rfl
 
 /-- A block of bound variables is witnessed by a single tuple of its specified sorts. -/
 @[simp] theorem holds_existsMany (Λ : List sig.SortType) (p : Formula sig (Λ ++ Γ))
@@ -418,6 +434,26 @@ def graphAt : {Γ : List sig.SortType} → {s : sig.SortType} → {Δ : List sig
       (graphAt init (fun index => .there (ρ index)) .here)
       (graphAt body (Renaming.lift ρ) (.there out)))
 
+/-- The value graph of a variable is equality with the output. -/
+theorem graphAt_var {Δ : List sig.SortType} (i : Var Γ s) (ρ : Renaming Γ Δ) (out : Var Δ s) :
+    (Term.var (sig := sig) i).graphAt ρ out = .atom (.eq (ρ i) out) := rfl
+
+/-- The graph of an application binds all argument values before using the primitive graph. -/
+theorem graphAt_app {Δ : List sig.SortType} (op : Operation sig)
+    (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t)
+    (ρ : Renaming Γ Δ) (out : Var Δ op.arity.output) :
+    (Term.app op args).graphAt ρ out = Formula.existsMany op.arity.inputs
+      ((Formula.conjoin op.arity.inputs fun i =>
+        (args i).graphAt (fun j => (ρ j).shift op.arity.inputs) (i.inLeft Δ)).conj
+        (.atom (.graph op (Var.inLeft Δ) (out.shift op.arity.inputs)))) := rfl
+
+/-- The graph of a strict binding shares its witness between the initializer and the body. -/
+theorem graphAt_letBind {Δ : List sig.SortType} {a : sig.SortType}
+    (init : Term sig Γ a) (body : Term sig (a :: Γ) s) (ρ : Renaming Γ Δ) (out : Var Δ s) :
+    (Term.letBind init body).graphAt ρ out =
+      ((init.graphAt (fun i => .there (ρ i)) .here).conj
+        (body.graphAt (Renaming.lift ρ) (.there out))).ex := rfl
+
 /-- A variable application graph introduces one witness per argument as in (1.3). -/
 theorem graphAt_app_vars (op : Operation sig) (args : Renaming op.arity.inputs Γ)
     (out : Var Γ op.arity.output) :
@@ -450,6 +486,9 @@ theorem holds_graphAt (A : Structure sig) (t : Term sig Γ s) :
 def graph (t : Term sig Γ s) : Formula sig (s :: Γ) :=
   t.graphAt (fun index => .there index) .here
 
+/-- The canonical graph uses a fresh head variable as its output. -/
+theorem graph_eq_graphAt (t : Term sig Γ s) : t.graph = t.graphAt (fun i => .there i) .here := rfl
+
 /-- An assignment satisfies the value graph precisely at the term's defined value. -/
 theorem holds_graph_iff (t : Term sig Γ s) (A : Structure sig) (e : Assignment A.carrier Γ)
     (y : A.carrier s) :
@@ -474,6 +513,9 @@ theorem graph_functional (t : Term sig Γ s) (A : Structure sig)
 
 /-- The formula `Def_t` existentially quantifies the graph's output. -/
 def defined (t : Term sig Γ s) : Formula sig Γ := .ex t.graph
+
+/-- Definedness is the existential closure of the value graph at its result sort. -/
+theorem defined_eq_ex_graph (t : Term sig Γ s) : t.defined = t.graph.ex := rfl
 
 /-- The satisfaction locus of the definedness formula is the domain of evaluation. -/
 @[simp] theorem holds_defined (t : Term sig Γ s) (A : Structure sig)
@@ -548,6 +590,9 @@ variable {sig : Signature.{u}} {Γ : List sig.SortType} {s : sig.SortType}
 /-- Term equality shares one existential output between the two value graphs. -/
 def termEq (t t' : Term sig Γ s) : Formula sig Γ := .ex (.conj t.graph t'.graph)
 
+/-- A term equation binds a shared result of its two value graphs. -/
+theorem termEq_eq_ex (t t' : Term sig Γ s) : termEq t t' = (t.graph.conj t'.graph).ex := rfl
+
 /-- An expanded term equality is satisfied exactly when both terms have the same value. -/
 @[simp] theorem holds_termEq (t t' : Term sig Γ s) (A : Structure sig)
     (e : Assignment A.carrier Γ) :
@@ -566,6 +611,12 @@ def bindArguments (Λ : List sig.SortType) (terms : ∀ {s}, Var Λ s → Term s
     (conjoin Λ fun index => (terms index).graphAt (fun var => var.shift Λ) (index.inLeft Γ))
     body)
 
+/-- Binding arguments existentially quantifies their graph conjunction together with the body. -/
+theorem bindArguments_eq_existsMany (Λ : List sig.SortType)
+    (terms : ∀ {s}, Var Λ s → Term sig Γ s) (body : Formula sig (Λ ++ Γ)) :
+    bindArguments Λ terms body = existsMany Λ
+      ((conjoin Λ fun i => (terms i).graphAt (Var.shift Λ) (i.inLeft Γ)).conj body) := rfl
+
 /-- Interpret the expansion of term arguments by an assignment of their evaluated values. -/
 theorem holds_bindArguments (Λ : List sig.SortType) (terms : ∀ {s}, Var Λ s → Term sig Γ s)
     (body : Formula sig (Λ ++ Γ)) (A : Structure sig) (e : Assignment A.carrier Γ) :
@@ -579,10 +630,19 @@ theorem holds_bindArguments (Λ : List sig.SortType) (terms : ∀ {s}, Var Λ s 
 def termRel (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s → Term sig Γ s) : Formula sig Γ :=
   bindArguments (sig.relInputs r) terms (.atom (.rel r (Var.inLeft Γ)))
 
+/-- A term relation tests the relation atom after binding the argument values. -/
+theorem termRel_eq_bindArguments (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s → Term sig Γ s) :
+    termRel r terms = bindArguments (sig.relInputs r) terms (.atom (.rel r (Var.inLeft Γ))) := rfl
+
 /-- A domain atom applied to terms is expanded using their value graphs. -/
 def termDomain (p : sig.Partial) (terms : ∀ {s}, Var (sig.partialArity p).inputs s → Term sig Γ s) :
     Formula sig Γ :=
   bindArguments (sig.partialArity p).inputs terms (.atom (.domain p (Var.inLeft Γ)))
+
+/-- A term domain formula tests the domain atom after binding the argument values. -/
+theorem termDomain_eq_bindArguments (p : sig.Partial)
+    (terms : ∀ {s}, Var (sig.partialArity p).inputs s → Term sig Γ s) :
+    termDomain p terms = bindArguments (sig.partialArity p).inputs terms (.atom (.domain p (Var.inLeft Γ))) := rfl
 
 /-- An operation graph can be applied to input terms together with a term for its output. -/
 def termGraph (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
@@ -592,6 +652,15 @@ def termGraph (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → T
       | .here => out
       | .there previous => terms previous)
     (.atom (.graph op (fun index => (Var.there index).inLeft Γ) (Var.here.inLeft Γ)))
+
+/-- A term graph binds the output term and every input term before testing its graph atom. -/
+theorem termGraph_eq_bindArguments (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
+    (out : Term sig Γ op.arity.output) : termGraph op terms out =
+      bindArguments (op.arity.output :: op.arity.inputs)
+        (fun i => match i with
+          | .here => out
+          | .there index => terms index)
+        (.atom (.graph op (fun i => (Var.there i).inLeft Γ) (Var.here.inLeft Γ))) := rfl
 
 /-- A term relation tests the tuple of evaluated argument values. -/
 theorem holds_termRel (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s → Term sig Γ s)

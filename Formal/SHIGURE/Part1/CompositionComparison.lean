@@ -5,6 +5,14 @@ import Formal.SHIGURE.Part1.TranslationComparison
 Two successive sort maps and the composite sort map present the same
 typed contexts. The canonical transport between them retains all
 variable positions, including those under binders.
+
+## Implementation notes
+
+A context cast retypes a formula or derivation when its contexts are
+equal. The renaming induced by that equality makes variable positions
+explicit for the syntactic comparisons. Writing dependent context
+rewrites at each use would repeat the binder coherence proof and hide
+which positions are retained.
 -/
 
 universe u
@@ -184,10 +192,9 @@ variable {S T U : Theory.{u}}
 theorem formula_castContext {Γ Δ : List S.signature.SortType}
     (tr : Translation S.signature T.signature f) (same : Γ = Δ) (p : Formula S.signature Γ) :
     tr.formula (p.castContext same) = (tr.formula p).castContext (congrArg (List.map f) same) := by
-  cases same
-  rfl
+  simp only [Formula.castContext_eq_rename, formula_rename, Renaming.mapSorts_castContext]
 
-/-- The same primitive graph is derivable under a composite replacement and two successive replacements. -/
+/-- A composite replacement and two successive replacements give mutually derivable atomic formulas. -/
 theorem comp_atomic_equivalent (v : Translation T.signature U.signature g)
     (u : Translation S.signature T.signature f) {Γ : List S.signature.SortType} (a : Atomic S.signature Γ) :
     Derivation.Equivalent U ((v.comp u).atomic a)
