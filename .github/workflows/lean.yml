@@ -234,10 +234,18 @@ jobs:
           test: false
           lint: false
           use-github-cache: false
+          use-mathlib-cache: false
 
       - name: Check SHIGURE imports
         if: steps.shigure-changes.outputs.run == 'true'
-        run: lean --run .github/lean_quality/check_shigure_imports.lean
+        run: lean --run .github/lean_quality/check_shigure_imports.lean --mathlib-imports > "$RUNNER_TEMP/shigure-mathlib-imports"
+
+      - name: Fetch SHIGURE Mathlib dependencies
+        if: steps.shigure-changes.outputs.run == 'true'
+        run: |
+          mapfile -t imports < "$RUNNER_TEMP/shigure-mathlib-imports"
+          # The declaration checker fixtures also import NormNum directly.
+          lake exe cache get Mathlib.Tactic.NormNum "${imports[@]}"
 
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'
@@ -247,9 +255,15 @@ jobs:
         if: steps.shigure-changes.outputs.run == 'true'
         run: |
           set -o pipefail
-          # Each frontend releases its elaboration environments before the next file.
+          checker_dir="$(mktemp -d "$RUNNER_TEMP/shigure-checker.XXXXXX")"
+          lake env lean -o "$checker_dir/ShigureDeclarationCheck.olean" .github/lean_quality/check_shigure_declarations.lean
+          printf 'import ShigureDeclarationCheck\n' > "$checker_dir/Run.lean"
+          # Separate workers release each file's elaboration environment when they exit.
           git ls-files -z -- ':(glob)Formal/SHIGURE/**/*.lean' Formal/SHIGURE.lean |
-            lake env xargs -0 -r -n 1 -t lean --run .github/lean_quality/check_shigure_declarations.lean
+            lake env bash -c '
+              export LEAN_PATH="$1:$LEAN_PATH"
+              xargs -0 -r -n 1 -P "$(nproc)" -t lean --run "$1/Run.lean"
+            ' bash "$checker_dir"
           bash .github/lean_quality/test_shigure_declarations.sh
 
       - name: Audit SHIGURE kernel dependencies

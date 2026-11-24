@@ -48,6 +48,8 @@ def kernelAxioms (env : Environment) (proofImports : Option Environment) (names 
 private def checkStandardAxioms (origin : Syntax) (env : Environment) (declarations : Array Name) :
     CommandElabM Unit := do
   let proofImports ← importProofEnvironment env
+  -- Share visits to common dependencies. If the batch fails, identify the offending root.
+  if (kernelAxioms env proofImports declarations).all isStandardAxiom then return
   for name in declarations do
     let unexpected := (kernelAxioms env proofImports #[name]).filter (!isStandardAxiom ·)
     unless unexpected.isEmpty do
