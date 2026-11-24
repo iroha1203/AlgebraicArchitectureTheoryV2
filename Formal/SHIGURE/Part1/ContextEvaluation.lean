@@ -204,15 +204,17 @@ theorem atomic_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f
     (A.pullback inside f).atomic e a support ↔ A.atomic
       (mapAssignment f (fun _ hd => support (Or.inl hd)) e) a (fun _ hd => inside (support hd)) := by
   cases a with
-  | eq x y => exact ⟨fun same => congrArg (f _ _) same, fun same => inj _ _ same⟩
+  | eq x y =>
+    rw [atomic_eq_iff, atomic_eq_iff]
+    exact ⟨fun same => congrArg (f _ _) same, fun same => inj _ _ same⟩
   | rel r vars =>
-    simp only [atomic, pullback_relation]
+    simp only [atomic_rel_iff, pullback_relation]
     rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
   | domain p vars =>
-    simp only [atomic, pullback_domain]
+    simp only [atomic_domain_iff, pullback_domain]
     rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
   | graph op vars y =>
-    simp only [atomic, pullback_graph, mapAssignment_apply]
+    simp only [atomic_graph_iff, pullback_graph, mapAssignment_apply]
     rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
 
 /-- Every supported formula agrees with its original evaluation on the mapped assignment. -/
@@ -227,15 +229,15 @@ theorem holds_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f 
   | falsehood => intros; rfl
   | conj p q hp hq =>
     intro support e
-    rw [holds, holds, hp, hq]
+    rw [holds_conj_iff, holds_conj_iff, hp, hq]
   | disj p q hp hq =>
     intro support e
-    rw [holds, holds, hp, hq]
+    rw [holds_disj_iff, holds_disj_iff, hp, hq]
   | @ex Γ s p ih =>
     intro support e
     have kept : Declaration.sort s ∈ V.declarations := support (Or.inr (Or.inl (Set.mem_singleton _)))
     let keepΓ : Declaration.sorts Γ ⊆ V.declarations := fun _ hd => support (Or.inl hd)
-    rw [holds, holds]
+    rw [holds_ex_iff, holds_ex_iff]
     constructor
     · rintro ⟨x, hx⟩
       refine ⟨f s kept x, ?_⟩

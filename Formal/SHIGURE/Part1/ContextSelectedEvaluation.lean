@@ -206,25 +206,25 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
   let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
   cases a with
   | eq l r =>
-    change selectAssignment e free x (selectVar free l) = selectAssignment e free x (selectVar free r) ↔ x l = x r
+    rw [selectAtomic_eq, Atomic.holds_eq, RestrictedEvaluation.atomic_eq_iff]
     rw [selectAssignment_selectVar, selectAssignment_selectVar]
     exact ⟨fun h => (e _ _).injective h, fun h => congrArg (e _ _) h⟩
   | rel r vars =>
     let k : Declaration.relation r ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
-    change B.relation ⟨r, k⟩ ((selectAssignment e free x).pull (selectRenaming (relationInputs r k) free vars)) ↔ _
-    rw [selectAssignment_pull e (relationInputs r k) free x vars]
+    rw [selectAtomic_rel, Atomic.holds_rel, RestrictedEvaluation.atomic_rel_iff]
+    erw [selectAssignment_pull e (relationInputs r k) free x vars]
     exact same.relation r k (x.pull vars)
   | domain p vars =>
     let k : Declaration.partialOp p ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
-    change B.partialDomain ⟨p, k⟩ ((selectAssignment e free x).pull
-      (selectRenaming (operationInputs (.partialOp p) k) free vars)) ↔ _
-    rw [selectAssignment_pull e (operationInputs (.partialOp p) k) free x vars]
+    rw [selectAtomic_domain, Atomic.holds_domain, RestrictedEvaluation.atomic_domain_iff]
+    erw [selectAssignment_pull e (operationInputs (.partialOp p) k) free x vars]
     exact same.domain p k (x.pull vars)
   | graph op vars y =>
     let k : Declaration.ofOperation op ∈ U.declarations := keep (Or.inr (Set.mem_singleton _))
     have args := selectAssignment_pull e (operationInputs op k) free x vars
     have out := selectAssignment_selectVar e free x y
-    cases op <;> simp only [selectAtomic, selectGraph, Atomic.holds_graph]
+    rw [selectAtomic_graph, RestrictedEvaluation.atomic_graph_iff]
+    cases op <;> simp only [selectGraph_total, selectGraph_partialOp, selectGraph_quantity, Atomic.holds_graph]
     all_goals
       erw [args, out]
       simpa only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] using
@@ -235,19 +235,29 @@ theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ
     ∀ (keep : Declaration.formulaSupport p ⊆ U.declarations) (x : Assignment X Γ),
       (selectFormula p keep).Holds B (selectAssignment e (fun _ h => keep (Or.inl h)) x) ↔ E.holds p keep x := by
   induction p with
-  | atom a => exact same.atomic_iff a
-  | truth | falsehood => intros; rfl
+  | atom a =>
+    intro keep x
+    rw [selectFormula_atom, Formula.holds_atom, RestrictedEvaluation.holds_atom_iff]
+    exact same.atomic_iff a keep x
+  | truth =>
+    intro keep x
+    rw [selectFormula_truth, Formula.holds_truth_iff, RestrictedEvaluation.holds_truth_iff]
+  | falsehood =>
+    intro keep x
+    rw [selectFormula_falsehood, Formula.holds_falsehood_iff, RestrictedEvaluation.holds_falsehood_iff]
   | conj p q hp hq =>
     intro keep x
+    rw [selectFormula_conj, Formula.holds_conj, RestrictedEvaluation.holds_conj_iff]
     exact and_congr (hp (leftSupport keep) x) (hq (rightSupport keep) x)
   | disj p q hp hq =>
     intro keep x
+    rw [selectFormula_disj, Formula.holds_disj, RestrictedEvaluation.holds_disj_iff]
     exact or_congr (hp (leftSupport keep) x) (hq (rightSupport keep) x)
   | @ex Γ s p ih =>
     intro keep x
     let kept : Declaration.sort s ∈ U.declarations := keep (Or.inr (Or.inl (Set.mem_singleton _)))
     let free : Declaration.sorts Γ ⊆ U.declarations := fun _ h => keep (Or.inl h)
-    rw [selectFormula, Formula.holds_ex, RestrictedEvaluation.holds]
+    rw [selectFormula_ex, Formula.holds_ex, RestrictedEvaluation.holds_ex_iff]
     constructor
     · rintro ⟨y, truth⟩
       refine ⟨(e s kept).symm y, (ih (existsSupport keep) _).1 ?_⟩

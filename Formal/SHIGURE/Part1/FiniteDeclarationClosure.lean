@@ -170,7 +170,9 @@ private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
         rcases included with s | ⟨s, i, rfl⟩
         · obtain rfl := Set.mem_singleton_iff.mp s
           simp [height]
-        · cases data.symbol i <;> simp [TotalSymbol.operation, ofOperation, height]
+        · cases data.symbol i <;>
+            simp [TotalSymbol.operation_ordinary, TotalSymbol.operation_quantity,
+              ofOperation_total, ofOperation_quantity, height]
   | law name =>
     by_cases role : P.laws.role name = .derived
     · rw [derived_dependencies name role, Set.mem_union] at uses

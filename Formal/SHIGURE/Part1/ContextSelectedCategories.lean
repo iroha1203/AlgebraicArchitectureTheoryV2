@@ -40,12 +40,12 @@ noncomputable def writeFunctor (U : DeclarationContext P) : Model (theory U) ⥤
     apply Models.hom_ext
     intro s keep x
     change writeOnSort (InducedCategory.Hom.hom (𝟙 A)) s keep x = x
-    simp only [writeOnSort, Model.id_apply, Equiv.symm_apply_apply]
+    simp only [writeOnSort_apply, Model.id_apply, Equiv.symm_apply_apply]
   map_comp f g := by
     apply Models.hom_ext
     intro s keep x
     change writeOnSort (f ≫ g).hom s keep x = writeOnSort g.hom s keep (writeOnSort f.hom s keep x)
-    simp only [writeOnSort, Model.comp_apply, Equiv.apply_symm_apply]
+    simp only [writeOnSort_apply, Model.comp_apply, Equiv.apply_symm_apply]
 
 /-- The written point map is the ordinary point map under the retained carrier identification. -/
 theorem writeFunctor_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
@@ -68,8 +68,8 @@ theorem read_comp_write (U : DeclarationContext P) : readFunctor U ⋙ writeFunc
   intro A B f
   apply Models.hom_ext
   intro s keep x
-  simp only [Functor.comp_map, Functor.id_map, writeFunctor_onSort, writeOnSort, readFunctor_onSort,
-    Models.comp_onSort, Models.eqToHom_onSort, extendedEquiv, ← Equiv.cast_symm, Equiv.cast_apply]
+  simp only [Functor.comp_map, Functor.id_map, writeFunctor_onSort, writeOnSort_apply, readFunctor_onSort,
+    Models.comp_onSort, Models.eqToHom_onSort, extendedEquiv_eq_cast, ← Equiv.cast_symm, Equiv.cast_apply]
 
 /-- Writing then reading is strictly the identity, including on all ordinary model arrows. -/
 theorem write_comp_read (U : DeclarationContext P) : writeFunctor U ⋙ readFunctor U = 𝟭 (Model (theory U)) := by
@@ -81,8 +81,8 @@ theorem write_comp_read (U : DeclarationContext P) : writeFunctor U ⋙ readFunc
   intro s x
   change SortName U at s
   rcases s with ⟨s, keep⟩
-  simp only [Functor.comp_map, Functor.id_map, readFunctor_onSort, writeFunctor_onSort, writeOnSort,
-    Model.comp_apply, ordinary_eqToHom_onSort, extendedEquiv, ← Equiv.cast_symm, Equiv.cast_apply]
+  simp only [Functor.comp_map, Functor.id_map, readFunctor_onSort, writeFunctor_onSort, writeOnSort_apply,
+    Model.comp_apply, ordinary_eqToHom_onSort, extendedEquiv_eq_cast, ← Equiv.cast_symm, Equiv.cast_apply]
 
 /-- The graph and ordinary model categories are strictly isomorphic. -/
 noncomputable def modelIso (U : DeclarationContext P) : Cat.of (Models U) ≅ Cat.of (Model (theory U)) where

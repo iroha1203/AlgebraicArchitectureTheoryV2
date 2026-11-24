@@ -216,11 +216,11 @@ def existsManyMono : {Λ : List T.signature.SortType} →
 def existsManyElim : {Λ : List T.signature.SortType} →
     {body : Formula T.signature (Λ ++ Γ)} →
     Derivation T body (q.rename (Var.shift Λ)) → Derivation T (Formula.existsMany Λ body) q
-  | [], _, d => by simpa only [Var.shift, Formula.rename_id] using d
+  | [], _, d => by simpa only [Var.shift_nil, Formula.rename_id] using d
   | _ :: Λ, _, d => by
     apply existsManyElim (Λ := Λ)
     apply existsElimPlain
-    simpa only [Formula.rename_comp, Renaming.comp, Var.shift] using d
+    simpa only [Formula.rename_comp, Renaming.comp, Var.shift_cons] using d
 
 /-- Introduce a block of witnesses taken from variables in the ambient context. -/
 def existsManyIntro : {Λ : List T.signature.SortType} →

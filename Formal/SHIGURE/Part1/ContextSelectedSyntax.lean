@@ -42,6 +42,37 @@ def selectGraph {Γ : List P.signature.SortType} (keepΓ : Declaration.sorts Γ 
   cases op <;> exact .graph (operation _ keep) (selectRenaming (operationInputs _ keep) keepΓ ρ)
     (selectVar keepΓ y)
 
+/-- A selected graph of a retained total operation keeps its original argument
+and result positions. This is the total branch of the structural rule comparison. -/
+theorem selectGraph_total {Γ : List P.signature.SortType}
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (f : P.signature.Total)
+    (keep : Declaration.total f ∈ U.declarations)
+    (ρ : Renaming (P.signature.totalArity f).inputs Γ) (y : Var Γ (P.signature.totalArity f).output) :
+    selectGraph keepΓ (.total f) keep ρ y =
+      .graph (.total ⟨f, keep⟩) (selectRenaming (operationInputs (.total f) keep) keepΓ ρ) (selectVar keepΓ y) :=
+  rfl
+
+/-- A selected graph of a retained partial operation keeps its original
+argument positions and result, with the same partial-operation tag. -/
+theorem selectGraph_partialOp {Γ : List P.signature.SortType}
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (p : P.signature.Partial)
+    (keep : Declaration.partialOp p ∈ U.declarations)
+    (ρ : Renaming (P.signature.partialArity p).inputs Γ) (y : Var Γ (P.signature.partialArity p).output) :
+    selectGraph keepΓ (.partialOp p) keep ρ y =
+      .graph (.partialOp ⟨p, keep⟩) (selectRenaming (operationInputs (.partialOp p) keep) keepΓ ρ)
+        (selectVar keepΓ y) :=
+  rfl
+
+/-- A selected graph of a retained quantity keeps its argument and result
+positions under the quantity tag. -/
+theorem selectGraph_quantity {Γ : List P.signature.SortType}
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (q : P.signature.Quantity)
+    (keep : Declaration.quantity q ∈ U.declarations)
+    (ρ : Renaming (P.signature.quantityArity q).inputs Γ) (y : Var Γ (P.signature.quantityArity q).output) :
+    selectGraph keepΓ (.quantity q) keep ρ y =
+      .graph (.quantity ⟨q, keep⟩) (selectRenaming (operationInputs (.quantity q) keep) keepΓ ρ) (selectVar keepΓ y) :=
+  rfl
+
 /-- Read an atomic formula over the actual selected signature. -/
 def selectAtomic {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (keep : Declaration.atomicSupport a ⊆ U.declarations) :
@@ -57,6 +88,39 @@ def selectAtomic {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     exact .domain ⟨p, keepP⟩ (selectRenaming (operationInputs (.partialOp p) keepP) keepΓ ρ)
   | graph op ρ y => exact selectGraph keepΓ op (keep (Or.inr (Set.mem_singleton _))) ρ y
 
+/-- Selecting an equality retains the compared positions in the selected context. -/
+theorem selectAtomic_eq {Γ : List P.signature.SortType} {s : P.signature.SortType} (x y : Var Γ s)
+    (keep : Declaration.atomicSupport (Atomic.eq (sig := P.signature) x y) ⊆ U.declarations) :
+    selectAtomic (.eq x y) keep =
+      .eq (selectVar (fun _ h => keep (Or.inl h)) x) (selectVar (fun _ h => keep (Or.inl h)) y) :=
+  rfl
+
+/-- Selecting a relation reads its retained name and reindexes its arguments. -/
+theorem selectAtomic_rel {Γ : List P.signature.SortType} (r : P.signature.Rel)
+    (ρ : Renaming (P.signature.relInputs r) Γ) (keep : Declaration.atomicSupport (.rel r ρ) ⊆ U.declarations) :
+    selectAtomic (.rel r ρ) keep =
+      .rel ⟨r, keep (Or.inr (Set.mem_singleton _))⟩
+        (selectRenaming (relationInputs r (keep (Or.inr (Set.mem_singleton _)))) (fun _ h => keep (Or.inl h)) ρ) :=
+  rfl
+
+/-- Selecting a domain atom reindexes the retained partial operation's arguments. -/
+theorem selectAtomic_domain {Γ : List P.signature.SortType} (p : P.signature.Partial)
+    (ρ : Renaming (P.signature.partialArity p).inputs Γ)
+    (keep : Declaration.atomicSupport (.domain p ρ) ⊆ U.declarations) :
+    selectAtomic (.domain p ρ) keep =
+      .domain ⟨p, keep (Or.inr (Set.mem_singleton _))⟩
+        (selectRenaming (operationInputs (.partialOp p) (keep (Or.inr (Set.mem_singleton _))))
+          (fun _ h => keep (Or.inl h)) ρ) :=
+  rfl
+
+/-- A selected graph atom uses the retained operation and its reindexed positions. -/
+theorem selectAtomic_graph {Γ : List P.signature.SortType} (op : Operation P.signature)
+    (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output)
+    (keep : Declaration.atomicSupport (.graph op ρ y) ⊆ U.declarations) :
+    selectAtomic (.graph op ρ y) keep =
+      selectGraph (fun _ h => keep (Or.inl h)) op (keep (Or.inr (Set.mem_singleton _))) ρ y :=
+  rfl
+
 /-- Read an arbitrary supported positive formula over the selected signature. -/
 def selectFormula : {Γ : List P.signature.SortType} → (p : Formula P.signature Γ) →
     (keep : Declaration.formulaSupport p ⊆ U.declarations) →
@@ -69,6 +133,43 @@ def selectFormula : {Γ : List P.signature.SortType} → (p : Formula P.signatur
   | _, @Formula.ex _ _ s body, keep =>
     .ex (s := ⟨s, keep (Or.inr (Or.inl (Set.mem_singleton _)))⟩) (selectFormula body (existsSupport keep))
 
+/-- Selecting an atomic formula uses the primitive comparison in Proposition 3.2. -/
+theorem selectFormula_atom {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
+    (keep : Declaration.formulaSupport (.atom a) ⊆ U.declarations) :
+    selectFormula (.atom a) keep = .atom (selectAtomic a keep) :=
+  rfl
+
+/-- Truth in the selected context has no further primitive dependency. -/
+theorem selectFormula_truth {Γ : List P.signature.SortType}
+    (keep : Declaration.formulaSupport (Formula.truth (sig := P.signature) (Γ := Γ)) ⊆ U.declarations) :
+    selectFormula .truth keep = .truth :=
+  rfl
+
+/-- Falsehood remains falsehood under the selected context. -/
+theorem selectFormula_falsehood {Γ : List P.signature.SortType}
+    (keep : Declaration.formulaSupport (Formula.falsehood (sig := P.signature) (Γ := Γ)) ⊆ U.declarations) :
+    selectFormula .falsehood keep = .falsehood :=
+  rfl
+
+/-- Selection keeps a conjunction by selecting each supported part. -/
+theorem selectFormula_conj {Γ : List P.signature.SortType} (p q : Formula P.signature Γ)
+    (keep : Declaration.formulaSupport (p.conj q) ⊆ U.declarations) :
+    selectFormula (p.conj q) keep = .conj (selectFormula p (leftSupport keep)) (selectFormula q (rightSupport keep)) :=
+  rfl
+
+/-- Selection keeps a disjunction by selecting each supported alternative. -/
+theorem selectFormula_disj {Γ : List P.signature.SortType} (p q : Formula P.signature Γ)
+    (keep : Declaration.formulaSupport (p.disj q) ⊆ U.declarations) :
+    selectFormula (p.disj q) keep = .disj (selectFormula p (leftSupport keep)) (selectFormula q (rightSupport keep)) :=
+  rfl
+
+/-- Selection retains the bound sort and the body's typed positions of an existential. -/
+theorem selectFormula_ex {Γ : List P.signature.SortType} {s : P.signature.SortType} (p : Formula P.signature (s :: Γ))
+    (keep : Declaration.formulaSupport p.ex ⊆ U.declarations) :
+    selectFormula p.ex keep =
+      .ex (s := ⟨s, keep (Or.inr (Or.inl (Set.mem_singleton _)))⟩) (selectFormula p (existsSupport keep)) :=
+  rfl
+
 /-- The same literal Law has a writing in the genuinely smaller vocabulary. -/
 def selectLaw (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) : Law (signature U) :=
   ⟨context law.context (fun _ t => keep (Or.inl (Or.inl t))),
@@ -77,6 +178,17 @@ def selectLaw (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.decl
     selectFormula law.conclusion (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
       (fun h => keep (Or.inr h)))⟩
 
+/-- The selected Law in Definition 3.1 uses exactly the retained context
+sorts, input and conclusion of its written Law. -/
+theorem selectLaw_eq (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) :
+    selectLaw law keep =
+      ⟨context law.context (fun _ t => keep (Or.inl (Or.inl t))),
+        selectFormula law.input (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
+          (fun h => keep (Or.inl (Or.inr h)))),
+        selectFormula law.conclusion (fun _ t => t.elim (fun h => keep (Or.inl (Or.inl h)))
+          (fun h => keep (Or.inr h)))⟩ :=
+  rfl
+
 /-- Retyping two successive renamings retypes their composite. -/
 theorem selectRenaming_comp {Γ Δ Ξ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -84,7 +196,7 @@ theorem selectRenaming_comp {Γ Δ Ξ : List P.signature.SortType}
     (fun {_} i => selectRenaming keepΔ keepΞ τ (selectRenaming keepΓ keepΔ ρ i)) =
       (selectRenaming keepΓ keepΞ (fun i => τ (ρ i)) : Renaming _ _) := by
   funext s i
-  simp only [selectRenaming]
+  simp only [selectRenaming_apply]
   rw [ambientVar_selectVar keepΔ (ρ (ambientVar keepΓ i))]
 
 /-- Selection commutes with lifting a renaming across an existential binder. -/

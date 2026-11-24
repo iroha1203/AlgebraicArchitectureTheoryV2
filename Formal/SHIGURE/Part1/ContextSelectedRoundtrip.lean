@@ -63,7 +63,7 @@ from the retained sorts, and the retained facts determine the structure. -/
   let f : CarrierMap U A.carrier (writeStructure B).carrier := fun s _ => cast (congrFun h.symm s)
   have component : ∀ s keep x, extendedEquiv B s keep (f s keep x) = readCarrierEquiv A s keep x := by
     intro s keep x
-    simp only [extendedEquiv, Equiv.cast_apply, f, readCarrierEquiv, Equiv.refl_apply, cast_cast]
+    simp only [extendedEquiv_eq_cast, Equiv.cast_apply, f, readCarrierEquiv_eq_refl, Equiv.refl_apply, cast_cast]
     rfl
   apply ContextStructure.ext h
   rw [RestrictedEvaluation.cast_evaluation _ h]

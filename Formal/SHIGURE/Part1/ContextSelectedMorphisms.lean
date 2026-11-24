@@ -128,17 +128,15 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
   StructureMap.ofGraphs (readOnSort f) (by
     intro r xs held
     let keep := relationInputs r.val r.property
-    obtain ⟨x, rfl⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
-    change (readStructure A).relation r (selectAssignment (readCarrierEquiv A) keep x) at held
-    change (readStructure B).relation r ((selectAssignment (readCarrierEquiv A) keep x).map _)
+    obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
+    rw [← hx, assignmentEquiv_apply] at held ⊢
     rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (fun _ _ _ => rfl)]
     exact ((readStructure_matches B).relation r.val r.property _).2
       (f.relation_mem r.val r.property x (((readStructure_matches A).relation r.val r.property x).1 held))) (by
     intro p xs held
     let keep := operationInputs (.partialOp p.val) p.property
-    obtain ⟨x, rfl⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
-    change (readStructure A).partialDomain p (selectAssignment (readCarrierEquiv A) keep x) at held
-    change (readStructure B).partialDomain p ((selectAssignment (readCarrierEquiv A) keep x).map _)
+    obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
+    rw [← hx, assignmentEquiv_apply] at held ⊢
     rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (fun _ _ _ => rfl)]
     exact ((readStructure_matches B).domain p.val p.property _).2
       (f.domain_mem p.val p.property x (((readStructure_matches A).domain p.val p.property x).1 held))) (by
@@ -158,6 +156,14 @@ variable {C D : Structure (signature U)}
 /-- Write the ordinary sort maps under the original sort names. -/
 noncomputable def writeOnSort (f : StructureMap C D) : CarrierMap U (extendedCarrier C) (extendedCarrier D) :=
   fun s keep x => (extendedEquiv D s keep).symm (f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x))
+
+/-- The written map in the comparison of Proposition 3.2 transports an
+original value through the two retained carrier equivalences and the original arrow. -/
+theorem writeOnSort_apply (f : StructureMap C D) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier C s) :
+    writeOnSort f s keep x = (extendedEquiv D s keep).symm
+      (f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x)) :=
+  rfl
 
 /-- The square of corresponding sort maps commutes. -/
 theorem writeOnSort_comm (f : StructureMap C D) (s : P.signature.SortType)

@@ -164,6 +164,21 @@ private def equalityPresentation : PrimitivePresentation where
 private def toName (d : Declaration equalityPresentation) : Declaration paddedPresentation :=
   d.renameNames (P := equalityPresentation) (Q := paddedPresentation) (.identity _) (fun _ => .inl ())
 
+/-- The equality context retains each original sort name. -/
+private theorem toName_sort (s : equalityPresentation.signature.SortType) :
+    toName (.sort s) = .sort s :=
+  rfl
+
+/-- The equality context retains each original total symbol's name. -/
+private theorem toName_total (f : equalityPresentation.signature.Total) :
+    toName (.total f) = .total f :=
+  rfl
+
+/-- Its sole Law is the equality in the left summand of the padded presentation. -/
+private theorem toName_law (name : equalityPresentation.laws.LawName) :
+    toName (.law name) = .law (.inl ()) :=
+  rfl
+
 /-- The naming map reaches only declarations retained in the equality context. -/
 private theorem toName_kept (d : Declaration equalityPresentation) : toName d ∈ equalityContext.declarations := by
   intro i h
@@ -222,8 +237,12 @@ private theorem equalityDependencies (a b : Declaration equalityPresentation) :
   | partialOp p => exact nomatch p
   | quantity q => exact nomatch q
   | total f =>
-    cases b <;> simp [Declaration.dependsOn, Declaration.sorts, toName,
-      Declaration.renameNames, SignatureNames.identity, equalityPresentation]
+    cases b with
+    | sort | total | law =>
+      simp [toName_sort, toName_total, toName_law, Declaration.total_dependencies, Declaration.sorts_eq_image] <;> rfl
+    | relation r => exact nomatch r
+    | partialOp p => exact nomatch p
+    | quantity q => exact nomatch q
   | law n =>
     change b ∈ Declaration.dependsOn equalityPresentation (.law n) ↔
       toName b ∈ Declaration.dependsOn paddedPresentation (.law (.inl ()))
@@ -231,9 +250,22 @@ private theorem equalityDependencies (a b : Declaration equalityPresentation) :
       Declaration.nonderived_dependencies (P := paddedPresentation) (.inl ()) (fun h => LawRole.noConfusion h)]
     change b ∈ Declaration.lawBody (P := equalityPresentation) literalLaw ↔
       toName b ∈ Declaration.lawBody (P := paddedPresentation) literalLaw
-    cases b <;>
-      simp [literalLaw, oneGraph, zeroGraph, Declaration.lawBody, Declaration.sorts, Declaration.formula,
-        Declaration.atomic, Declaration.ofOperation, Declaration.renameNames, SignatureNames.identity, toName]
+    cases b with
+    | sort | total =>
+      simp [literalLaw, oneGraph, zeroGraph, Declaration.lawBody_eq, Declaration.sorts_eq_image,
+        Declaration.formula_truth, Declaration.formula_ex, Declaration.formula_conj, Declaration.formula_atom,
+        toName_sort, toName_total]
+      all_goals
+        erw [Declaration.atomic_graph (P := equalityPresentation), Declaration.atomic_graph (P := equalityPresentation),
+          Declaration.atomic_graph (P := paddedPresentation), Declaration.atomic_graph (P := paddedPresentation)]
+        simp [Declaration.ofOperation_total]
+    | law m =>
+      rw [toName_law]
+      exact iff_of_false (Declaration.law_notMem_lawBody m literalLaw)
+        (Declaration.law_notMem_lawBody (P := paddedPresentation) (.inl ()) literalLaw)
+    | relation r => exact nomatch r
+    | partialOp p => exact nomatch p
+    | quantity q => exact nomatch q
 
 /-- The named equality can be selected as a reading when its optional ring axioms are omitted. -/
 noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation paddedPresentation equalityContext where
@@ -250,7 +282,8 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
     suffices h : (SignatureNames.identity signature).formula oneGraph = oneGraph ∧
         (SignatureNames.identity signature).formula zeroGraph = zeroGraph by
       rw [h.1, h.2]
-    constructor <;> simp [oneGraph, zeroGraph, SignatureNames.formula]
+    constructor <;> simp [oneGraph, zeroGraph, SignatureNames.formula_conj,
+      SignatureNames.formula_truth, SignatureNames.formula_atom]
     all_goals
       first
       | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>

@@ -194,7 +194,7 @@ theorem collapse_ne_id : collapse ≠ 𝟙 primitiveModel := by
     cast equality (Models.onSort f () sort_covered one)) same
   have forbidden : false = true := by
     simpa only [collapse, Models.onSort, ObjectProperty.homMk_hom, ContextStructure.Hom.restrict_onSort,
-      ContextStructure.Hom.restrictOnSort, collapseStructure, Models.id_onSort, equality, one, selectedMap_apply,
+      ContextStructure.Hom.restrictOnSort_apply, collapseStructure, Models.id_onSort, equality, one, selectedMap_apply,
       cast_cast] using h
   cases forbidden
 

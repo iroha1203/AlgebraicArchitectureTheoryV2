@@ -193,6 +193,16 @@ inductive LinearityLaw
 def LinearityLaw.symbol : V.LinearityLaw → V.Multilinear
   | .add f _ | .smul f _ => f
 
+/-- The addition Law keeps the named multilinear symbol at its argument position. -/
+theorem LinearityLaw.symbol_add {f : V.Multilinear} (i : V.Position f) :
+    LinearityLaw.symbol V (.add f i) = f :=
+  rfl
+
+/-- The scalar multiplication Law keeps the named multilinear symbol at its argument position. -/
+theorem LinearityLaw.symbol_smul {f : V.Multilinear} (i : V.Position f) :
+    LinearityLaw.symbol V (.smul f i) = f :=
+  rfl
+
 /-- The SHIGURE equality imposed by each generated Law. -/
 noncomputable def LinearityLaw.statement : V.LinearityLaw → Law V.signature
   | .add _ i => V.addLinearityLaw i

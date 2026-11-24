@@ -35,6 +35,11 @@ variable {P : PrimitivePresentation.{u}}
 def sorts (Γ : List P.signature.SortType) : Set (Declaration P) :=
   Declaration.sort '' {s | s ∈ Γ}
 
+/-- A context support in Definition 3.1 contains the declared sort of each position. -/
+theorem sorts_eq_image (Γ : List P.signature.SortType) :
+    sorts (P := P) Γ = Declaration.sort '' {s | s ∈ Γ} :=
+  rfl
+
 /-- The extended context retains its new sort and every previous sort. -/
 theorem sorts_cons_subset {Γ : List P.signature.SortType} {s : P.signature.SortType}
     {V : Set (Declaration P)} (head : Declaration.sort s ∈ V) (tail : sorts Γ ⊆ V) :
@@ -50,12 +55,50 @@ def ofOperation : Operation P.signature → Declaration P
   | .partialOp p => .partialOp p
   | .quantity q => .quantity q
 
+/-- The declaration support of a total graph uses the total-symbol tag. -/
+theorem ofOperation_total (f : P.signature.Total) :
+    ofOperation (P := P) (.total f) = .total f :=
+  rfl
+
+/-- The declaration support of a partial graph uses the partial-symbol tag. -/
+theorem ofOperation_partialOp (p : P.signature.Partial) :
+    ofOperation (P := P) (.partialOp p) = .partialOp p :=
+  rfl
+
+/-- The declaration support of a quantity graph uses the quantity-symbol tag. -/
+theorem ofOperation_quantity (q : P.signature.Quantity) :
+    ofOperation (P := P) (.quantity q) = .quantity q :=
+  rfl
+
 /-- A primitive formula refers to its typed relation, domain, or graph declaration. -/
 def atomic {Γ : List P.signature.SortType} : Atomic P.signature Γ → Set (Declaration P)
   | .eq _ _ => ∅
   | .rel r _ => {.relation r}
   | .domain p _ => {.partialOp p}
   | .graph op _ _ => {ofOperation op}
+
+/-- Equality adds no primitive declaration to the support of its variables. -/
+theorem atomic_eq {Γ : List P.signature.SortType} {s : P.signature.SortType} (x y : Var Γ s) :
+    atomic (P := P) (.eq x y) = ∅ :=
+  rfl
+
+/-- A relation atom refers to its declared relation. -/
+theorem atomic_rel {Γ : List P.signature.SortType} (r : P.signature.Rel)
+    (vars : Renaming (P.signature.relInputs r) Γ) :
+    atomic (P := P) (.rel r vars) = {.relation r} :=
+  rfl
+
+/-- A domain atom refers to its declared partial operation. -/
+theorem atomic_domain {Γ : List P.signature.SortType} (p : P.signature.Partial)
+    (vars : Renaming (P.signature.partialArity p).inputs Γ) :
+    atomic (P := P) (.domain p vars) = {.partialOp p} :=
+  rfl
+
+/-- A graph atom refers to the declaration determined by its operation tag. -/
+theorem atomic_graph {Γ : List P.signature.SortType} (op : Operation P.signature)
+    (vars : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
+    atomic (P := P) (.graph op vars y) = {ofOperation op} :=
+  rfl
 
 /-- The primitive declarations mentioned by a positive formula and its bound sorts. -/
 def formula : {Γ : List P.signature.SortType} → Formula P.signature Γ → Set (Declaration P)
@@ -65,6 +108,37 @@ def formula : {Γ : List P.signature.SortType} → Formula P.signature Γ → Se
   | _, .conj p q => formula p ∪ formula q
   | _, .disj p q => formula p ∪ formula q
   | _, @Formula.ex _ _ s p => {Declaration.sort s} ∪ formula p
+
+/-- An atomic formula inherits its primitive declaration support. -/
+theorem formula_atom {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
+    formula (P := P) (.atom a) = atomic a :=
+  rfl
+
+/-- Truth adds no primitive support. -/
+theorem formula_truth {Γ : List P.signature.SortType} :
+    formula (P := P) (Γ := Γ) .truth = ∅ :=
+  rfl
+
+/-- Falsehood adds no primitive support. -/
+theorem formula_falsehood {Γ : List P.signature.SortType} :
+    formula (P := P) (Γ := Γ) .falsehood = ∅ :=
+  rfl
+
+/-- A conjunction uses the primitive declarations of both of its formulas. -/
+theorem formula_conj {Γ : List P.signature.SortType} (p q : Formula P.signature Γ) :
+    formula (P := P) (p.conj q) = formula p ∪ formula q :=
+  rfl
+
+/-- A disjunction uses the primitive declarations of both of its formulas. -/
+theorem formula_disj {Γ : List P.signature.SortType} (p q : Formula P.signature Γ) :
+    formula (P := P) (p.disj q) = formula p ∪ formula q :=
+  rfl
+
+/-- The support of an existential includes its bound sort and the body's primitive references. -/
+theorem formula_ex {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (p : Formula P.signature (s :: Γ)) :
+    formula (P := P) p.ex = {Declaration.sort s} ∪ formula p :=
+  rfl
 
 /-- An atom's support includes all its free context, even positions unused by the atom. -/
 def atomicSupport {Γ : List P.signature.SortType} (a : Atomic P.signature Γ) :
@@ -79,6 +153,11 @@ def formulaSupport {Γ : List P.signature.SortType} (p : Formula P.signature Γ)
 /-- Every position and primitive mentioned by a written Law. -/
 def lawBody (law : Law P.signature) : Set (Declaration P) :=
   sorts law.context ∪ formula law.input ∪ formula law.conclusion
+
+/-- The written part of a Law keeps the context sorts and both formula supports. -/
+theorem lawBody_eq (law : Law P.signature) :
+    lawBody (P := P) law = sorts law.context ∪ formula law.input ∪ formula law.conclusion :=
+  rfl
 
 /-- Read the contexts and formulas of a sequent in the presentation with the same signature. -/
 private def sequentSupport {sig : Signature.{u}} (same : sig = P.signature)
@@ -129,6 +208,15 @@ def ringVocabularySupport {s : P.signature.SortType} (ring : RingVocabulary P.si
     ofOperation ring.add.symbol.operation, ofOperation ring.neg.symbol.operation,
     ofOperation ring.mul.symbol.operation}
 
+/-- A written ring contributes the declarations of its zero, unit, addition,
+negation and multiplication symbols to the context support. -/
+theorem ringVocabularySupport_eq {s : P.signature.SortType} (ring : RingVocabulary P.signature s) :
+    ringVocabularySupport (P := P) ring =
+      {ofOperation ring.zero.symbol.operation, ofOperation ring.one.symbol.operation,
+        ofOperation ring.add.symbol.operation, ofOperation ring.neg.symbol.operation,
+        ofOperation ring.mul.symbol.operation} :=
+  rfl
+
 /-- The declarations needed to read an ordered ring residual. -/
 def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
   match P.ringEquation name with
@@ -159,6 +247,12 @@ def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declarati
       | .derived => derivation (P.derived name role)
       | .required | .additional => ∅
 
+/-- A total operation in Definition 3.1 depends on its input and output sorts. -/
+theorem total_dependencies (f : P.signature.Total) :
+    dependsOn P (.total f) =
+      sorts ((P.signature.totalArity f).output :: (P.signature.totalArity f).inputs) :=
+  rfl
+
 /-- A partial operation retains its arity and the data of any declared domain inclusion. -/
 theorem partial_dependencies (p : P.signature.Partial) :
     dependsOn P (.partialOp p) =
@@ -169,6 +263,21 @@ theorem partial_dependencies (p : P.signature.Partial) :
           {a | ∃ (s : P.signature.SortType) (i : Var (P.signature.partialArity p).inputs s),
             a = ofOperation (data.symbol i).operation} :=
   rfl
+
+/-- A declared domain inclusion adds its stated sort to the operation's dependencies. -/
+theorem partial_domainSort_mem_dependsOn {p : P.signature.Partial} (data : DomainInclusions p)
+    (attached : P.domainInclusions p = some data) :
+    Declaration.sort data.domainSort ∈ dependsOn P (.partialOp p) := by
+  rw [partial_dependencies, attached]
+  exact Or.inr (Or.inl (Set.mem_singleton _))
+
+/-- A declared domain inclusion adds every named coordinate to the operation's dependencies. -/
+theorem partial_domainSymbol_mem_dependsOn {p : P.signature.Partial} (data : DomainInclusions p)
+    (attached : P.domainInclusions p = some data) {s : P.signature.SortType}
+    (i : Var (P.signature.partialArity p).inputs s) :
+    ofOperation (data.symbol i).operation ∈ dependsOn P (.partialOp p) := by
+  rw [partial_dependencies, attached]
+  exact Or.inr (Or.inr ⟨s, i, rfl⟩)
 
 /-- A derived Law retains its written support and the references from its proof tree. -/
 theorem derived_dependencies (name : P.laws.LawName) (role : P.laws.role name = .derived) :

@@ -2260,4 +2260,89 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 
 end SHIGURE.AxiomAudit
 
+-- Public constructor, comparison and example theorems used without unfolding their definitions.
+#shigure_assert_standard_axioms_of [
+  -- CoefficientReading
+  CoefficientReading.LocalPointRule.agreesOnNative_iff,
+  -- ContextGluing
+  DeclarationContext.Match.toPieceCarrier_apply,
+  DeclarationContext.Match.localView_eq_pullback,
+  -- ContextGluingMaps
+  DeclarationContext.Match.arrowView_apply,
+  -- ContextMorphisms
+  ContextStructure.Hom.restrictOnSort_apply,
+  -- ContextSelectedMorphisms
+  DeclarationContext.Selected.writeOnSort_apply,
+  -- ContextSelectedStructures
+  DeclarationContext.Selected.readCarrierEquiv_eq_refl,
+  DeclarationContext.Selected.extendedEquiv_eq_cast,
+  -- ContextSelectedSyntax
+  DeclarationContext.Selected.selectGraph_total,
+  DeclarationContext.Selected.selectGraph_partialOp,
+  DeclarationContext.Selected.selectGraph_quantity,
+  DeclarationContext.Selected.selectAtomic_eq,
+  DeclarationContext.Selected.selectAtomic_rel,
+  DeclarationContext.Selected.selectAtomic_domain,
+  DeclarationContext.Selected.selectAtomic_graph,
+  DeclarationContext.Selected.selectFormula_atom,
+  DeclarationContext.Selected.selectFormula_truth,
+  DeclarationContext.Selected.selectFormula_falsehood,
+  DeclarationContext.Selected.selectFormula_conj,
+  DeclarationContext.Selected.selectFormula_disj,
+  DeclarationContext.Selected.selectFormula_ex,
+  DeclarationContext.Selected.selectLaw_eq,
+  -- ContextSelectedVocabulary
+  DeclarationContext.Selected.selectRenaming_apply,
+  -- DeclarationContexts
+  Declaration.sorts_eq_image,
+  Declaration.ofOperation_total,
+  Declaration.ofOperation_partialOp,
+  Declaration.ofOperation_quantity,
+  Declaration.atomic_eq,
+  Declaration.atomic_rel,
+  Declaration.atomic_domain,
+  Declaration.atomic_graph,
+  Declaration.formula_atom,
+  Declaration.formula_truth,
+  Declaration.formula_falsehood,
+  Declaration.formula_conj,
+  Declaration.formula_disj,
+  Declaration.formula_ex,
+  Declaration.lawBody_eq,
+  Declaration.ringVocabularySupport_eq,
+  Declaration.total_dependencies,
+  Declaration.partial_domainSort_mem_dependsOn,
+  Declaration.partial_domainSymbol_mem_dependsOn,
+  -- MarkedVocabulary
+  Marked.Vocabulary.LinearityLaw.symbol_add,
+  Marked.Vocabulary.LinearityLaw.symbol_smul,
+  -- ReadingExamples
+  Chapter1.AdditionalCoefficientInputs.additional_retains_source_sort,
+  Chapter1.AdditionalCoefficientInputs.additional_not_retaining_source_sort,
+  -- RestrictedEvaluation
+  RestrictedEvaluation.atomic_eq_iff,
+  RestrictedEvaluation.atomic_rel_iff,
+  RestrictedEvaluation.atomic_domain_iff,
+  RestrictedEvaluation.atomic_graph_iff,
+  RestrictedEvaluation.holds_atom_iff,
+  RestrictedEvaluation.holds_truth_iff,
+  RestrictedEvaluation.holds_falsehood_iff,
+  RestrictedEvaluation.holds_conj_iff,
+  RestrictedEvaluation.holds_disj_iff,
+  RestrictedEvaluation.holds_ex_iff,
+  -- SelectedPresentation
+  SignatureNames.formula_atom,
+  SignatureNames.formula_truth,
+  SignatureNames.formula_conj,
+  -- Substitution
+  Term.rename_var,
+  -- Syntax
+  Formula.rename_truth,
+  Formula.rename_falsehood,
+  Formula.holds_truth_iff,
+  Formula.holds_falsehood_iff,
+  TotalSymbol.operation_ordinary,
+  TotalSymbol.operation_quantity
+]
+
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit

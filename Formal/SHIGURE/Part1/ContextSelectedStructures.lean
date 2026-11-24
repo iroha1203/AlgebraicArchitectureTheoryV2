@@ -22,6 +22,13 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 def readCarrierEquiv (A : ContextStructure U) : CarrierEquiv U A.carrier (fun s => A.carrier s.val) :=
   fun s _ => Equiv.refl (A.carrier s)
 
+/-- Reading a retained carrier for Proposition 3.2 identifies it by the
+identity equivalence, since its original type is used in the selected structure. -/
+theorem readCarrierEquiv_eq_refl (A : ContextStructure U) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) :
+    readCarrierEquiv A s keep = Equiv.refl (A.carrier s) :=
+  rfl
+
 /-- Read a context structure as an ordinary structure over the actual selected signature. -/
 noncomputable def readStructure (A : ContextStructure U) : Structure (signature U) where
   carrier s := A.carrier s.val
@@ -108,6 +115,13 @@ theorem extendedCarrier_omitted (B : Structure (signature U)) (s : P.signature.S
 /-- Each kept type corresponds to the selected structure's carrier. -/
 noncomputable def extendedEquiv (B : Structure (signature U)) : CarrierEquiv U (extendedCarrier B) B.carrier :=
   fun s keep => Equiv.cast (extendedCarrier_kept B s keep)
+
+/-- The full-carrier comparison for a retained original sort in Proposition 3.2
+is the equivalence obtained from its carrier type equality. -/
+theorem extendedEquiv_eq_cast (B : Structure (signature U)) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) :
+    extendedEquiv B s keep = Equiv.cast (extendedCarrier_kept B s keep) :=
+  rfl
 
 /-- Read the selected structure's primitive facts with their original names. -/
 noncomputable def extendedEvaluation (B : Structure (signature U)) : RestrictedEvaluation U (extendedCarrier B) where

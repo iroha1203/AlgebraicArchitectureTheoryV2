@@ -520,6 +520,22 @@ def LocalPointRule.AgreesOnNative {W : DeclarationContext P} (rule : LocalPointR
     rule X Y (reading.selection.selected.sort i) (supported i) =
       some (reading.scheme.nativePoints reading.algebra a _ (inside (supported i)))
 
+/-- Check the native point rule for Definition 1.11 on each input whose retained
+source and realized target agree with the reading. -/
+theorem LocalPointRule.agreesOnNative_iff {W : DeclarationContext P} (rule : LocalPointRule W)
+    (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations) :
+    rule.AgreesOnNative reading inside supported ↔
+      ∀ (i : reading.selection.selected.Index) (a : reading.scheme.Native),
+        let X := (reading.scheme.nativeStructure a).restrictWithin inside
+        let Y := (reading.scheme.structureOf reading.algebra (reading.scheme.realizeNative reading.algebra a))
+          |>.restrictWithin inside
+        ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees X →
+        ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees Y →
+        rule X Y (reading.selection.selected.sort i) (supported i) =
+          some (reading.scheme.nativePoints reading.algebra a _ (inside (supported i))) :=
+  Iff.rfl
+
 /-- The selected declared recipe restricts on every admissible application with the same
 retained data. Its source is a structure over the method's declarations, which can
 exist without an ambient extension. Its target is a realization of the method. -/

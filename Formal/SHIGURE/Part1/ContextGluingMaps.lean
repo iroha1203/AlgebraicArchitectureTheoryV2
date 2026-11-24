@@ -23,6 +23,14 @@ noncomputable def arrowView (i : cover.Index) : CarrierMap (cover.piece i) (A.gl
   fun s keep x => cast (B.glueCarrier_eq_piece cover i s keep).symm
     (Models.onSort (f.pieceMap i) s keep (A.toPieceCarrier cover i s keep x))
 
+/-- The local component in Theorem 3.5 acts by the piece arrow between the
+carrier identifications for the retained sort at each endpoint. -/
+theorem arrowView_apply (i : cover.Index) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ (cover.piece i).declarations) (x : A.glueCarrier cover s) :
+    arrowView cover f i s keep x = cast (B.glueCarrier_eq_piece cover i s keep).symm
+      (Models.onSort (f.pieceMap i) s keep (A.toPieceCarrier cover i s keep x)) :=
+  rfl
+
 /-- The two local arrow views have identical values at each shared sort. -/
 theorem arrowView_overlap (i j : cover.Index) (s : P.signature.SortType)
     (left : Declaration.sort s ∈ (cover.piece i).declarations)
@@ -38,7 +46,7 @@ theorem arrowView_overlap (i j : cover.Index) (s : P.signature.SortType)
   have transported := congrArg (fun z : ((B.pieceModel j).restrict R).obj.carrier s =>
     cast (B.glueCarrier_eq_piece cover j s right).symm
       (cast ((B.pieceModel j).obj.restrict_carrier R (s := s) shared) z)) agree
-  simpa only [arrowView, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, selectedMap_apply, toPieceCarrier,
+  simpa only [arrowView, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, selectedMap_apply, toPieceCarrier_apply,
     localX, a, cast_cast] using transported
 
 /-- Each retained sort supplies one covering piece for its global component map. -/
@@ -65,7 +73,7 @@ theorem toPieceCarrier_arrowView (i : cover.Index) (s : P.signature.SortType)
     (kept : Declaration.sort s ∈ (cover.piece i).declarations) (x : A.glueCarrier cover s) :
     B.toPieceCarrier cover i s kept (arrowView cover f i s kept x) =
       Models.onSort (f.pieceMap i) s kept (A.toPieceCarrier cover i s kept x) := by
-  simp only [arrowView, toPieceCarrier, cast_cast]
+  simp only [arrowView, toPieceCarrier_apply, cast_cast]
   rfl
 
 /-- Identifying an image tuple with the target piece agrees with mapping it there. -/
@@ -89,7 +97,7 @@ theorem glue_relation (r : P.signature.Rel) (keep : Declaration.relation r ∈ U
     exact held
   have preserved : (B.localView cover i).relation r localKept
       (mapAssignment (arrowView cover f i) (relationInputs r localKept) e) := by
-    simp only [localView, RestrictedEvaluation.pullback_relation, arrowView_assignment] at input ⊢
+    simp only [localView_eq_pullback, RestrictedEvaluation.pullback_relation, arrowView_assignment] at input ⊢
     exact (show ContextStructure.Hom _ _ from (f.pieceMap i).hom).relation_mem r localKept _ input
   rw [← B.glueEvaluation_view cover i, RestrictedEvaluation.pullback_relation, mapAssignment_id,
     ← glueAssignment_eq_piece cover f i] at preserved
@@ -108,7 +116,7 @@ theorem glue_domain (p : P.signature.Partial) (keep : Declaration.partialOp p �
     exact held
   have preserved : (B.localView cover i).domain p localKept
       (mapAssignment (arrowView cover f i) (operationInputs (.partialOp p) localKept) e) := by
-    simp only [localView, RestrictedEvaluation.pullback_domain, arrowView_assignment] at input ⊢
+    simp only [localView_eq_pullback, RestrictedEvaluation.pullback_domain, arrowView_assignment] at input ⊢
     exact (show ContextStructure.Hom _ _ from (f.pieceMap i).hom).domain_mem p localKept _ input
   rw [← B.glueEvaluation_view cover i, RestrictedEvaluation.pullback_domain, mapAssignment_id,
     ← glueAssignment_eq_piece cover f i] at preserved
@@ -128,7 +136,7 @@ theorem glue_graph (op : Operation P.signature) (keep : Declaration.ofOperation 
   have preserved : (B.localView cover i).graph op localKept
       (mapAssignment (arrowView cover f i) (operationInputs op localKept) e)
       (arrowView cover f i op.arity.output (operationOutput op localKept) y) := by
-    simp only [localView, RestrictedEvaluation.pullback_graph, arrowView_assignment, toPieceCarrier_arrowView]
+    simp only [localView_eq_pullback, RestrictedEvaluation.pullback_graph, arrowView_assignment, toPieceCarrier_arrowView]
       at input ⊢
     exact (show ContextStructure.Hom _ _ from (f.pieceMap i).hom).graph_mem op localKept _ _ input
   rw [← B.glueEvaluation_view cover i, RestrictedEvaluation.pullback_graph, mapAssignment_id,
@@ -155,7 +163,7 @@ theorem glueMap_restrict (i : cover.Index) :
   apply Models.hom_ext
   intro s keep x
   simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, glueMap_onSort,
-    glueOnSort_eq_piece cover f i s keep, arrowView, toPieceCarrier, selectedMap_apply, cast_cast]
+    glueOnSort_eq_piece cover f i s keep, arrowView, toPieceCarrier_apply, selectedMap_apply, cast_cast]
   rfl
 
 end Match

@@ -109,6 +109,14 @@ noncomputable def restrictOnSort (f : Hom A B) (inside : V ≤ U) :
   fun s keep x => cast (B.restrict_carrier inside (s := s) keep).symm
     (f.onSort s (inside keep) (selectedMap V A.carrier s keep x))
 
+/-- The restricted component at a retained sort transports the given arrow
+using the source and target carrier identifications of Proposition 3.2. -/
+theorem restrictOnSort_apply (f : Hom A B) (inside : V ≤ U) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ V.declarations) (x : (A.restrict inside).carrier s) :
+    f.restrictOnSort inside s keep x = cast (B.restrict_carrier inside (s := s) keep).symm
+      (f.onSort s (inside keep) (selectedMap V A.carrier s keep x)) :=
+  rfl
+
 /-- A local component is exactly the original component after identifying the retained carriers. -/
 theorem selectedMap_restrictOnSort (f : Hom A B) (inside : V ≤ U) (s : P.signature.SortType)
     (keep : Declaration.sort s ∈ V.declarations) (x : (A.restrict inside).carrier s) :

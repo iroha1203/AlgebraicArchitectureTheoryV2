@@ -54,6 +54,13 @@ noncomputable def toPieceCarrier (i : cover.Index) :
     CarrierMap (cover.piece i) (A.glueCarrier cover) (A.pieceModel i).obj.carrier :=
   fun s kept => cast (A.glueCarrier_eq_piece cover i s kept)
 
+/-- The carrier comparison used in Theorems 3.4–3.5 sends a value to a piece
+by the carrier equality supplied by that piece's retained sort. -/
+theorem toPieceCarrier_apply (i : cover.Index) (s : P.signature.SortType)
+    (kept : Declaration.sort s ∈ (cover.piece i).declarations) (x : A.glueCarrier cover s) :
+    A.toPieceCarrier cover i s kept x = cast (A.glueCarrier_eq_piece cover i s kept) x :=
+  rfl
+
 /-- Each identification with a local carrier has an inverse. -/
 theorem toPieceCarrier_bijective (i : cover.Index) (s : P.signature.SortType)
     (kept : Declaration.sort s ∈ (cover.piece i).declarations) :
@@ -63,6 +70,13 @@ theorem toPieceCarrier_bijective (i : cover.Index) (s : P.signature.SortType)
 /-- Read the retained primitives of a piece on the common glued carrier family. -/
 noncomputable def localView (i : cover.Index) : RestrictedEvaluation (cover.piece i) (A.glueCarrier cover) :=
   (A.pieceModel i).obj.evaluation.pullback (le_refl _) (A.toPieceCarrier cover i)
+
+/-- For Theorem 3.4 the local view is the pullback along the carrier
+identification for the chosen piece. The selected declarations stay fixed. -/
+theorem localView_eq_pullback (i : cover.Index) :
+    A.localView cover i =
+      (A.pieceModel i).obj.evaluation.pullback (le_refl _) (A.toPieceCarrier cover i) :=
+  rfl
 
 /-- The local views agree on every overlap as evaluations on the same carrier family. -/
 theorem localView_overlap (i j : cover.Index) :

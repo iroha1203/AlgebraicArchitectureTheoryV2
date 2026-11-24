@@ -211,7 +211,7 @@ private theorem linearity_supported (right : Bool) (linearity : vocabulary.Linea
   cases linearity with
   | add name i | smul name i =>
     obtain rfl := argument_eq name i
-    cases name <;> cases right <;> simp [LinearityLaw.symbol, Op.right] at side
+    cases name <;> cases right <;> simp [LinearityLaw.symbol_add, LinearityLaw.symbol_smul, Op.right] at side
     all_goals
       simp only [LinearityLaw.statement_add, LinearityLaw.statement_smul, addLinearityLaw_eq,
         smulLinearityLaw_eq, unary_updated]

@@ -34,8 +34,10 @@ def graphRuleName : GraphAxiom P.signature → Declaration P
 /-- Every structural graph rule refers to its primitive in its written sequent. -/
 theorem graphRuleName_mem_lawBody (rule : GraphAxiom P.signature) :
     graphRuleName (P := P) rule ∈ lawBody rule.toLaw := by
-  cases rule <;> simp [graphRuleName, lawBody, GraphAxiom.toLaw, GraphAxiom.hasOutput,
-    formula, atomic, ofOperation]
+  cases rule <;> simp [graphRuleName, lawBody_eq, GraphAxiom.toLaw_functional, GraphAxiom.toLaw_totality,
+    GraphAxiom.toLaw_quantityTotality, GraphAxiom.toLaw_graphImpliesDomain, GraphAxiom.toLaw_domainImpliesGraph,
+    GraphAxiom.hasOutput_eq_ex_graph, formula_atom, formula_truth, formula_conj, formula_ex,
+    atomic_eq, atomic_domain, atomic_graph, ofOperation_total, ofOperation_partialOp, ofOperation_quantity]
 
 /-- The proof of a graph rule uses the primitive in that structural rule. -/
 theorem graphRuleName_mem_derivation (rule : GraphAxiom P.signature) :

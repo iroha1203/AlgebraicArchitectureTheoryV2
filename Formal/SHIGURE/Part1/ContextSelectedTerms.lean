@@ -434,11 +434,11 @@ theorem selectFormula_termEq {Γ : List P.signature.SortType} {s : P.signature.S
 theorem termReferences_rename {Γ Δ : List P.signature.SortType} {s : P.signature.SortType}
     (t : Term P.signature Γ s) (ρ : Renaming Γ Δ) : termReferences (t.rename ρ) = termReferences t := by
   induction t generalizing Δ with
-  | var i => rfl
+  | var i => simp only [Term.rename_var, termReferences]
   | app op args ih =>
-    simp only [Term.rename, termReferences, ih]
+    simp only [Term.rename_app, termReferences, ih]
   | letBind init body hi hb =>
-    simp only [Term.rename, termReferences, hi, hb]
+    simp only [Term.rename_letBind, termReferences, hi, hb]
 
 /-- Rename each argument of an application indexed by an equal arity. -/
 private theorem rename_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)

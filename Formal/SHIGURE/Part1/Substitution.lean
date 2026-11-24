@@ -39,6 +39,11 @@ def rename : {Γ Δ : List sig.SortType} → {s : sig.SortType} →
   | _, _, _, ρ, .app op args => .app op (fun i => rename ρ (args i))
   | _, _, _, ρ, .letBind init body => .letBind (rename ρ init) (rename ρ.lift body)
 
+/-- Renaming a variable changes its free position and adds no primitive symbol. -/
+theorem rename_var (ρ : Renaming Γ Δ) (i : Var Γ s) :
+    (Term.var (sig := sig) i).rename ρ = .var (ρ i) :=
+  rfl
+
 /-- Renaming an application renames each argument in place. -/
 theorem rename_app (ρ : Renaming Γ Δ) (op : Operation sig)
     (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t) :

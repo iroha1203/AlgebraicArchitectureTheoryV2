@@ -57,26 +57,27 @@ theorem selectRule_toLaw (rule : GraphAxiom P.signature)
   cases rule with
   | functional op =>
     cases op <;>
-      simp only [GraphAxiom.toLaw_functional, selectLaw, selectFormula, selectAtomic, selectGraph,
-        selectRule, operation, signature, arity, context, selectVar] <;>
+      simp only [GraphAxiom.toLaw_functional, selectLaw_eq, selectFormula_conj, selectFormula_atom,
+        selectAtomic_graph, selectAtomic_eq, selectGraph_total, selectGraph_partialOp, selectGraph_quantity,
+        selectRule] <;>
       congr 6 <;> exact selectRenaming_there_there _ _ _
   | totality f =>
-    simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw, selectFormula, selectAtomic,
-      selectGraph, selectRule, operation, signature, arity, context, selectVar]
+    simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq, selectFormula_truth,
+      selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_total, selectRule]
     congr 6
     exact selectRenaming_there _ _
   | quantityTotality q =>
-    simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw, selectFormula,
-      selectAtomic, selectGraph, selectRule, operation, signature, arity, context, selectVar]
+    simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
+      selectFormula_truth, selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_quantity, selectRule]
     congr 6
     exact selectRenaming_there _ _
   | graphImpliesDomain p =>
-    simp only [GraphAxiom.toLaw_graphImpliesDomain, selectLaw, selectFormula, selectAtomic, selectGraph,
-      selectRule, operation, signature, arity, context, selectVar]
+    simp only [GraphAxiom.toLaw_graphImpliesDomain, selectLaw_eq, selectFormula_atom, selectAtomic_graph,
+      selectAtomic_domain, selectGraph_partialOp, selectRule]
     congr 6 <;> exact selectRenaming_there _ _
   | domainImpliesGraph p =>
-    simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, selectLaw, selectFormula,
-      selectAtomic, selectGraph, selectRule, operation, signature, arity, context, selectVar]
+    simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
+      selectFormula_atom, selectFormula_ex, selectAtomic_domain, selectAtomic_graph, selectGraph_partialOp, selectRule]
     congr 6 <;> first | exact selectRenaming_id _ | exact selectRenaming_there _ _
 
 /-- The root sequent is included among the references of any original derivation. -/
@@ -191,7 +192,7 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     let output := derivationOf_result source node keep
     let sub : Declaration.derivationOf rfl source child ⊆ U.declarations := fun _ h => keep (Or.inr h)
     have inner := ih sub
-    simp only [selectFormula] at inner
+    simp only [selectFormula_conj] at inner
     have lhs := selectFormula_there c (leftSupport input) (leftSupport (derivationOf_input source child sub))
     have rhs := selectFormula_there q output (derivationOf_result source child sub)
     erw [lhs, rhs] at inner
@@ -208,7 +209,7 @@ private noncomputable def selectDerivationUsing {I J : Type u}
       · apply out (Or.inr ?_)
         erw [Declaration.formula_rename (P := P) p (Renaming.openHead y)]
         exact ref
-    simp only [selectFormula, selectAtomic]
+    simp only [selectFormula_conj, selectFormula_atom, selectAtomic_eq]
     have lhs := selectFormula_openHead p x body (rightSupport (derivationOf_input source node keep))
     have rhs := selectFormula_openHead p y body out
     erw [lhs, rhs]

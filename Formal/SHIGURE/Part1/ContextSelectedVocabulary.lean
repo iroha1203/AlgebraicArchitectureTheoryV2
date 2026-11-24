@@ -158,6 +158,14 @@ def selectRenaming {Γ Δ : List P.signature.SortType} (keepΓ : Declaration.sor
     Renaming (context Γ keepΓ) (context Δ keepΔ) :=
   fun i => selectVar keepΔ (ρ (ambientVar keepΓ i))
 
+/-- A selected renaming reads the original variable, renames it, and selects
+the target position. Both contexts contain the sorts of the original map. -/
+theorem selectRenaming_apply {Γ Δ : List P.signature.SortType}
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
+    (ρ : Renaming Γ Δ) {s : SortName U} (i : Var (context Γ keepΓ) s) :
+    selectRenaming keepΓ keepΔ ρ i = selectVar keepΔ (ρ (ambientVar keepΓ i)) :=
+  rfl
+
 /-- A selected variable map actually maps the original position. -/
 @[simp] theorem renaming_selectVar {Γ Δ : List P.signature.SortType} (keepΓ : Declaration.sorts Γ ⊆ U.declarations)
     (keepΔ : Declaration.sorts Δ ⊆ U.declarations) (ρ : Renaming Γ Δ)

@@ -863,7 +863,7 @@ theorem uniform_native_points_have_local_rule :
       cases right
       rfl
     exact congrArg some (funext (composed xs ys))
-  · dsimp only [CoefficientReading.LocalPointRule.AgreesOnNative]
+  · simp only [CoefficientReading.LocalPointRule.agreesOnNative_iff]
     intro i a
     cases i
     cases a
@@ -1326,6 +1326,19 @@ private def additional {S T : Type} {s : S} (f : S → T) :
   extra := slot s
   coordinate _ := ⟨.inr (), rfl⟩
   extra_used _ := ⟨(), rfl⟩
+
+/-- The additional input in Definition 1.11 can be transported when its
+actual source sort is retained. Here the only source sort used is `true`. -/
+theorem additional_retains_source_sort :
+    (additional (s := true) (id : Bool → Bool)).RetainsSourceSorts (· = true) :=
+  fun _ => rfl
+
+/-- Retaining only `false` cannot supply the same additional input of sort `true`. -/
+theorem additional_not_retaining_source_sort :
+    ¬ (additional (s := true) (id : Bool → Bool)).RetainsSourceSorts (· = false) := by
+  intro retained
+  have wrongSort : true = false := retained ()
+  cases wrongSort
 
 /-- Even when two sorts have the same image, a name cannot change its original sort. -/
 theorem extra_cannot_change_original_sort :

@@ -147,6 +147,16 @@ def rename : {Γ Δ : List sig.SortType} → Renaming Γ Δ → Formula sig Γ �
     (Formula.atom a).rename ρ = .atom (a.rename ρ) :=
   rfl
 
+/-- Renaming free positions preserves truth in the new context. -/
+theorem rename_truth (ρ : Renaming Γ Δ) :
+    (Formula.truth (sig := sig) (Γ := Γ)).rename ρ = .truth :=
+  rfl
+
+/-- Renaming free positions preserves falsehood in the new context. -/
+theorem rename_falsehood (ρ : Renaming Γ Δ) :
+    (Formula.falsehood (sig := sig) (Γ := Γ)).rename ρ = .falsehood :=
+  rfl
+
 /-- Renaming a conjunction acts on each conjunct. -/
 @[simp] theorem rename_conj (p q : Formula sig Γ) (ρ : Renaming Γ Δ) :
     (p.conj q).rename ρ = (p.rename ρ).conj (q.rename ρ) :=
@@ -175,6 +185,16 @@ def Holds : {Γ : List sig.SortType} → Formula sig Γ → (A : Structure sig) 
 /-- Satisfaction of atoms is their interpretation in the structure. -/
 @[simp] theorem holds_atom (a : Atomic sig Γ) (A : Structure sig) (e : Assignment A.carrier Γ) :
     (Formula.atom a).Holds A e ↔ a.Holds A e :=
+  Iff.rfl
+
+/-- The truth formula always holds on an assignment. -/
+theorem holds_truth_iff (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Formula.truth (sig := sig) (Γ := Γ)).Holds A e ↔ True :=
+  Iff.rfl
+
+/-- The falsehood formula never holds on an assignment. -/
+theorem holds_falsehood_iff (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Formula.falsehood (sig := sig) (Γ := Γ)).Holds A e ↔ False :=
   Iff.rfl
 
 /-- Conjunction combines the two satisfaction conditions. -/
@@ -554,6 +574,16 @@ inductive TotalSymbol (sig : Signature.{u}) : Type u
 def TotalSymbol.operation {sig : Signature.{u}} : TotalSymbol sig → Operation sig
   | .ordinary f => .total f
   | .quantity q => .quantity q
+
+/-- An ordinary total symbol contributes its total operation to term syntax. -/
+theorem TotalSymbol.operation_ordinary {sig : Signature.{u}} (f : sig.Total) :
+    (TotalSymbol.ordinary f).operation = .total f :=
+  rfl
+
+/-- A quantity symbol contributes its marked quantity operation to term syntax. -/
+theorem TotalSymbol.operation_quantity {sig : Signature.{u}} (q : sig.Quantity) :
+    (TotalSymbol.quantity q).operation = .quantity q :=
+  rfl
 
 /-- A declared total symbol whose input and output profile has been identified. -/
 structure TypedTotal (sig : Signature.{u}) (profile : Arity sig.SortType) : Type u where

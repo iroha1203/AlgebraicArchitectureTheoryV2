@@ -33,18 +33,14 @@ theorem ambientArity_injective : Function.Injective (ambientArity (U := U)) := b
 
 /-- A retained partial declaration also retains its explicitly declared domain sort. -/
 theorem domainSortKept (p : Partial U) (data : DomainInclusions p.val)
-    (attached : P.domainInclusions p.val = some data) : Declaration.sort data.domainSort ∈ U.declarations := by
-  apply U.closed p.property
-  simp only [Declaration.dependsOn, attached]
-  exact Or.inr (Or.inl (Set.mem_singleton _))
+    (attached : P.domainInclusions p.val = some data) : Declaration.sort data.domainSort ∈ U.declarations :=
+  U.closed p.property (Declaration.partial_domainSort_mem_dependsOn data attached)
 
 /-- A retained partial declaration also retains every named coordinate of its inclusion. -/
 theorem domainSymbolKept (p : Partial U) (data : DomainInclusions p.val) (attached : P.domainInclusions p.val = some data)
     {s : P.signature.SortType} (i : Var (P.signature.partialArity p.val).inputs s) :
-    Declaration.ofOperation (data.symbol i).operation ∈ U.declarations := by
-  apply U.closed p.property
-  simp only [Declaration.dependsOn, attached]
-  exact Or.inr (Or.inr ⟨s, i, rfl⟩)
+    Declaration.ofOperation (data.symbol i).operation ∈ U.declarations :=
+  U.closed p.property (Declaration.partial_domainSymbol_mem_dependsOn data attached i)
 
 /-- Restrict the domain inclusion with its original sort and all ordered coordinate operations. -/
 def selectDomainInclusions (p : Partial U) (data : DomainInclusions p.val)

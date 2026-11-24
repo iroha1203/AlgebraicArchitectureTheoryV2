@@ -151,7 +151,7 @@ private theorem true_not_referenced :
     Declaration.sorts [()] ∪ (∅ : Set (Declaration presentation)) ∪
       ({Declaration.sort ()} ∪
         (({Declaration.sort ()} ∪ ((∅ ∪ ∅) ∪ {Declaration.total false})) ∪ ∅)) at used
-  simp [Declaration.sorts] at used
+  simp [Declaration.sorts_eq_image] at used
 
 /-- The left piece retains the Law, its operation and the entire common sort. -/
 def left : DeclarationContext presentation where

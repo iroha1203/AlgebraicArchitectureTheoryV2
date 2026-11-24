@@ -130,6 +130,22 @@ def formula (names : SignatureNames S T) :
   | _, .disj p q => .disj (names.formula p) (names.formula q)
   | _, .ex p => .ex (names.formula p)
 
+/-- Renaming an atomic formula acts on its atom, with the same position list
+renamed in the target signature. -/
+theorem formula_atom (names : SignatureNames S T) {Γ : List S.SortType} (a : Atomic S Γ) :
+    names.formula (.atom a) = .atom (names.atomic a) :=
+  rfl
+
+/-- Renaming truth preserves the logical connective and reindexes its context. -/
+theorem formula_truth (names : SignatureNames S T) {Γ : List S.SortType} :
+    names.formula (Formula.truth (Γ := Γ)) = .truth :=
+  rfl
+
+/-- Renaming a conjunction renames both parts in the same context. -/
+theorem formula_conj (names : SignatureNames S T) {Γ : List S.SortType} (p q : Formula S Γ) :
+    names.formula (p.conj q) = (names.formula p).conj (names.formula q) :=
+  rfl
+
 /-- Rename the context, antecedent and conclusion of a written Law. -/
 def law (names : SignatureNames S T) (ℓ : Law S) : Law T :=
   ⟨ℓ.context.map names.onSort, names.formula ℓ.input, names.formula ℓ.conclusion⟩

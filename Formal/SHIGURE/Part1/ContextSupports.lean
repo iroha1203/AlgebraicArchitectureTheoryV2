@@ -132,11 +132,14 @@ theorem law_notMem_formula (name : P.laws.LawName) (p : Formula P.signature Γ) 
   induction p with
   | atom a =>
     cases a with
-    | eq | rel | domain => simp [formula, atomic]
-    | graph op => cases op <;> simp [formula, atomic, ofOperation]
-  | truth | falsehood => simp [formula]
-  | conj p q hp hq | disj p q hp hq => simpa only [formula, Set.mem_union, not_or] using And.intro hp hq
-  | ex p ih => simpa [formula] using ih
+    | eq | rel | domain => simp [formula_atom, atomic_eq, atomic_rel, atomic_domain]
+    | graph op => cases op <;> simp
+        [formula_atom, atomic_graph, ofOperation_total, ofOperation_partialOp, ofOperation_quantity]
+  | truth => simp [formula_truth]
+  | falsehood => simp [formula_falsehood]
+  | conj p q hp hq => simpa only [formula_conj, Set.mem_union, not_or] using And.intro hp hq
+  | disj p q hp hq => simpa only [formula_disj, Set.mem_union, not_or] using And.intro hp hq
+  | ex p ih => simpa [formula_ex] using ih
 
 /-- The written support of a Law has only sort and primitive declarations. -/
 theorem law_notMem_lawBody (name : P.laws.LawName) (law : Law P.signature) :
@@ -144,7 +147,7 @@ theorem law_notMem_lawBody (name : P.laws.LawName) (law : Law P.signature) :
   have notSort : Declaration.law name ∉ sorts (P := P) law.context := by
     rintro ⟨s, _, h⟩
     cases h
-  simp only [lawBody, Set.mem_union, not_or, notSort, law_notMem_formula, and_self, not_false_eq_true]
+  simp only [lawBody_eq, Set.mem_union, not_or, notSort, law_notMem_formula, and_self, not_false_eq_true]
 
 /-- The dependency-closed support of a positive formula, including the free context. -/
 def formulaContext (p : Formula P.signature Γ) : DeclarationContext P :=

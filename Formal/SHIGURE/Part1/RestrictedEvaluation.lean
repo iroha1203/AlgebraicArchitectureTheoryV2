@@ -29,12 +29,16 @@ theorem formula_rename (p : Formula P.signature Γ) :
     ∀ {Δ : List P.signature.SortType} (ρ : Renaming Γ Δ),
       formula (P := P) (p.rename ρ) = formula p := by
   induction p with
-  | atom a => intro Δ ρ; cases a <;> rfl
-  | truth => intros; rfl
-  | falsehood => intros; rfl
-  | conj p q hp hq => intro Δ ρ; simp only [Formula.rename_conj, formula, hp, hq]
-  | disj p q hp hq => intro Δ ρ; simp only [Formula.rename_disj, formula, hp, hq]
-  | ex p hp => intro Δ ρ; simp only [Formula.rename_ex, formula, hp]
+  | atom a =>
+    intro Δ ρ
+    rw [Formula.rename_atom, formula_atom, formula_atom]
+    cases a <;> simp only [Atomic.rename_eq, Atomic.rename_rel, Atomic.rename_domain, Atomic.rename_graph,
+      atomic_eq, atomic_rel, atomic_domain, atomic_graph]
+  | truth => intro Δ ρ; simp only [Formula.rename_truth, formula_truth]
+  | falsehood => intro Δ ρ; simp only [Formula.rename_falsehood, formula_falsehood]
+  | conj p q hp hq => intro Δ ρ; simp only [Formula.rename_conj, formula_conj, hp, hq]
+  | disj p q hp hq => intro Δ ρ; simp only [Formula.rename_disj, formula_disj, hp, hq]
+  | ex p hp => intro Δ ρ; simp only [Formula.rename_ex, formula_ex, hp]
 
 end Declaration
 
@@ -71,6 +75,35 @@ def atomic (R : RestrictedEvaluation U X) (e : Assignment X Γ) :
   | .domain p vars, h => R.domain p (h (Or.inr (Set.mem_singleton _))) (e.pull vars)
   | .graph op vars y, h => R.graph op (h (Or.inr (Set.mem_singleton _))) (e.pull vars) (e y)
 
+/-- Evaluate equality at the two supported variable positions. -/
+theorem atomic_eq_iff (R : RestrictedEvaluation U X) (e : Assignment X Γ)
+    {s : P.signature.SortType} (x y : Var Γ s)
+    (keep : Declaration.atomicSupport (Atomic.eq (sig := P.signature) x y) ⊆ U.declarations) :
+    R.atomic e (.eq x y) keep ↔ e x = e y :=
+  Iff.rfl
+
+/-- Evaluate a supported relation at the tuple indexed by its arguments. -/
+theorem atomic_rel_iff (R : RestrictedEvaluation U X) (e : Assignment X Γ)
+    (r : P.signature.Rel) (vars : Renaming (P.signature.relInputs r) Γ)
+    (keep : Declaration.atomicSupport (.rel r vars) ⊆ U.declarations) :
+    R.atomic e (.rel r vars) keep ↔ R.relation r (keep (Or.inr (Set.mem_singleton _))) (e.pull vars) :=
+  Iff.rfl
+
+/-- A supported partial-operation domain is read on its argument tuple. -/
+theorem atomic_domain_iff (R : RestrictedEvaluation U X) (e : Assignment X Γ)
+    (p : P.signature.Partial) (vars : Renaming (P.signature.partialArity p).inputs Γ)
+    (keep : Declaration.atomicSupport (.domain p vars) ⊆ U.declarations) :
+    R.atomic e (.domain p vars) keep ↔ R.domain p (keep (Or.inr (Set.mem_singleton _))) (e.pull vars) :=
+  Iff.rfl
+
+/-- Evaluate a supported graph at its argument tuple and output position. -/
+theorem atomic_graph_iff (R : RestrictedEvaluation U X) (e : Assignment X Γ)
+    (op : Operation P.signature) (vars : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output)
+    (keep : Declaration.atomicSupport (.graph op vars y) ⊆ U.declarations) :
+    R.atomic e (.graph op vars y) keep ↔
+      R.graph op (keep (Or.inr (Set.mem_singleton _))) (e.pull vars) (e y) :=
+  Iff.rfl
+
 /-- Evaluate a positive formula using only retained primitives and bound sorts. -/
 def holds (R : RestrictedEvaluation U X) :
     {Γ : List P.signature.SortType} → (p : Formula P.signature Γ) →
@@ -94,6 +127,56 @@ def holds (R : RestrictedEvaluation U X) :
     ∃ value : X s, R.holds p
       (fun _ h => h.elim (fun h => sorts h) (fun h => supported (Or.inr (Or.inr h))))
       (Assignment.cons value e)
+
+/-- A supported atomic formula delegates to the evaluator for its atom. -/
+theorem holds_atom_iff (R : RestrictedEvaluation U X) (a : Atomic P.signature Γ)
+    (keep : Declaration.formulaSupport (.atom a) ⊆ U.declarations) (e : Assignment X Γ) :
+    R.holds (.atom a) keep e ↔ R.atomic e a keep :=
+  Iff.rfl
+
+/-- Truth has no primitive evaluation requirements in a restricted context. -/
+theorem holds_truth_iff (R : RestrictedEvaluation U X)
+    (keep : Declaration.formulaSupport (Formula.truth (sig := P.signature) (Γ := Γ)) ⊆ U.declarations)
+    (e : Assignment X Γ) :
+    R.holds .truth keep e ↔ True :=
+  Iff.rfl
+
+/-- Falsehood cannot be satisfied by a restricted assignment. -/
+theorem holds_falsehood_iff (R : RestrictedEvaluation U X)
+    (keep : Declaration.formulaSupport (Formula.falsehood (sig := P.signature) (Γ := Γ)) ⊆ U.declarations)
+    (e : Assignment X Γ) :
+    R.holds .falsehood keep e ↔ False :=
+  Iff.rfl
+
+/-- Conjunction in a restricted evaluator tests both supported formulas. -/
+theorem holds_conj_iff (R : RestrictedEvaluation U X) (p q : Formula P.signature Γ)
+    (keep : Declaration.formulaSupport (p.conj q) ⊆ U.declarations) (e : Assignment X Γ) :
+    R.holds (p.conj q) keep e ↔
+      R.holds p (fun _ h => h.elim (fun h => keep (Or.inl h)) (fun h => keep (Or.inr (Or.inl h)))) e ∧
+      R.holds q (fun _ h => h.elim (fun h => keep (Or.inl h)) (fun h => keep (Or.inr (Or.inr h)))) e :=
+  Iff.rfl
+
+/-- Disjunction in a restricted evaluator tests either supported formula. -/
+theorem holds_disj_iff (R : RestrictedEvaluation U X) (p q : Formula P.signature Γ)
+    (keep : Declaration.formulaSupport (p.disj q) ⊆ U.declarations) (e : Assignment X Γ) :
+    R.holds (p.disj q) keep e ↔
+      R.holds p (fun _ h => h.elim (fun h => keep (Or.inl h)) (fun h => keep (Or.inr (Or.inl h)))) e ∨
+      R.holds q (fun _ h => h.elim (fun h => keep (Or.inl h)) (fun h => keep (Or.inr (Or.inr h)))) e :=
+  Iff.rfl
+
+/-- An existential in a restricted evaluator ranges over the full carrier of
+its retained bound sort, including the case when there are no values. -/
+theorem holds_ex_iff (R : RestrictedEvaluation U X) {s : P.signature.SortType}
+    (p : Formula P.signature (s :: Γ)) (keep : Declaration.formulaSupport p.ex ⊆ U.declarations)
+    (e : Assignment X Γ) :
+    R.holds p.ex keep e ↔
+      ∃ value : X s, R.holds p
+        (fun _ h => h.elim
+          (fun h => Declaration.sorts_cons_subset
+            (keep (Or.inr (Or.inl (Set.mem_singleton _)))) (fun _ h => keep (Or.inl h)) h)
+          (fun h => keep (Or.inr (Or.inr h))))
+        (Assignment.cons value e) :=
+  Iff.rfl
 
 /-- The two evaluations use the same interpreted entry for a retained primitive. -/
 theorem restrict_atomic_iff (U : DeclarationContext P) (A : Structure P.signature)

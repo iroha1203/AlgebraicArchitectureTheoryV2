@@ -59,7 +59,8 @@ def presentation : PrimitivePresentation where
 /-- The constant does not occur in the visible statement of the derived Law. -/
 theorem constant_absent_from_statement :
     Declaration.total () ∉ Declaration.lawBody (P := presentation) nonemptyLaw := by
-  simp [Declaration.lawBody, Declaration.sorts, Declaration.formula, nonemptyLaw]
+  simp [Declaration.lawBody_eq, Declaration.sorts_eq_image, Declaration.formula_truth,
+    Declaration.formula_ex, nonemptyLaw]
 
 /-- The graph axiom keeps the constant among the derivation's required declarations. -/
 theorem constant_used_by_derivation :

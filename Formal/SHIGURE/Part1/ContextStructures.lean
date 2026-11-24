@@ -45,33 +45,37 @@ theorem graphRuleSupport (rule : GraphAxiom P.signature)
   | functional op =>
     have inputs := operationInputs op kept
     have output := operationOutput op kept
-    simp only [GraphAxiom.toLaw_functional, Declaration.lawBody, Declaration.formula, Declaration.atomic,
+    simp only [GraphAxiom.toLaw_functional, Declaration.lawBody_eq, Declaration.formula_conj,
+      Declaration.formula_atom, Declaration.atomic_eq, Declaration.atomic_graph,
       Set.union_self, Set.union_empty]
     exact Set.union_subset (Declaration.sorts_cons_subset output (Declaration.sorts_cons_subset output inputs))
       (Set.singleton_subset_iff.mpr kept)
   | totality f =>
     have inputs := operationInputs (.total f) kept
     have output := operationOutput (.total f) kept
-    simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody,
-      Declaration.formula, Declaration.atomic, Set.union_empty, Set.union_subset_iff, Set.singleton_subset_iff]
+    simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody_eq,
+      Declaration.formula_truth, Declaration.formula_ex, Declaration.formula_atom, Declaration.atomic_graph,
+      Set.union_empty, Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨inputs, output, kept⟩
   | quantityTotality q =>
     have inputs := operationInputs (.quantity q) kept
     have output := operationOutput (.quantity q) kept
-    simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody,
-      Declaration.formula, Declaration.atomic, Set.union_empty, Set.union_subset_iff, Set.singleton_subset_iff]
+    simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody_eq,
+      Declaration.formula_truth, Declaration.formula_ex, Declaration.formula_atom, Declaration.atomic_graph,
+      Set.union_empty, Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨inputs, output, kept⟩
   | graphImpliesDomain p =>
     have inputs := operationInputs (.partialOp p) kept
     have output := operationOutput (.partialOp p) kept
-    simp only [GraphAxiom.toLaw_graphImpliesDomain, Declaration.lawBody, Declaration.formula,
-      Declaration.atomic, Set.union_subset_iff, Set.singleton_subset_iff]
+    simp only [GraphAxiom.toLaw_graphImpliesDomain, Declaration.lawBody_eq, Declaration.formula_atom,
+      Declaration.atomic_graph, Declaration.atomic_domain, Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨⟨Declaration.sorts_cons_subset output inputs, kept⟩, kept⟩
   | domainImpliesGraph p =>
     have inputs := operationInputs (.partialOp p) kept
     have output := operationOutput (.partialOp p) kept
-    simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody,
-      Declaration.formula, Declaration.atomic, Set.union_subset_iff, Set.singleton_subset_iff]
+    simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, Declaration.lawBody_eq,
+      Declaration.formula_atom, Declaration.formula_ex, Declaration.atomic_graph, Declaration.atomic_domain,
+      Set.union_subset_iff, Set.singleton_subset_iff]
     exact ⟨⟨inputs, kept⟩, output, kept⟩
 
 /-- Onto maps at the retained sorts give an onto map on any supported assignment space. -/

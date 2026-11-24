@@ -43,31 +43,31 @@ private theorem twoSorts {s : P.signature.SortType} (hs : Declaration.sort s ∈
 private theorem keepsZero {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.zero.symbol.operation ∈ U.declarations :=
-  keep (by simp [Declaration.ringVocabularySupport])
+  keep (by simp [Declaration.ringVocabularySupport_eq])
 
 /-- Read retention of the named ring unit from the ring vocabulary support. -/
 private theorem keepsOne {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.one.symbol.operation ∈ U.declarations :=
-  keep (by simp [Declaration.ringVocabularySupport])
+  keep (by simp [Declaration.ringVocabularySupport_eq])
 
 /-- Read retention of the named addition from the ring vocabulary support. -/
 private theorem keepsAdd {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.add.symbol.operation ∈ U.declarations :=
-  keep (by simp [Declaration.ringVocabularySupport])
+  keep (by simp [Declaration.ringVocabularySupport_eq])
 
 /-- Read retention of the named negation from the ring vocabulary support. -/
 private theorem keepsNeg {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.neg.symbol.operation ∈ U.declarations :=
-  keep (by simp [Declaration.ringVocabularySupport])
+  keep (by simp [Declaration.ringVocabularySupport_eq])
 
 /-- Read retention of the named multiplication from the ring vocabulary support. -/
 private theorem keepsMul {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.mul.symbol.operation ∈ U.declarations :=
-  keep (by simp [Declaration.ringVocabularySupport])
+  keep (by simp [Declaration.ringVocabularySupport_eq])
 
 /-- Restrict the five actual operations of a ring when they are retained. -/
 def selectRingVocabulary {s : P.signature.SortType} (r : RingVocabulary P.signature s)
