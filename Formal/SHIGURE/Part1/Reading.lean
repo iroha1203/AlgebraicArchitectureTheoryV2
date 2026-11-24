@@ -41,10 +41,13 @@ the same evaluation rule in both realizations. A comparison of changed
 coefficient settings or a changed context compares the chosen evaluations
 along the structural state map. The common input has all used source
 positions and may include further positions that feed the target evaluation.
-Shared target positions must get their value from the same source state.
-The extra position's availability is checked inside that same sharing witness.
-A sort-only check would reject explicitly retained external states or accept
-a different ordinary position merely because it has the same sort.
+Shared target positions get their value from the same source state. The
+joint input is a fiber product over the positions identified by the same
+sharing witness that establishes availability. A sort-only check would
+reject an explicitly retained external state or accept a different ordinary
+position of the same sort. Additional carrier slots have no primitive
+declarations of their own. Each source piece uses its own supported
+translation, with overlap agreement deduced from their common interpretation.
 -/
 
 universe u v w x
@@ -648,10 +651,10 @@ structure ReadingContextChange (source target : Reading.{u, v, w, x})
   retained : DeclarationContext source.presentation
   /-- Restriction to these declarations takes place inside the source selection. -/
   inside : retained.declarations ⊆ source.context.declarations
-  /-- One can choose proofs whose supports are visible in the retained target declarations. -/
-  supporting : Interpretation source.presentation.theory target.presentation.theory
-  /-- The local replacements are equivalent to the chosen interpretation. -/
-  equivalent : supporting.Equivalent u
+  /-- Each source piece may use a representative supported by its assigned target pieces. -/
+  supporting : source.cover.Index → Interpretation source.presentation.theory target.presentation.theory
+  /-- Each local representative has the same meaning as the comparison's interpretation. -/
+  equivalent (i : source.cover.Index) : (supporting i).Equivalent u
   /-- A source cover piece can be compared over several target pieces. -/
   pieces : source.cover.Index → Set target.cover.Index
   /-- Target pieces independently chosen for declarations added by the comparison. -/
@@ -661,7 +664,7 @@ structure ReadingContextChange (source target : Reading.{u, v, w, x})
   /-- Each declaration's translated support is contained in the assigned target pieces. -/
   localSupport (i : source.cover.Index) {a : Declaration source.presentation} :
     a ∈ retained.declarations → a ∈ (source.cover.piece i).declarations →
-    ∀ {d}, d ∈ Declaration.translatedSupport supporting a →
+    ∀ {d}, d ∈ Declaration.translatedSupport (supporting i) a →
       ∃ j ∈ pieces i, d ∈ (target.cover.piece j).declarations
 
 namespace ReadingContextChange
@@ -669,13 +672,13 @@ namespace ReadingContextChange
 variable {source target : Reading.{u, v, w, x}}
   {u : Interpretation source.presentation.theory target.presentation.theory}
 
-/-- The retained source declaration translates entirely inside the target context. -/
+/-- A declaration in a source piece translates entirely inside the target context. -/
 theorem support_subset (transition : ReadingContextChange source target u)
-    {a : Declaration source.presentation} (ha : a ∈ transition.retained.declarations) :
-    Declaration.translatedSupport transition.supporting a ⊆ target.context.declarations := by
+    (i : source.cover.Index) {a : Declaration source.presentation}
+    (ha : a ∈ transition.retained.declarations) (inPiece : a ∈ (source.cover.piece i).declarations) :
+    Declaration.translatedSupport (transition.supporting i) a ⊆ target.context.declarations := by
   intro d hd
-  obtain ⟨i, hi⟩ := source.cover.covers (transition.inside ha)
-  obtain ⟨j, _, hj⟩ := transition.localSupport i ha hi hd
+  obtain ⟨j, _, hj⟩ := transition.localSupport i ha inPiece hd
   exact target.cover.subset j hj
 
 /-- A source sort in the restriction reaches an assigned target piece. -/
@@ -686,7 +689,7 @@ theorem sort_is_covered (transition : ReadingContextChange source target u)
       Declaration.sort (u.onSort s) ∈ (target.cover.piece j).declarations := by
   obtain ⟨i, available⟩ := source.cover.covers (transition.inside retained)
   obtain ⟨j, chosen, covered⟩ := transition.localSupport i retained available (Set.mem_singleton _)
-  exact ⟨i, j, chosen, congrFun transition.equivalent.choose s ▸ covered⟩
+  exact ⟨i, j, chosen, congrFun (transition.equivalent i).choose s ▸ covered⟩
 
 /-- Restrict a source piece to the declarations selected for this comparison. -/
 def sourcePiece (transition : ReadingContextChange source target u) (i : source.cover.Index) :
@@ -723,32 +726,33 @@ theorem targetRetained_inside (transition : ReadingContextChange source target u
 
 /-- Translate formula support using the specified target context for each declaration. -/
 private theorem formula_support_in (transition : ReadingContextChange source target u)
-    {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
+    (i : source.cover.Index) {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
     (V : Set (Declaration target.presentation)) (keep : ∀ d ∈ Declaration.formulaSupport p,
-      Declaration.translatedSupport transition.supporting d ⊆ V) :
-    Declaration.formulaSupport (transition.supporting.translation.formula p) ⊆ V := by
+      Declaration.translatedSupport (transition.supporting i) d ⊆ V) :
+    Declaration.formulaSupport ((transition.supporting i).translation.formula p) ⊆ V := by
   intro d hd
   rcases hd with hsort | hformula
   · obtain ⟨t, ht, rfl⟩ := hsort
     obtain ⟨s, hs, rfl⟩ := List.mem_map.mp ht
     exact keep (.sort s) (Or.inl ⟨s, hs, rfl⟩) (Set.mem_singleton _)
-  · exact Declaration.translated_formula_support transition.supporting p V
+  · exact Declaration.translated_formula_support (transition.supporting i) p V
       (fun d hd => keep d (Or.inr hd)) hformula
 
 /-- A supported formula translates inside the declarations of the target reading. -/
 theorem target_support (transition : ReadingContextChange source target u)
-    {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
-    (retained : Declaration.formulaSupport p ⊆ transition.retained.declarations) :
-    Declaration.formulaSupport (transition.supporting.translation.formula p) ⊆ target.context.declarations :=
-  transition.formula_support_in p _ (fun _ h => transition.support_subset (retained h))
+    (i : source.cover.Index) {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
+    (retained : Declaration.formulaSupport p ⊆ (transition.sourcePiece i).declarations) :
+    Declaration.formulaSupport ((transition.supporting i).translation.formula p) ⊆ target.context.declarations :=
+  transition.formula_support_in i p _
+    (fun _ h => transition.support_subset i (retained h).1 (retained h).2)
 
 /-- All translated support fits inside the assigned target pieces of the comparison. -/
 theorem local_formula_support (transition : ReadingContextChange source target u)
     (i : source.cover.Index) {Γ : List source.presentation.signature.SortType}
     (p : Formula source.presentation.signature Γ)
     (retained : Declaration.formulaSupport p ⊆ (transition.sourcePiece i).declarations) :
-    Declaration.formulaSupport (transition.supporting.translation.formula p) ⊆ (transition.targetPiece i).declarations :=
-  transition.formula_support_in p _ fun _ h _ hd =>
+    Declaration.formulaSupport ((transition.supporting i).translation.formula p) ⊆ (transition.targetPiece i).declarations :=
+  transition.formula_support_in i p _ fun _ h _ hd =>
     transition.localSupport i (retained h).1 (retained h).2 hd
 
 /-- Evaluated facts restricted to the declaration names retained by the comparison. -/
@@ -1069,6 +1073,31 @@ def CommonName (raw : ObservationProduct S) (i : raw.Index) (j : target.Index) :
 /-- A target position that is shared with the ordinary observation gets the source position
 specified by its ordinary correspondence. An extra input that supplies an original named
 position inherits its ordinary sharing before the source coefficient inputs were selected. -/
+def OrdinarySharing (inputs : ReadingInputMap source target onSort)
+    {ordinarySource : ObservationProduct S} {ordinaryTarget : ObservationProduct T}
+    (positions : ordinarySource.Correspondence ordinaryTarget onSort)
+    (raw : ObservationProduct S) (origin : source.Index → raw.Index)
+    (sourceShares : raw.Index → ordinarySource.Index → Prop)
+    (targetShares : target.Index → ordinaryTarget.Index → Prop)
+    (extraAccess : inputs.extra.Index → Option ordinarySource.Index → Prop)
+    (extraShares : inputs.extra.Index → Option ordinarySource.Index) : Prop :=
+  (∀ k i, extraShares k = some i → inputs.extra.sort k = ordinarySource.sort i) ∧
+  (∀ j k i, extraShares j = some i → extraShares k = some i → j = k) ∧
+  (∀ j i k, CommonName (target := target) (onSort := onSort) raw i j →
+      (inputs.coordinate j).val = .inr k →
+      ∀ l, extraShares k = some l ↔ sourceShares i l) ∧
+  (∀ j i, targetShares j i →
+      match (inputs.coordinate j).val with
+      | .inl k => sourceShares (origin k) (positions.position i)
+      | .inr k => extraShares k = some (positions.position i) ∧
+          ¬ ∃ q : source.Index, sourceShares (origin q) (positions.position i)) ∧
+  (∀ k, extraAccess k (extraShares k)) ∧
+  ∀ k i, extraShares k = some i →
+      (∃ j l, targetShares j l ∧ positions.position l = i ∧ (inputs.coordinate j).val = .inr k) ∨
+      ∃ j a, CommonName (target := target) (onSort := onSort) raw a j ∧
+        sourceShares a i ∧ (inputs.coordinate j).val = .inr k
+
+/-- A reading input correspondence has a single witness of its ordinary sharing. -/
 def RespectsOrdinary (inputs : ReadingInputMap source target onSort)
     {ordinarySource : ObservationProduct S} {ordinaryTarget : ObservationProduct T}
     (positions : ordinarySource.Correspondence ordinaryTarget onSort)
@@ -1076,18 +1105,7 @@ def RespectsOrdinary (inputs : ReadingInputMap source target onSort)
     (sourceShares : raw.Index → ordinarySource.Index → Prop)
     (targetShares : target.Index → ordinaryTarget.Index → Prop)
     (extraAccess : inputs.extra.Index → Option ordinarySource.Index → Prop := fun _ _ => True) : Prop :=
-  ∃ extraShares : inputs.extra.Index → Option ordinarySource.Index,
-    (∀ k i, extraShares k = some i → inputs.extra.sort k = ordinarySource.sort i) ∧
-    (∀ j k i, extraShares j = some i → extraShares k = some i → j = k) ∧
-    (∀ j i k, CommonName (target := target) (onSort := onSort) raw i j →
-      (inputs.coordinate j).val = .inr k →
-      ∀ l, extraShares k = some l ↔ sourceShares i l) ∧
-    (∀ j i, targetShares j i →
-      match (inputs.coordinate j).val with
-      | .inl k => sourceShares (origin k) (positions.position i)
-      | .inr k => extraShares k = some (positions.position i) ∧
-          ¬ ∃ q : source.Index, sourceShares (origin q) (positions.position i)) ∧
-    ∀ k, extraAccess k (extraShares k)
+  ∃ extraShares, inputs.OrdinarySharing positions raw origin sourceShares targetShares extraAccess extraShares
 
 /-- The identity map preserves the sharing relation of a common input layout. -/
 theorem identity_respectsOrdinary (product : ObservationProduct S)
@@ -1097,7 +1115,166 @@ theorem identity_respectsOrdinary (product : ObservationProduct S)
     (identity product).RespectsOrdinary (.identity ordinary) raw origin shares
       (fun j i => shares (origin j) i) extraAccess :=
   ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i),
-    (fun _ _ k => nomatch k), (fun _ _ h => h), fun k => nomatch k⟩
+    (fun _ _ k => nomatch k), (fun _ _ h => h), (fun k => nomatch k), fun k => nomatch k⟩
+
+/-- The common input for coefficient evaluation and the retained ordinary observation.
+The equality constraints are the fiber product over the positions that are shared. -/
+structure SharedValues (inputs : ReadingInputMap source target onSort)
+    {ordinary : ObservationProduct S} {X : S → Type u} {available : Set ordinary.Index}
+    (values : (ordinary.restrict available).Values X)
+    (sourceShares : source.Index → ordinary.Index → Prop)
+    (extraShares : inputs.extra.Index → Option ordinary.Index) where
+  /-- The coefficient tuple and its further source coordinates. -/
+  input : inputs.Values X
+  /-- Shared original coordinates read the retained ordinary value. -/
+  source_eq (i : source.Index) (j : available) : sourceShares i j.val → HEq (input.1 i) (values j)
+  /-- Shared additional coordinates read the retained ordinary value. -/
+  extra_eq (i : inputs.extra.Index) (j : available) : extraShares i = some j.val → HEq (input.2 i) (values j)
+
+/-- Independent inputs are supplied only at positions not linked to a retained ordinary state. -/
+def independentPositions (product ordinary : ObservationProduct S) (available : Set ordinary.Index)
+    (shares : product.Index → ordinary.Index → Prop) : Set product.Index :=
+  {i | ¬ ∃ j : available, shares i j.val}
+
+/-- Recover all positions from the ordinary values and the independent inputs. -/
+private noncomputable def fillSharedPositions {product ordinary : ObservationProduct S} {X : S → Type u}
+    {available : Set ordinary.Index} (ordinaryValues : (ordinary.restrict available).Values X)
+    (shares : product.Index → ordinary.Index → Prop)
+    (sorts : ∀ i j, shares i j → product.sort i = ordinary.sort j)
+    (independent : (product.restrict (independentPositions product ordinary available shares)).Values X) :
+    product.Values X := by
+  classical
+  exact fun i => if shared : ∃ j : available, shares i j.val then
+    cast (congrArg X (sorts i shared.choose.val shared.choose_spec).symm) (ordinaryValues shared.choose)
+  else independent ⟨i, shared⟩
+
+/-- Every shared position in the assembled product reads the value of its unique ordinary input. -/
+private theorem fillSharedPositions_eq {product ordinary : ObservationProduct S} {X : S → Type u}
+    {available : Set ordinary.Index} (ordinaryValues : (ordinary.restrict available).Values X)
+    (shares : product.Index → ordinary.Index → Prop)
+    (sorts : ∀ i j, shares i j → product.sort i = ordinary.sort j)
+    (unique : ∀ i j k, shares i j → shares i k → j = k)
+    (independent : (product.restrict (independentPositions product ordinary available shares)).Values X)
+    (i : product.Index) (j : available) (same : shares i j.val) :
+    HEq (fillSharedPositions ordinaryValues shares sorts independent i) (ordinaryValues j) := by
+  classical
+  unfold fillSharedPositions
+  have matched : ∃ j : available, shares i j.val := ⟨j, same⟩
+  rw [dif_pos matched]
+  have chosen : matched.choose = j := Subtype.ext (unique i _ _ matched.choose_spec same)
+  refine (cast_heq _ _).trans ?_
+  cases chosen
+  exact HEq.rfl
+
+/-- Assemble the joint input using the retained ordinary value at each linked position. -/
+noncomputable def SharedValues.assemble (inputs : ReadingInputMap source target onSort)
+    {ordinary : ObservationProduct S} {X : S → Type u} {available : Set ordinary.Index}
+    (values : (ordinary.restrict available).Values X)
+    (sourceShares : source.Index → ordinary.Index → Prop)
+    (extraShares : inputs.extra.Index → Option ordinary.Index)
+    (sourceSorts : ∀ i j, sourceShares i j → source.sort i = ordinary.sort j)
+    (extraSorts : ∀ i j, extraShares i = some j → inputs.extra.sort i = ordinary.sort j)
+    (sourceUnique : ∀ i j k, sourceShares i j → sourceShares i k → j = k)
+    (sourceFree : (source.restrict (independentPositions source ordinary available sourceShares)).Values X)
+    (extraFree : (inputs.extra.restrict
+      (independentPositions inputs.extra ordinary available (fun i j => extraShares i = some j))).Values X) :
+    inputs.SharedValues values sourceShares extraShares where
+  input := ⟨fillSharedPositions values sourceShares sourceSorts sourceFree,
+    fillSharedPositions values (fun i j => extraShares i = some j) extraSorts extraFree⟩
+  source_eq := fillSharedPositions_eq values sourceShares sourceSorts sourceUnique sourceFree
+  extra_eq := fillSharedPositions_eq values (fun i j => extraShares i = some j) extraSorts
+    (fun _ _ _ left right => Option.some.inj (left.symm.trans right)) extraFree
+
+/-- Transport a shared input through the same sort component as the ordinary observation. -/
+theorem mapValues_shared (inputs : ReadingInputMap source target onSort)
+    {ordinary : ObservationProduct S} {X : S → Type u} {Y : T → Type u}
+    {available : Set ordinary.Index} {values : (ordinary.restrict available).Values X}
+    {sourceShares : source.Index → ordinary.Index → Prop}
+    {extraShares : inputs.extra.Index → Option ordinary.Index}
+    (joint : inputs.SharedValues values sourceShares extraShares)
+    (sourceSort : ∀ i j, sourceShares i j → source.sort i = ordinary.sort j)
+    (extraSort : ∀ i j, extraShares i = some j → inputs.extra.sort i = ordinary.sort j)
+    (h : ∀ s, X s → Y (onSort s)) (j : target.Index) (k : available)
+    (shared : match (inputs.coordinate j).val with
+      | .inl i => sourceShares i k.val
+      | .inr i => extraShares i = some k.val) :
+    HEq (inputs.mapValues h joint.input j) (h _ (values k)) := by
+  have apply_eq {s t : S} (same : s = t) {x : X s} {y : X t} (eq : HEq x y) :
+      HEq (h s x) (h t y) := by
+    cases same
+    exact heq_of_eq (congrArg (h s) (eq_of_heq eq))
+  unfold mapValues
+  generalize selected : inputs.coordinate j = coordinate at shared ⊢
+  rcases coordinate with ⟨position, typed⟩
+  cases position with
+  | inl i =>
+    exact (eqRec_heq typed _).trans (apply_eq (sourceSort i k.val shared) (joint.source_eq i k shared))
+  | inr i =>
+    exact (eqRec_heq typed _).trans (apply_eq (extraSort i k.val shared) (joint.extra_eq i k shared))
+
+/-- A transported shared position has the value of the retained ordinary coordinate. -/
+theorem OrdinarySharing.map_shared {inputs : ReadingInputMap source target onSort}
+    {ordinarySource : ObservationProduct S} {ordinaryTarget : ObservationProduct T}
+    {positions : ordinarySource.Correspondence ordinaryTarget onSort}
+    {raw : ObservationProduct S} {origin : source.Index → raw.Index}
+    {sourceShares : raw.Index → ordinarySource.Index → Prop}
+    {targetShares : target.Index → ordinaryTarget.Index → Prop}
+    {extraAccess : inputs.extra.Index → Option ordinarySource.Index → Prop}
+    {extraShares : inputs.extra.Index → Option ordinarySource.Index}
+    (sharing : inputs.OrdinarySharing positions raw origin sourceShares targetShares extraAccess extraShares)
+    (sorts : ∀ i j, sourceShares (origin i) j → source.sort i = ordinarySource.sort j)
+    {X : S → Type u} {Y : T → Type u} {available : Set ordinarySource.Index}
+    {values : (ordinarySource.restrict available).Values X}
+    (joint : inputs.SharedValues values (fun i j => sourceShares (origin i) j) extraShares)
+    (state : ∀ s, X s → Y (onSort s)) (j : target.Index) (k : ordinaryTarget.Index)
+    (shared : targetShares j k) (kept : positions.position k ∈ available) :
+    HEq (inputs.mapValues state joint.input j) (state _ (values ⟨positions.position k, kept⟩)) := by
+  apply inputs.mapValues_shared joint sorts sharing.1
+  have uses := sharing.2.2.2.1 j k shared
+  cases coordinate : (inputs.coordinate j).val with
+  | inl i =>
+    rw [coordinate] at uses
+    exact uses
+  | inr i =>
+    rw [coordinate] at uses
+    exact uses.1
+
+/-- An evaluation square on the joint input, with the same sharing witness used to locate
+coordinates and check the images of their actual values. -/
+def SharedSquare (inputs : ReadingInputMap source target onSort)
+    {ordinarySource : ObservationProduct S} {ordinaryTarget : ObservationProduct T}
+    (positions : ordinarySource.Correspondence ordinaryTarget onSort)
+    (available : Set ordinarySource.Index) (raw : ObservationProduct S) (origin : source.Index → raw.Index)
+    (sourceShares : raw.Index → ordinarySource.Index → Prop)
+    (targetShares : target.Index → ordinaryTarget.Index → Prop)
+    (extraAccess : inputs.extra.Index → Option ordinarySource.Index → Prop)
+    {X : S → Type u} {Y : T → Type u} (state : ∀ s, X s → Y (onSort s))
+    (commutes : inputs.Values X → Prop) : Prop :=
+  ∃ extraShares,
+    inputs.OrdinarySharing positions raw origin sourceShares targetShares extraAccess extraShares ∧
+      ∀ (e : (ordinarySource.restrict available).Values X)
+        (joint : inputs.SharedValues e (fun i j => sourceShares (origin i) j) extraShares),
+        commutes joint.input ∧
+        ∀ j k, targetShares j k → ∀ kept : positions.position k ∈ available,
+          HEq (inputs.mapValues state joint.input j) (state _ (e ⟨positions.position k, kept⟩))
+
+/-- An input correspondence and a commuting evaluation give the square on shared values. -/
+theorem sharedSquare_of_respectsOrdinary (inputs : ReadingInputMap source target onSort)
+    {ordinarySource : ObservationProduct S} {ordinaryTarget : ObservationProduct T}
+    {positions : ordinarySource.Correspondence ordinaryTarget onSort} (available : Set ordinarySource.Index)
+    {raw : ObservationProduct S} {origin : source.Index → raw.Index}
+    {sourceShares : raw.Index → ordinarySource.Index → Prop}
+    {targetShares : target.Index → ordinaryTarget.Index → Prop}
+    {extraAccess : inputs.extra.Index → Option ordinarySource.Index → Prop}
+    (sharing : inputs.RespectsOrdinary positions raw origin sourceShares targetShares extraAccess)
+    (sorts : ∀ i j, sourceShares (origin i) j → source.sort i = ordinarySource.sort j)
+    {X : S → Type u} {Y : T → Type u} (state : ∀ s, X s → Y (onSort s))
+    {commutes : inputs.Values X → Prop} (square : ∀ e, commutes e) :
+    inputs.SharedSquare positions available raw origin sourceShares targetShares extraAccess state commutes := by
+  obtain ⟨extraShares, linked⟩ := sharing
+  refine ⟨extraShares, linked, fun e joint => ⟨square joint.input, ?_⟩⟩
+  intro j k shared kept
+  exact linked.map_shared sorts joint state j k shared kept
 
 /-- A shared name uses its original source coordinate, including when that coordinate
 needs to be supplied in addition to the selected source inputs. -/
@@ -1178,21 +1355,54 @@ def UsesInputs {ordinarySource : ObservationProduct P.signature.SortType}
       inputs.RespectsOrdinary positions Γ.product Subtype.val sourceShares (fun j i => targetShares j.val i)
         (fun i => extraAccess (inputs.extra.sort i))
 
-/-- A contextual change supplies an evaluation map, retains its inputs, and localizes each evaluation. -/
-def SupportsEvaluation (retains : P.signature.SortType → Prop) (sourceLocal targetLocal : Prop) :
+/-- A coefficient square on joint inputs. Ordinary and coefficient coordinates agree
+where the comparison identifies them. -/
+def SharesEvaluation {ordinarySource : ObservationProduct P.signature.SortType}
+    {ordinaryTarget : ObservationProduct Q.signature.SortType}
+    (positions : ordinarySource.Correspondence ordinaryTarget onSort)
+    (available : Set ordinarySource.Index)
+    (sourceShares : Γ.product.Index → ordinarySource.Index → Prop)
+    (targetShares : Δ.product.Index → ordinaryTarget.Index → Prop)
+    (extraAccess : P.signature.SortType → Option ordinarySource.Index → Prop) :
+    CoefficientComparison c d onSort state → Prop
+  | .fixed _ => True
+  | .changed inputs square =>
+    inputs.SharedSquare positions available Γ.product Subtype.val sourceShares
+      (fun j i => targetShares j.val i) (fun i => extraAccess (inputs.extra.sort i)) state
+      (fun e => d.evaluateSelected (inputs.mapValues state e) = square.coefficients (c.evaluateSelected e.1))
+
+/-- Restrict the actual coefficient square to inputs that share the stated ordinary values. -/
+theorem sharesEvaluation_of_usesInputs {ordinarySource : ObservationProduct P.signature.SortType}
+    {ordinaryTarget : ObservationProduct Q.signature.SortType}
+    (positions : ordinarySource.Correspondence ordinaryTarget onSort)
+    (available : Set ordinarySource.Index)
+    (sourceShares : Γ.product.Index → ordinarySource.Index → Prop)
+    (targetShares : Δ.product.Index → ordinaryTarget.Index → Prop)
+    (extraAccess : P.signature.SortType → Option ordinarySource.Index → Prop)
+    (comparison : CoefficientComparison c d onSort state)
+    (uses : comparison.UsesInputs positions sourceShares targetShares extraAccess)
+    (sourceSorts : ∀ i j, sourceShares i j → Γ.product.sort i = ordinarySource.sort j) :
+    comparison.SharesEvaluation positions available sourceShares targetShares extraAccess := by
+  cases comparison with
+  | fixed _ => trivial
+  | changed inputs square =>
+    exact inputs.sharedSquare_of_respectsOrdinary available uses.2
+      (fun i => sourceSorts i.val) state square.evaluate_commutes
+
+/-- A contextual change supplies an evaluation map and localizes each endpoint evaluation. -/
+def SupportsEvaluation (sourceLocal targetLocal : Prop) :
     CoefficientComparison c d onSort state → Prop
   | .fixed _ => False
-  | .changed _ _ => (∀ i, retains (c.selection.used.sort i)) ∧ sourceLocal ∧ targetLocal
+  | .changed _ _ => sourceLocal ∧ targetLocal
 
-/-- With a supplied evaluation map, support is exactly locality and retention of the actual inputs. -/
-theorem supportsEvaluation_changed (retains : P.signature.SortType → Prop)
-    (sourceLocal targetLocal : Prop)
+/-- With a supplied evaluation map, use the restriction certificates at both endpoints. -/
+theorem supportsEvaluation_changed (sourceLocal targetLocal : Prop)
     (inputs : ReadingInputMap c.selection.used d.selection.used onSort)
     (square : CoefficientReading.EvaluationComparison c d
       (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
       (fun e => d.evaluateSelected (inputs.mapValues state e))) :
-    (CoefficientComparison.changed inputs square).SupportsEvaluation retains sourceLocal targetLocal ↔
-      (∀ i, retains (c.selection.used.sort i)) ∧ sourceLocal ∧ targetLocal :=
+    (CoefficientComparison.changed inputs square).SupportsEvaluation sourceLocal targetLocal ↔
+      sourceLocal ∧ targetLocal :=
   Iff.rfl
 
 /-- Evaluate the actual retained inputs at both ends of a coefficient square. -/
@@ -1211,25 +1421,23 @@ theorem restricted_evaluation_commutes
 
 /-- Extract the actual comparison and its commuting evaluations on the chosen retained contexts. -/
 theorem evaluation_from_support (comparison : CoefficientComparison c d onSort state)
-    (retains : P.signature.SortType → Prop)
     {W : DeclarationContext P} {Z : DeclarationContext Q}
     {left : W.declarations ⊆ U.declarations} {right : Z.declarations ⊆ V.declarations}
-    (support : comparison.SupportsEvaluation retains
+    (support : comparison.SupportsEvaluation
       (c.RestrictionAllowed W left) (d.RestrictionAllowed Z right)) :
     ∃ (inputs : ReadingInputMap c.selection.used d.selection.used onSort)
       (square : CoefficientReading.EvaluationComparison c d
         (fun e : inputs.Values A.carrier => c.evaluateSelected e.1)
         (fun e => d.evaluateSelected (inputs.mapValues state e))),
       comparison = .changed inputs square ∧
-      (∀ i, retains (c.selection.used.sort i)) ∧
       ∃ (sourceLocal : c.RestrictionAllowed W left) (targetLocal : d.RestrictionAllowed Z right),
         ∀ e, d.evaluateWithin targetLocal (inputs.mapValues state e) =
           square.coefficients (c.evaluateWithin sourceLocal e.1) := by
   cases comparison with
   | fixed _ => exact support.elim
   | changed inputs square =>
-    have localSupport := (supportsEvaluation_changed retains _ _ inputs square).1 support
-    refine ⟨inputs, square, rfl, localSupport.1, localSupport.2.1, localSupport.2.2, ?_⟩
+    have localSupport := (supportsEvaluation_changed _ _ inputs square).1 support
+    refine ⟨inputs, square, rfl, localSupport.1, localSupport.2, ?_⟩
     intro e
     simpa only [CoefficientReading.evaluateWithin_eq] using square.evaluate_commutes e
 
@@ -1241,7 +1449,7 @@ inductive OneSidedCoefficientComparison (CrossEvaluation : Type u) where
   | compare (square : CrossEvaluation)
 
 /-- The comparison data at each of the four choices of endpoint evaluations. -/
-private def coefficientCompatibilityAt (source target : Reading.{u, v, w, x})
+def Reading.CoefficientCompatibility.At (source target : Reading.{u, v, w, x})
     (onSort : source.presentation.signature.SortType → target.presentation.signature.SortType)
     (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s)) :
     Option (Σ Γ, CoefficientReading.{u, v} source.context source.structureData Γ) →
@@ -1263,7 +1471,20 @@ private def coefficientCompatibilityAt (source target : Reading.{u, v, w, x})
 def Reading.CoefficientCompatibility (source target : Reading.{u, v, w, x})
     (onSort : source.presentation.signature.SortType → target.presentation.signature.SortType)
     (state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s)) : Type (u + 1) :=
-  coefficientCompatibilityAt source target onSort state source.coefficients target.coefficients
+  Reading.CoefficientCompatibility.At source target onSort state source.coefficients target.coefficients
+
+/-- Construct or inspect the branch selected by an equality of coefficient settings. -/
+def Reading.CoefficientCompatibility.reindex {source target : Reading.{u, v, w, x}}
+    {onSort : source.presentation.signature.SortType → target.presentation.signature.SortType}
+    {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s)}
+    {left : Option (Σ Γ, CoefficientReading.{u, v} source.context source.structureData Γ)}
+    {right : Option (Σ Δ, CoefficientReading.{u, v} target.context target.structureData Δ)}
+    (sourceSelection : source.coefficients = left) (targetSelection : target.coefficients = right) :
+    source.CoefficientCompatibility target onSort state ≃
+      Reading.CoefficientCompatibility.At source target onSort state left right := by
+  cases sourceSelection
+  cases targetSelection
+  exact Equiv.refl _
 
 /-- Extra inputs can carry a retained sort, a preexisting external sort, or the exact ordinary
 state retained by the comparison. -/
@@ -1294,14 +1515,16 @@ def Reading.ContextCompatibility.targetExtraAccess {source target : Reading.{u, 
 
 /-- The coefficient comparison preserves coefficient names and the ordinary correspondence
 at shared state positions. -/
-def Reading.CoefficientCompatibility.respectsOrdinary {source target : Reading.{u, v, w, x}}
+private def respectsOrdinaryAt {source target : Reading.{u, v, w, x}}
     {u : Interpretation source.presentation.theory target.presentation.theory}
     {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s)}
     (positions : source.observation.product.Correspondence target.observation.product u.onSort)
-    (contextChange : source.ContextCompatibility target u) :
-    source.CoefficientCompatibility target u.onSort state → Prop :=
-  match (motive := ∀ c d, coefficientCompatibilityAt source target u.onSort state c d → Prop)
-      source.coefficients, target.coefficients with
+    (contextChange : source.ContextCompatibility target u)
+    (left : Option (Σ Γ, CoefficientReading.{u, v} source.context source.structureData Γ))
+    (right : Option (Σ Δ, CoefficientReading.{u, v} target.context target.structureData Δ)) :
+    Reading.CoefficientCompatibility.At source target u.onSort state left right → Prop :=
+  match (motive := ∀ c d, Reading.CoefficientCompatibility.At source target u.onSort state c d → Prop)
+      left, right with
   | none, none => fun _ => True
   | some c, some d =>
     CoefficientComparison.UsesInputs positions (source.SharesInput c.1) (target.SharesInput d.1)
@@ -1317,45 +1540,160 @@ def Reading.CoefficientCompatibility.respectsOrdinary {source target : Reading.{
           data.1.RespectsOrdinary positions c.1.product Subtype.val (source.SharesInput c.1) (· = ·)
             (contextChange.targetExtraAccess positions data.1)
 
+/-- Apply the branch operation to the readings’ actual coefficient selections. -/
+def Reading.CoefficientCompatibility.respectsOrdinary {source target : Reading.{u, v, w, x}}
+    {u : Interpretation source.presentation.theory target.presentation.theory}
+    {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s)}
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
+    (contextChange : source.ContextCompatibility target u) :
+    source.CoefficientCompatibility target u.onSort state → Prop :=
+  respectsOrdinaryAt (state := state) positions contextChange source.coefficients target.coefficients
+
+/-- An evaluation comparison uses the joint input over its selected ordinary states. -/
+private def sharesEvaluationAt {source target : Reading.{u, v, w, x}}
+    {u : Interpretation source.presentation.theory target.presentation.theory}
+    {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s)}
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
+    (contextChange : source.ContextCompatibility target u)
+    (left : Option (Σ Γ, CoefficientReading.{u, v} source.context source.structureData Γ))
+    (right : Option (Σ Δ, CoefficientReading.{u, v} target.context target.structureData Δ)) :
+    Reading.CoefficientCompatibility.At source target u.onSort state left right → Prop :=
+  let available := match contextChange with
+    | .fixed _ => Set.univ
+    | .changed change => change.observationInputs
+  match (motive := ∀ c d, Reading.CoefficientCompatibility.At source target u.onSort state c d → Prop)
+      left, right with
+  | some c, some d => CoefficientComparison.SharesEvaluation positions
+      available
+      (source.SharesInput c.1) (target.SharesInput d.1) contextChange.extraStateAvailable
+  | none, none => fun _ => True
+  | none, some d => fun comparison => match comparison with
+      | .project => True
+      | .compare data =>
+        data.1.SharedSquare positions available source.observation.product id (· = ·)
+          (fun j i => target.SharesInput d.1 j.val i)
+          (fun i => contextChange.extraStateAvailable (data.1.extra.sort i)) state
+          (fun e => d.2.evaluateSelected (data.1.mapValues state e) = data.2.val (source.observation.read e.1))
+  | some c, none => fun comparison => match comparison with
+      | .project => True
+      | .compare data =>
+        data.1.SharedSquare positions available c.1.product Subtype.val (source.SharesInput c.1)
+          (· = ·) (contextChange.targetExtraAccess positions data.1) state
+          (fun e => target.observation.read (data.1.mapValues state e) = data.2.val (c.2.evaluateSelected e.1))
+
+/-- Apply the branch operation to the readings’ actual coefficient selections. -/
+def Reading.CoefficientCompatibility.sharesEvaluation {source target : Reading.{u, v, w, x}}
+    {u : Interpretation source.presentation.theory target.presentation.theory}
+    {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s)}
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
+    (contextChange : source.ContextCompatibility target u) :
+    source.CoefficientCompatibility target u.onSort state → Prop :=
+  sharesEvaluationAt (state := state) positions contextChange source.coefficients target.coefficients
+
+/-- The named input correspondence and coefficient square induce the joint evaluation. -/
+theorem Reading.CoefficientCompatibility.sharesEvaluation_of_respectsOrdinary
+    {source target : Reading.{u, v, w, x}}
+    {u : Interpretation source.presentation.theory target.presentation.theory}
+    {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s)}
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
+    (contextChange : source.ContextCompatibility target u)
+    (coefficients : source.CoefficientCompatibility target u.onSort state)
+    (sharing : coefficients.respectsOrdinary positions contextChange) :
+    coefficients.sharesEvaluation positions contextChange := by
+  revert sharing coefficients
+  change ∀ k : Reading.CoefficientCompatibility.At source target u.onSort state source.coefficients target.coefficients,
+    respectsOrdinaryAt positions contextChange source.coefficients target.coefficients k →
+      sharesEvaluationAt positions contextChange source.coefficients target.coefficients k
+  generalize source.coefficients = left
+  generalize target.coefficients = right
+  cases left <;> cases right <;> intro k sharing
+  · trivial
+  · cases k with
+    | project => trivial
+    | compare data =>
+      exact data.1.sharedSquare_of_respectsOrdinary _ sharing.2
+        (fun _ _ eq => congrArg source.observation.product.sort eq) state data.2.property
+  · cases k with
+    | project => trivial
+    | compare data =>
+      exact data.1.sharedSquare_of_respectsOrdinary _ sharing.2
+        (fun _ _ shared => shared.1) state data.2.property
+  · exact CoefficientComparison.sharesEvaluation_of_usesInputs _ _ _ _ _ k sharing
+      (fun _ _ shared => shared.1)
+
 /-- The coefficient evaluations use only the retained states and respect the restriction at
 each evaluated endpoint. A projection keeps only the ordinary component. -/
 def Reading.CoefficientCompatibility.retainsEvaluation {source target : Reading.{u, v, w, x}}
     {onSort : source.presentation.signature.SortType → target.presentation.signature.SortType}
     {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (onSort s)}
-    (retains : source.presentation.signature.SortType → Prop) (sourceLocal targetLocal : Prop) :
+    (sourceLocal targetLocal : Prop) :
     source.CoefficientCompatibility target onSort state → Prop :=
-  match (motive := ∀ c d, coefficientCompatibilityAt source target onSort state c d → Prop)
+  match (motive := ∀ c d, Reading.CoefficientCompatibility.At source target onSort state c d → Prop)
       source.coefficients, target.coefficients with
   | none, none => fun _ => True
-  | some _, some _ => CoefficientComparison.SupportsEvaluation retains sourceLocal targetLocal
+  | some _, some _ => CoefficientComparison.SupportsEvaluation sourceLocal targetLocal
   | none, some _ => fun comparison => match comparison with
       | .project => True
       | .compare _ => targetLocal
-  | some c, none => fun comparison => match comparison with
+  | some _, none => fun comparison => match comparison with
       | .project => True
-      | .compare _ => (∀ i, retains (c.2.selection.used.sort i)) ∧ sourceLocal
+      | .compare _ => sourceLocal
 
-/-- Keep the entire realization at an unchanged context. When declarations are forgotten,
-the evaluation of its selected tuple descends to the retained primitive data. -/
+/-- The primitive restriction and the carriers of the surviving external observation states.
+Added carrier slots allow those states to be typed without restoring primitive operations. -/
+def Reading.coefficientContext (reading : Reading.{u, v, w, x})
+    (kept : DeclarationContext reading.presentation) (available : Set reading.observation.product.Index) :
+    DeclarationContext reading.presentation where
+  declarations := kept.declarations ∪
+    {d | ∃ i ∈ available, d = Declaration.sort (reading.observation.product.sort i) ∧
+      d ∈ reading.context.declarations}
+  closed membership d dependency := by
+    rcases membership with keptName | ⟨i, _, rfl, _⟩
+    · exact Or.inl (kept.closed keptName dependency)
+    · exact dependency.elim
+
+/-- The extra carrier slots already belonged to the original realization. -/
+theorem Reading.coefficientContext_inside (reading : Reading.{u, v, w, x})
+    {kept : DeclarationContext reading.presentation} (available : Set reading.observation.product.Index)
+    (inside : kept.declarations ⊆ reading.context.declarations) :
+    (reading.coefficientContext kept available).declarations ⊆ reading.context.declarations := by
+  rintro d (retained | ⟨_, _, _, inContext⟩)
+  · exact inside retained
+  · exact inContext
+
+/-- A coefficient coordinate keeps its declaration or uses its own surviving ordinary share. -/
+def Reading.keepsCoefficientInput (reading : Reading.{u, v, w, x})
+    (kept : DeclarationContext reading.presentation) (available : Set reading.observation.product.Index)
+    (Γ : CoefficientProduct reading.presentation.signature.SortType) (i : Γ.product.Index) : Prop :=
+  Declaration.sort (Γ.product.sort i) ∈ kept.declarations ∨
+    ∃ j ∈ available, reading.SharesInput Γ i j
+
+/-- Check availability at the actual coefficient positions before forgetting primitive declarations. -/
 def Reading.respectsCoefficientRestriction (reading : Reading.{u, v, w, x})
     (kept : DeclarationContext reading.presentation)
-    (inside : kept.declarations ⊆ reading.context.declarations) : Prop :=
+    (inside : kept.declarations ⊆ reading.context.declarations)
+    (available : Set reading.observation.product.Index) : Prop :=
   match reading.coefficients with
   | none => True
-  | some c => c.2.RestrictionAllowed kept inside
+  | some c => (∀ i : c.2.selection.used.Index, reading.keepsCoefficientInput kept available c.1 i.val) ∧
+      (kept.declarations = reading.context.declarations ∨
+        c.2.RespectsRestriction (reading.coefficientContext kept available)
+          (reading.coefficientContext_inside available inside))
 
-/-- Relate the coefficient square to the sorts selected by a declaration change. -/
+/-- Relate the coefficient square to the actual available states at each endpoint. -/
 def Reading.ContextCompatibility.retainsCoefficients {source target : Reading.{u, v, w, x}}
     {u : Interpretation source.presentation.theory target.presentation.theory}
     {state : ∀ s, source.structureData.carrier s → target.structureData.carrier (u.onSort s)}
     (contextChange : source.ContextCompatibility target u)
+    (positions : source.observation.product.Correspondence target.observation.product u.onSort)
     (coefficientChange : source.CoefficientCompatibility target u.onSort state) : Prop :=
   match contextChange with
   | .fixed _ => True
   | .changed change =>
-    coefficientChange.retainsEvaluation (fun s => Declaration.sort s ∈ change.retained.declarations)
-      (source.respectsCoefficientRestriction change.retained change.inside)
-      (target.respectsCoefficientRestriction change.targetRetained change.targetRetained_inside)
+    coefficientChange.retainsEvaluation
+      (source.respectsCoefficientRestriction change.retained change.inside change.observationInputs)
+      (target.respectsCoefficientRestriction change.targetRetained change.targetRetained_inside
+        (change.targetObservationInputs positions))
 
 /-- In a projected comparison, evaluate the coefficient on the side where it exists and
 apply the value projection to the pair of observations. The retained outputs commute. -/
@@ -1365,7 +1703,7 @@ def Reading.CoefficientCompatibility.projectionCommutes {source target : Reading
     (positions : source.observation.product.Correspondence target.observation.product onSort)
     (value : source.observation.Output → target.observation.Output) :
     source.CoefficientCompatibility target onSort state → Prop :=
-  match (motive := ∀ c d, coefficientCompatibilityAt source target onSort state c d → Prop)
+  match (motive := ∀ c d, Reading.CoefficientCompatibility.At source target onSort state c d → Prop)
       source.coefficients, target.coefficients with
   | none, none => fun _ => True
   | some _, some _ => fun _ => True
@@ -1392,7 +1730,7 @@ def Reading.CoefficientCompatibility.respectsRestrictedOrdinary {source target :
     (readSource : change.SourceObservationValues → source.observation.Output)
     (readTarget : change.TargetObservationValues positions → target.observation.Output) :
     source.CoefficientCompatibility target u.onSort state → Prop :=
-  match (motive := ∀ c d, coefficientCompatibilityAt source target u.onSort state c d → Prop)
+  match (motive := ∀ c d, Reading.CoefficientCompatibility.At source target u.onSort state c d → Prop)
       source.coefficients, target.coefficients with
   | none, none => fun _ => True
   | some _, some _ => fun _ => True
@@ -1447,7 +1785,7 @@ structure ReadingComparison (source target : Reading.{u, v, w, x}) where
   /-- Both squares use the same shared states, and coefficient names keep their original positions. -/
   coefficientInputs : coefficientChange.respectsOrdinary contexts declarationChange := by trivial
   /-- A coefficient square over a changed context only uses the kept realizations and states. -/
-  coefficientSupport : declarationChange.retainsCoefficients coefficientChange := by trivial
+  coefficientSupport : declarationChange.retainsCoefficients contexts coefficientChange := by trivial
   /-- The function between the two sets of observed values. -/
   value : source.observation.Output → target.observation.Output
   /-- When a coefficient output exists at only one endpoint, the specified projection commutes. -/
@@ -1524,12 +1862,18 @@ abbrev ReadingComparison.ContextChange {source target : Reading.{u, v, w, x}}
 theorem ReadingComparison.coefficient_support_on_retained {source target : Reading.{u, v, w, x}}
     (comparison : ReadingComparison source target) (change : comparison.ContextChange) :
     comparison.coefficientChange.retainsEvaluation
-      (fun s => Declaration.sort s ∈ change.val.retained.declarations)
-      (source.respectsCoefficientRestriction change.val.retained change.val.inside)
-      (target.respectsCoefficientRestriction change.val.targetRetained change.val.targetRetained_inside) := by
+      (source.respectsCoefficientRestriction change.val.retained change.val.inside change.val.observationInputs)
+      (target.respectsCoefficientRestriction change.val.targetRetained change.val.targetRetained_inside
+        (change.val.targetObservationInputs comparison.contexts)) := by
   have support := comparison.coefficientSupport
   rw [change.property] at support
   exact support
+
+/-- The actual coefficient square respects sharing at every retained ordinary input. -/
+theorem ReadingComparison.coefficient_evaluation_on_shared_inputs {source target : Reading.{u, v, w, x}}
+    (comparison : ReadingComparison source target) :
+    comparison.coefficientChange.sharesEvaluation comparison.contexts comparison.declarationChange :=
+  comparison.coefficientChange.sharesEvaluation_of_respectsOrdinary _ _ comparison.coefficientInputs
 
 /-- A declared target observation belongs to a piece actually selected by the comparison. -/
 theorem ReadingComparison.target_observation_is_selected {source target : Reading.{u, v, w, x}}
@@ -1603,14 +1947,31 @@ theorem ReadingComparison.restricted_evaluation_commutes {source target : Readin
     (retained : Declaration.formulaSupport p ⊆ (change.val.sourcePiece i).declarations)
     (e : Assignment source.structureData.carrier Γ) :
     (RestrictedEvaluation.restrict (change.val.targetPiece i) target.structureData).holds
-      (change.val.supporting.translation.formula p)
+      ((change.val.supporting i).translation.formula p)
       (change.val.local_formula_support i p retained)
-      (change.val.equivalent.retype (comparison.interpretation.mapStates comparison.state e)) ↔
+      ((change.val.equivalent i).retype (comparison.interpretation.mapStates comparison.state e)) ↔
     p.Holds (comparison.interpretation.pullbackStructure target.structureData comparison.targetModel)
       (e.map comparison.state.onSort) :=
   (RestrictedEvaluation.restrict_holds_iff _ _ _ _ _).trans
-    ((change.val.equivalent.formula_holds_iff _ comparison.targetModel p _).trans
+    (((change.val.equivalent i).formula_holds_iff _ comparison.targetModel p _).trans
       (comparison.interpretation.pullback_formula_iff _ _ _ _).symm)
+
+/-- The local translations agree on a formula supported on both source pieces. -/
+theorem ReadingComparison.restricted_evaluation_agrees_on_overlap
+    {source target : Reading.{u, v, w, x}} (comparison : ReadingComparison source target)
+    (change : comparison.ContextChange) (i j : source.cover.Index)
+    {Γ : List source.presentation.signature.SortType} (p : Formula source.presentation.signature Γ)
+    (left : Declaration.formulaSupport p ⊆ (change.val.sourcePiece i).declarations)
+    (right : Declaration.formulaSupport p ⊆ (change.val.sourcePiece j).declarations)
+    (e : Assignment source.structureData.carrier Γ) :
+    (RestrictedEvaluation.restrict (change.val.targetPiece i) target.structureData).holds
+      ((change.val.supporting i).translation.formula p) (change.val.local_formula_support i p left)
+      ((change.val.equivalent i).retype (comparison.interpretation.mapStates comparison.state e)) ↔
+    (RestrictedEvaluation.restrict (change.val.targetPiece j) target.structureData).holds
+      ((change.val.supporting j).translation.formula p) (change.val.local_formula_support j p right)
+      ((change.val.equivalent j).retype (comparison.interpretation.mapStates comparison.state e)) :=
+  (comparison.restricted_evaluation_commutes change i p left e).trans
+    (comparison.restricted_evaluation_commutes change j p right e).symm
 
 /-- Transport a formula evaluated in a retained source piece to its assigned target pieces. -/
 theorem ReadingComparison.transport_restricted_formula {source target : Reading.{u, v, w, x}}
@@ -1622,9 +1983,9 @@ theorem ReadingComparison.transport_restricted_formula {source target : Reading.
     (held : (RestrictedEvaluation.restrict (change.val.sourcePiece i)
       source.structureData).holds p retained e) :
     (RestrictedEvaluation.restrict (change.val.targetPiece i) target.structureData).holds
-      (change.val.supporting.translation.formula p)
+      ((change.val.supporting i).translation.formula p)
       (change.val.local_formula_support i p retained)
-      (change.val.equivalent.retype (comparison.interpretation.mapStates comparison.state e)) :=
+      ((change.val.equivalent i).retype (comparison.interpretation.mapStates comparison.state e)) :=
   (comparison.restricted_evaluation_commutes change i p retained e).2
     (comparison.state.holds_map p e ((RestrictedEvaluation.restrict_holds_iff _ _ _ _ _).1 held))
 

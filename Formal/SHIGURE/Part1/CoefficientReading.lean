@@ -22,10 +22,11 @@ realization and yields the comparison by composition.
 
 Restriction fixes the selected coefficient algebra and the explicit coefficient choice
 before comparing realizations. The evaluation descends through the quotient by
-agreement of retained primitive structures and selected points. To produce those
-points, the scheme supplies a separate rule on the two restricted structures.
-Agreement with the original point map ensures this rule computes the same input
-without having to extend either structure to the original context.
+agreement of retained primitive structures and selected points. The comparison
+supplies a rule on the two restricted structures and proves that it computes the
+actual point map. For a native realization the rule must also agree whenever the
+native recipe uses the same retained data. This permits a comparison to supply
+its own local rule while preserving the provenance of native points.
 -/
 
 universe u v
@@ -132,11 +133,6 @@ structure CoefficientScheme {P : PrimitivePresentation.{u}} (U : DeclarationCont
     RestrictedStructure.PointMap (structureOf R a) (structureOf (R.extend f) (change f a))
   /-- The independently selectable data of the coefficient method. -/
   Choice : Type v := PUnit
-  /-- A point correspondence computed from the retained structures and the chosen data. -/
-  pointsWithin (R : CoefficientAlgebra base) (choice : Choice)
-    (W : DeclarationContext P) (X Y : RestrictedStructure W)
-    (s : P.signature.SortType) (kept : Declaration.sort s ∈ W.declarations) :
-    Option (X.carrier s → Y.carrier s) := none
 
 /-- A small indexed family of state sorts. -/
 structure ObservationProduct (S : Type u) where
@@ -442,20 +438,46 @@ def AgreeOn (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
       ((reading.scheme.structureOf R right.1).restrictWithin inside),
     right.2 = fun i => same.carrier_eq _ (supported i) ▸ left.2 i
 
+/-- A comparison can supply a point rule with access to just the retained structures. -/
+abbrev LocalPointRule (W : DeclarationContext P) :=
+  ∀ (X Y : RestrictedStructure W) (s : P.signature.SortType),
+    Declaration.sort s ∈ W.declarations → Option (X.carrier s → Y.carrier s)
+
+/-- A point rule must reproduce the actual assignment for every presentation of the retained data. -/
+def LocalPointRule.AgreesWith {W : DeclarationContext P} (rule : LocalPointRule W)
+    (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations) : Prop :=
+  ∀ (i : reading.selection.selected.Index) (X Y : RestrictedStructure W)
+    (sourceAgree : ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees X)
+    (targetAgree : ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees Y),
+    rule X Y (reading.selection.selected.sort i) (supported i) =
+      some (fun x => cast (targetAgree.carrier_eq _ (supported i))
+        (reading.selectedPoint i (cast (sourceAgree.carrier_eq _ (supported i)).symm x)))
+
+/-- A native point recipe can use a local rule only if every native input with the same
+retained source and realized structures computes that rule. -/
+def LocalPointRule.AgreesOnNative {W : DeclarationContext P} (rule : LocalPointRule W)
+    (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations) : Prop :=
+  ∀ (i : reading.selection.selected.Index) (a : reading.scheme.Native),
+    let X := (reading.scheme.nativeStructure a).restrictWithin inside
+    let Y := (reading.scheme.structureOf reading.algebra (reading.scheme.realizeNative reading.algebra a))
+      |>.restrictWithin inside
+    ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees X →
+    ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees Y →
+    rule X Y (reading.selection.selected.sort i) (supported i) =
+      some (reading.scheme.nativePoints reading.algebra a _ (inside (supported i)))
+
 /-- Restrict the actual point correspondence and evaluation at the chosen coefficient algebra. -/
 structure RespectsRestriction (reading : CoefficientReading U A Γ) (W : DeclarationContext P)
     (inside : W.declarations ⊆ U.declarations) : Prop where
-  /-- Every coordinate used in the evaluation belongs to the smaller context. -/
+  /-- Every coordinate used in the evaluation has a carrier in the smaller context. -/
   supported (i : reading.selection.selected.Index) :
     Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations
-  /-- The scheme's local point rule recovers the actual selected points on the retained source data. -/
-  points (i : reading.selection.selected.Index) (X Y : RestrictedStructure W)
-    (sourceAgree : ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees X)
-    (targetAgree : ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees Y) :
-    reading.scheme.pointsWithin reading.algebra reading.choice
-        W X Y (reading.selection.selected.sort i) (supported i) =
-      some (fun x => cast (targetAgree.carrier_eq _ (supported i))
-        (reading.selectedPoint i (cast (sourceAgree.carrier_eq _ (supported i)).symm x)))
+  /-- A rule on retained structures recovers the chosen points, including whether they
+  were independently specified or computed by the native recipe. -/
+  points : ∃ rule : LocalPointRule W, rule.AgreesWith reading inside supported ∧
+    (reading.pointOrigin.isNative → rule.AgreesOnNative reading inside supported)
   /-- Retained primitive data, coefficient data and points determine the value at the chosen algebra. -/
   agrees (left right : reading.RealizedInput reading.algebra) :
     reading.AgreeOn inside supported left right →
@@ -474,27 +496,25 @@ def evaluateRetained (reading : CoefficientReading U A Γ) {W : DeclarationConte
   Quot.lift (fun input : reading.RealizedInput reading.algebra =>
     reading.evaluateOn reading.choice reading.algebra input.1 input.2) locality.agrees
 
-/-- Recover the selected point map from the scheme's local rule on the actual restrictions. -/
-private def localPointRule (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+/-- Evaluate the comparison's point rule on the actual retained structures. -/
+private noncomputable def localPointRule (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     (i : reading.selection.selected.Index) :
     Option (A.carrier (reading.selection.selected.sort i) →
       (reading.scheme.structureOf reading.algebra reading.realization).carrier
         (reading.selection.selected.sort i)) :=
-  reading.scheme.pointsWithin reading.algebra reading.choice
-    W ((RestrictedStructure.restrict U A).restrictWithin inside)
-    ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside)
-    _ (locality.supported i)
+  locality.points.choose ((RestrictedStructure.restrict U A).restrictWithin inside)
+    ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside) _ (locality.supported i)
 
 /-- The chosen local point rule is defined and agrees with the original correspondence. -/
 private theorem localPointRule_eq (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     (i : reading.selection.selected.Index) :
     reading.localPointRule locality i = some (reading.selectedPoint i) :=
-  locality.points i _ _ (RestrictedStructure.Agrees.refl _) (RestrictedStructure.Agrees.refl _)
+  locality.points.choose_spec.1 i _ _ (RestrictedStructure.Agrees.refl _) (RestrictedStructure.Agrees.refl _)
 
 /-- Realize the retained state tuple using the actual local point rule and restrict its data. -/
-def restrictSelected (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+noncomputable def restrictSelected (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     (e : reading.selection.used.Values A.carrier) : reading.RetainedInput inside locality :=
   Quot.mk _ ⟨reading.realization, fun i =>

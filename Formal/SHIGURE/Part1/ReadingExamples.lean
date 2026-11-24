@@ -99,8 +99,8 @@ theorem different_relations_disagree_on_retained_structure :
 private def coverChange : ReadingContextChange source target (Interpretation.identity presentation.theory) where
   retained := piece
   inside := fun _ _ => Set.mem_univ _
-  supporting := Interpretation.identity presentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces := fun _ => {true}
   localSupport := by
     intro i a ha _ d hd
@@ -173,7 +173,7 @@ private def alternateCoverChange : ReadingContextChange source target alternateI
   retained := coverChange.retained
   inside := coverChange.inside
   supporting := coverChange.supporting
-  equivalent := alternateIdentity_equivalent.symm
+  equivalent := fun _ => alternateIdentity_equivalent.symm
   pieces := coverChange.pieces
   localSupport := coverChange.localSupport
 
@@ -224,9 +224,9 @@ theorem existential_transports_in_assigned_piece :
 /-- The same local evaluator works for the equivalent representative that mentions a forgotten relation. -/
 theorem equivalent_representative_transports_in_assigned_piece :
     (RestrictedEvaluation.restrict (alternateCoverChange.targetPiece ()) data).holds
-      (coverChange.supporting.translation.formula formula)
+      ((coverChange.supporting ()).translation.formula formula)
       (alternateCoverChange.local_formula_support () formula formulaSupported)
-      (alternateCoverChange.equivalent.retype
+      ((alternateCoverChange.equivalent ()).retype
         (alternateComparison.interpretation.mapStates alternateComparison.state Assignment.empty)) :=
   alternateComparison.transport_restricted_formula ⟨alternateCoverChange, rfl⟩ () formula formulaSupported
     Assignment.empty ⟨false, Set.mem_univ _⟩
@@ -240,6 +240,140 @@ theorem other_relation_is_not_assigned :
   change Declaration.relation (P := presentation) true = Declaration.sort () ∨
     Declaration.relation (P := presentation) true = Declaration.relation false at h
   rcases h with impossible | impossible <;> cases impossible
+
+/-- The nullary formula that reads the chosen relation symbol. -/
+private def selectedRelation (r : Bool) : Formula signature [] :=
+  .atom (.rel r (fun i => nomatch i))
+
+/-- A common primitive relation can be represented by either of two equivalent target relations. -/
+private def interchangeableRelations : PrimitivePresentation where
+  signature := signature
+  laws :=
+    { LawName := Bool
+      statement := fun r => ⟨[], selectedRelation r, selectedRelation (!r)⟩
+      role := fun _ => .required }
+  derived _ h := by cases h
+
+/-- Both required Laws are satisfied by this target model. -/
+private def bothRelationsHold : Structure signature := { data with relation := fun _ => Set.univ }
+
+/-- Choose which target relation gives the retained source relation. -/
+private def toInterchangeable (r : Bool) : Interpretation presentation.theory interchangeableRelations.theory where
+  onSort := id
+  translation :=
+    { operation op := match op with
+        | .total f => nomatch f
+        | .quantity q => nomatch q
+        | .partialOp p => nomatch p
+      relation _ := selectedRelation r
+      partialDomain p := nomatch p }
+  total f := nomatch f
+  quantity q := nomatch q
+  partialDefined p := nomatch p
+  definedPartial p := nomatch p
+  preserves n := nomatch n.val
+
+/-- The two replacements use different symbols and the displayed Laws give mutual derivability. -/
+private theorem interchangeable_equivalent (r : Bool) :
+    (toInterchangeable r).Equivalent (toInterchangeable false) := by
+  cases r
+  · exact Interpretation.Equivalent.refl _
+  · refine ⟨rfl, ?_, ?_, ?_⟩
+    · intro op
+      cases op <;> rename_i name <;> exact nomatch name
+    · intro _
+      change Derivation.Equivalent interchangeableRelations.theory (selectedRelation true) (selectedRelation false)
+      exact ⟨⟨Derivation.required (T := interchangeableRelations.theory) ⟨true, rfl⟩⟩,
+        ⟨Derivation.required (T := interchangeableRelations.theory) ⟨false, rfl⟩⟩⟩
+    · intro p
+      exact nomatch p
+
+/-- Both source pieces contain the same retained relation. -/
+private def sourceWithOverlap : Reading.{0, 0, 0, 0} :=
+  { source with cover := ⟨Bool, fun _ => whole, fun _ _ h => h, fun h => ⟨false, h⟩⟩ }
+
+/-- One target piece contains the sort and its own relation. -/
+private def interchangeablePiece (r : Bool) : DeclarationContext interchangeableRelations where
+  declarations := {d | d = .sort () ∨ d = .relation r}
+  closed := by
+    rintro a (rfl | rfl) d hd
+    · exact hd.elim
+    · obtain ⟨_, h, _⟩ := hd
+      cases h
+
+/-- The Laws are present in a separate piece that the comparison does not select. -/
+private def targetWithSeparatePieces : Reading.{0, 0, 0, 0} where
+  presentation := interchangeableRelations
+  structureData := bothRelationsHold
+  observation := .ofSort () Bool id
+  context := ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+  cover :=
+    { Index := Option Bool
+      piece := fun i => match i with
+        | none => ⟨Set.univ, fun _ _ _ => Set.mem_univ _⟩
+        | some r => interchangeablePiece r
+      subset _ _ _ := Set.mem_univ _
+      covers h := ⟨none, h⟩ }
+  Family := Unit
+  realize _ := bothRelationsHold
+  familyObservation := none
+  ValueStructure _ := Unit
+  valueStructure := ()
+  coefficients := none
+
+/-- Each source piece selects only the target relation it can evaluate. -/
+private def piecewiseTranslation : ReadingContextChange sourceWithOverlap targetWithSeparatePieces
+    (toInterchangeable false) where
+  retained := piece
+  inside _ _ := Set.mem_univ _
+  supporting := toInterchangeable
+  equivalent := interchangeable_equivalent
+  pieces i := {some i}
+  localSupport := by
+    intro i a kept _ d above
+    refine ⟨some i, Set.mem_singleton _, ?_⟩
+    change d = .sort () ∨ d = .relation i
+    rcases kept with rfl | rfl
+    · exact Or.inl (Set.mem_singleton_iff.1 above)
+    · rcases above with hsort | hrelation
+      · obtain ⟨_, h, _⟩ := hsort
+        cases h
+      · exact Or.inr (Set.mem_singleton_iff.1 hrelation)
+
+/-- Different supported translation representatives give a comparison on the actual model. -/
+def locally_distinct_translations_compare :
+    ReadingComparison sourceWithOverlap targetWithSeparatePieces where
+  interpretation := toInterchangeable false
+  targetModel _ _ _ := Set.mem_univ _
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem _ _ _ := Set.mem_univ _
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .changed piecewiseTranslation
+  declaredObservations := .external
+  observationSupport := ⟨False.elim, False.elim⟩
+  coefficientChange := PUnit.unit
+  value := id
+  commutes _ := rfl
+  restrictedObservations := piecewiseTranslation.observationSquare_of_all _ _ _
+    (fun _ => Or.inl rfl) (fun _ => rfl)
+
+/-- The separate pieces agree where both translate the same source formula. -/
+theorem locally_distinct_translations_agree_on_overlap :
+    (RestrictedEvaluation.restrict (piecewiseTranslation.targetPiece false) bothRelationsHold).holds
+      ((toInterchangeable false).translation.formula formula)
+      (piecewiseTranslation.local_formula_support false formula formulaSupported)
+      ((piecewiseTranslation.equivalent false).retype Assignment.empty) ↔
+    (RestrictedEvaluation.restrict (piecewiseTranslation.targetPiece true) bothRelationsHold).holds
+      ((toInterchangeable true).translation.formula formula)
+      (piecewiseTranslation.local_formula_support true formula formulaSupported)
+      ((piecewiseTranslation.equivalent true).retype Assignment.empty) :=
+  locally_distinct_translations_compare.restricted_evaluation_agrees_on_overlap
+    ⟨piecewiseTranslation, rfl⟩ false true formula formulaSupported formulaSupported Assignment.empty
 
 /-- Require the selected nullary relation in the presentation of a coefficient scheme. -/
 private def modelPresentation : PrimitivePresentation where
@@ -802,8 +936,8 @@ private def forgetPairedOperation : ReadingContextChange pairedReading splitPair
     (Interpretation.identity observationPresentation.theory) where
   retained := pairedSorts
   inside := fun _ _ => Set.mem_univ _
-  supporting := Interpretation.identity observationPresentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity observationPresentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces := fun _ => {false}
   localSupport := by
     rintro _ _ ⟨s, rfl⟩ _ d supported
@@ -839,8 +973,8 @@ private def declarePairObservation : ReadingContextChange externalPairReading pa
     (Interpretation.identity observationPresentation.theory) where
   retained := externalPairReading.context
   inside _ kept := kept
-  supporting := Interpretation.identity observationPresentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity observationPresentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces i := nomatch i
   addedTargetPieces := Set.univ
   localSupport i := nomatch i
@@ -940,7 +1074,7 @@ def independent_coefficient_comparison :
       | here => rfl
       | there v => exact nomatch v
     refine ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i), (fun _ _ k => nomatch k),
-      ?_, (fun k => nomatch k)⟩
+      ?_, (fun k => nomatch k), (fun k => nomatch k)⟩
     intro j i share
     obtain ⟨k, hk⟩ := j.property
     have sortEq : j.val.1 = false := by
@@ -1033,8 +1167,8 @@ private def introduceScalarContext :
       (Interpretation.identity presentation.theory) where
   retained := externalScalarSource.context
   inside _ kept := kept
-  supporting := Interpretation.identity presentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces i := nomatch i
   addedTargetPieces := Set.univ
   localSupport i := nomatch i
@@ -1069,15 +1203,21 @@ def external_state_feeds_new_coefficient_evaluation :
   coefficientInputs := by
     refine ⟨(fun _ _ common => (common.1 rfl).elim), ?_⟩
     refine ⟨(fun k => nomatch k), (fun k => nomatch k), (fun k => nomatch k),
-      (fun _ _ k => nomatch k), ?_, (fun k => nomatch k)⟩
+      (fun _ _ k => nomatch k), ?_, (fun k => nomatch k), (fun k => nomatch k)⟩
     intro _ _ shared
     rcases shared.2 with named | explicit
     · cases named.2.2.1
     · cases explicit.1
   coefficientSupport := by
-    refine Or.inl ?_
-    exact Set.Subset.antisymm introduceScalarContext.targetRetained_inside
+    have all := Set.Subset.antisymm introduceScalarContext.targetRetained_inside
       (fun _ kept => ⟨(), Or.inr (Set.mem_univ _), kept⟩)
+    refine ⟨?_, Or.inl all⟩
+    intro input
+    left
+    rw [all]
+    obtain ⟨coordinate, identical⟩ := input.property
+    rw [← identical]
+    exact (scalarInputs Int).supported coordinate
   value := id
   commutes _ := rfl
   restrictedObservations :=
@@ -1137,7 +1277,7 @@ theorem unavailable_source_position_cannot_be_used :
 theorem extra_keeps_original_sharing :
     (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
       (fun i => nomatch i) sharesFirst sharesFirst (fun _ retained => retained = some false) := by
-  refine ⟨fun _ => some false, (fun _ _ _ => rfl), ?_, ?_, ?_, fun _ => rfl⟩
+  refine ⟨fun _ => some false, (fun _ _ _ => rfl), ?_, ?_, ?_, (fun _ => rfl), ?_⟩
   · rintro ⟨⟩ ⟨⟩ _ _ _
     rfl
   · intro j i k _ _ o
@@ -1146,6 +1286,9 @@ theorem extra_keeps_original_sharing :
     refine ⟨congrArg some h.symm, ?_⟩
     rintro ⟨x, _⟩
     exact nomatch x
+  · rintro ⟨⟩ i link
+    cases Option.some.inj link
+    exact Or.inl ⟨(), false, rfl, rfl, rfl⟩
 
 /-- Sharing with the second ordinary position contradicts the original share with the first. -/
 theorem extra_cannot_reassign_original_sharing :
@@ -1160,8 +1303,25 @@ theorem extra_cannot_reassign_original_sharing :
 theorem extra_cannot_borrow_access_from_other_coordinate :
     ¬ (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) (slot ())
       (fun i => nomatch i) sharesFirst sharesFirst (fun _ retained => retained = some true) := by
-  rintro ⟨extraShares, _, _, _, follows, available⟩
+  rintro ⟨extraShares, _, _, _, follows, available, _⟩
   exact Bool.noConfusion (Option.some.inj ((follows () false rfl).1.symm.trans (available ())))
+
+/-- A new coordinate with no shared name or target position cannot invent a provenance. -/
+theorem extra_cannot_invent_a_share :
+    ¬ (additional (s := ()) id).RespectsOrdinary (.identity ordinaryPair) .empty
+      (fun i => nomatch i) (fun _ _ => False) (fun _ _ => False)
+      (fun _ retained => retained = some false) := by
+  rintro ⟨extraShares, _, _, _, _, access, origin⟩
+  rcases origin () false (access ()) with ⟨_, _, impossible, _, _⟩ | ⟨_, _, _, impossible, _⟩
+  exacts [impossible, impossible]
+
+/-- In a joint input, a coefficient coordinate linked to false cannot be supplied as true. -/
+theorem shared_extra_cannot_supply_a_different_value :
+    let ordinaryValues : (ordinaryPair.restrict Set.univ).Values (fun _ => Bool) := fun _ => false
+    ∀ joint : (additional (s := ()) id).SharedValues ordinaryValues (fun _ _ => False) (fun _ => some false),
+      joint.input.2 () = false := by
+  intro ordinaryValues joint
+  exact eq_of_heq (joint.extra_eq () ⟨false, Set.mem_univ _⟩ rfl)
 
 /-- The second target coordinate uses an additional state of the other sort. -/
 private def twoTargetInputs : ObservationProduct Bool :=
@@ -1328,8 +1488,8 @@ def external_stays_available_when_declarations_are_added :
     declarationChange := .changed
       { retained := emptyContext
         inside _ h := h
-        supporting := successor
-        equivalent := Interpretation.Equivalent.refl _
+        supporting := fun _ => successor
+        equivalent := fun _ => Interpretation.Equivalent.refl _
         addedTargetPieces := Set.univ
         pieces i := nomatch i
         localSupport i := nomatch i }

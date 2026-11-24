@@ -394,9 +394,8 @@ theorem missing_target_sort_fails :
         (Interpretation.identity presentation.theory),
       Declaration.sort () ∈ transition.retained.declarations := by
   rintro ⟨transition, hs⟩
-  have ht : Declaration.sort () ∈ missingSort.context.declarations :=
-    transition.support_subset hs (Set.mem_singleton _)
-  exact ht.elim
+  obtain ⟨_, j, _, _⟩ := transition.sort_is_covered () hs
+  exact nomatch j
 
 /-- A comparison cannot keep distinguishing observed states through an empty target cover. -/
 theorem cannot_compare_external_after_forgetting_input
@@ -429,8 +428,8 @@ private def emptyCoverChange :
       (Interpretation.identity presentation.theory) where
   retained := missingSort.context
   inside _ absent := absent.elim
-  supporting := Interpretation.identity presentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces _ := ∅
   localSupport _ _ absent := absent.elim
 
@@ -453,8 +452,8 @@ private def forgetSortKeepExternal : ReadingContextChange (reading id) missingSo
     (Interpretation.identity presentation.theory) where
   retained := missingSort.context
   inside _ absent := absent.elim
-  supporting := Interpretation.identity presentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   keptExternalInputs := Set.univ
   pieces _ := ∅
   localSupport _ _ absent := absent.elim
@@ -514,8 +513,8 @@ private def coverChange : ReadingContextChange (reading id) secondCover
     (Interpretation.identity presentation.theory) where
   retained := whole
   inside := fun _ h => h
-  supporting := Interpretation.identity presentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces := fun _ => {true}
   localSupport := by
     intros
@@ -710,12 +709,12 @@ theorem offset_not_determined_by_retained_structure :
   have equal := locality.agrees left right same
   exact (by decide : (0 : Int) + 0 ≠ 0 + 1) equal
 
-/-- Use the identity point rule on the carriers of the two retained structures. -/
-private noncomputable def localIdentityScheme : CoefficientScheme Observation.whole (ringOf Int) :=
-  { offsetScheme (ringOf Int) with
-    pointsWithin _ _ _ X Y s _ := by
-      classical
-      exact if same : X.carrier s = Y.carrier s then some (cast same) else none }
+/-- Use the identity point rule when the retained carriers agree. -/
+private noncomputable def localIdentityRule {W : DeclarationContext Observation.presentation} :
+    CoefficientReading.LocalPointRule W :=
+  fun X Y s _ => by
+    classical
+    exact if same : X.carrier s = Y.carrier s then some (cast same) else none
 
 /-- Compare a direct carrier transport with transport via the common carrier. -/
 private theorem cast_via_common_carrier {X Y Z : Type} (left : X = Y) (right : X = Z) (y : Y) :
@@ -724,39 +723,47 @@ private theorem cast_via_common_carrier {X Y Z : Type} (left : X = Y) (right : X
   cases right
   rfl
 
-/-- Reading the designated point factors through the retained structure and tuple. -/
-theorem point_evaluation_respects_restriction :
-    let reading := { readRing Int 0 with
-      scheme := localIdentityScheme
-      pointOrigin := .declared True.intro
-      evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }
-    reading.RespectsRestriction Observation.whole (fun _ h => h) := by
-  dsimp only
-  refine ⟨(fun _ => Set.mem_univ _), ?_, ?_⟩
+/-- Evaluate the designated integer point at the selected coordinate. -/
+private def pointReading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) :=
+  { readRing Int 0 with
+    pointOrigin := .declared True.intro
+    evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }
+
+/-- Reading the designated point factors through the retained carrier and tuple. -/
+private theorem pointReading_local {W : DeclarationContext Observation.presentation}
+    (inside : W.declarations ⊆ Observation.whole.declarations)
+    (kept : ∀ i : pointReading.selection.selected.Index,
+      Declaration.sort (pointReading.selection.selected.sort i) ∈ W.declarations) :
+    pointReading.RespectsRestriction W inside := by
+  refine ⟨kept, ⟨localIdentityRule, ?_, False.elim⟩, ?_⟩
   · intro i X Y left right
     classical
-    have x := left.carrier_eq _ (Set.mem_univ (Declaration.sort i.1))
-    have y := right.carrier_eq _ (Set.mem_univ (Declaration.sort i.1))
+    have x := left.carrier_eq _ (kept i)
+    have y := right.carrier_eq _ (kept i)
     change (if same : X.carrier i.1 = Y.carrier i.1 then some (cast same) else none) =
       some (fun z => cast y (cast x.symm z))
-    rw [dif_pos (x.symm.trans y)]
+    rw [dif_pos (show X.carrier i.1 = Y.carrier i.1 from x.symm.trans y)]
     exact congrArg some (funext (cast_via_common_carrier x y))
   · rintro left right ⟨same, tuple⟩
     have eq := congrFun tuple ⟨(), .here⟩
     exact eq.symm
 
+/-- The comparison supplies its own local rule for the integer point map. -/
+theorem point_evaluation_respects_restriction :
+    pointReading.RespectsRestriction Observation.whole (fun _ h => h) :=
+  pointReading_local _ (fun _ => Set.mem_univ _)
+
 /-- A purported local identity rule cannot justify a different designated point correspondence. -/
 theorem local_point_rule_cannot_hide_shift :
     let reading : CoefficientReading Observation.whole (statesOf Int) (.ofList [()]) := { readRing Int 0 with
-      scheme := localIdentityScheme
       realizePoint := fun _ _ x => (show Int from x) + 1
       pointOrigin := .declared True.intro
       evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }
-    ¬ reading.RespectsRestriction Observation.whole (fun _ h => h) := by
+    ¬ localIdentityRule.AgreesWith reading (fun _ h => h) (fun _ => Set.mem_univ _) := by
   classical
   dsimp only
   intro locality
-  have agrees := locality.points ⟨(), .here⟩ _ _
+  have agrees := locality ⟨(), .here⟩ _ _
     (RestrictedStructure.Agrees.refl _) (RestrictedStructure.Agrees.refl _)
   change (if same : Int = Int then some (cast same) else none) = some (fun x : Int => x + 1) at agrees
   have functions : some (id : Int → Int) = some (fun x : Int => x + 1) := by
@@ -882,7 +889,12 @@ theorem cannot_discard_coefficient_sort
       exact support.elim
     | changed inputs square =>
       rw [chosen] at support
-      exact support.1 input
+      rcases support.1.1 input with kept | ⟨j, available, shared⟩
+      · exact kept
+      · rcases shared.2 with named | ⟨explicit, _, _⟩
+        · have impossible : (some "typed variables" : Option String) = none := named.2.2.1
+          cases impossible
+        · cases explicit
   rw [empty] at kept
   exact kept.elim
 
@@ -1018,8 +1030,8 @@ def identity_coefficients_across_cover_change :
     declarationChange := .changed
       { retained := Observation.whole
         inside := fun _ h => h
-        supporting := Interpretation.identity Observation.presentation.theory
-        equivalent := Interpretation.Equivalent.refl _
+        supporting := fun _ => Interpretation.identity Observation.presentation.theory
+        equivalent := fun _ => Interpretation.Equivalent.refl _
         pieces := fun _ => {true}
         localSupport := by intros; exact ⟨true, Set.mem_singleton _, Set.mem_univ _⟩ }
     observationSupport := ⟨False.elim, False.elim⟩
@@ -1032,8 +1044,10 @@ def identity_coefficients_across_cover_change :
     coefficientInputs :=
       ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _ _ _⟩
     coefficientSupport :=
-      ⟨(fun _ => Set.mem_univ _), Or.inl rfl, Or.inl (Set.eq_univ_of_forall (fun _ =>
-        ⟨true, Or.inl ⟨PUnit.unit, Set.mem_singleton _⟩, Set.mem_univ _⟩))⟩
+      ⟨⟨(fun _ => Or.inl (Set.mem_univ _)), Or.inl rfl⟩,
+        ⟨(fun _ => Or.inl ⟨true, Or.inl ⟨PUnit.unit, Set.mem_singleton _⟩, Set.mem_univ _⟩),
+          Or.inl (Set.eq_univ_of_forall (fun _ =>
+            ⟨true, Or.inl ⟨PUnit.unit, Set.mem_singleton _⟩, Set.mem_univ _⟩))⟩⟩
     value := id
     commutes _ := rfl
     restrictedObservations := ReadingContextChange.observationSquare_of_all _ _ _ _
@@ -1595,8 +1609,7 @@ private def nullaryCoefficient : CoefficientReading Observation.whole (statesOf 
 private def taggedNullaryCoefficient : CoefficientReading Observation.whole (statesOf Int) (.ofList []) :=
   { nullaryCoefficient with
     scheme := { offsetScheme (ringOf Int) with
-      Choice := Int
-      pointsWithin _ _ _ _ _ _ _ := none }
+      Choice := Int }
     choice := 1
     pointOrigin := .declared True.intro
     evaluateOn parameter R _ _ := R.fromBase parameter }
@@ -1604,7 +1617,7 @@ private def taggedNullaryCoefficient : CoefficientReading Observation.whole (sta
 /-- A coefficient parameter survives the declaration restriction and determines the evaluation. -/
 theorem restricted_evaluation_keeps_coefficient_parameter :
     taggedNullaryCoefficient.RespectsRestriction Observation.missingSort.context (fun _ h => h.elim) :=
-  ⟨(fun i => nomatch i.2), (fun i => nomatch i.2), (fun _ _ _ => rfl)⟩
+  ⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun _ i => nomatch i.2)⟩, (fun _ _ _ => rfl)⟩
 
 /-- A fixed coefficient parameter cannot make an ambient realization offset local. -/
 theorem coefficient_choice_does_not_hide_realization :
@@ -1636,7 +1649,7 @@ theorem restriction_uses_only_selected_coefficient_algebra :
       let unused : CoefficientAlgebra selectedCoefficientAlgebra.base := ⟨ringOf Int, RingHom.snd Int Int⟩
       selectedCoefficientAlgebra.evaluateOn PUnit.unit unused (0 : Int) (fun j => nomatch j.2) ≠
         selectedCoefficientAlgebra.evaluateOn PUnit.unit unused (1 : Int) (fun j => nomatch j.2) := by
-  refine ⟨⟨(fun i => nomatch i.2), (fun i => nomatch i.2), ?_⟩, ?_⟩
+  refine ⟨⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun _ i => nomatch i.2)⟩, ?_⟩, ?_⟩
   · intro left right _
     change (0 : Int) * (show Int from left.1) = 0 * (show Int from right.1)
     simp
@@ -1667,10 +1680,7 @@ private def nullaryCoefficientReading : Reading.{0, 0, 0, 0} :=
 private noncomputable def sharedScalarTarget : Reading.{0, 0, 0, 0} :=
   { readingOf Int 0 with
     observation := .ofContext [()] Int (fun e => e .here) (some "typed variables")
-    coefficients := some ⟨.ofList [()], { readRing Int 0 with
-      scheme := localIdentityScheme
-      pointOrigin := .declared True.intro
-      evaluateOn := fun _ _ _ e => e ⟨(), .here⟩ }⟩
+    coefficients := some ⟨.ofList [()], pointReading⟩
     sharedInputs := .empty _
     observationPlacement := .external }
 
@@ -1683,8 +1693,8 @@ private noncomputable def keepSharedScalar : ReadingContextChange sharedScalarSo
     (Interpretation.identity Observation.presentation.theory) where
   retained := Observation.missingSort.context
   inside _ h := h.elim
-  supporting := Interpretation.identity Observation.presentation.theory
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => Interpretation.identity Observation.presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces _ := ∅
   addedTargetPieces := Set.univ
   keptExternalInputs := Set.univ
@@ -1722,7 +1732,7 @@ noncomputable def retained_external_state_feeds_coefficient_square :
       evaluate_commutes _ := rfl }
   coefficientInputs := by
     let first : sharedScalarSource.observation.product.Index := ⟨(), .here⟩
-    refine ⟨(fun _ i => nomatch i.2), fun _ => some first, ?_, ?_, ?_, ?_, ?_⟩
+    refine ⟨(fun _ i => nomatch i.2), fun _ => some first, ?_, ?_, ?_, ?_, ?_, ?_⟩
     · intro _ _ _
       rfl
     · intro j k _ _ _
@@ -1739,9 +1749,15 @@ noncomputable def retained_external_state_feeds_coefficient_square :
       | there later => exact nomatch later
     · intro _
       exact Or.inr (Or.inr ⟨first, Or.inr (Or.inr ⟨Set.mem_univ _, rfl, id⟩), rfl, rfl⟩)
+    · intro k i same
+      cases k
+      cases Option.some.inj same
+      exact Or.inl ⟨⟨⟨(), .here⟩, ⟨(), .here⟩, rfl⟩, first,
+        ⟨rfl, Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩, rfl, rfl⟩
   coefficientSupport := by
-    refine ⟨(fun input => nomatch input.val.2), Or.inr ?_, Or.inl ?_⟩
-    · exact ⟨(fun i => nomatch i.2), (fun i => nomatch i.2), (fun _ _ _ => rfl)⟩
+    refine ⟨⟨(fun input => nomatch input.val.2), Or.inr ?_⟩, ⟨?_, Or.inl ?_⟩⟩
+    · exact ⟨(fun i => nomatch i.2), ⟨(fun _ _ _ _ => none), (fun i => nomatch i.2), (fun _ i => nomatch i.2)⟩, (fun _ _ _ => rfl)⟩
+    · exact fun _ => Or.inl ⟨PUnit.unit, Or.inr (Set.mem_univ _), Set.mem_univ _⟩
     · exact Set.eq_univ_of_forall (fun _ => ⟨PUnit.unit, Or.inr (Set.mem_univ _), Set.mem_univ _⟩)
   value _ := (1 : Int)
   commutes _ := rfl
@@ -1749,6 +1765,61 @@ noncomputable def retained_external_state_feeds_coefficient_square :
     (fun _ _ => (1 : Int)) (fun _ => (1 : Int))
     (fun i => Or.inr (Or.inr ⟨Set.mem_univ i, rfl, id⟩))
     (fun _ => Or.inr (Or.inr ⟨Set.mem_univ _, rfl, id⟩)) (fun _ => rfl)
+
+/-- Both ends keep a single external coordinate while only the target retains the sort declaration. -/
+private noncomputable def keepBothScalarStates : ReadingContextChange sharedScalarTarget sharedScalarTarget
+    (Interpretation.identity Observation.presentation.theory) where
+  retained := Observation.missingSort.context
+  inside _ absent := absent.elim
+  supporting := fun _ => Interpretation.identity Observation.presentation.theory
+  equivalent := fun _ => Interpretation.Equivalent.refl _
+  pieces _ := ∅
+  addedTargetPieces := Set.univ
+  keptExternalInputs := Set.univ
+  localSupport _ _ absent := absent.elim
+
+/-- The ordinary integer position is retained independently of its declaration. -/
+private theorem bothScalarOrdinaryAvailable (i : sharedScalarTarget.observation.product.Index) :
+    i ∈ keepBothScalarStates.observationInputs :=
+  Or.inr (Or.inr ⟨Set.mem_univ i, rfl, id⟩)
+
+/-- Both coefficient evaluations can read the same state despite the source declaration being forgotten. -/
+noncomputable def retained_external_state_feeds_both_evaluations :
+    ReadingComparison sharedScalarTarget sharedScalarTarget where
+  interpretation := Interpretation.identity Observation.presentation.theory
+  targetModel name := nomatch name.val
+  state :=
+    { onSort _ := id
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := .identity _
+  declarationChange := .changed keepBothScalarStates
+  observationSupport := ⟨False.elim, False.elim⟩
+  declaredObservations := .external
+  coefficientChange := .changed (.identity pointReading.selection.used)
+    { baseMap := RingHom.id Int
+      coefficients := RingHom.id Int
+      algebra_commutes := rfl
+      evaluate_commutes _ := rfl }
+  coefficientInputs :=
+    ⟨ReadingInputMap.identity_usesCoefficientNames _, ReadingInputMap.identity_respectsOrdinary _ _ _ _⟩
+  coefficientSupport := by
+    refine ⟨⟨?_, Or.inr (pointReading_local _ ?_)⟩, ⟨?_, Or.inl ?_⟩⟩
+    · intro j
+      exact Or.inr ⟨j.val, bothScalarOrdinaryAvailable j.val, rfl,
+        Or.inl ⟨rfl, by decide, rfl, HEq.rfl⟩⟩
+    · intro i
+      cases i.1
+      exact Or.inr ⟨⟨(), .here⟩, bothScalarOrdinaryAvailable _, rfl, Set.mem_univ _⟩
+    · exact fun _ => Or.inl ⟨PUnit.unit, Or.inr (Set.mem_univ _), Set.mem_univ _⟩
+    · exact Set.eq_univ_of_forall (fun _ => ⟨PUnit.unit, Or.inr (Set.mem_univ _), Set.mem_univ _⟩)
+  value := id
+  commutes _ := rfl
+  restrictedObservations := keepBothScalarStates.observationSquare_of_available (.identity _)
+    (fun _ => id) id bothScalarOrdinaryAvailable bothScalarOrdinaryAvailable (fun _ => rfl)
 
 /-- Keep the theory fixed while changing the observation and the coefficients. -/
 private def emptyToScalarInterpretation := Interpretation.identity Observation.presentation.theory
@@ -1780,8 +1851,8 @@ private def forgetEmptyState : ReadingContextChange emptyOrdinaryReading nullary
     emptyToScalarInterpretation where
   retained := Observation.missingSort.context
   inside _ absent := absent.elim
-  supporting := emptyToScalarInterpretation
-  equivalent := Interpretation.Equivalent.refl _
+  supporting := fun _ => emptyToScalarInterpretation
+  equivalent := fun _ => Interpretation.Equivalent.refl _
   pieces _ := Set.univ
   localSupport _ _ absent := absent.elim
 
@@ -1837,9 +1908,9 @@ def introduces_scalar_at_retained_tuple :
   coefficientInputs := by
     refine ⟨(fun j => nomatch j.val.2), ?_⟩
     exact ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i),
-      (fun j => nomatch j.val.2), (fun j => nomatch j.val.2), (fun i => nomatch i)⟩
+      (fun j => nomatch j.val.2), (fun j => nomatch j.val.2), (fun i => nomatch i), (fun i => nomatch i)⟩
   coefficientSupport := by
-    refine Or.inl ?_
+    refine ⟨(fun j => nomatch j.val.2), Or.inl ?_⟩
     exact Set.eq_univ_of_forall (fun d => ⟨PUnit.unit, Or.inl ⟨PUnit.unit, Set.mem_univ _⟩, Set.mem_univ _⟩)
   value := id
   commutes e := nomatch e PUnit.unit
