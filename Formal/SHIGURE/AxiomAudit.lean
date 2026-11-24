@@ -1,4 +1,5 @@
 import Formal.SHIGURE.AssertStandardAxioms
+import Formal.SHIGURE.Part1.PositiveLogic
 import Formal.SHIGURE.Part1.PreservationExamples
 import Formal.SHIGURE.Part1.ReadingExamples
 
@@ -129,7 +130,28 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.Chapter1.DeclaredCoefficientPoints.recipe_remains_undefined_at_unpermitted_source,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.permitted_source_has_no_extension,
   SHIGURE.Chapter1.DeclaredCoefficientPoints.cannot_restrict_recipe_with_unextendable_source,
-  SHIGURE.Chapter1.DeclaredCoefficientPoints.forgotten_carrier_cannot_change_declared_points
+  SHIGURE.Chapter1.DeclaredCoefficientPoints.forgotten_carrier_cannot_change_declared_points,
+  Derivation.substitutePartial,
+  Derivation.bindFormula_equivalent,
+  Derivation.termGraphFunctional,
+  Derivation.strictGraph_equivalent,
+  Interpretation.translateGraphAxiom,
+  Interpretation.translateDerivation,
+  Translation.graph_equivalent,
+  Translation.defined_equivalent,
+  Translation.identityFormula_cast_equivalent,
+  Translation.comp_formula_equivalent,
+  Interpretation.Equivalent.formula,
+  Interpretation.Equivalent.graph,
+  Interpretation.comp,
+  Interpretation.comp_congr,
+  Interpretation.comp_id,
+  Interpretation.id_comp,
+  Interpretation.comp_assoc,
+  Theory.category,
+  Theory.ofInterpretation_eq_iff,
+  Theory.ofInterpretation_id,
+  Theory.ofInterpretation_comp
 ]
 
 end SHIGURE.AxiomAudit

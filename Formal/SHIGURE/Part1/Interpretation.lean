@@ -65,6 +65,16 @@ def mapSorts (f : S → T) (ρ : Renaming Γ Δ) : Renaming (Γ.map f) (Δ.map f
 
 end Renaming
 
+namespace Formula
+
+variable {sig : Signature.{u}} {Γ Δ : List sig.SortType}
+
+/-- Transport a formula along equality of its typed variable contexts. -/
+def castContext (same : Γ = Δ) (p : Formula sig Γ) : Formula sig Δ :=
+  cast (congrArg (Formula sig) same) p
+
+end Formula
+
 namespace Assignment
 
 variable {S : Type u} {X : S → Type v} {Γ : List S} {s : S}
@@ -94,6 +104,10 @@ end Assignment
 namespace Term
 
 variable {sig : Signature.{u}} {Γ : List sig.SortType} {s : sig.SortType}
+
+/-- Transport a term along equality of its input contexts. -/
+def castContext {Δ : List sig.SortType} (same : Γ = Δ) (t : Term sig Γ s) : Term sig Δ s :=
+  cast (congrArg (fun E => Term sig E s) same) t
 
 /-- Bind the argument tuple in context order before interpreting the supplied body. -/
 def letArguments : {Γ Λ : List sig.SortType} →
@@ -261,9 +275,24 @@ def identity (S : Signature.{u}) : Translation S S id where
 
 /-- Compose replacement data by translation into the final signature. -/
 def comp (v : Translation T U g) (u : Translation S T f) : Translation S U (g ∘ f) where
-  operation op := by simpa only [List.map_map] using v.term (u.operation op)
-  relation r := by simpa only [List.map_map] using v.formula (u.relation r)
-  partialDomain p := by simpa only [List.map_map] using v.formula (u.partialDomain p)
+  operation op := (v.term (u.operation op)).castContext List.map_map
+  relation r := (v.formula (u.relation r)).castContext List.map_map
+  partialDomain p := (v.formula (u.partialDomain p)).castContext List.map_map
+
+/-- A composite operation uses the translated replacement term on the composed context. -/
+theorem comp_operation (v : Translation T U g) (u : Translation S T f) (op : Operation S) :
+    (v.comp u).operation op = (v.term (u.operation op)).castContext List.map_map :=
+  rfl
+
+/-- A composite relation uses the successively translated replacement formula. -/
+theorem comp_relation (v : Translation T U g) (u : Translation S T f) (r : S.Rel) :
+    (v.comp u).relation r = (v.formula (u.relation r)).castContext List.map_map :=
+  rfl
+
+/-- A composite partial domain uses the successively translated domain formula. -/
+theorem comp_partialDomain (v : Translation T U g) (u : Translation S T f) (p : S.Partial) :
+    (v.comp u).partialDomain p = (v.formula (u.partialDomain p)).castContext List.map_map :=
+  rfl
 
 end Translation
 
