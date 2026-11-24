@@ -48,7 +48,9 @@ private def constantOrdinary : Structure (Selected.signature whole) where
 private def alignment : Selected.CarrierEquiv whole (fun _ => Bool) constantOrdinary.carrier :=
   fun _ _ => Equiv.refl Bool
 
-/-- A proposed comparison cannot identify a missing graph with the ordinary total interpretation. -/
+/-- The graph comparison used in Proposition 3.2 rejects the empty graph
+in this example because the retained total operation returns `false`
+on the input `false` in the ordinary structure. -/
 theorem missingGraph_not_matching : ¬ Selected.EvaluationMatches missingGraph constantOrdinary alignment := by
   intro impossible
   let keeps : Declaration.total (P := presentation) false ∈ whole.declarations := Set.mem_univ _

@@ -1280,6 +1280,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.ambientAssignment_selectAssignment,
   DeclarationContext.Selected.selectAssignment_ambientAssignment,
   DeclarationContext.Selected.assignmentEquiv,
+  DeclarationContext.Selected.assignmentEquiv_apply,
   DeclarationContext.Selected.selectAssignment_pull,
   DeclarationContext.Selected.selectAssignment_cons,
   DeclarationContext.Selected.selectArgs,

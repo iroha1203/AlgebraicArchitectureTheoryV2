@@ -42,9 +42,8 @@ theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y'
     (selectAssignment e kept a).map g = selectAssignment e' kept (mapAssignment f kept a) := by
   apply Assignment.ext
   intro s i
-  change g s (e s.val s.property (a (ambientVar kept i))) =
-    e' s.val s.property (mapAssignment f kept a (ambientVar kept i))
-  rw [mapAssignment_apply]
+  rw [Assignment.map_apply, ← selectVar_ambientVar kept i,
+    selectAssignment_selectVar, selectAssignment_selectVar, mapAssignment_apply]
   exact same s.val s.property (a (ambientVar kept i))
 
 /-- Transport the input tuple in the graph comparison of Proposition 3.2.
@@ -88,8 +87,7 @@ of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. 
 theorem argsEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
     argsEquiv e op keep a = selectArgs e op keep a := by
-  rw [selectArgs_eq_cast]
-  rfl
+  simp only [argsEquiv, Equiv.trans_apply, assignmentEquiv_apply, Equiv.cast_apply, selectArgs_eq_cast]
 
 /-- The outcome equivalence for a retained operation acts by the output selection
 of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
@@ -106,7 +104,9 @@ def readOnSort (f : ContextStructure.Hom A B) (s : SortName U) :
     (readStructure A).carrier s → (readStructure B).carrier s :=
   f.onSort s.val s.property
 
-/-- An ambient-indexed context arrow preserves graphs read in the actual selected signature. -/
+/-- Transport the graph-preservation component of a context arrow to the
+selected signature for Proposition 3.2. The retained operation supplies the
+input and output support for the two carrier comparisons. -/
 theorem readGraph (f : ContextStructure.Hom A B) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations)
     (xs : Assignment (readStructure A).carrier (operation op keep).arity.inputs)

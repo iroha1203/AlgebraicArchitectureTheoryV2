@@ -54,7 +54,9 @@ variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStructure A)).carrier = A.carrier :=
   ContextStructure.carrier_ext (fun s keep => extendedCarrier_kept (readStructure A) s keep)
 
-/-- Reading then writing represents exactly the original context structure. -/
+/-- Recover the given context structure by reading and writing it, as used
+in the model comparison for Proposition 3.2. The carrier identification comes
+from the retained sorts, and the retained facts determine the structure. -/
 @[simp] theorem write_read_structure (A : ContextStructure U) : writeStructure (readStructure A) = A := by
   let B := readStructure A
   let h := write_read_carriers A
@@ -102,7 +104,9 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
   rw [selectVar_ambientVar keep i]
   rfl
 
-/-- Writing then reading is the strict identity on ordinary selected structures. -/
+/-- Recover the given ordinary selected structure by writing and reading it,
+as used in the model comparison for Proposition 3.2. Its retained relations,
+domains and graphs determine the structure after the carrier identification. -/
 @[simp] theorem read_write_structure (B : Structure (signature U)) : readStructure (writeStructure B) = B := by
   let A := writeStructure B
   let h := read_write_carriers B

@@ -36,7 +36,9 @@ noncomputable def readStructure (A : ContextStructure U) : Structure (signature 
   quantity q e := A.toRestrictedStructure.quantity q.val q.property
     (ambientAssignment (readCarrierEquiv A) (operationInputs (.quantity q.val) q.property) e)
 
-/-- The ordinary structure interprets exactly the primitive facts of the context structure. -/
+/-- Construct the primitive comparisons used by Proposition 3.2 from any
+context structure. The selected relations, domains and graphs use exactly
+the declarations and input and output sorts retained by the context. -/
 theorem readStructure_matches (A : ContextStructure U) :
     EvaluationMatches A.evaluation (readStructure A) (readCarrierEquiv A) where
   relation r keep e := by

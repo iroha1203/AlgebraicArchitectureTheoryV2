@@ -65,6 +65,13 @@ def assignmentEquiv (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
   left_inv := ambientAssignment_selectAssignment e keep
   right_inv := selectAssignment_ambientAssignment e keep
 
+/-- The assignment equivalence in Proposition 3.2 sends an assignment to its
+selected values using the carrier equivalences on the retained sorts. -/
+theorem assignmentEquiv_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
+    assignmentEquiv e keep a = selectAssignment e keep a :=
+  rfl
+
 /-- Selecting an assignment commutes with reading a subcontext of its variable positions. -/
 theorem selectAssignment_pull (e : CarrierEquiv U X Y) {Γ Δ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
