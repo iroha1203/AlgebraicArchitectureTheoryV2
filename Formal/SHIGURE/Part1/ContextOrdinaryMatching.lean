@@ -91,6 +91,7 @@ noncomputable def project (i : I) : OrdinaryMatch piece ⥤ Model (Selected.theo
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/-- Move a matching square along equality of its four endpoints and heterogeneous equality of its arrows. -/
 private theorem transportSquare {C : Type*} [Category C]
     {A B X Y A' B' X' Y' : C}
     {l : A ⟶ B} {r : X ⟶ Y} {l' : A' ⟶ B'} {r' : X' ⟶ Y'}
@@ -108,6 +109,7 @@ private theorem transportSquare {C : Type*} [Category C]
   subst r'
   exact square
 
+/-- Apply a functor to an overlap square, including the transports along object equalities. -/
 private theorem mapSquare {C : Type*} {D : Type*} [Category C] [Category D]
     (F : C ⥤ D) {A B X Y : C} {l : A ⟶ B} {r : X ⟶ Y}
     (a : A = X) (b : B = Y) (square : l ≫ eqToHom b = eqToHom a ≫ r) :
@@ -117,6 +119,7 @@ private theorem mapSquare {C : Type*} {D : Type*} [Category C] [Category D]
   simp only [eqToHom_refl, Category.comp_id, Category.id_comp] at square ⊢
   rw [square]
 
+/-- Equal functors have the same arrow action after the endpoints are identified. -/
 private theorem mapHEq {C : Type*} {D : Type*} [Category C] [Category D]
     {F G : C ⥤ D} (same : F = G) {A B : C} (f : A ⟶ B) : F.map f ≍ G.map f := by
   subst G
@@ -190,6 +193,7 @@ theorem read_comp_write : readFunctor (piece := piece) ⋙ writeFunctor = 𝟭 (
     Functor.id_map]
   exact Functor.congr_hom (Selected.read_comp_write (piece i)) ((show Match.Hom A B from f).pieceMap i)
 
+/-- The component of a transport in the matching category is the transport of that component's endpoints. -/
 private theorem eqToHom_pieceMap {A B : OrdinaryMatch piece} (same : A = B) (i : I) :
     (show Hom A B from eqToHom same).pieceMap i = eqToHom (congrArg (fun M => M.pieceModel i) same) := by
   subst B

@@ -32,6 +32,7 @@ theorem app_refs (op : Operation P.signature)
   · simpa only [Set.mem_singleton_iff.mp hd] using kept
   · exact args i hd
 
+/-- If the declaration set supports each conjunct, it also supports the conjunction. -/
 private theorem conjoined_support (Λ : List P.signature.SortType)
     (ps : ∀ {t}, Var Λ t → Formula P.signature Γ)
     (kept : ∀ {t} (i : Var Λ t), Declaration.formula (ps i) ⊆ D) :
@@ -42,6 +43,7 @@ private theorem conjoined_support (Λ : List P.signature.SortType)
     rw [Formula.conjoin_cons]
     exact Set.union_subset (kept .here) (ih (fun i => ps (.there i)) (fun i => kept (.there i)))
 
+/-- Record the bound sort together with the support of the existential body. -/
 private theorem bound_support (Λ : List P.signature.SortType) (p : Formula P.signature (Λ ++ Γ))
     (sorts : Declaration.sorts Λ ⊆ D) (kept : Declaration.formula p ⊆ D) :
     Declaration.formula (Formula.existsMany Λ p) ⊆ D := by
@@ -53,6 +55,7 @@ private theorem bound_support (Λ : List P.signature.SortType) (p : Formula P.si
     refine Set.union_subset ?_ kept
     exact Set.singleton_subset_iff.mpr (sorts ⟨s, List.mem_cons_self, rfl⟩)
 
+/-- Track all typed names used by a term's value graph. -/
 private theorem graphAt_support (t : Term P.signature Γ s)
     (types : ∀ op : Operation P.signature, Declaration.ofOperation op ∈ D → Declaration.sorts op.arity.inputs ⊆ D)
     (references : termReferences t ⊆ D) :
@@ -87,6 +90,7 @@ theorem equality_law_support (left right : Term P.signature Γ s)
   exact Set.union_subset (Set.singleton_subset_iff.mpr result)
     (Set.union_subset (graphAt_support left types leftRefs _ _) (graphAt_support right types rightRefs _ _))
 
+/-- Account for both typed argument positions of a binary application in its reference set. -/
 private theorem two_arg_ref {t : P.signature.SortType} (x : Term P.signature Γ s) (y : Term P.signature Γ t)
     (hx : termReferences x ⊆ D) (hy : termReferences y ⊆ D)
     {a : P.signature.SortType} (i : Var [s, t] a) :

@@ -33,7 +33,8 @@ namespace DeclarationContext.Selected
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
   {X X' : P.signature.SortType → Type u} {Y Y' : SortName U → Type u}
 
-/-- Moving all tuple values by a structural arrow commutes with the reindexing of positions. -/
+/-- Reindex the assignments in the graph comparison of Proposition 3.2
+when the structural arrow commutes with the carrier identifications pointwise. -/
 theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
@@ -41,24 +42,32 @@ theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y'
     (selectAssignment e kept a).map g = selectAssignment e' kept (mapAssignment f kept a) := by
   apply Assignment.ext
   intro s i
+  rw [Assignment.map_apply, ← selectVar_ambientVar kept i,
+    selectAssignment_selectVar, selectAssignment_selectVar, mapAssignment_apply]
   exact same s.val s.property (a (ambientVar kept i))
 
-/-- Moving all input values of an operation agrees before and after selecting its arity. -/
+/-- Transport the input tuple in the graph comparison of Proposition 3.2.
+The pointwise square `same` is definitional for the read structural arrow
+and is proved by `writeOnSort_comm` for the written arrow. -/
 theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
     (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations)
     (a : Assignment X op.arity.inputs) :
     (selectArgs e op kept a).map g = selectArgs e' op kept (mapAssignment f (operationInputs op kept) a) := by
-  cases op <;> exact map_selectAssignment e e' f g same _ a
+  rw [selectArgs_eq_cast, selectArgs_eq_cast]
+  cases op <;> simpa only [cast_eq] using map_selectAssignment e e' f g same _ a
 
-/-- Moving the output value of an operation agrees before and after selecting its arity. -/
+/-- Transport the output in the graph comparison of Proposition 3.2.
+The pointwise square `same` is definitional for the read structural arrow
+and is proved by `writeOnSort_comm` for the written arrow. -/
 theorem map_selectResult (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
     (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
     g _ (selectResult e op kept x) = selectResult e' op kept (f _ (operationOutput op kept) x) := by
-  cases op <;> exact same _ _ x
+  rw [selectResult_eq_cast, selectResult_eq_cast]
+  cases op <;> simpa only [cast_eq] using same _ _ x
 
 /-- Every tuple of the selected arity comes from a unique ambient tuple of the retained carriers. -/
 def argsEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
@@ -73,6 +82,21 @@ def resultEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
   (e _ (operationOutput op kept)).trans
     (Equiv.cast (congrArg (fun profile => Y profile.output) (operation_arity op kept).symm))
 
+/-- The input equivalence for a retained operation acts by the input selection
+of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
+theorem argsEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    argsEquiv e op keep a = selectArgs e op keep a := by
+  simp only [argsEquiv, Equiv.trans_apply, assignmentEquiv_apply, Equiv.cast_apply, selectArgs_eq_cast]
+
+/-- The outcome equivalence for a retained operation acts by the output selection
+of Proposition 3.2. Use it to obtain ambient preimages in the graph comparison. -/
+theorem resultEquiv_apply (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    resultEquiv e op keep x = selectResult e op keep x := by
+  rw [selectResult_eq_cast]
+  rfl
+
 variable {A B : ContextStructure U}
 
 /-- The same point map can be indexed by the actual retained sort names. -/
@@ -80,19 +104,18 @@ def readOnSort (f : ContextStructure.Hom A B) (s : SortName U) :
     (readStructure A).carrier s → (readStructure B).carrier s :=
   f.onSort s.val s.property
 
-/-- An ambient-indexed context arrow preserves graphs read in the actual selected signature. -/
+/-- Transport the graph-preservation component of a context arrow to the
+selected signature for Proposition 3.2. The retained operation supplies the
+input and output support for the two carrier comparisons. -/
 theorem readGraph (f : ContextStructure.Hom A B) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations)
     (xs : Assignment (readStructure A).carrier (operation op keep).arity.inputs)
     (y : (readStructure A).carrier (operation op keep).arity.output)
     (held : (readStructure A).Graph (operation op keep) xs y) :
     (readStructure B).Graph (operation op keep) (xs.map (readOnSort f)) (readOnSort f _ y) := by
-  obtain ⟨x, rfl⟩ := (argsEquiv (readCarrierEquiv A) op keep).surjective xs
-  obtain ⟨z, rfl⟩ := (resultEquiv (readCarrierEquiv A) op keep).surjective y
-  change (readStructure A).Graph (operation op keep) (selectArgs (readCarrierEquiv A) op keep x)
-      (selectResult (readCarrierEquiv A) op keep z) at held
-  change (readStructure B).Graph (operation op keep) ((selectArgs (readCarrierEquiv A) op keep x).map (readOnSort f))
-      (readOnSort f _ (selectResult (readCarrierEquiv A) op keep z))
+  obtain ⟨x, hx⟩ := (argsEquiv (readCarrierEquiv A) op keep).surjective xs
+  obtain ⟨z, hz⟩ := (resultEquiv (readCarrierEquiv A) op keep).surjective y
+  rw [← hx, ← hz, argsEquiv_apply, resultEquiv_apply] at held ⊢
   rw [map_selectArgs (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)
       (fun _ _ _ => rfl) op keep x,
     map_selectResult (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)

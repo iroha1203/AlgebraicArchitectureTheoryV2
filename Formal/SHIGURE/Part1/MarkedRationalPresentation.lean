@@ -127,6 +127,7 @@ def keeps (right : Bool) : Declaration presentation → Prop
   | .law (.inr name) => (LinearityLaw.symbol vocabulary name).right = right
   | .relation p | .partialOp p | .quantity p => nomatch p
 
+/-- Retention of a total operation in a rational piece entails retention of all its arity sorts. -/
 private theorem kept_total_support (right : Bool) (name : vocabulary.Symbol)
     (kept : keeps right (.total name)) : Declaration.dependsOn presentation (.total name) ⊆ {d | keeps right d} := by
   cases name with
@@ -145,6 +146,7 @@ private theorem kept_total_support (right : Bool) (name : vocabulary.Symbol)
     cases name <;> cases right <;>
       simp_all [vocabulary, keeps, Op.source, Op.target, Op.right, keepsModule] <;> aesop
 
+/-- A retained operation's input sorts lie in the same rational piece. -/
 private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signature)
     (kept : keeps right (Declaration.ofOperation (P := presentation) op)) :
     Declaration.sorts (P := presentation) op.arity.inputs ⊆ {d | keeps right d} := by
@@ -155,12 +157,14 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
   | partialOp p => exact nomatch p
   | quantity q => exact nomatch q
 
+/-- Turn retention of each sort occurring in a context into retention of that context's declaration support. -/
 private theorem kept_sorts (right : Bool) {Γ : List (Option SortName)}
     (all : ∀ s ∈ Γ, keeps right (.sort s)) :
     Declaration.sorts (P := presentation) Γ ⊆ {d | keeps right d} := by
   rintro _ ⟨s, occurs, rfl⟩
   exact all s occurs
 
+/-- A retained unary operation and supported argument contribute only references in that piece. -/
 private theorem unary_refs (right : Bool) {Γ : List (Option SortName)} (name : Op)
     (x : Term vocabulary.signature Γ (some name.source))
     (kept : keeps right (vocabulary.multilinearDecl laws name))
@@ -173,6 +177,7 @@ private theorem unary_refs (right : Bool) {Γ : List (Option SortName)} (name : 
   | here => exact refs
   | there empty => cases empty
 
+/-- The term obtained by updating the only argument is the ordinary unary application. -/
 private theorem unary_updated {Γ : List (Option SortName)} (name : Op)
     (names : Renaming (vocabulary.inputs name) Γ)
     (x : Term vocabulary.signature Γ (some name.source)) :
@@ -184,6 +189,7 @@ private theorem unary_updated {Γ : List (Option SortName)} (name : Op)
   | here => exact vocabulary.updatedTerms_same names (argument name) x
   | there empty => cases empty
 
+/-- Each rational piece retains the syntax of its own required round-trip Law. -/
 private theorem roundTrip_supported (right : Bool) (name : Op) (side : name.right = right) :
     Declaration.lawBody (P := presentation) (roundTrip name) ⊆ {d | keeps right d} := by
   cases name <;> cases right <;> simp [Op.right] at side
@@ -198,6 +204,7 @@ private theorem roundTrip_supported (right : Bool) (name : Op) (side : name.righ
         | exact variable_refs (P := presentation) _
         | refine unary_refs _ _ _ (by rfl) ?_
 
+/-- The actual equality expressing linearity uses only the declarations in its operation's piece. -/
 private theorem linearity_supported (right : Bool) (linearity : vocabulary.LinearityLaw)
     (side : (LinearityLaw.symbol vocabulary linearity).right = right) :
     Declaration.lawBody (P := presentation) (LinearityLaw.statement vocabulary linearity) ⊆ {d | keeps right d} := by
@@ -219,6 +226,7 @@ private theorem linearity_supported (right : Bool) (linearity : vocabulary.Linea
           | refine addTerm_refs (V := vocabulary) (L := laws) _ _ _ (by first | exact rfl | exact True.intro) ?_ ?_
           | refine smulTerm_refs (V := vocabulary) (L := laws) _ _ _ (by first | exact rfl | exact True.intro) ?_ ?_
 
+/-- Every retained rational Law has its required dependencies in the corresponding piece. -/
 private theorem kept_law_support (right : Bool) (name : presentation.laws.LawName) (kept : keeps right (.law name)) :
     Declaration.dependsOn presentation (.law name) ⊆ {d | keeps right d} := by
   rw [Declaration.nonderived_dependencies (P := presentation) name (by cases name <;> intro h <;> cases h)]

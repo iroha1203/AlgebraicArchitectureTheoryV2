@@ -20,32 +20,38 @@ namespace Data
 
 variable {a : Data R U} {b : Data R W}
 
+/-- Identifying kernels identifies the zero classes of the standard quotients. -/
 private theorem cast_zero {m : ℕ} {K J : Kernel R m} (h : K = J) :
     cast (congrArg Quotient h) (0 : Quotient K) = 0 := by
   subst J
   rfl
 
+/-- Addition of quotient classes commutes with equality transport of the kernel. -/
 private theorem cast_add {m : ℕ} {K J : Kernel R m} (h : K = J) (x y : Quotient K) :
     cast (congrArg Quotient h) (x + y) =
       cast (congrArg Quotient h) x + cast (congrArg Quotient h) y := by
   subst J
   rfl
 
+/-- Negation of quotient classes commutes with equality transport of the kernel. -/
 private theorem cast_neg {m : ℕ} {K J : Kernel R m} (h : K = J) (x : Quotient K) :
     cast (congrArg Quotient h) (-x) = -cast (congrArg Quotient h) x := by
   subst J
   rfl
 
+/-- Scalar multiplication commutes with equality transport of the kernel. -/
 private theorem cast_smul {m : ℕ} {K J : Kernel R m} (h : K = J) (r : R) (x : Quotient K) :
     cast (congrArg Quotient h) (r • x) = r • cast (congrArg Quotient h) x := by
   subst J
   rfl
 
+/-- The named basis image is preserved under equality transport of the quotient kernel. -/
 private theorem cast_generator {m : ℕ} {K J : Kernel R m} (h : K = J) (i : Fin m) :
     cast (congrArg Quotient h) (generator K i) = generator J i := by
   subst J
   rfl
 
+/-- Transporting a multilinear map and its arguments transports the evaluated value. -/
 private theorem cast_map_apply {f : V.Multilinear}
     {p q : OperationKernels (V := V) R f}
     (same : p = q) {F : p.Map} {G : q.Map} (maps : HEq F G)
@@ -72,12 +78,14 @@ theorem Agree.carrier_eq (same : a.Agree b) (s : Option V.SortName)
   | none, _, _ => rfl
   | some _, left, right => congrArg Quotient (same.ambientKernel_eq left right)
 
+/-- Agreement on shared sorts identifies the ambient input and output kernel profiles. -/
 private theorem Agree.ambientOperationKernels_eq (same : a.Agree b) {f : V.Multilinear}
     (left : V.multilinearDecl L f ∈ U.declarations) (right : V.multilinearDecl L f ∈ W.declarations) :
     a.ambientOperationKernels f = b.ambientOperationKernels f :=
   (a.ambientOperationKernels_kept left).trans
     ((same.operationKernels_eq left right).trans (b.ambientOperationKernels_kept right).symm)
 
+/-- Agreement on a retained multilinear operation identifies its two ambient readings along the shared kernels. -/
 private theorem Agree.ambientOperation_heq (same : a.Agree b) {f : V.Multilinear}
     (left : V.multilinearDecl L f ∈ U.declarations) (right : V.multilinearDecl L f ∈ W.declarations) :
     HEq (a.ambientOperation f) (b.ambientOperation f) :=

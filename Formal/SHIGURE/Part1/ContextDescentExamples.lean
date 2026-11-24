@@ -35,6 +35,7 @@ theorem constantsReading_ambient_fails :
   intro holds
   exact constants_fail_inverseLaw (holds ⟨(), rfl⟩)
 
+/-- Interpret both retained total symbols by the constant zero map on the two-point carrier. -/
 private def constantOrdinary : Structure (Selected.signature whole) where
   carrier _ := Bool
   total _ _ := false
@@ -43,10 +44,13 @@ private def constantOrdinary : Structure (Selected.signature whole) where
   partialValue p := nomatch p.val
   quantity q := nomatch q.val
 
+/-- Identify the original and selected Bool carriers without changing their state names. -/
 private def alignment : Selected.CarrierEquiv whole (fun _ => Bool) constantOrdinary.carrier :=
   fun _ _ => Equiv.refl Bool
 
-/-- A proposed comparison cannot identify a missing graph with the ordinary total interpretation. -/
+/-- The graph comparison used in Proposition 3.2 rejects the empty graph
+in this example because the retained total operation returns `false`
+on the input `false` in the ordinary structure. -/
 theorem missingGraph_not_matching : ¬ Selected.EvaluationMatches missingGraph constantOrdinary alignment := by
   intro impossible
   let keeps : Declaration.total (P := presentation) false ∈ whole.declarations := Set.mem_univ _
@@ -56,9 +60,10 @@ theorem missingGraph_not_matching : ¬ Selected.EvaluationMatches missingGraph c
   change constantOrdinary.Graph (.total _) _ _
   rw [Structure.graph_total_iff]
   change false = _
-  simp only [Selected.selectResult, alignment, cast_eq]
+  rw [Selected.selectResult_total]
   rfl
 
+/-- View each primitive-only piece as a subcontext of the original presentation. -/
 private theorem pieces_inside (i : Bool) : piece i ≤ whole :=
   Set.subset_univ _
 
@@ -88,6 +93,7 @@ theorem different_ordinary_carriers_no_overlap :
       (overlapRight piece false true))) at localEq
   simpa only [Selected.write_read_model] using localEq
 
+/-- Read the two graph models as an ordinary matching family over the primitive cover. -/
 private noncomputable def ordinaryFamily : OrdinaryMatch primitiveCover.piece :=
   OrdinaryMatch.readObj (primitiveCover.read primitiveModel)
 
@@ -137,6 +143,7 @@ def presentation : PrimitivePresentation where
   laws := ⟨Unit, fun _ => identityLaw, fun _ => .required⟩
   derived _ role := by cases role
 
+/-- The written identity Law mentions only the first total symbol. -/
 private theorem true_not_referenced :
     Declaration.total (P := presentation) true ∉ Declaration.lawBody identityLaw := by
   intro used
@@ -208,6 +215,7 @@ theorem identities_hold : identityLaw.Holds identities := by
   intro e
   rfl
 
+/-- Use the two supplied unary operations to build the restricted Bool structure on the local piece. -/
 private def localStructure (W : DeclarationContext presentation) (kept : Declaration.sort () ∈ W.declarations)
     (value : Bool → Bool → Bool) : ContextStructure W :=
   let A : Structure signature := {constants with total := fun f e => value f (e .here)}

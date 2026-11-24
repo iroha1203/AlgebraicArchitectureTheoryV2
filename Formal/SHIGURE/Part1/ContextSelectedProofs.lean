@@ -96,10 +96,12 @@ theorem derivation_result {Γ : List P.theory.signature.SortType} {p q : Formula
     Declaration.formulaSupport q ⊆ U.declarations :=
   lawConclusionSupport (law := ⟨Γ, p, q⟩) ((derivation_root d).trans keep)
 
+/-- Read a theory by referencing original Law names through the supplied name map. -/
 private abbrev namedTheory {sig : Signature.{u}} (declarations : LawDeclarations sig)
     {I : Type u} (name : I → declarations.LawName) : Theory.{u} :=
   ⟨sig, I, declarations.statement ∘ name⟩
 
+/-- The support of the whole proof contains its outer sequent support. -/
 private theorem derivationOf_root {I : Type u} (source : I → P.laws.LawName)
     {Γ : List (namedTheory P.laws source).signature.SortType}
     {p q : Formula (namedTheory P.laws source).signature Γ}
@@ -107,6 +109,7 @@ private theorem derivationOf_root {I : Type u} (source : I → P.laws.LawName)
     Declaration.lawBody (P := P) ⟨Γ, p, q⟩ ⊆ Declaration.derivationOf rfl source d := by
   cases d <;> exact fun _ h => Or.inl h
 
+/-- A retained proof tree retains the syntax of its input formula. -/
 private theorem derivationOf_input {I : Type u} (source : I → P.laws.LawName)
     {Γ : List (namedTheory P.laws source).signature.SortType}
     {p q : Formula (namedTheory P.laws source).signature Γ}
@@ -115,6 +118,7 @@ private theorem derivationOf_input {I : Type u} (source : I → P.laws.LawName)
     Declaration.formulaSupport p ⊆ U.declarations :=
   lawInputSupport (law := ⟨Γ, p, q⟩) ((derivationOf_root source d).trans keep)
 
+/-- A retained proof tree retains the syntax of its conclusion. -/
 private theorem derivationOf_result {I : Type u} (source : I → P.laws.LawName)
     {Γ : List (namedTheory P.laws source).signature.SortType}
     {p q : Formula (namedTheory P.laws source).signature Γ}
@@ -123,6 +127,7 @@ private theorem derivationOf_result {I : Type u} (source : I → P.laws.LawName)
     Declaration.formulaSupport q ⊆ U.declarations :=
   lawConclusionSupport (law := ⟨Γ, p, q⟩) ((derivationOf_root source d).trans keep)
 
+/-- Replay each rule with selected formulas and the supplied required-Law names. -/
 private noncomputable def selectDerivationUsing {I J : Type u}
     (source : I → P.laws.LawName) (target : J → U.RetainedLaw)
     (choose : (i : I) → Declaration.law (source i) ∈ U.declarations → J)

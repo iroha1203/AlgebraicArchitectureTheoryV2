@@ -13,7 +13,10 @@ namespace SHIGURE
 namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
-  {X : P.signature.SortType → Type u} {Y : SortName U → Type u}
+
+section Selection
+
+variable {X : P.signature.SortType → Type u} {Y : SortName U → Type u}
 
 /-- The correspondence identifies each retained carrier as a whole. -/
 abbrev CarrierEquiv (U : DeclarationContext P) (X : P.signature.SortType → Type u) (Y : SortName U → Type u) :=
@@ -62,6 +65,13 @@ def assignmentEquiv (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
   left_inv := ambientAssignment_selectAssignment e keep
   right_inv := selectAssignment_ambientAssignment e keep
 
+/-- The assignment equivalence in Proposition 3.2 sends an assignment to its
+selected values using the carrier equivalences on the retained sorts. -/
+theorem assignmentEquiv_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
+    assignmentEquiv e keep a = selectAssignment e keep a :=
+  rfl
+
 /-- Selecting an assignment commutes with reading a subcontext of its variable positions. -/
 theorem selectAssignment_pull (e : CarrierEquiv U X Y) {Γ Δ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -97,6 +107,74 @@ def selectResult (e : CarrierEquiv U X Y) (op : Operation P.signature)
   cast (congrArg (fun profile => Y profile.output) (operation_arity op keep).symm)
     (e op.arity.output (operationOutput op keep) x)
 
+/-- In the graph comparison for Proposition 3.2, select the input values and
+transport the tuple along the arity equality for the retained operation. -/
+theorem selectArgs_eq_cast (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    selectArgs e op keep a =
+      cast (congrArg (fun profile => Assignment Y profile.inputs) (operation_arity op keep).symm)
+        (selectAssignment e (operationInputs op keep) a) :=
+  rfl
+
+/-- In the graph comparison for Proposition 3.2, select the output value and
+transport it along the arity equality for the retained operation. -/
+theorem selectResult_eq_cast (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    selectResult e op keep x =
+      cast (congrArg (fun profile => Y profile.output) (operation_arity op keep).symm)
+        (e op.arity.output (operationOutput op keep) x) :=
+  rfl
+
+/-- For a retained total operation, the output comparison of Proposition 3.2
+is the equivalence on its output carrier. The missing-graph example uses this form. -/
+theorem selectResult_total (e : CarrierEquiv U X Y) (f : P.signature.Total)
+    (keep : Declaration.total f ∈ U.declarations) (x : X (P.signature.totalArity f).output) :
+    selectResult e (.total f) keep x =
+      e _ (operationOutput (.total f) keep) x :=
+  rfl
+
+end Selection
+
+section CarrierTransport
+
+variable {X Y : P.signature.SortType → Type u} {Z : SortName U → Type u}
+
+/-- Compare the assignments used in Proposition 3.2 when the two carrier
+transports agree pointwise. In the structure round trip this agreement comes
+from the equality of the original and round-trip carriers. -/
+theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
+    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) {Γ : List P.signature.SortType}
+    (kept : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
+    selectAssignment e kept (mapAssignment f kept a) = selectAssignment g kept a := by
+  apply Assignment.ext
+  intro s i
+  change e s.val s.property (mapAssignment f kept a (ambientVar kept i)) =
+    g s.val s.property (a (ambientVar kept i))
+  rw [mapAssignment_apply]
+  exact agree s.val s.property (a (ambientVar kept i))
+
+/-- Transport the input side of the graph comparison in Proposition 3.2.
+The retained operation supplies its input support. The structure round trip
+proves `agree` by identifying the carrier transports at every kept sort. -/
+theorem selectArgs_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
+    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
+    (kept : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    selectArgs e op kept (mapAssignment f (operationInputs op kept) a) = selectArgs g op kept a := by
+  simp only [selectArgs, selectAssignment_mapCarrier e f g agree]
+
+/-- Transport the output side of the graph comparison in Proposition 3.2.
+The retained operation supplies its output support. The structure round trip
+proves `agree` by identifying the carrier transports at every kept sort. -/
+theorem selectResult_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
+    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
+    (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    selectResult e op kept (f _ (operationOutput op kept) x) = selectResult g op kept x := by
+  simp only [selectResult, agree]
+
+end CarrierTransport
+
+variable {X : P.signature.SortType → Type u} {Y : SortName U → Type u}
+
 /-- The primitive evaluations have the same facts after the given carrier identifications. -/
 structure EvaluationMatches (E : RestrictedEvaluation U X) (B : Structure (signature U))
     (e : CarrierEquiv U X B.carrier) : Prop where
@@ -120,7 +198,8 @@ variable {E : RestrictedEvaluation U X} {B : Structure (signature U)} {e : Carri
 
 include same
 
-/-- Equality and all retained primitive facts agree on the corresponding assignments. -/
+/-- The atomic step of Proposition 3.2 uses the carrier equivalences for equality
+and the supplied primitive comparisons for retained relation, domain and graph atoms. -/
 theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (keep : Declaration.atomicSupport a ⊆ U.declarations) (x : Assignment X Γ) :
     (selectAtomic a keep).Holds B (selectAssignment e (fun _ h => keep (Or.inl h)) x) ↔ E.atomic x a keep := by
@@ -148,7 +227,8 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     cases op <;> simp only [selectAtomic, selectGraph, Atomic.holds_graph]
     all_goals
       erw [args, out]
-      exact same.graph _ k (x.pull vars) (x y)
+      simpa only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] using
+        same.graph _ k (x.pull vars) (x y)
 
 /-- Any supported formula has the same truth in the actual selected structure. -/
 theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :

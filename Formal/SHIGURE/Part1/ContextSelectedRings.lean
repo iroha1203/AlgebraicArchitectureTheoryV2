@@ -24,38 +24,46 @@ namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
+/-- The nullary operation has no input sort declarations to retain. -/
 private theorem noSorts : Declaration.sorts (P := P) [] ⊆ U.declarations := by
   rintro _ ⟨s, h, rfl⟩
   cases h
 
+/-- Construct the support of the unary ring arity from its retained scalar sort. -/
 private theorem oneSort {s : P.signature.SortType} (hs : Declaration.sort s ∈ U.declarations) :
     Declaration.sorts [s] ⊆ U.declarations :=
   Declaration.sorts_cons_subset hs noSorts
 
+/-- Use the retained scalar sort at both positions of a binary ring operation. -/
 private theorem twoSorts {s : P.signature.SortType} (hs : Declaration.sort s ∈ U.declarations) :
     Declaration.sorts [s, s] ⊆ U.declarations :=
   Declaration.sorts_cons_subset hs (oneSort hs)
 
+/-- Read retention of the named ring zero from the ring vocabulary support. -/
 private theorem keepsZero {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.zero.symbol.operation ∈ U.declarations :=
   keep (by simp [Declaration.ringVocabularySupport])
 
+/-- Read retention of the named ring unit from the ring vocabulary support. -/
 private theorem keepsOne {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.one.symbol.operation ∈ U.declarations :=
   keep (by simp [Declaration.ringVocabularySupport])
 
+/-- Read retention of the named addition from the ring vocabulary support. -/
 private theorem keepsAdd {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.add.symbol.operation ∈ U.declarations :=
   keep (by simp [Declaration.ringVocabularySupport])
 
+/-- Read retention of the named negation from the ring vocabulary support. -/
 private theorem keepsNeg {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.neg.symbol.operation ∈ U.declarations :=
   keep (by simp [Declaration.ringVocabularySupport])
 
+/-- Read retention of the named multiplication from the ring vocabulary support. -/
 private theorem keepsMul {s : P.signature.SortType} {r : RingVocabulary P.signature s}
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     Declaration.ofOperation r.mul.symbol.operation ∈ U.declarations :=
@@ -71,6 +79,8 @@ def selectRingVocabulary {s : P.signature.SortType} (r : RingVocabulary P.signat
   neg := selectTypedTotal r.neg (keepsNeg keep) (oneSort hs) hs
   mul := selectTypedTotal r.mul (keepsMul keep) (twoSorts hs) hs
 
+/-- Reindex the variables of a ring expression in the selected context,
+keeping its coefficient-operation nodes as syntax for later interpretation. -/
 private def selectRingExpr {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hs : Declaration.sort s ∈ U.declarations) :
     RingVocabulary.Expr Γ s → RingVocabulary.Expr (context Γ hΓ) (⟨s, hs⟩ : SortName U)
@@ -81,6 +91,7 @@ private def selectRingExpr {Γ : List P.signature.SortType} {s : P.signature.Sor
   | .neg a => .neg (selectRingExpr hΓ hs a)
   | .mul a b => .mul (selectRingExpr hΓ hs a) (selectRingExpr hΓ hs b)
 
+/-- A retained nullary ring symbol still yields the corresponding constant term. -/
 private theorem selectNullary {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (f : TypedTotal P.signature ⟨[], s⟩)
     (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
@@ -93,6 +104,7 @@ private theorem selectNullary {Γ : List P.signature.SortType} {s : P.signature.
   funext t i
   exact nomatch i
 
+/-- Select the one-argument application of a retained ring symbol and its supported argument. -/
 private theorem selectUnary {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (f : TypedTotal P.signature ⟨[s], s⟩) (x : Term P.signature Γ s)
     (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
@@ -114,6 +126,7 @@ private theorem selectUnary {Γ : List P.signature.SortType} {s : P.signature.So
   | here => rfl
   | there i => exact nomatch i
 
+/-- Select the ordered pair of supported arguments to a retained binary ring symbol. -/
 private theorem selectBinary {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (f : TypedTotal P.signature ⟨[s, s], s⟩) (x y : Term P.signature Γ s)
     (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
@@ -143,6 +156,7 @@ private theorem selectBinary {Γ : List P.signature.SortType} {s : P.signature.S
     | here => rfl
     | there i => exact nomatch i
 
+/-- Extract the support of one argument term from the supported typed application. -/
 private theorem typedArgumentKept {Γ : List P.signature.SortType} {profile : Arity P.signature.SortType}
     (f : TypedTotal P.signature profile) (args : ∀ {s}, Var profile.inputs s → Term P.signature Γ s)
     (h : termReferences (f.term args) ⊆ U.declarations) {s} (i : Var profile.inputs s) :
@@ -150,6 +164,7 @@ private theorem typedArgumentKept {Γ : List P.signature.SortType} {profile : Ar
   rw [typedTermReferences] at h
   exact fun _ hd => h (Or.inr ⟨_, i, hd⟩)
 
+/-- The retyped ring expression and the selected ordinary syntax give the same term. -/
 private theorem selectRingExpr_term {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (r : RingVocabulary P.signature s) (hΓ : Declaration.sorts Γ ⊆ U.declarations)
     (hs : Declaration.sort s ∈ U.declarations) (keep : Declaration.ringVocabularySupport r ⊆ U.declarations)
@@ -181,6 +196,7 @@ private theorem selectRingExpr_term {Γ : List P.signature.SortType} {s : P.sign
     exact congrArg₂ (fun (a b : Term (signature U) (context Γ hΓ) ⟨s, hs⟩) => (selectRingVocabulary r hs keep).mul.term
       (a.argsCons (b.argsCons Term.argsNil))) (hx a) (hy b)
 
+/-- Retype the ordered sides and coefficient vocabulary of the ring equality together. -/
 private theorem selectRingEquality {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (r : RingVocabulary P.signature s) (hs : Declaration.sort s ∈ U.declarations)
     (keep : Declaration.ringVocabularySupport r ⊆ U.declarations)

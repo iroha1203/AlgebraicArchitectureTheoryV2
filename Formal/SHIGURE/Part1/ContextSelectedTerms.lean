@@ -22,6 +22,7 @@ def termReferences : {Γ : List P.signature.SortType} → {s : P.signature.SortT
       d ∈ termReferences (args i)}
   | _, _, @Term.letBind _ _ s _ x y => {Declaration.sort s} ∪ (termReferences x ∪ termReferences y)
 
+/-- Read the primitive references of a member of a conjunction from the conjunction's support. -/
 private theorem formula_conjoin_subset {Γ Λ : List P.signature.SortType}
     (ps : ∀ {s}, Var Λ s → Formula P.signature Γ) {s} (i : Var Λ s) :
     Declaration.formula (ps i) ⊆ Declaration.formula (Formula.conjoin Λ ps) := by
@@ -33,6 +34,7 @@ private theorem formula_conjoin_subset {Γ Λ : List P.signature.SortType}
     intro d hd
     exact Or.inr (ih (fun j => ps (.there j)) hd)
 
+/-- Keep the body's primitive references after existentially quantifying the context prefix. -/
 private theorem formula_existsMany_subset {Γ : List P.signature.SortType}
     (Λ : List P.signature.SortType) (p : Formula P.signature (Λ ++ Γ)) :
     Declaration.formula p ⊆ Declaration.formula (Formula.existsMany Λ p) := by
@@ -68,6 +70,7 @@ theorem termReferences_subset_graph {Γ : List P.signature.SortType} {s : P.sign
     (t : Term P.signature Γ s) : termReferences t ⊆ Declaration.formula t.graph :=
   termReferences_subset_graphAt t _ _
 
+/-- Form an application using an arity identified with the operation's declared arity. -/
 private def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
     Term sig Γ a.output :=
@@ -117,12 +120,14 @@ theorem selectTypedTotal_term {Γ : List P.signature.SortType} {profile : Arity 
   cases same
   cases symbol <;> rfl
 
+/-- Retain the sort names of both parts of a concatenated context. -/
 private theorem appendSupport {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations) :
     Declaration.sorts (Γ ++ Δ) ⊆ U.declarations := by
   rintro _ ⟨s, hs, rfl⟩
   exact (List.mem_append.mp hs).elim (fun left => hΓ ⟨s, left, rfl⟩) (fun right => hΔ ⟨s, right, rfl⟩)
 
+/-- The selected context of the concatenation identifies with the concatenation of the selected parts. -/
 private theorem context_append {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations) :
     context (Γ ++ Δ) (appendSupport hΓ hΔ) = context Γ hΓ ++ context Δ hΔ := by
@@ -131,17 +136,20 @@ private theorem context_append {Γ Δ : List P.signature.SortType}
   | cons s Γ ih =>
     exact congrArg (List.cons _) (ih ((tailSortsSubset s Γ).trans hΓ))
 
+/-- Transport the first variable when the remainder of its context is reindexed. -/
 private theorem cast_var_here {S : Type u} {Γ Δ : List S} {s : S} (h : Γ = Δ) :
     cast (congrArg (fun Λ => Var Λ s) (congrArg (List.cons s) h)) Var.here = Var.here := by
   cases h
   rfl
 
+/-- Transport a variable past the first position when its tail context is reindexed. -/
 private theorem cast_var_there {S : Type u} {Γ Δ : List S} {s t : S} (h : Γ = Δ) (i : Var Γ s) :
     cast (congrArg (fun Λ => Var Λ s) (congrArg (List.cons t) h)) (.there i) =
       .there (cast (congrArg (fun Λ => Var Λ s) h) i) := by
   cases h
   rfl
 
+/-- Selecting a variable commutes with shifting it past the retained prefix. -/
 private theorem selectVar_shift {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
     {s : P.signature.SortType} (i : Var Δ s) :
@@ -153,6 +161,7 @@ private theorem selectVar_shift {Γ Δ : List P.signature.SortType}
     let keepΓ := (tailSortsSubset t Γ).trans hΓ
     exact (cast_var_there (context_append keepΓ hΔ) _).trans (congrArg Var.there (ih keepΓ))
 
+/-- The selected inclusion of the left block keeps the same variable position. -/
 private theorem selectVar_inLeft {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
     {s : P.signature.SortType} (i : Var Γ s) :
@@ -165,6 +174,7 @@ private theorem selectVar_inLeft {Γ Δ : List P.signature.SortType}
     let keepΓ := (tailSortsSubset _ _).trans hΓ
     exact (cast_var_there (context_append keepΓ hΔ) _).trans (congrArg Var.there (ih keepΓ))
 
+/-- Retaining the existential closure provides the hidden context and the body's support. -/
 private theorem keepExistsMany {Γ Λ : List P.signature.SortType}
     (p : Formula P.signature (Λ ++ Γ)) (kept : Declaration.formulaSupport (Formula.existsMany Λ p) ⊆ U.declarations) :
     Declaration.formulaSupport p ⊆ U.declarations := by
@@ -173,6 +183,7 @@ private theorem keepExistsMany {Γ Λ : List P.signature.SortType}
   | cons s Λ ih =>
     exact existsSupport (ih p.ex kept)
 
+/-- Transporting the context of an existential also transports the context of its body. -/
 private theorem cast_formula_ex {sig : Signature.{u}} {Γ Δ : List sig.SortType} {s : sig.SortType}
     (h : Γ = Δ) (p : Formula sig (s :: Γ)) :
     cast (congrArg (Formula sig) h) p.ex =
@@ -180,6 +191,7 @@ private theorem cast_formula_ex {sig : Signature.{u}} {Γ Δ : List sig.SortType
   cases h
   rfl
 
+/-- Select the body over both retained contexts before closing the quantified prefix. -/
 private theorem selectFormula_existsMany {Γ Λ : List P.signature.SortType}
     (p : Formula P.signature (Λ ++ Γ)) (kept : Declaration.formulaSupport (Formula.existsMany Λ p) ⊆ U.declarations)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΛ : Declaration.sorts Λ ⊆ U.declarations) :
@@ -200,11 +212,13 @@ private theorem selectFormula_existsMany {Γ Λ : List P.signature.SortType}
       Formula.existsMany (sig := signature U) (context Λ tail) (Formula.ex (cast _ body))
     exact congrArg (Formula.existsMany (sig := signature U) (context Λ tail)) crossed
 
+/-- The full finite conjunction retains the support needed for each of its conjuncts. -/
 private theorem keepConjoin {Γ Λ : List P.signature.SortType} (ps : ∀ {s}, Var Λ s → Formula P.signature Γ)
     (keep : Declaration.formulaSupport (Formula.conjoin Λ ps) ⊆ U.declarations) {s} (i : Var Λ s) :
     Declaration.formulaSupport (ps i) ⊆ U.declarations :=
   fun _ hd => hd.elim (fun h => keep (Or.inl h)) (fun h => keep (Or.inr (formula_conjoin_subset ps i h)))
 
+/-- Select every formula of a finite conjunction and combine them in the selected signature. -/
 private theorem selectFormula_conjoin {Γ Λ : List P.signature.SortType} (ps : ∀ {s}, Var Λ s → Formula P.signature Γ)
     (keep : Declaration.formulaSupport (Formula.conjoin Λ ps) ⊆ U.declarations)
     (hΛ : Declaration.sorts Λ ⊆ U.declarations) :
@@ -217,6 +231,7 @@ private theorem selectFormula_conjoin {Γ Λ : List P.signature.SortType} (ps : 
     exact congrArg (Formula.conj _) (ih (fun i => ps (.there i)) (rightSupport keep) ((tailSortsSubset s Λ).trans hΛ))
 
 
+/-- Reindex each side of a binary conjunction along the same context equality. -/
 private theorem cast_formula_conj {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (h : Γ = Δ) (p q : Formula sig Γ) :
     cast (congrArg (Formula sig) h) (p.conj q) =
@@ -224,6 +239,7 @@ private theorem cast_formula_conj {sig : Signature.{u}} {Γ Δ : List sig.SortTy
   cases h
   rfl
 
+/-- Transport all conjuncts to the same reindexed context. -/
 private theorem cast_formula_conjoin {sig : Signature.{u}} {Γ Δ Λ : List sig.SortType}
     (h : Γ = Δ) (ps : ∀ {s}, Var Λ s → Formula sig Γ) :
     cast (congrArg (Formula sig) h) (Formula.conjoin Λ ps) =
@@ -231,12 +247,14 @@ private theorem cast_formula_conjoin {sig : Signature.{u}} {Γ Δ Λ : List sig.
   cases h
   rfl
 
+/-- Form the graph atom from variables indexed by an equal presentation of the operation's arity. -/
 private def reindexedGraph {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (ρ : Renaming a.inputs Γ) (y : Var Γ a.output) :
     Atomic sig Γ :=
   .graph op (fun {s} i => ρ (cast (congrArg (fun arity => Var arity.inputs s) same) i))
     (cast (congrArg (Var Γ) (congrArg Arity.output same.symm)) y)
 
+/-- The selected graph atom uses the same named input and output positions as its reindexed form. -/
 private theorem selectGraph_reindexed {Γ : List P.signature.SortType} (op : Operation P.signature)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hOp : Declaration.ofOperation op ∈ U.declarations)
     (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
@@ -244,6 +262,7 @@ private theorem selectGraph_reindexed {Γ : List P.signature.SortType} (op : Ope
       (selectRenaming (operationInputs op hOp) hΓ ρ) (selectVar hΓ y) := by
   cases op <;> rfl
 
+/-- Expand the value graph of an application whose arguments are indexed by an equal arity. -/
 private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (op : Operation sig) {a : Arity sig.SortType} (same : op.arity = a)
     (args : ∀ {s}, Var a.inputs s → Term sig Γ s) (ρ : Renaming Γ Δ) (y : Var Δ a.output) :
@@ -254,6 +273,7 @@ private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.Sor
   cases same
   rfl
 
+/-- Relate a term's value graph before and after transport of its free context. -/
 private theorem cast_graphAt {sig : Signature.{u}} {Γ Δ Ξ : List sig.SortType} {s : sig.SortType}
     (h : Δ = Ξ) (t : Term sig Γ s) (ρ : Renaming Γ Δ) (y : Var Δ s) :
     cast (congrArg (Formula sig) h) (t.graphAt ρ y) =
@@ -262,6 +282,7 @@ private theorem cast_graphAt {sig : Signature.{u}} {Γ Δ Ξ : List sig.SortType
   cases h
   rfl
 
+/-- Transport the variable context of a reindexed graph atom while retaining its operation. -/
 private theorem cast_reindexedGraph {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (h : Γ = Δ) (op : Operation sig) {a : Arity sig.SortType} (same : op.arity = a)
     (ρ : Renaming a.inputs Γ) (y : Var Γ a.output) :
@@ -271,6 +292,7 @@ private theorem cast_reindexedGraph {sig : Signature.{u}} {Γ Δ : List sig.Sort
   cases h
   rfl
 
+/-- Insert the selected prefix before the older variable positions. -/
 private theorem shiftedRenaming {Γ Δ Λ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
     (hΛ : Declaration.sorts Λ ⊆ U.declarations) (ρ : Renaming Γ Δ) :
@@ -281,6 +303,7 @@ private theorem shiftedRenaming {Γ Δ Λ : List P.signature.SortType}
   funext s i
   exact selectVar_shift hΛ hΔ (ρ (ambientVar hΓ i))
 
+/-- Keep positions of the selected left context in the selected concatenation. -/
 private theorem inLeftRenaming {Δ Λ : List P.signature.SortType}
     (hΔ : Declaration.sorts Δ ⊆ U.declarations) (hΛ : Declaration.sorts Λ ⊆ U.declarations) :
     (fun {s} (i : Var (context Λ hΛ) s) =>
@@ -375,6 +398,7 @@ theorem selectFormula_graphAt {Γ : List P.signature.SortType} {s : P.signature.
           (.there (selectVar hΔ y))) (selectRenaming_lift hA hΓ hΔ ρ))
 
 
+/-- Selecting a term's value graph agrees with taking the graph of the selected term. -/
 private theorem selectFormula_graph {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (t : Term P.signature Γ s) (hΓ : Declaration.sorts Γ ⊆ U.declarations)
     (hs : Declaration.sort s ∈ U.declarations) (ht : termReferences t ⊆ U.declarations)
@@ -416,6 +440,7 @@ theorem termReferences_rename {Γ Δ : List P.signature.SortType} {s : P.signatu
   | letBind init body hi hb =>
     simp only [Term.rename, termReferences, hi, hb]
 
+/-- Rename each argument of an application indexed by an equal arity. -/
 private theorem rename_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s)
     (ρ : Renaming Γ Δ) :
@@ -471,12 +496,14 @@ theorem formula_subset_bindArguments {Γ : List P.signature.SortType} (Λ : List
     Declaration.formula p ⊆ Declaration.formula (Formula.bindArguments Λ ts p) :=
   fun _ hd => formula_existsMany_subset Λ _ (Or.inr hd)
 
+/-- Read the body support separately from the argument witnesses in a bound formula. -/
 private theorem bindArguments_body_kept {Γ Λ : List P.signature.SortType}
     (ts : ∀ {s}, Var Λ s → Term P.signature Γ s) (p : Formula P.signature (Λ ++ Γ))
     (h : Declaration.formulaSupport (Formula.bindArguments Λ ts p) ⊆ U.declarations) :
     Declaration.formulaSupport p ⊆ U.declarations :=
   rightSupport (keepExistsMany _ h)
 
+/-- Retyping the strict argument witnesses commutes with binding those arguments. -/
 private theorem selectFormula_bindArguments {Γ Λ : List P.signature.SortType}
     (ts : ∀ {s}, Var Λ s → Term P.signature Γ s) (p : Formula P.signature (Λ ++ Γ))
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΛ : Declaration.sorts Λ ⊆ U.declarations)
@@ -519,6 +546,7 @@ private theorem selectFormula_bindArguments {Γ Λ : List P.signature.SortType}
     ((selectVar_inLeft hΛ hΓ j).trans
       (congrArg (Var.inLeft (context Γ hΓ)) (selectVar_ambientVar hΛ i)))
 
+/-- Transport a relation atom by reindexing its argument positions in the free context. -/
 private theorem cast_relationAtom {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (h : Γ = Δ) (r : sig.Rel) (ρ : Renaming (sig.relInputs r) Γ) :
     cast (congrArg (Formula sig) h) (.atom (.rel r ρ)) =
@@ -526,6 +554,7 @@ private theorem cast_relationAtom {sig : Signature.{u}} {Γ Δ : List sig.SortTy
   cases h
   rfl
 
+/-- Transport a domain atom by reindexing its argument positions in the free context. -/
 private theorem cast_domainAtom {sig : Signature.{u}} {Γ Δ : List sig.SortType}
     (h : Γ = Δ) (p : sig.Partial) (ρ : Renaming (sig.partialArity p).inputs Γ) :
     cast (congrArg (Formula sig) h) (.atom (.domain p ρ)) =
@@ -568,6 +597,7 @@ theorem selectFormula_termDomain {Γ : List P.signature.SortType} (p : P.signatu
     (inLeftRenaming hΓ hΛ)
 
 
+/-- Expand the graph atom with term inputs and a term output along an equal arity. -/
 private theorem termGraph_reindexed {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (terms : ∀ {s}, Var a.inputs s → Term sig Γ s)
     (out : Term sig Γ a.output) :
@@ -677,6 +707,7 @@ theorem selectSubstitution_lift {Γ Δ : List P.signature.SortType} (θ : Substi
       (congrArg (fun (mapVars : Renaming (context Δ hΔ) (context (a :: Δ) (Declaration.sorts_cons_subset ha hΔ))) =>
         t.rename mapVars) (selectRenaming_there ha hΔ))
 
+/-- Substitute in each argument of an application indexed by an equal arity. -/
 private theorem substitute_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)
     {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s)
     (θ : Substitution sig Γ Δ) :
@@ -733,6 +764,7 @@ theorem substitution_term_kept {Γ Δ : List P.signature.SortType} (θ : Substit
   exact ⟨one (Or.inr (Or.inl (Set.mem_singleton _))), fun _ hd =>
     one (Or.inr (Or.inr (termReferences_subset_graph (θ i) hd)))⟩
 
+/-- A sort named in a context has a typed variable witnessing that occurrence. -/
 private theorem variable_of_mem {S : Type u} {Γ : List S} {s : S} (h : s ∈ Γ) : Nonempty (Var Γ s) := by
   induction Γ with
   | nil => cases h

@@ -49,22 +49,14 @@ end Structure
 namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
-  {X Y : P.signature.SortType → Type u} {Z : SortName U → Type u}
-
-/-- Moving along equal source carrier values commutes with reindexing assignments. -/
-theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
-    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) {Γ : List P.signature.SortType}
-    (kept : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
-    selectAssignment e kept (mapAssignment f kept a) = selectAssignment g kept a := by
-  apply Assignment.ext
-  intro s i
-  exact agree s.val s.property (a (ambientVar kept i))
 
 /-- The round trip through an ordinary structure keeps every context carrier type. -/
 theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStructure A)).carrier = A.carrier :=
   ContextStructure.carrier_ext (fun s keep => extendedCarrier_kept (readStructure A) s keep)
 
-/-- Reading then writing represents exactly the original context structure. -/
+/-- Recover the given context structure by reading and writing it, as used
+in the model comparison for Proposition 3.2. The carrier identification comes
+from the retained sorts, and the retained facts determine the structure. -/
 @[simp] theorem write_read_structure (A : ContextStructure U) : writeStructure (readStructure A) = A := by
   let B := readStructure A
   let h := write_read_carriers A
@@ -93,8 +85,8 @@ theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStru
     change B.Graph (operation op keep) (selectArgs (extendedEquiv B) op keep
       (mapAssignment f (operationInputs op keep) a)) (selectResult (extendedEquiv B) op keep
         (f op.arity.output (operationOutput op keep) y)) ↔ _
-    cases op <;> simp only [selectArgs, selectResult, cast_eq, selectAssignment_mapCarrier _ _ _ component, component]
-    all_goals exact (readStructure_matches A).graph _ keep a y
+    rw [selectArgs_mapCarrier _ _ _ component, selectResult_mapCarrier _ _ _ component]
+    exact (readStructure_matches A).graph op keep a y
 
 /-- Writing then reading keeps every actual selected carrier type. -/
 theorem read_write_carriers (B : Structure (signature U)) : (readStructure (writeStructure B)).carrier = B.carrier :=
@@ -112,7 +104,9 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
   rw [selectVar_ambientVar keep i]
   rfl
 
-/-- Writing then reading is the strict identity on ordinary selected structures. -/
+/-- Recover the given ordinary selected structure by writing and reading it,
+as used in the model comparison for Proposition 3.2. Its retained relations,
+domains and graphs determine the structure after the carrier identification. -/
 @[simp] theorem read_write_structure (B : Structure (signature U)) : readStructure (writeStructure B) = B := by
   let A := writeStructure B
   let h := read_write_carriers B
@@ -144,8 +138,7 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       rw [read_write_args B keep x]
       have left := (readStructure_matches A).graph (.total f.val) f.property a z
       have right := (extendedEvaluation_matches B).graph (.total f.val) f.property a z
-      change B.Graph (.total f) (selectAssignment (extendedEquiv B) keep a)
-        (extendedEquiv B _ _ z) ↔ A.evaluation.graph (.total f.val) f.property a z at right
+      simp only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
     | partialOp p =>
@@ -155,8 +148,7 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       rw [read_write_args B keep x]
       have left := (readStructure_matches A).graph (.partialOp p.val) p.property a z
       have right := (extendedEvaluation_matches B).graph (.partialOp p.val) p.property a z
-      change B.Graph (.partialOp p) (selectAssignment (extendedEquiv B) keep a)
-        (extendedEquiv B _ _ z) ↔ A.evaluation.graph (.partialOp p.val) p.property a z at right
+      simp only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
     | quantity q =>
@@ -166,8 +158,7 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       rw [read_write_args B keep x]
       have left := (readStructure_matches A).graph (.quantity q.val) q.property a z
       have right := (extendedEvaluation_matches B).graph (.quantity q.val) q.property a z
-      change B.Graph (.quantity q) (selectAssignment (extendedEquiv B) keep a)
-        (extendedEquiv B _ _ z) ↔ A.evaluation.graph (.quantity q.val) q.property a z at right
+      simp only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
 
