@@ -445,7 +445,7 @@ def constant_observations_compare_through_empty_cover :
   value := Bool.not
   commutes _ := rfl
   restrictedObservations :=
-    ⟨fun _ => false, fun _ => true, fun _ => rfl, fun _ => rfl, fun _ => rfl⟩
+    ⟨fun _ => false, fun _ => true, fun _ => rfl, fun _ => rfl, (fun _ => rfl), True.intro⟩
 
 /-- Equality in a context of two states reads both variables of the retained sort. -/
 private def twoStatesEqual : Atomic signature [(), ()] := .eq .here (.there .here)
@@ -1129,7 +1129,7 @@ def independently_reindexed_comparison : ReadingComparison (reindexedObservation
   commutes _ := rfl
 
 /-- Ordinary and coefficient singleton inputs without a shared name can carry different values. -/
-def independent_singleton_inputs : (readingOf Int 0).JointInput (.all (.ofSort ())) where
+def independent_singleton_inputs : (readingOf Int 0).JointInput (InputSelection.all (.ofSort ())) where
   ordinary _ := (0 : Int)
   coefficient _ := (1 : Int)
   agrees _ _ shared :=
@@ -1502,6 +1502,126 @@ def introduce_independent_scalar : ReadingComparison plainInteger constantCoeffi
     coefficientChange := .project
     coefficientInputs := True.intro
     coefficientProjection := fun _ _ same => congrArg (fun states => states PUnit.unit) same }
+
+/-- The scalar comparison needs no input once its chosen evaluation is constant. -/
+private def nullaryCoefficient : CoefficientReading Observation.whole (statesOf Int) (.ofList []) where
+  base := ringOf Int
+  algebra := ⟨ringOf Int, RingHom.id Int⟩
+  scheme := offsetScheme (ringOf Int)
+  realization := (1 : Int)
+  selection := .ofRenaming fun i => i
+  supported i := nomatch i.2
+  realizePoint _ _ := id
+  pointOrigin := .declared True.intro
+  evaluateOn R _ _ :=
+    letI := R.scalars.ring
+    1
+
+private def emptyOrdinaryReading : Reading.{0, 0, 0, 0} :=
+  { Observation.reading id with
+    structureData := statesOf Empty
+    observation := StateObservation.ofSort () PUnit (fun _ => PUnit.unit)
+    realize _ := statesOf Empty
+    coefficients := none
+    sharedInputs := .empty _
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+private def nullaryCoefficientReading : Reading.{0, 0, 0, 0} :=
+  { readingOf Int 1 with
+    observation := .ofFunction .empty PUnit (fun _ => PUnit.unit)
+    coefficients := some ⟨.ofList [], nullaryCoefficient⟩
+    sharedInputs := .empty _
+    observationPlacement := .external
+    observationDeclared _ named := nomatch named }
+
+private def emptyToScalarInterpretation := Interpretation.identity Observation.presentation.theory
+
+/-- Unused empty carriers impose no requirement on the joint evaluation input. -/
+theorem joint_input_ignores_unused_empty_position :
+    let side : Reading.{0, 0, 0, 0} := { emptyOrdinaryReading with
+      observation := .ofFunction .empty PUnit (fun _ => PUnit.unit)
+      sharedInputs := .empty _
+      observationPlacement := .external
+      observationDeclared _ named := nomatch named }
+    let raw : CoefficientProduct Unit := .ofList [()]
+    let selection : InputSelection raw := .ofRenaming (Δ := []) (fun i => nomatch i)
+    IsEmpty (raw.product.Values side.structureData.carrier) ∧ Nonempty (side.JointInput selection) := by
+  dsimp only
+  refine ⟨⟨fun full => (full ⟨(), .here⟩).elim⟩, ⟨?_, ?_, ?_⟩⟩
+  · intro i
+    exact nomatch i
+  · intro j
+    have absent : False := by
+      obtain ⟨⟨_, i⟩, _⟩ := j.property
+      exact nomatch i
+    exact absent.elim
+  · intro j i
+    exact nomatch i
+
+private def forgetEmptyState : ReadingContextChange emptyOrdinaryReading nullaryCoefficientReading
+    emptyToScalarInterpretation where
+  retained := Observation.missingSort.context
+  inside _ absent := absent.elim
+  supporting := emptyToScalarInterpretation
+  equivalent := Interpretation.Equivalent.refl _
+  pieces _ := Set.univ
+  localSupport _ _ absent := absent.elim
+
+private def forgetEmptyPositions : emptyOrdinaryReading.observation.product.Correspondence
+    nullaryCoefficientReading.observation.product id :=
+  ⟨(fun j => nomatch j), (fun j => nomatch j), (fun j => nomatch j)⟩
+
+private def nullaryInputs : ReadingInputMap emptyOrdinaryReading.observation.product
+    nullaryCoefficient.selection.used id where
+  extra := .empty
+  coordinate i := nomatch i.val.2
+  extra_used i := nomatch i
+
+private def initialCoefficientValue (value : Int) :
+    Reading.CoefficientCompatibility emptyOrdinaryReading nullaryCoefficientReading id
+      (fun _ a => nomatch a) :=
+  .compare ⟨nullaryInputs, (fun _ => value), fun e => nomatch e.1 PUnit.unit⟩
+
+/-- Even without an ambient tuple, the retained tuple detects the wrong scalar value. -/
+theorem cannot_use_empty_ambient_to_skip_coefficient_square
+    (left : forgetEmptyState.SourceObservationValues → PUnit)
+    (right : forgetEmptyState.TargetObservationValues forgetEmptyPositions → PUnit) :
+    ¬ (initialCoefficientValue 0).respectsRestrictedOrdinary
+      forgetEmptyState forgetEmptyPositions left right := by
+  rintro ⟨_, square⟩
+  have tuple : forgetEmptyState.SourceObservationValues := fun i =>
+    False.elim (i.property.elim id (fun h => h.2 (Set.mem_univ _)))
+  have bad : (1 : Int) = 0 := square (tuple, fun i => nomatch i)
+  exact (by decide : (1 : Int) ≠ 0) bad
+
+/-- The same comparison is valid with the value map that commutes at the retained tuple. -/
+def introduces_scalar_at_retained_tuple :
+    ReadingComparison emptyOrdinaryReading nullaryCoefficientReading where
+  interpretation := emptyToScalarInterpretation
+  targetModel name := nomatch name.val
+  state :=
+    { onSort _ a := nomatch a
+      total_comm f := nomatch f
+      relation_mem r := nomatch r
+      partial_mem p := nomatch p
+      partial_comm p := nomatch p
+      quantity_comm q := nomatch q }
+  contexts := forgetEmptyPositions
+  declarationChange := .changed forgetEmptyState
+  coefficientChange := initialCoefficientValue 1
+  coefficientInputs := by
+    refine ⟨(fun j => nomatch j.val.2), ?_⟩
+    exact ⟨(fun i => nomatch i), (fun i => nomatch i), (fun i => nomatch i),
+      (fun j => nomatch j.val.2), (fun j => nomatch j.val.2)⟩
+  coefficientSupport := by
+    refine ⟨(fun j => nomatch j.val.2), Or.inl ?_⟩
+    exact Set.eq_univ_of_forall (fun d => ⟨PUnit.unit, PUnit.unit, Set.mem_univ _, Set.mem_univ _⟩)
+  value := id
+  commutes e := nomatch e PUnit.unit
+  restrictedObservations :=
+    ⟨fun _ => PUnit.unit, fun _ => PUnit.unit, fun _ => rfl, fun _ => rfl, (fun _ => rfl),
+      ⟨(fun j => nomatch j.val.2), fun _ => rfl⟩⟩
 
 /-- The zero ring cannot be sent to the integers by a unital coefficient map. -/
 theorem zero_ring_to_integer_fails :

@@ -73,8 +73,15 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.Chapter1.CoefficientTransport.identity_coefficients_across_cover_change,
   SHIGURE.Chapter1.RetainedCoefficientInputs.fixed_parameters_cannot_invent_ordinary_share,
   SHIGURE.Chapter1.IndexedObservation.nonidentity_at_fixed_context,
-  SHIGURE.Chapter1.IndexedObservation.external_stays_available_when_cover_changes,
+  SHIGURE.Chapter1.IndexedObservation.external_stays_available_when_declarations_are_added,
+  ReadingInputMap.mapRestrictedValues_restrict,
+  ReadingComparison.observation_and_coefficients_on_retained,
+  SHIGURE.Chapter1.CoefficientTransport.cannot_use_empty_ambient_to_skip_coefficient_square,
+  SHIGURE.Chapter1.CoefficientTransport.introduces_scalar_at_retained_tuple,
+  SHIGURE.Chapter1.CoefficientTransport.joint_input_ignores_unused_empty_position,
   CoefficientComparison.restricted_evaluation_commutes,
+  CoefficientComparison.evaluation_from_support,
+  ReadingComparison.coefficient_support_on_retained,
   CoefficientReading.evaluateRetained_mk
 ]
 

@@ -464,6 +464,32 @@ theorem evaluateRetained_mk (reading : CoefficientReading U A Γ) {W : Declarati
       reading.evaluateSelected e :=
   rfl
 
+/-- The retained context either keeps the entire realization or supports its restricted evaluator. -/
+def RestrictionAllowed (reading : CoefficientReading U A Γ) (W : DeclarationContext P)
+    (inside : W.declarations ⊆ U.declarations) : Prop :=
+  W.declarations = U.declarations ∨ reading.RespectsRestriction W inside
+
+open Classical in
+/-- Evaluate the chosen input through the full or restricted realization, as applicable. -/
+noncomputable def evaluateWithin (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    {inside : W.declarations ⊆ U.declarations} (allowed : reading.RestrictionAllowed W inside)
+    (e : reading.selection.used.Values A.carrier) : reading.ring.Carrier :=
+  if same : W.declarations = U.declarations then
+    reading.evaluateSelected e
+  else
+    let locality := allowed.resolve_left same
+    reading.evaluateRetained locality reading.algebra (reading.restrictSelected locality e)
+
+/-- Evaluation through either localization route gives the same selected value. -/
+theorem evaluateWithin_eq (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
+    {inside : W.declarations ⊆ U.declarations} (allowed : reading.RestrictionAllowed W inside)
+    (e : reading.selection.used.Values A.carrier) :
+    reading.evaluateWithin allowed e = reading.evaluateSelected e := by
+  unfold evaluateWithin
+  split
+  · rfl
+  · exact evaluateRetained_mk _ _ _
+
 /-- The changed structure comes from the selected realization by the scheme's rule. -/
 def changedStructure (reading : CoefficientReading U A Γ) {target : CoefficientRing.{u}}
     (f : reading.ring.Hom target) : RestrictedStructure U :=

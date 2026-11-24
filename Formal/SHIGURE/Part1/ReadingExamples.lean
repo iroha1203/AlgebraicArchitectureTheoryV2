@@ -1112,11 +1112,15 @@ def nonidentity_at_fixed_context : ReadingComparison (externalReading 0) (extern
   value := id
   commutes _ := rfl
 
-/-- A change of cover does not forget a state that was already external at both endpoints. -/
-def external_stays_available_when_cover_changes :
+/-- Adding a declaration at the target keeps access to the external state being observed. -/
+def external_stays_available_when_declarations_are_added :
     ReadingComparison (externalReading 0)
       { externalReading 1 with
-        cover := ⟨PUnit, (fun _ => emptyContext), (fun _ _ h => h), (fun absent => absent.elim)⟩ } :=
+        context := reading.context
+        cover := reading.cover
+        coefficients := none
+        observationPlacement := .external
+        observationDeclared _ named := nomatch named } :=
   { nonidentity_at_fixed_context with
     declarationChange := .changed
       { retained := emptyContext
@@ -1129,6 +1133,6 @@ def external_stays_available_when_cover_changes :
     declaredObservations := Or.inl ⟨rfl, rfl⟩
     restrictedObservations := ReadingContextChange.observationSquare_of_available _ _ _ _
       (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩)
-      (fun _ => ⟨Or.inr ⟨rfl, fun h => h.elim⟩, Or.inr ⟨rfl, fun h => h.elim⟩⟩) (fun _ => rfl) }
+      (fun _ => Or.inr ⟨rfl, fun h => h.elim⟩) (fun _ => rfl) }
 
 end SHIGURE.Chapter1.IndexedObservation
