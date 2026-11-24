@@ -1,6 +1,10 @@
 import Formal.SHIGURE.AssertStandardAxioms
 import Formal.SHIGURE.Part1.Chapter1Examples
 import Formal.SHIGURE.Part1.Chapter2Examples
+import Formal.SHIGURE.Part1.ContextBaseChange
+import Formal.SHIGURE.Part1.ContextDerivedExample
+import Formal.SHIGURE.Part1.ContextExamples
+import Formal.SHIGURE.Part1.ContextPrimitiveValues
 import Formal.SHIGURE.Part1.LensExamples
 import Formal.SHIGURE.Part1.ObservedModels
 import Formal.SHIGURE.Part1.OperationWordExamples
