@@ -570,6 +570,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- OperationWords
   OperationWord.term,
   OperationWord.Evaluates,
+  OperationWord.evaluates_iff_term,
   OperationWord.eval,
   OperationWord.mem_eval_iff,
   OperationWord.domain,

@@ -71,6 +71,12 @@ def Evaluates (w : OperationWord sig source target) (A : Structure sig)
     (x : A.carrier source) (y : A.carrier target) : Prop :=
   w.term.Evaluates A (Assignment.cons x Assignment.empty) y
 
+/-- Word evaluation is evaluation of its term at the one-variable assignment. -/
+theorem evaluates_iff_term (w : OperationWord sig source target) (A : Structure sig)
+    (x : A.carrier source) (y : A.carrier target) :
+    w.Evaluates A x y ↔ w.term.Evaluates A (Assignment.cons x Assignment.empty) y :=
+  Iff.rfl
+
 /-- The partial value of a word at a single input. -/
 noncomputable def eval (w : OperationWord sig source target) (A : Structure sig) (x : A.carrier source) :
     Part (A.carrier target) :=
@@ -144,20 +150,24 @@ theorem evaluates_snoc_iff {middle : sig.SortType} (w : OperationWord sig source
 theorem evaluates_map {A B : Structure sig} (w : OperationWord sig source target)
     (h : StructureMap A B) {x : A.carrier source} {y : A.carrier target}
     (held : w.Evaluates A x y) : w.Evaluates B (h.onSort source x) (h.onSort target y) := by
-  simpa only [Evaluates, Assignment.map_cons, Assignment.map_empty] using h.evaluates_map w.term _ y held
+  apply (w.evaluates_iff_term B _ _).2
+  simpa only [Assignment.map_cons, Assignment.map_empty] using
+    h.evaluates_map w.term _ y ((w.evaluates_iff_term A x y).1 held)
 
 /-- The image of the domain is contained in the target domain, as in (2.8). -/
 theorem domain_image_subset {A B : Structure sig} (w : OperationWord sig source target)
     (h : StructureMap A B) : h.onSort source '' w.domain A ⊆ w.domain B := by
-  rintro _ ⟨x, ⟨y, value⟩, rfl⟩
-  exact ⟨h.onSort target y, w.evaluates_map h value⟩
+  rintro _ ⟨x, hx, rfl⟩
+  obtain ⟨y, value⟩ := (w.mem_domain_iff A x).1 hx
+  exact (w.mem_domain_iff B _).2 ⟨h.onSort target y, w.evaluates_map h value⟩
 
 /-- The defined values of the word commute with the carrier map, as in (2.8). -/
 theorem value_comm {A B : Structure sig} (w : OperationWord sig source target)
     (h : StructureMap A B) (x : A.carrier source) (hx : x ∈ w.domain A) :
     h.onSort target ((w.eval A x).get hx) =
       (w.eval B (h.onSort source x)).get (w.domain_image_subset h ⟨x, hx, rfl⟩) :=
-  w.term.evaluates_unique B _ (w.evaluates_map h (w.evaluates_get A x hx)) (w.evaluates_get B _ _)
+  Part.mem_unique ((w.mem_eval_iff B _ _).2 (w.evaluates_map h (w.evaluates_get A x hx)))
+    ((w.mem_eval_iff B _ _).2 (w.evaluates_get B _ _))
 
 /-- A terminal observation commuting with the carrier map agrees on defined values. -/
 theorem observation_comm {A B : Structure sig} (w : OperationWord sig source target)
@@ -189,14 +199,17 @@ theorem mem_domain_of_map {A B : Structure sig} (w : OperationWord sig source ta
   | cons w edge ih =>
     cases edge with
     | of op unary =>
-      obtain ⟨y, value⟩ := defined
+      obtain ⟨y, value⟩ := (mem_domain_iff (snoc w op unary) B _).1 defined
       obtain ⟨imagePrefix, imageEval, imageStep⟩ := (evaluates_snoc_iff w op unary B _ y).1 value
-      obtain ⟨middleValue, prefixEval⟩ := ih ⟨imagePrefix, imageEval⟩
-      have imageEq := (term w).evaluates_unique B _ (evaluates_map w h prefixEval) imageEval
+      have imageDefined := (mem_domain_iff w B _).2 ⟨imagePrefix, imageEval⟩
+      obtain ⟨middleValue, prefixEval⟩ := (mem_domain_iff w A x).1 (ih imageDefined)
+      have imageEq := Part.mem_unique ((mem_eval_iff w B _ _).2 (evaluates_map w h prefixEval))
+        ((mem_eval_iff w B _ _).2 imageEval)
       have mappedStep : B.Graph op ((unaryInput (A := A) unary middleValue).map h.onSort) y := by
         simpa only [unaryInput_map, imageEq] using imageStep
       obtain ⟨original, originalStep⟩ := graph_input_reflected h reflects op _ ⟨y, mappedStep⟩
-      exact ⟨original, (evaluates_snoc_iff w op unary A _ original).2 ⟨middleValue, prefixEval, originalStep⟩⟩
+      exact (mem_domain_iff (snoc w op unary) A x).2
+        ⟨original, (evaluates_snoc_iff w op unary A _ original).2 ⟨middleValue, prefixEval, originalStep⟩⟩
 
 /-- Under (2.9), the original domain is exactly the preimage of the target domain. -/
 theorem domain_eq_preimage {A B : Structure sig} (w : OperationWord sig source target)
@@ -239,15 +252,18 @@ theorem translated_evaluates_iff (w : OperationWord S.signature s t) (u : Interp
     (y : B.carrier (u.onSort t)) :
     w.Evaluates (u.pullbackStructure B model) x y ↔
       (u.translation.term w.term).Evaluates B (Assignment.cons x Assignment.empty) y := by
-  simpa only [Evaluates, Assignment.mapSorts_cons, Assignment.eq_empty] using
+  rw [w.evaluates_iff_term]
+  simpa only [Assignment.mapSorts_cons, Assignment.eq_empty] using
     u.pullback_evaluates_iff B model w.term (Assignment.cons x Assignment.empty) y
 
 /-- Pullback word values agree as partial values with the translated term in the target model. -/
 theorem eval_pullback_eq_translated (w : OperationWord S.signature s t) (u : Interpretation S T)
     (B : Structure T.signature) (model : T.Holds B) (x : B.carrier (u.onSort s)) :
     w.eval (u.pullbackStructure B model) x = w.translatedEval u B x := by
-  simpa only [eval, translatedEval, Assignment.mapSorts_cons, Assignment.eq_empty] using
-    u.pullback_eval_eq B model w.term (Assignment.cons x Assignment.empty)
+  apply Part.ext
+  intro y
+  rw [w.mem_eval_iff, w.mem_translated_eval_iff]
+  exact w.translated_evaluates_iff u B model x y
 
 /-- In the target carrier, the word domain in the pullback is the domain of the translated term. -/
 theorem domain_pullback_eq_translated (w : OperationWord S.signature s t) (u : Interpretation S T)
