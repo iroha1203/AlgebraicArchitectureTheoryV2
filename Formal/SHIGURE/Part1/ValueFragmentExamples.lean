@@ -7,9 +7,78 @@ import Mathlib.Data.Set.Finite.Range
 Example 3.10 gives two independent obstructions. A total function's witness
 may lie beyond every finite graph table that asks about its input. A finite
 support condition may also fail when every finite restriction is realizable.
+
+## Implementation notes
+
+Fin indices represent the exact prefix intervals of Example 3.10 and their
+inclusions use Fin.castLE. General finite grid embeddings would introduce
+extra choices in this example. The sequence takes ordinary function values
+and carries its finite support as a proof. A sparse function representation
+would also require translating its evaluations into the ordinary structure.
 -/
 
 namespace SHIGURE.ValueFragment
+
+private theorem finite_names_one_sort (Name : Type) [Finite Name] :
+    Finite (Σ _ : PUnit, Name) := by
+  apply Finite.of_injective (fun x : Σ _ : PUnit, Name => x.2)
+  rintro ⟨⟨⟩, i⟩ ⟨⟨⟩, j⟩ h
+  cases h
+  rfl
+
+namespace EqualityObservation
+
+/-- A single sort with no operation or relation symbols. -/
+def signature : Signature.{0} where
+  SortType := PUnit
+  Total := PEmpty
+  Rel := PEmpty
+  Partial := PEmpty
+  Quantity := PEmpty
+  totalArity := PEmpty.elim
+  relInputs := PEmpty.elim
+  partialArity := PEmpty.elim
+  quantityArity := PEmpty.elim
+
+/-- The two equality queries read ordinary states of the same natural-number sort. -/
+def stateStructure : Structure signature where
+  carrier _ := ℕ
+  total name := PEmpty.elim name
+  relation name := PEmpty.elim name
+  partialDomain name := PEmpty.elim name
+  partialValue name := PEmpty.elim name
+  quantity name := PEmpty.elim name
+
+/-- A schema that compares the first sample with each of two named states. -/
+def schema : Schema.{0,0} signature where
+  Name _ := Bool
+  finiteNames := finite_names_one_sort Bool
+  Index := Bool
+  finiteIndices := inferInstance
+  query b := .truth .both (.eq (s := PUnit.unit) false b)
+
+/-- The two names designate zero and one. -/
+def samples : Samples schema.Name stateStructure.carrier :=
+  fun _ name => (if (show Bool from name) then 1 else 0 : Nat)
+
+/-- This schema can read equality even in a signature without operation or relation symbols. -/
+theorem read_equality (b : Bool) :
+    ((schema.read stateStructure samples).answer b).down = true ↔ b = false := by
+  rw [Schema.read_answer]
+  letI : Finite (Σ s, schema.Name s) := schema.finiteNames
+  exact (Query.read_equality_true_iff (A := stateStructure) samples
+    (s := PUnit.unit) false b).trans (by cases b <;> simp [samples])
+
+/-- Comparing a sample with itself records true. -/
+theorem read_same : ((schema.read stateStructure samples).answer false).down = true :=
+  (read_equality false).2 rfl
+
+/-- Comparing samples with different states records false. -/
+theorem read_different : ((schema.read stateStructure samples).answer true).down = false := by
+  rw [← Bool.not_eq_true, read_equality]
+  decide
+
+end EqualityObservation
 
 namespace GraphFailure
 
@@ -40,11 +109,7 @@ abbrev Grid (n : ℕ) := Fin (n + 1) × Fin (n + 1)
 /-- Ask both truth values for every graph pair in the finite grid. -/
 def schema (n : ℕ) : Schema.{0,0} signature where
   Name _ := Fin (n + 1)
-  finiteNames := by
-    apply Finite.of_injective (fun x : Σ _ : PUnit, Fin (n + 1) => x.2)
-    rintro ⟨⟨⟩, i⟩ ⟨⟨⟩, j⟩ h
-    cases h
-    rfl
+  finiteNames := finite_names_one_sort (Fin (n + 1))
   Index := Grid n
   finiteIndices := inferInstance
   query q := .truth .both (.graph (.total PUnit.unit) (.cons q.1 .empty) q.2)
@@ -59,8 +124,16 @@ noncomputable def observe (f : ℕ → ℕ) (n : ℕ) : Grid n → Bool :=
 
 /-- The observed answer is precisely graph membership of the ordinary operation. -/
 theorem observe_true_iff (f : ℕ → ℕ) (n : ℕ) (q : Grid n) :
-    observe f n q = true ↔ f q.1.val = q.2.val :=
-  (TruthRecording.record_both_eq_true _).trans
+    observe f n q = true ↔ f q.1.val = q.2.val := by
+  unfold observe
+  rw [Schema.read_answer]
+  letI : Finite (Σ s, (schema n).Name s) := (schema n).finiteNames
+  let atom : AtomicQuery signature (schema n).Name :=
+    .graph (.total PUnit.unit) (.cons q.1 .empty) q.2
+  have observes := Query.read_truth (A := structureOf f) (samples n) .both atom
+  change ((Query.truth .both atom).read (structureOf f) (samples n)).down = true ↔ _
+  rw [observes]
+  exact (TruthRecording.record_both_eq_true _).trans
     ((structureOf f).graph_total_iff PUnit.unit _ _)
 
 /-- The prescribed table: exactly the nonzero diagonal pairs are true. -/
@@ -183,6 +256,7 @@ def samples (n : ℕ) : Samples (schema n).Name (structureOf (fun _ => false)).c
 theorem read_answer (f : ℕ → Bool) (n : ℕ) (i : Fin (n + 1)) :
     ((schema n).read (structureOf f) (samples n)).answer i =
       (show Query.Answer (structureOf f).carrier ((schema n).query i) from some ⟨f i.val⟩) := by
+  rw [Schema.read_answer]
   letI : Finite (Σ s, (schema n).Name s) := (schema n).finiteNames
   exact Query.read_value_raw (A := structureOf f) (samples n) (.quantity PUnit.unit) _
     (((structureOf f).graph_quantity_iff PUnit.unit _ _).2 rfl)

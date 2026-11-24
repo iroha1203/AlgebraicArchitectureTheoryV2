@@ -6,6 +6,20 @@ import Mathlib.Data.Set.Finite.Basic
 Definition 3.8 specifies sample names and typed queries over an ordinary
 signature. The resulting table has an entry at each declared query index.
 Its type is defined independently of whether a model realizes the table.
+
+## Implementation notes
+
+A finite dependent sum counts the whole sample even when the signature has
+infinitely many sorts. Per-sort finiteness alone permits infinitely many
+named states. The name types retain their sort through every query, and a
+dependent answer family gives a value at exactly the declared index type.
+
+The positive policy records a witness marker or leaves the entry empty. A
+Bool is used when both truth values need explicit records. Raw outputs keep
+their full carrier type. Sampled outputs distinguish an outside value from a
+nonempty finite set of all matching names, since a single chosen name loses
+aliases. The outer option for value queries tracks definedness separately.
+ULift places these typed answers in the common universe of the table.
 -/
 
 universe u v
@@ -53,8 +67,16 @@ noncomputable def TruthRecording.record : (mode : TruthRecording) → Prop → m
   change (if p then some () else none) = some () ↔ p
   simp
 
+/-- A two-sided query answers false exactly when its atomic fact fails. -/
+@[simp] theorem TruthRecording.record_both_eq_false (p : Prop) :
+    TruthRecording.record .both p = false ↔ ¬ p := by
+  classical
+  change decide p = false ↔ ¬ p
+  simp
+
 /-- An atomic query uses sample names at the declared input and output sorts. -/
 inductive AtomicQuery (sig : Signature.{u}) (Name : sig.SortType → Type v) where
+  | eq {s : sig.SortType} (left right : Name s)
   | graph (op : Operation sig) (inputs : Assignment Name op.arity.inputs)
       (output : Name op.arity.output)
   | relation (r : sig.Rel) (inputs : Assignment Name (sig.relInputs r))
@@ -89,9 +111,16 @@ def Samples.tuple {Carrier : sig.SortType → Type u} (sample : Samples Name Car
     {Γ : List sig.SortType} (inputs : Assignment Name Γ) : Assignment Carrier Γ :=
   ⟨fun {s} i => sample s (inputs i)⟩
 
-/-- Read the corresponding graph, relation, or domain membership from a structure. -/
+/-- The names at each fixed sort sit inside the finite collection of all names. -/
+theorem Samples.finiteNamesAt (Name : sig.SortType → Type v) [Finite (Σ s, Name s)]
+    (s : sig.SortType) : Finite (Name s) :=
+  Finite.of_injective (fun n => (⟨s, n⟩ : Σ t, Name t))
+    (fun _ _ h => by cases h; rfl)
+
+/-- Read equality or the corresponding graph, relation, or domain membership from a structure. -/
 def AtomicQuery.holds (A : Structure sig) (sample : Samples Name A.carrier) :
     AtomicQuery sig Name → Prop
+  | .eq (s := s) left right => sample s left = sample s right
   | .graph op inputs output => A.Graph op (sample.tuple inputs) (sample _ output)
   | .relation r inputs => sample.tuple inputs ∈ A.relation r
   | .domain p inputs => sample.tuple inputs ∈ A.partialDomain p
@@ -137,22 +166,40 @@ noncomputable def Query.read (A : Structure sig) (sample : Samples Name A.carrie
   | .truth mode atom => ⟨mode.record (atom.holds A sample)⟩
   | .value op inputs mode => by
     classical
-    letI : Finite (Name op.arity.output) :=
-      Finite.of_injective (fun n => (⟨op.arity.output, n⟩ : Σ s, Name s)) (fun _ _ h => by cases h; rfl)
+    letI := Samples.finiteNamesAt Name op.arity.output
     exact (A.applyOp op (sample.tuple inputs)).toOption.map
       (fun value => mode.record (sample _) value)
 
-/-- A raw value query reports the value on the ordinary graph of the operation. -/
+/-- Truth queries record the named atomic fact under the chosen policy. -/
+theorem Query.read_truth {A : Structure sig} (sample : Samples Name A.carrier)
+    [Finite (Σ s, Name s)] (mode : TruthRecording) (atom : AtomicQuery sig Name) :
+    (Query.truth mode atom).read A sample = ⟨mode.record (atom.holds A sample)⟩ :=
+  rfl
+
+/-- Two-sided equality records truth exactly when both names designate the same state. -/
+theorem Query.read_equality_true_iff {A : Structure sig} (sample : Samples Name A.carrier)
+    [Finite (Σ s, Name s)] {s : sig.SortType} (left right : Name s) :
+    ((Query.truth .both (.eq left right)).read A sample).down = true ↔
+      sample s left = sample s right := by
+  rw [read_truth]
+  exact TruthRecording.record_both_eq_true _
+
+/-- A defined value query reports the graph's value under the selected output policy. -/
+theorem Query.read_value_of_graph {A : Structure sig} (sample : Samples Name A.carrier)
+    [Finite (Σ s, Name s)] (op : Operation sig) (inputs : Assignment Name op.arity.inputs)
+    (mode : OutputRecording) {value : A.carrier op.arity.output}
+    (graph : A.Graph op (sample.tuple inputs) value) :
+    letI := Samples.finiteNamesAt Name op.arity.output
+    (Query.value op inputs mode).read A sample = some (mode.record (sample _) value) := by
+  classical
+  simp only [Query.read, Part.toOption_eq_some_iff.mpr graph, Option.map_some]
+
+/-- A raw value query returns the full carrier value on the ordinary graph. -/
 theorem Query.read_value_raw {A : Structure sig} (sample : Samples Name A.carrier)
     [Finite (Σ s, Name s)] (op : Operation sig) (inputs : Assignment Name op.arity.inputs)
     {value : A.carrier op.arity.output} (graph : A.Graph op (sample.tuple inputs) value) :
-    (Query.value op inputs .raw).read A sample = some ⟨value⟩ := by
-  classical
-  change (@Part.toOption _ (A.applyOp op (sample.tuple inputs)) (Classical.propDecidable _)).map
-    (fun y => (⟨y⟩ : ULift.{v} (A.carrier op.arity.output))) =
-      some (⟨value⟩ : ULift.{v} (A.carrier op.arity.output))
-  rw [Part.toOption_eq_some_iff.mpr graph]
-  rfl
+    (Query.value op inputs .raw).read A sample = some ⟨value⟩ :=
+  read_value_of_graph sample op inputs .raw graph
 
 /-- A query at an undefined input has no value under either output policy. -/
 theorem Query.read_value_undefined {A : Structure sig} (sample : Samples Name A.carrier)
@@ -185,6 +232,13 @@ noncomputable def Schema.readModel {T : Theory.{u}} (schema : Schema.{u,v} T.sig
 /-- The samples in the observed table are exactly the original designated states. -/
 @[simp] theorem Schema.read_sample (schema : Schema.{u,v} sig) (A : Structure sig)
     (sample : Samples schema.Name A.carrier) : (schema.read A sample).sample = sample :=
+  rfl
+
+/-- Each answer in the table comes from reading the query at that declared index. -/
+theorem Schema.read_answer (schema : Schema.{u,v} sig) (A : Structure sig)
+    (sample : Samples schema.Name A.carrier) (i : schema.Index) :
+    (schema.read A sample).answer i =
+      (letI := schema.finiteNames; (schema.query i).read A sample) :=
   rfl
 
 end SHIGURE.ValueFragment

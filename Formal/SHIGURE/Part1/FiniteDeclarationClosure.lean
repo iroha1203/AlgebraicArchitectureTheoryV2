@@ -6,6 +6,16 @@ Each primitive declaration has finitely many immediate dependencies.
 Their height decreases from derived Laws to written Laws, from Laws to
 symbols, and from symbols through their arities to their sorts. This gives
 finite declaration closure for the basic signatures and finite Law syntax.
+
+## Implementation notes
+
+A finite set of direct references alone can have an infinite closure. The
+heights here follow the actual dependency routes of Definition 3.1. An
+iteration up to a guessed bound would require a separate closure proof.
+The finite union at each height constructs the closed fragment and ensures
+that it stays inside the original context. In this primitive syntax every
+context has finite dependency closure, including contexts with infinitely
+many declarations.
 -/
 
 universe u
@@ -36,16 +46,9 @@ private theorem lawBody_finite (law : Law P.signature) : (lawBody law).Finite :=
 
 private theorem derivation_finite {Γ : List P.theory.signature.SortType}
     {p q : Formula P.theory.signature Γ}
-    (proof : Derivation P.theory p q) : (derivation proof).Finite := by
-  unfold derivation
-  induction proof <;> rw [derivationOf]
-  all_goals
-    refine (((sorts_finite _).union (formula_finite _)).union (formula_finite _)).union ?_
-    first
-    | exact Set.finite_empty
-    | exact Set.finite_singleton _
-    | exact Set.Finite.union (by assumption) (by assumption)
-    | assumption
+    (proof : Derivation P.theory p q) : (derivation proof).Finite :=
+  derivation_support_induction Set.finite_empty sorts_finite
+    (fun p => formula_finite p) (fun _ => Set.finite_singleton _) Set.Finite.union proof
 
 private theorem position_lt_length {s : P.signature.SortType} (i : Var Γ s) :
     i.position < Γ.length := by
@@ -80,18 +83,17 @@ theorem dependsOn_finite (d : Declaration P) : (dependsOn P d).Finite := by
   | sort => exact Set.finite_empty
   | total | relation | quantity => exact sorts_finite _
   | partialOp p =>
-    rw [dependsOn]
+    rw [partial_dependencies]
     apply Set.Finite.union (sorts_finite _)
     split
     · exact Set.finite_empty
     · exact (Set.finite_singleton _).union (inclusions_finite p _)
   | law name =>
-    rw [dependsOn]
-    apply Set.Finite.union (lawBody_finite _)
-    split
-    · exact derivation_finite _
-    · exact Set.finite_empty
-    · exact Set.finite_empty
+    by_cases role : P.laws.role name = .derived
+    · rw [derived_dependencies name role]
+      exact (lawBody_finite _).union (derivation_finite _)
+    · rw [nonderived_dependencies name role]
+      exact lawBody_finite _
 
 private def height : Declaration P → ℕ
   | .sort _ => 0
@@ -101,30 +103,23 @@ private def height : Declaration P → ℕ
     | .derived => 4
     | .required | .additional => 3
 
-private theorem law_notMem_sequent (name : P.laws.LawName) (p q : Formula P.signature Γ) :
-    Declaration.law name ∉ sorts Γ ∪ formula p ∪ formula q := by
-  have notSort : Declaration.law name ∉ sorts (P := P) Γ := by
-    rintro ⟨s, _, eq⟩
-    cases eq
-  simp only [Set.mem_union, not_or, notSort, law_notMem_formula, and_self, not_false_eq_true]
-
 private theorem derivation_law_required {Γ : List P.theory.signature.SortType}
     {p q : Formula P.theory.signature Γ}
     (proof : Derivation P.theory p q) (name : P.laws.LawName) :
     Declaration.law name ∈ derivation proof → P.laws.role name = .required := by
-  unfold derivation
-  induction proof <;> intro uses <;> rw [derivationOf, Set.mem_union] at uses
-  all_goals
-    rcases uses with written | uses
-    · exact (law_notMem_sequent name _ _ written).elim
-    · first
-      | exact (Set.notMem_empty _ uses).elim
-      | exact uses.elim (by assumption) (by assumption)
-      | exact (by assumption : _ → _) uses
-      | rename_i requiredName
-        have eq := Declaration.law.inj (Set.mem_singleton_iff.mp uses)
-        rw [eq]
-        exact requiredName.property
+  refine derivation_support_induction
+    (M := fun dependencies => Declaration.law name ∈ dependencies → P.laws.role name = .required)
+    ?_ ?_ ?_ ?_ ?_ proof
+  · exact fun impossible => (Set.notMem_empty _ impossible).elim
+  · intro Γ
+    rintro ⟨_, _, eq⟩
+    cases eq
+  · exact fun p uses => (law_notMem_formula name p uses).elim
+  · intro required uses
+    have same := Declaration.law.inj (Set.mem_singleton_iff.mp uses)
+    rw [same]
+    exact required.property
+  · exact fun left right uses => uses.elim left right
 
 private theorem lawBody_height {d : Declaration P} {law : Law P.signature}
     (uses : d ∈ lawBody law) : d.height < 3 := by
@@ -151,7 +146,7 @@ private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
     rw [sort_height uses]
     simp [height]
   | partialOp p =>
-    rw [dependsOn, Set.mem_union] at uses
+    rw [partial_dependencies, Set.mem_union] at uses
     rcases uses with arity | included
     · rw [sort_height arity]
       simp [height]
@@ -163,18 +158,14 @@ private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
           simp [height]
         · cases data.symbol i <;> simp [TotalSymbol.operation, ofOperation, height]
   | law name =>
-    rw [dependsOn, Set.mem_union] at uses
-    rcases uses with written | derived
-    · have lower := lawBody_height written
-      cases role : P.laws.role name
-      · simpa [height, role] using lower
-      · simpa [height, role] using lower
-      · simpa [height, role] using Nat.lt_trans lower (by decide : 3 < 4)
-    · split at derived
-      · rename_i role
-        simpa [height, role] using derivation_height _ derived
-      · exact (Set.notMem_empty _ derived).elim
-      · exact (Set.notMem_empty _ derived).elim
+    by_cases role : P.laws.role name = .derived
+    · rw [derived_dependencies name role, Set.mem_union] at uses
+      rcases uses with written | derived
+      · simpa [height, role] using Nat.lt_trans (lawBody_height written) (by decide : 3 < 4)
+      · simpa [height, role] using derivation_height (P.derived name role) derived
+    · rw [nonderived_dependencies name role] at uses
+      have lower := lawBody_height uses
+      cases h : P.laws.role name <;> simp_all [height]
 
 end SHIGURE.Declaration
 

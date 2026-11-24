@@ -8,6 +8,15 @@ Example 3.12 uses the inclusion of the declaration of x into the presentation
 with x, y and the Law xy = 1. Its coordinate map is the localization map at x.
 A reverse map that preserves the shared generator x would make x invertible
 in the polynomial ring itself.
+
+## Implementation notes
+
+The option name type distinguishes the retained variable from the added
+inverse. The nested polynomial representation identifies the retained
+variable in the coefficients and the new variable as the outer generator.
+This connects their quotient to AdjoinRoot and to the mathlib localization
+equivalence. A direct presentation by fractions would require uniqueness
+proofs for two separately constructed homomorphisms.
 -/
 
 namespace SHIGURE.PolynomialPresentation.InverseVariableExample
@@ -32,26 +41,49 @@ def large : PolynomialPresentation.{0,0} ℚ where
 
 /-- The small presentation has no Law relations. -/
 theorem small_lawIdeal : small.lawIdeal = ⊥ := by
-  unfold lawIdeal
-  have h : Set.range (fun l : small.Law => small.left l - small.right l) = ∅ := by
-    ext p
-    constructor
-    · rintro ⟨l, _⟩
-      exact PEmpty.elim l
-    · exact False.elim
-  rw [h, Ideal.span_empty]
+  letI : IsEmpty small.Law := inferInstanceAs (IsEmpty (PEmpty : Type))
+  exact small.lawIdeal_eq_bot_of_isEmpty
 
 /-- The large presentation cuts out precisely the relation xy - 1. -/
 theorem large_lawIdeal : large.lawIdeal = Ideal.span
     {X (some PUnit.unit) * X none - (1 : MvPolynomial large.Variable ℚ)} := by
-  unfold lawIdeal
-  congr 1
-  ext p
-  constructor
-  · rintro ⟨⟨⟩, h⟩
-    exact h.symm
-  · intro h
-    exact ⟨PUnit.unit, h.symm⟩
+  letI : Subsingleton large.Law := inferInstanceAs (Subsingleton (PUnit : Type))
+  exact large.lawIdeal_eq_span_singleton PUnit.unit
+
+/-- The two variables equal to one satisfy the inverse Law. -/
+def assignmentAtOne : large.Assignment ℚ where
+  value _ := 1
+  holds _ := by
+    change aeval (fun _ : large.Variable => (1 : ℚ)) (X (some PUnit.unit) * X none) =
+      aeval (fun _ : large.Variable => (1 : ℚ)) 1
+    simp
+
+/-- Assigning zero to the retained variable is incompatible with the inverse Law. -/
+theorem no_assignment_at_x_zero :
+    ¬ ∃ a : large.Assignment ℚ, a.value (some PUnit.unit) = 0 := by
+  rintro ⟨a, xZero⟩
+  have holds := a.holds PUnit.unit
+  change aeval a.value (X (some PUnit.unit) * X none) = aeval a.value 1 at holds
+  simp [xZero] at holds
+
+/-- Keep both variable names with an empty family of Laws. -/
+def freeTwoVariables : PolynomialPresentation.{0,0} ℚ where
+  Variable := Option PUnit
+  Law := PEmpty
+  left := PEmpty.elim
+  right := PEmpty.elim
+
+/-- The two presentations have the same variable names. -/
+def sameNames : large.Variable ↪ freeTwoVariables.Variable :=
+  Function.Embedding.refl _
+
+/-- The identical variable embedding fails to preserve the inverse Law ideal. -/
+theorem sameNames_not_preserving :
+    ¬ large.lawIdeal ≤ freeTwoVariables.lawIdeal.comap (rename sameNames) := by
+  intro preserves
+  let inclusion : large.Inclusion freeTwoVariables := ⟨sameNames, preserves⟩
+  let zero : freeTwoVariables.Assignment ℚ := ⟨fun _ => 0, fun law => PEmpty.elim law⟩
+  exact no_assignment_at_x_zero ⟨inclusion.forget zero, rfl⟩
 
 /-- The inclusion preserves the name x and sends the zero Law ideal into the enlarged one. -/
 def inclusion : small.Inclusion large where
@@ -97,7 +129,7 @@ theorem declarationMap_X : declarationMap Polynomial.X = barX := by
 theorem barX_mul_barY : barX * barY = 1 := by
   let mk := Ideal.Quotient.mkₐ ℚ large.lawIdeal
   have rel : X (some PUnit.unit) * X none - 1 ∈ large.lawIdeal :=
-    Ideal.subset_span ⟨PUnit.unit, rfl⟩
+    large.law_sub_mem PUnit.unit
   have zero : mk (X (some PUnit.unit) * X none - 1) = 0 :=
     Ideal.Quotient.eq_zero_iff_mem.mpr rel
   change mk (X (some PUnit.unit)) * mk (X none) = 1

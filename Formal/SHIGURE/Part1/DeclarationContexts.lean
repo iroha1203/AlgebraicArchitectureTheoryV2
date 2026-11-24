@@ -103,6 +103,25 @@ abbrev derivation {Γ : List P.signature.SortType} {p q : Formula P.signature Γ
     (proof : Derivation P.theory p q) : Set (Declaration P) :=
   derivationOf rfl Subtype.val proof
 
+/-- Induct on derivation support through sequents, required Law leaves, and unions. -/
+theorem derivation_support_induction {M : Set (Declaration P) → Prop}
+    (empty : M ∅) (ofSorts : ∀ Γ, M (sorts Γ))
+    (ofFormula : ∀ {Γ : List P.theory.signature.SortType} (p : Formula P.theory.signature Γ),
+      M (formula p))
+    (ofRequired : ∀ name : P.theory.LawName, M {Declaration.law name.val})
+    (join : ∀ {A B}, M A → M B → M (A ∪ B))
+    {Γ : List P.theory.signature.SortType} {p q : Formula P.theory.signature Γ}
+    (proof : Derivation P.theory p q) : M (derivation proof) := by
+  unfold derivation
+  induction proof <;> rw [derivationOf]
+  all_goals
+    refine join (join (join (ofSorts _) (ofFormula _)) (ofFormula _)) ?_
+    first
+    | exact empty
+    | exact ofRequired _
+    | exact join (by assumption) (by assumption)
+    | assumption
+
 /-- The five named operations of a declared value ring. -/
 def ringVocabularySupport {s : P.signature.SortType} (ring : RingVocabulary P.signature s) :
     Set (Declaration P) :=
@@ -139,6 +158,28 @@ def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declarati
       match role : P.laws.role name with
       | .derived => derivation (P.derived name role)
       | .required | .additional => ∅
+
+/-- A partial operation retains its arity and the data of any declared domain inclusion. -/
+theorem partial_dependencies (p : P.signature.Partial) :
+    dependsOn P (.partialOp p) =
+      sorts ((P.signature.partialArity p).output :: (P.signature.partialArity p).inputs) ∪
+        match P.domainInclusions p with
+        | none => ∅
+        | some data => {Declaration.sort data.domainSort} ∪
+          {a | ∃ (s : P.signature.SortType) (i : Var (P.signature.partialArity p).inputs s),
+            a = ofOperation (data.symbol i).operation} :=
+  rfl
+
+/-- A derived Law retains its written support and the references from its proof tree. -/
+theorem derived_dependencies (name : P.laws.LawName) (role : P.laws.role name = .derived) :
+    dependsOn P (.law name) = lawBody (P.laws.statement name) ∪ derivation (P.derived name role) := by
+  rw [dependsOn]
+  split
+  · rfl
+  · rename_i otherRole
+    cases role.symm.trans otherRole
+  · rename_i otherRole
+    cases role.symm.trans otherRole
 
 /-- A retained derived Law keeps the actual references of its registered derivation. -/
 theorem derivation_subset_dependsOn (name : P.laws.LawName) (role : P.laws.role name = .derived) :

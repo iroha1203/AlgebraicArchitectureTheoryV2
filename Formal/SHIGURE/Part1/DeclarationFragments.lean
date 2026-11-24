@@ -6,6 +6,14 @@ import Mathlib.Data.Set.Finite.Lattice
 A finite declaration fragment has finitely many names and uses the usual
 selected presentation of its dependency-closed context. Its ordinary reduct
 keeps the full carriers and interpretations of all retained declarations.
+
+## Implementation notes
+
+The fragment stores a DeclarationContext so the same dependency closure
+and selected presentation govern all model and arrow restrictions in
+Definition 3.8. A finset of names would require a separate conversion to
+the closed context used by the assembly theorems. Set finiteness keeps
+that interface and supports finite indexed unions directly.
 -/
 
 universe u v
