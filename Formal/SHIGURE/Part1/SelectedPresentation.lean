@@ -197,6 +197,49 @@ private theorem restrict_partialDomain_iff (names : SignatureNames S T) (A : Str
       names.arguments (congrArg Arity.inputs (names.partialArity p)) xs ∈ A.partialDomain (names.onPartial p) :=
   Iff.rfl
 
+/-- The total interpretation in a named reduct uses the ambient function on the transported tuple. -/
+theorem restrict_total_apply (names : SignatureNames S T) (A : Structure T) (f : S.Total)
+    (xs : Assignment (names.restrict A).carrier (S.totalArity f).inputs) :
+    (names.restrict A).total f xs =
+      cast (congrArg (fun arity => A.carrier arity.output) (names.totalArity f).symm)
+        (A.total (names.onTotal f)
+          (congrArg Arity.inputs (names.totalArity f) ▸ xs.mapSorts names.onSort)) :=
+  rfl
+
+/-- Relation membership in a named reduct uses the ambient relation on the mapped tuple. -/
+theorem restrict_relation_mem_iff (names : SignatureNames S T) (A : Structure T) (r : S.Rel)
+    (xs : Assignment (names.restrict A).carrier (S.relInputs r)) :
+    xs ∈ (names.restrict A).relation r ↔
+      (names.relInputs r ▸ xs.mapSorts names.onSort) ∈ A.relation (names.onRel r) :=
+  names.restrict_relation_iff A r xs
+
+/-- Domain membership in a named reduct uses the ambient domain on the mapped tuple. -/
+theorem restrict_partialDomain_mem_iff (names : SignatureNames S T) (A : Structure T) (p : S.Partial)
+    (xs : Assignment (names.restrict A).carrier (S.partialArity p).inputs) :
+    xs ∈ (names.restrict A).partialDomain p ↔
+      (congrArg Arity.inputs (names.partialArity p) ▸ xs.mapSorts names.onSort) ∈
+        A.partialDomain (names.onPartial p) :=
+  names.restrict_partialDomain_iff A p xs
+
+/-- The partial value in a named reduct is transported back from the ambient operation on its domain. -/
+theorem restrict_partialValue_apply (names : SignatureNames S T) (A : Structure T) (p : S.Partial)
+    (xs : (names.restrict A).partialDomain p) :
+    (names.restrict A).partialValue p xs =
+      cast (congrArg (fun arity => A.carrier arity.output) (names.partialArity p).symm)
+        (A.partialValue (names.onPartial p)
+          ⟨congrArg Arity.inputs (names.partialArity p) ▸ xs.val.mapSorts names.onSort,
+            (names.restrict_partialDomain_mem_iff A p xs.val).1 xs.property⟩) :=
+  rfl
+
+/-- A quantity in a named reduct uses the ambient quantity on the transported tuple. -/
+theorem restrict_quantity_apply (names : SignatureNames S T) (A : Structure T) (q : S.Quantity)
+    (xs : Assignment (names.restrict A).carrier (S.quantityArity q).inputs) :
+    (names.restrict A).quantity q xs =
+      cast (congrArg (fun arity => A.carrier arity.output) (names.quantityArity q).symm)
+        (A.quantity (names.onQuantity q)
+          (congrArg Arity.inputs (names.quantityArity q) ▸ xs.mapSorts names.onSort)) :=
+  rfl
+
 /-- A retyped assignment can be read at its original positions without losing any coordinates. -/
 private theorem arguments_surjective (names : SignatureNames S T) {X : T.SortType → Type u}
     {Γ : List S.SortType} :

@@ -355,6 +355,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Structure.isIso_iff_bijective_reflects,
   Structure.law_holds_of_iso,
   -- SelectedPresentation
+  SignatureNames.restrict_total_apply,
+  SignatureNames.restrict_relation_mem_iff,
+  SignatureNames.restrict_partialDomain_mem_iff,
+  SignatureNames.restrict_partialValue_apply,
+  SignatureNames.restrict_quantity_apply,
   SignatureNames.restrict_formula_iff,
   SignatureNames.restrict_law_iff,
   -- Models

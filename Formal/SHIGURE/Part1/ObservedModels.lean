@@ -268,23 +268,53 @@ theorem restrict_extendStructure (A : ObservedModel T shape) :
     shape.original.restrict A.extendStructure = A.model.obj := by
   have domains : (shape.original.restrict A.extendStructure).partialDomain = A.model.obj.partialDomain := by
     funext p
-    exact Set.ext fun xs => iff_of_eq
-      (congrArg (fun ys => ys ∈ A.model.obj.partialDomain p) (originalTuple_roundtrip A xs))
+    apply Set.ext
+    intro xs
+    have restricted : xs ∈ (shape.original.restrict A.extendStructure).partialDomain p ↔
+        A.extendedTuple xs ∈ A.extendStructure.partialDomain p :=
+      shape.original.restrict_partialDomain_mem_iff A.extendStructure p xs
+    rw [restricted, A.extendStructure_partialDomain_iff, originalTuple_roundtrip A]
   refine Structure.ext rfl ?_ ?_ ?_ ?_ ?_
   · apply heq_of_eq
     funext f xs
-    exact congrArg (A.model.obj.total f) (originalTuple_roundtrip A xs)
+    calc
+      _ = A.extendStructure.total (.inl f) (A.extendedTuple xs) :=
+        shape.original.restrict_total_apply A.extendStructure f xs
+      _ = A.model.obj.total f (originalTuple (A.extendedTuple xs)) :=
+        A.extendStructure_total f (A.extendedTuple xs)
+      _ = _ := congrArg (A.model.obj.total f) (originalTuple_roundtrip A xs)
   · apply heq_of_eq
     funext r
-    exact Set.ext fun xs => iff_of_eq
-      (congrArg (fun ys => ys ∈ A.model.obj.relation r) (originalTuple_roundtrip A xs))
+    apply Set.ext
+    intro xs
+    have restricted : xs ∈ (shape.original.restrict A.extendStructure).relation r ↔
+        A.extendedTuple xs ∈ A.extendStructure.relation r :=
+      shape.original.restrict_relation_mem_iff A.extendStructure r xs
+    rw [restricted, A.extendStructure_relation_iff, originalTuple_roundtrip A]
   · exact heq_of_eq domains
   · apply partialValue_heq domains
     intro p xs _
-    exact congrArg (A.model.obj.partialValue p) (Subtype.ext (originalTuple_roundtrip A xs.val))
+    let extendedInput : A.extendStructure.partialDomain p :=
+      ⟨A.extendedTuple xs.val,
+        (shape.original.restrict_partialDomain_mem_iff A.extendStructure p xs.val).1 xs.property⟩
+    have restricted : (shape.original.restrict A.extendStructure).partialValue p xs =
+        A.extendStructure.partialValue p extendedInput :=
+      shape.original.restrict_partialValue_apply A.extendStructure p xs
+    have graph : A.extendStructure.Graph (.partialOp p) extendedInput.val
+        (A.extendStructure.partialValue p extendedInput) :=
+      (A.extendStructure.graph_partial_iff p _ _).2 ⟨extendedInput.property, rfl⟩
+    obtain ⟨_, value⟩ := (A.model.obj.graph_partial_iff p _ _).1
+      ((A.extendStructure_graph_partial_iff p _ _).1 graph)
+    exact restricted.trans (value.symm.trans
+      (congrArg (A.model.obj.partialValue p) (Subtype.ext (originalTuple_roundtrip A xs.val))))
   · apply heq_of_eq
     funext q xs
-    exact congrArg (A.model.obj.quantity q) (originalTuple_roundtrip A xs)
+    calc
+      _ = A.extendStructure.quantity q (A.extendedTuple xs) :=
+        shape.original.restrict_quantity_apply A.extendStructure q xs
+      _ = A.model.obj.quantity q (originalTuple (A.extendedTuple xs)) :=
+        A.extendStructure_quantity q (A.extendedTuple xs)
+      _ = _ := congrArg (A.model.obj.quantity q) (originalTuple_roundtrip A xs)
 
 /-- The value reduct of the extended structure is the prescribed fixed data. -/
 theorem restrict_values_extendStructure (A : ObservedModel T shape) :
