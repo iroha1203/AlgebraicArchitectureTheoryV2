@@ -138,11 +138,13 @@ theorem Agree.cast_operation {a : Data R U} {b : Data R W} (h : a.Agree b)
       (a.operation f left) = b.operation f right :=
   eq_of_heq ((cast_heq _ _).trans (h.operation f left right))
 
+/-- A retained coefficient or module slot has the same kernel before and after restricting the family. -/
 private theorem kernelAt_restrict (K : KernelFamily R U) (inside : W ≤ U) (s : Option V.SortName)
     (keep : Declaration.sort s ∈ W.declarations) :
     kernelAt (fun t ht => K t (inside ht)) s keep = kernelAt K s (inside keep) := by
   cases s <;> rfl
 
+/-- Restriction preserves the kernel profile at every argument and at the result of a retained operation. -/
 private theorem operationKernels_restrict (K : KernelFamily R U) (inside : W ≤ U) {f : V.Multilinear}
     (keep : V.multilinearDecl L f ∈ W.declarations) :
     operationKernels (fun s hs => K s (inside hs)) keep = operationKernels K (inside keep) :=

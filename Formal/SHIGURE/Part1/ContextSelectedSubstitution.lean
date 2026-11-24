@@ -14,6 +14,7 @@ namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
+/-- Each primitive reference of an atom is still needed in its strict substituted formula. -/
 private theorem atomicReferences_subset_substitute {Γ Δ : List P.signature.SortType}
     (a : Atomic P.signature Γ) (θ : Substitution P.signature Γ Δ) :
     Declaration.atomic a ⊆ Declaration.formula (a.substitute θ) := by
@@ -63,6 +64,7 @@ theorem substitute_term_kept {Γ : List P.signature.SortType} {s : P.signature.S
     · exact hi θ (fun _ h => ht (Or.inr (Or.inl h))) hθ hd
     · exact hb θ.lift (fun _ h => ht (Or.inr (Or.inr h))) (liftTermReferences θ hθ) hd
 
+/-- Retyping the strict witnesses in an atomic substitution agrees with substituting selected terms. -/
 private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (θ : Substitution P.signature Γ Δ) (hΓ : Declaration.sorts Γ ⊆ U.declarations)
     (hΔ : Declaration.sorts Δ ⊆ U.declarations)

@@ -49,16 +49,6 @@ end Structure
 namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
-  {X Y : P.signature.SortType → Type u} {Z : SortName U → Type u}
-
-/-- Moving along equal source carrier values commutes with reindexing assignments. -/
-theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
-    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) {Γ : List P.signature.SortType}
-    (kept : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
-    selectAssignment e kept (mapAssignment f kept a) = selectAssignment g kept a := by
-  apply Assignment.ext
-  intro s i
-  exact agree s.val s.property (a (ambientVar kept i))
 
 /-- The round trip through an ordinary structure keeps every context carrier type. -/
 theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStructure A)).carrier = A.carrier :=
@@ -93,8 +83,8 @@ theorem write_read_carriers (A : ContextStructure U) : (writeStructure (readStru
     change B.Graph (operation op keep) (selectArgs (extendedEquiv B) op keep
       (mapAssignment f (operationInputs op keep) a)) (selectResult (extendedEquiv B) op keep
         (f op.arity.output (operationOutput op keep) y)) ↔ _
-    cases op <;> simp only [selectArgs, selectResult, cast_eq, selectAssignment_mapCarrier _ _ _ component, component]
-    all_goals exact (readStructure_matches A).graph _ keep a y
+    rw [selectArgs_mapCarrier _ _ _ component, selectResult_mapCarrier _ _ _ component]
+    exact (readStructure_matches A).graph op keep a y
 
 /-- Writing then reading keeps every actual selected carrier type. -/
 theorem read_write_carriers (B : Structure (signature U)) : (readStructure (writeStructure B)).carrier = B.carrier :=

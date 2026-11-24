@@ -114,9 +114,11 @@ theorem constants_fail_inverseLaw : ¬ inverseLaw.Holds constants := by
   change false = true at atOne
   cases atOne
 
+/-- Include each local declaration set into the context with every declaration. -/
 private theorem piece_le_whole (f : Bool) : piece f ≤ whole :=
   Set.subset_univ _
 
+/-- Compare the union of primitive declarations with the context that also retains the inverse Law. -/
 private theorem withoutLaw_le_whole : withoutLaw ≤ whole :=
   Set.subset_univ _
 

@@ -8,6 +8,7 @@ namespace SHIGURE.Chapter3.OrderedRestriction
 
 open DeclarationContext
 
+/-- Start the ordered-equation witness with two distinct variables of the same sort. -/
 private def simplePair : OrderedEquation OmittedLaw.signature where
   context := [(), ()]
   result := ()
@@ -15,15 +16,18 @@ private def simplePair : OrderedEquation OmittedLaw.signature where
   left := .var .here
   right := .var (.there .here)
 
+/-- Use the equality of the two bare variables as the first writing of the equation. -/
 private def atomicWriting : OrderedEquation.Written OmittedLaw.signature :=
   simplePair.writeVariables .here (.there .here) rfl rfl
 
+/-- Exercise strict substitution by replacing one variable with a bound operation and the other with a variable. -/
 private def replacement : Substitution OmittedLaw.signature [(), ()] [(), ()] :=
   ⟨fun i => match i with
     | .here => .letBind (Term.app (sig := OmittedLaw.signature) (.total false)
         (fun j => match j with | .here => .var (.there .here))) (.var .here)
     | .there .here => .var .here⟩
 
+/-- Retain both substitution steps in the provenance of the written equation. -/
 private def writtenTwice : OrderedEquation.Written OmittedLaw.signature :=
   (atomicWriting.substitute replacement).substitute replacement
 
@@ -68,6 +72,7 @@ def equalityContext : DeclarationContext paddedPresentation where
         exact Declaration.law_notMem_lawBody _ _ used
       | inr n => exact kept n rfl
 
+/-- Select the ordered-equality Law while omitting the separate ring-axiom names. -/
 private theorem equalityKept :
     Declaration.law (P := paddedPresentation) (.inl ()) ∈ equalityContext.declarations := by
   intro i equal
@@ -111,6 +116,7 @@ theorem full_ring_some :
 
 open Chapter1.RingModule (realization scalarOne scalarZero Symbol SortName signature)
 
+/-- Read the named ring attachment from the original padded presentation at its equality Law. -/
 private def sourceRing : NamedRingEquation paddedPresentation.laws (.inl ()) :=
   (paddedPresentation.ringEquation (.inl ())).get (by rfl)
 
@@ -128,6 +134,7 @@ def integerReading : Reading.{0, 0, 0, 0} where
   valueStructure := PUnit.unit
   coefficients := none
 
+/-- Name the retained equality in the full context of the integer reading. -/
 private def equationName : integerReading.context.RetainedLaw := ⟨.inl (), Set.mem_univ _⟩
 
 /-- The selected reading uses the original named proofs to supply the seven ring axioms. -/
@@ -153,13 +160,16 @@ private def equalityPresentation : PrimitivePresentation where
   otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written, sourceRing.statement_eq⟩
   derived _ role := by cases role
 
+/-- Send the one-law presentation's names to the matching names of the padded presentation. -/
 private def toName (d : Declaration equalityPresentation) : Declaration paddedPresentation :=
   d.renameNames (P := equalityPresentation) (Q := paddedPresentation) (.identity _) (fun _ => .inl ())
 
+/-- The naming map reaches only declarations retained in the equality context. -/
 private theorem toName_kept (d : Declaration equalityPresentation) : toName d ∈ equalityContext.declarations := by
   intro i h
   cases d <;> cases h
 
+/-- Recover primitive names and the single equality name from their selected ambient names. -/
 private def fromName : equalityContext.Retained → Declaration equalityPresentation
   | ⟨.sort s, _⟩ => .sort s
   | ⟨.total f, _⟩ => .total f
@@ -169,6 +179,7 @@ private def fromName : equalityContext.Retained → Declaration equalityPresenta
   | ⟨.law (.inl _), _⟩ => .law ()
   | ⟨.law (.inr i), kept⟩ => (kept i rfl).elim
 
+/-- Identify the caller's names with all and only the retained names of the padded presentation. -/
 private def equalityNames : Declaration equalityPresentation ≃ equalityContext.Retained where
   toFun d := ⟨toName d, toName_kept d⟩
   invFun := fromName
@@ -188,16 +199,20 @@ private def equalityNames : Declaration equalityPresentation ≃ equalityContext
     | partialOp p => rfl
     | quantity q => rfl
 
+/-- Describe the scalar witness as the output of the named unit operation. -/
 private def oneGraph : Formula signature [SortName.scalar] :=
   .conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarOne)
     (Var.inLeft [SortName.scalar]) .here))
 
+/-- Describe the same scalar witness as the output of the named zero operation. -/
 private def zeroGraph : Formula signature [SortName.scalar] :=
   .conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarZero)
     (Var.inLeft [SortName.scalar]) .here))
 
+/-- Write the equation using the shared value of the unit and zero operations. -/
 private def literalLaw : Law signature := ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
 
+/-- Show that renaming the retained equality preserves its declaration dependency relation. -/
 private theorem equalityDependencies (a b : Declaration equalityPresentation) :
     b ∈ Declaration.dependsOn equalityPresentation a ↔
       toName b ∈ Declaration.dependsOn paddedPresentation (toName a) := by
@@ -255,6 +270,7 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
   domainAttachment_eq p := nomatch p
   dependencies := equalityDependencies
 
+/-- Use the integer realization after selecting the equality and keeping the observation external. -/
 private def ambientEqualityReading : Reading.{0, 0, 0, 0} :=
   { integerReading with
     context := equalityContext

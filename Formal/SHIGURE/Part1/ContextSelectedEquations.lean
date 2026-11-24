@@ -15,10 +15,12 @@ namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
+/-- Expose the Law whose conclusion is one chosen writing of the ordered equality. -/
 private abbrev writtenLaw (eqn : OrderedEquation P.signature) (p : Formula P.signature eqn.context) :
     Law P.signature :=
   ⟨eqn.context, eqn.input, p⟩
 
+/-- Recover the support of the prior writing from a retained guarded substitution. -/
 private theorem priorLaw_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     {Γ : List P.signature.SortType} (θ : Substitution P.signature eqn.context Γ)
     (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
@@ -33,6 +35,7 @@ private theorem priorLaw_kept {eqn : OrderedEquation P.signature} {p : Formula P
   · exact hPriorInput (Or.inr (formulaReferences_subset_substitute eqn.input θ hd))
   · exact hFinalConclusion (Or.inr (formulaReferences_subset_substitute p θ hd))
 
+/-- Follow the writing history to obtain support for both ordered terms and their value sort. -/
 private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     (data : OrderedEquation.Expansion eqn p) :
     (Declaration.lawBody (writtenLaw eqn p) ⊆ U.declarations) →
@@ -61,6 +64,7 @@ private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Fo
       (substitution_term_kept θ (leftSupport (lawInputSupport h)) i).2
     exact ⟨hs, substitute_term_kept eqn.left θ left terms, substitute_term_kept eqn.right θ right terms⟩
 
+/-- Retype both terms and the input formula in the selected signature. -/
 private def selectEquation {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     (data : OrderedEquation.Expansion eqn p)
     (h : Declaration.lawBody (writtenLaw eqn p) ⊆ U.declarations) : OrderedEquation (signature U) where
@@ -70,6 +74,7 @@ private def selectEquation {eqn : OrderedEquation P.signature} {p : Formula P.si
   left := selectTerm eqn.left (lawSortSupport h) (expansion_terms_kept data h).1 (expansion_terms_kept data h).2.1
   right := selectTerm eqn.right (lawSortSupport h) (expansion_terms_kept data h).1 (expansion_terms_kept data h).2.2
 
+/-- Selecting a written substitution commutes with substitution by the retyped arguments. -/
 private theorem selectEquation_substitute {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     (prior : OrderedEquation.Expansion eqn p) {Γ : List P.signature.SortType}
     (θ : Substitution P.signature eqn.context Γ)
@@ -96,12 +101,14 @@ private theorem selectEquation_substitute {eqn : OrderedEquation P.signature} {p
   exact (congrArg (fun input => make input _ _) inputSame).trans
     (congrArg₂ (make _) leftSame rightSame)
 
+/-- Transport the type of a writing certificate when its equation and conclusion agree. -/
 private theorem expansion_congr {sig : Signature.{u}} {e f : OrderedEquation sig}
     (same : e = f) {p : Formula sig e.context} {q : Formula sig f.context}
     (written : p ≍ q) : OrderedEquation.Expansion e p = OrderedEquation.Expansion f q := by
   cases same
   exact congrArg (OrderedEquation.Expansion _) (eq_of_heq written)
 
+/-- A term identified as a variable retains the corresponding selected variable position. -/
 private theorem selectTerm_of_var {Γ : List P.signature.SortType} {s : P.signature.SortType}
     {t : Term P.signature Γ s} (x : Var Γ s) (same : t = .var x)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hs : Declaration.sort s ∈ U.declarations)
@@ -110,6 +117,7 @@ private theorem selectTerm_of_var {Γ : List P.signature.SortType} {s : P.signat
   subst t
   rfl
 
+/-- Replay the entire writing certificate over the genuinely selected signature. -/
 private noncomputable def selectExpansion {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     (data : OrderedEquation.Expansion eqn p)
     (h : Declaration.lawBody (writtenLaw eqn p) ⊆ U.declarations) :
@@ -149,6 +157,7 @@ theorem selectWritten_toLaw (w : OrderedEquation.Written P.signature)
     (selectWritten w h).toLaw = selectLaw w.toLaw h :=
   rfl
 
+/-- An equality of written Laws identifies their selected Laws as well. -/
 private theorem selectLaw_congr {p q : Law P.signature} (same : p = q)
     (hp : Declaration.lawBody p ⊆ U.declarations) (hq : Declaration.lawBody q ⊆ U.declarations) :
     selectLaw p hp = selectLaw q hq := by

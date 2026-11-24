@@ -13,7 +13,10 @@ namespace SHIGURE
 namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
-  {X : P.signature.SortType → Type u} {Y : SortName U → Type u}
+
+section Selection
+
+variable {X : P.signature.SortType → Type u} {Y : SortName U → Type u}
 
 /-- The correspondence identifies each retained carrier as a whole. -/
 abbrev CarrierEquiv (U : DeclarationContext P) (X : P.signature.SortType → Type u) (Y : SortName U → Type u) :=
@@ -96,6 +99,46 @@ def selectResult (e : CarrierEquiv U X Y) (op : Operation P.signature)
     Y (operation op keep).arity.output :=
   cast (congrArg (fun profile => Y profile.output) (operation_arity op keep).symm)
     (e op.arity.output (operationOutput op keep) x)
+
+/-- A selected total operation reads its output through the equivalence of that output sort. -/
+theorem selectResult_total (e : CarrierEquiv U X Y) (f : P.signature.Total)
+    (keep : Declaration.total f ∈ U.declarations) (x : X (P.signature.totalArity f).output) :
+    selectResult e (.total f) keep x =
+      e _ (operationOutput (.total f) keep) x :=
+  rfl
+
+end Selection
+
+section CarrierTransport
+
+variable {X Y : P.signature.SortType → Type u} {Z : SortName U → Type u}
+
+/-- Moving along equal source carrier values commutes with reindexing assignments. -/
+theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
+    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) {Γ : List P.signature.SortType}
+    (kept : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) :
+    selectAssignment e kept (mapAssignment f kept a) = selectAssignment g kept a := by
+  apply Assignment.ext
+  intro s i
+  exact agree s.val s.property (a (ambientVar kept i))
+
+/-- Transporting the ambient carrier values and then selecting the inputs agrees with selecting them directly. -/
+theorem selectArgs_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
+    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
+    (kept : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    selectArgs e op kept (mapAssignment f (operationInputs op kept) a) = selectArgs g op kept a := by
+  simp only [selectArgs, selectAssignment_mapCarrier e f g agree]
+
+/-- Transporting the ambient result and then selecting it agrees with selecting that result directly. -/
+theorem selectResult_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g : CarrierEquiv U X Z)
+    (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
+    (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    selectResult e op kept (f _ (operationOutput op kept) x) = selectResult g op kept x := by
+  simp only [selectResult, agree]
+
+end CarrierTransport
+
+variable {X : P.signature.SortType → Type u} {Y : SortName U → Type u}
 
 /-- The primitive evaluations have the same facts after the given carrier identifications. -/
 structure EvaluationMatches (E : RestrictedEvaluation U X) (B : Structure (signature U))

@@ -40,6 +40,7 @@ def kernelsOf (K : ∀ s : V.SortName, Kernel R (V.generators s)) (f : V.Multili
     OperationKernels (V := V) R f :=
   ⟨fun i => completeKernelAt K i.1, completeKernelAt K (V.output f)⟩
 
+/-- A complete assignment of kernels restricts to the kernel prescribed at each retained sort. -/
 private theorem kernelAt_complete (K : ∀ s : V.SortName, Kernel R (V.generators s)) (s : Option V.SortName)
     (kept : Declaration.sort s ∈ U.declarations) :
     kernelAt (fun t _ => K t) s kept = completeKernelAt K s := by
@@ -52,6 +53,7 @@ theorem operationKernels_complete (K : ∀ s : V.SortName, Kernel R (V.generator
   OperationKernels.ext (fun i => kernelAt_complete K i.1 _)
     (kernelAt_complete K (V.output f) _)
 
+/-- Interpret the ring, module, named generators and multilinear symbols on their actual quotient carriers. -/
 private def operationValue (K : ∀ s : V.SortName, Kernel R (V.generators s))
     (maps : ∀ f, (kernelsOf K f).Map) :
     (f : V.Symbol) → Assignment (quotientCarriers K) (V.arity f).inputs →

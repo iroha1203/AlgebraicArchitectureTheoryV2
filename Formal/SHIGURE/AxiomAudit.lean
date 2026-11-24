@@ -1305,6 +1305,9 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedRoundtrip
   Structure.eq_of_graphs,
   DeclarationContext.Selected.selectAssignment_mapCarrier,
+  DeclarationContext.Selected.selectArgs_mapCarrier,
+  DeclarationContext.Selected.selectResult_mapCarrier,
+  DeclarationContext.Selected.selectResult_total,
   DeclarationContext.Selected.write_read_carriers,
   DeclarationContext.Selected.write_read_structure,
   DeclarationContext.Selected.read_write_carriers,

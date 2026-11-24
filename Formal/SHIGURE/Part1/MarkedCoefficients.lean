@@ -43,6 +43,7 @@ theorem coefficients_le (kept : RetainsCoefficients U) : coefficients L ≤ U :=
   · exact kept.sort
   · exact kept.operation f
 
+/-- A coefficient-only declaration context cannot contain a module sort. -/
 private theorem no_module (s : V.SortName) :
     Declaration.sort (some s) ∉ (coefficients L).declarations := by
   rintro (different | ⟨f, different⟩)
@@ -50,6 +51,7 @@ private theorem no_module (s : V.SortName) :
     cases eq
   · cases different
 
+/-- A coefficient-only declaration context cannot contain a marked multilinear symbol. -/
 private theorem no_multilinear (f : V.Multilinear) :
     V.multilinearDecl L f ∉ (coefficients L).declarations := by
   rintro (different | ⟨op, different⟩)

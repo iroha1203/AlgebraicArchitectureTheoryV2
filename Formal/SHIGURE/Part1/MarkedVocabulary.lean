@@ -86,6 +86,7 @@ instance noPartial : IsEmpty V.signature.Partial :=
 /-- A finite-arity position with its declared coefficient or module sort. -/
 abbrev Position (f : V.Multilinear) := Σ s, Var (V.inputs f) s
 
+/-- The position number of a typed argument lies within the arity's finite list. -/
 private theorem position_lt {S : Type u} {Γ : List S} {s : S} (i : Var Γ s) :
     i.position < Γ.length := by
   induction i with
