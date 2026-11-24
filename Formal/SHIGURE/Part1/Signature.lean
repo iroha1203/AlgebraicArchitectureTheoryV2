@@ -37,6 +37,12 @@ namespace Var
 
 variable {S : Type u} {Γ : List S} {s : S}
 
+/-- The sort of a position occurs in its context. -/
+theorem sort_mem (i : Var Γ s) : s ∈ Γ := by
+  induction i with
+  | here => exact List.mem_cons_self
+  | there _ ih => exact List.mem_cons_of_mem _ ih
+
 /-- Include a variable from the first block of an appended context. -/
 def inLeft (Δ : List S) : {Γ : List S} → {s : S} → Var Γ s → Var (Γ ++ Δ) s
   | _, _, .here => .here
@@ -46,6 +52,32 @@ def inLeft (Δ : List S) : {Γ : List S} → {s : S} → Var Γ s → Var (Γ ++
 def shift : (Δ : List S) → Var Γ s → Var (Δ ++ Γ) s
   | [], var => var
   | _ :: Δ, var => .there (shift Δ var)
+
+/-- Position number in the finite context. -/
+def position : {Γ : List S} → {s : S} → Var Γ s → Nat
+  | _, _, .here => 0
+  | _, _, .there i => i.position.succ
+
+/-- Two variables in the same finite context have distinct position numbers. -/
+theorem position_injective (Γ : List S) :
+    Function.Injective (fun i : (Σ s, Var Γ s) => i.2.position) := by
+  induction Γ with
+  | nil =>
+    intro i
+    exact nomatch i.2
+  | cons s Γ ih =>
+    rintro ⟨a, i⟩ ⟨b, j⟩ eq
+    cases i with
+    | here =>
+      cases j with
+      | here => rfl
+      | there j => exact (Nat.noConfusion eq)
+    | there i =>
+      cases j with
+      | here => exact (Nat.noConfusion eq)
+      | there j =>
+        have tail : (⟨_, i⟩ : Σ s, Var Γ s) = ⟨_, j⟩ := ih (Nat.succ.inj eq)
+        exact congrArg (fun i : Σ t, Var Γ t => (⟨i.1, .there i.2⟩ : Σ t, Var (s :: Γ) t)) tail
 
 end Var
 
@@ -57,6 +89,31 @@ variable {S : Type u} {Γ Δ : List S} {s : S}
 def lift (ρ : Renaming Γ Δ) : Renaming (s :: Γ) (s :: Δ)
   | _, .here => .here
   | _, .there var => .there (ρ var)
+
+/-- Map a new head position to a selected variable while applying the older variable map. -/
+def cons (head : Var Δ s) (tail : Renaming Γ Δ) : Renaming (s :: Γ) Δ
+  | _, .here => head
+  | _, .there i => tail i
+
+/-- Selecting the head of a cons renaming reads its distinguished variable. -/
+@[simp] theorem cons_here (head : Var Δ s) (tail : Renaming Γ Δ) :
+    cons head tail .here = head :=
+  rfl
+
+/-- Selecting an older coordinate of a cons renaming applies the older map. -/
+@[simp] theorem cons_there (head : Var Δ s) (tail : Renaming Γ Δ) {t : S} (i : Var Γ t) :
+    cons head tail (.there i) = tail i :=
+  rfl
+
+/-- Add an older variable after the selected prefix. -/
+def insertAfter : (Λ : List S) → Renaming (Λ ++ Γ) (Λ ++ s :: Γ)
+  | [] => fun i => .there i
+  | _ :: Λ => lift (insertAfter Λ)
+
+/-- Move the newest variable past a block while keeping all other positions. -/
+def moveHead (Λ : List S) : Renaming (s :: (Λ ++ Γ)) (Λ ++ s :: Γ)
+  | _, .here => (Var.here : Var (s :: Γ) s).shift Λ
+  | _, .there i => insertAfter Λ i
 
 end Renaming
 

@@ -44,6 +44,24 @@ def kernelAxioms (env : Environment) (proofImports : Option Environment) (names 
   let (_, resolved) := ((imported.forM CollectAxioms.collect).run proofImports).run {}
   return retained ++ resolved.axioms
 
+/-- Reject each root whose transitive kernel dependencies include a nonstandard axiom. -/
+private def checkStandardAxioms (origin : Syntax) (env : Environment) (declarations : Array Name) :
+    CommandElabM Unit := do
+  let proofImports ← importProofEnvironment env
+  for name in declarations do
+    let unexpected := (kernelAxioms env proofImports #[name]).filter (!isStandardAxiom ·)
+    unless unexpected.isEmpty do
+      let unexpectedNames := unexpected.toList.map privateToUserName
+      throwErrorAt origin
+        "Declaration '{privateToUserName name}' depends on nonstandard kernel assumptions: {unexpectedNames}"
+
+/-- Audit an explicit list of theorem or definition roots, including imported declarations. -/
+elab (name := assertStandardAxiomsOf) "#shigure_assert_standard_axioms_of " "[" roots:ident,+ "]" :
+    command => do
+  let env ← getEnv
+  let references ← roots.getElems.mapM fun root => liftTermElabM <| realizeGlobalConstNoOverloadWithInfo root
+  checkStandardAxioms (mkNullNode roots.getElems) env references
+
 /-- Reject an empty audit or a declaration depending on a nonstandard kernel assumption. -/
 elab (name := assertStandardAxiomsOnly) "#shigure_assert_standard_axioms_only " target:ident :
     command => do
@@ -55,12 +73,6 @@ elab (name := assertStandardAxiomsOnly) "#shigure_assert_standard_axioms_only " 
     if namespaceName != userName && namespaceName.isPrefixOf userName then names.push name else names
   if declarations.isEmpty then
     throwErrorAt target "No declarations in namespace '{namespaceName}' in the current module"
-  let proofImports ← importProofEnvironment env
-  for name in declarations do
-    let unexpected := (kernelAxioms env proofImports #[name]).filter (!isStandardAxiom ·)
-    unless unexpected.isEmpty do
-      let unexpectedNames := unexpected.toList.map privateToUserName
-      throwErrorAt target
-        "Declaration '{privateToUserName name}' depends on nonstandard kernel assumptions: {unexpectedNames}"
+  checkStandardAxioms target env declarations
 
 end SHIGURE

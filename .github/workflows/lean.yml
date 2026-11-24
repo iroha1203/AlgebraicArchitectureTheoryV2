@@ -246,7 +246,10 @@ jobs:
       - name: Check SHIGURE syntax and declaration dependencies
         if: steps.shigure-changes.outputs.run == 'true'
         run: |
-          lake env lean --run .github/lean_quality/check_shigure_declarations.lean
+          set -o pipefail
+          # Each frontend releases its elaboration environments before the next file.
+          git ls-files -z -- ':(glob)Formal/SHIGURE/**/*.lean' Formal/SHIGURE.lean |
+            lake env xargs -0 -r -n 1 -t lean --run .github/lean_quality/check_shigure_declarations.lean
           bash .github/lean_quality/test_shigure_declarations.sh
 
       - name: Audit SHIGURE kernel dependencies

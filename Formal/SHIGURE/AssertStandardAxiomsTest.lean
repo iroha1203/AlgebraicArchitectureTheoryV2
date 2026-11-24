@@ -24,6 +24,11 @@ theorem quot_eq_of_rel {α : Type} {r : α → α → Prop} {x y : α} (h : r x 
 end SHIGURE.KernelAuditTest.Allowed.Nested
 
 #shigure_assert_standard_axioms_only SHIGURE.KernelAuditTest.Allowed
+#shigure_assert_standard_axioms_of [
+  SHIGURE.KernelAuditTest.Allowed.Nested.prop_eq_of_iff,
+  SHIGURE.KernelAuditTest.Allowed.Nested.takeChoice,
+  SHIGURE.KernelAuditTest.Allowed.Nested.quot_eq_of_rel
+]
 
 /-- The deliberately nonstandard assumption used by the rejection fixtures. -/
 private axiom SHIGURE.KernelAuditTest.nonstandard : False
@@ -40,6 +45,12 @@ error: Declaration 'SHIGURE.KernelAuditTest.Rejected.derived' depends on nonstan
 -/
 #guard_msgs in
 #shigure_assert_standard_axioms_only SHIGURE.KernelAuditTest.Rejected
+
+/--
+error: Declaration 'SHIGURE.KernelAuditTest.Rejected.derived' depends on nonstandard kernel assumptions: [SHIGURE.KernelAuditTest.nonstandard]
+-/
+#guard_msgs in
+#shigure_assert_standard_axioms_of [SHIGURE.KernelAuditTest.Rejected.derived]
 
 /-- A declaration whose name coincides with the requested empty namespace. -/
 theorem SHIGURE.KernelAuditTest.Empty : True := True.intro

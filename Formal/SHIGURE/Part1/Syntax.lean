@@ -68,6 +68,27 @@ def rename (ρ : Renaming Γ Δ) : Atomic sig Γ → Atomic sig Δ
   | .domain p vars => .domain p (fun v => ρ (vars v))
   | .graph op vars y => .graph op (fun v => ρ (vars v)) (ρ y)
 
+/-- Renaming equality selects both of its named positions. -/
+@[simp] theorem rename_eq {s : sig.SortType} (x y : Var Γ s) (ρ : Renaming Γ Δ) :
+    (Atomic.eq (sig := sig) x y).rename ρ = .eq (ρ x) (ρ y) :=
+  rfl
+
+/-- Rename a relation atom by mapping its selected arguments. -/
+@[simp] theorem rename_rel (r : sig.Rel) (vars : Renaming (sig.relInputs r) Γ)
+    (ρ : Renaming Γ Δ) : (Atomic.rel r vars).rename ρ = .rel r (fun i => ρ (vars i)) :=
+  rfl
+
+/-- Rename a domain atom by mapping its selected arguments. -/
+@[simp] theorem rename_domain (p : sig.Partial) (vars : Renaming (sig.partialArity p).inputs Γ)
+    (ρ : Renaming Γ Δ) : (Atomic.domain p vars).rename ρ = .domain p (fun i => ρ (vars i)) :=
+  rfl
+
+/-- Rename a graph atom by mapping its selected arguments and output. -/
+@[simp] theorem rename_graph (op : Operation sig) (vars : Renaming op.arity.inputs Γ)
+    (y : Var Γ op.arity.output) (ρ : Renaming Γ Δ) :
+    (Atomic.graph op vars y).rename ρ = .graph op (fun v => ρ (vars v)) (ρ y) :=
+  rfl
+
 /-- Interpret an atom in a structure at the given assignment. -/
 def Holds (a : Atomic sig Γ) (A : Structure sig) (e : Assignment A.carrier Γ) : Prop :=
   match a with
@@ -114,6 +135,26 @@ def rename : {Γ Δ : List sig.SortType} → Renaming Γ Δ → Formula sig Γ �
   | _, _, ρ, .conj p q => .conj (rename ρ p) (rename ρ q)
   | _, _, ρ, .disj p q => .disj (rename ρ p) (rename ρ q)
   | _, _, ρ, .ex p => .ex (rename (Renaming.lift ρ) p)
+
+/-- Renaming an atomic formula acts on the underlying atom. -/
+@[simp] theorem rename_atom (a : Atomic sig Γ) (ρ : Renaming Γ Δ) :
+    (Formula.atom a).rename ρ = .atom (a.rename ρ) :=
+  rfl
+
+/-- Renaming a conjunction acts on each conjunct. -/
+@[simp] theorem rename_conj (p q : Formula sig Γ) (ρ : Renaming Γ Δ) :
+    (p.conj q).rename ρ = (p.rename ρ).conj (q.rename ρ) :=
+  rfl
+
+/-- Renaming a disjunction acts on each disjunct. -/
+@[simp] theorem rename_disj (p q : Formula sig Γ) (ρ : Renaming Γ Δ) :
+    (p.disj q).rename ρ = (p.rename ρ).disj (q.rename ρ) :=
+  rfl
+
+/-- Renaming an existential formula retains its binder and lifts the free-variable map. -/
+@[simp] theorem rename_ex {s : sig.SortType} (p : Formula sig (s :: Γ)) (ρ : Renaming Γ Δ) :
+    p.ex.rename ρ = (p.rename (Renaming.lift ρ)).ex :=
+  rfl
 
 /-- Satisfaction interprets the positive connectives and uses the full carrier for a witness. -/
 def Holds : {Γ : List sig.SortType} → Formula sig Γ → (A : Structure sig) →
@@ -276,6 +317,14 @@ theorem evaluates_unique (A : Structure sig) (t : Term sig Γ s) :
     (Term.var index).Evaluates A e y ↔ e index = y :=
   Iff.rfl
 
+/-- Application evaluation consists of evaluated arguments and an edge of the operation graph. -/
+theorem evaluates_app_iff (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) (y : A.carrier op.arity.output) :
+    (Term.app op terms).Evaluates A e y ↔
+      ∃ xs : Assignment A.carrier op.arity.inputs,
+        (∀ {t} (i : Var op.arity.inputs t), (terms i).Evaluates A e (xs i)) ∧ A.Graph op xs y :=
+  Iff.rfl
+
 /-- With evaluated arguments, application evaluates precisely on the operation graph. -/
 theorem evaluates_app_at (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
     (A : Structure sig) (e : Assignment A.carrier Γ) (xs : Assignment A.carrier op.arity.inputs)
@@ -368,6 +417,17 @@ def graphAt : {Γ : List sig.SortType} → {s : sig.SortType} → {Δ : List sig
     .ex (.conj
       (graphAt init (fun index => .there (ρ index)) .here)
       (graphAt body (Renaming.lift ρ) (.there out)))
+
+/-- A variable application graph introduces one witness per argument as in (1.3). -/
+theorem graphAt_app_vars (op : Operation sig) (args : Renaming op.arity.inputs Γ)
+    (out : Var Γ op.arity.output) :
+    (Term.app op (fun i => Term.var (args i))).graphAt (fun i => i) out =
+      Formula.existsMany op.arity.inputs
+        (.conj
+          (Formula.conjoin op.arity.inputs (fun i =>
+            .atom (.eq ((args i).shift op.arity.inputs) (i.inLeft Γ))))
+          (.atom (.graph op (Var.inLeft Γ) (out.shift op.arity.inputs)))) :=
+  rfl
 
 /-- The graph formula recognizes exactly semantic evaluation at its output variable. -/
 theorem holds_graphAt (A : Structure sig) (t : Term sig Γ s) :
