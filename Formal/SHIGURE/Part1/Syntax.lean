@@ -385,6 +385,11 @@ def totalValue [IsEmpty sig.Partial] :
   | _, _, .letBind init body, A, e =>
     totalValue body A (Assignment.cons (totalValue init A e) e)
 
+/-- The total evaluator reads a variable from its assigned coordinate. -/
+theorem totalValue_var [IsEmpty sig.Partial] (index : Var Γ s)
+    (A : Structure sig) (e : Assignment A.carrier Γ) : (Term.var index).totalValue A e = e index :=
+  rfl
+
 /-- The total evaluator yields the value of the general partial evaluation relation. -/
 theorem evaluates_totalValue [IsEmpty sig.Partial] (A : Structure sig) (term : Term sig Γ s) :
     ∀ e : Assignment A.carrier Γ, term.Evaluates A e (term.totalValue A e) := by

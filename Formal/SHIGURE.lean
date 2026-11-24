@@ -1,6 +1,7 @@
 import Formal.SHIGURE.AssertStandardAxioms
 import Formal.SHIGURE.Part1.Chapter1Examples
 import Formal.SHIGURE.Part1.Chapter2Examples
+import Formal.SHIGURE.Part1.LensExamples
 import Formal.SHIGURE.Part1.ObservedModels
 import Formal.SHIGURE.Part1.OperationWordExamples
 import Formal.SHIGURE.Part1.PositiveLogic

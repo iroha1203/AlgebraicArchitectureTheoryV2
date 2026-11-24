@@ -12,23 +12,25 @@ namespace SHIGURE.Chapter1
 
 namespace Lens
 
+universe u
+
 /-- The source and view sorts are distinct in the lens theory. -/
-inductive SortName
+inductive SortName : Type u
   | source
   | view
 
 /-- The total symbols of a lens. -/
-inductive Symbol
+inductive Symbol : Type u
   | get
   | put
 
 /-- The two sorted operations in (1.7). -/
-def signature : Signature where
-  SortType := SortName
-  Total := Symbol
-  Rel := Empty
-  Partial := Empty
-  Quantity := Empty
+def signature : Signature.{u} where
+  SortType := SortName.{u}
+  Total := Symbol.{u}
+  Rel := PEmpty
+  Partial := PEmpty
+  Quantity := PEmpty
   totalArity
     | .get => ⟨[.source], .view⟩
     | .put => ⟨[.source, .view], .source⟩
@@ -37,25 +39,25 @@ def signature : Signature where
   quantityArity := fun q => nomatch q
 
 /-- The lens signature has no partial operation symbols. -/
-instance : IsEmpty signature.Partial := ⟨fun p => nomatch p⟩
+instance : IsEmpty signature.{u}.Partial := ⟨fun p => nomatch p⟩
 
 /-- Read the view of a source term. -/
-def getTerm {Γ : List SortName} (state : Term signature Γ .source) : Term signature Γ .view :=
+def getTerm {Γ : List SortName.{u}} (state : Term signature Γ .source) : Term signature Γ .view :=
   Term.app (sig := signature) (.total Symbol.get) (Term.argsCons state Term.argsNil)
 
 /-- Update the view of a source term. -/
-def putTerm {Γ : List SortName} (state : Term signature Γ .source)
+def putTerm {Γ : List SortName.{u}} (state : Term signature Γ .source)
     (view : Term signature Γ .view) : Term signature Γ .source :=
   Term.app (sig := signature) (.total Symbol.put) (Term.argsCons state (Term.argsCons view Term.argsNil))
 
 /-- Names for the three equations in (1.7). -/
-inductive LawName
+inductive LawName : Type u
   | getPut
   | putGet
   | putPut
 
 /-- Each lens equation uses exactly the context displayed in (1.7). -/
-def law : LawName → Law signature
+def law : LawName.{u} → Law signature.{u}
   | .getPut =>
     let a : Term signature [.source] .source := .var .here
     Law.equality (putTerm a (getTerm a)) a
@@ -69,14 +71,32 @@ def law : LawName → Law signature
     let w : Term signature [.source, .view, .view] .view := .var (.there (.there .here))
     Law.equality (putTerm (putTerm a v) w) (putTerm a w)
 
+/-- The first Law updates with the original view. -/
+theorem law_getPut :
+    let a : Term signature.{u} [.source] .source := .var .here
+    law .getPut = Law.equality (putTerm a (getTerm a)) a := rfl
+
+/-- The second Law reads the view supplied by the last update. -/
+theorem law_putGet :
+    let a : Term signature.{u} [.source, .view] .source := .var .here
+    let v : Term signature.{u} [.source, .view] .view := .var (.there .here)
+    law .putGet = Law.equality (getTerm (putTerm a v)) v := rfl
+
+/-- The third Law removes the first of two successive view updates. -/
+theorem law_putPut :
+    let a : Term signature.{u} [.source, .view, .view] .source := .var .here
+    let v : Term signature.{u} [.source, .view, .view] .view := .var (.there .here)
+    let w : Term signature.{u} [.source, .view, .view] .view := .var (.there (.there .here))
+    law .putPut = Law.equality (putTerm (putTerm a v) w) (putTerm a w) := rfl
+
 /-- The required equations of a total lens. -/
-def theory : Theory where
+def theory : Theory.{u} where
   signature := signature
   LawName := LawName
   law := law
 
 /-- The product lens, with an arbitrary complement and projection onto the view. -/
-def product (V C : Type) : Structure signature where
+def product (V C : Type u) : Structure signature.{u} where
   carrier
     | .source => V × C
     | .view => V
@@ -89,7 +109,7 @@ def product (V C : Type) : Structure signature where
   quantity := fun q => nomatch q
 
 /-- In the product lens, get evaluates to the first coordinate. -/
-theorem evaluates_get {V C : Type} {Γ : List SortName}
+theorem evaluates_get {V C : Type u} {Γ : List SortName.{u}}
     {state : Term signature Γ .source} {e : Assignment (product V C).carrier Γ}
     {a : V × C} (h : state.Evaluates (product V C) e a) :
     (getTerm state).Evaluates (product V C) e a.1 := by
@@ -104,7 +124,7 @@ theorem evaluates_get {V C : Type} {Γ : List SortName}
   · exact (Structure.graph_total_iff (product V C) Symbol.get xs _).2 rfl
 
 /-- In the product lens, put changes only the view coordinate. -/
-theorem evaluates_put {V C : Type} {Γ : List SortName}
+theorem evaluates_put {V C : Type u} {Γ : List SortName.{u}}
     {state : Term signature Γ .source} {view : Term signature Γ .view}
     {e : Assignment (product V C).carrier Γ} {a : V × C} {v : V}
     (ha : state.Evaluates (product V C) e a) (hv : view.Evaluates (product V C) e v) :
@@ -124,7 +144,7 @@ theorem evaluates_put {V C : Type} {Γ : List SortName}
   · exact (Structure.graph_total_iff (product V C) Symbol.put xs _).2 rfl
 
 /-- The product structure satisfies all three laws in (1.7), including empty carriers. -/
-theorem product_holds (V C : Type) : theory.Holds (product V C) := by
+theorem product_holds (V C : Type u) : theory.Holds (product V C) := by
   intro name
   cases name with
   | getPut =>
@@ -154,7 +174,7 @@ theorem product_holds (V C : Type) : theory.Holds (product V C) := by
     · exact evaluates_put (a := e Var.here) (v := e (Var.there (Var.there Var.here))) ha hw
 
 /-- On the Boolean product, change put to leave the original state untouched. -/
-def unchangedPut : Structure signature :=
+def unchangedPut : Structure signature.{0} :=
   { product Bool Unit with
     total
       | .get => (product Bool Unit).total Symbol.get
