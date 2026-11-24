@@ -303,6 +303,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
                 cost_ranked_sets: vec![],
                 law_readout_comparison: law_readout_cmp,
             }),
+            lift: None,
+            artin: None,
+            diagnostics: None,
+            atlas: None,
         };
     }
 
@@ -347,6 +351,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
                 cost_ranked_sets: ranked,
                 law_readout_comparison: law_readout_cmp,
             }),
+            lift: None,
+            artin: None,
+            diagnostics: None,
+            atlas: None,
         };
     }
 
@@ -444,6 +452,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
             cost_ranked_sets,
             law_readout_comparison: law_readout_cmp,
         }),
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -584,5 +596,9 @@ fn undetermined_obs(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }

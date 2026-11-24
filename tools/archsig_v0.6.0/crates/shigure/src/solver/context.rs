@@ -51,6 +51,10 @@ impl SolveCtx {
             robustness: None,
             chevalley: None,
             observations: None,
+            lift: None,
+            artin: None,
+            diagnostics: None,
+            atlas: None,
         }
     }
 
@@ -75,6 +79,10 @@ impl SolveCtx {
             robustness: None,
             chevalley: None,
             observations: None,
+            lift: None,
+            artin: None,
+            diagnostics: None,
+            atlas: None,
         }
     }
 
@@ -99,6 +107,10 @@ impl SolveCtx {
             robustness: None,
             chevalley: None,
             observations: None,
+            lift: None,
+            artin: None,
+            diagnostics: None,
+            atlas: None,
         }
     }
 }

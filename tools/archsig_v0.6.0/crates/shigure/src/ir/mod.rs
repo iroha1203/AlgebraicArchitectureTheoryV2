@@ -14,9 +14,13 @@
 //! - `result` / `result_ext` / `result_phase3`: 適用条件検査・沈黙理由・空性 witness・復元と再評価検算・出力 JSON
 //! - `validate`: 型・参照・係数域・意味 Law 保護・未観測検出の検証済み構築経路
 
+pub mod artin;
+pub mod atlas;
 pub mod change;
 pub mod diagram;
+pub mod diagnostics;
 pub mod family;
+pub mod lift;
 pub mod morphism;
 pub mod observation;
 pub mod path;
@@ -25,6 +29,8 @@ pub mod provenance;
 pub mod result;
 pub mod result_ext;
 pub mod result_phase3;
+pub mod result_phase4;
+pub mod result_phase4_diag_atlas;
 pub mod robustness;
 pub mod term;
 pub mod transfer;
@@ -39,15 +45,37 @@ mod tests_phase2;
 mod tests_phase2_extra;
 #[cfg(test)]
 mod tests_phase3;
+#[cfg(test)]
+mod tests_phase4;
 
+pub use artin::{
+    ArtinTaskSpec, AuxiliaryDefSpec, BaseChangeSpec, CheckedArtinTask, CompositeStageSpec,
+    validate_artin_task,
+};
+pub use atlas::{
+    AtlasEvalConditionSpec, AtlasRefinementSpec, AtlasTaskSpec, CheckedAtlasTask,
+    ExtendedLanguageCheckSpec, ForgetfulReadingSpec, GraphEdgeSpec, validate_atlas_task,
+};
 pub use change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,
 };
 pub use diagram::{CheckedDiagramTask, DiagramEdge, DiagramRelation, DiagramSpec, DiagramVertex};
+pub use diagnostics::{
+    ChartSupportSpec, CheckedDiagnosticsTask, CoeffChangeComparisonSpec, CollisionComparisonSpec,
+    DiagnosticsReadoutSpec, DiagnosticsTaskSpec, DimensionRealizationSpec, ExplicitZComplexSpec,
+    NamedBasePointSpec, NamedRPointSpec, NerveEdgeSpec, NerveFaceSpec, PolyLawReadoutSpec,
+    RPointProbeSpec, StaticLawReadoutSpec, SupportedNerveSpec, validate_diagnostics_task,
+    validate_supported_nerve,
+};
 pub use family::{
     CandidateFamilySpec, CandidateMember, CandidateSpace, CheckedFamilySpec, FamilySpec,
     GoodnessKind, GoodnessSpec, PreservationGoodnessSource, RawSequenceCheck,
     ReadingComparisonSpec, RealizationFamilySpec, RealizationMember, RealizationSpace,
+};
+pub use lift::{
+    AffineAllowedSpec, CheckedLiftTask, DeclarationContextSpec, DeclarationCoverSpec,
+    FiniteEtaleDescentSpec, LiftTaskSpec, RawReadComparisonSpec, RedundantLawComparisonSpec,
+    RelativeReadingSpec, RingParamSpec, SquareZeroSpec, TwoContextCechSpec, validate_lift_task,
 };
 pub use morphism::{
     MorphismDirection, StateMorphism, TimeStepMorphism, compose_state_order, compose_time_order,
@@ -84,6 +112,16 @@ pub use result_phase3::{
     RationalFiberProbeResult, RawCandidateEvaluationSummary, ReadingComparisonResult,
     RealizationWitness, RemovalCounterexample, RestoredCompletionWitness, RobustnessOutcomeDetail,
     UniversalRingStabilityResult,
+};
+pub use result_phase4::{
+    AffineRepairResult, ArtinCompositionResult, ArtinOutcomeDetail, AtlasOutcomeDetail,
+    AtlasRefinementResult, CoeffChangeResult, CollisionMayerVietorisResult, ConditionCResult,
+    ConstrainedRepairSummary, DeclarationCoverResult, DiagnosticsOutcomeDetail,
+    DimensionProbePointResult, DimensionRealizationResult, ExplicitComplexChangeResult,
+    ExtendedLanguageResult, FiniteEtaleDescentResult, ForgetfulReadingResult,
+    LawValueBlockSummary, LiftOutcomeDetail, NilpotentBaseChangeResult, PartitionStratumSummary,
+    RPointContrastResult, RawCechComparisonResult, RedundantComparisonResult, RelativeConeResult,
+    UniversalObstructionSummary, UpperSemicontinuityRefutation,
 };
 pub use robustness::{
     CandidateSelector, CheckedChevalleyTask, CheckedRobustnessTask, ChevalleyTaskSpec,

@@ -304,6 +304,10 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
             universal_ring_contrast: universal_contrast,
         }),
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -330,6 +334,10 @@ fn undetermined_chevalley(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 

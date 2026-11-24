@@ -458,6 +458,10 @@ pub fn solve_diagram_task(task: &CheckedDiagramTask) -> ShigureOutcome {
                 robustness: None,
                 chevalley: None,
                 observations: None,
+                lift: None,
+                artin: None,
+                diagnostics: None,
+                atlas: None,
             }
         }
     }
@@ -496,6 +500,10 @@ fn undetermined_diagram(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -532,6 +540,10 @@ fn refuted_diagram(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 

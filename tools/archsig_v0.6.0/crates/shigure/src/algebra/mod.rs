@@ -9,20 +9,36 @@
 //!   および係数域・点集合域に応じた沈黙判定（G-141 D4–D6）
 //! - `interaction`: 座標面支持による相互作用参加変数数 r と極小不成立部分族（G-141 F10–F12）
 
+pub mod artin;
+pub mod artin_quotient;
+pub mod cochain;
 pub mod constructible;
 pub mod constructible_image;
 pub mod groebner;
 pub mod interaction;
 pub mod linear;
 pub mod poly;
+pub mod poly_expr;
 pub mod quotient;
 pub mod scalar;
+pub mod syzygy;
 
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
 mod tests_constructible;
+#[cfg(test)]
+mod tests_phase4;
 
+pub use artin::{
+    AffineSolutionField, DEFAULT_MAX_ARTIN_DIM, FiniteAlgebra, LocalArtinQuotient, RrefResult,
+    SquareZeroExtension, enumerate_monomials_up_to, rref_field, solve_affine_field,
+};
+pub use cochain::{
+    CochainComplex, CochainMap, CocycleCheckField, CocycleCheckZ, CohomologyGroup, FieldCohomology,
+    InducedCohomologyMapField, InducedDegreeMap, IntegerCohomology, SmithFormZ, mat_mul, mat_vec,
+    smith_normal_form_z,
+};
 pub use constructible::{ConstructibleSet, DEFAULT_MAX_CONSTRUCTIBLE_STRATA, LocallyClosedStratum};
 pub use constructible_image::{
     DEFAULT_MAX_IMAGE_BRANCHES, DEFAULT_MAX_IMAGE_Y_PAIRS, project_constructible_set,
@@ -47,6 +63,10 @@ pub use quotient::{
     quotient_membership_locus,
 };
 pub use scalar::{FpElem, Rat, RingCoeff};
+pub use syzygy::{
+    DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, SyzygyModule, compute_syzygies_field, compute_syzygies_z,
+    jacobian_polys,
+};
 
 /// 単項式順序の種別。
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]

@@ -259,6 +259,10 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
         }),
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -331,6 +335,10 @@ fn undetermined_robustness(
         robustness: None,
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 
@@ -592,6 +600,10 @@ fn finish_empty_fiber_outcome(
         }),
         chevalley: None,
         observations: None,
+        lift: None,
+        artin: None,
+        diagnostics: None,
+        atlas: None,
     }
 }
 

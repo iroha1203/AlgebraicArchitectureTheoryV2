@@ -20,6 +20,22 @@ pub trait RingCoeff: Clone + Eq + fmt::Debug + fmt::Display {
     fn zero_like(&self) -> Self;
     /// 同じ環に属する単位元 `1` を返す。
     fn one_like(&self) -> Self;
+    /// 同じ環に属する非負整数 `n * 1` を返す（標数 `p` では自動的に `n mod p`）。
+    fn u32_like(&self, n: u32) -> Self {
+        let mut acc = self.zero_like();
+        let mut base = self.one_like();
+        let mut k = n;
+        while k > 0 {
+            if k & 1 == 1 {
+                acc = acc.add_ref(&base);
+            }
+            k >>= 1;
+            if k > 0 {
+                base = base.add_ref(&base);
+            }
+        }
+        acc
+    }
     /// 2 つの係数が同じ係数環（特に `FpElem` の同一素数法）に属するか判定する。
     fn same_ring(&self, _other: &Self) -> bool {
         true
