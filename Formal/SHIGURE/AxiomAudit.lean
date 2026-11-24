@@ -3,6 +3,7 @@ import Formal.SHIGURE.Part1.Chapter2Examples
 import Formal.SHIGURE.Part1.ObservedModels
 import Formal.SHIGURE.Part1.PositiveLogic
 import Formal.SHIGURE.Part1.PreservationExamples
+import Formal.SHIGURE.Part1.PullbackExamples
 import Formal.SHIGURE.Part1.ReadingExamples
 
 /-! # SHIGURE kernel audit entry point -/
@@ -445,6 +446,116 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   ObservedModel.embeddingFull,
   ObservedModel.embeddingFaithful,
   Chapter2.IdempotentSwap.identityModel
+]
+
+-- Explicit roots for Theorem 2.4, Corollary 2.4a, and Construction 2.5.
+#shigure_assert_standard_axioms_of [
+  -- Signature
+  Structure.partialValue_heq,
+  -- Reading
+  Interpretation.evaluates_definedValue,
+  Interpretation.pullback_carrier,
+  Interpretation.pullback_relation_iff,
+  Interpretation.pullback_partialDomain_iff,
+  Interpretation.pullback_formula_iff,
+  Interpretation.pullback_isModel,
+  -- Pullback
+  Assignment.mapSorts_map,
+  Interpretation.pullback_evaluates_iff,
+  Interpretation.pullback_eval_eq,
+  Interpretation.pullback_mem_domain_iff,
+  Interpretation.pullbackModel_obj,
+  Interpretation.pullback_obj,
+  Interpretation.pullback_map_apply,
+  -- PullbackComparison
+  Assignment.mapSorts_comp_pull,
+  Assignment.mapSorts_id_pull,
+  Formula.holds_castContext,
+  Structure.eq_of_formula_holds_iff,
+  Model.eqToHom_apply,
+  Interpretation.pullback_identity,
+  Interpretation.pullback_comp,
+  Interpretation.pullback_eq_of_equivalent,
+  -- ModelSemantics
+  Theory.modelPullback_ofInterpretation,
+  Theory.modelPullback_id,
+  Theory.modelPullback_comp,
+  Theory.modelPullback_inv_hom,
+  Theory.modelPullback_hom_inv,
+  Theory.modelSemantics_obj,
+  Theory.modelSemantics_map_toFunctor,
+  -- SyntacticComparison
+  Substitution.singleton_evaluatesAt,
+  Term.primitive_evaluates_iff,
+  Term.evaluates_applyStrict_of_evaluatesAt,
+  Term.evaluates_applyUnary_iff,
+  Formula.values_eq_of_holds_termEq,
+  Interpretation.comparisonArguments_apply,
+  Interpretation.comparisonEquation_eq_termEq,
+  -- InverseInterpretations
+  Interpretation.SyntacticComparison.alpha_evaluates,
+  Interpretation.SyntacticComparison.beta_evaluates,
+  Interpretation.SyntacticComparison.beta_alpha_value,
+  Interpretation.SyntacticComparison.alpha_beta_value,
+  Interpretation.SyntacticComparison.alpha_bijective,
+  Interpretation.SyntacticComparison.comparisonArguments_evaluatesAt,
+  Interpretation.SyntacticComparison.alpha_relation_iff,
+  Interpretation.SyntacticComparison.alpha_partialDomain_iff,
+  Interpretation.SyntacticComparison.modelIso_hom_apply,
+  Interpretation.SyntacticComparison.modelIso_inv_apply,
+  Interpretation.modelEquivalence_functor,
+  Interpretation.modelEquivalence_inverse,
+  -- TotalModels
+  TotalModel.theory_homMk,
+  TotalModel.state_homMk,
+  TotalModel.theory_id,
+  TotalModel.state_id,
+  TotalModel.theory_comp,
+  TotalModel.state_comp,
+  TotalModel.projection_obj,
+  TotalModel.projection_map,
+  TotalModel.chosenFiber_eq,
+  TotalModel.chosenFiber_category,
+  -- PullbackExamples
+  Chapter2.PullbackWitnesses.comparison_on_points,
+  Chapter2.PullbackWitnesses.composed_base,
+  Chapter2.PullbackWitnesses.composed_state,
+  Chapter2.PullbackWitnesses.constant_term_cannot_compare,
+  Chapter2.InverseTermWitnesses.forward_moves_point,
+  Chapter2.InverseTermWitnesses.inverse_recovers_point,
+  -- Main functors, typed comparisons, category and fiber constructions
+  Interpretation.definedValue,
+  Interpretation.pullbackModel,
+  Interpretation.pullbackStructureMap,
+  Interpretation.pullback,
+  Theory.modelPullback,
+  Theory.modelSemantics,
+  Substitution.singleton,
+  Term.primitive,
+  Term.applyUnary,
+  Interpretation.comparisonArguments,
+  Interpretation.comparisonEquation,
+  Interpretation.SyntacticComparison,
+  Interpretation.SyntacticComparison.alphaValue,
+  Interpretation.SyntacticComparison.betaValue,
+  Interpretation.SyntacticComparison.alphaMap,
+  Interpretation.SyntacticComparison.structureIso,
+  Interpretation.SyntacticComparison.modelIso,
+  Interpretation.SyntacticComparison.naturalIso,
+  Interpretation.sourceRoundTrip,
+  Interpretation.targetRoundTrip,
+  Interpretation.modelEquivalence,
+  TotalModel,
+  TotalModel.ofModel,
+  TotalModel.homMk,
+  TotalModel.theory,
+  TotalModel.state,
+  TotalModel.projection,
+  TotalModel.hasFibers,
+  TotalModel.fiberEquivalence,
+  Model.core,
+  Model.coreInclusion,
+  Chapter2.PullbackWitnesses.equivalentModels
 ]
 
 end SHIGURE.AxiomAudit

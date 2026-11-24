@@ -344,6 +344,14 @@ theorem ext {sig : Signature.{u}} {A B : Structure sig} (carrier : A.carrier = B
   cases quantity
   rfl
 
+/-- Partial operations on equal domains agree if they return equal values on each input. -/
+theorem partialValue_heq {ι : Type u} {Inputs Output : ι → Type u}
+    {D E : (p : ι) → Set (Inputs p)} (domains : D = E)
+    (f : (p : ι) → D p → Output p) (g : (p : ι) → E p → Output p)
+    (values : ∀ p (xs : D p) (hx : xs.val ∈ E p), f p xs = g p ⟨xs.val, hx⟩) : HEq f g := by
+  cases domains
+  exact heq_of_eq (funext fun p => funext fun xs => values p xs xs.property)
+
 variable {sig : Signature.{u}} (A : Structure sig)
 
 /-- Evaluate an operation on a tuple, preserving its possibly partial domain. -/

@@ -62,13 +62,13 @@ namespace Interpretation
 variable {S T : Theory.{u}}
 
 /-- Select the actual value of a term at an input known to satisfy its definedness formula. -/
-private noncomputable def definedValue {sig : Signature.{u}} {Γ : List sig.SortType}
+noncomputable def definedValue {sig : Signature.{u}} {Γ : List sig.SortType}
     {s : sig.SortType} (B : Structure sig) (t : Term sig Γ s) (xs : Assignment B.carrier Γ)
     (defined : t.defined.Holds B xs) : B.carrier s :=
   (t.eval B xs).get ((t.mem_domain_iff B xs).1 ((t.holds_defined B xs).1 defined))
 
 /-- On the definedness locus, the selected value is an evaluation of the term. -/
-private theorem evaluates_definedValue {sig : Signature.{u}} {Γ : List sig.SortType}
+theorem evaluates_definedValue {sig : Signature.{u}} {Γ : List sig.SortType}
     {s : sig.SortType} (B : Structure sig) (t : Term sig Γ s) (xs : Assignment B.carrier Γ)
     (defined : t.defined.Holds B xs) : t.Evaluates B xs (definedValue B t xs defined) :=
   (t.mem_eval_iff B xs _).1 ⟨_, rfl⟩
@@ -91,6 +91,28 @@ noncomputable def pullbackStructure (u : Interpretation S T) (B : Structure T.si
     let e := xs.mapSorts u.onSort
     definedValue B (u.translation.operation (.quantity q)) e
       ((u.quantity q).sound B model e True.intro)
+
+/-- The carrier of the interpreted sort is the corresponding target carrier, as in (2.4). -/
+theorem pullback_carrier (u : Interpretation S T) (B : Structure T.signature)
+    (model : T.Holds B) (s : S.signature.SortType) :
+    (u.pullbackStructure B model).carrier s = B.carrier (u.onSort s) :=
+  rfl
+
+/-- The pullback relation is interpreted by its assigned positive formula. -/
+theorem pullback_relation_iff (u : Interpretation S T) (B : Structure T.signature)
+    (model : T.Holds B) (r : S.signature.Rel)
+    (xs : Assignment (u.pullbackStructure B model).carrier (S.signature.relInputs r)) :
+    xs ∈ (u.pullbackStructure B model).relation r ↔
+      (u.translation.relation r).Holds B (xs.mapSorts u.onSort) :=
+  Iff.rfl
+
+/-- The pullback domain is the locus of its translated domain formula. -/
+theorem pullback_partialDomain_iff (u : Interpretation S T) (B : Structure T.signature)
+    (model : T.Holds B) (p : S.signature.Partial)
+    (xs : Assignment (u.pullbackStructure B model).carrier (S.signature.partialArity p).inputs) :
+    xs ∈ (u.pullbackStructure B model).partialDomain p ↔
+      (u.translation.partialDomain p).Holds B (xs.mapSorts u.onSort) :=
+  Iff.rfl
 
 /-- A primitive graph in the pullback evaluates its replacement term. -/
 theorem pullback_graph_iff (u : Interpretation S T) (B : Structure T.signature)
