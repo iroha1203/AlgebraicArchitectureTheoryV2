@@ -20,13 +20,20 @@ private abbrev writtenLaw (eqn : OrderedEquation P.signature) (p : Formula P.sig
     Law P.signature :=
   ⟨eqn.context, eqn.input, p⟩
 
+/-- The supported input of a substituted writing is its full guarded input. -/
+private theorem guardedInput_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
+    {Γ : List P.signature.SortType} (θ : Substitution P.signature eqn.context Γ)
+    (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
+    Declaration.formulaSupport (θ.defined.conj (eqn.input.substitute θ)) ⊆ U.declarations := by
+  simpa only [OrderedEquation.substitute_eq] using lawInputSupport h
+
 /-- The antecedent of the written substitution includes its strict definedness guard. -/
 private theorem guard_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
     {Γ : List P.signature.SortType} (θ : Substitution P.signature eqn.context Γ)
     (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
     Declaration.formulaSupport θ.defined ⊆ U.declarations :=
   (Declaration.binarySupport_left (Declaration.formula_conj θ.defined (eqn.input.substitute θ))).trans
-    (lawInputSupport h)
+    (guardedInput_kept (eqn := eqn) (p := p) θ h)
 
 /-- The guarded antecedent still retains the substituted original formula. -/
 private theorem substitutedInput_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
@@ -34,7 +41,7 @@ private theorem substitutedInput_kept {eqn : OrderedEquation P.signature} {p : F
     (h : Declaration.lawBody (writtenLaw (eqn.substitute θ) (p.substitute θ)) ⊆ U.declarations) :
     Declaration.formulaSupport (eqn.input.substitute θ) ⊆ U.declarations :=
   (Declaration.binarySupport_right (Declaration.formula_conj θ.defined (eqn.input.substitute θ))).trans
-    (lawInputSupport h)
+    (guardedInput_kept (eqn := eqn) (p := p) θ h)
 
 /-- Recover the support of the prior writing from a retained guarded substitution. -/
 private theorem priorLaw_kept {eqn : OrderedEquation P.signature} {p : Formula P.signature eqn.context}
@@ -73,6 +80,7 @@ private theorem expansion_terms_kept {eqn : OrderedEquation P.signature} {p : Fo
     obtain ⟨hs, left, right⟩ := ih (priorLaw_kept θ h)
     have terms := fun {s} (i : Var eqn.context s) =>
       (substitution_term_kept θ (guard_kept (eqn := eqn) (p := p) θ h) i).2
+    simp only [OrderedEquation.substitute_eq]
     exact ⟨hs, substitute_term_kept eqn.left θ left terms, substitute_term_kept eqn.right θ right terms⟩
 
 /-- Retype both terms and the input formula in the selected signature. -/
@@ -103,12 +111,15 @@ private theorem selectEquation_substitute {eqn : OrderedEquation P.signature} {p
   have inputSame := congrArg₂ (Formula.conj (sig := signature U))
     (selectSubstitution_defined θ hOld hΓ hTerms (guard_kept (eqn := eqn) (p := p) θ h))
     (selectFormula_substitute eqn.input θ hOld hΓ hTerms (lawInputSupport prev) (substitutedInput_kept (eqn := eqn) (p := p) θ h))
-  have inputClause := selectFormula_conj θ.defined (eqn.input.substitute θ) (lawInputSupport h)
+  have inputClause := selectFormula_conj θ.defined (eqn.input.substitute θ)
+    (guardedInput_kept (eqn := eqn) (p := p) θ h)
   have leftSame := selectTerm_substitute eqn.left θ hOld hΓ hs (expansion_terms_kept prior prev).2.1 hTerms
     (expansion_terms_kept (prior.substitute θ) h).2.1
   have rightSame := selectTerm_substitute eqn.right θ hOld hΓ hs (expansion_terms_kept prior prev).2.2 hTerms
     (expansion_terms_kept (prior.substitute θ) h).2.2
   let make := OrderedEquation.mk (sig := signature U) (context Γ hΓ) ⟨eqn.result, hs⟩
+  change selectEquation (prior.substitute θ) h = (selectEquation prior prev).substitute θ'
+  rw [OrderedEquation.substitute_eq (selectEquation prior prev) θ']
   exact (congrArg (fun input => make input _ _) (inputClause.trans inputSame)).trans
     (congrArg₂ (make _) leftSame rightSame)
 
@@ -158,23 +169,17 @@ private noncomputable def selectExpansion {eqn : OrderedEquation P.signature} {p
 
 /-- Retype both members of a supported equation and keep its complete literal expansion. -/
 noncomputable def selectWritten (w : OrderedEquation.Written P.signature)
-    (h : Declaration.lawBody w.toLaw ⊆ U.declarations) : OrderedEquation.Written (signature U) where
-  equation := selectEquation w.expansion h
-  conclusion := selectFormula w.conclusion (lawConclusionSupport h)
-  expansion := selectExpansion w.expansion h
+    (h : Declaration.lawBody w.toLaw ⊆ U.declarations) : OrderedEquation.Written (signature U) := by
+  have kept : Declaration.lawBody (writtenLaw w.equation w.conclusion) ⊆ U.declarations := by
+    simpa only [OrderedEquation.Written.toLaw_eq] using h
+  exact ⟨selectEquation w.expansion kept, selectFormula w.conclusion (lawConclusionSupport kept),
+    selectExpansion w.expansion kept⟩
 
 /-- The selected ordered text is attached to the selected literal Law. -/
 theorem selectWritten_toLaw (w : OrderedEquation.Written P.signature)
     (h : Declaration.lawBody w.toLaw ⊆ U.declarations) :
     (selectWritten w h).toLaw = selectLaw w.toLaw h := by
-  rw [selectLaw_eq]
-  rfl
-
-/-- An equality of written Laws identifies their selected Laws as well. -/
-private theorem selectLaw_congr {p q : Law P.signature} (same : p = q)
-    (hp : Declaration.lawBody p ⊆ U.declarations) (hq : Declaration.lawBody q ⊆ U.declarations) :
-    selectLaw p hp = selectLaw q hq := by
-  subst q
+  simp only [OrderedEquation.Written.toLaw_eq, selectLaw_eq]
   rfl
 
 /-- A selected ordered equality is registered under the original retained Law's name. -/

@@ -117,14 +117,14 @@ private theorem selectUnary {Γ : List P.signature.SortType} {s : P.signature.So
   let args : ∀ {t}, Var [s] t → Term P.signature Γ t := x.argsCons (@Term.argsNil P.signature Γ)
   have parts {t : P.signature.SortType} (i : Var [s] t) : termReferences (args i) ⊆ U.declarations := by
     cases i with
-    | here => exact hx
+    | here => simpa only [args, Term.argsCons_here] using hx
     | there i => exact nomatch i
   refine (selectTypedTotal_term f args keep hΓ (oneSort hs) hs h parts).trans ?_
   apply congrArg (fun (terms : ∀ {t}, Var (context [s] (oneSort hs)) t →
       Term (signature U) (context Γ hΓ) t) => (selectTypedTotal f keep (oneSort hs) hs).term terms)
   funext t i
   cases i with
-  | here => rfl
+  | here => simp only [args, ambientVar_here (oneSort hs), Term.argsCons_here]
   | there i => exact nomatch i
 
 /-- Select the ordered pair of supported arguments to a retained binary ring symbol. -/
@@ -141,20 +141,25 @@ private theorem selectBinary {Γ : List P.signature.SortType} {s : P.signature.S
     x.argsCons (y.argsCons (@Term.argsNil P.signature Γ))
   have parts {t : P.signature.SortType} (i : Var [s, s] t) : termReferences (args i) ⊆ U.declarations := by
     cases i with
-    | here => exact hx
+    | here => simpa only [args, Term.argsCons_here] using hx
     | there i =>
       cases i with
-      | here => exact hy
+      | here => simpa only [args, Term.argsCons_there, Term.argsCons_here] using hy
       | there i => exact nomatch i
   refine (selectTypedTotal_term f args keep hΓ (twoSorts hs) hs h parts).trans ?_
   apply congrArg (fun (terms : ∀ {t}, Var (context [s, s] (twoSorts hs)) t →
       Term (signature U) (context Γ hΓ) t) => (selectTypedTotal f keep (twoSorts hs) hs).term terms)
   funext t i
   cases i with
-  | here => rfl
+  | here => simp only [args, ambientVar_here (twoSorts hs), Term.argsCons_here]
   | there i =>
     cases i with
-    | here => rfl
+    | here =>
+      let tail := (tailSortsSubset s [s]).trans (twoSorts hs)
+      have original : ambientVar (twoSorts hs) (.there .here) = (Var.there .here : Var [s, s] s) :=
+        (ambientVar_there (twoSorts hs) .here).trans (congrArg Var.there (ambientVar_here tail))
+      simp only [args, original, Term.argsCons_there, Term.argsCons_here]
+      exact (Term.argsCons_here (selectTerm y hΓ hs hy) Term.argsNil).symm
     | there i => exact nomatch i
 
 /-- Extract the support of one argument term from the supported typed application. -/
@@ -172,30 +177,47 @@ private theorem selectRingExpr_term {Γ : List P.signature.SortType} {s : P.sign
     (expr : RingVocabulary.Expr Γ s) (h : termReferences (expr.toTerm r) ⊆ U.declarations) :
     selectTerm (expr.toTerm r) hΓ hs h = (selectRingExpr hΓ hs expr).toTerm (selectRingVocabulary r hs keep) := by
   induction expr with
-  | var i => rfl
+  | var i => exact selectTerm_var i hΓ hs h
   | zero => exact selectNullary r.zero (keepsZero keep) hΓ hs h
   | one => exact selectNullary r.one (keepsOne keep) hΓ hs h
   | add x y hx hy =>
     let args : ∀ {t}, Var [s, s] t → Term P.signature Γ t :=
       (x.toTerm r).argsCons ((y.toTerm r).argsCons Term.argsNil)
-    let a := typedArgumentKept r.add args h .here
-    let b := typedArgumentKept r.add args h (.there .here)
+    have a : termReferences (x.toTerm r) ⊆ U.declarations := by
+      simpa only [args, Term.argsCons_here] using typedArgumentKept r.add args h .here
+    have b : termReferences (y.toTerm r) ⊆ U.declarations := by
+      simpa only [args, Term.argsCons_there, Term.argsCons_here] using
+        typedArgumentKept r.add args h (.there .here)
     refine (selectBinary r.add _ _ (keepsAdd keep) hΓ hs h a b).trans ?_
     exact congrArg₂ (fun (a b : Term (signature U) (context Γ hΓ) ⟨s, hs⟩) => (selectRingVocabulary r hs keep).add.term
       (a.argsCons (b.argsCons Term.argsNil))) (hx a) (hy b)
   | neg x hx =>
     let args : ∀ {t}, Var [s] t → Term P.signature Γ t := (x.toTerm r).argsCons Term.argsNil
-    let a := typedArgumentKept r.neg args h .here
+    have a : termReferences (x.toTerm r) ⊆ U.declarations := by
+      simpa only [args, Term.argsCons_here] using typedArgumentKept r.neg args h .here
     refine (selectUnary r.neg _ (keepsNeg keep) hΓ hs h a).trans ?_
     exact congrArg (fun (a : Term (signature U) (context Γ hΓ) ⟨s, hs⟩) => (selectRingVocabulary r hs keep).neg.term (a.argsCons Term.argsNil)) (hx a)
   | mul x y hx hy =>
     let args : ∀ {t}, Var [s, s] t → Term P.signature Γ t :=
       (x.toTerm r).argsCons ((y.toTerm r).argsCons Term.argsNil)
-    let a := typedArgumentKept r.mul args h .here
-    let b := typedArgumentKept r.mul args h (.there .here)
+    have a : termReferences (x.toTerm r) ⊆ U.declarations := by
+      simpa only [args, Term.argsCons_here] using typedArgumentKept r.mul args h .here
+    have b : termReferences (y.toTerm r) ⊆ U.declarations := by
+      simpa only [args, Term.argsCons_there, Term.argsCons_here] using
+        typedArgumentKept r.mul args h (.there .here)
     refine (selectBinary r.mul _ _ (keepsMul keep) hΓ hs h a b).trans ?_
     exact congrArg₂ (fun (a b : Term (signature U) (context Γ hΓ) ⟨s, hs⟩) => (selectRingVocabulary r hs keep).mul.term
       (a.argsCons (b.argsCons Term.argsNil))) (hx a) (hy b)
+
+/-- A ring expression equality retains the free context of its written terms. -/
+private theorem ringEqualitySorts {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (r : RingVocabulary P.signature s) (x y : RingVocabulary.Expr Γ s)
+    (h : Declaration.lawBody (RingVocabulary.Expr.equality r x y) ⊆ U.declarations) :
+    Declaration.sorts Γ ⊆ U.declarations := by
+  let law : Law P.signature := ⟨Γ, .truth, Formula.termEq (x.toTerm r) (y.toTerm r)⟩
+  have supported : Declaration.lawBody law ⊆ U.declarations := by
+    simpa only [RingVocabulary.Expr.equality_eq, Law.equality_eq, law] using h
+  exact (Declaration.sorts_subset_lawBody law).trans supported
 
 /-- Retype the ordered sides and coefficient vocabulary of the ring equality together. -/
 private theorem selectRingEquality {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -205,13 +227,21 @@ private theorem selectRingEquality {Γ : List P.signature.SortType} {s : P.signa
     (h : Declaration.lawBody (RingVocabulary.Expr.equality r x y) ⊆ U.declarations) :
     selectLaw (RingVocabulary.Expr.equality r x y) h =
       RingVocabulary.Expr.equality (selectRingVocabulary r hs keep)
-        (selectRingExpr (lawSortSupport h) hs x) (selectRingExpr (lawSortSupport h) hs y) := by
-  let hΓ := lawSortSupport h
-  let conclusion := lawConclusionSupport h
+        (selectRingExpr (ringEqualitySorts r x y h) hs x) (selectRingExpr (ringEqualitySorts r x y h) hs y) := by
+  let source : Law P.signature := ⟨Γ, .truth, Formula.termEq (x.toTerm r) (y.toTerm r)⟩
+  have written : RingVocabulary.Expr.equality r x y = source :=
+    (RingVocabulary.Expr.equality_eq r x y).trans (Law.equality_eq _ _)
+  have supported : Declaration.lawBody source ⊆ U.declarations := by
+    rw [← written]
+    exact h
+  let hΓ := ringEqualitySorts r x y h
+  let conclusion := lawConclusionSupport supported
   obtain ⟨_, hx, hy⟩ := termEq_support (x.toTerm r) (y.toTerm r) conclusion
   have same := (selectFormula_termEq _ _ hΓ hs hx hy conclusion).trans
     (congrArg₂ (Formula.termEq (sig := signature U))
       (selectRingExpr_term r hΓ hs keep x hx) (selectRingExpr_term r hΓ hs keep y hy))
+  refine (selectLaw_congr written h supported).trans ?_
+  rw [selectLaw_eq, selectFormula_truth, RingVocabulary.Expr.equality_eq, Law.equality_eq]
   exact congrArg (Law.mk (sig := signature U) (context Γ hΓ) .truth) same
 
 /-- The selected value ring preserves the exact syntax of all seven ring axioms. -/
@@ -242,6 +272,7 @@ noncomputable def selectNamedRingEquation (name : U.RetainedLaw)
   let proof := selectNamedDerivation equation.axiomNames (equation.axioms_derive i) retains
   change Derivation ((laws U).select (Subtype.val ⁻¹' equation.axiomNames)) (ring.law i).input (ring.law i).conclusion
   rw [← lawSame]
+  simp only [selectLaw_eq]
   exact proof
 
 /-- Both forms of the selected attachment carry the same ordered pair and literal expansion. -/

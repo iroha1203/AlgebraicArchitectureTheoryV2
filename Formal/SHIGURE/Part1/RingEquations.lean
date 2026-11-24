@@ -146,6 +146,11 @@ theorem evaluates_toTerm (ring : RingVocabulary sig s) (A : Structure sig)
 def equality (ring : RingVocabulary sig s) (lhs rhs : Expr Γ s) : Law sig :=
   Law.equality (lhs.toTerm ring) (rhs.toTerm ring)
 
+/-- The equality of ring expressions compares their two written terms. -/
+theorem equality_eq (ring : RingVocabulary sig s) (lhs rhs : Expr Γ s) :
+    equality ring lhs rhs = Law.equality (lhs.toTerm ring) (rhs.toTerm ring) :=
+  rfl
+
 /-- Satisfaction of the equality Law is pointwise equality of the interpreted expressions. -/
 theorem holds_equality_iff (ring : RingVocabulary sig s) (lhs rhs : Expr Γ s)
     (A : Structure sig) : (equality ring lhs rhs).Holds A ↔

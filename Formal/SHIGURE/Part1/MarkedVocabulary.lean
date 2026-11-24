@@ -118,6 +118,34 @@ def smulTerm {Γ : List (Option V.SortName)} : (s : Option V.SortName) →
   | some s, a, x => Term.app (sig := V.signature) (.total (Symbol.moduleOp s .smul))
       (a.argsCons (x.argsCons Term.argsNil))
 
+/-- The coefficient case of the written addition applies its declared primitive. -/
+theorem addTerm_none {Γ : List (Option V.SortName)}
+    (x : Term V.signature Γ none) (y : Term V.signature Γ none) :
+    V.addTerm none x y = Term.app (sig := V.signature) (.total (.coefficient .add))
+      (x.argsCons (y.argsCons Term.argsNil)) :=
+  rfl
+
+/-- The module case of the written addition applies its declared primitive. -/
+theorem addTerm_some {Γ : List (Option V.SortName)} (s : V.SortName)
+    (x : Term V.signature Γ (some s)) (y : Term V.signature Γ (some s)) :
+    V.addTerm (some s) x y = Term.app (sig := V.signature) (.total (.moduleOp s .add))
+      (x.argsCons (y.argsCons Term.argsNil)) :=
+  rfl
+
+/-- The coefficient case of the written scalar multiplication applies its declared primitive. -/
+theorem smulTerm_none {Γ : List (Option V.SortName)}
+    (a : Term V.signature Γ none) (x : Term V.signature Γ none) :
+    V.smulTerm none a x = Term.app (sig := V.signature) (.total (.coefficient .mul))
+      (a.argsCons (x.argsCons Term.argsNil)) :=
+  rfl
+
+/-- The module case of the written scalar multiplication applies its declared primitive. -/
+theorem smulTerm_some {Γ : List (Option V.SortName)} (s : V.SortName)
+    (a : Term V.signature Γ none) (x : Term V.signature Γ (some s)) :
+    V.smulTerm (some s) a x = Term.app (sig := V.signature) (.total (.moduleOp s .smul))
+      (a.argsCons (x.argsCons Term.argsNil)) :=
+  rfl
+
 /-- Replace just one typed argument in the variable tuple of a multilinear symbol. -/
 noncomputable def updatedTerms {Γ : List (Option V.SortName)} {f : V.Multilinear}
     (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :

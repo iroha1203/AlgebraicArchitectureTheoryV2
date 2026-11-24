@@ -2305,6 +2305,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectFormula_disj,
   DeclarationContext.Selected.selectFormula_ex,
   DeclarationContext.Selected.selectLaw_eq,
+  DeclarationContext.Selected.selectLaw_congr,
   -- ContextSelectedTerms
   DeclarationContext.Selected.termReferences_var,
   DeclarationContext.Selected.termReferences_app,
@@ -2320,6 +2321,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.ambientVar_here,
   DeclarationContext.Selected.ambientVar_there,
   DeclarationContext.Selected.selectRenaming_apply,
+  -- ContextStructures
+  RestrictedEvaluation.satisfies_iff,
   -- DeclarationContexts
   Declaration.sorts_eq_image,
   Declaration.sort_mem_sorts,
@@ -2376,6 +2379,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- Laws
   Law.equality_eq,
   -- MarkedVocabulary
+  Marked.Vocabulary.addTerm_none,
+  Marked.Vocabulary.addTerm_some,
+  Marked.Vocabulary.smulTerm_none,
+  Marked.Vocabulary.smulTerm_some,
   Marked.Vocabulary.LinearityLaw.symbol_add,
   Marked.Vocabulary.LinearityLaw.symbol_smul,
   -- Reading
@@ -2394,6 +2401,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RestrictedEvaluation.holds_conj_iff,
   RestrictedEvaluation.holds_disj_iff,
   RestrictedEvaluation.holds_ex_iff,
+  -- RingEquations
+  RingVocabulary.Expr.equality_eq,
   -- SelectedPresentation
   SignatureNames.formula_atom,
   SignatureNames.formula_truth,
@@ -2408,6 +2417,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Term.substitute_var,
   Term.substitute_app,
   Term.substitute_letBind,
+  OrderedEquation.substitute_eq,
+  OrderedEquation.Written.toLaw_eq,
   -- Syntax
   Formula.rename_truth,
   Formula.rename_falsehood,

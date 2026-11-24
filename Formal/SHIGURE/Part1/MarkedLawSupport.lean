@@ -129,10 +129,12 @@ theorem addTerm_refs (s : Option V.SortName) (x y : Term V.signature Δ s)
     termReferences (V.addTerm s x y) ⊆ keep := by
   cases s with
   | none =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .add)) _ op
+    rw [Vocabulary.addTerm_none]
+    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .add)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) x y hx hy i)
   | some s =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .add)) _ op
+    rw [Vocabulary.addTerm_some]
+    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .add)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) x y hx hy i)
 
 /-- The references of scalar multiplication include the correct coefficient or module symbol. -/
@@ -142,10 +144,12 @@ theorem smulTerm_refs (s : Option V.SortName) (a : Term V.signature Δ none) (x 
     termReferences (V.smulTerm s a x) ⊆ keep := by
   cases s with
   | none =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .mul)) _ op
+    rw [Vocabulary.smulTerm_none]
+    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .mul)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) a x ha hx i)
   | some s =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .smul)) _ op
+    rw [Vocabulary.smulTerm_some]
+    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .smul)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) a x ha hx i)
 
 end Arithmetic

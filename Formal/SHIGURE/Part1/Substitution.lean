@@ -407,6 +407,12 @@ abbrev substitute (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context
     left := eqn.left.substitute θ
     right := eqn.right.substitute θ }
 
+/-- An ordered substitution keeps the result sort, guards the input, and substitutes both terms. -/
+theorem substitute_eq (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ) :
+    eqn.substitute θ = ⟨Δ, eqn.result, θ.defined.conj (eqn.input.substitute θ),
+      eqn.left.substitute θ, eqn.right.substitute θ⟩ :=
+  rfl
+
 /-- The written Law retains the original expanded conclusion after Formula substitution. -/
 def substitutedLaw (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ) : Law sig :=
   eqn.toLaw.substitute θ
@@ -571,6 +577,11 @@ def writeVariables (eqn : OrderedEquation sig) (x y : Var eqn.context eqn.result
 /-- The very same Law, with its exact conclusion, can be used in the presentation. -/
 def Written.toLaw (written : Written sig) : Law sig :=
   ⟨written.equation.context, written.equation.input, written.conclusion⟩
+
+/-- The attached Law uses the equation context and input and the stored conclusion. -/
+theorem Written.toLaw_eq (written : Written sig) :
+    written.toLaw = ⟨written.equation.context, written.equation.input, written.conclusion⟩ :=
+  rfl
 
 /-- Apply another substitution to both the literal text and the ordered terms. -/
 def Written.substitute (written : Written sig) (θ : Substitution sig written.equation.context Δ) :

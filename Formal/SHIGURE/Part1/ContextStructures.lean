@@ -142,6 +142,14 @@ def satisfies (A : RestrictedEvaluation U X) (law : Law P.signature)
   ∀ e : Assignment X law.context, A.holds law.input (lawInputSupport support) e →
     A.holds law.conclusion (lawConclusionSupport support) e
 
+/-- A restricted Law compares the evaluations of its input and conclusion. -/
+theorem satisfies_iff (A : RestrictedEvaluation U X) (law : Law P.signature)
+    (support : Declaration.lawBody law ⊆ U.declarations) :
+    A.satisfies law support ↔
+      ∀ e : Assignment X law.context, A.holds law.input (lawInputSupport support) e →
+        A.holds law.conclusion (lawConclusionSupport support) e :=
+  Iff.rfl
+
 /-- An evaluation is structural exactly when its retained graph axioms hold. -/
 def Structural (A : RestrictedEvaluation U X) : Prop :=
   ∀ rule : GraphAxiom P.signature, ∀ kept : Declaration.graphRuleName rule ∈ U.declarations,

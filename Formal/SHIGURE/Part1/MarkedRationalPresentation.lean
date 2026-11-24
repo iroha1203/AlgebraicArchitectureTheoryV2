@@ -178,7 +178,7 @@ private theorem unary_refs (right : Bool) {Γ : List (Option SortName)} (name : 
   apply app_refs (P := presentation) (.total (Symbol.multilinear name)) _ kept
   intro t position
   cases position with
-  | here => exact refs
+  | here => simpa only [Term.argsCons_here] using refs
   | there empty => cases empty
 
 /-- The term obtained by updating the only argument is the ordinary unary application. -/
@@ -190,7 +190,7 @@ private theorem unary_updated {Γ : List (Option SortName)} (name : Op)
     Term.app (sig := vocabulary.signature) (.total (Symbol.multilinear name)) args)
   funext s position
   cases position with
-  | here => exact vocabulary.updatedTerms_same names (argument name) x
+  | here => simpa only [Term.argsCons_here] using vocabulary.updatedTerms_same names (argument name) x
   | there empty => cases empty
 
 /-- Each rational piece retains the syntax of its own required round-trip Law. -/

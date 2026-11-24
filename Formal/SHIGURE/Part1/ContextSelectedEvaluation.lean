@@ -50,8 +50,7 @@ theorem ambientAssignment_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.
 @[simp] theorem selectAssignment_selectVar (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
     (keep : Declaration.sorts Γ ⊆ U.declarations) (a : Assignment X Γ) {s : P.signature.SortType} (i : Var Γ s) :
     selectAssignment e keep a (selectVar keep i) = e s (varKept keep i) (a i) := by
-  change e s _ (a (ambientVar keep (selectVar keep i))) = _
-  rw [ambientVar_selectVar keep i]
+  rw [selectAssignment_apply, ambientVar_selectVar keep i]
 
 /-- Reading back a selected assignment is the original assignment. -/
 @[simp] theorem ambientAssignment_selectAssignment (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
@@ -59,8 +58,7 @@ theorem ambientAssignment_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.
     ambientAssignment e keep (selectAssignment e keep a) = a := by
   apply Assignment.ext
   intro s i
-  change (e s _).symm (selectAssignment e keep a (selectVar keep i)) = a i
-  rw [selectAssignment_selectVar e keep a i, Equiv.symm_apply_apply]
+  rw [ambientAssignment_apply, selectAssignment_selectVar e keep a i, Equiv.symm_apply_apply]
 
 /-- Selecting the inverse assignment recovers the selected assignment. -/
 @[simp] theorem selectAssignment_ambientAssignment (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
@@ -68,8 +66,7 @@ theorem ambientAssignment_apply (e : CarrierEquiv U X Y) {Γ : List P.signature.
     selectAssignment e keep (ambientAssignment e keep a) = a := by
   apply Assignment.ext
   intro s i
-  change e s.val s.property ((e s.val _).symm (a (selectVar keep (ambientVar keep i)))) = a i
-  rw [selectVar_ambientVar keep i, Equiv.apply_symm_apply]
+  rw [selectAssignment_apply, ambientAssignment_apply, selectVar_ambientVar, Equiv.apply_symm_apply]
 
 /-- The correspondence of retained assignments is a bijection. -/
 def assignmentEquiv (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
@@ -93,9 +90,7 @@ theorem selectAssignment_pull (e : CarrierEquiv U X Y) {Γ Δ : List P.signature
     (selectAssignment e keepΔ a).pull (selectRenaming keepΓ keepΔ ρ) = selectAssignment e keepΓ (a.pull ρ) := by
   apply Assignment.ext
   intro s i
-  change e s.val _ (a (ambientVar keepΔ (selectVar keepΔ (ρ (ambientVar keepΓ i))))) = _
-  rw [ambientVar_selectVar keepΔ (ρ (ambientVar keepΓ i))]
-  rfl
+  simp only [Assignment.pull_apply, selectAssignment_apply, selectRenaming_apply, ambientVar_selectVar]
 
 /-- Selecting an extended assignment keeps the bound witness as the new first coordinate. -/
 theorem selectAssignment_cons (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -105,7 +100,11 @@ theorem selectAssignment_cons (e : CarrierEquiv U X Y) {Γ : List P.signature.So
       Assignment.cons (s := (⟨s, keepS⟩ : SortName U)) (e s keepS x) (selectAssignment e keepΓ a) := by
   apply Assignment.ext
   intro t i
-  cases i <;> rfl
+  cases i with
+  | here => rw [selectAssignment_apply, ambientVar_here, Assignment.cons_here, Assignment.cons_here]
+  | there i =>
+    rw [selectAssignment_apply, ambientVar_there, Assignment.cons_there, Assignment.cons_there,
+      selectAssignment_apply]
 
 /-- Moving an input tuple to the selected operation uses its selected arity. -/
 def selectArgs (e : CarrierEquiv U X Y) (op : Operation P.signature)
@@ -162,9 +161,7 @@ theorem selectAssignment_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X
     selectAssignment e kept (mapAssignment f kept a) = selectAssignment g kept a := by
   apply Assignment.ext
   intro s i
-  change e s.val s.property (mapAssignment f kept a (ambientVar kept i)) =
-    g s.val s.property (a (ambientVar kept i))
-  rw [mapAssignment_apply]
+  simp only [selectAssignment_apply, mapAssignment_apply]
   exact agree s.val s.property (a (ambientVar kept i))
 
 /-- Transport the input side of the graph comparison in Proposition 3.2.
@@ -288,6 +285,7 @@ theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ
 /-- A supported Law has exactly the same input and conclusion tests in the selected signature. -/
 theorem law_iff (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) :
     (selectLaw law keep).Holds B ↔ E.satisfies law keep := by
+  rw [selectLaw_eq, Law.holds_iff, RestrictedEvaluation.satisfies_iff]
   constructor
   · intro held x input
     exact (same.formula_iff law.conclusion (lawConclusionSupport keep) x).1
@@ -295,6 +293,7 @@ theorem law_iff (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.de
   · intro held x input
     let free := lawSortSupport keep
     obtain ⟨a, rfl⟩ := (assignmentEquiv e free).surjective x
+    rw [assignmentEquiv_apply] at input ⊢
     exact (same.formula_iff law.conclusion (lawConclusionSupport keep) a).2
       (held a ((same.formula_iff law.input (lawInputSupport keep) a).1 input))
 

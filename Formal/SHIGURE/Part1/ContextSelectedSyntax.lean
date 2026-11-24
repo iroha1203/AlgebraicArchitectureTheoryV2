@@ -344,5 +344,12 @@ theorem selectFormula_there {Γ : List P.signature.SortType} {s : P.signature.So
     (selectRenaming_there head free)
   exact (selectFormula_rename p (fun i => Var.there (t := s) i) keep after).trans changeMap
 
+/-- An equality of written Laws identifies their selected Laws as well. -/
+theorem selectLaw_congr {p q : Law P.signature} (same : p = q)
+    (hp : Declaration.lawBody p ⊆ U.declarations) (hq : Declaration.lawBody q ⊆ U.declarations) :
+    selectLaw p hp = selectLaw q hq := by
+  subst q
+  rfl
+
 end DeclarationContext.Selected
 end SHIGURE

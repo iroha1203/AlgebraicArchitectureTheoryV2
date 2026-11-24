@@ -74,18 +74,23 @@ theorem termReferences_subset_graphAt {Γ : List P.signature.SortType} {s : P.si
     ∀ {Δ : List P.signature.SortType} (ρ : Renaming Γ Δ) (y : Var Δ s),
       termReferences t ⊆ Declaration.formula (t.graphAt ρ y) := by
   induction t with
-  | var i => intro Δ ρ y; exact Set.empty_subset _
+  | var i =>
+    intro Δ ρ y
+    rw [termReferences_var]
+    exact Set.empty_subset _
   | app op args ih =>
     intro Δ ρ y d hd
     rw [Term.graphAt_app]
     apply formula_existsMany_subset
     rw [Declaration.formula_conj, Declaration.formula_atom, Declaration.atomic_graph]
+    rw [termReferences_app] at hd
     rcases hd with hd | ⟨s, i, hd⟩
     · exact Or.inr hd
     · exact Or.inl (formula_conjoin_subset _ i (ih i _ _ hd))
   | letBind x t hx ht =>
     intro Δ ρ y d hd
     rw [Term.graphAt_letBind, Declaration.formula_ex, Declaration.formula_conj]
+    rw [termReferences_letBind] at hd
     rcases hd with hd | hd | hd
     · exact Or.inl hd
     · exact Or.inr (Or.inl (hx _ _ hd))
@@ -398,6 +403,7 @@ private theorem shiftedRenaming {Γ Δ Λ : List P.signature.SortType}
         (selectRenaming hΓ (appendSupport hΛ hΔ) (fun j => (ρ j).shift Λ) i)) =
       (fun {s} (i : Var (context Γ hΓ) s) => (selectRenaming hΓ hΔ ρ i).shift (context Λ hΛ)) := by
   funext s i
+  simp only [selectRenaming_apply]
   exact selectVar_shift hΛ hΔ (ρ (ambientVar hΓ i))
 
 /-- Keep positions of the selected left context in the selected concatenation. -/
@@ -408,6 +414,7 @@ private theorem inLeftRenaming {Δ Λ : List P.signature.SortType}
         (selectRenaming hΛ (appendSupport hΛ hΔ) (Var.inLeft Δ) i)) =
       (fun {s} (i : Var (context Λ hΛ) s) => i.inLeft (context Δ hΔ)) := by
   funext s i
+  rw [selectRenaming_apply]
   exact (selectVar_inLeft hΛ hΔ (ambientVar hΛ i)).trans
     (congrArg (Var.inLeft (context Δ hΔ)) (selectVar_ambientVar hΛ i))
 
@@ -701,6 +708,7 @@ private theorem selectFormula_bindArguments {Γ Λ : List P.signature.SortType}
         (selectRenaming hΓ (appendSupport hΛ hΓ) (Var.shift Λ) i)) =
         (fun {s} (i : Var (context Γ hΓ) s) => i.shift (context Λ hΛ)) := by
     funext s i
+    rw [selectRenaming_apply]
     exact (selectVar_shift hΛ hΓ (ambientVar hΓ i)).trans
       (congrArg (Var.shift (context Λ hΛ)) (selectVar_ambientVar hΓ i))
   exact congrArg₂ (fun (mapVars : Renaming (context Γ hΓ) (context Λ hΛ ++ context Γ hΓ))
@@ -847,7 +855,7 @@ theorem selectSubstitution_apply {Γ Δ : List P.signature.SortType} (θ : Subst
     selectSubstitution θ hΓ hΔ hθ (selectVar hΓ i) =
       selectTerm (θ i) hΔ (varKept hΓ i) (hθ i) := by
   have atOriginal := ambientVar_selectVar hΓ i
-  change selectTerm (θ (ambientVar hΓ (selectVar hΓ i))) hΔ (varKept hΓ i) _ = _
+  rw [selectSubstitution_at]
   exact congrArg (fun j : Var Γ s => selectTerm (θ j) hΔ (varKept hΓ i) (hθ j)) atOriginal
 
 /-- The substitution under a binder uses the same supported primitives as before. -/
@@ -914,6 +922,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
   | @app Γ op args ih =>
     intro Δ θ hΓ hΔ hs ht hθ hSub
     simp only [Term.substitute_app] at hSub ⊢
+    rw [termReferences_app] at ht hSub
     have keepOp := ht (Or.inl (Set.mem_singleton (Declaration.ofOperation op)))
     let hΛ := operationInputs op keepOp
     let ts : ∀ {s}, Var (context op.arity.inputs hΛ) s → Term (signature U) (context Γ hΓ) s :=
@@ -923,6 +932,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     let op' := operation op keepOp
     let same := operation_arity op keepOp
     let θ' := selectSubstitution θ hΓ hΔ hθ
+    simp only [selectTerm.eq_2]
     change reindexedApp op' same ts' = (reindexedApp op' same ts).substitute θ'
     refine (congrArg (fun (as' : ∀ {s}, Var (context op.arity.inputs hΛ) s →
         Term (signature U) (context Δ hΔ) s) => reindexedApp op' same as') ?_).trans
@@ -932,6 +942,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
   | @letBind Γ a s init body hi hb =>
     intro Δ θ hΓ hΔ hs ht hθ hSub
     simp only [Term.substitute_letBind] at hSub ⊢
+    rw [termReferences_letBind] at ht hSub
     let ha := ht (Or.inl (Set.mem_singleton (Declaration.sort a)))
     let hΓ' := Declaration.sorts_cons_subset ha hΓ
     let hΔ' := Declaration.sorts_cons_subset ha hΔ
@@ -939,7 +950,7 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     have first := hi θ hΓ hΔ ha (fun _ hd => ht (Or.inr (Or.inl hd))) hθ (fun _ hd => hSub (Or.inr (Or.inl hd)))
     have second := hb θ.lift hΓ' hΔ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
       (liftTermReferences θ hθ) (fun _ hd => hSub (Or.inr (Or.inr hd)))
-    simp only [selectTerm, Term.substitute_letBind]
+    simp only [selectTerm.eq_3, Term.substitute_letBind]
     exact congrArg₂ (Term.letBind (sig := signature U)) first (second.trans
       (congrArg (fun replacement => Term.substitute replacement body') (selectSubstitution_lift θ hΓ hΔ hθ ha)))
 
