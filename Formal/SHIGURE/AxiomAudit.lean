@@ -1,6 +1,7 @@
 import Formal.SHIGURE.AssertStandardAxioms
 import Formal.SHIGURE.Part1.Chapter2Examples
 import Formal.SHIGURE.Part1.ObservedModels
+import Formal.SHIGURE.Part1.OperationWordExamples
 import Formal.SHIGURE.Part1.PositiveLogic
 import Formal.SHIGURE.Part1.PreservationExamples
 import Formal.SHIGURE.Part1.PullbackExamples
@@ -556,6 +557,55 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Model.core,
   Model.coreInclusion,
   Chapter2.PullbackWitnesses.equivalentModels
+]
+
+-- Explicit roots for Theorem 2.6 and Example 2.7.
+#shigure_assert_standard_axioms_of [
+  OperationWord,
+  -- OperationWords
+  OperationWord.term,
+  OperationWord.Evaluates,
+  OperationWord.eval,
+  OperationWord.mem_eval_iff,
+  OperationWord.domain,
+  OperationWord.mem_domain_iff,
+  OperationWord.evaluates_get,
+  OperationWord.evaluates_nil_iff,
+  OperationWord.domain_nil,
+  OperationWord.unaryInput,
+  OperationWord.evaluates_snoc_iff,
+  OperationWord.evaluates_map,
+  OperationWord.domain_image_subset,
+  OperationWord.value_comm,
+  OperationWord.observation_comm,
+  OperationWord.mem_domain_of_map,
+  OperationWord.domain_eq_preimage,
+  OperationWord.translatedEval,
+  OperationWord.mem_translated_eval_iff,
+  OperationWord.translatedDomain,
+  OperationWord.translated_evaluates_iff,
+  OperationWord.eval_pullback_eq_translated,
+  OperationWord.domain_pullback_eq_translated,
+  OperationWord.translated_domain_image_subset,
+  OperationWord.translated_value_comm,
+  OperationWord.translated_observation_comm,
+  OperationWord.translated_domain_eq_preimage,
+  -- OperationWordExamples
+  Chapter2.OperationWordExamples.collapse,
+  Chapter2.OperationWordExamples.includePoint,
+  Chapter2.OperationWordExamples.collapse_not_injective,
+  Chapter2.OperationWordExamples.includePoint_not_surjective,
+  Chapter2.OperationWordExamples.identity_word_evaluates,
+  Chapter2.OperationWordExamples.collapse_preserves_observation,
+  Chapter2.OperationWordExamples.includePoint_preserves_observation,
+  Chapter2.OperationWordExamples.enlarge,
+  Chapter2.OperationWordExamples.partialWord,
+  Chapter2.OperationWordExamples.nullary_quantity_cannot_append,
+  Chapter2.OperationWordExamples.partialWord_source_domain,
+  Chapter2.OperationWordExamples.partialWord_target_value,
+  Chapter2.OperationWordExamples.enlarge_not_reflects,
+  Chapter2.OperationWordExamples.enlarge_preserves_words,
+  Chapter2.OperationWordExamples.partialWord_domain_enlarges
 ]
 
 end SHIGURE.AxiomAudit
