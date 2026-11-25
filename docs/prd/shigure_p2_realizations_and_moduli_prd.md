@@ -5,7 +5,7 @@
 | 状態 | Draft |
 | 対象配置 | `Formal/SHIGURE.lean`, `Formal/SHIGURE/AxiomAudit.lean`, `Formal/SHIGURE/Part2/**` |
 | 親計画 Issue | GitHub Issue `#6439` |
-| 数学本文（Tier 1 参照先） | [第4章](../aat/algebraic_geometric_theory/part_2/chapter_4_coefficient_realizations.md), [第5章](../aat/algebraic_geometric_theory/part_2/chapter_5_quantities_and_law_geometry.md), [第6章](../aat/algebraic_geometric_theory/part_2/chapter_6_families_and_moduli.md), [付録B](../aat/algebraic_geometric_theory/appendix_b_coefficients_and_descent.md), [第19章 19.6節（設定 19.12・補題 19.13）](../aat/algebraic_geometric_theory/part_6/chapter_19_local_reconstruction_and_finite_determination.md#196-有限ハンケル表からの最小実現), [共通記号](../aat/algebraic_geometric_theory/notation.md) |
+| 数学本文（Tier 1 参照先） | [第4章](../aat/algebraic_geometric_theory/part_2/chapter_4_coefficient_realizations.md), [第5章](../aat/algebraic_geometric_theory/part_2/chapter_5_quantities_and_law_geometry.md), [第6章](../aat/algebraic_geometric_theory/part_2/chapter_6_families_and_moduli.md), [付録B](../aat/algebraic_geometric_theory/appendix_b_coefficients_and_descent.md), [第20章 20.4節（設定 20.7・補題 20.8）](../aat/algebraic_geometric_theory/part_7/chapter_20_finite_determination_and_minimal_realizations.md#204-有限ハンケル表からの最小実現), [共通記号](../aat/algebraic_geometric_theory/notation.md) |
 | 適用ガイドライン | [AAT guideline](../aat/guideline.md), [Lean 品質基準](../aat/lean_quality_standard.md), [Workflow guideline](../workflow/guideline.md), [PRD guideline](guideline.md), [語彙ルール](../workflow/vocabulary.md) |
 | CI 変更要否 | 不要（既存の `.github/workflows/lean.yml` ジョブ `SHIGURE build and kernel audit` が `Formal/SHIGURE/**` と `Formal/SHIGURE.lean` を自動対象とする） |
 
@@ -13,14 +13,14 @@
 
 ## 1. 問い
 
-> 既存の `Formal/SHIGURE/Part1/**` および現行の `Formal/SHIGURE` 独立 CI・公理監査基盤の上で、`Formal/AG/`・`Formal/Util/`・`research/lean/ResearchLean/` を一切 import せずに、数学本文の第II部（第4–6章）・付録B（および第6.6節が先行参照する第19章の設定 19.12・補題 19.13）のすべての定義・構成・番号付き証明付き主張（25 件、ならびに節内の descent・相対 Spec・可換性主張）・番号付き具体例（9 件、ならびに本文中の無番号具体例・反例）を、仮定の追加や結論の弱化なしに Lean カーネルで検証できるか。
+> 既存の `Formal/SHIGURE/Part1/**` および現行の `Formal/SHIGURE` 独立 CI・公理監査基盤の上で、`Formal/AG/`・`Formal/Util/`・`research/lean/ResearchLean/` を一切 import せずに、数学本文の第II部（第4–6章）・付録B（および第6.6節が先行参照する第20章の設定 20.7・補題 20.8）のすべての定義・構成・番号付き証明付き主張（25 件、ならびに節内の descent・相対 Spec・可換性主張）・番号付き具体例（9 件、ならびに本文中の無番号具体例・反例）を、仮定の追加や結論の弱化なしに Lean カーネルで検証できるか。
 
 ---
 
 ## 2. 現状診断
 
-- 数学本文 `docs/aat/algebraic_geometric_theory/`（全 6 部 19 章 + 付録 A–F）は完成しており、第II部（第4–6章）と付録Bは第I部の語彙・構造・モデル・宣言文脈の上に、係数環上の実現（複製方式・テンソル方式）、固定構造上の量モデルのアフィン幾何、忠実平坦 descent、生成元付き実現のスキーム表示、商スタック、スタック上相対 $\mathrm{Spec}$、および最小実現の Grassmann 表示を構成する。
-- 第 6.6 節（定理 6.12）は第 19 章 19.6 節の設定 19.12・補題 19.13 を先行参照しているが、両者の定義と線形代数の証明は第 6 章・第 17 章に依存しない自己完結した内容である。
+- 数学本文 `docs/aat/algebraic_geometric_theory/`（全 7 部 21 章 + 付録 A–E）は完成しており、第II部（第4–6章）と付録Bは第I部の語彙・構造・モデル・宣言文脈の上に、係数環上の実現（複製方式・テンソル方式）、固定構造上の量モデルのアフィン幾何、忠実平坦 descent、生成元付き実現のスキーム表示、商スタック、スタック上相対 $\mathrm{Spec}$、および最小実現の Grassmann 表示を構成する。
+- 第 6.6 節（定理 6.12）は第20章 20.4 節の設定 20.7・補題 20.8 を先行参照しているが、両者の定義と線形代数の証明は第 6 章・第 17 章に依存しない自己完結した内容である。
 - `Formal/SHIGURE/` 配下には `AssertStandardAxioms.lean`、`AssertStandardAxiomsTest.lean`、`AxiomAudit.lean`、`Part1/**` および入口 `Formal/SHIGURE.lean` が整備されており、`.github/workflows/lean.yml` の `SHIGURE build and kernel audit` ジョブが以下を自動検証する：
   - `lean --run .github/lean_quality/check_shigure_imports.lean`（孤立 import 検査）
   - `lake build +Formal.SHIGURE`
@@ -52,7 +52,7 @@
   - **§4.1 標準公理検査**：許容するカーネル公理は `propext`, `Classical.choice`, `Quot.sound` のみ。`axiom`, `admit`, `sorry`, `unsafe`, `native_decide`, `debug.skipKernelTC` を禁止する。
 - **基礎環・集合論・宇宙の規約**（[共通記号](../aat/algebraic_geometric_theory/notation.md)・第4章 4.1 節）：
   - 基礎環 $k$ は単位元を持つ任意の可換環とし、零環を含める（非零や連結性が必要な主張では本文どおり明示的に仮定する）。環射は単位元を保つ。
-  - 担体集合、量添字集合 $J$、演算族、Law 族、生成子・関係添字集合 $H_0, H_1$ は本文で有限と明記された箇所（例：第 6 章の sort 集合 $S_0$、各演算の arity、設定 19.12 の有限単項操作など）を除き、任意の小さい集合（固定した宇宙 `Type u`）として扱い、勝手な有限化・固定化を行わない。
+  - 担体集合、量添字集合 $J$、演算族、Law 族、生成子・関係添字集合 $H_0, H_1$ は本文で有限と明記された箇所（例：第 6 章の sort 集合 $S_0$、各演算の arity、設定 20.7 の有限単項操作など）を除き、任意の小さい集合（固定した宇宙 `Type u`）として扱い、勝手な有限化・固定化を行わない。
 - **Lean build 運用（hard rule）**：[AAT guideline](../aat/guideline.md) に従い、ローカル確認は単一ファイル `lake env lean <target-file>` および必要時の対象モジュール `lake build <module>` とし、フル `lake build` は CI（`lake build +Formal.SHIGURE`）で行う。サブエージェントの `lake build` は全面禁止する。
 
 ### 3.3 推奨モジュール配置
@@ -76,7 +76,7 @@ Formal/
         ├── MarkedCharts.lean             -- 第6章 6.2–6.3: 定義 6.3, 構成 6.4, 定理 6.5, 例 6.6, 式 (6.2)–(6.3)
         ├── QuotientStack.lean            -- 第6章 6.4: 定理 6.7, 自己同型群スキーム, 階数直和, 例 6.8, 式 (6.4)
         ├── StackRelativeSpec.lean        -- 第6章 6.5: 定義 6.9, 定理 6.10, 式 (6.5)–(6.6), 非単射引戻し例
-        └── MinimalRealization.lean       -- 第6章 6.6 / 19.6節: 設定 19.12, 補題 19.13, 定理 6.12
+        └── MinimalRealization.lean       -- 第6章 6.6 / 20.4節: 設定 20.7, 補題 20.8, 定理 6.12
 ```
 
 （Part 1 と同様に、1 ファイルが過大になる場合は責務ごとに細分化し、`Formal/SHIGURE/Part2/<Topic>.lean` を集約入口として `Formal/SHIGURE.lean` から到達可能にすること。）
@@ -178,10 +178,10 @@ Formal/
 - **定理 6.10（構造のスタック上の量・Law の相対幾何）**：準連接加群 $Q$、平坦 fppf site 上の準連接イデアル $I\subseteq\mathrm{Sym}\,Q$ と商代数 $\mathcal C=\mathrm{Sym}\,Q/I$、任意の試験射 $b:T\to\mathcal B_\sigma$ への引き戻し $b^*I$・$\iota_b$・像イデアル $I_b=\mathrm{im}(\iota_b)$・$b^*\mathcal C=\mathrm{Sym}_{\mathcal O_T}(b^*Q)/I_b$、および式(6.6) の相対 $\mathrm{Spec}$ $\mathcal L=\mathrm{Spec}_{\mathcal B_\sigma}\mathcal C$ を構成し、任意の $T\to\mathcal B_\sigma$ への引き戻しのアフィン表現性、ならびに被覆および生成子・関係表示からの独立性（量・関係・Law 索引の有限性不要）を証明する。
 - 6.5 節の検証例：(a) 非零環 $k$ 上 $I=(at)\subset k[a,t]$ の $a=0$ への引き戻しで $I\otimes_{k[a]} k\ne 0$ だが像イデアルが $0$ であり商代数が $k[t]$ になること、(b) 固定集合を底とした $T=\mathrm{Spec}\,k$ ファイバーが定理 5.4 に一致することを証明する。
 
-### AC-13: 第6章 6.6（設定 19.12・補題 19.13・定理 6.12：最小実現の Grassmann 表示）
+### AC-13: 第6章 6.6（設定 20.7・補題 20.8・定理 6.12：最小実現の Grassmann 表示）
 
-- **設定 19.12（入力・操作・観測と語の加群）**：可換基礎環 $k$、有限 sort 集合 $S_0$、有限単項操作 $e:s(e)\to t(e)$、非負整数 $p_s,q_s,n_s$（$N=\sum_s n_s\ge 1$）、試験 $k$-スキーム $T$ 上の実現 $(E_s, i_s, T_e, o_s)$ と線形 Law、有限自由加群 $P_{s,r}, Q_{s,r}$、到達写像 $R_{s,r}$・観測写像 $O_{s,r}$、および全語到達写像・全語双対観測写像の全射性による最小実現を定義する。
-- **補題 19.13（語長 $N-1$ での到達と双対観測）**：最小実現であることと各 $s$ の $R_{s,N-1}$ および $O_{s,N-1}^\vee$ の全射性との同値性、任意係数変更での保存、実現スタックの開条件性、および $O_{s,N-1}$ の局所分裂単射性を証明する。あわせて、19.6 節の反例（$\mathbb Z$ 上階数 1・$i=1$・操作なし・$o=2$ で $O$ は単射だが $O^\vee$ が全射でなく $\mathbb F_2$ への係数変更で零になること）を証明する。
+- **設定 20.7（入力・操作・観測と語の加群）**：可換基礎環 $k$、有限 sort 集合 $S_0$、有限単項操作 $e:s(e)\to t(e)$、非負整数 $p_s,q_s,n_s$（$N=\sum_s n_s\ge 1$）、試験 $k$-スキーム $T$ 上の実現 $(E_s, i_s, T_e, o_s)$ と線形 Law、有限自由加群 $P_{s,r}, Q_{s,r}$、到達写像 $R_{s,r}$・観測写像 $O_{s,r}$、および全語到達写像・全語双対観測写像の全射性による最小実現を定義する。
+- **補題 20.8（語長 $N-1$ での到達と双対観測）**：最小実現であることと各 $s$ の $R_{s,N-1}$ および $O_{s,N-1}^\vee$ の全射性との同値性、任意係数変更での保存、実現スタックの開条件性、および $O_{s,N-1}$ の局所分裂単射性を証明する。あわせて、20.4 節の反例（$\mathbb Z$ 上階数 1・$i=1$・操作なし・$o=2$ で $O$ は単射だが $O^\vee$ が全射でなく $\mathbb F_2$ への係数変更で零になること）を証明する。
 - **定理 6.12（最小実現の Grassmann 表示）**：$d=N-1$ に対し Grassmann スキームの積 $G=\prod_{s\in S_0}\mathrm{Gr}_{n_s}(P_{s,d+1})$（構成 6.4・定理 6.5 の特殊構成、$n_s>\mathrm{rank}\,P$ で空スキーム・$n_s=0$ で唯一零商）、短い語制限全射の開部分スキーム $G^\circ$、$\pi_t\tau_e|_{K_{s,d}}=0$ の閉零点スキーム上の観測ベクトル束・Law 閉条件・長さ $d$ 以下の双対観測開条件によってスキーム $M_{\boldsymbol n}^{\min}$ を構成し、任意の試験スキームと任意の係数変更に対して普遍実現の引き戻しが最小実現の groupoid と圏同値を与えることを証明する。
 
 ### AC-14: 統合エントリポイント・最終公理監査・孤立検査
@@ -197,7 +197,7 @@ Formal/
 
 1. `Formal/SHIGURE/` または `Formal/SHIGURE.lean` が `Formal.AG`・`Formal.Util`・`ResearchLean` のいずれかを import している。
 2. `Formal/SHIGURE/` 配下に `sorry`・`admit`・`axiom`・`unsafe`・`native_decide`・`debug.skipKernelTC`（異常系テスト専用の分離箇所を除く）が残存している、または `check_shigure_declarations.lean` / `#shigure_assert_standard_axioms_only` が通らない。
-3. 数学本文（第4–6章・付録B・設定 19.12・補題 19.13）の番号付き証明付き主張 25 件、節内主張（4.5 節の局所分裂複製対象の Zariski descent、B.3 の一般スキーム fppf descent およびスタック上相対 Spec 拡張、5.4/6.1 節の宣言制限・係数変更可換性）、または番号付き具体例 9 件および本文中の無番号具体例・反例のいずれかに未証明・省略・仮定追加（未放電仮定）・結論弱化・対象縮小（有限化・固定化・非零環への無断限定等）がある。
+3. 数学本文（第4–6章・付録B・設定 20.7・補題 20.8）の番号付き証明付き主張 25 件、節内主張（4.5 節の局所分裂複製対象の Zariski descent、B.3 の一般スキーム fppf descent およびスタック上相対 Spec 拡張、5.4/6.1 節の宣言制限・係数変更可換性）、または番号付き具体例 9 件および本文中の無番号具体例・反例のいずれかに未証明・省略・仮定追加（未放電仮定）・結論弱化・対象縮小（有限化・固定化・非零環への無断限定等）がある。
 4. スキーム論の標準事実（平坦局所有限表示射の開性、滑らかな射の平坦性・基底変換安定性・fppf 局所性等）を未放電仮定・typeclass 仮定・構造フィールドへ逃がして閉じている。
 5. 定義側に結論を埋め込む definitional escape、または mathlib の圏・余代数・多項式環・対称代数・加群・平坦性・スキーム・接着構成と接続しない閉じたラッパーで済ませている。
 6. PRD 完了前に、本 PRD への参照がリポジトリ内の他文書・コードに残っている、または恒久規律の更新漏れがある。
@@ -207,8 +207,8 @@ Formal/
 ## 6. 対象外（Non-Goals）
 
 - **問題 6.11（一般の実現族の表示条件）**：数学本文で将来の研究課題として明記されているため本 PRD の対象外とする（問題 6.11(2) で触れられる Zariski 局所分裂対象の fppf 非閉性の注記自体は、必要に応じて AC-04 の補助反例として加えてよいが、問題 6.11 の一般条件決定は対象外とする）。
-- **定理 19.14・定理 19.15（有限ハンケル表からの一意同型と復元）および第6.6節末尾の注（付録 D.5–D.6 のスペクトル根診断）**：第V部・第VI部で扱う範囲のため本 PRD の対象外とする（第 6.6 節の定理 6.12 に直接必要な設定 19.12 と補題 19.13 のみを本 PRD に含める）。
-- 第III部以降（第7–19章の残り、付録 C–F）の形式化。
+- **定理 20.9・定理 20.10（有限ハンケル表からの一意同型と復元）および第6.6節末尾の注（付録 D.5–D.6 のスペクトル根診断）**：第V部・第VII部で扱う範囲のため本 PRD の対象外とする（第 6.6 節の定理 6.12 に直接必要な設定 20.7 と補題 20.8 のみを本 PRD に含める）。
+- 第III部以降（第7–21章の残り、付録 C–E）の形式化。
 - 既存の `Formal/AG/`、`Formal/Util/`、`research/lean/`、ツール群（`tools/`）、公開面（`website/`）、および `.github/workflows/lean.yml` の改修。
 
 ---
@@ -227,7 +227,7 @@ Formal/
 10. **PR 10（AC-10）**：`Part2/MarkedCharts.lean`（定義 6.3, 構成 6.4, 定理 6.5, 例 6.6）。
 11. **PR 11（AC-11）**：`Part2/QuotientStack.lean`（代数的スタック・滑らかさ, 定理 6.7, 自己同型群スキーム, 階数直和, 例 6.8）。
 12. **PR 12（AC-12）**：`Part2/StackRelativeSpec.lean`（定義 6.9, 定理 6.10, 残差計算例・非単射引戻し例・定理 5.4 の特殊場合）。
-13. **PR 13（AC-13）**：`Part2/MinimalRealization.lean`（設定 19.12, 補題 19.13, 定理 6.12）。
+13. **PR 13（AC-13）**：`Part2/MinimalRealization.lean`（設定 20.7, 補題 20.8, 定理 6.12）。
 14. **PR 14（AC-14）**：`Formal/SHIGURE.lean`・`Formal/SHIGURE/AxiomAudit.lean` の最終統合および全監査確認。
 
 （AC-07・AC-08・AC-11・AC-12 のように実装規模が大きい AC は、依存順にサブ PR へ細分化して進めてよい。）
@@ -240,7 +240,7 @@ Formal/
 
 次のいずれかに該当した時点で実装ループを停止し、状況を報告して人間判断を仰ぐ。
 
-1. 数学本文（第4–6章・付録B・設定 19.12・補題 19.13）の記述に Lean 形式化上の曖昧さ・不整合・欠落が見つかり、Tier 1 文書の判断または PRD の改訂が必要になった場合（ループ内で PRD や数学本文を編集しない）。
+1. 数学本文（第4–6章・付録B・設定 20.7・補題 20.8）の記述に Lean 形式化上の曖昧さ・不整合・欠落が見つかり、Tier 1 文書の判断または PRD の改訂が必要になった場合（ループ内で PRD や数学本文を編集しない）。
 2. [Lean 品質基準](../aat/lean_quality_standard.md) §5.3 に該当する target statement の変更（仮定の追加・結論の弱化・対象縮小）が必要と判明した場合。
 3. mathlib v4.28.0 の欠落定理（例：平坦局所有限表示射の開性や滑らかさの一般論など）の自前証明が想定を大幅に超え、別 PRD への切り出しまたはツールチェーン更新の判断が必要になった場合。
 4. 同一 AC で 2 周連続して PR がマージに至らない（`stalled`）場合。

@@ -9,7 +9,7 @@
 
 ## 構成ファイル
 
-- `manifest.json`: 構成順（序論 → 共通記号 → 第I–VI部（第1–19章）→ 付録A–F）、除外ファイル（`README.md`）、`README.md` の部アンカー対応、TeX 処理系の固定版を定めるマニフェスト。
+- `manifest.json`: 構成順（序論 → 共通記号 → 第I–VII部（第1–21章）→ 付録A–E）、除外ファイル（`README.md`）、`README.md` の部アンカー対応、TeX 処理系の固定版を定めるマニフェスト。
 - `preamble.tex`: XeTeX / `xeCJK` 用の LaTeX プリアンブル（A4、IPAex TrueType フォント `ipaexm.ttf` / `ipaexg.ttf`、`amsmath`/`amssymb`/`mathrsfs`/`xltabular`/`hyperref`/`bookmark`、宣言・証明・QED・式幅調整マクロ）。
 - `monograph.py`: 静的検査（`check`）、TeX 生成（`generate`）、PDF ビルドおよびログ／テキスト検証（`build`）を実行する CLI。
 - `test_monograph.py`: 変換の忠実性・リンク解決・失敗ケース検出（未閉じ数式、不在リンク／アンカー、未登録ファイル、上書き拒否、TeX ログエラー、PDF ハッシュ不一致）の `unittest` 回帰テスト。

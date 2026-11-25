@@ -20,7 +20,8 @@
     "第iii部-意味を保つ変更の全体": "part:3",
     "第iv部-局所変更修復障害": "part:4",
     "第v部-輸送比較診断": "part:5",
-    "第vi部-観測必要情報再構成": "part:6"
+    "第vi部-観測と必要情報": "part:6",
+    "第vii部-再構成と有限決定": "part:7"
   },
   "structure": [
     {
@@ -152,8 +153,8 @@
       "id": "part_6",
       "label": "part:6",
       "part_num": "第VI部",
-      "title": "観測・必要情報・再構成",
-      "subtitle": "第17–19章",
+      "title": "観測と必要情報",
+      "subtitle": "第17–18章",
       "chapters": [
         {
           "id": "chapter_17",
@@ -162,10 +163,28 @@
         {
           "id": "chapter_18",
           "source": "part_6/chapter_18_repair_and_observation.md"
-        },
+        }
+      ]
+    },
+    {
+      "kind": "part",
+      "id": "part_7",
+      "label": "part:7",
+      "part_num": "第VII部",
+      "title": "再構成と有限決定",
+      "subtitle": "第19–21章",
+      "chapters": [
         {
           "id": "chapter_19",
-          "source": "part_6/chapter_19_local_reconstruction_and_finite_determination.md"
+          "source": "part_7/chapter_19_reconstruction_from_local_models.md"
+        },
+        {
+          "id": "chapter_20",
+          "source": "part_7/chapter_20_finite_determination_and_minimal_realizations.md"
+        },
+        {
+          "id": "chapter_21",
+          "source": "part_7/chapter_21_uniform_finiteness_of_polynomial_operations.md"
         }
       ]
     },
@@ -191,10 +210,6 @@
         {
           "id": "appendix_e",
           "source": "appendix_e_change_paths_and_costs.md"
-        },
-        {
-          "id": "appendix_f",
-          "source": "appendix_f_universal_coefficients_and_termination.md"
         }
       ]
     }
