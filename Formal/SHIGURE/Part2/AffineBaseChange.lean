@@ -108,7 +108,7 @@ theorem baseChangeCokernel_symm_mk_tmul (f : M →ₗ[R] N) (s : S) (x : N) :
   rfl
 
 /-- The commuting square for cokernel naturality in Lemma B.3 sends the original relations into the new relations. -/
-private theorem range_le_comap_of_square
+theorem range_le_comap_of_square
     {K U V W X : Type*} [CommRing K]
     [AddCommGroup U] [Module K U] [AddCommGroup V] [Module K V]
     [AddCommGroup W] [Module K W] [AddCommGroup X] [Module K X]
@@ -187,7 +187,7 @@ theorem baseChangeQuotient_symm_mk_tmul (I : Ideal A) (s : S) (a : A) :
   simp [baseChangeQuotient, baseChangeQuotientMap]
 
 /-- An algebra map preserving equations induces a map preserving the extended equations of Lemma B.3. -/
-private theorem baseChangeIdeal_le_comap
+theorem baseChangeIdeal_le_comap
     {B : Type*} [CommRing B] [Algebra R B] {I : Ideal A} {J : Ideal B}
     (f : A →ₐ[R] B) (h : I ≤ J.comap f) :
     baseChangeIdeal S I ≤

@@ -2669,6 +2669,16 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 
 -- Appendix B.1: clopens, affine points and scalar extension.
 #shigure_assert_standard_axioms_of [
+  clopenOfIdempotent,
+  clopenPartitionEquiv,
+  polynomialPointEquiv,
+  symmetricPointEquiv,
+  specOverPointEquiv,
+  baseChangeDirectSum,
+  baseChangeTensor,
+  baseChangeCokernel,
+  baseChangeSymmetric,
+  baseChangeQuotient,
   coe_clopenOfIdempotent,
   clopenOfIdempotent_preimage,
   coe_clopenPartitionEquiv,
@@ -2693,9 +2703,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   baseChangeTensor_tmul,
   baseChangeTensor_natural,
   baseChangeCokernel_symm_mk_tmul,
+  range_le_comap_of_square,
   baseChangeCokernel_natural,
   baseChangeIdeal_span,
   baseChangeQuotient_symm_mk_tmul,
+  baseChangeIdeal_le_comap,
   baseChangeQuotient_natural,
   symmetricMap_ι,
   baseChangeSymmetric_tmul_ι,
