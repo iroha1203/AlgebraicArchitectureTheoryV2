@@ -78,7 +78,9 @@ theorem graphAt_renameTerm (t : Term sig Γ s) :
     ∀ {Δ E : List sig.SortType} (first : Renaming Γ Δ) (second : Renaming Δ E) (out : Var E s),
       (t.rename first).graphAt second out = t.graphAt (Renaming.comp second first) out := by
   induction t with
-  | var i => intros; rfl
+  | var i =>
+    intro Δ E first second out
+    simp only [rename_var, graphAt_var, Renaming.comp_apply]
   | app op terms ih =>
     intro Δ E first second out
     simp only [rename_app, graphAt_app, ih]
@@ -277,7 +279,11 @@ def packExistences : ∀ {Λ : List T.signature.SortType}
     have shape : together = ((head.rename (Renaming.lift lift)).conj (tail.rename (fun i => .there i))) :=
       Formula.witnessConjunction_cons condition
     have atAllWitnesses : Derivation T together ((result.rename lift).rename (fun i => .there i)) := by
-      simpa only [Renaming.append_blocks, Formula.rename_id, Formula.rename_comp] using
+      rw [Formula.rename_comp]
+      change Derivation T together
+        (result.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i))
+      rw [← Renaming.shift_cons_comp]
+      simpa only [Renaming.append_blocks, Formula.rename_id] using
         (existsManyIntroAlong (T := T) (Var.inLeft Γ : Renaming (s :: Λ) ((s :: Λ) ++ Γ))
           (Var.shift (s :: Λ)) together)
     have swapped : Derivation T (tail.conj (head.ex.rename lift)) (result.rename lift) := by

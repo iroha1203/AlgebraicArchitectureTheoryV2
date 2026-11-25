@@ -641,7 +641,8 @@ private theorem localPointRule_eq (reading : CoefficientReading U A Γ) {W : Dec
     {inside : W.declarations ⊆ U.declarations} (locality : reading.RespectsRestriction W inside)
     (i : reading.selection.selected.Index) :
     reading.localPointRule locality i = some (reading.selectedPoint i) :=
-  locality.points.choose_spec.1 i _ _ (RestrictedStructure.Agrees.refl _) (RestrictedStructure.Agrees.refl _)
+  ((locality.points.choose.agreesWith_iff reading inside locality.supported).mp
+    locality.points.choose_spec.1) i _ _ (RestrictedStructure.Agrees.refl _) (RestrictedStructure.Agrees.refl _)
 
 /-- Realize the retained state tuple using the actual local point rule and restrict its data. -/
 noncomputable def restrictSelected (reading : CoefficientReading U A Γ) {W : DeclarationContext P}
