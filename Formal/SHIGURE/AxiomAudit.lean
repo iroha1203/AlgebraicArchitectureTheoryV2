@@ -3208,6 +3208,54 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TensorRealization.integer_binary_product_extended
 ]
 
+-- Chapter 4: natural comparison of copying and tensor realizations.
+#shigure_assert_standard_axioms_of [
+  TensorRealization.compareCoefficients,
+  TensorRealization.compareCoefficients_apply,
+  TensorRealization.compareCopyingPoint,
+  TensorRealization.compareCoefficients_stateBasis,
+  TensorRealization.compareCopyingPoint_constant,
+  TensorRealization.compareCoefficients_map,
+  TensorRealization.compareCopyingPoint_changeBase,
+  TensorRealization.relativeCopyingPointEquiv,
+  TensorRealization.compareScalarPoint,
+  TensorRealization.compareScalarPoint_constant,
+  TensorRealization.compareScalarPoint_changeBase,
+  TensorRealization.compareScalarPoint_sum,
+  TensorRealization.compareCoefficients_mapStates,
+  TensorRealization.compareCoefficients_mapStates_sum,
+  TensorRealization.schemeRowsEquiv_comp_mapStates,
+  TensorRealization.compareCopyingPoint_linear,
+  TensorRealization.refineCopyRows,
+  TensorRealization.refineCopyRows_apply,
+  TensorRealization.refineCopyRows_sum,
+  TensorRealization.isCopyRow_refineCopyRows,
+  TensorRealization.refineCopyRows_repeated_zero,
+  TensorRealization.labelOfRow_refineCopyRows,
+  TensorRealization.tupleCopyingPoints,
+  TensorRealization.tupleCopyingPoints_row,
+  TensorRealization.tupleCopyingPoints_label,
+  TensorRealization.tupleCopyingPoints_projection,
+  TensorRealization.compareCopyingPoint_operation_sum,
+  TensorRealization.relativeConstantCopyingPoint,
+  TensorRealization.compareRelativeCopyingPoint_constant,
+  TensorRealization.compareRelativeCopyingPoint_changeBase,
+  TensorRealization.compareRelativeScalarPoint,
+  TensorRealization.compareRelativeScalarPoint_constant,
+  TensorRealization.compareRelativeScalarPoint_changeBase,
+  TensorRealization.relativeCopyingPointEquiv_comp_states,
+  TensorRealization.tupleRelativeCopyingPoints,
+  TensorRealization.relativeCopyingPointEquiv_tuple,
+  TensorRealization.tupleRelativeCopyingPoints_projection,
+  TensorRealization.compareRelativeCopyingPoint_linear,
+  TensorRealization.compareCopyingPoint_add,
+  TensorRealization.compareCopyingPoint_smul,
+  TensorRealization.compareCopyingPoint_multilinear,
+  TensorRealization.compareRelativeCopyingPoint_multilinear,
+  TensorRealization.compareRelativeCopyingPoint_add,
+  TensorRealization.compareRelativeCopyingPoint_smul
+]
+
 end SHIGURE.AxiomAudit
 
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit
