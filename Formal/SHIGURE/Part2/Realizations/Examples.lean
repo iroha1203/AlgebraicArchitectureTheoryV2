@@ -1,5 +1,7 @@
 import Formal.SHIGURE.Part2.Realizations.CopyingMode
-import Formal.SHIGURE.Part2.Realizations.TensorMode
+import Formal.SHIGURE.Part2.Realizations.CopyingReading
+import Formal.SHIGURE.Part2.Realizations.TensorDeclarations
+import Mathlib.Data.ZMod.Basic
 
 /-!
 # Positive and negative examples of realization semantics
@@ -125,6 +127,8 @@ def integers : CoefficientRing :=
 /-- The coefficient algebra with identity map on the integers. -/
 def integerAlgebra : CoefficientAlgebra integers :=
   ⟨integers, RingHom.id ℤ⟩
+
+local instance : CommRing integers.Carrier := integers.ring
 
 /-- The common semantic category of the copying mode contains the singleton model. -/
 theorem singleton_copying_model :
@@ -301,5 +305,172 @@ theorem integer_zero_map_not_preserving_marks :
     ⟨fun _ => ModuleCat.ofHom 0, h⟩
   have hz := f.preserves_designated false rfl
   exact zero_ne_one (show (0 : ℤ) = 1 from hz)
+
+/-- A coefficient rule cannot send the designated integer 1 to zero under the identity map. -/
+theorem integer_mark_not_erased (rule : TensorCoefficientRule pointedSignature) :
+    ((rule.change (R := integers) (S := integers) (RingHom.id ℤ) sameMarks).designated false rfl) ≠ 0 := by
+  let f : integers.Hom integers := RingHom.id ℤ
+  letI := f.toAlgebra
+  let A := rule.change f sameMarks
+  let e := rule.carrierIso f sameMarks ()
+  intro h
+  have h' : A.designated false rfl = 0 := h
+  let x : ∀ i : TensorPosition ([] : List Unit), sameMarks.carrier i.1 := fun i => nomatch i.2
+  have he : A.designated false rfl = e ((1 : ℤ) ⊗ₜ[ℤ] (1 : ℤ)) := by
+    refine Eq.trans ?_ (rule.total_unit f sameMarks false x)
+    apply congrArg (A.total false)
+    funext i
+    exact nomatch i.2
+  have hz : (1 : ℤ) ⊗ₜ[ℤ] (1 : ℤ) = 0 :=
+    e.injective (he.symm.trans (h'.trans (e.map_zero).symm))
+  have heval := congrArg (TensorProduct.lid ℤ ℤ) hz
+  exact one_ne_zero (by simpa only [TensorProduct.lid_tmul, one_smul, map_zero] using heval)
+
+private def repeatedGraphLaw : Law pointedSignature :=
+  ⟨[(), ()], .conj
+    (.atom (.graph (.total false) (fun i => nomatch i) .here))
+    (.atom (.graph (.total false) (fun i => nomatch i) (.there .here))),
+    .atom (.eq .here (.there .here))⟩
+
+private def markedBool : Structure pointedSignature where
+  carrier _ := Bool
+  total f _ := f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+private def markedBoolTheory : Theory :=
+  ⟨pointedSignature, Unit, fun _ => repeatedGraphLaw⟩
+
+private def markedBoolNative : Model markedBoolTheory :=
+  ⟨markedBool, fun _ => by
+    intro a h
+    have hx := (markedBool.graph_total_iff false _ _).mp h.1
+    have hy := (markedBool.graph_total_iff false _ _).mp h.2
+    exact hx.symm.trans hy⟩
+
+/-- The full copying structure with two Boolean states satisfies its graph Law on each test scheme. -/
+theorem markedBool_copying_model :
+    Nonempty ((Copying.copyingMode integers markedBoolTheory).Models integerAlgebra) := by
+  let A := Copying.constantStructure integerScheme markedBool
+  refine ⟨⟨A, Copying.isZariskiSplit_constant markedBoolTheory markedBoolNative, ?_⟩⟩
+  intro _
+  change A.holdsLaw repeatedGraphLaw
+  rw [SheafStructure.holdsLaw_iff]
+  intro U xs hx
+  let value : sheafTuple A.carrier [(), ()] ⟶ A.carrier () :=
+    sheafTupleRename A.carrier (Γ := []) (fun i => nomatch i) ≫ A.total false
+  let px := sheafTupleProj (Γ := [(), ()]) A.carrier Var.here
+  let py := sheafTupleProj (Γ := [(), ()]) A.carrier (.there .here)
+  change xs ∈ ((SheafPredicate.equal value px).conj (SheafPredicate.equal value py)).carrier.obj U at hx
+  change xs ∈ (SheafPredicate.equal px py).carrier.obj U
+  obtain ⟨ha, hb⟩ := (SheafPredicate.mem_conj_iff _ _ U xs).mp hx
+  exact (SheafPredicate.mem_equal_iff _ _ U xs).mpr
+    (((SheafPredicate.mem_equal_iff _ _ U xs).mp ha).symm.trans
+      ((SheafPredicate.mem_equal_iff _ _ U xs).mp hb))
+
+/-- A reflexive tensor equation cannot be a reading of the two-mark Law. -/
+theorem equalMarksReading_not_reflexive
+    (r : TensorLawReading integers fullDomainScope equalMarksSourceLaw) :
+    r.equation.left ≠ r.equation.right := by
+  letI := integerAlgebra.scalars.ring
+  intro h
+  have yes : (r.equation.mapScalars integerAlgebra.fromBase).holds differentMarks := by
+    change ((r.equation.left.mapScalars integerAlgebra.fromBase).eval differentMarks) =
+      ((r.equation.right.mapScalars integerAlgebra.fromBase).eval differentMarks)
+    rw [h]
+  have hValues := (equalMarksSourceLaw_iff differentMarks).mp ((r.correct integerAlgebra differentMarks).mp yes)
+  exact one_ne_zero (show (1 : ℤ) = 0 from hValues)
+
+private def tensorVocabulary : Signature where
+  SortType := Bool
+  Total := Empty
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity := Empty.elim
+  relInputs := Empty.elim
+  partialArity := Empty.elim
+  quantityArity := Empty.elim
+
+private def tensorPrimitives : PrimitivePresentation where
+  signature := tensorVocabulary
+  laws := ⟨Empty, Empty.elim, Empty.elim⟩
+  derived n := nomatch n
+
+private def tensorLawScope : DeclarationContext tensorPrimitives where
+  declarations := {Declaration.sort true}
+  closed := by
+    intro d kept e dependency
+    have hd : d = Declaration.sort true := kept
+    subst d
+    simp only [Declaration.sort_dependencies, Set.notMem_empty] at dependency
+
+private def tensorDeclarations : TensorLawDeclarations integers tensorPrimitives where
+  Name := Unit
+  statement _ :=
+    let sig := DeclarationContext.Selected.signature tensorLawScope
+    let s : sig.SortType := ⟨true, rfl⟩
+    let carrier := TensorShape.sort s
+    let left := TensorExpression.smul (2 : ℤ) (@TensorExpression.id ℤ sig carrier)
+    let right := @TensorExpression.zero ℤ sig carrier carrier
+    ⟨tensorLawScope, ⟨carrier, carrier, left, right⟩⟩
+  required := Set.univ
+
+private def tensorContext : TensorDeclarationContext tensorDeclarations where
+  primitives := DeclarationContext.full tensorPrimitives
+  noPositiveRequirement := ⟨fun l => nomatch l.val.val⟩
+  retained := Set.univ
+  dependencies _ _ := Set.subset_univ _
+
+private def contextScope : FullDomainTensorSignature tensorContext.presentation.signature :=
+  ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
+
+private def contextRule : TensorCoefficientRule tensorContext.presentation.signature where
+  change {R S} f A :=
+    letI := R.ring
+    letI := S.ring
+    letI := f.toAlgebra
+    { carrier := fun s => ModuleCat.of S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier s)
+      total := fun op => nomatch op.val
+      quantity := fun q => nomatch q.val }
+  carrierIso {R S} f A s :=
+    letI := R.ring
+    letI := S.ring
+    letI := f.toAlgebra
+    LinearEquiv.refl S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier s)
+  total_unit _ _ op := nomatch op.val
+  quantity_unit _ _ q := nomatch q.val
+
+private def contextModules (M : ModuleCat ℤ) : TensorAt integers tensorContext.presentation.signature where
+  carrier s := if (show Bool from s.val) then M else ModuleCat.of ℤ ℤ
+  total op := nomatch op.val
+  quantity q := nomatch q.val
+
+/-- The scoped tensor declaration holds on the cyclic group of order two at
+its chosen sort, even though the other sort carries an integer module. -/
+theorem cyclicTwo_satisfies_selected_tensor_law :
+    Nonempty (SelectedTensorModels tensorContext integerAlgebra contextScope contextRule) := by
+  refine ⟨⟨contextModules (ModuleCat.of ℤ (ZMod 2)), trivial, ?_⟩⟩
+  rintro ⟨l, _, _⟩
+  change Unit at l
+  cases l
+  change (2 : ℤ) • (LinearMap.id : ZMod 2 →ₗ[ℤ] ZMod 2) = 0
+  apply LinearMap.ext
+  intro x
+  change (2 : ℤ) • x = 0
+  rw [two_zsmul, ← two_mul, show (2 : ZMod 2) = 0 by decide, zero_mul]
+
+/-- Keeping the same declaration rules out an integer module at its chosen sort. -/
+theorem integer_fails_selected_tensor_law :
+    ¬ (tensorContext.mode contextScope contextRule).modelProperty integerAlgebra
+      (contextModules (ModuleCat.of ℤ ℤ)) := by
+  intro h
+  let name : tensorDeclarations.Name := ()
+  have hf := h.2 ⟨name, Set.mem_univ _, Set.mem_univ _⟩
+  change (2 : ℤ) • (LinearMap.id : ℤ →ₗ[ℤ] ℤ) = 0 at hf
+  have he := LinearMap.congr_fun hf 1
+  exact (by decide : (2 : ℤ) ≠ 0) he
 
 end SHIGURE.RealizationExamples

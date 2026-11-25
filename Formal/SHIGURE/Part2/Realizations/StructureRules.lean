@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part1.Signature
 import Mathlib.CategoryTheory.Category.Cat
+import Mathlib.CategoryTheory.Monoidal.Category
 import Mathlib.CategoryTheory.Pi.Basic
 import Mathlib.CategoryTheory.Subobject.MonoOver
 
@@ -13,6 +14,7 @@ the commutativity and factorization equations of (2.1).
 -/
 
 open CategoryTheory
+open scoped MonoidalCategory
 
 universe u v w t
 
@@ -22,6 +24,8 @@ namespace SHIGURE
 structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t) where
   /-- The object realizing each carrier sort. -/
   carrier : Object → sig.SortType → C
+  /-- The monoidal structure combining input carriers and carrier maps. -/
+  monoidal : MonoidalCategory C
   /-- The chosen representation of input objects and input maps. -/
   input (Γ : List sig.SortType) : (sig.SortType → C) ⥤ C
   /-- The combination of carriers at precisely the variable positions of an arity. -/
@@ -32,6 +36,15 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
       positionalInput Γ
   /-- A single input is naturally the carrier of its declared sort. -/
   unaryIso (s : sig.SortType) : input [s] ≅ Pi.eval (fun _ : sig.SortType => C) s
+  /-- The empty input is the unit of the chosen monoidal category. -/
+  nullaryIso :
+    letI := monoidal
+    input [] ≅ (Functor.const (sig.SortType → C)).obj (𝟙_ C)
+  /-- Every further input attaches its specified carrier by the chosen monoidal product. -/
+  consIso (s : sig.SortType) (Γ : List sig.SortType) :
+    letI := monoidal
+    input (s :: Γ) ≅ ((Pi.eval (fun _ : sig.SortType => C) s).prod' (input Γ)) ⋙
+      MonoidalCategory.tensor C
   /-- A total operation from its entire input object. -/
   total (A : Object) (f : sig.Total) : (input (sig.totalArity f).inputs).obj (carrier A) ⟶
     carrier A (sig.totalArity f).output

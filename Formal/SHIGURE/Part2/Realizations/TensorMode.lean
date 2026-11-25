@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part1.ContextSelectedPresentation
 import Formal.SHIGURE.Part2.Realizations.CoefficientModels
-import Formal.SHIGURE.Part2.Realizations.TensorExpressions
+import Formal.SHIGURE.Part2.Realizations.TensorInputs
+import Mathlib.Algebra.Category.ModuleCat.Monoidal.Basic
 import Mathlib.LinearAlgebra.Span.Basic
 import Mathlib.LinearAlgebra.TensorProduct.Tower
 
@@ -13,8 +14,8 @@ changed carriers with actual scalar extensions and specifies the primitive
 operations there on generating tuples. Construction 4.8 supplies this rule.
 -/
 
-open CategoryTheory
-open scoped TensorProduct
+open CategoryTheory SHIGURE.TensorRealization
+open scoped TensorProduct MonoidalCategory
 
 universe u
 
@@ -106,16 +107,50 @@ private def tensorUnaryIso (R : Type u) [CommRing R] {K : Type u} (s : K) :
     exact (singleArgumentEquiv_tprod B s _).trans
       (congrArg (fun x => (f s).hom x) (singleArgumentEquiv_tprod A s x)).symm)
 
+private def tensorNullaryIso (R : Type u) [CommRing R] (K : Type u) :
+    tensorInputs R ([] : List K) ≅ (Functor.const (K → ModuleCat.{u} R)).obj (𝟙_ (ModuleCat.{u} R)) :=
+  NatIso.ofComponents (fun A => (inputTensorUnit R A).toModuleIso) (by
+    intro A B f
+    apply ModuleCat.hom_ext
+    apply PiTensorProduct.ext
+    apply MultilinearMap.ext
+    intro x
+    change inputTensorUnit R B
+      (PiTensorProduct.map (fun i : TensorPosition ([] : List K) => (f i.1).hom)
+        (PiTensorProduct.tprod R x)) = inputTensorUnit R A (PiTensorProduct.tprod R x)
+    rw [PiTensorProduct.map_tprod, inputTensorUnit_tprod, inputTensorUnit_tprod])
+
+private def tensorConsIso (R : Type u) [CommRing R] {K : Type u} (s : K) (Γ : List K) :
+    tensorInputs R (s :: Γ) ≅
+      ((Pi.eval (fun _ : K => ModuleCat.{u} R) s).prod' (tensorInputs R Γ)) ⋙
+        MonoidalCategory.tensor (ModuleCat.{u} R) :=
+  NatIso.ofComponents (fun A => (inputTensorCons R A s Γ).toModuleIso) (by
+    intro A B f
+    apply ModuleCat.hom_ext
+    apply PiTensorProduct.ext
+    apply MultilinearMap.ext
+    intro x
+    change inputTensorCons R B s Γ
+        (PiTensorProduct.map (fun i : TensorPosition (s :: Γ) => (f i.1).hom)
+          (PiTensorProduct.tprod R x)) =
+      TensorProduct.map (f s).hom (PiTensorProduct.map (fun i : TensorPosition Γ => (f i.1).hom))
+        (inputTensorCons R A s Γ (PiTensorProduct.tprod R x))
+    rw [PiTensorProduct.map_tprod, inputTensorCons_tprod, inputTensorCons_tprod,
+      TensorProduct.map_tmul, PiTensorProduct.map_tprod])
+
 /-- Total operations and quantities are the maps from their typed input tensor
 products. The full-domain signature has no relation or partial symbols. -/
 def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
     (scope : FullDomainTensorSignature sig) :
     StructureRule sig (Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) where
   carrier A := A.carrier
+  monoidal := inferInstanceAs (MonoidalCategory (ModuleCat.{u} R))
   input := tensorInputs R
   positionalInput Γ := tensorPositionInputs R (TensorPosition Γ)
   inputIso _ := Iso.refl _
   unaryIso := tensorUnaryIso R
+  nullaryIso := tensorNullaryIso R _
+  consIso := tensorConsIso R
   total A op := ModuleCat.ofHom (PiTensorProduct.lift (A.total op))
   relation _ r := False.elim (scope.noRelations.false r)
   domain _ p := False.elim (scope.noPartial.false p)
@@ -208,20 +243,21 @@ def TensorTheory.presentation {base : CoefficientRing.{u}} {L : Type u}
     TensorLaw base.Carrier sig
   law := T.law
 
-/-- The full-domain tensor mode of Definition 4.1 evaluates the equations of
-its tensor presentation and uses the specified scalar extension rule. -/
-def tensorMode (base : CoefficientRing.{u}) {L : Type u}
-    (T : TensorTheory base sig L) (rule : TensorCoefficientRule sig) :
-    CoefficientRealizationMode base T.presentation where
-  Object S := TensorAt S.scalars sig
+/-- The module carriers and primitive operations of a tensor mode, together with
+the evaluation of its written statements. -/
+def tensorModeOfPresentation (base : CoefficientRing.{u}) (T : RealizationTheory.{u})
+    (scope : FullDomainTensorSignature T.signature) (rule : TensorCoefficientRule T.signature)
+    (holds : ∀ S : CoefficientAlgebra base, TensorAt S.scalars T.signature → T.Statement → Prop) :
+    CoefficientRealizationMode base T where
+  Object S := TensorAt S.scalars T.signature
   Carrier S :=
     letI := S.scalars.ring
     Cat.of (ModuleCat.{u} S.scalars.Carrier)
   rule S :=
     letI := S.scalars.ring
-    tensorStructureRule S.scalars.Carrier sig T.scope
+    tensorStructureRule S.scalars.Carrier T.signature scope
   admissible _ _ := True
-  Native := TensorAt base sig
+  Native := TensorAt base T.signature
   nativeStates A s :=
     letI := base.ring
     A.carrier s
@@ -238,7 +274,14 @@ def tensorMode (base : CoefficientRing.{u}) {L : Type u}
     letI := S'.ring
     (tensorPointEquiv ((rule.change f A).carrier s)).symm
       (rule.changeState f A s (tensorPointEquiv (A.carrier s) p))
-  holds S A law :=
+  holds := holds
+
+/-- The full-domain tensor mode evaluates the written equations of its
+presentation using the specified scalar extension rule. -/
+def tensorMode (base : CoefficientRing.{u}) {L : Type u}
+    (T : TensorTheory base sig L) (rule : TensorCoefficientRule sig) :
+    CoefficientRealizationMode base T.presentation :=
+  tensorModeOfPresentation base T.presentation T.scope rule fun S A law =>
     letI := base.ring
     letI := S.scalars.ring
     (law.mapScalars S.fromBase).holds A
@@ -293,7 +336,7 @@ end TensorTheory
 
 /-- The tensor meaning of exactly the required Law declarations retained by
 a Part I context, with a tensor reading of each original statement. -/
-abbrev SelectedTensorModels {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
+abbrev PositiveLawTensorModels {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
     {base : CoefficientRing.{u}} (S : CoefficientAlgebra base)
     (scope : FullDomainTensorSignature (DeclarationContext.Selected.presentation U).signature)
     (reading : ∀ l : (DeclarationContext.Selected.presentation U).theory.LawName,
@@ -303,13 +346,13 @@ abbrev SelectedTensorModels {P : PrimitivePresentation.{u}} (U : DeclarationCont
     (TensorTheory.read (DeclarationContext.Selected.presentation U).theory scope reading) rule).Models S
 
 /-- An object of the selected tensor meaning satisfies each original required statement. -/
-theorem selectedTensorModel_holds {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+theorem positiveLawTensorModel_holds {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
     {base : CoefficientRing.{u}} {S : CoefficientAlgebra base}
     {scope : FullDomainTensorSignature (DeclarationContext.Selected.presentation U).signature}
     {reading : ∀ l : (DeclarationContext.Selected.presentation U).theory.LawName,
       TensorLawReading base scope ((DeclarationContext.Selected.presentation U).theory.law l)}
     {rule : TensorCoefficientRule (DeclarationContext.Selected.presentation U).signature}
-    (A : SelectedTensorModels U S scope reading rule)
+    (A : PositiveLawTensorModels U S scope reading rule)
     (l : (DeclarationContext.Selected.presentation U).theory.LawName) :
     letI := S.scalars.ring
     ((DeclarationContext.Selected.presentation U).theory.law l).Holds (A.obj.elementStructure scope) :=

@@ -2,6 +2,8 @@ import Formal.SHIGURE.Part1.ContextSelectedMorphisms
 import Formal.SHIGURE.Part2.Realizations.CoefficientModels
 import Formal.SHIGURE.Part2.Realizations.ZariskiModels
 import Formal.SHIGURE.Part2.Realizations.SectionStructures
+import Mathlib.CategoryTheory.Monoidal.Types.Basic
+import Mathlib.CategoryTheory.Sites.CartesianMonoidal
 
 /-!
 # The copying mode as a coefficient realization
@@ -12,6 +14,7 @@ Zariski locally split. The Law test is subsheaf inclusion on the test site.
 -/
 
 open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
+open scoped MonoidalCategory
 
 universe u
 
@@ -101,16 +104,80 @@ private def copyingUnaryIso (S : Scheme.{u}) {K : Type u} (s : K) :
     copyingInputs S [s] ≅ CategoryTheory.Pi.eval (fun _ : K => ZariskiSheaf S) s :=
   NatIso.ofComponents (fun A => copyingUnaryIsoAt A s) (fun _ => Sheaf.Hom.ext rfl)
 
+private def copyingNullaryIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSheaf S) :
+    sheafTuple A [] ≅ 𝟙_ (ZariskiSheaf S) where
+  hom := ⟨{ app := fun _ => ↾fun _ => PUnit.unit }⟩
+  inv := ⟨{
+    app := fun _ => ↾fun _ => Assignment.empty
+    naturality := by
+      intro U V f
+      ext x
+      apply Assignment.ext
+      intro t i
+      exact nomatch i }⟩
+  hom_inv_id := by
+    ext U a
+    apply Assignment.ext
+    intro t i
+    exact nomatch i
+  inv_hom_id := by
+    ext U x
+    exact @Subsingleton.elim PUnit inferInstance _ _
+
+private def copyingNullaryIso (S : Scheme.{u}) (K : Type u) :
+    copyingInputs S ([] : List K) ≅ (Functor.const (K → ZariskiSheaf S)).obj (𝟙_ (ZariskiSheaf S)) :=
+  NatIso.ofComponents copyingNullaryIsoAt (by
+    intro A B f
+    ext U x
+    exact @Subsingleton.elim PUnit inferInstance _ _)
+
+private def copyingConsIsoAt {S : Scheme.{u}} {K : Type u}
+    (A : K → ZariskiSheaf S) (s : K) (Γ : List K) :
+    sheafTuple A (s :: Γ) ≅ A s ⊗ sheafTuple A Γ where
+  hom := ⟨{
+    app := fun _ => ↾fun a => (a.get .here, ⟨fun i => a.get (.there i)⟩)
+    naturality := by
+      intro U V f
+      ext a
+      rfl }⟩
+  inv := ⟨{
+    app := fun _ => ↾fun a => Assignment.cons a.1 a.2
+    naturality := by
+      intro U V f
+      ext a
+      apply Assignment.ext
+      intro t i
+      cases i <;> rfl }⟩
+  hom_inv_id := by
+    ext U a
+    apply Assignment.ext
+    intro t i
+    cases i <;> rfl
+  inv_hom_id := Sheaf.Hom.ext rfl
+
+private def copyingConsIso (S : Scheme.{u}) {K : Type u} (s : K) (Γ : List K) :
+    copyingInputs S (s :: Γ) ≅
+      ((CategoryTheory.Pi.eval (fun _ : K => ZariskiSheaf S) s).prod' (copyingInputs S Γ)) ⋙
+        MonoidalCategory.tensor (ZariskiSheaf S) :=
+  NatIso.ofComponents (fun A => copyingConsIsoAt A s Γ) (by
+    intro A B f
+    apply Sheaf.Hom.ext
+    ext U a
+    rfl)
+
 /-- The primitive diagrams of a copying realization use Cartesian tuples and
 the inclusions of the relation and domain subsheaves. -/
 def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
     StructureRule sig (Cat.of (ZariskiSheaf S))
       (SheafStructure sig (Scheme.zariskiTopology.over S)) where
   carrier A := A.carrier
+  monoidal := inferInstanceAs (MonoidalCategory (ZariskiSheaf S))
   input := copyingInputs S
   positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)
   inputIso := copyingInputIso S
   unaryIso := copyingUnaryIso S
+  nullaryIso := copyingNullaryIso S _
+  consIso := copyingConsIso S
   total := SheafStructure.total
   relation A r := realizedPredicate (A.relation r)
   domain A p := realizedPredicate (A.partialDomain p)
@@ -178,7 +245,7 @@ private abbrev states {sig : Signature.{u}} {S : Scheme.{u}}
   (A.carrier s).val.obj (op (Over.mk (𝟙 S)))
 
 /-- Pull a designated state back to the new coefficient scheme. -/
-private def changeStates {sig : Signature.{u}} {S S' : Scheme.{u}}
+def restrictState {sig : Signature.{u}} {S S' : Scheme.{u}}
     (f : S' ⟶ S) (A : SheafStructure sig (Scheme.zariskiTopology.over S)) (s : sig.SortType) :
     states A s → states (restrictStructure f A) s :=
   let g : (Over.map f).obj (Over.mk (𝟙 S')) ⟶ Over.mk (𝟙 S) :=
@@ -235,7 +302,7 @@ def copyingMode (base : CoefficientRing.{u}) (T : Theory.{u}) :
   change f := restrictStructure (CoefficientRing.specMap f)
   changePoints f A s p :=
     (copyingPointEquiv ((restrictStructure (CoefficientRing.specMap f) A).carrier s)).symm
-      (changeStates (CoefficientRing.specMap f) A s (copyingPointEquiv (A.carrier s) p))
+      (restrictState (CoefficientRing.specMap f) A s (copyingPointEquiv (A.carrier s) p))
   holds _ A l := A.holdsLaw l
 
 /-- The copying meaning of a selected primitive presentation in its coefficient algebra. -/
