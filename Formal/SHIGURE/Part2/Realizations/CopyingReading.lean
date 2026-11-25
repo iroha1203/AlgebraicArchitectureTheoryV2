@@ -15,7 +15,6 @@ larger universe than the designated states. Part I's coefficient scheme
 uses a category whose arrows belong to the state universe. A map of
 sections induced by a sheaf arrow is small, and its equality expresses
 equality of the maps available to a reading. The functor from the sheaf
-/-- Copying models inherit identities and composition from the structure-preserving sheaf maps. -/
 structure category sends every preserving sheaf arrow to this actual map.
 -/
 
