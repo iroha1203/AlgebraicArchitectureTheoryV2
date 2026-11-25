@@ -51,7 +51,7 @@ owned arrow は対象を増やさず、名前付き生成操作の候補とな�
 参照 leaf は from を指すものだけを to へ移し、それ以外は固定する。
 参照構造と target field の実在を検査し、source 部分 F 外では恒等として U 上へ全域化する。
 この総写像の configuration 保存を確認したものが、二つの部分対象間の生成操作である。
-未確認の arrow は候補のまま残す。候補を黙って除外して完成した object algebra とせず、
+未確認の arrow は候補のまま残す。候補を暗黙に除外して完成した object algebra とせず、
 必要な保存検査が未決なら構成も未決、反証されたならその構成を反証する。
 `change` は §4 の候補状態への作用であり、この内部 arrow の操作族へ加えない。
 
@@ -500,7 +500,7 @@ scopes は有限の変更単位について、修復可能で、どの真部分�
 これは最小件数の範囲だけを選ぶことと異なる。包含の単調性を使い、必要な範囲を順次調べる。
 全ての範囲の回答表やべき集合を前処理で構成しない。異なる極小範囲を全て扱い、
 探索を完了した場合だけ完全一覧とする。停止時の既発見範囲は証拠として残せるが、
-未発見範囲がないことや全体の不存在へ昇格させない。
+未発見範囲がないことや全体の不存在として扱わない。
 
 candidate は部品の fiber を元 change parameter の型付き割当てへ戻す。
 apply は同じ候補域への所属、範囲の固定条件、型、更新式と元 Law への再代入を検査して対象を作る。
@@ -573,7 +573,7 @@ Law条件、範囲 S の固定条件から、元Assignmentの集合 M_S(x) を�
 
 核はまず許可集合の十分性を検査し、十分なら原始位置のcanonical順に一つずつ除き、十分性が保たれるものを削る。
 結果は包含極小であり最小件数ではない。可否では全修復の対象・表示・件数を作らず、共通解も局所関係の結合と
-元parameterの復元を使う。未完了の走査や停止を完全な分割・十分性・共通解へ昇格しない。
+元parameterの復元を使う。未完了の走査や停止を完全な分割・十分性・共通解として扱わない。
 不足の場合、判定には同じ観測値で可否が異なる候補対、構成には共通部分が空の候補群を残す。
 各残した読取りが必要な理由も、その位置を除いた観測群の反例に対応させる。
 
@@ -752,8 +752,8 @@ H¹ という群、対象の類、その零性を別々に保持する。
 対象に結び付く構成のない類を追加しない。
 
 `[c]=0` なら補正を解いて matching family を生成する。
-確認済みの貼り合わせ条件と状態対応を使って大域解の証人を生成し、元の Law に再代入する。
-この証人は修復存在の証拠であり、Repair/object の出力には §4 の元 Assignment の一意性も必要である。
+確認済みの貼り合わせ条件と状態対応を使って大域解の具体例（witness）を生成し、元の Law に再代入する。
+この具体例は修復存在の証拠であり、Repair/object の出力には §4 の元 Assignment の一意性も必要である。
 直接の持上げ判定と Čech 類の零性は、それらの比較条件を確認した場合にだけ同値とする。
 cover-relative Čech 計算を sheaf cohomology へ同定する場合も、その接続条件を別に確認する。
 
@@ -781,7 +781,7 @@ d^1:\mathbb Z^3\to0,\qquad c=(-1,0,\gamma-1).
 商の同定 `H¹≅Z` は `(-1,1,-1)` によって生成され、対象の類は `2−γ` へ写る。
 この計算には `using=move` が必要であり、using 省略時の零次元系とは区別する。
 γ=3 なら非零類 −1 と大域解なし、γ=2 なら零類と全解 `(k,k+1,k+2)`（k∈Z）を返す。
-γ=2 の `(0,1,2)` は表示用特解・存在証人であり、平行移動の自由度が残るため Repair/object は返さない。
+γ=2 の `(0,1,2)` は表示用特解・存在の具体例（witness）であり、平行移動の自由度が残るため Repair/object は返さない。
 γ 未観測なら D、係数、微分、H¹ は計算できるが、b、局所解、対象の類は未確定となる。
 
 ## 8. 評価の十分性と診断の比較
@@ -874,11 +874,11 @@ Map の行を共有するときは、参照の始域型・終域型とキーの�
 コスト推定を表す計算計画ではない。問いの評価順と結果の参照は[実行仕様](execution.md)に従う。
 解集合や写像を、その数学的な型のまま後続の問いへ渡す。
 CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)に従い、
-数学的対象から決まる値を返す。表示用の特解・基底・証明証人は出力に保持して検査・表示に使い、
+数学的対象から決まる値を返す。表示用の特解・基底・証明の具体例（witness）は出力に保持して検査・表示に使い、
 その便宜的選択を新しい Law の束縛へ変換する経路にしない。
 核は表示を変えて計算する場合も、型付きの対象・射・類と、それらについての判定を保つ。
 
-## 11. SHIGURE の標準構成・適用条件・沈黙規律
+## 11. SHIGURE の標準構成・適用条件・判断不能の原則
 
 独立クレート `archsig-shigure` は、[Law §7](law.md#7-shigure-宣言原始表示比較変更仕様評価条件タスク図式経路移送複数解釈族) の
 原始表示・比較・変更仕様・評価条件・図式・経路・移送・複数解釈族宣言から、次の 10 構成を有限特殊化として計算する。
@@ -891,17 +891,17 @@ CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)�
 | 相互作用解析（`shigure_interaction`） | 閉条件の自由パラメータ座標環 $k[t_1,\ldots,t_n]$ における残差 ideal の座標面支持から、最大零化部分集合サイズ $r$（$\forall |S| \le r,\, i_S^* J = 0$）、相互作用に参加する最小変数数、包含極小の不成立部分族を算出する | 閉条件のみで構成される自由パラメータ空間、有効な係数零判定、有限個の残差多項式への有限還元 | 開条件 $D(g)$ が本質的に絡む場合は閉条件へ丸めず `undetermined`（`open_condition_in_interaction`） |
 | 固定図式の全補完（`shigure_diagram`） | 有限図式形 $J$ と固定部分図式 $K \hookrightarrow J$（四角形・鎖・一般有限図式）に対し、射の向き（`state_map` / `time_order`）に応じた全辺の保存義務、および全関係式について状態射合成一致と操作語翻訳合成一致を生成し、商環上の ideal 所属判定と Rabinowitsch 空性 witness・全頂点/全辺復元・数学モデル再評価検算を行う | 有限な頂点・生成射・関係表示、固定部分図式 $K$ の閉性と不変、商環所属・点集合域の有効算法成立、未観測値不在 | 2 枝の観測一致や係数条件だけで可換性を成立扱いせず、商環も ambient 零へ強めない。条件外は `undetermined` |
 | 一段変更経路と細分化（`shigure_path`） | 明示段数 $n \ge 0$ と有限な一段許容変更規則から固定 protocol 間変更経路（`fixed_protocol_change_path`）の `find` / `concatenate` / `subdivide` を計算し、各段の保存・評価条件と細分化合成一致を検証・復元する。また係数を状態に含み切替前の全許可有限語保存を伴う拡大 protocol 実行経路（`enlarged_protocol_execution_path`）を `path_kind` により区別して導出する | 明示された有限長 $n \ge 0$（`mode find` / `mode subdivide` で省略時は無界探索として `undetermined`、`mode concatenate` は `first`・`second` の連結長で有限長確定のため省略可）、統一された射の向き、一段規則（`find`/`subdivide`）または部分列（`concatenate`）の有限還元成立、未観測値不在 | 射・翻訳のない係数点列だけから経路を作らず、恒等一段規則のみの異なる 2 点間は `refuted` とする。`mode find` / `mode subdivide` で `length` を省略した無界探索等は `undetermined`（`unbounded_search_out_of_scope`） |
-| 合法状態移送と合成（`shigure_transfer`） | 意味保存射列 $h$・開始域 $\iota_0$（`op.domain_laws`・`step.domain_laws` 含む）に対する厳密な lift 条件 $h_{01} m_{01} = \iota_0$ と目標 phase Law を生成し、共通定義域 $D_w$ 上での新語観測保存（`word_checks`）、旧語 $v$ の lift 探索（`old_word_lifts`）、および多段引き戻し定義域 $D_{0k}$（`full_isomorphic` / `proper_subdomain` / `empty`）と `require_full_domain` を計算する | 初段基準表示 $X_0$ のパラメータフリー／編集不可、連鎖整合、有限 `max_length` 指定（`old_word_lift` 探索時）、有効算法成立、未観測値不在 | 観測一致だけで $h_{01} m_{01} = \iota_0$ を代用せず、$h_{01}$ の意味保存性から旧語 lift 存在を自動帰結させない。`max_length` 未指定無界探索は `undetermined`（`unbounded_search_out_of_scope`） |
+| 有効状態移送と合成（`shigure_transfer`） | 意味保存射列 $h$・開始域 $\iota_0$（`op.domain_laws`・`step.domain_laws` 含む）に対する厳密な lift 条件 $h_{01} m_{01} = \iota_0$ と目標 phase Law を生成し、共通定義域 $D_w$ 上での新語観測保存（`word_checks`）、旧語 $v$ の lift 探索（`old_word_lifts`）、および多段引き戻し定義域 $D_{0k}$（`full_isomorphic` / `proper_subdomain` / `empty`）と `require_full_domain` を計算する | 初段基準表示 $X_0$ のパラメータフリー／編集不可、連鎖整合、有限 `max_length` 指定（`old_word_lift` 探索時）、有効算法成立、未観測値不在 | 観測一致だけで $h_{01} m_{01} = \iota_0$ を代用せず、$h_{01}$ の意味保存性から旧語 lift 存在を自動帰結させない。`max_length` 未指定無界探索は `undetermined`（`unbounded_search_out_of_scope`） |
 | 複数解釈族の頑健性判定（`shigure_robustness`） | 観測と整合する実現族 $U \xrightarrow{q} B$ と候補族 $C \xrightarrow{\pi} B$ に対し、fiber 非空性 $U_b \ne \varnothing$・指定候補妥当性・$\forall u\,\exists c$・$\exists c\,\forall u$ の 3 量化を分離判定し、存在型 $E_{\mathrm{exists}}$ の補完 witness 復元と再評価検算（`reevaluation`）、全係数移送安定性 $\mathcal{R}(R)$（双対数・多項式環反例含む）、および粗/細 reading 比較（raw 候補残差評価含む）を行う | 未観測座標不在、有限還元可能な表示と有効算法範囲内の点集合域、`preservation` 使用時の `before` 保護、$\mathcal{R}(R)$ の線形・nilpotent 適用域 | 空 fiber を暗黙に正常成立扱いせず（`vacuously_true_empty_fiber`）、未観測依存（`unobserved_dependency`）・非線形有理/整数点判定（`nonlinear_point_existence_out_of_scope`）・$\mathcal{R}(R)$ 適用外（`universal_ring_out_of_scope`）は `undetermined` とする |
 | 構成可能幾何像と Chevalley 分類（`shigure_chevalley`） | 代数閉包上の構成可能集合演算（加算・積・補集合・準有限生成格子上の構成可能像射影）により有効領域 $E_{\mathrm{eff}}$ と 4 領域（`robust_all_pass` / `all_fail` / `mixed` / `empty_realizations`）を計算し、`mixed` 対の witness 抽出・有理点 fiber probe・Laurent 多項式環上の大域正則切断非存在検定・$\mathcal{R}(R)$ 対照を返す | `domain` が `Q`/`Z` かつ `point_domain` が `algebraic_closure`、有限個の方程式・可逆元表示、分岐・S-pair 上限内、未観測値不在 | 射影を開/閉包へ粗く丸めず、幾何点分類と有理点 fiber 不存在や $\mathcal{R}(R)$ 反証を混同しない。層別上限超過・適用外は `undetermined`（`constructible_stratification_out_of_scope`） |
 | 追加観測列挙と費用比較（`shigure_observations`） | 異判定対 $(u, u', c) \in \mathcal{D}_R$ と宣言済み観測関数群 $I$ の評価一致・分離添字集合 $D_d$ を求め、十分性判定・不足 witness（$D_d = \varnothing$）・全包含極小十分観測集合 $J \subseteq I$（全 1 要素削除反例対付き）・費用指定時ランキング（`cost_ranked_sets`）・`law_readout` adequacy 対比を計算する | 有限列挙・候補観測数および分岐上限内、非負整数費用、有効算法範囲内の評価、`observed` 未欠測 | 最小要素数 1 解へ潰して他の包含極小解を捨てない。候補集合・観測数の計算上限超過や点列挙不能時は `undetermined`（`finite_enumeration_out_of_scope`） |
 
-### 沈黙規律と射の向き・再評価のスコープ区別
+### 判断不能の原則と射の向き・再評価のスコープ区別
 
 1. **係数域と点集合域を混同しない**: 代数閉包上の幾何点存在（`algebraic_closure`）と、
    $\mathbb{Q}$ 点（`Q_points`）・$\mathbb{Z}$ 点（`Z_points`）・$\mathbb{F}_p$ 点（`Fp_points`）・
    普遍環（`universal_ring`）の判定を型と出力欄で常に区別する。
-2. **判断不能（沈黙）は正常出力**: 適用条件を外れる入力（無界経路探索・無界旧語 lift 探索・構成可能層別分岐上限・有限列挙上限・$\mathcal{R}(R)$ 適用外を含む）に対し、
+2. **判断不能（undetermined）は正常出力**: 適用条件を外れる入力（無界経路探索・無界旧語 lift 探索・構成可能層別分岐上限・有限列挙上限・$\mathcal{R}(R)$ 適用外を含む）に対し、
    誤った `established` / `refuted` や暗黙の近似を返さず、理由コード（`unbounded_search_out_of_scope`・`constructible_stratification_out_of_scope`・`finite_enumeration_out_of_scope`・`universal_ring_out_of_scope` 等）・
    不足スロット・適用外詳細を添えた `verdict: "undetermined"` を正常出力（CLI では `status: "partial"`, exit 2）として返す。
 3. **射の向きと合成順の型レベル区別**: 図式および経路では、状態比較射の向き（`state_map`: `after -> before`、合成 $h_{01} \circ h_{12}$）と

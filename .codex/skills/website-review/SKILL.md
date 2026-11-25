@@ -8,7 +8,7 @@ description: website/ と docs/website の実装完了後の最終差分を4観�
 公開 web surface の差分を敵対的にレビューする。分野の所有範囲は
 `website/` に加え `docs/website/`。
 
-## 必須契約
+## 必須ルール
 
 `.codex/skills/_shared/review-protocol.md` と
 `.codex/skills/_shared/refutation-checklist.md` を全文読み、
@@ -21,7 +21,7 @@ description: website/ と docs/website の実装完了後の最終差分を4観�
 
 ## 4観点(サブエージェント必須)
 
-4観点を4つの独立したsubagentに分け、共有契約どおり利用可能枠まで並行する。
+4観点を4つの独立したsubagentに分け、共有手順どおり利用可能枠まで並行する。
 
 1. **public reading surface**
    - Website が docs の複製に退化していないか、主題が first viewport で
@@ -36,7 +36,7 @@ description: website/ と docs/website の実装完了後の最終差分を4観�
    - ArchSig / FieldSig の責務が否定的 non-goal 羅列でなく肯定的責務として
      書かれているかを疑う。
 
-3. **cross-surface 同期**(#3082 由来)
+3. **cross-surface 同期**
    - Lean status・台帳語彙・claims 集約の website 表示が、`docs/aat/` の
      台帳・guideline の現在の語彙と drift していないかを疑う。
    - theorem 数、status タグ、部構成など docs 由来の数値・ラベルの
@@ -62,5 +62,5 @@ description: website/ と docs/website の実装完了後の最終差分を4観�
 
 ## 親 Codex の統合判定
 
-共有契約の統合出力に従い、判定を
+共有手順の統合出力に従い、判定を
 `Needs changes` / `No major findings` / `Blocked / cannot determine` で返す。

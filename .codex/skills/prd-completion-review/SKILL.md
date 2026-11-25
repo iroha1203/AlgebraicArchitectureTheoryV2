@@ -7,7 +7,7 @@ description: すべての実装PRが完了した後に、PRD全文から達成�
 
 PRD の達成条件を、実装作業に進まずレビューする。
 
-## 必須契約
+## 必須ルール
 
 `.codex/skills/_shared/review-protocol.md`、
 `.codex/skills/_shared/refutation-checklist.md`を読み、
@@ -59,10 +59,10 @@ Lean要件を含むPRDでは
    - **requirement matrix を作る。** AC だけでなく、PRD の `改修`(R 番号)、
      `Implementation Plan`、`Failure Contract`、`Changed / Removed Fields` を抽出し、
      各 AC がどの R / PR 区分に依存するかの対応表にする。これは AC を置き換える
-     合否基準ではない(R 群を独立の合否条件へ昇格させてスコープを広げない)。
+     合否基準ではない(R 群を独立の合否条件として扱ってスコープを広げない)。
      用途は 2 つ: (i) AC 充足の証拠を探す索引、(ii) 見落とし検出 —
      どの周回・どの PR にも接続していない R 群(実装計画の丸ごと欠落)が、
-     依存する AC の充足を空洞化していないかを確認し、空洞化していれば該当 AC を `未達` とする。
+     依存する AC の充足を形骸化していないかを確認し、実質を欠いていれば該当 AC を `未達` とする。
    - **must-not-remain リストを作る。** PRD の `現状診断` が解消対象として名指しした
      旧構造・旧挙動・旧文言(型、フィールド、fail-fast 挙動、hardcode、docs 記述)を
      1 項目 1 行で抽出する。PRD が明示的に「別 PRD の管轄」「既知の残置」とした項目は
@@ -103,7 +103,7 @@ Lean要件を含むPRDでは
    - 重複、矛盾、過剰 claim、PRD 外要求を整理する。
    - 各条件を `満たした`, `未達`, `未確認`, `PRD欠陥`, `範囲外` に分類する。
    - 親と規定全 lane（ツール専用 PRD は 2 本、その他は 4 本）の条件抽出・判定・coverage を照合し、
-     欠落と不一致を一次証拠で解消する。規定全 lane の有資格な結果と親の再判定が揃い、
+     欠落と不一致を一次証拠で解消する。規定全 lane の有効な結果と親の再判定が揃い、
      全必須条件・拘束条件・must-not-remain・問いの回答が確認できた場合だけ `達成済み` とする。
      未完了 lane、未解消 finding、coverage 不足は親の自己点検で埋めず、未達・未確認・PRD 欠陥として報告する。
    - finding は実装側へまとめて戻す。修正後は snapshot を固定し直し、規定全 lane を新規に
@@ -111,10 +111,10 @@ Lean要件を含むPRDでは
 
 ## Lean 反証チェックリスト
 
-昇格・証明・発火を主張する条件では、statement を実読して反証を試みる。
+status 引き上げ・証明・具体例の実在を主張する条件では、statement を実読して反証を試みる。
 台帳のstatus記載は根拠にしない。Lean固有項目は
-`.codex/skills/_shared/lean-refutation-checklist.md` §1–§3、scope資格・帰属は
-`.codex/skills/_shared/refutation-checklist.md` §4–§5を正本として適用する。
+`.codex/skills/_shared/lean-refutation-checklist.md` §1–§3、scope 記載要件・帰属は
+`.codex/skills/_shared/refutation-checklist.md` §4–§5を基準として適用する。
 
 ## 判定基準
 
@@ -137,7 +137,7 @@ PRD がこれより狭い検証を指定している場合は、PRD 指定を優
 
 ## 報告形式
 
-共有契約と[references/reviewer-lanes.md](references/reviewer-lanes.md)の
+共有手順と[references/reviewer-lanes.md](references/reviewer-lanes.md)の
 報告schemaに従う。
 
 **監査コメントの投稿義務**: prd-loop の最終達成条件レビューとして実行された

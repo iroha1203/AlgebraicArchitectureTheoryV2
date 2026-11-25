@@ -41,12 +41,12 @@
 ### 3.2 数学本文との整合・mathlib 接続・Lean 品質規律
 
 - すべての新規宣言は [Lean 品質基準](../aat/lean_quality_standard.md) に従う：
-  - **§1.1 material premise の三分類申告**：PR 本文で各定理の仮定を「本文由来（部・定理番号つき）」「放電済み（放電宣言名つき）」「未放電」に分類して申告する。未放電仮定を持つ定理は本 PRD の完了根拠としない。
+  - **§1.1 material premise の三分類申告**：PR 本文で各定理の仮定を「本文由来（部・定理番号つき）」「解消済み（解消宣言名つき）」「未解消」に分類して申告する。未解消仮定を持つ定理は本 PRD の完了根拠としない。
   - **§1.2 premise 使用性**：未使用引数を残さない。
-  - **§1.3–§2.3 API 接続義務と mathlib 再発明の禁止**：
+  - **§1.3–§2.3 API 接続義務と mathlib 重複実装の禁止**：
     - mathlib v4.28.0 に存在する概念（`CategoryTheory`, `Coalgebra`, `MvPolynomial`, `SymmetricAlgebra`, `Ideal.Quotient`, `Localization`, `PrimeSpectrum`, `AlgebraicGeometry.Scheme`, `Scheme.Spec`, `Scheme.GlueData`, `Module.Flat`, `Module.FaithfullyFlat`, `Module.Finite`, `Module.Projective`, `RingHom.FinitePresentation`, `Matrix.GeneralLinearGroup` 等）はそのまま用いるか、やむを得ず別表現を選ぶ場合は `Implementation notes` に理由を明記し comparison 同値・関手で直接接続する。
     - mathlib v4.28.0 に直接の定義が存在しない上位概念（一般スキーム上の準連接加群/代数層、fppf 位相・fppf スタック、torsor、代数的空間・代数的スタック、相対 $\mathrm{Spec}$ 等）は `Formal/SHIGURE/Part2/` 内に小さく定義し、アフィン試験スキーム $\mathrm{Spec}\,R$ 上で mathlib の `Module` / `Algebra` / `Scheme.Spec` / `Scheme.GlueData` への明示的な比較同値・接続定理を必ず備える。
-    - 本文がスキーム論の標準事実として引用する命題（例：付録 B.3 の「平坦かつ局所有限表示なスキーム射の開性」、第 6.4 節の「滑らかな射の平坦性・基底変換安定性・fppf 局所性」）についても、`axiom`・`sorry`・未放電の引数仮定で済ませず、mathlib 定理の直接利用または `Formal/SHIGURE/Part2/` 内での完全証明により放電する。
+    - 本文がスキーム論の標準事実として引用する命題（例：付録 B.3 の「平坦かつ局所有限表示なスキーム射の開性」、第 6.4 節の「滑らかな射の平坦性・基底変換安定性・fppf 局所性」）についても、`axiom`・`sorry`・未解消の引数仮定で済ませず、mathlib 定理の直接利用または `Formal/SHIGURE/Part2/` 内での完全証明により解消する。
   - **§1.4 instance ペア**：新規の `Prop` 述語や構造に対し、肯定・否定の双方の witness を備える（本文の番号付き 9 例および無番号具体例・反例を直接形式化する）。
   - **§2.1–§2.5**：小さい定義、data と `Prop` の分離、definitional escape 禁止、API 設計規律（mathlib 準拠：公開の主要定義に `ext` / `@[simps]` / constructor / destructor / 特徴づけ補題を定義と一体で提供）、自明でない表現選択への `Implementation notes` 記載。
   - **§4.1 標準公理検査**：許容するカーネル公理は `propext`, `Classical.choice`, `Quot.sound` のみ。`axiom`, `admit`, `sorry`, `unsafe`, `native_decide`, `debug.skipKernelTC` を禁止する。
@@ -85,7 +85,7 @@ Formal/
 
 ## 4. 一次仕様（Target Statements）と受け入れ条件（Acceptance Criteria）
 
-本節を本 PRD における **target statement の一次仕様**（[Lean 品質基準](../aat/lean_quality_standard.md) §5）とする。各 AC の数学的主張・仮定・結論の正典は対応する数学本文の番号付き項目であり、仮定の追加・結論の弱化・対象縮小（有限化・固定化・非零環への無断限定等）を禁止する。
+本節を本 PRD における **target statement の一次仕様**（[Lean 品質基準](../aat/lean_quality_standard.md) §5）とする。各 AC の数学的主張・仮定・結論は対応する数学本文の番号付き項目を基準とし、仮定の追加・結論の弱化・対象縮小（有限化・固定化・非零環への無断限定等）を禁止する。
 
 ### AC-01: 付録 B.1（開閉分割と冪等元・多項式/対称代数/Spec・係数変更と方程式）
 
@@ -197,8 +197,8 @@ Formal/
 
 1. `Formal/SHIGURE/` または `Formal/SHIGURE.lean` が `Formal.AG`・`Formal.Util`・`ResearchLean` のいずれかを import している。
 2. `Formal/SHIGURE/` 配下に `sorry`・`admit`・`axiom`・`unsafe`・`native_decide`・`debug.skipKernelTC`（異常系テスト専用の分離箇所を除く）が残存している、または `check_shigure_declarations.lean` / `#shigure_assert_standard_axioms_only` が通らない。
-3. 数学本文（第4–6章・付録B・設定 20.7・補題 20.8）の番号付き証明付き主張 25 件、節内主張（4.5 節の局所分裂複製対象の Zariski descent、B.3 の一般スキーム fppf descent およびスタック上相対 Spec 拡張、5.4/6.1 節の宣言制限・係数変更可換性）、または番号付き具体例 9 件および本文中の無番号具体例・反例のいずれかに未証明・省略・仮定追加（未放電仮定）・結論弱化・対象縮小（有限化・固定化・非零環への無断限定等）がある。
-4. スキーム論の標準事実（平坦局所有限表示射の開性、滑らかな射の平坦性・基底変換安定性・fppf 局所性等）を未放電仮定・typeclass 仮定・構造フィールドへ逃がして閉じている。
+3. 数学本文（第4–6章・付録B・設定 20.7・補題 20.8）の番号付き証明付き主張 25 件、節内主張（4.5 節の局所分裂複製対象の Zariski descent、B.3 の一般スキーム fppf descent およびスタック上相対 Spec 拡張、5.4/6.1 節の宣言制限・係数変更可換性）、または番号付き具体例 9 件および本文中の無番号具体例・反例のいずれかに未証明・省略・仮定追加（未解消仮定）・結論弱化・対象縮小（有限化・固定化・非零環への無断限定等）がある。
+4. スキーム論の標準事実（平坦局所有限表示射の開性、滑らかな射の平坦性・基底変換安定性・fppf 局所性等）を未解消仮定・typeclass 仮定・構造フィールドへ委ねて未証明のままとしている。
 5. 定義側に結論を埋め込む definitional escape、または mathlib の圏・余代数・多項式環・対称代数・加群・平坦性・スキーム・接着構成と接続しない閉じたラッパーで済ませている。
 6. PRD 完了前に、本 PRD への参照がリポジトリ内の他文書・コードに残っている、または恒久規律の更新漏れがある。
 
@@ -238,7 +238,7 @@ Formal/
 
 ## 8. 停止条件
 
-次のいずれかに該当した時点で実装ループを停止し、状況を報告して人間判断を仰ぐ。
+次のいずれかに該当した時点で実装ループを停止し、状況を報告して人間の判断を求める。
 
 1. 数学本文（第4–6章・付録B・設定 20.7・補題 20.8）の記述に Lean 形式化上の曖昧さ・不整合・欠落が見つかり、Tier 1 文書の判断または PRD の改訂が必要になった場合（ループ内で PRD や数学本文を編集しない）。
 2. [Lean 品質基準](../aat/lean_quality_standard.md) §5.3 に該当する target statement の変更（仮定の追加・結論の弱化・対象縮小）が必要と判明した場合。

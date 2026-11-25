@@ -1,12 +1,8 @@
 # ArchSig AG measurement input contract
 
-> 本 doc は既存 fixture の `sourceRef.section` 解決のための section 台帳であり、
-> ArchMap が観測する入力の根拠を固定する(入力トライアドの正本は
-> [guideline.md](guideline.md)「責務範囲(入力トライアドの正本)」)。測定結果や authored conclusion はこの台帳へ追加しない。
-
-この文書は、AG measurement fixtureの`sourceRef.section`が指す恒久的な入力契約である。
-各sectionは ArchMap が観測する有限 site、cover、restriction、law witness の意味を固定し、
-測定結果そのものは固定しない。
+> この文書は、既存 AG measurement fixture の `sourceRef.section` が指す恒久的な入力仕様（section 台帳）であり、
+> ArchMap が観測する有限 site、cover、restriction、law witness の意味と入力の根拠を固定する（3つの基本入力の責務は
+> [guideline.md](guideline.md#責務範囲3つの基本入力) を参照）。測定結果や authored conclusion はこの台帳へ追加しない。
 
 ## R3
 
@@ -17,8 +13,8 @@
 observed square-free forbidden supportとrepair候補を結ぶ入力。宣言された生成元と
 minimal hitting setはlaw surfaceから決まり、選択されたArchMapは各生成元の
 `supportAtomRefs`と構造verdictを観測する。宣言された生成元が選択されたArchMapで
-生起しない場合、構造verdictは`measured_zero`となり、未生起は`silence_by_design`
-statementとして残る。未生起の生成元はviewer cageを生成しない。
+観測されない場合、構造verdictは`measured_zero`となり、未観測は`silence_by_design`
+statementとして残る。未観測の生成元はviewer cageを生成しない。
 
 ## R5
 

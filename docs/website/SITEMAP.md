@@ -62,10 +62,10 @@ route の追加・削除は `website/src/**/index.html` の増減がそのまま
 | `/sft/references/research-program/` | `website/src/sft/references/research-program/index.html` | SFT research program。workbench、calibration、AI governance benchmark、closed-loop tooling へ進む研究計画。 |
 | `/sft/references/glossary/` | `website/src/sft/references/glossary/index.html` | SFT glossary。field、force、attractor、ForecastCone、ConsequenceEnvelope などの用語境界と参照先。 |
 | `/archsig/` | `website/src/archsig/index.html` | ArchSig v0.5.0 landing。one-cent drift、計測/投影/進化の三分業、Skill 5本、install。 |
-| `/archsig/getting-started/` | `website/src/archsig/getting-started/index.html` | 保証された最初の15分。デモ script 4幕、同じ acts を手で、ArchView、自リポジトリへの導線。全コマンド実走確認済み。 |
-| `/archsig/concepts/` | `website/src/archsig/concepts/index.html` | 三層入力契約、観測≠判定、5値 verdict、profile 相対性、comparability、沈黙の規律、theory anchor 導線。 |
+| `/archsig/getting-started/` | `website/src/archsig/getting-started/index.html` | 保証された最初の15分。デモ script 4ステップ、同じ手順を手で、ArchView、自リポジトリへの導線。全コマンド実走確認済み。 |
+| `/archsig/concepts/` | `website/src/archsig/concepts/index.html` | 三層入力の仕様、観測≠判定、5値 verdict、profile 相対性、comparability、判断不能の規則、理論参照への導線。 |
 | `/archsig/contracts/` | `website/src/archsig/contracts/index.html` | 入力 artifact authoring: ArchMap survey、LawPolicy / MeasurementProfile、gate policy、repair plan、validator。 |
-| `/archsig/analyses/` | `website/src/archsig/analyses/index.html` | evaluator カタログ(10本+foundation 行): 各 evaluator の問い・沈黙条件・理論 anchor。 |
+| `/archsig/analyses/` | `website/src/archsig/analyses/index.html` | evaluator カタログ(10本+foundation 行): 各 evaluator の問い・判断不能の条件・理論参照。 |
 | `/archsig/manual/` | `website/src/archsig/manual/index.html` | run directory の読み順(readThisFirst → insight → packet → gate / compare)とタスク別レシピ(CI / PR review / repair)。 |
 | `/archsig/reference/` | `website/src/archsig/reference/index.html` | CLI 10 subcommand、exit code、schema catalog、無互換方針、troubleshooting。 |
 | `/archsig/archview/` | `website/src/archsig/archview/index.html` | ArchView 解説+live demo(one-cent drift の実測3フレーム sequence。viewer assets は `viewer/` passthrough)。 |

@@ -52,7 +52,7 @@ bundle flag.
 | 第VIII部のデータ | 現行artifact / field | validator上の扱い |
 | --- | --- | --- |
 | selected site `X_M` | `MeasurementProfile.siteRef` | 非空文字列を要求する。参照先の内容はArchMap側で扱う。 |
-| selected cover `U_M` | `MeasurementProfile.coverRef` | 非空文字列を要求し、ArchMapのsite/cover digestとともにrun契約へ入れる。 |
+| selected cover `U_M` | `MeasurementProfile.coverRef` | 非空文字列を要求し、ArchMapのsite/cover digestとともにrun仕様へ入れる。 |
 | coefficient / effective coefficient | `MeasurementProfile.coefficient`, `effCoeff` | 非空文字列を要求する。有限計算に使う実装はevaluator registryが所有する。 |
 | selected witness variables / predicates | `law-equation-surface.witnessVariables[]`, `zeroPredicate`, `nonZeroPredicate` | witness変数は供給済みlaw surfaceから解決し、profileは計測手段と判定predicateだけを持つ。 |
 | verdict discipline | `verdictDiscipline` | `five-valued-structural-verdict@1`を要求し、`measured_zero`等を他の語へ縮約しない。 |
@@ -60,30 +60,30 @@ bundle flag.
 | law universe と選択されたreading | `LawPolicy.policies[]` の `law` / `lawPair`, `evaluator`, `basis`, `scope`, `severity` | LawPolicyは選択だけを持ち、predicateや計算結果を入力に埋め込まない。Torのlaw pairは明示列挙する。 |
 
 この対応表は、profileが指定した有限site・cover・係数計算の範囲でのみ
-measurementを読むという契約を固定する。`basisLedger[].path`や`siteRef` /
+measurementを読むという検査基準を固定する。`basisLedger[].path`や`siteRef` /
 `coverRef`の実体存在は、このvalidatorの宣言検査には含めない。
 
-## `analyze --out-dir` 出力契約
+## `analyze --out-dir` 出力仕様
 
 `--out-dir` はcurrent artifactが存在しない新しいディレクトリを指定する。ArchSigは
 既存のcurrent artifactを上書きせず、同じ出力先を再実行した場合は失敗する。これにより、
 異なるrunのvalidation reportやmeasurement artifactが同じ成果物として混在しない。
 
-退役済みartifactだけが残るディレクトリは、入力検証を開始したrunに限り整理して再利用できる。
+廃止済みartifactだけが残るディレクトリは、入力検証を開始したrunに限り整理して再利用できる。
 既知のartifact一覧外のファイルは削除しない。
 
 入力ファイルのopen / JSON parse / schema decodeがpreflight到達前に失敗した場合は、
 out-dirを変更せず、失敗manifestも出力しない。この場合、出力先に残る前run artifactは
 今回runの成果ではなく、呼び出し側はrun manifestを確認できるまで読み込んではならない。
 
-compareのR8契約では、contextsまたはcoversに差分がある場合、profile行をrun全体で
+compareのR8仕様では、contextsまたはcoversに差分がある場合、profile行をrun全体で
 `other_transition`として扱う。差分のある行だけに限定する実装変更は行わず、
 「差分があるprofile行」という要件は、この保守的なrun全体分類を許す注記として読む。
 
 SAGA の run 間読みは LawPolicy の selector ではなく、二つの analyze 測定記録から `compare` が
 導出する `residualDifferenceReading` である(comparability と derivation provenance の相等を
 ゲートに、residual delta の `B¹` 所属と `δ⁰` witness を計算する)。供給型の H¹ comparison slot
-(`h1ComparisonData` の explicit / presentation-generated)は #3822 で沈黙した。
+(`h1ComparisonData` の explicit / presentation-generated)は #3822 で廃止した。
 
 R8 の class-zero reading は、`compare` が両 run の MeasurementProfile-selected normalized ArchMap から
 coarse-to-fine context relationを導出し、fine contextごとの一意な coarse containment pathとderived class certificateを確認した場合だけ追加される。

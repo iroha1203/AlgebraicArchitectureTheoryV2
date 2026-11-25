@@ -1,8 +1,8 @@
 # Issue補助field
 
 `.github/ISSUE_TEMPLATE/implementation_request.yml` と
-`.github/ISSUE_TEMPLATE/documentation_request.yml` を本文構造の正本とする。
-同じfieldをこのreferenceへ複製しない。Issue Formsから作成した本文の`備考`に、
+`.github/ISSUE_TEMPLATE/documentation_request.yml` を本文構造のテンプレートとする。
+Issue Formsから作成した本文の`備考`に、
 次のうち該当する不足fieldだけを追加する。
 
 ## 関係・status
@@ -34,7 +34,7 @@ source of truth:
 - <移植元statementの結論一覧>
 
 Research下限原則:
-- 本体statementは移植元conjunctsをすべて覆う。
+- 本体statementは移植元conjunctsをすべて含む。
 - 結論を削減しない。分解・補題化は可。
 - 下限到達が不能と判明した場合は、実装で回避せず停止して報告する。
 ```
