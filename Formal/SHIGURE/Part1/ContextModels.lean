@@ -56,6 +56,12 @@ theorem restrict_comp (A : Models U) (inside : V ≤ U) (smaller : W ≤ V) :
 /-- A categorical model arrow has the usual retained carrier function. -/
 abbrev onSort {A B : Models U} (f : A ⟶ B) := (show ContextStructure.Hom A.obj B.obj from f.hom).onSort
 
+/-- Packaging a structure arrow as a model arrow retains its carrier function. -/
+theorem onSort_homMk {A B : Models U} (f : ContextStructure.Hom A.obj B.obj)
+    (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations) (x : A.obj.carrier s) :
+    onSort (ObjectProperty.homMk f : A ⟶ B) s kept x = f.onSort s kept x :=
+  rfl
+
 /-- The model identity is the identity at each retained sort. -/
 @[simp] theorem id_onSort (A : Models U) (s : P.signature.SortType)
     (kept : Declaration.sort s ∈ U.declarations) (x : A.obj.carrier s) : onSort (𝟙 A) s kept x = x :=

@@ -184,6 +184,13 @@ theorem selectVar_there {Γ : List P.signature.SortType} {s t : P.signature.Sort
     selectVar keep (Var.there (t := t) i) = .there (selectVar ((tailSortsSubset t Γ).trans keep) i) :=
   rfl
 
+/-- Selection past the first position commutes with transport to the explicit retained cons context. -/
+theorem selectVar_cast_there {Γ : List P.signature.SortType} {s t : P.signature.SortType}
+    (keep : Declaration.sorts (t :: Γ) ⊆ U.declarations) (i : Var Γ s) :
+    cast (congrArg (fun ctx => Var ctx ⟨s, varKept keep (Var.there (t := t) i)⟩) (context_cons t Γ keep))
+      (selectVar keep (Var.there (t := t) i)) = .there (selectVar ((tailSortsSubset t Γ).trans keep) i) :=
+  selectVar_there keep i
+
 /-- Erase the retention proof from a selected variable without changing its position. -/
 def ambientVar : {Γ : List P.signature.SortType} → (kept : Declaration.sorts Γ ⊆ U.declarations) →
     {s : SortName U} → Var (context Γ kept) s → Var Γ s.val
@@ -204,6 +211,21 @@ theorem ambientVar_there {Γ : List P.signature.SortType} {s : P.signature.SortT
     ambientVar keep (Var.there i : Var (context (s :: Γ) keep) t) =
       .there (ambientVar ((tailSortsSubset s Γ).trans keep) i) :=
   rfl
+
+/-- Erasure sends the transported head to the original head. -/
+theorem ambientVar_cast_here {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
+    ambientVar keep (cast (congrArg (fun ctx => Var ctx _) (context_cons s Γ keep).symm) Var.here) =
+      .here :=
+  ambientVar_here keep
+
+/-- Erasure sends a transported tail position to the corresponding original tail position. -/
+theorem ambientVar_cast_there {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) {t : SortName U}
+    (i : Var (context Γ ((tailSortsSubset s Γ).trans keep)) t) :
+    ambientVar keep (cast (congrArg (fun ctx => Var ctx t) (context_cons s Γ keep).symm) (Var.there i)) =
+      .there (ambientVar ((tailSortsSubset s Γ).trans keep) i) :=
+  ambientVar_there keep i
 
 /-- A selected variable reads back to its original position. -/
 @[simp] theorem ambientVar_selectVar {Γ : List P.signature.SortType}

@@ -230,6 +230,13 @@ private theorem cast_var_there {S : Type u} {Γ Δ : List S} {s t : S} (h : Γ =
   cases h
   rfl
 
+/-- Reindex a shifted variable when the prefix is given by an equal list. -/
+private theorem shift_context_congr {S : Type u} {Γ Λ Ξ : List S} {s : S}
+    (same : Λ = Ξ) (i : Var Γ s) :
+    cast (congrArg (fun ctx => Var (ctx ++ Γ) s) same) (i.shift Λ) = i.shift Ξ := by
+  cases same
+  rfl
+
 /-- Selecting a variable commutes with shifting it past the retained prefix. -/
 private theorem selectVar_shift {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -240,17 +247,27 @@ private theorem selectVar_shift {Γ Δ : List P.signature.SortType}
   | nil =>
     have left : i.shift [] = i :=
       congrArg (fun f : Renaming Δ Δ => f i) Var.shift_nil
-    have right : (selectVar hΔ i).shift (context [] hΓ) = selectVar hΔ i :=
+    have right : (selectVar hΔ i).shift [] = selectVar hΔ i :=
       congrArg (fun f : Renaming (context Δ hΔ) (context Δ hΔ) => f (selectVar hΔ i)) Var.shift_nil
-    rw [left, right]
+    let step := congrArg (fun ctx => Var (ctx ++ context Δ hΔ) ⟨s, varKept hΔ i⟩) (context_nil hΓ)
+    apply (cast_inj step).1
+    rw [cast_cast, shift_context_congr (context_nil hΓ), right]
+    rw [left]
     rfl
   | cons t Γ ih =>
     let keepΓ := (tailSortsSubset t Γ).trans hΓ
-    have right : (selectVar hΔ i).shift (context (t :: Γ) hΓ) =
-        Var.there (t := (⟨t, hΓ (Declaration.sort_mem_sorts List.mem_cons_self)⟩ : SortName U))
-          ((selectVar hΔ i).shift (context Γ keepΓ)) :=
-      Var.shift_cons (context Γ keepΓ) (selectVar hΔ i)
-    rw [Var.shift_cons, selectVar_there, right]
+    let selected : SortName U := ⟨t, hΓ (Declaration.sort_mem_sorts List.mem_cons_self)⟩
+    let name : SortName U := ⟨s, varKept hΔ i⟩
+    let step := congrArg (fun ctx => Var (ctx ++ context Δ hΔ) name) (context_cons t Γ hΓ)
+    apply (cast_inj step).1
+    rw [cast_cast, shift_context_congr (context_cons t Γ hΓ),
+      Var.shift_cons (t := selected), Var.shift_cons]
+    let head := congrArg (fun ctx => Var ctx name) (context_cons t (Γ ++ Δ) (appendSupport hΓ hΔ))
+    let rest := congrArg (fun ctx => Var ctx name) (congrArg (List.cons selected) (context_append keepΓ hΔ))
+    rw [show cast _ (selectVar _ (Var.there (i.shift Γ))) =
+        cast rest (cast head (selectVar (appendSupport hΓ hΔ) (Var.there (t := t) (i.shift Γ)))) from
+      (cast_cast head rest _).symm]
+    rw [selectVar_cast_there]
     exact (cast_var_there (context_append keepΓ hΔ) _).trans (congrArg Var.there (ih keepΓ))
 
 /-- The selected inclusion of the left block keeps the same variable position. -/
@@ -288,6 +305,14 @@ private theorem cast_formula_ex {sig : Signature.{u}} {Γ Δ : List sig.SortType
   cases h
   rfl
 
+/-- Reindex a quantified prefix and its bound body together. -/
+private theorem existsMany_context_congr {sig : Signature.{u}} {Γ Λ Ξ : List sig.SortType}
+    (same : Λ = Ξ) (body : Formula sig (Λ ++ Γ)) :
+    Formula.existsMany Λ body =
+      Formula.existsMany Ξ (cast (congrArg (fun ctx => Formula sig (ctx ++ Γ)) same) body) := by
+  cases same
+  rfl
+
 /-- Select the body over both retained contexts before closing the quantified prefix. -/
 private theorem selectFormula_existsMany {Γ Λ : List P.signature.SortType}
     (p : Formula P.signature (Λ ++ Γ)) (kept : Declaration.formulaSupport (Formula.existsMany Λ p) ⊆ U.declarations)
@@ -299,24 +324,19 @@ private theorem selectFormula_existsMany {Γ Λ : List P.signature.SortType}
   induction Λ with
   | nil =>
     simp only [Formula.existsMany_nil] at kept ⊢
-    change selectFormula p kept = Formula.existsMany [] (selectFormula p kept)
-    exact (Formula.existsMany_nil _).symm
+    conv_rhs => rw [existsMany_context_congr (context_nil hΛ), Formula.existsMany_nil, cast_cast]
+    rfl
   | cons s Λ ih =>
     let tail := (tailSortsSubset s Λ).trans hΛ
-    let selected : SortName U := ⟨s, hΛ (Declaration.sort_mem_sorts List.mem_cons_self)⟩
-    let body : Formula (signature U) (selected :: context (Λ ++ Γ) (appendSupport tail hΓ)) :=
-      selectFormula p (keepExistsMany (Λ := s :: Λ) p kept)
-    have crossed := cast_formula_ex (sig := signature U) (s := selected) (context_append tail hΓ) body
     have rewritten : Declaration.formulaSupport (Formula.existsMany Λ p.ex) ⊆ U.declarations := by
       rw [← Formula.existsMany_cons]
       exact kept
     simp only [Formula.existsMany_cons]
     refine (ih p.ex rewritten tail).trans ?_
-    erw [selectFormula_ex]
-    change Formula.existsMany (sig := signature U) (context Λ tail) (cast _ body.ex) =
-      Formula.existsMany (sig := signature U) (selected :: context Λ tail) (cast _ body)
-    rw [Formula.existsMany_cons]
-    exact congrArg (Formula.existsMany (sig := signature U) (context Λ tail)) crossed
+    erw [selectFormula_ex_cast]
+    conv_rhs => rw [existsMany_context_congr (context_cons s Λ hΛ), Formula.existsMany_cons]
+    rw [cast_formula_ex (context_append tail hΓ)]
+    simp only [cast_cast]
 
 /-- The full finite conjunction retains the support needed for each of its conjuncts. -/
 private theorem keepConjoin {Γ Λ : List P.signature.SortType} (ps : ∀ {s}, Var Λ s → Formula P.signature Γ)
@@ -331,6 +351,14 @@ private theorem selectFormula_congr {Γ : List P.signature.SortType} {p q : Form
     (same : p = q) {hp : Declaration.formulaSupport p ⊆ U.declarations}
     {hq : Declaration.formulaSupport q ⊆ U.declarations} : selectFormula p hp = selectFormula q hq := by
   subst q
+  rfl
+
+/-- Reindex the variables that enumerate a finite conjunction's conjuncts. -/
+private theorem conjoin_context_congr {sig : Signature.{u}} {Γ Λ Ξ : List sig.SortType}
+    (same : Λ = Ξ) (ps : ∀ {s}, Var Λ s → Formula sig Γ) :
+    Formula.conjoin Λ ps = Formula.conjoin Ξ
+      (fun {s} i => ps (cast (congrArg (fun ctx => Var ctx s) same.symm) i)) := by
+  cases same
   rfl
 
 /-- Select every formula of a finite conjunction and combine them in the selected signature. -/
@@ -349,28 +377,22 @@ private theorem selectFormula_conjoin {Γ Λ : List P.signature.SortType} (ps : 
       exact keep
     refine (selectFormula_congr written (hq := supported)).trans ?_
     rw [selectFormula_truth]
-    exact (Formula.conjoin_nil _).symm
+    conv_rhs => rw [conjoin_context_congr (context_nil hΛ), Formula.conjoin_nil]
   | cons s Λ ih =>
     let tail := (tailSortsSubset s Λ).trans hΛ
-    let selected : SortName U := ⟨s, hΛ (Declaration.sort_mem_sorts List.mem_cons_self)⟩
-    let hΓ := (Declaration.sorts_subset_formulaSupport _).trans keep
     have written := Formula.conjoin_cons ps
     have rewritten : Declaration.formulaSupport ((ps .here).conj (Formula.conjoin Λ (fun i => ps (.there i)))) ⊆ U.declarations := by
       rw [← written]
       exact keep
-    let lowered : ∀ {t}, Var (selected :: context Λ tail) t → Formula (signature U) (context Γ hΓ) :=
-      fun i => selectFormula (ps (ambientVar hΛ i)) (keepConjoin ps keep (ambientVar hΛ i))
     refine (selectFormula_congr written (hq := rewritten)).trans ?_
     rw [selectFormula_conj]
     refine (congrArg (Formula.conj _) (ih (fun i => ps (.there i)) ((Declaration.binarySupport_right (Declaration.formula_conj _ _)).trans rewritten) tail)).trans ?_
-    change _ = Formula.conjoin (selected :: context Λ tail) (fun {t} i => lowered (t := t) i)
-    rw [Formula.conjoin_cons]
-    dsimp only [lowered]
+    conv_rhs => rw [conjoin_context_congr (context_cons s Λ hΛ), Formula.conjoin_cons]
     apply congrArg₂ Formula.conj
-    · exact selectFormula_congr (congrArg (fun i : Var (s :: Λ) s => ps i) (ambientVar_here hΛ).symm)
+    · exact selectFormula_congr (congrArg (fun i : Var (s :: Λ) s => ps i) (ambientVar_cast_here hΛ).symm)
     · apply congrArg (Formula.conjoin (sig := signature U) (context Λ tail))
       funext t i
-      exact selectFormula_congr (congrArg (fun j : Var (s :: Λ) t.val => ps j) (ambientVar_there hΛ i).symm)
+      exact selectFormula_congr (congrArg (fun j : Var (s :: Λ) t.val => ps j) (ambientVar_cast_there hΛ i).symm)
 
 /-- Reindex each side of a binary conjunction along the same context equality. -/
 private theorem cast_formula_conj {sig : Signature.{u}} {Γ Δ : List sig.SortType}

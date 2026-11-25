@@ -186,6 +186,16 @@ theorem selectFormula_ex {Γ : List P.signature.SortType} {s : P.signature.SortT
       .ex (s := ⟨s, keep (Declaration.boundSort_mem_formulaSupport p)⟩) (selectFormula p (existsSupport keep)) :=
   rfl
 
+/-- Select an existential using explicit transport of the retained body's context. -/
+theorem selectFormula_ex_cast {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (p : Formula P.signature (s :: Γ)) (keep : Declaration.formulaSupport p.ex ⊆ U.declarations) :
+    selectFormula p.ex keep =
+      .ex (s := ⟨s, keep (Declaration.boundSort_mem_formulaSupport p)⟩)
+        (cast (congrArg (Formula (signature U)) (context_cons s Γ
+          ((Declaration.sorts_subset_formulaSupport p).trans (existsSupport keep))))
+          (selectFormula p (existsSupport keep))) :=
+  selectFormula_ex p keep
+
 /-- The same literal Law has a writing in the genuinely smaller vocabulary. -/
 def selectLaw (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) : Law (signature U) :=
   ⟨context law.context ((Declaration.sorts_subset_lawBody law).trans keep),

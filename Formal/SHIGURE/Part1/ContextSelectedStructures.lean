@@ -136,8 +136,8 @@ theorem read_evaluates_iff (A : ContextStructure U) {Γ : List P.signature.SortT
     (selectFormula t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)).Holds (readStructure A)
       (selectAssignment (readCarrierEquiv A) (ContextStructure.termSortSupport t) (Assignment.cons y e)) ↔
     A.evaluates t e y :=
-  (readStructure_matches A).formula_iff t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)
-    (Assignment.cons y e)
+  ((readStructure_matches A).formula_iff t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)
+    (Assignment.cons y e)).trans (A.evaluates_iff t e y).symm
 
 /-- Reindex a selected structure's carriers by original names, with one canonical slot for an omitted sort. -/
 noncomputable def extendedCarrier (B : Structure (signature U)) (s : P.signature.SortType) : Type u := by
@@ -184,8 +184,11 @@ noncomputable def writeStructure (B : Structure (signature U)) : ContextStructur
   carrier := extendedCarrier B
   omitted := extendedCarrier_omitted B
   evaluation := extendedEvaluation B
-  structural rule keep := ((extendedEvaluation_matches B).law_iff rule.toLaw (graphRuleSupport rule keep)).1
-    ((selectRule_toLaw rule keep).symm ▸ (selectRule rule keep).holds_toLaw B)
+  structural := by
+    rw [RestrictedEvaluation.structural_iff]
+    intro rule keep
+    exact ((extendedEvaluation_matches B).law_iff rule.toLaw (graphRuleSupport rule keep)).1
+      ((selectRule_toLaw rule keep).symm ▸ (selectRule rule keep).holds_toLaw B)
 
 /-- The written structure has the original-name carrier family of the selected structure. -/
 theorem writeStructure_carrier_eq (B : Structure (signature U)) :
@@ -199,6 +202,51 @@ theorem writeStructure_cast_evaluation (B : Structure (signature U))
       cast (congrArg (RestrictedEvaluation U) ((writeStructure_carrier_eq B).symm.trans h)) (extendedEvaluation B) :=
   rfl
 
+/-- The written carrier at each retained name identifies with the corresponding selected carrier.
+
+Implementation notes: use the composite carrier equality to transport points. This
+keeps the written structure abstract in downstream proofs that compare its evaluation.
+Using the extended carrier equivalence directly would require those proofs to reduce
+the written structure to identify the carrier types. -/
+noncomputable def writeCarrierEquiv (B : Structure (signature U)) :
+    CarrierEquiv U (writeStructure B).carrier B.carrier :=
+  fun s keep => Equiv.cast
+    ((congrFun (writeStructure_carrier_eq B) s).trans (extendedCarrier_kept B s keep))
+
+/-- The carrier equivalence of a written structure is the cast along its retained carrier equality. -/
+theorem writeCarrierEquiv_eq_cast (B : Structure (signature U)) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) :
+    writeCarrierEquiv B s keep = Equiv.cast
+      ((congrFun (writeStructure_carrier_eq B) s).trans (extendedCarrier_kept B s keep)) :=
+  rfl
+
+/-- The written structure uses the extended evaluation on its identified original-name carriers. -/
+theorem writeStructure_evaluation (B : Structure (signature U)) :
+    (writeStructure B).evaluation = (extendedEvaluation B).pullback (le_refl U)
+      (fun s _ => cast (congrFun (writeStructure_carrier_eq B) s)) := by
+  have written := writeStructure_cast_evaluation B (X := (writeStructure B).carrier) rfl
+  exact written.trans (RestrictedEvaluation.cast_evaluation _ (writeStructure_carrier_eq B).symm)
+
+/-- A written structure retains exactly the selected relation, domain and graph facts. -/
+theorem writeStructure_matches (B : Structure (signature U)) :
+    EvaluationMatches (writeStructure B).evaluation B (writeCarrierEquiv B) := by
+  let f : CarrierMap U (writeStructure B).carrier (extendedCarrier B) :=
+    fun s _ => cast (congrFun (writeStructure_carrier_eq B) s)
+  have component : ∀ s keep x, extendedEquiv B s keep (f s keep x) = writeCarrierEquiv B s keep x := by
+    intro s keep x
+    simp only [writeCarrierEquiv_eq_cast, extendedEquiv_eq_cast, f, Equiv.cast_apply, cast_cast]
+  rw [writeStructure_evaluation]
+  constructor
+  · intro r keep a
+    rw [RestrictedEvaluation.pullback_relation, ← (extendedEvaluation_matches B).relation r keep,
+      selectAssignment_mapCarrier _ f _ component]
+  · intro p keep a
+    rw [RestrictedEvaluation.pullback_domain, ← (extendedEvaluation_matches B).domain p keep,
+      selectAssignment_mapCarrier _ f _ component]
+  · intro op keep a y
+    rw [RestrictedEvaluation.pullback_graph, ← (extendedEvaluation_matches B).graph op keep,
+      selectArgs_mapCarrier _ f _ component, selectResult_mapCarrier _ f _ component]
+
 /-- Reading the selected names sends a context model to a model of the ordinary restricted theory. -/
 noncomputable def readModel (A : Models U) : Model (theory U) :=
   ⟨readStructure A.obj, fun name => by
@@ -210,7 +258,7 @@ noncomputable def readModel (A : Models U) : Model (theory U) :=
 noncomputable def writeModel (A : Model (theory U)) : Models U :=
   ⟨writeStructure A.obj, fun name => by
     let selected : (theory U).LawName := ⟨⟨name.val.val, name.property⟩, name.val.property⟩
-    exact ((extendedEvaluation_matches A.obj).law_iff (U.scopedTheory.law name)
+    exact ((writeStructure_matches A.obj).law_iff (U.scopedTheory.law name)
       (Declaration.lawBody_subset_of_mem name.property)).1 (A.property selected)⟩
 
 end DeclarationContext.Selected

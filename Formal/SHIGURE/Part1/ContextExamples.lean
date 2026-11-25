@@ -197,6 +197,12 @@ noncomputable def collapseStructure : ContextStructure.Hom
 noncomputable def collapse : primitiveModel ⟶ primitiveModel :=
   ObjectProperty.homMk (collapseStructure.restrict withoutLaw_le_whole)
 
+/-- The structure arrow sends each point to zero on the retained Boolean sort. -/
+private theorem collapseStructure_onSort (kept : Declaration.sort () ∈ whole.declarations)
+    (x : (ContextStructure.ofStructure whole constants).carrier ()) :
+    collapseStructure.onSort () kept x = cast (selectedCarrier_kept constants.carrier kept).symm false :=
+  rfl
+
 /-- The endomorphism sends the retained Boolean point one to zero. -/
 theorem collapse_ne_id : collapse ≠ 𝟙 primitiveModel := by
   intro same
@@ -208,9 +214,9 @@ theorem collapse_ne_id : collapse ≠ 𝟙 primitiveModel := by
   have h := congrArg (fun f : primitiveModel ⟶ primitiveModel =>
     cast equality (Models.onSort f () sort_covered one)) same
   have forbidden : false = true := by
-    simpa only [collapse, Models.onSort, ObjectProperty.homMk_hom, ContextStructure.Hom.restrict_onSort,
-      ContextStructure.Hom.restrictOnSort_apply, collapseStructure, Models.id_onSort, equality, one, selectedMap_apply,
-      cast_cast] using h
+    simpa only [collapse, Models.onSort_homMk, ContextStructure.Hom.restrict_onSort,
+      ContextStructure.Hom.restrictOnSort_apply, collapseStructure_onSort, Models.id_onSort, equality, one,
+      selectedMap_apply, cast_cast] using h
   cases forbidden
 
 /-- A nonidentity arrow is recovered from its restrictions to the genuinely split primitive cover. -/

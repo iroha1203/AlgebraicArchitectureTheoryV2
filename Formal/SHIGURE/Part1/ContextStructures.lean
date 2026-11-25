@@ -368,6 +368,14 @@ def evaluates (A : ContextStructure U) {Γ : List P.signature.SortType} {s : P.s
   A.evaluation.holds t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)
     (Assignment.cons result e)
 
+/-- The evaluation of a supported term is satisfaction of its value graph. -/
+theorem evaluates_iff (A : ContextStructure U) {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (t : U.TermIn Γ s) (e : Assignment A.carrier Γ) (result : A.carrier s) :
+    A.evaluates t e result ↔
+      A.evaluation.holds t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)
+        (Assignment.cons result e) :=
+  Iff.rfl
+
 /-- The defined inputs of a supported term are exactly those with an evaluation result. -/
 def termDomain (A : ContextStructure U) {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (t : U.TermIn Γ s) : Set (Assignment A.carrier Γ) :=

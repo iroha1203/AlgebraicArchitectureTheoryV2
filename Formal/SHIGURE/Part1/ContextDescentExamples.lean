@@ -107,22 +107,19 @@ theorem different_ordinary_arrows_no_match :
     OrdinaryMatch.writeFunctor.map (show ordinaryFamily ⟶ ordinaryFamily from f) ≫ eqToHom same
   apply different_arrows_no_match
   refine ⟨(show Match.Hom raw raw from written), ?_, ?_⟩
-  · let F := Selected.readFunctor (piece false)
-    let G := Selected.writeFunctor (piece false)
-    let g := (res (primitiveCover.subset false)).map collapse
-    have collapseWritten := Functor.congr_hom (Selected.read_comp_write (piece false)) g
-    simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap]
-    change _ ≫ G.map (f.pieceMap false) ≫ _ = _
+  · apply eq_of_heq
+    simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap, eqToHom_comp_heq_iff, comp_eqToHom_heq_iff]
+    refine (OrdinaryMatch.writeFunctor_map_pieceMap (show ordinaryFamily ⟶ ordinaryFamily from f) false).trans ?_
     rw [left]
-    change _ ≫ (F ⋙ G).map g ≫ _ = g
-    rw [collapseWritten]
-    simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl,
-      Category.id_comp, Category.comp_id]
-  · let G := Selected.writeFunctor (piece true)
-    simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap]
-    change _ ≫ G.map (f.pieceMap true) ≫ _ = _
-    rw [right, G.map_id]
-    simp only [Category.id_comp, eqToHom_trans, eqToHom_refl]
+    simpa only [Functor.comp_map, Functor.id_map] using
+      Functor.hcongr_hom (Selected.read_comp_write (piece false)) ((res (primitiveCover.subset false)).map collapse)
+  · apply eq_of_heq
+    simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap, eqToHom_comp_heq_iff, comp_eqToHom_heq_iff]
+    refine (OrdinaryMatch.writeFunctor_map_pieceMap (show ordinaryFamily ⟶ ordinaryFamily from f) true).trans ?_
+    rw [right, (Selected.writeFunctor (primitiveCover.piece true)).map_id (ordinaryFamily.pieceModel true)]
+    let point := (OrdinaryMatch.writeFunctor_obj_pieceModel ordinaryFamily true).symm.trans
+      (congrArg (fun M => M.pieceModel true) same)
+    exact (eqToHom_heq_id_dom _ _ point).symm.trans (eqToHom_heq_id_cod _ _ point)
 
 end OmittedLaw
 

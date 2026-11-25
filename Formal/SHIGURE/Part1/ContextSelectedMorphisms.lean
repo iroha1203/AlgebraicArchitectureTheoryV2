@@ -191,8 +191,9 @@ theorem readStructureMap_onSort (f : ContextStructure.Hom A B) (s : SortName U) 
 variable {C D : Structure (signature U)}
 
 /-- Write the ordinary sort maps under the original sort names. -/
-noncomputable def writeOnSort (f : StructureMap C D) : CarrierMap U (extendedCarrier C) (extendedCarrier D) :=
-  fun s keep x => (extendedEquiv D s keep).symm (f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x))
+noncomputable def writeOnSort (f : StructureMap C D) :
+    CarrierMap U (writeStructure C).carrier (writeStructure D).carrier :=
+  fun s keep x => (writeCarrierEquiv D s keep).symm (f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x))
 
 /-- The written map in the comparison of Proposition 3.2 transports an
 original value through the two retained carrier equivalences and the original arrow. -/
@@ -204,25 +205,25 @@ theorem writeOnSort_apply (f : StructureMap C D) (s : P.signature.SortType)
 
 /-- The square of corresponding sort maps commutes. -/
 theorem writeOnSort_comm (f : StructureMap C D) (s : P.signature.SortType)
-    (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier C s) :
-    f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x) = extendedEquiv D s keep (writeOnSort f s keep x) :=
-  ((extendedEquiv D s keep).apply_symm_apply _).symm
+    (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
+    f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x) = writeCarrierEquiv D s keep (writeOnSort f s keep x) :=
+  ((writeCarrierEquiv D s keep).apply_symm_apply _).symm
 
 /-- An ordinary structure map gives the original-name structural arrow. -/
 noncomputable def writeStructureMap (f : StructureMap C D) : ContextStructure.Hom (writeStructure C) (writeStructure D) where
   onSort := writeOnSort f
   relation_mem r keep a held := by
-    have mapped := f.relation_mem ⟨r, keep⟩ _ (((extendedEvaluation_matches C).relation r keep a).2 held)
+    have mapped := f.relation_mem ⟨r, keep⟩ _ (((writeStructure_matches C).relation r keep a).2 held)
     rw [map_selectAssignment _ _ _ _ (writeOnSort_comm f)] at mapped
-    exact ((extendedEvaluation_matches D).relation r keep _).1 mapped
+    exact ((writeStructure_matches D).relation r keep _).1 mapped
   domain_mem p keep a held := by
-    have mapped := f.partial_mem ⟨p, keep⟩ _ (((extendedEvaluation_matches C).domain p keep a).2 held)
+    have mapped := f.partial_mem ⟨p, keep⟩ _ (((writeStructure_matches C).domain p keep a).2 held)
     rw [map_selectAssignment _ _ _ _ (writeOnSort_comm f)] at mapped
-    exact ((extendedEvaluation_matches D).domain p keep _).1 mapped
+    exact ((writeStructure_matches D).domain p keep _).1 mapped
   graph_mem op keep a x held := by
-    have mapped := f.map_graph (operation op keep) _ _ (((extendedEvaluation_matches C).graph op keep a x).2 held)
+    have mapped := f.map_graph (operation op keep) _ _ (((writeStructure_matches C).graph op keep a x).2 held)
     rw [map_selectArgs _ _ _ _ (writeOnSort_comm f), map_selectResult _ _ _ _ (writeOnSort_comm f)] at mapped
-    exact ((extendedEvaluation_matches D).graph op keep _ _).1 mapped
+    exact ((writeStructure_matches D).graph op keep _ _).1 mapped
 
 /-- The written arrow acts by the transported ordinary component. -/
 theorem writeStructureMap_onSort (f : StructureMap C D) (s : P.signature.SortType)
