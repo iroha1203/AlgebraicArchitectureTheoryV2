@@ -56,11 +56,11 @@ theorem missingGraph_not_matching : ¬ Selected.EvaluationMatches missingGraph c
   let keeps : Declaration.total (P := presentation) false ∈ whole.declarations := Set.mem_univ _
   let input : Assignment (fun _ => Bool) (presentation.signature.totalArity false).inputs :=
     Assignment.cons false Assignment.empty
-  apply (impossible.graph (.total false) keeps input false).1
-  change constantOrdinary.Graph (.total _) _ _
-  rw [Structure.graph_total_iff]
-  change false = _
-  rw [Selected.selectResult_total]
+  let retained := Declaration.ofOperation_total_mem (P := presentation) false keeps
+  apply (impossible.graph (.total false) retained input false).1
+  apply (Selected.graph_select_congr constantOrdinary alignment (.total false) retained (.total ⟨false, keeps⟩)
+    (Selected.operation_total (P := presentation) (U := whole) false retained) rfl input false).2
+  rw [cast_eq, Structure.graph_total_iff]
   rfl
 
 /-- View each primitive-only piece as a subcontext of the original presentation. -/
@@ -86,10 +86,7 @@ theorem different_ordinary_carriers_no_overlap :
   apply different_carriers_no_overlap
   have localEq := congrArg (fun B : Model (Selected.theory (inter (piece false) (piece true))) =>
     Selected.writeModel B) same
-  change Selected.writeModel (Selected.readModel ((Selected.writeModel (Selected.readModel (localModel false))).restrict
-      (overlapLeft piece false true))) =
-    Selected.writeModel (Selected.readModel ((Selected.writeModel (Selected.readModel unitPiece)).restrict
-      (overlapRight piece false true))) at localEq
+  rw [Selected.modelRestriction_obj, Selected.modelRestriction_obj] at localEq
   simpa only [Selected.write_read_model] using localEq
 
 /-- Read the two graph models as an ordinary matching family over the primitive cover. -/

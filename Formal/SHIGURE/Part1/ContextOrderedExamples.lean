@@ -115,8 +115,9 @@ theorem equality_lacks_ring_support : ¬ equalityContext.RetainsRingSupport (.in
 
 /-- The omitted ring axiom rules out the named certificate while the ordered text survives. -/
 theorem equality_ring_none :
-    (Selected.presentation equalityContext).ringEquation ⟨.inl (), equalityKept⟩ = none :=
-  Selected.ringEquation_of_unsupported (U := equalityContext) ⟨.inl (), equalityKept⟩ equality_lacks_ring_support
+    (Selected.presentation equalityContext).ringEquation ⟨.inl (), equalityKept⟩ = none := by
+  rw [Selected.presentation_ringEquation]
+  exact Selected.ringEquation_of_unsupported (U := equalityContext) ⟨.inl (), equalityKept⟩ equality_lacks_ring_support
 
 /-- The full context includes the residual's named axioms and the proofs from those axioms. -/
 theorem full_ring_some :
@@ -124,7 +125,8 @@ theorem full_ring_some :
   let name : (full paddedPresentation).RetainedLaw := ⟨.inl (), Set.mem_univ _⟩
   have original : ∃ data, paddedPresentation.ringEquation name.val = some data := ⟨_, rfl⟩
   obtain ⟨data, registered⟩ := original
-  change (Selected.ringEquation name).isSome
+  change ((Selected.presentation (full paddedPresentation)).ringEquation name).isSome
+  rw [Selected.presentation_ringEquation]
   rw [Selected.ringEquation_of_supported name data registered full_retains_ring_support]
   rfl
 
@@ -315,14 +317,17 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
       A.withSupportedRing (equalityContext.RetainsRingSupport (.inl ()))
     rw [LawAttachments.withSupportedRing_of_unsupported A equality_lacks_ring_support]
     apply LawAttachments.ext
-    · change (equalityPresentation.lawAttachments (SignatureNames.identity _) (fun _ => .inl ()) ()).equation =
-        A.equation
+    · change (equalityPresentation.lawAttachments (SignatureNames.identity _)
+        (fun _ => (Sum.inl () : paddedPresentation.laws.LawName)) ()).equation = A.equation
       have original := (PrimitivePresentation.orderedEquation_eq paddedPresentation (.inl ())).trans
         (NamedRingEquation.ordered_of_some (data := sourceRing) rfl _)
       simp only [A, PrimitivePresentation.lawAttachments_equation, equalityPresentation_ordered, original]
       rfl
-    · rfl
-    · rfl
+    · exact PrimitivePresentation.lawAttachments_ring_of_none equalityPresentation _ _ () rfl
+    · let names := SignatureNames.identity paddedPresentation.signature
+      exact (PrimitivePresentation.lawAttachments_proof_of_additional equalityPresentation names
+        (fun _ => Sum.inl ()) () rfl).trans
+        (PrimitivePresentation.lawAttachments_proof_of_additional paddedPresentation names id (.inl ()) rfl).symm
   domainAttachment_eq p := nomatch p
   dependencies := equalityDependencies
 

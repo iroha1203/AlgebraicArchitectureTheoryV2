@@ -46,20 +46,22 @@ def selectGraph {Γ : List P.signature.SortType} (keepΓ : Declaration.sorts Γ 
 and result positions. This is the total branch of the structural rule comparison. -/
 theorem selectGraph_total {Γ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (f : P.signature.Total)
-    (keep : Declaration.total f ∈ U.declarations)
+    (keep : Declaration.ofOperation (.total f) ∈ U.declarations)
     (ρ : Renaming (P.signature.totalArity f).inputs Γ) (y : Var Γ (P.signature.totalArity f).output) :
     selectGraph keepΓ (.total f) keep ρ y =
-      .graph (.total ⟨f, keep⟩) (selectRenaming (operationInputs (.total f) keep) keepΓ ρ) (selectVar keepΓ y) :=
+      .graph (.total ⟨f, Declaration.ofOperation_total f ▸ keep⟩)
+        (selectRenaming (operationInputs (.total f) keep) keepΓ ρ) (selectVar keepΓ y) :=
   rfl
 
 /-- A selected graph of a retained partial operation keeps its original
 argument positions and result, with the same partial-operation tag. -/
 theorem selectGraph_partialOp {Γ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (p : P.signature.Partial)
-    (keep : Declaration.partialOp p ∈ U.declarations)
+    (keep : Declaration.ofOperation (.partialOp p) ∈ U.declarations)
     (ρ : Renaming (P.signature.partialArity p).inputs Γ) (y : Var Γ (P.signature.partialArity p).output) :
     selectGraph keepΓ (.partialOp p) keep ρ y =
-      .graph (.partialOp ⟨p, keep⟩) (selectRenaming (operationInputs (.partialOp p) keep) keepΓ ρ)
+      .graph (.partialOp ⟨p, Declaration.ofOperation_partialOp p ▸ keep⟩)
+        (selectRenaming (operationInputs (.partialOp p) keep) keepΓ ρ)
         (selectVar keepΓ y) :=
   rfl
 
@@ -67,10 +69,11 @@ theorem selectGraph_partialOp {Γ : List P.signature.SortType}
 positions under the quantity tag. -/
 theorem selectGraph_quantity {Γ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (q : P.signature.Quantity)
-    (keep : Declaration.quantity q ∈ U.declarations)
+    (keep : Declaration.ofOperation (.quantity q) ∈ U.declarations)
     (ρ : Renaming (P.signature.quantityArity q).inputs Γ) (y : Var Γ (P.signature.quantityArity q).output) :
     selectGraph keepΓ (.quantity q) keep ρ y =
-      .graph (.quantity ⟨q, keep⟩) (selectRenaming (operationInputs (.quantity q) keep) keepΓ ρ) (selectVar keepΓ y) :=
+      .graph (.quantity ⟨q, Declaration.ofOperation_quantity q ▸ keep⟩)
+        (selectRenaming (operationInputs (.quantity q) keep) keepΓ ρ) (selectVar keepΓ y) :=
   rfl
 
 /-- Read an atomic formula over the actual selected signature. -/
@@ -85,7 +88,8 @@ def selectAtomic {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     exact .rel ⟨r, keepR⟩ (selectRenaming (relationInputs r keepR) keepΓ ρ)
   | domain p ρ =>
     have keepP : Declaration.partialOp p ∈ U.declarations := keep (Declaration.domain_mem_atomicSupport p ρ)
-    exact .domain ⟨p, keepP⟩ (selectRenaming (operationInputs (.partialOp p) keepP) keepΓ ρ)
+    exact .domain ⟨p, keepP⟩
+      (selectRenaming (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keepP)) keepΓ ρ)
   | graph op ρ y => exact selectGraph keepΓ op (keep (Declaration.graph_mem_atomicSupport op ρ y)) ρ y
 
 /-- Selecting an equality retains the compared positions in the selected context. -/
@@ -111,7 +115,8 @@ theorem selectAtomic_domain {Γ : List P.signature.SortType} (p : P.signature.Pa
     (keep : Declaration.atomicSupport (.domain p ρ) ⊆ U.declarations) :
     selectAtomic (.domain p ρ) keep =
       .domain ⟨p, keep (Declaration.domain_mem_atomicSupport p ρ)⟩
-        (selectRenaming (operationInputs (.partialOp p) (keep (Declaration.domain_mem_atomicSupport p ρ)))
+        (selectRenaming (operationInputs (.partialOp p)
+          (Declaration.ofOperation_partialOp_mem p (keep (Declaration.domain_mem_atomicSupport p ρ))))
           ((Declaration.sorts_subset_atomicSupport (.domain p ρ)).trans keep) ρ) :=
   rfl
 
@@ -235,8 +240,9 @@ theorem selectRenaming_openHead {Γ : List P.signature.SortType} {s : P.signatur
       (Renaming.openHead (selectVar keepΓ x) : Renaming _ _) := by
   funext t i
   cases i with
-  | here => rfl
-  | there i => exact selectVar_ambientVar keepΓ i
+  | here => simp only [selectRenaming_apply, ambientVar_here, Renaming.openHead_here]
+  | there i =>
+    simp only [selectRenaming_apply, ambientVar_there, Renaming.openHead_there, selectVar_ambientVar]
 
 /-- Selecting an atom commutes with reorganizing its variable positions. -/
 theorem selectAtomic_rename {Γ Δ : List P.signature.SortType} (a : Atomic P.signature Γ) (ρ : Renaming Γ Δ)

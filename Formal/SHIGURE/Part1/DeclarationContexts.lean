@@ -70,10 +70,28 @@ theorem ofOperation_partialOp (p : P.signature.Partial) :
     ofOperation (P := P) (.partialOp p) = .partialOp p :=
   rfl
 
+/-- Retention of the partial name is retention of the corresponding tagged operation. -/
+theorem ofOperation_partialOp_mem (p : P.signature.Partial) {kept : Set (Declaration P)}
+    (h : Declaration.partialOp p ∈ kept) : ofOperation (.partialOp p) ∈ kept := by
+  rw [ofOperation_partialOp]
+  exact h
+
+/-- Retention of the total name is retention of the corresponding tagged operation. -/
+theorem ofOperation_total_mem (f : P.signature.Total) {kept : Set (Declaration P)}
+    (h : Declaration.total f ∈ kept) : ofOperation (.total f) ∈ kept := by
+  rw [ofOperation_total]
+  exact h
+
 /-- The declaration support of a quantity graph uses the quantity-symbol tag. -/
 theorem ofOperation_quantity (q : P.signature.Quantity) :
     ofOperation (P := P) (.quantity q) = .quantity q :=
   rfl
+
+/-- Retention of the quantity name is retention of the corresponding tagged operation. -/
+theorem ofOperation_quantity_mem (q : P.signature.Quantity) {kept : Set (Declaration P)}
+    (h : Declaration.quantity q ∈ kept) : ofOperation (.quantity q) ∈ kept := by
+  rw [ofOperation_quantity]
+  exact h
 
 /-- A primitive formula refers to its typed relation, domain, or graph declaration. -/
 def atomic {Γ : List P.signature.SortType} : Atomic P.signature Γ → Set (Declaration P)

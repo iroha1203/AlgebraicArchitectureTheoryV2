@@ -28,7 +28,7 @@ structure Hom (A B : ContextStructure U) where
   domain_mem (p : P.signature.Partial) (keep : Declaration.partialOp p ∈ U.declarations)
     (e : Assignment A.carrier (P.signature.partialArity p).inputs) :
     A.evaluation.domain p keep e →
-      B.evaluation.domain p keep (mapAssignment onSort (operationInputs (.partialOp p) keep) e)
+      B.evaluation.domain p keep (mapAssignment onSort (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) e)
   /-- Each retained operation commutes on its defined inputs. -/
   graph_mem (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (e : Assignment A.carrier op.arity.inputs) (y : A.carrier op.arity.output) :

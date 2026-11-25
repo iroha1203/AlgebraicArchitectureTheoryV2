@@ -47,13 +47,13 @@ def selectDomainInclusions (p : Partial U) (data : DomainInclusions p.val)
     (attached : P.domainInclusions p.val = some data) : DomainInclusions (sig := signature U) p where
   domainSort := ⟨data.domainSort, domainSortKept p data attached⟩
   symbol i := selectTotalSymbol
-    (data.symbol (ambientVar (operationInputs (.partialOp p.val) p.property) i))
-    (domainSymbolKept p data attached (ambientVar (operationInputs (.partialOp p.val) p.property) i))
+    (data.symbol (ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) i))
+    (domainSymbolKept p data attached (ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) i))
   arity_eq i := by
     apply ambientArity_injective
     change ambientArity (selectTotalSymbol _ _).operation.arity = _
     rw [selectTotalSymbol_arity]
-    exact (map_arity _ _).trans (data.arity_eq (ambientVar (operationInputs (.partialOp p.val) p.property) i))
+    exact (map_arity _ _).trans (data.arity_eq (ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) i))
 
 /-- Closedness supplies all the references of a retained derived Law's original proof. -/
 theorem keepsDerived (name : U.RetainedLaw) (role : P.laws.role name.val = .derived) :
@@ -74,6 +74,11 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
 
 /-- The actual restricted presentation gives the ordinary theory over the selected signature. -/
 theorem presentation_theory : (presentation U).theory = theory U :=
+  rfl
+
+/-- The selected display attaches the ring certificate retained at this Law. -/
+theorem presentation_ringEquation (name : U.RetainedLaw) :
+    (presentation U).ringEquation name = Selected.ringEquation name :=
   rfl
 
 /-- The selected presentation has exactly the original retained declaration names. -/

@@ -2288,14 +2288,18 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedCategories
   DeclarationContext.Selected.readFunctor_obj,
   -- ContextSelectedEquations
+  DeclarationContext.Selected.selectWritten_terms_kept,
   DeclarationContext.Selected.selectWritten_left,
   DeclarationContext.Selected.selectWritten_right,
   DeclarationContext.Selected.selectNamedEquation_result,
   -- ContextSelectedEvaluation
   DeclarationContext.Selected.selectAssignment_apply,
   DeclarationContext.Selected.ambientAssignment_apply,
+  DeclarationContext.Selected.graph_select_congr,
   -- ContextSelectedMorphisms
   DeclarationContext.Selected.writeOnSort_apply,
+  -- ContextSelectedPresentation
+  DeclarationContext.Selected.presentation_ringEquation,
   -- ContextSelectedStructures
   DeclarationContext.Selected.readCarrierEquiv_eq_refl,
   DeclarationContext.Selected.readStructure_carrier_eq,
@@ -2347,7 +2351,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.sort_mem_sorts,
   Declaration.ofOperation_total,
   Declaration.ofOperation_partialOp,
+  Declaration.ofOperation_partialOp_mem,
+  Declaration.ofOperation_total_mem,
   Declaration.ofOperation_quantity,
+  Declaration.ofOperation_quantity_mem,
   Declaration.atomic_eq,
   Declaration.atomic_rel,
   Declaration.atomic_domain,
@@ -2423,6 +2430,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Reading.restrict_equations,
   Reading.restrict_origin,
   Declaration.translatedSupport_sort,
+  Declaration.translatedSort_mem,
+  Declaration.translatedSupport_total,
+  Declaration.translatedSupport_partialOp,
+  Declaration.translatedSupport_quantity,
   Declaration.translatedSupport_relation,
   ReadingInputMap.retainsSourceSorts_iff,
   -- ReadingExamples
@@ -2467,6 +2478,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SignatureNames.law_eq,
   LawAttachments.ext,
   PrimitivePresentation.lawAttachments_equation,
+  PrimitivePresentation.lawAttachments_ring_of_none,
+  PrimitivePresentation.lawAttachments_proof_of_additional,
   -- Substitution
   Term.rename_var,
   Substitution.ext,
@@ -2488,7 +2501,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TotalSymbol.operation_quantity,
   Term.reindexedApp_rfl,
   Term.reindexedApp_congr,
-  TypedTotal.term_eq_reindexedApp
+  TypedTotal.term_eq_reindexedApp,
+  Formula.termGraph_congr_arity
 ]
 
 end SHIGURE.AxiomAudit

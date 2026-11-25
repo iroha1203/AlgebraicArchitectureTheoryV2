@@ -537,6 +537,24 @@ theorem lawAttachments_equation (P : PrimitivePresentation.{u}) (signature : Sig
       (P.orderedEquation name).map (fun eqn => signature.equation eqn.written.equation) :=
   rfl
 
+/-- The record carries no ring data when the source Law has no ring attachment. -/
+theorem lawAttachments_ring_of_none (P : PrimitivePresentation.{u}) (signature : SignatureNames P.signature S)
+    (lawName : P.laws.LawName → L) (name : P.laws.LawName) (missing : P.ringEquation name = none) :
+    (P.lawAttachments signature lawName name).ring = none := by
+  simp only [lawAttachments, missing, Option.map_none]
+
+/-- An additional Law has no registered derivation in its attachment record. -/
+theorem lawAttachments_proof_of_additional (P : PrimitivePresentation.{u}) (signature : SignatureNames P.signature S)
+    (lawName : P.laws.LawName → L) (name : P.laws.LawName) (role : P.laws.role name = .additional) :
+    (P.lawAttachments signature lawName name).proof = none := by
+  dsimp only [lawAttachments]
+  split
+  · rename_i derived
+    rw [role] at derived
+    cases derived
+  · rfl
+  · rfl
+
 /-- Record inclusion operations in the order of the partial operation's inputs. -/
 private def inclusionOperations (names : SignatureNames P.signature S) :
     {Γ : List P.signature.SortType} →

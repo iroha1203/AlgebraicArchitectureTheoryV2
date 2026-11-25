@@ -2248,7 +2248,7 @@ def paddedPresentation : PrimitivePresentation where
 theorem residual_retains_witness_operation (U : DeclarationContext paddedPresentation)
     (support : U.RetainsRingSupport (.inl ())) :
     Declaration.total (P := paddedPresentation) Symbol.vectorZero ∈ U.declarations := by
-  apply support
+  apply (U.retainsRingSupport_iff (.inl ())).1 support
   apply Declaration.ringProof_mem_ringEquationSupport (equation := paddedEquation) (i := .zeroAdd) rfl
   have derivation_eq : paddedEquation.axioms_derive .zeroAdd = derivePaddedAxiom .zeroAdd := rfl
   rw [derivation_eq]

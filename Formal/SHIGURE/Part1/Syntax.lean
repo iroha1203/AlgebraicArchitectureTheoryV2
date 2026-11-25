@@ -738,19 +738,26 @@ theorem termDomain_eq_bindArguments (p : sig.Partial)
 def termGraph (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
     (out : Term sig Γ op.arity.output) : Formula sig Γ :=
   bindArguments (op.arity.output :: op.arity.inputs)
-    (fun index => match index with
-      | .here => out
-      | .there previous => terms previous)
+    (Term.argsCons out terms)
     (.atom (.graph op (fun index => (Var.there index).inLeft Γ) (Var.here.inLeft Γ)))
 
 /-- A term graph binds the output term and every input term before testing its graph atom. -/
 theorem termGraph_eq_bindArguments (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
     (out : Term sig Γ op.arity.output) : termGraph op terms out =
       bindArguments (op.arity.output :: op.arity.inputs)
-        (fun i => match i with
-          | .here => out
-          | .there index => terms index)
+        (Term.argsCons out terms)
         (.atom (.graph op (fun i => (Var.there i).inLeft Γ) (Var.here.inLeft Γ))) := rfl
+
+/-- Equal operation tags give the same term graph at a common arity. -/
+theorem termGraph_congr_arity {op op' : Operation sig} (same : op = op') {a : Arity sig.SortType}
+    (left : op.arity = a) (right : op'.arity = a)
+    (terms : ∀ {s}, Var a.inputs s → Term sig Γ s) (out : Term sig Γ a.output) :
+    termGraph op (fun {s} i => terms (cast (congrArg (fun profile => Var profile.inputs s) left) i))
+      (cast (congrArg (Term sig Γ) (congrArg Arity.output left.symm)) out) =
+    termGraph op' (fun {s} i => terms (cast (congrArg (fun profile => Var profile.inputs s) right) i))
+      (cast (congrArg (Term sig Γ) (congrArg Arity.output right.symm)) out) := by
+  subst op'
+  rfl
 
 /-- A term relation tests the tuple of evaluated argument values. -/
 theorem holds_termRel (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s → Term sig Γ s)

@@ -138,12 +138,26 @@ theorem selectResult_eq_cast (e : CarrierEquiv U X Y) (op : Operation P.signatur
         (e op.arity.output (operationOutput op keep) x) :=
   rfl
 
+/-- A selected graph is independent of the name used for the same operation at the selected arity. -/
+theorem graph_select_congr (B : Structure (signature U)) (e : CarrierEquiv U X B.carrier)
+    (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
+    (op' : Operation (signature U)) (same : operation op keep = op') (shape : op'.arity = arity op keep)
+    (a : Assignment X op.arity.inputs) (x : X op.arity.output) :
+    B.Graph (operation op keep) (selectArgs e op keep a) (selectResult e op keep x) ↔
+      B.Graph op'
+        (cast (congrArg (fun profile => Assignment B.carrier profile.inputs) shape.symm)
+          (selectAssignment e (operationInputs op keep) a))
+        (cast (congrArg (fun profile => B.carrier profile.output) shape.symm)
+          (e op.arity.output (operationOutput op keep) x)) := by
+  subst op'
+  rw [selectArgs_eq_cast, selectResult_eq_cast]
+
 /-- For a retained total operation, the output comparison of Proposition 3.2
 is the equivalence on its output carrier. The missing-graph example uses this form. -/
 theorem selectResult_total (e : CarrierEquiv U X Y) (f : P.signature.Total)
     (keep : Declaration.total f ∈ U.declarations) (x : X (P.signature.totalArity f).output) :
-    selectResult e (.total f) keep x =
-      e _ (operationOutput (.total f) keep) x :=
+    selectResult e (.total f) (Declaration.ofOperation_total_mem f keep) x =
+      e _ (operationOutput (.total f) (Declaration.ofOperation_total_mem f keep)) x :=
   rfl
 
 end Selection
@@ -196,7 +210,9 @@ structure EvaluationMatches (E : RestrictedEvaluation U X) (B : Structure (signa
   /-- Retained domains have the same defined inputs. -/
   domain (p : P.signature.Partial) (keep : Declaration.partialOp p ∈ U.declarations)
     (a : Assignment X (P.signature.partialArity p).inputs) :
-    B.partialDomain ⟨p, keep⟩ (selectAssignment e (operationInputs (.partialOp p) keep) a) ↔ E.domain p keep a
+    B.partialDomain ⟨p, keep⟩
+      (selectAssignment e (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) a) ↔
+        E.domain p keep a
   /-- Retained graphs give the same values. -/
   graph (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (a : Assignment X op.arity.inputs) (x : X op.arity.output) :
@@ -228,7 +244,7 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
   | domain p vars =>
     let k : Declaration.partialOp p ∈ U.declarations := keep (Declaration.domain_mem_atomicSupport p vars)
     rw [selectAtomic_domain, Atomic.holds_domain, RestrictedEvaluation.atomic_domain_iff]
-    erw [selectAssignment_pull e (operationInputs (.partialOp p) k) free x vars]
+    erw [selectAssignment_pull e (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p k)) free x vars]
     exact same.domain p k (x.pull vars)
   | graph op vars y =>
     let k : Declaration.ofOperation op ∈ U.declarations := keep (Declaration.graph_mem_atomicSupport op vars y)
@@ -236,10 +252,16 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     have out := selectAssignment_selectVar e free x y
     rw [selectAtomic_graph, RestrictedEvaluation.atomic_graph_iff]
     cases op <;> simp only [selectGraph_total, selectGraph_partialOp, selectGraph_quantity, Atomic.holds_graph]
-    all_goals
-      erw [args, out]
-      simpa only [selectArgs_eq_cast, selectResult_eq_cast, cast_eq] using
-        same.graph _ k (x.pull vars) (x y)
+    all_goals erw [args, out]
+    · simpa only [cast_eq] using
+        (graph_select_congr B e (.total _) k _ (operation_total _ k) rfl _ _).symm.trans
+          (same.graph _ k (x.pull vars) (x y))
+    · simpa only [cast_eq] using
+        (graph_select_congr B e (.partialOp _) k _ (operation_partialOp _ k) rfl _ _).symm.trans
+          (same.graph _ k (x.pull vars) (x y))
+    · simpa only [cast_eq] using
+        (graph_select_congr B e (.quantity _) k _ (operation_quantity _ k) rfl _ _).symm.trans
+          (same.graph _ k (x.pull vars) (x y))
 
 /-- Any supported formula has the same truth in the actual selected structure. -/
 theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :

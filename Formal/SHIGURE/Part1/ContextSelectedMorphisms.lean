@@ -46,6 +46,22 @@ theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y'
     selectAssignment_selectVar, selectAssignment_selectVar, mapAssignment_apply]
   exact same s.val s.property (a (ambientVar kept i))
 
+/-- Mapping the values of an assignment commutes with a change of its context index. -/
+private theorem cast_assignment_map {left right : Arity (SortName U)} (same : left = right)
+    (g : ∀ s, Y s → Y' s) (a : Assignment Y left.inputs) :
+    (cast (congrArg (fun profile => Assignment Y profile.inputs) same) a).map g =
+      cast (congrArg (fun profile => Assignment Y' profile.inputs) same) (a.map g) := by
+  cases same
+  rfl
+
+/-- Mapping a carrier element commutes with a change of its sort index. -/
+private theorem cast_carrier_map {left right : Arity (SortName U)} (same : left = right)
+    (g : ∀ i, Y i → Y' i) (x : Y left.output) :
+    g right.output (cast (congrArg (fun profile => Y profile.output) same) x) =
+      cast (congrArg (fun profile => Y' profile.output) same) (g left.output x) := by
+  cases same
+  rfl
+
 /-- Transport the input tuple in the graph comparison of Proposition 3.2.
 The pointwise square `same` is definitional for the read structural arrow
 and is proved by `writeOnSort_comm` for the written arrow. -/
@@ -56,7 +72,10 @@ theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (a : Assignment X op.arity.inputs) :
     (selectArgs e op kept a).map g = selectArgs e' op kept (mapAssignment f (operationInputs op kept) a) := by
   rw [selectArgs_eq_cast, selectArgs_eq_cast]
-  cases op <;> simpa only [cast_eq] using map_selectAssignment e e' f g same _ a
+  let h := (operation_arity op kept).symm
+  exact (cast_assignment_map h g (selectAssignment e (operationInputs op kept) a)).trans
+    (congrArg (cast (congrArg (fun profile => Assignment Y' profile.inputs) h))
+      (map_selectAssignment e e' f g same (operationInputs op kept) a))
 
 /-- Transport the output in the graph comparison of Proposition 3.2.
 The pointwise square `same` is definitional for the read structural arrow
@@ -67,7 +86,9 @@ theorem map_selectResult (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
     g _ (selectResult e op kept x) = selectResult e' op kept (f _ (operationOutput op kept) x) := by
   rw [selectResult_eq_cast, selectResult_eq_cast]
-  cases op <;> simpa only [cast_eq] using same _ _ x
+  let h := (operation_arity op kept).symm
+  exact (cast_carrier_map h g (e op.arity.output (operationOutput op kept) x)).trans
+    (congrArg (cast (congrArg (fun profile => Y' profile.output) h)) (same _ _ x))
 
 /-- Every tuple of the selected arity comes from a unique ambient tuple of the retained carriers. -/
 def argsEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
@@ -141,7 +162,7 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
     exact ((readStructure_matches B).relation r.val r.property _).2
       (f.relation_mem r.val r.property x (((readStructure_matches A).relation r.val r.property x).1 held))) (by
     intro p xs held
-    let keep := operationInputs (.partialOp p.val) p.property
+    let keep := operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
     obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
     rw [← hx, assignmentEquiv_apply] at held ⊢
     rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
@@ -149,9 +170,18 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
       (f.domain_mem p.val p.property x (((readStructure_matches A).domain p.val p.property x).1 held))) (by
     intro op xs y held
     cases op with
-    | total f' => exact readGraph f (.total f'.val) f'.property xs y held
-    | partialOp p => exact readGraph f (.partialOp p.val) p.property xs y held
-    | quantity q => exact readGraph f (.quantity q.val) q.property xs y held)
+    | total f' =>
+      have preserved := readGraph f (.total f'.val) (Declaration.ofOperation_total_mem f'.val f'.property)
+      rw [operation_total] at preserved
+      exact preserved xs y held
+    | partialOp p =>
+      have preserved := readGraph f (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
+      rw [operation_partialOp] at preserved
+      exact preserved xs y held
+    | quantity q =>
+      have preserved := readGraph f (.quantity q.val) (Declaration.ofOperation_quantity_mem q.val q.property)
+      rw [operation_quantity] at preserved
+      exact preserved xs y held)
 
 /-- The read ordinary arrow preserves the same point map at each retained sort. -/
 theorem readStructureMap_onSort (f : ContextStructure.Hom A B) (s : SortName U) (x : A.carrier s.val) :

@@ -26,12 +26,14 @@ noncomputable def readFunctor (U : DeclarationContext P) : Models U ⥤ Model (t
   map_id A := by
     apply Model.hom_ext
     intro s x
+    rw [Model.id_apply]
     change (readStructureMap (InducedCategory.Hom.hom (𝟙 A))).onSort s x = x
     exact (readStructureMap_onSort (InducedCategory.Hom.hom (𝟙 A)) s x).trans
       (Models.id_onSort A s.val s.property x)
   map_comp f g := by
     apply Model.hom_ext
     intro s x
+    rw [Model.comp_apply]
     change (readStructureMap (f ≫ g).hom).onSort s x =
       (readStructureMap g.hom).onSort s ((readStructureMap f.hom).onSort s x)
     simpa only [readStructureMap_onSort] using Models.comp_onSort f g s.val s.property x

@@ -285,6 +285,11 @@ private def toInterchangeable (r : Bool) : Interpretation presentation.theory in
   definedPartial p := nomatch p
   preserves n := nomatch n.val
 
+/-- The interchangeable interpretation uses the chosen target relation. -/
+private theorem toInterchangeable_relation (r q : Bool) :
+    (toInterchangeable r).translation.relation q = selectedRelation r :=
+  rfl
+
 /-- The two replacements use different symbols and the displayed Laws give mutual derivability. -/
 private theorem interchangeable_equivalent (r : Bool) :
     (toInterchangeable r).Equivalent (toInterchangeable false) := by
@@ -294,7 +299,7 @@ private theorem interchangeable_equivalent (r : Bool) :
     · intro op
       cases op <;> rename_i name <;> exact nomatch name
     · intro _
-      change Derivation.Equivalent interchangeableRelations.theory (selectedRelation true) (selectedRelation false)
+      simp only [toInterchangeable_relation]
       exact ⟨⟨Derivation.required (T := interchangeableRelations.theory) ⟨true, rfl⟩⟩,
         ⟨Derivation.required (T := interchangeableRelations.theory) ⟨false, rfl⟩⟩⟩
     · intro p
@@ -355,8 +360,7 @@ private def piecewiseTranslation : ReadingContextChange sourceWithOverlap target
       · rw [Declaration.sorts_eq_image] at hsort
         obtain ⟨_, h, _⟩ := hsort
         cases h
-      · change d ∈ Declaration.formula (.atom (.rel i _)) at hrelation
-        rw [Declaration.formula_atom] at hrelation
+      · rw [toInterchangeable_relation, selectedRelation, Declaration.formula_atom] at hrelation
         erw [Declaration.atomic_rel (P := targetWithSeparatePieces.presentation)] at hrelation
         exact Or.inr (Set.mem_singleton_iff.1 hrelation)
 

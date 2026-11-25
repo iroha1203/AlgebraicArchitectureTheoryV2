@@ -28,14 +28,19 @@ instance noPartial : IsEmpty signature.Partial := inferInstanceAs (IsEmpty PEmpt
 
 /-- Apply one of the two unary symbols to a term. -/
 def applySymbol (f : Bool) (t : Term signature [()] ()) : Term signature [()] () :=
-  .app (.total f) (fun i => match i with | .here => t)
+  .app (.total f) (t.argsCons Term.argsNil)
 
 /-- The graph of a unary application binds the sole argument before using the named symbol. -/
 theorem applySymbol_graphAt (f : Bool) (t : Term signature [()] ())
     {Δ : List signature.SortType} (ρ : Renaming [()] Δ) (out : Var Δ ()) :
     (applySymbol f t).graphAt ρ out =
       (((t.graphAt (fun i => (ρ i).shift [()]) .here).conj .truth).conj
-        (.atom (.graph (.total f) (Var.inLeft Δ) (out.shift [()])))).ex :=
+        (.atom (.graph (.total f) (Var.inLeft Δ) (out.shift [()])))).ex := by
+  unfold applySymbol
+  rw [Term.graphAt_app]
+  change Formula.existsMany (sig := signature) [()] ((Formula.conjoin (sig := signature) [()] _).conj _) = _
+  simp only [Formula.existsMany_singleton, Formula.conjoin_cons, Formula.conjoin_nil,
+    Term.argsCons_here, Var.inLeft_here]
   rfl
 
 /-- The Law requires `g(f(x)) = x` at every value. -/

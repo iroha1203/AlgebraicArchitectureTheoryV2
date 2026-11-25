@@ -137,7 +137,7 @@ variable {P : PrimitivePresentation.{u}} {U V W : DeclarationContext P}
 def pullback (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V X Y) :
     RestrictedEvaluation V X where
   relation r kept e := A.relation r (inside kept) (mapAssignment f (relationInputs r kept) e)
-  domain p kept e := A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) kept) e)
+  domain p kept e := A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) e)
   graph op kept e y := A.graph op (inside kept) (mapAssignment f (operationInputs op kept) e)
     (f _ (operationOutput op kept) y)
 
@@ -152,7 +152,7 @@ def pullback (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V
     (p : P.signature.Partial) (kept : Declaration.partialOp p ∈ V.declarations)
     (e : Assignment X (P.signature.partialArity p).inputs) :
     (A.pullback inside f).domain p kept e ↔
-      A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) kept) e) :=
+      A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) e) :=
   Iff.rfl
 
 /-- The restricted operation graph relates the mapped input tuple and mapped result. -/

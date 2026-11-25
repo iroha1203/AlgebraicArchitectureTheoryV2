@@ -108,14 +108,16 @@ theorem glue_domain (p : P.signature.Partial) (keep : Declaration.partialOp p �
     (e : Assignment (A.glueCarrier cover) (P.signature.partialArity p).inputs)
     (held : (A.glueEvaluation cover).domain p keep e) :
     (B.glueEvaluation cover).domain p keep
-      (mapAssignment (glueOnSort cover f) (operationInputs (.partialOp p) keep) e) := by
+      (mapAssignment (glueOnSort cover f)
+        (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) e) := by
   let i := cover.index keep
   have localKept : Declaration.partialOp p ∈ (cover.piece i).declarations := cover.mem_index keep
   have input : (A.localView cover i).domain p localKept e := by
     rw [← A.glueEvaluation_view cover i, RestrictedEvaluation.pullback_domain, mapAssignment_id]
     exact held
   have preserved : (B.localView cover i).domain p localKept
-      (mapAssignment (arrowView cover f i) (operationInputs (.partialOp p) localKept) e) := by
+      (mapAssignment (arrowView cover f i)
+        (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p localKept)) e) := by
     simp only [localView_eq_pullback, RestrictedEvaluation.pullback_domain, arrowView_assignment] at input ⊢
     exact (show ContextStructure.Hom _ _ from (f.pieceMap i).hom).domain_mem p localKept _ input
   rw [← B.glueEvaluation_view cover i, RestrictedEvaluation.pullback_domain, mapAssignment_id,

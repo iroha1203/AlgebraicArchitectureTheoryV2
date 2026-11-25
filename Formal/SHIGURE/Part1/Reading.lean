@@ -629,6 +629,35 @@ theorem translatedSupport_sort (u : Interpretation P.theory Q.theory) (s : P.sig
     translatedSupport u (.sort s) = {.sort (u.onSort s)} :=
   rfl
 
+/-- The image of a sort is included in its translated support. -/
+theorem translatedSort_mem (u : Interpretation P.theory Q.theory) (s : P.signature.SortType) :
+    .sort (u.onSort s) ∈ translatedSupport u (.sort s) := by
+  rw [translatedSupport_sort]
+  exact Set.mem_singleton _
+
+/-- A total symbol contributes its input sorts, translated graph, and totality proof. -/
+theorem translatedSupport_total (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :
+    translatedSupport u (.total f) =
+      sorts ((P.signature.totalArity f).inputs.map u.onSort) ∪
+        (formula (u.translation.operation (.total f)).graph ∪ derivation (u.total f)) :=
+  rfl
+
+/-- A partial operation contributes both its graph and its definedness data. -/
+theorem translatedSupport_partialOp (u : Interpretation P.theory Q.theory) (p : P.signature.Partial) :
+    translatedSupport u (.partialOp p) =
+      sorts ((P.signature.partialArity p).inputs.map u.onSort) ∪
+        (formula (u.translation.operation (.partialOp p)).graph ∪
+          (formula (u.translation.partialDomain p) ∪
+            (derivation (u.partialDefined p) ∪ derivation (u.definedPartial p)))) :=
+  rfl
+
+/-- A quantity contributes its input sorts, translated graph, and totality proof. -/
+theorem translatedSupport_quantity (u : Interpretation P.theory Q.theory) (q : P.signature.Quantity) :
+    translatedSupport u (.quantity q) =
+      sorts ((P.signature.quantityArity q).inputs.map u.onSort) ∪
+        (formula (u.translation.operation (.quantity q)).graph ∪ derivation (u.quantity q)) :=
+  rfl
+
 /-- A translated relation contributes its input sorts and the names in its defining formula. -/
 theorem translatedSupport_relation (u : Interpretation P.theory Q.theory) (r : P.signature.Rel) :
     translatedSupport u (.relation r) =
@@ -637,8 +666,9 @@ theorem translatedSupport_relation (u : Interpretation P.theory Q.theory) (r : P
 
 /-- The translation of a total symbol retains every declaration in its totality proof. -/
 theorem totality_derivation_support (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :
-    derivation (u.total f) ⊆ translatedSupport u (.total f) :=
-  fun _ used => Or.inr (Or.inr used)
+    derivation (u.total f) ⊆ translatedSupport u (.total f) := by
+  rw [translatedSupport_total]
+  exact Set.subset_union_right.trans Set.subset_union_right
 
 /-- A translated atom references only declarations in the image support of the source atom. -/
 theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
@@ -655,22 +685,38 @@ theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
       formula_rename]
     rw [atomic_rel] at supported
     intro d hd
-    exact supported (.relation r) (Set.mem_singleton _) (Or.inr hd)
+    apply supported (.relation r) (Set.mem_singleton _)
+    rw [translatedSupport_relation]
+    exact Or.inr hd
   | domain p vars =>
     rw [Translation.atomic_domain (S := P.signature) (T := Q.signature) u.translation p vars,
       formula_rename]
     rw [atomic_domain] at supported
     intro d hd
-    exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inr (Or.inl hd)))
+    apply supported (.partialOp p) (Set.mem_singleton _)
+    rw [translatedSupport_partialOp]
+    exact Or.inr (Or.inr (Or.inl hd))
   | graph op vars y =>
     rw [Translation.atomic_graph (S := P.signature) (T := Q.signature) u.translation op vars y,
       formula_rename]
     rw [atomic_graph] at supported
     intro d hd
     cases op with
-    | total f => exact supported (.total f) (Set.mem_singleton _) (Or.inr (Or.inl hd))
-    | partialOp p => exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inl hd))
-    | quantity q => exact supported (.quantity q) (Set.mem_singleton _) (Or.inr (Or.inl hd))
+    | total f =>
+      rw [ofOperation_total] at supported
+      apply supported (.total f) (Set.mem_singleton _)
+      rw [translatedSupport_total]
+      exact Or.inr (Or.inl hd)
+    | partialOp p =>
+      rw [ofOperation_partialOp] at supported
+      apply supported (.partialOp p) (Set.mem_singleton _)
+      rw [translatedSupport_partialOp]
+      exact Or.inr (Or.inl hd)
+    | quantity q =>
+      rw [ofOperation_quantity] at supported
+      apply supported (.quantity q) (Set.mem_singleton _)
+      rw [translatedSupport_quantity]
+      exact Or.inr (Or.inl hd)
 
 /-- A formula's translation uses the translated support of all its bound sorts and symbols. -/
 theorem translated_formula_support (u : Interpretation P.theory Q.theory)
@@ -693,7 +739,9 @@ theorem translated_formula_support (u : Interpretation P.theory Q.theory)
   | @ex Γ s p ih =>
     simp only [Translation.formula_ex, formula_ex]
     intro keep d hd
-    exact hd.elim (fun h => keep (.sort s) (Or.inl (Set.mem_singleton _)) h)
+    have sortKept := keep (.sort s) (Or.inl (Set.mem_singleton _))
+    rw [translatedSupport_sort] at sortKept
+    exact hd.elim (fun h => sortKept h)
       (fun h => ih (fun x hx => keep x (Or.inr hx)) h)
 
 /-- The declared name underlying an evaluated state, relation, operation, or domain fact. -/
@@ -757,7 +805,8 @@ theorem sort_is_covered (transition : ReadingContextChange source target u)
     ∃ i j, j ∈ transition.pieces i ∧
       Declaration.sort (u.onSort s) ∈ (target.cover.piece j).declarations := by
   obtain ⟨i, available⟩ := source.cover.covers (transition.inside retained)
-  obtain ⟨j, chosen, covered⟩ := transition.localSupport i retained available (Set.mem_singleton _)
+  obtain ⟨j, chosen, covered⟩ := transition.localSupport i retained available
+    (Declaration.translatedSort_mem (transition.supporting i) s)
   exact ⟨i, j, chosen, congrFun (transition.equivalent i).choose s ▸ covered⟩
 
 /-- Restrict a source piece to the declarations selected for this comparison. -/
@@ -805,7 +854,8 @@ private theorem formula_support_in (transition : ReadingContextChange source tar
   · rw [Declaration.sorts_eq_image] at hsort
     obtain ⟨t, ht, rfl⟩ := hsort
     obtain ⟨s, hs, rfl⟩ := List.mem_map.mp ht
-    exact keep (.sort s) (Or.inl (Declaration.sort_mem_sorts hs)) (Set.mem_singleton _)
+    exact keep (.sort s) (Or.inl (Declaration.sort_mem_sorts hs))
+      (Declaration.translatedSort_mem (transition.supporting i) s)
   · exact Declaration.translated_formula_support (transition.supporting i) p V
       (fun d hd => keep d (Or.inr hd)) hformula
 
