@@ -373,20 +373,22 @@ theorem BlockClosed.of_cover {U : DeclarationContext (V.presentation L)}
     obtain ⟨i, localKeep⟩ := cover.covers keep
     exact cover.subset i ((h i).moduleOp s localKeep f)
 
+attribute [local irreducible] Declaration.ofOperation in
 /-- Any coefficient or module input of a retained multilinear symbol is retained. -/
 theorem multilinear_input_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}
     (kept : V.multilinearDecl L f ∈ U.declarations) (i : V.Position f) :
     Declaration.sort i.1 ∈ U.declarations :=
   DeclarationContext.operationInputs (P := V.presentation L) (U := U)
-    (.total (Symbol.multilinear f)) kept
+    (.total (Symbol.multilinear f)) (Declaration.ofOperation_total_mem _ kept)
     (Declaration.sort_mem_sorts i.2.sort_mem)
 
+attribute [local irreducible] Declaration.ofOperation in
 /-- A retained multilinear symbol forces retention of its coefficient or module result sort. -/
 theorem multilinear_output_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}
     (kept : V.multilinearDecl L f ∈ U.declarations) :
     Declaration.sort (V.output f) ∈ U.declarations :=
   DeclarationContext.operationOutput (P := V.presentation L) (U := U)
-    (.total (Symbol.multilinear f)) kept
+    (.total (Symbol.multilinear f)) (Declaration.ofOperation_total_mem _ kept)
 
 end Vocabulary
 end SHIGURE.Marked
