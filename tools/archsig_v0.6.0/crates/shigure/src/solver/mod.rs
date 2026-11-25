@@ -10,6 +10,12 @@
 
 mod artin;
 mod artin_z;
+mod atlas;
+mod atlas_condition_c;
+mod atlas_ext;
+mod atlas_graph;
+mod atlas_refinement;
+mod atlas_repair;
 mod chevalley;
 mod chevalley_sections;
 mod common_format;
@@ -18,6 +24,10 @@ mod common_solve;
 mod common_solve_q;
 mod context;
 mod diagram;
+mod diagnostics;
+mod diagnostics_change;
+mod diagnostics_collision;
+mod diagnostics_strat;
 mod domain_solve;
 mod family_direct;
 mod family_eval;
@@ -51,11 +61,17 @@ mod tests;
 #[cfg(test)]
 mod tests_artin;
 #[cfg(test)]
+mod tests_atlas;
+#[cfg(test)]
+mod tests_atlas_extra;
+#[cfg(test)]
 mod tests_chevalley;
 #[cfg(test)]
 mod tests_diagram;
 #[cfg(test)]
 mod tests_diagram_extra;
+#[cfg(test)]
+mod tests_diagnostics;
 #[cfg(test)]
 mod tests_extra;
 #[cfg(test)]
@@ -90,8 +106,10 @@ mod tests_transfer;
 mod tests_transfer_extra;
 
 pub use artin::solve_artin_task;
+pub use atlas::solve_atlas_task;
 pub use chevalley::solve_chevalley_task;
 pub use diagram::solve_diagram_task;
+pub use diagnostics::solve_diagnostics_task;
 pub use lift::solve_lift_task;
 pub use observation::solve_observation_task;
 pub use path::solve_path_task;
