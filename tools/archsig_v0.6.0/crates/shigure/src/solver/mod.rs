@@ -8,6 +8,8 @@
 //! - `solve` / `domain_solve` / `interaction_query`: 適用条件検査、係数域・点集合域ごとの計算分岐、
 //!   沈黙（`Verdict::Undetermined`）規律、座標面支持による相互作用解析の統合実行
 
+mod artin;
+mod artin_z;
 mod chevalley;
 mod chevalley_sections;
 mod common_format;
@@ -21,6 +23,12 @@ mod family_direct;
 mod family_eval;
 mod family_existential;
 mod interaction_query;
+mod lift;
+mod lift_affine;
+mod lift_common;
+mod lift_extensions;
+mod lift_z;
+mod lift_z_ext;
 mod observation;
 mod path;
 mod path_fixed;
@@ -41,6 +49,8 @@ mod transfer_words;
 #[cfg(test)]
 mod tests;
 #[cfg(test)]
+mod tests_artin;
+#[cfg(test)]
 mod tests_chevalley;
 #[cfg(test)]
 mod tests_diagram;
@@ -48,6 +58,12 @@ mod tests_diagram;
 mod tests_diagram_extra;
 #[cfg(test)]
 mod tests_extra;
+#[cfg(test)]
+mod tests_lift;
+#[cfg(test)]
+mod tests_lift_extra;
+#[cfg(test)]
+mod tests_lift_r3_r4;
 #[cfg(test)]
 mod tests_observation;
 #[cfg(test)]
@@ -73,8 +89,10 @@ mod tests_transfer;
 #[cfg(test)]
 mod tests_transfer_extra;
 
+pub use artin::solve_artin_task;
 pub use chevalley::solve_chevalley_task;
 pub use diagram::solve_diagram_task;
+pub use lift::solve_lift_task;
 pub use observation::solve_observation_task;
 pub use path::solve_path_task;
 pub use robustness::solve_robustness_task;

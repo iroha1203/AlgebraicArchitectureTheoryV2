@@ -65,7 +65,7 @@ pub use quotient::{
 pub use scalar::{FpElem, Rat, RingCoeff};
 pub use syzygy::{
     DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, SyzygyModule, compute_syzygies_field, compute_syzygies_z,
-    jacobian_polys,
+    ideal_membership_field, jacobian_polys,
 };
 
 /// 単項式順序の種別。
