@@ -4,7 +4,7 @@
 | --- | --- |
 | 状態 | Draft |
 | 対象配置 | `Formal/SHIGURE.lean`, `Formal/SHIGURE/AxiomAudit.lean`, `Formal/SHIGURE/Part2/**` |
-| 親計画 Issue | 未起票（着工前に GitHub Issue を起票し、第I部側の親 Issue との依存関係を設定する） |
+| 親計画 Issue | GitHub Issue `#6439` |
 | 数学本文（Tier 1 参照先） | [第4章](../aat/algebraic_geometric_theory/part_2/chapter_4_coefficient_realizations.md), [第5章](../aat/algebraic_geometric_theory/part_2/chapter_5_quantities_and_law_geometry.md), [第6章](../aat/algebraic_geometric_theory/part_2/chapter_6_families_and_moduli.md), [付録B](../aat/algebraic_geometric_theory/appendix_b_coefficients_and_descent.md), [第19章 19.6節（設定 19.12・補題 19.13）](../aat/algebraic_geometric_theory/part_6/chapter_19_local_reconstruction_and_finite_determination.md#196-有限ハンケル表からの最小実現), [共通記号](../aat/algebraic_geometric_theory/notation.md) |
 | 適用ガイドライン | [AAT guideline](../aat/guideline.md), [Lean 品質基準](../aat/lean_quality_standard.md), [Workflow guideline](../workflow/guideline.md), [PRD guideline](guideline.md), [語彙ルール](../workflow/vocabulary.md) |
 | CI 変更要否 | 不要（既存の `.github/workflows/lean.yml` ジョブ `SHIGURE build and kernel audit` が `Formal/SHIGURE/**` と `Formal/SHIGURE.lean` を自動対象とする） |
