@@ -732,7 +732,7 @@ Learning
 
 ### Japanese Version
 
-> **境界づけられたソフトウェア進化は、計算可能に統治できるか、さもなくば、どの計算境界が破れたかを示す型付き witness を持つ。**
+> **有界なソフトウェア進化は、計算可能な範囲で制御できるか、あるいはどの計算上の境界が破られたかを示す型付き witness を伴って失敗する。**
 
 This is the possible grand theorem of SFT.
 

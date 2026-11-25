@@ -11,7 +11,7 @@
 - 本文 / GOAL のtheorem claimと必要仮定を全体から読む。
 - 主張の強さ、量化、係数、site / topology、反例方向、欠けた仮定、
   claim scope外の要求混入を独立に判定する。
-- 指定された一次仕様との弱化、未放電仮定、定義不足を探す。
+- 指定された一次仕様との弱化、未解消仮定、定義不足を探す。
 
 ### Lean査読 A / B
 
@@ -19,9 +19,9 @@
   依存補題、`#print axioms`、placeholder scan、単一fileのfocused `lake env lean`
   checkを追う。
 - 数学claimの弱化、結論相当のtheorem argument / typeclass / certificate field /
-  structure fieldへの移動、未放電obligationを探す。
+  structure fieldへの移動、未解消obligationを探す。
 - material premiseのcertificate provenance、proof-use、field-contentを追う。
-  explicit certificateを放電済みと即断しない。
+  explicit certificateを解消済みと即断しない。
 
 ## 追加出力
 
@@ -29,7 +29,7 @@
 
 1. 対象数学claimと候補Lean declaration。
 2. Claim mapping。
-3. Material premise分類と放電状況。
+3. Material premise分類と解消状況。
 4. Certificate provenance / proof-use / field-content findings。
 5. Anti-weakening verdict。
 6. Axiom / dependency checksと未実行項目。
@@ -52,6 +52,6 @@
 12. 実行した検証。
 13. Coverage limitsと残リスク。
 
-`No major findings`はrare passとする。中心claimに関わる未確認、弱化、未放電、
+`No major findings`は厳格な条件を満たした場合にのみ与える。中心claimに関わる未確認、弱化、未解消、
 台帳不一致が残る場合、またはcertificate provenance / proof-use /
 field-content auditが閉じていない場合は使わない。

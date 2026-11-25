@@ -27,7 +27,7 @@ AAT / Lean status・theorem・GOALを扱う場合だけ
 
 ### 4観点(サブエージェント必須)
 
-4観点を4つの独立したsubagentに分け、共有契約どおり利用可能枠まで並行する。
+4観点を4つの独立したsubagentに分け、共有手順どおり利用可能枠まで並行する。
 
 1. **保護対象と責務分離**
    - `docs/aat/algebraic_geometric_theory/`, `docs/sft/software_field_theory.md`,
@@ -42,10 +42,10 @@ AAT / Lean status・theorem・GOALを扱う場合だけ
      tooling validation の完全性を `non-conclusion`・残タスク・証明不能な
      限界として持ち込んでいないかを疑う(source-observation layer は
      AAT theorem package の外側にある)。
-   - 実装・証明・発火を要求する条件を docs 記載だけで完了側へ動かす
-     差分(宣言落とし)を疑う。処置ラベルの降格は PRD の許容リストと
+   - 実装・証明・具体例提示を要求する条件を docs 記載だけで完了側へ動かす
+     差分(記載だけの完了扱い)を疑う。処置ラベルの降格は PRD の許容リストと
      照合する。
-   - scope記載(「〜とは主張しない」等)には checklist §4 の資格条件を
+   - scope記載(「〜とは主張しない」等)には checklist §4 の記載要件を
      適用する。Research 側に受理済み theorem がある欠落はscope制限ではなく
      `unported (Research-proved)` と書かれているかを疑う。
 
@@ -60,25 +60,25 @@ AAT / Lean status・theorem・GOALを扱う場合だけ
    - 文書の目的、問い、要件、判定、証拠、制約、失敗防止規則のいずれにも
      寄与しない記述を疑う。長さだけで冗長と判定せず、各記述が防いでいる
      失敗、保持する判断、追加する証拠、必要な例外を確認する。
-   - 同じ規則・説明・template・検証手順が複数箇所にあり、正本への参照で
-     置き換えられる重複を探す。削除候補には残す正本を明記する。
+   - 同じ規則・説明・template・検証手順が複数箇所にあり、定義元への参照で
+     置き換えられる重複を探す。削除候補には残す定義元を明記する。
    - `.codex/skills/` では、skill固有でない一般規律、別skillの手順再説明、
-     必要stageより前に読む長いreference、発火後にしか読まれない使用条件を疑う。
+     必要stageより前に読む長いreference、起動後にしか読まれない使用条件を疑う。
    - PRDでは「問い」・達成条件・Failure Contract・設計判断に影響しない
      経緯説明、研究文書ではclaim・証拠・未解決事項・次の判断に影響しない
      進行談を疑う。日付入りの改訂経緯や過去事案は、現行規則の意味に必要な
      場合を除き、runtime promptから外す。
-   - AATが比喩ではないこと、禁止語のhard stop、仮定放電、anti-weakeningなど、
-     実際の失敗を防ぐ固有規則は、同じ保護を別の正本が提供すると証明できない
+   - AATが比喩ではないこと、禁止語のhard stop、仮定の解消、anti-weakeningなど、
+     実際の失敗を防ぐ固有規則は、同じ保護を別の基準文書が提供すると証明できない
      限り冗長扱いしない。
    - 読者向けの構成、根拠、用語、説明順を疑う。
    - public-facing text の private name / path / 内部事情を疑う
      (checklist §6)。
-   - 主張が強すぎる場合・防御的非主張リスト化している場合を疑う。
+   - 主張が強すぎる場合・不要な免責事項の羅列になっている場合を疑う。
 
 ### 統合判定
 
-共有契約の統合出力に従い、判定を
+共有手順の統合出力に従い、判定を
 `Needs changes` / `No major findings` / `Blocked / cannot determine` で返す。
 
 ## 保守モード(単独起動時のみ)
@@ -99,7 +99,7 @@ docs 保守を単独で依頼した場合に使う。
      `unported (Research-proved)`, `Issue`, `TODO`, `完了`, `証明済み`
    - Lean declaration: `rg -n "^(def|theorem|lemma|structure|class|inductive|abbrev)\s+" Formal`
    - placeholder: `rg -n "\b(axiom|admit|sorry|unsafe)\b" Formal docs`
-3. docs の主張を実装と照合する。`proved`・昇格・発火を主張する行は
+3. docs の主張を実装と照合する。`proved`・status 引き上げ・具体例提示を主張する行は
    宣言名の存在確認で済ませず、サンプルで statement を実読する
    (`lean-refutation-checklist.md` §1–§2を適用)。tooling claim は `tools/` の README・
    source・tests を確認する。
@@ -109,12 +109,12 @@ docs 保守を単独で依頼した場合に使う。
 - **軽微な docs drift**: wording が古い、実装済み API が索引にない、
   完了済み項目が future のまま。→ 直接修正する。
 - **冗長記述**: 本筋に寄与せず、固有の失敗防止規則・判断・証拠・例外を
-  持たない重複や経緯説明。残す正本を特定できる場合だけ直接削除または参照へ
+  持たない重複や経緯説明。残す定義元を特定できる場合だけ直接削除または参照へ
   置換する。保護規則か判断できない場合は削除せずfindingとして報告する。
 - **claim scope の明確化**: docs が実装より強い theorem や未定義 contract を
   示唆している。正しい書き方が明確なら直接修正する。scopeを書く場合は
-  checklist §4 の資格条件を満たすこと。
-- **status 降格を伴う乖離**: docs / 台帳が `proved`・昇格・発火を主張するが
+  checklist §4 の記載要件を満たすこと。
+- **status 降格を伴う乖離**: docs / 台帳が `proved`・status 引き上げ・具体例提示を主張するが
   実装が支えていない場合、そのラベルが PRD / Issue の実装要求に対応する
   なら docs 側を弱めて閉じず「複雑な gap」として報告する。
   実装要求と無関係な純粋な docs 誇張だけ、status を

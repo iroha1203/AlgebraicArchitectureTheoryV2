@@ -42,7 +42,7 @@ findingからAtomとsource refsを経由して、確認対象を次の4種類に
 | Validated repair | target stateの再計測で選択されたobstructionの解消が記録されたsource |
 
 source解決精度はmethod / symbol / line / file / unresolvedとして表示する。
-evidence locationを自動的にcandidate change pointへ昇格しない。
+evidence locationを自動的にcandidate change pointとして扱わない。
 
 ## Input contract
 
@@ -111,10 +111,10 @@ visual channel origin
 
 visual channelは次に区分する。
 
-- `measured`: supplied measurementが直接駆動する。
+- `measured`: supplied measurementから直接決まる。
 - `derived`: supplied dataから決定論的に導出する。
 - `layout`: 読みやすさのための配置であり、diagnostic meaningを持たない。
-- `decoration`: interactionまたは演出であり、measurementを運ばない。
+- `decoration`: interactionまたは演出であり、測定結果を含まない。
 
 禁止事項:
 
@@ -124,7 +124,7 @@ visual channelは次に区分する。
 - direction dataなしでflowを描く。
 - repair dataなしでrepair arrowを描く。
 - unmeasuredをmeasured zeroまたはsafeとして表示する。
-- unresolved refを無言で捨てる。
+- unresolved refを通知せずに無視する。
 
 ## UI model
 
@@ -176,7 +176,7 @@ node tools/archview/foundation_browser_e2e.cjs tools/archview/rebuild
 
 - Analysis / Improveのfinding selectionとgeometry overlay
 
-現行viewer-data handoffは移行中のruntime contractであり、ArchViewのproduct identityではない。
+現行viewer-data handoffは移行期限定のruntime contractである。
 
 ## Local preview
 
@@ -197,7 +197,7 @@ python3 -m http.server 8000 --directory .tmp/archview-preview
 
 ## Verification
 
-ArchViewの検証は`tools/archview/`が所有するbrowser / UI testで行う。
+ArchViewの検証は`tools/archview/`配下にあるbrowser / UI testで行う。
 ArchSigのRust testからArchViewのUI、scene、内部関数を検査しない。
 
 現行HTMLではlocal previewを開き、読み込んだartifact名、report pane、source landing、

@@ -10,8 +10,8 @@
 - AAT / SFT の公開ページはウェブ向けのプレプリントやモノグラフとして、
   定義、前提、定理の適用範囲、例、反例、Lean の証明状態、非結論を正確に保つ。
 - 公開説明に用いる AAT の理論本体の所在は
-  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)に、
-  ArchSig の入力と計算の責務は [Tool guideline](../tool/guideline.md#責務範囲入力トライアドの正本)にある。
+  [AGENTS.md「基礎概念」](../../AGENTS.md#基礎概念)に、
+  ArchSig の入力と計算の責務は [Tool guideline](../tool/guideline.md#責務範囲3つの基本入力)にある。
 
 ## 編集方針
 

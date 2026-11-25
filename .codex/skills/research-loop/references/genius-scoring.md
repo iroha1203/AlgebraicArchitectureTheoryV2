@@ -16,14 +16,14 @@
 
 ## Target / Support / Unlock
 
-`genius-target` は後続サイクルで攻略する大定理、大予想、または theorem program を立てる候補である。target を置くだけで `1000` 点を加算してはならない。
+`genius-target` は後続サイクルで証明に取り組む大定理、大予想、または theorem program を立てる候補である。target を置くだけで `1000` 点を加算してはならない。
 
 - `genius-target`: target、claim boundary、support map、unlock condition を tracking Issue に seed する。証拠が足りなければ `seed-only` とし、SCORE は `0`。
-- `genius-support`: 既存 genius target を証明、反証、鋭化する補題、有限 witness、obstruction、bridge。通常の `0-100` 基本点で採点する。
+- `genius-support`: 既存 genius target を証明、反証、精緻化する補題、有限 witness、obstruction、bridge。通常の `0-100` 基本点で採点する。
 - `genius-unlock`: target theorem そのものが Lean proof、十分強い theorem package、または GOAL が明示的に許した conjectural evidence として G2 / G3 / G4 を通った時だけ `1000` 基本点を確定する。
 
 G4 は unlock 時に、support cycles で既に得た SCORE と今回 unlock する `1000` 点が何を別々に評価しているかを説明し、二重計上を避ける。
 
 ## Gate
 
-`genius` 基本点を採るには、四つの G2 審判がすべて `genius_eligibility: yes` を返し、G4 が `genius_verdict: confirm` を返す必要がある。一人でも `no` または `cannot-determine` なら通常 SCORE に戻す。
+`genius` 基本点を採るには、4つの G2 評価がすべて `genius_eligibility: yes` を返し、G4 が `genius_verdict: confirm` を返す必要がある。一人でも `no` または `cannot-determine` なら通常 SCORE に戻す。

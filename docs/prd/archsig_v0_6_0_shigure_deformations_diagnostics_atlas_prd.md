@@ -2,7 +2,7 @@
 
 ## 問い
 
-既存の独立クレート `crates/shigure`（`archsig-shigure`）および `archsig.atom-definition/1`・`archsig.law/2`・`archsig.archmap/2`（`semantics "archsig/0.6.0"`）の SHIGURE 計算基盤の上で、次の 4 領域を一般の原始表示 IR と多項式・syzygy・Artin 商・有限加群コホモロジー計算核から入口（入力層・CLI）から出力（lift・修復・診断類・細分化比較・独立再評価検算・沈黙）まで一気通貫で成立させられるか。
+既存の独立クレート `crates/shigure`（`archsig-shigure`）および `archsig.atom-definition/1`・`archsig.law/2`・`archsig.archmap/2`（`semantics "archsig/0.6.0"`）の SHIGURE 計算基盤の上で、次の 4 領域を一般の原始表示 IR と多項式・syzygy・Artin 商・有限加群コホモロジー計算核から入口（入力層・CLI）から出力（lift・修復・診断類・細分化比較・独立再評価検算・未決（`undetermined`））まで通しで成立させられるか。
 
 1. **全 syzygy 平方零 lift・相対障害・宣言被覆比較・有限 étale 被覆 cocycle descent**（G-141 E1–E8・C8–C9・H1–H4・H10）
 2. **定義的補助演算の原始消去・全局所 Artin 代数による検出次数 $\nu$・構文次数上界 $D$・一般係数の冪零商 base change**（G-141 F1–F9・H4–H7・H10）
@@ -86,7 +86,7 @@
    - 自由観測 chart 上では構文木再帰による次数上界 $D$（$J \neq 0 \implies \nu \le D$）を計算し、既存関係 $I_O \neq 0$ 付き表示では自由 chart 上界を適用しない（F7・H5）。
    - 基点 $a$ における初回失敗次数 $\nu = \max\{n \mid J \subseteq \mathfrak{m}^n\}$（$J = 0$ は $\nu = \infty$）を普遍商 $A/\mathfrak{m}^{r+1}$ 上の厳密計算で決定する（F2–F3）。出力に試験対象が全局所 Artin 代数（普遍商 $A/\mathfrak{m}^{r+1}$）であることを明記し、曲線 jet 試験 $k[t]/(t^{r+1})$ と区別する（F9）。
    - 有限 $\nu$ に対し、普遍初回拡大 $A/\mathfrak{m}^{\nu+1} \to A/\mathfrak{m}^\nu$ の相対障害 $\kappa_u: J/J^2 \to \mathfrak{m}^\nu/\mathfrak{m}^{\nu+1}$ と二文脈共有演算 Čech 差（F4–F5）を生成し、$\nu \ge 2$（どの観測 lift でも $P$-実現自体が lift 不能）と $\nu = 1$（指定観測方向のみ失敗・定値 lift 存在）を型・出力で区別する。
-   - 2 段合成 reading $u, v$ の合成則 $\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$（F6）、一般係数の冪零商 base change $k_0 \to k_1$ における $D_r$ の像と抽象テンソル $D_r \otimes k_1$ の比較（F8・H6: $\mathbb{Z}[t], J = (2t^2 + t^3)$ で $\mathbb{Z}/\mathbb{Q}$ は $\nu = 2$、$\mathbb{F}_2$ は $\nu = 3$、$D_2 = 2\mathbb{Z}t^2$ の像は $0$）、および非 Noetherian 無限表示（H7: $T_i = T_{i+1}^2$）での沈黙（`non_noetherian_infinite_presentation`）を扱う。
+   - 2 段合成 reading $u, v$ の合成則 $\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$（F6）、一般係数の冪零商 base change $k_0 \to k_1$ における $D_r$ の像と抽象テンソル $D_r \otimes k_1$ の比較（F8・H6: $\mathbb{Z}[t], J = (2t^2 + t^3)$ で $\mathbb{Z}/\mathbb{Q}$ は $\nu = 2$、$\mathbb{F}_2$ は $\nu = 3$、$D_2 = 2\mathbb{Z}t^2$ の像は $0$）、および非 Noetherian 無限表示（H7: $T_i = T_{i+1}^2$）での未決（`non_noetherian_infinite_presentation`）を扱う。
 3. **整数診断複体・係数変更・診断層 $B_\pi$・値合流 Mayer–Vietoris・診断次元実現（G-142 A–D・W1–W2）**:
    - 有限 `Source`・`Law`/`readout`・adequate な reading・`TargetSupportedNerve`（K1 交差支持と face 端点等式を検査）から次数 0–2 の診断複体 $C_\Lambda$（$\Lambda \in \{\mathbb{Z}, \mathbb{Q}, \mathbb{F}_p\}$）を生成し、$H^0, H^1, H^2$（自由階数＋$\mathbb{Z}$ torsion）と Law 値別部分複体分解 $C^\bullet(\pi; \Lambda) \cong \bigoplus_{\ell, a} C^\bullet(K_a; \Lambda)$ を計算する（A1・C1）。
    - 係数変更 $\Lambda \to \Lambda'$（A2–A3・W1）では、flat 性・faithfully flat 性を明示し、固定 label テンソル（例: $\mathbb{Z} \xrightarrow{2} \mathbb{Z}$ の $\mathbb{F}_2$ 非 flat 差、$\mathbb{Z} \to \mathbb{Q}$ での torsion 類消失）と値域再生成（例: 値 $0, 2 \in \mathbb{Z}$ の $\mathbb{F}_2$ 再評価による 2 label→1 label 合流 $a \mapsto (a, a)$）を型・出力で分離する。
@@ -100,7 +100,7 @@
    - 粗/細の `TargetSupportedNerve` と `TargetSupportedNerveMorphism` に対し、**Condition C0–C6 の全 7 条件**をコード上で独立検査し、粗→細 cochain 比較写像 $p^0, p^1$（$d_f^0 p^0 = p^1 d_c^0$）・$H^0/H^1$ 同型・指定類保存 $o_f = p^1 o_c, \kappa_f = p^1 \kappa_c$・評価条件 $P \hookrightarrow T$ を含む全修復 fiber 同型 $\Phi_R: \mathcal{F}_c(R) \xrightarrow{\sim} \mathcal{F}_f(R)$ と逆復元を計算する（F1–F6・W3）。
    - 情報を落とす reading の反例比較（F7: adequacy と C0–C6 成立下で忘却係数 $t$ に対する評価 $v(t) = t$・条件 $t = 1$ が fiber 一定性を破り降下しないこと）および原子操作 adapter の拡張言語非移送（H12: $g_1$ が固定入力 apply/compact を保っても拡張 snapshot 経路や `compact_all` を保たない反例評価）を一般構成から導出する。
 
-### R3. 現行入力層（`archsig-input`）後方互換拡張・変換層・最小 CLI 入口・沈黙規律
+### R3. 現行入力層（`archsig-input`）後方互換拡張・変換層・最小 CLI 入口・判断不能の原則
 
 1. 既存の入力版（`archsig.atom-definition/1`・`archsig.archmap/2`・`archsig.law/2`、`semantics "archsig/0.6.0"`）を維持し、予約語を増やさず文脈キーワード `shigure` の配下に Phase 4 宣言（`lift`・`artin`・`diagnostics`・`atlas` 等）を追加する。既存の通常テストおよび既存 SHIGURE Phase 1–3 テスト・フィクスチャを一切退行させない。
 2. 結論注入の禁止（計算済みの syzygy 基底・$H^0/H^1/H^2$ 次元や torsion・障害類 $o_P/o_u/\kappa_u/o_b/\kappa_b$・初回検出次数 $\nu$・合流核/余核・Condition C0–C6 合否・修復解集合などの結論相当欄を Law 入力に含めた場合は構文・変換検査で exit 65 拒否）および由来分離（`OriginKind` の明示保持・欠測座標の零補完禁止）を型と検査で強制する。
@@ -113,7 +113,7 @@
 
 ### R4. 恒久仕様書の同期更新
 
-1. 本 PRD で導入する DSL 宣言構文、標準構成・適用条件・沈黙理由、CLI の問い、型付き結果スキーマ、適合例を、同じ変更の中で `docs/tool/archsig_v0_6_0_io/` 配下の恒久仕様書（[law.md](../tool/archsig_v0_6_0_io/law.md)・[computations.md](../tool/archsig_v0_6_0_io/computations.md)・[execution.md](../tool/archsig_v0_6_0_io/execution.md)・[results.md](../tool/archsig_v0_6_0_io/results.md)・[validation.md](../tool/archsig_v0_6_0_io/validation.md)、必要に応じ [inputs.md](../tool/archsig_v0_6_0_io/inputs.md)）および [tools/archsig_v0.6.0/README.md](../../tools/archsig_v0.6.0/README.md) へ反映する。
+1. 本 PRD で導入する DSL 宣言構文、標準構成・適用条件・未決理由、CLI の問い、型付き結果スキーマ、適合例を、同じ変更の中で `docs/tool/archsig_v0_6_0_io/` 配下の恒久仕様書（[law.md](../tool/archsig_v0_6_0_io/law.md)・[computations.md](../tool/archsig_v0_6_0_io/computations.md)・[execution.md](../tool/archsig_v0_6_0_io/execution.md)・[results.md](../tool/archsig_v0_6_0_io/results.md)・[validation.md](../tool/archsig_v0_6_0_io/validation.md)、必要に応じ [inputs.md](../tool/archsig_v0_6_0_io/inputs.md)）および [tools/archsig_v0.6.0/README.md](../../tools/archsig_v0.6.0/README.md) へ反映する。
 
 ---
 
@@ -124,10 +124,10 @@
 | **AC1** | 先行分割・モジュール境界・中心核と IR 固定 | `crates/computation/src/observed/` および `crates/input/src/law/lexer.rs` への変更が 0 件であり、追記対象となる 900 行超既存ファイルが Phase 4 機能追加に先立って責務分割されている。`crates/shigure/src/algebra/`（`syzygy`・`artin`・`cochain`）・`crates/shigure/src/ir/`（Phase 4 `Checked*` と `result_phase4`）・`crates/shigure/src/solver/`・`crates/input/src/law/shigure/`・`src/run/shigure/` が独立サブモジュールとして責務分離され、新規および実質変更対象の Rust ファイルがいずれも目安 1,000 行未満に収まっている。 | 変更ファイル一覧・行数計測、依存グラフ、代数核・IR 単体テスト |
 | **AC2** | 入力層後方互換拡張と入力保護 | `archsig.law/2`（`semantics "archsig/0.6.0"`）の文脈キーワード `shigure` 配下に Phase 4 宣言（`lift`・`artin`・`diagnostics`・`atlas` 等）を追加し、`archsig-input → archsig-shigure` 変換層で型・参照・由来（`OriginKind`）・係数環・平方零条件・非循環依存・nerve 端点整合を検査できる。結論注入・不正参照・由来欠落は入力／変換検査（exit 65）で拒否され、既存の全テスト・既存フィクスチャ（通常経路および Phase 1–3 SHIGURE 経路）が一切退行せず通過する。 | `cargo test --workspace --manifest-path tools/archsig_v0.6.0/Cargo.toml` 全通過、入力層・負例テスト |
 | **AC3** | 全 syzygy 平方零 lift・相対障害・宣言被覆・有限 étale descent（G-141 E1–E8・C8–C9・H1–H4・H10） | 独立フィクスチャを用いた `archsig run`（`shigure_lift`）および計算核テストで次をすべて得る。(a) H1（$c + d = 1$ の全域・$\Delta d = 0$・全固定での affine 修復全解）。(b) H2（$t^2 = 0$ の二次 lift 不能と $t = 0$ との一次自由差、冗長 Law $(t^2, t^3)$ および $\mathbb{Z}/\mathbb{F}_2$ の $(z^2, 2z^2)$ の全 syzygy による $H^0/H^1$/障害一致）。(c) H3（同一基点値・同一支持の 2 系での $H^1(T_{\mathrm{raw}})$ vs $H^1(D)$ の分離: syzygy $(1,1,1)$ で $H^1(D) = 0$、$-t$ 変形で $H^1(D) \cong \mathbb{Q}$・非零障害 $[-t]$）。(d) H4・H10（相対 cone 複体 $F_u$ の非零障害 $o_u$ と二文脈共有演算 Čech 類の一致、H10 の raw read 差 $-\varepsilon^2$ の符号付き比較、および `finish_snap` での障害消滅と復元 lift の再評価一致 `reevaluation.matched = true`）。(e) E7（$T \mapsto X + Y$ の不適合被覆 $\{X\}/\{Y\}$ と合併被覆 $\{X, Y, T\}$ の対照）および C9/W5（$z^2 = t$ 上の $\mu_2$-cocycle と大域 regular section 不存在）。 | 実バイナリ E2E テスト、単体テスト、出力 JSON（syzygy・複体・障害・復元 lift 再評価検算） |
-| **AC4** | 原始消去・全 Artin 試験・検出次数 $\nu$・一般係数冪零商（G-141 F1–F9・H4–H7・H10） | 独立フィクスチャを用いた `archsig run`（`shigure_artin`）および計算核テストで次をすべて得る。(a) H4（$Y = T^2, Y = 0$ で $\nu = 2$・普遍初回拡大 $k[t]/(t^3) \to k[t]/(t^2)$ と非零 $\kappa_u$）。(b) H5（$Y_1 = T^2, \dots, Y_N = 0$ で消去 ideal $(t^{2^N})$・$\nu = 2^N$・構文次数上界 $D = 2^N$ の鋭さ、および既存関係 $Y = T^N$ 付き $Y = 0$ で $\nu = N$・自由上界非適用の区別）。(c) H10（snapshot $E = \mu\delta, E = 0$ で $\nu = 2$・軸方向の全次数 lift・$\delta = \mu = \varepsilon$ の二次不能）。(d) F4 の $\nu = 1$（指定観測方向のみ失敗・定値 lift 存在）と $\nu \ge 2$（実現自体が lift 不能）の分離、および F6 合成則 $\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$。(e) H6（$\mathbb{Z}[t], J = (2t^2 + t^3)$ で $\mathbb{Z}/\mathbb{Q}$ は $\nu = 2$、$\mathbb{F}_2$ は $\nu = 3$、$D_2 = 2\mathbb{Z}t^2$ の $\mathbb{F}_2$ への像が $0$）。(f) H7（非 Noetherian 無限表示 $T_i = T_{i+1}^2$ 相当入力での `non_noetherian_infinite_presentation` 沈黙）。 | 実バイナリ E2E テスト、単体テスト、出力 JSON |
+| **AC4** | 原始消去・全 Artin 試験・検出次数 $\nu$・一般係数冪零商（G-141 F1–F9・H4–H7・H10） | 独立フィクスチャを用いた `archsig run`（`shigure_artin`）および計算核テストで次をすべて得る。(a) H4（$Y = T^2, Y = 0$ で $\nu = 2$・普遍初回拡大 $k[t]/(t^3) \to k[t]/(t^2)$ と非零 $\kappa_u$）。(b) H5（$Y_1 = T^2, \dots, Y_N = 0$ で消去 ideal $(t^{2^N})$・$\nu = 2^N$・構文次数上界 $D = 2^N$ の鋭さ、および既存関係 $Y = T^N$ 付き $Y = 0$ で $\nu = N$・自由上界非適用の区別）。(c) H10（snapshot $E = \mu\delta, E = 0$ で $\nu = 2$・軸方向の全次数 lift・$\delta = \mu = \varepsilon$ の二次不能）。(d) F4 の $\nu = 1$（指定観測方向のみ失敗・定値 lift 存在）と $\nu \ge 2$（実現自体が lift 不能）の分離、および F6 合成則 $\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$。(e) H6（$\mathbb{Z}[t], J = (2t^2 + t^3)$ で $\mathbb{Z}/\mathbb{Q}$ は $\nu = 2$、$\mathbb{F}_2$ は $\nu = 3$、$D_2 = 2\mathbb{Z}t^2$ の $\mathbb{F}_2$ への像が $0$）。(f) H7（非 Noetherian 無限表示 $T_i = T_{i+1}^2$ 相当入力での `non_noetherian_infinite_presentation` による未決）。 | 実バイナリ E2E テスト、単体テスト、出力 JSON |
 | **AC5** | 整数診断複体・係数変更・診断層 $B_\pi$・合流 Mayer–Vietoris・次元実現（G-142 A–D・W1–W2） | 独立フィクスチャを用いた `archsig run`（`shigure_diagnostics`）および計算核テストで次をすべて得る。(a) W1（$\mathbb{Z} \xrightarrow{2} \mathbb{Z}$ の $\mathbb{F}_2$ 非 flat 差と $\mathbb{Z} \to \mathbb{Q}$ での torsion 消失、値 $0, 2 \in \mathbb{Z}$ の固定 label テンソル $\mathbb{F}_2^2$ vs $\mathbb{F}_2$ 値域再生成 $\mathbb{F}_2$ と比較射 $a \mapsto (a, a)$、三辺 cycle の $H^1(C_\mathbb{Z}) \cong \mathbb{Z}$）。(b) W2（$B = \mathbb{A}^2_{\lambda,\mu}$ 上の非空 partition 層別 $B_\pi$、全 stratum での $\dim_\Lambda H^1 = \mathbf{1}_{V(\lambda)\cap D(\mu)}$、生成 $\mu = 1, \lambda \to 0$ の $\ker H^1(r) \cong \Lambda$、消失 $\lambda = 0, \mu \to 0$ の $\operatorname{coker} H^1(r) \cong \Lambda$、双対数 $R = \mathbb{Q}[\varepsilon]/(\varepsilon^2)$ 上の $(0, 0)$ vs $(0, \varepsilon)$ の $R$-点値相違と幾何点 stalk 一致の分離、および上半連続性による pseudo-coherent 複体非存在証拠）。(c) D1–D2 の一般 $V(g_1, \dots, g_r) \cap D(h)$ 診断次元実現の検算と C2 多段合流の順序独立性。 | 実バイナリ E2E テスト、単体テスト、出力 JSON |
 | **AC6** | 有限グラフ実 adapter・SAGA 比較・制約付き全修復・指定診断類・Atlas 細分化 C0–C6（G-141 G・H8・H12 / G-142 E–F・W3） | 独立フィクスチャを用いた `archsig run`（`shigure_atlas`）および計算核テストで次をすべて得る。(a) H8・W3 三角形（$b = (1, 2, -3)$ で $o_b = \kappa_b = 0$・全解 $(s, s+1, s+3)$・再評価一致、$b = (1, 0, 0)$ で非零類 $1$・大域操作空、offset 修復 $H_E$〔全辺平面／一辺単点／空〕、頂点修復 $H_V$〔無固定 1 自由度／1 固定一意／2 固定不能〕、無制約 $\kappa_b = 0$ かつ全頂点固定時の修復不能、spanning tree $\Phi_R$ による $\mathbb{Z} \to \mathbb{Q}$ 零性反映、$H^1$ 次元一定の分離）。(b) W3 八点空間の細分化で Condition C0–C6 全 7 項目の独立合格、$p^0, p^1$ と $H^1$ 同型、指定類保存 $o_f = p^1 o_c, \kappa_f = p^1 \kappa_c$、評価条件 $P \hookrightarrow T$ を含む全修復 fiber 同型 $\Phi_R$ と逆復元。(c) F7（忘却係数 $t$ による adequacy＋C0–C6 成立と評価 $v(t) = t$・条件 $t = 1$ の降下失敗の分離）および H12（原子操作 adapter $g_1$ の拡張 snapshot / `compact_all` 非移送反例）。 | 実バイナリ E2E テスト、単体テスト、出力 JSON |
-| **AC7** | 沈黙規律と代数的性質の網羅検証 | 複体条件 $d^1 d^0 = 0$、syzygy 多項式恒等式 $\sum s_i f_i = 0$、$T \delta^0_{\mathrm{SAGA}} = d^0_\Gamma$、Mayer–Vietoris 長完全列次元恒等式、多段合流順序独立性、$\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$、および適用条件外（未観測座標依存、$M^2 \neq 0$、非 Noetherian 無限表示、syzygy／Artin 次数／partition 数上限超過、非連結グラフ、非対応係数環）で誤った `established` / `refuted` を返さず理由付き `undetermined`（CLI は `partial` / exit 2）を返すことを単体・パラメトリック・E2E テストで確認する。 | 代数的性質テスト、沈黙・負例 E2E テスト |
+| **AC7** | 判断不能の原則と代数的性質の網羅検証 | 複体条件 $d^1 d^0 = 0$、syzygy 多項式恒等式 $\sum s_i f_i = 0$、$T \delta^0_{\mathrm{SAGA}} = d^0_\Gamma$、Mayer–Vietoris 長完全列次元恒等式、多段合流順序独立性、$\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$、および適用条件外（未観測座標依存、$M^2 \neq 0$、非 Noetherian 無限表示、syzygy／Artin 次数／partition 数上限超過、非連結グラフ、非対応係数環）で誤った `established` / `refuted` を返さず理由付き `undetermined`（CLI は `partial` / exit 2）を返すことを単体・パラメトリック・E2E テストで確認する。 | 代数的性質テスト、未決・負例 E2E テスト |
 | **AC8** | 仕様書同期と品質確認 | 導入した DSL 宣言・標準構成・CLI 問い・出力スキーマ・適合例が `docs/tool/archsig_v0_6_0_io/` と `tools/archsig_v0.6.0/README.md` に同期反映されている。`rustfmt`・関連 Clippy lint・`git diff --check`・不可視／双方向制御 Unicode 検査・語彙ルール検査を通過する。 | 更新された仕様書差分、検証コマンド出力 |
 | **AC9** | 代表規模ベンチマーク実測 | 数百対象・数千 Atom 級の固定代表入力（既存ベンチ入力および Phase 4 の syzygy lift・Artin 試験・診断層・Atlas 細分化を含む固定入力）について、変更前後の実行時間と最大 RSS を実測比較し、既存経路の著しい退行がなく、新規 SHIGURE 経路の計算費用が実測値として Issue / PR に記録されている。 | Issue / PR に記録した実行時間・最大 RSS の実測比較ログ |
 
@@ -147,7 +147,7 @@
    - 診断層 $B_\pi$ の幾何点分割を $R$-点（双対数等）の分割と混同した場合（B5・W2 違反）。
    - 診断 $H^1$ の次元（一定）と指定診断類 $\kappa_b$ の零性を混同した場合、または無制約 $\kappa_b = 0$ から制約付き修復（$H_V, H_E$）の存在を推論した場合（E6・G5・W3 違反）。
    - Law 値 adequacy と Condition C0–C6 による $H^1$ 同型から評価条件付き全修復 fiber の降下を推論した場合（F7 違反）、または原子操作 adapter の可換性から拡張操作言語の保存を推論した場合（H12 違反）。
-4. **適用条件の無検査・沈黙違反・再評価検算欠落**: 係数環・平方零条件・非循環依存・Noetherian 有限表示・計算上限を検査せず条件外入力へ誤った `established` / `refuted` を返した場合、または復元した lift・修復解の独立再評価検算（`scope: "mathematical_model_reevaluation"`）を欠いた場合。
+4. **適用条件の無検査・未決違反・再評価検算欠落**: 係数環・平方零条件・非循環依存・Noetherian 有限表示・計算上限を検査せず条件外入力へ誤った `established` / `refuted` を返した場合、または復元した lift・修復解の独立再評価検算（`scope: "mathematical_model_reevaluation"`）を欠いた場合。
 5. **結論注入・由来混同**: syzygy 基底・コホモロジー群・障害類・検出次数 $\nu$・合流核/余核・Condition C0–C6 合否・修復解などの結論相当欄を入力で受理した場合、または由来（`OriginKind`）を喪失・混同した場合。
 6. **仕様書・テスト・ベンチの不足または退行**: AC1〜AC9 のいずれかの一次証拠が欠けている場合、または既存 `archsig_v0.6.0` の通常経路・Phase 1–3 SHIGURE 経路テストが退行した場合。
 
@@ -158,9 +158,9 @@
 1. **Step 1 — 先行分割・代数的計算核基盤と Phase 4 中心 IR の固定**:
    Phase 4 で追記が必要になる 900 行超の既存ファイル（`check.rs`・`check_relations.rs`・`algebra/poly.rs` 等）を先に責務分割する。そのうえで `crates/shigure/src/algebra/` に独立サブモジュール（`syzygy`・`artin`・`cochain`）を実装し、`crates/shigure/src/ir/` に Phase 4 の `CheckedLiftTask`・`CheckedArtinTask`・`CheckedDiagnosticsTask`・`CheckedAtlasTask` および `result_phase4` を固定する。
 2. **Step 2 — 変形・障害・Artin 試験計算核（`solver/lift`・`solver/artin`）と代数的検証**:
-   全 syzygy 平方零 lift 複体 $D$・相対 cone 複体 $F_u$・$T_{\mathrm{raw}}$ 比較・E7 観測支持・C9 有限 étale 被覆 cocycle descent、および原始消去・構文次数上界 $D$・初回検出次数 $\nu$・普遍初回障害 $\kappa_u$・合成則・一般係数冪零商 $D_r$ を独立サブモジュールとして実装し、H1–H7・H10・W5・沈黙を単体・パラメトリックテストで通す。
+   全 syzygy 平方零 lift 複体 $D$・相対 cone 複体 $F_u$・$T_{\mathrm{raw}}$ 比較・E7 観測支持・C9 有限 étale 被覆 cocycle descent、および原始消去・構文次数上界 $D$・初回検出次数 $\nu$・普遍初回障害 $\kappa_u$・合成則・一般係数冪零商 $D_r$ を独立サブモジュールとして実装し、H1–H7・H10・W5・未決（`undetermined`）を単体・パラメトリックテストで通す。
 3. **Step 3 — 診断層・合流・実 adapter 修復・Atlas 細分化計算核（`solver/diagnostics`・`solver/atlas`）と代数的検証**:
-   整数診断複体 $C_\Lambda$・係数変更 vs 値域再生成・多項式 readout 層別 $B_\pi$・Mayer–Vietoris 合流・診断次元実現と上半連続性反証、ならびに有限グラフ実 adapter・SAGA 符号比較 $T$・spanning tree $\Phi_R$・制約付き修復（$H_V, H_E$）・指定類 $\kappa_b$・Atlas 細分化 Condition C0–C6・F7/H12 反例を実装し、W1–W3・H8・H12・D1–D3・沈黙を単体・パラメトリックテストで通す。
+   整数診断複体 $C_\Lambda$・係数変更 vs 値域再生成・多項式 readout 層別 $B_\pi$・Mayer–Vietoris 合流・診断次元実現と上半連続性反証、ならびに有限グラフ実 adapter・SAGA 符号比較 $T$・spanning tree $\Phi_R$・制約付き修復（$H_V, H_E$）・指定類 $\kappa_b$・Atlas 細分化 Condition C0–C6・F7/H12 反例を実装し、W1–W3・H8・H12・D1–D3・未決（`undetermined`）を単体・パラメトリックテストで通す。
 4. **Step 4 — 入力層（`archsig-input`）後方互換拡張と変換層**:
    `crates/input/src/law/shigure/` に Phase 4 宣言（`lift`・`artin`・`diagnostics`・`atlas` 等）の AST・パーサ・静的検査を独立サブモジュールとして追加し、`crates/shigure/src/convert/` の独立変換モジュールから Phase 4 の `Checked*` タスクを構築する。結論注入・由来欠落・不正参照の拒否と既存全テスト非退行を確認する。
 5. **Step 5 — CLI 入口・独立フィクスチャ／E2E 検証**:
@@ -186,7 +186,7 @@
 
 ## 停止条件
 
-次のいずれかに該当した場合、場当たり的に実装や仕様を埋めず、判断事項と根拠を整理して停止し人間へ戻す。
+次のいずれかに該当した場合、仮の判断で実装や仕様を埋めず、判断事項と根拠を整理して停止し人間へ戻す。
 
 1. **既存入力仕様・既存 SHIGURE 宣言との意味衝突**: `archsig.law/2` / `archsig.archmap/2`（`semantics "archsig/0.6.0"`）の既存構文・既存 SHIGURE 12 宣言と両立しない設計変更が必要と判明した場合。
 2. **紙上証明との不整合または未定義境界**: G-141 E/F/G・C8–C9 または G-142 A–F の仮定・syzygy 生成性条件・非自由観測環上の $\nu$ 計算・有限 étale 被覆 cocycle descent の扱いに、仕様書未定義の設計判断が必要な境界が見つかった場合。

@@ -70,7 +70,7 @@ reading の定義参照は DeclarationInfo.vocabularies に保持する。
 ### 未使用情報と検査の段階
 
 [共通ライブラリの定義例](examples/counter-library.atoms.json) は同じ Counter 定義に
-未使用の Extras.Note と、Extras が列挙する未使用 dependency Counter を加えた包装である。
+未使用の Extras.Note と、Extras が列挙する未使用 dependency Counter を加えてまとめた例である。
 Extras の宣言は Counter の型を使わないが、dependency は登録済み Counter の正しい binding を指す。
 Counter の manifest・版・digest は変えず、定義ファイル全体の model_digest は変わる。
 Law と ArchMap は基本例のまま使う。
@@ -90,7 +90,7 @@ Extras.Note を観測していなくても受理し、その宣言と未使用 d
 | Extras.Note が未使用、Extras が Law から未参照、dependency Counter も型・alignment から未使用 | 入力検査成功。未使用情報を結果に保持 |
 | Extras の dependency binding の digest だけを変更 | vocabulary_mismatch / invalid / 65。未使用でも明示された版付き参照は照合する |
 | Extras の dependency を未登録 namespace へ変更 | reference / invalid / 65。明示した参照先が欠けている |
-| 定義の未知欄 meanng に意味を記録 | syntax / invalid / 65。未使用だからという理由で typo を黙認しない |
+| 定義の未知欄 meanng に意味を記録 | syntax / invalid / 65。未使用だからという理由で typo を許容しない |
 | Counter の count Atom を除く | 静的検査成功、値を必要とする run の三問は missing_observation |
 
 ### reading 間の宣言対応
@@ -223,7 +223,7 @@ Transfer は操作の二端点の数量対を読む。核は宣言から読取�
 | --- | --- |
 | 基本例のr=(4,0), s=(3,1) | 必要な変更は各状態で `(-2,0)`。合計が変わるためrebalanceによる修復なし |
 | r=(1,1), s=(0,2) | 各状態でd=−1を導出し、候補r=(2,0), s=(1,1)を元のretainedへ代入して成立確認 |
-| Transfer宣言を除く | StockとHeldではconservedが要求する二端点の数量の可視性が不足。勝手にTransferを追加しない |
+| Transfer宣言を除く | StockとHeldではconservedが要求する二端点の数量の可視性が不足。暗黙にTransferを追加しない |
 | dをZ、作用を `(−2d,2d)` とする別readingで、必要変更 `(−1,1)` を問う | 整数では修復なし。有理数のd=1/2を整数修復として返さない |
 
 StockとHeldの個別の変更が求まっても、一つのrebalanceから来るためには
@@ -275,7 +275,7 @@ y=evaluate(Pair.first,on=$u.object,s=@pair/s)
 一意性または再検査の途中で中断した場合は、確認済みの存在命題を保持し、
 Repair/object を返さず、修復の構成条件は undetermined、run は interrupted とする。
 
-同じ解集合を表示する特解 `(0,1)` と `(1,0)` は計算用の証人である。
+同じ解集合を表示する特解 `(0,1)` と `(1,0)` は計算用の具体例（witness）である。
 次の射影は、[意味上の射影](results.md#2-回答条件導出)の表にない `representation` の
 段階で `usage`、exit64 となり、Law の評価へ進まない。
 
@@ -348,7 +348,7 @@ shiftは固定値である。using省略時の固定観測系と、この変更�
 | 未観測 | cの存在と端点を保持し、shiftの追加観測を要求。補完2と3で答えが異なる |
 
 γ=2では `(0,1,2)` と `(1,2,3)` の変更量が異なる二つの元 Assignment となり、両方が元のalignedを満たす。
-`(0,1,2)` は表示用特解・存在証人として保持できるが、一意な修復対象へ昇格しない。
+`(0,1,2)` は表示用特解・存在の具体例（witness）として保持できるが、そのまま一意な修復対象として扱わない。
 `ker D=Z·(1,1,1)` の平行移動自由度は残り、後続evaluateに渡すobjectは生成しない。
 
 Edgeの読取りから生成した局所解の差と制限を用い、整数係数のČech H¹はZ、
@@ -424,7 +424,7 @@ archsig run --atom-definition examples/engine.atoms.json \
 | 空の族のbodyに型不整合がある | 空虚な成立の前に型検査で拒否する |
 | Compiler族が空 | preservesの全称は件数0の成立。実在する候補の保存を確認したとは出力しない |
 | 結果参照や導出専用型を原始値に書く | 入力の型・参照規則で拒否する |
-| 成功ラベルを普通の原始値へ偽装する | 語彙・観測の点検対象。核による意味的な偽装検出を保証しない |
+| 成功ラベルを見かけ上普通の原始値として記述する | 語彙・観測の点検対象。核による意味的な不適合記述の自動検出は保証しない |
 | 未観測候補まで探索済みとする | 記録した有限候補と宣言した変更族のscopeを保持する |
 | Law評価が等しい二つのreadingを比較する | 診断保存は実際の局所・係数・複体の比較から別に検査する |
 
@@ -453,12 +453,12 @@ SHIGURE 計算（`shigure_preservation`・`shigure_solve`・`shigure_interaction
 | 原子操作の保存方程式と marked fiber 復元 | 単一台帳 → base+delta 移行（`apply` / `compact`）で保存残差 $ac+bd-1,\, ar+bs$ を導出し、$a=1,b=1$ の評価条件で $c=1-d,\, r=-s$・$h(x,y)=x+y$ を復元し `reevaluation.matched = true` を得る |
 | snapshot 方式の非線形保存族と可逆評価条件 | 非線形残差 $V(\mu\delta)$ に対し、$D(\mu)$ で $\delta=0$、$D(\delta)$ で $\mu=0$ を導出し、$D(\mu\delta)$ で `refuted` と検算一致済み（`verified = true`）の空性 witness $1 = \sum h_i f_i$ を返す |
 | 許容変換 $H$ の拡張と旧表示 Law 固定の対照 | $\mathrm{finish}_\rho$ と Busy 表示 Law 編集可の $V(\mu\delta(1-\rho)) \cap D(\mu\delta)$ から $\rho=1$ を導出して `finish_snap` と全状態 Busy を復元・再評価一致させ、旧 Busy 表示 Law 固定の対照条件では依然 `refuted`（空性 witness 検算一致）を返す |
-| 座標面支持による相互作用解析 | 閉条件の $\mu\delta$ で `min_interacting_variables = 2`・極小不成立部分族 `[["delta","mu"]]`、単変数 $t^3$ で `1`・`[["t"]]`、$\mu\delta(1-\rho)$ の $\rho=0$ 面で不成立・$\rho=1$ 面で解消を区別し、開条件 $D(\mu\delta)$ を伴う場合は `open_condition_in_interaction` で沈黙する |
+| 座標面支持による相互作用解析 | 閉条件の $\mu\delta$ で `min_interacting_variables = 2`・極小不成立部分族 `[["delta","mu"]]`、単変数 $t^3$ で `1`・`[["t"]]`、$\mu\delta(1-\rho)$ の $\rho=0$ 面で不成立・$\rho=1$ 面で解消を区別し、開条件 $D(\mu\delta)$ を伴う場合は `open_condition_in_interaction` として未決（`undetermined`）を返す |
 | 商環上の ideal 所属判定 | 商環 $R[y]/(ay)$ で $y=0$ の条件を ambient 多項式零へ強めず商環上の ideal 所属として扱う（図式上の商環辺保存でも同様） |
-| 係数域・点集合域の区別と沈黙規律 | $p^2+1=0$ を `algebraic_closure` では `established`、`Q_points` / `Z_points` では `nonlinear_point_existence_out_of_scope`、`universal_ring` 対象や非適合構成では `applicability_condition_not_met`、`length`/`max_length` 未指定無界探索では `unbounded_search_out_of_scope` で `undetermined`（exit 2 / `partial`）とする。ArchMap の欠測座標は零補完せず `unobserved_dependency` で沈黙する |
-| 固定図式の全補完（四角形・鎖・対照例） | `state_map` / `time_order` 両向きの四角形・鎖補完で全頂点・全辺（$h$/$\tau$）を復元し `reevaluation.matched = true` を返す。両立不能四角形では検算済み空性 witness 付き `refuted`、観測一致のみの偽装可換では `commutativity_residuals` 非空で `refuted` を返す |
+| 係数域・点集合域の区別と判断不能の原則 | $p^2+1=0$ を `algebraic_closure` では `established`、`Q_points` / `Z_points` では `nonlinear_point_existence_out_of_scope`、`universal_ring` 対象や非適合構成では `applicability_condition_not_met`、`length`/`max_length` 未指定無界探索では `unbounded_search_out_of_scope` で `undetermined`（exit 2 / `partial`）とする。ArchMap の欠測座標は零補完せず `unobserved_dependency` として未決（`undetermined`）を返す |
+| 固定図式の全補完（四角形・鎖・対照例） | `state_map` / `time_order` 両向きの四角形・鎖補完で全頂点・全辺（$h$/$\tau$）を復元し `reevaluation.matched = true` を返す。両立不能四角形では検算済み空性 witness 付き `refuted`、観測一致のみの見かけ上の可換では `commutativity_residuals` 非空で `refuted` を返す |
 | 一段変更経路・細分化と台帳 4 順序 | 台帳 $V(\mu\delta(1-\rho))$ の $(0,0,0) \to (1,1,1)$ で合法 4 順序を復元・再評価一致させ、誤順 2 例を 2 段目残差 1 で拒否する。係数を状態に含む Idle 切替では全許可語保存検証付き 4 実行経路（`enlarged_protocol_execution_path`）を導出し、`fixed_protocol_change_path` と区別する。`n=0` 恒等一致/不一致、経路連結（`composite_is_one_step` 識別含む）、自由パラメータ細分化 fiber の成立と不成立、恒等一段規則の 2 点間 `refuted` を得る |
-| 合法状態移送・共通操作語・合成・Busy 対照 | 意味保存 $h_{01}$ 下での $h_{01} m_{01} = \iota_0$ 復元・再評価一致と、観測一致のみの偽装 lift（`ObsPair` 等、保存残差 0 で `lift_residuals` のみ失敗）の拒否を得る。共通定義域 $D_w$ の `word_checks` と独立な `old_word_lifts`（成立/不成立）を検証し、多段合成 $D_{0k}$ で `full_isomorphic` / `proper_subdomain`（`require_full_domain` で `refuted`）/ `empty` を区別する。台帳の Busy 状態 $(0,1,0)$ 移送では最終段 Busy Law 残差で `refuted`（空性 witness 検算一致）となる |
+| 有効状態移送・共通操作語・合成・Busy 対照 | 意味保存 $h_{01}$ 下での $h_{01} m_{01} = \iota_0$ 復元・再評価一致と、観測一致のみの見かけ上の lift（`ObsPair` 等、保存残差 0 で `lift_residuals` のみ失敗）の拒否を得る。共通定義域 $D_w$ の `word_checks` と独立な `old_word_lifts`（成立/不成立）を検証し、多段合成 $D_{0k}$ で `full_isomorphic` / `proper_subdomain`（`require_full_domain` で `refuted`）/ `empty` を区別する。台帳の Busy 状態 $(0,1,0)$ 移送では最終段 Busy Law 残差で `refuted`（空性 witness 検算一致）となる |
 | 複数解釈族・3 量化分離・存在型補完・$\mathcal{R}(R)$・粗細 reading | W4 で fiber 非空性・指定候補（`false`）・$\forall u\,\exists c$（`true`）・$\exists c\,\forall u$（`false`）を分離し、空 fiber を `vacuously_true_empty_fiber = true` / `refuted` として区別する。存在型 $E_{\mathrm{exists}}$ では補完 witness と `reevaluation.matched = true` を復元し、$\mathbb{F}_p$ 上 $u^p = u$ や $\mathbb{Q}[\rho]/((\rho-1)^2)$（双対数反例 $\rho = 1 + \varepsilon$）で有理点/幾何点成立と全係数移送 $\mathcal{R}(R)$ 反証を分離する。粗/細 reading 比較（可換性検算付き）と raw 候補（`OldFin` vs `SnapFin`）の残差差 `-1` vs `0` を得る |
 | 構成可能幾何像・Chevalley 四分類・有理 probe・大域切断 | D6 $xy = 1$ の射影で閉包 $\mathbb{A}^1$ ではなく構成可能像 $D(x)$（`equations = ["c"], invertibles = ["x"]`）を得る。`robust_all_pass` / `all_fail` / `mixed`（成立・不成立対 `mixed_witness_pair` 付き）/ `empty_realizations` の 4 領域を計算し、W5 $z^2 = t$ で幾何点成立と $t = 2$ 有理点 fiber 空・Laurent 環上大域正則切断非存在を分離する。$\mathbb{Q}[\rho]/((\rho-1)^2)$ の幾何点分類 `robust_all_pass` と `universal_ring_contrast` 反証を混同しない |
 | 包含極小十分観測・費用比較・`law_readout` 対比 | W4（$U = \mathbb{F}_2^2$, $e_1 = u_1$, $e_2 = u_2$, $e_3 = u_1 + u_2$）で 1 解へ潰さず `{e1}` と `{e2, e3}` の両包含極小集合と全 1 要素削除反例対を返し、費用指定時は `cost_ranked_sets` で費用順に比較する。$D_d = \varnothing$ では `insufficiency_witness` 付き `refuted`、$\mathcal{D}_R = \varnothing$ では空集合 `[]` 唯一解、W6 定数 `law_readout` 例では `coarse_adequate_for_law_readout = true` と `coarse_adequate_for_decision = false` を分離する |

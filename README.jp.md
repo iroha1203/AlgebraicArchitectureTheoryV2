@@ -62,7 +62,7 @@ SFT makes software evolution computable.
 
 ## 読む順序
 
-1. [研究の全体目標（研究の憲法）](docs/research_goal.md)
+1. [研究の全体目標](docs/research_goal.md)
 2. [代数幾何的 AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md)
 3. [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
 4. [AAT Tooling Documentation](docs/tool/README.md)

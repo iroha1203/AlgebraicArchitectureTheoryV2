@@ -31,7 +31,7 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
      現行docsフォームの`[doc]` title prefixはタスク型`docs`の宣言として扱う。
    - **移植型の規律**(通常の修正と規律が反転する):
      - 最小差分ヒューリスティクスを無効化する。「既存ファイル周辺で
-       安く直す」より「移植元の構成を崩さない」を優先する。
+       最小限の書き換えで済ませる」より「移植元の構成を崩さない」を優先する。
      - 実装前に移植元 statement(Issue の `移植元 theorem` /
        `rg` での `research/lean/ResearchLean/` 検索)を
        実読し、結論一覧(conjuncts)と本体 statement の**対応表**を作る。
@@ -40,12 +40,12 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
      - **Research 下限原則**: Research 側の statement が本体実装の下限。
        本体 statement が下限より弱い形になる場合、その PR で close せず、
        実装で回避もせず、停止して理由を報告する。scope・台帳注記で
-       弱化を正当化しない(scopeを書く資格条件は
+       弱化を正当化しない(scope を書く要件は
        `.codex/skills/_shared/refutation-checklist.md` §4)。
-     - **移植 ≠ import(依存 repackage の禁止)**: 本体
+     - **移植 ≠ import(単なる import ラッパーの禁止)**: 本体
        (`Formal/AG` 本線・`Formal.lean` 配線)から `ResearchLean.AG` を
        import してはならない(import 方向は Research → 本体のみ可)。
-       移植とは構成を本体内で再構成する蒸留であり、Research module を
+       移植とは構成の本体内での再構成であり、Research module を
        import して再導出する形は移植として扱われず、math-lean-review の
        Research import方向検査で hard fail になる。下限到達に Research の巨大 route の
        書き直しが必要で1 PR に収まらない場合は、import で近道せず、
@@ -79,8 +79,8 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
      明示的な相談なしに導入しない)。
    - **instance ペア規律**: 新規の Prop 述語・certificate 構造を導入する
      ときは、満たす instance と満たさない instance の両方を同じ PR で
-     提供する(意味レベルの空虚化 — subsingleton 等式型・
-     proof-irrelevance 恒真・answer-encoding — への一次防衛線。
+     提供する(形式だけの成立 — subsingleton 等式型・
+     proof-irrelevance 恒真・answer-encoding — への基本的な防止策。
      片方が作れない場合は理由を PR 本文に明記する)。
    - **CI gate の変更はユーザー判断事項**: CI workflow への gate の追加・
      削除・revert を PR 単独で行わない。必要な場合は Issue / PR 本文で
@@ -127,8 +127,8 @@ GitHub Issue を起点に、タスク選定から Pull Request 作成まで進�
 ## このリポジトリ固有の注意
 
 - Lean / AAT の定義・指標・universe・status の扱いは `docs/aat/guideline.md` の
-  「Lean 形式化方針」と「Lean status discipline」を正本として従う。
+  「Lean 形式化方針」と「Lean status discipline」を基準として従う。
 
 ## PR 本文テンプレート
 
-`.github/pull_request_template.md`を正本とし、対象Issueを`Closes #N`で含める。
+`.github/pull_request_template.md`をテンプレートとし、対象Issueを`Closes #N`で含める。

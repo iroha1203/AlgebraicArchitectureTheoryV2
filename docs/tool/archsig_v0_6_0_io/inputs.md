@@ -92,7 +92,7 @@ snapshot 自身の origin と各レコードの mode の一致も通常どおり
 
 例えば `{"id":"v2","origin":"model","base":"v1","atoms":{"remove":["count"]}}`
 は v1 の表を継承し count Atom だけを除く。subject は残り、その field は未知に戻る。
-false・零・空集合は補給しない。check/run は共通の読込で展開し、既存の型・参照・補完検査と
+false・零・空集合は補完しない。check/run は共通の読込で展開し、既存の型・参照・補完検査と
 評価を使う。model digest は展開後の全量表から計算するため、同じ全量記述と一致する。
 byte digest と保存する入力コピーは元の差分記述そのものを保持する。
 

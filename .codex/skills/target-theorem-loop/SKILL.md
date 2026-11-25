@@ -1,13 +1,13 @@
 ---
 name: target-theorem-loop
-description: "research/goals/GOAL-ID.mdのactiveなtarget-theorem GOALで、固定targetを弱めずproof obligationをLean theorem、premise discharge、finite witness、blockerとして消化し、標準PR監査と最終math-lean-reviewまで進める。\"$target-theorem-loop goal-id\"、\"大定理証明ループ\"で使う。探索型SCORE phaseにはresearch-loopを使う。"
+description: "research/goals/GOAL-ID.mdのactiveなtarget-theorem GOALで、固定targetを弱めずproof obligationをLean theorem、premise discharge、finite witness、blockerとして解消し、標準PR監査と最終math-lean-reviewまで進める。\"$target-theorem-loop goal-id\"、\"大定理証明ループ\"で使う。探索型SCORE phaseにはresearch-loopを使う。"
 ---
 
 # Target Theorem Loop
 
 `research mode: target-theorem`のactive GOALだけを扱う。[カードの読み取り手順](references/target-goal-contract.md)で特定したGOALと参照先の共通基準を固定入力とし、進捗を数学的な到達点ごとのproof obligation群のdeltaで管理する。
 
-GOALまたは指定一次仕様を弱める必要が生じたら、改訂案をtracking Issueへ記録して`goal defect`で止まる。ループ中に正本を書き換えない。
+GOALまたは指定一次仕様を弱める必要が生じたら、改訂案をtracking Issueへ記録して`goal defect`で止まる。ループ中に GOAL や一次仕様を書き換えない。
 
 起動は`$target-theorem-loop <goal-id>`とし、必要なら`max-cycles <N>`を付ける。
 
@@ -34,7 +34,7 @@ Research packageの全体buildは実行しない。`cd research/lean && lake bui
 ## 実行
 
 1. `git status --short --branch`と未追跡fileを確認し、base/headを固定する。mainから開始する場合はmainを最新化する。
-2. [カードの読み取り手順](references/target-goal-contract.md)に従って新規・既存と適用版を特定し、起動資格と内容を確認する。開始時・以後の各段階で読む共通基準も、その適用版で解決する。欠陥時はIssueを新設せず停止理由を返す。
+2. [カードの読み取り手順](references/target-goal-contract.md)に従って新規・既存と適用版を特定し、起動条件と内容を確認する。開始時・以後の各段階で読む共通基準も、その適用版で解決する。欠陥時はIssueを新設せず停止理由を返す。
 3. tracking Issueを特定し、なければ一本だけ作る。GOALのtarget節、Issueの直近state、reportの現proof obligation節、proof DAG、対象Lean宣言から現在状態を復元する。
 4. rootが[cycle ledger](references/cycle-ledger.md)のselectionを埋め、大定理までのproof distanceを最も直接縮める数学的な到達点と、それを支えるproof obligation群・終了条件を固定する。Cycleの粒度と途中分割は同referenceに従う。
 5. rootがLean theorem/package、input-generated witness/certificate、またはblocker/refutationを固定する。Lean証拠は`research/lean/ResearchLean/AG/<goal-area>/`に置き、`Formal/AG`は参照/importだけに使う。受理spineとcycle scaffoldを命名またはfileで分け、spine declaration listをreportに固定する。
@@ -42,7 +42,7 @@ Research packageの全体buildは実行しない。`cd research/lean && lake bui
 7. 到達点の終了条件を満たした時点、またはcycle ledgerに途中分割の理由を記録した時点でPRへ進む。`git diff --check`、staged diff、未追跡file、保護領域の変更有無を確認し、実装、report、cycle ledgerを同じPRへ収録する。PR本文は原則`Refs #<tracking-issue>`とする。
 8. PR headを固定し、標準`$review-pr <PR番号> tracking Issue #<N>`でそのPRのexact diffと変更責務を監査する。`Refs`だけにIssue関連付けを委ねない。監査コメントでAAT/Lean数学claimとして`$math-lean-review`へ委譲されたことを確認し、未委譲なら`Blocked / cannot determine`としてmergeしない。標準レビュー後、rootが[acceptance contract](references/acceptance-contract.md)をreview evidenceと差分実体へ適用し、結果をPRコメントへ置く。completion candidateでは両方の合格後に[completion ledger](references/completion-ledger.md)のfinal packetを同じ固定headから生成し、独立`$math-lean-review research/goals/<goal-id>.md <goal-id>`でGOALカードと累積証拠全体を照合する。必要な全判定とCIが通った場合だけmergeし、merge commit、CI、PR review、completion review、次obligationをtracking Issueへコメントする。
 
-PR作成まではroot一体で完結する。最初の独立subagent起動点はPRレビューである。PRレビュー、修正後確認、completion candidateの最終4本のsubagentは監査ごとに新規に起動し、ループの会話履歴や前の監査に使ったsubagentを引き継がせない(正本は共有review protocolの「Subagent入力」)。
+PR作成までは root 単独で完結する。最初の独立subagent起動点はPRレビューである。PRレビュー、修正後確認、completion candidateの最終4本のsubagentは監査ごとに新規に起動し、ループの会話履歴や前の監査に使ったsubagentを引き継がせない(詳細は共有review protocolの「Subagent入力」にある)。
 
 cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、completion candidateのfinal packet、標準review-pr監査記録、merge後のtracking Issueコメントとする。final packetは固定headに対するPRコメントであり、treeへ追加しない。数学claimの判定範囲はGOALのclaim boundaryに限る。
 
@@ -50,8 +50,8 @@ cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、
 
 - `proof-obligation-discharged`: 選んだ到達点の終了条件とproof obligation群をすべて、入力dataからのLean theorem/construction、finite witness、またはreview済みpredecessor theoremで閉じた。
 - `blocker-fixed`: 反例、必要条件、仮説不足、proof blockerを再利用可能な証拠として固定した。
-- `proof-checkpoint`: 証拠はあるが、未放電premise、provenance、proof-use、route、coverage、reviewのいずれかが残る。
-- `rejected`: statement不一致、hidden premise、証拠不足、claim越境、target-fitting routeがある。
+- `proof-checkpoint`: 証拠はあるが、未解消の premise、provenance、proof-use、route、coverage、reviewのいずれかが残る。
+- `rejected`: statement不一致、hidden premise、証拠不足、claim scope の超過、target-fitting routeがある。
 
 `approve`は上記resultの受理だけを表す。`target-theorem-proved`は最終完了判定専用である。
 
@@ -59,7 +59,7 @@ cycleの書込範囲は、対象ResearchLean証拠、同じPRのreport/ledger、
 
 すべてのPRを標準`$review-pr`へ渡す。target-theorem固有のroute、lane、修正後確認を`review-pr`へ追加しない。標準review-prは固定headのexact diff、変更責務、Issue受入条件を監査し、責務に対応する分野別敵対レビューへ委譲する。
 
-1 cycleの正式レビューは、初回と本筋修正後の再実行2回までとする(findingの中心/非中心の区分、本筋修正と微調整の手続きは共有review protocol「レビューバッチと修正後確認」が正本)。再実行後になお中心findingが残る、または新たに出る場合は、そのheadをmergeせず、cycle resultを`rejected`として記録し、次cycleで選定し直す。非中心findingは直接対応で解消するまでmergeしない。直接対応の確認subagentが範囲外で新たに挙げた非中心の事項は後出しとして監査記録に残し、merge後のtracking Issueコメントに一行で引き継ぐ。解消判定とmerge可否には影響させない。新たに挙げた中心の事項は本筋修正として扱い、上の再実行2回に数える。
+1 cycleの正式レビューは、初回と本筋修正後の再実行2回までとする(findingの中心/非中心の区分、本筋修正と微調整の手続きは共有review protocol「レビューバッチと修正後確認」に従う)。再実行後になお中心findingが残る、または新たに出る場合は、そのheadをmergeせず、cycle resultを`rejected`として記録し、次cycleで選定し直す。非中心findingは直接対応で解消するまでmergeしない。直接対応の確認subagentが範囲外で新たに挙げた非中心の事項は後出しとして監査記録に残し、merge後のtracking Issueコメントに一行で引き継ぐ。解消判定とmerge可否には影響させない。新たに挙げた中心の事項は本筋修正として扱い、上の再実行2回に数える。
 
 標準レビュー後、rootはその独立review evidenceと固定headの実体からstatement、premise discharge、provenance、proof-use、field escape、route、nonvacuity、dependency、回帰scenarioを再統合する。中心項目の未確認、不一致、証拠なしはmerge不可とする。
 
@@ -70,7 +70,7 @@ completion candidateでは、PR内容判定を再利用せず、別の`$math-lea
 `target-theorem-proved`は、次をすべて満たす場合だけ出す。
 
 - GOALの全completion criteriaと全proof artifactsが満たされる。
-- 全`discharge-required`行が入力dataからのtheorem/construction、finite witness、またはreview済みpredecessor theoremで放電される。
+- 全`discharge-required`行が入力dataからのtheorem/construction、finite witness、またはreview済みpredecessor theoremで解消される。
 - statement強度、certificate provenance、proof-use、structure-field escape、route integrity、nonvacuity、全方向、definition unfolding、dependency DAGが確認済みである。
 - 対象全宣言のaxiom audit、placeholder scan、report/ledger/Issue対応が確認済みである。
 - final packetに中心claimの`unchecked`がなく、4本査読の統合verdictが正確に`No major findings`である。
@@ -84,7 +84,7 @@ rootは4本の結果を貼るだけで終えず、final packet、unchecked、Lea
 - `target-theorem-proved`: 上のCompletionを満たす。
 - `target-refuted`: 現target statementへの反例または必要仮定不足を固定した。
 - `target-blocked`: 同じblockerが二cycle連続で解消しない。
-- `goal defect`: GOAL契約の欠陥または正本改訂が必要である。
+- `goal defect`: GOAL 定義の欠陥または GOAL・一次仕様の改訂が必要である。
 - `proof stagnation`: 二cycle連続で受理可能なproof DAG、premise、blockerのdeltaがない。
 - `review stagnation`: 五cycle連続で、本筋修正後の再実行でも中心findingが残る、または新たに出る。
 - `max-cycles`: 指定した上限に達する。

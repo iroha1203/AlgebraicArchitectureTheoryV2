@@ -85,7 +85,7 @@ description: 指定docsやproof obligationから未実装・未証明・未整�
 title prefix `[doc]`をタスク型宣言として扱う。
 
 - **移植(Research→本体)**: `research/lean/ResearchLean/` の受理成果を本体へ
-  蒸留するタスク。必須fieldとResearch下限原則は
+  移植するタスク。必須fieldとResearch下限原則は
   [Issue補助field](references/issue-templates.md#移植issue)をそのまま使う。
   移植元はまず Issue の source-of-truth pointer、次に `research/lean/ResearchLean/` を検索する。
 - タスク型を判断する材料が Issue 起票時点で不足している場合は、
@@ -105,20 +105,20 @@ PRD の完了条件を Issue 化する場合に適用する。
 - PRD の採否規律(処置の降格が許される対象、anti-weakening 等)を Issue 側で
   拡張・緩和しない。例: PRD が「B級のみ降格可」とする場合、「高コスト項目」などの
   対象拡大を AC に書かない。
-- 実装・証明・発火を要求する完了条件に対し、docs / 台帳記載だけで閉じられる
+- 実装・証明・具体例提示を要求する完了条件に対し、docs / 台帳記載だけで閉じられる
   Issue を作らない。
 - 許可外の降格が必要と判明した場合は Issue 化せず、`status:blocked` で
   ユーザー判断を求める。
 
 ## Issue 化の判断基準
 
-statusの意味は `docs/aat/guideline.md` の現行 status discipline を正本とする。
+statusの意味は `docs/aat/guideline.md` の現行 status discipline を基準とする。
 
 - `proved`: 原則として新規 Issue は不要。rename, docs sync, theorem generalization など追加作業が明確な場合だけ候補にする。
 - `defined only`: 対応する correctness theorem, API design decision, naming stabilization が残るなら Issue 化する。
 - `future proof obligation`: 既存 Issue がなければ Issue 化する。
 - `empirical hypothesis`: Lean proof をブロックしない。extractor, dataset, validation protocol, metric definition など tooling / research task として分割できる場合だけ Issue 化する。
-- `packaged (assumption-relative)`: 未放電premiseや生成すべきpackageが残るなら、その具体的な放電・構成をIssue化する。
+- `packaged (assumption-relative)`: 未解消の premise や生成すべきpackageが残るなら、その具体的な解消・構成をIssue化する。
 - `statement-only`: 証明または実装のIssueとして扱い、証明済みに数えない。
 - `unported (Research-proved)`: 移植Issueとして扱い、別statusへ置換してcloseしない。
 
@@ -149,14 +149,14 @@ area label は docs の主題に合わせる。
 
 ## Issue本文
 
-`.github/ISSUE_TEMPLATE/`を正本とし、不足fieldは
+`.github/ISSUE_TEMPLATE/`をテンプレートとし、不足fieldは
 [references/issue-templates.md](references/issue-templates.md)で補う。
 本文は次の責務を混ぜない。
 
 - `現状の課題`: 現在の状態、問題となる理由、確認できる根拠
 - `解決方針`: 採用する方向と維持すべき本質的要件
 - `期待する成果物`: PRに含める具体的な成果物
-- `受け入れ要件`: 成立条件と確認証拠を持つ客観的な完了契約
+- `受け入れ要件`: 成立条件と確認証拠を持つ客観的な完了条件
 - `備考`: source of truth、依存、対象外、候補ファイル、補助field
 
 受け入れ要件が成果物より弱い、曖昧、またはbuild / testの通過だけで閉じられる

@@ -28,7 +28,7 @@ field名の有無ではなく、該当内容と参照先を確認する。
 
 | 監査入力 | 新規カードでの所在 | 旧形式での所在 |
 | --- | --- | --- |
-| id・mode・起動資格 | 基本情報 | `id`、`research mode`、`status` |
+| id・mode・起動条件 | 基本情報 | `id`、`research mode`、`status` |
 | 研究目的と既存成果との差 | 研究目的 | `research aim`、`core tension`、`rival` |
 | statement・対象の制限 | 固定target | `target theorem`、`claim boundary`、`target theorem boundary` |
 | 成果物・完了判定 | 完了条件と参照するtarget条項 | `target proof artifacts`、`target theorem completion criteria` |
@@ -36,7 +36,7 @@ field名の有無ではなく、該当内容と参照先を確認する。
 | 固有の生成経路・許容結果 | 固定target・台帳・完了条件の該当箇所 | `target route integrity gate`、`target anti-weakening rule`、`target failure policy` |
 
 新規カードの台帳roleは、入力として保持するものを`ambient-boundary`、一般定理の仮定を
-`direction-hypothesis`、構成・放電義務を`discharge-required`として監査へ渡す。
+`direction-hypothesis`、構成・証明義務を`discharge-required`として監査へ渡す。
 結論との循環の懸念は`conclusion-equivalent-risk`として確認事項を抽出する。
 同じ前提の経路別roleと、構成から主結論までの接続を保持する。
 
@@ -47,7 +47,7 @@ field名の有無ではなく、該当内容と参照先を確認する。
 
 | 判定 | 参照先 |
 | --- | --- |
-| statement一致・前提放電・anti-weakening・provenance・route・非空虚性 | [acceptance基準](acceptance-contract.md) |
+| statement一致・前提の解消・anti-weakening・provenance・route・非自明性（nonvacuity） | [acceptance基準](acceptance-contract.md) |
 | 実装PRの標準レビュー、独立4査読による完了判定、停止処理 | [ループのPR gate・Completion・停止条件](../SKILL.md#pr-gate) |
 | final packet・report／Issueとの対応 | [completion ledger](completion-ledger.md) |
 | 独立した数学・Lean査読 | [math-lean-review](../../math-lean-review/SKILL.md)とそこから参照する共有基準 |
@@ -58,12 +58,12 @@ final packetの`completion_criteria`にはカード固有の条件と適用版�
 
 ## 欠陥判定
 
-起動資格としてactiveかつtarget-theoremであることを確認する。新規カードの内容は
+起動条件としてactiveかつtarget-theoremであることを確認する。新規カードの内容は
 記載基準に従い、特に次の場合はproof obligationの選定へ進まない。
 
 - 入力・量化・構成義務・結論を特定できない、または研究目的との接続が不明。
 - 成果物と達成条件が不明で、SCOREやPR mergeだけで完了になっている。
-- 台帳から入力・一般定理の仮定・放電義務を区別できず、provenanceや使用先を追えない。
+- 台帳から入力・一般定理の仮定・証明義務を区別できず、provenanceや使用先を追えない。
 - 結論相当の仮定を入力に移した疑いがあるのに、その確認事項が特定されていない。
 - 必要なwitnessの評価対象・同時成立条件、証明と反証の扱いを特定できない。
 - 共通基準への参照が解決できない、正式ゲートの省略を指示している、または必要な監査を実行できない。

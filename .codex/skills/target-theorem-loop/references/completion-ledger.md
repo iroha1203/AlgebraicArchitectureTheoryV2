@@ -91,4 +91,4 @@ unchecked_central_claim: [<item/reason>]
 root_recheck: <pass | fail | cannot-determine>
 ```
 
-`target-theorem-proved`には標準PR reviewの`Mergeable`、全gateの`pass`、空の`unchecked_central_claim`、4 laneすべての`pass`、統合verdictが正確に`No major findings`であることを要求する。それ以外はfail-closedにcheckpoint/refuted/blockedへ落とす。
+`target-theorem-proved`には標準PR reviewの`Mergeable`、全gateの`pass`、空の`unchecked_central_claim`、4 laneすべての`pass`、統合verdictが正確に`No major findings`であることを要求する。それ以外はfail-closedにcheckpoint/refuted/blockedと判定する。

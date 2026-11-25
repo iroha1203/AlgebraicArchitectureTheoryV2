@@ -13,19 +13,19 @@
 - `docs/` は source of truth、`website/` は public reading surface として扱う。
 - 公開サイトの source of truth は英語とし、prefix なしの route に置く。
   日本語は Qiita、Zenn、Hashnode などの outreach article として扱い、site mirror は作らない。
-- AAT の数学的正典は `docs/aat/algebraic_geometric_theory/`(第I〜X部+付録)である。
-  `website/aat/**` はこれを置き換えず、正典に忠実な web-native publication edition として扱う。
-- AAT website は正典第I〜X部と 1:1 のルート構成をとる(Wave 1 で移行中)。
-  website 独自の theorem claim は置かず、理論上の新規 claim は先に正典へ反映する。
+- AAT の数学本文は `docs/aat/algebraic_geometric_theory/`(第I〜X部+付録)である。
+  `website/aat/**` はこれを置き換えず、理論本文に忠実な web-native publication edition として扱う。
+- AAT website は数学本文の第I〜X部と 1:1 のルート構成をとる(Wave 1 で移行中)。
+  website 独自の theorem claim は置かず、理論上の新規 claim は先に数学本文へ反映する。
 - 数学本文、Lean status、proof obligation、tooling claim、empirical hypothesis を混同しない。
   claim taxonomy(Formal theorem / Certified bounded inference / Analytic reading)は
   AAT landing で一度説明し、各章はバッジと status card で参照する。
 - SFT は `docs/sft/software_field_theory.md`(v2)に忠実な research monograph として扱う。
   v2 の P4 / P5 が完了するまで、website の SFT ページは v1 構成のまま凍結する(Wave 2)。
-- ArchSig は standalone product manual として扱う(v0.5.0 出荷済み、Wave 1c/3 統合波で
+- ArchSig は standalone product manual として扱う(v0.5.0 出荷済み、Wave 1c/3 統合フェーズで
   全面刷新)。採否の判定規律は「第三者がこのサイトだけを頼りに ArchSig を自分の
   リポジトリで完走できるか」。掲載する CLI コマンドはすべて実走確認済みのものに限り、
-  期待出力を併記する。理論語彙は theory anchor リンクの背後に置き、
+  期待出力を併記する。理論語彙は理論参照リンクの背後に置き、
   主経路(getting-started / manual)はエンジニア語彙で完結させる。
 - AAT / SFT ページは marketing summary ではなく、定義、前提、theorem boundary、
   例、反例、Lean status への接続を持つ技術本文として書く。
@@ -33,10 +33,10 @@
 
 ## トップレベル route 設計
 
-### AAT(正典 1:1、Wave 1)
+### AAT(数学本文 1:1、Wave 1)
 
 ```text
-/aat/                             Overview: 正典宣言、中心図式(SVG)、claim taxonomy、部索引
+/aat/                             Overview: 位置づけの説明、中心図式(SVG)、claim taxonomy、部索引
 /aat/atoms-objects-laws/          I.    Atom 公理系、atom family、configuration、architecture object、law、obstruction circuit
 /aat/sites-and-sheaves/           II.   architecture context category、AAT site、cover、restriction、sheaf、descent の問い
 /aat/law-algebra-lawful-locus/    III.  law algebra 層 O_X^U、obstruction ideal I_Ob^U、affine chart、scheme、lawful locus
@@ -62,23 +62,23 @@ canonical-examples-and-readings は Wave 1b で後継章へ 301 する(それま
 ### SFT(v1 凍結中、Wave 2 で v2 構成へ)
 
 現行の三部構成(field-and-force / computation / software-evolution / references、
-計 20 route)は v1 のまま整合しており、Wave 2 発火(SFT P4 / P5 完了)まで変更しない。
-v2 の route 設計は発火時の計画で確定する。
+計 20 route)は v1 のまま整合しており、Wave 2 開始(SFT P4 / P5 完了)まで変更しない。
+v2 の route 設計は開始時の計画で確定する。
 
-### ArchSig(v0.5.0 製品マニュアル、Wave 1c/3 統合波で完成)
+### ArchSig(v0.5.0 製品マニュアル、Wave 1c/3 統合フェーズで完成)
 
 ```text
 /archsig/                  landing: 1セントのドリフト、三分業図(計測/投影/進化)、Skill 5本、install
-/archsig/getting-started/  保証された最初の15分: デモ script 4幕 → 同じ acts を手で → ArchView → 自リポジトリへ
-/archsig/concepts/         三層入力契約、観測≠判定、5値 verdict、profile 相対性、comparability、沈黙の規律
+/archsig/getting-started/  保証された最初の15分: デモ script 4ステップ → 同じ手順を手で → ArchView → 自リポジトリへ
+/archsig/concepts/         三層入力の仕様、観測≠判定、5値 verdict、profile 相対性、comparability、判断不能の扱い
 /archsig/contracts/        入力 artifact の作り方: ArchMap survey、LawPolicy/Profile、gate policy、repair plan、validator
-/archsig/analyses/         evaluator カタログ(10本+foundation 行)+理論 anchor(第II〜V・VII・VIII・X部)
+/archsig/analyses/         evaluator カタログ(10本+foundation 行)+理論参照(第II〜V・VII・VIII・X部)
 /archsig/manual/           run directory の読み順: readThisFirst → insight → packet → gate/compare。タスク別レシピ
 /archsig/reference/        CLI 10 subcommand、exit code 4値、schema catalog、無互換方針、troubleshooting
 /archsig/archview/         ArchView 解説+live demo(one-cent drift base/head/repaired の実測3フレーム sequence)
 ```
 
-`/archsig/examples/` は廃止し getting-started へ 301(one-cent drift が例の正本になった)。
+`/archsig/examples/` は廃止し getting-started へ 301(one-cent drift が代表例になった)。
 `/archsig/archview/viewer/` は passthrough copy(Eleventy template 処理から除外)で、
 コミット済みの実 `archsig analyze` 出力(viewer-data / summary / manifest ×3 frame)+
 `archview.html` + `archview-sequence.json` を配信する。viewer data を更新するときは
@@ -100,7 +100,7 @@ Home / AAT / SFT / ArchSig / Outreach
 
 ### AAT
 
-読書順は正典の部順。prev / next は各ページの page-nav に置く。
+読書順は数学本文の部順。prev / next は各ページの page-nav に置く。
 
 ```text
 /aat/ -> I -> II -> III -> IV -> V -> VI -> VII -> VIII -> IX -> X -> appendix
@@ -129,7 +129,7 @@ manual -> reference -> archview の順。
 
 ### AAT publication edition の型
 
-各章は正典の全節を、次の型で展開する。
+各章は数学本文の全節を、次の型で展開する。
 
 ```text
 Definition
@@ -140,7 +140,7 @@ Definition
 -> Lean status
 ```
 
-- 正典の theorem label(定義 I.2.1 → Definition I.2.1)をそのまま使い、
+- 数学本文の theorem label(定義 I.2.1 → Definition I.2.1)をそのまま使い、
   website 独自のラベル・主張を発明しない。
 - theorem-grade claim は theorem-card / lean-status-card で命題名、Lean 名、
   status、仮定、境界を近接表示する。
@@ -157,27 +157,27 @@ Definition
 | --- | --- | --- |
 | `/archsig/` | `tools/archsig/examples/practical-rust-service/README.md`, `.github/workflows/archsig-release.yml`(bundle 構成) | one-cent drift landing、三分業、Skill 5本、install。 |
 | `/archsig/getting-started/` | `tools/archsig/examples/practical-rust-service/`(script+実出力), `tools/archsig/skills/*/SKILL.md` | 実走確認済み Quick Start。 |
-| `/archsig/concepts/` | `docs/tool/archmap_lawpolicy_archsig_responsibility_charter.md`, `docs/tool/archsig_gate_policy.md`, `docs/tool/archsig_compare.md` | 三層責務、5値 verdict、comparability、沈黙。 |
+| `/archsig/concepts/` | `docs/tool/archmap_lawpolicy_archsig_responsibility_charter.md`, `docs/tool/archsig_gate_policy.md`, `docs/tool/archsig_compare.md` | 三層責務、5値 verdict、comparability、判断不能の扱い。 |
 | `/archsig/contracts/` | `tools/archsig/skills/*/SKILL.md`, `docs/tool/law_policy.md`, `docs/tool/archsig_gate_policy.md` | 入力 artifact authoring。 |
-| `/archsig/analyses/` | `tools/archsig/src/ag_measurement.rs`(evaluator registry+theoremRef), 正典第II〜V・VII・VIII・X部 | evaluator カタログ+理論 anchor。 |
+| `/archsig/analyses/` | `tools/archsig/src/ag_measurement.rs`(evaluator registry+theoremRef), 数学本文第II〜V・VII・VIII・X部 | evaluator カタログ+理論参照。 |
 | `/archsig/manual/` | `tools/archsig/docs/artifacts-and-boundaries.md`, 実 run 出力(readThisFirst / ruleOutcomes 抜粋) | artifact reading manual+レシピ。 |
 | `/archsig/reference/` | `tools/archsig/docs/commands.md`, `archsig --help`(全 subcommand), `main.rs`(exit codes) | command / schema / exit code reference。 |
 | `/archsig/archview/` | `tools/archview/README.md` | ArchView 解説+live demo。 |
 
 ArchSig reference pages では、観測と法・方程式の二系統から計算する計測層という
-肯定形 identity を先に置き、結論の近くで次の誤読だけを塞ぐ:
+肯定形 identity を先に置き、結論の近くで次の誤解を防ぐ:
 measured zero と unmeasured は異なる / policy pass は architecture lawfulness を意味しない。
 
 ## 本文成熟度
 
 | Section | Route status | 成熟度 | 残作業 |
 | --- | --- | --- | --- |
-| `/aat/` landing | 実装済み | 正典宣言・中心図式・claim taxonomy・部索引 | 正典改訂時に同期 |
-| `/aat/` Part I〜IV | 実装済み | 正典第I〜IV部の publication edition | 正典改訂時に同期 |
-| `/aat/` Part V〜X+付録 | 実装済み | 正典第V〜X部と付録の publication edition | 正典改訂時に同期 |
-| `/aat/related-work/`, `/aat/status/`, `/aat/formal-anchors/` | 実装済み | AG 基準の関連研究・status・形式化アンカー | Lean source更新時に同期 |
+| `/aat/` landing | 実装済み | 位置づけの説明・中心図式・claim taxonomy・部索引 | 数学本文改訂時に同期 |
+| `/aat/` Part I〜IV | 実装済み | 数学本文第I〜IV部の publication edition | 数学本文改訂時に同期 |
+| `/aat/` Part V〜X+付録 | 実装済み | 数学本文第V〜X部と付録の publication edition | 数学本文改訂時に同期 |
+| `/aat/related-work/`, `/aat/status/`, `/aat/formal-anchors/` | 実装済み | AG 基準の関連研究・status・形式化の参照索引 | Lean source更新時に同期 |
 | `/sft/**` | 実装済み | SFT publication edition | SFT本文改訂時に同期 |
-| `/archsig/**` | 実装済み | v0.5.0 製品マニュアル 8 route(concepts / contracts / archview live demo 含む) | tooling契約更新時に同期。viewer data はデモ3状態の再 analyze で差し替え |
+| `/archsig/**` | 実装済み | v0.5.0 製品マニュアル 8 route(concepts / contracts / archview live demo 含む) | tooling仕様更新時に同期。viewer data はデモ3状態の再 analyze で差し替え |
 | `/outreach/` | 実装済み | 外部記事 hub | 記事追加時に更新 |
 
 ## phase 管理

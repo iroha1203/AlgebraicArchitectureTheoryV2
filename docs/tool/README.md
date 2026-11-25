@@ -1,7 +1,6 @@
 # Tool Docs
 
-`docs/tool/` は ArchSig v0.6.0・ArchView・FieldSig の製品コンセプト、仕様（contract）、編集ガイドラインを扱う。
-AAT の数学的主張は定義せず、各ツールが何を入力して何を計算・生成するかを固定する。
+`docs/tool/` は ArchSig v0.6.0・ArchView・FieldSig の製品コンセプト、仕様（contract）、編集ガイドラインを扱い、各ツールが何を入力して何を計算・生成するかを定める（AAT の数学的主張は [理論本文](../aat/algebraic_geometric_theory/README.md) にある）。
 
 ## ArchSig v0.6.0 の入口
 
@@ -22,7 +21,7 @@ AAT の数学的主張は定義せず、各ツールが何を入力して何を�
 
 ## ArchView
 
-ArchView は ArchSig レポートの付属ビューアではない。ArchMap だけでコードベース理解を成立させる Atom-native Architecture Atlas であり、次の3責務を持つ。
+ArchView は、ArchMap だけでコードベース理解を成立させる Atom-native Architecture Atlas であり、次の3責務を持つ。
 
 1. ArchMap の Atom / Context / Cover からアーキテクチャ構造を理解できる形にする。
 2. ArchSig が供給した分析結果を同じ幾何上のオーバーレイとして表示する。

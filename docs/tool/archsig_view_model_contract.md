@@ -1,17 +1,16 @@
-# archsig-measurement-view-model 契約(v0.5.4)
+# archsig-measurement-view-model 仕様(v0.5.4)
 
-`archsig analyze` が出力する表示非依存の typed measurement view model
-(`archsig-measurement-view-model.json`)の現行artifact契約。この文書自身をartifact契約の
-source of truthとする。このartifactはArchViewの任意Analysis overlayに利用できるが、
-ArchViewのArchitecture modeやproduct identityを定義しない。
+この文書は、`archsig analyze` が出力する表示非依存の typed measurement view model
+(`archsig-measurement-view-model.json`) の現行 artifact 仕様を定める。
+この artifact は ArchView の任意 Analysis overlay の入力として利用する。
 
 ## 原則
 
-- view model は measurement packet と normalized ArchMap(観測入力)の**有界投影**であり、
+- view model は measurement packet と normalized ArchMap(観測入力)の**範囲を限定した投影**であり、
   新しい invariant を計算せず、verdict を生成しない。
 - **全 leaf は下の対応表に載る。** 対応表に無い leaf は存在してはならない(AC1)。
 - 表示語彙(気象語ほか)は view model のフィールド名に入らない(却下条件3。
-  cli テスト `cli_view_model_field_names_exclude_display_vocabulary` が執行)。
+  cli テスト `cli_view_model_field_names_exclude_display_vocabulary` で検証)。
 - 区画の absent(null)は「この run でその測定が記録されていない」ことを意味し、ゼロではない。
 - consumer(viewer)は coverage 行の列挙を超えて観測範囲を推測してはならない。
 
@@ -49,13 +48,13 @@ ArchViewのArchitecture modeやproduct identityを定義しない。
 | `harmonicFlow` | 常に null(調和代表元の per-edge 値は現行 packet に記録されない。合成しない) |
 | `scalarFields[]`(harmonic 系) | invariant `harmonic-debt:*` の `representation.harmonicDebtNorm / essentialRepairLowerBound / lowerBoundStatus / invariantId` |
 | `scalarFields[]`(capacity) | invariant `topological-debt-capacity:*` の `representation.capacityLowerBound / invariantId` |
-| `boundaryStatements` | `packet.boundaryStatements` の逐語投影 |
-| `nonClaims` | 固定文(view model の非主張) |
+| `boundaryStatements` | `packet.boundaryStatements` のそのままの転記 |
+| `nonClaims` | 固定文(view model の対象外事項) |
 
-## 執行
+## 検証テスト
 
 - `cli_analyze_emits_measurement_view_model_typed_sections` — 区画の型・複体との整合・
-  3値 witness・undirected・coverage 行の完全性・grounding 投影・boundary 逐語性・
+  3値 witness・undirected・coverage 行の完全性・grounding 投影・boundary のそのままの転記・
   harmonicFlow absent・scalar provenance。
 - `cli_view_model_field_names_exclude_display_vocabulary` — 表示語彙のフィールド名混入禁止。
 - byte-determinism テスト(`cli_analyze_practical_service_outputs_are_byte_deterministic_with_known_digests`)の
@@ -67,5 +66,5 @@ ArchViewのArchitecture modeやproduct identityを定義しない。
   正常であり、エラーでも欠陥でもない。
 - observationCoverage は「観測した組」の列挙であって、網羅性・完全性の主張ではない。
 - per-vertex / per-edge のスカラー場・調和代表元辺値は現行 packet に存在しないため
-  view model にも存在しない。将来 packet 側に測定が追加された場合のみ、この契約の
+  view model にも存在しない。将来 packet 側に測定が追加された場合のみ、この仕様の
   改訂とともに投影される。

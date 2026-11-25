@@ -2,7 +2,7 @@
 
 ## G1 候補生成
 
-四体に `closer`、`obstruction`、`unifier`、`wildcard` を一つずつ割り当てる。
+4つのサブエージェントに `closer`、`obstruction`、`unifier`、`wildcard` を一つずつ割り当てる。
 
 ```text
 Use the research-loop criteria to generate candidate research contributions for score-phase GOAL <goal-id>.

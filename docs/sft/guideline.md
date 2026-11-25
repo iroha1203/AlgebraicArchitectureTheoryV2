@@ -15,7 +15,7 @@
   および定理の適用範囲を、観測量・制約・制御入力として利用する。
 - SFT は AAT の数学的な核の上に構築し、AAT → SFT の片方向依存を保つ。
 - AAT の理論本体の所在は
-  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)にある。
+  [AGENTS.md「基礎概念」](../../AGENTS.md#基礎概念)にある。
   実成果物の測定対象・観測方法・観測条件は SFT・ArchSig・実証データの側で定める。
 - `docs/sft/software_field_theory.md` が SFT 本文であり、`docs/sft/aat_interface.md` が
   AAT / SFT 間のインタフェースを定める。
