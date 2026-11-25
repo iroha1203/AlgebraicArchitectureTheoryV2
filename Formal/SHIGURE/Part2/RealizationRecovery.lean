@@ -1,7 +1,9 @@
 import Formal.SHIGURE.Part2.Recovery.PresentationRestriction
 import Formal.SHIGURE.Part2.Recovery.LocalDisjunction
 import Formal.SHIGURE.Part2.Recovery.QuantityReading
+import Formal.SHIGURE.Part2.Tensor.DomainCoefficientMaps
 import Formal.SHIGURE.Part2.Tensor.DomainExamples
+import Formal.SHIGURE.Part2.Tensor.DomainLaws
 
 /-!
 # Recovering native structures and arrows from realizations
@@ -15,4 +17,6 @@ quantity with its value in the coefficient ring.
 For tensor realizations, coefficient-natural families of linear
 structure-preserving arrows recover exactly the original linear arrows,
 including factorizations and value maps on specified submodule domains.
+The comparison also applies to models of written tensor equations and
+commutes with coefficient maps on the relation and domain submodules.
 -/
