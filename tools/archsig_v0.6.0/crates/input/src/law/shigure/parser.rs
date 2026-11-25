@@ -9,12 +9,6 @@ use crate::law::lexer::TokenKind;
 use crate::law::parser::Parser;
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
-use num_bigint::{BigInt, BigUint};
-use num_integer::Integer;
-use num_traits::Zero;
-
-const RED_ZONE: usize = 128 * 1024;
-const STACK_STEP: usize = 4 * 1024 * 1024;
 
 pub(super) type PResult<T, E> = Result<T, E>;
 
@@ -25,7 +19,7 @@ impl<E: InputError> Parser<E> {
         self.expect_kw("shigure")?;
         let Some(tok) = self.peek().cloned() else {
             return self.err(
-                "expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, or `observations` after `shigure`",
+                "expected SHIGURE declaration kind (`presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, `observations`, `lift`, `artin`, `diagnostics`, or `atlas`) after `shigure`",
             );
         };
         if tok.kind != TokenKind::Name {
@@ -72,8 +66,20 @@ impl<E: InputError> Parser<E> {
             "observations" => self
                 .parse_shigure_observations(start)
                 .map(ShigureDeclAst::Observations),
+            "lift" => self
+                .parse_shigure_lift(start)
+                .map(|l| ShigureDeclAst::Lift(Box::new(l))),
+            "artin" => self
+                .parse_shigure_artin(start)
+                .map(|a| ShigureDeclAst::Artin(Box::new(a))),
+            "diagnostics" => self
+                .parse_shigure_diagnostics(start)
+                .map(|d| ShigureDeclAst::Diagnostics(Box::new(d))),
+            "atlas" => self
+                .parse_shigure_atlas(start)
+                .map(|a| ShigureDeclAst::Atlas(Box::new(a))),
             other => self.err(format!(
-                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, or `observations`"
+                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, `observations`, `lift`, `artin`, `diagnostics`, or `atlas`"
             )),
         }
     }
@@ -499,385 +505,6 @@ impl<E: InputError> Parser<E> {
             after_operation,
             steps,
             span: (t_start, self.prev_end()),
-        })
-    }
-
-    fn parse_shigure_change_spec(&mut self, start: usize) -> PResult<RawChangeSpec, E> {
-        self.expect_kw("change_spec")?;
-        let name = self.ident()?;
-        self.expect_sym("{")?;
-        let mut domain: Option<RawCoeffDomain> = None;
-        let mut parameters = Vec::new();
-        let mut fixed = Vec::new();
-        let mut editable = Vec::new();
-
-        while !self.is_sym("}") {
-            self.checkpoint_here()?;
-            if self.eat_kw("domain") {
-                if domain.is_some() {
-                    return self.err("duplicate `domain` clause in `shigure change_spec`");
-                }
-                domain = Some(self.parse_shigure_coeff_domain()?);
-                self.expect_sym(";")?;
-            } else if self.eat_kw("param") {
-                let p_start = self.prev_span().0;
-                let p_name = self.ident()?;
-                self.expect_sym(":")?;
-                let p_domain = self.parse_shigure_coeff_domain()?;
-                self.expect_sym(";")?;
-                parameters.push(RawParamDecl {
-                    name: p_name,
-                    domain: p_domain,
-                    span: (p_start, self.prev_end()),
-                });
-            } else if self.eat_kw("fixed") {
-                let f_start = self.prev_span().0;
-                let target = if self.eat_kw("semantic_law") {
-                    RawFixedTarget::SemanticLaw(self.qname()?)
-                } else if self.eat_kw("representation_law") {
-                    RawFixedTarget::RepresentationLaw(self.qname()?)
-                } else if self.eat_kw("operation") || self.eat_kw("op") {
-                    RawFixedTarget::OperationExpr(self.qname()?)
-                } else if self.eat_kw("observation") || self.eat_kw("obs") {
-                    RawFixedTarget::ObservationExpr(self.qname()?)
-                } else if self.eat_kw("state_comparison") {
-                    RawFixedTarget::StateComparisonExpr(self.ident()?)
-                } else if self.eat_kw("word_translation") {
-                    RawFixedTarget::WordTranslationOp(self.ident()?)
-                } else {
-                    return self.err(
-                        "expected `semantic_law`, `representation_law`, `operation`, `observation`, `state_comparison`, or `word_translation` after `fixed`",
-                    );
-                };
-                self.expect_sym(";")?;
-                fixed.push((target, (f_start, self.prev_end())));
-            } else if self.eat_kw("editable") {
-                let e_start = self.prev_span().0;
-                if self.eat_kw("semantic_law") {
-                    return Err(Box::new(Issue::law(
-                        Code::Type,
-                        (e_start, self.prev_end()),
-                        "semantic_law cannot be marked editable (semantic laws are protected)",
-                    ))
-                    .into());
-                }
-                let target = if self.eat_kw("representation_law") {
-                    RawEditableTarget::RepresentationLaw(self.qname()?)
-                } else if self.eat_kw("operation") || self.eat_kw("op") {
-                    RawEditableTarget::OperationExpr(self.qname()?)
-                } else if self.eat_kw("state_comparison") {
-                    RawEditableTarget::StateComparisonExpr(self.ident()?)
-                } else {
-                    return self.err(
-                        "expected `representation_law`, `operation`, or `state_comparison` after `editable`",
-                    );
-                };
-                self.expect_sym(";")?;
-                editable.push((target, (e_start, self.prev_end())));
-            } else {
-                self.reject_conclusion_or_unknown("`shigure change_spec`")?;
-            }
-        }
-        self.expect_sym("}")?;
-        let Some(domain) = domain else {
-            return Err(Box::new(Issue::law(
-                Code::Syntax,
-                (start, self.prev_end()),
-                "`shigure change_spec` requires a `domain` clause",
-            ))
-            .into());
-        };
-        Ok(RawChangeSpec {
-            name,
-            domain,
-            parameters,
-            fixed,
-            editable,
-            span: (start, self.prev_end()),
-        })
-    }
-
-    fn parse_shigure_eval_condition(&mut self, start: usize) -> PResult<RawEvalCondition, E> {
-        self.expect_kw("eval_condition")?;
-        let name = self.ident()?;
-        self.expect_sym("{")?;
-        let mut point_domain: Option<RawPointDomain> = None;
-        let mut evaluations = Vec::new();
-        let mut equations = Vec::new();
-        let mut invertibles = Vec::new();
-
-        while !self.is_sym("}") {
-            self.checkpoint_here()?;
-            if self.eat_kw("point_domain") {
-                if point_domain.is_some() {
-                    return self.err("duplicate `point_domain` clause in `shigure eval_condition`");
-                }
-                point_domain = Some(self.parse_shigure_point_domain()?);
-                self.expect_sym(";")?;
-            } else if self.eat_kw("eval") {
-                let e_start = self.prev_span().0;
-                let e_name = self.ident()?;
-                self.expect_sym("=")?;
-                let expr = self.parse_shigure_poly_expr()?;
-                self.expect_sym(";")?;
-                evaluations.push(RawNamedPoly {
-                    name: e_name,
-                    expr,
-                    span: (e_start, self.prev_end()),
-                });
-            } else if self.eat_kw("equation") {
-                let e_start = self.prev_span().0;
-                let e_name = self.ident()?;
-                self.expect_sym(":")?;
-                let expr = self.parse_shigure_equation_poly()?;
-                self.expect_sym(";")?;
-                equations.push(RawNamedPoly {
-                    name: e_name,
-                    expr,
-                    span: (e_start, self.prev_end()),
-                });
-            } else if self.eat_kw("invertible") {
-                let e_start = self.prev_span().0;
-                let e_name = self.ident()?;
-                self.expect_sym(":")?;
-                let expr = self.parse_shigure_poly_expr()?;
-                self.expect_sym(";")?;
-                invertibles.push(RawNamedPoly {
-                    name: e_name,
-                    expr,
-                    span: (e_start, self.prev_end()),
-                });
-            } else {
-                self.reject_conclusion_or_unknown("`shigure eval_condition`")?;
-            }
-        }
-        self.expect_sym("}")?;
-        let Some(point_domain) = point_domain else {
-            return Err(Box::new(Issue::law(
-                Code::Syntax,
-                (start, self.prev_end()),
-                "`shigure eval_condition` requires a `point_domain` clause",
-            ))
-            .into());
-        };
-        Ok(RawEvalCondition {
-            name,
-            point_domain,
-            evaluations,
-            equations,
-            invertibles,
-            span: (start, self.prev_end()),
-        })
-    }
-
-    fn parse_shigure_task(&mut self, start: usize) -> PResult<RawTask, E> {
-        self.expect_kw("task")?;
-        let name = self.ident()?;
-        self.expect_sym("{")?;
-        let mut comparison: Option<QName> = None;
-        let mut change_spec: Option<QName> = None;
-        let mut eval_condition: Option<QName> = None;
-
-        while !self.is_sym("}") {
-            self.checkpoint_here()?;
-            if self.eat_kw("comparison") {
-                if comparison.is_some() {
-                    return self.err("duplicate `comparison` clause in `shigure task`");
-                }
-                comparison = Some(self.qname()?);
-                self.expect_sym(";")?;
-            } else if self.eat_kw("change_spec") {
-                if change_spec.is_some() {
-                    return self.err("duplicate `change_spec` clause in `shigure task`");
-                }
-                change_spec = Some(self.qname()?);
-                self.expect_sym(";")?;
-            } else if self.eat_kw("eval_condition") {
-                if eval_condition.is_some() {
-                    return self.err("duplicate `eval_condition` clause in `shigure task`");
-                }
-                eval_condition = Some(self.qname()?);
-                self.expect_sym(";")?;
-            } else {
-                self.reject_conclusion_or_unknown("`shigure task`")?;
-            }
-        }
-        self.expect_sym("}")?;
-        let Some(comparison) = comparison else {
-            return Err(Box::new(Issue::law(
-                Code::Syntax,
-                (start, self.prev_end()),
-                "`shigure task` requires a `comparison` clause",
-            ))
-            .into());
-        };
-        let Some(change_spec) = change_spec else {
-            return Err(Box::new(Issue::law(
-                Code::Syntax,
-                (start, self.prev_end()),
-                "`shigure task` requires a `change_spec` clause",
-            ))
-            .into());
-        };
-        Ok(RawTask {
-            name,
-            comparison,
-            change_spec,
-            eval_condition,
-            span: (start, self.prev_end()),
-        })
-    }
-
-    /// 等式 `lhs = rhs` を `lhs - rhs`（`rhs` が定数 0 なら `lhs`）として解析する。
-    pub(super) fn parse_shigure_equation_poly(&mut self) -> PResult<ShigurePolyExpr, E> {
-        let lhs = self.parse_shigure_poly_expr()?;
-        self.expect_sym("=")?;
-        let rhs = self.parse_shigure_poly_expr()?;
-        if matches!(&rhs, ShigurePolyExpr::Int(n) if n.is_zero()) {
-            Ok(lhs)
-        } else {
-            Ok(ShigurePolyExpr::Sub(Box::new(lhs), Box::new(rhs)))
-        }
-    }
-
-    pub(super) fn parse_shigure_poly_expr(&mut self) -> PResult<ShigurePolyExpr, E> {
-        stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
-            let mut acc = self.parse_shigure_poly_term()?;
-            loop {
-                self.checkpoint_here()?;
-                if self.eat_sym("+") {
-                    let rhs = self.parse_shigure_poly_term()?;
-                    acc = ShigurePolyExpr::Add(Box::new(acc), Box::new(rhs));
-                } else if self.eat_sym("-") {
-                    let rhs = self.parse_shigure_poly_term()?;
-                    acc = ShigurePolyExpr::Sub(Box::new(acc), Box::new(rhs));
-                } else {
-                    break;
-                }
-            }
-            Ok(acc)
-        })
-    }
-
-    fn parse_shigure_poly_term(&mut self) -> PResult<ShigurePolyExpr, E> {
-        stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
-            let mut acc = self.parse_shigure_poly_unary()?;
-            while self.eat_sym("*") {
-                self.checkpoint_here()?;
-                let rhs = self.parse_shigure_poly_unary()?;
-                acc = ShigurePolyExpr::Mul(Box::new(acc), Box::new(rhs));
-            }
-            Ok(acc)
-        })
-    }
-
-    fn parse_shigure_poly_unary(&mut self) -> PResult<ShigurePolyExpr, E> {
-        stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
-            self.checkpoint_here()?;
-            if self.eat_sym("-") {
-                let inner = self.parse_shigure_poly_unary()?;
-                Ok(ShigurePolyExpr::Neg(Box::new(inner)))
-            } else {
-                self.parse_shigure_poly_primary()
-            }
-        })
-    }
-
-    fn parse_shigure_poly_primary(&mut self) -> PResult<ShigurePolyExpr, E> {
-        stacker::maybe_grow(RED_ZONE, STACK_STEP, || {
-            self.checkpoint_here()?;
-            if self.eat_sym("(") {
-                let inner = self.parse_shigure_poly_expr()?;
-                self.expect_sym(")")?;
-                return Ok(inner);
-            }
-            if let Some(tok) = self.peek().cloned()
-                && tok.kind == TokenKind::Int
-            {
-                self.advance();
-                let n = tok.text.parse::<BigInt>().map_err(|_| {
-                    Box::new(Issue::law(
-                        Code::Syntax,
-                        tok.span,
-                        "invalid integer literal",
-                    ))
-                })?;
-                return Ok(ShigurePolyExpr::Int(n));
-            }
-            if self.is_kw("rat") && self.peek_at(1).is_some_and(|t| t.text == "(") {
-                let start = self.here().0;
-                self.advance();
-                self.expect_sym("(")?;
-                let neg = self.eat_sym("-");
-                let num_raw = self.expect_int_token()?;
-                self.expect_sym(",")?;
-                let den_raw = self.expect_int_token()?;
-                self.expect_sym(")")?;
-                let span = (start, self.prev_end());
-                let mut num = num_raw.parse::<BigInt>().map_err(|_| {
-                    Box::new(Issue::law(Code::Syntax, span, "invalid rational numerator"))
-                })?;
-                if neg {
-                    num = -num;
-                }
-                let den = den_raw.parse::<BigInt>().map_err(|_| {
-                    Box::new(Issue::law(
-                        Code::Syntax,
-                        span,
-                        "invalid rational denominator",
-                    ))
-                })?;
-                if den <= BigInt::zero() {
-                    return Err(Box::new(Issue::law(
-                        Code::Syntax,
-                        span,
-                        "rational denominator must be positive",
-                    ))
-                    .into());
-                }
-                let g = num.gcd(&den);
-                return Ok(ShigurePolyExpr::Rat {
-                    num: num / &g,
-                    den: den / g,
-                });
-            }
-            if self.is_kw("fp") && self.peek_at(1).is_some_and(|t| t.text == "(") {
-                let start = self.here().0;
-                self.advance();
-                self.expect_sym("(")?;
-                let val_raw = self.expect_int_token()?;
-                self.expect_sym(",")?;
-                let mod_raw = self.expect_int_token()?;
-                self.expect_sym(")")?;
-                let span = (start, self.prev_end());
-                let value = val_raw.parse::<BigUint>().map_err(|_| {
-                    Box::new(Issue::law(Code::Syntax, span, "invalid Fp value literal"))
-                })?;
-                let modulus = mod_raw.parse::<BigUint>().map_err(|_| {
-                    Box::new(Issue::law(Code::Syntax, span, "invalid Fp modulus literal"))
-                })?;
-                return Ok(ShigurePolyExpr::Fp { value, modulus });
-            }
-            if self.is_kw("pow") && self.peek_at(1).is_some_and(|t| t.text == "(") {
-                let start = self.here().0;
-                self.advance();
-                self.expect_sym("(")?;
-                let base = self.parse_shigure_poly_expr()?;
-                self.expect_sym(",")?;
-                let exp_raw = self.expect_int_token()?;
-                self.expect_sym(")")?;
-                let span = (start, self.prev_end());
-                let exp = exp_raw.parse::<u32>().map_err(|_| {
-                    Box::new(Issue::law(
-                        Code::Syntax,
-                        span,
-                        "exponent in `pow` out of range",
-                    ))
-                })?;
-                return Ok(ShigurePolyExpr::Pow(Box::new(base), exp));
-            }
-            let id = self.ident()?;
-            Ok(ShigurePolyExpr::Var(id.name))
         })
     }
 }
