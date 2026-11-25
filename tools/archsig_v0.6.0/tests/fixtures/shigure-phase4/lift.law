@@ -4,9 +4,12 @@ reading LiftAC3 {
   use vocabulary Phase4Vocab version "1" digest "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83";
 
   // (a) H1: c + d = 1 (C8 lawful base point (1, 0), ambient lift (1 + eps, 0))
+  // 4 由来すべて（o_static, o_rt via coord_q, o_llm, o_human）を参照
   shigure lift H1Full {
     domain Q;
-    origin human_adopted "h1_full";
+    origin archmap "o_static";
+    origin archmap "o_llm";
+    origin archmap "o_human";
     vars [c, d];
     law sum_one: c + d = 1;
     extension truncated(eps, 0);
@@ -48,6 +51,15 @@ reading LiftAC3 {
     base_point { t = [0, 1]; }
     ambient_lift { t = [0, 1, 0]; }
     redundant_comparison { ref_law t2_only: pow(t, 2) = 0; }
+  }
+
+  shigure lift H2RedundantFirstOrder {
+    domain Q;
+    origin human_adopted "h2_t2_first";
+    vars [t];
+    law t2: pow(t, 2) = 0;
+    extension truncated(eps, 0);
+    base_point { t = [0]; }
   }
 
   shigure lift H2LinearFree {

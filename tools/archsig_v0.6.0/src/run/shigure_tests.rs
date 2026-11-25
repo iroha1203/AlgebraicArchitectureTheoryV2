@@ -139,6 +139,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "a=shigure_robustness(.r)",
         "a=shigure_chevalley([2])",
         "a=shigure_observations(.o)",
+        "a=shigure_lift(.l)",
+        "a=shigure_artin([3])",
+        "a=shigure_diagnostics(.d)",
+        "a=shigure_atlas([4])",
     ] {
         let msg = parse::parse_single_ask(bad).unwrap_err();
         assert!(
@@ -250,6 +254,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
     assert!(parse::parse_single_ask("r=shigure_robustness(R.Rob, foo=bar)").is_err());
     assert!(parse::parse_single_ask("c=shigure_chevalley(R.Ch, foo=bar)").is_err());
     assert!(parse::parse_single_ask("o=shigure_observations(R.Obs, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("l=shigure_lift(R.L, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("a=shigure_artin(R.A, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("d=shigure_diagnostics(R.D, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("g=shigure_atlas(R.G, foo=bar)").is_err());
 }
 
 #[test]

@@ -1,12 +1,13 @@
 //! `archsig run` から SHIGURE 計算（`shigure_preservation` / `shigure_solve` / `shigure_interaction` /
 //! `shigure_diagram` / `shigure_path` / `shigure_transfer` / `shigure_robustness` /
-//! `shigure_chevalley` / `shigure_observations`）を実行する最小入口。
+//! `shigure_chevalley` / `shigure_observations` / `shigure_lift` / `shigure_artin` /
+//! `shigure_diagnostics` / `shigure_atlas`）を実行する最小入口。
 //!
 //! 責務:
 //! - 既存の `crates/computation/src/observed/` へ一切触れずに、`archsig-input::input::check_inputs` →
 //!   `archsig-shigure::convert::ShigureConverter` → `archsig-shigure` 各計算核を接続する
 //! - 実行仕様 §§1・5–7 に従い、`archsig.summary/1`（stdout）と `archsig.result/4`（`--out` 保存時）および終了コードを返す
-//! - `Verdict::Undetermined`（沈黙）をエラーではなく正常な `partial` / exit 2 出力として返す
+//! - `Verdict::Undetermined`（判断不能）をエラーではなく正常な `partial` / exit 2 出力として返す
 
 mod deliver;
 mod parse;

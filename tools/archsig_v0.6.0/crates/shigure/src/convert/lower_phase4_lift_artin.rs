@@ -84,7 +84,11 @@ pub(super) fn lower_p4_coord_to_poly(
             match cv {
                 CoordValue::Observed(lit) => Ok(PolyExpr::Const(lit)),
                 CoordValue::Missing => Ok(PolyExpr::Unobserved {
-                    slot: format!("{entity}.{field}"),
+                    slot: if field.starts_with(&format!("{entity}.")) {
+                        field.clone()
+                    } else {
+                        format!("{entity}.{field}")
+                    },
                     origin: first_ref.or_else(|| Some(fallback_ref.clone())),
                 }),
                 CoordValue::Symbolic => Err(conv_err(format!(

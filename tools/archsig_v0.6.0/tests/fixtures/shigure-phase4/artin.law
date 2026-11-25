@@ -37,7 +37,7 @@ reading ArtinAC4 {
     max_order 8;
   }
 
-  // (c) H10: E = mu * delta, E = 0 => nu = 2
+  // (c) H10: E = mu * delta, E = 0 => nu = 2, and axis restriction mu = 0 => all-order lift
   shigure artin H10Artin {
     domain Q;
     origin human_adopted "artin_h10";
@@ -46,6 +46,17 @@ reading ArtinAC4 {
     extra_law g: E = 0;
     base_point { delta = 0; mu = 0; }
     max_order 6;
+  }
+
+  shigure artin H10AxisInfinite {
+    domain Q;
+    origin human_adopted "artin_h10_axis";
+    obs_vars [delta, mu];
+    obs_relation mu_zero: mu = 0;
+    aux_def E = mu * delta;
+    extra_law g: E = 0;
+    base_point { delta = 0; mu = 0; }
+    max_order 4;
   }
 
   // (d) F4: nu = 1 vs nu >= 2, and F6 composition law

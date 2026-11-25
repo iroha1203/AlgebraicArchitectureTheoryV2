@@ -180,7 +180,11 @@ pub(super) fn convert_diagnostics_task(
                             match cv {
                                 CoordValue::Observed(lit) => PolyExpr::Const(lit),
                                 CoordValue::Missing => PolyExpr::Unobserved {
-                                    slot: format!("{entity}.{field}"),
+                                    slot: if field.starts_with(&format!("{entity}.")) {
+                                        field.clone()
+                                    } else {
+                                        format!("{entity}.{field}")
+                                    },
                                     origin: first_ref.or_else(|| Some(primary_ref.clone())),
                                 },
                                 CoordValue::Symbolic => {

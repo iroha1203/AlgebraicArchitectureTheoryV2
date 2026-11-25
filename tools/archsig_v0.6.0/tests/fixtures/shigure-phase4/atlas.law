@@ -30,6 +30,18 @@ reading AtlasAC6 {
     allowed_vertices [v1, v2];
   }
 
+  shigure atlas H8TriangleTwoFixed {
+    domain Z;
+    origin human_adopted "h8_two_fixed";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 2;
+    edge e20 (v2 -> v0) offset -3;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_vertices [v2];
+  }
+
   shigure atlas H8TriangleAllFixed {
     domain Z;
     origin human_adopted "h8_all_fixed";
@@ -144,28 +156,33 @@ reading AtlasAC6 {
       }
     }
     extended_language_check {
-      state_vars [s, d];
-      adapter_map { s = s + 1; d = d - 1; }
-      atomic_op apply(a) {
-        before { s = s + a; d = d; }
-        after { s = s + a; d = d; }
+      state_vars [B, C];
+      adapter_map { B = 2 * B + C; C = -B; }
+      atomic_op apply(u) {
+        before { B = B + u; C = C; }
+        after { B = B + 2 * u; C = C - u; }
       }
-      atomic_op compact(k) {
-        before { s = s + k; d = d - k; }
-        after { s = s + k; d = d - k; }
+      atomic_op compact(t) {
+        before { B = B + t; C = C - t; }
+        after { B = B + t; C = C - t; }
       }
-      protocol_sequence "snapshot_seq" {
-        extended_state_vars [s, d, snap];
-        initial_state { s = 0; d = 0; snap = 0; }
-        before_step { s = s; d = d; snap = s; }
-        after_step { s = s; d = d; snap = s + 1; }
-        before_read snap;
-        after_read snap;
+      protocol_sequence "snapshot_protocol" {
+        extended_state_vars [B, C, h];
+        initial_state { B = 0; C = 0; h = 0; }
+        before_step { B = B; C = C; h = C; }
+        before_step { B = B + 1; C = C; h = h; }
+        before_step { B = B + h; C = C - C; h = h; }
+        after_step { B = B; C = C; h = C; }
+        after_step { B = B + 2; C = C - 1; h = h; }
+        after_step { B = B + h; C = C - C; h = h; }
+        before_read B + C;
+        after_read B + C;
+        intermediate_law busy_law: h - C = 0;
       }
       runtime_arg_op "compact_all" {
-        before { s = s + d; d = 0; }
-        after { s = s + d; d = 0; }
-        sample_state { s = 1; d = 2; }
+        before { B = B + C; C = 0; }
+        after { B = B + C; C = 0; }
+        sample_state { B = 1; C = 0; }
       }
     }
   }
