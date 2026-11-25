@@ -9,7 +9,7 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 
 ## 目次と入口
 
-- [序論](introduction.md)：本書が目指す四つの到達点と、そこへ至る論証の順序。
+- [序論](introduction.md)：AATの全体像、基本概念と台帳の例、四つの問いと七部構成の案内。
 - [共通記号](notation.md)：対象、写像、係数、文脈に用いる記号の一覧と使い分け。
 - [第I部 Lawと意味の基礎](#第i部-lawと意味の基礎)：第1–3章。
 - [第II部 実現の族とLawの幾何](#第ii部-実現の族とlawの幾何)：第4–6章。
