@@ -14,7 +14,7 @@
 
 ## 位置づけ
 
-- 現行の AAT は代数幾何的アーキテクチャ論であり、最新の理論本体は
+- 現行の AAT は代数的アーキテクチャ論であり、最新の理論本体は
   [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)にある。
   Law に基づいて Atom を観測し、幾何を構成する方針のもとで理論と作業を進める。
 - AAT は Atom を土台に、site、Grothendieck topology、sheaf、ringed topos、scheme、

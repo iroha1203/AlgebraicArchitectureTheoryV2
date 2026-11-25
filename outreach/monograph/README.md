@@ -1,6 +1,6 @@
 # AAT 数学本文モノグラフ PDF 生成パイプライン
 
-[代数幾何的アーキテクチャ論](../../docs/aat/algebraic_geometric_theory/README.md)（`docs/aat/algebraic_geometric_theory/`）の Markdown 群を唯一の編集元（Single Source of Truth）として保ち、ゼロ依存の Python 3.10+ スクリプトで決定的・一方向に LaTeX ソースを生成し、1 本のモノグラフ PDF を組版するツール群である。
+[代数的アーキテクチャ論](../../docs/aat/algebraic_geometric_theory/README.md)（`docs/aat/algebraic_geometric_theory/`）の Markdown 群を唯一の編集元（Single Source of Truth）として保ち、ゼロ依存の Python 3.10+ スクリプトで決定的・一方向に LaTeX ソースを生成し、1 本のモノグラフ PDF を組版するツール群である。
 査読前・公開論文を管理する `outreach/paper/`（[論文作成ガイドライン](../../docs/paper/guideline.md) の適用対象）とは分離し、`outreach/monograph/` に配置している。
 
 - 数学本文（`docs/aat/algebraic_geometric_theory/`）は読み取り専用入力として扱い、このツールから変更しない。

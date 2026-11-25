@@ -1,7 +1,7 @@
 # AAT: 代数的アーキテクチャ論
 
 このディレクトリは、AATの数学本文とLean形式化の編集基準を案内する。
-理論本体は[代数幾何的アーキテクチャ論](algebraic_geometric_theory/README.md)の
+理論本体は[代数的アーキテクチャ論](algebraic_geometric_theory/README.md)の
 全7部21章と付録A–Eにある。
 
 AATは、AtomとLawによって意味の対象と射を定め、その実現・変更・修復の全体を調べる。
