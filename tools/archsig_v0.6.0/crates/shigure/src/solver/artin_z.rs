@@ -4,9 +4,11 @@ use crate::algebra::MonomialOrder;
 use crate::algebra::artin::enumerate_monomials_up_to;
 use crate::algebra::artin_quotient::LocalArtinQuotient;
 use crate::algebra::cochain::{SmithFormZ, smith_normal_form_z};
+use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
 use crate::algebra::poly::{AlgebraError, Monomial, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat};
+use crate::algebra::syzygy::compute_syzygies_z;
 use crate::ir::artin::{ArtinTaskSpec, BaseChangeSpec};
 use crate::ir::change::PointDomain;
 use crate::ir::provenance::{MathClause, Provenance};
@@ -299,20 +301,19 @@ fn detect_order_z(
             .map(|(i, m)| (m.clone(), i))
             .collect();
         let mut nonzero_imgs = Vec::new();
-        let mut cech_diffs = Vec::new();
         if shifted_rels.is_empty() {
-            let zero_poly = Poly::zero(d, BigInt::zero());
+            let mut trunc_vecs = Vec::with_capacity(shifted_extra.len());
             for g in &shifted_extra {
                 let trunc = g.truncate_degree(r as u64);
-                let diff = trunc.sub(&zero_poly);
                 if !trunc.is_zero() {
                     nonzero_imgs.push(trunc.display(obs_order, MonomialOrder::Grevlex));
-                    cech_diffs.push(diff.display(obs_order, MonomialOrder::Grevlex));
                 }
+                trunc_vecs.push(poly_to_z_vec(&trunc, &mono_idx, monos.len()));
             }
             if !nonzero_imgs.is_empty() {
                 let kernel_dim = monos.len().saturating_sub(prev_dim);
-                let two_context_cech_matches = cech_diffs == nonzero_imgs;
+                let two_context_cech_matches =
+                    verify_z_f5_syzygies(extra_res, obs_order, base_pt, &trunc_vecs, None);
                 return Ok(OrderDetection::Finite {
                     nu: r,
                     r_base_label: if r == 1 {
@@ -332,21 +333,16 @@ fn detect_order_z(
                 .map_err(map_artin_err)?;
             let mat = cols_to_mat(&cols, monos.len());
             let snf = smith_normal_form_z(&mat, cols.len()).map_err(map_artin_err)?;
-            let zero_vec = vec![BigInt::zero(); monos.len()];
+            let mut trunc_vecs = Vec::with_capacity(shifted_extra.len());
             for g in &shifted_extra {
                 let trunc = g.truncate_degree(r as u64);
                 let vec = poly_to_z_vec(&trunc, &mono_idx, monos.len());
-                let diff_vec: Vec<BigInt> =
-                    vec.iter().zip(&zero_vec).map(|(a, b)| a - b).collect();
                 if !in_z_snf_image(&snf, &vec) {
                     nonzero_imgs.push(trunc.display(obs_order, MonomialOrder::Grevlex));
-                    if !in_z_snf_image(&snf, &diff_vec) {
-                        cech_diffs.push(trunc.display(obs_order, MonomialOrder::Grevlex));
-                    }
                 }
+                trunc_vecs.push(vec);
             }
             if !nonzero_imgs.is_empty() {
-                // F4/F8: 核 m^r / (m^{r+1} + I_O ∩ m^r) の最小生成元数（自由階数＋torsion 不変因子数）
                 let mut comb_r = cols.clone();
                 for (m_idx, m) in monos.iter().enumerate() {
                     if m.total_degree() == r as u64 {
@@ -360,7 +356,8 @@ fn detect_order_z(
                         .map_err(map_artin_err)?;
                 let (k_free, k_tors) = exact_sublattice_quotient_z(&snf_comb_r, &cols)?;
                 let kernel_dim = k_free + k_tors.len();
-                let two_context_cech_matches = cech_diffs == nonzero_imgs;
+                let two_context_cech_matches =
+                    verify_z_f5_syzygies(extra_res, obs_order, base_pt, &trunc_vecs, Some(&snf));
                 return Ok(OrderDetection::Finite {
                     nu: r,
                     r_base_label: if r == 1 {
@@ -393,7 +390,41 @@ fn detect_order_z(
     })
 }
 
-/// 次数有界な Z-線形結合による `g ∈ <rels>` の健全な十分証明（独立再検算付き）。
+/// F5 検証: Z 上の `extra_res` の syzygy 関係が `A_Z/m^{ν+1}` 上の像タプルを零化することを検算する。
+fn verify_z_f5_syzygies(
+    extra_res: &[Poly<BigInt>],
+    obs_order: &VarOrder,
+    base_pt: &[BigInt],
+    trunc_vecs: &[Vec<BigInt>],
+    snf_io: Option<&SmithFormZ>,
+) -> bool {
+    let dim = trunc_vecs.first().map_or(0, Vec::len);
+    if extra_res.len() <= 1 {
+        return true;
+    }
+    let Ok(syz) = compute_syzygies_z(extra_res, obs_order.clone()) else {
+        return false;
+    };
+    syz.generators.iter().all(|s_vec| {
+        let mut acc = vec![BigInt::zero(); dim];
+        for (s_poly, img) in s_vec.iter().zip(trunc_vecs) {
+            let Ok(c) = s_poly.eval_at(base_pt) else {
+                return false;
+            };
+            if !c.is_zero() {
+                for (dst, v) in acc.iter_mut().zip(img) {
+                    *dst += &c * v;
+                }
+            }
+        }
+        match snf_io {
+            Some(snf) => in_z_snf_image(snf, &acc),
+            None => acc.iter().all(Zero::is_zero),
+        }
+    })
+}
+
+/// 次数有界な Z-線形結合による `g ∈ <rels>` の健全な十分証明（cofactor 再構成による独立再検算付き）。
 fn is_certified_in_z_ideal(g: &Poly<BigInt>, rels: &[Poly<BigInt>], max_dim: usize) -> bool {
     if g.is_zero() {
         return true;
@@ -409,6 +440,7 @@ fn is_certified_in_z_ideal(g: &Poly<BigInt>, rels: &[Poly<BigInt>], max_dim: usi
         .map(|(i, m)| (m.clone(), i))
         .collect();
     let mut cols = Vec::new();
+    let mut prod_polys = Vec::new();
     for h in rels {
         if h.is_zero() {
             continue;
@@ -428,6 +460,7 @@ fn is_certified_in_z_ideal(g: &Poly<BigInt>, rels: &[Poly<BigInt>], max_dim: usi
             };
             if prod.total_degree() <= g.total_degree() && !prod.is_zero() {
                 cols.push(poly_to_z_vec(&prod, &mono_idx, target_monos.len()));
+                prod_polys.push(prod);
             }
         }
     }
@@ -435,10 +468,19 @@ fn is_certified_in_z_ideal(g: &Poly<BigInt>, rels: &[Poly<BigInt>], max_dim: usi
         return false;
     }
     let mat = cols_to_mat(&cols, target_monos.len());
-    let Ok(snf) = smith_normal_form_z(&mat, cols.len()) else {
+    let target_vec = poly_to_z_vec(g, &mono_idx, target_monos.len());
+    let Ok(AffineSolutionZ::Consistent { particular, .. }) =
+        solve_affine_z(&mat, &target_vec, cols.len())
+    else {
         return false;
     };
-    in_z_snf_image(&snf, &poly_to_z_vec(g, &mono_idx, target_monos.len()))
+    let mut reconstructed = Poly::zero(d, BigInt::zero());
+    for (coeff, prod) in particular.iter().zip(&prod_polys) {
+        if !coeff.is_zero() {
+            reconstructed = reconstructed.add(&prod.scale(coeff));
+        }
+    }
+    reconstructed == *g
 }
 
 #[allow(clippy::too_many_arguments)]

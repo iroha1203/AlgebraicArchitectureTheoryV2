@@ -24,6 +24,7 @@ mod family_eval;
 mod family_existential;
 mod interaction_query;
 mod lift;
+mod lift_affine;
 mod lift_common;
 mod lift_extensions;
 mod lift_z;

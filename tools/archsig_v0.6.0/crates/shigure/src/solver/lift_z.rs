@@ -20,9 +20,9 @@ use crate::solver::lift_common::{
     format_algebra_label, format_m_tuple, format_var_map, lift_outcome, lift_undetermined,
     lit_to_z, map_lift_algebra_error, reevaluate_laws_in_rp, verify_base_laws, write_block,
 };
+use crate::solver::lift_affine::compute_affine_repair_z;
 use crate::solver::lift_z_ext::{
-    compute_affine_repair_z, compute_declaration_cover_z, compute_raw_cech_z,
-    compute_relative_cone_z, r_action_matrix_z,
+    compute_declaration_cover_z, compute_raw_cech_z, compute_relative_cone_z, r_action_matrix_z,
 };
 use num_bigint::BigInt;
 use num_traits::Zero;

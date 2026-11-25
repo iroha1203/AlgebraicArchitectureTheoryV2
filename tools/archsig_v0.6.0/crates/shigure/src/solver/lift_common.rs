@@ -10,7 +10,7 @@ use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
 use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, ideal_membership_field};
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::lift::{
-    DeclarationCoverSpec, FiniteEtaleDescentSpec, LiftTaskSpec, SquareZeroSpec,
+    DeclarationCoverSpec, FiniteEtaleDescentSpec, LiftTaskSpec, RelativeReadingSpec, SquareZeroSpec,
 };
 use crate::ir::provenance::Provenance;
 use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, SilenceReason, Verdict};
@@ -586,12 +586,14 @@ pub(crate) fn check_cover_support_closure(
     cov: &DeclarationCoverSpec,
     spec_vars: &[String],
     laws: &[NamedPoly],
+    rel_reading: Option<&RelativeReadingSpec>,
 ) -> (bool, Vec<String>) {
     let law_map: BTreeMap<&str, &NamedPoly> =
         laws.iter().map(|l| (l.name.as_str(), l)).collect();
     let mut unclosed = Vec::new();
     let mut covered_vars: BTreeSet<&str> = BTreeSet::new();
     let mut covered_laws: BTreeSet<&str> = BTreeSet::new();
+    let mut context_var_sets: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
     for c in &cov.contexts {
         let allowed: BTreeSet<&str> = c.vars.iter().map(String::as_str).collect();
         covered_vars.extend(allowed.iter().copied());
@@ -632,6 +634,7 @@ pub(crate) fn check_cover_support_closure(
                 ));
             }
         }
+        context_var_sets.insert(c.name.as_str(), allowed);
     }
     for v in spec_vars {
         if !covered_vars.contains(v.as_str()) {
@@ -643,7 +646,52 @@ pub(crate) fn check_cover_support_closure(
             unclosed.push(format!("uncovered_law:{}", l.name));
         }
     }
+    if let Some(rel) = rel_reading {
+        for (obs_name, expr) in &rel.reading_map {
+            let covered = if let Some(cech) = &cov.two_context_cech {
+                let in_left = context_var_sets
+                    .get(cech.left_context.as_str())
+                    .is_some_and(|s| expr_supported_in(expr, s));
+                let in_right = context_var_sets
+                    .get(cech.right_context.as_str())
+                    .is_some_and(|s| expr_supported_in(expr, s));
+                in_left || in_right
+            } else {
+                context_var_sets
+                    .values()
+                    .any(|s| expr_supported_in(expr, s))
+            };
+            if !covered {
+                unclosed.push(format!("uncovered_reading:{obs_name}"));
+            }
+        }
+    }
     (unclosed.is_empty(), unclosed)
+}
+
+pub(crate) fn expr_supported_in(expr: &PolyExpr, allowed: &BTreeSet<&str>) -> bool {
+    let mut used = BTreeSet::new();
+    collect_state_vars(expr, &mut used);
+    used.iter().all(|v| allowed.contains(v))
+}
+
+/// 勾配ブロック行列 `grad` が `basis` の全ベクトルを零化するか検査する（ambient lift 不変性検算用）。
+pub(crate) fn grad_vanishes_on_basis<C: RingCoeff>(
+    grad: &[Vec<C>],
+    basis: &[Vec<C>],
+    zero: &C,
+) -> bool {
+    basis.iter().all(|v| {
+        grad.iter().all(|row| {
+            let mut acc = zero.zero_like();
+            for (a, b) in row.iter().zip(v) {
+                if !a.coeff_is_zero() && !b.coeff_is_zero() {
+                    acc = acc.add_ref(&a.mul_ref(b));
+                }
+            }
+            acc.coeff_is_zero()
+        })
+    })
 }
 
 fn collect_state_vars<'a>(expr: &'a PolyExpr, out: &mut BTreeSet<&'a str>) {

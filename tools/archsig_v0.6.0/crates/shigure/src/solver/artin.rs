@@ -7,7 +7,9 @@ use crate::algebra::artin_quotient::LocalArtinQuotient;
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
-use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, ideal_membership_field};
+use crate::algebra::syzygy::{
+    DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, compute_syzygies_field, ideal_membership_field,
+};
 use crate::ir::artin::{ArtinTaskSpec, AuxiliaryDefSpec, BaseChangeSpec, CheckedArtinTask};
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::provenance::{MathClause, Provenance};
@@ -397,20 +399,40 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
             detail: e.to_string(),
         })?;
         let mut nonzero_imgs = Vec::new();
-        let mut cech_diffs = Vec::new();
-        let left_local_lift = q_r.algebra.zero_elem();
+        let mut projected_tuple = Vec::with_capacity(extra_res.len());
         for g in extra_res {
-            let right_local_lift = q_r.project_poly(g).map_err(map_artin_err)?;
-            let cech_diff = q_r.algebra.sub(&right_local_lift, &left_local_lift);
-            if !q_r.algebra.is_zero_elem(&right_local_lift) {
-                nonzero_imgs.push(q_r.algebra.format_elem(&right_local_lift));
-                cech_diffs.push(q_r.algebra.format_elem(&cech_diff));
+            let proj = q_r.project_poly(g).map_err(map_artin_err)?;
+            if !q_r.algebra.is_zero_elem(&proj) {
+                nonzero_imgs.push(q_r.algebra.format_elem(&proj));
             }
+            projected_tuple.push(proj);
         }
         if !nonzero_imgs.is_empty() {
             let r_prime_label = format!("A/m^{}", r + 1);
             let kernel_dim = q_r.algebra.dim().saturating_sub(prev_dim);
-            let two_context_cech_matches = cech_diffs == nonzero_imgs;
+            // F5 検証: 全 syzygy 関係 s ∈ Syz(extra_res) を基点で評価した線形関係
+            // sum_α s_α(base_pt) * bar_G_α = 0 in A/m^{ν+1} を満たすことを実計算で検算する。
+            let two_context_cech_matches = match compute_syzygies_field(
+                extra_res,
+                obs_order.clone(),
+                MonomialOrder::Grevlex,
+                DEFAULT_MAX_SYZYGY_PAIRS,
+            ) {
+                Ok(syz) => syz.generators.iter().all(|s_vec| {
+                    let mut acc = q_r.algebra.zero_elem();
+                    for (s_poly, img) in s_vec.iter().zip(&projected_tuple) {
+                        let Ok(c) = s_poly.eval_at(base_pt) else {
+                            return false;
+                        };
+                        if !c.coeff_is_zero() {
+                            let scaled = q_r.algebra.scale(img, &c);
+                            acc = q_r.algebra.add(&acc, &scaled);
+                        }
+                    }
+                    q_r.algebra.is_zero_elem(&acc)
+                }),
+                Err(_) => false,
+            };
             return Ok(OrderDetection::Finite {
                 nu: r,
                 r_base_label: prev_label,

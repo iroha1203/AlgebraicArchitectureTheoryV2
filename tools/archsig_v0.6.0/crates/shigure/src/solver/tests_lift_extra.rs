@@ -688,3 +688,185 @@ fn r2_etale_non_applicable_silences_and_e7_checks_covering_completeness() {
             .any(|s| s == "uncovered_law:sum_law")
     );
 }
+
+/// R3 Finding 1/2 回帰:
+/// (1) 部分変数文脈被覆 `{s,a} ∪ {s,b}`＋分割観測 `oa->a, ob->b` で任意の `ambient_lift` に対して
+///     偽 `Undetermined` にならず、零/非零どちらでも Mayer–Vietoris 一致が成立すること（Q および Z）。
+/// (2) `raw_read_diff` が相対 lift 存在時に復元 lift `shifted` 上で評価され、非全射 `j_rho` や
+///     `ker(j_rho)` 依存式では黙ってフォールバックせず `None` を返すこと。
+#[test]
+fn r3_partial_context_relative_reading_and_raw_read_diff_invariance() {
+    // (1) Finding 1 反例: variables=[s,a,b], laws=[a-s, b-s], left={s,a}, right={s,b}, obs=[oa->a, ob->b]
+    for domain in [CoeffDomain::Q, CoeffDomain::Z] {
+        for (oa_eps, ob_eps, expected_verdict) in [
+            (0i64, 0i64, Verdict::Established),
+            (1, 2, Verdict::Refuted),
+        ] {
+            let task = validate_lift_task(LiftTaskSpec {
+                name: format!("r3_f1_{oa_eps}_{ob_eps}"),
+                coeff_domain: domain.clone(),
+                variables: vec!["s".into(), "a".into(), "b".into()],
+                ring_params: vec![],
+                laws: vec![
+                    np("la", sub(sv("a"), sv("s"))),
+                    np("lb", sub(sv("b"), sv("s"))),
+                ],
+                extension: SquareZeroSpec::TruncatedPoly {
+                    var_name: "eps".into(),
+                    base_degree: 0,
+                },
+                base_point: vec![
+                    ("s".into(), vec![cz(0)]),
+                    ("a".into(), vec![cz(0)]),
+                    ("b".into(), vec![cz(0)]),
+                ],
+                ambient_lift: Some(vec![
+                    ("s".into(), vec![cz(0), cz(0)]),
+                    ("a".into(), vec![cz(0), cz(7)]),
+                    ("b".into(), vec![cz(0), cz(-3)]),
+                ]),
+                relative_reading: Some(RelativeReadingSpec {
+                    obs_vars: vec!["oa".into(), "ob".into()],
+                    obs_laws: vec![],
+                    reading_map: vec![("oa".into(), sv("a")), ("ob".into(), sv("b"))],
+                    designated_obs_lift: vec![
+                        ("oa".into(), vec![cz(0), cz(oa_eps)]),
+                        ("ob".into(), vec![cz(0), cz(ob_eps)]),
+                    ],
+                    raw_read_diff: None,
+                }),
+                declaration_cover: Some(DeclarationCoverSpec {
+                    contexts: vec![
+                        DeclarationContextSpec {
+                            name: "left".into(),
+                            vars: vec!["s".into(), "a".into()],
+                            laws: vec!["la".into()],
+                            observations: vec![],
+                        },
+                        DeclarationContextSpec {
+                            name: "right".into(),
+                            vars: vec!["s".into(), "b".into()],
+                            laws: vec!["lb".into()],
+                            observations: vec![],
+                        },
+                    ],
+                    two_context_cech: Some(TwoContextCechSpec {
+                        left_context: "left".into(),
+                        right_context: "right".into(),
+                        shared_vars: vec!["s".into()],
+                    }),
+                }),
+                affine_allowed: None,
+                redundant_comparison: None,
+                etale_descent: None,
+                max_syzygy_pairs: None,
+                provenance: prov(vec![MathClause::G141E5, MathClause::G141E7]),
+            })
+            .unwrap();
+            let out = solve_lift_task(&task);
+            assert_eq!(out.verdict, expected_verdict);
+            let cov = out
+                .lift
+                .as_ref()
+                .unwrap()
+                .declaration_cover
+                .as_ref()
+                .unwrap();
+            assert!(cov.support_closed);
+            assert_eq!(cov.matches_relative_obstruction, Some(true));
+        }
+    }
+
+    // (2a) Finding 2 反例 1: 相対 lift 存在時に `raw_read_diff = E - mu*delta` を復元 lift で評価
+    let recovered_eval = validate_lift_task(LiftTaskSpec {
+        name: "r3_f2_restored_eval".into(),
+        coeff_domain: CoeffDomain::Q,
+        variables: vec!["delta".into(), "mu".into(), "E".into()],
+        ring_params: vec![],
+        laws: vec![np("e_eq", sub(sv("E"), mul(sv("mu"), sv("delta"))))],
+        extension: SquareZeroSpec::TruncatedPoly {
+            var_name: "eps".into(),
+            base_degree: 1,
+        },
+        base_point: vec![
+            ("delta".into(), vec![cz(0), cz(1)]),
+            ("mu".into(), vec![cz(0), cz(1)]),
+            ("E".into(), vec![cz(0), cz(0)]),
+        ],
+        ambient_lift: Some(vec![
+            ("delta".into(), vec![cz(0), cz(1), cz(0)]),
+            ("mu".into(), vec![cz(0), cz(1), cz(0)]),
+            ("E".into(), vec![cz(0), cz(0), cz(3)]),
+        ]),
+        relative_reading: Some(RelativeReadingSpec {
+            obs_vars: vec!["delta".into(), "mu".into()],
+            obs_laws: vec![],
+            reading_map: vec![("delta".into(), sv("delta")), ("mu".into(), sv("mu"))],
+            designated_obs_lift: vec![
+                ("delta".into(), vec![cz(0), cz(1), cz(0)]),
+                ("mu".into(), vec![cz(0), cz(1), cz(0)]),
+            ],
+            raw_read_diff: Some(RawReadComparisonSpec {
+                label: "e_minus_md".into(),
+                expr: sub(sv("E"), mul(sv("mu"), sv("delta"))),
+                negated: false,
+            }),
+        }),
+        declaration_cover: None,
+        affine_allowed: None,
+        redundant_comparison: None,
+        etale_descent: None,
+        max_syzygy_pairs: None,
+        provenance: prov(vec![MathClause::G141E5]),
+    })
+    .unwrap();
+    let out_rec = solve_lift_task(&recovered_eval);
+    assert_eq!(out_rec.verdict, Verdict::Established);
+    let rc_rec = out_rec
+        .lift
+        .as_ref()
+        .unwrap()
+        .relative_cone
+        .as_ref()
+        .unwrap();
+    assert_eq!(rc_rec.raw_read_diff_value.as_deref(), Some("0"));
+    assert_eq!(rc_rec.raw_read_diff_signed_match, Some(true));
+
+    // (2b) Finding 2 反例 2: 非全射 j_rho (w -> x^2, w = eps) では無警告フォールバックせず None
+    let nonsurj = validate_lift_task(LiftTaskSpec {
+        name: "r3_f2_nonsurj".into(),
+        coeff_domain: CoeffDomain::Q,
+        variables: vec!["x".into()],
+        ring_params: vec![],
+        laws: vec![],
+        extension: SquareZeroSpec::TruncatedPoly {
+            var_name: "eps".into(),
+            base_degree: 0,
+        },
+        base_point: vec![("x".into(), vec![cz(0)])],
+        ambient_lift: Some(vec![("x".into(), vec![cz(0), cz(0)])]),
+        relative_reading: Some(RelativeReadingSpec {
+            obs_vars: vec!["w".into()],
+            obs_laws: vec![],
+            reading_map: vec![("w".into(), pow(sv("x"), 2))],
+            designated_obs_lift: vec![("w".into(), vec![cz(0), cz(1)])],
+            raw_read_diff: Some(RawReadComparisonSpec {
+                label: "x_diff".into(),
+                expr: sv("x"),
+                negated: false,
+            }),
+        }),
+        declaration_cover: None,
+        affine_allowed: None,
+        redundant_comparison: None,
+        etale_descent: None,
+        max_syzygy_pairs: None,
+        provenance: prov(vec![MathClause::G141E5]),
+    })
+    .unwrap();
+    let out_ns = solve_lift_task(&nonsurj);
+    assert_eq!(out_ns.verdict, Verdict::Refuted);
+    let rc_ns = out_ns.lift.as_ref().unwrap().relative_cone.as_ref().unwrap();
+    assert_eq!(rc_ns.raw_read_diff_value, None);
+    assert_eq!(rc_ns.raw_read_diff_signed_match, None);
+}

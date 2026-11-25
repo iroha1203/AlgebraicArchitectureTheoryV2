@@ -23,9 +23,9 @@ use crate::solver::lift_common::{
     map_lift_algebra_error, r_action_matrix_field, reevaluate_laws_in_rp, verify_base_laws,
     write_block, compute_etale_descent,
 };
+use crate::solver::lift_affine::compute_affine_repair_field;
 use crate::solver::lift_extensions::{
-    compute_affine_repair_field, compute_declaration_cover_field,
-    compute_raw_cech_field, compute_relative_cone_field,
+    compute_declaration_cover_field, compute_raw_cech_field, compute_relative_cone_field,
 };
 use crate::solver::lift_z::solve_lift_z;
 use std::collections::{BTreeMap, BTreeSet};
