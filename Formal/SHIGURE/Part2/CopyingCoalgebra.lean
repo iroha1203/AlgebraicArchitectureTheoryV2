@@ -187,6 +187,13 @@ theorem isEmpty_schemeMaps_of_isEmpty_target [Nonempty X] [IsEmpty Y] [Nontrivia
     IsEmpty (CopyScheme R X ⟶ CopyScheme R Y) :=
   ⟨fun f => (isEmpty_rows_of_isEmpty_target (R := R) X Y).false ((schemeRowsEquiv X Y) f)⟩
 
+/-- Over the zero ring the constant scheme of any set of states is empty in Theorem 4.3. -/
+theorem isEmpty_copyScheme_of_subsingleton [Subsingleton R] :
+    IsEmpty (CopyScheme R X).left := by
+  letI : IsEmpty (Spec (CommRingCat.of R)) := inferInstanceAs (IsEmpty (PrimeSpectrum R))
+  exact ⟨fun p => isEmptyElim ((AlgebraicGeometry.sigmaMk (fun _ : X =>
+    Spec (CommRingCat.of R))).symm p).2⟩
+
 /-- Over the zero ring there is a unique arrow between any two state schemes in Theorem 4.3. -/
 def zeroRingSchemeMaps [Subsingleton R] : Unique (CopyScheme R X ⟶ CopyScheme R Y) :=
   letI := zeroRingRows (R := R) X Y

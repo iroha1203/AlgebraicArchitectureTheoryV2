@@ -8,6 +8,13 @@ import Formal.SHIGURE.Part2.Copying.ConstantScheme
 Theorem 4.3 identifies one row of a copying morphism with a locally constant
 label on an affine base. Compactness of the affine spectrum makes the range
 finite, so the clopen fibres determine a finitely supported row.
+
+## Implementation notes
+
+Compactness supplies the finite range of each label function. The fibres give
+the indexed partition for Lemma B.1. On the coefficient side `IsCopyRow` allows
+arbitrary output sets, and `complete_on_support` recovers mathlib's
+`CompleteOrthogonalIdempotents` on the finite support of that row.
 -/
 
 open AlgebraicGeometry TopologicalSpace

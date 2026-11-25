@@ -14,6 +14,10 @@ Construction 4.2 and the coalgebra side of Theorem 4.3.
 The direct sum of copies of the coefficient ring is mathlib's `Finsupp` module.
 Its existing coalgebra instance provides the copying and counit maps. The
 finite support of each coefficient row is part of the underlying module.
+
+Scalar extension is computed by the free-module tensor equivalence, which is
+then lifted to a coalgebra map by checking the state basis. A second
+presentation of the extended coalgebra would duplicate this module computation.
 -/
 
 open scoped BigOperators TensorProduct
@@ -211,6 +215,23 @@ def unitCoalgebraEquiv : CopyCoalgebra R PUnit ≃ₗc[R] R := by
     exact (ha a).symm.trans (hab.trans (ha b))
   · intro r
     exact ⟨Finsupp.single PUnit.unit r, by simp [f]⟩
+
+/-- The empty product equivalence in Construction 4.2 simplifies to the counit. -/
+@[simp]
+theorem unitCoalgebraEquiv_apply (a : CopyCoalgebra R PUnit) :
+    unitCoalgebraEquiv a = counit (R := R) a :=
+  rfl
+
+/-- The empty product equivalence sends the unique state basis vector to the unit. -/
+@[simp]
+theorem unitCoalgebraEquiv_stateBasis :
+    unitCoalgebraEquiv (stateBasis R PUnit PUnit.unit) = 1 := by
+  rw [unitCoalgebraEquiv_apply, counit_stateBasis]
+
+/-- Over the zero ring every copying module in Theorem 4.3 is a zero module. -/
+theorem subsingleton_copyCoalgebra (X : Type*) [Subsingleton R] :
+    Subsingleton (CopyCoalgebra R X) :=
+  inferInstance
 
 /-- A coefficient family of Theorem 4.3 is an arbitrary family of finite-support rows satisfying
 the equations (4.1). -/
@@ -456,6 +477,13 @@ def copyBaseChangeEquiv (X : Type*) :
           CommSemiring.comul_apply, AlgebraTensorModule.tensorTensorTensorComm_tmul,
           TensorProduct.map_tmul] }
   exact CoalgEquiv.ofBijective (f := φ) (copyBaseChangeLinear S X).bijective
+
+/-- The scalar extension of coalgebras in Theorem 4.3 has the stated free-module
+comparison as its underlying map. Simplify to that linear equivalence. -/
+@[simp]
+theorem copyBaseChangeEquiv_apply (X : Type*) (a : S ⊗[R] CopyCoalgebra R X) :
+    copyBaseChangeEquiv S X a = copyBaseChangeLinear S X a :=
+  rfl
 
 /-- In Theorem 4.3, changing coefficients of the rows then extending linearly agrees with
 scalar extension of the original coalgebra map under the two free-module comparisons. -/

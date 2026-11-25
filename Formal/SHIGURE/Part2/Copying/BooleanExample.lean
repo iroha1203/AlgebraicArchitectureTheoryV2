@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part2.Copying.Coalgebra
 import Mathlib.Tactic.NormNum
+import Mathlib.Tactic.Ring
 
 /-!
 # Boolean conjunction under copying
@@ -39,6 +40,17 @@ theorem booleanAndLinear_comul :
   intro a
   simp only [LinearMap.comp_apply, comul_stateBasis, booleanAndLinear_tmul_stateBasis, Bool.and_self,
     LinearMap.id_apply]
+
+/-- Example 4.4 computes the direct tensor square for arbitrary coefficients of the two states. -/
+theorem booleanAndLinear_square (a b : R) :
+    let v := a • stateBasis R Bool false + b • stateBasis R Bool true
+    booleanAndLinear R (v ⊗ₜ[R] v) =
+      (a ^ 2 + 2 * a * b) • stateBasis R Bool false + b ^ 2 • stateBasis R Bool true := by
+  dsimp only
+  simp only [TensorProduct.add_tmul, TensorProduct.tmul_add, TensorProduct.smul_tmul_smul,
+    map_add, map_smul, booleanAndLinear_tmul_stateBasis]
+  apply Finsupp.ext
+  rintro (_ | _) <;> simp [Finsupp.add_apply, smul_eq_mul] <;> ring
 
 /-- Example 4.4. Direct tensor squaring of the vector two times the true state gives four times
 the true state after linearized conjunction. -/

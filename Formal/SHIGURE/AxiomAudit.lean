@@ -2743,6 +2743,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.booleanAndLinear,
   Copying.booleanAndLinear_tmul_stateBasis,
   Copying.booleanAndLinear_comul,
+  Copying.booleanAndLinear_square,
   Copying.booleanAndLinear_square_two,
   Copying.booleanAndLinear_square_two_ne,
   Copying.stateBasis_apply,
@@ -2758,6 +2759,9 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.isGroupLikeElem_iff_isCopyRow,
   Copying.tensorCoefficients_symm_stateBasis,
   Copying.productCoalgebraEquiv_stateBasis,
+  Copying.unitCoalgebraEquiv_apply,
+  Copying.unitCoalgebraEquiv_stateBasis,
+  Copying.subsingleton_copyCoalgebra,
   Copying.mapOfRows_stateBasis,
   Copying.coalgebraRowsEquiv_apply,
   Copying.mapOfRows_apply,
@@ -2771,6 +2775,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.isCopyRow_mapRowCoefficients,
   Copying.copyBaseChangeLinear_one_tmul,
   Copying.copyBaseChangeLinear_one_tmul_stateBasis,
+  Copying.copyBaseChangeEquiv_apply,
   Copying.mapOfRows_mapRows_baseChange,
   Copying.stateInclusion_over,
   Copying.stateInclusion_mapStateSchemes,
@@ -2790,6 +2795,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.mapConstantBase_over,
   Copying.stateLabel_mapConstantBase,
   Copying.constantScheme_isPullback,
+  Copying.changeConstantMapBase_fst,
   Copying.stateLabel_changeConstantMapBase,
   Copying.stateInclusion_label_over,
   Copying.image_stateInclusion_eq,
@@ -2807,7 +2813,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.copyingHomEquiv_id,
   Copying.schemeRowsEquiv_changeBase,
   Copying.copyingHomEquiv_changeBase,
-  Copying.isEmpty_schemeMaps_of_isEmpty_target
+  Copying.isEmpty_schemeMaps_of_isEmpty_target,
+  Copying.isEmpty_copyScheme_of_subsingleton
 ]
 
 end SHIGURE.AxiomAudit

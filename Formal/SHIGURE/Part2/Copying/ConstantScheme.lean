@@ -13,6 +13,9 @@ Construction 4.2 and the scheme side of Theorem 4.3.
 A constant scheme is the scheme coproduct of copies of the base. The structural
 map is the fold map. A test scheme over the base maps into the coproduct by
 choosing a copy locally, as recorded by a locally constant function on its space.
+The fibres of these functions give the clopen decomposition when needed. Keeping
+the label function as the common datum makes precomposition and base change
+pointwise and avoids explicit transport of a family of open subschemes.
 -/
 
 open CategoryTheory CategoryTheory.Limits AlgebraicGeometry TopologicalSpace
@@ -356,16 +359,22 @@ def changeConstantMapBase (g : S' ⟶ S) {X Y : Type u}
   Over.homMk (h.lift (mapConstantBase g X ≫ f.left) (constantSchemeOver S' X).hom
     (by simpa only [Category.assoc] using k)) (h.lift_snd _ _ _)
 
+/-- The pulled-back arrow in Theorem 4.3 satisfies the pullback compatibility
+equation on the original constant schemes. -/
+@[reassoc]
+theorem changeConstantMapBase_fst (g : S' ⟶ S) {X Y : Type u}
+    (f : constantSchemeOver S X ⟶ constantSchemeOver S Y) :
+    (changeConstantMapBase g f).left ≫ mapConstantBase g Y =
+      mapConstantBase g X ≫ f.left :=
+  (constantScheme_isPullback g Y).lift_fst _ _ _
+
 /-- The label of a pulled-back arrow is the pullback of its label along the base comparison
 in Theorem 4.3. -/
 theorem stateLabel_changeConstantMapBase (g : S' ⟶ S) {X Y : Type u}
     (f : constantSchemeOver S X ⟶ constantSchemeOver S Y) (p : constantScheme S' X) :
     stateLabel ((changeConstantMapBase g f).left p) =
       stateLabel (f.left (mapConstantBase g X p)) := by
-  have h : (changeConstantMapBase g f).left ≫ mapConstantBase g Y =
-      mapConstantBase g X ≫ f.left := by
-    unfold changeConstantMapBase
-    exact (constantScheme_isPullback g Y).lift_fst _ _ _
+  have h := changeConstantMapBase_fst g f
   have hp := congrArg (fun k : constantScheme S' X ⟶ constantScheme S Y => k p) h
   change mapConstantBase g Y ((changeConstantMapBase g f).left p) =
     f.left (mapConstantBase g X p) at hp
