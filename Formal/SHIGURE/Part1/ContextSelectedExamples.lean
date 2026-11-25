@@ -18,6 +18,7 @@ def sortOnly : DeclarationContext presentation where
   closed kept := by
     have h := Set.mem_singleton_iff.mp kept
     subst h
+    rw [Declaration.sort_dependencies]
     exact Set.empty_subset _
 
 /-- In the ordinary restriction, there is no remaining operation with a forced value. -/

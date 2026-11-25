@@ -58,7 +58,17 @@ theorem positions_unchanged :
     change Selected.selectTerm (.var (.there .here)) _ _ _ = _
     rw [Selected.selectTerm_var, Selected.selectVar_there, Selected.selectVar_here]
 
-open Chapter1.ResidualTransport (paddedPresentation padded_integer_axioms)
+open Chapter1.ResidualTransport (paddedPresentation padded_integer_axioms
+  paddedPresentation_ring_isSome paddedPresentation_ring_axiomNames)
+
+/-- Read the named ring attachment from the original padded presentation at its equality Law. -/
+private def sourceRing : NamedRingEquation paddedPresentation.laws (.inl ()) :=
+  (paddedPresentation.ringEquation (.inl ())).get paddedPresentation_ring_isSome
+
+/-- This is the attachment registered at the original equality. -/
+private theorem sourceRing_registered :
+    paddedPresentation.ringEquation (.inl ()) = some sourceRing :=
+  (Option.some_get paddedPresentation_ring_isSome).symm
 
 /-- Retain the ordered equality and every primitive, forgetting the other named ring Laws. -/
 def equalityContext : DeclarationContext paddedPresentation where
@@ -98,7 +108,7 @@ theorem ringLaw_omitted : Declaration.law (P := paddedPresentation) (.inr .zeroA
 theorem equality_ordered_some :
     ((Selected.presentation equalityContext).orderedEquation ⟨.inl (), equalityKept⟩).isSome := by
   rw [Selected.presentation_orderedEquation, PrimitivePresentation.orderedEquation_eq,
-    NamedRingEquation.ordered_of_some (by rfl), Option.map_some]
+    NamedRingEquation.ordered_of_some sourceRing_registered, Option.map_some]
   rfl
 
 /-- All names of the optional residual presentation are available in the full context. -/
@@ -111,7 +121,10 @@ theorem equality_lacks_ring_support : ¬ equalityContext.RetainsRingSupport (.in
   have kept := (equalityContext.retainsRingSupport_iff (.inl ())).1 support
   apply ringLaw_omitted
   exact kept (Declaration.ringLaw_mem_ringEquationSupport (P := paddedPresentation)
-    (name := .inl ()) rfl (by exact ⟨.zeroAdd, rfl⟩))
+    (name := .inl ()) sourceRing_registered (by
+      change _ ∈ ((paddedPresentation.ringEquation (.inl ())).get paddedPresentation_ring_isSome).axiomNames
+      rw [paddedPresentation_ring_axiomNames]
+      exact ⟨.zeroAdd, rfl⟩))
 
 /-- The omitted ring axiom rules out the named certificate while the ordered text survives. -/
 theorem equality_ring_none :
@@ -123,18 +136,12 @@ theorem equality_ring_none :
 theorem full_ring_some :
     ((Selected.presentation (full paddedPresentation)).ringEquation ⟨.inl (), Set.mem_univ _⟩).isSome := by
   let name : (full paddedPresentation).RetainedLaw := ⟨.inl (), Set.mem_univ _⟩
-  have original : ∃ data, paddedPresentation.ringEquation name.val = some data := ⟨_, rfl⟩
-  obtain ⟨data, registered⟩ := original
   change ((Selected.presentation (full paddedPresentation)).ringEquation name).isSome
   rw [Selected.presentation_ringEquation]
-  rw [Selected.ringEquation_of_supported name data registered full_retains_ring_support]
+  rw [Selected.ringEquation_of_supported name sourceRing sourceRing_registered full_retains_ring_support]
   rfl
 
 open Chapter1.RingModule (realization scalarOne scalarZero Symbol SortName signature)
-
-/-- Read the named ring attachment from the original padded presentation at its equality Law. -/
-private def sourceRing : NamedRingEquation paddedPresentation.laws (.inl ()) :=
-  (paddedPresentation.ringEquation (.inl ())).get (by rfl)
 
 /-- An integer reading selects the original padded ring-axiom presentations. -/
 def integerReading : Reading.{0, 0, 0, 0} where
@@ -155,9 +162,9 @@ private def equationName : integerReading.context.RetainedLaw := ⟨.inl (), Set
 
 /-- The selected reading uses the original named proofs to supply the seven ring axioms. -/
 theorem integerReading_ring_axioms :
-    let attached := Selected.selectNamedRingEquation equationName sourceRing rfl full_retains_ring_support
+    let attached := Selected.selectNamedRingEquation equationName sourceRing sourceRing_registered full_retains_ring_support
     ∀ i, (attached.written.equation.ring.law i).Holds integerReading.selectedStructure :=
-  integerReading.selectedRing_axioms equationName sourceRing rfl full_retains_ring_support padded_integer_axioms
+  integerReading.selectedRing_axioms equationName sourceRing sourceRing_registered full_retains_ring_support padded_integer_axioms
 
 /-- The selected reading keeps the original false equality as the same test on the integer structure. -/
 theorem integerReading_fails_equation :
@@ -320,7 +327,7 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
     · change (equalityPresentation.lawAttachments (SignatureNames.identity _)
         (fun _ => (Sum.inl () : paddedPresentation.laws.LawName)) ()).equation = A.equation
       have original := (PrimitivePresentation.orderedEquation_eq paddedPresentation (.inl ())).trans
-        (NamedRingEquation.ordered_of_some (data := sourceRing) rfl _)
+        (NamedRingEquation.ordered_of_some sourceRing_registered _)
       simp only [A, PrimitivePresentation.lawAttachments_equation, equalityPresentation_ordered, original]
       rfl
     · exact PrimitivePresentation.lawAttachments_ring_of_none equalityPresentation _ _ () rfl

@@ -59,7 +59,7 @@ theorem missingGraph_not_matching : ¬ Selected.EvaluationMatches missingGraph c
   let retained := Declaration.ofOperation_total_mem (P := presentation) false keeps
   apply (impossible.graph (.total false) retained input false).1
   apply (Selected.graph_select_congr constantOrdinary alignment (.total false) retained (.total ⟨false, keeps⟩)
-    (Selected.operation_total (P := presentation) (U := whole) false retained) rfl input false).2
+    (Selected.operation_total (P := presentation) (U := whole) false retained) input false).2
   rw [cast_eq, Structure.graph_total_iff]
   rfl
 

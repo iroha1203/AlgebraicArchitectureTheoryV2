@@ -2244,6 +2244,16 @@ def paddedPresentation : PrimitivePresentation where
     | .inr _ => none
   derived _ h := by cases h
 
+/-- The padded equality has a registered ring attachment. -/
+theorem paddedPresentation_ring_isSome : (paddedPresentation.ringEquation (.inl ())).isSome :=
+  rfl
+
+/-- The registered padded attachment uses exactly the named ring axioms. -/
+theorem paddedPresentation_ring_axiomNames :
+    ((paddedPresentation.ringEquation (.inl ())).get paddedPresentation_ring_isSome).axiomNames =
+      Set.range Sum.inr :=
+  rfl
+
 /-- A retained residual keeps a constant used in its proof, even when no written ring Law names it. -/
 theorem residual_retains_witness_operation (U : DeclarationContext paddedPresentation)
     (support : U.RetainsRingSupport (.inl ())) :

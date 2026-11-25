@@ -141,8 +141,9 @@ theorem selectResult_eq_cast (e : CarrierEquiv U X Y) (op : Operation P.signatur
 /-- A selected graph is independent of the name used for the same operation at the selected arity. -/
 theorem graph_select_congr (B : Structure (signature U)) (e : CarrierEquiv U X B.carrier)
     (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
-    (op' : Operation (signature U)) (same : operation op keep = op') (shape : op'.arity = arity op keep)
+    (op' : Operation (signature U)) (same : operation op keep = op')
     (a : Assignment X op.arity.inputs) (x : X op.arity.output) :
+    let shape := operation_arity_of_eq same
     B.Graph (operation op keep) (selectArgs e op keep a) (selectResult e op keep x) ↔
       B.Graph op'
         (cast (congrArg (fun profile => Assignment B.carrier profile.inputs) shape.symm)
@@ -153,7 +154,7 @@ theorem graph_select_congr (B : Structure (signature U)) (e : CarrierEquiv U X B
   rw [selectArgs_eq_cast, selectResult_eq_cast]
 
 /-- For a retained total operation, the output comparison of Proposition 3.2
-is the equivalence on its output carrier. The missing-graph example uses this form. -/
+is the equivalence on its output carrier. -/
 theorem selectResult_total (e : CarrierEquiv U X Y) (f : P.signature.Total)
     (keep : Declaration.total f ∈ U.declarations) (x : X (P.signature.totalArity f).output) :
     selectResult e (.total f) (Declaration.ofOperation_total_mem f keep) x =
@@ -254,13 +255,13 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     cases op <;> simp only [selectGraph_total, selectGraph_partialOp, selectGraph_quantity, Atomic.holds_graph]
     all_goals erw [args, out]
     · simpa only [cast_eq] using
-        (graph_select_congr B e (.total _) k _ (operation_total _ k) rfl _ _).symm.trans
+        (graph_select_congr B e (.total _) k _ (operation_total _ k) _ _).symm.trans
           (same.graph _ k (x.pull vars) (x y))
     · simpa only [cast_eq] using
-        (graph_select_congr B e (.partialOp _) k _ (operation_partialOp _ k) rfl _ _).symm.trans
+        (graph_select_congr B e (.partialOp _) k _ (operation_partialOp _ k) _ _).symm.trans
           (same.graph _ k (x.pull vars) (x y))
     · simpa only [cast_eq] using
-        (graph_select_congr B e (.quantity _) k _ (operation_quantity _ k) rfl _ _).symm.trans
+        (graph_select_congr B e (.quantity _) k _ (operation_quantity _ k) _ _).symm.trans
           (same.graph _ k (x.pull vars) (x y))
 
 /-- Any supported formula has the same truth in the actual selected structure. -/

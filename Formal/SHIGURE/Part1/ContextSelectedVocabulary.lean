@@ -121,6 +121,12 @@ theorem operation_arity (op : Operation P.signature) (kept : Declaration.ofOpera
     (operation op kept).arity = arity op kept := by
   cases op <;> rfl
 
+/-- An equal selected operation has the same selected input and output profile. -/
+theorem operation_arity_of_eq {op : Operation P.signature} {keep : Declaration.ofOperation op ∈ U.declarations}
+    {selected : Operation (signature U)} (same : operation op keep = selected) :
+    selected.arity = arity op keep :=
+  (congrArg Operation.arity same).symm.trans (operation_arity op keep)
+
 /-- Inclusion sends a selected operation to the original operation. -/
 theorem names_operation (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
     (names U).operation (operation op kept) = op := by

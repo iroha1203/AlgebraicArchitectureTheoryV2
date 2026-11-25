@@ -147,15 +147,15 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
     cases op with
     | total f =>
       simp only [selectGraph_total, Atomic.substitute_graph]
-      exact Formula.termGraph_congr_arity (operation_total f kept) shape rfl
+      exact Formula.termGraph_congr_arity (operation_total f kept) shape
         (fun i => θ' (selectRenaming hΛ hΓ ρ i)) (θ' (selectVar hΓ y))
     | partialOp p =>
       simp only [selectGraph_partialOp, Atomic.substitute_graph]
-      exact Formula.termGraph_congr_arity (operation_partialOp p kept) shape rfl
+      exact Formula.termGraph_congr_arity (operation_partialOp p kept) shape
         (fun i => θ' (selectRenaming hΛ hΓ ρ i)) (θ' (selectVar hΓ y))
     | quantity q =>
       simp only [selectGraph_quantity, Atomic.substitute_graph]
-      exact Formula.termGraph_congr_arity (operation_quantity q kept) shape rfl
+      exact Formula.termGraph_congr_arity (operation_quantity q kept) shape
         (fun i => θ' (selectRenaming hΛ hΓ ρ i)) (θ' (selectVar hΓ y))
 
 /-- Selection preserves literal positive-formula substitution, including binder lifts and expanded atoms. -/

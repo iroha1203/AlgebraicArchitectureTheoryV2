@@ -135,10 +135,10 @@ domains and graphs determine the structure after the carrier identification. -/
       rw [read_write_args B keep x]
       have selectedOp := operation_total f.val opKept
       have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.total f.val)
-        opKept (.total f) selectedOp rfl a z).symm.trans
+        opKept (.total f) selectedOp a z).symm.trans
           ((readStructure_matches A).graph (.total f.val) opKept a z)
       have right := (graph_select_congr B (extendedEquiv B) (.total f.val) opKept
-        (.total f) selectedOp rfl a z).symm.trans ((extendedEvaluation_matches B).graph (.total f.val) opKept a z)
+        (.total f) selectedOp a z).symm.trans ((extendedEvaluation_matches B).graph (.total f.val) opKept a z)
       simp only [cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
@@ -150,10 +150,10 @@ domains and graphs determine the structure after the carrier identification. -/
       rw [read_write_args B keep x]
       have selectedOp := operation_partialOp p.val opKept
       have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.partialOp p.val)
-        opKept (.partialOp p) selectedOp rfl a z).symm.trans
+        opKept (.partialOp p) selectedOp a z).symm.trans
           ((readStructure_matches A).graph (.partialOp p.val) opKept a z)
       have right := (graph_select_congr B (extendedEquiv B) (.partialOp p.val) opKept
-        (.partialOp p) selectedOp rfl a z).symm.trans ((extendedEvaluation_matches B).graph (.partialOp p.val) opKept a z)
+        (.partialOp p) selectedOp a z).symm.trans ((extendedEvaluation_matches B).graph (.partialOp p.val) opKept a z)
       simp only [cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm
@@ -165,10 +165,10 @@ domains and graphs determine the structure after the carrier identification. -/
       rw [read_write_args B keep x]
       have selectedOp := operation_quantity q.val opKept
       have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.quantity q.val)
-        opKept (.quantity q) selectedOp rfl a z).symm.trans
+        opKept (.quantity q) selectedOp a z).symm.trans
           ((readStructure_matches A).graph (.quantity q.val) opKept a z)
       have right := (graph_select_congr B (extendedEquiv B) (.quantity q.val) opKept
-        (.quantity q) selectedOp rfl a z).symm.trans ((extendedEvaluation_matches B).graph (.quantity q.val) opKept a z)
+        (.quantity q) selectedOp a z).symm.trans ((extendedEvaluation_matches B).graph (.quantity q.val) opKept a z)
       simp only [cast_eq] at left right
       rw [selectAssignment_ambientAssignment (extendedEquiv B) keep x, Equiv.apply_symm_apply] at right
       exact left.trans right.symm

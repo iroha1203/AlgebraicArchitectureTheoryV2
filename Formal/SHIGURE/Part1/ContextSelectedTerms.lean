@@ -415,13 +415,16 @@ private theorem selectGraph_reindexed {Γ : List P.signature.SortType} (op : Ope
   cases op with
   | total f =>
     refine (selectGraph_total hΓ f hOp ρ y).trans ?_
-    exact (reindexedGraph_congr (operation_total f hOp) (operation_arity (.total f) hOp) rfl _ _).symm
+    have same := operation_total f hOp
+    exact (reindexedGraph_congr same (operation_arity (.total f) hOp) (operation_arity_of_eq same) _ _).symm
   | partialOp p =>
     refine (selectGraph_partialOp hΓ p hOp ρ y).trans ?_
-    exact (reindexedGraph_congr (operation_partialOp p hOp) (operation_arity (.partialOp p) hOp) rfl _ _).symm
+    have same := operation_partialOp p hOp
+    exact (reindexedGraph_congr same (operation_arity (.partialOp p) hOp) (operation_arity_of_eq same) _ _).symm
   | quantity q =>
     refine (selectGraph_quantity hΓ q hOp ρ y).trans ?_
-    exact (reindexedGraph_congr (operation_quantity q hOp) (operation_arity (.quantity q) hOp) rfl _ _).symm
+    have same := operation_quantity q hOp
+    exact (reindexedGraph_congr same (operation_arity (.quantity q) hOp) (operation_arity_of_eq same) _ _).symm
 
 /-- Expand the value graph of an application whose arguments are indexed by an equal arity. -/
 private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType}

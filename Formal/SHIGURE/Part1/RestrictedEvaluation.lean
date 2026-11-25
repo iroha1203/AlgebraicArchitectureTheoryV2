@@ -278,15 +278,62 @@ def graph (A : RestrictedStructure U) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) (e : Assignment A.carrier op.arity.inputs)
     (y : A.carrier op.arity.output) : Prop :=
   match op with
-  | .total f => A.total f kept e = y
-  | .partialOp p => ∃ h : e ∈ A.partialDomain p kept, A.partialValue p kept ⟨e, h⟩ = y
-  | .quantity q => A.quantity q kept e = y
+  | .total f => A.total f (Declaration.ofOperation_total f ▸ kept) e = y
+  | .partialOp p =>
+    let nameKept := Declaration.ofOperation_partialOp p ▸ kept
+    ∃ h : e ∈ A.partialDomain p nameKept, A.partialValue p nameKept ⟨e, h⟩ = y
+  | .quantity q => A.quantity q (Declaration.ofOperation_quantity q ▸ kept) e = y
+
+/-- The total graph records the actual value of the retained operation. -/
+theorem graph_total_iff (A : RestrictedStructure U) (f : P.signature.Total)
+    (kept : Declaration.ofOperation (.total f) ∈ U.declarations)
+    (e : Assignment A.carrier (P.signature.totalArity f).inputs)
+    (y : A.carrier (P.signature.totalArity f).output) :
+    A.graph (.total f) kept e y ↔ A.total f (Declaration.ofOperation_total f ▸ kept) e = y :=
+  Iff.rfl
+
+/-- The partial graph records a defined input and its actual value. -/
+theorem graph_partial_iff (A : RestrictedStructure U) (p : P.signature.Partial)
+    (kept : Declaration.ofOperation (.partialOp p) ∈ U.declarations)
+    (e : Assignment A.carrier (P.signature.partialArity p).inputs)
+    (y : A.carrier (P.signature.partialArity p).output) :
+    A.graph (.partialOp p) kept e y ↔
+      let nameKept := Declaration.ofOperation_partialOp p ▸ kept
+      ∃ h : e ∈ A.partialDomain p nameKept, A.partialValue p nameKept ⟨e, h⟩ = y :=
+  Iff.rfl
+
+/-- The quantity graph records the actual value of the retained quantity. -/
+theorem graph_quantity_iff (A : RestrictedStructure U) (q : P.signature.Quantity)
+    (kept : Declaration.ofOperation (.quantity q) ∈ U.declarations)
+    (e : Assignment A.carrier (P.signature.quantityArity q).inputs)
+    (y : A.carrier (P.signature.quantityArity q).output) :
+    A.graph (.quantity q) kept e y ↔ A.quantity q (Declaration.ofOperation_quantity q ▸ kept) e = y :=
+  Iff.rfl
 
 /-- The evaluator built from this restricted structure uses its retained operations. -/
 def evaluation (A : RestrictedStructure U) : RestrictedEvaluation U A.carrier where
   relation r kept e := e ∈ A.relation r kept
   domain p kept e := e ∈ A.partialDomain p kept
   graph := A.graph
+
+/-- The evaluator tests membership in the retained relation. -/
+theorem evaluation_relation (A : RestrictedStructure U) (r : P.signature.Rel)
+    (kept : Declaration.relation r ∈ U.declarations) (e : Assignment A.carrier (P.signature.relInputs r)) :
+    A.evaluation.relation r kept e ↔ e ∈ A.relation r kept :=
+  Iff.rfl
+
+/-- The evaluator tests membership in the retained partial domain. -/
+theorem evaluation_domain (A : RestrictedStructure U) (p : P.signature.Partial)
+    (kept : Declaration.partialOp p ∈ U.declarations) (e : Assignment A.carrier (P.signature.partialArity p).inputs) :
+    A.evaluation.domain p kept e ↔ e ∈ A.partialDomain p kept :=
+  Iff.rfl
+
+/-- The evaluator keeps every graph of the restricted structure. -/
+theorem evaluation_graph (A : RestrictedStructure U) (op : Operation P.signature)
+    (kept : Declaration.ofOperation op ∈ U.declarations)
+    (e : Assignment A.carrier op.arity.inputs) (y : A.carrier op.arity.output) :
+    A.evaluation.graph op kept e y = A.graph op kept e y :=
+  rfl
 
 /-- Set-valued satisfaction of a Law whose whole support is retained. -/
 def satisfies (A : RestrictedStructure U) (law : Law P.signature)

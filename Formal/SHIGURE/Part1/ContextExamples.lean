@@ -249,10 +249,12 @@ def missingGraph : RestrictedEvaluation whole (fun _ => Bool) where
 /-- The graph laws reject raw evaluation data missing a total output. -/
 theorem missingGraph_not_structural : ¬ missingGraph.Structural := by
   intro structural
-  have output := structural (.totality false) (Set.mem_univ _)
-    (Assignment.cons false Assignment.empty) True.intro
-  change ∃ _ : Bool, False at output
-  exact output.elim (fun _ h => h)
+  have output := missingGraph.structural_rule structural (.totality false) (Set.mem_univ _)
+  simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph,
+    RestrictedEvaluation.holds_truth_iff, true_implies, RestrictedEvaluation.holds_ex_iff,
+    RestrictedEvaluation.holds_atom_iff, RestrictedEvaluation.atomic_graph_iff] at output
+  obtain ⟨_, impossible⟩ := output (Assignment.cons false Assignment.empty)
+  exact impossible
 
 /-- Unit supplies a different, valid carrier for the two constant operations. -/
 def unitConstants : Structure signature where

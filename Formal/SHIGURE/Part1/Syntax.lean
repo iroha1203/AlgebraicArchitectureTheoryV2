@@ -750,8 +750,9 @@ theorem termGraph_eq_bindArguments (op : Operation sig) (terms : ∀ {s}, Var op
 
 /-- Equal operation tags give the same term graph at a common arity. -/
 theorem termGraph_congr_arity {op op' : Operation sig} (same : op = op') {a : Arity sig.SortType}
-    (left : op.arity = a) (right : op'.arity = a)
+    (left : op.arity = a)
     (terms : ∀ {s}, Var a.inputs s → Term sig Γ s) (out : Term sig Γ a.output) :
+    let right := (congrArg Operation.arity same).symm.trans left
     termGraph op (fun {s} i => terms (cast (congrArg (fun profile => Var profile.inputs s) left) i))
       (cast (congrArg (Term sig Γ) (congrArg Arity.output left.symm)) out) =
     termGraph op' (fun {s} i => terms (cast (congrArg (fun profile => Var profile.inputs s) right) i))

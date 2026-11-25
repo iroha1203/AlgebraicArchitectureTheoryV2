@@ -66,6 +66,7 @@ theorem glueAssignment_eq_piece (i : cover.Index) {Γ : List P.signature.SortTyp
       mapAssignment (arrowView cover f i) kept e := by
   apply Assignment.ext
   intro s var
+  rw [mapAssignment_apply, mapAssignment_apply]
   exact glueOnSort_eq_piece cover f i s (varKept kept var) (e var)
 
 /-- The local view of an assembled component commutes with transport to the target piece. -/

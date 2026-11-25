@@ -2303,6 +2303,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedStructures
   DeclarationContext.Selected.readCarrierEquiv_eq_refl,
   DeclarationContext.Selected.readStructure_carrier_eq,
+  DeclarationContext.Selected.readStructure_relation,
+  DeclarationContext.Selected.readStructure_domain,
+  DeclarationContext.Selected.readStructure_graph_total,
+  DeclarationContext.Selected.readStructure_graph_partial,
+  DeclarationContext.Selected.readStructure_graph_quantity,
   DeclarationContext.Selected.extendedEquiv_eq_cast,
   DeclarationContext.Selected.writeStructure_carrier_eq,
   DeclarationContext.Selected.writeStructure_cast_evaluation,
@@ -2338,6 +2343,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.operation_total,
   DeclarationContext.Selected.operation_partialOp,
   DeclarationContext.Selected.operation_quantity,
+  DeclarationContext.Selected.operation_arity_of_eq,
   DeclarationContext.Selected.selectTypedTotal_operation,
   DeclarationContext.Selected.selectVar_here,
   DeclarationContext.Selected.selectVar_there,
@@ -2346,6 +2352,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectRenaming_apply,
   -- ContextStructures
   RestrictedEvaluation.satisfies_iff,
+  RestrictedEvaluation.structural_iff,
+  RestrictedEvaluation.structural_rule,
   -- DeclarationContexts
   Declaration.sorts_eq_image,
   Declaration.sort_mem_sorts,
@@ -2426,6 +2434,9 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Marked.Vocabulary.updatedTerm_eq,
   Marked.Vocabulary.LinearityLaw.symbol_add,
   Marked.Vocabulary.LinearityLaw.symbol_smul,
+  -- PreservationExamples
+  Chapter1.ResidualTransport.paddedPresentation_ring_isSome,
+  Chapter1.ResidualTransport.paddedPresentation_ring_axiomNames,
   -- Reading
   Reading.restrict_equations,
   Reading.restrict_origin,
@@ -2450,6 +2461,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RestrictedEvaluation.holds_conj_iff,
   RestrictedEvaluation.holds_disj_iff,
   RestrictedEvaluation.holds_ex_iff,
+  RestrictedStructure.graph_total_iff,
+  RestrictedStructure.graph_partial_iff,
+  RestrictedStructure.graph_quantity_iff,
+  RestrictedStructure.evaluation_relation,
+  RestrictedStructure.evaluation_domain,
+  RestrictedStructure.evaluation_graph,
   -- RingEquations
   RingVocabulary.Expr.toTerm_var,
   RingVocabulary.Expr.toTerm_zero,

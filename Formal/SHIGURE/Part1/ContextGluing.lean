@@ -142,11 +142,12 @@ theorem glueEvaluation_satisfies (i : cover.Index) (law : Law P.signature)
 
 /-- Structural validity of the glued primitive data follows from covering each primitive symbol. -/
 theorem glueEvaluation_structural : (A.glueEvaluation cover).Structural := by
+  rw [RestrictedEvaluation.structural_iff]
   intro rule kept
   let i := cover.index kept
   have localKept : Declaration.graphRuleName rule ∈ (cover.piece i).declarations := cover.mem_index kept
   exact A.glueEvaluation_satisfies cover i rule.toLaw (graphRuleSupport rule localKept)
-    ((A.pieceModel i).obj.structural rule localKept)
+    ((A.pieceModel i).obj.evaluation.structural_rule (A.pieceModel i).obj.structural rule localKept)
 
 /-- The combined carriers and graphs form a structure of the restricted presentation. -/
 noncomputable def glueStructure : ContextStructure U where

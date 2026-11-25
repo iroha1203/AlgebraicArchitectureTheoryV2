@@ -155,11 +155,24 @@ def Structural (A : RestrictedEvaluation U X) : Prop :=
   ∀ rule : GraphAxiom P.signature, ∀ kept : Declaration.graphRuleName rule ∈ U.declarations,
     A.satisfies rule.toLaw (graphRuleSupport rule kept)
 
+/-- Structural evaluation is exactly the satisfaction of the graph axioms at retained primitives. -/
+theorem structural_iff (A : RestrictedEvaluation U X) :
+    A.Structural ↔ ∀ (rule : GraphAxiom P.signature) (kept : Declaration.graphRuleName rule ∈ U.declarations),
+      A.satisfies rule.toLaw (graphRuleSupport rule kept) :=
+  Iff.rfl
+
+/-- A structural evaluation satisfies the graph axiom of each retained primitive. -/
+theorem structural_rule (A : RestrictedEvaluation U X) (valid : A.Structural)
+    (rule : GraphAxiom P.signature) (kept : Declaration.graphRuleName rule ∈ U.declarations) :
+    A.satisfies rule.toLaw (graphRuleSupport rule kept) :=
+  (A.structural_iff.1 valid) rule kept
+
 /-- Truth of a supported Law transfers along restriction because the assignments correspond bijectively. -/
 theorem satisfies_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V X Y)
     (bij : ∀ s kept, Function.Bijective (f s kept)) (law : Law P.signature)
     (support : Declaration.lawBody law ⊆ V.declarations) :
     (A.pullback inside f).satisfies law support ↔ A.satisfies law (fun _ hd => inside (support hd)) := by
+  simp only [satisfies_iff]
   constructor
   · intro held e input
     obtain ⟨localE, rfl⟩ := mapAssignment_surjective f (fun s kept => (bij s kept).2)
@@ -175,14 +188,17 @@ theorem satisfies_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U)
 /-- A structural interpretation remains structural after forgetting declarations. -/
 theorem structural_pullback (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V X Y)
     (bij : ∀ s kept, Function.Bijective (f s kept)) (valid : A.Structural) :
-    (A.pullback inside f).Structural :=
-  fun rule kept => (A.satisfies_pullback_iff inside f bij rule.toLaw (graphRuleSupport rule kept)).2
-    (valid rule (inside kept))
+    (A.pullback inside f).Structural := by
+  rw [structural_iff]
+  intro rule kept
+  exact (A.satisfies_pullback_iff inside f bij rule.toLaw (graphRuleSupport rule kept)).2
+    (A.structural_rule valid rule (inside kept))
 
 /-- Reading the supported Law from an ambient structure gives its original satisfaction. -/
 theorem satisfies_restrict_iff (U : DeclarationContext P) (A : Structure P.signature)
     (law : Law P.signature) (support : Declaration.lawBody law ⊆ U.declarations) :
     (restrict U A).satisfies law support ↔ law.Holds A := by
+  rw [satisfies_iff, Law.holds_iff]
   constructor
   · intro held e he
     exact (restrict_holds_iff U A law.conclusion (lawConclusionSupport support) e).1
@@ -192,8 +208,10 @@ theorem satisfies_restrict_iff (U : DeclarationContext P) (A : Structure P.signa
       (held e ((restrict_holds_iff U A law.input (lawInputSupport support) e).1 he))
 
 /-- An ambient structure provides a structural interpretation on any retained context. -/
-theorem restrict_structural (U : DeclarationContext P) (A : Structure P.signature) : (restrict U A).Structural :=
-  fun rule kept => (satisfies_restrict_iff U A rule.toLaw (graphRuleSupport rule kept)).2 (rule.holds_toLaw A)
+theorem restrict_structural (U : DeclarationContext P) (A : Structure P.signature) : (restrict U A).Structural := by
+  rw [structural_iff]
+  intro rule kept
+  exact (satisfies_restrict_iff U A rule.toLaw (graphRuleSupport rule kept)).2 (rule.holds_toLaw A)
 
 end RestrictedEvaluation
 
