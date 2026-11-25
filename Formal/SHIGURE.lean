@@ -24,6 +24,7 @@ import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
+import Formal.SHIGURE.Part2.RealizationSchemes
 
 /-! # SHIGURE
 
