@@ -82,6 +82,14 @@ pub(crate) fn compute_coeff_change(
         };
 
     let explicit_complex_check = if let Some(ex) = &cc.explicit_z_complex {
+        if !matches!(source_domain, CoeffDomain::Z) {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "explicit_z_complex_requires_z_source".to_owned(),
+                detail: format!(
+                    "explicit_z_complex requires diagnostic_coeff = Z, got `{source_domain}`"
+                ),
+            });
+        }
         Some(check_explicit_z_complex(ex, &cc.target_domain)?)
     } else {
         None

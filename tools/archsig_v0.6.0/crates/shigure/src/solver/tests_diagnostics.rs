@@ -767,3 +767,196 @@ fn diagnostics_silence_inadequate_reading_max_partitions_unobserved_and_bad_ring
     assert_eq!(ex_free.designated_class_zero_in_target, Some(true));
     assert_eq!(ex_free.torsion_vanished_in_target, Some(false));
 }
+
+#[test]
+fn fp_base_stratification_r_point_and_fail_closed_boundaries() {
+    let z_const = |n: i64| PolyExpr::Const(ScalarLit::int(n));
+    let fp5_const = |n: u32| {
+        PolyExpr::Const(ScalarLit::Fp {
+            value: BigUint::from(n % 5),
+            modulus: BigUint::from(5u32),
+        })
+    };
+    // 1. F_5 基底での W2 層別・D3 上半連続性反証・R-点対照
+    let fp5 = CoeffDomain::Fp(BigUint::from(5u32));
+    let task_fp = validate_diagnostics_task(DiagnosticsTaskSpec {
+        name: "w2_base_f5".into(),
+        diagnostic_coeff: CoeffDomain::Q,
+        nerve: w2_nerve(),
+        readout: DiagnosticsReadoutSpec::Polynomial {
+            base_domain: fp5.clone(),
+            base_vars: vec!["lambda".into(), "mu".into()],
+            base_relations: Vec::new(),
+            sources: vec!["a".into(), "b".into(), "c".into(), "h".into()],
+            laws: vec![PolyLawReadoutSpec {
+                law_name: "L".into(),
+                values: vec![
+                    ("a".into(), fp5_const(0)),
+                    ("b".into(), PolyExpr::StateVar("lambda".into())),
+                    ("c".into(), fp5_const(0)),
+                    ("h".into(), PolyExpr::StateVar("mu".into())),
+                ],
+            }],
+        },
+        coeff_change: None,
+        collisions: Vec::new(),
+        r_point_probe: Some(RPointProbeSpec {
+            ring_var: "eps".into(),
+            ring_max_deg: 1,
+            points: vec![
+                NamedRPointSpec {
+                    label: "origin".into(),
+                    coords: vec![
+                        ("lambda".into(), vec![fp5_const(0), fp5_const(0)]),
+                        ("mu".into(), vec![fp5_const(0), fp5_const(0)]),
+                    ],
+                },
+                NamedRPointSpec {
+                    label: "dual_mu".into(),
+                    coords: vec![
+                        ("lambda".into(), vec![fp5_const(0), fp5_const(0)]),
+                        ("mu".into(), vec![fp5_const(0), fp5_const(1)]),
+                    ],
+                },
+            ],
+        }),
+        dimension_realization: None,
+        max_partitions: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    let out_fp = solve_diagnostics_task(&task_fp);
+    assert_eq!(out_fp.verdict, Verdict::Established);
+    let d_fp = out_fp.diagnostics.unwrap();
+    assert_eq!(d_fp.strata.len(), 5);
+    assert!(d_fp.strata.iter().any(|s| s.h1_free_rank == 1));
+    let refut = d_fp.upper_semicontinuity_refutation.as_ref().unwrap();
+    assert_eq!(refut.generic_h1_dim, 1);
+    assert_eq!(refut.special_h1_dim, 0);
+    let rp = d_fp.r_point_contrast.unwrap();
+    assert!(rp.r_values_differ);
+    assert!(rp.geometric_stalks_agree);
+
+    // 2. F_5 非線形 base_relations + 非空不等号での D3 飽和は fail-closed 沈黙
+    let task_fp_nonlin = validate_diagnostics_task(DiagnosticsTaskSpec {
+        name: "fp5_nonlinear_closure".into(),
+        diagnostic_coeff: CoeffDomain::Q,
+        nerve: w2_nerve(),
+        readout: DiagnosticsReadoutSpec::Polynomial {
+            base_domain: fp5,
+            base_vars: vec!["lambda".into(), "mu".into()],
+            base_relations: vec![NamedPoly {
+                name: "curve".into(),
+                expr: PolyExpr::Sub(
+                    Box::new(PolyExpr::Mul(
+                        Box::new(PolyExpr::StateVar("lambda".into())),
+                        Box::new(PolyExpr::StateVar("mu".into())),
+                    )),
+                    Box::new(PolyExpr::Mul(
+                        Box::new(PolyExpr::StateVar("lambda".into())),
+                        Box::new(PolyExpr::StateVar("lambda".into())),
+                    )),
+                ),
+                provenance: None,
+            }],
+            sources: vec!["a".into(), "b".into(), "c".into(), "h".into()],
+            laws: vec![PolyLawReadoutSpec {
+                law_name: "L".into(),
+                values: vec![
+                    ("a".into(), fp5_const(0)),
+                    ("b".into(), PolyExpr::StateVar("lambda".into())),
+                    ("c".into(), fp5_const(0)),
+                    ("h".into(), PolyExpr::StateVar("mu".into())),
+                ],
+            }],
+        },
+        coeff_change: None,
+        collisions: Vec::new(),
+        r_point_probe: None,
+        dimension_realization: None,
+        max_partitions: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_diagnostics_task(&task_fp_nonlin).verdict,
+        Verdict::Undetermined(SilenceReason::DiagnosticsStratificationOutOfScope { .. })
+    ));
+
+    // 3. base_domain = Z の多項式層別は fail-closed 沈黙
+    let task_z_base = validate_diagnostics_task(DiagnosticsTaskSpec {
+        name: "z_base_strat_out_of_scope".into(),
+        diagnostic_coeff: CoeffDomain::Q,
+        nerve: w2_nerve(),
+        readout: DiagnosticsReadoutSpec::Polynomial {
+            base_domain: CoeffDomain::Z,
+            base_vars: vec!["lambda".into()],
+            base_relations: Vec::new(),
+            sources: vec!["a".into(), "b".into(), "c".into(), "h".into()],
+            laws: vec![PolyLawReadoutSpec {
+                law_name: "L".into(),
+                values: vec![
+                    ("a".into(), z_const(0)),
+                    ("b".into(), PolyExpr::StateVar("lambda".into())),
+                    ("c".into(), z_const(0)),
+                    ("h".into(), z_const(1)),
+                ],
+            }],
+        },
+        coeff_change: None,
+        collisions: Vec::new(),
+        r_point_probe: None,
+        dimension_realization: None,
+        max_partitions: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_diagnostics_task(&task_z_base).verdict,
+        Verdict::Undetermined(SilenceReason::DiagnosticsStratificationOutOfScope { .. })
+    ));
+
+    // 4. diagnostic_coeff != Z に explicit_z_complex を渡すと fail-closed 沈黙
+    let task_bad_ex = validate_diagnostics_task(DiagnosticsTaskSpec {
+        name: "explicit_z_on_f2_source".into(),
+        diagnostic_coeff: CoeffDomain::Fp(BigUint::from(2u32)),
+        nerve: SupportedNerveSpec {
+            charts: vec![ChartSupportSpec {
+                name: "c0".into(),
+                support: vec!["s0".into()],
+            }],
+            edges: Vec::new(),
+            faces: Vec::new(),
+        },
+        readout: DiagnosticsReadoutSpec::Static {
+            sources: vec!["s0".into()],
+            targets: vec!["s0".into()],
+            reading: vec![("s0".into(), "s0".into())],
+            laws: vec![StaticLawReadoutSpec {
+                law_name: "L".into(),
+                values: vec![("s0".into(), z_lit(0))],
+            }],
+        },
+        coeff_change: Some(CoeffChangeComparisonSpec {
+            target_domain: CoeffDomain::Fp(BigUint::from(2u32)),
+            compare_codomain_regeneration: false,
+            explicit_z_complex: Some(ExplicitZComplexSpec {
+                dim0: 1,
+                dim1: 1,
+                d0: vec![vec![2]],
+                designated_cocycle: Some(vec![1]),
+            }),
+        }),
+        collisions: Vec::new(),
+        r_point_probe: None,
+        dimension_realization: None,
+        max_partitions: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_diagnostics_task(&task_bad_ex).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. })
+            if condition == "explicit_z_complex_requires_z_source"
+    ));
+}

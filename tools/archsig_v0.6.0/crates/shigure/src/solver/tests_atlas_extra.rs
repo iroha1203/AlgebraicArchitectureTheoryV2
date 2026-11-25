@@ -254,3 +254,174 @@ fn e3_unaligned_trivial_or_empty_edge_nerve_rejects_designated_kappa_preserved()
     assert!(rb.condition_c.all_passed);
     assert!(!rb.designated_kappa_preserved);
 }
+
+#[test]
+fn refinement_rejects_non_pullback_internal_offset_even_when_fibers_empty() {
+    let z = |n: i64| PolyExpr::Const(ScalarLit::int(n));
+    let (fine_vertices, mut fine_edges, vm, em) = w3_fine_graph();
+    // 粗グラフ b_c = (2, 4, -6), 細グラフ b_f = (1, 1, 4, -6):
+    // 内部辺 t に非零 offset 1 を持つため b_f != p^1 b_c だが一周和は 0 で cohomologous。
+    // A_V = A_E = ∅ の空 fiber でも repair_fiber_isomorphism_verified は false でなければならない。
+    fine_edges[0].offset = z(1);
+    fine_edges[1].offset = z(1);
+    fine_edges[2].offset = z(4);
+    fine_edges[3].offset = z(-6);
+    let nerve_coarse = SupportedNerveSpec {
+        charts: vec![
+            ChartSupportSpec {
+                name: "v0".into(),
+                support: vec!["s0".into(), "s01".into(), "s20".into()],
+            },
+            ChartSupportSpec {
+                name: "v1".into(),
+                support: vec!["s1".into(), "s01".into(), "s12".into()],
+            },
+            ChartSupportSpec {
+                name: "v2".into(),
+                support: vec!["s2".into(), "s12".into(), "s20".into()],
+            },
+        ],
+        edges: vec![
+            NerveEdgeSpec {
+                name: "e01".into(),
+                left: "v0".into(),
+                right: "v1".into(),
+            },
+            NerveEdgeSpec {
+                name: "e12".into(),
+                left: "v1".into(),
+                right: "v2".into(),
+            },
+            NerveEdgeSpec {
+                name: "e20".into(),
+                left: "v2".into(),
+                right: "v0".into(),
+            },
+        ],
+        faces: Vec::new(),
+    };
+    let nerve_fine = SupportedNerveSpec {
+        charts: vec![
+            ChartSupportSpec {
+                name: "v0a".into(),
+                support: vec!["s0a".into(), "s0m".into(), "s20".into()],
+            },
+            ChartSupportSpec {
+                name: "v0b".into(),
+                support: vec!["s0b".into(), "s0m".into(), "s01".into()],
+            },
+            ChartSupportSpec {
+                name: "v1".into(),
+                support: vec!["s1".into(), "s01".into(), "s12".into()],
+            },
+            ChartSupportSpec {
+                name: "v2".into(),
+                support: vec!["s2".into(), "s12".into(), "s20".into()],
+            },
+        ],
+        edges: vec![
+            NerveEdgeSpec {
+                name: "t".into(),
+                left: "v0a".into(),
+                right: "v0b".into(),
+            },
+            NerveEdgeSpec {
+                name: "e01".into(),
+                left: "v0b".into(),
+                right: "v1".into(),
+            },
+            NerveEdgeSpec {
+                name: "e12".into(),
+                left: "v1".into(),
+                right: "v2".into(),
+            },
+            NerveEdgeSpec {
+                name: "e20".into(),
+                left: "v2".into(),
+                right: "v0a".into(),
+            },
+        ],
+        faces: Vec::new(),
+    };
+    let common_sources: Vec<String> = vec![
+        "s0a".into(),
+        "s0b".into(),
+        "s0m".into(),
+        "s1".into(),
+        "s2".into(),
+        "s01".into(),
+        "s12".into(),
+        "s20".into(),
+    ];
+    let coarse_reading = vec![
+        ("s0a".into(), "s0".into()),
+        ("s0b".into(), "s0".into()),
+        ("s0m".into(), "s0".into()),
+        ("s1".into(), "s1".into()),
+        ("s2".into(), "s2".into()),
+        ("s01".into(), "s01".into()),
+        ("s12".into(), "s12".into()),
+        ("s20".into(), "s20".into()),
+    ];
+    let fine_reading: Vec<(String, String)> = common_sources
+        .iter()
+        .map(|s| (s.clone(), s.clone()))
+        .collect();
+    let ref_spec = AtlasRefinementSpec {
+        fine_vertices,
+        fine_edges,
+        vertex_map: vm.clone(),
+        edge_map: em.clone(),
+        common_sources,
+        coarse_reading,
+        fine_reading,
+        coarse_nerve: nerve_coarse,
+        fine_nerve: nerve_fine,
+        nerve_chart_map: vm,
+        nerve_edge_map: em,
+        nerve_face_map: Vec::new(),
+        eval_condition: None,
+        forgetful_reading: None,
+    };
+    let task = validate_atlas_task(AtlasTaskSpec {
+        name: "non_pullback_empty_fiber".into(),
+        coeff_domain: CoeffDomain::Z,
+        vertices: vec!["v0".into(), "v1".into(), "v2".into()],
+        edges: vec![
+            GraphEdgeSpec {
+                name: "e01".into(),
+                from: "v0".into(),
+                to: "v1".into(),
+                offset: z(2),
+            },
+            GraphEdgeSpec {
+                name: "e12".into(),
+                from: "v1".into(),
+                to: "v2".into(),
+                offset: z(4),
+            },
+            GraphEdgeSpec {
+                name: "e20".into(),
+                from: "v2".into(),
+                to: "v0".into(),
+                offset: z(-6),
+            },
+        ],
+        mu: z(1),
+        base_lambdas: vec![("v0".into(), z(0)), ("v1".into(), z(0)), ("v2".into(), z(0))],
+        allowed_vertices: Vec::new(),
+        allowed_edges: Vec::new(),
+        compare_to_q: false,
+        refinement: Some(ref_spec),
+        extended_language_check: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    let out = solve_atlas_task(&task);
+    assert_eq!(out.verdict, Verdict::Refuted);
+    let r = out.atlas.unwrap().refinement.unwrap();
+    assert!(r.condition_c.all_passed);
+    assert!(r.designated_o_preserved);
+    assert!(!r.repair_fiber_isomorphism_verified);
+    assert!(!r.inverse_reconstruction_verified);
+}

@@ -118,6 +118,7 @@ where
         &e_map_idx,
         &p0,
         &p1,
+        cochain_map_commutes,
         expand,
         solve_linear,
     )?;
@@ -405,6 +406,7 @@ fn verify_repair_fiber_iso<C, FE, FLin>(
     e_map: &[Option<(usize, i8)>],
     p0: &[Vec<C>],
     p1: &[Vec<C>],
+    cochain_map_commutes: bool,
     expand: &FE,
     solve_linear: &FLin,
 ) -> Result<(bool, bool, Option<bool>), SilenceReason>
@@ -441,10 +443,21 @@ where
         .map(|e| coarse.e_idx[e])
         .collect();
 
+    // 空 fiber でも偽陽性を防ぐため、自然同型 Φ_R の構造前提（d_f^0 p^0 = p^1 d_c^0、
+    // 引き戻し条件 b_f = p^1 b_c、頂点射・辺射の全射性）を最初に検算する。
+    let offsets_pulled_back = fine.offsets == mat_vec(p1, &coarse.offsets, &coarse.zero);
+    let v_covered: BTreeSet<usize> = v_map.iter().copied().collect();
+    let v_map_surjective = v_covered.len() == coarse.vertices.len();
+    let e_covered: BTreeSet<usize> = e_map.iter().filter_map(|opt| opt.map(|(ce, _)| ce)).collect();
+    let e_map_surjective = e_covered.len() == coarse.edges.len();
+    let structural_ok =
+        cochain_map_commutes && offsets_pulled_back && v_map_surjective && e_map_surjective;
+
     let (c_part, c_ker) = solve_joint_repair(coarse, coarse_lambdas, &coarse_av, &coarse_ae, solve_linear)?;
     let (f_part, f_ker) = solve_joint_repair(fine, fine_lambdas, &fine_av, &fine_ae, solve_linear)?;
 
-    let mut iso_ok = c_part.is_some() == f_part.is_some() && c_ker.len() == f_ker.len();
+    let mut iso_ok =
+        structural_ok && c_part.is_some() == f_part.is_some() && c_ker.len() == f_ker.len();
     let mut inv_ok = iso_ok;
 
     let check_forward = |vec_c: &(Vec<C>, Vec<C>), is_hom: bool| -> bool {
