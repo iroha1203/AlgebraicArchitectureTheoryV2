@@ -26,6 +26,7 @@ import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.TensorRealizations
+import Formal.SHIGURE.Part2.RealizationRecovery
 
 /-! # SHIGURE
 

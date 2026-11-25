@@ -3330,6 +3330,63 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TensorRealization.frobenius_formal_residual_ne
 ]
 
+-- Chapter 4: global copying recovery, local disjunction and scalar reading.
+#shigure_assert_standard_axioms_of [
+  Copying.nativeAssignmentAt,
+  Copying.nativeAssignmentAt_restrict,
+  Copying.mem_constantAtom_iff,
+  Copying.mem_constantFormula_iff,
+  Copying.constantTupleIso,
+  Copying.constantPredicateIso,
+  Copying.constantPredicateIso_inclusion,
+  Copying.constantFormula_eq,
+  Copying.constantTermDomain_eq,
+  Copying.constantTermGraph_eq,
+  Copying.constantStructure_holdsLaw,
+  Copying.constantStructure_holdsLaw_iff,
+  Copying.readConstantCarrierMap,
+  Copying.readConstantCarrierMap_constantCarrierMap,
+  Copying.constantCarrierMap_app_nativeState,
+  Copying.constantCarrierMap_readConstantCarrierMap,
+  Copying.constantCarrierMapsEquiv,
+  Copying.evaluateConstantSections,
+  Copying.constantSections,
+  Copying.constantStructureMap,
+  Copying.readConstantStructureMap,
+  Copying.readConstantStructureMap_onSort,
+  Copying.constantStructureMapsEquiv,
+  Copying.constantStructureFunctor,
+  Copying.constantCopyingModelFunctor,
+  Copying.constantCopyingModelFullyFaithful,
+  Copying.GloballySplitCopyingModels,
+  Copying.globallySplitCopyingEquivalence,
+  Copying.constantStructureMap_preservesValue_iff,
+  Copying.constantStructureMap_fixesSort_iff,
+  Copying.constantCopyingModelMap_fixesCarriers_iff,
+  Copying.restrictDeclarations,
+  Copying.restrictConstantStructureMap_onSort,
+  Copying.restrictConstantStructureMap_eq,
+  Copying.restrictStructure_restrictDeclarations,
+  Copying.twoValueStructure,
+  Copying.equalDesignated,
+  Copying.twoValueLaw,
+  Copying.twoValueLaw_native,
+  Copying.productSpectrum,
+  Copying.productChoice,
+  Copying.productChoiceOpens,
+  Copying.productChoice_isOpenCover,
+  Copying.productChoice_onOpen,
+  Copying.productChoice_notConstant,
+  Copying.productChoice_law,
+  Copying.productChoice_satisfies,
+  Copying.productChoice_no_global_disjunct,
+  Copying.productChoice_disjunct_onOpen,
+  TensorRealization.readQuantityScalar,
+  TensorRealization.readQuantityScalar_sum,
+  TensorRealization.readQuantityScalar_changeBase,
+  TensorRealization.integerValues_distinct_scalarReadings_equal
+]
+
 end SHIGURE.AxiomAudit
 
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit
