@@ -1,5 +1,4 @@
 import Formal.SHIGURE.Part2.Recovery.ConstantFormulas
-import Formal.SHIGURE.Part2.Realizations.Examples
 import Formal.SHIGURE.Part2.AffineFoundations
 
 /-!
@@ -11,15 +10,27 @@ as the original coefficient ring is nonzero.
 -/
 
 open AlgebraicGeometry CategoryTheory Opposite TopologicalSpace
-open SHIGURE.RealizationExamples (pointedSignature)
+universe u
 
 noncomputable section
 
 namespace SHIGURE.Copying
 
+/-- The two designated values live in the same universe as the coefficient ring. -/
+def twoValueSignature : Signature.{u} where
+  SortType := PUnit.{u + 1}
+  Total := ULift.{u} Bool
+  Rel := PEmpty
+  Partial := PEmpty
+  Quantity := PEmpty
+  totalArity _ := ⟨[], PUnit.unit⟩
+  relInputs r := nomatch r
+  partialArity p := nomatch p
+  quantityArity q := nomatch q
+
 /-- The Boolean state set with the two original designated values. -/
-def twoValueStructure : Structure pointedSignature where
-  carrier _ := Bool
+def twoValueStructure : Structure twoValueSignature.{u} where
+  carrier _ := ULift.{u} Bool
   total b _ := b
   relation r := nomatch r
   partialDomain p := nomatch p
@@ -27,24 +38,25 @@ def twoValueStructure : Structure pointedSignature where
   quantity q := nomatch q
 
 /-- The atom saying that the one input equals one of the designated values. -/
-def equalDesignated (b : Bool) : Formula pointedSignature [()] :=
-  .atom (.graph (.total b) (fun i => nomatch i) .here)
+def equalDesignated (b : Bool) : Formula twoValueSignature.{u} [PUnit.unit] :=
+  .atom (.graph (.total (ULift.up b)) (fun i => nomatch i) .here)
 
 /-- The native and sheaf readings of the law that the state equals a designated value. -/
-def twoValueLaw : Law pointedSignature :=
-  ⟨[()], .truth, (equalDesignated false).disj (equalDesignated true)⟩
+def twoValueLaw : Law twoValueSignature.{u} :=
+  ⟨[PUnit.unit], .truth, (equalDesignated false).disj (equalDesignated true)⟩
 
 /-- Every native Boolean state satisfies one of the two graph atoms. -/
-theorem twoValueLaw_native : twoValueLaw.Holds twoValueStructure := by
+theorem twoValueLaw_native : twoValueLaw.{u}.Holds twoValueStructure.{u} := by
   intro a _
   change (equalDesignated false).Holds twoValueStructure a ∨ (equalDesignated true).Holds twoValueStructure a
   simp only [equalDesignated, Formula.holds_atom, Atomic.holds_graph, Structure.graph_total_iff]
-  change false = a.get Var.here ∨ true = a.get Var.here
-  cases (a.get Var.here : Bool)
+  change (ULift.up false : ULift.{u} Bool) = a.get Var.here ∨ ULift.up true = a.get Var.here
+  rcases (a.get Var.here : ULift.{u} Bool) with ⟨b⟩
+  cases b
   · exact Or.inl rfl
   · exact Or.inr rfl
 
-variable (k : Type) [CommRing k]
+variable (k : Type u) [CommRing k]
 
 /-- The affine product spectrum of the local disjunction example. -/
 abbrev productSpectrum := Spec (CommRingCat.of (k × k))
@@ -122,7 +134,7 @@ theorem productChoice_law :
 theorem productChoice_satisfies :
     let U : Over (productSpectrum k) := Over.mk (𝟙 (productSpectrum k))
     let A := constantStructure (productSpectrum k) twoValueStructure
-    let a : (sheafTuple A.carrier [()]).val.obj (op U) := ⟨fun | .here => productChoice k⟩
+    let a : (sheafTuple A.carrier [PUnit.unit]).val.obj (op U) := ⟨fun | .here => LocallyConstant.map ULift.up (productChoice k)⟩
     a ∈ (A.interpretFormula twoValueLaw.conclusion).carrier.obj (op U) := by
   intro U A a
   exact productChoice_law k (op U) (SheafPredicate.mem_truth _ _)
@@ -131,7 +143,7 @@ theorem productChoice_satisfies :
 theorem productChoice_no_global_disjunct [Nontrivial k] (b : Bool) :
     let U : Over (productSpectrum k) := Over.mk (𝟙 (productSpectrum k))
     let A := constantStructure (productSpectrum k) twoValueStructure
-    let a : (sheafTuple A.carrier [()]).val.obj (op U) := ⟨fun | .here => productChoice k⟩
+    let a : (sheafTuple A.carrier [PUnit.unit]).val.obj (op U) := ⟨fun | .here => LocallyConstant.map ULift.up (productChoice k)⟩
     a ∉ (A.interpretFormula (equalDesignated b)).carrier.obj (op U) := by
   intro U A a h
   apply productChoice_notConstant k b
@@ -139,7 +151,7 @@ theorem productChoice_no_global_disjunct [Nontrivial k] (b : Bool) :
   intro x
   have h' := (mem_constantFormula_iff twoValueStructure (equalDesignated b) a).mp h x
   simp only [equalDesignated, Formula.holds_atom, Atomic.holds_graph, Structure.graph_total_iff] at h'
-  exact h'.symm
+  exact (congrArg ULift.down h').symm
 
 /-- The disjunct selected by an open fiber holds on that entire open subscheme. -/
 theorem productChoice_disjunct_onOpen (b : Bool) :
@@ -148,14 +160,14 @@ theorem productChoice_disjunct_onOpen (b : Bool) :
     let U : Over S := Over.mk ((productChoiceOpens k b).ι ≫ 𝟙 S)
     let f : U ⟶ T := Over.homMk (productChoiceOpens k b).ι
     let A := constantStructure S twoValueStructure
-    let a : (sheafTuple A.carrier [()]).val.obj (op T) := ⟨fun | .here => productChoice k⟩
-    (sheafTuple A.carrier [()]).val.map f.op a ∈
+    let a : (sheafTuple A.carrier [PUnit.unit]).val.obj (op T) := ⟨fun | .here => LocallyConstant.map ULift.up (productChoice k)⟩
+    (sheafTuple A.carrier [PUnit.unit]).val.map f.op a ∈
       (A.interpretFormula (equalDesignated b)).carrier.obj (op U) := by
   intro S T U f A a
   apply (mem_constantFormula_iff twoValueStructure (equalDesignated b) _).mpr
   intro x
   rw [nativeAssignmentAt_restrict]
   simp only [equalDesignated, Formula.holds_atom, Atomic.holds_graph, Structure.graph_total_iff]
-  exact (productChoice_onOpen k b x).symm
+  exact congrArg ULift.up (productChoice_onOpen k b x).symm
 
 end SHIGURE.Copying

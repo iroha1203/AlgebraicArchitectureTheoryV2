@@ -24,6 +24,7 @@ import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.TensorRealizations
+import Formal.SHIGURE.Part2.RealizationRecovery
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -3332,6 +3333,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 
 -- Chapter 4: global copying recovery, local disjunction and scalar reading.
 #shigure_assert_standard_axioms_of [
+  Copying.restrictStructure_comp,
   Copying.nativeAssignmentAt,
   Copying.nativeAssignmentAt_restrict,
   Copying.mem_constantAtom_iff,
@@ -3358,15 +3360,36 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.constantStructureFunctor,
   Copying.constantCopyingModelFunctor,
   Copying.constantCopyingModelFullyFaithful,
+  Copying.IsGloballySplit,
+  Copying.globallySplitCopyingProperty,
   Copying.GloballySplitCopyingModels,
+  Copying.nativeLaws_of_globallySplit,
+  Copying.globallySplitCopying_iff_mem_essImage,
+  Copying.globallySplitCopyingFunctor,
   Copying.globallySplitCopyingEquivalence,
+  Copying.copyingModeModelComparison,
+  Copying.copyingModeModelEquivalence,
+  Copying.globallySplitModeProperty,
+  Copying.globallySplitModeComparison,
+  Copying.globallySplitCopyingModeEquivalence,
   Copying.constantStructureMap_preservesValue_iff,
   Copying.constantStructureMap_fixesSort_iff,
   Copying.constantCopyingModelMap_fixesCarriers_iff,
+  Copying.renameTuple,
   Copying.restrictDeclarations,
+  Copying.restrictDeclarations_sections,
+  Copying.restrictNativeMap,
+  Copying.restrictDeclarationsMap,
+  Copying.restrictDeclarationsFunctor,
   Copying.restrictConstantStructureMap_onSort,
   Copying.restrictConstantStructureMap_eq,
   Copying.restrictStructure_restrictDeclarations,
+  Copying.restrictStructureMap_restrictDeclarationsMap,
+  Copying.restrictDeclarations_changeIso,
+  Copying.restrictDeclarations_formula_iff,
+  Copying.restrictDeclarations_holdsLaw_iff,
+  Copying.restrictDeclarationsConstantIso,
+  Copying.twoValueSignature,
   Copying.twoValueStructure,
   Copying.equalDesignated,
   Copying.twoValueLaw,
@@ -3384,7 +3407,22 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TensorRealization.readQuantityScalar,
   TensorRealization.readQuantityScalar_sum,
   TensorRealization.readQuantityScalar_changeBase,
-  TensorRealization.integerValues_distinct_scalarReadings_equal
+  TensorRealization.integerValues_distinct_scalarReadings_equal,
+  Copying.mem_restrictAtom_iff,
+  Copying.mem_restrictFormula_iff,
+  Copying.restrictStructure_holdsLaw,
+  SheafStructure.mem_interpretAtom_iff_sections,
+  SheafStructure.Hom.preservesFormula,
+  SheafStructure.holdsLaw_of_iso,
+  Copying.retainedRequiredName,
+  Copying.retainedRequiredLaw_eq,
+  Copying.restrictNativePresentation,
+  Copying.isZariskiSplit_restrictPresentation,
+  Copying.restrictCopyingPresentation,
+  Copying.isZariskiSplit_restrictCoefficients,
+  Copying.restrictCopyingCoefficients,
+  Copying.restrictCopyingPresentation_changeIso,
+  Copying.restrictCopyingNativeIso
 ]
 
 end SHIGURE.AxiomAudit

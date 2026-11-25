@@ -1,5 +1,4 @@
-import Formal.SHIGURE.Part2.Recovery.Models
-import Formal.SHIGURE.Part2.Recovery.DeclarationRestriction
+import Formal.SHIGURE.Part2.Recovery.PresentationRestriction
 import Formal.SHIGURE.Part2.Recovery.LocalDisjunction
 import Formal.SHIGURE.Part2.Recovery.QuantityReading
 
