@@ -178,12 +178,16 @@ domains and graphs determine the structure after the carrier identification. -/
       exact left.trans right.symm
 
 /-- The model readings are strictly inverse on ordinary model objects. -/
-@[simp] theorem read_write_model (A : Model (theory U)) : readModel (writeModel A) = A :=
-  CategoryTheory.ObjectProperty.FullSubcategory.ext (read_write_structure A.obj)
+@[simp] theorem read_write_model (A : Model (theory U)) : readModel (writeModel A) = A := by
+  apply CategoryTheory.ObjectProperty.FullSubcategory.ext
+  rw [readModel_obj, writeModel_obj]
+  exact read_write_structure A.obj
 
 /-- The model readings are strictly inverse on context model objects. -/
-@[simp] theorem write_read_model (A : Models U) : writeModel (readModel A) = A :=
-  CategoryTheory.ObjectProperty.FullSubcategory.ext (write_read_structure A.obj)
+@[simp] theorem write_read_model (A : Models U) : writeModel (readModel A) = A := by
+  apply CategoryTheory.ObjectProperty.FullSubcategory.ext
+  rw [writeModel_obj, readModel_obj]
+  exact write_read_structure A.obj
 
 end DeclarationContext.Selected
 end SHIGURE

@@ -146,7 +146,11 @@ theorem glue_graph (op : Operation P.signature) (keep : Declaration.ofOperation 
     ← glueAssignment_eq_piece cover f i, ← glueOnSort_eq_piece cover f i] at preserved
   exact preserved
 
-/-- The assembled arrow is a structure-preserving map between the two glued models. -/
+/-- The assembled arrow is a structure-preserving map between the two glued models.
+
+Implementation notes: construct the arrow on the assembled carriers and primitive facts, then
+transport its endpoints to the glued models. Constructing it directly on the model projections
+would require reducing `glue` to verify the types of the preservation laws. -/
 noncomputable def glueMap : A.glue cover ⟶ B.glue cover := by
   let mapped : ContextStructure.Hom
       ⟨A.glueCarrier cover, A.glueCarrier_omitted cover, A.glueEvaluation cover, A.glueEvaluation_structural cover⟩

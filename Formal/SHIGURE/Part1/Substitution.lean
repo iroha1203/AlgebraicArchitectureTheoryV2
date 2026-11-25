@@ -54,6 +54,16 @@ theorem rename_letBind {a : sig.SortType} (ρ : Renaming Γ Δ)
     (init : Term sig Γ a) (body : Term sig (a :: Γ) s) :
     (Term.letBind init body).rename ρ = .letBind (init.rename ρ) (body.rename ρ.lift) := rfl
 
+/-- Transport a renamed term along the context equality used for its renaming. -/
+theorem rename_cast_context {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (ρ : Renaming Γ Δ) (t : Term sig Γ s) :
+    cast (congrArg (fun ctx => Term sig ctx s) target) (t.rename ρ) =
+      (cast (congrArg (fun ctx => Term sig ctx s) source) t).rename
+        (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ) := by
+  cases source
+  cases target
+  rfl
+
 /-- Renaming is interpreted by reading the corresponding coordinates of the assignment. -/
 theorem evaluates_rename (t : Term sig Γ s) (A : Structure sig) :
     ∀ {Δ : List sig.SortType} (ρ : Renaming Γ Δ) (e : Assignment A.carrier Δ) (y : A.carrier s),
@@ -184,6 +194,16 @@ theorem substitute_app (θ : Substitution sig Γ Δ) (op : Operation sig)
 theorem substitute_letBind (θ : Substitution sig Γ Δ) {a : sig.SortType}
     (init : Term sig Γ a) (body : Term sig (a :: Γ) s) :
     (init.letBind body).substitute θ = (init.substitute θ).letBind (body.substitute θ.lift) :=
+  rfl
+
+/-- Transport a substituted term along the context equality used for its substitution. -/
+theorem substitute_cast_context {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (θ : Substitution sig Γ Δ) (t : Term sig Γ s) :
+    cast (congrArg (fun ctx => Term sig ctx s) target) (t.substitute θ) =
+      (cast (congrArg (fun ctx => Term sig ctx s) source) t).substitute
+        (@cast (Substitution sig Γ Δ) (Substitution sig Γ' Δ') (congrArg₂ (Substitution sig) source target) θ) := by
+  cases source
+  cases target
   rfl
 
 /-- Theorem 1.8(1) for a tuple of arbitrary evaluated substitution values. -/
@@ -583,6 +603,12 @@ def write (eqn : OrderedEquation sig) : Written sig :=
 def writeVariables (eqn : OrderedEquation sig) (x y : Var eqn.context eqn.result)
     (left : eqn.left = .var x) (right : eqn.right = .var y) : Written sig :=
   ⟨eqn, .atom (.eq x y), .variablePair x y left right⟩
+
+/-- A variable-pair writing retains the same underlying ordered equation. -/
+theorem writeVariables_equation (eqn : OrderedEquation sig) (x y : Var eqn.context eqn.result)
+    (left : eqn.left = .var x) (right : eqn.right = .var y) :
+    (eqn.writeVariables x y left right).equation = eqn :=
+  rfl
 
 /-- The very same Law, with its exact conclusion, can be used in the presentation. -/
 def Written.toLaw (written : Written sig) : Law sig :=

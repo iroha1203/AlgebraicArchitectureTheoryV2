@@ -209,6 +209,11 @@ def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw 
 def AxiomsHold (data : NamedRingEquation laws name) (A : Structure sig) : Prop :=
   ∀ i ∈ data.axiomNames, (laws.statement i).Holds A
 
+/-- The named ring conditions are exactly the satisfaction of its registered axiom names. -/
+theorem axiomsHold_iff (data : NamedRingEquation laws name) (A : Structure sig) :
+    data.AxiomsHold A ↔ ∀ i ∈ data.axiomNames, (laws.statement i).Holds A :=
+  Iff.rfl
+
 /-- The selected Laws imply the ring axioms by soundness of the recorded derivations. -/
 theorem axioms_imply (data : NamedRingEquation laws name) (A : Structure sig)
     (holds : data.AxiomsHold A) (i : RingVocabulary.LawName) :

@@ -20,6 +20,10 @@ private def simplePair : OrderedEquation OmittedLaw.signature where
 private def atomicWriting : OrderedEquation.Written OmittedLaw.signature :=
   simplePair.writeVariables .here (.there .here) rfl rfl
 
+/-- The first writing retains the original ordered pair. -/
+private theorem atomicWriting_equation : atomicWriting.equation = simplePair :=
+  OrderedEquation.writeVariables_equation simplePair .here (.there .here) rfl rfl
+
 /-- Exercise strict substitution by replacing one variable with a bound operation and the other with a variable. -/
 private def replacement : Substitution OmittedLaw.signature [(), ()] [(), ()] :=
   ⟨fun i => match i with
@@ -44,6 +48,17 @@ theorem twice_ordered_some :
   rw [Selected.presentation_orderedEquation, PrimitivePresentation.orderedEquation_eq]
   simp only [twicePresentation, NamedRingEquation.ordered_none, Option.map_some, Option.isSome_some]
 
+/-- The selected side is transported along an equality of the original ordered pairs. -/
+private theorem selectPairSide_congr
+    (side : (eqn : OrderedEquation OmittedLaw.signature) → Term OmittedLaw.signature eqn.context eqn.result)
+    {p q : OrderedEquation OmittedLaw.signature} (same : p = q) :
+    HEq (Selected.selectTerm (U := full twicePresentation) (side p)
+      (Set.subset_univ _) (Set.mem_univ _) (Set.subset_univ _))
+      (Selected.selectTerm (U := full twicePresentation) (side q)
+        (Set.subset_univ _) (Set.mem_univ _) (Set.subset_univ _)) := by
+  cases same
+  rfl
+
 /-- The two different starting positions remain in their original order after selection. -/
 theorem positions_unchanged :
     let selected := Selected.selectWritten (U := full twicePresentation) atomicWriting (Set.subset_univ _)
@@ -52,9 +67,11 @@ theorem positions_unchanged :
     Set.mem_univ _
   constructor
   · refine (eq_of_heq (Selected.selectWritten_left atomicWriting (Set.subset_univ _) hs (Set.subset_univ _))).trans ?_
+    refine (eq_of_heq (selectPairSide_congr OrderedEquation.left atomicWriting_equation)).trans ?_
     change Selected.selectTerm (.var .here) _ _ _ = _
     rw [Selected.selectTerm_var, Selected.selectVar_here]
   · refine (eq_of_heq (Selected.selectWritten_right atomicWriting (Set.subset_univ _) hs (Set.subset_univ _))).trans ?_
+    refine (eq_of_heq (selectPairSide_congr OrderedEquation.right atomicWriting_equation)).trans ?_
     change Selected.selectTerm (.var (.there .here)) _ _ _ = _
     rw [Selected.selectTerm_var, Selected.selectVar_there, Selected.selectVar_here]
 

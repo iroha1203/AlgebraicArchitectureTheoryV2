@@ -223,15 +223,18 @@ def existsMono {body target : Formula T.signature (s :: Γ)}
 def existsManyMono : {Λ : List T.signature.SortType} →
     {p q : Formula T.signature (Λ ++ Γ)} →
     Derivation T p q → Derivation T (Formula.existsMany Λ p) (Formula.existsMany Λ q)
-  | [], _, _, d => d
-  | _ :: Λ, p, q, d => existsManyMono (Λ := Λ) (p := p.ex) (q := q.ex) (existsMono d)
+  | [], _, _, d => by simpa only [Formula.existsMany_nil] using d
+  | _ :: Λ, p, q, d => by
+    rw [Formula.existsMany_cons, Formula.existsMany_cons]
+    exact existsManyMono (Λ := Λ) (p := p.ex) (q := q.ex) (existsMono d)
 
 /-- Eliminate a block of witnesses from a conclusion that mentions only the old context. -/
 def existsManyElim : {Λ : List T.signature.SortType} →
     {body : Formula T.signature (Λ ++ Γ)} →
     Derivation T body (q.rename (Var.shift Λ)) → Derivation T (Formula.existsMany Λ body) q
-  | [], _, d => by simpa only [Var.shift_nil, Formula.rename_id] using d
+  | [], _, d => by simpa only [Var.shift_nil, Formula.rename_id, Formula.existsMany_nil] using d
   | s :: Λ, _, d => by
+    rw [Formula.existsMany_cons]
     apply existsManyElim (Λ := Λ)
     apply existsElimPlain
     rw [Formula.rename_comp]
@@ -244,6 +247,7 @@ def existsManyIntro : {Λ : List T.signature.SortType} →
     (witness : Renaming Λ Γ) → (body : Formula T.signature (Λ ++ Γ)) →
     Derivation T (body.rename (Renaming.append witness (fun i => i))) (Formula.existsMany Λ body)
   | [], _, body => by
+    rw [Formula.existsMany_nil]
     change Derivation T (body.rename (fun i => i)) body
     rw [Formula.rename_id]
     exact .refl body
@@ -259,7 +263,7 @@ def existsManyIntro : {Λ : List T.signature.SortType} →
       cases i with
       | here => exact Renaming.append_shift tail (fun j => j) (witness .here)
       | there i => rfl
-    rw [← same]
+    rw [← same, Formula.existsMany_cons]
     exact .cut (existsManyIntro tail filled) (existsManyMono (.existsIntro body head))
 
 /-- Read any component of a finite conjunction. -/

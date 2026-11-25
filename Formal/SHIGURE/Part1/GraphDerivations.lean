@@ -29,6 +29,7 @@ def existsManyElimWith : {Λ : List T.signature.SortType} →
   | [], _, _, _, d => by
     simpa only [Var.shift_nil, Formula.rename_id, Formula.existsMany_nil] using d
   | s :: Λ, c, q, body, d => by
+    rw [Formula.existsMany_cons]
     apply existsManyElimWith (Λ := Λ) (body := body.ex)
     apply Derivation.existsElim
     rw [Formula.rename_comp, Formula.rename_comp]

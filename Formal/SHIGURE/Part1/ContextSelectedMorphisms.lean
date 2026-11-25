@@ -212,8 +212,8 @@ theorem writeOnSort_apply (f : StructureMap C D) (s : P.signature.SortType)
 /-- The square of corresponding sort maps commutes. -/
 theorem writeOnSort_comm (f : StructureMap C D) (s : P.signature.SortType)
     (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
-    f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x) = writeCarrierEquiv D s keep (writeOnSort f s keep x) :=
-  ((writeCarrierEquiv D s keep).apply_symm_apply _).symm
+    f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x) = writeCarrierEquiv D s keep (writeOnSort f s keep x) := by
+  rw [writeOnSort_apply, Equiv.apply_symm_apply]
 
 /-- An ordinary structure map gives the original-name structural arrow. -/
 noncomputable def writeStructureMap (f : StructureMap C D) : ContextStructure.Hom (writeStructure C) (writeStructure D) where

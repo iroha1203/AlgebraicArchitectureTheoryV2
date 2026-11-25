@@ -664,6 +664,17 @@ theorem translatedSupport_relation (u : Interpretation P.theory Q.theory) (r : P
       sorts ((P.signature.relInputs r).map u.onSort) ∪ formula (u.translation.relation r) :=
   rfl
 
+/-- A translated Law retains its sorts and formulas as well as the proof for a required Law. -/
+theorem translatedSupport_law (u : Interpretation P.theory Q.theory) (i : P.laws.LawName) :
+    translatedSupport u (.law i) =
+      let law := P.laws.statement i
+      sorts (law.context.map u.onSort) ∪ formula (u.translation.formula law.input) ∪
+        formula (u.translation.formula law.conclusion) ∪
+        match role : P.laws.role i with
+        | .required => derivation (u.preserves ⟨i, role⟩)
+        | .additional | .derived => ∅ :=
+  rfl
+
 /-- The translation of a total symbol retains every declaration in its totality proof. -/
 theorem totality_derivation_support (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :
     derivation (u.total f) ⊆ translatedSupport u (.total f) := by

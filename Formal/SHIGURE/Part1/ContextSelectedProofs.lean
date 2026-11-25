@@ -24,6 +24,15 @@ def laws (U : DeclarationContext P) : LawDeclarations (signature U) where
 /-- The ordinary theory of the restriction is defined over the genuinely selected signature. -/
 def theory (U : DeclarationContext P) : Theory.{u} := (laws U).toTheory
 
+/-- A required Law of the ordinary theory is the selection of the corresponding scoped Law. -/
+theorem theory_law (name : (theory U).LawName) :
+    (theory U).law name = selectLaw
+      (U.scopedTheory.law ⟨⟨name.val.val, name.property⟩, name.val.property⟩)
+      (Declaration.lawBody_subset_of_mem name.val.property) := by
+  let original : U.scopedTheory.LawName := ⟨⟨name.val.val, name.property⟩, name.val.property⟩
+  exact selectLaw_congr (U.scopedTheory_law original).symm
+    (Declaration.lawBody_subset_of_mem name.val.property) (Declaration.lawBody_subset_of_mem name.val.property)
+
 /-- The selected structural rule retains its original rule and primitive name. -/
 def selectRule : (rule : GraphAxiom P.signature) → Declaration.graphRuleName rule ∈ U.declarations →
     GraphAxiom (signature U)
@@ -43,35 +52,154 @@ theorem selectRenaming_there_there {Γ : List P.signature.SortType} {s t : P.sig
   funext _ i
   simp only [selectRenaming_apply, selectVar_there, selectVar_ambientVar]
 
+/-- Compare graph atoms across equal operation names and variable contexts. -/
+private theorem graph_heq {S : Signature.{u}} {Γ Δ : List S.SortType} {op op' : Operation S}
+    (contextEq : Γ = Δ) (operationEq : op = op')
+    {ρ : Renaming op.arity.inputs Γ} {τ : Renaming op'.arity.inputs Δ}
+    {x : Var Γ op.arity.output} {y : Var Δ op'.arity.output}
+    (inputs : HEq (fun {s} => ρ (s := s)) (fun {s} => τ (s := s))) (output : HEq x y) :
+    HEq (Atomic.graph op ρ x) (Atomic.graph op' τ y) := by
+  cases contextEq
+  cases operationEq
+  have same : (fun {s} => ρ (s := s)) = (fun {s} => τ (s := s)) := eq_of_heq inputs
+  rw [same, eq_of_heq output]
+
+private theorem selectRenaming_there_heq {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (head : Declaration.sort s ∈ U.declarations) (kept : Declaration.sorts Γ ⊆ U.declarations) :
+    HEq (fun {t} => selectRenaming kept (Declaration.sorts_cons_subset head kept) (fun i => .there i) (s := t))
+      (fun {t} (i : Var (context Γ kept) t) => Var.there (t := (⟨s, head⟩ : SortName U)) i) := by
+  have shifted := selectRenaming_there_cast head kept kept (fun i => i)
+  simp only [selectRenaming_id] at shifted
+  exact (cast_heq _ _).symm.trans (heq_of_eq shifted)
+
+private theorem selectRenaming_twice_heq {Γ : List P.signature.SortType} {s t : P.signature.SortType}
+    (keepS : Declaration.sort s ∈ U.declarations) (keepT : Declaration.sort t ∈ U.declarations)
+    (keep : Declaration.sorts Γ ⊆ U.declarations) :
+    HEq (fun {a} => selectRenaming keep (Declaration.sorts_cons_subset keepT (Declaration.sorts_cons_subset keepS keep))
+      (fun i => .there (.there i)) (s := a))
+      (fun {a} (i : Var (context Γ keep) a) =>
+        Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) := by
+  let tail := Declaration.sorts_cons_subset keepS keep
+  let whole := Declaration.sorts_cons_subset keepT tail
+  let length := (context_cons t (s :: Γ) whole).trans
+    (congrArg (List.cons (⟨t, keepT⟩ : SortName U)) (context_cons s Γ tail))
+  have computation : @cast _ _ (congrArg (Renaming (context Γ keep)) length)
+      (selectRenaming keep whole (fun i => .there (.there i))) =
+      (fun {a} (i : Var (context Γ keep) a) =>
+        Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) :=
+    selectRenaming_there_there keepS keepT keep
+  exact (cast_heq _ _).symm.trans (heq_of_eq computation)
+
+private theorem selectVar_here_heq {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
+    HEq (selectVar keep (Var.here : Var (s :: Γ) s))
+      (Var.here : Var (⟨s, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ ::
+        context Γ ((tailSortsSubset s Γ).trans keep)) _) :=
+  (cast_heq _ _).symm.trans (heq_of_eq (selectVar_cast_here keep))
+
+private theorem selectVar_there_here_heq {Γ : List P.signature.SortType} {s t : P.signature.SortType}
+    (keep : Declaration.sorts (t :: s :: Γ) ⊆ U.declarations) :
+    HEq (selectVar keep (Var.there (t := t) (Var.here : Var (s :: Γ) s)))
+      (Var.there Var.here : Var
+        (⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ ::
+          ⟨s, keep (Declaration.sort_mem_sorts (List.mem_cons_of_mem t List.mem_cons_self))⟩ ::
+          context Γ ((tailSortsSubset s Γ).trans ((tailSortsSubset t (s :: Γ)).trans keep))) _) := by
+  let tail := (tailSortsSubset t (s :: Γ)).trans keep
+  let alignment := (context_cons t (s :: Γ) keep).trans
+    (congrArg (List.cons (⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ : SortName U))
+      (context_cons s Γ tail))
+  have computation : cast (congrArg (fun ctx => Var ctx _) alignment)
+      (selectVar keep (Var.there (t := t) (Var.here : Var (s :: Γ) s))) = .there .here := by
+    simp only [cast_eq, selectVar_there, selectVar_here]
+  exact (cast_heq _ _).symm.trans (heq_of_eq computation)
+
+private theorem selectVar_head_twice_heq {Γ : List P.signature.SortType} {s t : P.signature.SortType}
+    (keep : Declaration.sorts (t :: s :: Γ) ⊆ U.declarations) :
+    HEq (selectVar keep (Var.here : Var (t :: s :: Γ) t))
+      (Var.here : Var
+        (⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ ::
+          ⟨s, keep (Declaration.sort_mem_sorts (List.mem_cons_of_mem t List.mem_cons_self))⟩ ::
+          context Γ ((tailSortsSubset s Γ).trans ((tailSortsSubset t (s :: Γ)).trans keep))) _) := by
+  let tail := (tailSortsSubset t (s :: Γ)).trans keep
+  let alignment := (context_cons t (s :: Γ) keep).trans
+    (congrArg (List.cons (⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ : SortName U))
+      (context_cons s Γ tail))
+  have computation : cast (congrArg (fun ctx => Var ctx _) alignment)
+      (selectVar keep (Var.here : Var (t :: s :: Γ) t)) = .here := by
+    simp only [cast_eq, selectVar_here]
+  exact (cast_heq _ _).symm.trans (heq_of_eq computation)
+
+/-- The structural rule places the retained output before the retained input sorts. -/
+private theorem context_one_output (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (selected : Operation (signature U))
+    (arityEq : selected.arity = arity op keep)
+    (kept : Declaration.sorts (op.arity.output :: op.arity.inputs) ⊆ U.declarations) :
+    context (op.arity.output :: op.arity.inputs) kept = selected.arity.output :: selected.arity.inputs := by
+  rw [context_cons, arityEq]
+  rfl
+
+/-- The graph functionality rule places two copies of the retained output before the inputs. -/
+private theorem context_two_outputs (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (selected : Operation (signature U))
+    (arityEq : selected.arity = arity op keep)
+    (kept : Declaration.sorts (op.arity.output :: op.arity.output :: op.arity.inputs) ⊆ U.declarations) :
+    context (op.arity.output :: op.arity.output :: op.arity.inputs) kept =
+      selected.arity.output :: selected.arity.output :: selected.arity.inputs := by
+  rw [context_cons, context_cons, arityEq]
+  rfl
+
+/-- Align graph-atom formulas along the context equality of the structural rule. -/
+private theorem cast_atom_of_heq {S : Signature.{u}} {Γ Δ : List S.SortType} (same : Γ = Δ)
+    {a : Atomic S Γ} {b : Atomic S Δ} (aligned : HEq a b) :
+    cast (congrArg (Formula S) same) (.atom a) = .atom b := by
+  cases same
+  cases eq_of_heq aligned
+  rfl
+
+attribute [local irreducible] context operation in
 /-- A graph axiom remains the same structural axiom of the selected signature. -/
 theorem selectRule_toLaw (rule : GraphAxiom P.signature)
     (kept : Declaration.graphRuleName rule ∈ U.declarations) :
     selectLaw rule.toLaw (graphRuleSupport rule kept) = (selectRule rule kept).toLaw := by
-  cases rule with
-  | functional op =>
+  cases rule
+  case' functional op =>
     cases op <;>
       simp only [GraphAxiom.toLaw_functional, selectLaw_eq, selectFormula_conj, selectFormula_atom,
         selectAtomic_graph, selectAtomic_eq, selectGraph_total, selectGraph_partialOp, selectGraph_quantity,
-        selectRule, selectVar_here, selectVar_there] <;>
-      congr 6 <;> exact selectRenaming_there_there _ _ _
-  | totality f =>
+        selectRule, operation_total, operation_partialOp, operation_quantity]
+  case' totality f =>
     simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq, selectFormula_truth,
-      selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_total, selectRule, selectVar_here]
-    congr 6
-    exact selectRenaming_there _ _
-  | quantityTotality q =>
+      selectFormula_ex_cast, selectFormula_atom, selectAtomic_graph, selectGraph_total, selectRule]
+  case' quantityTotality q =>
     simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
-      selectFormula_truth, selectFormula_ex, selectFormula_atom, selectAtomic_graph, selectGraph_quantity, selectRule, selectVar_here]
-    congr 6
-    exact selectRenaming_there _ _
-  | graphImpliesDomain p =>
+      selectFormula_truth, selectFormula_ex_cast, selectFormula_atom, selectAtomic_graph, selectGraph_quantity, selectRule]
+  case' graphImpliesDomain p =>
     simp only [GraphAxiom.toLaw_graphImpliesDomain, selectLaw_eq, selectFormula_atom, selectAtomic_graph,
-      selectAtomic_domain, selectGraph_partialOp, selectRule, selectVar_here]
-    congr 6 <;> exact selectRenaming_there _ _
-  | domainImpliesGraph p =>
+      selectAtomic_domain, selectGraph_partialOp, selectRule]
+  case' domainImpliesGraph p =>
     simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
-      selectFormula_atom, selectFormula_ex, selectAtomic_domain, selectAtomic_graph, selectGraph_partialOp, selectRule, selectVar_here]
-    congr 6 <;> first | exact selectRenaming_id _ | exact selectRenaming_there _ _
+      selectFormula_atom, selectFormula_ex_cast, selectAtomic_domain, selectAtomic_graph, selectGraph_partialOp, selectRule]
+  all_goals congr 6
+  all_goals first
+    | rfl
+    | exact context_two_outputs _ _ _ (operation_arity_of_eq (operation_total _ _)) _
+    | exact context_two_outputs _ _ _ (operation_arity_of_eq (operation_partialOp _ _)) _
+    | exact context_two_outputs _ _ _ (operation_arity_of_eq (operation_quantity _ _)) _
+    | exact context_one_output _ _ _ (operation_arity_of_eq (operation_partialOp _ _)) _
+    | exact selectRenaming_id _
+    | exact selectRenaming_there _ _
+    | exact selectRenaming_there_there _ _ _
+    | exact selectRenaming_there_heq _ _
+    | exact selectRenaming_twice_heq _ _ _
+    | exact selectVar_here_heq _
+    | exact selectVar_head_twice_heq _
+    | exact selectVar_there_here_heq _
+    | apply cast_atom_of_heq (context_cons _ _ _)
+      apply graph_heq
+      · exact context_cons _ _ _
+      · rfl
+      · exact selectRenaming_there_heq _ _
+      · exact selectVar_here_heq _
 
 /-- The root sequent is included among the references of any original derivation. -/
 theorem derivation_root {Γ : List P.theory.signature.SortType} {p q : Formula P.theory.signature Γ}

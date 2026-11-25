@@ -284,6 +284,14 @@ private theorem selectVar_shift {Γ Δ : List P.signature.SortType}
     rw [selectVar_cast_there]
     exact (cast_var_there (context_append keepΓ hΔ) _).trans (congrArg Var.there (ih keepΓ))
 
+/-- Reindex the leading variable before or after appending the same tail context. -/
+private theorem inLeft_context_congr {S : Type u} {Γ Γ' : List S} {s : S}
+    (same : Γ = Γ') (i : Var Γ s) (Δ : List S) :
+    cast (congrArg (fun ctx => Var (ctx ++ Δ) s) same) (i.inLeft Δ) =
+      (cast (congrArg (fun ctx => Var ctx s) same) i).inLeft Δ := by
+  cases same
+  rfl
+
 /-- The selected inclusion of the left block keeps the same variable position. -/
 private theorem selectVar_inLeft {Γ Δ : List P.signature.SortType}
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -291,12 +299,33 @@ private theorem selectVar_inLeft {Γ Δ : List P.signature.SortType}
     cast (congrArg (fun Λ => Var Λ ⟨s, varKept hΓ i⟩) (context_append hΓ hΔ))
       (selectVar (appendSupport hΓ hΔ) (i.inLeft Δ)) = (selectVar hΓ i).inLeft (context Δ hΔ) := by
   induction i with
-  | here =>
-    simp only [Var.inLeft_here, selectVar_here]
-    exact cast_var_here (context_append ((tailSortsSubset _ _).trans hΓ) hΔ)
-  | there i ih =>
-    simp only [Var.inLeft_there, selectVar_there]
-    let keepΓ := (tailSortsSubset _ _).trans hΓ
+  | @here Γ t =>
+    let name : SortName U := ⟨t, varKept hΓ .here⟩
+    let alignment := context_cons t Γ hΓ
+    let step := congrArg (fun ctx => Var (ctx ++ context Δ hΔ) name) alignment
+    apply (cast_inj step).1
+    rw [cast_cast, inLeft_context_congr alignment, selectVar_cast_here, Var.inLeft_here, Var.inLeft_here]
+    let head := congrArg (fun ctx => Var ctx name) (context_cons t (Γ ++ Δ) (appendSupport hΓ hΔ))
+    let rest := congrArg (fun ctx => Var ctx name)
+      (congrArg (List.cons name) (context_append ((tailSortsSubset t Γ).trans hΓ) hΔ))
+    rw [show cast _ (selectVar _ Var.here) = cast rest (cast head (selectVar (appendSupport hΓ hΔ) Var.here)) from
+      (cast_cast head rest _).symm]
+    rw [selectVar_cast_here]
+    exact cast_var_here (context_append ((tailSortsSubset t Γ).trans hΓ) hΔ)
+  | @there Γ s t i ih =>
+    let keepΓ := (tailSortsSubset t Γ).trans hΓ
+    let name : SortName U := ⟨s, varKept hΓ (.there i)⟩
+    let first : SortName U := ⟨t, hΓ (Declaration.sort_mem_sorts List.mem_cons_self)⟩
+    let alignment := context_cons t Γ hΓ
+    let step := congrArg (fun ctx => Var (ctx ++ context Δ hΔ) name) alignment
+    apply (cast_inj step).1
+    rw [cast_cast, inLeft_context_congr alignment, selectVar_cast_there, Var.inLeft_there, Var.inLeft_there]
+    let head := congrArg (fun ctx => Var ctx name) (context_cons t (Γ ++ Δ) (appendSupport hΓ hΔ))
+    let rest := congrArg (fun ctx => Var ctx name) (congrArg (List.cons first) (context_append keepΓ hΔ))
+    rw [show cast _ (selectVar _ (Var.there (i.inLeft Δ))) =
+      cast rest (cast head (selectVar (appendSupport hΓ hΔ) (Var.there (t := t) (i.inLeft Δ)))) from
+      (cast_cast head rest _).symm]
+    rw [selectVar_cast_there]
     exact (cast_var_there (context_append keepΓ hΔ) _).trans (congrArg Var.there (ih keepΓ))
 
 /-- Retaining the existential closure provides the hidden context and the body's support. -/
@@ -743,15 +772,22 @@ theorem selectTerm_rename {Γ : List P.signature.SortType} {s : P.signature.Sort
     let ha := ht (Or.inl (Set.mem_singleton (Declaration.sort a)))
     let hΓ' := Declaration.sorts_cons_subset ha hΓ
     let hΔ' := Declaration.sorts_cons_subset ha hΔ
-    let body' := selectTerm body hΓ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
+    let source := context_cons a Γ hΓ'
+    let target := context_cons a Δ hΔ'
+    let head : SortName U := ⟨a, ha⟩
+    let transport := fun {C D : List (SortName U)} (same : C = D) =>
+      cast (congrArg (fun ctx => Term (signature U) ctx ⟨s, hs⟩) same)
+    let body' := transport source (selectTerm body hΓ' hs (fun _ hd => ht (Or.inr (Or.inr hd))))
     have first := hi ρ hΓ hΔ ha (fun _ hd => ht (Or.inr (Or.inl hd))) (fun _ hd => hRen (Or.inr (Or.inl hd)))
     have second := hb ρ.lift hΓ' hΔ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
       (fun _ hd => hRen (Or.inr (Or.inr hd)))
-    have lifted := selectRenaming_lift ha hΓ hΔ ρ
-    simp only [selectTerm_letBind, Term.rename_letBind]
-    exact congrArg₂ (Term.letBind (sig := signature U)) first (second.trans
-      (congrArg (fun (mapVars : Renaming (context (a :: Γ) hΓ') (context (a :: Δ) hΔ')) =>
-        body'.rename mapVars) lifted))
+    have moved := congrArg (transport target) second
+    dsimp only [transport] at moved
+    rw [Term.rename_cast_context source target] at moved
+    have lifted := congrArg (fun (mapVars : Renaming (head :: context Γ hΓ) (head :: context Δ hΔ)) =>
+      body'.rename mapVars) (selectRenaming_lift_cast ha hΓ hΔ ρ)
+    simp only [selectTerm_letBind_cast, Term.rename_letBind]
+    exact congrArg₂ (Term.letBind (sig := signature U)) first (moved.trans lifted)
 
 
 /-- Binding term arguments preserves the primitive references from the body. -/
@@ -1076,13 +1112,23 @@ theorem selectTerm_substitute {Γ : List P.signature.SortType} {s : P.signature.
     let ha := ht (Or.inl (Set.mem_singleton (Declaration.sort a)))
     let hΓ' := Declaration.sorts_cons_subset ha hΓ
     let hΔ' := Declaration.sorts_cons_subset ha hΔ
-    let body' := selectTerm body hΓ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
+    let source := context_cons a Γ hΓ'
+    let target := context_cons a Δ hΔ'
+    let head : SortName U := ⟨a, ha⟩
+    let transport := fun {C D : List (SortName U)} (same : C = D) =>
+      cast (congrArg (fun ctx => Term (signature U) ctx ⟨s, hs⟩) same)
+    let body' := transport source (selectTerm body hΓ' hs (fun _ hd => ht (Or.inr (Or.inr hd))))
     have first := hi θ hΓ hΔ ha (fun _ hd => ht (Or.inr (Or.inl hd))) hθ (fun _ hd => hSub (Or.inr (Or.inl hd)))
     have second := hb θ.lift hΓ' hΔ' hs (fun _ hd => ht (Or.inr (Or.inr hd)))
       (liftTermReferences θ hθ) (fun _ hd => hSub (Or.inr (Or.inr hd)))
-    simp only [selectTerm_letBind, Term.substitute_letBind]
-    exact congrArg₂ (Term.letBind (sig := signature U)) first (second.trans
-      (congrArg (fun replacement => Term.substitute replacement body') (selectSubstitution_lift θ hΓ hΔ hθ ha)))
+    have moved := congrArg (transport target) second
+    dsimp only [transport] at moved
+    rw [Term.substitute_cast_context source target] at moved
+    have lifted := congrArg (fun (replacement : Substitution (signature U)
+        (head :: context Γ hΓ) (head :: context Δ hΔ)) => body'.substitute replacement)
+      (selectSubstitution_lift_cast θ hΓ hΔ hθ ha)
+    simp only [selectTerm_letBind_cast, Term.substitute_letBind]
+    exact congrArg₂ (Term.letBind (sig := signature U)) first (moved.trans lifted)
 
 /-- A supported definedness guard supplies the result sort and references of each substitution term. -/
 theorem substitution_term_kept {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)

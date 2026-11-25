@@ -147,7 +147,7 @@ theorem ordinaryAssemble_comp {A B C : Model (Selected.theory U)}
   refine (unique _ (cover.ordinaryAssemble_piece (f.comp g))).trans (unique _ ?_).symm
   intro i
   rw [Functor.map_comp, cover.ordinaryAssemble_piece f, cover.ordinaryAssemble_piece g]
-  rfl
+  exact (OrdinaryMatch.comp_pieceMap (show _ ⟶ _ from f) (show _ ⟶ _ from g) i).symm
 
 /-- The ordinary restriction to an intersection is independent of the route to it. -/
 theorem ordinaryPullback_restrictions {V : DeclarationContext P} (inside : V ≤ U) (i : cover.Index) :

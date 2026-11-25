@@ -19,23 +19,36 @@ open CategoryTheory
 
 variable {P : PrimitivePresentation.{u}}
 
+attribute [local irreducible] readModel writeModel
+
+/-- Attach the read structure map to the actual read models using their structure projections. -/
+private noncomputable def readModelMap {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B) :
+    readModel A ⟶ readModel B :=
+  ObjectProperty.homMk (cast (congrArg₂ StructureMap (readModel_obj A).symm (readModel_obj B).symm)
+    (readStructureMap f.hom))
+
+private theorem readModelMap_onSort {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
+    (s : SortName U) (x : (readModel A).obj.carrier s) :
+    (readModelMap f).hom.onSort s x = cast (congrArg (fun S => S.carrier s) (readModel_obj B).symm)
+      (readOnSort f.hom s (cast (congrArg (fun S => S.carrier s) (readModel_obj A)) x)) := by
+  rw [readModelMap, ObjectProperty.homMk_hom,
+    StructureMap.cast_onSort (readModel_obj A).symm (readModel_obj B).symm, readStructureMap_onSort]
+
 /-- Read all objects and arrows as ordinary models of the selected theory. -/
 noncomputable def readFunctor (U : DeclarationContext P) : Models U ⥤ Model (theory U) where
   obj := readModel
-  map f := ObjectProperty.homMk (readStructureMap f.hom)
+  map f := readModelMap f
   map_id A := by
     apply Model.hom_ext
     intro s x
     rw [Model.id_apply]
-    change (readStructureMap (InducedCategory.Hom.hom (𝟙 A))).onSort s x = x
-    simp only [readStructureMap_onSort, readOnSort_apply, Models.id_onSort, Equiv.apply_symm_apply]
+    simp only [readModelMap_onSort, readOnSort_apply, Models.id_onSort, Equiv.apply_symm_apply, cast_cast]
+    rfl
   map_comp f g := by
     apply Model.hom_ext
     intro s x
     rw [Model.comp_apply]
-    change (readStructureMap (f ≫ g).hom).onSort s x =
-      (readStructureMap g.hom).onSort s ((readStructureMap f.hom).onSort s x)
-    simp only [readStructureMap_onSort, readOnSort_apply, Models.comp_onSort, Equiv.symm_apply_apply]
+    simp only [readModelMap_onSort, cast_cast, cast_eq, readOnSort_apply, Models.comp_onSort, Equiv.symm_apply_apply]
 
 /-- The object part of reading is the ordinary model on the selected signature. -/
 theorem readFunctor_obj {U : DeclarationContext P} (A : Models U) :
@@ -45,30 +58,45 @@ theorem readFunctor_obj {U : DeclarationContext P} (A : Models U) :
 /-- The read model has the carrier family of its read structure. -/
 theorem readFunctor_carrier_eq {U : DeclarationContext P} (A : Models U) :
     ((readFunctor U).obj A).obj.carrier = (readStructure A.obj).carrier :=
-  congrArg (fun M => M.obj.carrier) (readFunctor_obj A)
+  (congrArg (fun M => M.obj.carrier) (readFunctor_obj A)).trans
+    (congrArg Structure.carrier (readModel_obj A))
 
 /-- The ordinary component of a read map uses the original retained component. -/
 theorem readFunctor_onSort {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
     (s : SortName U) (x : ((readFunctor U).obj A).obj.carrier s) :
     ((readFunctor U).map f).hom.onSort s x = cast (congrFun (readFunctor_carrier_eq B).symm s)
       (readOnSort f.hom s (cast (congrFun (readFunctor_carrier_eq A) s) x)) :=
-  readStructureMap_onSort f.hom s x
+  readModelMap_onSort f s x
+
+/-- Attach the written structure map to the actual written models using their structure projections. -/
+private noncomputable def writeModelMap {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B) :
+    writeModel A ⟶ writeModel B :=
+  ObjectProperty.homMk (cast (congrArg₂ ContextStructure.Hom (writeModel_obj A).symm (writeModel_obj B).symm)
+    (writeStructureMap f.hom))
+
+private theorem writeModelMap_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
+    (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations) (x : (writeModel A).obj.carrier s) :
+    Models.onSort (writeModelMap f) s keep x = cast (congrArg (fun S => S.carrier s) (writeModel_obj B).symm)
+      (writeOnSort f.hom s keep (cast (congrArg (fun S => S.carrier s) (writeModel_obj A)) x)) := by
+  rw [writeModelMap, Models.onSort_homMk,
+    ContextStructure.Hom.cast_onSort (writeModel_obj A).symm (writeModel_obj B).symm, writeStructureMap_onSort]
 
 /-- Write ordinary models and arrows as the original-name model data. -/
 noncomputable def writeFunctor (U : DeclarationContext P) : Model (theory U) ⥤ Models U where
   obj := writeModel
-  map f := ObjectProperty.homMk (writeStructureMap f.hom)
+  map f := writeModelMap f
   map_id A := by
     apply Models.hom_ext
     intro s keep x
-    change (writeStructureMap (InducedCategory.Hom.hom (𝟙 A))).onSort s keep x = x
-    simp only [writeStructureMap_onSort, writeOnSort_apply, Model.id_apply, Equiv.symm_apply_apply]
+    change Models.onSort (writeModelMap (𝟙 A)) s keep x = x
+    simp only [writeModelMap_onSort, writeOnSort_apply, Model.id_apply, Equiv.symm_apply_apply, cast_cast]
+    rfl
   map_comp f g := by
     apply Models.hom_ext
     intro s keep x
-    change (writeStructureMap (f ≫ g).hom).onSort s keep x =
-      (writeStructureMap g.hom).onSort s keep ((writeStructureMap f.hom).onSort s keep x)
-    simp only [writeStructureMap_onSort, writeOnSort_apply, Model.comp_apply, Equiv.apply_symm_apply]
+    change Models.onSort (writeModelMap (f ≫ g)) s keep x =
+      Models.onSort (writeModelMap g) s keep (Models.onSort (writeModelMap f) s keep x)
+    simp only [writeModelMap_onSort, cast_cast, cast_eq, writeOnSort_apply, Model.comp_apply, Equiv.apply_symm_apply]
 
 /-- The object part of writing is the context model of the selected structure. -/
 theorem writeFunctor_obj {U : DeclarationContext P} (A : Model (theory U)) :
@@ -78,7 +106,8 @@ theorem writeFunctor_obj {U : DeclarationContext P} (A : Model (theory U)) :
 /-- The written model has the carrier family of its written structure. -/
 theorem writeFunctor_carrier_eq {U : DeclarationContext P} (A : Model (theory U)) :
     ((writeFunctor U).obj A).obj.carrier = (writeStructure A.obj).carrier :=
-  congrArg (fun M => M.obj.carrier) (writeFunctor_obj A)
+  (congrArg (fun M => M.obj.carrier) (writeFunctor_obj A)).trans
+    (congrArg ContextStructure.carrier (writeModel_obj A))
 
 /-- The written point map is the ordinary point map under the retained carrier identification. -/
 theorem writeFunctor_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
@@ -86,7 +115,7 @@ theorem writeFunctor_onSort {U : DeclarationContext P} {A B : Model (theory U)} 
     (x : ((writeFunctor U).obj A).obj.carrier s) :
     Models.onSort ((writeFunctor U).map f) s keep x = cast (congrFun (writeFunctor_carrier_eq B).symm s)
       (writeOnSort f.hom s keep (cast (congrFun (writeFunctor_carrier_eq A) s) x)) :=
-  writeStructureMap_onSort f.hom s keep x
+  writeModelMap_onSort f s keep x
 
 /-- Equality transport of ordinary model arrows only transports the corresponding point value. -/
 theorem ordinary_eqToHom_onSort {U : DeclarationContext P} {A B : Model (theory U)} (h : A = B)
@@ -141,16 +170,16 @@ theorem modelRestriction_eq {U V : DeclarationContext P} (inside : V ≤ U) :
 /-- Restricting ordinary models commutes strictly with the comparison on objects and arrows. -/
 theorem read_res {U V : DeclarationContext P} (inside : V ≤ U) :
     res inside ⋙ readFunctor V = readFunctor U ⋙ modelRestriction inside := by
-  rw [modelRestriction, ← Functor.assoc, read_comp_write, Functor.id_comp]
+  rw [modelRestriction_eq, ← Functor.assoc, read_comp_write, Functor.id_comp]
 
 /-- The ordinary restriction is strictly the identity on an identity inclusion. -/
 theorem modelRestriction_id (U : DeclarationContext P) : modelRestriction (le_refl U) = 𝟭 (Model (theory U)) := by
-  rw [modelRestriction, res_id, Functor.id_comp, write_comp_read]
+  rw [modelRestriction_eq, res_id, Functor.id_comp, write_comp_read]
 
 /-- Ordinary restriction composes strictly along inclusions. -/
 theorem modelRestriction_comp {U V W : DeclarationContext P} (inside : V ≤ U) (smaller : W ≤ V) :
     modelRestriction inside ⋙ modelRestriction smaller = modelRestriction (smaller.trans inside) := by
-  rw [modelRestriction, modelRestriction, modelRestriction]
+  rw [modelRestriction_eq, modelRestriction_eq, modelRestriction_eq]
   simp only [Functor.assoc]
   rw [← Functor.assoc (readFunctor V) (writeFunctor V), read_comp_write, Functor.id_comp,
     ← Functor.assoc (res inside) (res smaller), res_comp]
@@ -163,7 +192,7 @@ theorem modelRestriction_obj {U V : DeclarationContext P} (inside : V ≤ U) (A 
 /-- Restriction also commutes strictly with writing the retained graph data. -/
 theorem write_res {U V : DeclarationContext P} (inside : V ≤ U) :
     writeFunctor U ⋙ res inside = modelRestriction inside ⋙ writeFunctor V := by
-  rw [modelRestriction, Functor.assoc, Functor.assoc, read_comp_write, Functor.comp_id]
+  rw [modelRestriction_eq, Functor.assoc, Functor.assoc, read_comp_write, Functor.comp_id]
 
 /-- The ordinary model categories and their literal reducts form a contravariant functor. -/
 noncomputable def modelPresheaf (P : PrimitivePresentation.{u}) :

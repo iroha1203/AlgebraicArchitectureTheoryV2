@@ -381,6 +381,12 @@ def termDomain (A : ContextStructure U) {Γ : List P.signature.SortType} {s : P.
     (t : U.TermIn Γ s) : Set (Assignment A.carrier Γ) :=
   {e | ∃ result, A.evaluates t e result}
 
+/-- An input belongs to the term domain exactly when evaluation returns a result there. -/
+theorem mem_termDomain_iff (A : ContextStructure U) {Γ : List P.signature.SortType}
+    {s : P.signature.SortType} (t : U.TermIn Γ s) (e : Assignment A.carrier Γ) :
+    e ∈ A.termDomain t ↔ ∃ result, A.evaluates t e result :=
+  Iff.rfl
+
 /-- A supported formula has the same truth before and after forgetting. -/
 theorem restrict_holds_iff (A : ContextStructure U) (inside : V ≤ U) {Γ : List P.signature.SortType}
     (p : Formula P.signature Γ) (keep : Declaration.formulaSupport p ⊆ V.declarations)
@@ -409,8 +415,7 @@ theorem restrict_evaluates_iff (A : ContextStructure U) (inside : V ≤ U)
         (mapAssignment (selectedMap V A.carrier)
           ((tailSortsSubset s Γ).trans (termSortSupport t)) e)
         (selectedMap V A.carrier s (varKept (termSortSupport t) .here) y) := by
-  unfold evaluates
-  rw [restrict_holds_iff, mapAssignment_cons]
+  rw [evaluates_iff, evaluates_iff, restrict_holds_iff, mapAssignment_cons]
 
 /-- Forgetting preserves the domain of every supported term at the retained inputs. -/
 theorem restrict_termDomain_iff (A : ContextStructure U) (inside : V ≤ U)
@@ -419,6 +424,7 @@ theorem restrict_termDomain_iff (A : ContextStructure U) (inside : V ≤ U)
     e ∈ (A.restrict inside).termDomain t ↔
       mapAssignment (selectedMap V A.carrier) ((tailSortsSubset s Γ).trans (termSortSupport t)) e ∈
         A.termDomain ⟨t.val, t.property.trans inside⟩ := by
+  rw [mem_termDomain_iff, mem_termDomain_iff]
   constructor
   · rintro ⟨y, evaluated⟩
     exact ⟨_, (A.restrict_evaluates_iff inside t e y).1 evaluated⟩

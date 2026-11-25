@@ -2320,6 +2320,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedPresentation
   DeclarationContext.Selected.presentation_law_statement,
   DeclarationContext.Selected.presentation_ringEquation,
+  -- ContextSelectedProofs
+  DeclarationContext.Selected.theory_law,
   -- ContextSelectedRoundtrip
   DeclarationContext.Selected.read_write_value,
   -- ContextSelectedStructures
@@ -2336,6 +2338,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.writeCarrierEquiv_eq_cast,
   DeclarationContext.Selected.writeStructure_evaluation,
   DeclarationContext.Selected.writeStructure_matches,
+  DeclarationContext.Selected.readModel_obj,
+  DeclarationContext.Selected.writeModel_obj,
   -- ContextSelectedSyntax
   DeclarationContext.Selected.selectGraph_total,
   DeclarationContext.Selected.selectGraph_partialOp,
@@ -2391,6 +2395,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RestrictedEvaluation.structural_iff,
   RestrictedEvaluation.structural_rule,
   ContextStructure.evaluates_iff,
+  ContextStructure.mem_termDomain_iff,
   -- Contexts
   DeclarationCover.readFunctor_project,
   -- DeclarationContexts
@@ -2453,6 +2458,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- Derivations
   NamedOrderedEquation.eq_of_written_eq,
   NamedRingEquation.toNamedOrderedEquation_written,
+  NamedRingEquation.axiomsHold_iff,
   NamedRingEquation.ordered_none,
   PrimitivePresentation.orderedEquation_eq,
   -- IdentityInterpretation
@@ -2485,6 +2491,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.translatedSupport_partialOp,
   Declaration.translatedSupport_quantity,
   Declaration.translatedSupport_relation,
+  Declaration.translatedSupport_law,
   ReadingInputMap.retainsSourceSorts_iff,
   -- ReadingExamples
   Chapter1.AdditionalCoefficientInputs.additional_retains_source_sort,
@@ -2536,14 +2543,19 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   PrimitivePresentation.lawAttachments_equation,
   PrimitivePresentation.lawAttachments_ring_of_none,
   PrimitivePresentation.lawAttachments_proof_of_additional,
+  -- StructureMaps
+  StructureMap.cast_onSort,
   -- Substitution
   Term.rename_var,
+  Term.rename_cast_context,
   Substitution.ext,
   Term.substitute_var,
   Term.substitute_app,
   Term.substitute_letBind,
+  Term.substitute_cast_context,
   Formula.substitute_cast_context,
   OrderedEquation.substitute_eq,
+  OrderedEquation.writeVariables_equation,
   OrderedEquation.Written.toLaw_eq,
   RingEquation.Written.toOrdered_result,
   RingEquation.Written.toOrdered_mk,

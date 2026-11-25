@@ -41,7 +41,11 @@ theorem readStructure_carrier_eq (A : ContextStructure U) (s : SortName U) :
     (readStructure A).carrier s = A.carrier s.val :=
   rfl
 
-/-- Identify the carrier at a retained name with the corresponding carrier of the read structure. -/
+/-- Identify the carrier at a retained name with the corresponding carrier of the read structure.
+
+Implementation notes: the equivalence targets the actual carrier of the read structure.
+Casting along `readStructure_carrier_eq` exposes the identification to consumers. An identity
+equivalence on the original carrier would require consumers to reduce `readStructure`. -/
 def readCarrierEquiv (A : ContextStructure U) : CarrierEquiv U A.carrier (readStructure A).carrier :=
   fun s keep => Equiv.cast (readStructure_carrier_eq A ⟨s, keep⟩).symm
 
@@ -257,15 +261,27 @@ theorem writeStructure_matches (B : Structure (signature U)) :
 noncomputable def readModel (A : Models U) : Model (theory U) :=
   ⟨readStructure A.obj, fun name => by
     let old : U.scopedTheory.LawName := ⟨⟨name.val.val, name.property⟩, name.val.property⟩
+    change ((theory U).law name).Holds (readStructure A.obj)
+    rw [theory_law]
     exact ((readStructure_matches A.obj).law_iff (U.scopedTheory.law old)
       (Declaration.lawBody_subset_of_mem old.property)).2 (A.satisfies_required old)⟩
+
+/-- The read model carries the structure read from its context model. -/
+theorem readModel_obj (A : Models U) : (readModel A).obj = readStructure A.obj :=
+  rfl
 
 /-- An ordinary model yields a context model with the same retained Law satisfaction. -/
 noncomputable def writeModel (A : Model (theory U)) : Models U :=
   ⟨writeStructure A.obj, fun name => by
     let selected : (theory U).LawName := ⟨⟨name.val.val, name.property⟩, name.val.property⟩
+    have held : ((theory U).law selected).Holds A.obj := A.property selected
+    rw [theory_law] at held
     exact ((writeStructure_matches A.obj).law_iff (U.scopedTheory.law name)
-      (Declaration.lawBody_subset_of_mem name.property)).1 (A.property selected)⟩
+      (Declaration.lawBody_subset_of_mem name.property)).1 held⟩
+
+/-- The written model carries the structure written from its ordinary model. -/
+theorem writeModel_obj (A : Model (theory U)) : (writeModel A).obj = writeStructure A.obj :=
+  rfl
 
 end DeclarationContext.Selected
 end SHIGURE
