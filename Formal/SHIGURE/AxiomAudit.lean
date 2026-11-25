@@ -3439,7 +3439,29 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.selectedCopyingRestriction_changeIso,
   Copying.restrictCopyingNativeIso,
   Copying.selectedConstantCopyingModelFunctor,
-  Copying.selectedCopyingNativeIso
+  Copying.selectedCopyingNativeIso,
+  TensorRealization.NaturalTensorHom,
+  TensorRealization.NaturalTensorHom.ext,
+  TensorRealization.NaturalTensorHom.ofNative,
+  TensorRealization.NaturalTensorHom.native,
+  TensorRealization.NaturalTensorHom.app_unit,
+  TensorRealization.NaturalTensorHom.app_tmul,
+  TensorRealization.NaturalTensorHom.ofNative_native,
+  TensorRealization.NaturalTensorHom.native_ofNative,
+  TensorRealization.NaturalTensorHom.id,
+  TensorRealization.NaturalTensorHom.comp,
+  TensorRealization.NaturalTensorHom.ofNative_id,
+  TensorRealization.NaturalTensorHom.ofNative_comp,
+  TensorRealization.NaturalTensorHom.nativeEquiv,
+  TensorRealization.fixedCoefficientTensorHomEquiv,
+  TensorRealization.fixedCoefficientTensorHomEquiv_id,
+  TensorRealization.fixedCoefficientTensorHomEquiv_comp,
+  TensorRealization.dualNumberEpsilonMap,
+  TensorRealization.dualNumberEpsilonMap_apply,
+  TensorRealization.dualNumberEpsilonMap_not_extension,
+  TensorRealization.dualNumberEpsilonMap_not_natural,
+  TensorRealization.dualNumberEpsilonSemanticMap,
+  TensorRealization.dualNumberEpsilonSemanticMap_not_extension
 ]
 
 end SHIGURE.AxiomAudit
