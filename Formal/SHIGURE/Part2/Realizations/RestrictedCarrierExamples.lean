@@ -63,12 +63,22 @@ private def permutationRule : StructureRule binarySignature (Cat.of Permutations
   positionalInput Γ := permutationProduct (Position Γ)
   inputIso _ := Iso.refl _
   unaryIso s := NatIso.ofComponents (fun _ => (unaryEquiv s).toIso) (fun _ => rfl)
-  probes := Set.univ
-  probe_ext h := by simpa using h _ (Set.mem_univ _) (𝟙 _)
-  tuplePoint {P} _ _ _ p := ↾fun x i => p i x
-  tuplePoint_map {P} _ Γ {A B} f p := rfl
+  Probe := Cat.of Type
+  probe := 𝟭 _
+  pointProbe := PUnit
+  pointTerminal := Limits.IsTerminal.ofUniqueHom (fun _ => ↾fun _ => PUnit.unit) (fun _ _ => rfl)
+  probe_ext h := by simpa using h _ (𝟙 _)
+  tuplePoint P _ _ p := ↾fun x i => p i x
+  tuplePoint_map P Γ {A B} f p := rfl
+  tuplePoint_restrict {P Q} f Γ A p := rfl
+  tuplePoint_nil A := by
+    refine ⟨⟨↾fun _ => PUnit.unit, rfl, ?_⟩⟩
+    apply ConcreteCategory.hom_ext (C := Type)
+    intro x
+    funext i
+    exact nomatch i.2
   tuplePoint_ext Γ A {Y f g} h := by
-    exact h (Position Γ → Fin 3) (Set.mem_univ _) (fun i => ↾fun x => x i)
+    exact h (Position Γ → Fin 3) (fun i => ↾fun x => x i)
   total _ _ := ↾fun (xs : Position [false, true] → Fin 3) => xs ⟨true, .there .here⟩
   relation _ r := nomatch r
   domain _ p := nomatch p
@@ -90,8 +100,6 @@ def threeStatePermutationMode (base : CoefficientRing) :
   admissible _ _ := True
   Native := PUnit
   nativeStates _ _ := Fin 3
-  pointCarrier _ _ := PUnit
-  pointCarrier_isProbe _ _ := Set.mem_univ _
   realizeNative _ _ := ()
   nativePoints _ _ _ x := ↾fun _ => x
   change _ _ := ()
@@ -124,6 +132,20 @@ theorem secondSortSwap_not_preserving :
   intro h
   have he := congrArg (fun f : (Position [false, true] → Fin 3) ⟶ Fin 3 => f (fun _ => 0)) (h.total ())
   exact (by decide : (0 : Fin 3) ≠ 1) he
+
+/-- The nullary square for a specified zero holds exactly for the permutations that fix zero. -/
+theorem nullaryZero_preserved_iff (σ : Equiv.Perm (Fin 3)) :
+    let A : Bool → Permutations := fun _ => SingleObj.star (Equiv.Perm (Fin 3))
+    let f : A ⟶ A := fun _ => σ
+    let z : (permutationRule.input []).obj A ⟶ (Fin 3 : Type) := ↾fun _ => 0
+    z ≫ (↾fun s : Fin 3 => σ s) = (permutationRule.input []).map f ≫ z ↔ σ 0 = 0 := by
+  intro A f z
+  rw [permutationRule.nullary_square_iff]
+  constructor
+  · intro h
+    exact congrArg (fun p : (PUnit : Type) ⟶ Fin 3 => p PUnit.unit) h
+  · intro h
+    exact congrArg (fun y : Fin 3 => (↾fun _ : PUnit => y : (PUnit : Type) ⟶ Fin 3)) h
 
 private def permutationModel (base : CoefficientRing) (R : CoefficientAlgebra base) :
     (threeStatePermutationMode base).Models R :=

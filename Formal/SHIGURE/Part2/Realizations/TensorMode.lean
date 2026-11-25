@@ -167,6 +167,10 @@ private def tensorTuplePoint {K : Type u} (Γ : List K) (A : K → ModuleCat.{u}
     ModuleCat.of R R ⟶ (tensorInputs R Γ).obj A :=
   (tensorPointEquiv _).symm (PiTensorProduct.tprod R (fun i => tensorPointEquiv (A i.1) (p i)))
 
+private def tensorProbeTerminal : Limits.IsTerminal (⟨PUnit.unit⟩ : Discrete PUnit.{1}) :=
+  Limits.IsTerminal.ofUniqueHom (fun P => eqToHom (Subsingleton.elim P _))
+    (fun _ _ => Subsingleton.elim _ _)
+
 /-- Total operations and quantities are the maps from their typed input tensor
 products. The full-domain signature has no relation or partial symbols. -/
 def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
@@ -180,35 +184,48 @@ def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
   positionalInput Γ := tensorPositionInputs R (TensorPosition Γ)
   inputIso _ := Iso.refl _
   unaryIso := tensorUnaryIso R
-  probes := {ModuleCat.of R R}
+  Probe := Cat.of (Discrete PUnit.{1})
+  probe := (Functor.const _).obj (ModuleCat.of R R)
+  pointProbe := ⟨PUnit.unit⟩
+  pointTerminal := tensorProbeTerminal
   probe_ext {X Y f g} h := by
     apply ModuleCat.hom_ext
     apply LinearMap.ext
     intro x
     have hx := congrArg (tensorPointEquiv Y)
-      (h (ModuleCat.of R R) (Set.mem_singleton _) ((tensorPointEquiv X).symm x))
+      (h ⟨PUnit.unit⟩ ((tensorPointEquiv X).symm x))
     change f.hom ((tensorPointEquiv X) ((tensorPointEquiv X).symm x)) =
       g.hom ((tensorPointEquiv X) ((tensorPointEquiv X).symm x)) at hx
     simpa only [Equiv.apply_symm_apply] using hx
-  tuplePoint {P} hp Γ A p := by
-    change P = ModuleCat.of R R at hp
-    subst P
-    exact tensorTuplePoint Γ A p
-  tuplePoint_map {P} hp Γ {A B} f p := by
-    change P = ModuleCat.of R R at hp
-    subst P
+  tuplePoint _ Γ A p := tensorTuplePoint Γ A p
+  tuplePoint_map P Γ {A B} f p := by
     apply (tensorPointEquiv _).injective
     change tensorPointEquiv ((tensorInputs R Γ).obj B) (tensorTuplePoint Γ A p ≫ (tensorInputs R Γ).map f) =
       tensorPointEquiv ((tensorInputs R Γ).obj B) (tensorTuplePoint Γ B (fun i => p i ≫ f i.1))
     simp only [tensorTuplePoint, tensorPointEquiv_map, Equiv.apply_symm_apply]
     exact PiTensorProduct.map_tprod (fun i : TensorPosition Γ => (f i.1).hom) _
+  tuplePoint_restrict {P Q} f Γ A p := by
+    change tensorTuplePoint Γ A (fun i => 𝟙 (ModuleCat.of R R) ≫ p i) = 𝟙 _ ≫ tensorTuplePoint Γ A p
+    simp only [Category.id_comp]
+  tuplePoint_nil A := by
+    let e := (inputTensorUnit R A).toModuleIso
+    have h : tensorTuplePoint [] A (fun i => nomatch i.2) = e.inv := by
+      apply (tensorPointEquiv _).injective
+      rw [tensorTuplePoint, Equiv.apply_symm_apply]
+      change PiTensorProduct.tprod R (fun i : TensorPosition ([] : List sig.SortType) =>
+        tensorPointEquiv (A i.1) (nomatch i.2)) = (inputTensorUnit R A).symm 1
+      apply (inputTensorUnit R A).injective
+      rw [LinearEquiv.apply_symm_apply, inputTensorUnit_tprod]
+    change IsIso (tensorTuplePoint [] A (fun i => nomatch i.2))
+    rw [h]
+    infer_instance
   tuplePoint_ext Γ A {Y f g} h := by
     apply ModuleCat.hom_ext
     apply PiTensorProduct.ext
     apply MultilinearMap.ext
     intro x
     have hx := congrArg (tensorPointEquiv Y)
-      (h (ModuleCat.of R R) (Set.mem_singleton _) (fun i => (tensorPointEquiv (A i.1)).symm (x i)))
+      (h ⟨PUnit.unit⟩ (fun i => (tensorPointEquiv (A i.1)).symm (x i)))
     let point := tensorTuplePoint Γ A (fun i => (tensorPointEquiv (A i.1)).symm (x i))
     change f.hom (tensorPointEquiv _ point) = g.hom (tensorPointEquiv _ point) at hx
     simpa only [point, tensorTuplePoint, Equiv.apply_symm_apply] using hx
@@ -348,10 +365,6 @@ def tensorModeOfPresentation (base : CoefficientRing.{u}) (T : RealizationTheory
   nativeStates A s :=
     letI := base.ring
     A.carrier s
-  pointCarrier S _ :=
-    letI := S.scalars.ring
-    ModuleCat.of S.scalars.Carrier S.scalars.Carrier
-  pointCarrier_isProbe _ _ := Set.mem_singleton _
   realizeNative S := rule.change S.fromBase
   nativePoints S A s x :=
     letI := S.scalars.ring
