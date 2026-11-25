@@ -57,19 +57,21 @@ structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Realizati
   Native : Type (u + 1)
   /-- The original states at each sort, which are the input to the native point map. -/
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
+  /-- The source object of the native designated points at this sort. -/
+  pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : (rule R).Ambient
   /-- The rule for realizing a native input at the chosen coefficients. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Object R
   /-- The correspondence of native and realized states. -/
   nativePoints (R : CoefficientAlgebra base) (A : Native) (s : T.signature.SortType) :
-    nativeStates A s → ((rule R).pointObject ⟶ (rule R).view.obj ((rule R).carrier (realizeNative R A) s))
+    nativeStates A s → (pointCarrier R s ⟶ (rule R).view.obj ((rule R).carrier (realizeNative R A) s))
   /-- Transport the primitive structure along a coefficient map. -/
   change {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S) :
     Object R → Object (R.extend f)
   /-- The state map induced by the change of coefficients. -/
   changePoints {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S)
     (A : Object R) (s : T.signature.SortType) :
-    ((rule R).pointObject ⟶ (rule R).view.obj ((rule R).carrier A s)) →
-      ((rule (R.extend f)).pointObject ⟶
+    (pointCarrier R s ⟶ (rule R).view.obj ((rule R).carrier A s)) →
+      (pointCarrier (R.extend f) s ⟶
         (rule (R.extend f)).view.obj ((rule (R.extend f)).carrier (change f A) s))
   /-- Interpretation of each required Law of the selected theory. -/
   holds (R : CoefficientAlgebra base) (A : Object R) (statement : T.Statement) : Prop
@@ -81,7 +83,7 @@ variable (mode : CoefficientRealizationMode base T)
 
 /-- Designated points are actual maps to the realized carrier. -/
 abbrev Points (R : CoefficientAlgebra base) (A : mode.Object R) (s : T.signature.SortType) :=
-  (mode.rule R).pointObject ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
+  mode.pointCarrier R s ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
 
 /-- A structural morphism maps designated points by composition with its carrier arrow. -/
 def mapPoints {R : CoefficientAlgebra base} {A B : (mode.rule R).Category}

@@ -132,7 +132,7 @@ def holds (S : CoefficientAlgebra base) (A : TensorAt S.scalars U.presentation.s
         (A.restrict (DeclarationContext.Selected.namesOfLE law.property))
 
 /-- The coefficient mode of the closed tensor declarations. -/
-def mode (rule : TensorCoefficientRule U.presentation.signature) :
+def modeWithRule (rule : TensorCoefficientRule U.presentation.signature) :
     CoefficientRealizationMode base U.presentation :=
   tensorModeOfPresentation base U.presentation U.fullDomain rule U.holds
 

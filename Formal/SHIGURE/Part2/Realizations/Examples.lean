@@ -1,7 +1,8 @@
 import Formal.SHIGURE.Part2.Realizations.CopyingMode
 import Formal.SHIGURE.Part2.Realizations.CopyingReading
 import Formal.SHIGURE.Part2.Realizations.RestrictedCarrierExamples
-import Formal.SHIGURE.Part2.Realizations.TensorDeclarations
+import Formal.SHIGURE.Part2.Realizations.SheafPredicateExamples
+import Formal.SHIGURE.Part2.Realizations.TensorCoefficientExtension
 import Mathlib.Data.ZMod.Basic
 
 /-!
@@ -250,33 +251,6 @@ private def pointedSourceTheory : Theory :=
 def pointedTheory : TensorTheory integers pointedSignature Unit :=
   TensorTheory.read pointedSourceTheory fullDomainScope (fun _ => equalMarksReading)
 
-/-- Extend both designated elements by mapping each to its unit tensor. -/
-def coefficientRule : TensorCoefficientRule pointedSignature where
-  change {R S} f A :=
-    letI := R.ring
-    letI := S.ring
-    letI := f.toAlgebra
-    pointedStructure (ModuleCat.of S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier ()))
-      (fun n => (1 : S.Carrier) ⊗ₜ[R.Carrier] A.designated n rfl)
-  carrierIso {R S} f A s :=
-    letI := R.ring
-    letI := S.ring
-    letI := f.toAlgebra
-    by
-      cases s
-      exact LinearEquiv.refl S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier ())
-  total_unit {R S} f A n xs := by
-    letI := R.ring
-    letI := S.ring
-    letI := f.toAlgebra
-    change (1 : S.Carrier) ⊗ₜ[R.Carrier] A.designated n rfl =
-      (1 : S.Carrier) ⊗ₜ[R.Carrier] A.total n xs
-    congr 2
-    apply congrArg (A.total n)
-    funext i
-    exact nomatch i.2
-  quantity_unit _ _ q := nomatch q
-
 private def sameMarks : TensorStructure ℤ pointedSignature :=
   pointedStructure (ModuleCat.of ℤ ℤ) (fun _ => 1)
 
@@ -285,12 +259,12 @@ private def differentMarks : TensorStructure ℤ pointedSignature :=
 
 /-- The same nonzero integer element in both operations satisfies the written tensor Law. -/
 theorem integer_equal_marks_model :
-    (tensorMode integers pointedTheory coefficientRule).modelProperty integerAlgebra sameMarks :=
+    (tensorMode integers pointedTheory).modelProperty integerAlgebra sameMarks :=
   ⟨trivial, fun _ => rfl⟩
 
 /-- The same required equation fails when the two operations give 1 and 0. -/
 theorem integer_different_marks_not_model :
-    ¬ (tensorMode integers pointedTheory coefficientRule).modelProperty integerAlgebra differentMarks := by
+    ¬ (tensorMode integers pointedTheory).modelProperty integerAlgebra differentMarks := by
   intro h
   have hEq := (TensorTheory.modelProperty_read_iff pointedSourceTheory fullDomainScope
     (fun _ => equalMarksReading) integerAlgebra differentMarks).mp h ()

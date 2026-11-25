@@ -65,6 +65,7 @@ inductive TensorExpression (R : Type u) (sig : Signature.{u}) :
   | rightUnit (X) : TensorExpression R sig (.tensor X .unit) X
   | rightUnitInv (X) : TensorExpression R sig X (.tensor X .unit)
   | emptyArguments : TensorExpression R sig .unit (.arguments [])
+  | emptyArgumentsInv : TensorExpression R sig (.arguments []) .unit
   | singleArgument (s) : TensorExpression R sig (.sort s) (.arguments [s])
   | singleArgumentInv (s) : TensorExpression R sig (.arguments [s]) (.sort s)
   | permuteArguments {Γ Δ : List sig.SortType} (e : TensorPosition Γ ≃ TensorPosition Δ)
@@ -153,6 +154,9 @@ def TensorExpression.eval (A : TensorStructure R sig) {X Y : TensorShape sig.Sor
   | .emptyArguments =>
       letI : IsEmpty ((s : sig.SortType) × Var [] s) := ⟨fun a => nomatch a.2⟩
       (PiTensorProduct.isEmptyEquiv ((s : sig.SortType) × Var [] s)).symm.toLinearMap
+  | .emptyArgumentsInv =>
+      letI : IsEmpty ((s : sig.SortType) × Var [] s) := ⟨fun a => nomatch a.2⟩
+      (PiTensorProduct.isEmptyEquiv ((s : sig.SortType) × Var [] s)).toLinearMap
   | .singleArgument s => (singleArgumentEquiv A.carrier s).symm.toLinearMap
   | .singleArgumentInv s => (singleArgumentEquiv A.carrier s).toLinearMap
   | .permuteArguments e sorts => (reindexTensor A Sigma.fst Sigma.fst e sorts).toLinearMap
@@ -162,6 +166,12 @@ def TensorExpression.eval (A : TensorStructure R sig) {X Y : TensorShape sig.Sor
   | .tensor f g => TensorProduct.map (eval A f) (eval A g)
   | .add f g => eval A f + eval A g
   | .smul r f => r • eval A f
+
+/-- The two comparisons between the empty input and the scalar unit are inverse. -/
+theorem TensorExpression.emptyArguments_roundtrip (A : TensorStructure R sig) :
+    (TensorExpression.comp .emptyArguments .emptyArgumentsInv).eval A = LinearMap.id := by
+  letI : IsEmpty (TensorPosition ([] : List sig.SortType)) := ⟨fun i => nomatch i.2⟩
+  exact (PiTensorProduct.isEmptyEquiv (TensorPosition ([] : List sig.SortType))).comp_symm
 
 /-- Change the scalar literals of a tensor expression while keeping its typed syntax. -/
 def TensorExpression.mapScalars {S : Type u} [CommRing S] (g : R →+* S)
@@ -178,6 +188,7 @@ def TensorExpression.mapScalars {S : Type u} [CommRing S] (g : R →+* S)
   | .rightUnit X => .rightUnit X
   | .rightUnitInv X => .rightUnitInv X
   | .emptyArguments => .emptyArguments
+  | .emptyArgumentsInv => .emptyArgumentsInv
   | .singleArgument s => .singleArgument s
   | .singleArgumentInv s => .singleArgumentInv s
   | .permuteArguments e sorts => .permuteArguments e sorts

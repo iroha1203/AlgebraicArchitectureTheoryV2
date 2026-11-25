@@ -187,6 +187,17 @@ private def copyingPointTerminal (S : Scheme.{u}) : IsTerminal (constantCarrier 
     intro x
     exact Subsingleton.elim _ _)
 
+private def copyingNullaryPoints (S : Scheme.{u}) {K : Type u} :
+    (Functor.const (K → ZariskiSheaf S)).obj (constantCarrier S PUnit) ≅ copyingInputs S ([] : List K) :=
+  NatIso.ofComponents (fun A =>
+    { hom := copyingTuplePoint [] A (fun i => nomatch i.2)
+      inv := toOneState (sheafTuple A [])
+      hom_inv_id := (copyingPointTerminal S).hom_ext _ _
+      inv_hom_id := (sheafTupleFanIsLimit A []).hom_ext (fun ⟨i⟩ => nomatch i.2) })
+    (by
+      intro _ B _
+      exact (sheafTupleFanIsLimit B []).hom_ext (fun ⟨i⟩ => nomatch i.2))
+
 /-- The primitive diagrams of a copying realization use Cartesian tuples and
 the inclusions of the relation and domain subsheaves. -/
 def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
@@ -200,11 +211,19 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
   positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)
   inputIso := copyingInputIso S
   unaryIso := copyingUnaryIso S
+  pointObject := constantCarrier S PUnit
+  nullaryInput := copyingNullaryPoints S
+  total := SheafStructure.total
+  relation A r := realizedPredicate (A.relation r)
+  domain A p := realizedPredicate (A.partialDomain p)
+  partialValue := SheafStructure.partialValue
+  quantity := SheafStructure.quantity
+
+/-- The Cartesian input of the copying mode is tested on all sheaf tuples. -/
+def copyingInputPoints (sig : Signature.{u}) (S : Scheme.{u}) :
+    StructureInputPoints (copyingStructureRule sig S) where
   Probe := Cat.of (ZariskiSheaf S)
   probe := 𝟭 _
-  pointProbe := constantCarrier S PUnit
-  pointTerminal := copyingPointTerminal S
-  probe_ext h := by simpa using h _ (𝟙 _)
   tuplePoint P Γ A p := copyingTuplePoint Γ A p
   tuplePoint_map P Γ {A B} f p := by
     apply (sheafTupleFanIsLimit B Γ).hom_ext
@@ -221,21 +240,10 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
     change copyingTuplePoint Γ A (fun j => f ≫ p j) ≫ sheafTupleProj A i.2 =
       (f ≫ copyingTuplePoint Γ A p) ≫ sheafTupleProj A i.2
     rw [Category.assoc, copyingTuplePoint_proj, copyingTuplePoint_proj]
-  tuplePoint_nil A := by
-    refine ⟨⟨toOneState (sheafTuple A []), ?_, ?_⟩⟩
-    · exact (copyingPointTerminal S).hom_ext _ _
-    · apply (sheafTupleFanIsLimit A []).hom_ext
-      rintro ⟨i⟩
-      exact nomatch i.2
   tuplePoint_ext Γ A {Y f g} h := by
     have hi : copyingTuplePoint Γ A (fun i => sheafTupleProj A i.2) = 𝟙 _ :=
       (sheafTupleFanIsLimit A Γ).lift_self
     simpa only [hi, Category.id_comp] using h (sheafTuple A Γ) (fun i => sheafTupleProj A i.2)
-  total := SheafStructure.total
-  relation A r := realizedPredicate (A.relation r)
-  domain A p := realizedPredicate (A.partialDomain p)
-  partialValue := SheafStructure.partialValue
-  quantity := SheafStructure.quantity
 
 /-- A nullary copying input is the terminal sheaf. -/
 def copyingStructureRule_nullaryIso (sig : Signature.{u}) (S : Scheme.{u}) :
@@ -362,6 +370,7 @@ def copyingMode (base : CoefficientRing.{u}) (T : Theory.{u}) :
   admissible _ := IsZariskiSplit T
   Native := Structure T.signature
   nativeStates A := A.carrier
+  pointCarrier R _ := (copyingStructureRule T.signature R.scalars.spec).pointObject
   realizeNative R := constantStructure R.scalars.spec
   nativePoints R A s x := (copyingPointEquiv ((constantStructure R.scalars.spec A).carrier s)).symm
     (nativeState R.scalars.spec (Over.mk (𝟙 R.scalars.spec)) x)

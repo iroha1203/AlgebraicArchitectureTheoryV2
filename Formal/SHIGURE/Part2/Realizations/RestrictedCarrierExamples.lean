@@ -52,6 +52,16 @@ private def binarySignature : Signature where
   partialArity := Empty.elim
   quantityArity := Empty.elim
 
+private def permutationEmptyIso : (PUnit : Type) ≅ (Position [] → Fin 3) :=
+  { hom := ↾fun _ i => nomatch i.2
+    inv := ↾fun _ => PUnit.unit
+    hom_inv_id := rfl
+    inv_hom_id := by
+      apply ConcreteCategory.hom_ext (C := Type)
+      intro x
+      funext i
+      exact nomatch i.2 }
+
 private def permutationRule : StructureRule binarySignature (Cat.of Permutations) Unit where
   carrier _ _ := SingleObj.star (Equiv.Perm (Fin 3))
   Ambient := Cat.of Type
@@ -63,27 +73,28 @@ private def permutationRule : StructureRule binarySignature (Cat.of Permutations
   positionalInput Γ := permutationProduct (Position Γ)
   inputIso _ := Iso.refl _
   unaryIso s := NatIso.ofComponents (fun _ => (unaryEquiv s).toIso) (fun _ => rfl)
-  Probe := Cat.of Type
-  probe := 𝟭 _
-  pointProbe := PUnit
-  pointTerminal := Limits.IsTerminal.ofUniqueHom (fun _ => ↾fun _ => PUnit.unit) (fun _ _ => rfl)
-  probe_ext h := by simpa using h _ (𝟙 _)
-  tuplePoint P _ _ p := ↾fun x i => p i x
-  tuplePoint_map P Γ {A B} f p := rfl
-  tuplePoint_restrict {P Q} f Γ A p := rfl
-  tuplePoint_nil A := by
-    refine ⟨⟨↾fun _ => PUnit.unit, rfl, ?_⟩⟩
+  pointObject := PUnit
+  nullaryInput := NatIso.ofComponents (fun _ => permutationEmptyIso) (by
+    intro A B f
     apply ConcreteCategory.hom_ext (C := Type)
     intro x
     funext i
-    exact nomatch i.2
-  tuplePoint_ext Γ A {Y f g} h := by
-    exact h (Position Γ → Fin 3) (fun i => ↾fun x => x i)
+    exact nomatch i.2)
   total _ _ := ↾fun (xs : Position [false, true] → Fin 3) => xs ⟨true, .there .here⟩
   relation _ r := nomatch r
   domain _ p := nomatch p
   partialValue _ p := nomatch p
   quantity _ q := nomatch q
+
+/-- The permutation example uses the actual Cartesian tuple of every declared state. -/
+def permutationInputPoints : StructureInputPoints permutationRule where
+  Probe := Cat.of Type
+  probe := 𝟭 _
+  tuplePoint P _ _ p := ↾fun x i => p i x
+  tuplePoint_map P Γ {A B} f p := rfl
+  tuplePoint_restrict {P Q} f Γ A p := rfl
+  tuplePoint_ext Γ A {Y f g} h := by
+    exact h (Position Γ → Fin 3) (fun i => ↾fun x => x i)
 
 private def permutationTheory : RealizationTheory where
   signature := binarySignature
@@ -100,6 +111,7 @@ def threeStatePermutationMode (base : CoefficientRing) :
   admissible _ _ := True
   Native := PUnit
   nativeStates _ _ := Fin 3
+  pointCarrier _ _ := permutationRule.pointObject
   realizeNative _ _ := ()
   nativePoints _ _ _ x := ↾fun _ => x
   change _ _ := ()

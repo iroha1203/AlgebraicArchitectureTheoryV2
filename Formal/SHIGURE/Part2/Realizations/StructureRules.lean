@@ -20,11 +20,12 @@ formed. For example, permutations may be the allowed maps even though the
 inputs of operations and the states of points are formed in sets. A mode
 constructs its inputs from the declared positions. The copying and tensor
 modes supply their respective comparisons with Cartesian and tensor products.
-Each input is tested on tuples of generalized points. The tuple comparison
+A mode can also compare its inputs with tuples of generalized points. The tuple comparison
 makes carrier maps act on every entry and requires the resulting tuples to
 determine arrows out of the input object. Comparing after restriction along
 a test map gives the same tuple as restricting each entry before comparison.
-The terminal test represents specified points and the unique empty input.
+The point object represents the empty input. Each mode also specifies
+how it reads native points of a carrier.
 -/
 
 open CategoryTheory
@@ -53,37 +54,10 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
       positionalInput Γ
   /-- A single input is naturally the carrier of its declared sort. -/
   unaryIso (s : sig.SortType) : input [s] ≅ Pi.eval (fun _ : sig.SortType => C) s ⋙ view
-  /-- Test objects and the actual restrictions between their generalized points. -/
-  Probe : Cat.{hp, dp}
-  /-- Represent the tests and associated restrictions in the diagram category. -/
-  probe : Probe ⥤ Ambient
-  /-- The distinguished test from which specified points are represented. -/
-  pointProbe : Probe
-  /-- Every test has a canonical restriction of a specified point. -/
-  pointTerminal : Limits.IsTerminal pointProbe
-  /-- The represented probes distinguish ambient arrows. -/
-  probe_ext {X Y : Ambient} {f g : X ⟶ Y} :
-    (∀ (P : Probe) (p : probe.obj P ⟶ X), p ≫ f = p ≫ g) → f = g
-  /-- Map a generalized tuple containing every declared entry into the input object. -/
-  tuplePoint (P : Probe) (Γ : List sig.SortType) (A : sig.SortType → C) :
-    (∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ view.obj (A i.1)) →
-      (probe.obj P ⟶ (input Γ).obj A)
-  /-- The input map applies the specified carrier map on every entry before comparison. -/
-  tuplePoint_map (P : Probe) (Γ : List sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B)
-    (p : ∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ view.obj (A i.1)) :
-    tuplePoint P Γ A p ≫ (input Γ).map f = tuplePoint P Γ B (fun i => p i ≫ view.map (f i.1))
-  /-- Building a tuple commutes with restricting every entry along the same probe map. -/
-  tuplePoint_restrict {P Q : Probe} (g : Q ⟶ P) (Γ : List sig.SortType) (A : sig.SortType → C)
-    (p : ∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ view.obj (A i.1)) :
-    tuplePoint Q Γ A (fun i => probe.map g ≫ p i) = probe.map g ≫ tuplePoint P Γ A p
-  /-- The unique empty tuple is represented by an isomorphism from the point object. -/
-  tuplePoint_nil (A : sig.SortType → C) :
-    IsIso (tuplePoint pointProbe [] A (fun i => nomatch i.2))
-  /-- Generalized tuples determine an arrow out of the interpreted input object. -/
-  tuplePoint_ext (Γ : List sig.SortType) (A : sig.SortType → C) {Y : Ambient}
-    {f g : (input Γ).obj A ⟶ Y} :
-    (∀ (P : Probe) (p : ∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ view.obj (A i.1)),
-      tuplePoint P Γ A p ≫ f = tuplePoint P Γ A p ≫ g) → f = g
+  /-- The source object for a nullary primitive value. -/
+  pointObject : Ambient
+  /-- The empty arity has the same point object at every carrier family. -/
+  nullaryInput : (Functor.const (sig.SortType → C)).obj pointObject ≅ input []
   /-- A total operation from its entire input object. -/
   total (A : Object) (f : sig.Total) : (input (sig.totalArity f).inputs).obj (carrier A) ⟶
     view.obj (carrier A (sig.totalArity f).output)
@@ -100,20 +74,35 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
   quantity (A : Object) (q : sig.Quantity) : (input (sig.quantityArity q).inputs).obj (carrier A) ⟶
     view.obj (carrier A (sig.quantityArity q).output)
 
+/-- A pointwise interpretation of inputs for modes that use generalized tuples. -/
+structure StructureInputPoints {sig : Signature.{u}} {C : Cat.{v, w}} {Object : Type t}
+    (rule : StructureRule sig C Object) where
+  /-- Test objects and the actual restrictions between their generalized points. -/
+  Probe : Cat.{hp, dp}
+  /-- Represent the tests and restrictions in the diagram category. -/
+  probe : Probe ⥤ rule.Ambient
+  /-- Map a tuple of the declared entries into the interpreted input. -/
+  tuplePoint (P : Probe) (Γ : List sig.SortType) (A : sig.SortType → C) :
+    (∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ rule.view.obj (A i.1)) →
+      (probe.obj P ⟶ (rule.input Γ).obj A)
+  /-- Applying the input map computes the comparison of the changed entries. -/
+  tuplePoint_map (P : Probe) (Γ : List sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B)
+    (p : ∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ rule.view.obj (A i.1)) :
+    tuplePoint P Γ A p ≫ (rule.input Γ).map f = tuplePoint P Γ B (fun i => p i ≫ rule.view.map (f i.1))
+  /-- Building a tuple commutes with restricting every entry along the same probe map. -/
+  tuplePoint_restrict {P Q : Probe} (g : Q ⟶ P) (Γ : List sig.SortType) (A : sig.SortType → C)
+    (p : ∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ rule.view.obj (A i.1)) :
+    tuplePoint Q Γ A (fun i => probe.map g ≫ p i) = probe.map g ≫ tuplePoint P Γ A p
+  /-- Generalized tuples determine an arrow out of the interpreted input object. -/
+  tuplePoint_ext (Γ : List sig.SortType) (A : sig.SortType → C) {Y : rule.Ambient}
+    {f g : (rule.input Γ).obj A ⟶ Y} :
+    (∀ (P : Probe) (p : ∀ i : (s : sig.SortType) × Var Γ s, probe.obj P ⟶ rule.view.obj (A i.1)),
+      tuplePoint P Γ A p ≫ f = tuplePoint P Γ A p ≫ g) → f = g
+
 namespace StructureRule
 
 variable {sig : Signature.{u}} {C : Cat.{v, w}} {Object : Type t}
 variable (rule : StructureRule sig C Object)
-
-/-- Specified points of a carrier are arrows from the represented terminal test. -/
-abbrev pointObject := rule.probe.obj rule.pointProbe
-
-/-- A constant tuple in any test is obtained by restricting the tuple of specified points. -/
-theorem tuplePoint_constant (P : rule.Probe) (Γ : List sig.SortType) (A : sig.SortType → C)
-    (p : ∀ i : (s : sig.SortType) × Var Γ s, rule.pointObject ⟶ rule.view.obj (A i.1)) :
-    rule.tuplePoint P Γ A (fun i => rule.probe.map (rule.pointTerminal.from P) ≫ p i) =
-      rule.probe.map (rule.pointTerminal.from P) ≫ rule.tuplePoint rule.pointProbe Γ A p :=
-  rule.tuplePoint_restrict (rule.pointTerminal.from P) Γ A p
 
 /-- On an input, changing carriers is the combination of just the declared argument maps. -/
 theorem input_map_positions (Γ : List sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B) :
@@ -146,20 +135,18 @@ theorem input_map_unary_eq_iff (s : sig.SortType) {A B : sig.SortType → C} (f 
     apply (cancel_mono ((rule.unaryIso s).hom.app B)).mp
     simp only [rule.input_map_unary, h]
 
-/-- The empty input is the same point object used to specify a state of a carrier. -/
-noncomputable def nullaryInputIso (A : sig.SortType → C) : rule.pointObject ≅ (rule.input []).obj A :=
-  letI := rule.tuplePoint_nil A
-  asIso (rule.tuplePoint rule.pointProbe [] A (fun i => nomatch i.2))
+/-- Identify the empty input with the point object. -/
+def nullaryInputIso (A : sig.SortType → C) : rule.pointObject ≅ (rule.input []).obj A :=
+  rule.nullaryInput.app A
 
 /-- Changing the carriers fixes the unique empty tuple. -/
 theorem nullaryInputIso_natural {A B : sig.SortType → C} (f : A ⟶ B) :
     (rule.nullaryInputIso A).hom ≫ (rule.input []).map f = (rule.nullaryInputIso B).hom := by
-  change rule.tuplePoint rule.pointProbe [] A _ ≫ (rule.input []).map f =
-    rule.tuplePoint rule.pointProbe [] B _
-  rw [rule.tuplePoint_map]
-  congr 1
-  funext i
-  exact nomatch i.2
+  have h := rule.nullaryInput.hom.naturality f
+  change 𝟙 rule.pointObject ≫ rule.nullaryInput.hom.app B =
+    rule.nullaryInput.hom.app A ≫ (rule.input []).map f at h
+  rw [Category.id_comp] at h
+  exact h.symm
 
 /-- A square for a nullary primitive is exactly preservation of its specified point. -/
 theorem nullary_square_iff {A B : sig.SortType → C} (f : A ⟶ B)
@@ -170,22 +157,22 @@ theorem nullary_square_iff {A B : sig.SortType → C} (f : A ⟶ B)
     rule.nullaryInputIso_natural]
 
 /-- The operation square agrees with the square on every tuple of generalized points. -/
-theorem total_preservation_iff_onTuples {A B : Object}
+theorem total_preservation_iff_onTuples (tests : StructureInputPoints rule) {A B : Object}
     (f : ∀ s, rule.carrier A s ⟶ rule.carrier B s) (op : sig.Total) :
     let Γ := (sig.totalArity op).inputs
     (rule.total A op ≫ rule.view.map (f _) = (rule.input Γ).map f ≫ rule.total B op) ↔
-      ∀ (P : rule.Probe)
-        (p : ∀ i : (s : sig.SortType) × Var Γ s, rule.probe.obj P ⟶ rule.view.obj (rule.carrier A i.1)),
-        rule.tuplePoint P Γ (rule.carrier A) p ≫ rule.total A op ≫ rule.view.map (f _) =
-          rule.tuplePoint P Γ (rule.carrier B) (fun i => p i ≫ rule.view.map (f i.1)) ≫ rule.total B op := by
+      ∀ (P : tests.Probe)
+        (p : ∀ i : (s : sig.SortType) × Var Γ s, tests.probe.obj P ⟶ rule.view.obj (rule.carrier A i.1)),
+        tests.tuplePoint P Γ (rule.carrier A) p ≫ rule.total A op ≫ rule.view.map (f _) =
+          tests.tuplePoint P Γ (rule.carrier B) (fun i => p i ≫ rule.view.map (f i.1)) ≫ rule.total B op := by
   intro Γ
   constructor
   · intro h P p
-    rw [h, ← Category.assoc, rule.tuplePoint_map]
+    rw [h, ← Category.assoc, tests.tuplePoint_map]
   · intro h
-    apply rule.tuplePoint_ext Γ (rule.carrier A)
+    apply tests.tuplePoint_ext Γ (rule.carrier A)
     intro P p
-    rw [← Category.assoc _ ((rule.input Γ).map f), rule.tuplePoint_map]
+    rw [← Category.assoc _ ((rule.input Γ).map f), tests.tuplePoint_map]
     exact h P p
 
 /-- All the preservation conditions of equation (2.1) for the interpreted primitive diagrams. -/
