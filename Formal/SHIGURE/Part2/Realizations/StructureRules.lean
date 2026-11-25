@@ -19,6 +19,9 @@ formed. For example, permutations may be the allowed maps even though the
 inputs of operations and the states of points are formed in sets. A mode
 constructs its inputs from the declared positions. The copying and tensor
 modes supply their respective comparisons with Cartesian and tensor products.
+Each input is tested on tuples of generalized points. The tuple comparison
+makes carrier maps act on every entry and requires the resulting tuples to
+determine arrows out of the input object.
 -/
 
 open CategoryTheory
@@ -47,6 +50,23 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
       positionalInput Γ
   /-- A single input is naturally the carrier of its declared sort. -/
   unaryIso (s : sig.SortType) : input [s] ≅ Pi.eval (fun _ : sig.SortType => C) s ⋙ view
+  /-- Objects from which the mode tests generalized tuples. -/
+  probes : Set Ambient
+  /-- The probes distinguish arrows between the objects in the ambient category. -/
+  probe_ext {X Y : Ambient} {f g : X ⟶ Y} :
+    (∀ P ∈ probes, ∀ p : P ⟶ X, p ≫ f = p ≫ g) → f = g
+  /-- Map a generalized tuple containing every declared entry into the input object. -/
+  tuplePoint {P : Ambient} (_ : P ∈ probes) (Γ : List sig.SortType) (A : sig.SortType → C) :
+    (∀ i : (s : sig.SortType) × Var Γ s, P ⟶ view.obj (A i.1)) → (P ⟶ (input Γ).obj A)
+  /-- The input map applies the specified carrier map on every entry before comparison. -/
+  tuplePoint_map {P : Ambient} (hp : P ∈ probes) (Γ : List sig.SortType)
+    {A B : sig.SortType → C} (f : A ⟶ B) (p : ∀ i : (s : sig.SortType) × Var Γ s, P ⟶ view.obj (A i.1)) :
+    tuplePoint hp Γ A p ≫ (input Γ).map f = tuplePoint hp Γ B (fun i => p i ≫ view.map (f i.1))
+  /-- Generalized tuples determine an arrow out of the interpreted input object. -/
+  tuplePoint_ext (Γ : List sig.SortType) (A : sig.SortType → C) {Y : Ambient}
+    {f g : (input Γ).obj A ⟶ Y} :
+    (∀ (P : Ambient) (hp : P ∈ probes) (p : ∀ i : (s : sig.SortType) × Var Γ s, P ⟶ view.obj (A i.1)),
+      tuplePoint hp Γ A p ≫ f = tuplePoint hp Γ A p ≫ g) → f = g
   /-- A total operation from its entire input object. -/
   total (A : Object) (f : sig.Total) : (input (sig.totalArity f).inputs).obj (carrier A) ⟶
     view.obj (carrier A (sig.totalArity f).output)
@@ -98,6 +118,25 @@ theorem input_map_unary_eq_iff (s : sig.SortType) {A B : sig.SortType → C} (f 
   · intro h
     apply (cancel_mono ((rule.unaryIso s).hom.app B)).mp
     simp only [rule.input_map_unary, h]
+
+/-- The operation square agrees with the square on every tuple of generalized points. -/
+theorem total_preservation_iff_onTuples {A B : Object}
+    (f : ∀ s, rule.carrier A s ⟶ rule.carrier B s) (op : sig.Total) :
+    let Γ := (sig.totalArity op).inputs
+    (rule.total A op ≫ rule.view.map (f _) = (rule.input Γ).map f ≫ rule.total B op) ↔
+      ∀ (P : rule.Ambient) (hp : P ∈ rule.probes)
+        (p : ∀ i : (s : sig.SortType) × Var Γ s, P ⟶ rule.view.obj (rule.carrier A i.1)),
+        rule.tuplePoint hp Γ (rule.carrier A) p ≫ rule.total A op ≫ rule.view.map (f _) =
+          rule.tuplePoint hp Γ (rule.carrier B) (fun i => p i ≫ rule.view.map (f i.1)) ≫ rule.total B op := by
+  intro Γ
+  constructor
+  · intro h P hp p
+    rw [h, ← Category.assoc, rule.tuplePoint_map]
+  · intro h
+    apply rule.tuplePoint_ext Γ (rule.carrier A)
+    intro P hp p
+    rw [← Category.assoc _ ((rule.input Γ).map f), rule.tuplePoint_map]
+    exact h P hp p
 
 /-- All the preservation conditions of equation (2.1) for the interpreted primitive diagrams. -/
 structure Preserves {A B : Object} (f : ∀ s, rule.carrier A s ⟶ rule.carrier B s) : Prop where

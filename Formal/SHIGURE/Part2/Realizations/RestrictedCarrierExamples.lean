@@ -6,8 +6,9 @@ import Mathlib.CategoryTheory.SingleObj
 # A mode with restricted carrier arrows
 
 The carrier category has one object and the permutations of a three-state
-set. The operation diagrams and inputs live in the Cartesian category of
-sets. The unary identity operation preserves every allowed map.
+set at each of two sorts. The operation diagrams and inputs live in the
+Cartesian category of sets. The binary operation takes the second input
+as a state of the first sort, so the two permutations must agree.
 -/
 
 open CategoryTheory
@@ -24,12 +25,12 @@ private def permutationProduct (I : Type) : (I → Permutations) ⥤ Type where
   obj _ := I → Fin 3
   map f := ↾fun x i => (show Equiv.Perm (Fin 3) from f i) (x i)
 
-private abbrev Position (Γ : List Unit) := (s : Unit) × Var Γ s
+private abbrev Position (Γ : List Bool) := (s : Bool) × Var Γ s
 
-private abbrev permutationInputs (Γ : List Unit) : (Unit → Permutations) ⥤ Type :=
-  Pi.comap (fun _ : Unit => Permutations) (fun i : Position Γ => i.1) ⋙ permutationProduct (Position Γ)
+private abbrev permutationInputs (Γ : List Bool) : (Bool → Permutations) ⥤ Type :=
+  Pi.comap (fun _ : Bool => Permutations) (fun i : Position Γ => i.1) ⋙ permutationProduct (Position Γ)
 
-private def unaryEquiv (s : Unit) : (Position [s] → Fin 3) ≃ Fin 3 where
+private def unaryEquiv (s : Bool) : (Position [s] → Fin 3) ≃ Fin 3 where
   toFun x := x ⟨s, .here⟩
   invFun a _ := a
   left_inv x := by
@@ -40,18 +41,18 @@ private def unaryEquiv (s : Unit) : (Position [s] → Fin 3) ≃ Fin 3 where
     | there i => exact nomatch i
   right_inv _ := rfl
 
-private def unarySignature : Signature where
-  SortType := Unit
+private def binarySignature : Signature where
+  SortType := Bool
   Total := Unit
   Rel := Empty
   Partial := Empty
   Quantity := Empty
-  totalArity _ := ⟨[()], ()⟩
+  totalArity _ := ⟨[false, true], false⟩
   relInputs := Empty.elim
   partialArity := Empty.elim
   quantityArity := Empty.elim
 
-private def permutationRule : StructureRule unarySignature (Cat.of Permutations) Unit where
+private def permutationRule : StructureRule binarySignature (Cat.of Permutations) Unit where
   carrier _ _ := SingleObj.star (Equiv.Perm (Fin 3))
   Ambient := Cat.of Type
   view := permutationView
@@ -62,54 +63,25 @@ private def permutationRule : StructureRule unarySignature (Cat.of Permutations)
   positionalInput Γ := permutationProduct (Position Γ)
   inputIso _ := Iso.refl _
   unaryIso s := NatIso.ofComponents (fun _ => (unaryEquiv s).toIso) (fun _ => rfl)
-  total _ _ := ↾fun (xs : Position [()] → Fin 3) => xs ⟨(), .here⟩
+  probes := Set.univ
+  probe_ext h := by simpa using h _ (Set.mem_univ _) (𝟙 _)
+  tuplePoint {P} _ _ _ p := ↾fun x i => p i x
+  tuplePoint_map {P} _ Γ {A B} f p := rfl
+  tuplePoint_ext Γ A {Y f g} h := by
+    exact h (Position Γ → Fin 3) (Set.mem_univ _) (fun i => ↾fun x => x i)
+  total _ _ := ↾fun (xs : Position [false, true] → Fin 3) => xs ⟨true, .there .here⟩
   relation _ r := nomatch r
   domain _ p := nomatch p
   partialValue _ p := nomatch p
   quantity _ q := nomatch q
 
 private def permutationTheory : RealizationTheory where
-  signature := unarySignature
+  signature := binarySignature
   LawName := Empty
   Statement := Empty
   law := Empty.elim
 
-private def groupPositionInputs : (Γ : List Unit) → (Position Γ → Permutations) ⥤ Permutations
-  | [] => (Functor.const _).obj (SingleObj.star (Equiv.Perm (Fin 3)))
-  | s :: _ => Pi.eval (fun _ : Position (s :: _) => Permutations) ⟨s, .here⟩
-
-private def groupInputs (Γ : List Unit) : (Unit → Permutations) ⥤ Permutations :=
-  Pi.comap (fun _ : Unit => Permutations) (fun i : Position Γ => i.1) ⋙ groupPositionInputs Γ
-
-private def permutationGroupRule : StructureRule unarySignature (Cat.of Permutations) Unit where
-  carrier _ _ := SingleObj.star (Equiv.Perm (Fin 3))
-  Ambient := Cat.of Permutations
-  view := 𝟭 _
-  view_faithful := inferInstance
-  input := groupInputs
-  positionalInput := groupPositionInputs
-  inputIso _ := Iso.refl _
-  unaryIso _ := Iso.refl _
-  total _ _ := 𝟙 (SingleObj.star (Equiv.Perm (Fin 3)))
-  relation _ r := nomatch r
-  domain _ p := nomatch p
-  partialValue _ p := nomatch p
-  quantity _ q := nomatch q
-
-/-- The permutation category itself can support primitive diagrams, using the
-first declared position for nonempty inputs. -/
-def permutationGroupHomEquiv :
-    ((show permutationGroupRule.Category from ()) ⟶ (show permutationGroupRule.Category from ())) ≃
-      Equiv.Perm (Fin 3) where
-  toFun f := f.val ()
-  invFun σ := ⟨fun _ => σ, by
-    refine ⟨fun _ => ?_, nofun, nofun, nofun⟩
-    change 𝟙 (SingleObj.star (Equiv.Perm (Fin 3))) ≫ σ = σ ≫ 𝟙 _
-    rw [Category.id_comp, Category.comp_id]⟩
-  left_inv f := Subtype.ext (funext fun ⟨⟩ => rfl)
-  right_inv _ := rfl
-
-/-- The three-state unary identity realization takes permutations as its allowed maps. -/
+/-- The three-state realization takes permutations as the allowed maps on each sort. -/
 def threeStatePermutationMode (base : CoefficientRing) :
     CoefficientRealizationMode base permutationTheory where
   Object _ := Unit
@@ -119,6 +91,7 @@ def threeStatePermutationMode (base : CoefficientRing) :
   Native := PUnit
   nativeStates _ _ := Fin 3
   pointCarrier _ _ := PUnit
+  pointCarrier_isProbe _ _ := Set.mem_univ _
   realizeNative _ _ := ()
   nativePoints _ _ _ x := ↾fun _ => x
   change _ _ := ()
@@ -128,14 +101,29 @@ def threeStatePermutationMode (base : CoefficientRing) :
 private def permutationStructureHomEquiv :
     ((show permutationRule.Category from ()) ⟶ (show permutationRule.Category from ())) ≃
       Equiv.Perm (Fin 3) where
-  toFun f := f.val ()
+  toFun f := f.val false
   invFun e := ⟨fun _ => e,
     { total := fun _ => by rfl
       relation := fun r => nomatch r
       partialOp := fun p => nomatch p
       quantity := fun q => nomatch q }⟩
-  left_inv f := Subtype.ext (funext fun ⟨⟩ => rfl)
+  left_inv f := by
+    apply Subtype.ext
+    funext s
+    cases s
+    · rfl
+    · apply Equiv.ext
+      intro x
+      exact congrArg (fun h : (Position [false, true] → Fin 3) ⟶ Fin 3 => h (fun _ => x)) (f.property.total ())
   right_inv _ := rfl
+
+/-- Acting on only the second sort fails to preserve the binary operation. -/
+theorem secondSortSwap_not_preserving :
+    ¬ permutationRule.Preserves (A := ()) (B := ())
+      (fun s => if (show Bool from s) = true then Equiv.swap (0 : Fin 3) 1 else Equiv.refl _) := by
+  intro h
+  have he := congrArg (fun f : (Position [false, true] → Fin 3) ⟶ Fin 3 => f (fun _ => 0)) (h.total ())
+  exact (by decide : (0 : Fin 3) ≠ 1) he
 
 private def permutationModel (base : CoefficientRing) (R : CoefficientAlgebra base) :
     (threeStatePermutationMode base).Models R :=

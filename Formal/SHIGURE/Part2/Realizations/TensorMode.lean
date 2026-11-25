@@ -145,6 +145,28 @@ private def tensorConsIso (R : Type u) [CommRing R] {K : Type u} (s : K) (Γ : L
     rw [PiTensorProduct.map_tprod, inputTensorCons_tprod, inputTensorCons_tprod,
       TensorProduct.map_tmul, PiTensorProduct.map_tprod])
 
+/-- A linear point from the scalar module is precisely an element of the carrier module. -/
+def tensorPointEquiv (M : ModuleCat.{u} R) : (ModuleCat.of R R ⟶ M) ≃ M where
+  toFun p := p.hom 1
+  invFun x := ModuleCat.ofHom (LinearMap.toSpanSingleton R M x)
+  left_inv p := by
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro r
+    change r • p.hom 1 = p.hom r
+    rw [← map_smul, smul_eq_mul, mul_one]
+  right_inv x := one_smul R x
+
+/-- Acting on a tensor point agrees with applying the carrier linear map to its element. -/
+theorem tensorPointEquiv_map {M N : ModuleCat.{u} R} (p : ModuleCat.of R R ⟶ M) (f : M ⟶ N) :
+    tensorPointEquiv N (p ≫ f) = f.hom (tensorPointEquiv M p) :=
+  rfl
+
+private def tensorTuplePoint {K : Type u} (Γ : List K) (A : K → ModuleCat.{u} R)
+    (p : ∀ i : TensorPosition Γ, ModuleCat.of R R ⟶ A i.1) :
+    ModuleCat.of R R ⟶ (tensorInputs R Γ).obj A :=
+  (tensorPointEquiv _).symm (PiTensorProduct.tprod R (fun i => tensorPointEquiv (A i.1) (p i)))
+
 /-- Total operations and quantities are the maps from their typed input tensor
 products. The full-domain signature has no relation or partial symbols. -/
 def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
@@ -158,6 +180,38 @@ def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
   positionalInput Γ := tensorPositionInputs R (TensorPosition Γ)
   inputIso _ := Iso.refl _
   unaryIso := tensorUnaryIso R
+  probes := {ModuleCat.of R R}
+  probe_ext {X Y f g} h := by
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro x
+    have hx := congrArg (tensorPointEquiv Y)
+      (h (ModuleCat.of R R) (Set.mem_singleton _) ((tensorPointEquiv X).symm x))
+    change f.hom ((tensorPointEquiv X) ((tensorPointEquiv X).symm x)) =
+      g.hom ((tensorPointEquiv X) ((tensorPointEquiv X).symm x)) at hx
+    simpa only [Equiv.apply_symm_apply] using hx
+  tuplePoint {P} hp Γ A p := by
+    change P = ModuleCat.of R R at hp
+    subst P
+    exact tensorTuplePoint Γ A p
+  tuplePoint_map {P} hp Γ {A B} f p := by
+    change P = ModuleCat.of R R at hp
+    subst P
+    apply (tensorPointEquiv _).injective
+    change tensorPointEquiv ((tensorInputs R Γ).obj B) (tensorTuplePoint Γ A p ≫ (tensorInputs R Γ).map f) =
+      tensorPointEquiv ((tensorInputs R Γ).obj B) (tensorTuplePoint Γ B (fun i => p i ≫ f i.1))
+    simp only [tensorTuplePoint, tensorPointEquiv_map, Equiv.apply_symm_apply]
+    exact PiTensorProduct.map_tprod (fun i : TensorPosition Γ => (f i.1).hom) _
+  tuplePoint_ext Γ A {Y f g} h := by
+    apply ModuleCat.hom_ext
+    apply PiTensorProduct.ext
+    apply MultilinearMap.ext
+    intro x
+    have hx := congrArg (tensorPointEquiv Y)
+      (h (ModuleCat.of R R) (Set.mem_singleton _) (fun i => (tensorPointEquiv (A i.1)).symm (x i)))
+    let point := tensorTuplePoint Γ A (fun i => (tensorPointEquiv (A i.1)).symm (x i))
+    change f.hom (tensorPointEquiv _ point) = g.hom (tensorPointEquiv _ point) at hx
+    simpa only [point, tensorTuplePoint, Equiv.apply_symm_apply] using hx
   total A op := ModuleCat.ofHom (PiTensorProduct.lift (A.total op))
   relation _ r := False.elim (scope.noRelations.false r)
   domain _ p := False.elim (scope.noPartial.false p)
@@ -228,23 +282,6 @@ def tensorStructureHomEquiv (sig : Signature.{u}) (scope : FullDomainTensorSigna
   left_inv _ := Subtype.ext rfl
   right_inv _ := TensorStructure.Hom.ext rfl
 
-/-- A linear point from the scalar module is precisely an element of the carrier module. -/
-def tensorPointEquiv (M : ModuleCat.{u} R) : (ModuleCat.of R R ⟶ M) ≃ M where
-  toFun p := p.hom 1
-  invFun x := ModuleCat.ofHom (LinearMap.toSpanSingleton R M x)
-  left_inv p := by
-    apply ModuleCat.hom_ext
-    apply LinearMap.ext
-    intro r
-    change r • p.hom 1 = p.hom r
-    rw [← map_smul, smul_eq_mul, mul_one]
-  right_inv x := one_smul R x
-
-/-- Acting on a tensor point agrees with applying the carrier linear map to its element. -/
-theorem tensorPointEquiv_map {M N : ModuleCat.{u} R} (p : ModuleCat.of R R ⟶ M) (f : M ⟶ N) :
-    tensorPointEquiv N (p ≫ f) = f.hom (tensorPointEquiv M p) :=
-  rfl
-
 /-- A tensor presentation gives the written equation of every required
 declaration over the base coefficients. -/
 structure TensorTheory (base : CoefficientRing.{u}) (sig : Signature.{u}) (Required : Type u) where
@@ -314,6 +351,7 @@ def tensorModeOfPresentation (base : CoefficientRing.{u}) (T : RealizationTheory
   pointCarrier S _ :=
     letI := S.scalars.ring
     ModuleCat.of S.scalars.Carrier S.scalars.Carrier
+  pointCarrier_isProbe _ _ := Set.mem_singleton _
   realizeNative S := rule.change S.fromBase
   nativePoints S A s x :=
     letI := S.scalars.ring

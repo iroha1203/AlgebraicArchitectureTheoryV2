@@ -59,6 +59,9 @@ structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Realizati
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
   /-- The object representing a designated point of a realized carrier. -/
   pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : (rule R).Ambient
+  /-- The same designated points can be used in primitive diagrams. -/
+  pointCarrier_isProbe (R : CoefficientAlgebra base) (s : T.signature.SortType) :
+    pointCarrier R s ∈ (rule R).probes
   /-- The rule for realizing a native input at the chosen coefficients. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Object R
   /-- The correspondence of native and realized states. -/

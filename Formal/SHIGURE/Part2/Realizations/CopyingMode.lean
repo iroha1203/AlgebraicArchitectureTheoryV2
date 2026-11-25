@@ -165,6 +165,17 @@ private def copyingConsIso (S : Scheme.{u}) {K : Type u} (s : K) (Γ : List K) :
     ext U a
     rfl)
 
+private def copyingTuplePoint {S : Scheme.{u}} {K : Type u} (Γ : List K)
+    (A : K → ZariskiSheaf S) {P : ZariskiSheaf S}
+    (p : ∀ i : (s : K) × Var Γ s, P ⟶ A i.1) : P ⟶ sheafTuple A Γ :=
+  (sheafTupleFanIsLimit A Γ).lift (Fan.mk P p)
+
+private theorem copyingTuplePoint_proj {S : Scheme.{u}} {K : Type u} (Γ : List K)
+    (A : K → ZariskiSheaf S) {P : ZariskiSheaf S}
+    (p : ∀ i : (s : K) × Var Γ s, P ⟶ A i.1) (i : (s : K) × Var Γ s) :
+    copyingTuplePoint Γ A p ≫ sheafTupleProj A i.2 = p i :=
+  (sheafTupleFanIsLimit A Γ).fac (Fan.mk P p) ⟨i⟩
+
 /-- The primitive diagrams of a copying realization use Cartesian tuples and
 the inclusions of the relation and domain subsheaves. -/
 def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
@@ -178,6 +189,22 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
   positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)
   inputIso := copyingInputIso S
   unaryIso := copyingUnaryIso S
+  probes := Set.univ
+  probe_ext h := by simpa using h _ (Set.mem_univ _) (𝟙 _)
+  tuplePoint {P} _ Γ A p := copyingTuplePoint Γ A p
+  tuplePoint_map {P} _ Γ {A B} f p := by
+    apply (sheafTupleFanIsLimit B Γ).hom_ext
+    intro ⟨i⟩
+    change (copyingTuplePoint Γ A p ≫ sheafTupleMap f Γ) ≫ sheafTupleProj B i.2 =
+      copyingTuplePoint Γ B (fun j => p j ≫ f j.1) ≫ sheafTupleProj B i.2
+    rw [Category.assoc, copyingTuplePoint_proj]
+    have hf : sheafTupleMap f Γ ≫ sheafTupleProj B i.2 = sheafTupleProj A i.2 ≫ f i.1 :=
+      Sheaf.Hom.ext rfl
+    rw [hf, ← Category.assoc, copyingTuplePoint_proj]
+  tuplePoint_ext Γ A {Y f g} h := by
+    have hi : copyingTuplePoint Γ A (fun i => sheafTupleProj A i.2) = 𝟙 _ :=
+      (sheafTupleFanIsLimit A Γ).lift_self
+    simpa only [hi, Category.id_comp] using h (sheafTuple A Γ) (Set.mem_univ _) (fun i => sheafTupleProj A i.2)
   total := SheafStructure.total
   relation A r := realizedPredicate (A.relation r)
   domain A p := realizedPredicate (A.partialDomain p)
@@ -310,6 +337,7 @@ def copyingMode (base : CoefficientRing.{u}) (T : Theory.{u}) :
   Native := Structure T.signature
   nativeStates A := A.carrier
   pointCarrier R _ := constantCarrier R.scalars.spec PUnit
+  pointCarrier_isProbe _ _ := Set.mem_univ _
   realizeNative R := constantStructure R.scalars.spec
   nativePoints R A s x := (copyingPointEquiv ((constantStructure R.scalars.spec A).carrier s)).symm
     (nativeState R.scalars.spec (Over.mk (𝟙 R.scalars.spec)) x)

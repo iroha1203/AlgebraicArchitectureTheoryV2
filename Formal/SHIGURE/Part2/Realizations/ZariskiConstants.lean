@@ -7,8 +7,9 @@ import Mathlib.CategoryTheory.Sites.Over
 # Constant carriers on the relative Zariski site
 
 The constant carrier sheaf in Definition 4.1 is the sheaf of points of the
-constant scheme from Construction 4.2. Its sections are locally constant
-state functions of the test scheme by Theorem 4.3.
+constant scheme from Construction 4.2. The equivalence
+`constantPointLabelsEquiv` identifies its sections with locally constant
+state functions on each test scheme.
 
 ## Implementation notes
 
