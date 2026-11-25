@@ -1,11 +1,10 @@
 # Lean 品質基準（mathlib 型 statement review 基準）
 
-この文書は、[guideline.md](guideline.md) の「「境界」という言葉の使用を禁止する」節で
-採用を定めた mathlib 型 statement review 基準を定義する。AAT / Lean の形式化
-（`Formal/` の新規・変更宣言）に適用する。
+この文書は、AAT / Lean の形式化（`Formal/` の新規・変更宣言）に適用する
+mathlib 型の statement review・定義品質・スタイル基準を定める。
 
 - 各 SKILL（`math-lean-review`、`prd-loop`、`research-loop`、`target-theorem-loop`）は
-  この基準の項目を複製せず参照する（`refutation-checklist.md` と同じ運用）。
+  この基準の項目を複製せず参照する。
 - 適用対象は**新規・変更宣言**に限る。既存宣言への遡及適用は別タスクとして扱い、
   この基準を理由に無関係な既存コードを書き換えない。
 - 採用しない mathlib 規律は §3.5 に記載する。
@@ -37,7 +36,7 @@
   最大で `packaged (assumption-relative)` とする（`docs/aat/guideline.md` の
   Lean status discipline を参照）。
 - 申告は**監査の対象であり、それ自体は証拠ではない**。レビュー側は premise を
-  独立に列挙して申告と突合する（`refutation-checklist.md` §3 の移植対応表と同じ扱い）。
+  独立に列挙して申告と突合する。
 - 未放電仮定を「明示 scope」「stated scope」と呼び替えて完了の根拠にしない
   （`guideline.md` の禁止語対応表を参照）。scope を名乗れるのは本文由来の仮定だけである。
 
@@ -53,8 +52,8 @@
 
 新規の `def` は、mathlib の既存概念または本体既存 API への接続
 （comparison map、instance、同値定理、制限写像との互換など）を最低1つ持つ。
-どの既存 API とも接続しない閉じたラッパーは査読を通さない
-（`guideline.md` の禁止語規律の具体化）。定理は次のどちらの位置づけかを明示する。
+どの既存 API とも接続しない閉じたラッパーは査読を通さない。
+定理は次のどちらの位置づけかを明示する。
 
 - 固定 statement（§5）または本文ラベルに対応する主定理
 - 主定理を支える API 補題（どの定義に対する API かを docstring に書く）
@@ -62,8 +61,7 @@
 ### 1.4 instance ペア [査読]
 
 新規の `Prop` 述語や certificate 構造には、条件を満たす instance と満たさない instance の
-両方を用意する（空虚化の検査。`refutation-checklist.md` §2 と同一項目であり、
-判定の観点はチェックリスト側、提供義務はこの基準側に定める）。
+両方を用意する（空虚化の検査。判定の観点は `lean-refutation-checklist.md` §2 を参照）。
 片方が作れない場合はその理由を書き、レビューでその理由自体が空虚でないかを確認する。
 
 ## §2 定義品質
@@ -71,8 +69,7 @@
 ### 2.1 小さい定義、data と Prop の分離 [査読]
 
 定義は小さく保ち、data（構成）と `Prop`（性質）を分離する。性質は
-定義のフィールドに混ぜず、別の述語や定理として証明する
-（`docs/aat/guideline.md` にある方針の基準）。
+定義のフィールドに混ぜず、別の述語や定理として証明する。
 
 ### 2.2 definitional escape の禁止 [査読]
 
@@ -208,7 +205,7 @@ certificate の来歴（provenance）、proof-use、既存 API への接続を�
 ### 5.3 drift 規則
 
 実装中に固定 statement（参照される `def` の signature を含む）の変更が必要になったら、
-その時点で**未達として停止して報告する**（`guideline.md` の停止規則の手続き化）。
+その時点で**未達として停止して報告する**。
 
 - PRD: PRD の欠陥または要求未達としてユーザーへ報告する。ループ内で PRD を編集しない。
 - research-loop: G3 合格を出さず G2 再審判へ戻す。乖離した statement のまま G4 / G5 へ進む経路を残さない。
@@ -239,5 +236,4 @@ certificate の来歴（provenance）、proof-use、既存 API への接続を�
 
 Research import 方向の検査は、差分上の新規追加行だけを失敗にする。
 Lean 内の `assert_not_exists` 方式は現時点では採用しない。既存の `main` に残る
-import を含めて全履歴が無条件に失敗してしまい、Issue #3172 の
-「既存指摘はベースライン固定し増分だけ失敗にする」という条件と衝突するためである。
+import による全履歴の失敗を避け、新規増分だけを失敗にするためである。
