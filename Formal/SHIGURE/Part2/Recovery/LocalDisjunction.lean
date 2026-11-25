@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part2.Recovery.ConstantFormulas
 import Formal.SHIGURE.Part2.Recovery.Models
 import Formal.SHIGURE.Part2.AffineFoundations
+import Mathlib.AlgebraicGeometry.Limits
 
 /-!
 # A disjunction satisfied locally on a product spectrum
@@ -212,5 +213,145 @@ theorem productChoice_disjunct_onOpen (b : Bool) :
   rw [nativeAssignmentAt_restrict]
   simp only [equalDesignated, Formula.holds_atom, Atomic.holds_graph, Structure.graph_total_iff]
   exact congrArg ULift.up (productChoice_onOpen k b x).symm
+
+open CategoryTheory.Limits in
+/-- The same one-sided carrier is a locally split model in both presentations and is not globally split. -/
+theorem productComponentModelCounterexamples [Nontrivial k] :
+    let T : Theory.{u} := ⟨carrierOnlySignature, PEmpty, fun i => nomatch i⟩
+    let scalars : CoefficientRing.{u} := ⟨k × k, inferInstance⟩
+    let R : CoefficientAlgebra scalars := ⟨scalars, RingHom.id (k × k)⟩
+    (∃ A : ZariskiCopyingModels T (k × k), ¬ globallySplitCopyingProperty T (k × k) A) ∧
+      (∃ A : (copyingMode scalars T).Models R, ¬ globallySplitModeProperty T R A) := by
+  intro productComponentTheory scalars R
+  have componentRelativeHom_subsingleton
+      (T : Over (productSpectrum k)) (f g : T ⟶ Over.mk (productChoiceOpens k true).ι) : f = g := by
+    apply Over.OverMorphism.ext
+    apply (cancel_mono (productChoiceOpens k true).ι).mp
+    exact (Over.w f).trans (Over.w g).symm
+
+  let componentBase (b : Bool) := (productChoiceOpens k b).toScheme
+
+  let pieceSections (b : Bool) (T : Over (componentBase b)) :=
+    (relativePoints (productSpectrum k) (Over.mk (productChoiceOpens k true).ι)).val.obj
+      (op ((Over.map (productChoiceOpens k b).ι).obj T))
+
+  let trueComponentSections (T : Over (componentBase true)) :
+      pieceSections true T ≃ LocallyConstant T.left PUnit.{u + 1} := {
+    toFun _ := LocallyConstant.const _ PUnit.unit
+    invFun _ := (relativePointsEquiv _ _ _).symm (Over.homMk T.hom)
+    left_inv a := by
+      apply (relativePointsEquiv _ _ _).injective
+      rw [Equiv.apply_symm_apply]
+      exact componentRelativeHom_subsingleton _ _ _
+    right_inv a := by
+      apply LocallyConstant.ext
+      intro x
+      exact Subsingleton.elim _ _ }
+
+  have falsePiece_empty (T : Over (componentBase false)) (a : pieceSections false T) :
+      IsEmpty T.left := by
+    let f := relativePointsEquiv _ _ _ a
+    refine ⟨fun x => ?_⟩
+    have hf : f.left ≫ (productChoiceOpens k true).ι = T.hom ≫ (productChoiceOpens k false).ι :=
+      Over.w f
+    have he : (productChoiceOpens k true).ι (f.left x) = (productChoiceOpens k false).ι (T.hom x) :=
+      congrArg (fun g : T.left ⟶ productSpectrum k => g x) hf
+    exact Bool.false_ne_true ((productChoice_onOpen k false (T.hom x)).symm.trans
+      ((congrArg (productChoice k) he).symm.trans (productChoice_onOpen k true (f.left x))))
+
+  let falseComponentSections (T : Over (componentBase false)) :
+      pieceSections false T ≃ LocallyConstant T.left PEmpty.{u + 1} := {
+    toFun a := by
+      letI := falsePiece_empty T a
+      refine ⟨fun x => isEmptyElim x, IsLocallyConstant.iff_isOpen_fiber.mpr ?_⟩
+      intro b
+      exact nomatch b
+    invFun a := by
+      letI : IsEmpty T.left := ⟨fun x => nomatch a x⟩
+      let ini := isInitialOfIsEmpty (X := T.left)
+      let f := ini.to (componentBase true)
+      exact (relativePointsEquiv _ _ _).symm
+        (Over.homMk f (ini.hom_ext _ _))
+    left_inv a := by
+      apply (relativePointsEquiv _ _ _).injective
+      rw [Equiv.apply_symm_apply]
+      exact componentRelativeHom_subsingleton _ _ _
+    right_inv a := by
+      apply LocallyConstant.ext
+      intro x
+      exact nomatch a x }
+
+  let componentLabel (b : Bool) : Type u :=
+    if b then PUnit else PEmpty
+
+  let componentSections (b : Bool) (T : Over (componentBase b)) :
+      pieceSections b T ≃ LocallyConstant T.left (componentLabel b) := by
+    cases b
+    · exact falseComponentSections T
+    · exact trueComponentSections T
+
+  let componentCarrierIso (b : Bool) :
+      ((Scheme.zariskiTopology.overMapPullback (Type u) (productChoiceOpens k b).ι).obj
+        ((productComponentStructure k).carrier PUnit.unit)) ≅
+        constantCarrier (componentBase b) (componentLabel b) := by
+    let n : (((Scheme.zariskiTopology.overMapPullback (Type u) (productChoiceOpens k b).ι).obj
+        ((productComponentStructure k).carrier PUnit.unit))).val ≅
+          (constantCarrier (componentBase b) (componentLabel b)).val :=
+      NatIso.ofComponents (fun T => (componentSections b T.unop).toIso) (by
+        intro U V g
+        ext p
+        have allEqual (a d : LocallyConstant V.unop.left (componentLabel b)) : a = d := by
+          apply LocallyConstant.ext
+          intro x
+          cases b
+          · exact nomatch a x
+          · exact @Subsingleton.elim PUnit.{u + 1} inferInstance (a x) (d x)
+        exact allEqual _ _)
+    exact ⟨⟨n.hom⟩, ⟨n.inv⟩, Sheaf.Hom.ext n.hom_inv_id, Sheaf.Hom.ext n.inv_hom_id⟩
+
+
+  let componentNative (b : Bool) : Model productComponentTheory :=
+    ⟨{ carrier := fun _ => componentLabel b
+       total f := nomatch f
+       relation r := nomatch r
+       partialDomain p := nomatch p
+       partialValue p := nomatch p
+       quantity q := nomatch q }, fun i => nomatch i⟩
+
+  let carrierOnlyMap {S : Scheme.{u}}
+      {A D : SheafStructure carrierOnlySignature.{u} (Scheme.zariskiTopology.over S)}
+      (f : ∀ s, A.carrier s ⟶ D.carrier s) : A ⟶ D := {
+    onSort := f
+    preservesTotal n := nomatch n
+    preservesRelation n := nomatch n
+    preservesDomain n := nomatch n
+    preservesPartial n := nomatch n
+    preservesQuantity n := nomatch n }
+
+  let componentStructureIso (b : Bool) :
+      restrictStructure (productChoiceOpens k b).ι (productComponentStructure k) ≅
+        constantStructure (componentBase b) (componentNative b).obj := by
+    let e := componentCarrierIso b
+    refine ⟨carrierOnlyMap (fun | PUnit.unit => e.hom), carrierOnlyMap (fun | PUnit.unit => e.inv), ?_, ?_⟩
+    · apply SheafStructure.Hom.ext
+      funext s
+      cases s
+      exact e.hom_inv_id
+    · apply SheafStructure.Hom.ext
+      funext s
+      cases s
+      exact e.inv_hom_id
+  let O (b : ULift.{u} Bool) := productChoiceOpens k b.down
+  have covers : IsOpenCover O := by
+    apply top_unique
+    intro x _
+    exact Opens.mem_iSup.mpr ⟨ULift.up (productChoice k x), rfl⟩
+  let C := (productSpectrum k).openCoverOfIsOpenCover O covers
+  have split : IsZariskiSplit productComponentTheory (productComponentStructure k) :=
+    ⟨C, fun b => ⟨componentNative b.down, ⟨componentStructureIso b.down⟩⟩⟩
+  let A : ZariskiCopyingModels productComponentTheory (k × k) :=
+    ⟨productComponentStructure k, split, fun i => nomatch i⟩
+  exact ⟨⟨A, productComponent_not_globallySplit k⟩,
+    ⟨(copyingModeModelReadback productComponentTheory R).obj A, productComponent_not_globallySplit k⟩⟩
 
 end SHIGURE.Copying

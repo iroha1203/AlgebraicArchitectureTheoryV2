@@ -47,7 +47,7 @@ theorem restrictNativePresentation_eq (inside : V ≤ U) :
   intro A D h
   apply Model.hom_ext
   intro s x
-  simp only [modelRestriction, Functor.comp_map, Model.comp_apply, ordinary_eqToHom_onSort, readFunctor_onSort_cast,
+  simp only [modelRestriction_eq, Functor.comp_map, Model.comp_apply, ordinary_eqToHom_onSort, readFunctor_onSort_cast,
     readOnSort_apply, DeclarationContext.res_onSort, writeFunctor_onSort_cast, writeOnSort_apply,
     DeclarationContext.selectedMap_apply, writeCarrierEquiv_eq_cast, readCarrierEquiv_eq_cast, ← Equiv.cast_symm,
     Equiv.cast_apply, cast_cast]

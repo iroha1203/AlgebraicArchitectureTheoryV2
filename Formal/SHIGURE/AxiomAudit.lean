@@ -3404,6 +3404,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.productChoice_notConstant,
   Copying.productComponentStructure,
   Copying.productComponent_not_globallySplit,
+  Copying.productComponentModelCounterexamples,
   Copying.productChoice_law,
   Copying.productChoice_satisfies,
   Copying.productChoice_no_global_disjunct,
