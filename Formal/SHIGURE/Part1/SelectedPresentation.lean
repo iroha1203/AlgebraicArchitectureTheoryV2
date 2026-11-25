@@ -78,7 +78,7 @@ def operation (names : SignatureNames S T) : Operation S → Operation T
   | .quantity q => .quantity (names.onQuantity q)
 
 /-- Renaming preserves the input and output sorts of each tagged operation. -/
-private theorem operationArity (names : SignatureNames S T) (op : Operation S) :
+theorem operationArity (names : SignatureNames S T) (op : Operation S) :
     ⟨op.arity.inputs.map names.onSort, names.onSort op.arity.output⟩ = (names.operation op).arity := by
   cases op with
   | total f => exact names.totalArity f
@@ -323,11 +323,11 @@ private theorem cast_output_eq {X : T.SortType → Type u} {s t : T.SortType} (s
   rfl
 
 /-- A primitive graph in a reduct is the ambient graph on the retyped tuple and value. -/
-private theorem restrict_graph_iff (names : SignatureNames S T) (A : Structure T)
+theorem restrict_graph_iff (names : SignatureNames S T) (A : Structure T)
     (op : Operation S) (xs : Assignment (names.restrict A).carrier op.arity.inputs)
     (y : (names.restrict A).carrier op.arity.output) :
     (names.restrict A).Graph op xs y ↔ A.Graph (names.operation op)
-      (names.arguments (congrArg Arity.inputs (names.operationArity op)) xs)
+      (congrArg Arity.inputs (names.operationArity op) ▸ xs.mapSorts names.onSort)
       (cast (congrArg (fun s => A.carrier s) (congrArg Arity.output (names.operationArity op))) y) := by
   cases op with
   | total f =>
@@ -356,7 +356,7 @@ private theorem restrict_atomic_iff (names : SignatureNames S T) (A : Structure 
     simp only [names.atomic_domain, Atomic.holds_domain, names.restrict_partialDomain_iff, names.arguments_pull]
   | graph op ρ y =>
     simp only [names.atomic_graph, Atomic.holds_graph, names.restrict_graph_iff,
-      names.arguments_pull, names.arguments_read]
+      names.arguments_pull, names.arguments_read, arguments]
 
 /-- A positive formula is satisfied in a reduct exactly when its renamed formula holds
 at the corresponding assignment in the ambient structure. -/

@@ -111,6 +111,25 @@ def copyingModeModelComparison {base : CoefficientRing.{u}} (T : Theory.{u}) (R 
       map_id := fun _ => ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl)
       map_comp := fun _ _ => ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl) }
 
+/-- Interpret a sheaf structure and all its preserving arrows in the public copying mode. -/
+def copyingModeModelReadback {base : CoefficientRing.{u}} (T : Theory.{u}) (R : CoefficientAlgebra base) :
+    letI := R.scalars.ring
+    ZariskiCopyingModels T R.scalars.Carrier ⥤ (copyingMode base T).Models R := by
+  letI := R.scalars.ring
+  exact
+    { obj := fun M => ⟨M.obj, M.property⟩
+      map := fun {M N} f => ObjectProperty.homMk
+        ((copyingStructureHomEquiv T.signature R.scalars.spec M.obj N.obj).symm f.hom)
+      map_id := fun _ => ObjectProperty.hom_ext _ (Subtype.ext rfl)
+      map_comp := fun _ _ => ObjectProperty.hom_ext _ (Subtype.ext rfl) }
+
+/-- Both presentations have the same objects and preserving carrier components. -/
+theorem copyingModeModelReadback_comp {base : CoefficientRing.{u}} (T : Theory.{u}) (R : CoefficientAlgebra base) :
+    letI := R.scalars.ring
+    copyingModeModelReadback T R ⋙ copyingModeModelComparison T R = 𝟭 _ := by
+  letI := R.scalars.ring
+  rfl
+
 /-- The models at the public copying-mode entry and the sheaf-model category are equivalent. -/
 def copyingModeModelEquivalence {base : CoefficientRing.{u}} (T : Theory.{u}) (R : CoefficientAlgebra base) :
     letI := R.scalars.ring

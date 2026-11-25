@@ -1,4 +1,5 @@
 import Formal.SHIGURE.Part2.Recovery.ConstantFormulas
+import Formal.SHIGURE.Part2.Recovery.Models
 import Formal.SHIGURE.Part2.AffineFoundations
 
 /-!
@@ -124,6 +125,48 @@ theorem productChoice_notConstant [Nontrivial k] (b : Bool) :
   have h₁ : productChoice k x = b := DFunLike.congr_fun h x
   have h₂ : productChoice k y = b := DFunLike.congr_fun h y
   exact Bool.noConfusion (hx.symm.trans (h₁.trans (h₂.symm.trans hy)))
+
+private def carrierOnlySignature : Signature.{u} where
+  SortType := PUnit
+  Total := PEmpty
+  Rel := PEmpty
+  Partial := PEmpty
+  Quantity := PEmpty
+  totalArity := PEmpty.elim
+  relInputs := PEmpty.elim
+  partialArity := PEmpty.elim
+  quantityArity := PEmpty.elim
+
+/-- A carrier supported on the true clopen component of the product spectrum. -/
+def productComponentStructure : SheafStructure carrierOnlySignature.{u}
+    (Scheme.zariskiTopology.over (productSpectrum k)) where
+  carrier _ := relativePoints _ (Over.mk (productChoiceOpens k true).ι)
+  total f := nomatch f
+  relation r := nomatch r
+  partialDomain p := nomatch p
+  partialValue p := nomatch p
+  quantity q := nomatch q
+
+/-- The true component has a relative section and the nonempty false component does not. -/
+theorem productComponent_not_globallySplit [Nontrivial k] :
+    ¬ IsGloballySplit (productComponentStructure k) := by
+  rintro ⟨N, ⟨e⟩⟩
+  obtain ⟨x, y, hx, hy⟩ := productChoice_two_labels k
+  let U := Over.mk (productChoiceOpens k true).ι
+  let V := Over.mk (productChoiceOpens k false).ι
+  let xU : U.left := ⟨x, hx⟩
+  let yV : V.left := ⟨y, hy⟩
+  let p : (relativePoints _ U).val.obj (op U) := (relativePointsEquiv _ U U).symm (𝟙 U)
+  let values : LocallyConstant U.left (N.carrier PUnit.unit) := (e.inv.onSort PUnit.unit).val.app (op U) p
+  let a := values xU
+  let b : (relativePoints _ U).val.obj (op V) :=
+    (e.hom.onSort PUnit.unit).val.app (op V) (LocallyConstant.const V.left a)
+  let f := relativePointsEquiv _ V U b
+  have same : U.hom (f.left yV) = V.hom yV := by
+    have hw : f.left ≫ U.hom = V.hom := Over.w f
+    exact congrArg (fun g : V.left ⟶ productSpectrum k => g yV) hw
+  exact Bool.false_ne_true ((productChoice_onOpen k false yV).symm.trans
+    ((congrArg (productChoice k) same).symm.trans (productChoice_onOpen k true (f.left yV))))
 
 /-- The same theory Law holds in the actual relative sheaf semantics of the product spectrum. -/
 theorem productChoice_law :

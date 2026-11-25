@@ -1,13 +1,15 @@
 import Formal.SHIGURE.Part2.Recovery.DeclarationRestriction
 import Formal.SHIGURE.Part2.Recovery.Models
+import Formal.SHIGURE.Part2.Recovery.SelectedNative
+import Mathlib.CategoryTheory.Whiskering
 
 /-!
 # Restriction of copied models along a selected presentation
 
-The Part I selection records exactly which required Laws and primitive
-names are retained. The coefficient and declaration restriction functors
-act on the same structures and preserving arrows. The named reduct
-retains local splitting by restricting each original native model.
+An inclusion of Part I contexts induces a restriction of copying models.
+The coefficient and declaration restriction functors act on the same
+structures and preserving arrows. Restricting the native models on each
+open preserves local splitting.
 -/
 
 open AlgebraicGeometry CategoryTheory
@@ -18,52 +20,63 @@ noncomputable section
 
 namespace SHIGURE.Copying
 
-variable {P Q : PrimitivePresentation.{u}} {U : DeclarationContext Q}
+open DeclarationContext.Selected
 
-/-- Retaining a required Law preserves its role as well as its ambient name. -/
-def retainedRequiredName (origin : ReadingOrigin P Q U) (l : P.theory.LawName) :
-    Q.theory.LawName :=
-  ⟨origin.lawName l.val, (origin.law_role l.val).symm.trans l.property⟩
+variable {P : PrimitivePresentation.{u}} {U V : DeclarationContext P}
 
-/-- The Part I selection keeps the literal antecedent and conclusion of each retained required Law. -/
-theorem retainedRequiredLaw_eq (origin : ReadingOrigin P Q U) (l : P.theory.LawName) :
-    origin.signature.law (P.theory.law l) = Q.theory.law (retainedRequiredName origin l) :=
-  origin.law_eq l.val
-
-/-- The corresponding Part I restriction of models and their preserving arrows. -/
-def restrictNativePresentation (origin : ReadingOrigin P Q U) : Model Q.theory ⥤ Model P.theory where
-  obj M := ⟨origin.signature.restrict M.obj, fun l => by
-    apply (origin.signature.restrict_law_iff M.obj (P.theory.law l)).mpr
-    rw [retainedRequiredLaw_eq]
-    exact M.property (retainedRequiredName origin l)⟩
-  map h := ObjectProperty.homMk (restrictNativeMap origin.signature h.hom)
+/-- The named reduct of all native models and their preserving arrows along a context inclusion. -/
+def restrictNativePresentation (inside : V ≤ U) : Model (theory U) ⥤ Model (theory V) where
+  obj M := ⟨(namesOfLE inside).restrict M.obj, fun l => by
+    apply ((namesOfLE inside).restrict_law_iff M.obj ((theory V).law l)).mpr
+    rw [namesOfLE_requiredLaw]
+    exact M.property (requiredNameOfLE inside l)⟩
+  map h := ObjectProperty.homMk (restrictNativeMap (namesOfLE inside) h.hom)
   map_id _ := ObjectProperty.hom_ext _ (StructureMap.ext fun _ _ => rfl)
   map_comp _ _ := ObjectProperty.hom_ext _ (StructureMap.ext fun _ _ => rfl)
+
+/-- The typed reduct agrees with Part I on the native models and every model arrow. -/
+theorem restrictNativePresentation_eq (inside : V ≤ U) :
+    restrictNativePresentation inside = modelRestriction inside := by
+  have objects (M : Model (theory U)) :
+      (restrictNativePresentation inside).obj M = (modelRestriction inside).obj M := by
+    apply ObjectProperty.FullSubcategory.ext
+    rw [modelRestriction_obj, readModel_obj, DeclarationContext.Models.restrict_obj, writeModel_obj,
+      writeStructure_namesOfLE_restrict inside, read_write_structure]
+    rfl
+  refine CategoryTheory.Functor.ext objects ?_
+  intro A D h
+  apply Model.hom_ext
+  intro s x
+  simp only [modelRestriction, Functor.comp_map, Model.comp_apply, ordinary_eqToHom_onSort, readFunctor_onSort_cast,
+    readOnSort_apply, DeclarationContext.res_onSort, writeFunctor_onSort_cast, writeOnSort_apply,
+    DeclarationContext.selectedMap_apply, writeCarrierEquiv_eq_cast, readCarrierEquiv_eq_cast, ← Equiv.cast_symm,
+    Equiv.cast_apply, cast_cast]
+  rfl
 
 variable {B B' : Scheme.{u}}
 
 /-- The local splittings themselves restrict to the native models on the retained declarations. -/
-theorem isZariskiSplit_restrictPresentation (origin : ReadingOrigin P Q U)
-    {A : SheafStructure Q.signature (Scheme.zariskiTopology.over B)}
-    (hA : IsZariskiSplit Q.theory A) :
-    IsZariskiSplit P.theory (restrictDeclarations origin.signature A) := by
+theorem isZariskiSplit_restrictPresentation (inside : V ≤ U)
+    {A : SheafStructure (signature U) (Scheme.zariskiTopology.over B)}
+    (hA : IsZariskiSplit (theory U) A) :
+    IsZariskiSplit (theory V) (restrictDeclarations (namesOfLE inside) A) := by
   obtain ⟨C, hC⟩ := hA
   refine ⟨C, fun i => ?_⟩
   obtain ⟨M, ⟨e⟩⟩ := hC i
-  refine ⟨(restrictNativePresentation origin).obj M, ⟨?_⟩⟩
-  exact eqToIso (restrictStructure_restrictDeclarations (C.f i) origin.signature A) ≪≫
-    (restrictDeclarationsFunctor (C.X i) origin.signature).mapIso e ≪≫
-    restrictDeclarationsConstantIso origin.signature M.obj (C.X i)
+  refine ⟨(restrictNativePresentation inside).obj M, ⟨?_⟩⟩
+  exact eqToIso (restrictStructure_restrictDeclarations (C.f i) (namesOfLE inside) A) ≪≫
+    (restrictDeclarationsFunctor (C.X i) (namesOfLE inside)).mapIso e ≪≫
+    restrictDeclarationsConstantIso (namesOfLE inside) M.obj (C.X i)
 
 /-- Forget the unselected declarations in the copying semantic category. -/
-def restrictCopyingPresentation (origin : ReadingOrigin P Q U) (B : Scheme.{u}) :
-    (zariskiCopyingProperty Q.theory B).FullSubcategory ⥤
-      (zariskiCopyingProperty P.theory B).FullSubcategory where
-  obj A := ⟨restrictDeclarations origin.signature A.obj, isZariskiSplit_restrictPresentation origin A.property.1,
-    fun l => (restrictDeclarations_holdsLaw_iff origin.signature A.obj (P.theory.law l)).mpr (by
-      rw [retainedRequiredLaw_eq]
-      exact A.property.2 (retainedRequiredName origin l))⟩
-  map h := ObjectProperty.homMk (restrictDeclarationsMap origin.signature h.hom)
+def restrictCopyingPresentation (inside : V ≤ U) (B : Scheme.{u}) :
+    (zariskiCopyingProperty (theory U) B).FullSubcategory ⥤
+      (zariskiCopyingProperty (theory V) B).FullSubcategory where
+  obj A := ⟨restrictDeclarations (namesOfLE inside) A.obj, isZariskiSplit_restrictPresentation inside A.property.1,
+    fun l => (restrictDeclarations_holdsLaw_iff (namesOfLE inside) A.obj ((theory V).law l)).mpr (by
+      rw [namesOfLE_requiredLaw]
+      exact A.property.2 (requiredNameOfLE inside l))⟩
+  map h := ObjectProperty.homMk (restrictDeclarationsMap (namesOfLE inside) h.hom)
   map_id _ := ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl)
   map_comp _ _ := ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl)
 
@@ -95,21 +108,53 @@ def restrictCopyingCoefficients (T : Theory.{u}) (f : B' ⟶ B) :
   map_comp _ _ := ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl)
 
 /-- The square for declaration and coefficient restriction commutes within the copying model categories. -/
-def restrictCopyingPresentation_changeIso (origin : ReadingOrigin P Q U) (f : B' ⟶ B) :
-    restrictCopyingPresentation origin B ⋙ restrictCopyingCoefficients P.theory f ≅
-      restrictCopyingCoefficients Q.theory f ⋙ restrictCopyingPresentation origin B' :=
+def restrictCopyingPresentation_changeIso (inside : V ≤ U) (f : B' ⟶ B) :
+    restrictCopyingPresentation inside B ⋙ restrictCopyingCoefficients (theory V) f ≅
+      restrictCopyingCoefficients (theory U) f ⋙ restrictCopyingPresentation inside B' :=
   NatIso.ofComponents (fun _ => Iso.refl _) (by
     intro A D h
     simp only [Functor.comp_map, Iso.refl_hom, Category.comp_id, Category.id_comp]
-    exact ObjectProperty.hom_ext _ (restrictStructureMap_restrictDeclarationsMap f origin.signature h.hom).symm)
+    exact ObjectProperty.hom_ext _ (restrictStructureMap_restrictDeclarationsMap f (namesOfLE inside) h.hom).symm)
+
+/-- Restrict the vocabulary on the public copying model category of Definition 4.1. -/
+def selectedCopyingRestriction {base : CoefficientRing.{u}} (inside : V ≤ U) (R : CoefficientAlgebra base) :
+    SelectedCopyingModels U R ⥤ SelectedCopyingModels V R := by
+  letI := R.scalars.ring
+  exact copyingModeModelComparison (theory U) R ⋙ restrictCopyingPresentation inside R.scalars.spec ⋙
+    copyingModeModelReadback (theory V) R
+
+/-- Coefficient changes on the public copying category pull back structures and all preserving arrows. -/
+def selectedCopyingCoefficientChange {base : CoefficientRing.{u}} (U : DeclarationContext P)
+    {R S : CoefficientAlgebra base} (f : R.scalars.Hom S.scalars) :
+    SelectedCopyingModels U R ⥤ SelectedCopyingModels U S := by
+  letI := R.scalars.ring
+  letI := S.scalars.ring
+  exact copyingModeModelComparison (theory U) R ⋙
+    restrictCopyingCoefficients (theory U) (CoefficientRing.specMap f) ⋙
+    copyingModeModelReadback (theory U) S
+
+/-- The two restriction directions commute on the copying models of the selected contexts. -/
+def selectedCopyingRestriction_changeIso {base : CoefficientRing.{u}} (inside : V ≤ U)
+    {R S : CoefficientAlgebra base} (f : R.scalars.Hom S.scalars) :
+    selectedCopyingRestriction inside R ⋙ selectedCopyingCoefficientChange V f ≅
+      selectedCopyingCoefficientChange U f ⋙ selectedCopyingRestriction inside S := by
+  letI := R.scalars.ring
+  letI := S.scalars.ring
+  unfold selectedCopyingRestriction selectedCopyingCoefficientChange
+  simp only [Functor.assoc, ← Functor.assoc (copyingModeModelReadback _ _) (copyingModeModelComparison _ _),
+    copyingModeModelReadback_comp, Functor.id_comp]
+  simpa only [Functor.assoc] using CategoryTheory.Functor.isoWhiskerLeft (copyingModeModelComparison (theory U) R)
+    (CategoryTheory.Functor.isoWhiskerRight (restrictCopyingPresentation_changeIso inside (CoefficientRing.specMap f))
+      (copyingModeModelReadback (theory V) S))
 
 /-- Restriction of the copied structure agrees naturally with the copied Part I native reduct. -/
-def restrictCopyingNativeIso (origin : ReadingOrigin P Q U) (R : Type u) [CommRing R] :
-    constantCopyingModelFunctor Q.theory R ⋙ restrictCopyingPresentation origin (Spec (CommRingCat.of R)) ≅
-      restrictNativePresentation origin ⋙ constantCopyingModelFunctor P.theory R :=
-  NatIso.ofComponents
-    (fun M => (zariskiCopyingProperty P.theory (Spec (CommRingCat.of R))).isoMk
-      (restrictDeclarationsConstantIso origin.signature M.obj (Spec (CommRingCat.of R))))
+def restrictCopyingNativeIso (inside : V ≤ U) (R : Type u) [CommRing R] :
+    constantCopyingModelFunctor (theory U) R ⋙ restrictCopyingPresentation inside (Spec (CommRingCat.of R)) ≅
+      modelRestriction inside ⋙ constantCopyingModelFunctor (theory V) R := by
+  rw [← restrictNativePresentation_eq inside]
+  exact NatIso.ofComponents
+    (fun M => (zariskiCopyingProperty (theory V) (Spec (CommRingCat.of R))).isoMk
+      (restrictDeclarationsConstantIso (namesOfLE inside) M.obj (Spec (CommRingCat.of R))))
     (by
       intro A D h
       apply ObjectProperty.hom_ext
@@ -117,5 +162,23 @@ def restrictCopyingNativeIso (origin : ReadingOrigin P Q U) (R : Type u) [CommRi
       funext s
       ext T a
       rfl)
+
+/-- Realize the original Part I model in the public copying category at a coefficient algebra. -/
+def selectedConstantCopyingModelFunctor {base : CoefficientRing.{u}} (U : DeclarationContext P)
+    (R : CoefficientAlgebra base) : Model (theory U) ⥤ SelectedCopyingModels U R := by
+  letI := R.scalars.ring
+  exact constantCopyingModelFunctor (theory U) R.scalars.Carrier ⋙ copyingModeModelReadback (theory U) R
+
+/-- The public copying reduct recovers the Part I reduct on every native model and arrow. -/
+def selectedCopyingNativeIso {base : CoefficientRing.{u}} (inside : V ≤ U) (R : CoefficientAlgebra base) :
+    selectedConstantCopyingModelFunctor U R ⋙ selectedCopyingRestriction inside R ≅
+      modelRestriction inside ⋙ selectedConstantCopyingModelFunctor V R := by
+  letI := R.scalars.ring
+  unfold selectedConstantCopyingModelFunctor selectedCopyingRestriction
+  simp only [Functor.assoc, ← Functor.assoc (copyingModeModelReadback _ _) (copyingModeModelComparison _ _),
+    copyingModeModelReadback_comp, Functor.id_comp]
+  simpa only [Functor.assoc] using CategoryTheory.Functor.isoWhiskerRight
+    (restrictCopyingNativeIso inside R.scalars.Carrier)
+    (copyingModeModelReadback (theory V) R)
 
 end SHIGURE.Copying
