@@ -129,7 +129,7 @@ theorem singleArgumentEquiv_tprod {K : Type u} (M : K → ModuleCat.{u} R) (s : 
   exact PiTensorProduct.subsingletonEquiv_apply_tprod _ x
 
 /-- The universal tensor comparison combines two finite blocks of typed input variables. -/
-private def combineArgumentsEquiv (A : TensorStructure R sig) {Γ Δ Θ : List sig.SortType}
+def combineArgumentsEquiv (A : TensorStructure R sig) {Γ Δ Θ : List sig.SortType}
     (e : TensorPosition Γ ⊕ TensorPosition Δ ≃ TensorPosition Θ)
     (sorts : ∀ i, Sum.elim Sigma.fst Sigma.fst i = (e i).1) :
     ((TensorShape.arguments Γ).module A ⊗[R] (TensorShape.arguments Δ).module A) ≃ₗ[R]
@@ -226,5 +226,53 @@ structure FullDomainTensorSignature (sig : Signature.{u}) : Prop where
   noRelations : IsEmpty sig.Rel
   /-- Partial domains belong to the separately interpreted structure. -/
   noPartial : IsEmpty sig.Partial
+
+section TensorExpressionGenerators
+
+variable {R : Type u} [CommRing R] {sig : Signature.{u}}
+
+/-- Transport of an entry acts by the equality of its carrier types. -/
+private theorem carrierSortEquiv_apply (A : TensorStructure R sig) {s t : sig.SortType} (h : s = t)
+    (x : A.carrier s) : carrierSortEquiv A h x = cast (congrArg (fun a => (A.carrier a : Type u)) h) x := by
+  cases h
+  rfl
+
+/-- Reindexing a pure input tensor permutes its entries and transports each entry to its declared sort. -/
+private theorem reindexTensor_tprod (A : TensorStructure R sig) {I J : Type u}
+    (s : I → sig.SortType) (t : J → sig.SortType) (e : I ≃ J)
+    (sorts : ∀ i, s i = t (e i)) (x : ∀ i, A.carrier (s i)) :
+    reindexTensor A s t e sorts (PiTensorProduct.tprod R x) = PiTensorProduct.tprod R (fun j =>
+      cast (congrArg (fun a => (A.carrier a : Type u))
+        ((sorts (e.symm j)).trans (congrArg t (e.apply_symm_apply j)))) (x (e.symm j))) := by
+  rw [reindexTensor, LinearEquiv.trans_apply, PiTensorProduct.reindex_tprod, PiTensorProduct.congr_tprod]
+  congr 1
+  funext j
+  exact carrierSortEquiv_apply A _ _
+
+/-- The permutation primitive evaluates pure inputs by the declared position equivalence. -/
+theorem TensorExpression.eval_permuteArguments_tprod (A : TensorStructure R sig)
+    {Γ Δ : List sig.SortType} (e : TensorPosition Γ ≃ TensorPosition Δ)
+    (sorts : ∀ i, i.1 = (e i).1) (x : ∀ i : TensorPosition Γ, A.carrier i.1) :
+    (TensorExpression.permuteArguments e sorts).eval A (PiTensorProduct.tprod R x) =
+      PiTensorProduct.tprod R (fun j => cast (congrArg (fun a => (A.carrier a : Type u))
+        ((sorts (e.symm j)).trans (congrArg Sigma.fst (e.apply_symm_apply j)))) (x (e.symm j))) :=
+  reindexTensor_tprod A Sigma.fst Sigma.fst e sorts x
+
+/-- Combining two blocks of pure inputs takes each entry from its declared block and position. -/
+theorem combineArgumentsEquiv_tprod (A : TensorStructure R sig) {Γ Δ Θ : List sig.SortType}
+    (e : TensorPosition Γ ⊕ TensorPosition Δ ≃ TensorPosition Θ)
+    (sorts : ∀ i, Sum.elim Sigma.fst Sigma.fst i = (e i).1)
+    (x : ∀ i : TensorPosition Γ, A.carrier i.1) (y : ∀ i : TensorPosition Δ, A.carrier i.1) :
+    combineArgumentsEquiv A e sorts (PiTensorProduct.tprod R x ⊗ₜ[R] PiTensorProduct.tprod R y) =
+      PiTensorProduct.tprod R (fun j => cast (congrArg (fun a => (A.carrier a : Type u))
+        ((sorts (e.symm j)).trans (congrArg Sigma.fst (e.apply_symm_apply j))))
+        (Sum.rec (motive := fun i => A.carrier (Sum.elim Sigma.fst Sigma.fst i)) x y (e.symm j))) := by
+  rw [combineArgumentsEquiv, LinearEquiv.trans_apply]
+  have h := PiTensorProduct.tmulEquivDep_apply (R := R)
+    (N := fun i => (A.carrier (Sum.elim Sigma.fst Sigma.fst i) : Type u)) x y
+  exact (congrArg (reindexTensor A (Sum.elim Sigma.fst Sigma.fst) Sigma.fst e sorts) h).trans
+    (reindexTensor_tprod A (Sum.elim Sigma.fst Sigma.fst) Sigma.fst e sorts _)
+
+end TensorExpressionGenerators
 
 end SHIGURE
