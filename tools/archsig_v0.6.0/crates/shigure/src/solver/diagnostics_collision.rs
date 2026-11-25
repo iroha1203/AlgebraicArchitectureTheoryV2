@@ -31,8 +31,8 @@ pub(crate) fn compute_collision_mv(
     reading_map: Option<&BTreeMap<&str, &str>>,
     diag_coeff: &CoeffDomain,
 ) -> Result<CollisionMayerVietorisResult, SilenceReason> {
-    let fine_cpx = build_partition_complex(nerve, &col.fine_partition, reading_map);
-    let coarse_cpx = build_partition_complex(nerve, &col.coarse_partition, reading_map);
+    let fine_cpx = build_partition_complex(nerve, &col.fine_partition, reading_map)?;
+    let coarse_cpx = build_partition_complex(nerve, &col.coarse_partition, reading_map)?;
 
     let (r0, r1, r2) = build_coarsening_map_matrices(
         &col.coarse_partition,
@@ -129,7 +129,7 @@ pub(crate) fn compute_collision_mv(
             let mut acc2: Option<Vec<Vec<BigInt>>> = None;
             let mut cpx_list = Vec::with_capacity(steps.len());
             for st in &steps {
-                cpx_list.push(build_partition_complex(nerve, st, reading_map));
+                cpx_list.push(build_partition_complex(nerve, st, reading_map)?);
             }
             for idx in 0..(steps.len() - 1) {
                 let (m0, m1, m2) = build_coarsening_map_matrices(
@@ -311,7 +311,15 @@ fn eval_mv_z(
 
     let coh_c = c_z.cohomology_z().map_err(map_diag_alg_err)?;
     let coh_f = f_z.cohomology_z().map_err(map_diag_alg_err)?;
-    let coh_q = q_z.cohomology_z().map_err(map_diag_alg_err)?;
+    let _coh_q = q_z.cohomology_z().map_err(map_diag_alg_err)?;
+
+    // H^1(coarse) または H^1(fine) に Z-torsion がある場合は torsion-free SNF 判定外として fail-closed 沈黙する。
+    // 注意: H^1(Q_Z) の torsion は H^1(r) の同型性を阻害しない（例: RP^2 の 3-cover で H^1(C)=H^1(F)=0, H^1(Q)=Z/2）。
+    if !coh_c.h1.torsion_invariants.is_empty() || !coh_f.h1.torsion_invariants.is_empty() {
+        return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
+            detail: "Z-torsion in H^1 of coarse/fine diagnostic complex is outside torsion-free SNF isomorphism check".to_owned(),
+        });
+    }
 
     // 有理階数の計算（Q 上の長完全列）。
     let (ker_q, coker_q, coker_h0_q, im_h1_q, h1_iso_q, mv_q) = eval_mv_field(
@@ -331,12 +339,8 @@ fn eval_mv_z(
         Rat::zero(),
     )?;
 
-    // Z 上の H^1 同型は torsion 一致かつ SNF 不変因子すべて 1 が必要。
-    let z_iso = if !h1_iso_q
-        || !coh_c.h1.torsion_invariants.is_empty()
-        || !coh_f.h1.torsion_invariants.is_empty()
-        || !coh_q.h1.torsion_invariants.is_empty()
-    {
+    // Z 上の H^1 同型（torsion-free 確認済みなので Q 同型かつ SNF 不変因子すべて 1 が必要十分）。
+    let z_iso = if !h1_iso_q {
         false
     } else if coh_c.h1.free_rank == 0 {
         true
@@ -420,7 +424,7 @@ fn build_partition_complex(
     nerve: &ComputedNerve,
     partition: &[Vec<String>],
     reading_map: Option<&BTreeMap<&str, &str>>,
-) -> DiagnosticComplexData {
+) -> Result<DiagnosticComplexData, SilenceReason> {
     let mut vals: BTreeMap<String, String> = BTreeMap::new();
     for (bi, block) in partition.iter().enumerate() {
         let label = format!("b{bi}");
@@ -428,12 +432,22 @@ fn build_partition_complex(
             let tgt = reading_map
                 .and_then(|m| m.get(s.as_str()).copied())
                 .unwrap_or(s.as_str());
+            if let Some(prev) = vals.get(tgt)
+                && prev != &label
+            {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "collision_partition_reading_adequacy".to_owned(),
+                    detail: format!(
+                        "collision partition splits sources mapping to the same reading target `{tgt}` into distinct blocks ({prev} vs {label})"
+                    ),
+                });
+            }
             vals.insert(tgt.to_owned(), label.clone());
         }
     }
     let mut target_law_values = BTreeMap::new();
     target_law_values.insert("law".to_owned(), vals);
-    build_diagnostic_complex(nerve, &target_law_values)
+    Ok(build_diagnostic_complex(nerve, &target_law_values))
 }
 
 fn fine_to_coarse_block_map(

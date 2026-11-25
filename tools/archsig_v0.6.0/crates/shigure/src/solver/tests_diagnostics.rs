@@ -676,4 +676,94 @@ fn diagnostics_silence_inadequate_reading_max_partitions_unobserved_and_bad_ring
         Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. })
             if condition == "ring_homomorphism_exists"
     ));
+
+    // 5. Static reading 非整合な collision partition は暗黙上書きせず fail-closed 沈黙（Finding 2）
+    let task_bad_col = validate_diagnostics_task(DiagnosticsTaskSpec {
+        name: "bad_col_adequacy".into(),
+        diagnostic_coeff: CoeffDomain::Q,
+        nerve: SupportedNerveSpec {
+            charts: vec![ChartSupportSpec {
+                name: "c0".into(),
+                support: vec!["t0".into()],
+            }],
+            edges: Vec::new(),
+            faces: Vec::new(),
+        },
+        readout: DiagnosticsReadoutSpec::Static {
+            sources: vec!["s0".into(), "s1".into()],
+            targets: vec!["t0".into()],
+            reading: vec![("s0".into(), "t0".into()), ("s1".into(), "t0".into())],
+            laws: vec![StaticLawReadoutSpec {
+                law_name: "L".into(),
+                values: vec![("s0".into(), z_lit(0)), ("s1".into(), z_lit(0))],
+            }],
+        },
+        coeff_change: None,
+        collisions: vec![CollisionComparisonSpec {
+            label: "split_same_target".into(),
+            law_name: "L".into(),
+            fine_partition: vec![vec!["s0".into()], vec!["s1".into()]],
+            coarse_partition: vec![vec!["s0".into(), "s1".into()]],
+            alternative_merge_paths: Vec::new(),
+        }],
+        r_point_probe: None,
+        dimension_realization: None,
+        max_partitions: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_diagnostics_task(&task_bad_col).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. })
+            if condition == "collision_partition_reading_adequacy"
+    ));
+
+    // 6. 自由類 [2] ∈ H^1([Z --0--> Z]) = Z の mod 2 消失は torsion_vanished_in_target = false（Finding 5）
+    let task_free_mod2 = validate_diagnostics_task(DiagnosticsTaskSpec {
+        name: "free_class_mod2".into(),
+        diagnostic_coeff: CoeffDomain::Z,
+        nerve: SupportedNerveSpec {
+            charts: vec![ChartSupportSpec {
+                name: "c0".into(),
+                support: vec!["s0".into()],
+            }],
+            edges: Vec::new(),
+            faces: Vec::new(),
+        },
+        readout: DiagnosticsReadoutSpec::Static {
+            sources: vec!["s0".into()],
+            targets: vec!["s0".into()],
+            reading: vec![("s0".into(), "s0".into())],
+            laws: vec![StaticLawReadoutSpec {
+                law_name: "L".into(),
+                values: vec![("s0".into(), z_lit(0))],
+            }],
+        },
+        coeff_change: Some(CoeffChangeComparisonSpec {
+            target_domain: CoeffDomain::Fp(BigUint::from(2u32)),
+            compare_codomain_regeneration: false,
+            explicit_z_complex: Some(ExplicitZComplexSpec {
+                dim0: 1,
+                dim1: 1,
+                d0: vec![vec![0]],
+                designated_cocycle: Some(vec![2]),
+            }),
+        }),
+        collisions: Vec::new(),
+        r_point_probe: None,
+        dimension_realization: None,
+        max_partitions: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    let ex_free = solve_diagnostics_task(&task_free_mod2)
+        .diagnostics
+        .unwrap()
+        .coeff_change
+        .unwrap()
+        .explicit_complex_check
+        .unwrap();
+    assert_eq!(ex_free.designated_class_zero_in_source, Some(false));
+    assert_eq!(ex_free.designated_class_zero_in_target, Some(true));
+    assert_eq!(ex_free.torsion_vanished_in_target, Some(false));
 }

@@ -98,10 +98,76 @@ pub(crate) fn check_condition_c0_to_c6(
         face_map[f_face_idx[ff.as_str()]] = cf_opt.as_ref().map(|cf| c_face_idx[cf.as_str()]);
     }
 
+    // TargetSupportedNerveMorphism の射公理を全細辺・全細面で厳密検査（Lean SupportedNerveMorphism.lean 準拠）。
+    if !factor_valid {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "target_supported_nerve_morphism_axioms".to_owned(),
+            detail: "coarse_reading does not factor through fine_reading".to_owned(),
+        });
+    }
+    for (fei, fe) in fine_nerve.edges.iter().enumerate() {
+        let fe_name = &ref_spec.fine_nerve.edges[fei].name;
+        match edge_map[fei] {
+            Some(cei) => {
+                let ce = &coarse_nerve.edges[cei];
+                if chart_map[fe.left_idx] != ce.left_idx || chart_map[fe.right_idx] != ce.right_idx {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "target_supported_nerve_morphism_axioms".to_owned(),
+                        detail: format!(
+                            "fine edge `{fe_name}` endpoints do not map to endpoints of coarse edge `{}` (edge_some_left/right violated)",
+                            ref_spec.coarse_nerve.edges[cei].name
+                        ),
+                    });
+                }
+            }
+            None => {
+                if chart_map[fe.left_idx] != chart_map[fe.right_idx] {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "target_supported_nerve_morphism_axioms".to_owned(),
+                        detail: format!(
+                            "degenerate fine edge `{fe_name}` crosses distinct coarse charts (edge_none_fiber violated)"
+                        ),
+                    });
+                }
+            }
+        }
+    }
+    for (ffi, ff) in fine_nerve.faces.iter().enumerate() {
+        let ff_name = &ref_spec.fine_nerve.faces[ffi].name;
+        match face_map[ffi] {
+            Some(cfi) => {
+                let cf = &coarse_nerve.faces[cfi];
+                if edge_map[ff.e0_idx] != Some(cf.e0_idx)
+                    || edge_map[ff.e1_idx] != Some(cf.e1_idx)
+                    || edge_map[ff.e2_idx] != Some(cf.e2_idx)
+                {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "target_supported_nerve_morphism_axioms".to_owned(),
+                        detail: format!(
+                            "fine face `{ff_name}` boundary edges do not map to coarse face `{}` edges (face_some_edge violated)",
+                            ref_spec.coarse_nerve.faces[cfi].name
+                        ),
+                    });
+                }
+            }
+            None => {
+                if edge_map[ff.e0_idx].is_some()
+                    || edge_map[ff.e1_idx].is_some()
+                    || edge_map[ff.e2_idx].is_some()
+                {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "target_supported_nerve_morphism_axioms".to_owned(),
+                        detail: format!(
+                            "degenerate fine face `{ff_name}` has a non-degenerate boundary edge (face_none_edge violated)"
+                        ),
+                    });
+                }
+            }
+        }
+    }
+
     // C0: 各粗 chart の支持は、その fiber 内の細 chart 支持の ψ 像の和集合とちょうど等しい。
-    let c0_support_image = if !factor_valid {
-        false
-    } else {
+    let c0_support_image = {
         let mut ok = true;
         for (fi, f_sup) in fine_nerve.chart_supports.iter().enumerate() {
             let ci = chart_map[fi];

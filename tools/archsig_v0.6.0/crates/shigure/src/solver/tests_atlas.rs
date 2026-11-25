@@ -505,13 +505,10 @@ fn condition_c0_to_c6_each_fails_independently() {
     assert!(c1.c0_support_image);
     assert!(!c1.c1_block_fiber_connected);
 
-    // C2 違反: 粗辺 e01 の lift を None にする
+    // C2 違反（正当な TargetSupportedNerveMorphism 上で粗辺 e01 の細 lift を除去）
     let mut r_c2 = w3_refinement(&dom, 1, 2, -3);
-    for (fe, ce) in &mut r_c2.nerve_edge_map {
-        if fe == "e01" {
-            *ce = None;
-        }
-    }
+    r_c2.fine_nerve.edges.retain(|e| e.name != "e01");
+    r_c2.nerve_edge_map.retain(|(fe, _)| fe != "e01");
     assert!(!run_ref(r_c2).c2_edge_lift);
 
     // C3 違反: v0 fiber 内に 3 頂点 cycle を face なしで作る
@@ -556,7 +553,7 @@ fn condition_c0_to_c6_each_fails_independently() {
     r_c3_filled.nerve_face_map.push(("f_fiber".into(), None));
     assert!(run_ref(r_c3_filled).c3_fiber_rational_1_cycles);
 
-    // C4 違反: 粗 nerve に非空 face を追加し fine に lift を置かない
+    // C4 違反: 粗 nerve に非空 face を追加し fine に lift を置かない（辺向きも整合する正当な射）
     let mut r_c4 = w3_refinement(&dom, 1, 2, -3);
     r_c4.coarse_nerve.charts[0].support.push("s12".into());
     r_c4.coarse_nerve.edges = vec![
@@ -582,6 +579,11 @@ fn condition_c0_to_c6_each_fails_independently() {
         e1: "e02".into(),
         e2: "e12".into(),
     }];
+    r_c4.fine_nerve.edges[3] = NerveEdgeSpec {
+        name: "e20".into(),
+        left: "v0a".into(),
+        right: "v2".into(),
+    };
     for (_, ce) in &mut r_c4.nerve_edge_map {
         if ce.as_deref() == Some("e20") {
             *ce = Some("e02".into());
@@ -589,14 +591,49 @@ fn condition_c0_to_c6_each_fails_independently() {
     }
     assert!(!run_ref(r_c4).c4_face_lift);
 
-    // C5 違反: 2 本の fine edge を同じ粗辺 e01 へ写す
+    // C5 違反（正当な TargetSupportedNerveMorphism 上で同一端点の 2 本の細辺を同じ粗辺 e01 へ写す）
     let mut r_c5 = w3_refinement(&dom, 1, 2, -3);
-    for (fe, ce) in &mut r_c5.nerve_edge_map {
-        if fe == "t" {
-            *ce = Some("e01".into());
-        }
-    }
+    r_c5.fine_nerve.edges.push(NerveEdgeSpec {
+        name: "e01_dup".into(),
+        left: "v0b".into(),
+        right: "v1".into(),
+    });
+    r_c5.nerve_edge_map
+        .push(("e01_dup".into(), Some("e01".into())));
     assert!(!run_ref(r_c5).c5_edge_lift_unique);
+
+    // TargetSupportedNerveMorphism 射公理違反（異なる粗 chart 間を結ぶ細辺を None へ写像）は fail-closed 沈黙（Finding 1）
+    let mut r_bad_morph = w3_refinement(&dom, 1, 2, -3);
+    r_bad_morph.fine_nerve.edges.push(NerveEdgeSpec {
+        name: "bad_cross".into(),
+        left: "v0b".into(),
+        right: "v2".into(),
+    });
+    r_bad_morph.nerve_edge_map.push(("bad_cross".into(), None));
+    let bad_task = validate_atlas_task(AtlasTaskSpec {
+        name: "bad_nerve_morph".into(),
+        coeff_domain: dom.clone(),
+        vertices: vec!["v0".into(), "v1".into(), "v2".into()],
+        edges: triangle_edges(&dom, 1, 2, -3),
+        mu: c_lit(&dom, 1),
+        base_lambdas: vec![
+            ("v0".into(), c_lit(&dom, 0)),
+            ("v1".into(), c_lit(&dom, 0)),
+            ("v2".into(), c_lit(&dom, 0)),
+        ],
+        allowed_vertices: vec!["v0".into(), "v1".into(), "v2".into()],
+        allowed_edges: Vec::new(),
+        compare_to_q: false,
+        refinement: Some(r_bad_morph),
+        extended_language_check: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_atlas_task(&bad_task).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. })
+            if condition == "target_supported_nerve_morphism_axioms"
+    ));
 
     // C6 違反: 粗 self-loop へ非 self-loop の細辺を写す
     let mut r_c6 = w3_refinement(&dom, 1, 2, -3);
@@ -698,7 +735,7 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
                     provenance: None,
                 }],
             },
-            // compact_all(B, C) = (B + C, 0) at (1, 0)
+            // compact_all(B, C) = (B + C, 0) at (1, 0) and equalizer point (0, 0) (Finding 4)
             ExtendedOperationCheckSpec::RuntimeArgOp {
                 name: "compact_all".into(),
                 before_updates: vec![
@@ -710,6 +747,18 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
                     ("C".into(), c_lit(&q, 0)),
                 ],
                 sample_state: vec![("B".into(), c_lit(&q, 1)), ("C".into(), c_lit(&q, 0))],
+            },
+            ExtendedOperationCheckSpec::RuntimeArgOp {
+                name: "compact_all_at_equalizer".into(),
+                before_updates: vec![
+                    ("B".into(), add(var("B"), var("C"))),
+                    ("C".into(), c_lit(&q, 0)),
+                ],
+                after_updates: vec![
+                    ("B".into(), add(var("B"), var("C"))),
+                    ("C".into(), c_lit(&q, 0)),
+                ],
+                sample_state: vec![("B".into(), c_lit(&q, 0)), ("C".into(), c_lit(&q, 0))],
             },
         ],
     };
@@ -755,6 +804,14 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
     assert!(!rt.transport_preserved);
     assert_eq!(rt.before_values, vec!["2", "-1"]);
     assert_eq!(rt.after_values, vec!["1", "0"]);
+
+    // 等化子点 (0, 0) でも多項式恒等式不一致により transport_preserved == false かつ多項式残差が出力される
+    let rt_eq = &ext_res.extended_check_results[2];
+    assert_eq!(rt_eq.kind, "runtime_arg_op");
+    assert!(!rt_eq.transport_preserved);
+    assert_eq!(rt_eq.before_values, vec!["0", "0"]);
+    assert_eq!(rt_eq.after_values, vec!["0", "0"]);
+    assert!(!rt_eq.law_residuals.is_empty());
 }
 
 #[test]

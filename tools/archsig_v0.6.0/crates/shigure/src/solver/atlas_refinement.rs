@@ -420,6 +420,23 @@ where
         Some((ac_vec, dbc_vec))
     };
 
+    let check_coarse = |vec_c: &(Vec<C>, Vec<C>), is_hom: bool| -> bool {
+        let lhs = mat_vec(&coarse.d0, &vec_c.0, &coarse.zero);
+        let target: Vec<C> = if is_hom {
+            vec_c.1.clone()
+        } else {
+            let c_d0_l = mat_vec(&coarse.d0, coarse_lambdas, &coarse.zero);
+            coarse
+                .offsets
+                .iter()
+                .zip(&c_d0_l)
+                .zip(&vec_c.1)
+                .map(|((b, dl), db)| b.sub_ref(dl).add_ref(db))
+                .collect()
+        };
+        lhs == target
+    };
+
     if let (Some(cp), Some(fp)) = (&c_part, &f_part) {
         if !check_forward(cp, false) {
             iso_ok = false;
@@ -436,7 +453,7 @@ where
                 mat_vec(p0, &psi_fp.0, &coarse.zero),
                 mat_vec(p1, &psi_fp.1, &coarse.zero),
             );
-            if back != *fp || !check_forward(&psi_fp, false) {
+            if back != *fp || !check_forward(&psi_fp, false) || !check_coarse(&psi_fp, false) {
                 inv_ok = false;
             }
         } else {
@@ -462,7 +479,7 @@ where
                 mat_vec(p0, &psi_fk.0, &coarse.zero),
                 mat_vec(p1, &psi_fk.1, &coarse.zero),
             );
-            if back != *fk || !check_forward(&psi_fk, true) {
+            if back != *fk || !check_forward(&psi_fk, true) || !check_coarse(&psi_fk, true) {
                 inv_ok = false;
             }
         } else {

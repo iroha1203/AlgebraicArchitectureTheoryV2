@@ -4,8 +4,9 @@
 //! 拡張プロトコル語（`ProtocolSequence`）および状態依存実行時引数操作（`RuntimeArgOp`）の
 //! 移送成否と中間状態 Law 残差を一般構成から導出する。
 
+use crate::algebra::MonomialOrder;
 use crate::algebra::poly::{AlgebraError, Poly};
-use crate::algebra::poly_expr::ExprBindings;
+use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::RingCoeff;
 use crate::ir::atlas::{ExtendedLanguageCheckSpec, ExtendedOperationCheckSpec};
 use crate::ir::result::SilenceReason;
@@ -25,7 +26,7 @@ where
     FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
 {
     let (_, empty_bindings) = ExprBindings::from_slices(&[], &[], &[]).map_err(map_atlas_alg_err)?;
-    let (_, state_bindings) =
+    let (state_order, state_bindings) =
         ExprBindings::from_slices(&ext.state_vars, &[], &[]).map_err(map_atlas_alg_err)?;
 
     // adapter g: R^n -> R^n を状態変数多項式として展開。
@@ -144,6 +145,7 @@ where
                 let res = eval_runtime_arg_op(
                     name,
                     &ext.state_vars,
+                    &state_order,
                     &adapter_state_polys,
                     before_updates,
                     after_updates,
@@ -261,6 +263,7 @@ where
 fn eval_runtime_arg_op<C, FE>(
     name: &str,
     state_vars: &[String],
+    state_order: &VarOrder,
     adapter_polys: &[Poly<C>],
     before_updates: &[(String, PolyExpr)],
     after_updates: &[(String, PolyExpr)],
@@ -287,30 +290,53 @@ where
     let after_map: BTreeMap<&str, &PolyExpr> =
         after_updates.iter().map(|(v, e)| (v.as_str(), e)).collect();
 
-    // lhs = g(op_before(x))
-    let mut op_b_x = Vec::with_capacity(state_vars.len());
+    let mut before_polys = Vec::with_capacity(state_vars.len());
+    let mut after_polys = Vec::with_capacity(state_vars.len());
     for v in state_vars {
-        let p = expand(before_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?;
-        op_b_x.push(p.eval_at(&x).map_err(map_atlas_alg_err)?);
+        before_polys.push(expand(before_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?);
+        after_polys.push(expand(after_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?);
+    }
+
+    // 1. 多項式恒等式による全域可換性判定: g(op_before(x)) == op_after(g(x))（単一サンプル点偽陽性を排除）。
+    let mut poly_identity_holds = true;
+    let mut poly_residuals = Vec::new();
+    for (coord, v) in state_vars.iter().enumerate() {
+        let lhs_poly = adapter_polys[coord]
+            .substitute(&before_polys)
+            .map_err(map_atlas_alg_err)?;
+        let rhs_poly = after_polys[coord]
+            .substitute(adapter_polys)
+            .map_err(map_atlas_alg_err)?;
+        if lhs_poly != rhs_poly {
+            poly_identity_holds = false;
+            let diff = lhs_poly.sub(&rhs_poly);
+            poly_residuals.push(format!(
+                "{v}_poly:{}",
+                diff.display(state_order, MonomialOrder::Grevlex)
+            ));
+        }
+    }
+
+    // 2. サンプル点での具体評価（witness 出力）。
+    let mut op_b_x = Vec::with_capacity(state_vars.len());
+    for bp in &before_polys {
+        op_b_x.push(bp.eval_at(&x).map_err(map_atlas_alg_err)?);
     }
     let mut lhs = Vec::with_capacity(state_vars.len());
     for gp in adapter_polys {
         lhs.push(gp.eval_at(&op_b_x).map_err(map_atlas_alg_err)?);
     }
-
-    // rhs = op_after(g(x))
     let mut g_x = Vec::with_capacity(state_vars.len());
     for gp in adapter_polys {
         g_x.push(gp.eval_at(&x).map_err(map_atlas_alg_err)?);
     }
     let mut rhs = Vec::with_capacity(state_vars.len());
-    for v in state_vars {
-        let p = expand(after_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?;
-        rhs.push(p.eval_at(&g_x).map_err(map_atlas_alg_err)?);
+    for ap in &after_polys {
+        rhs.push(ap.eval_at(&g_x).map_err(map_atlas_alg_err)?);
     }
 
-    let transport_preserved = lhs == rhs;
-    let law_residuals: Vec<String> = lhs
+    let sample_matches = lhs == rhs;
+    let mut law_residuals: Vec<String> = lhs
         .iter()
         .zip(&rhs)
         .zip(state_vars)
@@ -323,16 +349,21 @@ where
             }
         })
         .collect();
+    if !poly_identity_holds && law_residuals.is_empty() {
+        law_residuals = poly_residuals;
+    }
 
     Ok(ExtendedCheckOutcome {
         name: name.to_owned(),
         kind: "runtime_arg_op".to_owned(),
-        transport_preserved,
+        transport_preserved: poly_identity_holds,
         before_values: lhs.iter().map(ToString::to_string).collect(),
         after_values: rhs.iter().map(ToString::to_string).collect(),
         law_residuals,
-        detail: if transport_preserved {
-            "g(op_before(x)) == op_after(g(x))".to_owned()
+        detail: if poly_identity_holds {
+            "g(op_before(x)) == op_after(g(x)) holds identically".to_owned()
+        } else if sample_matches {
+            "g(op_before(x)) != op_after(g(x)) as polynomial maps (equalizer sample point coincided)".to_owned()
         } else {
             "g(op_before(x)) != op_after(g(x))".to_owned()
         },

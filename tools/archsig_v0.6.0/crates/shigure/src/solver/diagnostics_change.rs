@@ -236,86 +236,111 @@ fn check_explicit_z_complex(
         .map_err(map_diag_alg_err)?;
     let coh_z = cpx_z.cohomology_z().map_err(map_diag_alg_err)?;
 
-    let (target_h0, target_h1, target_h0_rank, target_h1_rank, zero_in_src, zero_in_tgt) =
-        match target {
-            CoeffDomain::Z => {
-                let (zs, zt) = if let Some(coc) = &ex.designated_cocycle {
-                    let v: Vec<BigInt> = coc.iter().map(|&x| BigInt::from(x)).collect();
-                    let chk = cpx_z.check_h1_cocycle_z(&v).map_err(map_diag_alg_err)?;
-                    (Some(chk.is_zero_in_z), Some(chk.is_zero_in_z))
-                } else {
-                    (None, None)
-                };
+    let (
+        target_h0,
+        target_h1,
+        target_h0_rank,
+        target_h1_rank,
+        zero_in_src,
+        zero_in_tgt,
+        is_torsion_in_src,
+    ) = match target {
+        CoeffDomain::Z => {
+            let (zs, zt, tors) = if let Some(coc) = &ex.designated_cocycle {
+                let v: Vec<BigInt> = coc.iter().map(|&x| BigInt::from(x)).collect();
+                let chk = cpx_z.check_h1_cocycle_z(&v).map_err(map_diag_alg_err)?;
                 (
-                    coh_z.h0.display("Z"),
-                    coh_z.h1.display("Z"),
-                    coh_z.h0.free_rank,
-                    coh_z.h1.free_rank,
-                    zs,
-                    zt,
+                    Some(chk.is_zero_in_z),
+                    Some(chk.is_zero_in_z),
+                    Some(chk.torsion_order.is_some()),
                 )
-            }
-            CoeffDomain::Q => {
-                let d0_q = lift_mat_z_to_q(&d0_z);
-                let cpx_q = CochainComplex::new(ex.dim0, ex.dim1, 0, d0_q, Vec::new(), Rat::zero())
+            } else {
+                (None, None, None)
+            };
+            (
+                coh_z.h0.display("Z"),
+                coh_z.h1.display("Z"),
+                coh_z.h0.free_rank,
+                coh_z.h1.free_rank,
+                zs,
+                zt,
+                tors,
+            )
+        }
+        CoeffDomain::Q => {
+            let d0_q = lift_mat_z_to_q(&d0_z);
+            let cpx_q = CochainComplex::new(ex.dim0, ex.dim1, 0, d0_q, Vec::new(), Rat::zero())
+                .map_err(map_diag_alg_err)?;
+            let coh_q = cpx_q.cohomology_field().map_err(map_diag_alg_err)?;
+            let (zs, zt, tors) = if let Some(coc) = &ex.designated_cocycle {
+                let vz: Vec<BigInt> = coc.iter().map(|&x| BigInt::from(x)).collect();
+                let chkz = cpx_z.check_h1_cocycle_z(&vz).map_err(map_diag_alg_err)?;
+                let vq: Vec<Rat> = coc
+                    .iter()
+                    .map(|&x| Rat::from_int(BigInt::from(x)))
+                    .collect();
+                let chkq = cpx_q
+                    .check_h1_cocycle_field(&coh_q, &vq)
                     .map_err(map_diag_alg_err)?;
-                let coh_q = cpx_q.cohomology_field().map_err(map_diag_alg_err)?;
-                let (zs, zt) = if let Some(coc) = &ex.designated_cocycle {
-                    let vz: Vec<BigInt> = coc.iter().map(|&x| BigInt::from(x)).collect();
-                    let chkz = cpx_z.check_h1_cocycle_z(&vz).map_err(map_diag_alg_err)?;
-                    let vq: Vec<Rat> = coc.iter().map(|&x| Rat::from_int(BigInt::from(x))).collect();
-                    let chkq = cpx_q
-                        .check_h1_cocycle_field(&coh_q, &vq)
-                        .map_err(map_diag_alg_err)?;
-                    (Some(chkz.is_zero_in_z), Some(chkq.is_zero_class))
-                } else {
-                    (None, None)
-                };
                 (
-                    CohomologyGroup::free(coh_q.h0_dim).display("Q"),
-                    CohomologyGroup::free(coh_q.h1_dim).display("Q"),
-                    coh_q.h0_dim,
-                    coh_q.h1_dim,
-                    zs,
-                    zt,
+                    Some(chkz.is_zero_in_z),
+                    Some(chkq.is_zero_class),
+                    Some(chkz.torsion_order.is_some()),
                 )
-            }
-            CoeffDomain::Fp(p) => {
-                let Some(zero_fp) = FpElem::zero(p.clone()) else {
-                    return Err(SilenceReason::UnsupportedCoeffRing {
-                        domain: target.clone(),
-                        detail: format!("modulus {p} is not prime"),
-                    });
-                };
-                let d0_fp = lift_mat_z_to_fp(&d0_z, p);
-                let cpx_fp = CochainComplex::new(ex.dim0, ex.dim1, 0, d0_fp, Vec::new(), zero_fp)
+            } else {
+                (None, None, None)
+            };
+            (
+                CohomologyGroup::free(coh_q.h0_dim).display("Q"),
+                CohomologyGroup::free(coh_q.h1_dim).display("Q"),
+                coh_q.h0_dim,
+                coh_q.h1_dim,
+                zs,
+                zt,
+                tors,
+            )
+        }
+        CoeffDomain::Fp(p) => {
+            let Some(zero_fp) = FpElem::zero(p.clone()) else {
+                return Err(SilenceReason::UnsupportedCoeffRing {
+                    domain: target.clone(),
+                    detail: format!("modulus {p} is not prime"),
+                });
+            };
+            let d0_fp = lift_mat_z_to_fp(&d0_z, p);
+            let cpx_fp = CochainComplex::new(ex.dim0, ex.dim1, 0, d0_fp, Vec::new(), zero_fp)
+                .map_err(map_diag_alg_err)?;
+            let coh_fp = cpx_fp.cohomology_field().map_err(map_diag_alg_err)?;
+            let label = format!("F_{p}");
+            let (zs, zt, tors) = if let Some(coc) = &ex.designated_cocycle {
+                let vz: Vec<BigInt> = coc.iter().map(|&x| BigInt::from(x)).collect();
+                let chkz = cpx_z.check_h1_cocycle_z(&vz).map_err(map_diag_alg_err)?;
+                let vfp: Vec<FpElem> = coc
+                    .iter()
+                    .map(|&x| FpElem::from_checked_prime(BigInt::from(x), p.clone()))
+                    .collect();
+                let chkfp = cpx_fp
+                    .check_h1_cocycle_field(&coh_fp, &vfp)
                     .map_err(map_diag_alg_err)?;
-                let coh_fp = cpx_fp.cohomology_field().map_err(map_diag_alg_err)?;
-                let label = format!("F_{p}");
-                let (zs, zt) = if let Some(coc) = &ex.designated_cocycle {
-                    let vz: Vec<BigInt> = coc.iter().map(|&x| BigInt::from(x)).collect();
-                    let chkz = cpx_z.check_h1_cocycle_z(&vz).map_err(map_diag_alg_err)?;
-                    let vfp: Vec<FpElem> = coc
-                        .iter()
-                        .map(|&x| FpElem::from_checked_prime(BigInt::from(x), p.clone()))
-                        .collect();
-                    let chkfp = cpx_fp
-                        .check_h1_cocycle_field(&coh_fp, &vfp)
-                        .map_err(map_diag_alg_err)?;
-                    (Some(chkz.is_zero_in_z), Some(chkfp.is_zero_class))
-                } else {
-                    (None, None)
-                };
                 (
-                    CohomologyGroup::free(coh_fp.h0_dim).display(&label),
-                    CohomologyGroup::free(coh_fp.h1_dim).display(&label),
-                    coh_fp.h0_dim,
-                    coh_fp.h1_dim,
-                    zs,
-                    zt,
+                    Some(chkz.is_zero_in_z),
+                    Some(chkfp.is_zero_class),
+                    Some(chkz.torsion_order.is_some()),
                 )
-            }
-        };
+            } else {
+                (None, None, None)
+            };
+            (
+                CohomologyGroup::free(coh_fp.h0_dim).display(&label),
+                CohomologyGroup::free(coh_fp.h1_dim).display(&label),
+                coh_fp.h0_dim,
+                coh_fp.h1_dim,
+                zs,
+                zt,
+                tors,
+            )
+        }
+    };
 
     // H^i(C_Z) ⊗_Z target と H^i(C_Z ⊗_Z target) が一致するか比較する（A3）。
     let flat_preservation_holds = match target {
@@ -343,8 +368,8 @@ fn check_explicit_z_complex(
         }
     };
 
-    let torsion_vanished_in_target = match (zero_in_src, zero_in_tgt) {
-        (Some(zs), Some(zt)) => Some(!zs && zt),
+    let torsion_vanished_in_target = match (is_torsion_in_src, zero_in_tgt) {
+        (Some(is_tors), Some(zt)) => Some(is_tors && zt),
         _ => None,
     };
 

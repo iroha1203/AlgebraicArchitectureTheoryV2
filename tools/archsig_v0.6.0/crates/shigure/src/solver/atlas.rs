@@ -652,8 +652,13 @@ fn determine_atlas_verdict(
     if let Some(r) = refinement
         && (!r.condition_c.all_passed
             || !r.cochain_map_commutes
+            || !r.h0_isomorphism
             || !r.h1_isomorphism
-            || !r.repair_fiber_isomorphism_verified)
+            || !r.designated_o_preserved
+            || !r.designated_kappa_preserved
+            || !r.repair_fiber_isomorphism_verified
+            || !r.inverse_reconstruction_verified
+            || r.eval_condition_fiber_preserved == Some(false))
     {
         return Verdict::Refuted;
     }

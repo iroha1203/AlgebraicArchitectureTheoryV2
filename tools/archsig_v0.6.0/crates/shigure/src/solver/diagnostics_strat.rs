@@ -488,8 +488,17 @@ fn is_nonempty_fp(
         gens.push(prod_poly);
     }
     let mut all_var_names: Vec<String> = vars.vars().to_vec();
-    for j in 0..invs.len() {
-        all_var_names.push(format!("__rab_u_{j}"));
+    let mut existing: BTreeSet<String> = all_var_names.iter().cloned().collect();
+    let mut aux_seq = 0usize;
+    for _ in 0..invs.len() {
+        loop {
+            let cand = format!("__rab_u_{aux_seq}");
+            aux_seq += 1;
+            if existing.insert(cand.clone()) {
+                all_var_names.push(cand);
+                break;
+            }
+        }
     }
     let all_vars = VarOrder::new(all_var_names).map_err(map_diag_alg_err)?;
     let mem = ideal_membership_field(
