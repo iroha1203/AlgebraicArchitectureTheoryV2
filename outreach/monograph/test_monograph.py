@@ -277,12 +277,14 @@ class RealCorpusIntegrationTests(unittest.TestCase):
             monograph.DEFAULT_PREAMBLE,
         )
         self.assertEqual(findings, [], f'Unexpected findings: {findings[:5]}')
-        self.assertEqual(len(originals), 27)
-        self.assertEqual(stats.chapters, 27)
+        self.assertEqual(len(originals), 28)
+        self.assertEqual(stats.chapters, 28)
         self.assertEqual(stats.declarations, 378)
         self.assertEqual(stats.equations, 132)
-        self.assertEqual(stats.tables, 18)
-        self.assertIn('chapters/appendix_f.tex', tex_files)
+        self.assertEqual(stats.tables, 19)
+        self.assertIn('chapters/chapter_20.tex', tex_files)
+        self.assertIn('chapters/chapter_21.tex', tex_files)
+        self.assertNotIn('chapters/appendix_f.tex', tex_files)
         main_tex = tex_files['aat_monograph.tex'].decode('utf-8')
         self.assertIn(
             r'\aattitlepage{Algebraic Architecture Theory}{代数的アーキテクチャ論}{Hiroyuki Nakahata}{0009-0008-5928-0234}',
@@ -292,12 +294,14 @@ class RealCorpusIntegrationTests(unittest.TestCase):
         ch14 = tex_files['chapters/chapter_14.tex'].decode('utf-8')
         ch16 = tex_files['chapters/chapter_16.tex'].decode('utf-8')
         ch19 = tex_files['chapters/chapter_19.tex'].decode('utf-8')
-        appf = tex_files['chapters/appendix_f.tex'].decode('utf-8')
+        ch21 = tex_files['chapters/chapter_21.tex'].decode('utf-8')
         self.assertIn('命題11.5a', ch11)
         self.assertIn('構成14.6b', ch14)
         self.assertIn(r'\tag{16.22a}', ch16)
         self.assertIn('定理19.2a', ch19)
-        self.assertIn('付録F', appf)
+        self.assertIn('補題21.2', ch21)
+        self.assertIn('定理21.3', ch21)
+        self.assertIn('定理21.4', ch21)
 
 
 if __name__ == '__main__':

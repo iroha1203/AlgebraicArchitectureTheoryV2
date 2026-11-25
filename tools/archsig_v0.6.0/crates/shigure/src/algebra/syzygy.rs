@@ -716,6 +716,76 @@ fn divide_field<C: FieldCoeff>(
     Ok((rem, quotients))
 }
 
+/// 体 `K`（`Q` または `F_p`）上の多項式 `target` が `gens` の生成する ideal に属するか判定し、
+/// 属する場合は `target = sum_i c_i * gens[i]` を満たす厳密 cofactor `c_i` を返す。
+pub fn ideal_membership_field<C: FieldCoeff>(
+    target: &Poly<C>,
+    gens: &[Poly<C>],
+    vars: &VarOrder,
+    order: MonomialOrder,
+    max_pairs: usize,
+) -> Result<Option<Vec<Poly<C>>>, AlgebraError> {
+    let n = vars.len();
+    if target.num_vars() != n {
+        return Err(AlgebraError::ArityMismatch {
+            expected: n,
+            actual: target.num_vars(),
+        });
+    }
+    for g in gens {
+        if g.num_vars() != n {
+            return Err(AlgebraError::ArityMismatch {
+                expected: n,
+                actual: g.num_vars(),
+            });
+        }
+    }
+    let zero_c = target.zero_coeff().clone();
+    for g in gens {
+        if !zero_c.same_ring(g.zero_coeff()) {
+            return Err(AlgebraError::DomainMismatch {
+                expected: format!("{zero_c:?}"),
+                actual: format!("{:?}", g.zero_coeff()),
+            });
+        }
+    }
+    if target.is_zero() {
+        return Ok(Some(vec![Poly::zero(n, zero_c); gens.len()]));
+    }
+    if gens.is_empty() {
+        return Ok(None);
+    }
+    let basis = compute_tracked_gb(gens, n, &zero_c, order, max_pairs)?;
+    let (rem, q_row) = divide_field(target, &basis, &zero_c, order)?;
+    if !rem.is_zero() {
+        return Ok(None);
+    }
+    let mut cofactors = vec![Poly::zero(n, zero_c.clone()); gens.len()];
+    for (q_a, g_a) in q_row.iter().zip(&basis) {
+        if q_a.is_zero() {
+            continue;
+        }
+        for (dst, a_aj) in cofactors.iter_mut().zip(&g_a.cofactors) {
+            if !a_aj.is_zero() {
+                *dst = dst.add(&q_a.checked_mul(a_aj)?);
+            }
+        }
+    }
+    let mut acc = Poly::zero(n, zero_c);
+    for (c, g) in cofactors.iter().zip(gens) {
+        if !c.is_zero() && !g.is_zero() {
+            acc = acc.add(&c.checked_mul(g)?);
+        }
+    }
+    if acc != *target {
+        return Err(AlgebraError::OutOfScope {
+            detail: "internal ideal membership cofactor reconstruction invariant violated"
+                .to_owned(),
+        });
+    }
+    Ok(Some(cofactors))
+}
+
 fn pop_min_pair(pairs: &mut Vec<(usize, usize, u64)>) -> Option<(usize, usize)> {
     if pairs.is_empty() {
         return None;
