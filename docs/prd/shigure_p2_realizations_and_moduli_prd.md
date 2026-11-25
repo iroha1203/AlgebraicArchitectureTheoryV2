@@ -213,24 +213,24 @@ Formal/
 
 ---
 
-## 7. 実装計画（推奨 PR 分割順）
+## 7. 実装計画（依存順の進行ステップ）
 
-1. **PR 1（AC-01）**：`Part2/AffineFoundations.lean`（補題 B.1, B.2, B.3）。
-2. **PR 2（AC-02）**：`Part2/CopyingCoalgebra.lean`（定義 4.1, 構成 4.2, 定理 4.3, 例 4.4, 定義 4.5, 定理 4.6, 例 4.7）。
-3. **PR 3（AC-03）**：`Part2/TensorRealizations.lean`（構成 4.8, 定理 4.9, 命題 4.10, 例 4.11）。
-4. **PR 4（AC-04）**：`Part2/RealizationRecovery.lean`（定理 4.12, 局所充足例, 局所分裂複製対象の Zariski descent, 量スカラー読取り, 命題 4.13）。
-5. **PR 5（AC-05）**：`Part2/QuantityModels.lean`（定義 5.1, 構成 5.2, 補題 5.3, 定理 5.4, 定理 5.5, 例 5.6, 例 5.7）。
-6. **PR 6（AC-06）**：`Part2/QuantityTransport.lean`（定理 5.8, 命題 5.9, 例 5.10, 宣言制限と係数変更の可換性, 定理 5.11, 例 5.12）。
-7. **PR 7（AC-07）**：`Part2/FaithfullyFlatDescent.lean`（補題 B.4, 補題 B.5）。
-8. **PR 8（AC-08）**：`Part2/SchemesAndRelativeSpec.lean`（準連接加群/代数, 一般スキームの fppf descent, 補題 B.6, 補題 B.7, スタック上相対 Spec）。
-9. **PR 9（AC-09）**：`Part2/RealizationStack.lean`（定義 6.1, 多項式 Law の展開と座標独立性, 補題 6.2）。
-10. **PR 10（AC-10）**：`Part2/MarkedCharts.lean`（定義 6.3, 構成 6.4, 定理 6.5, 例 6.6）。
-11. **PR 11（AC-11）**：`Part2/QuotientStack.lean`（代数的スタック・滑らかさ, 定理 6.7, 自己同型群スキーム, 階数直和, 例 6.8）。
-12. **PR 12（AC-12）**：`Part2/StackRelativeSpec.lean`（定義 6.9, 定理 6.10, 残差計算例・非単射引戻し例・定理 5.4 の特殊場合）。
-13. **PR 13（AC-13）**：`Part2/MinimalRealization.lean`（設定 19.12, 補題 19.13, 定理 6.12）。
-14. **PR 14（AC-14）**：`Formal/SHIGURE.lean`・`Formal/SHIGURE/AxiomAudit.lean` の最終統合および全監査確認。
+1. **Step 1（AC-01）**：`Part2/AffineFoundations.lean`（補題 B.1, B.2, B.3）。
+2. **Step 2（AC-02）**：`Part2/CopyingCoalgebra.lean`（定義 4.1, 構成 4.2, 定理 4.3, 例 4.4, 定義 4.5, 定理 4.6, 例 4.7）。
+3. **Step 3（AC-03）**：`Part2/TensorRealizations.lean`（構成 4.8, 定理 4.9, 命題 4.10, 例 4.11）。
+4. **Step 4（AC-04）**：`Part2/RealizationRecovery.lean`（定理 4.12, 局所充足例, 局所分裂複製対象の Zariski descent, 量スカラー読取り, 命題 4.13）。
+5. **Step 5（AC-05）**：`Part2/QuantityModels.lean`（定義 5.1, 構成 5.2, 補題 5.3, 定理 5.4, 定理 5.5, 例 5.6, 例 5.7）。
+6. **Step 6（AC-06）**：`Part2/QuantityTransport.lean`（定理 5.8, 命題 5.9, 例 5.10, 宣言制限と係数変更の可換性, 定理 5.11, 例 5.12）。
+7. **Step 7（AC-07）**：`Part2/FaithfullyFlatDescent.lean`（補題 B.4, 補題 B.5）。
+8. **Step 8（AC-08）**：`Part2/SchemesAndRelativeSpec.lean`（準連接加群/代数, 一般スキームの fppf descent, 補題 B.6, 補題 B.7, スタック上相対 Spec）。
+9. **Step 9（AC-09）**：`Part2/RealizationStack.lean`（定義 6.1, 多項式 Law の展開と座標独立性, 補題 6.2）。
+10. **Step 10（AC-10）**：`Part2/MarkedCharts.lean`（定義 6.3, 構成 6.4, 定理 6.5, 例 6.6）。
+11. **Step 11（AC-11）**：`Part2/QuotientStack.lean`（代数的スタック・滑らかさ, 定理 6.7, 自己同型群スキーム, 階数直和, 例 6.8）。
+12. **Step 12（AC-12）**：`Part2/StackRelativeSpec.lean`（定義 6.9, 定理 6.10, 残差計算例・非単射引戻し例・定理 5.4 の特殊場合）。
+13. **Step 13（AC-13）**：`Part2/MinimalRealization.lean`（設定 19.12, 補題 19.13, 定理 6.12）。
+14. **Step 14（AC-14）**：`Formal/SHIGURE.lean`・`Formal/SHIGURE/AxiomAudit.lean` の最終統合および全監査確認。
 
-（AC-07・AC-08・AC-11・AC-12 のように実装規模が大きい AC は、依存順にサブ PR へ細分化して進めてよい。）
+（実際の Issue / PR の分割・統合単位は `$prd-loop` の粒度規律に従って判断する。）
 
 各 PR は [Workflow guideline](../workflow/guideline.md) の PR 前チェックおよび `math-lean-review`（独立 4 lane）を通過してマージする。
 
