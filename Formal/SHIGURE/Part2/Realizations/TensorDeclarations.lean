@@ -16,6 +16,33 @@ noncomputable section
 
 namespace SHIGURE
 
+/-- Primitive sort declarations in a written tensor shape. -/
+def TensorShape.support {P : PrimitivePresentation.{u}} {K : Type u}
+    (name : K → P.signature.SortType) : TensorShape K → Set (Declaration P)
+  | .unit => ∅
+  | .sort s => {Declaration.sort (name s)}
+  | .arguments Γ => Declaration.sorts (Γ.map name)
+  | .tensor X Y => X.support name ∪ Y.support name
+
+/-- Sorts in the types and primitive symbols appearing anywhere in a written tensor expression. -/
+def TensorExpression.support {P : PrimitivePresentation.{u}} {R : Type u} {sig : Signature.{u}}
+    (names : SignatureNames sig P.signature) {X Y : TensorShape sig.SortType}
+    (e : TensorExpression R sig X Y) : Set (Declaration P) :=
+  X.support names.onSort ∪ Y.support names.onSort ∪
+    match e with
+    | .total f => {Declaration.total (names.onTotal f)}
+    | .quantity q => {Declaration.quantity (names.onQuantity q)}
+    | .comp f g => f.support names ∪ g.support names
+    | .tensor f g => f.support names ∪ g.support names
+    | .add f g => f.support names ∪ g.support names
+    | .smul _ f => f.support names
+    | _ => ∅
+
+/-- Both written expressions contribute their symbols and types to the Law's support. -/
+def TensorLaw.support {P : PrimitivePresentation.{u}} {R : Type u} {sig : Signature.{u}}
+    (law : TensorLaw R sig) (names : SignatureNames sig P.signature) : Set (Declaration P) :=
+  law.left.support names ∪ law.right.support names
+
 /-- A tensor Law is written on the primitive declarations it is allowed to use. -/
 structure ScopedTensorLaw (base : CoefficientRing.{u}) (P : PrimitivePresentation.{u}) where
   /-- The retained primitive signature used when writing the equation. -/
@@ -24,6 +51,16 @@ structure ScopedTensorLaw (base : CoefficientRing.{u}) (P : PrimitivePresentatio
   equation :
     letI := base.ring
     TensorLaw base.Carrier (DeclarationContext.Selected.signature scope)
+
+  /-- The written signature is the least context containing the actual support. -/
+  scope_exact :
+    DeclarationContext.closure (equation.support (DeclarationContext.Selected.names scope)) = scope
+
+/-- Only the primitive symbols actually occurring in a Law are required to retain it. -/
+theorem ScopedTensorLaw.scope_le_iff_support {base : CoefficientRing.{u}} {P : PrimitivePresentation.{u}}
+    (law : ScopedTensorLaw base P) (V : DeclarationContext P) :
+    law.scope ≤ V ↔ law.equation.support (DeclarationContext.Selected.names law.scope) ⊆ V.declarations :=
+  (Iff.of_eq (congrArg (· ≤ V) law.scope_exact.symm)).trans DeclarationContext.closure_le_iff
 
 /-- The named tensor declarations of a primitive presentation. -/
 structure TensorLawDeclarations (base : CoefficientRing.{u}) (P : PrimitivePresentation.{u}) where
@@ -45,7 +82,9 @@ structure TensorDeclarationContext {base : CoefficientRing.{u}} {P : PrimitivePr
   /-- All tensor Law declarations retained by this context. -/
   retained : Set D.Name
   /-- Each retained equation can be evaluated in this primitive context. -/
-  dependencies (l : D.Name) : l ∈ retained → (D.statement l).scope ≤ primitives
+  dependencies (l : D.Name) : l ∈ retained →
+    (D.statement l).equation.support (DeclarationContext.Selected.names (D.statement l).scope) ⊆
+      primitives.declarations
 
 namespace TensorDeclarationContext
 
@@ -60,7 +99,8 @@ def presentation : RealizationTheory.{u} where
   signature := DeclarationContext.Selected.signature U.primitives
   LawName := U.Required
   Statement := {law : ScopedTensorLaw base P // law.scope ≤ U.primitives}
-  law l := ⟨D.statement l.val, U.dependencies l.val l.property.2⟩
+  law l := ⟨D.statement l.val, ((D.statement l.val).scope_le_iff_support U.primitives).mpr
+    (U.dependencies l.val l.property.2)⟩
 
 /-- Interpret the written tensor Law on the actual structure restricted to its scope. -/
 def holds (S : CoefficientAlgebra base)

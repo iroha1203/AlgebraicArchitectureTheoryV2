@@ -407,15 +407,30 @@ private def tensorLawScope : DeclarationContext tensorPrimitives where
     subst d
     simp only [Declaration.sort_dependencies, Set.notMem_empty] at dependency
 
+private def twoTorsionLaw : TensorLaw ℤ (DeclarationContext.Selected.signature tensorLawScope) :=
+  let sig := DeclarationContext.Selected.signature tensorLawScope
+  let s : sig.SortType := ⟨true, rfl⟩
+  let carrier := TensorShape.sort s
+  let left := TensorExpression.smul (2 : ℤ) (@TensorExpression.id ℤ sig carrier)
+  let right := @TensorExpression.zero ℤ sig carrier carrier
+  ⟨carrier, carrier, left, right⟩
+
+private theorem twoTorsion_support :
+    twoTorsionLaw.support (DeclarationContext.Selected.names tensorLawScope) =
+      ({Declaration.sort true} : Set (Declaration tensorPrimitives)) := by
+  simp [twoTorsionLaw, TensorLaw.support, TensorExpression.support, TensorShape.support,
+    DeclarationContext.Selected.names]
+
 private def tensorDeclarations : TensorLawDeclarations integers tensorPrimitives where
   Name := Unit
   statement _ :=
-    let sig := DeclarationContext.Selected.signature tensorLawScope
-    let s : sig.SortType := ⟨true, rfl⟩
-    let carrier := TensorShape.sort s
-    let left := TensorExpression.smul (2 : ℤ) (@TensorExpression.id ℤ sig carrier)
-    let right := @TensorExpression.zero ℤ sig carrier carrier
-    ⟨tensorLawScope, ⟨carrier, carrier, left, right⟩⟩
+    { scope := tensorLawScope
+      equation := twoTorsionLaw
+      scope_exact := by
+        rw [twoTorsion_support]
+        apply le_antisymm
+        · exact DeclarationContext.closure_le_iff.mpr (fun _ h => h)
+        · exact DeclarationContext.subset_closure _ }
   required := Set.univ
 
 private def tensorContext : TensorDeclarationContext tensorDeclarations where
@@ -423,6 +438,31 @@ private def tensorContext : TensorDeclarationContext tensorDeclarations where
   noPositiveRequirement := ⟨fun l => nomatch l.val.val⟩
   retained := Set.univ
   dependencies _ _ := Set.subset_univ _
+
+private def smallerTensorContext : TensorDeclarationContext tensorDeclarations where
+  primitives := tensorLawScope
+  noPositiveRequirement := ⟨fun l => nomatch l.val.val⟩
+  retained := tensorContext.retained
+  dependencies _ _ := by
+    change twoTorsionLaw.support (DeclarationContext.Selected.names tensorLawScope) ⊆
+      tensorLawScope.declarations
+    rw [twoTorsion_support]
+    exact fun _ h => h
+
+/-- The same written Law is retained in a context that drops the unrelated sort. -/
+theorem twoTorsion_law_retained_after_removing_sort :
+    Nonempty smallerTensorContext.Required ∧
+      Declaration.sort false ∉ smallerTensorContext.primitives.declarations :=
+  ⟨⟨⟨(), Set.mem_univ _, Set.mem_univ _⟩⟩, fun h => Bool.false_ne_true (Declaration.sort.inj h)⟩
+
+/-- The same declaration requires the sort that actually appears in its equation. -/
+theorem twoTorsion_law_uses_its_sort (U : TensorDeclarationContext tensorDeclarations)
+    (kept : (show tensorDeclarations.Name from ()) ∈ U.retained) :
+    Declaration.sort true ∈ U.primitives.declarations := by
+  apply U.dependencies _ kept
+  change Declaration.sort true ∈ twoTorsionLaw.support (DeclarationContext.Selected.names tensorLawScope)
+  rw [twoTorsion_support]
+  rfl
 
 private def contextScope : FullDomainTensorSignature tensorContext.presentation.signature :=
   ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩

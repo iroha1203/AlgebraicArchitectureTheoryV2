@@ -40,6 +40,20 @@ theorem TensorPosition.mapEquiv_apply (f : K → L) (Γ : List K) (i : TensorPos
     | here => rfl
     | there j => simp [mapEquiv, consPositions, ih, Var.mapSorts]
 
+private def transportArgument {R : Type u} [CommRing R] (f : K → L)
+    (M : L → ModuleCat.{u} R) (Γ : List K) (i : TensorPosition Γ) :
+    M (f i.1) →ₗ[R] M ((TensorPosition.mapEquiv f Γ i).1) :=
+  (eqToIso (congrArg M (congrArg Sigma.fst (TensorPosition.mapEquiv_apply f Γ i)).symm)).hom.hom
+
+/-- Convert a tuple on the smaller signature to the original argument positions. -/
+def reindexedTensorArguments {R : Type u} [CommRing R] (f : K → L)
+    (M : L → ModuleCat.{u} R) {a : Arity K} {b : Arity L}
+    (shape : ⟨a.inputs.map f, f a.output⟩ = b)
+    (x : ∀ i : TensorPosition a.inputs, M (f i.1)) : ∀ i : TensorPosition b.inputs, M i.1 := by
+  subst b
+  let e := TensorPosition.mapEquiv f a.inputs
+  exact (e.symm.piCongrLeft' (fun i => M i.1)).symm (fun i => transportArgument f M a.inputs i (x i))
+
 private def restrictTensorOperation {R : Type u} [CommRing R] (f : K → L)
     (M : L → ModuleCat.{u} R) {a : Arity K} {b : Arity L}
     (shape : ⟨a.inputs.map f, f a.output⟩ = b) (op : TensorOperation R M b) :
@@ -48,8 +62,17 @@ private def restrictTensorOperation {R : Type u} [CommRing R] (f : K → L)
   let e := TensorPosition.mapEquiv f a.inputs
   let move := (MultilinearMap.domDomCongrLinearEquiv' R R
     (fun i : TensorPosition (a.inputs.map f) => (M i.1 : Type u)) (M (f a.output)) e.symm) op
-  exact move.compLinearMap fun i =>
-    (eqToIso (congrArg M (congrArg Sigma.fst (TensorPosition.mapEquiv_apply f a.inputs i)).symm)).hom.hom
+  exact move.compLinearMap (transportArgument f M a.inputs)
+
+private theorem restrictTensorOperation_apply {R : Type u} [CommRing R] (f : K → L)
+    (M : L → ModuleCat.{u} R) {a : Arity K} {b : Arity L}
+    (shape : ⟨a.inputs.map f, f a.output⟩ = b) (op : TensorOperation R M b)
+    (x : ∀ i : TensorPosition a.inputs, M (f i.1)) :
+    restrictTensorOperation f M shape op x =
+      cast (congrArg (fun b : Arity L => (M b.output : Type u)) shape.symm)
+        (op (reindexedTensorArguments f M shape x)) := by
+  subst b
+  rfl
 
 /-- Restrict module carriers and operations along an arity-preserving signature map. -/
 def TensorStructure.restrict {R : Type u} [CommRing R] {S T : Signature.{u}}
@@ -59,6 +82,26 @@ def TensorStructure.restrict {R : Type u} [CommRing R] {S T : Signature.{u}}
     (A.total (names.onTotal f))
   quantity q := restrictTensorOperation names.onSort A.carrier (names.quantityArity q)
     (A.quantity (names.onQuantity q))
+
+/-- Restriction evaluates the original total operation on the corresponding typed tuple. -/
+theorem TensorStructure.restrict_total_apply {R : Type u} [CommRing R] {S T : Signature.{u}}
+    (A : TensorStructure R T) (names : SignatureNames S T) (op : S.Total)
+    (x : ∀ i : TensorPosition (S.totalArity op).inputs, A.carrier (names.onSort i.1)) :
+    (A.restrict names).total op x =
+      cast (congrArg (fun a : Arity T.SortType => (A.carrier a.output : Type u)) (names.totalArity op).symm)
+        (A.total (names.onTotal op)
+          (reindexedTensorArguments names.onSort A.carrier (names.totalArity op) x)) :=
+  restrictTensorOperation_apply names.onSort A.carrier (names.totalArity op) _ x
+
+/-- Restriction evaluates the original quantity on the corresponding typed tuple. -/
+theorem TensorStructure.restrict_quantity_apply {R : Type u} [CommRing R] {S T : Signature.{u}}
+    (A : TensorStructure R T) (names : SignatureNames S T) (q : S.Quantity)
+    (x : ∀ i : TensorPosition (S.quantityArity q).inputs, A.carrier (names.onSort i.1)) :
+    (A.restrict names).quantity q x =
+      cast (congrArg (fun a : Arity T.SortType => (A.carrier a.output : Type u)) (names.quantityArity q).symm)
+        (A.quantity (names.onQuantity q)
+          (reindexedTensorArguments names.onSort A.carrier (names.quantityArity q) x)) :=
+  restrictTensorOperation_apply names.onSort A.carrier (names.quantityArity q) _ x
 
 namespace DeclarationContext.Selected
 

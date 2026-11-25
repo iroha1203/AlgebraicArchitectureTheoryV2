@@ -7,6 +7,15 @@ import Formal.SHIGURE.Part2.Realizations.CopyingMode
 The existing coefficient scheme API reads designated points and their
 primitive structure. The copying realization also retains all its
 relative sections and their maps for the interpretation of positive Laws.
+
+## Implementation notes
+
+The relative test category indexes the components of sheaf arrows in a
+larger universe than the designated states. Part I's coefficient scheme
+uses a category whose arrows belong to the state universe. A map of
+sections induced by a sheaf arrow is small, and its equality expresses
+equality of the maps available to a reading. The functor from the sheaf
+structure category sends every preserving sheaf arrow to this actual map.
 -/
 
 open AlgebraicGeometry CategoryTheory Opposite

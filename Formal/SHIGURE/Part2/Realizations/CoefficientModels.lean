@@ -55,6 +55,7 @@ structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Realizati
   admissible (R : CoefficientAlgebra base) : Object R → Prop
   /-- Native inputs and their state sets. -/
   Native : Type (u + 1)
+  /-- The original states at each sort, which are the input to the native point map. -/
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
   /-- The object representing a designated point of a realized carrier. -/
   pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : Carrier R
