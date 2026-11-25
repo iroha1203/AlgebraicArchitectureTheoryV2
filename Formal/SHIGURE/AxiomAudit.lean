@@ -2777,6 +2777,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.copyBaseChangeLinear_one_tmul_stateBasis,
   Copying.copyBaseChangeEquiv_apply,
   Copying.mapOfRows_mapRows_baseChange,
+  Copying.mapOfRows_mapRows_baseChange_coalg,
   Copying.stateInclusion_over,
   Copying.stateInclusion_mapStateSchemes,
   Copying.stateLabel_inclusion,

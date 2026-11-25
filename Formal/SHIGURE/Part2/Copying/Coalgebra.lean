@@ -501,6 +501,16 @@ theorem mapOfRows_mapRows_baseChange {X Y : Type*} (a : CopyRows R X Y) :
     copyBaseChangeLinear_one_tmul]
   rfl
 
+/-- Theorem 4.3. Changing the coefficients of a row commutes with scalar extension
+as an equality of coalgebra morphisms. -/
+theorem mapOfRows_mapRows_baseChange_coalg {X Y : Type*} (a : CopyRows R X Y) :
+    (mapOfRows (mapRows (algebraMap R S) a)).comp (copyBaseChangeEquiv S X).toCoalgHom =
+      (copyBaseChangeEquiv S Y).toCoalgHom.comp
+        (Coalgebra.TensorProduct.map (R := R) (S := S) (CoalgHom.id S S) (mapOfRows a)) := by
+  apply CoalgHom.coe_linearMap_injective
+  simpa only [CoalgHom.comp_toLinearMap, Coalgebra.TensorProduct.map_toLinearMap,
+    CoalgHom.id_toLinearMap, LinearMap.baseChange] using mapOfRows_mapRows_baseChange S a
+
 end BaseChange
 
 end SHIGURE.Copying
