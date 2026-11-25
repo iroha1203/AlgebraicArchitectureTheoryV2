@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part1.Signature
 import Mathlib.CategoryTheory.Category.Cat
 import Mathlib.CategoryTheory.Limits.Shapes.IsTerminal
+import Mathlib.CategoryTheory.Monoidal.Category
 import Mathlib.CategoryTheory.Pi.Basic
 import Mathlib.CategoryTheory.Subobject.MonoOver
 
@@ -18,8 +19,9 @@ The carrier category specifies the allowed maps of states. A faithful
 functor displays those maps in the category where primitive diagrams are
 formed. For example, permutations may be the allowed maps even though the
 inputs of operations and the states of points are formed in sets. A mode
-constructs its inputs from the declared positions. The copying and tensor
-modes supply their respective comparisons with Cartesian and tensor products.
+constructs its typed product from the declared positions. An interpreted input
+can identify tuples, provided a natural epimorphism presents it from the full
+product. The copying and tensor modes use Cartesian and tensor products.
 A mode can also compare its inputs with tuples of generalized points. The tuple comparison
 makes carrier maps act on every entry and requires the resulting tuples to
 determine arrows out of the input object. Comparing after restriction along
@@ -29,6 +31,7 @@ how it reads native points of a carrier.
 -/
 
 open CategoryTheory
+open scoped MonoidalCategory
 
 universe u v w t h d hp dp
 
@@ -54,8 +57,30 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
       positionalInput Γ
   /-- A single input is naturally the carrier of its declared sort. -/
   unaryIso (s : sig.SortType) : input [s] ≅ Pi.eval (fun _ : sig.SortType => C) s ⋙ view
+  /-- The mode's product of independently specified entries. -/
+  monoidal : MonoidalCategory Ambient
+  /-- The full typed product before identifying any input tuples. -/
+  fullInput (Γ : List sig.SortType) : (sig.SortType → C) ⥤ Ambient
+  /-- The full product at the empty arity is the unit of the mode. -/
+  fullInput_nil :
+    letI := monoidal
+    fullInput [] ≅ (Functor.const (sig.SortType → C)).obj (𝟙_ Ambient)
+  /-- A further position in the full product attaches its declared carrier. -/
+  fullInput_cons (s : sig.SortType) (Γ : List sig.SortType) :
+    letI := monoidal
+    fullInput (s :: Γ) ≅ ((Pi.eval (fun _ : sig.SortType => C) s ⋙ view).prod' (fullInput Γ)) ⋙
+      MonoidalCategory.tensor Ambient
+  /-- Interpret the full typed product of a nonempty arity in the chosen presentation. -/
+  positiveInputComparison (s : sig.SortType) (Γ : List sig.SortType) : fullInput (s :: Γ) ⟶ input (s :: Γ)
+  /-- The interpreted input is presented by the full typed product. -/
+  positiveInputComparison_epi (s : sig.SortType) (Γ : List sig.SortType) (A : sig.SortType → C) :
+    Epi ((positiveInputComparison s Γ).app A)
   /-- The source object for a nullary primitive value. -/
   pointObject : Ambient
+  /-- The point source represents the actual unit of the mode. -/
+  pointUnit :
+    letI := monoidal
+    pointObject ≅ 𝟙_ Ambient
   /-- The empty arity has the same point object at every carrier family. -/
   nullaryInput : (Functor.const (sig.SortType → C)).obj pointObject ≅ input []
   /-- A total operation from its entire input object. -/
@@ -103,6 +128,24 @@ namespace StructureRule
 
 variable {sig : Signature.{u}} {C : Cat.{v, w}} {Object : Type t}
 variable (rule : StructureRule sig C Object)
+
+private def emptyInputComparison : rule.fullInput [] ≅ rule.input [] :=
+  letI := rule.monoidal
+  rule.fullInput_nil ≪≫ (Functor.const (sig.SortType → C)).mapIso rule.pointUnit.symm ≪≫ rule.nullaryInput
+
+/-- The full typed product presents the interpreted input at every arity. -/
+def inputComparison : (Γ : List sig.SortType) → rule.fullInput Γ ⟶ rule.input Γ
+  | [] => rule.emptyInputComparison.hom
+  | s :: Γ => rule.positiveInputComparison s Γ
+
+/-- The full input comparison determines any arrow out of the interpreted input. -/
+theorem inputComparison_epi (Γ : List sig.SortType) (A : sig.SortType → C) :
+    Epi ((rule.inputComparison Γ).app A) := by
+  cases Γ with
+  | nil =>
+    change Epi (rule.emptyInputComparison.app A).hom
+    infer_instance
+  | cons s Γ => exact rule.positiveInputComparison_epi s Γ A
 
 /-- On an input, changing carriers is the combination of just the declared argument maps. -/
 theorem input_map_positions (Γ : List sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B) :
@@ -155,6 +198,40 @@ theorem nullary_square_iff {A B : sig.SortType → C} (f : A ⟶ B)
       (rule.nullaryInputIso A).hom ≫ p ≫ g = (rule.nullaryInputIso B).hom ≫ q := by
   rw [← cancel_epi ((rule.nullaryInputIso A).hom), ← Category.assoc _ ((rule.input []).map f),
     rule.nullaryInputIso_natural]
+
+/-- Assemble every declared point in the full product, including the empty tuple. -/
+def fullInputPoint (A : sig.SortType → C) : (Γ : List sig.SortType) →
+    (∀ i : (s : sig.SortType) × Var Γ s, rule.pointObject ⟶ rule.view.obj (A i.1)) →
+      (rule.pointObject ⟶ (rule.fullInput Γ).obj A)
+  | [], _ => by
+    letI := rule.monoidal
+    exact rule.pointUnit.hom ≫ rule.fullInput_nil.inv.app A
+  | s :: Γ, p => by
+    letI := rule.monoidal
+    exact (ρ_ rule.pointObject).inv ≫
+      (p ⟨s, .here⟩ ⊗ₘ (rule.pointUnit.inv ≫ fullInputPoint A Γ (fun i => p ⟨i.1, .there i.2⟩))) ≫
+        (rule.fullInput_cons s Γ).inv.app A
+
+/-- Evaluating a total primitive on any tuple of points produces a point of its output sort. -/
+def totalAtTuple (A : Object) (op : sig.Total)
+    (p : ∀ i : (s : sig.SortType) × Var (sig.totalArity op).inputs s,
+      rule.pointObject ⟶ rule.view.obj (rule.carrier A i.1)) :
+    rule.pointObject ⟶ rule.view.obj (rule.carrier A (sig.totalArity op).output) :=
+  rule.fullInputPoint (rule.carrier A) (sig.totalArity op).inputs p ≫
+    (rule.inputComparison (sig.totalArity op).inputs).app (rule.carrier A) ≫ rule.total A op
+
+/-- The represented full input determines each operation square. -/
+theorem total_preservation_iff_onFullInput {A B : Object}
+    (f : ∀ s, rule.carrier A s ⟶ rule.carrier B s) (op : sig.Total) :
+    let Γ := (sig.totalArity op).inputs
+    let α := rule.inputComparison Γ
+    (rule.total A op ≫ rule.view.map (f _) = (rule.input Γ).map f ≫ rule.total B op) ↔
+      α.app (rule.carrier A) ≫ rule.total A op ≫ rule.view.map (f _) =
+        (rule.fullInput Γ).map f ≫ α.app (rule.carrier B) ≫ rule.total B op := by
+  intro Γ α
+  letI := rule.inputComparison_epi Γ (rule.carrier A)
+  rw [← cancel_epi (α.app (rule.carrier A)), ← Category.assoc _ ((rule.input Γ).map f),
+    ← α.naturality, Category.assoc]
 
 /-- The operation square agrees with the square on every tuple of generalized points. -/
 theorem total_preservation_iff_onTuples (tests : StructureInputPoints rule) {A B : Object}

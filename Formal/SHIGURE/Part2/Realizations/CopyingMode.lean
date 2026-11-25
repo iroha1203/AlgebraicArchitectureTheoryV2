@@ -211,7 +211,15 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
   positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)
   inputIso := copyingInputIso S
   unaryIso := copyingUnaryIso S
+  monoidal := inferInstanceAs (MonoidalCategory (ZariskiSheaf S))
+  fullInput := copyingInputs S
+  fullInput_nil := copyingNullaryIso S _
+  fullInput_cons := copyingConsIso S
+  positiveInputComparison s Γ := 𝟙 (copyingInputs S (s :: Γ))
+  positiveInputComparison_epi _ _ _ := inferInstanceAs (Epi (𝟙 _))
   pointObject := constantCarrier S PUnit
+  pointUnit := (copyingNullaryPoints S (K := sig.SortType)).app (fun _ => constantCarrier S PUnit) ≪≫
+    (copyingNullaryIso S sig.SortType).app (fun _ => constantCarrier S PUnit)
   nullaryInput := copyingNullaryPoints S
   total := SheafStructure.total
   relation A r := realizedPredicate (A.relation r)
@@ -371,6 +379,7 @@ def copyingMode (base : CoefficientRing.{u}) (T : Theory.{u}) :
   Native := Structure T.signature
   nativeStates A := A.carrier
   pointCarrier R _ := (copyingStructureRule T.signature R.scalars.spec).pointObject
+  nullaryRead _ _ _ := 𝟙 _
   realizeNative R := constantStructure R.scalars.spec
   nativePoints R A s x := (copyingPointEquiv ((constantStructure R.scalars.spec A).carrier s)).symm
     (nativeState R.scalars.spec (Over.mk (𝟙 R.scalars.spec)) x)

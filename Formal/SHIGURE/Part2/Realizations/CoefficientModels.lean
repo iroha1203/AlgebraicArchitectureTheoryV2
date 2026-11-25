@@ -59,6 +59,10 @@ structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Realizati
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
   /-- The source object of the native designated points at this sort. -/
   pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : (rule R).Ambient
+  /-- A nullary primitive supplies a designated point through the mode's point source. -/
+  nullaryRead (R : CoefficientAlgebra base) (op : T.signature.Total)
+    (_ : (T.signature.totalArity op).inputs = []) :
+    pointCarrier R (T.signature.totalArity op).output ⟶ (rule R).pointObject
   /-- The rule for realizing a native input at the chosen coefficients. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Object R
   /-- The correspondence of native and realized states. -/
@@ -84,6 +88,13 @@ variable (mode : CoefficientRealizationMode base T)
 /-- Designated points are actual maps to the realized carrier. -/
 abbrev Points (R : CoefficientAlgebra base) (A : mode.Object R) (s : T.signature.SortType) :=
   mode.pointCarrier R s ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
+
+/-- The value of a nullary primitive is a point of its declared output sort. -/
+def nullaryPoint (R : CoefficientAlgebra base) (A : mode.Object R) (op : T.signature.Total)
+    (h : (T.signature.totalArity op).inputs = []) : mode.Points R A (T.signature.totalArity op).output :=
+  let rule := mode.rule R
+  mode.nullaryRead R op h ≫ (rule.nullaryInputIso (rule.carrier A)).hom ≫
+    eqToHom (congrArg (fun Γ => (rule.input Γ).obj (rule.carrier A)) h.symm) ≫ rule.total A op
 
 /-- A structural morphism maps designated points by composition with its carrier arrow. -/
 def mapPoints {R : CoefficientAlgebra base} {A B : (mode.rule R).Category}

@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part2.Realizations.CoefficientModels
 import Mathlib.Algebra.Group.End
+import Mathlib.CategoryTheory.Monoidal.Types.Basic
 import Mathlib.CategoryTheory.SingleObj
 
 /-!
@@ -62,6 +63,18 @@ private def permutationEmptyIso : (PUnit : Type) ≅ (Position [] → Fin 3) :=
       funext i
       exact nomatch i.2 }
 
+private def permutationSplitEquiv (s : Bool) (Γ : List Bool) :
+    (Position (s :: Γ) → Fin 3) ≃ Fin 3 × (Position Γ → Fin 3) where
+  toFun x := (x ⟨s, .here⟩, fun i => x ⟨i.1, .there i.2⟩)
+  invFun x
+    | ⟨_, .here⟩ => x.1
+    | ⟨t, .there i⟩ => x.2 ⟨t, i⟩
+  left_inv x := by
+    funext p
+    obtain ⟨_, i⟩ := p
+    cases i <;> rfl
+  right_inv _ := rfl
+
 private def permutationRule : StructureRule binarySignature (Cat.of Permutations) Unit where
   carrier _ _ := SingleObj.star (Equiv.Perm (Fin 3))
   Ambient := Cat.of Type
@@ -73,7 +86,14 @@ private def permutationRule : StructureRule binarySignature (Cat.of Permutations
   positionalInput Γ := permutationProduct (Position Γ)
   inputIso _ := Iso.refl _
   unaryIso s := NatIso.ofComponents (fun _ => (unaryEquiv s).toIso) (fun _ => rfl)
+  monoidal := inferInstanceAs (MonoidalCategory (Type 0))
+  fullInput := permutationInputs
+  fullInput_nil := NatIso.ofComponents (fun _ => permutationEmptyIso.symm) (fun _ => rfl)
+  fullInput_cons s Γ := NatIso.ofComponents (fun _ => (permutationSplitEquiv s Γ).toIso) (fun _ => rfl)
+  positiveInputComparison s Γ := 𝟙 (permutationInputs (s :: Γ))
+  positiveInputComparison_epi _ _ _ := inferInstanceAs (Epi (𝟙 _))
   pointObject := PUnit
+  pointUnit := Iso.refl _
   nullaryInput := NatIso.ofComponents (fun _ => permutationEmptyIso) (by
     intro A B f
     apply ConcreteCategory.hom_ext (C := Type)
@@ -112,6 +132,7 @@ def threeStatePermutationMode (base : CoefficientRing) :
   Native := PUnit
   nativeStates _ _ := Fin 3
   pointCarrier _ _ := permutationRule.pointObject
+  nullaryRead _ _ _ := 𝟙 _
   realizeNative _ _ := ()
   nativePoints _ _ _ x := ↾fun _ => x
   change _ _ := ()

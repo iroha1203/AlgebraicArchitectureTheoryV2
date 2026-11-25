@@ -180,7 +180,14 @@ def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
   positionalInput Γ := tensorPositionInputs R (TensorPosition Γ)
   inputIso _ := Iso.refl _
   unaryIso := tensorUnaryIso R
+  monoidal := inferInstanceAs (MonoidalCategory (ModuleCat.{u} R))
+  fullInput := tensorInputs R
+  fullInput_nil := tensorNullaryIso R _
+  fullInput_cons := tensorConsIso R
+  positiveInputComparison s Γ := 𝟙 (tensorInputs R (s :: Γ))
+  positiveInputComparison_epi _ _ _ := inferInstanceAs (Epi (𝟙 _))
   pointObject := ModuleCat.of R R
+  pointUnit := Iso.refl _
   nullaryInput := (tensorNullaryIso R _).symm
   total A op := ModuleCat.ofHom (PiTensorProduct.lift (A.total op))
   relation _ r := False.elim (scope.noRelations.false r)
@@ -348,6 +355,7 @@ def tensorModeOfPresentation (base : CoefficientRing.{u}) (T : RealizationTheory
   pointCarrier S _ :=
     letI := S.scalars.ring
     (tensorStructureRule S.scalars.Carrier T.signature scope).pointObject
+  nullaryRead _ _ _ := 𝟙 _
   realizeNative S := rule.change S.fromBase
   nativePoints S A s x :=
     letI := S.scalars.ring
