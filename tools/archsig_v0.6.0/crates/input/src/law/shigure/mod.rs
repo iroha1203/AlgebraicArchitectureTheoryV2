@@ -6,6 +6,8 @@
 
 pub mod ast_ext;
 pub mod ast_phase3;
+pub mod ast_phase4_diag_atlas;
+pub mod ast_phase4_lift_artin;
 pub mod check;
 mod check_comparison;
 mod check_diagram;
@@ -15,17 +17,27 @@ mod check_ext_scope;
 mod check_family;
 mod check_path;
 mod check_phase3_tasks;
+mod check_phase4_atlas;
+mod check_phase4_diagnostics;
+mod check_phase4_lift_artin;
 mod check_presentation;
 mod check_relations;
 mod check_transfer;
 pub mod parser;
+mod parser_core_tasks;
 mod parser_diagram_path;
+mod parser_expr;
 mod parser_family;
 mod parser_phase3_tasks;
+mod parser_phase4_atlas;
+mod parser_phase4_diagnostics;
+mod parser_phase4_lift_artin;
 mod parser_transfer;
 
 pub use ast_ext::*;
 pub use ast_phase3::*;
+pub use ast_phase4_diag_atlas::*;
+pub use ast_phase4_lift_artin::*;
 
 use super::ast::{Ident, QName, Span};
 use num_bigint::{BigInt, BigUint};
@@ -112,6 +124,71 @@ pub const FORBIDDEN_CONCLUSION_FIELDS: &[&str] = &[
     "counterexamples",
     "raw_candidate_evaluations",
     "reevaluation",
+    // Phase 4 結論注入禁止欄（R3.2 / Failure Contract #5）
+    "syzygy",
+    "syzygies",
+    "syzygy_basis",
+    "syzygy_generators",
+    "syzygy_verified",
+    "cohomology",
+    "h0_dim",
+    "h1_dim",
+    "h2_dim",
+    "h0_free_rank",
+    "h1_free_rank",
+    "h2_free_rank",
+    "h0_torsion",
+    "h1_torsion",
+    "h2_torsion",
+    "d1_d0_zero_verified",
+    "obstruction",
+    "obstruction_class",
+    "obstruction_zero",
+    "relative_obstruction",
+    "designated_obstruction",
+    "o_p",
+    "o_u",
+    "kappa_u",
+    "o_b",
+    "kappa_b",
+    "detection_order",
+    "first_failure_order",
+    "syntax_degree_bound",
+    "eliminated_ideal",
+    "is_locally_isomorphic",
+    "universal_first_obstruction",
+    "ker_h1_r",
+    "coker_h1_r",
+    "ker_h1_r_dim",
+    "coker_h1_r_dim",
+    "coker_h0_rho_dim",
+    "im_h1_rho_dim",
+    "mayer_vietoris",
+    "mayer_vietoris_identity_verified",
+    "strata",
+    "upper_semicontinuity_refutation",
+    "condition_c",
+    "condition_c0",
+    "condition_c1",
+    "condition_c2",
+    "condition_c3",
+    "condition_c4",
+    "condition_c5",
+    "condition_c6",
+    "h0_isomorphism",
+    "h1_isomorphism",
+    "designated_o_preserved",
+    "designated_kappa_preserved",
+    "repair_fiber_isomorphism_verified",
+    "inverse_reconstruction_verified",
+    "repair_solutions",
+    "unconstrained_repair",
+    "vertex_constrained_repair",
+    "edge_constrained_repair",
+    "torsor_basis",
+    "particular_solution",
+    "restored_lift",
+    "global_lift_exists",
 ];
 
 pub fn is_forbidden_conclusion_field(name: &str) -> bool {
@@ -446,6 +523,10 @@ pub enum ShigureDeclAst {
     Robustness(RawRobustnessTask),
     Chevalley(RawChevalleyTask),
     Observations(RawObservationTask),
+    Lift(Box<RawLiftTask>),
+    Artin(Box<RawArtinTask>),
+    Diagnostics(Box<RawDiagnosticsTask>),
+    Atlas(Box<RawAtlasTask>),
 }
 
 impl ShigureDeclAst {
@@ -463,6 +544,10 @@ impl ShigureDeclAst {
             ShigureDeclAst::Robustness(r) => &r.name,
             ShigureDeclAst::Chevalley(c) => &c.name,
             ShigureDeclAst::Observations(o) => &o.name,
+            ShigureDeclAst::Lift(l) => &l.name,
+            ShigureDeclAst::Artin(a) => &a.name,
+            ShigureDeclAst::Diagnostics(d) => &d.name,
+            ShigureDeclAst::Atlas(a) => &a.name,
         }
     }
 
@@ -480,6 +565,10 @@ impl ShigureDeclAst {
             ShigureDeclAst::Robustness(r) => r.span,
             ShigureDeclAst::Chevalley(c) => c.span,
             ShigureDeclAst::Observations(o) => o.span,
+            ShigureDeclAst::Lift(l) => l.span,
+            ShigureDeclAst::Artin(a) => a.span,
+            ShigureDeclAst::Diagnostics(d) => d.span,
+            ShigureDeclAst::Atlas(a) => a.span,
         }
     }
 }
@@ -698,6 +787,10 @@ pub struct CheckedShigureDecls {
     pub robustness_tasks: BTreeMap<String, ShigureRobustnessTask>,
     pub chevalley_tasks: BTreeMap<String, ShigureChevalleyTask>,
     pub observation_tasks: BTreeMap<String, ShigureObservationTask>,
+    pub lift_tasks: BTreeMap<String, ShigureLiftTask>,
+    pub artin_tasks: BTreeMap<String, ShigureArtinTask>,
+    pub diagnostics_tasks: BTreeMap<String, ShigureDiagnosticsTask>,
+    pub atlas_tasks: BTreeMap<String, ShigureAtlasTask>,
 }
 
 impl CheckedShigureDecls {
@@ -714,5 +807,9 @@ impl CheckedShigureDecls {
             && self.robustness_tasks.is_empty()
             && self.chevalley_tasks.is_empty()
             && self.observation_tasks.is_empty()
+            && self.lift_tasks.is_empty()
+            && self.artin_tasks.is_empty()
+            && self.diagnostics_tasks.is_empty()
+            && self.atlas_tasks.is_empty()
     }
 }

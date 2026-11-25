@@ -36,6 +36,10 @@ pub(super) enum DeclCategory {
     Robustness,
     Chevalley,
     Observations,
+    Lift,
+    Artin,
+    Diagnostics,
+    Atlas,
 }
 
 /// 既存の `Checker` 状態（reading・alias・vocabulary import・通常宣言名）を使って
@@ -87,6 +91,10 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 ShigureDeclAst::Robustness(_) => DeclCategory::Robustness,
                 ShigureDeclAst::Chevalley(_) => DeclCategory::Chevalley,
                 ShigureDeclAst::Observations(_) => DeclCategory::Observations,
+                ShigureDeclAst::Lift(_) => DeclCategory::Lift,
+                ShigureDeclAst::Artin(_) => DeclCategory::Artin,
+                ShigureDeclAst::Diagnostics(_) => DeclCategory::Diagnostics,
+                ShigureDeclAst::Atlas(_) => DeclCategory::Atlas,
             };
             index.insert(name, (cat, d.span(), r_idx));
         }
@@ -154,7 +162,11 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 | ShigureDeclAst::Family(_)
                 | ShigureDeclAst::Robustness(_)
                 | ShigureDeclAst::Chevalley(_)
-                | ShigureDeclAst::Observations(_) => {}
+                | ShigureDeclAst::Observations(_)
+                | ShigureDeclAst::Lift(_)
+                | ShigureDeclAst::Artin(_)
+                | ShigureDeclAst::Diagnostics(_)
+                | ShigureDeclAst::Atlas(_) => {}
             }
         }
     }
@@ -235,7 +247,11 @@ pub(crate) fn check_shigure_decls<E: InputError>(
                 | ShigureDeclAst::Family(_)
                 | ShigureDeclAst::Robustness(_)
                 | ShigureDeclAst::Chevalley(_)
-                | ShigureDeclAst::Observations(_) => {}
+                | ShigureDeclAst::Observations(_)
+                | ShigureDeclAst::Lift(_)
+                | ShigureDeclAst::Artin(_)
+                | ShigureDeclAst::Diagnostics(_)
+                | ShigureDeclAst::Atlas(_) => {}
             }
         }
     }
@@ -246,6 +262,7 @@ pub(crate) fn check_shigure_decls<E: InputError>(
         &mut shigure_edges,
         control,
     )?;
+    super::check_phase4_lift_artin::check_all_phase4_tasks(checker, &mut out, control)?;
 
     // reading 間の依存グラフ非循環性（通常宣言と SHIGURE 宣言の混合循環も含む）を検査する。
     if !shigure_edges.is_empty() {

@@ -12,6 +12,8 @@ mod lower_family;
 mod lower_morphism;
 mod lower_path;
 mod lower_phase3;
+mod lower_phase4_diag_atlas;
+mod lower_phase4_lift_artin;
 mod lower_transfer;
 #[cfg(test)]
 mod tests;
@@ -25,8 +27,16 @@ mod tests_phase2_neg;
 mod tests_phase3;
 #[cfg(test)]
 mod tests_phase3_neg;
+#[cfg(test)]
+mod tests_phase4;
+#[cfg(test)]
+mod tests_phase4_neg;
 
+use crate::ir::artin::CheckedArtinTask;
+use crate::ir::atlas::CheckedAtlasTask;
 use crate::ir::diagram::CheckedDiagramTask;
+use crate::ir::diagnostics::CheckedDiagnosticsTask;
+use crate::ir::lift::CheckedLiftTask;
 use crate::ir::observation::CheckedObservationTask;
 use crate::ir::path::CheckedPathTask;
 use crate::ir::robustness::{CheckedChevalleyTask, CheckedRobustnessTask};
@@ -85,6 +95,29 @@ pub trait ToShigureObservationTask {
         &self,
         inputs: &CheckedInputs,
     ) -> Result<CheckedObservationTask, ValidationError>;
+}
+
+/// `CheckedInputs` から全 syzygy 平方零 lift タスク `CheckedLiftTask` への変換境界。
+pub trait ToShigureLiftTask {
+    fn convert_lift(&self, inputs: &CheckedInputs) -> Result<CheckedLiftTask, ValidationError>;
+}
+
+/// `CheckedInputs` から Artin 試験タスク `CheckedArtinTask` への変換境界。
+pub trait ToShigureArtinTask {
+    fn convert_artin(&self, inputs: &CheckedInputs) -> Result<CheckedArtinTask, ValidationError>;
+}
+
+/// `CheckedInputs` から診断層・整数診断タスク `CheckedDiagnosticsTask` への変換境界。
+pub trait ToShigureDiagnosticsTask {
+    fn convert_diagnostics(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedDiagnosticsTask, ValidationError>;
+}
+
+/// `CheckedInputs` から有限グラフ実 adapter・Atlas 細分化タスク `CheckedAtlasTask` への変換境界。
+pub trait ToShigureAtlasTask {
+    fn convert_atlas(&self, inputs: &CheckedInputs) -> Result<CheckedAtlasTask, ValidationError>;
 }
 
 /// `CheckedInputs` から指定 SHIGURE タスクを抽出して `CheckedShigureTask` へ変換する標準変換器。
@@ -197,6 +230,49 @@ impl ToShigureObservationTask for ShigureConverter {
     }
 }
 
+impl ToShigureLiftTask for ShigureConverter {
+    fn convert_lift(&self, inputs: &CheckedInputs) -> Result<CheckedLiftTask, ValidationError> {
+        lower_phase4_lift_artin::convert_lift_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureArtinTask for ShigureConverter {
+    fn convert_artin(&self, inputs: &CheckedInputs) -> Result<CheckedArtinTask, ValidationError> {
+        lower_phase4_lift_artin::convert_artin_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureDiagnosticsTask for ShigureConverter {
+    fn convert_diagnostics(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedDiagnosticsTask, ValidationError> {
+        lower_phase4_diag_atlas::convert_diagnostics_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureAtlasTask for ShigureConverter {
+    fn convert_atlas(&self, inputs: &CheckedInputs) -> Result<CheckedAtlasTask, ValidationError> {
+        lower_phase4_diag_atlas::convert_atlas_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
 /// `CheckedInputs` 内の Law に宣言されている全 `shigure family` の完全名一覧を返す。
 pub fn list_shigure_families(inputs: &CheckedInputs) -> Vec<String> {
     inputs.law().shigure().families.keys().cloned().collect()
@@ -253,4 +329,30 @@ pub fn list_shigure_paths(inputs: &CheckedInputs) -> Vec<String> {
 /// `CheckedInputs` 内の Law に宣言されている全 `shigure transfer` の完全名一覧を返す。
 pub fn list_shigure_transfers(inputs: &CheckedInputs) -> Vec<String> {
     inputs.law().shigure().transfers.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure lift` の完全名一覧を返す。
+pub fn list_shigure_lift_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().lift_tasks.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure artin` の完全名一覧を返す。
+pub fn list_shigure_artin_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().artin_tasks.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure diagnostics` の完全名一覧を返す。
+pub fn list_shigure_diagnostics_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .diagnostics_tasks
+        .keys()
+        .cloned()
+        .collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure atlas` の完全名一覧を返す。
+pub fn list_shigure_atlas_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs.law().shigure().atlas_tasks.keys().cloned().collect()
 }
