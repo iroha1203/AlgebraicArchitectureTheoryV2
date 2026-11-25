@@ -98,12 +98,30 @@ pub(crate) fn check_condition_c0_to_c6(
         face_map[f_face_idx[ff.as_str()]] = cf_opt.as_ref().map(|cf| c_face_idx[cf.as_str()]);
     }
 
-    // TargetSupportedNerveMorphism の射公理を全細辺・全細面で厳密検査（Lean SupportedNerveMorphism.lean 準拠）。
+    // TargetSupportedNerveMorphism の射公理を全細 chart・全細辺・全細面で厳密検査（Lean SupportedNerveMorphism.lean 準拠）。
     if !factor_valid {
         return Err(SilenceReason::ApplicabilityConditionNotMet {
             condition: "target_supported_nerve_morphism_axioms".to_owned(),
             detail: "coarse_reading does not factor through fine_reading".to_owned(),
         });
+    }
+    for (fi, f_sup) in fine_nerve.chart_supports.iter().enumerate() {
+        let ci = chart_map[fi];
+        let fc_name = &ref_spec.fine_nerve.charts[fi].name;
+        let cc_name = &ref_spec.coarse_nerve.charts[ci].name;
+        for t in f_sup {
+            match psi.get(t.as_str()) {
+                Some(&tc) if coarse_nerve.chart_supports[ci].contains(tc) => {}
+                other => {
+                    return Err(SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "target_supported_nerve_morphism_axioms".to_owned(),
+                        detail: format!(
+                            "fine chart `{fc_name}` target `{t}` maps to {other:?} which is not in coarse chart `{cc_name}` support (chartSupport_compatible violated)"
+                        ),
+                    });
+                }
+            }
+        }
     }
     for (fei, fe) in fine_nerve.edges.iter().enumerate() {
         let fe_name = &ref_spec.fine_nerve.edges[fei].name;
@@ -167,19 +185,9 @@ pub(crate) fn check_condition_c0_to_c6(
     }
 
     // C0: 各粗 chart の支持は、その fiber 内の細 chart 支持の ψ 像の和集合とちょうど等しい。
+    // （包含方向 ψ(S_{fc}) ⊆ S_{chart_map(fc)} は上の morphism 公理 chartSupport_compatible で検証済み。）
     let c0_support_image = {
         let mut ok = true;
-        for (fi, f_sup) in fine_nerve.chart_supports.iter().enumerate() {
-            let ci = chart_map[fi];
-            for t in f_sup {
-                match psi.get(t.as_str()) {
-                    Some(&tc) if coarse_nerve.chart_supports[ci].contains(tc) => {}
-                    _ => {
-                        ok = false;
-                    }
-                }
-            }
-        }
         for (ci, c_sup) in coarse_nerve.chart_supports.iter().enumerate() {
             let mut img_union: BTreeSet<String> = BTreeSet::new();
             for (fi, &mapped_ci) in chart_map.iter().enumerate() {

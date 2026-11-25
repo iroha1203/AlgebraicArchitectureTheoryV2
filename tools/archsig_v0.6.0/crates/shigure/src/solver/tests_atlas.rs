@@ -635,6 +635,34 @@ fn condition_c0_to_c6_each_fails_independently() {
             if condition == "target_supported_nerve_morphism_axioms"
     ));
 
+    // chartSupport_compatible 違反（fine v0a に粗 v0 支持外の s12 を混入）も fail-closed 沈黙（R2 Major）
+    let mut r_bad_sup = w3_refinement(&dom, 1, 2, -3);
+    r_bad_sup.fine_nerve.charts[0].support.push("s12".into());
+    let bad_sup_task = validate_atlas_task(AtlasTaskSpec {
+        name: "bad_chart_support".into(),
+        coeff_domain: dom.clone(),
+        vertices: vec!["v0".into(), "v1".into(), "v2".into()],
+        edges: triangle_edges(&dom, 1, 2, -3),
+        mu: c_lit(&dom, 1),
+        base_lambdas: vec![
+            ("v0".into(), c_lit(&dom, 0)),
+            ("v1".into(), c_lit(&dom, 0)),
+            ("v2".into(), c_lit(&dom, 0)),
+        ],
+        allowed_vertices: vec!["v0".into(), "v1".into(), "v2".into()],
+        allowed_edges: Vec::new(),
+        compare_to_q: false,
+        refinement: Some(r_bad_sup),
+        extended_language_check: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_atlas_task(&bad_sup_task).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { ref condition, .. })
+            if condition == "target_supported_nerve_morphism_axioms"
+    ));
+
     // C6 違反: 粗 self-loop へ非 self-loop の細辺を写す
     let mut r_c6 = w3_refinement(&dom, 1, 2, -3);
     r_c6.coarse_nerve.edges.push(NerveEdgeSpec {

@@ -481,31 +481,40 @@ fn build_coarsening_map_matrices(
     fine_cpx: &DiagnosticComplexData,
 ) -> Result<IntMatTriple, SilenceReason> {
     let f2c = fine_to_coarse_block_map(coarse, fine)?;
-    let r0 = build_degree_restriction(&coarse_cpx.coords0, &fine_cpx.coords0, &f2c);
-    let r1 = build_degree_restriction(&coarse_cpx.coords1, &fine_cpx.coords1, &f2c);
-    let r2 = build_degree_restriction(&coarse_cpx.coords2, &fine_cpx.coords2, &f2c);
+    let r0 = build_degree_restriction(&coarse_cpx.coords0, &fine_cpx.coords0, &f2c)?;
+    let r1 = build_degree_restriction(&coarse_cpx.coords1, &fine_cpx.coords1, &f2c)?;
+    let r2 = build_degree_restriction(&coarse_cpx.coords2, &fine_cpx.coords2, &f2c)?;
     Ok((r0, r1, r2))
+}
+
+fn parse_block_index(label: &str) -> Result<usize, SilenceReason> {
+    label
+        .strip_prefix('b')
+        .and_then(|s| s.parse::<usize>().ok())
+        .ok_or_else(|| SilenceReason::DiagnosticsStratificationOutOfScope {
+            detail: format!("invalid internal partition block label `{label}`"),
+        })
 }
 
 fn build_degree_restriction(
     coarse_coords: &[(usize, String, String)],
     fine_coords: &[(usize, String, String)],
     f2c: &[usize],
-) -> Vec<Vec<BigInt>> {
+) -> Result<Vec<Vec<BigInt>>, SilenceReason> {
     let mut c_idx: BTreeMap<(usize, usize), usize> = BTreeMap::new();
     for (col, (cell, _, lbl)) in coarse_coords.iter().enumerate() {
-        let bi: usize = lbl.trim_start_matches('b').parse().unwrap_or(0);
+        let bi = parse_block_index(lbl)?;
         c_idx.insert((*cell, bi), col);
     }
     let mut mat = vec![vec![BigInt::zero(); coarse_coords.len()]; fine_coords.len()];
     for (row, (cell, _, lbl)) in fine_coords.iter().enumerate() {
-        let fbi: usize = lbl.trim_start_matches('b').parse().unwrap_or(0);
+        let fbi = parse_block_index(lbl)?;
         let cbi = f2c[fbi];
         if let Some(&col) = c_idx.get(&(*cell, cbi)) {
             mat[row][col] = BigInt::one();
         }
     }
-    mat
+    Ok(mat)
 }
 
 /// 短完全列 `0 -> C^\bullet(coarse) --r--> C^\bullet(fine) --rho--> Q^\bullet -> 0` の
@@ -521,9 +530,9 @@ fn build_cokernel_complex_and_rho(
 
     // 各次数で (cell, coarse_block) ごとに存在する fine block の昇順リスト `[b_0, b_1, ..., b_{k-1}]`
     // を求め、k >= 2 のとき k-1 個の座標 `(cell, coarse_block, b_j - b_0)` (j = 1..k) を Q の基底とする。
-    let (q_coords0, rho0, q0_lookup) = build_cokernel_degree(&fine_cpx.coords0, &f2c);
-    let (q_coords1, rho1, q1_lookup) = build_cokernel_degree(&fine_cpx.coords1, &f2c);
-    let (q_coords2, rho2, _) = build_cokernel_degree(&fine_cpx.coords2, &f2c);
+    let (q_coords0, rho0, q0_lookup) = build_cokernel_degree(&fine_cpx.coords0, &f2c)?;
+    let (q_coords1, rho1, q1_lookup) = build_cokernel_degree(&fine_cpx.coords1, &f2c)?;
+    let (q_coords2, rho2, _) = build_cokernel_degree(&fine_cpx.coords2, &f2c)?;
 
     // Q 上の微分 d^0_Q, d^1_Q は rho ∘ d_fine = d_Q ∘ rho から一意に定まる。
     // 各 Q 座標 (cell, cbi, first_fb, fb) は fine 座標 (cell, fb) の像であり、
@@ -606,14 +615,17 @@ fn build_cokernel_complex_and_rho(
 fn build_cokernel_degree(
     fine_coords: &[(usize, String, String)],
     f2c: &[usize],
-) -> (
-    Vec<(usize, usize, usize, usize)>,
-    Vec<Vec<BigInt>>,
-    BTreeMap<(usize, usize), Vec<(usize, usize, usize)>>,
-) {
+) -> Result<
+    (
+        Vec<(usize, usize, usize, usize)>,
+        Vec<Vec<BigInt>>,
+        BTreeMap<(usize, usize), Vec<(usize, usize, usize)>>,
+    ),
+    SilenceReason,
+> {
     let mut grouped: BTreeMap<(usize, usize), Vec<(usize, usize)>> = BTreeMap::new();
     for (col, (cell, _, lbl)) in fine_coords.iter().enumerate() {
-        let fbi: usize = lbl.trim_start_matches('b').parse().unwrap_or(0);
+        let fbi = parse_block_index(lbl)?;
         let cbi = f2c[fbi];
         grouped.entry((*cell, cbi)).or_default().push((fbi, col));
     }
@@ -642,7 +654,7 @@ fn build_cokernel_degree(
         }
     }
 
-    (q_coords, rho, lookup)
+    Ok((q_coords, rho, lookup))
 }
 
 /// D1–D2: 一般 `V(g_1, ..., g_r) ∩ D(h)` の標準 cycle + full 2-skeleton 構成と probe 検算。

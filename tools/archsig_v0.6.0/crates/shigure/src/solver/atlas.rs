@@ -456,14 +456,32 @@ fn solve_atlas_z(
             .iter()
             .map(|v| Rat::from_int(v.clone()))
             .collect();
-        let q_zero = matches!(
-            solve_affine_field(&d0_q, &b_q, graph.vertices.len(), &Rat::zero()),
-            Ok(AffineSolutionField::Consistent { .. })
-        );
-        let z_zero = matches!(
-            solve_affine_z(&graph.d0, &graph.offsets, graph.vertices.len()),
-            Ok(AffineSolutionZ::Consistent { .. })
-        );
+        let q_zero = match solve_affine_field(&d0_q, &b_q, graph.vertices.len(), &Rat::zero()) {
+            Ok(AffineSolutionField::Consistent { .. }) => true,
+            Ok(AffineSolutionField::Inconsistent { .. }) => false,
+            Err(e) => {
+                return atlas_undetermined(
+                    coeff_domain,
+                    point_domain,
+                    checks,
+                    provenance,
+                    map_atlas_alg_err(e),
+                );
+            }
+        };
+        let z_zero = match solve_affine_z(&graph.d0, &graph.offsets, graph.vertices.len()) {
+            Ok(AffineSolutionZ::Consistent { .. }) => true,
+            Ok(AffineSolutionZ::Inconsistent { .. }) => false,
+            Err(e) => {
+                return atlas_undetermined(
+                    coeff_domain,
+                    point_domain,
+                    checks,
+                    provenance,
+                    map_atlas_alg_err(e),
+                );
+            }
+        };
         Some(o_b_is_zero == z_zero && z_zero == q_zero)
     } else {
         None
@@ -645,7 +663,7 @@ fn determine_atlas_verdict(
     ext: Option<&crate::ir::result_phase4::ExtendedLanguageResult>,
 ) -> Verdict {
     if let Some(e) = ext
-        && !e.all_extended_checks_preserved
+        && (!e.all_atomic_ops_commute || !e.all_extended_checks_preserved)
     {
         return Verdict::Refuted;
     }
