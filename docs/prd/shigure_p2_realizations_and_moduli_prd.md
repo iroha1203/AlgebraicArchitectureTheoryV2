@@ -232,7 +232,7 @@ Formal/
 
 （AC-07・AC-08・AC-11・AC-12 のように実装規模が大きい AC は、依存順にサブ PR へ細分化して進めてよい。）
 
-各 PR は [Workflow guideline](../workflow/guideline.md) の PR 前チェックおよび `math-lean-review`（独立 4 lane・別モデル PR レビュー）を通過してマージする。
+各 PR は [Workflow guideline](../workflow/guideline.md) の PR 前チェックおよび `math-lean-review`（独立 4 lane）を通過してマージする。
 
 ---
 
