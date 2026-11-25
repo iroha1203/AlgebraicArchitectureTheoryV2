@@ -129,6 +129,10 @@ theorem mapAlong_comp {D : Sheaf J (Type w)} {P : SheafPredicate F} {Q : SheafPr
 def truth : SheafPredicate F :=
   ofLocal ⊤
 
+/-- Every tuple section belongs to the truth predicate. -/
+theorem mem_truth (U : Cᵒᵖ) (x : F.val.obj U) : x ∈ (truth : SheafPredicate F).carrier.obj U :=
+  (Subfunctor.le_sheafify J ⊤) U (Set.mem_univ x)
+
 /-- Falsehood is the least subsheaf. Its section on an empty test is supplied by the empty cover. -/
 def falsehood : SheafPredicate F :=
   ofLocal ⊥
@@ -170,6 +174,11 @@ theorem mem_disj_iff (P Q : SheafPredicate F) (U : Cᵒᵖ) (x : F.val.obj U) :
 /-- Existential quantification takes the image subsheaf under the projection of assignments. -/
 def existsAlong (p : G ⟶ F) (Q : SheafPredicate G) : SheafPredicate F :=
   ofLocal (Subfunctor.range (Q.carrier.ι ≫ p.val))
+
+/-- Existential interpretation assembles the same sheaf as mathlib's image. -/
+theorem existsAlong_toSheaf (p : G ⟶ F) (Q : SheafPredicate G) :
+    (existsAlong p Q).toSheaf = Sheaf.image (Q.inclusion ≫ p) :=
+  rfl
 
 /-- Existential membership holds on a covering sieve of restrictions having a witness. -/
 theorem mem_existsAlong_iff (p : G ⟶ F) (Q : SheafPredicate G) (U : Cᵒᵖ) (x : F.val.obj U) :

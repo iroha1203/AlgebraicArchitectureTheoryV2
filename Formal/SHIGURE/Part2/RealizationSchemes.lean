@@ -1,6 +1,4 @@
-import Formal.SHIGURE.Part2.Realizations.CoefficientModels
-import Formal.SHIGURE.Part2.Realizations.TensorStructures
-import Formal.SHIGURE.Part2.Realizations.ZariskiModels
+import Formal.SHIGURE.Part2.Realizations.Examples
 
 /-!
 # Coefficient realization schemes

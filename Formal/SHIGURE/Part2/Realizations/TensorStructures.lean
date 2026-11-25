@@ -1,6 +1,5 @@
 import Formal.SHIGURE.Part1.Signature
 import Mathlib.Algebra.Category.ModuleCat.Basic
-import Mathlib.CategoryTheory.ObjectProperty.FullSubcategory
 import Mathlib.LinearAlgebra.Multilinear.Basic
 
 /-!
@@ -47,11 +46,6 @@ variable {R} {sig : Signature.{u}}
 def designated (A : TensorStructure R sig) (f : sig.Total)
     (h : (sig.totalArity f).inputs = []) : A.carrier (sig.totalArity f).output :=
   A.total f fun i => nomatch (h ▸ i.2 : Var [] i.1)
-
-/-- A tensor Law equates two multilinear expressions of the same input and output types. -/
-def tensorEquality (A : TensorStructure R sig) (a : Arity sig.SortType)
-    (left right : TensorOperation R A.carrier a) : Prop :=
-  left = right
 
 /-- A map of tensor structures is a family of linear maps preserving the operations and quantities. -/
 structure Hom (A B : TensorStructure R sig) where
@@ -115,29 +109,5 @@ instance : Category (TensorStructure R sig) where
   assoc f g h := Hom.ext (funext fun s => (LinearMap.comp_assoc (f.onSort s) (g.onSort s) (h.onSort s)).symm)
 
 end TensorStructure
-
-/-- Two tensor expressions with the same typed input and output are a Law of the tensor scheme. -/
-structure TensorLaw (sig : Signature.{u}) where
-  /-- The common input and output types of the two expressions. -/
-  arity : Arity sig.SortType
-  /-- Evaluate the left typed expression in a given tensor realization. -/
-  left (A : TensorStructure R sig) : TensorOperation R A.carrier arity
-  /-- Evaluate the right typed expression in a given tensor realization. -/
-  right (A : TensorStructure R sig) : TensorOperation R A.carrier arity
-
-variable {R} {sig : Signature.{u}}
-
-/-- A tensor realization satisfies a Law as equality of the interpreted tensor maps. -/
-def TensorLaw.holds (law : TensorLaw R sig) (A : TensorStructure R sig) : Prop :=
-  A.tensorEquality law.arity (law.left A) (law.right A)
-
-/-- Required tensor Laws restrict the objects, with every structure-preserving linear map retained. -/
-def tensorModelProperty {L : Type u} (law : L → TensorLaw R sig) :
-    ObjectProperty (TensorStructure R sig) :=
-  fun A => ∀ l : L, (law l).holds A
-
-/-- The tensor-mode semantic category for a family of required typed expressions. -/
-abbrev TensorModels {L : Type u} (law : L → TensorLaw R sig) :=
-  (tensorModelProperty law).FullSubcategory
 
 end SHIGURE

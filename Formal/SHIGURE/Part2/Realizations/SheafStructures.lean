@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part1.Laws
 import Formal.SHIGURE.Part2.Realizations.PositiveSheaves
+import Mathlib.CategoryTheory.Limits.Shapes.Products
 
 /-!
 # Primitive structures and positive Laws in sheaves
@@ -18,7 +19,7 @@ product would require an additional comparison on every restriction to a
 test scheme. The sectionwise product gives that restriction directly.
 -/
 
-open CategoryTheory Opposite
+open CategoryTheory CategoryTheory.Limits Opposite
 
 universe u v w
 
@@ -73,6 +74,29 @@ def sheafTuple (A : S → Sheaf J (Type u)) (Γ : List S) : Sheaf J (Type u) whe
 def sheafTupleProj (A : S → Sheaf J (Type u)) {Γ : List S} {s : S} (i : Var Γ s) :
     sheafTuple A Γ ⟶ A s :=
   ⟨{ app := fun _ => ↾fun xs => xs.get i }⟩
+
+/-- The tuple sheaf and its variable projections form a fan of the carrier sheaves. -/
+def sheafTupleFan (A : S → Sheaf J (Type u)) (Γ : List S) :
+    Fan (fun i : (s : S) × Var Γ s => A i.1) :=
+  Fan.mk (sheafTuple A Γ) (fun i => sheafTupleProj A i.2)
+
+/-- The sectionwise tuple sheaf is the product of its carrier sheaves in mathlib. -/
+def sheafTupleFanIsLimit (A : S → Sheaf J (Type u)) (Γ : List S) :
+    IsLimit (sheafTupleFan A Γ) := by
+  refine mkFanLimit _ (fun F => ⟨{
+    app := fun U => ↾fun x => ⟨fun {s} i => (F.proj ⟨s, i⟩).val.app U x⟩
+    naturality := by
+      intro U V m
+      ext x
+      apply Assignment.ext
+      intro s i
+      exact FunctorToTypes.naturality _ _ (F.proj ⟨s, i⟩).val m x }⟩)
+    (fun _ _ => rfl) ?_
+  intro F m h
+  ext U x
+  apply Assignment.ext
+  intro s i
+  exact congrArg (fun f : F.pt ⟶ A s => f.val.app U x) (h ⟨s, i⟩)
 
 /-- Pick out an input tuple along a renaming of variables. -/
 def sheafTupleRename (A : S → Sheaf J (Type u)) {Γ Δ : List S} (f : Renaming Γ Δ) :

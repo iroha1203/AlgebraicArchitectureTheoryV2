@@ -81,6 +81,12 @@ def constantCarrier (X : Type u) : ZariskiSheaf S where
   cond := (Presheaf.isSheaf_of_iso_iff (J := Scheme.zariskiTopology.over S) (relativeLabelIso S X)).mp
     (relativePoints S (constantSchemeOver S X)).cond
 
+/-- The constant carrier is the relative point sheaf of the constant scheme. -/
+def constantCarrierIso (X : Type u) :
+    relativePoints S (constantSchemeOver S X) ≅ constantCarrier S X :=
+  let e := relativeLabelIso S X
+  ⟨⟨e.hom⟩, ⟨e.inv⟩, Sheaf.Hom.ext e.hom_inv_id, Sheaf.Hom.ext e.inv_hom_id⟩
+
 /-- A native state map acts on the corresponding constant sheaves by postcomposition. -/
 def constantCarrierMap {X Y : Type u} (f : X → Y) : constantCarrier S X ⟶ constantCarrier S Y :=
   ⟨{ app := fun _ => ↾LocallyConstant.map f

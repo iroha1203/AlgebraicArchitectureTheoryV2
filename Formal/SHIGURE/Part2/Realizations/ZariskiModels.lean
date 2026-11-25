@@ -107,9 +107,4 @@ def zariskiCopyingProperty (T : Theory.{u}) (S : Scheme.{u}) :
 abbrev ZariskiCopyingModels (T : Theory.{u}) (R : Type u) [CommRing R] :=
   (zariskiCopyingProperty T (Spec (CommRingCat.of R))).FullSubcategory
 
-/-- The copying-mode category uses exactly the signature and required Laws selected by the context. -/
-abbrev SelectedCopyingModels {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
-    (R : Type u) [CommRing R] :=
-  ZariskiCopyingModels (DeclarationContext.Selected.presentation U).theory R
-
 end SHIGURE.Copying
