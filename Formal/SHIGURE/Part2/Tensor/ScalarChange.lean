@@ -1,5 +1,4 @@
 import Formal.SHIGURE.Part1.CoefficientReading
-import Formal.SHIGURE.Part2.AffineBaseChange
 import Mathlib.LinearAlgebra.TensorProduct.Tower
 
 /-!

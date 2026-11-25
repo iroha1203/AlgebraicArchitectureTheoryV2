@@ -60,4 +60,19 @@ def extendStructureFunctor (k R : Type u) [CommRing k] [CommRing R] [Algebra k R
   map_comp f g := TensorStructure.Hom.ext (funext fun s =>
     LinearMap.baseChange_comp (A := R) (f.onSort s) (g.onSort s))
 
+/-- Read the carrier map of a changed structure arrow as mathlib scalar extension at that sort. -/
+@[simp]
+theorem extendStructureMap_onSort {A B : TensorStructure k sig} (f : A ⟶ B) (s : sig.SortType) :
+    (extendStructureMap R f).onSort s = (f.onSort s).baseChange R := rfl
+
+/-- Reduce the object action of the scalar extension functor to the extended structure. -/
+@[simp]
+theorem extendStructureFunctor_obj (A : TensorStructure k sig) :
+    (extendStructureFunctor k R sig).obj A = extendStructure k R A := rfl
+
+/-- Reduce the arrow action of the scalar extension functor to the extended structure arrow. -/
+@[simp]
+theorem extendStructureFunctor_map {A B : TensorStructure k sig} (f : A ⟶ B) :
+    (extendStructureFunctor k R sig).map f = extendStructureMap R f := rfl
+
 end SHIGURE.TensorRealization

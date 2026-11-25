@@ -7,6 +7,14 @@ import Formal.SHIGURE.Part2.Tensor.ScalarChange
 The module comparisons preserve every extended primitive operation.
 Their naturality and the three-stage identity are checked on the
 underlying carrier families.
+
+## Implementation notes
+
+`structureIsoOfCarrierEquiv` assembles the known preserving arrow and the
+linear equivalences on its carriers. The equivalences give the inverse maps,
+and their injectivity gives the inverse preservation laws from the forward
+ones. Taking a separate preserving inverse as input would require those
+proofs again for each unit and tower comparison.
 -/
 
 open CategoryTheory
@@ -141,5 +149,17 @@ theorem structureScalarTower_three (A : TensorStructure k sig) :
   TensorStructure.Hom.ext (funext fun _ => scalarTower_three)
 
 end Tower
+
+/-- Read the structured unit at each sort as the module comparison `scalarUnit`. -/
+@[simp]
+theorem structureScalarUnit_hom_onSort (A : TensorStructure k sig) (s : sig.SortType) :
+    (structureScalarUnit A).hom.onSort s = (scalarUnit (k := k) (M := A.carrier s)).toLinearMap := rfl
+
+/-- Read the structured tower at each sort as the module comparison `scalarTower`. -/
+@[simp]
+theorem structureScalarTower_hom_onSort [Algebra k R] [Algebra k S] [Algebra R S] [IsScalarTower k R S]
+    (A : TensorStructure k sig) (s : sig.SortType) :
+    (structureScalarTower (R := R) (S := S) A).hom.onSort s =
+      (scalarTower (k := k) (R := R) (S := S) (M := A.carrier s)).toLinearMap := rfl
 
 end SHIGURE.TensorRealization
