@@ -63,11 +63,19 @@ theorem constant_absent_from_statement :
   simp [Declaration.lawBody_eq, Declaration.sorts_eq_image, Declaration.formula_truth,
     Declaration.formula_ex, nonemptyLaw]
 
+attribute [local irreducible] GraphAxiom.toLaw GraphAxiom.hasOutput Declaration.graphRuleName in
 /-- The graph axiom keeps the constant among the derivation's required declarations. -/
 theorem constant_used_by_derivation :
     Declaration.total () ∈ Declaration.derivation (P := presentation) (presentation.derived () rfl) := by
+  let instantiated : Law signature := ⟨[], .truth, graphFormula.ex⟩
+  have law : (GraphAxiom.totality (sig := signature) ()).toLaw = instantiated := by
+    rw [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph]
+    rfl
+  have named : Declaration.total () ∈ Declaration.lawBody (P := presentation) instantiated := by
+    rw [← law, ← Declaration.graphRuleName_totality (P := presentation)]
+    exact Declaration.graphRuleName_mem_lawBody (P := presentation) (.totality ())
   have used : Declaration.total () ∈ Declaration.derivation (P := presentation) constantHasValue :=
-    Declaration.graphRuleName_mem_derivation (P := presentation) (.totality ())
+    Declaration.lawBody_subset_derivationOf Subtype.val constantHasValue named
   exact Declaration.derivation_cut_left _ _ (Declaration.derivation_andIntro_right _ _ used)
 
 /-- A closed context that keeps the derived Law also keeps the constant used in its proof. -/

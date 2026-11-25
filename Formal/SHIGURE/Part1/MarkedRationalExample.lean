@@ -64,12 +64,12 @@ theorem assembled_restricts (right : Bool) :
 
 /-- All four written round-trip Laws hold in the assembled global marked structure. -/
 theorem assembled_all_laws (name : Op) : (roundTrip name).Holds assembled.data.structureData :=
-  assembled.holds ⟨⟨.inl name, rfl⟩, Set.mem_univ _⟩
+  presentation_roundTrip name ▸ assembled.holds_statement ⟨⟨.inl name, rfl⟩, Set.mem_univ _⟩
 
 /-- The ordinary theory's generated equality Laws also hold after marked assembly. -/
 theorem assembled_all_linearity (name : vocabulary.LinearityLaw) :
     (presentation.laws.statement (.inr name)).Holds assembled.data.structureData :=
-  assembled.holds ⟨⟨.inr name, rfl⟩, Set.mem_univ _⟩
+  assembled.holds_statement ⟨⟨.inr name, rfl⟩, Set.mem_univ _⟩
 
 /-- Equation (3.5) is the shared kernel of the positive assembly. The retained
 sort proof is the explicit index of the kernel field. The full context supplies
@@ -89,8 +89,8 @@ theorem positive_existsUnique :
 theorem changed_right_laws :
     (roundTrip .u).Holds (localRealization true phiChanged).data.structureData ∧
       (roundTrip .v).Holds (localRealization true phiChanged).data.structureData :=
-  ⟨(localRealization true phiChanged).holds ⟨⟨.inl .u, rfl⟩, rfl⟩,
-    (localRealization true phiChanged).holds ⟨⟨.inl .v, rfl⟩, rfl⟩⟩
+  ⟨presentation_roundTrip .u ▸ (localRealization true phiChanged).holds_statement ⟨⟨.inl .u, rfl⟩, rfl⟩,
+    presentation_roundTrip .v ▸ (localRealization true phiChanged).holds_statement ⟨⟨.inl .v, rfl⟩, rfl⟩⟩
 
 /-- The changed right kernel directly fails the agreement predicate on the shared q sort. -/
 theorem changed_overlap_not_agree :

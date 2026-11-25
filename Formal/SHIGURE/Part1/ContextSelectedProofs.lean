@@ -383,24 +383,30 @@ theorem selectRule_toLaw (rule : GraphAxiom P.signature)
       simp only [GraphAxiom.toLaw_functional, selectLaw_eq, selectFormula_conj, selectFormula_atom,
         selectAtomic_graph, selectRule, operation_total, operation_partialOp, operation_quantity]
   case' totality f =>
-    have inputShape := (signature_totalInputs (U := U) ⟨f, kept⟩).symm
+    have named : Declaration.total f ∈ U.declarations := by
+      simpa only [Declaration.graphRuleName_totality] using kept
+    have inputShape := (signature_totalInputs (U := U) ⟨f, named⟩).symm
     have outputShape := congrArg Subtype.val (operation_selectedOutput
-      (operation_total (U := U) f (Declaration.ofOperation_total_mem f kept))).symm
+      (operation_total (U := U) f (Declaration.ofOperation_total_mem f named))).symm
     simp only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq, selectFormula_truth,
       selectFormula_ex_cast, selectFormula_atom, selectAtomic_graph, selectRule]
   case' quantityTotality q =>
-    have inputShape := (signature_quantityInputs (U := U) ⟨q, kept⟩).symm
+    have named : Declaration.quantity q ∈ U.declarations := by
+      simpa only [Declaration.graphRuleName_quantityTotality] using kept
+    have inputShape := (signature_quantityInputs (U := U) ⟨q, named⟩).symm
     have outputShape := congrArg Subtype.val (operation_selectedOutput
-      (operation_quantity (U := U) q (Declaration.ofOperation_quantity_mem q kept))).symm
+      (operation_quantity (U := U) q (Declaration.ofOperation_quantity_mem q named))).symm
     simp only [GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
       selectFormula_truth, selectFormula_ex_cast, selectFormula_atom, selectAtomic_graph, selectRule]
   case' graphImpliesDomain p =>
     simp only [GraphAxiom.toLaw_graphImpliesDomain, selectLaw_eq, selectFormula_atom, selectAtomic_graph,
       selectRule]
   case' domainImpliesGraph p =>
-    have inputShape := (signature_partialInputs (U := U) ⟨p, kept⟩).symm
+    have named : Declaration.partialOp p ∈ U.declarations := by
+      simpa only [Declaration.graphRuleName_domainImpliesGraph] using kept
+    have inputShape := (signature_partialInputs (U := U) ⟨p, named⟩).symm
     have outputShape := congrArg Subtype.val (operation_selectedOutput
-      (operation_partialOp (U := U) p (Declaration.ofOperation_partialOp_mem p kept))).symm
+      (operation_partialOp (U := U) p (Declaration.ofOperation_partialOp_mem p named))).symm
     simp only [GraphAxiom.toLaw_domainImpliesGraph, GraphAxiom.hasOutput_eq_ex_graph, selectLaw_eq,
       selectFormula_atom, selectFormula_ex_cast, selectAtomic_graph, selectRule]
   all_goals congr 4
@@ -425,19 +431,19 @@ theorem selectRule_toLaw (rule : GraphAxiom P.signature)
     | exact selected_output_equality _ (operation_quantity _ _) _
     | skip
   case totality.h.e_4.e_4 =>
-    let keep := Declaration.ofOperation_total_mem f kept
+    let keep := Declaration.ofOperation_total_mem f named
     let same := operation_total (U := U) f keep
     exact cast_atom_heq (context_cons (U := U) _ _ _)
       (context_one_output (.total f) keep _ (operation_arity_of_eq same) _)
       (selectGraph_shift_one keep same _)
   case quantityTotality.h.e_4.e_4 =>
-    let keep := Declaration.ofOperation_quantity_mem q kept
+    let keep := Declaration.ofOperation_quantity_mem q named
     let same := operation_quantity (U := U) q keep
     exact cast_atom_heq (context_cons (U := U) _ _ _)
       (context_one_output (.quantity q) keep _ (operation_arity_of_eq same) _)
       (selectGraph_shift_one keep same _)
   case domainImpliesGraph.h.e_4.e_4 =>
-    let keep := Declaration.ofOperation_partialOp_mem p kept
+    let keep := Declaration.ofOperation_partialOp_mem p named
     let same := operation_partialOp (U := U) p keep
     exact cast_atom_heq (context_cons (U := U) _ _ _)
       (context_one_output (.partialOp p) keep _ (operation_arity_of_eq same) _)

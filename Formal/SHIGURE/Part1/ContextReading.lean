@@ -120,7 +120,9 @@ theorem selectedRing_axiomsHold (name : reading.context.RetainedLaw)
   have original : i.val ∈ equation.axiomNames := by
     rw [← Selected.selectNamedRingEquation_axiomNames name equation attached keep]
     exact ⟨i, selected, rfl⟩
-  exact (reading.selectedLaw_iff i).2 ((equation.axiomsHold_iff _).1 held i.val original)
+  have selectedHeld := (reading.selectedLaw_iff i).2 ((equation.axiomsHold_iff _).1 held i.val original)
+  rw [Selected.presentation_law_eq_selected] at selectedHeld
+  exact selectedHeld
 
 /-- The retained proof trees supply all the ring Laws for a reading of the selected residual. -/
 theorem selectedRing_axioms (name : reading.context.RetainedLaw)

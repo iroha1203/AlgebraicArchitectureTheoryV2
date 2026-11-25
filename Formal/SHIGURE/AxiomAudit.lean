@@ -2543,6 +2543,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Marked.quotientStructure_total_module_smul,
   -- MarkedRationalPresentation
   Marked.RationalExample.presentation_roundTrip,
+  -- MarkedRealizations
+  Marked.Realization.holds_statement,
   -- MarkedVocabulary
   Marked.Vocabulary.addTerm_none,
   Marked.Vocabulary.addTerm_some,
