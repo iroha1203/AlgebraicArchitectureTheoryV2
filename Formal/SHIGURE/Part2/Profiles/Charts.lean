@@ -7,6 +7,14 @@ import Mathlib.AlgebraicGeometry.Morphisms.ClosedImmersion
 Definition 4.5 uses the spectrum of the coefficient presentation. For an
 inclusion of profiles the coordinate ring map sets the added generators to
 zero. This realizes enlargement of a profile on points by the same rows.
+
+## Implementation notes
+
+The affine point correspondence uses full faithfulness of `Spec` to land
+directly in the test algebra. Specializing the global-sections route of
+Lemma B.2 would carry the `ΓSpecIso` through the point diagram. The
+comparison in `SchemeComposition` supplies that identification for the
+composition morphism, where points of general test schemes are needed.
 -/
 
 open AlgebraicGeometry CategoryTheory MvPolynomial Opposite

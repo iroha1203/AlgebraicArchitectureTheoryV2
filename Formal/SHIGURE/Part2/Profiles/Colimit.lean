@@ -7,6 +7,12 @@ import Mathlib.CategoryTheory.Limits.Types.Filtered
 Theorem 4.6 takes the colimit of the relative affine test points in `Type`.
 Every copying map appears at its row supports, and two charts that present
 the same map agree after enlargement to the pointwise union.
+
+## Implementation notes
+
+The cocone uses mathlib's criterion for filtered colimits in `Type`.
+An explicit quotient of chart points would repeat the construction of that
+colimit and its identification of two points at a common larger profile.
 -/
 
 open CategoryTheory CategoryTheory.Limits
@@ -25,6 +31,7 @@ variable {X Y : Type u}
 theorem isFiltered (X Y : Type u) : IsFiltered (SupportProfile X Y) :=
   inferInstance
 
+/-- An arrow of the pointwise index category gives the inclusions of the allowed supports. -/
 private theorem profileLeOfHom {F G : SupportProfile X Y} (h : F ⟶ G) : F ≤ G :=
   fun x => leOfHom (h x)
 

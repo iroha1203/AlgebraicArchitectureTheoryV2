@@ -2886,6 +2886,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.SupportProfile.chartComp_points,
   Copying.SupportProfile.chartComp_transition,
   Copying.SupportProfile.chartIdentity,
+  Copying.SupportProfile.pointRowsEquiv_chartIdentity,
   Copying.SupportProfile.chartComp_identity_source,
   Copying.SupportProfile.chartComp_identity_target,
   Copying.SupportProfile.chartComp_assoc,

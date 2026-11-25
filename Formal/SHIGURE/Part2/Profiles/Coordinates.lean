@@ -12,6 +12,10 @@ The profile assigns a finite set of allowed outputs to each source.
 A chart uses the existing `PolynomialPresentation` for idempotence,
 orthogonality and the row sum. Extending the coordinates by zero gives the
 comparison with the finite rows of Theorem 4.3.
+
+A dedicated quotient would repeat the existing universal assignment
+equivalence. The named Law families let that equivalence handle the quotient
+while recording which equations impose idempotence, orthogonality and the sum.
 -/
 
 open MvPolynomial

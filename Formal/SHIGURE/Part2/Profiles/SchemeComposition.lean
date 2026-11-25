@@ -8,6 +8,15 @@ import Mathlib.CategoryTheory.Limits.Constructions.Over.Basic
 The product projections supply the universal pair of coefficient rows in
 Theorem 4.6. Evaluating the finite sums in the global sections of the product
 and applying Lemma B.2 gives the scheme morphism.
+
+## Implementation notes
+
+The product projections are already universal points with coefficients in
+the global sections of the product. A tensor product presentation of the
+coordinate ring would require comparing its spectrum with the scheme
+product. Using the projections and Lemma B.2 gives the morphism and its
+calculation on all test schemes. The affine comparison evaluates it on the
+same coordinates used for the filtered colimit.
 -/
 
 open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
@@ -90,14 +99,18 @@ def chartIdentity (T : Over (Spec (CommRingCat.of k))) (X : Type u) :
     T ⟶ (identityProfile X).chart k :=
   ((identityProfile X).pointRowsEquiv T).symm (identityRows Γ(T.left, ⊤) X)
 
+/-- The identity chart point simplifies to the unit row at each source state. -/
+@[simp]
+theorem pointRowsEquiv_chartIdentity (T : Over (Spec (CommRingCat.of k))) (X : Type u) :
+    (identityProfile X).pointRowsEquiv T (chartIdentity T X) = identityRows Γ(T.left, ⊤) X :=
+  Equiv.apply_symm_apply _ _
+
 /-- The composition morphism has the identity chart point as a left unit. -/
 theorem chartComp_identity_source (p : T ⟶ F.chart k) :
     prod.lift (chartIdentity T X) p ≫ chartComp (identityProfile X) F ≫
       transition (le_of_eq (compProfile_identity_source F)) = p := by
   apply (F.pointRowsEquiv T).injective
-  rw [← Category.assoc, pointRowsEquiv_transition, chartComp_points]
-  unfold chartIdentity
-  rw [Equiv.apply_symm_apply]
+  rw [← Category.assoc, pointRowsEquiv_transition, chartComp_points, pointRowsEquiv_chartIdentity]
   exact Subtype.ext (compRows_identity_source _)
 
 /-- The composition morphism has the identity chart point as a right unit. -/
@@ -105,9 +118,7 @@ theorem chartComp_identity_target (p : T ⟶ F.chart k) :
     prod.lift p (chartIdentity T Y) ≫ chartComp F (identityProfile Y) ≫
       transition (le_of_eq (compProfile_identity_target F)) = p := by
   apply (F.pointRowsEquiv T).injective
-  rw [← Category.assoc, pointRowsEquiv_transition, chartComp_points]
-  unfold chartIdentity
-  rw [Equiv.apply_symm_apply]
+  rw [← Category.assoc, pointRowsEquiv_transition, chartComp_points, pointRowsEquiv_chartIdentity]
   exact Subtype.ext (compRows_identity_target _)
 
 /-- The two composites of three chart points agree after the canonical profile comparison. -/
@@ -130,6 +141,7 @@ theorem chartComp_precomp (f : T' ⟶ T) (p : T ⟶ F.chart k) (q : T ⟶ H.char
   rw [pointRowsEquiv_precomp, chartComp_points, chartComp_points, pointRowsEquiv_precomp,
     pointRowsEquiv_precomp, compRows_natural]
 
+/-- Under the Γ–Spec adjunction a spectrum map is given by the ring map followed by the affine section isomorphism. -/
 private theorem specGlobalHom_specMap {A R : CommRingCat.{u}} (f : A ⟶ R) :
     specGlobalHom (Spec.map f) = f ≫ (Scheme.ΓSpecIso R).inv := by
   have hi : specGlobalHom (𝟙 (Spec R)) = (Scheme.ΓSpecIso R).inv := by
@@ -141,6 +153,7 @@ private theorem specGlobalHom_specMap {A R : CommRingCat.{u}} (f : A ⟶ R) :
 
 variable {R : Type u} [CommRing R] [Algebra k R]
 
+/-- The affine section isomorphism in the direction from the test algebra to global sections. -/
 private def affineSectionsMap :
     letI := globalSectionsAlgebra (specOver (k := k) R)
     R →ₐ[k] Γ((specOver (k := k) R).left, ⊤) := by
@@ -151,6 +164,7 @@ private def affineSectionsMap :
   rw [specGlobalHom_specMap]
   rfl
 
+/-- The general test-scheme coordinates restrict to the affine coordinates under the section isomorphism. -/
 private theorem pointRowsEquiv_affine (F : SupportProfile X Y) (p : specOver R ⟶ F.chart k) :
     letI := globalSectionsAlgebra (specOver (k := k) R)
     F.pointRowsEquiv (specOver R) p =

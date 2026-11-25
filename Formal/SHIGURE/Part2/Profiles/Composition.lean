@@ -5,6 +5,13 @@ import Formal.SHIGURE.Part2.Profiles.Charts
 
 The second part of Theorem 4.6 computes the composite of two copying maps in
 the profile obtained by taking the finite unions of their allowed outputs.
+
+## Implementation notes
+
+Composition of the copying maps supplies the equations and associativity
+of the composite rows. Defining the rows by the finite sum first would
+repeat both proofs. The coordinate formula and the finite support bound
+are then obtained separately.
 -/
 
 open scoped BigOperators
@@ -45,6 +52,7 @@ theorem compProfile_assoc (F : SupportProfile X Y) (H : SupportProfile Y Z) (J :
 
 variable {F : SupportProfile X Y} {H : SupportProfile Y Z} {J : SupportProfile Z W}
 
+/-- Equation (4.2) follows by expanding the composite on a state basis and extending the sum to the allowed support. -/
 private theorem composite_coeff (a : F.RowsAt R) (b : H.RowsAt R) (x : X) (z : Z) :
     ((coalgebraRowsEquiv X Z) ((mapOfRows b.val).comp (mapOfRows a.val))).val x z =
       ∑ y ∈ F x, a.val.val x y * b.val.val y z := by
