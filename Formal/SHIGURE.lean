@@ -23,6 +23,7 @@ import Formal.SHIGURE.Part1.Reading
 import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CopyingCoalgebra
+import Formal.SHIGURE.Part2.SupportProfiles
 
 /-! # SHIGURE
 

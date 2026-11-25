@@ -21,6 +21,7 @@ import Formal.SHIGURE.Part1.PullbackExamples
 import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CopyingCoalgebra
+import Formal.SHIGURE.Part2.SupportProfiles
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -2816,6 +2817,84 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.copyingHomEquiv_changeBase,
   Copying.isEmpty_schemeMaps_of_isEmpty_target,
   Copying.isEmpty_copyScheme_of_subsingleton
+]
+
+-- Chapter 4: affine support profiles, filtered colimits and composition.
+#shigure_assert_standard_axioms_of [
+  Copying.SupportProfile.CoordinateRing,
+  Copying.SupportProfile.chart,
+  Copying.SupportProfile.isAffine_chart,
+  Copying.SupportProfile.homRowsEquiv,
+  Copying.SupportProfile.homRowsEquiv_apply,
+  Copying.SupportProfile.homRowsEquiv_apply_notMem,
+  Copying.SupportProfile.mapCoefficients,
+  Copying.SupportProfile.homRowsEquiv_natural,
+  Copying.SupportProfile.enlargeRows,
+  Copying.SupportProfile.transitionRingMap,
+  Copying.SupportProfile.transitionRingMap_generator,
+  Copying.SupportProfile.transitionRingMap_generator_notMem,
+  Copying.SupportProfile.transitionRingMap_surjective,
+  Copying.SupportProfile.transition,
+  Copying.SupportProfile.isClosedImmersion_transition,
+  Copying.SupportProfile.homRowsEquiv_transition,
+  Copying.SupportProfile.affinePointRowsEquiv,
+  Copying.SupportProfile.affinePointRowsEquiv_specOverMap,
+  Copying.SupportProfile.affinePointRowsEquiv_transition,
+  Copying.SupportProfile.affinePointRowsEquiv_natural,
+  Copying.SupportProfile.isFiltered,
+  Copying.SupportProfile.affinePointDiagram,
+  Copying.SupportProfile.affinePointCocone,
+  Copying.SupportProfile.affinePointCoconeIsColimit,
+  Copying.SupportProfile.colimitEquiv,
+  Copying.SupportProfile.colimitEquiv_ι,
+  Copying.SupportProfile.affinePointDiagramMap,
+  Copying.SupportProfile.colimitEquiv_natural,
+  Copying.SupportProfile.compProfile,
+  Copying.SupportProfile.compProfile_mono,
+  Copying.SupportProfile.compProfile_assoc,
+  Copying.SupportProfile.compRows,
+  Copying.SupportProfile.compRows_apply,
+  Copying.SupportProfile.mapOfRows_compRows,
+  Copying.SupportProfile.compRows_enlarge,
+  Copying.SupportProfile.compRows_assoc,
+  Copying.SupportProfile.identityProfile,
+  Copying.SupportProfile.compProfile_identity_source,
+  Copying.SupportProfile.compProfile_identity_target,
+  Copying.SupportProfile.identityRows,
+  Copying.SupportProfile.mapOfRows_identityRows,
+  Copying.SupportProfile.compRows_identity_source,
+  Copying.SupportProfile.compRows_identity_target,
+  Copying.SupportProfile.compRows_natural,
+  Copying.SupportProfile,
+  Copying.SupportProfile.Coordinate,
+  Copying.SupportProfile.ChartLaw,
+  Copying.SupportProfile.presentation,
+  Copying.SupportProfile.RowsAt,
+  Copying.SupportProfile.rowOfValues,
+  Copying.SupportProfile.rowOfValues_apply_mem,
+  Copying.SupportProfile.rowOfValues_apply_notMem,
+  Copying.SupportProfile.support_rowOfValues,
+  Copying.SupportProfile.rowOfValues_sum,
+  Copying.SupportProfile.isCopyRow_rowOfAssignment,
+  Copying.SupportProfile.assignmentOfRows,
+  Copying.SupportProfile.assignmentRowsEquiv,
+  Copying.SupportProfile.pointRowsEquiv,
+  Copying.SupportProfile.pointRowsEquiv_precomp,
+  Copying.SupportProfile.pointRowsEquiv_transition,
+  Copying.SupportProfile.chartComp,
+  Copying.SupportProfile.chartComp_rows,
+  Copying.SupportProfile.chartComp_points,
+  Copying.SupportProfile.chartComp_transition,
+  Copying.SupportProfile.chartIdentity,
+  Copying.SupportProfile.pointRowsEquiv_chartIdentity,
+  Copying.SupportProfile.chartComp_identity_source,
+  Copying.SupportProfile.chartComp_identity_target,
+  Copying.SupportProfile.chartComp_assoc,
+  Copying.SupportProfile.chartComp_precomp,
+  Copying.SupportProfile.chartComp_affinePoints,
+  Copying.SupportProfile.natIdentity_represented_on_singletons,
+  Copying.SupportProfile.natIdentity_no_common_output,
+  Copying.SupportProfile.zeroRow_orthogonal_not_complete
 ]
 
 end SHIGURE.AxiomAudit
