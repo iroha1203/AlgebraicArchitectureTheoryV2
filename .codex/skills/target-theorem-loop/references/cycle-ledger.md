@@ -67,4 +67,4 @@ audits:
   next_obligation: <short>
 ```
 
-優先順は未放電premise、certificate生成gap、proof-use gap、field escape、statement対応gap、proof DAG未接続node、再利用可能なblockerとする。全文再要約や候補poolは作らない。selectionの中心項目に未確認があればcompletion candidateにしない。
+優先順は未解消の premise、certificate生成gap、proof-use gap、field escape、statement対応gap、proof DAG未接続node、再利用可能なblockerとする。全文再要約や候補poolは作らない。selectionの中心項目に未確認があればcompletion candidateにしない。

@@ -21,7 +21,7 @@
 >
 > そのAtom geometryの上に、ArchSigが測定したLaw、局所・大域不整合、obstruction、repair targetを重ね、問題の意味から確認・改善すべきファイル、クラス、メソッドまで到達できるようにする。
 
-ArchViewの中心は、ArchSig結果のレポート表示ではありません。
+ArchViewは、ArchMapのAtom geometryを起点に、コード理解・ArchSig分析の重ね合わせ・改善箇所の特定を一連の流れで扱います。
 
 ```text
 ArchMap
@@ -183,7 +183,7 @@ Source
 
 というsemantic zoomを採用します。
 
-`Subject group`は新しいdomain entityではありません。Atomの`subject`が完全一致するものを、表示上まとめるだけです。
+`Subject group`は、Atomの`subject`が完全一致するものを表示上まとめたグルーピングです。
 
 ## 5.3 空間に意味がない
 
@@ -286,7 +286,7 @@ Normalized ArchMapには、`sourceAtomId`、`normalizedAtomId`、Atom kind、sub
 Architecture | Analysis | Improve
 ```
 
-これらは別sceneではありません。
+これら3つのモードは同一のscene上で動作します。
 
 - 同じ3D geometry
 - 同じカメラ
@@ -380,7 +380,7 @@ Inspectorの情報順序は、どの要素を選んでも固定します。
 ![ArchView Paper Atlas design comp](assets/archview-paper-atlas-design-comp.png)
 
 中心となる比喩は、サイバー空間や監視画面ではなく、**研究者の机に広げた立体地図帳**です。
-難解な対象を威圧的に見せず、観察、探索、比較、根拠確認を落ち着いて行える画面にします。
+難解な対象でも過度な情報量で圧倒せず、観察、探索、比較、根拠確認を落ち着いて行える画面にします。
 
 | 対象 | Visual direction |
 |---|---|
@@ -407,7 +407,7 @@ Law違反、重要度、測定値を表しません。
 - decorativeなnetwork edgeや、入力から説明できない地形
 - 過度なglassmorphism、鏡面material、強いbloom
 
-このdesign compはvisual directionの正本です。ただし、画像内の個別label、件数、座標、装飾形状は
+このdesign compはvisual directionの基準です。ただし、画像内の個別label、件数、座標、装飾形状は
 実データcontractではありません。実装時にdesign compとHonesty and Fidelity Requirementsが衝突する場合は、
 入力artifactへの追跡可能性と段階的縮退を優先します。
 
@@ -480,7 +480,7 @@ F₂ class glyphを常時回転させ、
 - Breadcrumb
 - 現在選択中のCover / Context
 
-3D操作の自由度を保ちながら、迷子にならないようにします。
+3D操作の自由度を保ちながら、現在位置を見失わないようにします。
 
 ---
 
@@ -613,7 +613,7 @@ PaymentService
   effect
 ```
 
-Subject groupは、AATの新しいobjectではありません。
+Subject groupは表示上のグルーピングのみを目的とし、新しいAAT objectは導入しません。
 
 Inspectorに次を明示します。
 
@@ -663,7 +663,7 @@ AATの幾何を「数学用語のラベル」としてではなく、実際の�
 
 ## 段階的縮退
 
-必要なデータがない場合、もっともらしい形を発明しません。
+必要なデータがない場合、もっともらしい形を推測して生成しません。
 
 例:
 
@@ -767,7 +767,7 @@ ArchSigが明示的に測定した結論だけを表示します。
 
 ### Source evidence
 
-Atom refsとsource refsからsource targetへ降ります。
+Atom refsとsource refsからsource targetへたどります。
 
 既存viewer実装でも、insight evidenceにはAtom refs、Context refs、source refsが使われ、source landingへ接続されています。新ArchViewではこの接続を補助機能ではなく中心UXにします。
 
@@ -853,7 +853,7 @@ repositoryへ適用済みでない場合は、必ず`Hypothetical`を表示し�
 
 ## 14.3 改善候補がない場合
 
-直接のrepair targetが供給されていないfindingを、勝手に修正候補へ昇格しません。
+直接のrepair targetが供給されていないfindingを、勝手に修正候補として扱いません。
 
 ```text
 No explicit repair target was supplied.
@@ -954,7 +954,7 @@ Atom kindの識別は主に形で行います。
 
 # 17. Honesty and Fidelity Requirements
 
-「本物のツール」であることを、以下の規則で強制します。
+実データに基づく実用的なツールであることを、以下の規則で保証します。
 
 ## 17.1 Every Visual Element Has Provenance
 
@@ -1279,7 +1279,7 @@ train-ticket fixtureの、
 2. 文字列類似からrelation edgeを推測した
 3. 分析がない状態でwarningやrepairを表示した
 4. direct evidenceを自動的にrepair targetとして扱った
-5. source symbolを発明した
+5. 存在しないsource symbolを生成した
 6. unmeasuredをmeasured zeroとして表示した
 7. scalar fieldなしでterrainやcontourを描いた
 8. random layoutを使用した
@@ -1287,7 +1287,7 @@ train-ticket fixtureの、
 10. カメラ回転と、データglyphの意味的回転を混同した
 11. AAT用語を理解しないと基本操作できなかった
 12. raw conclusion codeだけを主説明として表示した
-13. unresolved refを無言で捨てた
+13. unresolved refを通知せずに無視した
 14. 新しいauthoritative world modelを必須にした
 15. ArchSig analysisがなければArchitecture Modeが使えなかった
 16. 既定画面をdark cyber aesthetic、neon、常時発光、particleで構成した
@@ -1359,7 +1359,7 @@ Phase 1終了時点で、ArchSigなしのコードベース理解ツールとし
 
 新ArchViewを一文で定義すると、次になります。
 
-> **ArchViewは、ArchMapのAtom・Context・Coverを本物のarchitecture geometryとして3Dに構成し、その上にArchSigの測定結果を重ね、分析の意味から改善対象となるfile・class・methodまでを一つの操作空間で結ぶ、Atom-native Architecture Atlasである。**
+> **ArchViewは、ArchMapのAtom・Context・Coverを実データに基づくarchitecture geometryとして3Dに構成し、その上にArchSigの測定結果を重ね、分析の意味から改善対象となるfile・class・methodまでを一つの操作空間で結ぶ、Atom-native Architecture Atlasである。**
 
 製品の3本柱は最後まで変えません。
 
@@ -1371,9 +1371,9 @@ Understand the analysis
   同じgeometry上でArchSig evidenceを読む
 
 Locate improvements
-  support Atomからsourceへ降りる
+  support Atomからsourceへたどる
 ```
 
-この設計では、3Dは飾りではありません。Contextの局所性、Cover、restriction、shared support、section、gluing、obstructionを表現するための操作可能な幾何です。
+この設計における3D空間は、Contextの局所性、Cover、restriction、shared support、section、gluing、obstructionを表現するための操作可能な幾何です。
 
-同時に、描画対象、接続、色、source、修正候補のすべてが既存artifactへ追跡できるため、**見栄えだけのarchitecture visualizationではなく、コード理解と改善判断に実際に使える開発ツール**になります。
+同時に、描画対象、接続、色、source、修正候補のすべてが既存artifactへ追跡できるため、**コード理解と改善判断に実際に使える実用的な開発ツール**になります。

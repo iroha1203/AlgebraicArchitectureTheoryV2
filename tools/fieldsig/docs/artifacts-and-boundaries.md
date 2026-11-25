@@ -12,7 +12,7 @@ non-conclusions を落とさない。
 | Surface | Artifact families | Boundary |
 | --- | --- | --- |
 | ArchSig handoff | `archsig-measurement-packet/v0.5.4` から生成する `operation-support-estimate/v0.5.0`。 | ArchSig measurement packet と三つの component fingerprint を current AG measurement state として読む。PR diff analysis、forecast truth、causal proof ではない。 |
-| Adapter / review refs | Sig0、validation report、snapshot、signature diff、AIR、Feature Extension Report、AAT Observable Bundle。 | historical / bounded review refs として読めるが、FieldSig の現行 handoff source of truth ではない。 |
+| Adapter / review refs | Sig0、validation report、snapshot、signature diff、AIR、Feature Extension Report、AAT Observable Bundle。 | historical / bounded review refs として読む補助資料（現行の handoff 入力は `archsig-measurement-packet/v0.5.4`）。 |
 | FieldSig SFT | ArtifactDescriptor、OperationSupportEstimate、ForecastConeSkeleton、ConsequenceEnvelope、ForecastCalibrationHook と validation report。 | bounded forecast report projection であり、point prediction、causal proof、forecast correctness ではない。 |
 | FieldSig Operational | PR history dataset、feature extension dataset、outcome linkage、daily ledger、calibration、threshold、ownership、repair adoption、incident correlation、hypothesis refresh。 | empirical / operational feedback であり、correlation を causal theorem にしない。 |
 
@@ -27,7 +27,7 @@ non-conclusions を落とさない。
 | AIR | `aat-air/v0.5.0` | Signature artifact layer を claim / evidence / coverage / extension boundary へ正規化した中間表現。 |
 | ArchSig measurement packet | `archsig-measurement-packet/v0.5.4` | FieldSig の現行 ArchSig handoff。三つの component fingerprint と structural verdict、computed invariants、analytic readings、assumption ledger、non-conclusions を bounded SFT input として読む。 |
 | AIR validation report | `aat-air-validation-report/v0.5.0` | AIR の dangling refs、claim boundary、measured evidence traceability の検査結果。 |
-| Theorem precondition check report | `theorem-precondition-check-report/v0.5.0` | AIR claim が `FORMAL_PROVED` へ昇格できるかの検査結果。 |
+| Theorem precondition check report | `theorem-precondition-check-report/v0.5.0` | AIR claim が `FORMAL_PROVED` として扱えるかの検査結果。 |
 | Feature Extension Report | `feature-extension-report/v0.5.0` | PR review 用 static report。split status、witness、coverage gap、theorem precondition checks を持つ。 |
 | AAT Observable Bundle | `aat-observable-bundle/v0.5.0` | AAT concept mapping、selected universe、witness catalog、operation candidates、theorem boundary、review actions、responsibility boundary を束ねる。 |
 | Policy decision report | `policy-decision-report/v0.5.0` | organization policy に基づく pass / warn / fail / advisory decision。 |
@@ -77,11 +77,11 @@ non-conclusions を落とさない。
 | 出力 | schema | 用途 |
 | --- | --- | --- |
 | ArtifactDescriptor | `artifact-descriptor/v0.5.0` | PRD / Spec / Issue / AI proposal の source refs、action class candidates、scope、missing evidence、measurement boundary、forecast non-conclusions を保持する。 |
-| ArtifactDescriptor validation report | `artifact-descriptor-validation-report/v0.5.0` | descriptor が theorem claim、ground truth architecture object、causal forecast に昇格していないことを検査する。 |
+| ArtifactDescriptor validation report | `artifact-descriptor-validation-report/v0.5.0` | descriptor が theorem claim、ground truth architecture object、causal forecast として扱われていないことを検査する。 |
 | IntentMap | `intentmap/v0.5.0` | PRD / Epic / Spec の requirement、operation、workflow、state transition、acceptance、non-goal、ambiguity、missing decision を source refs と LLM provenance 付きで保持する。 |
 | IntentMap validation report | `intentmap-validation-report/v0.5.0` | source refs、claim classification、confidence boundary、missing decision / ambiguity / missing evidence、non-conclusions を検査する。 |
 | OperationSupportEstimate | `operation-support-estimate/v0.5.0` | descriptor refs、candidate operation families、ArchSig measurement refs、structural verdict / computed invariant / analytic reading refs、coverage gaps、policy constraints、support disposition、governance action refs、known forbidden support、unknown remainder、confidence / evidence boundary を保持する。 |
-| OperationSupportEstimate validation report | `operation-support-estimate-validation-report/v0.5.0` | unknown support と measured zero の混同、global policy safety / future trajectory safety への昇格を検査する。 |
+| OperationSupportEstimate validation report | `operation-support-estimate-validation-report/v0.5.0` | unknown support と measured zero の混同や、global policy safety / future trajectory safety への不当な格上げがないことを検査する。 |
 | ForecastConeSkeleton | `forecast-cone-skeleton/v0.5.0` | finite support refs、bounded horizon、path class candidates、gluing evidence、governance interventions、typed boundary failures、forecast boundary、unknown remainder を保持する。 |
 | ForecastConeSkeleton validation report | `forecast-cone-skeleton-validation-report/v0.5.0` | probability claim、unmeasured axis の safe 扱い、support / horizon refs 欠落を検査する。 |
 | ConsequenceEnvelope | `consequence-envelope-report/v0.5.0` | affected regions、signature axes、axis delta ranges、obstruction candidates、missing / theorem boundary items、typed boundary failures、reviewer actions、review / CI recommendation を保持する。 |
@@ -97,7 +97,7 @@ non-conclusions を落とさない。
 | Lifecycle Decision Report | planned `lifecycle-decision-report/v0.5.0` | repair / migration / contraction / deletion の selected inputs、field capacity impact、runtime / ownership boundary、non-conclusions を保持する将来候補。 |
 
 `archsig-analysis-sft-input` は `archsig-measurement-packet/v0.5.4`（三つの component fingerprint を含む）を
-`operation-support-estimate/v0.5.0` へ射影する現行 handoff command である。structural verdict、
+`operation-support-estimate/v0.5.0` へ変換する現行 handoff command である。structural verdict、
 computed invariants、analytic readings、assumption ledger、non-conclusions は bounded refs /
 unknown remainder として残る。analytic readings や theorem-candidate readings は structural verdict
 へ変換しない。これは certified universal atoms、zero curvature proof、PR diff analysis、
@@ -122,7 +122,7 @@ AI proposal JSON から
 `sft-review-summary/v0.5.0` と各 validation report を
 同じ出力 directory に生成する end-to-end command である。command の成功は bounded
 tooling pipeline の validation 成功であり、extractor completeness、forecast correctness、
-causal prediction、Lean theorem claim への昇格を意味しない。
+causal prediction、Lean theorem claim として扱えることを意味しない。
 
 GitHub Issue JSON / AI proposal JSON adapter は supplied JSON artifact の正規化であり、
 GitHub API からの authenticated fetch、private project fields の復元、AI model
@@ -136,7 +136,7 @@ projection であり、`operation-support-estimate/v0.5.0`、`consequence-envelo
 prompt / policy boundary、allowed / conditionallyAllowed / forbidden / unknown / outOfScope
 support、shortcut witness、review / CI mediation、posterior field update を接続するが、
 AI policy compliance、review pass、CI pass、schema validation pass を architecture lawfulness
-や forecast correctness に昇格しない。
+や forecast correctness として扱わない。
 
 Lifecycle decision report は将来 artifact 候補であり、現時点では schema / validator / CLI を
 持たない。入力は ArchitectureSignature trajectory、`ConsequenceEnvelope` family、runtime /
@@ -189,7 +189,7 @@ human / formal proof の責務分離を検査する。
 Layered / SRP / policy / PR quality の evidence は、`ObstructionWitness`、`TheoremBoundary`、
 `ArchitectureOperation`、`Projection / Observation` などの AAT-facing field に再配置される。
 `private`、`unavailable`、`unsupported`、`dynamicBlindSpot`、`outOfScope` は first-class
-boundary であり、measured zero へ丸めない。
+boundary であり、measured zero と同一視しない。
 
 `reviewActions` は raw `nonConclusions` を evidence gap、non-finding、blocked formal claim、
 review guardrail、next evidence へ翻訳する。これは LLM Review Skill と human reviewer の
@@ -201,7 +201,7 @@ Lean theorem proof、extractor completeness、merge approval ではない。
 `theorem-check` は tooling evidence と Lean theorem claim を分離する。
 
 - `FORMAL_PROVED`: `claimLevel = formal`, `claimClassification = proved`, registry 登録済み theorem refs、かつ missing preconditions がない claim。
-- `MEASURED_WITNESS`: tooling evidence として測定された witness。formal proof claim へ自動昇格しない。
+- `MEASURED_WITNESS`: tooling evidence として測定された witness。formal proof claim へ自動格上げしない。
 - `BLOCKED_FORMAL_CLAIM`: formal/proved claim だが theorem bridge precondition が足りない claim。
 
 Python import graph、runtime edge evidence、policy violation count、B10 operational feedback は
@@ -221,7 +221,7 @@ tooling evidence であり、Lean `ComponentUniverse` bridge precondition なし
 | boundary violation | `boundaryViolationCount`, `policyViolations[]` | 意図した layer / domain boundary が破られている候補。 | policy 未指定なら placeholder 0 でも違反なしとは読まない。 |
 | Layered law violation | `law-violation-report/v0.5.0.deterministicViolations[]`, `policyViolations[]` | resolved layer selector と measured import edge に対する deterministic forbidden dependency。 | selector 未解決、dynamic import、framework convention は unmeasured。policy pass は architecture lawfulness proof ではない。 |
 | SRP review cue | `signatureAxes[]`, `repairCandidates[]`, `law-violation-report/v0.5.0.srpCues[]` | LLM Review Skill が probable violation / acceptable orchestrator / unmeasured を判断するための semantic evidence。 | tool 単独で SRP violation を断定しない。 |
-| abstraction violation | `abstractionViolationCount`, `policyViolations[]` | abstraction boundary の破れ候補。 | Lean の `ProjectionSound` witness そのものではない。 |
+| abstraction violation | `abstractionViolationCount`, `policyViolations[]` | abstraction boundary の違反候補。 | Lean の `ProjectionSound` witness そのものではない。 |
 | runtime exposure | `runtimePropagation`, `runtimeDependencyGraph`, `runtimeEdgeEvidence[]` | runtime evidence 上の exposure radius が大きい。 | runtime edge evidence を渡した場合だけ測定済み。 |
 | relation complexity | `relationComplexity`, `counts.*`, `excludedEvidence[]` | 状態遷移設計や運用リスクの review 対象候補。 | candidate evidence からの observation。 |
 

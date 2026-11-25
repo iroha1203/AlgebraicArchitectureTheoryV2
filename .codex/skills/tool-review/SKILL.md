@@ -22,10 +22,10 @@ ArchSig v0.6.0・ArchView・FieldSig の実装と `docs/tool/` の差分を、�
 
 ### 確認軸（1 lane 内で一貫検査）
 
-1. **入力区分・由来分離・数学対応**（checklist §8・[Tool guideline「責務範囲」](../../../docs/tool/guideline.md#責務範囲入力トライアドの正本)）
+1. **入力区分・由来分離・数学対応**（checklist §8・[Tool guideline「責務範囲」](../../../docs/tool/guideline.md#責務範囲3つの基本入力)）
    - 入力が Atom 定義・Law・ArchMap・問いの4区分に中身で帰属しているか。結論相当データの外部注入や、読解候補・観測・計算結果・数学的証明の混同がないかを疑う。
    - ArchView / FieldSig が AAT 構造解析の判定・結論を独自生成せず、ArchSig の計算結果を用いているかを確認する。
-   - 論文・SHIGURE GOAL・Lean 定理の有限特殊化を含む場合、対応する定理参照、適用条件の実行時検査、条件外入力の沈黙（未対応理由）、実コード復元と再観測の境界が揃っているかを確認する。
+   - 論文・SHIGURE GOAL・Lean 定理の有限特殊化を含む場合、対応する定理参照、適用条件の実行時検査、条件外入力に対する未対応理由の返却、実コード復元と再観測の境界が揃っているかを確認する。
 
 2. **仕様整合・導出の実体性**（checklist §5・`docs/tool/archsig_v0_6_0_io/`）
    - 実装・同梱 SKILL・[ArchSig v0.6.0 I/O 仕様](../../../docs/tool/archsig_v0_6_0_io/README.md)・クレート README の記述と実動作が一致しているか。

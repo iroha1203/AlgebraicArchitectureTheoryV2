@@ -1,6 +1,6 @@
 # reports — 研究貢献レポート
 
-ここには、SCORE 監査を通った研究結果を、GOAL の能力がどう増えたかという形でまとめる。GOAL 一つにつき一つのファイル(`<goal-id>.md`)とし、研究サイクルで新たな貢献が確定するたびに書き足していく(研究の流れ全体は [research/README.md](../README.md) にある)。メモである docs/note とも、正本(canonical)として保護される本文(`docs/aat/algebraic_geometric_theory/`)とも別物である。本文への取り込みや canonical への昇格は、ループの外で人間が判断する。
+ここには、SCORE 監査を通った研究結果を、GOAL の能力がどう増えたかという形でまとめる。GOAL 一つにつき一つのファイル(`<goal-id>.md`)とし、研究サイクルで新たな貢献が確定するたびに書き足していく（研究の流れ全体は [research/README.md](../README.md) にある）。作業メモは `docs/note/` に、正式な数学本文は `docs/aat/algebraic_geometric_theory/` に置く。正式な数学本文への取り込みは、ループの外で人間が判断する。
 
 レポートは定理一覧ではない。各成果について、候補名、候補種別、証拠段階、final SCORE、カテゴリ、GOAL に対する delta、まだ開いている問いを書く。
 

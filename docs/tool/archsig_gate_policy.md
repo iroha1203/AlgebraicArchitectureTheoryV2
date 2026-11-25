@@ -29,7 +29,7 @@ starter template:
 
 ArchViewで読む場合は、同じanalyze出力ディレクトリへ`archsig-gate-report.json`を書き出す。
 viewer-dataの`inputDigests.measurementPacket.sha256`とgate reportのdigestが一致するときだけ、
-SAGA最終段にdecisionとper-row actionが表示される。未供給は沈黙として扱い、schema / digest /
+SAGA最終段にdecisionとper-row actionが表示される。未供給は未指定（判断不能）として扱い、schema / digest /
 action語彙の不一致はstatusに明示して反映しない。
 
 ## Non-claims

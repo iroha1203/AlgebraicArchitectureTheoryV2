@@ -26,7 +26,7 @@ description: research/goals/<goal-id>.mdのactiveなscore-phase GOALで、独立
 - G1: [候補template](../../../research/ideas/TEMPLATE.md)、
   [候補作成contract](references/candidate-creation-contract.md)、
   [候補生成prompt](references/g1-prompt.md)
-- G2: [四審判prompt](references/g2-prompts.md)
+- G2: [4つの独立評価prompt](references/g2-prompts.md)
 - G3: [証拠監査prompt](references/g3-prompts.md)
 - G3.5: [候補同期contract](references/candidate-sync-contract.md)、
   [同期prompt](references/g35-prompt.md)
@@ -49,7 +49,7 @@ description: research/goals/<goal-id>.mdのactiveなscore-phase GOALで、独立
 SCORE は研究能力の増分に対して与える。証明数、ファイル数、定理数には与えない。
 
 - `0`: 定義展開、既存結果の言い換え、GOAL の能力を増やさない局所補題。
-- `10-20`: 小さいが必要な補助結果。単独では GOAL の景色を変えない。
+- `10-20`: 小さいが必要な補助結果。単独では GOAL の到達像を大きく変えない。
 - `30-40`: 新しい測定量、構成、比較、計算手段を与える。
 - `50-70`: 複数の品質概念、obstruction、cohomology、metric、lawfulness を一つの枠で説明する。
 - `80-100`: 反例、obstruction、新しい不変量、主定理候補により GOAL の見方や到達像を変える。
@@ -62,7 +62,7 @@ SCORE は研究能力の増分に対して与える。証明数、ファイル�
 ```text
 G0 状態確認
 G1 探索と候補生成
-G2 価値スコア審判
+G2 価値スコア評価
 G3 Lean 検証または証拠固定
 G3.5 候補カード同期
 G4 SCORE 確定とレポート
@@ -86,7 +86,7 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
 
 ### G1 探索と候補生成
 
-候補生成では、spine を埋めるものだけでなく、GOAL の見方を変えるものを探す。毎サイクル、独立した候補生成サブエージェントを四体走らせ、最低四案の候補 pool を作る。四体には互いの出力を渡さず、`closer`、`obstruction`、`unifier`、`wildcard` を一つずつ割り当てる。
+候補生成では、spine を埋めるものだけでなく、GOAL の見方を変えるものを探す。毎サイクル、独立した候補生成サブエージェントを4つ走らせ、最低4案の候補 pool を作る。4つには互いの出力を渡さず、`closer`、`obstruction`、`unifier`、`wildcard` を一つずつ割り当てる。
 
 良い候補は次を満たす。
 
@@ -98,36 +98,36 @@ GOAL card の必須項目や欠陥判定は [references/goal-card-contract.md](r
 
 候補種別は `closure`、`orientation`、`unification`、`computability`、`bridge`、`genius`、`genius-target`、`genius-support` とする。候補カードは `research/ideas/` に置き、詳細は [references/candidate-creation-contract.md](references/candidate-creation-contract.md) に従う。
 
-### G2 価値スコア審判
+### G2 価値スコア評価
 
-四人の独立サブエージェントに審判させる。渡すのは GOAL、候補カード、GOAL の `rival`、関連する既存結果、reward rubric、dullness filter、必要な repo overview だけにする。本体の期待や途中判断は渡さない。
+4つの独立サブエージェントに評価させる。渡すのは GOAL、候補カード、GOAL の `rival`、関連する既存結果、reward rubric、dullness filter、必要な repo overview だけにする。本体の期待や途中判断は渡さない。
 
-- 審判 A: 厳密性、claim scope、既存結果の即時系でないこと、Lean 予定 statement の弱化や結論相当前提逃がしがないこと。
-- 審判 B: GOAL への研究価値、surprise、compression、leverage。
-- 審判 C: AAT / SFT / Tooling / Website / Research 全体に照らした価値。
-- 審判 D: GOAL の `rival` に対する新規性、有効性、統合力、分離力。
+- 評価 A: 厳密性、claim scope、既存結果の即時系でないこと、Lean 予定 statement の弱化や結論に相当する前提を field へ移すことがないこと。
+- 評価 B: GOAL への研究価値、surprise、compression、leverage。
+- 評価 C: AAT / SFT / Tooling / Website / Research 全体に照らした価値。
+- 評価 D: GOAL の `rival` に対する新規性、有効性、統合力、分離力。
 
-四者が `accept` した候補のうち最も強いものを picked にする。`revise` は一度だけ直して再審判する。`reject` は `status: archived` とし、理由を残す。`genius` 基本点を採るには、[references/genius-scoring.md](references/genius-scoring.md) の条件を満たし、四者全員が `genius_eligibility: yes` を返し、G4 が confirm する必要がある。
+四者が `accept` した候補のうち最も強いものを picked にする。`revise` は一度だけ直して再評価する。`reject` は `status: archived` とし、理由を残す。`genius` 基本点を採るには、[references/genius-scoring.md](references/genius-scoring.md) の条件を満たし、四者全員が `genius_eligibility: yes` を返し、G4 が confirm する必要がある。
 
 ### G3 Lean 検証または証拠固定
 
-定理候補は `research/lean/ResearchLean/AG/<slug>.lean` に形式化する。`Formal/AG` 本体は参照または import のみ可とし、このループでは直接編集しない。import 方向は **Research → 本体のみ**であり、本体側(`Formal/AG` 本線・`Formal.lean` 配線)へ `ResearchLean.AG` の import を持ち込むことは、このループでも蒸留移植でも常に禁止する(疎結合不変条件。破ると math-lean-review のResearch import方向検査で hard fail)。
+定理候補は `research/lean/ResearchLean/AG/<slug>.lean` に形式化する。`Formal/AG` 本体は参照または import のみ可とし、このループでは直接編集しない。import 方向は **Research → 本体のみ**であり、本体側(`Formal/AG` 本線・`Formal.lean` の import 構成)へ `ResearchLean.AG` の import を持ち込むことは、このループでも本体への取り込みでも常に禁止する(疎結合不変条件。破ると math-lean-review のResearch import方向検査で hard fail)。
 
 合格条件:
 
 1. focused `cd research/lean && lake env lean ResearchLean/AG/<file>.lean` が通る。
    Research package build の hard rule は `docs/aat/guideline.md`「Lean build 運用」に従う。
 2. 独立サブエージェントの公理検査が通る。
-3. 独立サブエージェントの Lean 形式化品質監査を通る。判定正本は
-   `docs/aat/lean_quality_standard.md`(受理点への適用。同 §6)。
+3. 独立サブエージェントの Lean 形式化品質監査を通る。判定基準は
+   `docs/aat/lean_quality_standard.md`(受理時の確認箇所への適用。同 §6)。
    `True` で充足可能なフィールド、退化 witness(PUnit / 自明群 / singleton)、
-   instance の無い仮定パッケージ、結論相当前提の field 逃がしは
+   instance の無い仮定パッケージ、結論に相当する前提を field へ移すことは
    その代表例である。
 4. **target claim 直接突合**: 候補カードの`planned_lean_statement`が保持または参照する
    一次仕様と実装declarationを直接突合する(判定形式は同§5.2)。完全Lean signatureがある
    場合はそれも照合する。premise の追加・結論の弱化・対象の縮小があれば G3 合格を出さず、実装を直すか
-   候補カードを改訂して **G2 再審判へ戻す**。乖離した statement のまま
-   G4 / G5 へ進む経路を残さない。
+   候補カードを改訂して **G2 再評価へ戻す**。乖離した statement のまま
+   G4 / G5 へ進まない。
 
 ローカルでは対象範囲に応じて次を実行または同等に確認する。
 ビルドは上記の統括エージェント専用検証とし、この実行ブロックには含めない。
@@ -142,21 +142,21 @@ rg -n "$HOME|${TMPDIR%/}" <changed-files>
 
 反例、orientation result、計算例は Lean proof だけを要求しないが、最小反例、計算手順、対象 family、仮定、既存理論との対応を証拠 artifact に固定する。
 
-足場衛生を保つ。受理ルートが名前参照するスパイン宣言と、サイクル足場(premise 順列帯、再入口変種、checkpoint 帯)を、ファイル分割または命名で区別できる状態に保ち、足場の量産を避ける。研究 evidence は将来の蒸留移植(正典化)の入力になるため、スパインが行範囲でも時系列でも切り出せない状態を作らない。
+補助コードの整理を保つ。受理ルートが名前参照する主幹宣言と、サイクル固有の補助コード（premise の並び替え版、再入口用の変種、中間確認用の定義など）を、ファイル分割または命名で区別できる状態に保ち、補助コードの量産を避ける。研究 evidence は将来の本体への取り込み（正式化）の入力になるため、主幹宣言が行範囲でも時系列でも切り出せない状態を作らない。
 
 ### G3.5 候補カード同期
 
-G4 へ進む前に、候補カード、証拠、Lean declaration、審判メモを同期する。候補カードは生成時の期待値ではなく、実際に固定された証拠の index として読める状態にする。同期すべき最低項目は [references/candidate-sync-contract.md](references/candidate-sync-contract.md) を正とする。
+G4 へ進む前に、候補カード、証拠、Lean declaration、評価メモを同期する。候補カードは生成時の期待値ではなく、実際に固定された証拠の index として読める状態にする。同期すべき最低項目は [references/candidate-sync-contract.md](references/candidate-sync-contract.md) を正とする。
 
 ### G4 SCORE 確定とレポート
 
-検証と G3.5 同期後、独立サブエージェントに SCORE 監査を行わせる。渡すのは GOAL、GOAL の `rival`、同期済み候補カード、証拠、G2 の四審判結果、G3 の監査結果、diff だけにする。
+検証と G3.5 同期後、独立サブエージェントに SCORE 監査を行わせる。渡すのは GOAL、GOAL の `rival`、同期済み候補カード、証拠、G2 の4つの独立評価結果、G3 の監査結果、diff だけにする。
 
 `confirm` または `reduce` の場合だけ `research/reports/<goal-id>.md` に書く。レポート、カテゴリ別 SCORE、total SCORE、proof portfolio、cycle section、Next Frontier / phase boundary メモは G4 監査後の値で同時に更新する。`seed-only` は `genius-target` seed 専用で、total SCORE に加算しない。
 
 ### G5 PR レビューとマージ
 
-ひとつの picked の成果をひとつの PR にまとめる。PR には候補カード、Lean ファイルまたは証拠、レポート、tracking Issue の SCORE 更新を含める。Lean 検証済み(G3 で `lean-verified`)の theorem を受理する PR では、theorem 名、ファイル、本文ラベル、conjuncts 要旨、未放電仮定、受理点、移植状況 `unported` を tracking Issue または受理レポートに記録する(Research 下限原則の検索基盤。scaffolding・探索残骸は `not-for-porting` として扱うか、スパイン宣言でないものは登録対象外としてよい)。tracking Issue は研究状態の正本であり、PR 本文では原則 `Refs #<tracking-issue>` を使う。
+ひとつの picked の成果をひとつの PR にまとめる。PR には候補カード、Lean ファイルまたは証拠、レポート、tracking Issue の SCORE 更新を含める。Lean 検証済み(G3 で `lean-verified`)の theorem を受理する PR では、theorem 名、ファイル、本文ラベル、conjuncts 要旨、未解消の仮定、受理時の確認箇所、移植状況 `unported` を tracking Issue または受理レポートに記録する(Research 下限原則の検索基盤。補助コード・試行コードは `not-for-porting` として扱うか、主幹宣言でないものは登録対象外としてよい)。tracking Issue は研究状態の管理先であり、PR 本文では原則 `Refs #<tracking-issue>` を使う。
 
 PR 前に `git diff --check`、`git diff --cached --check`、未追跡ファイル、不可視 Unicode、ローカル絶対パス、保護対象 docs の編集有無を確認する。PR レビューは `$review-pr <PR番号>` を実行する。マージは `$review-pr` が mergeable で、CI または必要なローカル検証が通った場合だけ行う。
 
@@ -171,7 +171,7 @@ total SCORE が active threshold に到達または超過したら、必ず G6 �
 - `low-value stagnation`: 二サイクル続けて期待 final SCORE が 30 未満の候補しか出ない。
 - `proof stagnation`: 高 SCORE 候補はあるが、二サイクル続けて証拠固定に失敗する。
 - `review stagnation`: 同じ PR が二巡してもマージ可能にならない。
-- `score dispute`: 独立審判間で SCORE が大きく割れ、根拠を読んでも解消できない。
+- `score dispute`: 独立評価間で SCORE が大きく割れ、根拠を読んでも解消できない。
 - `score-threshold reached`: total SCORE が active threshold に到達または超過した。G6 で phase boundary として止めるか、明示理由つきで継続するかを判定する。
 - `threshold missing`: tracking Issue に active threshold がなく、起動引数でも threshold が指定されていない。
 - `phase boundary`: active threshold、portfolio constraint、phase boundary criteria を満たし、研究としてキリが良い。
@@ -179,7 +179,7 @@ total SCORE が active threshold に到達または超過したら、必ず G6 �
 
 ## サブエージェント規律
 
-候補生成、G2 審判 A/B/C/D、G3 公理検査、G3 Lean 形式化品質監査、G4 SCORE 監査、G6 フェーズ区切り判定は、独立したサブエージェントに行わせる。G5 PR レビューは `$review-pr` に渡す。サブエージェントを使えない環境では止まり、人間のレビューに委ねる。標準プロンプトは入口のstage対応表にある該当ファイルだけを読む。
+候補生成、G2 評価 A/B/C/D、G3 公理検査、G3 Lean 形式化品質監査、G4 SCORE 監査、G6 フェーズ区切り判定は、独立したサブエージェントに行わせる。G5 PR レビューは `$review-pr` に渡す。サブエージェントを使えない環境では止まり、人間のレビューに委ねる。標準プロンプトは入口のstage対応表にある該当ファイルだけを読む。
 
 ## 安全規則
 

@@ -41,7 +41,7 @@ sh "$example/run.sh" "$cli" "$work/integer-reobserved" integer reobserved "$work
 作業者が実際の値を確認して ArchMap に記録する段階を、同梱例では `finite-observed.archmap.json` の
 h=true で表す。実務でこの値をそのまま転記しない。
 `finite-choose.asks` は同じ問題から `scopes`、small/wide の `solve`、候補二つを求める。
-small は y を false に固定するため反駁され、wide は x=y=true、z は false/true の二候補を持つ。
+small は y を false に固定するため反証され、wide は x=y=true、z は false/true の二候補を持つ。
 `scopes` は包含極小の範囲 {x,y} を返す。許された範囲と実際に値が変わる部品は区別する。
 
 例は「要求に無関係な z を初期値 false に保つ」という選択理由で、`first` の index=0 を `apply` する。
@@ -58,7 +58,7 @@ h=false の再観測では、同じ問いでも small が成立し、最小範�
 入力によらず何らかの整数修復は存在するので、定数 view の `decision` に追加読取りは不要。
 共通の具体的修復には b の観測が必要で、`assignment` は State.b を要求する。
 観測 b=2 後は h=2、k は全整数域のまま。候補0は k=0、候補1は k=1 で、例は初期 k=0 を保つ候補0を採る。
-small は空範囲で h=0 を固定するため反駁される。wide は State 一つの変更を許し成立する。
+small は空範囲で h=0 を固定するため反証される。wide は State 一つの変更を許し成立する。
 再観測 b=4 後は h=4 へ変わり、適用後の Law も再検査する。
 無限族を列挙し終える必要はなく、`SolutionSet` から必要な元割当てだけを `candidate` で復元する。
 
@@ -72,7 +72,7 @@ plan の `requirements[].field` が観測する snapshot/subject/field を、loc
 
 各 status はその問いの命題について読む。`observe` の refuted は許した読取りでは目的を満たせないという意味で、
 修復不能とは限らない。`solve` の refuted はその範囲に解がないこと。
-`undetermined` は reasons の欠測・依存先・`unsupported_algorithm` を確認し、反駁へ読み替えない。
+`undetermined` は reasons の欠測・依存先・`unsupported_algorithm` を確認し、反証へ読み替えない。
 未対応族を通すために Law を弱めず、必要なら対象や問いを見直す判断を利用者へ返す。
 
 保存済みの表示は現在の根拠を代替しない。観測を追加・訂正・撤回したら、現在の三入力と同じ asks を再実行する。
@@ -82,7 +82,7 @@ plan の `requirements[].field` が観測する snapshot/subject/field を、loc
 
 必要なのが部品の修復ではなく担当別記述の統合なら、`assemble` を選ぶ。
 担当 root と共有個体の対は Law/ArchMap の作者が意味を確認して記録し、全体対象や包含写像は CLI が構成する。
-`assemble_map` には担当別の原始対応を与える。完成した全体写像や保存証拠を利用者が配線しない。
+`assemble_map` には担当別の原始対応を与える。完成した全体写像や保存証拠を利用者が手動で組み立てない。
 
 ```sh
 sh "$example/run.sh" "$cli" "$work/assembled" assembly observed

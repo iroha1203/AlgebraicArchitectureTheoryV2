@@ -19,7 +19,7 @@
 
 - `docs/` は研究本文、Lean status、proof obligation、tooling specification の source of truth として扱う。
 - `website/` は Cloudflare Pages 向けの public reading surface として扱う。
-- AAT の数学的正典は `docs/aat/algebraic_geometric_theory/` であり続ける。
+- AAT の数学本文は `docs/aat/algebraic_geometric_theory/` であり続ける。
   `website/aat/**` はそれを置き換えず、出版物として肉付けした web-native
   monograph / publication edition として扱う。
 - AAT website では、定義、命題、証明アイデア、例、反例、Lean status を章本文の中で

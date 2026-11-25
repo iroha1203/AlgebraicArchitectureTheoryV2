@@ -147,7 +147,7 @@ M では右辺0、Sでは原始 shift を使うだけで、同じ議論がすべ
 `M(W)` は `S(W)` に加法で作用する。二つの解の差は M に属し、差による移動は一意なので、
 S が非空の context では自由かつ推移的な作用になる。
 S の大域切断が空でも局所非空性は保たれ、M の torsor sheaf として扱える。
-ここではこの作用と層条件を具体化したので、局所差の類が零なら補正して貼り合わせられる。
+ここではこの作用と層条件を明示したので、局所差の類が零なら補正して貼り合わせられる。
 
 ## 4. 局所解から微分と具体的障害類を作る
 
@@ -272,7 +272,7 @@ TD=BR,\qquad \mu T=\lambda
 | `shift(c)` 未観測 | 有理数値として未構成 | 未決 | c の存在と端点を保持し、`shift(c)` の追加観測を要求する |
 
 表の `Established` は対象類の零性と大域解の存在を表す。γ=2 の全解は
-`z=(k,k+1,k+2)`（k∈Q）であり、`z=(0,1,2)` は一つの表示用証人である。
+`z=(k,k+1,k+2)`（k∈Q）であり、`z=(0,1,2)` は一つの表示用具体例（witness）である。
 固定した matching family の貼り合わせが一意でも、全大域解が一意とは限らない。
 [I/O の修復](../archsig_v0_6_0_io/computations.md#修復の一意性)で具体的な Repair/object を
 返すには元の変更 Assignment の一意性が別に必要で、この平行移動自由度を消して扱わない。
@@ -300,7 +300,7 @@ TD=BR,\qquad \mu T=\lambda
 
 これは[旧本文 AAT 第IV部 §5](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_4_obstruction_cohomology.md)
 の torsor-normalized mismatch と、[旧本文 第X部 §2](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/blob/b4764a24bfcf8e0f31de20e086a8a235db22df29/docs/aat/algebraic_geometric_theory/part_10_semantic_repair_descent_saga.md)
-の cover-relative Čech complex を、この Atom 定義・Law・ArchMapから具体化した例である。
+の cover-relative Čech complex を、この Atom 定義・Law・ArchMapから構成した例である。
 得られる大域状態は、この例で定義した座標 z である。
 
 SAGA の意味側・方程式側を独立に生成する presentation、primary state correspondence、

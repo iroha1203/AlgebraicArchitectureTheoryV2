@@ -19,7 +19,7 @@ baseのconfiguration保存を確認済みなら `outputs.operation` を保持す
 
 `coordinates` の型 `List<Ref<Coord>>` は任意長の列を許す。
 各入力値が長さ2でも、ObjectAlgebraの方程式表示に必要な全型域は二つの観測列に限られない。
-この例では `finite_primitive_domain` の算法非対応となる。欠測を埋める操作では解決しない。
+この例では `finite_primitive_domain` のアルゴリズム非対応となる。欠測を埋める操作では解決しない。
 列をSetに変えたり、観測された長さだけへ型域を制限して成功扱いにしない。
 
 ## 同じrunで確認済みoutputを使う
@@ -64,7 +64,7 @@ Uは全入力snapshotのsubject存在事実と既知field Atomからなる有限
 名前値の一致、完全なObjectAlgebraMapの存在、実プログラム全体の同値、
 実行時の共有・copy・更新挙動は、それぞれ別の問いと証拠を要する。
 
-## 二つの負例を分ける
+## 二つの反例を分ける
 
 同梱ArchMapを作業先へコピーし、以下をそれぞれ元入力から一箇所だけ変更して、
 上のコマンドの `--archmap` と未存在の `--out` を差し替えて実行する。

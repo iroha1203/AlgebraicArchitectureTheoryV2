@@ -1,6 +1,6 @@
 # Research Loop G2 Prompts
 
-## G2 審判 A: 厳密性
+## G2 評価 A: 厳密性
 
 ```text
 Judge this candidate only for rigor and boundary fidelity.
@@ -19,7 +19,7 @@ required_evidence:
 checked:
 unchecked:
 ```
-## G2 審判 B: 研究価値
+## G2 評価 B: 研究価値
 
 ```text
 Judge this candidate only for research value toward GOAL <goal-id>.
@@ -41,7 +41,7 @@ required_evidence:
 checked:
 unchecked:
 ```
-## G2 審判 C: プロジェクト全体価値
+## G2 評価 C: プロジェクト全体価値
 
 ```text
 Judge this candidate from the viewpoint of the whole repository and research program.
@@ -62,7 +62,7 @@ checked:
 unchecked:
 ```
 
-## G2 審判 D: ライバル比較
+## G2 評価 D: ライバル比較
 
 ```text
 Judge this candidate only against the GOAL's rival field.

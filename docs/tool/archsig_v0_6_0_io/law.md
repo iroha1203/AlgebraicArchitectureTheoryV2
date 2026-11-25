@@ -258,7 +258,7 @@ reading・別名・constructor・field の名には組込み演算名を使え�
 | `source(p)`、`target(p)` | Path の端点参照 |
 
 Map は値を記録した表、Term は閉じた有限式を適用する。
-`fn` は Term を構成し、その parameter 以外の変数・field・参照族を捕獲しない。
+`fn` は Term を構成し、その parameter 以外の変数・field・参照族をキャプチャしない。
 Term body は原始値の演算と data constructor だけを呼べる。参照・field・観測族・Path・with・
 名前付き view の呼出しを含めない。観測 Term の body も同じ規則で検査する。
 view は非循環な相互呼出しを許し、自己再帰は一つの data parameter の match で得た
@@ -300,7 +300,7 @@ Law の識別は完全名、role、束縛、guard、原式、AST 内位置の組
 適用状態も全補完で一致する場合に確定する。すべて適用なら `applicable`、すべて不適用なら
 `not_applicable`、適用状態が混在するか未決なら `undetermined` とする。
 この確認を完了できなければ依存 slot と理由を保持する。if/guard/所有者が不明なら、
-複数の分岐・族を条件付きで保持し、一方を勝手に捨てない。
+複数の分岐・族を条件付きで保持し、一方を暗黙に除外しない。
 Bool の false and x、true or x、同じ未知整数 h の h−h は補完によらず確定できる。
 全称に既知の反例が一つあれば他 instance の欠測によらず反証できる。
 
@@ -605,7 +605,7 @@ ShigureObservations ::= "observations" Name "{"
   `minimal_sufficient_sets`、`minimal_sufficient_observations`、`insufficiency_witness`、`raw_candidate_evaluations`、`reevaluation`
   などの計算結論相当の語を、`shigure <種別>` の宣言種別位置、各宣言本体・下位ブロックの句（フィールド）位置、および内部識別子・変数位置（`op`/`lift` の代入先座標・`endpoint` のパラメータ代入先・`u_vars`/`b_vars`/`c_vars`/`witness_vars`/`fine_b_vars`・`member` ID・`shigure family` の名前付き `equation`/`invertible`・`observe`/`law_readout` の名前付き `component`・`preservation` `bind`・`raw_sequence` `start_state`・`designated_candidate` の ID/変数・`probe` の名前/変数・`observe` ID・`law_readout` 名）に含めた場合、構文検査で拒否する。
 - **守る意味 Law と固定部分圏・初段基準の保護**: `editable semantic_law` は構文・型検査で拒否する。
-  `editable representation_law` で `semantic` 宣言を指す偽装、`fixed` と `editable` の重複、
+  `editable representation_law` で `semantic` 宣言を指す不適合な指定、`fixed` と `editable` の重複、
   `editable` による `shigure task` や `shigure family` `preservation` の `before` 表示変更・探索パラメータ混入も拒否する。
   `shigure diagram` では固定部分圏 $K$ の頂点・辺および意味 Law への編集指定と、固定辺が非固定頂点を結ぶ非閉指定を拒否する。
   `shigure transfer` では多段連鎖（`step[i].after == step[i+1].before`）を要求し、
@@ -625,5 +625,5 @@ ShigureObservations ::= "observations" Name "{"
   なお `domain Z` と `rational_points` は $\mathbb{Z} \hookrightarrow \mathbb{Q}$ による $\mathbb{Q}$ 点評価として受理する。
   また `shigure path` の `mode find` / `mode subdivide` における `length` 省略および `old_word_lift` の `max_length` 省略は構文上受理し、実行時に `unbounded_search_out_of_scope` の `undetermined` として扱う（`mode concatenate` は `first`・`second` の列長から経路長が定まるため `length` 省略を通常評価する）。
 - **欠測と由来**: `observed Entity.field` の値が ArchMap で欠測（`Slot::Missing` または対象不在）の場合や `member` 座標に `missing` を明示した場合は、
-  零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` で沈黙する。
+  零へ補完せず未観測のまま保持し、計算時に `unobserved_dependency` として未決（`undetermined`）を返す。
   参照した観測座標や `origin archmap` が指す ArchMap `Origin` には `Origin.kind` の明示を要求し、未参照の `Origin` は結果由来へ混入させない。また `origin` で指定した 4 種（`static_analysis`・`runtime_observation`・`llm_candidate`・`human_adopted`）および複数 `SourceLocation` を結果まで区別保持する。

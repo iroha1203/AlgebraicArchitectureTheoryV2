@@ -350,7 +350,7 @@ TにはLawの型適格性も適用する。例えばSetの要素にPathを置く
 Path/Vector/ModuleMapは必ずこのarray型を使い、型名だけのStringを使わない。
 表の短い型名はこの型の略記。PathのQNameは始域・終域のentity型。
 VectorのRefはModule、ModuleMapの二つのRefは始域・終域のModule。
-同じ座標や同型な型でも、このidentityを黙って同一視しない。
+同じ座標や同型な型でも、このidentityを暗黙に同一視しない。
 ownerのidentityは標準構成が指定する意味対象の同一性であり、表示nodeの番号の一致ではない。
 同じ生成対象を共有した場合と重複して表示した場合は、元の根・宣言・束縛・構成を照合して
 同じownerとして型検査する。別の生成対象を、群の同型やpayloadの一致だけで統合しない。
@@ -373,7 +373,7 @@ idは`n0`から連続する10進番号。同じ実行内で一意であり、番
 node数・並び・共有から実行順やキャッシュ動作を推測する保証を置かない。
 Construction、条件、証拠から、生成した構造と適用条件・正確な計算を確認できるようにする。
 argumentsは構成の入力、conditionsは入力から構成を許すProposition、evidenceは結果専用の証拠。
-成立未確認の条件を必要とする値をstate=valueとして封じ込めない。
+成立未確認の条件を必要とする値をstate=valueとして確定させない。
 全leafは現在の Atom 定義の宣言、Aの原始位置、Lの式、または本仕様の固定構成規則へ達する。
 CLIのselectorはこれらを選ぶためだけに使い、新しい原始leafにしない。
 Scopeは実際の根・量化域・仮定を全件保持する。全補完を含む場合domain=all_completionsとし、
@@ -433,7 +433,7 @@ Set/Mapと意味上の集合表はindexで選べない。Assignment.entriesもsu
 entries[index]から元parameter値を取り出す経路を設けない。
 完全なscopes.rangesのList<ChangeRange>は、上表の専用規則で[index]を許す。
 範囲外はprojectionのcondition_failed、未生成・partialならdependency_blockedとし、
-暫定一覧を型付きの完全な値へ昇格させない。他の導出型containerへ一般化しない。
+暫定一覧を型付きの完全な値として扱わない。他の導出型containerへ一般化しない。
 
 各段階をこの表またはTの構造射影で型付けできることを要求し、表外の中間欄を経由しない。
 結果が匿名recordのまま終わるpathも許可しない。SolutionSet.representation、
@@ -536,7 +536,7 @@ OperationNameは`{kind:"generator",subject:Ref}`、`{kind:"identity",object:Ref}
 内部生成操作のwordは原始arrow参照の順序列とし、両階層を混在させない。
 合成はgeneratorsに元のOperationを参照し、自分自身を参照しない。
 Operation.configuration_mapは必須で、同じcandidateの保存条件を確認済みのConfigurationMapを指す。
-source/target/actionはそのcandidateの各欄と一致させる。反証または未決の候補はOperationへ昇格しない。
+source/target/actionはそのcandidateの各欄と一致させる。反証または未決の候補はそのままOperationとして扱わない。
 Operationの合成は端点を確認したConfigurationMapの合成をconfiguration_mapに持つ。
 MapCandidateは原始候補を持つ場合だけdeclaration/subjectを保持する。
 この二欄は両方を持つか、両方を省略する。
@@ -873,7 +873,7 @@ Cohomology.inclusionはcycles→指定次数のModule、projectionはcycles→co
 Class.representativeは指定次数のcocycle、coordinatesはcohomology.moduleの元。
 Complexは指定次数までの診断に必要な次の微分を含み、d²=0を検査する。
 finite_matchingのdegreeは0または1だけに対応し、それ以外はunsupported_algorithm。
-degree=0はmatching/globalの対応、degree=1は大域解の存在を返し、有限集合に加群を捏造しない。
+degree=0はmatching/globalの対応、degree=1は大域解の存在を返し、有限集合に加群を無理に構成しない。
 
 局所解が空または未決なら対象classを生成しない。空のlocal_sectionsだけから零類を作らない。
 diagnostics比較は実写像を生成した条件を保持し、群のrankの一致だけで保存としない。
@@ -907,7 +907,7 @@ stepsは同じsubjectごとに同じ元parameter値を持ち、changeはdomain.c
 核は全解の一意性、確定した具体値、解所属と再代入をrepair構成条件として検査する。
 他の候補の適格性が未決なら、それを飛ばして既知の一解を唯一としない。
 全補完で一意性が成立しても唯一の割当てや更新後の値が異なれば、具体的なRepair/objectは未生成とする。
-未完了時は構成済みの全解表示や存在証拠を保持し、暫定候補をRepair/objectへ昇格しない。
+未完了時は構成済みの全解表示や存在証拠を保持し、暫定候補をそのままRepair/objectとして扱わない。
 SolutionRepresentation.particularは解集合の表示用特解であり、一意性を示すものではない。
 
 QuotientRepresentationは `{kind:"finite",fibers:{image:Ref,preimage:Domain}[]}`、
@@ -957,7 +957,7 @@ ObservationPlanは数学的な最小観測集合を主張せず、未観測と�
 RepairProblem は、元 CandidateSpace、選択 Law と束縛、常時変更できる instance と有限の変更単位を
 同じ owner の下で保持する結果型である。核が生成した部品の許容関係・共有条件・元 parameter への
 復元は内部で共有する。公開保存表現には計算の処理履歴や索引のダンプを追加しない。
-ChangeRange は同じ RepairProblem と解禁した変更単位の有限集合を保持する結果型である。
+ChangeRange は同じ RepairProblem と許可した変更単位の有限集合を保持する結果型である。
 scopes の ranges は ChangeRange を要素とする型付き List とし、各要素の修復可能性と
 真部分集合の修復不能性、一覧の完全性を区別して保持する。
 
@@ -1109,7 +1109,7 @@ fact:FactPointer,left:FactPointer,right:FactPointer}` は、元correspondenceま
 restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘eとμ(e)∘μの順とする。
 `AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
 left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
-これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
+これらは核が計算した反例の位置であり、新しい観測値や入力された証拠データではない。
 `AssemblyLawTransport={source:AssemblyLawOccurrence,target?:AssemblyLawOccurrence}`。
 `AssemblyLawOccurrence={assembly:ModelAssembly,object:ObjectComponent,law:LawInstance}`。
 `LawParameterTransportFailure={position:Nat,source_type:Type,target_type:Type,source:Value[],target:Value[],
@@ -1138,7 +1138,7 @@ completion_pairを回答の補助証拠として加えられる。元claimの証
 Set<Text>の空集合や有限な要素集合も仮説として扱える。全域Domainの構築には従来の有限型と全coverageの検査を要求する。
 補助対のSourceは元Expression・単独assignment・slot値への辺を保ち、全域Domainへの辺を持たない。
 AnswerのScopeは元評価と補助証拠のScopeの和とし、元評価の理由を保持する。補助証拠自身は、
-代入の合法性・slot発見に使った実根と採用した証人の診断を保持する。仮説内だけで読んだ欠測は
+代入の合法性・slot発見に使った実根と採用した具体例（witness）の診断を保持する。仮説内だけで読んだ欠測は
 元回答の観測要求へ加えない。neededは現在の実評価の未解決な依存と理由を完全に辿り、追加観測後の
 再評価で新たな依存が現れ得る段階的な計画を返す。全補完を先行調査した最小・十分観測集合や、
 元guard/bodyの全補完における追加の確定は主張しない。補完対が認証できない場合、確定値のための
@@ -1161,11 +1161,11 @@ Scope.domainはall_completionsとする。これらは新しい観測入力や�
 全caseが同じ既知値ならfinite_exhaustionのinstancesは各whole評価、checkedは補完域の件数となる。
 補完対のfirst/secondはfields順の型付きslot値、first_result/second_resultはそのcaseのwhole評価を指す。
 caseで異なる既知結果を持つviewは未決となり、Lawの反証と混同しない。全case違反のLawでは
-各caseの実反例を保持し、補完外の単一観測反例を捏造しない。未完成の全検査証拠は出力しない。
+各caseの実反例を保持し、補完外の単一観測反例を仮に生成しない。未完成の全検査証拠は出力しない。
 具体的な二解による非一意性反証ではcounterexample.left/rightを異なる二つのAssignmentへ向け、
 同じ候補域と各値型を保つ。両割当てのsolution_memberの成立証拠と、元parameterの等値に
 対する不等の証拠をunique_solutionの反証とrepairの構成条件に保持する。
-存在証人一つでは一意性を成立させない。全補完での一意性判断には次の証拠も使う。
+存在の具体例（witness）一つでは一意性を成立させない。全補完での一意性判断には次の証拠も使う。
 
 - completion_fibersは有限な補完と候補の全検査を表す。requestは現在のrequests中の
   solveまたはrepairのIDで、solutionsはその問いの全解を表すSolutionSet nodeである。
@@ -1186,7 +1186,7 @@ caseで異なる既知結果を持つviewは未決となり、Lawの反証と混
   全caseでassignmentsが一元ならunique_solutionは成立、全caseで件数が一以外なら反証。
   各命題の真偽が補完で異なればその命題は未決とする。
   これらは補完内の証拠値であり、観測値や通常のArchitecture・CandidateSpace・Assignment・
-  SolutionSetの確定値へ昇格しない。証拠内部の表を公開射影へ出さない。
+  SolutionSetの確定値として扱わない。証拠内部の表を公開射影へ出さない。
   Repair/objectには全補完で同じ元割当てと更新値の確定を別に要する。
 対象族・Configurationを確定できたArchitectureで、有限の値slotが未観測かつ候補の状態値または
 Law判定に必要な場合も、核は上記の補完表を生成し、
@@ -1219,7 +1219,7 @@ Repair/objectを生成せず不足位置を保持する。neededと後続の未�
   各具体列へのsmith証拠と、原式からこの式へのnormalizationを保持する。
   未確定な右辺をsmith.transformed_rhsへ入れず、B/Pが補完で変わる場合にこの規則を使わない。
 
-補完に依存する証人を具体値として捏造しない。具体的な全検査または対応する正確な記号計算で
+補完に依存する具体例（witness）を確定値として仮に生成しない。具体的な全検査または対応する正確な記号計算で
 判断を確認できなければ、元のmissing/unsupported理由を保持する。
 
 | IssueCode | 必須のdetailsと意味 |

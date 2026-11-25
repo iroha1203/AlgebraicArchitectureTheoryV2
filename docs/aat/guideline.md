@@ -15,7 +15,7 @@
 ## 位置づけ
 
 - 現行の AAT は代数幾何的アーキテクチャ論であり、最新の理論本体は
-  [AGENTS.md「理論本文の参照先」](../../AGENTS.md#理論本文の参照先)にある。
+  [AGENTS.md「基礎概念」](../../AGENTS.md#基礎概念)にある。
   Law に基づいて Atom を観測し、幾何を構成する方針のもとで理論と作業を進める。
 - AAT は Atom を土台に、site、Grothendieck topology、sheaf、ringed topos、scheme、
   Čech cohomology、derived / stacky structure といった代数幾何の概念へ接続する
@@ -67,8 +67,7 @@
 
 ## 「境界」という言葉の使用を禁止する
 
-この節は AAT / Lean 作業の停止規則を定める。エージェントはここを単なる推奨ではなく、
-実装・レビュー・完了判定の必須規則として扱う。
+この節は AAT / Lean の実装・レビュー・完了判定における必須の停止規則を定める。
 
 ### 原則
 
@@ -81,7 +80,7 @@ Lean 実装は数学本文の内容を再定義しない。数学本文より弱
 この欠陥を補えない。
 
 AAT / Lean 形式化では mathlib 型の statement review 基準を採る。仮定を増やして局所的に
-通しただけの定理、本文の数学的な証明作業を premise に肩代わりさせる定理、既存 API と
+通しただけの定理、本文の数学的な証明作業を premise として受け取る定理、既存 API と
 接続しない閉じたラッパー定理、再利用価値のない弱い定理は査読を通さない。
 実装前に target statement を固定し、完了判定は定理名の存在ではなく固定 statement との
 一致で行う。実装中に仮定・結論・対象を変更した場合は、その時点で未達として停止する。
@@ -95,27 +94,27 @@ AAT / Lean 形式化では mathlib 型の statement review 基準を採る。仮
 証明の裏づけのない no-go 風の説明を、未証明のまま閉じる理由にはしない。
 
 この規則に反する実装・説明・完了判定を見つけたら、エージェントは作業を止めて、
-本文の主張、実装した定理、追加された仮定、未放電の premise、放電に必要な補題や未移植定理を
+本文の主張、実装した定理、追加された仮定、未解消の premise、解消に必要な補題や未移植定理を
 報告する。レビューでは重大な指摘（major finding）とし、完了根拠には数えない。
 
 ### 対応表
 
 | 状態 | 使う語 |
 | --- | --- |
-| Research 側にはあるが AG 本体にない | `Research 成果の未蒸留` / `未移植` / `unported (Research-proved)` |
+| Research 側にはあるが AG 本体にない | `Research 成果の未移植` / `unported (Research-proved)` |
 | Lean theorem がまだない | `未証明` |
 | API、comparison、witness、proof chain がつながっていない | `未接続` |
-| 本文にない仮定を theorem 引数、typeclass、structure field、certificate field で受けている | `未放電仮定` / `仮定相対` |
+| 本文にない仮定を theorem 引数、typeclass、structure field、certificate field で受けている | `未解消仮定` / `仮定相対` |
 | implementation がない | `未実装` |
 | theorem が数学本文や完了要求より弱い | `要求未達` / `theorem strength mismatch` |
 | wrapper、alias、repackage、renaming だけで通している | `wrapper` / `alias` / `repackage` |
 | completion evidence として使えない中間状態 | `完了根拠ではない` |
 | 不可能性を主張しているが、証明済み theorem / counterexample の宣言名・statement・量化対象・本文主張との対応を提示できない | `未証明` / `要求未達` / `theorem strength mismatch` |
-| certificate に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `certificate escape` / `未放電仮定` |
-| structure field に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `structure-field escape` / `未放電仮定` |
-| typeclass に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `typeclass escape` / `未放電仮定` |
+| certificate に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `certificate escape` / `未解消仮定` |
+| structure field に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `structure-field escape` / `未解消仮定` |
+| typeclass に結論相当の premise が入っており、それを読むだけで theorem が閉じる | `typeclass escape` / `未解消仮定` |
 | 本文の theorem を Lean 都合で局所化・有限化・対象固定化したが、本文由来の根拠がない | `theorem strength mismatch` / `要求未達` |
-| 比較写像、同値、witness、obstruction の生成が残っている | `未接続` / `未構成` / `未放電仮定` |
+| 比較写像、同値、witness、obstruction の生成が残っている | `未接続` / `未構成` / `未解消仮定` |
 | 禁止語を避けた説明を書いただけで close 可能としている | `完了根拠ではない` / `Reject` |
 
 - 対応表にない状態でも、`禁止語` を使わず、実際の状態を直接表す語を選ぶ。
@@ -144,28 +143,28 @@ AAT / Lean 形式化では mathlib 型の statement review 基準を採る。仮
   selected package のフィールド合成から得る帰結を、`statement-only` は型や候補宣言はあるが
   証明済み定理として数えないものを指す。
 - **`unported (Research-proved)`**: Research 側（`research/lean/ResearchLean/`）に同等以上の
-  statement が受理済みだが、本体（`Formal/AG/` 本線）に蒸留されていない状態。
+  statement が受理済みだが、本体（`Formal/AG/` 本線）に移植されていない状態。
   **これは残タスクであり、制限ではない。** Research に同じ主題の受理済み定理が存在する限り、
   本体側の欠落を `packaged (assumption-relative)` と制限の注記だけで閉じてはならない
-  （Research 下限原則）。`unported` は完了状態ではなく、作業を閉じる場合は、蒸留の完了
+  （Research 下限原則）。`unported` は完了状態ではなく、作業を閉じる場合は、本体への移植の完了
   （下限到達）か、未達を明記した「下限到達不能の停止報告」を必要とする。
 - **移植 ≠ import（Research との独立性の不変条件）**: 本体（`Formal/AG` 本線、
   `Formal.lean` / `Formal/AG.lean` の配線を含む）から `ResearchLean.AG` を
   import してはならない。import 方向は Research → 本体のみ許可する
   （研究サンドボックスと本体の疎結合、peer-review hardening AC18）。ここでいう移植とは本体内で構成を
-  作り直す蒸留であり、Research モジュールの import と再導出ラッパーは
+  作り直すことであり、Research モジュールの import と再導出ラッパーは
   依存の包み直し（repackage）として `unported` のまま扱う。検査は
   `rg -n "import Formal\.AG\.Research" Formal Formal.lean --glob '!research/lean/ResearchLean/**' --glob '!research/lean/ResearchLean.lean'`
   に一致がないことで確認する（Research 集約ルート `research/lean/ResearchLean.lean` 自身の
   内部 import は正当なため除外する）。
-- **scope 記載の資格条件**: 台帳・ドキュメント・PR 本文に適用範囲の制限（selected input、no-go、沈黙、
+- **scope の記載要件**: 台帳・ドキュメント・PR 本文に適用範囲の制限（selected input、no-go、判断不能、
   「〜とは主張しない」）を書いてよい条件は、`.codex/skills/_shared/refutation-checklist.md`
   §4 に定める（不可能性証拠の宣言名、量化対象が制限対象を覆うことの statement 実読確認、
   覆い方の一文）。条件を満たさない欠落は適用範囲の制限ではなく
   `unported` または未達である（本ガイドラインの禁止語対応表を参照）。
 - 新規の `Prop + holds` フィールドは導入しない。どうしても selected assumption slot として
   導入する場合は、棚卸し台帳の公理スロットに登録し、`proved` ではなく
-  `packaged (assumption-relative)` または `statement-only` の未放電仮定つき状態として扱う。
+  `packaged (assumption-relative)` または `statement-only` の未解消仮定つき状態として扱う。
 - Lean で証明済みの主張と、実証研究で検証する主張を区別して書く。
 - 完了レビューでは、対象文書が列挙した定理、suite field、受け入れ定理、フィクスチャ、Issue クローズ条件を
   直接照合する（判定範囲は [Workflow guideline](../workflow/guideline.md#完了レビューの判定範囲) に従う）。

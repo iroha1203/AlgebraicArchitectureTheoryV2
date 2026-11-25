@@ -60,7 +60,7 @@ summaries will be added as the theory and Lean formalization stabilize.
 
 ## Reading Order
 
-1. [Research constitution](docs/research_goal.md)
+1. [Overall research goal](docs/research_goal.md)
 2. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
 3. [Software Field Theory](docs/sft/software_field_theory.md)
 4. [AAT Tooling Documentation](docs/tool/README.md)

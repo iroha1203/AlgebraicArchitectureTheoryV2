@@ -71,10 +71,10 @@ Closed-loop SFT workbench では、B10 artifact は forecast 後の観測面を�
 `sft-forecast` が生成した `ConsequenceEnvelope` / forecast item refs、review / CI
 intervention refs、observed PR / review / CI / incident refs を
 `forecast-calibration-hook/v0.5.0` と B10 artifact に接続し、hypothesis refresh の入力として
-保存することである。この接続は deployment evidence の台帳であり、自動 governance
+保存することである。この接続は deployment evidence の記録一覧であり、自動 governance
 correctness、forecast quality、global risk reduction、または incident causality を結論しない。
 
-- unavailable / private / missing / unmeasured outcome data を measured-zero evidence に丸めない。
+- unavailable / private / missing / unmeasured outcome data を measured-zero evidence として扱わない。
 - reviewer decision は threshold / CI policy の empirical calibration input として読む。
 - team threshold は formal theorem precondition discharge ではない。
 - ownership / boundary erosion signal は repair correctness を証明しない。

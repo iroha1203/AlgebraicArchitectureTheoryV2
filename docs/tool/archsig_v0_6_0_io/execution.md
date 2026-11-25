@@ -148,7 +148,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `shigure_interaction(Task,snapshot=Id?)` | 指定した `shigure task` の閉条件残差 ideal に対し、座標面支持から相互作用に参加する変数数と極小不成立部分族を計算する。`shigure:ShigureOutcome` |
 | `shigure_diagram(Diagram,snapshot=Id?)` | 指定した `shigure diagram` について固定図式補完（四角形・鎖・一般有限図式）を計算し、可換残差・構造不一致・空性証明 witness または復元図式（全頂点・全辺の $h$/$\tau$）と再評価検算を返す。`shigure:ShigureOutcome` |
 | `shigure_path(Path,snapshot=Id?)` | 指定した `shigure path` について一段変更経路探索（`find` / `concatenate` / `subdivide`・拡大 protocol 実行経路）を計算し、合法経路群と再評価検算・ステップ拒否診断を返す。`shigure:ShigureOutcome` |
-| `shigure_transfer(Transfer,snapshot=Id?)` | 指定した `shigure transfer` について合法状態移送 lift・共通操作語保存（`word_checks`）・旧語 lift（`old_word_lifts`）・多段合成定義域関係（`domain_relation`）と再評価検算を返す。`shigure:ShigureOutcome` |
+| `shigure_transfer(Transfer,snapshot=Id?)` | 指定した `shigure transfer` について有効状態移送 lift・共通操作語保存（`word_checks`）・旧語 lift（`old_word_lifts`）・多段合成定義域関係（`domain_relation`）と再評価検算を返す。`shigure:ShigureOutcome` |
 | `shigure_robustness(Robustness,snapshot=Id?)` | 指定した `shigure robustness` について複数解釈族 $U_b$ と候補族 $C_b$ の fiber 非空性・3 量化・存在型補完 witness 復元・全係数移送安定性・粗/細 reading 比較を計算する。`shigure:ShigureOutcome` |
 | `shigure_chevalley(Chevalley,snapshot=Id?)` | 指定した `shigure chevalley` について代数閉包上の構成可能幾何像と Chevalley 四分類（`robust_all_pass` / `all_fail` / `mixed` / `empty_realizations`）・`mixed` witness 対・有理点 probe・大域正則切断・全係数移送対照を計算する。`shigure:ShigureOutcome` |
 | `shigure_observations(Observations,snapshot=Id?)` | 指定した `shigure observations` について異判定対 $\mathcal{D}_R$ に対する十分性判定・不足 witness・全包含極小十分観測集合（1 要素削除反例対付き）・費用比較・`law_readout` adequacy 対比を計算する。`shigure:ShigureOutcome` |
@@ -173,7 +173,7 @@ SHIGURE の 9 種別の問い（`shigure_preservation`・`shigure_solve`・`shig
 同一の `archsig run` に上記 9 種別を含む複数の SHIGURE 問いを並べて実行できるが、通常の観測評価系の問いとは混在できない（混在は `usage` / exit 64）。
 SHIGURE 問いへ `--reuse` を渡した場合はキャッシュを再利用せず、`warnings`（`details.argument: "--reuse"`）を添えて現在入力から再計算する。
 出力は通常と同じ `archsig.summary/1`（stdout）および `archsig.result/4`（`--out` 保存時）に従い、
-1 件以上の `undetermined`（沈黙）があれば `partial` / exit 2、全件確定かつ 1 件以上の `refuted` があれば `complete` / exit 1、
+1 件以上の `undetermined`（判断不能）があれば `partial` / exit 2、全件確定かつ 1 件以上の `refuted` があれば `complete` / exit 1、
 全件 `established` なら `complete` / exit 0 を返す。`archsig check` は入力の SHIGURE 宣言も同一の静的検査で検証する。
 
 `build`はrootと各owned entityを対象族、保存確認済みの内部arrowを生成元とし、型の合う全有限語を
@@ -195,7 +195,7 @@ kind=object_algebraの追加条件が反証されても、configuration保存を
 一致を検査する。作用はU上の総写像の合成であり、合成後にfamily外の像を置き直さない。
 空語の作用はU全体の恒等とする。MapCandidateをOperationとして渡すことはできない。
 OperationとPathを混在させない。Pathは原始arrow/correspondenceの名前付き列を保持し、
-Architecture間の構造保存済みOperationへ自動で昇格しない。
+Architecture間の構造保存済みOperationとして自動で扱わない。
 作用が同じでも生成元名・経路を消さない。
 
 `compare`の型と意味を次に固定する。
@@ -297,7 +297,7 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `prepare(Law,using=Change,on=Handle,internal=Handle?,inputs=View?,B)` | `on` と B は従来の solve と同じ。`internal` は change の第1parameterと同じ entity 型の有限 Set を指す。省略時は空集合。`problem:RepairProblem`、`proposition:Proposition` |
-| `solve(Handle,within=Handle,mode=existence\|solutions?)` | 第1引数は RepairProblem、within は変更を解禁する entity の有限 Set または同じ問題の ChangeRange。mode の既定は solutions。`proposition:Proposition`、solutions モードでは `solutions:SolutionSet`。双方で `range:ChangeRange` |
+| `solve(Handle,within=Handle,mode=existence\|solutions?)` | 第1引数は RepairProblem、within は変更を許可する entity の有限 Set または同じ問題の ChangeRange。mode の既定は solutions。`proposition:Proposition`、solutions モードでは `solutions:SolutionSet`。双方で `range:ChangeRange` |
 | `scopes(Handle)` | RepairProblem の有限な変更単位について包含極小の修復可能範囲を全て求める。`ranges:List<ChangeRange>`、完全性の `proposition:Proposition` |
 | `candidate(Handle,index=Ordinal)` | 完全な有限または整数アフィン SolutionSet の要求した一候補を元座標へ復元する。`assignment:Assignment`、所属の `proposition:Proposition` |
 | `apply(Handle,in=Handle)` | 第1引数は利用者が明示選択した Assignment、in は同じ候補域の SolutionSet。所属と再代入を検査する。`proposition:Proposition`、成立時だけ `selection:Selection`、`object:Architecture` |
@@ -308,7 +308,7 @@ internal / within の Set は、既存の view を evaluate して得た型付�
 原始値、集合literal、局所関係、係数、完成した全体解を CLI へ入力する経路を追加しない。
 
 変更単位は、prepare が生成した change の各 entity instance とする。同じ instance の更新先は
-一単位で解禁する。internal は常時変更できる instance、残りが範囲の変更単位である。
+一単位で有効化する。internal は常時変更できる instance、残りが範囲の変更単位である。
 Set の要素は基準対象内の該当 instance に属さなければならず、within の Set は変更単位の部分集合とする。
 within に ChangeRange を指定した場合は同じ RepairProblem の enabled を使う。別の問題の範囲は
 condition_failed とする。scopes の完全な ranges は enabled のsubject参照の辞書順に並べた
@@ -373,7 +373,7 @@ next=localize($a.object,law=Example.valid,using=Example.replace)
 View の parameter は prepare の明示した B と同名・同型の束縛で全て与える。
 この view が読む原始位置について、現在の既知値は固定し、未観測の有限型の値を合法な全補完で動かす。
 型・owner・基準root・changeのinstance族は固定し、その適合を確認する。
-入力viewに含まれない未観測や、有限に補完できない位置を勝手に補わない。
+入力viewに含まれない未観測や、有限に補完できない位置を暗黙に補わない。
 inputs を省略した prepare と従来の needed の意味は変えない。
 
 | 問いの正確な形 | 選択と返すfield |
@@ -447,7 +447,7 @@ parameter は担当 root と異なる型の ownerless 設計主体で、両 View
 `object:Architecture`、`algebra:ObjectAlgebra` とする。
 assembly から局所ごとの包含と再制限の対応を辿れる。構成した object は evaluate / check /
 localize と次の変更の on に渡せる。初段の組立ては対象と生成操作を構成し、担当別の新旧写像の
-組立ては別の構成とする。局所で確認した Law の成立を全体の成立へ昇格させず、元の Law を全体で検査する。
+組立ては別の構成とする。局所で確認した Law の成立を全体の成立として扱わず、元の Law を全体で検査する。
 組立てViewの元式と、対象に付随するLawの元式・parameter・束縛は分けて保持する。
 Lawの追加・修正時も、その元出現の下で既存の数値族・有限読取りの算法を使う。
 構成で輸送した既知の参照を族・集計のownerへ渡す場合も、元fieldの支持と輸送の由来を保つ。
@@ -543,9 +543,9 @@ checkが検査を完了した後に捕捉signalを反映する場合は、確認
 保持する結果のための入力コピーと由来も同梱する。
 同じ親に一時directoryを作り、入力コピーと結果を書きflushした後、既存pathを置換しない
 renameで最終directoryを作る。競合してoutが作られた場合も上書きしない。
-出力に失敗した場合は、今回の実行が作成した未完成の一時directoryを片付ける。
+出力に失敗した場合は、今回の実行が作成した未完成の一時directoryを削除する。
 既存のpathや、有効な成果物のあるdirectoryは削除しない。削除できなかった一時directoryのpathと原因は、標準エラー出力のreceipt.issuesで知らせる。
-finalizeの状態確定と、その後の配送障害は次節に従う。
+finalizeの状態確定と、その後の出力失敗は次節に従う。
 
 ```text
 NEW_DIRECTORY/
@@ -628,22 +628,22 @@ io/internal併発時はio、複数signalは最初に捕捉したsignalを使う�
 finalize開始時にSIGINT/SIGTERMをblockし、受信済み・pendingのsignalを一度だけ判断へ含めて
 status/exit_codeを確定する。両方がpendingで受信順を取得できない場合はSIGINTを先とする。
 この状態は保存する計算結果の状態である。成果物のwrite/flush/renameの間は両signalをblockし、
-原子的な公開または一時directoryの片付けを終えた後、stdout/stderrへの配送前にblockを解除する。
-配送中または保存中に新しく届いてpendingになったSIGINT/SIGTERMは配送を中断し130/143で終了する。
+原子的な公開または一時directoryの削除を終えた後、stdout/stderrへの出力前にblockを解除する。
+出力中または保存中に新しく届いてpendingになったSIGINT/SIGTERMは出力を中断し130/143で終了する。
 既に中断を捕捉して計算状態を確定している場合は、その最初のsignalの終了コードを保つ。
-保存済みresultのstatus/exit_codeは変更しない。配送中断時には完全なJSON通知を保証しない。
+保存済みresultのstatus/exit_codeは変更しない。出力中断時には完全なJSON通知を保証しない。
 公開前のwrite/flush/rename失敗は最終resultを公開せず、result欄のないerror/74 receiptにioのissuesを入れ、
 stderrへ出して74で終了する。runの計算済みsummaryはstdoutへ返し、回答の成立・反証・未決とwarningsを保持する。
 入力検査や問い解決など計算前の失敗ではsummaryを生成しない。
 stdoutのwrite/flush失敗は計算状態と分けて扱う。BrokenPipe（後段による早期終了を含む）は追加通知なしで141、
 それ以外はerror/74の機械可読receiptをstderrへ通知し74で終了する。保存済みresultは保持し、通知にpathを付ける。
-stderr自体の配送失敗も非成功終了とし、BrokenPipeは141、その他は74とする。通知の再送は行わない。
-保存結果内のexit_codeは計算状態、実プロセスの終了コードは配送成否・配送中断も含む。
+stderr自体の出力失敗も非成功終了とし、BrokenPipeは141、その他は74とする。通知の再送は行わない。
+保存結果内のexit_codeは計算状態、実プロセスの終了コードは出力成否・出力中断も含む。
 全問いが算法非対応でもpartialである。確定反例は有効な結果であり、他の問いが未決でも保持する。
 不正入力・未対応版では数学計算を始めず、標準エラー出力のissuesで理由を伝え、結果ファイルを作らない。
 保存する結果のrequestsは、問いの選択を解決できた場合だけ埋める。
 捕捉できないSIGKILL・停電で最終directoryが存在しなければ出力未確定とする。
-最終directoryと有効なresultが存在すれば計算結果は確定済みであり、receiptの欠落だけを配送未完了と読む。
+最終directoryと有効なresultが存在すれば計算結果は確定済みであり、receiptの欠落だけを出力未完了と読む。
 この場合はプロセスの正常終了を確認したことにはせず、確定済みのstatus/exit_codeを事後に変更しない。
 
 時間とメモリの上限はCLIに持たない。実行時間を区切る場合は、呼び出し側がSIGINT/SIGTERMを送る。
@@ -677,7 +677,7 @@ digest一致は候補の検索だけに用い、成立証拠の代わりにし�
 通常評価を続ける。警告は候補を拒否した場合だけ出し、再利用件数は出力しない。
 候補の拒否だけでは計算結果の状態・終了コードを変えない。再検査中の中断は通常のsignal規則に従う。
 再計算した導出と保存候補を照合する経路は、証拠を含む保存ノードの型・値・由来・条件の一致を検査する。
-同じ命題の別の証明証人を持つ候補を拒否した場合も、現在の導出で判定を返す。
+同じ命題の別の証明の具体例（witness）を持つ候補を拒否した場合も、現在の導出で判定を返す。
 以前と同じ計算計画を使うことは要求せず、現在の式・原始根・束縛・条件に対する導出を検査する。
 観測計画の各要求では、検査済みの同じ導出への重複参照を一つにまとめて照合する。
 共通の計算結果を再利用・共有しても、Lawの各出現と現在のAtomの支持・由来を保持する。
@@ -693,7 +693,7 @@ completion_fibersのrequestは現在の解決済みの問いへ対応付け、ID
 現在の入力から導けない結論を旧結果から増やさない。変わったsourceへ古い由来を貼り直さない。
 数学的な値と条件は、同じ完全入力・解決済みの問いに対して計画によらず決定的とする。
 解集合・類・写像は、基底や特解等の表示を変えた場合も、元の意味対象に沿う同じ値を表す。
-時間・メモリ・node番号・表示基底・同じ命題の証明証人の選択は意味的一致の対象から除く。
+時間・メモリ・node番号・表示基底・同じ命題の証明の具体例（witness）の選択は意味的一致の対象から除く。
 後続の問いが読むRepairのAssignmentとobjectは、入力と問いで定まる全解の一意性に基づく。
 JSONの正規化・列挙順・表示用特解の選択を、解の選好や一意性の根拠にしない。
 
@@ -837,7 +837,7 @@ partitionはsourcesの初出順、反例はq群の初出順・群内のsources�
 反例がなければ `descent` にq値→Law値objectを追加する。空族・空Lawは十分かつ `vacuous=true`。
 これは表の等号から計算する指定Law値の保存であり、Law DSL評価や診断保存の証明へ読み替えない。
 
-### 配送・終了コードと旧補助からの移行
+### 出力・終了コードと旧補助からの移行
 
 結果は一行のUTF-8 JSONをstdoutへ、失敗は既存の `archsig.receipt/1` をstderrへ返す。
 成功は0、有限表の反例は1。usageは64、入力不正は65、内部障害は70、I/Oは74、

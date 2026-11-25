@@ -37,7 +37,7 @@ constructor の meaning は arguments の順序と各位置の意味も記す。
 核は meaning の存在と文字列型を検査して出力に保持する。文章を条件式へ翻訳しない。
 数値・関係の適用条件は型と Law の式で計算する。
 
-一ファイルは一つ以上の Vocabulary を包装する。同じ実行に同じ namespace を二度指定すると、
+一ファイルは一つ以上の Vocabulary を格納する。同じ実行に同じ namespace を二度指定すると、
 版・digest・内容が等しくても duplicate_id。同じ namespace の複数版を同時に使わない。
 ファイル名・配置と namespace の対応は要求しない。
 型の QName は原始宣言を指し、Law の view 等を参照しない。
@@ -107,7 +107,7 @@ meaning、version、全原始宣言と dependency binding は digest に含め�
 
 AtomDefinition 全体の model_digest は、各 Vocabulary を上記の順序で正規化し、
 vocabularies を namespace 順にした文書全体の canonical JSON の SHA-256。
-包装やファイル分割を変えるとファイルの digest は変わり得るが、各語彙の digest は変わらない。
+まとめ方やファイル分割を変えるとファイルの digest は変わり得るが、各語彙の digest は変わらない。
 全入力の semantics は同一とする。
 
 ## 4. 検査と責務
@@ -126,7 +126,7 @@ ArchMap の不正は[実行 §5](execution.md#5-ファイル操作と出力)の�
 宣言された field の Atom が欠ける場合は、subject があれば未観測 slot、subject 自体がなければ
 当該個体の追加生成をしない。値を必要とする問いへ未観測の理由を伝播する。
 型検査に通る Law の不成立や、選んだ構成の保存失敗は段階3の判定であり、不正入力とは区別する。
-未使用情報を黙って捨てず、入力コピー・manifest・解決済み宣言に保持する。
+未使用情報を暗黙に除外せず、入力コピー・manifest・解決済み宣言に保持する。
 参照先 namespace が未登録なら reference、登録済みだが版・digest が異なるなら
 vocabulary_mismatch、循環は cycle、重複は duplicate_id。型不一致は type、
 不正な欄・型表記・空 meaning/version は syntax、未知 format/semantics は unsupported_version。

@@ -26,7 +26,7 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
-| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合計算核・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
 下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
@@ -100,9 +100,9 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger
 ```
 
 この例では `p6c` が `established`（`rho = 1`・`finish` と Busy Law を復元し再評価一致）、
-`p6d` が `refuted`（検算済み空性 witness 付き）となり、反証を含むため終了コードは 1 です。
+`p6d` が `refuted`（検算済みの解なし witness 付き）となり、反証を含むため終了コードは 1 です。
 
-図式補完・変更経路・合法状態移送は対応する問いで実行します。
+図式補完・変更経路・有効状態の移送は対応する問いで実行します。
 
 ```bash
 archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase2/phase2.atoms.json \

@@ -21,7 +21,7 @@ A / B を主査と補助に分けず、各 lane が PRD 全文から条件を独
 - PRD の問い、全達成条件、拘束条件、requirement matrix、must-not-remain を全文から独立抽出する。
   抽出の範囲と除外規則は [標準手順 2](../SKILL.md#標準手順) に従う。
 - 全条件をコード、仕様書（`docs/tool/archsig_v0_6_0_io/` 等）、fixture、test、同梱 SKILL、必要な GitHub 状態へ一次証拠で追い、部分実装・記載のみの充足・欠落・旧構造の残存を探す。AC とは別に問いへの回答を判定する。
-- [Tool guideline](../../../../docs/tool/guideline.md) に照らし、入力区分・由来分離・数学対応（適用条件検査と範囲外の沈黙）、設計の直交性と肥大化、assertion 内容・負系・代表規模ベンチマーク（実行時間・最大 RSS の実測）の妥当性を確認する。
+- [Tool guideline](../../../../docs/tool/guideline.md) に照らし、入力区分・由来分離・数学対応（適用条件検査と範囲外入力の未対応明示）、設計の直交性と肥大化、assertion 内容・負系・代表規模ベンチマーク（実行時間・最大 RSS の実測）の妥当性を確認する。
 
 ### 標準（Lean / 数学要件を含む PRD 等）: 要件査読 A / B・実装・検証査読 A / B（4 本）
 
@@ -37,7 +37,7 @@ A / B を主査と補助に分けず、各 lane が PRD 全文から条件を独
 - 要件査読と同じ抽出を独立に行い、全条件をコード、宣言、schema、fixture、test、docs、
   必要な GitHub 状態へ追う。名前や台帳の status だけで充足扱いしない。
 - assertion 内容、負系、未接続 surface、旧構造・旧挙動の残存、検証の再現性を確認する。
-  Lean 要件では statement、依存、仮定放電、axiom 等の該当する反証項目も適用する。
+  Lean 要件では statement、依存、仮定の解消、axiom 等の該当する反証項目も適用する。
 
 ## 全 lane 共通の合格基準
 

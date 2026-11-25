@@ -2,7 +2,7 @@
 
 This document fixes the current end-to-end workflow for ArchMap /
 LawPolicy / law-equation-surface / MeasurementProfile / ArchSig `analyze`. It is an implementation
-transcript, not a new theory document.
+transcript.
 
 ## Flow
 
