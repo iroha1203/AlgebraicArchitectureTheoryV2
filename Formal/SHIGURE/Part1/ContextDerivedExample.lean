@@ -33,8 +33,9 @@ def graphFormula : Formula signature [()] :=
   .atom (.graph (.total ()) (fun i => .there i) .here)
 
 /-- The actual structural rule supplies a value of the nullary constant. -/
-def constantHasValue : Derivation laws.toTheory (Formula.truth (Γ := [])) graphFormula.ex :=
-  Derivation.graph (T := laws.toTheory) (.totality ())
+def constantHasValue : Derivation laws.toTheory (Formula.truth (Γ := [])) graphFormula.ex := by
+  simpa only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, graphFormula] using
+    Derivation.graph (T := laws.toTheory) (.totality ())
 
 /-- Existential elimination uses the graph witness to prove plain nonemptiness. -/
 def forgetGraph : Derivation laws.toTheory ((Formula.truth (Γ := [])).conj graphFormula.ex)

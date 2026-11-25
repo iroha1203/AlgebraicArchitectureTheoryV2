@@ -21,6 +21,12 @@ def laws (U : DeclarationContext P) : LawDeclarations (signature U) where
   statement name := selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property)
   role name := P.laws.role name.val
 
+/-- A retained Law's selected statement comes from its original declaration. -/
+theorem laws_statement (name : U.RetainedLaw) :
+    (laws U).statement name = selectLaw (P.laws.statement name.val)
+      (Declaration.lawBody_subset_of_mem name.property) :=
+  rfl
+
 /-- The ordinary theory of the restriction is defined over the genuinely selected signature. -/
 def theory (U : DeclarationContext P) : Theory.{u} := (laws U).toTheory
 
@@ -508,7 +514,7 @@ private noncomputable def selectDerivationUsing {I J : Type u}
       keep (Declaration.law_mem_derivationOf_required rfl source name)
     have chosenLaw : (namedTheory (laws U) target).law (choose name named) =
         selectLaw (P.laws.statement (source name)) (Declaration.lawBody_subset_of_mem named) :=
-      congrArg (laws U).statement (chosen name named)
+      (congrArg (laws U).statement (chosen name named)).trans (laws_statement ⟨source name, named⟩)
     have proof := Derivation.required (T := namedTheory (laws U) target) (choose name named)
     rw [chosenLaw, selectLaw_eq] at proof
     exact proof

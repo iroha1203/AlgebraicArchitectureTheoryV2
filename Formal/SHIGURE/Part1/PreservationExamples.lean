@@ -2218,8 +2218,9 @@ private def derivePaddedAxiom (i : RingVocabulary.LawName) :
   let graph : Formula signature [.vector] :=
     .atom (.graph (.total Symbol.vectorZero) (fun j => .there j) .here)
   let body := graph.rename (Renaming.lift (s := .vector) weaken)
-  have total : Derivation T (.truth : Formula signature []) graph.ex :=
-    Derivation.graph (T := T) (.totality Symbol.vectorZero)
+  have total : Derivation T (.truth : Formula signature []) graph.ex := by
+    simpa only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, graph] using
+      Derivation.graph (T := T) (.totality Symbol.vectorZero)
   have existsZero : Derivation T (.truth : Formula signature law.context) body.ex :=
     @Derivation.rename T [] law.context .truth graph.ex (@weaken) total
   let name : {a : paddedLaws.LawName // a ∈ Set.range Sum.inr} := ⟨.inr i, ⟨i, rfl⟩⟩

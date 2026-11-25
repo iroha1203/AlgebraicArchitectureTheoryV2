@@ -2360,6 +2360,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.presentation_law_cast,
   DeclarationContext.Selected.presentation_ringEquation,
   -- ContextSelectedProofs
+  DeclarationContext.Selected.laws_statement,
   DeclarationContext.Selected.theory_law,
   DeclarationContext.Selected.selectRenaming_there_there_cast,
   -- ContextSelectedRoundtrip
@@ -2527,6 +2528,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   NamedRingEquation.ordered_none,
   PrimitivePresentation.orderedEquation_eq,
   PrimitivePresentation.theory_law,
+  -- GraphDerivations
+  Renaming.liftMany_nil,
   -- IdentityInterpretation
   Interpretation.identity_onSort,
   Interpretation.identity_translation,

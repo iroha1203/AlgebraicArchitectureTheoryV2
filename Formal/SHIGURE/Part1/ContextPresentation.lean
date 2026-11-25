@@ -149,7 +149,12 @@ noncomputable def restrictDerivation {Γ : List P.theory.signature.SortType} {p 
   | required name =>
     have kept : Declaration.law name.val ∈ U.declarations :=
       used (Declaration.required_mem_derivation name)
-    exact ⟨Derivation.required (T := U.scopedTheory) ⟨name, kept⟩, by simpa only [Declaration.derivationOf_support_eq] using used⟩
+    let retained : U.scopedTheory.LawName := ⟨name, kept⟩
+    have proof : U.DerivationIn (U.scopedTheory.law retained).input (U.scopedTheory.law retained).conclusion :=
+      ⟨Derivation.required (T := U.scopedTheory) retained,
+        by simpa only [Declaration.derivationOf_support_eq] using used⟩
+    rw [U.scopedTheory_law retained] at proof
+    exact proof
   | graph rule => exact ⟨Derivation.graph (T := U.scopedTheory) rule, by simpa only [Declaration.derivationOf_support_eq] using used⟩
   | rename positions child restricted =>
     let child' := restricted ((Declaration.derivationOf_rename rfl Subtype.val positions child).trans used)

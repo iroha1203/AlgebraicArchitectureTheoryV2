@@ -101,21 +101,27 @@ namespace Interpretation
 def identity (T : Theory.{u}) : Interpretation T T where
   onSort := id
   translation := Translation.identity T.signature
-  total f :=
-    .cut (.rename (Translation.retype T) (.graph (.totality f)))
+  total f := by
+    have totality := Derivation.graph (T := T) (.totality f)
+    rw [GraphAxiom.toLaw_totality] at totality
+    exact .cut (totality.rename (Translation.retype T))
       (Translation.identityDefined T (.total f)).2
-  quantity q :=
-    .cut (.rename (Translation.retype T) (.graph (.quantityTotality q)))
+  quantity q := by
+    have totality := Derivation.graph (T := T) (.quantityTotality q)
+    rw [GraphAxiom.toLaw_quantityTotality] at totality
+    exact .cut (totality.rename (Translation.retype T))
       (Translation.identityDefined T (.quantity q)).2
-  partialDefined p :=
-    .cut (.rename (Translation.retype T) (.graph (.domainImpliesGraph p)))
+  partialDefined p := by
+    have hasValue := Derivation.graph (T := T) (.domainImpliesGraph p)
+    rw [GraphAxiom.toLaw_domainImpliesGraph] at hasValue
+    exact .cut (hasValue.rename (Translation.retype T))
       (Translation.identityDefined T (.partialOp p)).2
   definedPartial p := by
     refine .cut (Translation.identityDefined T (.partialOp p)).1 ?_
     apply Derivation.existsElimPlain
-    let ax := GraphAxiom.graphImpliesDomain p
-    have d := Derivation.rename (fun i => i.mapSorts id) (Derivation.graph (T := T) ax)
-    exact d
+    have inDomain := Derivation.graph (T := T) (.graphImpliesDomain p)
+    rw [GraphAxiom.toLaw_graphImpliesDomain] at inDomain
+    exact inDomain.rename (fun i => i.mapSorts id)
   preserves name :=
     .cut (Translation.identityFormula T (T.law name).input).1
       (.cut (.rename (Translation.retype T) (.required name))

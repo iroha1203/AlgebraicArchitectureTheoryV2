@@ -50,6 +50,11 @@ def liftMany (ρ : Renaming Γ Δ) : (Λ : List S) → Renaming (Λ ++ Γ) (Λ +
   | [], _, i => ρ i
   | _ :: Λ, _, i => lift (liftMany ρ Λ) i
 
+/-- Lifting past the empty block preserves the original renaming. -/
+theorem liftMany_nil (ρ : Renaming Γ Δ) :
+    @liftMany S Γ Δ ρ [] = (fun {t : S} (i : Var Γ t) => ρ i) :=
+  rfl
+
 /-- Lifting past a nonempty block keeps the head and lifts past the remaining positions. -/
 theorem liftMany_cons (ρ : Renaming Γ Δ) (s : S) (Λ : List S) :
     @liftMany S Γ Δ ρ (s :: Λ) = @lift S (Λ ++ Γ) (Λ ++ Δ) s (liftMany ρ Λ) := rfl

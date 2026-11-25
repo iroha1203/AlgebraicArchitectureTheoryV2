@@ -45,11 +45,13 @@ theorem ext_append {Λ : List S} {left right : Renaming (Λ ++ Γ) E}
   induction Λ with
   | nil =>
     funext s i
-    exact rightBlock i
+    have shift : i.shift [] = i := congrArg (fun ρ : Renaming Γ Γ => ρ i) Var.shift_nil
+    simpa only [shift] using rightBlock i
   | cons s Λ ih =>
     let leftTail : Renaming (Λ ++ Γ) E := fun i => left (.there i)
     let rightTail : Renaming (Λ ++ Γ) E := fun i => right (.there i)
-    have tail : @leftTail = @rightTail := ih (fun i => leftBlock (.there i)) rightBlock
+    have tail : @leftTail = @rightTail := ih (fun i => leftBlock (.there i)) (fun i => by
+      simpa only [Var.shift_cons] using rightBlock i)
     funext t i
     cases i with
     | here => exact leftBlock .here
@@ -247,7 +249,8 @@ theorem witnessConjunction_cons {Λ : List sig.SortType} {s : sig.SortType}
     witnessConjunction (s :: Λ) condition =
       ((condition .here).rename (Renaming.lift (Var.shift Λ))).conj
         ((witnessConjunction Λ fun i => condition (.there i)).rename (fun i => .there i)) := by
-  simp only [witnessConjunction_eq_conjoin, conjoin_cons, rename_conjoin, rename_comp, Renaming.comp_cons]
+  simp only [witnessConjunction_eq_conjoin, conjoin_cons, rename_conjoin, rename_comp, Renaming.comp_cons,
+    Renaming.shift_cons_comp, Renaming.comp_apply]
   rfl
 
 end SHIGURE.Formula
