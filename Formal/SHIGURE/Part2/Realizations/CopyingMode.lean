@@ -35,6 +35,7 @@ def CoefficientRing.specMap {R S : CoefficientRing.{u}} (f : R.Hom S) : S.spec �
 
 namespace Copying
 
+/-- View a predicate as the monomorphism into its ambient sheaf. -/
 private def realizedPredicate {S : Scheme.{u}} {F : ZariskiSheaf S}
     (P : SheafPredicate F) : MonoOver F :=
   letI : Mono P.inclusion.val := inferInstanceAs (Mono P.carrier.ι)
@@ -42,6 +43,7 @@ private def realizedPredicate {S : Scheme.{u}} {F : ZariskiSheaf S}
     Sheaf.Hom.mono_of_presheaf_mono (Scheme.zariskiTopology.over S) (Type u) P.inclusion
   MonoOver.mk P.inclusion
 
+/-- Form the sheaf of assignments in the declared context. -/
 private def copyingInputs (S : Scheme.{u}) {K : Type u} (Γ : List K) :
     (K → ZariskiSheaf S) ⥤ ZariskiSheaf S where
   obj A := sheafTuple A Γ
@@ -49,6 +51,7 @@ private def copyingInputs (S : Scheme.{u}) {K : Type u} (Γ : List K) :
   map_id A := sheafTupleMap_id A Γ
   map_comp f g := sheafTupleMap_comp f g Γ
 
+/-- Form the sheaf product indexed by the actual positions of the declaration. -/
 private def copyingPositionInputs (S : Scheme.{u}) (I : Type u) :
     (I → ZariskiSheaf S) ⥤ ZariskiSheaf S where
   obj A := ∏ᶜ A
@@ -56,15 +59,18 @@ private def copyingPositionInputs (S : Scheme.{u}) (I : Type u) :
   map_id _ := Limits.Pi.map_id
   map_comp f g := (Limits.Pi.map_comp_map f g).symm
 
+/-- Compare assignment syntax with the position-indexed product at one carrier family. -/
 private def copyingInputIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSheaf S) (Γ : List K) :
     sheafTuple A Γ ≅ ∏ᶜ (fun i : (s : K) × Var Γ s => A i.1) :=
   (sheafTupleFanIsLimit A Γ).conePointUniqueUpToIso (limit.isLimit _)
 
+/-- Identify each projection of the position-indexed product with assignment lookup. -/
 private theorem copyingInputIsoAt_hom_π {S : Scheme.{u}} {K : Type u}
     (A : K → ZariskiSheaf S) (Γ : List K) (i : (s : K) × Var Γ s) :
     (copyingInputIsoAt A Γ).hom ≫ Limits.Pi.π _ i = sheafTupleProj A i.2 := by
   exact limit.lift_π (sheafTupleFan A Γ) ⟨i⟩
 
+/-- Make the lookup comparison natural in all carrier maps. -/
 private def copyingInputIso (S : Scheme.{u}) {K : Type u} (Γ : List K) :
     copyingInputs S Γ ≅ CategoryTheory.Pi.comap (fun _ : K => ZariskiSheaf S) (fun i : (s : K) × Var Γ s => i.1) ⋙
       copyingPositionInputs S ((s : K) × Var Γ s) :=
@@ -78,6 +84,7 @@ private def copyingInputIso (S : Scheme.{u}) {K : Type u} (Γ : List K) :
       ← Category.assoc, copyingInputIsoAt_hom_π]
     exact Sheaf.Hom.ext rfl)
 
+/-- Identify a single-position assignment with its entry. -/
 private def copyingUnaryIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSheaf S) (s : K) :
     sheafTuple A [s] ≅ A s where
   hom := sheafTupleProj A Var.here
@@ -100,10 +107,12 @@ private def copyingUnaryIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSh
     | there i => exact nomatch i
   inv_hom_id := Sheaf.Hom.ext rfl
 
+/-- Lift the single-position comparison to an isomorphism of input functors. -/
 private def copyingUnaryIso (S : Scheme.{u}) {K : Type u} (s : K) :
     copyingInputs S [s] ≅ CategoryTheory.Pi.eval (fun _ : K => ZariskiSheaf S) s :=
   NatIso.ofComponents (fun A => copyingUnaryIsoAt A s) (fun _ => Sheaf.Hom.ext rfl)
 
+/-- The empty assignment is the unique section of the tensor unit. -/
 private def copyingNullaryIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSheaf S) :
     sheafTuple A [] ≅ 𝟙_ (ZariskiSheaf S) where
   hom := ⟨{ app := fun _ => ↾fun _ => PUnit.unit }⟩
@@ -124,6 +133,7 @@ private def copyingNullaryIsoAt {S : Scheme.{u}} {K : Type u} (A : K → Zariski
     ext U x
     exact @Subsingleton.elim PUnit inferInstance _ _
 
+/-- Compare the empty assignment functor with the constant terminal sheaf. -/
 private def copyingNullaryIso (S : Scheme.{u}) (K : Type u) :
     copyingInputs S ([] : List K) ≅ (Functor.const (K → ZariskiSheaf S)).obj (𝟙_ (ZariskiSheaf S)) :=
   NatIso.ofComponents copyingNullaryIsoAt (by
@@ -131,6 +141,7 @@ private def copyingNullaryIso (S : Scheme.{u}) (K : Type u) :
     ext U x
     exact @Subsingleton.elim PUnit inferInstance _ _)
 
+/-- Split off the first entry of a sheaf assignment. -/
 private def copyingConsIsoAt {S : Scheme.{u}} {K : Type u}
     (A : K → ZariskiSheaf S) (s : K) (Γ : List K) :
     sheafTuple A (s :: Γ) ≅ A s ⊗ sheafTuple A Γ where
@@ -155,6 +166,7 @@ private def copyingConsIsoAt {S : Scheme.{u}} {K : Type u}
     cases i <;> rfl
   inv_hom_id := Sheaf.Hom.ext rfl
 
+/-- Make the first-entry splitting natural in all carrier maps. -/
 private def copyingConsIso (S : Scheme.{u}) {K : Type u} (s : K) (Γ : List K) :
     copyingInputs S (s :: Γ) ≅
       ((CategoryTheory.Pi.eval (fun _ : K => ZariskiSheaf S) s).prod' (copyingInputs S Γ)) ⋙
@@ -165,20 +177,24 @@ private def copyingConsIso (S : Scheme.{u}) {K : Type u} (s : K) (Γ : List K) :
     ext U a
     rfl)
 
+/-- Build a generalized input point from its coordinate maps using the product limit. -/
 private def copyingTuplePoint {S : Scheme.{u}} {K : Type u} (Γ : List K)
     (A : K → ZariskiSheaf S) {P : ZariskiSheaf S}
     (p : ∀ i : (s : K) × Var Γ s, P ⟶ A i.1) : P ⟶ sheafTuple A Γ :=
   (sheafTupleFanIsLimit A Γ).lift (Fan.mk P p)
 
+/-- The product lift recovers exactly the given map at every argument position. -/
 private theorem copyingTuplePoint_proj {S : Scheme.{u}} {K : Type u} (Γ : List K)
     (A : K → ZariskiSheaf S) {P : ZariskiSheaf S}
     (p : ∀ i : (s : K) × Var Γ s, P ⟶ A i.1) (i : (s : K) × Var Γ s) :
     copyingTuplePoint Γ A p ≫ sheafTupleProj A i.2 = p i :=
   (sheafTupleFanIsLimit A Γ).fac (Fan.mk P p) ⟨i⟩
 
+/-- Send each section to the unique state of the singleton sheaf. -/
 private def toOneState {S : Scheme.{u}} (P : ZariskiSheaf S) : P ⟶ constantCarrier S PUnit :=
   ⟨{ app := fun _ => ↾fun _ => LocallyConstant.const _ PUnit.unit }⟩
 
+/-- The singleton sheaf has the terminal property used to identify global sections. -/
 private def copyingPointTerminal (S : Scheme.{u}) : IsTerminal (constantCarrier S PUnit) :=
   IsTerminal.ofUniqueHom toOneState (fun _ _ => by
     apply Sheaf.Hom.ext
@@ -187,6 +203,7 @@ private def copyingPointTerminal (S : Scheme.{u}) : IsTerminal (constantCarrier 
     intro x
     exact Subsingleton.elim _ _)
 
+/-- Identify the singleton point source with empty inputs throughout the carrier category. -/
 private def copyingNullaryPoints (S : Scheme.{u}) {K : Type u} :
     (Functor.const (K → ZariskiSheaf S)).obj (constantCarrier S PUnit) ≅ copyingInputs S ([] : List K) :=
   NatIso.ofComponents (fun A =>
@@ -215,8 +232,8 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
   fullInput := copyingInputs S
   fullInput_nil := copyingNullaryIso S _
   fullInput_cons := copyingConsIso S
-  positiveInputComparison s Γ := 𝟙 (copyingInputs S (s :: Γ))
-  positiveInputComparison_epi _ _ _ := inferInstanceAs (Epi (𝟙 _))
+  multipleInputComparison s t Γ := 𝟙 (copyingInputs S (s :: t :: Γ))
+  multipleInputComparison_epi _ _ _ _ := inferInstanceAs (Epi (𝟙 _))
   pointObject := constantCarrier S PUnit
   pointUnit := (copyingNullaryPoints S (K := sig.SortType)).app (fun _ => constantCarrier S PUnit) ≪≫
     (copyingNullaryIso S sig.SortType).app (fun _ => constantCarrier S PUnit)
@@ -226,6 +243,41 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
   domain A p := realizedPredicate (A.partialDomain p)
   partialValue := SheafStructure.partialValue
   quantity := SheafStructure.quantity
+
+/-- The Cartesian full input of unit points is the tuple given by the product limit. -/
+private theorem copyingFullInputPoint (sig : Signature.{u}) (S : Scheme.{u})
+    (Γ : List sig.SortType) (A : sig.SortType → ZariskiSheaf S)
+    (p : ∀ i : (s : sig.SortType) × Var Γ s, constantCarrier S PUnit ⟶ A i.1) :
+    (copyingStructureRule sig S).fullInputPoint A Γ p = copyingTuplePoint Γ A p := by
+  let rule := copyingStructureRule sig S
+  induction Γ with
+  | nil =>
+    apply (sheafTupleFanIsLimit A []).hom_ext
+    rintro ⟨⟨_, i⟩⟩
+    exact nomatch i
+  | cons s Γ ih =>
+    apply (sheafTupleFanIsLimit A (s :: Γ)).hom_ext
+    rintro ⟨⟨t, i⟩⟩
+    change rule.fullInputPoint A (s :: Γ) p ≫ sheafTupleProj A i =
+      copyingTuplePoint (s :: Γ) A p ≫ sheafTupleProj A i
+    refine Eq.trans ?_ (copyingTuplePoint_proj (s :: Γ) A p ⟨t, i⟩).symm
+    cases i with
+    | here => rfl
+    | there j =>
+      let q : ∀ i : (s : sig.SortType) × Var Γ s, constantCarrier S PUnit ⟶ A i.1 :=
+        fun i => p ⟨i.1, .there i.2⟩
+      apply Sheaf.Hom.ext
+      ext U x
+      change (((rule.fullInputPoint A Γ q).val.app U)
+        (rule.pointUnit.inv.val.app U PUnit.unit)).get j = (q ⟨t, j⟩).val.app U x
+      have hx : rule.pointUnit.inv.val.app U PUnit.unit = x := by
+        change (_ : LocallyConstant U.unop.left PUnit) = _
+        apply LocallyConstant.ext
+        intro y
+        exact Subsingleton.elim _ _
+      rw [hx, ih q]
+      exact congrArg (fun f : constantCarrier S PUnit ⟶ A t => f.val.app U x)
+        (copyingTuplePoint_proj Γ A q ⟨t, j⟩)
 
 /-- The Cartesian input of the copying mode is tested on all sheaf tuples. -/
 def copyingInputPoints (sig : Signature.{u}) (S : Scheme.{u}) :
@@ -253,6 +305,28 @@ def copyingInputPoints (sig : Signature.{u}) (S : Scheme.{u}) :
       (sheafTupleFanIsLimit A Γ).lift_self
     simpa only [hi, Category.id_comp] using h (sheafTuple A Γ) (fun i => sheafTupleProj A i.2)
 
+/-- At the singleton test, the copying tests and unit-point input use the same Cartesian tuple. -/
+theorem copyingInputPoints_unit (sig : Signature.{u}) (S : Scheme.{u})
+    (Γ : List sig.SortType) (A : sig.SortType → ZariskiSheaf S)
+    (p : ∀ i : (s : sig.SortType) × Var Γ s, constantCarrier S PUnit ⟶ A i.1) :
+    (copyingInputPoints sig S).tuplePoint (constantCarrier S PUnit) Γ A p =
+      (copyingStructureRule sig S).inputPoint A Γ p := by
+  let rule := copyingStructureRule sig S
+  change copyingTuplePoint Γ A p = rule.inputPoint A Γ p
+  match Γ with
+  | [] =>
+    apply (sheafTupleFanIsLimit A []).hom_ext
+    rintro ⟨⟨_, i⟩⟩
+    exact nomatch i
+  | [s] =>
+    apply (cancel_mono ((rule.unaryIso s).hom.app A)).mp
+    rw [rule.inputPoint_unary]
+    change copyingTuplePoint [s] A p ≫ sheafTupleProj A (Var.here : Var [s] s) = p ⟨s, .here⟩
+    exact copyingTuplePoint_proj [s] A p ⟨s, .here⟩
+  | s :: t :: Γ =>
+    change _ = rule.fullInputPoint A (s :: t :: Γ) p ≫ 𝟙 _
+    rw [Category.comp_id, copyingFullInputPoint]
+
 /-- A nullary copying input is the terminal sheaf. -/
 def copyingStructureRule_nullaryIso (sig : Signature.{u}) (S : Scheme.{u}) :
     (copyingStructureRule sig S).input [] ≅
@@ -267,6 +341,7 @@ def copyingStructureRule_consIso (sig : Signature.{u}) (S : Scheme.{u}) (s : sig
         ((copyingStructureRule sig S).input Γ)) ⋙ MonoidalCategory.tensor (ZariskiSheaf S) :=
   copyingConsIso S s Γ
 
+/-- An actual factorization through a predicate gives inclusion in its inverse image. -/
 private theorem predicate_le_of_factor {S : Scheme.{u}} {F G : ZariskiSheaf S}
     {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
     {g : P.toSheaf ⟶ Q.toSheaf} (h : g ≫ Q.inclusion = P.inclusion ≫ f) :
@@ -277,12 +352,14 @@ private theorem predicate_le_of_factor {S : Scheme.{u}} {F G : ZariskiSheaf S}
   change (g.val.app U ⟨x, hx⟩).val = f.val.app U x at he
   exact he ▸ (g.val.app U ⟨x, hx⟩).property
 
+/-- A predicate inclusion into an inverse image induces the map on the representing subsheaves. -/
 private theorem mapAlong_factor {S : Scheme.{u}} {F G : ZariskiSheaf S}
     {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
     (h : P.carrier ≤ (Q.preimage f).carrier) :
     SheafPredicate.mapAlong f h ≫ Q.inclusion = P.inclusion ≫ f :=
   Sheaf.Hom.ext rfl
 
+/-- The target predicate monomorphism determines any factorization uniquely. -/
 private theorem predicate_factor_unique {S : Scheme.{u}} {F G : ZariskiSheaf S}
     {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
     {g : P.toSheaf ⟶ Q.toSheaf} (h : g ≫ Q.inclusion = P.inclusion ≫ f)
@@ -335,9 +412,11 @@ def restrictState {sig : Signature.{u}} {S S' : Scheme.{u}}
     Over.homMk f (by simp)
   (A.carrier s).val.map g.op
 
+/-- Use the structure map as the unique arrow to the terminal relative test. -/
 private def toCoefficient {S : Scheme.{u}} (U : Over S) : U ⟶ Over.mk (𝟙 S) :=
   Over.homMk U.hom (by simp)
 
+/-- Read a section at the coefficient scheme as a map from the singleton sheaf. -/
 private def sectionAsPoint {S : Scheme.{u}} {F : ZariskiSheaf S}
     (x : F.val.obj (op (Over.mk (𝟙 S)))) : constantCarrier S PUnit ⟶ F :=
   ⟨{ app := fun U => ↾fun _ => F.val.map (toCoefficient U.unop).op x

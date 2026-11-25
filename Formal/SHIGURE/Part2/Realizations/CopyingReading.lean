@@ -15,6 +15,7 @@ larger universe than the designated states. Part I's coefficient scheme
 uses a category whose arrows belong to the state universe. A map of
 sections induced by a sheaf arrow is small, and its equality expresses
 equality of the maps available to a reading. The functor from the sheaf
+/-- Copying models inherit identities and composition from the structure-preserving sheaf maps. -/
 structure category sends every preserving sheaf arrow to this actual map.
 -/
 
@@ -30,6 +31,7 @@ open DeclarationContext
 
 variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
 
+/-- The selected structural map carries atomic truth through the Part I reading. -/
 private theorem ContextStructure.Hom.preservesAtomic {A B : ContextStructure U}
     (f : ContextStructure.Hom A B) :
     A.toRestrictedStructure.Preserves B.toRestrictedStructure f.onSort := by
@@ -76,6 +78,7 @@ def readCopyingFunctor (sig : Signature.{u}) (S : Scheme.{u}) :
   map_id _ := Subtype.ext (StructureMap.ext (fun _ _ => rfl))
   map_comp _ _ := Subtype.ext (StructureMap.ext (fun _ _ => rfl))
 
+/-- Compare the section carrier with the corresponding Part I state set. -/
 private def sectionCarrierEquiv {S : Scheme.{u}}
     (A : SheafStructure (Selected.signature U) (Scheme.zariskiTopology.over S))
     (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations) :

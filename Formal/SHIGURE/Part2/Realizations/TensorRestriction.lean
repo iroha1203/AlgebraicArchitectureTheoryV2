@@ -40,6 +40,7 @@ theorem TensorPosition.mapEquiv_apply (f : K → L) (Γ : List K) (i : TensorPos
     | here => rfl
     | there j => simp [mapEquiv, consPositions, ih, Var.mapSorts]
 
+/-- Transport a variable occurrence through the selected signature. -/
 private def transportArgument {R : Type u} [CommRing R] (f : K → L)
     (M : L → ModuleCat.{u} R) (Γ : List K) (i : TensorPosition Γ) :
     M (f i.1) →ₗ[R] M ((TensorPosition.mapEquiv f Γ i).1) :=
@@ -54,6 +55,7 @@ def reindexedTensorArguments {R : Type u} [CommRing R] (f : K → L)
   let e := TensorPosition.mapEquiv f a.inputs
   exact (e.symm.piCongrLeft' (fun i => M i.1)).symm (fun i => transportArgument f M a.inputs i (x i))
 
+/-- Apply the module operation to the original variable positions after restriction. -/
 private def restrictTensorOperation {R : Type u} [CommRing R] (f : K → L)
     (M : L → ModuleCat.{u} R) {a : Arity K} {b : Arity L}
     (shape : ⟨a.inputs.map f, f a.output⟩ = b) (op : TensorOperation R M b) :
@@ -64,6 +66,7 @@ private def restrictTensorOperation {R : Type u} [CommRing R] (f : K → L)
     (fun i : TensorPosition (a.inputs.map f) => (M i.1 : Type u)) (M (f a.output)) e.symm) op
   exact move.compLinearMap (transportArgument f M a.inputs)
 
+/-- Compute a restricted primitive on its actual tuple of entries. -/
 private theorem restrictTensorOperation_apply {R : Type u} [CommRing R] (f : K → L)
     (M : L → ModuleCat.{u} R) {a : Arity K} {b : Arity L}
     (shape : ⟨a.inputs.map f, f a.output⟩ = b) (op : TensorOperation R M b)

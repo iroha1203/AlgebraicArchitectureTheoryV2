@@ -15,9 +15,11 @@ noncomputable section
 
 namespace SHIGURE.Copying
 
+/-- Use the empty relative test scheme to display the empty-cover condition. -/
 private def emptyTest (S : Scheme.{u}) : Over S :=
   Over.mk (Scheme.emptyTo S)
 
+/-- Its empty covering family satisfies the Zariski cover condition. -/
 private theorem emptyTest_cover (S : Scheme.{u}) :
     (⊥ : Sieve (emptyTest S)) ∈ (Scheme.zariskiTopology.over S) (emptyTest S) := by
   have h : Sieve.overEquiv (emptyTest S) ⊥ = ⊥ := by
@@ -30,9 +32,11 @@ private theorem emptyTest_cover (S : Scheme.{u}) :
   rw [GrothendieckTopology.mem_over_iff, h]
   exact Scheme.bot_mem_grothendieckTopology (∅ : Scheme.{u})
 
+/-- Choose the unique section used in the empty-test example. -/
 private def singletonSection (S : Scheme.{u}) : (constantCarrier S PUnit).val.obj (op (emptyTest S)) :=
   LocallyConstant.const _ PUnit.unit
 
+/-- Relate the pointwise-empty section rule to the empty covering sieve. -/
 private theorem emptySubfunctor_sieve (S : Scheme.{u}) :
     (⊥ : Subfunctor (constantCarrier S PUnit).val).sieveOfSection (singletonSection S) = ⊥ := by
   ext Y f

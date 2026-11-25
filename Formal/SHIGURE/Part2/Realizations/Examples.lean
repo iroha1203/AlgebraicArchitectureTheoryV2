@@ -54,11 +54,13 @@ def singletonTheory : Theory :=
 def integerScheme : Scheme :=
   Spec (CommRingCat.of ℤ)
 
+/-- Apply the singleton Law to an arbitrary pair of states in a native model. -/
 private theorem model_states_eq (A : Model singletonTheory)
     (x y : A.obj.carrier ()) : x = y := by
   have h : singletonLaw.Holds A.obj := A.property ()
   exact h (Assignment.cons x (Assignment.cons y Assignment.empty)) trivial
 
+/-- Supply the native one-state model used on every trivializing open. -/
 private def singletonNative : Model singletonTheory :=
   ⟨setStructure Unit, by
     intro _ a _
@@ -156,6 +158,7 @@ def pointedSignature : Signature where
   partialArity := Empty.elim
   quantityArity := Empty.elim
 
+/-- Turn a chosen value into a multilinear operation on the unique empty tuple. -/
 private def emptyOperation {R : Type} [CommRing R] (M : ModuleCat R) (x : M) :
     MultilinearMap R (fun _ : TensorPosition ([] : List Unit) => M) M where
   toFun _ := x
@@ -169,6 +172,7 @@ def pointedStructure {R : Type} [CommRing R] (M : ModuleCat R) (mark : Bool → 
   total f := emptyOperation M (mark f)
   quantity q := nomatch q
 
+/-- The marked signature has operations and quantities with full domains. -/
 private def fullDomainScope : FullDomainTensorSignature pointedSignature :=
   ⟨inferInstanceAs (IsEmpty Empty), inferInstanceAs (IsEmpty Empty)⟩
 
@@ -177,6 +181,7 @@ theorem relation_not_fullDomain :
     ¬ FullDomainTensorSignature { pointedSignature with Rel := Unit, relInputs := fun _ => [] } :=
   fun scope => scope.noRelations.false ()
 
+/-- Write a chosen nullary mark as an expression from the tensor unit. -/
 private def markedElementExpr (R : Type) (b : Bool) :
     TensorExpression R pointedSignature .unit (.sort ()) :=
   .comp .emptyArguments (.total b)
@@ -192,6 +197,7 @@ def equalMarksSourceLaw : Law pointedSignature :=
     (.conj (.atom (.graph (.total true) (fun i => nomatch i) .here))
       (.atom (.eq (.there .here) .here)))))⟩
 
+/-- Read the designated native mark by evaluating the unit expression at one. -/
 private theorem markedElementExpr_at_one {R : Type} [CommRing R]
     (A : TensorStructure R pointedSignature) (b : Bool) :
     (markedElementExpr R b).eval A (1 : R) = A.designated b rfl := by
@@ -210,6 +216,7 @@ private theorem markedElementExpr_at_one {R : Type} [CommRing R]
   funext i
   exact nomatch i.2
 
+/-- The positive Law reads the equality of the two actual operation values. -/
 private theorem equalMarksSourceLaw_iff {R : Type} [CommRing R] (A : TensorStructure R pointedSignature) :
     equalMarksSourceLaw.Holds (A.elementStructure fullDomainScope) ↔
       A.designated false rfl = A.designated true rfl := by
@@ -244,6 +251,7 @@ def equalMarksReading : TensorLawReading integers fullDomainScope equalMarksSour
       apply LinearMap.ext_ring
       exact (markedElementExpr_at_one A false).trans (h.trans (markedElementExpr_at_one A true).symm)
 
+/-- Use the written Part I equality as the required Law of the marked signature. -/
 private def pointedSourceTheory : Theory :=
   ⟨pointedSignature, Unit, fun _ => equalMarksSourceLaw⟩
 
@@ -251,9 +259,11 @@ private def pointedSourceTheory : Theory :=
 def pointedTheory : TensorTheory integers pointedSignature Unit :=
   TensorTheory.read pointedSourceTheory fullDomainScope (fun _ => equalMarksReading)
 
+/-- Provide the nonzero equal-mark fixture over the integers. -/
 private def sameMarks : TensorStructure ℤ pointedSignature :=
   pointedStructure (ModuleCat.of ℤ ℤ) (fun _ => 1)
 
+/-- Provide the mark values that violate the required equality over the integers. -/
 private def differentMarks : TensorStructure ℤ pointedSignature :=
   pointedStructure (ModuleCat.of ℤ ℤ) (fun b => if b then 0 else 1)
 
@@ -338,12 +348,14 @@ theorem integer_mark_not_erased (rule : TensorCoefficientRule pointedSignature) 
   have heval := congrArg (TensorProduct.lid ℤ ℤ) hz
   exact one_ne_zero (by simpa only [TensorProduct.lid_tmul, one_smul, map_zero] using heval)
 
+/-- Write the coordinate repetition test using the actual primitive graph. -/
 private def repeatedGraphLaw : Law pointedSignature :=
   ⟨[(), ()], .conj
     (.atom (.graph (.total false) (fun i => nomatch i) .here))
     (.atom (.graph (.total false) (fun i => nomatch i) (.there .here))),
     .atom (.eq .here (.there .here))⟩
 
+/-- Give the Boolean states a primitive operation for the graph test. -/
 private def markedBool : Structure pointedSignature where
   carrier _ := Bool
   total f _ := f
@@ -352,9 +364,11 @@ private def markedBool : Structure pointedSignature where
   partialValue p := nomatch p
   quantity q := nomatch q
 
+/-- Require the graph test in the Boolean copying example. -/
 private def markedBoolTheory : Theory :=
   ⟨pointedSignature, Unit, fun _ => repeatedGraphLaw⟩
 
+/-- Verify the graph test on the native Boolean structure. -/
 private def markedBoolNative : Model markedBoolTheory :=
   ⟨markedBool, fun _ => by
     intro a h
@@ -395,6 +409,7 @@ theorem equalMarksReading_not_reflexive
   have hValues := (equalMarksSourceLaw_iff differentMarks).mp ((r.correct integerAlgebra differentMarks).mp yes)
   exact one_ne_zero (show (1 : ℤ) = 0 from hValues)
 
+/-- Choose the sorts used to test the support of a written tensor Law. -/
 private def tensorVocabulary : Signature where
   SortType := Bool
   Total := Empty
@@ -406,20 +421,24 @@ private def tensorVocabulary : Signature where
   partialArity := Empty.elim
   quantityArity := Empty.elim
 
+/-- Write the set-based equality on the false sort for the mixed-context example. -/
 private def collapseFalseSort : Law tensorVocabulary :=
   ⟨[false, false], .truth, .atom (.eq .here (.there .here))⟩
 
+/-- Use the sort-only signature for the torsion Law example. -/
 private def tensorPrimitives : PrimitivePresentation where
   signature := tensorVocabulary
   laws := ⟨Unit, fun _ => collapseFalseSort, fun _ => .required⟩
   derived _ role := by cases role
 
+/-- Record the two retained sorts of the tensor declarations. -/
 private def tensorSorts : DeclarationContext tensorPrimitives where
   declarations := Set.range Declaration.sort
   closed := by
     rintro _ ⟨s, rfl⟩ _ dependency
     simp only [Declaration.sort_dependencies, Set.notMem_empty] at dependency
 
+/-- Record the exact declarations occurring in the torsion Law. -/
 private def tensorLawScope : DeclarationContext tensorPrimitives where
   declarations := {Declaration.sort true}
   closed := by
@@ -428,6 +447,7 @@ private def tensorLawScope : DeclarationContext tensorPrimitives where
     subst d
     simp only [Declaration.sort_dependencies, Set.notMem_empty] at dependency
 
+/-- Test a genuine scalar relation by requiring twice the identity to vanish. -/
 private def twoTorsionLaw : TensorLaw ℤ (DeclarationContext.Selected.signature tensorLawScope) :=
   let sig := DeclarationContext.Selected.signature tensorLawScope
   let s : sig.SortType := ⟨true, rfl⟩
@@ -436,12 +456,14 @@ private def twoTorsionLaw : TensorLaw ℤ (DeclarationContext.Selected.signature
   let right := @TensorExpression.zero ℤ sig carrier carrier
   ⟨carrier, carrier, left, right⟩
 
+/-- Verify which declarations occur in the written torsion expression. -/
 private theorem twoTorsion_support :
     twoTorsionLaw.support (DeclarationContext.Selected.names tensorLawScope) =
       ({Declaration.sort true} : Set (Declaration tensorPrimitives)) := by
   simp [twoTorsionLaw, TensorLaw.support, TensorExpression.support, TensorShape.support,
     DeclarationContext.Selected.names]
 
+/-- Attach the torsion Law to its declaration context. -/
 private def tensorDeclarations : TensorLawDeclarations integers tensorPrimitives where
   Name := Unit
   statement _ :=
@@ -454,6 +476,7 @@ private def tensorDeclarations : TensorLawDeclarations integers tensorPrimitives
         · exact DeclarationContext.subset_closure _ }
   required := Set.univ
 
+/-- Retain the full declaration family for the torsion test. -/
 private def tensorContext : TensorDeclarationContext tensorDeclarations where
   primitives := tensorSorts
   fullDomain := ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
@@ -468,6 +491,7 @@ private def tensorContext : TensorDeclarationContext tensorDeclarations where
     rintro _ rfl
     exact ⟨true, rfl⟩
 
+/-- Retain the Law while dropping the unused sort. -/
 private def smallerTensorContext : TensorDeclarationContext tensorDeclarations where
   primitives := tensorLawScope
   fullDomain := ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
@@ -496,12 +520,14 @@ theorem twoTorsion_law_uses_its_sort (U : TensorDeclarationContext tensorDeclara
   rw [twoTorsion_support]
   rfl
 
+/-- Build a tensor model from the chosen module at each sort. -/
 private def contextModules (U : DeclarationContext tensorPrimitives) (M N : ModuleCat ℤ) :
     TensorAt integers (DeclarationContext.Selected.signature U) where
   carrier s := if (show Bool from s.val) then M else N
   total op := nomatch op.val
   quantity q := nomatch q.val
 
+/-- Twice every element of the characteristic-two module vanishes. -/
 private theorem zmod2_two_torsion : (2 : ℤ) • (LinearMap.id : ZMod 2 →ₗ[ℤ] ZMod 2) = 0 := by
   apply LinearMap.ext
   intro x
@@ -531,15 +557,20 @@ theorem integer_fails_selected_tensor_law :
   have he := LinearMap.congr_fun hf 1
   exact (by decide : (2 : ℤ) ≠ 0) he
 
+/-- Give the mixed context a common primitive signature for both kinds of Law. -/
 private abbrev mixedPrimitives := DeclarationContext.full tensorPrimitives
 
+/-- Extract the actual typed signature used by both readings. -/
 private abbrev mixedSignature := DeclarationContext.Selected.signature mixedPrimitives
 
+/-- Express the equality requirement on the sort read by Part I. -/
 private abbrev collapsedSort : mixedSignature.SortType := ⟨false, Set.mem_univ _⟩
 
+/-- Recognize the mixed signature as a full-domain tensor signature. -/
 private def mixedScope : FullDomainTensorSignature mixedSignature :=
   ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
 
+/-- Translate the specified positive equality into the tensor equation at its sort. -/
 private def mixedReading (name : (DeclarationContext.Selected.presentation mixedPrimitives).theory.LawName) :
     TensorLawReading integers mixedScope ((DeclarationContext.Selected.presentation mixedPrimitives).theory.law name) where
   equation := ⟨.sort collapsedSort, .sort collapsedSort, .id _, .zero _ _⟩
@@ -556,6 +587,7 @@ private def mixedReading (name : (DeclarationContext.Selected.presentation mixed
       intro x
       exact h (Assignment.cons x (Assignment.cons (0 : A.carrier collapsedSort) Assignment.empty)) trivial
 
+/-- Retain both the Part I declaration and the native tensor declaration. -/
 private def mixedTensorContext : TensorDeclarationContext tensorDeclarations where
   primitives := mixedPrimitives
   fullDomain := mixedScope

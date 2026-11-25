@@ -85,14 +85,14 @@ variable (mode : CoefficientRealizationMode base T)
 abbrev Points (R : CoefficientAlgebra base) (A : mode.Object R) (s : T.signature.SortType) :=
   (mode.rule R).pointObject ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
 
-/-- The value of a nullary primitive is a point of its declared output sort. -/
+/-- Read a nullary total operation as a point of its declared output sort. -/
 def nullaryPoint (R : CoefficientAlgebra base) (A : mode.Object R) (op : T.signature.Total)
     (h : (T.signature.totalArity op).inputs = []) : mode.Points R A (T.signature.totalArity op).output :=
   let rule := mode.rule R
   (rule.nullaryInputIso (rule.carrier A)).hom ≫
     eqToHom (congrArg (fun Γ => (rule.input Γ).obj (rule.carrier A)) h.symm) ≫ rule.total A op
 
-/-- The nullary preservation square is equivalent to preserving the actual designated point. -/
+/-- For a nullary total operation, its square commutes precisely when the designated point is preserved. -/
 theorem nullaryPoint_preservation_iff {R : CoefficientAlgebra base} {A B : mode.Object R}
     (f : ∀ s, (mode.rule R).carrier A s ⟶ (mode.rule R).carrier B s) (op : T.signature.Total)
     (h : (T.signature.totalArity op).inputs = []) :

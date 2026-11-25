@@ -70,11 +70,12 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
     letI := monoidal
     fullInput (s :: Γ) ≅ ((Pi.eval (fun _ : sig.SortType => C) s ⋙ view).prod' (fullInput Γ)) ⋙
       MonoidalCategory.tensor Ambient
-  /-- Interpret the full typed product of a nonempty arity in the chosen presentation. -/
-  positiveInputComparison (s : sig.SortType) (Γ : List sig.SortType) : fullInput (s :: Γ) ⟶ input (s :: Γ)
+  /-- Interpret the full typed product of two or more arguments in the chosen presentation. -/
+  multipleInputComparison (s t : sig.SortType) (Γ : List sig.SortType) :
+    fullInput (s :: t :: Γ) ⟶ input (s :: t :: Γ)
   /-- The interpreted input is presented by the full typed product. -/
-  positiveInputComparison_epi (s : sig.SortType) (Γ : List sig.SortType) (A : sig.SortType → C) :
-    Epi ((positiveInputComparison s Γ).app A)
+  multipleInputComparison_epi (s t : sig.SortType) (Γ : List sig.SortType) (A : sig.SortType → C) :
+    Epi ((multipleInputComparison s t Γ).app A)
   /-- The source object for a nullary primitive value. -/
   pointObject : Ambient
   /-- The point source represents the actual unit of the mode. -/
@@ -99,7 +100,8 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
   quantity (A : Object) (q : sig.Quantity) : (input (sig.quantityArity q).inputs).obj (carrier A) ⟶
     view.obj (carrier A (sig.quantityArity q).output)
 
-/-- A pointwise interpretation of inputs for modes that use generalized tuples. -/
+/-- A jointly detecting family of generalized input points, natural under carrier
+maps and restrictions. Its choice of probes serves to test diagram equality. -/
 structure StructureInputPoints {sig : Signature.{u}} {C : Cat.{v, w}} {Object : Type t}
     (rule : StructureRule sig C Object) where
   /-- Test objects and the actual restrictions between their generalized points. -/
@@ -129,14 +131,44 @@ namespace StructureRule
 variable {sig : Signature.{u}} {C : Cat.{v, w}} {Object : Type t}
 variable (rule : StructureRule sig C Object)
 
+/-- Compare the full empty product with the chosen empty input using the unit. -/
 private def emptyInputComparison : rule.fullInput [] ≅ rule.input [] :=
   letI := rule.monoidal
   rule.fullInput_nil ≪≫ (Functor.const (sig.SortType → C)).mapIso rule.pointUnit.symm ≪≫ rule.nullaryInput
 
+/-- Removing the empty tail identifies the full unary input with the displayed sort. -/
+private def fullUnaryIso (s : sig.SortType) :
+    rule.fullInput [s] ≅ Pi.eval (fun _ : sig.SortType => C) s ⋙ rule.view := by
+  letI := rule.monoidal
+  refine rule.fullInput_cons s [] ≪≫ NatIso.ofComponents (fun A =>
+    (Iso.refl _ ⊗ᵢ rule.fullInput_nil.app A) ≪≫ (ρ_ (rule.view.obj (A s)))) ?_
+  intro A B f
+  let g := rule.view.map (f s)
+  have h : (rule.fullInput []).map f ≫ (rule.fullInput_nil.app B).hom =
+      (rule.fullInput_nil.app A).hom := by
+    have e := rule.fullInput_nil.hom.naturality f
+    change (rule.fullInput []).map f ≫ (rule.fullInput_nil.app B).hom =
+      (rule.fullInput_nil.app A).hom ≫ 𝟙 _ at e
+    simpa only [Category.comp_id] using e
+  change (g ⊗ₘ (rule.fullInput []).map f) ≫
+      (𝟙 _ ⊗ₘ (rule.fullInput_nil.app B).hom) ≫ (ρ_ _).hom =
+    ((𝟙 _ ⊗ₘ (rule.fullInput_nil.app A).hom) ≫ (ρ_ _).hom) ≫ g
+  rw [← Category.assoc, MonoidalCategory.tensorHom_comp_tensorHom, Category.comp_id, h,
+    Category.assoc _ (ρ_ _).hom, ← MonoidalCategory.rightUnitor_naturality,
+    ← MonoidalCategory.tensorHom_id, ← Category.assoc, MonoidalCategory.tensorHom_comp_tensorHom,
+    Category.id_comp]
+  exact congrArg (fun z => (g ⊗ₘ z) ≫ (ρ_ (rule.view.obj (B s))).hom)
+    (Category.comp_id (rule.fullInput_nil.app A).hom).symm
+
+/-- Use the same displayed carrier to compare the two unary input representations. -/
+private def unaryInputComparison (s : sig.SortType) : rule.fullInput [s] ≅ rule.input [s] :=
+  rule.fullUnaryIso s ≪≫ (rule.unaryIso s).symm
+
 /-- The full typed product presents the interpreted input at every arity. -/
 def inputComparison : (Γ : List sig.SortType) → rule.fullInput Γ ⟶ rule.input Γ
   | [] => rule.emptyInputComparison.hom
-  | s :: Γ => rule.positiveInputComparison s Γ
+  | [s] => (rule.unaryInputComparison s).hom
+  | s :: t :: Γ => rule.multipleInputComparison s t Γ
 
 /-- The full input comparison determines any arrow out of the interpreted input. -/
 theorem inputComparison_epi (Γ : List sig.SortType) (A : sig.SortType → C) :
@@ -145,7 +177,12 @@ theorem inputComparison_epi (Γ : List sig.SortType) (A : sig.SortType → C) :
   | nil =>
     change Epi (rule.emptyInputComparison.app A).hom
     infer_instance
-  | cons s Γ => exact rule.positiveInputComparison_epi s Γ A
+  | cons s Γ =>
+    cases Γ with
+    | nil =>
+      change Epi ((rule.unaryInputComparison s).app A).hom
+      infer_instance
+    | cons t Γ => exact rule.multipleInputComparison_epi s t Γ A
 
 /-- On an input, changing carriers is the combination of just the declared argument maps. -/
 theorem input_map_positions (Γ : List sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B) :
@@ -212,13 +249,46 @@ def fullInputPoint (A : sig.SortType → C) : (Γ : List sig.SortType) →
       (p ⟨s, .here⟩ ⊗ₘ (rule.pointUnit.inv ≫ fullInputPoint A Γ (fun i => p ⟨i.1, .there i.2⟩))) ≫
         (rule.fullInput_cons s Γ).inv.app A
 
-/-- Evaluating a total primitive on any tuple of points produces a point of its output sort. -/
+/-- Interpret a tuple of points as a point of the input of its arity. -/
+def inputPoint (A : sig.SortType → C) (Γ : List sig.SortType)
+    (p : ∀ i : (s : sig.SortType) × Var Γ s, rule.pointObject ⟶ rule.view.obj (A i.1)) :
+    rule.pointObject ⟶ (rule.input Γ).obj A :=
+  rule.fullInputPoint A Γ p ≫ (rule.inputComparison Γ).app A
+
+/-- The point of the empty input is the very comparison used to read nullary operations. -/
+theorem inputPoint_nil (A : sig.SortType → C)
+    (p : ∀ i : (s : sig.SortType) × Var [] s, rule.pointObject ⟶ rule.view.obj (A i.1)) :
+    rule.inputPoint A [] p = (rule.nullaryInputIso A).hom := by
+  letI := rule.monoidal
+  change (rule.pointUnit.hom ≫ (rule.fullInput_nil.app A).inv) ≫
+    (rule.fullInput_nil.app A).hom ≫ rule.pointUnit.inv ≫ (rule.nullaryInputIso A).hom = _
+  simp only [Category.assoc, Iso.inv_hom_id_assoc, Iso.hom_inv_id_assoc]
+
+/-- At a singleton arity the input point is the original point in the displayed sort. -/
+theorem inputPoint_unary (A : sig.SortType → C) (s : sig.SortType)
+    (p : ∀ i : (t : sig.SortType) × Var [s] t, rule.pointObject ⟶ rule.view.obj (A i.1)) :
+    rule.inputPoint A [s] p ≫ (rule.unaryIso s).hom.app A = p ⟨s, .here⟩ := by
+  letI := rule.monoidal
+  let a := p ⟨s, Var.here⟩
+  change (rule.fullInputPoint A [s] p ≫ (rule.fullUnaryIso s).hom.app A ≫
+    (rule.unaryIso s).inv.app A) ≫ (rule.unaryIso s).hom.app A = a
+  simp only [Category.assoc, Iso.inv_hom_id_app, Category.comp_id]
+  change ((ρ_ rule.pointObject).inv ≫
+      (a ⊗ₘ (rule.pointUnit.inv ≫ rule.pointUnit.hom ≫ (rule.fullInput_nil.app A).inv)) ≫
+      (rule.fullInput_cons s []).inv.app A) ≫
+    (rule.fullInput_cons s []).hom.app A ≫
+      ((𝟙 (rule.view.obj (A s)) ⊗ₘ (rule.fullInput_nil.app A).hom) ≫
+        (ρ_ (rule.view.obj (A s))).hom) = a
+  simp only [Category.assoc, Iso.inv_hom_id_assoc, Iso.inv_hom_id_app_assoc]
+  rw [MonoidalCategory.tensorHom_comp_tensorHom_assoc, Category.comp_id a, Iso.inv_hom_id,
+    MonoidalCategory.tensorHom_id, MonoidalCategory.rightUnitor_naturality, Iso.inv_hom_id_assoc]
+
+/-- Evaluating a total operation on a typed tuple produces a point of its output sort. -/
 def totalAtTuple (A : Object) (op : sig.Total)
     (p : ∀ i : (s : sig.SortType) × Var (sig.totalArity op).inputs s,
       rule.pointObject ⟶ rule.view.obj (rule.carrier A i.1)) :
     rule.pointObject ⟶ rule.view.obj (rule.carrier A (sig.totalArity op).output) :=
-  rule.fullInputPoint (rule.carrier A) (sig.totalArity op).inputs p ≫
-    (rule.inputComparison (sig.totalArity op).inputs).app (rule.carrier A) ≫ rule.total A op
+  rule.inputPoint (rule.carrier A) (sig.totalArity op).inputs p ≫ rule.total A op
 
 /-- The represented full input determines each operation square. -/
 theorem total_preservation_iff_onFullInput {A B : Object}

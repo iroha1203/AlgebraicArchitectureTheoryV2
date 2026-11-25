@@ -16,21 +16,27 @@ open CategoryTheory
 
 namespace SHIGURE.RealizationExamples
 
+/-- Use the permutation group as the arrow set on a single carrier. -/
 private abbrev Permutations := SingleObj (Equiv.Perm (Fin 3))
 
+/-- Display each permutation as the actual state function in sets. -/
 private def permutationView : Permutations ⥤ Type where
   obj _ := Fin 3
   map f := ↾fun x => (show Equiv.Perm (Fin 3) from f) x
 
+/-- Form the product of the state sets at the given argument positions. -/
 private def permutationProduct (I : Type) : (I → Permutations) ⥤ Type where
   obj _ := I → Fin 3
   map f := ↾fun x i => (show Equiv.Perm (Fin 3) from f i) (x i)
 
+/-- Use a dependent index to identify a sort together with a specific variable occurrence. -/
 private abbrev Position (Γ : List Bool) := (s : Bool) × Var Γ s
 
+/-- Associate the arity-indexed product to a family of permutation carriers. -/
 private abbrev permutationInputs (Γ : List Bool) : (Bool → Permutations) ⥤ Type :=
   Pi.comap (fun _ : Bool => Permutations) (fun i : Position Γ => i.1) ⋙ permutationProduct (Position Γ)
 
+/-- Read a one-position state tuple at its only position. -/
 private def unaryEquiv (s : Bool) : (Position [s] → Fin 3) ≃ Fin 3 where
   toFun x := x ⟨s, .here⟩
   invFun a _ := a
@@ -42,6 +48,7 @@ private def unaryEquiv (s : Bool) : (Position [s] → Fin 3) ≃ Fin 3 where
     | there i => exact nomatch i
   right_inv _ := rfl
 
+/-- Use two sorts and one binary operation to test independently chosen carrier maps. -/
 private def binarySignature : Signature where
   SortType := Bool
   Total := Unit
@@ -53,6 +60,7 @@ private def binarySignature : Signature where
   partialArity := Empty.elim
   quantityArity := Empty.elim
 
+/-- There is precisely one function from an empty list of positions. -/
 private def permutationEmptyIso : (PUnit : Type) ≅ (Position [] → Fin 3) :=
   { hom := ↾fun _ i => nomatch i.2
     inv := ↾fun _ => PUnit.unit
@@ -63,6 +71,7 @@ private def permutationEmptyIso : (PUnit : Type) ≅ (Position [] → Fin 3) :=
       funext i
       exact nomatch i.2 }
 
+/-- Split the first argument from the remaining state tuple. -/
 private def permutationSplitEquiv (s : Bool) (Γ : List Bool) :
     (Position (s :: Γ) → Fin 3) ≃ Fin 3 × (Position Γ → Fin 3) where
   toFun x := (x ⟨s, .here⟩, fun i => x ⟨i.1, .there i.2⟩)
@@ -75,6 +84,7 @@ private def permutationSplitEquiv (s : Bool) (Γ : List Bool) :
     cases i <;> rfl
   right_inv _ := rfl
 
+/-- Use sortwise permutations and Cartesian declaration inputs in the example. -/
 private def permutationRule : StructureRule binarySignature (Cat.of Permutations) Unit where
   carrier _ _ := SingleObj.star (Equiv.Perm (Fin 3))
   Ambient := Cat.of Type
@@ -90,8 +100,8 @@ private def permutationRule : StructureRule binarySignature (Cat.of Permutations
   fullInput := permutationInputs
   fullInput_nil := NatIso.ofComponents (fun _ => permutationEmptyIso.symm) (fun _ => rfl)
   fullInput_cons s Γ := NatIso.ofComponents (fun _ => (permutationSplitEquiv s Γ).toIso) (fun _ => rfl)
-  positiveInputComparison s Γ := 𝟙 (permutationInputs (s :: Γ))
-  positiveInputComparison_epi _ _ _ := inferInstanceAs (Epi (𝟙 _))
+  multipleInputComparison s t Γ := 𝟙 (permutationInputs (s :: t :: Γ))
+  multipleInputComparison_epi _ _ _ _ := inferInstanceAs (Epi (𝟙 _))
   pointObject := PUnit
   pointUnit := Iso.refl _
   nullaryInput := NatIso.ofComponents (fun _ => permutationEmptyIso) (by
@@ -116,6 +126,7 @@ def permutationInputPoints : StructureInputPoints permutationRule where
   tuplePoint_ext Γ A {Y f g} h := by
     exact h (Position Γ → Fin 3) (fun i => ↾fun x => x i)
 
+/-- Keep the binary signature with no additional Laws in the example. -/
 private def permutationTheory : RealizationTheory where
   signature := binarySignature
   LawName := Empty
@@ -138,6 +149,7 @@ def threeStatePermutationMode (base : CoefficientRing) :
   changePoints _ _ _ p := p
   holds _ _ statement := nomatch statement
 
+/-- Read an endomorphism by its action on the sort used by the operation. -/
 private def permutationStructureHomEquiv :
     ((show permutationRule.Category from ()) ⟶ (show permutationRule.Category from ())) ≃
       Equiv.Perm (Fin 3) where
@@ -179,6 +191,7 @@ theorem nullaryZero_preserved_iff (σ : Equiv.Perm (Fin 3)) :
   · intro h
     exact congrArg (fun y : Fin 3 => (↾fun _ : PUnit => y : (PUnit : Type) ⟶ Fin 3)) h
 
+/-- Admit the example structure as a model of its empty Law family. -/
 private def permutationModel (base : CoefficientRing) (R : CoefficientAlgebra base) :
     (threeStatePermutationMode base).Models R :=
   ⟨(), trivial, fun l => nomatch l⟩
