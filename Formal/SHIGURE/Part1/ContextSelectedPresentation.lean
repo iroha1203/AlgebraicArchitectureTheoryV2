@@ -42,18 +42,25 @@ theorem domainSymbolKept (p : Partial U) (data : DomainInclusions p.val) (attach
     Declaration.ofOperation (data.symbol i).operation ∈ U.declarations :=
   U.closed p.property (Declaration.partial_domainSymbol_mem_dependsOn data attached i)
 
+/-- Read a domain projection at its actual position in the selected partial arity. -/
+private def ambientDomainInput (p : Partial U) {s : SortName U}
+    (i : Var ((signature U).partialArity p).inputs s) :
+    Var (P.signature.partialArity p.val).inputs s.val :=
+  ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property))
+    (cast (congrArg (Var · s) (signature_partialInputs p)) i)
+
 /-- Restrict the domain inclusion with its original sort and all ordered coordinate operations. -/
 def selectDomainInclusions (p : Partial U) (data : DomainInclusions p.val)
     (attached : P.domainInclusions p.val = some data) : DomainInclusions (sig := signature U) p where
   domainSort := ⟨data.domainSort, domainSortKept p data attached⟩
   symbol i := selectTotalSymbol
-    (data.symbol (ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) i))
-    (domainSymbolKept p data attached (ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) i))
+    (data.symbol (ambientDomainInput p i))
+    (domainSymbolKept p data attached (ambientDomainInput p i))
   arity_eq i := by
     apply ambientArity_injective
     change ambientArity (selectTotalSymbol _ _).operation.arity = _
     rw [selectTotalSymbol_arity]
-    exact (map_arity _ _).trans (data.arity_eq (ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) i))
+    exact (map_arity _ _).trans (data.arity_eq (ambientDomainInput p i))
 
 /-- Closedness supplies all the references of a retained derived Law's original proof. -/
 theorem keepsDerived (name : U.RetainedLaw) (role : P.laws.role name.val = .derived) :
@@ -87,6 +94,11 @@ def presentationLawName (name : U.RetainedLaw) : (presentation U).laws.LawName :
 /-- A required name in the selected theory comes from a retained Law declaration. -/
 def retainedTheoryName (name : (presentation U).theory.LawName) : U.RetainedLaw :=
   name.val
+
+/-- The retained theory name identifies the same original declaration. -/
+theorem retainedTheoryName_val (name : (presentation U).theory.LawName) :
+    (retainedTheoryName name).val = name.val.val :=
+  rfl
 
 /-- A required Law of the selected presentation reads the statement at its retained name. -/
 theorem presentation_theory_law (name : (presentation U).theory.LawName) :

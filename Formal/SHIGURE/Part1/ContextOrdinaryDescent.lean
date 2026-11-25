@@ -175,7 +175,7 @@ theorem ordinaryAssemble_comp {A B C : Model (Selected.theory U)}
   refine (unique _ (cover.ordinaryAssemble_piece_heq (f.comp g))).trans (unique _ ?_).symm
   have readComposite : cover.ordinaryRead.map (cover.ordinaryAssemble f ≫ cover.ordinaryAssemble g) = f.comp g := by
     rw [Functor.map_comp, ordinaryAssemble_read, ordinaryAssemble_read]
-    rfl
+    exact OrdinaryMatch.comp_eq_hom_comp f g
   intro i
   exact (cover.ordinaryRead_map_heq (cover.ordinaryAssemble f ≫ cover.ordinaryAssemble g) i).symm.trans
     (heq_of_eq (congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) readComposite))

@@ -183,6 +183,13 @@ theorem operation_selectedOutput {op : Operation P.signature}
     selected.arity.output = ⟨op.arity.output, operationOutput op keep⟩ :=
   (congrArg Arity.output (operation_arity_of_eq same)).trans (arity_output op keep)
 
+/-- The operation profile can be stated directly in terms of its retained input list and result sort. -/
+theorem operation_arity_atContext (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) :
+    (operation op keep).arity = ⟨context op.arity.inputs (operationInputs op keep),
+      ⟨op.arity.output, operationOutput op keep⟩⟩ :=
+  congrArg₂ Arity.mk (operation_selectedInputs (keep := keep) rfl) (operation_selectedOutput (keep := keep) rfl)
+
 /-- Inclusion sends a selected operation to the original operation. -/
 theorem names_operation (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
     (names U).operation (operation op kept) = op := by

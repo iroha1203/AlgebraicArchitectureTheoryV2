@@ -104,6 +104,64 @@ theorem read_write_value (B : Structure (signature U)) (s : SortName U) (y : B.c
       readCarrierEquiv (writeStructure B) s.val s.property ((writeCarrierEquiv B s.val s.property).symm y) := by
   simp only [readCarrierEquiv_eq_cast, writeCarrierEquiv_eq_cast, ← Equiv.cast_symm, Equiv.cast_apply, cast_cast]
 
+/-- Carrier transport at an actual selected input list uses the corresponding ambient tuple. -/
+private theorem read_write_args_cast (B : Structure (signature U)) {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts Γ ⊆ U.declarations) {Δ : List (SortName U)}
+    (shape : Δ = context Γ keep) (x : Assignment B.carrier Δ) :
+    x.map (fun s => cast (congrFun (read_write_carriers B).symm s)) =
+      cast (congrArg (Assignment (readStructure (writeStructure B)).carrier) shape.symm)
+        (selectAssignment (readCarrierEquiv (writeStructure B)) keep
+          (ambientAssignment (writeCarrierEquiv B) keep (cast (congrArg (Assignment B.carrier) shape) x))) := by
+  subst Δ
+  exact read_write_args B keep x
+
+/-- Reading and selecting an actual tuple in the same structure cancels both transports. -/
+private theorem written_args_inverse (B : Structure (signature U)) {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts Γ ⊆ U.declarations) {Δ : List (SortName U)}
+    (shape : Δ = context Γ keep) (x : Assignment B.carrier Δ) :
+    cast (congrArg (Assignment B.carrier) shape.symm)
+      (selectAssignment (writeCarrierEquiv B) keep
+        (ambientAssignment (writeCarrierEquiv B) keep (cast (congrArg (Assignment B.carrier) shape) x))) = x := by
+  rw [selectAssignment_ambientAssignment, cast_cast, cast_eq]
+
+/-- The output carrier transport uses the corresponding retained original sort. -/
+private theorem read_write_value_cast (B : Structure (signature U)) {s t : SortName U}
+    (shape : s = t) (y : B.carrier s) :
+    cast (congrFun (read_write_carriers B).symm s) y =
+      cast (congrArg (readStructure (writeStructure B)).carrier shape.symm)
+        (readCarrierEquiv (writeStructure B) t.val t.property
+          ((writeCarrierEquiv B t.val t.property).symm (cast (congrArg B.carrier shape) y))) := by
+  cases shape
+  exact read_write_value B s y
+
+attribute [local irreducible] arity in
+/-- The compared structures have the same graph at the actual selected operation profile. -/
+private theorem read_write_graph (B : Structure (signature U))
+    (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
+    (selected : Operation (signature U)) (same : operation op keep = selected)
+    (x : Assignment B.carrier selected.arity.inputs) (y : B.carrier selected.arity.output) :
+    (readStructure (writeStructure B)).Graph selected
+      (x.map (fun s => cast (congrFun (read_write_carriers B).symm s)))
+      (cast (congrFun (read_write_carriers B).symm selected.arity.output) y) ↔ B.Graph selected x y := by
+  let A := writeStructure B
+  let shape := operation_selectedInputs same
+  let output := operation_selectedOutput same
+  let a := ambientAssignment (writeCarrierEquiv B) (operationInputs op keep)
+    (cast (congrArg (Assignment B.carrier) shape) x)
+  let z := (writeCarrierEquiv B _ (operationOutput op keep)).symm (cast (congrArg B.carrier output) y)
+  rw [read_write_args_cast B (operationInputs op keep) shape x, read_write_value_cast B output y]
+  have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) op keep selected same a z).symm.trans
+    ((readStructure_matches A).graph op keep a z)
+  have right := (graph_select_congr B (writeCarrierEquiv B) op keep selected same a z).symm.trans
+    ((writeStructure_matches B).graph op keep a z)
+  rw [written_args_inverse B (operationInputs op keep) shape x] at right
+  have inverse : cast (congrArg B.carrier output.symm)
+      (writeCarrierEquiv B _ (operationOutput op keep) z) = y := by
+    rw [show z = _ from rfl, Equiv.apply_symm_apply, cast_cast, cast_eq]
+  rw [inverse] at right
+  exact left.trans right.symm
+
+attribute [local irreducible] arity in
 /-- Recover the given ordinary selected structure by writing and reading it,
 as used in the model comparison for Proposition 3.2. Its retained relations,
 domains and graphs determine the structure after the carrier identification. -/
@@ -113,69 +171,35 @@ domains and graphs determine the structure after the carrier identification. -/
   apply Structure.eq_of_graphs h
   · intro r x
     let keep := relationInputs r.val r.property
-    let a := ambientAssignment (writeCarrierEquiv B) keep x
+    let shape := signature_relInputs r
+    let a := ambientAssignment (writeCarrierEquiv B) keep (cast (congrArg (Assignment B.carrier) shape) x)
     change (readStructure A).relation r (x.map (fun s => cast (congrFun h.symm s))) ↔ B.relation r x
-    rw [read_write_args B keep x]
-    have left := (readStructure_matches A).relation r.val r.property a
-    have right := (writeStructure_matches B).relation r.val r.property a
-    rw [selectAssignment_ambientAssignment (writeCarrierEquiv B) keep x] at right
+    rw [read_write_args_cast B keep shape x]
+    have left := (readStructure_matches A).relation_cast r a
+    have right := (writeStructure_matches B).relation_cast r a
+    rw [written_args_inverse B keep shape x] at right
     exact left.trans right.symm
   · intro p x
     let keep := operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
-    let a := ambientAssignment (writeCarrierEquiv B) keep x
+    let shape := signature_partialInputs p
+    let a := ambientAssignment (writeCarrierEquiv B) keep (cast (congrArg (Assignment B.carrier) shape) x)
     change (readStructure A).partialDomain p (x.map (fun s => cast (congrFun h.symm s))) ↔ B.partialDomain p x
-    rw [read_write_args B keep x]
-    have left := (readStructure_matches A).domain p.val p.property a
-    have right := (writeStructure_matches B).domain p.val p.property a
-    rw [selectAssignment_ambientAssignment (writeCarrierEquiv B) keep x] at right
+    rw [read_write_args_cast B keep shape x]
+    have left := (readStructure_matches A).domain_cast p a
+    have right := (writeStructure_matches B).domain_cast p a
+    rw [written_args_inverse B keep shape x] at right
     exact left.trans right.symm
   · intro op x y
     cases op with
     | total f =>
-      let opKept := Declaration.ofOperation_total_mem f.val f.property
-      let keep := operationInputs (.total f.val) opKept
-      let a := ambientAssignment (writeCarrierEquiv B) keep x
-      let z := (writeCarrierEquiv B _ (operationOutput (.total f.val) opKept)).symm y
-      rw [read_write_args B keep x, read_write_value]
-      have selectedOp := operation_total f.val opKept
-      have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.total f.val)
-        opKept (.total f) selectedOp a z).symm.trans
-          ((readStructure_matches A).graph (.total f.val) opKept a z)
-      have right := (graph_select_congr B (writeCarrierEquiv B) (.total f.val) opKept
-        (.total f) selectedOp a z).symm.trans ((writeStructure_matches B).graph (.total f.val) opKept a z)
-      simp only [cast_eq] at left right
-      rw [selectAssignment_ambientAssignment (writeCarrierEquiv B) keep x, Equiv.apply_symm_apply] at right
-      exact left.trans right.symm
+      let kept := Declaration.ofOperation_total_mem f.val f.property
+      exact read_write_graph B (.total f.val) kept (.total f) (operation_total f.val kept) x y
     | partialOp p =>
-      let opKept := Declaration.ofOperation_partialOp_mem p.val p.property
-      let keep := operationInputs (.partialOp p.val) opKept
-      let a := ambientAssignment (writeCarrierEquiv B) keep x
-      let z := (writeCarrierEquiv B _ (operationOutput (.partialOp p.val) opKept)).symm y
-      rw [read_write_args B keep x, read_write_value]
-      have selectedOp := operation_partialOp p.val opKept
-      have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.partialOp p.val)
-        opKept (.partialOp p) selectedOp a z).symm.trans
-          ((readStructure_matches A).graph (.partialOp p.val) opKept a z)
-      have right := (graph_select_congr B (writeCarrierEquiv B) (.partialOp p.val) opKept
-        (.partialOp p) selectedOp a z).symm.trans ((writeStructure_matches B).graph (.partialOp p.val) opKept a z)
-      simp only [cast_eq] at left right
-      rw [selectAssignment_ambientAssignment (writeCarrierEquiv B) keep x, Equiv.apply_symm_apply] at right
-      exact left.trans right.symm
+      let kept := Declaration.ofOperation_partialOp_mem p.val p.property
+      exact read_write_graph B (.partialOp p.val) kept (.partialOp p) (operation_partialOp p.val kept) x y
     | quantity q =>
-      let opKept := Declaration.ofOperation_quantity_mem q.val q.property
-      let keep := operationInputs (.quantity q.val) opKept
-      let a := ambientAssignment (writeCarrierEquiv B) keep x
-      let z := (writeCarrierEquiv B _ (operationOutput (.quantity q.val) opKept)).symm y
-      rw [read_write_args B keep x, read_write_value]
-      have selectedOp := operation_quantity q.val opKept
-      have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.quantity q.val)
-        opKept (.quantity q) selectedOp a z).symm.trans
-          ((readStructure_matches A).graph (.quantity q.val) opKept a z)
-      have right := (graph_select_congr B (writeCarrierEquiv B) (.quantity q.val) opKept
-        (.quantity q) selectedOp a z).symm.trans ((writeStructure_matches B).graph (.quantity q.val) opKept a z)
-      simp only [cast_eq] at left right
-      rw [selectAssignment_ambientAssignment (writeCarrierEquiv B) keep x, Equiv.apply_symm_apply] at right
-      exact left.trans right.symm
+      let kept := Declaration.ofOperation_quantity_mem q.val q.property
+      exact read_write_graph B (.quantity q.val) kept (.quantity q) (operation_quantity q.val kept) x y
 
 /-- The model readings are strictly inverse on ordinary model objects. -/
 @[simp] theorem read_write_model (A : Model (theory U)) : readModel (writeModel A) = A := by

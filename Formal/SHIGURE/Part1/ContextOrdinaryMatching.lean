@@ -84,6 +84,11 @@ noncomputable instance category : Category.{max u v} (OrdinaryMatch piece) where
   comp_id _ := Hom.ext (fun _ => Category.comp_id _)
   assoc _ _ _ := Hom.ext (fun _ => Category.assoc _ _ _)
 
+/-- Categorical composition is the composition of ordinary matching arrows. -/
+theorem comp_eq_hom_comp {A B C : OrdinaryMatch piece} (f : Hom A B) (g : Hom B C) :
+    (show A ⟶ C from f ≫ g) = f.comp g :=
+  rfl
+
 /-- Projection to any piece is an ordinary model functor. -/
 noncomputable def project (i : I) : OrdinaryMatch piece ⥤ Model (Selected.theory (piece i)) where
   obj A := A.pieceModel i

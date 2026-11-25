@@ -88,6 +88,7 @@ theorem substitute_term_kept {Γ : List P.signature.SortType} {s : P.signature.S
     · exact hi θ (fun _ h => ht (Or.inr (Or.inl h))) hθ hd
     · exact hb θ.lift (fun _ h => ht (Or.inr (Or.inr h))) (liftTermReferences θ hθ) hd
 
+attribute [local irreducible] arity in
 /-- Retyping the strict witnesses in an atomic substitution agrees with substituting selected terms. -/
 private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType} (a : Atomic P.signature Γ)
     (θ : Substitution P.signature Γ Δ) (hΓ : Declaration.sorts Γ ⊆ U.declarations)
@@ -106,24 +107,28 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
       (selectSubstitution_apply θ hΓ hΔ hθ x).symm (selectSubstitution_apply θ hΓ hΔ hθ y).symm
   | rel r ρ =>
     simp only [Atomic.substitute_rel] at h ⊢
-    simp only [selectAtomic_rel, Atomic.substitute_rel]
     let kept := ha (Declaration.relation_mem_atomicSupport r ρ)
     let hΛ := relationInputs r kept
-    refine (selectFormula_termRel r (fun i => θ (ρ i)) hΔ kept (fun i => hθ (ρ i)) h).trans ?_
-    apply congrArg (fun (ts : ∀ {s}, Var (context (P.signature.relInputs r) hΛ) s →
+    let shape := signature_relInputs (U := U) ⟨r, kept⟩
+    simp only [selectAtomic_rel_cast r ρ ha kept, Atomic.substitute_rel]
+    refine (selectFormula_termRel_cast r (fun i => θ (ρ i)) hΔ kept (fun i => hθ (ρ i)) h).trans ?_
+    apply congrArg (fun (ts : ∀ {s}, Var ((signature U).relInputs ⟨r, kept⟩) s →
       Term (signature U) (context Δ hΔ) s) => Formula.termRel (sig := signature U) ⟨r, kept⟩ ts)
     funext s i
-    simpa only [selectRenaming_apply] using (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
+    simpa only [selectRenaming_apply] using
+      (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ (cast (congrArg (Var · s) shape) i)))).symm
   | domain p ρ =>
     simp only [Atomic.substitute_domain] at h ⊢
-    simp only [selectAtomic_domain, Atomic.substitute_domain]
     let kept := ha (Declaration.domain_mem_atomicSupport p ρ)
     let hΛ := operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)
-    refine (selectFormula_termDomain p (fun i => θ (ρ i)) hΔ kept (fun i => hθ (ρ i)) h).trans ?_
-    apply congrArg (fun (ts : ∀ {s}, Var (context (P.signature.partialArity p).inputs hΛ) s →
+    let shape := signature_partialInputs (U := U) ⟨p, kept⟩
+    simp only [selectAtomic_domain_cast p ρ ha kept, Atomic.substitute_domain]
+    refine (selectFormula_termDomain_cast p (fun i => θ (ρ i)) hΔ kept (fun i => hθ (ρ i)) h).trans ?_
+    apply congrArg (fun (ts : ∀ {s}, Var ((signature U).partialArity ⟨p, kept⟩).inputs s →
       Term (signature U) (context Δ hΔ) s) => Formula.termDomain (sig := signature U) ⟨p, kept⟩ ts)
     funext s i
-    simpa only [selectRenaming_apply] using (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ i))).symm
+    simpa only [selectRenaming_apply] using
+      (selectSubstitution_apply θ hΓ hΔ hθ (ρ (ambientVar hΛ (cast (congrArg (Var · s) shape) i)))).symm
   | graph op ρ y =>
     simp only [Atomic.substitute_graph] at h ⊢
     rw [selectAtomic_graph]
@@ -137,26 +142,19 @@ private theorem selectFormula_substitute_atom {Γ Δ : List P.signature.SortType
     have atOutput := (selectSubstitution_apply θ hΓ hΔ hθ y).symm
     refine (selectFormula_termGraph op (fun i => θ (ρ i)) (θ y) hΔ kept (fun i => hθ (ρ i)) (hθ y) h).trans ?_
     let selected := operation op kept
-    let shape := operation_arity op kept
+    let same : operation op kept = selected := rfl
+    let inputs := operation_selectedInputs same
+    let output := operation_selectedOutput same
     let graph (ts : ∀ {s}, Var (context op.arity.inputs hΛ) s → Term (signature U) (context Δ hΔ) s)
-        (out : Term (signature U) (context Δ hΔ) (arity op kept).output) :=
+        (out : Term (signature U) (context Δ hΔ) ⟨op.arity.output, operationOutput op kept⟩) :=
       Formula.termGraph selected
-        (fun {s} i => ts (cast (congrArg (fun profile => Var profile.inputs s) shape) i))
-        (cast (congrArg (Term (signature U) (context Δ hΔ)) (congrArg Arity.output shape.symm)) out)
+        (fun {s} i => ts (cast (congrArg (Var · s) inputs) i))
+        (cast (congrArg (Term (signature U) (context Δ hΔ)) output.symm) out)
     refine (congrArg₂ graph atInputs atOutput).trans ?_
-    cases op with
-    | total f =>
-      simp only [selectGraph_total, Atomic.substitute_graph]
-      exact Formula.termGraph_congr_arity (operation_total f kept) shape
-        (fun i => θ' (selectRenaming hΛ hΓ ρ i)) (θ' (selectVar hΓ y))
-    | partialOp p =>
-      simp only [selectGraph_partialOp, Atomic.substitute_graph]
-      exact Formula.termGraph_congr_arity (operation_partialOp p kept) shape
-        (fun i => θ' (selectRenaming hΛ hΓ ρ i)) (θ' (selectVar hΓ y))
-    | quantity q =>
-      simp only [selectGraph_quantity, Atomic.substitute_graph]
-      exact Formula.termGraph_congr_arity (operation_quantity q kept) shape
-        (fun i => θ' (selectRenaming hΛ hΓ ρ i)) (θ' (selectVar hΓ y))
+    rw [selectGraph_atOperation _ op kept selected same, Atomic.substitute_graph]
+    exact congrArg (fun value => Formula.termGraph selected
+      (fun {s} i => θ' (selectRenaming hΛ hΓ ρ (cast (congrArg (Var · s) inputs) i))) value)
+      (Substitution.get_cast_sort output.symm θ' (selectVar hΓ y)).symm
 
 /-- Selection preserves literal positive-formula substitution, including binder lifts and expanded atoms. -/
 theorem selectFormula_substitute {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :

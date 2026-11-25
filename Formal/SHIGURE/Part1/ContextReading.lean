@@ -68,6 +68,7 @@ theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
       (reading.presentation.laws.statement name.val).Holds reading.structureData :=
   reading.selectedLaw_iff_ofName name
 
+attribute [local irreducible] Theory.Holds Selected.retainedTheoryName in
 /-- The selected model condition tests the original Laws that are both retained and required. -/
 theorem selectedTheory_holds_iff :
     reading.selectedPresentation.theory.Holds reading.selectedStructure ↔
@@ -78,10 +79,14 @@ theorem selectedTheory_holds_iff :
   · intro model name
     have held := model name
     rw [Selected.presentation_theory_law] at held
-    exact (reading.selectedLaw_iff_ofName (Selected.retainedTheoryName name)).1 held
+    have original := (reading.selectedLaw_iff_ofName (Selected.retainedTheoryName name)).1 held
+    rw [Selected.retainedTheoryName_val] at original
+    exact original
   · intro model name
     rw [Selected.presentation_theory_law]
-    exact (reading.selectedLaw_iff_ofName (Selected.retainedTheoryName name)).2 (model name)
+    apply (reading.selectedLaw_iff_ofName (Selected.retainedTheoryName name)).2
+    rw [Selected.retainedTheoryName_val]
+    exact model name
 
 /-- The reading determines its ordinary model when the retained required Laws hold. -/
 noncomputable def selectedModel (model : reading.selectedPresentation.theory.Holds reading.selectedStructure) :

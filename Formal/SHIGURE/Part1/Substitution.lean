@@ -44,6 +44,13 @@ theorem rename_var (ρ : Renaming Γ Δ) (i : Var Γ s) :
     (Term.var (sig := sig) i).rename ρ = .var (ρ i) :=
   rfl
 
+/-- Transporting a variable term transports the variable in its context. -/
+theorem var_cast_context (same : Γ = Δ) (i : Var Γ s) :
+    cast (congrArg (fun ctx => Term sig ctx s) same) (.var i) =
+      .var (cast (congrArg (Var · s) same) i) := by
+  cases same
+  rfl
+
 /-- Renaming an application renames each argument in place. -/
 theorem rename_app (ρ : Renaming Γ Δ) (op : Operation sig)
     (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t) :
@@ -91,6 +98,22 @@ variable {sig : Signature.{u}} {Γ Δ : List sig.SortType} {s : sig.SortType}
 /-- A substitution can be applied to a variable of its context. -/
 instance : CoeFun (Substitution sig Γ Δ) (fun _ => ∀ {s}, Var Γ s → Term sig Δ s) :=
   ⟨get⟩
+
+/-- Transporting a substitution transports its input position and the resulting term. -/
+theorem cast_context_apply {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (θ : Substitution sig Γ Δ) (i : Var Γ' s) :
+    (cast (congrArg₂ (Substitution sig) source target) θ) i =
+      cast (congrArg (fun ctx => Term sig ctx s) target)
+        (θ (cast (congrArg (Var · s) source.symm) i)) := by
+  cases source
+  cases target
+  rfl
+
+/-- Looking up a sort-transported variable transports the replacement term's sort. -/
+theorem get_cast_sort {t : sig.SortType} (same : s = t) (θ : Substitution sig Γ Δ) (i : Var Γ s) :
+    θ (cast (congrArg (Var Γ) same) i) = cast (congrArg (Term sig Δ) same) (θ i) := by
+  cases same
+  rfl
 
 /-- Extend a substitution under one binder, keeping the bound position fixed. -/
 def lift (θ : Substitution sig Γ Δ) : Substitution sig (s :: Γ) (s :: Δ) :=

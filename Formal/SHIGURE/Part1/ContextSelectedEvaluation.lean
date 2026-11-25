@@ -125,15 +125,31 @@ theorem selectAssignment_cons_cast (e : CarrierEquiv U X Y) {Γ : List P.signatu
 def selectArgs (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
     Assignment Y (operation op keep).arity.inputs :=
-  cast (congrArg (fun profile => Assignment Y profile.inputs) (operation_arity op keep).symm)
+  cast (congrArg (Assignment Y) (operation_selectedInputs (keep := keep) rfl).symm)
     (selectAssignment e (operationInputs op keep) a)
 
 /-- Moving an output value to the selected operation uses its selected result sort. -/
 def selectResult (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
     Y (operation op keep).arity.output :=
-  cast (congrArg (fun profile => Y profile.output) (operation_arity op keep).symm)
+  cast (congrArg Y (operation_selectedOutput (keep := keep) rfl).symm)
     (e op.arity.output (operationOutput op keep) x)
+
+/-- The selected tuple transports the original values to the declared input list. -/
+theorem selectArgs_eq_inputs_cast (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
+    selectArgs e op keep a =
+      cast (congrArg (Assignment Y) (operation_selectedInputs (keep := keep) rfl).symm)
+        (selectAssignment e (operationInputs op keep) a) :=
+  rfl
+
+/-- The selected value transports the original value to the declared output sort. -/
+theorem selectResult_eq_output_cast (e : CarrierEquiv U X Y) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
+    selectResult e op keep x =
+      cast (congrArg Y (operation_selectedOutput (keep := keep) rfl).symm)
+        (e op.arity.output (operationOutput op keep) x) :=
+  rfl
 
 /-- In the graph comparison for Proposition 3.2, select the input values and
 transport the tuple along the arity equality for the retained operation. -/
@@ -158,15 +174,14 @@ theorem graph_select_congr (B : Structure (signature U)) (e : CarrierEquiv U X B
     (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (op' : Operation (signature U)) (same : operation op keep = op')
     (a : Assignment X op.arity.inputs) (x : X op.arity.output) :
-    let shape := operation_arity_of_eq same
     B.Graph (operation op keep) (selectArgs e op keep a) (selectResult e op keep x) ↔
       B.Graph op'
-        (cast (congrArg (fun profile => Assignment B.carrier profile.inputs) shape.symm)
+        (cast (congrArg (Assignment B.carrier) (operation_selectedInputs same).symm)
           (selectAssignment e (operationInputs op keep) a))
-        (cast (congrArg (fun profile => B.carrier profile.output) shape.symm)
+        (cast (congrArg B.carrier (operation_selectedOutput same).symm)
           (e op.arity.output (operationOutput op keep) x)) := by
   subst op'
-  rw [selectArgs_eq_cast, selectResult_eq_cast]
+  rw [selectArgs_eq_inputs_cast, selectResult_eq_output_cast]
 
 /-- For a retained total operation, the output comparison of Proposition 3.2
 is the equivalence on its output carrier. -/
@@ -222,13 +237,15 @@ structure EvaluationMatches (E : RestrictedEvaluation U X) (B : Structure (signa
   /-- Retained relation facts agree. -/
   relation (r : P.signature.Rel) (keep : Declaration.relation r ∈ U.declarations)
     (a : Assignment X (P.signature.relInputs r)) :
-    B.relation ⟨r, keep⟩ (selectAssignment e (relationInputs r keep) a) ↔ E.relation r keep a
+    B.relation ⟨r, keep⟩ (cast (congrArg (Assignment B.carrier) (signature_relInputs ⟨r, keep⟩).symm)
+      (selectAssignment e (relationInputs r keep) a)) ↔ E.relation r keep a
   /-- Retained domains have the same defined inputs. -/
   domain (p : P.signature.Partial) (keep : Declaration.partialOp p ∈ U.declarations)
     (a : Assignment X (P.signature.partialArity p).inputs) :
     B.partialDomain ⟨p, keep⟩
-      (selectAssignment e (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) a) ↔
-        E.domain p keep a
+      (cast (congrArg (Assignment B.carrier) (signature_partialInputs ⟨p, keep⟩).symm)
+        (selectAssignment e (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) a)) ↔
+      E.domain p keep a
   /-- Retained graphs give the same values. -/
   graph (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (a : Assignment X op.arity.inputs) (x : X op.arity.output) :
@@ -258,6 +275,7 @@ variable {E : RestrictedEvaluation U X} {B : Structure (signature U)} {e : Carri
 
 include same
 
+attribute [local irreducible] arity operation in
 /-- The atomic step of Proposition 3.2 uses the carrier equivalences for equality
 and the supplied primitive comparisons for retained relation, domain and graph atoms. -/
 theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
@@ -271,30 +289,37 @@ theorem atomic_iff {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
     exact ⟨fun h => (e _ _).injective h, fun h => congrArg (e _ _) h⟩
   | rel r vars =>
     let k : Declaration.relation r ∈ U.declarations := keep (Declaration.relation_mem_atomicSupport r vars)
-    rw [selectAtomic_rel, Atomic.holds_rel, RestrictedEvaluation.atomic_rel_iff]
-    erw [selectAssignment_pull e (relationInputs r k) free x vars]
-    exact same.relation r k (x.pull vars)
+    let retained : Rel U := ⟨r, k⟩
+    rw [selectAtomic_rel_cast r vars keep k, Atomic.holds_rel, RestrictedEvaluation.atomic_rel_iff,
+      Assignment.pull_cast_inputs (signature_relInputs retained)]
+    have pulled := congrArg (fun a =>
+      cast (congrArg (Assignment B.carrier) (signature_relInputs retained).symm) a ∈ B.relation retained)
+      (selectAssignment_pull e (relationInputs r k) free x vars)
+    exact (Iff.of_eq pulled).trans (same.relation_cast retained (x.pull vars))
   | domain p vars =>
     let k : Declaration.partialOp p ∈ U.declarations := keep (Declaration.domain_mem_atomicSupport p vars)
-    rw [selectAtomic_domain, Atomic.holds_domain, RestrictedEvaluation.atomic_domain_iff]
-    erw [selectAssignment_pull e (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p k)) free x vars]
-    exact same.domain p k (x.pull vars)
+    let retained : Partial U := ⟨p, k⟩
+    rw [selectAtomic_domain_cast p vars keep k, Atomic.holds_domain, RestrictedEvaluation.atomic_domain_iff,
+      Assignment.pull_cast_inputs (signature_partialInputs retained)]
+    have pulled := congrArg (fun a =>
+      cast (congrArg (Assignment B.carrier) (signature_partialInputs retained).symm) a ∈ B.partialDomain retained)
+      (selectAssignment_pull e (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p k)) free x vars)
+    exact (Iff.of_eq pulled).trans (same.domain_cast retained (x.pull vars))
   | graph op vars y =>
     let k : Declaration.ofOperation op ∈ U.declarations := keep (Declaration.graph_mem_atomicSupport op vars y)
-    have args := selectAssignment_pull e (operationInputs op k) free x vars
-    have out := selectAssignment_selectVar e free x y
-    rw [selectAtomic_graph, RestrictedEvaluation.atomic_graph_iff]
-    cases op <;> simp only [selectGraph_total, selectGraph_partialOp, selectGraph_quantity, Atomic.holds_graph]
-    all_goals erw [args, out]
-    · simpa only [cast_eq] using
-        (graph_select_congr B e (.total _) k _ (operation_total _ k) _ _).symm.trans
-          (same.graph _ k (x.pull vars) (x y))
-    · simpa only [cast_eq] using
-        (graph_select_congr B e (.partialOp _) k _ (operation_partialOp _ k) _ _).symm.trans
-          (same.graph _ k (x.pull vars) (x y))
-    · simpa only [cast_eq] using
-        (graph_select_congr B e (.quantity _) k _ (operation_quantity _ k) _ _).symm.trans
-          (same.graph _ k (x.pull vars) (x y))
+    let selected := operation op k
+    let shape : operation op k = selected := rfl
+    rw [selectAtomic_graph, selectGraph_atOperation _ op k selected shape,
+      Atomic.holds_graph, RestrictedEvaluation.atomic_graph_iff,
+      Assignment.pull_cast_inputs (operation_selectedInputs shape),
+      Assignment.get_cast_sort (operation_selectedOutput shape).symm]
+    have pulled := congrArg₂ (fun inputs output => B.Graph selected
+      (cast (congrArg (Assignment B.carrier) (operation_selectedInputs shape).symm) inputs)
+      (cast (congrArg B.carrier (operation_selectedOutput shape).symm) output))
+      (selectAssignment_pull e (operationInputs op k) free x vars) (selectAssignment_selectVar e free x y)
+    exact (Iff.of_eq pulled).trans
+      ((graph_select_congr B e op k selected shape (x.pull vars) (x y)).symm.trans
+        (same.graph op k (x.pull vars) (x y)))
 
 /-- Any supported formula has the same truth in the actual selected structure. -/
 theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :

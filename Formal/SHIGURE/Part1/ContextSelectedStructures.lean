@@ -25,16 +25,34 @@ private def retainedCarrierEquiv (A : ContextStructure U) : CarrierEquiv U A.car
 /-- Read a context structure as an ordinary structure over the actual selected signature. -/
 noncomputable def readStructure (A : ContextStructure U) : Structure (signature U) where
   carrier s := A.carrier s.val
-  total f e := A.toRestrictedStructure.total f.val f.property
-    (ambientAssignment (retainedCarrierEquiv A) (operationInputs (.total f.val) (Declaration.ofOperation_total_mem f.val f.property)) e)
+  total f e :=
+    let keep := Declaration.ofOperation_total_mem f.val f.property
+    let same := operation_total (U := U) f.val keep
+    cast (congrArg (fun s : SortName U => A.carrier s.val) (operation_selectedOutput same).symm)
+      (A.toRestrictedStructure.total f.val f.property
+        (ambientAssignment (retainedCarrierEquiv A) (operationInputs (.total f.val) keep)
+          (cast (congrArg (Assignment (fun s => A.carrier s.val)) (operation_selectedInputs same)) e)))
   relation r := {e | A.evaluation.relation r.val r.property
-    (ambientAssignment (retainedCarrierEquiv A) (relationInputs r.val r.property) e)}
+    (ambientAssignment (retainedCarrierEquiv A) (relationInputs r.val r.property)
+      (cast (congrArg (Assignment (fun s => A.carrier s.val)) (signature_relInputs r)) e))}
   partialDomain p := {e | A.evaluation.domain p.val p.property
-    (ambientAssignment (retainedCarrierEquiv A) (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) e)}
-  partialValue p e := A.toRestrictedStructure.partialValue p.val p.property
-    ⟨ambientAssignment (retainedCarrierEquiv A) (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) e.val, e.property⟩
-  quantity q e := A.toRestrictedStructure.quantity q.val q.property
-    (ambientAssignment (retainedCarrierEquiv A) (operationInputs (.quantity q.val) (Declaration.ofOperation_quantity_mem q.val q.property)) e)
+    (ambientAssignment (retainedCarrierEquiv A) (operationInputs (.partialOp p.val)
+      (Declaration.ofOperation_partialOp_mem p.val p.property))
+      (cast (congrArg (Assignment (fun s => A.carrier s.val)) (signature_partialInputs p)) e))}
+  partialValue p e :=
+    let keep := Declaration.ofOperation_partialOp_mem p.val p.property
+    let same := operation_partialOp (U := U) p.val keep
+    cast (congrArg (fun s : SortName U => A.carrier s.val) (operation_selectedOutput same).symm)
+      (A.toRestrictedStructure.partialValue p.val p.property
+        ⟨ambientAssignment (retainedCarrierEquiv A) (operationInputs (.partialOp p.val) keep)
+          (cast (congrArg (Assignment (fun s => A.carrier s.val)) (signature_partialInputs p)) e.val), e.property⟩)
+  quantity q e :=
+    let keep := Declaration.ofOperation_quantity_mem q.val q.property
+    let same := operation_quantity (U := U) q.val keep
+    cast (congrArg (fun s : SortName U => A.carrier s.val) (operation_selectedOutput same).symm)
+      (A.toRestrictedStructure.quantity q.val q.property
+        (ambientAssignment (retainedCarrierEquiv A) (operationInputs (.quantity q.val) keep)
+          (cast (congrArg (Assignment (fun s => A.carrier s.val)) (operation_selectedInputs same)) e)))
 
 /-- Reading a structure takes the original carrier at each retained sort. -/
 theorem readStructure_carrier_eq (A : ContextStructure U) (s : SortName U) :
@@ -69,6 +87,24 @@ theorem readStructure_domain (A : ContextStructure U) (p : Partial U)
     (readStructure A).partialDomain p e ↔
       A.evaluation.domain p.val p.property (ambientAssignment (readCarrierEquiv A)
         (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) e) :=
+  Iff.rfl
+
+/-- A read relation evaluates the input transported from the actual selected signature. -/
+theorem readStructure_relation_cast (A : ContextStructure U) (r : Rel U)
+    (e : Assignment (readStructure A).carrier ((signature U).relInputs r)) :
+    (readStructure A).relation r e ↔
+      A.evaluation.relation r.val r.property (ambientAssignment (readCarrierEquiv A)
+        (relationInputs r.val r.property)
+        (cast (congrArg (Assignment (readStructure A).carrier) (signature_relInputs r)) e)) :=
+  Iff.rfl
+
+/-- A read partial domain evaluates the input transported from the actual selected signature. -/
+theorem readStructure_domain_cast (A : ContextStructure U) (p : Partial U)
+    (e : Assignment (readStructure A).carrier ((signature U).partialArity p).inputs) :
+    (readStructure A).partialDomain p e ↔ A.evaluation.domain p.val p.property
+      (ambientAssignment (readCarrierEquiv A)
+        (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property))
+        (cast (congrArg (Assignment (readStructure A).carrier) (signature_partialInputs p)) e)) :=
   Iff.rfl
 
 /-- Reading a retained total graph takes its restricted graph on the ambient input tuple. -/
@@ -107,36 +143,99 @@ theorem readStructure_graph_quantity (A : ContextStructure U) (q : Quantity U)
   rw [Structure.graph_quantity_iff, RestrictedStructure.graph_quantity_iff]
   rfl
 
+/-- Comparing a transported value is the same as comparing the inverse-transported target. -/
+private theorem cast_output_eq {X Y : Type u} (h : X = Y) (x : X) (y : Y) :
+    cast h x = y ↔ x = cast h.symm y := by
+  cases h
+  rfl
+
+/-- Reading a retained total graph transports its input tuple and output value. -/
+theorem readStructure_graph_total_cast (A : ContextStructure U) (f : Total U)
+    (e : Assignment (readStructure A).carrier ((signature U).totalArity f).inputs)
+    (y : (readStructure A).carrier ((signature U).totalArity f).output) :
+    (readStructure A).Graph (.total f) e y ↔
+      let keep := Declaration.ofOperation_total_mem f.val f.property
+      let same := operation_total (U := U) f.val keep
+      A.toRestrictedStructure.graph (.total f.val) keep
+        (ambientAssignment (readCarrierEquiv A) (operationInputs (.total f.val) keep)
+          (cast (congrArg (Assignment (readStructure A).carrier) (operation_selectedInputs same)) e))
+        ((readCarrierEquiv A _ (operationOutput (.total f.val) keep)).symm
+          (cast (congrArg (readStructure A).carrier (operation_selectedOutput same)) y)) := by
+  dsimp only
+  rw [Structure.graph_total_iff, RestrictedStructure.graph_total_iff]
+  exact cast_output_eq (congrArg (readStructure A).carrier
+    (operation_selectedOutput (operation_total (U := U) f.val (Declaration.ofOperation_total_mem f.val f.property))).symm) _ _
+
+/-- Reading a retained partial graph transports its input tuple and output value. -/
+theorem readStructure_graph_partial_cast (A : ContextStructure U) (p : Partial U)
+    (e : Assignment (readStructure A).carrier ((signature U).partialArity p).inputs)
+    (y : (readStructure A).carrier ((signature U).partialArity p).output) :
+    (readStructure A).Graph (.partialOp p) e y ↔
+      let keep := Declaration.ofOperation_partialOp_mem p.val p.property
+      let same := operation_partialOp (U := U) p.val keep
+      A.toRestrictedStructure.graph (.partialOp p.val) keep
+        (ambientAssignment (readCarrierEquiv A) (operationInputs (.partialOp p.val) keep)
+          (cast (congrArg (Assignment (readStructure A).carrier) (operation_selectedInputs same)) e))
+        ((readCarrierEquiv A _ (operationOutput (.partialOp p.val) keep)).symm
+          (cast (congrArg (readStructure A).carrier (operation_selectedOutput same)) y)) := by
+  dsimp only
+  rw [Structure.graph_partial_iff, RestrictedStructure.graph_partial_iff]
+  apply exists_congr
+  intro held
+  exact cast_output_eq (congrArg (readStructure A).carrier
+    (operation_selectedOutput (operation_partialOp (U := U) p.val (Declaration.ofOperation_partialOp_mem p.val p.property))).symm) _ _
+
+/-- Reading a retained quantity graph transports its input tuple and output value. -/
+theorem readStructure_graph_quantity_cast (A : ContextStructure U) (q : Quantity U)
+    (e : Assignment (readStructure A).carrier ((signature U).quantityArity q).inputs)
+    (y : (readStructure A).carrier ((signature U).quantityArity q).output) :
+    (readStructure A).Graph (.quantity q) e y ↔
+      let keep := Declaration.ofOperation_quantity_mem q.val q.property
+      let same := operation_quantity (U := U) q.val keep
+      A.toRestrictedStructure.graph (.quantity q.val) keep
+        (ambientAssignment (readCarrierEquiv A) (operationInputs (.quantity q.val) keep)
+          (cast (congrArg (Assignment (readStructure A).carrier) (operation_selectedInputs same)) e))
+        ((readCarrierEquiv A _ (operationOutput (.quantity q.val) keep)).symm
+          (cast (congrArg (readStructure A).carrier (operation_selectedOutput same)) y)) := by
+  dsimp only
+  rw [Structure.graph_quantity_iff, RestrictedStructure.graph_quantity_iff]
+  exact cast_output_eq (congrArg (readStructure A).carrier
+    (operation_selectedOutput (operation_quantity (U := U) q.val (Declaration.ofOperation_quantity_mem q.val q.property))).symm) _ _
+
+attribute [local irreducible] arity in
 /-- Construct the primitive comparisons used by Proposition 3.2 from any
 context structure. The selected relations, domains and graphs use exactly
 the declarations and input and output sorts retained by the context. -/
 theorem readStructure_matches (A : ContextStructure U) :
     EvaluationMatches A.evaluation (readStructure A) (readCarrierEquiv A) where
   relation r keep e := by
-    rw [readStructure_relation, ambientAssignment_selectAssignment]
+    rw [readStructure_relation_cast, cast_cast, cast_eq, ambientAssignment_selectAssignment]
   domain p keep e := by
-    rw [readStructure_domain, ambientAssignment_selectAssignment]
+    rw [readStructure_domain_cast, cast_cast, cast_eq, ambientAssignment_selectAssignment]
   graph op keep e y := by
     cases op with
     | total f =>
       refine (graph_select_congr (readStructure A) (readCarrierEquiv A) (.total f) keep _
         (operation_total f keep) e y).trans ?_
-      erw [cast_eq, cast_eq, readStructure_graph_total]
+      rw [readStructure_graph_total_cast]
       dsimp only
+      rw [cast_cast, cast_cast, cast_eq, cast_eq]
       rw [ambientAssignment_selectAssignment (readCarrierEquiv A) (operationInputs (.total f) keep) e,
         Equiv.symm_apply_apply, ← RestrictedStructure.evaluation_graph, A.toRestrictedStructure_evaluation]
     | partialOp p =>
       refine (graph_select_congr (readStructure A) (readCarrierEquiv A) (.partialOp p) keep _
         (operation_partialOp p keep) e y).trans ?_
-      erw [cast_eq, cast_eq, readStructure_graph_partial]
+      rw [readStructure_graph_partial_cast]
       dsimp only
+      rw [cast_cast, cast_cast, cast_eq, cast_eq]
       rw [ambientAssignment_selectAssignment (readCarrierEquiv A) (operationInputs (.partialOp p) keep) e,
         Equiv.symm_apply_apply, ← RestrictedStructure.evaluation_graph, A.toRestrictedStructure_evaluation]
     | quantity q =>
       refine (graph_select_congr (readStructure A) (readCarrierEquiv A) (.quantity q) keep _
         (operation_quantity q keep) e y).trans ?_
-      erw [cast_eq, cast_eq, readStructure_graph_quantity]
+      rw [readStructure_graph_quantity_cast]
       dsimp only
+      rw [cast_cast, cast_cast, cast_eq, cast_eq]
       rw [ambientAssignment_selectAssignment (readCarrierEquiv A) (operationInputs (.quantity q) keep) e,
         Equiv.symm_apply_apply, ← RestrictedStructure.evaluation_graph, A.toRestrictedStructure_evaluation]
 
@@ -179,8 +278,13 @@ theorem extendedEquiv_eq_cast (B : Structure (signature U)) (s : P.signature.Sor
 
 /-- Read the selected structure's primitive facts with their original names. -/
 noncomputable def extendedEvaluation (B : Structure (signature U)) : RestrictedEvaluation U (extendedCarrier B) where
-  relation r keep e := B.relation ⟨r, keep⟩ (selectAssignment (extendedEquiv B) (relationInputs r keep) e)
-  domain p keep e := B.partialDomain ⟨p, keep⟩ (selectAssignment (extendedEquiv B) (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) e)
+  relation r keep e := B.relation ⟨r, keep⟩
+    (cast (congrArg (Assignment B.carrier) (signature_relInputs ⟨r, keep⟩).symm)
+      (selectAssignment (extendedEquiv B) (relationInputs r keep) e))
+  domain p keep e := B.partialDomain ⟨p, keep⟩
+    (cast (congrArg (Assignment B.carrier) (signature_partialInputs ⟨p, keep⟩).symm)
+      (selectAssignment (extendedEquiv B)
+        (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) e))
   graph op keep e y := B.Graph (operation op keep) (selectArgs (extendedEquiv B) op keep e)
     (selectResult (extendedEquiv B) op keep y)
 

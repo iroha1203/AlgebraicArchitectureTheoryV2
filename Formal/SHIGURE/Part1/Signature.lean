@@ -187,6 +187,12 @@ theorem cast_context_apply {Δ : List S} (same : Γ = Δ) (e : Assignment X Γ) 
   cases same
   rfl
 
+/-- Changing a variable's sort transports the value read at that variable. -/
+theorem get_cast_sort {t : S} (same : s = t) (e : Assignment X Γ) (i : Var Γ s) :
+    e (cast (congrArg (Var Γ) same) i) = cast (congrArg X same) (e i) := by
+  cases same
+  rfl
+
 /-- The canonical assignment to the empty context. -/
 def empty : Assignment X [] := ⟨fun var => nomatch var⟩
 
@@ -240,6 +246,13 @@ theorem eq_empty (xs : Assignment X []) : xs = empty := by
 /-- Pull an assignment back along a sort-preserving variable renaming. -/
 def pull {Δ : List S} (xs : Assignment X Δ) (ρ : Renaming Γ Δ) : Assignment X Γ :=
   ⟨fun var => xs (ρ var)⟩
+
+/-- A pullback along a transported renaming transports the resulting assignment. -/
+theorem pull_cast_inputs {Γ' Δ : List S} (same : Γ' = Γ) (xs : Assignment X Δ) (ρ : Renaming Γ Δ) :
+    xs.pull (fun {t} (i : Var Γ' t) => ρ (cast (congrArg (Var · t) same) i)) =
+      cast (congrArg (Assignment X) same.symm) (xs.pull ρ) := by
+  cases same
+  rfl
 
 /-- Pulling back along the identity preserves the assignment. -/
 @[simp] theorem pull_id (xs : Assignment X Γ) : xs.pull (fun var => var) = xs := rfl

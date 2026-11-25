@@ -120,8 +120,10 @@ def selectTerm : {Γ : List P.signature.SortType} → {s : P.signature.SortType}
   | _, _, @Term.letBind _ _ a _ x y, keepΓ, keepS, keep =>
     let support := (termReferences_letBind x y).ge.trans keep
     let keepA := support (Or.inl (Set.mem_singleton (Declaration.sort a)))
+    let keepBody := Declaration.sorts_cons_subset keepA keepΓ
     .letBind (selectTerm x keepΓ keepA (fun _ hd => support (Or.inr (Or.inl hd))))
-      (selectTerm y (Declaration.sorts_cons_subset keepA keepΓ) keepS (fun _ hd => support (Or.inr (Or.inr hd))))
+      (cast (congrArg (fun ctx => Term (signature U) ctx ⟨_, keepS⟩) (context_cons a _ keepBody))
+        (selectTerm y keepBody keepS (fun _ hd => support (Or.inr (Or.inr hd)))))
 
 
 /-- Selecting a variable term keeps the position selected in its context. -/
@@ -158,6 +160,7 @@ theorem selectTerm_letBind {Γ : List P.signature.SortType} {a s : P.signature.S
           (fun _ hd => support (Or.inr (Or.inr hd)))) :=
   rfl
 
+attribute [local irreducible] context in
 /-- Select the body of a binding on the explicit cons context of its selected initializer. -/
 theorem selectTerm_letBind_cast {Γ : List P.signature.SortType} {a s : P.signature.SortType}
     (init : Term P.signature Γ a) (body : Term P.signature (a :: Γ) s)
@@ -170,7 +173,7 @@ theorem selectTerm_letBind_cast {Γ : List P.signature.SortType} {a s : P.signat
       .letBind (selectTerm init keepΓ keepA (fun _ hd => support (Or.inr (Or.inl hd))))
         (cast (congrArg (fun ctx => Term (signature U) ctx ⟨s, keepS⟩) (context_cons a Γ keepBody))
           (selectTerm body keepBody keepS (fun _ hd => support (Or.inr (Or.inr hd))))) :=
-  selectTerm_letBind init body keepΓ keepS keep
+  rfl
 
 /-- Selection respects equality of the original terms, independently of how support was shown. -/
 theorem selectTerm_congr {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -467,21 +470,9 @@ private theorem reindexedGraph_congr {sig : Signature.{u}} {Γ : List sig.SortTy
 private theorem selectGraph_reindexed {Γ : List P.signature.SortType} (op : Operation P.signature)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hOp : Declaration.ofOperation op ∈ U.declarations)
     (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
-    selectGraph hΓ op hOp ρ y = reindexedGraph (operation op hOp) (operation_arity op hOp)
-      (selectRenaming (operationInputs op hOp) hΓ ρ) (selectVar hΓ y) := by
-  cases op with
-  | total f =>
-    refine (selectGraph_total hΓ f hOp ρ y).trans ?_
-    have same := operation_total f hOp
-    exact (reindexedGraph_congr same (operation_arity (.total f) hOp) (operation_arity_of_eq same) _ _).symm
-  | partialOp p =>
-    refine (selectGraph_partialOp hΓ p hOp ρ y).trans ?_
-    have same := operation_partialOp p hOp
-    exact (reindexedGraph_congr same (operation_arity (.partialOp p) hOp) (operation_arity_of_eq same) _ _).symm
-  | quantity q =>
-    refine (selectGraph_quantity hΓ q hOp ρ y).trans ?_
-    have same := operation_quantity q hOp
-    exact (reindexedGraph_congr same (operation_arity (.quantity q) hOp) (operation_arity_of_eq same) _ _).symm
+    selectGraph hΓ op hOp ρ y = reindexedGraph (operation op hOp) (operation_arity_atContext op hOp)
+      (selectRenaming (operationInputs op hOp) hΓ ρ) (selectVar hΓ y) :=
+  selectGraph_atOperation hΓ op hOp (operation op hOp) rfl ρ y
 
 /-- Expand the value graph of an application whose arguments are indexed by an equal arity. -/
 private theorem graphAt_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType}
@@ -876,6 +867,54 @@ private theorem cast_domainAtom {sig : Signature.{u}} {Γ Δ : List sig.SortType
   cases h
   rfl
 
+/-- An equal input profile transports the bound positions and their term witnesses together. -/
+private theorem bindArguments_reindex {sig : Signature.{u}} {Γ Λ Ξ : List sig.SortType}
+    (shape : Ξ = Λ) (terms : ∀ {s}, Var Λ s → Term sig Γ s) (body : Formula sig (Ξ ++ Γ)) :
+    Formula.bindArguments Ξ (fun {s} i => terms (cast (congrArg (Var · s) shape) i)) body =
+      Formula.bindArguments Λ terms (cast (congrArg (fun ctx => Formula sig (ctx ++ Γ)) shape) body) := by
+  cases shape
+  rfl
+
+/-- Selection of the left variable inclusion reindexes the bound inputs at their actual arity. -/
+private theorem inLeftRenaming_atInputs {Γ Λ : List P.signature.SortType}
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΛ : Declaration.sorts Λ ⊆ U.declarations)
+    {selected : List (SortName U)} (shape : selected = context Λ hΛ) {s : SortName U}
+    (i : Var selected s) :
+    cast (congrArg (Var · s) (context_append hΛ hΓ))
+      (selectRenaming hΛ (appendSupport hΛ hΓ) (Var.inLeft Γ) (cast (congrArg (Var · s) shape) i)) =
+        cast (congrArg (fun Λ => Var (Λ ++ context Γ hΓ) s) shape) (i.inLeft (context Γ hΓ)) := by
+  exact (congrArg (fun (ρ : Renaming (context Λ hΛ) (context Λ hΛ ++ context Γ hΓ)) =>
+    ρ (cast (congrArg (Var · s) shape) i)) (inLeftRenaming hΓ hΛ)).trans
+    (inLeft_context_congr shape i (context Γ hΓ)).symm
+
+attribute [local irreducible] context arity in
+/-- Selection commutes with relation expansion at its transported argument profile. -/
+theorem selectFormula_termRel_cast {Γ : List P.signature.SortType} (r : P.signature.Rel)
+    (ts : ∀ {s}, Var (P.signature.relInputs r) s → Term P.signature Γ s)
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hr : Declaration.relation r ∈ U.declarations)
+    (ht : ∀ {s} (i : Var (P.signature.relInputs r) s), termReferences (ts i) ⊆ U.declarations)
+    (h : Declaration.formulaSupport (Formula.termRel r ts) ⊆ U.declarations) :
+    selectFormula (Formula.termRel r ts) h = Formula.termRel (sig := signature U) ⟨r, hr⟩
+      (fun {s} i => selectTerm (ts (ambientVar (relationInputs r hr)
+        (cast (congrArg (Var · s) (signature_relInputs ⟨r, hr⟩)) i))) hΓ s.property (ht _)) := by
+  simp only [Formula.termRel_eq_bindArguments] at h ⊢
+  let hΛ := relationInputs r hr
+  let retained : Rel U := ⟨r, hr⟩
+  let shape := signature_relInputs retained
+  refine (selectFormula_bindArguments ts (.atom (.rel r (Var.inLeft Γ))) hΓ hΛ ht h).trans ?_
+  let terms : ∀ {s}, Var (context (P.signature.relInputs r) hΛ) s → Term (signature U) (context Γ hΓ) s :=
+    fun {s} i => selectTerm (ts (ambientVar hΛ i)) hΓ s.property (ht _)
+  refine Eq.trans ?_ (bindArguments_reindex shape terms
+    (.atom (.rel retained (Var.inLeft (context Γ hΓ))))).symm
+  apply congrArg (Formula.bindArguments (sig := signature U) (context (P.signature.relInputs r) hΛ) _)
+  rw [selectFormula_atom, selectAtomic_rel_cast r _ _ hr,
+    cast_relationAtom (context_append hΛ hΓ), cast_relationAtom (congrArg (· ++ context Γ hΓ) shape)]
+  refine congrArg (α := Renaming ((signature U).relInputs retained)
+    (context (P.signature.relInputs r) hΛ ++ context Γ hΓ))
+    (fun ρ => Formula.atom (Atomic.rel (sig := signature U) retained ρ)) ?_
+  funext s i
+  exact inLeftRenaming_atInputs hΓ hΛ shape i
+
 /-- Selection commutes with the graph expansion of a relation applied to terms. -/
 theorem selectFormula_termRel {Γ : List P.signature.SortType} (r : P.signature.Rel)
     (ts : ∀ {s}, Var (P.signature.relInputs r) s → Term P.signature Γ s)
@@ -883,38 +922,46 @@ theorem selectFormula_termRel {Γ : List P.signature.SortType} (r : P.signature.
     (ht : ∀ {s} (i : Var (P.signature.relInputs r) s), termReferences (ts i) ⊆ U.declarations)
     (h : Declaration.formulaSupport (Formula.termRel r ts) ⊆ U.declarations) :
     selectFormula (Formula.termRel r ts) h = Formula.termRel (sig := signature U) ⟨r, hr⟩
-      (fun {s} i => selectTerm (ts (ambientVar (relationInputs r hr) i)) hΓ s.property (ht _)) := by
-  simp only [Formula.termRel_eq_bindArguments] at h ⊢
-  let hΛ := relationInputs r hr
-  let r' : (signature U).Rel := ⟨r, hr⟩
-  refine (selectFormula_bindArguments ts (.atom (.rel r (Var.inLeft Γ))) hΓ hΛ ht h).trans ?_
-  apply congrArg (Formula.bindArguments (sig := signature U) (context (P.signature.relInputs r) hΛ) _)
-  rw [selectFormula_atom, selectAtomic_rel]
-  refine (cast_relationAtom (context_append hΛ hΓ) r' (selectRenaming hΛ (appendSupport hΛ hΓ) (Var.inLeft Γ))).trans ?_
-  exact congrArg (fun (mapVars : Renaming (context (P.signature.relInputs r) hΛ)
-    (context (P.signature.relInputs r) hΛ ++ context Γ hΓ)) => Formula.atom (.rel r' mapVars))
-    (inLeftRenaming hΓ hΛ)
+      (fun {s} i => selectTerm (ts (ambientVar (relationInputs r hr) i)) hΓ s.property (ht _)) :=
+  selectFormula_termRel_cast r ts hΓ hr ht h
+
+attribute [local irreducible] context arity in
+/-- Selection commutes with partial domain expansion at its transported argument profile. -/
+theorem selectFormula_termDomain_cast {Γ : List P.signature.SortType} (p : P.signature.Partial)
+    (ts : ∀ {s}, Var ((P.signature.partialArity p).inputs) s → Term P.signature Γ s)
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hp : Declaration.partialOp p ∈ U.declarations)
+    (ht : ∀ {s} (i : Var ((P.signature.partialArity p).inputs) s), termReferences (ts i) ⊆ U.declarations)
+    (h : Declaration.formulaSupport (Formula.termDomain p ts) ⊆ U.declarations) :
+    selectFormula (Formula.termDomain p ts) h = Formula.termDomain (sig := signature U) ⟨p, hp⟩
+      (fun {s} i => selectTerm (ts (ambientVar (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p hp))
+        (cast (congrArg (Var · s) (signature_partialInputs ⟨p, hp⟩)) i))) hΓ s.property (ht _)) := by
+  simp only [Formula.termDomain_eq_bindArguments] at h ⊢
+  let hΛ := operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p hp)
+  let retained : Partial U := ⟨p, hp⟩
+  let shape := signature_partialInputs retained
+  refine (selectFormula_bindArguments ts (.atom (.domain p (Var.inLeft Γ))) hΓ hΛ ht h).trans ?_
+  let terms : ∀ {s}, Var (context (P.signature.partialArity p).inputs hΛ) s → Term (signature U) (context Γ hΓ) s :=
+    fun {s} i => selectTerm (ts (ambientVar hΛ i)) hΓ s.property (ht _)
+  refine Eq.trans ?_ (bindArguments_reindex shape terms
+    (.atom (.domain retained (Var.inLeft (context Γ hΓ))))).symm
+  apply congrArg (Formula.bindArguments (sig := signature U) (context ((P.signature.partialArity p).inputs) hΛ) _)
+  rw [selectFormula_atom, selectAtomic_domain_cast p _ _ hp,
+    cast_domainAtom (context_append hΛ hΓ), cast_domainAtom (congrArg (· ++ context Γ hΓ) shape)]
+  refine congrArg (α := Renaming ((signature U).partialArity retained).inputs
+    (context (P.signature.partialArity p).inputs hΛ ++ context Γ hΓ))
+    (fun ρ => Formula.atom (Atomic.domain (sig := signature U) retained ρ)) ?_
+  funext s i
+  exact inLeftRenaming_atInputs hΓ hΛ shape i
 
 /-- Selection commutes with the graph expansion of a partial domain applied to terms. -/
 theorem selectFormula_termDomain {Γ : List P.signature.SortType} (p : P.signature.Partial)
-    (ts : ∀ {s}, Var (P.signature.partialArity p).inputs s → Term P.signature Γ s)
+    (ts : ∀ {s}, Var ((P.signature.partialArity p).inputs) s → Term P.signature Γ s)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hp : Declaration.partialOp p ∈ U.declarations)
-    (ht : ∀ {s} (i : Var (P.signature.partialArity p).inputs s), termReferences (ts i) ⊆ U.declarations)
+    (ht : ∀ {s} (i : Var ((P.signature.partialArity p).inputs) s), termReferences (ts i) ⊆ U.declarations)
     (h : Declaration.formulaSupport (Formula.termDomain p ts) ⊆ U.declarations) :
     selectFormula (Formula.termDomain p ts) h = Formula.termDomain (sig := signature U) ⟨p, hp⟩
-      (fun {s} i => selectTerm (ts (ambientVar (operationInputs (.partialOp p)
-        (Declaration.ofOperation_partialOp_mem p hp)) i)) hΓ s.property (ht _)) := by
-  simp only [Formula.termDomain_eq_bindArguments] at h ⊢
-  let hΛ := operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p hp)
-  let p' : (signature U).Partial := ⟨p, hp⟩
-  refine (selectFormula_bindArguments ts (.atom (.domain p (Var.inLeft Γ))) hΓ hΛ ht h).trans ?_
-  apply congrArg (Formula.bindArguments (sig := signature U) (context (P.signature.partialArity p).inputs hΛ) _)
-  rw [selectFormula_atom, selectAtomic_domain]
-  refine (cast_domainAtom (context_append hΛ hΓ) p' (selectRenaming hΛ (appendSupport hΛ hΓ) (Var.inLeft Γ))).trans ?_
-  exact congrArg (fun (mapVars : Renaming (context (P.signature.partialArity p).inputs hΛ)
-    (context (P.signature.partialArity p).inputs hΛ ++ context Γ hΓ)) => Formula.atom (.domain p' mapVars))
-    (inLeftRenaming hΓ hΛ)
-
+      (fun {s} i => selectTerm (ts (ambientVar (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p hp)) i)) hΓ s.property (ht _)) :=
+  selectFormula_termDomain_cast p ts hΓ hp ht h
 
 /-- Expand the graph atom with term inputs and a term output along an equal arity. -/
 private theorem termGraph_reindexed {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
@@ -938,17 +985,17 @@ theorem selectFormula_termGraph {Γ : List P.signature.SortType} (op : Operation
     (h : Declaration.formulaSupport (Formula.termGraph op ts out) ⊆ U.declarations) :
     selectFormula (Formula.termGraph op ts out) h =
       Formula.termGraph (operation op ho)
-        (fun {s} i => let j := cast (congrArg (fun a => Var a.inputs s) (operation_arity op ho)) i
+        (fun {s} i => let j := cast (congrArg (fun a => Var a.inputs s) (operation_arity_atContext op ho)) i
           selectTerm (ts (ambientVar (operationInputs op ho) j)) hΓ s.property (ht _))
         (cast (congrArg (Term (signature U) (context Γ hΓ))
-          (congrArg Arity.output (operation_arity op ho).symm))
+          (congrArg Arity.output (operation_arity_atContext op ho).symm))
           (selectTerm out hΓ (operationOutput op ho) hy)) := by
   simp only [Formula.termGraph_eq_bindArguments op ts out] at h ⊢
   let hΛ := operationInputs op ho
   let hs := operationOutput op ho
   let lead := Declaration.sorts_cons_subset hs hΛ
   let selected := operation op ho
-  let same := operation_arity op ho
+  let same := operation_arity_atContext op ho
   let ht' : ∀ {s}, (i : Var (op.arity.output :: op.arity.inputs) s) →
       termReferences (Term.argsCons out ts i) ⊆ U.declarations := fun i =>
       match i with
@@ -1022,34 +1069,7 @@ theorem liftTermReferences {Γ Δ : List P.signature.SortType} (θ : Substitutio
     rw [Substitution.lift_there, termReferences_rename]
     exact hθ i
 
-/-- Selection commutes with lifting a substitution into one more binder. -/
-theorem selectSubstitution_lift {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)
-    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
-    (hθ : ∀ {s} (i : Var Γ s), termReferences (θ i) ⊆ U.declarations)
-    {a} (ha : Declaration.sort a ∈ U.declarations) :
-    selectSubstitution (θ.lift (s := a)) (Declaration.sorts_cons_subset ha hΓ)
-      (Declaration.sorts_cons_subset ha hΔ) (liftTermReferences θ hθ) =
-      (selectSubstitution θ hΓ hΔ hθ).lift (s := (⟨a, ha⟩ : SortName U)) := by
-  apply Substitution.ext
-  intro s v
-  cases v with
-  | here =>
-    simp only [selectSubstitution_at, ambientVar_here, Substitution.lift_here, selectTerm_var, selectVar_here]
-    exact (Substitution.lift_here (s := (⟨a, ha⟩ : SortName U)) (selectSubstitution θ hΓ hΔ hθ)).symm
-  | there v =>
-    have atOld := Substitution.lift_there (s := (⟨a, ha⟩ : SortName U)) (selectSubstitution θ hΓ hΔ hθ) v
-    rw [atOld]
-    simp only [selectSubstitution_at, ambientVar_there, Substitution.lift_there]
-    let i := ambientVar hΓ v
-    let t := selectTerm (θ i) hΔ s.property (hθ i)
-    have moved : termReferences ((θ i).rename (fun j => Var.there (t := a) j)) ⊆ U.declarations := by
-      rw [termReferences_rename]
-      exact hθ i
-    exact (selectTerm_rename (θ i) (fun j => .there j) hΔ (Declaration.sorts_cons_subset ha hΔ)
-      s.property (hθ i) moved).trans
-      (congrArg (fun (mapVars : Renaming (context Δ hΔ) (context (a :: Δ) (Declaration.sorts_cons_subset ha hΔ))) =>
-        t.rename mapVars) (selectRenaming_there ha hΔ))
-
+attribute [local irreducible] context in
 /-- The selected lift agrees with the ordinary lift after transporting both contexts. -/
 theorem selectSubstitution_lift_cast {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -1060,8 +1080,60 @@ theorem selectSubstitution_lift_cast {Γ Δ : List P.signature.SortType} (θ : S
       (context_cons a Δ (Declaration.sorts_cons_subset ha hΔ)))
       (selectSubstitution (θ.lift (s := a)) (Declaration.sorts_cons_subset ha hΓ)
         (Declaration.sorts_cons_subset ha hΔ) (liftTermReferences θ hθ)) =
+      (selectSubstitution θ hΓ hΔ hθ).lift (s := (⟨a, ha⟩ : SortName U)) := by
+  let source := context_cons a Γ (Declaration.sorts_cons_subset ha hΓ)
+  let target := context_cons a Δ (Declaration.sorts_cons_subset ha hΔ)
+  apply Substitution.ext
+  intro s v
+  rw [Substitution.cast_context_apply source target, selectSubstitution_at]
+  cases v with
+  | here =>
+    let start : Declaration.sorts (a :: Γ) ⊆ U.declarations := Declaration.sorts_cons_subset ha hΓ
+    let finish : Declaration.sorts (a :: Δ) ⊆ U.declarations := Declaration.sorts_cons_subset ha hΔ
+    let v : Var (a :: Γ) a := ambientVar start
+      (cast (congrArg (Var · (⟨a, ha⟩ : SortName U)) source.symm) .here)
+    have same := (congrArg (fun i : Var (a :: Γ) a => θ.lift i) (ambientVar_cast_here start)).trans
+      (Substitution.lift_here (s := a) θ)
+    have kept : termReferences (.var (sig := P.signature) (Var.here : Var (a :: Δ) a)) ⊆ U.declarations := by
+      rw [termReferences_var]
+      exact Set.empty_subset _
+    have named := selectTerm_congr same finish ha (liftTermReferences θ hθ v) kept
+    refine (congrArg (cast (congrArg (fun ctx => Term (signature U) ctx ⟨a, ha⟩) target)) named).trans ?_
+    rw [selectTerm_var, Term.var_cast_context target]
+    exact (congrArg (Term.var (sig := signature U)) (selectVar_cast_here finish)).trans
+      (Substitution.lift_here (s := (⟨a, ha⟩ : SortName U)) (selectSubstitution θ hΓ hΔ hθ)).symm
+  | there v =>
+    let i := ambientVar hΓ v
+    let t := selectTerm (θ i) hΔ s.property (hθ i)
+    let start : Declaration.sorts (a :: Γ) ⊆ U.declarations := Declaration.sorts_cons_subset ha hΓ
+    let finish : Declaration.sorts (a :: Δ) ⊆ U.declarations := Declaration.sorts_cons_subset ha hΔ
+    let old := ambientVar start (cast (congrArg (Var · s) source.symm) (.there v))
+    have same := (congrArg (fun j : Var (a :: Γ) s.val => θ.lift j) (ambientVar_cast_there start v)).trans
+      (Substitution.lift_there (s := a) θ i)
+    have kept : termReferences ((θ i).rename (fun j => Var.there (t := a) j)) ⊆ U.declarations := by
+      rw [termReferences_rename]
+      exact hθ i
+    let carry := cast (congrArg (fun ctx => Term (signature U) ctx s) target)
+    refine (congrArg carry (selectTerm_congr same finish s.property (liftTermReferences θ hθ old) kept)).trans ?_
+    have named := selectTerm_rename (θ i) (fun j => Var.there (t := a) j) hΔ
+      finish s.property (hθ i) kept
+    have moved := congrArg (cast (congrArg (fun ctx => Term (signature U) ctx s) target)) named
+    rw [Term.rename_cast_context rfl target] at moved
+    refine moved.trans ?_
+    have shifted := selectRenaming_there_cast ha hΔ hΔ (fun j => j)
+    simp only [selectRenaming_id] at shifted
+    refine (congrArg (fun (r : Renaming (context Δ hΔ) (⟨a, ha⟩ :: context Δ hΔ)) => t.rename r) shifted).trans ?_
+    rw [Substitution.lift_there, selectSubstitution_at]
+
+/-- Selection commutes with lifting a substitution into one more binder. -/
+theorem selectSubstitution_lift {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
+    (hθ : ∀ {s} (i : Var Γ s), termReferences (θ i) ⊆ U.declarations)
+    {a} (ha : Declaration.sort a ∈ U.declarations) :
+    selectSubstitution (θ.lift (s := a)) (Declaration.sorts_cons_subset ha hΓ)
+      (Declaration.sorts_cons_subset ha hΔ) (liftTermReferences θ hθ) =
       (selectSubstitution θ hΓ hΔ hθ).lift (s := (⟨a, ha⟩ : SortName U)) :=
-  selectSubstitution_lift θ hΓ hΔ hθ ha
+  selectSubstitution_lift_cast θ hΓ hΔ hθ ha
 
 /-- Substitute in each argument of an application indexed by an equal arity. -/
 private theorem substitute_reindexedApp {sig : Signature.{u}} {Γ Δ : List sig.SortType} (op : Operation sig)
