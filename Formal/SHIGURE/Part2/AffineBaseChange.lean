@@ -1,0 +1,280 @@
+import Mathlib.LinearAlgebra.DirectSum.TensorProduct
+import Mathlib.LinearAlgebra.Isomorphisms
+import Mathlib.LinearAlgebra.SymmetricAlgebra.Basic
+import Mathlib.LinearAlgebra.TensorProduct.RightExactness
+import Mathlib.RingTheory.Ideal.Quotient.Operations
+
+/-! # Affine base change
+Appendix B.3, with the extension algebra in the left tensor factor.
+-/
+
+open scoped DirectSum TensorProduct
+open TensorProduct
+
+noncomputable section
+
+namespace SHIGURE
+
+variable {R : Type*} [CommRing R] (S : Type*) [CommRing S] [Algebra R S]
+
+section Modules
+
+variable {M N : Type*} [AddCommGroup M] [Module R M] [AddCommGroup N] [Module R N]
+
+/-- Base change distributes over an arbitrary direct sum. -/
+def baseChangeDirectSum {ι : Type*} [DecidableEq ι] (V : ι → Type*)
+    [∀ i, AddCommGroup (V i)] [∀ i, Module R (V i)] :
+    (S ⊗[R] (⨁ i, V i)) ≃ₗ[S] ⨁ i, S ⊗[R] V i :=
+  TensorProduct.directSumRight' R S S V
+
+@[simp]
+theorem baseChangeDirectSum_tmul_lof {ι : Type*} [DecidableEq ι] (V : ι → Type*)
+    [∀ i, AddCommGroup (V i)] [∀ i, Module R (V i)]
+    (s : S) (i : ι) (v : V i) :
+    baseChangeDirectSum S V (s ⊗ₜ DirectSum.lof R ι V i v) =
+      DirectSum.lof S ι (fun i => S ⊗[R] V i) i (s ⊗ₜ v) := by
+  rw [baseChangeDirectSum, TensorProduct.coe_directSumRight']
+  exact TensorProduct.directSumRight_tmul_lof R s i v
+
+theorem baseChangeDirectSum_natural {ι : Type*} [DecidableEq ι]
+    {V W : ι → Type*} [∀ i, AddCommGroup (V i)] [∀ i, Module R (V i)]
+    [∀ i, AddCommGroup (W i)] [∀ i, Module R (W i)] (f : ∀ i, V i →ₗ[R] W i) :
+    (baseChangeDirectSum S W).toLinearMap.comp ((DirectSum.lmap f).baseChange S) =
+      (DirectSum.lmap fun i => (f i).baseChange S).comp (baseChangeDirectSum S V).toLinearMap := by
+  apply AlgebraTensorModule.ext
+  intro s v
+  ext i
+  simp [baseChangeDirectSum, TensorProduct.coe_directSumRight']
+
+/-- The scalar extension of a tensor product is the tensor product of the scalar extensions. -/
+def baseChangeTensor :
+    (S ⊗[R] (M ⊗[R] N)) ≃ₗ[S] (S ⊗[R] M) ⊗[S] (S ⊗[R] N) :=
+  AlgebraTensorModule.distribBaseChange R S M N
+
+@[simp]
+theorem baseChangeTensor_tmul (s : S) (x : M) (y : N) :
+    baseChangeTensor S (s ⊗ₜ[R] (x ⊗ₜ[R] y)) =
+      (s ⊗ₜ[R] x) ⊗ₜ[S] ((1 : S) ⊗ₜ[R] y) :=
+  rfl
+
+theorem baseChangeTensor_natural
+    {M' N' : Type*} [AddCommGroup M'] [Module R M'] [AddCommGroup N'] [Module R N']
+    (f : M →ₗ[R] M') (g : N →ₗ[R] N') :
+    (baseChangeTensor S).toLinearMap.comp ((TensorProduct.map f g).baseChange S) =
+      (TensorProduct.map (f.baseChange S) (g.baseChange S)).comp
+        (baseChangeTensor S).toLinearMap := by
+  apply AlgebraTensorModule.ext
+  intro s t
+  induction t using TensorProduct.induction_on with
+  | zero => simp
+  | tmul x y => simp
+  | add x y hx hy => simp only [tmul_add, map_add, hx, hy]
+
+private theorem baseChangeCokernel_range (f : M →ₗ[R] N) :
+    LinearMap.ker ((LinearMap.range f).mkQ.baseChange S) = LinearMap.range (f.baseChange S) := by
+  apply SetLike.ext
+  intro x
+  change (LinearMap.lTensor S (LinearMap.range f).mkQ) x = 0 ↔
+    x ∈ LinearMap.range (LinearMap.lTensor S f)
+  exact lTensor_exact S f.exact_map_mkQ_range (Submodule.mkQ_surjective _) x
+
+/-- The cokernel of a linear map commutes with scalar extension along any algebra. -/
+def baseChangeCokernel (f : M →ₗ[R] N) :
+    (S ⊗[R] (N ⧸ LinearMap.range f)) ≃ₗ[S] ((S ⊗[R] N) ⧸ LinearMap.range (f.baseChange S)) :=
+  (Submodule.quotEquivOfEq _ _ (baseChangeCokernel_range S f).symm ≪≫ₗ
+    ((LinearMap.range f).mkQ.baseChange S).quotKerEquivOfSurjective
+      (LinearMap.lTensor_surjective S (Submodule.mkQ_surjective _))).symm
+
+@[simp]
+theorem baseChangeCokernel_symm_mk_tmul (f : M →ₗ[R] N) (s : S) (x : N) :
+    (baseChangeCokernel S f).symm (Submodule.Quotient.mk (s ⊗ₜ x)) =
+      s ⊗ₜ (Submodule.Quotient.mk x : N ⧸ LinearMap.range f) := by
+  rw [baseChangeCokernel, LinearEquiv.symm_symm, LinearEquiv.trans_apply,
+    Submodule.quotEquivOfEq_mk, LinearMap.quotKerEquivOfSurjective_apply_mk]
+  rfl
+
+private theorem range_le_comap_of_square
+    {K U V W X : Type*} [CommRing K]
+    [AddCommGroup U] [Module K U] [AddCommGroup V] [Module K V]
+    [AddCommGroup W] [Module K W] [AddCommGroup X] [Module K X]
+    {f : U →ₗ[K] V} {g : W →ₗ[K] X} {a : U →ₗ[K] W} {b : V →ₗ[K] X}
+    (comm : b.comp f = g.comp a) :
+    LinearMap.range f ≤ (LinearMap.range g).comap b := by
+  rintro _ ⟨x, rfl⟩
+  exact ⟨a x, (LinearMap.congr_fun comm x).symm⟩
+
+theorem baseChangeCokernel_natural
+    {M' N' : Type*} [AddCommGroup M'] [Module R M'] [AddCommGroup N'] [Module R N']
+    {f : M →ₗ[R] N} {g : M' →ₗ[R] N'} {a : M →ₗ[R] M'} {b : N →ₗ[R] N'}
+    (comm : b.comp f = g.comp a) :
+    (baseChangeCokernel S g).symm.toLinearMap.comp
+        ((f.baseChange S).range.mapQ (g.baseChange S).range (b.baseChange S)
+          (range_le_comap_of_square (by
+            simpa [LinearMap.baseChange_comp] using congrArg (LinearMap.baseChange S) comm))) =
+      ((f.range.mapQ g.range b (range_le_comap_of_square comm)).baseChange S).comp
+        (baseChangeCokernel S f).symm.toLinearMap := by
+  apply LinearMap.ext
+  intro z
+  obtain ⟨w, rfl⟩ := Submodule.mkQ_surjective (f.baseChange S).range z
+  induction w using TensorProduct.induction_on with
+  | zero => simp
+  | tmul s n =>
+    simp only [Submodule.mkQ_apply, LinearMap.comp_apply, Submodule.mapQ_apply,
+      LinearMap.baseChange_tmul, LinearEquiv.coe_coe, baseChangeCokernel_symm_mk_tmul]
+  | add x y hx hy =>
+    simp only [map_add, hx, hy]
+
+end Modules
+
+section Algebras
+
+open Algebra.TensorProduct (includeRight)
+
+variable {A : Type*} [CommRing A] [Algebra R A]
+
+/-- The image equations after scalar extension generate the extended ideal. -/
+def baseChangeIdeal (I : Ideal A) : Ideal (S ⊗[R] A) :=
+  I.map (includeRight : A →ₐ[R] S ⊗[R] A)
+
+theorem baseChangeIdeal_span (E : Set A) :
+    baseChangeIdeal S (Ideal.span E) =
+      Ideal.span ((fun a : A => (1 : S) ⊗ₜ[R] a) '' E) := by
+  rw [baseChangeIdeal, Ideal.map_span]
+  rfl
+
+private def baseChangeQuotientMap (I : Ideal A) : S ⊗[R] A →ₐ[S] S ⊗[R] (A ⧸ I) :=
+  Algebra.TensorProduct.map (AlgHom.id S S) (Ideal.Quotient.mkₐ R I)
+
+private theorem baseChangeQuotientMap_ker (I : Ideal A) :
+    RingHom.ker (baseChangeQuotientMap (R := R) S I) = baseChangeIdeal S I := by
+  have h := Algebra.TensorProduct.lTensor_ker (A := S) (Ideal.Quotient.mkₐ R I)
+    (Ideal.Quotient.mkₐ_surjective R I)
+  rw [AlgHom.ker_coe (Ideal.Quotient.mkₐ R I), Ideal.Quotient.mkₐ_ker] at h
+  exact h
+
+/-- Extending scalars on a quotient algebra gives the quotient by the extended ideal. -/
+def baseChangeQuotient (I : Ideal A) :
+    (S ⊗[R] (A ⧸ I)) ≃ₐ[S] ((S ⊗[R] A) ⧸ baseChangeIdeal S I) :=
+  ((Ideal.quotientEquivAlgOfEq S (baseChangeQuotientMap_ker S I).symm).trans
+    (Ideal.quotientKerAlgEquivOfSurjective (f := baseChangeQuotientMap S I)
+      (Algebra.TensorProduct.map_surjective _ _ Function.surjective_id
+        (Ideal.Quotient.mkₐ_surjective R I)))).symm
+
+@[simp]
+theorem baseChangeQuotient_symm_mk_tmul (I : Ideal A) (s : S) (a : A) :
+    (baseChangeQuotient (R := R) S I).symm (Ideal.Quotient.mk _ (s ⊗ₜ[R] a)) =
+      s ⊗ₜ (Ideal.Quotient.mk I a) := by
+  simp [baseChangeQuotient, baseChangeQuotientMap]
+
+private theorem baseChangeIdeal_le_comap
+    {B : Type*} [CommRing B] [Algebra R B] {I : Ideal A} {J : Ideal B}
+    (f : A →ₐ[R] B) (h : I ≤ J.comap f) :
+    baseChangeIdeal S I ≤
+      (baseChangeIdeal S J).comap (Algebra.TensorProduct.map (AlgHom.id S S) f) := by
+  rw [baseChangeIdeal, Ideal.map_le_iff_le_comap]
+  intro a ha
+  change Algebra.TensorProduct.map (AlgHom.id S S) f ((1 : S) ⊗ₜ[R] a) ∈ baseChangeIdeal S J
+  simpa only [Algebra.TensorProduct.map_tmul, AlgHom.id_apply] using
+    (Ideal.mem_map_of_mem (includeRight : B →ₐ[R] S ⊗[R] B) (h ha) :
+      ((1 : S) ⊗ₜ[R] f a) ∈ baseChangeIdeal S J)
+
+theorem baseChangeQuotient_natural
+    {B : Type*} [CommRing B] [Algebra R B] {I : Ideal A} {J : Ideal B}
+    (f : A →ₐ[R] B) (h : I ≤ J.comap f) :
+    (baseChangeQuotient (R := R) S J).symm.toAlgHom.comp
+        (Ideal.quotientMapₐ (baseChangeIdeal S J) (Algebra.TensorProduct.map (AlgHom.id S S) f)
+          (baseChangeIdeal_le_comap S f h)) =
+      (Algebra.TensorProduct.map (AlgHom.id S S) (Ideal.quotientMapₐ J f h)).comp
+        (baseChangeQuotient (R := R) S I).symm.toAlgHom := by
+  apply Ideal.Quotient.algHom_ext
+  apply Algebra.TensorProduct.ext'
+  intro s a
+  simp [Ideal.quotient_map_mkₐ]
+
+end Algebras
+
+section Symmetric
+
+open SymmetricAlgebra
+
+variable (Q : Type*) [AddCommGroup Q] [Module R Q]
+
+/-- The algebra map induced by a linear map of generators. -/
+def symmetricMap {Q'} [AddCommGroup Q'] [Module R Q'] (f : Q →ₗ[R] Q') :
+    SymmetricAlgebra R Q →ₐ[R] SymmetricAlgebra R Q' :=
+  lift ((ι R Q').comp f)
+
+@[simp]
+theorem symmetricMap_ι {Q'} [AddCommGroup Q'] [Module R Q'] (f : Q →ₗ[R] Q') (q : Q) :
+    symmetricMap Q f (ι R Q q) = ι R Q' (f q) := by
+  simp [symmetricMap]
+
+private def extendSymmetricGenerators :
+    SymmetricAlgebra R Q →ₐ[R] SymmetricAlgebra S (S ⊗[R] Q) :=
+  lift (((ι S (S ⊗[R] Q)).restrictScalars R).comp (TensorProduct.mk R S Q 1))
+
+private def extendSymmetric :
+    S ⊗[R] SymmetricAlgebra R Q →ₐ[S] SymmetricAlgebra S (S ⊗[R] Q) :=
+  Algebra.TensorProduct.lift (Algebra.ofId S _) (extendSymmetricGenerators S Q)
+    fun _ _ => Commute.all _ _
+
+private def restrictSymmetric :
+    SymmetricAlgebra S (S ⊗[R] Q) →ₐ[S] S ⊗[R] SymmetricAlgebra R Q :=
+  lift (((Algebra.TensorProduct.includeRight :
+    SymmetricAlgebra R Q →ₐ[R] S ⊗[R] SymmetricAlgebra R Q).toLinearMap.comp
+      (ι R Q)).liftBaseChange S)
+
+private theorem extendSymmetric_tmul_ι (s : S) (q : Q) :
+    extendSymmetric S Q (s ⊗ₜ[R] ι R Q q) = ι S (S ⊗[R] Q) (s ⊗ₜ[R] q) := by
+  simp only [extendSymmetric, Algebra.TensorProduct.lift_tmul, Algebra.ofId_apply,
+    extendSymmetricGenerators, lift_ι_apply, LinearMap.comp_apply,
+    LinearMap.restrictScalars_apply, mk_apply]
+  rw [← Algebra.smul_def, ← map_smul, smul_tmul', smul_eq_mul, mul_one]
+
+private theorem restrictSymmetric_ι_tmul (s : S) (q : Q) :
+    restrictSymmetric S Q (ι S (S ⊗[R] Q) (s ⊗ₜ[R] q)) = s ⊗ₜ[R] ι R Q q := by
+  simp [restrictSymmetric, Algebra.smul_def]
+
+/-- The symmetric algebra commutes with arbitrary scalar extension. -/
+def baseChangeSymmetric :
+    (S ⊗[R] SymmetricAlgebra R Q) ≃ₐ[S] SymmetricAlgebra S (S ⊗[R] Q) :=
+  AlgEquiv.ofAlgHom (extendSymmetric S Q) (restrictSymmetric S Q)
+    (by
+      apply SymmetricAlgebra.algHom_ext
+      apply AlgebraTensorModule.ext
+      intro s q
+      simp [extendSymmetric_tmul_ι, restrictSymmetric_ι_tmul])
+    (by
+      apply Algebra.TensorProduct.ext
+      · apply Subsingleton.elim
+      · apply SymmetricAlgebra.algHom_ext
+        apply LinearMap.ext
+        intro q
+        change restrictSymmetric S Q (extendSymmetric S Q
+          ((1 : S) ⊗ₜ[R] ι R Q q)) = (1 : S) ⊗ₜ[R] ι R Q q
+        rw [extendSymmetric_tmul_ι, restrictSymmetric_ι_tmul])
+
+@[simp]
+theorem baseChangeSymmetric_tmul_ι (s : S) (q : Q) :
+    baseChangeSymmetric S Q (s ⊗ₜ[R] ι R Q q) = ι S (S ⊗[R] Q) (s ⊗ₜ[R] q) :=
+  extendSymmetric_tmul_ι S Q s q
+
+theorem baseChangeSymmetric_natural
+    {Q' : Type*} [AddCommGroup Q'] [Module R Q'] (f : Q →ₗ[R] Q') :
+    (baseChangeSymmetric S Q').toAlgHom.comp
+        (Algebra.TensorProduct.map (AlgHom.id S S) (symmetricMap Q f)) =
+      (symmetricMap (S ⊗[R] Q) (f.baseChange S)).comp (baseChangeSymmetric S Q).toAlgHom := by
+  apply Algebra.TensorProduct.ext
+  · exact Subsingleton.elim _ _
+  · apply SymmetricAlgebra.algHom_ext
+    apply LinearMap.ext
+    intro q
+    change baseChangeSymmetric S Q'
+      (Algebra.TensorProduct.map (AlgHom.id S S) (symmetricMap Q f) ((1 : S) ⊗ₜ[R] ι R Q q)) =
+      symmetricMap (S ⊗[R] Q) (f.baseChange S)
+        (baseChangeSymmetric S Q ((1 : S) ⊗ₜ[R] ι R Q q))
+    simp
+
+end Symmetric
+
+end SHIGURE
