@@ -99,8 +99,8 @@ private def reindexTensor (A : TensorStructure R sig) {I J : Type u}
       ((sorts (e.symm j)).trans (congrArg t (e.apply_symm_apply j))))
 
 /-- The tensor product of the single type of variable is its carrier module. -/
-private def singleArgumentEquiv (A : TensorStructure R sig) (s : sig.SortType) :
-    (TensorShape.arguments [s]).module A ≃ₗ[R] A.carrier s := by
+def singleArgumentEquiv {K : Type u} (M : K → ModuleCat.{u} R) (s : K) :
+    (⨂[R] i : TensorPosition [s], M i.1) ≃ₗ[R] M s := by
   let e : TensorPosition [s] ≃ PUnit.{1} :=
     { toFun := fun _ => PUnit.unit
       invFun := fun _ => ⟨s, .here⟩
@@ -112,8 +112,20 @@ private def singleArgumentEquiv (A : TensorStructure R sig) (s : sig.SortType) :
       right_inv _ := rfl }
   haveI : Subsingleton (TensorPosition [s]) :=
     ⟨fun i j => e.injective (Subsingleton.elim (e i) (e j))⟩
-  exact PiTensorProduct.subsingletonEquiv (R := R) (s := fun i : TensorPosition [s] => A.carrier i.1)
+  exact PiTensorProduct.subsingletonEquiv (R := R) (s := fun i : TensorPosition [s] => M i.1)
     (⟨s, Var.here⟩ : TensorPosition [s])
+
+/-- The single input comparison evaluates the one remaining entry. -/
+theorem singleArgumentEquiv_tprod {K : Type u} (M : K → ModuleCat.{u} R) (s : K)
+    (x : ∀ i : TensorPosition [s], M i.1) :
+    singleArgumentEquiv M s (PiTensorProduct.tprod R x) = x ⟨s, Var.here⟩ := by
+  have he (i : TensorPosition [s]) : i = ⟨s, Var.here⟩ := by
+    obtain ⟨_, j⟩ := i
+    cases j with
+    | here => rfl
+    | there i => exact nomatch i
+  letI : Subsingleton (TensorPosition [s]) := ⟨fun i j => (he i).trans (he j).symm⟩
+  exact PiTensorProduct.subsingletonEquiv_apply_tprod _ x
 
 /-- The universal tensor comparison combines two finite blocks of typed input variables. -/
 private def combineArgumentsEquiv (A : TensorStructure R sig) {Γ Δ Θ : List sig.SortType}
@@ -141,8 +153,8 @@ def TensorExpression.eval (A : TensorStructure R sig) {X Y : TensorShape sig.Sor
   | .emptyArguments =>
       letI : IsEmpty ((s : sig.SortType) × Var [] s) := ⟨fun a => nomatch a.2⟩
       (PiTensorProduct.isEmptyEquiv ((s : sig.SortType) × Var [] s)).symm.toLinearMap
-  | .singleArgument s => (singleArgumentEquiv A s).symm.toLinearMap
-  | .singleArgumentInv s => (singleArgumentEquiv A s).toLinearMap
+  | .singleArgument s => (singleArgumentEquiv A.carrier s).symm.toLinearMap
+  | .singleArgumentInv s => (singleArgumentEquiv A.carrier s).toLinearMap
   | .permuteArguments e sorts => (reindexTensor A Sigma.fst Sigma.fst e sorts).toLinearMap
   | .combineArguments e sorts => (combineArgumentsEquiv A e sorts).toLinearMap
   | .splitArguments e sorts => (combineArgumentsEquiv A e sorts).symm.toLinearMap
@@ -203,14 +215,5 @@ structure FullDomainTensorSignature (sig : Signature.{u}) : Prop where
   noRelations : IsEmpty sig.Rel
   /-- Partial domains belong to the separately interpreted structure. -/
   noPartial : IsEmpty sig.Partial
-
-/-- The satisfaction predicate for required tensor Laws at the given coefficients. -/
-def tensorModelProperty {L : Type u} (_scope : FullDomainTensorSignature sig)
-    (law : L → TensorLaw R sig) : ObjectProperty (TensorStructure R sig) :=
-  fun A => ∀ l : L, (law l).holds A
-
-/-- The tensor-mode semantic category for a family of required typed expressions. -/
-abbrev TensorModels {L : Type u} (scope : FullDomainTensorSignature sig) (law : L → TensorLaw R sig) :=
-  (tensorModelProperty scope law).FullSubcategory
 
 end SHIGURE

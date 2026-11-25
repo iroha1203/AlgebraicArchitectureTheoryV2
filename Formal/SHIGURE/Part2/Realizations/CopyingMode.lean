@@ -11,7 +11,7 @@ conditions of the primitive sheaf structure. The admissible objects are
 Zariski locally split. The Law test is subsheaf inclusion on the test site.
 -/
 
-open AlgebraicGeometry CategoryTheory Opposite
+open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
 
 universe u
 
@@ -33,12 +33,73 @@ def CoefficientRing.specMap {R S : CoefficientRing.{u}} (f : R.Hom S) : S.spec �
 namespace Copying
 
 private def realizedPredicate {S : Scheme.{u}} {F : ZariskiSheaf S}
-    (P : SheafPredicate F) : RealizedSubobject F where
-  obj := P.toSheaf
-  inclusion := P.inclusion
-  mono_inclusion := by
-    letI : Mono P.inclusion.val := inferInstanceAs (Mono P.carrier.ι)
-    exact Sheaf.Hom.mono_of_presheaf_mono (Scheme.zariskiTopology.over S) (Type u) P.inclusion
+    (P : SheafPredicate F) : MonoOver F :=
+  letI : Mono P.inclusion.val := inferInstanceAs (Mono P.carrier.ι)
+  letI : Mono P.inclusion :=
+    Sheaf.Hom.mono_of_presheaf_mono (Scheme.zariskiTopology.over S) (Type u) P.inclusion
+  MonoOver.mk P.inclusion
+
+private def copyingInputs (S : Scheme.{u}) {K : Type u} (Γ : List K) :
+    (K → ZariskiSheaf S) ⥤ ZariskiSheaf S where
+  obj A := sheafTuple A Γ
+  map f := sheafTupleMap f Γ
+  map_id A := sheafTupleMap_id A Γ
+  map_comp f g := sheafTupleMap_comp f g Γ
+
+private def copyingPositionInputs (S : Scheme.{u}) (I : Type u) :
+    (I → ZariskiSheaf S) ⥤ ZariskiSheaf S where
+  obj A := ∏ᶜ A
+  map f := Limits.Pi.map f
+  map_id _ := Limits.Pi.map_id
+  map_comp f g := (Limits.Pi.map_comp_map f g).symm
+
+private def copyingInputIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSheaf S) (Γ : List K) :
+    sheafTuple A Γ ≅ ∏ᶜ (fun i : (s : K) × Var Γ s => A i.1) :=
+  (sheafTupleFanIsLimit A Γ).conePointUniqueUpToIso (limit.isLimit _)
+
+private theorem copyingInputIsoAt_hom_π {S : Scheme.{u}} {K : Type u}
+    (A : K → ZariskiSheaf S) (Γ : List K) (i : (s : K) × Var Γ s) :
+    (copyingInputIsoAt A Γ).hom ≫ Limits.Pi.π _ i = sheafTupleProj A i.2 := by
+  exact limit.lift_π (sheafTupleFan A Γ) ⟨i⟩
+
+private def copyingInputIso (S : Scheme.{u}) {K : Type u} (Γ : List K) :
+    copyingInputs S Γ ≅ CategoryTheory.Pi.comap (fun _ : K => ZariskiSheaf S) (fun i : (s : K) × Var Γ s => i.1) ⋙
+      copyingPositionInputs S ((s : K) × Var Γ s) :=
+  NatIso.ofComponents (fun A => copyingInputIsoAt A Γ) (by
+    intro A B f
+    apply Limits.Pi.hom_ext
+    intro i
+    change (sheafTupleMap f Γ ≫ (copyingInputIsoAt B Γ).hom) ≫ Limits.Pi.π _ i =
+      ((copyingInputIsoAt A Γ).hom ≫ Limits.Pi.map (fun j => f j.1)) ≫ Limits.Pi.π _ i
+    rw [Category.assoc, copyingInputIsoAt_hom_π, Category.assoc, Limits.Pi.map_π,
+      ← Category.assoc, copyingInputIsoAt_hom_π]
+    exact Sheaf.Hom.ext rfl)
+
+private def copyingUnaryIsoAt {S : Scheme.{u}} {K : Type u} (A : K → ZariskiSheaf S) (s : K) :
+    sheafTuple A [s] ≅ A s where
+  hom := sheafTupleProj A Var.here
+  inv := ⟨{
+    app := fun _ => ↾fun x => Assignment.cons x Assignment.empty
+    naturality := by
+      intro U V f
+      ext x
+      apply Assignment.ext
+      intro t i
+      cases i with
+      | here => rfl
+      | there i => exact nomatch i }⟩
+  hom_inv_id := by
+    ext U x
+    apply Assignment.ext
+    intro t i
+    cases i with
+    | here => rfl
+    | there i => exact nomatch i
+  inv_hom_id := Sheaf.Hom.ext rfl
+
+private def copyingUnaryIso (S : Scheme.{u}) {K : Type u} (s : K) :
+    copyingInputs S [s] ≅ CategoryTheory.Pi.eval (fun _ : K => ZariskiSheaf S) s :=
+  NatIso.ofComponents (fun A => copyingUnaryIsoAt A s) (fun _ => Sheaf.Hom.ext rfl)
 
 /-- The primitive diagrams of a copying realization use Cartesian tuples and
 the inclusions of the relation and domain subsheaves. -/
@@ -46,11 +107,10 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
     StructureRule sig (Cat.of (ZariskiSheaf S))
       (SheafStructure sig (Scheme.zariskiTopology.over S)) where
   carrier A := A.carrier
-  input Γ :=
-    { obj := fun A => sheafTuple A Γ
-      map := fun f => sheafTupleMap f Γ
-      map_id := fun A => sheafTupleMap_id A Γ
-      map_comp := fun f g => sheafTupleMap_comp f g Γ }
+  input := copyingInputs S
+  positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)
+  inputIso := copyingInputIso S
+  unaryIso := copyingUnaryIso S
   total := SheafStructure.total
   relation A r := realizedPredicate (A.relation r)
   domain A p := realizedPredicate (A.partialDomain p)
@@ -77,7 +137,7 @@ private theorem predicate_factor_unique {S : Scheme.{u}} {F G : ZariskiSheaf S}
     {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
     {g : P.toSheaf ⟶ Q.toSheaf} (h : g ≫ Q.inclusion = P.inclusion ≫ f)
     (h' : P.carrier ≤ (Q.preimage f).carrier) : g = SheafPredicate.mapAlong f h' := by
-  letI : Mono Q.inclusion := (realizedPredicate Q).mono_inclusion
+  letI : Mono Q.inclusion := (realizedPredicate Q).property
   exact (cancel_mono Q.inclusion).mp (h.trans (mapAlong_factor h').symm)
 
 /-- A preserving carrier family in the primitive diagrams is exactly a

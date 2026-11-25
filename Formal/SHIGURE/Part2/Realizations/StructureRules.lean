@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part1.Signature
 import Mathlib.CategoryTheory.Category.Cat
 import Mathlib.CategoryTheory.Pi.Basic
+import Mathlib.CategoryTheory.Subobject.MonoOver
 
 /-!
 # Primitive structure rules and their maps
@@ -17,33 +18,32 @@ universe u v w t
 
 namespace SHIGURE
 
-/-- A represented subobject with its monic inclusion. -/
-structure RealizedSubobject {C : Type w} [Category.{v} C] (X : C) where
-  /-- An object representing the subobject. -/
-  obj : C
-  /-- The inclusion in the input object. -/
-  inclusion : obj ⟶ X
-  /-- The inclusion is monic. -/
-  mono_inclusion : Mono inclusion
-
 /-- The primitive data and the allowable carrier maps of a structure mode. -/
 structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t) where
   /-- The object realizing each carrier sort. -/
   carrier : Object → sig.SortType → C
-  /-- The input objects, functorial in the entire family of carrier maps. -/
+  /-- The chosen representation of input objects and input maps. -/
   input (Γ : List sig.SortType) : (sig.SortType → C) ⥤ C
+  /-- The combination of carriers at precisely the variable positions of an arity. -/
+  positionalInput (Γ : List sig.SortType) : (((s : sig.SortType) × Var Γ s) → C) ⥤ C
+  /-- Identify the chosen input representation with the combination of the declared arguments. -/
+  inputIso (Γ : List sig.SortType) :
+    input Γ ≅ Pi.comap (fun _ : sig.SortType => C) (fun i : (s : sig.SortType) × Var Γ s => i.1) ⋙
+      positionalInput Γ
+  /-- A single input is naturally the carrier of its declared sort. -/
+  unaryIso (s : sig.SortType) : input [s] ≅ Pi.eval (fun _ : sig.SortType => C) s
   /-- A total operation from its entire input object. -/
   total (A : Object) (f : sig.Total) : (input (sig.totalArity f).inputs).obj (carrier A) ⟶
     carrier A (sig.totalArity f).output
   /-- A relation as a subobject of its input object. -/
   relation (A : Object) (r : sig.Rel) :
-    RealizedSubobject ((input (sig.relInputs r)).obj (carrier A))
+    MonoOver ((input (sig.relInputs r)).obj (carrier A))
   /-- The specified domain of a partial operation. -/
   domain (A : Object) (p : sig.Partial) :
-    RealizedSubobject ((input (sig.partialArity p).inputs).obj (carrier A))
+    MonoOver ((input (sig.partialArity p).inputs).obj (carrier A))
   /-- The partial operation on its specified domain. -/
   partialValue (A : Object) (p : sig.Partial) :
-    (domain A p).obj ⟶ carrier A (sig.partialArity p).output
+    (domain A p : C) ⟶ carrier A (sig.partialArity p).output
   /-- The map reading a quantity. -/
   quantity (A : Object) (q : sig.Quantity) : (input (sig.quantityArity q).inputs).obj (carrier A) ⟶
     carrier A (sig.quantityArity q).output
@@ -53,19 +53,48 @@ namespace StructureRule
 variable {sig : Signature.{u}} {C : Cat.{v, w}} {Object : Type t}
 variable (rule : StructureRule sig C Object)
 
+/-- On an input, changing carriers is the combination of just the declared argument maps. -/
+theorem input_map_positions (Γ : List sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B) :
+    (rule.input Γ).map f ≫ (rule.inputIso Γ).hom.app B =
+      (rule.inputIso Γ).hom.app A ≫ (rule.positionalInput Γ).map (fun i => f i.1) :=
+  (rule.inputIso Γ).hom.naturality f
+
+/-- Changes in undeclared arguments cannot change the input map. -/
+theorem input_map_positions_congr (Γ : List sig.SortType) {A B : sig.SortType → C} {f g : A ⟶ B}
+    (h : ∀ i : (s : sig.SortType) × Var Γ s, f i.1 = g i.1) :
+    (rule.input Γ).map f = (rule.input Γ).map g := by
+  apply (cancel_mono ((rule.inputIso Γ).hom.app B)).mp
+  simp only [rule.input_map_positions, funext h]
+
+/-- In a unary operation, the input map is the specified map of its single sort. -/
+theorem input_map_unary (s : sig.SortType) {A B : sig.SortType → C} (f : A ⟶ B) :
+    (rule.input [s]).map f ≫ (rule.unaryIso s).hom.app B = (rule.unaryIso s).hom.app A ≫ f s :=
+  (rule.unaryIso s).hom.naturality f
+
+/-- Unary input maps are equal exactly when the displayed carrier maps are equal. -/
+theorem input_map_unary_eq_iff (s : sig.SortType) {A B : sig.SortType → C} (f g : A ⟶ B) :
+    (rule.input [s]).map f = (rule.input [s]).map g ↔ f s = g s := by
+  constructor
+  · intro h
+    apply (cancel_epi ((rule.unaryIso s).hom.app A)).mp
+    rw [← rule.input_map_unary, ← rule.input_map_unary, h]
+  · intro h
+    apply (cancel_mono ((rule.unaryIso s).hom.app B)).mp
+    simp only [rule.input_map_unary, h]
+
 /-- All the preservation conditions of equation (2.1) for the interpreted primitive diagrams. -/
 structure Preserves {A B : Object} (f : ∀ s, rule.carrier A s ⟶ rule.carrier B s) : Prop where
   /-- The total maps commute with the carrier maps on their inputs and outputs. -/
   total (op : sig.Total) : rule.total A op ≫ f _ =
     (rule.input (sig.totalArity op).inputs).map f ≫ rule.total B op
   /-- A map takes the source relation into the target relation. -/
-  relation (r : sig.Rel) : ∃ h : (rule.relation A r).obj ⟶ (rule.relation B r).obj,
-    h ≫ (rule.relation B r).inclusion =
-      (rule.relation A r).inclusion ≫ (rule.input (sig.relInputs r)).map f
+  relation (r : sig.Rel) : ∃ h : (rule.relation A r : C) ⟶ (rule.relation B r : C),
+    h ≫ (rule.relation B r).arrow =
+      (rule.relation A r).arrow ≫ (rule.input (sig.relInputs r)).map f
   /-- The partial operation commutes on the factorization through the target domain. -/
-  partialOp (p : sig.Partial) : ∃ h : (rule.domain A p).obj ⟶ (rule.domain B p).obj,
-    h ≫ (rule.domain B p).inclusion =
-      (rule.domain A p).inclusion ≫ (rule.input (sig.partialArity p).inputs).map f ∧
+  partialOp (p : sig.Partial) : ∃ h : (rule.domain A p : C) ⟶ (rule.domain B p : C),
+    h ≫ (rule.domain B p).arrow =
+      (rule.domain A p).arrow ≫ (rule.input (sig.partialArity p).inputs).map f ∧
     h ≫ rule.partialValue B p = rule.partialValue A p ≫ f _
   /-- The quantity maps commute with the carrier maps. -/
   quantity (q : sig.Quantity) : rule.quantity A q ≫ f _ =
@@ -78,13 +107,13 @@ theorem preserves_id (A : Object) : rule.Preserves (fun s => 𝟙 (rule.carrier 
     simp
   relation r := by
     refine ⟨𝟙 _, ?_⟩
-    change 𝟙 _ ≫ (rule.relation A r).inclusion =
-      (rule.relation A r).inclusion ≫ (rule.input _).map (𝟙 (rule.carrier A))
+    change 𝟙 _ ≫ (rule.relation A r).arrow =
+      (rule.relation A r).arrow ≫ (rule.input _).map (𝟙 (rule.carrier A))
     simp
   partialOp p := by
     refine ⟨𝟙 _, ?_, by simp⟩
-    change 𝟙 _ ≫ (rule.domain A p).inclusion =
-      (rule.domain A p).inclusion ≫ (rule.input _).map (𝟙 (rule.carrier A))
+    change 𝟙 _ ≫ (rule.domain A p).arrow =
+      (rule.domain A p).arrow ≫ (rule.input _).map (𝟙 (rule.carrier A))
     simp
   quantity q := by
     change rule.quantity A q ≫ 𝟙 _ = (rule.input _).map (𝟙 (rule.carrier A)) ≫ rule.quantity A q
@@ -101,15 +130,15 @@ theorem preserves_comp {A B D : Object} {f : ∀ s, rule.carrier A s ⟶ rule.ca
     obtain ⟨a, ha⟩ := hf.relation r
     obtain ⟨b, hb⟩ := hg.relation r
     refine ⟨a ≫ b, ?_⟩
-    change (a ≫ b) ≫ (rule.relation D r).inclusion =
-      (rule.relation A r).inclusion ≫ (rule.input _).map (f ≫ g)
+    change (a ≫ b) ≫ (rule.relation D r).arrow =
+      (rule.relation A r).arrow ≫ (rule.input _).map (f ≫ g)
     rw [Category.assoc, hb, ← Category.assoc, ha, Category.assoc, Functor.map_comp]
   partialOp p := by
     obtain ⟨a, ha, hva⟩ := hf.partialOp p
     obtain ⟨b, hb, hvb⟩ := hg.partialOp p
     refine ⟨a ≫ b, ?_, ?_⟩
-    · change (a ≫ b) ≫ (rule.domain D p).inclusion =
-        (rule.domain A p).inclusion ≫ (rule.input _).map (f ≫ g)
+    · change (a ≫ b) ≫ (rule.domain D p).arrow =
+        (rule.domain A p).arrow ≫ (rule.input _).map (f ≫ g)
       rw [Category.assoc, hb, ← Category.assoc, ha, Category.assoc, Functor.map_comp]
     · rw [Category.assoc, hvb, ← Category.assoc, hva, Category.assoc]
   quantity q := by

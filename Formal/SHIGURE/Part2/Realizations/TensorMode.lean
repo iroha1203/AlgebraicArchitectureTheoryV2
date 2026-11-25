@@ -70,21 +70,41 @@ def TensorCoefficientRule.changeState (rule : TensorCoefficientRule sig)
 
 variable {R : Type u} [CommRing R]
 
-private def tensorInputs (R : Type u) [CommRing R] {K : Type u} (Γ : List K) :
-    (K → ModuleCat.{u} R) ⥤ ModuleCat.{u} R where
-  obj A := ModuleCat.of R (⨂[R] i : TensorPosition Γ, A i.1)
-  map f := ModuleCat.ofHom (PiTensorProduct.map (fun i => (f i.1).hom))
+private def tensorPositionInputs (R : Type u) [CommRing R] (I : Type u) :
+    (I → ModuleCat.{u} R) ⥤ ModuleCat.{u} R where
+  obj A := ModuleCat.of R (⨂[R] i : I, A i)
+  map f := ModuleCat.ofHom (PiTensorProduct.map (fun i => (f i).hom))
   map_id A := by
     apply ModuleCat.hom_ext
-    exact PiTensorProduct.map_id (s := fun i : TensorPosition Γ => A i.1)
+    exact PiTensorProduct.map_id (s := fun i : I => A i)
   map_comp {A B D} f g := by
     apply ModuleCat.hom_ext
     have h := PiTensorProduct.map_comp (R := R)
-      (s := fun i : TensorPosition Γ => (A i.1 : Type u))
-      (t := fun i : TensorPosition Γ => (B i.1 : Type u))
-      (t' := fun i : TensorPosition Γ => (D i.1 : Type u))
-      (fun i => (g i.1).hom) (fun i => (f i.1).hom)
+      (s := fun i : I => (A i : Type u))
+      (t := fun i : I => (B i : Type u))
+      (t' := fun i : I => (D i : Type u))
+      (fun i => (g i).hom) (fun i => (f i).hom)
     exact h
+
+private abbrev tensorInputs (R : Type u) [CommRing R] {K : Type u} (Γ : List K) :
+    (K → ModuleCat.{u} R) ⥤ ModuleCat.{u} R :=
+  Pi.comap (fun _ : K => ModuleCat.{u} R) (fun i : TensorPosition Γ => i.1) ⋙
+    tensorPositionInputs R (TensorPosition Γ)
+
+private def tensorUnaryIso (R : Type u) [CommRing R] {K : Type u} (s : K) :
+    tensorInputs R [s] ≅ Pi.eval (fun _ : K => ModuleCat.{u} R) s :=
+  NatIso.ofComponents (fun A => (singleArgumentEquiv A s).toModuleIso) (by
+    intro A B f
+    apply ModuleCat.hom_ext
+    apply PiTensorProduct.ext
+    apply MultilinearMap.ext
+    intro x
+    change singleArgumentEquiv B s
+        (PiTensorProduct.map (fun i : TensorPosition [s] => (f i.1).hom) (PiTensorProduct.tprod R x)) =
+      (f s).hom (singleArgumentEquiv A s (PiTensorProduct.tprod R x))
+    rw [PiTensorProduct.map_tprod]
+    exact (singleArgumentEquiv_tprod B s _).trans
+      (congrArg (fun x => (f s).hom x) (singleArgumentEquiv_tprod A s x)).symm)
 
 /-- Total operations and quantities are the maps from their typed input tensor
 products. The full-domain signature has no relation or partial symbols. -/
@@ -93,6 +113,9 @@ def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
     StructureRule sig (Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) where
   carrier A := A.carrier
   input := tensorInputs R
+  positionalInput Γ := tensorPositionInputs R (TensorPosition Γ)
+  inputIso _ := Iso.refl _
+  unaryIso := tensorUnaryIso R
   total A op := ModuleCat.ofHom (PiTensorProduct.lift (A.total op))
   relation _ r := False.elim (scope.noRelations.false r)
   domain _ p := False.elim (scope.noPartial.false p)
@@ -220,12 +243,77 @@ def tensorMode (base : CoefficientRing.{u}) {L : Type u}
     letI := S.scalars.ring
     (law.mapScalars S.fromBase).holds A
 
-/-- Restrict the primitive signature to the declaration context and evaluate
-the Laws written in the tensor presentation over that signature. -/
+/-- Evaluate the primitive symbols on the elements of the module carriers. -/
+def TensorStructure.elementStructure (A : TensorStructure R sig) (scope : FullDomainTensorSignature sig) :
+    Structure sig where
+  carrier s := A.carrier s
+  total op xs := A.total op (fun i => xs.get i.2)
+  relation r := False.elim (scope.noRelations.false r)
+  partialDomain p := False.elim (scope.noPartial.false p)
+  partialValue p := False.elim (scope.noPartial.false p)
+  quantity q xs := A.quantity q (fun i => xs.get i.2)
+
+/-- Read an existing positive Law by a typed tensor equation when its two
+readings agree on the actual primitive operations at every coefficient algebra. -/
+structure TensorLawReading (base : CoefficientRing.{u}) (scope : FullDomainTensorSignature sig)
+    (source : Law sig) where
+  /-- Its proposed tensor equation over the base. -/
+  equation :
+    letI := base.ring
+    TensorLaw base.Carrier sig
+  /-- The equation interprets the written source Law at every coefficient. -/
+  correct (S : CoefficientAlgebra base) (A : TensorAt S.scalars sig) :
+    letI := base.ring
+    letI := S.scalars.ring
+    (equation.mapScalars S.fromBase).holds A ↔ source.Holds (A.elementStructure scope)
+
+namespace TensorTheory
+
+/-- A tensor presentation of a previously written theory uses all its required
+names and the reading of the original statement at each name. -/
+def read {base : CoefficientRing.{u}} (T : Theory.{u})
+    (scope : FullDomainTensorSignature T.signature)
+    (reading : ∀ l : T.LawName, TensorLawReading base scope (T.law l)) :
+    TensorTheory base T.signature T.LawName :=
+  ⟨scope, fun l => (reading l).equation⟩
+
+/-- The semantic object condition reads every written Law of the source theory. -/
+theorem modelProperty_read_iff {base : CoefficientRing.{u}} (T : Theory.{u})
+    (scope : FullDomainTensorSignature T.signature)
+    (reading : ∀ l : T.LawName, TensorLawReading base scope (T.law l))
+    (rule : TensorCoefficientRule T.signature) (S : CoefficientAlgebra base)
+    (A : TensorAt S.scalars T.signature) :
+    (tensorMode base (read T scope reading) rule).modelProperty S A ↔
+      (letI := S.scalars.ring
+       ∀ l, (T.law l).Holds (A.elementStructure scope)) :=
+  ⟨fun h l => ((reading l).correct S A).mp (h.2 l),
+    fun h => ⟨trivial, fun l => ((reading l).correct S A).mpr (h l)⟩⟩
+
+end TensorTheory
+
+/-- The tensor meaning of exactly the required Law declarations retained by
+a Part I context, with a tensor reading of each original statement. -/
 abbrev SelectedTensorModels {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
-    {base : CoefficientRing.{u}} {L : Type u} (S : CoefficientAlgebra base)
-    (T : TensorTheory base (DeclarationContext.Selected.presentation U).signature L)
+    {base : CoefficientRing.{u}} (S : CoefficientAlgebra base)
+    (scope : FullDomainTensorSignature (DeclarationContext.Selected.presentation U).signature)
+    (reading : ∀ l : (DeclarationContext.Selected.presentation U).theory.LawName,
+      TensorLawReading base scope ((DeclarationContext.Selected.presentation U).theory.law l))
     (rule : TensorCoefficientRule (DeclarationContext.Selected.presentation U).signature) :=
-  (tensorMode base T rule).Models S
+  (tensorMode base
+    (TensorTheory.read (DeclarationContext.Selected.presentation U).theory scope reading) rule).Models S
+
+/-- An object of the selected tensor meaning satisfies each original required statement. -/
+theorem selectedTensorModel_holds {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {base : CoefficientRing.{u}} {S : CoefficientAlgebra base}
+    {scope : FullDomainTensorSignature (DeclarationContext.Selected.presentation U).signature}
+    {reading : ∀ l : (DeclarationContext.Selected.presentation U).theory.LawName,
+      TensorLawReading base scope ((DeclarationContext.Selected.presentation U).theory.law l)}
+    {rule : TensorCoefficientRule (DeclarationContext.Selected.presentation U).signature}
+    (A : SelectedTensorModels U S scope reading rule)
+    (l : (DeclarationContext.Selected.presentation U).theory.LawName) :
+    letI := S.scalars.ring
+    ((DeclarationContext.Selected.presentation U).theory.law l).Holds (A.obj.elementStructure scope) :=
+  (TensorTheory.modelProperty_read_iff (DeclarationContext.Selected.presentation U).theory
+    scope reading rule S A.obj).mp A.property l
 
 end SHIGURE

@@ -171,14 +171,79 @@ theorem relation_not_fullDomain :
     ¬ FullDomainTensorSignature { pointedSignature with Rel := Unit, relInputs := fun _ => [] } :=
   fun scope => scope.noRelations.false ()
 
+private def markedElementExpr (R : Type) (b : Bool) :
+    TensorExpression R pointedSignature .unit (.sort ()) :=
+  .comp .emptyArguments (.total b)
+
 /-- The two nullary operations are required to represent the same map from the tensor unit. -/
 def equalMarksLaw : TensorLaw ℤ pointedSignature :=
-  ⟨.unit, .sort (),
-    .comp .emptyArguments (.total false), .comp .emptyArguments (.total true)⟩
+  ⟨.unit, .sort (), markedElementExpr ℤ false, markedElementExpr ℤ true⟩
 
-/-- The tensor theory carries its written equation comparing its two designated elements. -/
+/-- The written positive Law states that the two nullary operations have the same value. -/
+def equalMarksSourceLaw : Law pointedSignature :=
+  ⟨[], .truth, .ex (.ex (.conj
+    (.atom (.graph (.total false) (fun i => nomatch i) (.there .here)))
+    (.conj (.atom (.graph (.total true) (fun i => nomatch i) .here))
+      (.atom (.eq (.there .here) .here)))))⟩
+
+private theorem markedElementExpr_at_one {R : Type} [CommRing R]
+    (A : TensorStructure R pointedSignature) (b : Bool) :
+    (markedElementExpr R b).eval A (1 : R) = A.designated b rfl := by
+  letI : IsEmpty (TensorPosition ([] : List Unit)) := ⟨fun i => nomatch i.2⟩
+  let zeroInput : ∀ i : TensorPosition ([] : List Unit), A.carrier i.1 := fun i => nomatch i.2
+  let e := PiTensorProduct.isEmptyEquiv (R := R)
+    (s := fun i : TensorPosition ([] : List Unit) => A.carrier i.1) (TensorPosition [])
+  have he : e.symm 1 = PiTensorProduct.tprod R zeroInput := by
+    apply e.injective
+    exact (e.apply_symm_apply 1).trans
+      (PiTensorProduct.isEmptyEquiv_apply_tprod (TensorPosition []) zeroInput).symm
+  change PiTensorProduct.lift (A.total b) (e.symm 1) = A.designated b rfl
+  refine (congrArg (PiTensorProduct.lift (A.total b)) he).trans
+    ((PiTensorProduct.lift.tprod (φ := A.total b) zeroInput).trans ?_)
+  apply congrArg (A.total b)
+  funext i
+  exact nomatch i.2
+
+private theorem equalMarksSourceLaw_iff {R : Type} [CommRing R] (A : TensorStructure R pointedSignature) :
+    equalMarksSourceLaw.Holds (A.elementStructure fullDomainScope) ↔
+      A.designated false rfl = A.designated true rfl := by
+  have htotal (b : Bool) (xs : ∀ i : TensorPosition ([] : List Unit), A.carrier i.1) :
+      A.total b xs = A.designated b rfl := by
+    apply congrArg (A.total b)
+    funext i
+    exact nomatch i.2
+  simp only [equalMarksSourceLaw, Law.holds_iff, Formula.Holds, Atomic.Holds, Structure.graph_total_iff]
+  change (∀ (a : Assignment (fun s => A.carrier s) []), True → ∃ x y : A.carrier (),
+    A.total false _ = x ∧ A.total true _ = y ∧ x = y) ↔ _
+  constructor
+  · intro h
+    obtain ⟨x, y, hx, hy, hxy⟩ := h Assignment.empty trivial
+    exact (htotal false _).symm.trans (hx.trans (hxy.trans (hy.symm.trans (htotal true _))))
+  · intro h a _
+    exact ⟨A.designated false rfl, A.designated true rfl, htotal false _, htotal true _, h⟩
+
+/-- The typed equation reads the written positive Law over every integer algebra. -/
+def equalMarksReading : TensorLawReading integers fullDomainScope equalMarksSourceLaw where
+  equation := equalMarksLaw
+  correct S A := by
+    letI := S.scalars.ring
+    rw [equalMarksSourceLaw_iff]
+    change (markedElementExpr S.scalars.Carrier false).eval A =
+      (markedElementExpr S.scalars.Carrier true).eval A ↔ _
+    constructor
+    · intro h
+      exact (markedElementExpr_at_one A false).symm.trans
+        ((LinearMap.congr_fun h (1 : S.scalars.Carrier)).trans (markedElementExpr_at_one A true))
+    · intro h
+      apply LinearMap.ext_ring
+      exact (markedElementExpr_at_one A false).trans (h.trans (markedElementExpr_at_one A true).symm)
+
+private def pointedSourceTheory : Theory :=
+  ⟨pointedSignature, Unit, fun _ => equalMarksSourceLaw⟩
+
+/-- The tensor theory reads the positive Law comparing the two designated elements. -/
 def pointedTheory : TensorTheory integers pointedSignature Unit :=
-  ⟨fullDomainScope, fun _ => equalMarksLaw⟩
+  TensorTheory.read pointedSourceTheory fullDomainScope (fun _ => equalMarksReading)
 
 /-- Extend both designated elements by mapping each to its unit tensor. -/
 def coefficientRule : TensorCoefficientRule pointedSignature where
@@ -222,23 +287,10 @@ theorem integer_equal_marks_model :
 theorem integer_different_marks_not_model :
     ¬ (tensorMode integers pointedTheory coefficientRule).modelProperty integerAlgebra differentMarks := by
   intro h
-  have hEq : equalMarksLaw.holds differentMarks := h.2 ()
-  have hVal := LinearMap.congr_fun hEq (1 : ℤ)
-  letI : IsEmpty (TensorPosition ([] : List Unit)) := ⟨fun i => nomatch i.2⟩
-  have hEmpty : (PiTensorProduct.isEmptyEquiv (R := ℤ)
-      (s := fun i : TensorPosition ([] : List Unit) => differentMarks.carrier i.1)
-      (TensorPosition [])).symm 1 =
-        PiTensorProduct.tprod ℤ (s := fun i => differentMarks.carrier i.1) (fun i => nomatch i.2) := by
-    apply (PiTensorProduct.isEmptyEquiv (R := ℤ) (TensorPosition [])).injective
-    rw [LinearEquiv.apply_symm_apply, PiTensorProduct.isEmptyEquiv_apply_tprod]
-  change PiTensorProduct.lift (differentMarks.total false)
-      ((PiTensorProduct.isEmptyEquiv (TensorPosition ([] : List Unit))).symm (1 : ℤ)) =
-    PiTensorProduct.lift (differentMarks.total true)
-      ((PiTensorProduct.isEmptyEquiv (TensorPosition ([] : List Unit))).symm (1 : ℤ)) at hVal
-  rw [hEmpty] at hVal
-  have hFalse := PiTensorProduct.lift.tprod (φ := differentMarks.total false) (fun i => nomatch i.2)
-  have hTrue := PiTensorProduct.lift.tprod (φ := differentMarks.total true) (fun i => nomatch i.2)
-  exact one_ne_zero (show (1 : ℤ) = 0 from hFalse.symm.trans (hVal.trans hTrue))
+  have hEq := (TensorTheory.modelProperty_read_iff pointedSourceTheory fullDomainScope
+    (fun _ => equalMarksReading) coefficientRule integerAlgebra differentMarks).mp h ()
+  have hValues := (equalMarksSourceLaw_iff differentMarks).mp hEq
+  exact one_ne_zero (show (1 : ℤ) = 0 from hValues)
 
 /-- The zero carrier map does not preserve the designated nonzero element. -/
 theorem integer_zero_map_not_preserving_marks :
