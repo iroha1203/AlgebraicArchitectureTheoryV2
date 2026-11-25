@@ -23,6 +23,7 @@ import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
+import Formal.SHIGURE.Part2.TensorRealizations
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -3153,6 +3154,58 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Copying.isZariskiSplit_constant,
   Copying.zariskiCopyingProperty,
   Copying.ZariskiCopyingModels
+]
+
+-- Chapter 4: scalar extension of tensor realizations.
+#shigure_assert_standard_axioms_of [
+  TensorRealization.scalarUnit,
+  TensorRealization.scalarUnit_tmul,
+  TensorRealization.scalarUnit_natural,
+  TensorRealization.extendScalarSort,
+  TensorRealization.extendScalarSort_tmul,
+  TensorRealization.ringHom_scalarTower,
+  TensorRealization.scalarTower,
+  TensorRealization.scalarTower_tmul,
+  TensorRealization.scalarTower_natural,
+  TensorRealization.scalarTower_three,
+  TensorRealization.UniversallyInjective,
+  TensorRealization.universallyInjective_of_retraction,
+  TensorRealization.extendStructureMap,
+  TensorRealization.extendStructureFunctor,
+  TensorRealization.extendStructureMap_onSort,
+  TensorRealization.extendStructureFunctor_obj,
+  TensorRealization.extendStructureFunctor_map,
+  TensorRealization.structureIsoOfCarrierEquiv,
+  TensorRealization.structureScalarUnit,
+  TensorRealization.scalarUnitNatIso,
+  TensorRealization.structureScalarTower,
+  TensorRealization.scalarTowerNatIso,
+  TensorRealization.structureScalarTower_three,
+  TensorRealization.structureScalarUnit_hom_onSort,
+  TensorRealization.structureScalarTower_hom_onSort,
+  TensorRealization.mapCoefficients,
+  TensorRealization.mapCoefficients_tmul,
+  TensorRealization.mapCoefficients_id,
+  TensorRealization.mapCoefficients_comp,
+  TensorRealization.extendScalarSort_mapCoefficients,
+  TensorRealization.scalarTower_leftUnit,
+  TensorRealization.scalarTower_rightUnit,
+  TensorRealization.structureScalarTower_leftUnit,
+  TensorRealization.structureScalarTower_rightUnit,
+  TensorRealization.coefficientRule_changeState_direct,
+  TensorRealization.extendDomainMap,
+  TensorRealization.extendedDomain,
+  TensorRealization.extendDomainMap_injective,
+  TensorRealization.extendTypedPartial,
+  TensorRealization.extendTypedPartial_apply,
+  TensorRealization.TensorDomainTuples,
+  TensorRealization.extendedPartialValue,
+  TensorRealization.extendedPartialValue_eq,
+  TensorRealization.extendedPartialValue_unit,
+  TensorRealization.integer_state_changes_to_zmod_two,
+  TensorRealization.integer_split_inclusion_universallyInjective,
+  TensorRealization.integer_twice_not_universallyInjective,
+  TensorRealization.integer_binary_product_extended
 ]
 
 end SHIGURE.AxiomAudit
