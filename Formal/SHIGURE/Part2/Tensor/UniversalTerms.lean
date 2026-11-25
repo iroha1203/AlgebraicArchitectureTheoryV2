@@ -1,13 +1,14 @@
 import Formal.SHIGURE.Part2.Tensor.CoefficientPoints
 import Mathlib.Algebra.MvPolynomial.CommRing
 import Mathlib.Algebra.MvPolynomial.Eval
+import Mathlib.LinearAlgebra.TensorProduct.Finiteness
 
 /-!
 # Universal inputs for equations of terms
 
 The first half of Proposition 4.10 uses finite sums of pure tensors as
 inputs. A separate indeterminate records each coefficient in those sums.
-Terms use typed variables and may use an input more than once.
+The terms retain strict bindings and may use an input more than once.
 
 ## Implementation notes
 
@@ -27,26 +28,105 @@ noncomputable section
 namespace SHIGURE.TensorRealization
 
 /-- Terms whose primitive operations are total multilinear maps. -/
-inductive TensorTerm (sig : Signature.{u}) (Γ : List sig.SortType) : sig.SortType → Type u
-  | var {s : sig.SortType} : Var Γ s → TensorTerm sig Γ s
-  | total (op : sig.Total) :
+inductive TensorTerm (sig : Signature.{u}) : List sig.SortType → sig.SortType → Type u
+  | var {Γ : List sig.SortType} {s : sig.SortType} : Var Γ s → TensorTerm sig Γ s
+  | total {Γ : List sig.SortType} (op : sig.Total) :
       (∀ i : TensorPosition (sig.totalArity op).inputs, TensorTerm sig Γ i.1) →
       TensorTerm sig Γ (sig.totalArity op).output
-  | quantity (q : sig.Quantity) :
+  | quantity {Γ : List sig.SortType} (q : sig.Quantity) :
       (∀ i : TensorPosition (sig.quantityArity q).inputs, TensorTerm sig Γ i.1) →
       TensorTerm sig Γ (sig.quantityArity q).output
+  | letBind {Γ : List sig.SortType} {s t : sig.SortType} :
+      TensorTerm sig Γ s → TensorTerm sig (s :: Γ) t → TensorTerm sig Γ t
 
 namespace TensorTerm
 
 variable {sig : Signature.{u}} {Γ : List sig.SortType} {s : sig.SortType}
+/-- Whether a written Part I term uses only the available total primitives. -/
+def usesTotalPrimitives : {Γ : List sig.SortType} → {s : sig.SortType} → Term sig Γ s → Prop
+  | _, _, .var _ => True
+  | _, _, .app (.total _) args => ∀ i : TensorPosition _, usesTotalPrimitives (args i.2)
+  | _, _, .app (.quantity _) args => ∀ i : TensorPosition _, usesTotalPrimitives (args i.2)
+  | _, _, .app (.partialOp _) _ => False
+  | _, _, .letBind init body => usesTotalPrimitives init ∧ usesTotalPrimitives body
+
+/-- Interpret the total fragment of the existing syntax without removing any bindings. -/
+def ofNative : {Γ : List sig.SortType} → {s : sig.SortType} → (t : Term sig Γ s) →
+    usesTotalPrimitives t → TensorTerm sig Γ s
+  | _, _, .var i, _ => .var i
+  | _, _, .app (.total f) args, h => .total f (fun i => ofNative (args i.2) (h i))
+  | _, _, .app (.quantity q) args, h => .quantity q (fun i => ofNative (args i.2) (h i))
+  | _, _, .app (.partialOp _) _, h => h.elim
+  | _, _, .letBind init body, h => .letBind (ofNative init h.1) (ofNative body h.2)
+
+/-- Read the typed tensor term in the original Part I syntax. -/
+def toNative : {Γ : List sig.SortType} → {s : sig.SortType} → TensorTerm sig Γ s → Term sig Γ s
+  | _, _, .var i => .var i
+  | _, _, .total f args => .app (.total f) (fun i => toNative (args ⟨_, i⟩))
+  | _, _, .quantity q args => .app (.quantity q) (fun i => toNative (args ⟨_, i⟩))
+  | _, _, .letBind init body => .letBind (toNative init) (toNative body)
+
+/-- Each typed tensor term is written using only the native total primitives. -/
+theorem toNative_usesTotalPrimitives (t : TensorTerm sig Γ s) : usesTotalPrimitives t.toNative := by
+  induction t with
+  | var _ => trivial
+  | total _ _ ih => exact fun i => ih i
+  | quantity _ _ ih => exact fun i => ih i
+  | letBind _ _ hi hb => exact ⟨hi, hb⟩
+
+/-- A term headed by a partial operation does not belong to the total fragment. -/
+theorem not_usesTotalPrimitives_partial (p : sig.Partial)
+    (args : ∀ {r}, Var (sig.partialArity p).inputs r → Term sig Γ r) :
+    ¬ usesTotalPrimitives (Term.app (.partialOp p) args) :=
+  not_false
+
+/-- Every written total term is recovered verbatim from the tensor syntax. -/
+theorem toNative_ofNative (t : Term sig Γ s) (h : usesTotalPrimitives t) :
+    (ofNative t h).toNative = t := by
+  induction t with
+  | var i => rfl
+  | app op args ih =>
+    cases op with
+    | partialOp p => exact h.elim
+    | total f =>
+      simp only [ofNative, toNative]
+      congr 1
+      funext j
+      funext i
+      exact ih i (h ⟨j, i⟩)
+    | quantity q =>
+      simp only [ofNative, toNative]
+      congr 1
+      funext j
+      funext i
+      exact ih i (h ⟨j, i⟩)
+  | letBind init body hi hb =>
+    simp only [ofNative, toNative, hi h.1, hb h.2]
+
 variable {R : Type u} [CommRing R]
 
-/-- Evaluate the typed term using actual primitive maps on the input tuple. -/
-def eval (A : TensorStructure R sig) (xs : ∀ i : TensorPosition Γ, A.carrier i.1) :
-    {s : sig.SortType} → TensorTerm sig Γ s → A.carrier s
-  | _, .var i => xs ⟨_, i⟩
-  | _, .total op args => A.total op (fun i => (args i).eval A xs)
-  | _, .quantity q args => A.quantity q (fun i => (args i).eval A xs)
+/-- Extend a typed input tuple with its newly bound head value. -/
+private def bindInput {X : sig.SortType → Type u} {s : sig.SortType} (x : X s)
+    (xs : ∀ i : TensorPosition Γ, X i.1) : ∀ i : TensorPosition (s :: Γ), X i.1
+  | ⟨_, .here⟩ => x
+  | ⟨_, .there i⟩ => xs ⟨_, i⟩
+
+/-- A family of state maps sends the bound value and every earlier input to their images. -/
+private theorem bindInput_map {X Y : sig.SortType → Type u} {s : sig.SortType}
+    (f : ∀ s, X s → Y s) (x : X s) (xs : ∀ i : TensorPosition Γ, X i.1) :
+    (fun i => f i.1 (bindInput x xs i)) = bindInput (f s x) (fun i => f i.1 (xs i)) := by
+  funext i
+  obtain ⟨_, i⟩ := i
+  cases i <;> rfl
+
+/-- Evaluate the typed term using actual primitive maps and strict binding in the input tuple. -/
+def eval (A : TensorStructure R sig) :
+    {Γ : List sig.SortType} → (xs : ∀ i : TensorPosition Γ, A.carrier i.1) →
+      {s : sig.SortType} → TensorTerm sig Γ s → A.carrier s
+  | _, xs, _, .var i => xs ⟨_, i⟩
+  | _, xs, _, .total op args => A.total op (fun i => (args i).eval A xs)
+  | _, xs, _, .quantity q args => A.quantity q (fun i => (args i).eval A xs)
+  | _, xs, _, .letBind init body => body.eval A (bindInput (X := fun s => (A.carrier s : Type u)) (init.eval A xs) xs)
 
 /-- The structure-preserving maps commute with evaluation of finite terms. -/
 theorem eval_hom {A B : TensorStructure R sig} (f : TensorStructure.Hom A B)
@@ -55,9 +135,55 @@ theorem eval_hom {A B : TensorStructure R sig} (f : TensorStructure.Hom A B)
   induction t with
   | var i => rfl
   | total op args ih =>
-    exact (f.preservesTotal op _).trans (congrArg (B.total op) (funext ih))
+    exact (f.preservesTotal op _).trans (congrArg (B.total op) (funext fun i => ih i xs))
   | quantity q args ih =>
-    exact (f.preservesQuantity q _).trans (congrArg (B.quantity q) (funext ih))
+    exact (f.preservesQuantity q _).trans (congrArg (B.quantity q) (funext fun i => ih i xs))
+  | letBind init body hi hb =>
+    simp only [eval]
+    rw [hb, bindInput_map (fun s x => f.onSort s x), hi]
+
+/-- For the native evaluation relation, interpret precisely the tensor carrier and total primitives. -/
+def nativeStructure (A : TensorStructure R sig) : Structure sig where
+  carrier s := A.carrier s
+  total f xs := A.total f (fun i => xs.get i.2)
+  relation _ := ∅
+  partialDomain _ := ∅
+  partialValue _ x := False.elim x.property
+  quantity q xs := A.quantity q (fun i => xs.get i.2)
+
+/-- The tensor evaluator computes the value of the same written Part I term. -/
+theorem native_evaluates (A : TensorStructure R sig) (t : TensorTerm sig Γ s)
+    (xs : ∀ i : TensorPosition Γ, A.carrier i.1) :
+    t.toNative.Evaluates (nativeStructure A) ⟨fun i => xs ⟨_, i⟩⟩ (t.eval A xs) := by
+  induction t with
+  | var i => rfl
+  | total f args ih =>
+    refine ⟨⟨fun i => (args ⟨_, i⟩).eval A xs⟩, ?_, ?_⟩
+    · intro r i
+      exact ih ⟨r, i⟩ xs
+    · exact ((nativeStructure A).graph_total_iff f _ _).mpr rfl
+  | quantity q args ih =>
+    refine ⟨⟨fun i => (args ⟨_, i⟩).eval A xs⟩, ?_, ?_⟩
+    · intro r i
+      exact ih ⟨r, i⟩ xs
+    · exact ((nativeStructure A).graph_quantity_iff q _ _).mpr rfl
+  | @letBind Γ sort _ init body hi hb =>
+    refine ⟨init.eval A xs, hi xs, ?_⟩
+    let ys := bindInput (X := fun s => (A.carrier s : Type u)) (init.eval A xs) xs
+    let env : Assignment (nativeStructure A).carrier Γ := ⟨fun i => xs ⟨_, i⟩⟩
+    have harg : (⟨fun i => ys ⟨_, i⟩⟩ : Assignment (nativeStructure A).carrier (sort :: Γ)) =
+        Assignment.cons (s := sort) (init.eval A xs) env := by
+      apply Assignment.ext
+      intro s i
+      cases i <;> rfl
+    rw [← harg]
+    exact hb ys
+
+/-- The translated evaluator realizes the original value of every total Part I term. -/
+theorem ofNative_evaluates (A : TensorStructure R sig) (t : Term sig Γ s)
+    (h : usesTotalPrimitives t) (xs : ∀ i : TensorPosition Γ, A.carrier i.1) :
+    t.Evaluates (nativeStructure A) ⟨fun i => xs ⟨_, i⟩⟩ ((ofNative t h).eval A xs) := by
+  simpa only [toNative_ofNative] using native_evaluates A (ofNative t h) xs
 
 end TensorTerm
 
@@ -73,14 +199,18 @@ theorem TensorTerm.eval_unit {sig : Signature.{u}} {Γ : List sig.SortType} {s :
   | total op args ih =>
     change extendOperation k A.carrier R (A.total op)
       (fun i => (args i).eval (extendStructure k R A) (fun j => (1 : R) ⊗ₜ[k] xs j)) = _
-    rw [funext ih, extendOperation_unit]
+    rw [funext (fun i => ih i xs), extendOperation_unit]
     rfl
   | quantity q args ih =>
     change extendOperation k A.carrier R (A.quantity q)
       (fun i => (args i).eval (extendStructure k R A) (fun j => (1 : R) ⊗ₜ[k] xs j)) = _
-    rw [funext ih, extendOperation_unit]
+    rw [funext (fun i => ih i xs), extendOperation_unit]
     rfl
+  | letBind init body hi hb =>
+    simp only [TensorTerm.eval]
+    rw [hi, ← TensorTerm.bindInput_map (fun s (x : A.carrier s) => (1 : R) ⊗ₜ[k] x), hb]
 
+/-- The tower comparison applied to a unit tensor computes the direct coefficient substitution. -/
 private theorem scalarTower_unit_mapCoefficients (f : R →ₐ[k] S) (z : R ⊗[k] M) :
     letI : Algebra R S := f.toRingHom.toAlgebra
     letI : IsScalarTower k R S := IsScalarTower.of_algebraMap_eq (fun x => (f.commutes x).symm)
@@ -109,17 +239,6 @@ theorem TensorTerm.eval_mapCoefficients {sig : Signature.{u}} {Γ : List sig.Sor
   rw [← t.eval_unit (R := S) (extendStructure k R A) xs, t.eval_hom e.hom]
   exact congrArg (t.eval (extendStructure k S A)) (funext fun i => scalarTower_unit_mapCoefficients f (xs i))
 
-/-- Every scalar-extended element is a finite sum of coefficient-weighted native states. -/
-theorem exists_list_tmul_sum (z : R ⊗[k] M) :
-    ∃ xs : List (R × M), (xs.map fun x => x.1 ⊗ₜ[k] x.2).sum = z := by
-  induction z using TensorProduct.induction_on with
-  | zero => exact ⟨[], rfl⟩
-  | tmul r m => exact ⟨[(r, m)], by simp⟩
-  | add x y hx hy =>
-    obtain ⟨a, ha⟩ := hx
-    obtain ⟨b, hb⟩ := hy
-    exact ⟨a ++ b, by rw [List.map_append, List.sum_append, ha, hb]⟩
-
 variable {sig : Signature.{u}} {Γ : List sig.SortType} {s : sig.SortType}
 
 /-- For each native summand, insert a distinct coefficient variable in the
@@ -140,20 +259,15 @@ theorem universal_term_equation_iff (A : TensorStructure k sig) (t t' : TensorTe
   constructor
   · intro hall R _ _ x
     classical
-    choose l hl using (fun i => exists_list_tmul_sum (x i))
-    let n (i : TensorPosition Γ) := (l i).length
-    let m (i : TensorPosition Γ) (j : Fin (n i)) := ((l i).get j).2
+    choose n r m hx using (fun i => TensorProduct.exists_sum_tmul_eq (x i))
     let f : MvPolynomial ((i : TensorPosition Γ) × Fin (n i)) k →ₐ[k] R :=
-      MvPolynomial.aeval (fun j => ((l j.1).get j.2).1)
-    have hx (i : TensorPosition Γ) : mapCoefficients f (formalInput A n m i) = x i := by
+      MvPolynomial.aeval (fun j => r j.1 j.2)
+    have hsub (i : TensorPosition Γ) : mapCoefficients f (formalInput A n m i) = x i := by
       rw [formalInput, map_sum]
       simp only [mapCoefficients_tmul, f, MvPolynomial.aeval_X]
-      rw [← List.sum_ofFn]
-      have he := List.map_ofFn (l i).get (fun z => z.1 ⊗ₜ[k] z.2)
-      rw [List.ofFn_get] at he
-      exact (congrArg List.sum he).symm.trans (hl i)
+      exact (hx i).symm
     have he := congrArg (mapCoefficients f) (sub_eq_zero.mp (hall n m))
-    rw [t.eval_mapCoefficients, t'.eval_mapCoefficients, funext hx] at he
+    rw [t.eval_mapCoefficients, t'.eval_mapCoefficients, funext hsub] at he
     exact he
   · intro hall n m
     exact sub_eq_zero.mpr (hall _ (formalInput A n m))

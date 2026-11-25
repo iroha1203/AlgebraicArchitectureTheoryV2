@@ -57,18 +57,18 @@ theorem dualNumber_epsilon_not_copying {k : Type u} [Field k] :
   have hz : (0 : k) = 1 := congrArg TrivSqZeroExt.snd hε
   exact zero_ne_one hz
 
-variable (p : ℕ) [Fact p.Prime]
+variable (p : ℕ)
 
 /-- The Frobenius equation holds at every native state of the prime field. -/
-theorem zmod_frobenius (a : ZMod p) : a ^ p = a := ZMod.pow_card a
+theorem zmod_frobenius [Fact p.Prime] (a : ZMod p) : a ^ p = a := ZMod.pow_card a
 
 /-- Substituting the polynomial indeterminate into the Frobenius equation fails. -/
-theorem polynomial_frobenius_fails :
+theorem polynomial_frobenius_fails [Fact p.Prime] :
     (Polynomial.X : Polynomial (ZMod p)) ^ p - Polynomial.X ≠ 0 :=
   FiniteField.X_pow_card_sub_X_ne_zero _ (Fact.out : Nat.Prime p).one_lt
 
 /-- The nonzero square-zero direction also violates the Frobenius equation. -/
-theorem dualNumber_frobenius_fails :
+theorem dualNumber_frobenius_fails [Fact p.Prime] :
     (DualNumber.eps : DualNumber (ZMod p)) ^ p ≠ DualNumber.eps := by
   have h : 2 ≤ p := (Fact.out : Nat.Prime p).two_le
   obtain ⟨n, hn⟩ := Nat.exists_eq_add_of_le h
@@ -119,6 +119,7 @@ private def scalarPair {X : Type} (a b : X) : TensorPosition [(), ()] → X
   | ⟨_, .here⟩ => a
   | ⟨_, .there .here⟩ => b
 
+/-- The product over the two typed argument positions is their ordinary binary product. -/
 private theorem scalarPair_prod {K : Type} [CommRing K] (a b : K) :
     letI : Fintype (TensorPosition [(), ()]) := Fintype.ofFinite _
     ∏ i, scalarPair a b i = a * b := by
@@ -231,7 +232,7 @@ theorem scalarPowerTerm_eval_extended (n : ℕ) (x : R) :
     rw [h, scalarProduct_extended, scalarPair_prod, pow_succ]
 
 /-- The written Frobenius term agrees with the input variable at every prime-field state. -/
-theorem frobenius_term_native (x : ZMod p) :
+theorem frobenius_term_native [Fact p.Prime] (x : ZMod p) :
     (scalarPowerTerm p).eval (scalarRingStructure (ZMod p)) (fun _ => x) =
       (TensorTerm.var Var.here : TensorTerm scalarRingSignature [()] ()).eval
         (scalarRingStructure (ZMod p)) (fun _ => x) :=
@@ -251,7 +252,7 @@ theorem frobenius_term_extended_ne [Algebra (ZMod p) R] (x : R) (h : x ^ p ≠ x
   exact h (by simpa only [extendScalarSort_tmul, one_smul] using hs)
 
 /-- In the polynomial algebra the extended Frobenius term disagrees with the variable at the indeterminate. -/
-theorem frobenius_term_polynomial :
+theorem frobenius_term_polynomial [Fact p.Prime] :
     (scalarPowerTerm p).eval (extendStructure (ZMod p) (Polynomial (ZMod p)) (scalarRingStructure (ZMod p)))
       (fun _ => Polynomial.X ⊗ₜ[ZMod p] (1 : ZMod p)) ≠
     (TensorTerm.var Var.here : TensorTerm scalarRingSignature [()] ()).eval
@@ -260,7 +261,7 @@ theorem frobenius_term_polynomial :
   frobenius_term_extended_ne p Polynomial.X (sub_ne_zero.mp (polynomial_frobenius_fails p))
 
 /-- The dual-number direction also violates the extended equation of written terms. -/
-theorem frobenius_term_dualNumber :
+theorem frobenius_term_dualNumber [Fact p.Prime] :
     (scalarPowerTerm p).eval (extendStructure (ZMod p) (DualNumber (ZMod p)) (scalarRingStructure (ZMod p)))
       (fun _ => DualNumber.eps ⊗ₜ[ZMod p] (1 : ZMod p)) ≠
     (TensorTerm.var Var.here : TensorTerm scalarRingSignature [()] ()).eval
@@ -269,7 +270,7 @@ theorem frobenius_term_dualNumber :
   frobenius_term_extended_ne p DualNumber.eps (dualNumber_frobenius_fails p)
 
 /-- The single native summand equal to one gives a nonzero residual in equation (4.5). -/
-theorem frobenius_formal_residual_ne :
+theorem frobenius_formal_residual_ne [Fact p.Prime] :
     let A := scalarRingStructure (ZMod p)
     let n : TensorPosition ([()] : List Unit) → ℕ := fun _ => 1
     let P := MvPolynomial ((i : TensorPosition ([()] : List Unit)) × Fin (n i)) (ZMod p)
