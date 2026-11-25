@@ -29,28 +29,62 @@ namespace SHIGURE.Copying
 
 variable {S S' : Scheme.{u}}
 
-/-- Coefficient restriction of a predicate pulls back all its satisfying sections. -/
-def restrictPredicate (f : S' ⟶ S) {F : ZariskiSheaf S} (P : SheafPredicate F) :
-    SheafPredicate ((Scheme.zariskiTopology.overMapPullback (Type u) f).obj F) where
+/-- Restrict a predicate along the continuous functor on relative test objects. -/
+private def restrictPredicateAlong (F : Over S' ⥤ Over S)
+    [F.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)]
+    {G : ZariskiSheaf S} (P : SheafPredicate G) :
+    SheafPredicate ((F.sheafPushforwardContinuous (Type u) (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)).obj G) where
   carrier :=
-    { obj := fun U => P.carrier.obj (op ((Over.map f).obj U.unop))
+    { obj := fun U => P.carrier.obj (op (F.obj U.unop))
       map := by
         intro U V g x hx
-        exact P.carrier.map ((Over.map f).map g.unop).op hx }
+        exact P.carrier.map (F.map g.unop).op hx }
   isSheaf := by
     apply (isSheaf_iff_isSheaf_of_type (Scheme.zariskiTopology.over S') _).mp
-    exact ((Scheme.zariskiTopology.overMapPullback (Type u) f).obj P.toSheaf).cond
+    exact ((F.sheafPushforwardContinuous (Type u) (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)).obj P.toSheaf).cond
+
+/-- Coefficient restriction of a predicate pulls back all its satisfying sections. -/
+def restrictPredicate (f : S' ⟶ S) {F : ZariskiSheaf S} (P : SheafPredicate F) :
+    SheafPredicate ((Scheme.zariskiTopology.overMapPullback (Type u) f).obj F) :=
+  restrictPredicateAlong (Over.map f) P
+
+/-- Restrict an entire structure along a continuous functor on its relative test category. -/
+private def restrictStructureAlong {sig : Signature.{u}} (F : Over S' ⥤ Over S)
+    [F.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)]
+    (A : SheafStructure sig (Scheme.zariskiTopology.over S)) :
+    SheafStructure sig (Scheme.zariskiTopology.over S') :=
+  let pullback := F.sheafPushforwardContinuous (Type u)
+    (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)
+  { carrier := fun s => pullback.obj (A.carrier s)
+    total := fun op => pullback.map (A.total op)
+    relation := fun r => restrictPredicateAlong F (A.relation r)
+    partialDomain := fun p => restrictPredicateAlong F (A.partialDomain p)
+    partialValue := fun p => pullback.map (A.partialValue p)
+    quantity := fun q => pullback.map (A.quantity q) }
 
 /-- Restrict the carriers and all primitive interpretations along a map of base schemes. -/
 def restrictStructure {sig : Signature.{u}} (f : S' ⟶ S)
     (A : SheafStructure sig (Scheme.zariskiTopology.over S)) :
-    SheafStructure sig (Scheme.zariskiTopology.over S') where
-  carrier s := (Scheme.zariskiTopology.overMapPullback (Type u) f).obj (A.carrier s)
-  total op := (Scheme.zariskiTopology.overMapPullback (Type u) f).map (A.total op)
-  relation r := restrictPredicate f (A.relation r)
-  partialDomain p := restrictPredicate f (A.partialDomain p)
-  partialValue p := (Scheme.zariskiTopology.overMapPullback (Type u) f).map (A.partialValue p)
-  quantity q := (Scheme.zariskiTopology.overMapPullback (Type u) f).map (A.quantity q)
+    SheafStructure sig (Scheme.zariskiTopology.over S') :=
+  restrictStructureAlong (Over.map f) A
+
+/-- Equal functors on tests induce the same restriction of the whole structure. -/
+private theorem restrictStructureAlong_congr {sig : Signature.{u}} {F G : Over S' ⥤ Over S}
+    [F.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)]
+    [G.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)]
+    (h : F = G) (A : SheafStructure sig (Scheme.zariskiTopology.over S)) :
+    restrictStructureAlong F A = restrictStructureAlong G A := by
+  subst G
+  rfl
+
+/-- Comparing two stages of coefficient change agrees with restricting along their composite. -/
+theorem restrictStructure_comp {S'' : Scheme.{u}} {sig : Signature.{u}} (g : S'' ⟶ S') (f : S' ⟶ S)
+    (A : SheafStructure sig (Scheme.zariskiTopology.over S)) :
+    restrictStructure g (restrictStructure f A) = restrictStructure (g ≫ f) A := by
+  letI := Functor.isContinuous_comp (Over.map g) (Over.map f)
+    (Scheme.zariskiTopology.over S'') (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)
+  have h := restrictStructureAlong_congr (Over.mapComp_eq g f).symm A
+  exact h
 
 /-- A structure-preserving sheaf map restricts to a structure-preserving map on the new test site. -/
 def restrictStructureMap {sig : Signature.{u}} (f : S' ⟶ S)
