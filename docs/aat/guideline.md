@@ -37,7 +37,7 @@
 - statement 品質・定義品質・スタイルの基準は
   [lean_quality_standard.md](lean_quality_standard.md) にある
   （mathlib 型の statement review 基準。material premise の三分類申告、
-  API 接続義務、no-unfold API 規律、target statement の一次仕様と直接査読を含む）。
+  API 接続義務、API 設計規律（mathlib 準拠）、target statement の一次仕様と直接査読を含む）。
   この節の各項目と重なる場合はそちらを優先する。
 - 明示的な相談なしに `axiom`、`admit`、`sorry`、`unsafe` を導入しない。
 - 定義は小さく保ち、同値性や対応関係は定理として証明する。
@@ -59,7 +59,8 @@
   [理論本文](algebraic_geometric_theory/README.md)の仮定と結論を保ち、mathlib の圏、環、多項式環、商環、局所化を用いる。
 - `Formal/SHIGURE` とその入口は独立した import 系統とし、`Mathlib`、`Std`、`Lean`、
   `Formal.SHIGURE` の import に限る。
-- 主定理、命題、補題、系、具体例の定理は `Formal/SHIGURE/AxiomAudit.lean` に登録する。
+- 主定理、命題、補題、系、具体例の定理は `Formal/SHIGURE/AxiomAudit.lean` に登録する
+  （`@[simps]` 生成補題や単なる補助射影 API の個別登録は不要で、全宣言の公理依存は専用の全宣言検査で検証する）。
   専用の GitHub Actions ジョブ `SHIGURE build and kernel audit` で
   `lake build +Formal.SHIGURE`、import と全宣言の検査、公理監査を実行する。
   証明で使える公理は `propext`、`Classical.choice`、`Quot.sound` に限る。

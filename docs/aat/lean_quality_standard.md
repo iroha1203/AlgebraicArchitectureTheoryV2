@@ -87,13 +87,14 @@ mathlib に同型の概念（順序、束、圏、位相、コホモロジーの
 mathlib の概念をそのまま使うか、使えない理由を Implementation notes（§2.5）に書いたうえで
 comparison 定理で接続する。AAT 専用の仮置きラッパーや名前だけの対応物で済ませない。
 
-### 2.4 no-unfold API 規律 [査読]
+### 2.4 API 設計規律（mathlib 準拠） [査読]
 
-定義を作ったら、下流の証明が定義を unfold しなくて済むように API 補題を揃える。
-下流の証明が `unfold`、`show` による定義展開、`simp only [Foo]` などで
-定義の中身を展開している箇所は、API 補題が不足している兆候として指摘対象にする。
-定義直後の基本補題（constructor / destructor / ext / 特徴づけ）までを
-定義と一体の作業単位とする。
+他モジュールや後続の部から再利用される公開の数学的概念（主要な `def` / `structure` / 圏・関手など）を定義したら、利用者が実装詳細を毎回展開せずに操作できるよう、基本 API（`ext`、`@[simps]` による射影補題、constructor / destructor、特徴づけ `_iff` 等）を定義と一体で揃える。構造体・関手・射の射影補題には `@[simps]` を積極的に用いてよく、手書きの定型補題を量産しない。
+
+- **適用範囲**: 他モジュールから参照される公開 `def` / `structure` のインターフェースと、それを使う下流の主証明における明示的な定義展開（`unfold Foo`、`simp only [Foo]`、`dsimp [Foo]` 等）を対象とする。
+- **対象外**: 単一ファイル内・証明内部の補助定義（`private` 含む）、具体例・反例の証明、および通常の `semireducible` 定義に対する Lean の definitional equality（型照合、軽い `rfl`、`change`）は対象外とする。
+- **抜き打ち `irreducible` 試験の禁止**: 査読時に既存定義を局所的に `irreducible` にして暗黙の definitional equality 依存を洗い出す検査は行わない（mathlib と同じく、抽象化障壁や型検査性能の保護が必要な中核定義だけは、定義側で最初から `@[irreducible]` や `structure` として明示する）。
+- **重大度の区分**: §2.4 の不足は原則として非中心 finding（設計・保守性の指摘）とし、PR 単位の直接対応で扱う。数学的主張の成立を否定する中心 finding（Major）や `$prd-completion-review` の完了ブロック条件にはしない（定義の中身を利用して仮定や結論を迂回する欠陥は、§2.2 definitional escape の中心 finding として別途扱う）。
 
 ### 2.5 Implementation notes [査読]
 
@@ -141,8 +142,8 @@ module docstring（`/-! -/`）を置く。docstring には主張の単なる言�
 次の mathlib 規律は現時点では採用しない。採用しない理由まで明示しておくことで、
 実装者の勝手な再解釈を防ぐ。
 
-- **simp normal form の全面運用**: 採用しない。ただし `@[simp]` を付ける場合は、
-  simp ループを作らないことと、normal form の向きを docstring に書くことだけを義務とする。
+- **simp normal form の全面運用**: 採用しない。ただし基本 API への `@[simps]` や局所的な `@[simp]` の付与は mathlib 準拠として推奨・許容する。`@[simp]` を付ける場合は、simp ループを作らないことと、normal form の向きを docstring に書くことを義務とする。
+- **全定義に対する `irreducible` 展開不可耐性の強制**: 採用しない。mathlib でも `irreducible` は性能保護や明確な抽象化障壁が必要な一部の中核定義に限られるため、通常の `semireducible` 定義に対して局所 `irreducible` による暗黙展開の全面排除を求めない（§2.4）。
 - **universe polymorphism の強制**: 採用しない。AAT は有限・具体的な対象を中心に扱うため、
   必要になった時点で個別に判断する。
 - **mathlib 本体への upstreaming 前提の一般化**: 採用しない。AAT 固有の概念は

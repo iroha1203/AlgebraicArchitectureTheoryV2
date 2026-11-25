@@ -48,7 +48,7 @@
     - mathlib v4.28.0 に直接の定義が存在しない上位概念（一般スキーム上の準連接加群/代数層、fppf 位相・fppf スタック、torsor、代数的空間・代数的スタック、相対 $\mathrm{Spec}$ 等）は `Formal/SHIGURE/Part2/` 内に小さく定義し、アフィン試験スキーム $\mathrm{Spec}\,R$ 上で mathlib の `Module` / `Algebra` / `Scheme.Spec` / `Scheme.GlueData` への明示的な比較同値・接続定理を必ず備える。
     - 本文がスキーム論の標準事実として引用する命題（例：付録 B.3 の「平坦かつ局所有限表示なスキーム射の開性」、第 6.4 節の「滑らかな射の平坦性・基底変換安定性・fppf 局所性」）についても、`axiom`・`sorry`・未放電の引数仮定で済ませず、mathlib 定理の直接利用または `Formal/SHIGURE/Part2/` 内での完全証明により放電する。
   - **§1.4 instance ペア**：新規の `Prop` 述語や構造に対し、肯定・否定の双方の witness を備える（本文の番号付き 9 例および無番号具体例・反例を直接形式化する）。
-  - **§2.1–§2.5**：小さい定義、data と `Prop` の分離、definitional escape 禁止、no-unfold API（`ext` / constructor / destructor / 特徴づけ補題を定義と一体で提供）、自明でない表現選択への `Implementation notes` 記載。
+  - **§2.1–§2.5**：小さい定義、data と `Prop` の分離、definitional escape 禁止、API 設計規律（mathlib 準拠：公開の主要定義に `ext` / `@[simps]` / constructor / destructor / 特徴づけ補題を定義と一体で提供）、自明でない表現選択への `Implementation notes` 記載。
   - **§4.1 標準公理検査**：許容するカーネル公理は `propext`, `Classical.choice`, `Quot.sound` のみ。`axiom`, `admit`, `sorry`, `unsafe`, `native_decide`, `debug.skipKernelTC` を禁止する。
 - **基礎環・集合論・宇宙の規約**（[共通記号](../aat/algebraic_geometric_theory/notation.md)・第4章 4.1 節）：
   - 基礎環 $k$ は単位元を持つ任意の可換環とし、零環を含める（非零や連結性が必要な主張では本文どおり明示的に仮定する）。環射は単位元を保つ。
