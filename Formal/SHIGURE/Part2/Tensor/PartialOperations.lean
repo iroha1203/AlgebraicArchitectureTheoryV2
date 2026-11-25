@@ -7,6 +7,14 @@ import Formal.SHIGURE.Part2.Tensor.ScalarChange
 The image of the extended inclusion is expressed in the actual input
 tensor over the new coefficients. Typed tuples are defined precisely
 when their pure tensor lies in that image.
+
+## Implementation notes
+
+A module with an injective linear map into the input tensor allows the native
+domain to be presented in its own coordinates. After scalar extension, the
+range in the input tensor represents that domain as a submodule. Universal
+injectivity identifies the extended module with its range and lets the partial
+operation evaluate the unique preimage of each admissible input.
 -/
 
 open CategoryTheory

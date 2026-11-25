@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part2.Tensor.CoefficientCoherence
+import Formal.SHIGURE.Part2.Tensor.CoefficientPoints
 import Formal.SHIGURE.Part2.Tensor.PartialOperations
 import Mathlib.Data.ZMod.Basic
 import Mathlib.LinearAlgebra.Prod
@@ -17,6 +17,14 @@ open scoped BigOperators TensorProduct
 noncomputable section
 
 namespace SHIGURE.TensorRealization
+
+/-- Reducing coefficients modulo two sends the pure state with coefficient three to coefficient one. -/
+theorem integer_state_changes_to_zmod_two :
+    mapCoefficients (Algebra.ofId ℤ (ZMod 2)) ((3 : ℤ) ⊗ₜ[ℤ] (1 : ℤ)) =
+      (1 : ZMod 2) ⊗ₜ[ℤ] (1 : ℤ) := by
+  rw [mapCoefficients_tmul]
+  have h : algebraMap ℤ (ZMod 2) (3 : ℤ) = 1 := by decide
+  exact congrArg (fun a : ZMod 2 => a ⊗ₜ[ℤ] (1 : ℤ)) h
 
 /-- The first summand of a product persists under every change of scalars. -/
 theorem integer_split_inclusion_universallyInjective :
