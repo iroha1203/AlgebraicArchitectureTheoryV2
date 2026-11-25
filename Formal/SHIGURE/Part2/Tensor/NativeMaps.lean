@@ -14,6 +14,9 @@ The naturality square is stated on the actual semilinear maps of carrier
 elements. Applying the square to the base-ring component determines the
 pure tensors with scalar factor one. Linearity and tensor induction then
 determine the whole arrow, with its original primitive diagrams.
+An ordinary transformation of carrier functors would need separate
+fields for linearity and the primitive diagrams. The components already
+have those conditions in their types.
 -/
 
 open CategoryTheory TensorProduct
@@ -100,10 +103,8 @@ theorem ofNative_native (f : NaturalTensorHom A B) : ofNative f.native = f := by
     ((f.app R).onSort s : R ⊗[k] A.carrier s →ₗ[R] R ⊗[k] B.carrier s)
   apply AlgebraTensorModule.ext
   intro r x
-  rw [show (r : R) ⊗ₜ[k] x = r • ((1 : R) ⊗ₜ[k] x) by
-    rw [TensorProduct.smul_tmul', smul_eq_mul, mul_one], map_smul, map_smul]
   rw [LinearMap.baseChange_tmul]
-  exact congrArg (fun y : R ⊗[k] B.carrier s => r • y) (f.app_unit (R := R) s x).symm
+  exact (f.app_tmul (R := R) s r x).symm
 
 /-- Reading the family of a native map recovers that exact map. -/
 theorem native_ofNative (g : A ⟶ B) : (ofNative g).native = g := by
@@ -188,6 +189,7 @@ theorem fixedCoefficientTensorHomEquiv_comp {base : CoefficientRing.{u}} (T : Re
   letI := R.scalars.ring
   exact TensorStructure.Hom.ext rfl
 
+/-- The single scalar sort for the dual-number example. -/
 private def scalarSignature : Signature where
   SortType := PUnit
   Total := PEmpty
@@ -199,6 +201,7 @@ private def scalarSignature : Signature where
   partialArity := PEmpty.elim
   quantityArity := PEmpty.elim
 
+/-- The native model consists of the coefficient module at the scalar sort. -/
 private def nativeScalar (k : Type u) [CommRing k] : TensorStructure k scalarSignature where
   carrier _ := ModuleCat.of k k
   total f := PEmpty.elim f
@@ -254,19 +257,24 @@ theorem dualNumberEpsilonMap_not_natural (k : Type u) [Field k] :
   exact (congrArg (fun g : NaturalTensorHom (nativeScalar k) (nativeScalar k) => g.app (DualNumber k))
     f.ofNative_native).trans hf
 
+/-- The scalar example has an empty family of required Laws. -/
 private def scalarTheory : RealizationTheory.{u} :=
   ⟨scalarSignature, PEmpty, PEmpty, fun l => nomatch l⟩
 
+/-- The scalar example has no relation or partial declarations. -/
 private def scalarScope : FullDomainTensorSignature scalarSignature :=
   ⟨⟨fun r => nomatch r⟩, ⟨fun p => nomatch p⟩⟩
 
+/-- Use the usual inclusion of the field into the dual numbers. -/
 private def dualNumberCoefficientAlgebra (k : Type u) [Field k] : CoefficientAlgebra ⟨k, inferInstance⟩ :=
   ⟨⟨DualNumber k, inferInstance⟩, algebraMap k (DualNumber k)⟩
 
+/-- Realize the scalar sort over the dual-number coefficient algebra. -/
 private def dualNumberScalarModel (k : Type u) [Field k] :
     TensorModelsAt scalarTheory (dualNumberCoefficientAlgebra k) scalarScope (fun _ l => nomatch l) :=
   ⟨extendStructure k (DualNumber k) (nativeScalar k), trivial, fun l => nomatch l⟩
 
+/-- The linear-map comparison specialized to the dual-number scalar model. -/
 private def dualNumberScalarHomEquiv (k : Type u) [Field k] :=
   fixedCoefficientTensorHomEquiv scalarTheory (dualNumberCoefficientAlgebra k) scalarScope
     (fun _ l => nomatch l) (dualNumberScalarModel k) (dualNumberScalarModel k)

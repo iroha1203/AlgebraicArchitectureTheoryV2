@@ -24,7 +24,7 @@ multilinear operations and give the coefficient map on specified points.
 open CategoryTheory SHIGURE.TensorRealization
 open scoped TensorProduct MonoidalCategory
 
-universe u
+universe u v
 
 noncomputable section
 
@@ -173,12 +173,17 @@ private def tensorTuplePoint {K : Type u} (Γ : List K) (A : K → ModuleCat.{u}
     ModuleCat.of R R ⟶ (tensorInputs R Γ).obj A :=
   (tensorPointEquiv _).symm (PiTensorProduct.tprod R (fun i => tensorPointEquiv (A i.1) (p i)))
 
-/-- Total operations and quantities are the maps from their typed input tensor
-products. The full-domain signature has no relation or partial symbols. -/
-def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
-    (scope : FullDomainTensorSignature sig) :
-    StructureRule sig (Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) where
-  carrier A := A.carrier
+/-- Interpret the primitive diagrams in modules using the actual input tensors. -/
+def tensorPrimitiveRule (R : Type u) [CommRing R] (sig : Signature.{u}) {Object : Type v}
+    (underlying : Object → TensorStructure R sig)
+    (rel : ∀ (A : Object) (r : sig.Rel),
+      MonoOver (ModuleCat.of R (InputTensor R (underlying A).carrier (sig.relInputs r))))
+    (dom : ∀ (A : Object) (p : sig.Partial),
+      MonoOver (ModuleCat.of R (InputTensor R (underlying A).carrier (sig.partialArity p).inputs)))
+    (partialMap : ∀ (A : Object) (p : sig.Partial), (dom A p : ModuleCat.{u} R) ⟶
+      (underlying A).carrier (sig.partialArity p).output) :
+    StructureRule sig (Cat.of (ModuleCat.{u} R)) Object where
+  carrier A := (underlying A).carrier
   Ambient := Cat.of (ModuleCat.{u} R)
   view := 𝟭 _
   view_faithful := inferInstance
@@ -195,11 +200,18 @@ def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
   pointObject := ModuleCat.of R R
   pointUnit := Iso.refl _
   nullaryInput := (tensorNullaryIso R _).symm
-  total A op := ModuleCat.ofHom (PiTensorProduct.lift (A.total op))
-  relation _ r := False.elim (scope.noRelations.false r)
-  domain _ p := False.elim (scope.noPartial.false p)
-  partialValue _ p := False.elim (scope.noPartial.false p)
-  quantity A q := ModuleCat.ofHom (PiTensorProduct.lift (A.quantity q))
+  total A op := ModuleCat.ofHom (PiTensorProduct.lift ((underlying A).total op))
+  relation := rel
+  domain := dom
+  partialValue := partialMap
+  quantity A q := ModuleCat.ofHom (PiTensorProduct.lift ((underlying A).quantity q))
+
+/-- The full-domain tensor presentation has no relation or partial symbols. -/
+def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
+    (scope : FullDomainTensorSignature sig) :
+    StructureRule sig (Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) :=
+  tensorPrimitiveRule R sig id (fun _ r => False.elim (scope.noRelations.false r))
+    (fun _ p => False.elim (scope.noPartial.false p)) (fun _ p => False.elim (scope.noPartial.false p))
 
 /-- The full input of a tuple of scalar-module points represents its pure tensor. -/
 private theorem tensorFullInputPoint (sig : Signature.{u}) (scope : FullDomainTensorSignature sig)
@@ -291,7 +303,7 @@ def tensorStructureRule_consIso (R : Type u) [CommRing R] (sig : Signature.{u})
   tensorConsIso R s Γ
 
 /-- Use the pure tensor generators to read a primitive preservation square pointwise. -/
-private theorem tensorSquare_iff {K : Type u} {Γ : List K}
+theorem tensorSquare_iff {K : Type u} {Γ : List K}
     {A B : K → ModuleCat.{u} R} {X Y : ModuleCat.{u} R}
     (f : ∀ s, A s ⟶ B s) (g : X ⟶ Y)
     (a : MultilinearMap R (fun i : TensorPosition Γ => A i.1) X)
