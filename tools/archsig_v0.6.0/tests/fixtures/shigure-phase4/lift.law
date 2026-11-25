@@ -1,0 +1,209 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading LiftAC3 {
+  use vocabulary Phase4Vocab version "1" digest "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83";
+
+  // (a) H1: c + d = 1 (C8 lawful base point (1, 0), ambient lift (1 + eps, 0))
+  shigure lift H1Full {
+    domain Q;
+    origin human_adopted "h1_full";
+    vars [c, d];
+    law sum_one: c + d = 1;
+    extension truncated(eps, 0);
+    base_point { c = [1]; d = [observed Phase4Vocab.Node.coord_q]; }
+    ambient_lift { c = [1, 1]; d = [0, 0]; }
+    affine_allowed { allowed_vars [c, d]; finite_displacement false; }
+  }
+
+  shigure lift H1FixD {
+    domain Q;
+    origin human_adopted "h1_fix_d";
+    vars [c, d];
+    law sum_one: c + d = 1;
+    extension truncated(eps, 0);
+    base_point { c = [1]; d = [0]; }
+    ambient_lift { c = [1, 1]; d = [0, 0]; }
+    affine_allowed { allowed_vars [c]; finite_displacement false; }
+  }
+
+  shigure lift H1FixAll {
+    domain Q;
+    origin human_adopted "h1_fix_all";
+    vars [c, d];
+    law sum_one: c + d = 1;
+    extension truncated(eps, 0);
+    base_point { c = [1]; d = [0]; }
+    ambient_lift { c = [1, 1]; d = [0, 0]; }
+    affine_allowed { allowed_vars []; finite_displacement false; }
+  }
+
+  // (b) H2: (t^2, t^3) over Q, (z^2, 2z^2) over Z and F_2
+  shigure lift H2RedundantQ {
+    domain Q;
+    origin human_adopted "h2_q";
+    vars [t];
+    law t2: pow(t, 2) = 0;
+    law t3: pow(t, 3) = 0;
+    extension truncated(eps, 1);
+    base_point { t = [0, 1]; }
+    ambient_lift { t = [0, 1, 0]; }
+    redundant_comparison { ref_law t2_only: pow(t, 2) = 0; }
+  }
+
+  shigure lift H2LinearFree {
+    domain Q;
+    origin human_adopted "h2_lin";
+    vars [t];
+    law t1: t = 0;
+    extension truncated(eps, 0);
+    base_point { t = [0]; }
+  }
+
+  shigure lift H2RedundantZ {
+    domain Z;
+    origin human_adopted "h2_z";
+    vars [z];
+    law z2: pow(z, 2) = 0;
+    law two_z2: 2 * pow(z, 2) = 0;
+    extension truncated(eps, 1);
+    base_point { z = [0, 1]; }
+    ambient_lift { z = [0, 1, 0]; }
+    redundant_comparison { ref_law z2_only: pow(z, 2) = 0; }
+  }
+
+  shigure lift H2RedundantF2 {
+    domain Fp(2);
+    origin human_adopted "h2_f2";
+    vars [z];
+    law z2: pow(z, 2) = 0;
+    law two_z2: (1 + 1) * pow(z, 2) = 0;
+    extension truncated(eps, 1);
+    base_point { z = [0, 1]; }
+    ambient_lift { z = [0, 1, 0]; }
+    redundant_comparison { ref_law z2_only: pow(z, 2) = 0; }
+  }
+
+  // (c) H3: H^1(T_raw) vs H^1(D)
+  shigure lift H3Dependent {
+    domain Q;
+    origin human_adopted "h3_dep";
+    vars [x0, x1, x2];
+    law f1: x1 - x0 = 0;
+    law f2: x2 - x1 = 0;
+    law f3: x0 - x2 = 0;
+    extension truncated(eps, 0);
+    base_point { x0 = [0]; x1 = [0]; x2 = [0]; }
+  }
+
+  shigure lift H3Regular {
+    domain Q;
+    origin human_adopted "h3_reg";
+    vars [x0, x1, x2];
+    ring_param t = [0, 1];
+    law f1: x1 - x0 = 0;
+    law f2: x2 - x1 = 0;
+    law f3p: x0 - x2 - t = 0;
+    extension truncated(eps, 0);
+    base_point { x0 = [0]; x1 = [0]; x2 = [0]; }
+  }
+
+  // (d) H4 & H10: relative cone F_u, two-context Cech, raw_read_diff, finish_snap
+  shigure lift H4RelativeCone {
+    domain Q;
+    origin archmap "o_static";
+    vars [t, y];
+    law l_def: y - pow(t, 2) = 0;
+    law l_zero: y = 0;
+    extension truncated(eps, 1);
+    base_point { t = [0, 1]; y = [0, 0]; }
+    ambient_lift { t = [0, 1, 0]; y = [0, 0, 0]; }
+    relative_reading {
+      obs_vars [o];
+      reading_map { o = t; }
+      designated_obs_lift { o = [0, 1, 0]; }
+    }
+    declaration_cover {
+      context c_def { vars [t, y]; laws [l_def]; obs o_def: y; }
+      context c_zero { vars [y]; laws [l_zero]; obs o_zero: y; }
+      two_context_cech { left c_def; right c_zero; shared_vars [y]; }
+    }
+  }
+
+  shigure lift H10SnapshotFail {
+    domain Q;
+    origin archmap "o_rt";
+    vars [delta, mu, E];
+    law busy_zero: E = 0;
+    law def_E: E - mu * delta = 0;
+    extension truncated(eps, 1);
+    base_point { delta = [0, 1]; mu = [0, 1]; E = [0, 0]; }
+    ambient_lift { delta = [0, 1, 0]; mu = [0, 1, 0]; E = [0, 0, 0]; }
+    relative_reading {
+      obs_vars [delta, mu];
+      reading_map { delta = delta; mu = mu; }
+      designated_obs_lift { delta = [0, 1, 0]; mu = [0, 1, 0]; }
+      raw_read_diff "raw_read_diff" negated : -(mu * delta);
+    }
+    declaration_cover {
+      context busy_law { vars [delta, mu, E]; laws [busy_zero]; obs read_E: E; }
+      context def_aux { vars [delta, mu, E]; laws [def_E]; obs read_prod: mu * delta; }
+      two_context_cech { left busy_law; right def_aux; shared_vars [E]; }
+    }
+  }
+
+  shigure lift H10FinishSnap {
+    domain Q;
+    origin archmap "o_rt";
+    vars [delta, mu, E];
+    law def_E: E - mu * delta = 0;
+    extension truncated(eps, 1);
+    base_point { delta = [0, 1]; mu = [0, 1]; E = [0, 0]; }
+    ambient_lift { delta = [0, 1, 0]; mu = [0, 1, 0]; E = [0, 0, 0]; }
+    relative_reading {
+      obs_vars [delta, mu];
+      reading_map { delta = delta; mu = mu; }
+      designated_obs_lift { delta = [0, 1, 0]; mu = [0, 1, 0]; }
+    }
+  }
+
+  // (e) E7 observation support cover & C9/W5 finite etale descent
+  shigure lift E7UnclosedCover {
+    domain Q;
+    origin human_adopted "e7_split";
+    vars [X, Y, T];
+    law sum_t: T - X - Y = 0;
+    extension truncated(eps, 0);
+    base_point { X = [0]; Y = [0]; T = [0]; }
+    declaration_cover {
+      context ctx_x { vars [X]; laws []; obs read_T: X + Y; }
+      context ctx_y { vars [Y]; laws []; obs read_y: Y; }
+    }
+  }
+
+  shigure lift E7MergedCover {
+    domain Q;
+    origin human_adopted "e7_merged";
+    vars [X, Y, T];
+    law sum_t: T - X - Y = 0;
+    extension truncated(eps, 0);
+    base_point { X = [0]; Y = [0]; T = [0]; }
+    declaration_cover {
+      context ctx_all { vars [X, Y, T]; laws [sum_t]; obs read_T: X + Y; }
+    }
+  }
+
+  shigure lift C9EtaleW5 {
+    domain Q;
+    origin human_adopted "c9_w5";
+    vars [t, z];
+    law cover_eq: pow(z, 2) - t = 0;
+    extension truncated(eps, 0);
+    base_point { t = [1]; z = [1]; }
+    etale_descent {
+      base_var t;
+      cover_var z;
+      degree 2;
+      base_invertible true;
+    }
+  }
+}

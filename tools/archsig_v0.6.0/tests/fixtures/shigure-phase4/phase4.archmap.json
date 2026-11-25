@@ -1,0 +1,126 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Phase4Vocab",
+      "version": "1",
+      "digest": "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83"
+    }
+  ],
+  "sources": [
+    {
+      "id": "p4_src",
+      "uri": "file://phase4.rs",
+      "revision": "rev1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000004"
+    }
+  ],
+  "origins": [
+    {
+      "id": "o_static",
+      "mode": "observed",
+      "method": "ast-extractor",
+      "kind": "static_analysis",
+      "locations": [
+        {
+          "source": "p4_src",
+          "path": "src/phase4.rs",
+          "span": [1, 40]
+        }
+      ]
+    },
+    {
+      "id": "o_rt",
+      "mode": "observed",
+      "method": "runtime-probe",
+      "kind": "runtime_observation",
+      "locations": [
+        {
+          "source": "p4_src",
+          "path": "src/runtime.rs",
+          "span": [5, 20]
+        }
+      ]
+    },
+    {
+      "id": "o_llm",
+      "mode": "proposed",
+      "method": "llm-reader",
+      "kind": "llm_candidate",
+      "locations": [],
+      "note": "llm candidate observation"
+    },
+    {
+      "id": "o_human",
+      "mode": "specification",
+      "method": "design-review",
+      "kind": "human_adopted",
+      "locations": [],
+      "note": "human adopted specification"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "snap1",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "node1",
+          "type": "Phase4Vocab.Node",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_coord_q",
+          "subject": "node1",
+          "field": "Phase4Vocab.Node.coord_q",
+          "value": ["0", "1"],
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_missing_q",
+          "subject": "node1",
+          "field": "Phase4Vocab.Node.missing_q",
+          "value": ["0", "1"],
+          "origin": "o_static"
+        },
+        {
+          "id": "a_offset_z",
+          "subject": "node1",
+          "field": "Phase4Vocab.Node.offset_z",
+          "value": "1",
+          "origin": "o_static"
+        }
+      ]
+    },
+    {
+      "id": "snap_missing",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "node1",
+          "type": "Phase4Vocab.Node",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_coord_q_m",
+          "subject": "node1",
+          "field": "Phase4Vocab.Node.coord_q",
+          "value": ["0", "1"],
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_offset_z_m",
+          "subject": "node1",
+          "field": "Phase4Vocab.Node.offset_z",
+          "value": "1",
+          "origin": "o_static"
+        }
+      ]
+    }
+  ]
+}

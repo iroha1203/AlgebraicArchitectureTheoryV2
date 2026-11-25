@@ -1,0 +1,135 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading DiagnosticsAC5 {
+  use vocabulary Phase4Vocab version "1" digest "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83";
+
+  // (a) W1: Z -> F_2 non-flat & fixed-label tensor vs codomain regeneration
+  shigure diagnostics W1NonFlatF2 {
+    diagnostic_coeff Z;
+    origin human_adopted "diag_w1_f2";
+    nerve { chart c0 [s0, s2]; }
+    static_readout {
+      sources [s0, s2];
+      targets [s0, s2];
+      reading { s0 -> s0; s2 -> s2; }
+      law L { s0 = 0; s2 = 2; }
+    }
+    coeff_change {
+      target_domain Fp(2);
+      compare_codomain_regeneration true;
+      explicit_z_complex {
+        dim0 1;
+        dim1 1;
+        d0 [[2]];
+        designated_cocycle [1];
+      }
+    }
+  }
+
+  shigure diagnostics W1TorsionQ {
+    diagnostic_coeff Z;
+    origin human_adopted "diag_w1_q";
+    nerve { chart c0 [s0]; }
+    static_readout {
+      sources [s0];
+      targets [s0];
+      reading { s0 -> s0; }
+      law L { s0 = 0; }
+    }
+    coeff_change {
+      target_domain Q;
+      compare_codomain_regeneration false;
+      explicit_z_complex {
+        dim0 1;
+        dim1 1;
+        d0 [[2]];
+        designated_cocycle [1];
+      }
+    }
+  }
+
+  shigure diagnostics W1CycleZ {
+    diagnostic_coeff Z;
+    origin human_adopted "diag_w1_cycle";
+    nerve {
+      chart c0 [s0, s01, s20];
+      chart c1 [s1, s01, s12];
+      chart c2 [s2, s12, s20];
+      edge e01 (c0, c1);
+      edge e12 (c1, c2);
+      edge e20 (c2, c0);
+    }
+    static_readout {
+      sources [s0, s1, s2, s01, s12, s20];
+      targets [s0, s1, s2, s01, s12, s20];
+      reading { s0 -> s0; s1 -> s1; s2 -> s2; s01 -> s01; s12 -> s12; s20 -> s20; }
+      law L { s0 = 0; s1 = 0; s2 = 0; s01 = 0; s12 = 0; s20 = 0; }
+    }
+  }
+
+  // (b) W2: stratification B_pi, generation/vanishing MV, C2 multi-stage, R-point contrast, D3 refutation
+  shigure diagnostics W2SheafQ {
+    diagnostic_coeff Q;
+    origin static_analysis "diag_w2";
+    nerve {
+      chart c0 [a, c, h];
+      chart c1 [a, b, h];
+      chart c2 [b, c, h];
+      edge e01 (c0, c1);
+      edge e02 (c0, c2);
+      edge e12 (c1, c2);
+      face f012 (e01, e02, e12);
+    }
+    poly_readout {
+      base_domain Q;
+      base_vars [lambda, mu];
+      sources [a, b, c, h];
+      law L { a = 0; b = lambda; c = 0; h = mu; }
+    }
+    collision "generation" on L {
+      fine [[a, c], [b], [h]];
+      coarse [[a, b, c], [h]];
+    }
+    collision "vanishing" on L {
+      fine [[a, b, c], [h]];
+      coarse [[a, b, c, h]];
+    }
+    collision "multi_stage" on L {
+      fine [[a, c], [b], [h]];
+      coarse [[a, b, c, h]];
+      alt_path [[[a, b, c], [h]]];
+      alt_path [[[a, c], [b, h]]];
+    }
+    r_point_probe {
+      ring_var eps;
+      ring_max_deg 1;
+      point "origin" { lambda = [0, 0]; mu = [0, 0]; }
+      point "dual_mu" { lambda = [0, 0]; mu = [0, 1]; }
+    }
+  }
+
+  // (c) D1-D2: general V(g1, g2, g3) cap D(h) dimension realization
+  shigure diagnostics D1DimRealization {
+    diagnostic_coeff Q;
+    origin human_adopted "diag_d1";
+    nerve { chart c0 [s0]; }
+    static_readout {
+      sources [s0];
+      targets [s0];
+      reading { s0 -> s0; }
+      law L { s0 = 0; }
+    }
+    dimension_realization {
+      base_domain Q;
+      base_vars [x, y, z, w];
+      vanishing g1: x = 0;
+      vanishing g2: y = 0;
+      vanishing g3: z = 0;
+      invertible h: w;
+      probe "on_locus" { x = 0; y = 0; z = 0; w = 1; }
+      probe "off_g1" { x = 1; y = 0; z = 0; w = 1; }
+      probe "off_g3" { x = 0; y = 0; z = 1; w = 1; }
+      probe "off_h" { x = 0; y = 0; z = 0; w = 0; }
+    }
+  }
+}

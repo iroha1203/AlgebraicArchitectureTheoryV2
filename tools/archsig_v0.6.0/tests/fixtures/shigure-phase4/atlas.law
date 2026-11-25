@@ -1,0 +1,172 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading AtlasAC6 {
+  use vocabulary Phase4Vocab version "1" digest "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83";
+
+  // (a) H8 / W3 triangle solvable: b = (1, 2, -3)
+  shigure atlas H8TriangleSolvable {
+    domain Z;
+    origin archmap "o_static";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset observed Phase4Vocab.Node.offset_z;
+    edge e12 (v1 -> v2) offset 2;
+    edge e20 (v2 -> v0) offset -3;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_vertices [v0, v1, v2];
+    allowed_edges [e01];
+    compare_to_q true;
+  }
+
+  shigure atlas H8TriangleOneFixed {
+    domain Z;
+    origin human_adopted "h8_one_fixed";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 2;
+    edge e20 (v2 -> v0) offset -3;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_vertices [v1, v2];
+  }
+
+  shigure atlas H8TriangleAllFixed {
+    domain Z;
+    origin human_adopted "h8_all_fixed";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 2;
+    edge e20 (v2 -> v0) offset -3;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_vertices [];
+    allowed_edges [];
+  }
+
+  // H8 / W3 triangle obstructed: b = (1, 0, 0), H_E empty / single-edge / all-edges
+  shigure atlas H8TriangleObstructed {
+    domain Z;
+    origin human_adopted "h8_obs";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 0;
+    edge e20 (v2 -> v0) offset 0;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_vertices [v0, v1, v2];
+    allowed_edges [];
+    compare_to_q true;
+  }
+
+  shigure atlas H8TriangleEdge1 {
+    domain Z;
+    origin human_adopted "h8_edge1";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 0;
+    edge e20 (v2 -> v0) offset 0;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_edges [e01];
+  }
+
+  shigure atlas H8TriangleEdgeAll {
+    domain Z;
+    origin human_adopted "h8_edge_all";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 0;
+    edge e20 (v2 -> v0) offset 0;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_edges [e01, e12, e20];
+  }
+
+  // (b) & (c) W3 8-point refinement (C0-C6, F5 eval_condition, F7 forgetful_reading) + H12
+  shigure atlas W3Refinement8Pt {
+    domain Z;
+    origin archmap "o_static";
+    vertices [v0, v1, v2];
+    edge e01 (v0 -> v1) offset 1;
+    edge e12 (v1 -> v2) offset 2;
+    edge e20 (v2 -> v0) offset -3;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; }
+    allowed_vertices [v0, v1, v2];
+    allowed_edges [e01];
+    compare_to_q true;
+    refinement {
+      fine_vertices [v0a, v0b, v1, v2];
+      fine_edge t (v0a -> v0b) offset 0;
+      fine_edge e01 (v0b -> v1) offset 1;
+      fine_edge e12 (v1 -> v2) offset 2;
+      fine_edge e20 (v2 -> v0a) offset -3;
+      vertex_map { v0a -> v0; v0b -> v0; v1 -> v1; v2 -> v2; }
+      edge_map { t -> none; e01 -> e01; e12 -> e12; e20 -> e20; }
+      common_sources [s0a, s0b, s0m, s1, s2, s01, s12, s20];
+      coarse_reading {
+        s0a -> s0; s0b -> s0; s0m -> s0;
+        s1 -> s1; s2 -> s2; s01 -> s01; s12 -> s12; s20 -> s20;
+      }
+      fine_reading {
+        s0a -> s0a; s0b -> s0b; s0m -> s0m;
+        s1 -> s1; s2 -> s2; s01 -> s01; s12 -> s12; s20 -> s20;
+      }
+      coarse_nerve {
+        chart v0 [s0, s01, s20];
+        chart v1 [s1, s01, s12];
+        chart v2 [s2, s12, s20];
+        edge e01 (v0, v1);
+        edge e12 (v1, v2);
+        edge e20 (v2, v0);
+      }
+      fine_nerve {
+        chart v0a [s0a, s0m, s20];
+        chart v0b [s0b, s0m, s01];
+        chart v1 [s1, s01, s12];
+        chart v2 [s2, s12, s20];
+        edge t (v0a, v0b);
+        edge e01 (v0b, v1);
+        edge e12 (v1, v2);
+        edge e20 (v2, v0a);
+      }
+      nerve_chart_map { v0a -> v0; v0b -> v0; v1 -> v1; v2 -> v2; }
+      nerve_edge_map { t -> none; e01 -> e01; e12 -> e12; e20 -> e20; }
+      eval_condition {
+        eval ev0 = v0;
+        equation eq0: v0 = 0;
+      }
+      forgetful_reading {
+        forgotten_var t;
+        eval_expr t;
+        condition_eq: t = 1;
+        sample_values [0, 1];
+      }
+    }
+    extended_language_check {
+      state_vars [s, d];
+      adapter_map { s = s + 1; d = d - 1; }
+      atomic_op apply(a) {
+        before { s = s + a; d = d; }
+        after { s = s + a; d = d; }
+      }
+      atomic_op compact(k) {
+        before { s = s + k; d = d - k; }
+        after { s = s + k; d = d - k; }
+      }
+      protocol_sequence "snapshot_seq" {
+        extended_state_vars [s, d, snap];
+        initial_state { s = 0; d = 0; snap = 0; }
+        before_step { s = s; d = d; snap = s; }
+        after_step { s = s; d = d; snap = s + 1; }
+        before_read snap;
+        after_read snap;
+      }
+      runtime_arg_op "compact_all" {
+        before { s = s + d; d = 0; }
+        after { s = s + d; d = 0; }
+        sample_state { s = 1; d = 2; }
+      }
+    }
+  }
+}

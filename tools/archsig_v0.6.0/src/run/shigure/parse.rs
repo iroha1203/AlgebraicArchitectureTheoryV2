@@ -8,7 +8,7 @@ use archsig_input::result::Status;
 use archsig_shigure::solver::ShigureQueryKind;
 use std::collections::BTreeSet;
 
-const SHIGURE_QUERY_PREFIXES: [&str; 9] = [
+const SHIGURE_QUERY_PREFIXES: [&str; 13] = [
     "shigure_preservation",
     "shigure_solve",
     "shigure_interaction",
@@ -18,6 +18,10 @@ const SHIGURE_QUERY_PREFIXES: [&str; 9] = [
     "shigure_robustness",
     "shigure_chevalley",
     "shigure_observations",
+    "shigure_lift",
+    "shigure_artin",
+    "shigure_diagnostics",
+    "shigure_atlas",
 ];
 
 /// `--ask` 文字列列に SHIGURE 問いが含まれるかを判定する。
@@ -134,9 +138,13 @@ pub(super) fn parse_single_ask(ask: &str) -> Result<ParsedShigureRequest, String
         "shigure_robustness" => ShigureCliQuery::Robustness,
         "shigure_chevalley" => ShigureCliQuery::Chevalley,
         "shigure_observations" => ShigureCliQuery::Observations,
+        "shigure_lift" => ShigureCliQuery::Lift,
+        "shigure_artin" => ShigureCliQuery::Artin,
+        "shigure_diagnostics" => ShigureCliQuery::Diagnostics,
+        "shigure_atlas" => ShigureCliQuery::Atlas,
         other => {
             return Err(format!(
-                "unknown SHIGURE query kind `{other}` in `{ask}`; expected `shigure_preservation`, `shigure_solve`, `shigure_interaction`, `shigure_diagram`, `shigure_path`, `shigure_transfer`, `shigure_robustness`, `shigure_chevalley`, or `shigure_observations`"
+                "unknown SHIGURE query kind `{other}` in `{ask}`; expected `shigure_preservation`, `shigure_solve`, `shigure_interaction`, `shigure_diagram`, `shigure_path`, `shigure_transfer`, `shigure_robustness`, `shigure_chevalley`, `shigure_observations`, `shigure_lift`, `shigure_artin`, `shigure_diagnostics`, or `shigure_atlas`"
             ));
         }
     };

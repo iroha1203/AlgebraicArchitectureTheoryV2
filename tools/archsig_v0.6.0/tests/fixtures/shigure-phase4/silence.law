@@ -1,0 +1,90 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading SilenceAC7 {
+  use vocabulary Phase4Vocab version "1" digest "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83";
+
+  // 1. 未観測座標依存（snap_missing で missing_q が欠測）
+  shigure lift LiftUnobserved {
+    domain Q;
+    origin human_adopted "sil_unobs";
+    vars [t];
+    law l1: pow(t, 2) = 0;
+    extension truncated(eps, 0);
+    base_point { t = [observed Phase4Vocab.Node.missing_q]; }
+  }
+
+  // 2. 平方零条件違反 M^2 != 0（Q[e]/(e^3) -> Q で kernel = <e, e^2>, e * e = e^2 != 0）
+  shigure lift LiftNotSquareZero {
+    domain Q;
+    origin human_adopted "sil_m2";
+    vars [x];
+    law l1: x = 0;
+    extension explicit_table {
+      r_prime_basis [one, e1, e2];
+      r_prime_one [1, 0, 0];
+      r_prime_mul [
+        [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+        [[0, 1, 0], [0, 0, 1], [0, 0, 0]],
+        [[0, 0, 1], [0, 0, 0], [0, 0, 0]]
+      ];
+      r_base_basis [one];
+      r_base_one [1];
+      r_base_mul [[[1]]];
+      projection [[1, 0, 0]];
+    }
+    base_point { x = [0]; }
+  }
+
+  // 3. Artin 探索次数上限超過
+  shigure artin ArtinOrderBound {
+    domain Q;
+    origin human_adopted "sil_artin_bound";
+    obs_vars [t];
+    extra_law g: pow(t, 5) = 0;
+    base_point { t = 0; }
+    max_order 3;
+  }
+
+  // 4. 非 Noetherian 無限表示（H7）
+  shigure artin ArtinH7Infinite {
+    domain Q;
+    origin human_adopted "sil_h7";
+    obs_vars [t];
+    base_point { t = 0; }
+    max_order 4;
+    non_noetherian_infinite true;
+  }
+
+  // 5. 診断層 partition 上限超過
+  shigure diagnostics DiagMaxPartitions {
+    diagnostic_coeff Q;
+    origin human_adopted "sil_diag_part";
+    nerve {
+      chart c0 [a, c, h];
+      chart c1 [a, b, h];
+      chart c2 [b, c, h];
+      edge e01 (c0, c1);
+      edge e02 (c0, c2);
+      edge e12 (c1, c2);
+      face f012 (e01, e02, e12);
+    }
+    poly_readout {
+      base_domain Q;
+      base_vars [lambda, mu];
+      sources [a, b, c, h];
+      law L { a = 0; b = lambda; c = 0; h = mu; }
+    }
+    max_partitions 2;
+  }
+
+  // 6. 非連結グラフ（atlas）
+  shigure atlas AtlasDisconnected {
+    domain Z;
+    origin human_adopted "sil_disconn";
+    vertices [v0, v1, v2, v3];
+    edge e01 (v0 -> v1) offset 0;
+    edge e23 (v2 -> v3) offset 0;
+    mu 1;
+    base_lambdas { v0 = 0; v1 = 0; v2 = 0; v3 = 0; }
+  }
+}
