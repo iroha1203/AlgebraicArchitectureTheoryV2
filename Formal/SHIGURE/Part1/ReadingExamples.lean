@@ -876,10 +876,12 @@ theorem uniform_native_points_have_local_rule :
   let rule : CoefficientReading.LocalPointRule retained :=
     fun X Y s _ => if same : X.carrier s = Y.carrier s then some (cast same) else none
   refine ⟨(fun _ => Set.mem_singleton _), ⟨rule, ?_, ?_⟩, ?_⟩
-  · intro i X Y left right
+  · rw [CoefficientReading.LocalPointRule.agreesWith_iff]
+    intro i X Y left right
     cases i
     have xs : Int = X.carrier false := left.carrier_eq _ (Set.mem_singleton _)
     have ys : Int = Y.carrier false := right.carrier_eq _ (Set.mem_singleton _)
+    simp only [CoefficientReading.selectedPoint_apply]
     change (if same : X.carrier false = Y.carrier false then some (cast same) else none) =
       some (fun x => cast ys (cast xs.symm x))
     rw [dif_pos (xs.symm.trans ys)]

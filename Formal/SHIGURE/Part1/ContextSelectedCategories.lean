@@ -88,15 +88,14 @@ noncomputable def writeFunctor (U : DeclarationContext P) : Model (theory U) ⥤
   map_id A := by
     apply Models.hom_ext
     intro s keep x
-    change Models.onSort (writeModelMap (𝟙 A)) s keep x = x
-    simp only [writeModelMap_onSort, writeOnSort_apply, Model.id_apply, Equiv.symm_apply_apply, cast_cast]
+    simp only [writeModelMap_onSort, Models.id_onSort, writeOnSort_apply, Model.id_apply,
+      Equiv.symm_apply_apply, cast_cast]
     rfl
   map_comp f g := by
     apply Models.hom_ext
     intro s keep x
-    change Models.onSort (writeModelMap (f ≫ g)) s keep x =
-      Models.onSort (writeModelMap g) s keep (Models.onSort (writeModelMap f) s keep x)
-    simp only [writeModelMap_onSort, cast_cast, cast_eq, writeOnSort_apply, Model.comp_apply, Equiv.apply_symm_apply]
+    simp only [Models.comp_onSort, writeModelMap_onSort, cast_cast, cast_eq, writeOnSort_apply,
+      Model.comp_apply, Equiv.apply_symm_apply]
 
 /-- The object part of writing is the context model of the selected structure. -/
 theorem writeFunctor_obj {U : DeclarationContext P} (A : Model (theory U)) :

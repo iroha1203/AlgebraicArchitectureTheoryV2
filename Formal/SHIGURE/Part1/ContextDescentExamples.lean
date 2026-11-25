@@ -93,16 +93,17 @@ theorem different_ordinary_carriers_no_overlap :
 private noncomputable def ordinaryFamily : OrdinaryMatch primitiveCover.piece :=
   OrdinaryMatch.readObj (primitiveCover.read primitiveModel)
 
-/-- The ordinary collapse on one piece and identity on the other cannot form a matching map. -/
-theorem different_ordinary_arrows_no_match :
+/-- The ordinary collapse and identity cannot match after identifying the local model endpoints. -/
+theorem different_ordinary_arrows_no_match_heq :
     ¬ ∃ f : OrdinaryMatch.Hom ordinaryFamily ordinaryFamily,
-      f.pieceMap false = (Selected.readFunctor (piece false)).map
-        ((res (primitiveCover.subset false)).map collapse) ∧
+      HEq (f.pieceMap false) ((Selected.readFunctor (piece false)).map
+        ((res (primitiveCover.subset false)).map collapse)) ∧
       f.pieceMap true = 𝟙 (ordinaryFamily.pieceModel true) := by
   rintro ⟨f, left, right⟩
   let raw := primitiveCover.read primitiveModel
   have same : OrdinaryMatch.writeFunctor.obj ordinaryFamily = raw :=
-    Functor.congr_obj OrdinaryMatch.read_comp_write raw
+    (congrArg OrdinaryMatch.writeFunctor.obj (OrdinaryMatch.readFunctor_obj raw).symm).trans
+      (Functor.congr_obj OrdinaryMatch.read_comp_write raw)
   let written : raw ⟶ raw := eqToHom same.symm ≫
     OrdinaryMatch.writeFunctor.map (show ordinaryFamily ⟶ ordinaryFamily from f) ≫ eqToHom same
   apply different_arrows_no_match
@@ -110,7 +111,12 @@ theorem different_ordinary_arrows_no_match :
   · apply eq_of_heq
     simp only [written, Match.comp_pieceMap, Match.eqToHom_pieceMap, eqToHom_comp_heq_iff, comp_eqToHom_heq_iff]
     refine (OrdinaryMatch.writeFunctor_map_pieceMap (show ordinaryFamily ⟶ ordinaryFamily from f) false).trans ?_
-    rw [left]
+    have source : ordinaryFamily.pieceModel false =
+        (Selected.readFunctor (piece false)).obj ((res (primitiveCover.subset false)).obj primitiveModel) := by
+      change (OrdinaryMatch.readObj raw).pieceModel false = _
+      rw [OrdinaryMatch.readObj_pieceModel, primitiveCover.read_pieceModel, res_obj]
+      exact (Selected.readFunctor_obj _).symm
+    refine (OrdinaryMatch.map_heq_of_endpoints (Selected.writeFunctor (piece false)) source source left).trans ?_
     simpa only [Functor.comp_map, Functor.id_map] using
       Functor.hcongr_hom (Selected.read_comp_write (piece false)) ((res (primitiveCover.subset false)).map collapse)
   · apply eq_of_heq
@@ -120,6 +126,15 @@ theorem different_ordinary_arrows_no_match :
     let point := (OrdinaryMatch.writeFunctor_obj_pieceModel ordinaryFamily true).symm.trans
       (congrArg (fun M => M.pieceModel true) same)
     exact (eqToHom_heq_id_dom _ _ point).symm.trans (eqToHom_heq_id_cod _ _ point)
+
+/-- The ordinary collapse on one piece and identity on the other cannot form a matching map. -/
+theorem different_ordinary_arrows_no_match :
+    ¬ ∃ f : OrdinaryMatch.Hom ordinaryFamily ordinaryFamily,
+      f.pieceMap false = (Selected.readFunctor (piece false)).map
+        ((res (primitiveCover.subset false)).map collapse) ∧
+      f.pieceMap true = 𝟙 (ordinaryFamily.pieceModel true) := by
+  rintro ⟨f, left, right⟩
+  exact different_ordinary_arrows_no_match_heq ⟨f, heq_of_eq left, right⟩
 
 end OmittedLaw
 

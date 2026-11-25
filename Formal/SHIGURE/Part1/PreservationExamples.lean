@@ -2244,6 +2244,19 @@ def paddedPresentation : PrimitivePresentation where
     | .inr _ => none
   derived _ h := by cases h
 
+/-- The padded presentation registers the unit and zero graphs with the same output variable. -/
+theorem paddedPresentation_equality_statement :
+    paddedPresentation.laws.statement (.inl ()) =
+      ⟨[], .truth, ((Formula.conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarOne)
+        (Var.inLeft [SortName.scalar]) .here))).conj
+        (.conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarZero)
+          (Var.inLeft [SortName.scalar]) .here)))).ex⟩ :=
+  rfl
+
+/-- The named padded equality is an additional Law. -/
+theorem paddedPresentation_equality_role : paddedPresentation.laws.role (.inl ()) = .additional :=
+  rfl
+
 /-- The padded equality has a registered ring attachment. -/
 theorem paddedPresentation_ring_isSome : (paddedPresentation.ringEquation (.inl ())).isSome :=
   rfl

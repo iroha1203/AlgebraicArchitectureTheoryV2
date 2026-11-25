@@ -130,12 +130,21 @@ theorem existsUnique_model (closed : HasFiniteClosure U)
   (cover U closed).existsUnique_ordinary_glue A
 
 /-- Apply Theorem 3.5 to compatible arrows on all finite dependency-closed fragments. -/
+theorem existsUnique_map_heq (closed : HasFiniteClosure U)
+    {A B : Model (Selected.presentation U).theory}
+    (f : OrdinaryMatch.Hom ((cover U closed).ordinaryRead.obj A)
+      ((cover U closed).ordinaryRead.obj B)) :
+    ∃! h : A ⟶ B, ∀ F : FiniteFragment U, HEq (F.restriction.map h) (f.pieceMap F) :=
+  (cover U closed).existsUnique_ordinary_assemble_heq f
+
+/-- The finite-fragment form also has the homogeneous comparison for compatible arrows. -/
 theorem existsUnique_map (closed : HasFiniteClosure U)
     {A B : Model (Selected.presentation U).theory}
     (f : OrdinaryMatch.Hom ((cover U closed).ordinaryRead.obj A)
       ((cover U closed).ordinaryRead.obj B)) :
-    ∃! h : A ⟶ B, ∀ F : FiniteFragment U, F.restriction.map h = f.pieceMap F :=
-  (cover U closed).existsUnique_ordinary_assemble f
+    ∃! h : A ⟶ B, ∀ F : FiniteFragment U, F.restriction.map h = f.pieceMap F := by
+  obtain ⟨h, components, unique⟩ := existsUnique_map_heq closed f
+  exact ⟨h, fun F => eq_of_heq (components F), fun g same => unique g (fun F => heq_of_eq (same F))⟩
 
 end FiniteFragment
 

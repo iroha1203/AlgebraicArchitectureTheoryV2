@@ -249,8 +249,15 @@ theorem selectRenaming_lift_cast {Γ Δ : List P.signature.SortType} {s : P.sign
     @cast _ _ (congrArg₂ Renaming (context_cons s Γ (Declaration.sorts_cons_subset kept keepΓ))
       (context_cons s Δ (Declaration.sorts_cons_subset kept keepΔ)))
       (selectRenaming (Declaration.sorts_cons_subset kept keepΓ) (Declaration.sorts_cons_subset kept keepΔ) ρ.lift) =
-      (Renaming.lift (selectRenaming keepΓ keepΔ ρ) (s := (⟨s, kept⟩ : SortName U)) : Renaming _ _) :=
-  selectRenaming_lift kept keepΓ keepΔ ρ
+      (Renaming.lift (selectRenaming keepΓ keepΔ ρ) (s := (⟨s, kept⟩ : SortName U)) : Renaming _ _) := by
+  funext t i
+  rw [Renaming.cast_context_apply (context_cons s Γ (Declaration.sorts_cons_subset kept keepΓ))
+    (context_cons s Δ (Declaration.sorts_cons_subset kept keepΔ)), selectRenaming_apply]
+  cases i with
+  | here => rw [ambientVar_cast_here, Renaming.lift_here, selectVar_cast_here, Renaming.lift_here]
+  | there i =>
+    rw [ambientVar_cast_there, Renaming.lift_there, selectVar_cast_there, Renaming.lift_there,
+      selectRenaming_apply]
 
 /-- Select a weakening into a context extended by one new sort. -/
 theorem selectRenaming_there {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -269,9 +276,9 @@ theorem selectRenaming_there_cast {Γ Δ : List P.signature.SortType} {s : P.sig
       (context_cons s Δ (Declaration.sorts_cons_subset kept keepΔ)))
       (selectRenaming keepΓ (Declaration.sorts_cons_subset kept keepΔ) (fun i => .there (ρ i))) =
       (fun {_} i => Var.there (t := (⟨s, kept⟩ : SortName U)) (selectRenaming keepΓ keepΔ ρ i)) := by
-  rw [← selectRenaming_comp keepΓ keepΔ (Declaration.sorts_cons_subset kept keepΔ) ρ (fun i => .there i)]
-  exact congrArg (fun (shifted : Renaming (context Δ keepΔ) (context (s :: Δ) (Declaration.sorts_cons_subset kept keepΔ))) =>
-    fun {t} i => shifted (selectRenaming keepΓ keepΔ ρ (s := t) i)) (selectRenaming_there kept keepΔ)
+  funext t i
+  rw [Renaming.cast_target_apply (context_cons s Δ (Declaration.sorts_cons_subset kept keepΔ)),
+    selectRenaming_apply, selectVar_cast_there, selectRenaming_apply]
 
 /-- Select the variable map that substitutes an existing variable for a new head. -/
 theorem selectRenaming_openHead {Γ : List P.signature.SortType} {s : P.signature.SortType}

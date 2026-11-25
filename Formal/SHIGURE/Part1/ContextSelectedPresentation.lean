@@ -72,6 +72,10 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
     | some data => some (selectDomainInclusions p data attached)
   derived name role := selectDerivation (P.derived name.val role) (keepsDerived name role)
 
+/-- The restricted presentation uses the signature of the retained vocabulary. -/
+theorem presentation_signature : (presentation U).signature = signature U :=
+  rfl
+
 /-- The actual restricted presentation gives the ordinary theory over the selected signature. -/
 theorem presentation_theory : (presentation U).theory = theory U :=
   rfl
@@ -79,6 +83,12 @@ theorem presentation_theory : (presentation U).theory = theory U :=
 /-- A retained Law in the selected presentation has the selected text of its original statement. -/
 theorem presentation_law_statement (name : U.RetainedLaw) :
     (presentation U).laws.statement name =
+      selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property) :=
+  rfl
+
+/-- Transporting the restricted Law text along the signature comparison gives its selected form. -/
+theorem presentation_law_cast (name : U.RetainedLaw) :
+    cast (congrArg Law (presentation_signature (U := U))) ((presentation U).laws.statement name) =
       selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property) :=
   rfl
 

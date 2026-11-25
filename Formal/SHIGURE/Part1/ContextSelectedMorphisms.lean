@@ -47,10 +47,10 @@ theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y'
   exact same s.val s.property (a (ambientVar kept i))
 
 /-- Mapping the values of an assignment commutes with a change of its context index. -/
-private theorem cast_assignment_map {left right : Arity (SortName U)} (same : left = right)
-    (g : ∀ s, Y s → Y' s) (a : Assignment Y left.inputs) :
-    (cast (congrArg (fun profile => Assignment Y profile.inputs) same) a).map g =
-      cast (congrArg (fun profile => Assignment Y' profile.inputs) same) (a.map g) := by
+private theorem cast_assignment_map {left right : List (SortName U)} (same : left = right)
+    (g : ∀ s, Y s → Y' s) (a : Assignment Y left) :
+    (cast (congrArg (Assignment Y) same) a).map g =
+      cast (congrArg (Assignment Y') same) (a.map g) := by
   cases same
   rfl
 
@@ -73,7 +73,7 @@ theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (selectArgs e op kept a).map g = selectArgs e' op kept (mapAssignment f (operationInputs op kept) a) := by
   rw [selectArgs_eq_cast, selectArgs_eq_cast]
   let h := (operation_arity op kept).symm
-  exact (cast_assignment_map h g (selectAssignment e (operationInputs op kept) a)).trans
+  exact (cast_assignment_map (congrArg Arity.inputs h) g (selectAssignment e (operationInputs op kept) a)).trans
     (congrArg (cast (congrArg (fun profile => Assignment Y' profile.inputs) h))
       (map_selectAssignment e e' f g same (operationInputs op kept) a))
 
@@ -162,18 +162,26 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
   StructureMap.ofGraphs (readOnSort f) (by
     intro r xs held
     let keep := relationInputs r.val r.property
-    obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
-    rw [← hx, assignmentEquiv_apply] at held ⊢
-    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
-    exact ((readStructure_matches B).relation r.val r.property _).2
-      (f.relation_mem r.val r.property x (((readStructure_matches A).relation r.val r.property x).1 held))) (by
+    let shape := (signature_relInputs r).symm
+    let inputs := (assignmentEquiv (readCarrierEquiv A) keep).trans
+      (Equiv.cast (congrArg (Assignment (readStructure A).carrier) shape))
+    obtain ⟨x, hx⟩ := inputs.surjective xs
+    rw [← hx] at held ⊢
+    simp only [inputs, Equiv.trans_apply, Equiv.cast_apply, assignmentEquiv_apply] at held ⊢
+    rw [cast_assignment_map shape, map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
+    exact ((readStructure_matches B).relation_cast r _).2
+      (f.relation_mem r.val r.property x (((readStructure_matches A).relation_cast r x).1 held))) (by
     intro p xs held
     let keep := operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
-    obtain ⟨x, hx⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
-    rw [← hx, assignmentEquiv_apply] at held ⊢
-    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
-    exact ((readStructure_matches B).domain p.val p.property _).2
-      (f.domain_mem p.val p.property x (((readStructure_matches A).domain p.val p.property x).1 held))) (by
+    let shape := (signature_partialInputs p).symm
+    let inputs := (assignmentEquiv (readCarrierEquiv A) keep).trans
+      (Equiv.cast (congrArg (Assignment (readStructure A).carrier) shape))
+    obtain ⟨x, hx⟩ := inputs.surjective xs
+    rw [← hx] at held ⊢
+    simp only [inputs, Equiv.trans_apply, Equiv.cast_apply, assignmentEquiv_apply] at held ⊢
+    rw [cast_assignment_map shape, map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
+    exact ((readStructure_matches B).domain_cast p _).2
+      (f.domain_mem p.val p.property x (((readStructure_matches A).domain_cast p x).1 held))) (by
     intro op xs y held
     cases op with
     | total f' =>

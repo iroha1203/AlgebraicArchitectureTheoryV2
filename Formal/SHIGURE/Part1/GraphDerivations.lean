@@ -186,7 +186,11 @@ def primitiveFunctional (op : Operation T.signature) (inputs : Renaming op.arity
     Derivation T
       ((Formula.atom (.graph op inputs y)).conj (Formula.atom (.graph op inputs z)))
       (.atom (.eq y z)) := by
-  exact .rename (Renaming.cons y (Renaming.cons z inputs)) (.graph (.functional op))
+  have rule := Derivation.graph (T := T) (.functional op)
+  rw [GraphAxiom.toLaw_functional] at rule
+  have instantiated := rule.rename (Renaming.cons y (Renaming.cons z inputs))
+  simpa only [Formula.rename_conj, Formula.rename_atom, Atomic.rename_graph, Atomic.rename_eq,
+    Renaming.cons_here, Renaming.cons_there] using instantiated
 
 /-- Replace equal input witnesses in an instantiated primitive graph. -/
 def primitiveGraphCongr (op : Operation T.signature) (left right : Renaming op.arity.inputs Γ)

@@ -51,6 +51,15 @@ theorem context_cons (s : P.signature.SortType) (Γ : List P.signature.SortType)
       context Γ ((tailSortsSubset s Γ).trans kept) :=
   rfl
 
+/-- Selecting a context with two head variables selects them in their original order. -/
+theorem context_cons_cons (s t : P.signature.SortType) (Γ : List P.signature.SortType)
+    (keep : Declaration.sorts (t :: s :: Γ) ⊆ U.declarations) :
+    context (t :: s :: Γ) keep =
+      ⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ ::
+      ⟨s, keep (Declaration.sort_mem_sorts (List.mem_cons_of_mem t List.mem_cons_self))⟩ ::
+      context Γ ((tailSortsSubset s Γ).trans ((tailSortsSubset t (s :: Γ)).trans keep)) := by
+  rw [context_cons, context_cons]
+
 /-- Forgetting the retention proofs recovers the original input list. -/
 @[simp] theorem map_context (Γ : List P.signature.SortType) (kept : Declaration.sorts Γ ⊆ U.declarations) :
     (context Γ kept).map Subtype.val = Γ := by
@@ -61,6 +70,16 @@ theorem context_cons (s : P.signature.SortType) (Γ : List P.signature.SortType)
 /-- Restrict an operation arity by selecting each of its retained sorts. -/
 def arity (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) : Arity (SortName U) :=
   ⟨context op.arity.inputs (operationInputs op kept), ⟨op.arity.output, operationOutput op kept⟩⟩
+
+/-- The input profile of a retained operation is the selection of its original input context. -/
+theorem arity_inputs (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
+    (arity op kept).inputs = context op.arity.inputs (operationInputs op kept) :=
+  rfl
+
+/-- The retained output profile names the original output sort. -/
+theorem arity_output (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
+    (arity op kept).output = ⟨op.arity.output, operationOutput op kept⟩ :=
+  rfl
 
 /-- The actual signature of the restricted presentation has precisely the retained names. -/
 def signature (U : DeclarationContext P) : Signature.{u} where
@@ -73,6 +92,17 @@ def signature (U : DeclarationContext P) : Signature.{u} where
   partialArity p := arity (.partialOp p.val) (by simpa only [Declaration.ofOperation_partialOp] using p.property)
   Quantity := Quantity U
   quantityArity q := arity (.quantity q.val) (by simpa only [Declaration.ofOperation_quantity] using q.property)
+
+/-- The input positions of a retained relation are the selected original positions. -/
+theorem signature_relInputs (r : Rel U) :
+    (signature U).relInputs r = context (P.signature.relInputs r.val) (relationInputs r.val r.property) :=
+  rfl
+
+/-- The input positions of a retained partial domain are the selected original positions. -/
+theorem signature_partialInputs (p : Partial U) :
+    ((signature U).partialArity p).inputs = context (P.signature.partialArity p.val).inputs
+      (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) :=
+  (arity_inputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property))
 
 /-- Erasing the retention proofs recovers the original operation arity. -/
 theorem map_arity (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :

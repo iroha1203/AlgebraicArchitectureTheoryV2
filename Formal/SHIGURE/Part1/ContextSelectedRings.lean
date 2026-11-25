@@ -70,15 +70,49 @@ private theorem keepsMul {s : P.signature.SortType} {r : RingVocabulary P.signat
     Declaration.ofOperation r.mul.symbol.operation ∈ U.declarations :=
   keep (by simp [Declaration.ringVocabularySupport_eq])
 
+private theorem unaryInputs {s : P.signature.SortType} (hs : Declaration.sort s ∈ U.declarations) :
+    context [s] (oneSort hs) = [⟨s, hs⟩] :=
+  (context_cons s [] (oneSort hs)).trans (congrArg (List.cons ⟨s, hs⟩) (context_nil noSorts))
+
+private theorem binaryInputs {s : P.signature.SortType} (hs : Declaration.sort s ∈ U.declarations) :
+    context [s, s] (twoSorts hs) = [⟨s, hs⟩, ⟨s, hs⟩] :=
+  (context_cons s [s] (twoSorts hs)).trans (congrArg (List.cons ⟨s, hs⟩) (unaryInputs hs))
+
+private theorem ambientInputHere {s : P.signature.SortType} {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) {Δ : List (SortName U)}
+    (tail : context Γ ((tailSortsSubset s Γ).trans keep) = Δ) :
+    let t : SortName U := ⟨s, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩
+    let full := (context_cons s Γ keep).trans (congrArg (List.cons t) tail)
+    ambientVar keep (cast (congrArg (Var · t) full.symm) .here) = .here := by
+  dsimp only
+  cases tail
+  exact ambientVar_cast_here keep
+
+private theorem ambientInputThere {s : P.signature.SortType} {Γ : List P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) {Δ : List (SortName U)}
+    (tail : context Γ ((tailSortsSubset s Γ).trans keep) = Δ) {t : SortName U} (i : Var Δ t) :
+    let head : SortName U := ⟨s, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩
+    let full := (context_cons s Γ keep).trans (congrArg (List.cons head) tail)
+    ambientVar keep (cast (congrArg (Var · t) full.symm) (.there i)) =
+      .there (ambientVar ((tailSortsSubset s Γ).trans keep) (cast (congrArg (Var · t) tail.symm) i)) := by
+  dsimp only
+  cases tail
+  exact ambientVar_cast_there keep i
+
 /-- Restrict the five actual operations of a ring when they are retained. -/
 def selectRingVocabulary {s : P.signature.SortType} (r : RingVocabulary P.signature s)
     (hs : Declaration.sort s ∈ U.declarations) (keep : Declaration.ringVocabularySupport r ⊆ U.declarations) :
     RingVocabulary (signature U) ⟨s, hs⟩ where
-  zero := selectTypedTotal r.zero (keepsZero keep) noSorts hs
-  one := selectTypedTotal r.one (keepsOne keep) noSorts hs
-  add := selectTypedTotal r.add (keepsAdd keep) (twoSorts hs) hs
-  neg := selectTypedTotal r.neg (keepsNeg keep) (oneSort hs) hs
-  mul := selectTypedTotal r.mul (keepsMul keep) (twoSorts hs) hs
+  zero := cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (context_nil noSorts))
+    (selectTypedTotal r.zero (keepsZero keep) noSorts hs)
+  one := cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (context_nil noSorts))
+    (selectTypedTotal r.one (keepsOne keep) noSorts hs)
+  add := cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (binaryInputs hs))
+    (selectTypedTotal r.add (keepsAdd keep) (twoSorts hs) hs)
+  neg := cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (unaryInputs hs))
+    (selectTypedTotal r.neg (keepsNeg keep) (oneSort hs) hs)
+  mul := cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (binaryInputs hs))
+    (selectTypedTotal r.mul (keepsMul keep) (twoSorts hs) hs)
 
 /-- Reindex the variables of a ring expression in the selected context,
 keeping its coefficient-operation nodes as syntax for later interpretation. -/
@@ -92,18 +126,43 @@ private def selectRingExpr {Γ : List P.signature.SortType} {s : P.signature.Sor
   | .neg a => .neg (selectRingExpr hΓ hs a)
   | .mul a b => .mul (selectRingExpr hΓ hs a) (selectRingExpr hΓ hs b)
 
+private theorem selectTypedTotal_atInputs {Γ inputs : List P.signature.SortType}
+    {s : P.signature.SortType} {target : List (SortName U)}
+    (f : TypedTotal P.signature ⟨inputs, s⟩) (args : ∀ {t}, Var inputs t → Term P.signature Γ t)
+    (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hInputs : Declaration.sorts inputs ⊆ U.declarations)
+    (hs : Declaration.sort s ∈ U.declarations)
+    (same : context inputs hInputs = target)
+    (h : termReferences (f.term args) ⊆ U.declarations)
+    (parts : ∀ {t} (i : Var inputs t), termReferences (args i) ⊆ U.declarations)
+    (selected : ∀ {t}, Var target t → Term (signature U) (context Γ hΓ) t)
+    (compare : ∀ {t} (i : Var target t),
+      let j := ambientVar hInputs (cast (congrArg (Var · t) same.symm) i)
+      selectTerm (args j) hΓ t.property (parts j) = selected i) :
+    selectTerm (f.term args) hΓ hs h =
+      (cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) same)
+        (selectTypedTotal f keep hInputs hs)).term selected := by
+  refine (selectTypedTotal_term f args keep hΓ hInputs hs h parts).trans ?_
+  refine Eq.trans ?_ (TypedTotal.term_cast_inputs same (selectTypedTotal f keep hInputs hs) selected).symm
+  apply congrArg (fun (terms : ∀ {t}, Var (context inputs hInputs) t →
+      Term (signature U) (context Γ hΓ) t) => (selectTypedTotal f keep hInputs hs).term terms)
+  funext t i
+  have roundtrip : cast (congrArg (Var · t) same.symm) (cast (congrArg (Var · t) same) i) = i := by
+    cases same
+    rfl
+  simpa only [roundtrip] using compare (cast (congrArg (Var · t) same) i)
+
 /-- A retained nullary ring symbol still yields the corresponding constant term. -/
 private theorem selectNullary {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (f : TypedTotal P.signature ⟨[], s⟩)
     (keep : Declaration.ofOperation f.symbol.operation ∈ U.declarations)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hs : Declaration.sort s ∈ U.declarations)
     (h : termReferences (f.term (@Term.argsNil P.signature Γ)) ⊆ U.declarations) :
-    selectTerm (f.term (@Term.argsNil P.signature Γ)) hΓ hs h = (selectTypedTotal f keep noSorts hs).term (@Term.argsNil (signature U) (context Γ hΓ)) := by
-  refine (selectTypedTotal_term f Term.argsNil keep hΓ noSorts hs h (fun i => nomatch i)).trans ?_
-  apply congrArg (fun (args : ∀ {t}, Var ([] : List (SortName U)) t →
-      Term (signature U) (context Γ hΓ) t) => (selectTypedTotal f keep noSorts hs).term args)
-  funext t i
-  exact nomatch i
+    selectTerm (f.term (@Term.argsNil P.signature Γ)) hΓ hs h =
+      (cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (context_nil noSorts))
+        (selectTypedTotal f keep noSorts hs)).term (@Term.argsNil (signature U) (context Γ hΓ)) :=
+  selectTypedTotal_atInputs f Term.argsNil keep hΓ noSorts hs (context_nil noSorts) h
+    (fun i => nomatch i) (@Term.argsNil (signature U) (context Γ hΓ)) (fun i => nomatch i)
 
 /-- Select the one-argument application of a retained ring symbol and its supported argument. -/
 private theorem selectUnary {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -113,18 +172,22 @@ private theorem selectUnary {Γ : List P.signature.SortType} {s : P.signature.So
     (h : termReferences (f.term (x.argsCons Term.argsNil)) ⊆ U.declarations)
     (hx : termReferences x ⊆ U.declarations) :
     selectTerm (f.term (x.argsCons Term.argsNil)) hΓ hs h =
-      (selectTypedTotal f keep (oneSort hs) hs).term ((selectTerm x hΓ hs hx).argsCons Term.argsNil) := by
+      (cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (unaryInputs hs))
+        (selectTypedTotal f keep (oneSort hs) hs)).term ((selectTerm x hΓ hs hx).argsCons Term.argsNil) := by
   let args : ∀ {t}, Var [s] t → Term P.signature Γ t := x.argsCons (@Term.argsNil P.signature Γ)
   have parts {t : P.signature.SortType} (i : Var [s] t) : termReferences (args i) ⊆ U.declarations := by
     cases i with
     | here => simpa only [args, Term.argsCons_here] using hx
     | there i => exact nomatch i
-  refine (selectTypedTotal_term f args keep hΓ (oneSort hs) hs h parts).trans ?_
-  apply congrArg (fun (terms : ∀ {t}, Var (context [s] (oneSort hs)) t →
-      Term (signature U) (context Γ hΓ) t) => (selectTypedTotal f keep (oneSort hs) hs).term terms)
-  funext t i
+  refine selectTypedTotal_atInputs f args keep hΓ (oneSort hs) hs (unaryInputs hs) h parts _ ?_
+  intro t i
   cases i with
-  | here => simp only [args, ambientVar_here (oneSort hs), Term.argsCons_here]
+  | here =>
+    have pos : ambientVar (oneSort hs)
+        (cast (congrArg (Var · (⟨s, hs⟩ : SortName U)) (unaryInputs hs).symm) .here) = .here :=
+      ambientInputHere (oneSort hs) (context_nil noSorts)
+    simp only [pos, args, Term.argsCons_here]
+    rfl
   | there i => exact nomatch i
 
 /-- Select the ordered pair of supported arguments to a retained binary ring symbol. -/
@@ -135,7 +198,8 @@ private theorem selectBinary {Γ : List P.signature.SortType} {s : P.signature.S
     (h : termReferences (f.term (x.argsCons (y.argsCons Term.argsNil))) ⊆ U.declarations)
     (hx : termReferences x ⊆ U.declarations) (hy : termReferences y ⊆ U.declarations) :
     selectTerm (f.term (x.argsCons (y.argsCons Term.argsNil))) hΓ hs h =
-      (selectTypedTotal f keep (twoSorts hs) hs).term
+      (cast (congrArg (fun xs => TypedTotal (signature U) ⟨xs, ⟨s, hs⟩⟩) (binaryInputs hs))
+        (selectTypedTotal f keep (twoSorts hs) hs)).term
         ((selectTerm x hΓ hs hx).argsCons ((selectTerm y hΓ hs hy).argsCons Term.argsNil)) := by
   let args : ∀ {t}, Var [s, s] t → Term P.signature Γ t :=
     x.argsCons (y.argsCons (@Term.argsNil P.signature Γ))
@@ -146,20 +210,25 @@ private theorem selectBinary {Γ : List P.signature.SortType} {s : P.signature.S
       cases i with
       | here => simpa only [args, Term.argsCons_there, Term.argsCons_here] using hy
       | there i => exact nomatch i
-  refine (selectTypedTotal_term f args keep hΓ (twoSorts hs) hs h parts).trans ?_
-  apply congrArg (fun (terms : ∀ {t}, Var (context [s, s] (twoSorts hs)) t →
-      Term (signature U) (context Γ hΓ) t) => (selectTypedTotal f keep (twoSorts hs) hs).term terms)
-  funext t i
+  refine selectTypedTotal_atInputs f args keep hΓ (twoSorts hs) hs (binaryInputs hs) h parts _ ?_
+  intro t i
   cases i with
-  | here => simp only [args, ambientVar_here (twoSorts hs), Term.argsCons_here]
+  | here =>
+    have pos : ambientVar (twoSorts hs)
+        (cast (congrArg (Var · (⟨s, hs⟩ : SortName U)) (binaryInputs hs).symm) .here) = .here :=
+      ambientInputHere (twoSorts hs) (unaryInputs hs)
+    simp only [pos, args, Term.argsCons_here]
+    rfl
   | there i =>
     cases i with
     | here =>
-      let tail := (tailSortsSubset s [s]).trans (twoSorts hs)
-      have original : ambientVar (twoSorts hs) (.there .here) = (Var.there .here : Var [s, s] s) :=
-        (ambientVar_there (twoSorts hs) .here).trans (congrArg Var.there (ambientVar_here tail))
-      simp only [args, original, Term.argsCons_there, Term.argsCons_here]
-      exact (Term.argsCons_here (selectTerm y hΓ hs hy) Term.argsNil).symm
+      have pos : ambientVar (twoSorts hs)
+          (cast (congrArg (Var · (⟨s, hs⟩ : SortName U)) (binaryInputs hs).symm) (.there .here)) =
+            .there (.here : Var [s] s) :=
+        (ambientInputThere (twoSorts hs) (unaryInputs hs) .here).trans
+          (congrArg Var.there (ambientInputHere (oneSort hs) (context_nil noSorts)))
+      simp only [pos, args, Term.argsCons_there, Term.argsCons_here]
+      rfl
     | there i => exact nomatch i
 
 /-- Extract the support of one argument term from the supported typed application. -/

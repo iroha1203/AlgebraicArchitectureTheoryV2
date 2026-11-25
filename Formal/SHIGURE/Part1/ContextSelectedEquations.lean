@@ -179,6 +179,19 @@ noncomputable def selectWritten (w : OrderedEquation.Written P.signature)
   exact ⟨selectEquation w.expansion kept, selectFormula w.conclusion (lawConclusionSupport kept),
     selectExpansion w.expansion kept⟩
 
+/-- Selection keeps the ordered equation's input variables in the selected context. -/
+theorem selectWritten_context (w : OrderedEquation.Written P.signature)
+    (h : Declaration.lawBody w.toLaw ⊆ U.declarations) :
+    (selectWritten w h).equation.context = context w.equation.context (lawSortSupport h) :=
+  rfl
+
+/-- Selection retains the original result sort of a written equation. -/
+theorem selectWritten_result (w : OrderedEquation.Written P.signature)
+    (h : Declaration.lawBody w.toLaw ⊆ U.declarations)
+    (hs : Declaration.sort w.equation.result ∈ U.declarations) :
+    (selectWritten w h).equation.result = ⟨w.equation.result, hs⟩ :=
+  rfl
+
 /-- Support of the written Law supplies the result sort and both sides of its ordered equalities. -/
 theorem selectWritten_terms_kept (w : OrderedEquation.Written P.signature)
     (h : Declaration.lawBody w.toLaw ⊆ U.declarations) :

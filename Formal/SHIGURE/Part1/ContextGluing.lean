@@ -174,10 +174,16 @@ theorem glue_obj_eq : (A.glue cover).obj =
 theorem glue_carrier_eq : (A.glue cover).obj.carrier = A.glueCarrier cover :=
   congrArg ContextStructure.carrier (A.glue_obj_eq cover)
 
+/-- The assembled model uses the structure assembled from the same pieces. -/
+theorem glue_obj : (A.glue cover).obj = A.glueStructure cover :=
+  rfl
+
 /-- The assembled model restricts to the original model in every piece. -/
-@[simp] theorem glue_restrict (i : cover.Index) : (A.glue cover).restrict (cover.subset i) = A.pieceModel i :=
-  ObjectProperty.FullSubcategory.ext ((A.glueStructure cover).restrict_eq_of_view (A.pieceModel i).obj
-    (cover.subset i) (A.glueCarrier_eq_piece cover i) (A.glueEvaluation_view cover i))
+@[simp] theorem glue_restrict (i : cover.Index) : (A.glue cover).restrict (cover.subset i) = A.pieceModel i := by
+  apply ObjectProperty.FullSubcategory.ext
+  rw [Models.restrict_obj, glue_obj]
+  exact (A.glueStructure cover).restrict_eq_of_view (A.pieceModel i).obj
+    (cover.subset i) (A.glueCarrier_eq_piece cover i) (A.glueEvaluation_view cover i)
 
 end Match
 end DeclarationContext

@@ -42,15 +42,32 @@ def selectRule : (rule : GraphAxiom P.signature) → Declaration.graphRuleName r
   | .graphImpliesDomain p, keep => .graphImpliesDomain ⟨p, by simpa only [Declaration.graphRuleName_graphImpliesDomain] using keep⟩
   | .domainImpliesGraph p, keep => .domainImpliesGraph ⟨p, by simpa only [Declaration.graphRuleName_domainImpliesGraph] using keep⟩
 
-/-- A selected variable map shifted by two head variables is the same double shift. -/
+section
+
+attribute [local irreducible] context arity
+
+/-- A selected variable map shifted twice agrees after transport across both selected heads. -/
 theorem selectRenaming_there_there {Γ : List P.signature.SortType} {s t : P.signature.SortType}
     (keepS : Declaration.sort s ∈ U.declarations) (keepT : Declaration.sort t ∈ U.declarations)
-    (kept : Declaration.sorts Γ ⊆ U.declarations) :
-    (selectRenaming kept (Declaration.sorts_cons_subset keepT (Declaration.sorts_cons_subset keepS kept))
-      (fun i => .there (.there i)) : Renaming _ _) =
-      (fun {_} i => Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) := by
-  funext _ i
-  simp only [selectRenaming_apply, selectVar_there, selectVar_ambientVar]
+    (keep : Declaration.sorts Γ ⊆ U.declarations) :
+    let tail := Declaration.sorts_cons_subset keepS keep
+    let whole := Declaration.sorts_cons_subset keepT tail
+    @cast _ _ (congrArg (Renaming (context Γ keep)) (context_cons_cons s t Γ whole))
+      (selectRenaming keep whole (fun i => .there (.there i))) =
+      (fun {a} (i : Var (context Γ keep) a) =>
+        Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) := by
+  dsimp only
+  funext a i
+  let tail := Declaration.sorts_cons_subset keepS keep
+  let whole := Declaration.sorts_cons_subset keepT tail
+  let first := context_cons t (s :: Γ) whole
+  let second := context_cons s Γ tail
+  rw [Renaming.cast_target_apply (context_cons_cons s t Γ whole), selectRenaming_apply]
+  have compose := cast_cast (congrArg (fun ctx => Var ctx a) first)
+    (congrArg (fun ctx => Var ctx a) (congrArg (List.cons (⟨t, keepT⟩ : SortName U)) second))
+    (selectVar whole (Var.there (t := t) (Var.there (t := s) (ambientVar keep i))))
+  rw [← compose, selectVar_cast_there, Renaming.cast_there_target second,
+    selectVar_cast_there, selectVar_ambientVar]
 
 /-- Compare graph atoms across equal operation names and variable contexts. -/
 private theorem graph_heq {S : Signature.{u}} {Γ Δ : List S.SortType} {op op' : Operation S}
@@ -79,16 +96,7 @@ private theorem selectRenaming_twice_heq {Γ : List P.signature.SortType} {s t :
       (fun i => .there (.there i)) (s := a))
       (fun {a} (i : Var (context Γ keep) a) =>
         Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) := by
-  let tail := Declaration.sorts_cons_subset keepS keep
-  let whole := Declaration.sorts_cons_subset keepT tail
-  let length := (context_cons t (s :: Γ) whole).trans
-    (congrArg (List.cons (⟨t, keepT⟩ : SortName U)) (context_cons s Γ tail))
-  have computation : @cast _ _ (congrArg (Renaming (context Γ keep)) length)
-      (selectRenaming keep whole (fun i => .there (.there i))) =
-      (fun {a} (i : Var (context Γ keep) a) =>
-        Var.there (t := (⟨t, keepT⟩ : SortName U)) (Var.there (t := (⟨s, keepS⟩ : SortName U)) i)) :=
-    selectRenaming_there_there keepS keepT keep
-  exact (cast_heq _ _).symm.trans (heq_of_eq computation)
+  exact (cast_heq _ _).symm.trans (heq_of_eq (selectRenaming_there_there keepS keepT keep))
 
 private theorem selectVar_here_heq {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
@@ -105,12 +113,21 @@ private theorem selectVar_there_here_heq {Γ : List P.signature.SortType} {s t :
           ⟨s, keep (Declaration.sort_mem_sorts (List.mem_cons_of_mem t List.mem_cons_self))⟩ ::
           context Γ ((tailSortsSubset s Γ).trans ((tailSortsSubset t (s :: Γ)).trans keep))) _) := by
   let tail := (tailSortsSubset t (s :: Γ)).trans keep
-  let alignment := (context_cons t (s :: Γ) keep).trans
-    (congrArg (List.cons (⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ : SortName U))
-      (context_cons s Γ tail))
+  let first := context_cons t (s :: Γ) keep
+  let second := context_cons s Γ tail
+  let retainedHead : SortName U := ⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩
+  let retainedNext : SortName U := ⟨s, keep (Declaration.sort_mem_sorts (List.mem_cons_of_mem t List.mem_cons_self))⟩
+  let alignment := first.trans (congrArg (List.cons retainedHead) second)
   have computation : cast (congrArg (fun ctx => Var ctx _) alignment)
       (selectVar keep (Var.there (t := t) (Var.here : Var (s :: Γ) s))) = .there .here := by
-    simp only [cast_eq, selectVar_there, selectVar_here]
+    let i := selectVar keep (Var.there (t := t) (Var.here : Var (s :: Γ) s))
+    let carry := congrArg (Var · retainedNext) (congrArg (List.cons retainedHead) second)
+    calc
+      _ = cast carry (cast (congrArg (Var · retainedNext) first) i) := (cast_cast _ _ i).symm
+      _ = cast carry (.there (selectVar tail (Var.here : Var (s :: Γ) s))) :=
+        congrArg (cast carry) (selectVar_cast_there keep Var.here)
+      _ = .there .here := (Renaming.cast_there_target second _).trans
+        (congrArg Var.there (selectVar_cast_here tail))
   exact (cast_heq _ _).symm.trans (heq_of_eq computation)
 
 private theorem selectVar_head_twice_heq {Γ : List P.signature.SortType} {s t : P.signature.SortType}
@@ -121,12 +138,18 @@ private theorem selectVar_head_twice_heq {Γ : List P.signature.SortType} {s t :
           ⟨s, keep (Declaration.sort_mem_sorts (List.mem_cons_of_mem t List.mem_cons_self))⟩ ::
           context Γ ((tailSortsSubset s Γ).trans ((tailSortsSubset t (s :: Γ)).trans keep))) _) := by
   let tail := (tailSortsSubset t (s :: Γ)).trans keep
-  let alignment := (context_cons t (s :: Γ) keep).trans
-    (congrArg (List.cons (⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩ : SortName U))
-      (context_cons s Γ tail))
+  let first := context_cons t (s :: Γ) keep
+  let second := context_cons s Γ tail
+  let retainedHead : SortName U := ⟨t, keep (Declaration.sort_mem_sorts List.mem_cons_self)⟩
+  let alignment := first.trans (congrArg (List.cons retainedHead) second)
   have computation : cast (congrArg (fun ctx => Var ctx _) alignment)
       (selectVar keep (Var.here : Var (t :: s :: Γ) t)) = .here := by
-    simp only [cast_eq, selectVar_here]
+    let i := selectVar keep (Var.here : Var (t :: s :: Γ) t)
+    let carry := congrArg (Var · retainedHead) (congrArg (List.cons retainedHead) second)
+    calc
+      _ = cast carry (cast (congrArg (Var · retainedHead) first) i) := (cast_cast _ _ i).symm
+      _ = cast carry .here := congrArg (cast carry) (selectVar_cast_here keep)
+      _ = .here := Renaming.cast_here_target second
   exact (cast_heq _ _).symm.trans (heq_of_eq computation)
 
 /-- The structural rule places the retained output before the retained input sorts. -/
@@ -135,8 +158,7 @@ private theorem context_one_output (op : Operation P.signature)
     (arityEq : selected.arity = arity op keep)
     (kept : Declaration.sorts (op.arity.output :: op.arity.inputs) ⊆ U.declarations) :
     context (op.arity.output :: op.arity.inputs) kept = selected.arity.output :: selected.arity.inputs := by
-  rw [context_cons, arityEq]
-  rfl
+  rw [context_cons, arityEq, arity_output, arity_inputs]
 
 /-- The graph functionality rule places two copies of the retained output before the inputs. -/
 private theorem context_two_outputs (op : Operation P.signature)
@@ -145,8 +167,9 @@ private theorem context_two_outputs (op : Operation P.signature)
     (kept : Declaration.sorts (op.arity.output :: op.arity.output :: op.arity.inputs) ⊆ U.declarations) :
     context (op.arity.output :: op.arity.output :: op.arity.inputs) kept =
       selected.arity.output :: selected.arity.output :: selected.arity.inputs := by
-  rw [context_cons, context_cons, arityEq]
-  rfl
+  rw [context_cons, context_cons, arityEq, arity_output, arity_inputs]
+
+end
 
 /-- Align graph-atom formulas along the context equality of the structural rule. -/
 private theorem cast_atom_of_heq {S : Signature.{u}} {Γ Δ : List S.SortType} (same : Γ = Δ)
@@ -188,7 +211,6 @@ theorem selectRule_toLaw (rule : GraphAxiom P.signature)
     | exact context_one_output _ _ _ (operation_arity_of_eq (operation_partialOp _ _)) _
     | exact selectRenaming_id _
     | exact selectRenaming_there _ _
-    | exact selectRenaming_there_there _ _ _
     | exact selectRenaming_there_heq _ _
     | exact selectRenaming_twice_heq _ _ _
     | exact selectVar_here_heq _

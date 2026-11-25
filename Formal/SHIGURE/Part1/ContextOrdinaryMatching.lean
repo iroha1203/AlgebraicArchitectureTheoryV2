@@ -91,6 +91,15 @@ noncomputable def project (i : I) : OrdinaryMatch piece ⥤ Model (Selected.theo
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/-- The projected ordinary model is the chosen member of the matching family. -/
+theorem project_obj (i : I) (A : OrdinaryMatch piece) : (project i).obj A = A.pieceModel i :=
+  rfl
+
+/-- The projected ordinary arrow is the chosen component on the identified endpoints. -/
+theorem project_map (i : I) {A B : OrdinaryMatch piece} (f : A ⟶ B) :
+    (project i).map f ≍ (show Hom A B from f).pieceMap i :=
+  HEq.rfl
+
 /-- Move a matching square along equality of its four endpoints and heterogeneous equality of its arrows. -/
 private theorem transportSquare {C : Type*} [Category C]
     {A B X Y A' B' X' Y' : C}
@@ -123,6 +132,15 @@ private theorem mapSquare {C : Type*} {D : Type*} [Category C] [Category D]
 private theorem mapHEq {C : Type*} {D : Type*} [Category C] [Category D]
     {F G : C ⥤ D} (same : F = G) {A B : C} (f : A ⟶ B) : F.map f ≍ G.map f := by
   subst G
+  rfl
+
+/-- A functor transports arrows that agree after identifying their endpoints. -/
+theorem map_heq_of_endpoints {C D : Type*} [Category C] [Category D] (F : C ⥤ D)
+    {A B A' B' : C} (source : A = A') (target : B = B') {f : A ⟶ B} {g : A' ⟶ B'}
+    (same : f ≍ g) : F.map f ≍ F.map g := by
+  cases source
+  cases target
+  cases eq_of_heq same
   rfl
 
 /-- Translate the graph model in each piece into its ordinary selected model. -/
@@ -168,6 +186,10 @@ noncomputable def readFunctor : Match piece ⥤ OrdinaryMatch piece where
   map_comp f g := Hom.ext fun i => (Selected.readFunctor (piece i)).map_comp
     ((show Match.Hom _ _ from f).pieceMap i) ((show Match.Hom _ _ from g).pieceMap i)
 
+/-- The comparison functor reads its matching objects by the object comparison. -/
+theorem readFunctor_obj (A : Match piece) : readFunctor.obj A = readObj A :=
+  rfl
+
 /-- The strict write on each piece sends ordinary matching maps to graph matching maps. -/
 noncomputable def writeFunctor : OrdinaryMatch piece ⥤ Match piece where
   obj := writeObj
@@ -198,14 +220,20 @@ theorem writeFunctor_project (i : I) :
 
 /-- Writing a matching family applies the selected write functor to each piece. -/
 theorem writeFunctor_obj_pieceModel (A : OrdinaryMatch piece) (i : I) :
-    (writeFunctor.obj A).pieceModel i = (Selected.writeFunctor (piece i)).obj (A.pieceModel i) :=
-  Functor.congr_obj (writeFunctor_project i) A
+    (writeFunctor.obj A).pieceModel i = (Selected.writeFunctor (piece i)).obj (A.pieceModel i) := by
+  exact ((Match.project_obj i (writeFunctor.obj A)).symm.trans
+    (Functor.congr_obj (writeFunctor_project i) A)).trans
+    (congrArg (Selected.writeFunctor (piece i)).obj (project_obj i A))
 
 /-- Writing a matching arrow applies the selected write functor to each component. -/
 theorem writeFunctor_map_pieceMap {A B : OrdinaryMatch piece} (f : A ⟶ B) (i : I) :
     (show Match.Hom (writeFunctor.obj A) (writeFunctor.obj B) from writeFunctor.map f).pieceMap i ≍
-      (Selected.writeFunctor (piece i)).map ((show Hom A B from f).pieceMap i) :=
-  Functor.hcongr_hom (writeFunctor_project i) f
+      (Selected.writeFunctor (piece i)).map ((show Hom A B from f).pieceMap i) := by
+  have localMap := map_heq_of_endpoints (Selected.writeFunctor (piece i)) (project_obj i A)
+    (project_obj i B) (project_map i f)
+  have projected := Functor.hcongr_hom (writeFunctor_project i) f
+  simp only [Functor.comp_map] at projected
+  exact ((Match.project_map i (writeFunctor.map f)).symm.trans projected).trans localMap
 
 /-- Reading and writing a family recovers the original graph family, including every arrow. -/
 theorem read_comp_write : readFunctor (piece := piece) ⋙ writeFunctor = 𝟭 (Match piece) := by
@@ -218,13 +246,18 @@ theorem read_comp_write : readFunctor (piece := piece) ⋙ writeFunctor = 𝟭 (
     change Match.project i ⋙ (Selected.readFunctor (piece i) ⋙ Selected.writeFunctor (piece i)) = _
     rw [Selected.read_comp_write, Functor.comp_id, Functor.id_comp]
   have objects (A : Match piece) : (readFunctor ⋙ writeFunctor).obj A = (𝟭 _).obj A :=
-    Match.ext (fun i => Functor.congr_obj (projected i) A)
+    Match.ext fun i =>
+      ((Match.project_obj i ((readFunctor ⋙ writeFunctor).obj A)).symm.trans
+        (Functor.congr_obj (projected i) A)).trans (Match.project_obj i A)
   refine CategoryTheory.Functor.ext objects ?_
   intro A B f
   apply Match.Hom.ext
   intro i
-  simp only [Match.comp_pieceMap, Match.eqToHom_pieceMap]
-  exact Functor.congr_hom (projected i) f
+  apply eq_of_heq
+  simp only [Match.comp_pieceMap, Match.eqToHom_pieceMap, heq_eqToHom_comp_iff, heq_comp_eqToHom_iff, Functor.id_map]
+  have mapEq := Functor.hcongr_hom (projected i) f
+  simp only [Functor.comp_map, Functor.id_map] at mapEq
+  exact ((Match.project_map i _).symm.trans mapEq).trans (Match.project_map i f)
 
 /-- The component of a transport in the matching category is the transport of that component's endpoints. -/
 private theorem eqToHom_pieceMap {A B : OrdinaryMatch piece} (same : A = B) (i : I) :
@@ -248,13 +281,18 @@ theorem write_comp_read : writeFunctor (piece := piece) ⋙ readFunctor = 𝟭 (
     change project i ⋙ (Selected.writeFunctor (piece i) ⋙ Selected.readFunctor (piece i)) = _
     rw [Selected.write_comp_read, Functor.comp_id, Functor.id_comp]
   have objects (A : OrdinaryMatch piece) : (writeFunctor ⋙ readFunctor).obj A = (𝟭 _).obj A :=
-    OrdinaryMatch.ext (fun i => Functor.congr_obj (projected i) A)
+    OrdinaryMatch.ext fun i =>
+      ((project_obj i ((writeFunctor ⋙ readFunctor).obj A)).symm.trans
+        (Functor.congr_obj (projected i) A)).trans (project_obj i A)
   refine CategoryTheory.Functor.ext objects ?_
   intro A B f
   apply Hom.ext
   intro i
-  simp only [comp_pieceMap, eqToHom_pieceMap]
-  exact Functor.congr_hom (projected i) f
+  apply eq_of_heq
+  simp only [comp_pieceMap, eqToHom_pieceMap, heq_eqToHom_comp_iff, heq_comp_eqToHom_iff, Functor.id_map]
+  have mapEq := Functor.hcongr_hom (projected i) f
+  simp only [Functor.comp_map, Functor.id_map] at mapEq
+  exact ((project_map i _).symm.trans mapEq).trans (project_map i f)
 
 /-- The ordinary and graph matching categories are strictly isomorphic. -/
 noncomputable def categoryIso : Cat.of (Match piece) ≅ Cat.of (OrdinaryMatch piece) where

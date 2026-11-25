@@ -106,6 +106,15 @@ noncomputable def project (i : I) : Match piece ⥤ Models (piece i) where
   map_id _ := rfl
   map_comp _ _ := rfl
 
+/-- The projected model is the chosen member of the matching family. -/
+theorem project_obj (i : I) (A : Match piece) : (project i).obj A = A.pieceModel i :=
+  rfl
+
+/-- The projected arrow is the chosen component, with the endpoint identifications. -/
+theorem project_map (i : I) {A B : Match piece} (f : A ⟶ B) :
+    (project i).map f ≍ (show Hom A B from f).pieceMap i :=
+  HEq.rfl
+
 /-- The underlying local arrow of an equality transport is the transported local equality. -/
 theorem eqToHom_pieceMap {A B : Match piece} (same : A = B) (i : I) :
     (show Hom A B from eqToHom same).pieceMap i = eqToHom (congrArg (fun M => M.pieceModel i) same) := by

@@ -684,6 +684,15 @@ theorem term_eq_reindexedApp (op : TypedTotal sig profile) {Γ : List sig.SortTy
   cases same
   exact (Term.reindexedApp_rfl symbol.operation args).symm
 
+/-- Moving the input list of a typed symbol transports exactly its argument positions. -/
+theorem term_cast_inputs {Γ inputs inputs' : List sig.SortType} {output : sig.SortType}
+    (same : inputs = inputs') (op : TypedTotal sig ⟨inputs, output⟩)
+    (args : ∀ {s}, Var inputs' s → Term sig Γ s) :
+    (cast (congrArg (fun xs => TypedTotal sig ⟨xs, output⟩) same) op).term args =
+      op.term (fun {s} i => args (cast (congrArg (Var · s) same) i)) := by
+  cases same
+  rfl
+
 /-- Evaluate the interpretation of a declared total symbol on its typed input tuple. -/
 def value (op : TypedTotal sig profile) (A : Structure sig)
     (xs : Assignment A.carrier profile.inputs) : A.carrier profile.output := by

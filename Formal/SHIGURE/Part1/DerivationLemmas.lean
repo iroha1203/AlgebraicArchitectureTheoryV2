@@ -25,6 +25,17 @@ def append : {Λ : List S} → Renaming Λ E → Renaming Γ E → Renaming (Λ 
   | [], _, right => right
   | _ :: _, left, right => cons (left .here) (append (fun i => left (.there i)) right)
 
+/-- Appending an empty left renaming uses exactly the right renaming. -/
+theorem append_nil (left : Renaming ([] : List S) E) (right : Renaming Γ E) :
+    @append S Γ E [] left right = (fun {_} i => right i) :=
+  rfl
+
+/-- Under a left head, concatenation acts by the two remaining renamings. -/
+theorem append_there {s t : S} {Λ : List S} (left : Renaming (s :: Λ) E)
+    (right : Renaming Γ E) (i : Var (Λ ++ Γ) t) :
+    append left right (.there i) = append (fun j => left (.there j)) right i :=
+  rfl
+
 /-- Renaming the left block of a concatenation selects the left map. -/
 @[simp] theorem append_inLeft {Λ : List S} (left : Renaming Λ E) (right : Renaming Γ E)
     {s : S} (i : Var Λ s) : append left right (i.inLeft Γ) = left i := by
@@ -247,10 +258,8 @@ def existsManyIntro : {Λ : List T.signature.SortType} →
     (witness : Renaming Λ Γ) → (body : Formula T.signature (Λ ++ Γ)) →
     Derivation T (body.rename (Renaming.append witness (fun i => i))) (Formula.existsMany Λ body)
   | [], _, body => by
-    rw [Formula.existsMany_nil]
-    change Derivation T (body.rename (fun i => i)) body
-    rw [Formula.rename_id]
-    exact .refl body
+    rw [Formula.existsMany_nil, Renaming.append_nil]
+    exact (Formula.rename_id body).symm ▸ Derivation.refl body
   | _ :: Λ, witness, body => by
     let tail : Renaming Λ Γ := fun i => witness (.there i)
     let head : Var (Λ ++ Γ) _ := (witness .here).shift Λ
@@ -262,7 +271,7 @@ def existsManyIntro : {Λ : List T.signature.SortType} →
       funext t i
       cases i with
       | here => exact Renaming.append_shift tail (fun j => j) (witness .here)
-      | there i => rfl
+      | there i => rw [Renaming.comp_apply, Renaming.openHead_there, Renaming.append_there]
     rw [← same, Formula.existsMany_cons]
     exact .cut (existsManyIntro tail filled) (existsManyMono (.existsIntro body head))
 

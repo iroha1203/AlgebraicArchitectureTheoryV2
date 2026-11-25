@@ -112,8 +112,14 @@ theorem selectAssignment_cons_cast (e : CarrierEquiv U X Y) {Γ : List P.signatu
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (x : X s) (a : Assignment X Γ) :
     cast (congrArg (Assignment Y) (context_cons s Γ (Declaration.sorts_cons_subset keepS keepΓ)))
       (selectAssignment e (Declaration.sorts_cons_subset keepS keepΓ) (Assignment.cons x a)) =
-      Assignment.cons (s := (⟨s, keepS⟩ : SortName U)) (e s keepS x) (selectAssignment e keepΓ a) :=
-  selectAssignment_cons e keepS keepΓ x a
+      Assignment.cons (s := (⟨s, keepS⟩ : SortName U)) (e s keepS x) (selectAssignment e keepΓ a) := by
+  apply Assignment.ext
+  intro t i
+  rw [Assignment.cast_context_apply (context_cons s Γ (Declaration.sorts_cons_subset keepS keepΓ)),
+    selectAssignment_apply]
+  cases i with
+  | here => rw [ambientVar_cast_here, Assignment.cons_here, Assignment.cons_here]
+  | there i => rw [ambientVar_cast_there, Assignment.cons_there, Assignment.cons_there, selectAssignment_apply]
 
 /-- Moving an input tuple to the selected operation uses its selected arity. -/
 def selectArgs (e : CarrierEquiv U X Y) (op : Operation P.signature)
@@ -227,6 +233,23 @@ structure EvaluationMatches (E : RestrictedEvaluation U X) (B : Structure (signa
   graph (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (a : Assignment X op.arity.inputs) (x : X op.arity.output) :
     B.Graph (operation op keep) (selectArgs e op keep a) (selectResult e op keep x) ↔ E.graph op keep a x
+
+/-- Read relation agreement at the tuple type in the selected signature. -/
+theorem EvaluationMatches.relation_cast {E : RestrictedEvaluation U X} {B : Structure (signature U)}
+    {e : CarrierEquiv U X B.carrier} (agreement : EvaluationMatches E B e) (r : Rel U)
+    (a : Assignment X (P.signature.relInputs r.val)) :
+    B.relation r (cast (congrArg (Assignment B.carrier) (signature_relInputs r).symm)
+      (selectAssignment e (relationInputs r.val r.property) a)) ↔ E.relation r.val r.property a :=
+  agreement.relation r.val r.property a
+
+/-- Read domain agreement at the tuple type in the selected signature. -/
+theorem EvaluationMatches.domain_cast {E : RestrictedEvaluation U X} {B : Structure (signature U)}
+    {e : CarrierEquiv U X B.carrier} (agreement : EvaluationMatches E B e) (p : Partial U)
+    (a : Assignment X (P.signature.partialArity p.val).inputs) :
+    B.partialDomain p (cast (congrArg (Assignment B.carrier) (signature_partialInputs p).symm)
+      (selectAssignment e (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) a)) ↔
+      E.domain p.val p.property a :=
+  agreement.domain p.val p.property a
 
 namespace EvaluationMatches
 

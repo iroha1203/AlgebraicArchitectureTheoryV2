@@ -2269,7 +2269,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 -- Public constructor, comparison and example theorems used without unfolding their definitions.
 #shigure_assert_standard_axioms_of [
   -- CoefficientReading
+  CoefficientReading.selectedPoint_apply,
+  CoefficientReading.LocalPointRule.agreesWith_iff,
   CoefficientReading.LocalPointRule.agreesOnNative_iff,
+  -- ContextDescentExamples
+  Chapter3.OmittedLaw.different_ordinary_arrows_no_match_heq,
   -- ContextExamples
   Chapter3.OmittedLaw.applySymbol_graphAt,
   -- ContextGluing
@@ -2277,17 +2281,29 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Match.localView_eq_pullback,
   DeclarationContext.Match.glue_obj_eq,
   DeclarationContext.Match.glue_carrier_eq,
+  DeclarationContext.Match.glue_obj,
   -- ContextGluingMaps
   DeclarationContext.Match.arrowView_apply,
+  -- ContextMatching
+  DeclarationContext.Match.project_obj,
+  DeclarationContext.Match.project_map,
   -- ContextModels
   DeclarationContext.Models.onSort_homMk,
   -- ContextMorphisms
   ContextStructure.Hom.cast_onSort,
   ContextStructure.Hom.restrictOnSort_apply,
+  -- ContextOrderedExamples
+  Chapter3.OrderedRestriction.positions_unchanged_heq,
   -- ContextOrdinaryDescent
   DeclarationCover.ordinaryAssemble_eq,
+  DeclarationCover.ordinaryAssemble_piece_heq,
+  DeclarationCover.existsUnique_ordinary_assemble_heq,
   -- ContextOrdinaryMatching
+  DeclarationContext.OrdinaryMatch.project_obj,
+  DeclarationContext.OrdinaryMatch.project_map,
+  DeclarationContext.OrdinaryMatch.map_heq_of_endpoints,
   DeclarationContext.OrdinaryMatch.readObj_pieceModel,
+  DeclarationContext.OrdinaryMatch.readFunctor_obj,
   DeclarationContext.OrdinaryMatch.readFunctor_project,
   DeclarationContext.OrdinaryMatch.writeFunctor_project,
   DeclarationContext.OrdinaryMatch.writeFunctor_obj_pieceModel,
@@ -2298,6 +2314,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.graphRuleName_quantityTotality,
   Declaration.graphRuleName_graphImpliesDomain,
   Declaration.graphRuleName_domainImpliesGraph,
+  -- ContextReading
+  Reading.selectedStructure_eq,
   -- ContextSelectedCategories
   DeclarationContext.Selected.readFunctor_obj,
   DeclarationContext.Selected.readFunctor_carrier_eq,
@@ -2305,6 +2323,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.writeFunctor_carrier_eq,
   DeclarationContext.Selected.modelRestriction_eq,
   -- ContextSelectedEquations
+  DeclarationContext.Selected.selectWritten_context,
+  DeclarationContext.Selected.selectWritten_result,
   DeclarationContext.Selected.selectWritten_terms_kept,
   DeclarationContext.Selected.selectWritten_left,
   DeclarationContext.Selected.selectWritten_right,
@@ -2314,11 +2334,15 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.ambientAssignment_apply,
   DeclarationContext.Selected.selectAssignment_cons_cast,
   DeclarationContext.Selected.graph_select_congr,
+  DeclarationContext.Selected.EvaluationMatches.relation_cast,
+  DeclarationContext.Selected.EvaluationMatches.domain_cast,
   -- ContextSelectedMorphisms
   DeclarationContext.Selected.readOnSort_apply,
   DeclarationContext.Selected.writeOnSort_apply,
   -- ContextSelectedPresentation
+  DeclarationContext.Selected.presentation_signature,
   DeclarationContext.Selected.presentation_law_statement,
+  DeclarationContext.Selected.presentation_law_cast,
   DeclarationContext.Selected.presentation_ringEquation,
   -- ContextSelectedProofs
   DeclarationContext.Selected.theory_law,
@@ -2376,6 +2400,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedVocabulary
   DeclarationContext.Selected.context_nil,
   DeclarationContext.Selected.context_cons,
+  DeclarationContext.Selected.context_cons_cons,
+  DeclarationContext.Selected.arity_inputs,
+  DeclarationContext.Selected.arity_output,
+  DeclarationContext.Selected.signature_relInputs,
+  DeclarationContext.Selected.signature_partialInputs,
   DeclarationContext.Selected.operation_total,
   DeclarationContext.Selected.operation_partialOp,
   DeclarationContext.Selected.operation_quantity,
@@ -2453,7 +2482,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.partial_domainSort_mem_dependsOn,
   Declaration.partial_domainSymbol_mem_dependsOn,
   DeclarationContext.retainsRingSupport_iff,
+  -- DeclarationFragments
+  DeclarationContext.FiniteFragment.existsUnique_map_heq,
   -- DerivationLemmas
+  Renaming.append_nil,
+  Renaming.append_there,
   Renaming.shift_cons_comp,
   -- Derivations
   NamedOrderedEquation.eq_of_written_eq,
@@ -2480,6 +2513,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Marked.Vocabulary.LinearityLaw.symbol_add,
   Marked.Vocabulary.LinearityLaw.symbol_smul,
   -- PreservationExamples
+  Chapter1.ResidualTransport.paddedPresentation_equality_statement,
+  Chapter1.ResidualTransport.paddedPresentation_equality_role,
   Chapter1.ResidualTransport.paddedPresentation_ring_isSome,
   Chapter1.ResidualTransport.paddedPresentation_ring_axiomNames,
   -- Reading
@@ -2543,6 +2578,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   PrimitivePresentation.lawAttachments_equation,
   PrimitivePresentation.lawAttachments_ring_of_none,
   PrimitivePresentation.lawAttachments_proof_of_additional,
+  -- Signature
+  Renaming.cast_context_apply,
+  Renaming.cast_target_apply,
+  Renaming.cast_there_target,
+  Renaming.cast_here_target,
+  Assignment.cast_context_apply,
   -- StructureMaps
   StructureMap.cast_onSort,
   -- Substitution
@@ -2575,6 +2616,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Term.reindexedApp_rfl,
   Term.reindexedApp_congr,
   TypedTotal.term_eq_reindexedApp,
+  TypedTotal.term_cast_inputs,
   Formula.termGraph_congr_arity
 ]
 

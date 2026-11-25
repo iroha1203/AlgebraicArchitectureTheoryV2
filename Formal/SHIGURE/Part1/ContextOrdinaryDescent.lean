@@ -32,13 +32,16 @@ theorem ordinaryRead_project (i : cover.Index) :
 /-- The components of the restriction to a cover are the ordinary reducts. -/
 theorem ordinaryRead_obj (X : Model (Selected.theory U)) (i : cover.Index) :
     (cover.ordinaryRead.obj X).pieceModel i = (Selected.modelRestriction (cover.subset i)).obj X :=
-  Functor.congr_obj (cover.ordinaryRead_project i) X
+  (OrdinaryMatch.project_obj i (cover.ordinaryRead.obj X)).symm.trans
+    (Functor.congr_obj (cover.ordinaryRead_project i) X)
 
 /-- The arrow read at each piece is its usual ordinary reduct. -/
 theorem ordinaryRead_map {A B : Model (Selected.theory U)} (f : A ⟶ B) (i : cover.Index) :
-    (show OrdinaryMatch.Hom _ _ from cover.ordinaryRead.map f).pieceMap i =
-      (Selected.modelRestriction (cover.subset i)).map f :=
-  eq_of_heq (Functor.hcongr_hom (cover.ordinaryRead_project i) f)
+    (show OrdinaryMatch.Hom _ _ from cover.ordinaryRead.map f).pieceMap i ≍
+      (Selected.modelRestriction (cover.subset i)).map f := by
+  have projected := Functor.hcongr_hom (cover.ordinaryRead_project i) f
+  simp only [Functor.comp_map] at projected
+  exact (OrdinaryMatch.project_map i (cover.ordinaryRead.map f)).symm.trans projected
 
 /-- Restricting then gluing is the identity on the ordinary global model category. -/
 theorem ordinaryRead_comp_glue :
@@ -110,25 +113,38 @@ theorem ordinaryAssemble_read {A B : Model (Selected.theory U)}
   rw [h]
   simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl, Category.id_comp, Category.comp_id]
 
+/-- The restriction of the assembled arrow recovers each local component across the identified endpoints. -/
+theorem ordinaryAssemble_piece_heq {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) (i : cover.Index) :
+    (Selected.modelRestriction (cover.subset i)).map (cover.ordinaryAssemble f) ≍ f.pieceMap i :=
+  (cover.ordinaryRead_map (cover.ordinaryAssemble f) i).symm.trans
+    (heq_of_eq (congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) (cover.ordinaryAssemble_read f)))
+
 /-- A piece of the assembled ordinary arrow is exactly its original local component. -/
 theorem ordinaryAssemble_piece {A B : Model (Selected.theory U)}
     (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) (i : cover.Index) :
     (Selected.modelRestriction (cover.subset i)).map (cover.ordinaryAssemble f) = f.pieceMap i :=
-  (cover.ordinaryRead_map (cover.ordinaryAssemble f) i).symm.trans
-    (congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) (cover.ordinaryAssemble_read f))
+  eq_of_heq (cover.ordinaryAssemble_piece_heq f i)
 
-/-- Theorem 3.5 for arbitrary compatible arrows of the ordinary local models. -/
-theorem existsUnique_ordinary_assemble {A B : Model (Selected.theory U)}
+/-- Theorem 3.5 with the equalities of the local endpoint types left explicit. -/
+theorem existsUnique_ordinary_assemble_heq {A B : Model (Selected.theory U)}
     (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) :
-    ∃! h : A ⟶ B, ∀ i, (Selected.modelRestriction (cover.subset i)).map h = f.pieceMap i := by
-  refine ⟨cover.ordinaryAssemble f, cover.ordinaryAssemble_piece f, fun h components => ?_⟩
+    ∃! h : A ⟶ B, ∀ i, (Selected.modelRestriction (cover.subset i)).map h ≍ f.pieceMap i := by
+  refine ⟨cover.ordinaryAssemble f, cover.ordinaryAssemble_piece_heq f, fun h components => ?_⟩
   have matching : cover.ordinaryRead.map h = f :=
-    OrdinaryMatch.Hom.ext fun i => (cover.ordinaryRead_map h i).trans (components i)
+    OrdinaryMatch.Hom.ext fun i => eq_of_heq ((cover.ordinaryRead_map h i).trans (components i))
   rw [cover.ordinaryAssemble_eq]
   rw [← matching]
   change h = _ ≫ (cover.ordinaryRead ⋙ cover.ordinaryGlue).map h ≫ _
   rw [Functor.congr_hom cover.ordinaryRead_comp_glue h]
   simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl, Category.id_comp, Category.comp_id]
+
+/-- Theorem 3.5 for arbitrary compatible arrows of the ordinary local models. -/
+theorem existsUnique_ordinary_assemble {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) :
+    ∃! h : A ⟶ B, ∀ i, (Selected.modelRestriction (cover.subset i)).map h = f.pieceMap i := by
+  obtain ⟨h, components, unique⟩ := cover.existsUnique_ordinary_assemble_heq f
+  exact ⟨h, fun i => eq_of_heq (components i), fun g same => unique g (fun i => heq_of_eq (same i))⟩
 
 /-- Ordinary assembly takes the tuple of local identities to the global identity. -/
 theorem ordinaryAssemble_id (A : Model (Selected.theory U)) :

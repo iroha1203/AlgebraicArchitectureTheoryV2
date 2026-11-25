@@ -24,6 +24,12 @@ namespace SHIGURE.Reading
 
 open DeclarationContext
 
+private theorem holds_cast_structure {S Q : Signature.{u}} (same : S = Q)
+    (law : Law S) (A : Structure Q) :
+    law.Holds (cast (congrArg Structure same.symm) A) ↔ (cast (congrArg Law same) law).Holds A := by
+  cases same
+  rfl
+
 variable (reading : Reading.{u, v, w, x})
 
 /-- The presentation of the reading's selected declarations. -/
@@ -32,7 +38,15 @@ noncomputable abbrev selectedPresentation : PrimitivePresentation.{u} :=
 
 /-- Interpret the selected signature in the structure carried by the reading. -/
 noncomputable def selectedStructure : Structure reading.selectedPresentation.signature :=
-  Selected.readStructure (ContextStructure.ofStructure reading.context reading.structureData)
+  cast (congrArg Structure (Selected.presentation_signature (U := reading.context)).symm)
+    (Selected.readStructure (ContextStructure.ofStructure reading.context reading.structureData))
+
+/-- The structure of the selected reading is the restriction along its selected signature. -/
+theorem selectedStructure_eq :
+    reading.selectedStructure =
+      cast (congrArg Structure (Selected.presentation_signature (U := reading.context)).symm)
+        (Selected.readStructure (ContextStructure.ofStructure reading.context reading.structureData)) :=
+  rfl
 
 /-- A retained Law's exact selected text holds precisely when its original text holds in the reading. -/
 theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
@@ -41,7 +55,8 @@ theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
   let original := reading.presentation.laws.statement name.val
   let kept := Declaration.lawBody_subset_of_mem name.property
   let A := ContextStructure.ofStructure reading.context reading.structureData
-  rw [Selected.presentation_law_statement]
+  rw [selectedStructure_eq, holds_cast_structure (Selected.presentation_signature (U := reading.context)),
+    Selected.presentation_law_cast]
   exact ((Selected.readStructure_matches A).law_iff original kept).trans
     (ContextStructure.ofStructure_satisfies_iff reading.context reading.structureData original kept)
 

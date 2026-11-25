@@ -450,6 +450,12 @@ def selectedPoint (reading : CoefficientReading U A Γ) (i : reading.selection.s
         (reading.selection.selected.sort i) :=
   reading.realizePoint _ ⟨i, rfl⟩
 
+/-- The selected point applies the realization at the position recorded by the selection. -/
+theorem selectedPoint_apply (reading : CoefficientReading U A Γ) (i : reading.selection.selected.Index)
+    (x : A.carrier (reading.selection.selected.sort i)) :
+    reading.selectedPoint i x = reading.realizePoint _ ⟨i, rfl⟩ x :=
+  rfl
+
 /-- Realize the tuple at the selected inputs. -/
 def selectedTuple (reading : CoefficientReading U A Γ) (e : reading.selection.used.Values A.carrier) :
     reading.selection.selected.Values (reading.scheme.structureOf reading.algebra reading.realization).carrier :=
@@ -505,6 +511,19 @@ def LocalPointRule.AgreesWith {W : DeclarationContext P} (rule : LocalPointRule 
     rule X Y (reading.selection.selected.sort i) (supported i) =
       some (fun x => cast (targetAgree.carrier_eq _ (supported i))
         (reading.selectedPoint i (cast (sourceAgree.carrier_eq _ (supported i)).symm x)))
+
+/-- The local rule agrees when it gives the selected point on every identified pair of structures. -/
+theorem LocalPointRule.agreesWith_iff {W : DeclarationContext P} (rule : LocalPointRule W)
+    (reading : CoefficientReading U A Γ) (inside : W.declarations ⊆ U.declarations)
+    (supported : ∀ i, Declaration.sort (reading.selection.selected.sort i) ∈ W.declarations) :
+    rule.AgreesWith reading inside supported ↔
+      ∀ (i : reading.selection.selected.Index) (X Y : RestrictedStructure W)
+        (sourceAgree : ((RestrictedStructure.restrict U A).restrictWithin inside).Agrees X)
+        (targetAgree : ((reading.scheme.structureOf reading.algebra reading.realization).restrictWithin inside).Agrees Y),
+        rule X Y (reading.selection.selected.sort i) (supported i) =
+          some (fun x => cast (targetAgree.carrier_eq _ (supported i))
+            (reading.selectedPoint i (cast (sourceAgree.carrier_eq _ (supported i)).symm x))) :=
+  Iff.rfl
 
 /-- A native point recipe can use a local rule only if every native input with the same
 retained source and realized structures computes that rule. -/
