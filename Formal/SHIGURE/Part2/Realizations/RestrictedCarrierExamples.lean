@@ -131,8 +131,7 @@ def threeStatePermutationMode (base : CoefficientRing) :
   admissible _ _ := True
   Native := PUnit
   nativeStates _ _ := Fin 3
-  pointCarrier _ _ := permutationRule.pointObject
-  nullaryRead _ _ _ := 𝟙 _
+  nativePointSource _ _ := permutationRule.pointObject
   realizeNative _ _ := ()
   nativePoints _ _ _ x := ↾fun _ => x
   change _ _ := ()

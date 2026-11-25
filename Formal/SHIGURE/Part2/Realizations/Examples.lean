@@ -257,6 +257,37 @@ private def sameMarks : TensorStructure ℤ pointedSignature :=
 private def differentMarks : TensorStructure ℤ pointedSignature :=
   pointedStructure (ModuleCat.of ℤ ℤ) (fun b => if b then 0 else 1)
 
+/-- The designated point in the general API evaluates to the native tensor value. -/
+theorem integer_nullaryPoint_value (A : TensorStructure ℤ pointedSignature) (b : Bool) :
+    tensorPointEquiv (A.carrier ())
+        ((tensorMode integers pointedTheory).nullaryPoint integerAlgebra A b rfl) = A.designated b rfl := by
+  change (markedElementExpr ℤ b).eval A (1 : ℤ) = A.designated b rfl
+  exact markedElementExpr_at_one A b
+
+/-- Sending each tuple to zero cannot give tests that determine the input maps. -/
+theorem integer_tensor_tuple_tests_not_zero
+    (tests : StructureInputPoints (tensorStructureRule ℤ pointedSignature fullDomainScope)) :
+    ¬ ∀ P, tests.tuplePoint P [] sameMarks.carrier (fun i => nomatch i.2) = ModuleCat.ofHom (R := ℤ) 0 := by
+  intro h
+  let rule := tensorStructureRule ℤ pointedSignature fullDomainScope
+  let f := (rule.nullaryInputIso sameMarks.carrier).inv
+  have hf : f = ModuleCat.ofHom (R := ℤ) 0 := tests.tuplePoint_ext [] sameMarks.carrier (by
+    intro P p
+    have hp : p = fun i => nomatch i.2 := by
+      funext i
+      exact nomatch i.2
+    subst p
+    rw [h P]
+    apply ModuleCat.hom_ext
+    ext x
+    change f.hom 0 = (0 : ℤ)
+    exact map_zero _)
+  let x : ∀ i : TensorPosition ([] : List Unit), sameMarks.carrier i.1 := fun i => nomatch i.2
+  have h₁ := congrArg (fun g => g.hom (PiTensorProduct.tprod ℤ x)) hf
+  change TensorRealization.inputTensorUnit ℤ sameMarks.carrier (PiTensorProduct.tprod ℤ x) = 0 at h₁
+  rw [TensorRealization.inputTensorUnit_tprod] at h₁
+  exact one_ne_zero h₁
+
 /-- The same nonzero integer element in both operations satisfies the written tensor Law. -/
 theorem integer_equal_marks_model :
     (tensorMode integers pointedTheory).modelProperty integerAlgebra sameMarks :=
@@ -276,10 +307,16 @@ theorem integer_zero_map_not_preserving_marks :
     ¬ (tensorStructureRule ℤ pointedSignature fullDomainScope).Preserves
       (A := sameMarks) (B := sameMarks) (fun _ => ModuleCat.ofHom 0) := by
   intro h
-  let f := tensorStructureHomEquiv pointedSignature fullDomainScope sameMarks sameMarks
-    ⟨fun _ => ModuleCat.ofHom 0, h⟩
-  have hz := f.preserves_designated false rfl
-  exact zero_ne_one (show (0 : ℤ) = 1 from hz)
+  let mode := tensorMode integers pointedTheory
+  let p := mode.nullaryPoint integerAlgebra sameMarks false rfl
+  have hp : p ≫ ModuleCat.ofHom (R := ℤ) 0 = p :=
+    (mode.nullaryPoint_preservation_iff (R := integerAlgebra) (A := sameMarks) (B := sameMarks)
+      (fun _ => ModuleCat.ofHom (R := ℤ) 0) false rfl).mp (h.total false)
+  apply zero_ne_one (α := ℤ)
+  calc
+    (0 : ℤ) = tensorPointEquiv (sameMarks.carrier ()) (p ≫ ModuleCat.ofHom (R := ℤ) 0) := rfl
+    _ = tensorPointEquiv (sameMarks.carrier ()) p := congrArg (tensorPointEquiv (sameMarks.carrier ())) hp
+    _ = (1 : ℤ) := integer_nullaryPoint_value sameMarks false
 
 /-- A coefficient rule cannot send the designated integer 1 to zero under the identity map. -/
 theorem integer_mark_not_erased (rule : TensorCoefficientRule pointedSignature) :

@@ -378,8 +378,7 @@ def copyingMode (base : CoefficientRing.{u}) (T : Theory.{u}) :
   admissible _ := IsZariskiSplit T
   Native := Structure T.signature
   nativeStates A := A.carrier
-  pointCarrier R _ := (copyingStructureRule T.signature R.scalars.spec).pointObject
-  nullaryRead _ _ _ := 𝟙 _
+  nativePointSource R _ := (copyingStructureRule T.signature R.scalars.spec).pointObject
   realizeNative R := constantStructure R.scalars.spec
   nativePoints R A s x := (copyingPointEquiv ((constantStructure R.scalars.spec A).carrier s)).symm
     (nativeState R.scalars.spec (Over.mk (𝟙 R.scalars.spec)) x)

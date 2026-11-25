@@ -57,25 +57,21 @@ structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Realizati
   Native : Type (u + 1)
   /-- The original states at each sort, which are the input to the native point map. -/
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
-  /-- The source object of the native designated points at this sort. -/
-  pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : (rule R).Ambient
-  /-- A nullary primitive supplies a designated point through the mode's point source. -/
-  nullaryRead (R : CoefficientAlgebra base) (op : T.signature.Total)
-    (_ : (T.signature.totalArity op).inputs = []) :
-    pointCarrier R (T.signature.totalArity op).output ⟶ (rule R).pointObject
+  /-- The test object used to realize a native state of this sort. -/
+  nativePointSource (R : CoefficientAlgebra base) (s : T.signature.SortType) : (rule R).Ambient
   /-- The rule for realizing a native input at the chosen coefficients. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Object R
   /-- The correspondence of native and realized states. -/
   nativePoints (R : CoefficientAlgebra base) (A : Native) (s : T.signature.SortType) :
-    nativeStates A s → (pointCarrier R s ⟶ (rule R).view.obj ((rule R).carrier (realizeNative R A) s))
+    nativeStates A s → (nativePointSource R s ⟶ (rule R).view.obj ((rule R).carrier (realizeNative R A) s))
   /-- Transport the primitive structure along a coefficient map. -/
   change {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S) :
     Object R → Object (R.extend f)
-  /-- The state map induced by the change of coefficients. -/
+  /-- The change of coefficients on points read from the native-state test objects. -/
   changePoints {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S)
     (A : Object R) (s : T.signature.SortType) :
-    (pointCarrier R s ⟶ (rule R).view.obj ((rule R).carrier A s)) →
-      (pointCarrier (R.extend f) s ⟶
+    (nativePointSource R s ⟶ (rule R).view.obj ((rule R).carrier A s)) →
+      (nativePointSource (R.extend f) s ⟶
         (rule (R.extend f)).view.obj ((rule (R.extend f)).carrier (change f A) s))
   /-- Interpretation of each required Law of the selected theory. -/
   holds (R : CoefficientAlgebra base) (A : Object R) (statement : T.Statement) : Prop
@@ -85,16 +81,39 @@ namespace CoefficientRealizationMode
 variable {base : CoefficientRing.{u}} {T : RealizationTheory.{u}}
 variable (mode : CoefficientRealizationMode base T)
 
-/-- Designated points are actual maps to the realized carrier. -/
+/-- A designated point is a map from the point object representing the mode's unit. -/
 abbrev Points (R : CoefficientAlgebra base) (A : mode.Object R) (s : T.signature.SortType) :=
-  mode.pointCarrier R s ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
+  (mode.rule R).pointObject ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
 
 /-- The value of a nullary primitive is a point of its declared output sort. -/
 def nullaryPoint (R : CoefficientAlgebra base) (A : mode.Object R) (op : T.signature.Total)
     (h : (T.signature.totalArity op).inputs = []) : mode.Points R A (T.signature.totalArity op).output :=
   let rule := mode.rule R
-  mode.nullaryRead R op h ≫ (rule.nullaryInputIso (rule.carrier A)).hom ≫
+  (rule.nullaryInputIso (rule.carrier A)).hom ≫
     eqToHom (congrArg (fun Γ => (rule.input Γ).obj (rule.carrier A)) h.symm) ≫ rule.total A op
+
+/-- The nullary preservation square is equivalent to preserving the actual designated point. -/
+theorem nullaryPoint_preservation_iff {R : CoefficientAlgebra base} {A B : mode.Object R}
+    (f : ∀ s, (mode.rule R).carrier A s ⟶ (mode.rule R).carrier B s) (op : T.signature.Total)
+    (h : (T.signature.totalArity op).inputs = []) :
+    let rule := mode.rule R
+    rule.total A op ≫ rule.view.map (f _) = (rule.input _).map f ≫ rule.total B op ↔
+      mode.nullaryPoint R A op h ≫ rule.view.map (f _) = mode.nullaryPoint R B op h := by
+  let rule := mode.rule R
+  let transport := fun X : mode.Object R =>
+    eqToHom (congrArg (fun Γ => (rule.input Γ).obj (rule.carrier X)) h.symm)
+  have natural : transport A ≫ (rule.input (T.signature.totalArity op).inputs).map f =
+      (rule.input []).map f ≫ transport B :=
+    (eqToHom_naturality (fun Γ => (rule.input Γ).map f) h.symm).symm
+  have compare : ((rule.nullaryInputIso (rule.carrier A)).hom ≫ transport A) ≫
+        (rule.input (T.signature.totalArity op).inputs).map f =
+      (rule.nullaryInputIso (rule.carrier B)).hom ≫ transport B := by
+    rw [Category.assoc, natural, ← Category.assoc, rule.nullaryInputIso_natural]
+  change (_ = _) ↔ (_ = _)
+  rw [← cancel_epi ((rule.nullaryInputIso (rule.carrier A)).hom ≫ transport A)]
+  rw [← Category.assoc _ ((rule.input (T.signature.totalArity op).inputs).map f), compare]
+  simp only [nullaryPoint, Category.assoc, transport]
+  exact Iff.rfl
 
 /-- A structural morphism maps designated points by composition with its carrier arrow. -/
 def mapPoints {R : CoefficientAlgebra base} {A B : (mode.rule R).Category}

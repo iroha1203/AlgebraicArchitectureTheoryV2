@@ -352,10 +352,9 @@ def tensorModeOfPresentation (base : CoefficientRing.{u}) (T : RealizationTheory
   nativeStates A s :=
     letI := base.ring
     A.carrier s
-  pointCarrier S _ :=
+  nativePointSource S _ :=
     letI := S.scalars.ring
     (tensorStructureRule S.scalars.Carrier T.signature scope).pointObject
-  nullaryRead _ _ _ := 𝟙 _
   realizeNative S := rule.change S.fromBase
   nativePoints S A s x :=
     letI := S.scalars.ring
