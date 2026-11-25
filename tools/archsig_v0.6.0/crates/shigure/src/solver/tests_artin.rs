@@ -506,4 +506,68 @@ fn artin_z_nonfree_sublattice_quotient_torsion_is_exact() {
     assert!(!bc_zero.abstract_tensor_nonzero);
     assert!(bc_zero.target_image_is_zero);
     assert!(bc_zero.source_dr_generators.is_empty());
+    // F5: Z 上の冪零商は体上の局所 Artin 代数族と明示区別される
+    assert_eq!(
+        out_zero.artin.as_ref().unwrap().test_ring_family,
+        "general_coeff_nilpotent_quotient"
+    );
+}
+
+/// F2 回帰: Z 上 `composite_stage` で第 2 段 `extra_laws` が基点で零にならない場合、
+/// 誤って `nu_v = 1` を返さず `ApplicabilityConditionNotMet` で沈黙すること。
+#[test]
+fn f2_artin_z_composite_stage_silences_on_nonvanishing_stage2_base_point() {
+    let task = validate_artin_task(ArtinTaskSpec {
+        name: "z_stage2_bad_base".into(),
+        coeff_domain: CoeffDomain::Z,
+        obs_vars: vec!["t".into()],
+        obs_relations: vec![],
+        aux_defs: vec![],
+        extra_laws: vec![np("t2", pow(sv("t"), 2))],
+        base_point: vec![("t".into(), cz(0))],
+        max_order: 3,
+        max_artin_dim: None,
+        composite_stage: Some(CompositeStageSpec {
+            aux_defs: vec![],
+            extra_laws: vec![np("t_minus_1", sub(sv("t"), cz(1)))],
+        }),
+        base_change: None,
+        non_noetherian_infinite: false,
+        provenance: prov(vec![MathClause::G141F6]),
+    })
+    .unwrap();
+    let out = solve_artin_task(&task);
+    assert!(matches!(
+        out.verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+}
+
+/// F7 回帰: 空観測 chart（`obs_vars = []`, `extra_laws = []`）での体上 base_change が
+/// 不要な `ArtinOrderOutOfScope` にならないこと。
+#[test]
+fn f7_artin_field_empty_chart_base_change_succeeds() {
+    let task = validate_artin_task(ArtinTaskSpec {
+        name: "empty_chart_bc".into(),
+        coeff_domain: CoeffDomain::Q,
+        obs_vars: vec![],
+        obs_relations: vec![],
+        aux_defs: vec![],
+        extra_laws: vec![],
+        base_point: vec![],
+        max_order: 2,
+        max_artin_dim: None,
+        composite_stage: None,
+        base_change: Some(BaseChangeSpec {
+            target_domain: CoeffDomain::Q,
+            test_order: Some(1),
+        }),
+        non_noetherian_infinite: false,
+        provenance: prov(vec![MathClause::G141F8]),
+    })
+    .unwrap();
+    let out = solve_artin_task(&task);
+    assert_eq!(out.verdict, Verdict::Established);
+    let bc = out.artin.as_ref().unwrap().base_change.as_ref().unwrap();
+    assert!(bc.target_image_is_zero);
 }

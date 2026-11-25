@@ -21,10 +21,10 @@ use crate::ir::result_phase4::{
 use crate::ir::term::PolyExpr;
 use crate::solver::lift::CoreLiftField;
 use crate::solver::lift_common::{
-    apply_m_shift, apply_rp_subset_shift, check_cover_support_closure,
-    compare_raw_diff_to_residuals, concat_vecs, eval_var_coords_generic, expand_named_polys,
-    expand_subset_delta, format_subset_m_map, format_subset_rp_map, format_var_map,
-    map_lift_algebra_error, r_action_matrix_field, reevaluate_laws_in_rp, write_block,
+    apply_m_shift, apply_rp_subset_shift, check_cover_support_closure, concat_vecs,
+    eval_var_coords_generic, expand_named_polys, expand_subset_delta, format_subset_m_map,
+    format_subset_rp_map, format_var_map, map_lift_algebra_error, r_action_matrix_field,
+    reevaluate_laws_in_rp, write_block,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -186,9 +186,13 @@ where
             .chain((0..param_names.len()).map(|k| Poly::var(vars.len(), n + k, z.clone())))
             .collect();
         for a in 0..l {
-            let pulled = obs_law_polys[a]
-                .substitute(&subst_vec)
-                .map_err(map_lift_algebra_error)?;
+            let pulled = if subst_vec.is_empty() {
+                Poly::constant(vars.len(), obs_law_polys[a].constant_value())
+            } else {
+                obs_law_polys[a]
+                    .substitute(&subst_vec)
+                    .map_err(map_lift_algebra_error)?
+            };
             let cofactors =
                 express_in_ideal_field(&pulled, law_polys, vars, max_pairs).map_err(|detail| {
                     SilenceReason::ApplicabilityConditionNotMet {
@@ -302,7 +306,7 @@ where
         let matched = if relative_obstruction_is_zero {
             ext.r_prime().is_zero_elem(&raw_val)
         } else {
-            compare_raw_diff_to_residuals(&raw_val, law_polys, &eval_full, ext, rr.negated)
+            compare_raw_diff_in_fu_field(&raw_val, rr.negated, r, &fu, &rel_cocycle, ext)
         };
         (Some(ext.r_prime().format_elem(&raw_val)), Some(matched))
     } else {
@@ -333,14 +337,14 @@ pub(crate) fn compute_declaration_cover_field<C, FE>(
     param_vals_r: &[Vec<C>],
     ambient_lift_rp: &[Vec<C>],
     param_vals_rp: &[Vec<C>],
-    rel_cone: Option<&mut RelativeConeResult>,
+    rel_cone: Option<&RelativeConeResult>,
     expand_expr: &FE,
 ) -> Result<DeclarationCoverResult, SilenceReason>
 where
     C: FieldCoeff,
     FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
 {
-    let (support_closed, unclosed_observations) = check_cover_support_closure(cov);
+    let (support_closed, unclosed_observations) = check_cover_support_closure(cov, &spec.laws);
     let Some(cech) = &cov.two_context_cech else {
         return Ok(DeclarationCoverResult {
             support_closed,
@@ -460,37 +464,13 @@ where
         apply_m_shift(ext, ambient_lift_rp, &right_delta).map_err(map_lift_algebra_error)?;
 
     let mut diff_map = BTreeMap::new();
-    let mut diff_elems = Vec::new();
     for (sv, &idx) in cech.shared_vars.iter().zip(&shared_indices) {
         let d = ext.r_prime().sub(&right_lift[idx], &left_lift[idx]);
         diff_map.insert(sv.clone(), ext.r_prime().format_elem(&d));
-        diff_elems.push(d);
     }
 
     let matches_relative_obstruction = rel_cone
-        .as_ref()
         .map(|rc| rc.relative_obstruction_is_zero != cech_class_nonzero);
-
-    if let (Some(rc), Some(rel_spec)) = (rel_cone, &spec.relative_reading)
-        && let Some(rr) = &rel_spec.raw_read_diff
-        && diff_elems.len() == 1
-    {
-        let param_names: Vec<String> = spec.ring_params.iter().map(|p| p.name.clone()).collect();
-        if let Ok((_, bindings)) = ExprBindings::from_slices(&spec.variables, &[], &param_names)
-            && let Ok(rr_poly) = expand_expr(&rr.expr, &bindings)
-        {
-            let full_right = concat_vecs(&right_lift, param_vals_rp);
-            if let Ok(raw_val) = ext.r_prime().eval_poly(&rr_poly, &full_right) {
-                let target = if rr.negated {
-                    ext.r_prime().neg(&diff_elems[0])
-                } else {
-                    diff_elems[0].clone()
-                };
-                rc.raw_read_diff_value = Some(ext.r_prime().format_elem(&raw_val));
-                rc.raw_read_diff_signed_match = Some(raw_val == target);
-            }
-        }
-    }
 
     Ok(DeclarationCoverResult {
         support_closed,
@@ -818,6 +798,46 @@ fn align_ambient_to_obs_field<C: FieldCoeff>(
     }
 }
 
+
+fn compare_raw_diff_in_fu_field<C: FieldCoeff>(
+    raw_val: &[C],
+    negated: bool,
+    num_laws: usize,
+    fu: &CochainComplex<C>,
+    rel_cocycle: &[C],
+    ext: &SquareZeroExtension<C>,
+) -> bool {
+    let target_rp = if negated {
+        ext.r_prime().neg(raw_val)
+    } else {
+        raw_val.to_vec()
+    };
+    let Ok(target_m) = ext.extract_kernel_coords_field(&target_rp) else {
+        return false;
+    };
+    let dm = ext.kernel_dim();
+    let z = ext.r_prime().zero_coeff.zero_like();
+    let Some(i0) = (0..num_laws).find(|&i| {
+        let mut iota = vec![z.clone(); fu.dim1()];
+        for k in 0..dm {
+            iota[i * dm + k] = target_m[k].clone();
+        }
+        matches!(
+            solve_affine_field(fu.d0(), &iota, fu.dim0(), &z),
+            Ok(AffineSolutionField::Inconsistent { .. })
+        )
+    }) else {
+        return false;
+    };
+    let mut diff = rel_cocycle.to_vec();
+    for k in 0..dm {
+        diff[i0 * dm + k] = diff[i0 * dm + k].sub_ref(&target_m[k]);
+    }
+    matches!(
+        solve_affine_field(fu.d0(), &diff, fu.dim0(), &z),
+        Ok(AffineSolutionField::Consistent { .. })
+    )
+}
 
 pub(crate) fn express_in_ideal_field<C: FieldCoeff>(
     pulled: &Poly<C>,

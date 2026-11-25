@@ -36,7 +36,9 @@ pub(crate) struct CoreLiftZ {
     residual_in_m_str: Vec<String>,
     residual_cocycle_verified: bool,
     h0_dim: usize,
+    h0_torsion: Vec<BigInt>,
     h1_dim: usize,
+    h1_torsion: Vec<BigInt>,
     h0_basis_str: Vec<Vec<String>>,
     obstruction_class_coords: Vec<String>,
     obstruction_is_zero: bool,
@@ -193,7 +195,7 @@ pub(crate) fn solve_lift_z(
         }
     };
 
-    let mut relative_cone = if let Some(rel_spec) = &spec.relative_reading {
+    let relative_cone = if let Some(rel_spec) = &spec.relative_reading {
         match compute_relative_cone_z(
             spec,
             rel_spec,
@@ -226,7 +228,7 @@ pub(crate) fn solve_lift_z(
             &param_vals_r,
             &ambient_lift_rp,
             &param_vals_rp,
-            relative_cone.as_mut(),
+            relative_cone.as_ref(),
         ) {
             Ok(dc) => Some(dc),
             Err(reason) => {
@@ -270,6 +272,20 @@ pub(crate) fn solve_lift_z(
                     );
                 }
             };
+        if let Err(reason) = verify_base_laws(
+            &red_spec.reference_laws,
+            &ref_polys,
+            &base_pt_r,
+            &param_vals_r,
+            &ext,
+        ) {
+            checks.push(ApplicabilityCheck::failed(
+                "reference_laws_satisfied_at_base_point",
+                MathClause::G141E2,
+                reason.code(),
+            ));
+            return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+        }
         match run_core_lift_z(
             &spec.variables,
             &ref_polys,
@@ -284,8 +300,10 @@ pub(crate) fn solve_lift_z(
                 ref_h0_dim: ref_core.h0_dim,
                 ref_h1_dim: ref_core.h1_dim,
                 ref_obstruction_is_zero: ref_core.obstruction_is_zero,
-                h0_matches: core.h0_dim == ref_core.h0_dim,
-                h1_matches: core.h1_dim == ref_core.h1_dim,
+                h0_matches: core.h0_dim == ref_core.h0_dim
+                    && core.h0_torsion == ref_core.h0_torsion,
+                h1_matches: core.h1_dim == ref_core.h1_dim
+                    && core.h1_torsion == ref_core.h1_torsion,
                 obstruction_matches: core.obstruction_is_zero == ref_core.obstruction_is_zero,
             }),
             Err(reason) => {
@@ -464,7 +482,9 @@ fn run_core_lift_z(
         residual_in_m_str,
         residual_cocycle_verified: coc.is_cocycle,
         h0_dim: coh.h0.free_rank,
+        h0_torsion: coh.h0.torsion_invariants,
         h1_dim: coh.h1.free_rank,
+        h1_torsion: coh.h1.torsion_invariants,
         h0_basis_str,
         obstruction_class_coords,
         obstruction_is_zero,

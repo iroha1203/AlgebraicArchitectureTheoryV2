@@ -16,14 +16,15 @@ use crate::ir::result_phase4::{
 };
 use crate::ir::term::CoeffDomain;
 use crate::solver::artin::{
-    OrderDetection, TEST_RING_FAMILY, artin_outcome, artin_undetermined,
-    compute_syntactic_degree_bound, detect_order_field, detection_nu, eliminate_stage,
-    eliminate_stage_from, eval_base_point, expand_polys, map_artin_err, opt_min, unpack_detection,
-    verify_base_point_vanishing,
+    OrderDetection, artin_outcome, artin_undetermined, compute_syntactic_degree_bound,
+    detect_order_field, detection_nu, eliminate_stage, eliminate_stage_from, eval_base_point,
+    expand_polys, map_artin_err, opt_min, unpack_detection, verify_base_point_vanishing,
 };
 use num_bigint::{BigInt, BigUint};
 use num_traits::{One, Zero};
 use std::collections::BTreeMap;
+
+const Z_TEST_RING_FAMILY: &str = "general_coeff_nilpotent_quotient";
 
 pub(crate) fn solve_artin_z(
     spec: &ArtinTaskSpec,
@@ -169,6 +170,11 @@ pub(crate) fn solve_artin_z(
                 );
             }
         };
+        if let Err(reason) =
+            verify_base_point_vanishing(&[], &eliminated2, &base_pt, &[], &stage2.extra_laws)
+        {
+            return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+        }
         let mut a1_rels = obs_rels.clone();
         a1_rels.extend(eliminated1.iter().cloned());
         let det_v = match detect_order_z(
@@ -243,7 +249,7 @@ pub(crate) fn solve_artin_z(
     };
 
     let detail = ArtinOutcomeDetail {
-        test_ring_family: TEST_RING_FAMILY.to_owned(),
+        test_ring_family: Z_TEST_RING_FAMILY.to_owned(),
         is_free_observation_chart: is_free,
         eliminated_residuals,
         syntactic_degree_bound,
@@ -316,7 +322,8 @@ fn detect_order_z(
             }
             prev_dim = monos.len();
         } else {
-            let cols = build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r);
+            let cols = build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r)
+                .map_err(map_artin_err)?;
             let mat = cols_to_mat(&cols, monos.len());
             let snf = smith_normal_form_z(&mat, cols.len()).map_err(map_artin_err)?;
             for g in &shifted_extra {
@@ -390,7 +397,9 @@ fn is_certified_in_z_ideal(g: &Poly<BigInt>, rels: &[Poly<BigInt>], max_dim: usi
         for m in mul_monos {
             let mut mp = Poly::zero(d, BigInt::zero());
             mp.add_term(m, BigInt::one());
-            let prod = mp.mul(h);
+            let Ok(prod) = mp.checked_mul(h) else {
+                return false;
+            };
             if prod.total_degree() <= g.total_degree() && !prod.is_zero() {
                 cols.push(poly_to_z_vec(&prod, &mono_idx, target_monos.len()));
             }
@@ -441,13 +450,15 @@ fn compute_base_change_from_z(
         .collect::<Result<_, _>>()
         .map_err(map_artin_err)?;
 
-    let j_cols = build_z_ideal_matrix(&shifted_extra, &monos, &mono_idx, r);
+    let j_cols = build_z_ideal_matrix(&shifted_extra, &monos, &mono_idx, r)
+        .map_err(map_artin_err)?;
     let (dr_free_rank, dr_torsions, snf_io_opt) = if shifted_rels.is_empty() {
         let mat = cols_to_mat(&j_cols, monos.len());
         let snf = smith_normal_form_z(&mat, j_cols.len()).map_err(map_artin_err)?;
         (snf.rank, Vec::new(), None)
     } else {
-        let io_cols = build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r);
+        let io_cols = build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r)
+            .map_err(map_artin_err)?;
         let mut combined_cols = io_cols.clone();
         combined_cols.extend(j_cols.iter().cloned());
         let snf_io = smith_normal_form_z(&cols_to_mat(&io_cols, monos.len()), io_cols.len())
@@ -631,7 +642,7 @@ fn build_z_ideal_matrix(
     monos: &[Monomial],
     mono_idx: &BTreeMap<Monomial, usize>,
     max_deg: usize,
-) -> Vec<Vec<BigInt>> {
+) -> Result<Vec<Vec<BigInt>>, AlgebraError> {
     let dim = monos.len();
     let mut cols = Vec::new();
     for g in gens {
@@ -642,13 +653,13 @@ fn build_z_ideal_matrix(
         for m in monos {
             let mut m_poly = Poly::zero(m.num_vars(), BigInt::zero());
             m_poly.add_term(m.clone(), BigInt::one());
-            let prod = m_poly.mul(&g_trunc).truncate_degree(max_deg as u64);
+            let prod = m_poly.checked_mul(&g_trunc)?.truncate_degree(max_deg as u64);
             if !prod.is_zero() {
                 cols.push(poly_to_z_vec(&prod, mono_idx, dim));
             }
         }
     }
-    cols
+    Ok(cols)
 }
 
 fn cols_to_mat(cols: &[Vec<BigInt>], num_rows: usize) -> Vec<Vec<BigInt>> {

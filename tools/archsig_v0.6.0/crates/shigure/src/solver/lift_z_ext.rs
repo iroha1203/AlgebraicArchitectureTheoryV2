@@ -15,10 +15,9 @@ use crate::ir::result_phase4::{
 };
 use crate::ir::term::PolyExpr;
 use crate::solver::lift_common::{
-    apply_m_shift, apply_rp_subset_shift, check_cover_support_closure,
-    compare_raw_diff_to_residuals, concat_vecs, eval_var_coords_generic, expand_subset_delta,
-    format_subset_m_map, format_subset_rp_map, format_var_map, map_lift_algebra_error,
-    reevaluate_laws_in_rp, write_block,
+    apply_m_shift, apply_rp_subset_shift, check_cover_support_closure, concat_vecs,
+    eval_var_coords_generic, expand_subset_delta, format_subset_m_map, format_subset_rp_map,
+    format_var_map, map_lift_algebra_error, reevaluate_laws_in_rp, write_block,
 };
 use crate::solver::lift_z::CoreLiftZ;
 use num_bigint::BigInt;
@@ -109,10 +108,7 @@ pub(crate) fn compute_relative_cone_z(
     }
 
     let jac_rho = jacobian_polys(&reading_polys, vars.len()).map_err(map_lift_algebra_error)?;
-    let mut d0_fu = vec![vec![z.clone(); n * dm]; (r + m) * dm];
-    for (row_idx, row) in core.complex.d0().iter().enumerate() {
-        d0_fu[row_idx] = row.clone();
-    }
+    let mut j_rho = vec![vec![z.clone(); n * dm]; m * dm];
     for (a, jac_row) in jac_rho.iter().enumerate().take(m) {
         for (j, jac_entry) in jac_row.iter().enumerate().take(n) {
             let val_r = ext
@@ -120,8 +116,15 @@ pub(crate) fn compute_relative_cone_z(
                 .eval_poly(jac_entry, &base_full_r)
                 .map_err(map_lift_algebra_error)?;
             let block = r_action_matrix_z(ext, &val_r).map_err(map_lift_algebra_error)?;
-            write_block(&mut d0_fu, (r + a) * dm, j * dm, &block);
+            write_block(&mut j_rho, a * dm, j * dm, &block);
         }
+    }
+    let mut d0_fu = vec![vec![z.clone(); n * dm]; (r + m) * dm];
+    for (row_idx, row) in core.complex.d0().iter().enumerate() {
+        d0_fu[row_idx] = row.clone();
+    }
+    for (row_idx, row) in j_rho.iter().enumerate() {
+        d0_fu[r * dm + row_idx] = row.clone();
     }
     let q_dm = core.complex.dim2();
     let mut d1_fu = vec![vec![z.clone(); (r + m) * dm]; q_dm];
@@ -151,6 +154,11 @@ pub(crate) fn compute_relative_cone_z(
     let fu_coc = fu
         .check_h1_cocycle_z(&rel_cocycle)
         .map_err(map_lift_algebra_error)?;
+    if !fu_coc.is_cocycle {
+        return Err(SilenceReason::SyzygyOutOfScope {
+            detail: "Z relative cone cocycle verification failed".to_owned(),
+        });
+    }
     let relative_obstruction_is_zero = fu_coc.is_zero_in_z;
 
     let (restored_relative_lift, reevaluation) =
@@ -158,23 +166,58 @@ pub(crate) fn compute_relative_cone_z(
             let delta: Vec<BigInt> = witness_pos.iter().map(|v| -v).collect();
             let shifted =
                 apply_m_shift(ext, ambient_lift_rp, &delta).map_err(map_lift_algebra_error)?;
-            let reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
+            let mut reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
                 .map_err(map_lift_algebra_error)?;
-            (Some(format_var_map(&spec.variables, &shifted, ext.r_prime())), Some(reeval))
+            let shifted_full = concat_vecs(&shifted, param_vals_rp);
+            let mut obs_bad = Vec::new();
+            for (idx, (rp_poly, y_rp)) in reading_polys.iter().zip(&obs_lift_rp).enumerate() {
+                let got = ext
+                    .r_prime()
+                    .eval_poly(rp_poly, &shifted_full)
+                    .map_err(map_lift_algebra_error)?;
+                if got != *y_rp {
+                    obs_bad.push(format!(
+                        "{}={} (expected {})",
+                        rel.obs_vars[idx],
+                        ext.r_prime().format_elem(&got),
+                        ext.r_prime().format_elem(y_rp)
+                    ));
+                }
+            }
+            if !obs_bad.is_empty() {
+                reeval.matched = false;
+                reeval.detail = format!("{}; obs mismatch: {}", reeval.detail, obs_bad.join(", "));
+            } else {
+                reeval.detail = format!("{}; designated obs lift matched", reeval.detail);
+            }
+            (
+                Some(format_var_map(&spec.variables, &shifted, ext.r_prime())),
+                Some(reeval),
+            )
         } else {
             (None, None)
         };
 
     let (raw_read_diff_value, raw_read_diff_signed_match) = if let Some(rr) = &rel.raw_read_diff {
         let rr_poly = Poly::from_expr_z(&rr.expr, bindings).map_err(map_lift_algebra_error)?;
+        let eval_base = align_ambient_to_obs_z(
+            ambient_lift_rp,
+            &j_rho,
+            &reading_polys,
+            &obs_lift_rp,
+            param_vals_rp,
+            ext,
+        )
+        .unwrap_or_else(|| ambient_lift_rp.to_vec());
+        let eval_full = concat_vecs(&eval_base, param_vals_rp);
         let raw_val = ext
             .r_prime()
-            .eval_poly(&rr_poly, &lift_full_rp)
+            .eval_poly(&rr_poly, &eval_full)
             .map_err(map_lift_algebra_error)?;
         let matched = if relative_obstruction_is_zero {
             ext.r_prime().is_zero_elem(&raw_val)
         } else {
-            compare_raw_diff_to_residuals(&raw_val, law_polys, &lift_full_rp, ext, rr.negated)
+            compare_raw_diff_in_fu_z(&raw_val, rr.negated, r, &fu, &rel_cocycle, ext)
         };
         (Some(ext.r_prime().format_elem(&raw_val)), Some(matched))
     } else {
@@ -208,9 +251,9 @@ pub(crate) fn compute_declaration_cover_z(
     param_vals_r: &[Vec<BigInt>],
     ambient_lift_rp: &[Vec<BigInt>],
     param_vals_rp: &[Vec<BigInt>],
-    rel_cone: Option<&mut RelativeConeResult>,
+    rel_cone: Option<&RelativeConeResult>,
 ) -> Result<DeclarationCoverResult, SilenceReason> {
-    let (support_closed, unclosed_observations) = check_cover_support_closure(cov);
+    let (support_closed, unclosed_observations) = check_cover_support_closure(cov, &spec.laws);
     let Some(cech) = &cov.two_context_cech else {
         return Ok(DeclarationCoverResult {
             support_closed,
@@ -506,8 +549,18 @@ pub(crate) fn compute_affine_repair_z(
             } => {
                 let shifted =
                     apply_rp_subset_shift(ambient_lift_rp, &allowed_indices, dp, &particular, ext);
-                let reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
+                let mut reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
                     .map_err(map_lift_algebra_error)?;
+                let mut torsor_maps = Vec::with_capacity(kernel_basis.len());
+                for kb in &kernel_basis {
+                    let shifted_k = apply_rp_subset_shift(&shifted, &allowed_indices, dp, kb, ext);
+                    let re_k = reevaluate_laws_in_rp(law_polys, &shifted_k, param_vals_rp, ext)
+                        .map_err(map_lift_algebra_error)?;
+                    if !re_k.matched {
+                        reeval.matched = false;
+                    }
+                    torsor_maps.push(format_subset_rp_map(&aff.allowed_vars, kb, dp, ext));
+                }
                 Ok(AffineRepairResult {
                     finite_displacement: true,
                     allowed_vars: aff.allowed_vars.clone(),
@@ -518,10 +571,7 @@ pub(crate) fn compute_affine_repair_z(
                         dp,
                         ext,
                     )),
-                    torsor_basis: kernel_basis
-                        .iter()
-                        .map(|kb| format_subset_rp_map(&aff.allowed_vars, kb, dp, ext))
-                        .collect(),
+                    torsor_basis: torsor_maps,
                     reevaluation: Some(reeval),
                 })
             }
@@ -562,17 +612,27 @@ pub(crate) fn compute_affine_repair_z(
             );
             let shifted =
                 apply_m_shift(ext, ambient_lift_rp, &full_delta).map_err(map_lift_algebra_error)?;
-            let reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
+            let mut reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
                 .map_err(map_lift_algebra_error)?;
+            let mut torsor_maps = Vec::with_capacity(kernel_basis.len());
+            for kb in &kernel_basis {
+                let kb_full =
+                    expand_subset_delta(spec.variables.len(), &allowed_indices, dm, kb, &z);
+                let shifted_k =
+                    apply_m_shift(ext, &shifted, &kb_full).map_err(map_lift_algebra_error)?;
+                let re_k = reevaluate_laws_in_rp(law_polys, &shifted_k, param_vals_rp, ext)
+                    .map_err(map_lift_algebra_error)?;
+                if !re_k.matched {
+                    reeval.matched = false;
+                }
+                torsor_maps.push(format_subset_m_map(&aff.allowed_vars, kb, ext));
+            }
             Ok(AffineRepairResult {
                 finite_displacement: false,
                 allowed_vars: aff.allowed_vars.clone(),
                 repair_exists: true,
                 particular_delta: Some(format_subset_m_map(&aff.allowed_vars, &particular, ext)),
-                torsor_basis: kernel_basis
-                    .iter()
-                    .map(|kb| format_subset_m_map(&aff.allowed_vars, kb, ext))
-                    .collect(),
+                torsor_basis: torsor_maps,
                 reevaluation: Some(reeval),
             })
         }
@@ -609,5 +669,68 @@ pub(crate) fn r_action_matrix_z(
         }
     }
     Ok(block)
+}
+
+fn align_ambient_to_obs_z(
+    ambient_lift_rp: &[Vec<BigInt>],
+    j_rho: &[Vec<BigInt>],
+    reading_polys: &[Poly<BigInt>],
+    obs_lift_rp: &[Vec<BigInt>],
+    param_vals_rp: &[Vec<BigInt>],
+    ext: &SquareZeroExtension<BigInt>,
+) -> Option<Vec<Vec<BigInt>>> {
+    let full = concat_vecs(ambient_lift_rp, param_vals_rp);
+    let mut neg_w = Vec::new();
+    for (rp_poly, y_rp) in reading_polys.iter().zip(obs_lift_rp) {
+        let got = ext.r_prime().eval_poly(rp_poly, &full).ok()?;
+        let diff = ext.r_prime().sub(y_rp, &got);
+        neg_w.extend(ext.extract_kernel_coords_z(&diff).ok()?);
+    }
+    let num_cols = ambient_lift_rp.len() * ext.kernel_dim();
+    match solve_affine_z(j_rho, &neg_w, num_cols).ok()? {
+        AffineSolutionZ::Consistent { particular, .. } => {
+            apply_m_shift(ext, ambient_lift_rp, &particular).ok()
+        }
+        AffineSolutionZ::Inconsistent { .. } => None,
+    }
+}
+
+fn compare_raw_diff_in_fu_z(
+    raw_val: &[BigInt],
+    negated: bool,
+    num_laws: usize,
+    fu: &CochainComplex<BigInt>,
+    rel_cocycle: &[BigInt],
+    ext: &SquareZeroExtension<BigInt>,
+) -> bool {
+    let target_rp = if negated {
+        ext.r_prime().neg(raw_val)
+    } else {
+        raw_val.to_vec()
+    };
+    let Ok(target_m) = ext.extract_kernel_coords_z(&target_rp) else {
+        return false;
+    };
+    let dm = ext.kernel_dim();
+    let Some(i0) = (0..num_laws).find(|&i| {
+        let mut iota = vec![BigInt::zero(); fu.dim1()];
+        for k in 0..dm {
+            iota[i * dm + k] = target_m[k].clone();
+        }
+        matches!(
+            solve_affine_z(fu.d0(), &iota, fu.dim0()),
+            Ok(AffineSolutionZ::Inconsistent { .. })
+        )
+    }) else {
+        return false;
+    };
+    let mut diff = rel_cocycle.to_vec();
+    for k in 0..dm {
+        diff[i0 * dm + k] = &diff[i0 * dm + k] - &target_m[k];
+    }
+    matches!(
+        solve_affine_z(fu.d0(), &diff, fu.dim0()),
+        Ok(AffineSolutionZ::Consistent { .. })
+    )
 }
 

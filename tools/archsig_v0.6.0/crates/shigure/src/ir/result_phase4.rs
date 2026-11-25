@@ -321,7 +321,7 @@ impl LiftOutcomeDetail {
 /// 原始消去・全 Artin 試験・検出次数 `ν`・一般係数冪零商 base change の詳細出力（AC4）。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ArtinOutcomeDetail {
-    /// 試験対象環族の明示（常に `"all_local_artin_algebras_universal_quotient"`、F9）。
+    /// 試験対象環族の明示（体上では `"all_local_artin_algebras_universal_quotient"`、$\mathbb{Z}$ 上では `"general_coeff_nilpotent_quotient"`、F8–F9）。
     pub test_ring_family: String,
     pub is_free_observation_chart: bool,
     pub eliminated_residuals: Vec<String>,

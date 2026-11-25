@@ -472,10 +472,34 @@ pub(crate) fn compute_etale_descent(
 // 共通補助ヘルパ（lift_z からも参照）
 // =========================================================================
 
-pub(crate) fn check_cover_support_closure(cov: &DeclarationCoverSpec) -> (bool, Vec<String>) {
+pub(crate) fn check_cover_support_closure(
+    cov: &DeclarationCoverSpec,
+    laws: &[NamedPoly],
+) -> (bool, Vec<String>) {
+    let law_map: BTreeMap<&str, &NamedPoly> =
+        laws.iter().map(|l| (l.name.as_str(), l)).collect();
     let mut unclosed = Vec::new();
     for c in &cov.contexts {
         let allowed: BTreeSet<&str> = c.vars.iter().map(String::as_str).collect();
+        for law_name in &c.laws {
+            if let Some(law) = law_map.get(law_name.as_str()) {
+                let mut used = BTreeSet::new();
+                collect_state_vars(&law.expr, &mut used);
+                let outside: Vec<&str> = used
+                    .iter()
+                    .copied()
+                    .filter(|v| !allowed.contains(v))
+                    .collect();
+                if !outside.is_empty() {
+                    unclosed.push(format!(
+                        "{}.law:{}(references outside vars: {})",
+                        c.name,
+                        law.name,
+                        outside.join(", ")
+                    ));
+                }
+            }
+        }
         for obs in &c.observations {
             let mut used = BTreeSet::new();
             collect_state_vars(&obs.expr, &mut used);
@@ -579,30 +603,4 @@ pub(crate) fn format_subset_m_map<C: RingCoeff>(
             (name.clone(), s)
         })
         .collect()
-}
-
-
-pub(crate) fn compare_raw_diff_to_residuals<C: RingCoeff>(
-    raw_val: &[C],
-    law_polys: &[Poly<C>],
-    eval_full: &[Vec<C>],
-    ext: &SquareZeroExtension<C>,
-    negated: bool,
-) -> bool {
-    let mut nonzero = Vec::new();
-    for p in law_polys {
-        if let Ok(v) = ext.r_prime().eval_poly(p, eval_full)
-            && !ext.r_prime().is_zero_elem(&v)
-        {
-            nonzero.push(v);
-        }
-    }
-    nonzero.iter().any(|r| {
-        let target = if negated {
-            ext.r_prime().neg(r)
-        } else {
-            r.clone()
-        };
-        raw_val == target.as_slice()
-    })
 }

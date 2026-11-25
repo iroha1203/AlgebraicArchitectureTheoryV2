@@ -60,6 +60,8 @@ mod tests_extra;
 #[cfg(test)]
 mod tests_lift;
 #[cfg(test)]
+mod tests_lift_extra;
+#[cfg(test)]
 mod tests_observation;
 #[cfg(test)]
 mod tests_path;

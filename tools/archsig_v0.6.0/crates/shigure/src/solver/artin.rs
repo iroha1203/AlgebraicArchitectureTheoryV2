@@ -300,7 +300,7 @@ where
             &base_pt,
             spec.max_order,
             max_dim,
-            zero_coeff,
+            zero_coeff.clone(),
         ) {
             Ok(d) => d,
             Err(reason) => {
@@ -330,6 +330,7 @@ where
             &base_pt,
             detection_order_nu,
             max_dim,
+            zero_coeff,
         ) {
             Ok(r) => Some(r),
             Err(reason) => {
@@ -448,6 +449,7 @@ fn compute_base_change_from_field<C: FieldCoeff>(
     base_pt: &[C],
     source_nu: Option<usize>,
     max_dim: usize,
+    zero: C,
 ) -> Result<NilpotentBaseChangeResult, SilenceReason> {
     if bc.target_domain != spec.coeff_domain {
         return Err(SilenceReason::UnsupportedCoeffRing {
@@ -459,13 +461,6 @@ fn compute_base_change_from_field<C: FieldCoeff>(
         });
     }
     let r = bc.test_order.or(source_nu).unwrap_or(1);
-    let zero = base_pt
-        .first()
-        .map(RingCoeff::zero_like)
-        .or_else(|| eliminated.first().map(|p| p.zero_coeff().clone()))
-        .ok_or_else(|| SilenceReason::ArtinOrderOutOfScope {
-            detail: "cannot infer zero coefficient for empty observation chart".to_owned(),
-        })?;
     let q_r = LocalArtinQuotient::build(obs_order.clone(), obs_rels, base_pt, r, zero, max_dim)
         .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
             detail: e.to_string(),

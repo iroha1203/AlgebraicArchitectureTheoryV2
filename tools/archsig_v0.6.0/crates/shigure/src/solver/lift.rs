@@ -273,7 +273,7 @@ where
         }
     };
 
-    let mut relative_cone = if let Some(rel_spec) = &spec.relative_reading {
+    let relative_cone = if let Some(rel_spec) = &spec.relative_reading {
         match compute_relative_cone_field(
             spec,
             rel_spec,
@@ -313,7 +313,7 @@ where
             &param_vals_r,
             &ambient_lift_rp,
             &param_vals_rp,
-            relative_cone.as_mut(),
+            relative_cone.as_ref(),
             expand_expr,
         ) {
             Ok(dc) => Some(dc),
@@ -357,6 +357,20 @@ where
                 );
             }
         };
+        if let Err(reason) = verify_base_laws(
+            &red_spec.reference_laws,
+            &ref_polys,
+            &base_pt_r,
+            &param_vals_r,
+            &ext,
+        ) {
+            checks.push(ApplicabilityCheck::failed(
+                "reference_laws_satisfied_at_base_point",
+                MathClause::G141E2,
+                reason.code(),
+            ));
+            return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+        }
         match run_core_lift_field(
             &spec.variables,
             &ref_polys,
