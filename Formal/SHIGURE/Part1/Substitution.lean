@@ -341,6 +341,16 @@ theorem substitute_disj (θ : Substitution sig Γ Δ) (p q : Formula sig Γ) :
 theorem substitute_ex (θ : Substitution sig Γ Δ) {s : sig.SortType} (p : Formula sig (s :: Γ)) :
     p.ex.substitute θ = (p.substitute θ.lift).ex := rfl
 
+/-- Transporting a substitution and its input formula transports the result in the target context. -/
+theorem substitute_cast_context {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (θ : Substitution sig Γ Δ) (p : Formula sig Γ) :
+    cast (congrArg (Formula sig) target) (p.substitute θ) =
+      (cast (congrArg (Formula sig) source) p).substitute
+        (@cast (Substitution sig Γ Δ) (Substitution sig Γ' Δ') (congrArg₂ (Substitution sig) source target) θ) := by
+  cases source
+  cases target
+  rfl
+
 /-- Formula substitution preserves satisfaction at any evaluated assignment. -/
 theorem holds_substitute_of_evaluatesAt (p : Formula sig Γ) (A : Structure sig) :
     ∀ {Δ : List sig.SortType} (θ : Substitution sig Γ Δ) (e : Assignment A.carrier Δ)

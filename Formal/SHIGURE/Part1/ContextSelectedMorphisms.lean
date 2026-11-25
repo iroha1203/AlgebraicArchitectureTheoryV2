@@ -123,14 +123,20 @@ variable {A B : ContextStructure U}
 /-- The same point map can be indexed by the actual retained sort names. -/
 def readOnSort (f : ContextStructure.Hom A B) (s : SortName U) :
     (readStructure A).carrier s → (readStructure B).carrier s :=
-  f.onSort s.val s.property
+  fun x => readCarrierEquiv B s.val s.property (f.onSort s.val s.property
+    ((readCarrierEquiv A s.val s.property).symm x))
+
+/-- A read point map uses the two retained carrier equivalences and the original point map. -/
+theorem readOnSort_apply (f : ContextStructure.Hom A B) (s : SortName U) (x : (readStructure A).carrier s) :
+    readOnSort f s x = readCarrierEquiv B s.val s.property (f.onSort s.val s.property
+      ((readCarrierEquiv A s.val s.property).symm x)) :=
+  rfl
 
 /-- Reading a carrier commutes with the map at every retained sort. -/
 private theorem readOnSort_equiv (f : ContextStructure.Hom A B) (s : P.signature.SortType)
     (keep : Declaration.sort s ∈ U.declarations) (x : A.carrier s) :
     readOnSort f ⟨s, keep⟩ (readCarrierEquiv A s keep x) = readCarrierEquiv B s keep (f.onSort s keep x) := by
-  rw [readCarrierEquiv_eq_refl, readCarrierEquiv_eq_refl]
-  rfl
+  rw [readOnSort_apply, Equiv.symm_apply_apply]
 
 /-- Transport the graph-preservation component of a context arrow to the
 selected signature for Proposition 3.2. The retained operation supplies the
@@ -184,8 +190,8 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
       exact preserved xs y held)
 
 /-- The read ordinary arrow preserves the same point map at each retained sort. -/
-theorem readStructureMap_onSort (f : ContextStructure.Hom A B) (s : SortName U) (x : A.carrier s.val) :
-    (readStructureMap f).onSort s x = f.onSort s.val s.property x :=
+theorem readStructureMap_onSort (f : ContextStructure.Hom A B) (s : SortName U) (x : (readStructure A).carrier s) :
+    (readStructureMap f).onSort s x = readOnSort f s x :=
   rfl
 
 variable {C D : Structure (signature U)}
@@ -198,9 +204,9 @@ noncomputable def writeOnSort (f : StructureMap C D) :
 /-- The written map in the comparison of Proposition 3.2 transports an
 original value through the two retained carrier equivalences and the original arrow. -/
 theorem writeOnSort_apply (f : StructureMap C D) (s : P.signature.SortType)
-    (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier C s) :
-    writeOnSort f s keep x = (extendedEquiv D s keep).symm
-      (f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x)) :=
+    (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
+    writeOnSort f s keep x = (writeCarrierEquiv D s keep).symm
+      (f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x)) :=
   rfl
 
 /-- The square of corresponding sort maps commutes. -/
@@ -227,7 +233,7 @@ noncomputable def writeStructureMap (f : StructureMap C D) : ContextStructure.Ho
 
 /-- The written arrow acts by the transported ordinary component. -/
 theorem writeStructureMap_onSort (f : StructureMap C D) (s : P.signature.SortType)
-    (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier C s) :
+    (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
     (writeStructureMap f).onSort s keep x = writeOnSort f s keep x :=
   rfl
 

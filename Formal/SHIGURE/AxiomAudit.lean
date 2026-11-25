@@ -2262,7 +2262,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 #shigure_assert_standard_axioms_of [
   Term.reindexedApp,
   RingEquation.Written.toOrdered,
-  DeclarationContext.Selected.writeCarrierEquiv
+  DeclarationContext.Selected.writeCarrierEquiv,
+  Derivation.cast_context
 ]
 
 -- Public constructor, comparison and example theorems used without unfolding their definitions.
@@ -2274,12 +2275,17 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextGluing
   DeclarationContext.Match.toPieceCarrier_apply,
   DeclarationContext.Match.localView_eq_pullback,
+  DeclarationContext.Match.glue_obj_eq,
+  DeclarationContext.Match.glue_carrier_eq,
   -- ContextGluingMaps
   DeclarationContext.Match.arrowView_apply,
   -- ContextModels
   DeclarationContext.Models.onSort_homMk,
   -- ContextMorphisms
+  ContextStructure.Hom.cast_onSort,
   ContextStructure.Hom.restrictOnSort_apply,
+  -- ContextOrdinaryDescent
+  DeclarationCover.ordinaryAssemble_eq,
   -- ContextOrdinaryMatching
   DeclarationContext.OrdinaryMatch.readObj_pieceModel,
   DeclarationContext.OrdinaryMatch.readFunctor_project,
@@ -2294,6 +2300,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.graphRuleName_domainImpliesGraph,
   -- ContextSelectedCategories
   DeclarationContext.Selected.readFunctor_obj,
+  DeclarationContext.Selected.readFunctor_carrier_eq,
+  DeclarationContext.Selected.writeFunctor_obj,
+  DeclarationContext.Selected.writeFunctor_carrier_eq,
+  DeclarationContext.Selected.modelRestriction_eq,
   -- ContextSelectedEquations
   DeclarationContext.Selected.selectWritten_terms_kept,
   DeclarationContext.Selected.selectWritten_left,
@@ -2302,14 +2312,19 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextSelectedEvaluation
   DeclarationContext.Selected.selectAssignment_apply,
   DeclarationContext.Selected.ambientAssignment_apply,
+  DeclarationContext.Selected.selectAssignment_cons_cast,
   DeclarationContext.Selected.graph_select_congr,
   -- ContextSelectedMorphisms
+  DeclarationContext.Selected.readOnSort_apply,
   DeclarationContext.Selected.writeOnSort_apply,
   -- ContextSelectedPresentation
+  DeclarationContext.Selected.presentation_law_statement,
   DeclarationContext.Selected.presentation_ringEquation,
+  -- ContextSelectedRoundtrip
+  DeclarationContext.Selected.read_write_value,
   -- ContextSelectedStructures
-  DeclarationContext.Selected.readCarrierEquiv_eq_refl,
   DeclarationContext.Selected.readStructure_carrier_eq,
+  DeclarationContext.Selected.readCarrierEquiv_eq_cast,
   DeclarationContext.Selected.readStructure_relation,
   DeclarationContext.Selected.readStructure_domain,
   DeclarationContext.Selected.readStructure_graph_total,
@@ -2337,6 +2352,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectFormula_ex,
   DeclarationContext.Selected.selectFormula_ex_cast,
   DeclarationContext.Selected.selectLaw_eq,
+  DeclarationContext.Selected.selectRenaming_lift_cast,
+  DeclarationContext.Selected.selectRenaming_there_cast,
+  DeclarationContext.Selected.selectFormula_openHead_cast,
+  DeclarationContext.Selected.selectFormula_there_cast,
   DeclarationContext.Selected.selectLaw_congr,
   -- ContextSelectedTerms
   DeclarationContext.Selected.termReferences_var,
@@ -2345,9 +2364,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.selectTerm_var,
   DeclarationContext.Selected.selectTerm_app,
   DeclarationContext.Selected.selectTerm_letBind,
+  DeclarationContext.Selected.selectTerm_letBind_cast,
   DeclarationContext.Selected.selectTerm_congr,
   DeclarationContext.Selected.termEq_support,
   DeclarationContext.Selected.selectSubstitution_at,
+  DeclarationContext.Selected.selectSubstitution_lift_cast,
   -- ContextSelectedVocabulary
   DeclarationContext.Selected.context_nil,
   DeclarationContext.Selected.context_cons,
@@ -2357,6 +2378,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.operation_arity_of_eq,
   DeclarationContext.Selected.selectTypedTotal_operation,
   DeclarationContext.Selected.selectVar_here,
+  DeclarationContext.Selected.selectVar_cast_here,
   DeclarationContext.Selected.selectVar_there,
   DeclarationContext.Selected.selectVar_cast_there,
   DeclarationContext.Selected.ambientVar_here,
@@ -2369,6 +2391,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RestrictedEvaluation.structural_iff,
   RestrictedEvaluation.structural_rule,
   ContextStructure.evaluates_iff,
+  -- Contexts
+  DeclarationCover.readFunctor_project,
   -- DeclarationContexts
   Declaration.sorts_eq_image,
   Declaration.sort_mem_sorts,
@@ -2518,6 +2542,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Term.substitute_var,
   Term.substitute_app,
   Term.substitute_letBind,
+  Formula.substitute_cast_context,
   OrderedEquation.substitute_eq,
   OrderedEquation.Written.toLaw_eq,
   RingEquation.Written.toOrdered_result,
@@ -2528,7 +2553,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Formula.rename_falsehood,
   Formula.holds_truth_iff,
   Formula.holds_falsehood_iff,
+  Formula.holds_cast_context,
+  Formula.cast_conj_context,
+  Formula.rename_cast_context,
   Term.totalValue_total,
+  Term.graphAt_cast_context,
   TotalSymbol.operation_ordinary,
   TotalSymbol.operation_quantity,
   Term.reindexedApp_rfl,

@@ -24,19 +24,21 @@ noncomputable def ordinaryGlue : OrdinaryMatch cover.piece ⥤ Model (Selected.t
 
 /-- Projection to each piece is exactly the ordinary model restriction functor. -/
 theorem ordinaryRead_project (i : cover.Index) :
-    cover.ordinaryRead ⋙ OrdinaryMatch.project i = Selected.modelRestriction (cover.subset i) :=
-  rfl
+    cover.ordinaryRead ⋙ OrdinaryMatch.project i = Selected.modelRestriction (cover.subset i) := by
+  rw [ordinaryRead, Selected.modelRestriction_eq, Functor.assoc, Functor.assoc,
+    OrdinaryMatch.readFunctor_project, ← Functor.assoc cover.readFunctor (Match.project i),
+    cover.readFunctor_project]
 
 /-- The components of the restriction to a cover are the ordinary reducts. -/
 theorem ordinaryRead_obj (X : Model (Selected.theory U)) (i : cover.Index) :
     (cover.ordinaryRead.obj X).pieceModel i = (Selected.modelRestriction (cover.subset i)).obj X :=
-  rfl
+  Functor.congr_obj (cover.ordinaryRead_project i) X
 
 /-- The arrow read at each piece is its usual ordinary reduct. -/
 theorem ordinaryRead_map {A B : Model (Selected.theory U)} (f : A ⟶ B) (i : cover.Index) :
     (show OrdinaryMatch.Hom _ _ from cover.ordinaryRead.map f).pieceMap i =
       (Selected.modelRestriction (cover.subset i)).map f :=
-  rfl
+  eq_of_heq (Functor.hcongr_hom (cover.ordinaryRead_project i) f)
 
 /-- Restricting then gluing is the identity on the ordinary global model category. -/
 theorem ordinaryRead_comp_glue :
@@ -75,9 +77,11 @@ theorem existsUnique_ordinary_glue (A : OrdinaryMatch cover.piece) :
       (Selected.modelRestriction (cover.subset i)).obj X = A.pieceModel i := by
   refine ⟨cover.ordinaryGlue.obj A, ?_, ?_⟩
   · intro i
-    exact congrArg (fun B : OrdinaryMatch cover.piece => B.pieceModel i) (cover.ordinaryGlue_read A)
+    exact (cover.ordinaryRead_obj (cover.ordinaryGlue.obj A) i).symm.trans
+      (congrArg (fun B : OrdinaryMatch cover.piece => B.pieceModel i) (cover.ordinaryGlue_read A))
   · intro X h
-    have matching : cover.ordinaryRead.obj X = A := OrdinaryMatch.ext h
+    have matching : cover.ordinaryRead.obj X = A :=
+      OrdinaryMatch.ext fun i => (cover.ordinaryRead_obj X i).trans (h i)
     exact (Functor.congr_obj cover.ordinaryRead_comp_glue X).symm.trans
       (congrArg cover.ordinaryGlue.obj matching)
 
@@ -87,6 +91,13 @@ noncomputable def ordinaryAssemble {A B : Model (Selected.theory U)}
   eqToHom (Functor.congr_obj cover.ordinaryRead_comp_glue A).symm ≫
     cover.ordinaryGlue.map f ≫ eqToHom (Functor.congr_obj cover.ordinaryRead_comp_glue B)
 
+/-- An assembled map is the glued arrow transported along its two endpoint identifications. -/
+theorem ordinaryAssemble_eq {A B : Model (Selected.theory U)}
+    (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) :
+    cover.ordinaryAssemble f = eqToHom (Functor.congr_obj cover.ordinaryRead_comp_glue A).symm ≫
+      cover.ordinaryGlue.map f ≫ eqToHom (Functor.congr_obj cover.ordinaryRead_comp_glue B) :=
+  rfl
+
 /-- Reading the assembled ordinary arrow gives exactly the supplied matching arrow. -/
 theorem ordinaryAssemble_read {A B : Model (Selected.theory U)}
     (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) :
@@ -94,9 +105,7 @@ theorem ordinaryAssemble_read {A B : Model (Selected.theory U)}
   let R := cover.ordinaryRead
   let G := cover.ordinaryGlue
   have h := Functor.congr_hom cover.ordinaryGlue_comp_read (show R.obj A ⟶ R.obj B from f)
-  change R.map (eqToHom (Functor.congr_obj cover.ordinaryRead_comp_glue A).symm ≫ G.map f ≫
-    eqToHom (Functor.congr_obj cover.ordinaryRead_comp_glue B)) = f
-  simp only [Functor.map_comp, eqToHom_map]
+  simp only [ordinaryAssemble_eq, Functor.map_comp, eqToHom_map]
   change _ ≫ (G ⋙ R).map f ≫ _ = _
   rw [h]
   simp only [Functor.id_map, Category.assoc, eqToHom_trans_assoc, eqToHom_trans, eqToHom_refl, Category.id_comp, Category.comp_id]
@@ -105,7 +114,8 @@ theorem ordinaryAssemble_read {A B : Model (Selected.theory U)}
 theorem ordinaryAssemble_piece {A B : Model (Selected.theory U)}
     (f : OrdinaryMatch.Hom (cover.ordinaryRead.obj A) (cover.ordinaryRead.obj B)) (i : cover.Index) :
     (Selected.modelRestriction (cover.subset i)).map (cover.ordinaryAssemble f) = f.pieceMap i :=
-  congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) (cover.ordinaryAssemble_read f)
+  (cover.ordinaryRead_map (cover.ordinaryAssemble f) i).symm.trans
+    (congrArg (fun g : OrdinaryMatch.Hom _ _ => g.pieceMap i) (cover.ordinaryAssemble_read f))
 
 /-- Theorem 3.5 for arbitrary compatible arrows of the ordinary local models. -/
 theorem existsUnique_ordinary_assemble {A B : Model (Selected.theory U)}
@@ -113,8 +123,8 @@ theorem existsUnique_ordinary_assemble {A B : Model (Selected.theory U)}
     ∃! h : A ⟶ B, ∀ i, (Selected.modelRestriction (cover.subset i)).map h = f.pieceMap i := by
   refine ⟨cover.ordinaryAssemble f, cover.ordinaryAssemble_piece f, fun h components => ?_⟩
   have matching : cover.ordinaryRead.map h = f :=
-    OrdinaryMatch.Hom.ext components
-  unfold ordinaryAssemble
+    OrdinaryMatch.Hom.ext fun i => (cover.ordinaryRead_map h i).trans (components i)
+  rw [cover.ordinaryAssemble_eq]
   rw [← matching]
   change h = _ ≫ (cover.ordinaryRead ⋙ cover.ordinaryGlue).map h ≫ _
   rw [Functor.congr_hom cover.ordinaryRead_comp_glue h]

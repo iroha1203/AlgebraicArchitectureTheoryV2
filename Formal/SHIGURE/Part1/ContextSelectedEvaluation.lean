@@ -106,6 +106,15 @@ theorem selectAssignment_cons (e : CarrierEquiv U X Y) {Γ : List P.signature.So
     rw [selectAssignment_apply, ambientVar_there, Assignment.cons_there, Assignment.cons_there,
       selectAssignment_apply]
 
+/-- The selected assignment at a bound variable agrees with the explicit cons context. -/
+theorem selectAssignment_cons_cast (e : CarrierEquiv U X Y) {Γ : List P.signature.SortType}
+    {s : P.signature.SortType} (keepS : Declaration.sort s ∈ U.declarations)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (x : X s) (a : Assignment X Γ) :
+    cast (congrArg (Assignment Y) (context_cons s Γ (Declaration.sorts_cons_subset keepS keepΓ)))
+      (selectAssignment e (Declaration.sorts_cons_subset keepS keepΓ) (Assignment.cons x a)) =
+      Assignment.cons (s := (⟨s, keepS⟩ : SortName U)) (e s keepS x) (selectAssignment e keepΓ a) :=
+  selectAssignment_cons e keepS keepΓ x a
+
 /-- Moving an input tuple to the selected operation uses its selected arity. -/
 def selectArgs (e : CarrierEquiv U X Y) (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
@@ -186,7 +195,7 @@ theorem selectArgs_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) (g
     (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) (a : Assignment X op.arity.inputs) :
     selectArgs e op kept (mapAssignment f (operationInputs op kept) a) = selectArgs g op kept a := by
-  simp only [selectArgs, selectAssignment_mapCarrier e f g agree]
+  simp only [selectArgs_eq_cast, selectAssignment_mapCarrier e f g agree]
 
 /-- Transport the output side of the graph comparison in Proposition 3.2.
 The retained operation supplies its output support. The structure round trip
@@ -195,7 +204,7 @@ theorem selectResult_mapCarrier (e : CarrierEquiv U Y Z) (f : CarrierMap U X Y) 
     (agree : ∀ s keep x, e s keep (f s keep x) = g s keep x) (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
     selectResult e op kept (f _ (operationOutput op kept) x) = selectResult g op kept x := by
-  simp only [selectResult, agree]
+  simp only [selectResult_eq_cast, agree]
 
 end CarrierTransport
 
@@ -293,17 +302,21 @@ theorem formula_iff {Γ : List P.signature.SortType} (p : Formula P.signature Γ
     intro keep x
     let kept : Declaration.sort s ∈ U.declarations := keep (Declaration.boundSort_mem_formulaSupport p)
     let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport p.ex).trans keep
-    rw [selectFormula_ex, Formula.holds_ex, RestrictedEvaluation.holds_ex_iff]
+    let bound := Declaration.sorts_cons_subset kept free
+    let alignment := context_cons s Γ bound
+    rw [selectFormula_ex_cast, Formula.holds_ex, RestrictedEvaluation.holds_ex_iff]
     constructor
     · rintro ⟨y, truth⟩
-      refine ⟨(e s kept).symm y, (ih (existsSupport keep) _).1 ?_⟩
-      rw [selectAssignment_cons e kept free, Equiv.apply_symm_apply]
+      let preimage := (e s kept).symm y
+      refine ⟨preimage, (ih (existsSupport keep) _).1 ?_⟩
+      apply (Formula.holds_cast_context alignment _ B (selectAssignment e bound (Assignment.cons preimage x))).1
+      rw [selectAssignment_cons_cast e kept free, Equiv.apply_symm_apply]
       exact truth
     · rintro ⟨y, truth⟩
       refine ⟨e s kept y, ?_⟩
       have typed := (ih (existsSupport keep) (Assignment.cons y x)).2 truth
-      rw [selectAssignment_cons e kept free] at typed
-      exact typed
+      have moved := (Formula.holds_cast_context alignment _ B (selectAssignment e bound (Assignment.cons y x))).2 typed
+      rwa [selectAssignment_cons_cast e kept free] at moved
 
 /-- A supported Law has exactly the same input and conclusion tests in the selected signature. -/
 theorem law_iff (law : Law P.signature) (keep : Declaration.lawBody law ⊆ U.declarations) :

@@ -33,13 +33,6 @@ def selectRule : (rule : GraphAxiom P.signature) → Declaration.graphRuleName r
   | .graphImpliesDomain p, keep => .graphImpliesDomain ⟨p, by simpa only [Declaration.graphRuleName_graphImpliesDomain] using keep⟩
   | .domainImpliesGraph p, keep => .domainImpliesGraph ⟨p, by simpa only [Declaration.graphRuleName_domainImpliesGraph] using keep⟩
 
-/-- The selected variable map of an identity is an identity. -/
-theorem selectRenaming_id {Γ : List P.signature.SortType} (kept : Declaration.sorts Γ ⊆ U.declarations) :
-    (selectRenaming kept kept (fun i => i) : Renaming _ _) = (fun {_} i => i) := by
-  funext _ i
-  rw [selectRenaming_apply]
-  exact selectVar_ambientVar kept i
-
 /-- A selected variable map shifted by two head variables is the same double shift. -/
 theorem selectRenaming_there_there {Γ : List P.signature.SortType} {s t : P.signature.SortType}
     (keepS : Declaration.sort s ∈ U.declarations) (keepT : Declaration.sort t ∈ U.declarations)
@@ -202,9 +195,9 @@ private noncomputable def selectDerivationUsing {I J : Type u}
   | existsIntro p x =>
     let node := Derivation.existsIntro (T := namedTheory P.laws source) p x
     let body := existsSupport (derivationOf_result source node keep)
-    have lhs := selectFormula_openHead p x body (derivationOf_input source node keep)
-    erw [lhs, selectFormula_ex]
-    exact Derivation.existsIntro (T := namedTheory (laws U) target) (selectFormula p body) _
+    have lhs := selectFormula_openHead_cast p x body (derivationOf_input source node keep)
+    erw [lhs, selectFormula_ex_cast]
+    exact Derivation.existsIntro (T := namedTheory (laws U) target) _ _
   | @existsElim Γ s p c q child ih =>
     let node := Derivation.existsElim (T := namedTheory P.laws source) child
     let input := derivationOf_input source node keep
@@ -215,13 +208,12 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     let keepLeft := (Declaration.binarySupport_left (Declaration.formula_conj c p.ex)).trans input
     let keepInner := (Declaration.binarySupport_left
       (Declaration.formula_conj (c.rename (fun i => Var.there i)) p)).trans (derivationOf_input source child sub)
-    have lhs := selectFormula_there c keepLeft keepInner
-    have rhs := selectFormula_there q output (derivationOf_result source child sub)
-    erw [lhs, rhs] at inner
-    rw [selectFormula_conj, selectFormula_ex]
-    let keepRight := (Declaration.binarySupport_right (Declaration.formula_conj c p.ex)).trans input
-    exact Derivation.existsElim (T := namedTheory (laws U) target)
-      (p := selectFormula p (existsSupport keepRight)) inner
+    let alignment := context_cons s Γ ((Declaration.sorts_subset_formulaSupport _).trans keepInner)
+    have transported := Derivation.cast_context alignment inner
+    rw [Formula.cast_conj_context alignment, selectFormula_there_cast c keepLeft keepInner,
+      selectFormula_there_cast q output (derivationOf_result source child sub)] at transported
+    rw [selectFormula_conj, selectFormula_ex_cast]
+    exact Derivation.existsElim (T := namedTheory (laws U) target) transported
   | eqRefl x =>
     rw [selectFormula_truth, selectFormula_atom, selectAtomic_eq]
     exact Derivation.eqRefl (T := namedTheory (laws U) target) _
@@ -240,10 +232,10 @@ private noncomputable def selectDerivationUsing {I J : Type u}
     let left := Formula.atom (Atomic.eq x y)
     let keepInput := (Declaration.binarySupport_right (Declaration.formula_conj left
       (p.rename (Renaming.openHead x)))).trans (derivationOf_input source node keep)
-    have lhs := selectFormula_openHead p x body keepInput
-    have rhs := selectFormula_openHead p y body out
+    have lhs := selectFormula_openHead_cast p x body keepInput
+    have rhs := selectFormula_openHead_cast p y body out
     erw [lhs, rhs]
-    exact Derivation.eqSubst (T := namedTheory (laws U) target) (selectFormula p body) _ _
+    exact Derivation.eqSubst (T := namedTheory (laws U) target) _ _ _
 
 /-- Select the original inference tree as an ordinary derivation from the retained required Laws. -/
 noncomputable def selectDerivation {Γ : List P.theory.signature.SortType} {p q : Formula P.theory.signature Γ}

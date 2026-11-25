@@ -211,6 +211,13 @@ theorem selectLaw_eq (law : Law P.signature) (keep : Declaration.lawBody law ⊆
         selectFormula law.conclusion ((Declaration.formulaSupport_conclusion_subset_lawBody law).trans keep)⟩ :=
   rfl
 
+/-- The selected variable map of an identity is an identity. -/
+theorem selectRenaming_id {Γ : List P.signature.SortType} (kept : Declaration.sorts Γ ⊆ U.declarations) :
+    (selectRenaming kept kept (fun i => i) : Renaming _ _) = (fun {_} i => i) := by
+  funext _ i
+  rw [selectRenaming_apply]
+  exact selectVar_ambientVar kept i
+
 /-- Retyping two successive renamings retypes their composite. -/
 theorem selectRenaming_comp {Γ Δ Ξ : List P.signature.SortType}
     (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
@@ -234,6 +241,17 @@ theorem selectRenaming_lift {Γ Δ : List P.signature.SortType} {s : P.signature
   | here => simp only [selectRenaming_apply, ambientVar_here, Renaming.lift_here, selectVar_here]
   | there i => simp only [selectRenaming_apply, ambientVar_there, Renaming.lift_there, selectVar_there]
 
+/-- The selected lifted renaming agrees with the lift on both explicit cons contexts. -/
+theorem selectRenaming_lift_cast {Γ Δ : List P.signature.SortType} {s : P.signature.SortType}
+    (kept : Declaration.sort s ∈ U.declarations)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
+    (ρ : Renaming Γ Δ) :
+    @cast _ _ (congrArg₂ Renaming (context_cons s Γ (Declaration.sorts_cons_subset kept keepΓ))
+      (context_cons s Δ (Declaration.sorts_cons_subset kept keepΔ)))
+      (selectRenaming (Declaration.sorts_cons_subset kept keepΓ) (Declaration.sorts_cons_subset kept keepΔ) ρ.lift) =
+      (Renaming.lift (selectRenaming keepΓ keepΔ ρ) (s := (⟨s, kept⟩ : SortName U)) : Renaming _ _) :=
+  selectRenaming_lift kept keepΓ keepΔ ρ
+
 /-- Select a weakening into a context extended by one new sort. -/
 theorem selectRenaming_there {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (kept : Declaration.sort s ∈ U.declarations) (keepΓ : Declaration.sorts Γ ⊆ U.declarations) :
@@ -241,6 +259,19 @@ theorem selectRenaming_there {Γ : List P.signature.SortType} {s : P.signature.S
       (fun {_} i => Var.there (t := (⟨s, kept⟩ : SortName U)) i) := by
   funext t i
   simp only [selectRenaming_apply, selectVar_there, selectVar_ambientVar]
+
+/-- Transport the target of a selected variable map across a newly inserted head. -/
+theorem selectRenaming_there_cast {Γ Δ : List P.signature.SortType} {s : P.signature.SortType}
+    (kept : Declaration.sort s ∈ U.declarations)
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (keepΔ : Declaration.sorts Δ ⊆ U.declarations)
+    (ρ : Renaming Γ Δ) :
+    @cast _ _ (congrArg (Renaming (context Γ keepΓ))
+      (context_cons s Δ (Declaration.sorts_cons_subset kept keepΔ)))
+      (selectRenaming keepΓ (Declaration.sorts_cons_subset kept keepΔ) (fun i => .there (ρ i))) =
+      (fun {_} i => Var.there (t := (⟨s, kept⟩ : SortName U)) (selectRenaming keepΓ keepΔ ρ i)) := by
+  rw [← selectRenaming_comp keepΓ keepΔ (Declaration.sorts_cons_subset kept keepΔ) ρ (fun i => .there i)]
+  exact congrArg (fun (shifted : Renaming (context Δ keepΔ) (context (s :: Δ) (Declaration.sorts_cons_subset kept keepΔ))) =>
+    fun {t} i => shifted (selectRenaming keepΓ keepΔ ρ (s := t) i)) (selectRenaming_there kept keepΔ)
 
 /-- Select the variable map that substitutes an existing variable for a new head. -/
 theorem selectRenaming_openHead {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -322,16 +353,20 @@ theorem selectFormula_rename {Γ : List P.signature.SortType} (p : Formula P.sig
       (hq ρ ((Declaration.binarySupport_right written).trans keep) ((Declaration.binarySupport_right moved).trans renamed))
   | @ex Γ s body ih =>
     intro Δ ρ keep renamed
-    simp only [Formula.rename_ex, selectFormula_ex] at renamed ⊢
+    simp only [Formula.rename_ex, selectFormula_ex_cast] at renamed ⊢
     let kept : Declaration.sort s ∈ U.declarations := keep (Declaration.boundSort_mem_formulaSupport body)
     let free : Declaration.sorts Γ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport body.ex).trans keep
     let target : Declaration.sorts Δ ⊆ U.declarations := (Declaration.sorts_subset_formulaSupport (body.rename ρ.lift).ex).trans renamed
     have inside := ih ρ.lift (existsSupport keep) (existsSupport renamed)
-    have underBinder := congrArg (fun r : Renaming
-        (context (s :: Γ) (Declaration.sorts_cons_subset kept free))
-        (context (s :: Δ) (Declaration.sorts_cons_subset kept target)) =>
-      (selectFormula body (existsSupport keep)).rename r) (selectRenaming_lift kept free target ρ)
-    exact congrArg Formula.ex (inside.trans underBinder)
+    let oldCtx := context_cons s Γ (Declaration.sorts_cons_subset kept free)
+    let newCtx := context_cons s Δ (Declaration.sorts_cons_subset kept target)
+    have transported := congrArg (cast (congrArg (Formula (signature U)) newCtx)) inside
+    rw [Formula.rename_cast_context oldCtx newCtx] at transported
+    let selected : SortName U := ⟨s, kept⟩
+    have lifted := congrArg (fun (rename : Renaming (selected :: context Γ free) (selected :: context Δ target)) =>
+      (cast (congrArg (Formula (signature U)) oldCtx) (selectFormula body (existsSupport keep))).rename rename)
+      (selectRenaming_lift_cast kept free target ρ)
+    exact congrArg Formula.ex (transported.trans lifted)
 
 /-- Selecting the substitution of a variable for an existential head preserves its position. -/
 theorem selectFormula_openHead {Γ : List P.signature.SortType} {s : P.signature.SortType}
@@ -359,6 +394,28 @@ theorem selectFormula_there {Γ : List P.signature.SortType} {s : P.signature.So
       (context (s :: Γ) (Declaration.sorts_cons_subset head free)) => (selectFormula p keep).rename r)
     (selectRenaming_there head free)
   exact (selectFormula_rename p (fun i => Var.there (t := s) i) keep after).trans changeMap
+
+/-- Opening a selected head uses the body transported to the explicit cons context. -/
+theorem selectFormula_openHead_cast {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (p : Formula P.signature (s :: Γ)) (x : Var Γ s) (keep : Declaration.formulaSupport p ⊆ U.declarations)
+    (after : Declaration.formulaSupport (p.rename (Renaming.openHead x)) ⊆ U.declarations) :
+    selectFormula (p.rename (Renaming.openHead x)) after =
+      (cast (congrArg (Formula (signature U)) (context_cons s Γ
+        ((Declaration.sorts_subset_formulaSupport p).trans keep))) (selectFormula p keep)).rename
+          (Renaming.openHead
+            (selectVar ((Declaration.sorts_subset_formulaSupport (p.rename (Renaming.openHead x))).trans after) x)) :=
+  selectFormula_openHead p x keep after
+
+/-- Weakening into the selected cons context keeps the explicit retained head sort. -/
+theorem selectFormula_there_cast {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (p : Formula P.signature Γ) (keep : Declaration.formulaSupport p ⊆ U.declarations)
+    (after : Declaration.formulaSupport (p.rename (fun i => Var.there (t := s) i)) ⊆ U.declarations) :
+    cast (congrArg (Formula (signature U)) (context_cons s Γ
+      ((Declaration.sorts_subset_formulaSupport _).trans after)))
+      (selectFormula (p.rename (fun i => Var.there (t := s) i)) after) =
+      (selectFormula p keep).rename (fun i => Var.there
+        (t := (⟨s, after (Declaration.sorts_subset_formulaSupport _ (Declaration.sort_mem_sorts List.mem_cons_self))⟩ : SortName U)) i) :=
+  selectFormula_there p keep after
 
 /-- An equality of written Laws identifies their selected Laws as well. -/
 theorem selectLaw_congr {p q : Law P.signature} (same : p = q)

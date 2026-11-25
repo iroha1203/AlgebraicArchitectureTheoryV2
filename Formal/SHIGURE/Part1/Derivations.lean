@@ -77,6 +77,12 @@ namespace Derivation
 
 variable {T : Theory.{u}} {Γ : List T.signature.SortType} {p q : Formula T.signature Γ}
 
+/-- Reindex both formulas of a derivation along the same context equality. -/
+def cast_context {Δ : List T.signature.SortType} (same : Γ = Δ) (d : Derivation T p q) :
+    Derivation T (cast (congrArg (Formula T.signature) same) p) (cast (congrArg (Formula T.signature) same) q) := by
+  cases same
+  exact d
+
 /-- Weaken by adding an unused variable to the context. -/
 def weaken {s : T.signature.SortType} (d : Derivation T p q) :
     Derivation T (p.rename (fun i => Var.there (t := s) i)) (q.rename (fun i => .there i)) :=

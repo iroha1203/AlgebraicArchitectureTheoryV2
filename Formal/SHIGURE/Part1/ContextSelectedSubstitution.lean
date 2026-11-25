@@ -200,15 +200,20 @@ theorem selectFormula_substitute {Γ : List P.signature.SortType} (p : Formula P
         ((Declaration.binarySupport_right moved).trans hSub))
   | @ex Γ s p ih =>
     intro Δ θ hΓ hΔ hθ hp hSub
-    simp only [Formula.substitute_ex, selectFormula_ex] at hSub ⊢
+    simp only [Formula.substitute_ex, selectFormula_ex_cast] at hSub ⊢
     let hs := hp (Declaration.boundSort_mem_formulaSupport p)
     let hΓ' := Declaration.sorts_cons_subset hs hΓ
     let hΔ' := Declaration.sorts_cons_subset hs hΔ
     have selected := ih (θ.lift (s := s)) hΓ' hΔ' (liftTermReferences θ hθ)
       (existsSupport hp) (existsSupport hSub)
-    exact congrArg (Formula.ex (sig := signature U)) (selected.trans
-      (congrArg (fun replacement => Formula.substitute replacement (selectFormula p (existsSupport hp)))
-        (selectSubstitution_lift θ hΓ hΔ hθ hs)))
+    have transported := congrArg (cast (congrArg (Formula (signature U)) (context_cons s Δ hΔ'))) selected
+    rw [Formula.substitute_cast_context (context_cons s Γ hΓ') (context_cons s Δ hΔ')] at transported
+    let head : SortName U := ⟨s, hs⟩
+    have lifted := congrArg (fun (replacement : Substitution (signature U)
+        (head :: context Γ hΓ) (head :: context Δ hΔ)) =>
+      (cast (congrArg (Formula (signature U)) (context_cons s Γ hΓ')) (selectFormula p (existsSupport hp))).substitute
+        replacement) (selectSubstitution_lift_cast θ hΓ hΔ hθ hs)
+    exact congrArg (Formula.ex (sig := signature U)) (transported.trans lifted)
 
 end DeclarationContext.Selected
 end SHIGURE

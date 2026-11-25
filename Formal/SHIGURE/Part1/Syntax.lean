@@ -213,6 +213,31 @@ theorem holds_falsehood_iff (A : Structure sig) (e : Assignment A.carrier Γ) :
     (Formula.ex p).Holds A e ↔ ∃ x : A.carrier s, p.Holds A (Assignment.cons x e) :=
   Iff.rfl
 
+/-- Reindexing a formula and its assignment by the same context equality preserves satisfaction. -/
+theorem holds_cast_context {Δ : List sig.SortType} (same : Γ = Δ) (p : Formula sig Γ)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (cast (congrArg (Formula sig) same) p).Holds A (cast (congrArg (Assignment A.carrier) same) e) ↔
+      p.Holds A e := by
+  cases same
+  rfl
+
+/-- Transport a conjunction by transporting both conjuncts along the same context equality. -/
+theorem cast_conj_context {Δ : List sig.SortType} (same : Γ = Δ) (p q : Formula sig Γ) :
+    cast (congrArg (Formula sig) same) (p.conj q) =
+      (cast (congrArg (Formula sig) same) p).conj (cast (congrArg (Formula sig) same) q) := by
+  cases same
+  rfl
+
+/-- Transporting the variable map and input formula transports the renamed formula. -/
+theorem rename_cast_context {Γ' Δ Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (ρ : Renaming Γ Δ) (p : Formula sig Γ) :
+    cast (congrArg (Formula sig) target) (p.rename ρ) =
+      (cast (congrArg (Formula sig) source) p).rename
+        (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ) := by
+  cases source
+  cases target
+  rfl
+
 /-- Satisfaction commutes with capture-free renaming of arbitrary positive formulas. -/
 @[simp] theorem holds_rename (A : Structure sig) (p : Formula sig Γ) :
     ∀ {Δ : List sig.SortType} (ρ : Renaming Γ Δ) (e : Assignment A.carrier Δ),
@@ -496,6 +521,17 @@ theorem graphAt_letBind {Δ : List sig.SortType} {a : sig.SortType}
     (Term.letBind init body).graphAt ρ out =
       ((init.graphAt (fun i => .there (ρ i)) .here).conj
         (body.graphAt (Renaming.lift ρ) (.there out))).ex := rfl
+
+/-- Changing the contexts of the term and its output also transports the variable map and graph. -/
+theorem graphAt_cast_context {Γ' Δ Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (t : Term sig Γ s) (ρ : Renaming Γ Δ) (out : Var Δ s) :
+    cast (congrArg (Formula sig) target) (t.graphAt ρ out) =
+      (cast (congrArg (fun ctx => Term sig ctx s) source) t).graphAt
+        (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ)
+        (cast (congrArg (fun ctx => Var ctx s) target) out) := by
+  cases source
+  cases target
+  rfl
 
 /-- A variable application graph introduces one witness per argument as in (1.3). -/
 theorem graphAt_app_vars (op : Operation sig) (args : Renaming op.arity.inputs Γ)

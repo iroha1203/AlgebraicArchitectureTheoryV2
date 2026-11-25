@@ -165,6 +165,15 @@ noncomputable def glue : Models U :=
       (Declaration.lawBody_subset_of_mem localKept)
       ((A.pieceModel i).satisfies_required ⟨name.val, localKept⟩)⟩
 
+/-- The model assembled from the cover carries the glued carriers and primitive evaluation. -/
+theorem glue_obj_eq : (A.glue cover).obj =
+    ⟨A.glueCarrier cover, A.glueCarrier_omitted cover, A.glueEvaluation cover, A.glueEvaluation_structural cover⟩ :=
+  rfl
+
+/-- The assembled model carries the glued carrier family. -/
+theorem glue_carrier_eq : (A.glue cover).obj.carrier = A.glueCarrier cover :=
+  congrArg ContextStructure.carrier (A.glue_obj_eq cover)
+
 /-- The assembled model restricts to the original model in every piece. -/
 @[simp] theorem glue_restrict (i : cover.Index) : (A.glue cover).restrict (cover.subset i) = A.pieceModel i :=
   ObjectProperty.FullSubcategory.ext ((A.glueStructure cover).restrict_eq_of_view (A.pieceModel i).obj

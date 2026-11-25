@@ -178,6 +178,13 @@ theorem selectVar_here {Γ : List P.signature.SortType} {s : P.signature.SortTyp
     selectVar keep (Var.here : Var (s :: Γ) s) = .here :=
   rfl
 
+/-- Selection of the head variable takes the head position in the explicit cons context. -/
+theorem selectVar_cast_here {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) :
+    cast (congrArg (fun ctx => Var ctx _) (context_cons s Γ keep))
+      (selectVar keep (Var.here : Var (s :: Γ) s)) = .here :=
+  selectVar_here keep
+
 /-- A retained variable following the head stays in the selected tail. -/
 theorem selectVar_there {Γ : List P.signature.SortType} {s t : P.signature.SortType}
     (keep : Declaration.sorts (t :: Γ) ⊆ U.declarations) (i : Var Γ s) :

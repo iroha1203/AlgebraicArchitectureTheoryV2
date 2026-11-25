@@ -66,8 +66,7 @@ from the retained sorts, and the retained facts determine the structure. -/
   let f : CarrierMap U A.carrier (extendedCarrier B) := fun s _ => cast (congrFun carriers.symm s)
   have component : ∀ s keep x, extendedEquiv B s keep (f s keep x) = readCarrierEquiv A s keep x := by
     intro s keep x
-    simp only [extendedEquiv_eq_cast, Equiv.cast_apply, f, readCarrierEquiv_eq_refl, Equiv.refl_apply, cast_cast]
-    rfl
+    simp only [extendedEquiv_eq_cast, Equiv.cast_apply, f, readCarrierEquiv_eq_cast, cast_cast]
   apply ContextStructure.ext h
   rw [writeStructure_cast_evaluation B h, RestrictedEvaluation.cast_evaluation (extendedEvaluation B) carriers]
   apply RestrictedEvaluation.ext
@@ -96,9 +95,14 @@ theorem read_write_args (B : Structure (signature U)) {Γ : List P.signature.Sor
       selectAssignment (readCarrierEquiv (writeStructure B)) keep (ambientAssignment (writeCarrierEquiv B) keep x) := by
   apply Assignment.ext
   intro s i
-  rw [Assignment.map_apply, selectAssignment_apply, ambientAssignment_apply, selectVar_ambientVar,
-    readCarrierEquiv_eq_refl, writeCarrierEquiv_eq_cast]
-  rfl
+  simp only [Assignment.map_apply, selectAssignment_apply, ambientAssignment_apply, selectVar_ambientVar,
+    readCarrierEquiv_eq_cast, writeCarrierEquiv_eq_cast, ← Equiv.cast_symm, Equiv.cast_apply, cast_cast]
+
+/-- The inverse carrier cast on an output identifies the written value in the read structure. -/
+theorem read_write_value (B : Structure (signature U)) (s : SortName U) (y : B.carrier s) :
+    cast (congrFun (read_write_carriers B).symm s) y =
+      readCarrierEquiv (writeStructure B) s.val s.property ((writeCarrierEquiv B s.val s.property).symm y) := by
+  simp only [readCarrierEquiv_eq_cast, writeCarrierEquiv_eq_cast, ← Equiv.cast_symm, Equiv.cast_apply, cast_cast]
 
 /-- Recover the given ordinary selected structure by writing and reading it,
 as used in the model comparison for Proposition 3.2. Its retained relations,
@@ -132,7 +136,7 @@ domains and graphs determine the structure after the carrier identification. -/
       let keep := operationInputs (.total f.val) opKept
       let a := ambientAssignment (writeCarrierEquiv B) keep x
       let z := (writeCarrierEquiv B _ (operationOutput (.total f.val) opKept)).symm y
-      rw [read_write_args B keep x]
+      rw [read_write_args B keep x, read_write_value]
       have selectedOp := operation_total f.val opKept
       have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.total f.val)
         opKept (.total f) selectedOp a z).symm.trans
@@ -147,7 +151,7 @@ domains and graphs determine the structure after the carrier identification. -/
       let keep := operationInputs (.partialOp p.val) opKept
       let a := ambientAssignment (writeCarrierEquiv B) keep x
       let z := (writeCarrierEquiv B _ (operationOutput (.partialOp p.val) opKept)).symm y
-      rw [read_write_args B keep x]
+      rw [read_write_args B keep x, read_write_value]
       have selectedOp := operation_partialOp p.val opKept
       have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.partialOp p.val)
         opKept (.partialOp p) selectedOp a z).symm.trans
@@ -162,7 +166,7 @@ domains and graphs determine the structure after the carrier identification. -/
       let keep := operationInputs (.quantity q.val) opKept
       let a := ambientAssignment (writeCarrierEquiv B) keep x
       let z := (writeCarrierEquiv B _ (operationOutput (.quantity q.val) opKept)).symm y
-      rw [read_write_args B keep x]
+      rw [read_write_args B keep x, read_write_value]
       have selectedOp := operation_quantity q.val opKept
       have left := (graph_select_congr (readStructure A) (readCarrierEquiv A) (.quantity q.val)
         opKept (.quantity q) selectedOp a z).symm.trans

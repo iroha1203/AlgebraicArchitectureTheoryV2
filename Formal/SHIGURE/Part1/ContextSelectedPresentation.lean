@@ -76,6 +76,12 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
 theorem presentation_theory : (presentation U).theory = theory U :=
   rfl
 
+/-- A retained Law in the selected presentation has the selected text of its original statement. -/
+theorem presentation_law_statement (name : U.RetainedLaw) :
+    (presentation U).laws.statement name =
+      selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property) :=
+  rfl
+
 /-- The selected display attaches the ring certificate retained at this Law. -/
 theorem presentation_ringEquation (name : U.RetainedLaw) :
     (presentation U).ringEquation name = Selected.ringEquation name :=

@@ -27,6 +27,10 @@ noncomputable def readFunctor : Models U ⥤ Match cover.piece where
   map_id A := Match.Hom.ext fun i => (res (cover.subset i)).map_id A
   map_comp f g := Match.Hom.ext fun i => (res (cover.subset i)).map_comp f g
 
+/-- Projecting the read family gives the context restriction to that piece on objects and arrows. -/
+theorem readFunctor_project (i : cover.Index) : cover.readFunctor ⋙ Match.project i = res (cover.subset i) :=
+  rfl
+
 /-- At a piece the reading functor's arrow is the restriction to that piece. -/
 theorem readFunctor_pieceMap {A B : Models U} (f : A ⟶ B) (i : cover.Index) :
     (show Match.Hom (cover.read A) (cover.read B) from cover.readFunctor.map f).pieceMap i =

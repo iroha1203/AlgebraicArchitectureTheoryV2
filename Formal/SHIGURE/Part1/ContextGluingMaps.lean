@@ -147,17 +147,24 @@ theorem glue_graph (op : Operation P.signature) (keep : Declaration.ofOperation 
   exact preserved
 
 /-- The assembled arrow is a structure-preserving map between the two glued models. -/
-noncomputable def glueMap : A.glue cover ⟶ B.glue cover :=
-  ObjectProperty.homMk (show ContextStructure.Hom _ _ from {
+noncomputable def glueMap : A.glue cover ⟶ B.glue cover := by
+  let mapped : ContextStructure.Hom
+      ⟨A.glueCarrier cover, A.glueCarrier_omitted cover, A.glueEvaluation cover, A.glueEvaluation_structural cover⟩
+      ⟨B.glueCarrier cover, B.glueCarrier_omitted cover, B.glueEvaluation cover, B.glueEvaluation_structural cover⟩ := {
     onSort := glueOnSort cover f
     relation_mem := glue_relation cover f
     domain_mem := glue_domain cover f
-    graph_mem := glue_graph cover f })
+    graph_mem := glue_graph cover f }
+  exact ObjectProperty.homMk (cast (congrArg₂ ContextStructure.Hom (A.glue_obj_eq cover).symm
+    (B.glue_obj_eq cover).symm) mapped)
 
 /-- The categorical arrow assembled from local maps has the expected retained components. -/
 theorem glueMap_onSort (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations)
-    (x : A.glueCarrier cover s) : Models.onSort (glueMap cover f) s kept x = glueOnSort cover f s kept x :=
-  rfl
+    (x : (A.glue cover).obj.carrier s) : Models.onSort (glueMap cover f) s kept x =
+      cast (congrFun (B.glue_carrier_eq cover).symm s)
+        (glueOnSort cover f s kept (cast (congrFun (A.glue_carrier_eq cover) s) x)) := by
+  rw [glueMap, Models.onSort_homMk,
+    ContextStructure.Hom.cast_onSort (A.glue_obj_eq cover).symm (B.glue_obj_eq cover).symm]
 
 /-- Restricting an assembled arrow recovers the local map after identifying the endpoints. -/
 theorem glueMap_restrict (i : cover.Index) :

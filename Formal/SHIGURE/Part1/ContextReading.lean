@@ -41,6 +41,7 @@ theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
   let original := reading.presentation.laws.statement name.val
   let kept := Declaration.lawBody_subset_of_mem name.property
   let A := ContextStructure.ofStructure reading.context reading.structureData
+  rw [Selected.presentation_law_statement]
   exact ((Selected.readStructure_matches A).law_iff original kept).trans
     (ContextStructure.ofStructure_satisfies_iff reading.context reading.structureData original kept)
 
@@ -71,7 +72,7 @@ theorem selectedRing_attached (name : reading.context.RetainedLaw)
     (keep : reading.context.RetainsRingSupport name.val) :
     reading.selectedPresentation.ringEquation name =
       some (Selected.selectNamedRingEquation name equation attached keep) :=
-  Selected.ringEquation_of_supported name equation attached keep
+  (Selected.presentation_ringEquation name).trans (Selected.ringEquation_of_supported name equation attached keep)
 
 /-- Selecting an attached ring in a reading keeps the name of each of its axioms. -/
 theorem selectedRing_axiomsHold (name : reading.context.RetainedLaw)

@@ -39,6 +39,16 @@ namespace Hom
 
 variable {A B C : ContextStructure U}
 
+/-- Transporting a structure arrow transports its input and output at each retained sort. -/
+theorem cast_onSort {D : ContextStructure U} (source : A = C) (target : B = D) (f : Hom A B)
+    (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations) (x : C.carrier s) :
+    (cast (congrArg₂ Hom source target) f).onSort s keep x =
+      cast (congrArg (fun S => S.carrier s) target)
+        (f.onSort s keep (cast (congrArg (fun S => S.carrier s) source.symm) x)) := by
+  cases source
+  cases target
+  rfl
+
 /-- All arrows are determined by their retained components. -/
 @[ext] theorem ext {f g : Hom A B} (same : ∀ s keep x, f.onSort s keep x = g.onSort s keep x) : f = g := by
   have onSort : f.onSort = g.onSort := funext fun s => funext fun keep => funext (same s keep)
