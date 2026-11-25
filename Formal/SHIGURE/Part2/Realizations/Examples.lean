@@ -1,14 +1,13 @@
 import Formal.SHIGURE.Part2.Realizations.CopyingMode
 import Formal.SHIGURE.Part2.Realizations.TensorMode
-import Mathlib.Algebra.Module.PUnit
 
 /-!
 # Positive and negative examples of realization semantics
 
 The singleton Law holds in a constant singleton carrier and fails in the
 constant Boolean carrier over a nonempty base. The latter cannot be split
-into constant models of this Law. In the tensor scheme the identity equals
-zero on the zero module and differs from zero on the integer module.
+into constant models of this Law. In the tensor mode a required equation
+compares two designated elements of an integer module.
 -/
 
 open AlgebraicGeometry CategoryTheory Opposite
@@ -119,30 +118,6 @@ theorem bool_not_isZariskiSplit :
   have hxy := (hleft x).symm.trans ((congrArg (g.val.app (op V)) he).trans (hleft y))
   exact Bool.false_ne_true (congrArg (fun h : LocallyConstant V.left Bool => h point) hxy)
 
-/-- Tensor structures for the one-sort signature are given by a single module. -/
-def moduleStructure (M : ModuleCat ℤ) : TensorStructure ℤ signature where
-  carrier _ := M
-  total f := nomatch f
-  quantity q := nomatch q
-
-/-- The typed equation equates the identity of the carrier with zero. -/
-def identityZeroLaw : TensorLaw ℤ signature :=
-  ⟨.sort (), .sort (), @TensorExpression.id ℤ signature (.sort ()),
-    @TensorExpression.zero ℤ signature (.sort ()) (.sort ())⟩
-
-/-- The same tensor equation holds on the zero module. -/
-theorem zeroModule_holds : identityZeroLaw.holds (moduleStructure (ModuleCat.of ℤ PUnit)) := by
-  change (LinearMap.id : PUnit →ₗ[ℤ] PUnit) = 0
-  apply LinearMap.ext
-  intro _
-  exact Subsingleton.elim _ _
-
-/-- The tensor identity-zero equation fails on the integer module. -/
-theorem integerModule_not_holds : ¬ identityZeroLaw.holds (moduleStructure (ModuleCat.of ℤ ℤ)) := by
-  intro h
-  change (LinearMap.id : ℤ →ₗ[ℤ] ℤ) = 0 at h
-  exact one_ne_zero (LinearMap.congr_fun h (1 : ℤ))
-
 /-- The integer ring with its chosen coefficient structure. -/
 def integers : CoefficientRing :=
   ⟨ℤ, inferInstance⟩
@@ -163,34 +138,116 @@ theorem bool_not_copying_model :
       (Copying.constantStructure integerScheme (setStructure Bool)) :=
   fun h => bool_not_isZariskiSplit h.1
 
-/-- Scalar extension of the carriers of the signature with no operations. -/
-def coefficientRule : TensorCoefficientRule signature where
+/-- A single sort with two designated elements. -/
+def pointedSignature : Signature where
+  SortType := Unit
+  Total := Bool
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity _ := ⟨[], ()⟩
+  relInputs := Empty.elim
+  partialArity := Empty.elim
+  quantityArity := Empty.elim
+
+private def emptyOperation {R : Type} [CommRing R] (M : ModuleCat R) (x : M) :
+    MultilinearMap R (fun _ : TensorPosition ([] : List Unit) => M) M where
+  toFun _ := x
+  map_update_add' _ i _ _ := nomatch i.2
+  map_update_smul' _ i _ _ := nomatch i.2
+
+/-- Interpret the full-domain signature in a module with the given two designated elements. -/
+def pointedStructure {R : Type} [CommRing R] (M : ModuleCat R) (mark : Bool → M) :
+    TensorStructure R pointedSignature where
+  carrier _ := M
+  total f := emptyOperation M (mark f)
+  quantity q := nomatch q
+
+private def fullDomainScope : FullDomainTensorSignature pointedSignature :=
+  ⟨inferInstanceAs (IsEmpty Empty), inferInstanceAs (IsEmpty Empty)⟩
+
+/-- The full-domain scope excludes even one nullary relation symbol. -/
+theorem relation_not_fullDomain :
+    ¬ FullDomainTensorSignature { pointedSignature with Rel := Unit, relInputs := fun _ => [] } :=
+  fun scope => scope.noRelations.false ()
+
+/-- The two nullary operations are required to represent the same map from the tensor unit. -/
+def equalMarksLaw : TensorLaw ℤ pointedSignature :=
+  ⟨.unit, .sort (),
+    .comp .emptyArguments (.total false), .comp .emptyArguments (.total true)⟩
+
+/-- The tensor theory carries its written equation comparing its two designated elements. -/
+def pointedTheory : TensorTheory integers pointedSignature Unit :=
+  ⟨fullDomainScope, fun _ => equalMarksLaw⟩
+
+/-- Extend both designated elements by mapping each to its unit tensor. -/
+def coefficientRule : TensorCoefficientRule pointedSignature where
   change {R S} f A :=
     letI := R.ring
     letI := S.ring
     letI := f.toAlgebra
-    { carrier := fun s => ModuleCat.of S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier s)
-      total := fun op => nomatch op
-      quantity := fun q => nomatch q }
+    pointedStructure (ModuleCat.of S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier ()))
+      (fun n => (1 : S.Carrier) ⊗ₜ[R.Carrier] A.designated n rfl)
   carrierIso {R S} f A s :=
     letI := R.ring
     letI := S.ring
     letI := f.toAlgebra
-    LinearEquiv.refl S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier s)
-  total_unit _ _ op := nomatch op
+    by
+      cases s
+      exact LinearEquiv.refl S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier ())
+  total_unit {R S} f A n xs := by
+    letI := R.ring
+    letI := S.ring
+    letI := f.toAlgebra
+    change (1 : S.Carrier) ⊗ₜ[R.Carrier] A.designated n rfl =
+      (1 : S.Carrier) ⊗ₜ[R.Carrier] A.total n xs
+    congr 2
+    apply congrArg (A.total n)
+    funext i
+    exact nomatch i.2
   quantity_unit _ _ q := nomatch q
 
-/-- The tensor mode accepts the zero module as a model of the identity-zero Law. -/
-theorem zero_tensor_model :
-    Nonempty ((tensorMode integers singletonTheory coefficientRule (fun _ => identityZeroLaw)).Models
-      integerAlgebra) :=
-  ⟨⟨moduleStructure (ModuleCat.of ℤ PUnit), ⟨inferInstanceAs (IsEmpty Empty), inferInstanceAs (IsEmpty Empty)⟩,
-    fun _ => zeroModule_holds⟩⟩
+private def sameMarks : TensorStructure ℤ pointedSignature :=
+  pointedStructure (ModuleCat.of ℤ ℤ) (fun _ => 1)
 
-/-- The tensor mode excludes the integer module for the same required Law. -/
-theorem integer_not_tensor_model :
-    ¬ (tensorMode integers singletonTheory coefficientRule (fun _ => identityZeroLaw)).modelProperty
-      integerAlgebra (moduleStructure (ModuleCat.of ℤ ℤ)) :=
-  fun h => integerModule_not_holds (h.2 ())
+private def differentMarks : TensorStructure ℤ pointedSignature :=
+  pointedStructure (ModuleCat.of ℤ ℤ) (fun b => if b then 0 else 1)
+
+/-- The same nonzero integer element in both operations satisfies the written tensor Law. -/
+theorem integer_equal_marks_model :
+    (tensorMode integers pointedTheory coefficientRule).modelProperty integerAlgebra sameMarks :=
+  ⟨trivial, fun _ => rfl⟩
+
+/-- The same required equation fails when the two operations give 1 and 0. -/
+theorem integer_different_marks_not_model :
+    ¬ (tensorMode integers pointedTheory coefficientRule).modelProperty integerAlgebra differentMarks := by
+  intro h
+  have hEq : equalMarksLaw.holds differentMarks := h.2 ()
+  have hVal := LinearMap.congr_fun hEq (1 : ℤ)
+  letI : IsEmpty (TensorPosition ([] : List Unit)) := ⟨fun i => nomatch i.2⟩
+  have hEmpty : (PiTensorProduct.isEmptyEquiv (R := ℤ)
+      (s := fun i : TensorPosition ([] : List Unit) => differentMarks.carrier i.1)
+      (TensorPosition [])).symm 1 =
+        PiTensorProduct.tprod ℤ (s := fun i => differentMarks.carrier i.1) (fun i => nomatch i.2) := by
+    apply (PiTensorProduct.isEmptyEquiv (R := ℤ) (TensorPosition [])).injective
+    rw [LinearEquiv.apply_symm_apply, PiTensorProduct.isEmptyEquiv_apply_tprod]
+  change PiTensorProduct.lift (differentMarks.total false)
+      ((PiTensorProduct.isEmptyEquiv (TensorPosition ([] : List Unit))).symm (1 : ℤ)) =
+    PiTensorProduct.lift (differentMarks.total true)
+      ((PiTensorProduct.isEmptyEquiv (TensorPosition ([] : List Unit))).symm (1 : ℤ)) at hVal
+  rw [hEmpty] at hVal
+  have hFalse := PiTensorProduct.lift.tprod (φ := differentMarks.total false) (fun i => nomatch i.2)
+  have hTrue := PiTensorProduct.lift.tprod (φ := differentMarks.total true) (fun i => nomatch i.2)
+  exact one_ne_zero (show (1 : ℤ) = 0 from hFalse.symm.trans (hVal.trans hTrue))
+
+/-- The zero carrier map does not preserve the designated nonzero element. -/
+theorem integer_zero_map_not_preserving_marks :
+    ¬ (tensorStructureRule ℤ pointedSignature fullDomainScope).Preserves
+      (A := sameMarks) (B := sameMarks) (fun _ => ModuleCat.ofHom 0) := by
+  intro h
+  let f := tensorStructureHomEquiv pointedSignature fullDomainScope sameMarks sameMarks
+    ⟨fun _ => ModuleCat.ofHom 0, h⟩
+  have hz := f.preserves_designated false rfl
+  exact zero_ne_one (show (0 : ℤ) = 1 from hz)
 
 end SHIGURE.RealizationExamples

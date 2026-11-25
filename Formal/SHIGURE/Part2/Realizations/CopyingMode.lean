@@ -1,5 +1,7 @@
+import Formal.SHIGURE.Part1.ContextSelectedMorphisms
 import Formal.SHIGURE.Part2.Realizations.CoefficientModels
 import Formal.SHIGURE.Part2.Realizations.ZariskiModels
+import Formal.SHIGURE.Part2.Realizations.SectionStructures
 
 /-!
 # The copying mode as a coefficient realization
@@ -30,28 +32,85 @@ def CoefficientRing.specMap {R S : CoefficientRing.{u}} (f : R.Hom S) : S.spec �
 
 namespace Copying
 
-/-- Copying preservation means that the entire family of sheaf arrows is a
-structure-preserving map of the primitive realizations. -/
+private def realizedPredicate {S : Scheme.{u}} {F : ZariskiSheaf S}
+    (P : SheafPredicate F) : RealizedSubobject F where
+  obj := P.toSheaf
+  inclusion := P.inclusion
+  mono_inclusion := by
+    letI : Mono P.inclusion.val := inferInstanceAs (Mono P.carrier.ι)
+    exact Sheaf.Hom.mono_of_presheaf_mono (Scheme.zariskiTopology.over S) (Type u) P.inclusion
+
+/-- The primitive diagrams of a copying realization use Cartesian tuples and
+the inclusions of the relation and domain subsheaves. -/
 def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
-    StructureRule (fun _ : sig.SortType => Cat.of (ZariskiSheaf S))
+    StructureRule sig (Cat.of (ZariskiSheaf S))
       (SheafStructure sig (Scheme.zariskiTopology.over S)) where
   carrier A := A.carrier
-  preserves f := ∃ h : SheafStructure.Hom _ _, h.onSort = f
-  preserves_id A := ⟨SheafStructure.Hom.id A, rfl⟩
-  preserves_comp := by
-    rintro A B D f g ⟨f', rfl⟩ ⟨g', rfl⟩
-    exact ⟨f'.comp g', rfl⟩
+  input Γ :=
+    { obj := fun A => sheafTuple A Γ
+      map := fun f => sheafTupleMap f Γ
+      map_id := fun A => sheafTupleMap_id A Γ
+      map_comp := fun f g => sheafTupleMap_comp f g Γ }
+  total := SheafStructure.total
+  relation A r := realizedPredicate (A.relation r)
+  domain A p := realizedPredicate (A.partialDomain p)
+  partialValue := SheafStructure.partialValue
+  quantity := SheafStructure.quantity
 
-/-- A family of structured sheaf maps determines exactly one preserving family
-in the general structure rule, and every preserving family arises this way. -/
+private theorem predicate_le_of_factor {S : Scheme.{u}} {F G : ZariskiSheaf S}
+    {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
+    {g : P.toSheaf ⟶ Q.toSheaf} (h : g ≫ Q.inclusion = P.inclusion ≫ f) :
+    P.carrier ≤ (Q.preimage f).carrier := by
+  intro U x hx
+  change f.val.app U x ∈ Q.carrier.obj U
+  have he := congrArg (fun k : P.toSheaf ⟶ G => k.val.app U ⟨x, hx⟩) h
+  change (g.val.app U ⟨x, hx⟩).val = f.val.app U x at he
+  exact he ▸ (g.val.app U ⟨x, hx⟩).property
+
+private theorem mapAlong_factor {S : Scheme.{u}} {F G : ZariskiSheaf S}
+    {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
+    (h : P.carrier ≤ (Q.preimage f).carrier) :
+    SheafPredicate.mapAlong f h ≫ Q.inclusion = P.inclusion ≫ f :=
+  Sheaf.Hom.ext rfl
+
+private theorem predicate_factor_unique {S : Scheme.{u}} {F G : ZariskiSheaf S}
+    {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}
+    {g : P.toSheaf ⟶ Q.toSheaf} (h : g ≫ Q.inclusion = P.inclusion ≫ f)
+    (h' : P.carrier ≤ (Q.preimage f).carrier) : g = SheafPredicate.mapAlong f h' := by
+  letI : Mono Q.inclusion := (realizedPredicate Q).mono_inclusion
+  exact (cancel_mono Q.inclusion).mp (h.trans (mapAlong_factor h').symm)
+
+/-- A preserving carrier family in the primitive diagrams is exactly a
+structure-preserving sheaf morphism. -/
 def copyingStructureHomEquiv (sig : Signature.{u}) (S : Scheme.{u})
     (A B : (copyingStructureRule sig S).Category) :
     (A ⟶ B) ≃ SheafStructure.Hom A B where
-  toFun h := h.property.choose
-  invFun h := ⟨h.onSort, ⟨h, rfl⟩⟩
-  left_inv h := Subtype.ext h.property.choose_spec
-  right_inv h := SheafStructure.Hom.ext (Exists.choose_spec (⟨h, rfl⟩ :
-    ∃ f : SheafStructure.Hom A B, f.onSort = h.onSort))
+  toFun h :=
+    have domain (p : sig.Partial) :
+        (A.partialDomain p).carrier ≤
+          ((B.partialDomain p).preimage (sheafTupleMap h.val _)).carrier := by
+      obtain ⟨_, hi, _⟩ := h.property.partialOp p
+      exact predicate_le_of_factor hi
+    { onSort := h.val
+      preservesTotal := h.property.total
+      preservesRelation := fun r => by
+        obtain ⟨_, hi⟩ := h.property.relation r
+        exact predicate_le_of_factor hi
+      preservesDomain := domain
+      preservesPartial := fun p => by
+        obtain ⟨g, hi, hv⟩ := h.property.partialOp p
+        have hg : g = SheafPredicate.mapAlong (sheafTupleMap h.val _) (domain p) :=
+          predicate_factor_unique hi (domain p)
+        rw [← hg]
+        exact hv.symm
+      preservesQuantity := h.property.quantity }
+  invFun h := ⟨h.onSort,
+    { total := h.preservesTotal
+      relation := fun r => ⟨_, mapAlong_factor (h.preservesRelation r)⟩
+      partialOp := fun p => ⟨_, mapAlong_factor (h.preservesDomain p), (h.preservesPartial p).symm⟩
+      quantity := h.preservesQuantity }⟩
+  left_inv _ := Subtype.ext rfl
+  right_inv _ := SheafStructure.Hom.ext rfl
 
 /-- A designated state of a sheaf structure is its section over the coefficient scheme. -/
 private abbrev states {sig : Signature.{u}} {S : Scheme.{u}}
@@ -66,26 +125,104 @@ private def changeStates {sig : Signature.{u}} {S S' : Scheme.{u}}
     Over.homMk f (by simp)
   (A.carrier s).val.map g.op
 
+private def toCoefficient {S : Scheme.{u}} (U : Over S) : U ⟶ Over.mk (𝟙 S) :=
+  Over.homMk U.hom (by simp)
+
+private def sectionAsPoint {S : Scheme.{u}} {F : ZariskiSheaf S}
+    (x : F.val.obj (op (Over.mk (𝟙 S)))) : constantCarrier S PUnit ⟶ F :=
+  ⟨{ app := fun U => ↾fun _ => F.val.map (toCoefficient U.unop).op x
+     naturality := by
+       intro U V f
+       ext y
+       change F.val.map (toCoefficient V.unop).op x =
+         F.val.map f (F.val.map (toCoefficient U.unop).op x)
+       have h : (toCoefficient U.unop).op ≫ f = (toCoefficient V.unop).op := by
+         apply Quiver.Hom.unop_inj
+         apply Over.OverMorphism.ext
+         exact Over.w f.unop
+       rw [← h, Functor.map_comp]
+       rfl }⟩
+
+/-- A point from the one-state carrier is precisely a section over the coefficient scheme. -/
+def copyingPointEquiv {S : Scheme.{u}} (F : ZariskiSheaf S) :
+    (constantCarrier S PUnit ⟶ F) ≃ F.val.obj (op (Over.mk (𝟙 S))) where
+  toFun p := p.val.app _ (LocallyConstant.const _ PUnit.unit)
+  invFun := sectionAsPoint
+  left_inv p := by
+    apply Sheaf.Hom.ext
+    ext U y
+    change F.val.map (toCoefficient U.unop).op (p.val.app _ _) = p.val.app U y
+    rw [← FunctorToTypes.naturality]
+    congr
+  right_inv x := by
+    change F.val.map (toCoefficient (Over.mk (𝟙 S))).op x = x
+    have h : toCoefficient (Over.mk (𝟙 S)) = 𝟙 _ := Over.OverMorphism.ext rfl
+    simpa only [h, op_id] using FunctorToTypes.map_id_apply F.val x
+
 /-- The concrete copying realization mode of Definition 4.1. -/
 def copyingMode (base : CoefficientRing.{u}) (T : Theory.{u}) :
-    CoefficientRealizationMode base T where
+    CoefficientRealizationMode base (RealizationTheory.ofTheory T) where
   Object R := SheafStructure T.signature (Scheme.zariskiTopology.over R.scalars.spec)
-  Carrier R _ := Cat.of (ZariskiSheaf R.scalars.spec)
+  Carrier R := Cat.of (ZariskiSheaf R.scalars.spec)
   rule R := copyingStructureRule T.signature R.scalars.spec
   admissible _ := IsZariskiSplit T
   Native := Structure T.signature
   nativeStates A := A.carrier
-  States _ := states
+  pointCarrier R _ := constantCarrier R.scalars.spec PUnit
   realizeNative R := constantStructure R.scalars.spec
-  nativePoints R _ _ x := nativeState R.scalars.spec (Over.mk (𝟙 R.scalars.spec)) x
+  nativePoints R A s x := (copyingPointEquiv ((constantStructure R.scalars.spec A).carrier s)).symm
+    (nativeState R.scalars.spec (Over.mk (𝟙 R.scalars.spec)) x)
   change f := restrictStructure (CoefficientRing.specMap f)
-  changePoints f := changeStates (CoefficientRing.specMap f)
-  holds _ A l := A.holdsLaw (T.law l)
+  changePoints f A s p :=
+    (copyingPointEquiv ((restrictStructure (CoefficientRing.specMap f) A).carrier s)).symm
+      (changeStates (CoefficientRing.specMap f) A s (copyingPointEquiv (A.carrier s) p))
+  holds _ A l := A.holdsLaw l
 
 /-- The copying meaning of a selected primitive presentation in its coefficient algebra. -/
 abbrev SelectedCopyingModels {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
     {base : CoefficientRing.{u}} (R : CoefficientAlgebra base) :=
   (copyingMode base (DeclarationContext.Selected.presentation U).theory).Models R
+
+/-- The global section structure read at the retained sorts of the Part I context. -/
+def readCopyingContext {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
+    {S : Scheme.{u}} (A : SheafStructure (DeclarationContext.Selected.signature U)
+      (Scheme.zariskiTopology.over S)) : ContextStructure U :=
+  DeclarationContext.Selected.writeStructure (A.sections (op (Over.mk (𝟙 S))))
+
+/-- A copying arrow gives the Part I structure-preserving map on the retained points. -/
+def readCopyingContextMap {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {S : Scheme.{u}} {A B : SheafStructure (DeclarationContext.Selected.signature U)
+      (Scheme.zariskiTopology.over S)} (f : SheafStructure.Hom A B) :
+    ContextStructure.Hom (readCopyingContext U A) (readCopyingContext U B) :=
+  DeclarationContext.Selected.writeStructureMap (f.sections (op (Over.mk (𝟙 S))))
+
+/-- A semantic arrow in the selected copying mode acts on the Part I retained points. -/
+def readSelectedCopyingMap {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {base : CoefficientRing.{u}} {R : CoefficientAlgebra base} {A B : SelectedCopyingModels U R}
+    (f : A ⟶ B) : ContextStructure.Hom (readCopyingContext U A.obj) (readCopyingContext U B.obj) :=
+  readCopyingContextMap
+    (copyingStructureHomEquiv (DeclarationContext.Selected.signature U) R.scalars.spec A.obj B.obj f.hom)
+
+/-- The Part I reading of a semantic arrow uses its action on the representing points. -/
+theorem copyingPointEquiv_map {S : Scheme.{u}} {F G : ZariskiSheaf S}
+    (h : F ⟶ G) (p : constantCarrier S PUnit ⟶ F) :
+    copyingPointEquiv G (p ≫ h) =
+      h.val.app (op (Over.mk (𝟙 S))) (copyingPointEquiv F p) :=
+  rfl
+
+/-- Realize the native structure read from the retained Part I declaration context. -/
+def realizeSelectedCopying {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {base : CoefficientRing.{u}} (R : CoefficientAlgebra base) (A : ContextStructure U) :=
+  (copyingMode base (DeclarationContext.Selected.presentation U).theory).realizeNative R
+    (DeclarationContext.Selected.readStructure A)
+
+/-- The native point of a retained sort has the original carrier of the context. -/
+def realizeSelectedCopyingPoint {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+    {base : CoefficientRing.{u}} (R : CoefficientAlgebra base) (A : ContextStructure U)
+    (s : DeclarationContext.Selected.SortName U) (x : A.carrier s.val) :=
+  (copyingMode base (DeclarationContext.Selected.presentation U).theory).nativePoints R
+    (DeclarationContext.Selected.readStructure A) s
+    (DeclarationContext.Selected.readCarrierEquiv A s.val s.property x)
 
 end Copying
 

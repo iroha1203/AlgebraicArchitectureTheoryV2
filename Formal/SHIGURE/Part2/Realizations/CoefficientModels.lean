@@ -1,5 +1,5 @@
 import Formal.SHIGURE.Part1.CoefficientReading
-import Mathlib.CategoryTheory.Category.Cat
+import Formal.SHIGURE.Part2.Realizations.StructureRules
 import Mathlib.CategoryTheory.ObjectProperty.FullSubcategory
 
 /-!
@@ -12,7 +12,7 @@ carrier maps satisfying the preservation conditions of equation (2.1).
 
 ## Implementation notes
 
-The category is constructed from the preservation predicate on a tuple of
+The category is constructed from the primitive diagrams on a tuple of
 carrier arrows. Supplying an independent category and a map from its arrows
 to point functions would allow missing preservation maps and duplicate
 representatives. Keeping the actual carrier arrows also retains all
@@ -25,80 +25,84 @@ universe u v w t
 
 namespace SHIGURE
 
-/-- The primitive structures, allowed carrier arrows and their preservation condition. -/
-structure StructureRule {S : Type u} (C : S → Cat.{v, w}) (Object : Type t) where
-  /-- The carrier object at every sort. -/
-  carrier (A : Object) (s : S) : C s
-  /-- The simultaneous preservation conditions on a family of allowed carrier arrows. -/
-  preserves {A B : Object} (f : ∀ s, carrier A s ⟶ carrier B s) : Prop
-  /-- The identity family satisfies the preservation conditions. -/
-  preserves_id (A : Object) : preserves (fun s => 𝟙 (carrier A s))
-  /-- The composite of two preserving families preserves the structure. -/
-  preserves_comp {A B D : Object} {f : ∀ s, carrier A s ⟶ carrier B s}
-    {g : ∀ s, carrier B s ⟶ carrier D s} :
-    preserves f → preserves g → preserves (fun s => f s ≫ g s)
+/-- The written required Laws and the primitive signature they use. -/
+structure RealizationTheory where
+  /-- The primitive symbols of the chosen presentation. -/
+  signature : Signature.{u}
+  /-- The required declarations. -/
+  LawName : Type u
+  /-- The syntax in which the Laws are written. -/
+  Statement : Type u
+  /-- The actual written statement of each declaration. -/
+  law : LawName → Statement
 
-namespace StructureRule
-
-variable {S : Type u} {C : S → Cat.{v, w}} {Object : Type t}
-
-/-- The category of primitive structures before imposing the required Laws. -/
-def Category (_rule : StructureRule C Object) : Type t := Object
-
-/-- Take every preserving family of the allowable carrier arrows as a morphism. -/
-instance category (rule : StructureRule C Object) : CategoryTheory.Category.{max u v} rule.Category where
-  Hom A B := {f : ∀ s, rule.carrier A s ⟶ rule.carrier B s // rule.preserves f}
-  id A := ⟨fun s => 𝟙 (rule.carrier A s), rule.preserves_id A⟩
-  comp f g := ⟨fun s => f.val s ≫ g.val s, rule.preserves_comp f.property g.property⟩
-  id_comp _ := Subtype.ext (funext fun _ => CategoryTheory.Category.id_comp _)
-  comp_id _ := Subtype.ext (funext fun _ => CategoryTheory.Category.comp_id _)
-  assoc _ _ _ := Subtype.ext (funext fun _ => CategoryTheory.Category.assoc _ _ _)
-
-/-- The arrow equivalence records exactly which carrier families are included. -/
-def homEquiv (rule : StructureRule C Object) (A B : rule.Category) :
-    (A ⟶ B) ≃ {f : ∀ s, rule.carrier A s ⟶ rule.carrier B s // rule.preserves f} :=
-  Equiv.refl _
-
-end StructureRule
+/-- The set-based presentation already carries its written positive sequents. -/
+def RealizationTheory.ofTheory (T : Theory.{u}) : RealizationTheory.{u} where
+  signature := T.signature
+  LawName := T.LawName
+  Statement := Law T.signature
+  law := T.law
 
 /-- A coefficient realization mode for a theory and a chosen coefficient base. -/
-structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Theory.{u}) where
+structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : RealizationTheory.{u}) where
   /-- The raw primitive structures at each coefficient algebra. -/
   Object (R : CoefficientAlgebra base) : Type t
-  /-- The allowable carriers and their allowable maps by sort. -/
-  Carrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : Cat.{v, w}
-  /-- The structure-preservation test for families of allowable maps. -/
-  rule (R : CoefficientAlgebra base) : StructureRule (Carrier R) (Object R)
+  /-- The allowable carriers and their allowable maps. -/
+  Carrier (R : CoefficientAlgebra base) : Cat.{v, w}
+  /-- The interpreted primitives, whose diagrams determine the semantic arrows. -/
+  rule (R : CoefficientAlgebra base) : StructureRule T.signature (Carrier R) (Object R)
   /-- The structures admitted by the mode, independently of the Law test. -/
   admissible (R : CoefficientAlgebra base) : Object R → Prop
   /-- Native inputs and their state sets. -/
   Native : Type (u + 1)
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
-  /-- Designated state sets of the realization for each sort. -/
-  States (R : CoefficientAlgebra base) (A : Object R) (s : T.signature.SortType) : Type u
+  /-- The object representing a designated point of a realized carrier. -/
+  pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : Carrier R
   /-- The rule for realizing a native input at the chosen coefficients. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Object R
   /-- The correspondence of native and realized states. -/
   nativePoints (R : CoefficientAlgebra base) (A : Native) (s : T.signature.SortType) :
-    nativeStates A s → States R (realizeNative R A) s
+    nativeStates A s → (pointCarrier R s ⟶ (rule R).carrier (realizeNative R A) s)
   /-- Transport the primitive structure along a coefficient map. -/
   change {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S) :
     Object R → Object (R.extend f)
   /-- The state map induced by the change of coefficients. -/
   changePoints {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S)
     (A : Object R) (s : T.signature.SortType) :
-    States R A s → States (R.extend f) (change f A) s
+    (pointCarrier R s ⟶ (rule R).carrier A s) →
+      (pointCarrier (R.extend f) s ⟶ (rule (R.extend f)).carrier (change f A) s)
   /-- Interpretation of each required Law of the selected theory. -/
-  holds (R : CoefficientAlgebra base) (A : Object R) (name : T.LawName) : Prop
+  holds (R : CoefficientAlgebra base) (A : Object R) (statement : T.Statement) : Prop
 
 namespace CoefficientRealizationMode
 
-variable {base : CoefficientRing.{u}} {T : Theory.{u}}
+variable {base : CoefficientRing.{u}} {T : RealizationTheory.{u}}
 variable (mode : CoefficientRealizationMode.{u, v, w, t} base T)
+
+/-- Designated points are actual maps to the realized carrier. -/
+abbrev Points (R : CoefficientAlgebra base) (A : mode.Object R) (s : T.signature.SortType) :=
+  mode.pointCarrier R s ⟶ (mode.rule R).carrier A s
+
+/-- A structural morphism maps designated points by composition with its carrier arrow. -/
+def mapPoints {R : CoefficientAlgebra base} {A B : (mode.rule R).Category}
+    (f : A ⟶ B) (s : T.signature.SortType) : mode.Points R A s → mode.Points R B s :=
+  fun p => p ≫ f.val s
+
+/-- The carrier identity fixes every point. -/
+@[simp]
+theorem mapPoints_id {R : CoefficientAlgebra base} (A : (mode.rule R).Category)
+    (s : T.signature.SortType) (p : mode.Points R A s) : mode.mapPoints (𝟙 A) s p = p :=
+  Category.comp_id _
+
+/-- The action on points respects composition of carrier maps. -/
+theorem mapPoints_comp {R : CoefficientAlgebra base} {A B D : (mode.rule R).Category}
+    (f : A ⟶ B) (g : B ⟶ D) (s : T.signature.SortType) (p : mode.Points R A s) :
+    mode.mapPoints (f ≫ g) s p = mode.mapPoints g s (mode.mapPoints f s p) :=
+  (Category.assoc p (f.val s) (g.val s)).symm
 
 /-- Semantic objects satisfy the admissibility condition and all required Laws. -/
 def modelProperty (R : CoefficientAlgebra base) : ObjectProperty (mode.rule R).Category :=
-  fun A => mode.admissible R A ∧ ∀ name : T.LawName, mode.holds R A name
+  fun A => mode.admissible R A ∧ ∀ name : T.LawName, mode.holds R A (T.law name)
 
 /-- The semantic category of Definition 4.1 at a fixed coefficient algebra. -/
 abbrev Models (R : CoefficientAlgebra base) :=

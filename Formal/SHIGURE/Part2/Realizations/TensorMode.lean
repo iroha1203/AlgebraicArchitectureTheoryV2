@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part1.ContextSelectedPresentation
 import Formal.SHIGURE.Part2.Realizations.CoefficientModels
 import Formal.SHIGURE.Part2.Realizations.TensorExpressions
+import Mathlib.LinearAlgebra.Span.Basic
 import Mathlib.LinearAlgebra.TensorProduct.Tower
 
 /-!
@@ -69,71 +70,162 @@ def TensorCoefficientRule.changeState (rule : TensorCoefficientRule sig)
 
 variable {R : Type u} [CommRing R]
 
-/-- Tensor preservation is the condition of commuting with the primitive
-operations and quantities on a family of module arrows. -/
-def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u}) :
-    StructureRule (fun _ : sig.SortType => Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) where
+private def tensorInputs (R : Type u) [CommRing R] {K : Type u} (Γ : List K) :
+    (K → ModuleCat.{u} R) ⥤ ModuleCat.{u} R where
+  obj A := ModuleCat.of R (⨂[R] i : TensorPosition Γ, A i.1)
+  map f := ModuleCat.ofHom (PiTensorProduct.map (fun i => (f i.1).hom))
+  map_id A := by
+    apply ModuleCat.hom_ext
+    exact PiTensorProduct.map_id (s := fun i : TensorPosition Γ => A i.1)
+  map_comp {A B D} f g := by
+    apply ModuleCat.hom_ext
+    have h := PiTensorProduct.map_comp (R := R)
+      (s := fun i : TensorPosition Γ => (A i.1 : Type u))
+      (t := fun i : TensorPosition Γ => (B i.1 : Type u))
+      (t' := fun i : TensorPosition Γ => (D i.1 : Type u))
+      (fun i => (g i.1).hom) (fun i => (f i.1).hom)
+    exact h
+
+/-- Total operations and quantities are the maps from their typed input tensor
+products. The full-domain signature has no relation or partial symbols. -/
+def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
+    (scope : FullDomainTensorSignature sig) :
+    StructureRule sig (Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) where
   carrier A := A.carrier
-  preserves f := ∃ h : TensorStructure.Hom _ _, (fun s => ModuleCat.ofHom (h.onSort s)) = f
-  preserves_id A := ⟨TensorStructure.Hom.id A, rfl⟩
-  preserves_comp := by
-    rintro A B D f g ⟨f', rfl⟩ ⟨g', rfl⟩
-    exact ⟨f'.comp g', rfl⟩
+  input := tensorInputs R
+  total A op := ModuleCat.ofHom (PiTensorProduct.lift (A.total op))
+  relation _ r := False.elim (scope.noRelations.false r)
+  domain _ p := False.elim (scope.noPartial.false p)
+  partialValue _ p := False.elim (scope.noPartial.false p)
+  quantity A q := ModuleCat.ofHom (PiTensorProduct.lift (A.quantity q))
 
-/-- The carrier tuples in the general structure rule are exactly the
-structure-preserving linear maps. -/
-def tensorStructureHomEquiv (sig : Signature.{u})
-    (A B : (tensorStructureRule R sig).Category) :
+private theorem tensorSquare_iff {K : Type u} {Γ : List K}
+    {A B : K → ModuleCat.{u} R} {X Y : ModuleCat.{u} R}
+    (f : ∀ s, A s ⟶ B s) (g : X ⟶ Y)
+    (a : MultilinearMap R (fun i : TensorPosition Γ => A i.1) X)
+    (b : MultilinearMap R (fun i : TensorPosition Γ => B i.1) Y) :
+    ModuleCat.ofHom (PiTensorProduct.lift a) ≫ g =
+      (tensorInputs R Γ).map f ≫ ModuleCat.ofHom (PiTensorProduct.lift b) ↔
+    ∀ xs, g.hom (a xs) = b (fun i => (f i.1).hom (xs i)) := by
+  constructor
+  · intro h xs
+    have h' := congrArg (fun k : (tensorInputs R Γ).obj A ⟶ Y =>
+      k.hom (PiTensorProduct.tprod R xs)) h
+    change g.hom (PiTensorProduct.lift a (PiTensorProduct.tprod R xs)) =
+      PiTensorProduct.lift b
+        (PiTensorProduct.map (fun i : TensorPosition Γ => (f i.1).hom)
+          (PiTensorProduct.tprod R xs)) at h'
+    simpa only [PiTensorProduct.lift.tprod, PiTensorProduct.map_tprod] using h'
+  · intro h
+    apply ModuleCat.hom_ext
+    apply PiTensorProduct.ext
+    apply MultilinearMap.ext
+    intro xs
+    change g.hom (PiTensorProduct.lift a (PiTensorProduct.tprod R xs)) =
+      PiTensorProduct.lift b
+        (PiTensorProduct.map (fun i : TensorPosition Γ => (f i.1).hom)
+          (PiTensorProduct.tprod R xs))
+    simpa only [PiTensorProduct.lift.tprod, PiTensorProduct.map_tprod] using h xs
+
+/-- The primitive diagrams give exactly the linear families preserving the
+tensor operations and quantities. -/
+def tensorStructureHomEquiv (sig : Signature.{u}) (scope : FullDomainTensorSignature sig)
+    (A B : (tensorStructureRule R sig scope).Category) :
     (A ⟶ B) ≃ TensorStructure.Hom A B where
-  toFun h := h.property.choose
-  invFun h := ⟨fun s => ModuleCat.ofHom (h.onSort s), ⟨h, rfl⟩⟩
-  left_inv h := Subtype.ext h.property.choose_spec
-  right_inv h := by
-    apply TensorStructure.Hom.ext
-    funext s
-    exact congrArg (fun f => (f s).hom) (Exists.choose_spec (⟨h, rfl⟩ :
-      ∃ g : TensorStructure.Hom A B, (fun i => ModuleCat.ofHom (g.onSort i)) =
-        (fun i => ModuleCat.ofHom (h.onSort i))))
+  toFun h :=
+    { onSort := fun s => (h.val s).hom
+      preservesTotal := fun op => (tensorSquare_iff h.val (h.val _) (A.total op) (B.total op)).mp
+        (h.property.total op)
+      preservesQuantity := fun q => (tensorSquare_iff h.val (h.val _) (A.quantity q) (B.quantity q)).mp
+        (h.property.quantity q) }
+  invFun h := ⟨fun s => ModuleCat.ofHom (h.onSort s),
+    { total := fun op => (tensorSquare_iff (fun s => ModuleCat.ofHom (h.onSort s)) _
+        (A.total op) (B.total op)).mpr (h.preservesTotal op)
+      relation := fun r => False.elim (scope.noRelations.false r)
+      partialOp := fun p => False.elim (scope.noPartial.false p)
+      quantity := fun q => (tensorSquare_iff (fun s => ModuleCat.ofHom (h.onSort s)) _
+        (A.quantity q) (B.quantity q)).mpr (h.preservesQuantity q) }⟩
+  left_inv _ := Subtype.ext rfl
+  right_inv _ := TensorStructure.Hom.ext rfl
 
-/-- The typed interpretation of every named required Law of a theory over the base. -/
-abbrev TensorLawInterpretation (base : CoefficientRing.{u}) (T : Theory.{u}) :=
-  letI := base.ring
-  T.LawName → TensorLaw base.Carrier T.signature
+/-- A linear point from the scalar module is precisely an element of the carrier module. -/
+def tensorPointEquiv (M : ModuleCat.{u} R) : (ModuleCat.of R R ⟶ M) ≃ M where
+  toFun p := p.hom 1
+  invFun x := ModuleCat.ofHom (LinearMap.toSpanSingleton R M x)
+  left_inv p := by
+    apply ModuleCat.hom_ext
+    apply LinearMap.ext
+    intro r
+    change r • p.hom 1 = p.hom r
+    rw [← map_smul, smul_eq_mul, mul_one]
+  right_inv x := one_smul R x
 
-/-- The full-domain tensor mode of Definition 4.1, with named Laws and its
-specified coefficient rule. -/
-def tensorMode (base : CoefficientRing.{u}) (T : Theory.{u})
-    (rule : TensorCoefficientRule T.signature) (law : TensorLawInterpretation base T) :
-    CoefficientRealizationMode base T where
-  Object S := TensorAt S.scalars T.signature
-  Carrier S _ :=
+/-- Acting on a tensor point agrees with applying the carrier linear map to its element. -/
+theorem tensorPointEquiv_map {M N : ModuleCat.{u} R} (p : ModuleCat.of R R ⟶ M) (f : M ⟶ N) :
+    tensorPointEquiv N (p ≫ f) = f.hom (tensorPointEquiv M p) :=
+  rfl
+
+/-- A tensor presentation gives the written equation of every required
+declaration over the base coefficients. -/
+structure TensorTheory (base : CoefficientRing.{u}) (sig : Signature.{u}) (Required : Type u) where
+  /-- The primitive symbols interpreted by this full-domain presentation. -/
+  scope : FullDomainTensorSignature sig
+  /-- Each declaration's actual typed statement. -/
+  law (name : Required) :
+    letI := base.ring
+    TensorLaw base.Carrier sig
+
+/-- Use the written tensor equations as the required Law statements. -/
+def TensorTheory.presentation {base : CoefficientRing.{u}} {L : Type u}
+    (T : TensorTheory base sig L) : RealizationTheory.{u} where
+  signature := sig
+  LawName := L
+  Statement :=
+    letI := base.ring
+    TensorLaw base.Carrier sig
+  law := T.law
+
+/-- The full-domain tensor mode of Definition 4.1 evaluates the equations of
+its tensor presentation and uses the specified scalar extension rule. -/
+def tensorMode (base : CoefficientRing.{u}) {L : Type u}
+    (T : TensorTheory base sig L) (rule : TensorCoefficientRule sig) :
+    CoefficientRealizationMode base T.presentation where
+  Object S := TensorAt S.scalars sig
+  Carrier S :=
     letI := S.scalars.ring
     Cat.of (ModuleCat.{u} S.scalars.Carrier)
   rule S :=
     letI := S.scalars.ring
-    tensorStructureRule S.scalars.Carrier T.signature
-  admissible _ _ := FullDomainTensorSignature T.signature
-  Native := TensorAt base T.signature
+    tensorStructureRule S.scalars.Carrier sig T.scope
+  admissible _ _ := True
+  Native := TensorAt base sig
   nativeStates A s :=
     letI := base.ring
     A.carrier s
-  States S A s :=
+  pointCarrier S _ :=
     letI := S.scalars.ring
-    A.carrier s
+    ModuleCat.of S.scalars.Carrier S.scalars.Carrier
   realizeNative S := rule.change S.fromBase
-  nativePoints S := rule.changeState S.fromBase
+  nativePoints S A s x :=
+    letI := S.scalars.ring
+    (tensorPointEquiv ((rule.change S.fromBase A).carrier s)).symm (rule.changeState S.fromBase A s x)
   change f := rule.change f
-  changePoints f := rule.changeState f
-  holds S A name :=
+  changePoints {S S'} f A s p :=
+    letI := S.scalars.ring
+    letI := S'.ring
+    (tensorPointEquiv ((rule.change f A).carrier s)).symm
+      (rule.changeState f A s (tensorPointEquiv (A.carrier s) p))
+  holds S A law :=
     letI := base.ring
     letI := S.scalars.ring
-    ((law name).mapScalars S.fromBase).holds A
+    (law.mapScalars S.fromBase).holds A
 
-/-- The tensor semantics of exactly the declarations selected by the context. -/
+/-- Restrict the primitive signature to the declaration context and evaluate
+the Laws written in the tensor presentation over that signature. -/
 abbrev SelectedTensorModels {P : PrimitivePresentation.{u}} (U : DeclarationContext P)
-    {base : CoefficientRing.{u}} (S : CoefficientAlgebra base)
-    (rule : TensorCoefficientRule (DeclarationContext.Selected.presentation U).signature)
-    (law : TensorLawInterpretation base (DeclarationContext.Selected.presentation U).theory) :=
-  (tensorMode base (DeclarationContext.Selected.presentation U).theory rule law).Models S
+    {base : CoefficientRing.{u}} {L : Type u} (S : CoefficientAlgebra base)
+    (T : TensorTheory base (DeclarationContext.Selected.presentation U).signature L)
+    (rule : TensorCoefficientRule (DeclarationContext.Selected.presentation U).signature) :=
+  (tensorMode base T rule).Models S
 
 end SHIGURE
