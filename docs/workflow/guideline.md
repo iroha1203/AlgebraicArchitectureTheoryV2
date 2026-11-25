@@ -33,7 +33,6 @@
 
 - **Codex**: 数学、Lean 形式化、論文執筆
 - **Gemini**: ツール（ArchSig / ArchView / FieldSig）、ブログ（`outreach/blog/`）、website（`website/`）
-- **Claude**: レビュー（PR 経由）
 - **ユーザー（人間）**: 方向づけ、受け入れ確認、最終判断とマージ
 
 全エージェントの SKILL は `.codex/skills/` に一本化している。
@@ -74,9 +73,7 @@
 `docs/sft/aat_interface.md`、`outreach/paper/**` の更新は、次の3条件がすべて揃う場合に限る。
 
 1. 人間が対象文書と変更方針を明示する。
-2. 実装者とは別の LLM モデルが PR 経由でレビューする（既定では Claude がレビューを担う。
-   Claude が実装した場合は Codex または Gemini など別の LLM モデルがレビューする。
-   実施経路は「レビュー体制」の別モデルレビュー規則に従う）。
+2. 実装者とは別の LLM モデルが PR 経由でレビューする（実施経路は「レビュー体制」の「別モデルレビュー」に従う）。
 3. 人間が差分を確認してマージする。
 
 ## CI への恒久追加の禁止
@@ -96,22 +93,22 @@
 
 ## レビュー体制
 
-- **別モデルレビューの必須規則（PR 経由の義務とコマンド呼び出しの禁止）**:
-  - 実装者とは別の LLM モデルによるレビュー（既定の Claude レビュー、および保護対象や
-    Tier 1 文書更新時の別モデルレビューを含む）は、**必ず GitHub PR 経由**で行う。
-  - AI エージェントがシェルコマンドや CLI 等（`claude`、`codex`、`gemini` などのコマンド実行や
-    外部 AI 呼び出し）で別の AI を直接呼び出してレビューを実行することは**禁止**する。
-  - 実装担当エージェントは PR の作成（および必要な検証・CI 確認）までを行い、
-    別モデルのレビュー担当エージェントが別セッションで PR を対象にレビューを実施し、結果を PR 上に記録する。
-- レビューは分野別の敵対レビュー SKILL
-  （`.codex/skills/` 配下の `math-lean-review` / `tool-review` / `website-review` / `docs-review`）で行う。
-  共通の反証観点は `.codex/skills/_shared/refutation-checklist.md` にまとめている。
-  査読 lane 数は分野別 SKILL の規定に従う（Lean 実装は 4 本、ツール実装は独立 1 本）。
-- Lean 実装（`Formal/`）を触る差分は、大きさを問わず PR 作成後のレビューゲートとして
-  `math-lean-review` の4本の独立査読を行う。承認は、4本すべての合格、または指摘事項の
-  全解消と `review-protocol.md` に従う修正後確認（直接対応）の記録をもって成立する。
-- 正式レビューの開始時点、指摘修正後の直接対応（指摘箇所に限定した軽量確認）と
-  正式レビュー再実行の条件は、`.codex/skills/_shared/review-protocol.md` に定める。
+### 通常の PR レビュー
+
+- 実装と同じモデルのセッションで、分野別の敵対レビュー SKILL
+  （`math-lean-review` / `tool-review` / `website-review` / `docs-review`）を実行する。
+- 共通の反証観点は `.codex/skills/_shared/refutation-checklist.md`、正式レビューの開始時点・
+  修正後確認（直接対応）・再実行条件は `.codex/skills/_shared/review-protocol.md` に定める。
+  査読 lane 数と承認条件は各分野別 SKILL に従う。
+- Lean 実装（`Formal/`）を触る差分は大きさを問わず、PR 作成後に `math-lean-review` による独立査読を必須とする。
+
+### 別モデルレビュー
+
+- **対象**: 「保護対象(3条件)」または Tier 1 文書の更新時、および人間が明示的に指示した PR に限る。
+- **PR 経由の義務**: 必ず GitHub PR 経由の別セッションで行う。実装担当は PR 作成・検証・CI 確認までを行い、
+  実装者とは別の LLM モデルが別セッションで PR にレビューを記録する。
+- **直接呼び出しの禁止**: シェルコマンド・CLI（`claude`、`codex`、`gemini` 等）や外部 API で
+  別の AI を直接呼び出してレビューを実行することは禁止する。
 
 ## PR 前の共通確認
 
