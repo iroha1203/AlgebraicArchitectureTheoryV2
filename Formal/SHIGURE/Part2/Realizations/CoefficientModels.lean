@@ -58,48 +58,52 @@ structure CoefficientRealizationMode (base : CoefficientRing.{u}) (T : Realizati
   /-- The original states at each sort, which are the input to the native point map. -/
   nativeStates (A : Native) (s : T.signature.SortType) : Type u
   /-- The object representing a designated point of a realized carrier. -/
-  pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : Carrier R
+  pointCarrier (R : CoefficientAlgebra base) (s : T.signature.SortType) : (rule R).Ambient
   /-- The rule for realizing a native input at the chosen coefficients. -/
   realizeNative (R : CoefficientAlgebra base) : Native → Object R
   /-- The correspondence of native and realized states. -/
   nativePoints (R : CoefficientAlgebra base) (A : Native) (s : T.signature.SortType) :
-    nativeStates A s → (pointCarrier R s ⟶ (rule R).carrier (realizeNative R A) s)
+    nativeStates A s → (pointCarrier R s ⟶ (rule R).view.obj ((rule R).carrier (realizeNative R A) s))
   /-- Transport the primitive structure along a coefficient map. -/
   change {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S) :
     Object R → Object (R.extend f)
   /-- The state map induced by the change of coefficients. -/
   changePoints {R : CoefficientAlgebra base} {S : CoefficientRing.{u}} (f : R.scalars.Hom S)
     (A : Object R) (s : T.signature.SortType) :
-    (pointCarrier R s ⟶ (rule R).carrier A s) →
-      (pointCarrier (R.extend f) s ⟶ (rule (R.extend f)).carrier (change f A) s)
+    (pointCarrier R s ⟶ (rule R).view.obj ((rule R).carrier A s)) →
+      (pointCarrier (R.extend f) s ⟶
+        (rule (R.extend f)).view.obj ((rule (R.extend f)).carrier (change f A) s))
   /-- Interpretation of each required Law of the selected theory. -/
   holds (R : CoefficientAlgebra base) (A : Object R) (statement : T.Statement) : Prop
 
 namespace CoefficientRealizationMode
 
 variable {base : CoefficientRing.{u}} {T : RealizationTheory.{u}}
-variable (mode : CoefficientRealizationMode.{u, v, w, t} base T)
+variable (mode : CoefficientRealizationMode base T)
 
 /-- Designated points are actual maps to the realized carrier. -/
 abbrev Points (R : CoefficientAlgebra base) (A : mode.Object R) (s : T.signature.SortType) :=
-  mode.pointCarrier R s ⟶ (mode.rule R).carrier A s
+  mode.pointCarrier R s ⟶ (mode.rule R).view.obj ((mode.rule R).carrier A s)
 
 /-- A structural morphism maps designated points by composition with its carrier arrow. -/
 def mapPoints {R : CoefficientAlgebra base} {A B : (mode.rule R).Category}
     (f : A ⟶ B) (s : T.signature.SortType) : mode.Points R A s → mode.Points R B s :=
-  fun p => p ≫ f.val s
+  fun p => p ≫ (mode.rule R).view.map (f.val s)
 
 /-- The carrier identity fixes every point. -/
 @[simp]
 theorem mapPoints_id {R : CoefficientAlgebra base} (A : (mode.rule R).Category)
-    (s : T.signature.SortType) (p : mode.Points R A s) : mode.mapPoints (𝟙 A) s p = p :=
-  Category.comp_id _
+    (s : T.signature.SortType) (p : mode.Points R A s) : mode.mapPoints (𝟙 A) s p = p := by
+  change p ≫ (mode.rule R).view.map (𝟙 _) = p
+  exact (congrArg (fun f => p ≫ f) ((mode.rule R).view.map_id _)).trans (Category.comp_id _)
 
 /-- The action on points respects composition of carrier maps. -/
 theorem mapPoints_comp {R : CoefficientAlgebra base} {A B D : (mode.rule R).Category}
     (f : A ⟶ B) (g : B ⟶ D) (s : T.signature.SortType) (p : mode.Points R A s) :
-    mode.mapPoints (f ≫ g) s p = mode.mapPoints g s (mode.mapPoints f s p) :=
-  (Category.assoc p (f.val s) (g.val s)).symm
+    mode.mapPoints (f ≫ g) s p = mode.mapPoints g s (mode.mapPoints f s p) := by
+  change p ≫ (mode.rule R).view.map (f.val s ≫ g.val s) =
+    (p ≫ (mode.rule R).view.map (f.val s)) ≫ (mode.rule R).view.map (g.val s)
+  rw [Functor.map_comp, Category.assoc]
 
 /-- Semantic objects satisfy the admissibility condition and all required Laws. -/
 def modelProperty (R : CoefficientAlgebra base) : ObjectProperty (mode.rule R).Category :=

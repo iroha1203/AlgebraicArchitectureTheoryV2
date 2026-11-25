@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part1.ContextSelectedVocabulary
+import Formal.SHIGURE.Part1.ContextSelectedPresentation
 import Formal.SHIGURE.Part2.Realizations.TensorInputs
 
 /-!
@@ -107,17 +107,6 @@ namespace DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {U V : DeclarationContext P}
 
-private theorem forgetArity_injective (V : DeclarationContext P) :
-    Function.Injective (fun a : Arity (SortName V) =>
-      (⟨a.inputs.map Subtype.val, a.output.val⟩ : Arity P.signature.SortType)) := by
-  rintro ⟨as, a⟩ ⟨bs, b⟩ h
-  have hi : as = bs := (List.map_inj_right (fun _ _ e => Subtype.val_injective e)).mp
-    (congrArg Arity.inputs h)
-  have ho : a = b := Subtype.val_injective (congrArg Arity.output h)
-  cases hi
-  cases ho
-  rfl
-
 /-- The signature of a smaller declaration context includes into the larger one. -/
 def namesOfLE (h : U ≤ V) : SignatureNames (signature U) (signature V) where
   onSort s := ⟨s.val, h s.property⟩
@@ -126,20 +115,20 @@ def namesOfLE (h : U ≤ V) : SignatureNames (signature U) (signature V) where
   onPartial p := ⟨p.val, h p.property⟩
   onQuantity q := ⟨q.val, h q.property⟩
   totalArity f := by
-    apply forgetArity_injective V
-    simp only [List.map_map]
+    apply ambientArity_injective (U := V)
+    simp only [ambientArity, List.map_map]
     exact ((names U).totalArity f).trans ((names V).totalArity ⟨f.val, h f.property⟩).symm
   relInputs r := by
     apply (List.map_inj_right (fun _ _ e => Subtype.val_injective e)).mp
     simp only [List.map_map]
     exact ((names U).relInputs r).trans ((names V).relInputs ⟨r.val, h r.property⟩).symm
   partialArity p := by
-    apply forgetArity_injective V
-    simp only [List.map_map]
+    apply ambientArity_injective (U := V)
+    simp only [ambientArity, List.map_map]
     exact ((names U).partialArity p).trans ((names V).partialArity ⟨p.val, h p.property⟩).symm
   quantityArity q := by
-    apply forgetArity_injective V
-    simp only [List.map_map]
+    apply ambientArity_injective (U := V)
+    simp only [ambientArity, List.map_map]
     exact ((names U).quantityArity q).trans ((names V).quantityArity ⟨q.val, h q.property⟩).symm
 
 end DeclarationContext.Selected

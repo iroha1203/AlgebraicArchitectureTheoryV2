@@ -1,5 +1,6 @@
 import Formal.SHIGURE.Part2.Realizations.CopyingMode
 import Formal.SHIGURE.Part2.Realizations.CopyingReading
+import Formal.SHIGURE.Part2.Realizations.RestrictedCarrierExamples
 import Formal.SHIGURE.Part2.Realizations.TensorDeclarations
 import Mathlib.Data.ZMod.Basic
 

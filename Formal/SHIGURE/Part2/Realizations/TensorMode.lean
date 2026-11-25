@@ -12,6 +12,13 @@ The mode uses arbitrary module carriers and includes every linear family
 preserving the specified operations. The coefficient rule compares the
 changed carriers with actual scalar extensions and specifies the primitive
 operations there on generating tuples. Construction 4.8 supplies this rule.
+
+## Implementation notes
+
+The comparison with scalar extension identifies the changed carriers
+while permitting a mode to choose their representation. The unit
+tensors generate each extended input module. Their images fix the
+multilinear operations and give the coefficient map on specified points.
 -/
 
 open CategoryTheory SHIGURE.TensorRealization
@@ -144,6 +151,9 @@ def tensorStructureRule (R : Type u) [CommRing R] (sig : Signature.{u})
     (scope : FullDomainTensorSignature sig) :
     StructureRule sig (Cat.of (ModuleCat.{u} R)) (TensorStructure R sig) where
   carrier A := A.carrier
+  Ambient := Cat.of (ModuleCat.{u} R)
+  view := 𝟭 _
+  view_faithful := inferInstance
   monoidal := inferInstanceAs (MonoidalCategory (ModuleCat.{u} R))
   input := tensorInputs R
   positionalInput Γ := tensorPositionInputs R (TensorPosition Γ)

@@ -2991,6 +2991,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SheafPredicate.mem_existsAlong_iff,
   SheafPredicate.mem_existsAlong_inclusion_iff,
   SheafPredicate.holds,
+  RealizationExamples.threeStatePermutationMode,
+  RealizationExamples.permutationModelHomEquiv,
   SheafStructure.sections,
   SheafStructure.Hom.sections,
   SheafStructure.Hom,

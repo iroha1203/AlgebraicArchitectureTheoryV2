@@ -171,6 +171,9 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
     StructureRule sig (Cat.of (ZariskiSheaf S))
       (SheafStructure sig (Scheme.zariskiTopology.over S)) where
   carrier A := A.carrier
+  Ambient := Cat.of (ZariskiSheaf S)
+  view := 𝟭 _
+  view_faithful := inferInstance
   monoidal := inferInstanceAs (MonoidalCategory (ZariskiSheaf S))
   input := copyingInputs S
   positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)

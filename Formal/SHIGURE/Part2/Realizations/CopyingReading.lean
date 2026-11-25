@@ -82,10 +82,11 @@ private def sectionCarrierEquiv {S : Scheme.{u}}
     (readCopyingContext U A).carrier s ≃ (A.carrier ⟨s, kept⟩).val.obj (op (Over.mk (𝟙 S))) :=
   Selected.writeCarrierEquiv (A.sections (op (Over.mk (𝟙 S)))) s kept
 
-/-- Use the actual copying realization as the coefficient scheme in a
-Part I reading. Explicit point choices are permitted on every retained
-sort. Its arrows are exactly the maps on those sections induced by
-preserving sheaf arrows. -/
+/-- Read copying structures and their designated sections through the
+Part I coefficient interface. The objects are primitive structures
+before checking local splitting and the required Laws. Explicit point
+choices are permitted on every retained sort. Its arrows are the
+section maps induced by preserving sheaf arrows. -/
 def copyingCoefficientScheme (U : DeclarationContext P) (base : CoefficientRing.{u}) :
     CoefficientScheme U base where
   Realization R := ReadCopying (Selected.signature U) R.scalars.spec

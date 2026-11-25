@@ -8,6 +8,16 @@ A tensor equation is written over a dependency-closed primitive signature.
 A larger context can evaluate it by restricting the actual module
 structure to that signature. Required Law names and their equations come
 from the declarations retained by the context.
+
+## Implementation notes
+
+The primitive dependencies use Part I's closed contexts. A tensor Law
+has its own typed equation and name because tensor shape and linear
+equality are part of that declaration. Storing the equation on its
+exact support lets the same statement be evaluated in different
+contexts by restricting their structures. A fixed ambient signature
+would make an equation depend on every sort and operation of that
+signature when reading it in a smaller context.
 -/
 
 universe u
