@@ -90,4 +90,4 @@ python3 -m unittest discover -s outreach/monograph -p 'test_*.py' -v
 
 ## 保守
 
-`docs/aat/algebraic_geometric_theory/` に新しい章や付録（例：付録 G）を追加した場合、`monograph.py` は未登録ファイル検出で非ゼロ終了する。`manifest.json` の `structure` に正しい配置順で追記すること。
+`docs/aat/algebraic_geometric_theory/` に新しい章や付録（例：付録 F）を追加した場合、`monograph.py` は未登録ファイル検出で非ゼロ終了する。`manifest.json` の `structure` に正しい配置順で追記すること。

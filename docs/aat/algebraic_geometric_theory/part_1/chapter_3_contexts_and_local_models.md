@@ -251,7 +251,7 @@ B_W=\mathbb Q[x,y]/(xy-1),\qquad x\longmapsto\bar x
 
 ---
 
-第I部では、署名と Law の言語、モデルとすべての構造保存射からなる意味圏、理論解釈による引戻し、そして宣言被覆上の対象と射の厳密な組立てを構成した。第II部以降の係数的実現と幾何的表示はこれらの対象を受け取って展開され、同型による descent は[第10章](../README.md#第iv部-局所変更修復障害)へ、値の有限問い合わせによる再構成は[第13章](../README.md#第iv部-局所変更修復障害)と[第20章](../part_7/chapter_20_finite_determination_and_minimal_realizations.md)へ引き継がれる。
+第I部では、署名と Law の言語、モデルとすべての構造保存射からなる意味圏、理論解釈による引戻し、そして宣言被覆上の対象と射の厳密な組立てを構成した。第II部以降の係数的実現と幾何的表示はこれらの対象を受け取って展開され、同型による descent は[第10章](../README.md#第iv部-局所変更修復障害)へ、値の有限断片の整合族からの再構成は[第13章](../README.md#第iv部-局所変更修復障害)と[第19章](../part_7/chapter_19_reconstruction_from_local_models.md)へ、有限決定は[第20章](../part_7/chapter_20_finite_determination_and_minimal_realizations.md)へ引き継がれる。
 
 [前章](chapter_2_models_and_morphisms.md) · [第I部](../README.md#第i部-lawと意味の基礎) ·
 [共通記号](../notation.md) · [全体の構成](../README.md)
