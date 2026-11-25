@@ -24,6 +24,9 @@ use num_bigint::BigInt;
 use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
 
+/// D1 次元実現の full 2-skeleton 頂点数上限（`\Theta(n^5)` 密行列の組合せ爆発を防ぐ）。
+pub const DEFAULT_MAX_DIM_REALIZATION_VERTICES: usize = 16;
+
 /// 粗化 partition `π -> π'` の単射合流射 `r` と余核複体 `Q` の長完全列を計算する（C2–C4）。
 pub(crate) fn compute_collision_mv(
     col: &CollisionComparisonSpec,
@@ -113,8 +116,6 @@ pub(crate) fn compute_collision_mv(
     } else {
         let mut all_match = true;
         for path in &col.alternative_merge_paths {
-            let mut cur_part: &[Vec<String>] = &col.fine_partition;
-            let mut cur_cpx = fine_cpx.clone();
             // 合成方向: fine <- step_0 <- ... <- coarse (r は coarse -> fine)
             let mut steps: Vec<&[Vec<String>]> = Vec::with_capacity(path.len() + 2);
             steps.push(&col.fine_partition);
@@ -153,9 +154,6 @@ pub(crate) fn compute_collision_mv(
                     None => m2,
                     Some(prev) => mat_mul(&prev, &m2, c2_cols, &BigInt::zero()),
                 });
-                let _ = (cur_part, &cur_cpx);
-                cur_part = steps[idx + 1];
-                cur_cpx = cpx_list[idx + 1].clone();
             }
             if acc0.as_ref() != Some(&r0)
                 || acc1.as_ref() != Some(&r1)
@@ -311,7 +309,6 @@ fn eval_mv_z(
 
     let coh_c = c_z.cohomology_z().map_err(map_diag_alg_err)?;
     let coh_f = f_z.cohomology_z().map_err(map_diag_alg_err)?;
-    let _coh_q = q_z.cohomology_z().map_err(map_diag_alg_err)?;
 
     // H^1(coarse) または H^1(fine) に Z-torsion がある場合は torsion-free SNF 判定外として fail-closed 沈黙する。
     // 注意: H^1(Q_Z) の torsion は H^1(r) の同型性を阻害しない（例: RP^2 の 3-cover で H^1(C)=H^1(F)=0, H^1(Q)=Z/2）。
@@ -380,6 +377,13 @@ fn eval_mv_z(
             smith_normal_form_z(&coords_mat, combined_cols.len()).map_err(map_diag_alg_err)?;
         snf_im.rank == z1_f.len() && snf_im.diagonals.iter().all(|d| *d == BigInt::one())
     };
+
+    // Q 上は同型だが Z 上で有限 torsion 余核が残る場合は、自由階数指標との不整合を避けて fail-closed 沈黙する。
+    if h1_iso_q && !z_iso {
+        return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
+            detail: "H^1(r) is a Q-isomorphism but has finite Z-torsion cokernel outside free-rank Mayer-Vietoris summary".to_owned(),
+        });
+    }
 
     let mv_ok = mv_q;
     Ok((ker_q, coker_q, coker_h0_q, im_h1_q, z_iso, mv_ok))
@@ -664,6 +668,13 @@ pub(crate) fn compute_dimension_realization(
 ) -> Result<DimensionRealizationResult, SilenceReason> {
     let r = dr.vanishing_polys.len();
     let n = std::cmp::max(3, r + 1);
+    if n > DEFAULT_MAX_DIM_REALIZATION_VERTICES {
+        return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
+            detail: format!(
+                "dimension realization cycle size n={n} exceeds safe limit ({DEFAULT_MAX_DIM_REALIZATION_VERTICES})"
+            ),
+        });
+    }
 
     // D1 標準 full 2-skeleton nerve を構築。
     let mut charts = Vec::with_capacity(n);

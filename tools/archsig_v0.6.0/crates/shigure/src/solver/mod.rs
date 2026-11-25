@@ -63,6 +63,8 @@ mod tests_artin;
 #[cfg(test)]
 mod tests_atlas;
 #[cfg(test)]
+mod tests_atlas_extra;
+#[cfg(test)]
 mod tests_chevalley;
 #[cfg(test)]
 mod tests_diagram;

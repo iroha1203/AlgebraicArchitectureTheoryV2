@@ -231,8 +231,13 @@ where
         Ok((cur, residuals, all_laws_zero))
     };
 
-    let (before_final, _, _) = run_steps(before_steps, false)?;
-    let (after_final, law_residuals, all_laws_zero) = run_steps(after_steps, true)?;
+    let (before_final, before_residuals, before_laws_zero) = run_steps(before_steps, true)?;
+    let (after_final, mut law_residuals, after_laws_zero) = run_steps(after_steps, true)?;
+    if !before_laws_zero {
+        for r in before_residuals {
+            law_residuals.push(format!("before_{r}"));
+        }
+    }
 
     let before_read_val = expand(before_read, &ext_bindings)
         .map_err(map_atlas_alg_err)?
@@ -244,7 +249,7 @@ where
         .map_err(map_atlas_alg_err)?;
 
     let reads_match = before_read_val == after_read_val;
-    let transport_preserved = reads_match && all_laws_zero;
+    let transport_preserved = reads_match && before_laws_zero && after_laws_zero;
 
     Ok(ExtendedCheckOutcome {
         name: name.to_owned(),
@@ -254,7 +259,7 @@ where
         after_values: vec![after_read_val.to_string()],
         law_residuals,
         detail: format!(
-            "before_read={before_read_val}, after_read={after_read_val}, intermediate_laws_satisfied={all_laws_zero}"
+            "on initial_state: before_read={before_read_val}, after_read={after_read_val}, before_laws_satisfied={before_laws_zero}, after_laws_satisfied={after_laws_zero}"
         ),
     })
 }

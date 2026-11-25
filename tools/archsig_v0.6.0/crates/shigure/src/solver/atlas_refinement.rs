@@ -19,6 +19,7 @@ use crate::solver::atlas::{
     build_spanning_tree, eval_const_expr, is_graph_connected, map_atlas_alg_err,
 };
 use crate::solver::atlas_condition_c::check_condition_c0_to_c6;
+use crate::solver::diagnostics::compute_nerve;
 use num_bigint::BigInt;
 use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
@@ -101,7 +102,9 @@ where
     let phi_diff = apply_spanning_tree_phi(&fine_graph, &fine_tree, &diff_residuals);
     let designated_o_preserved =
         cochain_map_commutes && phi_diff.iter().all(RingCoeff::coeff_is_zero);
-    let designated_kappa_preserved = designated_o_preserved && condition_c.all_passed;
+    let nerve_aligns_with_graph = check_nerve_aligns_with_graph(ref_spec, coarse_graph, &fine_graph)?;
+    let designated_kappa_preserved =
+        designated_o_preserved && condition_c.all_passed && nerve_aligns_with_graph;
 
     // 5. 全修復 fiber 同型 Φ_R: F_c(R) -> F_f(R) と逆復元（F2・F5）。
     let (repair_fiber_iso, inverse_recon_ok, eval_cond_preserved) = verify_repair_fiber_iso(
@@ -143,6 +146,93 @@ where
         eval_condition_fiber_preserved: eval_cond_preserved,
         forgetful_reading_contrast,
     })
+}
+
+/// G-142 E3 整合検査: 粗/細の診断 nerve と nerve 射が粗/細グラフおよび `vertex_map`/`edge_map` と
+/// 1 対 1 に対応し、全 chart・全 edge の支持が非空かつ face が空であることを独立検証する。
+fn check_nerve_aligns_with_graph<C: RingCoeff>(
+    ref_spec: &AtlasRefinementSpec,
+    coarse_graph: &EvaluatedGraph<C>,
+    fine_graph: &EvaluatedGraph<C>,
+) -> Result<bool, SilenceReason> {
+    let coarse_nerve = compute_nerve(&ref_spec.coarse_nerve)?;
+    let fine_nerve = compute_nerve(&ref_spec.fine_nerve)?;
+
+    let single_matches = |nerve_spec: &crate::ir::diagnostics::SupportedNerveSpec,
+                          computed: &crate::solver::diagnostics::ComputedNerve,
+                          graph: &EvaluatedGraph<C>|
+     -> bool {
+        if !nerve_spec.faces.is_empty() {
+            return false;
+        }
+        if nerve_spec.charts.len() != graph.vertices.len()
+            || nerve_spec.edges.len() != graph.edges.len()
+        {
+            return false;
+        }
+        let g_verts: BTreeSet<&str> = graph.vertices.iter().map(String::as_str).collect();
+        let n_charts: BTreeSet<&str> = nerve_spec.charts.iter().map(|c| c.name.as_str()).collect();
+        if g_verts != n_charts {
+            return false;
+        }
+        if computed.chart_supports.iter().any(BTreeSet::is_empty)
+            || computed.edges.iter().any(|e| e.support.is_empty())
+        {
+            return false;
+        }
+        let g_edges: BTreeMap<&str, (&str, &str)> = graph
+            .edges
+            .iter()
+            .map(|e| {
+                (
+                    e.name.as_str(),
+                    (
+                        graph.vertices[e.from].as_str(),
+                        graph.vertices[e.to].as_str(),
+                    ),
+                )
+            })
+            .collect();
+        for ne in &nerve_spec.edges {
+            match g_edges.get(ne.name.as_str()) {
+                Some(&(gf, gt)) if gf == ne.left.as_str() && gt == ne.right.as_str() => {}
+                _ => return false,
+            }
+        }
+        true
+    };
+
+    if !single_matches(&ref_spec.coarse_nerve, &coarse_nerve, coarse_graph)
+        || !single_matches(&ref_spec.fine_nerve, &fine_nerve, fine_graph)
+    {
+        return Ok(false);
+    }
+
+    let vm: BTreeMap<&str, &str> = ref_spec
+        .vertex_map
+        .iter()
+        .map(|(f, c)| (f.as_str(), c.as_str()))
+        .collect();
+    let ncm: BTreeMap<&str, &str> = ref_spec
+        .nerve_chart_map
+        .iter()
+        .map(|(f, c)| (f.as_str(), c.as_str()))
+        .collect();
+    if vm != ncm {
+        return Ok(false);
+    }
+
+    let em: BTreeMap<&str, Option<&str>> = ref_spec
+        .edge_map
+        .iter()
+        .map(|(f, c)| (f.as_str(), c.as_deref()))
+        .collect();
+    let nem: BTreeMap<&str, Option<&str>> = ref_spec
+        .nerve_edge_map
+        .iter()
+        .map(|(f, c)| (f.as_str(), c.as_deref()))
+        .collect();
+    Ok(em == nem)
 }
 
 #[allow(clippy::type_complexity)]

@@ -246,7 +246,6 @@ fn stratify_over_q(
         let target_law_values = partition_to_law_values(&law_polys, &parts);
         let cpx_data = build_diagnostic_complex(nerve, &target_law_values);
         let sum = evaluate_complex_over_domain(&cpx_data, diag_coeff)?;
-        let rab = rabinowitsch_solve(&eqs, &invs, var_order).map_err(map_diag_alg_err)?;
         let partition_display = format_partition_display(&law_polys, &parts);
         let eq_strs: Vec<String> = eqs
             .iter()
@@ -277,9 +276,10 @@ fn stratify_over_q(
             h1_free_rank: sum.h1_free_rank,
             h2_free_rank: sum.h2_free_rank,
         });
+        // `eqs` は既に `normalize_and_prune_stratum` が飽和済みの Zariski 閉包基底へ正規化している。
         closure_data.push(StratumClosureData::Q {
             vars: var_order.clone(),
-            closure_eqs: rab.parameter_equations,
+            closure_eqs: eqs.clone(),
             equations: eqs,
             invertibles: invs,
         });
