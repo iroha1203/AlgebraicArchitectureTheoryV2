@@ -581,3 +581,61 @@ fn f7_artin_field_empty_chart_base_change_succeeds() {
     let bc = out.artin.as_ref().unwrap().base_change.as_ref().unwrap();
     assert!(bc.target_image_is_zero);
 }
+
+/// R4 Finding 2 回帰:
+/// (1) 非自由観測環 `obs_relations = [x - y]`, `extra_laws = [x^2, y^2]` で A-syzygy `(1, -1)` を含めて F5 検算が通ること。
+/// (2) Z 上の未保証非線形 2 Law 系では偽の `two_context_cech_matches == false` を返さず `SyzygyOutOfScope` で沈黙すること。
+#[test]
+fn r4_artin_f5_syzygy_includes_obs_relations_and_silences_on_z_nonlinear() {
+    let task_q = validate_artin_task(ArtinTaskSpec {
+        name: "r4_q_nonfree_syz".into(),
+        coeff_domain: CoeffDomain::Q,
+        obs_vars: vec!["x".into(), "y".into()],
+        obs_relations: vec![np("x_eq_y", sub(sv("x"), sv("y")))],
+        aux_defs: vec![],
+        extra_laws: vec![np("x2", pow(sv("x"), 2)), np("y2", pow(sv("y"), 2))],
+        base_point: vec![("x".into(), cz(0)), ("y".into(), cz(0))],
+        max_order: 3,
+        max_artin_dim: None,
+        composite_stage: None,
+        base_change: None,
+        non_noetherian_infinite: false,
+        provenance: prov(vec![MathClause::G141F5]),
+    })
+    .unwrap();
+    let out_q = solve_artin_task(&task_q);
+    assert_eq!(out_q.verdict, Verdict::Refuted);
+    let ufo = out_q
+        .artin
+        .as_ref()
+        .unwrap()
+        .universal_first_obstruction
+        .as_ref()
+        .unwrap();
+    assert_eq!(ufo.nu, 2);
+    assert!(ufo.two_context_cech_matches);
+
+    let task_z_nonlin = validate_artin_task(ArtinTaskSpec {
+        name: "r4_z_nonlin_f5".into(),
+        coeff_domain: CoeffDomain::Z,
+        obs_vars: vec!["x".into(), "y".into()],
+        obs_relations: vec![],
+        aux_defs: vec![],
+        extra_laws: vec![
+            np("g1", add(pow(sv("x"), 2), mul(sv("x"), sv("y")))),
+            np("g2", add(pow(sv("y"), 2), mul(sv("x"), sv("y")))),
+        ],
+        base_point: vec![("x".into(), cz(0)), ("y".into(), cz(0))],
+        max_order: 3,
+        max_artin_dim: None,
+        composite_stage: None,
+        base_change: None,
+        non_noetherian_infinite: false,
+        provenance: prov(vec![MathClause::G141F5]),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_artin_task(&task_z_nonlin).verdict,
+        Verdict::Undetermined(SilenceReason::SyzygyOutOfScope { .. })
+    ));
+}

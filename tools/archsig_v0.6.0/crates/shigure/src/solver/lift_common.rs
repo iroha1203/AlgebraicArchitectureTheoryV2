@@ -594,11 +594,14 @@ pub(crate) fn check_cover_support_closure(
     let mut covered_vars: BTreeSet<&str> = BTreeSet::new();
     let mut covered_laws: BTreeSet<&str> = BTreeSet::new();
     let mut context_var_sets: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
+    let mut context_law_sets: BTreeMap<&str, BTreeSet<&str>> = BTreeMap::new();
     for c in &cov.contexts {
         let allowed: BTreeSet<&str> = c.vars.iter().map(String::as_str).collect();
         covered_vars.extend(allowed.iter().copied());
+        let mut ctx_laws: BTreeSet<&str> = BTreeSet::new();
         for law_name in &c.laws {
             covered_laws.insert(law_name.as_str());
+            ctx_laws.insert(law_name.as_str());
             if let Some(law) = law_map.get(law_name.as_str()) {
                 let mut used = BTreeSet::new();
                 collect_state_vars(&law.expr, &mut used);
@@ -635,6 +638,7 @@ pub(crate) fn check_cover_support_closure(
             }
         }
         context_var_sets.insert(c.name.as_str(), allowed);
+        context_law_sets.insert(c.name.as_str(), ctx_laws);
     }
     for v in spec_vars {
         if !covered_vars.contains(v.as_str()) {
@@ -644,6 +648,26 @@ pub(crate) fn check_cover_support_closure(
     for l in laws {
         if !covered_laws.contains(l.name.as_str()) {
             unclosed.push(format!("uncovered_law:{}", l.name));
+        }
+    }
+    if let Some(cech) = &cov.two_context_cech {
+        let l_vars = context_var_sets.get(cech.left_context.as_str());
+        let r_vars = context_var_sets.get(cech.right_context.as_str());
+        let l_laws = context_law_sets.get(cech.left_context.as_str());
+        let r_laws = context_law_sets.get(cech.right_context.as_str());
+        for v in spec_vars {
+            let ok = l_vars.is_some_and(|s| s.contains(v.as_str()))
+                || r_vars.is_some_and(|s| s.contains(v.as_str()));
+            if !ok {
+                unclosed.push(format!("uncovered_var_in_two_context:{v}"));
+            }
+        }
+        for l in laws {
+            let ok = l_laws.is_some_and(|s| s.contains(l.name.as_str()))
+                || r_laws.is_some_and(|s| s.contains(l.name.as_str()));
+            if !ok {
+                unclosed.push(format!("uncovered_law_in_two_context:{}", l.name));
+            }
         }
     }
     if let Some(rel) = rel_reading {

@@ -410,29 +410,34 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
         if !nonzero_imgs.is_empty() {
             let r_prime_label = format!("A/m^{}", r + 1);
             let kernel_dim = q_r.algebra.dim().saturating_sub(prev_dim);
-            // F5 検証: 全 syzygy 関係 s ∈ Syz(extra_res) を基点で評価した線形関係
-            // sum_α s_α(base_pt) * bar_G_α = 0 in A/m^{ν+1} を満たすことを実計算で検算する。
-            let two_context_cech_matches = match compute_syzygies_field(
-                extra_res,
+            // F5 検証: [extra_res..., obs_rels...] の全 syzygy から A = K[O]/I_O 上の
+            // 全 syzygy（先頭 extra_res.len() 成分）を抽出し、基点評価線形関係
+            // sum_α s_α(base_pt) * bar_G_α = 0 in A/m^{ν+1} を実計算で検算する。
+            let mut all_gens = Vec::with_capacity(extra_res.len() + obs_rels.len());
+            all_gens.extend_from_slice(extra_res);
+            all_gens.extend_from_slice(obs_rels);
+            let syz = compute_syzygies_field(
+                &all_gens,
                 obs_order.clone(),
                 MonomialOrder::Grevlex,
                 DEFAULT_MAX_SYZYGY_PAIRS,
-            ) {
-                Ok(syz) => syz.generators.iter().all(|s_vec| {
-                    let mut acc = q_r.algebra.zero_elem();
-                    for (s_poly, img) in s_vec.iter().zip(&projected_tuple) {
-                        let Ok(c) = s_poly.eval_at(base_pt) else {
-                            return false;
-                        };
-                        if !c.coeff_is_zero() {
-                            let scaled = q_r.algebra.scale(img, &c);
-                            acc = q_r.algebra.add(&acc, &scaled);
-                        }
+            )
+            .map_err(|e| SilenceReason::SyzygyOutOfScope {
+                detail: e.to_string(),
+            })?;
+            let two_context_cech_matches = syz.generators.iter().all(|s_vec| {
+                let mut acc = q_r.algebra.zero_elem();
+                for (s_poly, img) in s_vec.iter().take(extra_res.len()).zip(&projected_tuple) {
+                    let Ok(c) = s_poly.eval_at(base_pt) else {
+                        return false;
+                    };
+                    if !c.coeff_is_zero() {
+                        let scaled = q_r.algebra.scale(img, &c);
+                        acc = q_r.algebra.add(&acc, &scaled);
                     }
-                    q_r.algebra.is_zero_elem(&acc)
-                }),
-                Err(_) => false,
-            };
+                }
+                q_r.algebra.is_zero_elem(&acc)
+            });
             return Ok(OrderDetection::Finite {
                 nu: r,
                 r_base_label: prev_label,

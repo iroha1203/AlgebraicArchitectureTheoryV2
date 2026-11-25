@@ -314,19 +314,18 @@ where
             }
             if relative_obstruction_is_zero {
                 if let Some(shifted) = &restored_shifted {
-                    let eval_full = concat_vecs(shifted, param_vals_rp);
-                    let raw_val = ext
-                        .r_prime()
-                        .eval_poly(&rr_poly, &eval_full)
-                        .map_err(map_lift_algebra_error)?;
-                    let inv_h0 = grad_vanishes_on_basis(&grad_rr, &fu_coh.h0_basis, &z_c);
-                    let matched = if inv_h0 {
-                        Some(ext.r_prime().is_zero_elem(&raw_val))
+                    if grad_vanishes_on_basis(&grad_rr, &fu_coh.h0_basis, &z_c) {
+                        let eval_full = concat_vecs(shifted, param_vals_rp);
+                        let raw_val = ext
+                            .r_prime()
+                            .eval_poly(&rr_poly, &eval_full)
+                            .map_err(map_lift_algebra_error)?;
+                        let matched = Some(ext.r_prime().is_zero_elem(&raw_val));
+                        let formatted = ext.r_prime().format_elem(&raw_val);
+                        (Some(formatted), matched, Some((raw_val, rr.negated)))
                     } else {
-                        None
-                    };
-                    let formatted = ext.r_prime().format_elem(&raw_val);
-                    (Some(formatted), matched, Some((raw_val, rr.negated)))
+                        (None, None, None)
+                    }
                 } else {
                     (None, None, None)
                 }
@@ -464,6 +463,15 @@ where
         .enumerate()
         .map(|(i, v)| (v.as_str(), i))
         .collect();
+    let left_vars: BTreeSet<&str> = left_ctx.vars.iter().map(String::as_str).collect();
+    let right_vars: BTreeSet<&str> = right_ctx.vars.iter().map(String::as_str).collect();
+    let overlap_indices: Vec<usize> = spec
+        .variables
+        .iter()
+        .enumerate()
+        .filter(|(_, v)| left_vars.contains(v.as_str()) && right_vars.contains(v.as_str()))
+        .map(|(i, _)| i)
+        .collect();
     let shared_indices: Vec<usize> = cech
         .shared_vars
         .iter()
@@ -471,34 +479,34 @@ where
         .collect();
     let dm = ext.kernel_dim();
     let z = ext.r_prime().zero_coeff.zero_like();
-    let mut rhs_s = Vec::with_capacity(shared_indices.len() * dm);
-    for &idx in &shared_indices {
+    let mut rhs_o = Vec::with_capacity(overlap_indices.len() * dm);
+    for &idx in &overlap_indices {
         for k in 0..dm {
-            rhs_s.push(p_r[idx * dm + k].sub_ref(&p_l[idx * dm + k]));
+            rhs_o.push(p_r[idx * dm + k].sub_ref(&p_l[idx * dm + k]));
         }
     }
     let total_k = k_l.len() + k_r.len();
-    let mut cob_mat = vec![vec![z.clone(); total_k]; rhs_s.len()];
+    let mut cob_mat = vec![vec![z.clone(); total_k]; rhs_o.len()];
     for (c_idx, kb) in k_l.iter().enumerate() {
-        for (s_pos, &v_idx) in shared_indices.iter().enumerate() {
+        for (o_pos, &v_idx) in overlap_indices.iter().enumerate() {
             for k in 0..dm {
-                cob_mat[s_pos * dm + k][c_idx] = kb[v_idx * dm + k].clone();
+                cob_mat[o_pos * dm + k][c_idx] = kb[v_idx * dm + k].clone();
             }
         }
     }
     for (c_off, kb) in k_r.iter().enumerate() {
         let c_idx = k_l.len() + c_off;
-        for (s_pos, &v_idx) in shared_indices.iter().enumerate() {
+        for (o_pos, &v_idx) in overlap_indices.iter().enumerate() {
             for k in 0..dm {
-                cob_mat[s_pos * dm + k][c_idx] = kb[v_idx * dm + k].neg_ref();
+                cob_mat[o_pos * dm + k][c_idx] = kb[v_idx * dm + k].neg_ref();
             }
         }
     }
     let (cech_class_nonzero, left_delta, right_delta) = if total_k == 0 {
-        let nonzero = rhs_s.iter().any(|v| !v.coeff_is_zero());
+        let nonzero = rhs_o.iter().any(|v| !v.coeff_is_zero());
         (nonzero, p_l, p_r)
     } else {
-        match solve_affine_field(&cob_mat, &rhs_s, total_k, &z).map_err(map_lift_algebra_error)? {
+        match solve_affine_field(&cob_mat, &rhs_o, total_k, &z).map_err(map_lift_algebra_error)? {
             AffineSolutionField::Consistent { particular, .. } => {
                 let mut adj_l = p_l;
                 for (c, kb) in particular[..k_l.len()].iter().zip(&k_l) {
@@ -535,15 +543,11 @@ where
 
     let matches_relative_obstruction = if let Some(rc) = rel_cone {
         let left_laws: BTreeSet<&str> = left_ctx.laws.iter().map(String::as_str).collect();
-        let left_vars: BTreeSet<&str> = left_ctx.vars.iter().map(String::as_str).collect();
-        let right_vars: BTreeSet<&str> = right_ctx.vars.iter().map(String::as_str).collect();
         let mut overlap_diff = vec![z.clone(); spec.variables.len() * dm];
-        for (j, v_name) in spec.variables.iter().enumerate() {
-            if left_vars.contains(v_name.as_str()) && right_vars.contains(v_name.as_str()) {
-                for k in 0..dm {
-                    overlap_diff[j * dm + k] =
-                        right_delta[j * dm + k].sub_ref(&left_delta[j * dm + k]);
-                }
+        for &j in &overlap_indices {
+            for k in 0..dm {
+                overlap_diff[j * dm + k] =
+                    right_delta[j * dm + k].sub_ref(&left_delta[j * dm + k]);
             }
         }
         let mut mv_cocycle = vec![z.clone(); rc.fu.dim1()];
@@ -615,9 +619,16 @@ where
             };
             let oriented_match = match ext.extract_kernel_coords_field(&target_rp) {
                 Ok(target_m) => {
-                    let residual: Vec<C> = rhs_s
+                    let target_var_idx = shared_indices[0];
+                    let mut target_overlap = vec![z.clone(); rhs_o.len()];
+                    if let Some(o_pos) = overlap_indices.iter().position(|&v| v == target_var_idx) {
+                        for k in 0..dm {
+                            target_overlap[o_pos * dm + k] = target_m[k].clone();
+                        }
+                    }
+                    let residual: Vec<C> = rhs_o
                         .iter()
-                        .zip(&target_m)
+                        .zip(&target_overlap)
                         .map(|(a, b)| a.sub_ref(b))
                         .collect();
                     if total_k == 0 {

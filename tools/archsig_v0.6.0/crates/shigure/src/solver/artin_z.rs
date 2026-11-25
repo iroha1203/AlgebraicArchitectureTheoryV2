@@ -312,8 +312,14 @@ fn detect_order_z(
             }
             if !nonzero_imgs.is_empty() {
                 let kernel_dim = monos.len().saturating_sub(prev_dim);
-                let two_context_cech_matches =
-                    verify_z_f5_syzygies(extra_res, obs_order, base_pt, &trunc_vecs, None);
+                let two_context_cech_matches = verify_z_f5_syzygies(
+                    extra_res,
+                    obs_rels,
+                    obs_order,
+                    base_pt,
+                    &trunc_vecs,
+                    None,
+                )?;
                 return Ok(OrderDetection::Finite {
                     nu: r,
                     r_base_label: if r == 1 {
@@ -356,8 +362,14 @@ fn detect_order_z(
                         .map_err(map_artin_err)?;
                 let (k_free, k_tors) = exact_sublattice_quotient_z(&snf_comb_r, &cols)?;
                 let kernel_dim = k_free + k_tors.len();
-                let two_context_cech_matches =
-                    verify_z_f5_syzygies(extra_res, obs_order, base_pt, &trunc_vecs, Some(&snf));
+                let two_context_cech_matches = verify_z_f5_syzygies(
+                    extra_res,
+                    obs_rels,
+                    obs_order,
+                    base_pt,
+                    &trunc_vecs,
+                    Some(&snf),
+                )?;
                 return Ok(OrderDetection::Finite {
                     nu: r,
                     r_base_label: if r == 1 {
@@ -390,24 +402,30 @@ fn detect_order_z(
     })
 }
 
-/// F5 検証: Z 上の `extra_res` の syzygy 関係が `A_Z/m^{ν+1}` 上の像タプルを零化することを検算する。
+/// F5 検証: Z 上の `[extra_res..., obs_rels...]` の syzygy 関係（A_Z = Z[O]/I_O 上の syzygy）が
+/// `A_Z/m^{ν+1}` 上の像タプルを零化することを検算する。未保証非線形族は fail-closed に沈黙する。
 fn verify_z_f5_syzygies(
     extra_res: &[Poly<BigInt>],
+    obs_rels: &[Poly<BigInt>],
     obs_order: &VarOrder,
     base_pt: &[BigInt],
     trunc_vecs: &[Vec<BigInt>],
     snf_io: Option<&SmithFormZ>,
-) -> bool {
+) -> Result<bool, SilenceReason> {
     let dim = trunc_vecs.first().map_or(0, Vec::len);
-    if extra_res.len() <= 1 {
-        return true;
+    let mut all_gens = Vec::with_capacity(extra_res.len() + obs_rels.len());
+    all_gens.extend_from_slice(extra_res);
+    all_gens.extend_from_slice(obs_rels);
+    if all_gens.len() <= 1 {
+        return Ok(true);
     }
-    let Ok(syz) = compute_syzygies_z(extra_res, obs_order.clone()) else {
-        return false;
-    };
-    syz.generators.iter().all(|s_vec| {
+    let syz =
+        compute_syzygies_z(&all_gens, obs_order.clone()).map_err(|e| SilenceReason::SyzygyOutOfScope {
+            detail: e.to_string(),
+        })?;
+    let ok = syz.generators.iter().all(|s_vec| {
         let mut acc = vec![BigInt::zero(); dim];
-        for (s_poly, img) in s_vec.iter().zip(trunc_vecs) {
+        for (s_poly, img) in s_vec.iter().take(extra_res.len()).zip(trunc_vecs) {
             let Ok(c) = s_poly.eval_at(base_pt) else {
                 return false;
             };
@@ -421,7 +439,8 @@ fn verify_z_f5_syzygies(
             Some(snf) => in_z_snf_image(snf, &acc),
             None => acc.iter().all(Zero::is_zero),
         }
-    })
+    });
+    Ok(ok)
 }
 
 /// 次数有界な Z-線形結合による `g ∈ <rels>` の健全な十分証明（cofactor 再構成による独立再検算付き）。
