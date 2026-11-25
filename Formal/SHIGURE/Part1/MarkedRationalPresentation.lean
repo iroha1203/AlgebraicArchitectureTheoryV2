@@ -110,6 +110,10 @@ def laws : vocabulary.Laws where
 /-- The ordinary SHIGURE presentation of the rational example. -/
 noncomputable abbrev presentation := vocabulary.presentation laws
 
+/-- The rational presentation keeps each named round-trip Law. -/
+theorem presentation_roundTrip (name : Op) : presentation.laws.statement (.inl name) = roundTrip name :=
+  rfl
+
 /-- p and r belong to separate pieces, and q is shared. -/
 def keepsModule (right : Bool) : SortName → Prop
   | .p => right = false
@@ -141,7 +145,7 @@ private theorem kept_total_support (right : Bool) (name : vocabulary.Symbol)
     · rw [Set.mem_singleton_iff.mp same]
       exact True.intro
   | multilinear name =>
-    rw [vocabulary.multilinear_dependencies]
+    rw [vocabulary.multilinear_dependencies, Declaration.sorts_eq_image]
     rintro _ ⟨s, occurs, rfl⟩
     cases name <;> cases right <;>
       simp_all [vocabulary, keeps, Op.source, Op.target, Op.right, keepsModule] <;> aesop
@@ -152,8 +156,12 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
     Declaration.sorts (P := presentation) op.arity.inputs ⊆ {d | keeps right d} := by
   cases op with
   | total name =>
+    rw [Declaration.ofOperation_total] at kept
+    rw [Declaration.sorts_eq_image]
     rintro _ ⟨s, occurs, rfl⟩
-    exact kept_total_support right name kept ⟨s, List.mem_cons_of_mem _ occurs, rfl⟩
+    have support := kept_total_support right name kept
+    rw [Declaration.total_dependencies, Declaration.sorts_eq_image] at support
+    exact support ⟨s, List.mem_cons_of_mem _ occurs, rfl⟩
   | partialOp p => exact nomatch p
   | quantity q => exact nomatch q
 
@@ -161,6 +169,7 @@ private theorem kept_input_sorts (right : Bool) (op : Operation vocabulary.signa
 private theorem kept_sorts (right : Bool) {Γ : List (Option SortName)}
     (all : ∀ s ∈ Γ, keeps right (.sort s)) :
     Declaration.sorts (P := presentation) Γ ⊆ {d | keeps right d} := by
+  rw [Declaration.sorts_eq_image]
   rintro _ ⟨s, occurs, rfl⟩
   exact all s occurs
 
@@ -171,10 +180,12 @@ private theorem unary_refs (right : Bool) {Γ : List (Option SortName)} (name : 
     (refs : Selected.termReferences (P := presentation) x ⊆ {d | keeps right d}) :
     Selected.termReferences (P := presentation) (unary name x) ⊆ {d | keeps right d} := by
   unfold unary
-  apply app_refs (P := presentation) (.total (Symbol.multilinear name)) _ kept
+  apply app_refs (P := presentation) (.total (Symbol.multilinear name)) _ (by
+    rw [Declaration.ofOperation_total]
+    exact kept)
   intro t position
   cases position with
-  | here => exact refs
+  | here => simpa only [Term.argsCons_here] using refs
   | there empty => cases empty
 
 /-- The term obtained by updating the only argument is the ordinary unary application. -/
@@ -182,11 +193,12 @@ private theorem unary_updated {Γ : List (Option SortName)} (name : Op)
     (names : Renaming (vocabulary.inputs name) Γ)
     (x : Term vocabulary.signature Γ (some name.source)) :
     vocabulary.updatedTerm names (argument name) x = unary name x := by
+  rw [Vocabulary.updatedTerm_eq]
   apply congrArg (fun (args : ∀ {s}, Var [some name.source] s → Term vocabulary.signature Γ s) =>
     Term.app (sig := vocabulary.signature) (.total (Symbol.multilinear name)) args)
   funext s position
   cases position with
-  | here => exact vocabulary.updatedTerms_same names (argument name) x
+  | here => simpa only [Term.argsCons_here] using vocabulary.updatedTerms_same names (argument name) x
   | there empty => cases empty
 
 /-- Each rational piece retains the syntax of its own required round-trip Law. -/
@@ -211,7 +223,7 @@ private theorem linearity_supported (right : Bool) (linearity : vocabulary.Linea
   cases linearity with
   | add name i | smul name i =>
     obtain rfl := argument_eq name i
-    cases name <;> cases right <;> simp [LinearityLaw.symbol, Op.right] at side
+    cases name <;> cases right <;> simp [LinearityLaw.symbol_add, LinearityLaw.symbol_smul, Op.right] at side
     all_goals
       simp only [LinearityLaw.statement_add, LinearityLaw.statement_smul, addLinearityLaw_eq,
         smulLinearityLaw_eq, unary_updated]
@@ -231,7 +243,9 @@ private theorem kept_law_support (right : Bool) (name : presentation.laws.LawNam
     Declaration.dependsOn presentation (.law name) ⊆ {d | keeps right d} := by
   rw [Declaration.nonderived_dependencies (P := presentation) name (by cases name <;> intro h <;> cases h)]
   cases name with
-  | inl name => exact roundTrip_supported right name kept
+  | inl name =>
+    rw [presentation_roundTrip]
+    exact roundTrip_supported right name kept
   | inr name =>
     rw [vocabulary.linearity_statement]
     exact linearity_supported right name kept
@@ -241,7 +255,7 @@ def piece (right : Bool) : DeclarationContext presentation where
   declarations := {d | keeps right d}
   closed {a} kept := by
     cases a with
-    | sort s => exact Set.empty_subset _
+    | sort s => rw [Declaration.sort_dependencies]; exact Set.empty_subset _
     | total name => exact kept_total_support right name kept
     | law n => exact kept_law_support right n kept
     | relation p => exact nomatch p

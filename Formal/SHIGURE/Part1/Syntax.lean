@@ -147,6 +147,16 @@ def rename : {Γ Δ : List sig.SortType} → Renaming Γ Δ → Formula sig Γ �
     (Formula.atom a).rename ρ = .atom (a.rename ρ) :=
   rfl
 
+/-- Renaming free positions preserves truth in the new context. -/
+theorem rename_truth (ρ : Renaming Γ Δ) :
+    (Formula.truth (sig := sig) (Γ := Γ)).rename ρ = .truth :=
+  rfl
+
+/-- Renaming free positions preserves falsehood in the new context. -/
+theorem rename_falsehood (ρ : Renaming Γ Δ) :
+    (Formula.falsehood (sig := sig) (Γ := Γ)).rename ρ = .falsehood :=
+  rfl
+
 /-- Renaming a conjunction acts on each conjunct. -/
 @[simp] theorem rename_conj (p q : Formula sig Γ) (ρ : Renaming Γ Δ) :
     (p.conj q).rename ρ = (p.rename ρ).conj (q.rename ρ) :=
@@ -177,6 +187,16 @@ def Holds : {Γ : List sig.SortType} → Formula sig Γ → (A : Structure sig) 
     (Formula.atom a).Holds A e ↔ a.Holds A e :=
   Iff.rfl
 
+/-- The truth formula always holds on an assignment. -/
+theorem holds_truth_iff (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Formula.truth (sig := sig) (Γ := Γ)).Holds A e ↔ True :=
+  Iff.rfl
+
+/-- The falsehood formula never holds on an assignment. -/
+theorem holds_falsehood_iff (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Formula.falsehood (sig := sig) (Γ := Γ)).Holds A e ↔ False :=
+  Iff.rfl
+
 /-- Conjunction combines the two satisfaction conditions. -/
 @[simp] theorem holds_conj (p q : Formula sig Γ) (A : Structure sig)
     (e : Assignment A.carrier Γ) : (p.conj q).Holds A e ↔ p.Holds A e ∧ q.Holds A e :=
@@ -192,6 +212,31 @@ def Holds : {Γ : List sig.SortType} → Formula sig Γ → (A : Structure sig) 
     (e : Assignment A.carrier Γ) :
     (Formula.ex p).Holds A e ↔ ∃ x : A.carrier s, p.Holds A (Assignment.cons x e) :=
   Iff.rfl
+
+/-- Reindexing a formula and its assignment by the same context equality preserves satisfaction. -/
+theorem holds_cast_context {Δ : List sig.SortType} (same : Γ = Δ) (p : Formula sig Γ)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (cast (congrArg (Formula sig) same) p).Holds A (cast (congrArg (Assignment A.carrier) same) e) ↔
+      p.Holds A e := by
+  cases same
+  rfl
+
+/-- Transport a conjunction by transporting both conjuncts along the same context equality. -/
+theorem cast_conj_context {Δ : List sig.SortType} (same : Γ = Δ) (p q : Formula sig Γ) :
+    cast (congrArg (Formula sig) same) (p.conj q) =
+      (cast (congrArg (Formula sig) same) p).conj (cast (congrArg (Formula sig) same) q) := by
+  cases same
+  rfl
+
+/-- Transporting the variable map and input formula transports the renamed formula. -/
+theorem rename_cast_context {Γ' Δ Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (ρ : Renaming Γ Δ) (p : Formula sig Γ) :
+    cast (congrArg (Formula sig) target) (p.rename ρ) =
+      (cast (congrArg (Formula sig) source) p).rename
+        (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ) := by
+  cases source
+  cases target
+  rfl
 
 /-- Satisfaction commutes with capture-free renaming of arbitrary positive formulas. -/
 @[simp] theorem holds_rename (A : Structure sig) (p : Formula sig Γ) :
@@ -390,6 +435,14 @@ theorem totalValue_var [IsEmpty sig.Partial] (index : Var Γ s)
     (A : Structure sig) (e : Assignment A.carrier Γ) : (Term.var index).totalValue A e = e index :=
   rfl
 
+/-- Evaluate a total operation at the values of its argument terms. -/
+theorem totalValue_total [IsEmpty sig.Partial] (f : sig.Total)
+    (args : ∀ {t}, Var (sig.totalArity f).inputs t → Term sig Γ t)
+    (A : Structure sig) (e : Assignment A.carrier Γ) :
+    (Term.app (.total f) args).totalValue A e =
+      A.total f ⟨fun i => (args i).totalValue A e⟩ :=
+  rfl
+
 /-- The total evaluator yields the value of the general partial evaluation relation. -/
 theorem evaluates_totalValue [IsEmpty sig.Partial] (A : Structure sig) (term : Term sig Γ s) :
     ∀ e : Assignment A.carrier Γ, term.Evaluates A e (term.totalValue A e) := by
@@ -468,6 +521,17 @@ theorem graphAt_letBind {Δ : List sig.SortType} {a : sig.SortType}
     (Term.letBind init body).graphAt ρ out =
       ((init.graphAt (fun i => .there (ρ i)) .here).conj
         (body.graphAt (Renaming.lift ρ) (.there out))).ex := rfl
+
+/-- Changing the contexts of the term and its output also transports the variable map and graph. -/
+theorem graphAt_cast_context {Γ' Δ Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (t : Term sig Γ s) (ρ : Renaming Γ Δ) (out : Var Δ s) :
+    cast (congrArg (Formula sig) target) (t.graphAt ρ out) =
+      (cast (congrArg (fun ctx => Term sig ctx s) source) t).graphAt
+        (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ)
+        (cast (congrArg (fun ctx => Var ctx s) target) out) := by
+  cases source
+  cases target
+  rfl
 
 /-- A variable application graph introduces one witness per argument as in (1.3). -/
 theorem graphAt_app_vars (op : Operation sig) (args : Renaming op.arity.inputs Γ)
@@ -555,12 +619,51 @@ def TotalSymbol.operation {sig : Signature.{u}} : TotalSymbol sig → Operation 
   | .ordinary f => .total f
   | .quantity q => .quantity q
 
+/-- An ordinary total symbol contributes its total operation to term syntax. -/
+theorem TotalSymbol.operation_ordinary {sig : Signature.{u}} (f : sig.Total) :
+    (TotalSymbol.ordinary f).operation = .total f :=
+  rfl
+
+/-- A quantity symbol contributes its marked quantity operation to term syntax. -/
+theorem TotalSymbol.operation_quantity {sig : Signature.{u}} (q : sig.Quantity) :
+    (TotalSymbol.quantity q).operation = .quantity q :=
+  rfl
+
 /-- A declared total symbol whose input and output profile has been identified. -/
 structure TypedTotal (sig : Signature.{u}) (profile : Arity sig.SortType) : Type u where
   /-- The existing symbol in the signature. -/
   symbol : TotalSymbol sig
   /-- Its declared profile agrees with the selected profile. -/
   arity_eq : symbol.operation.arity = profile
+
+namespace Term
+
+/-- Form an application using an arity identified with the operation's declared arity.
+
+Implementation notes: the equality of arities transports typed argument positions
+and the result sort. Using unrestricted argument lists would discard the input
+and output typing preserved by selection. -/
+def reindexedApp {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
+    {a : Arity sig.SortType} (same : op.arity = a) (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
+    Term sig Γ a.output :=
+  cast (congrArg (Term sig Γ) (congrArg Arity.output same))
+    (.app op (fun {s} j => args (cast (congrArg (fun arity => Var arity.inputs s) same) j)))
+
+/-- When the arity needs no transport, the application is the original constructor. -/
+theorem reindexedApp_rfl {sig : Signature.{u}} {Γ : List sig.SortType} (op : Operation sig)
+    (args : ∀ {s}, Var op.arity.inputs s → Term sig Γ s) :
+    reindexedApp op rfl args = .app op args :=
+  rfl
+
+/-- Two equal operations give the same application at a common arity. -/
+theorem reindexedApp_congr {sig : Signature.{u}} {Γ : List sig.SortType} {op op' : Operation sig}
+    (equal : op = op') {a : Arity sig.SortType} (shape : op.arity = a) (shape' : op'.arity = a)
+    (args : ∀ {s}, Var a.inputs s → Term sig Γ s) :
+    reindexedApp op shape args = reindexedApp op' shape' args := by
+  subst op'
+  rfl
+
+end Term
 
 namespace TypedTotal
 
@@ -572,6 +675,23 @@ def term (op : TypedTotal sig profile) {Γ : List sig.SortType}
   obtain ⟨symbol, h⟩ := op
   subst profile
   exact .app symbol.operation args
+
+/-- A typed total term is an application reindexed to its specified arity. -/
+theorem term_eq_reindexedApp (op : TypedTotal sig profile) {Γ : List sig.SortType}
+    (args : ∀ {s}, Var profile.inputs s → Term sig Γ s) :
+    op.term args = Term.reindexedApp op.symbol.operation op.arity_eq args := by
+  rcases op with ⟨symbol, same⟩
+  cases same
+  exact (Term.reindexedApp_rfl symbol.operation args).symm
+
+/-- Moving the input list of a typed symbol transports exactly its argument positions. -/
+theorem term_cast_inputs {Γ inputs inputs' : List sig.SortType} {output : sig.SortType}
+    (same : inputs = inputs') (op : TypedTotal sig ⟨inputs, output⟩)
+    (args : ∀ {s}, Var inputs' s → Term sig Γ s) :
+    (cast (congrArg (fun xs => TypedTotal sig ⟨xs, output⟩) same) op).term args =
+      op.term (fun {s} i => args (cast (congrArg (Var · s) same) i)) := by
+  cases same
+  rfl
 
 /-- Evaluate the interpretation of a declared total symbol on its typed input tuple. -/
 def value (op : TypedTotal sig profile) (A : Structure sig)
@@ -663,19 +783,27 @@ theorem termDomain_eq_bindArguments (p : sig.Partial)
 def termGraph (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
     (out : Term sig Γ op.arity.output) : Formula sig Γ :=
   bindArguments (op.arity.output :: op.arity.inputs)
-    (fun index => match index with
-      | .here => out
-      | .there previous => terms previous)
+    (Term.argsCons out terms)
     (.atom (.graph op (fun index => (Var.there index).inLeft Γ) (Var.here.inLeft Γ)))
 
 /-- A term graph binds the output term and every input term before testing its graph atom. -/
 theorem termGraph_eq_bindArguments (op : Operation sig) (terms : ∀ {s}, Var op.arity.inputs s → Term sig Γ s)
     (out : Term sig Γ op.arity.output) : termGraph op terms out =
       bindArguments (op.arity.output :: op.arity.inputs)
-        (fun i => match i with
-          | .here => out
-          | .there index => terms index)
+        (Term.argsCons out terms)
         (.atom (.graph op (fun i => (Var.there i).inLeft Γ) (Var.here.inLeft Γ))) := rfl
+
+/-- Equal operation tags give the same term graph at a common arity. -/
+theorem termGraph_congr_arity {op op' : Operation sig} (same : op = op') {a : Arity sig.SortType}
+    (left : op.arity = a)
+    (terms : ∀ {s}, Var a.inputs s → Term sig Γ s) (out : Term sig Γ a.output) :
+    let right := (congrArg Operation.arity same).symm.trans left
+    termGraph op (fun {s} i => terms (cast (congrArg (fun profile => Var profile.inputs s) left) i))
+      (cast (congrArg (Term sig Γ) (congrArg Arity.output left.symm)) out) =
+    termGraph op' (fun {s} i => terms (cast (congrArg (fun profile => Var profile.inputs s) right) i))
+      (cast (congrArg (Term sig Γ) (congrArg Arity.output right.symm)) out) := by
+  subst op'
+  rfl
 
 /-- A term relation tests the tuple of evaluated argument values. -/
 theorem holds_termRel (r : sig.Rel) (terms : ∀ {s}, Var (sig.relInputs r) s → Term sig Γ s)

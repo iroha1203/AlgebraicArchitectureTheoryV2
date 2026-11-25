@@ -2218,8 +2218,9 @@ private def derivePaddedAxiom (i : RingVocabulary.LawName) :
   let graph : Formula signature [.vector] :=
     .atom (.graph (.total Symbol.vectorZero) (fun j => .there j) .here)
   let body := graph.rename (Renaming.lift (s := .vector) weaken)
-  have total : Derivation T (.truth : Formula signature []) graph.ex :=
-    Derivation.graph (T := T) (.totality Symbol.vectorZero)
+  have total : Derivation T (.truth : Formula signature []) graph.ex := by
+    simpa only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, graph] using
+      Derivation.graph (T := T) (.totality Symbol.vectorZero)
   have existsZero : Derivation T (.truth : Formula signature law.context) body.ex :=
     @Derivation.rename T [] law.context .truth graph.ex (@weaken) total
   let name : {a : paddedLaws.LawName // a ∈ Set.range Sum.inr} := ⟨.inr i, ⟨i, rfl⟩⟩
@@ -2244,11 +2245,34 @@ def paddedPresentation : PrimitivePresentation where
     | .inr _ => none
   derived _ h := by cases h
 
+/-- The padded presentation registers the unit and zero graphs with the same output variable. -/
+theorem paddedPresentation_equality_statement :
+    paddedPresentation.laws.statement (.inl ()) =
+      ⟨[], .truth, ((Formula.conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarOne)
+        (Var.inLeft [SortName.scalar]) .here))).conj
+        (.conj .truth (.atom (.graph (Operation.total (sig := signature) Symbol.scalarZero)
+          (Var.inLeft [SortName.scalar]) .here)))).ex⟩ :=
+  rfl
+
+/-- The named padded equality is an additional Law. -/
+theorem paddedPresentation_equality_role : paddedPresentation.laws.role (.inl ()) = .additional :=
+  rfl
+
+/-- The padded equality has a registered ring attachment. -/
+theorem paddedPresentation_ring_isSome : (paddedPresentation.ringEquation (.inl ())).isSome :=
+  rfl
+
+/-- The registered padded attachment uses exactly the named ring axioms. -/
+theorem paddedPresentation_ring_axiomNames :
+    ((paddedPresentation.ringEquation (.inl ())).get paddedPresentation_ring_isSome).axiomNames =
+      Set.range Sum.inr :=
+  rfl
+
 /-- A retained residual keeps a constant used in its proof, even when no written ring Law names it. -/
 theorem residual_retains_witness_operation (U : DeclarationContext paddedPresentation)
     (support : U.RetainsRingSupport (.inl ())) :
     Declaration.total (P := paddedPresentation) Symbol.vectorZero ∈ U.declarations := by
-  apply support
+  apply (U.retainsRingSupport_iff (.inl ())).1 support
   apply Declaration.ringProof_mem_ringEquationSupport (equation := paddedEquation) (i := .zeroAdd) rfl
   have derivation_eq : paddedEquation.axioms_derive .zeroAdd = derivePaddedAxiom .zeroAdd := rfl
   rw [derivation_eq]

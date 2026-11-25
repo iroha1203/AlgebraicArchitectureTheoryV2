@@ -35,13 +35,14 @@ noncomputable def localRealization (right : Bool) {K : Kernel ℚ 2}
     have localSupport := Declaration.lawBody_subset_of_mem name.property
     have fullSupport : Declaration.lawBody (P := presentation) law ⊆ whole.declarations := Set.subset_univ _
     have primitiveHolds : law.Holds fullData.structureData := by
-      change (presentation.laws.statement name.val.val).Holds fullData.structureData
+      rw [show law = _ from (cover.piece right).scopedTheory_law name, PrimitivePresentation.theory_law]
       cases h : name.val.val with
       | inl roundTripName =>
-        change (roundTrip roundTripName).Holds (coordinateData whole coord).structureData
-        rw [coordinateData_full_structure]
+        rw [presentation_roundTrip, coordinateData_full_structure]
         exact all_roundTrips coord roundTripName
-      | inr linearity => exact holds_linearity fullData linearity
+      | inr linearity =>
+        rw [vocabulary.linearity_statement]
+        exact (vocabulary.linearity_statement laws linearity) ▸ holds_linearity fullData linearity
     have fullHolds := (fullData.contextStructure_satisfies_iff law fullSupport).2 primitiveHolds
     have localHolds := (fullData.contextStructure.restrict_satisfies_iff (cover.subset right) law localSupport).2 fullHolds
     rw [fullData.contextStructure_restrict, coordinateData_restrict] at localHolds
@@ -63,12 +64,12 @@ theorem assembled_restricts (right : Bool) :
 
 /-- All four written round-trip Laws hold in the assembled global marked structure. -/
 theorem assembled_all_laws (name : Op) : (roundTrip name).Holds assembled.data.structureData :=
-  assembled.holds ⟨⟨.inl name, rfl⟩, Set.mem_univ _⟩
+  presentation_roundTrip name ▸ assembled.holds_statement ⟨⟨.inl name, rfl⟩, Set.mem_univ _⟩
 
 /-- The ordinary theory's generated equality Laws also hold after marked assembly. -/
 theorem assembled_all_linearity (name : vocabulary.LinearityLaw) :
     (presentation.laws.statement (.inr name)).Holds assembled.data.structureData :=
-  assembled.holds ⟨⟨.inr name, rfl⟩, Set.mem_univ _⟩
+  assembled.holds_statement ⟨⟨.inr name, rfl⟩, Set.mem_univ _⟩
 
 /-- Equation (3.5) is the shared kernel of the positive assembly. The retained
 sort proof is the explicit index of the kernel field. The full context supplies
@@ -88,8 +89,8 @@ theorem positive_existsUnique :
 theorem changed_right_laws :
     (roundTrip .u).Holds (localRealization true phiChanged).data.structureData ∧
       (roundTrip .v).Holds (localRealization true phiChanged).data.structureData :=
-  ⟨(localRealization true phiChanged).holds ⟨⟨.inl .u, rfl⟩, rfl⟩,
-    (localRealization true phiChanged).holds ⟨⟨.inl .v, rfl⟩, rfl⟩⟩
+  ⟨presentation_roundTrip .u ▸ (localRealization true phiChanged).holds_statement ⟨⟨.inl .u, rfl⟩, rfl⟩,
+    presentation_roundTrip .v ▸ (localRealization true phiChanged).holds_statement ⟨⟨.inl .v, rfl⟩, rfl⟩⟩
 
 /-- The changed right kernel directly fails the agreement predicate on the shared q sort. -/
 theorem changed_overlap_not_agree :
@@ -112,6 +113,7 @@ def qSortAlone : DeclarationContext presentation where
   closed kept := by
     have same := Set.mem_singleton_iff.mp kept
     subst same
+    rw [Declaration.sort_dependencies]
     exact Set.empty_subset _
 
 /-- The dependency-closed context of q alone omits the fixed coefficient sort. -/

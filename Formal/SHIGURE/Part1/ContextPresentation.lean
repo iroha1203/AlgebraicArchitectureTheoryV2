@@ -31,28 +31,56 @@ def graphRuleName : GraphAxiom P.signature → Declaration P
   | .quantityTotality q => .quantity q
   | .graphImpliesDomain p | .domainImpliesGraph p => .partialOp p
 
+/-- The functional rule uses the tagged operation. -/
+theorem graphRuleName_functional (op : Operation P.signature) :
+    graphRuleName (P := P) (.functional op) = ofOperation op :=
+  rfl
+
+/-- The totality rule uses the total operation. -/
+theorem graphRuleName_totality (f : P.signature.Total) :
+    graphRuleName (P := P) (.totality f) = .total f :=
+  rfl
+
+/-- The quantityTotality rule uses the quantity. -/
+theorem graphRuleName_quantityTotality (q : P.signature.Quantity) :
+    graphRuleName (P := P) (.quantityTotality q) = .quantity q :=
+  rfl
+
+/-- The graphImpliesDomain rule uses the partial operation. -/
+theorem graphRuleName_graphImpliesDomain (p : P.signature.Partial) :
+    graphRuleName (P := P) (.graphImpliesDomain p) = .partialOp p :=
+  rfl
+
+/-- The domainImpliesGraph rule uses the partial operation. -/
+theorem graphRuleName_domainImpliesGraph (p : P.signature.Partial) :
+    graphRuleName (P := P) (.domainImpliesGraph p) = .partialOp p :=
+  rfl
+
 /-- Every structural graph rule refers to its primitive in its written sequent. -/
 theorem graphRuleName_mem_lawBody (rule : GraphAxiom P.signature) :
     graphRuleName (P := P) rule ∈ lawBody rule.toLaw := by
-  cases rule <;> simp [graphRuleName, lawBody, GraphAxiom.toLaw, GraphAxiom.hasOutput,
-    formula, atomic, ofOperation]
+  cases rule <;> simp [graphRuleName, lawBody_eq, GraphAxiom.toLaw_functional, GraphAxiom.toLaw_totality,
+    GraphAxiom.toLaw_quantityTotality, GraphAxiom.toLaw_graphImpliesDomain, GraphAxiom.toLaw_domainImpliesGraph,
+    GraphAxiom.hasOutput_eq_ex_graph, formula_atom, formula_truth, formula_conj, formula_ex,
+    atomic_eq, atomic_domain, atomic_graph, ofOperation_total, ofOperation_partialOp, ofOperation_quantity]
 
 /-- The proof of a graph rule uses the primitive in that structural rule. -/
 theorem graphRuleName_mem_derivation (rule : GraphAxiom P.signature) :
     graphRuleName (P := P) rule ∈ derivation (Derivation.graph (T := P.theory) rule) :=
-  Or.inl (graphRuleName_mem_lawBody rule)
+  lawBody_subset_derivationOf Subtype.val (Derivation.graph (T := P.theory) rule)
+    (graphRuleName_mem_lawBody rule)
 
 /-- Cutting two proofs retains every declaration from the first proof. -/
 theorem derivation_cut_left {Γ : List P.signature.SortType} {p q r : Formula P.signature Γ}
     (left : Derivation P.theory p q) (right : Derivation P.theory q r) :
     derivation left ⊆ derivation (.cut left right) :=
-  fun _ kept => Or.inr (Or.inl kept)
+  derivationOf_cut_left rfl Subtype.val left right
 
 /-- Conjunction introduction retains every declaration from its second proof. -/
 theorem derivation_andIntro_right {Γ : List P.signature.SortType} {p q r : Formula P.signature Γ}
     (left : Derivation P.theory p q) (right : Derivation P.theory p r) :
     derivation right ⊆ derivation (.andIntro left right) :=
-  fun _ kept => Or.inr (Or.inr kept)
+  derivationOf_andIntro_right rfl Subtype.val left right
 
 end Declaration
 
@@ -109,42 +137,64 @@ noncomputable def restrictDerivation {Γ : List P.theory.signature.SortType} {p 
     (d : Derivation P.theory p q) (used : Declaration.derivation d ⊆ U.declarations) :
     U.DerivationIn p q := by
   induction d with
-  | refl p => exact ⟨Derivation.refl (T := U.scopedTheory) p, used⟩
+  | refl p => exact ⟨Derivation.refl (T := U.scopedTheory) p, by simpa only [Declaration.derivationOf_support_eq] using used⟩
   | cut l r left right =>
-    let l' := left (fun _ a => used (Or.inr (Or.inl a)))
-    let r' := right (fun _ a => used (Or.inr (Or.inr a)))
-    exact ⟨Derivation.cut (T := U.scopedTheory) l'.val r'.val, fun _ a => a.elim (fun h => used (Or.inl h))
-      (fun h => h.elim (fun kept => l'.property kept) (fun kept => r'.property kept))⟩
+    let l' := left ((Declaration.derivationOf_cut_left rfl Subtype.val l r).trans used)
+    let r' := right ((Declaration.derivationOf_cut_right rfl Subtype.val l r).trans used)
+    refine ⟨Derivation.cut (T := U.scopedTheory) l'.val r'.val, ?_⟩
+    rw [Declaration.derivationOf_support_eq]
+    exact Set.union_subset
+      ((Declaration.lawBody_subset_derivationOf Subtype.val (Derivation.cut l r)).trans used)
+      (Set.union_subset l'.property r'.property)
   | required name =>
     have kept : Declaration.law name.val ∈ U.declarations :=
       used (Declaration.required_mem_derivation name)
-    exact ⟨Derivation.required (T := U.scopedTheory) ⟨name, kept⟩, used⟩
-  | graph rule => exact ⟨Derivation.graph (T := U.scopedTheory) rule, used⟩
+    let retained : U.scopedTheory.LawName := ⟨name, kept⟩
+    have proof : U.DerivationIn (U.scopedTheory.law retained).input (U.scopedTheory.law retained).conclusion :=
+      ⟨Derivation.required (T := U.scopedTheory) retained,
+        by simpa only [Declaration.derivationOf_support_eq] using used⟩
+    rw [U.scopedTheory_law retained] at proof
+    exact proof
+  | graph rule => exact ⟨Derivation.graph (T := U.scopedTheory) rule, by simpa only [Declaration.derivationOf_support_eq] using used⟩
   | rename positions child restricted =>
-    let child' := restricted (fun _ a => used (Or.inr a))
-    exact ⟨Derivation.rename (T := U.scopedTheory) positions child'.val, fun _ a => a.elim (fun h => used (Or.inl h)) (fun kept => child'.property kept)⟩
-  | truth p => exact ⟨Derivation.truth (T := U.scopedTheory) p, used⟩
-  | falsehood p => exact ⟨Derivation.falsehood (T := U.scopedTheory) _, used⟩
-  | andLeft p q => exact ⟨Derivation.andLeft (T := U.scopedTheory) _ _, used⟩
-  | andRight p q => exact ⟨Derivation.andRight (T := U.scopedTheory) p q, used⟩
+    let child' := restricted ((Declaration.derivationOf_rename rfl Subtype.val positions child).trans used)
+    refine ⟨Derivation.rename (T := U.scopedTheory) positions child'.val, ?_⟩
+    rw [Declaration.derivationOf_support_eq]
+    exact Set.union_subset
+      ((Declaration.lawBody_subset_derivationOf Subtype.val (Derivation.rename positions child)).trans used)
+      child'.property
+  | truth p => exact ⟨Derivation.truth (T := U.scopedTheory) p, by simpa only [Declaration.derivationOf_support_eq] using used⟩
+  | falsehood p => exact ⟨Derivation.falsehood (T := U.scopedTheory) _, by simpa only [Declaration.derivationOf_support_eq] using used⟩
+  | andLeft p q => exact ⟨Derivation.andLeft (T := U.scopedTheory) _ _, by simpa only [Declaration.derivationOf_support_eq] using used⟩
+  | andRight p q => exact ⟨Derivation.andRight (T := U.scopedTheory) p q, by simpa only [Declaration.derivationOf_support_eq] using used⟩
   | andIntro l r left right =>
-    let l' := left (fun _ a => used (Or.inr (Or.inl a)))
-    let r' := right (fun _ a => used (Or.inr (Or.inr a)))
-    exact ⟨Derivation.andIntro (T := U.scopedTheory) l'.val r'.val, fun _ a => a.elim (fun h => used (Or.inl h))
-      (fun h => h.elim (fun kept => l'.property kept) (fun kept => r'.property kept))⟩
-  | orLeft p q => exact ⟨Derivation.orLeft (T := U.scopedTheory) p q, used⟩
-  | orRight p q => exact ⟨Derivation.orRight (T := U.scopedTheory) _ _, used⟩
+    let l' := left ((Declaration.derivationOf_andIntro_left rfl Subtype.val l r).trans used)
+    let r' := right ((Declaration.derivationOf_andIntro_right rfl Subtype.val l r).trans used)
+    refine ⟨Derivation.andIntro (T := U.scopedTheory) l'.val r'.val, ?_⟩
+    rw [Declaration.derivationOf_support_eq]
+    exact Set.union_subset
+      ((Declaration.lawBody_subset_derivationOf Subtype.val (Derivation.andIntro l r)).trans used)
+      (Set.union_subset l'.property r'.property)
+  | orLeft p q => exact ⟨Derivation.orLeft (T := U.scopedTheory) p q, by simpa only [Declaration.derivationOf_support_eq] using used⟩
+  | orRight p q => exact ⟨Derivation.orRight (T := U.scopedTheory) _ _, by simpa only [Declaration.derivationOf_support_eq] using used⟩
   | orElim l r left right =>
-    let l' := left (fun _ a => used (Or.inr (Or.inl a)))
-    let r' := right (fun _ a => used (Or.inr (Or.inr a)))
-    exact ⟨Derivation.orElim (T := U.scopedTheory) l'.val r'.val, fun _ a => a.elim (fun h => used (Or.inl h))
-      (fun h => h.elim (fun kept => l'.property kept) (fun kept => r'.property kept))⟩
-  | existsIntro body x => exact ⟨Derivation.existsIntro (T := U.scopedTheory) body x, used⟩
+    let l' := left ((Declaration.derivationOf_orElim_left rfl Subtype.val l r).trans used)
+    let r' := right ((Declaration.derivationOf_orElim_right rfl Subtype.val l r).trans used)
+    refine ⟨Derivation.orElim (T := U.scopedTheory) l'.val r'.val, ?_⟩
+    rw [Declaration.derivationOf_support_eq]
+    exact Set.union_subset
+      ((Declaration.lawBody_subset_derivationOf Subtype.val (Derivation.orElim l r)).trans used)
+      (Set.union_subset l'.property r'.property)
+  | existsIntro body x => exact ⟨Derivation.existsIntro (T := U.scopedTheory) body x, by simpa only [Declaration.derivationOf_support_eq] using used⟩
   | existsElim child restricted =>
-    let child' := restricted (fun _ a => used (Or.inr a))
-    exact ⟨Derivation.existsElim (T := U.scopedTheory) child'.val, fun _ a => a.elim (fun h => used (Or.inl h)) (fun kept => child'.property kept)⟩
-  | eqRefl x => exact ⟨Derivation.eqRefl (T := U.scopedTheory) x, used⟩
-  | eqSubst body x y => exact ⟨Derivation.eqSubst (T := U.scopedTheory) body x y, used⟩
+    let child' := restricted ((Declaration.derivationOf_existsElim rfl Subtype.val child).trans used)
+    refine ⟨Derivation.existsElim (T := U.scopedTheory) child'.val, ?_⟩
+    rw [Declaration.derivationOf_support_eq]
+    exact Set.union_subset
+      ((Declaration.lawBody_subset_derivationOf Subtype.val (Derivation.existsElim child)).trans used)
+      child'.property
+  | eqRefl x => exact ⟨Derivation.eqRefl (T := U.scopedTheory) x, by simpa only [Declaration.derivationOf_support_eq] using used⟩
+  | eqSubst body x y => exact ⟨Derivation.eqSubst (T := U.scopedTheory) body x y, by simpa only [Declaration.derivationOf_support_eq] using used⟩
 
 /-- A retained derived Law's original derivation is valid in the restricted language. -/
 noncomputable def derived (name : U.RetainedLaw) (role : P.laws.role name.val = .derived) :

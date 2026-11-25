@@ -33,31 +33,34 @@ theorem ambientArity_injective : Function.Injective (ambientArity (U := U)) := b
 
 /-- A retained partial declaration also retains its explicitly declared domain sort. -/
 theorem domainSortKept (p : Partial U) (data : DomainInclusions p.val)
-    (attached : P.domainInclusions p.val = some data) : Declaration.sort data.domainSort ∈ U.declarations := by
-  apply U.closed p.property
-  simp only [Declaration.dependsOn, attached]
-  exact Or.inr (Or.inl (Set.mem_singleton _))
+    (attached : P.domainInclusions p.val = some data) : Declaration.sort data.domainSort ∈ U.declarations :=
+  U.closed p.property (Declaration.partial_domainSort_mem_dependsOn data attached)
 
 /-- A retained partial declaration also retains every named coordinate of its inclusion. -/
 theorem domainSymbolKept (p : Partial U) (data : DomainInclusions p.val) (attached : P.domainInclusions p.val = some data)
     {s : P.signature.SortType} (i : Var (P.signature.partialArity p.val).inputs s) :
-    Declaration.ofOperation (data.symbol i).operation ∈ U.declarations := by
-  apply U.closed p.property
-  simp only [Declaration.dependsOn, attached]
-  exact Or.inr (Or.inr ⟨s, i, rfl⟩)
+    Declaration.ofOperation (data.symbol i).operation ∈ U.declarations :=
+  U.closed p.property (Declaration.partial_domainSymbol_mem_dependsOn data attached i)
+
+/-- Read a domain projection at its actual position in the selected partial arity. -/
+private def ambientDomainInput (p : Partial U) {s : SortName U}
+    (i : Var ((signature U).partialArity p).inputs s) :
+    Var (P.signature.partialArity p.val).inputs s.val :=
+  ambientVar (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property))
+    (cast (congrArg (Var · s) (signature_partialInputs p)) i)
 
 /-- Restrict the domain inclusion with its original sort and all ordered coordinate operations. -/
 def selectDomainInclusions (p : Partial U) (data : DomainInclusions p.val)
     (attached : P.domainInclusions p.val = some data) : DomainInclusions (sig := signature U) p where
   domainSort := ⟨data.domainSort, domainSortKept p data attached⟩
   symbol i := selectTotalSymbol
-    (data.symbol (ambientVar (operationInputs (.partialOp p.val) p.property) i))
-    (domainSymbolKept p data attached (ambientVar (operationInputs (.partialOp p.val) p.property) i))
+    (data.symbol (ambientDomainInput p i))
+    (domainSymbolKept p data attached (ambientDomainInput p i))
   arity_eq i := by
     apply ambientArity_injective
     change ambientArity (selectTotalSymbol _ _).operation.arity = _
     rw [selectTotalSymbol_arity]
-    exact (map_arity _ _).trans (data.arity_eq (ambientVar (operationInputs (.partialOp p.val) p.property) i))
+    exact (map_arity _ _).trans (data.arity_eq (ambientDomainInput p i))
 
 /-- Closedness supplies all the references of a retained derived Law's original proof. -/
 theorem keepsDerived (name : U.RetainedLaw) (role : P.laws.role name.val = .derived) :
@@ -76,8 +79,54 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
     | some data => some (selectDomainInclusions p data attached)
   derived name role := selectDerivation (P.derived name.val role) (keepsDerived name role)
 
+/-- The restricted presentation uses the signature of the retained vocabulary. -/
+theorem presentation_signature : (presentation U).signature = signature U :=
+  rfl
+
 /-- The actual restricted presentation gives the ordinary theory over the selected signature. -/
 theorem presentation_theory : (presentation U).theory = theory U :=
+  rfl
+
+/-- A retained name indexes the corresponding Law of the selected presentation. -/
+def presentationLawName (name : U.RetainedLaw) : (presentation U).laws.LawName :=
+  name
+
+/-- A required name in the selected theory comes from a retained Law declaration. -/
+def retainedTheoryName (name : (presentation U).theory.LawName) : U.RetainedLaw :=
+  name.val
+
+/-- The retained theory name identifies the same original declaration. -/
+theorem retainedTheoryName_val (name : (presentation U).theory.LawName) :
+    (retainedTheoryName name).val = name.val.val :=
+  rfl
+
+/-- A required Law of the selected presentation reads the statement at its retained name. -/
+theorem presentation_theory_law (name : (presentation U).theory.LawName) :
+    (presentation U).theory.law name =
+      (presentation U).laws.statement (presentationLawName (retainedTheoryName name)) :=
+  rfl
+
+/-- The presentation registers the selected Law under the same retained name. -/
+theorem presentation_law_eq_selected (name : U.RetainedLaw) :
+    (presentation U).laws.statement name = (laws U).statement name :=
+  rfl
+
+/-- A retained Law in the selected presentation has the selected text of its original statement. -/
+theorem presentation_law_statement (name : U.RetainedLaw) :
+    (presentation U).laws.statement name =
+      selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property) :=
+  rfl
+
+/-- Transporting the restricted Law text along the signature comparison gives its selected form. -/
+theorem presentation_law_cast (name : U.RetainedLaw) :
+    cast (congrArg Law (presentation_signature (U := U)))
+      ((presentation U).laws.statement (presentationLawName name)) =
+      selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property) :=
+  rfl
+
+/-- The selected display attaches the ring certificate retained at this Law. -/
+theorem presentation_ringEquation (name : U.RetainedLaw) :
+    (presentation U).ringEquation name = Selected.ringEquation name :=
   rfl
 
 /-- The selected presentation has exactly the original retained declaration names. -/
@@ -106,14 +155,13 @@ theorem declarationNames_eq (d : Declaration (presentation U)) :
 
 /-- The selected Law has exactly the original ordered text read into the selected signature. -/
 theorem presentation_orderedEquation (name : U.RetainedLaw) :
-    (presentation U).orderedEquation name = (P.orderedEquation name.val).map (selectNamedEquation name) :=
-  NamedRingEquation.ordered_otherOrdered _ _ (fun data h => by
+    (presentation U).orderedEquation name = (P.orderedEquation name.val).map (selectNamedEquation name) := by
+  rw [PrimitivePresentation.orderedEquation_eq (presentation U)]
+  exact NamedRingEquation.ordered_otherOrdered _ _ (fun data h => by
     obtain ⟨original, attached, support, rfl⟩ := ringEquation_some name h
-    have oldText := NamedRingEquation.ordered_of_some attached (P.otherOrderedEquation name.val)
-    change (NamedRingEquation.ordered (P.ringEquation name.val) (P.otherOrderedEquation name.val)).map
-      (selectNamedEquation name) = _
-    rw [oldText]
-    rfl)
+    have oldText := (PrimitivePresentation.orderedEquation_eq P name.val).trans
+      (NamedRingEquation.ordered_of_some attached (P.otherOrderedEquation name.val))
+    rw [oldText, Option.map_some, selectNamedRingEquation_toOrdered])
 
 end DeclarationContext.Selected
 end SHIGURE

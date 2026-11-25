@@ -28,10 +28,16 @@ def existsManyElimWith : {Λ : List T.signature.SortType} →
     Derivation T (c.conj (Formula.existsMany Λ body)) q
   | [], _, _, _, d => by
     simpa only [Var.shift_nil, Formula.rename_id, Formula.existsMany_nil] using d
-  | _ :: Λ, _, _, body, d => by
+  | s :: Λ, c, q, body, d => by
+    rw [Formula.existsMany_cons]
     apply existsManyElimWith (Λ := Λ) (body := body.ex)
     apply Derivation.existsElim
-    simpa only [Formula.rename_comp, Renaming.comp_apply, Var.shift_cons] using d
+    rw [Formula.rename_comp, Formula.rename_comp]
+    change Derivation T
+      ((c.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i)).conj body)
+      (q.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i))
+    rw [← Renaming.shift_cons_comp]
+    exact d
 
 end SHIGURE.Derivation
 
@@ -43,6 +49,11 @@ variable {S : Type u} {Γ Δ : List S}
 def liftMany (ρ : Renaming Γ Δ) : (Λ : List S) → Renaming (Λ ++ Γ) (Λ ++ Δ)
   | [], _, i => ρ i
   | _ :: Λ, _, i => lift (liftMany ρ Λ) i
+
+/-- Lifting past the empty block preserves the original renaming. -/
+theorem liftMany_nil (ρ : Renaming Γ Δ) :
+    @liftMany S Γ Δ ρ [] = (fun {t : S} (i : Var Γ t) => ρ i) :=
+  rfl
 
 /-- Lifting past a nonempty block keeps the head and lifts past the remaining positions. -/
 theorem liftMany_cons (ρ : Renaming Γ Δ) (s : S) (Λ : List S) :
@@ -59,8 +70,14 @@ theorem liftMany_cons (ρ : Renaming Γ Δ) (s : S) (Λ : List S) :
 @[simp] theorem liftMany_shift (ρ : Renaming Γ Δ) (Λ : List S) {s : S}
     (i : Var Γ s) : liftMany ρ Λ (i.shift Λ) = (ρ i).shift Λ := by
   induction Λ with
-  | nil => rfl
-  | cons t Λ ih => exact congrArg Var.there ih
+  | nil =>
+    have source : i.shift [] = i := congrArg (fun f : Renaming Γ Γ => f i) Var.shift_nil
+    have target : (ρ i).shift [] = ρ i := congrArg (fun f : Renaming Δ Δ => f (ρ i)) Var.shift_nil
+    rw [source, target]
+    rfl
+  | cons t Λ ih =>
+    rw [Var.shift_cons, Var.shift_cons]
+    exact congrArg Var.there ih
 
 end SHIGURE.Renaming
 
@@ -174,7 +191,11 @@ def primitiveFunctional (op : Operation T.signature) (inputs : Renaming op.arity
     Derivation T
       ((Formula.atom (.graph op inputs y)).conj (Formula.atom (.graph op inputs z)))
       (.atom (.eq y z)) := by
-  exact .rename (Renaming.cons y (Renaming.cons z inputs)) (.graph (.functional op))
+  have rule := Derivation.graph (T := T) (.functional op)
+  rw [GraphAxiom.toLaw_functional] at rule
+  have instantiated := rule.rename (Renaming.cons y (Renaming.cons z inputs))
+  simpa only [Formula.rename_conj, Formula.rename_atom, Atomic.rename_graph, Atomic.rename_eq,
+    Renaming.cons_here, Renaming.cons_there] using instantiated
 
 /-- Replace equal input witnesses in an instantiated primitive graph. -/
 def primitiveGraphCongr (op : Operation T.signature) (left right : Renaming op.arity.inputs Γ)
@@ -254,14 +275,20 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
     let rightInit := init.graphAt args right
     let leftBody := body.graphAt (Renaming.cons left args) (old y)
     let rightBody := body.graphAt (Renaming.cons right args) (old z)
+    have singleton {Ω : List T.signature.SortType} :
+        (fun {a} (v : Var Ω a) => Var.shift [b] v) =
+          (fun {a} (v : Var Ω a) => Var.there (t := b) v) := by
+      funext a v
+      rw [Var.shift_cons]
+      exact congrArg Var.there (congrArg (fun f : Renaming Ω Ω => f v) Var.shift_nil)
     have reduceLeft : (graph y).rename (Var.shift [b]) = leftInit.conj leftBody := by
       simp only [graph, Formula.rename_conj, Term.graphAt_rename, Renaming.comp_lift,
-        leftInit, leftBody, args, left]
+        leftInit, leftBody, args, left, singleton]
       rfl
     have reduceRight : (graph z).rename (Renaming.liftMany (Var.shift [b]) [b]) =
         rightInit.conj rightBody := by
       simp only [graph, Formula.rename_conj, Term.graphAt_rename, Renaming.comp_lift,
-        rightInit, rightBody, args, right]
+        rightInit, rightBody, args, right, singleton]
       rfl
     let premises := (leftInit.conj leftBody).conj (rightInit.conj rightBody)
     have equate : Derivation T premises (.atom (.eq right left)) :=
@@ -282,6 +309,9 @@ noncomputable def termGraphFunctional {s : T.signature.SortType} (t : Term T.sig
     rw [← Formula.existsMany_singleton (graph y), ← Formula.existsMany_singleton (graph z)]
     apply existsManyBothElim
     rw [reduceLeft, reduceRight]
-    exact conclude
+    have singletonAt {Ω : List T.signature.SortType} {a} (v : Var Ω a) :
+        Var.shift [b] v = .there v :=
+      congrArg (fun f : Renaming Ω (b :: Ω) => f v) singleton
+    simpa only [Formula.rename_atom, Atomic.rename_eq, singletonAt, old] using conclude
 
 end SHIGURE.Derivation

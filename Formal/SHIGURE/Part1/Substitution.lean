@@ -39,6 +39,18 @@ def rename : {Γ Δ : List sig.SortType} → {s : sig.SortType} →
   | _, _, _, ρ, .app op args => .app op (fun i => rename ρ (args i))
   | _, _, _, ρ, .letBind init body => .letBind (rename ρ init) (rename ρ.lift body)
 
+/-- Renaming a variable changes its free position and adds no primitive symbol. -/
+theorem rename_var (ρ : Renaming Γ Δ) (i : Var Γ s) :
+    (Term.var (sig := sig) i).rename ρ = .var (ρ i) :=
+  rfl
+
+/-- Transporting a variable term transports the variable in its context. -/
+theorem var_cast_context (same : Γ = Δ) (i : Var Γ s) :
+    cast (congrArg (fun ctx => Term sig ctx s) same) (.var i) =
+      .var (cast (congrArg (Var · s) same) i) := by
+  cases same
+  rfl
+
 /-- Renaming an application renames each argument in place. -/
 theorem rename_app (ρ : Renaming Γ Δ) (op : Operation sig)
     (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t) :
@@ -48,6 +60,16 @@ theorem rename_app (ρ : Renaming Γ Δ) (op : Operation sig)
 theorem rename_letBind {a : sig.SortType} (ρ : Renaming Γ Δ)
     (init : Term sig Γ a) (body : Term sig (a :: Γ) s) :
     (Term.letBind init body).rename ρ = .letBind (init.rename ρ) (body.rename ρ.lift) := rfl
+
+/-- Transport a renamed term along the context equality used for its renaming. -/
+theorem rename_cast_context {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (ρ : Renaming Γ Δ) (t : Term sig Γ s) :
+    cast (congrArg (fun ctx => Term sig ctx s) target) (t.rename ρ) =
+      (cast (congrArg (fun ctx => Term sig ctx s) source) t).rename
+        (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ) := by
+  cases source
+  cases target
+  rfl
 
 /-- Renaming is interpreted by reading the corresponding coordinates of the assignment. -/
 theorem evaluates_rename (t : Term sig Γ s) (A : Structure sig) :
@@ -77,6 +99,22 @@ variable {sig : Signature.{u}} {Γ Δ : List sig.SortType} {s : sig.SortType}
 instance : CoeFun (Substitution sig Γ Δ) (fun _ => ∀ {s}, Var Γ s → Term sig Δ s) :=
   ⟨get⟩
 
+/-- Transporting a substitution transports its input position and the resulting term. -/
+theorem cast_context_apply {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (θ : Substitution sig Γ Δ) (i : Var Γ' s) :
+    (cast (congrArg₂ (Substitution sig) source target) θ) i =
+      cast (congrArg (fun ctx => Term sig ctx s) target)
+        (θ (cast (congrArg (Var · s) source.symm) i)) := by
+  cases source
+  cases target
+  rfl
+
+/-- Looking up a sort-transported variable transports the replacement term's sort. -/
+theorem get_cast_sort {t : sig.SortType} (same : s = t) (θ : Substitution sig Γ Δ) (i : Var Γ s) :
+    θ (cast (congrArg (Var Γ) same) i) = cast (congrArg (Term sig Δ) same) (θ i) := by
+  cases same
+  rfl
+
 /-- Extend a substitution under one binder, keeping the bound position fixed. -/
 def lift (θ : Substitution sig Γ Δ) : Substitution sig (s :: Γ) (s :: Δ) :=
   ⟨fun i => match i with
@@ -90,6 +128,13 @@ theorem lift_here (θ : Substitution sig Γ Δ) :
 /-- A lifted substitution weakens the substituted term at each old position. -/
 theorem lift_there (θ : Substitution sig Γ Δ) {t : sig.SortType} (i : Var Γ t) :
     θ.lift (Var.there (t := s) i) = (θ i).rename (fun j => .there j) := rfl
+
+/-- The terms assigned at every original position determine a substitution. -/
+theorem ext {θ η : Substitution sig Γ Δ} (same : ∀ {t} (i : Var Γ t), θ i = η i) :
+    θ = η := by
+  cases θ
+  cases η
+  exact congrArg Substitution.mk (funext fun t => funext fun i => same i)
 
 /-- All substituted positions have the values of one target assignment. -/
 def EvaluatesAt (θ : Substitution sig Γ Δ) (A : Structure sig)
@@ -156,6 +201,33 @@ def substitute : {Γ Δ : List sig.SortType} → {s : sig.SortType} →
   | _, _, _, θ, .var i => θ i
   | _, _, _, θ, .app op args => .app op (fun i => substitute θ (args i))
   | _, _, _, θ, .letBind init body => .letBind (substitute θ init) (substitute θ.lift body)
+
+/-- Substitution reads the assigned term at an original variable position. -/
+theorem substitute_var (θ : Substitution sig Γ Δ) (i : Var Γ s) :
+    (Term.var i).substitute θ = θ i :=
+  rfl
+
+/-- Substitution applies independently to every argument of an operation. -/
+theorem substitute_app (θ : Substitution sig Γ Δ) (op : Operation sig)
+    (args : ∀ {t}, Var op.arity.inputs t → Term sig Γ t) :
+    (Term.app op args).substitute θ = .app op (fun i => (args i).substitute θ) :=
+  rfl
+
+/-- Substitution lifts under the bound variable of a strict let term. -/
+theorem substitute_letBind (θ : Substitution sig Γ Δ) {a : sig.SortType}
+    (init : Term sig Γ a) (body : Term sig (a :: Γ) s) :
+    (init.letBind body).substitute θ = (init.substitute θ).letBind (body.substitute θ.lift) :=
+  rfl
+
+/-- Transport a substituted term along the context equality used for its substitution. -/
+theorem substitute_cast_context {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (θ : Substitution sig Γ Δ) (t : Term sig Γ s) :
+    cast (congrArg (fun ctx => Term sig ctx s) target) (t.substitute θ) =
+      (cast (congrArg (fun ctx => Term sig ctx s) source) t).substitute
+        (@cast (Substitution sig Γ Δ) (Substitution sig Γ' Δ') (congrArg₂ (Substitution sig) source target) θ) := by
+  cases source
+  cases target
+  rfl
 
 /-- Theorem 1.8(1) for a tuple of arbitrary evaluated substitution values. -/
 theorem evaluates_substitute_of_evaluatesAt (t : Term sig Γ s) (A : Structure sig) :
@@ -312,6 +384,16 @@ theorem substitute_disj (θ : Substitution sig Γ Δ) (p q : Formula sig Γ) :
 theorem substitute_ex (θ : Substitution sig Γ Δ) {s : sig.SortType} (p : Formula sig (s :: Γ)) :
     p.ex.substitute θ = (p.substitute θ.lift).ex := rfl
 
+/-- Transporting a substitution and its input formula transports the result in the target context. -/
+theorem substitute_cast_context {Γ' Δ' : List sig.SortType} (source : Γ = Γ') (target : Δ = Δ')
+    (θ : Substitution sig Γ Δ) (p : Formula sig Γ) :
+    cast (congrArg (Formula sig) target) (p.substitute θ) =
+      (cast (congrArg (Formula sig) source) p).substitute
+        (@cast (Substitution sig Γ Δ) (Substitution sig Γ' Δ') (congrArg₂ (Substitution sig) source target) θ) := by
+  cases source
+  cases target
+  rfl
+
 /-- Formula substitution preserves satisfaction at any evaluated assignment. -/
 theorem holds_substitute_of_evaluatesAt (p : Formula sig Γ) (A : Structure sig) :
     ∀ {Δ : List sig.SortType} (θ : Substitution sig Γ Δ) (e : Assignment A.carrier Δ)
@@ -377,6 +459,12 @@ abbrev substitute (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context
     result := eqn.result
     left := eqn.left.substitute θ
     right := eqn.right.substitute θ }
+
+/-- An ordered substitution keeps the result sort, guards the input, and substitutes both terms. -/
+theorem substitute_eq (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ) :
+    eqn.substitute θ = ⟨Δ, eqn.result, θ.defined.conj (eqn.input.substitute θ),
+      eqn.left.substitute θ, eqn.right.substitute θ⟩ :=
+  rfl
 
 /-- The written Law retains the original expanded conclusion after Formula substitution. -/
 def substitutedLaw (eqn : OrderedEquation sig) (θ : Substitution sig eqn.context Δ) : Law sig :=
@@ -539,9 +627,20 @@ def writeVariables (eqn : OrderedEquation sig) (x y : Var eqn.context eqn.result
     (left : eqn.left = .var x) (right : eqn.right = .var y) : Written sig :=
   ⟨eqn, .atom (.eq x y), .variablePair x y left right⟩
 
+/-- A variable-pair writing retains the same underlying ordered equation. -/
+theorem writeVariables_equation (eqn : OrderedEquation sig) (x y : Var eqn.context eqn.result)
+    (left : eqn.left = .var x) (right : eqn.right = .var y) :
+    (eqn.writeVariables x y left right).equation = eqn :=
+  rfl
+
 /-- The very same Law, with its exact conclusion, can be used in the presentation. -/
 def Written.toLaw (written : Written sig) : Law sig :=
   ⟨written.equation.context, written.equation.input, written.conclusion⟩
+
+/-- The attached Law uses the equation context and input and the stored conclusion. -/
+theorem Written.toLaw_eq (written : Written sig) :
+    written.toLaw = ⟨written.equation.context, written.equation.input, written.conclusion⟩ :=
+  rfl
 
 /-- Apply another substitution to both the literal text and the ordered terms. -/
 def Written.substitute (written : Written sig) (θ : Substitution sig written.equation.context Δ) :
@@ -661,6 +760,28 @@ def writeVariables (eqn : RingEquation sig) (x y : Var eqn.context eqn.result)
 /-- The very same Law, with its exact conclusion, can be used in the presentation. -/
 def Written.toLaw (written : Written sig) : Law sig :=
   ⟨written.equation.context, written.equation.input, written.conclusion⟩
+
+/-- Forget the ring symbols and keep the same ordered equation and literal conclusion. -/
+def Written.toOrdered (written : Written sig) : OrderedEquation.Written sig :=
+  ⟨written.equation.toOrderedEquation, written.conclusion, written.expansion⟩
+
+/-- The ordered writing has the same result sort. -/
+theorem Written.toOrdered_result (written : Written sig) :
+    written.toOrdered.equation.result = written.equation.result :=
+  rfl
+
+/-- Adding a ring to a writing and then forgetting it recovers the original writing. -/
+theorem Written.toOrdered_mk (written : OrderedEquation.Written sig)
+    (ring : RingVocabulary sig written.equation.result) :
+    (Written.mk ⟨written.equation, ring⟩ written.conclusion written.expansion).toOrdered = written := by
+  cases written
+  rfl
+
+/-- Forgetting the ring leaves the Law exactly as written. -/
+theorem Written.toLaw_eq_ordered (written : Written sig) :
+    written.toLaw = written.toOrdered.toLaw := by
+  rw [OrderedEquation.Written.toLaw_eq]
+  rfl
 
 /-- Apply another substitution to both the literal text and the ordered terms. -/
 def Written.substitute (written : Written sig) (θ : Substitution sig written.equation.context Δ) :

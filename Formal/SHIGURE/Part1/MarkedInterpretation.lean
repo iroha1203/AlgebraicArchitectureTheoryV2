@@ -81,6 +81,34 @@ def quotientStructure (K : ∀ s : V.SortName, Kernel R (V.generators s))
   partialValue p := nomatch p
   quantity q := nomatch q
 
+/-- Coefficient addition in the quotient structure is the fixed ring addition. -/
+theorem quotientStructure_total_coefficient_add (K : ∀ s : V.SortName, Kernel R (V.generators s))
+    (maps : ∀ f, (kernelsOf K f).Map) (xs : Assignment (quotientCarriers K) [none, none]) :
+    (quotientStructure K maps).total (.coefficient .add) xs = (xs .here : R) + xs (.there .here) :=
+  rfl
+
+/-- Coefficient multiplication in the quotient structure is the fixed ring multiplication. -/
+theorem quotientStructure_total_coefficient_mul (K : ∀ s : V.SortName, Kernel R (V.generators s))
+    (maps : ∀ f, (kernelsOf K f).Map) (xs : Assignment (quotientCarriers K) [none, none]) :
+    (quotientStructure K maps).total (.coefficient .mul) xs = (xs .here : R) * xs (.there .here) :=
+  rfl
+
+/-- Module addition in the quotient structure is the addition on the designated quotient. -/
+theorem quotientStructure_total_module_add (K : ∀ s : V.SortName, Kernel R (V.generators s))
+    (maps : ∀ f, (kernelsOf K f).Map) (s : V.SortName)
+    (xs : Assignment (quotientCarriers K) [some s, some s]) :
+    (quotientStructure K maps).total (.moduleOp s .add) xs =
+      (xs .here : Quotient (K s)) + xs (.there .here) :=
+  rfl
+
+/-- Module scalar multiplication in the quotient structure uses the fixed coefficient ring. -/
+theorem quotientStructure_total_module_smul (K : ∀ s : V.SortName, Kernel R (V.generators s))
+    (maps : ∀ f, (kernelsOf K f).Map) (s : V.SortName)
+    (xs : Assignment (quotientCarriers K) [none, some s]) :
+    (quotientStructure K maps).total (.moduleOp s .smul) xs =
+      (xs .here : R) • (xs (.there .here) : Quotient (K s)) :=
+  rfl
+
 /-- The multilinear symbol in that structure is the underlying function of the chosen map. -/
 theorem quotientStructure_total_multilinear (K : ∀ s : V.SortName, Kernel R (V.generators s))
     (maps : ∀ f, (kernelsOf K f).Map) (f : V.Multilinear)

@@ -19,13 +19,32 @@ variable (K : ∀ s : V.SortName, Kernel R (V.generators s))
 variable (maps : ∀ f, (kernelsOf K f).Map)
 variable {Γ : List (Option V.SortName)}
 
+/-- Evaluating a binary tuple at its first and second positions reads the two given terms. -/
+private theorem arguments_totalValue {s t : Option V.SortName}
+    (x : Term V.signature Γ s) (y : Term V.signature Γ t)
+    (e : Assignment (quotientCarriers K) Γ) :
+    ((x.argsCons (y.argsCons Term.argsNil) .here).totalValue (quotientStructure K maps) e =
+      x.totalValue (quotientStructure K maps) e) ∧
+    ((x.argsCons (y.argsCons Term.argsNil) (.there .here)).totalValue (quotientStructure K maps) e =
+      y.totalValue (quotientStructure K maps) e) :=
+  ⟨congrArg (fun term => term.totalValue (quotientStructure K maps) e)
+      (Term.argsCons_here x (y.argsCons Term.argsNil)),
+    congrArg (fun term => term.totalValue (quotientStructure K maps) e)
+      ((Term.argsCons_there x (y.argsCons Term.argsNil) .here).trans (Term.argsCons_here y Term.argsNil))⟩
+
 /-- The coefficient and module addition terms both use their actual carrier addition. -/
 theorem addTerm_totalValue (s : Option V.SortName) (x y : Term V.signature Γ s)
     (e : Assignment (quotientCarriers K) Γ) :
     (V.addTerm s x y).totalValue (quotientStructure K maps) e =
       @Add.add (quotientCarriers K s) _
         (x.totalValue (quotientStructure K maps) e) (y.totalValue (quotientStructure K maps) e) := by
-  cases s <;> rfl
+  cases s with
+  | none =>
+    rw [Vocabulary.addTerm_none, Term.totalValue_total, quotientStructure_total_coefficient_add]
+    exact congrArg₂ (· + ·) (arguments_totalValue K maps x y e).1 (arguments_totalValue K maps x y e).2
+  | some s =>
+    rw [Vocabulary.addTerm_some, Term.totalValue_total, quotientStructure_total_module_add]
+    exact congrArg₂ (· + ·) (arguments_totalValue K maps x y e).1 (arguments_totalValue K maps x y e).2
 
 /-- The scalar multiplication term uses the actual action of the fixed coefficient ring. -/
 theorem smulTerm_totalValue (s : Option V.SortName) (a : Term V.signature Γ none) (x : Term V.signature Γ s)
@@ -33,7 +52,13 @@ theorem smulTerm_totalValue (s : Option V.SortName) (a : Term V.signature Γ non
     (V.smulTerm s a x).totalValue (quotientStructure K maps) e =
       @SMul.smul R (quotientCarriers K s) _
         (a.totalValue (quotientStructure K maps) e) (x.totalValue (quotientStructure K maps) e) := by
-  cases s <;> rfl
+  cases s with
+  | none =>
+    rw [Vocabulary.smulTerm_none, Term.totalValue_total, quotientStructure_total_coefficient_mul]
+    exact congrArg₂ (· * ·) (arguments_totalValue K maps a x e).1 (arguments_totalValue K maps a x e).2
+  | some s =>
+    rw [Vocabulary.smulTerm_some, Term.totalValue_total, quotientStructure_total_module_smul]
+    exact congrArg₂ (· • ·) (arguments_totalValue K maps a x e).1 (arguments_totalValue K maps a x e).2
 
 /-- Replacing an argument term evaluates to replacing the corresponding value. -/
 theorem updatedTerm_totalValue {f : V.Multilinear} [DecidableEq (V.Position f)]
@@ -41,9 +66,10 @@ theorem updatedTerm_totalValue {f : V.Multilinear} [DecidableEq (V.Position f)]
     (e : Assignment (quotientCarriers K) Γ) :
     (V.updatedTerm names i x).totalValue (quotientStructure K maps) e =
       maps f (Function.update (fun j => e (names j.2)) i (x.totalValue (quotientStructure K maps) e)) := by
-  change maps f (fun j => (V.updatedTerms names i x j).totalValue (quotientStructure K maps) e) = _
+  rw [Vocabulary.updatedTerm_eq, Term.totalValue_total, quotientStructure_total_multilinear]
   apply congrArg (maps f)
   funext j
+  change (V.updatedTerms names i x j).totalValue (quotientStructure K maps) e = _
   by_cases same : j = i
   · subst j
     rw [V.updatedTerms_same, Function.update_self]

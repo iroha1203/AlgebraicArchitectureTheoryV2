@@ -92,22 +92,26 @@ private theorem Agree.ambientOperation_heq (same : a.Agree b) {f : V.Multilinear
   (a.ambientOperation_kept left).trans
     ((same.operation f left right).trans (b.ambientOperation_kept right).symm)
 
+attribute [local irreducible] Declaration.ofOperation in
 /-- A retained operation preserves its value across the identification of shared quotients. -/
 theorem Agree.totalValue_cast (same : a.Agree b) (inside : W ≤ U)
     (f : V.Symbol) (keep : Declaration.total (P := V.presentation L) f ∈ W.declarations)
     (xs : Assignment a.carrier (V.arity f).inputs) :
     let op : Operation V.signature := .total f
+    let operationKept : Declaration.ofOperation (P := V.presentation L) op ∈ W.declarations :=
+      Declaration.ofOperation_total_mem (P := V.presentation L) (kept := W.declarations) f keep
     let h (s : Option V.SortName) (hs : Declaration.sort s ∈ W.declarations) :=
       same.carrier_eq s (inside hs) hs
-    cast (h _ (operationOutput (P := V.presentation L) (U := W) op keep)) (a.totalValue f xs) =
+    cast (h _ (operationOutput (P := V.presentation L) (U := W) op operationKept)) (a.totalValue f xs) =
       b.totalValue f (mapAssignment (P := V.presentation L) (U := W)
-        (fun s hs => cast (h s hs)) (operationInputs (P := V.presentation L) (U := W) op keep) xs) := by
+        (fun s hs => cast (h s hs)) (operationInputs (P := V.presentation L) (U := W) op operationKept) xs) := by
   cases f with
   | coefficient f =>
     cases f <;> rfl
   | moduleOp s f =>
     have out : Declaration.sort (some s) ∈ W.declarations := by
-      cases f <;> exact operationOutput (P := V.presentation L) (U := W) (.total (Symbol.moduleOp s _)) keep
+      cases f <;> exact operationOutput (P := V.presentation L) (U := W) (.total (Symbol.moduleOp s _))
+        (Declaration.ofOperation_total_mem _ keep)
     let eq := same.ambientKernel_eq (inside out) out
     cases f with
     | zero => exact cast_zero eq
@@ -119,6 +123,7 @@ theorem Agree.totalValue_cast (same : a.Agree b) (inside : W ≤ U)
     exact cast_map_apply (same.ambientOperationKernels_eq (inside keep) keep)
       (same.ambientOperation_heq (inside keep) keep) (fun i => xs i.2)
 
+attribute [local irreducible] Declaration.ofOperation in
 /-- The ordinary graphs of shared operations are the same after identifying their carriers. -/
 theorem Agree.graph_iff (same : a.Agree b) (inside : W ≤ U)
     (op : Operation V.signature) (keep : Declaration.ofOperation (P := V.presentation L) op ∈ W.declarations)
@@ -130,9 +135,11 @@ theorem Agree.graph_iff (same : a.Agree b) (inside : W ≤ U)
         (c _ (operationOutput (P := V.presentation L) (U := W) op keep) y) := by
   cases op with
   | total f =>
+    have retained : Declaration.total (P := V.presentation L) f ∈ W.declarations := by
+      simpa only [Declaration.ofOperation_total] using keep
     dsimp only
     rw [Structure.graph_total_iff, Structure.graph_total_iff, structure_total, structure_total,
-      ← same.totalValue_cast inside f keep xs]
+      ← same.totalValue_cast inside f retained xs]
     refine ⟨congrArg _, fun equal => ?_⟩
     have outputKeep := operationOutput (P := V.presentation L) (U := W) (.total f) keep
     have back := congrArg (cast (same.carrier_eq (V.arity f).output (inside outputKeep) outputKeep).symm) equal

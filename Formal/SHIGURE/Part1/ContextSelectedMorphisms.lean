@@ -46,9 +46,24 @@ theorem map_selectAssignment (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y'
     selectAssignment_selectVar, selectAssignment_selectVar, mapAssignment_apply]
   exact same s.val s.property (a (ambientVar kept i))
 
+/-- Mapping the values of an assignment commutes with a change of its context index. -/
+private theorem cast_assignment_map {left right : List (SortName U)} (same : left = right)
+    (g : ∀ s, Y s → Y' s) (a : Assignment Y left) :
+    (cast (congrArg (Assignment Y) same) a).map g =
+      cast (congrArg (Assignment Y') same) (a.map g) := by
+  cases same
+  rfl
+
+/-- Mapping a carrier element commutes with a change of its sort index. -/
+private theorem cast_carrier_map {left right : Arity (SortName U)} (same : left = right)
+    (g : ∀ i, Y i → Y' i) (x : Y left.output) :
+    g right.output (cast (congrArg (fun profile => Y profile.output) same) x) =
+      cast (congrArg (fun profile => Y' profile.output) same) (g left.output x) := by
+  cases same
+  rfl
+
 /-- Transport the input tuple in the graph comparison of Proposition 3.2.
-The pointwise square `same` is definitional for the read structural arrow
-and is proved by `writeOnSort_comm` for the written arrow. -/
+The read and written maps supply the pointwise square via their carrier equivalences. -/
 theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
@@ -56,18 +71,22 @@ theorem map_selectArgs (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (a : Assignment X op.arity.inputs) :
     (selectArgs e op kept a).map g = selectArgs e' op kept (mapAssignment f (operationInputs op kept) a) := by
   rw [selectArgs_eq_cast, selectArgs_eq_cast]
-  cases op <;> simpa only [cast_eq] using map_selectAssignment e e' f g same _ a
+  let h := (operation_arity op kept).symm
+  exact (cast_assignment_map (congrArg Arity.inputs h) g (selectAssignment e (operationInputs op kept) a)).trans
+    (congrArg (cast (congrArg (fun profile => Assignment Y' profile.inputs) h))
+      (map_selectAssignment e e' f g same (operationInputs op kept) a))
 
 /-- Transport the output in the graph comparison of Proposition 3.2.
-The pointwise square `same` is definitional for the read structural arrow
-and is proved by `writeOnSort_comm` for the written arrow. -/
+The read and written maps supply the pointwise square via their carrier equivalences. -/
 theorem map_selectResult (e : CarrierEquiv U X Y) (e' : CarrierEquiv U X' Y')
     (f : CarrierMap U X X') (g : ∀ s, Y s → Y' s)
     (same : ∀ s keep x, g ⟨s, keep⟩ (e s keep x) = e' s keep (f s keep x))
     (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) (x : X op.arity.output) :
     g _ (selectResult e op kept x) = selectResult e' op kept (f _ (operationOutput op kept) x) := by
   rw [selectResult_eq_cast, selectResult_eq_cast]
-  cases op <;> simpa only [cast_eq] using same _ _ x
+  let h := (operation_arity op kept).symm
+  exact (cast_carrier_map h g (e op.arity.output (operationOutput op kept) x)).trans
+    (congrArg (cast (congrArg (fun profile => Y' profile.output) h)) (same _ _ x))
 
 /-- Every tuple of the selected arity comes from a unique ambient tuple of the retained carriers. -/
 def argsEquiv (e : CarrierEquiv U X Y) (op : Operation P.signature)
@@ -102,7 +121,20 @@ variable {A B : ContextStructure U}
 /-- The same point map can be indexed by the actual retained sort names. -/
 def readOnSort (f : ContextStructure.Hom A B) (s : SortName U) :
     (readStructure A).carrier s → (readStructure B).carrier s :=
-  f.onSort s.val s.property
+  fun x => readCarrierEquiv B s.val s.property (f.onSort s.val s.property
+    ((readCarrierEquiv A s.val s.property).symm x))
+
+/-- A read point map uses the two retained carrier equivalences and the original point map. -/
+theorem readOnSort_apply (f : ContextStructure.Hom A B) (s : SortName U) (x : (readStructure A).carrier s) :
+    readOnSort f s x = readCarrierEquiv B s.val s.property (f.onSort s.val s.property
+      ((readCarrierEquiv A s.val s.property).symm x)) :=
+  rfl
+
+/-- Reading a carrier commutes with the map at every retained sort. -/
+private theorem readOnSort_equiv (f : ContextStructure.Hom A B) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) (x : A.carrier s) :
+    readOnSort f ⟨s, keep⟩ (readCarrierEquiv A s keep x) = readCarrierEquiv B s keep (f.onSort s keep x) := by
+  rw [readOnSort_apply, Equiv.symm_apply_apply]
 
 /-- Transport the graph-preservation component of a context arrow to the
 selected signature for Proposition 3.2. The retained operation supplies the
@@ -117,9 +149,9 @@ theorem readGraph (f : ContextStructure.Hom A B) (op : Operation P.signature)
   obtain ⟨z, hz⟩ := (resultEquiv (readCarrierEquiv A) op keep).surjective y
   rw [← hx, ← hz, argsEquiv_apply, resultEquiv_apply] at held ⊢
   rw [map_selectArgs (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)
-      (fun _ _ _ => rfl) op keep x,
+      (readOnSort_equiv f) op keep x,
     map_selectResult (readCarrierEquiv A) (readCarrierEquiv B) f.onSort (readOnSort f)
-      (fun _ _ _ => rfl) op keep z]
+      (readOnSort_equiv f) op keep z]
   exact ((readStructure_matches B).graph op keep _ _).2
     (f.graph_mem op keep x z (((readStructure_matches A).graph op keep x z).1 held))
 
@@ -128,62 +160,91 @@ noncomputable def readStructureMap (f : ContextStructure.Hom A B) : StructureMap
   StructureMap.ofGraphs (readOnSort f) (by
     intro r xs held
     let keep := relationInputs r.val r.property
-    obtain ⟨x, rfl⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
-    change (readStructure A).relation r (selectAssignment (readCarrierEquiv A) keep x) at held
-    change (readStructure B).relation r ((selectAssignment (readCarrierEquiv A) keep x).map _)
-    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (fun _ _ _ => rfl)]
-    exact ((readStructure_matches B).relation r.val r.property _).2
-      (f.relation_mem r.val r.property x (((readStructure_matches A).relation r.val r.property x).1 held))) (by
+    let shape := (signature_relInputs r).symm
+    let inputs := (assignmentEquiv (readCarrierEquiv A) keep).trans
+      (Equiv.cast (congrArg (Assignment (readStructure A).carrier) shape))
+    obtain ⟨x, hx⟩ := inputs.surjective xs
+    rw [← hx] at held ⊢
+    simp only [inputs, Equiv.trans_apply, Equiv.cast_apply, assignmentEquiv_apply] at held ⊢
+    rw [cast_assignment_map shape, map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
+    exact ((readStructure_matches B).relation_cast r _).2
+      (f.relation_mem r.val r.property x (((readStructure_matches A).relation_cast r x).1 held))) (by
     intro p xs held
-    let keep := operationInputs (.partialOp p.val) p.property
-    obtain ⟨x, rfl⟩ := (assignmentEquiv (readCarrierEquiv A) keep).surjective xs
-    change (readStructure A).partialDomain p (selectAssignment (readCarrierEquiv A) keep x) at held
-    change (readStructure B).partialDomain p ((selectAssignment (readCarrierEquiv A) keep x).map _)
-    rw [map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (fun _ _ _ => rfl)]
-    exact ((readStructure_matches B).domain p.val p.property _).2
-      (f.domain_mem p.val p.property x (((readStructure_matches A).domain p.val p.property x).1 held))) (by
+    let keep := operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
+    let shape := (signature_partialInputs p).symm
+    let inputs := (assignmentEquiv (readCarrierEquiv A) keep).trans
+      (Equiv.cast (congrArg (Assignment (readStructure A).carrier) shape))
+    obtain ⟨x, hx⟩ := inputs.surjective xs
+    rw [← hx] at held ⊢
+    simp only [inputs, Equiv.trans_apply, Equiv.cast_apply, assignmentEquiv_apply] at held ⊢
+    rw [cast_assignment_map shape, map_selectAssignment _ (readCarrierEquiv B) f.onSort _ (readOnSort_equiv f)]
+    exact ((readStructure_matches B).domain_cast p _).2
+      (f.domain_mem p.val p.property x (((readStructure_matches A).domain_cast p x).1 held))) (by
     intro op xs y held
     cases op with
-    | total f' => exact readGraph f (.total f'.val) f'.property xs y held
-    | partialOp p => exact readGraph f (.partialOp p.val) p.property xs y held
-    | quantity q => exact readGraph f (.quantity q.val) q.property xs y held)
+    | total f' =>
+      have preserved := readGraph f (.total f'.val) (Declaration.ofOperation_total_mem f'.val f'.property)
+      rw [operation_total] at preserved
+      exact preserved xs y held
+    | partialOp p =>
+      have preserved := readGraph f (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
+      rw [operation_partialOp] at preserved
+      exact preserved xs y held
+    | quantity q =>
+      have preserved := readGraph f (.quantity q.val) (Declaration.ofOperation_quantity_mem q.val q.property)
+      rw [operation_quantity] at preserved
+      exact preserved xs y held)
 
 /-- The read ordinary arrow preserves the same point map at each retained sort. -/
-theorem readStructureMap_onSort (f : ContextStructure.Hom A B) (s : SortName U) (x : A.carrier s.val) :
-    (readStructureMap f).onSort s x = f.onSort s.val s.property x :=
+theorem readStructureMap_onSort (f : ContextStructure.Hom A B) (s : SortName U) (x : (readStructure A).carrier s) :
+    (readStructureMap f).onSort s x = readOnSort f s x :=
   rfl
 
 variable {C D : Structure (signature U)}
 
 /-- Write the ordinary sort maps under the original sort names. -/
-noncomputable def writeOnSort (f : StructureMap C D) : CarrierMap U (extendedCarrier C) (extendedCarrier D) :=
-  fun s keep x => (extendedEquiv D s keep).symm (f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x))
+noncomputable def writeOnSort (f : StructureMap C D) :
+    CarrierMap U (writeStructure C).carrier (writeStructure D).carrier :=
+  fun s keep x => (writeCarrierEquiv D s keep).symm (f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x))
+
+/-- The written map in the comparison of Proposition 3.2 transports an
+original value through the two retained carrier equivalences and the original arrow. -/
+theorem writeOnSort_apply (f : StructureMap C D) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
+    writeOnSort f s keep x = (writeCarrierEquiv D s keep).symm
+      (f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x)) :=
+  rfl
 
 /-- The square of corresponding sort maps commutes. -/
 theorem writeOnSort_comm (f : StructureMap C D) (s : P.signature.SortType)
-    (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier C s) :
-    f.onSort ⟨s, keep⟩ (extendedEquiv C s keep x) = extendedEquiv D s keep (writeOnSort f s keep x) :=
-  ((extendedEquiv D s keep).apply_symm_apply _).symm
+    (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
+    f.onSort ⟨s, keep⟩ (writeCarrierEquiv C s keep x) = writeCarrierEquiv D s keep (writeOnSort f s keep x) := by
+  rw [writeOnSort_apply, Equiv.apply_symm_apply]
 
+attribute [local irreducible] arity in
 /-- An ordinary structure map gives the original-name structural arrow. -/
 noncomputable def writeStructureMap (f : StructureMap C D) : ContextStructure.Hom (writeStructure C) (writeStructure D) where
   onSort := writeOnSort f
   relation_mem r keep a held := by
-    have mapped := f.relation_mem ⟨r, keep⟩ _ (((extendedEvaluation_matches C).relation r keep a).2 held)
-    rw [map_selectAssignment _ _ _ _ (writeOnSort_comm f)] at mapped
-    exact ((extendedEvaluation_matches D).relation r keep _).1 mapped
+    let name : Rel U := ⟨r, keep⟩
+    have mapped := f.relation_mem name _ (((writeStructure_matches C).relation_cast name a).2 held)
+    rw [cast_assignment_map (signature_relInputs name).symm,
+      map_selectAssignment _ _ _ _ (writeOnSort_comm f)] at mapped
+    exact ((writeStructure_matches D).relation_cast name _).1 mapped
   domain_mem p keep a held := by
-    have mapped := f.partial_mem ⟨p, keep⟩ _ (((extendedEvaluation_matches C).domain p keep a).2 held)
-    rw [map_selectAssignment _ _ _ _ (writeOnSort_comm f)] at mapped
-    exact ((extendedEvaluation_matches D).domain p keep _).1 mapped
+    let name : Partial U := ⟨p, keep⟩
+    have mapped := f.partial_mem name _ (((writeStructure_matches C).domain_cast name a).2 held)
+    rw [cast_assignment_map (signature_partialInputs name).symm,
+      map_selectAssignment _ _ _ _ (writeOnSort_comm f)] at mapped
+    exact ((writeStructure_matches D).domain_cast name _).1 mapped
   graph_mem op keep a x held := by
-    have mapped := f.map_graph (operation op keep) _ _ (((extendedEvaluation_matches C).graph op keep a x).2 held)
+    have mapped := f.map_graph (operation op keep) _ _ (((writeStructure_matches C).graph op keep a x).2 held)
     rw [map_selectArgs _ _ _ _ (writeOnSort_comm f), map_selectResult _ _ _ _ (writeOnSort_comm f)] at mapped
-    exact ((extendedEvaluation_matches D).graph op keep _ _).1 mapped
+    exact ((writeStructure_matches D).graph op keep _ _).1 mapped
 
 /-- The written arrow acts by the transported ordinary component. -/
 theorem writeStructureMap_onSort (f : StructureMap C D) (s : P.signature.SortType)
-    (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier C s) :
+    (keep : Declaration.sort s ∈ U.declarations) (x : (writeStructure C).carrier s) :
     (writeStructureMap f).onSort s keep x = writeOnSort f s keep x :=
   rfl
 

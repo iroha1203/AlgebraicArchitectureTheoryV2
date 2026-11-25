@@ -77,6 +77,12 @@ namespace Derivation
 
 variable {T : Theory.{u}} {Γ : List T.signature.SortType} {p q : Formula T.signature Γ}
 
+/-- Reindex both formulas of a derivation along the same context equality. -/
+def cast_context {Δ : List T.signature.SortType} (same : Γ = Δ) (d : Derivation T p q) :
+    Derivation T (cast (congrArg (Formula T.signature) same) p) (cast (congrArg (Formula T.signature) same) q) := by
+  cases same
+  exact d
+
 /-- Weaken by adding an unused variable to the context. -/
 def weaken {s : T.signature.SortType} (d : Derivation T p q) :
     Derivation T (p.rename (fun i => Var.there (t := s) i)) (q.rename (fun i => .there i)) :=
@@ -147,6 +153,15 @@ structure NamedOrderedEquation {sig : Signature.{u}} (laws : LawDeclarations sig
   /-- The literal equality is the Law registered at this name. -/
   statement_eq : written.toLaw = laws.statement name
 
+/-- The writing determines the attachment at a fixed Law name. -/
+theorem NamedOrderedEquation.eq_of_written_eq {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {name : laws.LawName} {left right : NamedOrderedEquation laws name}
+    (same : left.written = right.written) : left = right := by
+  cases left
+  cases right
+  cases same
+  rfl
+
 /-- A written ring equality and the names of the Laws that give its value sort a ring. -/
 structure NamedRingEquation {sig : Signature.{u}} (laws : LawDeclarations sig)
     (name : laws.LawName) where
@@ -167,8 +182,12 @@ variable {sig : Signature.{u}} {laws : LawDeclarations sig} {name : laws.LawName
 
 /-- Forget the presentation-specific ring symbols while retaining the literal equality. -/
 def toNamedOrderedEquation (data : NamedRingEquation laws name) : NamedOrderedEquation laws name :=
-  ⟨⟨data.written.equation.toOrderedEquation, data.written.conclusion, data.written.expansion⟩,
-    data.statement_eq⟩
+  ⟨data.written.toOrdered, data.written.toLaw_eq_ordered.symm.trans data.statement_eq⟩
+
+/-- Forgetting the named ring certificate retains its writing. -/
+theorem toNamedOrderedEquation_written (data : NamedRingEquation laws name) :
+    data.toNamedOrderedEquation.written = data.written.toOrdered :=
+  rfl
 
 /-- Attach the names of ring Laws written in the canonical form. -/
 def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw = laws.statement name)
@@ -189,6 +208,11 @@ def ofAxioms (written : RingEquation.Written sig) (statement_eq : written.toLaw 
 /-- The structure satisfies the named Laws that specify the ring. -/
 def AxiomsHold (data : NamedRingEquation laws name) (A : Structure sig) : Prop :=
   ∀ i ∈ data.axiomNames, (laws.statement i).Holds A
+
+/-- The named ring conditions are exactly the satisfaction of its registered axiom names. -/
+theorem axiomsHold_iff (data : NamedRingEquation laws name) (A : Structure sig) :
+    data.AxiomsHold A ↔ ∀ i ∈ data.axiomNames, (laws.statement i).Holds A :=
+  Iff.rfl
 
 /-- The selected Laws imply the ring axioms by soundness of the recorded derivations. -/
 theorem axioms_imply (data : NamedRingEquation laws name) (A : Structure sig)
@@ -261,6 +285,12 @@ def NamedRingEquation.ordered {sig : Signature.{u}} {laws : LawDeclarations sig}
   | none => id
   | some data => fun _ => some data.toNamedOrderedEquation
 
+/-- With no ring attachment, the supplied ordered writing is returned directly. -/
+theorem NamedRingEquation.ordered_none {sig : Signature.{u}} {laws : LawDeclarations sig}
+    {i : laws.LawName} (text : Option (NamedOrderedEquation laws i)) :
+    NamedRingEquation.ordered none text = text :=
+  rfl
+
 /-- Reading a supported ring's order gives the pair supplied by its certificate. -/
 theorem NamedRingEquation.ordered_of_some {sig : Signature.{u}} {laws : LawDeclarations sig} {i : laws.LawName}
     {ring : Option (NamedRingEquation laws i)} {data : NamedRingEquation laws i}
@@ -283,9 +313,19 @@ def PrimitivePresentation.orderedEquation (P : PrimitivePresentation.{u}) (i : P
     Option (NamedOrderedEquation P.laws i) :=
   NamedRingEquation.ordered (P.ringEquation i) (P.otherOrderedEquation i)
 
+/-- The order of a written Law is read from the registered ring or its separately supplied text. -/
+theorem PrimitivePresentation.orderedEquation_eq (P : PrimitivePresentation.{u}) (i : P.laws.LawName) :
+    P.orderedEquation i = NamedRingEquation.ordered (P.ringEquation i) (P.otherOrderedEquation i) :=
+  rfl
+
 /-- The theory presented by the required declarations, as in Definition 1.7. -/
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=
   P.laws.toTheory
+
+/-- The required theory reads the registered Law at the underlying declaration name. -/
+theorem PrimitivePresentation.theory_law (P : PrimitivePresentation.{u}) (name : P.theory.LawName) :
+    P.theory.law name = P.laws.statement name.val :=
+  rfl
 
 /-- A model satisfies the chosen ring Laws if they were declared required or derived. -/
 theorem NamedRingEquation.axioms_hold_of_model {P : PrimitivePresentation.{u}}

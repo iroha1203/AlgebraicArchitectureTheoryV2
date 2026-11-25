@@ -31,8 +31,15 @@ variable {S : Type u} {Γ Δ : List S} {s : S}
 @[simp] theorem insertAfter_shift (Λ : List S) {t : S} (i : Var Γ t) :
     insertAfter (s := s) Λ (i.shift Λ) = (Var.there (t := s) i).shift Λ := by
   induction Λ with
-  | nil => rfl
-  | cons t Λ ih => exact congrArg Var.there ih
+  | nil =>
+    have source : i.shift [] = i := congrArg (fun r : Renaming Γ Γ => r i) Var.shift_nil
+    have target : (Var.there (t := s) i).shift [] = .there i :=
+      congrArg (fun r : Renaming (s :: Γ) (s :: Γ) => r (.there i)) Var.shift_nil
+    rw [source, target]
+    rfl
+  | cons t Λ ih =>
+    rw [Var.shift_cons, Var.shift_cons]
+    exact congrArg Var.there ih
 
 /-- The moved head is the parameter that follows the remaining witnesses. -/
 @[simp] theorem moveHead_here (Λ : List S) :
@@ -46,8 +53,9 @@ variable {S : Type u} {Γ Δ : List S} {s : S}
 
 /-- Moving the head sends an outer-context variable to the old parameter positions. -/
 @[simp] theorem moveHead_outer (Λ : List S) {t : S} (i : Var Γ t) :
-    moveHead Λ (i.shift (s :: Λ)) = (Var.there (t := s) i).shift Λ :=
-  insertAfter_shift Λ i
+    moveHead Λ (i.shift (s :: Λ)) = (Var.there (t := s) i).shift Λ := by
+  rw [Var.shift_cons]
+  exact insertAfter_shift Λ i
 
 /-- Filling the tail witnesses and the moved head fills the original block. -/
 theorem fill_moveHead {Λ : List S} (witness : Renaming (s :: Λ) Δ) (ambient : Renaming Γ Δ) :
@@ -272,7 +280,10 @@ theorem letArguments_graphAt (Λ : List sig.SortType) :
           (fun i => (args i).graphAt (fun j => .there (ambient j)) .here)
           (body.graphAt (Renaming.liftMany ambient Λ) (y.shift Λ)) := by
   induction Λ with
-  | nil => intros; rw [letArguments_nil, Formula.sequentialWitnesses_nil]; rfl
+  | nil =>
+    intro Γ E s args body ambient y
+    have same : y.shift [] = y := congrArg (fun r : Renaming E E => r y) Var.shift_nil
+    rw [letArguments_nil, Formula.sequentialWitnesses_nil, Renaming.liftMany_nil, same]
   | cons t Λ ih =>
     intro Γ E s args body ambient y
     simp only [letArguments_cons, graphAt_letBind, ih, Formula.sequentialWitnesses_cons, graphAt_rename,

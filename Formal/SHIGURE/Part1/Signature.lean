@@ -100,6 +100,36 @@ namespace Renaming
 
 variable {S : Type u} {Γ Δ : List S} {s : S}
 
+/-- Apply a transported renaming by moving the argument back and the result forward. -/
+theorem cast_context_apply {Γ' Δ' : List S} (source : Γ = Γ') (target : Δ = Δ')
+    (ρ : Renaming Γ Δ) (i : Var Γ' s) :
+    (@cast (Renaming Γ Δ) (Renaming Γ' Δ') (congrArg₂ Renaming source target) ρ) i =
+      cast (congrArg (fun ctx => Var ctx s) target)
+        (ρ (cast (congrArg (fun ctx => Var ctx s) source.symm) i)) := by
+  cases source
+  cases target
+  rfl
+
+/-- A renaming with only its target transported maps the same variable before transport. -/
+theorem cast_target_apply {Δ' : List S} (same : Δ = Δ') (ρ : Renaming Γ Δ) (i : Var Γ s) :
+    (@cast (Renaming Γ Δ) (Renaming Γ Δ') (congrArg (Renaming Γ) same) ρ) i =
+      cast (congrArg (fun ctx => Var ctx s) same) (ρ i) := by
+  cases same
+  rfl
+
+/-- Transport the tail of a variable below a fixed head. -/
+theorem cast_there_target {Δ' : List S} {t : S} (same : Δ = Δ') (i : Var Δ s) :
+    cast (congrArg (fun ctx => Var ctx s) (congrArg (List.cons t) same)) (.there i) =
+      .there (cast (congrArg (fun ctx => Var ctx s) same) i) := by
+  cases same
+  rfl
+
+/-- Transporting the tail of a context keeps the head variable. -/
+theorem cast_here_target {Δ' : List S} (same : Δ = Δ') :
+    cast (congrArg (Var · s) (congrArg (List.cons s) same)) (.here : Var (s :: Δ) s) = .here := by
+  cases same
+  rfl
+
 /-- Extend a renaming under a binder, keeping its new variable fixed. -/
 def lift (ρ : Renaming Γ Δ) : Renaming (s :: Γ) (s :: Δ)
   | _, .here => .here
@@ -150,6 +180,18 @@ variable {S : Type u} {X : S → Type v} {Γ : List S} {s : S}
 
 /-- An assignment can be applied to any variable in its context. -/
 instance : CoeFun (Assignment X Γ) (fun _ => ∀ {t : S}, Var Γ t → X t) := ⟨get⟩
+
+/-- A transported assignment reads the old assignment at the inverse-transported variable. -/
+theorem cast_context_apply {Δ : List S} (same : Γ = Δ) (e : Assignment X Γ) (i : Var Δ s) :
+    (cast (congrArg (Assignment X) same) e).get i = e.get (cast (congrArg (fun ctx => Var ctx s) same.symm) i) := by
+  cases same
+  rfl
+
+/-- Changing a variable's sort transports the value read at that variable. -/
+theorem get_cast_sort {t : S} (same : s = t) (e : Assignment X Γ) (i : Var Γ s) :
+    e (cast (congrArg (Var Γ) same) i) = cast (congrArg X same) (e i) := by
+  cases same
+  rfl
 
 /-- The canonical assignment to the empty context. -/
 def empty : Assignment X [] := ⟨fun var => nomatch var⟩
@@ -204,6 +246,13 @@ theorem eq_empty (xs : Assignment X []) : xs = empty := by
 /-- Pull an assignment back along a sort-preserving variable renaming. -/
 def pull {Δ : List S} (xs : Assignment X Δ) (ρ : Renaming Γ Δ) : Assignment X Γ :=
   ⟨fun var => xs (ρ var)⟩
+
+/-- A pullback along a transported renaming transports the resulting assignment. -/
+theorem pull_cast_inputs {Γ' Δ : List S} (same : Γ' = Γ) (xs : Assignment X Δ) (ρ : Renaming Γ Δ) :
+    xs.pull (fun {t} (i : Var Γ' t) => ρ (cast (congrArg (Var · t) same) i)) =
+      cast (congrArg (Assignment X) same.symm) (xs.pull ρ) := by
+  cases same
+  rfl
 
 /-- Pulling back along the identity preserves the assignment. -/
 @[simp] theorem pull_id (xs : Assignment X Γ) : xs.pull (fun var => var) = xs := rfl

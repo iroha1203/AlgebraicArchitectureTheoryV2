@@ -62,6 +62,13 @@ theorem holds (A : Realization R U) (name : U.scopedTheory.LawName) :
   (A.data.contextStructure_satisfies_iff (U.scopedTheory.law name)
     (Declaration.lawBody_subset_of_mem name.property)).1 (A.satisfiesRequired name)
 
+/-- The interpreted realization satisfies the statement at each retained required name. -/
+theorem holds_statement (A : Realization R U) (name : U.scopedTheory.LawName) :
+    ((V.presentation L).laws.statement name.val.val).Holds A.data.structureData := by
+  have held := A.holds name
+  rw [U.scopedTheory_law name, PrimitivePresentation.theory_law] at held
+  exact held
+
 /-- Restriction retains the original quotient data and all conditions on the smaller context. -/
 noncomputable def restrict (A : Realization R U) (inside : W ≤ U) (blocks : BlockClosed W) :
     Realization R W where

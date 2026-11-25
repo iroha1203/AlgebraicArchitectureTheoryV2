@@ -33,6 +33,16 @@ theorem readFunctor_pieceMap {A B : Models U} (f : A ⟶ B) (i : cover.Index) :
       (res (cover.subset i)).map f :=
   rfl
 
+attribute [local irreducible] Match.project in
+/-- Projecting the read family gives the context restriction to that piece on objects and arrows. -/
+theorem readFunctor_project (i : cover.Index) : cover.readFunctor ⋙ Match.project i = res (cover.subset i) := by
+  apply Functor.hext
+  · intro A
+    exact (Match.project_obj i (cover.readFunctor.obj A)).trans
+      ((cover.read_pieceModel A i).trans (res_obj (cover.subset i) A).symm)
+  · intro A B f
+    exact (Match.project_map i (cover.readFunctor.map f)).trans (heq_of_eq (cover.readFunctor_pieceMap f i))
+
 /-- Assembling arrows commutes with identity and composition on the matching side. -/
 noncomputable def glueFunctor : Match cover.piece ⥤ Models U where
   obj A := A.glue cover
@@ -42,16 +52,16 @@ noncomputable def glueFunctor : Match cover.piece ⥤ Models U where
     intro s keep x
     let i := cover.index keep
     have localKept := cover.mem_index keep
-    simp only [Match.glueMap_onSort, Match.glueOnSort_eq_piece cover _ i s localKept, Match.arrowView,
-      Match.id_pieceMap, Models.id_onSort, Match.toPieceCarrier, cast_cast]
+    simp only [Match.glueMap_onSort_cast, Match.glueOnSort_eq_piece cover _ i s localKept, Match.arrowView_apply,
+      Match.id_pieceMap, Models.id_onSort, Match.toPieceCarrier_apply, cast_cast]
     rfl
   map_comp f g := by
     apply Models.hom_ext
     intro s keep x
     let i := cover.index keep
     have localKept := cover.mem_index keep
-    simp only [Models.comp_onSort, Match.glueMap_onSort, Match.glueOnSort_eq_piece cover _ i s localKept,
-      Match.arrowView, Match.comp_pieceMap, Match.toPieceCarrier, cast_cast]
+    simp only [Models.comp_onSort, Match.glueMap_onSort_cast, Match.glueOnSort_eq_piece cover _ i s localKept,
+      Match.arrowView_apply, Match.comp_pieceMap, Match.toPieceCarrier_apply, cast_cast]
     rfl
 
 /-- The assembly functor maps a matching arrow by gluing its components. -/
@@ -67,9 +77,9 @@ theorem read_comp_glue : cover.readFunctor ⋙ cover.glueFunctor = 𝟭 (Models 
   intro s keep x
   let i := cover.index keep
   have localKept := cover.mem_index keep
-  simp only [Functor.comp_map, glueFunctor_map, Match.glueMap_onSort,
-    Match.glueOnSort_eq_piece cover _ i s localKept, Match.arrowView, readFunctor_pieceMap, res_onSort,
-    Match.toPieceCarrier, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map, selectedMap_apply, cast_cast]
+  simp only [Functor.comp_map, glueFunctor_map, Match.glueMap_onSort_cast,
+    Match.glueOnSort_eq_piece cover _ i s localKept, Match.arrowView_apply, readFunctor_pieceMap, res_onSort,
+    Match.toPieceCarrier_apply, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map, selectedMap_apply, cast_cast]
 
 /-- Assembly before reading is strictly the identity on all objects and arrows of the matching category. -/
 theorem glue_comp_read : cover.glueFunctor ⋙ cover.readFunctor = 𝟭 (Match cover.piece) := by
@@ -80,8 +90,8 @@ theorem glue_comp_read : cover.glueFunctor ⋙ cover.readFunctor = 𝟭 (Match c
   apply Models.hom_ext
   intro s keep x
   simp only [Functor.comp_map, glueFunctor_map, readFunctor_pieceMap, Match.comp_pieceMap,
-    Match.eqToHom_pieceMap, res_onSort, Match.glueMap_onSort, Match.glueOnSort_eq_piece cover f i s keep,
-    Match.arrowView, Match.toPieceCarrier, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map,
+    Match.eqToHom_pieceMap, res_onSort, Match.glueMap_onSort_cast, Match.glueOnSort_eq_piece cover f i s keep,
+    Match.arrowView_apply, Match.toPieceCarrier_apply, Models.comp_onSort, Models.eqToHom_onSort, Functor.id_map,
     selectedMap_apply, cast_cast]
 
 /-- Equation (3.3): restriction and assembly give an isomorphism in the category of categories. -/
@@ -112,8 +122,8 @@ noncomputable def assemble {A B : Models U} (f : Match.Hom (cover.read A) (cover
     (i : cover.Index) : (res (cover.subset i)).map (cover.assemble f) = f.pieceMap i := by
   apply Models.hom_ext
   intro s keep x
-  simp only [assemble, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, Match.glueMap_onSort,
-    Match.glueOnSort_eq_piece cover f i s keep, Match.arrowView, Match.toPieceCarrier, selectedMap_apply, cast_cast]
+  simp only [assemble, res_onSort, Models.comp_onSort, Models.eqToHom_onSort, Match.glueMap_onSort_cast,
+    Match.glueOnSort_eq_piece cover f i s keep, Match.arrowView_apply, Match.toPieceCarrier_apply, selectedMap_apply, cast_cast]
   rfl
 
 /-- Theorem 3.5: strictly compatible local arrows extend to exactly one global arrow. -/

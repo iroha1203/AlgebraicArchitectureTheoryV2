@@ -118,6 +118,34 @@ def smulTerm {Γ : List (Option V.SortName)} : (s : Option V.SortName) →
   | some s, a, x => Term.app (sig := V.signature) (.total (Symbol.moduleOp s .smul))
       (a.argsCons (x.argsCons Term.argsNil))
 
+/-- The coefficient case of the written addition applies its declared primitive. -/
+theorem addTerm_none {Γ : List (Option V.SortName)}
+    (x : Term V.signature Γ none) (y : Term V.signature Γ none) :
+    V.addTerm none x y = Term.app (sig := V.signature) (.total (.coefficient .add))
+      (x.argsCons (y.argsCons Term.argsNil)) :=
+  rfl
+
+/-- The module case of the written addition applies its declared primitive. -/
+theorem addTerm_some {Γ : List (Option V.SortName)} (s : V.SortName)
+    (x : Term V.signature Γ (some s)) (y : Term V.signature Γ (some s)) :
+    V.addTerm (some s) x y = Term.app (sig := V.signature) (.total (.moduleOp s .add))
+      (x.argsCons (y.argsCons Term.argsNil)) :=
+  rfl
+
+/-- The coefficient case of the written scalar multiplication applies its declared primitive. -/
+theorem smulTerm_none {Γ : List (Option V.SortName)}
+    (a : Term V.signature Γ none) (x : Term V.signature Γ none) :
+    V.smulTerm none a x = Term.app (sig := V.signature) (.total (.coefficient .mul))
+      (a.argsCons (x.argsCons Term.argsNil)) :=
+  rfl
+
+/-- The module case of the written scalar multiplication applies its declared primitive. -/
+theorem smulTerm_some {Γ : List (Option V.SortName)} (s : V.SortName)
+    (a : Term V.signature Γ none) (x : Term V.signature Γ (some s)) :
+    V.smulTerm (some s) a x = Term.app (sig := V.signature) (.total (.moduleOp s .smul))
+      (a.argsCons (x.argsCons Term.argsNil)) :=
+  rfl
+
 /-- Replace just one typed argument in the variable tuple of a multilinear symbol. -/
 noncomputable def updatedTerms {Γ : List (Option V.SortName)} {f : V.Multilinear}
     (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :
@@ -145,6 +173,14 @@ noncomputable def updatedTerm {Γ : List (Option V.SortName)} {f : V.Multilinear
     Term V.signature Γ (V.output f) :=
   Term.app (sig := V.signature) (.total (Symbol.multilinear f))
     (fun j => V.updatedTerms names i x ⟨_, j⟩)
+
+/-- An updated term applies the same symbol to the updated tuple. -/
+theorem updatedTerm_eq {Γ : List (Option V.SortName)} {f : V.Multilinear}
+    (names : Renaming (V.inputs f) Γ) (i : V.Position f) (x : Term V.signature Γ i.1) :
+    V.updatedTerm names i x =
+      Term.app (sig := V.signature) (.total (Symbol.multilinear f))
+        (fun j => V.updatedTerms names i x ⟨_, j⟩) :=
+  rfl
 
 /-- Proposition 3.6 imposes additivity as a literal equality Law at each argument. -/
 noncomputable def addLinearityLaw {f : V.Multilinear} (i : V.Position f) : Law V.signature :=
@@ -192,6 +228,16 @@ inductive LinearityLaw
 /-- The multilinear symbol named in this required Law. -/
 def LinearityLaw.symbol : V.LinearityLaw → V.Multilinear
   | .add f _ | .smul f _ => f
+
+/-- The addition Law keeps the named multilinear symbol at its argument position. -/
+theorem LinearityLaw.symbol_add {f : V.Multilinear} (i : V.Position f) :
+    LinearityLaw.symbol V (.add f i) = f :=
+  rfl
+
+/-- The scalar multiplication Law keeps the named multilinear symbol at its argument position. -/
+theorem LinearityLaw.symbol_smul {f : V.Multilinear} (i : V.Position f) :
+    LinearityLaw.symbol V (.smul f i) = f :=
+  rfl
 
 /-- The SHIGURE equality imposed by each generated Law. -/
 noncomputable def LinearityLaw.statement : V.LinearityLaw → Law V.signature
@@ -257,6 +303,7 @@ abbrev multilinearDecl (L : V.Laws) (f : V.Multilinear) : Declaration (V.present
 /-- The type of every input or result of a primitive coefficient operation is the coefficient sort. -/
 theorem coefficient_dependency (L : V.Laws) (f : CoefficientOp.{u}) :
     Declaration.dependsOn (V.presentation L) (V.coefficientDecl L f) = {Declaration.sort none} := by
+  rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
   ext d
   constructor
   · rintro ⟨s, within, rfl⟩
@@ -273,6 +320,7 @@ theorem coefficient_dependency (L : V.Laws) (f : CoefficientOp.{u}) :
 theorem module_dependencies (L : V.Laws) (s : V.SortName) (f : ModuleOp.{u} (V.generators s)) :
     Declaration.dependsOn (V.presentation L) (V.moduleDecl L s f) ⊆
       {Declaration.sort (some s), Declaration.sort none} := by
+  rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
   rintro _ ⟨t, occurs, rfl⟩
   cases f <;> simp_all [presentation, signature, arity]
   aesop
@@ -281,7 +329,7 @@ theorem module_dependencies (L : V.Laws) (s : V.SortName) (f : ModuleOp.{u} (V.g
 theorem multilinear_dependencies (L : V.Laws) (f : V.Multilinear) :
     Declaration.dependsOn (V.presentation L) (V.multilinearDecl L f) =
       Declaration.sorts (V.output f :: V.inputs f) :=
-  rfl
+  Declaration.total_dependencies (P := V.presentation L) (.multilinear f)
 
 variable {V} {L : V.Laws}
 
@@ -325,20 +373,22 @@ theorem BlockClosed.of_cover {U : DeclarationContext (V.presentation L)}
     obtain ⟨i, localKeep⟩ := cover.covers keep
     exact cover.subset i ((h i).moduleOp s localKeep f)
 
+attribute [local irreducible] Declaration.ofOperation in
 /-- Any coefficient or module input of a retained multilinear symbol is retained. -/
 theorem multilinear_input_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}
     (kept : V.multilinearDecl L f ∈ U.declarations) (i : V.Position f) :
     Declaration.sort i.1 ∈ U.declarations :=
   DeclarationContext.operationInputs (P := V.presentation L) (U := U)
-    (.total (Symbol.multilinear f)) kept
-    ⟨_, i.2.sort_mem, rfl⟩
+    (.total (Symbol.multilinear f)) (Declaration.ofOperation_total_mem _ kept)
+    (Declaration.sort_mem_sorts i.2.sort_mem)
 
+attribute [local irreducible] Declaration.ofOperation in
 /-- A retained multilinear symbol forces retention of its coefficient or module result sort. -/
 theorem multilinear_output_kept {U : DeclarationContext (V.presentation L)} {f : V.Multilinear}
     (kept : V.multilinearDecl L f ∈ U.declarations) :
     Declaration.sort (V.output f) ∈ U.declarations :=
   DeclarationContext.operationOutput (P := V.presentation L) (U := U)
-    (.total (Symbol.multilinear f)) kept
+    (.total (Symbol.multilinear f)) (Declaration.ofOperation_total_mem _ kept)
 
 end Vocabulary
 end SHIGURE.Marked

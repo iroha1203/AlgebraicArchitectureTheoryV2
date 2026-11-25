@@ -54,6 +54,13 @@ noncomputable def toPieceCarrier (i : cover.Index) :
     CarrierMap (cover.piece i) (A.glueCarrier cover) (A.pieceModel i).obj.carrier :=
   fun s kept => cast (A.glueCarrier_eq_piece cover i s kept)
 
+/-- The carrier comparison used in Theorems 3.4–3.5 sends a value to a piece
+by the carrier equality supplied by that piece's retained sort. -/
+theorem toPieceCarrier_apply (i : cover.Index) (s : P.signature.SortType)
+    (kept : Declaration.sort s ∈ (cover.piece i).declarations) (x : A.glueCarrier cover s) :
+    A.toPieceCarrier cover i s kept x = cast (A.glueCarrier_eq_piece cover i s kept) x :=
+  rfl
+
 /-- Each identification with a local carrier has an inverse. -/
 theorem toPieceCarrier_bijective (i : cover.Index) (s : P.signature.SortType)
     (kept : Declaration.sort s ∈ (cover.piece i).declarations) :
@@ -63,6 +70,13 @@ theorem toPieceCarrier_bijective (i : cover.Index) (s : P.signature.SortType)
 /-- Read the retained primitives of a piece on the common glued carrier family. -/
 noncomputable def localView (i : cover.Index) : RestrictedEvaluation (cover.piece i) (A.glueCarrier cover) :=
   (A.pieceModel i).obj.evaluation.pullback (le_refl _) (A.toPieceCarrier cover i)
+
+/-- For Theorem 3.4 the local view is the pullback along the carrier
+identification for the chosen piece. The selected declarations stay fixed. -/
+theorem localView_eq_pullback (i : cover.Index) :
+    A.localView cover i =
+      (A.pieceModel i).obj.evaluation.pullback (le_refl _) (A.toPieceCarrier cover i) :=
+  rfl
 
 /-- The local views agree on every overlap as evaluations on the same carrier family. -/
 theorem localView_overlap (i j : cover.Index) :
@@ -79,10 +93,10 @@ theorem localView_overlap (i j : cover.Index) :
     (fun s keep x => cast (X.restrict_carrier left (s := s) keep).symm (f s keep x))
     (fun s keep x => cast (Y.restrict_carrier right (s := s) keep).symm (g s keep x)) (by
       intro s keep x
-      simp only [f, g, toPieceCarrier, cast_cast])
+      simp only [f, g, toPieceCarrier_apply, cast_cast])
   rw [ContextStructure.restrict_evaluation_view X left f, ContextStructure.restrict_evaluation_view Y right g]
     at views
-  simpa only [localView, RestrictedEvaluation.pullback_comp] using views
+  simpa only [localView_eq_pullback, RestrictedEvaluation.pullback_comp] using views
 
 /-- Assemble primitive facts from a covering piece for each symbol. -/
 noncomputable def glueEvaluation : RestrictedEvaluation U (A.glueCarrier cover) where
@@ -118,20 +132,22 @@ theorem glueEvaluation_satisfies (i : cover.Index) (law : Law P.signature)
     (support : Declaration.lawBody law ⊆ (cover.piece i).declarations)
     (localHolds : (A.pieceModel i).obj.evaluation.satisfies law support) :
     (A.glueEvaluation cover).satisfies law (fun _ used => cover.subset i (support used)) := by
-  have held : (A.localView cover i).satisfies law support :=
-    ((A.pieceModel i).obj.evaluation.satisfies_pullback_iff (le_refl _) (A.toPieceCarrier cover i)
-      (A.toPieceCarrier_bijective cover i) law support).2 localHolds
+  have held : (A.localView cover i).satisfies law support := by
+    rw [localView_eq_pullback]
+    exact ((A.pieceModel i).obj.evaluation.satisfies_pullback_iff (le_refl _) (A.toPieceCarrier cover i)
+        (A.toPieceCarrier_bijective cover i) law support).2 localHolds
   rw [← A.glueEvaluation_view cover i] at held
   exact ((A.glueEvaluation cover).satisfies_pullback_iff (cover.subset i) (fun _ _ x => x)
     (fun _ _ => Function.bijective_id) law support).1 held
 
 /-- Structural validity of the glued primitive data follows from covering each primitive symbol. -/
 theorem glueEvaluation_structural : (A.glueEvaluation cover).Structural := by
+  rw [RestrictedEvaluation.structural_iff]
   intro rule kept
   let i := cover.index kept
   have localKept : Declaration.graphRuleName rule ∈ (cover.piece i).declarations := cover.mem_index kept
   exact A.glueEvaluation_satisfies cover i rule.toLaw (graphRuleSupport rule localKept)
-    ((A.pieceModel i).obj.structural rule localKept)
+    ((A.pieceModel i).obj.evaluation.structural_rule (A.pieceModel i).obj.structural rule localKept)
 
 /-- The combined carriers and graphs form a structure of the restricted presentation. -/
 noncomputable def glueStructure : ContextStructure U where
@@ -149,10 +165,25 @@ noncomputable def glue : Models U :=
       (Declaration.lawBody_subset_of_mem localKept)
       ((A.pieceModel i).satisfies_required ⟨name.val, localKept⟩)⟩
 
+/-- The model assembled from the cover carries the glued carriers and primitive evaluation. -/
+theorem glue_obj_eq : (A.glue cover).obj =
+    ⟨A.glueCarrier cover, A.glueCarrier_omitted cover, A.glueEvaluation cover, A.glueEvaluation_structural cover⟩ :=
+  rfl
+
+/-- The assembled model carries the glued carrier family. -/
+theorem glue_carrier_eq : (A.glue cover).obj.carrier = A.glueCarrier cover :=
+  congrArg ContextStructure.carrier (A.glue_obj_eq cover)
+
+/-- The assembled model uses the structure assembled from the same pieces. -/
+theorem glue_obj : (A.glue cover).obj = A.glueStructure cover :=
+  rfl
+
 /-- The assembled model restricts to the original model in every piece. -/
-@[simp] theorem glue_restrict (i : cover.Index) : (A.glue cover).restrict (cover.subset i) = A.pieceModel i :=
-  ObjectProperty.FullSubcategory.ext ((A.glueStructure cover).restrict_eq_of_view (A.pieceModel i).obj
-    (cover.subset i) (A.glueCarrier_eq_piece cover i) (A.glueEvaluation_view cover i))
+@[simp] theorem glue_restrict (i : cover.Index) : (A.glue cover).restrict (cover.subset i) = A.pieceModel i := by
+  apply ObjectProperty.FullSubcategory.ext
+  rw [Models.restrict_obj, glue_obj]
+  exact (A.glueStructure cover).restrict_eq_of_view (A.pieceModel i).obj
+    (cover.subset i) (A.glueCarrier_eq_piece cover i) (A.glueEvaluation_view cover i)
 
 end Match
 end DeclarationContext

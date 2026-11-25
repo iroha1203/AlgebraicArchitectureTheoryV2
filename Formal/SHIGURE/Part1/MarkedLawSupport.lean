@@ -18,8 +18,9 @@ variable {P : PrimitivePresentation.{u}} {D : Set (Declaration P)}
 variable {Γ : List P.signature.SortType} {s : P.signature.SortType}
 
 /-- A variable contributes no operation or bound-sort references. -/
-theorem variable_refs (i : Var Γ s) : termReferences (Term.var (sig := P.signature) i) ⊆ D :=
-  Set.empty_subset _
+theorem variable_refs (i : Var Γ s) : termReferences (Term.var (sig := P.signature) i) ⊆ D := by
+  rw [termReferences_var]
+  exact Set.empty_subset _
 
 /-- Keeping an application requires its graph symbol and the references of its arguments. -/
 theorem app_refs (op : Operation P.signature)
@@ -27,6 +28,7 @@ theorem app_refs (op : Operation P.signature)
     (kept : Declaration.ofOperation op ∈ D)
     (args : ∀ {t} (i : Var op.arity.inputs t), termReferences (xs i) ⊆ D) :
     termReferences (Term.app op xs) ⊆ D := by
+  rw [termReferences_app]
   intro d used
   rcases used with hd | ⟨_, i, hd⟩
   · simpa only [Set.mem_singleton_iff.mp hd] using kept
@@ -38,9 +40,11 @@ private theorem conjoined_support (Λ : List P.signature.SortType)
     (kept : ∀ {t} (i : Var Λ t), Declaration.formula (ps i) ⊆ D) :
     Declaration.formula (Formula.conjoin Λ ps) ⊆ D := by
   induction Λ with
-  | nil => exact Set.empty_subset _
+  | nil =>
+    rw [Formula.conjoin_nil, Declaration.formula_truth]
+    exact Set.empty_subset _
   | cons s more ih =>
-    rw [Formula.conjoin_cons]
+    rw [Formula.conjoin_cons, Declaration.formula_conj]
     exact Set.union_subset (kept .here) (ih (fun i => ps (.there i)) (fun i => kept (.there i)))
 
 /-- Record the bound sort together with the support of the existential body. -/
@@ -48,12 +52,15 @@ private theorem bound_support (Λ : List P.signature.SortType) (p : Formula P.si
     (sorts : Declaration.sorts Λ ⊆ D) (kept : Declaration.formula p ⊆ D) :
     Declaration.formula (Formula.existsMany Λ p) ⊆ D := by
   induction Λ with
-  | nil => exact kept
+  | nil =>
+    rw [Formula.existsMany_nil]
+    exact kept
   | cons s more ih =>
     rw [Formula.existsMany_cons]
     apply ih p.ex ((DeclarationContext.tailSortsSubset s more).trans sorts)
+    rw [Declaration.formula_ex]
     refine Set.union_subset ?_ kept
-    exact Set.singleton_subset_iff.mpr (sorts ⟨s, List.mem_cons_self, rfl⟩)
+    exact Set.singleton_subset_iff.mpr (sorts (Declaration.sort_mem_sorts List.mem_cons_self))
 
 /-- Track all typed names used by a term's value graph. -/
 private theorem graphAt_support (t : Term P.signature Γ s)
@@ -64,18 +71,21 @@ private theorem graphAt_support (t : Term P.signature Γ s)
   induction t with
   | var i =>
     intro Δ names out
-    rw [Term.graphAt_var]
+    rw [Term.graphAt_var, Declaration.formula_atom, Declaration.atomic_eq]
     exact Set.empty_subset _
   | app op xs ih =>
     intro Δ names out
     rw [Term.graphAt_app]
+    rw [termReferences_app] at references
     have kept := references (Or.inl (Set.mem_singleton _))
     apply bound_support _ _ (types op kept)
+    rw [Declaration.formula_conj, Declaration.formula_atom, Declaration.atomic_graph]
     refine Set.union_subset (conjoined_support _ _ (fun i => ?_)) (Set.singleton_subset_iff.mpr kept)
     exact ih i (fun _ used => references (Or.inr ⟨_, i, used⟩)) _ _
   | letBind init body initIH bodyIH =>
     intro Δ names out
-    rw [Term.graphAt_letBind]
+    rw [Term.graphAt_letBind, Declaration.formula_ex, Declaration.formula_conj]
+    rw [termReferences_letBind] at references
     refine Set.union_subset (Set.singleton_subset_iff.mpr (references (Or.inl (Set.mem_singleton _)))) ?_
     exact Set.union_subset (initIH (fun _ used => references (Or.inr (Or.inl used))) _ _)
       (bodyIH (fun _ used => references (Or.inr (Or.inr used))) _ _)
@@ -86,6 +96,9 @@ theorem equality_law_support (left right : Term P.signature Γ s)
     (context : Declaration.sorts Γ ⊆ D) (result : Declaration.sort s ∈ D)
     (leftRefs : termReferences left ⊆ D) (rightRefs : termReferences right ⊆ D) :
     Declaration.lawBody (Law.equality left right) ⊆ D := by
+  rw [Law.equality_eq, Declaration.lawBody_eq]
+  simp only [Declaration.formula_truth, Formula.termEq_eq_ex, Declaration.formula_ex,
+    Declaration.formula_conj, Term.graph_eq_graphAt]
   refine Set.union_subset (Set.union_subset context (Set.empty_subset _)) ?_
   exact Set.union_subset (Set.singleton_subset_iff.mpr result)
     (Set.union_subset (graphAt_support left types leftRefs _ _) (graphAt_support right types rightRefs _ _))
@@ -96,10 +109,10 @@ private theorem two_arg_ref {t : P.signature.SortType} (x : Term P.signature Γ 
     {a : P.signature.SortType} (i : Var [s, t] a) :
     termReferences (x.argsCons (y.argsCons Term.argsNil) i) ⊆ D := by
   cases i with
-  | here => exact hx
+  | here => simpa only [Term.argsCons_here] using hx
   | there tail =>
     cases tail with
-    | here => exact hy
+    | here => simpa only [Term.argsCons_here, Term.argsCons_there] using hy
     | there empty => cases empty
 
 section Arithmetic
@@ -116,10 +129,12 @@ theorem addTerm_refs (s : Option V.SortName) (x y : Term V.signature Δ s)
     termReferences (V.addTerm s x y) ⊆ keep := by
   cases s with
   | none =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .add)) _ op
+    rw [Vocabulary.addTerm_none]
+    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .add)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) x y hx hy i)
   | some s =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .add)) _ op
+    rw [Vocabulary.addTerm_some]
+    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .add)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) x y hx hy i)
 
 /-- The references of scalar multiplication include the correct coefficient or module symbol. -/
@@ -129,10 +144,12 @@ theorem smulTerm_refs (s : Option V.SortName) (a : Term V.signature Δ none) (x 
     termReferences (V.smulTerm s a x) ⊆ keep := by
   cases s with
   | none =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .mul)) _ op
+    rw [Vocabulary.smulTerm_none]
+    exact app_refs (P := V.presentation L) (.total (Symbol.coefficient .mul)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) a x ha hx i)
   | some s =>
-    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .smul)) _ op
+    rw [Vocabulary.smulTerm_some]
+    exact app_refs (P := V.presentation L) (.total (Symbol.moduleOp s .smul)) _ (by rwa [Declaration.ofOperation_total])
       (fun i => two_arg_ref (P := V.presentation L) a x ha hx i)
 
 end Arithmetic

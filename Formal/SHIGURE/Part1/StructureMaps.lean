@@ -87,6 +87,16 @@ namespace StructureMap
 
 variable {A B : Structure sig} {Γ : List sig.SortType} {s : sig.SortType}
 
+/-- Transporting a structure map transports its input and output on each carrier. -/
+theorem cast_onSort {C D : Structure sig} (source : A = C) (target : B = D)
+    (f : StructureMap A B) (s : sig.SortType) (x : C.carrier s) :
+    (cast (congrArg₂ StructureMap source target) f).onSort s x =
+      cast (congrArg (fun S => S.carrier s) target)
+        (f.onSort s (cast (congrArg (fun S => S.carrier s) source.symm) x)) := by
+  cases source
+  cases target
+  rfl
+
 /-- Structure maps with equal components are equal. -/
 @[ext] theorem ext {f g : StructureMap A B} (h : ∀ s x, f.onSort s x = g.onSort s x) : f = g := by
   have same : f.onSort = g.onSort := funext fun s => funext (h s)

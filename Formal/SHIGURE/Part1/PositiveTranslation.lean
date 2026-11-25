@@ -275,8 +275,16 @@ theorem mapAppend_cons (f : S → T) (s : S) (Λ : List S) :
 @[simp] theorem mapAppend_shift (f : S → T) (Λ : List S) {s : S} (i : Var Γ s) :
     mapAppend f Λ ((i.shift Λ).mapSorts f) = (i.mapSorts f).shift (Λ.map f) := by
   induction Λ with
-  | nil => rfl
-  | cons t Λ ih => exact congrArg Var.there ih
+  | nil =>
+    have source : i.shift [] = i := congrArg (fun r : Renaming Γ Γ => r i) Var.shift_nil
+    have target : (i.mapSorts f).shift [] = i.mapSorts f :=
+      congrArg (fun r : Renaming (Γ.map f) (Γ.map f) => r (i.mapSorts f)) Var.shift_nil
+    change mapAppend f [] ((i.shift []).mapSorts f) = (i.mapSorts f).shift []
+    rw [source, target, mapAppend_nil]
+  | cons t Λ ih =>
+    change mapAppend f (t :: Λ) ((i.shift (t :: Λ)).mapSorts f) = (i.mapSorts f).shift (f t :: Λ.map f)
+    rw [Var.shift_cons, Var.shift_cons]
+    exact congrArg Var.there ih
 
 /-- A retyped ambient map into a concatenation uses the same trailing positions. -/
 theorem mapAppend_comp_mapSorts_shift (f : S → T) (Λ : List S) (ρ : Renaming Γ Δ) :

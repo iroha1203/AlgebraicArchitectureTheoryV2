@@ -18,6 +18,7 @@ variable {P : PrimitivePresentation.{u}} {U V : DeclarationContext P}
 /-- The declarations of a context's tail also occur in the context with its head. -/
 theorem tailSortsSubset (s : P.signature.SortType) (Γ : List P.signature.SortType) :
     Declaration.sorts (P := P) Γ ⊆ Declaration.sorts (s :: Γ) := by
+  rw [Declaration.sorts_eq_image, Declaration.sorts_eq_image]
   rintro _ ⟨t, ht, rfl⟩
   exact ⟨t, List.mem_cons_of_mem _ ht, rfl⟩
 
@@ -28,38 +29,31 @@ abbrev CarrierMap (U : DeclarationContext P) (X Y : P.signature.SortType → Typ
 /-- A retained operation's input sorts occur among its dependencies. -/
 theorem operationInputs (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) :
-    Declaration.sorts op.arity.inputs ⊆ U.declarations := by
-  intro d hd
-  apply U.closed keep
-  have included := tailSortsSubset (P := P) op.arity.output op.arity.inputs
-  cases op with
-  | total f => exact included hd
-  | partialOp p => exact Or.inl (included hd)
-  | quantity q => exact included hd
+    Declaration.sorts op.arity.inputs ⊆ U.declarations :=
+  (tailSortsSubset (P := P) op.arity.output op.arity.inputs).trans
+    ((Declaration.operationSorts_subset_dependsOn op).trans (U.closed keep))
 
 /-- A retained operation's result sort occurs among its dependencies. -/
 theorem operationOutput (op : Operation P.signature)
     (keep : Declaration.ofOperation op ∈ U.declarations) :
     Declaration.sort op.arity.output ∈ U.declarations := by
-  apply U.closed keep
-  have member : Declaration.sort op.arity.output ∈
-      Declaration.sorts (op.arity.output :: op.arity.inputs) :=
-    ⟨_, List.mem_cons_self, rfl⟩
-  cases op with
-  | total f => exact member
-  | partialOp p => exact Or.inl member
-  | quantity q => exact member
+  apply U.closed keep (Declaration.operationSorts_subset_dependsOn op ?_)
+  rw [Declaration.sorts_eq_image]
+  exact ⟨_, List.mem_cons_self, rfl⟩
 
 /-- A retained relation requires all its input sorts. -/
 theorem relationInputs (r : P.signature.Rel) (keep : Declaration.relation r ∈ U.declarations) :
-    Declaration.sorts (P.signature.relInputs r) ⊆ U.declarations :=
-  U.closed keep
+    Declaration.sorts (P.signature.relInputs r) ⊆ U.declarations := by
+  rw [← Declaration.relation_dependencies r]
+  exact U.closed keep
 
 /-- Retaining all the variable positions retains the sort of each variable. -/
 theorem varKept {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (keep : Declaration.sorts Γ ⊆ U.declarations) (var : Var Γ s) :
     Declaration.sort s ∈ U.declarations :=
-  keep ⟨s, var.sort_mem, rfl⟩
+  keep (by
+    rw [Declaration.sorts_eq_image]
+    exact ⟨s, var.sort_mem, rfl⟩)
 
 /-- Map an assignment along the carrier maps at its retained positions. -/
 def mapAssignment {X Y : P.signature.SortType → Type u} (f : CarrierMap U X Y)
@@ -143,7 +137,7 @@ variable {P : PrimitivePresentation.{u}} {U V W : DeclarationContext P}
 def pullback (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V X Y) :
     RestrictedEvaluation V X where
   relation r kept e := A.relation r (inside kept) (mapAssignment f (relationInputs r kept) e)
-  domain p kept e := A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) kept) e)
+  domain p kept e := A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) e)
   graph op kept e y := A.graph op (inside kept) (mapAssignment f (operationInputs op kept) e)
     (f _ (operationOutput op kept) y)
 
@@ -158,7 +152,7 @@ def pullback (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V
     (p : P.signature.Partial) (kept : Declaration.partialOp p ∈ V.declarations)
     (e : Assignment X (P.signature.partialArity p).inputs) :
     (A.pullback inside f).domain p kept e ↔
-      A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) kept) e) :=
+      A.domain p (inside kept) (mapAssignment f (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) e) :=
   Iff.rfl
 
 /-- The restricted operation graph relates the mapped input tuple and mapped result. -/
@@ -202,40 +196,50 @@ theorem atomic_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f
     (inj : ∀ s kept, Function.Injective (f s kept)) {Γ : List P.signature.SortType}
     (a : Atomic P.signature Γ) (support : Declaration.atomicSupport a ⊆ V.declarations) (e : Assignment X Γ) :
     (A.pullback inside f).atomic e a support ↔ A.atomic
-      (mapAssignment f (fun _ hd => support (Or.inl hd)) e) a (fun _ hd => inside (support hd)) := by
+      (mapAssignment f ((Declaration.sorts_subset_atomicSupport a).trans support) e) a (fun _ hd => inside (support hd)) := by
   cases a with
-  | eq x y => exact ⟨fun same => congrArg (f _ _) same, fun same => inj _ _ same⟩
+  | eq x y =>
+    rw [atomic_eq_iff, atomic_eq_iff]
+    exact ⟨fun same => congrArg (f _ _) same, fun same => inj _ _ same⟩
   | rel r vars =>
-    simp only [atomic, pullback_relation]
-    rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
+    simp only [atomic_rel_iff, pullback_relation]
+    rw [mapAssignment_pull f _ ((Declaration.sorts_subset_atomicSupport (.rel r vars)).trans support) vars e]
   | domain p vars =>
-    simp only [atomic, pullback_domain]
-    rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
+    simp only [atomic_domain_iff, pullback_domain]
+    rw [mapAssignment_pull f _ ((Declaration.sorts_subset_atomicSupport (.domain p vars)).trans support) vars e]
   | graph op vars y =>
-    simp only [atomic, pullback_graph, mapAssignment_apply]
-    rw [mapAssignment_pull f _ (fun _ hd => support (Or.inl hd)) vars e]
+    simp only [atomic_graph_iff, pullback_graph, mapAssignment_apply]
+    rw [mapAssignment_pull f _ ((Declaration.sorts_subset_atomicSupport (.graph op vars y)).trans support) vars e]
 
 /-- Every supported formula agrees with its original evaluation on the mapped assignment. -/
 theorem holds_pullback_iff (A : RestrictedEvaluation U Y) (inside : V ≤ U) (f : CarrierMap V X Y)
     (bij : ∀ s kept, Function.Bijective (f s kept)) {Γ : List P.signature.SortType} (p : Formula P.signature Γ) :
     ∀ (support : Declaration.formulaSupport p ⊆ V.declarations) (e : Assignment X Γ),
       (A.pullback inside f).holds p support e ↔ A.holds p (fun _ hd => inside (support hd))
-        (mapAssignment f (fun _ hd => support (Or.inl hd)) e) := by
+        (mapAssignment f ((Declaration.sorts_subset_formulaSupport p).trans support) e) := by
   induction p with
-  | atom a => exact atomic_pullback_iff A inside f (fun s kept => (bij s kept).1) a
-  | truth => intros; rfl
-  | falsehood => intros; rfl
+  | atom a =>
+    intro support e
+    rw [holds_atom_iff, holds_atom_iff]
+    exact atomic_pullback_iff A inside f (fun s kept => (bij s kept).1) a
+      ((Declaration.formulaSupport_atom a).ge.trans support) e
+  | truth =>
+    intro support e
+    simp only [holds_truth_iff]
+  | falsehood =>
+    intro support e
+    simp only [holds_falsehood_iff]
   | conj p q hp hq =>
     intro support e
-    rw [holds, holds, hp, hq]
+    rw [holds_conj_iff, holds_conj_iff, hp, hq]
   | disj p q hp hq =>
     intro support e
-    rw [holds, holds, hp, hq]
+    rw [holds_disj_iff, holds_disj_iff, hp, hq]
   | @ex Γ s p ih =>
     intro support e
-    have kept : Declaration.sort s ∈ V.declarations := support (Or.inr (Or.inl (Set.mem_singleton _)))
-    let keepΓ : Declaration.sorts Γ ⊆ V.declarations := fun _ hd => support (Or.inl hd)
-    rw [holds, holds]
+    have kept : Declaration.sort s ∈ V.declarations := support (Declaration.boundSort_mem_formulaSupport p)
+    let keepΓ : Declaration.sorts Γ ⊆ V.declarations := (Declaration.sorts_subset_formulaSupport p.ex).trans support
+    rw [holds_ex_iff, holds_ex_iff]
     constructor
     · rintro ⟨x, hx⟩
       refine ⟨f s kept x, ?_⟩

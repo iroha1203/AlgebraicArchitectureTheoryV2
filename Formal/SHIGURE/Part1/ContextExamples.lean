@@ -28,7 +28,20 @@ instance noPartial : IsEmpty signature.Partial := inferInstanceAs (IsEmpty PEmpt
 
 /-- Apply one of the two unary symbols to a term. -/
 def applySymbol (f : Bool) (t : Term signature [()] ()) : Term signature [()] () :=
-  .app (.total f) (fun i => match i with | .here => t)
+  .app (.total f) (t.argsCons Term.argsNil)
+
+/-- The graph of a unary application binds the sole argument before using the named symbol. -/
+theorem applySymbol_graphAt (f : Bool) (t : Term signature [()] ())
+    {Δ : List signature.SortType} (ρ : Renaming [()] Δ) (out : Var Δ ()) :
+    (applySymbol f t).graphAt ρ out =
+      (((t.graphAt (fun i => (ρ i).shift [()]) .here).conj .truth).conj
+        (.atom (.graph (.total f) (Var.inLeft Δ) (out.shift [()])))).ex := by
+  unfold applySymbol
+  rw [Term.graphAt_app]
+  change Formula.existsMany (sig := signature) [()] ((Formula.conjoin (sig := signature) [()] _).conj _) = _
+  simp only [Formula.existsMany_singleton, Formula.conjoin_cons, Formula.conjoin_nil,
+    Term.argsCons_here, Var.inLeft_here]
+  rfl
 
 /-- The Law requires `g(f(x)) = x` at every value. -/
 def inverseLaw : Law signature :=
@@ -48,8 +61,10 @@ def piece (f : Bool) : DeclarationContext presentation where
   declarations := {d | d = .sort () ∨ d = .total f}
   closed kept := by
     rcases kept with rfl | rfl
-    · exact Set.empty_subset _
-    · rintro _ ⟨s, _, rfl⟩
+    · rw [Declaration.sort_dependencies]
+      exact Set.empty_subset _
+    · rw [Declaration.total_dependencies, Declaration.sorts_eq_image]
+      rintro _ ⟨s, _, rfl⟩
       cases s
       exact Or.inl rfl
 
@@ -182,6 +197,12 @@ noncomputable def collapseStructure : ContextStructure.Hom
 noncomputable def collapse : primitiveModel ⟶ primitiveModel :=
   ObjectProperty.homMk (collapseStructure.restrict withoutLaw_le_whole)
 
+/-- The structure arrow sends each point to zero on the retained Boolean sort. -/
+private theorem collapseStructure_onSort (kept : Declaration.sort () ∈ whole.declarations)
+    (x : (ContextStructure.ofStructure whole constants).carrier ()) :
+    collapseStructure.onSort () kept x = cast (selectedCarrier_kept constants.carrier kept).symm false :=
+  rfl
+
 /-- The endomorphism sends the retained Boolean point one to zero. -/
 theorem collapse_ne_id : collapse ≠ 𝟙 primitiveModel := by
   intro same
@@ -193,9 +214,9 @@ theorem collapse_ne_id : collapse ≠ 𝟙 primitiveModel := by
   have h := congrArg (fun f : primitiveModel ⟶ primitiveModel =>
     cast equality (Models.onSort f () sort_covered one)) same
   have forbidden : false = true := by
-    simpa only [collapse, Models.onSort, ObjectProperty.homMk_hom, ContextStructure.Hom.restrict_onSort,
-      ContextStructure.Hom.restrictOnSort, collapseStructure, Models.id_onSort, equality, one, selectedMap_apply,
-      cast_cast] using h
+    simpa only [collapse, Models.onSort_homMk, ContextStructure.Hom.restrict_onSort,
+      ContextStructure.Hom.restrictOnSort_apply, collapseStructure_onSort, Models.id_onSort, equality, one,
+      selectedMap_apply, cast_cast] using h
   cases forbidden
 
 /-- A nonidentity arrow is recovered from its restrictions to the genuinely split primitive cover. -/
@@ -234,10 +255,12 @@ def missingGraph : RestrictedEvaluation whole (fun _ => Bool) where
 /-- The graph laws reject raw evaluation data missing a total output. -/
 theorem missingGraph_not_structural : ¬ missingGraph.Structural := by
   intro structural
-  have output := structural (.totality false) (Set.mem_univ _)
-    (Assignment.cons false Assignment.empty) True.intro
-  change ∃ _ : Bool, False at output
-  exact output.elim (fun _ h => h)
+  have output := missingGraph.structural_rule structural (.totality false) (Set.mem_univ _)
+  simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph,
+    RestrictedEvaluation.holds_truth_iff, true_implies, RestrictedEvaluation.holds_ex_iff,
+    RestrictedEvaluation.holds_atom_iff, RestrictedEvaluation.atomic_graph_iff] at output
+  obtain ⟨_, impossible⟩ := output (Assignment.cons false Assignment.empty)
+  exact impossible
 
 /-- Unit supplies a different, valid carrier for the two constant operations. -/
 def unitConstants : Structure signature where

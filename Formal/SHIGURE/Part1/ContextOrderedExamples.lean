@@ -20,6 +20,10 @@ private def simplePair : OrderedEquation OmittedLaw.signature where
 private def atomicWriting : OrderedEquation.Written OmittedLaw.signature :=
   simplePair.writeVariables .here (.there .here) rfl rfl
 
+/-- The first writing retains the original ordered pair. -/
+private theorem atomicWriting_equation : atomicWriting.equation = simplePair :=
+  OrderedEquation.writeVariables_equation simplePair .here (.there .here) rfl rfl
+
 /-- Exercise strict substitution by replacing one variable with a bound operation and the other with a variable. -/
 private def replacement : Substitution OmittedLaw.signature [(), ()] [(), ()] :=
   ⟨fun i => match i with
@@ -40,16 +44,128 @@ def twicePresentation : PrimitivePresentation where
 
 /-- The complete substitution history still produces a registered ordered equality. -/
 theorem twice_ordered_some :
-    ((Selected.presentation (full twicePresentation)).orderedEquation ⟨(), Set.mem_univ _⟩).isSome :=
+    ((Selected.presentation (full twicePresentation)).orderedEquation ⟨(), Set.mem_univ _⟩).isSome := by
+  rw [Selected.presentation_orderedEquation, PrimitivePresentation.orderedEquation_eq]
+  simp only [twicePresentation, NamedRingEquation.ordered_none, Option.map_some, Option.isSome_some]
+
+/-- The selected side is transported along an equality of the original ordered pairs. -/
+private theorem selectPairSide_congr
+    (side : (eqn : OrderedEquation OmittedLaw.signature) → Term OmittedLaw.signature eqn.context eqn.result)
+    {p q : OrderedEquation OmittedLaw.signature} (same : p = q) :
+    HEq (Selected.selectTerm (U := full twicePresentation) (side p)
+      (Set.subset_univ _) (Set.mem_univ _) (Set.subset_univ _))
+      (Selected.selectTerm (U := full twicePresentation) (side q)
+        (Set.subset_univ _) (Set.mem_univ _) (Set.subset_univ _)) := by
+  cases same
   rfl
+
+/-- The retained sort names of the ordered example. -/
+private abbrev SelectedSort := Selected.SortName (full twicePresentation)
+
+/-- The unique original sort as a name of the full selected context. -/
+private abbrev keptUnit : SelectedSort := ⟨(), Set.mem_univ _⟩
+
+/-- A variable term transports with its variable along the context equality. -/
+private theorem var_cast_term {Γ Δ : List SelectedSort} {s : SelectedSort}
+    (same : Γ = Δ) (i : Var Γ s) :
+    HEq (Term.var (sig := Selected.signature (full twicePresentation)) i)
+      (Term.var (sig := Selected.signature (full twicePresentation)) (cast (congrArg (Var · s) same) i)) := by
+  cases same
+  rfl
+
+/-- Selecting equal lists of original sorts gives equal retained contexts. -/
+private theorem same_context {Γ Δ : List twicePresentation.signature.SortType} (same : Γ = Δ)
+    (g : Declaration.sorts (P := twicePresentation) Γ ⊆ (full twicePresentation).declarations)
+    (d : Declaration.sorts (P := twicePresentation) Δ ⊆ (full twicePresentation).declarations) :
+    Selected.context Γ g = Selected.context Δ d := by
+  cases same
+  rfl
+
+attribute [local irreducible] Selected.selectWritten Selected.context in
+/-- The selected members use the original two positions in the explicitly retained context. -/
+theorem positions_unchanged_heq :
+    let selected := Selected.selectWritten (U := full twicePresentation) atomicWriting (Set.subset_univ _)
+    let left : Term (Selected.signature (full twicePresentation)) [keptUnit, keptUnit] keptUnit := .var .here
+    let right : Term (Selected.signature (full twicePresentation)) [keptUnit, keptUnit] keptUnit :=
+      .var (.there .here)
+    HEq selected.equation.left left ∧ HEq selected.equation.right right := by
+  let hs : Declaration.sort atomicWriting.equation.result ∈ (full twicePresentation).declarations :=
+    Set.mem_univ _
+  let keep : Declaration.sorts (P := twicePresentation) [(), ()] ⊆ (full twicePresentation).declarations :=
+    Set.subset_univ _
+  let tail := (tailSortsSubset (P := twicePresentation) () [()]).trans keep
+  let empty := (tailSortsSubset (P := twicePresentation) () []).trans tail
+  have headShape := Selected.context_cons (U := full twicePresentation) () [()] keep
+  have tailShape : Selected.context (U := full twicePresentation) [()] tail = [keptUnit] :=
+    (Selected.context_cons (U := full twicePresentation) () [] tail).trans
+      (congrArg (List.cons keptUnit) (Selected.context_nil (U := full twicePresentation) empty))
+  have headForLeft :
+      cast (congrArg (Var · keptUnit) headShape) (Selected.selectVar keep .here) = .here :=
+    Selected.selectVar_cast_here (U := full twicePresentation) keep
+  have tailHead : cast (congrArg (Var · keptUnit) tailShape) (Selected.selectVar tail .here) = .here := by
+    have first := Selected.context_cons (U := full twicePresentation) () [] tail
+    have second := Selected.context_nil (U := full twicePresentation) empty
+    let initial := congrArg (Var · keptUnit) first
+    let final := congrArg (Var · keptUnit) (congrArg (List.cons keptUnit) second)
+    calc
+      _ = cast final (cast initial (Selected.selectVar tail .here)) := (cast_cast initial final _).symm
+      _ = cast final .here := congrArg (cast final) (Selected.selectVar_cast_here (U := full twicePresentation) tail)
+      _ = .here := Renaming.cast_here_target second
+  constructor
+  · refine (Selected.selectWritten_left atomicWriting (Set.subset_univ _) hs (Set.subset_univ _)).trans ?_
+    refine (selectPairSide_congr OrderedEquation.left atomicWriting_equation).trans ?_
+    change HEq (Selected.selectTerm (U := full twicePresentation) (.var .here) keep _ _) _
+    rw [Selected.selectTerm_var]
+    refine (var_cast_term headShape _).trans ?_
+    refine (heq_of_eq (congrArg (Term.var (sig := Selected.signature (full twicePresentation))) headForLeft)).trans ?_
+    refine (var_cast_term (congrArg (List.cons keptUnit) tailShape) _).trans ?_
+    exact heq_of_eq (congrArg (Term.var (sig := Selected.signature (full twicePresentation)))
+      (Renaming.cast_here_target tailShape))
+  · refine (Selected.selectWritten_right atomicWriting (Set.subset_univ _) hs (Set.subset_univ _)).trans ?_
+    refine (selectPairSide_congr OrderedEquation.right atomicWriting_equation).trans ?_
+    change HEq (Selected.selectTerm (U := full twicePresentation) (.var (.there .here)) keep _ _) _
+    rw [Selected.selectTerm_var]
+    refine (var_cast_term headShape _).trans ?_
+    refine (heq_of_eq (congrArg (Term.var (sig := Selected.signature (full twicePresentation)))
+      (Selected.selectVar_cast_there (U := full twicePresentation) keep .here))).trans ?_
+    refine (var_cast_term (congrArg (List.cons keptUnit) tailShape) _).trans ?_
+    exact heq_of_eq (congrArg (Term.var (sig := Selected.signature (full twicePresentation)))
+      ((Renaming.cast_there_target tailShape _).trans (congrArg Var.there tailHead)))
 
 /-- The two different starting positions remain in their original order after selection. -/
 theorem positions_unchanged :
     let selected := Selected.selectWritten (U := full twicePresentation) atomicWriting (Set.subset_univ _)
-    selected.equation.left = .var .here ∧ selected.equation.right = .var (.there .here) :=
-  ⟨rfl, rfl⟩
+    selected.equation.left = .var .here ∧ selected.equation.right = .var (.there .here) := by
+  let keep : Declaration.lawBody atomicWriting.toLaw ⊆ (full twicePresentation).declarations :=
+    Set.subset_univ _
+  let selected := Selected.selectWritten (U := full twicePresentation) atomicWriting keep
+  have contextEq : selected.equation.context = [keptUnit, keptUnit] := by
+    refine (Selected.selectWritten_context (U := full twicePresentation) atomicWriting keep).trans ?_
+    have shape : atomicWriting.equation.context = [(), ()] :=
+      congrArg OrderedEquation.context atomicWriting_equation
+    exact (same_context shape _ _).trans
+      ((Selected.context_cons_cons (U := full twicePresentation) () () [] (Set.subset_univ _)).trans
+        (congrArg (fun xs => keptUnit :: keptUnit :: xs)
+          (Selected.context_nil (U := full twicePresentation) (Set.subset_univ _))))
+  have sortEq : selected.equation.result = keptUnit :=
+    (Selected.selectWritten_result (U := full twicePresentation) atomicWriting keep (Set.mem_univ _)).trans
+      (Subtype.ext (congrArg OrderedEquation.result atomicWriting_equation))
+  let same := congrArg₂ (Term (Selected.signature (full twicePresentation))) contextEq sortEq
+  exact ⟨eq_of_heq ((cast_heq same selected.equation.left).trans positions_unchanged_heq.1),
+    eq_of_heq ((cast_heq same selected.equation.right).trans positions_unchanged_heq.2)⟩
 
-open Chapter1.ResidualTransport (paddedPresentation padded_integer_axioms)
+open Chapter1.ResidualTransport (paddedPresentation padded_integer_axioms
+  paddedPresentation_ring_isSome paddedPresentation_ring_axiomNames paddedPresentation_equality_statement
+  paddedPresentation_equality_role)
+
+/-- Read the named ring attachment from the original padded presentation at its equality Law. -/
+private def sourceRing : NamedRingEquation paddedPresentation.laws (.inl ()) :=
+  (paddedPresentation.ringEquation (.inl ())).get paddedPresentation_ring_isSome
+
+/-- This is the attachment registered at the original equality. -/
+private theorem sourceRing_registered :
+    paddedPresentation.ringEquation (.inl ()) = some sourceRing :=
+  (Option.some_get paddedPresentation_ring_isSome).symm
 
 /-- Retain the ordered equality and every primitive, forgetting the other named ring Laws. -/
 def equalityContext : DeclarationContext paddedPresentation where
@@ -58,8 +174,11 @@ def equalityContext : DeclarationContext paddedPresentation where
     intro d used i banned
     subst d
     cases a with
-    | sort s => exact used
-    | total f => rcases used with ⟨s, hs, same⟩; cases same
+    | sort s => rw [Declaration.sort_dependencies] at used; exact used
+    | total f =>
+      rw [Declaration.total_dependencies, Declaration.sorts_eq_image] at used
+      rcases used with ⟨s, hs, same⟩
+      cases same
     | relation r => exact nomatch r
     | partialOp p => exact nomatch p
     | quantity q => exact nomatch q
@@ -85,40 +204,41 @@ theorem ringLaw_omitted : Declaration.law (P := paddedPresentation) (.inr .zeroA
 /-- Retaining only the logical dependencies still keeps the ordered equality itself. -/
 theorem equality_ordered_some :
     ((Selected.presentation equalityContext).orderedEquation ⟨.inl (), equalityKept⟩).isSome := by
-  rw [Selected.presentation_orderedEquation]
+  rw [Selected.presentation_orderedEquation, PrimitivePresentation.orderedEquation_eq,
+    NamedRingEquation.ordered_of_some sourceRing_registered, Option.map_some]
   rfl
 
 /-- All names of the optional residual presentation are available in the full context. -/
 theorem full_retains_ring_support : (full paddedPresentation).RetainsRingSupport (.inl ()) :=
-  Set.subset_univ _
+  ((full paddedPresentation).retainsRingSupport_iff (.inl ())).2 (Set.subset_univ _)
 
 /-- The exact logical context does not supply this optional residual presentation. -/
 theorem equality_lacks_ring_support : ¬ equalityContext.RetainsRingSupport (.inl ()) := by
   intro support
+  have kept := (equalityContext.retainsRingSupport_iff (.inl ())).1 support
   apply ringLaw_omitted
-  exact support (Declaration.ringLaw_mem_ringEquationSupport (P := paddedPresentation)
-    (name := .inl ()) rfl (by exact ⟨.zeroAdd, rfl⟩))
+  exact kept (Declaration.ringLaw_mem_ringEquationSupport (P := paddedPresentation)
+    (name := .inl ()) sourceRing_registered (by
+      change _ ∈ ((paddedPresentation.ringEquation (.inl ())).get paddedPresentation_ring_isSome).axiomNames
+      rw [paddedPresentation_ring_axiomNames]
+      exact ⟨.zeroAdd, rfl⟩))
 
 /-- The omitted ring axiom rules out the named certificate while the ordered text survives. -/
 theorem equality_ring_none :
-    (Selected.presentation equalityContext).ringEquation ⟨.inl (), equalityKept⟩ = none :=
-  Selected.ringEquation_of_unsupported (U := equalityContext) ⟨.inl (), equalityKept⟩ equality_lacks_ring_support
+    (Selected.presentation equalityContext).ringEquation ⟨.inl (), equalityKept⟩ = none := by
+  rw [Selected.presentation_ringEquation]
+  exact Selected.ringEquation_of_unsupported (U := equalityContext) ⟨.inl (), equalityKept⟩ equality_lacks_ring_support
 
 /-- The full context includes the residual's named axioms and the proofs from those axioms. -/
 theorem full_ring_some :
     ((Selected.presentation (full paddedPresentation)).ringEquation ⟨.inl (), Set.mem_univ _⟩).isSome := by
   let name : (full paddedPresentation).RetainedLaw := ⟨.inl (), Set.mem_univ _⟩
-  have original : ∃ data, paddedPresentation.ringEquation name.val = some data := ⟨_, rfl⟩
-  obtain ⟨data, registered⟩ := original
-  change (Selected.ringEquation name).isSome
-  rw [Selected.ringEquation_of_supported name data registered full_retains_ring_support]
+  change ((Selected.presentation (full paddedPresentation)).ringEquation name).isSome
+  rw [Selected.presentation_ringEquation]
+  rw [Selected.ringEquation_of_supported name sourceRing sourceRing_registered full_retains_ring_support]
   rfl
 
 open Chapter1.RingModule (realization scalarOne scalarZero Symbol SortName signature)
-
-/-- Read the named ring attachment from the original padded presentation at its equality Law. -/
-private def sourceRing : NamedRingEquation paddedPresentation.laws (.inl ()) :=
-  (paddedPresentation.ringEquation (.inl ())).get (by rfl)
 
 /-- An integer reading selects the original padded ring-axiom presentations. -/
 def integerReading : Reading.{0, 0, 0, 0} where
@@ -139,9 +259,9 @@ private def equationName : integerReading.context.RetainedLaw := ⟨.inl (), Set
 
 /-- The selected reading uses the original named proofs to supply the seven ring axioms. -/
 theorem integerReading_ring_axioms :
-    let attached := Selected.selectNamedRingEquation equationName sourceRing rfl full_retains_ring_support
+    let attached := Selected.selectNamedRingEquation equationName sourceRing sourceRing_registered full_retains_ring_support
     ∀ i, (attached.written.equation.ring.law i).Holds integerReading.selectedStructure :=
-  integerReading.selectedRing_axioms equationName sourceRing rfl full_retains_ring_support padded_integer_axioms
+  integerReading.selectedRing_axioms equationName sourceRing sourceRing_registered full_retains_ring_support padded_integer_axioms
 
 /-- The selected reading keeps the original false equality as the same test on the integer structure. -/
 theorem integerReading_fails_equation :
@@ -157,12 +277,34 @@ theorem integerReading_fails_equation :
 private def equalityPresentation : PrimitivePresentation where
   signature := paddedPresentation.signature
   laws := ⟨Unit, fun _ => paddedPresentation.laws.statement (.inl ()), fun _ => .additional⟩
-  otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written, sourceRing.statement_eq⟩
+  otherOrderedEquation _ := some ⟨sourceRing.toNamedOrderedEquation.written,
+    sourceRing.toNamedOrderedEquation.statement_eq⟩
   derived _ role := by cases role
+
+/-- The one-law presentation attaches the ordered view of the original equality. -/
+private theorem equalityPresentation_ordered :
+    equalityPresentation.orderedEquation () =
+      some ⟨sourceRing.toNamedOrderedEquation.written, sourceRing.toNamedOrderedEquation.statement_eq⟩ :=
+  (PrimitivePresentation.orderedEquation_eq equalityPresentation ()).trans (NamedRingEquation.ordered_none _)
 
 /-- Send the one-law presentation's names to the matching names of the padded presentation. -/
 private def toName (d : Declaration equalityPresentation) : Declaration paddedPresentation :=
   d.renameNames (P := equalityPresentation) (Q := paddedPresentation) (.identity _) (fun _ => .inl ())
+
+/-- The equality context retains each original sort name. -/
+private theorem toName_sort (s : equalityPresentation.signature.SortType) :
+    toName (.sort s) = .sort s :=
+  rfl
+
+/-- The equality context retains each original total symbol's name. -/
+private theorem toName_total (f : equalityPresentation.signature.Total) :
+    toName (.total f) = .total f :=
+  rfl
+
+/-- Its sole Law is the equality in the left summand of the padded presentation. -/
+private theorem toName_law (name : equalityPresentation.laws.LawName) :
+    toName (.law name) = .law (.inl ()) :=
+  rfl
 
 /-- The naming map reaches only declarations retained in the equality context. -/
 private theorem toName_kept (d : Declaration equalityPresentation) : toName d ∈ equalityContext.declarations := by
@@ -212,28 +354,56 @@ private def zeroGraph : Formula signature [SortName.scalar] :=
 /-- Write the equation using the shared value of the unit and zero operations. -/
 private def literalLaw : Law signature := ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
 
+/-- The small presentation reuses the exact Law of the padded example. -/
+private theorem equalityPresentation_law (name : equalityPresentation.laws.LawName) :
+    equalityPresentation.laws.statement name = literalLaw :=
+  paddedPresentation_equality_statement
+
+/-- The padded equality carries the additional role. -/
+private theorem paddedEquality_nonderived : paddedPresentation.laws.role (.inl ()) ≠ .derived := by
+  rw [paddedPresentation_equality_role]
+  exact fun h => LawRole.noConfusion h
+
 /-- Show that renaming the retained equality preserves its declaration dependency relation. -/
 private theorem equalityDependencies (a b : Declaration equalityPresentation) :
     b ∈ Declaration.dependsOn equalityPresentation a ↔
       toName b ∈ Declaration.dependsOn paddedPresentation (toName a) := by
   cases a with
-  | sort s => exact Iff.rfl
+  | sort s => simp only [toName_sort, Declaration.sort_dependencies, Set.mem_empty_iff_false]
   | relation r => exact nomatch r
   | partialOp p => exact nomatch p
   | quantity q => exact nomatch q
   | total f =>
-    cases b <;> simp [Declaration.dependsOn, Declaration.sorts, toName,
-      Declaration.renameNames, SignatureNames.identity, equalityPresentation]
+    cases b with
+    | sort | total | law =>
+      simp [toName_sort, toName_total, toName_law, Declaration.total_dependencies, Declaration.sorts_eq_image] <;> rfl
+    | relation r => exact nomatch r
+    | partialOp p => exact nomatch p
+    | quantity q => exact nomatch q
   | law n =>
     change b ∈ Declaration.dependsOn equalityPresentation (.law n) ↔
       toName b ∈ Declaration.dependsOn paddedPresentation (.law (.inl ()))
     rw [Declaration.nonderived_dependencies n (fun h => LawRole.noConfusion h),
-      Declaration.nonderived_dependencies (P := paddedPresentation) (.inl ()) (fun h => LawRole.noConfusion h)]
+      Declaration.nonderived_dependencies (P := paddedPresentation) (.inl ()) paddedEquality_nonderived,
+      equalityPresentation_law, paddedPresentation_equality_statement]
     change b ∈ Declaration.lawBody (P := equalityPresentation) literalLaw ↔
       toName b ∈ Declaration.lawBody (P := paddedPresentation) literalLaw
-    cases b <;>
-      simp [literalLaw, oneGraph, zeroGraph, Declaration.lawBody, Declaration.sorts, Declaration.formula,
-        Declaration.atomic, Declaration.ofOperation, Declaration.renameNames, SignatureNames.identity, toName]
+    cases b with
+    | sort | total =>
+      simp [literalLaw, oneGraph, zeroGraph, Declaration.lawBody_eq, Declaration.sorts_eq_image,
+        Declaration.formula_truth, Declaration.formula_ex, Declaration.formula_conj, Declaration.formula_atom,
+        toName_sort, toName_total]
+      all_goals
+        erw [Declaration.atomic_graph (P := equalityPresentation), Declaration.atomic_graph (P := equalityPresentation),
+          Declaration.atomic_graph (P := paddedPresentation), Declaration.atomic_graph (P := paddedPresentation)]
+        simp [Declaration.ofOperation_total]
+    | law m =>
+      rw [toName_law]
+      exact iff_of_false (Declaration.law_notMem_lawBody m literalLaw)
+        (Declaration.law_notMem_lawBody (P := paddedPresentation) (.inl ()) literalLaw)
+    | relation r => exact nomatch r
+    | partialOp p => exact nomatch p
+    | quantity q => exact nomatch q
 
 /-- The named equality can be selected as a reading when its optional ring axioms are omitted. -/
 noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation paddedPresentation equalityContext where
@@ -241,32 +411,42 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
   lawName _ := .inl ()
   names := equalityNames
   names_eq _ := rfl
-  law_eq _ := by
+  law_eq name := by
+    change (SignatureNames.identity signature).law (equalityPresentation.laws.statement name) =
+      paddedPresentation.laws.statement (.inl ())
+    rw [equalityPresentation_law, paddedPresentation_equality_statement]
     change (SignatureNames.identity signature).law ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩ =
       ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
-    change Law.mk [] .truth
-      (((SignatureNames.identity signature).formula oneGraph).conj
-        ((SignatureNames.identity signature).formula zeroGraph)).ex = _
+    simp only [SignatureNames.law_eq, SignatureNames.formula_truth,
+      SignatureNames.formula_ex, SignatureNames.formula_conj, List.map_nil]
     suffices h : (SignatureNames.identity signature).formula oneGraph = oneGraph ∧
         (SignatureNames.identity signature).formula zeroGraph = zeroGraph by
       rw [h.1, h.2]
-    constructor <;> simp [oneGraph, zeroGraph, SignatureNames.formula]
-    all_goals
-      first
-      | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>
-          Atomic.graph (sig := signature) (.total Symbol.scalarOne) ρ .here)
-      | apply congrArg (fun (ρ : Renaming [] [SortName.scalar]) =>
-          Atomic.graph (sig := signature) (.total Symbol.scalarZero) ρ .here)
+    constructor <;> simp [oneGraph, zeroGraph, SignatureNames.formula_conj,
+      SignatureNames.formula_truth, SignatureNames.formula_totalGraph, SignatureNames.identity_onTotal,
+      Var.mapSorts_here]
     all_goals
       funext s i
       exact nomatch i
-  law_role _ := rfl
+  law_role _ := paddedPresentation_equality_role.symm
   lawAttachments_eq _ := by
     let A := paddedPresentation.lawAttachments (SignatureNames.identity _) id (.inl ())
     change equalityPresentation.lawAttachments (SignatureNames.identity _) (fun _ => .inl ()) () =
       A.withSupportedRing (equalityContext.RetainsRingSupport (.inl ()))
     rw [LawAttachments.withSupportedRing_of_unsupported A equality_lacks_ring_support]
-    rfl
+    apply LawAttachments.ext
+    · change (equalityPresentation.lawAttachments (SignatureNames.identity _)
+        (fun _ => (Sum.inl () : paddedPresentation.laws.LawName)) ()).equation = A.equation
+      have original := (PrimitivePresentation.orderedEquation_eq paddedPresentation (.inl ())).trans
+        (NamedRingEquation.ordered_of_some sourceRing_registered _)
+      simp only [A, PrimitivePresentation.lawAttachments_equation, equalityPresentation_ordered, original]
+      rfl
+    · exact PrimitivePresentation.lawAttachments_ring_of_none equalityPresentation _ _ () rfl
+    · let names := SignatureNames.identity paddedPresentation.signature
+      exact (PrimitivePresentation.lawAttachments_proof_of_additional equalityPresentation names
+        (fun _ => Sum.inl ()) () rfl).trans
+        (PrimitivePresentation.lawAttachments_proof_of_additional paddedPresentation names id (.inl ())
+          paddedPresentation_equality_role).symm
   domainAttachment_eq p := nomatch p
   dependencies := equalityDependencies
 
@@ -290,7 +470,14 @@ noncomputable def restrictedIntegerReading : Reading.{0, 0, 0, 0} :=
 theorem restrictedIntegerReading_attachment :
     (restrictedIntegerReading.presentation.orderedEquation ()).isSome ∧
       restrictedIntegerReading.presentation.ringEquation () = none ∧
-      restrictedIntegerReading.origin.isSome :=
-  ⟨rfl, rfl, rfl⟩
+      restrictedIntegerReading.origin.isSome := by
+  have attachments := Reading.restrict_equations ambientEqualityReading equalityReadingOrigin
+    (StateObservation.ofSort SortName.scalar Int id) PUnit.unit none (.empty _) ()
+  have ordered : restrictedIntegerReading.presentation.orderedEquation () = equalityPresentation.orderedEquation () :=
+    attachments.1
+  refine ⟨?_, attachments.2, ?_⟩
+  · rw [ordered, equalityPresentation_ordered]
+    rfl
+  · simp only [restrictedIntegerReading, Reading.restrict_origin, Option.isSome_some]
 
 end SHIGURE.Chapter3.OrderedRestriction

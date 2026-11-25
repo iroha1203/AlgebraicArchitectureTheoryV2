@@ -25,12 +25,13 @@ namespace SHIGURE.Declaration
 variable {P : PrimitivePresentation.{u}} {Γ : List P.signature.SortType}
 
 /-- Each arity is a finite list of sort names. -/
-private theorem sorts_finite (Γ : List P.signature.SortType) : (sorts (P := P) Γ).Finite :=
-  Γ.finite_toSet.image _
+private theorem sorts_finite (Γ : List P.signature.SortType) : (sorts (P := P) Γ).Finite := by
+  rw [sorts_eq_image]
+  exact Γ.finite_toSet.image _
 
 /-- A positive atom uses at most one primitive symbol in addition to its context. -/
 private theorem atomic_finite (a : Atomic P.signature Γ) : (atomic a).Finite := by
-  cases a
+  cases a <;> simp only [atomic_eq, atomic_rel, atomic_domain, atomic_graph]
   · exact Set.finite_empty
   · exact Set.finite_singleton _
   · exact Set.finite_singleton _
@@ -39,14 +40,17 @@ private theorem atomic_finite (a : Atomic P.signature Γ) : (atomic a).Finite :=
 /-- The support of a finite formula collects the supports at its finitely many nodes. -/
 private theorem formula_finite (p : Formula P.signature Γ) : (formula p).Finite := by
   induction p with
-  | atom a => exact atomic_finite a
-  | truth | falsehood => exact Set.finite_empty
-  | conj _ _ p q | disj _ _ p q => exact p.union q
-  | ex _ h => exact (Set.finite_singleton _).union h
+  | atom a => rw [formula_atom]; exact atomic_finite a
+  | truth => rw [formula_truth]; exact Set.finite_empty
+  | falsehood => rw [formula_falsehood]; exact Set.finite_empty
+  | conj _ _ p q => rw [formula_conj]; exact p.union q
+  | disj _ _ p q => rw [formula_disj]; exact p.union q
+  | ex _ h => rw [formula_ex]; exact (Set.finite_singleton _).union h
 
 /-- The written Law takes its declaration support from its context and two formulas. -/
-private theorem lawBody_finite (law : Law P.signature) : (lawBody law).Finite :=
-  ((sorts_finite law.context).union (formula_finite law.input)).union (formula_finite law.conclusion)
+private theorem lawBody_finite (law : Law P.signature) : (lawBody law).Finite := by
+  rw [lawBody_eq]
+  exact ((sorts_finite law.context).union (formula_finite law.input)).union (formula_finite law.conclusion)
 
 /-- A finite derivation contributes finitely many declarations through its support rules. -/
 private theorem derivation_finite {Γ : List P.theory.signature.SortType}
@@ -88,8 +92,10 @@ private theorem inclusions_finite (p : P.signature.Partial) (data : DomainInclus
 /-- A primitive declaration has only finitely many immediate dependency names. -/
 theorem dependsOn_finite (d : Declaration P) : (dependsOn P d).Finite := by
   cases d with
-  | sort => exact Set.finite_empty
-  | total | relation | quantity => exact sorts_finite _
+  | sort => rw [sort_dependencies]; exact Set.finite_empty
+  | total => rw [total_dependencies]; exact sorts_finite _
+  | relation => rw [relation_dependencies]; exact sorts_finite _
+  | quantity => rw [quantity_dependencies]; exact sorts_finite _
   | partialOp p =>
     rw [partial_dependencies]
     apply Set.Finite.union (sorts_finite _)
@@ -122,6 +128,7 @@ private theorem derivation_law_required {Γ : List P.theory.signature.SortType}
     ?_ ?_ ?_ ?_ ?_ proof
   · exact fun impossible => (Set.notMem_empty _ impossible).elim
   · intro Γ
+    rw [sorts_eq_image]
     rintro ⟨_, _, eq⟩
     cases eq
   · exact fun p uses => (law_notMem_formula name p uses).elim
@@ -148,6 +155,7 @@ private theorem derivation_height {p q : Formula P.signature Γ}
 /-- Arity references have the bottom declaration height. -/
 private theorem sort_height {d : Declaration P} {Γ : List P.signature.SortType}
     (uses : d ∈ sorts Γ) : d.height = 0 := by
+  rw [sorts_eq_image] at uses
   rcases uses with ⟨_, _, rfl⟩
   rfl
 
@@ -155,8 +163,11 @@ private theorem sort_height {d : Declaration P} {Γ : List P.signature.SortType}
 private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
     d.height < e.height := by
   cases e with
-  | sort => exact (Set.notMem_empty _ uses).elim
+  | sort =>
+    rw [sort_dependencies] at uses
+    exact (Set.notMem_empty _ uses).elim
   | total | relation | quantity =>
+    simp only [total_dependencies, relation_dependencies, quantity_dependencies] at uses
     rw [sort_height uses]
     simp [height]
   | partialOp p =>
@@ -170,7 +181,9 @@ private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
         rcases included with s | ⟨s, i, rfl⟩
         · obtain rfl := Set.mem_singleton_iff.mp s
           simp [height]
-        · cases data.symbol i <;> simp [TotalSymbol.operation, ofOperation, height]
+        · cases data.symbol i <;>
+            simp [TotalSymbol.operation_ordinary, TotalSymbol.operation_quantity,
+              ofOperation_total, ofOperation_quantity, height]
   | law name =>
     by_cases role : P.laws.role name = .derived
     · rw [derived_dependencies name role, Set.mem_union] at uses

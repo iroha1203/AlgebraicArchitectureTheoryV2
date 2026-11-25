@@ -33,8 +33,9 @@ def graphFormula : Formula signature [()] :=
   .atom (.graph (.total ()) (fun i => .there i) .here)
 
 /-- The actual structural rule supplies a value of the nullary constant. -/
-def constantHasValue : Derivation laws.toTheory (Formula.truth (Γ := [])) graphFormula.ex :=
-  Derivation.graph (T := laws.toTheory) (.totality ())
+def constantHasValue : Derivation laws.toTheory (Formula.truth (Γ := [])) graphFormula.ex := by
+  simpa only [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph, graphFormula] using
+    Derivation.graph (T := laws.toTheory) (.totality ())
 
 /-- Existential elimination uses the graph witness to prove plain nonemptiness. -/
 def forgetGraph : Derivation laws.toTheory ((Formula.truth (Γ := [])).conj graphFormula.ex)
@@ -59,13 +60,22 @@ def presentation : PrimitivePresentation where
 /-- The constant does not occur in the visible statement of the derived Law. -/
 theorem constant_absent_from_statement :
     Declaration.total () ∉ Declaration.lawBody (P := presentation) nonemptyLaw := by
-  simp [Declaration.lawBody, Declaration.sorts, Declaration.formula, nonemptyLaw]
+  simp [Declaration.lawBody_eq, Declaration.sorts_eq_image, Declaration.formula_truth,
+    Declaration.formula_ex, nonemptyLaw]
 
+attribute [local irreducible] GraphAxiom.toLaw GraphAxiom.hasOutput Declaration.graphRuleName in
 /-- The graph axiom keeps the constant among the derivation's required declarations. -/
 theorem constant_used_by_derivation :
     Declaration.total () ∈ Declaration.derivation (P := presentation) (presentation.derived () rfl) := by
+  let instantiated : Law signature := ⟨[], .truth, graphFormula.ex⟩
+  have law : (GraphAxiom.totality (sig := signature) ()).toLaw = instantiated := by
+    rw [GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph]
+    rfl
+  have named : Declaration.total () ∈ Declaration.lawBody (P := presentation) instantiated := by
+    rw [← law, ← Declaration.graphRuleName_totality (P := presentation)]
+    exact Declaration.graphRuleName_mem_lawBody (P := presentation) (.totality ())
   have used : Declaration.total () ∈ Declaration.derivation (P := presentation) constantHasValue :=
-    Declaration.graphRuleName_mem_derivation (P := presentation) (.totality ())
+    Declaration.lawBody_subset_derivationOf Subtype.val constantHasValue named
   exact Declaration.derivation_cut_left _ _ (Declaration.derivation_andIntro_right _ _ used)
 
 /-- A closed context that keeps the derived Law also keeps the constant used in its proof. -/

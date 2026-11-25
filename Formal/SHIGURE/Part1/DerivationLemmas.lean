@@ -25,6 +25,17 @@ def append : {Λ : List S} → Renaming Λ E → Renaming Γ E → Renaming (Λ 
   | [], _, right => right
   | _ :: _, left, right => cons (left .here) (append (fun i => left (.there i)) right)
 
+/-- Appending an empty left renaming uses exactly the right renaming. -/
+theorem append_nil (left : Renaming ([] : List S) E) (right : Renaming Γ E) :
+    @append S Γ E [] left right = (fun {_} i => right i) :=
+  rfl
+
+/-- Under a left head, concatenation acts by the two remaining renamings. -/
+theorem append_there {s t : S} {Λ : List S} (left : Renaming (s :: Λ) E)
+    (right : Renaming Γ E) (i : Var (Λ ++ Γ) t) :
+    append left right (.there i) = append (fun j => left (.there j)) right i :=
+  rfl
+
 /-- Renaming the left block of a concatenation selects the left map. -/
 @[simp] theorem append_inLeft {Λ : List S} (left : Renaming Λ E) (right : Renaming Γ E)
     {s : S} (i : Var Λ s) : append left right (i.inLeft Γ) = left i := by
@@ -36,8 +47,13 @@ def append : {Λ : List S} → Renaming Λ E → Renaming Γ E → Renaming (Λ 
 @[simp] theorem append_shift {Λ : List S} (left : Renaming Λ E) (right : Renaming Γ E)
     {s : S} (i : Var Γ s) : append left right (i.shift Λ) = right i := by
   induction Λ with
-  | nil => rfl
-  | cons s Λ ih => exact ih (fun j => left (.there j))
+  | nil =>
+    have same : i.shift [] = i := congrArg (fun f : Renaming Γ Γ => f i) Var.shift_nil
+    rw [same]
+    rfl
+  | cons s Λ ih =>
+    rw [Var.shift_cons]
+    exact ih (fun j => left (.there j))
 
 /-- Composition is determined coordinatewise. -/
 @[simp] theorem comp_apply (σ : Renaming Δ E) (ρ : Renaming Γ Δ) {s : S} (i : Var Γ s) :
@@ -86,18 +102,29 @@ theorem append_moveHead {s : S} {Λ : List S} (x : Var E s)
   | here => exact append_shift left (cons x right) Var.here
   | there j => exact append_insertAfter x right left j
 
+/-- Shifting a variable by a nonempty block is the composite of two shifts. -/
+theorem shift_cons_comp {s : S} (Λ : List S) :
+    (fun {t} (i : Var Γ t) => Var.shift (s :: Λ) i) =
+      (fun {t} (i : Var Γ t) => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i) := by
+  funext _ i
+  rw [Renaming.comp_apply]
+  exact Var.shift_cons Λ i
+
 /-- Joining the inclusions of both blocks recovers the identity on the full context. -/
 theorem append_blocks {Λ : List S} :
     @append S Γ (Λ ++ Γ) Λ (Var.inLeft Γ) (Var.shift Λ) = (fun {_} i => i) := by
+  funext t i
   induction Λ with
-  | nil => rfl
+  | nil =>
+    rw [Var.shift_nil]
+    rfl
   | cons s Λ ih =>
-    funext t i
     cases i with
-    | here => rfl
+    | here => exact Var.inLeft_here Γ
     | there j =>
-      change append (fun k => Var.there (k.inLeft Γ))
-        (fun k => Var.there (k.shift Λ)) j = Var.there j
+      change append (fun k => (Var.there (t := s) k).inLeft Γ)
+        (fun k => Var.shift (s :: Λ) k) j = Var.there j
+      simp only [Var.inLeft_there, Var.shift_cons]
       have go : ∀ {Θ : List S} (left : Renaming Θ (Λ ++ Γ))
           (right : Renaming Γ (Λ ++ Γ)) {r : S} (k : Var (Θ ++ Γ) r),
           append (fun i => Var.there (t := s) (left i)) (fun i => Var.there (t := s) (right i)) k =
@@ -110,9 +137,7 @@ theorem append_blocks {Λ : List S} :
           cases k with
           | here => rfl
           | there old => exact inner (fun i => left (.there i)) right old
-      have h := congrArg (fun (ρ : Renaming (Λ ++ Γ) (Λ ++ Γ)) => ρ j) ih
-      rw [go]
-      exact congrArg (fun x => Var.there (t := s) x) h
+      rw [go, ih j]
 
 /-- Selecting an old position while leaving it fixed recovers that position. -/
 @[simp] theorem append_id_shift {Λ : List S} (left : Renaming Λ Γ)
@@ -209,27 +234,32 @@ def existsMono {body target : Formula T.signature (s :: Γ)}
 def existsManyMono : {Λ : List T.signature.SortType} →
     {p q : Formula T.signature (Λ ++ Γ)} →
     Derivation T p q → Derivation T (Formula.existsMany Λ p) (Formula.existsMany Λ q)
-  | [], _, _, d => d
-  | _ :: Λ, p, q, d => existsManyMono (Λ := Λ) (p := p.ex) (q := q.ex) (existsMono d)
+  | [], _, _, d => by simpa only [Formula.existsMany_nil] using d
+  | _ :: Λ, p, q, d => by
+    rw [Formula.existsMany_cons, Formula.existsMany_cons]
+    exact existsManyMono (Λ := Λ) (p := p.ex) (q := q.ex) (existsMono d)
 
 /-- Eliminate a block of witnesses from a conclusion that mentions only the old context. -/
 def existsManyElim : {Λ : List T.signature.SortType} →
     {body : Formula T.signature (Λ ++ Γ)} →
     Derivation T body (q.rename (Var.shift Λ)) → Derivation T (Formula.existsMany Λ body) q
-  | [], _, d => by simpa only [Var.shift, Formula.rename_id] using d
-  | _ :: Λ, _, d => by
+  | [], _, d => by simpa only [Var.shift_nil, Formula.rename_id, Formula.existsMany_nil] using d
+  | s :: Λ, _, d => by
+    rw [Formula.existsMany_cons]
     apply existsManyElim (Λ := Λ)
     apply existsElimPlain
-    simpa only [Formula.rename_comp, Renaming.comp, Var.shift] using d
+    rw [Formula.rename_comp]
+    change Derivation T _ (q.rename (fun i => Renaming.comp (fun j => Var.there (t := s) j) (Var.shift Λ) i))
+    rw [← Renaming.shift_cons_comp]
+    exact d
 
 /-- Introduce a block of witnesses taken from variables in the ambient context. -/
 def existsManyIntro : {Λ : List T.signature.SortType} →
     (witness : Renaming Λ Γ) → (body : Formula T.signature (Λ ++ Γ)) →
     Derivation T (body.rename (Renaming.append witness (fun i => i))) (Formula.existsMany Λ body)
   | [], _, body => by
-    change Derivation T (body.rename (fun i => i)) body
-    rw [Formula.rename_id]
-    exact .refl body
+    rw [Formula.existsMany_nil, Renaming.append_nil]
+    exact (Formula.rename_id body).symm ▸ Derivation.refl body
   | _ :: Λ, witness, body => by
     let tail : Renaming Λ Γ := fun i => witness (.there i)
     let head : Var (Λ ++ Γ) _ := (witness .here).shift Λ
@@ -241,8 +271,8 @@ def existsManyIntro : {Λ : List T.signature.SortType} →
       funext t i
       cases i with
       | here => exact Renaming.append_shift tail (fun j => j) (witness .here)
-      | there i => rfl
-    rw [← same]
+      | there i => rw [Renaming.comp_apply, Renaming.openHead_there, Renaming.append_there]
+    rw [← same, Formula.existsMany_cons]
     exact .cut (existsManyIntro tail filled) (existsManyMono (.existsIntro body head))
 
 /-- Read any component of a finite conjunction. -/

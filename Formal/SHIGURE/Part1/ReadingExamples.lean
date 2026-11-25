@@ -46,8 +46,10 @@ private def piece : DeclarationContext presentation where
   declarations := {d | d = .sort () ∨ d = .relation false}
   closed := by
     rintro a (rfl | rfl) d hd
-    · exact hd.elim
-    · obtain ⟨_, h, _⟩ := hd
+    · rw [Declaration.sort_dependencies] at hd
+      exact hd.elim
+    · rw [Declaration.relation_dependencies, Declaration.sorts_eq_image] at hd
+      obtain ⟨_, h, _⟩ := hd
       cases h
 
 /-- The whole context retains both relations. -/
@@ -107,11 +109,17 @@ private def coverChange : ReadingContextChange source target (Interpretation.ide
     refine ⟨true, Set.mem_singleton _, ?_⟩
     change d = .sort () ∨ d = .relation false
     rcases ha with rfl | rfl
-    · exact Or.inl (Set.mem_singleton_iff.1 hd)
-    · rcases hd with hsort | hrelation
-      · obtain ⟨_, h, _⟩ := hsort
+    · rw [Declaration.translatedSupport_sort, Interpretation.identity_onSort] at hd
+      exact Or.inl (Set.mem_singleton_iff.1 hd)
+    · rw [Declaration.translatedSupport_relation] at hd
+      rcases hd with hsort | hrelation
+      · rw [Declaration.sorts_eq_image] at hsort
+        obtain ⟨_, h, _⟩ := hsort
         cases h
-      · exact Or.inr (Set.mem_singleton_iff.1 hrelation)
+      · rw [Interpretation.identity_translation, Translation.identity_relation,
+          Declaration.formula_atom] at hrelation
+        erw [Declaration.atomic_rel (P := target.presentation)] at hrelation
+        exact Or.inr (Set.mem_singleton_iff.1 hrelation)
 
 /-- The identity state map and the selected cover change belong to one comparison. -/
 private def comparison : ReadingComparison source target where
@@ -205,12 +213,16 @@ private def formula : Formula signature [] :=
 /-- The support of that existential fits inside the retained source piece. -/
 private theorem formulaSupported :
     Declaration.formulaSupport formula ⊆ (coverChange.sourcePiece ()).declarations := by
+  rw [Declaration.formulaSupport_eq]
   intro d hd
   refine ⟨?_, Set.mem_univ _⟩
   rcases hd with hsort | hformula
-  · obtain ⟨_, h, _⟩ := hsort
+  · rw [Declaration.sorts_eq_image] at hsort
+    obtain ⟨_, h, _⟩ := hsort
     cases h
-  · exact hformula.imp Set.mem_singleton_iff.1 Set.mem_singleton_iff.1
+  · rw [formula, Declaration.formula_ex, Declaration.formula_atom] at hformula
+    erw [Declaration.atomic_rel (P := presentation)] at hformula
+    exact hformula.imp Set.mem_singleton_iff.1 Set.mem_singleton_iff.1
 
 /-- The local comparison really evaluates the relation in the assigned target piece. -/
 theorem existential_transports_in_assigned_piece :
@@ -273,6 +285,11 @@ private def toInterchangeable (r : Bool) : Interpretation presentation.theory in
   definedPartial p := nomatch p
   preserves n := nomatch n.val
 
+/-- The interchangeable interpretation uses the chosen target relation. -/
+private theorem toInterchangeable_relation (r q : Bool) :
+    (toInterchangeable r).translation.relation q = selectedRelation r :=
+  rfl
+
 /-- The two replacements use different symbols and the displayed Laws give mutual derivability. -/
 private theorem interchangeable_equivalent (r : Bool) :
     (toInterchangeable r).Equivalent (toInterchangeable false) := by
@@ -282,7 +299,7 @@ private theorem interchangeable_equivalent (r : Bool) :
     · intro op
       cases op <;> rename_i name <;> exact nomatch name
     · intro _
-      change Derivation.Equivalent interchangeableRelations.theory (selectedRelation true) (selectedRelation false)
+      simp only [toInterchangeable_relation]
       exact ⟨⟨Derivation.required (T := interchangeableRelations.theory) ⟨true, rfl⟩⟩,
         ⟨Derivation.required (T := interchangeableRelations.theory) ⟨false, rfl⟩⟩⟩
     · intro p
@@ -297,8 +314,10 @@ private def interchangeablePiece (r : Bool) : DeclarationContext interchangeable
   declarations := {d | d = .sort () ∨ d = .relation r}
   closed := by
     rintro a (rfl | rfl) d hd
-    · exact hd.elim
-    · obtain ⟨_, h, _⟩ := hd
+    · rw [Declaration.sort_dependencies] at hd
+      exact hd.elim
+    · rw [Declaration.relation_dependencies, Declaration.sorts_eq_image] at hd
+      obtain ⟨_, h, _⟩ := hd
       cases h
 
 /-- The Laws are present in a separate piece that the comparison does not select. -/
@@ -334,11 +353,16 @@ private def piecewiseTranslation : ReadingContextChange sourceWithOverlap target
     refine ⟨some i, Set.mem_singleton _, ?_⟩
     change d = .sort () ∨ d = .relation i
     rcases kept with rfl | rfl
-    · exact Or.inl (Set.mem_singleton_iff.1 above)
-    · rcases above with hsort | hrelation
-      · obtain ⟨_, h, _⟩ := hsort
+    · rw [Declaration.translatedSupport_sort] at above
+      exact Or.inl (Set.mem_singleton_iff.1 above)
+    · rw [Declaration.translatedSupport_relation] at above
+      rcases above with hsort | hrelation
+      · rw [Declaration.sorts_eq_image] at hsort
+        obtain ⟨_, h, _⟩ := hsort
         cases h
-      · exact Or.inr (Set.mem_singleton_iff.1 hrelation)
+      · rw [toInterchangeable_relation, selectedRelation, Declaration.formula_atom] at hrelation
+        erw [Declaration.atomic_rel (P := targetWithSeparatePieces.presentation)] at hrelation
+        exact Or.inr (Set.mem_singleton_iff.1 hrelation)
 
 /-- Different supported translation representatives give a comparison on the actual model. -/
 def locally_distinct_translations_compare :
@@ -525,6 +549,7 @@ private def retained : DeclarationContext presentation where
     intro d hd e he
     have same : d = .sort false := Set.mem_singleton_iff.1 hd
     subst d
+    rw [Declaration.sort_dependencies] at he
     exact he.elim
 
 /-- Vary the forgotten carrier while keeping the retained integer carrier. -/
@@ -592,7 +617,7 @@ private theorem retained_preserves (source target : RestrictedStructure retained
   cases a with
   | @eq s i j =>
     have kept : Declaration.sort s ∈ retained.declarations :=
-      supported (Or.inl ⟨s, i.sort_mem, rfl⟩)
+      supported (Declaration.sorts_subset_atomicSupport _ (Declaration.sort_mem_sorts i.sort_mem))
     exact congrArg (fun x => same s kept ▸ x) held
   | rel r _ => exact nomatch r
   | domain p _ => exact nomatch p
@@ -812,6 +837,7 @@ theorem native_same_retained_data_with_distinct_maps_fails :
     ¬ (nativeCoefficient true false).RespectsRestriction retained (fun _ h => h) := by
   intro locality
   obtain ⟨rule, _, native⟩ := locality.points
+  simp only [CoefficientReading.LocalPointRule.agreesOnNative_iff] at native
   have agreement (b : Bool) := native PUnit.unit b
     (ambient_agrees_scheme true) (RestrictedStructure.Agrees.refl _)
   have bad := congrFun (Option.some.inj ((agreement false).symm.trans (agreement true))) (0 : Int)
@@ -850,10 +876,12 @@ theorem uniform_native_points_have_local_rule :
   let rule : CoefficientReading.LocalPointRule retained :=
     fun X Y s _ => if same : X.carrier s = Y.carrier s then some (cast same) else none
   refine ⟨(fun _ => Set.mem_singleton _), ⟨rule, ?_, ?_⟩, ?_⟩
-  · intro i X Y left right
+  · rw [CoefficientReading.LocalPointRule.agreesWith_iff]
+    intro i X Y left right
     cases i
     have xs : Int = X.carrier false := left.carrier_eq _ (Set.mem_singleton _)
     have ys : Int = Y.carrier false := right.carrier_eq _ (Set.mem_singleton _)
+    simp only [CoefficientReading.selectedPoint_apply]
     change (if same : X.carrier false = Y.carrier false then some (cast same) else none) =
       some (fun x => cast ys (cast xs.symm x))
     rw [dif_pos (xs.symm.trans ys)]
@@ -863,7 +891,7 @@ theorem uniform_native_points_have_local_rule :
       cases right
       rfl
     exact congrArg some (funext (composed xs ys))
-  · dsimp only [CoefficientReading.LocalPointRule.AgreesOnNative]
+  · simp only [CoefficientReading.LocalPointRule.agreesOnNative_iff]
     intro i a
     cases i
     cases a
@@ -994,14 +1022,16 @@ theorem declared_observation_covers_both_sorts :
   let declared : pairedReading.DeclaredObservation := ⟨.ordinary (), Set.mem_univ _, rfl⟩
   obtain ⟨i, symbol, arity⟩ := declared.covered
   refine ⟨i, symbol, ?_⟩
+  rw [Declaration.sorts_eq_image]
   rintro _ ⟨s, kept, rfl⟩
-  exact arity ⟨s, List.mem_cons_of_mem _ kept, rfl⟩
+  exact arity (Declaration.sort_mem_sorts (List.mem_cons_of_mem _ kept))
 
 /-- Both state sorts remain available while the operation declaration is forgotten. -/
 private def pairedSorts : DeclarationContext observationPresentation where
   declarations := {d | ∃ s, d = .sort s}
   closed := by
     rintro _ ⟨s, rfl⟩ d source
+    rw [Declaration.sort_dependencies] at source
     exact source.elim
 
 /-- The target has a covering piece for the operation and a separate sorts-only piece. -/
@@ -1023,6 +1053,7 @@ private def forgetPairedOperation : ReadingContextChange pairedReading splitPair
   pieces := fun _ => {false}
   localSupport := by
     rintro _ _ ⟨s, rfl⟩ _ d supported
+    rw [Declaration.translatedSupport_sort, Interpretation.identity_onSort] at supported
     exact ⟨false, Set.mem_singleton _, ⟨s, Set.mem_singleton_iff.1 supported⟩⟩
 
 /-- Covering the two inputs still does not permit forgetting the selected observation operation. -/
@@ -1327,6 +1358,19 @@ private def additional {S T : Type} {s : S} (f : S → T) :
   coordinate _ := ⟨.inr (), rfl⟩
   extra_used _ := ⟨(), rfl⟩
 
+/-- The additional input in Definition 1.11 can be transported when its
+actual source sort is retained. Here the only source sort used is `true`. -/
+theorem additional_retains_source_sort :
+    (additional (s := true) (id : Bool → Bool)).RetainsSourceSorts (· = true) :=
+  (ReadingInputMap.retainsSourceSorts_iff _ _).2 (fun _ => rfl)
+
+/-- Retaining only `false` cannot supply the same additional input of sort `true`. -/
+theorem additional_not_retaining_source_sort :
+    ¬ (additional (s := true) (id : Bool → Bool)).RetainsSourceSorts (· = false) := by
+  intro retained
+  have wrongSort : true = false := (ReadingInputMap.retainsSourceSorts_iff _ _).1 retained ()
+  cases wrongSort
+
 /-- Even when two sorts have the same image, a name cannot change its original sort. -/
 theorem extra_cannot_change_original_sort :
     ¬ (additional (s := true) (fun _ => ())).PreservesNames (slot false) (fun i => nomatch i) := by
@@ -1612,6 +1656,7 @@ private def U : DeclarationContext P where
   declarations := Set.range Declaration.sort
   closed seen _ dependency := by
     obtain ⟨s, rfl⟩ := seen
+    rw [Declaration.sort_dependencies] at dependency
     exact dependency.elim
 
 /-- Both sort declarations belong to the method's context. -/
@@ -1629,6 +1674,7 @@ private def W : DeclarationContext P where
   closed seen d hd := by
     have same := Set.mem_singleton_iff.1 seen
     rw [same] at hd
+    rw [Declaration.sort_dependencies] at hd
     exact hd.elim
 
 /-- The selected Boolean declaration lies in the full context. -/
@@ -1883,9 +1929,9 @@ private theorem sameBooleanSource :
     | eq x y => exact congrArg (fun a => cast _ a) held
     | rel r => nomatch r
     | domain p => nomatch p
-    | graph op _ _ =>
+    | graph op vars y =>
       cases op with
-      | total f => exact (omitsTotal f (inside (support (Or.inr (Set.mem_singleton _))))).elim
+      | total f => exact (omitsTotal f (inside (support (Declaration.graph_mem_atomicSupport (.total f) vars y)))).elim
       | partialOp p => nomatch p
       | quantity q => nomatch q
 

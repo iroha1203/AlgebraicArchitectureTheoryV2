@@ -28,7 +28,7 @@ structure Hom (A B : ContextStructure U) where
   domain_mem (p : P.signature.Partial) (keep : Declaration.partialOp p ∈ U.declarations)
     (e : Assignment A.carrier (P.signature.partialArity p).inputs) :
     A.evaluation.domain p keep e →
-      B.evaluation.domain p keep (mapAssignment onSort (operationInputs (.partialOp p) keep) e)
+      B.evaluation.domain p keep (mapAssignment onSort (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keep)) e)
   /-- Each retained operation commutes on its defined inputs. -/
   graph_mem (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (e : Assignment A.carrier op.arity.inputs) (y : A.carrier op.arity.output) :
@@ -38,6 +38,16 @@ structure Hom (A B : ContextStructure U) where
 namespace Hom
 
 variable {A B C : ContextStructure U}
+
+/-- Transporting a structure arrow transports its input and output at each retained sort. -/
+theorem cast_onSort {D : ContextStructure U} (source : A = C) (target : B = D) (f : Hom A B)
+    (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations) (x : C.carrier s) :
+    (cast (congrArg₂ Hom source target) f).onSort s keep x =
+      cast (congrArg (fun S => S.carrier s) target)
+        (f.onSort s keep (cast (congrArg (fun S => S.carrier s) source.symm) x)) := by
+  cases source
+  cases target
+  rfl
 
 /-- All arrows are determined by their retained components. -/
 @[ext] theorem ext {f g : Hom A B} (same : ∀ s keep x, f.onSort s keep x = g.onSort s keep x) : f = g := by
@@ -109,12 +119,20 @@ noncomputable def restrictOnSort (f : Hom A B) (inside : V ≤ U) :
   fun s keep x => cast (B.restrict_carrier inside (s := s) keep).symm
     (f.onSort s (inside keep) (selectedMap V A.carrier s keep x))
 
+/-- The restricted component at a retained sort transports the given arrow
+using the source and target carrier identifications of Proposition 3.2. -/
+theorem restrictOnSort_apply (f : Hom A B) (inside : V ≤ U) (s : P.signature.SortType)
+    (keep : Declaration.sort s ∈ V.declarations) (x : (A.restrict inside).carrier s) :
+    f.restrictOnSort inside s keep x = cast (B.restrict_carrier inside (s := s) keep).symm
+      (f.onSort s (inside keep) (selectedMap V A.carrier s keep x)) :=
+  rfl
+
 /-- A local component is exactly the original component after identifying the retained carriers. -/
 theorem selectedMap_restrictOnSort (f : Hom A B) (inside : V ≤ U) (s : P.signature.SortType)
     (keep : Declaration.sort s ∈ V.declarations) (x : (A.restrict inside).carrier s) :
     selectedMap V B.carrier s keep (f.restrictOnSort inside s keep x) =
       f.onSort s (inside keep) (selectedMap V A.carrier s keep x) := by
-  simp only [restrictOnSort, selectedMap_apply, cast_cast]
+  simp only [restrictOnSort_apply, selectedMap_apply, cast_cast]
   rfl
 
 /-- The corresponding square of maps on retained tuples commutes. -/
@@ -174,7 +192,7 @@ theorem restrictFunctor_id : restrictFunctor (le_refl U) = 𝟭 (ContextStructur
   intro A B f
   apply Hom.ext
   intro s kept x
-  simp only [restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort, selectedMap_apply, comp_onSort,
+  simp only [restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort_apply, selectedMap_apply, comp_onSort,
     Functor.id_map, eqToHom_onSort]
 
 /-- Successive structure reducts compose strictly as functors. -/
@@ -184,7 +202,7 @@ theorem restrictFunctor_comp (inside : V ≤ U) (smaller : W ≤ V) :
   intro A B f
   apply Hom.ext
   intro s kept x
-  simp only [Functor.comp_map, restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort, selectedMap_apply,
+  simp only [Functor.comp_map, restrictFunctor_map, Hom.restrict_onSort, Hom.restrictOnSort_apply, selectedMap_apply,
     comp_onSort, eqToHom_onSort, cast_cast]
 
 end ContextStructure

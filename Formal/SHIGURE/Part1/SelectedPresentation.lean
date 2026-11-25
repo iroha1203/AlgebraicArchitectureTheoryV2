@@ -67,6 +67,10 @@ def identity (S : Signature.{u}) : SignatureNames S S where
     change ⟨(S.quantityArity q).inputs.map id, (S.quantityArity q).output⟩ = S.quantityArity q
     rw [List.map_id]
 
+/-- The identity name map keeps each total primitive. -/
+theorem identity_onTotal (S : Signature.{u}) (f : S.Total) : (identity S).onTotal f = f :=
+  rfl
+
 /-- Map a tagged operation to the same kind of operation in the other signature. -/
 def operation (names : SignatureNames S T) : Operation S → Operation T
   | .total f => .total (names.onTotal f)
@@ -130,9 +134,54 @@ def formula (names : SignatureNames S T) :
   | _, .disj p q => .disj (names.formula p) (names.formula q)
   | _, .ex p => .ex (names.formula p)
 
+/-- Renaming an atomic formula acts on its atom, with the same position list
+renamed in the target signature. -/
+theorem formula_atom (names : SignatureNames S T) {Γ : List S.SortType} (a : Atomic S Γ) :
+    names.formula (.atom a) = .atom (names.atomic a) :=
+  rfl
+
+/-- The renamed graph of a total operation uses the renamed primitive and the same positions. -/
+theorem formula_totalGraph (names : SignatureNames S T) {Γ : List S.SortType}
+    (f : S.Total) (args : Renaming (S.totalArity f).inputs Γ) (y : Var Γ (S.totalArity f).output) :
+    names.formula (.atom (.graph (.total f) args y)) =
+      .atom (.graph (.total (names.onTotal f))
+        (congrArg Arity.inputs (names.totalArity f) ▸ args.mapSorts names.onSort)
+        (congrArg Arity.output (names.totalArity f) ▸ y.mapSorts names.onSort)) :=
+  rfl
+
+/-- Renaming truth preserves the logical connective and reindexes its context. -/
+theorem formula_truth (names : SignatureNames S T) {Γ : List S.SortType} :
+    names.formula (Formula.truth (Γ := Γ)) = .truth :=
+  rfl
+
+/-- Renaming falsehood preserves the logical connective in the target context. -/
+theorem formula_falsehood (names : SignatureNames S T) {Γ : List S.SortType} :
+    names.formula (Formula.falsehood (Γ := Γ)) = .falsehood :=
+  rfl
+
+/-- Renaming a conjunction renames both parts in the same context. -/
+theorem formula_conj (names : SignatureNames S T) {Γ : List S.SortType} (p q : Formula S Γ) :
+    names.formula (p.conj q) = (names.formula p).conj (names.formula q) :=
+  rfl
+
+/-- Renaming a disjunction renames both parts in the same context. -/
+theorem formula_disj (names : SignatureNames S T) {Γ : List S.SortType} (p q : Formula S Γ) :
+    names.formula (p.disj q) = (names.formula p).disj (names.formula q) :=
+  rfl
+
+/-- Renaming an existential renames the witnessed sort and the body together. -/
+theorem formula_ex (names : SignatureNames S T) {Γ : List S.SortType} {s : S.SortType}
+    (p : Formula S (s :: Γ)) : names.formula p.ex = (names.formula p).ex :=
+  rfl
+
 /-- Rename the context, antecedent and conclusion of a written Law. -/
 def law (names : SignatureNames S T) (ℓ : Law S) : Law T :=
   ⟨ℓ.context.map names.onSort, names.formula ℓ.input, names.formula ℓ.conclusion⟩
+
+/-- A renamed Law keeps its two written formulas in the renamed free context. -/
+theorem law_eq (names : SignatureNames S T) (ℓ : Law S) :
+    names.law ℓ = ⟨ℓ.context.map names.onSort, names.formula ℓ.input, names.formula ℓ.conclusion⟩ :=
+  rfl
 
 /-- Rename a term through its exact typed primitive operations. -/
 def term (names : SignatureNames S T) :
@@ -316,19 +365,24 @@ theorem restrict_formula_iff (names : SignatureNames S T) (A : Structure T)
     ∀ e : Assignment (names.restrict A).carrier Γ,
       p.Holds (names.restrict A) e ↔ (names.formula p).Holds A (e.mapSorts names.onSort) := by
   induction p with
-  | atom a => exact names.restrict_atomic_iff A a
-  | truth => intro; rfl
-  | falsehood => intro; rfl
+  | atom a =>
+    rw [formula_atom]
+    exact names.restrict_atomic_iff A a
+  | truth => simp only [formula_truth, Formula.holds_truth_iff, implies_true]
+  | falsehood => simp only [formula_falsehood, Formula.holds_falsehood_iff, implies_true]
   | conj p q hp hq =>
     intro e
+    rw [formula_conj]
     exact (Formula.holds_conj _ _ _ _).trans
       ((and_congr (hp e) (hq e)).trans (Formula.holds_conj _ _ _ _).symm)
   | disj p q hp hq =>
     intro e
+    rw [formula_disj]
     exact (Formula.holds_disj _ _ _ _).trans
       ((or_congr (hp e) (hq e)).trans (Formula.holds_disj _ _ _ _).symm)
   | ex p ih =>
     intro e
+    rw [formula_ex]
     refine (Formula.holds_ex _ _ _).trans ((exists_congr fun x => ?_).trans
       (Formula.holds_ex (names.formula p) A (e.mapSorts names.onSort)).symm)
     simpa only [Assignment.mapSorts_cons] using ih (Assignment.cons x e)
@@ -423,6 +477,17 @@ structure LawAttachments (S : Signature.{u}) (L : Type u) where
   ring : Option (RingLawRecord S L)
   proof : Option (RecordedDerivation S L)
 
+/-- Equal ordered text, ring data, and proofs determine the same attachment record. -/
+theorem LawAttachments.ext {S : Signature.{u}} {L : Type u} {left right : LawAttachments S L}
+    (equation : left.equation = right.equation) (ring : left.ring = right.ring)
+    (proof : left.proof = right.proof) : left = right := by
+  cases left
+  cases right
+  cases equation
+  cases ring
+  cases proof
+  rfl
+
 /-- The ordered syntax and proof stay available, with a ring record when its references are retained. -/
 noncomputable def LawAttachments.withSupportedRing {S : Signature.{u}} {L : Type u}
     (data : LawAttachments S L) (supported : Prop) : LawAttachments S L := by
@@ -464,6 +529,31 @@ def lawAttachments (P : PrimitivePresentation.{u}) (signature : SignatureNames P
   proof := match h : P.laws.role name with
     | .derived => some (Derivation.record (T := P.theory) signature (fun n => lawName n.val) (P.derived name h))
     | .required | .additional => none
+
+/-- An attachment record keeps the ordered text transported along the name map. -/
+theorem lawAttachments_equation (P : PrimitivePresentation.{u}) (signature : SignatureNames P.signature S)
+    (lawName : P.laws.LawName → L) (name : P.laws.LawName) :
+    (P.lawAttachments signature lawName name).equation =
+      (P.orderedEquation name).map (fun eqn => signature.equation eqn.written.equation) :=
+  rfl
+
+/-- The record carries no ring data when the source Law has no ring attachment. -/
+theorem lawAttachments_ring_of_none (P : PrimitivePresentation.{u}) (signature : SignatureNames P.signature S)
+    (lawName : P.laws.LawName → L) (name : P.laws.LawName) (missing : P.ringEquation name = none) :
+    (P.lawAttachments signature lawName name).ring = none := by
+  simp only [lawAttachments, missing, Option.map_none]
+
+/-- An additional Law has no registered derivation in its attachment record. -/
+theorem lawAttachments_proof_of_additional (P : PrimitivePresentation.{u}) (signature : SignatureNames P.signature S)
+    (lawName : P.laws.LawName → L) (name : P.laws.LawName) (role : P.laws.role name = .additional) :
+    (P.lawAttachments signature lawName name).proof = none := by
+  dsimp only [lawAttachments]
+  split
+  · rename_i derived
+    rw [role] at derived
+    cases derived
+  · rfl
+  · rfl
 
 /-- Record inclusion operations in the order of the partial operation's inputs. -/
 private def inclusionOperations (names : SignatureNames P.signature S) :

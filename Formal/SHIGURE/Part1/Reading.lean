@@ -423,11 +423,8 @@ theorem Reading.DeclaredObservation.covered {reading : Reading.{u, v, w, x}}
   obtain ⟨symbol, retained, reads⟩ := declared
   obtain ⟨i, kept⟩ := reading.cover.covers retained
   refine ⟨i, kept, ?_⟩
-  rintro _ ⟨s, input, rfl⟩
-  apply (reading.cover.piece i).closed kept
-  cases symbol with
-  | ordinary f => exact ⟨s, input, rfl⟩
-  | quantity q => exact ⟨s, input, rfl⟩
+  exact (Declaration.operationSorts_subset_dependsOn symbol.operation).trans ((reading.cover.piece i).closed kept)
+
 
 namespace Reading.DeclaredObservation
 
@@ -507,6 +504,31 @@ def Reading.restrict (reading : Reading.{u, v, w, x}) {P : PrimitivePresentation
   observationPlacement := .retained (fun _ => Set.mem_univ _)
   observationDeclared _ _ := Set.mem_univ _
   origin := some ⟨reading.presentation, reading.context, selection⟩
+
+/-- A restricted reading uses the ordered and ring attachments in its selected presentation. -/
+theorem Reading.restrict_equations (reading : Reading.{u, v, w, x}) {P : PrimitivePresentation.{u}}
+    (selection : ReadingOrigin P reading.presentation reading.context)
+    (observation : StateObservation (selection.signature.restrict reading.structureData))
+    (valueStructure : reading.ValueStructure observation.Output)
+    (coefficients : Option (Σ Γ : CoefficientProduct P.signature.SortType,
+      CoefficientReading.{u, v} (ReadingOrigin.whole P) (selection.signature.restrict reading.structureData) Γ))
+    (sharedInputs : SharedInputNames observation.product) (name : P.laws.LawName) :
+    let restricted := reading.restrict selection observation valueStructure coefficients sharedInputs
+    restricted.presentation.orderedEquation name = P.orderedEquation name ∧
+      restricted.presentation.ringEquation name = P.ringEquation name :=
+  ⟨rfl, rfl⟩
+
+/-- A restricted reading records the original presentation and its actual selection. -/
+theorem Reading.restrict_origin (reading : Reading.{u, v, w, x}) {P : PrimitivePresentation.{u}}
+    (selection : ReadingOrigin P reading.presentation reading.context)
+    (observation : StateObservation (selection.signature.restrict reading.structureData))
+    (valueStructure : reading.ValueStructure observation.Output)
+    (coefficients : Option (Σ Γ : CoefficientProduct P.signature.SortType,
+      CoefficientReading.{u, v} (ReadingOrigin.whole P) (selection.signature.restrict reading.structureData) Γ))
+    (sharedInputs : SharedInputNames observation.product) :
+    (reading.restrict selection observation valueStructure coefficients sharedInputs).origin =
+      some ⟨reading.presentation, reading.context, selection⟩ :=
+  rfl
 
 /-- Use original position names, including when the products keep different subsets of them. -/
 def Reading.namedInput (reading : Reading.{u, v, w, x})
@@ -602,10 +624,62 @@ def translatedSupport (u : Interpretation P.theory Q.theory) :
       | .required => derivation (u.preserves ⟨i, role⟩)
       | .additional | .derived => ∅
 
+/-- A translated sort contributes the single sort selected by the interpretation. -/
+theorem translatedSupport_sort (u : Interpretation P.theory Q.theory) (s : P.signature.SortType) :
+    translatedSupport u (.sort s) = {.sort (u.onSort s)} :=
+  rfl
+
+/-- The image of a sort is included in its translated support. -/
+theorem translatedSort_mem (u : Interpretation P.theory Q.theory) (s : P.signature.SortType) :
+    .sort (u.onSort s) ∈ translatedSupport u (.sort s) := by
+  rw [translatedSupport_sort]
+  exact Set.mem_singleton _
+
+/-- A total symbol contributes its input sorts, translated graph, and totality proof. -/
+theorem translatedSupport_total (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :
+    translatedSupport u (.total f) =
+      sorts ((P.signature.totalArity f).inputs.map u.onSort) ∪
+        (formula (u.translation.operation (.total f)).graph ∪ derivation (u.total f)) :=
+  rfl
+
+/-- A partial operation contributes both its graph and its definedness data. -/
+theorem translatedSupport_partialOp (u : Interpretation P.theory Q.theory) (p : P.signature.Partial) :
+    translatedSupport u (.partialOp p) =
+      sorts ((P.signature.partialArity p).inputs.map u.onSort) ∪
+        (formula (u.translation.operation (.partialOp p)).graph ∪
+          (formula (u.translation.partialDomain p) ∪
+            (derivation (u.partialDefined p) ∪ derivation (u.definedPartial p)))) :=
+  rfl
+
+/-- A quantity contributes its input sorts, translated graph, and totality proof. -/
+theorem translatedSupport_quantity (u : Interpretation P.theory Q.theory) (q : P.signature.Quantity) :
+    translatedSupport u (.quantity q) =
+      sorts ((P.signature.quantityArity q).inputs.map u.onSort) ∪
+        (formula (u.translation.operation (.quantity q)).graph ∪ derivation (u.quantity q)) :=
+  rfl
+
+/-- A translated relation contributes its input sorts and the names in its defining formula. -/
+theorem translatedSupport_relation (u : Interpretation P.theory Q.theory) (r : P.signature.Rel) :
+    translatedSupport u (.relation r) =
+      sorts ((P.signature.relInputs r).map u.onSort) ∪ formula (u.translation.relation r) :=
+  rfl
+
+/-- A translated Law retains its sorts and formulas as well as the proof for a required Law. -/
+theorem translatedSupport_law (u : Interpretation P.theory Q.theory) (i : P.laws.LawName) :
+    translatedSupport u (.law i) =
+      let law := P.laws.statement i
+      sorts (law.context.map u.onSort) ∪ formula (u.translation.formula law.input) ∪
+        formula (u.translation.formula law.conclusion) ∪
+        match role : P.laws.role i with
+        | .required => derivation (u.preserves ⟨i, role⟩)
+        | .additional | .derived => ∅ :=
+  rfl
+
 /-- The translation of a total symbol retains every declaration in its totality proof. -/
 theorem totality_derivation_support (u : Interpretation P.theory Q.theory) (f : P.signature.Total) :
-    derivation (u.total f) ⊆ translatedSupport u (.total f) :=
-  fun _ used => Or.inr (Or.inr used)
+    derivation (u.total f) ⊆ translatedSupport u (.total f) := by
+  rw [translatedSupport_total]
+  exact Set.subset_union_right.trans Set.subset_union_right
 
 /-- A translated atom references only declarations in the image support of the source atom. -/
 theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
@@ -615,48 +689,70 @@ theorem translated_atomic_support (u : Interpretation P.theory Q.theory)
     formula (u.translation.atomic a) ⊆ V := by
   cases a with
   | eq x y =>
+    rw [Translation.atomic_eq, formula_atom, atomic_eq]
     exact Set.empty_subset V
   | rel r vars =>
     rw [Translation.atomic_rel (S := P.signature) (T := Q.signature) u.translation r vars,
       formula_rename]
+    rw [atomic_rel] at supported
     intro d hd
-    exact supported (.relation r) (Set.mem_singleton _) (Or.inr hd)
+    apply supported (.relation r) (Set.mem_singleton _)
+    rw [translatedSupport_relation]
+    exact Or.inr hd
   | domain p vars =>
     rw [Translation.atomic_domain (S := P.signature) (T := Q.signature) u.translation p vars,
       formula_rename]
+    rw [atomic_domain] at supported
     intro d hd
-    exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inr (Or.inl hd)))
+    apply supported (.partialOp p) (Set.mem_singleton _)
+    rw [translatedSupport_partialOp]
+    exact Or.inr (Or.inr (Or.inl hd))
   | graph op vars y =>
     rw [Translation.atomic_graph (S := P.signature) (T := Q.signature) u.translation op vars y,
       formula_rename]
+    rw [atomic_graph] at supported
     intro d hd
     cases op with
-    | total f => exact supported (.total f) (Set.mem_singleton _) (Or.inr (Or.inl hd))
-    | partialOp p => exact supported (.partialOp p) (Set.mem_singleton _) (Or.inr (Or.inl hd))
-    | quantity q => exact supported (.quantity q) (Set.mem_singleton _) (Or.inr (Or.inl hd))
+    | total f =>
+      rw [ofOperation_total] at supported
+      apply supported (.total f) (Set.mem_singleton _)
+      rw [translatedSupport_total]
+      exact Or.inr (Or.inl hd)
+    | partialOp p =>
+      rw [ofOperation_partialOp] at supported
+      apply supported (.partialOp p) (Set.mem_singleton _)
+      rw [translatedSupport_partialOp]
+      exact Or.inr (Or.inl hd)
+    | quantity q =>
+      rw [ofOperation_quantity] at supported
+      apply supported (.quantity q) (Set.mem_singleton _)
+      rw [translatedSupport_quantity]
+      exact Or.inr (Or.inl hd)
 
 /-- A formula's translation uses the translated support of all its bound sorts and symbols. -/
 theorem translated_formula_support (u : Interpretation P.theory Q.theory)
     {Γ : List P.signature.SortType} (p : Formula P.signature Γ) (V : Set (Declaration Q)) :
     (∀ d ∈ formula p, translatedSupport u d ⊆ V) → formula (u.translation.formula p) ⊆ V := by
   induction p with
-  | atom a => rw [Translation.formula_atom]; exact translated_atomic_support u a V
-  | truth => rw [Translation.formula_truth]; intro; exact Set.empty_subset V
-  | falsehood => rw [Translation.formula_falsehood]; intro; exact Set.empty_subset V
+  | atom a => rw [Translation.formula_atom, formula_atom]; exact translated_atomic_support u a V
+  | truth => simp only [Translation.formula_truth, formula_truth]; intro; exact Set.empty_subset V
+  | falsehood => simp only [Translation.formula_falsehood, formula_falsehood]; intro; exact Set.empty_subset V
   | conj p q hp hq =>
-    rw [Translation.formula_conj]
+    simp only [Translation.formula_conj, formula_conj]
     intro keep d hd
     exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
       (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
   | disj p q hp hq =>
-    rw [Translation.formula_disj]
+    simp only [Translation.formula_disj, formula_disj]
     intro keep d hd
     exact hd.elim (fun left => hp (fun x hx => keep x (Or.inl hx)) left)
       (fun right => hq (fun x hx => keep x (Or.inr hx)) right)
   | @ex Γ s p ih =>
-    rw [Translation.formula_ex]
+    simp only [Translation.formula_ex, formula_ex]
     intro keep d hd
-    exact hd.elim (fun h => keep (.sort s) (Or.inl (Set.mem_singleton _)) h)
+    have sortKept := keep (.sort s) (Or.inl (Set.mem_singleton _))
+    rw [translatedSupport_sort] at sortKept
+    exact hd.elim (fun h => sortKept h)
       (fun h => ih (fun x hx => keep x (Or.inr hx)) h)
 
 /-- The declared name underlying an evaluated state, relation, operation, or domain fact. -/
@@ -720,7 +816,8 @@ theorem sort_is_covered (transition : ReadingContextChange source target u)
     ∃ i j, j ∈ transition.pieces i ∧
       Declaration.sort (u.onSort s) ∈ (target.cover.piece j).declarations := by
   obtain ⟨i, available⟩ := source.cover.covers (transition.inside retained)
-  obtain ⟨j, chosen, covered⟩ := transition.localSupport i retained available (Set.mem_singleton _)
+  obtain ⟨j, chosen, covered⟩ := transition.localSupport i retained available
+    (Declaration.translatedSort_mem (transition.supporting i) s)
   exact ⟨i, j, chosen, congrFun (transition.equivalent i).choose s ▸ covered⟩
 
 /-- Restrict a source piece to the declarations selected for this comparison. -/
@@ -762,11 +859,14 @@ private theorem formula_support_in (transition : ReadingContextChange source tar
     (V : Set (Declaration target.presentation)) (keep : ∀ d ∈ Declaration.formulaSupport p,
       Declaration.translatedSupport (transition.supporting i) d ⊆ V) :
     Declaration.formulaSupport ((transition.supporting i).translation.formula p) ⊆ V := by
+  simp only [Declaration.formulaSupport_eq] at keep ⊢
   intro d hd
   rcases hd with hsort | hformula
-  · obtain ⟨t, ht, rfl⟩ := hsort
+  · rw [Declaration.sorts_eq_image] at hsort
+    obtain ⟨t, ht, rfl⟩ := hsort
     obtain ⟨s, hs, rfl⟩ := List.mem_map.mp ht
-    exact keep (.sort s) (Or.inl ⟨s, hs, rfl⟩) (Set.mem_singleton _)
+    exact keep (.sort s) (Or.inl (Declaration.sort_mem_sorts hs))
+      (Declaration.translatedSort_mem (transition.supporting i) s)
   · exact Declaration.translated_formula_support (transition.supporting i) p V
       (fun d hd => keep d (Or.inr hd)) hformula
 
@@ -1076,6 +1176,13 @@ def mapToRestrictedTarget (inputs : ReadingInputMap source target onSort)
 def RetainsSourceSorts (inputs : ReadingInputMap source target onSort) (retains : S → Prop) : Prop :=
   ∀ j, retains (Sum.elim source.sort inputs.extra.sort (inputs.coordinate j).val)
 
+/-- The support condition for Definition 1.11 checks the actual source sort
+of each target coordinate, from the original or the additional input. -/
+theorem retainsSourceSorts_iff (inputs : ReadingInputMap source target onSort) (retains : S → Prop) :
+    inputs.RetainsSourceSorts retains ↔
+      ∀ j, retains (Sum.elim source.sort inputs.extra.sort (inputs.coordinate j).val) :=
+  Iff.rfl
+
 /-- On states constant within each sort, a target input gets the mapped sort value. -/
 theorem mapValues_ofSort (inputs : ReadingInputMap source target onSort)
     {X : S → Type u} {Y : T → Type u} (h : ∀ s, X s → Y (onSort s))
@@ -1346,7 +1453,8 @@ theorem ReadingContextChange.target_evaluation_input_is_covered {source target :
     (supports : inputs.RetainsSourceSorts (fun s => Declaration.sort s ∈ change.retained.declarations))
     (j : q.Index) :
     ∃ i k, k ∈ change.pieces i ∧ Declaration.sort (q.sort j) ∈ (target.cover.piece k).declarations := by
-  obtain ⟨i, k, chosen, covered⟩ := change.sort_is_covered _ (supports j)
+  obtain ⟨i, k, chosen, covered⟩ := change.sort_is_covered _
+    ((inputs.retainsSourceSorts_iff _).1 supports j)
   exact ⟨i, k, chosen, (inputs.coordinate j).property ▸ covered⟩
 
 /-- Compare two coefficient selections, keeping fixed settings or supplying an evaluation square. -/
@@ -1675,7 +1783,8 @@ def Reading.coefficientContext (reading : Reading.{u, v, w, x})
   closed membership d dependency := by
     rcases membership with keptName | ⟨i, j, _, _, rfl, _⟩
     · exact Or.inl (kept.closed keptName dependency)
-    · exact dependency.elim
+    · rw [Declaration.sort_dependencies] at dependency
+      exact dependency.elim
 
 /-- Added carrier slots already belonged to the original realization. -/
 theorem Reading.coefficientContext_inside (reading : Reading.{u, v, w, x})
