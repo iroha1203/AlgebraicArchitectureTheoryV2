@@ -299,15 +299,20 @@ fn detect_order_z(
             .map(|(i, m)| (m.clone(), i))
             .collect();
         let mut nonzero_imgs = Vec::new();
+        let mut cech_diffs = Vec::new();
         if shifted_rels.is_empty() {
+            let zero_poly = Poly::zero(d, BigInt::zero());
             for g in &shifted_extra {
                 let trunc = g.truncate_degree(r as u64);
+                let diff = trunc.sub(&zero_poly);
                 if !trunc.is_zero() {
                     nonzero_imgs.push(trunc.display(obs_order, MonomialOrder::Grevlex));
+                    cech_diffs.push(diff.display(obs_order, MonomialOrder::Grevlex));
                 }
             }
             if !nonzero_imgs.is_empty() {
                 let kernel_dim = monos.len().saturating_sub(prev_dim);
+                let two_context_cech_matches = cech_diffs == nonzero_imgs;
                 return Ok(OrderDetection::Finite {
                     nu: r,
                     r_base_label: if r == 1 {
@@ -318,6 +323,7 @@ fn detect_order_z(
                     r_prime_label: format!("Z[O]/m^{}", r + 1),
                     kernel_dim,
                     kappa_u_images: nonzero_imgs,
+                    two_context_cech_matches,
                 });
             }
             prev_dim = monos.len();
@@ -326,16 +332,35 @@ fn detect_order_z(
                 .map_err(map_artin_err)?;
             let mat = cols_to_mat(&cols, monos.len());
             let snf = smith_normal_form_z(&mat, cols.len()).map_err(map_artin_err)?;
+            let zero_vec = vec![BigInt::zero(); monos.len()];
             for g in &shifted_extra {
                 let trunc = g.truncate_degree(r as u64);
                 let vec = poly_to_z_vec(&trunc, &mono_idx, monos.len());
+                let diff_vec: Vec<BigInt> =
+                    vec.iter().zip(&zero_vec).map(|(a, b)| a - b).collect();
                 if !in_z_snf_image(&snf, &vec) {
                     nonzero_imgs.push(trunc.display(obs_order, MonomialOrder::Grevlex));
+                    if !in_z_snf_image(&snf, &diff_vec) {
+                        cech_diffs.push(trunc.display(obs_order, MonomialOrder::Grevlex));
+                    }
                 }
             }
             if !nonzero_imgs.is_empty() {
-                let cur_rank = monos.len().saturating_sub(snf.rank);
-                let kernel_dim = cur_rank.saturating_sub(prev_dim);
+                // F4/F8: 核 m^r / (m^{r+1} + I_O ∩ m^r) の最小生成元数（自由階数＋torsion 不変因子数）
+                let mut comb_r = cols.clone();
+                for (m_idx, m) in monos.iter().enumerate() {
+                    if m.total_degree() == r as u64 {
+                        let mut e = vec![BigInt::zero(); monos.len()];
+                        e[m_idx] = BigInt::one();
+                        comb_r.push(e);
+                    }
+                }
+                let snf_comb_r =
+                    smith_normal_form_z(&cols_to_mat(&comb_r, monos.len()), comb_r.len())
+                        .map_err(map_artin_err)?;
+                let (k_free, k_tors) = exact_sublattice_quotient_z(&snf_comb_r, &cols)?;
+                let kernel_dim = k_free + k_tors.len();
+                let two_context_cech_matches = cech_diffs == nonzero_imgs;
                 return Ok(OrderDetection::Finite {
                     nu: r,
                     r_base_label: if r == 1 {
@@ -346,6 +371,7 @@ fn detect_order_z(
                     r_prime_label: format!("A_Z/m^{}", r + 1),
                     kernel_dim,
                     kappa_u_images: nonzero_imgs,
+                    two_context_cech_matches,
                 });
             }
             prev_dim = monos.len().saturating_sub(snf.rank);

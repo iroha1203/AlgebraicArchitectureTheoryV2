@@ -1,11 +1,13 @@
 //! `solver/lift`・`solver/lift_z`・`solver/lift_extensions` 間の共通補助関数。
 
+use crate::algebra::MonomialOrder;
 use crate::algebra::artin::{AffineSolutionField, FiniteAlgebra, solve_affine_field};
 use crate::algebra::artin_quotient::SquareZeroExtension;
+use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
 use crate::algebra::poly::{AlgebraError, Poly};
-use crate::algebra::poly_expr::ExprBindings;
+use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
-use crate::algebra::syzygy::FieldCoeff;
+use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, ideal_membership_field};
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::lift::{
     DeclarationCoverSpec, FiniteEtaleDescentSpec, LiftTaskSpec, SquareZeroSpec,
@@ -15,7 +17,7 @@ use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, Silence
 use crate::ir::result_phase4::{FiniteEtaleDescentResult, LiftOutcomeDetail};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use num_bigint::{BigInt, BigUint};
-use num_traits::Zero;
+use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
 
 pub(crate) fn verify_base_laws<C: RingCoeff>(
@@ -309,15 +311,10 @@ pub(crate) fn derive_lift_verdict(
     affine_repair_exists: Option<bool>,
     etale_global_exists: Option<bool>,
 ) -> Verdict {
-    let ok = if let Some(et) = etale_global_exists {
-        et
-    } else if let Some(rel) = relative_lift_exists {
-        rel
-    } else if let Some(aff) = affine_repair_exists {
-        aff
-    } else {
-        lift_exists
-    };
+    let ok = lift_exists
+        && relative_lift_exists.unwrap_or(true)
+        && affine_repair_exists.unwrap_or(true)
+        && etale_global_exists.unwrap_or(true);
     if ok {
         Verdict::Established
     } else {
@@ -421,51 +418,164 @@ pub(crate) fn lift_outcome(
 pub(crate) fn compute_etale_descent(
     et: &FiniteEtaleDescentSpec,
     coeff_domain: &CoeffDomain,
-) -> FiniteEtaleDescentResult {
+) -> Result<FiniteEtaleDescentResult, SilenceReason> {
     let d = et.degree;
     let cover_equation = format!("{}^{d} - {} = 0", et.cover_var, et.base_var);
+
+    // 1. 多項式 f(z, t) = z^d - t を構築し、partial_derivative で導関数 ∂f/∂z を実計算する。
+    let z_var = Poly::var(2, 0, BigInt::zero());
+    let t_var = Poly::var(2, 1, BigInt::zero());
+    let z_pow_d = z_var.checked_pow(d).map_err(map_lift_algebra_error)?;
+    let cover_poly = z_pow_d.sub(&t_var);
+    let df_dz = cover_poly
+        .partial_derivative(0)
+        .map_err(map_lift_algebra_error)?;
+    let deriv_coeff = df_dz
+        .terms()
+        .values()
+        .next()
+        .cloned()
+        .unwrap_or_else(BigInt::zero);
+
     let derivative_unit_verified = match coeff_domain {
-        CoeffDomain::Q => d >= 2,
-        CoeffDomain::Fp(p) => !(BigUint::from(d) % p).is_zero(),
-        CoeffDomain::Z => false,
+        CoeffDomain::Q => Rat::from_int(deriv_coeff.clone()).coeff_inv().is_some(),
+        CoeffDomain::Fp(p) => FpElem::from_checked_prime(deriv_coeff.clone(), p.clone())
+            .coeff_inv()
+            .is_some(),
+        CoeffDomain::Z => deriv_coeff == BigInt::one() || deriv_coeff == -BigInt::one(),
     };
-    let is_finite_etale = et.base_invertible && derivative_unit_verified;
-    let cocycle_group = format!("mu_{d}");
-    let cocycle_verified = is_finite_etale;
-    let local_selection_exists_on_cover = true;
-    let global_regular_section_exists = 1u32.is_multiple_of(d);
-    let nonexistence_reason = if !et.base_invertible {
-        format!(
-            "base variable `{}` is not inverted; cover ramifies at {} = 0",
-            et.base_var, et.base_var
-        )
-    } else if !derivative_unit_verified {
-        format!(
-            "derivative {d}*{}^({}) is not a unit over {coeff_domain}",
-            et.cover_var,
-            d - 1
-        )
+
+    if !et.base_invertible || !derivative_unit_verified {
+        let detail = if !et.base_invertible {
+            format!(
+                "base variable `{}` is not inverted; cover ramifies at {} = 0 (C9 not applicable)",
+                et.base_var, et.base_var
+            )
+        } else {
+            format!(
+                "derivative {deriv_coeff}*{}^({}) is not a unit over {coeff_domain} (C9 not finite etale)",
+                et.cover_var,
+                d - 1
+            )
+        };
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "finite_etale_cover_applicable".to_owned(),
+            detail,
+        });
+    }
+
+    // 2. 被覆 E 上の対角局所断面 s_diag(z) = z が f(z, z^d) = 0 を満たすことを代入検算する。
+    let diag_eval = cover_poly
+        .substitute(&[z_var, z_pow_d])
+        .map_err(map_lift_algebra_error)?;
+    let local_selection_exists_on_cover = diag_eval.is_zero();
+
+    // 3. ファイバー積 E ×_B E の μ_d-torsor 関係と三重交差 cocycle 恒等式を多項式計算で検証する。
+    let cocycle_verified = verify_mu_d_cocycle_identities(d, coeff_domain)?;
+
+    // 4. 基底 G_m = Spec k[t, t^-1] 上の大域正則断面 h(t)^d = t の単元指数方程式 d*m = 1 を
+    //    整数線形計算核 solve_affine_z で厳密に解く。
+    let global_regular_section_exists = matches!(
+        solve_affine_z(&[vec![BigInt::from(d)]], &[BigInt::one()], 1)
+            .map_err(map_lift_algebra_error)?,
+        AffineSolutionZ::Consistent { .. }
+    );
+
+    let nonexistence_reason = if global_regular_section_exists {
+        "global regular section exists".to_owned()
     } else {
         format!(
-            "unit exponent obstruction: h({})^{d} = {} requires {d} | 1 in Z (1 mod {d} = {}), so no global regular section exists in {coeff_domain}[{}, {}^-1]",
-            et.base_var,
-            et.base_var,
-            1 % d,
-            et.base_var,
-            et.base_var
+            "unit exponent obstruction: h({})^{d} = {} requires {d}*m = 1 in Z (inconsistent by SNF), so no global regular section exists in {coeff_domain}[{}, {}^-1]",
+            et.base_var, et.base_var, et.base_var, et.base_var
         )
     };
-    FiniteEtaleDescentResult {
+    Ok(FiniteEtaleDescentResult {
         cover_equation,
         degree: d,
-        is_finite_etale,
+        is_finite_etale: true,
         derivative_unit_verified,
-        cocycle_group,
+        cocycle_group: format!("mu_{d}"),
         cocycle_verified,
         local_selection_exists_on_cover,
         global_regular_section_exists,
         nonexistence_reason,
-    }
+    })
+}
+
+fn verify_mu_d_cocycle_identities(
+    d: u32,
+    coeff_domain: &CoeffDomain,
+) -> Result<bool, SilenceReason> {
+    // 変数 (z1, w12, w23) 上で z2 = w12*z1, z3 = w23*z2, w13 = w12*w23 として
+    // (a) z2^d - z1^d == z1^d * (w12^d - 1)
+    // (b) z3 - w13*z1 == 0
+    // (c) w13^d - 1 ∈ <w12^d - 1, w23^d - 1>（体上の ideal 所属検査）
+    let z1 = Poly::var(3, 0, BigInt::zero());
+    let w12 = Poly::var(3, 1, BigInt::zero());
+    let w23 = Poly::var(3, 2, BigInt::zero());
+    let one = Poly::one(3, BigInt::zero());
+    let z2 = w12.checked_mul(&z1).map_err(map_lift_algebra_error)?;
+    let z3 = w23.checked_mul(&z2).map_err(map_lift_algebra_error)?;
+    let w13 = w12.checked_mul(&w23).map_err(map_lift_algebra_error)?;
+    let z1_d = z1.checked_pow(d).map_err(map_lift_algebra_error)?;
+    let z2_d = z2.checked_pow(d).map_err(map_lift_algebra_error)?;
+    let w12_d_m1 = w12.checked_pow(d).map_err(map_lift_algebra_error)?.sub(&one);
+    let pairwise_ok = z2_d.sub(&z1_d) == z1_d.checked_mul(&w12_d_m1).map_err(map_lift_algebra_error)?;
+    let triple_ok = z3
+        .sub(&w13.checked_mul(&z1).map_err(map_lift_algebra_error)?)
+        .is_zero();
+
+    let vars = VarOrder::new(vec!["w12".to_owned(), "w23".to_owned()])
+        .map_err(map_lift_algebra_error)?;
+    let ideal_ok = match coeff_domain {
+        CoeffDomain::Q => {
+            let a = Poly::var(2, 0, Rat::zero());
+            let b = Poly::var(2, 1, Rat::zero());
+            let o = Poly::one(2, Rat::zero());
+            let g1 = a.checked_pow(d).map_err(map_lift_algebra_error)?.sub(&o);
+            let g2 = b.checked_pow(d).map_err(map_lift_algebra_error)?.sub(&o);
+            let tgt = a
+                .checked_mul(&b)
+                .map_err(map_lift_algebra_error)?
+                .checked_pow(d)
+                .map_err(map_lift_algebra_error)?
+                .sub(&o);
+            ideal_membership_field(
+                &tgt,
+                &[g1, g2],
+                &vars,
+                MonomialOrder::Grevlex,
+                DEFAULT_MAX_SYZYGY_PAIRS,
+            )
+            .map_err(map_lift_algebra_error)?
+            .is_some()
+        }
+        CoeffDomain::Fp(p) => {
+            let zero = FpElem::from_checked_prime(BigInt::zero(), p.clone());
+            let a = Poly::var(2, 0, zero.clone());
+            let b = Poly::var(2, 1, zero.clone());
+            let o = Poly::one(2, zero);
+            let g1 = a.checked_pow(d).map_err(map_lift_algebra_error)?.sub(&o);
+            let g2 = b.checked_pow(d).map_err(map_lift_algebra_error)?.sub(&o);
+            let tgt = a
+                .checked_mul(&b)
+                .map_err(map_lift_algebra_error)?
+                .checked_pow(d)
+                .map_err(map_lift_algebra_error)?
+                .sub(&o);
+            ideal_membership_field(
+                &tgt,
+                &[g1, g2],
+                &vars,
+                MonomialOrder::Grevlex,
+                DEFAULT_MAX_SYZYGY_PAIRS,
+            )
+            .map_err(map_lift_algebra_error)?
+            .is_some()
+        }
+        CoeffDomain::Z => false,
+    };
+    Ok(pairwise_ok && triple_ok && ideal_ok)
 }
 
 // =========================================================================
@@ -474,14 +584,19 @@ pub(crate) fn compute_etale_descent(
 
 pub(crate) fn check_cover_support_closure(
     cov: &DeclarationCoverSpec,
+    spec_vars: &[String],
     laws: &[NamedPoly],
 ) -> (bool, Vec<String>) {
     let law_map: BTreeMap<&str, &NamedPoly> =
         laws.iter().map(|l| (l.name.as_str(), l)).collect();
     let mut unclosed = Vec::new();
+    let mut covered_vars: BTreeSet<&str> = BTreeSet::new();
+    let mut covered_laws: BTreeSet<&str> = BTreeSet::new();
     for c in &cov.contexts {
         let allowed: BTreeSet<&str> = c.vars.iter().map(String::as_str).collect();
+        covered_vars.extend(allowed.iter().copied());
         for law_name in &c.laws {
+            covered_laws.insert(law_name.as_str());
             if let Some(law) = law_map.get(law_name.as_str()) {
                 let mut used = BTreeSet::new();
                 collect_state_vars(&law.expr, &mut used);
@@ -516,6 +631,16 @@ pub(crate) fn check_cover_support_closure(
                     outside.join(", ")
                 ));
             }
+        }
+    }
+    for v in spec_vars {
+        if !covered_vars.contains(v.as_str()) {
+            unclosed.push(format!("uncovered_var:{v}"));
+        }
+    }
+    for l in laws {
+        if !covered_laws.contains(l.name.as_str()) {
+            unclosed.push(format!("uncovered_law:{}", l.name));
         }
     }
     (unclosed.is_empty(), unclosed)

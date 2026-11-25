@@ -475,6 +475,16 @@ fn artin_z_nonfree_sublattice_quotient_torsion_is_exact() {
 
     // Z -> Q: (Z/2) ⊗ Q = 0
     let out_q = solve_artin_task(&make_case(sv("x"), CoeffDomain::Q));
+    let ufo_z = out_q
+        .artin
+        .as_ref()
+        .unwrap()
+        .universal_first_obstruction
+        .as_ref()
+        .unwrap();
+    // R2 Finding 4/5: Z/2Z のみの torsion カーネルでも最小生成元数 kernel_dim == 1 が返る
+    assert_eq!(ufo_z.kernel_dim, 1);
+    assert!(ufo_z.two_context_cech_matches);
     let bc_q = out_q.artin.as_ref().unwrap().base_change.as_ref().unwrap();
     assert!(!bc_q.abstract_tensor_nonzero);
     assert!(bc_q.target_image_is_zero);

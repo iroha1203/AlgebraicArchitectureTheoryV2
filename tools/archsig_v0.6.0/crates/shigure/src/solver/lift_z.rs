@@ -195,7 +195,7 @@ pub(crate) fn solve_lift_z(
         }
     };
 
-    let relative_cone = if let Some(rel_spec) = &spec.relative_reading {
+    let mut relative_cone = if let Some(rel_spec) = &spec.relative_reading {
         match compute_relative_cone_z(
             spec,
             rel_spec,
@@ -209,8 +209,19 @@ pub(crate) fn solve_lift_z(
             &param_vals_rp,
             &core,
         ) {
-            Ok(rc) => Some(rc),
+            Ok(rc) => {
+                checks.push(ApplicabilityCheck::passed(
+                    "relative_reading_cone_computed",
+                    MathClause::G141E5,
+                ));
+                Some(rc)
+            }
             Err(reason) => {
+                checks.push(ApplicabilityCheck::failed(
+                    "relative_reading_cone_computed",
+                    MathClause::G141E5,
+                    reason.code(),
+                ));
                 return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
             }
         }
@@ -228,7 +239,8 @@ pub(crate) fn solve_lift_z(
             &param_vals_r,
             &ambient_lift_rp,
             &param_vals_rp,
-            relative_cone.as_ref(),
+            &core,
+            relative_cone.as_mut(),
         ) {
             Ok(dc) => Some(dc),
             Err(reason) => {
@@ -314,14 +326,32 @@ pub(crate) fn solve_lift_z(
         None
     };
 
-    let etale_descent = spec
-        .etale_descent
-        .as_ref()
-        .map(|et| compute_etale_descent(et, &spec.coeff_domain));
+    let etale_descent = if let Some(et) = &spec.etale_descent {
+        match compute_etale_descent(et, &spec.coeff_domain) {
+            Ok(res) => {
+                checks.push(ApplicabilityCheck::passed(
+                    "finite_etale_cover_applicable",
+                    MathClause::G141C9,
+                ));
+                Some(res)
+            }
+            Err(reason) => {
+                checks.push(ApplicabilityCheck::failed(
+                    "finite_etale_cover_applicable",
+                    MathClause::G141C9,
+                    reason.code(),
+                ));
+                return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+            }
+        }
+    } else {
+        None
+    };
 
+    let relative_cone_result = relative_cone.map(|rc| rc.result);
     let verdict = derive_lift_verdict(
         core.lift_exists,
-        relative_cone.as_ref().map(|r| r.relative_lift_exists),
+        relative_cone_result.as_ref().map(|r| r.relative_lift_exists),
         affine_repair.as_ref().map(|a| a.repair_exists),
         etale_descent
             .as_ref()
@@ -349,7 +379,7 @@ pub(crate) fn solve_lift_z(
         restored_lift: core.restored_lift,
         reevaluation: core.reevaluation,
         raw_cech_comparison,
-        relative_cone,
+        relative_cone: relative_cone_result,
         declaration_cover,
         affine_repair,
         redundant_comparison,

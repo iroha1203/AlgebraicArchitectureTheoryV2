@@ -54,6 +54,13 @@ pub(crate) fn compute_raw_cech_z(
     })
 }
 
+pub(crate) struct ComputedRelativeConeZ {
+    pub(crate) result: RelativeConeResult,
+    pub(crate) fu: CochainComplex<BigInt>,
+    pub(crate) rel_cocycle: Vec<BigInt>,
+    pub(crate) raw_val_rp: Option<(Vec<BigInt>, bool)>,
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn compute_relative_cone_z(
     spec: &LiftTaskSpec,
@@ -67,7 +74,7 @@ pub(crate) fn compute_relative_cone_z(
     ambient_lift_rp: &[Vec<BigInt>],
     param_vals_rp: &[Vec<BigInt>],
     core: &CoreLiftZ,
-) -> Result<RelativeConeResult, SilenceReason> {
+) -> Result<ComputedRelativeConeZ, SilenceReason> {
     if !rel.obs_laws.is_empty() {
         return Err(SilenceReason::SyzygyOutOfScope {
             detail: "relative cone with non-empty obs_laws over Z is out of scope".to_owned(),
@@ -198,46 +205,53 @@ pub(crate) fn compute_relative_cone_z(
             (None, None)
         };
 
-    let (raw_read_diff_value, raw_read_diff_signed_match) = if let Some(rr) = &rel.raw_read_diff {
-        let rr_poly = Poly::from_expr_z(&rr.expr, bindings).map_err(map_lift_algebra_error)?;
-        let eval_base = align_ambient_to_obs_z(
-            ambient_lift_rp,
-            &j_rho,
-            &reading_polys,
-            &obs_lift_rp,
-            param_vals_rp,
-            ext,
-        )
-        .unwrap_or_else(|| ambient_lift_rp.to_vec());
-        let eval_full = concat_vecs(&eval_base, param_vals_rp);
-        let raw_val = ext
-            .r_prime()
-            .eval_poly(&rr_poly, &eval_full)
-            .map_err(map_lift_algebra_error)?;
-        let matched = if relative_obstruction_is_zero {
-            ext.r_prime().is_zero_elem(&raw_val)
+    let (raw_read_diff_value, raw_read_diff_signed_match, raw_val_rp) =
+        if let Some(rr) = &rel.raw_read_diff {
+            let rr_poly = Poly::from_expr_z(&rr.expr, bindings).map_err(map_lift_algebra_error)?;
+            let eval_base = align_ambient_to_obs_z(
+                ambient_lift_rp,
+                &j_rho,
+                &reading_polys,
+                &obs_lift_rp,
+                param_vals_rp,
+                ext,
+            )
+            .unwrap_or_else(|| ambient_lift_rp.to_vec());
+            let eval_full = concat_vecs(&eval_base, param_vals_rp);
+            let raw_val = ext
+                .r_prime()
+                .eval_poly(&rr_poly, &eval_full)
+                .map_err(map_lift_algebra_error)?;
+            let matched = if relative_obstruction_is_zero {
+                Some(ext.r_prime().is_zero_elem(&raw_val))
+            } else {
+                None
+            };
+            let formatted = ext.r_prime().format_elem(&raw_val);
+            (Some(formatted), matched, Some((raw_val, rr.negated)))
         } else {
-            compare_raw_diff_in_fu_z(&raw_val, rr.negated, r, &fu, &rel_cocycle, ext)
+            (None, None, None)
         };
-        (Some(ext.r_prime().format_elem(&raw_val)), Some(matched))
-    } else {
-        (None, None)
-    };
 
-    Ok(RelativeConeResult {
-        h0_fu_dim: fu_coh.h0.free_rank,
-        h1_fu_dim: fu_coh.h1.free_rank,
-        relative_obstruction_coords: if relative_obstruction_is_zero {
-            Vec::new()
-        } else {
-            rel_cocycle.iter().map(ToString::to_string).collect()
+    Ok(ComputedRelativeConeZ {
+        result: RelativeConeResult {
+            h0_fu_dim: fu_coh.h0.free_rank,
+            h1_fu_dim: fu_coh.h1.free_rank,
+            relative_obstruction_coords: if relative_obstruction_is_zero {
+                Vec::new()
+            } else {
+                rel_cocycle.iter().map(ToString::to_string).collect()
+            },
+            relative_obstruction_is_zero,
+            relative_lift_exists: relative_obstruction_is_zero,
+            restored_relative_lift,
+            reevaluation,
+            raw_read_diff_value,
+            raw_read_diff_signed_match,
         },
-        relative_obstruction_is_zero,
-        relative_lift_exists: relative_obstruction_is_zero,
-        restored_relative_lift,
-        reevaluation,
-        raw_read_diff_value,
-        raw_read_diff_signed_match,
+        fu,
+        rel_cocycle,
+        raw_val_rp,
     })
 }
 
@@ -251,9 +265,11 @@ pub(crate) fn compute_declaration_cover_z(
     param_vals_r: &[Vec<BigInt>],
     ambient_lift_rp: &[Vec<BigInt>],
     param_vals_rp: &[Vec<BigInt>],
-    rel_cone: Option<&RelativeConeResult>,
+    core: &CoreLiftZ,
+    rel_cone: Option<&mut ComputedRelativeConeZ>,
 ) -> Result<DeclarationCoverResult, SilenceReason> {
-    let (support_closed, unclosed_observations) = check_cover_support_closure(cov, &spec.laws);
+    let (support_closed, unclosed_observations) =
+        check_cover_support_closure(cov, &spec.variables, &spec.laws);
     let Some(cech) = &cov.two_context_cech else {
         return Ok(DeclarationCoverResult {
             support_closed,
@@ -262,6 +278,14 @@ pub(crate) fn compute_declaration_cover_z(
             matches_relative_obstruction: None,
         });
     };
+    if !support_closed {
+        return Ok(DeclarationCoverResult {
+            support_closed: false,
+            unclosed_observations,
+            two_context_cech_diff: None,
+            matches_relative_obstruction: None,
+        });
+    }
     let left_ctx = cov
         .contexts
         .iter()
@@ -281,6 +305,7 @@ pub(crate) fn compute_declaration_cover_z(
 
     let (p_l, k_l) = solve_context_local_lift_z(
         spec,
+        &left_ctx.vars,
         &left_ctx.laws,
         law_polys,
         ext,
@@ -291,6 +316,7 @@ pub(crate) fn compute_declaration_cover_z(
     )?;
     let (p_r, k_r) = solve_context_local_lift_z(
         spec,
+        &right_ctx.vars,
         &right_ctx.laws,
         law_polys,
         ext,
@@ -319,26 +345,26 @@ pub(crate) fn compute_declaration_cover_z(
         }
     }
     let total_k = k_l.len() + k_r.len();
+    let mut cob_mat = vec![vec![BigInt::zero(); total_k]; rhs_s.len()];
+    for (c_idx, kb) in k_l.iter().enumerate() {
+        for (s_pos, &v_idx) in shared_indices.iter().enumerate() {
+            for k in 0..dm {
+                cob_mat[s_pos * dm + k][c_idx] = kb[v_idx * dm + k].clone();
+            }
+        }
+    }
+    for (c_off, kb) in k_r.iter().enumerate() {
+        let c_idx = k_l.len() + c_off;
+        for (s_pos, &v_idx) in shared_indices.iter().enumerate() {
+            for k in 0..dm {
+                cob_mat[s_pos * dm + k][c_idx] = -&kb[v_idx * dm + k];
+            }
+        }
+    }
     let (cech_class_nonzero, left_delta, right_delta) = if total_k == 0 {
         let nonzero = rhs_s.iter().any(|v| !v.is_zero());
         (nonzero, p_l, p_r)
     } else {
-        let mut cob_mat = vec![vec![BigInt::zero(); total_k]; rhs_s.len()];
-        for (c_idx, kb) in k_l.iter().enumerate() {
-            for (s_pos, &v_idx) in shared_indices.iter().enumerate() {
-                for k in 0..dm {
-                    cob_mat[s_pos * dm + k][c_idx] = kb[v_idx * dm + k].clone();
-                }
-            }
-        }
-        for (c_off, kb) in k_r.iter().enumerate() {
-            let c_idx = k_l.len() + c_off;
-            for (s_pos, &v_idx) in shared_indices.iter().enumerate() {
-                for k in 0..dm {
-                    cob_mat[s_pos * dm + k][c_idx] = -&kb[v_idx * dm + k];
-                }
-            }
-        }
         match solve_affine_z(&cob_mat, &rhs_s, total_k).map_err(map_lift_algebra_error)? {
             AffineSolutionZ::Consistent { particular, .. } => {
                 let mut adj_l = p_l;
@@ -373,8 +399,85 @@ pub(crate) fn compute_declaration_cover_z(
         let d = ext.r_prime().sub(&right_lift[idx], &left_lift[idx]);
         diff_map.insert(sv.clone(), ext.r_prime().format_elem(&d));
     }
-    let matches_relative_obstruction = rel_cone
-        .map(|rc| rc.relative_obstruction_is_zero != cech_class_nonzero);
+
+    let matches_relative_obstruction = if let Some(rc) = rel_cone {
+        let left_laws: BTreeSet<&str> = left_ctx.laws.iter().map(String::as_str).collect();
+        let delta_diff: Vec<BigInt> = right_delta
+            .iter()
+            .zip(&left_delta)
+            .map(|(r_v, l_v)| r_v - l_v)
+            .collect();
+        let mut mv_cocycle = vec![BigInt::zero(); rc.fu.dim1()];
+        for (i, law) in spec.laws.iter().enumerate() {
+            if left_laws.contains(law.name.as_str()) {
+                for row_k in 0..dm {
+                    let row = &core.complex.d0()[i * dm + row_k];
+                    let mut acc = BigInt::zero();
+                    for (a, b) in row.iter().zip(&delta_diff) {
+                        if !a.is_zero() && !b.is_zero() {
+                            acc += a * b;
+                        }
+                    }
+                    mv_cocycle[i * dm + row_k] = acc;
+                }
+            }
+        }
+        let mv_is_cocycle = rc.fu.d1().iter().all(|row| {
+            let mut acc = BigInt::zero();
+            for (a, b) in row.iter().zip(&mv_cocycle) {
+                if !a.is_zero() && !b.is_zero() {
+                    acc += a * b;
+                }
+            }
+            acc.is_zero()
+        });
+        let class_diff: Vec<BigInt> = rc
+            .rel_cocycle
+            .iter()
+            .zip(&mv_cocycle)
+            .map(|(a, b)| a - b)
+            .collect();
+        let class_matches = mv_is_cocycle
+            && matches!(
+                solve_affine_z(rc.fu.d0(), &class_diff, rc.fu.dim0()),
+                Ok(AffineSolutionZ::Consistent { .. })
+            );
+
+        if let Some((raw_val, negated)) = &rc.raw_val_rp
+            && !rc.result.relative_obstruction_is_zero
+            && shared_indices.len() == 1
+        {
+            let target_rp = if *negated {
+                ext.r_prime().neg(raw_val)
+            } else {
+                raw_val.clone()
+            };
+            let oriented_match = match ext.extract_kernel_coords_z(&target_rp) {
+                Ok(target_m) => {
+                    let residual: Vec<BigInt> = rhs_s
+                        .iter()
+                        .zip(&target_m)
+                        .map(|(a, b)| a - b)
+                        .collect();
+                    if total_k == 0 {
+                        residual.iter().all(Zero::is_zero)
+                    } else {
+                        matches!(
+                            solve_affine_z(&cob_mat, &residual, total_k),
+                            Ok(AffineSolutionZ::Consistent { .. })
+                        )
+                    }
+                }
+                Err(_) => false,
+            };
+            rc.result.raw_read_diff_signed_match = Some(oriented_match);
+        }
+
+        Some(class_matches && (rc.result.relative_obstruction_is_zero != cech_class_nonzero))
+    } else {
+        None
+    };
+
     Ok(DeclarationCoverResult {
         support_closed,
         unclosed_observations,
@@ -386,6 +489,7 @@ pub(crate) fn compute_declaration_cover_z(
 #[allow(clippy::too_many_arguments, clippy::type_complexity)]
 fn solve_context_local_lift_z(
     spec: &LiftTaskSpec,
+    ctx_var_names: &[String],
     ctx_law_names: &[String],
     law_polys: &[Poly<BigInt>],
     ext: &SquareZeroExtension<BigInt>,
@@ -397,6 +501,15 @@ fn solve_context_local_lift_z(
     let n = spec.variables.len();
     let dm = ext.kernel_dim();
     let z = BigInt::zero();
+    let ctx_var_set: BTreeSet<&str> = ctx_var_names.iter().map(String::as_str).collect();
+    let ctx_var_indices: Vec<usize> = spec
+        .variables
+        .iter()
+        .enumerate()
+        .filter(|(_, v)| ctx_var_set.contains(v.as_str()))
+        .map(|(i, _)| i)
+        .collect();
+    let num_cols = ctx_var_indices.len() * dm;
     let law_set: BTreeSet<&str> = ctx_law_names.iter().map(String::as_str).collect();
     let active_laws: Vec<&Poly<BigInt>> = spec
         .laws
@@ -422,15 +535,15 @@ fn solve_context_local_lift_z(
         let res_m = ext
             .extract_kernel_coords_z(&val_rp)
             .map_err(map_lift_algebra_error)?;
-        let mut row_block = vec![vec![z.clone(); n * dm]; dm];
-        for j in 0..n {
+        let mut row_block = vec![vec![z.clone(); num_cols]; dm];
+        for (c_pos, &j) in ctx_var_indices.iter().enumerate() {
             let dp = poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
             let val_r = ext
                 .r_base()
                 .eval_poly(&dp, &base_full_r)
                 .map_err(map_lift_algebra_error)?;
             let blk = r_action_matrix_z(ext, &val_r).map_err(map_lift_algebra_error)?;
-            write_block(&mut row_block, 0, j * dm, &blk);
+            write_block(&mut row_block, 0, c_pos * dm, &blk);
         }
         rows.extend(row_block);
         rhs.extend(res_m.into_iter().map(|v| -v));
@@ -455,27 +568,34 @@ fn solve_context_local_lift_z(
             let w_m = ext
                 .extract_kernel_coords_z(&diff)
                 .map_err(map_lift_algebra_error)?;
-            let mut row_block = vec![vec![z.clone(); n * dm]; dm];
-            for j in 0..n {
+            let mut row_block = vec![vec![z.clone(); num_cols]; dm];
+            for (c_pos, &j) in ctx_var_indices.iter().enumerate() {
                 let dp = rp_poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
                 let val_r = ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
                     .map_err(map_lift_algebra_error)?;
                 let blk = r_action_matrix_z(ext, &val_r).map_err(map_lift_algebra_error)?;
-                write_block(&mut row_block, 0, j * dm, &blk);
+                write_block(&mut row_block, 0, c_pos * dm, &blk);
             }
             rows.extend(row_block);
             rhs.extend(w_m.into_iter().map(|v| -v));
         }
     }
 
-    match solve_affine_z(&rows, &rhs, n * dm).map_err(map_lift_algebra_error)? {
+    match solve_affine_z(&rows, &rhs, num_cols).map_err(map_lift_algebra_error)? {
         AffineSolutionZ::Consistent {
             particular,
             kernel_basis,
             ..
-        } => Ok((particular, kernel_basis)),
+        } => {
+            let full_p = expand_subset_delta(n, &ctx_var_indices, dm, &particular, &z);
+            let full_k = kernel_basis
+                .iter()
+                .map(|kb| expand_subset_delta(n, &ctx_var_indices, dm, kb, &z))
+                .collect();
+            Ok((full_p, full_k))
+        }
         AffineSolutionZ::Inconsistent { .. } => Err(SilenceReason::ApplicabilityConditionNotMet {
             condition: "two_context_local_lift_exists".to_owned(),
             detail: "Z local lift does not exist on one of the two contexts".to_owned(),
@@ -693,44 +813,5 @@ fn align_ambient_to_obs_z(
         }
         AffineSolutionZ::Inconsistent { .. } => None,
     }
-}
-
-fn compare_raw_diff_in_fu_z(
-    raw_val: &[BigInt],
-    negated: bool,
-    num_laws: usize,
-    fu: &CochainComplex<BigInt>,
-    rel_cocycle: &[BigInt],
-    ext: &SquareZeroExtension<BigInt>,
-) -> bool {
-    let target_rp = if negated {
-        ext.r_prime().neg(raw_val)
-    } else {
-        raw_val.to_vec()
-    };
-    let Ok(target_m) = ext.extract_kernel_coords_z(&target_rp) else {
-        return false;
-    };
-    let dm = ext.kernel_dim();
-    let Some(i0) = (0..num_laws).find(|&i| {
-        let mut iota = vec![BigInt::zero(); fu.dim1()];
-        for k in 0..dm {
-            iota[i * dm + k] = target_m[k].clone();
-        }
-        matches!(
-            solve_affine_z(fu.d0(), &iota, fu.dim0()),
-            Ok(AffineSolutionZ::Inconsistent { .. })
-        )
-    }) else {
-        return false;
-    };
-    let mut diff = rel_cocycle.to_vec();
-    for k in 0..dm {
-        diff[i0 * dm + k] = &diff[i0 * dm + k] - &target_m[k];
-    }
-    matches!(
-        solve_affine_z(fu.d0(), &diff, fu.dim0()),
-        Ok(AffineSolutionZ::Consistent { .. })
-    )
 }
 

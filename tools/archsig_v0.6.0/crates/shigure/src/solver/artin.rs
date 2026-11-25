@@ -7,7 +7,7 @@ use crate::algebra::artin_quotient::LocalArtinQuotient;
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
-use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff};
+use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, ideal_membership_field};
 use crate::ir::artin::{ArtinTaskSpec, AuxiliaryDefSpec, BaseChangeSpec, CheckedArtinTask};
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::provenance::{MathClause, Provenance};
@@ -19,7 +19,6 @@ use crate::ir::result_phase4::{
 use crate::ir::term::{CoeffDomain, PolyExpr};
 use crate::solver::artin_z::solve_artin_z;
 use crate::solver::lift_common::eval_const_expr;
-use crate::solver::lift_extensions::express_in_ideal_field;
 use std::collections::{BTreeMap, BTreeSet};
 
 pub(crate) const TEST_RING_FAMILY: &str = "all_local_artin_algebras_universal_quotient";
@@ -113,6 +112,7 @@ pub(crate) enum OrderDetection {
         r_prime_label: String,
         kernel_dim: usize,
         kappa_u_images: Vec<String>,
+        two_context_cech_matches: bool,
     },
     Infinite,
 }
@@ -397,21 +397,27 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
             detail: e.to_string(),
         })?;
         let mut nonzero_imgs = Vec::new();
+        let mut cech_diffs = Vec::new();
+        let left_local_lift = q_r.algebra.zero_elem();
         for g in extra_res {
-            let v = q_r.project_poly(g).map_err(map_artin_err)?;
-            if !q_r.algebra.is_zero_elem(&v) {
-                nonzero_imgs.push(q_r.algebra.format_elem(&v));
+            let right_local_lift = q_r.project_poly(g).map_err(map_artin_err)?;
+            let cech_diff = q_r.algebra.sub(&right_local_lift, &left_local_lift);
+            if !q_r.algebra.is_zero_elem(&right_local_lift) {
+                nonzero_imgs.push(q_r.algebra.format_elem(&right_local_lift));
+                cech_diffs.push(q_r.algebra.format_elem(&cech_diff));
             }
         }
         if !nonzero_imgs.is_empty() {
             let r_prime_label = format!("A/m^{}", r + 1);
             let kernel_dim = q_r.algebra.dim().saturating_sub(prev_dim);
+            let two_context_cech_matches = cech_diffs == nonzero_imgs;
             return Ok(OrderDetection::Finite {
                 nu: r,
                 r_base_label: prev_label,
                 r_prime_label,
                 kernel_dim,
                 kappa_u_images: nonzero_imgs,
+                two_context_cech_matches,
             });
         }
         if q_r.algebra.dim() == prev_dim {
@@ -425,12 +431,27 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
     if stabilized {
         return Ok(OrderDetection::Infinite);
     }
-    if !obs_rels.is_empty()
-        && extra_res
-            .iter()
-            .all(|g| express_in_ideal_field(g, obs_rels, obs_order, DEFAULT_MAX_SYZYGY_PAIRS).is_ok())
-    {
-        return Ok(OrderDetection::Infinite);
+    if !obs_rels.is_empty() {
+        let mut all_in_ideal = true;
+        for g in extra_res {
+            match ideal_membership_field(
+                g,
+                obs_rels,
+                obs_order,
+                MonomialOrder::Grevlex,
+                DEFAULT_MAX_SYZYGY_PAIRS,
+            ) {
+                Ok(Some(_)) => {}
+                Ok(None) => {
+                    all_in_ideal = false;
+                    break;
+                }
+                Err(e) => return Err(map_artin_err(e)),
+            }
+        }
+        if all_in_ideal {
+            return Ok(OrderDetection::Infinite);
+        }
     }
     Err(SilenceReason::ArtinOrderOutOfScope {
         detail: format!(
@@ -628,6 +649,7 @@ pub(crate) fn unpack_detection(
             r_prime_label,
             kernel_dim,
             kappa_u_images,
+            two_context_cech_matches,
         } => {
             let constant_lift_exists = nu == 1;
             let mode = if nu == 1 {
@@ -647,7 +669,7 @@ pub(crate) fn unpack_detection(
                     kernel_dim,
                     kappa_u_images,
                     kappa_u_nonzero,
-                    two_context_cech_matches: kappa_u_nonzero,
+                    two_context_cech_matches,
                     constant_lift_exists,
                 }),
             )

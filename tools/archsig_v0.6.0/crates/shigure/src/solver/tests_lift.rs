@@ -563,7 +563,13 @@ fn lift_e7_cover_support_closure_and_c9_w5_etale_descent() {
         .declaration_cover
         .unwrap();
     assert!(!split_cov.support_closed);
-    assert_eq!(split_cov.unclosed_observations.len(), 1);
+    assert!(split_cov.unclosed_observations.len() >= 2);
+    assert!(
+        split_cov
+            .unclosed_observations
+            .iter()
+            .any(|s| s.contains("uncovered_law:sum_law"))
+    );
 
     let merged_cov = solve_lift_task(&make_e7(true))
         .lift
@@ -610,7 +616,7 @@ fn lift_e7_cover_support_closure_and_c9_w5_etale_descent() {
         assert_eq!(et.cocycle_group, format!("mu_{deg}"));
     }
 
-    // F_2 で d = 2 は導関数 2z = 0 のため非 étale
+    // F_2 で d = 2 は導関数 2z = 0 のため非 étale => C9 適用条件不成立で沈黙する
     let task_insep = validate_lift_task(LiftTaskSpec {
         name: "c9_inseparable_f2".into(),
         coeff_domain: CoeffDomain::Fp(BigUint::from(2u32)),
@@ -637,12 +643,11 @@ fn lift_e7_cover_support_closure_and_c9_w5_etale_descent() {
         provenance: prov(vec![MathClause::G141C9]),
     })
     .unwrap();
-    let et_f2 = solve_lift_task(&task_insep)
-        .lift
-        .unwrap()
-        .etale_descent
-        .unwrap();
-    assert!(!et_f2.is_finite_etale && !et_f2.derivative_unit_verified);
+    let out_f2 = solve_lift_task(&task_insep);
+    assert!(matches!(
+        out_f2.verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
 }
 
 #[test]

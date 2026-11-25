@@ -65,109 +65,219 @@ fn np(name: &str, expr: PolyExpr) -> NamedPoly {
     }
 }
 
-/// F1 回帰: H10 の `raw_read_diff` が `declaration_cover: None` かつ任意の ambient lift
-/// （例: `E = 3*eps^2`, `delta = eps + 7*eps^2`）に対して不変に符号付き一致し、
-/// 符号を反転（`negated: false`）すると `false` になること（Q・F_5、および線形 Z 系）。
+/// F1 回帰:
+/// (1) 向きを定める二文脈 Čech がない非零相対障害では `raw_read_diff_signed_match` を安易に推測せず `None` とする。
+/// (2) 二文脈 Čech があるとき、任意 ambient lift・Law 順序入替・Law 符号反転・冗長 Law 追加のすべてで不変に
+///     符号付き一致し、`negated: false` や左右文脈入替では `Some(false)` となる（Q・F_5・線形 Z）。
 #[test]
 fn f1_h10_raw_read_diff_is_ambient_lift_invariant_without_declaration_cover() {
+    // (1) declaration_cover: None では raw_read_diff_value を報告しつつ符号判定は None
+    let unoriented = validate_lift_task(LiftTaskSpec {
+        name: "h10_unoriented".into(),
+        coeff_domain: CoeffDomain::Q,
+        variables: vec!["delta".into(), "mu".into(), "E".into()],
+        ring_params: vec![],
+        laws: vec![
+            np("e_zero", sv("E")),
+            np("e_eq_mu_delta", sub(sv("E"), mul(sv("mu"), sv("delta")))),
+        ],
+        extension: SquareZeroSpec::TruncatedPoly {
+            var_name: "eps".into(),
+            base_degree: 1,
+        },
+        base_point: vec![
+            ("delta".into(), vec![cz(0), cz(1)]),
+            ("mu".into(), vec![cz(0), cz(1)]),
+            ("E".into(), vec![cz(0), cz(0)]),
+        ],
+        ambient_lift: Some(vec![
+            ("delta".into(), vec![cz(0), cz(1), cz(7)]),
+            ("mu".into(), vec![cz(0), cz(1), cz(-5)]),
+            ("E".into(), vec![cz(0), cz(0), cz(3)]),
+        ]),
+        relative_reading: Some(RelativeReadingSpec {
+            obs_vars: vec!["delta".into(), "mu".into()],
+            obs_laws: vec![],
+            reading_map: vec![("delta".into(), sv("delta")), ("mu".into(), sv("mu"))],
+            designated_obs_lift: vec![
+                ("delta".into(), vec![cz(0), cz(1), cz(0)]),
+                ("mu".into(), vec![cz(0), cz(1), cz(0)]),
+            ],
+            raw_read_diff: Some(RawReadComparisonSpec {
+                label: "h10_raw_diff".into(),
+                expr: neg(mul(sv("mu"), sv("delta"))),
+                negated: true,
+            }),
+        }),
+        declaration_cover: None,
+        affine_allowed: None,
+        redundant_comparison: None,
+        etale_descent: None,
+        max_syzygy_pairs: None,
+        provenance: prov(vec![MathClause::G141E5]),
+    })
+    .unwrap();
+    let out_u = solve_lift_task(&unoriented);
+    assert_eq!(out_u.verdict, Verdict::Refuted);
+    let rc_u = out_u.lift.as_ref().unwrap().relative_cone.as_ref().unwrap();
+    assert!(!rc_u.relative_obstruction_is_zero);
+    assert_eq!(rc_u.raw_read_diff_value.as_deref(), Some("-eps^2"));
+    assert_eq!(rc_u.raw_read_diff_signed_match, None);
+
+    // (2) Law 順入替・Law 符号反転・冗長 Law 追加・任意 ambient lift・左右文脈入替の厳密検証
+    let law_variants = [
+        (
+            "canonical",
+            vec![
+                np("e_zero", sv("E")),
+                np("e_eq", sub(sv("E"), mul(sv("mu"), sv("delta")))),
+            ],
+            vec!["e_zero"],
+            vec!["e_eq"],
+        ),
+        (
+            "reordered",
+            vec![
+                np("e_eq", sub(sv("E"), mul(sv("mu"), sv("delta")))),
+                np("e_zero", sv("E")),
+            ],
+            vec!["e_zero"],
+            vec!["e_eq"],
+        ),
+        (
+            "sign_flipped",
+            vec![
+                np("e_zero", neg(sv("E"))),
+                np("e_eq", sub(sv("E"), mul(sv("mu"), sv("delta")))),
+            ],
+            vec!["e_zero"],
+            vec!["e_eq"],
+        ),
+        (
+            "redundant_law",
+            vec![
+                np("e_zero", sv("E")),
+                np("e_zero_dup", sv("E")),
+                np("e_eq", sub(sv("E"), mul(sv("mu"), sv("delta")))),
+            ],
+            vec!["e_zero", "e_zero_dup"],
+            vec!["e_eq"],
+        ),
+    ];
     for domain in [CoeffDomain::Q, CoeffDomain::Fp(5u32.into())] {
-        for (ambient_e, ambient_d_eps2, negated, expected_match) in [
-            (0i64, 0i64, true, true),
-            (3, 7, true, true),
-            (-4, 2, true, true),
-            (3, 7, false, false),
-        ] {
-            let task = validate_lift_task(LiftTaskSpec {
-                name: format!("h10_f1_{ambient_e}_{negated}"),
-                coeff_domain: domain.clone(),
-                variables: vec!["delta".into(), "mu".into(), "E".into()],
-                ring_params: vec![],
-                laws: vec![
-                    np("e_zero", sv("E")),
-                    np("e_eq_mu_delta", sub(sv("E"), mul(sv("mu"), sv("delta")))),
-                ],
-                extension: SquareZeroSpec::TruncatedPoly {
-                    var_name: "eps".into(),
-                    base_degree: 1,
-                },
-                base_point: vec![
-                    ("delta".into(), vec![c_dom(&domain, 0), c_dom(&domain, 1)]),
-                    ("mu".into(), vec![c_dom(&domain, 0), c_dom(&domain, 1)]),
-                    ("E".into(), vec![c_dom(&domain, 0), c_dom(&domain, 0)]),
-                ],
-                ambient_lift: Some(vec![
-                    (
-                        "delta".into(),
-                        vec![
-                            c_dom(&domain, 0),
-                            c_dom(&domain, 1),
-                            c_dom(&domain, ambient_d_eps2),
-                        ],
-                    ),
-                    (
-                        "mu".into(),
-                        vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, -5)],
-                    ),
-                    (
-                        "E".into(),
-                        vec![
-                            c_dom(&domain, 0),
-                            c_dom(&domain, 0),
-                            c_dom(&domain, ambient_e),
-                        ],
-                    ),
-                ]),
-                relative_reading: Some(RelativeReadingSpec {
-                    obs_vars: vec!["delta".into(), "mu".into()],
-                    obs_laws: vec![],
-                    reading_map: vec![
-                        ("delta".into(), sv("delta")),
-                        ("mu".into(), sv("mu")),
+        for (tag, laws, left_laws, right_laws) in &law_variants {
+            for (negated, swap_lr, expected_match) in [
+                (true, false, true),
+                (false, false, false),
+                (true, true, false),
+            ] {
+                let (l_name, r_name) = if swap_lr {
+                    ("ctx_eq", "ctx_zero")
+                } else {
+                    ("ctx_zero", "ctx_eq")
+                };
+                let task = validate_lift_task(LiftTaskSpec {
+                    name: format!("h10_f1_{tag}_{negated}_{swap_lr}"),
+                    coeff_domain: domain.clone(),
+                    variables: vec!["delta".into(), "mu".into(), "E".into()],
+                    ring_params: vec![],
+                    laws: laws.clone(),
+                    extension: SquareZeroSpec::TruncatedPoly {
+                        var_name: "eps".into(),
+                        base_degree: 1,
+                    },
+                    base_point: vec![
+                        ("delta".into(), vec![c_dom(&domain, 0), c_dom(&domain, 1)]),
+                        ("mu".into(), vec![c_dom(&domain, 0), c_dom(&domain, 1)]),
+                        ("E".into(), vec![c_dom(&domain, 0), c_dom(&domain, 0)]),
                     ],
-                    designated_obs_lift: vec![
+                    ambient_lift: Some(vec![
                         (
                             "delta".into(),
-                            vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, 0)],
+                            vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, 7)],
                         ),
                         (
                             "mu".into(),
-                            vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, 0)],
+                            vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, -5)],
                         ),
-                    ],
-                    raw_read_diff: Some(RawReadComparisonSpec {
-                        label: "h10_raw_diff".into(),
-                        expr: neg(mul(sv("mu"), sv("delta"))),
-                        negated,
+                        (
+                            "E".into(),
+                            vec![c_dom(&domain, 0), c_dom(&domain, 0), c_dom(&domain, 3)],
+                        ),
+                    ]),
+                    relative_reading: Some(RelativeReadingSpec {
+                        obs_vars: vec!["delta".into(), "mu".into()],
+                        obs_laws: vec![],
+                        reading_map: vec![
+                            ("delta".into(), sv("delta")),
+                            ("mu".into(), sv("mu")),
+                        ],
+                        designated_obs_lift: vec![
+                            (
+                                "delta".into(),
+                                vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, 0)],
+                            ),
+                            (
+                                "mu".into(),
+                                vec![c_dom(&domain, 0), c_dom(&domain, 1), c_dom(&domain, 0)],
+                            ),
+                        ],
+                        raw_read_diff: Some(RawReadComparisonSpec {
+                            label: "h10_raw_diff".into(),
+                            expr: neg(mul(sv("mu"), sv("delta"))),
+                            negated,
+                        }),
                     }),
-                }),
-                declaration_cover: None,
-                affine_allowed: None,
-                redundant_comparison: None,
-                etale_descent: None,
-                max_syzygy_pairs: None,
-                provenance: prov(vec![MathClause::G141E5]),
-            })
-            .unwrap();
-            let out = solve_lift_task(&task);
-            assert_eq!(out.verdict, Verdict::Refuted);
-            let rc = out.lift.as_ref().unwrap().relative_cone.as_ref().unwrap();
-            assert!(!rc.relative_obstruction_is_zero);
-            assert_eq!(rc.raw_read_diff_signed_match, Some(expected_match));
+                    declaration_cover: Some(DeclarationCoverSpec {
+                        contexts: vec![
+                            DeclarationContextSpec {
+                                name: "ctx_zero".into(),
+                                vars: vec!["delta".into(), "mu".into(), "E".into()],
+                                laws: left_laws.iter().map(|s| (*s).to_owned()).collect(),
+                                observations: vec![],
+                            },
+                            DeclarationContextSpec {
+                                name: "ctx_eq".into(),
+                                vars: vec!["delta".into(), "mu".into(), "E".into()],
+                                laws: right_laws.iter().map(|s| (*s).to_owned()).collect(),
+                                observations: vec![],
+                            },
+                        ],
+                        two_context_cech: Some(TwoContextCechSpec {
+                            left_context: l_name.into(),
+                            right_context: r_name.into(),
+                            shared_vars: vec!["E".into()],
+                        }),
+                    }),
+                    affine_allowed: None,
+                    redundant_comparison: None,
+                    etale_descent: None,
+                    max_syzygy_pairs: None,
+                    provenance: prov(vec![MathClause::G141E5, MathClause::G141E7]),
+                })
+                .unwrap();
+                let out = solve_lift_task(&task);
+                assert_eq!(out.verdict, Verdict::Refuted);
+                let d = out.lift.as_ref().unwrap();
+                let rc = d.relative_cone.as_ref().unwrap();
+                assert!(!rc.relative_obstruction_is_zero);
+                assert_eq!(rc.raw_read_diff_signed_match, Some(expected_match));
+                let cov = d.declaration_cover.as_ref().unwrap();
+                assert_eq!(cov.matches_relative_obstruction, Some(true));
+            }
         }
     }
 
-    // Z 上の線形相対 cone でも任意の ambient lift に対して obs 整列＋不変判定が成立する。
-    for (ambient_e, ambient_d, negated, expected_match) in
-        [(3i64, 7i64, true, true), (3, 7, false, false)]
-    {
+    // Z 上の線形相対 cone + 二文脈 Čech でも任意 ambient lift で厳密一致
+    for (negated, expected_match) in [(true, true), (false, false)] {
         let task_z = validate_lift_task(LiftTaskSpec {
-            name: format!("z_rel_f1_{ambient_e}_{negated}"),
+            name: format!("z_rel_f1_{negated}"),
             coeff_domain: CoeffDomain::Z,
             variables: vec!["delta".into(), "E".into()],
             ring_params: vec![],
             laws: vec![
-                np("e_zero", sv("E")),
                 np("e_eq_delta", sub(sv("E"), sv("delta"))),
+                np("e_zero", sv("E")),
             ],
             extension: SquareZeroSpec::TruncatedPoly {
                 var_name: "eps".into(),
@@ -175,8 +285,8 @@ fn f1_h10_raw_read_diff_is_ambient_lift_invariant_without_declaration_cover() {
             },
             base_point: vec![("delta".into(), vec![cz(0)]), ("E".into(), vec![cz(0)])],
             ambient_lift: Some(vec![
-                ("delta".into(), vec![cz(0), cz(ambient_d)]),
-                ("E".into(), vec![cz(0), cz(ambient_e)]),
+                ("delta".into(), vec![cz(0), cz(7)]),
+                ("E".into(), vec![cz(0), cz(3)]),
             ]),
             relative_reading: Some(RelativeReadingSpec {
                 obs_vars: vec!["delta".into()],
@@ -189,19 +299,47 @@ fn f1_h10_raw_read_diff_is_ambient_lift_invariant_without_declaration_cover() {
                     negated,
                 }),
             }),
-            declaration_cover: None,
+            declaration_cover: Some(DeclarationCoverSpec {
+                contexts: vec![
+                    DeclarationContextSpec {
+                        name: "ctx_zero".into(),
+                        vars: vec!["delta".into(), "E".into()],
+                        laws: vec!["e_zero".into()],
+                        observations: vec![],
+                    },
+                    DeclarationContextSpec {
+                        name: "ctx_eq".into(),
+                        vars: vec!["delta".into(), "E".into()],
+                        laws: vec!["e_eq_delta".into()],
+                        observations: vec![],
+                    },
+                ],
+                two_context_cech: Some(TwoContextCechSpec {
+                    left_context: "ctx_zero".into(),
+                    right_context: "ctx_eq".into(),
+                    shared_vars: vec!["E".into()],
+                }),
+            }),
             affine_allowed: None,
             redundant_comparison: None,
             etale_descent: None,
             max_syzygy_pairs: None,
-            provenance: prov(vec![MathClause::G141E5]),
+            provenance: prov(vec![MathClause::G141E5, MathClause::G141E7]),
         })
         .unwrap();
         let out = solve_lift_task(&task_z);
         assert_eq!(out.verdict, Verdict::Refuted);
-        let rc = out.lift.as_ref().unwrap().relative_cone.as_ref().unwrap();
+        let d = out.lift.as_ref().unwrap();
+        let rc = d.relative_cone.as_ref().unwrap();
         assert!(!rc.relative_obstruction_is_zero);
         assert_eq!(rc.raw_read_diff_signed_match, Some(expected_match));
+        assert_eq!(
+            d.declaration_cover
+                .as_ref()
+                .unwrap()
+                .matches_relative_obstruction,
+            Some(true)
+        );
     }
 }
 
@@ -446,4 +584,107 @@ fn f8_h4_quadratic_witness_relative_cone_and_two_context_cech() {
         let diff = cov.two_context_cech_diff.as_ref().unwrap();
         assert_eq!(diff.get("Y").map(String::as_str), Some("eps^2"));
     }
+}
+
+/// R2 Finding 2/3 回帰:
+/// (1) 非 étale 被覆（`base_invertible: false` および `CoeffDomain::Z`）が `ApplicabilityConditionNotMet` で沈黙する。
+/// (2) E7 宣言被覆で宣言変数または Law が被覆全体から欠落していれば `support_closed == false` となる。
+#[test]
+fn r2_etale_non_applicable_silences_and_e7_checks_covering_completeness() {
+    use crate::ir::lift::FiniteEtaleDescentSpec;
+
+    for (domain, base_inv) in [(CoeffDomain::Q, false), (CoeffDomain::Z, true)] {
+        let task = validate_lift_task(LiftTaskSpec {
+            name: format!("non_etale_{base_inv}"),
+            coeff_domain: domain,
+            variables: vec!["t".into()],
+            ring_params: vec![],
+            laws: vec![],
+            extension: SquareZeroSpec::TruncatedPoly {
+                var_name: "eps".into(),
+                base_degree: 0,
+            },
+            base_point: vec![("t".into(), vec![cz(1)])],
+            ambient_lift: None,
+            relative_reading: None,
+            declaration_cover: None,
+            affine_allowed: None,
+            redundant_comparison: None,
+            etale_descent: Some(FiniteEtaleDescentSpec {
+                base_var: "t".into(),
+                cover_var: "z".into(),
+                degree: 2,
+                base_invertible: base_inv,
+            }),
+            max_syzygy_pairs: None,
+            provenance: prov(vec![MathClause::G141C9]),
+        })
+        .unwrap();
+        assert!(matches!(
+            solve_lift_task(&task).verdict,
+            Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+        ));
+    }
+
+    // E7: sum_law を省いた被覆や空被覆は support_closed == false
+    let incomplete_cover = validate_lift_task(LiftTaskSpec {
+        name: "e7_missing_law_in_cover".into(),
+        coeff_domain: CoeffDomain::Q,
+        variables: vec!["X".into(), "Y".into(), "T".into()],
+        ring_params: vec![],
+        laws: vec![np(
+            "sum_law",
+            sub(sv("T"), PolyExpr::Add(Box::new(sv("X")), Box::new(sv("Y")))),
+        )],
+        extension: SquareZeroSpec::TruncatedPoly {
+            var_name: "eps".into(),
+            base_degree: 0,
+        },
+        base_point: vec![
+            ("X".into(), vec![cz(0)]),
+            ("Y".into(), vec![cz(0)]),
+            ("T".into(), vec![cz(0)]),
+        ],
+        ambient_lift: None,
+        relative_reading: None,
+        declaration_cover: Some(DeclarationCoverSpec {
+            contexts: vec![
+                DeclarationContextSpec {
+                    name: "ctx_x".into(),
+                    vars: vec!["X".into()],
+                    laws: vec![],
+                    observations: vec![],
+                },
+                DeclarationContextSpec {
+                    name: "ctx_y".into(),
+                    vars: vec!["Y".into()],
+                    laws: vec![],
+                    observations: vec![],
+                },
+            ],
+            two_context_cech: None,
+        }),
+        affine_allowed: None,
+        redundant_comparison: None,
+        etale_descent: None,
+        max_syzygy_pairs: None,
+        provenance: prov(vec![MathClause::G141E7]),
+    })
+    .unwrap();
+    let cov = solve_lift_task(&incomplete_cover)
+        .lift
+        .unwrap()
+        .declaration_cover
+        .unwrap();
+    assert!(!cov.support_closed);
+    assert!(
+        cov.unclosed_observations
+            .iter()
+            .any(|s| s == "uncovered_var:T")
+    );
+    assert!(
+        cov.unclosed_observations
+            .iter()
+            .any(|s| s == "uncovered_law:sum_law")
+    );
 }
