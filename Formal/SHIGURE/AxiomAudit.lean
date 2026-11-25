@@ -3218,6 +3218,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TensorRealization.compareCoefficients_map,
   TensorRealization.compareCopyingPoint_changeBase,
   TensorRealization.relativeCopyingPointEquiv,
+  TensorRealization.compareRelativeCopyingPoint,
+  TensorRealization.compareRelativeCopyingPoint_apply,
   TensorRealization.compareScalarPoint,
   TensorRealization.compareScalarPoint_constant,
   TensorRealization.compareScalarPoint_changeBase,
@@ -3241,6 +3243,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TensorRealization.compareRelativeCopyingPoint_constant,
   TensorRealization.compareRelativeCopyingPoint_changeBase,
   TensorRealization.compareRelativeScalarPoint,
+  TensorRealization.compareRelativeScalarPoint_apply,
   TensorRealization.compareRelativeScalarPoint_constant,
   TensorRealization.compareRelativeScalarPoint_changeBase,
   TensorRealization.relativeCopyingPointEquiv_comp_states,
@@ -3253,7 +3256,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TensorRealization.compareCopyingPoint_multilinear,
   TensorRealization.compareRelativeCopyingPoint_multilinear,
   TensorRealization.compareRelativeCopyingPoint_add,
-  TensorRealization.compareRelativeCopyingPoint_smul
+  TensorRealization.compareRelativeCopyingPoint_smul,
+  TensorRealization.smulCopyingPoints,
+  TensorRealization.compareCopyingPoint_smulCopyingPoints,
+  TensorRealization.smulRelativeCopyingPoints,
+  TensorRealization.compareRelativeCopyingPoint_smulRelativeCopyingPoints
 ]
 
 end SHIGURE.AxiomAudit

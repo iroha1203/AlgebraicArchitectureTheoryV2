@@ -15,6 +15,13 @@ The indexed row retains the actual labels read from the relative scheme.
 The product of its finite supports gives the common refinement for several
 arguments. The coefficient map on the resulting tensors is the semilinear
 map of Construction 4.8.
+
+A separate computation of the clopen fibers of relative points would repeat
+the classification and coefficient-change arguments of Theorem 4.3. The
+label equivalence lets this construction reuse those arguments. The product
+of the supports keeps a coefficient for each input tuple until the operation
+merges equal outputs. An output-indexed refinement would need those merges
+during the construction of the tuple itself.
 -/
 
 open CategoryTheory AlgebraicGeometry TensorProduct
@@ -90,6 +97,13 @@ def relativeCopyingPointEquiv (f : k →+* R) (X : Type u) :
 def compareRelativeCopyingPoint
     (p : Over.mk (Spec.map (CommRingCat.ofHom (algebraMap k R))) ⟶ CopyScheme k M) : R ⊗[k] M :=
   compareCopyingPoint (relativeCopyingPointEquiv (algebraMap k R) M p)
+
+/-- Equation (4.4) computes the relative comparison by summing the actual row of the point. -/
+theorem compareRelativeCopyingPoint_apply (p : specOver (k := k) R ⟶ CopyScheme k M) :
+    compareRelativeCopyingPoint p =
+      (((schemeRowsEquiv PUnit M) (relativeCopyingPointEquiv (algebraMap k R) M p)).val PUnit.unit).sum
+        (fun m r => r ⊗ₜ[k] m) :=
+  compareCoefficients_apply _
 
 /-- The scalar case of (4.4) uses the canonical identification of the scalar tensor with `R`. -/
 def compareScalarPoint (p : CopyScheme R PUnit ⟶ CopyScheme R k) : R :=
@@ -373,6 +387,13 @@ theorem compareRelativeCopyingPoint_changeBase (f : R →ₐ[k] S)
 def compareRelativeScalarPoint (p : specOver (k := k) R ⟶ CopyScheme k k) : R :=
   extendScalarSort R (compareRelativeCopyingPoint p)
 
+/-- The relative scalar comparison is the sum of the scalar images weighted by the point's row. -/
+theorem compareRelativeScalarPoint_apply (p : specOver (k := k) R ⟶ CopyScheme k k) :
+    compareRelativeScalarPoint p =
+      (((schemeRowsEquiv PUnit k) (relativeCopyingPointEquiv (algebraMap k R) k p)).val PUnit.unit).sum
+        (fun a r => r * algebraMap k R a) :=
+  compareScalarPoint_sum _
+
 /-- The relative scalar comparison takes a constant scalar to its coefficient image. -/
 theorem compareRelativeScalarPoint_constant (a : k) :
     compareRelativeScalarPoint (relativeConstantCopyingPoint (k := k) (R := R) a) = algebraMap k R a := by
@@ -570,5 +591,33 @@ theorem compareRelativeCopyingPoint_smul (p : specOver (k := k) R ⟶ CopyScheme
     cases b <;> rfl
   rw [h]
   exact compareCopyingPoint_smul p' q'
+
+/-- Apply the geometric scalar action to a pair of copying points over the coefficient scheme. -/
+def smulCopyingPoints (p : CopyScheme R PUnit ⟶ CopyScheme R k)
+    (q : CopyScheme R PUnit ⟶ CopyScheme R M) : CopyScheme R PUnit ⟶ CopyScheme R M :=
+  tupleCopyingPoints (scalarCopyingInputs p q) ≫ mapStateSchemes (Spec (CommRingCat.of R))
+    (fun xs => (scalarInputEquiv xs).1 • (scalarInputEquiv xs).2)
+
+/-- The comparison of the scalar-action point is the scalar action on the compared states. -/
+theorem compareCopyingPoint_smulCopyingPoints (p : CopyScheme R PUnit ⟶ CopyScheme R k)
+    (q : CopyScheme R PUnit ⟶ CopyScheme R M) :
+    compareCopyingPoint (k := k) (smulCopyingPoints p q) = compareScalarPoint p • compareCopyingPoint (k := k) q :=
+  compareCopyingPoint_smul p q
+
+/-- Apply the geometric scalar action on the native schemes to two relative affine points. -/
+def smulRelativeCopyingPoints (p : specOver (k := k) R ⟶ CopyScheme k k)
+    (q : specOver (k := k) R ⟶ CopyScheme k M) : specOver (k := k) R ⟶ CopyScheme k M :=
+  let args : (i : ULift.{u} Bool) → specOver (k := k) R ⟶ CopyScheme k (scalarInputs k M i)
+    | ⟨false⟩ => p
+    | ⟨true⟩ => q
+  tupleRelativeCopyingPoints args ≫ mapStateSchemes (Spec (CommRingCat.of k))
+    (fun xs => (scalarInputEquiv xs).1 • (scalarInputEquiv xs).2)
+
+/-- The relative scalar-action point computes the scalar action in the tensor realization. -/
+theorem compareRelativeCopyingPoint_smulRelativeCopyingPoints
+    (p : specOver (k := k) R ⟶ CopyScheme k k) (q : specOver (k := k) R ⟶ CopyScheme k M) :
+    compareRelativeCopyingPoint (smulRelativeCopyingPoints p q) =
+      compareRelativeScalarPoint p • compareRelativeCopyingPoint q :=
+  compareRelativeCopyingPoint_smul p q
 
 end SHIGURE.TensorRealization
