@@ -1,15 +1,13 @@
 # Lean 品質基準（mathlib 型 statement review 基準）
 
-この文書は、[guideline.md](guideline.md) の「「境界」という言葉の使用を禁止する」節で
-採用を定めた mathlib 型 statement review 基準を定義する。AAT / Lean の形式化
-（`Formal/` の新規・変更宣言）に適用する。
+この文書は、AAT / Lean の形式化（`Formal/` の新規・変更宣言）に適用する
+mathlib 型の statement review・定義品質・スタイル基準を定める。
 
 - 各 SKILL（`math-lean-review`、`prd-loop`、`research-loop`、`target-theorem-loop`）は
-  この基準の項目を複製せず参照する（`refutation-checklist.md` と同じ運用）。
+  この基準の項目を複製せず参照する。
 - 適用対象は**新規・変更宣言**に限る。既存宣言への遡及適用は別タスクとして扱い、
   この基準を理由に無関係な既存コードを書き換えない。
-- mathlib の規律のうち採用するものと採用しないものを明示し（§3.5）、
-  省かれた項目を実装者が独自に再解釈する余地を残さない。
+- 採用しない mathlib 規律は §3.5 に記載する。
 
 各規則には判定方法のタグを付ける。
 
@@ -38,7 +36,7 @@
   最大で `packaged (assumption-relative)` とする（`docs/aat/guideline.md` の
   Lean status discipline を参照）。
 - 申告は**監査の対象であり、それ自体は証拠ではない**。レビュー側は premise を
-  独立に列挙して申告と突合する（`refutation-checklist.md` §3 の移植対応表と同じ扱い）。
+  独立に列挙して申告と突合する。
 - 未放電仮定を「明示 scope」「stated scope」と呼び替えて完了の根拠にしない
   （`guideline.md` の禁止語対応表を参照）。scope を名乗れるのは本文由来の仮定だけである。
 
@@ -54,8 +52,8 @@
 
 新規の `def` は、mathlib の既存概念または本体既存 API への接続
 （comparison map、instance、同値定理、制限写像との互換など）を最低1つ持つ。
-どの既存 API とも接続しない閉じたラッパーは査読を通さない
-（`guideline.md` の禁止語規律の具体化）。定理は次のどちらの位置づけかを明示する。
+どの既存 API とも接続しない閉じたラッパーは査読を通さない。
+定理は次のどちらの位置づけかを明示する。
 
 - 固定 statement（§5）または本文ラベルに対応する主定理
 - 主定理を支える API 補題（どの定義に対する API かを docstring に書く）
@@ -63,8 +61,7 @@
 ### 1.4 instance ペア [査読]
 
 新規の `Prop` 述語や certificate 構造には、条件を満たす instance と満たさない instance の
-両方を用意する（空虚化の検査。`refutation-checklist.md` §2 と同一項目であり、
-判定の観点はチェックリスト側、提供義務はこの基準側に定める）。
+両方を用意する（空虚化の検査。判定の観点は `lean-refutation-checklist.md` §2 を参照）。
 片方が作れない場合はその理由を書き、レビューでその理由自体が空虚でないかを確認する。
 
 ## §2 定義品質
@@ -72,8 +69,7 @@
 ### 2.1 小さい定義、data と Prop の分離 [査読]
 
 定義は小さく保ち、data（構成）と `Prop`（性質）を分離する。性質は
-定義のフィールドに混ぜず、別の述語や定理として証明する
-（`docs/aat/guideline.md` にある方針の基準）。
+定義のフィールドに混ぜず、別の述語や定理として証明する。
 
 ### 2.2 definitional escape の禁止 [査読]
 
@@ -87,13 +83,14 @@ mathlib に同型の概念（順序、束、圏、位相、コホモロジーの
 mathlib の概念をそのまま使うか、使えない理由を Implementation notes（§2.5）に書いたうえで
 comparison 定理で接続する。AAT 専用の仮置きラッパーや名前だけの対応物で済ませない。
 
-### 2.4 no-unfold API 規律 [査読]
+### 2.4 API 設計規律（mathlib 準拠） [査読]
 
-定義を作ったら、下流の証明が定義を unfold しなくて済むように API 補題を揃える。
-下流の証明が `unfold`、`show` による定義展開、`simp only [Foo]` などで
-定義の中身を展開している箇所は、API 補題が不足している兆候として指摘対象にする。
-定義直後の基本補題（constructor / destructor / ext / 特徴づけ）までを
-定義と一体の作業単位とする。
+他モジュールや後続の部から再利用される公開の数学的概念（主要な `def` / `structure` / 圏・関手など）を定義したら、利用者が実装詳細を毎回展開せずに操作できるよう、基本 API（`ext`、`@[simps]` による射影補題、constructor / destructor、特徴づけ `_iff` 等）を定義と一体で揃える。構造体・関手・射の射影補題には `@[simps]` を積極的に用いてよく、手書きの定型補題を量産しない。
+
+- **適用範囲**: 他モジュールから参照される公開 `def` / `structure` のインターフェースと、それを使う下流の主証明における明示的な定義展開（`unfold Foo`、`simp only [Foo]`、`dsimp [Foo]` 等）を対象とする。
+- **対象外**: 単一ファイル内・証明内部の補助定義（`private` 含む）、具体例・反例の証明、および通常の `semireducible` 定義に対する Lean の definitional equality（型照合、軽い `rfl`、`change`）は対象外とする。
+- **抜き打ち `irreducible` 試験の禁止**: 査読時に既存定義を局所的に `irreducible` にして暗黙の definitional equality 依存を洗い出す検査は行わない（mathlib と同じく、抽象化障壁や型検査性能の保護が必要な中核定義だけは、定義側で最初から `@[irreducible]` や `structure` として明示する）。
+- **重大度の区分**: §2.4 の不足は原則として非中心 finding（設計・保守性の指摘）とし、PR 単位の直接対応で扱う。数学的主張の成立を否定する中心 finding（Major）や `$prd-completion-review` の完了ブロック条件にはしない（定義の中身を利用して仮定や結論を迂回する欠陥は、§2.2 definitional escape の中心 finding として別途扱う）。
 
 ### 2.5 Implementation notes [査読]
 
@@ -136,13 +133,12 @@ module docstring（`/-! -/`）を置く。docstring には主張の単なる言�
 `Prop` を `def` で包むと statement 突合や公理検査の対象から見えにくくなるため、
 この区別に反するものは repackage の疑いとして指摘対象にする。
 
-### 3.5 不採用項目（明示）
+### 3.5 不採用項目
 
-次の mathlib 規律は現時点では採用しない。採用しない理由まで明示しておくことで、
-実装者の勝手な再解釈を防ぐ。
+次の mathlib 規律は現時点では採用しない。
 
-- **simp normal form の全面運用**: 採用しない。ただし `@[simp]` を付ける場合は、
-  simp ループを作らないことと、normal form の向きを docstring に書くことだけを義務とする。
+- **simp normal form の全面運用**: 採用しない。ただし基本 API への `@[simps]` や局所的な `@[simp]` の付与は mathlib 準拠として推奨・許容する。`@[simp]` を付ける場合は、simp ループを作らないことと、normal form の向きを docstring に書くことを義務とする。
+- **全定義に対する `irreducible` 展開不可耐性の強制**: 採用しない。mathlib でも `irreducible` は性能保護や明確な抽象化障壁が必要な一部の中核定義に限られるため、通常の `semireducible` 定義に対して局所 `irreducible` による暗黙展開の全面排除を求めない（§2.4）。
 - **universe polymorphism の強制**: 採用しない。AAT は有限・具体的な対象を中心に扱うため、
   必要になった時点で個別に判断する。
 - **mathlib 本体への upstreaming 前提の一般化**: 採用しない。AAT 固有の概念は
@@ -209,7 +205,7 @@ certificate の来歴（provenance）、proof-use、既存 API への接続を�
 ### 5.3 drift 規則
 
 実装中に固定 statement（参照される `def` の signature を含む）の変更が必要になったら、
-その時点で**未達として停止して報告する**（`guideline.md` の停止規則の手続き化）。
+その時点で**未達として停止して報告する**。
 
 - PRD: PRD の欠陥または要求未達としてユーザーへ報告する。ループ内で PRD を編集しない。
 - research-loop: G3 合格を出さず G2 再審判へ戻す。乖離した statement のまま G4 / G5 へ進む経路を残さない。
@@ -240,5 +236,4 @@ certificate の来歴（provenance）、proof-use、既存 API への接続を�
 
 Research import 方向の検査は、差分上の新規追加行だけを失敗にする。
 Lean 内の `assert_not_exists` 方式は現時点では採用しない。既存の `main` に残る
-import を含めて全履歴が無条件に失敗してしまい、Issue #3172 の
-「既存指摘はベースライン固定し増分だけ失敗にする」という条件と衝突するためである。
+import による全履歴の失敗を避け、新規増分だけを失敗にするためである。
