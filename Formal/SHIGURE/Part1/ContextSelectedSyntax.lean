@@ -38,9 +38,25 @@ theorem existsSupport {Γ : List P.signature.SortType} {s : P.signature.SortType
 def selectGraph {Γ : List P.signature.SortType} (keepΓ : Declaration.sorts Γ ⊆ U.declarations)
     (op : Operation P.signature) (keep : Declaration.ofOperation op ∈ U.declarations)
     (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
-    Atomic (signature U) (context Γ keepΓ) := by
-  cases op <;> exact .graph (operation _ keep) (selectRenaming (operationInputs _ keep) keepΓ ρ)
-    (selectVar keepΓ y)
+    Atomic (signature U) (context Γ keepΓ) :=
+  .graph (operation op keep)
+    (fun {s} i => selectRenaming (operationInputs op keep) keepΓ ρ
+      (cast (congrArg (Var · s) (operation_selectedInputs (keep := keep) rfl)) i))
+    (cast (congrArg (Var (context Γ keepΓ)) (operation_selectedOutput (keep := keep) rfl).symm)
+      (selectVar keepΓ y))
+
+/-- Select a graph at the actual input and output types of an equal retained operation. -/
+theorem selectGraph_atOperation {Γ : List P.signature.SortType}
+    (keepΓ : Declaration.sorts Γ ⊆ U.declarations) (op : Operation P.signature)
+    (keep : Declaration.ofOperation op ∈ U.declarations) (selected : Operation (signature U))
+    (same : operation op keep = selected) (ρ : Renaming op.arity.inputs Γ) (y : Var Γ op.arity.output) :
+    selectGraph keepΓ op keep ρ y = .graph selected
+      (fun {s} i => selectRenaming (operationInputs op keep) keepΓ ρ
+        (cast (congrArg (Var · s) (operation_selectedInputs same)) i))
+      (cast (congrArg (Var (context Γ keepΓ)) (operation_selectedOutput same).symm)
+        (selectVar keepΓ y)) := by
+  cases same
+  rfl
 
 /-- A selected graph of a retained total operation keeps its original argument
 and result positions. This is the total branch of the structural rule comparison. -/
@@ -89,7 +105,9 @@ def selectAtomic {Γ : List P.signature.SortType} (a : Atomic P.signature Γ)
   | domain p ρ =>
     have keepP : Declaration.partialOp p ∈ U.declarations := keep (Declaration.domain_mem_atomicSupport p ρ)
     exact .domain ⟨p, keepP⟩
-      (selectRenaming (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keepP)) keepΓ ρ)
+      (fun {s} i => selectRenaming
+        (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p keepP)) keepΓ ρ
+        (cast (congrArg (Var · s) (signature_partialInputs ⟨p, keepP⟩)) i))
   | graph op ρ y => exact selectGraph keepΓ op (keep (Declaration.graph_mem_atomicSupport op ρ y)) ρ y
 
 /-- Selecting an equality retains the compared positions in the selected context. -/
@@ -118,6 +136,18 @@ theorem selectAtomic_domain {Γ : List P.signature.SortType} (p : P.signature.Pa
         (selectRenaming (operationInputs (.partialOp p)
           (Declaration.ofOperation_partialOp_mem p (keep (Declaration.domain_mem_atomicSupport p ρ))))
           ((Declaration.sorts_subset_atomicSupport (.domain p ρ)).trans keep) ρ) :=
+  rfl
+
+/-- A selected domain atom reads inputs at the partial operation's actual retained arity. -/
+theorem selectAtomic_domain_cast {Γ : List P.signature.SortType} (p : P.signature.Partial)
+    (ρ : Renaming (P.signature.partialArity p).inputs Γ)
+    (keep : Declaration.atomicSupport (.domain p ρ) ⊆ U.declarations)
+    (d : Declaration.partialOp p ∈ U.declarations) :
+    selectAtomic (.domain p ρ) keep =
+      .domain ⟨p, d⟩ (fun {s} i => selectRenaming
+        (operationInputs (.partialOp p) (Declaration.ofOperation_partialOp_mem p d))
+        ((Declaration.sorts_subset_atomicSupport (.domain p ρ)).trans keep) ρ
+        (cast (congrArg (Var · s) (signature_partialInputs ⟨p, d⟩)) i)) :=
   rfl
 
 /-- A selected graph atom uses the retained operation and its reindexed positions. -/

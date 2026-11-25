@@ -24,6 +24,7 @@ namespace SHIGURE.Reading
 
 open DeclarationContext
 
+/-- Transporting the interpreted structure instead of the Law preserves its truth. -/
 private theorem holds_cast_structure {S Q : Signature.{u}} (same : S = Q)
     (law : Law S) (A : Structure Q) :
     law.Holds (cast (congrArg Structure same.symm) A) ↔ (cast (congrArg Law same) law).Holds A := by
@@ -48,9 +49,10 @@ theorem selectedStructure_eq :
         (Selected.readStructure (ContextStructure.ofStructure reading.context reading.structureData)) :=
   rfl
 
-/-- A retained Law's exact selected text holds precisely when its original text holds in the reading. -/
-theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
-    (reading.selectedPresentation.laws.statement name).Holds reading.selectedStructure ↔
+attribute [local irreducible] Selected.presentation in
+/-- Compare the selected reading using the actual Law name of the selected presentation. -/
+theorem selectedLaw_iff_ofName (name : reading.context.RetainedLaw) :
+    (reading.selectedPresentation.laws.statement (Selected.presentationLawName name)).Holds reading.selectedStructure ↔
       (reading.presentation.laws.statement name.val).Holds reading.structureData := by
   let original := reading.presentation.laws.statement name.val
   let kept := Declaration.lawBody_subset_of_mem name.property
@@ -60,14 +62,26 @@ theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
   exact ((Selected.readStructure_matches A).law_iff original kept).trans
     (ContextStructure.ofStructure_satisfies_iff reading.context reading.structureData original kept)
 
+/-- A retained Law's exact selected text holds precisely when its original text holds in the reading. -/
+theorem selectedLaw_iff (name : reading.context.RetainedLaw) :
+    (reading.selectedPresentation.laws.statement name).Holds reading.selectedStructure ↔
+      (reading.presentation.laws.statement name.val).Holds reading.structureData :=
+  reading.selectedLaw_iff_ofName name
+
 /-- The selected model condition tests the original Laws that are both retained and required. -/
 theorem selectedTheory_holds_iff :
     reading.selectedPresentation.theory.Holds reading.selectedStructure ↔
       ∀ name : reading.selectedPresentation.theory.LawName,
         (reading.presentation.laws.statement name.val.val).Holds reading.structureData := by
+  rw [Theory.holds_iff]
   constructor
-  · exact fun model name => (reading.selectedLaw_iff name.val).1 (model name)
-  · exact fun model name => (reading.selectedLaw_iff name.val).2 (model name)
+  · intro model name
+    have held := model name
+    rw [Selected.presentation_theory_law] at held
+    exact (reading.selectedLaw_iff_ofName (Selected.retainedTheoryName name)).1 held
+  · intro model name
+    rw [Selected.presentation_theory_law]
+    exact (reading.selectedLaw_iff_ofName (Selected.retainedTheoryName name)).2 (model name)
 
 /-- The reading determines its ordinary model when the retained required Laws hold. -/
 noncomputable def selectedModel (model : reading.selectedPresentation.theory.Holds reading.selectedStructure) :
@@ -126,8 +140,9 @@ theorem selectedRing_residual_iff (name : reading.context.RetainedLaw)
     (reading.selectedPresentation.laws.statement name).Holds reading.selectedStructure ↔
       eqn.jointInputs reading.selectedStructure = selected.written.toLaw.inputSet reading.selectedStructure ∧
       ∀ e : eqn.jointInputs reading.selectedStructure,
-        eqn.residual reading.selectedStructure ringLaws e = eqn.ring.zeroValue reading.selectedStructure :=
-  (Selected.selectNamedRingEquation name equation attached keep).holds_iff_residual_zero reading.selectedStructure
+        eqn.residual reading.selectedStructure ringLaws e = eqn.ring.zeroValue reading.selectedStructure := by
+  rw [Selected.presentation_law_eq_selected]
+  exact (Selected.selectNamedRingEquation name equation attached keep).holds_iff_residual_zero reading.selectedStructure
     (reading.selectedRing_axiomsHold name equation attached keep held)
 
 end SHIGURE.Reading

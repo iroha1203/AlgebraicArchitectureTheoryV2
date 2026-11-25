@@ -19,14 +19,21 @@ open CategoryTheory
 
 variable {P : PrimitivePresentation.{u}}
 
+section
+
 attribute [local irreducible] readModel writeModel
 
-/-- Attach the read structure map to the actual read models using their structure projections. -/
+/-- Attach the read structure map to the actual read models using their structure projections.
+
+Implementation notes: the endpoint equalities transport the structural arrow to the models
+of the ordinary theory. Applying `ObjectProperty.homMk` to the structural arrow directly
+would identify those endpoints by reducing the read model. -/
 private noncomputable def readModelMap {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B) :
     readModel A ⟶ readModel B :=
   ObjectProperty.homMk (cast (congrArg₂ StructureMap (readModel_obj A).symm (readModel_obj B).symm)
     (readStructureMap f.hom))
 
+/-- The packaged read arrow acts by the read structure map on each identified carrier. -/
 private theorem readModelMap_onSort {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
     (s : SortName U) (x : (readModel A).obj.carrier s) :
     (readModelMap f).hom.onSort s x = cast (congrArg (fun S => S.carrier s) (readModel_obj B).symm)
@@ -62,18 +69,23 @@ theorem readFunctor_carrier_eq {U : DeclarationContext P} (A : Models U) :
     (congrArg Structure.carrier (readModel_obj A))
 
 /-- The ordinary component of a read map uses the original retained component. -/
-theorem readFunctor_onSort {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
+theorem readFunctor_onSort_cast {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
     (s : SortName U) (x : ((readFunctor U).obj A).obj.carrier s) :
     ((readFunctor U).map f).hom.onSort s x = cast (congrFun (readFunctor_carrier_eq B).symm s)
       (readOnSort f.hom s (cast (congrFun (readFunctor_carrier_eq A) s) x)) :=
   readModelMap_onSort f s x
 
-/-- Attach the written structure map to the actual written models using their structure projections. -/
+/-- Attach the written structure map to the actual written models using their structure projections.
+
+Implementation notes: the endpoint equalities transport the structural arrow to the context models.
+Applying `ObjectProperty.homMk` to the structural arrow directly would identify those endpoints
+by reducing the written model. -/
 private noncomputable def writeModelMap {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B) :
     writeModel A ⟶ writeModel B :=
   ObjectProperty.homMk (cast (congrArg₂ ContextStructure.Hom (writeModel_obj A).symm (writeModel_obj B).symm)
     (writeStructureMap f.hom))
 
+/-- The packaged write arrow acts by the written structure map on each identified carrier. -/
 private theorem writeModelMap_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
     (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations) (x : (writeModel A).obj.carrier s) :
     Models.onSort (writeModelMap f) s keep x = cast (congrArg (fun S => S.carrier s) (writeModel_obj B).symm)
@@ -109,7 +121,7 @@ theorem writeFunctor_carrier_eq {U : DeclarationContext P} (A : Model (theory U)
     (congrArg ContextStructure.carrier (writeModel_obj A))
 
 /-- The written point map is the ordinary point map under the retained carrier identification. -/
-theorem writeFunctor_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
+theorem writeFunctor_onSort_cast {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
     (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations)
     (x : ((writeFunctor U).obj A).obj.carrier s) :
     Models.onSort ((writeFunctor U).map f) s keep x = cast (congrFun (writeFunctor_carrier_eq B).symm s)
@@ -131,7 +143,7 @@ theorem read_comp_write (U : DeclarationContext P) : readFunctor U ⋙ writeFunc
   intro A B f
   apply Models.hom_ext
   intro s keep x
-  simp only [Functor.comp_map, Functor.id_map, writeFunctor_onSort, writeOnSort_apply, readFunctor_onSort,
+  simp only [Functor.comp_map, Functor.id_map, writeFunctor_onSort_cast, writeOnSort_apply, readFunctor_onSort_cast,
     readOnSort_apply, Models.comp_onSort, Models.eqToHom_onSort, writeCarrierEquiv_eq_cast, readCarrierEquiv_eq_cast,
     ← Equiv.cast_symm, Equiv.cast_apply, cast_cast]
 
@@ -145,7 +157,7 @@ theorem write_comp_read (U : DeclarationContext P) : writeFunctor U ⋙ readFunc
   intro s x
   change SortName U at s
   rcases s with ⟨s, keep⟩
-  simp only [Functor.comp_map, Functor.id_map, readFunctor_onSort, writeFunctor_onSort, writeOnSort_apply,
+  simp only [Functor.comp_map, Functor.id_map, readFunctor_onSort_cast, writeFunctor_onSort_cast, writeOnSort_apply,
     readOnSort_apply, Model.comp_apply, ordinary_eqToHom_onSort, writeCarrierEquiv_eq_cast, readCarrierEquiv_eq_cast,
     ← Equiv.cast_symm, Equiv.cast_apply, cast_cast]
 
@@ -201,6 +213,21 @@ noncomputable def modelPresheaf (P : PrimitivePresentation.{u}) :
   map_id U := congrArg Functor.toCatHom (modelRestriction_id (Opposite.unop U))
   map_comp f g := congrArg Functor.toCatHom
     (modelRestriction_comp (leOfHom f.unop) (leOfHom g.unop)).symm
+
+end
+
+/-- Reading a model arrow preserves its original point map on a retained sort. -/
+theorem readFunctor_onSort {U : DeclarationContext P} {A B : Models U} (f : A ⟶ B)
+    (s : SortName U) (x : A.obj.carrier s.val) :
+    ((readFunctor U).map f).hom.onSort s x = Models.onSort f s.val s.property x := by
+  simpa only [readOnSort_apply, readCarrierEquiv_eq_cast, Equiv.cast_apply, cast_eq]
+    using readFunctor_onSort_cast f s x
+
+/-- Writing a model arrow agrees with its written point map on the extended carrier. -/
+theorem writeFunctor_onSort {U : DeclarationContext P} {A B : Model (theory U)} (f : A ⟶ B)
+    (s : P.signature.SortType) (keep : Declaration.sort s ∈ U.declarations) (x : extendedCarrier A.obj s) :
+    Models.onSort ((writeFunctor U).map f) s keep x = writeOnSort f.hom s keep x := by
+  simpa only [cast_eq] using writeFunctor_onSort_cast f s keep x
 
 end DeclarationContext.Selected
 end SHIGURE

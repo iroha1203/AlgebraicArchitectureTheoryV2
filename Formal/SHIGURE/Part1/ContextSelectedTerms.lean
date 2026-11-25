@@ -1160,15 +1160,22 @@ theorem substitution_source_kept {Γ Δ : List P.signature.SortType} (θ : Subst
   obtain ⟨i⟩ := variable_of_mem xs
   exact (substitution_term_kept θ h i).1
 
+attribute [local irreducible] Substitution.defined selectSubstitution in
 /-- Retyping the definedness guard is the definedness guard of the retyped substitution. -/
 theorem selectSubstitution_defined {Γ Δ : List P.signature.SortType} (θ : Substitution P.signature Γ Δ)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hΔ : Declaration.sorts Δ ⊆ U.declarations)
     (hθ : ∀ {s} (i : Var Γ s), termReferences (θ i) ⊆ U.declarations)
     (h : Declaration.formulaSupport θ.defined ⊆ U.declarations) :
     selectFormula θ.defined h = (selectSubstitution θ hΓ hΔ hθ).defined := by
-  refine (selectFormula_conjoin (fun i => (θ i).defined) h hΓ).trans ?_
+  have same := Substitution.defined_eq_conjoin θ
+  have support : Declaration.formulaSupport (Formula.conjoin Γ (fun i => (θ i).defined)) ⊆ U.declarations :=
+    same ▸ h
+  refine (selectFormula_congr same (hp := h) (hq := support)).trans ?_
+  refine (selectFormula_conjoin (fun i => (θ i).defined) support hΓ).trans ?_
+  rw [Substitution.defined_eq_conjoin]
   apply congrArg (Formula.conjoin (sig := signature U) (context Γ hΓ))
   funext s i
+  rw [selectSubstitution_at]
   exact selectFormula_defined (θ (ambientVar hΓ i)) hΔ s.property (hθ _) _
 
 end DeclarationContext.Selected

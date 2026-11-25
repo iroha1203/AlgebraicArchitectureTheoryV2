@@ -59,10 +59,13 @@ private theorem selectPairSide_congr
   cases same
   rfl
 
+/-- The retained sort names of the ordered example. -/
 private abbrev SelectedSort := Selected.SortName (full twicePresentation)
 
+/-- The unique original sort as a name of the full selected context. -/
 private abbrev keptUnit : SelectedSort := ⟨(), Set.mem_univ _⟩
 
+/-- A variable term transports with its variable along the context equality. -/
 private theorem var_cast_term {Γ Δ : List SelectedSort} {s : SelectedSort}
     (same : Γ = Δ) (i : Var Γ s) :
     HEq (Term.var (sig := Selected.signature (full twicePresentation)) i)
@@ -70,6 +73,7 @@ private theorem var_cast_term {Γ Δ : List SelectedSort} {s : SelectedSort}
   cases same
   rfl
 
+/-- Selecting equal lists of original sorts gives equal retained contexts. -/
 private theorem same_context {Γ Δ : List twicePresentation.signature.SortType} (same : Γ = Δ)
     (g : Declaration.sorts (P := twicePresentation) Γ ⊆ (full twicePresentation).declarations)
     (d : Declaration.sorts (P := twicePresentation) Δ ⊆ (full twicePresentation).declarations) :
@@ -350,10 +354,12 @@ private def zeroGraph : Formula signature [SortName.scalar] :=
 /-- Write the equation using the shared value of the unit and zero operations. -/
 private def literalLaw : Law signature := ⟨[], .truth, (oneGraph.conj zeroGraph).ex⟩
 
+/-- The small presentation reuses the exact Law of the padded example. -/
 private theorem equalityPresentation_law (name : equalityPresentation.laws.LawName) :
     equalityPresentation.laws.statement name = literalLaw :=
   paddedPresentation_equality_statement
 
+/-- The padded equality carries the additional role. -/
 private theorem paddedEquality_nonderived : paddedPresentation.laws.role (.inl ()) ≠ .derived := by
   rw [paddedPresentation_equality_role]
   exact fun h => LawRole.noConfusion h

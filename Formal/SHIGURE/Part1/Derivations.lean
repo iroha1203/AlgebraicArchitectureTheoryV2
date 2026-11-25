@@ -322,6 +322,11 @@ theorem PrimitivePresentation.orderedEquation_eq (P : PrimitivePresentation.{u})
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=
   P.laws.toTheory
 
+/-- The required theory reads the registered Law at the underlying declaration name. -/
+theorem PrimitivePresentation.theory_law (P : PrimitivePresentation.{u}) (name : P.theory.LawName) :
+    P.theory.law name = P.laws.statement name.val :=
+  rfl
+
 /-- A model satisfies the chosen ring Laws if they were declared required or derived. -/
 theorem NamedRingEquation.axioms_hold_of_model {P : PrimitivePresentation.{u}}
     {name : P.laws.LawName} (data : NamedRingEquation P.laws name) (A : Structure P.signature)

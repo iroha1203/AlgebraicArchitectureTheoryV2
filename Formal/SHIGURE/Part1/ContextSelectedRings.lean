@@ -70,14 +70,17 @@ private theorem keepsMul {s : P.signature.SortType} {r : RingVocabulary P.signat
     Declaration.ofOperation r.mul.symbol.operation ∈ U.declarations :=
   keep (by simp [Declaration.ringVocabularySupport_eq])
 
+/-- Selection of a unary ring profile retains its one scalar input. -/
 private theorem unaryInputs {s : P.signature.SortType} (hs : Declaration.sort s ∈ U.declarations) :
     context [s] (oneSort hs) = [⟨s, hs⟩] :=
   (context_cons s [] (oneSort hs)).trans (congrArg (List.cons ⟨s, hs⟩) (context_nil noSorts))
 
+/-- Selection of a binary ring profile retains both scalar inputs in order. -/
 private theorem binaryInputs {s : P.signature.SortType} (hs : Declaration.sort s ∈ U.declarations) :
     context [s, s] (twoSorts hs) = [⟨s, hs⟩, ⟨s, hs⟩] :=
   (context_cons s [s] (twoSorts hs)).trans (congrArg (List.cons ⟨s, hs⟩) (unaryInputs hs))
 
+/-- Reading the head position after aligning the tail gives the original head position. -/
 private theorem ambientInputHere {s : P.signature.SortType} {Γ : List P.signature.SortType}
     (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) {Δ : List (SortName U)}
     (tail : context Γ ((tailSortsSubset s Γ).trans keep) = Δ) :
@@ -88,6 +91,7 @@ private theorem ambientInputHere {s : P.signature.SortType} {Γ : List P.signatu
   cases tail
   exact ambientVar_cast_here keep
 
+/-- Reading a non-head position after aligning the tail reads that position in the tail. -/
 private theorem ambientInputThere {s : P.signature.SortType} {Γ : List P.signature.SortType}
     (keep : Declaration.sorts (s :: Γ) ⊆ U.declarations) {Δ : List (SortName U)}
     (tail : context Γ ((tailSortsSubset s Γ).trans keep) = Δ) {t : SortName U} (i : Var Δ t) :
@@ -126,6 +130,7 @@ private def selectRingExpr {Γ : List P.signature.SortType} {s : P.signature.Sor
   | .neg a => .neg (selectRingExpr hΓ hs a)
   | .mul a b => .mul (selectRingExpr hΓ hs a) (selectRingExpr hΓ hs b)
 
+/-- Compare a retyped application using its explicitly identified argument profile. -/
 private theorem selectTypedTotal_atInputs {Γ inputs : List P.signature.SortType}
     {s : P.signature.SortType} {target : List (SortName U)}
     (f : TypedTotal P.signature ⟨inputs, s⟩) (args : ∀ {t}, Var inputs t → Term P.signature Γ t)

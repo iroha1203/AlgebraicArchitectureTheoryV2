@@ -80,6 +80,25 @@ theorem presentation_signature : (presentation U).signature = signature U :=
 theorem presentation_theory : (presentation U).theory = theory U :=
   rfl
 
+/-- A retained name indexes the corresponding Law of the selected presentation. -/
+def presentationLawName (name : U.RetainedLaw) : (presentation U).laws.LawName :=
+  name
+
+/-- A required name in the selected theory comes from a retained Law declaration. -/
+def retainedTheoryName (name : (presentation U).theory.LawName) : U.RetainedLaw :=
+  name.val
+
+/-- A required Law of the selected presentation reads the statement at its retained name. -/
+theorem presentation_theory_law (name : (presentation U).theory.LawName) :
+    (presentation U).theory.law name =
+      (presentation U).laws.statement (presentationLawName (retainedTheoryName name)) :=
+  rfl
+
+/-- The presentation registers the selected Law under the same retained name. -/
+theorem presentation_law_eq_selected (name : U.RetainedLaw) :
+    (presentation U).laws.statement name = (laws U).statement name :=
+  rfl
+
 /-- A retained Law in the selected presentation has the selected text of its original statement. -/
 theorem presentation_law_statement (name : U.RetainedLaw) :
     (presentation U).laws.statement name =
@@ -88,7 +107,8 @@ theorem presentation_law_statement (name : U.RetainedLaw) :
 
 /-- Transporting the restricted Law text along the signature comparison gives its selected form. -/
 theorem presentation_law_cast (name : U.RetainedLaw) :
-    cast (congrArg Law (presentation_signature (U := U))) ((presentation U).laws.statement name) =
+    cast (congrArg Law (presentation_signature (U := U)))
+      ((presentation U).laws.statement (presentationLawName name)) =
       selectLaw (P.laws.statement name.val) (Declaration.lawBody_subset_of_mem name.property) :=
   rfl
 

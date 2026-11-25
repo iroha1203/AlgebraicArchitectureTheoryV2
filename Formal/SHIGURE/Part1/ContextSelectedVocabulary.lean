@@ -102,7 +102,19 @@ theorem signature_relInputs (r : Rel U) :
 theorem signature_partialInputs (p : Partial U) :
     ((signature U).partialArity p).inputs = context (P.signature.partialArity p.val).inputs
       (operationInputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)) :=
-  (arity_inputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property))
+  arity_inputs (.partialOp p.val) (Declaration.ofOperation_partialOp_mem p.val p.property)
+
+/-- A retained total symbol has the original input positions with their retention proofs. -/
+theorem signature_totalInputs (f : Total U) :
+    ((signature U).totalArity f).inputs = context (P.signature.totalArity f.val).inputs
+      (operationInputs (.total f.val) (Declaration.ofOperation_total_mem f.val f.property)) :=
+  arity_inputs (.total f.val) (Declaration.ofOperation_total_mem f.val f.property)
+
+/-- A retained quantity has the original input positions with their retention proofs. -/
+theorem signature_quantityInputs (q : Quantity U) :
+    ((signature U).quantityArity q).inputs = context (P.signature.quantityArity q.val).inputs
+      (operationInputs (.quantity q.val) (Declaration.ofOperation_quantity_mem q.val q.property)) :=
+  arity_inputs (.quantity q.val) (Declaration.ofOperation_quantity_mem q.val q.property)
 
 /-- Erasing the retention proofs recovers the original operation arity. -/
 theorem map_arity (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
@@ -156,6 +168,20 @@ theorem operation_arity_of_eq {op : Operation P.signature} {keep : Declaration.o
     {selected : Operation (signature U)} (same : operation op keep = selected) :
     selected.arity = arity op keep :=
   (congrArg Operation.arity same).symm.trans (operation_arity op keep)
+
+/-- A selected operation's input list carries the retained original positions. -/
+theorem operation_selectedInputs {op : Operation P.signature}
+    {keep : Declaration.ofOperation op ∈ U.declarations} {selected : Operation (signature U)}
+    (same : operation op keep = selected) :
+    selected.arity.inputs = context op.arity.inputs (operationInputs op keep) :=
+  (congrArg Arity.inputs (operation_arity_of_eq same)).trans (arity_inputs op keep)
+
+/-- A selected operation's result is the retained original result sort. -/
+theorem operation_selectedOutput {op : Operation P.signature}
+    {keep : Declaration.ofOperation op ∈ U.declarations} {selected : Operation (signature U)}
+    (same : operation op keep = selected) :
+    selected.arity.output = ⟨op.arity.output, operationOutput op keep⟩ :=
+  (congrArg Arity.output (operation_arity_of_eq same)).trans (arity_output op keep)
 
 /-- Inclusion sends a selected operation to the original operation. -/
 theorem names_operation (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :

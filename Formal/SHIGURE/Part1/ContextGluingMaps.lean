@@ -163,12 +163,17 @@ noncomputable def glueMap : A.glue cover ⟶ B.glue cover := by
     (B.glue_obj_eq cover).symm) mapped)
 
 /-- The categorical arrow assembled from local maps has the expected retained components. -/
-theorem glueMap_onSort (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations)
+theorem glueMap_onSort_cast (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations)
     (x : (A.glue cover).obj.carrier s) : Models.onSort (glueMap cover f) s kept x =
       cast (congrFun (B.glue_carrier_eq cover).symm s)
         (glueOnSort cover f s kept (cast (congrFun (A.glue_carrier_eq cover) s) x)) := by
   rw [glueMap, Models.onSort_homMk,
     ContextStructure.Hom.cast_onSort (A.glue_obj_eq cover).symm (B.glue_obj_eq cover).symm]
+
+/-- The assembled model arrow acts by the glued point map on its identified carrier. -/
+theorem glueMap_onSort (s : P.signature.SortType) (kept : Declaration.sort s ∈ U.declarations)
+    (x : A.glueCarrier cover s) : Models.onSort (glueMap cover f) s kept x = glueOnSort cover f s kept x := by
+  simpa only [cast_eq] using glueMap_onSort_cast cover f s kept x
 
 /-- Restricting an assembled arrow recovers the local map after identifying the endpoints. -/
 theorem glueMap_restrict (i : cover.Index) :
@@ -176,7 +181,7 @@ theorem glueMap_restrict (i : cover.Index) :
       eqToHom (A.glue_restrict cover i) ≫ f.pieceMap i := by
   apply Models.hom_ext
   intro s keep x
-  simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, glueMap_onSort,
+  simp only [Models.comp_onSort, Models.eqToHom_onSort, res_onSort, glueMap_onSort_cast,
     glueOnSort_eq_piece cover f i s keep, arrowView_apply, toPieceCarrier_apply, selectedMap_apply, cast_cast]
   rfl
 

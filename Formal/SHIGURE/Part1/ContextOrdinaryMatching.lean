@@ -208,32 +208,58 @@ noncomputable def writeFunctor : OrdinaryMatch piece ⥤ Match piece where
   map_comp f g := Match.Hom.ext fun i => (Selected.writeFunctor (piece i)).map_comp
     ((show Hom _ _ from f).pieceMap i) ((show Hom _ _ from g).pieceMap i)
 
-/-- Projecting the read family reads the model and arrows on the chosen piece. -/
-theorem readFunctor_project (i : I) :
-    readFunctor ⋙ project i = Match.project i ⋙ Selected.readFunctor (piece i) :=
+/-- The underlying model of a read piece is its selected ordinary model. -/
+private theorem readFunctor_obj_pieceModel (A : Match piece) (i : I) :
+    (readFunctor.obj A).pieceModel i = (Selected.readFunctor (piece i)).obj (A.pieceModel i) :=
   rfl
 
-/-- Projecting the written family writes the model and arrows on the chosen piece. -/
-theorem writeFunctor_project (i : I) :
-    writeFunctor ⋙ Match.project i = project i ⋙ Selected.writeFunctor (piece i) :=
-  rfl
+/-- Reading a matching arrow applies the selected read map at each piece. -/
+private theorem readFunctor_map_pieceMap {A B : Match piece} (f : A ⟶ B) (i : I) :
+    (show Hom (readFunctor.obj A) (readFunctor.obj B) from readFunctor.map f).pieceMap i ≍
+      (Selected.readFunctor (piece i)).map ((show Match.Hom A B from f).pieceMap i) :=
+  HEq.rfl
 
 /-- Writing a matching family applies the selected write functor to each piece. -/
 theorem writeFunctor_obj_pieceModel (A : OrdinaryMatch piece) (i : I) :
-    (writeFunctor.obj A).pieceModel i = (Selected.writeFunctor (piece i)).obj (A.pieceModel i) := by
-  exact ((Match.project_obj i (writeFunctor.obj A)).symm.trans
-    (Functor.congr_obj (writeFunctor_project i) A)).trans
-    (congrArg (Selected.writeFunctor (piece i)).obj (project_obj i A))
+    (writeFunctor.obj A).pieceModel i = (Selected.writeFunctor (piece i)).obj (A.pieceModel i) :=
+  rfl
 
 /-- Writing a matching arrow applies the selected write functor to each component. -/
 theorem writeFunctor_map_pieceMap {A B : OrdinaryMatch piece} (f : A ⟶ B) (i : I) :
     (show Match.Hom (writeFunctor.obj A) (writeFunctor.obj B) from writeFunctor.map f).pieceMap i ≍
-      (Selected.writeFunctor (piece i)).map ((show Hom A B from f).pieceMap i) := by
-  have localMap := map_heq_of_endpoints (Selected.writeFunctor (piece i)) (project_obj i A)
-    (project_obj i B) (project_map i f)
-  have projected := Functor.hcongr_hom (writeFunctor_project i) f
-  simp only [Functor.comp_map] at projected
-  exact ((Match.project_map i (writeFunctor.map f)).symm.trans projected).trans localMap
+      (Selected.writeFunctor (piece i)).map ((show Hom A B from f).pieceMap i) :=
+  HEq.rfl
+
+section
+
+attribute [local irreducible] Match.project project
+
+/-- Projecting the read family reads the model and arrows on the chosen piece. -/
+theorem readFunctor_project (i : I) :
+    readFunctor ⋙ project i = Match.project i ⋙ Selected.readFunctor (piece i) := by
+  let F := Selected.readFunctor (piece i)
+  apply Functor.hext
+  · intro A
+    exact (project_obj i (readFunctor.obj A)).trans
+      ((readFunctor_obj_pieceModel A i).trans (congrArg F.obj (Match.project_obj i A).symm))
+  · intro A B f
+    have mapped := map_heq_of_endpoints F (Match.project_obj i A).symm (Match.project_obj i B).symm
+      (Match.project_map i f).symm
+    exact (project_map i (readFunctor.map f)).trans ((readFunctor_map_pieceMap f i).trans mapped)
+
+/-- Projecting the written family writes the model and arrows on the chosen piece. -/
+theorem writeFunctor_project (i : I) :
+    writeFunctor ⋙ Match.project i = project i ⋙ Selected.writeFunctor (piece i) := by
+  let F := Selected.writeFunctor (piece i)
+  apply Functor.hext
+  · intro A
+    exact (Match.project_obj i (writeFunctor.obj A)).trans
+      ((writeFunctor_obj_pieceModel A i).trans (congrArg F.obj (project_obj i A).symm))
+  · intro A B f
+    have mapped := map_heq_of_endpoints F (project_obj i A).symm (project_obj i B).symm (project_map i f).symm
+    exact (Match.project_map i (writeFunctor.map f)).trans ((writeFunctor_map_pieceMap f i).trans mapped)
+
+end
 
 /-- Reading and writing a family recovers the original graph family, including every arrow. -/
 theorem read_comp_write : readFunctor (piece := piece) ⋙ writeFunctor = 𝟭 (Match piece) := by

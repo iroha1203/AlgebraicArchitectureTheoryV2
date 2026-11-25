@@ -110,6 +110,10 @@ def laws : vocabulary.Laws where
 /-- The ordinary SHIGURE presentation of the rational example. -/
 noncomputable abbrev presentation := vocabulary.presentation laws
 
+/-- The rational presentation keeps each named round-trip Law. -/
+theorem presentation_roundTrip (name : Op) : presentation.laws.statement (.inl name) = roundTrip name :=
+  rfl
+
 /-- p and r belong to separate pieces, and q is shared. -/
 def keepsModule (right : Bool) : SortName → Prop
   | .p => right = false
@@ -239,7 +243,9 @@ private theorem kept_law_support (right : Bool) (name : presentation.laws.LawNam
     Declaration.dependsOn presentation (.law name) ⊆ {d | keeps right d} := by
   rw [Declaration.nonderived_dependencies (P := presentation) name (by cases name <;> intro h <;> cases h)]
   cases name with
-  | inl name => exact roundTrip_supported right name kept
+  | inl name =>
+    rw [presentation_roundTrip]
+    exact roundTrip_supported right name kept
   | inr name =>
     rw [vocabulary.linearity_statement]
     exact linearity_supported right name kept

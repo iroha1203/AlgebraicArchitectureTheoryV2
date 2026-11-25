@@ -228,6 +228,11 @@ def LawDeclarations.toTheory {sig : Signature.{u}} (laws : LawDeclarations sig) 
 def Theory.Holds (theory : Theory.{u}) (A : Structure theory.signature) : Prop :=
   ∀ name, (theory.law name).Holds A
 
+/-- A theory holds exactly when every required Law holds. -/
+theorem Theory.holds_iff (theory : Theory.{u}) (A : Structure theory.signature) :
+    theory.Holds A ↔ ∀ name, (theory.law name).Holds A :=
+  Iff.rfl
+
 /-- A formula occurrence records the route from a formula root to one of its nodes. -/
 inductive Formula.Occurrence {sig : Signature.{u}} :
     {Γ : List sig.SortType} → Formula sig Γ → Type u

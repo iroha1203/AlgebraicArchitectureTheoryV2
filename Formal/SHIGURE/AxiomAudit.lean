@@ -2258,12 +2258,14 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   PolynomialPresentation.InverseVariableExample.declarationMap_eq_localization
 ]
 
--- Public reindexing of an application and the ordered view of an attached equality.
+-- Public application reindexing, ordered views, carrier transports and selected Law names.
 #shigure_assert_standard_axioms_of [
   Term.reindexedApp,
   RingEquation.Written.toOrdered,
   DeclarationContext.Selected.writeCarrierEquiv,
-  Derivation.cast_context
+  Derivation.cast_context,
+  DeclarationContext.Selected.presentationLawName,
+  DeclarationContext.Selected.retainedTheoryName
 ]
 
 -- Public constructor, comparison and example theorems used without unfolding their definitions.
@@ -2284,6 +2286,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Match.glue_obj,
   -- ContextGluingMaps
   DeclarationContext.Match.arrowView_apply,
+  DeclarationContext.Match.glueMap_onSort_cast,
   -- ContextMatching
   DeclarationContext.Match.project_obj,
   DeclarationContext.Match.project_map,
@@ -2295,19 +2298,22 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   -- ContextOrderedExamples
   Chapter3.OrderedRestriction.positions_unchanged_heq,
   -- ContextOrdinaryDescent
+  DeclarationCover.ordinaryRead_map_heq,
   DeclarationCover.ordinaryAssemble_eq,
   DeclarationCover.ordinaryAssemble_piece_heq,
   DeclarationCover.existsUnique_ordinary_assemble_heq,
+  DeclarationCover.ordinaryPullback_component_heq,
+  DeclarationCover.ordinaryPullback_matchingMap_piece_heq,
   -- ContextOrdinaryMatching
   DeclarationContext.OrdinaryMatch.project_obj,
   DeclarationContext.OrdinaryMatch.project_map,
   DeclarationContext.OrdinaryMatch.map_heq_of_endpoints,
   DeclarationContext.OrdinaryMatch.readObj_pieceModel,
   DeclarationContext.OrdinaryMatch.readFunctor_obj,
-  DeclarationContext.OrdinaryMatch.readFunctor_project,
-  DeclarationContext.OrdinaryMatch.writeFunctor_project,
   DeclarationContext.OrdinaryMatch.writeFunctor_obj_pieceModel,
   DeclarationContext.OrdinaryMatch.writeFunctor_map_pieceMap,
+  DeclarationContext.OrdinaryMatch.readFunctor_project,
+  DeclarationContext.OrdinaryMatch.writeFunctor_project,
   -- ContextPresentation
   Declaration.graphRuleName_functional,
   Declaration.graphRuleName_totality,
@@ -2316,11 +2322,14 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Declaration.graphRuleName_domainImpliesGraph,
   -- ContextReading
   Reading.selectedStructure_eq,
+  Reading.selectedLaw_iff_ofName,
   -- ContextSelectedCategories
   DeclarationContext.Selected.readFunctor_obj,
   DeclarationContext.Selected.readFunctor_carrier_eq,
+  DeclarationContext.Selected.readFunctor_onSort_cast,
   DeclarationContext.Selected.writeFunctor_obj,
   DeclarationContext.Selected.writeFunctor_carrier_eq,
+  DeclarationContext.Selected.writeFunctor_onSort_cast,
   DeclarationContext.Selected.modelRestriction_eq,
   -- ContextSelectedEquations
   DeclarationContext.Selected.selectWritten_context,
@@ -2341,11 +2350,14 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.writeOnSort_apply,
   -- ContextSelectedPresentation
   DeclarationContext.Selected.presentation_signature,
+  DeclarationContext.Selected.presentation_theory_law,
+  DeclarationContext.Selected.presentation_law_eq_selected,
   DeclarationContext.Selected.presentation_law_statement,
   DeclarationContext.Selected.presentation_law_cast,
   DeclarationContext.Selected.presentation_ringEquation,
   -- ContextSelectedProofs
   DeclarationContext.Selected.theory_law,
+  DeclarationContext.Selected.selectRenaming_there_there_cast,
   -- ContextSelectedRoundtrip
   DeclarationContext.Selected.read_write_value,
   -- ContextSelectedStructures
@@ -2365,12 +2377,14 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.readModel_obj,
   DeclarationContext.Selected.writeModel_obj,
   -- ContextSelectedSyntax
+  DeclarationContext.Selected.selectGraph_atOperation,
   DeclarationContext.Selected.selectGraph_total,
   DeclarationContext.Selected.selectGraph_partialOp,
   DeclarationContext.Selected.selectGraph_quantity,
   DeclarationContext.Selected.selectAtomic_eq,
   DeclarationContext.Selected.selectAtomic_rel,
   DeclarationContext.Selected.selectAtomic_domain,
+  DeclarationContext.Selected.selectAtomic_domain_cast,
   DeclarationContext.Selected.selectAtomic_graph,
   DeclarationContext.Selected.selectFormula_atom,
   DeclarationContext.Selected.selectFormula_truth,
@@ -2405,10 +2419,14 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   DeclarationContext.Selected.arity_output,
   DeclarationContext.Selected.signature_relInputs,
   DeclarationContext.Selected.signature_partialInputs,
+  DeclarationContext.Selected.signature_totalInputs,
+  DeclarationContext.Selected.signature_quantityInputs,
   DeclarationContext.Selected.operation_total,
   DeclarationContext.Selected.operation_partialOp,
   DeclarationContext.Selected.operation_quantity,
   DeclarationContext.Selected.operation_arity_of_eq,
+  DeclarationContext.Selected.operation_selectedInputs,
+  DeclarationContext.Selected.operation_selectedOutput,
   DeclarationContext.Selected.selectTypedTotal_operation,
   DeclarationContext.Selected.selectVar_here,
   DeclarationContext.Selected.selectVar_cast_here,
@@ -2494,16 +2512,20 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   NamedRingEquation.axiomsHold_iff,
   NamedRingEquation.ordered_none,
   PrimitivePresentation.orderedEquation_eq,
+  PrimitivePresentation.theory_law,
   -- IdentityInterpretation
   Interpretation.identity_onSort,
   Interpretation.identity_translation,
   -- Laws
   Law.equality_eq,
+  Theory.holds_iff,
   -- MarkedInterpretation
   Marked.quotientStructure_total_coefficient_add,
   Marked.quotientStructure_total_coefficient_mul,
   Marked.quotientStructure_total_module_add,
   Marked.quotientStructure_total_module_smul,
+  -- MarkedRationalPresentation
+  Marked.RationalExample.presentation_roundTrip,
   -- MarkedVocabulary
   Marked.Vocabulary.addTerm_none,
   Marked.Vocabulary.addTerm_some,
