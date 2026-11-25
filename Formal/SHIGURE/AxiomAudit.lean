@@ -19,6 +19,7 @@ import Formal.SHIGURE.Part1.PreservationExamples
 import Formal.SHIGURE.Part1.ProtocolExamples
 import Formal.SHIGURE.Part1.PullbackExamples
 import Formal.SHIGURE.Part1.ReadingExamples
+import Formal.SHIGURE.Part2.AffineFoundations
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -2664,6 +2665,53 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   TypedTotal.term_eq_reindexedApp,
   TypedTotal.term_cast_inputs,
   Formula.termGraph_congr_arity
+]
+
+-- Appendix B.1: clopens, affine points and scalar extension.
+#shigure_assert_standard_axioms_of [
+  clopenOfIdempotent,
+  clopenPartitionEquiv,
+  polynomialPointEquiv,
+  symmetricPointEquiv,
+  specOverPointEquiv,
+  baseChangeDirectSum,
+  baseChangeTensor,
+  baseChangeCokernel,
+  baseChangeSymmetric,
+  baseChangeQuotient,
+  coe_clopenOfIdempotent,
+  clopenOfIdempotent_preimage,
+  coe_clopenPartitionEquiv,
+  clopenPartitionEquiv_preimage,
+  polynomialPointEquiv_apply,
+  polynomialPointEquiv_natural,
+  polynomialPointEquiv_rename,
+  symmetricPointEquiv_apply,
+  symmetricPointEquiv_natural,
+  symmetricPointEquiv_precomp,
+  specGlobalHom_precomp,
+  specGlobalHom_postcomp,
+  specOver_hom,
+  globalSectionsAlgebra_algebraMap,
+  specOverPointEquiv_apply,
+  specOverMap_left,
+  globalSectionsMap_apply,
+  specOverPointEquiv_postcomp,
+  specOverPointEquiv_precomp,
+  baseChangeDirectSum_tmul_lof,
+  baseChangeDirectSum_natural,
+  baseChangeTensor_tmul,
+  baseChangeTensor_natural,
+  baseChangeCokernel_symm_mk_tmul,
+  range_le_comap_of_square,
+  baseChangeCokernel_natural,
+  baseChangeIdeal_span,
+  baseChangeQuotient_symm_mk_tmul,
+  baseChangeIdeal_le_comap,
+  baseChangeQuotient_natural,
+  symmetricMap_ι,
+  baseChangeSymmetric_tmul_ι,
+  baseChangeSymmetric_natural
 ]
 
 end SHIGURE.AxiomAudit

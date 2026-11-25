@@ -21,6 +21,7 @@ import Formal.SHIGURE.Part1.ProtocolExamples
 import Formal.SHIGURE.Part1.PullbackExamples
 import Formal.SHIGURE.Part1.Reading
 import Formal.SHIGURE.Part1.ReadingExamples
+import Formal.SHIGURE.Part2.AffineFoundations
 
 /-! # SHIGURE
 
