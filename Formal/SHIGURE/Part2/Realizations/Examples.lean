@@ -293,7 +293,7 @@ theorem integer_different_marks_not_model :
     ¬ (tensorMode integers pointedTheory coefficientRule).modelProperty integerAlgebra differentMarks := by
   intro h
   have hEq := (TensorTheory.modelProperty_read_iff pointedSourceTheory fullDomainScope
-    (fun _ => equalMarksReading) coefficientRule integerAlgebra differentMarks).mp h ()
+    (fun _ => equalMarksReading) integerAlgebra differentMarks).mp h ()
   have hValues := (equalMarksSourceLaw_iff differentMarks).mp hEq
   exact one_ne_zero (show (1 : ℤ) = 0 from hValues)
 
@@ -395,10 +395,19 @@ private def tensorVocabulary : Signature where
   partialArity := Empty.elim
   quantityArity := Empty.elim
 
+private def collapseFalseSort : Law tensorVocabulary :=
+  ⟨[false, false], .truth, .atom (.eq .here (.there .here))⟩
+
 private def tensorPrimitives : PrimitivePresentation where
   signature := tensorVocabulary
-  laws := ⟨Empty, Empty.elim, Empty.elim⟩
-  derived n := nomatch n
+  laws := ⟨Unit, fun _ => collapseFalseSort, fun _ => .required⟩
+  derived _ role := by cases role
+
+private def tensorSorts : DeclarationContext tensorPrimitives where
+  declarations := Set.range Declaration.sort
+  closed := by
+    rintro _ ⟨s, rfl⟩ _ dependency
+    simp only [Declaration.sort_dependencies, Set.notMem_empty] at dependency
 
 private def tensorLawScope : DeclarationContext tensorPrimitives where
   declarations := {Declaration.sort true}
@@ -435,14 +444,25 @@ private def tensorDeclarations : TensorLawDeclarations integers tensorPrimitives
   required := Set.univ
 
 private def tensorContext : TensorDeclarationContext tensorDeclarations where
-  primitives := DeclarationContext.full tensorPrimitives
-  noPositiveRequirement := ⟨fun l => nomatch l.val.val⟩
+  primitives := tensorSorts
+  fullDomain := ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
+  positiveReading l := by
+    exfalso
+    obtain ⟨s, hs⟩ := l.val.property
+    cases hs
   retained := Set.univ
-  dependencies _ _ := Set.subset_univ _
+  dependencies _ _ := by
+    change twoTorsionLaw.support (DeclarationContext.Selected.names tensorLawScope) ⊆ tensorSorts.declarations
+    rw [twoTorsion_support]
+    rintro _ rfl
+    exact ⟨true, rfl⟩
 
 private def smallerTensorContext : TensorDeclarationContext tensorDeclarations where
   primitives := tensorLawScope
-  noPositiveRequirement := ⟨fun l => nomatch l.val.val⟩
+  fullDomain := ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
+  positiveReading l := by
+    have hl : Declaration.law l.val.val = Declaration.sort true := l.val.property
+    cases hl
   retained := tensorContext.retained
   dependencies _ _ := by
     change twoTorsionLaw.support (DeclarationContext.Selected.names tensorLawScope) ⊆
@@ -465,53 +485,82 @@ theorem twoTorsion_law_uses_its_sort (U : TensorDeclarationContext tensorDeclara
   rw [twoTorsion_support]
   rfl
 
-private def contextScope : FullDomainTensorSignature tensorContext.presentation.signature :=
-  ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
-
-private def contextRule : TensorCoefficientRule tensorContext.presentation.signature where
-  change {R S} f A :=
-    letI := R.ring
-    letI := S.ring
-    letI := f.toAlgebra
-    { carrier := fun s => ModuleCat.of S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier s)
-      total := fun op => nomatch op.val
-      quantity := fun q => nomatch q.val }
-  carrierIso {R S} f A s :=
-    letI := R.ring
-    letI := S.ring
-    letI := f.toAlgebra
-    LinearEquiv.refl S.Carrier (S.Carrier ⊗[R.Carrier] A.carrier s)
-  total_unit _ _ op := nomatch op.val
-  quantity_unit _ _ q := nomatch q.val
-
-private def contextModules (M : ModuleCat ℤ) : TensorAt integers tensorContext.presentation.signature where
-  carrier s := if (show Bool from s.val) then M else ModuleCat.of ℤ ℤ
+private def contextModules (U : DeclarationContext tensorPrimitives) (M N : ModuleCat ℤ) :
+    TensorAt integers (DeclarationContext.Selected.signature U) where
+  carrier s := if (show Bool from s.val) then M else N
   total op := nomatch op.val
   quantity q := nomatch q.val
 
-/-- The scoped tensor declaration holds on the cyclic group of order two at
-its chosen sort, even though the other sort carries an integer module. -/
-theorem cyclicTwo_satisfies_selected_tensor_law :
-    Nonempty (SelectedTensorModels tensorContext integerAlgebra contextScope contextRule) := by
-  refine ⟨⟨contextModules (ModuleCat.of ℤ (ZMod 2)), trivial, ?_⟩⟩
-  rintro ⟨l, _, _⟩
-  change Unit at l
-  cases l
-  change (2 : ℤ) • (LinearMap.id : ZMod 2 →ₗ[ℤ] ZMod 2) = 0
+private theorem zmod2_two_torsion : (2 : ℤ) • (LinearMap.id : ZMod 2 →ₗ[ℤ] ZMod 2) = 0 := by
   apply LinearMap.ext
   intro x
   change (2 : ℤ) • x = 0
   rw [two_zsmul, ← two_mul, show (2 : ZMod 2) = 0 by decide, zero_mul]
 
+/-- The scoped tensor declaration holds on the cyclic group of order two at
+its chosen sort, even though the other sort carries an integer module. -/
+theorem cyclicTwo_satisfies_selected_tensor_law :
+    Nonempty (SelectedTensorModels tensorContext integerAlgebra) := by
+  refine ⟨⟨contextModules tensorSorts (ModuleCat.of ℤ (ZMod 2)) (ModuleCat.of ℤ ℤ), trivial, ?_⟩⟩
+  rintro (l | ⟨l, _, _⟩)
+  · obtain ⟨s, hs⟩ := l.val.property
+    cases hs
+  rcases l with ⟨⟩
+  exact zmod2_two_torsion
+
 /-- Keeping the same declaration rules out an integer module at its chosen sort. -/
 theorem integer_fails_selected_tensor_law :
-    ¬ (tensorContext.mode contextScope contextRule).modelProperty integerAlgebra
-      (contextModules (ModuleCat.of ℤ ℤ)) := by
+    ¬ tensorModelProperty tensorContext.presentation integerAlgebra tensorContext.fullDomain
+      (tensorContext.holds integerAlgebra)
+      (contextModules tensorSorts (ModuleCat.of ℤ ℤ) (ModuleCat.of ℤ ℤ)) := by
   intro h
   let name : tensorDeclarations.Name := ()
-  have hf := h.2 ⟨name, Set.mem_univ _, Set.mem_univ _⟩
+  have hf := h.2 (.inr ⟨name, Set.mem_univ _, Set.mem_univ _⟩)
   change (2 : ℤ) • (LinearMap.id : ℤ →ₗ[ℤ] ℤ) = 0 at hf
   have he := LinearMap.congr_fun hf 1
   exact (by decide : (2 : ℤ) ≠ 0) he
+
+private abbrev mixedPrimitives := DeclarationContext.full tensorPrimitives
+
+private abbrev mixedSignature := DeclarationContext.Selected.signature mixedPrimitives
+
+private abbrev collapsedSort : mixedSignature.SortType := ⟨false, Set.mem_univ _⟩
+
+private def mixedScope : FullDomainTensorSignature mixedSignature :=
+  ⟨⟨fun r => nomatch r.val⟩, ⟨fun p => nomatch p.val⟩⟩
+
+private def mixedReading (name : (DeclarationContext.Selected.presentation mixedPrimitives).theory.LawName) :
+    TensorLawReading integers mixedScope ((DeclarationContext.Selected.presentation mixedPrimitives).theory.law name) where
+  equation := ⟨.sort collapsedSort, .sort collapsedSort, .id _, .zero _ _⟩
+  correct S A := by
+    letI := S.scalars.ring
+    change (LinearMap.id : A.carrier collapsedSort →ₗ[S.scalars.Carrier] A.carrier collapsedSort) = 0 ↔ _
+    rw [Law.holds_iff]
+    change _ ↔ ∀ a : Assignment _ [collapsedSort, collapsedSort], True → a.get .here = a.get (.there .here)
+    constructor
+    · intro h a _
+      exact (LinearMap.congr_fun h (a.get .here)).trans (LinearMap.congr_fun h (a.get (.there .here))).symm
+    · intro h
+      apply LinearMap.ext
+      intro x
+      exact h (Assignment.cons x (Assignment.cons (0 : A.carrier collapsedSort) Assignment.empty)) trivial
+
+private def mixedTensorContext : TensorDeclarationContext tensorDeclarations where
+  primitives := mixedPrimitives
+  fullDomain := mixedScope
+  positiveReading := mixedReading
+  retained := Set.univ
+  dependencies _ _ := Set.subset_univ _
+
+/-- The same fixed-coefficient context imposes the original equality on the false
+sort and the native two-torsion Law on the true sort. -/
+theorem twoSorts_satisfy_mixed_tensor_laws : Nonempty (SelectedTensorModels mixedTensorContext integerAlgebra) := by
+  refine ⟨⟨contextModules mixedPrimitives (ModuleCat.of ℤ (ZMod 2)) (ModuleCat.of ℤ (ZMod 1)), trivial, ?_⟩⟩
+  rintro (l | ⟨⟨⟩, _, _⟩)
+  · change (LinearMap.id : ZMod 1 →ₗ[ℤ] ZMod 1) = 0
+    apply LinearMap.ext
+    intro x
+    exact Subsingleton.elim _ _
+  · exact zmod2_two_torsion
 
 end SHIGURE.RealizationExamples

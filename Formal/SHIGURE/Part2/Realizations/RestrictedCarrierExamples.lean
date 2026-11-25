@@ -1,6 +1,5 @@
 import Formal.SHIGURE.Part2.Realizations.CoefficientModels
 import Mathlib.Algebra.Group.End
-import Mathlib.CategoryTheory.Monoidal.Types.Basic
 import Mathlib.CategoryTheory.SingleObj
 
 /-!
@@ -12,7 +11,6 @@ sets. The unary identity operation preserves every allowed map.
 -/
 
 open CategoryTheory
-open scoped MonoidalCategory
 
 namespace SHIGURE.RealizationExamples
 
@@ -42,24 +40,6 @@ private def unaryEquiv (s : Unit) : (Position [s] → Fin 3) ≃ Fin 3 where
     | there i => exact nomatch i
   right_inv _ := rfl
 
-private def emptyEquiv : (Position [] → Fin 3) ≃ PUnit where
-  toFun _ := PUnit.unit
-  invFun _ i := nomatch i.2
-  left_inv _ := funext fun i => nomatch i.2
-  right_inv _ := Subsingleton.elim _ _
-
-private def splitEquiv (s : Unit) (Γ : List Unit) :
-    (Position (s :: Γ) → Fin 3) ≃ Fin 3 × (Position Γ → Fin 3) where
-  toFun x := (x ⟨s, .here⟩, fun i => x ⟨i.1, .there i.2⟩)
-  invFun x
-    | ⟨_, .here⟩ => x.1
-    | ⟨t, .there i⟩ => x.2 ⟨t, i⟩
-  left_inv x := by
-    funext p
-    obtain ⟨_, i⟩ := p
-    cases i <;> rfl
-  right_inv _ := rfl
-
 private def unarySignature : Signature where
   SortType := Unit
   Total := Unit
@@ -78,13 +58,10 @@ private def permutationRule : StructureRule unarySignature (Cat.of Permutations)
   view_faithful := ⟨by
     intro _ _ f g h
     exact Equiv.ext (fun x => congrArg (fun a : Fin 3 ⟶ Fin 3 => a x) h)⟩
-  monoidal := inferInstanceAs (MonoidalCategory (Type 0))
   input := permutationInputs
   positionalInput Γ := permutationProduct (Position Γ)
   inputIso _ := Iso.refl _
   unaryIso s := NatIso.ofComponents (fun _ => (unaryEquiv s).toIso) (fun _ => rfl)
-  nullaryIso := NatIso.ofComponents (fun _ => emptyEquiv.toIso) (fun _ => rfl)
-  consIso s Γ := NatIso.ofComponents (fun _ => (splitEquiv s Γ).toIso) (fun _ => rfl)
   total _ _ := ↾fun (xs : Position [()] → Fin 3) => xs ⟨(), .here⟩
   relation _ r := nomatch r
   domain _ p := nomatch p
@@ -96,6 +73,41 @@ private def permutationTheory : RealizationTheory where
   LawName := Empty
   Statement := Empty
   law := Empty.elim
+
+private def groupPositionInputs : (Γ : List Unit) → (Position Γ → Permutations) ⥤ Permutations
+  | [] => (Functor.const _).obj (SingleObj.star (Equiv.Perm (Fin 3)))
+  | s :: _ => Pi.eval (fun _ : Position (s :: _) => Permutations) ⟨s, .here⟩
+
+private def groupInputs (Γ : List Unit) : (Unit → Permutations) ⥤ Permutations :=
+  Pi.comap (fun _ : Unit => Permutations) (fun i : Position Γ => i.1) ⋙ groupPositionInputs Γ
+
+private def permutationGroupRule : StructureRule unarySignature (Cat.of Permutations) Unit where
+  carrier _ _ := SingleObj.star (Equiv.Perm (Fin 3))
+  Ambient := Cat.of Permutations
+  view := 𝟭 _
+  view_faithful := inferInstance
+  input := groupInputs
+  positionalInput := groupPositionInputs
+  inputIso _ := Iso.refl _
+  unaryIso _ := Iso.refl _
+  total _ _ := 𝟙 (SingleObj.star (Equiv.Perm (Fin 3)))
+  relation _ r := nomatch r
+  domain _ p := nomatch p
+  partialValue _ p := nomatch p
+  quantity _ q := nomatch q
+
+/-- The permutation category itself can support primitive diagrams, using the
+first declared position for nonempty inputs. -/
+def permutationGroupHomEquiv :
+    ((show permutationGroupRule.Category from ()) ⟶ (show permutationGroupRule.Category from ())) ≃
+      Equiv.Perm (Fin 3) where
+  toFun f := f.val ()
+  invFun σ := ⟨fun _ => σ, by
+    refine ⟨fun _ => ?_, nofun, nofun, nofun⟩
+    change 𝟙 (SingleObj.star (Equiv.Perm (Fin 3))) ≫ σ = σ ≫ 𝟙 _
+    rw [Category.id_comp, Category.comp_id]⟩
+  left_inv f := Subtype.ext (funext fun ⟨⟩ => rfl)
+  right_inv _ := rfl
 
 /-- The three-state unary identity realization takes permutations as its allowed maps. -/
 def threeStatePermutationMode (base : CoefficientRing) :

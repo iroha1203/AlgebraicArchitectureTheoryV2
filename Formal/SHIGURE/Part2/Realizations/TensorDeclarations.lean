@@ -87,8 +87,11 @@ structure TensorDeclarationContext {base : CoefficientRing.{u}} {P : PrimitivePr
     (D : TensorLawDeclarations base P) where
   /-- The dependency-closed primitive declaration context. -/
   primitives : DeclarationContext P
-  /-- The chosen primitives have no separate required positive declarations. -/
-  noPositiveRequirement : IsEmpty (DeclarationContext.Selected.presentation primitives).theory.LawName
+  /-- The symbols interpreted by the full-domain tensor structure. -/
+  fullDomain : FullDomainTensorSignature (DeclarationContext.Selected.signature primitives)
+  /-- A tensor reading of each original required Law retained from Part I. -/
+  positiveReading : ∀ l : (DeclarationContext.Selected.presentation primitives).theory.LawName,
+    TensorLawReading base fullDomain ((DeclarationContext.Selected.presentation primitives).theory.law l)
   /-- All tensor Law declarations retained by this context. -/
   retained : Set D.Name
   /-- Each retained equation can be evaluated in this primitive context. -/
@@ -104,44 +107,56 @@ variable (U : TensorDeclarationContext D)
 /-- Required tensor names are exactly the required declarations retained by the context. -/
 abbrev Required := {l : D.Name // l ∈ D.required ∧ l ∈ U.retained}
 
-/-- Each required name carries its original tensor statement and its dependency inclusion. -/
+/-- Together, the retained required names carry the compatible readings of Part I Laws and
+the original equations and scopes of native tensor declarations. -/
 def presentation : RealizationTheory.{u} where
   signature := DeclarationContext.Selected.signature U.primitives
-  LawName := U.Required
-  Statement := {law : ScopedTensorLaw base P // law.scope ≤ U.primitives}
-  law l := ⟨D.statement l.val, ((D.statement l.val).scope_le_iff_support U.primitives).mpr
-    (U.dependencies l.val l.property.2)⟩
+  LawName := (DeclarationContext.Selected.presentation U.primitives).theory.LawName ⊕ U.Required
+  Statement :=
+    letI := base.ring
+    TensorLaw base.Carrier (DeclarationContext.Selected.signature U.primitives) ⊕
+      {law : ScopedTensorLaw base P // law.scope ≤ U.primitives}
+  law
+    | .inl l => .inl (U.positiveReading l).equation
+    | .inr l => .inr ⟨D.statement l.val, ((D.statement l.val).scope_le_iff_support U.primitives).mpr
+        (U.dependencies l.val l.property.2)⟩
 
 /-- Interpret the written tensor Law on the actual structure restricted to its scope. -/
-def holds (S : CoefficientAlgebra base)
-    (A : TensorAt S.scalars (DeclarationContext.Selected.signature U.primitives))
-    (law : U.presentation.Statement) : Prop :=
+def holds (S : CoefficientAlgebra base) (A : TensorAt S.scalars U.presentation.signature) :
+    U.presentation.Statement → Prop :=
   letI := base.ring
   letI := S.scalars.ring
-  (law.val.equation.mapScalars S.fromBase).holds
-    (A.restrict (DeclarationContext.Selected.namesOfLE law.property))
+  fun
+    | .inl law => (law.mapScalars S.fromBase).holds A
+    | .inr law => (law.val.equation.mapScalars S.fromBase).holds
+        (A.restrict (DeclarationContext.Selected.namesOfLE law.property))
 
 /-- The coefficient mode of the closed tensor declarations. -/
-def mode (scope : FullDomainTensorSignature U.presentation.signature)
-    (rule : TensorCoefficientRule U.presentation.signature) :
+def mode (rule : TensorCoefficientRule U.presentation.signature) :
     CoefficientRealizationMode base U.presentation :=
-  tensorModeOfPresentation base U.presentation scope rule U.holds
+  tensorModeOfPresentation base U.presentation U.fullDomain rule U.holds
 
 end TensorDeclarationContext
 
 /-- The semantic category with exactly the written tensor Laws retained by the context. -/
 abbrev SelectedTensorModels {base : CoefficientRing.{u}} {P : PrimitivePresentation.{u}}
-    {D : TensorLawDeclarations base P} (U : TensorDeclarationContext D) (S : CoefficientAlgebra base)
-    (scope : FullDomainTensorSignature U.presentation.signature)
-    (rule : TensorCoefficientRule U.presentation.signature) :=
-  (U.mode scope rule).Models S
+    {D : TensorLawDeclarations base P} (U : TensorDeclarationContext D) (S : CoefficientAlgebra base) :=
+  TensorModelsAt U.presentation S U.fullDomain (U.holds S)
 
 /-- A model in the selected category satisfies the actual equation at each required name. -/
 theorem selectedTensorModel_holds {base : CoefficientRing.{u}} {P : PrimitivePresentation.{u}}
     {D : TensorLawDeclarations base P} {U : TensorDeclarationContext D} {S : CoefficientAlgebra base}
-    {scope : FullDomainTensorSignature U.presentation.signature}
-    {rule : TensorCoefficientRule U.presentation.signature} (A : SelectedTensorModels U S scope rule)
-    (l : U.Required) : U.holds S A.obj (U.presentation.law l) :=
-  A.property.2 l
+    (A : SelectedTensorModels U S) (l : U.Required) :
+    U.holds S A.obj (U.presentation.law (.inr l)) :=
+  A.property.2 (.inr l)
+
+/-- The same object also satisfies each retained required Law written in Part I. -/
+theorem selectedTensorModel_holds_positive {base : CoefficientRing.{u}} {P : PrimitivePresentation.{u}}
+    {D : TensorLawDeclarations base P} {U : TensorDeclarationContext D} {S : CoefficientAlgebra base}
+    (A : SelectedTensorModels U S) (l : (DeclarationContext.Selected.presentation U.primitives).theory.LawName) :
+    letI := S.scalars.ring
+    ((DeclarationContext.Selected.presentation U.primitives).theory.law l).Holds
+      (A.obj.elementStructure U.fullDomain) :=
+  ((U.positiveReading l).correct S A.obj).mp (A.property.2 (.inl l))
 
 end SHIGURE

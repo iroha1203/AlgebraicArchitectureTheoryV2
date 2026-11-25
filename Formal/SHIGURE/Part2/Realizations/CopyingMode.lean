@@ -174,18 +174,29 @@ def copyingStructureRule (sig : Signature.{u}) (S : Scheme.{u}) :
   Ambient := Cat.of (ZariskiSheaf S)
   view := 𝟭 _
   view_faithful := inferInstance
-  monoidal := inferInstanceAs (MonoidalCategory (ZariskiSheaf S))
   input := copyingInputs S
   positionalInput Γ := copyingPositionInputs S ((s : sig.SortType) × Var Γ s)
   inputIso := copyingInputIso S
   unaryIso := copyingUnaryIso S
-  nullaryIso := copyingNullaryIso S _
-  consIso := copyingConsIso S
   total := SheafStructure.total
   relation A r := realizedPredicate (A.relation r)
   domain A p := realizedPredicate (A.partialDomain p)
   partialValue := SheafStructure.partialValue
   quantity := SheafStructure.quantity
+
+/-- A nullary copying input is the terminal sheaf. -/
+def copyingStructureRule_nullaryIso (sig : Signature.{u}) (S : Scheme.{u}) :
+    (copyingStructureRule sig S).input [] ≅
+      (Functor.const (sig.SortType → ZariskiSheaf S)).obj (𝟙_ (ZariskiSheaf S)) :=
+  copyingNullaryIso S _
+
+/-- A copying input with one more position is the Cartesian product with its carrier. -/
+def copyingStructureRule_consIso (sig : Signature.{u}) (S : Scheme.{u}) (s : sig.SortType)
+    (Γ : List sig.SortType) :
+    (copyingStructureRule sig S).input (s :: Γ) ≅
+      ((CategoryTheory.Pi.eval (fun _ : sig.SortType => ZariskiSheaf S) s).prod'
+        ((copyingStructureRule sig S).input Γ)) ⋙ MonoidalCategory.tensor (ZariskiSheaf S) :=
+  copyingConsIso S s Γ
 
 private theorem predicate_le_of_factor {S : Scheme.{u}} {F G : ZariskiSheaf S}
     {P : SheafPredicate F} {Q : SheafPredicate G} {f : F ⟶ G}

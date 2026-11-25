@@ -1,6 +1,5 @@
 import Formal.SHIGURE.Part1.Signature
 import Mathlib.CategoryTheory.Category.Cat
-import Mathlib.CategoryTheory.Monoidal.Category
 import Mathlib.CategoryTheory.Pi.Basic
 import Mathlib.CategoryTheory.Subobject.MonoOver
 
@@ -17,14 +16,12 @@ the commutativity and factorization equations of (2.1).
 The carrier category specifies the allowed maps of states. A faithful
 functor displays those maps in the category where primitive diagrams are
 formed. For example, permutations may be the allowed maps even though the
-inputs of operations and the states of points are formed in sets. The
-monoidal category belongs to the diagram side. The input functor uses
-the chosen representation of a mode, with comparisons at the declared
-positions and with the unit and repeated monoidal product.
+inputs of operations and the states of points are formed in sets. A mode
+constructs its inputs from the declared positions. The copying and tensor
+modes supply their respective comparisons with Cartesian and tensor products.
 -/
 
 open CategoryTheory
-open scoped MonoidalCategory
 
 universe u v w t h d
 
@@ -40,8 +37,6 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
   view : C ⥤ Ambient
   /-- The displayed action determines the original allowable carrier arrow. -/
   view_faithful : view.Faithful
-  /-- The monoidal structure in which the primitive inputs are combined. -/
-  monoidal : MonoidalCategory Ambient
   /-- The chosen representation of input objects and input maps. -/
   input (Γ : List sig.SortType) : (sig.SortType → C) ⥤ Ambient
   /-- The combination of carriers at precisely the variable positions of an arity. -/
@@ -52,15 +47,6 @@ structure StructureRule (sig : Signature.{u}) (C : Cat.{v, w}) (Object : Type t)
       positionalInput Γ
   /-- A single input is naturally the carrier of its declared sort. -/
   unaryIso (s : sig.SortType) : input [s] ≅ Pi.eval (fun _ : sig.SortType => C) s ⋙ view
-  /-- The empty input is the unit of the chosen monoidal category. -/
-  nullaryIso :
-    letI := monoidal
-    input [] ≅ (Functor.const (sig.SortType → C)).obj (𝟙_ Ambient)
-  /-- Every further input attaches its specified carrier by the chosen monoidal product. -/
-  consIso (s : sig.SortType) (Γ : List sig.SortType) :
-    letI := monoidal
-    input (s :: Γ) ≅ ((Pi.eval (fun _ : sig.SortType => C) s ⋙ view).prod' (input Γ)) ⋙
-      MonoidalCategory.tensor Ambient
   /-- A total operation from its entire input object. -/
   total (A : Object) (f : sig.Total) : (input (sig.totalArity f).inputs).obj (carrier A) ⟶
     view.obj (carrier A (sig.totalArity f).output)
