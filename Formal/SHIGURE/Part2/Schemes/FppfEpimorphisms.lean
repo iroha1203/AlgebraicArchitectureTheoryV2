@@ -21,8 +21,9 @@ universe u v
 
 variable {X Y : Scheme.{u}}
 
-/-- On an affine open, a cokernel of maps of modules with tilde
-presentations is the tilde of the cokernel of the corresponding map. -/
+/-- Affine presentation API for Appendix B.3. The tilde presentations of
+both endpoints on the given affine open determine a coefficient map. Its
+cokernel presents the restriction of the actual sheaf cokernel. -/
 theorem HasTildeOn.cokernel {M N : X.Modules} (f : M ⟶ N) {U : X.Opens} {hU : IsAffineOpen U}
     (m : HasTildeOn M hU) (n : HasTildeOn N hU) : HasTildeOn (cokernel f) hU := by
   obtain ⟨P, ⟨e⟩⟩ := m
@@ -36,21 +37,29 @@ theorem HasTildeOn.cokernel {M N : X.Modules} (f : M ⟶ N) {U : X.Opens} {hU : 
   exact ⟨Limits.cokernel g, ⟨PreservesCokernel.iso T g ≪≫
     cokernel.mapIso (T.map g) (S.map f) e e' comm ≪≫ (PreservesCokernel.iso S f).symm⟩⟩
 
-/-- The ambient sheaf cokernel of a map of quasi-coherent modules is quasi-coherent. -/
+/-- The affine presentation criterion in Appendix B.3 gives quasi-coherence
+of the ambient sheaf cokernel from quasi-coherence of both endpoints.
+This closure property supplies the target for descent of the cokernel map. -/
 theorem IsQuasiCoherentModule.cokernel {M N : X.Modules} (f : M ⟶ N)
     (m : IsQuasiCoherentModule M) (n : IsQuasiCoherentModule N) : IsQuasiCoherentModule (cokernel f) :=
   fun U => HasTildeOn.cokernel f (m U) (n U)
 
-/-- The actual module sheaf pullback preserves epimorphisms along every scheme map. -/
+/-- Preservation direction of the surjectivity criterion of Lemma B.5 on
+schemes. The actual sheaf pullback along any scheme map is left adjoint to
+pushforward, so it preserves an epimorphism of module sheaves. This uses
+the right exactness underlying the affine cokernel comparison in Lemma B.3. -/
 theorem epi_modulePullback {M N : X.Modules} (f : M ⟶ N) (g : Y ⟶ X) [Epi f] :
     Epi ((Scheme.Modules.pullback g).map f) :=
   inferInstance
 
+/-- The quasi-coherent fiber used to detect equality of the two ambient sheaf maps. -/
 private abbrev Q := quasiCoherentModulesPseudofunctor.{u}
 
 set_option maxHeartbeats 100000 in
-/-- A map between quasi-coherent modules is an epimorphism of sheaves if
-its actual pullback is an epimorphism on every original fppf component. -/
+/-- Reflection direction of the surjectivity criterion of Lemma B.5 for
+an original fppf family as in Appendix B.3. Quasi-coherence of the endpoints
+allows the cokernel map to be compared by fppf descent of morphisms. The
+epimorphism on each chart forces the pullback of that map to vanish. -/
 theorem epi_of_fppfModulePullbacks {M N : X.Modules} (f : M ⟶ N)
     (m : IsQuasiCoherentModule M) (n : IsQuasiCoherentModule N) (cover : FppfCover.{u,v} X)
     (localEpi : ∀ i, Epi ((Scheme.Modules.pullback (cover.f i)).map f)) : Epi f := by
@@ -73,8 +82,9 @@ theorem epi_of_fppfModulePullbacks {M N : X.Modules} (f : M ⟶ N)
     exact image
   exact Abelian.epi_of_cokernel_π_eq_zero f (congrArg (fun t : N' ⟶ P' => t.hom) (K.map_injective h))
 
-/-- Being an epimorphism of quasi-coherent sheaves can be checked on the
-original components of an arbitrary fppf covering family. -/
+/-- The public surjectivity criterion of Lemma B.5 on the fppf site of
+Appendix B.3. For a map of quasi-coherent sheaves, being an epimorphism is
+equivalent to being one on each original component of the given cover. -/
 theorem epi_iff_fppfModulePullbacks {M N : X.Modules} (f : M ⟶ N)
     (m : IsQuasiCoherentModule M) (n : IsQuasiCoherentModule N) (cover : FppfCover.{u,v} X) :
     Epi f ↔ ∀ i, Epi ((Scheme.Modules.pullback (cover.f i)).map f) :=
