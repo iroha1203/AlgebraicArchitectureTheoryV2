@@ -3839,6 +3839,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 -- Regular coefficient extensions and their finite stages in Chapter 5.
 #shigure_assert_standard_axioms_of [
   Quantities.ScalarOperation,
+  Quantities.ScalarOperation.natTransEquiv,
   Quantities.polynomialOperation,
   Quantities.operationPolynomial,
   Quantities.polynomialOperationEquiv,

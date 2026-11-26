@@ -1,4 +1,6 @@
 import Formal.SHIGURE.Part2.AffineFoundations
+import Mathlib.Algebra.Category.CommAlgCat.Basic
+import Mathlib.CategoryTheory.Yoneda
 
 /-!
 # Natural scalar operations and regular extensions
@@ -23,6 +25,8 @@ noncomputable section
 
 namespace SHIGURE.Quantities
 
+open CategoryTheory Opposite
+
 /-- A scalar operation on the given tuple of variables, natural over all coefficient algebras. -/
 @[ext]
 structure ScalarOperation (C : Type u) [CommRing C] (X : Type u) where
@@ -31,6 +35,40 @@ structure ScalarOperation (C : Type u) [CommRing C] (X : Type u) where
   /-- Algebra maps commute with the operation on all tuples. -/
   natural {R S : Type u} [CommRing R] [CommRing S] [Algebra C R] [Algebra C S]
     (f : R →ₐ[C] S) (x : X → R) : f (run x) = run (fun i => f (x i))
+
+/-- The explicit family of scalar operations is equivalent to natural transformations
+from the tuple functor represented by the free coefficient algebra. -/
+def ScalarOperation.natTransEquiv (C X : Type u) [CommRing C] :
+    ScalarOperation C X ≃
+      (coyoneda.obj (op (CommAlgCat.of C (MvPolynomial X C))) ⟶ forget (CommAlgCat.{u} C)) where
+  toFun f :=
+    { app := fun R => ↾fun g => f.run (R := R) (polynomialPointEquiv g.hom)
+      naturality := fun {_ _} g => by
+        ext a
+        change f.run (polynomialPointEquiv (g.hom.comp a.hom)) = g.hom (f.run (polynomialPointEquiv a.hom))
+        rw [polynomialPointEquiv_natural]
+        exact (f.natural g.hom (polynomialPointEquiv a.hom)).symm }
+  invFun t :=
+    { run {R} _ _ x := t.app (CommAlgCat.of C R) (CommAlgCat.ofHom (polynomialPointEquiv.symm x))
+      natural := by
+        intro R S _ _ _ _ g x
+        have eq : polynomialPointEquiv.symm (fun i => g (x i)) =
+            g.comp (polynomialPointEquiv.symm x : MvPolynomial X C →ₐ[C] R) := by
+          apply polynomialPointEquiv.injective
+          rw [Equiv.apply_symm_apply, polynomialPointEquiv_natural, Equiv.apply_symm_apply]
+          rfl
+        rw [eq]
+        exact (congrArg (fun h => h (CommAlgCat.ofHom (polynomialPointEquiv.symm x)))
+          (t.naturality (CommAlgCat.ofHom g))).symm }
+  left_inv f := by
+    apply ScalarOperation.ext
+    funext R _ _ x
+    change f.run (polynomialPointEquiv (polynomialPointEquiv.symm x)) = f.run x
+    rw [Equiv.apply_symm_apply]
+  right_inv t := by
+    ext R a
+    change t.app R (CommAlgCat.ofHom (polynomialPointEquiv.symm (polynomialPointEquiv a.hom))) = t.app R a
+    rw [Equiv.symm_apply_apply, CommAlgCat.ofHom_hom]
 
 variable {C X : Type u} [CommRing C]
 
