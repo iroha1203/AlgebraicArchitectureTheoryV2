@@ -135,30 +135,27 @@ private theorem nativeInput_iff_domain (l : (written.selection Full).laws)
   exact ⟨And.right, fun input => ⟨trivial, input⟩⟩
 
 private def fixedState : written.FixedState ambient selectedDomain where
-  guard l B same e := by
+  guard l B same _ e := by
     change ambient.evaluation.holds guard (Set.subset_univ _) e ↔ B.holds guard (Set.subset_univ _) e
     rw [guard_iff_domain ambient.evaluation ambient.structural, guard_iff_domain B same.structural]
     exact and_congr (same.relation () (Set.mem_univ _) e) (same.domain () (Set.mem_univ _) e)
-  argument l _ same e a := by
+  argument l _ same _ e a := by
     intro s i y
     apply same.toSameStateEvaluation.evaluates_iff
     obtain ⟨⟨application, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨application, support⟩
     trivial
 
-private def reading : written.GuardedInterpretation ambient where
-  selectedDomain := selectedDomain
-  fixedState := fixedState
-  value l e a := by
+private def reading : written.GuardedInterpretation ambient :=
+  NamedWrittenLaws.GuardedInterpretation.ofFixedState written fixedState (fun l e a => by
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
-    exact ⟨e.val, (nativeInput_iff_domain l e.val).mp e.property, Set.mem_univ _⟩
-  argument l e a := by
+    exact ⟨e.val, (nativeInput_iff_domain l e.val).mp e.property, Set.mem_univ _⟩) (fun l e a => by
     intro s i
     apply (fixedState.argument_evaluates_iff l e a i _).mpr
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
-    rfl
+    rfl)
 
 private abbrev interpreted := reading.toInterpretation
 
@@ -226,7 +223,8 @@ theorem named_law_rejects_zero :
     ¬ interpreted.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
   intro holds
   have input := (named_law_input_iff_fixed_domain true).mpr rfl
-  have eq := holds l ⟨point true, input⟩
+  have native : point true ∈ written.nativeInput ambient l := (fixedState.input_eq_native l) ▸ input
+  have eq := holds l ⟨point true, native⟩
   simp only [WrittenLaws.DeclarationSelection.Interpretation.presentation, NamedWrittenLaws.written,
     Expression.eval_compile_const] at eq
   rw [equation_eq l.val] at eq

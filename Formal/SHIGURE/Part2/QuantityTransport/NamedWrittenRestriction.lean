@@ -146,16 +146,16 @@ structure SameFixedState (A : ContextStructure U)
 /-- The actual state determines the antecedents and argument values. A
 replacement must still interpret its graphs as functions on the same domains. -/
 structure FixedState (A : ContextStructure U)
-    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :
-    Prop where
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val)))
+    (admissible : RestrictedEvaluation U A.carrier → Prop := fun _ => True) : Prop where
   /-- Replacing quantity values preserves the truth of the original antecedent. -/
   guard (l : (L.selection U).laws) (B : RestrictedEvaluation U A.carrier) (same : L.SameFixedState A selected B)
-    (e : Assignment A.carrier (L.written.inputContext l.val)) :
+    (allowed : admissible B) (e : Assignment A.carrier (L.written.inputContext l.val)) :
     e ∈ L.nativeInput A l ↔ B.holds (P.theory.law l.val.val).input
       (lawInputSupport (Declaration.lawBody_subset_of_mem l.property)) e
   /-- A state argument has the same evaluation on each actual Law input. -/
   argument (l : (L.selection U).laws) (B : RestrictedEvaluation U A.carrier) (same : L.SameFixedState A selected B)
-    (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val)
+    (allowed : admissible B) (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val)
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s)
     (y : A.carrier s) :
     let t := (L.selection U).applicationTerm l a i
@@ -171,46 +171,46 @@ theorem FixedState.ofSyntax {L : NamedWrittenLaws k P} (A : ContextStructure U)
       {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s),
       StateTerm (QuantityDeclaration.operation '' L.quantities) ((L.selection U).applicationTerm l a i).val) :
     L.FixedState A selected where
-  guard l _ same e := same.toSameStateEvaluation.holds_iff _ (guard l) _ e
-  argument l _ same e a := by
+  guard l _ same _ e := same.toSameStateEvaluation.holds_iff _ (guard l) _ e
+  argument l _ same _ e a := by
     intro s i y
     exact same.toSameStateEvaluation.evaluates_iff _ (argument l a i) e.val y
 
--- The witness used to inhabit the output type is a proof; the chosen value
--- depends only on the type and its inhabitation, not on the original value.
-private def fixedOutput {T : Type u} (witness : T) : T :=
-  Classical.choice (show Nonempty T from ⟨witness⟩)
+/-- A family of values at the designated native quantity coordinates. -/
+abbrev SelectedOutput (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :=
+  ∀ j : (L.selection U).quantities, L.fixedDomain A selected j → A.carrier j.val.val.operation.arity.output
 
-private def fixedStateStructure (A : ContextStructure U)
-    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :
-    RestrictedStructure U := by
+private def candidateStructure (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val)))
+    (value : L.SelectedOutput A selected) : RestrictedStructure U := by
   classical
   exact { A.toRestrictedStructure with
     quantity := fun q keep e =>
       if chosen : QuantityDeclaration.total q ∈ L.quantities then
-        if e ∈ selected ⟨⟨.total q, chosen⟩, keep⟩ then
-          fixedOutput (A.toRestrictedStructure.quantity q keep e)
+        if present : e ∈ selected ⟨⟨.total q, chosen⟩, keep⟩ then
+          value ⟨⟨.total q, chosen⟩, keep⟩ ⟨e, present⟩
         else A.toRestrictedStructure.quantity q keep e
       else A.toRestrictedStructure.quantity q keep e
     partialValue := fun p keep e =>
       if chosen : QuantityDeclaration.partialOp p ∈ L.quantities then
-        if e.val ∈ selected ⟨⟨.partialOp p, chosen⟩, keep⟩ then
-          fixedOutput (A.toRestrictedStructure.partialValue p keep e)
+        if present : e.val ∈ selected ⟨⟨.partialOp p, chosen⟩, keep⟩ then
+          value ⟨⟨.partialOp p, chosen⟩, keep⟩ ⟨e.val, e.property, present⟩
         else A.toRestrictedStructure.partialValue p keep e
       else A.toRestrictedStructure.partialValue p keep e }
 
-/-- Evaluate using fixed representatives at the selected inputs. This preserves
-the original domains and the graph axioms used by definedness tests. -/
-def fixedStateEvaluation (A : ContextStructure U)
-    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :
-    RestrictedEvaluation U A.carrier :=
-  (L.fixedStateStructure A selected).evaluation
+/-- Replace only the output at each designated coordinate, preserving its native domain. -/
+def candidateEvaluation (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val)))
+    (value : L.SelectedOutput A selected) : RestrictedEvaluation U A.carrier :=
+  (L.candidateStructure A selected value).evaluation
 
 /-- The representative evaluation preserves the actual domains and all unselected values. -/
-theorem fixedStateEvaluation_agrees (A : ContextStructure U)
-    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :
-    L.SameFixedState A selected (L.fixedStateEvaluation A selected) where
-  structural := (L.fixedStateStructure A selected).evaluation_structural
+theorem candidateEvaluation_agrees (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val)))
+    (value : L.SelectedOutput A selected) :
+    L.SameFixedState A selected (L.candidateEvaluation A selected value) where
+  structural := (L.candidateStructure A selected value).evaluation_structural
   relation _ _ _ := Iff.rfl
   domain _ _ _ := Iff.rfl
   graph op fixed keep x y := by
@@ -220,12 +220,12 @@ theorem fixedStateEvaluation_agrees (A : ContextStructure U)
     | quantity q =>
       have notChosen : QuantityDeclaration.total q ∉ L.quantities :=
         fun chosen => fixed ⟨.total q, chosen, rfl⟩
-      simp [fixedStateEvaluation, fixedStateStructure, RestrictedStructure.evaluation_graph,
+      simp [candidateEvaluation, candidateStructure, RestrictedStructure.evaluation_graph,
         RestrictedStructure.graph_quantity_iff, notChosen]
     | partialOp p =>
       have notChosen : QuantityDeclaration.partialOp p ∉ L.quantities :=
         fun chosen => fixed ⟨.partialOp p, chosen, rfl⟩
-      simp [fixedStateEvaluation, fixedStateStructure, RestrictedStructure.evaluation_graph,
+      simp [candidateEvaluation, candidateStructure, RestrictedStructure.evaluation_graph,
         RestrictedStructure.graph_partial_iff, notChosen]
   outside j x unselected y := by
     rw [← A.toRestrictedStructure_evaluation]
@@ -233,16 +233,82 @@ theorem fixedStateEvaluation_agrees (A : ContextStructure U)
     cases q with
     | total q =>
       have absent : x ∉ selected ⟨⟨.total q, chosen⟩, keep⟩ := unselected
-      simp [QuantityDeclaration.operation, fixedStateEvaluation, fixedStateStructure,
+      simp [QuantityDeclaration.operation, candidateEvaluation, candidateStructure,
         RestrictedStructure.evaluation_graph, RestrictedStructure.graph_quantity_iff, chosen, absent]
     | partialOp p =>
       simp only [QuantityDeclaration.operation, RestrictedStructure.evaluation_graph,
-        RestrictedStructure.graph_partial_iff, fixedStateEvaluation, fixedStateStructure, dif_pos chosen]
+        RestrictedStructure.graph_partial_iff, candidateEvaluation, candidateStructure, dif_pos chosen]
       apply exists_congr
       intro defined
       have absent : x ∉ selected ⟨⟨.partialOp p, chosen⟩, keep⟩ :=
         fun present => unselected ⟨defined, present⟩
-      simp only [if_neg absent]
+      simp only [dif_neg absent]
+
+/-- The structural candidate has precisely the supplied output at every selected coordinate. -/
+theorem candidateEvaluation_graph (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val)))
+    (value : L.SelectedOutput A selected)
+    (j : (L.selection U).quantities) (x : L.fixedDomain A selected j) :
+    (L.candidateEvaluation A selected value).graph j.val.val.operation j.property x.val (value j x) := by
+  rcases j with ⟨⟨q, chosen⟩, keep⟩
+  cases q with
+  | total q =>
+    have present : x.val ∈ selected ⟨⟨.total q, chosen⟩, keep⟩ := x.property
+    simp [QuantityDeclaration.operation, candidateEvaluation, candidateStructure,
+      RestrictedStructure.evaluation_graph, RestrictedStructure.graph_quantity_iff, chosen, present]
+  | partialOp p =>
+    have domain := x.property.1
+    have present := x.property.2
+    simp only [QuantityDeclaration.operation, candidateEvaluation, RestrictedStructure.evaluation_graph,
+      RestrictedStructure.graph_partial_iff]
+    exact ⟨domain, by simp [candidateStructure, chosen, present]⟩
+
+/-- Independent scalar values at the selected coordinates. -/
+abbrev ScalarCandidate (R : Type u) (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :=
+  (j : (L.selection U).quantities) → L.fixedDomain A selected j → R
+
+/-- A faithful native encoding of scalars at each selected coordinate. -/
+abbrev NativeEncoding (R : Type u) (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :=
+  (j : (L.selection U).quantities) → L.fixedDomain A selected j → R ↪ A.carrier j.val.val.operation.arity.output
+
+/-- The candidate evaluation uses the encoded scalar values in its actual graphs. -/
+def RepresentsScalars {R : Type u} {A : ContextStructure U}
+    {selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))}
+    (encode : L.NativeEncoding R A selected) (q : L.ScalarCandidate R A selected)
+    (B : RestrictedEvaluation U A.carrier) : Prop :=
+  ∀ j x, B.graph j.val.val.operation j.property x.val (encode j x (q j x))
+
+/-- Every scalar candidate can be evaluated with its prescribed native encoding. -/
+theorem candidateEvaluation_represents {R : Type u} {A : ContextStructure U}
+    {selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))}
+    (encode : L.NativeEncoding R A selected) (q : L.ScalarCandidate R A selected) :
+    L.RepresentsScalars encode q
+      (L.candidateEvaluation A selected (fun j x => encode j x (q j x))) :=
+  L.candidateEvaluation_graph A selected _
+
+private theorem outputNonempty (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val)))
+    (j : (L.selection U).quantities) (x : L.fixedDomain A selected j) :
+    Nonempty (A.carrier j.val.val.operation.arity.output) := by
+  rcases j with ⟨⟨q, chosen⟩, keep⟩
+  cases q with
+  | total q => exact ⟨A.toRestrictedStructure.quantity q keep x.val⟩
+  | partialOp p => exact ⟨A.toRestrictedStructure.partialValue p keep ⟨x.val, x.property.1⟩⟩
+
+/-- Evaluate using fixed representatives at the selected inputs. The choice
+at each coordinate depends only on the output type and its inhabitation. -/
+def fixedStateEvaluation (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :
+    RestrictedEvaluation U A.carrier :=
+  L.candidateEvaluation A selected fun j x => Classical.choice (L.outputNonempty A selected j x)
+
+/-- The fixed representative is a structural evaluation of the original state. -/
+theorem fixedStateEvaluation_agrees (A : ContextStructure U)
+    (selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))) :
+    L.SameFixedState A selected (L.fixedStateEvaluation A selected) :=
+  L.candidateEvaluation_agrees A selected _
 
 /-- Evaluate a retained antecedent on the fixed state. -/
 def fixedStateInput (A : ContextStructure U)
@@ -257,7 +323,7 @@ theorem FixedState.input_eq_native {L : NamedWrittenLaws k P} {A : ContextStruct
     {selected : ∀ j : (L.selection U).quantities, Set (Assignment A.carrier (L.written.domainContext j.val))}
     (S : L.FixedState A selected) (l : (L.selection U).laws) :
     L.fixedStateInput A selected l = L.nativeInput A l :=
-  Set.ext fun e => (S.guard l _ (L.fixedStateEvaluation_agrees A selected) e).symm
+  Set.ext fun e => (S.guard l _ (L.fixedStateEvaluation_agrees A selected) trivial e).symm
 
 /-- Evaluate a retained term on the fixed state, keeping its original typed arguments. -/
 def fixedStateEvaluatesArgument (A : ContextStructure U)
@@ -276,32 +342,73 @@ theorem FixedState.argument_evaluates_iff {L : NamedWrittenLaws k P} {A : Contex
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s)
     (y : A.carrier s) :
     L.fixedStateEvaluatesArgument A selected l a i e.val y ↔ A.evaluates ((L.selection U).applicationTerm l a i) e.val y :=
-  (S.argument l _ (L.fixedStateEvaluation_agrees A selected) e a i y).symm
+  (S.argument l _ (L.fixedStateEvaluation_agrees A selected) trivial e a i y).symm
 
-/-- Prescribed quantity domains and evaluated arguments at the actual guards. -/
+/-- Read the registered coefficient Law at the fixed source state. Candidates
+take values in the coefficient algebra, independently of the native output
+carrier. Each application reads its actual state terms on the original input. -/
 structure GuardedInterpretation (A : ContextStructure U) where
   /-- The prescribed inputs at which each retained quantity varies. -/
   selectedDomain (j : (L.selection U).quantities) : Set (Assignment A.carrier (L.written.domainContext j.val))
-  /-- The original guards and term values are stable under replacement at those inputs. -/
-  fixedState : L.FixedState A selectedDomain
   /-- Evaluate each used application at a genuine input of its registered Law. -/
   value (l : (L.selection U).laws) (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val) :
     L.fixedDomain A selectedDomain ((L.selection U).applicationQuantity l a)
-  /-- Each stored argument is read by evaluating the original typed term on the fixed state. -/
+  /-- Each stored argument is the value of the original typed term in the source state. -/
   argument (l : (L.selection U).laws) (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val)
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s) :
-    L.fixedStateEvaluatesArgument A selectedDomain l a i e.val ((value l e a).val i)
+    A.evaluates ((L.selection U).applicationTerm l a i) e.val ((value l e a).val i)
 
-/-- Read the prescribed values and the actual original antecedent as a written interpretation. -/
+/-- A candidate-independent evaluation also yields a reading of the actual source state. -/
+def GuardedInterpretation.ofFixedState {A : ContextStructure U}
+    {selected : ∀ j : (L.selection U).quantities,
+      Set (Assignment A.carrier (L.written.domainContext j.val))}
+    (S : L.FixedState A selected)
+    (value : ∀ (l : (L.selection U).laws) (_ : L.nativeInput A l) (a : L.written.UsedOccurrence l.val),
+      L.fixedDomain A selected ((L.selection U).applicationQuantity l a))
+    (argument : ∀ (l : (L.selection U).laws) (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val)
+      {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s),
+      L.fixedStateEvaluatesArgument A selected l a i e.val ((value l e a).val i)) :
+    L.GuardedInterpretation A where
+  selectedDomain := selected
+  value := value
+  argument l e a := by
+    intro s i
+    exact (S.argument_evaluates_iff l e a i _).mp (argument l e a i)
+
+/-- Read the prescribed coordinates and the actual original antecedent. -/
 def GuardedInterpretation.toInterpretation {A : ContextStructure U} (I : L.GuardedInterpretation A) :
     (L.selection U).Interpretation A where
   domain := L.fixedDomain A I.selectedDomain
-  input := L.fixedStateInput A I.selectedDomain
-  value l e := I.value l ⟨e.val, (I.fixedState.input_eq_native l) ▸ e.property⟩
-  argument l e a := by
-    intro s i
-    let input : L.nativeInput A l := ⟨e.val, (I.fixedState.input_eq_native l) ▸ e.property⟩
-    exact (I.fixedState.argument_evaluates_iff l input a i _).mp (I.argument l input a i)
+  input := L.nativeInput A
+  value := I.value
+  argument := I.argument
+
+/-- The abstract source input agrees with the antecedent in every represented
+scalar candidate, when the original antecedent is invariant on those candidates. -/
+theorem GuardedInterpretation.nativeCandidateInput {R : Type u} {A : ContextStructure U}
+    (I : L.GuardedInterpretation A) (encode : L.NativeEncoding R A I.selectedDomain)
+    (S : L.FixedState A I.selectedDomain (fun B => ∃ q, L.RepresentsScalars encode q B))
+    (l : (L.selection U).laws) (q : L.ScalarCandidate R A I.selectedDomain)
+    (B : RestrictedEvaluation U A.carrier) (same : L.SameFixedState A I.selectedDomain B)
+    (represents : L.RepresentsScalars encode q B) :
+    I.toInterpretation.input l = {e | B.holds (P.theory.law l.val.val).input
+      (lawInputSupport (Declaration.lawBody_subset_of_mem l.property)) e} :=
+  Set.ext fun e => S.guard l B same ⟨q, represents⟩ e
+
+/-- The registered application arguments are also evaluated correctly in
+each candidate realizing the chosen native encoding. -/
+theorem GuardedInterpretation.nativeCandidateArgument {R : Type u} {A : ContextStructure U}
+    (I : L.GuardedInterpretation A) (encode : L.NativeEncoding R A I.selectedDomain)
+    (S : L.FixedState A I.selectedDomain (fun B => ∃ q, L.RepresentsScalars encode q B))
+    (l : (L.selection U).laws) (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val)
+    {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s)
+    (q : L.ScalarCandidate R A I.selectedDomain)
+    (B : RestrictedEvaluation U A.carrier) (same : L.SameFixedState A I.selectedDomain B)
+    (represents : L.RepresentsScalars encode q B) :
+    let t := (L.selection U).applicationTerm l a i
+    B.holds t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)
+      (Assignment.cons ((I.value l e a).val i) e.val) :=
+  (S.argument l B same ⟨q, represents⟩ e a i _).mp (I.argument l e a i)
 
 /-- The reduct of a guarded interpretation evaluates the original antecedents in the reduced state. -/
 theorem restrict_input_eq_native {A : ContextStructure U} (I : L.GuardedInterpretation A) (inside : V ≤ U)
@@ -309,8 +416,7 @@ theorem restrict_input_eq_native {A : ContextStructure U} (I : L.GuardedInterpre
     (I.toInterpretation.restrict (L.inclusion inside)).input l = L.nativeInput (A.restrict inside) l := by
   rw [I.toInterpretation.restrict_input]
   change {e | A.restrictAssignmentEquiv inside ((L.selection V).inputSorts l.property) e ∈
-    L.fixedStateInput A I.selectedDomain (Set.inclusion (L.inclusion inside).laws l)} = L.nativeInput (A.restrict inside) l
-  rw [I.fixedState.input_eq_native]
+    L.nativeInput A (Set.inclusion (L.inclusion inside).laws l)} = L.nativeInput (A.restrict inside) l
   exact Set.ext fun e => (L.nativeInput_restrict_iff A inside l e).symm
 
 /-- The application type used by the actual selected registration at this Law. -/
