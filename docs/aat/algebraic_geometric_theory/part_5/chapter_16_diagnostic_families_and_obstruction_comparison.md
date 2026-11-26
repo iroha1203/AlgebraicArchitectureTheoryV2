@@ -1123,4 +1123,4 @@ g^{-1}\mathscr D_{\mathrm{sp},B}\cong\mathscr D_{\mathrm{sp},B'}
 
 原始式のスカラー値が基底変更で不変な場合も、構成16.8は同じ手続きで商上へ降りる。$`A_{11}`$ のような非不変成分を読む場合は、フレームまたはそれに相当するベクトル・共変ベクトルの指定を残す。値域を同時に変更する表示では、その値域同型と合成条件を指定してから制限を比較する。この条件と具体例は付録DのD.5節で与えた。
 
-[次章：観測の十分性と選択](../part_6/chapter_20_observation_sufficiency_and_selection.md)
+[次章：出現の同定と観測語彙](../part_6/chapter_17_occurrence_identity_and_observation_vocabulary.md)

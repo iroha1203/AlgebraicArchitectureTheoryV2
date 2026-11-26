@@ -714,6 +714,6 @@ H(a+Tt_0)=0,\qquad HTG=0
 **例20.27（候補をすべて公開しても不足する場合）.**
 局所候補を $`k^2`$、評価を $`e(x,y)=y`$、初期公開値とすべての追加候補を第一成分の読取りとする。$`(0,0)`$ と $`(0,1)`$ は全候補で一致するが評価が異なるため、対応する分離集合は空である。有限個の読取り候補があることと、十分な補完を作れることは別の条件である。
 
-[前章](../part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md) ·
+[前章：観測の改訂・無効化範囲と多源統合](chapter_19_observation_revision_and_source_integration.md) ·
 [全体の構成](../README.md) · [共通記号](../notation.md) ·
 [次章：修復と観測](chapter_21_repair_and_observation.md)
