@@ -4,9 +4,11 @@ import Mathlib.CategoryTheory.ObjectProperty.FullSubcategory
 
 /-! # The contravariant category of models on declaration contexts
 
-A model is a structure in the context satisfying its retained required Laws.
-The full subcategory keeps all structure-preserving maps. The morphisms of
-contexts are inclusions, so restrictions form an ordinary functor into Cat.
+A state model satisfies the retained required Laws in the state projection
+of a declaration context. Registered coefficient conclusions are evaluated
+in the named quantity models. The full subcategory keeps all
+structure-preserving maps. Context inclusions give a contravariant functor
+into Cat.
 -/
 
 universe u
