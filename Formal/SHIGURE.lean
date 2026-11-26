@@ -30,6 +30,7 @@ import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
 import Formal.SHIGURE.Part2.QuantityTransport
+import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 
 /-! # SHIGURE
 
