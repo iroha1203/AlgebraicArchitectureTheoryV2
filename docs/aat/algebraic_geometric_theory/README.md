@@ -33,7 +33,7 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 - **第III部（第7–9章）**：意味を保つ変更の全体と条件付きの変更族を構成し、さらに商、対称性、代表の選択、持ち上げの分類を行う。
 - **第IV部（第10–13章、付録C）**：文脈と係数の 2 方向の descent、固定部分と許可範囲に相対的な修復の全体（アリアドネ）、変形と交差の障害、および有限断片からの大域的な復元を構成する。
 - **第V部（第14–16章、付録D）**：reading と係数に沿う輸送、生成される比較と正規化、および診断の族と指定された障害の比較を構成する。
-- **第VI部（第17–18章）**：状態と Law 評価から実現族の観測を構成し、判定・数値補正・解の選択に対する十分性と必要情報を調べる。最小問い合わせ、構造パラメータによる層別化、修復範囲と必要情報の関係、および適応的・重み付き観測を扱う。
+- **第VI部（第17–18章）**：状態と Law 評価から実現族の観測を構成し、判定・数値補正・解の選択に対する十分性と必要情報を調べる。許容変更上の局所可視性、共有値の貼り合わせと最小公開補完、整数の自由障害と剰余障害、平行移動補正と上書き置換を扱い、修復範囲と観測費用を比較する。最小問い合わせ、構造パラメータによる層別化、および適応的・重み付き観測も構成する。
 - **第VII部（第19–21章、付録E）**：原始的な局所表から対象・すべての射・条件付き変更と修復の全体を再構成する。有限決定と実効的復元、最小線形実現の有限ハンケル表からの復元、および全域多項式操作の全語判定に十分な一様語長を構成する。付録Eでは有限移行と最適経路の復元へ展開する。
 
 ### 第I部 Lawと意味の基礎
@@ -90,6 +90,8 @@ Algebraic Architecture Theory（AAT）は、Atom と Law によって意味の�
 | 整数障害や実現族上の診断をどう読むか | [整数障害と指定比較](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1612-整数障害有限素数冪指定比較)、[診断次元の実現](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1611-診断次元を実現する幾何)、[根診断の降下と選択](part_5/chapter_16_diagnostic_families_and_obstruction_comparison.md#1613-固有値の根診断と商上の選択) |
 | 複数の変更や次の要求を同時に実現できるか | [混合・三重障害](part_4/chapter_12_deformations_and_obstructions.md#128-二変更の混合障害と三重持ち上げ)、[要求の持ち上げ](part_4/chapter_12_deformations_and_obstructions.md#1210-指定要求の持ち上げと滑らかな開集合) |
 | 部分観測だけで不能性や外部への置換を保証できるか | [閉部分表示と共有宣言](part_4/chapter_11_ariadne_relative_repairs.md#1112-部分観測の不能証拠と任意の外部への置換)、[重み付き問い合わせ](part_6/chapter_18_repair_and_observation.md#1810-有限候補の重み付き観測) |
+| 許容変更を局所的に評価し、共有値から解を貼り合わせるには何を公開すべきか | [局所可視性の核条件](part_6/chapter_17_observation_sufficiency_and_selection.md#179-許容変更全体での局所可視性)、[共有照合と最小公開補完](part_6/chapter_17_observation_sufficiency_and_selection.md#1710-公開された共有値と解の貼り合わせ) |
+| 整数修復と上書き置換に必要な観測はどう違うか | [整数修復の二つの核条件](part_6/chapter_18_repair_and_observation.md#1811-整数アフィン修復の観測十分性)、[上書き後の実効入力行列](part_6/chapter_18_repair_and_observation.md#1813-平行移動補正と具体的な上書き置換)、[範囲と観測のパレート最適化](part_6/chapter_18_repair_and_observation.md#1814-許可範囲と観測費用の同時最適化) |
 | 全域多項式操作のすべての語を有限に判定できるか | [一様語長と安全スキーム](part_7/chapter_21_uniform_finiteness_of_polynomial_operations.md#214-最大安全状態スキームと係数変更)、[普遍係数の停止算法](part_7/chapter_21_uniform_finiteness_of_polynomial_operations.md#213-普遍係数と計算可能な一様語長) |
 | どの幅と資源で移行でき、最適経路をどう戻せるか | [移行幅と接続資源](appendix_e_change_paths_and_costs.md#e2-law同時変更数一時資源)、[最適経路groupoid](appendix_e_change_paths_and_costs.md#e4-時間を含む局所合成と全最小解) |
 
