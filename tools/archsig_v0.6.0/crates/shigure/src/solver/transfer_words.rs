@@ -12,7 +12,7 @@ use crate::solver::common_format::{
     fmt_poly_expr, poly_q_to_expr, reeval_obligations_and_constraints,
 };
 use crate::solver::common_solve::{ParamWitness, solve_obligations_and_evals};
-use crate::solver::common_solve_q::is_ideal_nonempty;
+use crate::solver::common_solve_q::{IdealNonemptyCtx, is_ideal_nonempty};
 use crate::solver::preservation::{
     PreservationObligation, map_algebra_silence, substitute_poly_expr,
 };
@@ -227,11 +227,13 @@ pub(crate) fn check_word_steps_impl(
         &dw_laws,
         &d0_sv,
         word_args,
-        free_vars,
-        witness,
-        eval_conds,
-        coeff_domain,
-        point_domain,
+        &IdealNonemptyCtx {
+            free_vars,
+            witness,
+            eval_conds,
+            coeff_domain,
+            point_domain,
+        },
     )?;
     if !domain_nonempty {
         return Ok(WordPreservationCheck {

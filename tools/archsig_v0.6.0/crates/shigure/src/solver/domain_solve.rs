@@ -8,6 +8,7 @@ use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
 use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason};
 use crate::ir::validate::CheckedShigureTask;
+use crate::solver::common_solve::{collect_eval_and_extra, lift_z_to_q};
 use crate::solver::context::{SolveCtx, display_polys};
 use crate::solver::preservation::{
     PreservationObligation, extract_closed_residuals_fp, map_algebra_silence,
@@ -54,8 +55,8 @@ pub(crate) fn solve_affine_direct_z(
             };
             let Some(pt) = chosen else {
                 // 自由変数 0（唯一解が不成立）または代数閉包上で空（1 in I）なら確実に Refuted。
-                let eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_poly_to_q).collect();
-                let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_poly_to_q).collect();
+                let eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
+                let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();
                 if let Ok(rab) = rabinowitsch_solve(&eqs_q, &invs_q, param_vars)
                     && rab.is_empty_over_closure
                 {
@@ -112,14 +113,6 @@ pub(crate) fn solve_affine_direct_z(
     }
 }
 
-fn lift_z_poly_to_q(poly: &Poly<BigInt>) -> Poly<Rat> {
-    let mut out = Poly::zero(poly.num_vars(), Rat::zero());
-    for (mono, coeff) in poly.terms() {
-        out.add_term(mono.clone(), Rat::from_int(coeff.clone()));
-    }
-    out
-}
-
 pub(crate) fn solve_over_fp(
     task: &CheckedShigureTask,
     obligations: &[PreservationObligation],
@@ -162,35 +155,14 @@ pub(crate) fn solve_over_fp(
 
     let param_bind = ExprBindings::params_only(param_vars);
     let mut all_eqs = residuals.clone();
-    let mut invs = Vec::new();
-    if let Some(cond) = eval_cond {
-        for eq in &cond.equations {
-            match Poly::from_expr_fp(&eq.expr, &param_bind, modulus) {
-                Ok(p) => {
-                    if !p.is_zero() {
-                        all_eqs.push(p);
-                    }
-                }
-                Err(e) => {
-                    return ctx.undetermined(
-                        display_polys(&residuals, param_vars),
-                        map_algebra_silence(e),
-                    );
-                }
-            }
-        }
-        for inv in &cond.invertibles {
-            match Poly::from_expr_fp(&inv.expr, &param_bind, modulus) {
-                Ok(p) => invs.push(p),
-                Err(e) => {
-                    return ctx.undetermined(
-                        display_polys(&residuals, param_vars),
-                        map_algebra_silence(e),
-                    );
-                }
-            }
-        }
-    }
+    let eval_refs: Vec<&EvalCondition> = eval_cond.into_iter().collect();
+    let (ev_eqs, invs) = match collect_eval_and_extra(&[], &eval_refs, &param_bind, |e, b| {
+        Poly::from_expr_fp(e, b, modulus)
+    }) {
+        Ok(pair) => pair,
+        Err(reason) => return ctx.undetermined(display_polys(&residuals, param_vars), reason),
+    };
+    all_eqs.extend(ev_eqs);
 
     let residual_display = display_polys(&all_eqs, param_vars);
     match solve_fp_enumeration(

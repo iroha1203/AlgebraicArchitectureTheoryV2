@@ -2,20 +2,20 @@
 //! 独立した数学モデル再評価検算（G-140 E2・P1.2・P4・P6 / R3.2–R3.3）。
 
 use crate::algebra::{
-    ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly, Rat, RingCoeff, VarOrder,
-    rabinowitsch_solve,
+    AlgebraError, ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly, Rat, RingCoeff,
+    VarOrder, rabinowitsch_solve,
 };
 use crate::ir::change::EvalCondition;
 use crate::ir::presentation::ComparisonPair;
 use crate::ir::result::{ReevalCheck, RestoredArtifact, SilenceReason};
 use crate::ir::term::{PolyExpr, ScalarLit};
 use crate::solver::preservation::{
-    build_preservation_obligations, compute_preservation_locus_q, extract_closed_residuals_fp,
-    extract_closed_residuals_z, is_stratum_covered_by_union, map_algebra_silence,
-    substitute_poly_expr,
+    PreservationObligation, build_preservation_obligations, compute_preservation_locus_q,
+    extract_closed_residuals_fp, extract_closed_residuals_z, is_stratum_covered_by_union,
+    map_algebra_silence, substitute_poly_expr,
 };
 use crate::solver::restore_format::{
-    format_restored_pair_fp, format_restored_pair_q, format_restored_pair_z,
+    FormattedRestoredMaps, format_restored_pair_fp, format_restored_pair_q, format_restored_pair_z,
     substitute_comparison_pair,
 };
 use num_bigint::{BigInt, BigUint};
@@ -127,22 +127,8 @@ pub fn extract_affine_substitution_q(
     // 残余の非線形多項式にも抽出したアフィン代入を適用し、未代入変数環へ縮約する。
     let mut remaining_nonlinear = Vec::new();
     if !nonlinear_polys.is_empty() {
-        let subst_polys: Vec<Poly<Rat>> = (0..n)
-            .map(|idx| {
-                let name = &param_vars.vars()[idx];
-                if let Some(expr) = param_subst.get(name) {
-                    Poly::from_expr_q(expr, &free_bind).map_err(map_algebra_silence)
-                } else {
-                    let fidx = free_order.index_of(name).ok_or_else(|| {
-                        SilenceReason::ApplicabilityConditionNotMet {
-                            condition: "parameter_binding_consistent".to_owned(),
-                            detail: format!("non-pivot parameter `{name}` missing from free order"),
-                        }
-                    })?;
-                    Ok(Poly::var(free_order.len(), fidx, Rat::zero()))
-                }
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+        let subst_polys =
+            build_param_subst_polys_q(param_vars, &param_subst, &free_order, &free_bind)?;
         for nl in &nonlinear_polys {
             let reduced = eval_poly_with_polys_q(nl, &subst_polys, free_order.len())?;
             if !reduced.is_zero() {
@@ -216,32 +202,14 @@ pub fn find_witness_point_q(
     equations: &[Poly<Rat>],
     invertibles: &[Poly<Rat>],
 ) -> Result<Option<Vec<Rat>>, SilenceReason> {
-    let check_point = |pt: &[Rat]| -> Result<bool, SilenceReason> {
-        for eq in equations {
-            if !eq.eval_at(pt).map_err(map_algebra_silence)?.is_zero() {
-                return Ok(false);
-            }
-        }
-        for inv in invertibles {
-            if inv.eval_at(pt).map_err(map_algebra_silence)?.is_zero() {
-                return Ok(false);
-            }
-        }
-        Ok(true)
-    };
-
-    if kernel_basis.is_empty() {
-        return Ok(check_point(particular)?.then(|| particular.to_vec()));
-    }
-
-    for coeffs in witness_sample_vectors(kernel_basis.len()) {
-        let pt = combine_affine_q(particular, kernel_basis, &coeffs);
-        if check_point(&pt)? {
-            return Ok(Some(pt));
-        }
-    }
-
-    Ok(None)
+    find_witness_point_with(
+        particular,
+        kernel_basis,
+        equations,
+        invertibles,
+        |v| !v.is_zero(),
+        |c| Rat::from_int(BigInt::from(c)),
+    )
 }
 
 /// Z アフィン解空間 `particular + span(kernel_basis)` 上で、`invertibles` がすべて
@@ -252,15 +220,33 @@ pub fn find_witness_point_z(
     equations: &[Poly<BigInt>],
     invertibles: &[Poly<BigInt>],
 ) -> Result<Option<Vec<BigInt>>, SilenceReason> {
-    let check_point = |pt: &[BigInt]| -> Result<bool, SilenceReason> {
+    find_witness_point_with(
+        particular,
+        kernel_basis,
+        equations,
+        invertibles,
+        |v| v.abs().is_one(),
+        BigInt::from,
+    )
+}
+
+fn find_witness_point_with<C: RingCoeff>(
+    particular: &[C],
+    kernel_basis: &[Vec<C>],
+    equations: &[Poly<C>],
+    invertibles: &[Poly<C>],
+    is_inv_unit: impl Fn(&C) -> bool,
+    from_i64: impl Fn(i64) -> C,
+) -> Result<Option<Vec<C>>, SilenceReason> {
+    let check_point = |pt: &[C]| -> Result<bool, SilenceReason> {
         for eq in equations {
-            if !eq.eval_at(pt).map_err(map_algebra_silence)?.is_zero() {
+            if !eq.eval_at(pt).map_err(map_algebra_silence)?.coeff_is_zero() {
                 return Ok(false);
             }
         }
         for inv in invertibles {
             let val = inv.eval_at(pt).map_err(map_algebra_silence)?;
-            if !val.abs().is_one() {
+            if !is_inv_unit(&val) {
                 return Ok(false);
             }
         }
@@ -272,13 +258,37 @@ pub fn find_witness_point_z(
     }
 
     for coeffs in witness_sample_vectors(kernel_basis.len()) {
-        let pt = combine_affine_z(particular, kernel_basis, &coeffs);
+        let pt = combine_affine_with(particular, kernel_basis, &coeffs, &from_i64);
         if check_point(&pt)? {
             return Ok(Some(pt));
         }
     }
 
     Ok(None)
+}
+
+fn build_param_subst_polys_q(
+    param_vars: &VarOrder,
+    param_subst: &BTreeMap<String, PolyExpr>,
+    free_order: &VarOrder,
+    free_bind: &ExprBindings,
+) -> Result<Vec<Poly<Rat>>, SilenceReason> {
+    (0..param_vars.len())
+        .map(|idx| {
+            let name = &param_vars.vars()[idx];
+            if let Some(expr) = param_subst.get(name) {
+                Poly::from_expr_q(expr, free_bind).map_err(map_algebra_silence)
+            } else {
+                let fidx = free_order.index_of(name).ok_or_else(|| {
+                    SilenceReason::ApplicabilityConditionNotMet {
+                        condition: "parameter_binding_consistent".to_owned(),
+                        detail: format!("non-pivot parameter `{name}` missing from free order"),
+                    }
+                })?;
+                Ok(Poly::var(free_order.len(), fidx, Rat::zero()))
+            }
+        })
+        .collect()
 }
 
 /// Q（または代数閉包）上の抽出代入から `RestoredArtifact` を復元し、独立再評価検算を行う。
@@ -299,22 +309,8 @@ pub fn restore_and_reeval_q(
         format_restored_pair_q(&restored_pair, &extracted.unassigned_parameters)?;
 
     // extra_invs を未代入変数空間へ縮約する（非閉な商環層の開条件を検算にも引き継ぐ）。
-    let subst_polys: Vec<Poly<Rat>> = (0..param_vars.len())
-        .map(|idx| {
-            let name = &param_vars.vars()[idx];
-            if let Some(expr) = extracted.param_subst.get(name) {
-                Poly::from_expr_q(expr, &free_bind).map_err(map_algebra_silence)
-            } else {
-                let fidx = free_order.index_of(name).ok_or_else(|| {
-                    SilenceReason::ApplicabilityConditionNotMet {
-                        condition: "parameter_binding_consistent".to_owned(),
-                        detail: format!("non-pivot parameter `{name}` missing from free order"),
-                    }
-                })?;
-                Ok(Poly::var(free_order.len(), fidx, Rat::zero()))
-            }
-        })
-        .collect::<Result<Vec<_>, _>>()?;
+    let subst_polys =
+        build_param_subst_polys_q(param_vars, &extracted.param_subst, &free_order, &free_bind)?;
     let mut reduced_extra_invs = Vec::with_capacity(extra_invs.len());
     for inv in extra_invs {
         reduced_extra_invs.push(eval_poly_with_polys_q(inv, &subst_polys, free_order.len())?);
@@ -324,8 +320,7 @@ pub fn restore_and_reeval_q(
     let reeval = reeval_restored_pair_q(
         &restored_pair,
         eval_cond,
-        &extracted.param_subst,
-        &extracted.remaining_nonlinear,
+        extracted,
         &reduced_extra_invs,
         &free_order,
         &free_bind,
@@ -343,6 +338,33 @@ pub fn restore_and_reeval_q(
     })
 }
 
+fn check_point_arity(param_vars: &VarOrder, got: usize) -> Result<(), SilenceReason> {
+    if got != param_vars.len() {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "parameter_point_arity_match".to_owned(),
+            detail: format!("expected {} parameter values, got {got}", param_vars.len()),
+        });
+    }
+    Ok(())
+}
+
+type ConcretePointMaps = (BTreeMap<String, PolyExpr>, BTreeMap<String, String>);
+
+fn build_concrete_point_assignments<T: std::fmt::Display>(
+    param_vars: &VarOrder,
+    point: &[T],
+    mut to_lit: impl FnMut(&T) -> PolyExpr,
+) -> Result<ConcretePointMaps, SilenceReason> {
+    check_point_arity(param_vars, point.len())?;
+    let mut param_subst = BTreeMap::new();
+    let mut display_assignments = BTreeMap::new();
+    for (name, val) in param_vars.vars().iter().zip(point) {
+        param_subst.insert(name.clone(), to_lit(val));
+        display_assignments.insert(name.clone(), val.to_string());
+    }
+    Ok((param_subst, display_assignments))
+}
+
 /// Q 上の具体的有理点から `RestoredArtifact` を復元し、暗黙の開条件なしで独立再評価検算を行う（F2 対策）。
 pub fn restore_and_reeval_q_point(
     pair: &ComparisonPair,
@@ -350,22 +372,8 @@ pub fn restore_and_reeval_q_point(
     param_vars: &VarOrder,
     point: &[Rat],
 ) -> Result<RestoredArtifact, SilenceReason> {
-    if point.len() != param_vars.len() {
-        return Err(SilenceReason::ApplicabilityConditionNotMet {
-            condition: "parameter_point_arity_match".to_owned(),
-            detail: format!(
-                "expected {} parameter values, got {}",
-                param_vars.len(),
-                point.len()
-            ),
-        });
-    }
-    let mut param_subst = BTreeMap::new();
-    let mut display_assignments = BTreeMap::new();
-    for (name, val) in param_vars.vars().iter().zip(point) {
-        param_subst.insert(name.clone(), rat_to_expr(val, false));
-        display_assignments.insert(name.clone(), val.to_string());
-    }
+    let (param_subst, display_assignments) =
+        build_concrete_point_assignments(param_vars, point, |val| rat_to_expr(val, false))?;
     let extracted = ExtractedSubstitutionQ {
         param_subst,
         display_assignments,
@@ -376,74 +384,70 @@ pub fn restore_and_reeval_q_point(
     restore_and_reeval_q(pair, eval_cond, &[], param_vars, &extracted, false)
 }
 
-/// Z 上の具体的整数点から `RestoredArtifact` を復元し、独立再評価検算を行う。
-pub fn restore_and_reeval_z(
+type PairFormatter<'a> =
+    &'a dyn Fn(&ComparisonPair) -> Result<FormattedRestoredMaps, SilenceReason>;
+type ResidualExtractor<'a, C> =
+    &'a dyn Fn(&[PreservationObligation]) -> Result<Option<Vec<Poly<C>>>, SilenceReason>;
+type ExprParser<'a, C> = &'a dyn Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>;
+
+struct ConcreteRestoreOps<'a, C: RingCoeff> {
+    format_pair: PairFormatter<'a>,
+    extract_residuals: ResidualExtractor<'a, C>,
+    parse_expr: ExprParser<'a, C>,
+    is_inv_unit: fn(&Poly<C>) -> bool,
+    nonzero_residual_msg: &'a str,
+    quotient_out_of_scope_msg: &'a str,
+    eval_eq_suffix: &'a str,
+    eval_inv_suffix: &'a str,
+    model_label: String,
+}
+
+fn restore_and_reeval_concrete_point<C: RingCoeff>(
     pair: &ComparisonPair,
     eval_cond: Option<&EvalCondition>,
-    param_vars: &VarOrder,
-    point: &[BigInt],
+    assignments: ConcretePointMaps,
+    ops: &ConcreteRestoreOps<'_, C>,
 ) -> Result<RestoredArtifact, SilenceReason> {
-    if point.len() != param_vars.len() {
-        return Err(SilenceReason::ApplicabilityConditionNotMet {
-            condition: "parameter_point_arity_match".to_owned(),
-            detail: format!(
-                "expected {} parameter values, got {}",
-                param_vars.len(),
-                point.len()
-            ),
-        });
-    }
-    let mut param_subst = BTreeMap::new();
-    let mut display_assignments = BTreeMap::new();
-    for (name, val) in param_vars.vars().iter().zip(point) {
-        param_subst.insert(name.clone(), PolyExpr::Const(ScalarLit::Z(val.clone())));
-        display_assignments.insert(name.clone(), val.to_string());
-    }
+    let (param_subst, display_assignments) = assignments;
     let restored_pair = substitute_comparison_pair(pair, &param_subst);
     let (operations, state_laws, state_comparisons, word_translation) =
-        format_restored_pair_z(&restored_pair)?;
+        (ops.format_pair)(&restored_pair)?;
 
-    // 独立再評価検算: 復元後の ComparisonPair から直接 Z 残差を再構成し全零・評価条件一致を検証。
+    // 独立再評価検算: 復元後の ComparisonPair から残差を再構成し全零・評価条件一致を検証。
     let obligations = build_preservation_obligations(&restored_pair)?;
     let empty_bind =
         ExprBindings::params_only(&VarOrder::new(vec![]).map_err(map_algebra_silence)?);
     let mut matched = true;
     let mut fail_detail = String::new();
 
-    if let Some(residuals) = extract_closed_residuals_z(&obligations, &[])? {
+    if let Some(residuals) = (ops.extract_residuals)(&obligations)? {
         if residuals.iter().any(|r| !r.is_zero()) {
             matched = false;
-            fail_detail = "restored Z presentation has nonzero preservation residual".to_owned();
+            fail_detail = ops.nonzero_residual_msg.to_owned();
         }
     } else {
         matched = false;
-        fail_detail = "quotient state-law re-evaluation over Z is out of scope".to_owned();
+        fail_detail = ops.quotient_out_of_scope_msg.to_owned();
     }
 
     if matched && let Some(cond) = eval_cond {
         let empty = BTreeMap::new();
         for eq in &cond.equations {
             let sub = substitute_poly_expr(&eq.expr, &empty, &empty, &param_subst);
-            let p = Poly::from_expr_z(&sub, &empty_bind).map_err(map_algebra_silence)?;
+            let p = (ops.parse_expr)(&sub, &empty_bind).map_err(map_algebra_silence)?;
             if !p.is_zero() {
                 matched = false;
-                fail_detail = format!(
-                    "eval equation `{}` did not vanish after restoration",
-                    eq.name
-                );
+                fail_detail = format!("eval equation `{}` {}", eq.name, ops.eval_eq_suffix);
                 break;
             }
         }
         if matched {
             for inv in &cond.invertibles {
                 let sub = substitute_poly_expr(&inv.expr, &empty, &empty, &param_subst);
-                let p = Poly::from_expr_z(&sub, &empty_bind).map_err(map_algebra_silence)?;
-                if !p.constant_value().abs().is_one() {
+                let p = (ops.parse_expr)(&sub, &empty_bind).map_err(map_algebra_silence)?;
+                if !(ops.is_inv_unit)(&p) {
                     matched = false;
-                    fail_detail = format!(
-                        "eval invertible `{}` is not a unit in Z (|g| != 1) after restoration",
-                        inv.name
-                    );
+                    fail_detail = format!("eval invertible `{}` {}", inv.name, ops.eval_inv_suffix);
                     break;
                 }
             }
@@ -452,8 +456,9 @@ pub fn restore_and_reeval_z(
 
     let detail = if matched {
         format!(
-            "verified all {} preservation obligations and evaluation conditions on restored Z model",
-            obligations.len()
+            "verified all {} preservation obligations and evaluation conditions on restored {} model",
+            obligations.len(),
+            ops.model_label
         )
     } else {
         fail_detail
@@ -472,6 +477,30 @@ pub fn restore_and_reeval_z(
             detail,
         },
     })
+}
+
+/// Z 上の具体的整数点から `RestoredArtifact` を復元し、独立再評価検算を行う。
+pub fn restore_and_reeval_z(
+    pair: &ComparisonPair,
+    eval_cond: Option<&EvalCondition>,
+    param_vars: &VarOrder,
+    point: &[BigInt],
+) -> Result<RestoredArtifact, SilenceReason> {
+    let assignments = build_concrete_point_assignments(param_vars, point, |val| {
+        PolyExpr::Const(ScalarLit::Z(val.clone()))
+    })?;
+    let ops = ConcreteRestoreOps {
+        format_pair: &format_restored_pair_z,
+        extract_residuals: &|obs| extract_closed_residuals_z(obs, &[]),
+        parse_expr: &Poly::from_expr_z,
+        is_inv_unit: |p| p.constant_value().abs().is_one(),
+        nonzero_residual_msg: "restored Z presentation has nonzero preservation residual",
+        quotient_out_of_scope_msg: "quotient state-law re-evaluation over Z is out of scope",
+        eval_eq_suffix: "did not vanish after restoration",
+        eval_inv_suffix: "is not a unit in Z (|g| != 1) after restoration",
+        model_label: "Z".to_owned(),
+    };
+    restore_and_reeval_concrete_point(pair, eval_cond, assignments, &ops)
 }
 
 /// F_p 上の具体点から `RestoredArtifact` を復元し、独立再評価検算を行う。
@@ -482,108 +511,41 @@ pub fn restore_and_reeval_fp(
     point: &[FpElem],
     modulus: &BigUint,
 ) -> Result<RestoredArtifact, SilenceReason> {
-    if point.len() != param_vars.len() {
-        return Err(SilenceReason::ApplicabilityConditionNotMet {
-            condition: "parameter_point_arity_match".to_owned(),
-            detail: format!(
-                "expected {} parameter values, got {}",
-                param_vars.len(),
-                point.len()
-            ),
-        });
-    }
-    let mut param_subst = BTreeMap::new();
-    let mut display_assignments = BTreeMap::new();
-    for (name, val) in param_vars.vars().iter().zip(point) {
-        param_subst.insert(
-            name.clone(),
-            PolyExpr::Const(ScalarLit::Fp {
-                value: val.value().clone(),
-                modulus: modulus.clone(),
-            }),
-        );
-        display_assignments.insert(name.clone(), val.to_string());
-    }
-    let restored_pair = substitute_comparison_pair(pair, &param_subst);
-    let (operations, state_laws, state_comparisons, word_translation) =
-        format_restored_pair_fp(&restored_pair, modulus)?;
-
-    let obligations = build_preservation_obligations(&restored_pair)?;
-    let empty_bind =
-        ExprBindings::params_only(&VarOrder::new(vec![]).map_err(map_algebra_silence)?);
-    let mut matched = true;
-    let mut fail_detail = String::new();
-
-    if let Some(residuals) = extract_closed_residuals_fp(&obligations, &[], modulus)? {
-        if residuals.iter().any(|r| !r.is_zero()) {
-            matched = false;
-            fail_detail = "restored Fp presentation has nonzero preservation residual".to_owned();
-        }
-    } else {
-        matched = false;
-        fail_detail = "quotient state-law re-evaluation over Fp is out of scope".to_owned();
-    }
-
-    if matched && let Some(cond) = eval_cond {
-        let empty = BTreeMap::new();
-        for eq in &cond.equations {
-            let sub = substitute_poly_expr(&eq.expr, &empty, &empty, &param_subst);
-            let p = Poly::from_expr_fp(&sub, &empty_bind, modulus).map_err(map_algebra_silence)?;
-            if !p.is_zero() {
-                matched = false;
-                fail_detail = format!("eval equation `{}` did not vanish over Fp", eq.name);
-                break;
-            }
-        }
-        if matched {
-            for inv in &cond.invertibles {
-                let sub = substitute_poly_expr(&inv.expr, &empty, &empty, &param_subst);
-                let p =
-                    Poly::from_expr_fp(&sub, &empty_bind, modulus).map_err(map_algebra_silence)?;
-                if p.is_zero() {
-                    matched = false;
-                    fail_detail = format!("eval invertible `{}` vanished over Fp", inv.name);
-                    break;
-                }
-            }
-        }
-    }
-
-    let detail = if matched {
-        format!(
-            "verified all {} preservation obligations and evaluation conditions on restored Fp({modulus}) model",
-            obligations.len()
-        )
-    } else {
-        fail_detail
+    let assignments = build_concrete_point_assignments(param_vars, point, |val| {
+        PolyExpr::Const(ScalarLit::Fp {
+            value: val.value().clone(),
+            modulus: modulus.clone(),
+        })
+    })?;
+    let format_fp = |rp: &ComparisonPair| format_restored_pair_fp(rp, modulus);
+    let extract_fp =
+        |obs: &[PreservationObligation]| extract_closed_residuals_fp(obs, &[], modulus);
+    let parse_fp = |expr: &PolyExpr, bind: &ExprBindings| Poly::from_expr_fp(expr, bind, modulus);
+    let ops = ConcreteRestoreOps {
+        format_pair: &format_fp,
+        extract_residuals: &extract_fp,
+        parse_expr: &parse_fp,
+        is_inv_unit: |p| !p.is_zero(),
+        nonzero_residual_msg: "restored Fp presentation has nonzero preservation residual",
+        quotient_out_of_scope_msg: "quotient state-law re-evaluation over Fp is out of scope",
+        eval_eq_suffix: "did not vanish over Fp",
+        eval_inv_suffix: "vanished over Fp",
+        model_label: format!("Fp({modulus})"),
     };
-
-    Ok(RestoredArtifact {
-        parameter_assignments: display_assignments,
-        free_parameters: vec![],
-        operations,
-        state_laws,
-        state_comparisons,
-        word_translation,
-        reeval: ReevalCheck {
-            checked: true,
-            matched,
-            detail,
-        },
-    })
+    restore_and_reeval_concrete_point(pair, eval_cond, assignments, &ops)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn reeval_restored_pair_q(
     restored_pair: &ComparisonPair,
     eval_cond: Option<&EvalCondition>,
-    param_subst: &BTreeMap<String, PolyExpr>,
-    remaining_nonlinear: &[Poly<Rat>],
+    extracted: &ExtractedSubstitutionQ,
     extra_invs: &[Poly<Rat>],
     free_order: &VarOrder,
     free_bind: &ExprBindings,
     require_strict_ideal: bool,
 ) -> Result<ReevalCheck, SilenceReason> {
+    let param_subst = &extracted.param_subst;
+    let remaining_nonlinear = &extracted.remaining_nonlinear;
     let obligations = build_preservation_obligations(restored_pair)?;
     let locus = compute_preservation_locus_q(&obligations, free_order)?;
 
@@ -674,10 +636,11 @@ fn reeval_restored_pair_q(
 type AffineSystemQ = (Vec<Vec<Rat>>, Vec<Rat>);
 type AffineSystemZ = (Vec<Vec<BigInt>>, Vec<BigInt>);
 
-pub fn polys_to_affine_system_q(
-    polys: &[Poly<Rat>],
+fn polys_to_affine_system_with<C: RingCoeff>(
+    polys: &[Poly<C>],
     num_vars: usize,
-) -> Result<AffineSystemQ, SilenceReason> {
+    zero: C,
+) -> Result<(Vec<Vec<C>>, Vec<C>), SilenceReason> {
     let mut matrix = Vec::with_capacity(polys.len());
     let mut rhs = Vec::with_capacity(polys.len());
     for p in polys {
@@ -687,8 +650,8 @@ pub fn polys_to_affine_system_q(
                 detail: "polynomial arity or degree exceeds affine system bounds".to_owned(),
             });
         }
-        let mut row = vec![Rat::zero(); num_vars];
-        let mut c0 = Rat::zero();
+        let mut row = vec![zero.clone(); num_vars];
+        let mut c0 = zero.clone();
         for (mono, coeff) in p.terms() {
             if mono.is_one() {
                 c0 = coeff.clone();
@@ -697,37 +660,23 @@ pub fn polys_to_affine_system_q(
             }
         }
         matrix.push(row);
-        rhs.push(-&c0);
+        rhs.push(c0.neg_ref());
     }
     Ok((matrix, rhs))
+}
+
+pub fn polys_to_affine_system_q(
+    polys: &[Poly<Rat>],
+    num_vars: usize,
+) -> Result<AffineSystemQ, SilenceReason> {
+    polys_to_affine_system_with(polys, num_vars, Rat::zero())
 }
 
 pub fn polys_to_affine_system_z(
     polys: &[Poly<BigInt>],
     num_vars: usize,
 ) -> Result<AffineSystemZ, SilenceReason> {
-    let mut matrix = Vec::with_capacity(polys.len());
-    let mut rhs = Vec::with_capacity(polys.len());
-    for p in polys {
-        if p.num_vars() != num_vars || !p.is_affine() {
-            return Err(SilenceReason::ApplicabilityConditionNotMet {
-                condition: "affine_system_expected".to_owned(),
-                detail: "polynomial arity or degree exceeds affine system bounds".to_owned(),
-            });
-        }
-        let mut row = vec![BigInt::zero(); num_vars];
-        let mut c0 = BigInt::zero();
-        for (mono, coeff) in p.terms() {
-            if mono.is_one() {
-                c0 = coeff.clone();
-            } else if let Some(idx) = mono.exps().iter().position(|&e| e == 1) {
-                row[idx] = coeff.clone();
-            }
-        }
-        matrix.push(row);
-        rhs.push(-c0);
-    }
-    Ok((matrix, rhs))
+    polys_to_affine_system_with(polys, num_vars, BigInt::zero())
 }
 
 type RrefResultQ = (Vec<Vec<Rat>>, Vec<Rat>, Vec<(usize, usize)>);
@@ -825,29 +774,20 @@ fn eval_poly_with_polys_q(
     Ok(acc)
 }
 
-fn combine_affine_q(particular: &[Rat], kernel: &[Vec<Rat>], coeffs: &[i64]) -> Vec<Rat> {
+fn combine_affine_with<C: RingCoeff>(
+    particular: &[C],
+    kernel: &[Vec<C>],
+    coeffs: &[i64],
+    from_i64: impl Fn(i64) -> C,
+) -> Vec<C> {
     let mut pt = particular.to_vec();
     for (vec, &c) in kernel.iter().zip(coeffs) {
         if c == 0 {
             continue;
         }
-        let rc = Rat::from_int(BigInt::from(c));
+        let sc = from_i64(c);
         for (dst, v) in pt.iter_mut().zip(vec) {
-            *dst = &*dst + &(&rc * v);
-        }
-    }
-    pt
-}
-
-fn combine_affine_z(particular: &[BigInt], kernel: &[Vec<BigInt>], coeffs: &[i64]) -> Vec<BigInt> {
-    let mut pt = particular.to_vec();
-    for (vec, &c) in kernel.iter().zip(coeffs) {
-        if c == 0 {
-            continue;
-        }
-        let bc = BigInt::from(c);
-        for (dst, v) in pt.iter_mut().zip(vec) {
-            *dst += &bc * v;
+            *dst = dst.add_ref(&sc.mul_ref(v));
         }
     }
     pt
