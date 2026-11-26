@@ -248,22 +248,31 @@ and its canonical spectrum map supplies the restriction. -/
 def HasTildeOn {X : Scheme.{u}} (M : X.Modules) {U : X.Opens} (affine : IsAffineOpen U) : Prop :=
   (tilde.functor Γ(X, U)).essImage (M.restrict affine.fromSpec)
 
-/-- Tilde presentations restrict along any inclusion of affine opens.
-This API restricts a presentation from the opening of Appendix B along an inclusion of affine
-opens, using the induced ring map. -/
-theorem HasTildeOn.restrict {X : Scheme.{u}} {M : X.Modules} {U V : X.Opens}
-    {hU : IsAffineOpen U} {hV : IsAffineOpen V} (inside : V ≤ U) (localTilde : HasTildeOn M hU) :
-    HasTildeOn M hV := by
+/-- Restriction of a specified affine presentation is the associated module
+of the extension of scalars along the restriction map. -/
+def restrictTildePresentationIso {X : Scheme.{u}} {M : X.Modules} {U V : X.Opens} {hU : IsAffineOpen U} {hV : IsAffineOpen V}
+    (inside : V ≤ U) {N : ModuleCat.{u} Γ(X, U)}
+    (e : (tilde.functor Γ(X, U)).obj N ≅ M.restrict hU.fromSpec) :
+    (tilde.functor Γ(X, V)).obj ((ModuleCat.extendScalars (X.presheaf.map (homOfLE inside).op).hom).obj N) ≅
+      M.restrict hV.fromSpec := by
   let f := X.presheaf.map (homOfLE inside).op
   have composite : Spec.map f ≫ hU.fromSpec = hV.fromSpec :=
     hU.map_fromSpec hV (homOfLE inside).op
   haveI : IsOpenImmersion (Spec.map f ≫ hU.fromSpec) := by rw [composite]; infer_instance
   letI : IsOpenImmersion (Spec.map f) := IsOpenImmersion.of_comp _ hU.fromSpec
-  obtain ⟨N, ⟨e⟩⟩ := localTilde
-  refine ⟨(ModuleCat.extendScalars f.hom).obj N, ⟨?_⟩⟩
   exact ((tildeRestrictIso f).app N).symm ≪≫ (restrictFunctor (Spec.map f)).mapIso e ≪≫
     ((restrictFunctorComp (Spec.map f) hU.fromSpec).app M).symm ≪≫
     (restrictFunctorCongr composite).app M
+
+/-- Tilde presentations restrict along any inclusion of affine opens.
+This API restricts a presentation from the opening of Appendix B along affine
+opens, using the induced ring map. -/
+theorem HasTildeOn.restrict {X : Scheme.{u}} {M : X.Modules} {U V : X.Opens}
+    {hU : IsAffineOpen U} {hV : IsAffineOpen V} (inside : V ≤ U) (localTilde : HasTildeOn M hU) :
+    HasTildeOn M hV := by
+  let f := X.presheaf.map (homOfLE inside).op
+  obtain ⟨N, ⟨e⟩⟩ := localTilde
+  exact ⟨(ModuleCat.extendScalars f.hom).obj N, ⟨restrictTildePresentationIso (hV := hV) inside e⟩⟩
 
 private theorem localizedRestriction_congr (P : (Spec R).Opensᵒᵖ ⥤ ModuleCat.{u} R)
     (S : Submonoid R) {U V U' V' : (Spec R).Opens}
