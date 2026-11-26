@@ -30,11 +30,17 @@ private def oneTerm : Term signature [()] () := .app (.total ()) (fun i => .var 
 private def guard : Formula signature [()] := .atom (.rel () (fun i => i))
 private def equation : OrderedEquation signature := ⟨[()], (), guard, quantityTerm, oneTerm⟩
 
+private def registeredEquation : WrittenCoefficientEquation ℤ signature [()] :=
+  (.quantity ⟨.total false, ⟨.var⟩⟩, .scalar 1)
+
 private def primitive : PrimitivePresentation where
   signature := signature
   laws := ⟨Unit, fun _ => equation.toLaw, fun _ => .required⟩
   otherOrderedEquation _ := some ⟨equation.write, rfl⟩
   derived _ impossible := by cases impossible
+  coefficientEquation k _ := by
+    classical
+    exact if same : k = ℤ then some (same.symm ▸ registeredEquation) else none
 
 private def written : NamedWrittenLaws ℤ primitive where
   quantities := Set.univ
@@ -43,6 +49,8 @@ private def written : NamedWrittenLaws ℤ primitive where
   application _ _ := ⟨⟨.total false, Set.mem_univ _⟩, ⟨.var⟩⟩
   left _ := .quantity ()
   right _ := .scalar 1
+  registered _ := by
+    simp [primitive, registeredEquation, Expression.rename]
   supports _ _ _ := by
     constructor
     · apply Or.inr
@@ -94,11 +102,11 @@ private def state : Structure signature where
 
 private def ambient : ContextStructure Full := ContextStructure.ofStructure Full state
 
-private def reading : (written.selection Full).Interpretation ambient where
-  domain _ := Set.univ
-  input := written.nativeInput ambient
-  value _ e _ := ⟨e.val, Set.mem_univ _⟩
-  argument _ _ _ _ _ := rfl
+private def reading : written.GuardedInterpretation ambient :=
+  ⟨{ domain := fun _ => Set.univ
+     input := written.nativeInput ambient
+     value := fun _ e _ => ⟨e.val, Set.mem_univ _⟩
+     argument := fun _ _ _ _ _ => rfl }, fun _ => rfl⟩
 
 private def l : (written.selection Full).laws :=
   ⟨⟨⟨(), rfl⟩, Set.mem_univ _⟩, Set.mem_univ _⟩
@@ -118,9 +126,14 @@ theorem named_law_keeps_guard (U : DeclarationContext primitive) (l : (written.s
     Declaration.relation () ∈ U.declarations :=
   Declaration.lawBody_subset_of_mem l.property (Or.inl (Or.inr (Set.mem_singleton _)))
 
+/-- The same original declaration cannot register zero in place of the written coefficient one. -/
+theorem named_law_retains_literal :
+    primitive.coefficientEquation ℤ () ≠ some (registeredEquation.1, .scalar 0) := by
+  simp [primitive, registeredEquation]
+
 /-- The actual named scalar Law excludes zero even though the native carrier has one point. -/
 theorem named_law_rejects_zero :
-    ¬ reading.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
+    ¬ reading.val.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
   intro holds
   have eq := holds l ⟨point, inGuard⟩
   change (0 : ℤ) = algebraMap ℤ ℤ 1 at eq
@@ -128,14 +141,14 @@ theorem named_law_rejects_zero :
 
 /-- The retained equation uses the guard evaluated in the actual reduct. -/
 theorem named_restriction_reads_guard (l : (written.selection retained).laws) :
-    (reading.restrict (written.inclusion inside)).input l = written.nativeInput (ambient.restrict inside) l :=
-  written.restrict_input_eq_native reading (fun _ => rfl) inside l
+    (reading.val.restrict (written.inclusion inside)).input l = written.nativeInput (ambient.restrict inside) l :=
+  written.restrict_input_eq_native reading inside l
 
 /-- The structural reduct forgetting the independent quantity commutes with arbitrary coefficient change. -/
 theorem named_restriction_baseChange (R : Type) [CommRing R] [Algebra ℤ R] :
-    let F := (reading.restrict (written.inclusion inside)).presentation
-    let ι := reading.lawMap (written.inclusion inside)
-    (baseChangeQuotient (R := ℤ) R reading.presentation.residualIdeal).symm.toAlgHom.comp
+    let F := (reading.val.restrict (written.inclusion inside)).presentation
+    let ι := reading.val.lawMap (written.inclusion inside)
+    (baseChangeQuotient (R := ℤ) R reading.val.presentation.residualIdeal).symm.toAlgHom.comp
         (ι.extendedEquationMap R) =
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := ℤ) R F.residualIdeal).symm.toAlgHom :=
   written.lawMap_baseChange reading inside R

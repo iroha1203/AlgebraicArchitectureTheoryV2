@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part1.Substitution
+import Formal.SHIGURE.Part1.WrittenCoefficientEquation
 
 /-! # Positive sequent derivations
 
@@ -261,6 +261,9 @@ structure PrimitivePresentation where
   /-- Each derived Law has a proof from the required Laws and structural graph axioms. -/
   derived (i : laws.LawName) : laws.role i = .derived →
     Derivation laws.toTheory (laws.statement i).input (laws.statement i).conclusion
+  /-- The original external coefficient equation registered at this Law and coefficient type. -/
+  coefficientEquation (k : Type u) (i : laws.LawName) :
+    Option (Quantities.WrittenCoefficientEquation k signature (laws.statement i).context) := none
 
 /-- The type of the separately written equality, available without a named ring certificate. -/
 abbrev NamedRingEquation.OtherOrdered {sig : Signature.{u}} {laws : LawDeclarations sig}

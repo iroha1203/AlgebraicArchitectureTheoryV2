@@ -23,22 +23,6 @@ universe u
 
 namespace SHIGURE.Quantities
 
-/-- The primitive name of a varying quantity, with its declared total or partial profile. -/
-inductive QuantityDeclaration (sig : Signature.{u})
-  | total (name : sig.Quantity)
-  | partialOp (name : sig.Partial)
-
-namespace QuantityDeclaration
-
-variable {sig : Signature.{u}}
-
-/-- Read the quantity as the operation declared in the original signature. -/
-def operation : QuantityDeclaration sig → Operation sig
-  | .total name => .quantity name
-  | .partialOp name => .partialOp name
-
-end QuantityDeclaration
-
 /-- A coefficient operation retains its primitive tag and typed profile. -/
 structure CoefficientSymbol (sig : Signature.{u}) (profile : Arity sig.SortType) where
   operation : Operation sig

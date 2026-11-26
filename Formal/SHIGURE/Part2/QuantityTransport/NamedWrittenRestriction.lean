@@ -3,19 +3,18 @@ import Formal.SHIGURE.Part2.QuantityTransport.WrittenRestriction
 
 /-! # Coefficient equations with names in a primitive presentation
 
-Some coefficient equations have declared names and typed inputs in the
-primitive presentation. Their external scalar expressions attach to
-those names, and the original Law keeps its antecedent and every
-declaration used by the scalar expressions.
+A primitive presentation can register coefficient equations at its Law
+names. The comparison uses the registered expressions and the actual
+antecedent of each retained Law.
 
 ## Implementation notes
 
-The attachment records a finite coefficient expression for each named
-Law. This is the coefficient syntax of Chapter 5. Looking up only
-the native ordered term pair cannot identify arbitrary ring literals.
-The dependency proof concerns only references of leaves used in the
-two coefficient expressions. Retention then follows from the actual
-dependency closure of Chapter 3.
+The registration stores the literal expressions with their typed
+primitive applications. A local occurrence index may simplify evaluation
+but must rename back to the registered pair. Ambient and retained
+coefficient equations are compiled from this same pair. The support proof
+concerns only the applications used by the two expressions, and retention
+follows from the dependency closure of Chapter 3.
 -/
 
 namespace SHIGURE.Quantities
@@ -41,6 +40,10 @@ structure NamedWrittenLaws (k : Type u) (P : PrimitivePresentation.{u}) where
   left (l : laws) : Expression k (Occurrence l)
   /-- The original right coefficient expression. -/
   right (l : laws) : Expression k (Occurrence l)
+  /-- Both sides name exactly the original registered applications and literals. -/
+  registered (l : laws) : P.coefficientEquation k l.val.val = some
+    ((left l).rename (fun a => ⟨(application l a).1.val, (application l a).2⟩),
+     (right l).rename (fun a => ⟨(application l a).1.val, (application l a).2⟩))
   /-- Each application in the two written sides belongs to the original Law's declaration support. -/
   supports (l : laws) (a : Occurrence l) (used : a ∈ (left l).occurrences ∪ (right l).occurrences) :
     Declaration.ofOperation (application l a).1.val.operation ∈ Declaration.lawBody (P.theory.law l.val) ∧
@@ -97,22 +100,35 @@ theorem nativeInput_restrict_iff (A : ContextStructure U) (inside : V ≤ U)
         L.nativeInput A (Set.inclusion (L.inclusion inside).laws l) :=
   A.restrict_holds_iff inside _ _ e
 
-/-- When the named antecedents give the original input sets, the reduct has the actual retained antecedents. -/
-theorem restrict_input_eq_native {A : ContextStructure U} (I : (L.selection U).Interpretation A)
-    (original : ∀ l, I.input l = L.nativeInput A l) (inside : V ≤ U)
+/-- The interpretation of a registered Law uses exactly the inputs of its original guard. -/
+abbrev GuardedInterpretation (A : ContextStructure U) :=
+  {I : (L.selection U).Interpretation A // ∀ l, I.input l = L.nativeInput A l}
+
+/-- The reduct of a guarded interpretation evaluates the original antecedents in the reduced state. -/
+theorem restrict_input_eq_native {A : ContextStructure U} (I : L.GuardedInterpretation A) (inside : V ≤ U)
     (l : (L.selection V).laws) :
-    (I.restrict (L.inclusion inside)).input l = L.nativeInput (A.restrict inside) l := by
-  rw [I.restrict_input, original]
+    (I.val.restrict (L.inclusion inside)).input l = L.nativeInput (A.restrict inside) l := by
+  rw [I.val.restrict_input, I.property]
   exact Set.ext fun e => (L.nativeInput_restrict_iff A inside l e).symm
 
-/-- The actual primitive restriction of named scalar equations commutes with changing coefficients. -/
-theorem lawMap_baseChange [CommRing k] {A : ContextStructure U} (I : (L.selection U).Interpretation A)
+/-- The actual primitive restriction of registered scalar equations commutes with changing coefficients. -/
+theorem lawMap_baseChange [CommRing k] {A : ContextStructure U} (I : L.GuardedInterpretation A)
     (inside : V ≤ U) (R : Type u) [CommRing R] [Algebra k R] :
-    let F := (I.restrict (L.inclusion inside)).presentation
-    let ι := I.lawMap (L.inclusion inside)
-    (baseChangeQuotient (R := k) R I.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
+    let F := (I.val.restrict (L.inclusion inside)).presentation
+    let ι := I.val.lawMap (L.inclusion inside)
+    (baseChangeQuotient (R := k) R I.val.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
-  I.lawMap_baseChange (L.inclusion inside) R
+  I.val.lawMap_baseChange (L.inclusion inside) R
+
+/-- The same registered equation and guard give the comparison on a principal open. -/
+theorem lawMap_localization [CommRing k] {A : ContextStructure U} (I : L.GuardedInterpretation A)
+    (inside : V ≤ U) (r : k) :
+    let R := Localization.Away r
+    let F := (I.val.restrict (L.inclusion inside)).presentation
+    let ι := I.val.lawMap (L.inclusion inside)
+    (baseChangeQuotient (R := k) R I.val.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
+      (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
+  L.lawMap_baseChange I inside (Localization.Away r)
 
 end NamedWrittenLaws
 
