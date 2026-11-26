@@ -12,6 +12,20 @@ For the scheme glued by Lemma B.6, a module is formed as the equalizer of
 the two maps from the product of chart sheaves to the product of overlap
 sheaves. Each chart and overlap is pushed forward along its actual open
 immersion, so the equalizer consists of compatible local sections.
+
+## Implementation notes
+
+The equalizer uses the limits in the category of module sheaves, which
+supplies the sheaf axiom and the universal property for maps. A direct
+construction of the section presheaf would require proving its sheaf
+axiom separately.
+
+One can express the transitions as equations between morphisms restricted
+to a triple pullback. Here the equations are evaluated on each open of
+the actual triple intersection. This form is used in `transport_agree`
+to extend a section of one chart to the components of a compatible
+family. The resulting chart comparison is a morphism of module sheaves,
+and equality on all opens determines these morphisms.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -169,6 +183,7 @@ def transport (i j : D.J) (W : D.glued.Opens) (hi : W ≤ (D.ι i).opensRange) :
   letI := G.restrictRight_app_isIso i j W hi
   (G.restrictLeft i j).app W ≫ inv ((G.restrictRight i j).app W)
 
+/-- Simplify a transport followed by the right restriction to the left restriction. -/
 @[reassoc (attr := simp)]
 theorem transport_restrictRight (i j : D.J) (W : D.glued.Opens) (hi : W ≤ (D.ι i).opensRange) :
     G.transport i j W hi ≫ (G.restrictRight i j).app W = (G.restrictLeft i j).app W := by
@@ -204,6 +219,34 @@ structure Cocycle : Prop where
   composition (i j k : D.J) (W : D.glued.Opens)
     (hi : W ≤ (D.ι i).opensRange) (hj : W ≤ (D.ι j).opensRange) :
     G.transport i j W hi ≫ G.transport j k W hj = G.transport i k W hi
+
+/-- Use the ordinary composition equations on opens lying in all three charts. -/
+theorem Cocycle.ofTripleOpen
+    (identity : ∀ (i : D.J) (W : D.glued.Opens) (h : W ≤ (D.ι i).opensRange),
+      G.transport i i W h = 𝟙 _)
+    (triple : ∀ (i j k : D.J) (W : D.glued.Opens)
+      (hi : W ≤ (D.ι i).opensRange) (hj : W ≤ (D.ι j).opensRange),
+      W ≤ (D.ι k).opensRange →
+      G.transport i j W hi ≫ G.transport j k W hj = G.transport i k W hi) :
+    G.Cocycle where
+  identity := identity
+  composition i j k W hi hj := by
+    let V := (D.ι k).opensRange ⊓ W
+    let a : V ⟶ W := homOfLE inf_le_right
+    have equal : (D.ι k) ⁻¹ᵁ V = (D.ι k) ⁻¹ᵁ W := by
+      rw [show V = (D.ι k).opensRange ⊓ W from rfl, Scheme.Hom.preimage_inf,
+        (D.ι k).preimage_opensRange, top_inf_eq]
+    haveI : IsIso ((G.chartPushforward k).presheaf.map a.op) := by
+      rw [pushforward_obj_presheaf_map]
+      have same : (TopologicalSpace.Opens.map (D.ι k).base).map a = eqToHom equal :=
+        Subsingleton.elim _ _
+      rw [same]
+      infer_instance
+    apply (cancel_mono ((G.chartPushforward k).presheaf.map a.op)).1
+    simp only [Category.assoc]
+    rw [← G.transport_naturality j k a hj, ← G.transport_naturality_assoc i j a hi,
+      ← G.transport_naturality i k a hi,
+      triple i j k V (a.le.trans hi) (a.le.trans hj) inf_le_left]
 
 /-- The reverse transition is inverse on every shared open. -/
 theorem Cocycle.inverse (C : G.Cocycle) (i j : D.J) (W : D.glued.Opens)
@@ -396,6 +439,7 @@ def compatibleSectionsEquiv (W : D.glued.Opens) :
       ((sections W).map (equalizer.ι G.leftMap G.rightMap) y) = s.val i
     rw [hy, value]
 
+/-- Simplify the chosen component of the section equivalence to the corresponding chart projection. -/
 @[simp]
 theorem compatibleSectionsEquiv_apply (W : D.glued.Opens) (s : Γ(G.compatibleModule, W)) (i : D.J) :
     (G.compatibleSectionsEquiv W s).val i = (G.projectChart i).app W s := rfl
@@ -529,6 +573,8 @@ def glueMorphism (m : G.CompatibleMorphisms H) : G.compatibleModule ⟶ H.compat
       simp only [Category.assoc, m.restrictLeft_naturality, m.restrictRight_naturality]
       exact G.projectChart_agree_assoc i j _⟩
 
+/-- Simplify the projection of the glued morphism to the original chart projection
+followed by the pushforward of the specified local morphism. -/
 @[reassoc (attr := simp)]
 theorem glueMorphism_project (m : G.CompatibleMorphisms H) (i : D.J) :
     glueMorphism m ≫ H.projectChart i = G.projectChart i ≫ (pushforward (D.ι i)).map (m.map i) := by

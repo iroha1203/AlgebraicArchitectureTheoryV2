@@ -4246,6 +4246,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.ModuleGluingData.transport_restrictRight,
   SchemeDescent.ModuleGluingData.transport_naturality,
   SchemeDescent.ModuleGluingData.Cocycle,
+  SchemeDescent.ModuleGluingData.Cocycle.ofTripleOpen,
   SchemeDescent.ModuleGluingData.Cocycle.inverse,
   SchemeDescent.ModuleGluingData.ofModule_cocycle,
   SchemeDescent.ModuleGluingData.CompatibleMaps,
