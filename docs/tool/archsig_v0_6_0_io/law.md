@@ -586,20 +586,24 @@ ShigureObservations ::= "observations" Name "{"
   ("law_readout" Name "{" ("component" ShigureNamedPoly)* "}")?
 "}"
 
-ShigureCoordVec ::= "[" (ShigureMemberCoord ("," ShigureMemberCoord)*)? "]"
+ShigureCoordVec  ::= "[" (ShigureMemberValue ("," ShigureMemberValue)*)? "]"
+ShigureScalarVec ::= "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]"
+ShigureSignedInt ::= ("-")? Integer
+ShigurePartition ::= "[" ("[" (Name ("," Name)*)? "]"
+                         ("," "[" (Name ("," Name)*)? "]")*)? "]"
 
 ShigureSquareZeroExt ::=
     "truncated" "(" Name "," Integer ")" ";"
   | "explicit_table" "{"
-      "r_prime_basis" "[" Name ("," Name)* "]" ";"
-      "r_prime_one" ShigureCoordVec ";"
-      "r_prime_mul" "[" "[" ShigureCoordVec ("," ShigureCoordVec)* "]"
-                        ("," "[" ShigureCoordVec ("," ShigureCoordVec)* "]")* "]" ";"
-      "r_base_basis" "[" Name ("," Name)* "]" ";"
-      "r_base_one" ShigureCoordVec ";"
-      "r_base_mul" "[" "[" ShigureCoordVec ("," ShigureCoordVec)* "]"
-                       ("," "[" ShigureCoordVec ("," ShigureCoordVec)* "]")* "]" ";"
-      "projection" "[" ShigureCoordVec ("," ShigureCoordVec)* "]" ";"
+      "r_prime_basis" "[" (Name ("," Name)*)? "]" ";"
+      "r_prime_one" ShigureScalarVec ";"
+      "r_prime_mul" "[" ("[" (ShigureScalarVec ("," ShigureScalarVec)*)? "]"
+                        ("," "[" (ShigureScalarVec ("," ShigureScalarVec)*)? "]")*)? "]" ";"
+      "r_base_basis" "[" (Name ("," Name)*)? "]" ";"
+      "r_base_one" ShigureScalarVec ";"
+      "r_base_mul" "[" ("[" (ShigureScalarVec ("," ShigureScalarVec)*)? "]"
+                       ("," "[" (ShigureScalarVec ("," ShigureScalarVec)*)? "]")*)? "]" ";"
+      "projection" "[" (ShigureScalarVec ("," ShigureScalarVec)*)? "]" ";"
     "}"
 
 ShigureLift ::= "lift" Name "{"
@@ -607,22 +611,23 @@ ShigureLift ::= "lift" Name "{"
   ShigureOriginRef+
   "vars" "[" (Name ("," Name)*)? "]" ";"
   ("ring_param" Name "=" ShigureCoordVec ";")*
-  ("law" ShigureNamedPoly)*
+  ("law" ShigureNamedEq)*
   "extension" ShigureSquareZeroExt
   "base_point" "{" (Name "=" ShigureCoordVec ";")* "}"
   ("ambient_lift" "{" (Name "=" ShigureCoordVec ";")* "}")?
   ("relative_reading" "{"
     "obs_vars" "[" (Name ("," Name)*)? "]" ";"
     "reading_map" "{" (Name "=" PolyExpr ";")* "}"
+    ("obs_law" ShigureNamedEq)*
     "designated_obs_lift" "{" (Name "=" ShigureCoordVec ";")* "}"
-    ("raw_read_diff" String ("same" | "negated")? ":" PolyExpr ";")?
+    ("raw_read_diff" String ("same_sign" | "negated") ":" PolyExpr ";")?
   "}")?
   ("declaration_cover" "{"
     ("context" Name "{"
-      "vars" "[" (Name ("," Name)*)? "]" ";"
-      "laws" "[" (Name ("," Name)*)? "]" ";"
+      ("vars" "[" (Name ("," Name)*)? "]" ";")?
+      ("laws" "[" (Name ("," Name)*)? "]" ";")?
       ("obs" Name ":" PolyExpr ";")*
-    "}")+
+    "}")*
     ("two_context_cech" "{"
       "left" Name ";" "right" Name ";"
       "shared_vars" "[" (Name ("," Name)*)? "]" ";"
@@ -632,37 +637,37 @@ ShigureLift ::= "lift" Name "{"
     "allowed_vars" "[" (Name ("," Name)*)? "]" ";"
     ("finite_displacement" ("true" | "false") ";")?
   "}")?
-  ("redundant_comparison" "{" ("ref_law" ShigureNamedPoly)+ "}")?
+  ("redundant_comparison" "{" ("ref_law" ShigureNamedEq)* "}")?
   ("etale_descent" "{"
     "base_var" Name ";" "cover_var" Name ";"
     "degree" Integer ";" ("base_invertible" ("true" | "false") ";")?
   "}")?
-  ("max_syzygy_spairs" Integer ";")?
+  ("max_syzygy_pairs" Integer ";")?
 "}"
 
 ShigureArtin ::= "artin" Name "{"
   "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
   ShigureOriginRef+
   "obs_vars" "[" (Name ("," Name)*)? "]" ";"
-  ("obs_relation" ShigureNamedPoly)*
+  ("obs_relation" ShigureNamedEq)*
   ("aux_def" Name "=" PolyExpr ";")*
-  ("extra_law" ShigureNamedPoly)*
-  "base_point" "{" (Name "=" ShigureMemberCoord ";")* "}"
+  ("extra_law" ShigureNamedEq)*
+  "base_point" "{" (Name "=" ShigureMemberValue ";")* "}"
   "max_order" Integer ";"
   ("max_artin_dim" Integer ";")?
   ("composite_stage" "{"
     ("aux_def" Name "=" PolyExpr ";")*
-    ("extra_law" ShigureNamedPoly)*
+    ("extra_law" ShigureNamedEq)*
   "}")?
   ("base_change" "{"
     "target_domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
-    "test_order" Integer ";"
+    ("test_order" Integer ";")?
   "}")?
   ("non_noetherian_infinite" ("true" | "false") ";")?
 "}"
 
 ShigureSupportedNerve ::= "{"
-  ("chart" Name "[" (Name ("," Name)*)? "]" ";")+
+  ("chart" Name "[" (Name ("," Name)*)? "]" ";")*
   ("edge" Name "(" Name "," Name ")" ";")*
   ("face" Name "(" Name "," Name "," Name ")" ";")*
 "}"
@@ -675,12 +680,13 @@ ShigureDiagnostics ::= "diagnostics" Name "{"
       "sources" "[" (Name ("," Name)*)? "]" ";"
       "targets" "[" (Name ("," Name)*)? "]" ";"
       "reading" "{" (Name "->" Name ";")* "}"
-      ("law" Name "{" (Name "=" ShigureMemberCoord ";")* "}")*
+      ("law" Name "{" (Name "=" ShigureScalarLit ";")* "}")*
     "}"
   | "poly_readout" "{"
       "base_domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
       "base_vars" "[" (Name ("," Name)*)? "]" ";"
       "sources" "[" (Name ("," Name)*)? "]" ";"
+      ("base_relation" ShigureNamedEq)*
       ("law" Name "{" (Name "=" (PolyExpr | "observed" QName | "missing") ";")* "}")*
     "}" )
   ("coeff_change" "{"
@@ -688,26 +694,26 @@ ShigureDiagnostics ::= "diagnostics" Name "{"
     ("compare_codomain_regeneration" ("true" | "false") ";")?
     ("explicit_z_complex" "{"
       "dim0" Integer ";" "dim1" Integer ";"
-      "d0" "[" ("[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]"
-            ("," "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]")*)? "]" ";"
-      ("designated_cocycle" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")?
+      "d0" "[" ("[" (ShigureSignedInt ("," ShigureSignedInt)*)? "]"
+            ("," "[" (ShigureSignedInt ("," ShigureSignedInt)*)? "]")*)? "]" ";"
+      ("designated_cocycle" "[" (ShigureSignedInt ("," ShigureSignedInt)*)? "]" ";")?
     "}")?
   "}")?
   ("collision" String "on" Name "{"
     "fine" ShigurePartition ";"
     "coarse" ShigurePartition ";"
-    ("alt_path" "[" ShigurePartition ("," ShigurePartition)* "]" ";")*
+    ("alt_path" "[" (ShigurePartition ("," ShigurePartition)*)? "]" ";")*
   "}")*
   ("r_point_probe" "{"
     "ring_var" Name ";" "ring_max_deg" Integer ";"
-    ("point" String "{" (Name "=" ShigureCoordVec ";")* "}")+
+    ("point" String "{" (Name "=" ShigureCoordVec ";")* "}")*
   "}")?
   ("dimension_realization" "{"
     "base_domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
     "base_vars" "[" (Name ("," Name)*)? "]" ";"
-    ("vanishing" ShigureNamedPoly)+
+    ("vanishing" ShigureNamedEq)*
     "invertible" Name ":" PolyExpr ";"
-    ("probe" String "{" (Name "=" ShigureMemberCoord ";")* "}")+
+    ("probe" String "{" (Name "=" ShigureMemberValue ";")* "}")*
   "}")?
   ("max_partitions" Integer ";")?
 "}"
@@ -716,15 +722,15 @@ ShigureAtlas ::= "atlas" Name "{"
   "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
   ShigureOriginRef+
   "vertices" "[" (Name ("," Name)*)? "]" ";"
-  ("edge" Name "(" Name "->" Name ")" "offset" ShigureMemberCoord ";")*
-  "mu" ShigureMemberCoord ";"
-  "base_lambdas" "{" (Name "=" ShigureMemberCoord ";")* "}"
+  ("edge" Name "(" Name "->" Name ")" "offset" ShigureMemberValue ";")*
+  "mu" ShigureMemberValue ";"
+  "base_lambdas" "{" (Name "=" ShigureMemberValue ";")* "}"
   ("allowed_vertices" "[" (Name ("," Name)*)? "]" ";")?
   ("allowed_edges" "[" (Name ("," Name)*)? "]" ";")?
   ("compare_to_q" ("true" | "false") ";")?
   ("refinement" "{"
     "fine_vertices" "[" (Name ("," Name)*)? "]" ";"
-    ("fine_edge" Name "(" Name "->" Name ")" "offset" ShigureMemberCoord ";")*
+    ("fine_edge" Name "(" Name "->" Name ")" "offset" ShigureMemberValue ";")*
     "vertex_map" "{" (Name "->" Name ";")* "}"
     "edge_map" "{" (Name "->" (Name | "none") ";")* "}"
     "common_sources" "[" (Name ("," Name)*)? "]" ";"
@@ -737,7 +743,7 @@ ShigureAtlas ::= "atlas" Name "{"
     ("nerve_face_map" "{" (Name "->" (Name | "none") ";")* "}")?
     ("eval_condition" "{"
       ("eval" Name "=" PolyExpr ";")*
-      ("equation" ShigureNamedPoly)*
+      ("equation" ShigureNamedEq)*
       ("invertible" Name ":" PolyExpr ";")*
     "}")?
     ("forgetful_reading" "{"
@@ -756,16 +762,16 @@ ShigureAtlas ::= "atlas" Name "{"
     "}")*
     ( "protocol_sequence" String "{"
         "extended_state_vars" "[" (Name ("," Name)*)? "]" ";"
-        "initial_state" "{" (Name "=" ShigureMemberCoord ";")* "}"
+        "initial_state" "{" (Name "=" ShigureMemberValue ";")* "}"
         ("before_step" "{" (Name "=" PolyExpr ";")* "}")*
         ("after_step" "{" (Name "=" PolyExpr ";")* "}")*
         "before_read" PolyExpr ";" "after_read" PolyExpr ";"
-        ("intermediate_law" ShigureNamedPoly)*
+        ("intermediate_law" ShigureNamedEq)*
       "}"
     | "runtime_arg_op" String "{"
         "before" "{" (Name "=" PolyExpr ";")* "}"
         "after" "{" (Name "=" PolyExpr ";")* "}"
-        "sample_state" "{" (Name "=" ShigureMemberCoord ";")* "}"
+        "sample_state" "{" (Name "=" ShigureMemberValue ";")* "}"
       "}" )*
   "}")?
 "}"
@@ -812,7 +818,7 @@ ShigureAtlas ::= "atlas" Name "{"
   `shigure lift` の `vars`/`base_point` 不整合・`ring_param` 長不一致・`explicit_table` 次元不整合・未宣言変数参照、
   `shigure artin` の `aux_def` 循環依存・`max_order == 0`・`obs_vars` と `aux_def` の名前衝突、
   `shigure diagnostics` の `static_readout` と `poly_readout` の排他違反・`nerve` の端点/面不整合・`collision` の未宣言 Law 参照、
-  `shigure atlas` の単純有向グラフ端点違反・`base_lambdas` 欠落・`refinement` の写像域外参照・`extended_language_check` の状態変数不一致、
+  `shigure atlas` の単純有向グラフ端点・辺数（1 本以上必須）違反・`base_lambdas` 欠落・`refinement` の写像域外参照・`extended_language_check` の状態変数不一致、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
   （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
   `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
