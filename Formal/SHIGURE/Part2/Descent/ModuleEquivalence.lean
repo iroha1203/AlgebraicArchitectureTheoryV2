@@ -123,22 +123,8 @@ private theorem comparisonCompatible (X : DescentModule A B) :
 omit [Module.FaithfullyFlat A B] in
 private theorem compatible_inverse (e : X.carrier ≃ₗ[B] Y.carrier)
     (compatible : X.datum.Compatible Y.datum e.toLinearMap) :
-    Y.datum.Compatible X.datum e.symm.toLinearMap := by
-  apply (Datum.compatible_iff_coaction _ _ _).2
-  intro y
-  let lifted := LinearEquiv.baseChange A B X.carrier Y.carrier (e.restrictScalars A)
-  apply lifted.injective
-  have coherent := (X.datum.compatible_iff_coaction Y.datum e.toLinearMap).1 compatible (e.symm y)
-  change lifted (LinearEquiv.baseChange A B Y.carrier X.carrier (e.symm.restrictScalars A)
-        (Y.datum.coactionMap y)) = lifted (X.datum.coactionMap (e.symm y))
-  have inverseLift :
-      LinearEquiv.baseChange A B Y.carrier X.carrier (e.symm.restrictScalars A) = lifted.symm := by
-    apply LinearEquiv.toLinearMap_injective
-    apply AlgebraTensorModule.ext
-    intro b n
-    rfl
-  rw [inverseLift, lifted.apply_symm_apply]
-  exact (congrArg Y.datum.coactionMap (e.apply_symm_apply y)).symm.trans coherent.symm
+    Y.datum.Compatible X.datum e.symm.toLinearMap :=
+  X.datum.compatible_symm Y.datum e compatible
 
 private def comparisonIso (X : DescentModule A B) :
     ((descend (A := A) (B := B)) ⋙ (extend (A := A) (B := B))).obj X ≅ X where
