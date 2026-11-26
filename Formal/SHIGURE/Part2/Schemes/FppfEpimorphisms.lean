@@ -39,7 +39,8 @@ theorem HasTildeOn.cokernel {M N : X.Modules} (f : M ⟶ N) {U : X.Opens} {hU : 
 
 /-- The affine presentation criterion in Appendix B.3 gives quasi-coherence
 of the ambient sheaf cokernel from quasi-coherence of both endpoints.
-This closure property supplies the target for descent of the cokernel map. -/
+This closure property places the cokernel map in the quasi-coherent fiber
+where fppf pullback detects equality of maps. -/
 theorem IsQuasiCoherentModule.cokernel {M N : X.Modules} (f : M ⟶ N)
     (m : IsQuasiCoherentModule M) (n : IsQuasiCoherentModule N) : IsQuasiCoherentModule (cokernel f) :=
   fun U => HasTildeOn.cokernel f (m U) (n U)
@@ -52,14 +53,15 @@ theorem epi_modulePullback {M N : X.Modules} (f : M ⟶ N) (g : Y ⟶ X) [Epi f]
     Epi ((Scheme.Modules.pullback g).map f) :=
   inferInstance
 
-/-- The quasi-coherent fiber used to detect equality of the two ambient sheaf maps. -/
+/-- The quasi-coherent module pseudofunctor whose fppf comparison detects equality of sheaf maps. -/
 private abbrev Q := quasiCoherentModulesPseudofunctor.{u}
 
 set_option maxHeartbeats 100000 in
 /-- Reflection direction of the surjectivity criterion of Lemma B.5 for
 an original fppf family as in Appendix B.3. Quasi-coherence of the endpoints
-allows the cokernel map to be compared by fppf descent of morphisms. The
-epimorphism on each chart forces the pullback of that map to vanish. -/
+puts the cokernel map in the domain of the faithful comparison for the
+given cover. The epimorphism on each chart forces the pullback of that
+map to vanish. -/
 theorem epi_of_fppfModulePullbacks {M N : X.Modules} (f : M ⟶ N)
     (m : IsQuasiCoherentModule M) (n : IsQuasiCoherentModule N) (cover : FppfCover.{u,v} X)
     (localEpi : ∀ i, Epi ((Scheme.Modules.pullback (cover.f i)).map f)) : Epi f := by
@@ -83,8 +85,11 @@ theorem epi_of_fppfModulePullbacks {M N : X.Modules} (f : M ⟶ N)
   exact Abelian.epi_of_cokernel_π_eq_zero f (congrArg (fun t : N' ⟶ P' => t.hom) (K.map_injective h))
 
 /-- The public surjectivity criterion of Lemma B.5 on the fppf site of
-Appendix B.3. For a map of quasi-coherent sheaves, being an epimorphism is
-equivalent to being one on each original component of the given cover. -/
+Appendix B.3. A map of quasi-coherent sheaves is an epimorphism exactly
+when its pullbacks to the original components are epimorphisms. The preservation direction
+works along every scheme morphism. The reflection direction uses both
+quasi-coherent endpoints to form the cokernel map in the quasi-coherent
+fiber and uses the fppf family to detect equality there. -/
 theorem epi_iff_fppfModulePullbacks {M N : X.Modules} (f : M ⟶ N)
     (m : IsQuasiCoherentModule M) (n : IsQuasiCoherentModule N) (cover : FppfCover.{u,v} X) :
     Epi f ↔ ∀ i, Epi ((Scheme.Modules.pullback (cover.f i)).map f) :=
