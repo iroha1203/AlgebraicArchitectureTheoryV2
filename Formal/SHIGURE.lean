@@ -28,6 +28,7 @@ import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
+import Formal.SHIGURE.Part2.QuantityTransport
 
 /-! # SHIGURE
 
