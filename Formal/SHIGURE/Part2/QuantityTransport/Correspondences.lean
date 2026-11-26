@@ -42,6 +42,7 @@ def correspondencePresentation : Presentation k B where
     | .inl l, e => Q.right l e
     | .inr l, e => (P.right l e).rename h.coordinate
 
+/-- Reading the renamed equation at a target quantity gives its source pullback value. -/
 private theorem evaluate_renamed {R : Type u} [CommRing R] (q : Q.Candidate R)
     (t : Expression k P.Coordinate) [Algebra k R] :
     (t.rename h.coordinate).eval (fun x => q x.1 x.2) =

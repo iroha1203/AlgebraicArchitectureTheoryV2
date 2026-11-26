@@ -1,26 +1,26 @@
-import Formal.SHIGURE.Part1.ContextSelectedStructures
+import Formal.SHIGURE.Part1.ContextSelectedEquations
 import Formal.SHIGURE.Part1.MarkedLawSupport
+import Formal.SHIGURE.Part2.QuantityTransport.CoefficientSyntax
 import Formal.SHIGURE.Part2.QuantityTransport.Coefficients
+import Formal.SHIGURE.Part2.QuantityTransport.DeclarationStates
 import Mathlib.RingTheory.Localization.Away.Basic
 
 /-!
-# Restriction of written quantity Laws along declaration contexts
+# Restriction of declared quantity Laws
 
-Chapter 3 supplies the contexts, retained assignments, and preservation
-of each supported term's evaluation. The Law expressions in §5.4 are
-compiled from those terms in both contexts.
+Chapter 3 supplies the selected declarations and actual state reduct.
+The ordered writing of each kept Law supplies its literal terms. The
+coefficient presentation reads precisely their used primitive values
+and applications of the designated quantities.
 
 ## Implementation notes
 
-The original names index the retained Law and quantity declarations.
-The interpretation reads the original antecedent and transports the
-quantity domains along the retained carrier maps. It transports the actual argument
-values by the retained assignment equivalences, using the term graph to
-certify their evaluation. Selecting only the compiled coordinate
-expressions would discard the original state declarations.
+One may select coordinates after evaluating the state terms. The retained
+writing used here also gives the original substitutions, primitive
+symbols and antecedents, which the reduct can evaluate independently.
+The selected domain of a partial quantity is read from its own domain
+declaration. Ordinary literal values come from their declared operations.
 -/
-
-open scoped TensorProduct
 
 universe u
 
@@ -30,256 +30,318 @@ namespace SHIGURE.Quantities
 
 open DeclarationContext
 
-namespace Expression
-
-variable {C k X Y Z : Type u}
-
-/-- The labels of the quantity applications actually occurring in a finite expression. -/
-def applications : Expression C X → Set X
-  | .scalar _ => ∅
-  | .quantity x => {x}
-  | .add l r | .mul l r => l.applications ∪ r.applications
-  | .neg x => x.applications
-
-/-- Compile the scalar literals and only the quantity applications appearing in the expression. -/
-def compile (scalar : C → k) :
-    (e : Expression C X) → (∀ x ∈ e.applications, Y) → Expression k Y
-  | .scalar a, _ => .scalar (scalar a)
-  | .quantity x, f => .quantity (f x (Set.mem_singleton x))
-  | .add l r, f => .add (compile scalar l (fun x h => f x (Or.inl h)))
-      (compile scalar r (fun x h => f x (Or.inr h)))
-  | .neg x, f => .neg (compile scalar x f)
-  | .mul l r, f => .mul (compile scalar l (fun x h => f x (Or.inl h)))
-      (compile scalar r (fun x h => f x (Or.inr h)))
-
-/-- An application mapping after compilation is the same mapping on the actual leaves. -/
-theorem rename_compile (scalar : C → k) (e : Expression C X)
-    (f : ∀ x ∈ e.applications, Y) (g : Y → Z) :
-    (e.compile scalar f).rename g = e.compile scalar (fun x h => g (f x h)) := by
-  induction e <;> simp [compile, rename, *]
-  rfl
-
-end Expression
-
-/-- A coefficient vocabulary renders literals and arithmetic as named terms of the signature.
-Only the scalar literals supplied by the vocabulary need declared symbols. -/
-structure CoefficientSyntax (k : Type u) (sig : Signature.{u}) where
-  /-- The result sort of the coefficient expressions. -/
-  sort : sig.SortType
-  /-- The written literal names and their coefficients. -/
-  Literal : Type u
-  value : Literal → k
-  /-- Each literal denotes a distinct declared nullary operation. -/
-  literal : Literal ↪ sig.Total
-  literalArity : ∀ a, sig.totalArity (literal a) = ⟨[], sort⟩
-  /-- The declared ring operations used in the equality. -/
-  add : TypedTotal sig ⟨[sort, sort], sort⟩
-  neg : TypedTotal sig ⟨[sort], sort⟩
-  mul : TypedTotal sig ⟨[sort, sort], sort⟩
-
-namespace CoefficientSyntax
-
-variable {k : Type u} {sig : Signature.{u}} (C : CoefficientSyntax k sig)
-variable {Γ : List sig.SortType}
-
-/-- A named quantity of the coefficient sort applied to a tuple of original state terms. -/
-abbrev Application (Γ : List sig.SortType) :=
-  Σ j : {j : sig.Quantity // (sig.quantityArity j).output = C.sort},
-    Substitution sig (sig.quantityArity j.val).inputs Γ
-
-/-- The typed term denoted by a quantity application. -/
-def applicationTerm (a : C.Application Γ) : Term sig Γ C.sort :=
-  cast (congrArg (Term sig Γ) a.1.property) (.app (.quantity a.1.val) (fun i => a.2 i))
-
-/-- The literal equality can be read as an ordinary typed term equality of the presentation. -/
-def term (C : CoefficientSyntax k sig) : Expression C.Literal (C.Application Γ) → Term sig Γ C.sort
-  | .scalar a => (TypedTotal.mk (.ordinary (C.literal a)) (C.literalArity a)).term Term.argsNil
-  | .quantity a => C.applicationTerm a
-  | .add x y => C.add.term ((term C x).argsCons ((term C y).argsCons Term.argsNil))
-  | .neg x => C.neg.term ((term C x).argsCons Term.argsNil)
-  | .mul x y => C.mul.term ((term C x).argsCons ((term C y).argsCons Term.argsNil))
-
-end CoefficientSyntax
-
-/-- The fixed family of required quantity equations in the original presentation.
-The same presentation may also contain state Laws. -/
-structure DeclaredQuantityLaws (k : Type u) (P : PrimitivePresentation.{u}) where
-  coefficients : CoefficientSyntax k P.signature
-  /-- The required Law declarations that serve as the quantity equations of §5.1. -/
-  quantityLaw : Set P.theory.LawName
-  /-- The two sides of each designated equation, with the applications as actual leaves. -/
-  left (l : quantityLaw) :
-    Expression coefficients.Literal (coefficients.Application (P.theory.law l.val).context)
-  right (l : quantityLaw) :
-    Expression coefficients.Literal (coefficients.Application (P.theory.law l.val).context)
-  /-- The expressions present the conclusion of that very Law declaration. -/
-  conclusion (l : quantityLaw) :
-    (P.theory.law l.val).conclusion =
-      Formula.termEq (coefficients.term (left l)) (coefficients.term (right l))
+/-- The original required coefficient equations in one primitive presentation.
+Their terms are tied to the actual positive formulas by their ordered writings. -/
+structure DeclaredQuantityLaws (P : PrimitivePresentation.{u}) where
+  /-- Exactly the declared operations chosen to supply the varying scalar values. -/
+  quantities : Set (QuantityDeclaration P.signature)
+  /-- The original required Laws imposing the scalar equalities. -/
+  quantityLaws : Set P.theory.LawName
+  /-- Each equality may have its own value sort. -/
+  valueSort : quantityLaws → P.signature.SortType
+  /-- The two sides, over the original source context of each declaration. -/
+  left (l : quantityLaws) : CoefficientTerm quantities (P.theory.law l.val).context (valueSort l)
+  right (l : quantityLaws) : CoefficientTerm quantities (P.theory.law l.val).context (valueSort l)
+  /-- The existing Law is the ordered writing of these two original typed terms. -/
+  expansion (l : quantityLaws) : OrderedEquation.Expansion
+    ⟨(P.theory.law l.val).context, valueSort l, (P.theory.law l.val).input, (left l).toTerm, (right l).toTerm⟩
+    (P.theory.law l.val).conclusion
+  /-- The antecedent reads the fixed state, allowing domains of partial quantities. -/
+  stateInput (l : quantityLaws) :
+    StateFormula (QuantityDeclaration.operation '' quantities) (P.theory.law l.val).input
+  /-- Every actual quantity argument only reads fixed state values. -/
+  stateArgument (l : quantityLaws) (a : CoefficientTerm.Application quantities (P.theory.law l.val).context)
+    (used : Sum.inr a ∈ (left l).leaves ∪ (right l).leaves)
+    {s} (i : Var a.1.val.operation.arity.inputs s) :
+    StateTerm (QuantityDeclaration.operation '' quantities) (a.2 i)
 
 namespace DeclaredQuantityLaws
 
-variable {k : Type u} {P : PrimitivePresentation.{u}} (L : DeclaredQuantityLaws k P)
+variable {P : PrimitivePresentation.{u}} (L : DeclaredQuantityLaws P)
 variable {U V : DeclarationContext P}
 
-/-- A quantity of the original signature retained in this declaration context. -/
+/-- The retained part of the designated varying quantities. -/
 abbrev KeptQuantity (U : DeclarationContext P) :=
-  {j : P.signature.Quantity // Declaration.quantity j ∈ U.declarations}
+  {j : L.quantities // Declaration.ofOperation j.val.operation ∈ U.declarations}
 
-/-- The Chapter 3 selection of required Laws, within the fixed quantity Law family. -/
+/-- The retained part of the original required scalar Laws. -/
 abbrev KeptLaw (U : DeclarationContext P) :=
-  {l : L.quantityLaw // Declaration.law l.val.val ∈ U.declarations}
+  {l : L.quantityLaws // Declaration.law l.val.val ∈ U.declarations}
 
-/-- The full declaration context retains every required quantity Law. -/
-def keptLaw_full (l : L.quantityLaw) : L.KeptLaw (DeclarationContext.full P) :=
-  ⟨l, Set.mem_univ _⟩
+/-- The original equation with its full ordered writing. -/
+def writing (l : L.quantityLaws) : OrderedEquation.Written P.signature :=
+  ⟨⟨_, _, _, (L.left l).toTerm, (L.right l).toTerm⟩, (P.theory.law l.val).conclusion, L.expansion l⟩
 
-/-- The selected quantity Law is a selected rule in the contextual theory. -/
-def KeptLaw.scoped (l : L.KeptLaw U) : U.scopedTheory.LawName :=
-  ⟨l.val.val, l.property⟩
-
-/-- The actual quantity applications of the original two sides. -/
-abbrev UsedApplication (l : L.quantityLaw) :=
-  {a : L.coefficients.Application (P.theory.law l.val).context //
-    a ∈ (L.left l).applications ∪ (L.right l).applications}
-
-/-- The input sorts of a retained Law survive by dependency closure. -/
-theorem keptLaw_sorts (l : L.KeptLaw U) :
-    Declaration.sorts (P.theory.law l.val.val).context ⊆ U.declarations :=
-  lawSortSupport (Declaration.lawBody_subset_of_mem l.property)
-
-/-- The references of an argument are present in the corresponding operation term. -/
-private theorem refs_typedArg {profile : Arity P.signature.SortType}
-    {Γ : List P.signature.SortType} (op : TypedTotal P.signature profile)
-    (args : ∀ {s}, Var profile.inputs s → Term P.signature Γ s)
-    {s : P.signature.SortType} (i : Var profile.inputs s) :
-    Selected.termReferences (args i) ⊆ Selected.termReferences (op.term args) := by
-  rcases op with ⟨symbol, same⟩
-  subst profile
-  intro d used
-  change d ∈ Selected.termReferences (.app symbol.operation args)
-  exact Or.inr ⟨_, i, used⟩
-
-private theorem refs_castResult {Γ : List P.signature.SortType} {s t : P.signature.SortType}
-    (h : s = t) (x : Term P.signature Γ s) :
-    Selected.termReferences (cast (congrArg (Term P.signature Γ) h) x) =
-      Selected.termReferences x := by
-  cases h
+/-- Its stored positive Law is exactly the declaration at the selected name. -/
+theorem writing_toLaw (l : L.quantityLaws) : (L.writing l).toLaw = P.theory.law l.val :=
   rfl
 
-/-- An actual application contributes its quantity name and all its argument references. -/
-private theorem application_refs {Γ : List P.signature.SortType}
-    (C : CoefficientSyntax k P.signature) (e : Expression C.Literal (C.Application Γ))
-    {a : C.Application Γ} (used : a ∈ e.applications) :
-    Selected.termReferences (C.applicationTerm a) ⊆ Selected.termReferences (C.term e) := by
-  induction e with
-  | scalar c => exact False.elim used
-  | quantity x =>
-    obtain rfl := Set.mem_singleton_iff.mp used
-    exact Set.Subset.rfl
-  | add x y hx hy =>
-    rcases used with h | h
-    · exact (hx h).trans (refs_typedArg C.add (fun i => (C.term x).argsCons ((C.term y).argsCons Term.argsNil) i) .here)
-    · exact (hy h).trans (refs_typedArg C.add (fun i => (C.term x).argsCons ((C.term y).argsCons Term.argsNil) i) (.there .here))
-  | neg x hx => exact (hx used).trans (refs_typedArg C.neg (fun i => (C.term x).argsCons Term.argsNil i) .here)
-  | mul x y hx hy =>
-    rcases used with h | h
-    · exact (hx h).trans (refs_typedArg C.mul (fun i => (C.term x).argsCons ((C.term y).argsCons Term.argsNil) i) .here)
-    · exact (hy h).trans (refs_typedArg C.mul (fun i => (C.term x).argsCons ((C.term y).argsCons Term.argsNil) i) (.there .here))
+/-- The reduced context keeps the result sort and all references of both actual written sides. -/
+theorem keptLaw_refs (l : L.KeptLaw U) :
+    Declaration.sort (L.valueSort l.val) ∈ U.declarations ∧
+      Selected.termReferences (L.left l.val).toTerm ⊆ U.declarations ∧
+      Selected.termReferences (L.right l.val).toTerm ⊆ U.declarations :=
+  Selected.selectWritten_terms_kept (L.writing l.val)
+    (by rw [L.writing_toLaw]; exact Declaration.lawBody_subset_of_mem l.property)
 
-private theorem keptApplication_refs (l : L.KeptLaw U) (a : L.UsedApplication l.val) :
-    Selected.termReferences (Term.app (.quantity a.val.1.val) (fun i => a.val.2 i)) ⊆ U.declarations := by
-  have written := lawConclusionSupport (Declaration.lawBody_subset_of_mem l.property)
-  change Declaration.formulaSupport (P.theory.law l.val.val).conclusion ⊆ U.declarations at written
-  rw [L.conclusion] at written
-  have refs := Selected.termEq_support _ _ written
-  have kept : Selected.termReferences (L.coefficients.applicationTerm a.val) ⊆ U.declarations :=
-    a.property.elim (fun h => (application_refs _ _ h).trans refs.2.1)
-      (fun h => (application_refs _ _ h).trans refs.2.2)
-  unfold CoefficientSyntax.applicationTerm at kept
-  rw [refs_castResult (P := P) a.val.1.property
-    (Term.app (.quantity a.val.1.val) (fun i => a.val.2 i))] at kept
-  exact kept
+/-- Only literal symbols and applications present in the two original terms are compiled. -/
+abbrev UsedLeaf (l : L.quantityLaws) :=
+  {a : CoefficientTerm.Literal P.signature ⊕
+      CoefficientTerm.Application L.quantities (P.theory.law l.val).context //
+    a ∈ (L.left l).leaves ∪ (L.right l).leaves}
 
-/-- The written Law's dependency closure contains the quantity of each actual application. -/
-def keptApplication (l : L.KeptLaw U) (a : L.UsedApplication l.val) : KeptQuantity U :=
-  ⟨a.val.1.val, L.keptApplication_refs l a (Or.inl (Set.mem_singleton _))⟩
+/-- The original Law's support keeps every actual referenced leaf. -/
+theorem keptLeaf_refs (l : L.KeptLaw U) (a : L.UsedLeaf l.val) :
+    Selected.termReferences (CoefficientTerm.leafTerm a.val).2 ⊆ U.declarations :=
+  a.property.elim
+    (fun h => (CoefficientTerm.leafReferences_subset _ h).trans (L.keptLaw_refs l).2.1)
+    (fun h => (CoefficientTerm.leafReferences_subset _ h).trans (L.keptLaw_refs l).2.2)
 
-/-- References and retained input and result sorts suffice for the support of a term graph. -/
-private theorem termContext_le {Γ : List P.signature.SortType} {s : P.signature.SortType}
-    (t : Term P.signature Γ s) (context : Declaration.sorts Γ ⊆ U.declarations)
-    (result : Declaration.sort s ∈ U.declarations)
-    (refs : Selected.termReferences t ⊆ U.declarations) : Declaration.termContext t ≤ U := by
-  have equality := lawConclusionSupport (Marked.equality_law_support t t operationInputs context result refs refs)
+/-- The selected Law's arithmetic symbols are also retained. -/
+theorem keptArithmetic (l : L.KeptLaw U) {a : ArithmeticOperation P.signature}
+    (used : a ∈ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
+    Declaration.total a.name ∈ U.declarations :=
+  used.elim
+    (fun h => (L.keptLaw_refs l).2.1 (CoefficientTerm.arithmetic_reference _ h))
+    (fun h => (L.keptLaw_refs l).2.2 (CoefficientTerm.arithmetic_reference _ h))
+
+/-- A designated quantity application occurring in either original side. -/
+abbrev UsedApplication (l : L.quantityLaws) :=
+  {a : CoefficientTerm.Application L.quantities (P.theory.law l.val).context //
+    Sum.inr a ∈ (L.left l).leaves ∪ (L.right l).leaves}
+
+/-- An original coefficient literal occurring in either original side. -/
+abbrev UsedLiteral (l : L.quantityLaws) :=
+  {a : CoefficientTerm.Literal P.signature //
+    Sum.inl a ∈ (L.left l).leaves ∪ (L.right l).leaves}
+
+/-- The original Law's support keeps the operation of every applied quantity. -/
+def keptApplication (l : L.KeptLaw U) (a : L.UsedApplication l.val) : L.KeptQuantity U :=
+  ⟨a.val.1, L.keptLeaf_refs l ⟨.inr a.val, a.property⟩ (Or.inl (Set.mem_singleton _))⟩
+
+/-- Every argument term of an actual application is written in the retained context. -/
+private theorem keptTerm_support (l : L.KeptLaw U) (a : L.UsedApplication l.val)
+    {s : P.signature.SortType} (i : Var a.val.1.val.operation.arity.inputs s) :
+    Declaration.termContext (a.val.2 i) ≤ U := by
+  let t := a.val.2 i
+  have input := lawSortSupport (Declaration.lawBody_subset_of_mem l.property)
+  have result := varKept
+    (operationInputs a.val.1.val.operation (L.keptApplication l a).property) i
+  have termRefs : Selected.termReferences t ⊆ U.declarations :=
+    fun _ h => L.keptLeaf_refs l ⟨.inr a.val, a.property⟩ (Or.inr ⟨_, i, h⟩)
+  have equality := lawConclusionSupport (Marked.equality_law_support t t operationInputs input result termRefs termRefs)
   change Declaration.formulaSupport (Formula.termEq t t) ⊆ U.declarations at equality
   rw [Formula.termEq_eq_ex] at equality
   apply (Declaration.termContext_le_iff t).2
   exact (Declaration.binarySupport_left (Declaration.formula_conj t.graph t.graph)).trans
     ((Declaration.formulaSupport_ex_body _).trans equality)
 
-/-- Each argument of an actual application is retained by the written Law's dependency closure. -/
+/-- The retained state argument denotes precisely its original term. -/
 def keptTerm (l : L.KeptLaw U) (a : L.UsedApplication l.val) {s : P.signature.SortType}
-    (i : Var (P.signature.quantityArity (L.keptApplication l a).val).inputs s) :
-    U.TermIn (P.theory.law l.val.val).context s :=
-  ⟨a.val.2 i, termContext_le _ (L.keptLaw_sorts l)
-    (varKept (operationInputs (.quantity a.val.1.val) (L.keptApplication l a).property) i)
-    (fun _ used => L.keptApplication_refs l a (Or.inr ⟨_, i, used⟩))⟩
+    (i : Var a.val.1.val.operation.arity.inputs s) : U.TermIn (P.theory.law l.val.val).context s :=
+  ⟨a.val.2 i, L.keptTerm_support l a i⟩
 
-/-- The required argument sorts of a retained quantity survive by dependency closure. -/
-theorem keptQuantity_sorts (j : KeptQuantity U) :
-    Declaration.sorts (P.signature.quantityArity j.val).inputs ⊆ U.declarations :=
-  operationInputs (.quantity j.val) (by simpa only [Declaration.ofOperation_quantity] using j.property)
+/-- A literal's nullary ordinary operation survives selection of its written Law. -/
+private theorem keptLiteral_name (l : L.KeptLaw U) (a : L.UsedLiteral l.val) :
+    Declaration.total a.val.2.name ∈ U.declarations := by
+  let op := a.val.2
+  have kept := L.keptLeaf_refs l ⟨.inl a.val, a.property⟩
+  change Selected.termReferences (op.term (Γ := (P.theory.law l.val.val).context) Term.argsNil) ⊆
+    U.declarations at kept
+  exact kept (CoefficientTerm.coefficientHead_ref op Term.argsNil)
 
-/-- Inclusion keeps precisely the same original required Law and its written equation. -/
-def includeLaw (inside : V ≤ U) (l : L.KeptLaw V) : L.KeptLaw U :=
-  ⟨l.val, inside l.property⟩
-
-/-- The original required Law's input set, read on the fixed state structure. -/
+/-- The input of the Law is read from its actual fixed-state antecedent. -/
 def lawInput (A : ContextStructure U) (l : L.KeptLaw U) :
     Set (Assignment A.carrier (P.theory.law l.val.val).context) :=
   {e | A.evaluation.holds (P.theory.law l.val.val).input
     (lawInputSupport (Declaration.lawBody_subset_of_mem l.property)) e}
 
-/-- The quantity domains and evaluated arguments on the original required input sets. -/
-structure Interpretation (A : ContextStructure U) where
-  /-- The fixed domain on each retained quantity's actual carrier product. -/
-  domain (j : KeptQuantity U) :
-    Set (Assignment A.carrier (P.signature.quantityArity j.val).inputs)
-  /-- At each prescribed input the evaluated tuple of each actual application is in its domain. -/
-  value (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val) :
-    domain (L.keptApplication l a)
-  /-- Each coordinate is the actual evaluation of its supported state term. -/
-  evaluates (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val) {s : P.signature.SortType}
-    (i : Var (P.signature.quantityArity (L.keptApplication l a).val).inputs s) :
-    A.evaluates (L.keptTerm l a i) e.val ((value l e a).val i)
+/-- The input sorts survive along with the original required Law. -/
+theorem keptLaw_sorts (l : L.KeptLaw U) :
+    Declaration.sorts (P.theory.law l.val.val).context ⊆ U.declarations :=
+  lawSortSupport (Declaration.lawBody_subset_of_mem l.property)
 
-/-- Obtain the argument tuples from definedness on the original Law inputs. -/
-def Interpretation.ofDefined (A : ContextStructure U)
-    (domain : ∀ j : KeptQuantity U, Set (Assignment A.carrier (P.signature.quantityArity j.val).inputs))
-    (w : ∀ (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val),
-      ∃ x : domain (L.keptApplication l a), ∀ {s} (i : Var (P.signature.quantityArity (L.keptApplication l a).val).inputs s),
-        A.evaluates (L.keptTerm l a i) e.val (x.val i)) :
-    L.Interpretation A where
-  domain := domain
-  value l e a := (w l e a).choose
-  evaluates l e a := by
-    intro s i
-    exact (w l e a).choose_spec i
+/-- Each retained quantity preserves its typed input positions. -/
+theorem keptQuantity_sorts (j : L.KeptQuantity U) :
+    Declaration.sorts j.val.val.operation.arity.inputs ⊆ U.declarations :=
+  operationInputs j.val.val.operation j.property
+
+/-- The context inclusion keeps the same chosen quantity with its original operation tag. -/
+def includeQuantity (inside : V ≤ U) (j : L.KeptQuantity V) : L.KeptQuantity U :=
+  ⟨j.val, inside j.property⟩
+
+/-- The context inclusion keeps the same required Law and its original writing. -/
+def includeLaw (inside : V ≤ U) (l : L.KeptLaw V) : L.KeptLaw U :=
+  ⟨l.val, inside l.property⟩
+
+/-- A marked total quantity has a designated argument set in the state structure. -/
+abbrev KeptTotal (U : DeclarationContext P) :=
+  {j : P.signature.Quantity //
+    QuantityDeclaration.total j ∈ L.quantities ∧ Declaration.quantity j ∈ U.declarations}
+
+/-- For a partial quantity the argument set is its declared domain in the state structure. -/
+def fixedDomain (A : ContextStructure U)
+    (total : ∀ j : L.KeptTotal U, Set (Assignment A.carrier (P.signature.quantityArity j.val).inputs)) :
+    (j : L.KeptQuantity U) → Set (Assignment A.carrier j.val.val.operation.arity.inputs)
+  | ⟨⟨.total j, chosen⟩, keep⟩ => total ⟨j, chosen, keep⟩
+  | ⟨⟨.partialOp j, _⟩, keep⟩ => {e | A.evaluation.domain j keep e}
+
+variable {k : Type u} [CommRing k]
+
+/-- Interpret scalar meanings and the defined state arguments in a fixed context structure. -/
+structure Interpretation (A : ContextStructure U) where
+  /-- Read the coefficient value of an element of a retained carrier. -/
+  read : CarrierMap U A.carrier (fun _ => k)
+  /-- The designated argument sets of marked total quantities. -/
+  totalDomain (j : L.KeptTotal U) : Set (Assignment A.carrier (P.signature.quantityArity j.val).inputs)
+  /-- The actual declared operations at arithmetic nodes realize their written meanings. -/
+  arithmetic (l : L.KeptLaw U) (a : ArithmeticOperation P.signature)
+    (used : a ∈ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
+    a.realizes A read (L.keptArithmetic l used)
+  /-- The evaluated state argument tuple of each used quantity is in its fixed domain. -/
+  value (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val) :
+    L.fixedDomain A totalDomain (L.keptApplication l a)
+  /-- Its components are the actual evaluations of the original fixed state terms. -/
+  evaluates (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val)
+    {s : P.signature.SortType} (i : Var a.val.1.val.operation.arity.inputs s) :
+    A.evaluates (L.keptTerm l a i) e.val ((value l e a).val i)
 
 namespace Interpretation
 
-variable {L} {A : ContextStructure U} (I : L.Interpretation A)
+variable {L} {A : ContextStructure U} (I : L.Interpretation (k := k) A)
 
-/-- Read the finite expressions using their actual state arguments. -/
+/-- The fixed argument set in the retained state for a designated quantity. -/
+abbrev domain (j : L.KeptQuantity U) := L.fixedDomain A I.totalDomain j
+
+/-- The actual value of the original retained nullary operation. -/
+private def actualLiteral (l : L.KeptLaw U) (a : L.UsedLiteral l.val) : A.carrier a.val.1 :=
+  a.val.2.nativeValue A (L.keptLiteral_name l a) Assignment.empty
+
+/-- Read the scalar from the actual value of its declared nullary symbol. -/
+def literalValue (l : L.KeptLaw U) (a : L.UsedLiteral l.val) : k :=
+  I.read a.val.1 (a.val.2.keepsResult (L.keptLiteral_name l a)) (actualLiteral (A := A) l a)
+
+/-- A leaf compiles to its original coefficient value or its actual quantity coordinate. -/
+private def readLeaf (l : L.KeptLaw U) (e : L.lawInput A l) :
+    (a : L.UsedLeaf l.val) →
+      CoefficientTerm.LeafValue k (Σ j : L.KeptQuantity U, I.domain j) a.val
+  | ⟨.inl literal, used⟩ => I.literalValue l ⟨literal, used⟩
+  | ⟨.inr app, used⟩ => ⟨L.keptApplication l ⟨app, used⟩, I.value l e ⟨app, used⟩⟩
+
+/-- Compile exactly the originally designated quantity equations surviving in the context. -/
 def presentation : Presentation k (Selected.readStructure A) where
-  Quantity := KeptQuantity U
+  Quantity := L.KeptQuantity U
   Domain := fun j => I.domain j
   Law := L.KeptLaw U
   Input := fun l => L.lawInput A l
-  left l e := (L.left l.val).compile L.coefficients.value fun a h =>
-    ⟨L.keptApplication l ⟨a, Or.inl h⟩, I.value l e ⟨a, Or.inl h⟩⟩
-  right l e := (L.right l.val).compile L.coefficients.value fun a h =>
-    ⟨L.keptApplication l ⟨a, Or.inr h⟩, I.value l e ⟨a, Or.inr h⟩⟩
+  left l e := (L.left l.val).compile (fun a h => I.readLeaf l e ⟨a, Or.inl h⟩)
+  right l e := (L.right l.val).compile (fun a h => I.readLeaf l e ⟨a, Or.inr h⟩)
+
+/-- The original guard is independent of the candidate value graphs, with all domains fixed. -/
+theorem lawInput_fixed (l : L.KeptLaw U) (B : RestrictedEvaluation U A.carrier)
+    (same : SameStateEvaluation (QuantityDeclaration.operation '' L.quantities) A.evaluation B)
+    (e : Assignment A.carrier (P.theory.law l.val.val).context) :
+    e ∈ L.lawInput A l ↔ B.holds (P.theory.law l.val.val).input
+      (lawInputSupport (Declaration.lawBody_subset_of_mem l.property)) e :=
+  same.holds_iff _ (L.stateInput l.val) _ e
+
+/-- Replacing the candidate values leaves every evaluated state argument unchanged. -/
+theorem argument_fixed (l : L.KeptLaw U) (B : RestrictedEvaluation U A.carrier)
+    (same : SameStateEvaluation (QuantityDeclaration.operation '' L.quantities) A.evaluation B)
+    (e : L.lawInput A l) (a : L.UsedApplication l.val) {s : P.signature.SortType}
+    (i : Var a.val.1.val.operation.arity.inputs s) :
+    B.holds (L.keptTerm l a i).val.graph
+        ((Declaration.termContext_le_iff (L.keptTerm l a i).val).1 (L.keptTerm l a i).property)
+        (Assignment.cons ((I.value l e a).val i) e.val) :=
+  (same.evaluates_iff (L.keptTerm l a i) (L.stateArgument l.val a.val a.property i) _ _).1
+    (I.evaluates l e a i)
+
+/-- Reading an element after retyping its sort uses the same retained carrier. -/
+private theorem read_cast {s t : P.signature.SortType} (eq : s = t)
+    (hs : Declaration.sort s ∈ U.declarations) (ht : Declaration.sort t ∈ U.declarations)
+    (x : A.carrier s) : I.read t ht (cast (congrArg A.carrier eq) x) = I.read s hs x := by
+  cases eq
+  rfl
+
+/-- The native value of a leaf is its actual literal value or the selected candidate quantity. -/
+private def nativeLeaf (l : L.KeptLaw U) (e : L.lawInput A l)
+    (q : I.presentation.Candidate k) (lift : k → A.carrier (L.valueSort l.val))
+    (t : CoefficientTerm L.quantities (P.theory.law l.val.val).context (L.valueSort l.val))
+    (used : t.leaves ⊆ (L.left l.val).leaves ∪ (L.right l.val).leaves) :
+    ∀ a ∈ t.leaves, A.carrier (L.valueSort l.val)
+  | .inl literal, h =>
+    cast (congrArg A.carrier (t.leafSort_eq h))
+      (actualLiteral (A := A) l ⟨literal, used h⟩)
+  | .inr app, h =>
+    let a : L.UsedApplication l.val := ⟨app, used h⟩
+    lift (q (L.keptApplication l a) (I.value l e a))
+
+/-- Both native sides evaluate their actual declared arithmetic at the same fixed state input. -/
+def nativeSides (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
+    (lift : k → A.carrier (L.valueSort l.val)) :
+    A.carrier (L.valueSort l.val) × A.carrier (L.valueSort l.val) :=
+  ⟨(L.left l.val).evalNative A (L.keptLaw_refs l).2.1
+    (I.nativeLeaf l e q lift (L.left l.val) Set.subset_union_left),
+    (L.right l.val).evalNative A (L.keptLaw_refs l).2.2
+      (I.nativeLeaf l e q lift (L.right l.val) Set.subset_union_right)⟩
+
+/-- The original native term actions give the compiled value on each side. -/
+private theorem nativeSide_read (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
+    (lift : k → A.carrier (L.valueSort l.val))
+    (readsLift : ∀ x, I.read _ (L.keptLaw_refs l).1 (lift x) = x)
+    (t : CoefficientTerm L.quantities (P.theory.law l.val.val).context (L.valueSort l.val))
+    (keep : Selected.termReferences t.toTerm ⊆ U.declarations)
+    (used : t.leaves ⊆ (L.left l.val).leaves ∪ (L.right l.val).leaves)
+    (usedArithmetic : t.arithmetic ⊆ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
+    I.read _ (L.keptLaw_refs l).1 (t.evalNative A keep (I.nativeLeaf l e q lift t used)) =
+      (t.compile (fun a h => I.readLeaf l e ⟨a, used h⟩)).eval (fun x => q x.1 x.2) := by
+  apply CoefficientTerm.evalNative_read
+  · intro a h
+    cases a with
+    | inl literal =>
+      exact I.read_cast (t.leafSort_eq h) _ _ _
+    | inr app => exact readsLift _
+  · intro op h
+    exact I.arithmetic l op (usedArithmetic h)
+
+/-- Reading both original native sides agrees with evaluation of their compiled equations. -/
+theorem nativeSides_read (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
+    (lift : k → A.carrier (L.valueSort l.val))
+    (readsLift : ∀ x, I.read _ (L.keptLaw_refs l).1 (lift x) = x) :
+    let result := I.nativeSides l e q lift
+    (I.read _ (L.keptLaw_refs l).1 result.1, I.read _ (L.keptLaw_refs l).1 result.2) =
+      ((I.presentation.left l e).eval (fun x => q x.1 x.2),
+        (I.presentation.right l e).eval (fun x => q x.1 x.2)) :=
+  Prod.ext
+    (I.nativeSide_read l e q lift readsLift _ _ Set.subset_union_left Set.subset_union_left)
+    (I.nativeSide_read l e q lift readsLift _ _ Set.subset_union_right Set.subset_union_right)
+
+/-- When the native value carrier is identified with the coefficient ring, the compiled
+equation holds exactly when the two interpreted original sides are equal. -/
+theorem nativeEquation_iff (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
+    (coefficients : A.carrier (L.valueSort l.val) ≃ k)
+    (reads : ∀ x, I.read _ (L.keptLaw_refs l).1 x = coefficients x) :
+    let native := I.nativeSides l e q coefficients.symm
+    native.1 = native.2 ↔
+      (I.presentation.left l e).eval (fun x => q x.1 x.2) =
+        (I.presentation.right l e).eval (fun x => q x.1 x.2) := by
+  have equality := I.nativeSides_read l e q coefficients.symm
+    (fun x => (reads _).trans (coefficients.apply_symm_apply x))
+  have lh := congrArg Prod.fst equality
+  have rh := congrArg Prod.snd equality
+  dsimp only at lh rh ⊢
+  rw [← lh, ← rh, reads, reads, coefficients.injective.eq_iff]
+
+/-- The universal polynomial residual specializes to the interpreted difference of the native sides. -/
+theorem nativeResidual_eq (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
+    (lift : k → A.carrier (L.valueSort l.val))
+    (readsLift : ∀ x, I.read _ (L.keptLaw_refs l).1 (lift x) = x) :
+    I.presentation.evaluate q (I.presentation.residual l e) =
+      let sides := I.nativeSides l e q lift
+      I.read _ (L.keptLaw_refs l).1 sides.1 - I.read _ (L.keptLaw_refs l).1 sides.2 := by
+  rw [I.presentation.evaluate_residual]
+  exact congrArg (fun values : k × k => values.1 - values.2)
+    (I.nativeSides_read l e q lift readsLift).symm
 
 variable (inside : V ≤ U)
 
@@ -295,10 +357,23 @@ private def assignmentEquiv {Γ : List P.signature.SortType}
     exact (selectedMap_bijective A.carrier s (varKept support i)).1
       (congrArg (fun e : Assignment A.carrier Γ => e i) same))
 
-/-- The domain of a retained quantity is transported along the retained carrier identification. -/
-private def restrictDomain (j : KeptQuantity V) :
+/-- The retained carriers identify the same scalar value before and after forgetting. -/
+private def restrictRead : CarrierMap V (A.restrict inside).carrier (fun _ => k) :=
+  fun s keep x => I.read s (inside keep) (selectedMap V A.carrier s keep x)
+
+/-- The argument set of each marked total quantity is read on its retained carriers. -/
+private def restrictTotal (j : L.KeptTotal V) :
     Set (Assignment (A.restrict inside).carrier (P.signature.quantityArity j.val).inputs) :=
-  (assignmentEquiv (A := A) inside (keptQuantity_sorts j)) ⁻¹' I.domain ⟨j.val, inside j.property⟩
+  (assignmentEquiv (A := A) inside (operationInputs (.quantity j.val) j.property.2)) ⁻¹'
+    I.totalDomain ⟨j.val, j.property.1, inside j.property.2⟩
+
+/-- Total argument sets and genuine partial domains both restrict along the carrier identification. -/
+private theorem restrict_domain_iff (j : L.KeptQuantity V)
+    (e : Assignment (A.restrict inside).carrier j.val.val.operation.arity.inputs) :
+    e ∈ L.fixedDomain (A.restrict inside) (I.restrictTotal inside) j ↔
+      assignmentEquiv (A := A) inside (L.keptQuantity_sorts j) e ∈ I.domain (L.includeQuantity inside j) := by
+  rcases j with ⟨⟨j, chosen⟩, keep⟩
+  cases j <;> rfl
 
 /-- The original antecedent has the same truth on the corresponding ambient assignment. -/
 theorem restrict_lawInput_iff (l : L.KeptLaw V)
@@ -313,70 +388,95 @@ private def includeInput (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l
   ⟨assignmentEquiv (A := A) inside (L.keptLaw_sorts l) e.val,
     (restrict_lawInput_iff inside l e.val).1 e.property⟩
 
-/-- The original value tuple transported to the carriers of the actual reduct. -/
-private def restrictValue (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l) (a : L.UsedApplication l.val) :
-    I.restrictDomain inside (L.keptApplication l a) := by
-  let value := I.value (L.includeLaw inside l) (includeInput inside l e) a
-  let reads := assignmentEquiv (A := A) inside (keptQuantity_sorts (L.keptApplication l a))
-  exact ⟨reads.symm value.val, by
-    change reads (reads.symm value.val) ∈ I.domain (L.keptApplication (L.includeLaw inside l) a)
-    rw [reads.apply_symm_apply]
-    exact value.property⟩
+/-- Return the original evaluated tuple through the actual reduct's carrier identification. -/
+private def restrictValue (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l)
+    (a : L.UsedApplication l.val) :
+    L.fixedDomain (A.restrict inside) (I.restrictTotal inside) (L.keptApplication l a) := by
+  let original := I.value (L.includeLaw inside l) (includeInput inside l e) a
+  let reads := assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))
+  refine ⟨reads.symm original.val, (I.restrict_domain_iff inside _ _).2 ?_⟩
+  change reads (reads.symm original.val) ∈ I.domain (L.keptApplication (L.includeLaw inside l) a)
+  rw [reads.apply_symm_apply]
+  exact original.property
 
-/-- The restricted interpretation evaluates the same supported terms in the actual reduct. -/
-def restrict : L.Interpretation (A.restrict inside) where
-  domain := I.restrictDomain inside
+/-- The actual reduct retains the coefficient meanings and fixed-state evaluations of the original Laws. -/
+def restrict : L.Interpretation (k := k) (A.restrict inside) where
+  read := I.restrictRead inside
+  totalDomain := I.restrictTotal inside
+  arithmetic l a used :=
+    a.realizes_restrict inside (L.keptArithmetic l used) I.read (I.arithmetic (L.includeLaw inside l) a used)
   value := I.restrictValue inside
   evaluates l e a := by
     intro s i
     apply (A.restrict_evaluates_iff inside (L.keptTerm l a i) _ _).2
-    have same := (assignmentEquiv (A := A) inside (keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply
+    have same := (assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply
       (I.value (L.includeLaw inside l) (includeInput inside l e) a).val
     have atIndex := congrArg (fun x : Assignment A.carrier _ => x i) same
-    change selectedMap V A.carrier s (varKept (keptQuantity_sorts (L.keptApplication l a)) i)
+    change selectedMap V A.carrier s (varKept (L.keptQuantity_sorts (L.keptApplication l a)) i)
       ((I.restrictValue inside l e a).val i) =
         (I.value (L.includeLaw inside l) (includeInput inside l e) a).val i at atIndex
     rw [atIndex]
     exact I.evaluates (L.includeLaw inside l) (includeInput inside l e) a i
 
-/-- The map on retained quantity arguments reads their values in the ambient carriers. -/
+/-- Read a retained quantity and its designated argument in the ambient context. -/
 private def declarationQuantityMap : QuantityMap (I.restrict inside).presentation I.presentation where
-  name j := ⟨j.val, inside j.property⟩
-  argument j x := ⟨assignmentEquiv (A := A) inside (keptQuantity_sorts j) x.val, x.property⟩
+  name := L.includeQuantity inside
+  argument j x := ⟨assignmentEquiv (A := A) inside (L.keptQuantity_sorts j) x.val,
+    (I.restrict_domain_iff inside j x.val).1 x.property⟩
 
-/-- The declaration comparison sends each evaluated retained argument to the original one. -/
-private theorem declarationCoordinate (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l) (a : L.UsedApplication l.val) :
+/-- Restricting a literal does not change the coefficient read from its actual declaration. -/
+theorem literalValue_restrict (l : L.KeptLaw V) (a : L.UsedLiteral l.val) :
+    (I.restrict inside).literalValue l a = I.literalValue (L.includeLaw inside l) a := by
+  let op := a.val.2
+  let keep := L.keptLiteral_name l a
+  change I.read _ _ (selectedMap V A.carrier _ (op.keepsResult keep)
+      (op.nativeValue (A.restrict inside) keep Assignment.empty)) =
+    I.read _ _ (op.nativeValue A (inside keep) Assignment.empty)
+  rw [op.nativeValue_restrict]
+  congr 2
+  exact Assignment.eq_empty _
+
+/-- The declaration comparison sends each evaluated argument to the original one. -/
+private theorem declarationCoordinate (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l)
+    (a : L.UsedApplication l.val) :
     (I.declarationQuantityMap inside).coordinate ⟨L.keptApplication l a, I.restrictValue inside l e a⟩ =
-      ⟨L.keptApplication (L.includeLaw inside l) a, I.value (L.includeLaw inside l) (includeInput inside l e) a⟩ := by
+      ⟨L.keptApplication (L.includeLaw inside l) a,
+        I.value (L.includeLaw inside l) (includeInput inside l e) a⟩ := by
   refine Sigma.ext ?_ ?_
   · rfl
   apply heq_of_eq
   apply Subtype.ext
-  exact (assignmentEquiv (A := A) inside (keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply _
+  exact (assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply _
 
-/-- The actual declaration restriction induces the comparison of quantity Law models in §5.4. -/
+/-- Reading a compiled leaf commutes with the comparison of declaration contexts. -/
+private theorem declarationReadLeaf (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l)
+    (a : L.UsedLeaf l.val) :
+    CoefficientTerm.mapLeafValue (I.declarationQuantityMap inside).coordinate a.val
+      ((I.restrict inside).readLeaf l e a) =
+    I.readLeaf (L.includeLaw inside l) (includeInput inside l e) a := by
+  rcases a with ⟨literal | app, used⟩
+  · exact I.literalValue_restrict inside l ⟨literal, used⟩
+  · exact I.declarationCoordinate inside l e ⟨app, used⟩
+
+/-- The actual context inclusion induces a comparison of the original retained scalar equations. -/
 def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation where
   toQuantityMap := I.declarationQuantityMap inside
   law := L.includeLaw inside
   input := fun l e => includeInput (A := A) inside l e
   left l e := by
-    change ((L.left l.val).compile L.coefficients.value (fun a h =>
-      ⟨L.keptApplication l ⟨a, Or.inl h⟩, I.restrictValue inside l e ⟨a, Or.inl h⟩⟩)).rename
+    change ((L.left l.val).compile (fun a h => (I.restrict inside).readLeaf l e ⟨a, Or.inl h⟩)).rename
       (I.declarationQuantityMap inside).coordinate = _
-    rw [Expression.rename_compile]
+    rw [CoefficientTerm.rename_compile]
     congr 1
     funext a h
-    exact I.declarationCoordinate inside l e ⟨a, Or.inl h⟩
+    exact I.declarationReadLeaf inside l e ⟨a, Or.inl h⟩
   right l e := by
-    change ((L.right l.val).compile L.coefficients.value (fun a h =>
-      ⟨L.keptApplication l ⟨a, Or.inr h⟩, I.restrictValue inside l e ⟨a, Or.inr h⟩⟩)).rename
+    change ((L.right l.val).compile (fun a h => (I.restrict inside).readLeaf l e ⟨a, Or.inr h⟩)).rename
       (I.declarationQuantityMap inside).coordinate = _
-    rw [Expression.rename_compile]
+    rw [CoefficientTerm.rename_compile]
     congr 1
     funext a h
-    exact I.declarationCoordinate inside l e ⟨a, Or.inr h⟩
-
-variable [CommRing k]
+    exact I.declarationReadLeaf inside l e ⟨a, Or.inr h⟩
 
 /-- Declaration restriction along the Chapter 3 context inclusion commutes with changing coefficients. -/
 theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :

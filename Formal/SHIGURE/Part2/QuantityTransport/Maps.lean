@@ -107,6 +107,7 @@ namespace LawMap
 variable (h : LawMap P Q)
 
 omit [CommRing k] in
+/-- Renaming coordinates with the identity preserves each written expression. -/
 private theorem rename_identity {L : Type u} (t : Expression k L) : t.rename _root_.id = t := by
   induction t <;> simp [Expression.rename, *]
 

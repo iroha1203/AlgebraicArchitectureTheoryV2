@@ -41,6 +41,7 @@ variable {A : Structure sig} {B : Structure sig'}
 variable {P : Presentation k A} {Q : Presentation k B}
 variable (h : QuantityMap P Q)
 
+/-- Use the commutative tensor product ring when forming the agreement ideal. -/
 local instance : CommRing (P.LawAlgebra ⊗[k] Q.LawAlgebra) :=
   Algebra.TensorProduct.instCommRing
 
@@ -65,11 +66,13 @@ def agreementSource : P.LawAlgebra →ₐ[k] h.AgreementAlgebra :=
 def agreementTarget : Q.LawAlgebra →ₐ[k] h.AgreementAlgebra :=
   (Ideal.Quotient.mkₐ k h.agreementIdeal).comp Algebra.TensorProduct.includeRight
 
+/-- The defining agreement generator identifies the source and target forms of each coordinate. -/
 private theorem agreement_variable (x : P.Coordinate) :
     h.agreementSource (Ideal.Quotient.mk P.residualIdeal (MvPolynomial.X x)) =
       h.agreementTarget (Ideal.Quotient.mk Q.residualIdeal (MvPolynomial.X (h.coordinate x))) := by
   exact (Ideal.Quotient.eq (I := h.agreementIdeal)).mpr (Ideal.subset_span ⟨x, rfl⟩)
 
+/-- The two algebra maps agree after transporting all polynomial coordinates. -/
 private theorem agreement_polynomial :
     (h.agreementTarget.comp (Ideal.Quotient.mkₐ k Q.residualIdeal)).comp h.polynomial =
       h.agreementSource.comp (Ideal.Quotient.mkₐ k P.residualIdeal) := by
@@ -78,6 +81,7 @@ private theorem agreement_polynomial :
   rw [AlgHom.comp_apply, polynomial_X]
   exact (h.agreement_variable x).symm
 
+/-- The source and target maps determine the ring map by the tensor product universal property. -/
 private def tensorToEliminated : (P.LawAlgebra ⊗[k] Q.LawAlgebra) →ₐ[k] h.correspondencePresentation.LawAlgebra :=
   Algebra.TensorProduct.lift h.sourceQuotient h.targetQuotient (fun _ _ => Commute.all _ _)
 
@@ -125,6 +129,7 @@ theorem agreementToEliminated_comp_target : h.agreementToEliminated.comp h.agree
   rw [agreementToEliminated, Ideal.Quotient.liftₐ_comp, tensorToEliminated,
     Algebra.TensorProduct.lift_comp_includeRight']
 
+/-- The inverse comparison maps the eliminated source algebra to the original tensor projection. -/
 private theorem eliminatedToAgreement_comp_source :
     h.eliminatedToAgreement.comp h.sourceQuotient = h.agreementSource := by
   apply AlgHom.ext
@@ -132,6 +137,7 @@ private theorem eliminatedToAgreement_comp_source :
   obtain ⟨a, rfl⟩ := Ideal.Quotient.mk_surjective q
   exact AlgHom.congr_fun h.agreement_polynomial a
 
+/-- The inverse comparison maps the eliminated target algebra to the original tensor projection. -/
 private theorem eliminatedToAgreement_comp_target :
     h.eliminatedToAgreement.comp h.targetQuotient = h.agreementTarget := by
   apply AlgHom.ext
