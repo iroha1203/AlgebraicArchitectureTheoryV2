@@ -4,7 +4,7 @@ import Formal.SHIGURE.Part2.QuantityTransport.NamedWrittenRestriction
 
 The written scalar equation prescribes the external coefficient `1` on
 a partial quantity whose fixed domain consists of the input `true`.
-The original guard reads that domain and a relation. Forgetting an
+The original guard tests output existence and a relation. Forgetting an
 independent quantity leaves the registered equation and its guard intact.
 -/
 
@@ -26,7 +26,7 @@ private def signature : Signature where
   quantityArity _ := ⟨[()], ()⟩
 
 private def guard : Formula signature [()] :=
-  (Formula.atom (sig := signature) (.rel () (fun i => i))).conj (.atom (.domain () (fun i => i)))
+  (Formula.atom (sig := signature) (.rel () (fun i => i))).conj (GraphAxiom.hasOutput (.partialOp ()))
 private def law : Law signature := ⟨[()], guard, .truth⟩
 
 private def application : DeclaredApplication signature [()] :=
@@ -84,7 +84,7 @@ private def retained : DeclarationContext primitive where
       rcases hd with (native | coefficient) | impossible
       · change Declaration.quantity true ∈ Declaration.lawBody (P := primitive) law at native
         simp [Declaration.lawBody, law, guard, Declaration.formula, Declaration.atomic,
-          Declaration.sorts] at native
+          Declaration.sorts, GraphAxiom.hasOutput, Declaration.ofOperation_partialOp] at native
       · change (∃ a ∈ ({application} ∪ ∅ : Set _),
           Declaration.quantity true ∈ Declaration.coefficientApplicationSupport (P := primitive) a) at coefficient
         obtain ⟨a, used, support⟩ := coefficient
@@ -109,41 +109,53 @@ private def state : Structure signature where
 
 private def ambient : ContextStructure Full := ContextStructure.ofStructure Full state
 
-private def fixedState : written.FixedState Full where
-  guard _ := by
-    change StateFormula _ guard
-    exact ⟨trivial, trivial⟩
-  argument l a := by
-    intro s i
-    obtain ⟨⟨application, support⟩, used⟩ := a
-    obtain rfl := used_eq l.val ⟨application, support⟩
-    trivial
+private def selectedDomain (j : (written.selection Full).quantities) :
+    Set (Assignment ambient.carrier (written.written.domainContext j.val)) := Set.univ
 
 private def fixedDomain : Set (Assignment ambient.carrier [()]) :=
   {x | selectedMap Full state.carrier () (Set.mem_univ _) (x .here) = true}
+
+private theorem guard_iff_domain (B : RestrictedEvaluation Full ambient.carrier) (valid : B.Structural)
+    (e : Assignment ambient.carrier [()]) :
+    B.holds guard (Set.subset_univ _) e ↔
+      B.relation () (Set.mem_univ _) e ∧ B.domain () (Set.mem_univ _) e := by
+  change B.relation () (Set.mem_univ _) (e.pull (fun i => i)) ∧
+    (∃ y, B.graph (.partialOp ()) (Set.mem_univ _)
+      ((Assignment.cons y e).pull (fun i => .there i)) ((Assignment.cons y e) .here)) ↔ _
+  simp only [Assignment.pull_cons_there, Assignment.pull_id, Assignment.cons_here]
+  have structural := RestrictedEvaluation.partial_graph_valid valid () (Set.mem_univ _)
+  exact and_congr Iff.rfl ⟨fun ⟨y, h⟩ => structural.2.1 e y h, structural.2.2 e⟩
 
 private theorem nativeInput_iff_domain (l : (written.selection Full).laws)
     (e : Assignment ambient.carrier [()]) :
     e ∈ written.nativeInput ambient l ↔ e ∈ fixedDomain := by
   change ambient.evaluation.holds guard (Set.subset_univ _) e ↔ e ∈ fixedDomain
-  unfold guard
-  rw [RestrictedEvaluation.holds_conj_iff, RestrictedEvaluation.holds_atom_iff,
-    RestrictedEvaluation.holds_atom_iff]
+  rw [guard_iff_domain ambient.evaluation ambient.structural]
   change (True ∧ e ∈ fixedDomain) ↔ e ∈ fixedDomain
   exact ⟨And.right, fun input => ⟨trivial, input⟩⟩
 
+private def fixedState : written.FixedState ambient selectedDomain where
+  guard l B same e := by
+    change ambient.evaluation.holds guard (Set.subset_univ _) e ↔ B.holds guard (Set.subset_univ _) e
+    rw [guard_iff_domain ambient.evaluation ambient.structural, guard_iff_domain B same.structural]
+    exact and_congr (same.relation () (Set.mem_univ _) e) (same.domain () (Set.mem_univ _) e)
+  argument l _ same e a := by
+    intro s i y
+    apply same.toSameStateEvaluation.evaluates_iff
+    obtain ⟨⟨application, support⟩, used⟩ := a
+    obtain rfl := used_eq l.val ⟨application, support⟩
+    trivial
+
 private def reading : written.GuardedInterpretation ambient where
+  selectedDomain := selectedDomain
   fixedState := fixedState
-  domain j := by
-    rcases j with ⟨⟨j, _⟩, _⟩
-    cases j <;> exact fixedDomain
   value l e a := by
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
-    exact ⟨e.val, (nativeInput_iff_domain l e.val).mp e.property⟩
-  argument l _ a := by
+    exact ⟨e.val, (nativeInput_iff_domain l e.val).mp e.property, Set.mem_univ _⟩
+  argument l e a := by
     intro s i
-    rw [fixedState.argument_evaluates_iff]
+    apply (fixedState.argument_evaluates_iff l e a i _).mpr
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
     rfl
@@ -166,13 +178,17 @@ private theorem point_mem_fixedDomain_iff (x : Bool) : point x ∈ fixedDomain �
 
 /-- The input of the registered equation is the actual fixed partial domain. -/
 theorem named_law_input_iff_fixed_domain (x : Bool) :
-    point x ∈ written.fixedStateInput ambient l ↔ x = true := by
+    point x ∈ written.fixedStateInput ambient selectedDomain l ↔ x = true := by
   rw [fixedState.input_eq_native, nativeInput_iff_domain, point_mem_fixedDomain_iff]
 
-/-- The same fixed state hides the value graph of that partial quantity. -/
-theorem named_law_hides_partial_graph (y : ambient.carrier ()) :
-    ¬ (written.fixedStateEvaluation ambient).graph (.partialOp ()) (Set.mem_univ _) (point true) y :=
-  fun holds => holds.1 ⟨.partialOp (), Set.mem_univ _, rfl⟩
+private def partialAmount : (written.selection Full).quantities :=
+  ⟨⟨.partialOp (), Set.mem_univ _⟩, Set.mem_univ _⟩
+
+/-- Even a full selection leaves the coefficient candidate defined only at the native input. -/
+theorem named_law_partial_domain_iff (x : Bool) :
+    point x ∈ interpreted.domain partialAmount ↔ x = true := by
+  change (point x ∈ fixedDomain ∧ True) ↔ x = true
+  rw [and_true, point_mem_fixedDomain_iff]
 
 /-- A context keeping the actual Law declaration also keeps the guard relation. -/
 theorem named_law_keeps_guard (U : DeclarationContext primitive) (l : (written.selection U).laws) :

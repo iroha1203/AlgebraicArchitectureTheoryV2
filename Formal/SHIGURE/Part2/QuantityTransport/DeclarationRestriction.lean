@@ -358,7 +358,10 @@ def RepresentsLaw (A : ContextStructure U)
     ∀ e : L.fixedDomain A selected j, ∃ r, B.graph j.val.val.operation j.property e.val (output j e r)
 
 /-- Read the fixed state where the declared coefficient equations use it.
-Scalar quantity candidates assign values on the selected arguments independently of the native output carriers. -/
+Scalar quantity candidates assign values on the selected arguments independently of the native output carriers.
+The resulting equations use coefficients read in the original state. Comparing their solutions
+with satisfaction by a varying native structure uses the additional invariance and representation
+conditions of `Interpretation`. -/
 structure Reading (A : ContextStructure U) where
   /-- Read the coefficient value of an element of a retained carrier. -/
   read : CarrierMap U A.carrier (fun _ => k)
@@ -1156,7 +1159,8 @@ private theorem declarationReadLeaf (l : L.KeptLaw V) (e : L.lawInput (A.restric
   · exact I.coefficientValue_restrict inside l e ⟨literal, used⟩
   · exact I.declarationCoordinate inside l e ⟨app, used⟩
 
-/-- The actual context inclusion induces a comparison of the original retained scalar equations. -/
+/-- Compare the retained scalar equations along a declaration inclusion. Both sides read
+their coefficients from the original state and its reduct. -/
 def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation where
   toQuantityMap := I.declarationQuantityMap inside
   law := L.includeLaw inside
@@ -1176,7 +1180,7 @@ def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation w
     funext a h
     exact I.declarationReadLeaf inside l e ⟨a, Or.inr h⟩
 
-/-- Declaration restriction along the Chapter 3 context inclusion commutes with changing coefficients. -/
+/-- Restriction of the equations read in the fixed state commutes with changing the coefficient ring. -/
 theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
     let F := (I.restrict inside).presentation
     let ι := I.declarationLawMap inside
@@ -1184,7 +1188,7 @@ theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
   (I.declarationLawMap inside).extendedEquationMap_natural R
 
-/-- Changing coefficients to a principal-open localization also commutes with the native readings. -/
+/-- Principal-open localization commutes with restriction of equations read in the fixed state. -/
 theorem declarationLawMap_localization (r : k) :
     let R := Localization.Away r
     let F := (I.restrict inside).presentation
