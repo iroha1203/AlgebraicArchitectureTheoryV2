@@ -3,13 +3,13 @@
 use super::ast_ext::ShigureScalarLit;
 use super::ast_phase3::*;
 use super::check::{
-    CResult, DeclCategory, check_point_domain, check_presentation_vars, resolve_shigure_ref,
+    CResult, DeclCategory, ShigureDeclCtx, check_point_domain, check_presentation_vars,
 };
 use super::check_ext_common::check_scalar_lit;
 use super::check_family::{check_family, check_named_polys_in_scope, check_origin_ref};
 use super::*;
 use crate::law::ast::Span;
-use crate::law::check::{Checker, duplicate, full, reference};
+use crate::law::check::{Checker, duplicate, reference};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
@@ -27,16 +27,16 @@ pub(super) fn check_all_families<E: InputError>(
         for d in &r.shigure_decls {
             if let ShigureDeclAst::Family(raw) = d {
                 E::checkpoint(control, Checkpoint::LawSemantics)?;
-                let checked = check_family(
-                    raw.as_ref(),
+                let mut ctx = ShigureDeclCtx {
                     r_idx,
-                    &r.name.name,
+                    reading_name: &r.name.name,
                     checker,
                     index,
-                    out,
+                    decls: out,
                     edges,
                     control,
-                )?;
+                };
+                let checked = check_family(raw.as_ref(), &mut ctx)?;
                 out.families.insert(checked.name.clone(), checked);
             }
         }
@@ -57,44 +57,44 @@ pub(super) fn check_all_phase3_tasks<E: InputError>(
             match d {
                 ShigureDeclAst::Robustness(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_robustness(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
                         index,
-                        out,
+                        decls: out,
                         edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_robustness(raw, &mut ctx)?;
                     out.robustness_tasks.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::Chevalley(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_chevalley(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
                         index,
-                        out,
+                        decls: out,
                         edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_chevalley(raw, &mut ctx)?;
                     out.chevalley_tasks.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::Observations(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_observations(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
                         index,
-                        out,
+                        decls: out,
                         edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_observations(raw, &mut ctx)?;
                     out.observation_tasks.insert(checked.name.clone(), checked);
                 }
                 _ => {}
@@ -247,28 +247,14 @@ fn check_candidate_selector<E: InputError>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_robustness<E: InputError>(
     raw: &RawRobustnessTask,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureRobustnessTask, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
-    let family_name = resolve_shigure_ref(
-        &raw.family,
-        DeclCategory::Family,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
-    let fam = &decls.families[&family_name];
+    let full_name = ctx.full_name(&raw.name.name);
+    let family_name = ctx.resolve_ref(&raw.family, DeclCategory::Family)?;
+    let fam = &ctx.decls.families[&family_name];
+    let control = ctx.control;
     let point_domain = check_task_point_domain(
         &raw.point_domain,
         &fam.coeff_domain,
@@ -309,7 +295,7 @@ fn check_robustness<E: InputError>(
         .transpose()?;
     Ok(ShigureRobustnessTask {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         family: family_name,
         point_domain,
         base_value: raw.base_value.clone(),
@@ -320,28 +306,14 @@ fn check_robustness<E: InputError>(
     })
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_chevalley<E: InputError>(
     raw: &RawChevalleyTask,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureChevalleyTask, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
-    let family_name = resolve_shigure_ref(
-        &raw.family,
-        DeclCategory::Family,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
-    let fam = &decls.families[&family_name];
+    let full_name = ctx.full_name(&raw.name.name);
+    let family_name = ctx.resolve_ref(&raw.family, DeclCategory::Family)?;
+    let fam = &ctx.decls.families[&family_name];
+    let control = ctx.control;
     let point_domain = check_task_point_domain(
         &raw.point_domain,
         &fam.coeff_domain,
@@ -426,7 +398,7 @@ fn check_chevalley<E: InputError>(
     }
     Ok(ShigureChevalleyTask {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         family: family_name,
         point_domain,
         base_value: raw.base_value.clone(),
@@ -438,28 +410,14 @@ fn check_chevalley<E: InputError>(
     })
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_observations<E: InputError>(
     raw: &RawObservationTask,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureObservationTask, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
-    let family_name = resolve_shigure_ref(
-        &raw.family,
-        DeclCategory::Family,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
-    let fam = &decls.families[&family_name];
+    let full_name = ctx.full_name(&raw.name.name);
+    let family_name = ctx.resolve_ref(&raw.family, DeclCategory::Family)?;
+    let fam = &ctx.decls.families[&family_name];
+    let control = ctx.control;
     let point_domain = check_task_point_domain(
         &raw.point_domain,
         &fam.coeff_domain,
@@ -570,7 +528,7 @@ fn check_observations<E: InputError>(
 
     Ok(ShigureObservationTask {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         family: family_name,
         point_domain,
         base_value: raw.base_value.clone(),

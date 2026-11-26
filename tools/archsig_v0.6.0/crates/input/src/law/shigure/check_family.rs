@@ -2,17 +2,16 @@
 
 use super::ast_phase3::*;
 use super::check::{
-    CResult, DeclCategory, LiteralDomainRule, check_coeff_domain, check_poly_literals,
-    check_poly_vars, check_presentation_vars, resolve_observed_field, resolve_shigure_ref,
+    CResult, CoordCheckCtx, DeclCategory, LiteralDomainRule, ShigureDeclCtx, check_coeff_domain,
+    check_member_coord_value, check_poly_literals, check_poly_vars, check_presentation_vars,
 };
-use super::check_ext_common::check_scalar_lit;
 use super::*;
 use crate::law::ast::{Ident, Span};
-use crate::law::check::{Checker, duplicate, full, reference};
+use crate::law::check::{duplicate, reference};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
 pub(super) fn check_origin_ref<E: InputError>(
     raw: &RawOriginRef,
@@ -113,21 +112,17 @@ fn collect_unique_vars<E: InputError>(
     Ok(out)
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_member_assignments<E: InputError>(
     raw_assigns: &[(Ident, RawMemberCoordValue, Span)],
     expected_vars: &[String],
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
+    coord_ctx: &CoordCheckCtx<'_, '_, E>,
     member_span: Span,
     context: &str,
-    control: &Control,
 ) -> CResult<BTreeMap<String, ShigureMemberCoordValue>, E> {
     let expected_set: HashSet<&str> = expected_vars.iter().map(String::as_str).collect();
     let mut out = BTreeMap::new();
     for (var, val, span) in raw_assigns {
-        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        E::checkpoint(coord_ctx.control, Checkpoint::LawSemantics)?;
         if !expected_set.contains(var.name.as_str()) {
             return reference(
                 var.span,
@@ -140,44 +135,7 @@ fn check_member_assignments<E: InputError>(
                 format!("duplicate assignment for `{}` in {context}", var.name),
             );
         }
-        let checked_val = match val {
-            RawMemberCoordValue::Literal(lit) => {
-                check_scalar_lit(lit, coeff_domain, *span, control)?;
-                ShigureMemberCoordValue::Literal(lit.clone())
-            }
-            RawMemberCoordValue::ObservedField {
-                field,
-                span: f_span,
-            } => {
-                let binding = resolve_observed_field(
-                    field,
-                    *f_span,
-                    coeff_domain,
-                    &checker.imports[r_idx],
-                    checker.definitions,
-                )?;
-                match binding {
-                    ShigureCoordBinding::ObservedField {
-                        entity,
-                        field,
-                        span,
-                    } => ShigureMemberCoordValue::ObservedField {
-                        entity,
-                        field,
-                        span,
-                    },
-                    ShigureCoordBinding::Symbolic => {
-                        return Err(Box::new(Issue::law(
-                            Code::Type,
-                            *f_span,
-                            "observed binding could not be resolved",
-                        ))
-                        .into());
-                    }
-                }
-            }
-            RawMemberCoordValue::Missing(_) => ShigureMemberCoordValue::Missing,
-        };
+        let checked_val = check_member_coord_value(val, coord_ctx, *span)?;
         out.insert(var.name.clone(), checked_val);
     }
     for req in expected_vars {
@@ -193,18 +151,12 @@ fn check_member_assignments<E: InputError>(
     Ok(out)
 }
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_family<E: InputError>(
     raw: &RawFamilySpec,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureFamilySpec, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
+    let full_name = ctx.full_name(&raw.name.name);
+    let control = ctx.control;
     let coeff_domain = check_coeff_domain(&raw.domain, control)?;
 
     let u_vars = collect_unique_vars(
@@ -301,28 +253,23 @@ pub(super) fn check_family<E: InputError>(
                     );
                 }
                 let origin = check_origin_ref(&m.origin, &format!("{full_name}.{}", m.id.name))?;
+                let coord_ctx = CoordCheckCtx {
+                    coeff_domain: &coeff_domain,
+                    r_idx: ctx.r_idx,
+                    checker: ctx.checker,
+                    control,
+                };
                 let assignments = check_member_assignments(
                     &m.assignments,
                     &u_vars,
-                    &coeff_domain,
-                    r_idx,
-                    checker,
+                    &coord_ctx,
                     m.span,
                     &format!("{full_name}.{}", m.id.name),
-                    control,
                 )?;
                 let presentation = match &m.presentation {
                     Some(qname) => {
-                        let p_name = resolve_shigure_ref(
-                            qname,
-                            DeclCategory::Presentation,
-                            r_idx,
-                            reading_name,
-                            checker,
-                            index,
-                            edges,
-                        )?;
-                        let pres = &decls.presentations[&p_name];
+                        let p_name = ctx.resolve_ref(qname, DeclCategory::Presentation)?;
+                        let pres = &ctx.decls.presentations[&p_name];
                         if pres.coeff_domain != coeff_domain {
                             return Err(Box::new(Issue::law(
                                 Code::Type,
@@ -393,15 +340,18 @@ pub(super) fn check_family<E: InputError>(
                     );
                 }
                 let origin = check_origin_ref(&m.origin, &format!("{full_name}.{}", m.id.name))?;
+                let coord_ctx = CoordCheckCtx {
+                    coeff_domain: &coeff_domain,
+                    r_idx: ctx.r_idx,
+                    checker: ctx.checker,
+                    control,
+                };
                 let assignments = check_member_assignments(
                     &m.assignments,
                     &c_vars,
-                    &coeff_domain,
-                    r_idx,
-                    checker,
+                    &coord_ctx,
                     m.span,
                     &format!("{full_name}.{}", m.id.name),
-                    control,
                 )?;
                 checked.push(ShigureCandidateMember {
                     id: m.id.name.clone(),
@@ -440,21 +390,18 @@ pub(super) fn check_family<E: InputError>(
         }
     };
 
+    let var_sets = FamilyVarSets {
+        u_owned: &u_owned,
+        b_owned: &b_owned,
+        c_owned: &c_owned,
+        full_name: &full_name,
+    };
     let goodness = check_goodness(
         &raw.goodness,
+        ctx,
         &real_space,
         &coeff_domain,
-        &u_owned,
-        &b_owned,
-        &c_owned,
-        &full_name,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        decls,
-        edges,
-        control,
+        &var_sets,
     )?;
 
     let reading_comparison = raw
@@ -526,7 +473,7 @@ pub(super) fn check_family<E: InputError>(
 
     Ok(ShigureFamilySpec {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         coeff_domain,
         realizations: ShigureRealizationFamily {
             name: raw.realizations.name.name.clone(),
@@ -549,23 +496,27 @@ pub(super) fn check_family<E: InputError>(
     })
 }
 
-#[allow(clippy::too_many_arguments)]
+struct FamilyVarSets<'a> {
+    u_owned: &'a HashSet<String>,
+    b_owned: &'a HashSet<String>,
+    c_owned: &'a HashSet<String>,
+    full_name: &'a str,
+}
+
 fn check_goodness<E: InputError>(
     raw: &RawGoodnessSpec,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
     real_space: &ShigureRealizationSpace,
     coeff_domain: &ShigureCoeffDomain,
-    u_owned: &HashSet<String>,
-    b_owned: &HashSet<String>,
-    c_owned: &HashSet<String>,
-    full_name: &str,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    vars: &FamilyVarSets<'_>,
 ) -> CResult<ShigureGoodnessSpec, E> {
+    let FamilyVarSets {
+        u_owned,
+        b_owned,
+        c_owned,
+        full_name,
+    } = *vars;
+    let control = ctx.control;
     match raw {
         RawGoodnessSpec::Direct {
             equations,
@@ -591,21 +542,7 @@ fn check_goodness<E: InputError>(
             )?;
             let pres = preservation
                 .as_ref()
-                .map(|p| {
-                    check_preservation_source(
-                        p,
-                        coeff_domain,
-                        &allowed,
-                        full_name,
-                        r_idx,
-                        reading_name,
-                        checker,
-                        index,
-                        decls,
-                        edges,
-                        control,
-                    )
-                })
+                .map(|p| check_preservation_source(p, ctx, coeff_domain, &allowed, full_name))
                 .transpose()?;
             let seq = raw_sequence
                 .as_ref()
@@ -614,7 +551,7 @@ fn check_goodness<E: InputError>(
                         s,
                         real_space,
                         coeff_domain,
-                        decls,
+                        ctx.decls,
                         *span,
                         full_name,
                         control,
@@ -668,21 +605,7 @@ fn check_goodness<E: InputError>(
             )?;
             let pres = preservation
                 .as_ref()
-                .map(|p| {
-                    check_preservation_source(
-                        p,
-                        coeff_domain,
-                        &allowed,
-                        full_name,
-                        r_idx,
-                        reading_name,
-                        checker,
-                        index,
-                        decls,
-                        edges,
-                        control,
-                    )
-                })
+                .map(|p| check_preservation_source(p, ctx, coeff_domain, &allowed, full_name))
                 .transpose()?;
             Ok(ShigureGoodnessSpec::Existential {
                 witness_vars: w_vars,
@@ -694,38 +617,17 @@ fn check_goodness<E: InputError>(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_preservation_source<E: InputError>(
     raw: &RawPreservationSource,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
     coeff_domain: &ShigureCoeffDomain,
     allowed_vars: &HashSet<&str>,
     full_name: &str,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
 ) -> CResult<ShigurePreservationSource, E> {
-    let comparison = resolve_shigure_ref(
-        &raw.comparison,
-        DeclCategory::Comparison,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
-    let change_spec = resolve_shigure_ref(
-        &raw.change_spec,
-        DeclCategory::ChangeSpec,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
+    let comparison = ctx.resolve_ref(&raw.comparison, DeclCategory::Comparison)?;
+    let change_spec = ctx.resolve_ref(&raw.change_spec, DeclCategory::ChangeSpec)?;
+    let decls = ctx.decls;
+    let control = ctx.control;
     let cmp = &decls.comparisons[&comparison];
     let spec = &decls.change_specs[&change_spec];
     if &decls.presentations[&cmp.after].coeff_domain != coeff_domain

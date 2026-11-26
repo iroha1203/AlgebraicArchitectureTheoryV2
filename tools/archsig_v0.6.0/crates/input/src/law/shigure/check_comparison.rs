@@ -1,47 +1,23 @@
 //! `shigure comparison` の静的検査と `change_spec` との整合検査。
 
 use super::check::{
-    CResult, DeclCategory, LiteralDomainRule, check_poly_literals, check_poly_vars,
-    check_presentation_vars, resolve_shigure_ref,
+    CResult, DeclCategory, LiteralDomainRule, ShigureDeclCtx, check_poly_literals, check_poly_vars,
+    check_presentation_vars,
 };
 use super::*;
-use crate::law::ast::Span;
-use crate::law::check::{Checker, duplicate, full, reference};
+use crate::law::check::{duplicate, reference};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_comparison<E: InputError>(
     raw: &RawComparison,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    presentations: &BTreeMap<String, ShigurePresentation>,
-    edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureComparison, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
-    let before = resolve_shigure_ref(
-        &raw.before,
-        DeclCategory::Presentation,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
-    let after = resolve_shigure_ref(
-        &raw.after,
-        DeclCategory::Presentation,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        edges,
-    )?;
+    let full_name = ctx.full_name(&raw.name.name);
+    let before = ctx.resolve_ref(&raw.before, DeclCategory::Presentation)?;
+    let after = ctx.resolve_ref(&raw.after, DeclCategory::Presentation)?;
     if before == after {
         return Err(Box::new(Issue::law(
             Code::Type,
@@ -50,8 +26,9 @@ pub(super) fn check_comparison<E: InputError>(
         ))
         .into());
     }
-    let before_p = &presentations[&before];
-    let after_p = &presentations[&after];
+    let before_p = &ctx.decls.presentations[&before];
+    let after_p = &ctx.decls.presentations[&after];
+    let control = ctx.control;
     if before_p.coeff_domain != after_p.coeff_domain {
         return Err(Box::new(Issue::law(
             Code::Type,
@@ -314,7 +291,7 @@ pub(super) fn check_comparison<E: InputError>(
 
     Ok(ShigureComparison {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         before,
         after,
         state_comparisons,

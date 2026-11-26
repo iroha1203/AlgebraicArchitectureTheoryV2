@@ -170,8 +170,8 @@ fn checked_table_comparison_has_pre_and_post_stops_with_checked_stage_retained()
 fn mismatched_checked_tables_report_cancellation_at_post_comparison() {
     let src = sources();
     let (control, seen, _) = stop(22);
-    let (mut definitions, law, map) = tables(&src);
-    definitions = changed_definitions();
+    let (_, law, map) = tables(&src);
+    let definitions = changed_definitions();
     let failure =
         CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap_err();
     assert_eq!(seen.get(), 22);

@@ -3,14 +3,14 @@
 use super::ast_ext::ShigureScalarLit;
 use super::ast_phase4_diag_atlas::*;
 use super::check::{
-    CResult, LiteralDomainRule, check_coeff_domain, check_poly_literals, check_poly_vars,
-    resolve_observed_field,
+    CResult, CoordCheckCtx, LiteralDomainRule, check_coeff_domain, check_poly_literals,
+    check_poly_vars, resolve_observed_field,
 };
 use super::check_ext_common::check_scalar_lit;
 use super::check_family::check_named_polys_in_scope;
 use super::check_phase4_lift_artin::{
-    check_p4_coord_scalar_map, check_p4_coord_vec_map, check_p4_origins, check_p4_unique_idents,
-    p4_type_err,
+    KeyedBlockMeta, check_p4_coord_scalar_map, check_p4_coord_vec_map, check_p4_origins,
+    check_p4_unique_idents, p4_type_err,
 };
 use super::*;
 use crate::law::ast::{Ident, Span};
@@ -586,6 +586,12 @@ pub(super) fn check_diagnostics<E: InputError>(
             let Some(expected_len) = rp.ring_max_deg.checked_add(1) else {
                 return p4_type_err(rp.span, "ring_max_deg overflow");
             };
+            let coord_ctx = CoordCheckCtx {
+                coeff_domain: bdom,
+                r_idx,
+                checker,
+                control,
+            };
             let mut pt_labels = HashSet::new();
             let mut points = Vec::with_capacity(rp.points.len());
             for pt in &rp.points {
@@ -599,13 +605,12 @@ pub(super) fn check_diagnostics<E: InputError>(
                     &pt.coords,
                     bvars,
                     expected_len,
-                    bdom,
-                    r_idx,
-                    checker,
-                    pt.span,
-                    "base_var",
-                    &format!("r_point `{}`", pt.label),
-                    control,
+                    &coord_ctx,
+                    KeyedBlockMeta {
+                        span: pt.span,
+                        kind: "base_var",
+                        context: &format!("r_point `{}`", pt.label),
+                    },
                 )?;
                 points.push(ShigureNamedRPoint {
                     label: pt.label.clone(),
@@ -644,6 +649,12 @@ pub(super) fn check_diagnostics<E: InputError>(
                 control,
             )?;
             let invertible_poly = inv_list.pop().expect("single invertible_poly");
+            let coord_ctx = CoordCheckCtx {
+                coeff_domain: &bdom,
+                r_idx,
+                checker,
+                control,
+            };
             let mut pt_labels = HashSet::new();
             let mut probe_points = Vec::with_capacity(dr.probe_points.len());
             for pt in &dr.probe_points {
@@ -656,13 +667,12 @@ pub(super) fn check_diagnostics<E: InputError>(
                 let coords = check_p4_coord_scalar_map(
                     &pt.coords,
                     &bvars,
-                    &bdom,
-                    r_idx,
-                    checker,
-                    pt.span,
-                    "base_var",
-                    &format!("probe `{}`", pt.label),
-                    control,
+                    &coord_ctx,
+                    KeyedBlockMeta {
+                        span: pt.span,
+                        kind: "base_var",
+                        context: &format!("probe `{}`", pt.label),
+                    },
                 )?;
                 probe_points.push(ShigureNamedBasePoint {
                     label: pt.label.clone(),

@@ -1,55 +1,33 @@
 //! `shigure diagram` 宣言の静的検査。
 
 use super::ast_ext::*;
-use super::check::{CResult, DeclCategory, check_presentation_vars, resolve_shigure_ref};
+use super::check::{CResult, DeclCategory, ShigureDeclCtx, check_presentation_vars};
 use super::check_ext_common::{
     ScopedMorphismMeta, check_eval_cond_against_domain_params, check_morphism_body,
     check_scoped_change_spec_targets,
 };
+use super::check_ext_morphism::MorphismCheckSpec;
 use super::*;
-use crate::law::ast::Span;
-use crate::law::check::{Checker, duplicate, full, reference};
-use archsig_common::control::{Checkpoint, Control};
+use crate::law::check::{duplicate, reference};
+use archsig_common::control::Checkpoint;
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_diagram<E: InputError>(
     raw: &RawDiagramTask,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    reading_edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureDiagramTask, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
-    let change_spec_name = resolve_shigure_ref(
-        &raw.change_spec,
-        DeclCategory::ChangeSpec,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        reading_edges,
-    )?;
-    let spec = &decls.change_specs[&change_spec_name];
+    let full_name = ctx.full_name(&raw.name.name);
+    let change_spec_name = ctx.resolve_ref(&raw.change_spec, DeclCategory::ChangeSpec)?;
+    let spec = &ctx.decls.change_specs[&change_spec_name];
     let param_set: HashSet<&str> = spec.parameters.iter().map(|p| p.name.as_str()).collect();
+    let control = ctx.control;
 
     let eval_condition = match &raw.eval_condition {
         Some(q) => {
-            let ec_name = resolve_shigure_ref(
-                q,
-                DeclCategory::EvalCondition,
-                r_idx,
-                reading_name,
-                checker,
-                index,
-                reading_edges,
-            )?;
-            let ec = &decls.eval_conditions[&ec_name];
+            let ec_name = ctx.resolve_ref(q, DeclCategory::EvalCondition)?;
+            let ec = &ctx.decls.eval_conditions[&ec_name];
             check_eval_cond_against_domain_params(
                 ec,
                 &spec.coeff_domain,
@@ -73,16 +51,8 @@ pub(super) fn check_diagram<E: InputError>(
                 format!("duplicate diagram vertex `{}`", v.name.name),
             );
         }
-        let pres_name = resolve_shigure_ref(
-            &v.presentation,
-            DeclCategory::Presentation,
-            r_idx,
-            reading_name,
-            checker,
-            index,
-            reading_edges,
-        )?;
-        let pres = &decls.presentations[&pres_name];
+        let pres_name = ctx.resolve_ref(&v.presentation, DeclCategory::Presentation)?;
+        let pres = &ctx.decls.presentations[&pres_name];
         if pres.coeff_domain != spec.coeff_domain {
             return Err(Box::new(Issue::law(
                 Code::Type,
@@ -158,18 +128,14 @@ pub(super) fn check_diagram<E: InputError>(
         let allowed = if e.is_fixed { None } else { Some(&param_set) };
         let body = check_morphism_body(
             &e.morphism,
-            r_idx,
-            reading_name,
-            checker,
-            index,
-            decls,
-            reading_edges,
-            morph_src_p,
-            morph_tgt_p,
-            allowed,
-            e.span,
-            &format!("diagram edge `{}`", e.name.name),
-            control,
+            ctx,
+            &MorphismCheckSpec {
+                src_pres: morph_src_p,
+                tgt_pres: morph_tgt_p,
+                params: allowed,
+                span: e.span,
+                context: &format!("diagram edge `{}`", e.name.name),
+            },
         )?;
         edges_by_name.insert(
             e.name.name.clone(),
@@ -191,7 +157,9 @@ pub(super) fn check_diagram<E: InputError>(
     }
     let morphs: Vec<ScopedMorphismMeta<'_>> = edge_bodies
         .iter()
-        .map(|(body, src_p, is_fixed)| ScopedMorphismMeta::from_body(body, src_p, decls, *is_fixed))
+        .map(|(body, src_p, is_fixed)| {
+            ScopedMorphismMeta::from_body(body, src_p, ctx.decls, *is_fixed)
+        })
         .collect();
     let edges: Vec<ShigureDiagramEdge> = checked_bodies.into_iter().map(|(edge, _)| edge).collect();
 
@@ -301,16 +269,8 @@ pub(super) fn check_diagram<E: InputError>(
                 ),
             );
         }
-        let ec_name = resolve_shigure_ref(
-            &item.eval_condition,
-            DeclCategory::EvalCondition,
-            r_idx,
-            reading_name,
-            checker,
-            index,
-            reading_edges,
-        )?;
-        let ec = &decls.eval_conditions[&ec_name];
+        let ec_name = ctx.resolve_ref(&item.eval_condition, DeclCategory::EvalCondition)?;
+        let ec = &ctx.decls.eval_conditions[&ec_name];
         check_eval_cond_against_domain_params(
             ec,
             &spec.coeff_domain,
@@ -323,7 +283,7 @@ pub(super) fn check_diagram<E: InputError>(
 
     Ok(ShigureDiagramTask {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         direction: raw.direction,
         vertices,
         edges,

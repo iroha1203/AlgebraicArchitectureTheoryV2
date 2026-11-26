@@ -2,32 +2,29 @@
 
 use super::ast_phase4_diag_atlas::*;
 use super::check::{
-    CResult, LiteralDomainRule, check_coeff_domain, check_poly_literals, check_poly_vars,
+    CResult, CoordCheckCtx, LiteralDomainRule, check_coeff_domain, check_member_coord_value,
+    check_poly_literals, check_poly_vars,
 };
 use super::check_family::check_named_polys_in_scope;
 use super::check_phase4_diagnostics::check_supported_nerve;
 use super::check_phase4_lift_artin::{
-    check_p4_coord_scalar_map, check_p4_coord_value, check_p4_origins, check_p4_poly_assign_map,
+    KeyedBlockMeta, check_p4_coord_scalar_map, check_p4_origins, check_p4_poly_assign_map,
     check_p4_unique_idents, p4_type_err,
 };
-use super::*;
 use crate::law::ast::{Ident, Span};
 use crate::law::check::{Checker, duplicate, full, reference};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::json::InputError;
 use std::collections::HashSet;
 
-#[allow(clippy::too_many_arguments)]
 fn check_simple_graph<E: InputError>(
     raw_vertices: &[Ident],
     raw_edges: &[RawGraphEdge],
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
+    ctx: &CoordCheckCtx<'_, '_, E>,
     span: Span,
     context: &str,
-    control: &Control,
 ) -> CResult<(Vec<String>, Vec<ShigureGraphEdge>), E> {
+    let control = ctx.control;
     if raw_vertices.is_empty() {
         return p4_type_err(span, format!("{context} must have at least one vertex"));
     }
@@ -91,8 +88,7 @@ fn check_simple_graph<E: InputError>(
                 ),
             );
         }
-        let offset =
-            check_p4_coord_value(&e.offset, coeff_domain, r_idx, checker, e.span, control)?;
+        let offset = check_member_coord_value(&e.offset, ctx, e.span)?;
         edges.push(ShigureGraphEdge {
             name: e.name.name.clone(),
             from: e.from.name.clone(),
@@ -224,31 +220,28 @@ pub(super) fn check_atlas<E: InputError>(
     let ctx = format!("`shigure atlas {name}`");
     let coeff_domain = check_coeff_domain(&raw.domain, control)?;
     let origins = check_p4_origins(&raw.origins, raw.span, &ctx)?;
-
-    let (vertices, edges) = check_simple_graph(
-        &raw.vertices,
-        &raw.edges,
-        &coeff_domain,
+    let coord_ctx = CoordCheckCtx {
+        coeff_domain: &coeff_domain,
         r_idx,
         checker,
-        raw.span,
-        &ctx,
         control,
-    )?;
+    };
+
+    let (vertices, edges) =
+        check_simple_graph(&raw.vertices, &raw.edges, &coord_ctx, raw.span, &ctx)?;
     let v_set: HashSet<&str> = vertices.iter().map(String::as_str).collect();
     let e_set: HashSet<&str> = edges.iter().map(|e| e.name.as_str()).collect();
 
-    let mu = check_p4_coord_value(&raw.mu.0, &coeff_domain, r_idx, checker, raw.mu.1, control)?;
+    let mu = check_member_coord_value(&raw.mu.0, &coord_ctx, raw.mu.1)?;
     let base_lambdas = check_p4_coord_scalar_map(
         &raw.base_lambdas,
         &vertices,
-        &coeff_domain,
-        r_idx,
-        checker,
-        raw.span,
-        "vertex",
-        &format!("{ctx} base_lambdas"),
-        control,
+        &coord_ctx,
+        KeyedBlockMeta {
+            span: raw.span,
+            kind: "vertex",
+            context: &format!("{ctx} base_lambdas"),
+        },
     )?;
 
     let allowed_vertices = check_p4_unique_idents(&raw.allowed_vertices, "allowed_vertex", &ctx)?;
@@ -270,25 +263,13 @@ pub(super) fn check_atlas<E: InputError>(
     let refinement = raw
         .refinement
         .as_ref()
-        .map(|r| {
-            check_refinement(
-                r.as_ref(),
-                &v_set,
-                &e_set,
-                &coeff_domain,
-                r_idx,
-                checker,
-                &ctx,
-                control,
-            )
-            .map(Box::new)
-        })
+        .map(|r| check_refinement(r.as_ref(), &v_set, &e_set, &coord_ctx, &ctx).map(Box::new))
         .transpose()?;
 
     let extended_language_check = raw
         .extended_language_check
         .as_ref()
-        .map(|ext| check_extended_language(ext, &coeff_domain, r_idx, checker, &ctx, control))
+        .map(|ext| check_extended_language(ext, &coord_ctx, &ctx))
         .transpose()?;
 
     Ok(ShigureAtlasTask {
@@ -309,27 +290,22 @@ pub(super) fn check_atlas<E: InputError>(
     })
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_refinement<E: InputError>(
     r: &RawAtlasRefinement,
     coarse_v: &HashSet<&str>,
     coarse_e: &HashSet<&str>,
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
+    coord_ctx: &CoordCheckCtx<'_, '_, E>,
     ctx: &str,
-    control: &Control,
 ) -> CResult<ShigureAtlasRefinement, E> {
+    let coeff_domain = coord_ctx.coeff_domain;
+    let control = coord_ctx.control;
     let rctx = format!("{ctx} refinement");
     let (fine_vertices, fine_edges) = check_simple_graph(
         &r.fine_vertices,
         &r.fine_edges,
-        coeff_domain,
-        r_idx,
-        checker,
+        coord_ctx,
         r.span,
         &format!("{rctx} fine_graph"),
-        control,
     )?;
     let fine_v: HashSet<&str> = fine_vertices.iter().map(String::as_str).collect();
     let fine_e: HashSet<&str> = fine_edges.iter().map(|e| e.name.as_str()).collect();
@@ -498,14 +474,7 @@ fn check_refinement<E: InputError>(
             )?;
             let mut samples = Vec::with_capacity(fg.sample_values.len());
             for sv in &fg.sample_values {
-                samples.push(check_p4_coord_value(
-                    sv,
-                    coeff_domain,
-                    r_idx,
-                    checker,
-                    fg.span,
-                    control,
-                )?);
+                samples.push(check_member_coord_value(sv, coord_ctx, fg.span)?);
             }
             Ok::<_, E>(ShigureForgetfulReading {
                 forgotten_var: fg.forgotten_var.name.clone(),
@@ -538,12 +507,11 @@ fn check_refinement<E: InputError>(
 
 fn check_extended_language<E: InputError>(
     ext: &RawExtendedLanguageCheck,
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
+    coord_ctx: &CoordCheckCtx<'_, '_, E>,
     ctx: &str,
-    control: &Control,
 ) -> CResult<ShigureExtendedLanguageCheck, E> {
+    let coeff_domain = coord_ctx.coeff_domain;
+    let control = coord_ctx.control;
     let ectx = format!("{ctx} extended_language_check");
     if ext.state_vars.is_empty() {
         return p4_type_err(ext.span, format!("{ectx} state_vars must be non-empty"));
@@ -555,9 +523,11 @@ fn check_extended_language<E: InputError>(
         &state_vars,
         &sv_set,
         coeff_domain,
-        ext.span,
-        "state_var",
-        &format!("{ectx} adapter_map"),
+        KeyedBlockMeta {
+            span: ext.span,
+            kind: "state_var",
+            context: &format!("{ectx} adapter_map"),
+        },
         control,
     )?;
 
@@ -589,9 +559,11 @@ fn check_extended_language<E: InputError>(
             &state_vars,
             &scope,
             coeff_domain,
-            op.span,
-            "state_var",
-            &format!("atomic_op `{}` before", op.name.name),
+            KeyedBlockMeta {
+                span: op.span,
+                kind: "state_var",
+                context: &format!("atomic_op `{}` before", op.name.name),
+            },
             control,
         )?;
         let after_updates = check_p4_poly_assign_map(
@@ -599,9 +571,11 @@ fn check_extended_language<E: InputError>(
             &state_vars,
             &scope,
             coeff_domain,
-            op.span,
-            "state_var",
-            &format!("atomic_op `{}` after", op.name.name),
+            KeyedBlockMeta {
+                span: op.span,
+                kind: "state_var",
+                context: &format!("atomic_op `{}` after", op.name.name),
+            },
             control,
         )?;
         atomic_ops.push(ShigureAtomicOpCompare {
@@ -646,13 +620,12 @@ fn check_extended_language<E: InputError>(
                 let init = check_p4_coord_scalar_map(
                     initial_state,
                     &ext_vars,
-                    coeff_domain,
-                    r_idx,
-                    checker,
-                    *span,
-                    "extended_state_var",
-                    &format!("protocol_sequence `{name}` initial_state"),
-                    control,
+                    coord_ctx,
+                    KeyedBlockMeta {
+                        span: *span,
+                        kind: "extended_state_var",
+                        context: &format!("protocol_sequence `{name}` initial_state"),
+                    },
                 )?;
                 let mut b_steps = Vec::with_capacity(before_steps.len());
                 for (i, st) in before_steps.iter().enumerate() {
@@ -661,9 +634,11 @@ fn check_extended_language<E: InputError>(
                         &ext_vars,
                         &ext_set,
                         coeff_domain,
-                        *span,
-                        "extended_state_var",
-                        &format!("protocol_sequence `{name}` before_step[{i}]"),
+                        KeyedBlockMeta {
+                            span: *span,
+                            kind: "extended_state_var",
+                            context: &format!("protocol_sequence `{name}` before_step[{i}]"),
+                        },
                         control,
                     )?);
                 }
@@ -674,9 +649,11 @@ fn check_extended_language<E: InputError>(
                         &ext_vars,
                         &ext_set,
                         coeff_domain,
-                        *span,
-                        "extended_state_var",
-                        &format!("protocol_sequence `{name}` after_step[{i}]"),
+                        KeyedBlockMeta {
+                            span: *span,
+                            kind: "extended_state_var",
+                            context: &format!("protocol_sequence `{name}` after_step[{i}]"),
+                        },
                         control,
                     )?);
                 }
@@ -743,9 +720,11 @@ fn check_extended_language<E: InputError>(
                     &state_vars,
                     &sv_set,
                     coeff_domain,
-                    *span,
-                    "state_var",
-                    &format!("runtime_arg_op `{name}` before"),
+                    KeyedBlockMeta {
+                        span: *span,
+                        kind: "state_var",
+                        context: &format!("runtime_arg_op `{name}` before"),
+                    },
                     control,
                 )?;
                 let au = check_p4_poly_assign_map(
@@ -753,21 +732,22 @@ fn check_extended_language<E: InputError>(
                     &state_vars,
                     &sv_set,
                     coeff_domain,
-                    *span,
-                    "state_var",
-                    &format!("runtime_arg_op `{name}` after"),
+                    KeyedBlockMeta {
+                        span: *span,
+                        kind: "state_var",
+                        context: &format!("runtime_arg_op `{name}` after"),
+                    },
                     control,
                 )?;
                 let ss = check_p4_coord_scalar_map(
                     sample_state,
                     &state_vars,
-                    coeff_domain,
-                    r_idx,
-                    checker,
-                    *span,
-                    "state_var",
-                    &format!("runtime_arg_op `{name}` sample_state"),
-                    control,
+                    coord_ctx,
+                    KeyedBlockMeta {
+                        span: *span,
+                        kind: "state_var",
+                        context: &format!("runtime_arg_op `{name}` sample_state"),
+                    },
                 )?;
                 extended_checks.push(ShigureExtendedOperationCheck::RuntimeArgOp {
                     name: name.clone(),
