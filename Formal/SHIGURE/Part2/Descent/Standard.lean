@@ -183,13 +183,16 @@ theorem compatible_iff_coaction (f : N →ₗ[B] N') :
 
 set_option maxHeartbeats 500000 in
 /-- The inverse of a compatible linear equivalence respects the actual overlap. -/
-theorem compatible_symm (e : N ≃ₗ[B] N')
-    (compatible : D.Compatible D' e.toLinearMap) : D'.Compatible D e.symm.toLinearMap := by
-  apply (D'.compatible_iff_coaction D e.symm.toLinearMap).2
+theorem compatible_symm {A B X X' : Type u} [CommRing A] [CommRing B] [Algebra A B]
+    [AddCommGroup X] [Module A X] [Module B X] [IsScalarTower A B X]
+    [AddCommGroup X'] [Module A X'] [Module B X'] [IsScalarTower A B X']
+    (D : Datum A B X) (E : Datum A B X') (e : X ≃ₗ[B] X')
+    (compatible : D.Compatible E e.toLinearMap) : E.Compatible D e.symm.toLinearMap := by
+  apply (E.compatible_iff_coaction D e.symm.toLinearMap).2
   intro x
-  have held := (D.compatible_iff_coaction D' e.toLinearMap).1 compatible (e.symm x)
+  have held := (D.compatible_iff_coaction E e.toLinearMap).1 compatible (e.symm x)
   change (e.toLinearMap.restrictScalars A).baseChange B (D.coactionMap (e.symm x)) =
-    D'.coactionMap (e (e.symm x)) at held
+    E.coactionMap (e (e.symm x)) at held
   rw [e.apply_symm_apply] at held
   rw [← held]
   change ((e.restrictScalars A).symm.baseChange A B _ _) (((e.restrictScalars A).baseChange A B _ _) (D.coactionMap (e.symm x))) = _
