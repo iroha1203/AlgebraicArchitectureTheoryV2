@@ -4730,10 +4730,14 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.IsQuasiCoherentModule.restrict,
   SchemeDescent.isQuasiCoherentModule_of_openCover,
   SchemeDescent.ModuleGluingData.compatibleModule_quasiCoherent,
+  SchemeDescent.descentRechart,
+  SchemeDescent.descentRechartIso,
+  SchemeDescent.openCoverComparisonEquivalence_anySize,
   SchemeDescent.openCoverComparison_isEquivalence_anySize,
   SchemeDescent.quasiCoherentModules_isZariskiStack,
   SchemeDescent.ModuleGluingData.reglueIso_chart,
-  SchemeDescent.OpenModuleGluingExamples.integersQuasiCoherentMapDescent
+  SchemeDescent.OpenModuleGluingExamples.integersQuasiCoherentMapDescent,
+  SchemeDescent.OpenModuleGluingExamples.integersLiftedOpenCoverObjectDescent
 ]
 
 end SHIGURE.AxiomAudit

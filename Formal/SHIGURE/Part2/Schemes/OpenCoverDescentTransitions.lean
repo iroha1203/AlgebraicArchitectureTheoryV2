@@ -3,7 +3,7 @@ import Formal.SHIGURE.Part2.Schemes.OpenDataRestriction
 /-! # Descent comparisons on an open cover
 
 The double overlaps of the descent category coincide with the geometric
-overlaps used to glue actual modules in Appendix B.6.
+overlaps used to glue actual modules in Lemma B.6.
 -/
 
 namespace SHIGURE.SchemeDescent
