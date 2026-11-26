@@ -1,33 +1,33 @@
-//! 全 syzygy 平方零 lift 複体 $D$（体係数および共通ヘルパ）・入口ディスパッチ（G-141 E1–E8・C8–C9）。
+//! 全 syzygy 平方零 lift 複体 $D$（体係数および $\mathbb{Z}$ 係数共通）・入口ディスパッチ（G-141 E1–E8・C8–C9）。
 
 use crate::algebra::MonomialOrder;
-use crate::algebra::artin::{AffineSolutionField, FiniteAlgebra, solve_affine_field};
+use crate::algebra::artin::FiniteAlgebra;
 use crate::algebra::artin_quotient::SquareZeroExtension;
 use crate::algebra::cochain::CochainComplex;
 use crate::algebra::poly::{AlgebraError, Poly};
-use crate::algebra::poly_expr::{ExprBindings, VarOrder};
-use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
-use crate::algebra::syzygy::{
-    DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, compute_syzygies_field, jacobian_polys,
-};
+use crate::algebra::poly_expr::ExprBindings;
+use crate::algebra::scalar::{FpElem, RingCoeff};
+use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, jacobian_polys};
 use crate::ir::change::PointDomain;
 use crate::ir::lift::{CheckedLiftTask, LiftTaskSpec, SquareZeroSpec};
 use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, SilenceReason};
 use crate::ir::result_phase4::{LiftOutcomeDetail, RedundantComparisonResult};
-use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
-use crate::solver::lift_affine::compute_affine_repair_field;
+use crate::ir::term::CoeffDomain;
+use crate::solver::lift_affine::compute_affine_repair;
+use crate::solver::lift_backend::{
+    FieldLiftBackend, FpFieldAdapter, LiftContext, LiftRingBackend, QFieldAdapter, ZLiftBackend,
+};
 use crate::solver::lift_common::{
     apply_m_shift, compute_etale_descent, concat_vecs, conv_cube, conv_mat, conv_vec,
     derive_lift_verdict, eval_ring_params_generic, eval_var_coords_generic, expand_named_polys,
     format_algebra_label, format_m_tuple, format_var_map, lift_outcome, lift_undetermined,
-    lit_to_fp, lit_to_q, map_lift_algebra_error, r_action_matrix_field, reevaluate_laws_in_rp,
-    verify_base_laws, write_block,
+    map_lift_algebra_error, r_action_matrix, reevaluate_laws_in_rp, verify_base_laws, write_block,
 };
 use crate::solver::lift_extensions::{
-    compute_declaration_cover_field, compute_raw_cech_field, compute_relative_cone_field,
+    compute_declaration_cover, compute_raw_cech, compute_relative_cone,
 };
-use crate::solver::lift_z::solve_lift_z;
+use num_bigint::BigInt;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// `shigure_lift` の計算核入口（G-141 E1–E8・C8–C9）。
@@ -59,15 +59,9 @@ pub fn solve_lift_task(task: &CheckedLiftTask) -> ShigureOutcome {
     ));
 
     match &spec.coeff_domain {
-        CoeffDomain::Q => solve_lift_field(
-            spec,
-            Rat::zero(),
-            "Q".to_owned(),
-            &|e, b| Poly::from_expr_q(e, b),
-            &lit_to_q,
-            checks,
-            provenance,
-        ),
+        CoeffDomain::Q => {
+            solve_lift_with_backend(spec, &FieldLiftBackend(QFieldAdapter), checks, provenance)
+        }
         CoeffDomain::Fp(p) => {
             let Some(zero_fp) = FpElem::zero(p.clone()) else {
                 return lift_undetermined(
@@ -81,23 +75,17 @@ pub fn solve_lift_task(task: &CheckedLiftTask) -> ShigureOutcome {
                     },
                 );
             };
-            let p1 = p.clone();
-            let p2 = p.clone();
-            solve_lift_field(
-                spec,
+            let backend = FieldLiftBackend(FpFieldAdapter {
+                p: p.clone(),
                 zero_fp,
-                format!("F_{p}"),
-                &move |e, b| Poly::from_expr_fp(e, b, &p1),
-                &move |lit| lit_to_fp(lit, &p2),
-                checks,
-                provenance,
-            )
+            });
+            solve_lift_with_backend(spec, &backend, checks, provenance)
         }
-        CoeffDomain::Z => solve_lift_z(spec, checks, provenance),
+        CoeffDomain::Z => solve_lift_with_backend(spec, &ZLiftBackend, checks, provenance),
     }
 }
 
-pub(crate) struct CoreLiftField<C: FieldCoeff> {
+pub(crate) struct CoreLift<C: RingCoeff> {
     pub(crate) syz_gens_str: Vec<Vec<String>>,
     pub(crate) syzygy_identity_verified: bool,
     pub(crate) complex: CochainComplex<C>,
@@ -105,7 +93,9 @@ pub(crate) struct CoreLiftField<C: FieldCoeff> {
     pub(crate) residual_in_m_str: Vec<String>,
     pub(crate) residual_cocycle_verified: bool,
     pub(crate) h0_dim: usize,
+    pub(crate) h0_torsion: Vec<BigInt>,
     pub(crate) h1_dim: usize,
+    pub(crate) h1_torsion: Vec<BigInt>,
     pub(crate) h0_basis_str: Vec<Vec<String>>,
     pub(crate) obstruction_class_coords: Vec<String>,
     pub(crate) obstruction_is_zero: bool,
@@ -114,25 +104,16 @@ pub(crate) struct CoreLiftField<C: FieldCoeff> {
     pub(crate) reevaluation: Option<ReevalCheck>,
 }
 
-#[allow(clippy::too_many_arguments)]
-fn solve_lift_field<C, FE, FL>(
+fn solve_lift_with_backend<B: LiftRingBackend>(
     spec: &LiftTaskSpec,
-    zero_coeff: C,
-    coeff_label: String,
-    expand_expr: &FE,
-    lit_conv: &FL,
+    backend: &B,
     mut checks: Vec<ApplicabilityCheck>,
     provenance: Provenance,
-) -> ShigureOutcome
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-    FL: Fn(&ScalarLit) -> Result<C, AlgebraError>,
-{
+) -> ShigureOutcome {
     let coeff_domain = spec.coeff_domain.clone();
     let point_domain = PointDomain::UniversalRing;
 
-    let ext = match build_extension_field(&spec.extension, zero_coeff, lit_conv) {
+    let ext = match build_extension(&spec.extension, backend) {
         Ok(ext) => {
             checks.push(ApplicabilityCheck::passed(
                 "square_zero_extension_valid",
@@ -158,6 +139,7 @@ where
         }
     };
 
+    let expand = |e: &_, b: &_| backend.expand_expr(e, b);
     let param_names: Vec<String> = spec.ring_params.iter().map(|p| p.name.clone()).collect();
     let (vars, bindings) = match ExprBindings::from_slices(&spec.variables, &[], &param_names) {
         Ok(pair) => pair,
@@ -172,7 +154,7 @@ where
         }
     };
 
-    let law_polys = match expand_named_polys(&spec.laws, &bindings, expand_expr) {
+    let law_polys = match expand_named_polys(&spec.laws, &bindings, &expand) {
         Ok(v) => v,
         Err(e) => {
             return lift_undetermined(
@@ -184,7 +166,7 @@ where
             );
         }
     };
-    let param_vals_rp = match eval_ring_params_generic(spec, expand_expr) {
+    let param_vals_rp = match eval_ring_params_generic(spec, &expand) {
         Ok(v) => v,
         Err(e) => {
             return lift_undetermined(
@@ -196,8 +178,8 @@ where
             );
         }
     };
-    let param_vals_r: Vec<Vec<C>> = param_vals_rp.iter().map(|v| ext.project(v)).collect();
-    let base_pt_r = match eval_var_coords_generic(&spec.variables, &spec.base_point, expand_expr) {
+    let param_vals_r: Vec<Vec<B::Coeff>> = param_vals_rp.iter().map(|v| ext.project(v)).collect();
+    let base_pt_r = match eval_var_coords_generic(&spec.variables, &spec.base_point, &expand) {
         Ok(v) => v,
         Err(e) => {
             return lift_undetermined(
@@ -223,7 +205,7 @@ where
         MathClause::G141E1,
     ));
 
-    let ambient_lift_rp = match resolve_ambient_lift_field(spec, &ext, &base_pt_r, expand_expr) {
+    let ambient_lift_rp = match resolve_ambient_lift(spec, backend, &ext, &base_pt_r) {
         Ok(v) => v,
         Err(reason) => {
             checks.push(ApplicabilityCheck::failed(
@@ -239,18 +221,21 @@ where
         MathClause::G141E1,
     ));
 
-    let max_pairs = spec.max_syzygy_pairs.unwrap_or(DEFAULT_MAX_SYZYGY_PAIRS);
-    let core = match run_core_lift_field(
-        &spec.variables,
-        &law_polys,
-        &vars,
-        &ext,
-        &base_pt_r,
-        &param_vals_r,
-        &ambient_lift_rp,
-        &param_vals_rp,
-        max_pairs,
-    ) {
+    let ctx = LiftContext {
+        spec,
+        backend,
+        vars,
+        bindings,
+        ext,
+        law_polys,
+        base_pt_r,
+        param_vals_r,
+        ambient_lift_rp,
+        param_vals_rp,
+        max_pairs: spec.max_syzygy_pairs.unwrap_or(DEFAULT_MAX_SYZYGY_PAIRS),
+    };
+
+    let core = match run_core_lift(&ctx, &ctx.law_polys) {
         Ok(c) => c,
         Err(reason) => {
             checks.push(ApplicabilityCheck::failed(
@@ -266,7 +251,7 @@ where
         MathClause::G141E2,
     ));
 
-    let raw_cech_comparison = match compute_raw_cech_field(&core.complex, core.h1_dim) {
+    let raw_cech_comparison = match compute_raw_cech(backend, &core.complex, core.h1_dim) {
         Ok(r) => Some(r),
         Err(reason) => {
             return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
@@ -274,21 +259,7 @@ where
     };
 
     let mut relative_cone = if let Some(rel_spec) = &spec.relative_reading {
-        match compute_relative_cone_field(
-            spec,
-            rel_spec,
-            &law_polys,
-            &vars,
-            &bindings,
-            &ext,
-            &base_pt_r,
-            &param_vals_r,
-            &ambient_lift_rp,
-            &param_vals_rp,
-            &core,
-            expand_expr,
-            max_pairs,
-        ) {
+        match compute_relative_cone(&ctx, rel_spec, &core) {
             Ok(rc) => {
                 checks.push(ApplicabilityCheck::passed(
                     "relative_reading_cone_computed",
@@ -310,19 +281,7 @@ where
     };
 
     let declaration_cover = if let Some(cov_spec) = &spec.declaration_cover {
-        match compute_declaration_cover_field(
-            spec,
-            cov_spec,
-            &law_polys,
-            &ext,
-            &base_pt_r,
-            &param_vals_r,
-            &ambient_lift_rp,
-            &param_vals_rp,
-            &core,
-            relative_cone.as_mut(),
-            expand_expr,
-        ) {
+        match compute_declaration_cover(&ctx, cov_spec, &core, relative_cone.as_mut()) {
             Ok(dc) => Some(dc),
             Err(reason) => {
                 return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
@@ -333,15 +292,7 @@ where
     };
 
     let affine_repair = if let Some(aff_spec) = &spec.affine_allowed {
-        match compute_affine_repair_field(
-            spec,
-            aff_spec,
-            &law_polys,
-            &ext,
-            &ambient_lift_rp,
-            &param_vals_rp,
-            &core,
-        ) {
+        match compute_affine_repair(&ctx, aff_spec, &core) {
             Ok(ar) => Some(ar),
             Err(reason) => {
                 return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
@@ -352,24 +303,18 @@ where
     };
 
     let redundant_comparison = if let Some(red_spec) = &spec.redundant_comparison {
-        let ref_polys = match expand_named_polys(&red_spec.reference_laws, &bindings, expand_expr) {
+        let ref_polys = match ctx.expand_named(&red_spec.reference_laws, &ctx.bindings) {
             Ok(v) => v,
-            Err(e) => {
-                return lift_undetermined(
-                    coeff_domain,
-                    point_domain,
-                    checks,
-                    provenance,
-                    map_lift_algebra_error(e),
-                );
+            Err(reason) => {
+                return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
             }
         };
         if let Err(reason) = verify_base_laws(
             &red_spec.reference_laws,
             &ref_polys,
-            &base_pt_r,
-            &param_vals_r,
-            &ext,
+            &ctx.base_pt_r,
+            &ctx.param_vals_r,
+            &ctx.ext,
         ) {
             checks.push(ApplicabilityCheck::failed(
                 "reference_laws_satisfied_at_base_point",
@@ -378,23 +323,15 @@ where
             ));
             return lift_undetermined(coeff_domain, point_domain, checks, provenance, reason);
         }
-        match run_core_lift_field(
-            &spec.variables,
-            &ref_polys,
-            &vars,
-            &ext,
-            &base_pt_r,
-            &param_vals_r,
-            &ambient_lift_rp,
-            &param_vals_rp,
-            max_pairs,
-        ) {
+        match run_core_lift(&ctx, &ref_polys) {
             Ok(ref_core) => Some(RedundantComparisonResult {
                 ref_h0_dim: ref_core.h0_dim,
                 ref_h1_dim: ref_core.h1_dim,
                 ref_obstruction_is_zero: ref_core.obstruction_is_zero,
-                h0_matches: core.h0_dim == ref_core.h0_dim,
-                h1_matches: core.h1_dim == ref_core.h1_dim,
+                h0_matches: core.h0_dim == ref_core.h0_dim
+                    && core.h0_torsion == ref_core.h0_torsion,
+                h1_matches: core.h1_dim == ref_core.h1_dim
+                    && core.h1_torsion == ref_core.h1_torsion,
                 obstruction_matches: core.obstruction_is_zero == ref_core.obstruction_is_zero,
             }),
             Err(reason) => {
@@ -440,11 +377,11 @@ where
     );
 
     let detail = LiftOutcomeDetail {
-        coeff_ring_label: coeff_label,
+        coeff_ring_label: backend.coeff_label(),
         r_base_label: format_algebra_label(&spec.extension, false),
         r_prime_label: format_algebra_label(&spec.extension, true),
-        kernel_dim: ext.kernel_dim(),
-        square_zero_verified: ext.square_zero_verified(),
+        kernel_dim: ctx.ext.kernel_dim(),
+        square_zero_verified: ctx.ext.square_zero_verified(),
         base_point_lawful: true,
         syzygy_generators: core.syz_gens_str,
         syzygy_identity_verified: core.syzygy_identity_verified,
@@ -477,55 +414,42 @@ where
     )
 }
 
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn run_core_lift_field<C: FieldCoeff>(
-    variables: &[String],
-    law_polys: &[Poly<C>],
-    vars: &VarOrder,
-    ext: &SquareZeroExtension<C>,
-    base_pt_r: &[Vec<C>],
-    param_vals_r: &[Vec<C>],
-    ambient_lift_rp: &[Vec<C>],
-    param_vals_rp: &[Vec<C>],
-    max_pairs: usize,
-) -> Result<CoreLiftField<C>, SilenceReason> {
-    let n = variables.len();
+pub(crate) fn run_core_lift<B: LiftRingBackend>(
+    ctx: &LiftContext<'_, B>,
+    law_polys: &[Poly<B::Coeff>],
+) -> Result<CoreLift<B::Coeff>, SilenceReason> {
+    let n = ctx.spec.variables.len();
     let r = law_polys.len();
-    let dm = ext.kernel_dim();
-    let z = ext.r_prime().zero_coeff.zero_like();
+    let dm = ctx.ext.kernel_dim();
+    let z = ctx.backend.zero();
 
-    let syz_res =
-        compute_syzygies_field(law_polys, vars.clone(), MonomialOrder::Grevlex, max_pairs)
-            .map_err(|e| SilenceReason::SyzygyOutOfScope {
-                detail: e.to_string(),
-            })?;
-    if !syz_res.verified || !syz_res.generating_certified {
-        return Err(SilenceReason::SyzygyOutOfScope {
-            detail: "syzygy generating certification failed".to_owned(),
-        });
-    }
+    let syz_res = ctx
+        .backend
+        .compute_syzygies(law_polys, ctx.vars.clone(), ctx.max_pairs)?;
     let q = syz_res.generators.len();
     let syz_gens_str: Vec<Vec<String>> = syz_res
         .generators
         .iter()
         .map(|s| {
             s.iter()
-                .map(|p| p.display(vars, MonomialOrder::Grevlex))
+                .map(|p| p.display(&ctx.vars, MonomialOrder::Grevlex))
                 .collect()
         })
         .collect();
 
-    let jac = jacobian_polys(law_polys, vars.len()).map_err(map_lift_algebra_error)?;
-    let base_full_r = concat_vecs(base_pt_r, param_vals_r);
+    let jac = jacobian_polys(law_polys, ctx.vars.len()).map_err(map_lift_algebra_error)?;
+    let base_full_r = concat_vecs(&ctx.base_pt_r, &ctx.param_vals_r);
 
     let mut d0 = vec![vec![z.clone(); n * dm]; r * dm];
     for (i, jac_row) in jac.iter().enumerate().take(r) {
         for (j, jac_entry) in jac_row.iter().enumerate().take(n) {
-            let val_r = ext
+            let val_r = ctx
+                .ext
                 .r_base()
                 .eval_poly(jac_entry, &base_full_r)
                 .map_err(map_lift_algebra_error)?;
-            let block = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+            let block =
+                r_action_matrix(ctx.backend, &ctx.ext, &val_r).map_err(map_lift_algebra_error)?;
             write_block(&mut d0, i * dm, j * dm, &block);
         }
     }
@@ -533,11 +457,13 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
     let mut d1 = vec![vec![z.clone(); r * dm]; q * dm];
     for (k, syz) in syz_res.generators.iter().enumerate() {
         for (i, poly) in syz.iter().enumerate() {
-            let val_r = ext
+            let val_r = ctx
+                .ext
                 .r_base()
                 .eval_poly(poly, &base_full_r)
                 .map_err(map_lift_algebra_error)?;
-            let block = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+            let block =
+                r_action_matrix(ctx.backend, &ctx.ext, &val_r).map_err(map_lift_algebra_error)?;
             write_block(&mut d1, k * dm, i * dm, &block);
         }
     }
@@ -545,26 +471,28 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
     let complex =
         CochainComplex::new(n * dm, r * dm, q * dm, d0, d1, z).map_err(map_lift_algebra_error)?;
 
-    let lift_full_rp = concat_vecs(ambient_lift_rp, param_vals_rp);
+    let lift_full_rp = concat_vecs(&ctx.ambient_lift_rp, &ctx.param_vals_rp);
     let mut residual_m = Vec::with_capacity(r * dm);
     let mut residual_in_m_str = Vec::with_capacity(r);
     for poly in law_polys {
-        let val_rp = ext
+        let val_rp = ctx
+            .ext
             .r_prime()
             .eval_poly(poly, &lift_full_rp)
             .map_err(map_lift_algebra_error)?;
-        let coords = ext
-            .extract_kernel_coords_field(&val_rp)
+        let coords = ctx
+            .backend
+            .extract_kernel_coords(&ctx.ext, &val_rp)
             .map_err(map_lift_algebra_error)?;
-        residual_in_m_str.push(ext.r_prime().format_elem(&val_rp));
+        residual_in_m_str.push(ctx.ext.r_prime().format_elem(&val_rp));
         residual_m.extend(coords);
     }
 
-    let coh = complex.cohomology_field().map_err(map_lift_algebra_error)?;
-    let coc = complex
-        .check_h1_cocycle_field(&coh, &residual_m)
+    let coh = ctx
+        .backend
+        .cohomology_and_cocycle(&complex, &residual_m)
         .map_err(map_lift_algebra_error)?;
-    if !coc.is_cocycle {
+    if !coh.is_cocycle {
         return Err(SilenceReason::SyzygyOutOfScope {
             detail: "evaluated residual failed d^1(r) = 0 cocycle verification".to_owned(),
         });
@@ -573,36 +501,41 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
     let h0_basis_str = coh
         .h0_basis
         .iter()
-        .map(|b| format_m_tuple(ext, b, n))
+        .map(|b| format_m_tuple(&ctx.ext, b, n))
         .collect();
-    let obstruction_class_coords = coc.class_coords.iter().map(ToString::to_string).collect();
-    let obstruction_is_zero = coc.is_zero_class;
+    let obstruction_is_zero = coh.is_zero_class;
 
-    let (restored_lift, reevaluation) = if let Some(witness_pos) = coc.coboundary_witness {
-        let delta: Vec<C> = witness_pos.iter().map(RingCoeff::neg_ref).collect();
-        let shifted =
-            apply_m_shift(ext, ambient_lift_rp, &delta).map_err(map_lift_algebra_error)?;
-        let reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
+    let (restored_lift, reevaluation) = if let Some(witness_pos) = coh.coboundary_witness {
+        let delta: Vec<B::Coeff> = witness_pos.iter().map(RingCoeff::neg_ref).collect();
+        let shifted = apply_m_shift(&ctx.ext, &ctx.ambient_lift_rp, &delta)
+            .map_err(map_lift_algebra_error)?;
+        let reeval = reevaluate_laws_in_rp(law_polys, &shifted, &ctx.param_vals_rp, &ctx.ext)
             .map_err(map_lift_algebra_error)?;
         (
-            Some(format_var_map(variables, &shifted, ext.r_prime())),
+            Some(format_var_map(
+                &ctx.spec.variables,
+                &shifted,
+                ctx.ext.r_prime(),
+            )),
             Some(reeval),
         )
     } else {
         (None, None)
     };
 
-    Ok(CoreLiftField {
+    Ok(CoreLift {
         syz_gens_str,
         syzygy_identity_verified: syz_res.verified,
         complex,
         residual_m,
         residual_in_m_str,
-        residual_cocycle_verified: coc.is_cocycle,
+        residual_cocycle_verified: coh.is_cocycle,
         h0_dim: coh.h0_dim,
+        h0_torsion: coh.h0_torsion,
         h1_dim: coh.h1_dim,
+        h1_torsion: coh.h1_torsion,
         h0_basis_str,
-        obstruction_class_coords,
+        obstruction_class_coords: coh.class_coords,
         obstruction_is_zero,
         lift_exists: obstruction_is_zero,
         restored_lift,
@@ -610,22 +543,15 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
     })
 }
 
-// =========================================================================
-// 共通補助関数（lift_z・lift_extensions・artin からも共用）
-// =========================================================================
-
-fn resolve_ambient_lift_field<C, FE>(
+fn resolve_ambient_lift<B: LiftRingBackend>(
     spec: &LiftTaskSpec,
-    ext: &SquareZeroExtension<C>,
-    base_pt_r: &[Vec<C>],
-    expand_expr: &FE,
-) -> Result<Vec<Vec<C>>, SilenceReason>
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-{
+    backend: &B,
+    ext: &SquareZeroExtension<B::Coeff>,
+    base_pt_r: &[Vec<B::Coeff>],
+) -> Result<Vec<Vec<B::Coeff>>, SilenceReason> {
+    let expand = |e: &_, b: &_| backend.expand_expr(e, b);
     if let Some(lift_spec) = &spec.ambient_lift {
-        let vals = eval_var_coords_generic(&spec.variables, lift_spec, expand_expr)
+        let vals = eval_var_coords_generic(&spec.variables, lift_spec, &expand)
             .map_err(map_lift_algebra_error)?;
         for (i, (l, b)) in vals.iter().zip(base_pt_r).enumerate() {
             if ext.project(l) != *b {
@@ -640,14 +566,14 @@ where
         }
         return Ok(vals);
     }
-    let z = ext.r_prime().zero_coeff.zero_like();
     let mut out = Vec::with_capacity(base_pt_r.len());
     for b in base_pt_r {
-        match solve_affine_field(ext.projection(), b, ext.r_prime().dim(), &z)
+        match backend
+            .solve_affine(ext.projection(), b, ext.r_prime().dim())
             .map_err(map_lift_algebra_error)?
         {
-            AffineSolutionField::Consistent { particular, .. } => out.push(particular),
-            AffineSolutionField::Inconsistent { .. } => {
+            Some((particular, _)) => out.push(particular),
+            None => {
                 return Err(SilenceReason::SquareZeroConditionViolated {
                     detail: "projection R' -> R failed to lift base_point".to_owned(),
                 });
@@ -657,20 +583,16 @@ where
     Ok(out)
 }
 
-fn build_extension_field<C, FL>(
+fn build_extension<B: LiftRingBackend>(
     spec: &SquareZeroSpec,
-    zero_coeff: C,
-    lit_conv: &FL,
-) -> Result<SquareZeroExtension<C>, AlgebraError>
-where
-    C: FieldCoeff,
-    FL: Fn(&ScalarLit) -> Result<C, AlgebraError>,
-{
+    backend: &B,
+) -> Result<SquareZeroExtension<B::Coeff>, AlgebraError> {
+    let lit_conv = |lit: &_| backend.convert_lit(lit);
     match spec {
         SquareZeroSpec::TruncatedPoly {
             var_name,
             base_degree,
-        } => SquareZeroExtension::truncated_step_field(var_name, *base_degree, zero_coeff),
+        } => backend.build_truncated_ext(var_name, *base_degree),
         SquareZeroSpec::ExplicitTable {
             r_prime_basis,
             r_prime_one,
@@ -682,17 +604,17 @@ where
         } => {
             let rp = FiniteAlgebra {
                 basis_names: r_prime_basis.clone(),
-                zero_coeff: zero_coeff.zero_like(),
-                one: conv_vec(r_prime_one, lit_conv)?,
-                mul_table: conv_cube(r_prime_mul, lit_conv)?,
+                zero_coeff: backend.zero(),
+                one: conv_vec(r_prime_one, &lit_conv)?,
+                mul_table: conv_cube(r_prime_mul, &lit_conv)?,
             };
             let rb = FiniteAlgebra {
                 basis_names: r_base_basis.clone(),
-                zero_coeff: zero_coeff.zero_like(),
-                one: conv_vec(r_base_one, lit_conv)?,
-                mul_table: conv_cube(r_base_mul, lit_conv)?,
+                zero_coeff: backend.zero(),
+                one: conv_vec(r_base_one, &lit_conv)?,
+                mul_table: conv_cube(r_base_mul, &lit_conv)?,
             };
-            SquareZeroExtension::new_field(rp, rb, conv_mat(projection, lit_conv)?)
+            backend.build_explicit_ext(rp, rb, conv_mat(projection, &lit_conv)?)
         }
     }
 }

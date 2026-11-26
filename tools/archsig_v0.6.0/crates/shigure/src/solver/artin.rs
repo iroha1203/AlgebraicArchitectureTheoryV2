@@ -6,7 +6,7 @@ use crate::algebra::artin::DEFAULT_MAX_ARTIN_DIM;
 use crate::algebra::artin_quotient::LocalArtinQuotient;
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
-use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
+use crate::algebra::scalar::{FpElem, RingCoeff};
 use crate::algebra::syzygy::{
     DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, compute_syzygies_field, ideal_membership_field,
 };
@@ -19,7 +19,8 @@ use crate::ir::result_phase4::{
     UniversalObstructionSummary,
 };
 use crate::ir::term::{CoeffDomain, PolyExpr};
-use crate::solver::artin_z::solve_artin_z;
+use crate::solver::artin_z::ZArtinBackend;
+use crate::solver::lift_backend::{FieldRingAdapter, FpFieldAdapter, QFieldAdapter};
 use crate::solver::lift_common::eval_const_expr;
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -72,11 +73,10 @@ pub fn solve_artin_task(task: &CheckedArtinTask) -> ShigureOutcome {
 
     let max_dim = spec.max_artin_dim.unwrap_or(DEFAULT_MAX_ARTIN_DIM);
     match &spec.coeff_domain {
-        CoeffDomain::Q => solve_artin_field(
+        CoeffDomain::Q => solve_artin_with_backend(
             spec,
-            Rat::zero(),
+            &FieldArtinBackend(QFieldAdapter),
             max_dim,
-            &|e, b| Poly::from_expr_q(e, b),
             checks,
             provenance,
         ),
@@ -93,17 +93,15 @@ pub fn solve_artin_task(task: &CheckedArtinTask) -> ShigureOutcome {
                     },
                 );
             };
-            let p_clone = p.clone();
-            solve_artin_field(
-                spec,
+            let backend = FieldArtinBackend(FpFieldAdapter {
+                p: p.clone(),
                 zero_fp,
-                max_dim,
-                &move |e, b| Poly::from_expr_fp(e, b, &p_clone),
-                checks,
-                provenance,
-            )
+            });
+            solve_artin_with_backend(spec, &backend, max_dim, checks, provenance)
         }
-        CoeffDomain::Z => solve_artin_z(spec, max_dim, checks, provenance),
+        CoeffDomain::Z => {
+            solve_artin_with_backend(spec, &ZArtinBackend, max_dim, checks, provenance)
+        }
     }
 }
 
@@ -119,20 +117,107 @@ pub(crate) enum OrderDetection {
     Infinite,
 }
 
-fn solve_artin_field<C, FE>(
+pub(crate) struct ArtinBaseChangeInput<'a, C: RingCoeff> {
+    pub(crate) spec: &'a ArtinTaskSpec,
+    pub(crate) bc: &'a BaseChangeSpec,
+    pub(crate) obs_order: &'a VarOrder,
+    pub(crate) obs_rels: &'a [Poly<C>],
+    pub(crate) eliminated: &'a [Poly<C>],
+    pub(crate) base_pt: &'a [C],
+    pub(crate) source_nu: Option<usize>,
+    pub(crate) max_dim: usize,
+}
+
+pub(crate) trait ArtinRingBackend {
+    type Coeff: RingCoeff;
+
+    fn test_ring_family(&self) -> &'static str;
+    fn check_clause(&self) -> MathClause;
+    fn zero(&self) -> Self::Coeff;
+    fn expand_expr(
+        &self,
+        expr: &PolyExpr,
+        bindings: &ExprBindings,
+    ) -> Result<Poly<Self::Coeff>, AlgebraError>;
+    fn detect_order(
+        &self,
+        obs_order: &VarOrder,
+        obs_rels: &[Poly<Self::Coeff>],
+        extra_res: &[Poly<Self::Coeff>],
+        base_pt: &[Self::Coeff],
+        max_order: usize,
+        max_dim: usize,
+    ) -> Result<OrderDetection, SilenceReason>;
+    fn compute_base_change(
+        &self,
+        input: &ArtinBaseChangeInput<'_, Self::Coeff>,
+    ) -> Result<NilpotentBaseChangeResult, SilenceReason>;
+}
+
+struct FieldArtinBackend<A: FieldRingAdapter>(A);
+
+impl<A: FieldRingAdapter> ArtinRingBackend for FieldArtinBackend<A> {
+    type Coeff = A::Coeff;
+
+    fn test_ring_family(&self) -> &'static str {
+        TEST_RING_FAMILY
+    }
+
+    fn check_clause(&self) -> MathClause {
+        MathClause::G141F2
+    }
+
+    fn zero(&self) -> A::Coeff {
+        self.0.zero()
+    }
+
+    fn expand_expr(
+        &self,
+        expr: &PolyExpr,
+        bindings: &ExprBindings,
+    ) -> Result<Poly<A::Coeff>, AlgebraError> {
+        self.0.expand_expr(expr, bindings)
+    }
+
+    fn detect_order(
+        &self,
+        obs_order: &VarOrder,
+        obs_rels: &[Poly<A::Coeff>],
+        extra_res: &[Poly<A::Coeff>],
+        base_pt: &[A::Coeff],
+        max_order: usize,
+        max_dim: usize,
+    ) -> Result<OrderDetection, SilenceReason> {
+        detect_order_field(
+            obs_order,
+            obs_rels,
+            extra_res,
+            base_pt,
+            max_order,
+            max_dim,
+            self.zero(),
+        )
+    }
+
+    fn compute_base_change(
+        &self,
+        input: &ArtinBaseChangeInput<'_, A::Coeff>,
+    ) -> Result<NilpotentBaseChangeResult, SilenceReason> {
+        compute_base_change_from_field(input, self.zero())
+    }
+}
+
+fn solve_artin_with_backend<B: ArtinRingBackend>(
     spec: &ArtinTaskSpec,
-    zero_coeff: C,
+    backend: &B,
     max_dim: usize,
-    expand_expr: &FE,
     mut checks: Vec<ApplicabilityCheck>,
     provenance: Provenance,
-) -> ShigureOutcome
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-{
+) -> ShigureOutcome {
     let coeff_domain = spec.coeff_domain.clone();
     let point_domain = PointDomain::UniversalRing;
+    let clause = backend.check_clause();
+    let expand = |e: &_, b: &_| backend.expand_expr(e, b);
 
     let (obs_order, obs_bindings) = match ExprBindings::from_slices(&spec.obs_vars, &[], &[]) {
         Ok(p) => p,
@@ -147,7 +232,7 @@ where
         }
     };
 
-    let obs_rels = match expand_polys(&spec.obs_relations, &obs_bindings, expand_expr) {
+    let obs_rels = match expand_polys(&spec.obs_relations, &obs_bindings, &expand) {
         Ok(v) => v,
         Err(e) => {
             return artin_undetermined(
@@ -160,7 +245,7 @@ where
         }
     };
 
-    let base_pt = match eval_base_point(&spec.obs_vars, &spec.base_point, expand_expr) {
+    let base_pt = match eval_base_point(&spec.obs_vars, &spec.base_point, &expand) {
         Ok(v) => v,
         Err(e) => {
             return artin_undetermined(
@@ -178,8 +263,8 @@ where
         &[],
         &spec.aux_defs,
         &spec.extra_laws,
-        zero_coeff.clone(),
-        expand_expr,
+        backend.zero(),
+        &expand,
     ) {
         Ok(p) => p,
         Err(e) => {
@@ -202,14 +287,14 @@ where
     ) {
         checks.push(ApplicabilityCheck::failed(
             "base_point_lies_in_Sem_P",
-            MathClause::G141F2,
+            clause,
             reason.code(),
         ));
         return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
     }
     checks.push(ApplicabilityCheck::passed(
         "base_point_lies_in_Sem_P",
-        MathClause::G141F2,
+        clause,
     ));
 
     let is_free = spec.obs_relations.is_empty();
@@ -223,20 +308,19 @@ where
         None
     };
 
-    let det1 = match detect_order_field(
+    let det1 = match backend.detect_order(
         &obs_order,
         &obs_rels,
         &eliminated1,
         &base_pt,
         spec.max_order,
         max_dim,
-        zero_coeff.clone(),
     ) {
         Ok(d) => d,
         Err(reason) => {
             checks.push(ApplicabilityCheck::failed(
                 "artin_order_within_bound",
-                MathClause::G141F2,
+                clause,
                 reason.code(),
             ));
             return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
@@ -244,7 +328,7 @@ where
     };
     checks.push(ApplicabilityCheck::passed(
         "artin_order_within_bound",
-        MathClause::G141F2,
+        clause,
     ));
 
     let (
@@ -259,7 +343,7 @@ where
             &stage1_subst,
             &stage2.aux_defs,
             &stage2.extra_laws,
-            expand_expr,
+            &expand,
         ) {
             Ok(p) => p,
             Err(e) => {
@@ -279,14 +363,13 @@ where
         }
         let mut a1_rels = obs_rels.clone();
         a1_rels.extend(eliminated1.iter().cloned());
-        let det_v = match detect_order_field(
+        let det_v = match backend.detect_order(
             &obs_order,
             &a1_rels,
             &eliminated2,
             &base_pt,
             spec.max_order,
             max_dim,
-            zero_coeff.clone(),
         ) {
             Ok(d) => d,
             Err(reason) => {
@@ -295,14 +378,13 @@ where
         };
         let mut combined_extra = eliminated1.clone();
         combined_extra.extend(eliminated2);
-        let det_vu = match detect_order_field(
+        let det_vu = match backend.detect_order(
             &obs_order,
             &obs_rels,
             &combined_extra,
             &base_pt,
             spec.max_order,
             max_dim,
-            zero_coeff.clone(),
         ) {
             Ok(d) => d,
             Err(reason) => {
@@ -323,17 +405,17 @@ where
     };
 
     let base_change = if let Some(bc) = &spec.base_change {
-        match compute_base_change_from_field(
+        let input = ArtinBaseChangeInput {
             spec,
             bc,
-            &obs_order,
-            &obs_rels,
-            &eliminated1,
-            &base_pt,
-            detection_order_nu,
+            obs_order: &obs_order,
+            obs_rels: &obs_rels,
+            eliminated: &eliminated1,
+            base_pt: &base_pt,
+            source_nu: detection_order_nu,
             max_dim,
-            zero_coeff,
-        ) {
+        };
+        match backend.compute_base_change(&input) {
             Ok(r) => Some(r),
             Err(reason) => {
                 return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
@@ -354,7 +436,7 @@ where
     };
 
     let detail = ArtinOutcomeDetail {
-        test_ring_family: TEST_RING_FAMILY.to_owned(),
+        test_ring_family: backend.test_ring_family().to_owned(),
         is_free_observation_chart: is_free,
         eliminated_residuals,
         syntactic_degree_bound,
@@ -494,45 +576,44 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
     })
 }
 
-#[allow(clippy::too_many_arguments)]
 fn compute_base_change_from_field<C: FieldCoeff>(
-    spec: &ArtinTaskSpec,
-    bc: &BaseChangeSpec,
-    obs_order: &VarOrder,
-    obs_rels: &[Poly<C>],
-    eliminated: &[Poly<C>],
-    base_pt: &[C],
-    source_nu: Option<usize>,
-    max_dim: usize,
+    input: &ArtinBaseChangeInput<'_, C>,
     zero: C,
 ) -> Result<NilpotentBaseChangeResult, SilenceReason> {
-    if bc.target_domain != spec.coeff_domain {
+    if input.bc.target_domain != input.spec.coeff_domain {
         return Err(SilenceReason::UnsupportedCoeffRing {
-            domain: bc.target_domain.clone(),
+            domain: input.bc.target_domain.clone(),
             detail: format!(
                 "no canonical ring homomorphism from {} to {}",
-                spec.coeff_domain, bc.target_domain
+                input.spec.coeff_domain, input.bc.target_domain
             ),
         });
     }
-    let r = bc.test_order.or(source_nu).unwrap_or(1);
-    let q_r = LocalArtinQuotient::build(obs_order.clone(), obs_rels, base_pt, r, zero, max_dim)
-        .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
-            detail: e.to_string(),
-        })?;
+    let r = input.bc.test_order.or(input.source_nu).unwrap_or(1);
+    let q_r = LocalArtinQuotient::build(
+        input.obs_order.clone(),
+        input.obs_rels,
+        input.base_pt,
+        r,
+        zero,
+        input.max_dim,
+    )
+    .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
+        detail: e.to_string(),
+    })?;
     let mut imgs = Vec::new();
-    for g in eliminated {
+    for g in input.eliminated {
         let v = q_r.project_poly(g).map_err(map_artin_err)?;
         if !q_r.algebra.is_zero_elem(&v) {
             imgs.push(q_r.algebra.format_elem(&v));
         }
     }
-    let dom_str = spec.coeff_domain.to_string();
+    let dom_str = input.spec.coeff_domain.to_string();
     Ok(NilpotentBaseChangeResult {
         source_domain: dom_str.clone(),
         target_domain: dom_str,
-        source_nu,
-        target_nu: source_nu,
+        source_nu: input.source_nu,
+        target_nu: input.source_nu,
         test_order: r,
         source_dr_generators: imgs.clone(),
         abstract_tensor_nonzero: !imgs.is_empty(),

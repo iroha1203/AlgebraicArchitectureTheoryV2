@@ -1,62 +1,45 @@
-//! `solver/lift` の体係数補助解析群（`T_raw` 比較・相対 cone `F_u`・宣言被覆 E7/二文脈 Čech・
-//! 許容部分加群 `H` アフィン修復・有限 étale 被覆 `z^d = t` descent）。
+//! `solver/lift` の補助解析群（`T_raw` 比較・相対 cone `F_u`・宣言被覆 E7/二文脈 Čech）。
 
-use crate::algebra::MonomialOrder;
-use crate::algebra::artin::{AffineSolutionField, rref_field, solve_affine_field};
-use crate::algebra::artin_quotient::SquareZeroExtension;
 use crate::algebra::cochain::CochainComplex;
-use crate::algebra::poly::{AlgebraError, Poly};
-use crate::algebra::poly_expr::{ExprBindings, VarOrder};
+use crate::algebra::poly::Poly;
+use crate::algebra::poly_expr::ExprBindings;
 use crate::algebra::scalar::RingCoeff;
-use crate::algebra::syzygy::{FieldCoeff, ideal_membership_field, jacobian_polys};
-use crate::ir::lift::{DeclarationCoverSpec, LiftTaskSpec, RelativeReadingSpec};
+use crate::algebra::syzygy::jacobian_polys;
+use crate::ir::lift::{DeclarationCoverSpec, RelativeReadingSpec};
 use crate::ir::result::SilenceReason;
 use crate::ir::result_phase4::{
     DeclarationCoverResult, RawCechComparisonResult, RelativeConeResult,
 };
 use crate::ir::term::PolyExpr;
-use crate::solver::lift::CoreLiftField;
+use crate::solver::lift::CoreLift;
+use crate::solver::lift_backend::{LiftContext, LiftRingBackend};
 use crate::solver::lift_common::{
     apply_m_shift, check_cover_support_closure, concat_vecs, eval_var_coords_generic,
     expand_named_polys, expand_subset_delta, expr_supported_in, format_var_map,
-    grad_vanishes_on_basis, map_lift_algebra_error, r_action_matrix_field, reevaluate_laws_in_rp,
+    grad_vanishes_on_basis, map_lift_algebra_error, r_action_matrix, reevaluate_laws_in_rp,
     write_block,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 生宣言 Čech total complex `T_raw`（`d^1 = 0`）と全 syzygy 複体 `D` の比較（G-141 E8・H3）。
-pub(crate) fn compute_raw_cech_field<C: FieldCoeff>(
-    complex_d: &CochainComplex<C>,
+pub(crate) fn compute_raw_cech<B: LiftRingBackend>(
+    backend: &B,
+    complex_d: &CochainComplex<B::Coeff>,
     h1_d_dim: usize,
 ) -> Result<RawCechComparisonResult, SilenceReason> {
-    let z = complex_d.zero_coeff().zero_like();
-    let t_raw = CochainComplex::new(
-        complex_d.dim0(),
-        complex_d.dim1(),
-        0,
-        complex_d.d0().to_vec(),
-        Vec::new(),
-        z.clone(),
-    )
-    .map_err(map_lift_algebra_error)?;
-    let raw_coh = t_raw.cohomology_field().map_err(map_lift_algebra_error)?;
-    let d1_rank = if complex_d.dim2() == 0 {
-        0
-    } else {
-        rref_field(complex_d.d1(), complex_d.dim1(), &z)
-            .map_err(map_lift_algebra_error)?
-            .rank
-    };
+    let stats = backend
+        .raw_cech_stats(complex_d)
+        .map_err(map_lift_algebra_error)?;
     Ok(RawCechComparisonResult {
-        h0_t_raw_dim: raw_coh.h0_dim,
-        h1_t_raw_dim: raw_coh.h1_dim,
+        h0_t_raw_dim: stats.h0_t_raw_dim,
+        h1_t_raw_dim: stats.h1_t_raw_dim,
         h1_d_dim,
-        kernel_map_exact_verified: raw_coh.h1_dim == h1_d_dim + d1_rank,
-        differs_from_full_syzygy: raw_coh.h1_dim != h1_d_dim,
+        kernel_map_exact_verified: stats.h1_t_raw_dim == h1_d_dim + stats.d1_rank,
+        differs_from_full_syzygy: stats.h1_t_raw_dim != h1_d_dim,
     })
 }
 
-pub(crate) struct ComputedRelativeConeField<C: FieldCoeff> {
+pub(crate) struct ComputedRelativeCone<C: RingCoeff> {
     pub(crate) result: RelativeConeResult,
     pub(crate) fu: CochainComplex<C>,
     pub(crate) rel_cocycle: Vec<C>,
@@ -64,31 +47,20 @@ pub(crate) struct ComputedRelativeConeField<C: FieldCoeff> {
 }
 
 /// 相対 cone 複体 `F_u = Cone(φ)[-1]` の計算と raw read 差の符号付き比較（G-141 E5・H4・H10）。
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn compute_relative_cone_field<C, FE>(
-    spec: &LiftTaskSpec,
+pub(crate) fn compute_relative_cone<B: LiftRingBackend>(
+    ctx: &LiftContext<'_, B>,
     rel: &RelativeReadingSpec,
-    law_polys: &[Poly<C>],
-    vars: &VarOrder,
-    bindings: &ExprBindings,
-    ext: &SquareZeroExtension<C>,
-    base_pt_r: &[Vec<C>],
-    param_vals_r: &[Vec<C>],
-    ambient_lift_rp: &[Vec<C>],
-    param_vals_rp: &[Vec<C>],
-    core: &CoreLiftField<C>,
-    expand_expr: &FE,
-    max_pairs: usize,
-) -> Result<ComputedRelativeConeField<C>, SilenceReason>
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-{
-    let n = spec.variables.len();
-    let r = law_polys.len();
+    core: &CoreLift<B::Coeff>,
+) -> Result<ComputedRelativeCone<B::Coeff>, SilenceReason> {
+    ctx.backend
+        .check_obs_laws_supported(!rel.obs_laws.is_empty())?;
+
+    let n = ctx.spec.variables.len();
+    let r = ctx.law_polys.len();
     let m = rel.obs_vars.len();
-    let dm = ext.kernel_dim();
-    let z = ext.r_prime().zero_coeff.zero_like();
+    let dm = ctx.ext.kernel_dim();
+    let z = ctx.backend.zero();
+    let expand = |e: &_, b: &_| ctx.backend.expand_expr(e, b);
 
     let rm_map: BTreeMap<&str, &PolyExpr> = rel
         .reading_map
@@ -97,64 +69,77 @@ where
         .collect();
     let mut reading_polys = Vec::with_capacity(m);
     for ov in &rel.obs_vars {
-        reading_polys
-            .push(expand_expr(rm_map[ov.as_str()], bindings).map_err(map_lift_algebra_error)?);
+        reading_polys.push(
+            ctx.backend
+                .expand_expr(rm_map[ov.as_str()], &ctx.bindings)
+                .map_err(map_lift_algebra_error)?,
+        );
     }
 
-    let obs_lift_rp = eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, expand_expr)
+    let obs_lift_rp = eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, &expand)
         .map_err(map_lift_algebra_error)?;
-    let base_full_r = concat_vecs(base_pt_r, param_vals_r);
+    let base_full_r = concat_vecs(&ctx.base_pt_r, &ctx.param_vals_r);
     for (idx, (rp_poly, y_rp)) in reading_polys.iter().zip(&obs_lift_rp).enumerate() {
-        let expected_r = ext
+        let expected_r = ctx
+            .ext
             .r_base()
             .eval_poly(rp_poly, &base_full_r)
             .map_err(map_lift_algebra_error)?;
-        let actual_r = ext.project(y_rp);
+        let actual_r = ctx.ext.project(y_rp);
         if expected_r != actual_r {
             return Err(SilenceReason::ApplicabilityConditionNotMet {
                 condition: "designated_obs_lift_covers_base_reading".to_owned(),
                 detail: format!(
                     "designated_obs_lift `{}` projects to {} != {}",
                     rel.obs_vars[idx],
-                    ext.r_base().format_elem(&actual_r),
-                    ext.r_base().format_elem(&expected_r)
+                    ctx.ext.r_base().format_elem(&actual_r),
+                    ctx.ext.r_base().format_elem(&expected_r)
                 ),
             });
         }
     }
 
-    let param_names: Vec<String> = spec.ring_params.iter().map(|p| p.name.clone()).collect();
+    let param_names: Vec<String> = ctx
+        .spec
+        .ring_params
+        .iter()
+        .map(|p| p.name.clone())
+        .collect();
     let (_, obs_bindings) = ExprBindings::from_slices(&rel.obs_vars, &[], &param_names)
         .map_err(map_lift_algebra_error)?;
-    let obs_law_polys = expand_named_polys(&rel.obs_laws, &obs_bindings, expand_expr)
+    let obs_law_polys = expand_named_polys(&rel.obs_laws, &obs_bindings, &expand)
         .map_err(map_lift_algebra_error)?;
-    let obs_full_rp = concat_vecs(&obs_lift_rp, param_vals_rp);
+    let obs_full_rp = concat_vecs(&obs_lift_rp, &ctx.param_vals_rp);
     for (ol, poly) in rel.obs_laws.iter().zip(&obs_law_polys) {
-        let v = ext
+        let v = ctx
+            .ext
             .r_prime()
             .eval_poly(poly, &obs_full_rp)
             .map_err(map_lift_algebra_error)?;
-        if !ext.r_prime().is_zero_elem(&v) {
+        if !ctx.ext.r_prime().is_zero_elem(&v) {
             return Err(SilenceReason::ApplicabilityConditionNotMet {
                 condition: "designated_obs_lift_satisfies_obs_laws".to_owned(),
                 detail: format!(
                     "obs_law `{}` is nonzero at designated_obs_lift: {}",
                     ol.name,
-                    ext.r_prime().format_elem(&v)
+                    ctx.ext.r_prime().format_elem(&v)
                 ),
             });
         }
     }
 
-    let jac_rho = jacobian_polys(&reading_polys, vars.len()).map_err(map_lift_algebra_error)?;
+    let jac_rho =
+        jacobian_polys(&reading_polys, ctx.vars.len()).map_err(map_lift_algebra_error)?;
     let mut j_rho = vec![vec![z.clone(); n * dm]; m * dm];
     for (a, jac_row) in jac_rho.iter().enumerate().take(m) {
         for (j, jac_entry) in jac_row.iter().enumerate().take(n) {
-            let val_r = ext
+            let val_r = ctx
+                .ext
                 .r_base()
                 .eval_poly(jac_entry, &base_full_r)
                 .map_err(map_lift_algebra_error)?;
-            let block = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+            let block =
+                r_action_matrix(ctx.backend, &ctx.ext, &val_r).map_err(map_lift_algebra_error)?;
             write_block(&mut j_rho, a * dm, j * dm, &block);
         }
     }
@@ -177,32 +162,31 @@ where
     }
 
     if l > 0 {
-        let obs_full_r: Vec<Vec<C>> = obs_lift_rp
+        let obs_full_r: Vec<Vec<B::Coeff>> = obs_lift_rp
             .iter()
-            .map(|v| ext.project(v))
-            .chain(param_vals_r.iter().cloned())
+            .map(|v| ctx.ext.project(v))
+            .chain(ctx.param_vals_r.iter().cloned())
             .collect();
         let jac_obs = jacobian_polys(&obs_law_polys, rel.obs_vars.len() + param_names.len())
             .map_err(map_lift_algebra_error)?;
-        let subst_vec: Vec<Poly<C>> = reading_polys
+        let subst_vec: Vec<Poly<B::Coeff>> = reading_polys
             .iter()
             .cloned()
-            .chain((0..param_names.len()).map(|k| Poly::var(vars.len(), n + k, z.clone())))
+            .chain((0..param_names.len()).map(|k| Poly::var(ctx.vars.len(), n + k, z.clone())))
             .collect();
         for a in 0..l {
             let pulled = if subst_vec.is_empty() {
-                Poly::constant(vars.len(), obs_law_polys[a].constant_value())
+                Poly::constant(ctx.vars.len(), obs_law_polys[a].constant_value())
             } else {
                 obs_law_polys[a]
                     .substitute(&subst_vec)
                     .map_err(map_lift_algebra_error)?
             };
-            let cofactors = match ideal_membership_field(
+            let cofactors = match ctx.backend.ideal_membership(
                 &pulled,
-                law_polys,
-                vars,
-                MonomialOrder::Grevlex,
-                max_pairs,
+                &ctx.law_polys,
+                &ctx.vars,
+                ctx.max_pairs,
             ) {
                 Ok(Some(c)) => c,
                 Ok(None) => {
@@ -214,70 +198,74 @@ where
                 Err(e) => return Err(map_lift_algebra_error(e)),
             };
             for (i, cf) in cofactors.iter().enumerate() {
-                let val_r = ext
+                let val_r = ctx
+                    .ext
                     .r_base()
                     .eval_poly(cf, &base_full_r)
                     .map_err(map_lift_algebra_error)?;
-                let block = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+                let block = r_action_matrix(ctx.backend, &ctx.ext, &val_r)
+                    .map_err(map_lift_algebra_error)?;
                 write_block(&mut d1_fu, q_dm + a * dm, i * dm, &block);
             }
             for (b, jac_entry) in jac_obs[a].iter().enumerate().take(m) {
-                let val_r = ext
+                let val_r = ctx
+                    .ext
                     .r_base()
                     .eval_poly(jac_entry, &obs_full_r)
                     .map_err(map_lift_algebra_error)?;
-                let neg_val = ext.r_base().neg(&val_r);
-                let block = r_action_matrix_field(ext, &neg_val).map_err(map_lift_algebra_error)?;
+                let neg_val = ctx.ext.r_base().neg(&val_r);
+                let block = r_action_matrix(ctx.backend, &ctx.ext, &neg_val)
+                    .map_err(map_lift_algebra_error)?;
                 write_block(&mut d1_fu, q_dm + a * dm, r * dm + b * dm, &block);
             }
         }
     }
 
-    let fu = CochainComplex::new(n * dm, (r + m) * dm, q_dm + l * dm, d0_fu, d1_fu, z)
+    let fu = CochainComplex::new(n * dm, (r + m) * dm, q_dm + l * dm, d0_fu, d1_fu, z.clone())
         .map_err(map_lift_algebra_error)?;
 
-    let lift_full_rp = concat_vecs(ambient_lift_rp, param_vals_rp);
+    let lift_full_rp = concat_vecs(&ctx.ambient_lift_rp, &ctx.param_vals_rp);
     let mut rel_cocycle = core.residual_m.clone();
     for (rp_poly, y_rp) in reading_polys.iter().zip(&obs_lift_rp) {
-        let read_val = ext
+        let read_val = ctx
+            .ext
             .r_prime()
             .eval_poly(rp_poly, &lift_full_rp)
             .map_err(map_lift_algebra_error)?;
-        let diff = ext.r_prime().sub(&read_val, y_rp);
+        let diff = ctx.ext.r_prime().sub(&read_val, y_rp);
         rel_cocycle.extend(
-            ext.extract_kernel_coords_field(&diff)
+            ctx.backend
+                .extract_kernel_coords(&ctx.ext, &diff)
                 .map_err(map_lift_algebra_error)?,
         );
     }
 
-    let fu_coh = fu.cohomology_field().map_err(map_lift_algebra_error)?;
-    let fu_coc = fu
-        .check_h1_cocycle_field(&fu_coh, &rel_cocycle)
+    let fu_coh = ctx
+        .backend
+        .cohomology_and_cocycle(&fu, &rel_cocycle)
         .map_err(map_lift_algebra_error)?;
-    if !fu_coc.is_cocycle {
+    if !fu_coh.is_cocycle {
         return Err(SilenceReason::SyzygyOutOfScope {
             detail: "relative cone cocycle verification failed".to_owned(),
         });
     }
 
-    let relative_obstruction_is_zero = fu_coc.is_zero_class;
-    let relative_obstruction_coords = fu_coc
-        .class_coords
-        .iter()
-        .map(ToString::to_string)
-        .collect();
+    let relative_obstruction_is_zero = fu_coh.is_zero_class;
+    let relative_obstruction_coords = fu_coh.class_coords;
 
     let (restored_relative_lift, reevaluation, restored_shifted) =
-        if let Some(witness_pos) = fu_coc.coboundary_witness {
-            let delta: Vec<C> = witness_pos.iter().map(RingCoeff::neg_ref).collect();
-            let shifted =
-                apply_m_shift(ext, ambient_lift_rp, &delta).map_err(map_lift_algebra_error)?;
-            let mut reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
+        if let Some(witness_pos) = fu_coh.coboundary_witness {
+            let delta: Vec<B::Coeff> = witness_pos.iter().map(RingCoeff::neg_ref).collect();
+            let shifted = apply_m_shift(&ctx.ext, &ctx.ambient_lift_rp, &delta)
                 .map_err(map_lift_algebra_error)?;
-            let shifted_full = concat_vecs(&shifted, param_vals_rp);
+            let mut reeval =
+                reevaluate_laws_in_rp(&ctx.law_polys, &shifted, &ctx.param_vals_rp, &ctx.ext)
+                    .map_err(map_lift_algebra_error)?;
+            let shifted_full = concat_vecs(&shifted, &ctx.param_vals_rp);
             let mut obs_bad = Vec::new();
             for (idx, (rp_poly, y_rp)) in reading_polys.iter().zip(&obs_lift_rp).enumerate() {
-                let got = ext
+                let got = ctx
+                    .ext
                     .r_prime()
                     .eval_poly(rp_poly, &shifted_full)
                     .map_err(map_lift_algebra_error)?;
@@ -285,8 +273,8 @@ where
                     obs_bad.push(format!(
                         "{}={} (expected {})",
                         rel.obs_vars[idx],
-                        ext.r_prime().format_elem(&got),
-                        ext.r_prime().format_elem(y_rp)
+                        ctx.ext.r_prime().format_elem(&got),
+                        ctx.ext.r_prime().format_elem(y_rp)
                     ));
                 }
             }
@@ -296,7 +284,7 @@ where
             } else {
                 reeval.detail = format!("{}; designated obs lift matched", reeval.detail);
             }
-            let fmt = format_var_map(&spec.variables, &shifted, ext.r_prime());
+            let fmt = format_var_map(&ctx.spec.variables, &shifted, ctx.ext.r_prime());
             (Some(fmt), Some(reeval), Some(shifted))
         } else {
             (None, None, None)
@@ -304,30 +292,35 @@ where
 
     let (raw_read_diff_value, raw_read_diff_signed_match, raw_val_rp) =
         if let Some(rr) = &rel.raw_read_diff {
-            let rr_poly = expand_expr(&rr.expr, bindings).map_err(map_lift_algebra_error)?;
-            let z_c = ext.r_prime().zero_coeff.zero_like();
-            let mut grad_rr = vec![vec![z_c.clone(); n * dm]; dm];
+            let rr_poly = ctx
+                .backend
+                .expand_expr(&rr.expr, &ctx.bindings)
+                .map_err(map_lift_algebra_error)?;
+            let mut grad_rr = vec![vec![z.clone(); n * dm]; dm];
             for j in 0..n {
                 let dp = rr_poly
                     .partial_derivative(j)
                     .map_err(map_lift_algebra_error)?;
-                let val_r = ext
+                let val_r = ctx
+                    .ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
                     .map_err(map_lift_algebra_error)?;
-                let blk = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+                let blk = r_action_matrix(ctx.backend, &ctx.ext, &val_r)
+                    .map_err(map_lift_algebra_error)?;
                 write_block(&mut grad_rr, 0, j * dm, &blk);
             }
             if relative_obstruction_is_zero {
                 if let Some(shifted) = &restored_shifted {
-                    if grad_vanishes_on_basis(&grad_rr, &fu_coh.h0_basis, &z_c) {
-                        let eval_full = concat_vecs(shifted, param_vals_rp);
-                        let raw_val = ext
+                    if grad_vanishes_on_basis(&grad_rr, &fu_coh.h0_basis, &z) {
+                        let eval_full = concat_vecs(shifted, &ctx.param_vals_rp);
+                        let raw_val = ctx
+                            .ext
                             .r_prime()
                             .eval_poly(&rr_poly, &eval_full)
                             .map_err(map_lift_algebra_error)?;
-                        let matched = Some(ext.r_prime().is_zero_elem(&raw_val));
-                        let formatted = ext.r_prime().format_elem(&raw_val);
+                        let matched = Some(ctx.ext.r_prime().is_zero_elem(&raw_val));
+                        let formatted = ctx.ext.r_prime().format_elem(&raw_val);
                         (Some(formatted), matched, Some((raw_val, rr.negated)))
                     } else {
                         (None, None, None)
@@ -335,21 +328,17 @@ where
                 } else {
                     (None, None, None)
                 }
-            } else if let Some((eval_base, ker_j_rho)) = align_ambient_to_obs_field(
-                ambient_lift_rp,
-                &j_rho,
-                &reading_polys,
-                &obs_lift_rp,
-                param_vals_rp,
-                ext,
-            ) {
-                if grad_vanishes_on_basis(&grad_rr, &ker_j_rho, &z_c) {
-                    let eval_full = concat_vecs(&eval_base, param_vals_rp);
-                    let raw_val = ext
+            } else if let Some((eval_base, ker_j_rho)) =
+                align_ambient_to_obs(ctx, &j_rho, &reading_polys, &obs_lift_rp)
+            {
+                if grad_vanishes_on_basis(&grad_rr, &ker_j_rho, &z) {
+                    let eval_full = concat_vecs(&eval_base, &ctx.param_vals_rp);
+                    let raw_val = ctx
+                        .ext
                         .r_prime()
                         .eval_poly(&rr_poly, &eval_full)
                         .map_err(map_lift_algebra_error)?;
-                    let formatted = ext.r_prime().format_elem(&raw_val);
+                    let formatted = ctx.ext.r_prime().format_elem(&raw_val);
                     (Some(formatted), None, Some((raw_val, rr.negated)))
                 } else {
                     (None, None, None)
@@ -361,7 +350,7 @@ where
             (None, None, None)
         };
 
-    Ok(ComputedRelativeConeField {
+    Ok(ComputedRelativeCone {
         result: RelativeConeResult {
             h0_fu_dim: fu_coh.h0_dim,
             h1_fu_dim: fu_coh.h1_dim,
@@ -380,29 +369,17 @@ where
 }
 
 /// 宣言被覆支持閉包（G-141 E7）と二文脈共有演算 Čech 差（G-141 F5・H4・H10）。
-#[allow(clippy::too_many_arguments)]
-pub(crate) fn compute_declaration_cover_field<C, FE>(
-    spec: &LiftTaskSpec,
+pub(crate) fn compute_declaration_cover<B: LiftRingBackend>(
+    ctx: &LiftContext<'_, B>,
     cov: &DeclarationCoverSpec,
-    law_polys: &[Poly<C>],
-    ext: &SquareZeroExtension<C>,
-    base_pt_r: &[Vec<C>],
-    param_vals_r: &[Vec<C>],
-    ambient_lift_rp: &[Vec<C>],
-    param_vals_rp: &[Vec<C>],
-    core: &CoreLiftField<C>,
-    rel_cone: Option<&mut ComputedRelativeConeField<C>>,
-    expand_expr: &FE,
-) -> Result<DeclarationCoverResult, SilenceReason>
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-{
+    core: &CoreLift<B::Coeff>,
+    rel_cone: Option<&mut ComputedRelativeCone<B::Coeff>>,
+) -> Result<DeclarationCoverResult, SilenceReason> {
     let (support_closed, unclosed_observations) = check_cover_support_closure(
         cov,
-        &spec.variables,
-        &spec.laws,
-        spec.relative_reading.as_ref(),
+        &ctx.spec.variables,
+        &ctx.spec.laws,
+        ctx.spec.relative_reading.as_ref(),
     );
     let Some(cech) = &cov.two_context_cech else {
         return Ok(DeclarationCoverResult {
@@ -438,32 +415,11 @@ where
             detail: format!("missing right context `{}`", cech.right_context),
         })?;
 
-    let (p_l, k_l) = solve_context_local_lift_field(
-        spec,
-        &left_ctx.vars,
-        &left_ctx.laws,
-        law_polys,
-        ext,
-        base_pt_r,
-        param_vals_r,
-        ambient_lift_rp,
-        param_vals_rp,
-        expand_expr,
-    )?;
-    let (p_r, k_r) = solve_context_local_lift_field(
-        spec,
-        &right_ctx.vars,
-        &right_ctx.laws,
-        law_polys,
-        ext,
-        base_pt_r,
-        param_vals_r,
-        ambient_lift_rp,
-        param_vals_rp,
-        expand_expr,
-    )?;
+    let (p_l, k_l) = solve_context_local_lift(ctx, &left_ctx.vars, &left_ctx.laws)?;
+    let (p_r, k_r) = solve_context_local_lift(ctx, &right_ctx.vars, &right_ctx.laws)?;
 
-    let var_idx: BTreeMap<&str, usize> = spec
+    let var_idx: BTreeMap<&str, usize> = ctx
+        .spec
         .variables
         .iter()
         .enumerate()
@@ -471,7 +427,8 @@ where
         .collect();
     let left_vars: BTreeSet<&str> = left_ctx.vars.iter().map(String::as_str).collect();
     let right_vars: BTreeSet<&str> = right_ctx.vars.iter().map(String::as_str).collect();
-    let overlap_indices: Vec<usize> = spec
+    let overlap_indices: Vec<usize> = ctx
+        .spec
         .variables
         .iter()
         .enumerate()
@@ -483,8 +440,8 @@ where
         .iter()
         .map(|sv| var_idx[sv.as_str()])
         .collect();
-    let dm = ext.kernel_dim();
-    let z = ext.r_prime().zero_coeff.zero_like();
+    let dm = ctx.ext.kernel_dim();
+    let z = ctx.backend.zero();
     let mut rhs_o = Vec::with_capacity(overlap_indices.len() * dm);
     for &idx in &overlap_indices {
         for k in 0..dm {
@@ -512,8 +469,12 @@ where
         let nonzero = rhs_o.iter().any(|v| !v.coeff_is_zero());
         (nonzero, p_l, p_r)
     } else {
-        match solve_affine_field(&cob_mat, &rhs_o, total_k, &z).map_err(map_lift_algebra_error)? {
-            AffineSolutionField::Consistent { particular, .. } => {
+        match ctx
+            .backend
+            .solve_affine(&cob_mat, &rhs_o, total_k)
+            .map_err(map_lift_algebra_error)?
+        {
+            Some((particular, _)) => {
                 let mut adj_l = p_l;
                 for (c, kb) in particular[..k_l.len()].iter().zip(&k_l) {
                     if !c.coeff_is_zero() {
@@ -532,31 +493,31 @@ where
                 }
                 (false, adj_l, adj_r)
             }
-            AffineSolutionField::Inconsistent { .. } => (true, p_l, p_r),
+            None => (true, p_l, p_r),
         }
     };
 
-    let left_lift =
-        apply_m_shift(ext, ambient_lift_rp, &left_delta).map_err(map_lift_algebra_error)?;
-    let right_lift =
-        apply_m_shift(ext, ambient_lift_rp, &right_delta).map_err(map_lift_algebra_error)?;
+    let left_lift = apply_m_shift(&ctx.ext, &ctx.ambient_lift_rp, &left_delta)
+        .map_err(map_lift_algebra_error)?;
+    let right_lift = apply_m_shift(&ctx.ext, &ctx.ambient_lift_rp, &right_delta)
+        .map_err(map_lift_algebra_error)?;
 
     let mut diff_map = BTreeMap::new();
     for (sv, &idx) in cech.shared_vars.iter().zip(&shared_indices) {
-        let d = ext.r_prime().sub(&right_lift[idx], &left_lift[idx]);
-        diff_map.insert(sv.clone(), ext.r_prime().format_elem(&d));
+        let d = ctx.ext.r_prime().sub(&right_lift[idx], &left_lift[idx]);
+        diff_map.insert(sv.clone(), ctx.ext.r_prime().format_elem(&d));
     }
 
     let matches_relative_obstruction = if let Some(rc) = rel_cone {
         let left_laws: BTreeSet<&str> = left_ctx.laws.iter().map(String::as_str).collect();
-        let mut overlap_diff = vec![z.clone(); spec.variables.len() * dm];
+        let mut overlap_diff = vec![z.clone(); ctx.spec.variables.len() * dm];
         for &j in &overlap_indices {
             for k in 0..dm {
                 overlap_diff[j * dm + k] = right_delta[j * dm + k].sub_ref(&left_delta[j * dm + k]);
             }
         }
         let mut mv_cocycle = vec![z.clone(); rc.fu.dim1()];
-        for (i, law) in spec.laws.iter().enumerate() {
+        for (i, law) in ctx.spec.laws.iter().enumerate() {
             if left_laws.contains(law.name.as_str()) {
                 for row_k in 0..dm {
                     let row = &core.complex.d0()[i * dm + row_k];
@@ -570,13 +531,13 @@ where
                 }
             }
         }
-        if let Some(rel) = &spec.relative_reading {
+        if let Some(rel) = &ctx.spec.relative_reading {
             let rm_map: BTreeMap<&str, &PolyExpr> = rel
                 .reading_map
                 .iter()
                 .map(|(k, v)| (k.as_str(), v))
                 .collect();
-            let r_offset = spec.laws.len() * dm;
+            let r_offset = ctx.spec.laws.len() * dm;
             for (a, ov) in rel.obs_vars.iter().enumerate() {
                 if expr_supported_in(rm_map[ov.as_str()], &left_vars) {
                     for row_k in 0..dm {
@@ -601,7 +562,7 @@ where
             }
             acc.coeff_is_zero()
         });
-        let class_diff: Vec<C> = rc
+        let class_diff: Vec<B::Coeff> = rc
             .rel_cocycle
             .iter()
             .zip(&mv_cocycle)
@@ -609,8 +570,9 @@ where
             .collect();
         let class_matches = mv_is_cocycle
             && matches!(
-                solve_affine_field(rc.fu.d0(), &class_diff, rc.fu.dim0(), &z),
-                Ok(AffineSolutionField::Consistent { .. })
+                ctx.backend
+                    .solve_affine(rc.fu.d0(), &class_diff, rc.fu.dim0()),
+                Ok(Some(_))
             );
 
         if let Some((raw_val, negated)) = &rc.raw_val_rp
@@ -618,11 +580,11 @@ where
             && shared_indices.len() == 1
         {
             let target_rp = if *negated {
-                ext.r_prime().neg(raw_val)
+                ctx.ext.r_prime().neg(raw_val)
             } else {
                 raw_val.clone()
             };
-            let oriented_match = match ext.extract_kernel_coords_field(&target_rp) {
+            let oriented_match = match ctx.backend.extract_kernel_coords(&ctx.ext, &target_rp) {
                 Ok(target_m) => {
                     let target_var_idx = shared_indices[0];
                     let mut target_overlap = vec![z.clone(); rhs_o.len()];
@@ -631,7 +593,7 @@ where
                             target_overlap[o_pos * dm + k] = target_m[k].clone();
                         }
                     }
-                    let residual: Vec<C> = rhs_o
+                    let residual: Vec<B::Coeff> = rhs_o
                         .iter()
                         .zip(&target_overlap)
                         .map(|(a, b)| a.sub_ref(b))
@@ -640,8 +602,8 @@ where
                         residual.iter().all(RingCoeff::coeff_is_zero)
                     } else {
                         matches!(
-                            solve_affine_field(&cob_mat, &residual, total_k, &z),
-                            Ok(AffineSolutionField::Consistent { .. })
+                            ctx.backend.solve_affine(&cob_mat, &residual, total_k),
+                            Ok(Some(_))
                         )
                     }
                 }
@@ -663,28 +625,19 @@ where
     })
 }
 
-#[allow(clippy::too_many_arguments, clippy::type_complexity)]
-fn solve_context_local_lift_field<C, FE>(
-    spec: &LiftTaskSpec,
+#[allow(clippy::type_complexity)]
+fn solve_context_local_lift<B: LiftRingBackend>(
+    ctx: &LiftContext<'_, B>,
     ctx_var_names: &[String],
     ctx_law_names: &[String],
-    law_polys: &[Poly<C>],
-    ext: &SquareZeroExtension<C>,
-    base_pt_r: &[Vec<C>],
-    param_vals_r: &[Vec<C>],
-    ambient_lift_rp: &[Vec<C>],
-    param_vals_rp: &[Vec<C>],
-    expand_expr: &FE,
-) -> Result<(Vec<C>, Vec<Vec<C>>), SilenceReason>
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-{
-    let n = spec.variables.len();
-    let dm = ext.kernel_dim();
-    let z = ext.r_prime().zero_coeff.zero_like();
+) -> Result<(Vec<B::Coeff>, Vec<Vec<B::Coeff>>), SilenceReason> {
+    let n = ctx.spec.variables.len();
+    let dm = ctx.ext.kernel_dim();
+    let z = ctx.backend.zero();
+    let expand = |e: &_, b: &_| ctx.backend.expand_expr(e, b);
     let ctx_var_set: BTreeSet<&str> = ctx_var_names.iter().map(String::as_str).collect();
-    let ctx_var_indices: Vec<usize> = spec
+    let ctx_var_indices: Vec<usize> = ctx
+        .spec
         .variables
         .iter()
         .enumerate()
@@ -693,47 +646,49 @@ where
         .collect();
     let num_cols = ctx_var_indices.len() * dm;
     let law_set: BTreeSet<&str> = ctx_law_names.iter().map(String::as_str).collect();
-    let active_laws: Vec<&Poly<C>> = spec
+    let active_laws: Vec<&Poly<B::Coeff>> = ctx
+        .spec
         .laws
         .iter()
-        .zip(law_polys)
+        .zip(&ctx.law_polys)
         .filter(|(l, _)| law_set.contains(l.name.as_str()))
         .map(|(_, p)| p)
         .collect();
 
-    let param_names: Vec<String> = spec.ring_params.iter().map(|p| p.name.clone()).collect();
-    let (_, bindings) = ExprBindings::from_slices(&spec.variables, &[], &param_names)
-        .map_err(map_lift_algebra_error)?;
-    let base_full_r = concat_vecs(base_pt_r, param_vals_r);
-    let lift_full_rp = concat_vecs(ambient_lift_rp, param_vals_rp);
+    let base_full_r = concat_vecs(&ctx.base_pt_r, &ctx.param_vals_r);
+    let lift_full_rp = concat_vecs(&ctx.ambient_lift_rp, &ctx.param_vals_rp);
 
     let mut rows = Vec::new();
     let mut rhs = Vec::new();
     for poly in &active_laws {
-        let val_rp = ext
+        let val_rp = ctx
+            .ext
             .r_prime()
             .eval_poly(poly, &lift_full_rp)
             .map_err(map_lift_algebra_error)?;
-        let res_m = ext
-            .extract_kernel_coords_field(&val_rp)
+        let res_m = ctx
+            .backend
+            .extract_kernel_coords(&ctx.ext, &val_rp)
             .map_err(map_lift_algebra_error)?;
         let mut row_block = vec![vec![z.clone(); num_cols]; dm];
         for (c_pos, &j) in ctx_var_indices.iter().enumerate() {
             let dp = poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
-            let val_r = ext
+            let val_r = ctx
+                .ext
                 .r_base()
                 .eval_poly(&dp, &base_full_r)
                 .map_err(map_lift_algebra_error)?;
-            let blk = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+            let blk =
+                r_action_matrix(ctx.backend, &ctx.ext, &val_r).map_err(map_lift_algebra_error)?;
             write_block(&mut row_block, 0, c_pos * dm, &blk);
         }
         rows.extend(row_block);
         rhs.extend(res_m.into_iter().map(|v| v.neg_ref()));
     }
 
-    if let Some(rel) = &spec.relative_reading {
+    if let Some(rel) = &ctx.spec.relative_reading {
         let obs_lift_rp =
-            eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, expand_expr)
+            eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, &expand)
                 .map_err(map_lift_algebra_error)?;
         let rm_map: BTreeMap<&str, &PolyExpr> = rel
             .reading_map
@@ -745,25 +700,32 @@ where
             if !expr_supported_in(expr, &ctx_var_set) {
                 continue;
             }
-            let rp_poly = expand_expr(expr, &bindings).map_err(map_lift_algebra_error)?;
-            let read_val = ext
+            let rp_poly = ctx
+                .backend
+                .expand_expr(expr, &ctx.bindings)
+                .map_err(map_lift_algebra_error)?;
+            let read_val = ctx
+                .ext
                 .r_prime()
                 .eval_poly(&rp_poly, &lift_full_rp)
                 .map_err(map_lift_algebra_error)?;
-            let diff = ext.r_prime().sub(&read_val, y_rp);
-            let w_m = ext
-                .extract_kernel_coords_field(&diff)
+            let diff = ctx.ext.r_prime().sub(&read_val, y_rp);
+            let w_m = ctx
+                .backend
+                .extract_kernel_coords(&ctx.ext, &diff)
                 .map_err(map_lift_algebra_error)?;
             let mut row_block = vec![vec![z.clone(); num_cols]; dm];
             for (c_pos, &j) in ctx_var_indices.iter().enumerate() {
                 let dp = rp_poly
                     .partial_derivative(j)
                     .map_err(map_lift_algebra_error)?;
-                let val_r = ext
+                let val_r = ctx
+                    .ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
                     .map_err(map_lift_algebra_error)?;
-                let blk = r_action_matrix_field(ext, &val_r).map_err(map_lift_algebra_error)?;
+                let blk = r_action_matrix(ctx.backend, &ctx.ext, &val_r)
+                    .map_err(map_lift_algebra_error)?;
                 write_block(&mut row_block, 0, c_pos * dm, &blk);
             }
             rows.extend(row_block);
@@ -771,12 +733,12 @@ where
         }
     }
 
-    match solve_affine_field(&rows, &rhs, num_cols, &z).map_err(map_lift_algebra_error)? {
-        AffineSolutionField::Consistent {
-            particular,
-            kernel_basis,
-            ..
-        } => {
+    match ctx
+        .backend
+        .solve_affine(&rows, &rhs, num_cols)
+        .map_err(map_lift_algebra_error)?
+    {
+        Some((particular, kernel_basis)) => {
             let full_p = expand_subset_delta(n, &ctx_var_indices, dm, &particular, &z);
             let full_k = kernel_basis
                 .iter()
@@ -784,42 +746,33 @@ where
                 .collect();
             Ok((full_p, full_k))
         }
-        AffineSolutionField::Inconsistent { .. } => {
-            Err(SilenceReason::ApplicabilityConditionNotMet {
-                condition: "two_context_local_lift_exists".to_owned(),
-                detail: "local lift does not exist on one of the two contexts".to_owned(),
-            })
-        }
+        None => Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "two_context_local_lift_exists".to_owned(),
+            detail: "local lift does not exist on one of the two contexts".to_owned(),
+        }),
     }
 }
 
 #[allow(clippy::type_complexity)]
-fn align_ambient_to_obs_field<C: FieldCoeff>(
-    ambient_lift_rp: &[Vec<C>],
-    j_rho: &[Vec<C>],
-    reading_polys: &[Poly<C>],
-    obs_lift_rp: &[Vec<C>],
-    param_vals_rp: &[Vec<C>],
-    ext: &SquareZeroExtension<C>,
-) -> Option<(Vec<Vec<C>>, Vec<Vec<C>>)> {
-    let full = concat_vecs(ambient_lift_rp, param_vals_rp);
+fn align_ambient_to_obs<B: LiftRingBackend>(
+    ctx: &LiftContext<'_, B>,
+    j_rho: &[Vec<B::Coeff>],
+    reading_polys: &[Poly<B::Coeff>],
+    obs_lift_rp: &[Vec<B::Coeff>],
+) -> Option<(Vec<Vec<B::Coeff>>, Vec<Vec<B::Coeff>>)> {
+    let full = concat_vecs(&ctx.ambient_lift_rp, &ctx.param_vals_rp);
     let mut neg_w = Vec::new();
     for (rp_poly, y_rp) in reading_polys.iter().zip(obs_lift_rp) {
-        let got = ext.r_prime().eval_poly(rp_poly, &full).ok()?;
-        let diff = ext.r_prime().sub(y_rp, &got);
-        neg_w.extend(ext.extract_kernel_coords_field(&diff).ok()?);
+        let got = ctx.ext.r_prime().eval_poly(rp_poly, &full).ok()?;
+        let diff = ctx.ext.r_prime().sub(y_rp, &got);
+        neg_w.extend(ctx.backend.extract_kernel_coords(&ctx.ext, &diff).ok()?);
     }
-    let z = ext.r_prime().zero_coeff.zero_like();
-    let num_cols = ambient_lift_rp.len() * ext.kernel_dim();
-    match solve_affine_field(j_rho, &neg_w, num_cols, &z).ok()? {
-        AffineSolutionField::Consistent {
-            particular,
-            kernel_basis,
-            ..
-        } => Some((
-            apply_m_shift(ext, ambient_lift_rp, &particular).ok()?,
+    let num_cols = ctx.ambient_lift_rp.len() * ctx.ext.kernel_dim();
+    match ctx.backend.solve_affine(j_rho, &neg_w, num_cols).ok()? {
+        Some((particular, kernel_basis)) => Some((
+            apply_m_shift(&ctx.ext, &ctx.ambient_lift_rp, &particular).ok()?,
             kernel_basis,
         )),
-        AffineSolutionField::Inconsistent { .. } => None,
+        None => None,
     }
 }

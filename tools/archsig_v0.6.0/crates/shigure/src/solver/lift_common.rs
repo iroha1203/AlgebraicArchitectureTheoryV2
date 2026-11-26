@@ -1,7 +1,7 @@
-//! `solver/lift`・`solver/lift_z`・`solver/lift_extensions` 間の共通補助関数。
+//! `solver/lift`・`solver/lift_extensions`・`solver/lift_affine` 間の共通補助関数。
 
 use crate::algebra::MonomialOrder;
-use crate::algebra::artin::{AffineSolutionField, FiniteAlgebra, solve_affine_field};
+use crate::algebra::artin::FiniteAlgebra;
 use crate::algebra::artin_quotient::SquareZeroExtension;
 use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
 use crate::algebra::poly::{AlgebraError, Poly};
@@ -16,6 +16,7 @@ use crate::ir::provenance::Provenance;
 use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::result_phase4::{FiniteEtaleDescentResult, LiftOutcomeDetail};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
+use crate::solver::lift_backend::LiftRingBackend;
 use num_bigint::{BigInt, BigUint};
 use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
@@ -47,15 +48,16 @@ pub(crate) fn verify_base_laws<C: RingCoeff>(
     Ok(())
 }
 
-pub(crate) fn r_action_matrix_field<C: FieldCoeff>(
-    ext: &SquareZeroExtension<C>,
-    a_in_r: &[C],
-) -> Result<Vec<Vec<C>>, AlgebraError> {
-    let z = ext.r_prime().zero_coeff.zero_like();
+pub(crate) fn r_action_matrix<B: LiftRingBackend>(
+    backend: &B,
+    ext: &SquareZeroExtension<B::Coeff>,
+    a_in_r: &[B::Coeff],
+) -> Result<Vec<Vec<B::Coeff>>, AlgebraError> {
+    let z = backend.zero();
     let dm = ext.kernel_dim();
-    let a_lift = match solve_affine_field(ext.projection(), a_in_r, ext.r_prime().dim(), &z)? {
-        AffineSolutionField::Consistent { particular, .. } => particular,
-        AffineSolutionField::Inconsistent { .. } => {
+    let a_lift = match backend.solve_affine(ext.projection(), a_in_r, ext.r_prime().dim())? {
+        Some((particular, _)) => particular,
+        None => {
             return Err(AlgebraError::OutOfScope {
                 detail: "projection R' -> R is not surjective".to_owned(),
             });
@@ -64,7 +66,7 @@ pub(crate) fn r_action_matrix_field<C: FieldCoeff>(
     let mut block = vec![vec![z; dm]; dm];
     for (col, kb) in ext.kernel_basis().iter().enumerate() {
         let prod = ext.r_prime().mul(&a_lift, kb);
-        let coords = ext.extract_kernel_coords_field(&prod)?;
+        let coords = backend.extract_kernel_coords(ext, &prod)?;
         for (row, val) in coords.into_iter().enumerate() {
             block[row][col] = val;
         }

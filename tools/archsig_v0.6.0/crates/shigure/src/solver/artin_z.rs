@@ -9,18 +9,13 @@ use crate::algebra::poly::{AlgebraError, Monomial, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat};
 use crate::algebra::syzygy::compute_syzygies_z;
-use crate::ir::artin::{ArtinTaskSpec, BaseChangeSpec};
-use crate::ir::change::PointDomain;
-use crate::ir::provenance::{MathClause, Provenance};
-use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason, Verdict};
-use crate::ir::result_phase4::{
-    ArtinCompositionResult, ArtinOutcomeDetail, NilpotentBaseChangeResult,
-};
-use crate::ir::term::CoeffDomain;
+use crate::ir::provenance::MathClause;
+use crate::ir::result::SilenceReason;
+use crate::ir::result_phase4::NilpotentBaseChangeResult;
+use crate::ir::term::{CoeffDomain, PolyExpr};
 use crate::solver::artin::{
-    OrderDetection, artin_outcome, artin_undetermined, compute_syntactic_degree_bound,
-    detect_order_field, detection_nu, eliminate_stage, eliminate_stage_from, eval_base_point,
-    expand_polys, map_artin_err, opt_min, unpack_detection, verify_base_point_vanishing,
+    ArtinBaseChangeInput, ArtinRingBackend, OrderDetection, detect_order_field, detection_nu,
+    map_artin_err,
 };
 use num_bigint::{BigInt, BigUint};
 use num_traits::{One, Zero};
@@ -28,248 +23,49 @@ use std::collections::BTreeMap;
 
 const Z_TEST_RING_FAMILY: &str = "general_coeff_nilpotent_quotient";
 
-pub(crate) fn solve_artin_z(
-    spec: &ArtinTaskSpec,
-    max_dim: usize,
-    mut checks: Vec<ApplicabilityCheck>,
-    provenance: Provenance,
-) -> ShigureOutcome {
-    let coeff_domain = CoeffDomain::Z;
-    let point_domain = PointDomain::UniversalRing;
+pub(crate) struct ZArtinBackend;
 
-    let (obs_order, obs_bindings) = match ExprBindings::from_slices(&spec.obs_vars, &[], &[]) {
-        Ok(p) => p,
-        Err(e) => {
-            return artin_undetermined(
-                coeff_domain,
-                point_domain,
-                checks,
-                provenance,
-                map_artin_err(e),
-            );
-        }
-    };
-    let obs_rels = match expand_polys(&spec.obs_relations, &obs_bindings, &Poly::from_expr_z) {
-        Ok(v) => v,
-        Err(e) => {
-            return artin_undetermined(
-                coeff_domain,
-                point_domain,
-                checks,
-                provenance,
-                map_artin_err(e),
-            );
-        }
-    };
-    let base_pt = match eval_base_point(&spec.obs_vars, &spec.base_point, &Poly::from_expr_z) {
-        Ok(v) => v,
-        Err(e) => {
-            return artin_undetermined(
-                coeff_domain,
-                point_domain,
-                checks,
-                provenance,
-                map_artin_err(e),
-            );
-        }
-    };
+impl ArtinRingBackend for ZArtinBackend {
+    type Coeff = BigInt;
 
-    let (stage1_subst, eliminated1) = match eliminate_stage(
-        &spec.obs_vars,
-        &[],
-        &spec.aux_defs,
-        &spec.extra_laws,
-        BigInt::zero(),
-        &Poly::from_expr_z,
-    ) {
-        Ok(p) => p,
-        Err(e) => {
-            return artin_undetermined(
-                coeff_domain,
-                point_domain,
-                checks,
-                provenance,
-                map_artin_err(e),
-            );
-        }
-    };
-
-    if let Err(reason) = verify_base_point_vanishing(
-        &obs_rels,
-        &eliminated1,
-        &base_pt,
-        &spec.obs_relations,
-        &spec.extra_laws,
-    ) {
-        checks.push(ApplicabilityCheck::failed(
-            "base_point_lies_in_Sem_P",
-            MathClause::G141F8,
-            reason.code(),
-        ));
-        return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+    fn test_ring_family(&self) -> &'static str {
+        Z_TEST_RING_FAMILY
     }
-    checks.push(ApplicabilityCheck::passed(
-        "base_point_lies_in_Sem_P",
-        MathClause::G141F8,
-    ));
 
-    let is_free = spec.obs_relations.is_empty();
-    let syntactic_degree_bound = if is_free {
-        Some(compute_syntactic_degree_bound(
-            &spec.obs_vars,
-            &spec.aux_defs,
-            &spec.extra_laws,
-        ))
-    } else {
-        None
-    };
+    fn check_clause(&self) -> MathClause {
+        MathClause::G141F8
+    }
 
-    let det1 = match detect_order_z(
-        &obs_order,
-        &obs_rels,
-        &eliminated1,
-        &base_pt,
-        spec.max_order,
-        max_dim,
-    ) {
-        Ok(d) => d,
-        Err(reason) => {
-            checks.push(ApplicabilityCheck::failed(
-                "artin_order_within_bound",
-                MathClause::G141F8,
-                reason.code(),
-            ));
-            return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-        }
-    };
-    checks.push(ApplicabilityCheck::passed(
-        "artin_order_within_bound",
-        MathClause::G141F8,
-    ));
+    fn zero(&self) -> BigInt {
+        BigInt::zero()
+    }
 
-    let (
-        detection_order_nu,
-        local_isomorphism_at_base,
-        lift_failure_mode,
-        universal_first_obstruction,
-    ) = unpack_detection(det1);
+    fn expand_expr(
+        &self,
+        expr: &PolyExpr,
+        bindings: &ExprBindings,
+    ) -> Result<Poly<BigInt>, AlgebraError> {
+        Poly::from_expr_z(expr, bindings)
+    }
 
-    let composition_law = if let Some(stage2) = &spec.composite_stage {
-        let (_, eliminated2) = match eliminate_stage_from(
-            &stage1_subst,
-            &stage2.aux_defs,
-            &stage2.extra_laws,
-            &Poly::from_expr_z,
-        ) {
-            Ok(p) => p,
-            Err(e) => {
-                return artin_undetermined(
-                    coeff_domain,
-                    point_domain,
-                    checks,
-                    provenance,
-                    map_artin_err(e),
-                );
-            }
-        };
-        if let Err(reason) =
-            verify_base_point_vanishing(&[], &eliminated2, &base_pt, &[], &stage2.extra_laws)
-        {
-            return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-        }
-        let mut a1_rels = obs_rels.clone();
-        a1_rels.extend(eliminated1.iter().cloned());
-        let det_v = match detect_order_z(
-            &obs_order,
-            &a1_rels,
-            &eliminated2,
-            &base_pt,
-            spec.max_order,
-            max_dim,
-        ) {
-            Ok(d) => d,
-            Err(reason) => {
-                return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-            }
-        };
-        let mut combined = eliminated1.clone();
-        combined.extend(eliminated2);
-        let det_vu = match detect_order_z(
-            &obs_order,
-            &obs_rels,
-            &combined,
-            &base_pt,
-            spec.max_order,
-            max_dim,
-        ) {
-            Ok(d) => d,
-            Err(reason) => {
-                return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-            }
-        };
-        let nu_u = detection_order_nu;
-        let nu_v = detection_nu(&det_v);
-        let nu_vu = detection_nu(&det_vu);
-        Some(ArtinCompositionResult {
-            nu_u,
-            nu_v,
-            nu_vu,
-            min_law_verified: nu_vu == opt_min(nu_u, nu_v),
-        })
-    } else {
-        None
-    };
+    fn detect_order(
+        &self,
+        obs_order: &VarOrder,
+        obs_rels: &[Poly<BigInt>],
+        extra_res: &[Poly<BigInt>],
+        base_pt: &[BigInt],
+        max_order: usize,
+        max_dim: usize,
+    ) -> Result<OrderDetection, SilenceReason> {
+        detect_order_z(obs_order, obs_rels, extra_res, base_pt, max_order, max_dim)
+    }
 
-    let base_change = if let Some(bc) = &spec.base_change {
-        match compute_base_change_from_z(
-            spec,
-            bc,
-            &obs_order,
-            &obs_rels,
-            &eliminated1,
-            &base_pt,
-            detection_order_nu,
-            max_dim,
-        ) {
-            Ok(r) => Some(r),
-            Err(reason) => {
-                return artin_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-            }
-        }
-    } else {
-        None
-    };
-
-    let eliminated_residuals = eliminated1
-        .iter()
-        .map(|p| p.display(&obs_order, MonomialOrder::Grevlex))
-        .collect();
-    let verdict = if local_isomorphism_at_base {
-        Verdict::Established
-    } else {
-        Verdict::Refuted
-    };
-
-    let detail = ArtinOutcomeDetail {
-        test_ring_family: Z_TEST_RING_FAMILY.to_owned(),
-        is_free_observation_chart: is_free,
-        eliminated_residuals,
-        syntactic_degree_bound,
-        detection_order_nu,
-        local_isomorphism_at_base,
-        lift_failure_mode,
-        universal_first_obstruction,
-        composition_law,
-        base_change,
-    };
-    artin_outcome(
-        verdict,
-        coeff_domain,
-        point_domain,
-        checks,
-        provenance,
-        detail,
-    )
+    fn compute_base_change(
+        &self,
+        input: &ArtinBaseChangeInput<'_, BigInt>,
+    ) -> Result<NilpotentBaseChangeResult, SilenceReason> {
+        compute_base_change_from_z(input)
+    }
 }
 
 fn detect_order_z(
@@ -510,17 +306,17 @@ fn is_certified_in_z_ideal(g: &Poly<BigInt>, rels: &[Poly<BigInt>], max_dim: usi
     reconstructed == *g
 }
 
-#[allow(clippy::too_many_arguments)]
 fn compute_base_change_from_z(
-    spec: &ArtinTaskSpec,
-    bc: &BaseChangeSpec,
-    obs_order: &VarOrder,
-    obs_rels: &[Poly<BigInt>],
-    eliminated: &[Poly<BigInt>],
-    base_pt: &[BigInt],
-    source_nu: Option<usize>,
-    max_dim: usize,
+    input: &ArtinBaseChangeInput<'_, BigInt>,
 ) -> Result<NilpotentBaseChangeResult, SilenceReason> {
+    let spec = input.spec;
+    let bc = input.bc;
+    let obs_order = input.obs_order;
+    let obs_rels = input.obs_rels;
+    let eliminated = input.eliminated;
+    let base_pt = input.base_pt;
+    let source_nu = input.source_nu;
+    let max_dim = input.max_dim;
     let r = bc.test_order.or(source_nu).unwrap_or(1);
     let d = obs_order.len();
     let monos = enumerate_monomials_up_to(d, r, max_dim).map_err(|e| {
