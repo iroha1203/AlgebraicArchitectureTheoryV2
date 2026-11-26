@@ -2,6 +2,7 @@ import Formal.SHIGURE.Part2.QuantityTransport.FiniteExtensionStages
 import Mathlib.Algebra.Category.CommAlgCat.Basic
 import Mathlib.CategoryTheory.Category.Preorder
 import Mathlib.CategoryTheory.Limits.FunctorCategory.Basic
+import Mathlib.CategoryTheory.Yoneda
 
 /-!
 # The colimit of the finite extension stages
@@ -10,9 +11,17 @@ The union of two finite monomial sets is a common stage. Two
 representatives agree there precisely when they give the same
 polynomial. The quotient by that relation has the colimit
 universal property and is natural in the coefficient algebra.
+
+## Implementation notes
+
+Mathlib's filtered colimit of types can identify representatives using the
+existence of a common stage. Here the setoid uses equality of the represented
+polynomials so that its inverse can read the actual support of a polynomial.
+The union of the two supports realizes the common-stage relation, and the
+pointwise universal property gives the colimit in the functor category.
 -/
 
-open CategoryTheory CategoryTheory.Limits
+open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
 open scoped BigOperators
 
 universe u
@@ -244,6 +253,95 @@ def extensionCoconeIsColimit : IsColimit (extensionCocone q ε) :=
         refine Quotient.inductionOn z ?_
         intro a
         exact congrArg (fun g => g a.2) (same a.1) }
+
+/-- The finite stage's algebra map changes coefficients by composition. -/
+theorem stagePointAlgHomEquiv_natural (F : Finset (X →₀ ℕ)) (f : C →ₐ[k] C')
+    (a : StagePoint (C := C) q ε F) :
+    stagePointAlgHomEquiv q ε F (mapStagePoint q ε F f a) =
+      f.comp (stagePointAlgHomEquiv q ε F a) := by
+  apply Ideal.Quotient.algHom_ext
+  apply MvPolynomial.algHom_ext
+  intro m
+  change MvPolynomial.aeval (mapStagePoint q ε F f a).val (MvPolynomial.X m) =
+    f (MvPolynomial.aeval a.val (MvPolynomial.X m))
+  simp only [MvPolynomial.aeval_X]
+  rfl
+
+/-- Pullback of relative scheme points applies the global sections map to the coefficients. -/
+theorem stagePointSchemeEquiv_natural (F : Finset (X →₀ ℕ))
+    {T T' : Over (Spec (CommRingCat.of k))} (f : T' ⟶ T) :
+    letI := globalSectionsAlgebra T
+    letI := globalSectionsAlgebra T'
+    ∀ a : StagePoint (C := Γ(T.left, ⊤)) q ε F,
+      stagePointSchemeEquiv q ε F T' (mapStagePoint q ε F (globalSectionsMap f) a) =
+        f ≫ stagePointSchemeEquiv q ε F T a := by
+  letI := globalSectionsAlgebra T
+  letI := globalSectionsAlgebra T'
+  intro a
+  apply (specOverPointEquiv T' (StageAlgebra q ε F)).injective
+  rw [specOverPointEquiv_precomp]
+  change (specOverPointEquiv T' (StageAlgebra q ε F))
+      ((specOverPointEquiv T' (StageAlgebra q ε F)).symm
+        (stagePointAlgHomEquiv q ε F (mapStagePoint q ε F (globalSectionsMap f) a))) =
+    (globalSectionsMap f).comp ((specOverPointEquiv T (StageAlgebra q ε F))
+      ((specOverPointEquiv T (StageAlgebra q ε F)).symm (stagePointAlgHomEquiv q ε F a)))
+  rw [Equiv.apply_symm_apply, Equiv.apply_symm_apply, stagePointAlgHomEquiv_natural]
+
+/-- The finite-stage coordinate rings, contravariant in inclusion of monomial sets. -/
+def extensionCoordinateDiagram : Finset (X →₀ ℕ) ⥤ (CommAlgCat.{u} k)ᵒᵖ where
+  obj F := op (CommAlgCat.of k (StageAlgebra q ε F))
+  map {F G} h := (CommAlgCat.ofHom (extensionStageAlgebraMap q ε F (leOfHom h))).op
+  map_id F := by
+    apply Quiver.Hom.unop_inj
+    change CommAlgCat.ofHom (extensionStageAlgebraMap q ε F (Finset.Subset.refl _)) = _
+    rw [extensionStageAlgebraMap_id, CommAlgCat.ofHom_id]
+    rfl
+  map_comp {F G H} h g := by
+    apply Quiver.Hom.unop_inj
+    change CommAlgCat.ofHom (extensionStageAlgebraMap q ε F ((leOfHom h).trans (leOfHom g))) =
+      CommAlgCat.ofHom (extensionStageAlgebraMap q ε G (leOfHom g)) ≫
+        CommAlgCat.ofHom (extensionStageAlgebraMap q ε F (leOfHom h))
+    rw [extensionStageAlgebraMap_comp, CommAlgCat.ofHom_comp]
+
+/-- The coefficient solutions are the affine points of each coordinate scheme, naturally in the test algebra. -/
+def stagePointFunctorIso (F : Finset (X →₀ ℕ)) :
+    stagePointFunctor q ε F ≅ coyoneda.obj (op (CommAlgCat.of k (StageAlgebra q ε F))) :=
+  NatIso.ofComponents (fun C => Equiv.toIso
+    ((stagePointAlgHomEquiv (C := C) q ε F).trans
+      ⟨CommAlgCat.ofHom, CommAlgCat.Hom.hom, fun _ => rfl, fun _ => rfl⟩)) (by
+    intro C C' f
+    ext a
+    apply CommAlgCat.hom_ext
+    exact stagePointAlgHomEquiv_natural q ε F f.hom a)
+
+/-- The finite coefficient equation diagram agrees with the actual affine-point diagram. -/
+def extensionStageDiagramIso :
+    extensionStageDiagram q ε ≅ extensionCoordinateDiagram q ε ⋙ coyoneda :=
+  NatIso.ofComponents (stagePointFunctorIso q ε) (by
+    intro F G h
+    ext C a
+    apply CommAlgCat.hom_ext
+    exact stagePointAlgHomEquiv_extend q ε F (leOfHom h) a)
+
+/-- The extension functor receives the geometric stages on affine test algebras. -/
+def extensionAffineCocone : Cocone (extensionCoordinateDiagram q ε ⋙ coyoneda) :=
+  (Cocones.precompose (extensionStageDiagramIso q ε).inv).obj (extensionCocone q ε)
+
+/-- The geometric stages on affine test algebras have the asserted extension functor as their colimit. -/
+def extensionAffineCoconeIsColimit : IsColimit (extensionAffineCocone q ε) :=
+  (IsColimit.precomposeInvEquiv (extensionStageDiagramIso q ε) (extensionCocone q ε)).symm
+    (extensionCoconeIsColimit q ε)
+
+/-- Distinct required values at the same native tuple rule out a regular extension over k. -/
+theorem noExtension_of_eq_input {d e : D} (same : q d = q e) (different : ε d ≠ ε e) :
+    IsEmpty (ExtensionColimit (C := k) q ε) := by
+  refine ⟨fun a => different ?_⟩
+  let p := extensionColimitEquiv q ε a
+  have left := p.property d
+  have right := p.property e
+  simp only [Algebra.algebraMap_self, RingHom.id_apply] at left right
+  rw [same] at left
+  exact left.symm.trans right
 
 /-- The colimit represents precisely the extending natural scalar operations. -/
 def extensionColimitScalarEquiv :

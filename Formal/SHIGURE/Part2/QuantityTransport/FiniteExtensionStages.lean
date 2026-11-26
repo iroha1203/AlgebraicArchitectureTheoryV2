@@ -214,7 +214,7 @@ theorem extensionStageMap_closed {F' : Finset (X →₀ ℕ)} (h : F ⊆ F') :
     IsClosedImmersion (extensionStageMap q ε F h).left :=
   IsClosedImmersion.spec_of_surjective _ (extensionStageAlgebraMap_surjective q ε F h)
 
-/-- Extending a finite-stage point postcomposes its algebra map with the coordinate restriction. -/
+/-- Extending a finite-stage point precomposes its algebra map with the coordinate restriction. -/
 theorem stagePointAlgHomEquiv_extend {F' : Finset (X →₀ ℕ)} (h : F ⊆ F')
     (b : StagePoint (C := C) q ε F) :
     stagePointAlgHomEquiv q ε F' (extendStagePoint q ε F h b) =

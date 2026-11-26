@@ -7,6 +7,14 @@ Theorem 5.11. A scalar operation natural in the test algebra is
 determined by its value at the universal tuple of indeterminates.
 The extension equations can therefore be imposed directly on a
 polynomial's coefficients.
+
+## Implementation notes
+
+A natural transformation between the tuple functor and the underlying ring
+functor also presents these operations. The explicit family lets a caller
+choose the test algebra and its algebra structure directly, as in the
+quantification of Theorem 5.11. The universal tuple provides its polynomial
+on that same interface.
 -/
 
 universe u
