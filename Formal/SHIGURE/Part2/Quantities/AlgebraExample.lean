@@ -170,6 +170,51 @@ def linearMapOfModel (q : (modulePresentation k N).Model R) : N →ₗ[k] R wher
 
 variable (k N)
 
+/-- Example 5.6's linearity relations on the free module on the underlying set of `N`. -/
+def linearityRelations : Submodule k (N →₀ k) :=
+  Submodule.span k
+    (Set.range (fun p : N × N =>
+      Finsupp.single (p.1 + p.2) 1 - (Finsupp.single p.1 1 + Finsupp.single p.2 1)) ∪
+    Set.range (fun p : k × N =>
+      Finsupp.single (p.1 • p.2) 1 - p.1 • Finsupp.single p.2 1))
+
+/-- The free module modulo the additive and scalar relations recovers the original module. -/
+def linearityQuotientEquiv : ((N →₀ k) ⧸ linearityRelations k N) ≃ₗ[k] N := by
+  let I := linearityRelations k N
+  let values := Finsupp.linearCombination k (id : N → N)
+  have vanishes : I ≤ LinearMap.ker values := by
+    change linearityRelations k N ≤ LinearMap.ker values
+    rw [linearityRelations, Submodule.span_le]
+    rintro _ (⟨⟨x, y⟩, rfl⟩ | ⟨⟨a, x⟩, rfl⟩)
+    all_goals
+      change values _ = 0
+      simp [values]
+  let fromQuotient := I.liftQ values vanishes
+  let toQuotient : N →ₗ[k] (N →₀ k) ⧸ I :=
+    { toFun := fun x => I.mkQ (Finsupp.single x 1)
+      map_add' := fun x y => by
+        rw [← map_add]
+        exact (Submodule.Quotient.eq I).mpr (Submodule.subset_span (Or.inl ⟨(x, y), rfl⟩))
+      map_smul' := fun a x => by
+        rw [RingHom.id_apply, ← map_smul]
+        exact (Submodule.Quotient.eq I).mpr (Submodule.subset_span (Or.inr ⟨(a, x), rfl⟩)) }
+  refine LinearEquiv.ofLinear fromQuotient toQuotient ?_ ?_
+  · apply LinearMap.ext
+    intro x
+    change Finsupp.linearCombination k (id : N → N) (Finsupp.single x 1) = x
+    rw [Finsupp.linearCombination_single, one_smul, id_eq]
+  · have h : toQuotient.comp values = I.mkQ := by
+      apply Finsupp.lhom_ext
+      intro x a
+      rw [LinearMap.comp_apply, show values (Finsupp.single x a) = a • x by simp [values],
+        map_smul]
+      change a • I.mkQ (Finsupp.single x 1) = I.mkQ (Finsupp.single x a)
+      rw [← map_smul, Finsupp.smul_single, smul_eq_mul, mul_one]
+    apply LinearMap.ext
+    intro q
+    obtain ⟨p, rfl⟩ := I.mkQ_surjective q
+    exact LinearMap.congr_fun h p
+
 /-- The Law algebra of the module presentation is the symmetric algebra. -/
 def symmetricLawAlgebraEquiv : (modulePresentation k N).LawAlgebra ≃ₐ[k] SymmetricAlgebra k N := by
   let P := modulePresentation k N

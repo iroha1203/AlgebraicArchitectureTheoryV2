@@ -27,14 +27,13 @@ theorem lawInclusion_closed : IsClosedImmersion P.lawInclusion.left :=
 /-- Vanishing of the generators under evaluation is exactly direct Law satisfaction. -/
 theorem holds_iff_residualIdeal_le_ker (q : P.Candidate R) :
     P.Holds q ↔ P.residualIdeal ≤ RingHom.ker (P.evaluate q).toRingHom := by
-  rw [residualIdeal, Ideal.span_le]
+  rw [P.residualIdeal_le_iff]
   constructor
-  · intro h r hr
-    obtain ⟨⟨l, e⟩, rfl⟩ := hr
+  · intro h l e
     change P.evaluate q (P.residual l e) = 0
     rw [evaluate_residual, h l e, sub_self]
   · intro h l e
-    have hr : P.evaluate q (P.residual l e) = 0 := h ⟨⟨l, e⟩, rfl⟩
+    have hr : P.evaluate q (P.residual l e) = 0 := h l e
     rw [evaluate_residual, sub_eq_zero] at hr
     exact hr
 

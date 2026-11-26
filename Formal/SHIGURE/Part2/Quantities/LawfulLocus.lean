@@ -6,6 +6,13 @@ import Mathlib.AlgebraicGeometry.IdealSheaf.Functorial
 
 Theorem 5.5 characterizes the factorization by vanishing of the named
 residuals and by vanishing of the ideal they generate after pullback.
+
+## Implementation notes
+
+The ideal sheaf is transported with mathlib's `IdealSheafData.comap`,
+which describes the ideal of the pulled-back closed subscheme.
+Using the pullback of the ideal as a module would retain the conormal
+contribution even at points where its image in the structure sheaf is zero.
 -/
 
 open AlgebraicGeometry CategoryTheory

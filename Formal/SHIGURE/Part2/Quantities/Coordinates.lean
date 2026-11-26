@@ -60,6 +60,12 @@ theorem residualMap_single (l : P.Law) (e : P.Input l) :
 def residualIdeal : Ideal P.CoordinateAlgebra :=
   Ideal.span (Set.range (fun x : Σ l, P.Input l => P.residual x.1 x.2))
 
+/-- Inclusion of the residual ideal is tested on every named residual. -/
+theorem residualIdeal_le_iff {I : Ideal P.CoordinateAlgebra} :
+    P.residualIdeal ≤ I ↔ ∀ l e, P.residual l e ∈ I := by
+  rw [residualIdeal, Ideal.span_le]
+  exact ⟨fun h l e => h ⟨⟨l, e⟩, rfl⟩, fun h _ ⟨⟨l, e⟩, eq⟩ => eq ▸ h l e⟩
+
 /-- The coordinate algebra on the common zero locus of the required Laws. -/
 abbrev LawAlgebra := P.CoordinateAlgebra ⧸ P.residualIdeal
 
@@ -104,33 +110,5 @@ theorem evaluate_natural (q : P.Candidate R) (f : R →ₐ[k] S) :
   apply P.evaluate_unique
   intro x
   exact congrArg f (P.evaluate_X q x)
-
-/-- A substituted written expression read at universal quantities specializes to its original state evaluation. -/
-theorem evaluate_stateExpression_substitute {Γ Δ : List sig.SortType}
-    (θ : Substitution sig Γ Δ) (e : θ.domain A)
-    (term : Expression k (StateQuantityInput A (θ.value A e) P.Coordinate)) (q : P.Candidate R) :
-    P.evaluate q ((StateQuantityInput.compile (term.rename (StateQuantityInput.substitute θ e))).eval
-        (fun x => P.universalQuantity x.1 x.2)) =
-      term.eval (fun x => q x.coordinate.1 x.coordinate.2) := by
-  rw [StateQuantityInput.compile_substitute, ← Expression.eval_map]
-  change ((term.rename StateQuantityInput.coordinate).eval
-    (P.evaluate q ∘ fun x : P.Coordinate => P.universalQuantity x.1 x.2)) = _
-  rw [Expression.eval_rename]
-  congr 1
-  funext x
-  exact P.evaluate_X q x.coordinate
-
-/-- Both sides of a substituted Law give the same residual difference at every candidate. -/
-theorem evaluate_stateResidual_substitute {Γ Δ : List sig.SortType}
-    (θ : Substitution sig Γ Δ) (e : θ.domain A)
-    (left right : Expression k (StateQuantityInput A (θ.value A e) P.Coordinate)) (q : P.Candidate R) :
-    P.evaluate q
-      ((StateQuantityInput.compile (left.rename (StateQuantityInput.substitute θ e))).eval
-        (fun x => P.universalQuantity x.1 x.2) -
-       (StateQuantityInput.compile (right.rename (StateQuantityInput.substitute θ e))).eval
-        (fun x => P.universalQuantity x.1 x.2)) =
-      left.eval (fun x => q x.coordinate.1 x.coordinate.2) -
-        right.eval (fun x => q x.coordinate.1 x.coordinate.2) := by
-  rw [map_sub, P.evaluate_stateExpression_substitute, P.evaluate_stateExpression_substitute]
 
 end SHIGURE.Quantities.Presentation
