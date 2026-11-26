@@ -1,6 +1,7 @@
 import Formal.SHIGURE.Part2.Recovery.RelativeTotalSheaf
 import Formal.SHIGURE.Part2.Recovery.CopyingBaseChange
 import Formal.SHIGURE.Part2.Recovery.ConstantFormulas
+import Mathlib.AlgebraicGeometry.Morphisms.OpenImmersion
 import Mathlib.CategoryTheory.Sites.LocallyInjective
 
 /-!
@@ -9,9 +10,17 @@ import Mathlib.CategoryTheory.Sites.LocallyInjective
 Each native chart gives constant schemes for carriers, finite tuples,
 and the subtypes for relations and partial domains. Gluing these
 relative representations gives the schemes of the entire structure.
+
+## Implementation notes
+
+The carriers, input tuples and their subobjects all use the same
+representability theorem. The representing isomorphisms then give
+actual maps by relative Yoneda. Constructing separate transition
+diagrams of schemes for every primitive would repeat the overlap
+conditions already recorded by the sheaf structure.
 -/
 
-open AlgebraicGeometry CategoryTheory Opposite
+open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
 
 universe u
 
@@ -33,6 +42,28 @@ def readMap (f : F ⟶ G) : X.space ⟶ Y.space :=
 theorem readMap_points (f : F ⟶ G) :
     relativePointsMap (X.readMap Y f) = X.points.hom ≫ f ≫ Y.points.inv :=
   (relativePointsHomEquiv X.space Y.space).apply_symm_apply _
+
+/-- Representing the identity sheaf map gives the identity of the representing scheme. -/
+theorem readMap_id : X.readMap X (𝟙 F) = 𝟙 X.space := by
+  apply (relativePointsHomEquiv X.space X.space).injective
+  change relativePointsMap _ = relativePointsMap _
+  rw [X.readMap_points, relativePointsMap_id]
+  simp
+
+/-- Representing two composable sheaf maps gives the composite on their schemes. -/
+theorem readMap_comp {H : ZariskiSheaf S} (Z : RelativeRepresentation H) (f : F ⟶ G) (g : G ⟶ H) :
+    X.readMap Z (f ≫ g) = X.readMap Y f ≫ Y.readMap Z g := by
+  apply (relativePointsHomEquiv X.space Z.space).injective
+  change relativePointsMap _ = relativePointsMap _
+  rw [X.readMap_points, relativePointsMap_comp, X.readMap_points, Y.readMap_points]
+  simp [Category.assoc]
+
+/-- A sheaf isomorphism identifies its representing schemes. -/
+def readIso (e : F ≅ G) : X.space ≅ Y.space where
+  hom := X.readMap Y e.hom
+  inv := Y.readMap X e.inv
+  hom_inv_id := by rw [← X.readMap_comp Y, Iso.hom_inv_id, X.readMap_id]
+  inv_hom_id := by rw [← Y.readMap_comp X, Iso.inv_hom_id, Y.readMap_id]
 
 /-- A monomorphism of represented sheaves gives a monomorphism of relative schemes. -/
 theorem readMap_mono (f : F ⟶ G) [Mono f] : Mono (X.readMap Y f) where
@@ -66,9 +97,75 @@ theorem baseChange_readMap (f : S' ⟶ S) (m : F ⟶ G) :
     eX.hom ≫ relativePointsMap ((relativeSchemePullback f).map (X.readMap Y m))
   simpa only [Category.assoc, Iso.hom_inv_id_assoc, CategoryTheory.Functor.map_comp] using h
 
+/-- Openness of a represented morphism is detected after base change to a coefficient cover. -/
+theorem readMap_open_ofOpenCover (m : F ⟶ G) (C : Scheme.OpenCover.{u} S)
+    (h : ∀ i, IsOpenImmersion ((X.baseChange (C.f i)).readMap (Y.baseChange (C.f i))
+      ((Scheme.zariskiTopology.overMapPullback (Type u) (C.f i)).map m)).left) :
+    IsOpenImmersion (X.readMap Y m).left := by
+  let Yc := C.pullback₁ Y.space.hom
+  let t := X.readMap Y m
+  refine IsZariskiLocalAtTarget.of_openCover (P := @IsOpenImmersion) Yc ?_
+  intro i
+  let f := C.f i
+  have hs := (relativeSchemePullbackMap_isPullback f t).flip
+  let e := hs.isoPullback
+  letI : IsOpenImmersion ((relativeSchemePullback f).map t).left := by
+    simpa only [baseChange_readMap] using h i
+  have he : e.inv ≫ ((relativeSchemePullback f).map t).left =
+      pullback.snd t.left (relativeSchemeProjection f Y.space) := by
+    rw [← hs.isoPullback_hom_snd, Iso.inv_hom_id_assoc]
+  change IsOpenImmersion (pullback.snd t.left (relativeSchemeProjection f Y.space))
+  rw [← he]
+  infer_instance
+
 /-- The constant sheaf is represented by the constant scheme. -/
 def constant (S : Scheme.{u}) (X : Type u) : RelativeRepresentation (constantCarrier S X) :=
   ⟨constantSchemeOver S X, constantCarrierIso S X⟩
+
+/-- On constant schemes the representing map is induced from the given function of labels. -/
+theorem constant_readMap (S : Scheme.{u}) {X Y : Type u} (f : X → Y) :
+    (constant S X).readMap (constant S Y) (constantCarrierMap S f) = mapStateSchemes S f := by
+  apply (relativePointsHomEquiv (constantSchemeOver S X) (constantSchemeOver S Y)).injective
+  change relativePointsMap _ = relativePointsMap _
+  rw [(constant S X).readMap_points]
+  apply (cancel_mono (constantCarrierIso S Y).hom).mp
+  simp only [constant, Category.assoc, Iso.inv_hom_id, Category.comp_id]
+  ext T x
+  apply LocallyConstant.ext
+  intro p
+  let U := T.unop
+  let g := relativePointsEquiv S U (constantSchemeOver S X) x
+  change f (constantPointLabelsEquiv U X g p) = constantPointLabelsEquiv U Y
+    (relativePointsEquiv S U (constantSchemeOver S Y) ((relativePointsMap (mapStateSchemes S f)).val.app T x)) p
+  rw [relativePointsMap_app]
+  exact (stateLabel_mapStateSchemes (S := S) f (g.left p)).symm
+
+/-- An injective map between constant labels represents an open immersion. -/
+theorem mapStateSchemes_open (S : Scheme.{u}) {X Y : Type u} (f : X → Y) (hf : Function.Injective f) :
+    IsOpenImmersion (mapStateSchemes S f).left := by
+  let m := (mapStateSchemes S f).left
+  let C : Scheme.OpenCover.{u} (constantScheme S X) :=
+    Scheme.Cover.mkOfCovers X (fun _ => S) (stateInclusion S X) (fun p => by
+      obtain ⟨⟨i, x⟩, h⟩ := (AlgebraicGeometry.sigmaMk (fun _ : X => S)).surjective p
+      exact ⟨i, x, by simpa only [AlgebraicGeometry.sigmaMk_mk] using h⟩)
+  apply IsOpenImmersion.of_openCover_source m C
+  · intro p q h
+    obtain ⟨i, x, rfl⟩ := C.exists_eq p
+    obtain ⟨j, y, rfl⟩ := C.exists_eq q
+    have e := congrArg stateLabel h
+    change stateLabel (m (stateInclusion S X i x)) = stateLabel (m (stateInclusion S X j y)) at e
+    rw [stateLabel_mapStateSchemes, stateLabel_mapStateSchemes, stateLabel_inclusion, stateLabel_inclusion] at e
+    obtain rfl := hf e
+    have he := congrArg (fun a : S ⟶ constantScheme S Y => a x) (stateInclusion_mapStateSchemes S f i)
+    have he' := congrArg (fun a : S ⟶ constantScheme S Y => a y) (stateInclusion_mapStateSchemes S f i)
+    change m (stateInclusion S X i x) = m (stateInclusion S X i y) at h
+    have xy : x = y := (stateInclusion S Y (f i)).isOpenEmbedding.injective
+      (he.symm.trans (h.trans he'))
+    rw [xy]
+  · intro i
+    change IsOpenImmersion (stateInclusion S X i ≫ m)
+    rw [stateInclusion_mapStateSchemes]
+    infer_instance
 
 end RelativeRepresentation
 
@@ -113,6 +210,38 @@ private def constantPredicateRepresentation (S : Scheme.{u}) {K : Type u} (M : K
     RelativeRepresentation (((constantPredicate S P).preimage (constantTupleMap S M Γ)).toSheaf) :=
   ⟨constantSchemeOver S P, constantCarrierIso S P ≪≫ (constantPredicateIso S P).symm ≪≫
     (preimageIso (constantPredicate S P) (constantTupleIso S M Γ)).symm⟩
+
+private theorem predicateRepresentation_open {K : Type u} {F : ZariskiSheaf S} (P : SheafPredicate F)
+    (X : RelativeRepresentation P.toSheaf) (Y : RelativeRepresentation F)
+    (M : K → Type u) (Γ : List K) (Q : Set (Assignment M Γ))
+    (a : F ≅ sheafTuple (fun s => constantCarrier S (M s)) Γ)
+    (hom : P.carrier ≤ (((constantPredicate S Q).preimage (constantTupleMap S M Γ)).preimage a.hom).carrier)
+    (inv : ((constantPredicate S Q).preimage (constantTupleMap S M Γ)).carrier ≤ (P.preimage a.inv).carrier) :
+    IsOpenImmersion (X.readMap Y P.inclusion).left := by
+  let P' := (constantPredicate S Q).preimage (constantTupleMap S M Γ)
+  let a₀ := constantTupleIso S M Γ
+  let b := predicateIso P P' a hom inv ≪≫ preimageIso (constantPredicate S Q) a₀ ≪≫ constantPredicateIso S Q
+  let a' := a ≪≫ a₀
+  let X' := RelativeRepresentation.constant S Q
+  let Y' := RelativeRepresentation.constant S (Assignment M Γ)
+  let n := constantCarrierMap S (Subtype.val : Q → Assignment M Γ)
+  have commutes : P.inclusion ≫ a'.hom = b.hom ≫ n := by
+    ext T x
+    apply LocallyConstant.ext
+    intro t
+    rfl
+  have hcomm : X.readMap Y P.inclusion ≫ (Y.readIso Y' a').hom =
+      (X.readIso X' b).hom ≫ X'.readMap Y' n := by
+    change X.readMap Y P.inclusion ≫ Y.readMap Y' a'.hom =
+      X.readMap X' b.hom ≫ X'.readMap Y' n
+    rw [← X.readMap_comp Y, ← X.readMap_comp X', commutes]
+  let arrowIso : Arrow.mk (X.readMap Y P.inclusion).left ≅ Arrow.mk (X'.readMap Y' n).left :=
+    Arrow.isoMk ((Over.forget S).mapIso (X.readIso X' b)) ((Over.forget S).mapIso (Y.readIso Y' a'))
+      (congrArg (fun m : X.space ⟶ Y'.space => m.left) hcomm.symm)
+  apply (MorphismProperty.arrow_mk_iso_iff (P := @IsOpenImmersion) arrowIso).mpr
+  change IsOpenImmersion ((RelativeRepresentation.constant S Q).readMap _ (constantCarrierMap S Subtype.val)).left
+  rw [RelativeRepresentation.constant_readMap]
+  exact RelativeRepresentation.mapStateSchemes_open S _ Subtype.val_injective
 
 /-- Relative schemes for all carriers, inputs and chosen subobjects of a copying structure. -/
 structure CopyingRepresentation {sig : Signature.{u}} (A : SheafStructure sig (Scheme.zariskiTopology.over S)) where
@@ -191,6 +320,32 @@ theorem relationInclusion_mono (r : sig.Rel) : Mono (X.relationInclusion r) := b
 theorem domainInclusion_mono (p : sig.Partial) : Mono (X.domainInclusion p) := by
   letI := Sheaf.mono_of_injective (A.partialDomain p).inclusion (fun _ => Subtype.val_injective)
   exact (X.domain p).readMap_mono (X.input _) (A.partialDomain p).inclusion
+
+/-- In a locally split representation every relation is an open subscheme of its inputs. -/
+theorem relationInclusion_open {T : Theory.{u}} {A : SheafStructure T.signature (Scheme.zariskiTopology.over S)}
+    (X : CopyingRepresentation A) (split : IsZariskiSplit T A) (r : T.signature.Rel) :
+    IsOpenImmersion (X.relationInclusion r).left := by
+  obtain ⟨C, h⟩ := split
+  apply (X.relation r).readMap_open_ofOpenCover (X.input _) (A.relation r).inclusion C
+  intro i
+  obtain ⟨M, ⟨e⟩⟩ := h i
+  let f := C.f i
+  exact predicateRepresentation_open ((restrictStructure f A).relation r)
+    ((X.relation r).baseChange f) ((X.input _).baseChange f) M.obj.carrier _ (M.obj.relation r)
+    (tupleIso (sortIso e) _) (e.hom.preservesRelation r) (e.inv.preservesRelation r)
+
+/-- In a locally split representation every partial domain is an open subscheme of its inputs. -/
+theorem domainInclusion_open {T : Theory.{u}} {A : SheafStructure T.signature (Scheme.zariskiTopology.over S)}
+    (X : CopyingRepresentation A) (split : IsZariskiSplit T A) (p : T.signature.Partial) :
+    IsOpenImmersion (X.domainInclusion p).left := by
+  obtain ⟨C, h⟩ := split
+  apply (X.domain p).readMap_open_ofOpenCover (X.input _) (A.partialDomain p).inclusion C
+  intro i
+  obtain ⟨M, ⟨e⟩⟩ := h i
+  let f := C.f i
+  exact predicateRepresentation_open ((restrictStructure f A).partialDomain p)
+    ((X.domain p).baseChange f) ((X.input _).baseChange f) M.obj.carrier _ (M.obj.partialDomain p)
+    (tupleIso (sortIso e) _) (e.hom.preservesDomain p) (e.inv.preservesDomain p)
 
 /-- Represent a structure-preserving arrow on each carrier. -/
 def mapOnSort (Y : CopyingRepresentation B) (h : A ⟶ B) (s : sig.SortType) :

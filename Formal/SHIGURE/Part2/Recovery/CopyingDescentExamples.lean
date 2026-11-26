@@ -8,7 +8,7 @@ cover. A two-label chart equipped with the flip as its self-transition
 shows that an overlap isomorphism alone need not satisfy the unit law.
 -/
 
-open AlgebraicGeometry CategoryTheory Opposite
+open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
 
 universe u
 
@@ -78,5 +78,64 @@ theorem boolFlipCharts_not_coherent (S : Scheme.{0}) [Nonempty S] : ¬ (boolFlip
   have h' := congrArg (fun g : LocallyConstant S Bool => g p) (h.unit a x)
   change true = false at h'
   cases h'
+
+private def duplicateCover (S : Scheme.{0}) : Scheme.OpenCover S :=
+  Scheme.Cover.mkOfCovers Bool (fun _ => S) (fun _ => 𝟙 S) (fun x => ⟨false, x, rfl⟩)
+
+private def duplicateArrows (S : Scheme.{0}) (i : (duplicateCover S).I₀) :
+    (Scheme.zariskiTopology.overMapPullback (Type 0) ((duplicateCover S).f i)).obj (constantCarrier S Bool) ⟶
+      (Scheme.zariskiTopology.overMapPullback (Type 0) ((duplicateCover S).f i)).obj (constantCarrier S Bool) :=
+  if (show Bool from i) = true then (boolFlip S).hom else 𝟙 (constantCarrier S Bool)
+
+/-- The identity and the flip do not agree on the overlap of two copies of a nonempty chart. -/
+theorem duplicateArrows_not_agree (S : Scheme.{0}) [Nonempty S] :
+    ¬ SheafArrowsAgreeOnOverlaps (duplicateArrows S) := by
+  intro h
+  let C := duplicateCover S
+  let T := Over.mk (𝟙 S)
+  let p : S ⟶ CoverOverlap C false true :=
+    pullback.lift (𝟙 S) (𝟙 S) rfl
+  have hp : p ≫ pullback.fst (C.f false) (C.f true) ≫ C.f false = T.hom := by
+    rw [← Category.assoc]
+    change pullback.lift (𝟙 S) (𝟙 S) rfl ≫ pullback.fst (𝟙 S) (𝟙 S) ≫ 𝟙 S = 𝟙 S
+    rw [pullback.lift_fst_assoc, Category.id_comp]
+  let x : LocallyConstant S Bool := LocallyConstant.const S false
+  let z : S := Classical.choice inferInstance
+  have he := congrArg (fun y : LocallyConstant S Bool => y z) (h false true T p hp x)
+  change false = true at he
+  cases he
+
+private def constantLabelCharts (S : Scheme.{0}) : SheafCharts (duplicateCover S) where
+  chart _ := constantCarrier S Bool
+  transition _ _ := Iso.refl _
+
+private abbrev testContext : List Unit := []
+
+private def differentPredicates (S : Scheme.{0}) (i : (duplicateCover S).I₀) :
+    SheafPredicate ((SheafCharts.tuples (fun _ : Unit => constantLabelCharts S) testContext).chart i) :=
+  (constantPredicate S (if (show Bool from i) = true then
+    (∅ : Set (Assignment (fun _ : Unit => Bool) testContext)) else Set.univ)).preimage
+      (constantTupleMap S (fun _ : Unit => Bool) testContext)
+
+/-- The full and empty predicates on a repeated nonempty chart fail to match under the identity. -/
+theorem differentPredicates_not_preserved (S : Scheme.{0}) [Nonempty S] :
+    ¬ SheafCharts.PreservesPredicates (fun _ : Unit => constantLabelCharts S) testContext (differentPredicates S) := by
+  intro h
+  let C := duplicateCover S
+  let p : S ⟶ CoverOverlap C false true := pullback.lift (𝟙 S) (𝟙 S) rfl
+  let U := Over.mk p
+  let W := (Over.map (pullback.fst (C.f false) (C.f true))).obj U
+  let V := (Over.map (pullback.snd (C.f false) (C.f true))).obj U
+  let x : Assignment (fun _ : Unit => LocallyConstant S Bool) testContext := ⟨fun i => nomatch i⟩
+  have hx : x ∈ (restrictPredicate (pullback.fst (C.f false) (C.f true)) (differentPredicates S false)).carrier.obj
+      (op U) :=
+    (mem_constantPredicate S Set.univ (op W) ((constantTupleMap S (fun _ : Unit => Bool) testContext).val.app
+      (op W) x)).mpr (fun _ => Set.mem_univ _)
+  have he := h.hom false true (op U) hx
+  let y := ((SheafCharts.tuples (fun _ : Unit => constantLabelCharts S) testContext).transition false true).hom.val.app
+    (op U) x
+  have ha := (mem_constantPredicate S (∅ : Set (Assignment (fun _ : Unit => Bool) testContext)) (op V)
+    ((constantTupleMap S (fun _ : Unit => Bool) testContext).val.app (op V) y)).mp he
+  exact ha (Classical.choice (inferInstance : Nonempty S))
 
 end SHIGURE.Copying

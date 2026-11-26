@@ -8,6 +8,14 @@ import Mathlib.CategoryTheory.Limits.Types.Pullbacks
 A section consists of a map to the base and a section on that relative
 test. Gluing first glues the map to the base, then glues the sections on
 the resulting relative test.
+
+## Implementation notes
+
+Mathlib's local representability theorem works on the absolute
+Zariski site. Recording the base map in a dependent pair gives an
+absolute sheaf whose fibers recover the original sheaf. This uses the
+existing scheme gluing theorem directly, avoiding a second construction
+of the transition maps on the underlying locally ringed spaces.
 -/
 
 open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite

@@ -7,6 +7,14 @@ import Formal.SHIGURE.Part2.Recovery.StructureArrowDescent
 The equation for local arrows is imposed on tests over the actual
 fiber product of two chart opens. Naturality then gives the matching
 condition for arbitrary sections restricted from those two charts.
+
+## Implementation notes
+
+The equation is evaluated on a test mapping to the intersection.
+This lets the two chart restrictions be compared on the same test
+scheme, using identities of its underlying scheme to transport
+sections. Equalities between the iterated site functors give the
+same equations after evaluation.
 -/
 
 open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
@@ -79,6 +87,20 @@ def SheafArrowsAgreeOnOverlaps
   ∀ (i j : C.I₀) (T : Over S) (p : T.left ⟶ pullback (C.f i) (C.f j))
     (hp : p ≫ pullback.fst _ _ ≫ C.f i = T.hom) (x : F.val.obj (op T)),
     chartApply (f i) (firstOverlapLift p hp) x = chartApply (f j) (secondOverlapLift p hp) x
+
+private theorem chartApply_restrictGlobal {i : C.I₀} {T : Over S} (f : F ⟶ G)
+    (a : CoverLift C i T) (x : F.val.obj (op T)) :
+    chartApply ((Scheme.zariskiTopology.overMapPullback (Type u) (C.f i)).map f) a x =
+      f.val.app (op T) x := by
+  change G.val.map a.toBase.inv.op (f.val.app _ (F.val.map a.toBase.hom.op x)) = _
+  rw [FunctorToTypes.naturality _ _ f.val, ← FunctorToTypes.map_comp_apply, ← op_comp, Iso.inv_hom_id, op_id,
+    FunctorToTypes.map_id_apply]
+
+/-- Restrictions of a single global arrow satisfy the overlap equations. -/
+theorem sheafArrowsAgreeOnOverlaps_ofGlobal (f : F ⟶ G) :
+    SheafArrowsAgreeOnOverlaps (fun i => (Scheme.zariskiTopology.overMapPullback (Type u) (C.f i)).map f) := by
+  intro i j T p hp x
+  rw [chartApply_restrictGlobal, chartApply_restrictGlobal]
 
 /-- The overlap equations imply the matching conditions for gluing local sheaf maps. -/
 def LocalSheafMaps.ofOverlaps

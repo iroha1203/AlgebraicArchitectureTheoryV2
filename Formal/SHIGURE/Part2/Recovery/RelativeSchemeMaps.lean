@@ -9,6 +9,13 @@ import Mathlib.AlgebraicGeometry.Pullbacks
 A sheaf of relative points remembers all the relative scheme morphisms.
 The pullback comparison comes from the actual adjunction between
 postcomposition and the fiber product of relative schemes.
+
+## Implementation notes
+
+The comparisons have the types of mathlib's `Over.pullbackId` and
+`Over.pullbackComp`. We use the limiting cones to give their components
+directly, so that the projection equations and the comparison of the
+represented points can use the same morphisms.
 -/
 
 open AlgebraicGeometry CategoryTheory Opposite
@@ -35,6 +42,11 @@ def relativePointsPresheafIso (Y : Over S) :
 def relativePointsMap {Y Z : Over S} (f : Y ⟶ Z) :
     relativePoints S Y ⟶ relativePoints S Z :=
   ⟨(relativePointsPresheafIso Y).hom ≫ yoneda.map f ≫ (relativePointsPresheafIso Z).inv⟩
+
+/-- Postcomposition by an identity induces the identity on relative points. -/
+theorem relativePointsMap_id (Y : Over S) : relativePointsMap (𝟙 Y) = 𝟙 (relativePoints S Y) := by
+  apply Sheaf.Hom.ext
+  simp [relativePointsMap]
 
 /-- Postcomposition on represented relative points respects composition. -/
 theorem relativePointsMap_comp {X Y Z : Over S} (f : X ⟶ Y) (g : Y ⟶ Z) :
@@ -92,11 +104,22 @@ abbrev relativeSchemeProjection (f : S' ⟶ S) (Y : Over S) :
     ((relativeSchemePullback f).obj Y).left ⟶ Y.left :=
   pullback.fst Y.hom f
 
+/-- Projecting after a fiber-product map reduces to projecting before the original map. -/
 @[reassoc (attr := simp)]
 theorem relativeSchemeProjection_map (f : S' ⟶ S) {Y Z : Over S} (g : Y ⟶ Z) :
     ((relativeSchemePullback f).map g).left ≫ relativeSchemeProjection f Z =
       relativeSchemeProjection f Y ≫ g.left :=
   pullback.lift_fst _ _ _
+
+/-- The map of fiber products itself fits into a pullback square over the original scheme map. -/
+theorem relativeSchemePullbackMap_isPullback (f : S' ⟶ S) {Y Z : Over S} (g : Y ⟶ Z) :
+    IsPullback ((relativeSchemePullback f).map g).left (relativeSchemeProjection f Y)
+      (relativeSchemeProjection f Z) g.left := by
+  have outer : IsPullback (((relativeSchemePullback f).map g).left ≫ ((relativeSchemePullback f).obj Z).hom)
+      (relativeSchemeProjection f Y) f (g.left ≫ Z.hom) := by
+    rw [Over.w ((relativeSchemePullback f).map g), Over.w g]
+    exact (IsPullback.of_hasPullback Y.hom f).flip
+  exact outer.of_right (relativeSchemeProjection_map f g) (IsPullback.of_hasPullback Z.hom f).flip
 
 /-- Pullback along the coefficient identity keeps the same relative test by the first projection. -/
 def relativeSchemePullbackId (S : Scheme.{u}) : relativeSchemePullback (𝟙 S) ≅ 𝟭 (Over S) :=
@@ -144,6 +167,7 @@ def relativeSchemePullbackComp {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : S' ⟶ S
     simp only [Category.assoc, relativeSchemePullbackCompAt_fst, relativeSchemeProjection_map,
       relativeSchemeProjection_map_assoc, relativeSchemePullbackCompAt_fst_assoc])
 
+/-- Projecting an iterated comparison back to the original scheme reduces to the direct projection. -/
 @[reassoc (attr := simp)]
 theorem relativeSchemePullbackComp_fst {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : S' ⟶ S) (Y : Over S) :
     ((relativeSchemePullbackComp g f).hom.app Y).left ≫
@@ -151,10 +175,12 @@ theorem relativeSchemePullbackComp_fst {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : 
       relativeSchemeProjection (g ≫ f) Y :=
   relativeSchemePullbackCompAt_fst g f Y
 
+/-- The underlying map of a unit comparison reduces to the first projection. -/
 @[reassoc (attr := simp)]
 theorem relativeSchemePullbackId_fst (Y : Over S) :
     ((relativeSchemePullbackId S).hom.app Y).left = relativeSchemeProjection (𝟙 S) Y := rfl
 
+/-- After identifying equal coefficient maps, the projection reduces to the untransported projection. -/
 @[reassoc (attr := simp)]
 theorem relativeSchemePullback_congr_fst {f g : S' ⟶ S} (e : f = g) (Y : Over S) :
     (eqToHom (congrArg (fun a => (relativeSchemePullback a).obj Y) e)).left ≫ relativeSchemeProjection g Y =
@@ -238,5 +264,70 @@ theorem relativePointsPullbackIso_naturality (f : S' ⟶ S) {Y Z : Over S} (g : 
         ((relativePointsPullbackIso f Y).hom.val.app (op U) x))
   rw [relativePointsMap_app, relativePointsPullbackIso_app, relativePointsPullbackIso_app, relativePointsMap_app]
   exact (relativeSchemePullbackAdj f).homEquiv_naturality_right _ g
+
+private theorem relativePointsEquiv_restrict {T U Y : Over S} (g : U ⟶ T)
+    (x : (relativePoints S Y).val.obj (op T)) :
+    relativePointsEquiv S U Y ((relativePoints S Y).val.map g.op x) =
+      g ≫ relativePointsEquiv S T Y x :=
+  Over.OverMorphism.ext rfl
+
+@[reassoc (attr := simp)]
+private theorem relativeSchemePullbackHomEquiv_fst (f : S' ⟶ S) {T : Over S'} {Y : Over S}
+    (g : (Over.map f).obj T ⟶ Y) :
+    ((relativeSchemePullbackAdj f).homEquiv T Y g).left ≫ relativeSchemeProjection f Y = g.left := by
+  unfold relativeSchemePullbackAdj Over.mapPullbackAdj
+  rw [Adjunction.mkOfHomEquiv_homEquiv]
+  exact pullback.lift_fst _ _ _
+
+/-- The comparison on point sheaves intertwines the actual fiber-product unit comparison. -/
+theorem relativePointsPullbackIso_id (Y : Over S) :
+    (relativePointsPullbackIso (𝟙 S) Y).hom ≫ relativePointsMap ((relativeSchemePullbackId S).hom.app Y) =
+      (Scheme.zariskiTopology.overMapPullbackId (Type u) S).hom.app (relativePoints S Y) := by
+  ext T x
+  let V := T.unop
+  let U := (Over.map (𝟙 S)).obj V
+  let e : V ⟶ U := (Over.mapId S).inv.app V
+  change ((relativePointsMap ((relativeSchemePullbackId S).hom.app Y)).val.app (op V))
+    ((relativePointsPullbackIso (𝟙 S) Y).hom.val.app (op V) x) =
+    (relativePoints S Y).val.map e.op x
+  apply (relativePointsEquiv S V Y).injective
+  rw [relativePointsMap_app, relativePointsPullbackIso_app, relativePointsEquiv_restrict]
+  apply Over.OverMorphism.ext
+  change ((relativeSchemePullbackAdj (𝟙 S)).homEquiv V Y (relativePointsEquiv S U Y x)).left ≫
+    relativeSchemeProjection (𝟙 S) Y = e.left ≫ (relativePointsEquiv S U Y x).left
+  rw [relativeSchemePullbackHomEquiv_fst]
+  exact (Category.id_comp _).symm
+
+/-- The comparison on point sheaves intertwines the actual iterated fiber-product comparison. -/
+theorem relativePointsPullbackIso_comp {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : S' ⟶ S) (Y : Over S) :
+    (Scheme.zariskiTopology.overMapPullback (Type u) g).map (relativePointsPullbackIso f Y).hom ≫
+        (relativePointsPullbackIso g ((relativeSchemePullback f).obj Y)).hom =
+      (Scheme.zariskiTopology.overMapPullbackComp (Type u) g f).hom.app (relativePoints S Y) ≫
+        (relativePointsPullbackIso (g ≫ f) Y).hom ≫ relativePointsMap ((relativeSchemePullbackComp g f).hom.app Y) := by
+  ext T x
+  let V := T.unop
+  let U := (Over.map g).obj V
+  let W := (Over.map f).obj U
+  let K := (Over.map (g ≫ f)).obj V
+  let e : K ⟶ W := (Over.mapComp g f).hom.app V
+  let P := (relativeSchemePullback f).obj Y
+  let Q := (relativeSchemePullback g).obj P
+  let r := relativePointsEquiv S W Y x
+  let m := ((relativeSchemePullbackComp g f).hom.app Y)
+  change (relativePointsPullbackIso g P).hom.val.app (op V)
+      ((relativePointsPullbackIso f Y).hom.val.app (op U) x) =
+    (relativePointsMap m).val.app (op V)
+      ((relativePointsPullbackIso (g ≫ f) Y).hom.val.app (op V) ((relativePoints S Y).val.map e.op x))
+  apply (relativePointsEquiv S'' V Q).injective
+  rw [relativePointsMap_app, relativePointsPullbackIso_app, relativePointsPullbackIso_app,
+    relativePointsPullbackIso_app, relativePointsEquiv_restrict]
+  apply overPullbackHomExt (iteratedRelativePullback g f Y)
+  change ((relativeSchemePullbackAdj g).homEquiv V P ((relativeSchemePullbackAdj f).homEquiv U Y r)).left ≫
+    relativeSchemeProjection g P ≫ relativeSchemeProjection f Y =
+      (((relativeSchemePullbackAdj (g ≫ f)).homEquiv V Y (e ≫ r)).left ≫ m.left) ≫
+        relativeSchemeProjection g P ≫ relativeSchemeProjection f Y
+  rw [relativeSchemePullbackHomEquiv_fst_assoc, relativeSchemePullbackHomEquiv_fst, Category.assoc,
+    relativeSchemePullbackComp_fst, relativeSchemePullbackHomEquiv_fst]
+  exact (Category.id_comp _).symm
 
 end SHIGURE.Copying

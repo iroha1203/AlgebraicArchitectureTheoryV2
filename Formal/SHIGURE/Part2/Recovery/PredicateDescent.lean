@@ -34,6 +34,7 @@ def ofInjection (f : F ⟶ G) (h : ∀ T, Function.Injective (f.val.app T)) : Sh
 def ofInjectionIso (f : F ⟶ G) (h : ∀ T, Function.Injective (f.val.app T)) : F ≅ (ofInjection f h).toSheaf :=
   (fullyFaithfulSheafToPresheaf _ _).preimageIso (rangePresheafIso f h)
 
+/-- The range identification followed by inclusion reduces to the original sheaf map. -/
 @[simp]
 theorem ofInjectionIso_inclusion (f : F ⟶ G) (h : ∀ T, Function.Injective (f.val.app T)) :
     (ofInjectionIso f h).hom ≫ (ofInjection f h).inclusion = f := rfl
@@ -56,6 +57,10 @@ structure PreservesPredicates : Prop where
   inv (i j : C.I₀) :
     (restrictPredicate (pullback.snd (C.f i) (C.f j)) (P j)).carrier ≤
       ((restrictPredicate (pullback.fst (C.f i) (C.f j)) (P i)).preimage ((tuples D Γ).transition i j).inv).carrier
+
+/-- Every transition preserves the full predicate in both directions. -/
+theorem preservesPredicates_truth : PreservesPredicates D Γ (fun _ => SheafPredicate.truth) :=
+  ⟨fun _ _ _ _ _ => SheafPredicate.mem_truth _ _, fun _ _ _ _ _ => SheafPredicate.mem_truth _ _⟩
 
 variable {D Γ P}
 

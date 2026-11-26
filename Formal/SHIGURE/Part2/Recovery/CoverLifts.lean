@@ -28,6 +28,7 @@ namespace CoverLift
 
 variable {i j : C.I₀} {T U V : Over S}
 
+/-- A chart lift is unique because the chart inclusion is a monomorphism. -/
 instance : Subsingleton (CoverLift C i T) :=
   ⟨fun a b => Subtype.ext ((cancel_mono (C.f i)).mp (a.property.trans b.property.symm))⟩
 
@@ -46,10 +47,12 @@ def pullback (a : CoverLift C i T) (g : U ⟶ T) : CoverLift C i U :=
 def map (a : CoverLift C i T) (b : CoverLift C i U) (g : U ⟶ T) : b.test ⟶ a.test :=
   Over.homMk g.left (congrArg Subtype.val (Subsingleton.elim (a.pullback g) b))
 
+/-- A lifted identity reduces to the identity in the chart slice. -/
 @[simp]
 theorem map_id (a : CoverLift C i T) : a.map a (𝟙 T) = 𝟙 a.test :=
   Over.OverMorphism.ext rfl
 
+/-- A lifted composite reduces to the composite of the lifted maps. -/
 @[simp]
 theorem map_comp (a : CoverLift C i T) (b : CoverLift C i U) (c : CoverLift C i V)
     (g : V ⟶ U) (h : U ⟶ T) : a.map c (g ≫ h) = b.map c g ≫ a.map b h :=
@@ -73,6 +76,7 @@ def toChartBase (a : CoverLift C i U) (g : U ⟶ T) :
     U ⟶ (Over.map (C.f i)).obj (coefficientCoverTest C T i) :=
   a.toBase.inv ≫ (Over.map (C.f i)).map (a.toChartTest g)
 
+/-- The lift followed by the chart inclusion reduces to the original map of tests. -/
 @[simp]
 theorem toChartBase_inclusion (a : CoverLift C i U) (g : U ⟶ T) :
     a.toChartBase g ≫ coefficientCoverTestInclusion C T i = g := by
@@ -90,6 +94,7 @@ theorem map_toChartBase (a : CoverLift C i U) (g : U ⟶ T) :
 def chartTestMap (g : U ⟶ T) (i : C.I₀) : coefficientCoverTest C U i ⟶ coefficientCoverTest C T i :=
   (relativeSchemePullback (C.f i)).map g
 
+/-- The fiber-product map commutes with the chart inclusions. -/
 @[reassoc]
 theorem chartTestMap_inclusion (g : U ⟶ T) (i : C.I₀) :
     (Over.map (C.f i)).map (chartTestMap g i) ≫ coefficientCoverTestInclusion C T i =
@@ -128,6 +133,7 @@ theorem toChartTest_comp_source (a : CoverLift C i U) (b : CoverLift C i V) (f :
   simpa only [toChartBase, map, Over.homMk_left, Over.comp_left, Over.map_map_left, toBase,
     Over.isoMk_inv_left, Iso.refl_inv, Category.id_comp] using e
 
+/-- Lifting the chart inclusion back into the same chart reduces to the identity. -/
 @[simp]
 theorem toChartTest_inclusion (C : Scheme.OpenCover.{u} S) (T : Over S) (i : C.I₀) :
     (chartLift C T i).toChartTest (coefficientCoverTestInclusion C T i) = 𝟙 _ := by

@@ -6,6 +6,13 @@ import Formal.SHIGURE.Part2.Recovery.SheafTransitions
 The two maps from the product of chart direct images record the two
 restrictions to each overlap. Their equalizer represents the sections
 that match under the prescribed transition isomorphisms.
+
+## Implementation notes
+
+Taking the equalizer in sheaves supplies the sheaf condition before
+computing any section. A sectionwise construction would repeat the
+gluing proof on the relative site. Here the sectionwise matching
+equations and the comparison on each chart follow from the equalizer.
 -/
 
 open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
