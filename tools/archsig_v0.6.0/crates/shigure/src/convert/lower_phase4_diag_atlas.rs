@@ -83,11 +83,8 @@ pub(super) fn convert_diagnostics_task(
     let archmap = inputs.archmap();
     ensure_snapshot_exists(archmap, snapshot_id, "ShigureConverter::with_snapshot")?;
 
-    let (_, decl) = select_named_decl(
-        &shigure.diagnostics_tasks,
-        task_name,
-        "shigure diagnostics",
-    )?;
+    let (_, decl) =
+        select_named_decl(&shigure.diagnostics_tasks, task_name, "shigure diagnostics")?;
     let diagnostic_coeff = lower_coeff_domain(&decl.diagnostic_coeff);
     let (mut origins, primary_ref) =
         lower_p4_origins(&decl.origins, archmap, &decl.name, &decl.name)?;
@@ -180,7 +177,11 @@ pub(super) fn convert_diagnostics_task(
                             match cv {
                                 CoordValue::Observed(lit) => PolyExpr::Const(lit),
                                 CoordValue::Missing => PolyExpr::Unobserved {
-                                    slot: format!("{entity}.{field}"),
+                                    slot: if field.starts_with(&format!("{entity}.")) {
+                                        field.clone()
+                                    } else {
+                                        format!("{entity}.{field}")
+                                    },
                                     origin: first_ref.or_else(|| Some(primary_ref.clone())),
                                 },
                                 CoordValue::Symbolic => {
@@ -221,12 +222,15 @@ pub(super) fn convert_diagnostics_task(
         .map(|cc| CoeffChangeComparisonSpec {
             target_domain: lower_coeff_domain(&cc.target_domain),
             compare_codomain_regeneration: cc.compare_codomain_regeneration,
-            explicit_z_complex: cc.explicit_z_complex.as_ref().map(|ez| ExplicitZComplexSpec {
-                dim0: ez.dim0,
-                dim1: ez.dim1,
-                d0: ez.d0.clone(),
-                designated_cocycle: ez.designated_cocycle.clone(),
-            }),
+            explicit_z_complex: cc
+                .explicit_z_complex
+                .as_ref()
+                .map(|ez| ExplicitZComplexSpec {
+                    dim0: ez.dim0,
+                    dim1: ez.dim1,
+                    d0: ez.d0.clone(),
+                    designated_cocycle: ez.designated_cocycle.clone(),
+                }),
         });
 
     let collisions = decl
@@ -302,7 +306,9 @@ pub(super) fn convert_diagnostics_task(
                 &primary_ref,
                 &format!("{}.dim_real.invertible", decl.name),
             )?;
-            let invertible_poly = inv.pop().ok_or_else(|| conv_err("missing invertible_poly"))?;
+            let invertible_poly = inv
+                .pop()
+                .ok_or_else(|| conv_err("missing invertible_poly"))?;
             let mut probe_points = Vec::with_capacity(dr.probe_points.len());
             for pt in &dr.probe_points {
                 let mut coords = Vec::with_capacity(pt.coords.len());
@@ -491,7 +497,8 @@ pub(super) fn convert_atlas_task(
                 .forgetful_reading
                 .as_ref()
                 .map(|fg| {
-                    let fg_vars: BTreeSet<String> = [fg.forgotten_var.clone()].into_iter().collect();
+                    let fg_vars: BTreeSet<String> =
+                        [fg.forgotten_var.clone()].into_iter().collect();
                     let eval_expr = lower_poly_expr(
                         &fg.eval_expr,
                         &coeff_domain,

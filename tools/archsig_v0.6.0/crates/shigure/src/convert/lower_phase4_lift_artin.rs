@@ -84,7 +84,11 @@ pub(super) fn lower_p4_coord_to_poly(
             match cv {
                 CoordValue::Observed(lit) => Ok(PolyExpr::Const(lit)),
                 CoordValue::Missing => Ok(PolyExpr::Unobserved {
-                    slot: format!("{entity}.{field}"),
+                    slot: if field.starts_with(&format!("{entity}.")) {
+                        field.clone()
+                    } else {
+                        format!("{entity}.{field}")
+                    },
                     origin: first_ref.or_else(|| Some(fallback_ref.clone())),
                 }),
                 CoordValue::Symbolic => Err(conv_err(format!(
@@ -468,12 +472,15 @@ pub(super) fn convert_lift_task(
         })
         .transpose()?;
 
-    let etale_descent = decl.etale_descent.as_ref().map(|ed| FiniteEtaleDescentSpec {
-        base_var: ed.base_var.clone(),
-        cover_var: ed.cover_var.clone(),
-        degree: ed.degree,
-        base_invertible: ed.base_invertible,
-    });
+    let etale_descent = decl
+        .etale_descent
+        .as_ref()
+        .map(|ed| FiniteEtaleDescentSpec {
+            base_var: ed.base_var.clone(),
+            cover_var: ed.cover_var.clone(),
+            degree: ed.degree,
+            base_invertible: ed.base_invertible,
+        });
 
     validate_lift_task(LiftTaskSpec {
         name: decl.name.clone(),

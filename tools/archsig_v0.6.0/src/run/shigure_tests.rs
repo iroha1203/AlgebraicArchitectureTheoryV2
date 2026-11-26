@@ -117,6 +117,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "shigure_robustness(Base.Rob, snapshot=snap1)",
         "shigure_chevalley(Base.Ch, snapshot=snap1)",
         "shigure_observations(Base.Obs, snapshot=snap1)",
+        "shigure_lift(Base.L, snapshot=snap1)",
+        "shigure_artin(Base.A, snapshot=snap1)",
+        "shigure_diagnostics(Base.D, snapshot=snap1)",
+        "shigure_atlas(Base.G, snapshot=snap1)",
     ] {
         let valid_ask = "p=shigure_solve(LedgerMigration.P1AtomicMarked)".to_owned();
         assert_eq!(
@@ -135,6 +139,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "a=shigure_robustness(.r)",
         "a=shigure_chevalley([2])",
         "a=shigure_observations(.o)",
+        "a=shigure_lift(.l)",
+        "a=shigure_artin([3])",
+        "a=shigure_diagnostics(.d)",
+        "a=shigure_atlas([4])",
     ] {
         let msg = parse::parse_single_ask(bad).unwrap_err();
         assert!(
@@ -181,6 +189,30 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
             "R.Obs",
             Some("snap.b-1"),
         ),
+        (
+            "l=shigure_lift(R.LiftTask, snapshot=snap1)",
+            ShigureCliQuery::Lift,
+            "R.LiftTask",
+            Some("snap1"),
+        ),
+        (
+            "a=shigure_artin(R.ArtinTask)",
+            ShigureCliQuery::Artin,
+            "R.ArtinTask",
+            None,
+        ),
+        (
+            "d=shigure_diagnostics(R.DiagTask)",
+            ShigureCliQuery::Diagnostics,
+            "R.DiagTask",
+            None,
+        ),
+        (
+            "g=shigure_atlas(R.AtlasTask, snapshot=snap_1)",
+            ShigureCliQuery::Atlas,
+            "R.AtlasTask",
+            Some("snap_1"),
+        ),
     ] {
         assert_eq!(classify_asks(&[ask.to_owned()]), AskPartition::AllShigure);
         let parsed = parse::parse_single_ask(ask).unwrap();
@@ -193,6 +225,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "x=shigure_robustness_extra(Foo)",
         "x=shigure_chevalley_extra(Foo)",
         "x=shigure_observations_extra(Foo)",
+        "x=shigure_lift_extra(Foo)",
+        "x=shigure_artin_extra(Foo)",
+        "x=shigure_diagnostics_extra(Foo)",
+        "x=shigure_atlas_extra(Foo)",
     ] {
         assert_eq!(classify_asks(&[extra.to_owned()]), AskPartition::None);
     }
@@ -201,6 +237,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "b=shigure_robustness(R.Rob)",
         "b=shigure_chevalley(R.Ch)",
         "b=shigure_observations(R.Obs)",
+        "b=shigure_lift(R.L)",
+        "b=shigure_artin(R.A)",
+        "b=shigure_diagnostics(R.D)",
+        "b=shigure_atlas(R.G)",
     ] {
         assert_eq!(
             classify_asks(&[
@@ -214,6 +254,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
     assert!(parse::parse_single_ask("r=shigure_robustness(R.Rob, foo=bar)").is_err());
     assert!(parse::parse_single_ask("c=shigure_chevalley(R.Ch, foo=bar)").is_err());
     assert!(parse::parse_single_ask("o=shigure_observations(R.Obs, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("l=shigure_lift(R.L, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("a=shigure_artin(R.A, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("d=shigure_diagnostics(R.D, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("g=shigure_atlas(R.G, foo=bar)").is_err());
 }
 
 #[test]

@@ -1,0 +1,122 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading ArtinAC4 {
+  use vocabulary Phase4Vocab version "1" digest "sha256:c4c4f5bb0c50bcec155a48e2a1402387df5e89c00fe063a568895c9a439c6f83";
+
+  // (a) H4: Y = T^2, Y = 0 => nu = 2
+  shigure artin H4Artin {
+    domain Q;
+    origin human_adopted "artin_h4";
+    obs_vars [t];
+    aux_def y = pow(t, 2);
+    extra_law g: y = 0;
+    base_point { t = observed Phase4Vocab.Node.coord_q; }
+    max_order 8;
+  }
+
+  // (b) H5: 2^N sharp bound vs existing relation Y = T^N (no free bound)
+  shigure artin H5Chain3 {
+    domain Q;
+    origin human_adopted "artin_h5_chain";
+    obs_vars [t];
+    aux_def y1 = pow(t, 2);
+    aux_def y2 = pow(y1, 2);
+    aux_def y3 = pow(y2, 2);
+    extra_law g: y3 = 0;
+    base_point { t = 0; }
+    max_order 12;
+  }
+
+  shigure artin H5WithRelation {
+    domain Q;
+    origin human_adopted "artin_h5_rel";
+    obs_vars [t, y];
+    obs_relation rel_y: y - pow(t, 3) = 0;
+    extra_law g: y = 0;
+    base_point { t = 0; y = 0; }
+    max_order 8;
+  }
+
+  // (c) H10: E = mu * delta, E = 0 => nu = 2, and axis restriction mu = 0 => all-order lift
+  shigure artin H10Artin {
+    domain Q;
+    origin human_adopted "artin_h10";
+    obs_vars [delta, mu];
+    aux_def E = mu * delta;
+    extra_law g: E = 0;
+    base_point { delta = 0; mu = 0; }
+    max_order 6;
+  }
+
+  shigure artin H10AxisInfinite {
+    domain Q;
+    origin human_adopted "artin_h10_axis";
+    obs_vars [delta, mu];
+    obs_relation mu_zero: mu = 0;
+    aux_def E = mu * delta;
+    extra_law g: E = 0;
+    base_point { delta = 0; mu = 0; }
+    max_order 4;
+  }
+
+  // (d) F4: nu = 1 vs nu >= 2, and F6 composition law
+  shigure artin F4Nu1 {
+    domain Q;
+    origin human_adopted "artin_f4_1";
+    obs_vars [t];
+    extra_law g: t = 0;
+    base_point { t = 0; }
+    max_order 6;
+  }
+
+  shigure artin F6Composite {
+    domain Q;
+    origin static_analysis "artin_f6";
+    obs_vars [s, t];
+    aux_def y1 = pow(t, 2);
+    extra_law g1: y1 = 0;
+    base_point { s = 0; t = 0; }
+    max_order 6;
+    composite_stage {
+      aux_def y2 = pow(s, 3);
+      extra_law g2: y2 = 0;
+    }
+  }
+
+  // (e) H6: Z[t], J = (2t^2 + t^3) => Z/Q nu=2, F_2 nu=3, image of D_2 is 0
+  shigure artin H6BaseChangeF2 {
+    domain Z;
+    origin human_adopted "artin_h6_f2";
+    obs_vars [t];
+    extra_law g: 2 * pow(t, 2) + pow(t, 3) = 0;
+    base_point { t = 0; }
+    max_order 6;
+    base_change {
+      target_domain Fp(2);
+      test_order 2;
+    }
+  }
+
+  shigure artin H6BaseChangeQ {
+    domain Z;
+    origin human_adopted "artin_h6_q";
+    obs_vars [t];
+    extra_law g: 2 * pow(t, 2) + pow(t, 3) = 0;
+    base_point { t = 0; }
+    max_order 6;
+    base_change {
+      target_domain Q;
+      test_order 2;
+    }
+  }
+
+  // (f) H7: non-Noetherian infinite presentation => undetermined
+  shigure artin H7Infinite {
+    domain Q;
+    origin human_adopted "artin_h7";
+    obs_vars [t];
+    base_point { t = 0; }
+    max_order 6;
+    non_noetherian_infinite true;
+  }
+}

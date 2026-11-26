@@ -1,12 +1,13 @@
 //! `archsig run` から SHIGURE 計算（`shigure_preservation` / `shigure_solve` / `shigure_interaction` /
 //! `shigure_diagram` / `shigure_path` / `shigure_transfer` / `shigure_robustness` /
-//! `shigure_chevalley` / `shigure_observations`）を実行する最小入口。
+//! `shigure_chevalley` / `shigure_observations` / `shigure_lift` / `shigure_artin` /
+//! `shigure_diagnostics` / `shigure_atlas`）を実行する最小入口。
 //!
 //! 責務:
 //! - 既存の `crates/computation/src/observed/` へ一切触れずに、`archsig-input::input::check_inputs` →
 //!   `archsig-shigure::convert::ShigureConverter` → `archsig-shigure` 各計算核を接続する
 //! - 実行仕様 §§1・5–7 に従い、`archsig.summary/1`（stdout）と `archsig.result/4`（`--out` 保存時）および終了コードを返す
-//! - `Verdict::Undetermined`（沈黙）をエラーではなく正常な `partial` / exit 2 出力として返す
+//! - `Verdict::Undetermined`（判断不能）をエラーではなく正常な `partial` / exit 2 出力として返す
 
 mod deliver;
 mod parse;
@@ -20,7 +21,11 @@ use super::{Io, Outcome, RunArgs, Signals, output, read};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_input::input::{InputSources, InputStatus, check_inputs};
 use archsig_input::result::{ResultIssue, Status};
+use archsig_shigure::ir::artin::CheckedArtinTask;
+use archsig_shigure::ir::atlas::CheckedAtlasTask;
+use archsig_shigure::ir::diagnostics::CheckedDiagnosticsTask;
 use archsig_shigure::ir::diagram::CheckedDiagramTask;
+use archsig_shigure::ir::lift::CheckedLiftTask;
 use archsig_shigure::ir::observation::CheckedObservationTask;
 use archsig_shigure::ir::path::CheckedPathTask;
 use archsig_shigure::ir::result::ShigureOutcome;
@@ -28,7 +33,8 @@ use archsig_shigure::ir::robustness::{CheckedChevalleyTask, CheckedRobustnessTas
 use archsig_shigure::ir::transfer::CheckedTransferTask;
 use archsig_shigure::ir::validate::CheckedShigureTask;
 use archsig_shigure::solver::{
-    ShigureQueryKind, execute_shigure_task, solve_chevalley_task, solve_diagram_task,
+    ShigureQueryKind, execute_shigure_task, solve_artin_task, solve_atlas_task,
+    solve_chevalley_task, solve_diagnostics_task, solve_diagram_task, solve_lift_task,
     solve_observation_task, solve_path_task, solve_robustness_task, solve_transfer_task,
 };
 
@@ -54,6 +60,10 @@ enum ShigureCliQuery {
     Robustness,
     Chevalley,
     Observations,
+    Lift,
+    Artin,
+    Diagnostics,
+    Atlas,
 }
 
 impl ShigureCliQuery {
@@ -68,6 +78,10 @@ impl ShigureCliQuery {
             ShigureCliQuery::Robustness => "shigure_robustness",
             ShigureCliQuery::Chevalley => "shigure_chevalley",
             ShigureCliQuery::Observations => "shigure_observations",
+            ShigureCliQuery::Lift => "shigure_lift",
+            ShigureCliQuery::Artin => "shigure_artin",
+            ShigureCliQuery::Diagnostics => "shigure_diagnostics",
+            ShigureCliQuery::Atlas => "shigure_atlas",
         }
     }
 }
@@ -89,6 +103,10 @@ enum ResolvedShigurePayload {
     Robustness(Box<CheckedRobustnessTask>),
     Chevalley(Box<CheckedChevalleyTask>),
     Observations(Box<CheckedObservationTask>),
+    Lift(Box<CheckedLiftTask>),
+    Artin(Box<CheckedArtinTask>),
+    Diagnostics(Box<CheckedDiagnosticsTask>),
+    Atlas(Box<CheckedAtlasTask>),
 }
 
 impl ResolvedShigurePayload {
@@ -101,6 +119,10 @@ impl ResolvedShigurePayload {
             ResolvedShigurePayload::Robustness(task) => solve_robustness_task(task),
             ResolvedShigurePayload::Chevalley(task) => solve_chevalley_task(task),
             ResolvedShigurePayload::Observations(task) => solve_observation_task(task),
+            ResolvedShigurePayload::Lift(task) => solve_lift_task(task),
+            ResolvedShigurePayload::Artin(task) => solve_artin_task(task),
+            ResolvedShigurePayload::Diagnostics(task) => solve_diagnostics_task(task),
+            ResolvedShigurePayload::Atlas(task) => solve_atlas_task(task),
         }
     }
 }
@@ -121,7 +143,7 @@ pub(super) fn mixed_asks_outcome(signals: &mut dyn Signals, control: &Control) -
         control.stop_reason(),
         vec![deliver::usage_issue(
             None,
-            "SHIGURE queries (`shigure_preservation`, `shigure_solve`, `shigure_interaction`, `shigure_diagram`, `shigure_path`, `shigure_transfer`, `shigure_robustness`, `shigure_chevalley`, `shigure_observations`) cannot be combined with standard observed queries in the same `archsig run`; invoke them separately",
+            "SHIGURE queries (`shigure_preservation`, `shigure_solve`, `shigure_interaction`, `shigure_diagram`, `shigure_path`, `shigure_transfer`, `shigure_robustness`, `shigure_chevalley`, `shigure_observations`, `shigure_lift`, `shigure_artin`, `shigure_diagnostics`, `shigure_atlas`) cannot be combined with standard observed queries in the same `archsig run`; invoke them separately",
         )],
     )
 }

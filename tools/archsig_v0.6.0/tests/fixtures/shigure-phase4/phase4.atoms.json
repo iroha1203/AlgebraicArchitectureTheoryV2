@@ -1,0 +1,38 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Phase4Vocab",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Phase4Vocab.Node",
+          "meaning": "Observation subject for SHIGURE Phase 4 lift, Artin, diagnostics, and atlas checks.",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "coord_q",
+              "type": "Q",
+              "meaning": "Observed rational coordinate."
+            },
+            {
+              "name": "missing_q",
+              "type": "Q",
+              "meaning": "Optional rational coordinate omitted in missing-slot snapshots."
+            },
+            {
+              "name": "offset_z",
+              "type": "Z",
+              "meaning": "Observed integer edge offset."
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

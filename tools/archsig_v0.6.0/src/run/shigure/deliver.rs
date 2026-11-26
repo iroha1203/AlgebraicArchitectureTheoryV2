@@ -498,6 +498,10 @@ fn collect_decl_readings(
                 push_family(&obs.family, readings);
             }
         }
+        ShigureCliQuery::Lift
+        | ShigureCliQuery::Artin
+        | ShigureCliQuery::Diagnostics
+        | ShigureCliQuery::Atlas => {}
     }
 }
 
