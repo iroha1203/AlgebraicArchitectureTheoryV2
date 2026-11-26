@@ -190,6 +190,17 @@ end RestrictedStructure
 
 namespace DeclarationContext.Selected
 
+/-- The supported variables and primitive references also keep the term's result sort. -/
+theorem termResult_mem_of_references {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (term : Term P.signature Γ s) (context : Declaration.sorts Γ ⊆ U.declarations)
+    (refs : termReferences term ⊆ U.declarations) : Declaration.sort s ∈ U.declarations := by
+  induction term with
+  | var i => exact varKept context i
+  | app op _ _ => exact operationOutput op (refs (Or.inl (Set.mem_singleton _)))
+  | letBind x y _ hy =>
+    exact hy (Declaration.sorts_cons_subset (refs (Or.inl (Set.mem_singleton _))) context)
+      (fun _ h => refs (Or.inr (Or.inr h)))
+
 /-- The original term's context is selected when its free variables, result and references are selected. -/
 theorem termContext_le_of_references {Γ : List P.signature.SortType} {s : P.signature.SortType}
     (term : Term P.signature Γ s) (context : Declaration.sorts Γ ⊆ U.declarations)

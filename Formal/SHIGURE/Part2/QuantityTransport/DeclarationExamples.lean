@@ -5,8 +5,8 @@ import Formal.SHIGURE.Part2.QuantityTransport.DeclarationRestriction
 The original Law uses a strict binder and has distinct input and output
 sorts for addition. The marked addition may vary off the diagonal.
 Subtraction and the coefficient one are partial operations.
-The varying sample is defined at one integer. Its guard asks whether the
-sample graph has an output there.
+The partial sample is defined at two integers. A fixed relation selects one,
+and the Law guard also asks whether the sample graph has an output there.
 -/
 
 namespace SHIGURE.Quantities.DeclaredRestrictionExample
@@ -23,11 +23,11 @@ private inductive Partial
 private def signature : Signature where
   SortType := Bool
   Total := Unit
-  Rel := Empty
+  Rel := Unit
   Partial := Partial
   Quantity := Unit
   totalArity _ := ⟨[], true⟩
-  relInputs r := nomatch r
+  relInputs _ := [false]
   partialArity
     | .sample => ⟨[false], false⟩
     | .one => ⟨[], true⟩
@@ -53,11 +53,11 @@ private def sampleTerm : CoefficientTerm varying [false] false := .quantity samp
 private def left : CoefficientTerm varying [false] true :=
   .add addSymbol sampleTerm sampleTerm
 
-private def right : CoefficientTerm varying [false] true :=
-  .sub differenceSymbol (.scalar oneSymbol) (.scalar oneSymbol)
-
 private def oneTerm {Γ : List signature.SortType} : Term signature Γ true :=
   oneSymbol.term Term.argsNil
+
+private def right : CoefficientTerm varying [false] true :=
+  .sub differenceSymbol (.scalar oneTerm) (.scalar oneTerm)
 
 private def bound : Term signature [false, false] false := .var .here
 
@@ -71,7 +71,8 @@ private def originalLeft : Term signature [false] true :=
   sampleTerm.toTerm.letBind (addition bound bound)
 
 private def guard : Formula signature [false] :=
-  .ex (.atom (.graph (.partialOp .sample) (fun i => .there i) .here))
+  .conj (.atom (.rel () (fun i => i)))
+    (.ex (.atom (.graph (.partialOp .sample) (fun i => .there i) .here)))
 
 private def declarations : LawDeclarations signature where
   LawName := Unit
@@ -110,9 +111,9 @@ private def written : DeclaredQuantityLaws primitive where
 private def base : Structure signature where
   carrier _ := ℤ
   total _ _ := 0
-  relation r := nomatch r
+  relation _ := {e | e .here = 2}
   partialDomain
-    | .sample => {e | e .here = 2}
+    | .sample => {e | e .here = 2 ∨ e .here = 3}
     | .one | .difference => Set.univ
   partialValue
     | .sample, _ => 0
@@ -132,21 +133,24 @@ private def carrierRead (s : signature.SortType) : ambient.carrier s ≃ ℤ :=
   Equiv.ofBijective (selectedMap Full base.carrier s (Set.mem_univ _))
     (selectedMap_bijective (U := Full) base.carrier s (Set.mem_univ _))
 
+/-- The guard is its fixed relation together with existence in the native sample domain. -/
 private theorem domainGuard (B : RestrictedEvaluation Full ambient.carrier) (valid : B.Structural)
     (e : Assignment ambient.carrier [false]) :
-    B.holds guard (Set.subset_univ _) e ↔ B.domain .sample (Set.mem_univ _) e := by
-  change (∃ y, B.graph (.partialOp .sample) (Set.mem_univ _)
+    B.holds guard (Set.subset_univ _) e ↔
+      B.relation () (Set.mem_univ _) e ∧ B.domain .sample (Set.mem_univ _) e := by
+  change B.relation () (Set.mem_univ _) (e.pull (fun i => i)) ∧
+    (∃ y, B.graph (.partialOp .sample) (Set.mem_univ _)
       ((Assignment.cons y e).pull (fun i => .there i)) ((Assignment.cons y e) .here)) ↔ _
   simp only [Assignment.pull_cons_there, Assignment.pull_id, Assignment.cons_here]
   have structural := RestrictedEvaluation.partial_graph_valid valid .sample (Set.mem_univ _)
-  exact ⟨fun ⟨y, h⟩ => structural.2.1 e y h, structural.2.2 e⟩
+  exact and_congr Iff.rfl ⟨fun ⟨y, h⟩ => structural.2.1 e y h, structural.2.2 e⟩
 
 private theorem application_eq (a : CoefficientTerm.Application varying [false])
     (used : Sum.inr a ∈ left.leaves ∪ right.leaves) : a = application := by
   simpa [left, right, sampleTerm, CoefficientTerm.leaves, application] using used
 
-private theorem literal_eq (a : CoefficientTerm.Literal signature)
-    (used : Sum.inl a ∈ left.leaves ∪ right.leaves) : a = ⟨true, oneSymbol⟩ := by
+private theorem coefficient_eq (a : CoefficientTerm.StateCoefficient signature [false])
+    (used : Sum.inl a ∈ left.leaves ∪ right.leaves) : a = ⟨true, oneTerm⟩ := by
   simpa [left, right, sampleTerm, CoefficientTerm.leaves] using used
 
 private def plusApplication : ArithmeticApplication signature [false] :=
@@ -163,13 +167,17 @@ private theorem arithmetic_eq (a : ArithmeticApplication signature [false])
       plusApplication, subtractApplication, oneTerm] using used
   exact found.symm
 
-private def varyingAddition (j : written.KeptTotal Full) :
-    Set (Assignment ambient.carrier (signature.quantityArity j.val).inputs) :=
-  {x | x .here ≠ x (.there .here)}
+/-- The marked addition changes off diagonal and the partial sample changes only at selected inputs. -/
+private def varyingDomain :
+    (j : written.KeptQuantity Full) → Set (Assignment ambient.carrier j.val.val.operation.arity.inputs)
+  | ⟨⟨.total _, _⟩, _⟩ => {x | x .here ≠ x (.there .here)}
+  | ⟨⟨.partialOp .sample, _⟩, _⟩ => {x | ambient.evaluation.relation () (Set.mem_univ _) x}
+  | ⟨⟨.partialOp .one, _⟩, _⟩ => Set.univ
+  | ⟨⟨.partialOp .difference, _⟩, _⟩ => Set.univ
 
 private theorem fixedPartial (p : Partial) (notSample : p ≠ .sample)
     (B : RestrictedEvaluation Full ambient.carrier)
-    (same : written.SameDeclarationState ambient varyingAddition B)
+    (same : written.SameDeclarationState ambient varyingDomain B)
     (keep : Declaration.ofOperation (.partialOp (sig := signature) p) ∈ Full.declarations)
     (x : Assignment ambient.carrier (signature.partialArity p).inputs) (y : ambient.carrier (signature.partialArity p).output) :
     ambient.evaluation.graph (.partialOp p) keep x y ↔ B.graph (.partialOp p) keep x y := by
@@ -201,7 +209,7 @@ private theorem differenceRealizes :
 set_option maxHeartbeats 600000 in
 private theorem sourceDefined (l : written.KeptLaw Full) (e : written.lawInput ambient l)
     (B : RestrictedEvaluation Full ambient.carrier)
-    (same : written.SameDeclarationState ambient varyingAddition B) :
+    (same : written.SameDeclarationState ambient varyingDomain B) :
     (∃ y, B.holds originalLeft.graph (Set.subset_univ _) (Assignment.cons y e.val)) ∧
       (∃ y, B.holds right.toTerm.graph (Set.subset_univ _) (Assignment.cons y e.val)) := by
   let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
@@ -217,7 +225,7 @@ private theorem sourceDefined (l : written.KeptLaw Full) (e : written.lawInput a
     nomatch i
   have hs : B.domain .sample (Set.mem_univ _) e.val :=
     (same.domain .sample (Set.mem_univ _) e.val).1
-      ((domainGuard ambient.evaluation ambient.structural e.val).1 e.property)
+      ((domainGuard ambient.evaluation ambient.structural e.val).1 e.property).2
   obtain ⟨x, sampleEdge⟩ := (C.partial_graph_valid .sample (Set.mem_univ _)).2.2 _ hs
   have init : C.evaluates (supported sampleTerm.toTerm) e.val x :=
     C.evaluates_app_of_graph (.partialOp .sample) (fun i => .var i) _ rfl e.val e.val
@@ -256,9 +264,11 @@ private theorem sourceDefined (l : written.KeptLaw Full) (e : written.lawInput a
 
 private def interpretation : written.Interpretation (k := ℤ) ambient where
   read := selectedMap Full base.carrier
-  lawRead l := selectedMap_bijective (U := Full) base.carrier (written.valueSort l.val) _
-  quantityRead j := selectedMap_bijective (U := Full) base.carrier j.val.val.operation.arity.output _
-  totalDomain := varyingAddition
+  quantityRead j _ := (selectedMap_bijective (U := Full) base.carrier j.val.val.operation.arity.output _).2
+  selectedDomain := varyingDomain
+  lawRead l _ _ _ := by
+    intro _ _ _ _ equals
+    exact (selectedMap_bijective (U := Full) base.carrier (written.valueSort l.val) _).1 equals
   arithmeticAt l a e B same x y each edge := by
     obtain ⟨a, used⟩ := a
     change a ∈ left.arithmeticApplications ∪ right.arithmeticApplications at used
@@ -269,24 +279,33 @@ private def interpretation : written.Interpretation (k := ℤ) ambient where
       have second : C.evaluates (supported sampleTerm.toTerm) e.val (x (.there .here)) :=
         each (.there .here : Var [false, false] false)
       have diagonal := C.evaluates_unique (supported sampleTerm.toTerm) e.val first second
-      have fixed := (same.outside ⟨(), Or.inr rfl, Set.mem_univ _⟩ x (fun neq => neq diagonal) y).2 edge
+      have fixed := (same.outside ⟨⟨.total (), Or.inr rfl⟩, Set.mem_univ _⟩ x (fun neq => neq diagonal) y).2 edge
       exact addRealizes x y fixed
     · exact differenceRealizes x y ((fixedPartial .difference (by intro eq; cases eq) B same _ x y).2 edge)
-  fixedLiteral _ a _ B same := by
-    have h := literal_eq a.val a.property
-    rcases a with ⟨val, used⟩
-    change val = ⟨true, oneSymbol⟩ at h
-    subst val
-    exact fixedPartial .one (by intro eq; cases eq) B same
+  coefficientIndependent l a e B same x y original replacement := by
+    have fixed := coefficient_eq a.val a.property
+    rcases a with ⟨term, used⟩
+    change term = ⟨true, oneTerm⟩ at fixed
+    subst term
+    let t := supported (oneTerm (Γ := [false]))
+    have state : StateTerm (QuantityDeclaration.operation '' varying) t.val := by
+      refine ⟨?_, fun i => nomatch i⟩
+      rintro ⟨declaration, chosen, eq⟩
+      change declaration = .partialOp .sample ∨ declaration = .total () at chosen
+      rcases chosen with rfl | rfl <;> cases eq
+    have localValue := (same.toSameStateEvaluation.evaluates_iff t state e.val y).2 replacement
+    exact congrArg _ (ambient.evaluates_unique t e.val localValue original)
   value l e a := by
     have actual := application_eq a.val a.property
     obtain ⟨stored, used⟩ := a
     change stored = application at actual
     subst stored
-    exact ⟨e.val, (domainGuard ambient.evaluation ambient.structural e.val).1 e.property⟩
+    have holds := (domainGuard ambient.evaluation ambient.structural e.val).1 e.property
+    exact ⟨e.val, holds.2, holds.1⟩
   inputIndependent _ B same e :=
     (domainGuard ambient.evaluation ambient.structural e).trans
-      ((same.domain .sample (Set.mem_univ _) e).trans (domainGuard B same.structural e).symm)
+      ((and_congr (same.relation () (Set.mem_univ _) e) (same.domain .sample (Set.mem_univ _) e)).trans
+        (domainGuard B same.structural e).symm)
   argumentIndependent l B same e a s i := by
     have actual := application_eq a.val a.property
     obtain ⟨stored, used⟩ := a
@@ -301,39 +320,42 @@ private def law : written.KeptLaw Full :=
 private def input : written.lawInput ambient law := by
   let e := Assignment.cons ((carrierRead false).symm 2) Assignment.empty
   refine ⟨e, (domainGuard ambient.evaluation ambient.structural e).2 ?_⟩
-  change mapAssignment (selectedMap Full base.carrier)
-    (operationInputs (.partialOp (sig := primitive.signature) Partial.sample) (Set.mem_univ _)) e ∈ base.partialDomain .sample
-  change carrierRead false ((carrierRead false).symm 2) = 2
-  exact (carrierRead false).apply_symm_apply 2
+  change carrierRead false ((carrierRead false).symm 2) = 2 ∧
+    (carrierRead false ((carrierRead false).symm 2) = 2 ∨ carrierRead false ((carrierRead false).symm 2) = 3)
+  simp
 
-private def oneLeaf : written.UsedLiteral law.val :=
-  ⟨⟨true, oneSymbol⟩, by simp [written, left, right, sampleTerm, CoefficientTerm.leaves]⟩
+private def oneLeaf : written.UsedCoefficient law.val :=
+  ⟨⟨true, oneTerm⟩, by simp [written, left, right, sampleTerm, CoefficientTerm.leaves]⟩
 
 private theorem literal_one (e : written.lawInput ambient law) :
-    interpretation.literalValue law e oneLeaf = 1 := by
+    interpretation.coefficientValue law e oneLeaf = 1 := by
   let z := (carrierRead true).symm 1
   have graph : oneSymbol.graph ambient (Set.mem_univ _) Assignment.empty z := by
     apply (ContextStructure.ofStructure_graph_iff Full base (.partialOp .one)
       (Set.mem_univ _) Assignment.empty z).2
     exact ⟨Set.mem_univ _, ((carrierRead true).apply_symm_apply 1).symm⟩
-  calc
-    interpretation.literalValue law e oneLeaf = carrierRead true z :=
-      interpretation.literalValue_eq_of_graph law e oneLeaf z graph
-    _ = 1 := (carrierRead true).apply_symm_apply 1
+  have held : ambient.evaluates (written.keptCoefficient law oneLeaf) e.val z := by
+    apply (oneSymbol.evaluates_term_iff ambient Term.argsNil _ e.val (Set.mem_univ _) z).2
+    refine ⟨Assignment.empty, ?_, graph⟩
+    intro _ i
+    nomatch i
+  exact (interpretation.coefficientValue_eq_of_evaluates law e oneLeaf z held).trans
+    ((carrierRead true).apply_symm_apply 1)
 
-/-- The existential guard reads the fixed domain in every candidate structure. -/
+/-- The guard reads the fixed relation and native domain in every candidate structure. -/
 theorem guard_reads_fixed_domain (q : interpretation.presentation.Candidate ℤ)
     (e : Assignment ambient.carrier [false]) :
     (interpretation.candidateStructure q).evaluation.holds guard (Set.subset_univ _) e ↔
-      ambient.evaluation.domain .sample (Set.mem_univ _) e :=
+      ambient.evaluation.relation () (Set.mem_univ _) e ∧ ambient.evaluation.domain .sample (Set.mem_univ _) e :=
   (domainGuard _ (interpretation.candidateStructure q).structural e).trans
-    ((interpretation.candidateStructure_sameState q).domain .sample (Set.mem_univ _) e).symm
+    ((and_congr ((interpretation.candidateStructure_sameState q).relation () (Set.mem_univ _) e)
+      ((interpretation.candidateStructure_sameState q).domain .sample (Set.mem_univ _) e)).symm)
 
 /-- The original written guard actually refers to the varying graph. -/
 theorem guard_mentions_varying_graph :
     ¬ StateFormula (QuantityDeclaration.operation '' varying) guard := by
-  change ¬ (Operation.partialOp (sig := signature) Partial.sample ∉ QuantityDeclaration.operation '' varying)
-  exact fun h => h ⟨.partialOp .sample, Or.inl rfl, rfl⟩
+  intro state
+  exact state.2 ⟨.partialOp .sample, Or.inl rfl, rfl⟩
 
 /-- An atomic domain query is a fixed-state formula for the same varying sample. -/
 theorem sample_domain_is_state_formula :
@@ -366,12 +388,17 @@ private def offDiagonal : interpretation.domain additionQuantity := by
 /-- A candidate preserving the declared state can replace the same marked addition off the diagonal. -/
 theorem off_diagonal_addition_changes :
     let B := interpretation.candidateStructure (fun _ _ => 0)
-    written.SameDeclarationState ambient interpretation.totalDomain B.evaluation ∧
+    written.SameDeclarationState ambient interpretation.selectedDomain B.evaluation ∧
       B.evaluation.graph (.quantity ()) (Set.mem_univ _) offDiagonal.val ((carrierRead true).symm 0) ∧
       ¬ ambient.evaluation.graph (.quantity ()) (Set.mem_univ _) offDiagonal.val ((carrierRead true).symm 0) := by
   dsimp only
   refine ⟨interpretation.candidateStructure_sameState _, ?_, ?_⟩
-  · exact interpretation.candidateStructure_graph (fun _ _ => 0) additionQuantity offDiagonal
+  · have value := interpretation.quantityOutput_read additionQuantity offDiagonal 0
+    have exactValue : interpretation.quantityOutput additionQuantity offDiagonal 0 = (carrierRead true).symm 0 := by
+      apply (carrierRead true).injective
+      exact value.trans ((carrierRead true).apply_symm_apply 0).symm
+    rw [← exactValue]
+    exact interpretation.candidateStructure_graph (fun _ _ => 0) additionQuantity offDiagonal
   · intro old
     have reading := addRealizes offDiagonal.val ((carrierRead true).symm 0) old
     change carrierRead true ((carrierRead true).symm 0) =
@@ -396,7 +423,7 @@ theorem removing_sample_domain_changes_state :
   dsimp only
   intro same
   exact (same.domain .sample (Set.mem_univ _) input.val).1
-    ((domainGuard ambient.evaluation ambient.structural input.val).1 input.property)
+    ((domainGuard ambient.evaluation ambient.structural input.val).1 input.property).2
 
 /-- Declaring every addition input fixed would exclude a valid off-diagonal replacement. -/
 theorem off_diagonal_replacement_violates_empty_varying_domain :
@@ -404,8 +431,31 @@ theorem off_diagonal_replacement_violates_empty_varying_domain :
       (interpretation.candidateStructure (fun _ _ => 0)).evaluation := by
   intro same
   obtain ⟨_, candidate, absent⟩ := off_diagonal_addition_changes
-  exact absent ((same.outside ⟨(), Or.inr rfl, Set.mem_univ _⟩ offDiagonal.val
+  exact absent ((same.outside additionQuantity offDiagonal.val
     (Set.notMem_empty _) ((carrierRead true).symm 0)).2 candidate)
+
+/-- The native partial graph stays defined at 3, outside the chosen argument set. -/
+theorem partial_defined_outside_selection (q : interpretation.presentation.Candidate ℤ) :
+    let e := Assignment.cons ((carrierRead false).symm 3) Assignment.empty
+    let j : written.KeptQuantity Full := ⟨sample, Set.mem_univ _⟩
+    e ∉ interpretation.domain j ∧
+      (interpretation.candidateStructure q).evaluation.graph (.partialOp .sample) (Set.mem_univ _) e
+        ((carrierRead false).symm 0) := by
+  dsimp only
+  let e := Assignment.cons ((carrierRead false).symm 3) Assignment.empty
+  let j : written.KeptQuantity Full := ⟨sample, Set.mem_univ _⟩
+  have excluded : e ∉ interpretation.domain j := by
+    intro selected
+    have h : carrierRead false ((carrierRead false).symm 3) = 2 := selected.2
+    norm_num at h
+  have old : ambient.evaluation.graph (.partialOp .sample) (Set.mem_univ _) e ((carrierRead false).symm 0) := by
+    apply (ContextStructure.ofStructure_graph_iff Full base (.partialOp .sample) (Set.mem_univ _) e
+      ((carrierRead false).symm 0)).2
+    rw [Structure.graph_partial_iff]
+    refine ⟨Or.inr ((carrierRead false).apply_symm_apply 3), ?_⟩
+    exact ((carrierRead false).apply_symm_apply 0).symm
+  exact ⟨excluded, ((interpretation.candidateStructure_sameState q).outside j e excluded
+    ((carrierRead false).symm 0)).1 old⟩
 
 /-- The original bound equality holds when the varying sample is zero. -/
 theorem candidate_zero_holds :
@@ -414,7 +464,7 @@ theorem candidate_zero_holds :
   apply (interpretation.candidate_satisfies_iff law _).2
   intro e
   rw [Presentation.evaluate_residual]
-  let c := algebraMap ℤ ℤ (interpretation.literalValue law e oneLeaf)
+  let c := algebraMap ℤ ℤ (interpretation.coefficientValue law e oneLeaf)
   change (0 + 0 : ℤ) - (c + -c) = 0
   simp [c, literal_one]
 
@@ -425,7 +475,7 @@ theorem candidate_one_fails :
   intro held
   have atInput := (interpretation.candidate_satisfies_iff law (fun _ _ => (1 : ℤ))).1 held input
   rw [Presentation.evaluate_residual] at atInput
-  let c := algebraMap ℤ ℤ (interpretation.literalValue law input oneLeaf)
+  let c := algebraMap ℤ ℤ (interpretation.coefficientValue law input oneLeaf)
   change (1 + 1 : ℤ) - (c + -c) = 0 at atInput
   norm_num [c, literal_one] at atInput
 

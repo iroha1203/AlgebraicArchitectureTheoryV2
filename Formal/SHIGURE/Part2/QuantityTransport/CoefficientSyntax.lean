@@ -195,7 +195,7 @@ abbrev ArithmeticApplication (sig : Signature.{u}) (Γ : List sig.SortType) :=
 Each arithmetic node refers to the actual operation of that occurrence. -/
 inductive CoefficientTerm {sig : Signature.{u}} (quantity : Set (QuantityDeclaration sig))
     (Γ : List sig.SortType) : sig.SortType → Type u
-  | scalar {s} (symbol : CoefficientSymbol sig ⟨[], s⟩) : CoefficientTerm quantity Γ s
+  | scalar {s} (term : Term sig Γ s) : CoefficientTerm quantity Γ s
   | quantity (j : quantity) (args : Substitution sig j.val.operation.arity.inputs Γ) :
       CoefficientTerm quantity Γ j.val.operation.arity.output
   | add {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
@@ -218,20 +218,21 @@ variable {sig : Signature.{u}} {quantity : Set (QuantityDeclaration sig)} {Γ : 
 abbrev Application (quantity : Set (QuantityDeclaration sig)) (Γ : List sig.SortType) :=
   Σ j : quantity, Substitution sig j.val.operation.arity.inputs Γ
 
-/-- A literal refers to one original nullary symbol and its own value sort. -/
-abbrev Literal (sig : Signature.{u}) := Σ s : sig.SortType, CoefficientSymbol sig ⟨[], s⟩
+/-- A fixed coefficient is computed by its actual state term at a declared input. -/
+abbrev StateCoefficient (sig : Signature.{u}) (Γ : List sig.SortType) :=
+  Σ s : sig.SortType, Term sig Γ s
 
 /-- Read the original typed term, with the declared symbols at each node. -/
 def toTerm : {s : sig.SortType} → CoefficientTerm quantity Γ s → Term sig Γ s
-  | _, .scalar symbol => symbol.term Term.argsNil
+  | _, .scalar term => term
   | _, .quantity j args => .app j.val.operation (fun i => args i)
   | _, .add symbol l r => symbol.term ((toTerm l).argsCons ((toTerm r).argsCons Term.argsNil))
   | _, .neg symbol x => symbol.term ((toTerm x).argsCons Term.argsNil)
   | _, .sub symbol l r => symbol.term ((toTerm l).argsCons ((toTerm r).argsCons Term.argsNil))
   | _, .mul symbol l r => symbol.term ((toTerm l).argsCons ((toTerm r).argsCons Term.argsNil))
 
-/-- Collect the literals and applications of the actual syntax as two disjoint kinds of scalar leaves. -/
-def leaves : {s : sig.SortType} → CoefficientTerm quantity Γ s → Set (Literal sig ⊕ Application quantity Γ)
+/-- Collect the state coefficients and quantity applications of the actual syntax as two disjoint kinds of scalar leaves. -/
+def leaves : {s : sig.SortType} → CoefficientTerm quantity Γ s → Set (StateCoefficient sig Γ ⊕ Application quantity Γ)
   | _, .scalar symbol => {Sum.inl ⟨_, symbol⟩}
   | _, .quantity j args => {Sum.inr ⟨j, args⟩}
   | _, .add _ l r | _, .sub _ l r | _, .mul _ l r => l.leaves ∪ r.leaves
@@ -254,7 +255,7 @@ def LeafValue {L Q : Type u} (k Z : Type u) : L ⊕ Q → Type u
   | .inl _ => k
   | .inr _ => Z
 
-/-- Translate the occurring literal symbols and state argument tuples at a selected input. -/
+/-- Translate the occurring state coefficients and quantity argument tuples at a selected input. -/
 def compile {k Z : Type u} :
     {s : sig.SortType} → (t : CoefficientTerm quantity Γ s) →
       (∀ a ∈ t.leaves, LeafValue k Z a) → Expression k Z
@@ -281,10 +282,10 @@ theorem rename_compile {k Z W : Type u} {s : sig.SortType} (t : CoefficientTerm 
   induction t <;> simp [compile, Expression.rename, mapLeafValue, *]
   rfl
 
-/-- The term for a particular written literal or quantity application. -/
-def leafTerm (a : Literal sig ⊕ Application quantity Γ) : Σ s : sig.SortType, Term sig Γ s :=
+/-- The term for a particular written coefficient or quantity application. -/
+def leafTerm (a : StateCoefficient sig Γ ⊕ Application quantity Γ) : Σ s : sig.SortType, Term sig Γ s :=
   match a with
-  | .inl ⟨s, symbol⟩ => ⟨s, symbol.term Term.argsNil⟩
+  | .inl term => term
   | .inr ⟨j, args⟩ => ⟨_, Term.app j.val.operation (fun i => args i)⟩
 
 section References
@@ -308,7 +309,7 @@ theorem coefficientArg_refs {profile : Arity P.signature.SortType}
 
 /-- Every actual leaf contributes its full primitive references to the original rendered term. -/
 theorem leafReferences_subset {s : P.signature.SortType} (t : CoefficientTerm Q Δ s)
-    {a : Literal P.signature ⊕ Application Q Δ} (ha : a ∈ t.leaves) :
+    {a : StateCoefficient P.signature Δ ⊕ Application Q Δ} (ha : a ∈ t.leaves) :
     termReferences (leafTerm a).2 ⊆ termReferences t.toTerm := by
   induction t with
   | scalar symbol =>
@@ -385,7 +386,7 @@ variable {Γ : List P.signature.SortType} {U : DeclarationContext P} (A : Contex
 
 /-- Each written leaf has an actual value whenever the enclosing coefficient term does. -/
 theorem exists_evaluated_leaf {s : P.signature.SortType} (t : CoefficientTerm Q Γ s)
-    (e : Assignment A.carrier Γ) (a : Literal P.signature ⊕ Application Q Γ) (used : a ∈ t.leaves)
+    (e : Assignment A.carrier Γ) (a : StateCoefficient P.signature Γ ⊕ Application Q Γ) (used : a ∈ t.leaves)
     (keep : termReferences t.toTerm ⊆ U.declarations)
     (supported : Declaration.termContext t.toTerm ≤ U)
     (y : A.carrier s) (value : A.evaluates ⟨t.toTerm, supported⟩ e y) :
