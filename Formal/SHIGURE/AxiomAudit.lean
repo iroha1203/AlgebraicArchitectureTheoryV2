@@ -4223,6 +4223,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.affinePullbackAlgebra_isPushout,
   SchemeDescent.QuasiCoherentAlgebra.baseChangeAlgebraIso,
   SchemeDescent.QuasiCoherentAlgebra.homEquivBaseChangeAlgebraSheaf,
+  SchemeDescent.RelativeSpecExamples.rationalAffineAlgebra,
   SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo,
   SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo_not_localization
 ]

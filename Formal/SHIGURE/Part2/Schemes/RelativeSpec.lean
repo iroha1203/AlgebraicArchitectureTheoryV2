@@ -14,6 +14,9 @@ The small affine Zariski site remembers principal open restrictions. The
 structure sheaf and its algebra are compared there by mathlib's pushout
 criterion for localization. Passing to spectra turns those squares into
 pullbacks, so the relative gluing recovers each chart on its whole inverse image.
+An input given on all opens would first need to be restricted to this site
+to form these gluing diagrams. The affine-site input gives the diagrams
+directly, and the sheaf comparison recovers the algebra on all opens.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -47,16 +50,17 @@ theorem coequifibered : C.algebra.Coequifibered :=
 def gluingData : (Scheme.AffineZariskiSite.directedCover X).RelativeGluingData :=
   Scheme.AffineZariskiSite.relativeGluingData C.coequifibered
 
-/-- The relative spectrum of the quasi-coherent algebra. -/
+/-- The relative spectrum constructed by the affine gluing of Lemma B.7. -/
 abbrev spec : Scheme.{u} := C.gluingData.glued
 
-/-- The structural morphism of the relative spectrum. -/
+/-- The structural morphism of the relative spectrum in Lemma B.7. -/
 def projection : C.spec ⟶ X := C.gluingData.toBase
 
 /-- The canonical morphism from the spectrum of the algebra on an affine open. -/
 def chart (U : X.AffineZariskiSite) : Spec (C.sections.obj (.op U)) ⟶ C.spec :=
   C.gluingData.cover.f U
 
+/-- Each affine chart enters the scheme of Lemma B.7 as an open immersion. -/
 instance chart_open (U : X.AffineZariskiSite) : IsOpenImmersion (C.chart U) :=
   inferInstanceAs (IsOpenImmersion (C.gluingData.cover.f U))
 
@@ -129,11 +133,13 @@ def restrictMap (h : Over.mk g ⟶ Over.mk C.projection) (U : X.AffineZariskiSit
     rw [Category.assoc, show h.left ≫ C.projection = g from Over.w h]
     exact (pullback.condition (f := g) (g := U.1.ι)).symm)
 
+/-- The restriction of a test morphism respects the map to the base chart. -/
 @[reassoc (attr := simp)]
 theorem restrictMap_chartToBase (h : Over.mk g ⟶ Over.mk C.projection) (U : X.AffineZariskiSite) :
     C.restrictMap h U ≫ C.chartToBase U = testToBase g U :=
   IsPullback.lift_fst _ _ _ _
 
+/-- The restricted test morphism, followed by the chart inclusion, is the original map on that open. -/
 @[reassoc (attr := simp)]
 theorem restrictMap_chart (h : Over.mk g ⟶ Over.mk C.projection) (U : X.AffineZariskiSite) :
     C.restrictMap h U ≫ C.chart U = (testCover g).f U ≫ h.left :=
@@ -252,6 +258,7 @@ def testChartMap (f : Over.mk g' ⟶ Over.mk g) (U : X.AffineZariskiSite) :
     (by simpa using (show f.left ≫ g = g' from Over.w f).symm)
     (by simp)
 
+/-- The map between inverse images of a base open restricts the given test morphism. -/
 @[reassoc (attr := simp)]
 theorem testChartMap_f (f : Over.mk g' ⟶ Over.mk g) (U : X.AffineZariskiSite) :
     testChartMap f U ≫ (testCover g).f U = (testCover g').f U ≫ f.left :=

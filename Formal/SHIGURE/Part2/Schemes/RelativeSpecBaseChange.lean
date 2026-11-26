@@ -6,6 +6,14 @@ The direct image algebra of an affine morphism recovers the morphism by
 gluing its affine spectra. In the pullback, the new rings of sections are
 the tensor products on affine charts. The algebra-sheaf equivalence also
 identifies maps into the pullback with maps from the pulled-back algebra.
+
+## Implementation notes
+
+Starting with the sheaf pullback would require constructing its affine
+localization data before forming the relative spectrum. The scheme pullback
+has an affine projection, so its direct image already supplies those data.
+The pushout comparison in `RelativeSpecAlgebraBaseChange` then identifies
+that algebra sheaf with the sheaf pullback.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -39,6 +47,7 @@ def recoverAffine : (ofAffine f).spec ⟶ Y :=
     (fun {U V} a => (V.2.preimage f).map_fromSpec (U.2.preimage f)
       ((Opens.map f.base).map ((Scheme.AffineZariskiSite.toOpensFunctor X).map a)).op)
 
+/-- The recovery map on an affine chart is its canonical map to the source scheme. -/
 @[reassoc (attr := simp)]
 theorem chart_recoverAffine (U : X.AffineZariskiSite) :
     (ofAffine f).chart U ≫ recoverAffine f = (U.2.preimage f).fromSpec := by
@@ -67,11 +76,13 @@ def affineChartIso (U : X.AffineZariskiSite) :
     rw [(U.2.preimage f).range_fromSpec, Scheme.Pullback.range_fst, Scheme.Opens.range_ι]
     rfl
 
+/-- The chart identification respects its inclusion into the source. -/
 @[reassoc (attr := simp)]
 theorem affineChartIso_hom_f (U : X.AffineZariskiSite) :
     (affineChartIso f U).hom ≫ (testCover f).f U = (U.2.preimage f).fromSpec :=
   IsOpenImmersion.isoOfRangeEq_hom_fac _ _ _
 
+/-- The inverse chart identification recovers the canonical affine chart map. -/
 @[reassoc (attr := simp)]
 theorem affineChartIso_inv_fromSpec (U : X.AffineZariskiSite) :
     (affineChartIso f U).inv ≫ (U.2.preimage f).fromSpec = (testCover f).f U :=
@@ -99,6 +110,7 @@ private def affineChartMaps : (ofAffine f).ChartMaps f where
 def recoverAffineInv : Y ⟶ (ofAffine f).spec :=
   ((ofAffine f).glueCharts (affineChartMaps f)).left
 
+/-- The inverse recovery map restricts to the inverse identification on each chart. -/
 @[reassoc (attr := simp)]
 theorem f_recoverAffineInv (U : X.AffineZariskiSite) :
     (testCover f).f U ≫ recoverAffineInv f = (affineChartIso f U).inv ≫ (ofAffine f).chart U :=
@@ -126,7 +138,7 @@ private instance pullback_affine (g : Y ⟶ X) : IsAffineHom (pullback.snd C.pro
 def baseChange (g : Y ⟶ X) : QuasiCoherentAlgebra Y :=
   ofAffine (pullback.snd C.projection g)
 
-/-- The relative spectrum after base change is the actual scheme pullback. -/
+/-- The relative spectrum after base change is the scheme pullback appearing in Lemma B.7. -/
 def baseChangeIso (g : Y ⟶ X) :
     (C.baseChange g).spec ≅ pullback C.projection g :=
   recoverAffineIso (pullback.snd C.projection g)
@@ -155,6 +167,7 @@ def mapIntoOpen (g : Y ⟶ X) (U : X.AffineZariskiSite) (V : Y.AffineZariskiSite
     (inside : V.1 ≤ g ⁻¹ᵁ U.1) : V.1.toScheme ⟶ U.1.toScheme :=
   Y.homOfLE inside ≫ g ∣_ U.1
 
+/-- The map of the chosen opens restricts the original base-change morphism. -/
 @[reassoc (attr := simp)]
 theorem mapIntoOpen_ι (g : Y ⟶ X) (U : X.AffineZariskiSite) (V : Y.AffineZariskiSite)
     (inside : V.1 ≤ g ⁻¹ᵁ U.1) : mapIntoOpen g U V inside ≫ U.1.ι = V.1.ι ≫ g := by

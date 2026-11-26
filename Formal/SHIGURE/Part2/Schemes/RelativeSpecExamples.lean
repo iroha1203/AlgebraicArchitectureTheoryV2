@@ -12,6 +12,11 @@ noncomputable section
 private abbrev intRing := CommRingCat.of ℤ
 private abbrev intScheme := Spec intRing
 
+/-- The affine morphism from the spectrum of ℚ to the spectrum of ℤ supplies
+a quasi-coherent algebra by the construction used in Lemma B.7. -/
+def rationalAffineAlgebra : QuasiCoherentAlgebra intScheme :=
+  QuasiCoherentAlgebra.ofAffine (Spec.map (CommRingCat.ofHom (Int.castRingHom ℚ)))
+
 private def pointAtTwo : PrimeSpectrum ℤ :=
   ⟨Ideal.span {2}, (Ideal.span_singleton_prime (by decide : (2 : ℤ) ≠ 0)).mpr
     (Int.prime_iff_natAbs_prime.mpr Nat.prime_two)⟩

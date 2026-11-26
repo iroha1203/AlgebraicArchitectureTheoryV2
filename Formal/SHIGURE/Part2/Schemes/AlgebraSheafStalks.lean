@@ -108,6 +108,7 @@ def directImageStalkMap (g : T ⟶ S) {F : S.Sheaf CommRingCat.{u}} {G : T.Sheaf
     (ringSheafStalk (g y)).obj F ⟶ (ringSheafStalk y).obj G :=
   (ringSheafStalk (g y)).map a ≫ Presheaf.stalkPushforward CommRingCat g G.val y
 
+/-- The direct-image stalk comparison acts on a section by taking its germ on the inverse-image open. -/
 @[reassoc]
 theorem germ_directImageStalkMap (g : T ⟶ S)
     {F : S.Sheaf CommRingCat.{u}} {G : T.Sheaf CommRingCat.{u}}

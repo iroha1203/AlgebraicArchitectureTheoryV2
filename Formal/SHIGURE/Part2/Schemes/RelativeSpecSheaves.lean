@@ -10,6 +10,14 @@ algebras. Comparison with the affine charts identifies maps of those
 algebras with maps of sheaves on all opens. The sheaf adjunction then
 gives the relative spectrum's representing equivalence over every test
 scheme.
+
+## Implementation notes
+
+Extension along the equivalence of sites would produce an algebra sheaf
+that then needs comparison with functions on the actual relative spectrum.
+Using the direct image along the projection gives those functions by
+definition. The comparison on the affine site recovers the input algebra
+and gives the equivalence with its extension to all opens.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -42,6 +50,7 @@ def testChartOpenIso (g : Y ⟶ X) (U : X.AffineZariskiSite) :
     rw [Scheme.Pullback.range_fst, Scheme.Opens.range_ι, Scheme.Opens.range_ι]
     rfl
 
+/-- The comparison with the inverse-image open preserves its inclusion into the test scheme. -/
 @[reassoc (attr := simp)]
 theorem testChartOpenIso_hom_ι (g : Y ⟶ X) (U : X.AffineZariskiSite) :
     (testChartOpenIso g U).hom ≫ (g ⁻¹ᵁ U.1).ι = (testCover g).f U :=
@@ -171,6 +180,7 @@ def chartSpectrumIso (U : X.AffineZariskiSite) :
     rw [(U.2.preimage C.projection).range_fromSpec, C.preimage_eq_chart]
     rfl
 
+/-- The spectrum of the recovered ring gives the original chart inclusion. -/
 @[reassoc (attr := simp)]
 theorem chartSpectrumIso_fromSpec (U : X.AffineZariskiSite) :
     (C.chartSpectrumIso U).hom ≫ (U.2.preimage C.projection).fromSpec = C.chart U :=
@@ -382,7 +392,7 @@ def directImageMapsEquivSheaves :
       ((Functor.FullyFaithful.under X.sheaf (affineSiteSheafEquivalence X).inverse
         (affineSiteSheafEquivalence X).fullyFaithfulInverse).homEquiv).symm)
 
-/-- The relative spectrum represents maps from the pulled-back algebra to the test structure sheaf. -/
+/-- The representing equivalence of Lemma B.7 uses maps from the pulled-back algebra to the test structure sheaf. -/
 def homEquivAlgebraSheaf :
     (Over.mk g ⟶ Over.mk C.projection) ≃
       ((pullbackAlgebra g).obj C.algebraSheaf ⟶ Under.mk (𝟙 Y.sheaf)) :=

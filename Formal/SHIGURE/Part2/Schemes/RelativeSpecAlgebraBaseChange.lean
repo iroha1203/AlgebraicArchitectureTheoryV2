@@ -176,7 +176,7 @@ namespace QuasiCoherentAlgebra
 
 variable {X Y : Scheme.{u}} (C : QuasiCoherentAlgebra X)
 
-/-- Algebra pullback agrees with the reconstructed algebra sheaf on the scheme pullback. -/
+/-- The algebra comparison in Lemma B.7 identifies the sheaf pullback with the algebra of the scheme pullback. -/
 def baseChangeAlgebraIso (f : Y ⟶ X) :
     (pullbackAlgebra f).obj C.algebraSheaf ≅ (C.baseChange f).algebraSheaf := by
   let p := affinePullbackAlgebra_isPushout (C.baseChange_isPullback f)
