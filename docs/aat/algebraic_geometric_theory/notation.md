@@ -90,34 +90,42 @@
 
 ## 第VI部 観測と必要情報の記号
 
-入力となる実現族を $`\mathcal U`$、宣言文脈を $`U`$ と書き分ける。この規約は第19章の再構成でも用いる。また、$`s`$ は既知情報の値、$`\partial=s,t`$ は変更の固定端点の指定を表し、型と使用箇所によって区別する。
+入力となる実現族を $`\mathcal U`$、宣言文脈を $`U`$ と書き分ける。この規約は第22章の再構成でも用いる。また、$`s`$ は既知情報の値、$`\partial=s,t`$ は変更の固定端点の指定を表し、型と使用箇所によって区別する。
 
 | 記号 | 意味 | 定義 |
 | --- | --- | --- |
-| $`\mathcal X_s\to\mathcal U,\ w_j,s_j,\ q:\mathcal U\to B`$ | 状態を印としてもつ族、評価語と切断、および実現族の観測 | [17.1](part_6/chapter_17_observation_sufficiency_and_selection.md#171-状態観測law-の読み出しから実現族の観測へ) |
-| $`\eta,s,U_s,U_{s,b}`$ | 既知情報、その値、入力の制限、および観測ファイバー | [17.2](part_6/chapter_17_observation_sufficiency_and_selection.md#172-既知情報観測ファイバーと出力十分性) |
-| $`p:\mathcal F\to\mathcal U,\ C_b,\mathrm{Valid}(u,c)`$ | すべての変更元にわたる解の族、共通候補の型、および有効性の関係 | [17.2–17.3](part_6/chapter_17_observation_sufficiency_and_selection.md#173-共通候補と解の選択) |
-| $`a(\tau),E(\tau),V(\tau),T_\tau,\beta_{\tau,c}`$ | 入力射の実現、評価先と合格値の輸送、および可変規則の記録輸送と端点比較 | [17.2 構成17.5](part_6/chapter_17_observation_sufficiency_and_selection.md#172-既知情報観測ファイバーと出力十分性) |
-| $`G_{(J)},R_T,R_V,F_{R,A}`$ | 観測点の安定化群、値とチャートの分割、および粗視化の診断比較 | [17.4–17.5](part_6/chapter_17_observation_sufficiency_and_selection.md#175-安全な解像度と選択の三つの問題) |
-| $`\Omega_H,r_i,e_i,\phi_i`$ | 許容変更の候補集合、局所公開読取り、局所評価、および実像上の線形因子化 | [17.9](part_6/chapter_17_observation_sufficiency_and_selection.md#179-許容変更全体での局所可視性) |
-| $`F_i,M_{\mathrm{pub}},M_{\mathrm{eq}},H,Q`$ | 局所解、公開値で照合した族、実際の共有値が一致する族、および共有差と公開の行列 | [17.10](part_6/chapter_17_observation_sufficiency_and_selection.md#1710-公開された共有値と解の貼り合わせ) |
-| $`\Pi_0,E_b`$ | 追加公開の候補集合、および不成立例を解消する候補の集合 | [17.11](part_6/chapter_17_observation_sufficiency_and_selection.md#1711-最小公開補完と不十分性の具体例) |
-| $`P_S,P_{\mathrm{in}},Y,D_S,B_{\mathrm{in}},b_0`$ | 補正空間、未知入力空間、欠陥の空間、および同じ修復問題から生成する補正式 | [18.1](part_6/chapter_18_repair_and_observation.md#181-実際の操作からの補正方程式) |
-| $`\pi_S,o_S,A_S`$ | 補正像で割る商写像、指定された残存障害、および入力方向の障害写像 | [18.2](part_6/chapter_18_repair_and_observation.md#182-残存障害と双対観測) |
-| $`L,F_s,N,O_J,\lambda_j,m_C`$ | 線形な既知情報、そのファイバーと核、問い合わせ評価、および最適追加問い合わせ数 | [18.3–18.4](part_6/chapter_18_repair_and_observation.md#183-既知情報を条件とする十分性) |
-| $`\Gamma_D,\omega_D,d_i`$ | 整数補正の余核の表示、自由・剰余障害を読む写像、および単因子 | [18.12](part_6/chapter_18_repair_and_observation.md#1812-単因子による自由障害と剰余障害) |
-| $`K,a,D_K,b_K,B^{(K)}`$ | 実際の上書き辺集合、具体的な置換値、および上書き後の修復方程式 | [18.13](part_6/chapter_18_repair_and_observation.md#1813-平行移動補正と具体的な上書き置換) |
-| $`\operatorname{Solv}_S,w(S),m(S)`$ | 許可範囲で可解な入力の集合、範囲費用、および静的な最小観測費用 | [18.14](part_6/chapter_18_repair_and_observation.md#1814-許可範囲と観測費用の同時最適化) |
+| $`\mathcal E,E_s,\mathscr R_s,\theta^{\min}`$ | 原始出現系、sort ごとの出現、同一視要求、および最小機能閉包 | [17.1](part_6/chapter_17_occurrence_identity_and_observation_vocabulary.md#171-原始出現と機能的な同一視) |
+| $`\mathcal V,\approx_{\mathcal V},p_s,a_s,\kappa_s(\theta)`$ | 使用文脈、文脈同値、初期読み出し、補助属性、およびその最小値域濃度 | [17.2–17.3](part_6/chapter_17_occurrence_identity_and_observation_vocabulary.md#173-補助属性の最小値域) |
+| $`P,\Xi,\operatorname{Comp}(P),\operatorname{Val}_P`$ | 部分提示、名前付き未観測スロット、構造的補完、および非空補完上の超評価 | [18.1–18.2](part_6/chapter_18_partial_presentations_and_open_domains.md#181-名前付きスロットと補完ファイバー) |
+| $`E,U,G,Q,E_{A,A'}`$ | 各補完の解存在・一意性、全補完で同じ唯一解、共通解集合の一意性、および異なる出力を分離するスロット | [18.3](part_6/chapter_18_partial_presentations_and_open_domains.md#183-解の量化と必要なスロット) |
+| $`\iota:A_0\hookrightarrow A,\ r:S_F\to S_C`$ | 充満部分構造の包含、および大域修復から局所修復への制限 | [18.4–18.5](part_6/chapter_18_partial_presentations_and_open_domains.md#184-担体の開領域と局所網羅) |
+| $`P_1\hookleftarrow P_0\hookrightarrow P_2,\operatorname{Cone}(\Delta)`$ | 部分提示の改訂スパン、および構造制約の支持から生成する無効化錐 | [19.1–19.2](part_6/chapter_19_observation_revision_and_source_integration.md#192-構造制約から作る無効化錐) |
+| $`P_{\mathrm{op}},P_{\mathrm{rhs}},UMV=D`$ | 作用素を決める提示、右辺の提示、および改訂時に保持する単因子表示 | [19.3](part_6/chapter_19_observation_revision_and_source_integration.md#193-作用素と右辺を分離した修復計算) |
+| $`P_\alpha,T_S,\mathcal B_v,E_A`$ | 多源提示、採用した候補付き提示、所望の結論に反する補完、およびそれを除く候補記録 | [19.4–19.5](part_6/chapter_19_observation_revision_and_source_integration.md#195-検証後に結論を支える最小項目) |
+| $`\mathcal X_s\to\mathcal U,\ w_j,s_j,\ q:\mathcal U\to B`$ | 状態を印としてもつ族、評価語と切断、および実現族の観測 | [20.1](part_6/chapter_20_observation_sufficiency_and_selection.md#201-状態観測law-の読み出しから実現族の観測へ) |
+| $`\eta,s,U_s,U_{s,b}`$ | 既知情報、その値、入力の制限、および観測ファイバー | [20.2](part_6/chapter_20_observation_sufficiency_and_selection.md#202-既知情報観測ファイバーと出力十分性) |
+| $`p:\mathcal F\to\mathcal U,\ C_b,\mathrm{Valid}(u,c)`$ | すべての変更元にわたる解の族、共通候補の型、および有効性の関係 | [20.2–20.3](part_6/chapter_20_observation_sufficiency_and_selection.md#203-共通候補と解の選択) |
+| $`a(\tau),E(\tau),V(\tau),T_\tau,\beta_{\tau,c}`$ | 入力射の実現、評価先と合格値の輸送、および可変規則の記録輸送と端点比較 | [20.2 構成20.5](part_6/chapter_20_observation_sufficiency_and_selection.md#202-既知情報観測ファイバーと出力十分性) |
+| $`G_{(J)},R_T,R_V,F_{R,A}`$ | 観測点の安定化群、値とチャートの分割、および粗視化の診断比較 | [20.4–20.5](part_6/chapter_20_observation_sufficiency_and_selection.md#205-安全な解像度と選択の三つの問題) |
+| $`\Omega_H,r_i,e_i,\phi_i`$ | 許容変更の候補集合、局所公開読取り、局所評価、および実像上の線形因子化 | [20.9](part_6/chapter_20_observation_sufficiency_and_selection.md#209-許容変更全体での局所可視性) |
+| $`F_i,M_{\mathrm{pub}},M_{\mathrm{eq}},H,Q`$ | 局所解、公開値で照合した族、実際の共有値が一致する族、および共有差と公開の行列 | [20.10](part_6/chapter_20_observation_sufficiency_and_selection.md#2010-公開された共有値と解の貼り合わせ) |
+| $`\Pi_0,E_b`$ | 追加公開の候補集合、および不成立例を解消する候補の集合 | [20.11](part_6/chapter_20_observation_sufficiency_and_selection.md#2011-最小公開補完と不十分性の具体例) |
+| $`P_S,P_{\mathrm{in}},Y,D_S,B_{\mathrm{in}},b_0`$ | 補正空間、未知入力空間、欠陥の空間、および同じ修復問題から生成する補正式 | [21.1](part_6/chapter_21_repair_and_observation.md#211-実際の操作からの補正方程式) |
+| $`\pi_S,o_S,A_S`$ | 補正像で割る商写像、指定された残存障害、および入力方向の障害写像 | [21.2](part_6/chapter_21_repair_and_observation.md#212-残存障害と双対観測) |
+| $`L,F_s,N,O_J,\lambda_j,m_C`$ | 線形な既知情報、そのファイバーと核、問い合わせ評価、および最適追加問い合わせ数 | [21.3–21.4](part_6/chapter_21_repair_and_observation.md#213-既知情報を条件とする十分性) |
+| $`\Gamma_D,\omega_D,d_i`$ | 整数補正の余核の表示、自由・剰余障害を読む写像、および単因子 | [21.12](part_6/chapter_21_repair_and_observation.md#2112-単因子による自由障害と剰余障害) |
+| $`K,a,D_K,b_K,B^{(K)}`$ | 実際の上書き辺集合、具体的な置換値、および上書き後の修復方程式 | [21.13](part_6/chapter_21_repair_and_observation.md#2113-平行移動補正と具体的な上書き置換) |
+| $`\operatorname{Solv}_S,w(S),m(S)`$ | 許可範囲で可解な入力の集合、範囲費用、および静的な最小観測費用 | [21.14](part_6/chapter_21_repair_and_observation.md#2114-許可範囲と観測費用の同時最適化) |
 
 ## 第VII部 再構成と有限決定の記号
 
 | 記号 | 意味 | 定義 |
 | --- | --- | --- |
-| $`\Lambda_X,\mathcal L_{\mathbb T},N,\mathsf{Asm}`$ | 原始項目、整合する局所表の圏、読み取り関手、および組み立て関手 | [19.1–19.2](part_7/chapter_19_reconstruction_from_local_models.md#191-原始読み取りと局所モデル) |
-| $`\mathcal L_{\mathbb T,\sigma}(R),N_\sigma,\mathsf{Asm}_\sigma`$ | 係数方式ごとの局所表、および対象とすべての射の読み取り関手・組み立て関手 | [19.2](part_7/chapter_19_reconstruction_from_local_models.md#192-対象と射の組み立て) |
-| $`\mathcal F^{\mathrm{loc}},N_H,\mathsf{Asm}_H`$ | 局所的な解の全体族、および許容記録の読み取りと復元 | [19.3](part_7/chapter_19_reconstruction_from_local_models.md#193-条件付き変更と修復全体の相対再構成) |
-| $`F,j:\pi_0(G[F])\to\pi_0(G)`$ | 有限頂点の読み取り、および誘導部分グラフから全体への連結成分写像 | [20.1](part_7/chapter_20_finite_determination_and_minimal_realizations.md#201-有限決定と実行可能な復元) |
-| $`A,\mathfrak m_a,J,B,r`$ | 基点の局所環、極大イデアル、消去後の残差イデアル、次数上界、および Artin 試験次数 | [20.2](part_7/chapter_20_finite_determination_and_minimal_realizations.md#202-すべての有限断片有限次数試験と大域的回復) |
+| $`\Lambda_X,\mathcal L_{\mathbb T},N,\mathsf{Asm}`$ | 原始項目、整合する局所表の圏、読み取り関手、および組み立て関手 | [22.1–22.2](part_7/chapter_22_reconstruction_from_local_models.md#221-原始読み取りと局所モデル) |
+| $`\mathcal L_{\mathbb T,\sigma}(R),N_\sigma,\mathsf{Asm}_\sigma`$ | 係数方式ごとの局所表、および対象とすべての射の読み取り関手・組み立て関手 | [22.2](part_7/chapter_22_reconstruction_from_local_models.md#222-対象と射の組み立て) |
+| $`\mathcal F^{\mathrm{loc}},N_H,\mathsf{Asm}_H`$ | 局所的な解の全体族、および許容記録の読み取りと復元 | [22.3](part_7/chapter_22_reconstruction_from_local_models.md#223-条件付き変更と修復全体の相対再構成) |
+| $`F,j:\pi_0(G[F])\to\pi_0(G)`$ | 有限頂点の読み取り、および誘導部分グラフから全体への連結成分写像 | [23.1](part_7/chapter_23_finite_determination_and_minimal_realizations.md#231-有限決定と実行可能な復元) |
+| $`A,\mathfrak m_a,J,B,r`$ | 基点の局所環、極大イデアル、消去後の残差イデアル、次数上界、および Artin 試験次数 | [23.2](part_7/chapter_23_finite_determination_and_minimal_realizations.md#232-すべての有限断片有限次数試験と大域的回復) |
 
 ## 指定修復・必要情報・有限語再構成の記号
 
@@ -125,13 +133,13 @@
 | --- | --- | --- |
 | $`F_S:C_S^\bullet\to C_S'^\bullet`$ | 原始操作の比較から生成する範囲付き複体の写像 | 構成11.20、定理11.21–11.22 |
 | $`\mathrm{Cone}(F)^n=D^n\oplus C^{n+1}`$ | 微分 $`(y,x)\mapsto(d_Dy+Fx,-d_Cx)`$ を持つ写像錐 | 16.2節、定理16.20 |
-| $`G=\mathop{\mathrm{im}}\nolimits d^0,\ Z=\ker d^1,\ U=C_S^1`$ | 全許可範囲の再同定像・閉補正と、許可された辺の座標 | 定理11.23・18.17 |
+| $`G=\mathop{\mathrm{im}}\nolimits d^0,\ Z=\ker d^1,\ U=C_S^1`$ | 全許可範囲の再同定像・閉補正と、許可された辺の座標 | 定理11.23・21.17 |
 | $`Q_c,Q_f,q,Z`$ | 二領域の交差の零次余核とその比較、および一次比較で失われる交差の像 | 定理16.25。この $`Z`$ は閉補正の群とは別に定義する |
 | $`\mathcal N=\mathcal I/\mathcal I^2,\ \partial_{\mathcal U}(s)`$ | Law 生成余法係数と、指定切断の一次持ち上げ障害 | 定理12.13 |
-| $`T=\mathop{\mathrm{Spec}}\nolimits A,\ K_t=\kappa(t)`$ | 既知の構造パラメータの空間と、各点の剰余体 | 設定18.11 |
-| $`Q_J=(L,O_J),\ m_{\mathrm{dec}},m_{\mathrm{num}}`$ | 既知情報と問い合わせの行列、判定と数値補正の最適問い合わせ数 | 定理18.12・18.15。$`Q_J`$ は縦の並置 |
-| $`P_{s,r},Q_{s,r},R_{s,r},O_{s,r}`$ | 長さ $`r`$ 以下の入力語・出力語の加群と、到達・観測写像 | 設定20.7 |
-| $`N=\sum_s n_s,\ H_s,H_e`$ | 総階数、有限ハンケル写像、1操作を挿入したハンケル写像 | 定理20.9–20.10 |
+| $`T=\mathop{\mathrm{Spec}}\nolimits A,\ K_t=\kappa(t)`$ | 既知の構造パラメータの空間と、各点の剰余体 | 設定21.11 |
+| $`Q_J=(L,O_J),\ m_{\mathrm{dec}},m_{\mathrm{num}}`$ | 既知情報と問い合わせの行列、判定と数値補正の最適問い合わせ数 | 定理21.12・21.15。$`Q_J`$ は縦の並置 |
+| $`P_{s,r},Q_{s,r},R_{s,r},O_{s,r}`$ | 長さ $`r`$ 以下の入力語・出力語の加群と、到達・観測写像 | 設定23.7 |
+| $`N=\sum_s n_s,\ H_s,H_e`$ | 総階数、有限ハンケル写像、1操作を挿入したハンケル写像 | 定理23.9–23.10 |
 | $`M_{\boldsymbol n}^{\min}`$ | 到達と双対観測が全射な最小実現のモジュライ | 定理6.12 |
 | $`g_n=\det'((d^{n-1})^\top d^{n-1})`$ | 指定整数基底から作るねじれ消去整数・有理解の分母上界 | 補題C.4・定理C.5。非零固有値の空積は1 |
 | $`R_n,t_n,\nu_n`$ | 調和レギュレータ、整数コホモロジーのねじれの位数、整数格子の共体積 | 定理C.7 |
@@ -146,9 +154,9 @@
 | $`g_{ij},\psi_{ij},c_{ijk}`$ | 重なり同型、共役による輸送、および三重周回 | 命題12.18 |
 | $`J_t,J_z,\Delta,\operatorname{Fitt}_s(\Omega_{A/B})`$ | 要求・内部係数のヤコビ写像、可逆小行列式、および相対微分のFittingイデアル | 命題12.20・定理12.21、補題C.11 |
 | $`r^i,\lambda r^2`$ | 閉部分表示への制限、および全体へ運んだ不能証拠 | 定理11.24 |
-| $`E_{u,v},c_j,V(A)`$ | 異なる出力を分離する問い合わせ集合、費用、および適応的最悪費用の最適値 | 定理18.20 |
-| $`I_L,W_L,B(N,m,d,d_0)`$ | 語長 $`L`$ までの残差イデアル、安全状態スキーム、および一様語長 | 定理21.3–21.4 |
-| $`P,\Phi_j,G_L,J_L`$ | 普遍係数環、操作の引き戻し、有限語の残差族、およびその生成イデアル | [21.3](part_7/chapter_21_uniform_finiteness_of_polynomial_operations.md#213-普遍係数と計算可能な一様語長) |
+| $`E_{u,v},c_j,V(A)`$ | 異なる出力を分離する問い合わせ集合、費用、および適応的最悪費用の最適値 | 定理21.20 |
+| $`I_L,W_L,B(N,m,d,d_0)`$ | 語長 $`L`$ までの残差イデアル、安全状態スキーム、および一様語長 | 定理24.3–24.4 |
+| $`P,\Phi_j,G_L,J_L`$ | 普遍係数環、操作の引き戻し、有限語の残差族、およびその生成イデアル | [24.3](part_7/chapter_24_uniform_finiteness_of_polynomial_operations.md#243-普遍係数と計算可能な一様語長) |
 | $`M,A,\partial_GM,w,b_w(G)`$ | 移行済み頂点、有効接続、両相を結ぶ辺、許容幅、および必要資源ピーク | 設定E.3・定理E.4 |
 | $`\rho_*,d_*,\mathsf B_t,\mathsf S_t,D_t`$ | 最小資源ピーク、その下での最小費用、木の袋、共有変数、および局所最小費用表 | 定理E.5・E.6 |
 | $`\mathcal P^{\mathrm{fin}}_{H,n}`$ | 許容規則 $`H`$ と指定された有限の型・担体・記録を使う長さ $`n`$ の経路の充満部分groupoid | 定理E.6 |
@@ -185,15 +193,18 @@
 - **第14–16章（輸送・正規化・診断）**：
   - 第15章の $`\Gamma,\Delta`$ は適合する変更の部分群であり、変数文脈や第16章の Laplacian $`\Delta_n`$ とは別である。
   - 第16章の $`S`$ は Source、$`L`$ は読み出しの有限添字集合、$`L_\bullet`$ は退化部分複体を表す。同章16.3節の $`G`$ はセル係数系、$`P`$ はそのコチェイン複体、$`\Gamma_e`$ は辺の持ち上げの関係グラフ、$`\mathscr R`$ はファイバー類の適合部分空間である。16.5節の $`G`$ は実際の被覆グラフ、$`P=L\times S`$ は実際の係数の原始生成元集合であり、各節で型を指定し直す。$`T`$ は16.1節では reading の値集合、16.3節では直接比較の $`H^1`$ 射である。
-  - $`D_q`$ の添字 $`q`$ は reading である。定理16.25で局所的に使う $`q:Q_c\to Q_f`$ は交差余核の比較写像を表す。そこでの $`Z`$ は交差からの像であり、定理11.23・18.17の閉補正 $`Z=\ker d^1`$、次数付きコサイクル群 $`Z^n`$、根スキーム $`Z_{\sigma,\ell}`$ とは定義域と添字で区別する。
+  - $`D_q`$ の添字 $`q`$ は reading である。定理16.25で局所的に使う $`q:Q_c\to Q_f`$ は交差余核の比較写像を表す。そこでの $`Z`$ は交差からの像であり、定理11.23・21.17の閉補正 $`Z=\ker d^1`$、次数付きコサイクル群 $`Z^n`$、根スキーム $`Z_{\sigma,\ell}`$ とは定義域と添字で区別する。
   - 付録Dでは、係数スキームの変更 $`B'\to B`$ による引き戻しと、同じ担体のフレーム変更を区別する。後者の共役は式(6.4)の右作用 $`A\mapsto g^{-1}Ag`$ に従う。
-- **第17–21章・付録E（観測・修復方程式・再構成・有限停止・費用）**：
-  - 第18章の $`N=\ker L`$ と第19章の読み取り関手 $`N`$ は別の記号である。第19章の組み立て関手は $`\mathsf{Asm},\mathsf{Asm}_\sigma,\mathsf{Asm}_H`$ と書く。
-  - 第18章の $`S`$ は候補辺の許可範囲、$`P_S`$ は補正空間であり、原始表示 $`\mathcal P`$ とは異なる。
-  - 第17章17.10節の $`H`$ は共有座標の差を取る行列、$`Q`$ はその線形公開読取りである。許容規則の添字 $`H`$ とは型と使用箇所で区別する。 17.11節の $`Q_J`$ は選んだ共有読取りを並べる行列であり、18.6節の既知情報と問い合わせを縦に並べた行列 $`Q_J=\binom{L}{O_J}`$ とは定義域と役割が異なる。
-  - 第18章18.13節以降の $`K\subseteq S`$ は実際に上書きする辺の集合であり、18.1節で用いるセル表示の記号 $`K`$ とは異なる。整数修復の $`N`$ は入力方向の部分群で、有限生成系を指定して計算する。
-  - 第19章の $`J`$ は図式補完の小圏を、第20章の Artin 試験の $`J`$ は残差イデアルを表す。第21章の $`J_L`$ は普遍係数環上の残差イデアルである。
-  - 第18章の階数計算や第20章のハンケル表で使うブロック行列の文字は、各設定・証明内で定義する。小行列式の開集合上で選ぶブロックや逆行列は局所的な計算用であり、実現の大域的な基底を指定するものではない。
-  - 付録Eの $`c(\gamma),d(a,b)`$ は変更経路の費用とその下限であり、第11–18章のコチェイン微分 $`d^i`$ や固定図式 $`d`$ とは区別する。
+- **第17–24章・付録E（同定・部分提示・観測・修復・再構成・費用）**：
+  - 第17章の $`\mathcal E`$ は原始出現系であり、付録Eの一段変更の groupoid とは異なる。$`\theta`$ は出現の同値関係族、$`a_s`$ は補助属性である。
+  - 第18章の $`E,U,G,Q`$ は解に関する四つの論理的性質である。同章の候補集合 $`C`$、共有照合の行列 $`Q`$、群 $`G`$ などとは定義箇所で区別する。三値の $`?`$ は未決、部分評価の $`\bot_c`$ は未定義を表す。
+  - 第19章の $`\operatorname{Cone}(\Delta)`$ は制約支持を通じた座標集合の閉包であり、第16章の複体の写像錐 $`\mathrm{Cone}(F)`$ とは異なる。$`P_0`$ は改訂で共通に保持する部分提示、$`T`$ は信頼済み提示である。
+  - 第21章の $`N=\ker L`$ と第22章の読み取り関手 $`N`$ は別の記号である。第22章の組み立て関手は $`\mathsf{Asm},\mathsf{Asm}_\sigma,\mathsf{Asm}_H`$ と書く。
+  - 第21章の $`S`$ は候補辺の許可範囲、$`P_S`$ は補正空間であり、原始表示 $`\mathcal P`$ とは異なる。
+  - 第20章20.10節の $`H`$ は共有座標の差を取る行列、$`Q`$ はその線形公開読取りである。許容規則の添字 $`H`$ とは型と使用箇所で区別する。 20.11節の $`Q_J`$ は選んだ共有読取りを並べる行列であり、21.6節の既知情報と問い合わせを縦に並べた行列 $`Q_J=\binom{L}{O_J}`$ とは定義域と役割が異なる。
+  - 第21章21.13節以降の $`K\subseteq S`$ は実際に上書きする辺の集合であり、21.1節で用いるセル表示の記号 $`K`$ とは異なる。整数修復の $`N`$ は入力方向の部分群で、有限生成系を指定して計算する。
+  - 第22章の $`J`$ は図式補完の小圏を、第23章の Artin 試験の $`J`$ は残差イデアルを表す。第24章の $`J_L`$ は普遍係数環上の残差イデアルである。
+  - 第21章の階数計算や第23章のハンケル表で使うブロック行列の文字は、各設定・証明内で定義する。小行列式の開集合上で選ぶブロックや逆行列は局所的な計算用であり、実現の大域的な基底を指定するものではない。
+  - 付録Eの $`c(\gamma),d(a,b)`$ は変更経路の費用とその下限であり、第11–21章のコチェイン微分 $`d^i`$ や固定図式 $`d`$ とは区別する。
   - 付録Eの $`G=(V,E)`$ の $`V,E`$ は頂点・辺の集合であり、一段変更のgroupoid $`\mathcal E`$ とは異なる。$`B,B_i`$ は一段の移行集合と順序付き分割のブロック、$`\mathsf B_t`$ は木の袋である。$`S`$ は有限状態集合、$`\mathsf S_t`$ は袋どうしの共有変数である。経路長 $`n`$ と許容規則 $`H`$ も区別する。
-  - 12.8節の $`B_f`$ は残差の混合係数、第21章の $`B(N,m,d,d_0)`$ は語長上界、付録Eの $`\mathsf B_t`$ は木の袋である。各章の基礎環や基礎スキームを表す $`B`$ とは役割を分ける。
+  - 12.8節の $`B_f`$ は残差の混合係数、第24章の $`B(N,m,d,d_0)`$ は語長上界、付録Eの $`\mathsf B_t`$ は木の袋である。各章の基礎環や基礎スキームを表す $`B`$ とは役割を分ける。

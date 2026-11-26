@@ -154,15 +154,27 @@
       "label": "part:6",
       "part_num": "第VI部",
       "title": "観測と必要情報",
-      "subtitle": "第17–18章",
+      "subtitle": "第17–21章",
       "chapters": [
         {
           "id": "chapter_17",
-          "source": "part_6/chapter_17_observation_sufficiency_and_selection.md"
+          "source": "part_6/chapter_17_occurrence_identity_and_observation_vocabulary.md"
         },
         {
           "id": "chapter_18",
-          "source": "part_6/chapter_18_repair_and_observation.md"
+          "source": "part_6/chapter_18_partial_presentations_and_open_domains.md"
+        },
+        {
+          "id": "chapter_19",
+          "source": "part_6/chapter_19_observation_revision_and_source_integration.md"
+        },
+        {
+          "id": "chapter_20",
+          "source": "part_6/chapter_20_observation_sufficiency_and_selection.md"
+        },
+        {
+          "id": "chapter_21",
+          "source": "part_6/chapter_21_repair_and_observation.md"
         }
       ]
     },
@@ -172,19 +184,19 @@
       "label": "part:7",
       "part_num": "第VII部",
       "title": "再構成と有限決定",
-      "subtitle": "第19–21章",
+      "subtitle": "第22–24章",
       "chapters": [
         {
-          "id": "chapter_19",
-          "source": "part_7/chapter_19_reconstruction_from_local_models.md"
+          "id": "chapter_22",
+          "source": "part_7/chapter_22_reconstruction_from_local_models.md"
         },
         {
-          "id": "chapter_20",
-          "source": "part_7/chapter_20_finite_determination_and_minimal_realizations.md"
+          "id": "chapter_23",
+          "source": "part_7/chapter_23_finite_determination_and_minimal_realizations.md"
         },
         {
-          "id": "chapter_21",
-          "source": "part_7/chapter_21_uniform_finiteness_of_polynomial_operations.md"
+          "id": "chapter_24",
+          "source": "part_7/chapter_24_uniform_finiteness_of_polynomial_operations.md"
         }
       ]
     },

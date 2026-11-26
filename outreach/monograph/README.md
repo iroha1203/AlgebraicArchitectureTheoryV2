@@ -5,11 +5,11 @@
 
 - 数学本文（`docs/aat/algebraic_geometric_theory/`）は読み取り専用入力として扱い、このツールから変更しない。
 - 生成される `.tex`・`.pdf`・ログ・メタデータはすべて `--out` で指定した作業ディレクトリ（既定運用では `.tmp/` 配下）へ隔離出力し、リポジトリへコミットしない。
-- 定理番号・補題番号・式番号は LaTeX に自動採番させず、枝番（例：`命題11.5a`、`構成14.6b`、`式(16.22a)`、`定理19.2a`）を含め本文の固定番号をそのまま組版する。
+- 定理番号・補題番号・式番号は LaTeX に自動採番させず、枝番（例：`命題11.5a`、`構成14.6b`、`式(16.22a)`、`定理22.2a`）を含め本文の固定番号をそのまま組版する。
 
 ## 構成ファイル
 
-- `manifest.json`: 構成順（序論 → 共通記号 → 第I–VII部（第1–21章）→ 付録A–E）、除外ファイル（`README.md`）、`README.md` の部アンカー対応、TeX 処理系の固定版を定めるマニフェスト。
+- `manifest.json`: 構成順（序論 → 共通記号 → 第I–VII部（第1–24章）→ 付録A–E）、除外ファイル（`README.md`）、`README.md` の部アンカー対応、TeX 処理系の固定版を定めるマニフェスト。
 - `preamble.tex`: XeTeX / `xeCJK` 用の LaTeX プリアンブル（A4、IPAex TrueType フォント `ipaexm.ttf` / `ipaexg.ttf`、`amsmath`/`amssymb`/`mathrsfs`/`xltabular`/`hyperref`/`bookmark`、宣言・証明・QED・式幅調整マクロ）。
 - `monograph.py`: 静的検査（`check`）、TeX 生成（`generate`）、PDF ビルドおよびログ／テキスト検証（`build`）を実行する CLI。
 - `test_monograph.py`: 変換の忠実性・リンク解決・失敗ケース検出（未閉じ数式、不在リンク／アンカー、未登録ファイル、上書き拒否、TeX ログエラー、PDF ハッシュ不一致）の `unittest` 回帰テスト。
