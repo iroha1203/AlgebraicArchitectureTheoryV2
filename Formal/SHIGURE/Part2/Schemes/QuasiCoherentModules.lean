@@ -115,8 +115,8 @@ theorem principalLocalizations_of_fromTildeΓ_isIso (M : (Spec R).Modules)
 
 /-- A module sheaf on an affine scheme is a tilde sheaf precisely when its
 global-to-principal restriction maps are localizations.
-This API identifies the principal-open condition of Appendix B.3 and the affine tilde
-representation via the canonical counit. -/
+This API identifies the principal-open condition in the opening of Appendix B and the affine
+tilde representation via the canonical counit. -/
 theorem principalLocalizations_iff_tilde (M : (Spec R).Modules) :
     PrincipalLocalizations M ↔ (tilde.functor R).essImage M := by
   rw [← isIso_fromTildeΓ_iff]
@@ -319,8 +319,8 @@ theorem HasTildeOn.pullbackImage {X Y : Scheme.{u}} {g : Y ⟶ X} [IsOpenImmersi
 
 /-- Local tilde presentations on a finite principal cover of a spectrum
 give a tilde presentation on the entire spectrum.
-This proves the affine case of Appendix B.3. The principal cover and its local presentations
-come from the affine communication lemma. -/
+This proves the affine case of the cover criterion in the opening of Appendix B.
+The principal cover and its local presentations come from the affine communication lemma. -/
 theorem affineTilde_of_finite_principalCover (M : (Spec R).Modules) {ι : Type u}
     [Fintype ι] [DecidableEq ι] (r : ι → R)
     (cover : (⨆ i, PrimeSpectrum.basicOpen (r i)) = ⊤)
