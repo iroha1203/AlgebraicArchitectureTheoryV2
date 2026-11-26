@@ -18,20 +18,27 @@ attribute [local instance] doubleModule
 
 variable (θ : OverlapIso A B N)
 
+/-- Insert a coefficient between the module and final scalar for the B.4 (0,2) comparison. -/
 private def insertMiddle (b : B) : (B ⊗[A] N) →ₗ[A] B ⊗[A] (B ⊗[A] N) :=
   ((TensorProduct.comm A N B).toLinearMap.lTensor B).comp
     ((TensorProduct.assoc A B N B).toLinearMap.comp ((TensorProduct.mk A (B ⊗[A] N) B).flip b))
 
 omit [Module B N] [IsScalarTower A B N] in
+/-- Evaluate the B.4 middle insertion on the two factors of a pure tensor. -/
 private theorem insertMiddle_tmul (b x : B) (n : N) :
     insertMiddle b (x ⊗ₜ[A] n) = x ⊗ₜ[A] (b ⊗ₜ[A] n) := rfl
 
+/-- Apply the first two coefficient actions to the two scalar factors in the target of the B.4
+cocycle. -/
 private def outputScale (b c : B) : (B ⊗[A] (B ⊗[A] N)) →ₗ[A] B ⊗[A] (B ⊗[A] N) :=
   (doubleAction (b ⊗ₜ[A] c) : Module.End A (B ⊗[A] N)).lTensor B
 
+/-- Evaluate the coefficient action in the B.4 target on a tensor of three elements. -/
 private theorem outputScale_tmul (b c x : B) (z : B ⊗[A] N) :
     outputScale b c (x ⊗ₜ[A] z) = x ⊗ₜ[A] ((b ⊗ₜ[A] c) • z) := rfl
 
+/-- Use the linearity in (B.1) to move the two outer coefficient factors across the (1,2)
+comparison. -/
 private theorem move12_scale (b c : B) (z : B ⊗[A] N) :
     move12 θ ((((1 : B) ⊗ₜ[A] b) • z) ⊗ₜ[A] c) =
       outputScale b c (move12 θ (z ⊗ₜ[A] (1 : B))) := by
@@ -47,9 +54,11 @@ private theorem move12_scale (b c : B) (z : B ⊗[A] N) :
       outputScale b c (x ⊗ₜ[A] θ (n ⊗ₜ[A] (1 : B)))
     rw [comparison, outputScale_tmul]
 
+/-- Read the (0,2) transition in (B.1) as a single comparison followed by insertion in the middle. -/
 private theorem move02_tmul (n : N) (b c : B) :
     move02 θ ((n ⊗ₜ[A] b) ⊗ₜ[A] c) = insertMiddle b (θ (n ⊗ₜ[A] c)) := rfl
 
+/-- Move a final scalar into the target of the B.4 middle insertion. -/
 private theorem insertMiddle_scale (b c : B) (z : B ⊗[A] N) :
     insertMiddle b ((((1 : B) ⊗ₜ[A] c) • z)) =
       outputScale b c (insertMiddle (1 : B) z) := by
@@ -126,25 +135,6 @@ theorem scalarExtensionComp_map_unit (f : R →+* S) (g : S →+* T)
     ModuleCat.extendScalarsComp_hom_app_one_tmul f g M m
   rw [unit]
   exact (congrArg (fun z : (ModuleCat.extendScalars f).obj M ⟶ _ => z k) (η.naturality h)).symm
-
-/-- Replacing the two overlap modules by isomorphic modules commutes with
-extending the overlap comparison. -/
-theorem scalarExtensionPullHom_rechart (f₁ f₂ : R →+* S) (g : S →+* T)
-    {M N : ModuleCat.{u} R} {U V : ModuleCat.{u} S}
-    (δ : (ModuleCat.extendScalars f₁).obj M ⟶ (ModuleCat.extendScalars f₂).obj N)
-    (e₁ : (ModuleCat.extendScalars f₁).obj M ≅ U)
-    (e₂ : (ModuleCat.extendScalars f₂).obj N ≅ V) :
-    scalarExtensionPullHom f₁ f₂ g δ ≫
-      ((ModuleCat.extendScalarsComp f₂ g).app N ≪≫ (ModuleCat.extendScalars g).mapIso e₂).hom =
-    ((ModuleCat.extendScalarsComp f₁ g).app M ≪≫ (ModuleCat.extendScalars g).mapIso e₁).hom ≫
-      (ModuleCat.extendScalars g).map (e₁.inv ≫ δ ≫ e₂.hom) := by
-  let E := ModuleCat.extendScalars g
-  let a := (ModuleCat.extendScalarsComp f₁ g).app M
-  let b := (ModuleCat.extendScalarsComp f₂ g).app N
-  change (a.hom ≫ E.map δ ≫ b.inv) ≫ (b.hom ≫ E.map e₂.hom) =
-    (a.hom ≫ E.map e₁.hom) ≫ E.map (e₁.inv ≫ δ ≫ e₂.hom)
-  simp only [Category.assoc, Iso.inv_hom_id_assoc]
-  rw [← E.map_comp, ← E.map_comp, e₁.hom_inv_id_assoc]
 
 end Extension
 

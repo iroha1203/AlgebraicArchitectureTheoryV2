@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part2.Descent.ScalarExtensionCoordinates
+import Formal.SHIGURE.Part2.Descent.ScalarChangeProjection
 
 /-! # The inner extension inside a composite scalar chart -/
 

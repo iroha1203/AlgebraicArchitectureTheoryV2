@@ -32,6 +32,8 @@ def scalarExtensionPullHomAt (f₀ f₁ : R →+* S) (g : S →+* T) {r₀ r₁ 
   (extensionAlongCongruence e₀).inv.app M ≫ scalarExtensionPullHom f₀ f₁ g m ≫
     (extensionAlongCongruence e₁).hom.app N
 
+/-- In the coefficient comparison for Lemma B.4, reflexive formulas for the
+composite maps simplify to ordinary pullback of the overlap map. -/
 @[simp]
 theorem scalarExtensionPullHomAt_comp (f₀ f₁ : R →+* S) (g : S →+* T) {M N : ModuleCat.{u} R}
     (m : (extendScalars f₀).obj M ⟶ (extendScalars f₁).obj N) :

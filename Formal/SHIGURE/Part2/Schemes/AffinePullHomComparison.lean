@@ -15,9 +15,13 @@ noncomputable section
 
 universe u
 
+/-- The geometric quasi-coherent module pseudofunctor used by Appendix B.3. -/
 private abbrev F := quasiCoherentModulesPseudofunctor
+/-- The inclusion of the quasi-coherent fiber into all module sheaves in Appendix B.3. -/
 private abbrev forget (X : Scheme.{u}) := (quasiCoherentModulesProperty.prop (.mk (op X))).ι
 
+/-- Identify the affine coefficient composition constraint with the scheme pullback comparison in
+B.3. -/
 private theorem affinePullbackComposition_to_generic {R S T : CommRingCat.{u}} (f : R ⟶ S) (g : S ⟶ T) :
     affinePullbackComposition f g =
       pullbackCompositionFor (Spec.map f) (Spec.map g) (Spec.map (f ≫ g)) (Spec.map_comp f g).symm := rfl

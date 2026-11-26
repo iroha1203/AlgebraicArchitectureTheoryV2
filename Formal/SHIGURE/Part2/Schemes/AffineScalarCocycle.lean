@@ -18,11 +18,16 @@ variable {A B : Type u} [CommRing A] [CommRing B] [Algebra A B]
 local notation "B₂" => B ⊗[A] B
 local notation "B₃" => B ⊗[A] (B ⊗[A] B)
 
+/-- The geometric quasi-coherent module pseudofunctor used by Appendix B.3. -/
 private abbrev F := quasiCoherentModulesPseudofunctor
+/-- The inclusion of the quasi-coherent fiber into all module sheaves in Appendix B.3. -/
 private abbrev forget (X : Scheme.{u}) := (quasiCoherentModulesProperty.prop (.mk (op X))).ι
 
+/-- The double tensor ring of the affine overlap in Appendix B.3. -/
 private abbrev doubleRing (i : Fin 2) := affineDoubleRingHom A B i
+/-- The right-associated triple tensor ring of Appendix B.3. -/
 private abbrev tripleRing (i : Fin 3) := affineTripleRingHom A B i
+/-- The ring map from the B.3 double overlap into an ordered pair of the triple overlap. -/
 private abbrev pairRing (i j : Fin 3) := affinePairRingHom A B i j
 
 /-- Extend the actual double-overlap scalar map to the specified pair of
@@ -36,6 +41,7 @@ def affineDescentPairScalarHom (D : AffineSingletonDescentData A B) (i j : Fin 3
     (congrArg (fun k : CommRingCat.of B ⟶ CommRingCat.of B₃ => k.hom) (affinePairRingHom_comp_right A B i j))
     (affineDescentScalarExtensionIso D).hom
 
+/-- The pullback of the B.3 double transition along one of the ordered pair projections. -/
 private abbrev geometricPair (D : AffineSingletonDescentData A B) (i j : Fin 3) :=
   pullHom (affineDoubleTransition A B (affineTildeDescentData D)).hom (affinePairProjection A B i j)
     (affineTripleProjection A B i) (affineTripleProjection A B j)
@@ -54,6 +60,8 @@ theorem affineDescentPairScalarHom_tilde (D : AffineSingletonDescentData A B) (i
     (affineDoubleTransition A B (affineTildeDescentData D)).hom (affineDescentScalarExtensionIso D).hom
     (affineTildeDescentData_double_forget D)
 
+/-- Reflect the three-chart cocycle after conjugating each B.3 transition by the associated
+comparison. -/
 private theorem reflect_conjugated_composition {C D : Type*} [Category C] [Category D]
     (G : C ⥤ D) [G.Faithful] {X₀ X₁ X₂ : C} {Y₀ Y₁ Y₂ : D}
     (a : Y₀ ≅ G.obj X₀) (b : Y₁ ≅ G.obj X₁) (c : Y₂ ≅ G.obj X₂)

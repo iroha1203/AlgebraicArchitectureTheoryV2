@@ -15,9 +15,11 @@ variable {A B : Type u} [CommRing A] [CommRing B] [Algebra A B]
 
 local notation "B₂" => B ⊗[A] B
 
+/-- The bundled ring homomorphism for the indexed affine overlap projection of Appendix B.3. -/
 private abbrev bund (i : Fin 2) : CommRingCat.of B ⟶ CommRingCat.of B₂ :=
   CommRingCat.ofHom (affineDoubleEmbedding A B i).toRingHom
 
+/-- Cancel the invertible coefficient comparisons to restore the B.3 chart square. -/
 private theorem reflect_transported_square {C : Type*} [Category C]
     {X Y U V X' Y' U' V' : C} (a : X ≅ X') (b : Y ≅ Y') (c : U ≅ U') (d : V ≅ V')
     (x : X ⟶ U) (y : Y ⟶ V) (x' : X' ⟶ U') (y' : Y' ⟶ V')
@@ -31,6 +33,7 @@ private theorem reflect_transported_square {C : Type*} [Category C]
   rw [r, ← Category.assoc x c.hom, left, Category.assoc, comm]
 
 
+/-- A different representative of the same base arrow preserves a B.3 transition. -/
 private theorem descentHom_reindexBase {C : Type*} [Category C]
     {F : Pseudofunctor (LocallyDiscrete Cᵒᵖ) Cat} {X T : C} {I : Type*} {U : I → C}
     {covers : ∀ i, U i ⟶ X} (D : F.DescentData covers)
@@ -41,6 +44,7 @@ private theorem descentHom_reindexBase {C : Type*} [Category C]
   rfl
 
 set_option maxHeartbeats 675000 in
+/-- Write the B.3 double transition using the composite through the first projection. -/
 private theorem affineDoubleTransition_hom_compBase (D : AffineSingletonDescentData A B) :
     D.hom (affineDoubleProjection A B 0 ≫ affineScalarMap A B) (i₁ := ()) (i₂ := ())
       (affineDoubleProjection A B 0) (affineDoubleProjection A B 1)

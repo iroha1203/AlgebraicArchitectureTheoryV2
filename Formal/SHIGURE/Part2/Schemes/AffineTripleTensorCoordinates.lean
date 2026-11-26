@@ -3,7 +3,18 @@ import Formal.SHIGURE.Part2.Schemes.AffineOverlapRingDiagram
 import Formal.SHIGURE.Part2.Descent.ScalarIteration
 import Formal.SHIGURE.Part2.Descent.OrderedOverlapInsertion
 
-/-! # Right-associated tensor coordinates for affine triple overlaps -/
+/-! # Right-associated tensor coordinates for affine triple overlaps
+
+## Implementation notes
+
+The three geometric projections of Appendix B.3 use the ring
+`B ⊗[A] (B ⊗[A] B)`. Nesting the two extensions on the right gives the
+middle and last charts directly and identifies the three unit insertions
+in the order of the cocycle in Lemma B.4. A left-associated tensor
+presentation would require an additional associator on every projection.
+The first chart uses the swap of the first two positions and the transported
+scalar action, so the three coefficient expressions use one ring.
+-/
 
 namespace SHIGURE.SchemeDescent
 
@@ -18,6 +29,7 @@ variable {A B : Type u} [CommRing A] [CommRing B] [Algebra A B]
 
 local notation "D₂" => B ⊗[A] B
 local notation "D₃" => B ⊗[A] (B ⊗[A] B)
+/-- The ring map of the indexed projection of the affine triple overlap in B.3. -/
 private abbrev tripleProjectionRing (i : Fin 3) : B →+* D₃ :=
   (affineTripleRingHom A B i).hom
 
@@ -25,7 +37,9 @@ attribute [local instance] doubleModule
 
 variable (M : ModuleCat.{u} B) [Module A M] [IsScalarTower A B M]
 
+/-- The B.4 double tensor module with its original module in the first slot. -/
 private abbrev middleDouble : ModuleCat.{u} D₂ := ModuleCat.of D₂ (M ⊗[A] B)
+/-- The B.4 double tensor module with its original module in the last slot. -/
 private abbrev lastDouble : ModuleCat.{u} D₂ := ModuleCat.of D₂ (B ⊗[A] M)
 
 private instance : Module A (middleDouble (A := A) M) :=
@@ -40,6 +54,7 @@ private instance : IsScalarTower A D₂ (middleDouble (A := A) M) :=
 private instance : IsScalarTower A D₂ (lastDouble (A := A) M) :=
   inferInstanceAs (IsScalarTower A D₂ (B ⊗[A] M))
 
+/-- Give the nested tensor chart its module structure over the B.3 triple coefficient ring. -/
 private def rightTriple (U : ModuleCat.{u} D₂) [Module A U] [IsScalarTower A D₂ U] : ModuleCat.{u} D₃ :=
   letI : Module D₃ (B ⊗[A] U) :=
     tensorProductModule (A := A) (B := B) (C := D₂) (X := B) (Y := U)
@@ -89,15 +104,19 @@ theorem affineLastTensorIso_unit (x : M) :
     (secondScalarEmbedding A B) (rightOverlapExtensionIso (A := A) (B := B) (N := M)) x).trans
     (congrArg (fun y : B ⊗[A] M => (1 : B) ⊗ₜ[A] y) (rightOverlapExtensionIso_unit (A := A) (B := B) x))
 
+/-- The ring map from the B.3 double overlap into an ordered pair of the triple overlap. -/
 private abbrev pairRing (i j : Fin 3) : D₂ →+* D₃ :=
   (affinePairRingHom A B i j).hom
 
+/-- The right-associated triple tensor ring of Appendix B.3. -/
 private abbrev tripleRing (i : Fin 3) : B →+* D₃ :=
   (affineTripleRingHom A B i).hom
 
+/-- The double tensor ring of the affine overlap in Appendix B.3. -/
 private abbrev doubleRing (j : Fin 2) : B →+* D₂ :=
   (affineDoubleRingHom A B j).hom
 
+/-- Identify the second projection of a pair in the B.3 triple overlap. -/
 private theorem pair_right (i j : Fin 3) :
     @RingHom.comp B D₂ D₃ _ _ _ (pairRing (A := A) (B := B) i j) (doubleRing (A := A) (B := B) 1) =
       tripleRing (A := A) (B := B) j :=
@@ -105,6 +124,7 @@ private theorem pair_right (i j : Fin 3) :
     (fun k : CommRingCat.of B ⟶ CommRingCat.of D₃ => k.hom)
     (affinePairRingHom_comp_right A B i j)
 
+/-- Identify the first projection of a pair in the B.3 triple overlap. -/
 private theorem pair_left (i j : Fin 3) :
     @RingHom.comp B D₂ D₃ _ _ _ (pairRing (A := A) (B := B) i j) (doubleRing (A := A) (B := B) 0) =
       tripleRing (A := A) (B := B) i :=
@@ -112,6 +132,7 @@ private theorem pair_left (i j : Fin 3) :
     (fun k : CommRingCat.of B ⟶ CommRingCat.of D₃ => k.hom)
     (affinePairRingHom_comp_left A B i j)
 
+/-- Compute the action of a pair embedding on the first scalar generator of the B.4 chart. -/
 private theorem pair_apply_first (i j : Fin 3) (b : B) :
     pairRing (A := A) (B := B) i j (b ⊗ₜ[A] (1 : B)) =
       tripleRing (A := A) (B := B) i b :=
@@ -137,6 +158,7 @@ abbrev affineTripleOverlapInsertion (i j : Fin 3) :=
 
 set_option maxRecDepth 2048 in
 set_option maxHeartbeats 700000 in
+/-- Compare extension of the double tensor chart with the insertion formula used by (B.1). -/
 private theorem affineInsertion_formula (i j : Fin 3) {V : ModuleCat.{u} D₃}
     (chart : affineTripleScalarModule (A := A) M j ≅ V) (L : (B ⊗[A] M) →+ V)
     (pure_tensor : ∀ b : B, ∀ x : M,
@@ -156,6 +178,7 @@ private theorem affineInsertion_formula (i j : Fin 3) {V : ModuleCat.{u} D₃}
       (pair_apply_first (A := A) (B := B) i j b)
     exact first.trans (middle.trans (pure_tensor b x))
 
+/-- The B.4 ordered insertion placing the unit in the final coefficient position. -/
 private def insertLast : (B ⊗[A] M) →ₗ[A] B ⊗[A] (M ⊗[A] B) :=
   (TensorProduct.assoc A B M B).toLinearMap.comp
     ((TensorProduct.mk A (B ⊗[A] M) B).flip (1 : B))

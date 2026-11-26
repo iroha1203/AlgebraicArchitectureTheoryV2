@@ -11,7 +11,9 @@ noncomputable section
 
 universe u
 
+/-- The geometric quasi-coherent module pseudofunctor used by Appendix B.3. -/
 private abbrev F := quasiCoherentModulesPseudofunctor
+/-- The inclusion of the quasi-coherent fiber into all module sheaves in Appendix B.3. -/
 private abbrev forget (X : Scheme.{u}) := (quasiCoherentModulesProperty.prop (.mk (op X))).ι
 
 variable {X₀ X₁ Y T : Scheme.{u}} {a₀ : Y ⟶ X₀} {a₁ : Y ⟶ X₁}

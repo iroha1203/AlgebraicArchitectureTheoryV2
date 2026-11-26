@@ -14,6 +14,7 @@ noncomputable section
 
 universe u
 
+/-- Transport composition of natural isomorphisms through the tilde comparisons of Appendix B.3. -/
 private theorem conjugateIsoEquiv_trans {C D : Type*} [Category C] [Category D]
     {L₁ L₂ L₃ : C ⥤ D} {R₁ R₂ R₃ : D ⥤ C}
     (a₁ : L₁ ⊣ R₁) (a₂ : L₂ ⊣ R₂) (a₃ : L₃ ⊣ R₃) (e : L₃ ≅ L₂) (f : L₂ ≅ L₁) :
@@ -21,6 +22,7 @@ private theorem conjugateIsoEquiv_trans {C D : Type*} [Category C] [Category D]
       (conjugateIsoEquiv a₁ a₂) f ≪≫ (conjugateIsoEquiv a₂ a₃) e :=
   Iso.ext (conjugateEquiv_comp a₁ a₂ a₃ f.hom e.hom).symm
 
+/-- Compare conjugation with a common left functor in the B.3 pullback calculation. -/
 private theorem conjugateIsoEquiv_whiskerLeft {A B C : Type*} [Category A] [Category B] [Category C]
     {L₁ L₂ : B ⥤ C} {R₁ R₂ : C ⥤ B} {L : A ⥤ B} {R : B ⥤ A}
     (a₁ : L₁ ⊣ R₁) (a₂ : L₂ ⊣ R₂) (a : L ⊣ R) (e : L₂ ≅ L₁) :
@@ -28,6 +30,7 @@ private theorem conjugateIsoEquiv_whiskerLeft {A B C : Type*} [Category A] [Cate
       Functor.isoWhiskerRight ((conjugateIsoEquiv a₁ a₂) e) R :=
   Iso.ext (conjugateEquiv_whiskerLeft a₁ a₂ a e.hom)
 
+/-- Compare conjugation with a common right functor in the B.3 pullback calculation. -/
 private theorem conjugateIsoEquiv_whiskerRight {A B C : Type*} [Category A] [Category B] [Category C]
     {L₁ L₂ : A ⥤ B} {R₁ R₂ : B ⥤ A} {L : B ⥤ C} {R : C ⥤ B}
     (a₁ : L₁ ⊣ R₁) (a₂ : L₂ ⊣ R₂) (a : L ⊣ R) (e : L₂ ≅ L₁) :
@@ -35,6 +38,7 @@ private theorem conjugateIsoEquiv_whiskerRight {A B C : Type*} [Category A] [Cat
       Functor.isoWhiskerLeft R ((conjugateIsoEquiv a₁ a₂) e) :=
   Iso.ext (conjugateEquiv_whiskerRight a₁ a₂ a e.hom)
 
+/-- Transport the functor associator for the B.3 comparison of composed pullbacks. -/
 private theorem conjugateIsoEquiv_associator {A B C D : Type*}
     [Category A] [Category B] [Category C] [Category D]
     {L₁ : A ⥤ B} {R₁ : B ⥤ A} {L₂ : B ⥤ C} {R₂ : C ⥤ B} {L₃ : C ⥤ D} {R₃ : D ⥤ C}
@@ -43,10 +47,12 @@ private theorem conjugateIsoEquiv_associator {A B C D : Type*}
       Functor.associator R₃ R₂ R₁ :=
   Iso.ext (conjugateEquiv_associator_hom a b c)
 
+/-- Transport inversion of a comparison for the B.3 pullback calculation. -/
 private theorem conjugateIsoEquiv_symm_iso {C D : Type*} [Category C] [Category D]
     {L₁ L₂ : C ⥤ D} {R₁ R₂ : D ⥤ C} (a : L₁ ⊣ R₁) (b : L₂ ⊣ R₂) (e : L₂ ≅ L₁) :
     (conjugateIsoEquiv b a) e.symm = ((conjugateIsoEquiv a b) e).symm := rfl
 
+/-- Transport the comparison for equal geometric arrows in the B.3 pullback calculation. -/
 private theorem conjugateIsoEquiv_pullbackCongr {Z X : Scheme.{u}} {p q : Z ⟶ X}
     (equal : p = q) :
     (conjugateIsoEquiv (pullbackPushforwardAdjunction q) (pullbackPushforwardAdjunction p))
@@ -61,11 +67,13 @@ private theorem conjugateIsoEquiv_pullbackCongr {Z X : Scheme.{u}} {p q : Z ⟶ 
   rw [h, op_id, M.presheaf.map_id]
   rfl
 
+/-- Transport the composition comparison for the actual geometric B.3 pullback. -/
 private theorem conjugateIsoEquiv_pullbackComp {Z Y X : Scheme.{u}} (p : Z ⟶ Y) (q : Y ⟶ X) :
     (conjugateIsoEquiv ((pullbackPushforwardAdjunction q).comp (pullbackPushforwardAdjunction p))
       (pullbackPushforwardAdjunction (p ≫ q))) (pullbackComp p q).symm = pushforwardComp p q :=
   Iso.ext (conjugateEquiv_pullbackComp_inv p q)
 
+/-- Recover the B.3 forward composition comparison from the equality of inverse composites. -/
 private theorem iso_eq_of_symm_chains {C : Type*} [Category C]
     {X₀ X₁ X₂ X₃ X₄ X₅ X₆ Y : C}
     (x₁ : X₀ ≅ X₁) (x₂ : X₁ ≅ X₂) (x₃ : X₂ ≅ X₃) (x₄ : X₃ ≅ X₄)
@@ -74,6 +82,7 @@ private theorem iso_eq_of_symm_chains {C : Type*} [Category C]
     y₁ ≪≫ y₂ = x₁ ≪≫ x₂ ≪≫ x₃ ≪≫ x₄ ≪≫ x₅ ≪≫ x₆ := by
   simpa only [Iso.trans_symm, Iso.trans_assoc] using congrArg Iso.symm e
 
+/-- Use the equality of the two transported paths to identify the original B.3 isomorphism. -/
 private theorem conjugateParallelPaths {C D : Type*} [Category C] [Category D]
     {L₀ L₁ L₂ L₃ L₄ L₅ L₆ L : C ⥤ D} {R₀ R₁ R₂ R₃ R₄ R₅ R₆ R : D ⥤ C}
     (a₀ : L₀ ⊣ R₀) (a₁ : L₁ ⊣ R₁) (a₂ : L₂ ⊣ R₂) (a₃ : L₃ ⊣ R₃)
@@ -94,6 +103,7 @@ private theorem conjugateParallelPaths {C D : Type*} [Category C] [Category D]
 
 variable {R S T : CommRingCat.{u}} (f : R ⟶ S) (g : S ⟶ T)
 
+/-- Identify the inverse tilde pullback comparison with the transported affine chart map in B.3. -/
 private theorem conjugateIsoEquiv_tildePullbackIso_inv :
     (conjugateIsoEquiv ((tilde.adjunction (R := R)).comp (pullbackPushforwardAdjunction (Spec.map f)))
       ((ModuleCat.extendRestrictScalarsAdj f.hom).comp (tilde.adjunction (R := S)))) (tildePullbackIso f).symm =

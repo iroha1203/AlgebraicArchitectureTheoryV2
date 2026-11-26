@@ -14,6 +14,7 @@ variable {A B : Type u} [CommRing A] [CommRing B] [Algebra A B]
 
 local notation "B₂" => B ⊗[A] B
 
+/-- The bundled ring homomorphism for the indexed affine overlap projection of Appendix B.3. -/
 private abbrev bund (i : Fin 2) : CommRingCat.of B ⟶ CommRingCat.of B₂ :=
   CommRingCat.ofHom (affineDoubleEmbedding A B i).toRingHom
 
@@ -24,6 +25,7 @@ def affineDescentCoefficientMap (m : D ⟶ E) :
     affineDescentCoefficientModule D ⟶ affineDescentCoefficientModule E :=
   (affineTildeEquivalence (CommRingCat.of B)).inverse.map (m.hom ())
 
+/-- Transport the B.3 square to the coefficient chart through its tilde comparisons. -/
 private theorem transport_square {C : Type*} [Category C]
     {X Y U V X' Y' U' V' : C} (a : X ≅ X') (b : Y ≅ Y') (c : U ≅ U') (d : V ≅ V')
     (x : X ⟶ U) (y : Y ⟶ V) (x' : X' ⟶ U') (y' : Y' ⟶ V')

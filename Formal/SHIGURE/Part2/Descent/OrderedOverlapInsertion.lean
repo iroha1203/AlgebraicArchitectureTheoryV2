@@ -20,6 +20,8 @@ local notation "D₂" => B ⊗[A] B
 local notation "f₀" => firstScalarEmbedding A B
 local notation "f₁" => secondScalarEmbedding A B
 
+/-- The coefficient map for the right side of the double overlap followed by its ordered insertion
+in B.4. -/
 private abbrev rightComposite (k : (B ⊗[A] B) →+* T) : B →+* T :=
   @RingHom.comp B (B ⊗[A] B) T _ _ _ k (secondScalarEmbedding A B)
 

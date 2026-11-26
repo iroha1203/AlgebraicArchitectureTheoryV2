@@ -37,6 +37,8 @@ theorem moduleSpecΓPushforwardIso_comp :
   change N.presheaf.map (𝟙 (op (⊤ : (Spec T).Opens))) x = x
   exact congrArg (fun m => m x) (N.presheaf.map_id (op ⊤))
 
+/-- The inverse comparison between the two transported left adjoints gives the same base change in
+B.3. -/
 private theorem transportedAdjunction_leftUniq_inv {C D : Type*} [Category C] [Category D]
     {L L' : C ⥤ D} {A B : D ⥤ C} (adj : L ⊣ A) (adj' : L' ⊣ B) (e : A ≅ B) :
     ((adj.ofNatIsoRight e).leftAdjointUniq adj').inv =
@@ -89,6 +91,7 @@ end Transitions
 
 section Composition
 
+/-- Cancel the invertible changes of presentation in the comparison of B.3 pullbacks. -/
 private theorem cancel_iso_on_both_sides {C : Type*} [Category C] {X Y Z W : C}
     (a : X ≅ Y) (b : Y ≅ Z) (c : X ≅ W) (d : Z ≅ W) (eq : a ≪≫ b = c ≪≫ d.symm) :
     b ≪≫ d = a.symm ≪≫ c := calc
@@ -97,6 +100,7 @@ private theorem cancel_iso_on_both_sides {C : Type*} [Category C] {X Y Z W : C}
   _ = a.symm ≪≫ (c ≪≫ d.symm) ≪≫ d := congrArg (fun z => a.symm ≪≫ z ≪≫ d) eq
   _ = _ := by rw [Iso.trans_assoc c, Iso.symm_self_id, Iso.trans_refl]
 
+/-- Reassociate the base change comparison in B.3 to expose its naturality square. -/
 private theorem append_five {C : Type*} [Category C] {X₀ X₁ X₂ X₃ X₄ X₅ X₆ : C}
     (a : X₀ ≅ X₁) (b : X₁ ≅ X₂) (c : X₂ ≅ X₃) (d : X₃ ≅ X₄) (e : X₄ ≅ X₅) (f : X₅ ≅ X₆) :
     (a ≪≫ b ≪≫ c ≪≫ d ≪≫ e) ≪≫ f = a ≪≫ b ≪≫ c ≪≫ d ≪≫ e ≪≫ f := by

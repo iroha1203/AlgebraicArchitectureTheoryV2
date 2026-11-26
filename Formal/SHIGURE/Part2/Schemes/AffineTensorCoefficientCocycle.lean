@@ -18,6 +18,7 @@ universe u
 variable {A B : Type u} [CommRing A] [CommRing B] [Algebra A B]
 local notation "D₃" => B ⊗[A] (B ⊗[A] B)
 
+/-- Compare scalar extension maps on the adjunction unit to identify a B.4 coordinate operation. -/
 private theorem scalarExtension_hom_ext_at_unit {R T : Type u} [CommRing R] [CommRing T]
     (f : R →+* T) {M : ModuleCat.{u} R} {N : ModuleCat.{u} T}
     {a b : (extendScalars f).obj M ⟶ N}
@@ -37,11 +38,16 @@ attribute [local instance] doubleModule
 
 variable (θ : OverlapIso A B M)
 
+/-- The coefficient action on the three ordered tensor charts of the B.4 cocycle. -/
 private abbrev coordinateAction (θ : OverlapIso A B M) := (θ.restrictScalars A).toLinearMap.lTensor B
 
+/-- The scalar extension along the indexed triple projection in Appendix B.3. -/
 private abbrev scalarCoordinate (i : Fin 3) := affineTripleScalarModule (A := A) M i
+/-- The canonical extension unit for the indexed coordinate in the B.4 cocycle. -/
 private abbrev coordinateUnit (i : Fin 3) := affineTripleScalarUnit (A := A) M i
+/-- Identify the center extension of the B.3 triple overlap with its B.4 tensor chart. -/
 private abbrev middleChart := affineMiddleTensorIso (A := A) (M := M)
+/-- Identify the final extension of the B.3 triple overlap with its B.4 tensor chart. -/
 private abbrev lastChart := affineLastTensorIso (A := A) (M := M)
 
 variable (q : scalarCoordinate (A := A) M 1 ⟶ scalarCoordinate (A := A) M 2)
@@ -55,6 +61,7 @@ include ht h₁₂
 
 set_option maxRecDepth 2048 in
 set_option maxHeartbeats 450000 in
+/-- Calculate the B.4 pair comparison on the scalar extension generators. -/
 private theorem pair_generator (x : M) :
     (lastChart (A := A) M).hom (q (coordinateUnit (A := A) M 1 x)) =
       t ((middleChart (A := A) M).hom (coordinateUnit (A := A) M 1 x)) := by
@@ -74,12 +81,14 @@ private theorem pair_generator (x : M) :
 
 set_option maxRecDepth 2048 in
 set_option maxHeartbeats 450000 in
+/-- Determine a B.4 transition on the whole middle chart from its generator formula. -/
 private theorem pair_comparison : q ≫ (lastChart (A := A) M).hom = (middleChart (A := A) M).hom ≫ t :=
   scalarExtension_hom_ext_at_unit (affineTripleRingHom A B 1).hom
     (M := M) (N := affineLastTensor (A := A) M) (pair_generator M θ q t ht h₁₂)
 
 set_option maxRecDepth 2048 in
 set_option maxHeartbeats 775000 in
+/-- Read the three affine comparison formulas as the ordered B.4 tensor cocycle. -/
 private theorem tensor_cocycle_of_affine_coordinates
     (p : scalarCoordinate (A := A) M 0 ⟶ scalarCoordinate (A := A) M 1)
     (r : scalarCoordinate (A := A) M 0 ⟶ scalarCoordinate (A := A) M 2) (cocycle : p ≫ q = r)
