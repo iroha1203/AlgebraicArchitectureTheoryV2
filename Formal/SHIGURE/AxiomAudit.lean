@@ -23,6 +23,7 @@ import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeExamples
+import Formal.SHIGURE.Part2.Schemes.FppfEpimorphisms
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
@@ -4865,6 +4866,11 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.HasFiniteLocallyFreeOn.restrict,
   SchemeDescent.isFiniteLocallyFreeModule_iff_on_affineOpens,
   SchemeDescent.isFiniteLocallyFreeModule_of_fppfCover,
+  SchemeDescent.HasTildeOn.cokernel,
+  SchemeDescent.IsQuasiCoherentModule.cokernel,
+  SchemeDescent.epi_modulePullback,
+  SchemeDescent.epi_of_fppfModulePullbacks,
+  SchemeDescent.epi_iff_fppfModulePullbacks,
   CoefficientDescent.extendScalarsTensorIso,
   CoefficientDescent.extendScalarsTensorIso_unit,
   CoefficientDescent.extendScalarsTensorIso_natural,

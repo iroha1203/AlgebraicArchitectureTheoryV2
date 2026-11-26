@@ -32,6 +32,7 @@ import Formal.SHIGURE.Part2.QuantityModels
 import Formal.SHIGURE.Part2.QuantityTransport
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeExamples
+import Formal.SHIGURE.Part2.Schemes.FppfEpimorphisms
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
