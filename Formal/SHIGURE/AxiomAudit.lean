@@ -4073,7 +4073,24 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientDescent.Examples.split_tensor_fixed_three_five,
   CoefficientDescent.Examples.split_binary_product,
   CoefficientDescent.Examples.split_descended_square_distinguishes_zero,
-  CoefficientDescent.Examples.split_first_idempotent_element_incompatible
+  CoefficientDescent.Examples.split_first_idempotent_element_incompatible,
+  CoefficientDescent.doubleCongr_tmul,
+  TensorShape.mapSorts,
+  TensorShape.equivSorts,
+  TensorShape.equivSorts_toLinearMap,
+  TensorExpression.eval_natural,
+  CoefficientDescent.TensorDatum,
+  CoefficientDescent.TensorDatum.native,
+  CoefficientDescent.TensorDatum.descended,
+  CoefficientDescent.TensorDatum.comparison_unit,
+  CoefficientDescent.TensorDatum.comparison,
+  CoefficientDescent.TensorDatum.homEquiv,
+  CoefficientDescent.TensorDatum.homEquiv_surjective_iff,
+  CoefficientDescent.TensorDatum.shapeComparison,
+  CoefficientDescent.TensorDatum.eval_comparison,
+  CoefficientDescent.TensorDatum.tensorLaw_holds_iff,
+  CoefficientDescent.Examples.split_bad_nullary_incompatible,
+  CoefficientDescent.Examples.split_binary_law
 ]
 
 end SHIGURE.AxiomAudit

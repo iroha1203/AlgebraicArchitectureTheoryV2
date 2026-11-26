@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part2.Descent.Operations
+import Formal.SHIGURE.Part2.Descent.TensorLaws
 import Formal.SHIGURE.Part2.Descent.Examples
 
 /-! # Tensor and operation descent on a split cover
@@ -121,6 +121,56 @@ theorem split_first_idempotent_element_incompatible :
   change r * 1 = 1 * 1 at left
   change r * 1 = 1 * 0 at right
   linarith
+
+private def badNullary :
+    MultilinearMap B (fun i : TensorPosition ([] : List Unit) => nativeFamily family i.1) lineDatum.carrier :=
+  PiTensorProduct.lift.symm ((LinearMap.toSpanSingleton B lineDatum.carrier (((1, 0) : B) ⊗ₜ[K] (1 : K))).comp
+    (inputTensorUnit B (nativeFamily family)).toLinearMap)
+
+/-- The constant operation given by a single idempotent fails the finite-operation compatibility. -/
+theorem split_bad_nullary_incompatible : ¬ CompatibleOperation family [] lineDatum badNullary := by
+  intro compatible
+  let x : ∀ i : TensorPosition ([] : List Unit), fixedFamily family i.1 := fun i => nomatch i.2
+  let z := operationEquiv family [] lineDatum ⟨badNullary, compatible⟩ x
+  have native := operationEquiv_apply family [] lineDatum badNullary compatible x
+  have value : badNullary (fun i => (x i).val) = ((1, 0) : B) ⊗ₜ[K] (1 : K) := by
+    change (LinearMap.toSpanSingleton B lineDatum.carrier (((1, 0) : B) ⊗ₜ[K] (1 : K)))
+      (inputTensorUnit B (nativeFamily family) (PiTensorProduct.tprod B (fun i => (x i).val))) = _
+    rw [inputTensorUnit_tprod B (nativeFamily family) (fun i => (x i).val), LinearMap.toSpanSingleton_apply_one]
+  change z.val = badNullary _ at native
+  have fixed := z.property
+  rw [native, value] at fixed
+  exact split_first_idempotent_element_incompatible ((element_compatible_iff lineDatum.datum _).2 fixed)
+
+private def multiplicationSignature : Signature where
+  SortType := Unit
+  Total := Unit
+  Rel := Empty
+  Partial := Empty
+  Quantity := Empty
+  totalArity _ := ⟨arguments, ()⟩
+  relInputs r := nomatch r
+  partialArity p := nomatch p
+  quantityArity q := nomatch q
+
+private def multiplicationDatum : TensorDatum K B multiplicationSignature where
+  sort := family
+  total _ := (operationEquiv family arguments lineDatum).symm binaryProduct
+  quantity q := nomatch q
+
+private def doubleProductLaw : TensorLaw K multiplicationSignature :=
+  ⟨.arguments arguments, .sort (), .add (.total ()) (.total ()), .smul 2 (.total ())⟩
+
+/-- Adding two copies of the written binary operation agrees with scaling it, before and after descent. -/
+theorem split_binary_law :
+    (doubleProductLaw.mapScalars (algebraMap K B)).holds multiplicationDatum.native ∧
+      doubleProductLaw.holds multiplicationDatum.descended := by
+  have descended : doubleProductLaw.holds multiplicationDatum.descended := by
+    change (PiTensorProduct.lift (multiplicationDatum.descended.total ()) +
+      PiTensorProduct.lift (multiplicationDatum.descended.total ())) =
+      (2 : K) • PiTensorProduct.lift (multiplicationDatum.descended.total ())
+    exact (two_smul _ _).symm
+  exact ⟨(multiplicationDatum.tensorLaw_holds_iff doubleProductLaw).2 descended, descended⟩
 
 end
 

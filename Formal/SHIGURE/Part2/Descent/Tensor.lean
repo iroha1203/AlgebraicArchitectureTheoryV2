@@ -52,6 +52,7 @@ def doubleCongr (e : X ≃ₗ[B] X') (f : Y ≃ₗ[B] Y') :
       | add r s hr hs =>
         simp only [add_smul, map_add, hr, hs] }
 
+/-- The double coefficient comparison applies the two carrier maps in their own positions. -/
 @[simp] theorem doubleCongr_tmul (e : X ≃ₗ[B] X') (f : Y ≃ₗ[B] Y') (x : X) (y : Y) :
     doubleCongr e f (x ⊗ₜ[A] y) = e x ⊗ₜ[A] f y := rfl
 
