@@ -22,6 +22,7 @@ import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
+import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
@@ -4591,7 +4592,52 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.QuasiCoherentAlgebra.homEquivBaseChangeAlgebraSheaf,
   SchemeDescent.RelativeSpecExamples.rationalAffineAlgebra,
   SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo,
-  SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo_not_localization
+  SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo_not_localization,
+  SchemeDescent.overlapRight,
+  SchemeDescent.overlapRight_isOpenImmersion,
+  SchemeDescent.overlapRight_comp_chart,
+  SchemeDescent.overlap_isPullback,
+  SchemeDescent.overlapRight_image_preimage,
+  SchemeDescent.overlapLeft_image_preimage,
+  SchemeDescent.isIso_of_restrictCharts,
+  SchemeDescent.ModuleGluingData,
+  SchemeDescent.ModuleGluingData.chartPushforward,
+  SchemeDescent.ModuleGluingData.ofModule,
+  SchemeDescent.ModuleGluingData.overlapPushforward,
+  SchemeDescent.ModuleGluingData.restrictLeft,
+  SchemeDescent.ModuleGluingData.restrictRight,
+  SchemeDescent.ModuleGluingData.restrictRight_app_isIso,
+  SchemeDescent.ModuleGluingData.restrictLeft_app_isIso,
+  SchemeDescent.ModuleGluingData.transport,
+  SchemeDescent.ModuleGluingData.transport_restrictRight,
+  SchemeDescent.ModuleGluingData.transport_naturality,
+  SchemeDescent.ModuleGluingData.Cocycle,
+  SchemeDescent.ModuleGluingData.Cocycle.ofTripleOpen,
+  SchemeDescent.ModuleGluingData.Cocycle.inverse,
+  SchemeDescent.ModuleGluingData.ofModule_cocycle,
+  SchemeDescent.ModuleGluingData.CompatibleMaps,
+  SchemeDescent.ModuleGluingData.compatibleModule,
+  SchemeDescent.ModuleGluingData.projectChart,
+  SchemeDescent.ModuleGluingData.projectChart_agree,
+  SchemeDescent.ModuleGluingData.compatibleMapsEquiv,
+  SchemeDescent.ModuleGluingData.CompatibleSections,
+  SchemeDescent.ModuleGluingData.compatibleSectionsEquiv,
+  SchemeDescent.ModuleGluingData.compatibleSectionsEquiv_apply,
+  SchemeDescent.ModuleGluingData.compatibleSectionsOnChart,
+  SchemeDescent.ModuleGluingData.projectChart_app_isIso,
+  SchemeDescent.ModuleGluingData.chartMap,
+  SchemeDescent.ModuleGluingData.chartIso,
+  SchemeDescent.ModuleGluingData.chartIso_overlap,
+  SchemeDescent.ModuleGluingData.reglueIso,
+  SchemeDescent.ModuleGluingData.CompatibleMorphisms,
+  SchemeDescent.ModuleGluingData.glueMorphism,
+  SchemeDescent.ModuleGluingData.glueMorphism_project,
+  SchemeDescent.ModuleGluingData.glueMorphism_chart,
+  SchemeDescent.ModuleGluingData.existsUnique_glueMorphism,
+  SchemeDescent.OpenModuleGluingExamples.integersChartGluing,
+  SchemeDescent.OpenModuleGluingExamples.integersModuleGluing,
+  SchemeDescent.OpenModuleGluingExamples.integersModuleMapGluing,
+  SchemeDescent.OpenModuleGluingExamples.nonIdentityTransition_not_cocycle
 ]
 
 end SHIGURE.AxiomAudit
