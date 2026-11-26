@@ -1,10 +1,11 @@
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluing
+import Formal.SHIGURE.Part2.Schemes.QuasiCoherentZariskiStack
 
 /-! # Module gluing on the principal opens of 2 and 3 in Spec ℤ -/
 
 namespace SHIGURE.SchemeDescent.OpenModuleGluingExamples
 
-open AlgebraicGeometry CategoryTheory CategoryTheory.Limits
+open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
 open Scheme.Modules
 
 noncomputable section
@@ -23,6 +24,22 @@ private theorem charts_span : Ideal.span (Set.range chartDenominator) = ⊤ := b
 
 private def cover : (Spec integers).OpenCover :=
   (Scheme.affineOpenCoverOfSpanRangeEqTop (R := integers) chartDenominator charts_span).openCover
+
+private abbrev integerComparison := quasiCoherentModulesPseudofunctor.toDescentData cover.f
+
+private def integerQuasiCoherent : quasiCoherentModulesPseudofunctor.obj (.mk (op (Spec integers))) :=
+  ⟨(tilde.functor integers).obj (ModuleCat.of integers integers),
+    isQuasiCoherentModule_of_tilde _ ⟨ModuleCat.of integers integers, ⟨Iso.refl _⟩⟩⟩
+
+/-- On the original principal opens `D(2)` and `D(3)`, every compatible pair
+of maps between the rank-one restrictions descends uniquely. -/
+theorem integersQuasiCoherentMapDescent
+    (localMap : integerComparison.obj integerQuasiCoherent ⟶ integerComparison.obj integerQuasiCoherent) :
+    ∃! f : integerQuasiCoherent ⟶ integerQuasiCoherent, integerComparison.map f = localMap := by
+  letI : integerComparison.IsEquivalence := openCoverComparison_isEquivalence_anySize cover
+  refine ⟨integerComparison.preimage localMap, integerComparison.map_preimage localMap, ?_⟩
+  intro f h
+  exact integerComparison.map_injective (h.trans (integerComparison.map_preimage localMap).symm)
 
 private abbrev D := cover.gluedCover
 
