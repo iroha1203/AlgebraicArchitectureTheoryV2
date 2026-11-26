@@ -10,17 +10,18 @@ unique realization of total and partial graphs.
 universe u
 
 namespace SHIGURE
-namespace ContextStructure
+namespace RestrictedEvaluation
 
 open DeclarationContext
 
-variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P} (A : ContextStructure U)
+variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
+variable {X : P.signature.SortType → Type u} {E : RestrictedEvaluation U X}
 
 /-- Each retained graph is functional on the entire supported input product. -/
-theorem graph_rightUnique (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
-    Relator.RightUnique (A.evaluation.graph op kept) := by
+theorem graph_rightUnique (valid : E.Structural) (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
+    Relator.RightUnique (E.graph op kept) := by
   intro e y z hy hz
-  have held := A.evaluation.structural_rule A.structural (.functional op)
+  have held := E.structural_rule valid (.functional op)
     (by simpa only [Declaration.graphRuleName_functional] using kept)
   simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_functional,
     RestrictedEvaluation.holds_conj_iff, RestrictedEvaluation.holds_atom_iff,
@@ -30,11 +31,11 @@ theorem graph_rightUnique (op : Operation P.signature) (kept : Declaration.ofOpe
     using And.intro hy hz
 
 /-- A total operation's graph has a value for every input. -/
-theorem total_graph_valid (f : P.signature.Total) (kept : Declaration.total f ∈ U.declarations) :
-    GraphPresentation.IsTotal (A.evaluation.graph (.total f) (Declaration.ofOperation_total_mem f kept)) := by
+theorem total_graph_valid (valid : E.Structural) (f : P.signature.Total) (kept : Declaration.total f ∈ U.declarations) :
+    GraphPresentation.IsTotal (E.graph (.total f) (Declaration.ofOperation_total_mem f kept)) := by
   let opKept := Declaration.ofOperation_total_mem f kept
-  refine ⟨A.graph_rightUnique (.total f) opKept, fun e => ?_⟩
-  have held := A.evaluation.structural_rule A.structural (.totality f)
+  refine ⟨graph_rightUnique valid (.total f) opKept, fun e => ?_⟩
+  have held := E.structural_rule valid (.totality f)
     (by simpa only [Declaration.graphRuleName_totality] using kept)
   simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_totality, GraphAxiom.hasOutput_eq_ex_graph,
     RestrictedEvaluation.holds_truth_iff, true_implies, RestrictedEvaluation.holds_ex_iff,
@@ -43,11 +44,11 @@ theorem total_graph_valid (f : P.signature.Total) (kept : Declaration.total f �
   exact held e
 
 /-- A quantity's graph has a value for every input. -/
-theorem quantity_graph_valid (q : P.signature.Quantity) (kept : Declaration.quantity q ∈ U.declarations) :
-    GraphPresentation.IsTotal (A.evaluation.graph (.quantity q) (Declaration.ofOperation_quantity_mem q kept)) := by
+theorem quantity_graph_valid (valid : E.Structural) (q : P.signature.Quantity) (kept : Declaration.quantity q ∈ U.declarations) :
+    GraphPresentation.IsTotal (E.graph (.quantity q) (Declaration.ofOperation_quantity_mem q kept)) := by
   let opKept := Declaration.ofOperation_quantity_mem q kept
-  refine ⟨A.graph_rightUnique (.quantity q) opKept, fun e => ?_⟩
-  have held := A.evaluation.structural_rule A.structural (.quantityTotality q)
+  refine ⟨graph_rightUnique valid (.quantity q) opKept, fun e => ?_⟩
+  have held := E.structural_rule valid (.quantityTotality q)
     (by simpa only [Declaration.graphRuleName_quantityTotality] using kept)
   simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_quantityTotality, GraphAxiom.hasOutput_eq_ex_graph,
     RestrictedEvaluation.holds_truth_iff, true_implies, RestrictedEvaluation.holds_ex_iff,
@@ -56,12 +57,12 @@ theorem quantity_graph_valid (q : P.signature.Quantity) (kept : Declaration.quan
   exact held e
 
 /-- A partial graph has unique values exactly on its declared domain. -/
-theorem partial_graph_valid (p : P.signature.Partial) (kept : Declaration.partialOp p ∈ U.declarations) :
-    GraphPresentation.IsPartial {e | A.evaluation.domain p kept e} (A.evaluation.graph (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) := by
+theorem partial_graph_valid (valid : E.Structural) (p : P.signature.Partial) (kept : Declaration.partialOp p ∈ U.declarations) :
+    GraphPresentation.IsPartial {e | E.domain p kept e} (E.graph (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) := by
   let opKept := Declaration.ofOperation_partialOp_mem p kept
-  refine ⟨A.graph_rightUnique (.partialOp p) opKept, ?_, ?_⟩
+  refine ⟨graph_rightUnique valid (.partialOp p) opKept, ?_, ?_⟩
   · intro e y graph
-    have held := A.evaluation.structural_rule A.structural (.graphImpliesDomain p)
+    have held := E.structural_rule valid (.graphImpliesDomain p)
       (by simpa only [Declaration.graphRuleName_graphImpliesDomain] using kept)
     simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_graphImpliesDomain,
       RestrictedEvaluation.holds_atom_iff, RestrictedEvaluation.atomic_graph_iff,
@@ -70,7 +71,7 @@ theorem partial_graph_valid (p : P.signature.Partial) (kept : Declaration.partia
     simp only [Assignment.pull_cons_there, Assignment.pull_id, Assignment.cons_here] at atInput
     exact atInput graph
   · intro e domain
-    have held := A.evaluation.structural_rule A.structural (.domainImpliesGraph p)
+    have held := E.structural_rule valid (.domainImpliesGraph p)
       (by simpa only [Declaration.graphRuleName_domainImpliesGraph] using kept)
     simp only [RestrictedEvaluation.satisfies_iff, GraphAxiom.toLaw_domainImpliesGraph,
       GraphAxiom.hasOutput_eq_ex_graph, RestrictedEvaluation.holds_ex_iff,
@@ -78,6 +79,35 @@ theorem partial_graph_valid (p : P.signature.Partial) (kept : Declaration.partia
       RestrictedEvaluation.atomic_graph_iff, Assignment.pull_cons_there, Assignment.pull_id,
       Assignment.cons_here] at held
     exact held e domain
+
+end RestrictedEvaluation
+
+namespace ContextStructure
+
+open DeclarationContext
+
+variable {P : PrimitivePresentation.{u}} {U : DeclarationContext P} (A : ContextStructure U)
+
+/-- Each retained graph is functional on the entire supported input product. -/
+theorem graph_rightUnique (op : Operation P.signature) (kept : Declaration.ofOperation op ∈ U.declarations) :
+    Relator.RightUnique (A.evaluation.graph op kept) :=
+  RestrictedEvaluation.graph_rightUnique A.structural op kept
+
+/-- A total operation's graph has a value for every input. -/
+theorem total_graph_valid (f : P.signature.Total) (kept : Declaration.total f ∈ U.declarations) :
+    GraphPresentation.IsTotal (A.evaluation.graph (.total f) (Declaration.ofOperation_total_mem f kept)) :=
+  RestrictedEvaluation.total_graph_valid A.structural f kept
+
+/-- A quantity's graph has a value for every input. -/
+theorem quantity_graph_valid (q : P.signature.Quantity) (kept : Declaration.quantity q ∈ U.declarations) :
+    GraphPresentation.IsTotal (A.evaluation.graph (.quantity q) (Declaration.ofOperation_quantity_mem q kept)) :=
+  RestrictedEvaluation.quantity_graph_valid A.structural q kept
+
+/-- A partial graph has unique values exactly on its declared domain. -/
+theorem partial_graph_valid (p : P.signature.Partial) (kept : Declaration.partialOp p ∈ U.declarations) :
+    GraphPresentation.IsPartial {e | A.evaluation.domain p kept e}
+      (A.evaluation.graph (.partialOp p) (Declaration.ofOperation_partialOp_mem p kept)) :=
+  RestrictedEvaluation.partial_graph_valid A.structural p kept
 
 /-- Read the literal functions, relations and domains of a context structure. -/
 noncomputable def toRestrictedStructure : RestrictedStructure U where

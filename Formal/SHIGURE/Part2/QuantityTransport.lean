@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part2.QuantityTransport.DeclarationRestriction
+import Formal.SHIGURE.Part2.QuantityTransport.DeclarationExamples
 import Formal.SHIGURE.Part2.QuantityTransport.ExtensionColimit
 import Formal.SHIGURE.Part2.QuantityTransport.FiniteFieldVanishing
 import Formal.SHIGURE.Part2.QuantityTransport.MissingLawInput

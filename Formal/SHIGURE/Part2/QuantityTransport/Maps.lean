@@ -52,6 +52,9 @@ theorem polynomial_X (x : P.Coordinate) :
     h.polynomial (MvPolynomial.X x) = MvPolynomial.X (h.coordinate x) :=
   MvPolynomial.rename_X h.coordinate x
 
+/-- Coordinate transport is contravariant on the ambient quantity schemes. -/
+def ambientMap : Q.ambientScheme ⟶ P.ambientScheme := specOverMap h.polynomial
+
 /-- Pull back a candidate by precomposing all its quantities with the domain maps. -/
 def candidate {R : Type u} (q : Q.Candidate R) : P.Candidate R :=
   fun j x => q (h.name j) (h.argument j x)
@@ -180,6 +183,14 @@ theorem algebra_comp (g : LawMap Q W) : (h.comp g).algebra = g.algebra.comp h.al
 
 /-- The map of the represented model spaces runs opposite the map of fixed domains. -/
 def scheme : Q.lawScheme ⟶ P.lawScheme := specOverMap h.algebra
+
+/-- The Law comparison restricts the ambient coordinate transport. -/
+theorem scheme_lawInclusion :
+    h.scheme ≫ P.lawInclusion = Q.lawInclusion ≫ h.toQuantityMap.ambientMap := by
+  apply Over.OverMorphism.ext
+  simp only [scheme, QuantityMap.ambientMap, Presentation.lawInclusion, Over.comp_left, specOverMap_left]
+  rw [← Spec.map_comp, ← Spec.map_comp]
+  congr 1
 
 /-- The scheme comparison for the identity on the fixed structure is the identity. -/
 theorem scheme_id : (LawMap.id P).scheme = 𝟙 P.lawScheme := by
