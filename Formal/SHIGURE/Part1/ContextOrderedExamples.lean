@@ -449,7 +449,6 @@ noncomputable def equalityReadingOrigin : ReadingOrigin equalityPresentation pad
         (fun _ => Sum.inl ()) () rfl).trans
         (PrimitivePresentation.lawAttachments_proof_of_additional paddedPresentation names id (.inl ())
           paddedPresentation_equality_role).symm
-  coefficientWriting_eq n := by cases n; rfl
   domainAttachment_eq p := nomatch p
   dependencies := equalityDependencies
 

@@ -38,7 +38,7 @@ private def primitive : PrimitivePresentation where
   signature := signature
   laws := ⟨Unit, fun _ => law, fun _ => .required⟩
   derived _ impossible := by cases impossible
-  coefficientWriting _ := some ⟨ℤ, registeredEquation⟩
+  coefficientLaw _ := some ⟨⟨ℤ, registeredEquation⟩, rfl, rfl⟩
 
 private theorem coefficientEquation_eq (n : primitive.laws.LawName) :
     primitive.coefficientEquation ℤ n = some registeredEquation := by
@@ -152,13 +152,13 @@ theorem named_law_keeps_quantity (U : DeclarationContext primitive) (l : (writte
 
 /-- The actual selected presentation retains the literal one in the original Law. -/
 theorem named_restriction_retains_literal (l : (written.selection retained).laws) :
-    ∃ left, (Selected.presentation retained).coefficientEquation ℤ
-      ⟨l.val.val.val, l.property⟩ = some (left, .scalar 1) := by
+    ∃ left, (Selected.presentation retained).declaredConclusion
+      ⟨l.val.val.val, l.property⟩ = .coefficient ⟨ℤ, left, .scalar 1⟩ := by
   have reg : primitive.coefficientWriting l.val.val.val = some ⟨ℤ, registeredEquation⟩ := rfl
-  rw [PrimitivePresentation.coefficientEquation, Selected.presentation_coefficientWriting _ reg]
   let name : retained.RetainedLaw := ⟨l.val.val.val, l.property⟩
   let selected := Selected.selectCoefficientWriting name ⟨ℤ, registeredEquation⟩ reg
-  refine ⟨selected.2.1, ?_⟩
+  refine ⟨selected.2.1, PrimitivePresentation.declaredConclusion_of_coefficientEquation ?_⟩
+  rw [PrimitivePresentation.coefficientEquation, Selected.presentation_coefficientWriting _ reg]
   change (some selected).bind (·.atType ℤ) = some (selected.2.1, .scalar 1)
   rw [Option.bind_some]
   exact RegisteredCoefficientEquation.atType_mk ℤ (selected.2.1, .scalar 1)
@@ -192,7 +192,7 @@ private def literalOnly (r : ℤ) : PrimitivePresentation where
   signature := signature
   laws := ⟨Unit, fun _ => ⟨[], .truth, .truth⟩, fun _ => .required⟩
   derived _ impossible := by cases impossible
-  coefficientWriting _ := some ⟨ℤ, .scalar r, .scalar 0⟩
+  coefficientLaw _ := some ⟨⟨ℤ, .scalar r, .scalar 0⟩, rfl, rfl⟩
 
 /-- A reading origin cannot replace the registered literals, even with identical dependency sets. -/
 theorem reading_origin_rejects_replaced_literal

@@ -109,6 +109,19 @@ def selectCoefficientWriting (name : U.RetainedLaw)
     writing.2.2.compile (fun a used =>
       selectCoefficientApplication hΓ a (fun _ incoming => support ⟨a, Or.inr used, incoming⟩))⟩
 
+private theorem selectLaw_conclusion_truth (law : Law P.signature)
+    (kept : Declaration.lawBody law ⊆ U.declarations) (truth : law.conclusion = .truth) :
+    (selectLaw law kept).conclusion = .truth := by
+  obtain ⟨context, input, conclusion⟩ := law
+  change conclusion = .truth at truth
+  subst conclusion
+  rfl
+
+private theorem coefficientWriting_some (name : U.RetainedLaw)
+    {e : P.laws.CoefficientConclusion name.val}
+    (found : P.coefficientLaw name.val = some e) : P.coefficientWriting name.val = some e.val :=
+  congrArg (Option.map Subtype.val) found
+
 /-- The selected names and proofs form an ordinary primitive presentation. -/
 noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentation.{u} where
   signature := signature U
@@ -120,25 +133,32 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
     | none => none
     | some data => some (selectDomainInclusions p data attached)
   derived name role := selectDerivation (P.derived name.val role) (keepsDerived name role)
-  coefficientWriting name := match registered : P.coefficientWriting name.val with
+  coefficientLaw name := match found : P.coefficientLaw name.val with
     | none => none
-    | some writing => some (selectCoefficientWriting name writing registered)
+    | some e => some ⟨selectCoefficientWriting name e.val (coefficientWriting_some name found),
+        e.property.1, selectLaw_conclusion_truth _ (Declaration.lawBody_subset_of_mem name.property) e.property.2⟩
 
 /-- A selected Law carries the original coefficient writing in its selected signature. -/
 theorem presentation_coefficientWriting (name : U.RetainedLaw)
     {writing : Quantities.RegisteredCoefficientEquation P.signature (P.laws.statement name.val).context}
     (registered : P.coefficientWriting name.val = some writing) :
     (presentation U).coefficientWriting name = some (selectCoefficientWriting name writing registered) := by
-  change (match found : P.coefficientWriting name.val with
-    | none => none
-    | some e => some (selectCoefficientWriting name e found)) = _
+  change Option.map Subtype.val
+    (match found : P.coefficientLaw name.val with
+      | none => none
+      | some e => some (⟨selectCoefficientWriting name e.val (coefficientWriting_some name found),
+          e.property.1, selectLaw_conclusion_truth _ (Declaration.lawBody_subset_of_mem name.property)
+            e.property.2⟩ :
+        (laws U).CoefficientConclusion name)) = _
   split
   · rename_i absent
-    have impossible := absent.symm.trans registered
+    have impossible : (none : Option _) = some writing :=
+      (congrArg (Option.map Subtype.val) absent).symm.trans registered
     cases impossible
-  · rename_i original found
-    have equal : original = writing := Option.some.inj (found.symm.trans registered)
-    subst original
+  · rename_i e found
+    have equal : e.val = writing :=
+      Option.some.inj ((coefficientWriting_some name found).symm.trans registered)
+    subst writing
     rfl
 
 /-- The restricted presentation uses the signature of the retained vocabulary. -/

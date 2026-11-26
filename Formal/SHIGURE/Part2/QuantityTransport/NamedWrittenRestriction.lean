@@ -201,8 +201,8 @@ theorem registeredResidual [CommRing k] (l : (L.selection V).laws) (e : L.native
     let J := L.restrictedInterpretation I inside
     let F := J.presentation
     ∃ (left right : Expression k (L.SelectedApplication l × F.Coordinate)),
-      (Selected.presentation V).coefficientEquation k ⟨l.val.val.val, l.property⟩ =
-        some (left.rename Prod.fst, right.rename Prod.fst) ∧
+      (Selected.presentation V).declaredConclusion ⟨l.val.val.val, l.property⟩ =
+        .coefficient ⟨k, left.rename Prod.fst, right.rename Prod.fst⟩ ∧
       ∃ input : F.Input l, input.val = e.val ∧
         F.residual l input =
           left.eval (fun a => F.universalQuantity a.2.1 a.2.2) -
@@ -210,7 +210,7 @@ theorem registeredResidual [CommRing k] (l : (L.selection V).laws) (e : L.native
   let input : (L.restrictedInterpretation I inside).input l :=
     ⟨e.val, (L.restrict_input_eq_native I inside l).symm ▸ e.property⟩
   obtain ⟨left, right, selected, leftCompiled, rightCompiled⟩ := L.registeredSides_compile I inside l input
-  refine ⟨left, right, selected, input, rfl, ?_⟩
+  refine ⟨left, right, PrimitivePresentation.declaredConclusion_of_coefficientEquation selected, input, rfl, ?_⟩
   rw [Presentation.residual, leftCompiled, rightCompiled, Expression.eval_rename, Expression.eval_rename]
   rfl
 

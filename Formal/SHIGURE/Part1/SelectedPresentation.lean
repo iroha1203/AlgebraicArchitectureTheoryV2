@@ -621,7 +621,9 @@ structure ReadingOrigin (selected ambient : PrimitivePresentation.{u})
   /-- The original external coefficient writing survives the same typed name transport. -/
   coefficientWriting_eq (i : selected.laws.LawName) :
     HEq ((selected.coefficientWriting i).map signature.coefficientWriting)
-      (ambient.coefficientWriting (lawName i))
+      (ambient.coefficientWriting (lawName i)) := by
+    intro i
+    first | rfl | cases i <;> rfl
   /-- Retain each inclusion-domain declaration with its ordered inclusion symbols. -/
   domainAttachment_eq (p : selected.signature.Partial) :
     selected.domainAttachment signature p = ambient.domainAttachment (SignatureNames.identity _) (signature.onPartial p)
