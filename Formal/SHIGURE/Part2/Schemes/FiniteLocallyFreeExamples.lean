@@ -65,8 +65,11 @@ theorem finiteFreeAffine_isFiniteLocallyFree (R : CommRingCat.{u}) (n : ℕ) :
     IsFiniteLocallyFreeModule ((tilde.functor R).obj (finiteFreeModule R n)) := by
   exact ⟨ULift.{u} Unit, fun _ => ⟨⊤, isAffineOpen_top _⟩, by simp, fun _ => finiteFreeAffine_on_top R n⟩
 
+/-- The B.5 infinite rank counterexample as a rational coefficient module. -/
 private abbrev rationalInfiniteFree := ModuleCat.of ℚ (ℕ →₀ ℚ)
+/-- The affine base of the infinite rank example. -/
 private abbrev rationalSpectrum := Spec (CommRingCat.of ℚ)
+/-- The associated sheaf in the B.3 infinite rank counterexample. -/
 private abbrev rationalInfiniteTilde := (tilde.functor (CommRingCat.of ℚ)).obj rationalInfiniteFree
 
 /-- The infinite rank free rational module has no finite locally free

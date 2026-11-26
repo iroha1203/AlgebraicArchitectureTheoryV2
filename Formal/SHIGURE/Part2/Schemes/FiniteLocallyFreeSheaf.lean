@@ -7,9 +7,11 @@ import Formal.SHIGURE.Part2.Schemes.AffineFiniteLocallyFree
 The finite principal cover in B.5 records a finite free basis chart around
 each point of an affine open. Using that coefficient predicate on an affine
 open cover expresses the local free-basis condition of B.3 with the actual
-module sheaf. The affine-open criterion extends these presentations to all
-affine opens, and the affine examples identify the condition with the
-coefficient predicate on an associated sheaf.
+module sheaf. The equivalent formulation by local trivializations would
+require converting each trivialization back to a coefficient presentation
+before applying B.5. The chosen form shares that coefficient API directly.
+The affine-open criterion extends the presentations to all affine opens,
+and the affine examples identify the condition on an associated sheaf.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -44,8 +46,8 @@ theorem IsFiniteLocallyFreeModule.quasiCoherent {M : X.Modules}
   obtain ⟨N, _, e⟩ := presentations i
   exact ⟨N, e⟩
 
-/-- On the inverse image of an affine open, a finite locally free
-presentation pulls back along the actual map of section rings. -/
+/-- On an affine open in the inverse image of a base affine open, a finite
+locally free presentation pulls back along the actual map of section rings. -/
 theorem HasFiniteLocallyFreeOn.pullback {f : Y ⟶ X} {M : X.Modules} {U : X.Opens} {V : Y.Opens}
     {hU : IsAffineOpen U} {hV : IsAffineOpen V} (inside : V ≤ f ⁻¹ᵁ U)
     (presentation : HasFiniteLocallyFreeOn M hU) :

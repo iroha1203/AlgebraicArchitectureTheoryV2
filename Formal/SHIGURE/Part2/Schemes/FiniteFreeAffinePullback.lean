@@ -14,12 +14,12 @@ universe u
 
 variable {R S : CommRingCat.{u}} (f : R ⟶ S) (n : ℕ)
 
-/-- The coordinate module of the rank-`n` trivial affine bundle. -/
+/-- The coordinate module of a rank-`n` free affine chart for B.3. -/
 def finiteFreeModule (R : CommRingCat.{u}) (n : ℕ) : ModuleCat.{u} R :=
   ModuleCat.of R (Fin n → R)
 
-/-- Extending scalars carries the finite free module, with its chosen basis, to
-the finite free module of the same rank over the new coefficient ring. -/
+/-- For the affine comparison in B.3, extending scalars carries the chosen
+coordinate basis to the same finite coordinate basis over the target ring. -/
 def finiteFreeScalarsIso :
     (ModuleCat.extendScalars f.hom).obj (finiteFreeModule R n) ≅ finiteFreeModule S n := by
   letI : Algebra R S := f.hom.toAlgebra

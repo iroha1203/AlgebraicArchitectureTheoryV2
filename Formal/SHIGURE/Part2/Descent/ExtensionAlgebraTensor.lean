@@ -13,14 +13,20 @@ universe u
 
 variable {A B : Type u} [CommRing A] [CommRing B]
 
+/-- The tensor target of coefficient extension in B.4, with its algebra
+structure explicit so that it can be transported along equality. -/
 private def tensorModuleOfAlgebra (a : Algebra A B) (M : ModuleCat.{u} A) : ModuleCat.{u} B :=
   letI := a
   ModuleCat.of B (B ⊗[A] M)
 
+/-- Transport the tensor presentation of scalar extension to an equal
+algebra structure on the target ring. -/
 private def extendScalarsTensorIsoOf (f : A →+* B) (a : Algebra A B) (e : f.toAlgebra = a)
     (M : ModuleCat.{u} A) : (extendScalars f).obj M ≅ tensorModuleOfAlgebra a M :=
   eqToIso (congrArg (fun algebraStructure => tensorModuleOfAlgebra algebraStructure M) e)
 
+/-- The comparison of tensor presentations carries the extension unit
+to the pure tensor of the coefficient unit with the original element. -/
 private theorem extendScalarsTensorIsoOf_unit (f : A →+* B) (a : Algebra A B) (e : f.toAlgebra = a)
     (M : ModuleCat.{u} A) (m : M) :
     (extendScalarsTensorIsoOf f a e M).hom ((extendRestrictScalarsAdj f).unit.app M m) =

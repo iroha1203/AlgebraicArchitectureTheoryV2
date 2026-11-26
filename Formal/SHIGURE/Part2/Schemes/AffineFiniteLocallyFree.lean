@@ -14,14 +14,16 @@ universe u
 
 variable {R S : CommRingCat.{u}}
 
-/-- Finite local freeness is unchanged by replacing the coefficient module by an isomorphic one. -/
+/-- In B.5 the finite projective criterion transports finite local freeness
+across an isomorphism of coefficient modules. -/
 theorem finiteLocallyFree_of_moduleIso {M N : ModuleCat.{u} R} (e : M ≅ N)
     (h : FiniteLocallyFree R M) : FiniteLocallyFree R N := by
   obtain ⟨finite, projective⟩ := finiteLocallyFree_iff_finite_projective.mp h
   exact finiteLocallyFree_iff_finite_projective.mpr
     ⟨Module.Finite.equiv e.toLinearEquiv, Module.Projective.of_equiv e.toLinearEquiv⟩
 
-/-- Extension along any affine coordinate map preserves finite local freeness. -/
+/-- For the B.3 affine pullback, the B.5 finite projective criterion is
+preserved by extension along an arbitrary coordinate map. -/
 theorem finiteLocallyFree_extendScalars (f : R ⟶ S) (M : ModuleCat.{u} R)
     (h : FiniteLocallyFree R M) :
     FiniteLocallyFree S ((ModuleCat.extendScalars f.hom).obj M) := by
@@ -32,7 +34,8 @@ theorem finiteLocallyFree_extendScalars (f : R ⟶ S) (M : ModuleCat.{u} R)
     ⟨inferInstance, inferInstance⟩
   exact finiteLocallyFree_of_moduleIso (extendScalarsTensorIso (B := S) M).symm baseChange
 
-/-- A faithfully flat affine pullback reflects finite local freeness of coefficients. -/
+/-- B.5 reflects finite presentation and flatness of the coefficient module
+along a faithfully flat ring map, giving finite local freeness on the base. -/
 theorem finiteLocallyFree_of_faithfullyFlat_extendScalars (f : R ⟶ S) (M : ModuleCat.{u} R)
     (faithfulFlat : letI : Algebra R S := f.hom.toAlgebra; Module.FaithfullyFlat R S)
     (h : FiniteLocallyFree S ((ModuleCat.extendScalars f.hom).obj M)) : FiniteLocallyFree R M := by
