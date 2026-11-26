@@ -20,6 +20,7 @@ import Formal.SHIGURE.Part1.ProtocolExamples
 import Formal.SHIGURE.Part1.PullbackExamples
 import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
+import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
@@ -4158,6 +4159,83 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Quantities.RegularExtensionExamples.integerStageAlgebraEquiv,
   Quantities.RegularExtensionExamples.integerStageSchemeIso,
   Quantities.RegularExtensionExamples.integerStage_nonempty
+]
+
+-- Faithfully flat coefficient descent and its comparison maps, Appendix B.2.
+#shigure_assert_standard_axioms_of [
+  CoefficientDescent.insertUnit,
+  CoefficientDescent.insertUnit_apply,
+  CoefficientDescent.multiply,
+  CoefficientDescent.multiply_tmul,
+  CoefficientDescent.Coaction,
+  CoefficientDescent.Coaction.descended,
+  CoefficientDescent.Coaction.descended_iff,
+  CoefficientDescent.Coaction.intoTensorEqualizer,
+  CoefficientDescent.Coaction.fromModule,
+  CoefficientDescent.Coaction.subtype_fromModule,
+  CoefficientDescent.Coaction.comparison,
+  CoefficientDescent.Coaction.comparison_tmul,
+  CoefficientDescent.Coaction.comparison_fromModule,
+  CoefficientDescent.Coaction.fromModule_comparison,
+  CoefficientDescent.Coaction.comparisonEquiv,
+  CoefficientDescent.Coaction.equivCoalgebra,
+  CoefficientDescent.doubleAction,
+  CoefficientDescent.doubleAction_tmul,
+  CoefficientDescent.doubleModule,
+  CoefficientDescent.double_smul,
+  CoefficientDescent.doubleTower,
+  CoefficientDescent.OverlapIso,
+  CoefficientDescent.move01,
+  CoefficientDescent.move12,
+  CoefficientDescent.move02,
+  CoefficientDescent.Datum,
+  CoefficientDescent.Datum.coactionMap,
+  CoefficientDescent.Datum.coactionMap_apply,
+  CoefficientDescent.Datum.coaction_coassoc,
+  CoefficientDescent.Datum.diagonal,
+  CoefficientDescent.Datum.diagonal_surjective,
+  CoefficientDescent.Datum.coaction_counit,
+  CoefficientDescent.Datum.toCoaction,
+  CoefficientDescent.Datum.mem_descended_iff,
+  CoefficientDescent.Datum.comparisonEquiv_tmul,
+  CoefficientDescent.standardLinearIso,
+  CoefficientDescent.standardLinearIso_tmul,
+  CoefficientDescent.standardOverlap,
+  CoefficientDescent.standardOverlap_tmul,
+  CoefficientDescent.standardDatum,
+  CoefficientDescent.standardUnit,
+  CoefficientDescent.comparison_after_standardUnit,
+  CoefficientDescent.standardUnit_bijective,
+  CoefficientDescent.standardUnitEquiv,
+  CoefficientDescent.standardUnitEquiv_apply,
+  CoefficientDescent.Datum.Compatible,
+  CoefficientDescent.Datum.overlap_tmul,
+  CoefficientDescent.Datum.compatible_iff_coaction,
+  CoefficientDescent.Datum.compatible_id,
+  CoefficientDescent.Datum.compatible_comp,
+  CoefficientDescent.Datum.descendMap,
+  CoefficientDescent.Datum.descendMap_apply,
+  CoefficientDescent.Datum.comparison_natural,
+  CoefficientDescent.DescentModule,
+  CoefficientDescent.DescentModule.ofDatum,
+  CoefficientDescent.DescentModule.Hom,
+  CoefficientDescent.DescentModule.Hom.ext,
+  CoefficientDescent.DescentModule.id_hom,
+  CoefficientDescent.DescentModule.comp_hom,
+  CoefficientDescent.DescentModule.extend,
+  CoefficientDescent.DescentModule.descend,
+  CoefficientDescent.DescentModule.unitIso,
+  CoefficientDescent.DescentModule.counitIso,
+  CoefficientDescent.DescentModule.equivalence,
+  CoefficientDescent.Examples.split_faithfullyFlat,
+  CoefficientDescent.Examples.split_overlap,
+  CoefficientDescent.Examples.split_unit_recovers,
+  CoefficientDescent.Examples.split_map_doubles,
+  CoefficientDescent.Examples.split_comparison_fixed_vector,
+  CoefficientDescent.Examples.split_comparison_doubling_square,
+  CoefficientDescent.Examples.split_idempotent_incompatible,
+  CoefficientDescent.Examples.zero_coaction_fails,
+  CoefficientDescent.Examples.sign_reversed_overlap_fails
 ]
 
 end SHIGURE.AxiomAudit
