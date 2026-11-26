@@ -99,9 +99,15 @@
 | $`p:\mathcal F\to\mathcal U,\ C_b,\mathrm{Valid}(u,c)`$ | すべての変更元にわたる解の族、共通候補の型、および有効性の関係 | [17.2–17.3](part_6/chapter_17_observation_sufficiency_and_selection.md#173-共通候補と解の選択) |
 | $`a(\tau),E(\tau),V(\tau),T_\tau,\beta_{\tau,c}`$ | 入力射の実現、評価先と合格値の輸送、および可変規則の記録輸送と端点比較 | [17.2 構成17.5](part_6/chapter_17_observation_sufficiency_and_selection.md#172-既知情報観測ファイバーと出力十分性) |
 | $`G_{(J)},R_T,R_V,F_{R,A}`$ | 観測点の安定化群、値とチャートの分割、および粗視化の診断比較 | [17.4–17.5](part_6/chapter_17_observation_sufficiency_and_selection.md#175-安全な解像度と選択の三つの問題) |
+| $`\Omega_H,r_i,e_i,\phi_i`$ | 許容変更の候補集合、局所公開読取り、局所評価、および実像上の線形因子化 | [17.9](part_6/chapter_17_observation_sufficiency_and_selection.md#179-許容変更全体での局所可視性) |
+| $`F_i,M_{\mathrm{pub}},M_{\mathrm{eq}},H,Q`$ | 局所解、公開値で照合した族、実際の共有値が一致する族、および共有差と公開の行列 | [17.10](part_6/chapter_17_observation_sufficiency_and_selection.md#1710-公開された共有値と解の貼り合わせ) |
+| $`\Pi_0,E_b`$ | 追加公開の候補集合、および不成立例を解消する候補の集合 | [17.11](part_6/chapter_17_observation_sufficiency_and_selection.md#1711-最小公開補完と不十分性の具体例) |
 | $`P_S,P_{\mathrm{in}},Y,D_S,B_{\mathrm{in}},b_0`$ | 補正空間、未知入力空間、欠陥の空間、および同じ修復問題から生成する補正式 | [18.1](part_6/chapter_18_repair_and_observation.md#181-実際の操作からの補正方程式) |
 | $`\pi_S,o_S,A_S`$ | 補正像で割る商写像、指定された残存障害、および入力方向の障害写像 | [18.2](part_6/chapter_18_repair_and_observation.md#182-残存障害と双対観測) |
 | $`L,F_s,N,O_J,\lambda_j,m_C`$ | 線形な既知情報、そのファイバーと核、問い合わせ評価、および最適追加問い合わせ数 | [18.3–18.4](part_6/chapter_18_repair_and_observation.md#183-既知情報を条件とする十分性) |
+| $`\Gamma_D,\omega_D,d_i`$ | 整数補正の余核の表示、自由・剰余障害を読む写像、および単因子 | [18.12](part_6/chapter_18_repair_and_observation.md#1812-単因子による自由障害と剰余障害) |
+| $`K,a,D_K,b_K,B^{(K)}`$ | 実際の上書き辺集合、具体的な置換値、および上書き後の修復方程式 | [18.13](part_6/chapter_18_repair_and_observation.md#1813-平行移動補正と具体的な上書き置換) |
+| $`\operatorname{Solv}_S,w(S),m(S)`$ | 許可範囲で可解な入力の集合、範囲費用、および静的な最小観測費用 | [18.14](part_6/chapter_18_repair_and_observation.md#1814-許可範囲と観測費用の同時最適化) |
 
 ## 第VII部 再構成と有限決定の記号
 
@@ -184,6 +190,8 @@
 - **第17–21章・付録E（観測・修復方程式・再構成・有限停止・費用）**：
   - 第18章の $`N=\ker L`$ と第19章の読み取り関手 $`N`$ は別の記号である。第19章の組み立て関手は $`\mathsf{Asm},\mathsf{Asm}_\sigma,\mathsf{Asm}_H`$ と書く。
   - 第18章の $`S`$ は候補辺の許可範囲、$`P_S`$ は補正空間であり、原始表示 $`\mathcal P`$ とは異なる。
+  - 第17章17.10節の $`H`$ は共有座標の差を取る行列、$`Q`$ はその線形公開読取りである。許容規則の添字 $`H`$ とは型と使用箇所で区別する。 17.11節の $`Q_J`$ は選んだ共有読取りを並べる行列であり、18.6節の既知情報と問い合わせを縦に並べた行列 $`Q_J=\binom{L}{O_J}`$ とは定義域と役割が異なる。
+  - 第18章18.13節以降の $`K\subseteq S`$ は実際に上書きする辺の集合であり、18.1節で用いるセル表示の記号 $`K`$ とは異なる。整数修復の $`N`$ は入力方向の部分群で、有限生成系を指定して計算する。
   - 第19章の $`J`$ は図式補完の小圏を、第20章の Artin 試験の $`J`$ は残差イデアルを表す。第21章の $`J_L`$ は普遍係数環上の残差イデアルである。
   - 第18章の階数計算や第20章のハンケル表で使うブロック行列の文字は、各設定・証明内で定義する。小行列式の開集合上で選ぶブロックや逆行列は局所的な計算用であり、実現の大域的な基底を指定するものではない。
   - 付録Eの $`c(\gamma),d(a,b)`$ は変更経路の費用とその下限であり、第11–18章のコチェイン微分 $`d^i`$ や固定図式 $`d`$ とは区別する。
