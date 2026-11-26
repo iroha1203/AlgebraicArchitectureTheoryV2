@@ -1,3 +1,5 @@
+import Mathlib.Algebra.Category.ModuleCat.ChangeOfRings
+import Mathlib.CategoryTheory.Monad.Adjunction
 import Mathlib.RingTheory.Flat.Equalizer
 
 /-! # Flat base change and the fixed-vector equalizer
@@ -11,7 +13,10 @@ for coalgebras of the extension–restriction comonad. Mathlib proves
 `ModuleCat.comonadicExtendScalars` and leaves the passage to geometric
 overlap data open. Here the overlap constructs the coaction in
 `Datum.toCoaction`, and the explicit tensor equalizer computes the
-comparison and its inverse in (B.2).
+comparison and its inverse in (B.2). `Coaction.equivCoalgebra` identifies
+this concrete representation with the actual mathlib coalgebras on the
+same module. Their structure map becomes the coaction, with counit
+given by scalar multiplication and comultiplication by unit insertion.
 -/
 
 namespace SHIGURE.CoefficientDescent
@@ -122,4 +127,79 @@ end Coaction
 
 end
 
+open CategoryTheory
+
+noncomputable section
+universe u
+
+variable {A B N : Type u} [CommRing A] [CommRing B] [AddCommGroup N] [Module B N]
+
+/-- On a fixed module, the explicit tensor laws are exactly the laws of the coefficient comonad. -/
+def Coaction.equivCoalgebra [Algebra A B] [Module A N] [IsScalarTower A B N] :
+    Coaction A B N ≃
+      { C : Comonad.Coalgebra (ModuleCat.extendRestrictScalarsAdj.{u} (algebraMap A B)).toComonad //
+        C.A = ModuleCat.of B N } := by
+  let canonical (f : A →+* B) : Type u :=
+    letI : Algebra A B := f.toAlgebra
+    letI : Module A N := Module.compHom N f
+    letI : IsScalarTower A B N := IsScalarTower.of_algebraMap_smul (fun _ _ => rfl)
+    Coaction A B N
+
+  have restricted : Coaction A B N = canonical (algebraMap A B) := by
+    generalize map_eq : algebraMap A B = f
+    have algebra_eq : f.toAlgebra = (inferInstance : Algebra A B) := by
+      rw [← map_eq]
+      exact toAlgebra_algebraMap
+    have module_eq : Module.compHom N f = (inferInstance : Module A N) := by
+      apply Module.ext'
+      intro r n
+      change (f r) • n = r • n
+      rw [← map_eq]
+      exact IsScalarTower.algebraMap_smul B r n
+    cases algebra_eq
+    cases module_eq
+    rfl
+
+  let compare (f : A →+* B) : canonical f ≃
+      { C : Comonad.Coalgebra (ModuleCat.extendRestrictScalarsAdj.{u} f).toComonad //
+        C.A = ModuleCat.of B N } := by
+    letI : Algebra A B := f.toAlgebra
+    letI : Module A N := Module.compHom N f
+    letI : IsScalarTower A B N := IsScalarTower.of_algebraMap_smul (fun _ _ => rfl)
+    have counitFormula (z : B ⊗[A] N) :
+        ModuleCat.ExtendRestrictScalarsAdj.Counit.map f (Y := ModuleCat.of B N) z =
+          multiply (A := A) z := by
+      induction z with
+      | zero => simp
+      | tmul b n => rfl
+      | add x y hx hy =>
+        rw [map_add, map_add]
+        exact congrArg₂ (· + ·) hx hy
+    exact
+      { toFun := fun ρ => ⟨{
+          A := ModuleCat.of B N
+          a := ModuleCat.ofHom ρ.map
+          counit := by
+            apply ModuleCat.hom_ext
+            ext n
+            exact (counitFormula (ρ.map n)).trans (ρ.counit n)
+          coassoc := by
+            apply ModuleCat.hom_ext
+            ext n
+            exact (ρ.coassoc n).symm }, rfl⟩
+        invFun := fun ⟨⟨M, a, counit, coassoc⟩, fixed⟩ => by
+          change M = ModuleCat.of B N at fixed
+          subst M
+          exact
+            { map := a.hom
+              counit := fun n => (counitFormula (a.hom n)).symm.trans (ConcreteCategory.congr_hom counit n)
+              coassoc := fun n => (ConcreteCategory.congr_hom coassoc n).symm }
+        left_inv := fun ρ => by cases ρ; rfl
+        right_inv := fun ⟨⟨M, a, counit, coassoc⟩, fixed⟩ => by
+          change M = ModuleCat.of B N at fixed
+          subst M
+          rfl }
+  exact (Equiv.cast restricted).trans (compare (algebraMap A B))
+
+end
 end SHIGURE.CoefficientDescent

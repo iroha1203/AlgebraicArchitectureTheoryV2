@@ -3945,6 +3945,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientDescent.Coaction.comparison_fromModule,
   CoefficientDescent.Coaction.fromModule_comparison,
   CoefficientDescent.Coaction.comparisonEquiv,
+  CoefficientDescent.Coaction.equivCoalgebra,
   CoefficientDescent.doubleAction,
   CoefficientDescent.doubleAction_tmul,
   CoefficientDescent.doubleModule,
