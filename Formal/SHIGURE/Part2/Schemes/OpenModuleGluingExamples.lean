@@ -1,10 +1,12 @@
+import Formal.SHIGURE.Part2.Schemes.DescentRechart
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluing
+import Formal.SHIGURE.Part2.Schemes.QuasiCoherentZariskiStack
 
 /-! # Module gluing on the principal opens of 2 and 3 in Spec ℤ -/
 
 namespace SHIGURE.SchemeDescent.OpenModuleGluingExamples
 
-open AlgebraicGeometry CategoryTheory CategoryTheory.Limits
+open AlgebraicGeometry CategoryTheory CategoryTheory.Limits Opposite
 open Scheme.Modules
 
 noncomputable section
@@ -23,6 +25,22 @@ private theorem charts_span : Ideal.span (Set.range chartDenominator) = ⊤ := b
 
 private def cover : (Spec integers).OpenCover :=
   (Scheme.affineOpenCoverOfSpanRangeEqTop (R := integers) chartDenominator charts_span).openCover
+
+private abbrev integerComparison := quasiCoherentModulesPseudofunctor.toDescentData cover.f
+
+private def integerQuasiCoherent : quasiCoherentModulesPseudofunctor.obj (.mk (op (Spec integers))) :=
+  ⟨(tilde.functor integers).obj (ModuleCat.of integers integers),
+    isQuasiCoherentModule_of_tilde _ ⟨ModuleCat.of integers integers, ⟨Iso.refl _⟩⟩⟩
+
+/-- On the original principal opens `D(2)` and `D(3)`, every compatible pair
+of maps between the rank-one restrictions descends uniquely. -/
+theorem integersQuasiCoherentMapDescent
+    (localMap : integerComparison.obj integerQuasiCoherent ⟶ integerComparison.obj integerQuasiCoherent) :
+    ∃! f : integerQuasiCoherent ⟶ integerQuasiCoherent, integerComparison.map f = localMap := by
+  letI : integerComparison.IsEquivalence := openCoverComparison_isEquivalence_anySize cover
+  refine ⟨integerComparison.preimage localMap, integerComparison.map_preimage localMap, ?_⟩
+  intro f h
+  exact integerComparison.map_injective (h.trans (integerComparison.map_preimage localMap).symm)
 
 private abbrev D := cover.gluedCover
 
@@ -54,6 +72,30 @@ private def negateIso {X : Scheme} {M N : X.Modules} (e : M ≅ N) : M ≅ N whe
   inv := -e.inv
   hom_inv_id := by simp
   inv_hom_id := by simp
+
+private def liftedCover : Scheme.OpenCover.{1} (Spec integers) :=
+  cover.reindex (Equiv.ulift : ULift.{1} cover.I₀ ≃ cover.I₀)
+
+private abbrev liftedComparison := quasiCoherentModulesPseudofunctor.toDescentData liftedCover.f
+private abbrev liftedRankOne := liftedComparison.obj integerQuasiCoherent
+
+private def signedChart (i : liftedCover.I₀) : liftedRankOne.obj i ≅ liftedRankOne.obj i :=
+  if (show Bool from i.down) = true then
+    let I := (quasiCoherentModulesProperty.prop (.mk (op (liftedCover.X i)))).fullyFaithfulι
+    I.preimageIso (negateIso (Iso.refl (liftedRankOne.obj i).obj))
+  else Iso.refl _
+
+private def signedLocalData : quasiCoherentModulesPseudofunctor.DescentData liftedCover.f :=
+  descentRechart (X := liftedRankOne.obj) liftedRankOne signedChart
+
+set_option maxHeartbeats 550000 in
+/-- Use opposite rank-one trivializations on `D(2)` and `D(3)`, with the
+indices in a larger universe. The compatible-sections inverse recovers both
+local modules and their changed overlap comparison. -/
+def integersLiftedOpenCoverObjectDescent :
+    let e := openCoverComparisonEquivalence_anySize liftedCover
+    e.functor.obj (e.inverse.obj signedLocalData) ≅ signedLocalData :=
+  (openCoverComparisonEquivalence_anySize liftedCover).counitIso.app signedLocalData
 
 private def badCharts : ModuleGluingData D where
   module := charts.module

@@ -521,6 +521,12 @@ def reglueIso (N : D.glued.Modules) : N ≅ (ofModule N).compatibleModule := by
     infer_instance
   exact asIso (fromGlobalHom N)
 
+/-- The canonical reglue isomorphism recovers each original restriction. -/
+@[reassoc]
+theorem reglueIso_chart (N : D.glued.Modules) (i : D.J) :
+    (restrictFunctor (D.ι i)).map (reglueIso N).hom ≫ (ofModule N).chartMap i = 𝟙 _ :=
+  fromGlobalHom_chart N i
+
 /-- A morphism between local modules that intertwines the two overlap transitions. -/
 structure CompatibleMorphisms (H : ModuleGluingData D) where
   /-- The morphism on each original chart. -/
