@@ -35,8 +35,8 @@ def IsQuasiCoherentSheafAlgebra (C : Under X.sheaf) : Prop :=
 
 /-- Affine-local tilde presentations of the underlying module determine
 quasi-coherence of the algebra on the whole scheme.
-This is the underlying-module form of the algebra cover criterion in the opening of Appendix B
-and Lemma B.7. -/
+This applies the module cover criterion in the opening of Appendix B to the underlying module
+of the algebra in Lemma B.7. -/
 theorem isQuasiCoherentSheafAlgebra_iff_affineCover (C : Under X.sheaf) :
     IsQuasiCoherentSheafAlgebra C ↔ HasAffineTildeCover (algebraUnderlyingModule C) :=
   isQuasiCoherentModule_iff_affineCover (algebraUnderlyingModule C)

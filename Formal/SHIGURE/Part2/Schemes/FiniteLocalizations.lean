@@ -92,8 +92,9 @@ theorem isLocalizedModule_limitMap (a : F ⟶ G)
 
 /-- Localizing at the images of a submonoid continues to localize at the
 original submonoid after restricting scalars.
-This is the scalar comparison used for principal opens in Appendix B.3. The two scalar towers
-and localization at the image monoid are supplied by the local presentations. -/
+This is the scalar comparison used for principal opens in Appendix B.3. Restricting the module
+actions along the ring map supplies both scalar towers. The local presentation supplies
+localization at the image monoid. -/
 theorem isLocalizedModule_restrictScalars_of_map {A M N : Type u} [CommRing A] [Algebra R A]
     [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] [Module A M] [Module A N]
     [IsScalarTower R A M] [IsScalarTower R A N] (f : M →ₗ[A] N)

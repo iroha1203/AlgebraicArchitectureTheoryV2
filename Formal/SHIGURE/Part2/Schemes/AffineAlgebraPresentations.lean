@@ -170,7 +170,7 @@ def HasAlgebraTildeOn (C : Under X.sheaf) {U : X.Opens} (hU : IsAffineOpen U) : 
     Nonempty ((pullbackAlgebra hU.fromSpec).obj C ≅ directImageStructure (Spec.map a))
 
 /-- Presentations as algebras on an affine open cover.
-This is the algebra cover condition of the opening of Appendix B, using the actual algebra
+This applies the module cover condition in the opening of Appendix B to the actual algebra
 presentations in Lemma B.7. -/
 def HasAffineAlgebraTildeCover (C : Under X.sheaf) : Prop :=
   ∃ (I : Type u) (U : I → X.affineOpens), (⨆ i, (U i : X.Opens)) = ⊤ ∧
@@ -189,8 +189,9 @@ private theorem HasAlgebraTildeOn.underlying {C : Under X.sheaf} {U : X.Opens}
   exact ⟨N, ⟨iso ≪≫ comparison.symm⟩⟩
 
 /-- Quasi-coherence is equivalent to a presentation as an algebra sheaf on every affine open.
-This is the all-affine form of the algebra criterion in Appendix B. The two directions use the
-given quasi-coherence or the given algebra presentations on each affine open. -/
+This compares the all-affine algebra presentations of Lemma B.7 with quasi-coherence of the
+underlying module. The two directions use the given quasi-coherence or the given algebra
+presentations on each affine open. -/
 theorem isQuasiCoherentSheafAlgebra_iff_eachAlgebraPresentation (C : Under X.sheaf) :
     IsQuasiCoherentSheafAlgebra C ↔ ∀ U : X.affineOpens, HasAlgebraTildeOn C U.property := by
   constructor
@@ -201,8 +202,9 @@ theorem isQuasiCoherentSheafAlgebra_iff_eachAlgebraPresentation (C : Under X.she
     exact (presentations U).underlying
 
 /-- The presentations as algebra sheaves on any affine open cover extend to all affine opens.
-This is the main algebra cover criterion in the opening of Appendix B and Lemma B.7. An
-arbitrary covering family and its given algebra presentations supply the reverse direction. -/
+This is the main algebra cover criterion, obtained by applying the module criterion in the
+opening of Appendix B to the algebra presentations in Lemma B.7. The reverse direction starts
+from an arbitrary affine covering family and its given algebra presentations. -/
 theorem isQuasiCoherentSheafAlgebra_iff_affineAlgebraTildeCover (C : Under X.sheaf) :
     IsQuasiCoherentSheafAlgebra C ↔ HasAffineAlgebraTildeCover C := by
   constructor
