@@ -12,8 +12,10 @@ it is the tensor of the two original overlap isomorphisms.
 The tensor product uses the tensor comparison of Lemma B.3 and the
 two multiplication comparisons of Lemma B.4. Transport proves the
 threefold condition while preserving the two native coefficient positions.
-The explicit pairing on overlap modules connects this construction to
-the actual tensor over the double coefficient algebra.
+A direct reordering of the three overlap factors would repeat the
+cocycle calculation already proved for the standard overlap. The
+explicit pairing verifies the resulting actual tensor over the
+double coefficient algebra on pure generators.
 -/
 
 namespace SHIGURE.CoefficientDescent

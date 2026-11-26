@@ -181,7 +181,9 @@ def homEquiv :
   right_inv f := TensorStructure.Hom.ext (funext (D.descend_liftSort E f))
 
 /-- The structure correspondence tests surjectivity on each carrier. -/
-theorem homEquiv_surjective_iff (f : D.CompatibleHom E) :
+theorem homEquiv_surjective_iff
+    (f : {f : TensorStructure.Hom D.native E.native //
+      ∀ s, (D.sort s).datum.Compatible (E.sort s).datum (f.onSort s)}) :
     (∀ s, Function.Surjective ((D.homEquiv E f).onSort s)) ↔
       ∀ s, Function.Surjective (f.val.onSort s) :=
   forall_congr' (fun s => (D.sort s).datum.descendMap_surjective_iff (E.sort s).datum (f.val.onSort s) (f.property s))
