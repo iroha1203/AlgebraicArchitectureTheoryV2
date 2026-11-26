@@ -165,20 +165,6 @@ theorem Datum.transport_compatible (D : Datum A B X) (e : X ≃ₗ[B] X') :
   rw [overlap_at, e.symm_apply_apply]
   rfl
 
-set_option maxHeartbeats 500000 in
-/-- The inverse of a compatible linear equivalence respects the actual overlap. -/
-theorem Datum.compatible_symm (D : Datum A B X) (E : Datum A B X') (e : X ≃ₗ[B] X')
-    (compatible : D.Compatible E e.toLinearMap) : E.Compatible D e.symm.toLinearMap := by
-  apply (E.compatible_iff_coaction D e.symm.toLinearMap).2
-  intro x
-  have held := (D.compatible_iff_coaction E e.toLinearMap).1 compatible (e.symm x)
-  change (e.toLinearMap.restrictScalars A).baseChange B (D.coactionMap (e.symm x)) =
-    E.coactionMap (e (e.symm x)) at held
-  rw [e.apply_symm_apply] at held
-  rw [← held]
-  change ((e.restrictScalars A).symm.baseChange A B _ _) (((e.restrictScalars A).baseChange A B _ _) (D.coactionMap (e.symm x))) = _
-  exact ((e.restrictScalars A).baseChange A B _ _).symm_apply_apply _
-
 /-- Conjugating a compatible map along transport gives a compatible map. -/
 theorem Datum.transport_map_compatible (D : Datum A B X) (E : Datum A B Y)
     (e : X ≃ₗ[B] X') (e' : Y ≃ₗ[B] Y') (f : X →ₗ[B] Y) (hf : D.Compatible E f) :

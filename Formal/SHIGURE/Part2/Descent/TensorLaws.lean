@@ -23,7 +23,7 @@ def shapeComparison (X : TensorShape sig.SortType) :
   shapeBaseChange D.descended X ≪≫ₗ
     X.equivSorts (fun s => (D.sort s).datum.toCoaction.comparisonEquiv)
 
-/-- Every native tensor expression is evaluated by the coefficient extension of its descended evaluation. -/
+/-- Evaluating an expression with base-ring scalars over the cover commutes with coefficient extension. -/
 theorem eval_comparison {X Y : TensorShape sig.SortType} (term : TensorExpression A sig X Y) :
     (D.shapeComparison Y).toLinearMap.comp ((term.eval D.descended).baseChange B) =
       ((term.mapScalars (algebraMap A B)).eval D.native).comp (D.shapeComparison X).toLinearMap := by

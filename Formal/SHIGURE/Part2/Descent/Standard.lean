@@ -181,6 +181,20 @@ theorem compatible_iff_coaction (f : N →ₗ[B] N') :
     rw [D.overlap_tmul, D'.overlap_tmul, lTensor_right_action]
     exact congrArg (fun z : B ⊗[A] N' => ((1 : B) ⊗ₜ[A] b) • z) (coaction n)
 
+set_option maxHeartbeats 500000 in
+/-- The inverse of a compatible linear equivalence respects the actual overlap. -/
+theorem compatible_symm (e : N ≃ₗ[B] N')
+    (compatible : D.Compatible D' e.toLinearMap) : D'.Compatible D e.symm.toLinearMap := by
+  apply (D'.compatible_iff_coaction D e.symm.toLinearMap).2
+  intro x
+  have held := (D.compatible_iff_coaction D' e.toLinearMap).1 compatible (e.symm x)
+  change (e.toLinearMap.restrictScalars A).baseChange B (D.coactionMap (e.symm x)) =
+    D'.coactionMap (e (e.symm x)) at held
+  rw [e.apply_symm_apply] at held
+  rw [← held]
+  change ((e.restrictScalars A).symm.baseChange A B _ _) (((e.restrictScalars A).baseChange A B _ _) (D.coactionMap (e.symm x))) = _
+  exact ((e.restrictScalars A).baseChange A B _ _).symm_apply_apply _
+
 /-- The identity is compatible with the overlap. -/
 theorem compatible_id : D.Compatible D LinearMap.id := by
   intro z

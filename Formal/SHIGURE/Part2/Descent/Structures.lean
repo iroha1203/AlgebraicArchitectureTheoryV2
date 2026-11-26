@@ -1,6 +1,16 @@
 import Formal.SHIGURE.Part2.Descent.Operations
 
-/-! # Descent of the actual tensor structures and their maps -/
+/-! # Descent of the actual tensor structures and their maps
+
+## Implementation notes
+
+Bundle each original carrier and its overlap once, then attach the
+overlap equation to each native multilinear operation. This is the
+sortwise data of Lemma B.5. The two interpretations expose the existing
+`TensorStructure`; a separate structure with an opaque comparison would
+hide the fixed vectors and the actual primitive operations. The
+comparison checks each operation on its scalar-extension generators.
+-/
 
 namespace SHIGURE.CoefficientDescent
 
