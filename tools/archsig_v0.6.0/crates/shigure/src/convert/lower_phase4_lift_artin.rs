@@ -472,12 +472,15 @@ pub(super) fn convert_lift_task(
         })
         .transpose()?;
 
-    let etale_descent = decl.etale_descent.as_ref().map(|ed| FiniteEtaleDescentSpec {
-        base_var: ed.base_var.clone(),
-        cover_var: ed.cover_var.clone(),
-        degree: ed.degree,
-        base_invertible: ed.base_invertible,
-    });
+    let etale_descent = decl
+        .etale_descent
+        .as_ref()
+        .map(|ed| FiniteEtaleDescentSpec {
+            base_var: ed.base_var.clone(),
+            cover_var: ed.cover_var.clone(),
+            degree: ed.degree,
+            base_invertible: ed.base_invertible,
+        });
 
     validate_lift_task(LiftTaskSpec {
         name: decl.name.clone(),
