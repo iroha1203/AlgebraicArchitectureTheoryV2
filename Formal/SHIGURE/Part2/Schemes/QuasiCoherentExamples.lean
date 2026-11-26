@@ -1,3 +1,4 @@
+import Formal.SHIGURE.Part2.Schemes.QuasiCoherentComparison
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentSheafAlgebras
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 
@@ -35,6 +36,13 @@ theorem skyscraper_not_affineCover :
     (isQuasiCoherentSheafAlgebra_iff_affineCover _).2 localCover
   exact RelativeSpecExamples.skyscraperAlgebraAtTwo_not_localization
     (sheafAlgebra_localizes _ qc (isAffineOpen_top X) (2 : Γ(X, ⊤)))
+
+example : (algebraUnderlyingModule structureAlgebra).IsQuasicoherent :=
+  (isQuasiCoherentModule_iff_mathlib _).mp structureAlgebra_quasiCoherent
+
+example : ¬ (algebraUnderlyingModule RelativeSpecExamples.skyscraperAlgebraAtTwo).IsQuasicoherent :=
+  fun qc => skyscraper_not_affineCover
+    ((isQuasiCoherentModule_iff_affineCover _).mp ((isQuasiCoherentModule_iff_mathlib _).mpr qc))
 
 end
 

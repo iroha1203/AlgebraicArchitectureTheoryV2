@@ -1,5 +1,5 @@
 import Formal.SHIGURE.Part2.Schemes.AffineModuleSections
-import Formal.SHIGURE.Part2.Schemes.AlgebraLocalizations
+import Mathlib.Algebra.Module.LocalizedModule.IsLocalization
 import Formal.SHIGURE.Part2.Schemes.AlgebraModule
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecSheaves
 
@@ -65,7 +65,7 @@ theorem sheafAlgebra_localizes (C : Under X.sheaf) (qc : IsQuasiCoherentSheafAlg
   have localizes := affineSections_localize hU (algebraUnderlyingModule C) source r
   have compatible : IsLocalizedModule (Submonoid.powers r) (IsScalarTower.toAlgHom R A B).toLinearMap :=
     localizes
-  have localization := isLocalization_of_isLocalizedModule (Submonoid.powers r) compatible
+  have localization := isLocalizedModule_iff_isLocalization.mp compatible
   change IsLocalization.Away (a r) B
   change IsLocalization ((Submonoid.powers r).map a.hom) B at localization
   rw [Submonoid.map_powers] at localization

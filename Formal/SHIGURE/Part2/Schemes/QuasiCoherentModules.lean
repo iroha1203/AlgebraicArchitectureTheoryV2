@@ -301,7 +301,9 @@ theorem affineTilde_of_finite_principalCover (M : (Spec R).Modules) {ι : Type u
   have intersections : (⨆ i, U i ⊓ W) = W := by rw [← iSup_inf_eq, cover, top_inf_eq]
   exact localizedRestriction_congr P.val (Submonoid.powers f) _ le_top cover intersections localizes
 
-/-- Having a tilde presentation on each affine open defines a quasi-coherent module sheaf. -/
+/-- Having a tilde presentation on each affine open defines a quasi-coherent module sheaf. We
+keep the statement in the form used in Appendix B. The separate comparison
+`isQuasiCoherentModule_iff_mathlib` identifies it with the existing site-theoretic criterion. -/
 def IsQuasiCoherentModule {X : Scheme.{u}} (M : X.Modules) : Prop :=
   ∀ U : X.affineOpens, HasTildeOn M U.property
 
