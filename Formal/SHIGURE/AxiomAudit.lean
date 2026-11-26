@@ -4248,6 +4248,26 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientDescent.Examples.sign_reversed_overlap_fails
 ]
 
+-- Finite locally free coefficient modules and constant rank, Appendix B.2.
+#shigure_assert_standard_axioms_of [
+  CoefficientDescent.FiniteLocallyFree,
+  CoefficientDescent.finite_baseChange_ker_of_surjective,
+  CoefficientDescent.FiniteLocallyFree.finitePresentation,
+  CoefficientDescent.FiniteLocallyFree.flat,
+  CoefficientDescent.FiniteLocallyFree.projective,
+  CoefficientDescent.finiteLocallyFree_of_finitePresentation_flat,
+  CoefficientDescent.finite_of_equiv_baseChange,
+  CoefficientDescent.finitePresentation_of_equiv_baseChange,
+  CoefficientDescent.flat_of_equiv_baseChange,
+  CoefficientDescent.rankAtStalk_of_equiv_baseChange,
+  CoefficientDescent.finiteLocallyFree_iff_finite_projective,
+  CoefficientDescent.Datum.finiteLocallyFree,
+  CoefficientDescent.Datum.constantRank,
+  CoefficientDescent.Examples.split_extension_finiteLocallyFree,
+  CoefficientDescent.Examples.split_finiteLocallyFree_descends,
+  CoefficientDescent.Examples.infinite_free_not_finiteLocallyFree
+]
+
 end SHIGURE.AxiomAudit
 
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit
