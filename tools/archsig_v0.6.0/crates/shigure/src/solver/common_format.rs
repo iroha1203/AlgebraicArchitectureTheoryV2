@@ -1,7 +1,7 @@
 //! Phase 2 復元済み表現・射のパラメータ代入、整形、および独立再評価検算ヘルパ。
 
 use crate::algebra::{
-    AlgebraError, ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, VarOrder,
+    AlgebraError, ExprBindings, GroebnerBasis, MonomialOrder, Poly, Rat, RingCoeff, VarOrder,
     rabinowitsch_solve,
 };
 use crate::ir::change::{ChangeSpec, EvalCondition, NamedPoly, PointDomain};
@@ -20,7 +20,8 @@ use crate::solver::preservation::{
     PreservationObligation, compute_preservation_locus_q, is_stratum_covered_by_union,
     map_algebra_silence, substitute_poly_expr,
 };
-use num_traits::{One, Signed, Zero};
+use num_bigint::BigUint;
+use num_traits::{One, Signed};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// パラメータ置換 `param_subst` を `Presentation` に適用する。
@@ -376,76 +377,138 @@ pub(crate) fn reeval_obligations_and_constraints(
             }),
         },
         ParamWitness::FpPoint { modulus, .. } => {
-            let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
-            let empty_bind = ExprBindings::params_only(&empty_order);
-            for ob in obligations {
-                if ob.source_laws.is_empty() {
-                    let (_, ob_bind) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
-                        .map_err(map_algebra_silence)?;
-                    let p = Poly::from_expr_fp(&ob.target, &ob_bind, modulus)
-                        .map_err(map_algebra_silence)?;
-                    if !p.is_zero() {
-                        return Ok(fail_reeval(format!(
-                            "restored {context_label} has nonzero Fp preservation residual"
-                        )));
-                    }
-                } else {
-                    match decide_fp_quotient_exact(ob, modulus)? {
-                        Some(true) => {}
-                        Some(false) => {
-                            return Ok(fail_reeval(format!(
-                                "restored {context_label} failed Fp quotient state-law check"
-                            )));
-                        }
-                        None => {
-                            return Err(SilenceReason::QuotientIdealOutOfScope {
-                                detail: "nonlinear multi-generator Fp quotient re-evaluation is out of scope".to_owned(),
-                            });
-                        }
-                    }
-                }
-            }
-            for ex in extra_eqs {
-                let p =
-                    Poly::from_expr_fp(ex, &empty_bind, modulus).map_err(map_algebra_silence)?;
-                if !p.is_zero() {
-                    return Ok(fail_reeval(format!(
-                        "restored {context_label} violated extra equality constraint over Fp"
-                    )));
-                }
-            }
-            for cond in eval_conds {
-                for eq in &cond.equations {
-                    let p = Poly::from_expr_fp(&eq.expr, &empty_bind, modulus)
-                        .map_err(map_algebra_silence)?;
-                    if !p.is_zero() {
-                        return Ok(fail_reeval(format!(
-                            "eval equation `{}` did not vanish over Fp",
-                            eq.name
-                        )));
-                    }
-                }
-                for inv in &cond.invertibles {
-                    let p = Poly::from_expr_fp(&inv.expr, &empty_bind, modulus)
-                        .map_err(map_algebra_silence)?;
-                    if p.is_zero() {
-                        return Ok(fail_reeval(format!(
-                            "eval invertible `{}` vanished over Fp",
-                            inv.name
-                        )));
-                    }
-                }
-            }
-            Ok(ReevalCheck {
-                checked: true,
-                matched: true,
-                detail: format!(
-                    "verified all {} obligations on restored Fp({modulus}) {context_label}",
-                    obligations.len()
-                ),
-            })
+            reeval_zero_param_fp(obligations, extra_eqs, eval_conds, modulus, context_label)
         }
     }
+}
+
+struct ZeroParamConstraintMessages<'a> {
+    extra_eq_msg: String,
+    eval_eq_suffix: &'a str,
+    eval_inv_suffix: &'a str,
+    matched_detail: String,
+}
+
+struct ZeroParamObligationMessages<'a> {
+    nonzero_residual: String,
+    quotient_failed: String,
+    quotient_out_of_scope: &'a str,
+}
+
+fn check_zero_param_obligations_exact<C: RingCoeff>(
+    obligations: &[PreservationObligation],
+    parse_expr: impl Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
+    decide_quotient: impl Fn(&PreservationObligation) -> Result<Option<bool>, SilenceReason>,
+    msgs: &ZeroParamObligationMessages<'_>,
+) -> Result<Option<ReevalCheck>, SilenceReason> {
+    for ob in obligations {
+        if ob.source_laws.is_empty() {
+            let (_, ob_bind) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
+                .map_err(map_algebra_silence)?;
+            let p = parse_expr(&ob.target, &ob_bind).map_err(map_algebra_silence)?;
+            if !p.is_zero() {
+                return Ok(Some(fail_reeval(msgs.nonzero_residual.clone())));
+            }
+        } else {
+            match decide_quotient(ob)? {
+                Some(true) => {}
+                Some(false) => {
+                    return Ok(Some(fail_reeval(msgs.quotient_failed.clone())));
+                }
+                None => {
+                    return Err(SilenceReason::QuotientIdealOutOfScope {
+                        detail: msgs.quotient_out_of_scope.to_owned(),
+                    });
+                }
+            }
+        }
+    }
+    Ok(None)
+}
+
+fn verify_zero_param_constraints<C: RingCoeff>(
+    extra_eqs: &[PolyExpr],
+    eval_conds: &[&EvalCondition],
+    empty_bind: &ExprBindings,
+    parse_expr: impl Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
+    is_inv_valid: impl Fn(&Poly<C>) -> bool,
+    msgs: ZeroParamConstraintMessages<'_>,
+) -> Result<ReevalCheck, SilenceReason> {
+    for ex in extra_eqs {
+        let p = parse_expr(ex, empty_bind).map_err(map_algebra_silence)?;
+        if !p.is_zero() {
+            return Ok(fail_reeval(msgs.extra_eq_msg));
+        }
+    }
+    for cond in eval_conds {
+        for eq in &cond.equations {
+            let p = parse_expr(&eq.expr, empty_bind).map_err(map_algebra_silence)?;
+            if !p.is_zero() {
+                return Ok(fail_reeval(format!(
+                    "eval equation `{}` {}",
+                    eq.name, msgs.eval_eq_suffix
+                )));
+            }
+        }
+        for inv in &cond.invertibles {
+            let p = parse_expr(&inv.expr, empty_bind).map_err(map_algebra_silence)?;
+            if !is_inv_valid(&p) {
+                return Ok(fail_reeval(format!(
+                    "eval invertible `{}` {}",
+                    inv.name, msgs.eval_inv_suffix
+                )));
+            }
+        }
+    }
+    Ok(ReevalCheck {
+        checked: true,
+        matched: true,
+        detail: msgs.matched_detail,
+    })
+}
+
+fn reeval_zero_param_fp(
+    obligations: &[PreservationObligation],
+    extra_eqs: &[PolyExpr],
+    eval_conds: &[&EvalCondition],
+    modulus: &BigUint,
+    context_label: &str,
+) -> Result<ReevalCheck, SilenceReason> {
+    let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
+    let empty_bind = ExprBindings::params_only(&empty_order);
+    let parse_fp = |expr: &PolyExpr, bind: &ExprBindings| Poly::from_expr_fp(expr, bind, modulus);
+    if let Some(failed) = check_zero_param_obligations_exact(
+        obligations,
+        parse_fp,
+        |ob| decide_fp_quotient_exact(ob, modulus),
+        &ZeroParamObligationMessages {
+            nonzero_residual: format!(
+                "restored {context_label} has nonzero Fp preservation residual"
+            ),
+            quotient_failed: format!("restored {context_label} failed Fp quotient state-law check"),
+            quotient_out_of_scope: "nonlinear multi-generator Fp quotient re-evaluation is out of scope",
+        },
+    )? {
+        return Ok(failed);
+    }
+    verify_zero_param_constraints(
+        extra_eqs,
+        eval_conds,
+        &empty_bind,
+        parse_fp,
+        |p| !p.is_zero(),
+        ZeroParamConstraintMessages {
+            extra_eq_msg: format!(
+                "restored {context_label} violated extra equality constraint over Fp"
+            ),
+            eval_eq_suffix: "did not vanish over Fp",
+            eval_inv_suffix: "vanished over Fp",
+            matched_detail: format!(
+                "verified all {} obligations on restored Fp({modulus}) {context_label}",
+                obligations.len()
+            ),
+        },
+    )
 }
 
 fn reeval_q_subst(
@@ -549,48 +612,29 @@ fn reeval_zero_param_q(
             "restored {context_label} failed independent preservation check"
         )));
     }
-    for ex in extra_eqs {
-        let p = Poly::from_expr_q(ex, &empty_bind).map_err(map_algebra_silence)?;
-        if !p.is_zero() {
-            return Ok(fail_reeval(format!(
-                "restored {context_label} violated extra equality constraint"
-            )));
-        }
-    }
-    for cond in eval_conds {
-        for eq in &cond.equations {
-            let p = Poly::from_expr_q(&eq.expr, &empty_bind).map_err(map_algebra_silence)?;
-            if !p.is_zero() {
-                return Ok(fail_reeval(format!(
-                    "eval equation `{}` did not vanish",
-                    eq.name
-                )));
-            }
-        }
-        for inv in &cond.invertibles {
-            let p = Poly::from_expr_q(&inv.expr, &empty_bind).map_err(map_algebra_silence)?;
-            let val = p.constant_value();
-            let valid = if require_z_unit_invs {
+    verify_zero_param_constraints(
+        extra_eqs,
+        eval_conds,
+        &empty_bind,
+        Poly::from_expr_q,
+        |p| {
+            if require_z_unit_invs {
+                let val = p.constant_value();
                 val.den().is_one() && val.num().abs().is_one()
             } else {
                 !p.is_zero()
-            };
-            if !valid {
-                return Ok(fail_reeval(format!(
-                    "eval invertible `{}` does not hold at restored point",
-                    inv.name
-                )));
             }
-        }
-    }
-    Ok(ReevalCheck {
-        checked: true,
-        matched: true,
-        detail: format!(
-            "verified all {} obligations on restored {context_label}",
-            obligations.len()
-        ),
-    })
+        },
+        ZeroParamConstraintMessages {
+            extra_eq_msg: format!("restored {context_label} violated extra equality constraint"),
+            eval_eq_suffix: "did not vanish",
+            eval_inv_suffix: "does not hold at restored point",
+            matched_detail: format!(
+                "verified all {} obligations on restored {context_label}",
+                obligations.len()
+            ),
+        },
+    )
 }
 
 fn reeval_zero_param_z(
@@ -601,69 +645,38 @@ fn reeval_zero_param_z(
 ) -> Result<ReevalCheck, SilenceReason> {
     let empty_order = VarOrder::new(vec![]).map_err(map_algebra_silence)?;
     let empty_bind = ExprBindings::params_only(&empty_order);
-    for ob in obligations {
-        if ob.source_laws.is_empty() {
-            let (_, ob_bind) = ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, &[])
-                .map_err(map_algebra_silence)?;
-            let p = Poly::from_expr_z(&ob.target, &ob_bind).map_err(map_algebra_silence)?;
-            if !p.is_zero() {
-                return Ok(fail_reeval(format!(
-                    "restored {context_label} has nonzero preservation residual over Z"
-                )));
-            }
-        } else {
-            match decide_z_quotient_unit_safe(ob, &empty_order)? {
-                Some(true) => {}
-                Some(false) => {
-                    return Ok(fail_reeval(format!(
-                        "restored {context_label} failed Z quotient state-law check"
-                    )));
-                }
-                None => {
-                    return Err(SilenceReason::QuotientIdealOutOfScope {
-                        detail: "Z quotient re-evaluation outside unit-pivot scope".to_owned(),
-                    });
-                }
-            }
-        }
+    if let Some(failed) = check_zero_param_obligations_exact(
+        obligations,
+        Poly::from_expr_z,
+        |ob| decide_z_quotient_unit_safe(ob, &empty_order),
+        &ZeroParamObligationMessages {
+            nonzero_residual: format!(
+                "restored {context_label} has nonzero preservation residual over Z"
+            ),
+            quotient_failed: format!("restored {context_label} failed Z quotient state-law check"),
+            quotient_out_of_scope: "Z quotient re-evaluation outside unit-pivot scope",
+        },
+    )? {
+        return Ok(failed);
     }
-    for ex in extra_eqs {
-        let p = Poly::from_expr_z(ex, &empty_bind).map_err(map_algebra_silence)?;
-        if !p.is_zero() {
-            return Ok(fail_reeval(format!(
+    verify_zero_param_constraints(
+        extra_eqs,
+        eval_conds,
+        &empty_bind,
+        Poly::from_expr_z,
+        |p| p.constant_value().abs().is_one(),
+        ZeroParamConstraintMessages {
+            extra_eq_msg: format!(
                 "restored {context_label} violated extra equality constraint over Z"
-            )));
-        }
-    }
-    for cond in eval_conds {
-        for eq in &cond.equations {
-            let p = Poly::from_expr_z(&eq.expr, &empty_bind).map_err(map_algebra_silence)?;
-            if !p.is_zero() {
-                return Ok(fail_reeval(format!(
-                    "eval equation `{}` did not vanish over Z",
-                    eq.name
-                )));
-            }
-        }
-        for inv in &cond.invertibles {
-            let p = Poly::from_expr_z(&inv.expr, &empty_bind).map_err(map_algebra_silence)?;
-            let val = p.constant_value();
-            if val.is_zero() || !val.abs().is_one() {
-                return Ok(fail_reeval(format!(
-                    "eval invertible `{}` is not a unit in Z",
-                    inv.name
-                )));
-            }
-        }
-    }
-    Ok(ReevalCheck {
-        checked: true,
-        matched: true,
-        detail: format!(
-            "verified all {} obligations on restored Z {context_label}",
-            obligations.len()
-        ),
-    })
+            ),
+            eval_eq_suffix: "did not vanish over Z",
+            eval_inv_suffix: "is not a unit in Z",
+            matched_detail: format!(
+                "verified all {} obligations on restored Z {context_label}",
+                obligations.len()
+            ),
+        },
+    )
 }
 
 pub(crate) fn collect_presentation_origins(pres: &Presentation, set: &mut BTreeSet<SourceRef>) {

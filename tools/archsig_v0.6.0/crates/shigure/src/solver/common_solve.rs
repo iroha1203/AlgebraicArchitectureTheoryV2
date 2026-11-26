@@ -1,8 +1,8 @@
 //! Phase 2（図式補完・一段変更経路・合法状態移送）で共有する多項式系解法と Z 商環単位ピボット判定。
 
 use crate::algebra::{
-    AffineSolutionZ, DEFAULT_MAX_FP_POINTS, ExprBindings, FpElem, GroebnerBasis, Monomial,
-    MonomialOrder, Poly, Rat, RingCoeff, VarOrder, rabinowitsch_solve, solve_affine_z,
+    AffineSolutionZ, AlgebraError, DEFAULT_MAX_FP_POINTS, ExprBindings, FpElem, GroebnerBasis,
+    Monomial, MonomialOrder, Poly, Rat, RingCoeff, VarOrder, rabinowitsch_solve, solve_affine_z,
     solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
@@ -349,28 +349,13 @@ fn solve_fp_system(
             ));
             return undetermined_system(checks, vec![], reason);
         }
-        let Ok((_, ob_bind)) =
-            ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, param_vars.vars())
-        else {
-            return undetermined_system(
-                checks,
-                vec![],
-                SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "binding_well_formed".to_owned(),
-                    detail: "failed to construct bindings".to_owned(),
-                },
-            );
-        };
-        match Poly::from_expr_fp(&ob.target, &ob_bind, modulus) {
-            Ok(p) => {
-                let sa = ob.state_vars.len() + ob.arg_vars.len();
-                eqs_fp.extend(
-                    extract_ambient_param_coeffs(&p, sa, param_vars.len())
-                        .into_iter()
-                        .filter(|c| !c.is_zero()),
-                );
-            }
-            Err(e) => return undetermined_system(checks, vec![], map_algebra_silence(e)),
+        if let Err(reason) = extract_obligation_ambient_eqs(
+            ob,
+            param_vars,
+            |e, b| Poly::from_expr_fp(e, b, modulus),
+            &mut eqs_fp,
+        ) {
+            return undetermined_system(checks, vec![], reason);
         }
     }
 
@@ -447,40 +432,9 @@ pub(crate) fn decide_fp_quotient_exact(
         return Ok(Some(true));
     }
 
-    let mut changed = true;
-    while changed && !cur_laws.is_empty() {
-        changed = false;
-        let found = cur_laws.iter().enumerate().find_map(|(idx, law)| {
-            if !law.is_affine() {
-                return None;
-            }
-            (0..n).find_map(|v| {
-                let c = affine_linear_coeff(law, v)?;
-                let inv = c.inv()?;
-                let neg_inv = inv.neg_elem();
-                let mut rhs = Poly::zero(n, law.zero_coeff().clone());
-                for (m, coeff) in law.terms() {
-                    if m.exps()[v] == 0 {
-                        rhs.add_term(m.clone(), neg_inv.mul_ref(coeff));
-                    }
-                }
-                Some((idx, v, rhs))
-            })
-        });
-        if let Some((idx, v, rhs)) = found {
-            changed = true;
-            cur_laws.remove(idx);
-            cur_target = substitute_single_var(&cur_target, v, &rhs)?;
-            let mut next = Vec::with_capacity(cur_laws.len());
-            for l in cur_laws {
-                let sl = substitute_single_var(&l, v, &rhs)?;
-                if !sl.is_zero() {
-                    next.push(sl);
-                }
-            }
-            cur_laws = next;
-        }
-    }
+    eliminate_unit_affine_laws(n, &mut cur_target, &mut cur_laws, |c| {
+        c.inv().map(|inv| inv.neg_elem())
+    })?;
 
     if cur_laws
         .iter()
@@ -581,41 +535,9 @@ pub(crate) fn decide_z_quotient_unit_safe(
         }
     }
 
-    let mut changed = true;
-    while changed && !cur_laws.is_empty() {
-        changed = false;
-        let found = cur_laws.iter().enumerate().find_map(|(idx, law)| {
-            if !law.is_affine() {
-                return None;
-            }
-            (0..n).find_map(|v| {
-                let c = affine_linear_coeff(law, v)?;
-                if !c.abs().is_one() {
-                    return None;
-                }
-                let mut rhs = Poly::zero(n, BigInt::zero());
-                for (m, coeff) in law.terms() {
-                    if m.exps()[v] == 0 {
-                        rhs.add_term(m.clone(), -(&c * coeff));
-                    }
-                }
-                Some((idx, v, rhs))
-            })
-        });
-        if let Some((idx, v, rhs)) = found {
-            changed = true;
-            cur_laws.remove(idx);
-            cur_target = substitute_single_var(&cur_target, v, &rhs)?;
-            let mut next = Vec::with_capacity(cur_laws.len());
-            for l in cur_laws {
-                let sl = substitute_single_var(&l, v, &rhs)?;
-                if !sl.is_zero() {
-                    next.push(sl);
-                }
-            }
-            cur_laws = next;
-        }
-    }
+    eliminate_unit_affine_laws(n, &mut cur_target, &mut cur_laws, |c| {
+        c.abs().is_one().then(|| -c)
+    })?;
 
     if cur_laws.is_empty() {
         return Ok(Some(cur_target.is_zero()));
@@ -639,6 +561,72 @@ pub(crate) fn decide_z_quotient_unit_safe(
     }
     // I·Z[x] ⊆ I·Q[x] のため、Q 上での非所属は Z 上での非所属を厳密に含意する。
     Ok(Some(false))
+}
+
+fn eliminate_unit_affine_laws<C: RingCoeff>(
+    num_vars: usize,
+    cur_target: &mut Poly<C>,
+    cur_laws: &mut Vec<Poly<C>>,
+    unit_neg_inv: impl Fn(&C) -> Option<C>,
+) -> Result<(), SilenceReason> {
+    let mut changed = true;
+    while changed && !cur_laws.is_empty() {
+        changed = false;
+        let found = cur_laws.iter().enumerate().find_map(|(idx, law)| {
+            if !law.is_affine() {
+                return None;
+            }
+            (0..num_vars).find_map(|v| {
+                let c = affine_linear_coeff(law, v)?;
+                let neg_inv = unit_neg_inv(&c)?;
+                let mut rhs = Poly::zero(num_vars, law.zero_coeff().clone());
+                for (m, coeff) in law.terms() {
+                    if m.exps()[v] == 0 {
+                        rhs.add_term(m.clone(), neg_inv.mul_ref(coeff));
+                    }
+                }
+                Some((idx, v, rhs))
+            })
+        });
+        if let Some((idx, v, rhs)) = found {
+            changed = true;
+            cur_laws.remove(idx);
+            *cur_target = substitute_single_var(cur_target, v, &rhs)?;
+            let mut next = Vec::with_capacity(cur_laws.len());
+            for l in cur_laws.drain(..) {
+                let sl = substitute_single_var(&l, v, &rhs)?;
+                if !sl.is_zero() {
+                    next.push(sl);
+                }
+            }
+            *cur_laws = next;
+        }
+    }
+    Ok(())
+}
+
+fn extract_obligation_ambient_eqs<C: RingCoeff>(
+    ob: &PreservationObligation,
+    param_vars: &VarOrder,
+    parse_expr: impl FnOnce(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
+    out: &mut Vec<Poly<C>>,
+) -> Result<(), SilenceReason> {
+    let Ok((_, ob_bind)) =
+        ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, param_vars.vars())
+    else {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "binding_well_formed".to_owned(),
+            detail: "failed to construct bindings".to_owned(),
+        });
+    };
+    let p = parse_expr(&ob.target, &ob_bind).map_err(map_algebra_silence)?;
+    let sa = ob.state_vars.len() + ob.arg_vars.len();
+    out.extend(
+        extract_ambient_param_coeffs(&p, sa, param_vars.len())
+            .into_iter()
+            .filter(|c| !c.is_zero()),
+    );
+    Ok(())
 }
 
 fn affine_linear_coeff<C: RingCoeff>(poly: &Poly<C>, var: usize) -> Option<C> {
@@ -748,28 +736,10 @@ fn solve_z_system(
     let param_bind = ExprBindings::params_only(param_vars);
     let mut eqs_z = Vec::new();
     for ob in obligations {
-        let Ok((_, ob_bind)) =
-            ExprBindings::from_slices(&ob.state_vars, &ob.arg_vars, param_vars.vars())
-        else {
-            return undetermined_system(
-                checks,
-                vec![],
-                SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "binding_well_formed".to_owned(),
-                    detail: "failed to construct bindings".to_owned(),
-                },
-            );
-        };
-        match Poly::from_expr_z(&ob.target, &ob_bind) {
-            Ok(p) => {
-                let sa = ob.state_vars.len() + ob.arg_vars.len();
-                eqs_z.extend(
-                    extract_ambient_param_coeffs(&p, sa, param_vars.len())
-                        .into_iter()
-                        .filter(|c| !c.is_zero()),
-                );
-            }
-            Err(e) => return undetermined_system(checks, vec![], map_algebra_silence(e)),
+        if let Err(reason) =
+            extract_obligation_ambient_eqs(ob, param_vars, Poly::from_expr_z, &mut eqs_z)
+        {
+            return undetermined_system(checks, vec![], reason);
         }
     }
     let (ex_eqs, invs_z) =

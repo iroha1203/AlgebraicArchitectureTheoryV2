@@ -18,7 +18,7 @@ use crate::solver::common_morph::compare_morphisms;
 use crate::solver::common_solve::{
     ParamWitness, collect_eval_and_extra, decide_fp_quotient_exact, decide_z_quotient_unit_safe,
 };
-use crate::solver::common_solve_q::is_ideal_nonempty;
+use crate::solver::common_solve_q::{IdealNonemptyCtx, is_ideal_nonempty};
 use crate::solver::context::display_polys;
 use crate::solver::preservation::{
     PreservationObligation, build_preservation_obligations, map_algebra_silence,
@@ -390,11 +390,13 @@ fn classify_domain_relation(
         d0k_laws,
         d0_sv,
         &[],
-        free_vars,
-        witness,
-        eval_conds,
-        coeff_domain,
-        point_domain,
+        &IdealNonemptyCtx {
+            free_vars,
+            witness,
+            eval_conds,
+            coeff_domain,
+            point_domain,
+        },
     )?;
 
     let q_like = matches!(coeff_domain, CoeffDomain::Q)

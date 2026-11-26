@@ -168,19 +168,17 @@ pub(crate) fn solve_q_system(
                     point_domain,
                     PointDomain::RationalPoints | PointDomain::IntegerPoints
                 ) {
+                    let stratum_ctx = StratumSolveCtx {
+                        input_eval_invs: &base_invs,
+                        first_witness: &first_witness,
+                        point_domain,
+                        param_vars,
+                        prefer_z,
+                    };
                     let mut first_undetermined = None;
                     for st in &nonempty_strata {
                         let st_disp = display_polys(&st.equations, param_vars);
-                        let out = solve_single_stratum_q(
-                            st,
-                            &base_invs,
-                            &st_disp,
-                            &first_witness,
-                            point_domain,
-                            param_vars,
-                            prefer_z,
-                            checks.clone(),
-                        );
+                        let out = solve_single_stratum_q(st, st_disp, &stratum_ctx, checks.clone());
                         match out.verdict {
                             Verdict::Established => return out,
                             Verdict::Refuted => {}
@@ -212,31 +210,38 @@ pub(crate) fn solve_q_system(
         }
     };
 
-    let residual_display = display_polys(&chosen_stratum.equations, param_vars);
-    solve_single_stratum_q(
-        &chosen_stratum,
-        &base_invs,
-        &residual_display,
-        &first_witness,
+    let stratum_ctx = StratumSolveCtx {
+        input_eval_invs: &base_invs,
+        first_witness: &first_witness,
         point_domain,
         param_vars,
         prefer_z,
-        checks,
-    )
+    };
+    let residual_display = display_polys(&chosen_stratum.equations, param_vars);
+    solve_single_stratum_q(&chosen_stratum, residual_display, &stratum_ctx, checks)
 }
 
-#[allow(clippy::too_many_arguments)]
+struct StratumSolveCtx<'a> {
+    input_eval_invs: &'a [Poly<Rat>],
+    first_witness: &'a Option<EmptyWitness>,
+    point_domain: &'a PointDomain,
+    param_vars: &'a VarOrder,
+    prefer_z: bool,
+}
+
 fn solve_single_stratum_q(
     chosen: &QuotientStratum,
-    input_eval_invs: &[Poly<Rat>],
-    residual_display: &[String],
-    first_witness: &Option<EmptyWitness>,
-    point_domain: &PointDomain,
-    param_vars: &VarOrder,
-    prefer_z: bool,
+    residual_display: Vec<String>,
+    ctx: &StratumSolveCtx<'_>,
     mut checks: Vec<ApplicabilityCheck>,
 ) -> SystemSolveOutcome {
-    let residual_display = residual_display.to_vec();
+    let StratumSolveCtx {
+        input_eval_invs,
+        first_witness,
+        point_domain,
+        param_vars,
+        prefer_z,
+    } = *ctx;
     let all_affine = chosen.equations.iter().all(Poly::is_affine);
 
     let has_implicit_open = if chosen.invertibles.is_empty() {
@@ -478,7 +483,7 @@ fn derive_obligation_empty_witness_q(
     None
 }
 
-fn compute_empty_witness_q(
+pub(crate) fn compute_empty_witness_q(
     eqs: &[Poly<Rat>],
     invs: &[Poly<Rat>],
     param_vars: &VarOrder,
@@ -492,18 +497,28 @@ fn compute_empty_witness_q(
     }
 }
 
+pub(crate) struct IdealNonemptyCtx<'a> {
+    pub free_vars: &'a VarOrder,
+    pub witness: &'a ParamWitness,
+    pub eval_conds: &'a [&'a EvalCondition],
+    pub coeff_domain: &'a CoeffDomain,
+    pub point_domain: &'a PointDomain,
+}
+
 /// 共通定義域・状態定義域イデアル `(laws)` が係数域・点域・評価開条件のもとで非空かを厳密判定する。
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn is_ideal_nonempty(
     laws: &[PolyExpr],
     state_vars: &[String],
     arg_vars: &[String],
-    free_vars: &VarOrder,
-    witness: &ParamWitness,
-    eval_conds: &[&EvalCondition],
-    coeff_domain: &CoeffDomain,
-    point_domain: &PointDomain,
+    ctx: &IdealNonemptyCtx<'_>,
 ) -> Result<bool, SilenceReason> {
+    let IdealNonemptyCtx {
+        free_vars,
+        witness,
+        eval_conds,
+        coeff_domain,
+        point_domain,
+    } = *ctx;
     let (order, bind) = ExprBindings::from_slices(state_vars, arg_vars, free_vars.vars())
         .map_err(map_algebra_silence)?;
     let sa = state_vars.len() + arg_vars.len();

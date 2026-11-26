@@ -15,7 +15,7 @@ use crate::solver::common_format::{
     symbolic_and_observed,
 };
 use crate::solver::common_solve::{ParamWitness, solve_obligations_and_evals};
-use crate::solver::common_solve_q::is_ideal_nonempty;
+use crate::solver::common_solve_q::{IdealNonemptyCtx, is_ideal_nonempty};
 use crate::solver::context::collect_presentation_params;
 use crate::solver::path::{
     MAX_PATH_CANDIDATES, established_path, path_query_mode_wire, refuted_path, undetermined_path,
@@ -482,11 +482,13 @@ fn evaluate_execution_sequence(
         &init_laws,
         &start_sv,
         &[],
-        free_vars,
-        witness,
-        &eval_refs,
-        domain,
-        point_domain,
+        &IdealNonemptyCtx {
+            free_vars,
+            witness,
+            eval_conds: &eval_refs,
+            coeff_domain: domain,
+            point_domain,
+        },
     )? {
         let disp =
             format_state_modulo_laws(&cur_state, &init_laws, &start_sv, &[], free_vars, domain)?;
@@ -728,11 +730,13 @@ fn evaluate_execution_sequence(
         &cand_init_laws,
         &start_sv,
         &[],
-        &cand_free_vars,
-        &cand_witness,
-        &cand_eval_refs,
-        domain,
-        point_domain,
+        &IdealNonemptyCtx {
+            free_vars: &cand_free_vars,
+            witness: &cand_witness,
+            eval_conds: &cand_eval_refs,
+            coeff_domain: domain,
+            point_domain,
+        },
     )? {
         let disp = format_state_modulo_laws(
             cand_states.last().expect("last state"),

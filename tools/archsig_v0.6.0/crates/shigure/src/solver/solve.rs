@@ -1,15 +1,17 @@
 //! 意味保存検査・条件付き解空間 F_{a,H,P}・相互作用解析の統合実行器（G-140 / G-141）。
 
 use crate::algebra::{
-    AffineSolutionQ, ExprBindings, GroebnerBasis, MonomialOrder, Poly, QuotientStratum, Rat,
-    VarOrder, rabinowitsch_solve, solve_affine_q,
+    AffineSolutionQ, ExprBindings, Poly, QuotientStratum, Rat, VarOrder, rabinowitsch_solve,
+    solve_affine_q,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
-use crate::ir::result::{ApplicabilityCheck, EmptyWitness, ShigureOutcome, SilenceReason, Verdict};
+use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::term::CoeffDomain;
 use crate::ir::validate::CheckedShigureTask;
 use crate::solver::ShigureQueryKind;
+use crate::solver::common_solve::collect_eval_and_extra;
+use crate::solver::common_solve_q::compute_empty_witness_q;
 use crate::solver::context::{
     SolveCtx, build_outcome_provenance, check_common_applicability, clear_denominators_to_z,
     display_polys, guard_z_quotient_or_universal, resolve_point_domain,
@@ -139,29 +141,24 @@ fn execute_semantic_preservation(
                 return ctx.refuted(residual_display, locus.empty_witness);
             }
 
+            let fctx = TaskFinalizeCtx {
+                task,
+                eval_cond: None,
+                input_eval_invs: &[],
+                param_vars,
+                has_source_laws,
+            };
             if locus.is_zariski_closed {
                 return finalize_q_or_z_solution(
-                    task,
-                    None,
+                    &fctx,
                     &locus.closure_ideal,
                     &[],
-                    &[],
-                    param_vars,
-                    has_source_laws,
                     ctx,
                     residual_display,
                 );
             }
 
-            finalize_non_closed_strata(
-                task,
-                None,
-                &locus.strata,
-                &[],
-                param_vars,
-                has_source_laws,
-                ctx,
-            )
+            finalize_non_closed_strata(&fctx, &locus.strata, ctx)
         }
     }
 }
@@ -208,23 +205,14 @@ fn execute_conditional_solution_space(
                 return ctx.undetermined(vec![], reason);
             }
             if let Ok(Some(z_res)) = extract_closed_residuals_z(obligations, param_vars.vars()) {
+                let eval_refs: Vec<&EvalCondition> = eval_cond.into_iter().collect();
+                let (ev_eqs, invs_z) =
+                    match collect_eval_and_extra(&[], &eval_refs, &param_bind, Poly::from_expr_z) {
+                        Ok(pair) => pair,
+                        Err(reason) => return ctx.undetermined(vec![], reason),
+                    };
                 let mut all_eqs_z = z_res;
-                let mut invs_z = Vec::new();
-                if let Some(cond) = eval_cond {
-                    for eq in &cond.equations {
-                        match Poly::from_expr_z(&eq.expr, &param_bind) {
-                            Ok(p) if !p.is_zero() => all_eqs_z.push(p),
-                            Ok(_) => {}
-                            Err(e) => return ctx.undetermined(vec![], map_algebra_silence(e)),
-                        }
-                    }
-                    for inv in &cond.invertibles {
-                        match Poly::from_expr_z(&inv.expr, &param_bind) {
-                            Ok(p) => invs_z.push(p),
-                            Err(e) => return ctx.undetermined(vec![], map_algebra_silence(e)),
-                        }
-                    }
-                }
+                all_eqs_z.extend(ev_eqs);
                 if all_eqs_z.iter().all(Poly::is_affine) {
                     return solve_affine_direct_z(
                         task, eval_cond, &all_eqs_z, &invs_z, param_vars, ctx,
@@ -287,27 +275,24 @@ fn solve_conditional_via_q(
     };
 
     let closure_disp = display_polys(&locus.closure_ideal, param_vars);
-    let mut eval_eqs = Vec::new();
-    let mut eval_invs = Vec::new();
-    if let Some(cond) = eval_cond {
-        for eq in &cond.equations {
-            match Poly::from_expr_q(&eq.expr, param_bind) {
-                Ok(p) if !p.is_zero() => eval_eqs.push(p),
-                Ok(_) => {}
-                Err(e) => return ctx.undetermined(closure_disp, map_algebra_silence(e)),
-            }
-        }
-        for inv in &cond.invertibles {
-            match Poly::from_expr_q(&inv.expr, param_bind) {
-                Ok(p) => eval_invs.push(p),
-                Err(e) => return ctx.undetermined(closure_disp, map_algebra_silence(e)),
-            }
-        }
-    }
+    let eval_refs: Vec<&EvalCondition> = eval_cond.into_iter().collect();
+    let (eval_eqs, eval_invs) =
+        match collect_eval_and_extra(&[], &eval_refs, param_bind, Poly::from_expr_q) {
+            Ok(pair) => pair,
+            Err(reason) => return ctx.undetermined(closure_disp, reason),
+        };
 
     if locus.strata.is_empty() {
         return ctx.refuted(closure_disp, locus.empty_witness);
     }
+
+    let fctx = TaskFinalizeCtx {
+        task,
+        eval_cond,
+        input_eval_invs: &eval_invs,
+        param_vars,
+        has_source_laws,
+    };
 
     if locus.is_zariski_closed {
         let mut combined_eqs = locus.closure_ideal.clone();
@@ -326,13 +311,9 @@ fn solve_conditional_via_q(
 
         let final_residual = display_polys(&rab.parameter_equations, param_vars);
         return finalize_q_or_z_solution(
-            task,
-            eval_cond,
+            &fctx,
             &rab.parameter_equations,
             &eval_invs,
-            &eval_invs,
-            param_vars,
-            has_source_laws,
             ctx,
             final_residual,
         );
@@ -359,38 +340,31 @@ fn solve_conditional_via_q(
         return ctx.refuted(closure_disp, witness);
     }
 
-    finalize_non_closed_strata(
-        task,
-        eval_cond,
-        &intersected,
-        &eval_invs,
-        param_vars,
-        has_source_laws,
-        ctx,
-    )
+    finalize_non_closed_strata(&fctx, &intersected, ctx)
+}
+
+struct TaskFinalizeCtx<'a> {
+    task: &'a CheckedShigureTask,
+    eval_cond: Option<&'a EvalCondition>,
+    input_eval_invs: &'a [Poly<Rat>],
+    param_vars: &'a VarOrder,
+    has_source_laws: bool,
 }
 
 /// 非閉な局所閉層の和集合 `strata` を、開条件を黙って落とさずに全層整合で解決する（F1・F2 対策）。
 fn finalize_non_closed_strata(
-    task: &CheckedShigureTask,
-    eval_cond: Option<&EvalCondition>,
+    fctx: &TaskFinalizeCtx<'_>,
     strata: &[QuotientStratum],
-    input_eval_invs: &[Poly<Rat>],
-    param_vars: &VarOrder,
-    has_source_laws: bool,
     mut ctx: SolveCtx,
 ) -> ShigureOutcome {
+    let param_vars = fctx.param_vars;
     if strata.len() == 1 {
         let first = &strata[0];
         let final_residual = display_polys(&first.equations, param_vars);
         return finalize_q_or_z_solution(
-            task,
-            eval_cond,
+            fctx,
             &first.equations,
             &first.invertibles,
-            input_eval_invs,
-            param_vars,
-            has_source_laws,
             ctx,
             final_residual,
         );
@@ -402,16 +376,12 @@ fn finalize_non_closed_strata(
         Err(reason) => return ctx.undetermined(vec![], reason),
     };
     let inter_disp = display_polys(&inter_closure, param_vars);
-    match is_stratum_covered_by_union(&inter_closure, input_eval_invs, strata, param_vars) {
+    match is_stratum_covered_by_union(&inter_closure, fctx.input_eval_invs, strata, param_vars) {
         Ok(true) => {
             return finalize_q_or_z_solution(
-                task,
-                eval_cond,
+                fctx,
                 &inter_closure,
-                input_eval_invs,
-                input_eval_invs,
-                param_vars,
-                has_source_laws,
+                fctx.input_eval_invs,
                 ctx,
                 inter_disp,
             );
@@ -426,13 +396,9 @@ fn finalize_non_closed_strata(
             for stratum in strata {
                 let stratum_disp = display_polys(&stratum.equations, param_vars);
                 let out = finalize_q_or_z_solution(
-                    task,
-                    eval_cond,
+                    fctx,
                     &stratum.equations,
                     &stratum.invertibles,
-                    input_eval_invs,
-                    param_vars,
-                    has_source_laws,
                     ctx.clone(),
                     stratum_disp,
                 );
@@ -469,18 +435,20 @@ fn finalize_non_closed_strata(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn finalize_q_or_z_solution(
-    task: &CheckedShigureTask,
-    eval_cond: Option<&EvalCondition>,
+    fctx: &TaskFinalizeCtx<'_>,
     final_eqs: &[Poly<Rat>],
     final_invs: &[Poly<Rat>],
-    input_eval_invs: &[Poly<Rat>],
-    param_vars: &VarOrder,
-    has_source_laws: bool,
     mut ctx: SolveCtx,
     residual_display: Vec<String>,
 ) -> ShigureOutcome {
+    let TaskFinalizeCtx {
+        task,
+        eval_cond,
+        input_eval_invs,
+        param_vars,
+        has_source_laws,
+    } = *fctx;
     let prefer_z = ctx.coeff_domain == CoeffDomain::Z;
     let all_affine = final_eqs.iter().all(Poly::is_affine);
 
@@ -515,16 +483,7 @@ fn finalize_q_or_z_solution(
                 "algebraic_closure_nonempty",
                 MathClause::G141D5,
             ));
-            restore_q_and_finish(
-                task,
-                eval_cond,
-                final_eqs,
-                final_invs,
-                param_vars,
-                prefer_z,
-                ctx,
-                residual_display,
-            )
+            restore_q_and_finish(fctx, final_eqs, final_invs, prefer_z, ctx, residual_display)
         }
         PointDomain::UniversalRing => {
             if let Some(out) = guard_z_quotient_or_universal(has_source_laws, eval_cond, &ctx) {
@@ -542,16 +501,7 @@ fn finalize_q_or_z_solution(
                 ));
                 return ctx.undetermined(residual_display, reason);
             }
-            restore_q_and_finish(
-                task,
-                eval_cond,
-                final_eqs,
-                &[],
-                param_vars,
-                false,
-                ctx,
-                residual_display,
-            )
+            restore_q_and_finish(fctx, final_eqs, &[], false, ctx, residual_display)
         }
         PointDomain::RationalPoints => {
             if !all_affine {
@@ -635,16 +585,7 @@ fn finalize_q_or_z_solution(
                             Err(reason) => ctx.undetermined(residual_display, reason),
                         };
                     }
-                    restore_q_and_finish(
-                        task,
-                        eval_cond,
-                        final_eqs,
-                        final_invs,
-                        param_vars,
-                        false,
-                        ctx,
-                        residual_display,
-                    )
+                    restore_q_and_finish(fctx, final_eqs, final_invs, false, ctx, residual_display)
                 }
                 Ok(AffineSolutionQ::Consistent {
                     verified: false, ..
@@ -685,17 +626,20 @@ fn finalize_q_or_z_solution(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn restore_q_and_finish(
-    task: &CheckedShigureTask,
-    eval_cond: Option<&EvalCondition>,
+    fctx: &TaskFinalizeCtx<'_>,
     final_eqs: &[Poly<Rat>],
     final_invs: &[Poly<Rat>],
-    param_vars: &VarOrder,
     prefer_z: bool,
     mut ctx: SolveCtx,
     residual_display: Vec<String>,
 ) -> ShigureOutcome {
+    let TaskFinalizeCtx {
+        task,
+        eval_cond,
+        param_vars,
+        ..
+    } = *fctx;
     let extracted = match extract_affine_substitution_q(final_eqs, param_vars, prefer_z) {
         Ok(Some(ext)) => ext,
         Ok(None) => {
@@ -736,19 +680,5 @@ fn restore_q_and_finish(
             )
         }
         Err(reason) => ctx.undetermined(residual_display, reason),
-    }
-}
-
-fn compute_empty_witness_q(
-    eqs: &[Poly<Rat>],
-    invs: &[Poly<Rat>],
-    param_vars: &VarOrder,
-) -> Option<EmptyWitness> {
-    if invs.is_empty() {
-        let gb = GroebnerBasis::compute(eqs, param_vars.clone(), MonomialOrder::Grevlex).ok()?;
-        gb.empty_witness().ok()?
-    } else {
-        let rab = rabinowitsch_solve(eqs, invs, param_vars).ok()?;
-        rab.empty_witness
     }
 }
