@@ -56,25 +56,39 @@ theorem finite_baseChange_ker_of_surjective (B : Type u) [CommRing B] [Algebra A
     Module.Finite.iff_fg.mpr (Module.FinitePresentation.fg_ker fB fSurj)
   exact Module.Finite.equiv (f.tensorKerEquiv B B).symm
 
+/-- Finite presentation is detected by a finite principal cover of
+finitely presented localizations. -/
+theorem finitePresentation_of_localizationSpan (s : Finset A)
+    (spans : Ideal.span (s : Set A) = ⊤)
+    (locally : ∀ f : s,
+      Module.FinitePresentation (Localization.Away f.val) (LocalizedModule (Submonoid.powers f.val) M)) :
+    Module.FinitePresentation A M := by
+  have finite : Module.Finite A M :=
+    Module.Finite.of_localizationSpan_finite s spans fun f => by
+      letI := locally f
+      infer_instance
+  obtain ⟨n, map, onto⟩ := Module.Finite.exists_fin' A M
+  refine Module.finitePresentation_of_free_of_surjective map onto (Module.Finite.iff_fg.mp ?_)
+  refine Module.Finite.of_localizationSpan_finite s spans fun f => ?_
+  let Rf := Localization.Away f.val
+  let S := Submonoid.powers f.val
+  letI : Module.FinitePresentation Rf (LocalizedModule S M) := locally f
+  letI : Module.FinitePresentation Rf (Rf ⊗[A] M) :=
+    Module.FinitePresentation.of_equiv (LocalizedModule.equivTensorProduct S M)
+  letI : Module.Flat A Rf := IsLocalization.flat Rf S
+  letI : Module.Finite Rf (Rf ⊗[A] LinearMap.ker map) :=
+    finite_baseChange_ker_of_surjective Rf map onto
+  exact Module.Finite.equiv (LocalizedModule.equivTensorProduct S (LinearMap.ker map)).symm
+
 /-- Finite local freeness implies finite presentation by localization of a finite free presentation. -/
 theorem FiniteLocallyFree.finitePresentation (h : FiniteLocallyFree A M) :
     Module.FinitePresentation A M := by
   obtain ⟨cover, spans, locally⟩ := h
-  have finite : Module.Finite A M :=
-    Module.Finite.of_localizationSpan_finite cover spans (fun f => (locally f).2)
-  obtain ⟨n, f, surj⟩ := Module.Finite.exists_fin' A M
-  refine Module.finitePresentation_of_free_of_surjective f surj (Module.Finite.iff_fg.mp ?_)
-  refine Module.Finite.of_localizationSpan_finite cover spans (fun g => ?_)
-  let Rg := Localization.Away g.val
-  let S := Submonoid.powers g.val
-  haveI : Module.Free Rg (LocalizedModule S M) := (locally g).1
-  haveI : Module.Finite Rg (LocalizedModule S M) := (locally g).2
-  haveI : Module.FinitePresentation Rg (LocalizedModule S M) := Module.finitePresentation_of_projective _ _
-  haveI : Module.FinitePresentation Rg (Rg ⊗[A] M) :=
-    Module.FinitePresentation.of_equiv (LocalizedModule.equivTensorProduct S M)
-  haveI : Module.Flat A Rg := IsLocalization.flat Rg S
-  haveI : Module.Finite Rg (Rg ⊗[A] LinearMap.ker f) := finite_baseChange_ker_of_surjective Rg f surj
-  exact Module.Finite.equiv (LocalizedModule.equivTensorProduct S (LinearMap.ker f)).symm
+  apply finitePresentation_of_localizationSpan cover spans
+  intro g
+  letI := (locally g).1
+  letI := (locally g).2
+  exact Module.finitePresentation_of_projective _ _
 
 /-- Finite local freeness gives flatness on the underlying affine. -/
 theorem FiniteLocallyFree.flat (h : FiniteLocallyFree A M) : Module.Flat A M := by
@@ -108,6 +122,24 @@ theorem finiteLocallyFree_of_finitePresentation_flat [Module.FinitePresentation 
     exact outside (le_p (Ideal.subset_span (show g ∈ good from free)))
   obtain ⟨cover, keep, spans⟩ := (Ideal.span_eq_top_iff_finite good).1 spans
   exact ⟨cover, spans, fun g => ⟨keep g.property, inferInstance⟩⟩
+
+/-- Finite local freeness can be checked on any finite principal cover. -/
+theorem finiteLocallyFree_of_localizationSpan (s : Finset A)
+    (spans : Ideal.span (s : Set A) = ⊤)
+    (locally : ∀ f : s,
+      FiniteLocallyFree (Localization.Away f.val) (LocalizedModule (Submonoid.powers f.val) M)) :
+    FiniteLocallyFree A M := by
+  letI : Module.FinitePresentation A M :=
+    finitePresentation_of_localizationSpan s spans fun f => (locally f).finitePresentation
+  letI : Module.Flat A M := by
+    apply Module.flat_of_localized_span A M (s : Set A) spans
+    intro f
+    let Rf := Localization.Away f.val
+    let S := Submonoid.powers f.val
+    letI : Module.Flat Rf (LocalizedModule S M) := (locally f).flat
+    letI : Module.Flat A Rf := IsLocalization.flat Rf S
+    exact Module.Flat.trans A Rf _
+  exact finiteLocallyFree_of_finitePresentation_flat
 
 variable [Module.FaithfullyFlat A B]
 

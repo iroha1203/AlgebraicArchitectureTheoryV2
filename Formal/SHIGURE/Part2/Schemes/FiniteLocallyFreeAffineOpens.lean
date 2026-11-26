@@ -1,6 +1,4 @@
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeSheaf
-import Formal.SHIGURE.Part2.Descent.FiniteLocallyFreeLocalSpan
-import Formal.SHIGURE.Part2.Descent.CanonicalScalarComparison
 
 /-! # Finite local freeness is affine local -/
 
@@ -15,28 +13,16 @@ universe u
 
 variable {X : Scheme.{u}} {M : X.Modules}
 
-private def restrictTildePresentation {U V : X.Opens} {hU : IsAffineOpen U} {hV : IsAffineOpen V}
-    (inside : V ≤ U) {N : ModuleCat.{u} Γ(X, U)}
-    (e : (tilde.functor Γ(X, U)).obj N ≅ M.restrict hU.fromSpec) :
-    (tilde.functor Γ(X, V)).obj ((ModuleCat.extendScalars (X.presheaf.map (homOfLE inside).op).hom).obj N) ≅
-      M.restrict hV.fromSpec := by
-  let f := X.presheaf.map (homOfLE inside).op
-  have composite : Spec.map f ≫ hU.fromSpec = hV.fromSpec :=
-    hU.map_fromSpec hV (homOfLE inside).op
-  haveI : IsOpenImmersion (Spec.map f ≫ hU.fromSpec) := by rw [composite]; infer_instance
-  letI : IsOpenImmersion (Spec.map f) := IsOpenImmersion.of_comp _ hU.fromSpec
-  exact ((tildeRestrictIso f).app N).symm ≪≫ (restrictFunctor (Spec.map f)).mapIso e ≪≫
-    ((restrictFunctorComp (Spec.map f) hU.fromSpec).app M).symm ≪≫
-    (restrictFunctorCongr composite).app M
-
 /-- Finite locally free presentations restrict to smaller affine opens. -/
 theorem HasFiniteLocallyFreeOn.restrict {U V : X.Opens} {hU : IsAffineOpen U} {hV : IsAffineOpen V}
     (inside : V ≤ U) (h : HasFiniteLocallyFreeOn M hU) : HasFiniteLocallyFreeOn M hV := by
   obtain ⟨N, finite, ⟨e⟩⟩ := h
   let f := X.presheaf.map (homOfLE inside).op
   exact ⟨(ModuleCat.extendScalars f.hom).obj N, finiteLocallyFree_extendScalars f N finite,
-    ⟨restrictTildePresentation (hV := hV) inside e⟩⟩
+    ⟨restrictTildePresentationIso (hV := hV) inside e⟩⟩
 
+/-- The section ring and its principal localization identify the local
+coefficient module with the one obtained from the smaller tilde chart. -/
 private theorem finiteLocallyFree_of_basicOpenPresentation {U : X.Opens}
     (affine : IsAffineOpen U) (N : ModuleCat.{u} Γ(X, U))
     (e : (tilde.functor Γ(X, U)).obj N ≅ M.restrict affine.fromSpec)
@@ -47,7 +33,7 @@ private theorem finiteLocallyFree_of_basicOpenPresentation {U : X.Opens}
   letI : Algebra Γ(X, U) Γ(X, V) := a.hom.toAlgebra
   letI : IsLocalization.Away f Γ(X, V) := affine.isLocalization_basicOpen f
   obtain ⟨P, finite, ⟨k⟩⟩ := localFree
-  let w := restrictTildePresentation (hV := affine.basicOpen f) (X.basicOpen_le f) e
+  let w := restrictTildePresentationIso (hV := affine.basicOpen f) (X.basicOpen_le f) e
   let comparison := (tilde.fullyFaithfulFunctor (R := Γ(X, V))).preimageIso (k ≪≫ w.symm)
   let N₀ := (ModuleCat.extendScalars a.hom).obj N
   have finite₀ : FiniteLocallyFree (Γ(X, V)) N₀ := finiteLocallyFree_of_moduleIso comparison finite
@@ -58,7 +44,8 @@ private theorem finiteLocallyFree_of_basicOpenPresentation {U : X.Opens}
     ext z
     exact j.commutes z
   let composed := ((ModuleCat.extendScalarsComp a.hom b.hom).app N).symm
-  let changeRing := (extensionAlongCongruence equal).app N
+  let changeRing := eqToIso (congrArg (fun a' : Γ(X, U) →+* L =>
+    (ModuleCat.extendScalars a').obj N) equal)
   let tensor := extendScalarsTensorIso (B := L) N
   let localized := (LocalizedModule.equivTensorProduct (Submonoid.powers f) N).symm.toModuleIso
   exact finiteLocallyFree_of_moduleIso (composed ≪≫ changeRing ≪≫ tensor ≪≫ localized)

@@ -1,6 +1,16 @@
 import Formal.SHIGURE.Part2.Schemes.AffineFiniteLocallyFree
 
-/-! # Finite locally free modules on schemes -/
+/-! # Finite locally free modules on schemes
+
+## Implementation notes
+
+The finite principal cover in B.5 records a finite free basis chart around
+each point of an affine open. Using that coefficient predicate on an affine
+open cover expresses the local free-basis condition of B.3 with the actual
+module sheaf. The affine-open criterion extends these presentations to all
+affine opens, and the affine examples identify the condition with the
+coefficient predicate on an associated sheaf.
+-/
 
 namespace SHIGURE.SchemeDescent
 
@@ -13,14 +23,14 @@ universe u
 
 variable {X Y : Scheme.{u}}
 
-/-- An affine open has a presentation by a coefficient module with a finite
-principal cover of free localizations. -/
+/-- On an affine open in B.3, the actual restriction is the associated sheaf
+of a coefficient module satisfying the finite principal-cover condition of B.5. -/
 def HasFiniteLocallyFreeOn (M : X.Modules) {U : X.Opens} (affine : IsAffineOpen U) : Prop :=
   ∃ N : ModuleCat.{u} Γ(X, U), FiniteLocallyFree (Γ(X, U)) N ∧
     Nonempty ((tilde.functor Γ(X, U)).obj N ≅ M.restrict affine.fromSpec)
 
-/-- A module sheaf is finite locally free if such presentations exist on an
-affine open cover. -/
+/-- Finite local freeness in B.3, expressed through the B.5 coefficient
+presentations on an affine open cover of the scheme. -/
 def IsFiniteLocallyFreeModule (M : X.Modules) : Prop :=
   ∃ (ι : Type u) (U : ι → X.affineOpens), (⨆ i, (U i : X.Opens)) = ⊤ ∧
     ∀ i, HasFiniteLocallyFreeOn M (U i).property

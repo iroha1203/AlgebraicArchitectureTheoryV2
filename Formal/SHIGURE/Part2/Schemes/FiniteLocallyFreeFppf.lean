@@ -15,6 +15,8 @@ universe u
 
 variable {X Y : Scheme.{u}} {M : X.Modules}
 
+/-- A pointwise lifting on the affine opens gives surjectivity for the
+spectrum of the actual map of section rings. -/
 private theorem specMap_appLE_surjective (f : Y ⟶ X) {U : X.Opens} {V : Y.Opens}
     (hU : IsAffineOpen U) (hV : IsAffineOpen V) (inside : V ≤ f ⁻¹ᵁ U)
     (onto : ∀ x ∈ U, ∃ y ∈ V, f y = x) :
@@ -29,6 +31,8 @@ private theorem specMap_appLE_surjective (f : Y ⟶ X) {U : X.Opens} {V : Y.Open
   rw [← Scheme.Hom.comp_apply, IsAffineOpen.SpecMap_appLE_fromSpec f hU hV inside,
     Scheme.Hom.comp_apply, hz, hy]
 
+/-- For an affine chart mapping onto a base open, flatness gives a faithfully
+flat section map. B.5 reflects finite local freeness across that map. -/
 private theorem HasFiniteLocallyFreeOn.of_faithfullyFlat_chart
     (f : Y ⟶ X) [Flat f] {U : X.Opens} {V : Y.Opens}
     (hU : IsAffineOpen U) (hV : IsAffineOpen V) (inside : V ≤ f ⁻¹ᵁ U)
@@ -51,6 +55,8 @@ private theorem HasFiniteLocallyFreeOn.of_faithfullyFlat_chart
     finiteLocallyFree_of_moduleIso coefficients finite
   exact ⟨N, finiteLocallyFree_of_faithfullyFlat_extendScalars a N faithful finiteAfter, ⟨e⟩⟩
 
+/-- The map of the two given affine charts is affine, so the inverse image
+of a smaller affine base open is affine within the source chart. -/
 private theorem affine_inter_preimage_of_maps_into_affine
     (f : Y ⟶ X) {U W : X.Opens} {V : Y.Opens} (hU : IsAffineOpen U) (hW : IsAffineOpen W)
     (hV : IsAffineOpen V) (inside : V ≤ f ⁻¹ᵁ U) (within : W ≤ U) :
@@ -64,8 +70,9 @@ private theorem affine_inter_preimage_of_maps_into_affine
     Scheme.Hom.comp_preimage, hV.fromSpec.image_preimage_eq_opensRange_inf, hV.opensRange_fromSpec] at affine
   exact affine
 
-/-- Finite local freeness of a quasi-coherent module can be checked on the
-components of any fppf cover. -/
+/-- For B.3, finite local freeness of a quasi-coherent module can be checked
+on the components of any fppf cover. The open image of a source chart gives
+a base chart on which the actual section map is faithfully flat. -/
 theorem isFiniteLocallyFreeModule_of_fppfCover (cover : FppfCover X) (coherent : IsQuasiCoherentModule M)
     (localFree : ∀ i, IsFiniteLocallyFreeModule ((Scheme.Modules.pullback (cover.f i)).obj M)) :
     IsFiniteLocallyFreeModule M := by
