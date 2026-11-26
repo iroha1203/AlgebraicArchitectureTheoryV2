@@ -142,6 +142,78 @@ theorem restrict_input_eq_native {A : ContextStructure U} (I : L.GuardedInterpre
     L.nativeInput A (Set.inclusion (L.inclusion inside).laws l)} = L.nativeInput (A.restrict inside) l
   exact Set.ext fun e => (L.nativeInput_restrict_iff A inside l e).symm
 
+/-- The application type used by the actual selected registration at this Law. -/
+abbrev SelectedApplication (l : (L.selection V).laws) :=
+  DeclaredApplication (Selected.signature V) ((Selected.laws V).statement ⟨l.val.val.val, l.property⟩).context
+
+variable {A : ContextStructure U} (I : L.GuardedInterpretation A) (inside : V ≤ U)
+
+/-- The written model of the actual declaration reduct with retained domains and inputs. -/
+abbrev restrictedInterpretation := I.toInterpretation.restrict (L.inclusion inside)
+
+private def pairApplication (l : (L.selection V).laws) (e : (L.restrictedInterpretation I inside).input l)
+    (a : L.written.UsedOccurrence l.val) :
+    L.SelectedApplication l × (L.restrictedInterpretation I inside).presentation.Coordinate :=
+  ⟨Selected.selectCoefficientApplication ((L.selection V).inputSorts l.property) a.val.val
+      (L.occurrence_kept l.property a.val),
+    ⟨(L.selection V).applicationQuantity l a, (L.restrictedInterpretation I inside).value l e a⟩⟩
+
+private def pairedLeft (l : (L.selection V).laws) (e : (L.restrictedInterpretation I inside).input l) :
+    Expression k (L.SelectedApplication l × (L.restrictedInterpretation I inside).presentation.Coordinate) :=
+  (L.equation l.val).1.compile fun a ha =>
+    let name : L.Occurrence l.val := ⟨a, Or.inl ha⟩
+    have used : name ∈ (L.written.left l.val).occurrences :=
+      (L.equation l.val).1.mem_compile_occurrences _ ha
+    L.pairApplication I inside l e ⟨name, Or.inl used⟩
+
+private def pairedRight (l : (L.selection V).laws) (e : (L.restrictedInterpretation I inside).input l) :
+    Expression k (L.SelectedApplication l × (L.restrictedInterpretation I inside).presentation.Coordinate) :=
+  (L.equation l.val).2.compile fun a ha =>
+    let name : L.Occurrence l.val := ⟨a, Or.inr ha⟩
+    have used : name ∈ (L.written.right l.val).occurrences :=
+      (L.equation l.val).2.mem_compile_occurrences _ ha
+    L.pairApplication I inside l e ⟨name, Or.inr used⟩
+
+/-- Each leaf of the retained Law pairs its trusted selected declaration with its evaluated coordinate.
+
+The first projections read the literal writing from the actual selected presentation.
+The second projections are precisely the compiled sides used to define the comparison.
+-/
+theorem registeredSides_compile (l : (L.selection V).laws) (e : (L.restrictedInterpretation I inside).input l) :
+    ∃ (left right : Expression k (L.SelectedApplication l × (L.restrictedInterpretation I inside).presentation.Coordinate)),
+      (Selected.presentation V).coefficientEquation k ⟨l.val.val.val, l.property⟩ =
+        some (left.rename Prod.fst, right.rename Prod.fst) ∧
+      (L.restrictedInterpretation I inside).presentation.left l e = left.rename Prod.snd ∧
+      (L.restrictedInterpretation I inside).presentation.right l e = right.rename Prod.snd := by
+  refine ⟨L.pairedLeft I inside l e, L.pairedRight I inside l e, ?_, ?_, ?_⟩
+  · rw [PrimitivePresentation.coefficientEquation, L.selected_coefficientWriting l, Option.bind_some]
+    simp only [pairedLeft, pairedRight, Expression.rename_compile]
+    exact RegisteredCoefficientEquation.atType_mk _ _
+  · simp only [WrittenLaws.DeclarationSelection.Interpretation.presentation, written, pairedLeft,
+      Expression.rename_compile, Expression.compile_compile]
+    rfl
+  · simp only [WrittenLaws.DeclarationSelection.Interpretation.presentation, written, pairedRight,
+      Expression.rename_compile, Expression.compile_compile]
+    rfl
+
+/-- The residual used by the comparison evaluates both sides of the selected registration at its real guard. -/
+theorem registeredResidual [CommRing k] (l : (L.selection V).laws) (e : L.nativeInput (A.restrict inside) l) :
+    let J := L.restrictedInterpretation I inside
+    let F := J.presentation
+    ∃ (left right : Expression k (L.SelectedApplication l × F.Coordinate)),
+      (Selected.presentation V).coefficientEquation k ⟨l.val.val.val, l.property⟩ =
+        some (left.rename Prod.fst, right.rename Prod.fst) ∧
+      ∃ input : F.Input l, input.val = e.val ∧
+        F.residual l input =
+          left.eval (fun a => F.universalQuantity a.2.1 a.2.2) -
+            right.eval (fun a => F.universalQuantity a.2.1 a.2.2) := by
+  let input : (L.restrictedInterpretation I inside).input l :=
+    ⟨e.val, (L.restrict_input_eq_native I inside l).symm ▸ e.property⟩
+  obtain ⟨left, right, selected, leftCompiled, rightCompiled⟩ := L.registeredSides_compile I inside l input
+  refine ⟨left, right, selected, input, rfl, ?_⟩
+  rw [Presentation.residual, leftCompiled, rightCompiled, Expression.eval_rename, Expression.eval_rename]
+  rfl
+
 /-- The actual primitive restriction of registered scalar equations commutes with changing coefficients. -/
 theorem lawMap_baseChange [CommRing k] {A : ContextStructure U} (I : L.GuardedInterpretation A)
     (inside : V ≤ U) (R : Type u) [CommRing R] [Algebra k R] :

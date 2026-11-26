@@ -28,6 +28,33 @@ noncomputable section
 
 universe u
 
+namespace Expression
+
+variable {k J K N : Type u}
+
+/-- A used application remains present after the supported renaming. -/
+theorem mem_compile_occurrences (p : Expression k J) (f : ∀ a ∈ p.occurrences, K)
+    {a : J} (used : a ∈ p.occurrences) : f a used ∈ (p.compile f).occurrences := by
+  induction p with
+  | scalar => exact (Set.notMem_empty _ used).elim
+  | quantity x =>
+    obtain rfl := Set.mem_singleton_iff.mp used
+    exact Set.mem_singleton _
+  | add p q ihp ihq | mul p q ihp ihq =>
+    rcases used with left | right
+    · exact Or.inl (ihp (fun x hx => f x (Or.inl hx)) left)
+    · exact Or.inr (ihq (fun x hx => f x (Or.inr hx)) right)
+  | neg p ih => exact ih f used
+
+/-- Compiling two successive supported renamings agrees with compiling their composite. -/
+theorem compile_compile (p : Expression k J) (f : ∀ a ∈ p.occurrences, K)
+    (g : ∀ b ∈ (p.compile f).occurrences, N) :
+    (p.compile f).compile g = p.compile (fun a used => g (f a used) (p.mem_compile_occurrences f used)) := by
+  induction p <;> simp only [compile, *]
+  rfl
+
+end Expression
+
 namespace WrittenLaws
 
 variable {P : PrimitivePresentation.{u}} {k : Type u}
