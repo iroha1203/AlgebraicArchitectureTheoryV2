@@ -20,97 +20,116 @@ noncomputable section
 
 namespace SHIGURE.Quantities.MissingLawInput
 
-variable (k : Type u) [CommRing k] {sig : Signature.{u}} (A : Structure sig)
+variable (k : Type u) [CommRing k] {sig : Signature.{u}}
 
-/-- The empty state context has a single argument tuple. -/
-private abbrev EmptyArgument :=
-  {a : Assignment A.carrier [] // a ∈ (Set.univ : Set (Assignment A.carrier []))}
+/-- The singleton domain whose unary argument is the specified state. -/
+private def singletonDomain {A : Structure sig} {s : sig.SortType} (a : A.carrier s) :
+    Set (Assignment A.carrier [s]) :=
+  {Assignment.cons a Assignment.empty}
 
-/-- The unique tuple in the argument and input domains. -/
-private def emptyArgument : EmptyArgument A :=
-  ⟨Assignment.empty, Set.mem_univ _⟩
+/-- The unary assignment naming the only element of a singleton domain. -/
+private def singletonArgument {A : Structure sig} {s : sig.SortType} (a : A.carrier s) :
+    singletonDomain a :=
+  ⟨Assignment.cons a Assignment.empty, Set.mem_singleton _⟩
 
-/-- A tuple in the empty context has no values to distinguish it from the canonical tuple. -/
-private theorem emptyArgument_eq (a : EmptyArgument A) : a = emptyArgument A :=
-  Subtype.ext (Assignment.eq_empty a.val)
+/-- Every argument in the domain equals the named unary assignment. -/
+private theorem singletonArgument_eq {A : Structure sig} {s : sig.SortType} (a : A.carrier s)
+    (x : singletonDomain a) : x = singletonArgument a :=
+  Subtype.ext (Set.mem_singleton_iff.mp x.property)
 
-/-- The fixed equation (q()=0) on an empty state context. -/
-def written : WrittenLaws k sig where
+/-- The fixed unary equation (q(x)=0). -/
+def written (s : sig.SortType) : WrittenLaws k sig where
   Quantity := PUnit
-  domainContext _ := []
+  domainContext _ := [s]
   Law := PUnit
-  inputContext _ := []
+  inputContext _ := [s]
   Occurrence _ := PUnit
-  application _ _ := ⟨PUnit.unit, ⟨Term.argsNil⟩⟩
+  application _ _ := ⟨PUnit.unit, ⟨fun i => .var i⟩⟩
   left _ := .quantity PUnit.unit
   right _ := .scalar 0
 
-/-- The source interprets the equation at its single possible input. -/
-def sourceInterpretation : (written k (sig := sig)).Interpretation A where
-  domain _ := Set.univ
-  input _ := Set.univ
-  defined _ _ _ := fun i => nomatch i
-  inDomain _ _ _ := Set.mem_univ _
+variable {A B : Structure sig} {s : sig.SortType}
 
-/-- The target has the same state structure and quantity domain, with no required Law inputs. -/
-def targetInterpretation : (written k (sig := sig)).Interpretation A where
-  domain _ := Set.univ
+/-- The source interprets the equation at the input a in the domain {a}. -/
+def sourceInterpretation (a : A.carrier s) : (written k s).Interpretation A where
+  domain _ := singletonDomain a
+  input _ := singletonDomain a
+  defined _ e _ := fun i => ⟨e.val i, rfl⟩
+  inDomain l e x := by
+    have same : ((written k s).application l x).2.value A
+        ⟨e.val, fun i => ⟨e.val i, rfl⟩⟩ = e.val := by
+      apply Assignment.ext
+      intro t i
+      exact (((written k s).application l x).2.evaluatesAt_value A
+        ⟨e.val, fun i => ⟨e.val i, rfl⟩⟩ i).symm
+    rw [same]
+    exact e.property
+
+/-- The target has domain {b} and the empty set of Law inputs. -/
+def targetInterpretation (b : B.carrier s) : (written k s).Interpretation B where
+  domain _ := singletonDomain b
   input _ := ∅
   defined _ e _ := False.elim e.property
   inDomain _ e _ := False.elim e.property
 
-/-- Compile the single mandatory input in Example 5.10. -/
-def source : Presentation k A := (sourceInterpretation k A).presentation
+/-- Compile the mandatory input in Example 5.10. -/
+def source (a : A.carrier s) : Presentation k A := (sourceInterpretation k a).presentation
 
-/-- Compile the same written equality with an empty target input set. -/
-def target : Presentation k A := (targetInterpretation k A).presentation
+/-- Compile the same equality with the empty target input set. -/
+def target (b : B.carrier s) : Presentation k B := (targetInterpretation k b).presentation
 
-/-- The identity structure map carries the sole quantity input to the sole target input. -/
-def comparison : QuantityMap (source k A) (target k A) :=
-  (sourceInterpretation k A).quantityMap (targetInterpretation k A) (StructureMap.id A)
-    (fun _ _ => Set.mem_univ _)
+variable (f : StructureMap A B) (a : A.carrier s)
 
-/-- The actual structure map cannot carry the source's designated input to a designated input. -/
+/-- A structure map taking a to b carries the domain {a} into the domain {b}. -/
+def comparison : QuantityMap (source k a) (target k (f.onSort s a)) :=
+  (sourceInterpretation k a).quantityMap (targetInterpretation k (f.onSort s a)) f (by
+    intro j x
+    change x.val.map f.onSort ∈ singletonDomain (f.onSort s a)
+    rw [singletonArgument_eq a x]
+    exact Set.mem_singleton_iff.mpr (by simp [singletonArgument]))
+
+/-- The structure map cannot carry a into the empty set of designated target inputs. -/
 theorem structureMap_does_not_preserve_inputs :
-    ¬ ∀ l (e : (sourceInterpretation k A).input l),
-      e.val.map (StructureMap.id A).onSort ∈ (targetInterpretation k A).input l := by
+    ¬ ∀ l (e : (sourceInterpretation k a).input l),
+      e.val.map f.onSort ∈ (targetInterpretation k (f.onSort s a)).input l := by
   intro preserve
-  exact preserve PUnit.unit (emptyArgument A)
+  exact preserve PUnit.unit (singletonArgument a)
 
 /-- No Law map can act on the source's required input. -/
-theorem noLawMap : ¬ Nonempty (LawMap (source k A) (target k A)) := by
+theorem noLawMap (a : A.carrier s) (b : B.carrier s) :
+    ¬ Nonempty (LawMap (source k a) (target k b)) := by
   rintro ⟨h⟩
-  exact (h.input PUnit.unit (emptyArgument A)).property
+  exact (h.input PUnit.unit (singletonArgument a)).property
 
 /-- The written zero equation requires exactly the vanishing of the quantity. -/
-private theorem source_holds_iff {R : Type u} [CommRing R] [Algebra k R]
-    (q : (source k A).Candidate R) :
-    (source k A).Holds q ↔ ∀ j x, q j x = 0 := by
-  change (sourceInterpretation k A).presentation.Holds q ↔ _
+private theorem source_holds_iff (a : A.carrier s) {R : Type u} [CommRing R] [Algebra k R]
+    (q : (source k a).Candidate R) :
+    (source k a).Holds q ↔ ∀ j x, q j x = 0 := by
+  change (sourceInterpretation k a).presentation.Holds q ↔ _
   rw [WrittenLaws.Interpretation.holds_iff_written]
   constructor
   · intro h j x
-    have hq := h PUnit.unit (emptyArgument A)
-    change q PUnit.unit ((sourceInterpretation k A).applicationCoordinate
-      PUnit.unit (emptyArgument A) PUnit.unit).2 = algebraMap k R 0 at hq
-    rw [emptyArgument_eq A ((sourceInterpretation k A).applicationCoordinate
-      PUnit.unit (emptyArgument A) PUnit.unit).2, map_zero] at hq
+    have hq := h PUnit.unit (singletonArgument a)
+    change q PUnit.unit ((sourceInterpretation k a).applicationCoordinate
+      PUnit.unit (singletonArgument a) PUnit.unit).2 = algebraMap k R 0 at hq
+    rw [singletonArgument_eq a ((sourceInterpretation k a).applicationCoordinate
+      PUnit.unit (singletonArgument a) PUnit.unit).2, map_zero] at hq
     cases j
-    rwa [emptyArgument_eq A x]
+    rwa [singletonArgument_eq a x]
   · intro h l e
-    change q PUnit.unit ((sourceInterpretation k A).applicationCoordinate l e PUnit.unit).2 = algebraMap k R 0
+    change q PUnit.unit ((sourceInterpretation k a).applicationCoordinate l e PUnit.unit).2 = algebraMap k R 0
     rw [map_zero]
     exact h _ _
 
 /-- The free model with quantity value one is lawful at the target. -/
-def targetOne : (target k A).Model k :=
+def targetOne (b : B.carrier s) : (target k b).Model k :=
   ⟨fun _ _ => 1, fun _ e => False.elim e.property⟩
 
 /-- Over a nonzero ring the pullback of quantity one violates the source equation. -/
 theorem targetOne_pullback_fails [Nontrivial k] :
-    ¬ (source k A).Holds ((comparison k A).candidate (targetOne k A).val) := by
+    ¬ (source k a).Holds ((comparison k f a).candidate (targetOne k (f.onSort s a)).val) := by
   intro h
-  exact one_ne_zero ((source_holds_iff k A _).mp h PUnit.unit (emptyArgument A))
+  exact one_ne_zero ((source_holds_iff k a _).mp h PUnit.unit (singletonArgument a))
 
 /-- When every quantity must be zero, the coefficient ring represents the models. -/
 private def zeroModelAlgebra {S : Structure sig} (P : Presentation k S)
@@ -135,32 +154,32 @@ private def zeroModelAlgebra {S : Structure sig} (P : Presentation k S)
     exact P.modelAlgHomEquiv.apply_symm_apply _
 
 /-- The source Law scheme is represented by the coefficient ring. -/
-def sourceAlgebraEquiv : (source k A).LawAlgebra ≃ₐ[k] k :=
-  zeroModelAlgebra k (source k A) (fun _ _ _ q => source_holds_iff k A q)
+def sourceAlgebraEquiv (a : A.carrier s) : (source k a).LawAlgebra ≃ₐ[k] k :=
+  zeroModelAlgebra k (source k a) (fun _ _ _ q => source_holds_iff k a q)
 
 /-- With no Law inputs the target residual ideal is zero. -/
-theorem targetResidualIdeal_eq_bot : (target k A).residualIdeal = ⊥ := by
+theorem targetResidualIdeal_eq_bot (b : B.carrier s) : (target k b).residualIdeal = ⊥ := by
   apply le_antisymm _ bot_le
-  exact ((target k A).residualIdeal_le_iff).mpr (fun _ e => False.elim e.property)
+  exact ((target k b).residualIdeal_le_iff).mpr (fun _ e => False.elim e.property)
 
 /-- The target Law scheme is the relative affine line. -/
-def targetAlgebraEquiv : (target k A).LawAlgebra ≃ₐ[k] Polynomial k :=
-  (Ideal.quotientEquivAlgOfEq k (targetResidualIdeal_eq_bot k A)).trans
+def targetAlgebraEquiv (b : B.carrier s) : (target k b).LawAlgebra ≃ₐ[k] Polynomial k :=
+  (Ideal.quotientEquivAlgOfEq k (targetResidualIdeal_eq_bot k b)).trans
     ((AlgEquiv.quotientBot k _).trans
       ((MvPolynomial.renameEquiv k
-        (show (target k A).Coordinate ≃ PUnit.{u + 1} from
+        (show (target k b).Coordinate ≃ PUnit.{u + 1} from
           { toFun := fun _ => PUnit.unit
-            invFun := fun _ => ⟨PUnit.unit, emptyArgument A⟩
+            invFun := fun _ => ⟨PUnit.unit, singletonArgument b⟩
             left_inv := by
-              rintro ⟨⟨⟩, a⟩
-              rw [emptyArgument_eq A a]
+              rintro ⟨⟨⟩, x⟩
+              rw [singletonArgument_eq b x]
             right_inv := by rintro ⟨⟩; rfl })).trans (MvPolynomial.pUnitAlgEquiv k)))
 
 /-- The agreement equations impose exactly the original source Law. -/
 private theorem correspondence_holds_iff {R : Type u} [CommRing R] [Algebra k R]
-    (q : (comparison k A).correspondencePresentation.Candidate R) :
-    (comparison k A).correspondencePresentation.Holds q ↔
-      (source k A).Holds ((comparison k A).candidate q) := by
+    (q : (comparison k f a).correspondencePresentation.Candidate R) :
+    (comparison k f a).correspondencePresentation.Holds q ↔
+      (source k a).Holds ((comparison k f a).candidate q) := by
   constructor
   · intro h l e
     simpa only [QuantityMap.correspondencePresentation, Expression.eval_rename] using h (.inr l) e
@@ -172,48 +191,55 @@ private theorem correspondence_holds_iff {R : Type u} [CommRing R] [Algebra k R]
 
 /-- The matching equations leave one quantity forced to be zero. -/
 def correspondenceAlgebraEquiv :
-    (comparison k A).correspondencePresentation.LawAlgebra ≃ₐ[k] k :=
-  zeroModelAlgebra k (comparison k A).correspondencePresentation (by
+    (comparison k f a).correspondencePresentation.LawAlgebra ≃ₐ[k] k :=
+  zeroModelAlgebra k (comparison k f a).correspondencePresentation (by
     intro R _ _ q
     rw [correspondence_holds_iff, source_holds_iff]
-    rfl)
+    refine ⟨?_, fun h j x => h _ ((comparison k f a).argument j x)⟩
+    intro h j x
+    cases j
+    rw [singletonArgument_eq (f.onSort s a) x]
+    have atSource := h PUnit.unit (singletonArgument a)
+    change q PUnit.unit ((comparison k f a).argument PUnit.unit (singletonArgument a)) = 0 at atSource
+    rwa [singletonArgument_eq (f.onSort s a)
+      ((comparison k f a).argument PUnit.unit (singletonArgument a))] at atSource)
 
 /-- Under the displayed identifications the second projection is the origin of the affine line. -/
 theorem projection_eq_origin :
-    (correspondenceAlgebraEquiv k A).toAlgHom.comp (comparison k A).targetQuotient =
-      (Polynomial.aeval (0 : k)).comp (targetAlgebraEquiv k A).toAlgHom := by
+    (correspondenceAlgebraEquiv k f a).toAlgHom.comp (comparison k f a).targetQuotient =
+      (Polynomial.aeval (0 : k)).comp (targetAlgebraEquiv k (f.onSort s a)).toAlgHom := by
   apply Ideal.Quotient.algHom_ext
   apply MvPolynomial.algHom_ext
-  rintro ⟨⟨⟩, a⟩
-  rw [emptyArgument_eq A a]
-  change (correspondenceAlgebraEquiv k A)
-      (Ideal.Quotient.mk (comparison k A).correspondencePresentation.residualIdeal
-        (MvPolynomial.X ⟨PUnit.unit, emptyArgument A⟩)) =
-    Polynomial.aeval (0 : k) ((targetAlgebraEquiv k A)
-      (Ideal.Quotient.mk (target k A).residualIdeal (MvPolynomial.X ⟨PUnit.unit, emptyArgument A⟩)))
-  have origin : (correspondenceAlgebraEquiv k A)
-      (Ideal.Quotient.mk (comparison k A).correspondencePresentation.residualIdeal
-        (MvPolynomial.X ⟨PUnit.unit, emptyArgument A⟩)) = 0 := by
+  rintro ⟨⟨⟩, x⟩
+  rw [singletonArgument_eq (f.onSort s a) x]
+  change (correspondenceAlgebraEquiv k f a)
+      (Ideal.Quotient.mk (comparison k f a).correspondencePresentation.residualIdeal
+        (MvPolynomial.X ⟨PUnit.unit, singletonArgument (f.onSort s a)⟩)) =
+    Polynomial.aeval (0 : k) ((targetAlgebraEquiv k (f.onSort s a))
+      (Ideal.Quotient.mk (target k (f.onSort s a)).residualIdeal (MvPolynomial.X ⟨PUnit.unit, singletonArgument (f.onSort s a)⟩)))
+  have origin : (correspondenceAlgebraEquiv k f a)
+      (Ideal.Quotient.mk (comparison k f a).correspondencePresentation.residualIdeal
+        (MvPolynomial.X ⟨PUnit.unit, singletonArgument (f.onSort s a)⟩)) = 0 := by
     change MvPolynomial.aeval (fun _ => (0 : k))
-      (MvPolynomial.X (⟨PUnit.unit, emptyArgument A⟩ : (target k A).Coordinate)) = 0
+      (MvPolynomial.X (⟨PUnit.unit, singletonArgument (f.onSort s a)⟩ : (target k (f.onSort s a)).Coordinate)) = 0
     rw [MvPolynomial.aeval_X]
-  have variable_image : (targetAlgebraEquiv k A)
-      (Ideal.Quotient.mk (target k A).residualIdeal (MvPolynomial.X ⟨PUnit.unit, emptyArgument A⟩)) =
+  have variable_image : (targetAlgebraEquiv k (f.onSort s a))
+      (Ideal.Quotient.mk (target k (f.onSort s a)).residualIdeal (MvPolynomial.X ⟨PUnit.unit, singletonArgument (f.onSort s a)⟩)) =
       Polynomial.X := by
     change MvPolynomial.pUnitAlgEquiv k
       (MvPolynomial.rename (fun _ => PUnit.unit)
-        (MvPolynomial.X (R := k) (⟨PUnit.unit, emptyArgument A⟩ : (target k A).Coordinate))) = _
+        (MvPolynomial.X (R := k) (⟨PUnit.unit, singletonArgument (f.onSort s a)⟩ : (target k (f.onSort s a)).Coordinate))) = _
     rw [MvPolynomial.rename_X]
     exact MvPolynomial.eval₂_X _ _ _
   rw [origin, variable_image, Polynomial.aeval_X]
 
 /-- The second projection becomes the inclusion of the origin as a relative scheme map. -/
 theorem schemeProjection_eq_origin :
-    (specOverAlgEquiv (correspondenceAlgebraEquiv k A)).hom ≫ (comparison k A).targetProjection =
-      specOverMap (Polynomial.aeval (0 : k)) ≫ (specOverAlgEquiv (targetAlgebraEquiv k A)).hom := by
-  change specOverMap (correspondenceAlgebraEquiv k A).toAlgHom ≫
-      specOverMap (comparison k A).targetQuotient =
-    specOverMap (Polynomial.aeval (0 : k)) ≫ specOverMap (targetAlgebraEquiv k A).toAlgHom
+    (specOverAlgEquiv (correspondenceAlgebraEquiv k f a)).hom ≫ (comparison k f a).targetProjection =
+      specOverMap (Polynomial.aeval (0 : k)) ≫ (specOverAlgEquiv (targetAlgebraEquiv k (f.onSort s a))).hom := by
+  change specOverMap (correspondenceAlgebraEquiv k f a).toAlgHom ≫
+      specOverMap (comparison k f a).targetQuotient =
+    specOverMap (Polynomial.aeval (0 : k)) ≫ specOverMap (targetAlgebraEquiv k (f.onSort s a)).toAlgHom
   rw [specOverMap_comp, specOverMap_comp, projection_eq_origin]
 
 end SHIGURE.Quantities.MissingLawInput
