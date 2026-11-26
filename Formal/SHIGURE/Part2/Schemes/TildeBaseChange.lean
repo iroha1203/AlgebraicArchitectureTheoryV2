@@ -19,7 +19,9 @@ universe u
 variable {R S : CommRingCat.{u}}
 
 /-- On each open of the target spectrum, the pushforward section is the
-original section on its inverse image, with scalars restricted along the ring map. -/
+original section on its inverse image, with scalars restricted along the ring map.
+This is the sections comparison for Appendix B.1. The affine map is induced by an arbitrary ring
+morphism. -/
 def moduleSpecPushforwardPresheafIso (f : R ⟶ S) (N : (Spec S).Modules) :
     ((modulesSpecToSheaf (R := R)).obj ((pushforward (Spec.map f)).obj N)).val ≅
       (TopologicalSpace.Opens.map (Spec.map f).base).op ⋙
@@ -50,7 +52,9 @@ def moduleSpecPushforwardPresheafIso (f : R ⟶ S) (N : (Spec S).Modules) :
     rfl
 
 /-- The global sections of a pushforward along an affine morphism use the same
-sections, with the scalar action restricted along its original ring map. -/
+sections, with the scalar action restricted along its original ring map.
+This is the global-section case of the affine comparison for Appendix B.1, obtained at the top
+open. -/
 def moduleSpecΓPushforwardIso (f : R ⟶ S) :
     pushforward (Spec.map f) ⋙ moduleSpecΓFunctor (R := R) ≅
       moduleSpecΓFunctor (R := S) ⋙ ModuleCat.restrictScalars f.hom :=
@@ -58,7 +62,9 @@ def moduleSpecΓPushforwardIso (f : R ⟶ S) :
     (fun _ => by ext x; rfl)
 
 /-- Pullback of an associated module sheaf on spectra is the sheaf associated
-to scalar extension along the ring map. -/
+to scalar extension along the ring map.
+This is the coefficient-extension comparison used in Appendix B.1 and B.3. It uses the two
+standard adjunctions for an arbitrary ring morphism. -/
 def tildePullbackIso (f : R ⟶ S) :
     tilde.functor R ⋙ pullback (Spec.map f) ≅
       ModuleCat.extendScalars f.hom ⋙ tilde.functor S :=
@@ -66,7 +72,9 @@ def tildePullbackIso (f : R ⟶ S) :
     (moduleSpecΓPushforwardIso f)).leftAdjointUniq
     ((ModuleCat.extendRestrictScalarsAdj f.hom).comp (tilde.adjunction (R := S)))
 
-/-- For an affine open immersion the same comparison uses the actual sheaf restriction. -/
+/-- For an affine open immersion the same comparison uses the actual sheaf restriction.
+This is the open-restriction case used in Appendix B.3. The open immersion lets the actual
+restriction agree with pullback. -/
 def tildeRestrictIso (f : R ⟶ S) [IsOpenImmersion (Spec.map f)] :
     tilde.functor R ⋙ restrictFunctor (Spec.map f) ≅
       ModuleCat.extendScalars f.hom ⋙ tilde.functor S :=

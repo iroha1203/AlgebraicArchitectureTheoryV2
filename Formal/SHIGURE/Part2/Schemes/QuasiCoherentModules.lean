@@ -53,12 +53,16 @@ private theorem isIso_of_basis {X : TopCat.{u}} {ι : Type u} {C : Type (u + 1)}
     exact (asIso restricted).inv_hom_id_app (op i)
 
 /-- A sheaf on a spectrum has the expected localization maps from its global
-sections to all principal opens. -/
+sections to all principal opens.
+This is the principal-open criterion for the affine presentations in Appendix B. The maps are
+the actual restrictions of a module sheaf on a spectrum. -/
 def PrincipalLocalizations (M : (Spec R).Modules) : Prop :=
   ∀ r : R, IsLocalizedModule (Submonoid.powers r)
     ((modulesSpecToSheaf.obj M).val.map (homOfLE (show PrimeSpectrum.basicOpen r ≤ ⊤ from le_top)).op).hom
 
-/-- Principal localizations make the actual tilde–global sections counit an isomorphism. -/
+/-- Principal localizations make the actual tilde–global sections counit an isomorphism.
+This is the recovery step for Appendix B.3. The finite-cover argument supplies the
+principal-open localization hypotheses. -/
 theorem fromTildeΓ_isIso_of_principalLocalizations (M : (Spec R).Modules)
     (localizes : PrincipalLocalizations M) : IsIso M.fromTildeΓ := by
   letI := (SpecModulesToSheafFullyFaithful (R := R)).reflectsIsomorphisms
@@ -89,7 +93,9 @@ theorem fromTildeΓ_isIso_of_principalLocalizations (M : (Spec R).Modules)
 
 
 /-- An invertible tilde–global sections counit exhibits each principal
-restriction map as the actual localization of the global sections. -/
+restriction map as the actual localization of the global sections.
+This is the converse criterion for Appendix B. The counit is invertible for a tilde presentation
+by the tilde-global-sections adjunction. -/
 theorem principalLocalizations_of_fromTildeΓ_isIso (M : (Spec R).Modules)
     [IsIso M.fromTildeΓ] : PrincipalLocalizations M := by
   intro r
@@ -108,7 +114,9 @@ theorem principalLocalizations_of_fromTildeΓ_isIso (M : (Spec R).Modules)
   exact IsLocalizedModule.of_linearEquiv (Submonoid.powers r) p.hom (asIso u).toLinearEquiv
 
 /-- A module sheaf on an affine scheme is a tilde sheaf precisely when its
-global-to-principal restriction maps are localizations. -/
+global-to-principal restriction maps are localizations.
+This API identifies the principal-open condition of Appendix B.3 and the affine tilde
+representation via the canonical counit. -/
 theorem principalLocalizations_iff_tilde (M : (Spec R).Modules) :
     PrincipalLocalizations M ↔ (tilde.functor R).essImage M := by
   rw [← isIso_fromTildeΓ_iff]
@@ -148,7 +156,9 @@ private theorem restrictedPrincipalMap_localizes {S : CommRingCat.{u}} (f : R �
     exact hN (f r)
   exact isLocalizedModule_restrictScalars_of_map (Submonoid.powers r) h.hom
 
-/-- An affine pushforward of an associated module sheaf has an associated module presentation. -/
+/-- An affine pushforward of an associated module sheaf has an associated module presentation.
+This API supplies the reverse affine algebra comparison in Lemma B.7. Its inputs are a ring map
+and a tilde presentation on its source spectrum. -/
 theorem affinePushforward_essImage {S : CommRingCat.{u}} (f : R ⟶ S)
     (N : (Spec S).Modules) (tildeN : (tilde.functor S).essImage N) :
     (tilde.functor R).essImage ((pushforward (Spec.map f)).obj N) := by
@@ -178,7 +188,9 @@ theorem affinePushforward_essImage {S : CommRingCat.{u}} (f : R ⟶ S)
 
 /-- If the restriction to an open affine chart has a tilde presentation,
 restricting its sections to a principal open of the ambient affine scheme
-localizes them at the ambient scalar. -/
+localizes them at the ambient scalar.
+This is the localization on one chart for Appendix B.3. The chart inclusion and its tilde
+presentation give the comparison on principal opens. -/
 theorem affineChart_sections_localize {S : CommRingCat.{u}} (f : R ⟶ S)
     [IsOpenImmersion (Spec.map f)] (M : (Spec R).Modules)
     (localTilde : (tilde.functor S).essImage (M.restrict (Spec.map f))) (r : R) :
@@ -230,11 +242,15 @@ theorem affineChart_sections_localize {S : CommRingCat.{u}} (f : R ⟶ S)
 
 
 /-- A module sheaf is presented by a module over the section ring of an
-affine open when its actual restriction is the associated module sheaf. -/
+affine open when its actual restriction is the associated module sheaf.
+This is the affine module presentation from the opening of Appendix B. The given open is affine
+and its canonical spectrum map supplies the restriction. -/
 def HasTildeOn {X : Scheme.{u}} (M : X.Modules) {U : X.Opens} (affine : IsAffineOpen U) : Prop :=
   (tilde.functor Γ(X, U)).essImage (M.restrict affine.fromSpec)
 
-/-- Tilde presentations restrict along any inclusion of affine opens. -/
+/-- Tilde presentations restrict along any inclusion of affine opens.
+This API restricts a presentation from the opening of Appendix B along an inclusion of affine
+opens, using the induced ring map. -/
 theorem HasTildeOn.restrict {X : Scheme.{u}} {M : X.Modules} {U V : X.Opens}
     {hU : IsAffineOpen U} {hV : IsAffineOpen V} (inside : V ≤ U) (localTilde : HasTildeOn M hU) :
     HasTildeOn M hV := by
@@ -258,7 +274,9 @@ private theorem localizedRestriction_congr (P : (Spec R).Opensᵒᵖ ⥤ ModuleC
   exact h
 
 /-- On an affine open of a spectrum with a tilde presentation, its section
-map to the intersection with an ambient principal open is localization. -/
+map to the intersection with an ambient principal open is localization.
+This is the localization used on opens and double intersections in Appendix B.3. It uses the
+given tilde presentation on the affine open. -/
 theorem affineOpen_sections_localize (M : (Spec R).Modules) {U : (Spec R).Opens}
     (hU : IsAffineOpen U) (presentation : HasTildeOn M hU) (r : R) :
     IsLocalizedModule (Submonoid.powers r)
@@ -279,7 +297,9 @@ theorem affineOpen_sections_localize (M : (Spec R).Modules) {U : (Spec R).Opens}
 
 
 /-- An associated module presentation on the image of an open immersion
-pulls back to the same affine open in the source. -/
+pulls back to the same affine open in the source.
+This is the restriction comparison in Appendix B.3 for an open immersion. Its image-open
+presentation is over the structure ring isomorphic to that of the source open. -/
 theorem HasTildeOn.pullbackImage {X Y : Scheme.{u}} {g : Y ⟶ X} [IsOpenImmersion g]
     {M : X.Modules} {V : Y.Opens} {hV : IsAffineOpen V}
     {hImage : IsAffineOpen (g ''ᵁ V)} (presentation : HasTildeOn M hImage) :
@@ -298,7 +318,9 @@ theorem HasTildeOn.pullbackImage {X Y : Scheme.{u}} {g : Y ⟶ X} [IsOpenImmersi
 
 
 /-- Local tilde presentations on a finite principal cover of a spectrum
-give a tilde presentation on the entire spectrum. -/
+give a tilde presentation on the entire spectrum.
+This proves the affine case of Appendix B.3. The principal cover and its local presentations
+come from the affine communication lemma. -/
 theorem affineTilde_of_finite_principalCover (M : (Spec R).Modules) {ι : Type u}
     [Fintype ι] [DecidableEq ι] (r : ι → R)
     (cover : (⨆ i, PrimeSpectrum.basicOpen (r i)) = ⊤)
@@ -331,11 +353,15 @@ theorem affineTilde_of_finite_principalCover (M : (Spec R).Modules) {ι : Type u
 
 /-- Having a tilde presentation on each affine open defines a quasi-coherent module sheaf. We
 keep the statement in the form used in Appendix B. The separate comparison
-`isQuasiCoherentModule_iff_mathlib` identifies it with the existing site-theoretic criterion. -/
+`isQuasiCoherentModule_iff_mathlib` identifies it with the existing site-theoretic criterion.
+This is the module condition in the opening of Appendix B. It quantifies over all affine opens
+of an arbitrary scheme. -/
 def IsQuasiCoherentModule {X : Scheme.{u}} (M : X.Modules) : Prop :=
   ∀ U : X.affineOpens, HasTildeOn M U.property
 
-/-- Affine-local presentations on some affine open cover. -/
+/-- Affine-local presentations on some affine open cover.
+This is the cover condition equivalent to the definition in the opening of Appendix B. The cover
+is arbitrary in the universe of the scheme. -/
 def HasAffineTildeCover {X : Scheme.{u}} (M : X.Modules) : Prop :=
   ∃ (I : Type u) (U : I → X.affineOpens), (⨆ i, (U i : X.Opens)) = ⊤ ∧
     ∀ i, HasTildeOn M (U i).property
@@ -346,7 +372,9 @@ private theorem hasTildeOn_congr {X : Scheme.{u}} {M : X.Modules} {U V : X.Opens
   subst V
   exact value
 
-/-- The affine-local presentation on one affine cover extends to every affine open. -/
+/-- The affine-local presentation on one affine cover extends to every affine open.
+This is the main module criterion from the opening of Appendix B. Finite principal refinements
+are constructed for each affine open in the proof. -/
 theorem isQuasiCoherentModule_iff_affineCover {X : Scheme.{u}} (M : X.Modules) :
     IsQuasiCoherentModule M ↔ HasAffineTildeCover M := by
   constructor
@@ -374,7 +402,9 @@ theorem isQuasiCoherentModule_iff_affineCover {X : Scheme.{u}} (M : X.Modules) :
       exact HasTildeOn.pullbackImage (g := g) (hV := hZ) (hImage := hImage) present
 
 
-/-- An associated module sheaf on a spectrum is quasi-coherent on every affine open. -/
+/-- An associated module sheaf on a spectrum is quasi-coherent on every affine open.
+This API builds the associated module sheaf case of Appendix B. It takes a single tilde
+presentation on the ambient spectrum. -/
 theorem isQuasiCoherentModule_of_tilde (M : (Spec R).Modules)
     (presentation : (tilde.functor R).essImage M) : IsQuasiCoherentModule M := by
   intro U

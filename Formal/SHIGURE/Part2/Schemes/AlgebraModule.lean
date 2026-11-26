@@ -58,7 +58,9 @@ private def algebraModulePresheaf (C : Under X.sheaf) : X.PresheafOfModules wher
     rfl
 
 /-- The algebra's underlying module sheaf uses its actual rings, restriction
-maps, and structure morphism on every open. -/
+maps, and structure morphism on every open.
+This is the module underlying the algebra in Lemma B.7. The given structure morphism supplies
+the scalar action and the restriction squares. -/
 def algebraUnderlyingModule (C : Under X.sheaf) : X.Modules where
   val := algebraModulePresheaf C
   isSheaf := by

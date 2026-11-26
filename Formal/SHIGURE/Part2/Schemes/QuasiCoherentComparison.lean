@@ -240,7 +240,9 @@ private def overPresentation {M : X.Modules} {U : X.Opens}
   exact Presentation.of_isIso.{u,u,u} (F.unitIso.app (M.over U)).inv (base.map F.inverse eUnit)
 
 /-- The affine tilde criterion is equivalent to mathlib's site-theoretic
-quasi-coherence, given by local presentations by generators and relations. -/
+quasi-coherence, given by local presentations by generators and relations.
+This connects the main criterion in the opening of Appendix B to mathlib. In the reverse
+direction, the input is a local presentation by generators and relations. -/
 theorem isQuasiCoherentModule_iff_mathlib (M : X.Modules) :
     IsQuasiCoherentModule M ↔ M.IsQuasicoherent := by
   constructor

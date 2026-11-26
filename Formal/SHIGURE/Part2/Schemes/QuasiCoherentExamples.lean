@@ -16,20 +16,26 @@ private abbrev X := Spec base
 
 private abbrev structureAlgebra : Under X.sheaf := Under.mk (𝟙 X.sheaf)
 
-/-- The structure sheaf on the spectrum of the integers is quasi-coherent. -/
+/-- The structure sheaf on the spectrum of the integers is quasi-coherent.
+This verifies the positive case of the Appendix B.3 criterion using the structure module on the
+integer spectrum. -/
 theorem structureAlgebra_quasiCoherent : IsQuasiCoherentSheafAlgebra structureAlgebra := by
   apply isQuasiCoherentModule_of_tilde
   refine ⟨ModuleCat.of base base, ⟨?_⟩⟩
   exact tildeSelf (R := base)
 
-/-- The affine-site construction uses the same actual structure sheaf. -/
+/-- The affine-site construction uses the same actual structure sheaf.
+This verifies Lemma B.7 on the integer spectrum using the quasi-coherence proof for its
+structure algebra. -/
 def structureAlgebra_reconstructed :
     (QuasiCoherentAlgebra.ofSheaf structureAlgebra structureAlgebra_quasiCoherent).algebraSheaf ≅
       structureAlgebra :=
   QuasiCoherentAlgebra.ofSheaf_algebraSheafIso structureAlgebra structureAlgebra_quasiCoherent
 
 /-- The skyscraper algebra with value ℚ at the prime (2) cannot have a
-tilde presentation on any affine open cover. -/
+tilde presentation on any affine open cover.
+This verifies the negative case of the Appendix B.3 criterion using the computed restriction to
+the principal open at 2. -/
 theorem skyscraper_not_affineCover :
     ¬ HasAffineTildeCover (algebraUnderlyingModule RelativeSpecExamples.skyscraperAlgebraAtTwo) := by
   intro localCover

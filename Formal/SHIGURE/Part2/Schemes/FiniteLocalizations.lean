@@ -53,7 +53,9 @@ private instance localizationUnit_localizes (M : ModuleCat.{u} R) :
 variable {J : Type u} [SmallCategory J] [FinCategory J] {F G : J ⥤ ModuleCat.{u} R}
 
 /-- A comparison between finite diagrams that locally inverts one submonoid
-localizes their limit at the same submonoid. -/
+localizes their limit at the same submonoid.
+This proves the localization step for compatible sections in Appendix B.3. The finite diagram is
+supplied by the principal-open refinement. -/
 theorem isLocalizedModule_limitMap (a : F ⟶ G)
     (h : ∀ j, IsLocalizedModule S (a.app j).hom) :
     IsLocalizedModule S (limMap a).hom := by
@@ -89,7 +91,9 @@ theorem isLocalizedModule_limitMap (a : F ⟶ G)
   exact IsLocalizedModule.of_linearEquiv S ((localizationUnit S).app (limit F)).hom comparison.toLinearEquiv
 
 /-- Localizing at the images of a submonoid continues to localize at the
-original submonoid after restricting scalars. -/
+original submonoid after restricting scalars.
+This is the scalar comparison used for principal opens in Appendix B.3. The two scalar towers
+and localization at the image monoid are supplied by the local presentations. -/
 theorem isLocalizedModule_restrictScalars_of_map {A M N : Type u} [CommRing A] [Algebra R A]
     [AddCommGroup M] [AddCommGroup N] [Module R M] [Module R N] [Module A M] [Module A N]
     [IsScalarTower R A M] [IsScalarTower R A N] (f : M →ₗ[A] N)

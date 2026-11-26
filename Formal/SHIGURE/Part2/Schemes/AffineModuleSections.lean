@@ -79,7 +79,9 @@ private theorem affineRead_apply (M : X.Modules) (W : (Spec Γ(X, U)).Opens) {V 
   rfl
 
 /-- An affine tilde presentation localizes the module's original restriction
-map from that affine open to each principal open inside it. -/
+map from that affine open to each principal open inside it.
+This supplies the restriction on principal opens used in Lemma B.7. The affine presentation
+determines localization for the actual sheaf sections. -/
 theorem affineSections_localize (M : X.Modules) (presentation : HasTildeOn M hU) (r : Γ(X, U)) :
     IsLocalizedModule (Submonoid.powers r) (M.val.map (homOfLE (X.basicOpen_le r)).op).hom := by
   let g := hU.fromSpec

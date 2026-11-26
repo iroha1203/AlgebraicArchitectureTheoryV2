@@ -133,7 +133,9 @@ section Presentations
 variable {X : Scheme.{u}}
 
 /-- On an affine open, the actual algebra restriction is the direct image
-from the spectrum of its section algebra, over the spectrum of the base ring. -/
+from the spectrum of its section algebra, over the spectrum of the base ring.
+This is the identification of the restriction with the algebra of sections in Lemma B.7. The
+quasi-coherence hypothesis supplies its affine chart through ofSheaf. -/
 def quasiCoherentAlgebra_affinePresentation (C : Under X.sheaf)
     (coherent : IsQuasiCoherentSheafAlgebra C) {U : X.Opens} (hU : IsAffineOpen U) :
     (pullbackAlgebra hU.fromSpec).obj C ≅
@@ -160,12 +162,16 @@ def quasiCoherentAlgebra_affinePresentation (C : Under X.sheaf)
   exact (pullbackAlgebra hU.fromSpec).mapIso (QuasiCoherentAlgebra.ofSheaf_algebraSheafIso C coherent).symm ≪≫ comparison
 
 /-- The actual algebra restriction is associated to an algebra over the section ring
-of the affine open. The comparison preserves the structure morphism. -/
+of the affine open. The comparison preserves the structure morphism.
+This is the form of the local presentation in Lemma B.7 that records the algebra isomorphism
+over the affine base. -/
 def HasAlgebraTildeOn (C : Under X.sheaf) {U : X.Opens} (hU : IsAffineOpen U) : Prop :=
   ∃ (A : CommRingCat.{u}) (a : Γ(X, U) ⟶ A),
     Nonempty ((pullbackAlgebra hU.fromSpec).obj C ≅ directImageStructure (Spec.map a))
 
-/-- Presentations as algebras on an affine open cover. -/
+/-- Presentations as algebras on an affine open cover.
+This is the algebra cover condition of the opening of Appendix B, using the actual algebra
+presentations in Lemma B.7. -/
 def HasAffineAlgebraTildeCover (C : Under X.sheaf) : Prop :=
   ∃ (I : Type u) (U : I → X.affineOpens), (⨆ i, (U i : X.Opens)) = ⊤ ∧
     ∀ i, HasAlgebraTildeOn C (U i).property
@@ -182,7 +188,9 @@ private theorem HasAlgebraTildeOn.underlying {C : Under X.sheaf} {U : X.Opens}
   obtain ⟨N, ⟨iso⟩⟩ := affinePushforward_essImage a _ represented
   exact ⟨N, ⟨iso ≪≫ comparison.symm⟩⟩
 
-/-- Quasi-coherence is equivalent to a presentation as an algebra sheaf on every affine open. -/
+/-- Quasi-coherence is equivalent to a presentation as an algebra sheaf on every affine open.
+This is the all-affine form of the algebra criterion in Appendix B. The two directions use the
+given quasi-coherence or the given algebra presentations on each affine open. -/
 theorem isQuasiCoherentSheafAlgebra_iff_eachAlgebraPresentation (C : Under X.sheaf) :
     IsQuasiCoherentSheafAlgebra C ↔ ∀ U : X.affineOpens, HasAlgebraTildeOn C U.property := by
   constructor
@@ -192,7 +200,9 @@ theorem isQuasiCoherentSheafAlgebra_iff_eachAlgebraPresentation (C : Under X.she
   · intro presentations U
     exact (presentations U).underlying
 
-/-- The presentations as algebra sheaves on any affine open cover extend to all affine opens. -/
+/-- The presentations as algebra sheaves on any affine open cover extend to all affine opens.
+This is the main algebra cover criterion in the opening of Appendix B and Lemma B.7. An
+arbitrary covering family and its given algebra presentations supply the reverse direction. -/
 theorem isQuasiCoherentSheafAlgebra_iff_affineAlgebraTildeCover (C : Under X.sheaf) :
     IsQuasiCoherentSheafAlgebra C ↔ HasAffineAlgebraTildeCover C := by
   constructor

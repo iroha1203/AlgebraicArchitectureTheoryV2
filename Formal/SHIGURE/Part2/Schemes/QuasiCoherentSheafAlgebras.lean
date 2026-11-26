@@ -28,18 +28,23 @@ universe u
 
 variable {X : Scheme.{u}}
 
-/-- A sheaf of algebras is quasi-coherent when its actual module is quasi-coherent. -/
+/-- A sheaf of algebras is quasi-coherent when its actual module is quasi-coherent.
+This is the quasi-coherence condition of Lemma B.7 on an algebra under the structure sheaf. -/
 def IsQuasiCoherentSheafAlgebra (C : Under X.sheaf) : Prop :=
   IsQuasiCoherentModule (algebraUnderlyingModule C)
 
 /-- Affine-local tilde presentations of the underlying module determine
-quasi-coherence of the algebra on the whole scheme. -/
+quasi-coherence of the algebra on the whole scheme.
+This is the underlying-module form of the algebra cover criterion in the opening of Appendix B
+and Lemma B.7. -/
 theorem isQuasiCoherentSheafAlgebra_iff_affineCover (C : Under X.sheaf) :
     IsQuasiCoherentSheafAlgebra C ↔ HasAffineTildeCover (algebraUnderlyingModule C) :=
   isQuasiCoherentModule_iff_affineCover (algebraUnderlyingModule C)
 
 /-- The section algebra on a principal open is the localization of the
-original section algebra at the image of the specified scalar. -/
+original section algebra at the image of the specified scalar.
+This proves the principal-open localization step of Lemma B.7. Quasi-coherence of the underlying
+module supplies the localization of the original section ring. -/
 theorem sheafAlgebra_localizes (C : Under X.sheaf) (qc : IsQuasiCoherentSheafAlgebra C)
     {U : X.Opens} (hU : IsAffineOpen U) (r : Γ(X, U)) :
     let F := C.right.val
@@ -72,7 +77,9 @@ theorem sheafAlgebra_localizes (C : Under X.sheaf) (qc : IsQuasiCoherentSheafAlg
   exact localization
 
 /-- Restrict the actual section algebras to the affine site with their
-proved localization maps, ready for the relative spectrum. -/
+proved localization maps, ready for the relative spectrum.
+This is the input conversion for Lemma B.7. The actual quasi-coherence hypothesis supplies the
+required localization proof. -/
 def QuasiCoherentAlgebra.ofSheaf (C : Under X.sheaf) (qc : IsQuasiCoherentSheafAlgebra C) :
     QuasiCoherentAlgebra X where
   sections := (Scheme.AffineZariskiSite.toOpensFunctor X).op ⋙ C.right.val
@@ -80,7 +87,9 @@ def QuasiCoherentAlgebra.ofSheaf (C : Under X.sheaf) (qc : IsQuasiCoherentSheafA
   localization U r := sheafAlgebra_localizes C qc U.property r
 
 /-- Reconstructing the algebra sheaf from its affine-site sections returns
-the original algebra and its original structure morphism. -/
+the original algebra and its original structure morphism.
+This is the reconstruction comparison in Lemma B.7. The affine site supplies the local ring and
+structure-map identifications. -/
 def QuasiCoherentAlgebra.ofSheaf_algebraSheafIso (C : Under X.sheaf)
     (qc : IsQuasiCoherentSheafAlgebra C) : (QuasiCoherentAlgebra.ofSheaf C qc).algebraSheaf ≅ C := by
   let E := Scheme.AffineZariskiSite.sheafEquiv (X := X) (A := CommRingCat.{u})

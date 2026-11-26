@@ -36,7 +36,9 @@ private theorem iSupInf_le : (⨆ i, U i ⊓ W) ≤ ⨆ i, U i :=
   iSup_mono fun _ => inf_le_left
 
 /-- If restriction to the intersected cover localizes all charts and
-pairwise overlaps, then it localizes the section map on their unions. -/
+pairwise overlaps, then it localizes the section map on their unions.
+This applies the Appendix B.3 compatible-section construction to a finite cover. The local
+hypotheses are supplied by the single and double intersections of its principal opens. -/
 theorem isLocalizedModule_sectionsRestrict_of_pairwise [Fintype ι] [DecidableEq ι]
     (F : TopCat.Sheaf (ModuleCat.{u} R) X) (S : Submonoid R)
     (localization : ∀ j : Pairwise ι,
