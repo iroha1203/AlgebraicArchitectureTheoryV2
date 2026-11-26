@@ -16,7 +16,7 @@ and constant rank descend through the comparison of Lemma B.4.
 ## Implementation notes
 
 The explicit principal-cover definition retains the actual localization
-data used in B.5. A finite projective presentation also characterizes
+data used in B.5. Finiteness and projectivity together characterize
 finite local freeness. The theorem `finiteLocallyFree_iff_finite_projective`
 relates the two descriptions, with finite basic opens available from
 either one.
