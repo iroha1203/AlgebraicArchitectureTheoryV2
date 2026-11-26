@@ -195,6 +195,32 @@ def term (names : SignatureNames S T) :
       (.app (names.operation op) (fun {s} i => renameArgs (cast (congrArg (fun ctx => Var ctx s) sorts.symm) i)))
   | _, _, .letBind x y => .letBind (names.term x) (names.term y)
 
+/-- Rename the primitive quantity in a coefficient application. -/
+def coefficientQuantity (names : SignatureNames S T) :
+    Quantities.QuantityDeclaration S → Quantities.QuantityDeclaration T
+  | .total q => .total (names.onQuantity q)
+  | .partialOp p => .partialOp (names.onPartial p)
+
+private theorem coefficientQuantity_operation (names : SignatureNames S T)
+    (q : Quantities.QuantityDeclaration S) :
+    (names.coefficientQuantity q).operation = names.operation q.operation := by
+  cases q <;> rfl
+
+/-- Rename a coefficient application's quantity and the terms in its exact argument positions. -/
+def coefficientApplication (names : SignatureNames S T) {Γ : List S.SortType}
+    (a : Quantities.DeclaredApplication S Γ) : Quantities.DeclaredApplication T (Γ.map names.onSort) := by
+  let q := names.coefficientQuantity a.1
+  let same : a.1.operation.arity.inputs.map names.onSort = q.operation.arity.inputs :=
+    (congrArg Arity.inputs (names.operationArity a.1.operation)).trans
+      (congrArg (fun op => op.arity.inputs) (names.coefficientQuantity_operation a.1)).symm
+  exact ⟨q, same ▸ ⟨Var.reindex names.onSort (fun i => names.term (a.2 i))⟩⟩
+
+/-- Rename the declarations of an external coefficient writing, preserving its literals and operators. -/
+def coefficientWriting (names : SignatureNames S T) {Γ : List S.SortType}
+    (e : Quantities.RegisteredCoefficientEquation S Γ) :
+    Quantities.RegisteredCoefficientEquation T (Γ.map names.onSort) :=
+  ⟨e.1, e.2.1.rename names.coefficientApplication, e.2.2.rename names.coefficientApplication⟩
+
 /-- Rename both members of an ordered equation and its input condition. -/
 def equation (names : SignatureNames S T) (eqn : OrderedEquation S) : OrderedEquation T where
   context := eqn.context.map names.onSort
@@ -592,6 +618,10 @@ structure ReadingOrigin (selected ambient : PrimitivePresentation.{u})
     selected.lawAttachments signature lawName i =
       (ambient.lawAttachments (SignatureNames.identity _) id (lawName i)).withSupportedRing
         (retained.RetainsRingSupport (lawName i))
+  /-- The original external coefficient writing survives the same typed name transport. -/
+  coefficientWriting_eq (i : selected.laws.LawName) :
+    HEq ((selected.coefficientWriting i).map signature.coefficientWriting)
+      (ambient.coefficientWriting (lawName i))
   /-- Retain each inclusion-domain declaration with its ordered inclusion symbols. -/
   domainAttachment_eq (p : selected.signature.Partial) :
     selected.domainAttachment signature p = ambient.domainAttachment (SignatureNames.identity _) (signature.onPartial p)

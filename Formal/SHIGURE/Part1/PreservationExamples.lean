@@ -2541,6 +2541,7 @@ private def singleRetainedSort {P : PrimitivePresentation} {U : DeclarationConte
   law_eq n := nomatch n
   law_role n := nomatch n
   lawAttachments_eq n := nomatch n
+  coefficientWriting_eq n := nomatch n
   domainAttachment_eq p := nomatch p
   names :=
     { toFun := fun _ => ⟨.sort sort, kept.symm ▸ Set.mem_singleton _⟩
@@ -2715,6 +2716,7 @@ def keeps_derived_tree : ReadingOrigin (proofTreePresentation true) (proofTreePr
   law_eq _ := rfl
   law_role _ := rfl
   lawAttachments_eq _ := rfl
+  coefficientWriting_eq _ := HEq.rfl
   domainAttachment_eq p := nomatch p
   dependencies _ _ := Iff.rfl
 

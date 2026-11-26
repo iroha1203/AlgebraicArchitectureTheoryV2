@@ -187,6 +187,22 @@ theorem named_restriction_baseChange (R : Type) [CommRing R] [Algebra ℤ R] :
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := ℤ) R F.residualIdeal).symm.toAlgHom :=
   written.lawMap_baseChange reading inside R
 
+
+private def literalOnly (r : ℤ) : PrimitivePresentation where
+  signature := signature
+  laws := ⟨Unit, fun _ => ⟨[], .truth, .truth⟩, fun _ => .required⟩
+  derived _ impossible := by cases impossible
+  coefficientWriting _ := some ⟨ℤ, .scalar r, .scalar 0⟩
+
+/-- A reading origin cannot replace the registered literals, even with identical dependency sets. -/
+theorem reading_origin_rejects_replaced_literal
+    (U : DeclarationContext (literalOnly 1)) : IsEmpty (ReadingOrigin (literalOnly 0) (literalOnly 1) U) where
+  false origin := by
+    have same := eq_of_heq (origin.coefficientWriting_eq ())
+    change some (⟨ℤ, .scalar (0 : ℤ), .scalar 0⟩ : RegisteredCoefficientEquation signature []) =
+      some ⟨ℤ, .scalar (1 : ℤ), .scalar 0⟩ at same
+    simp at same
+
 end
 
 end SHIGURE.Quantities.NamedWrittenRestrictionExample
