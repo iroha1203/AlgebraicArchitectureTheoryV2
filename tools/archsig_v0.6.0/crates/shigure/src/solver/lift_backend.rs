@@ -108,6 +108,7 @@ pub(crate) trait FieldRingAdapter {
         bindings: &ExprBindings,
     ) -> Result<Poly<Self::Coeff>, AlgebraError>;
     fn convert_lit(&self, lit: &ScalarLit) -> Result<Self::Coeff, AlgebraError>;
+    fn lift_mat_z(&self, mat: &[Vec<BigInt>]) -> Vec<Vec<Self::Coeff>>;
 }
 
 pub(crate) struct QFieldAdapter;
@@ -133,6 +134,10 @@ impl FieldRingAdapter for QFieldAdapter {
 
     fn convert_lit(&self, lit: &ScalarLit) -> Result<Rat, AlgebraError> {
         lit_to_q(lit)
+    }
+
+    fn lift_mat_z(&self, mat: &[Vec<BigInt>]) -> Vec<Vec<Rat>> {
+        crate::solver::diagnostics::lift_mat_z_to_q(mat)
     }
 }
 
@@ -162,6 +167,10 @@ impl FieldRingAdapter for FpFieldAdapter {
 
     fn convert_lit(&self, lit: &ScalarLit) -> Result<FpElem, AlgebraError> {
         lit_to_fp(lit, &self.p)
+    }
+
+    fn lift_mat_z(&self, mat: &[Vec<BigInt>]) -> Vec<Vec<FpElem>> {
+        crate::solver::diagnostics::lift_mat_z_to_fp(mat, &self.p)
     }
 }
 

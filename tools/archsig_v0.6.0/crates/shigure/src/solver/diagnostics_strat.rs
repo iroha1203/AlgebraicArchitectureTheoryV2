@@ -20,6 +20,7 @@ use crate::solver::diagnostics::{
     ComputedNerve, DiagCohomologySummary, DiagnosticComplexData, build_diagnostic_complex,
     compute_block_decomposition, evaluate_complex_over_domain, map_diag_alg_err,
 };
+use crate::solver::lift_backend::{FieldRingAdapter, FpFieldAdapter, QFieldAdapter};
 use num_bigint::BigUint;
 use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
@@ -79,17 +80,19 @@ pub(crate) fn compute_polynomial_stratification(
     let (var_order, bindings) =
         ExprBindings::from_slices(base_vars, &[], &[]).map_err(map_diag_alg_err)?;
 
+    let input = StratifyInput {
+        var_order: &var_order,
+        bindings: &bindings,
+        base_relations,
+        sources,
+        laws,
+        nerve,
+        diag_coeff,
+        max_partitions,
+    };
+
     match base_domain {
-        CoeffDomain::Q => stratify_over_q(
-            &var_order,
-            &bindings,
-            base_relations,
-            sources,
-            laws,
-            nerve,
-            diag_coeff,
-            max_partitions,
-        ),
+        CoeffDomain::Q => stratify_over_field(&QStratBackend, &input),
         CoeffDomain::Fp(p) => {
             if !archsig_common::prime::is_prime(p) {
                 return Err(SilenceReason::UnsupportedCoeffRing {
@@ -97,17 +100,7 @@ pub(crate) fn compute_polynomial_stratification(
                     detail: format!("base_domain modulus {p} is not prime"),
                 });
             }
-            stratify_over_fp(
-                p,
-                &var_order,
-                &bindings,
-                base_relations,
-                sources,
-                laws,
-                nerve,
-                diag_coeff,
-                max_partitions,
-            )
+            stratify_over_field(&FpStratBackend { modulus: p.clone() }, &input)
         }
         CoeffDomain::Z => Err(SilenceReason::DiagnosticsStratificationOutOfScope {
             detail: "polynomial readout stratification B_pi requires a field base_domain (Q or F_p); Z base scheme stratification is out of scope".to_owned(),
@@ -115,49 +108,160 @@ pub(crate) fn compute_polynomial_stratification(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn stratify_over_q(
-    var_order: &VarOrder,
-    bindings: &ExprBindings,
-    base_relations: &[crate::ir::change::NamedPoly],
-    sources: &[String],
-    laws: &[crate::ir::diagnostics::PolyLawReadoutSpec],
-    nerve: &ComputedNerve,
-    diag_coeff: &CoeffDomain,
+struct StratifyInput<'a> {
+    var_order: &'a VarOrder,
+    bindings: &'a ExprBindings,
+    base_relations: &'a [crate::ir::change::NamedPoly],
+    sources: &'a [String],
+    laws: &'a [crate::ir::diagnostics::PolyLawReadoutSpec],
+    nerve: &'a ComputedNerve,
+    diag_coeff: &'a CoeffDomain,
     max_partitions: usize,
-) -> Result<StratificationOutput, SilenceReason> {
-    let mut base_eqs = Vec::with_capacity(base_relations.len());
-    for rel in base_relations {
-        base_eqs.push(Poly::from_expr_q(&rel.expr, bindings).map_err(map_diag_alg_err)?);
+}
+
+type StratumPolyPair<C> = (Vec<Poly<C>>, Vec<Poly<C>>);
+
+trait StratifyFieldBackend {
+    type Coeff: FieldCoeff;
+
+    fn expand_expr(
+        &self,
+        expr: &PolyExpr,
+        bindings: &ExprBindings,
+    ) -> Result<Poly<Self::Coeff>, AlgebraError>;
+
+    fn prune_or_check(
+        &self,
+        eqs: &[Poly<Self::Coeff>],
+        invs: &[Poly<Self::Coeff>],
+        vars: &VarOrder,
+    ) -> Result<Option<StratumPolyPair<Self::Coeff>>, SilenceReason>;
+
+    fn make_closure_data(
+        &self,
+        vars: &VarOrder,
+        eqs: Vec<Poly<Self::Coeff>>,
+        invs: Vec<Poly<Self::Coeff>>,
+    ) -> StratumClosureData;
+}
+
+struct QStratBackend;
+
+impl StratifyFieldBackend for QStratBackend {
+    type Coeff = Rat;
+
+    fn expand_expr(&self, expr: &PolyExpr, bindings: &ExprBindings) -> Result<Poly<Rat>, AlgebraError> {
+        Poly::from_expr_q(expr, bindings)
     }
 
-    let mut law_polys: Vec<LawPolyGroup<Rat>> = Vec::with_capacity(laws.len());
-    for law in laws {
+    fn prune_or_check(
+        &self,
+        eqs: &[Poly<Rat>],
+        invs: &[Poly<Rat>],
+        vars: &VarOrder,
+    ) -> Result<Option<StratumPolyPair<Rat>>, SilenceReason> {
+        Ok(normalize_and_prune_stratum(eqs, invs, vars)?
+            .map(|norm| (norm.equations, norm.invertibles)))
+    }
+
+    fn make_closure_data(
+        &self,
+        vars: &VarOrder,
+        eqs: Vec<Poly<Rat>>,
+        invs: Vec<Poly<Rat>>,
+    ) -> StratumClosureData {
+        // `eqs` は既に `normalize_and_prune_stratum` が飽和済みの Zariski 閉包基底へ正規化している。
+        StratumClosureData::Q {
+            vars: vars.clone(),
+            closure_eqs: eqs.clone(),
+            equations: eqs,
+            invertibles: invs,
+        }
+    }
+}
+
+struct FpStratBackend {
+    modulus: BigUint,
+}
+
+impl StratifyFieldBackend for FpStratBackend {
+    type Coeff = FpElem;
+
+    fn expand_expr(
+        &self,
+        expr: &PolyExpr,
+        bindings: &ExprBindings,
+    ) -> Result<Poly<FpElem>, AlgebraError> {
+        Poly::from_expr_fp(expr, bindings, &self.modulus)
+    }
+
+    fn prune_or_check(
+        &self,
+        eqs: &[Poly<FpElem>],
+        invs: &[Poly<FpElem>],
+        vars: &VarOrder,
+    ) -> Result<Option<StratumPolyPair<FpElem>>, SilenceReason> {
+        if is_nonempty_fp(eqs, invs, vars, &self.modulus)? {
+            Ok(Some((eqs.to_vec(), invs.to_vec())))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn make_closure_data(
+        &self,
+        vars: &VarOrder,
+        eqs: Vec<Poly<FpElem>>,
+        invs: Vec<Poly<FpElem>>,
+    ) -> StratumClosureData {
+        StratumClosureData::Fp {
+            modulus: self.modulus.clone(),
+            vars: vars.clone(),
+            equations: eqs,
+            invertibles: invs,
+        }
+    }
+}
+
+fn stratify_over_field<B: StratifyFieldBackend>(
+    backend: &B,
+    input: &StratifyInput<'_>,
+) -> Result<StratificationOutput, SilenceReason> {
+    let mut base_eqs = Vec::with_capacity(input.base_relations.len());
+    for rel in input.base_relations {
+        base_eqs.push(
+            backend
+                .expand_expr(&rel.expr, input.bindings)
+                .map_err(map_diag_alg_err)?,
+        );
+    }
+
+    let mut law_polys: Vec<LawPolyGroup<B::Coeff>> = Vec::with_capacity(input.laws.len());
+    for law in input.laws {
         let map: BTreeMap<&str, &PolyExpr> =
             law.values.iter().map(|(s, e)| (s.as_str(), e)).collect();
-        let mut entries = Vec::with_capacity(sources.len());
-        for s in sources {
-            let expr = map[s.as_str()];
-            let p = Poly::from_expr_q(expr, bindings).map_err(map_diag_alg_err)?;
-            entries.push((s.clone(), p));
+        let mut entries = Vec::with_capacity(input.sources.len());
+        for s in input.sources {
+            let poly = backend
+                .expand_expr(map[s.as_str()], input.bindings)
+                .map_err(map_diag_alg_err)?;
+            entries.push((s.clone(), poly));
         }
         law_polys.push((law.law_name.clone(), entries));
     }
 
     // 初期基底 B が空なら空層別を返す。
-    let Some(init_st) = normalize_and_prune_stratum(&base_eqs, &[], var_order)? else {
-        return empty_stratification(diag_coeff);
+    let Some((init_eqs, init_invs)) = backend.prune_or_check(&base_eqs, &[], input.var_order)?
+    else {
+        return empty_stratification(input.diag_coeff);
     };
 
     // 状態: (law ごとの blocks: Vec<Vec<(source_name, poly)>>, equations, invertibles)
-    type BlockEntry = (String, Poly<Rat>);
-    type State = (Vec<Vec<Vec<BlockEntry>>>, Vec<Poly<Rat>>, Vec<Poly<Rat>>);
+    type BlockEntry<C> = (String, Poly<C>);
+    type State<C> = (Vec<Vec<Vec<BlockEntry<C>>>>, Vec<Poly<C>>, Vec<Poly<C>>);
 
-    let mut active: Vec<State> = vec![(
-        vec![Vec::new(); law_polys.len()],
-        init_st.equations,
-        init_st.invertibles,
-    )];
+    let mut active: Vec<State<B::Coeff>> =
+        vec![(vec![Vec::new(); law_polys.len()], init_eqs, init_invs)];
     let mut visited_candidates = 1usize;
 
     for (li, (_law_name, entries)) in law_polys.iter().enumerate() {
@@ -168,10 +272,11 @@ fn stratify_over_q(
                 // 枝 1: 既存 block へ合流
                 for (bi, block) in cur_blocks.iter().enumerate() {
                     visited_candidates += 1;
-                    if visited_candidates > max_partitions {
+                    if visited_candidates > input.max_partitions {
                         return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
                             detail: format!(
-                                "partition stratification exceeded max_partitions ({max_partitions})"
+                                "partition stratification exceeded max_partitions ({})",
+                                input.max_partitions
                             ),
                         });
                     }
@@ -180,18 +285,21 @@ fn stratify_over_q(
                     if !diff.is_zero() {
                         new_eqs.push(diff);
                     }
-                    if let Some(norm) = normalize_and_prune_stratum(&new_eqs, &invs, var_order)? {
+                    if let Some((next_eqs, next_invs)) =
+                        backend.prune_or_check(&new_eqs, &invs, input.var_order)?
+                    {
                         let mut new_parts = parts.clone();
                         new_parts[li][bi].push((src.clone(), poly.clone()));
-                        next_active.push((new_parts, norm.equations, norm.invertibles));
+                        next_active.push((new_parts, next_eqs, next_invs));
                     }
                 }
                 // 枝 2: 新規 block を生成
                 visited_candidates += 1;
-                if visited_candidates > max_partitions {
+                if visited_candidates > input.max_partitions {
                     return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
                         detail: format!(
-                            "partition stratification exceeded max_partitions ({max_partitions})"
+                            "partition stratification exceeded max_partitions ({})",
+                            input.max_partitions
                         ),
                     });
                 }
@@ -206,18 +314,20 @@ fn stratify_over_q(
                     new_invs.push(diff);
                 }
                 if !trivial_zero
-                    && let Some(norm) = normalize_and_prune_stratum(&eqs, &new_invs, var_order)?
+                    && let Some((next_eqs, next_invs)) =
+                        backend.prune_or_check(&eqs, &new_invs, input.var_order)?
                 {
                     let mut new_parts = parts.clone();
                     new_parts[li].push(vec![(src.clone(), poly.clone())]);
-                    next_active.push((new_parts, norm.equations, norm.invertibles));
+                    next_active.push((new_parts, next_eqs, next_invs));
                 }
             }
-            if next_active.len() > max_partitions {
+            if next_active.len() > input.max_partitions {
                 return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
                     detail: format!(
-                        "nonempty strata count {} exceeded max_partitions ({max_partitions})",
-                        next_active.len()
+                        "nonempty strata count {} exceeded max_partitions ({})",
+                        next_active.len(),
+                        input.max_partitions
                     ),
                 });
             }
@@ -226,7 +336,7 @@ fn stratify_over_q(
     }
 
     if active.is_empty() {
-        return empty_stratification(diag_coeff);
+        return empty_stratification(input.diag_coeff);
     }
 
     let mut strata = Vec::with_capacity(active.len());
@@ -241,16 +351,16 @@ fn stratify_over_q(
 
     for (parts, eqs, invs) in active {
         let target_law_values = partition_to_law_values(&law_polys, &parts);
-        let cpx_data = build_diagnostic_complex(nerve, &target_law_values);
-        let sum = evaluate_complex_over_domain(&cpx_data, diag_coeff)?;
+        let cpx_data = build_diagnostic_complex(input.nerve, &target_law_values);
+        let sum = evaluate_complex_over_domain(&cpx_data, input.diag_coeff)?;
         let partition_display = format_partition_display(&law_polys, &parts);
         let eq_strs: Vec<String> = eqs
             .iter()
-            .map(|p| p.display(var_order, MonomialOrder::Grevlex))
+            .map(|p| p.display(input.var_order, MonomialOrder::Grevlex))
             .collect();
         let inv_strs: Vec<String> = invs
             .iter()
-            .map(|p| p.display(var_order, MonomialOrder::Grevlex))
+            .map(|p| p.display(input.var_order, MonomialOrder::Grevlex))
             .collect();
         let total_blocks: usize = parts.iter().map(Vec::len).sum();
         let eq_count = eqs.len();
@@ -261,7 +371,8 @@ fn stratify_over_q(
             }
         };
         if is_better {
-            let blocks = compute_block_decomposition(nerve, &target_law_values, diag_coeff)?;
+            let blocks =
+                compute_block_decomposition(input.nerve, &target_law_values, input.diag_coeff)?;
             best_generic = Some((eq_count, total_blocks, cpx_data, sum.clone(), blocks));
         }
 
@@ -273,183 +384,7 @@ fn stratify_over_q(
             h1_free_rank: sum.h1_free_rank,
             h2_free_rank: sum.h2_free_rank,
         });
-        // `eqs` は既に `normalize_and_prune_stratum` が飽和済みの Zariski 閉包基底へ正規化している。
-        closure_data.push(StratumClosureData::Q {
-            vars: var_order.clone(),
-            closure_eqs: eqs.clone(),
-            equations: eqs,
-            invertibles: invs,
-        });
-    }
-
-    let (_, _, generic_complex, generic_summary, generic_blocks) =
-        best_generic.expect("active is non-empty");
-    Ok(StratificationOutput {
-        strata,
-        closure_data,
-        generic_complex,
-        generic_summary,
-        generic_blocks,
-    })
-}
-
-#[allow(clippy::too_many_arguments)]
-fn stratify_over_fp(
-    modulus: &BigUint,
-    var_order: &VarOrder,
-    bindings: &ExprBindings,
-    base_relations: &[crate::ir::change::NamedPoly],
-    sources: &[String],
-    laws: &[crate::ir::diagnostics::PolyLawReadoutSpec],
-    nerve: &ComputedNerve,
-    diag_coeff: &CoeffDomain,
-    max_partitions: usize,
-) -> Result<StratificationOutput, SilenceReason> {
-    let mut base_eqs = Vec::with_capacity(base_relations.len());
-    for rel in base_relations {
-        base_eqs.push(Poly::from_expr_fp(&rel.expr, bindings, modulus).map_err(map_diag_alg_err)?);
-    }
-    let mut law_polys: Vec<LawPolyGroup<FpElem>> = Vec::with_capacity(laws.len());
-    for law in laws {
-        let map: BTreeMap<&str, &PolyExpr> =
-            law.values.iter().map(|(s, e)| (s.as_str(), e)).collect();
-        let mut entries = Vec::with_capacity(sources.len());
-        for s in sources {
-            let p =
-                Poly::from_expr_fp(map[s.as_str()], bindings, modulus).map_err(map_diag_alg_err)?;
-            entries.push((s.clone(), p));
-        }
-        law_polys.push((law.law_name.clone(), entries));
-    }
-
-    if !is_nonempty_fp(&base_eqs, &[], var_order, modulus)? {
-        return empty_stratification(diag_coeff);
-    }
-
-    type BlockEntry = (String, Poly<FpElem>);
-    type State = (
-        Vec<Vec<Vec<BlockEntry>>>,
-        Vec<Poly<FpElem>>,
-        Vec<Poly<FpElem>>,
-    );
-    let mut active: Vec<State> = vec![(vec![Vec::new(); law_polys.len()], base_eqs, Vec::new())];
-    let mut visited = 1usize;
-
-    for (li, (_law_name, entries)) in law_polys.iter().enumerate() {
-        for (src, poly) in entries {
-            let mut next_active = Vec::new();
-            for (parts, eqs, invs) in active {
-                let cur_blocks = &parts[li];
-                for (bi, block) in cur_blocks.iter().enumerate() {
-                    visited += 1;
-                    if visited > max_partitions {
-                        return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
-                            detail: format!(
-                                "partition stratification exceeded max_partitions ({max_partitions})"
-                            ),
-                        });
-                    }
-                    let diff = poly.sub(&block[0].1);
-                    let mut new_eqs = eqs.clone();
-                    if !diff.is_zero() {
-                        new_eqs.push(diff);
-                    }
-                    if is_nonempty_fp(&new_eqs, &invs, var_order, modulus)? {
-                        let mut new_parts = parts.clone();
-                        new_parts[li][bi].push((src.clone(), poly.clone()));
-                        next_active.push((new_parts, new_eqs, invs.clone()));
-                    }
-                }
-                visited += 1;
-                if visited > max_partitions {
-                    return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
-                        detail: format!(
-                            "partition stratification exceeded max_partitions ({max_partitions})"
-                        ),
-                    });
-                }
-                let mut new_invs = invs.clone();
-                let mut trivial_zero = false;
-                for block in cur_blocks {
-                    let diff = poly.sub(&block[0].1);
-                    if diff.is_zero() {
-                        trivial_zero = true;
-                        break;
-                    }
-                    new_invs.push(diff);
-                }
-                if !trivial_zero && is_nonempty_fp(&eqs, &new_invs, var_order, modulus)? {
-                    let mut new_parts = parts.clone();
-                    new_parts[li].push(vec![(src.clone(), poly.clone())]);
-                    next_active.push((new_parts, eqs.clone(), new_invs));
-                }
-            }
-            if next_active.len() > max_partitions {
-                return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
-                    detail: format!(
-                        "nonempty strata count {} exceeded max_partitions ({max_partitions})",
-                        next_active.len()
-                    ),
-                });
-            }
-            active = next_active;
-        }
-    }
-
-    if active.is_empty() {
-        return empty_stratification(diag_coeff);
-    }
-
-    let mut strata = Vec::with_capacity(active.len());
-    let mut closure_data = Vec::with_capacity(active.len());
-    let mut best_generic: Option<(
-        usize,
-        usize,
-        DiagnosticComplexData,
-        DiagCohomologySummary,
-        Vec<LawValueBlockSummary>,
-    )> = None;
-
-    for (parts, eqs, invs) in active {
-        let target_law_values = partition_to_law_values(&law_polys, &parts);
-        let cpx_data = build_diagnostic_complex(nerve, &target_law_values);
-        let sum = evaluate_complex_over_domain(&cpx_data, diag_coeff)?;
-        let partition_display = format_partition_display(&law_polys, &parts);
-        let eq_strs: Vec<String> = eqs
-            .iter()
-            .map(|p| p.display(var_order, MonomialOrder::Grevlex))
-            .collect();
-        let inv_strs: Vec<String> = invs
-            .iter()
-            .map(|p| p.display(var_order, MonomialOrder::Grevlex))
-            .collect();
-        let total_blocks: usize = parts.iter().map(Vec::len).sum();
-        let eq_count = eqs.len();
-        let is_better = match &best_generic {
-            None => true,
-            Some((best_eqs, best_blocks, ..)) => {
-                (eq_count < *best_eqs) || (eq_count == *best_eqs && total_blocks > *best_blocks)
-            }
-        };
-        if is_better {
-            let blocks = compute_block_decomposition(nerve, &target_law_values, diag_coeff)?;
-            best_generic = Some((eq_count, total_blocks, cpx_data, sum.clone(), blocks));
-        }
-
-        strata.push(PartitionStratumSummary {
-            partition: partition_display,
-            equations: eq_strs,
-            invertibles: inv_strs,
-            h0_free_rank: sum.h0_free_rank,
-            h1_free_rank: sum.h1_free_rank,
-            h2_free_rank: sum.h2_free_rank,
-        });
-        closure_data.push(StratumClosureData::Fp {
-            modulus: modulus.clone(),
-            vars: var_order.clone(),
-            equations: eqs,
-            invertibles: invs,
-        });
+        closure_data.push(backend.make_closure_data(input.var_order, eqs, invs));
     }
 
     let (_, _, generic_complex, generic_summary, generic_blocks) =
@@ -642,21 +577,20 @@ pub(crate) fn compute_r_point_contrast(
         ExprBindings::from_slices(base_vars, &[], &[]).map_err(map_diag_alg_err)?;
     let (_, empty_bindings) = ExprBindings::from_slices(&[], &[], &[]).map_err(map_diag_alg_err)?;
 
+    let input = RPointContrastInput {
+        base_vars,
+        base_relations,
+        sources,
+        laws,
+        rp,
+        nerve,
+        diag_coeff,
+        bindings: &bindings,
+        empty_bindings: &empty_bindings,
+    };
+
     match base_domain {
-        CoeffDomain::Q => r_point_contrast_field(
-            base_vars,
-            base_relations,
-            sources,
-            laws,
-            rp,
-            nerve,
-            diag_coeff,
-            Rat::zero(),
-            "Q",
-            &bindings,
-            &empty_bindings,
-            &|e, b| Poly::from_expr_q(e, b),
-        ),
+        CoeffDomain::Q => r_point_contrast_field(&QFieldAdapter, &input),
         CoeffDomain::Fp(p) => {
             let Some(zero_fp) = FpElem::zero(p.clone()) else {
                 return Err(SilenceReason::UnsupportedCoeffRing {
@@ -664,21 +598,12 @@ pub(crate) fn compute_r_point_contrast(
                     detail: format!("modulus {p} is not prime"),
                 });
             };
-            let p1 = p.clone();
-            let ring_base = format!("F_{p}");
             r_point_contrast_field(
-                base_vars,
-                base_relations,
-                sources,
-                laws,
-                rp,
-                nerve,
-                diag_coeff,
-                zero_fp,
-                &ring_base,
-                &bindings,
-                &empty_bindings,
-                &move |e, b| Poly::from_expr_fp(e, b, &p1),
+                &FpFieldAdapter {
+                    p: p.clone(),
+                    zero_fp,
+                },
+                &input,
             )
         }
         CoeffDomain::Z => Err(SilenceReason::DiagnosticsStratificationOutOfScope {
@@ -687,49 +612,55 @@ pub(crate) fn compute_r_point_contrast(
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn r_point_contrast_field<C, FE>(
-    base_vars: &[String],
-    base_relations: &[crate::ir::change::NamedPoly],
-    sources: &[String],
-    laws: &[crate::ir::diagnostics::PolyLawReadoutSpec],
-    rp: &RPointProbeSpec,
-    nerve: &ComputedNerve,
-    diag_coeff: &CoeffDomain,
-    zero: C,
-    base_ring_label: &str,
-    bindings: &ExprBindings,
-    empty_bindings: &ExprBindings,
-    expand: &FE,
-) -> Result<RPointContrastResult, SilenceReason>
-where
-    C: FieldCoeff,
-    FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
-{
-    let alg = FiniteAlgebra::truncated_univariate(&rp.ring_var, rp.ring_max_deg, zero.clone())
-        .map_err(map_diag_alg_err)?;
+struct RPointContrastInput<'a> {
+    base_vars: &'a [String],
+    base_relations: &'a [crate::ir::change::NamedPoly],
+    sources: &'a [String],
+    laws: &'a [crate::ir::diagnostics::PolyLawReadoutSpec],
+    rp: &'a RPointProbeSpec,
+    nerve: &'a ComputedNerve,
+    diag_coeff: &'a CoeffDomain,
+    bindings: &'a ExprBindings,
+    empty_bindings: &'a ExprBindings,
+}
+
+fn r_point_contrast_field<A: FieldRingAdapter>(
+    adapter: &A,
+    input: &RPointContrastInput<'_>,
+) -> Result<RPointContrastResult, SilenceReason> {
+    let alg = FiniteAlgebra::truncated_univariate(
+        &input.rp.ring_var,
+        input.rp.ring_max_deg,
+        adapter.zero(),
+    )
+    .map_err(map_diag_alg_err)?;
     let ring_label = format!(
-        "{base_ring_label}[{}]/({}^{})",
-        rp.ring_var,
-        rp.ring_var,
-        rp.ring_max_deg + 1
+        "{}[{}]/({}^{})",
+        adapter.coeff_label(),
+        input.rp.ring_var,
+        input.rp.ring_var,
+        input.rp.ring_max_deg + 1
     );
 
-    let mut rel_polys = Vec::with_capacity(base_relations.len());
-    for rel in base_relations {
+    let mut rel_polys = Vec::with_capacity(input.base_relations.len());
+    for rel in input.base_relations {
         rel_polys.push((
             rel.name.as_str(),
-            expand(&rel.expr, bindings).map_err(map_diag_alg_err)?,
+            adapter
+                .expand_expr(&rel.expr, input.bindings)
+                .map_err(map_diag_alg_err)?,
         ));
     }
 
-    let mut law_polys: Vec<LawPolyGroup<C>> = Vec::with_capacity(laws.len());
-    for law in laws {
+    let mut law_polys: Vec<LawPolyGroup<A::Coeff>> = Vec::with_capacity(input.laws.len());
+    for law in input.laws {
         let map: BTreeMap<&str, &PolyExpr> =
             law.values.iter().map(|(s, e)| (s.as_str(), e)).collect();
-        let mut entries = Vec::with_capacity(sources.len());
-        for s in sources {
-            let p = expand(map[s.as_str()], bindings).map_err(map_diag_alg_err)?;
+        let mut entries = Vec::with_capacity(input.sources.len());
+        for s in input.sources {
+            let p = adapter
+                .expand_expr(map[s.as_str()], input.bindings)
+                .map_err(map_diag_alg_err)?;
             entries.push((s.clone(), p));
         }
         law_polys.push((law.law_name.clone(), entries));
@@ -740,19 +671,21 @@ where
     let mut geom_partitions: Vec<BTreeMap<String, BTreeMap<String, String>>> = Vec::new();
     let single_law = law_polys.len() == 1;
 
-    for pt in &rp.points {
+    for pt in &input.rp.points {
         let coord_map: BTreeMap<&str, &[PolyExpr]> = pt
             .coords
             .iter()
             .map(|(v, cs)| (v.as_str(), cs.as_slice()))
             .collect();
-        let mut r_coords: Vec<Vec<C>> = Vec::with_capacity(base_vars.len());
-        let mut geom_coords: Vec<C> = Vec::with_capacity(base_vars.len());
-        for v in base_vars {
+        let mut r_coords: Vec<Vec<A::Coeff>> = Vec::with_capacity(input.base_vars.len());
+        let mut geom_coords: Vec<A::Coeff> = Vec::with_capacity(input.base_vars.len());
+        for v in input.base_vars {
             let cs = coord_map[v.as_str()];
             let mut elem = Vec::with_capacity(cs.len());
             for c_expr in cs {
-                let cp = expand(c_expr, empty_bindings).map_err(map_diag_alg_err)?;
+                let cp = adapter
+                    .expand_expr(c_expr, input.empty_bindings)
+                    .map_err(map_diag_alg_err)?;
                 let val = cp.eval_at(&[]).map_err(map_diag_alg_err)?;
                 elem.push(val);
             }
@@ -794,8 +727,8 @@ where
             geom_target_vals.insert(law_name.clone(), g_inner);
         }
 
-        let stalk_cpx = build_diagnostic_complex(nerve, &geom_target_vals);
-        let stalk_sum = evaluate_complex_over_domain(&stalk_cpx, diag_coeff)?;
+        let stalk_cpx = build_diagnostic_complex(input.nerve, &geom_target_vals);
+        let stalk_sum = evaluate_complex_over_domain(&stalk_cpx, input.diag_coeff)?;
         geometric_stalk_h1_dims.insert(pt.label.clone(), stalk_sum.h1_free_rank);
         r_values_by_point.insert(pt.label.clone(), pt_r_vals);
         geom_partitions.push(canonicalize_geom_partition(&geom_target_vals));
