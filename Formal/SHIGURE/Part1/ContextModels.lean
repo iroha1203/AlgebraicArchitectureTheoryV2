@@ -4,9 +4,11 @@ import Mathlib.CategoryTheory.ObjectProperty.FullSubcategory
 
 /-! # The contravariant category of models on declaration contexts
 
-A model is a structure in the context satisfying its retained required Laws.
-The full subcategory keeps all structure-preserving maps. The morphisms of
-contexts are inclusions, so restrictions form an ordinary functor into Cat.
+A state model satisfies the retained required Laws in the state projection
+of a declaration context. Registered coefficient conclusions are evaluated
+in the named quantity models. The full subcategory keeps all
+structure-preserving maps. Context inclusions give a contravariant functor
+into Cat.
 -/
 
 universe u
@@ -18,22 +20,23 @@ open CategoryTheory
 
 variable {P : PrimitivePresentation.{u}} {U V W : DeclarationContext P}
 
-/-- A structure models the required Laws of the restricted presentation. -/
+/-- The structure satisfies the required Laws in the state projection of the restricted presentation.
+Authored coefficient conclusions are evaluated in the named quantity model. -/
 def ModelCondition (U : DeclarationContext P) : ObjectProperty (ContextStructure U) :=
   fun A => ∀ name : U.scopedTheory.LawName,
     A.evaluation.satisfies (U.scopedTheory.law name) (Declaration.lawBody_subset_of_mem name.property)
 
-/-- The category of models of the restricted presentation includes all its structural arrows. -/
+/-- The category of state models includes all structural arrows between its objects. -/
 abbrev Models (U : DeclarationContext P) := (ModelCondition U).FullSubcategory
 
 namespace Models
 
-/-- A model gives satisfaction of every retained required Law. -/
+/-- A state model satisfies the state projection of every retained required Law. -/
 theorem satisfies_required (A : Models U) (name : U.scopedTheory.LawName) :
     A.obj.evaluation.satisfies (U.scopedTheory.law name) (Declaration.lawBody_subset_of_mem name.property) :=
   A.property name
 
-/-- Restricting a model keeps the required Laws that belong to the smaller presentation. -/
+/-- Restricting a state model preserves the projected Laws of the smaller presentation. -/
 noncomputable def restrict (A : Models U) (inside : V ≤ U) : Models V :=
   ⟨A.obj.restrict inside, fun name =>
     (A.obj.restrict_satisfies_iff inside (V.scopedTheory.law name)

@@ -440,6 +440,33 @@ def ringEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
       ((Declaration.law '' equation.axiomNames ∪ ringVocabularySupport ring) ∪
         {a | ∃ i, a ∈ derivationOf rfl Subtype.val (equation.axioms_derive i)})
 
+/-- References in an actual named quantity application of a coefficient expression. -/
+def coefficientApplicationSupport {Γ : List P.signature.SortType}
+    (a : Quantities.DeclaredApplication P.signature Γ) : Set (Declaration P) :=
+  {ofOperation a.1.operation} ∪
+    {d | ∃ (s : P.signature.SortType) (i : Var a.1.operation.arity.inputs s),
+      d ∈ formulaSupport (a.2 i).graph}
+
+/-- The exact references in the two finite sides of a registered coefficient equation. -/
+def coefficientWritingSupport {Γ : List P.signature.SortType}
+    (e : Quantities.RegisteredCoefficientEquation P.signature Γ) : Set (Declaration P) :=
+  { d | ∃ a ∈ e.2.1.occurrences ∪ e.2.2.occurrences, d ∈ coefficientApplicationSupport a }
+
+/-- A Law depends on the references of its registered coefficient writing. -/
+def coefficientEquationSupport (name : P.laws.LawName) : Set (Declaration P) :=
+  match P.coefficientWriting name with
+  | none => ∅
+  | some e => coefficientWritingSupport e
+
+/-- The native Law and its registered coefficient equation give its written references. -/
+def declaredLawSupport (name : P.laws.LawName) : Set (Declaration P) :=
+  lawBody (P.laws.statement name) ∪ coefficientEquationSupport name
+
+/-- Without a coefficient registration the written references are those of the native Law. -/
+theorem declaredLawSupport_of_none (name : P.laws.LawName) (absent : P.coefficientWriting name = none) :
+    declaredLawSupport (P := P) name = lawBody (P.laws.statement name) := by
+  simp [declaredLawSupport, coefficientEquationSupport, absent]
+
 /-- The immediate references of a declaration in Definition 3.1. -/
 def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declaration P)
   | .sort _ => ∅
@@ -454,7 +481,7 @@ def dependsOn (P : PrimitivePresentation.{u}) : Declaration P → Set (Declarati
         {a | ∃ (s : P.signature.SortType) (i : Var (P.signature.partialArity p).inputs s),
           a = ofOperation (data.symbol i).operation}
   | .law name =>
-    lawBody (P.laws.statement name) ∪
+    declaredLawSupport name ∪
       match role : P.laws.role name with
       | .derived => derivation (P.derived name role)
       | .required | .additional => ∅
@@ -517,7 +544,8 @@ theorem partial_domainSymbol_mem_dependsOn {p : P.signature.Partial} (data : Dom
 /-- A derived Law retains its written support and the references from its proof tree. -/
 theorem derived_dependencies (name : P.laws.LawName) (role : P.laws.role name = .derived) :
     dependsOn P (.law name) = lawBody (P.laws.statement name) ∪ derivation (P.derived name role) := by
-  rw [dependsOn]
+  have nonrequired : P.laws.role name ≠ .required := fun req => LawRole.noConfusion (role.symm.trans req)
+  rw [← declaredLawSupport_of_none name (P.coefficientWriting_of_nonrequired name nonrequired), dependsOn]
   split
   · rfl
   · rename_i otherRole
@@ -540,13 +568,18 @@ theorem derivation_subset_dependsOn (name : P.laws.LawName) (role : P.laws.role 
 
 /-- Required and additional Laws refer to their written support. -/
 theorem nonderived_dependencies (name : P.laws.LawName) (role : P.laws.role name ≠ .derived) :
-    dependsOn P (.law name) = lawBody (P.laws.statement name) := by
+    dependsOn P (.law name) = declaredLawSupport name := by
   rw [dependsOn]
   split
   · rename_i h
     exact (role h).elim
   · exact Set.union_empty _
   · exact Set.union_empty _
+
+/-- A non-derived Law without a coefficient conclusion depends only on its native written support. -/
+theorem nonderived_dependencies_of_no_coefficient (name : P.laws.LawName) (role : P.laws.role name ≠ .derived)
+    (absent : P.coefficientWriting name = none) : dependsOn P (.law name) = lawBody (P.laws.statement name) :=
+  (nonderived_dependencies name role).trans (declaredLawSupport_of_none name absent)
 
 /-- A required Law used by a derivation is among that derivation's declarations. -/
 theorem required_mem_derivation (name : P.theory.LawName) :

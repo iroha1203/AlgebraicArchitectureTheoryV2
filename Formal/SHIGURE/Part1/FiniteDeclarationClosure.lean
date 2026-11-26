@@ -89,6 +89,45 @@ private theorem inclusions_finite (p : P.signature.Partial) (data : DomainInclus
   rw [same]
   exact Set.finite_range _
 
+private theorem coefficientApplicationSupport_finite {Γ : List P.signature.SortType}
+    (a : Quantities.DeclaredApplication P.signature Γ) :
+    (coefficientApplicationSupport (P := P) a).Finite := by
+  letI := finite_positions (P := P) a.1.operation.arity.inputs
+  apply (Set.finite_singleton _).union
+  let terms : (Σ s, Var a.1.operation.arity.inputs s) → Set (Declaration P) :=
+    fun i => formulaSupport (a.2 i.2).graph
+  change {d | ∃ s i, d ∈ terms ⟨s, i⟩}.Finite
+  have same : {d | ∃ s i, d ∈ terms ⟨s, i⟩} = ⋃ i, terms i := by
+    ext d
+    simp only [Set.mem_setOf_eq, Set.mem_iUnion, Sigma.exists]
+  rw [same]
+  exact Set.finite_iUnion fun i => (sorts_finite _).union (formula_finite _)
+
+private theorem expressionOccurrences_finite {k L : Type u} (e : Quantities.Expression k L) :
+    e.occurrences.Finite := by
+  induction e with
+  | scalar => exact Set.finite_empty
+  | quantity => exact Set.finite_singleton _
+  | add _ _ hp hq | mul _ _ hp hq => exact hp.union hq
+  | neg _ h => exact h
+
+private theorem declaredLawSupport_finite (name : P.laws.LawName) :
+    (declaredLawSupport (P := P) name).Finite := by
+  apply (lawBody_finite _).union
+  unfold coefficientEquationSupport
+  split
+  · exact Set.finite_empty
+  · rename_i e _
+    unfold coefficientWritingSupport
+    have same : {d | ∃ a ∈ e.2.1.occurrences ∪ e.2.2.occurrences,
+        d ∈ coefficientApplicationSupport (P := P) a} =
+        ⋃ a ∈ e.2.1.occurrences ∪ e.2.2.occurrences, coefficientApplicationSupport (P := P) a := by
+      ext d
+      simp only [Set.mem_setOf_eq, Set.mem_iUnion, exists_prop]
+    rw [same]
+    exact ((expressionOccurrences_finite _).union (expressionOccurrences_finite _)).biUnion
+      fun a _ => coefficientApplicationSupport_finite a
+
 /-- A primitive declaration has only finitely many immediate dependency names. -/
 theorem dependsOn_finite (d : Declaration P) : (dependsOn P d).Finite := by
   cases d with
@@ -107,7 +146,7 @@ theorem dependsOn_finite (d : Declaration P) : (dependsOn P d).Finite := by
     · rw [derived_dependencies name role]
       exact (lawBody_finite _).union (derivation_finite _)
     · rw [nonderived_dependencies name role]
-      exact lawBody_finite _
+      exact declaredLawSupport_finite _
 
 /-- Assign heights that decrease along primitive declaration dependencies. -/
 private def height : Declaration P → ℕ
@@ -143,6 +182,24 @@ private theorem lawBody_height {d : Declaration P} {law : Law P.signature}
     (uses : d ∈ lawBody law) : d.height < 3 := by
   cases d <;> try simp only [height, Nat.reduceLT]
   exact (law_notMem_lawBody _ _ uses).elim
+
+private theorem declaredLawSupport_height {d : Declaration P} {name : P.laws.LawName}
+    (uses : d ∈ declaredLawSupport name) : d.height < 3 := by
+  rcases uses with written | coefficient
+  · exact lawBody_height written
+  · cases d <;> try simp only [height, Nat.reduceLT]
+    rename_i n
+    unfold coefficientEquationSupport at coefficient
+    split at coefficient
+    · exact (Set.notMem_empty _ coefficient).elim
+    · obtain ⟨a, _, declared | ⟨_, i, term⟩⟩ := coefficient
+      · have same := Set.mem_singleton_iff.mp declared
+        cases h : a.1.operation <;> simp [h, Declaration.ofOperation] at same
+      · rcases term with sort | formula
+        · rw [sorts_eq_image] at sort
+          obtain ⟨_, _, same⟩ := sort
+          cases same
+        · exact (law_notMem_formula n (a.2 i).graph formula).elim
 
 /-- Every primitive and required Law used in a derivation fits below a derived Law. -/
 private theorem derivation_height {p q : Formula P.signature Γ}
@@ -191,7 +248,7 @@ private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
       · simpa [height, role] using Nat.lt_trans (lawBody_height written) (by decide : 3 < 4)
       · simpa [height, role] using derivation_height (P.derived name role) derived
     · rw [nonderived_dependencies name role] at uses
-      have lower := lawBody_height uses
+      have lower := declaredLawSupport_height uses
       cases h : P.laws.role name <;> simp_all [height]
 
 end SHIGURE.Declaration

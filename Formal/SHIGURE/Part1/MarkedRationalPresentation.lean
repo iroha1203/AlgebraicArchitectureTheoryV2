@@ -241,7 +241,8 @@ private theorem linearity_supported (right : Bool) (linearity : vocabulary.Linea
 /-- Every retained rational Law has its required dependencies in the corresponding piece. -/
 private theorem kept_law_support (right : Bool) (name : presentation.laws.LawName) (kept : keeps right (.law name)) :
     Declaration.dependsOn presentation (.law name) ⊆ {d | keeps right d} := by
-  rw [Declaration.nonderived_dependencies (P := presentation) name (by cases name <;> intro h <;> cases h)]
+  rw [Declaration.nonderived_dependencies (P := presentation) name (by cases name <;> intro h <;> cases h),
+    Declaration.declaredLawSupport_of_none _ rfl]
   cases name with
   | inl name =>
     rw [presentation_roundTrip]

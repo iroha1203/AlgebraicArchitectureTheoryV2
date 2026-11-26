@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part1.Signature
+import Formal.SHIGURE.Part1.WrittenCoefficientEquation
 import Mathlib.Algebra.Category.CommAlgCat.Basic
 
 /-!
@@ -22,19 +22,6 @@ universe u
 
 namespace SHIGURE.Quantities
 
-/-- A finite coefficient expression with one variable for each quantity application. -/
-inductive Expression (k L : Type u)
-  /-- A coefficient from the base ring. -/
-  | scalar (a : k)
-  /-- A quantity application identified by an occurrence or a compiled coordinate. -/
-  | quantity (x : L)
-  /-- Addition of two expressions. -/
-  | add (left right : Expression k L)
-  /-- Additive inverse. -/
-  | neg (arg : Expression k L)
-  /-- Multiplication of two expressions. -/
-  | mul (left right : Expression k L)
-
 namespace Expression
 
 variable {k L R S : Type u} [CommRing k] [CommRing R] [CommRing S] [Algebra k R] [Algebra k S]
@@ -52,13 +39,10 @@ theorem eval_map (f : R →ₐ[k] S) (q : L → R) (t : Expression k L) :
     t.eval (f ∘ q) = f (t.eval q) := by
   induction t <;> simp [eval, Function.comp_apply, *]
 
-/-- Rename the quantity inputs of an expression, retaining its scalar literals and operations. -/
-def rename {k L M : Type u} (f : L → M) : Expression k L → Expression k M
-  | .scalar a => .scalar a
-  | .quantity x => .quantity (f x)
-  | .add l r => .add (rename f l) (rename f r)
-  | .neg x => .neg (rename f x)
-  | .mul l r => .mul (rename f l) (rename f r)
+/-- Evaluating with a constant assignment is independent of the names of compiled occurrences. -/
+theorem eval_compile_const {M : Type u} (t : Expression k L) (f : ∀ x ∈ t.occurrences, M) (r : R) :
+    (t.compile f).eval (fun _ => r) = t.eval (fun _ => r) := by
+  induction t <;> simp [compile, eval, *]
 
 /-- Renaming the inputs gives the same value as reading the original inputs through the renaming. -/
 theorem eval_rename {M : Type u} (f : L → M) (q : M → R) (t : Expression k L) :

@@ -337,20 +337,21 @@ def all (p : ObservationProduct S) : InputSelection (CoefficientProduct.all p) w
 
 end InputSelection
 
-/-- Interpret a selected declaration by its written Law in the scheme. -/
+/-- Interpret the state projection of a selected Law in the realized structure. -/
 def CoefficientScheme.holdsLaw {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
     {base : CoefficientRing.{u}} (scheme : CoefficientScheme U base) (R : CoefficientAlgebra base)
     (realization : scheme.Realization R) (name : P.laws.LawName)
     (kept : Declaration.law name ∈ U.declarations) : Prop :=
-  scheme.interpretLaw R realization (P.laws.statement name) (fun _ hd => U.closed kept (Or.inl hd))
+  scheme.interpretLaw R realization (P.laws.statement name) (fun _ used => U.closed kept (Or.inl (Or.inl used)))
 
-/-- The realized points form a set-valued model of the retained required Laws. -/
+/-- Realized points satisfy the retained required Laws of the state projection.
+The authored coefficient equations are evaluated by the named quantity model. -/
 def CoefficientScheme.IsPointModel {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
     {base : CoefficientRing.{u}} (scheme : CoefficientScheme U base) (R : CoefficientAlgebra base)
     (realization : scheme.Realization R) : Prop :=
   ∀ name : P.theory.LawName, ∀ kept : Declaration.law name.val ∈ U.declarations,
     (scheme.structureOf R realization).satisfies (P.theory.law name)
-      (fun _ used => U.closed kept (Or.inl used))
+      (fun _ used => U.closed kept (Or.inl (Or.inl used)))
 
 /-- The designated-point map on the sorts actually evaluated. -/
 abbrev CoefficientScheme.SelectedPointMap {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
