@@ -33,26 +33,6 @@ universe u
 
 noncomputable section
 
-namespace SHIGURE.ContextStructure
-
-open DeclarationContext
-
-variable {P : PrimitivePresentation.{u}} {U V : DeclarationContext P}
-
-/-- A supported tuple in the actual reduct has the same assigned values in the ambient structure. -/
-def restrictAssignmentEquiv (A : ContextStructure U) (inside : V ≤ U) {Γ : List P.signature.SortType}
-    (support : Declaration.sorts Γ ⊆ V.declarations) :
-    Assignment (A.restrict inside).carrier Γ ≃ Assignment A.carrier Γ :=
-  Equiv.ofBijective (mapAssignment (selectedMap V A.carrier) support) (by
-    refine ⟨?_, mapAssignment_surjective _ (fun s hs => (selectedMap_bijective A.carrier s hs).2) _⟩
-    intro a b same
-    apply Assignment.ext
-    intro s i
-    exact (selectedMap_bijective A.carrier s (varKept support i)).1
-      (congrArg (fun e : Assignment A.carrier Γ => e i) same))
-
-end SHIGURE.ContextStructure
-
 namespace SHIGURE.Quantities
 
 open DeclarationContext

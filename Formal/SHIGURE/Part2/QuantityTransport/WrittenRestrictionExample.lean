@@ -39,9 +39,9 @@ private def written : WrittenLaws ℤ signature where
   domainContext _ := [()]
   Law := Fin 3
   inputContext _ := [()]
-  Occurrence _ := Unit
-  application l _ := ⟨l, ⟨.var⟩⟩
-  left _ := .quantity ()
+  Occurrence _ := Bool
+  application l useThird := ⟨if useThird then (2 : Fin 3) else l, ⟨.var⟩⟩
+  left _ := .quantity false
   right l := .scalar l.val
 
 private abbrev Full := DeclarationContext.full primitive
@@ -75,7 +75,13 @@ private def retained : WrittenLaws.DeclarationSelection (P := primitive) written
   laws := {l | l.val < 2}
   domainSorts _ := unitSorts
   inputSorts _ := unitSorts
-  applicationKept h _ := h
+  applicationKept {l} h a := by
+    have used := a.property
+    change a.val ∈ ({false} : Set Bool) ∪ ∅ at used
+    have occurrence : a.val = false := by simpa using used
+    change (written.application l a.val).1.val < 2
+    rw [occurrence]
+    exact h
   termKept _ _ := by
     intro s i
     change Declaration.termContext (Term.var (sig := signature) i) ≤ retainedState
