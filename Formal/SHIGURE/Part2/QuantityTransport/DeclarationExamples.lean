@@ -264,12 +264,13 @@ private theorem sourceDefined (l : written.KeptLaw Full) (e : written.lawInput a
 
 private def interpretation : written.Interpretation (k := ℤ) ambient where
   read := selectedMap Full base.carrier
-  quantityRead j _ := (selectedMap_bijective (U := Full) base.carrier j.val.val.operation.arity.output _).2
   selectedDomain := varyingDomain
-  lawRead l _ _ _ := by
+  quantityOutput j _ r := (carrierRead j.val.val.operation.arity.output).symm r
+  quantityOutput_read j _ r := (carrierRead j.val.val.operation.arity.output).apply_symm_apply r
+  lawRead l _ _ _ _ := by
     intro _ _ _ _ equals
     exact (selectedMap_bijective (U := Full) base.carrier (written.valueSort l.val) _).1 equals
-  arithmeticAt l a e B same x y each edge := by
+  arithmeticAt l a e B same _ x y each edge := by
     obtain ⟨a, used⟩ := a
     change a ∈ left.arithmeticApplications ∪ right.arithmeticApplications at used
     rcases arithmetic_eq a used with rfl | rfl
@@ -282,7 +283,18 @@ private def interpretation : written.Interpretation (k := ℤ) ambient where
       have fixed := (same.outside ⟨⟨.total (), Or.inr rfl⟩, Set.mem_univ _⟩ x (fun neq => neq diagonal) y).2 edge
       exact addRealizes x y fixed
     · exact differenceRealizes x y ((fixedPartial .difference (by intro eq; cases eq) B same _ x y).2 edge)
-  coefficientIndependent l a e B same x y original replacement := by
+  coefficientDefined l a e := by
+    have fixed := coefficient_eq a.val a.property
+    rcases a with ⟨term, used⟩
+    change term = ⟨true, oneTerm⟩ at fixed
+    subst term
+    obtain ⟨z, graph⟩ := (ambient.partial_graph_valid .one (Set.mem_univ _)).2.2
+      Assignment.empty (Set.mem_univ _)
+    refine ⟨z, (CoefficientSymbol.evaluates_term_iff (P := primitive) (U := Full) oneSymbol ambient
+      Term.argsNil _ e.val (Set.mem_univ _) z).2 ⟨Assignment.empty, ?_, graph⟩⟩
+    intro _ i
+    nomatch i
+  coefficientIndependent l a e B same _ x y original replacement := by
     have fixed := coefficient_eq a.val a.property
     rcases a with ⟨term, used⟩
     change term = ⟨true, oneTerm⟩ at fixed
@@ -302,17 +314,23 @@ private def interpretation : written.Interpretation (k := ℤ) ambient where
     subst stored
     have holds := (domainGuard ambient.evaluation ambient.structural e.val).1 e.property
     exact ⟨e.val, holds.2, holds.1⟩
-  inputIndependent _ B same e :=
+  inputIndependent _ B same _ e :=
     (domainGuard ambient.evaluation ambient.structural e).trans
       ((and_congr (same.relation () (Set.mem_univ _) e) (same.domain .sample (Set.mem_univ _) e)).trans
         (domainGuard B same.structural e).symm)
-  argumentIndependent l B same e a s i := by
+  argumentState l e a s i := by
     have actual := application_eq a.val a.property
     obtain ⟨stored, used⟩ := a
     change stored = application at actual
     subst stored
     exact rfl
-  definedSides := sourceDefined
+  argumentIndependent l B same _ e a s i := by
+    have actual := application_eq a.val a.property
+    obtain ⟨stored, used⟩ := a
+    change stored = application at actual
+    subst stored
+    exact rfl
+  definedSides l e B same _ := sourceDefined l e B same
 
 private def law : written.KeptLaw Full :=
   ⟨⟨⟨(), rfl⟩, Set.mem_univ _⟩, Set.mem_univ _⟩

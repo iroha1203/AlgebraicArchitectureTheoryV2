@@ -3,10 +3,10 @@ import Mathlib.Data.ZMod.Basic
 
 /-! # Reading a coefficient from a registered input
 
-The single registered Law reads its coefficient from the input variable.
-Both sides return values in the image of `Option.some`. Their scalar
-readings are faithful there even though the result carrier has an extra
-point and cannot inject into the coefficient ring.
+The registered equation compares the native values of a quantity and a
+fixed state operation. Both read as scalars on the candidate
+representatives `some r`. The original state has an additional native
+value `none`, which the candidate encoding never uses.
 -/
 
 namespace SHIGURE.Quantities.CoefficientInputExample
@@ -15,57 +15,51 @@ open DeclarationContext
 
 noncomputable section
 
-/-- The finite field used for the coefficients and quantity values. -/
+/-- Coefficients and the input variable live in the three-element field. -/
 private abbrev Scalar := ZMod 3
 
-/-- A quantity has scalar result. Addition records its result in a separate carrier. -/
+/-- The fixed embedding and the varying quantity both return the native result sort. -/
 private def signature : Signature where
   SortType := Bool
   Total := Unit
   Rel := Empty
   Partial := Empty
   Quantity := Unit
-  totalArity _ := ⟨[false, false], true⟩
+  totalArity _ := ⟨[false], true⟩
   relInputs r := nomatch r
   partialArity p := nomatch p
-  quantityArity _ := ⟨[false], false⟩
+  quantityArity _ := ⟨[false], true⟩
 
-/-- The argument of the sole quantity is the source variable. -/
+/-- The quantity has a designated coordinate at every input. -/
 private def varying : Set (QuantityDeclaration signature) := {.total ()}
 
-/-- The variable is read as a state coefficient at each named input. -/
-private def stateVariable : Term signature [false] false := .var .here
-
-/-- The only designated varying symbol. -/
+/-- The only varying operation has this declared name. -/
 private def quantityName : varying := ⟨.total (), Set.mem_singleton _⟩
 
-/-- The original typed application of the only varying quantity. -/
-private def quantityTerm : CoefficientTerm varying [false] false :=
-  .quantity quantityName ⟨.var⟩
+/-- The sole argument of both declared operations is the source variable. -/
+private def stateVariable : Term signature [false] false := .var .here
 
-/-- The fixed binary operation adds the scalar readings. -/
-private def plusSymbol : CoefficientSymbol signature ⟨[false, false], true⟩ := ⟨.total (), rfl⟩
+/-- The left side reads the actual varying quantity. -/
+private def left : CoefficientTerm varying [false] true := .quantity quantityName ⟨.var⟩
 
-/-- The written residual is `q(x) + x - (x + x)`. -/
-private def left : CoefficientTerm varying [false] true :=
-  .add plusSymbol quantityTerm (.scalar stateVariable)
+/-- The state term embeds the input in the native result carrier. -/
+private def embedTerm : Term signature [false] true := Term.app (.total ()) (fun i => .var i)
 
-/-- The same variable supplies both coefficients on the right. -/
-private def right : CoefficientTerm varying [false] true :=
-  .add plusSymbol (.scalar stateVariable) (.scalar stateVariable)
+/-- The right side reads a fixed coefficient from the state term on the input. -/
+private def right : CoefficientTerm varying [false] true := .scalar embedTerm
 
-/-- Preserve one registered Law for every value of the input variable. -/
+/-- One registered source law covers all inputs. -/
 private def equation : OrderedEquation signature :=
   ⟨[false], true, .truth, left.toTerm, right.toTerm⟩
 
-/-- The presentation registers the original typed term pair. -/
+/-- The presentation registers the original typed pair. -/
 private def primitive : PrimitivePresentation where
   signature := signature
   laws := ⟨Unit, fun _ => equation.toLaw, fun _ => .required⟩
   otherOrderedEquation _ := some ⟨equation.write, rfl⟩
   derived _ impossible := by cases impossible
 
-/-- Use the registered syntax directly as the polynomial reading. -/
+/-- Compile the registered syntax while retaining the required Law's name. -/
 private def written : DeclaredQuantityLaws primitive where
   quantities := varying
   quantityLaws := Set.univ
@@ -78,209 +72,231 @@ private def written : DeclaredQuantityLaws primitive where
     cases Option.some.inj attached
     rfl
 
-/-- The `none` point belongs to the actual carrier but addition never returns it. -/
+/-- The result sort has one more value than the coefficient sort. -/
 private abbrev carrier : Bool → Type
   | false => Scalar
   | true => Option Scalar
 
-/-- The original addition computes the sum inside the attained part of the result carrier. -/
+/-- The fixed embedding returns `some` and the starting native quantity returns `none`. -/
 private def base : Structure signature where
   carrier := carrier
-  total _ args := some (args .here + args (.there .here))
+  total _ args := some (args .here)
   relation r := nomatch r
   partialDomain p := nomatch p
   partialValue p := nomatch p
-  quantity _ args := args .here
+  quantity _ _ := none
 
-/-- The full declaration context for the input example. -/
+/-- The example starts in the full declaration context. -/
 private abbrev Full := DeclarationContext.full primitive
 
-/-- Evaluate the literal original declarations. -/
+/-- The source evaluates the actual typed declarations. -/
 private def ambient : ContextStructure Full := ContextStructure.ofStructure Full base
 
-/-- All terms in this example belong to the full context. -/
+/-- Every term in the example is supported by the full context. -/
 private def supported {Γ : List signature.SortType} {s : signature.SortType}
-    (t : Term signature Γ s) : Full.TermIn Γ s :=
-  ⟨t, fun _ _ => Set.mem_univ _⟩
+    (t : Term signature Γ s) : Full.TermIn Γ s := ⟨t, fun _ _ => Set.mem_univ _⟩
 
-/-- Identify the retained input or result with its carrier in the supplied structure. -/
+/-- Read the underlying carrier value of a retained term. -/
 private def readCarrier (s : signature.SortType) : ambient.carrier s ≃ carrier s :=
   Equiv.ofBijective (selectedMap Full base.carrier s (Set.mem_univ _))
     (selectedMap_bijective (U := Full) base.carrier s (Set.mem_univ _))
 
-/-- The extra result has a default reading, outside the values attained by the Law. -/
+/-- On representatives the result reads its scalar. The extra point has a default reading. -/
 private def read (s : signature.SortType) (x : ambient.carrier s) : Scalar :=
   match s with
   | false => readCarrier false x
   | true => (readCarrier true x).getD 0
 
-/-- A replacement leaves the fixed arithmetic primitive unchanged. -/
-private theorem fixed_plus (B : RestrictedEvaluation Full ambient.carrier)
+/-- The selected quantity uses the full argument set of its native graph. -/
+private def appliedQuantity : written.KeptQuantity Full := ⟨quantityName, Set.mem_univ _⟩
+
+/-- The Law refers to the actual selected quantity in its left term. -/
+private theorem quantity_relevant (l : written.KeptLaw Full) :
+    Declaration.ofOperation appliedQuantity.val.val.operation ∈ Declaration.lawBody (primitive.theory.law l.val.val) := by
+  apply Or.inr
+  change Declaration.ofOperation (P := primitive) (.quantity ()) ∈ Declaration.formula
+    (Formula.termEq left.toTerm embedTerm)
+  rw [Formula.termEq_eq_ex, Declaration.formula_ex, Declaration.formula_conj]
+  exact Or.inr (Or.inl (Selected.termReferences_subset_graph (P := primitive) left.toTerm
+    (Or.inl (Set.mem_singleton _))))
+
+/-- The fixed embedding's native result is the representative of the state input. -/
+private theorem embed_read (B : RestrictedEvaluation Full ambient.carrier)
     (same : written.SameDeclarationState ambient (fun _ => Set.univ) B)
-    (xs : Assignment ambient.carrier [false, false]) (y : ambient.carrier true)
-    (edge : B.graph (.total ()) (Set.mem_univ _) xs y) :
-    readCarrier true y = some (readCarrier false (xs .here) + readCarrier false (xs (.there .here))) := by
-  have noQuantity : Operation.total (sig := signature) () ∉ QuantityDeclaration.operation '' varying := by
-    rintro ⟨j, hj, equal⟩
-    cases Set.mem_singleton_iff.mp hj
+    (e : Assignment ambient.carrier [false]) (y : ambient.carrier true)
+    (eval : B.holds embedTerm.graph (Set.subset_univ _) (Assignment.cons y e)) :
+    readCarrier true y = some (read false (e .here)) := by
+  let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
+  obtain ⟨args, each, graph⟩ := (C.evaluates_app_iff (.total ()) (fun i => .var i)
+    (supported embedTerm) rfl e (Set.mem_univ _) y).1 eval
+  have sameArgs : args = e := by
+    apply Assignment.ext
+    intro s i
+    obtain ⟨_, atVar⟩ := each i
+    exact C.evaluates_unique (supported (.var i)) e atVar rfl
+  have fixed : Operation.total (sig := signature) () ∉ QuantityDeclaration.operation '' varying := by
+    rintro ⟨j, chosen, equal⟩
+    cases Set.mem_singleton_iff.mp chosen
     cases equal
-  have original := (same.graph (.total ()) noQuantity (Set.mem_univ _) xs y).2 edge
-  have actual := (ContextStructure.ofStructure_graph_iff Full base (.total ()) (Set.mem_univ _) xs y).1 original
+  have actual := (ContextStructure.ofStructure_graph_iff Full base (.total ())
+    (Set.mem_univ _) e y).1 ((same.graph (.total ()) fixed (Set.mem_univ _) e y).2 (sameArgs ▸ graph))
   rw [Structure.graph_total_iff] at actual
   exact actual.symm
 
-/-- An evaluated plus term returns a value in the attained part of the native carrier. -/
-private theorem reached_plus (B : RestrictedEvaluation Full ambient.carrier)
-    (same : written.SameDeclarationState ambient (fun _ => Set.univ) B)
-    (t u : Term signature [false] false) (input : Assignment ambient.carrier [false])
-    (y : ambient.carrier true)
-    (held : B.holds (plusSymbol.term (fun i => t.argsCons (u.argsCons Term.argsNil) i)).graph
-      (Set.subset_univ _) (Assignment.cons y input)) :
-    readCarrier true y = some (read true y) := by
-  let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
-  have ⟨args, _, edge⟩ := (CoefficientSymbol.evaluates_term_iff (P := primitive) (U := Full) plusSymbol C
-    (fun i => t.argsCons (u.argsCons Term.argsNil) i) (supported _).property input (Set.mem_univ _) y).1 held
-  have actual := fixed_plus B same args y edge
-  change readCarrier true y = some ((readCarrier true y).getD 0)
-  rw [actual]
-  rfl
+/-- The fixed state term is defined at every input. -/
+private theorem embed_defined (C : ContextStructure Full) (e : Assignment C.carrier [false]) :
+    ∃ y, C.evaluates (supported embedTerm) e y := by
+  obtain ⟨z, graph⟩ := (C.total_graph_valid () (Set.mem_univ _)).2 e
+  exact ⟨z, C.evaluates_app_of_graph (.total ()) (fun i => .var i) (supported embedTerm) rfl e e
+    (fun i => ⟨(supported (.var i)).property, rfl⟩) (Set.mem_univ _) z graph⟩
 
-/-- A variable evaluates to the argument at its original position. -/
-private theorem variable_eval (B : ContextStructure Full) (e : Assignment B.carrier [false]) :
-    B.evaluates (supported stateVariable) e (e .here) := rfl
+/-- The quantity side has a native value at every input. -/
+private theorem quantity_defined (C : ContextStructure Full) (e : Assignment C.carrier [false]) :
+    ∃ y, C.evaluates (supported left.toTerm) e y := by
+  obtain ⟨z, graph⟩ := (C.quantity_graph_valid () (Set.mem_univ _)).2 e
+  exact ⟨z, C.evaluates_app_of_graph (.quantity ()) (fun i => .var i) (supported left.toTerm) rfl e e
+    (fun i => ⟨(supported (.var i)).property, rfl⟩) (Set.mem_univ _) z graph⟩
 
-/-- Every evaluation of the original written arithmetic is within the attained result image. -/
-private theorem sides_defined (l : written.KeptLaw Full) (e : written.lawInput ambient l)
-    (B : RestrictedEvaluation Full ambient.carrier) (same : written.SameDeclarationState ambient (fun _ => Set.univ) B) :
-    (∃ y, B.holds left.toTerm.graph (Set.subset_univ _) (Assignment.cons y e.val)) ∧
-      (∃ y, B.holds right.toTerm.graph (Set.subset_univ _) (Assignment.cons y e.val)) := by
-  let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
-  obtain ⟨value, edge⟩ := (C.quantity_graph_valid () (Set.mem_univ _)).2 e.val
-  have quantityValue : C.evaluates (supported quantityTerm.toTerm) e.val value :=
-    C.evaluates_app_of_graph (.quantity ()) (fun i => .var i) _ rfl e.val e.val
-      (fun i => by cases i with
-        | here => exact ⟨(supported stateVariable).property, variable_eval C e.val⟩
-        | there i => nomatch i) (Set.mem_univ _) value edge
-  have add {t u : Term signature [false] false} {a b : ambient.carrier false}
-      (first : C.evaluates (supported t) e.val a) (second : C.evaluates (supported u) e.val b) :
-      ∃ y, C.evaluates (supported (plusSymbol.term (fun i => t.argsCons (u.argsCons Term.argsNil) i))) e.val y := by
-    let args := Assignment.cons a (Assignment.cons b Assignment.empty)
-    obtain ⟨z, edge⟩ := (C.total_graph_valid () (Set.mem_univ _)).2 args
-    refine ⟨z, (CoefficientSymbol.evaluates_term_iff (P := primitive) (U := Full) plusSymbol C
-      (fun i => t.argsCons (u.argsCons Term.argsNil) i) (supported _).property e.val (Set.mem_univ _) z).2
-        ⟨args, ?_, edge⟩⟩
-    intro s i
-    cases i with
-    | here => exact ⟨(supported t).property, first⟩
-    | there i =>
-      cases i with
-      | here => exact ⟨(supported u).property, second⟩
-      | there i => nomatch i
-  exact ⟨add quantityValue (variable_eval C e.val), add (variable_eval C e.val) (variable_eval C e.val)⟩
+/-- The only coefficient occurrence is the actual embedding of the input. -/
+private theorem coefficient_eq (l : written.KeptLaw Full) (a : written.UsedCoefficient l.val) :
+    a.val = ⟨true, embedTerm⟩ := by
+  have used := a.property
+  change Sum.inl a.val ∈ left.leaves ∪ right.leaves at used
+  simpa [left, right, CoefficientTerm.leaves] using used
 
-/-- Confirm the singleton state term occurring as the coefficient in both written sides. -/
-private theorem state_coefficient_eq (a : CoefficientTerm.StateCoefficient signature [false])
-    (h : Sum.inl a ∈ left.leaves ∪ right.leaves) : a = ⟨false, stateVariable⟩ := by
-  simpa [left, right, quantityTerm, CoefficientTerm.leaves] using h
+/-- The only quantity occurrence uses the original variable. -/
+private theorem application_eq (l : written.KeptLaw Full) (a : written.UsedApplication l.val) :
+    a.val = ⟨quantityName, ⟨.var⟩⟩ := by
+  have used := a.property
+  change Sum.inr a.val ∈ left.leaves ∪ right.leaves at used
+  simpa [left, right, CoefficientTerm.leaves] using used
 
-/-- Compile the actual fixed input and the equality on reached native outputs. -/
+/-- Choose the `some` encoding explicitly for the native graph of every scalar candidate. -/
 private def interpretation : written.Interpretation (k := Scalar) ambient where
   read s _ := read s
-  quantityRead j _ := by
-    cases j.val.val with
-    | total q => exact (readCarrier false).surjective
-    | partialOp p => nomatch p
   selectedDomain _ := Set.univ
-  lawRead l e B same := by
+  quantityOutput j _ r := by
+    rcases j with ⟨⟨name, _⟩, _⟩
+    cases name with
+    | total _ => exact (readCarrier true).symm (some r)
+    | partialOp p => nomatch p
+  quantityOutput_read j _ r := by
+    rcases j with ⟨⟨name, _⟩, _⟩
+    cases name with
+    | total _ =>
+      change (readCarrier true ((readCarrier true).symm (some r))).getD 0 = r
+      rw [(readCarrier true).apply_symm_apply]
+      rfl
+    | partialOp p => nomatch p
+  lawRead l e B same represents := by
     let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
-    have reached (y : ambient.carrier true)
-        (h : C.evaluates (supported left.toTerm) e.val y ∨ C.evaluates (supported right.toTerm) e.val y) :
-        readCarrier true y = some (read true y) :=
-      h.elim (reached_plus B same quantityTerm.toTerm stateVariable e.val y)
-        (reached_plus B same stateVariable stateVariable e.val y)
+    have leftRead (y : ambient.carrier true) (held : C.evaluates (supported left.toTerm) e.val y) :
+        readCarrier true y = some (read true y) := by
+      obtain ⟨r, graph⟩ := represents appliedQuantity (quantity_relevant l) ⟨e.val, Set.mem_univ _⟩
+      have expected : C.evaluates (supported left.toTerm) e.val ((readCarrier true).symm (some r)) :=
+        C.evaluates_app_of_graph (.quantity ()) (fun i => .var i) _ rfl e.val e.val
+          (fun i => ⟨(supported (.var i)).property, rfl⟩) (Set.mem_univ _) _ graph
+      have native := C.evaluates_unique (supported left.toTerm) e.val held expected
+      rw [native]
+      change readCarrier true ((readCarrier true).symm (some r)) =
+        some ((readCarrier true ((readCarrier true).symm (some r))).getD 0)
+      rw [(readCarrier true).apply_symm_apply]
+      rfl
+    have rightRead (y : ambient.carrier true) (held : C.evaluates (supported right.toTerm) e.val y) :
+        readCarrier true y = some (read true y) := by
+      have native := embed_read B same e.val y held
+      change readCarrier true y = some ((readCarrier true y).getD 0)
+      rw [native]
+      rfl
     intro x hx y hy equal
-    exact (readCarrier true).injective ((reached x hx).trans ((congrArg some equal).trans (reached y hy).symm))
-  arithmeticAt l a e B same x y _ edge := by
-    have op : a.val.1 = .add plusSymbol := by
-      obtain ⟨⟨op, args⟩, used⟩ := a
-      change ⟨op, args⟩ ∈ left.arithmeticApplications ∪ right.arithmeticApplications at used
-      have one := used
-      simp [left, right, quantityTerm, CoefficientTerm.arithmeticApplications] at one
-      rcases one with eq | eq <;> exact eq.1
-    obtain ⟨⟨name, args⟩, used⟩ := a
-    change name = .add plusSymbol at op
-    subst name
-    have actual := fixed_plus B same x y edge
-    change (readCarrier true y).getD 0 = _
-    rw [actual]
-    rfl
-  coefficientIndependent l a e B same x y original replacement := by
+    exact (readCarrier true).injective
+      ((hx.elim (leftRead x) (rightRead x)).trans ((congrArg some equal).trans
+        (hy.elim (leftRead y) (rightRead y)).symm))
+  arithmeticAt l a _ _ _ _ _ _ _ _ := by
+    have used := a.property
+    change a.val ∈ left.arithmeticApplications ∪ right.arithmeticApplications at used
+    simp [left, right, CoefficientTerm.arithmeticApplications] at used
+  coefficientDefined l a e := by
     obtain ⟨a, used⟩ := a
-    have eq := state_coefficient_eq a used
+    have eq := coefficient_eq l ⟨a, used⟩
+    change a = ⟨true, embedTerm⟩ at eq
     subst a
-    let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
-    have originalValue := ambient.evaluates_unique (supported stateVariable) e.val original (variable_eval ambient e.val)
-    have replacementValue := C.evaluates_unique (supported stateVariable) e.val replacement (variable_eval C e.val)
-    exact congrArg (read false) (replacementValue.trans originalValue.symm)
-  value _ e a := by
-    obtain ⟨⟨⟨j, chosen⟩, args⟩, used⟩ := a
-    change j ∈ varying at chosen
-    obtain rfl := Set.mem_singleton_iff.mp chosen
+    exact embed_defined ambient e.val
+  coefficientIndependent l a e B same _ x y original replacement := by
+    obtain ⟨a, used⟩ := a
+    have eq := coefficient_eq l ⟨a, used⟩
+    change a = ⟨true, embedTerm⟩ at eq
+    subst a
+    have old := embed_read ambient.evaluation (DeclaredQuantityLaws.SameDeclarationState.refl written ambient _)
+      e.val x original
+    have new := embed_read B same e.val y replacement
+    exact congrArg (fun z : Option Scalar => z.getD 0) (new.trans old.symm)
+  value l e a := by
+    obtain ⟨a, used⟩ := a
+    have eq := application_eq l ⟨a, used⟩
+    change a = ⟨quantityName, ⟨.var⟩⟩ at eq
+    subst a
     exact ⟨e.val, Set.mem_univ _⟩
-  inputIndependent _ _ _ _ := Iff.rfl
-  argumentIndependent l B same e a := by
-    obtain ⟨⟨j, args⟩, used⟩ := a
-    have found : (⟨j, args⟩ : CoefficientTerm.Application varying [false]) =
-        ⟨quantityName, ⟨.var⟩⟩ := by
-      change Sum.inr ⟨j, args⟩ ∈ left.leaves ∪ right.leaves at used
-      simpa [left, right, quantityTerm, CoefficientTerm.leaves] using used
-    cases found
-    intro s i
+  argumentState l e a := by
+    obtain ⟨a, used⟩ := a
+    have eq := application_eq l ⟨a, used⟩
+    change a = ⟨quantityName, ⟨.var⟩⟩ at eq
+    subst a
+    intro _ i
     cases i with
     | here => rfl
     | there i => nomatch i
-  definedSides := sides_defined
+  inputIndependent _ _ _ _ _ := Iff.rfl
+  argumentIndependent l _ _ _ e a := by
+    obtain ⟨a, used⟩ := a
+    have eq := application_eq l ⟨a, used⟩
+    change a = ⟨quantityName, ⟨.var⟩⟩ at eq
+    subst a
+    intro _ i
+    cases i with
+    | here => rfl
+    | there i => nomatch i
+  definedSides _ e B same _ :=
+    let C : ContextStructure Full := ⟨ambient.carrier, ambient.omitted, B, same.structural⟩
+    ⟨quantity_defined C e.val, embed_defined C e.val⟩
 
-/-- There cannot be a globally injective read of the actual equality carrier into the coefficient ring. -/
+/-- There is no globally injective reading of this native equality carrier. -/
 theorem no_global_read : ¬ ∃ f : ambient.carrier true → Scalar, Function.Injective f := by
   rintro ⟨f, injective⟩
   let g : Option Scalar → Scalar := f ∘ (readCarrier true).symm
   have bound := Fintype.card_le_of_injective g (injective.comp (readCarrier true).symm.injective)
   norm_num [Scalar] at bound
 
-/-- The named quantity is retained in the full declaration context. -/
-private def appliedQuantity : written.KeptQuantity Full :=
-  ⟨quantityName, Set.mem_univ _⟩
-
-/-- The coordinate at an input is the one obtained by evaluating the named quantity argument. -/
+/-- The coordinate at the input uses the original assignment. -/
 private def atInput {l : written.KeptLaw Full} (e : written.lawInput ambient l) :
     interpretation.domain appliedQuantity := ⟨e.val, Set.mem_univ _⟩
 
-/-- The actual registered Law is satisfied exactly when the candidate quantity equals the input. -/
+/-- The actual registered Law holds exactly when the candidate equals the input. -/
 theorem scalar_input_law
     (l : written.KeptLaw Full) (e : written.lawInput ambient l) (q : interpretation.presentation.Candidate Scalar) :
     (interpretation.candidateStructure q).evaluation.holds (primitive.theory.law l.val.val).conclusion
         (lawConclusionSupport (Declaration.lawBody_subset_of_mem l.property)) e.val ↔
       q appliedQuantity (atInput e) = read false (e.val .here) := by
   rw [interpretation.candidate_conclusion_iff l e q, Presentation.evaluate_residual]
-  let coefficient : written.UsedCoefficient l.val := ⟨⟨false, stateVariable⟩, by
-    change Sum.inl ⟨false, stateVariable⟩ ∈ left.leaves ∪ right.leaves
-    simp [left, right, quantityTerm, CoefficientTerm.leaves]⟩
-  have value := interpretation.coefficientValue_eq_of_evaluates l e coefficient (e.val .here)
-    (variable_eval ambient e.val)
-  let c := algebraMap Scalar Scalar (interpretation.coefficientValue l e coefficient)
-  change (q appliedQuantity (atInput e) + c) - (c + c) = 0 ↔ _
-  change interpretation.coefficientValue l e coefficient = read false (e.val .here) at value
-  dsimp [c]
+  let coefficient : written.UsedCoefficient l.val := ⟨⟨true, embedTerm⟩, by
+    change Sum.inl ⟨true, embedTerm⟩ ∈ left.leaves ∪ right.leaves
+    simp [left, right, CoefficientTerm.leaves]⟩
+  obtain ⟨z, held⟩ := embed_defined ambient e.val
+  have value := interpretation.coefficientValue_eq_of_evaluates l e coefficient z held
+  have native := embed_read ambient.evaluation (DeclaredQuantityLaws.SameDeclarationState.refl written ambient _)
+    e.val z held
+  change interpretation.coefficientValue l e coefficient = (readCarrier true z).getD 0 at value
+  rw [native] at value
+  change q appliedQuantity (atInput e) - interpretation.coefficientValue l e coefficient = 0 ↔ _
   rw [value]
-  exact ⟨fun h => add_right_cancel (sub_eq_zero.mp h), fun h => sub_eq_zero.mpr (congrArg (· + _) h)⟩
+  exact sub_eq_zero
 
-/-- The identity candidate reads the original argument, preserving the same Law for every input. -/
+/-- Reading the input at the original position gives a solution on all inputs. -/
 private def identityCandidate : interpretation.presentation.Candidate Scalar
   | ⟨⟨.total _, _⟩, _⟩, a => read false (a.val .here)
-  | ⟨⟨.partialOp name, _⟩, _⟩, _ => nomatch name
+  | ⟨⟨.partialOp p, _⟩, _⟩, _ => nomatch p
 
-/-- The registered input-dependent equation has a native solution. -/
+/-- The registered input equation has a native solution. -/
 theorem identity_candidate_satisfies (l : written.KeptLaw Full) :
     (interpretation.candidateStructure identityCandidate).evaluation.satisfies (primitive.theory.law l.val.val)
       (Declaration.lawBody_subset_of_mem l.property) := by
@@ -291,14 +307,28 @@ theorem identity_candidate_satisfies (l : written.KeptLaw Full) :
 private def exampleLaw : written.KeptLaw Full :=
   ⟨⟨⟨(), rfl⟩, Set.mem_univ _⟩, Set.mem_univ _⟩
 
-/-- A constant shift of the candidate breaks the same equation even at zero. -/
+/-- The scalar input zero as an assignment. -/
+private def zeroInput : written.lawInput ambient exampleLaw :=
+  ⟨Assignment.cons ((readCarrier false).symm 0) Assignment.empty, trivial⟩
+
+/-- The original state itself may have native values outside the chosen scalar encoding. -/
+theorem original_quantity_outside_representation :
+    ¬ written.RepresentsLaw ambient interpretation.quantityOutput exampleLaw ambient.evaluation := by
+  intro represents
+  obtain ⟨r, graph⟩ := represents appliedQuantity (quantity_relevant exampleLaw) (atInput zeroInput)
+  have original := (ContextStructure.ofStructure_graph_iff Full base (.quantity ()) (Set.mem_univ _)
+    zeroInput.val ((readCarrier true).symm (some r))).1 graph
+  rw [Structure.graph_quantity_iff] at original
+  change none = readCarrier true ((readCarrier true).symm (some r)) at original
+  rw [(readCarrier true).apply_symm_apply] at original
+  cases original
+
+/-- A constant shift breaks the very same native equation. -/
 theorem shifted_candidate_fails :
     ¬ (interpretation.candidateStructure (fun j a => identityCandidate j a + 1)).evaluation.satisfies
       (primitive.theory.law exampleLaw.val.val) (Declaration.lawBody_subset_of_mem exampleLaw.property) := by
   intro holds
-  let e := Assignment.cons ((readCarrier false).symm 0) Assignment.empty
-  have guard : e ∈ written.lawInput ambient exampleLaw := trivial
-  have evaluated := (scalar_input_law exampleLaw ⟨e, guard⟩ _).1 (holds e guard)
+  have evaluated := (scalar_input_law exampleLaw zeroInput _).1 (holds zeroInput.val zeroInput.property)
   change readCarrier false ((readCarrier false).symm 0) + 1 = readCarrier false ((readCarrier false).symm 0) at evaluated
   simp at evaluated
 

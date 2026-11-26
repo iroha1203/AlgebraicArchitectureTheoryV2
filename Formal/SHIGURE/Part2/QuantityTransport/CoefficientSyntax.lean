@@ -16,7 +16,7 @@ the value sort of their occurrence.
 A global ring vocabulary can supply all scalar arithmetic at one sort.
 Here each node supplies only its own symbol. This accommodates multiple
 declared value sorts and equality Laws that never use arithmetic.
-The leaves are indexed by actual term applications and literal symbols
+The leaves are indexed by fixed coefficient terms and named quantity applications
 so their dependencies can be read directly from the written Law.
 -/
 
@@ -383,35 +383,6 @@ open DeclarationContext DeclarationContext.Selected
 
 variable {P : PrimitivePresentation.{u}} {Q : Set (QuantityDeclaration P.signature)}
 variable {Γ : List P.signature.SortType} {U : DeclarationContext P} (A : ContextStructure U)
-
-/-- Each written leaf has an actual value whenever the enclosing coefficient term does. -/
-theorem exists_evaluated_leaf {s : P.signature.SortType} (t : CoefficientTerm Q Γ s)
-    (e : Assignment A.carrier Γ) (a : StateCoefficient P.signature Γ ⊕ Application Q Γ) (used : a ∈ t.leaves)
-    (keep : termReferences t.toTerm ⊆ U.declarations)
-    (supported : Declaration.termContext t.toTerm ≤ U)
-    (y : A.carrier s) (value : A.evaluates ⟨t.toTerm, supported⟩ e y) :
-    ∃ hTerm : Declaration.termContext (leafTerm a).2 ≤ U, ∃ z, A.evaluates ⟨(leafTerm a).2, hTerm⟩ e z := by
-  induction t with
-  | scalar sym =>
-    obtain rfl := Set.mem_singleton_iff.mp used
-    exact ⟨supported, y, value⟩
-  | quantity j args =>
-    obtain rfl := Set.mem_singleton_iff.mp used
-    exact ⟨supported, y, value⟩
-  | neg op t it =>
-    obtain ⟨input, each, _⟩ := (op.evaluates_term_iff A _ supported e (keep (coefficientHead_ref op _)) y).1 value
-    obtain ⟨h, child⟩ := each (.here : Var [_] _)
-    exact it used ((coefficientArg_refs op (fun i => t.toTerm.argsCons Term.argsNil i) .here).trans keep) h _ child
-  | add op l r il ir
-  | sub op l r il ir
-  | mul op l r il ir =>
-    obtain ⟨input, each, _⟩ := (op.evaluates_term_iff A _ supported e (keep (coefficientHead_ref op _)) y).1 value
-    let args := fun {s} (i : Var [_, _] s) => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i
-    rcases used with onLeft | onRight
-    · obtain ⟨h, child⟩ := each (.here : Var [_, _] _)
-      exact il onLeft ((coefficientArg_refs op args .here).trans keep) h _ child
-    · obtain ⟨h, child⟩ := each (.there .here : Var [_, _] _)
-      exact ir onRight ((coefficientArg_refs op args (.there .here)).trans keep) h _ child
 
 /-- Read a compiled leaf in the coefficient ring at the same candidate. -/
 def compiledLeafValue {k Z L Q' : Type u} (q : Z → k) :
