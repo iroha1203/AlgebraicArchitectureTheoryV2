@@ -101,12 +101,14 @@ noncomputable def atType {sig : Signature.{u}} {Γ : List sig.SortType}
   classical
   exact if same : e.1 = k then some (same ▸ e.2) else none
 
+/-- Reading a packaged equation at its original type returns its two sides. -/
 @[simp]
 theorem atType_mk {sig : Signature.{u}} {Γ : List sig.SortType} (k : Type u)
     (e : WrittenCoefficientEquation k sig Γ) : atType ⟨k, e⟩ k = some e := by
   classical
   simp [atType]
 
+/-- A successful typed read determines the packaged coefficient equation. -/
 theorem eq_of_atType {sig : Signature.{u}} {Γ : List sig.SortType}
     {e : RegisteredCoefficientEquation sig Γ} {k : Type u} {w : WrittenCoefficientEquation k sig Γ}
     (read : e.atType k = some w) : e = ⟨k, w⟩ := by

@@ -283,6 +283,15 @@ def PrimitivePresentation.coefficientWriting (P : PrimitivePresentation.{u}) (i 
     Option (Quantities.RegisteredCoefficientEquation P.signature (P.laws.statement i).context) :=
   (P.coefficientLaw i).map Subtype.val
 
+/-- Coefficient conclusions are only authored at required Law names. -/
+theorem PrimitivePresentation.coefficientWriting_of_nonrequired
+    (P : PrimitivePresentation.{u}) (name : P.laws.LawName) (role : P.laws.role name ≠ .required) :
+    P.coefficientWriting name = none := by
+  unfold PrimitivePresentation.coefficientWriting
+  cases P.coefficientLaw name with
+  | none => rfl
+  | some e => exact (role e.property.1).elim
+
 /-- The authored conclusion, using the coefficient equation for a coefficient Law. -/
 def PrimitivePresentation.declaredConclusion (P : PrimitivePresentation.{u}) (i : P.laws.LawName) :
     DeclaredLawConclusion P.signature (P.laws.statement i).context :=
@@ -370,11 +379,13 @@ theorem PrimitivePresentation.orderedEquation_eq (P : PrimitivePresentation.{u})
     P.orderedEquation i = NamedRingEquation.ordered (P.ringEquation i) (P.otherOrderedEquation i) :=
   rfl
 
-/-- The theory presented by the required declarations, as in Definition 1.7. -/
+/-- The required theory in the state signature. A coefficient Law contributes
+its original input with its conclusion projected to truth. -/
 def PrimitivePresentation.theory (P : PrimitivePresentation.{u}) : Theory.{u} :=
   P.laws.toTheory
 
-/-- The required theory reads the registered Law at the underlying declaration name. -/
+/-- The state theory reads the state projection at the required Law name.
+Use `declaredConclusion` to read the authored coefficient conclusion. -/
 theorem PrimitivePresentation.theory_law (P : PrimitivePresentation.{u}) (name : P.theory.LawName) :
     P.theory.law name = P.laws.statement name.val :=
   rfl

@@ -543,8 +543,9 @@ theorem partial_domainSymbol_mem_dependsOn {p : P.signature.Partial} (data : Dom
 
 /-- A derived Law retains its written support and the references from its proof tree. -/
 theorem derived_dependencies (name : P.laws.LawName) (role : P.laws.role name = .derived) :
-    dependsOn P (.law name) = declaredLawSupport name ∪ derivation (P.derived name role) := by
-  rw [dependsOn]
+    dependsOn P (.law name) = lawBody (P.laws.statement name) ∪ derivation (P.derived name role) := by
+  have nonrequired : P.laws.role name ≠ .required := fun req => LawRole.noConfusion (role.symm.trans req)
+  rw [← declaredLawSupport_of_none name (P.coefficientWriting_of_nonrequired name nonrequired), dependsOn]
   split
   · rfl
   · rename_i otherRole
@@ -574,6 +575,11 @@ theorem nonderived_dependencies (name : P.laws.LawName) (role : P.laws.role name
     exact (role h).elim
   · exact Set.union_empty _
   · exact Set.union_empty _
+
+/-- A non-derived Law without a coefficient conclusion depends only on its native written support. -/
+theorem nonderived_dependencies_of_no_coefficient (name : P.laws.LawName) (role : P.laws.role name ≠ .derived)
+    (absent : P.coefficientWriting name = none) : dependsOn P (.law name) = lawBody (P.laws.statement name) :=
+  (nonderived_dependencies name role).trans (declaredLawSupport_of_none name absent)
 
 /-- A required Law used by a derivation is among that derivation's declarations. -/
 theorem required_mem_derivation (name : P.theory.LawName) :

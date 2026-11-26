@@ -48,8 +48,6 @@ private theorem coefficientEquation_eq (n : primitive.laws.LawName) :
 
 private def written : NamedWrittenLaws ℤ primitive where
   quantities := Set.univ
-  laws := Set.univ
-  hasEquation l := by simp [coefficientEquation_eq l.val.val]
   hasQuantity _ _ _ := Set.mem_univ _
 
 private theorem equation_eq (l : written.laws) : written.equation l = registeredEquation := by
@@ -105,7 +103,49 @@ private def state : Structure signature where
 
 private def ambient : ContextStructure Full := ContextStructure.ofStructure Full state
 
+private def fixedContext : DeclarationContext primitive where
+  declarations := {d | match d with
+    | .sort _ | .relation _ => True
+    | _ => False}
+  closed {a} ha := by
+    intro d hd
+    cases a with
+    | sort => exact hd.elim
+    | relation =>
+      obtain ⟨_, _, rfl⟩ := hd
+      trivial
+    | total | partialOp | quantity | law => exact ha.elim
+
+private theorem fixedGuard (l : (written.selection Full).laws) :
+    Declaration.formulaSupport (primitive.theory.law l.val.val).input ⊆ fixedContext.declarations := by
+  intro d hd
+  change d ∈ Declaration.formulaSupport (P := primitive) guard at hd
+  change d ∈ (Declaration.sorts [()] ∪ ({Declaration.relation ()} : Set _)) at hd
+  rcases hd with ⟨_, _, rfl⟩ | rfl <;> trivial
+
+private theorem fixedArgument (l : (written.selection Full).laws) (a : written.written.UsedOccurrence l.val)
+    {s : signature.SortType} (i : Var (written.written.domainContext (written.written.application l.val a.val).1) s) :
+    Declaration.formulaSupport ((written.selection Full).applicationTerm l a i).val.graph ⊆
+      fixedContext.declarations := by
+  obtain ⟨⟨a, support⟩, used⟩ := a
+  obtain rfl := used_eq l.val ⟨a, support⟩
+  intro d hd
+  change d ∈ Declaration.formulaSupport (P := primitive) (Term.var (sig := signature) i).graph at hd
+  have sorted : d ∈ Declaration.sorts (P := primitive) (s :: [()]) := by
+    simpa [Declaration.formulaSupport, Term.graph_eq_graphAt, Term.graphAt, Declaration.formula,
+      Declaration.atomic] using hd
+  obtain ⟨_, _, rfl⟩ := sorted
+  trivial
+
 private def reading : written.GuardedInterpretation ambient where
+  fixedState :=
+    { context := fixedContext
+      inside := Set.subset_univ _
+      forgetsQuantity := by
+        rintro ⟨j, _⟩
+        cases j <;> exact id
+      guardSupport := fixedGuard
+      argumentSupport := fixedArgument }
   domain _ := Set.univ
   value l e a := by
     obtain ⟨⟨a, support⟩, used⟩ := a
@@ -113,6 +153,7 @@ private def reading : written.GuardedInterpretation ambient where
     exact ⟨e.val, Set.mem_univ _⟩
   argument l _ a := by
     intro s i
+    rw [NamedWrittenLaws.FixedState.argument_evaluates_iff]
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
     rfl
@@ -120,7 +161,7 @@ private def reading : written.GuardedInterpretation ambient where
 private abbrev interpreted := reading.toInterpretation
 
 private def l : (written.selection Full).laws :=
-  ⟨⟨⟨(), rfl⟩, Set.mem_univ _⟩, Set.mem_univ _⟩
+  ⟨⟨⟨(), rfl⟩, by simp [NamedWrittenLaws.laws, registeredCoefficientLaws, coefficientEquation_eq]⟩, Set.mem_univ _⟩
 
 private def point : Assignment ambient.carrier [()] :=
   Assignment.cons
@@ -167,7 +208,9 @@ theorem named_restriction_retains_literal (l : (written.selection retained).laws
 theorem named_law_rejects_zero :
     ¬ interpreted.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
   intro holds
-  have eq := holds l ⟨point, inGuard⟩
+  have input : point ∈ reading.fixedState.input ambient l :=
+    (reading.fixedState.input_eq_native ambient l).symm ▸ inGuard
+  have eq := holds l ⟨point, input⟩
   simp only [WrittenLaws.DeclarationSelection.Interpretation.presentation, NamedWrittenLaws.written,
     Expression.eval_compile_const] at eq
   rw [equation_eq l.val] at eq
@@ -193,6 +236,15 @@ private def literalOnly (r : ℤ) : PrimitivePresentation where
   laws := ⟨Unit, fun _ => ⟨[], .truth, .truth⟩, fun _ => .required⟩
   derived _ impossible := by cases impossible
   coefficientLaw _ := some ⟨⟨ℤ, .scalar r, .scalar 0⟩, rfl, rfl⟩
+
+/-- A retained required coefficient Law with no quantity occurrences is still read. -/
+theorem literal_only_law_is_read (L : NamedWrittenLaws ℤ (literalOnly 1))
+    (U : DeclarationContext (literalOnly 1)) (kept : Declaration.law () ∈ U.declarations) :
+    Nonempty (L.selection U).laws := by
+  refine ⟨⟨⟨⟨(), rfl⟩, ?_⟩, kept⟩⟩
+  change ((some (⟨ℤ, .scalar 1, .scalar 0⟩ : RegisteredCoefficientEquation signature [])).bind
+    (fun e => RegisteredCoefficientEquation.atType e ℤ)).isSome
+  simp
 
 /-- A reading origin cannot replace the registered literals, even with identical dependency sets. -/
 theorem reading_origin_rejects_replaced_literal

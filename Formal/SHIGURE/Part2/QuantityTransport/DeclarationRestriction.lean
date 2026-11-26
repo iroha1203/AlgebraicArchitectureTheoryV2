@@ -1157,7 +1157,7 @@ private theorem declarationReadLeaf (l : L.KeptLaw V) (e : L.lawInput (A.restric
   · exact I.declarationCoordinate inside l e ⟨app, used⟩
 
 /-- The actual context inclusion induces a comparison of the original retained scalar equations. -/
-private def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation where
+def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation where
   toQuantityMap := I.declarationQuantityMap inside
   law := L.includeLaw inside
   input := fun l e => includeInput (A := A) inside l e
@@ -1177,12 +1177,21 @@ private def declarationLawMap : LawMap (I.restrict inside).presentation I.presen
     exact I.declarationReadLeaf inside l e ⟨a, Or.inr h⟩
 
 /-- Declaration restriction along the Chapter 3 context inclusion commutes with changing coefficients. -/
-private theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
+theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
     let F := (I.restrict inside).presentation
     let ι := I.declarationLawMap inside
     (baseChangeQuotient (R := k) R I.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
   (I.declarationLawMap inside).extendedEquationMap_natural R
+
+/-- Changing coefficients to a principal-open localization also commutes with the native readings. -/
+theorem declarationLawMap_localization (r : k) :
+    let R := Localization.Away r
+    let F := (I.restrict inside).presentation
+    let ι := I.declarationLawMap inside
+    (baseChangeQuotient (R := k) R I.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
+      (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
+  I.declarationLawMap_baseChange inside (Localization.Away r)
 
 end Reading
 

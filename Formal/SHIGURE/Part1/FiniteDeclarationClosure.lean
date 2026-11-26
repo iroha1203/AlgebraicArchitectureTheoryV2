@@ -144,7 +144,7 @@ theorem dependsOn_finite (d : Declaration P) : (dependsOn P d).Finite := by
   | law name =>
     by_cases role : P.laws.role name = .derived
     · rw [derived_dependencies name role]
-      exact (declaredLawSupport_finite _).union (derivation_finite _)
+      exact (lawBody_finite _).union (derivation_finite _)
     · rw [nonderived_dependencies name role]
       exact declaredLawSupport_finite _
 
@@ -245,7 +245,7 @@ private theorem height_lt {d e : Declaration P} (uses : d ∈ dependsOn P e) :
     by_cases role : P.laws.role name = .derived
     · rw [derived_dependencies name role, Set.mem_union] at uses
       rcases uses with written | derived
-      · simpa [height, role] using Nat.lt_trans (declaredLawSupport_height written) (by decide : 3 < 4)
+      · simpa [height, role] using Nat.lt_trans (lawBody_height written) (by decide : 3 < 4)
       · simpa [height, role] using derivation_height (P.derived name role) derived
     · rw [nonderived_dependencies name role] at uses
       have lower := declaredLawSupport_height uses

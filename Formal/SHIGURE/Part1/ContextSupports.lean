@@ -187,7 +187,9 @@ theorem declaredLawSupport_subset_of_mem {U : DeclarationContext P} {name : P.la
     declaredLawSupport name ⊆ U.declarations := by
   refine Set.Subset.trans ?_ (U.closed kept)
   by_cases role : P.laws.role name = .derived
-  · rw [derived_dependencies name role]
+  · have nonrequired : P.laws.role name ≠ .required := fun req => LawRole.noConfusion (role.symm.trans req)
+    rw [derived_dependencies name role, declaredLawSupport_of_none name
+      (P.coefficientWriting_of_nonrequired name nonrequired)]
     exact Set.subset_union_left
   · rw [nonderived_dependencies name role]
 
