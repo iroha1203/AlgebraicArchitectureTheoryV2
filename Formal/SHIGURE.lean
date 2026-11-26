@@ -27,6 +27,7 @@ import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
+import Formal.SHIGURE.Part2.QuantityModels
 
 /-! # SHIGURE
 
