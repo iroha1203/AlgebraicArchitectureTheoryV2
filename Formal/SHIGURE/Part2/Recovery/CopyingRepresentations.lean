@@ -258,7 +258,8 @@ private def representationAlongIso {F G : ZariskiSheaf S} (e : F ≅ G) (X : Rel
     RelativeRepresentation F :=
   ⟨X.space, X.points ≪≫ e.symm⟩
 
-/-- Zariski local splitting represents the entire primitive diagram by relative schemes. -/
+/-- Represent the primitive diagram of Chapter 4, §4.5 by relative schemes. The supplied
+Zariski splitting gives constant presentations of the carriers and predicates on each chart. -/
 def CopyingRepresentation.ofSplit {T : Theory.{u}} {A : SheafStructure T.signature (Scheme.zariskiTopology.over S)}
     (hA : IsZariskiSplit T A) : CopyingRepresentation A := by
   let C := hA.choose
@@ -321,7 +322,8 @@ theorem domainInclusion_mono (p : sig.Partial) : Mono (X.domainInclusion p) := b
   letI := Sheaf.mono_of_injective (A.partialDomain p).inclusion (fun _ => Subtype.val_injective)
   exact (X.domain p).readMap_mono (X.input _) (A.partialDomain p).inclusion
 
-/-- In a locally split representation every relation is an open subscheme of its inputs. -/
+/-- The represented relation in Chapter 4, §4.5 is an open subscheme of its inputs.
+The given Zariski splitting identifies the relation on each chart with a subset of input labels. -/
 theorem relationInclusion_open {T : Theory.{u}} {A : SheafStructure T.signature (Scheme.zariskiTopology.over S)}
     (X : CopyingRepresentation A) (split : IsZariskiSplit T A) (r : T.signature.Rel) :
     IsOpenImmersion (X.relationInclusion r).left := by
@@ -334,7 +336,8 @@ theorem relationInclusion_open {T : Theory.{u}} {A : SheafStructure T.signature 
     ((X.relation r).baseChange f) ((X.input _).baseChange f) M.obj.carrier _ (M.obj.relation r)
     (tupleIso (sortIso e) _) (e.hom.preservesRelation r) (e.inv.preservesRelation r)
 
-/-- In a locally split representation every partial domain is an open subscheme of its inputs. -/
+/-- The represented partial domain in Chapter 4, §4.5 is an open subscheme of its inputs.
+The given Zariski splitting identifies the domain on each chart with a subset of input labels. -/
 theorem domainInclusion_open {T : Theory.{u}} {A : SheafStructure T.signature (Scheme.zariskiTopology.over S)}
     (X : CopyingRepresentation A) (split : IsZariskiSplit T A) (p : T.signature.Partial) :
     IsOpenImmersion (X.domainInclusion p).left := by

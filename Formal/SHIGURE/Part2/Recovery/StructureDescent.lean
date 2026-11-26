@@ -179,7 +179,8 @@ theorem glue_holdsLaw (hD : D.Coherent) (law : Law sig) (h : ∀ i, (D.chart i).
     (D.glue hD).holdsLaw law :=
   holdsLaw_of_openCover C _ law (fun i => SheafStructure.holdsLaw_of_iso (D.restrictGlueIso hD i).symm law (h i))
 
-/-- Effective object descent takes local models and their descent data to a global copying model. -/
+/-- Effective object descent for Chapter 4, §4.5. The charts supply local splitting and
+Law satisfaction, and their transitions supply the unit and cocycle conditions. -/
 def glueModel {T : Theory.{u}} {D : StructureCharts C T.signature} (hD : D.Coherent)
     (models : ∀ i, zariskiCopyingProperty T (C.X i) (D.chart i)) :
     (zariskiCopyingProperty T S).FullSubcategory :=

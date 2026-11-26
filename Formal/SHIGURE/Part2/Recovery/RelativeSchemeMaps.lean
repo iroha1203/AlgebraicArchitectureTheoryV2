@@ -15,7 +15,8 @@ postcomposition and the fiber product of relative schemes.
 The comparisons have the types of mathlib's `Over.pullbackId` and
 `Over.pullbackComp`. We use the limiting cones to give their components
 directly, so that the projection equations and the comparison of the
-represented points can use the same morphisms.
+represented points can use the same morphisms. The counit formula for
+adjoint mates identifies these comparisons with the mathlib isomorphisms.
 -/
 
 open AlgebraicGeometry CategoryTheory Opposite
@@ -180,6 +181,39 @@ theorem relativeSchemePullbackComp_fst {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : 
 theorem relativeSchemePullbackId_fst (Y : Over S) :
     ((relativeSchemePullbackId S).hom.app Y).left = relativeSchemeProjection (𝟙 S) Y := rfl
 
+/-- The first-projection unit is the standard unit comparison for slice pullback. -/
+theorem relativeSchemePullbackId_eq_mathlib (S : Scheme.{u}) :
+    relativeSchemePullbackId S = (Over.pullbackId (X := S)) := by
+  apply Iso.ext
+  ext1
+  funext Y
+  apply Over.OverMorphism.ext
+  rw [relativeSchemePullbackId_fst]
+  have h := conjugateEquiv_counit
+    (relativeSchemePullbackAdj (𝟙 S)) (Adjunction.id (C := Over S)) (Over.mapId S).inv Y
+  have hleft := congrArg (fun (r : (relativeSchemePullback (𝟙 S)).obj Y ⟶ Y) => r.left) h
+  change ((Over.pullbackId (X := S)).hom.app Y).left ≫ 𝟙 Y.left =
+    𝟙 _ ≫ relativeSchemeProjection (𝟙 S) Y at hleft
+  simpa only [Category.comp_id, Category.id_comp] using hleft.symm
+
+/-- The two-projection composition comparison is the standard composition comparison for slice pullback. -/
+theorem relativeSchemePullbackComp_eq_mathlib {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : S' ⟶ S) :
+    relativeSchemePullbackComp g f = Over.pullbackComp g f := by
+  apply Iso.ext
+  ext1
+  funext Y
+  apply overPullbackHomExt (iteratedRelativePullback g f Y)
+  rw [relativeSchemePullbackComp_fst]
+  have h := conjugateEquiv_counit (relativeSchemePullbackAdj (g ≫ f))
+    ((relativeSchemePullbackAdj g).comp (relativeSchemePullbackAdj f)) (Over.mapComp g f).inv Y
+  rw [Adjunction.comp_counit_app] at h
+  have hleft := congrArg (fun r => (Over.forget S).map r) h
+  change ((Over.pullbackComp g f).hom.app Y).left ≫
+      (𝟙 _ ≫ relativeSchemeProjection g ((relativeSchemePullback f).obj Y)) ≫
+        (𝟙 _ ≫ relativeSchemeProjection f Y) =
+    𝟙 _ ≫ (𝟙 _ ≫ relativeSchemeProjection (g ≫ f) Y) at hleft
+  simpa only [Category.id_comp] using hleft.symm
+
 /-- After identifying equal coefficient maps, the projection reduces to the untransported projection. -/
 @[reassoc (attr := simp)]
 theorem relativeSchemePullback_congr_fst {f g : S' ⟶ S} (e : f = g) (Y : Over S) :
@@ -279,7 +313,8 @@ private theorem relativeSchemePullbackHomEquiv_fst (f : S' ⟶ S) {T : Over S'} 
   rw [Adjunction.mkOfHomEquiv_homEquiv]
   exact pullback.lift_fst _ _ _
 
-/-- The comparison on point sheaves intertwines the actual fiber-product unit comparison. -/
+/-- For coefficient change in Chapter 4, §4.5, the comparison of represented points commutes
+with the unit of slice pullback. The input is an arbitrary relative scheme over the given base. -/
 theorem relativePointsPullbackIso_id (Y : Over S) :
     (relativePointsPullbackIso (𝟙 S) Y).hom ≫ relativePointsMap ((relativeSchemePullbackId S).hom.app Y) =
       (Scheme.zariskiTopology.overMapPullbackId (Type u) S).hom.app (relativePoints S Y) := by
@@ -298,7 +333,8 @@ theorem relativePointsPullbackIso_id (Y : Over S) :
   rw [relativeSchemePullbackHomEquiv_fst]
   exact (Category.id_comp _).symm
 
-/-- The comparison on point sheaves intertwines the actual iterated fiber-product comparison. -/
+/-- For coefficient change in Chapter 4, §4.5, the comparison of represented points commutes
+with composition of slice pullbacks along the two given coefficient maps. -/
 theorem relativePointsPullbackIso_comp {S'' : Scheme.{u}} (g : S'' ⟶ S') (f : S' ⟶ S) (Y : Over S) :
     (Scheme.zariskiTopology.overMapPullback (Type u) g).map (relativePointsPullbackIso f Y).hom ≫
         (relativePointsPullbackIso g ((relativeSchemePullback f).obj Y)).hom =
