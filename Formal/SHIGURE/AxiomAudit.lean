@@ -22,7 +22,7 @@ import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
-import Formal.SHIGURE.Part2.Schemes.RelativeSpecBaseChange
+import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
@@ -4203,7 +4203,28 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.QuasiCoherentAlgebra.baseChangeChartRingIso,
   SchemeDescent.QuasiCoherentAlgebra.homEquivBaseChange,
   SchemeDescent.QuasiCoherentAlgebra.directImageStructure_comp,
-  SchemeDescent.QuasiCoherentAlgebra.homEquivBaseChangeAlgebraSheaf
+  SchemeDescent.QuasiCoherentAlgebra.directImageStructureMapNat,
+  SchemeDescent.QuasiCoherentAlgebra.testChartSectionsIso_precomp,
+  SchemeDescent.directImageStructureMap,
+  SchemeDescent.QuasiCoherentAlgebra.homEquivDirectImage_precomp,
+  SchemeDescent.QuasiCoherentAlgebra.homEquivSheaves_precomp,
+  SchemeDescent.QuasiCoherentAlgebra.homEquivAlgebraSheaf_postcomp,
+  SchemeDescent.ringSheafStalk,
+  SchemeDescent.ringSheafStalk_isLeftAdjoint,
+  SchemeDescent.inverseImageStalkHom,
+  SchemeDescent.inverseImageStalkHom_isIso,
+  SchemeDescent.directImageStalkMap,
+  SchemeDescent.germ_directImageStalkMap,
+  SchemeDescent.inverseImageStalkHom_mate,
+  SchemeDescent.inverseImageStalkHom_naturality,
+  SchemeDescent.affinePushforwardStalk_isPushout,
+  SchemeDescent.affinePullbackSections_isPushout,
+  SchemeDescent.affinePullbackMate,
+  SchemeDescent.affinePullbackAlgebra_isPushout,
+  SchemeDescent.QuasiCoherentAlgebra.baseChangeAlgebraIso,
+  SchemeDescent.QuasiCoherentAlgebra.homEquivBaseChangeAlgebraSheaf,
+  SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo,
+  SchemeDescent.RelativeSpecExamples.skyscraperAlgebraAtTwo_not_localization
 ]
 
 end SHIGURE.AxiomAudit

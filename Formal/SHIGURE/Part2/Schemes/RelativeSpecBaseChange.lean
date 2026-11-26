@@ -245,16 +245,6 @@ def directImageStructure_comp (f : Y ⟶ X) {Z : Scheme.{u}} (g : Z ⟶ Y) :
   funext U
   rfl
 
-/-- Under arbitrary base change the pullback represents the pulled-back algebra on every test scheme. -/
-def homEquivBaseChangeAlgebraSheaf (f : Y ⟶ X) {Z : Scheme.{u}} (g : Z ⟶ Y) :
-    (Over.mk g ⟶ Over.mk (C.baseChange f).projection) ≃
-      ((pullbackAlgebra g).obj ((pullbackAlgebra f).obj C.algebraSheaf) ⟶ Under.mk (𝟙 Z.sheaf)) :=
-  (C.homEquivBaseChange f g).trans
-    ((C.homEquivDirectImage.trans C.directImageMapsEquivSheaves).trans
-      (((directImageStructure_comp f g).homToEquiv.symm).trans
-        (((pullbackAlgebraAdjunction f).homEquiv C.algebraSheaf (directImageStructure g)).symm.trans
-          (pullbackAlgebraHomEquiv g _).symm)))
-
 end QuasiCoherentAlgebra
 
 end

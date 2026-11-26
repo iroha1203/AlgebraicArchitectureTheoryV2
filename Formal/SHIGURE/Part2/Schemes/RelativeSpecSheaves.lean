@@ -213,6 +213,53 @@ theorem sectionsIsoDirectImage_algebra :
       U.unop.2.SpecMap_appLE_fromSpec C.projection (U.unop.2.preimage C.projection) (i := le_rfl)
   rw [compat, chartSpectrumIso_fromSpec_assoc, C.chart_projection]
 
+private theorem testPreimage_le {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) (U : X.Opens) :
+    g' ⁻¹ᵁ U ≤ t.left ⁻¹ᵁ (g ⁻¹ᵁ U) := by
+  rw [← Scheme.Hom.comp_preimage, show t.left ≫ g = g' from Over.w t]
+
+/-- Pull functions back along a morphism over the base on each inverse image open. -/
+def directImageStructureMapNat {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) :
+    (Opens.map g.base).op ⋙ Y.presheaf ⟶ (Opens.map g'.base).op ⋙ Y'.presheaf where
+  app U := t.left.appLE _ _ (testPreimage_le t U.unop)
+  naturality {U V} a := by
+    change Y.presheaf.map ((Opens.map g.base).map a.unop).op ≫
+        t.left.appLE _ _ (testPreimage_le t V.unop) =
+      t.left.appLE _ _ (testPreimage_le t U.unop) ≫
+        Y'.presheaf.map ((Opens.map g'.base).map a.unop).op
+    exact (Scheme.Hom.map_appLE t.left (testPreimage_le t V.unop)
+      ((Opens.map g.base).map a.unop).op).trans
+        (Scheme.Hom.appLE_map t.left (testPreimage_le t U.unop)
+          ((Opens.map g'.base).map a.unop).op).symm
+
+private theorem testChartOpenIso_precomp {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) (U : X.AffineZariskiSite) :
+    testChartMap t U ≫ (testChartOpenIso g U).hom =
+      (testChartOpenIso g' U).hom ≫ t.left.resLE _ _ (testPreimage_le t U.1) := by
+  rw [← cancel_mono (g ⁻¹ᵁ U.1).ι, Category.assoc, testChartOpenIso_hom_ι,
+    testChartMap_f, Category.assoc, Scheme.Hom.resLE_comp_ι, testChartOpenIso_hom_ι_assoc]
+
+/-- The scheme map on an inverse image open induces the corresponding map on chart functions. -/
+theorem testChartSectionsIso_precomp {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) (U : X.AffineZariskiSite) :
+    (directImageStructureMapNat t).app (.op U.1) ≫ (testChartSectionsIso g' U).hom =
+      (testChartSectionsIso g U).hom ≫ (testChartMap t U).appTop := by
+  let V := g ⁻¹ᵁ U.1
+  let V' := g' ⁻¹ᵁ U.1
+  let inside := testPreimage_le t U.1
+  have top : (t.left.resLE V V' inside).appTop ≫ V'.topIso.hom =
+      V.topIso.hom ≫ t.left.appLE V V' inside :=
+    (arrowResLEAppIso t.left V V' inside).hom.w.symm
+  have topInv : t.left.appLE V V' inside ≫ V'.topIso.inv =
+      V.topIso.inv ≫ (t.left.resLE V V' inside).appTop := by
+    rw [← cancel_mono V'.topIso.hom, Category.assoc, Iso.inv_hom_id, Category.comp_id,
+      Category.assoc, top, Iso.inv_hom_id_assoc]
+  change t.left.appLE V V' inside ≫ V'.topIso.inv ≫ (testChartOpenIso g' U).hom.appTop =
+    (V.topIso.inv ≫ (testChartOpenIso g U).hom.appTop) ≫ (testChartMap t U).appTop
+  rw [← Category.assoc, topInv, Category.assoc, Category.assoc, ← Scheme.Hom.comp_appTop,
+    ← Scheme.Hom.comp_appTop, testChartOpenIso_precomp]
+
 end QuasiCoherentAlgebra
 
 section AlgebraSheaves
@@ -222,6 +269,17 @@ variable {X Y : Scheme.{u}}
 /-- The pushforward structure sheaf viewed as an algebra over the base structure sheaf. -/
 def directImageStructure (g : Y ⟶ X) : Under X.sheaf :=
   Under.mk (Y := (TopCat.Sheaf.pushforward CommRingCat g.base).obj Y.sheaf) ⟨g.c⟩
+
+/-- A morphism of test schemes over the base pulls back functions as a morphism of algebras. -/
+def directImageStructureMap {Y' : Scheme.{u}} {g : Y ⟶ X} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) : directImageStructure g ⟶ directImageStructure g' :=
+  Under.homMk ⟨QuasiCoherentAlgebra.directImageStructureMapNat t⟩ (by
+    apply Sheaf.hom_ext
+    ext1
+    funext U
+    change g.app U.unop ≫ t.left.appLE _ _ (QuasiCoherentAlgebra.testPreimage_le t U.unop) = g'.app U.unop
+    rw [← Scheme.Hom.comp_appLE]
+    exact (Scheme.Hom.congr_app (show g' = t.left ≫ g from (Over.w t).symm) U.unop).symm)
 
 /-- The algebra sheaf associated to the local rings of the quasi-coherent algebra. -/
 def QuasiCoherentAlgebra.algebraSheaf (C : QuasiCoherentAlgebra X) : Under X.sheaf :=
@@ -331,7 +389,7 @@ def homEquivAlgebraSheaf :
   (C.homEquivDirectImage.trans C.directImageMapsEquivSheaves).trans
     (pullbackAlgebraHomEquiv g C.algebraSheaf).symm
 
-/-- Read a morphism from the pulled-back algebra on each affine chart of the test scheme. -/
+/-- Read a morphism from the pulled-back algebra on each inverse image of an affine open of the base. -/
 def algebraSheafMapSections :=
   (pullbackAlgebraHomEquiv g C.algebraSheaf).trans
     (C.directImageMapsEquivSheaves.symm.trans C.chartAlgebraMapsEquivDirectImage.symm)
@@ -346,6 +404,51 @@ theorem homEquivAlgebraSheaf_precomp {Y' : Scheme.{u}} {g' : Y' ⟶ X}
     simp [algebraSheafMapSections, homEquivAlgebraSheaf, homEquivDirectImage]
   rw [cancel, cancel]
   exact C.homEquivAlgebraMaps_precomp t h U
+/-- In the direct image formulation, precomposition of test maps pulls back functions. -/
+theorem homEquivDirectImage_precomp {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) (h : Over.mk g ⟶ Over.mk C.projection) :
+    (C.homEquivDirectImage (t ≫ h)).val =
+      (C.homEquivDirectImage h).val ≫
+        (Functor.whiskerLeft (Scheme.AffineZariskiSite.toOpensFunctor X).op
+          (directImageStructureMapNat t)) := by
+  ext1
+  funext U
+  change (C.homEquivAlgebraMaps (t ≫ h)).app U.unop ≫ (testChartSectionsIso g' U.unop).inv =
+    ((C.homEquivAlgebraMaps h).app U.unop ≫ (testChartSectionsIso g U.unop).inv) ≫
+      (directImageStructureMapNat t).app (.op U.unop.1)
+  rw [← cancel_mono (testChartSectionsIso g' U.unop).hom, Category.assoc,
+    Iso.inv_hom_id, Category.comp_id, Category.assoc, testChartSectionsIso_precomp]
+  simpa only [Category.assoc, Iso.inv_hom_id_assoc] using
+    C.homEquivAlgebraMaps_precomp t h U.unop
+
+/-- The representing equivalence is natural for the canonical maps of direct image algebras. -/
+theorem homEquivSheaves_precomp {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) (h : Over.mk g ⟶ Over.mk C.projection) :
+    (C.homEquivDirectImage.trans C.directImageMapsEquivSheaves) (t ≫ h) =
+      (C.homEquivDirectImage.trans C.directImageMapsEquivSheaves) h ≫ directImageStructureMap t := by
+  let F := Functor.FullyFaithful.under X.sheaf (affineSiteSheafEquivalence X).inverse
+    (affineSiteSheafEquivalence X).fullyFaithfulInverse
+  apply F.map_injective
+  simp only [Functor.map_comp]
+  change F.homEquiv (F.homEquiv.symm (C.affineAlgebraSheafIso.hom ≫
+    C.directImageMapsEquivAffineSheaf (C.homEquivDirectImage (t ≫ h)))) =
+      F.homEquiv (F.homEquiv.symm (C.affineAlgebraSheafIso.hom ≫
+        C.directImageMapsEquivAffineSheaf (C.homEquivDirectImage h))) ≫
+          (Under.post (affineSiteSheafEquivalence X).inverse).map (directImageStructureMap t)
+  rw [Equiv.apply_symm_apply, Equiv.apply_symm_apply, Category.assoc]
+  congr 1
+  apply Under.UnderMorphism.ext
+  apply Sheaf.hom_ext
+  exact C.homEquivDirectImage_precomp t h
+
+/-- Via the adjunction, the algebra map for a composite test morphism is the pulled-back map. -/
+theorem homEquivAlgebraSheaf_postcomp {Y' : Scheme.{u}} {g' : Y' ⟶ X}
+    (t : Over.mk g' ⟶ Over.mk g) (h : Over.mk g ⟶ Over.mk C.projection) :
+    pullbackAlgebraHomEquiv g' C.algebraSheaf (C.homEquivAlgebraSheaf (t ≫ h)) =
+      pullbackAlgebraHomEquiv g C.algebraSheaf (C.homEquivAlgebraSheaf h) ≫ directImageStructureMap t := by
+  simp only [homEquivAlgebraSheaf, Equiv.trans_apply, Equiv.apply_symm_apply]
+  exact C.homEquivSheaves_precomp t h
+
 end QuasiCoherentAlgebra
 
 end AlgebraSheaves
