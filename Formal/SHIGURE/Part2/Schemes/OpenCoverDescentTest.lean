@@ -82,7 +82,7 @@ private theorem chartRead_topSections {T V U X : Scheme.{u}}
         (restrictFunctorComp k p).hom.app M).app ⊤ := by
   simp only [Hom.comp_app, pushforward_map_app, pushforwardComp_hom_app_app,
     restrictAdjunction_unit_app_app, pushforwardCongr_hom_app_app, restrictFunctorCongr_inv_app_app,
-    restrictFunctorComp_hom_app_app, openTopSectionsIso, Functor.mapIso_hom, Iso.op_hom, eqToIso.hom,
+    restrictFunctorComp_hom_app_app, openTopSectionsIso_hom,
     restrict_map, ← Category.assoc, ← Functor.map_comp]
   erw [Category.comp_id]
   rw [← Functor.map_comp, ← Functor.map_comp]

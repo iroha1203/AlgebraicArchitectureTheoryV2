@@ -75,6 +75,11 @@ def openTopSectionsIso {T Y : Scheme.{u}} (M : Y.Modules)
     Γ(M, V) ≅ Γ(M.restrict f, ⊤) :=
   M.presheaf.mapIso (eqToIso image).op
 
+/-- The section comparison transports along the equality of image opens. -/
+theorem openTopSectionsIso_hom {T Y : Scheme.{u}} (M : Y.Modules)
+    (f : T ⟶ Y) [IsOpenImmersion f] (V : Y.Opens) (image : f ''ᵁ ⊤ = V) :
+    (openTopSectionsIso M f V image).hom = M.presheaf.map (eqToHom image).op := rfl
+
 /-- Sections on the chart inverse image agree with top sections of the restriction to the test open. -/
 def openChartTopSectionsIso (M : (D.U i).Modules) :
     Γ(M, D.ι i ⁻¹ᵁ W) ≅ Γ(M.restrict (openChartLift i W inside), ⊤) :=

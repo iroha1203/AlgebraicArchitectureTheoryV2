@@ -2,7 +2,19 @@ import Mathlib.AlgebraicGeometry.Sites.BigZariski
 import Mathlib.CategoryTheory.Sites.Descent.Precoverage
 import Formal.SHIGURE.Part2.Schemes.OpenCoverDescentEquivalence
 
-/-! # The Zariski stack of quasi-coherent modules -/
+/-! # The Zariski stack of quasi-coherent modules
+
+## Implementation notes
+
+`Scheme.Cover.gluedCover` takes chart indices in the scheme universe of
+`Scheme.GlueData`. The image opens of a cover already form a set in that
+universe, and equal image opens give chart isomorphisms over the base.
+We use one representative per image open so that the compatible-sections
+construction of Lemma B.6 applies and the original descent category is
+recovered by the chart isomorphisms. Choosing a general inverse with
+`Functor.asEquivalence` would select preimages by choice and lose the
+formula for the compatible-sections inverse.
+-/
 
 namespace SHIGURE.SchemeDescent
 

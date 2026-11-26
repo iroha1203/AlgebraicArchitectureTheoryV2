@@ -4695,6 +4695,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.openLift_image_top,
   SchemeDescent.openChartLift_image_top,
   SchemeDescent.openTopSectionsIso,
+  SchemeDescent.openTopSectionsIso_hom,
   SchemeDescent.openChartTopSectionsIso,
   SchemeDescent.openCoverGluedObject,
   SchemeDescent.openCoverGluedIso,

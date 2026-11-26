@@ -1,6 +1,15 @@
 import Mathlib.CategoryTheory.Sites.Descent.DescentData
 
-/-! # Changing the base of a descent comparison while keeping its charts -/
+/-! # Changing the base of a descent comparison while keeping its charts
+
+## Implementation notes
+
+The chart objects in `rebaseDatum` are the objects of the supplied datum.
+This lets the compatible-sections construction use the same modules over
+the original charts of Lemma B.6. The standard `DescentData.pullFunctor`
+would put an identity pullback on each chart. `pullFunctorRebaseIso`
+identifies those pullbacks with the chart objects used here.
+-/
 
 namespace SHIGURE.SchemeDescent
 
