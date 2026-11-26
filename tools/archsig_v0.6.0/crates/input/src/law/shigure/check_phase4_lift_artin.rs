@@ -5,8 +5,8 @@ use super::ast_phase3::{
 };
 use super::ast_phase4_lift_artin::*;
 use super::check::{
-    CResult, LiteralDomainRule, check_coeff_domain, check_poly_literals, check_poly_vars,
-    resolve_observed_field,
+    CResult, CoordCheckCtx, LiteralDomainRule, check_coeff_domain, check_member_coord_value,
+    check_poly_literals, check_poly_vars,
 };
 use super::check_ext_common::check_scalar_lit;
 use super::check_family::{check_named_polys_in_scope, check_origin_ref};
@@ -17,6 +17,49 @@ use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
 use std::collections::{HashMap, HashSet};
+
+#[derive(Clone, Copy)]
+pub(super) struct KeyedBlockMeta<'a> {
+    pub(super) span: Span,
+    pub(super) kind: &'a str,
+    pub(super) context: &'a str,
+}
+
+fn check_p4_keyed_entries<T, U, E: InputError>(
+    raw: &[(Ident, T, Span)],
+    required_keys: &[String],
+    meta: KeyedBlockMeta<'_>,
+    control: &Control,
+    mut check_val: impl FnMut(&str, &T, Span) -> CResult<U, E>,
+) -> CResult<Vec<(String, U)>, E> {
+    let key_set: HashSet<&str> = required_keys.iter().map(String::as_str).collect();
+    let mut seen = HashSet::new();
+    let mut out = Vec::with_capacity(raw.len());
+    for (k, val, v_span) in raw {
+        E::checkpoint(control, Checkpoint::LawSemantics)?;
+        if !key_set.contains(k.name.as_str()) {
+            return reference(
+                k.span,
+                format!("unknown {} `{}` in {}", meta.kind, k.name, meta.context),
+            );
+        }
+        if !seen.insert(k.name.as_str()) {
+            return duplicate(
+                k.span,
+                format!("duplicate {} `{}` in {}", meta.kind, k.name, meta.context),
+            );
+        }
+        let checked = check_val(&k.name, val, *v_span)?;
+        out.push((k.name.clone(), checked));
+    }
+    if seen.len() != key_set.len() {
+        return p4_type_err(
+            meta.span,
+            format!("{} must assign every {}", meta.context, meta.kind),
+        );
+    }
+    Ok(out)
+}
 
 pub(super) fn check_all_phase4_tasks<E: InputError>(
     checker: &Checker<'_, E>,
@@ -100,54 +143,12 @@ pub(super) fn check_p4_unique_idents<E: InputError>(
     Ok(out)
 }
 
-pub(super) fn check_p4_coord_value<E: InputError>(
-    raw: &RawMemberCoordValue,
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
-    span: Span,
-    control: &Control,
-) -> CResult<ShigureMemberCoordValue, E> {
-    match raw {
-        RawMemberCoordValue::Literal(lit) => {
-            check_scalar_lit(lit, coeff_domain, span, control)?;
-            Ok(ShigureMemberCoordValue::Literal(lit.clone()))
-        }
-        RawMemberCoordValue::ObservedField { field, span: fspan } => {
-            let ShigureCoordBinding::ObservedField {
-                entity,
-                field: field_full,
-                span: resolved_span,
-            } = resolve_observed_field(
-                field,
-                *fspan,
-                coeff_domain,
-                &checker.imports[r_idx],
-                checker.definitions,
-            )?
-            else {
-                unreachable!("resolve_observed_field always returns ObservedField");
-            };
-            Ok(ShigureMemberCoordValue::ObservedField {
-                entity,
-                field: field_full,
-                span: resolved_span,
-            })
-        }
-        RawMemberCoordValue::Missing(_) => Ok(ShigureMemberCoordValue::Missing),
-    }
-}
-
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_p4_coord_vec<E: InputError>(
     raw: &[RawMemberCoordValue],
     expected_len: usize,
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
+    ctx: &CoordCheckCtx<'_, '_, E>,
     span: Span,
     context: &str,
-    control: &Control,
 ) -> CResult<Vec<ShigureMemberCoordValue>, E> {
     if raw.len() != expected_len {
         return p4_type_err(
@@ -159,134 +160,57 @@ pub(super) fn check_p4_coord_vec<E: InputError>(
         );
     }
     raw.iter()
-        .map(|v| check_p4_coord_value(v, coeff_domain, r_idx, checker, span, control))
+        .map(|v| check_member_coord_value(v, ctx, span))
         .collect()
 }
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_p4_coord_scalar_map<E: InputError>(
     raw: &[(Ident, RawMemberCoordValue, Span)],
     required_keys: &[String],
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
-    block_span: Span,
-    kind: &str,
-    context: &str,
-    control: &Control,
+    ctx: &CoordCheckCtx<'_, '_, E>,
+    meta: KeyedBlockMeta<'_>,
 ) -> CResult<Vec<(String, ShigureMemberCoordValue)>, E> {
-    let key_set: HashSet<&str> = required_keys.iter().map(String::as_str).collect();
-    let mut seen = HashSet::new();
-    let mut out = Vec::with_capacity(raw.len());
-    for (k, val, v_span) in raw {
-        E::checkpoint(control, Checkpoint::LawSemantics)?;
-        if !key_set.contains(k.name.as_str()) {
-            return reference(k.span, format!("unknown {kind} `{}` in {context}", k.name));
-        }
-        if !seen.insert(k.name.as_str()) {
-            return duplicate(
-                k.span,
-                format!("duplicate {kind} `{}` in {context}", k.name),
-            );
-        }
-        let checked = check_p4_coord_value(val, coeff_domain, r_idx, checker, *v_span, control)?;
-        out.push((k.name.clone(), checked));
-    }
-    if seen.len() != key_set.len() {
-        return p4_type_err(block_span, format!("{context} must assign every {kind}"));
-    }
-    Ok(out)
+    check_p4_keyed_entries(raw, required_keys, meta, ctx.control, |_, val, v_span| {
+        check_member_coord_value(val, ctx, v_span)
+    })
 }
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_p4_coord_vec_map<E: InputError>(
     raw: &[(Ident, Vec<RawMemberCoordValue>, Span)],
     required_keys: &[String],
     expected_len: usize,
-    coeff_domain: &ShigureCoeffDomain,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
-    block_span: Span,
-    kind: &str,
-    context: &str,
-    control: &Control,
+    ctx: &CoordCheckCtx<'_, '_, E>,
+    meta: KeyedBlockMeta<'_>,
 ) -> CResult<Vec<(String, Vec<ShigureMemberCoordValue>)>, E> {
-    let key_set: HashSet<&str> = required_keys.iter().map(String::as_str).collect();
-    let mut seen = HashSet::new();
-    let mut out = Vec::with_capacity(raw.len());
-    for (k, vals, v_span) in raw {
-        E::checkpoint(control, Checkpoint::LawSemantics)?;
-        if !key_set.contains(k.name.as_str()) {
-            return reference(k.span, format!("unknown {kind} `{}` in {context}", k.name));
-        }
-        if !seen.insert(k.name.as_str()) {
-            return duplicate(
-                k.span,
-                format!("duplicate {kind} `{}` in {context}", k.name),
-            );
-        }
-        let checked = check_p4_coord_vec(
-            vals,
-            expected_len,
-            coeff_domain,
-            r_idx,
-            checker,
-            *v_span,
-            &format!("{context} `{}`", k.name),
-            control,
-        )?;
-        out.push((k.name.clone(), checked));
-    }
-    if seen.len() != key_set.len() {
-        return p4_type_err(block_span, format!("{context} must assign every {kind}"));
-    }
-    Ok(out)
+    check_p4_keyed_entries(raw, required_keys, meta, ctx.control, |name, vals, v_span| {
+        check_p4_coord_vec(vals, expected_len, ctx, v_span, &format!("{} `{name}`", meta.context))
+    })
 }
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_p4_poly_assign_map<E: InputError>(
     raw: &[(Ident, ShigurePolyExpr, Span)],
     required_keys: &[String],
     allowed_rhs_vars: &HashSet<&str>,
     coeff_domain: &ShigureCoeffDomain,
-    block_span: Span,
-    kind: &str,
-    context: &str,
+    meta: KeyedBlockMeta<'_>,
     control: &Control,
 ) -> CResult<Vec<(String, ShigurePolyExpr)>, E> {
-    let key_set: HashSet<&str> = required_keys.iter().map(String::as_str).collect();
-    let mut seen = HashSet::new();
-    let mut out = Vec::with_capacity(raw.len());
-    for (k, expr, v_span) in raw {
-        E::checkpoint(control, Checkpoint::LawSemantics)?;
-        if !key_set.contains(k.name.as_str()) {
-            return reference(k.span, format!("unknown {kind} `{}` in {context}", k.name));
-        }
-        if !seen.insert(k.name.as_str()) {
-            return duplicate(
-                k.span,
-                format!("duplicate {kind} `{}` in {context}", k.name),
-            );
-        }
+    check_p4_keyed_entries(raw, required_keys, meta, control, |name, expr, v_span| {
         check_poly_literals(
             expr,
             LiteralDomainRule::Exact(coeff_domain),
-            *v_span,
+            v_span,
             control,
         )?;
         check_poly_vars(
             expr,
             allowed_rhs_vars,
-            *v_span,
-            &format!("{context}.{}", k.name),
+            v_span,
+            &format!("{}.{name}", meta.context),
             control,
         )?;
-        out.push((k.name.clone(), expr.clone()));
-    }
-    if seen.len() != key_set.len() {
-        return p4_type_err(block_span, format!("{context} must assign every {kind}"));
-    }
-    Ok(out)
+        Ok(expr.clone())
+    })
 }
 
 // ---- `shigure lift` 検査 ----
@@ -399,6 +323,13 @@ fn check_lift<E: InputError>(
     let (extension, r_dim, rp_dim) =
         check_square_zero_spec(&raw.extension, &coeff_domain, &ctx, control)?;
 
+    let coord_ctx = CoordCheckCtx {
+        coeff_domain: &coeff_domain,
+        r_idx,
+        checker,
+        control,
+    };
+
     let var_set: HashSet<&str> = variables.iter().map(String::as_str).collect();
     let mut param_set = HashSet::new();
     let mut ring_params = Vec::with_capacity(raw.ring_params.len());
@@ -415,12 +346,9 @@ fn check_lift<E: InputError>(
         let val = check_p4_coord_vec(
             &rp.value_in_r_prime,
             rp_dim,
-            &coeff_domain,
-            r_idx,
-            checker,
+            &coord_ctx,
             rp.span,
             &format!("{ctx} ring_param `{}`", rp.name.name),
-            control,
         )?;
         ring_params.push(ShigureRingParam {
             name: rp.name.name.clone(),
@@ -444,13 +372,12 @@ fn check_lift<E: InputError>(
         &raw.base_point,
         &variables,
         r_dim,
-        &coeff_domain,
-        r_idx,
-        checker,
-        raw.span,
-        "variable",
-        &format!("{ctx} base_point"),
-        control,
+        &coord_ctx,
+        KeyedBlockMeta {
+            span: raw.span,
+            kind: "variable",
+            context: &format!("{ctx} base_point"),
+        },
     )?;
     let ambient_lift = raw
         .ambient_lift
@@ -460,13 +387,12 @@ fn check_lift<E: InputError>(
                 al,
                 &variables,
                 rp_dim,
-                &coeff_domain,
-                r_idx,
-                checker,
-                raw.span,
-                "variable",
-                &format!("{ctx} ambient_lift"),
-                control,
+                &coord_ctx,
+                KeyedBlockMeta {
+                    span: raw.span,
+                    kind: "variable",
+                    context: &format!("{ctx} ambient_lift"),
+                },
             )
         })
         .transpose()?;
@@ -502,22 +428,23 @@ fn check_lift<E: InputError>(
                 &obs_vars,
                 &law_scope,
                 &coeff_domain,
-                rel.span,
-                "obs_var",
-                &format!("{ctx} reading_map"),
+                KeyedBlockMeta {
+                    span: rel.span,
+                    kind: "obs_var",
+                    context: &format!("{ctx} reading_map"),
+                },
                 control,
             )?;
             let designated_obs_lift = check_p4_coord_vec_map(
                 &rel.designated_obs_lift,
                 &obs_vars,
                 rp_dim,
-                &coeff_domain,
-                r_idx,
-                checker,
-                rel.span,
-                "obs_var",
-                &format!("{ctx} designated_obs_lift"),
-                control,
+                &coord_ctx,
+                KeyedBlockMeta {
+                    span: rel.span,
+                    kind: "obs_var",
+                    context: &format!("{ctx} designated_obs_lift"),
+                },
             )?;
             let raw_read_diff = rel
                 .raw_read_diff
@@ -806,16 +733,21 @@ fn check_artin<E: InputError>(
         control,
     )?;
 
+    let coord_ctx = CoordCheckCtx {
+        coeff_domain: &coeff_domain,
+        r_idx,
+        checker,
+        control,
+    };
     let base_point = check_p4_coord_scalar_map(
         &raw.base_point,
         &obs_vars,
-        &coeff_domain,
-        r_idx,
-        checker,
-        raw.span,
-        "obs_var",
-        &format!("{ctx} base_point"),
-        control,
+        &coord_ctx,
+        KeyedBlockMeta {
+            span: raw.span,
+            kind: "obs_var",
+            context: &format!("{ctx} base_point"),
+        },
     )?;
 
     let composite_stage = raw

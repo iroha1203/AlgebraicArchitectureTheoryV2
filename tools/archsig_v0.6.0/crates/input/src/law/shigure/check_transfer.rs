@@ -2,34 +2,28 @@
 
 use super::ast_ext::*;
 use super::check::{
-    CResult, DeclCategory, LiteralDomainRule, check_poly_literals, check_poly_vars,
-    check_presentation_vars, resolve_shigure_ref,
+    CResult, DeclCategory, LiteralDomainRule, ShigureDeclCtx, check_poly_literals, check_poly_vars,
+    check_presentation_vars,
 };
 use super::check_ext_common::{
     ScopedMorphismMeta, check_coords_disjoint_from_params, check_eval_cond_against_domain_params,
     check_morphism_body, check_morphism_vars_against_pres, check_scoped_change_spec_targets,
     check_state_law_list,
 };
+use super::check_ext_morphism::MorphismCheckSpec;
 use super::*;
-use crate::law::ast::Span;
-use crate::law::check::{Checker, duplicate, full, reference};
+use crate::law::check::{duplicate, reference};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 
-#[allow(clippy::too_many_arguments)]
 pub(super) fn check_transfer<E: InputError>(
     raw: &RawTransferTask,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    reading_edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigureTransferTask, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
+    let full_name = ctx.full_name(&raw.name.name);
+    let control = ctx.control;
     if raw.steps.is_empty() {
         return Err(Box::new(Issue::law(
             Code::Type,
@@ -39,30 +33,14 @@ pub(super) fn check_transfer<E: InputError>(
         .into());
     }
 
-    let change_spec_name = resolve_shigure_ref(
-        &raw.change_spec,
-        DeclCategory::ChangeSpec,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        reading_edges,
-    )?;
-    let spec = &decls.change_specs[&change_spec_name];
+    let change_spec_name = ctx.resolve_ref(&raw.change_spec, DeclCategory::ChangeSpec)?;
+    let spec = &ctx.decls.change_specs[&change_spec_name];
     let param_set: HashSet<&str> = spec.parameters.iter().map(|p| p.name.as_str()).collect();
 
     let eval_condition = match &raw.eval_condition {
         Some(q) => {
-            let ec_name = resolve_shigure_ref(
-                q,
-                DeclCategory::EvalCondition,
-                r_idx,
-                reading_name,
-                checker,
-                index,
-                reading_edges,
-            )?;
-            let ec = &decls.eval_conditions[&ec_name];
+            let ec_name = ctx.resolve_ref(q, DeclCategory::EvalCondition)?;
+            let ec = &ctx.decls.eval_conditions[&ec_name];
             check_eval_cond_against_domain_params(
                 ec,
                 &spec.coeff_domain,
@@ -94,18 +72,10 @@ pub(super) fn check_transfer<E: InputError>(
 
         let (source, before_p, after_p, morph_body) = match &st.source {
             RawTransferStepSource::Comparison(q) => {
-                let cmp_name = resolve_shigure_ref(
-                    q,
-                    DeclCategory::Comparison,
-                    r_idx,
-                    reading_name,
-                    checker,
-                    index,
-                    reading_edges,
-                )?;
-                let cmp = &decls.comparisons[&cmp_name];
-                let b_p = &decls.presentations[&cmp.before];
-                let a_p = &decls.presentations[&cmp.after];
+                let cmp_name = ctx.resolve_ref(q, DeclCategory::Comparison)?;
+                let cmp = &ctx.decls.comparisons[&cmp_name];
+                let b_p = &ctx.decls.presentations[&cmp.before];
+                let a_p = &ctx.decls.presentations[&cmp.after];
                 if b_p.coeff_domain != spec.coeff_domain {
                     return Err(Box::new(Issue::law(
                         Code::Type,
@@ -140,26 +110,10 @@ pub(super) fn check_transfer<E: InputError>(
                 after,
                 morphism,
             } => {
-                let b_name = resolve_shigure_ref(
-                    before,
-                    DeclCategory::Presentation,
-                    r_idx,
-                    reading_name,
-                    checker,
-                    index,
-                    reading_edges,
-                )?;
-                let a_name = resolve_shigure_ref(
-                    after,
-                    DeclCategory::Presentation,
-                    r_idx,
-                    reading_name,
-                    checker,
-                    index,
-                    reading_edges,
-                )?;
-                let b_p = &decls.presentations[&b_name];
-                let a_p = &decls.presentations[&a_name];
+                let b_name = ctx.resolve_ref(before, DeclCategory::Presentation)?;
+                let a_name = ctx.resolve_ref(after, DeclCategory::Presentation)?;
+                let b_p = &ctx.decls.presentations[&b_name];
+                let a_p = &ctx.decls.presentations[&a_name];
                 if b_p.coeff_domain != spec.coeff_domain || a_p.coeff_domain != spec.coeff_domain {
                     return Err(Box::new(Issue::law(
                         Code::Type,
@@ -179,18 +133,14 @@ pub(super) fn check_transfer<E: InputError>(
                 check_presentation_vars(a_p, Some(&param_set), control)?;
                 let body = check_morphism_body(
                     morphism,
-                    r_idx,
-                    reading_name,
-                    checker,
-                    index,
-                    decls,
-                    reading_edges,
-                    a_p,
-                    b_p,
-                    Some(&param_set),
-                    st.span,
-                    &format!("transfer step `{}`", st.name.name),
-                    control,
+                    ctx,
+                    &MorphismCheckSpec {
+                        src_pres: a_p,
+                        tgt_pres: b_p,
+                        params: Some(&param_set),
+                        span: st.span,
+                        context: &format!("transfer step `{}`", st.name.name),
+                    },
                 )?;
                 (
                     ShigureTransferStepSource::Inline {
@@ -233,7 +183,7 @@ pub(super) fn check_transfer<E: InputError>(
         };
 
         let mapped_before_phase = match &morph_body {
-            ShigureMorphismBody::Comparison(c) => decls.comparisons[c]
+            ShigureMorphismBody::Comparison(c) => ctx.decls.comparisons[c]
                 .state_comparisons
                 .iter()
                 .find(|s| s.after_phase == tgt_ph.name)
@@ -374,7 +324,7 @@ pub(super) fn check_transfer<E: InputError>(
 
     let morphs: Vec<ScopedMorphismMeta<'_>> = step_metas
         .iter()
-        .map(|(body, a_p)| ScopedMorphismMeta::from_body(body, a_p, decls, false))
+        .map(|(body, a_p)| ScopedMorphismMeta::from_body(body, a_p, ctx.decls, false))
         .collect();
     check_scoped_change_spec_targets(spec, &pres_map, &morphs, "transfer", control)?;
 
@@ -391,16 +341,14 @@ pub(super) fn check_transfer<E: InputError>(
                 format!("duplicate `word_check` `{}`", wc.name.name),
             );
         }
-        let (args, w_steps) = check_word_steps(
-            &wc.args,
-            &wc.steps,
-            last_after_p,
-            last_tgt_ph,
-            &spec.coeff_domain,
-            &param_set,
-            &format!("word_check `{}`", wc.name.name),
-            control,
-        )?;
+        let scope = WordStepScope {
+            pres: last_after_p,
+            start_phase: last_tgt_ph,
+            domain: &spec.coeff_domain,
+            param_set: &param_set,
+            context: &format!("word_check `{}`", wc.name.name),
+        };
+        let (args, w_steps) = check_word_steps(&wc.args, &wc.steps, &scope, control)?;
         word_checks.push(ShigureWordCheck {
             name: wc.name.name.clone(),
             args,
@@ -419,16 +367,14 @@ pub(super) fn check_transfer<E: InputError>(
                 format!("duplicate `old_word_lift` `{}`", ol.name.name),
             );
         }
-        let (args, target_steps) = check_word_steps(
-            &ol.args,
-            &ol.target_steps,
-            first_before_p,
-            first_src_ph,
-            &spec.coeff_domain,
-            &param_set,
-            &format!("old_word_lift `{}`", ol.name.name),
-            control,
-        )?;
+        let scope = WordStepScope {
+            pres: first_before_p,
+            start_phase: first_src_ph,
+            domain: &spec.coeff_domain,
+            param_set: &param_set,
+            context: &format!("old_word_lift `{}`", ol.name.name),
+        };
+        let (args, target_steps) = check_word_steps(&ol.args, &ol.target_steps, &scope, control)?;
         old_word_lifts.push(ShigureOldWordLift {
             name: ol.name.name.clone(),
             args,
@@ -440,7 +386,7 @@ pub(super) fn check_transfer<E: InputError>(
 
     Ok(ShigureTransferTask {
         name: full_name,
-        reading: reading_name.to_owned(),
+        reading: ctx.reading_name.to_owned(),
         steps,
         word_checks,
         old_word_lifts,
@@ -451,17 +397,27 @@ pub(super) fn check_transfer<E: InputError>(
     })
 }
 
-#[allow(clippy::too_many_arguments)]
+struct WordStepScope<'a> {
+    pres: &'a ShigurePresentation,
+    start_phase: &'a str,
+    domain: &'a ShigureCoeffDomain,
+    param_set: &'a HashSet<&'a str>,
+    context: &'a str,
+}
+
 fn check_word_steps<E: InputError>(
     raw_args: &[Ident],
     raw_steps: &[RawWordStep],
-    pres: &ShigurePresentation,
-    start_phase: &str,
-    domain: &ShigureCoeffDomain,
-    param_set: &HashSet<&str>,
-    context: &str,
+    scope: &WordStepScope<'_>,
     control: &Control,
 ) -> CResult<(Vec<String>, Vec<ShigureWordStep>), E> {
+    let WordStepScope {
+        pres,
+        start_phase,
+        domain,
+        param_set,
+        context,
+    } = *scope;
     let mut seen_args = HashSet::new();
     let mut args = Vec::with_capacity(raw_args.len());
     for a in raw_args {

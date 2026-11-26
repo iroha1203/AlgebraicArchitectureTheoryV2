@@ -755,10 +755,10 @@ fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &Control) -> R<
                 type_any::<E>(
                     t,
                     &mut |t| {
-                        if let Type::Data(other) = t {
-                            if other != name {
-                                edges.entry(name.clone()).or_default().insert(other.clone());
-                            }
+                        if let Type::Data(other) = t
+                            && other != name
+                        {
+                            edges.entry(name.clone()).or_default().insert(other.clone());
                         }
                         false
                     },

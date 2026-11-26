@@ -2,34 +2,38 @@
 
 use super::ast_ext::*;
 use super::check::{
-    CResult, DeclCategory, LiteralDomainRule, check_poly_literals, check_poly_vars,
-    resolve_shigure_ref,
+    CResult, DeclCategory, LiteralDomainRule, ShigureDeclCtx, check_poly_literals, check_poly_vars,
 };
 use super::check_ext_common::check_coords_disjoint_from_params;
 use super::*;
 use crate::law::ast::Span;
-use crate::law::check::{Checker, duplicate, reference};
+use crate::law::check::{duplicate, reference};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
 use std::collections::{HashMap, HashSet};
 
-#[allow(clippy::too_many_arguments)]
+pub(super) struct MorphismCheckSpec<'a> {
+    pub(super) src_pres: &'a ShigurePresentation,
+    pub(super) tgt_pres: &'a ShigurePresentation,
+    pub(super) params: Option<&'a HashSet<&'a str>>,
+    pub(super) span: Span,
+    pub(super) context: &'a str,
+}
+
 pub(super) fn check_morphism_body<E: InputError>(
     raw: &RawMorphismBody,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    edges: &mut Vec<(usize, usize, Span)>,
-    morph_src_pres: &ShigurePresentation,
-    morph_tgt_pres: &ShigurePresentation,
-    params: Option<&HashSet<&str>>,
-    span: Span,
-    context: &str,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
+    spec: &MorphismCheckSpec<'_>,
 ) -> CResult<ShigureMorphismBody, E> {
+    let MorphismCheckSpec {
+        src_pres: morph_src_pres,
+        tgt_pres: morph_tgt_pres,
+        params,
+        span,
+        context,
+    } = *spec;
+    let control = ctx.control;
     if morph_src_pres.coeff_domain != morph_tgt_pres.coeff_domain {
         return Err(Box::new(Issue::law(
             Code::Type,
@@ -40,16 +44,8 @@ pub(super) fn check_morphism_body<E: InputError>(
     }
     match raw {
         RawMorphismBody::Comparison(qname) => {
-            let cmp_name = resolve_shigure_ref(
-                qname,
-                DeclCategory::Comparison,
-                r_idx,
-                reading_name,
-                checker,
-                index,
-                edges,
-            )?;
-            let cmp = &decls.comparisons[&cmp_name];
+            let cmp_name = ctx.resolve_ref(qname, DeclCategory::Comparison)?;
+            let cmp = &ctx.decls.comparisons[&cmp_name];
             if cmp.after != morph_src_pres.name || cmp.before != morph_tgt_pres.name {
                 return Err(Box::new(Issue::law(
                     Code::Type,

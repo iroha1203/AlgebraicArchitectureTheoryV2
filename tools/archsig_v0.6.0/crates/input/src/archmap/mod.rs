@@ -102,58 +102,6 @@ fn check_archmap_inner<E: InputError>(
     Ok(checked)
 }
 
-#[cfg(test)]
-mod entry_control_tests {
-    use super::*;
-    use crate::result::Signal;
-    use std::{cell::Cell, rc::Rc};
-
-    thread_local! {
-        pub(super) static BYTES_DIGEST_STARTS: Cell<usize> = const { Cell::new(0) };
-    }
-
-    #[test]
-    fn stopped_entry_does_not_start_bytes_digest() {
-        BYTES_DIGEST_STARTS.with(|count| count.set(0));
-        for latched in [false, true] {
-            let control = Control::new(|_| Some(Signal::Int));
-            if latched {
-                control.checkpoint(Checkpoint::InputBundle).unwrap_err();
-            }
-            let failure = check_archmap_controlled(b"bad", &CheckedDefinitions::empty(), &control)
-                .unwrap_err();
-            let CheckFailure::Stopped(reason) = failure else {
-                panic!("entry stop must precede input checking");
-            };
-            assert_eq!(Some(reason), control.stop_reason());
-            BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 0));
-        }
-    }
-
-    #[test]
-    fn live_entry_checks_control_before_digest_and_preserves_input_failure() {
-        BYTES_DIGEST_STARTS.with(|count| count.set(0));
-        let definitions = CheckedDefinitions::empty();
-        let ordinary = check_archmap(b"bad", &definitions).unwrap_err();
-        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
-        let first = Rc::new(Cell::new(None));
-        let observed = first.clone();
-        let control = Control::new(move |point| {
-            if observed.get().is_none() {
-                observed.set(Some(point));
-            }
-            None
-        });
-        let controlled = check_archmap_controlled(b"bad", &definitions, &control).unwrap_err();
-        let CheckFailure::Input(controlled) = controlled else {
-            panic!("live control must preserve the input error");
-        };
-        assert_eq!(first.get(), Some(Checkpoint::BeforeArchMap));
-        assert_eq!(controlled, ordinary);
-        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 2));
-    }
-}
-
 /// subject と、その field 型から推移的に参照する宣言の namespace。
 fn required_namespaces<E: InputError>(
     definitions: &CheckedDefinitions,
@@ -404,4 +352,56 @@ fn check_document_inner<E: InputError>(
         origins,
         snapshots,
     })
+}
+
+#[cfg(test)]
+mod entry_control_tests {
+    use super::*;
+    use crate::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+
+    thread_local! {
+        pub(super) static BYTES_DIGEST_STARTS: Cell<usize> = const { Cell::new(0) };
+    }
+
+    #[test]
+    fn stopped_entry_does_not_start_bytes_digest() {
+        BYTES_DIGEST_STARTS.with(|count| count.set(0));
+        for latched in [false, true] {
+            let control = Control::new(|_| Some(Signal::Int));
+            if latched {
+                control.checkpoint(Checkpoint::InputBundle).unwrap_err();
+            }
+            let failure = check_archmap_controlled(b"bad", &CheckedDefinitions::empty(), &control)
+                .unwrap_err();
+            let CheckFailure::Stopped(reason) = failure else {
+                panic!("entry stop must precede input checking");
+            };
+            assert_eq!(Some(reason), control.stop_reason());
+            BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 0));
+        }
+    }
+
+    #[test]
+    fn live_entry_checks_control_before_digest_and_preserves_input_failure() {
+        BYTES_DIGEST_STARTS.with(|count| count.set(0));
+        let definitions = CheckedDefinitions::empty();
+        let ordinary = check_archmap(b"bad", &definitions).unwrap_err();
+        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
+        let first = Rc::new(Cell::new(None));
+        let observed = first.clone();
+        let control = Control::new(move |point| {
+            if observed.get().is_none() {
+                observed.set(Some(point));
+            }
+            None
+        });
+        let controlled = check_archmap_controlled(b"bad", &definitions, &control).unwrap_err();
+        let CheckFailure::Input(controlled) = controlled else {
+            panic!("live control must preserve the input error");
+        };
+        assert_eq!(first.get(), Some(Checkpoint::BeforeArchMap));
+        assert_eq!(controlled, ordinary);
+        BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 2));
+    }
 }

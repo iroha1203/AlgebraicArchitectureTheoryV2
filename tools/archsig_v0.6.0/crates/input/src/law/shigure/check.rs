@@ -1,7 +1,9 @@
 //! `archsig.law/2` 内の SHIGURE 宣言群の静的検査（名前・型・参照・素数・意味 Law 保護）。
 
+use super::ast_phase3::{RawMemberCoordValue, ShigureMemberCoordValue};
 use super::check_comparison::check_comparison;
 use super::check_diagram::check_diagram;
+use super::check_ext_common::check_scalar_lit;
 use super::check_path::check_path;
 use super::check_presentation::check_presentation;
 pub(super) use super::check_presentation::resolve_observed_field;
@@ -21,6 +23,83 @@ const RED_ZONE: usize = 128 * 1024;
 const STACK_STEP: usize = 4 * 1024 * 1024;
 
 pub(super) type CResult<T, E> = Result<T, E>;
+
+/// 座標値 (`RawMemberCoordValue`) 検証に必要な読み取り文脈。
+pub(super) struct CoordCheckCtx<'a, 'c, E: InputError> {
+    pub(super) coeff_domain: &'a ShigureCoeffDomain,
+    pub(super) r_idx: usize,
+    pub(super) checker: &'a Checker<'c, E>,
+    pub(super) control: &'a Control,
+}
+
+/// Reading 内の各 SHIGURE 宣言検査で共有する静的検査文脈。
+pub(super) struct ShigureDeclCtx<'a, 'c, E: InputError> {
+    pub(super) r_idx: usize,
+    pub(super) reading_name: &'a str,
+    pub(super) checker: &'a Checker<'c, E>,
+    pub(super) index: &'a HashMap<String, (DeclCategory, Span, usize)>,
+    pub(super) decls: &'a CheckedShigureDecls,
+    pub(super) edges: &'a mut Vec<(usize, usize, Span)>,
+    pub(super) control: &'a Control,
+}
+
+impl<'a, 'c, E: InputError> ShigureDeclCtx<'a, 'c, E> {
+    pub(super) fn full_name(&self, short: &str) -> String {
+        full(self.reading_name, &[short])
+    }
+
+    pub(super) fn resolve_ref(&mut self, qname: &QName, expected: DeclCategory) -> CResult<String, E> {
+        resolve_shigure_ref(
+            qname,
+            expected,
+            self.r_idx,
+            self.reading_name,
+            self.checker,
+            self.index,
+            self.edges,
+        )
+    }
+}
+
+pub(super) fn check_member_coord_value<E: InputError>(
+    raw: &RawMemberCoordValue,
+    ctx: &CoordCheckCtx<'_, '_, E>,
+    span: Span,
+) -> CResult<ShigureMemberCoordValue, E> {
+    match raw {
+        RawMemberCoordValue::Literal(lit) => {
+            check_scalar_lit(lit, ctx.coeff_domain, span, ctx.control)?;
+            Ok(ShigureMemberCoordValue::Literal(lit.clone()))
+        }
+        RawMemberCoordValue::ObservedField { field, span: fspan } => {
+            let ShigureCoordBinding::ObservedField {
+                entity,
+                field: field_full,
+                span: resolved_span,
+            } = resolve_observed_field(
+                field,
+                *fspan,
+                ctx.coeff_domain,
+                &ctx.checker.imports[ctx.r_idx],
+                ctx.checker.definitions,
+            )?
+            else {
+                return Err(Box::new(Issue::law(
+                    Code::Type,
+                    *fspan,
+                    "observed binding could not be resolved",
+                ))
+                .into());
+            };
+            Ok(ShigureMemberCoordValue::ObservedField {
+                entity,
+                field: field_full,
+                span: resolved_span,
+            })
+        }
+        RawMemberCoordValue::Missing(_) => Ok(ShigureMemberCoordValue::Missing),
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum DeclCategory {
@@ -123,30 +202,30 @@ pub(crate) fn check_shigure_decls<E: InputError>(
             match d {
                 ShigureDeclAst::Comparison(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_comparison(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
-                        &index,
-                        &out.presentations,
-                        &mut shigure_edges,
+                        index: &index,
+                        decls: &out,
+                        edges: &mut shigure_edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_comparison(raw, &mut ctx)?;
                     out.comparisons.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::ChangeSpec(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_change_spec(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
-                        &index,
-                        &out.presentations,
-                        &mut shigure_edges,
+                        index: &index,
+                        decls: &out,
+                        edges: &mut shigure_edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_change_spec(raw, &mut ctx)?;
                     out.change_specs.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::EvalCondition(raw) => {
@@ -186,58 +265,58 @@ pub(crate) fn check_shigure_decls<E: InputError>(
             match d {
                 ShigureDeclAst::Task(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_task(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
-                        &index,
-                        &out,
-                        &mut shigure_edges,
+                        index: &index,
+                        decls: &out,
+                        edges: &mut shigure_edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_task(raw, &mut ctx)?;
                     out.tasks.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::Diagram(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_diagram(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
-                        &index,
-                        &out,
-                        &mut shigure_edges,
+                        index: &index,
+                        decls: &out,
+                        edges: &mut shigure_edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_diagram(raw, &mut ctx)?;
                     out.diagrams.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::Path(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_path(
-                        raw.as_ref(),
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
-                        &index,
-                        &out,
-                        &mut shigure_edges,
+                        index: &index,
+                        decls: &out,
+                        edges: &mut shigure_edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_path(raw.as_ref(), &mut ctx)?;
                     out.paths.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::Transfer(raw) => {
                     E::checkpoint(control, Checkpoint::LawSemantics)?;
-                    let checked = check_transfer(
-                        raw,
+                    let mut ctx = ShigureDeclCtx {
                         r_idx,
-                        &r.name.name,
+                        reading_name: &r.name.name,
                         checker,
-                        &index,
-                        &out,
-                        &mut shigure_edges,
+                        index: &index,
+                        decls: &out,
+                        edges: &mut shigure_edges,
                         control,
-                    )?;
+                    };
+                    let checked = check_transfer(raw, &mut ctx)?;
                     out.transfers.insert(checked.name.clone(), checked);
                 }
                 ShigureDeclAst::Presentation(_)

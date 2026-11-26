@@ -308,22 +308,22 @@ impl<'d, E: InputError> Checker<'d, E> {
         if definitions.declarations.contains_key(name) {
             return Ok(true);
         }
-        if let Some((decl, member)) = name.rsplit_once('.') {
-            if let Some(d) = definitions.declarations.get(decl) {
-                if let Some((params, fields)) = d.signature.record_fields() {
-                    for field in params.iter().chain(fields) {
-                        self.cooperate()?;
-                        if field.name == member {
-                            return Ok(true);
-                        }
+        if let Some((decl, member)) = name.rsplit_once('.')
+            && let Some(d) = definitions.declarations.get(decl)
+        {
+            if let Some((params, fields)) = d.signature.record_fields() {
+                for field in params.iter().chain(fields) {
+                    self.cooperate()?;
+                    if field.name == member {
+                        return Ok(true);
                     }
                 }
-                if let PrimitiveSignature::Data { constructors } = &d.signature {
-                    for ctor in constructors {
-                        self.cooperate()?;
-                        if ctor.name == member {
-                            return Ok(true);
-                        }
+            }
+            if let PrimitiveSignature::Data { constructors } = &d.signature {
+                for ctor in constructors {
+                    self.cooperate()?;
+                    if ctor.name == member {
+                        return Ok(true);
                     }
                 }
             }
@@ -455,10 +455,10 @@ impl<'d, E: InputError> Checker<'d, E> {
             let mut hits: BTreeMap<String, Target> = BTreeMap::new();
             for name in self.expand(reading, &parts[..k])? {
                 self.cooperate()?;
-                if let Some(target) = self.target(&name) {
-                    if self.target_visible(reading, &target)? {
-                        hits.insert(name, target);
-                    }
+                if let Some(target) = self.target(&name)
+                    && self.target_visible(reading, &target)?
+                {
+                    hits.insert(name, target);
                 }
             }
             if hits.len() > 1 {
@@ -479,10 +479,10 @@ impl<'d, E: InputError> Checker<'d, E> {
             .get(name)
             .map(|(d, _)| d.as_str())
             .unwrap_or(name);
-        if let Some(&(target, _)) = self.decl_index.get(decl) {
-            if target != reading {
-                self.reading_edges.push((reading, target, span));
-            }
+        if let Some(&(target, _)) = self.decl_index.get(decl)
+            && target != reading
+        {
+            self.reading_edges.push((reading, target, span));
         }
     }
 

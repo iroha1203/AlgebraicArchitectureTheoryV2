@@ -712,7 +712,7 @@ mod interruption_tests {
             } else {
                 is_id_controlled::<E>(s, &control)
             };
-            assert_eq!(valid.unwrap(), true);
+            assert!(valid.unwrap());
             seen.get()
         };
         assert_eq!(count("Abcd", false), count("A", false) + 6);

@@ -2,58 +2,44 @@
 
 use super::ast_ext::*;
 use super::check::{
-    CResult, DeclCategory, LiteralDomainRule, check_poly_literals, check_poly_vars,
-    check_presentation_vars, resolve_shigure_ref,
+    CResult, DeclCategory, LiteralDomainRule, ShigureDeclCtx, check_poly_literals, check_poly_vars,
+    check_presentation_vars,
 };
 use super::check_ext_common::{
     ScopedMorphismMeta, check_eval_cond_against_domain_params, check_morphism_body,
     check_morphism_vars_against_pres, check_scalar_lit, check_scoped_change_spec_targets,
     check_state_law_list,
 };
+use super::check_ext_morphism::MorphismCheckSpec;
 use super::*;
-use crate::law::ast::Span;
-use crate::law::check::{Checker, duplicate, full, reference};
-use archsig_common::control::{Checkpoint, Control};
+use crate::law::check::{duplicate, reference};
+use archsig_common::control::Checkpoint;
 use archsig_common::issue::{Code, Issue};
 use archsig_common::json::InputError;
 use std::collections::{BTreeMap, HashMap, HashSet};
 
-#[allow(clippy::too_many_arguments)]
+struct PathTaskHeader<'a> {
+    full_name: String,
+    spec: &'a ShigureChangeSpec,
+    param_set: &'a HashSet<&'a str>,
+    change_spec_name: String,
+    eval_condition: Option<String>,
+}
+
 pub(super) fn check_path<E: InputError>(
     raw: &RawPathTask,
-    r_idx: usize,
-    reading_name: &str,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    reading_edges: &mut Vec<(usize, usize, Span)>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
 ) -> CResult<ShigurePathTask, E> {
-    let full_name = full(reading_name, &[&raw.name.name]);
-    let change_spec_name = resolve_shigure_ref(
-        &raw.change_spec,
-        DeclCategory::ChangeSpec,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        reading_edges,
-    )?;
-    let spec = &decls.change_specs[&change_spec_name];
+    let full_name = ctx.full_name(&raw.name.name);
+    let change_spec_name = ctx.resolve_ref(&raw.change_spec, DeclCategory::ChangeSpec)?;
+    let spec = &ctx.decls.change_specs[&change_spec_name];
     let param_set: HashSet<&str> = spec.parameters.iter().map(|p| p.name.as_str()).collect();
+    let control = ctx.control;
 
     let eval_condition = match &raw.eval_condition {
         Some(q) => {
-            let ec_name = resolve_shigure_ref(
-                q,
-                DeclCategory::EvalCondition,
-                r_idx,
-                reading_name,
-                checker,
-                index,
-                reading_edges,
-            )?;
-            let ec = &decls.eval_conditions[&ec_name];
+            let ec_name = ctx.resolve_ref(q, DeclCategory::EvalCondition)?;
+            let ec = &ctx.decls.eval_conditions[&ec_name];
             check_eval_cond_against_domain_params(
                 ec,
                 &spec.coeff_domain,
@@ -66,56 +52,29 @@ pub(super) fn check_path<E: InputError>(
         None => None,
     };
 
+    let header = PathTaskHeader {
+        full_name,
+        spec,
+        param_set: &param_set,
+        change_spec_name,
+        eval_condition,
+    };
+
     match raw.kind {
-        ShigurePathKind::FixedProtocolChangePath => check_fixed_path(
-            raw,
-            full_name,
-            reading_name,
-            r_idx,
-            checker,
-            index,
-            decls,
-            reading_edges,
-            spec,
-            &param_set,
-            change_spec_name,
-            eval_condition,
-            control,
-        ),
-        ShigurePathKind::EnlargedProtocolExecutionPath => check_protocol_path(
-            raw,
-            full_name,
-            reading_name,
-            r_idx,
-            checker,
-            index,
-            decls,
-            reading_edges,
-            spec,
-            &param_set,
-            change_spec_name,
-            eval_condition,
-            control,
-        ),
+        ShigurePathKind::FixedProtocolChangePath => check_fixed_path(raw, ctx, &header),
+        ShigurePathKind::EnlargedProtocolExecutionPath => check_protocol_path(raw, ctx, &header),
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_fixed_path<E: InputError>(
     raw: &RawPathTask,
-    full_name: String,
-    reading_name: &str,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    reading_edges: &mut Vec<(usize, usize, Span)>,
-    spec: &ShigureChangeSpec,
-    param_set: &HashSet<&str>,
-    change_spec_name: String,
-    eval_condition: Option<String>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
+    header: &PathTaskHeader<'_>,
 ) -> CResult<ShigurePathTask, E> {
+    let spec = header.spec;
+    let param_set = header.param_set;
+    let decls = ctx.decls;
+    let control = ctx.control;
     if raw.protocol.is_some() {
         return Err(Box::new(Issue::law(
             Code::Type,
@@ -152,15 +111,7 @@ fn check_fixed_path<E: InputError>(
                 format!("duplicate path vertex `{}`", b.vertex.name),
             );
         }
-        let pres_name = resolve_shigure_ref(
-            &b.presentation,
-            DeclCategory::Presentation,
-            r_idx,
-            reading_name,
-            checker,
-            index,
-            reading_edges,
-        )?;
+        let pres_name = ctx.resolve_ref(&b.presentation, DeclCategory::Presentation)?;
         let pres = &decls.presentations[&pres_name];
         if pres.coeff_domain != spec.coeff_domain {
             return Err(Box::new(Issue::law(
@@ -315,15 +266,7 @@ fn check_fixed_path<E: InputError>(
 
         let rule_ec = match &r.eval_condition {
             Some(q) => {
-                let ec_name = resolve_shigure_ref(
-                    q,
-                    DeclCategory::EvalCondition,
-                    r_idx,
-                    reading_name,
-                    checker,
-                    index,
-                    reading_edges,
-                )?;
+                let ec_name = ctx.resolve_ref(q, DeclCategory::EvalCondition)?;
                 let ec = &decls.eval_conditions[&ec_name];
                 check_eval_cond_against_domain_params(
                     ec,
@@ -343,18 +286,14 @@ fn check_fixed_path<E: InputError>(
         };
         let morph = check_morphism_body(
             &r.morphism,
-            r_idx,
-            reading_name,
-            checker,
-            index,
-            decls,
-            reading_edges,
-            m_src,
-            m_tgt,
-            Some(param_set),
-            r.span,
-            &format!("path rule `{}`", r.name.name),
-            control,
+            ctx,
+            &MorphismCheckSpec {
+                src_pres: m_src,
+                tgt_pres: m_tgt,
+                params: Some(param_set),
+                span: r.span,
+                context: &format!("path rule `{}`", r.name.name),
+            },
         )?;
         rule_bodies.push((morph.clone(), m_src));
         rules_by_name.insert(
@@ -433,18 +372,14 @@ fn check_fixed_path<E: InputError>(
             };
             let target_morph = check_morphism_body(
                 target_edge,
-                r_idx,
-                reading_name,
-                checker,
-                index,
-                decls,
-                reading_edges,
-                m_src,
-                m_tgt,
-                Some(param_set),
-                raw.span,
-                "`mode subdivide` target_edge",
-                control,
+                ctx,
+                &MorphismCheckSpec {
+                    src_pres: m_src,
+                    tgt_pres: m_tgt,
+                    params: Some(param_set),
+                    span: raw.span,
+                    context: "`mode subdivide` target_edge",
+                },
             )?;
             rule_bodies.push((target_morph.clone(), m_src));
             ShigurePathQueryMode::Subdivide {
@@ -460,8 +395,8 @@ fn check_fixed_path<E: InputError>(
     check_scoped_change_spec_targets(spec, &vertices_by_pres, &morphs, "path", control)?;
 
     Ok(ShigurePathTask {
-        name: full_name,
-        reading: reading_name.to_owned(),
+        name: header.full_name.clone(),
+        reading: ctx.reading_name.to_owned(),
         kind: raw.kind,
         direction: raw.direction,
         query_mode,
@@ -471,28 +406,22 @@ fn check_fixed_path<E: InputError>(
         start: Some(start),
         end: Some(end),
         protocol: None,
-        change_spec: change_spec_name,
-        eval_condition,
+        change_spec: header.change_spec_name.clone(),
+        eval_condition: header.eval_condition.clone(),
         span: raw.span,
     })
 }
 
-#[allow(clippy::too_many_arguments)]
 fn check_protocol_path<E: InputError>(
     raw: &RawPathTask,
-    full_name: String,
-    reading_name: &str,
-    r_idx: usize,
-    checker: &Checker<'_, E>,
-    index: &HashMap<String, (DeclCategory, Span, usize)>,
-    decls: &CheckedShigureDecls,
-    reading_edges: &mut Vec<(usize, usize, Span)>,
-    spec: &ShigureChangeSpec,
-    param_set: &HashSet<&str>,
-    change_spec_name: String,
-    eval_condition: Option<String>,
-    control: &Control,
+    ctx: &mut ShigureDeclCtx<'_, '_, E>,
+    header: &PathTaskHeader<'_>,
 ) -> CResult<ShigurePathTask, E> {
+    let spec = header.spec;
+    let param_set = header.param_set;
+    let decls = ctx.decls;
+    let control = ctx.control;
+    let full_name = &header.full_name;
     if !matches!(raw.query_mode, RawPathQueryMode::Find) {
         return Err(Box::new(Issue::law(
             Code::Type,
@@ -526,15 +455,7 @@ fn check_protocol_path<E: InputError>(
         .into());
     };
 
-    let cmp_name = resolve_shigure_ref(
-        &raw_proto.comparison,
-        DeclCategory::Comparison,
-        r_idx,
-        reading_name,
-        checker,
-        index,
-        reading_edges,
-    )?;
+    let cmp_name = ctx.resolve_ref(&raw_proto.comparison, DeclCategory::Comparison)?;
     let cmp = &decls.comparisons[&cmp_name];
     let before_p = &decls.presentations[&cmp.before];
     let after_p = &decls.presentations[&cmp.after];
@@ -651,8 +572,8 @@ fn check_protocol_path<E: InputError>(
     }
 
     Ok(ShigurePathTask {
-        name: full_name,
-        reading: reading_name.to_owned(),
+        name: header.full_name.clone(),
+        reading: ctx.reading_name.to_owned(),
         kind: raw.kind,
         direction: raw.direction,
         query_mode: ShigurePathQueryMode::Find,
@@ -670,8 +591,8 @@ fn check_protocol_path<E: InputError>(
             allowed_ops,
             span: raw_proto.span,
         }),
-        change_spec: change_spec_name,
-        eval_condition,
+        change_spec: header.change_spec_name.clone(),
+        eval_condition: header.eval_condition.clone(),
         span: raw.span,
     })
 }
