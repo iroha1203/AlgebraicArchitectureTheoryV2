@@ -3,6 +3,15 @@ import Mathlib.RingTheory.Flat.Equalizer
 /-! # Flat base change and the fixed-vector equalizer
 
 The coaction identities give an inverse to multiplication on the base-changed equalizer.
+
+## Implementation notes
+
+The two coaction identities are the counit and comultiplication laws
+for coalgebras of the extension–restriction comonad. Mathlib proves
+`ModuleCat.comonadicExtendScalars` and leaves the passage to geometric
+overlap data open. Here the overlap constructs the coaction in
+`Datum.toCoaction`, and the explicit tensor equalizer computes the
+comparison and its inverse in (B.2).
 -/
 
 namespace SHIGURE.CoefficientDescent
@@ -28,10 +37,12 @@ def multiply : B ⊗[A] N →ₗ[B] N :=
         ext n
         simp [smul_eq_mul] }
 
+/-- Evaluate the multiplication comparison on a pure tensor. -/
 @[simp] theorem multiply_tmul (b : B) (n : N) :
     multiply (A := A) (b ⊗ₜ[A] n) = b • n := rfl
 
 omit [Module B N] [IsScalarTower A B N] in
+/-- Evaluate the unit insertion on a vector. -/
 @[simp] theorem insertUnit_apply (n : N) :
     insertUnit (A := A) (B := B) n = 1 ⊗ₜ[A] n := rfl
 
@@ -52,6 +63,7 @@ variable (ρ : Coaction A B N)
 def descended : Submodule A N :=
   LinearMap.eqLocus (ρ.map.restrictScalars A) insertUnit
 
+/-- A vector descends exactly when its coaction equals unit insertion. -/
 theorem descended_iff (n : N) : n ∈ ρ.descended ↔ ρ.map n = 1 ⊗ₜ[A] n := Iff.rfl
 
 variable [Module.Flat A B]
@@ -78,14 +90,17 @@ def comparison : B ⊗[A] ρ.descended →ₗ[B] N :=
   multiply.comp (ρ.descended.subtype.baseChange B)
 
 omit [Module.Flat A B] in
+/-- The comparison sends a pure tensor to scalar multiplication. -/
 @[simp] theorem comparison_tmul (b : B) (n : ρ.descended) :
     ρ.comparison (b ⊗ₜ[A] n) = b • (n.val : N) := rfl
 
+/-- The coaction counit makes the constructed inverse a right inverse. -/
 theorem comparison_fromModule (n : N) : ρ.comparison (ρ.fromModule n) = n := by
   change multiply (A := A) ((ρ.descended.subtype.baseChange B) (ρ.fromModule n)) = n
   rw [ρ.subtype_fromModule]
   exact ρ.counit n
 
+/-- Flatness and the fixed-vector condition make the constructed inverse a left inverse. -/
 theorem fromModule_comparison (x : B ⊗[A] ρ.descended) : ρ.fromModule (ρ.comparison x) = x := by
   suffices ρ.fromModule.comp ρ.comparison = LinearMap.id from LinearMap.congr_fun this x
   apply AlgebraTensorModule.ext

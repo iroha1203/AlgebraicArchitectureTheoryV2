@@ -6,6 +6,13 @@ import Mathlib.RingTheory.Flat.FaithfullyFlat.Basic
 Scalar extension puts the two coefficients in their prescribed positions.
 The unit compares the original module with its fixed vectors, and maps
 commuting with the overlap restrict to the two equalizers.
+
+## Implementation notes
+
+The standard unit becomes an isomorphism after tensoring: its composite
+with the equalizer comparison is the identity. Faithful flatness then
+reflects bijectivity to the unit itself. This reuses the comparison
+already constructed from the coaction and gives the unit map directly.
 -/
 
 namespace SHIGURE.CoefficientDescent
@@ -27,6 +34,7 @@ def standardLinearIso :
   (TensorProduct.assoc A B M B).trans
     (TensorProduct.congr (LinearEquiv.refl A B) (TensorProduct.comm A M B))
 
+/-- The underlying reassociation moves the module past the second coefficient. -/
 @[simp] theorem standardLinearIso_tmul (a b : B) (x : M) :
     standardLinearIso (((a ⊗ₜ[A] x) ⊗ₜ[A] b)) = a ⊗ₜ[A] (b ⊗ₜ[A] x) := rfl
 
@@ -49,6 +57,7 @@ def standardOverlap : OverlapIso A B (B ⊗[A] M) :=
   { standardLinearIso.toAddEquiv with
     map_smul' := standardAction }
 
+/-- Compute the standard double-linear overlap on pure tensors. -/
 @[simp] theorem standardOverlap_tmul (a b : B) (x : M) :
     standardOverlap (((a ⊗ₜ[A] x) ⊗ₜ[A] b)) = a ⊗ₜ[A] (b ⊗ₜ[A] x) := rfl
 
@@ -140,6 +149,7 @@ def Compatible (f : N →ₗ[B] N') : Prop :=
   ∀ z : N ⊗[A] B, (f.restrictScalars A).lTensor B (D.overlap z) =
     D'.overlap ((f.restrictScalars A).rTensor B z)
 
+/-- Recover the entire overlap from the coaction and the second coefficient action. -/
 theorem overlap_tmul (n : N) (b : B) :
     D.overlap (n ⊗ₜ[A] b) = ((1 : B) ⊗ₜ[A] b) • D.coactionMap n := by
   have h := D.overlap.map_smul ((1 : B) ⊗ₜ[A] b) (n ⊗ₜ[A] (1 : B))
@@ -171,10 +181,12 @@ theorem compatible_iff_coaction (f : N →ₗ[B] N') :
     rw [D.overlap_tmul, D'.overlap_tmul, lTensor_right_action]
     exact congrArg (fun z : B ⊗[A] N' => ((1 : B) ⊗ₜ[A] b) • z) (coaction n)
 
+/-- The identity is compatible with the overlap. -/
 theorem compatible_id : D.Compatible D LinearMap.id := by
   intro z
   simp
 
+/-- Composition preserves compatibility with overlaps. -/
 theorem compatible_comp {f : N →ₗ[B] N'} {g : N' →ₗ[B] N''}
     (hf : D.Compatible D' f) (hg : D'.Compatible D'' g) :
     D.Compatible D'' (g.comp f) := by
@@ -192,6 +204,7 @@ def descendMap (f : N →ₗ[B] N') (compatible : D.Compatible D' f) :
     rw [← (D.compatible_iff_coaction D' f).1 compatible, held,
       LinearMap.baseChange_tmul, LinearMap.restrictScalars_apply]
 
+/-- The descended map has the original value on each fixed vector. -/
 theorem descendMap_apply (f : N →ₗ[B] N') (compatible : D.Compatible D' f)
     (n : D.toCoaction.descended) : (D.descendMap D' f compatible n).val = f n.val := rfl
 

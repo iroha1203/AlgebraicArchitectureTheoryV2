@@ -6,6 +6,13 @@ import Mathlib.CategoryTheory.Equivalence
 
 Scalar extension and the fixed-vector equalizer define inverse functors
 for the actual overlap data and all compatible linear maps.
+
+## Implementation notes
+
+The forward functor uses the same tensor objects and base-change maps
+as `ModuleCat.extendScalars` and equips each tensor object with the
+explicit overlap. The inverse functor and the two natural isomorphisms
+retain the fixed-vector and multiplication formulas of the appendix.
 -/
 
 namespace SHIGURE.CoefficientDescent
@@ -42,6 +49,7 @@ structure Hom (X Y : DescentModule A B) where
   hom : X.carrier →ₗ[B] Y.carrier
   compatible : X.datum.Compatible Y.datum hom
 
+/-- A compatible morphism is determined by its underlying linear map. -/
 @[ext] theorem Hom.ext {f g : Hom X Y} (same : f.hom = g.hom) : f = g := by
   cases f
   cases g
@@ -53,8 +61,10 @@ instance : Category (DescentModule A B) where
   id X := ⟨LinearMap.id, X.datum.compatible_id⟩
   comp {X Y Z} f g := ⟨g.hom.comp f.hom, X.datum.compatible_comp Y.datum Z.datum f.compatible g.compatible⟩
 
+/-- The underlying map of the identity is the linear identity. -/
 @[simp] theorem id_hom (X : DescentModule A B) : (𝟙 X : X ⟶ X).hom = LinearMap.id := rfl
 
+/-- The underlying map of a composite is the composite of the linear maps. -/
 @[simp] theorem comp_hom (f : X ⟶ Y) (g : Y ⟶ Z) : (f ≫ g).hom = g.hom.comp f.hom := rfl
 
 /-- Descent is the fixed-vector equalizer on objects and restriction on maps. -/

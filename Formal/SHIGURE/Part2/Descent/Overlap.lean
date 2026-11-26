@@ -5,6 +5,15 @@ import Mathlib.RingTheory.TensorProduct.Maps
 
 The two scalar actions define the overlap in (B.1). The triple cocycle
 produces the two identities for the coaction in (B.3).
+
+## Implementation notes
+
+The tensor product of the two scalar actions uses
+`Module.endTensorEndAlgHom` and records the position of each copy of the
+same algebra. The instance is local. A construction of a custom overlap
+can use `attribute [local instance] doubleModule` to select these actions.
+The three moves are compared as underlying `A`-linear maps, so the cocycle
+tests equality on the entire triple tensor using its actual factor order.
 -/
 
 namespace SHIGURE.CoefficientDescent
@@ -19,76 +28,16 @@ variable {A B X Y : Type u} [CommRing A] [CommRing B] [Algebra A B]
 variable [AddCommGroup X] [Module A X] [Module B X] [IsScalarTower A B X]
 variable [AddCommGroup Y] [Module A Y] [Module B Y] [IsScalarTower A B Y]
 
-/-- A scalar in the first copy of the algebra acts on the first tensor module. -/
-def leftAction : B →ₐ[A] Module.End A (X ⊗[A] Y) where
-  toFun b := ((Algebra.lsmul A A X : B →ₐ[A] Module.End A X) b).rTensor Y
-  map_zero' := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  map_one' := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  map_add' b c := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  map_mul' b c := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  commutes' a := by
-    apply TensorProduct.ext'
-    intro x y
-    simp [smul_tmul']
-
-/-- A scalar in the second copy of the algebra acts on the second tensor module. -/
-def rightAction : B →ₐ[A] Module.End A (X ⊗[A] Y) where
-  toFun b := ((Algebra.lsmul A A Y : B →ₐ[A] Module.End A Y) b).lTensor X
-  map_zero' := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  map_one' := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  map_add' b c := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  map_mul' b c := by
-    apply TensorProduct.ext'
-    intro x y
-    simp
-  commutes' a := by
-    apply TensorProduct.ext'
-    intro x y
-    simp [tmul_smul]
-
-omit [Module B Y] [IsScalarTower A B Y] in
-@[simp] theorem leftAction_tmul (b : B) (x : X) (y : Y) :
-    leftAction b (x ⊗ₜ[A] y) = (b • x) ⊗ₜ[A] y := rfl
-
-omit [Module B X] [IsScalarTower A B X] in
-@[simp] theorem rightAction_tmul (b : B) (x : X) (y : Y) :
-    rightAction b (x ⊗ₜ[A] y) = x ⊗ₜ[A] (b • y) := rfl
-
-/-- The two actions commute because they act on separate factors. -/
-theorem commute_actions (b c : B) :
-    Commute (leftAction (A := A) (X := X) (Y := Y) b) (rightAction c) := by
-  apply TensorProduct.ext'
-  intro x y
-  rfl
-
-/-- Use the commuting scalar actions to define the double coefficient action in (B.1). -/
+/-- The two algebra factors act by the tensor product of their scalar actions. -/
 def doubleAction : B ⊗[A] B →ₐ[A] Module.End A (X ⊗[A] Y) :=
-  Algebra.TensorProduct.lift leftAction rightAction commute_actions
+  (Module.endTensorEndAlgHom (R := A) (S := A) (A := A) (M := X) (N := Y)).comp
+    (Algebra.TensorProduct.map (Algebra.lsmul A A X : B →ₐ[A] Module.End A X)
+      (Algebra.lsmul A A Y : B →ₐ[A] Module.End A Y))
 
+/-- A pure coefficient tensor acts at the matching module positions. -/
 @[simp] theorem doubleAction_tmul (b c : B) (x : X) (y : Y) :
     doubleAction (b ⊗ₜ[A] c) (x ⊗ₜ[A] y) = (b • x) ⊗ₜ[A] (c • y) := by
-  rw [doubleAction, Algebra.TensorProduct.lift_tmul]
+  rw [doubleAction, AlgHom.comp_apply, Algebra.TensorProduct.map_tmul, Module.endTensorEndAlgHom_apply]
   rfl
 
 /-- The descent tensors carry the two actions at distinct tensor positions. -/
@@ -97,10 +46,12 @@ def doubleModule : Module (B ⊗[A] B) (X ⊗[A] Y) :=
 
 attribute [local instance] doubleModule
 
+/-- Compute the double scalar action on each factor of a pure tensor. -/
 theorem double_smul (b c : B) (x : X) (y : Y) :
     (b ⊗ₜ[A] c) • (x ⊗ₜ[A] y) = (b • x) ⊗ₜ[A] (c • y) :=
   doubleAction_tmul b c x y
 
+/-- Scalar restriction of the double action recovers the original base action. -/
 instance doubleTower : IsScalarTower A (B ⊗[A] B) (X ⊗[A] Y) :=
   IsScalarTower.of_algebraMap_smul (fun a m => by
     change doubleAction (algebraMap A (B ⊗[A] B) a) m = a • m
@@ -124,6 +75,7 @@ variable [AddCommGroup N] [Module A N] [Module B N] [IsScalarTower A B N]
 
 attribute [local instance] doubleModule
 
+/-- The overlap is linear over the tensor algebra with its two separate actions. -/
 abbrev OverlapIso (A B N : Type u) [CommRing A] [CommRing B] [Algebra A B]
     [AddCommGroup N] [Module A N] [Module B N] [IsScalarTower A B N] :=
   (N ⊗[A] B) ≃ₗ[B ⊗[A] B] (B ⊗[A] N)
@@ -171,6 +123,7 @@ def coactionMap : N →ₗ[B] B ⊗[A] N where
     | tmul c m => rw [double_smul, one_smul, smul_tmul']
     | add x y hx hy => rw [smul_add, smul_add, hx, hy]
 
+/-- The coaction evaluates the overlap with unit in the second coefficient. -/
 theorem coactionMap_apply (n : N) : D.coactionMap n = D.overlap (n ⊗ₜ[A] (1 : B)) := rfl
 
 private def appendUnit : (B ⊗[A] N) →ₗ[A] ((B ⊗[A] N) ⊗[A] B) :=
@@ -259,6 +212,7 @@ private theorem diagonal_overlap (z : N ⊗[A] B) :
   rw [factor, multiply_rightTensor, multiply_tmul, map_smul]
   rfl
 
+/-- Invertibility of the overlap makes the diagonal map surjective. -/
 theorem diagonal_surjective : Function.Surjective D.diagonal := by
   intro n
   obtain ⟨z, hz⟩ := D.overlap.surjective ((1 : B) ⊗ₜ[A] n)

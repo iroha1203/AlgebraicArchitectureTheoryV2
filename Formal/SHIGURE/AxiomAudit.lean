@@ -3945,11 +3945,6 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientDescent.Coaction.comparison_fromModule,
   CoefficientDescent.Coaction.fromModule_comparison,
   CoefficientDescent.Coaction.comparisonEquiv,
-  CoefficientDescent.leftAction,
-  CoefficientDescent.rightAction,
-  CoefficientDescent.leftAction_tmul,
-  CoefficientDescent.rightAction_tmul,
-  CoefficientDescent.commute_actions,
   CoefficientDescent.doubleAction,
   CoefficientDescent.doubleAction_tmul,
   CoefficientDescent.doubleModule,
@@ -4001,7 +3996,12 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientDescent.Examples.split_faithfullyFlat,
   CoefficientDescent.Examples.split_overlap,
   CoefficientDescent.Examples.split_unit_recovers,
-  CoefficientDescent.Examples.split_map_doubles
+  CoefficientDescent.Examples.split_map_doubles,
+  CoefficientDescent.Examples.split_comparison_fixed_vector,
+  CoefficientDescent.Examples.split_comparison_doubling_square,
+  CoefficientDescent.Examples.split_idempotent_incompatible,
+  CoefficientDescent.Examples.zero_coaction_fails,
+  CoefficientDescent.Examples.sign_reversed_overlap_fails
 ]
 
 end SHIGURE.AxiomAudit
