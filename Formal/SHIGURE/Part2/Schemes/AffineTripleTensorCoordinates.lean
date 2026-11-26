@@ -12,8 +12,8 @@ The three geometric projections of Appendix B.3 use the ring
 middle and last charts directly and identifies the three unit insertions
 in the order of the cocycle in Lemma B.4. A left-associated tensor
 presentation would require an additional associator on every projection.
-The first chart uses the swap of the first two positions and the transported
-scalar action, so the three coefficient expressions use one ring.
+The first chart stays in its scalar extension presentation. The cocycle
+calculation evaluates that chart on the generators given by the adjunction unit.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -42,15 +42,19 @@ private abbrev middleDouble : ModuleCat.{u} D₂ := ModuleCat.of D₂ (M ⊗[A] 
 /-- The B.4 double tensor module with its original module in the last slot. -/
 private abbrev lastDouble : ModuleCat.{u} D₂ := ModuleCat.of D₂ (B ⊗[A] M)
 
+/-- The middle B.4 coordinate has the scalar action of its inner tensor. -/
 private instance : Module A (middleDouble (A := A) M) :=
   inferInstanceAs (Module A (M ⊗[A] B))
 
+/-- The final B.4 coordinate has the scalar action of its inner tensor. -/
 private instance : Module A (lastDouble (A := A) M) :=
   inferInstanceAs (Module A (B ⊗[A] M))
 
+/-- The middle B.4 coordinate restricts scalars through the double tensor ring. -/
 private instance : IsScalarTower A D₂ (middleDouble (A := A) M) :=
   inferInstanceAs (IsScalarTower A D₂ (M ⊗[A] B))
 
+/-- The final B.4 coordinate restricts scalars through the double tensor ring. -/
 private instance : IsScalarTower A D₂ (lastDouble (A := A) M) :=
   inferInstanceAs (IsScalarTower A D₂ (B ⊗[A] M))
 
@@ -250,7 +254,9 @@ variable (D : AffineSingletonDescentData A B)
 local notation "ℳ" => affineDescentCoefficientModule D
 local notation "θ" => affineDescentCoefficientOverlap D
 
+/-- The coefficient module of the B.3 chart is an A-module by restriction along the base ring map. -/
 local instance : Module A ℳ := Module.compHom _ (algebraMap A B)
+/-- The restricted action and the original chart action form the scalar tower of B.4. -/
 local instance : IsScalarTower A B ℳ := IsScalarTower.of_algebraMap_smul (fun _ _ => rfl)
 
 set_option maxRecDepth 2048 in

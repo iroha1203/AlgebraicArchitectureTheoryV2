@@ -25,10 +25,9 @@ private theorem scalarExtension_hom_ext_at_unit {R T : Type u} [CommRing R] [Com
     (pointwise : ∀ x : M,
       a ((extendRestrictScalarsAdj f).unit.app M x) = b ((extendRestrictScalarsAdj f).unit.app M x)) :
     a = b := by
-  let adj := extendRestrictScalarsAdj f
-  apply (adj.homEquiv M N).injective
-  rw [adj.homEquiv_unit, adj.homEquiv_unit]
-  exact ModuleCat.hom_ext (LinearMap.ext pointwise)
+  apply ExtendScalars.hom_ext (f := f)
+  intro x
+  simpa only [extendRestrictScalarsAdj_unit_app_apply] using pointwise x
 
 section Coordinates
 
@@ -122,7 +121,9 @@ section GeometricDatum
 variable (D : AffineSingletonDescentData A B)
 
 local notation "ℳ" => affineDescentCoefficientModule D
+/-- The coefficient module of the B.3 chart is an A-module by restriction along the base ring map. -/
 local instance : Module A ℳ := Module.compHom _ (algebraMap A B)
+/-- The restricted action and the original chart action form the scalar tower of B.4. -/
 local instance : IsScalarTower A B ℳ := IsScalarTower.of_algebraMap_smul (fun _ _ => rfl)
 attribute [local instance] doubleModule
 
