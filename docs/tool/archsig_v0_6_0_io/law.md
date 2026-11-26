@@ -780,8 +780,9 @@ ShigureAtlas ::= "atlas" Name "{"
 `PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
 `+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
 `shigure path` の `mode` 省略時は `find`、`shigure transfer` の `require_full_domain` 省略時は `false` を既定とする。
+また、`shigure lift` の `etale_descent.base_invertible` 省略時は `true` を、`affine_allowed.finite_displacement`・`shigure artin` の `non_noetherian_infinite`・`shigure diagnostics` の `compare_codomain_regeneration`・`shigure atlas` の `compare_to_q` 省略時は `false` を既定とする。
 各 `rule`・`edge`・`subdivide`・移送 `step` における射本体 `ShigureMorphismClause` では、`comparison`・`identity`・インライン（`state_map` / `translate`）の混在を禁止する（`step` では `comparison` と `before`/`after` の混在も禁止する）。
-`shigure diagram` / `shigure path` / `shigure transfer` / `shigure family` / `shigure robustness` / `shigure chevalley` / `shigure observations` / `shigure lift` / `shigure artin` / `shigure diagnostics` / `shigure atlas` の各ブロックおよび `phase` ブロック内の句は上記の多重度制約のもと任意の順序で記述できる。
+`shigure diagram` / `shigure path` / `shigure transfer` / `shigure family` / `shigure robustness` / `shigure chevalley` / `shigure observations` / `shigure lift` / `shigure artin` / `shigure diagnostics` / `shigure atlas` の各ブロックおよび `phase` ブロック内では、異なる句の配置順は上記の多重度制約のもと任意であるが、`shigure transfer` の `step`、`shigure artin`（および `composite_stage`）の `aux_def`（先行定義のみ参照する依存順）、`shigure atlas` `protocol_sequence` の `before_step` / `after_step` は記述順が意味を持つ。
 
 静的検査と変換検査では次を強制する。
 
@@ -816,7 +817,7 @@ ShigureAtlas ::= "atlas" Name "{"
   `goodness existential` の空 `witness_vars`、`raw_sequence` 指定時の必須 `presentation`・フェーズ連結・`start_state` 網羅・終端/基準フェーズ観測不整合、
   `observe.cost` の負数または小数、`realization`・`candidate`・`observe`・`lift`・`artin`・`diagnostics`・`atlas` における `origin` 欠如および空 `ArchMap` origin ID 参照、
   `shigure lift` の `vars`/`base_point` 不整合・`ring_param` 長不一致・`explicit_table` 次元不整合・未宣言変数参照、
-  `shigure artin` の `aux_def` 循環依存・`max_order == 0`・`obs_vars` と `aux_def` の名前衝突、
+  `shigure artin` の `aux_def` の循環・逆順依存（後方参照）・`max_order == 0`・`obs_vars` と `aux_def` の名前衝突、
   `shigure diagnostics` の `static_readout` と `poly_readout` の排他違反・`nerve` の端点/面不整合・`collision` の未宣言 Law 参照、
   `shigure atlas` の単純有向グラフ端点・辺数（1 本以上必須）違反・`base_lambdas` 欠落・`refinement` の写像域外参照・`extended_language_check` の状態変数不一致、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
