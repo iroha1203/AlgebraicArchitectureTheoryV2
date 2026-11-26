@@ -187,7 +187,7 @@ def equalityContext : DeclarationContext paddedPresentation where
       | inl n =>
         have rule := Declaration.nonderived_dependencies (P := paddedPresentation) (.inl n)
           (fun h => LawRole.noConfusion h)
-        rw [rule] at used
+        rw [rule, Declaration.declaredLawSupport_of_none _ rfl] at used
         exact Declaration.law_notMem_lawBody _ _ used
       | inr n => exact kept n rfl
 
@@ -385,6 +385,8 @@ private theorem equalityDependencies (a b : Declaration equalityPresentation) :
       toName b ∈ Declaration.dependsOn paddedPresentation (.law (.inl ()))
     rw [Declaration.nonderived_dependencies n (fun h => LawRole.noConfusion h),
       Declaration.nonderived_dependencies (P := paddedPresentation) (.inl ()) paddedEquality_nonderived,
+      Declaration.declaredLawSupport_of_none (P := equalityPresentation) n rfl,
+      Declaration.declaredLawSupport_of_none (P := paddedPresentation) (.inl ()) rfl,
       equalityPresentation_law, paddedPresentation_equality_statement]
     change b ∈ Declaration.lawBody (P := equalityPresentation) literalLaw ↔
       toName b ∈ Declaration.lawBody (P := paddedPresentation) literalLaw

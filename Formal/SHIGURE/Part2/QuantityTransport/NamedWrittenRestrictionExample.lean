@@ -25,50 +25,42 @@ private def signature : Signature where
   partialArity p := nomatch p
   quantityArity _ := ⟨[()], ()⟩
 
-private def quantityTerm : Term signature [()] () := .app (.quantity false) (fun i => .var i)
-private def oneTerm : Term signature [()] () := .app (.total ()) (fun i => .var i)
 private def guard : Formula signature [()] := .atom (.rel () (fun i => i))
-private def equation : OrderedEquation signature := ⟨[()], (), guard, quantityTerm, oneTerm⟩
+private def law : Law signature := ⟨[()], guard, .truth⟩
+
+private def application : DeclaredApplication signature [()] :=
+  ⟨.total false, ⟨.var⟩⟩
 
 private def registeredEquation : WrittenCoefficientEquation ℤ signature [()] :=
-  (.quantity ⟨.total false, ⟨.var⟩⟩, .scalar 1)
+  (.quantity application, .scalar 1)
 
 private def primitive : PrimitivePresentation where
   signature := signature
-  laws := ⟨Unit, fun _ => equation.toLaw, fun _ => .required⟩
-  otherOrderedEquation _ := some ⟨equation.write, rfl⟩
+  laws := ⟨Unit, fun _ => law, fun _ => .required⟩
   derived _ impossible := by cases impossible
-  coefficientEquation k _ := by
-    classical
-    exact if same : k = ℤ then some (same.symm ▸ registeredEquation) else none
+  coefficientWriting _ := some ⟨ℤ, registeredEquation⟩
+
+private theorem coefficientEquation_eq (n : primitive.laws.LawName) :
+    primitive.coefficientEquation ℤ n = some registeredEquation := by
+  change (some ⟨ℤ, registeredEquation⟩ : Option (RegisteredCoefficientEquation signature [()])).bind
+    (·.atType ℤ) = _
+  simp
 
 private def written : NamedWrittenLaws ℤ primitive where
   quantities := Set.univ
   laws := Set.univ
-  Occurrence _ := Unit
-  application _ _ := ⟨⟨.total false, Set.mem_univ _⟩, ⟨.var⟩⟩
-  left _ := .quantity ()
-  right _ := .scalar 1
-  registered _ := by
-    simp [primitive, registeredEquation, Expression.rename]
-  supports _ _ _ := by
-    constructor
-    · apply Or.inr
-      change Declaration.ofOperation (P := primitive) (.quantity false) ∈
-        Declaration.formula (Formula.termEq quantityTerm oneTerm)
-      rw [Formula.termEq_eq_ex, Declaration.formula_ex, Declaration.formula_conj]
-      exact Or.inr (Or.inl (Selected.termReferences_subset_graph (P := primitive) quantityTerm
-        (Or.inl (Set.mem_singleton _))))
-    · intro s i
-      rw [Declaration.formulaSupport_eq]
-      apply Set.union_subset
-      · apply Declaration.sorts_cons_subset _ (Declaration.sorts_subset_lawBody (P := primitive) equation.toLaw)
-        exact Declaration.sorts_subset_lawBody (P := primitive) equation.toLaw
-          (Declaration.sort_mem_sorts (by
-            change s ∈ ([()] : List Unit)
-            cases s
-            exact List.mem_cons_self))
-      · exact Set.empty_subset _
+  hasEquation l := by simp [coefficientEquation_eq l.val.val]
+  hasQuantity _ _ _ := Set.mem_univ _
+
+private theorem equation_eq (l : written.laws) : written.equation l = registeredEquation := by
+  apply Option.some.inj
+  exact (Option.some_get (written.hasEquation l)).trans (coefficientEquation_eq l.val.val)
+
+private theorem used_eq (l : written.laws) (a : written.Occurrence l) : a.val = application := by
+  obtain ⟨a, used⟩ := a
+  change a ∈ (written.equation l).1.occurrences ∪ (written.equation l).2.occurrences at used
+  rw [equation_eq] at used
+  exact Set.mem_singleton_iff.mp (by simpa [registeredEquation, Expression.occurrences] using used)
 
 private abbrev Full := DeclarationContext.full primitive
 
@@ -84,11 +76,22 @@ private def retained : DeclarationContext primitive where
     | partialOp p => exact nomatch p
     | quantity q => obtain ⟨_, _, h⟩ := hd; cases h
     | law l =>
-      change Declaration.quantity true ∈
-        (Declaration.lawBody equation.toLaw ∪ (∅ : Set (Declaration primitive))) at hd
-      simp [Declaration.lawBody, equation, guard, OrderedEquation.toLaw, Formula.termEq_eq_ex,
-        quantityTerm, oneTerm, Term.graphAt, Term.graph, signature, Operation.arity, Formula.existsMany,
-        Formula.conjoin, Declaration.formula, Declaration.atomic, Declaration.sorts, Declaration.ofOperation] at hd
+      change Declaration.quantity true ∈ Declaration.declaredLawSupport (P := primitive) l ∪ ∅ at hd
+      rcases hd with (native | coefficient) | impossible
+      · change Declaration.quantity true ∈ Declaration.lawBody (P := primitive) law at native
+        simp [Declaration.lawBody, law, guard, Declaration.formula, Declaration.atomic,
+          Declaration.sorts] at native
+      · change (∃ a ∈ ({application} ∪ ∅ : Set _),
+          Declaration.quantity true ∈ Declaration.coefficientApplicationSupport (P := primitive) a) at coefficient
+        obtain ⟨a, used, support⟩ := coefficient
+        rw [Set.union_empty] at used
+        obtain rfl := Set.mem_singleton_iff.mp used
+        rcases support with named | ⟨s, i, arg⟩
+        · have same := Set.mem_singleton_iff.mp named
+          cases same
+        · simp [Declaration.formulaSupport, application, Term.graph_eq_graphAt, Term.graphAt,
+            Declaration.formula, Declaration.atomic, Declaration.sorts] at arg
+      · exact impossible
 
 private theorem inside : retained ≤ Full := fun _ _ => Set.mem_univ _
 
@@ -102,11 +105,19 @@ private def state : Structure signature where
 
 private def ambient : ContextStructure Full := ContextStructure.ofStructure Full state
 
-private def reading : written.GuardedInterpretation ambient :=
-  ⟨{ domain := fun _ => Set.univ
-     input := written.nativeInput ambient
-     value := fun _ e _ => ⟨e.val, Set.mem_univ _⟩
-     argument := fun _ _ _ _ _ => rfl }, fun _ => rfl⟩
+private def reading : written.GuardedInterpretation ambient where
+  domain _ := Set.univ
+  value l e a := by
+    obtain ⟨⟨a, support⟩, used⟩ := a
+    obtain rfl := used_eq l.val ⟨a, support⟩
+    exact ⟨e.val, Set.mem_univ _⟩
+  argument l _ a := by
+    intro s i
+    obtain ⟨⟨a, support⟩, used⟩ := a
+    obtain rfl := used_eq l.val ⟨a, support⟩
+    rfl
+
+private abbrev interpreted := reading.toInterpretation
 
 private def l : (written.selection Full).laws :=
   ⟨⟨⟨(), rfl⟩, Set.mem_univ _⟩, Set.mem_univ _⟩
@@ -129,26 +140,49 @@ theorem named_law_keeps_guard (U : DeclarationContext primitive) (l : (written.s
 /-- The same original declaration cannot register zero in place of the written coefficient one. -/
 theorem named_law_retains_literal :
     primitive.coefficientEquation ℤ () ≠ some (registeredEquation.1, .scalar 0) := by
-  simp [primitive, registeredEquation]
+  rw [coefficientEquation_eq]
+  simp [registeredEquation]
+
+/-- The coefficient equation keeps its quantity in every selected declaration context. -/
+theorem named_law_keeps_quantity (U : DeclarationContext primitive) (l : (written.selection U).laws) :
+    Declaration.quantity false ∈ U.declarations := by
+  apply Declaration.coefficientWritingSupport_subset_of_mem l.property
+    (show primitive.coefficientWriting l.val.val.val = some ⟨ℤ, registeredEquation⟩ from rfl)
+  exact ⟨application, Or.inl (Set.mem_singleton _), Or.inl (Set.mem_singleton _)⟩
+
+/-- The actual selected presentation retains the literal one in the original Law. -/
+theorem named_restriction_retains_literal (l : (written.selection retained).laws) :
+    ∃ left, (Selected.presentation retained).coefficientEquation ℤ
+      ⟨l.val.val.val, l.property⟩ = some (left, .scalar 1) := by
+  have reg : primitive.coefficientWriting l.val.val.val = some ⟨ℤ, registeredEquation⟩ := rfl
+  rw [PrimitivePresentation.coefficientEquation, Selected.presentation_coefficientWriting _ reg]
+  let name : retained.RetainedLaw := ⟨l.val.val.val, l.property⟩
+  let selected := Selected.selectCoefficientWriting name ⟨ℤ, registeredEquation⟩ reg
+  refine ⟨selected.2.1, ?_⟩
+  change (some selected).bind (·.atType ℤ) = some (selected.2.1, .scalar 1)
+  rw [Option.bind_some]
+  exact RegisteredCoefficientEquation.atType_mk ℤ (selected.2.1, .scalar 1)
 
 /-- The actual named scalar Law excludes zero even though the native carrier has one point. -/
 theorem named_law_rejects_zero :
-    ¬ reading.val.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
+    ¬ interpreted.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
   intro holds
   have eq := holds l ⟨point, inGuard⟩
-  change (0 : ℤ) = algebraMap ℤ ℤ 1 at eq
-  exact zero_ne_one (eq.trans (map_one _))
+  simp only [WrittenLaws.DeclarationSelection.Interpretation.presentation, NamedWrittenLaws.written,
+    Expression.eval_compile_const] at eq
+  rw [equation_eq l.val] at eq
+  simp [registeredEquation, Expression.eval] at eq
 
 /-- The retained equation uses the guard evaluated in the actual reduct. -/
 theorem named_restriction_reads_guard (l : (written.selection retained).laws) :
-    (reading.val.restrict (written.inclusion inside)).input l = written.nativeInput (ambient.restrict inside) l :=
+    (interpreted.restrict (written.inclusion inside)).input l = written.nativeInput (ambient.restrict inside) l :=
   written.restrict_input_eq_native reading inside l
 
 /-- The structural reduct forgetting the independent quantity commutes with arbitrary coefficient change. -/
 theorem named_restriction_baseChange (R : Type) [CommRing R] [Algebra ℤ R] :
-    let F := (reading.val.restrict (written.inclusion inside)).presentation
-    let ι := reading.val.lawMap (written.inclusion inside)
-    (baseChangeQuotient (R := ℤ) R reading.val.presentation.residualIdeal).symm.toAlgHom.comp
+    let F := (interpreted.restrict (written.inclusion inside)).presentation
+    let ι := interpreted.lawMap (written.inclusion inside)
+    (baseChangeQuotient (R := ℤ) R interpreted.presentation.residualIdeal).symm.toAlgHom.comp
         (ι.extendedEquationMap R) =
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := ℤ) R F.residualIdeal).symm.toAlgHom :=
   written.lawMap_baseChange reading inside R

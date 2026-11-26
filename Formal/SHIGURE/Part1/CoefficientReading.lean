@@ -342,7 +342,7 @@ def CoefficientScheme.holdsLaw {P : PrimitivePresentation.{u}} {U : DeclarationC
     {base : CoefficientRing.{u}} (scheme : CoefficientScheme U base) (R : CoefficientAlgebra base)
     (realization : scheme.Realization R) (name : P.laws.LawName)
     (kept : Declaration.law name ∈ U.declarations) : Prop :=
-  scheme.interpretLaw R realization (P.laws.statement name) (fun _ hd => U.closed kept (Or.inl hd))
+  scheme.interpretLaw R realization (P.laws.statement name) (fun _ used => U.closed kept (Or.inl (Or.inl used)))
 
 /-- The realized points form a set-valued model of the retained required Laws. -/
 def CoefficientScheme.IsPointModel {P : PrimitivePresentation.{u}} {U : DeclarationContext P}
@@ -350,7 +350,7 @@ def CoefficientScheme.IsPointModel {P : PrimitivePresentation.{u}} {U : Declarat
     (realization : scheme.Realization R) : Prop :=
   ∀ name : P.theory.LawName, ∀ kept : Declaration.law name.val ∈ U.declarations,
     (scheme.structureOf R realization).satisfies (P.theory.law name)
-      (fun _ used => U.closed kept (Or.inl used))
+      (fun _ used => U.closed kept (Or.inl (Or.inl used)))
 
 /-- The designated-point map on the sorts actually evaluated. -/
 abbrev CoefficientScheme.SelectedPointMap {P : PrimitivePresentation.{u}} {U : DeclarationContext P}

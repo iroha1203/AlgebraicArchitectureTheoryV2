@@ -67,6 +67,48 @@ theorem keepsDerived (name : U.RetainedLaw) (role : P.laws.role name.val = .deri
     Declaration.derivation (P.derived name.val role) ⊆ U.declarations :=
   (Declaration.derivation_subset_dependsOn name.val role).trans (U.closed name.property)
 
+private def selectCoefficientQuantity (q : Quantities.QuantityDeclaration P.signature)
+    (keep : Declaration.ofOperation q.operation ∈ U.declarations) :
+    Quantities.QuantityDeclaration (signature U) :=
+  match q with
+  | .total name => .total ⟨name, by simpa [Quantities.QuantityDeclaration.operation] using keep⟩
+  | .partialOp name => .partialOp ⟨name, by simpa [Quantities.QuantityDeclaration.operation] using keep⟩
+
+private theorem selectCoefficientQuantity_operation (q : Quantities.QuantityDeclaration P.signature)
+    (keep : Declaration.ofOperation q.operation ∈ U.declarations) :
+    operation q.operation keep = (selectCoefficientQuantity q keep).operation := by
+  cases q <;> rfl
+
+/-- Retype a named quantity and its exact argument terms in a selected signature. -/
+def selectCoefficientApplication {Γ : List P.signature.SortType}
+    (hΓ : Declaration.sorts Γ ⊆ U.declarations)
+    (a : Quantities.DeclaredApplication P.signature Γ)
+    (support : Declaration.coefficientApplicationSupport (P := P) a ⊆ U.declarations) :
+    Quantities.DeclaredApplication (signature U) (context Γ hΓ) := by
+  let kept := support (Or.inl (Set.mem_singleton _))
+  let hInputs := operationInputs a.1.operation kept
+  let q := selectCoefficientQuantity a.1 kept
+  have inputs : q.operation.arity.inputs = context a.1.operation.arity.inputs hInputs :=
+    operation_selectedInputs (selectCoefficientQuantity_operation a.1 kept)
+  let terms := selectSubstitution a.2 hInputs hΓ (fun i =>
+    (termReferences_subset_graph (a.2 i)).trans fun _ used =>
+      support (Or.inr ⟨_, i, Or.inr used⟩))
+  exact ⟨q, cast (congrArg (fun Δ => Substitution (signature U) Δ (context Γ hΓ)) inputs.symm) terms⟩
+
+/-- Retype both original coefficient expressions and retain their original coefficient type. -/
+def selectCoefficientWriting (name : U.RetainedLaw)
+    (writing : Quantities.RegisteredCoefficientEquation P.signature (P.laws.statement name.val).context)
+    (registered : P.coefficientWriting name.val = some writing) :
+    Quantities.RegisteredCoefficientEquation (signature U) ((laws U).statement name).context := by
+  let kept := Declaration.lawBody_subset_of_mem name.property
+  let hΓ := (Declaration.sorts_subset_lawBody (P.laws.statement name.val)).trans kept
+  let support := Declaration.coefficientWritingSupport_subset_of_mem name.property registered
+  exact ⟨writing.1,
+    writing.2.1.compile (fun a used =>
+      selectCoefficientApplication hΓ a (fun _ incoming => support ⟨a, Or.inl used, incoming⟩)),
+    writing.2.2.compile (fun a used =>
+      selectCoefficientApplication hΓ a (fun _ incoming => support ⟨a, Or.inr used, incoming⟩))⟩
+
 /-- The selected names and proofs form an ordinary primitive presentation. -/
 noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentation.{u} where
   signature := signature U
@@ -78,6 +120,26 @@ noncomputable def presentation (U : DeclarationContext P) : PrimitivePresentatio
     | none => none
     | some data => some (selectDomainInclusions p data attached)
   derived name role := selectDerivation (P.derived name.val role) (keepsDerived name role)
+  coefficientWriting name := match registered : P.coefficientWriting name.val with
+    | none => none
+    | some writing => some (selectCoefficientWriting name writing registered)
+
+/-- A selected Law carries the original coefficient writing in its selected signature. -/
+theorem presentation_coefficientWriting (name : U.RetainedLaw)
+    {writing : Quantities.RegisteredCoefficientEquation P.signature (P.laws.statement name.val).context}
+    (registered : P.coefficientWriting name.val = some writing) :
+    (presentation U).coefficientWriting name = some (selectCoefficientWriting name writing registered) := by
+  change (match found : P.coefficientWriting name.val with
+    | none => none
+    | some e => some (selectCoefficientWriting name e found)) = _
+  split
+  · rename_i absent
+    have impossible := absent.symm.trans registered
+    cases impossible
+  · rename_i original found
+    have equal : original = writing := Option.some.inj (found.symm.trans registered)
+    subst original
+    rfl
 
 /-- The restricted presentation uses the signature of the retained vocabulary. -/
 theorem presentation_signature : (presentation U).signature = signature U :=

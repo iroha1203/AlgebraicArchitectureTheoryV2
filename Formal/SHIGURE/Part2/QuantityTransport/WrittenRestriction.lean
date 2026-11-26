@@ -28,39 +28,6 @@ noncomputable section
 
 universe u
 
-namespace Expression
-
-variable {k J K N : Type u}
-
-/-- The variable occurrences that the expression actually uses. -/
-def occurrences : Expression k J → Set J
-  | .scalar _ => ∅
-  | .quantity a => {a}
-  | .add p q | .mul p q => p.occurrences ∪ q.occurrences
-  | .neg p => p.occurrences
-
-/-- Compile only the variables used by the expression. -/
-def compile : (p : Expression k J) → (∀ a ∈ p.occurrences, K) → Expression k K
-  | .scalar r, _ => .scalar r
-  | .quantity a, f => .quantity (f a (Set.mem_singleton _))
-  | .add p q, f => .add (p.compile fun a h => f a (Or.inl h)) (q.compile fun a h => f a (Or.inr h))
-  | .mul p q, f => .mul (p.compile fun a h => f a (Or.inl h)) (q.compile fun a h => f a (Or.inr h))
-  | .neg p, f => .neg (p.compile f)
-
-/-- All coefficient literals and operations are unchanged by compiling and then renaming. -/
-theorem rename_compile (p : Expression k J) (f : ∀ a ∈ p.occurrences, K) (g : K → N) :
-    (p.compile f).rename g = p.compile (fun a h => g (f a h)) := by
-  induction p <;> simp [compile, rename, *]
-  rfl
-
-/-- Compiling along a function defined on every occurrence is ordinary renaming. -/
-theorem compile_eq_rename (p : Expression k J) (f : J → K) :
-    p.compile (fun a _ => f a) = p.rename f := by
-  induction p <;> simp [compile, rename, *]
-  assumption
-
-end Expression
-
 namespace WrittenLaws
 
 variable {P : PrimitivePresentation.{u}} {k : Type u}

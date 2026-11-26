@@ -181,7 +181,7 @@ def left : DeclarationContext presentation where
     | law n =>
       exact true_not_referenced (by
         have support := Declaration.nonderived_dependencies (P := presentation) n (fun h => LawRole.noConfusion h)
-        rw [support] at used
+        rw [support, Declaration.declaredLawSupport_of_none _ rfl] at used
         exact used)
 
 /-- The right piece has the second operation and the same common sort. -/

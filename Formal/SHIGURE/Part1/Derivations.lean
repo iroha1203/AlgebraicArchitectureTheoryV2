@@ -261,9 +261,26 @@ structure PrimitivePresentation where
   /-- Each derived Law has a proof from the required Laws and structural graph axioms. -/
   derived (i : laws.LawName) : laws.role i = .derived →
     Derivation laws.toTheory (laws.statement i).input (laws.statement i).conclusion
-  /-- The original external coefficient equation registered at this Law and coefficient type. -/
-  coefficientEquation (k : Type u) (i : laws.LawName) :
-    Option (Quantities.WrittenCoefficientEquation k signature (laws.statement i).context) := none
+  /-- The original external coefficient equation and its coefficient type, when declared. -/
+  coefficientWriting (i : laws.LawName) :
+    Option (Quantities.RegisteredCoefficientEquation signature (laws.statement i).context) := none
+
+/-- Read the registered equation in the requested coefficient type. -/
+noncomputable def PrimitivePresentation.coefficientEquation (P : PrimitivePresentation.{u})
+    (k : Type u) (i : P.laws.LawName) :
+    Option (Quantities.WrittenCoefficientEquation k P.signature (P.laws.statement i).context) :=
+  (P.coefficientWriting i).bind (·.atType k)
+
+/-- A successful read fixes both the coefficient type and literal equation registered at that name. -/
+theorem PrimitivePresentation.coefficientWriting_of_equation {P : PrimitivePresentation.{u}} {k : Type u}
+    {i : P.laws.LawName} {w : Quantities.WrittenCoefficientEquation k P.signature (P.laws.statement i).context}
+    (read : P.coefficientEquation k i = some w) : P.coefficientWriting i = some ⟨k, w⟩ := by
+  unfold PrimitivePresentation.coefficientEquation at read
+  cases found : P.coefficientWriting i with
+  | none => simp [found] at read
+  | some e =>
+    have h : e.atType k = some w := by simpa only [found, Option.bind_some] using read
+    exact congrArg some (Quantities.RegisteredCoefficientEquation.eq_of_atType h)
 
 /-- The type of the separately written equality, available without a named ring certificate. -/
 abbrev NamedRingEquation.OtherOrdered {sig : Signature.{u}} {laws : LawDeclarations sig}

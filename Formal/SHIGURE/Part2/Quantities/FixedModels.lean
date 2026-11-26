@@ -39,6 +39,11 @@ theorem eval_map (f : R →ₐ[k] S) (q : L → R) (t : Expression k L) :
     t.eval (f ∘ q) = f (t.eval q) := by
   induction t <;> simp [eval, Function.comp_apply, *]
 
+/-- Evaluating with a constant assignment is independent of the names of compiled occurrences. -/
+theorem eval_compile_const {M : Type u} (t : Expression k L) (f : ∀ x ∈ t.occurrences, M) (r : R) :
+    (t.compile f).eval (fun _ => r) = t.eval (fun _ => r) := by
+  induction t <;> simp [compile, eval, *]
+
 /-- Renaming the inputs gives the same value as reading the original inputs through the renaming. -/
 theorem eval_rename {M : Type u} (f : L → M) (q : M → R) (t : Expression k L) :
     (t.rename f).eval q = t.eval (q ∘ f) := by

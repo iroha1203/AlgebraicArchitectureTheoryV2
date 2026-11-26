@@ -181,15 +181,30 @@ theorem lawContext_le_iff {U : DeclarationContext P} (law : Law P.signature) :
     lawContext law ≤ U ↔ lawBody law ⊆ U.declarations :=
   DeclarationContext.closure_le_iff
 
-/-- A declared Law in a context has its entire written support in that context. -/
-theorem lawBody_subset_of_mem {U : DeclarationContext P} {name : P.laws.LawName}
+/-- A retained declaration keeps both forms of its original written support. -/
+theorem declaredLawSupport_subset_of_mem {U : DeclarationContext P} {name : P.laws.LawName}
     (kept : Declaration.law name ∈ U.declarations) :
-    lawBody (P.laws.statement name) ⊆ U.declarations := by
+    declaredLawSupport name ⊆ U.declarations := by
   refine Set.Subset.trans ?_ (U.closed kept)
   by_cases role : P.laws.role name = .derived
   · rw [derived_dependencies name role]
     exact Set.subset_union_left
   · rw [nonderived_dependencies name role]
+
+/-- A declared Law in a context has its entire native written support in that context. -/
+theorem lawBody_subset_of_mem {U : DeclarationContext P} {name : P.laws.LawName}
+    (kept : Declaration.law name ∈ U.declarations) :
+    lawBody (P.laws.statement name) ⊆ U.declarations :=
+  Set.subset_union_left.trans (declaredLawSupport_subset_of_mem kept)
+
+/-- A retained Law keeps the references of its registered coefficient equation. -/
+theorem coefficientWritingSupport_subset_of_mem {U : DeclarationContext P} {name : P.laws.LawName}
+    (kept : Declaration.law name ∈ U.declarations)
+    {e : Quantities.RegisteredCoefficientEquation P.signature (P.laws.statement name).context}
+    (registered : P.coefficientWriting name = some e) : coefficientWritingSupport (P := P) e ⊆ U.declarations := by
+  have support : coefficientEquationSupport (P := P) name ⊆ U.declarations :=
+    Set.subset_union_right.trans (declaredLawSupport_subset_of_mem kept)
+  simpa [coefficientEquationSupport, registered] using support
 
 end Declaration
 
