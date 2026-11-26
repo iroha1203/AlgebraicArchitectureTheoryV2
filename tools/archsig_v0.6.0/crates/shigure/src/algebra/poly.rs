@@ -504,9 +504,7 @@ impl<C: RingCoeff> Poly<C> {
     /// 各変数 `x_i` へ多項式 `replacements[i]` を同時代入する（出力変数数は `replacements` の変数数）。
     pub fn substitute(&self, replacements: &[Self]) -> Result<Self, AlgebraError> {
         self.check_arity(replacements.len())?;
-        let out_vars = replacements
-            .first()
-            .map_or(self.num_vars, |p| p.num_vars());
+        let out_vars = replacements.first().map_or(self.num_vars, |p| p.num_vars());
         for p in replacements {
             if p.num_vars() != out_vars {
                 return Err(AlgebraError::ArityMismatch {

@@ -91,8 +91,9 @@ pub(crate) fn compute_relative_cone_z(
         .collect();
     let mut reading_polys = Vec::with_capacity(m);
     for ov in &rel.obs_vars {
-        reading_polys
-            .push(Poly::from_expr_z(rm_map[ov.as_str()], bindings).map_err(map_lift_algebra_error)?);
+        reading_polys.push(
+            Poly::from_expr_z(rm_map[ov.as_str()], bindings).map_err(map_lift_algebra_error)?,
+        );
     }
 
     let obs_lift_rp =
@@ -207,7 +208,9 @@ pub(crate) fn compute_relative_cone_z(
             let z_c = BigInt::zero();
             let mut grad_rr = vec![vec![z_c.clone(); n * dm]; dm];
             for j in 0..n {
-                let dp = rr_poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
+                let dp = rr_poly
+                    .partial_derivative(j)
+                    .map_err(map_lift_algebra_error)?;
                 let val_r = ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
@@ -641,7 +644,9 @@ fn solve_context_local_lift_z(
                 .map_err(map_lift_algebra_error)?;
             let mut row_block = vec![vec![z.clone(); num_cols]; dm];
             for (c_pos, &j) in ctx_var_indices.iter().enumerate() {
-                let dp = rp_poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
+                let dp = rp_poly
+                    .partial_derivative(j)
+                    .map_err(map_lift_algebra_error)?;
                 let val_r = ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
@@ -720,8 +725,10 @@ fn align_ambient_to_obs_z(
             particular,
             kernel_basis,
             ..
-        } => Some((apply_m_shift(ext, ambient_lift_rp, &particular).ok()?, kernel_basis)),
+        } => Some((
+            apply_m_shift(ext, ambient_lift_rp, &particular).ok()?,
+            kernel_basis,
+        )),
         AffineSolutionZ::Inconsistent { .. } => None,
     }
 }
-

@@ -347,7 +347,8 @@ impl<E: InputError> Parser<E> {
             return self.p4_syntax_err(span, "`shigure lift` requires a `domain` clause");
         };
         if origins.is_empty() {
-            return self.p4_syntax_err(span, "`shigure lift` requires at least one `origin` clause");
+            return self
+                .p4_syntax_err(span, "`shigure lift` requires at least one `origin` clause");
         }
         let Some(variables) = variables else {
             return self.p4_syntax_err(span, "`shigure lift` requires a `vars` clause");
@@ -503,7 +504,8 @@ impl<E: InputError> Parser<E> {
                 if reading_map.is_some() {
                     return self.err("duplicate `reading_map` in `relative_reading`");
                 }
-                reading_map = Some(self.parse_p4_poly_assign_block("`relative_reading` reading_map")?);
+                reading_map =
+                    Some(self.parse_p4_poly_assign_block("`relative_reading` reading_map")?);
             } else if self.eat_kw("designated_obs_lift") {
                 if designated_obs_lift.is_some() {
                     return self.err("duplicate `designated_obs_lift` in `relative_reading`");
@@ -590,7 +592,8 @@ impl<E: InputError> Parser<E> {
                         self.expect_sym(";")?;
                         seen_laws = true;
                     } else if self.eat_kw("obs") {
-                        observations.push(self.parse_shigure_named_poly("`declaration_cover` obs")?);
+                        observations
+                            .push(self.parse_shigure_named_poly("`declaration_cover` obs")?);
                     } else {
                         self.reject_conclusion_or_unknown("`declaration_cover` context")?;
                     }
@@ -928,7 +931,10 @@ impl<E: InputError> Parser<E> {
             return self.p4_syntax_err(span, "`shigure artin` requires a `domain` clause");
         };
         if origins.is_empty() {
-            return self.p4_syntax_err(span, "`shigure artin` requires at least one `origin` clause");
+            return self.p4_syntax_err(
+                span,
+                "`shigure artin` requires at least one `origin` clause",
+            );
         }
         let Some(obs_vars) = obs_vars else {
             return self.p4_syntax_err(span, "`shigure artin` requires an `obs_vars` clause");

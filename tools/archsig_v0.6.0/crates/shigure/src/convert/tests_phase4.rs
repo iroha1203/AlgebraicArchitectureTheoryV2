@@ -3,9 +3,7 @@
 use super::*;
 use crate::ir::provenance::OriginKind;
 use crate::ir::result::{SilenceReason, Verdict};
-use crate::solver::{
-    solve_artin_task, solve_atlas_task, solve_diagnostics_task, solve_lift_task,
-};
+use crate::solver::{solve_artin_task, solve_atlas_task, solve_diagnostics_task, solve_lift_task};
 use archsig_common::control::Control;
 use archsig_input::definition::check_definitions;
 use archsig_input::input::{CheckedInputs, InputSources, check_inputs};
@@ -144,24 +142,30 @@ fn round_trip_lift_h4_h2_c9_and_observed_missing() {
     let checked = ShigureConverter::for_task("H4Lift")
         .convert_lift(&inputs)
         .unwrap();
-    assert!(checked
-        .spec()
-        .provenance
-        .origins
-        .iter()
-        .any(|o| o.kind == OriginKind::StaticAnalysis));
-    assert!(checked
-        .spec()
-        .provenance
-        .origins
-        .iter()
-        .any(|o| o.kind == OriginKind::RuntimeObservation));
-    assert!(checked
-        .spec()
-        .provenance
-        .origins
-        .iter()
-        .any(|o| o.kind == OriginKind::LlmCandidate));
+    assert!(
+        checked
+            .spec()
+            .provenance
+            .origins
+            .iter()
+            .any(|o| o.kind == OriginKind::StaticAnalysis)
+    );
+    assert!(
+        checked
+            .spec()
+            .provenance
+            .origins
+            .iter()
+            .any(|o| o.kind == OriginKind::RuntimeObservation)
+    );
+    assert!(
+        checked
+            .spec()
+            .provenance
+            .origins
+            .iter()
+            .any(|o| o.kind == OriginKind::LlmCandidate)
+    );
     let out = solve_lift_task(&checked);
     assert_eq!(out.verdict, Verdict::Refuted);
     let detail = out.lift.unwrap();
@@ -489,7 +493,11 @@ fn round_trip_atlas_w3_h12_and_observed_missing() {
     assert!(r.designated_kappa_preserved);
     assert!(r.repair_fiber_isomorphism_verified);
     assert_eq!(r.eval_condition_fiber_preserved, Some(true));
-    assert!(!r.forgetful_reading_contrast.unwrap().condition_descends_to_coarse);
+    assert!(
+        !r.forgetful_reading_contrast
+            .unwrap()
+            .condition_descends_to_coarse
+    );
     let ext = a.extended_language_non_transport.unwrap();
     assert!(ext.all_atomic_ops_commute);
     assert!(!ext.all_extended_checks_preserved);

@@ -14,13 +14,13 @@ use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, SilenceReason};
 use crate::ir::result_phase4::{LiftOutcomeDetail, RedundantComparisonResult};
 use crate::ir::term::CoeffDomain;
+use crate::solver::lift_affine::compute_affine_repair_z;
 use crate::solver::lift_common::{
     apply_m_shift, compute_etale_descent, concat_vecs, conv_cube, conv_mat, conv_vec,
     derive_lift_verdict, eval_ring_params_generic, eval_var_coords_generic, expand_named_polys,
     format_algebra_label, format_m_tuple, format_var_map, lift_outcome, lift_undetermined,
     lit_to_z, map_lift_algebra_error, reevaluate_laws_in_rp, verify_base_laws, write_block,
 };
-use crate::solver::lift_affine::compute_affine_repair_z;
 use crate::solver::lift_z_ext::{
     compute_declaration_cover_z, compute_raw_cech_z, compute_relative_cone_z, r_action_matrix_z,
 };
@@ -351,7 +351,9 @@ pub(crate) fn solve_lift_z(
     let relative_cone_result = relative_cone.map(|rc| rc.result);
     let verdict = derive_lift_verdict(
         core.lift_exists,
-        relative_cone_result.as_ref().map(|r| r.relative_lift_exists),
+        relative_cone_result
+            .as_ref()
+            .map(|r| r.relative_lift_exists),
         affine_repair.as_ref().map(|a| a.repair_exists),
         etale_descent
             .as_ref()
@@ -386,7 +388,14 @@ pub(crate) fn solve_lift_z(
         etale_descent,
     };
 
-    lift_outcome(verdict, coeff_domain, point_domain, checks, provenance, detail)
+    lift_outcome(
+        verdict,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+        detail,
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -499,7 +508,10 @@ fn run_core_lift_z(
             apply_m_shift(ext, ambient_lift_rp, &delta).map_err(map_lift_algebra_error)?;
         let reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
             .map_err(map_lift_algebra_error)?;
-        (Some(format_var_map(variables, &shifted, ext.r_prime())), Some(reeval))
+        (
+            Some(format_var_map(variables, &shifted, ext.r_prime())),
+            Some(reeval),
+        )
     } else {
         (None, None)
     };
@@ -523,7 +535,6 @@ fn run_core_lift_z(
         reevaluation,
     })
 }
-
 
 fn resolve_ambient_lift_z(
     spec: &LiftTaskSpec,

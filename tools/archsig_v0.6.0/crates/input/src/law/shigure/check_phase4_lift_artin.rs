@@ -1,6 +1,8 @@
 //! `shigure lift`・`shigure artin` 宣言の静的意味検査および Phase 4 共通検査ヘルパ（AC2）。
 
-use super::ast_phase3::{RawMemberCoordValue, RawOriginRef, ShigureMemberCoordValue, ShigureOriginRef};
+use super::ast_phase3::{
+    RawMemberCoordValue, RawOriginRef, ShigureMemberCoordValue, ShigureOriginRef,
+};
 use super::ast_phase4_lift_artin::*;
 use super::check::{
     CResult, LiteralDomainRule, check_coeff_domain, check_poly_literals, check_poly_vars,
@@ -88,7 +90,10 @@ pub(super) fn check_p4_unique_idents<E: InputError>(
     let mut out = Vec::with_capacity(items.len());
     for id in items {
         if !seen.insert(id.name.as_str()) {
-            return duplicate(id.span, format!("duplicate {kind} `{}` in {context}", id.name));
+            return duplicate(
+                id.span,
+                format!("duplicate {kind} `{}` in {context}", id.name),
+            );
         }
         out.push(id.name.clone());
     }
@@ -179,7 +184,10 @@ pub(super) fn check_p4_coord_scalar_map<E: InputError>(
             return reference(k.span, format!("unknown {kind} `{}` in {context}", k.name));
         }
         if !seen.insert(k.name.as_str()) {
-            return duplicate(k.span, format!("duplicate {kind} `{}` in {context}", k.name));
+            return duplicate(
+                k.span,
+                format!("duplicate {kind} `{}` in {context}", k.name),
+            );
         }
         let checked = check_p4_coord_value(val, coeff_domain, r_idx, checker, *v_span, control)?;
         out.push((k.name.clone(), checked));
@@ -212,7 +220,10 @@ pub(super) fn check_p4_coord_vec_map<E: InputError>(
             return reference(k.span, format!("unknown {kind} `{}` in {context}", k.name));
         }
         if !seen.insert(k.name.as_str()) {
-            return duplicate(k.span, format!("duplicate {kind} `{}` in {context}", k.name));
+            return duplicate(
+                k.span,
+                format!("duplicate {kind} `{}` in {context}", k.name),
+            );
         }
         let checked = check_p4_coord_vec(
             vals,
@@ -252,9 +263,17 @@ pub(super) fn check_p4_poly_assign_map<E: InputError>(
             return reference(k.span, format!("unknown {kind} `{}` in {context}", k.name));
         }
         if !seen.insert(k.name.as_str()) {
-            return duplicate(k.span, format!("duplicate {kind} `{}` in {context}", k.name));
+            return duplicate(
+                k.span,
+                format!("duplicate {kind} `{}` in {context}", k.name),
+            );
         }
-        check_poly_literals(expr, LiteralDomainRule::Exact(coeff_domain), *v_span, control)?;
+        check_poly_literals(
+            expr,
+            LiteralDomainRule::Exact(coeff_domain),
+            *v_span,
+            control,
+        )?;
         check_poly_vars(
             expr,
             allowed_rhs_vars,
@@ -315,14 +334,21 @@ fn check_square_zero_spec<E: InputError>(
             let rp_dim = rpb.len();
             let r_dim = rbb.len();
             if rp_dim == 0 || r_dim == 0 {
-                return p4_type_err(*span, format!("explicit_table bases must be non-empty in {context}"));
+                return p4_type_err(
+                    *span,
+                    format!("explicit_table bases must be non-empty in {context}"),
+                );
             }
             if r_prime_one.len() != rp_dim
                 || r_base_one.len() != r_dim
                 || r_prime_mul.len() != rp_dim
-                || r_prime_mul.iter().any(|m| m.len() != rp_dim || m.iter().any(|v| v.len() != rp_dim))
+                || r_prime_mul
+                    .iter()
+                    .any(|m| m.len() != rp_dim || m.iter().any(|v| v.len() != rp_dim))
                 || r_base_mul.len() != r_dim
-                || r_base_mul.iter().any(|m| m.len() != r_dim || m.iter().any(|v| v.len() != r_dim))
+                || r_base_mul
+                    .iter()
+                    .any(|m| m.len() != r_dim || m.iter().any(|v| v.len() != r_dim))
                 || projection.len() != r_dim
                 || projection.iter().any(|row| row.len() != rp_dim)
             {
@@ -380,7 +406,10 @@ fn check_lift<E: InputError>(
         if var_set.contains(rp.name.name.as_str()) || !param_set.insert(rp.name.name.as_str()) {
             return duplicate(
                 rp.name.span,
-                format!("ring_param `{}` collides with variable or duplicate in {ctx}", rp.name.name),
+                format!(
+                    "ring_param `{}` collides with variable or duplicate in {ctx}",
+                    rp.name.name
+                ),
             );
         }
         let val = check_p4_coord_vec(
@@ -446,8 +475,11 @@ fn check_lift<E: InputError>(
         .relative_reading
         .as_ref()
         .map(|rel| {
-            let obs_vars =
-                check_p4_unique_idents(&rel.obs_vars, "obs_var", &format!("{ctx} relative_reading"))?;
+            let obs_vars = check_p4_unique_idents(
+                &rel.obs_vars,
+                "obs_var",
+                &format!("{ctx} relative_reading"),
+            )?;
             for ov in &obs_vars {
                 if param_set.contains(ov.as_str()) {
                     return duplicate(
@@ -618,7 +650,10 @@ fn check_lift<E: InputError>(
             let av = check_p4_unique_idents(&aff.allowed_vars, "allowed_var", &ctx)?;
             for v in &av {
                 if !var_set.contains(v.as_str()) {
-                    return reference(aff.span, format!("unknown variable `{v}` in affine_allowed"));
+                    return reference(
+                        aff.span,
+                        format!("unknown variable `{v}` in affine_allowed"),
+                    );
                 }
             }
             Ok::<_, E>(ShigureAffineAllowed {
@@ -733,7 +768,10 @@ fn check_artin<E: InputError>(
         if available.contains(aux.name.name.as_str()) {
             return duplicate(
                 aux.name.span,
-                format!("aux_def `{}` collides with earlier variable in {ctx}", aux.name.name),
+                format!(
+                    "aux_def `{}` collides with earlier variable in {ctx}",
+                    aux.name.name
+                ),
             );
         }
         check_poly_literals(
@@ -746,7 +784,10 @@ fn check_artin<E: InputError>(
             &aux.expr,
             &available,
             aux.span,
-            &format!("{ctx} aux_def `{}` (acyclic dependency order)", aux.name.name),
+            &format!(
+                "{ctx} aux_def `{}` (acyclic dependency order)",
+                aux.name.name
+            ),
             control,
         )?;
         available.insert(aux.name.name.as_str());

@@ -391,11 +391,7 @@ fn poly_content_z(poly: &Poly<BigInt>) -> BigInt {
     for c in poly.terms().values() {
         g = g.gcd(c);
     }
-    if g.is_zero() {
-        BigInt::one()
-    } else {
-        g
-    }
+    if g.is_zero() { BigInt::one() } else { g }
 }
 
 fn primitive_part_z(poly: &Poly<BigInt>) -> (BigInt, Poly<BigInt>) {

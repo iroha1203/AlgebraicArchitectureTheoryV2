@@ -3,7 +3,7 @@
 use crate::ir::atlas::{AtlasRefinementSpec, AtlasTaskSpec, GraphEdgeSpec, validate_atlas_task};
 use crate::ir::diagnostics::{ChartSupportSpec, NerveEdgeSpec, SupportedNerveSpec};
 use crate::ir::provenance::{MathClause, OriginKind, Provenance, SourceRef};
-use crate::ir::result::Verdict;
+use crate::ir::result::{SilenceReason, Verdict};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
 use crate::solver::solve_atlas_task;
 
@@ -44,7 +44,11 @@ fn base_triangle_task(refinement: AtlasRefinementSpec) -> AtlasTaskSpec {
             },
         ],
         mu: q(1),
-        base_lambdas: vec![("v0".into(), q(0)), ("v1".into(), q(0)), ("v2".into(), q(0))],
+        base_lambdas: vec![
+            ("v0".into(), q(0)),
+            ("v1".into(), q(0)),
+            ("v2".into(), q(0)),
+        ],
         allowed_vertices: vec!["v0".into(), "v1".into(), "v2".into()],
         allowed_edges: Vec::new(),
         compare_to_q: false,
@@ -408,7 +412,11 @@ fn refinement_rejects_non_pullback_internal_offset_even_when_fibers_empty() {
             },
         ],
         mu: z(1),
-        base_lambdas: vec![("v0".into(), z(0)), ("v1".into(), z(0)), ("v2".into(), z(0))],
+        base_lambdas: vec![
+            ("v0".into(), z(0)),
+            ("v1".into(), z(0)),
+            ("v2".into(), z(0)),
+        ],
         allowed_vertices: Vec::new(),
         allowed_edges: Vec::new(),
         compare_to_q: false,
@@ -424,4 +432,137 @@ fn refinement_rejects_non_pullback_internal_offset_even_when_fibers_empty() {
     assert!(r.designated_o_preserved);
     assert!(!r.repair_fiber_isomorphism_verified);
     assert!(!r.inverse_reconstruction_verified);
+}
+
+#[test]
+fn atlas_two_cycle_graph_and_silence_disconnected_or_unobserved() {
+    // 1. 非三角形一般グラフ（4 頂点 5 辺 => |E|-|V|+1 = 2 の 2-chord グラフ）
+    let task_2c = validate_atlas_task(AtlasTaskSpec {
+        name: "two_cycles".into(),
+        coeff_domain: CoeffDomain::Q,
+        vertices: vec!["v0".into(), "v1".into(), "v2".into(), "v3".into()],
+        edges: vec![
+            GraphEdgeSpec {
+                name: "e01".into(),
+                from: "v0".into(),
+                to: "v1".into(),
+                offset: q(1),
+            },
+            GraphEdgeSpec {
+                name: "e12".into(),
+                from: "v1".into(),
+                to: "v2".into(),
+                offset: q(2),
+            },
+            GraphEdgeSpec {
+                name: "e20".into(),
+                from: "v2".into(),
+                to: "v0".into(),
+                offset: q(-3),
+            },
+            GraphEdgeSpec {
+                name: "e03".into(),
+                from: "v0".into(),
+                to: "v3".into(),
+                offset: q(4),
+            },
+            GraphEdgeSpec {
+                name: "e32".into(),
+                from: "v3".into(),
+                to: "v2".into(),
+                offset: q(-1),
+            },
+        ],
+        mu: q(1),
+        base_lambdas: vec![
+            ("v0".into(), q(0)),
+            ("v1".into(), q(0)),
+            ("v2".into(), q(0)),
+            ("v3".into(), q(0)),
+        ],
+        allowed_vertices: vec!["v0".into(), "v1".into(), "v2".into(), "v3".into()],
+        allowed_edges: vec!["e20".into(), "e32".into()],
+        compare_to_q: false,
+        refinement: None,
+        extended_language_check: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    let out_2c = solve_atlas_task(&task_2c);
+    assert_eq!(out_2c.verdict, Verdict::Established);
+    let a2c = out_2c.atlas.unwrap();
+    assert_eq!(a2c.diagnostic_h1_rank, 2);
+    assert_eq!(a2c.chord_edges.len(), 2);
+    assert!(a2c.o_b_is_zero);
+    assert!(a2c.saga_sign_commutes_verified);
+    assert!(a2c.primitive_relation_connected_verified);
+    assert!(a2c.unconstrained_reevaluation.as_ref().unwrap().matched);
+
+    // 2. 非連結グラフ -> DisconnectedGraphOutOfScope 判断不能
+    let task_disc = validate_atlas_task(AtlasTaskSpec {
+        name: "disconnected".into(),
+        coeff_domain: CoeffDomain::Q,
+        vertices: vec!["v0".into(), "v1".into(), "v2".into(), "v3".into()],
+        edges: vec![
+            GraphEdgeSpec {
+                name: "e01".into(),
+                from: "v0".into(),
+                to: "v1".into(),
+                offset: q(0),
+            },
+            GraphEdgeSpec {
+                name: "e23".into(),
+                from: "v2".into(),
+                to: "v3".into(),
+                offset: q(0),
+            },
+        ],
+        mu: q(1),
+        base_lambdas: vec![
+            ("v0".into(), q(0)),
+            ("v1".into(), q(0)),
+            ("v2".into(), q(0)),
+            ("v3".into(), q(0)),
+        ],
+        allowed_vertices: Vec::new(),
+        allowed_edges: Vec::new(),
+        compare_to_q: false,
+        refinement: None,
+        extended_language_check: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_atlas_task(&task_disc).verdict,
+        Verdict::Undetermined(SilenceReason::DisconnectedGraphOutOfScope { .. })
+    ));
+
+    // 3. 未観測 offset -> UnobservedDependency 判断不能
+    let task_unobs = validate_atlas_task(AtlasTaskSpec {
+        name: "unobs_atlas".into(),
+        coeff_domain: CoeffDomain::Q,
+        vertices: vec!["v0".into(), "v1".into()],
+        edges: vec![GraphEdgeSpec {
+            name: "e01".into(),
+            from: "v0".into(),
+            to: "v1".into(),
+            offset: PolyExpr::Unobserved {
+                slot: "missing_b".into(),
+                origin: Some(SourceRef::new("u", OriginKind::LlmCandidate)),
+            },
+        }],
+        mu: q(1),
+        base_lambdas: vec![("v0".into(), q(0)), ("v1".into(), q(0))],
+        allowed_vertices: Vec::new(),
+        allowed_edges: Vec::new(),
+        compare_to_q: false,
+        refinement: None,
+        extended_language_check: None,
+        provenance: prov(),
+    })
+    .unwrap();
+    assert!(matches!(
+        solve_atlas_task(&task_unobs).verdict,
+        Verdict::Undetermined(SilenceReason::UnobservedDependency { .. })
+    ));
 }

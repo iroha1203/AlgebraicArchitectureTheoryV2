@@ -208,10 +208,7 @@ fn f1_h10_raw_read_diff_is_ambient_lift_invariant_without_declaration_cover() {
                     relative_reading: Some(RelativeReadingSpec {
                         obs_vars: vec!["delta".into(), "mu".into()],
                         obs_laws: vec![],
-                        reading_map: vec![
-                            ("delta".into(), sv("delta")),
-                            ("mu".into(), sv("mu")),
-                        ],
+                        reading_map: vec![("delta".into(), sv("delta")), ("mu".into(), sv("mu"))],
                         designated_obs_lift: vec![
                             (
                                 "delta".into(),
@@ -391,7 +388,10 @@ fn f4_declaration_cover_detects_unclosed_law_variable_reference() {
         coeff_domain: CoeffDomain::Q,
         variables: vec!["X".into(), "Y".into(), "T".into()],
         ring_params: vec![],
-        laws: vec![np("sum_law", sub(sv("T"), PolyExpr::Add(Box::new(sv("X")), Box::new(sv("Y")))))],
+        laws: vec![np(
+            "sum_law",
+            sub(sv("T"), PolyExpr::Add(Box::new(sv("X")), Box::new(sv("Y")))),
+        )],
         extension: SquareZeroSpec::TruncatedPoly {
             var_name: "eps".into(),
             base_degree: 0,

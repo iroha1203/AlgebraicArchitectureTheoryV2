@@ -74,7 +74,10 @@ fn artin_h4_universal_first_obstruction_and_f4_nu1_vs_nu_ge_2() {
     let out_h4 = solve_artin_task(&task_h4);
     assert_eq!(out_h4.verdict, Verdict::Refuted);
     let d4 = out_h4.artin.unwrap();
-    assert_eq!(d4.test_ring_family, "all_local_artin_algebras_universal_quotient");
+    assert_eq!(
+        d4.test_ring_family,
+        "all_local_artin_algebras_universal_quotient"
+    );
     assert!(d4.is_free_observation_chart);
     assert_eq!(d4.syntactic_degree_bound, Some(2));
     assert_eq!(d4.detection_order_nu, Some(2));
@@ -263,7 +266,11 @@ fn artin_f6_composition_min_law_parametric() {
             provenance: prov(vec![MathClause::G141F6]),
         })
         .unwrap();
-        let comp = solve_artin_task(&task).artin.unwrap().composition_law.unwrap();
+        let comp = solve_artin_task(&task)
+            .artin
+            .unwrap()
+            .composition_law
+            .unwrap();
         assert_eq!(comp.nu_u, Some(du as usize));
         assert_eq!(comp.nu_v, Some(dv as usize));
         assert_eq!(comp.nu_vu, Some((du.min(dv)) as usize));
@@ -311,7 +318,10 @@ fn artin_h6_nilpotent_base_change_z_to_q_and_f2() {
             obs_vars: vec!["t".into()],
             obs_relations: vec![],
             aux_defs: vec![],
-            extra_laws: vec![np("j_gen", add(mul(cz(2), pow(sv("t"), 2)), pow(sv("t"), 3)))],
+            extra_laws: vec![np(
+                "j_gen",
+                add(mul(cz(2), pow(sv("t"), 2)), pow(sv("t"), 3)),
+            )],
             base_point: vec![("t".into(), cz(0))],
             max_order: 5,
             max_artin_dim: None,

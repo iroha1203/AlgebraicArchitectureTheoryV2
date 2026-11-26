@@ -479,11 +479,7 @@ pub use crate::ir::result_phase4_diag_atlas::{
 };
 
 fn str_map_json(map: &BTreeMap<String, String>) -> Json {
-    Json::Obj(
-        map.iter()
-            .map(|(k, v)| (k.clone(), Json::str(v)))
-            .collect(),
-    )
+    Json::Obj(map.iter().map(|(k, v)| (k.clone(), Json::str(v))).collect())
 }
 
 fn opt_nu_json(nu: Option<usize>) -> Json {

@@ -53,19 +53,28 @@ fn check_simple_graph<E: InputError>(
         if !v_set.contains(e.from.name.as_str()) {
             return reference(
                 e.from.span,
-                format!("unknown vertex `{}` in edge `{}` ({context})", e.from.name, e.name.name),
+                format!(
+                    "unknown vertex `{}` in edge `{}` ({context})",
+                    e.from.name, e.name.name
+                ),
             );
         }
         if !v_set.contains(e.to.name.as_str()) {
             return reference(
                 e.to.span,
-                format!("unknown vertex `{}` in edge `{}` ({context})", e.to.name, e.name.name),
+                format!(
+                    "unknown vertex `{}` in edge `{}` ({context})",
+                    e.to.name, e.name.name
+                ),
             );
         }
         if e.from.name == e.to.name {
             return p4_type_err(
                 e.span,
-                format!("simple graph forbids self-loop edge `{}` in {context}", e.name.name),
+                format!(
+                    "simple graph forbids self-loop edge `{}` in {context}",
+                    e.name.name
+                ),
             );
         }
         let pair = if e.from.name < e.to.name {
@@ -82,7 +91,8 @@ fn check_simple_graph<E: InputError>(
                 ),
             );
         }
-        let offset = check_p4_coord_value(&e.offset, coeff_domain, r_idx, checker, e.span, control)?;
+        let offset =
+            check_p4_coord_value(&e.offset, coeff_domain, r_idx, checker, e.span, control)?;
         edges.push(ShigureGraphEdge {
             name: e.name.name.clone(),
             from: e.from.name.clone(),
@@ -106,13 +116,22 @@ fn check_total_arrow_map<E: InputError>(
     let mut out = Vec::with_capacity(raw.len());
     for (lhs, rhs, _) in raw {
         if !dom.contains(lhs.name.as_str()) {
-            return reference(lhs.span, format!("unknown {kind} `{}` in {context}", lhs.name));
+            return reference(
+                lhs.span,
+                format!("unknown {kind} `{}` in {context}", lhs.name),
+            );
         }
         if !cod.contains(rhs.name.as_str()) {
-            return reference(rhs.span, format!("unknown target {kind} `{}` in {context}", rhs.name));
+            return reference(
+                rhs.span,
+                format!("unknown target {kind} `{}` in {context}", rhs.name),
+            );
         }
         if !seen.insert(lhs.name.as_str()) {
-            return duplicate(lhs.span, format!("duplicate {kind} `{}` in {context}", lhs.name));
+            return duplicate(
+                lhs.span,
+                format!("duplicate {kind} `{}` in {context}", lhs.name),
+            );
         }
         out.push((lhs.name.clone(), rhs.name.clone()));
     }
@@ -134,7 +153,10 @@ fn check_opt_arrow_map<E: InputError>(
     let mut out = Vec::with_capacity(raw.len());
     for (lhs, rhs_opt, _) in raw {
         if !dom.contains(lhs.name.as_str()) {
-            return reference(lhs.span, format!("unknown {kind} `{}` in {context}", lhs.name));
+            return reference(
+                lhs.span,
+                format!("unknown {kind} `{}` in {context}", lhs.name),
+            );
         }
         let rhs_str = if let Some(rhs) = rhs_opt {
             if !cod.contains(rhs.name.as_str()) {
@@ -148,7 +170,10 @@ fn check_opt_arrow_map<E: InputError>(
             None
         };
         if !seen.insert(lhs.name.as_str()) {
-            return duplicate(lhs.span, format!("duplicate {kind} `{}` in {context}", lhs.name));
+            return duplicate(
+                lhs.span,
+                format!("duplicate {kind} `{}` in {context}", lhs.name),
+            );
         }
         out.push((lhs.name.clone(), rhs_str));
     }
@@ -174,7 +199,10 @@ fn check_reading_surjection<E: InputError>(
             return reference(s.span, format!("unknown source `{}` in {context}", s.name));
         }
         if !seen.insert(s.name.as_str()) {
-            return duplicate(s.span, format!("duplicate source `{}` in {context}", s.name));
+            return duplicate(
+                s.span,
+                format!("duplicate source `{}` in {context}", s.name),
+            );
         }
         targets.insert(t.name.clone());
         out.push((s.name.clone(), t.name.clone()));
@@ -226,7 +254,10 @@ pub(super) fn check_atlas<E: InputError>(
     let allowed_vertices = check_p4_unique_idents(&raw.allowed_vertices, "allowed_vertex", &ctx)?;
     for v in &allowed_vertices {
         if !v_set.contains(v.as_str()) {
-            return reference(raw.span, format!("unknown vertex `{v}` in allowed_vertices"));
+            return reference(
+                raw.span,
+                format!("unknown vertex `{v}` in allowed_vertices"),
+            );
         }
     }
     let allowed_edges = check_p4_unique_idents(&raw.allowed_edges, "allowed_edge", &ctx)?;
@@ -325,19 +356,39 @@ fn check_refinement<E: InputError>(
     }
     let common_sources = check_p4_unique_idents(&r.common_sources, "common_source", &rctx)?;
     let src_set: HashSet<&str> = common_sources.iter().map(String::as_str).collect();
-    let (coarse_reading, coarse_t_owned) =
-        check_reading_surjection(&r.coarse_reading, &src_set, r.span, &format!("{rctx} coarse_reading"))?;
-    let (fine_reading, fine_t_owned) =
-        check_reading_surjection(&r.fine_reading, &src_set, r.span, &format!("{rctx} fine_reading"))?;
+    let (coarse_reading, coarse_t_owned) = check_reading_surjection(
+        &r.coarse_reading,
+        &src_set,
+        r.span,
+        &format!("{rctx} coarse_reading"),
+    )?;
+    let (fine_reading, fine_t_owned) = check_reading_surjection(
+        &r.fine_reading,
+        &src_set,
+        r.span,
+        &format!("{rctx} fine_reading"),
+    )?;
     let coarse_t: HashSet<&str> = coarse_t_owned.iter().map(String::as_str).collect();
     let fine_t: HashSet<&str> = fine_t_owned.iter().map(String::as_str).collect();
 
-    let coarse_nerve =
-        check_supported_nerve(&r.coarse_nerve, &coarse_t, &format!("{rctx} coarse_nerve"), control)?;
-    let fine_nerve =
-        check_supported_nerve(&r.fine_nerve, &fine_t, &format!("{rctx} fine_nerve"), control)?;
+    let coarse_nerve = check_supported_nerve(
+        &r.coarse_nerve,
+        &coarse_t,
+        &format!("{rctx} coarse_nerve"),
+        control,
+    )?;
+    let fine_nerve = check_supported_nerve(
+        &r.fine_nerve,
+        &fine_t,
+        &format!("{rctx} fine_nerve"),
+        control,
+    )?;
 
-    let c_charts: HashSet<&str> = coarse_nerve.charts.iter().map(|c| c.name.as_str()).collect();
+    let c_charts: HashSet<&str> = coarse_nerve
+        .charts
+        .iter()
+        .map(|c| c.name.as_str())
+        .collect();
     let f_charts: HashSet<&str> = fine_nerve.charts.iter().map(|c| c.name.as_str()).collect();
     let c_edges: HashSet<&str> = coarse_nerve.edges.iter().map(|e| e.name.as_str()).collect();
     let f_edges: HashSet<&str> = fine_nerve.edges.iter().map(|e| e.name.as_str()).collect();
@@ -514,7 +565,10 @@ fn check_extended_language<E: InputError>(
     let mut atomic_ops = Vec::with_capacity(ext.atomic_ops.len());
     for op in &ext.atomic_ops {
         if !op_names.insert(op.name.name.as_str()) {
-            return duplicate(op.name.span, format!("duplicate atomic_op `{}`", op.name.name));
+            return duplicate(
+                op.name.span,
+                format!("duplicate atomic_op `{}`", op.name.name),
+            );
         }
         let arg_vars = check_p4_unique_idents(&op.arg_vars, "arg_var", &op.name.name)?;
         let mut scope = sv_set.clone();
@@ -522,7 +576,10 @@ fn check_extended_language<E: InputError>(
             if sv_set.contains(a.as_str()) {
                 return duplicate(
                     op.span,
-                    format!("atomic_op `{}` arg `{a}` collides with state_var", op.name.name),
+                    format!(
+                        "atomic_op `{}` arg `{a}` collides with state_var",
+                        op.name.name
+                    ),
                 );
             }
             scope.insert(a.as_str());

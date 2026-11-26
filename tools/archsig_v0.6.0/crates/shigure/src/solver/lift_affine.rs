@@ -138,13 +138,8 @@ where
 
     match solve(&sub_d0, &neg_res, num_cols).map_err(map_lift_algebra_error)? {
         Some((particular, kernel_basis)) => {
-            let full_delta = expand_subset_delta(
-                spec.variables.len(),
-                &allowed_indices,
-                dm,
-                &particular,
-                &z,
-            );
+            let full_delta =
+                expand_subset_delta(spec.variables.len(), &allowed_indices, dm, &particular, &z);
             let shifted =
                 apply_m_shift(ext, ambient_lift_rp, &full_delta).map_err(map_lift_algebra_error)?;
             let mut reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
@@ -205,8 +200,9 @@ where
             let deg_allowed: u32 = allowed_indices.iter().map(|&idx| mono.exps()[idx]).sum();
             if deg_allowed > 1 {
                 return Err(SilenceReason::SyzygyOutOfScope {
-                    detail: "finite_displacement affine repair requires laws affine in allowed_vars"
-                        .to_owned(),
+                    detail:
+                        "finite_displacement affine repair requires laws affine in allowed_vars"
+                            .to_owned(),
                 });
             }
         }

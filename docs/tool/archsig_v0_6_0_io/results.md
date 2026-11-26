@@ -1276,7 +1276,7 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 
 ## 8. SHIGURE の型付き結果（`ShigureOutcome`）
 
-`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations` の回答は、
+`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations`・`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas` の回答は、
 標準出力の `archsig.summary/1` では `answers[].outputs.shigure` に直接保持し、
 `--out` 保存時の `archsig.result/4` では `type: "ShigureOutcome"` の `SavedNode`（`answers[].outputs.shigure = {"node": ...}`、
 `scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
@@ -1317,7 +1317,11 @@ ShigureOutcome = {
   transfer?: TransferOutcomeDetail,
   robustness?: RobustnessOutcomeDetail,
   chevalley?: ChevalleyOutcomeDetail,
-  observations?: ObservationOutcomeDetail
+  observations?: ObservationOutcomeDetail,
+  lift?: LiftOutcomeDetail,
+  artin?: ArtinOutcomeDetail,
+  diagnostics?: DiagnosticsOutcomeDetail,
+  atlas?: AtlasOutcomeDetail
 }
 
 ReevalCheck = {
@@ -1586,6 +1590,197 @@ ObservationOutcomeDetail = {
   }
 }
 
+LiftOutcomeDetail = {
+  coeff_ring: String, r_base: String, r_prime: String,
+  kernel_dim: Nat, square_zero_verified: Bool, base_point_lawful: Bool,
+  syzygy_generators: String[][],
+  syzygy_identity_verified: Bool,
+  complex_d1_d0_zero_verified: Bool,
+  residual_cocycle_verified: Bool,
+  residual_in_m: String[],
+  h0_dim: Nat, h1_dim: Nat, h0_basis: String[][],
+  obstruction_class_coords: String[],
+  obstruction_is_zero: Bool, lift_exists: Bool,
+  restored_lift?: { [VarName]: String },
+  reevaluation?: ReevalCheck,
+  raw_cech_comparison?: {
+    h0_t_raw_dim: Nat, h1_t_raw_dim: Nat, h1_d_dim: Nat,
+    kernel_map_exact_verified: Bool, differs_from_full_syzygy: Bool
+  },
+  relative_cone?: {
+    h0_fu_dim: Nat, h1_fu_dim: Nat,
+    relative_obstruction_coords: String[],
+    relative_obstruction_is_zero: Bool, relative_lift_exists: Bool,
+    restored_relative_lift?: { [VarName]: String },
+    reevaluation?: ReevalCheck,
+    raw_read_diff_value?: String,
+    raw_read_diff_signed_match?: Bool
+  },
+  declaration_cover?: {
+    support_closed: Bool, unclosed_observations: String[],
+    two_context_cech_diff?: { [VarName]: String },
+    matches_relative_obstruction?: Bool
+  },
+  affine_repair?: {
+    finite_displacement: Bool, allowed_vars: String[],
+    repair_exists: Bool,
+    particular_delta?: { [VarName]: String },
+    torsor_basis: { [VarName]: String }[],
+    reevaluation?: ReevalCheck
+  },
+  redundant_comparison?: {
+    ref_h0_dim: Nat, ref_h1_dim: Nat, ref_obstruction_is_zero: Bool,
+    h0_matches: Bool, h1_matches: Bool, obstruction_matches: Bool
+  },
+  etale_descent?: {
+    cover_equation: String, degree: Nat,
+    is_finite_etale: Bool, derivative_unit_verified: Bool,
+    cocycle_group: String, cocycle_verified: Bool,
+    local_selection_exists_on_cover: Bool,
+    global_regular_section_exists: Bool,
+    nonexistence_reason: String
+  }
+}
+
+ArtinNu = Nat | "infinity"
+
+ArtinOutcomeDetail = {
+  test_ring_family: String,
+  is_free_observation_chart: Bool,
+  eliminated_residuals: String[],
+  syntactic_degree_bound?: Nat,
+  detection_order_nu: ArtinNu,
+  local_isomorphism_at_base: Bool,
+  lift_failure_mode: "nu_ge_2_realization_unliftable"
+                   | "nu_eq_1_designated_direction_only_constant_lift_exists"
+                   | "infinite_local_iso",
+  universal_first_obstruction?: {
+    nu: Nat, r_base: String, r_prime: String, kernel_dim: Nat,
+    kappa_u_images: String[], kappa_u_nonzero: Bool,
+    two_context_cech_matches: Bool, constant_lift_exists: Bool
+  },
+  composition_law?: {
+    nu_u: ArtinNu, nu_v: ArtinNu, nu_vu: ArtinNu, min_law_verified: Bool
+  },
+  base_change?: {
+    source_domain: String, target_domain: String,
+    source_nu: ArtinNu, target_nu: ArtinNu, test_order: Nat,
+    source_dr_generators: String[], abstract_tensor_nonzero: Bool,
+    target_image_generators: String[], target_image_is_zero: Bool,
+    flat_base_change: Bool, faithfully_flat: Bool
+  }
+}
+
+DiagnosticsOutcomeDetail = {
+  diagnostic_coeff: String, reading_adequate: Bool,
+  d1_d0_zero_verified: Bool, cell_dims: [Nat, Nat, Nat],
+  h0: String, h1: String, h2: String,
+  h0_free_rank: Nat, h1_free_rank: Nat, h1_torsion: String[], h2_free_rank: Nat,
+  block_decomposition: {
+    law_name: String, value_label: String, cell_dims: [Nat, Nat, Nat],
+    h0_free_rank: Nat, h1_free_rank: Nat, h1_torsion: String[]
+  }[],
+  coeff_change?: {
+    source_domain: String, target_domain: String,
+    is_flat: Bool, is_faithfully_flat: Bool,
+    fixed_label_c0_dim: Nat, fixed_label_h0: String, fixed_label_h1: String,
+    regenerated_c0_dim?: Nat, regenerated_h0?: String, regenerated_h1?: String,
+    label_collision_map?: String,
+    explicit_complex_check?: {
+      source_h0: String, source_h1: String, target_h0: String, target_h1: String,
+      flat_preservation_holds: Bool,
+      designated_class_zero_in_source?: Bool,
+      designated_class_zero_in_target?: Bool,
+      torsion_vanished_in_target?: Bool
+    }
+  },
+  strata: {
+    partition: String[][], equations: String[], invertibles: String[],
+    h0_free_rank: Nat, h1_free_rank: Nat, h2_free_rank: Nat
+  }[],
+  collisions: {
+    label: String, ker_h1_r_dim: Nat, coker_h1_r_dim: Nat,
+    coker_h0_rho_dim: Nat, im_h1_rho_dim: Nat,
+    mayer_vietoris_identity_verified: Bool, h1_r_is_isomorphism: Bool,
+    multi_stage_order_independent?: Bool
+  }[],
+  upper_semicontinuity_refutation?: {
+    generic_partition: String[][], special_partition: String[][],
+    generic_h1_dim: Nat, special_h1_dim: Nat,
+    pseudo_coherent_complex_excluded: Bool, reason: String
+  },
+  r_point_contrast?: {
+    ring: String,
+    r_values_by_point: { [Label]: { [Source]: String } },
+    r_values_differ: Bool,
+    geometric_stalk_h1_dims: { [Label]: Nat },
+    geometric_stalks_agree: Bool
+  },
+  dimension_realization?: {
+    cycle_vertices: Nat, all_probes_matched: Bool,
+    probe_results: {
+      label: String, expected_indicator: Nat, computed_h1_dim: Nat, matched: Bool
+    }[]
+  }
+}
+
+ConstrainedRepairSummary = {
+  allowed_items: String[], repair_exists: Bool,
+  particular_delta?: { [Name]: String },
+  torsor_basis: { [Name]: String }[],
+  h0_operation_torsor_rank: Nat,
+  reevaluation?: ReevalCheck
+}
+
+AtlasOutcomeDetail = {
+  coeff_ring: String, num_vertices: Nat, num_edges: Nat,
+  graph_connected: Bool, saga_sign_commutes_verified: Bool,
+  real_residuals: { [EdgeName]: String },
+  spanning_tree_edges: String[], chord_edges: String[],
+  designated_class_o_b_coords: String[],
+  designated_class_kappa_b_coords: String[],
+  o_b_is_zero: Bool, kappa_b_is_zero: Bool,
+  diagnostic_h1_rank: Nat,
+  primitive_relation_connected_verified: Bool,
+  z_to_q_zero_reflection_verified?: Bool,
+  unconstrained_global_operation_exists: Bool,
+  unconstrained_particular_lambda?: { [VertexName]: String },
+  unconstrained_h0_torsor_rank: Nat,
+  unconstrained_reevaluation?: ReevalCheck,
+  vertex_constrained_repair: ConstrainedRepairSummary,
+  edge_constrained_repair: ConstrainedRepairSummary,
+  refinement?: {
+    condition_c: {
+      c0_support_image: Bool, c1_block_fiber_connected: Bool,
+      c2_edge_lift: Bool, c3_fiber_rational_1_cycles: Bool,
+      c4_face_lift: Bool, c5_edge_lift_unique: Bool,
+      c6_self_loop: Bool, all_passed: Bool
+    },
+    cochain_map_commutes: Bool, h0_isomorphism: Bool, h1_isomorphism: Bool,
+    designated_o_preserved: Bool, designated_kappa_preserved: Bool,
+    repair_fiber_isomorphism_verified: Bool,
+    inverse_reconstruction_verified: Bool,
+    eval_condition_fiber_preserved?: Bool,
+    forgetful_reading_contrast?: {
+      adequacy_and_c0_c6_hold: Bool,
+      eval_constant_on_fiber: Bool, eval_descends_to_coarse: Bool,
+      condition_constant_on_fiber: Bool, condition_descends_to_coarse: Bool,
+      sample_eval_values: { [Sample]: String },
+      sample_condition_holds: { [Sample]: Bool }
+    }
+  },
+  extended_language_non_transport?: {
+    atomic_ops_commute: { [OpName]: Bool },
+    all_atomic_ops_commute: Bool,
+    extended_check_results: {
+      name: String, kind: String, transport_preserved: Bool,
+      before_values: String[], after_values: String[],
+      law_residuals: String[], detail: String
+    }[],
+    all_extended_checks_preserved: Bool
+  }
+}
+
 ApplicabilityCheck = { condition: String, clause: String, satisfied: Bool, detail?: String }
 ShigureOriginRef = {
   origin_id: String,
@@ -1599,6 +1794,9 @@ SilenceReason = {
       | "quotient_ideal_out_of_scope" | "open_condition_in_interaction"
       | "unbounded_search_out_of_scope" | "constructible_stratification_out_of_scope"
       | "finite_enumeration_out_of_scope" | "universal_ring_out_of_scope"
+      | "non_noetherian_infinite_presentation" | "square_zero_condition_violated"
+      | "syzygy_out_of_scope" | "artin_order_out_of_scope"
+      | "diagnostics_stratification_out_of_scope" | "disconnected_graph_out_of_scope"
       | "applicability_condition_not_met",
   missing_slots?: String[],
   point_domain?: ShigurePointDomain,
@@ -1612,6 +1810,7 @@ SilenceReason = {
 `code: "unobserved"`（`unobserved_dependency` の場合）または `code: "unsupported_algorithm"`（その他の適用条件外の場合）の
 Issue を付与し、`details` へ `silence_reason` の構造体をそのまま保持する。
 `provenance.origins` には、当該タスクが参照した Law 宣言と、実際に参照された `observed` 座標の ArchMap `Origin`（全 `SourceLocation`）だけを収集し、未参照の `Origin` は混入させない。
+`lift.redundant_comparison.h0_matches` および `h1_matches` は、元の生成族と参照生成族（`ref_law`）の $H^0(D)$・$H^1(D)$ の抽象的な加群・ベクトル空間同型（体上は次元一致、$\mathbb{Z}$ 上は自由階数と不変因子の一致）を示す。
 `path.valid_paths[].step_states` と `path.rejected_candidates[].intermediate_state` のキーには、`fixed_protocol_change_path` では `change_spec` のパラメータ名、`enlarged_protocol_execution_path` では対象位相の状態座標名を格納する。
 `path.valid_paths[].intermediate_vertices` には、`fixed_protocol_change_path` では経路上の頂点名列、`enlarged_protocol_execution_path` では実行経路が通過した位相名列を格納し、`enlarged_protocol_execution_path` の `path.valid_paths[].composite_word_translation` には各操作名 `OpName` に加えて、`steps` 全体に対応する翻訳語列を予約キー `"sequence"` で格納する。
-`restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
+`restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope`・`lift.reevaluation.scope`・`lift.relative_cone.reevaluation.scope`・`lift.affine_repair.reevaluation.scope`・`atlas.unconstrained_reevaluation.scope`・`atlas.{vertex,edge}_constrained_repair.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。

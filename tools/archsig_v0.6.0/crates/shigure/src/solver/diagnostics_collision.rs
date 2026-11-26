@@ -61,22 +61,31 @@ pub(crate) fn compute_collision_mv(
         let comp = mat_mul(rho, r, cols, &BigInt::zero());
         if comp.iter().any(|row| row.iter().any(|v| !v.is_zero())) {
             return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
-                detail: format!("exact sequence condition rho * r == 0 violated in `{}`", col.label),
+                detail: format!(
+                    "exact sequence condition rho * r == 0 violated in `{}`",
+                    col.label
+                ),
             });
         }
     }
 
     let (ker_h1_r, coker_h1_r, coker_h0_rho, im_h1_rho, h1_r_iso, mv_ok) = match diag_coeff {
-        CoeffDomain::Q => {
-            eval_mv_field(
-                &coarse_cpx,
-                &fine_cpx,
-                &q_cpx,
-                (&lift_mat_z_to_q(&r0), &lift_mat_z_to_q(&r1), &lift_mat_z_to_q(&r2)),
-                (&lift_mat_z_to_q(&rho0), &lift_mat_z_to_q(&rho1), &lift_mat_z_to_q(&rho2)),
-                Rat::zero(),
-            )?
-        }
+        CoeffDomain::Q => eval_mv_field(
+            &coarse_cpx,
+            &fine_cpx,
+            &q_cpx,
+            (
+                &lift_mat_z_to_q(&r0),
+                &lift_mat_z_to_q(&r1),
+                &lift_mat_z_to_q(&r2),
+            ),
+            (
+                &lift_mat_z_to_q(&rho0),
+                &lift_mat_z_to_q(&rho1),
+                &lift_mat_z_to_q(&rho2),
+            ),
+            Rat::zero(),
+        )?,
         CoeffDomain::Fp(p) => {
             let Some(zero_fp) = FpElem::zero(p.clone()) else {
                 return Err(SilenceReason::UnsupportedCoeffRing {
@@ -240,8 +249,12 @@ fn eval_mv_field<C: FieldCoeff>(
     )
     .map_err(map_diag_alg_err)?;
 
-    let ind_r = r_map.induced_field(&c_cpx, &f_cpx).map_err(map_diag_alg_err)?;
-    let ind_rho = rho_map.induced_field(&f_cpx, &q_cpx).map_err(map_diag_alg_err)?;
+    let ind_r = r_map
+        .induced_field(&c_cpx, &f_cpx)
+        .map_err(map_diag_alg_err)?;
+    let ind_rho = rho_map
+        .induced_field(&f_cpx, &q_cpx)
+        .map_err(map_diag_alg_err)?;
 
     let ker_h1_r = ind_r.h1.ker_dim;
     let coker_h1_r = ind_r.h1.coker_dim;
@@ -251,7 +264,14 @@ fn eval_mv_field<C: FieldCoeff>(
     let mv_ok = ker_h1_r == coker_h0_rho
         && coker_h1_r == im_h1_rho
         && (h1_r_iso == (coker_h0_rho == 0 && im_h1_rho == 0));
-    Ok((ker_h1_r, coker_h1_r, coker_h0_rho, im_h1_rho, h1_r_iso, mv_ok))
+    Ok((
+        ker_h1_r,
+        coker_h1_r,
+        coker_h0_rho,
+        im_h1_rho,
+        h1_r_iso,
+        mv_ok,
+    ))
 }
 
 fn eval_mv_z(
@@ -351,7 +371,11 @@ fn eval_mv_z(
             combined_cols.push(f_z.d0().iter().map(|row| row[c].clone()).collect());
         }
         for v in z1_c {
-            combined_cols.push(crate::algebra::cochain::mat_vec(r_mats.1, v, &BigInt::zero()));
+            combined_cols.push(crate::algebra::cochain::mat_vec(
+                r_mats.1,
+                v,
+                &BigInt::zero(),
+            ));
         }
         let f_dim1 = f_z.dim1();
         let mut z1f_mat = vec![vec![BigInt::zero(); z1_f.len()]; f_dim1];

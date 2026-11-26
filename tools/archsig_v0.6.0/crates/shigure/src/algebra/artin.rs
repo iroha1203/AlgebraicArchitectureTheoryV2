@@ -34,10 +34,7 @@ pub struct RrefResult<C: FieldCoeff> {
     pub rank: usize,
 }
 
-pub(crate) fn check_same_ring<C: RingCoeff>(
-    expected: &C,
-    actual: &C,
-) -> Result<(), AlgebraError> {
+pub(crate) fn check_same_ring<C: RingCoeff>(expected: &C, actual: &C) -> Result<(), AlgebraError> {
     if !expected.same_ring(actual) {
         return Err(AlgebraError::DomainMismatch {
             expected: format!("{expected:?}"),

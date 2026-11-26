@@ -53,10 +53,9 @@ fn np(name: &str, expr: PolyExpr) -> NamedPoly {
 #[test]
 fn r3_partial_context_relative_reading_and_raw_read_diff_invariance() {
     for domain in [CoeffDomain::Q, CoeffDomain::Z] {
-        for (oa_eps, ob_eps, expected_verdict) in [
-            (0i64, 0i64, Verdict::Established),
-            (1, 2, Verdict::Refuted),
-        ] {
+        for (oa_eps, ob_eps, expected_verdict) in
+            [(0i64, 0i64, Verdict::Established), (1, 2, Verdict::Refuted)]
+        {
             let task = validate_lift_task(LiftTaskSpec {
                 name: format!("r3_f1_{oa_eps}_{ob_eps}"),
                 coeff_domain: domain.clone(),
@@ -219,7 +218,13 @@ fn r3_partial_context_relative_reading_and_raw_read_diff_invariance() {
     .unwrap();
     let out_ns = solve_lift_task(&nonsurj);
     assert_eq!(out_ns.verdict, Verdict::Refuted);
-    let rc_ns = out_ns.lift.as_ref().unwrap().relative_cone.as_ref().unwrap();
+    let rc_ns = out_ns
+        .lift
+        .as_ref()
+        .unwrap()
+        .relative_cone
+        .as_ref()
+        .unwrap();
     assert_eq!(rc_ns.raw_read_diff_value, None);
     assert_eq!(rc_ns.raw_read_diff_signed_match, None);
 }

@@ -34,8 +34,8 @@ mod tests_phase4_neg;
 
 use crate::ir::artin::CheckedArtinTask;
 use crate::ir::atlas::CheckedAtlasTask;
-use crate::ir::diagram::CheckedDiagramTask;
 use crate::ir::diagnostics::CheckedDiagnosticsTask;
+use crate::ir::diagram::CheckedDiagramTask;
 use crate::ir::lift::CheckedLiftTask;
 use crate::ir::observation::CheckedObservationTask;
 use crate::ir::path::CheckedPathTask;

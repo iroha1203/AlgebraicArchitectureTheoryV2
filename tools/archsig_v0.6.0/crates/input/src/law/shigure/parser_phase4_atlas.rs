@@ -120,8 +120,10 @@ impl<E: InputError> Parser<E> {
             return self.p4_syntax_err(span, "`shigure atlas` requires a `domain` clause");
         };
         if origins.is_empty() {
-            return self
-                .p4_syntax_err(span, "`shigure atlas` requires at least one `origin` clause");
+            return self.p4_syntax_err(
+                span,
+                "`shigure atlas` requires at least one `origin` clause",
+            );
         }
         let Some(vertices) = vertices else {
             return self.p4_syntax_err(span, "`shigure atlas` requires a `vertices` clause");
@@ -413,9 +415,8 @@ impl<E: InputError> Parser<E> {
                 if adapter_map.is_some() {
                     return self.err("duplicate `adapter_map` in `extended_language_check`");
                 }
-                adapter_map = Some(
-                    self.parse_p4_poly_assign_block("`extended_language_check` adapter_map")?,
-                );
+                adapter_map =
+                    Some(self.parse_p4_poly_assign_block("`extended_language_check` adapter_map")?);
             } else if self.eat_kw("atomic_op") {
                 atomic_ops.push(self.parse_atomic_op_compare(self.prev_span().0)?);
             } else if self.eat_kw("protocol_sequence") {
@@ -545,12 +546,8 @@ impl<E: InputError> Parser<E> {
         }
         self.expect_sym("}")?;
         let span = (start, self.prev_end());
-        let (
-            Some(extended_state_vars),
-            Some(initial_state),
-            Some(before_read),
-            Some(after_read),
-        ) = (extended_state_vars, initial_state, before_read, after_read)
+        let (Some(extended_state_vars), Some(initial_state), Some(before_read), Some(after_read)) =
+            (extended_state_vars, initial_state, before_read, after_read)
         else {
             return self.p4_syntax_err(
                 span,

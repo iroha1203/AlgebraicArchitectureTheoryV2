@@ -16,14 +16,14 @@ use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, ReevalCheck, ShigureOutcome, SilenceReason};
 use crate::ir::result_phase4::{LiftOutcomeDetail, RedundantComparisonResult};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
-use crate::solver::lift_common::{
-    apply_m_shift, concat_vecs, conv_cube, conv_mat, conv_vec, derive_lift_verdict,
-    eval_ring_params_generic, eval_var_coords_generic, expand_named_polys, format_algebra_label,
-    format_m_tuple, format_var_map, lift_outcome, lift_undetermined, lit_to_fp, lit_to_q,
-    map_lift_algebra_error, r_action_matrix_field, reevaluate_laws_in_rp, verify_base_laws,
-    write_block, compute_etale_descent,
-};
 use crate::solver::lift_affine::compute_affine_repair_field;
+use crate::solver::lift_common::{
+    apply_m_shift, compute_etale_descent, concat_vecs, conv_cube, conv_mat, conv_vec,
+    derive_lift_verdict, eval_ring_params_generic, eval_var_coords_generic, expand_named_polys,
+    format_algebra_label, format_m_tuple, format_var_map, lift_outcome, lift_undetermined,
+    lit_to_fp, lit_to_q, map_lift_algebra_error, r_action_matrix_field, reevaluate_laws_in_rp,
+    verify_base_laws, write_block,
+};
 use crate::solver::lift_extensions::{
     compute_declaration_cover_field, compute_raw_cech_field, compute_relative_cone_field,
 };
@@ -430,7 +430,9 @@ where
     let relative_cone_result = relative_cone.map(|rc| rc.result);
     let verdict = derive_lift_verdict(
         core.lift_exists,
-        relative_cone_result.as_ref().map(|r| r.relative_lift_exists),
+        relative_cone_result
+            .as_ref()
+            .map(|r| r.relative_lift_exists),
         affine_repair.as_ref().map(|a| a.repair_exists),
         etale_descent
             .as_ref()
@@ -465,7 +467,14 @@ where
         etale_descent,
     };
 
-    lift_outcome(verdict, coeff_domain, point_domain, checks, provenance, detail)
+    lift_outcome(
+        verdict,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+        detail,
+    )
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -485,10 +494,11 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
     let dm = ext.kernel_dim();
     let z = ext.r_prime().zero_coeff.zero_like();
 
-    let syz_res = compute_syzygies_field(law_polys, vars.clone(), MonomialOrder::Grevlex, max_pairs)
-        .map_err(|e| SilenceReason::SyzygyOutOfScope {
-            detail: e.to_string(),
-        })?;
+    let syz_res =
+        compute_syzygies_field(law_polys, vars.clone(), MonomialOrder::Grevlex, max_pairs)
+            .map_err(|e| SilenceReason::SyzygyOutOfScope {
+                detail: e.to_string(),
+            })?;
     if !syz_res.verified || !syz_res.generating_certified {
         return Err(SilenceReason::SyzygyOutOfScope {
             detail: "syzygy generating certification failed".to_owned(),
@@ -532,8 +542,8 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
         }
     }
 
-    let complex = CochainComplex::new(n * dm, r * dm, q * dm, d0, d1, z)
-        .map_err(map_lift_algebra_error)?;
+    let complex =
+        CochainComplex::new(n * dm, r * dm, q * dm, d0, d1, z).map_err(map_lift_algebra_error)?;
 
     let lift_full_rp = concat_vecs(ambient_lift_rp, param_vals_rp);
     let mut residual_m = Vec::with_capacity(r * dm);
@@ -570,10 +580,14 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
 
     let (restored_lift, reevaluation) = if let Some(witness_pos) = coc.coboundary_witness {
         let delta: Vec<C> = witness_pos.iter().map(RingCoeff::neg_ref).collect();
-        let shifted = apply_m_shift(ext, ambient_lift_rp, &delta).map_err(map_lift_algebra_error)?;
+        let shifted =
+            apply_m_shift(ext, ambient_lift_rp, &delta).map_err(map_lift_algebra_error)?;
         let reeval = reevaluate_laws_in_rp(law_polys, &shifted, param_vals_rp, ext)
             .map_err(map_lift_algebra_error)?;
-        (Some(format_var_map(variables, &shifted, ext.r_prime())), Some(reeval))
+        (
+            Some(format_var_map(variables, &shifted, ext.r_prime())),
+            Some(reeval),
+        )
     } else {
         (None, None)
     };
@@ -599,7 +613,6 @@ pub(crate) fn run_core_lift_field<C: FieldCoeff>(
 // =========================================================================
 // 共通補助関数（lift_z・lift_extensions・artin からも共用）
 // =========================================================================
-
 
 fn resolve_ambient_lift_field<C, FE>(
     spec: &LiftTaskSpec,
@@ -684,10 +697,14 @@ where
     }
 }
 
-
 fn build_lift_provenance(spec: &LiftTaskSpec) -> Provenance {
     let mut clauses = spec.provenance.clauses.clone();
-    for c in [MathClause::G141E1, MathClause::G141E2, MathClause::G141E4, MathClause::G141E8] {
+    for c in [
+        MathClause::G141E1,
+        MathClause::G141E2,
+        MathClause::G141E4,
+        MathClause::G141E8,
+    ] {
         if !clauses.contains(&c) {
             clauses.push(c);
         }
@@ -759,4 +776,3 @@ fn collect_lift_unobserved(spec: &LiftTaskSpec) -> Vec<String> {
     }
     slots.into_iter().collect()
 }
-

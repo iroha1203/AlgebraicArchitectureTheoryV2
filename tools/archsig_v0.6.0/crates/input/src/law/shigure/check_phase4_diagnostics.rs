@@ -41,7 +41,10 @@ pub(super) fn check_supported_nerve<E: InputError>(
             if !valid_targets.contains(s.as_str()) {
                 return reference(
                     ch.span,
-                    format!("unknown target `{s}` in nerve chart `{}` ({context})", ch.name.name),
+                    format!(
+                        "unknown target `{s}` in nerve chart `{}` ({context})",
+                        ch.name.name
+                    ),
                 );
             }
         }
@@ -62,17 +65,26 @@ pub(super) fn check_supported_nerve<E: InputError>(
         if !chart_names.contains(e.left.name.as_str()) {
             return reference(
                 e.left.span,
-                format!("unknown nerve chart `{}` in edge `{}` ({context})", e.left.name, e.name.name),
+                format!(
+                    "unknown nerve chart `{}` in edge `{}` ({context})",
+                    e.left.name, e.name.name
+                ),
             );
         }
         if !chart_names.contains(e.right.name.as_str()) {
             return reference(
                 e.right.span,
-                format!("unknown nerve chart `{}` in edge `{}` ({context})", e.right.name, e.name.name),
+                format!(
+                    "unknown nerve chart `{}` in edge `{}` ({context})",
+                    e.right.name, e.name.name
+                ),
             );
         }
         if edge_endpoints
-            .insert(e.name.name.as_str(), (e.left.name.as_str(), e.right.name.as_str()))
+            .insert(
+                e.name.name.as_str(),
+                (e.left.name.as_str(), e.right.name.as_str()),
+            )
             .is_some()
         {
             return duplicate(
@@ -104,19 +116,28 @@ pub(super) fn check_supported_nerve<E: InputError>(
         let Some(&(l0, r0)) = edge_endpoints.get(f.e0.name.as_str()) else {
             return reference(
                 f.e0.span,
-                format!("unknown nerve edge `{}` in face `{}` ({context})", f.e0.name, f.name.name),
+                format!(
+                    "unknown nerve edge `{}` in face `{}` ({context})",
+                    f.e0.name, f.name.name
+                ),
             );
         };
         let Some(&(l1, r1)) = edge_endpoints.get(f.e1.name.as_str()) else {
             return reference(
                 f.e1.span,
-                format!("unknown nerve edge `{}` in face `{}` ({context})", f.e1.name, f.name.name),
+                format!(
+                    "unknown nerve edge `{}` in face `{}` ({context})",
+                    f.e1.name, f.name.name
+                ),
             );
         };
         let Some(&(l2, r2)) = edge_endpoints.get(f.e2.name.as_str()) else {
             return reference(
                 f.e2.span,
-                format!("unknown nerve edge `{}` in face `{}` ({context})", f.e2.name, f.name.name),
+                format!(
+                    "unknown nerve edge `{}` in face `{}` ({context})",
+                    f.e2.name, f.name.name
+                ),
             );
         };
         if l0 != l1 || r0 != l2 || r1 != r2 {
@@ -163,7 +184,10 @@ fn check_partition<E: InputError>(
     let mut out = Vec::with_capacity(raw.len());
     for block in raw {
         if block.is_empty() {
-            return p4_type_err(span, format!("partition block must be non-empty in {context}"));
+            return p4_type_err(
+                span,
+                format!("partition block must be non-empty in {context}"),
+            );
         }
         let mut b = Vec::with_capacity(block.len());
         for s in block {
@@ -173,7 +197,10 @@ fn check_partition<E: InputError>(
             if !seen.insert(s.name.as_str()) {
                 return duplicate(
                     s.span,
-                    format!("source `{}` appears in multiple blocks in {context}", s.name),
+                    format!(
+                        "source `{}` appears in multiple blocks in {context}",
+                        s.name
+                    ),
                 );
             }
             b.push(s.name.clone());
@@ -181,7 +208,10 @@ fn check_partition<E: InputError>(
         out.push(b);
     }
     if seen.len() != sources.len() {
-        return p4_type_err(span, format!("partition must cover every source in {context}"));
+        return p4_type_err(
+            span,
+            format!("partition must cover every source in {context}"),
+        );
     }
     Ok(out)
 }
@@ -284,7 +314,10 @@ pub(super) fn check_diagnostics<E: InputError>(
                     if !v_seen.insert(s.name.as_str()) {
                         return duplicate(
                             s.span,
-                            format!("duplicate source `{}` in law `{}`", s.name, law.law_name.name),
+                            format!(
+                                "duplicate source `{}` in law `{}`",
+                                s.name, law.law_name.name
+                            ),
                         );
                     }
                     let ld = literal_domain(lit);
@@ -307,7 +340,10 @@ pub(super) fn check_diagnostics<E: InputError>(
                 if v_seen.len() != src_set.len() {
                     return p4_type_err(
                         law.span,
-                        format!("static law `{}` must assign every source", law.law_name.name),
+                        format!(
+                            "static law `{}` must assign every source",
+                            law.law_name.name
+                        ),
                     );
                 }
                 checked_laws.push(ShigureStaticLawReadout {
@@ -371,7 +407,10 @@ pub(super) fn check_diagnostics<E: InputError>(
                     if !v_seen.insert(s.name.as_str()) {
                         return duplicate(
                             s.span,
-                            format!("duplicate source `{}` in law `{}`", s.name, law.law_name.name),
+                            format!(
+                                "duplicate source `{}` in law `{}`",
+                                s.name, law.law_name.name
+                            ),
                         );
                     }
                     let checked_val = match val {
@@ -494,12 +533,18 @@ pub(super) fn check_diagnostics<E: InputError>(
             return p4_type_err(col.span, "collision label must be non-empty");
         }
         if !col_labels.insert(col.label.as_str()) {
-            return duplicate(col.span, format!("duplicate collision `{}` in {ctx}", col.label));
+            return duplicate(
+                col.span,
+                format!("duplicate collision `{}` in {ctx}", col.label),
+            );
         }
         if !law_names.contains(&col.law_name.name) {
             return reference(
                 col.law_name.span,
-                format!("unknown law `{}` in collision `{}`", col.law_name.name, col.label),
+                format!(
+                    "unknown law `{}` in collision `{}`",
+                    col.law_name.name, col.label
+                ),
             );
         }
         let fine = check_partition(&col.fine_partition, &src_set, col.span, &col.label)?;

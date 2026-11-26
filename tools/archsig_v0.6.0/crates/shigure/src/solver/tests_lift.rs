@@ -381,10 +381,7 @@ fn lift_h4_and_h10_relative_cone_two_context_cech_and_finish_snap_recovery() {
         relative_reading: Some(RelativeReadingSpec {
             obs_vars: vec!["delta".into(), "mu".into()],
             obs_laws: vec![],
-            reading_map: vec![
-                ("delta".into(), sv("delta")),
-                ("mu".into(), sv("mu")),
-            ],
+            reading_map: vec![("delta".into(), sv("delta")), ("mu".into(), sv("mu"))],
             designated_obs_lift: vec![
                 ("delta".into(), vec![cz(0), cz(1), cz(0)]),
                 ("mu".into(), vec![cz(0), cz(1), cz(0)]),
@@ -435,7 +432,12 @@ fn lift_h4_and_h10_relative_cone_two_context_cech_and_finish_snap_recovery() {
     let cov10 = d10.declaration_cover.unwrap();
     assert!(cov10.support_closed);
     assert_eq!(
-        cov10.two_context_cech_diff.as_ref().unwrap().get("E").unwrap(),
+        cov10
+            .two_context_cech_diff
+            .as_ref()
+            .unwrap()
+            .get("E")
+            .unwrap(),
         "eps^2"
     );
     assert_eq!(cov10.matches_relative_obstruction, Some(true));
@@ -465,10 +467,7 @@ fn lift_h4_and_h10_relative_cone_two_context_cech_and_finish_snap_recovery() {
         relative_reading: Some(RelativeReadingSpec {
             obs_vars: vec!["delta".into(), "mu".into()],
             obs_laws: vec![],
-            reading_map: vec![
-                ("delta".into(), sv("delta")),
-                ("mu".into(), sv("mu")),
-            ],
+            reading_map: vec![("delta".into(), sv("delta")), ("mu".into(), sv("mu"))],
             designated_obs_lift: vec![
                 ("delta".into(), vec![cz(0), cz(1), cz(0)]),
                 ("mu".into(), vec![cz(0), cz(1), cz(0)]),
@@ -668,19 +667,55 @@ fn lift_silences_fail_closed_on_m2_nonzero_unobserved_z_nonlinear_and_pair_limit
             ],
             r_prime_mul: vec![
                 vec![
-                    vec![ScalarLit::Z(1.into()), ScalarLit::Z(0.into()), ScalarLit::Z(0.into())],
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(1.into()), ScalarLit::Z(0.into())],
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(0.into()), ScalarLit::Z(1.into())],
+                    vec![
+                        ScalarLit::Z(1.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                    ],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(1.into()),
+                        ScalarLit::Z(0.into()),
+                    ],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(1.into()),
+                    ],
                 ],
                 vec![
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(1.into()), ScalarLit::Z(0.into())],
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(0.into()), ScalarLit::Z(1.into())],
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(0.into()), ScalarLit::Z(0.into())],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(1.into()),
+                        ScalarLit::Z(0.into()),
+                    ],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(1.into()),
+                    ],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                    ],
                 ],
                 vec![
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(0.into()), ScalarLit::Z(1.into())],
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(0.into()), ScalarLit::Z(0.into())],
-                    vec![ScalarLit::Z(0.into()), ScalarLit::Z(0.into()), ScalarLit::Z(0.into())],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(1.into()),
+                    ],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                    ],
+                    vec![
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                        ScalarLit::Z(0.into()),
+                    ],
                 ],
             ],
             r_base_basis: vec!["1".into()],

@@ -17,7 +17,10 @@ use num_traits::Zero;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 係数環射 `source -> target` の存在・flat 性・faithfully flat 性を判定する（G-142 A3）。
-fn classify_ring_hom(source: &CoeffDomain, target: &CoeffDomain) -> Result<(bool, bool), SilenceReason> {
+fn classify_ring_hom(
+    source: &CoeffDomain,
+    target: &CoeffDomain,
+) -> Result<(bool, bool), SilenceReason> {
     if let CoeffDomain::Fp(p) = target
         && !archsig_common::prime::is_prime(p)
     {
@@ -70,7 +73,12 @@ pub(crate) fn compute_coeff_change(
             let regen_values = regenerate_law_values(lits, &cc.target_domain)?;
             let regen_complex = build_diagnostic_complex(nerve, &regen_values);
             let regen_sum = evaluate_complex_over_domain(&regen_complex, &cc.target_domain)?;
-            let map_desc = describe_label_collision_map(fixed_complex, &regen_complex, lits, &cc.target_domain)?;
+            let map_desc = describe_label_collision_map(
+                fixed_complex,
+                &regen_complex,
+                lits,
+                &cc.target_domain,
+            )?;
             (
                 Some(regen_complex.coords0.len()),
                 Some(regen_sum.h0_summary),
@@ -122,13 +130,11 @@ fn map_scalar_lit_to_domain(
             let elem = FpElem::from_checked_prime(n.clone(), p.clone());
             Ok(elem.to_string())
         }
-        (ScalarLit::Q { num, den }, CoeffDomain::Q) => {
-            Ok(ScalarLit::Q {
-                num: num.clone(),
-                den: den.clone(),
-            }
-            .to_string())
+        (ScalarLit::Q { num, den }, CoeffDomain::Q) => Ok(ScalarLit::Q {
+            num: num.clone(),
+            den: den.clone(),
         }
+        .to_string()),
         (ScalarLit::Q { num, den }, CoeffDomain::Fp(p)) => {
             let p_int = BigInt::from(p.clone());
             if (den % &p_int).is_zero() {
@@ -139,10 +145,12 @@ fn map_scalar_lit_to_domain(
             }
             let num_fp = FpElem::from_checked_prime(num.clone(), p.clone());
             let den_fp = FpElem::from_checked_prime(den.clone(), p.clone());
-            let inv = den_fp.inv().ok_or_else(|| SilenceReason::ApplicabilityConditionNotMet {
-                condition: "codomain_regeneration_reduction".to_owned(),
-                detail: format!("denominator {den} has no inverse mod {p}"),
-            })?;
+            let inv = den_fp
+                .inv()
+                .ok_or_else(|| SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "codomain_regeneration_reduction".to_owned(),
+                    detail: format!("denominator {den} has no inverse mod {p}"),
+                })?;
             Ok(num_fp.mul_ref(&inv).to_string())
         }
         (ScalarLit::Fp { value, modulus }, CoeffDomain::Fp(p)) if modulus == p => {

@@ -97,7 +97,8 @@ where
         .collect();
     let mut reading_polys = Vec::with_capacity(m);
     for ov in &rel.obs_vars {
-        reading_polys.push(expand_expr(rm_map[ov.as_str()], bindings).map_err(map_lift_algebra_error)?);
+        reading_polys
+            .push(expand_expr(rm_map[ov.as_str()], bindings).map_err(map_lift_algebra_error)?);
     }
 
     let obs_lift_rp = eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, expand_expr)
@@ -226,8 +227,7 @@ where
                     .eval_poly(jac_entry, &obs_full_r)
                     .map_err(map_lift_algebra_error)?;
                 let neg_val = ext.r_base().neg(&val_r);
-                let block =
-                    r_action_matrix_field(ext, &neg_val).map_err(map_lift_algebra_error)?;
+                let block = r_action_matrix_field(ext, &neg_val).map_err(map_lift_algebra_error)?;
                 write_block(&mut d1_fu, q_dm + a * dm, r * dm + b * dm, &block);
             }
         }
@@ -261,7 +261,11 @@ where
     }
 
     let relative_obstruction_is_zero = fu_coc.is_zero_class;
-    let relative_obstruction_coords = fu_coc.class_coords.iter().map(ToString::to_string).collect();
+    let relative_obstruction_coords = fu_coc
+        .class_coords
+        .iter()
+        .map(ToString::to_string)
+        .collect();
 
     let (restored_relative_lift, reevaluation, restored_shifted) =
         if let Some(witness_pos) = fu_coc.coboundary_witness {
@@ -304,7 +308,9 @@ where
             let z_c = ext.r_prime().zero_coeff.zero_like();
             let mut grad_rr = vec![vec![z_c.clone(); n * dm]; dm];
             for j in 0..n {
-                let dp = rr_poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
+                let dp = rr_poly
+                    .partial_derivative(j)
+                    .map_err(map_lift_algebra_error)?;
                 let val_r = ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
@@ -546,8 +552,7 @@ where
         let mut overlap_diff = vec![z.clone(); spec.variables.len() * dm];
         for &j in &overlap_indices {
             for k in 0..dm {
-                overlap_diff[j * dm + k] =
-                    right_delta[j * dm + k].sub_ref(&left_delta[j * dm + k]);
+                overlap_diff[j * dm + k] = right_delta[j * dm + k].sub_ref(&left_delta[j * dm + k]);
             }
         }
         let mut mv_cocycle = vec![z.clone(); rc.fu.dim1()];
@@ -751,7 +756,9 @@ where
                 .map_err(map_lift_algebra_error)?;
             let mut row_block = vec![vec![z.clone(); num_cols]; dm];
             for (c_pos, &j) in ctx_var_indices.iter().enumerate() {
-                let dp = rp_poly.partial_derivative(j).map_err(map_lift_algebra_error)?;
+                let dp = rp_poly
+                    .partial_derivative(j)
+                    .map_err(map_lift_algebra_error)?;
                 let val_r = ext
                     .r_base()
                     .eval_poly(&dp, &base_full_r)
@@ -777,10 +784,12 @@ where
                 .collect();
             Ok((full_p, full_k))
         }
-        AffineSolutionField::Inconsistent { .. } => Err(SilenceReason::ApplicabilityConditionNotMet {
-            condition: "two_context_local_lift_exists".to_owned(),
-            detail: "local lift does not exist on one of the two contexts".to_owned(),
-        }),
+        AffineSolutionField::Inconsistent { .. } => {
+            Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "two_context_local_lift_exists".to_owned(),
+                detail: "local lift does not exist on one of the two contexts".to_owned(),
+            })
+        }
     }
 }
 
@@ -807,7 +816,10 @@ fn align_ambient_to_obs_field<C: FieldCoeff>(
             particular,
             kernel_basis,
             ..
-        } => Some((apply_m_shift(ext, ambient_lift_rp, &particular).ok()?, kernel_basis)),
+        } => Some((
+            apply_m_shift(ext, ambient_lift_rp, &particular).ok()?,
+            kernel_basis,
+        )),
         AffineSolutionField::Inconsistent { .. } => None,
     }
 }

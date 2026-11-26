@@ -25,7 +25,8 @@ where
     C: RingCoeff,
     FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
 {
-    let (_, empty_bindings) = ExprBindings::from_slices(&[], &[], &[]).map_err(map_atlas_alg_err)?;
+    let (_, empty_bindings) =
+        ExprBindings::from_slices(&[], &[], &[]).map_err(map_atlas_alg_err)?;
     let (state_order, state_bindings) =
         ExprBindings::from_slices(&ext.state_vars, &[], &[]).map_err(map_atlas_alg_err)?;
 
@@ -158,9 +159,8 @@ where
             }
         }
     }
-    let all_extended_checks_preserved = extended_check_results
-        .iter()
-        .all(|c| c.transport_preserved);
+    let all_extended_checks_preserved =
+        extended_check_results.iter().all(|c| c.transport_preserved);
 
     Ok(ExtendedLanguageResult {
         atomic_ops_commute,
@@ -194,7 +194,11 @@ where
         initial_state.iter().map(|(v, e)| (v.as_str(), e)).collect();
     let mut init_vec = Vec::with_capacity(extended_state_vars.len());
     for v in extended_state_vars {
-        init_vec.push(eval_const_expr(init_map[v.as_str()], empty_bindings, expand)?);
+        init_vec.push(eval_const_expr(
+            init_map[v.as_str()],
+            empty_bindings,
+            expand,
+        )?);
     }
 
     let law_polys: Vec<(&str, Poly<C>)> = intermediate_laws
@@ -285,7 +289,11 @@ where
         sample_state.iter().map(|(v, e)| (v.as_str(), e)).collect();
     let mut x = Vec::with_capacity(state_vars.len());
     for v in state_vars {
-        x.push(eval_const_expr(sample_map[v.as_str()], empty_bindings, expand)?);
+        x.push(eval_const_expr(
+            sample_map[v.as_str()],
+            empty_bindings,
+            expand,
+        )?);
     }
 
     let before_map: BTreeMap<&str, &PolyExpr> = before_updates
@@ -298,7 +306,8 @@ where
     let mut before_polys = Vec::with_capacity(state_vars.len());
     let mut after_polys = Vec::with_capacity(state_vars.len());
     for v in state_vars {
-        before_polys.push(expand(before_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?);
+        before_polys
+            .push(expand(before_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?);
         after_polys.push(expand(after_map[v.as_str()], state_bindings).map_err(map_atlas_alg_err)?);
     }
 
