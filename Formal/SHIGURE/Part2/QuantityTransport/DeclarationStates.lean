@@ -1,5 +1,5 @@
 import Formal.SHIGURE.Part1.ContextSelectedStructures
-import Formal.SHIGURE.Part1.ContextSelectedEquations
+import Formal.SHIGURE.Part2.QuantityTransport.DeclarationBinders
 import Formal.SHIGURE.Part1.MarkedLawSupport
 
 /-!
@@ -231,6 +231,29 @@ private theorem selected_evaluates_iff (t : U.TermIn Γ s)
   rw [pulled, selectAssignment_selectVar] at evaluated
   exact evaluated
 
+/-- Equal written terms have the same evaluation with either support proof. -/
+theorem evaluates_congr {t v : Term P.signature Γ s} (same : t = v)
+    (keepT : Declaration.termContext t ≤ U) (keepV : Declaration.termContext v ≤ U)
+    (e : Assignment B.carrier Γ) (y : B.carrier s) :
+    B.evaluates ⟨t, keepT⟩ e y ↔ B.evaluates ⟨v, keepV⟩ e y := by
+  cases same
+  rfl
+
+/-- Expanding a supported original term preserves every value it actually evaluates. -/
+theorem evaluates_inlineLets (t : U.TermIn Γ s) (inlineKept : Declaration.termContext t.val.inlineLets ≤ U)
+    (e : Assignment B.carrier Γ) (y : B.carrier s) (held : B.evaluates t e y) :
+    B.evaluates ⟨t.val.inlineLets, inlineKept⟩ e y := by
+  let hSorts := termSortSupport t
+  let hΓ := (tailSortsSubset s Γ).trans hSorts
+  have hs : Declaration.sort s ∈ U.declarations := hSorts (Declaration.sort_mem_sorts (by simp))
+  have keep := (Declaration.termContext_le_iff t.val).1 t.property
+  have refs : termReferences t.val ⊆ U.declarations :=
+    (termReferences_subset_graph t.val).trans (Set.subset_union_right.trans keep)
+  have selected := (B.selected_evaluates_iff t hΓ hs refs e y).2 held
+  apply (B.selected_evaluates_iff ⟨_, inlineKept⟩ hΓ hs (inlineLets_supported t.val refs) e y).1
+  rw [selectTerm_inlineLets t.val hΓ hs refs]
+  exact Term.evaluates_inlineLets (readStructure B) _ _ _ selected
+
 /-- Every supported written value graph evaluates the same term at its named coordinates. -/
 theorem holds_graphAt_iff (t : U.TermIn Γ s) (ρ : Renaming Γ Δ) (out : Var Δ s)
     (keep : Declaration.formulaSupport (t.val.graphAt ρ out) ⊆ U.declarations)
@@ -251,15 +274,16 @@ theorem holds_graphAt_iff (t : U.TermIn Γ s) (ρ : Renaming Γ Δ) (out : Var �
   simp only [selectAssignment_pull, selectAssignment_selectVar] at graphAt
   exact graphAt.symm.trans (B.selected_evaluates_iff t hΓ _ refs _ _)
 
-/-- An application evaluates when its typed arguments evaluate and its primitive graph holds. -/
-theorem evaluates_app_of_graph (op : Operation P.signature)
+/-- An actual application evaluates exactly through its typed inputs and primitive graph. -/
+theorem evaluates_app_iff (op : Operation P.signature)
     (args : ∀ {t}, Var op.arity.inputs t → Term P.signature Γ t)
     (term : U.TermIn Γ op.arity.output) (application : term.val = .app op args)
-    (input : Assignment B.carrier Γ) (values : Assignment B.carrier op.arity.inputs)
-    (each : ∀ {t} (i : Var op.arity.inputs t), ∃ h, B.evaluates ⟨args i, h⟩ input (values i))
-    (keepOp : Declaration.ofOperation op ∈ U.declarations) (y : B.carrier op.arity.output)
-    (edge : B.evaluation.graph op keepOp values y) :
-    B.evaluates term input y := by
+    (input : Assignment B.carrier Γ)
+    (keepOp : Declaration.ofOperation op ∈ U.declarations) (y : B.carrier op.arity.output) :
+    B.evaluates term input y ↔
+      ∃ values : Assignment B.carrier op.arity.inputs,
+        (∀ {t} (i : Var op.arity.inputs t), ∃ ht, B.evaluates ⟨args i, ht⟩ input (values i)) ∧
+        B.evaluation.graph op keepOp values y := by
   obtain ⟨term, supported⟩ := term
   change term = Term.app op args at application
   subst term
@@ -272,26 +296,98 @@ theorem evaluates_app_of_graph (op : Operation P.signature)
   let body := (Formula.conjoin Λ fs).conj atom
   have keep : Declaration.formulaSupport (Formula.existsMany Λ body) ⊆ U.declarations :=
     (Declaration.termContext_le_iff (.app op args)).1 supported
-  change B.evaluation.holds (Formula.existsMany Λ body) keep e
+  change B.evaluation.holds (Formula.existsMany Λ body) keep e ↔ _
   have bodyKeep := existsMany_body_supported body keep
-  refine (B.evaluation.holds_existsMany_iff Λ body keep bodyKeep e).2 ⟨values, ?_⟩
-  rw [RestrictedEvaluation.holds_conj_iff]
+  rw [B.evaluation.holds_existsMany_iff Λ body keep bodyKeep e]
   let argsKeep := (Declaration.binarySupport_left (Declaration.formula_conj (Formula.conjoin Λ fs) atom)).trans bodyKeep
-  refine ⟨(B.evaluation.holds_conjoin_iff Λ fs argsKeep
-    (fun i => conjoin_component_supported fs argsKeep i) (values.append e)).2 ?_, ?_⟩
-  · intro t i
-    obtain ⟨hi, evaluated⟩ := each i
-    apply (B.holds_graphAt_iff ⟨args i, hi⟩ _ _ _ _).2
-    have inputEq : (values.append e).pull (fun {s} (j : Var Γ s) => (Var.there j : Var Δ s).shift Λ) = input := by
-      apply Assignment.ext
-      intro s j
-      rw [Assignment.pull_apply, Assignment.append_shift, Assignment.cons_there]
-    rw [inputEq, Assignment.append_inLeft]
-    exact evaluated
+  apply exists_congr
+  intro values
+  rw [RestrictedEvaluation.holds_conj_iff]
+  refine and_congr ?_ ?_
+  · refine (B.evaluation.holds_conjoin_iff Λ fs argsKeep
+      (fun i => conjoin_component_supported fs argsKeep i) (values.append e)).trans ?_
+    constructor
+    · intro held s i
+      have hi : Declaration.termContext (args i) ≤ U := by
+        apply termContext_le_of_references (args i)
+        · exact (tailSortsSubset op.arity.output Γ).trans (termSortSupport ⟨_, supported⟩)
+        · exact varKept (operationInputs op keepOp) i
+        · have keptTerm : termReferences (Term.app op args) ⊆ U.declarations :=
+            (termReferences_subset_graph (Term.app op args)).trans (Set.subset_union_right.trans keep)
+          exact fun _ h => keptTerm (Or.inr ⟨_, i, h⟩)
+      refine ⟨hi, ?_⟩
+      have evaluated := (B.holds_graphAt_iff ⟨args i, hi⟩ _ _ _ _).1 (held i)
+      have inputEq : (values.append e).pull (fun {s} (j : Var Γ s) => (Var.there j : Var Δ s).shift Λ) = input := by
+        apply Assignment.ext
+        intro s j
+        rw [Assignment.pull_apply, Assignment.append_shift, Assignment.cons_there]
+      rwa [inputEq, Assignment.append_inLeft] at evaluated
+    · intro each t i
+      obtain ⟨hi, evaluated⟩ := each i
+      apply (B.holds_graphAt_iff ⟨args i, hi⟩ _ _ _ _).2
+      have inputEq : (values.append e).pull (fun {s} (j : Var Γ s) => (Var.there j : Var Δ s).shift Λ) = input := by
+        apply Assignment.ext
+        intro s j
+        rw [Assignment.pull_apply, Assignment.append_shift, Assignment.cons_there]
+      rwa [inputEq, Assignment.append_inLeft]
   · change B.evaluation.graph op keepOp
-      ((values.append e).pull (Var.inLeft Δ)) ((values.append e) ((Var.here : Var Δ _).shift Λ))
+      ((values.append e).pull (Var.inLeft Δ)) ((values.append e) ((Var.here : Var Δ _).shift Λ)) ↔ _
     rw [Assignment.pull_append_left, Assignment.append_shift, Assignment.cons_here]
-    exact edge
+
+/-- An application evaluates when its typed arguments evaluate and its primitive graph holds. -/
+theorem evaluates_app_of_graph (op : Operation P.signature)
+    (args : ∀ {t}, Var op.arity.inputs t → Term P.signature Γ t)
+    (term : U.TermIn Γ op.arity.output) (application : term.val = .app op args)
+    (input : Assignment B.carrier Γ) (values : Assignment B.carrier op.arity.inputs)
+    (each : ∀ {t} (i : Var op.arity.inputs t), ∃ h, B.evaluates ⟨args i, h⟩ input (values i))
+    (keepOp : Declaration.ofOperation op ∈ U.declarations) (y : B.carrier op.arity.output)
+    (edge : B.evaluation.graph op keepOp values y) :
+    B.evaluates term input y :=
+  (B.evaluates_app_iff op args term application input keepOp y).2 ⟨values, each, edge⟩
+
+/-- A strict binding evaluates its initializer and then its body at the extended input. -/
+theorem evaluates_let_of_values {a : P.signature.SortType} (init : U.TermIn Γ a) (body : U.TermIn (a :: Γ) s)
+    (support : Declaration.termContext (init.val.letBind body.val) ≤ U)
+    (e : Assignment B.carrier Γ) (x : B.carrier a) (y : B.carrier s)
+    (hx : B.evaluates init e x) (hy : B.evaluates body (Assignment.cons x e) y) :
+    B.evaluates ⟨init.val.letBind body.val, support⟩ e y := by
+  let e' := Assignment.cons y e
+  let Δ := s :: Γ
+  let first : Renaming Γ (a :: Δ) := fun i => .there (.there i)
+  let rest : Renaming (a :: Γ) (a :: Δ) := Renaming.lift (fun i => .there i)
+  let p := init.val.graphAt first (Var.here : Var (a :: Δ) a)
+  let q := body.val.graphAt rest (Var.there (Var.here : Var Δ s))
+  have keep : Declaration.formulaSupport ((p.conj q).ex) ⊆ U.declarations :=
+    (Declaration.termContext_le_iff (init.val.letBind body.val)).1 support
+  change B.evaluation.holds (p.conj q).ex keep e'
+  refine ⟨x, ?_⟩
+  rw [RestrictedEvaluation.holds_conj_iff]
+  constructor
+  · change B.evaluation.holds (init.val.graphAt first .here) _ (Assignment.cons x e')
+    apply (B.holds_graphAt_iff init first .here _ _).2
+    exact hx
+  · change B.evaluation.holds (body.val.graphAt rest (.there .here)) _ (Assignment.cons x e')
+    apply (B.holds_graphAt_iff body rest (.there .here) _ _).2
+    have pull : (Assignment.cons x e').pull rest = Assignment.cons x e := by
+      apply Assignment.ext
+      intro s i
+      cases i <;> rfl
+    rw [pull]
+    exact hy
+
+/-- A supported term has at most one value on its actual input assignment. -/
+theorem evaluates_unique (t : U.TermIn Γ s) (input : Assignment B.carrier Γ) {x y : B.carrier s}
+    (hx : B.evaluates t input x) (hy : B.evaluates t input y) : x = y := by
+  let hSorts := termSortSupport t
+  let hΓ := (tailSortsSubset s Γ).trans hSorts
+  have hs : Declaration.sort s ∈ U.declarations := hSorts (Declaration.sort_mem_sorts (by simp))
+  have keep := (Declaration.termContext_le_iff t.val).1 t.property
+  have refs : termReferences t.val ⊆ U.declarations :=
+    (termReferences_subset_graph t.val).trans (Set.subset_union_right.trans keep)
+  let lhs := B.selected_evaluates_iff t hΓ hs refs input x
+  let rhs := B.selected_evaluates_iff t hΓ hs refs input y
+  exact (readCarrierEquiv B s hs).injective ((selectTerm t.val hΓ hs refs).evaluates_unique _ _
+    (lhs.2 hx) (rhs.2 hy))
 
 /-- A declared expansion on its guard holds exactly when its two actual term values agree. -/
 theorem holds_written_iff_of_evaluates (w : OrderedEquation.Written P.signature)

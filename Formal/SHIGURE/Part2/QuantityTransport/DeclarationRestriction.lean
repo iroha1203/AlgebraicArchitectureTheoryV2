@@ -19,7 +19,7 @@ One may select coordinates after evaluating the state terms. The retained
 writing used here also gives the original substitutions, primitive
 symbols and antecedents, which the reduct can evaluate independently.
 The selected domain of a partial quantity is read from its own domain
-declaration. Ordinary literal values come from their declared operations.
+declaration. Literal values come from the actual nullary graphs on the declared inputs.
 -/
 
 universe u
@@ -29,6 +29,24 @@ noncomputable section
 namespace SHIGURE.Quantities
 
 open DeclarationContext
+
+/-- A written source term can retain a strict binder expanded by the polynomial compiler. -/
+inductive SourceSide {sig : Signature.{u}} {Q : Set (QuantityDeclaration sig)}
+    {Γ : List sig.SortType} {s : sig.SortType} (compiled : CoefficientTerm Q Γ s)
+  | direct
+  | inline (written : Term sig Γ s) (expands : written.inlineLets = compiled.toTerm)
+
+namespace SourceSide
+
+variable {sig : Signature.{u}} {Q : Set (QuantityDeclaration sig)}
+variable {Γ : List sig.SortType} {s : sig.SortType} {compiled : CoefficientTerm Q Γ s}
+
+/-- Read the original term, including any written strict binders. -/
+def term : SourceSide compiled → Term sig Γ s
+  | .direct => compiled.toTerm
+  | .inline written _ => written
+
+end SourceSide
 
 /-- The original required coefficient equations in one primitive presentation.
 Their terms are tied to the actual positive formulas by their ordered writings. -/
@@ -42,9 +60,12 @@ structure DeclaredQuantityLaws (P : PrimitivePresentation.{u}) where
   /-- The two sides, over the original source context of each declaration. -/
   left (l : quantityLaws) : CoefficientTerm quantities (P.theory.law l.val).context (valueSort l)
   right (l : quantityLaws) : CoefficientTerm quantities (P.theory.law l.val).context (valueSort l)
+  /-- The two original terms may use strict binders around their scalar expressions. -/
+  leftSource (l : quantityLaws) : SourceSide (left l) := .direct
+  rightSource (l : quantityLaws) : SourceSide (right l) := .direct
   /-- The existing Law is the ordered writing of these two original typed terms. -/
   expansion (l : quantityLaws) : OrderedEquation.Expansion
-    ⟨(P.theory.law l.val).context, valueSort l, (P.theory.law l.val).input, (left l).toTerm, (right l).toTerm⟩
+    ⟨(P.theory.law l.val).context, valueSort l, (P.theory.law l.val).input, (leftSource l).term, (rightSource l).term⟩
     (P.theory.law l.val).conclusion
 
 namespace DeclaredQuantityLaws
@@ -62,19 +83,37 @@ abbrev KeptLaw (U : DeclarationContext P) :=
 
 /-- The original equation with its full ordered writing. -/
 def writing (l : L.quantityLaws) : OrderedEquation.Written P.signature :=
-  ⟨⟨_, _, _, (L.left l).toTerm, (L.right l).toTerm⟩, (P.theory.law l.val).conclusion, L.expansion l⟩
+  ⟨⟨_, _, _, (L.leftSource l).term, (L.rightSource l).term⟩, (P.theory.law l.val).conclusion, L.expansion l⟩
 
 /-- Its stored positive Law is exactly the declaration at the selected name. -/
 theorem writing_toLaw (l : L.quantityLaws) : (L.writing l).toLaw = P.theory.law l.val :=
   rfl
 
-/-- The reduced context keeps the result sort and all references of both actual written sides. -/
+private theorem keptWriting_refs (l : L.KeptLaw U) :
+    Declaration.sort (L.valueSort l.val) ∈ U.declarations ∧
+      Selected.termReferences (L.leftSource l.val).term ⊆ U.declarations ∧
+      Selected.termReferences (L.rightSource l.val).term ⊆ U.declarations :=
+  Selected.selectWritten_terms_kept (L.writing l.val)
+    (by rw [L.writing_toLaw]; exact Declaration.lawBody_subset_of_mem l.property)
+
+private theorem compiledRefs_kept {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    {compiled : CoefficientTerm L.quantities Γ s} (source : SourceSide compiled)
+    (keep : Selected.termReferences source.term ⊆ U.declarations) :
+    Selected.termReferences compiled.toTerm ⊆ U.declarations := by
+  cases source with
+  | direct => exact keep
+  | inline term expands =>
+    rw [← expands]
+    exact Selected.inlineLets_supported term keep
+
+/-- Reading a retained Law keeps the result sort and each reference used by its compiled terms. -/
 theorem keptLaw_refs (l : L.KeptLaw U) :
     Declaration.sort (L.valueSort l.val) ∈ U.declarations ∧
       Selected.termReferences (L.left l.val).toTerm ⊆ U.declarations ∧
       Selected.termReferences (L.right l.val).toTerm ⊆ U.declarations :=
-  Selected.selectWritten_terms_kept (L.writing l.val)
-    (by rw [L.writing_toLaw]; exact Declaration.lawBody_subset_of_mem l.property)
+  ⟨(L.keptWriting_refs l).1,
+    L.compiledRefs_kept (L.leftSource l.val) (L.keptWriting_refs l).2.1,
+    L.compiledRefs_kept (L.rightSource l.val) (L.keptWriting_refs l).2.2⟩
 
 /-- Only literal symbols and applications present in the two original terms are compiled. -/
 abbrev UsedLeaf (l : L.quantityLaws) :=
@@ -130,7 +169,7 @@ def keptTerm (l : L.KeptLaw U) (a : L.UsedApplication l.val) {s : P.signature.So
 
 /-- A literal's nullary operation survives selection of its written Law. -/
 private theorem keptLiteral_name (l : L.KeptLaw U) (a : L.UsedLiteral l.val) :
-    Declaration.ofOperation a.val.2.symbol.operation ∈ U.declarations := by
+    Declaration.ofOperation a.val.2.operation ∈ U.declarations := by
   let op := a.val.2
   have kept := L.keptLeaf_refs l ⟨.inl a.val, a.property⟩
   change Selected.termReferences (op.term (Γ := (P.theory.law l.val.val).context) Term.argsNil) ⊆
@@ -147,6 +186,30 @@ def lawInput (A : ContextStructure U) (l : L.KeptLaw U) :
 theorem keptLaw_sorts (l : L.KeptLaw U) :
     Declaration.sorts (P.theory.law l.val.val).context ⊆ U.declarations :=
   lawSortSupport (Declaration.lawBody_subset_of_mem l.property)
+
+/-- The left term of the actual declared Law is supported in the retained context. -/
+def keptLeftSource (l : L.KeptLaw U) : U.TermIn (P.theory.law l.val.val).context (L.valueSort l.val) :=
+  ⟨(L.leftSource l.val).term, Selected.termContext_le_of_references _ (L.keptLaw_sorts l)
+    (L.keptWriting_refs l).1 (L.keptWriting_refs l).2.1⟩
+
+/-- The right term of the actual declared Law is supported in the retained context. -/
+def keptRightSource (l : L.KeptLaw U) : U.TermIn (P.theory.law l.val.val).context (L.valueSort l.val) :=
+  ⟨(L.rightSource l.val).term, Selected.termContext_le_of_references _ (L.keptLaw_sorts l)
+    (L.keptWriting_refs l).1 (L.keptWriting_refs l).2.2⟩
+
+private theorem evaluates_compiledSide (B : ContextStructure U)
+    {Γ : List P.signature.SortType} {s : P.signature.SortType} {compiled : CoefficientTerm L.quantities Γ s}
+    (source : SourceSide compiled) (originalKept : Declaration.termContext source.term ≤ U)
+    (compiledKept : Declaration.termContext compiled.toTerm ≤ U)
+    (e : Assignment B.carrier Γ) (y : B.carrier s)
+    (original : B.evaluates ⟨source.term, originalKept⟩ e y) :
+    B.evaluates ⟨compiled.toTerm, compiledKept⟩ e y := by
+  cases source with
+  | direct => exact original
+  | inline term expands =>
+    have inlineKept : Declaration.termContext term.inlineLets ≤ U := expands.symm ▸ compiledKept
+    exact (B.evaluates_congr expands inlineKept compiledKept e y).1
+      (B.evaluates_inlineLets ⟨term, originalKept⟩ inlineKept e y original)
 
 /-- Each retained quantity preserves its typed input positions. -/
 theorem keptQuantity_sorts (j : L.KeptQuantity U) :
@@ -213,6 +276,21 @@ structure SameDeclarationState (A : ContextStructure U)
     A.evaluation.graph (.quantity j.val) j.property.2 input y ↔
       B.graph (.quantity j.val) j.property.2 input y
 
+/-- The original evaluation is itself an allowed replacement with no change of values. -/
+theorem SameDeclarationState.refl (A : ContextStructure U)
+    (total : ∀ j : L.KeptTotal U, Set (Assignment A.carrier (P.signature.quantityArity j.val).inputs)) :
+    L.SameDeclarationState A total A.evaluation where
+  structural := A.structural
+  relation _ _ _ := Iff.rfl
+  domain _ _ _ := Iff.rfl
+  graph _ _ _ _ _ := Iff.rfl
+  outside _ _ _ _ := Iff.rfl
+
+private abbrev termGraph {X : P.signature.SortType → Type u} (B : RestrictedEvaluation U X)
+    {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (t : U.TermIn Γ s) (e : Assignment X Γ) (y : X s) : Prop :=
+  B.holds t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property) (Assignment.cons y e)
+
 /-- Interpret scalar meanings and the defined state arguments in a fixed context structure. -/
 structure Interpretation (A : ContextStructure U) where
   /-- Read the coefficient value of an element of a retained carrier. -/
@@ -231,17 +309,16 @@ structure Interpretation (A : ContextStructure U) where
   /-- Each coefficient operation keeps its original values as the candidate quantities vary. -/
   fixedArithmetic (l : L.KeptLaw U) (a : ArithmeticOperation P.signature)
     (used : a ∈ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
-    a.operation ∉ QuantityDeclaration.operation '' L.quantities
+    ∀ (B : RestrictedEvaluation U A.carrier), L.SameDeclarationState A totalDomain B →
+      ∀ keep x y, A.evaluation.graph a.operation keep x y ↔ B.graph a.operation keep x y
   /-- Each literal keeps the value of its original nullary operation. -/
   fixedLiteral (l : L.KeptLaw U) (a : L.UsedLiteral l.val) :
-    a.val.2.symbol.operation ∉ QuantityDeclaration.operation '' L.quantities
+    ∀ (B : RestrictedEvaluation U A.carrier), L.SameDeclarationState A totalDomain B →
+      let op := a.val.2.operation
+      ∀ keep x y, A.evaluation.graph op keep x y ↔ B.graph op keep x y
   /-- The evaluated state argument tuple of each used quantity is in its fixed domain. -/
   value (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val) :
     L.fixedDomain A totalDomain (L.keptApplication l a)
-  /-- Its components are the actual evaluations of the original fixed state terms. -/
-  evaluates (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val)
-    {s : P.signature.SortType} (i : Var a.val.1.val.operation.arity.inputs s) :
-    A.evaluates (L.keptTerm l a i) e.val ((value l e a).val i)
   /-- The original antecedent is independent of the candidate values. -/
   inputIndependent (l : L.KeptLaw U) (B : RestrictedEvaluation U A.carrier)
     (same : L.SameDeclarationState A totalDomain B)
@@ -257,6 +334,12 @@ structure Interpretation (A : ContextStructure U) where
       ((Declaration.termContext_le_iff (L.keptTerm l a i).val).1 (L.keptTerm l a i).property)
       (Assignment.cons ((value l e a).val i) e.val)
 
+  /-- The required original terms are defined on every declared input with every candidate. -/
+  definedSides (l : L.KeptLaw U) (e : L.lawInput A l) (B : RestrictedEvaluation U A.carrier)
+    (same : L.SameDeclarationState A totalDomain B) :
+    (∃ y, termGraph B (L.keptLeftSource l) e.val y) ∧
+    (∃ y, termGraph B (L.keptRightSource l) e.val y)
+
 
 namespace Interpretation
 
@@ -265,19 +348,57 @@ variable {L} {A : ContextStructure U} (I : L.Interpretation (k := k) A)
 /-- The fixed argument set in the retained state for a designated quantity. -/
 abbrev domain (j : L.KeptQuantity U) := L.fixedDomain A I.totalDomain j
 
-/-- The actual value of the original retained nullary operation. -/
-private def actualLiteral (l : L.KeptLaw U) (a : L.UsedLiteral l.val) : A.carrier a.val.1 :=
-  a.val.2.nativeValue A (L.keptLiteral_name l a) Assignment.empty
+/-- Specializing independence to the original evaluation reads the original state argument. -/
+theorem evaluates (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedApplication l.val)
+    {s : P.signature.SortType} (i : Var a.val.1.val.operation.arity.inputs s) :
+    A.evaluates (L.keptTerm l a i) e.val ((I.value l e a).val i) :=
+  I.argumentIndependent l A.evaluation (SameDeclarationState.refl L A I.totalDomain) e a i
 
-/-- Read the scalar from the actual value of its declared nullary symbol. -/
-def literalValue (l : L.KeptLaw U) (a : L.UsedLiteral l.val) : k :=
-  I.read a.val.1 (a.val.2.keepsResult (L.keptLiteral_name l a)) (actualLiteral (A := A) l a)
+include I in
+private theorem literalGraph_exists (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedLiteral l.val) :
+    ∃ z, a.val.2.graph A (L.keptLiteral_name l a) Assignment.empty z := by
+  have source := I.definedSides l e A.evaluation (SameDeclarationState.refl L A I.totalDomain)
+  let op := a.val.2
+  let keep := L.keptLiteral_name l a
+  have existsLeaf : ∃ hTerm : Declaration.termContext (op.term (Γ := (P.theory.law l.val.val).context) Term.argsNil) ≤ U, ∃ z,
+      A.evaluates ⟨op.term Term.argsNil, hTerm⟩ e.val z := by
+    rcases a.property with onLeft | onRight
+    · obtain ⟨z, original⟩ := source.1
+      have retained := Selected.termContext_le_of_references (L.left l.val).toTerm
+        (L.keptLaw_sorts l) (L.keptLaw_refs l).1 (L.keptLaw_refs l).2.1
+      have normal := L.evaluates_compiledSide A (L.leftSource l.val) (L.keptLeftSource l).property retained e.val z original
+      exact (L.left l.val).exists_evaluated_leaf A e.val (.inl a.val) onLeft
+        (L.keptLaw_refs l).2.1 retained z normal
+    · obtain ⟨z, original⟩ := source.2
+      have retained := Selected.termContext_le_of_references (L.right l.val).toTerm
+        (L.keptLaw_sorts l) (L.keptLaw_refs l).1 (L.keptLaw_refs l).2.2
+      have normal := L.evaluates_compiledSide A (L.rightSource l.val) (L.keptRightSource l).property retained e.val z original
+      exact (L.right l.val).exists_evaluated_leaf A e.val (.inl a.val) onRight
+        (L.keptLaw_refs l).2.2 retained z normal
+  obtain ⟨hTerm, z, hz⟩ := existsLeaf
+  obtain ⟨input, _, edge⟩ := (op.evaluates_term_iff A Term.argsNil hTerm e.val keep z).1 hz
+  exact ⟨z, Assignment.eq_empty input ▸ edge⟩
+
+/-- The actual value of the original retained nullary operation at a designated Law input. -/
+private def actualLiteral (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedLiteral l.val) : A.carrier a.val.1 :=
+  (I.literalGraph_exists l e a).choose
+
+/-- Read an actual coefficient at a declared input, including a fixed defined partial constant. -/
+def literalValue (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedLiteral l.val) : k :=
+  I.read a.val.1 (a.val.2.keepsResult (L.keptLiteral_name l a)) (I.actualLiteral l e a)
+
+/-- Reading an actual nullary graph gives the same coefficient as the compiler. -/
+theorem literalValue_eq_of_graph (l : L.KeptLaw U) (e : L.lawInput A l) (a : L.UsedLiteral l.val)
+    (z : A.carrier a.val.1)
+    (edge : a.val.2.graph A (L.keptLiteral_name l a) Assignment.empty z) :
+    I.literalValue l e a = I.read a.val.1 (a.val.2.keepsResult (L.keptLiteral_name l a)) z :=
+  congrArg _ (a.val.2.graph_rightUnique A _ (I.literalGraph_exists l e a).choose_spec edge)
 
 /-- A leaf compiles to its original coefficient value or its actual quantity coordinate. -/
 private def readLeaf (l : L.KeptLaw U) (e : L.lawInput A l) :
     (a : L.UsedLeaf l.val) →
       CoefficientTerm.LeafValue k (Σ j : L.KeptQuantity U, I.domain j) a.val
-  | ⟨.inl literal, used⟩ => I.literalValue l ⟨literal, used⟩
+  | ⟨.inl literal, used⟩ => I.literalValue l e ⟨literal, used⟩
   | ⟨.inr app, used⟩ => ⟨L.keptApplication l ⟨app, used⟩, I.value l e ⟨app, used⟩⟩
 
 /-- Compile exactly the originally designated quantity equations surviving in the context. -/
@@ -295,59 +416,6 @@ private theorem read_cast {s t : P.signature.SortType} (eq : s = t)
     (x : A.carrier s) : I.read t ht (cast (congrArg A.carrier eq) x) = I.read s hs x := by
   cases eq
   rfl
-
-/-- The native value of a leaf is its actual literal value or the selected candidate quantity. -/
-private def nativeLeaf (l : L.KeptLaw U) (e : L.lawInput A l)
-    (q : I.presentation.Candidate k) (lift : k → A.carrier (L.valueSort l.val))
-    (t : CoefficientTerm L.quantities (P.theory.law l.val.val).context (L.valueSort l.val))
-    (used : t.leaves ⊆ (L.left l.val).leaves ∪ (L.right l.val).leaves) :
-    ∀ a ∈ t.leaves, A.carrier (L.valueSort l.val)
-  | .inl literal, h =>
-    cast (congrArg A.carrier (t.leafSort_eq h))
-      (actualLiteral (A := A) l ⟨literal, used h⟩)
-  | .inr app, h =>
-    let a : L.UsedApplication l.val := ⟨app, used h⟩
-    lift (q (L.keptApplication l a) (I.value l e a))
-
-/-- Both native sides evaluate their actual declared arithmetic at the same fixed state input. -/
-def nativeSides (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
-    (lift : k → A.carrier (L.valueSort l.val)) :
-    A.carrier (L.valueSort l.val) × A.carrier (L.valueSort l.val) :=
-  ⟨(L.left l.val).evalNative A (L.keptLaw_refs l).2.1
-    (I.nativeLeaf l e q lift (L.left l.val) Set.subset_union_left),
-    (L.right l.val).evalNative A (L.keptLaw_refs l).2.2
-      (I.nativeLeaf l e q lift (L.right l.val) Set.subset_union_right)⟩
-
-/-- The original native term actions give the compiled value on each side. -/
-private theorem nativeSide_read (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
-    (lift : k → A.carrier (L.valueSort l.val))
-    (readsLift : ∀ x, I.read _ (L.keptLaw_refs l).1 (lift x) = x)
-    (t : CoefficientTerm L.quantities (P.theory.law l.val.val).context (L.valueSort l.val))
-    (keep : Selected.termReferences t.toTerm ⊆ U.declarations)
-    (used : t.leaves ⊆ (L.left l.val).leaves ∪ (L.right l.val).leaves)
-    (usedArithmetic : t.arithmetic ⊆ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
-    I.read _ (L.keptLaw_refs l).1 (t.evalNative A keep (I.nativeLeaf l e q lift t used)) =
-      (t.compile (fun a h => I.readLeaf l e ⟨a, used h⟩)).eval (fun x => q x.1 x.2) := by
-  apply CoefficientTerm.evalNative_read
-  · intro a h
-    cases a with
-    | inl literal =>
-      exact I.read_cast (t.leafSort_eq h) _ _ _
-    | inr app => exact readsLift _
-  · intro op h
-    exact I.arithmetic l op (usedArithmetic h)
-
-/-- Reading both original native sides agrees with evaluation of their compiled equations. -/
-theorem nativeSides_read (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k)
-    (lift : k → A.carrier (L.valueSort l.val))
-    (readsLift : ∀ x, I.read _ (L.keptLaw_refs l).1 (lift x) = x) :
-    let result := I.nativeSides l e q lift
-    (I.read _ (L.keptLaw_refs l).1 result.1, I.read _ (L.keptLaw_refs l).1 result.2) =
-      ((I.presentation.left l e).eval (fun x => q x.1 x.2),
-        (I.presentation.right l e).eval (fun x => q x.1 x.2)) :=
-  Prod.ext
-    (I.nativeSide_read l e q lift readsLift _ _ Set.subset_union_left Set.subset_union_left)
-    (I.nativeSide_read l e q lift readsLift _ _ Set.subset_union_right Set.subset_union_right)
 
 /-- The identification of the original equality's value sort with the coefficient ring. -/
 def lawCoefficients (l : L.KeptLaw U) : A.carrier (L.valueSort l.val) ≃ k :=
@@ -431,87 +499,57 @@ theorem candidateStructure_graph (q : I.presentation.Candidate k) (j : L.KeptQua
     simp only [candidateOperations, dif_pos chosen]
     rfl
 
-/-- The compiled equation holds exactly when the two interpreted original sides are equal. -/
-theorem nativeEquation_iff (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k) :
-    let native := I.nativeSides l e q (I.lawCoefficients l).symm
-    native.1 = native.2 ↔
-      (I.presentation.left l e).eval (fun x => q x.1 x.2) =
-        (I.presentation.right l e).eval (fun x => q x.1 x.2) := by
-  have equality := I.nativeSides_read l e q (I.lawCoefficients l).symm
-    (I.lawCoefficients l).apply_symm_apply
-  have lh := congrArg Prod.fst equality
-  have rh := congrArg Prod.snd equality
-  dsimp only at lh rh ⊢
-  rw [← lh, ← rh, (I.lawRead l).1.eq_iff]
-
-/-- The universal polynomial residual specializes to the interpreted difference of the native sides. -/
-theorem nativeResidual_eq (l : L.KeptLaw U) (e : L.lawInput A l) (q : I.presentation.Candidate k) :
-    I.presentation.evaluate q (I.presentation.residual l e) =
-      let sides := I.nativeSides l e q (I.lawCoefficients l).symm
-      I.read _ (L.keptLaw_refs l).1 sides.1 - I.read _ (L.keptLaw_refs l).1 sides.2 := by
-  rw [I.presentation.evaluate_residual]
-  exact congrArg (fun values : k × k => values.1 - values.2)
-    (I.nativeSides_read l e q (I.lawCoefficients l).symm (I.lawCoefficients l).apply_symm_apply).symm
-
-private theorem nativeSide_evaluates (l : L.KeptLaw U) (e : L.lawInput A l)
+private theorem compiledValue_read (l : L.KeptLaw U) (e : L.lawInput A l)
     (q : I.presentation.Candidate k)
     (t : CoefficientTerm L.quantities (P.theory.law l.val.val).context (L.valueSort l.val))
     (keep : Selected.termReferences t.toTerm ⊆ U.declarations)
     (used : t.leaves ⊆ (L.left l.val).leaves ∪ (L.right l.val).leaves)
-    (arithmetic : t.arithmetic ⊆ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
-    ∃ hTerm, (I.candidateStructure q).evaluates ⟨t.toTerm, hTerm⟩ e.val
-      (t.evalNative A keep (I.nativeLeaf l e q (I.lawCoefficients l).symm t used)) := by
+    (arithmetic : t.arithmetic ⊆ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic)
+    (supported : Declaration.termContext t.toTerm ≤ U) (y : A.carrier (L.valueSort l.val))
+    (evaluated : (I.candidateStructure q).evaluates ⟨t.toTerm, supported⟩ e.val y) :
+    I.read _ (L.keptLaw_refs l).1 y =
+      (t.compile (fun a h => I.readLeaf l e ⟨a, used h⟩)).eval (fun x => q x.1 x.2) := by
   let B := I.candidateStructure q
   have fixed := I.candidateStructure_sameState q
-  apply t.evalNative_evaluates A B.evaluation B.structural _ (L.keptLaw_sorts l) (L.keptLaw_refs l).1
-  · dsimp only
-    intro a h
+  apply t.evaluates_read B I.read e.val keep (L.keptLaw_refs l).1 _ _ ?_ ?_ supported y evaluated
+  · intro a h hTerm z value
     cases a with
     | inl literal =>
       let leaf : L.UsedLiteral l.val := ⟨literal, used h⟩
       let op := literal.2
       let kept := L.keptLiteral_name l leaf
-      have support := Selected.termContext_le_of_references
-        (op.term (Γ := (P.theory.law l.val.val).context) Term.argsNil)
-        (L.keptLaw_sorts l) (op.keepsResult kept) (L.keptLeaf_refs l ⟨.inl literal, leaf.property⟩)
-      refine ⟨support, ?_⟩
-      have trivialCast : cast (congrArg A.carrier (t.leafSort_eq h).symm)
-          (I.nativeLeaf l e q (I.lawCoefficients l).symm t used (.inl literal) h) =
-          op.nativeValue A kept Assignment.empty := by
-        simp only [nativeLeaf, actualLiteral, cast_cast, cast_eq]
-        rfl
-      rw [trivialCast]
-      refine op.evaluates_term B _ support e.val Assignment.empty
-        (fun i => nomatch i) kept _ ?_
-      exact (fixed.graph op.symbol.operation (I.fixedLiteral l leaf) kept _ _).1
-        (op.nativeValue_graph A kept Assignment.empty)
+      obtain ⟨args, _, edge⟩ := (op.evaluates_term_iff B Term.argsNil hTerm e.val kept z).1 value
+      have atEmpty : op.graph B kept Assignment.empty z := Assignment.eq_empty args ▸ edge
+      have original : op.graph A kept Assignment.empty z :=
+        (I.fixedLiteral l leaf B.evaluation fixed kept _ _).2 atEmpty
+      have same := op.graph_rightUnique A kept original (I.literalGraph_exists l e leaf).choose_spec
+      have read := I.read_cast (t.leafSort_eq h) (op.keepsResult kept) (L.keptLaw_refs l).1 z
+      exact read.trans (congrArg (I.read literal.1 (op.keepsResult kept)) same)
     | inr application =>
       let a : L.UsedApplication l.val := ⟨application, used h⟩
       let j := L.keptApplication l a
       let input := I.value l e a
       let op := application.1.val.operation
-      have support := Selected.termContext_le_of_references (Term.app op (fun i => application.2 i))
-        (L.keptLaw_sorts l) (operationOutput op j.property) (L.keptLeaf_refs l ⟨.inr application, a.property⟩)
-      refine ⟨support, ?_⟩
-      have result :
-          cast (congrArg A.carrier (t.leafSort_eq h).symm)
-            (I.nativeLeaf l e q (I.lawCoefficients l).symm t used (.inr application) h) =
-            (I.quantityCoefficients j).symm (q j input) := by
-        apply (I.quantityCoefficients j).injective
-        change I.read _ (operationOutput op j.property)
-          (cast (congrArg A.carrier (t.leafSort_eq h).symm) ((I.lawCoefficients l).symm (q j input))) =
-          I.quantityCoefficients j ((I.quantityCoefficients j).symm (q j input))
-        have sortEq : op.arity.output = L.valueSort l.val := t.leafSort_eq h
-        exact (I.read_cast sortEq.symm (L.keptLaw_refs l).1 (operationOutput op j.property)
-          ((I.lawCoefficients l).symm (q j input))).trans
-          (((I.lawCoefficients l).apply_symm_apply (q j input)).trans
-            ((I.quantityCoefficients j).apply_symm_apply (q j input)).symm)
-      rw [result]
-      refine B.evaluates_app_of_graph op (fun i => application.2 i) ⟨_, support⟩ rfl e.val input.val
-        (fun i => ⟨(L.keptTerm l a i).property, I.argumentIndependent l B.evaluation fixed e a i⟩) j.property _ ?_
-      exact I.candidateStructure_graph q j input
-  · intro op h keep args y
-    exact (fixed.graph op.operation (I.fixedArithmetic l op (arithmetic h)) keep args y).1
+      have keepOp := j.property
+      obtain ⟨args, each, edge⟩ := (B.evaluates_app_iff op (fun i => application.2 i)
+        ⟨_, hTerm⟩ rfl e.val keepOp z).1 value
+      have agreed : args = input.val := by
+        apply Assignment.ext
+        intro s i
+        obtain ⟨_, witness⟩ := each i
+        exact B.evaluates_unique (L.keptTerm l a i) e.val witness
+          (I.argumentIndependent l B.evaluation fixed e a i)
+      have same := B.graph_rightUnique op keepOp (agreed ▸ edge) (I.candidateStructure_graph q j input)
+      have sortEq : op.arity.output = L.valueSort l.val := t.leafSort_eq h
+      refine (I.read_cast sortEq (operationOutput op keepOp) (L.keptLaw_refs l).1 z).trans ?_
+      exact (congrArg (I.read _ (operationOutput op keepOp)) same).trans ((I.quantityCoefficients j).apply_symm_apply _)
+  · intro a h
+    have original := I.arithmetic l a (arithmetic h)
+    have agreement := I.fixedArithmetic l a (arithmetic h) B.evaluation fixed
+    cases a with
+    | add op | neg op | sub op | mul op =>
+      intro args result edge
+      exact original args result ((agreement _ _ _).2 edge)
 
 /-- On the original guard, the declared conclusion holds exactly when its compiled residual is zero. -/
 theorem candidate_conclusion_iff (l : L.KeptLaw U) (e : L.lawInput A l)
@@ -521,15 +559,24 @@ theorem candidate_conclusion_iff (l : L.KeptLaw U) (e : L.lawInput A l)
     I.presentation.evaluate q (I.presentation.residual l e) = 0 := by
   let B := I.candidateStructure q
   let w := L.writing l.val
-  have guard := (I.inputIndependent l B.evaluation (I.candidateStructure_sameState q) e.val).1 e.property
-  obtain ⟨hl, actualLeft⟩ := I.nativeSide_evaluates l e q _ (L.keptLaw_refs l).2.1
-    Set.subset_union_left Set.subset_union_left
-  obtain ⟨hr, actualRight⟩ := I.nativeSide_evaluates l e q _ (L.keptLaw_refs l).2.2
-    Set.subset_union_right Set.subset_union_right
-  have compared := B.holds_written_iff_of_evaluates w
-    (Declaration.lawBody_subset_of_mem l.property) e.val guard actualLeft actualRight
-  refine compared.trans ((I.nativeEquation_iff l e q).trans ?_)
-  rw [I.presentation.evaluate_residual, sub_eq_zero]
+  have fixed := I.candidateStructure_sameState q
+  have guard := (I.inputIndependent l B.evaluation fixed e.val).1 e.property
+  obtain ⟨⟨x, originalLeft⟩, ⟨y, originalRight⟩⟩ := I.definedSides l e B.evaluation fixed
+  have leftKept := Selected.termContext_le_of_references (L.left l.val).toTerm
+    (L.keptLaw_sorts l) (L.keptLaw_refs l).1 (L.keptLaw_refs l).2.1
+  have rightKept := Selected.termContext_le_of_references (L.right l.val).toTerm
+    (L.keptLaw_sorts l) (L.keptLaw_refs l).1 (L.keptLaw_refs l).2.2
+  have compared := B.holds_written_iff_of_evaluates w (Declaration.lawBody_subset_of_mem l.property)
+    e.val guard originalLeft originalRight
+  have leftValue := I.compiledValue_read l e q _ (L.keptLaw_refs l).2.1 Set.subset_union_left Set.subset_union_left
+    leftKept x (L.evaluates_compiledSide B (L.leftSource l.val) (L.keptLeftSource l).property leftKept e.val x originalLeft)
+  have rightValue := I.compiledValue_read l e q _ (L.keptLaw_refs l).2.2 Set.subset_union_right Set.subset_union_right
+    rightKept y (L.evaluates_compiledSide B (L.rightSource l.val) (L.keptRightSource l).property rightKept e.val y originalRight)
+  change I.read _ (L.keptLaw_refs l).1 x = (I.presentation.left l e).eval (fun a => q a.1 a.2) at leftValue
+  change I.read _ (L.keptLaw_refs l).1 y = (I.presentation.right l e).eval (fun a => q a.1 a.2) at rightValue
+  have readsEq := (I.lawRead l).1.eq_iff (a := x) (b := y)
+  rw [I.presentation.evaluate_residual, sub_eq_zero, ← leftValue, ← rightValue]
+  exact compared.trans readsEq.symm
 
 /-- The actual original Law of each retained declaration is satisfied exactly when all its
 compiled residuals vanish for the same candidate. -/
@@ -734,6 +781,39 @@ private theorem extendEvaluation_restrict
       (le_refl V) (selectedMap V A.carrier)).graph op keep e y ↔ _
     rw [cancel]
 
+private theorem termDefined_restrict
+    (B : RestrictedEvaluation V (A.restrict inside).carrier)
+    (same : L.SameDeclarationState (A.restrict inside) (I.restrictTotal inside) B)
+    {Γ : List P.signature.SortType} {s : P.signature.SortType}
+    (t : V.TermIn Γ s) (e : Assignment (A.restrict inside).carrier Γ)
+    (original : ∃ y, termGraph (extendEvaluation (A := A) inside B) ⟨t.val, t.property.trans inside⟩
+      (mapAssignment (selectedMap V A.carrier) ((tailSortsSubset s Γ).trans (ContextStructure.termSortSupport t)) e) y) :
+    ∃ y, termGraph B t e y := by
+  obtain ⟨y, held⟩ := original
+  let keep := (Declaration.termContext_le_iff t.val).1 t.property
+  have hs : Declaration.sort s ∈ V.declarations :=
+    ContextStructure.termSortSupport t (Declaration.sort_mem_sorts (by simp))
+  let selected := retainedCarrierEquiv (A := A) inside s hs
+  let localResult := selected.symm y
+  let extended := extendEvaluation (A := A) inside B
+  refine ⟨localResult, ?_⟩
+  have transfer := extended.holds_pullback_iff inside (selectedMap V A.carrier)
+    (selectedMap_bijective A.carrier) t.val.graph keep (Assignment.cons localResult e)
+  rw [I.extendEvaluation_restrict inside B same] at transfer
+  apply transfer.2
+  have witness :
+      mapAssignment (selectedMap V A.carrier) ((Declaration.sorts_subset_formulaSupport _).trans keep)
+        (Assignment.cons localResult e) =
+      Assignment.cons y (mapAssignment (selectedMap V A.carrier)
+        ((tailSortsSubset s Γ).trans (ContextStructure.termSortSupport t)) e) := by
+    apply Assignment.ext
+    intro s i
+    cases i with
+    | here => exact selected.apply_symm_apply y
+    | there i => rfl
+  rw [witness]
+  exact held
+
 /-- The actual reduct retains the coefficient meanings and fixed-state evaluations of the original Laws. -/
 def restrict : L.Interpretation (k := k) (A.restrict inside) where
   read := I.restrictRead inside
@@ -742,21 +822,28 @@ def restrict : L.Interpretation (k := k) (A.restrict inside) where
   totalDomain := I.restrictTotal inside
   arithmetic l a used :=
     a.realizes_restrict inside (L.keptArithmetic l used) I.read (I.arithmetic (L.includeLaw inside l) a used)
-  fixedArithmetic l a used := I.fixedArithmetic (L.includeLaw inside l) a used
-  fixedLiteral l a := I.fixedLiteral (L.includeLaw inside l) a
+  fixedArithmetic l a used B same keep x y := by
+    let extended := extendEvaluation (A := A) inside B
+    have fixed := I.fixedArithmetic (L.includeLaw inside l) a used extended
+      (I.extendEvaluation_sameState inside B same) (inside keep)
+      (mapAssignment (selectedMap V A.carrier) (operationInputs a.operation keep) x)
+      (selectedMap V A.carrier _ (operationOutput a.operation keep) y)
+    change (A.restrict inside).evaluation.graph a.operation keep x y ↔
+      (extended.pullback inside (selectedMap V A.carrier)).graph a.operation keep x y at fixed
+    rw [I.extendEvaluation_restrict inside B same] at fixed
+    exact fixed
+  fixedLiteral l a B same keep x y := by
+    let extended := extendEvaluation (A := A) inside B
+    let op := a.val.2.operation
+    have fixed := I.fixedLiteral (L.includeLaw inside l) a extended
+      (I.extendEvaluation_sameState inside B same) (inside keep)
+      (mapAssignment (selectedMap V A.carrier) (operationInputs op keep) x)
+      (selectedMap V A.carrier _ (operationOutput op keep) y)
+    change (A.restrict inside).evaluation.graph op keep x y ↔
+      (extended.pullback inside (selectedMap V A.carrier)).graph op keep x y at fixed
+    rw [I.extendEvaluation_restrict inside B same] at fixed
+    exact fixed
   value := I.restrictValue inside
-  evaluates l e a := by
-    intro s i
-    apply (A.restrict_evaluates_iff inside (L.keptTerm l a i) _ _).2
-    have same := (assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply
-      (I.value (L.includeLaw inside l) (includeInput inside l e) a).val
-    have atIndex := congrArg (fun x : Assignment A.carrier _ => x i) same
-    change selectedMap V A.carrier s (varKept (L.keptQuantity_sorts (L.keptApplication l a)) i)
-      ((I.restrictValue inside l e a).val i) =
-        (I.value (L.includeLaw inside l) (includeInput inside l e) a).val i at atIndex
-    rw [atIndex]
-    exact I.evaluates (L.includeLaw inside l) (includeInput inside l e) a i
-
   inputIndependent l B same e := by
     let extended := extendEvaluation (A := A) inside B
     let e' := mapAssignment (selectedMap V A.carrier) (L.keptLaw_sorts l) e
@@ -795,23 +882,32 @@ def restrict : L.Interpretation (k := k) (A.restrict inside) where
     rw [witnessMapped]
     exact preserved
 
+  definedSides l e B same := by
+    let extended := extendEvaluation (A := A) inside B
+    have old := I.definedSides (L.includeLaw inside l) (includeInput inside l e) extended
+      (I.extendEvaluation_sameState inside B same)
+    exact ⟨I.termDefined_restrict inside B same (L.keptLeftSource l) e.val old.1,
+      I.termDefined_restrict inside B same (L.keptRightSource l) e.val old.2⟩
+
 /-- Read a retained quantity and its designated argument in the ambient context. -/
 private def declarationQuantityMap : QuantityMap (I.restrict inside).presentation I.presentation where
   name := L.includeQuantity inside
   argument j x := ⟨assignmentEquiv (A := A) inside (L.keptQuantity_sorts j) x.val,
     (I.restrict_domain_iff inside j x.val).1 x.property⟩
 
-/-- Restricting a literal does not change the coefficient read from its actual declaration. -/
-theorem literalValue_restrict (l : L.KeptLaw V) (a : L.UsedLiteral l.val) :
-    (I.restrict inside).literalValue l a = I.literalValue (L.includeLaw inside l) a := by
+/-- Restricting reads the same actual coefficient on the corresponding Law input. -/
+theorem literalValue_restrict (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l)
+    (a : L.UsedLiteral l.val) :
+    (I.restrict inside).literalValue l e a = I.literalValue (L.includeLaw inside l) (includeInput inside l e) a := by
   let op := a.val.2
   let keep := L.keptLiteral_name l a
-  change I.read _ _ (selectedMap V A.carrier _ (op.keepsResult keep)
-      (op.nativeValue (A.restrict inside) keep Assignment.empty)) =
-    I.read _ _ (op.nativeValue A (inside keep) Assignment.empty)
-  rw [op.nativeValue_restrict]
-  congr 2
-  exact Assignment.eq_empty _
+  let z := (I.restrict inside).actualLiteral l e a
+  have mapped := (op.graph_restrict_iff A inside keep Assignment.empty z).1
+    ((I.restrict inside).literalGraph_exists l e a).choose_spec
+  rw [Assignment.eq_empty (mapAssignment (selectedMap V A.carrier) (op.keepsInputs keep) Assignment.empty)] at mapped
+  have same := op.graph_rightUnique A (inside keep) mapped
+    (I.literalGraph_exists (L.includeLaw inside l) (includeInput inside l e) a).choose_spec
+  exact congrArg (I.read _ (inside (op.keepsResult keep))) same
 
 /-- The declaration comparison sends each evaluated argument to the original one. -/
 private theorem declarationCoordinate (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l)
@@ -832,7 +928,7 @@ private theorem declarationReadLeaf (l : L.KeptLaw V) (e : L.lawInput (A.restric
       ((I.restrict inside).readLeaf l e a) =
     I.readLeaf (L.includeLaw inside l) (includeInput inside l e) a := by
   rcases a with ⟨literal | app, used⟩
-  · exact I.literalValue_restrict inside l ⟨literal, used⟩
+  · exact I.literalValue_restrict inside l e ⟨literal, used⟩
   · exact I.declarationCoordinate inside l e ⟨app, used⟩
 
 /-- The actual context inclusion induces a comparison of the original retained scalar equations. -/

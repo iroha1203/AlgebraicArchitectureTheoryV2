@@ -39,7 +39,7 @@ namespace QuantityMap
 
 variable (h : QuantityMap P Q)
 
-/-- Transport the tagged coordinate, retaining its quantity name and argument. -/
+/-- Transport the tagged coordinate by mapping its quantity name and argument. -/
 def coordinate (x : P.Coordinate) : Q.Coordinate := ⟨h.name x.1, h.argument x.1 x.2⟩
 
 /-- The polynomial map sends each universal variable to the variable of the transported input. -/
