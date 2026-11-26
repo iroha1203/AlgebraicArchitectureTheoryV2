@@ -23,6 +23,7 @@ import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
+import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
@@ -4637,7 +4638,45 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.OpenModuleGluingExamples.integersChartGluing,
   SchemeDescent.OpenModuleGluingExamples.integersModuleGluing,
   SchemeDescent.OpenModuleGluingExamples.integersModuleMapGluing,
-  SchemeDescent.OpenModuleGluingExamples.nonIdentityTransition_not_cocycle
+  SchemeDescent.OpenModuleGluingExamples.nonIdentityTransition_not_cocycle,
+  SchemeDescent.moduleSpecPushforwardPresheafIso,
+  SchemeDescent.moduleSpecΓPushforwardIso,
+  SchemeDescent.tildePullbackIso,
+  SchemeDescent.tildeRestrictIso,
+  SchemeDescent.isLocalizedModule_limitMap,
+  SchemeDescent.isLocalizedModule_restrictScalars_of_map,
+  SchemeDescent.isLocalizedModule_sectionsRestrict_of_pairwise,
+  SchemeDescent.PrincipalLocalizations,
+  SchemeDescent.fromTildeΓ_isIso_of_principalLocalizations,
+  SchemeDescent.principalLocalizations_of_fromTildeΓ_isIso,
+  SchemeDescent.principalLocalizations_iff_tilde,
+  SchemeDescent.affineChart_sections_localize,
+  SchemeDescent.HasTildeOn,
+  SchemeDescent.HasTildeOn.restrict,
+  SchemeDescent.affineOpen_sections_localize,
+  SchemeDescent.HasTildeOn.pullbackImage,
+  SchemeDescent.affineTilde_of_finite_principalCover,
+  SchemeDescent.IsQuasiCoherentModule,
+  SchemeDescent.HasAffineTildeCover,
+  SchemeDescent.isQuasiCoherentModule_iff_affineCover,
+  SchemeDescent.isQuasiCoherentModule_iff_mathlib,
+  SchemeDescent.affinePushforward_essImage,
+  SchemeDescent.quasiCoherentAlgebra_affinePresentation,
+  SchemeDescent.HasAlgebraTildeOn,
+  SchemeDescent.HasAffineAlgebraTildeCover,
+  SchemeDescent.isQuasiCoherentSheafAlgebra_iff_eachAlgebraPresentation,
+  SchemeDescent.isQuasiCoherentSheafAlgebra_iff_affineAlgebraTildeCover,
+  SchemeDescent.isQuasiCoherentModule_of_tilde,
+  SchemeDescent.affineSections_localize,
+  SchemeDescent.algebraUnderlyingModule,
+  SchemeDescent.IsQuasiCoherentSheafAlgebra,
+  SchemeDescent.isQuasiCoherentSheafAlgebra_iff_affineCover,
+  SchemeDescent.sheafAlgebra_localizes,
+  SchemeDescent.QuasiCoherentAlgebra.ofSheaf,
+  SchemeDescent.QuasiCoherentAlgebra.ofSheaf_algebraSheafIso,
+  SchemeDescent.QuasiCoherentExamples.structureAlgebra_quasiCoherent,
+  SchemeDescent.QuasiCoherentExamples.structureAlgebra_reconstructed,
+  SchemeDescent.QuasiCoherentExamples.skyscraper_not_affineCover
 ]
 
 end SHIGURE.AxiomAudit
