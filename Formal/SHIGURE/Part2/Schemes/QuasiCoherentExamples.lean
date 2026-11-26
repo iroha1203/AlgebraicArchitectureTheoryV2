@@ -1,3 +1,4 @@
+import Formal.SHIGURE.Part2.Schemes.AffineAlgebraPresentations
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentComparison
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentSheafAlgebras
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
@@ -43,6 +44,60 @@ example : (algebraUnderlyingModule structureAlgebra).IsQuasicoherent :=
 example : ¬ (algebraUnderlyingModule RelativeSpecExamples.skyscraperAlgebraAtTwo).IsQuasicoherent :=
   fun qc => skyscraper_not_affineCover
     ((isQuasiCoherentModule_iff_affineCover _).mp ((isQuasiCoherentModule_iff_mathlib _).mpr qc))
+
+private abbrev skyscraperModule :=
+  algebraUnderlyingModule RelativeSpecExamples.skyscraperAlgebraAtTwo
+
+example : IsQuasiCoherentModule (algebraUnderlyingModule structureAlgebra) :=
+  structureAlgebra_quasiCoherent
+
+example : ¬ IsQuasiCoherentModule skyscraperModule :=
+  fun coherent => skyscraper_not_affineCover
+    ((isQuasiCoherentModule_iff_affineCover skyscraperModule).mp coherent)
+
+example : HasAffineTildeCover (algebraUnderlyingModule structureAlgebra) :=
+  (isQuasiCoherentSheafAlgebra_iff_affineCover _).mp structureAlgebra_quasiCoherent
+
+example : ¬ IsQuasiCoherentSheafAlgebra RelativeSpecExamples.skyscraperAlgebraAtTwo :=
+  fun coherent => skyscraper_not_affineCover ((isQuasiCoherentSheafAlgebra_iff_affineCover _).mp coherent)
+
+example : PrincipalLocalizations (algebraUnderlyingModule structureAlgebra) :=
+  (principalLocalizations_iff_tilde _).2 ⟨ModuleCat.of base base, ⟨tildeSelf (R := base)⟩⟩
+
+example : ¬ PrincipalLocalizations skyscraperModule := by
+  intro localizes
+  apply skyscraper_not_affineCover
+  exact (isQuasiCoherentModule_iff_affineCover _).mp
+    (isQuasiCoherentModule_of_tilde _ ((principalLocalizations_iff_tilde _).mp localizes))
+
+example : HasTildeOn (algebraUnderlyingModule structureAlgebra) (isAffineOpen_top X) :=
+  structureAlgebra_quasiCoherent ⟨⊤, isAffineOpen_top X⟩
+
+example : ¬ HasTildeOn skyscraperModule (isAffineOpen_top X) := by
+  intro localTilde
+  apply skyscraper_not_affineCover
+  exact ⟨Unit, fun _ => ⟨⊤, isAffineOpen_top X⟩, by simp, fun _ => localTilde⟩
+
+example : HasAffineAlgebraTildeCover structureAlgebra :=
+  (isQuasiCoherentSheafAlgebra_iff_affineAlgebraTildeCover _).mp structureAlgebra_quasiCoherent
+
+example : ¬ HasAffineAlgebraTildeCover RelativeSpecExamples.skyscraperAlgebraAtTwo := by
+  intro localTilde
+  apply skyscraper_not_affineCover
+  exact (isQuasiCoherentSheafAlgebra_iff_affineCover _).mp
+    ((isQuasiCoherentSheafAlgebra_iff_affineAlgebraTildeCover _).mpr localTilde)
+
+example : HasAlgebraTildeOn structureAlgebra (isAffineOpen_top X) :=
+  (isQuasiCoherentSheafAlgebra_iff_eachAlgebraPresentation _).mp
+    structureAlgebra_quasiCoherent ⟨⊤, isAffineOpen_top X⟩
+
+example : ¬ HasAlgebraTildeOn RelativeSpecExamples.skyscraperAlgebraAtTwo (isAffineOpen_top X) := by
+  intro localTilde
+  apply skyscraper_not_affineCover
+  have cover : HasAffineAlgebraTildeCover RelativeSpecExamples.skyscraperAlgebraAtTwo :=
+    ⟨Unit, fun _ => ⟨⊤, isAffineOpen_top X⟩, by simp, fun _ => localTilde⟩
+  exact (isQuasiCoherentSheafAlgebra_iff_affineCover _).mp
+    ((isQuasiCoherentSheafAlgebra_iff_affineAlgebraTildeCover _).mpr cover)
 
 end
 

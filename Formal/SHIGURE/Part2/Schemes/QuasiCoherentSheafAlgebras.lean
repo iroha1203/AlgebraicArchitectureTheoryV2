@@ -13,9 +13,9 @@ is the input to the relative spectrum construction.
 
 We derive the ring localization from the underlying module localization
 and the actual ring restriction map. The affine-site equivalence then
-recovers the input algebra sheaf and its structure morphism. A new
-affine-local presentation of the algebra would need this comparison
-with the original restriction maps spelled out separately.
+recovers the input algebra sheaf and its structure morphism.
+`AffineAlgebraPresentations` then identifies its algebra restrictions
+with the algebras associated to the original affine sections.
 -/
 
 namespace SHIGURE.SchemeDescent

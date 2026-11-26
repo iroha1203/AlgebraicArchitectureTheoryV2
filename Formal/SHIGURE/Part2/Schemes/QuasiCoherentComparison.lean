@@ -10,6 +10,12 @@ Appendix B. Mathlib uses local presentations by generators and relations on
 a general ringed site. We identify the two definitions on schemes by using
 the actual equivalence between opens of an open subscheme and the slice site
 over its image, with the structure rings identified by the open immersion.
+Mathlib's `Opens.overEquivalence` compares the slice with opens of the
+subspace. Here the image and preimage act along the given scheme morphism,
+so the induced ringed-site equivalence has the same component maps as
+`Scheme.Modules.restrict`. The opens equivalence alone supplies neither
+continuity nor these structure ring maps. `restrictOverIso` identifies
+the resulting restriction with mathlib's scheme-module restriction.
 -/
 
 namespace SHIGURE.SchemeDescent

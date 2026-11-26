@@ -148,6 +148,34 @@ private theorem restrictedPrincipalMap_localizes {S : CommRingCat.{u}} (f : R �
     exact hN (f r)
   exact isLocalizedModule_restrictScalars_of_map (Submonoid.powers r) h.hom
 
+/-- An affine pushforward of an associated module sheaf has an associated module presentation. -/
+theorem affinePushforward_essImage {S : CommRingCat.{u}} (f : R ⟶ S)
+    (N : (Spec S).Modules) (tildeN : (tilde.functor S).essImage N) :
+    (tilde.functor R).essImage ((pushforward (Spec.map f)).obj N) := by
+  let g := Spec.map f
+  apply (principalLocalizations_iff_tilde _).1
+  intro r
+  let U := PrimeSpectrum.basicOpen r
+  let j : op (⊤ : (Spec R).Opens) ⟶ op U := (homOfLE le_top).op
+  let P := (modulesSpecToSheaf.obj ((pushforward g).obj N)).val
+  let Q := (Opens.map g.base).op ⋙ (modulesSpecToSheaf.obj N).val ⋙ ModuleCat.restrictScalars f.hom
+  let comparison : P ≅ Q := moduleSpecPushforwardPresheafIso f N
+  let e := comparison.app (op ⊤)
+  let e' := comparison.app (op U)
+  have equal : P.map j = e.hom ≫ Q.map j ≫ e'.inv := by
+    apply (cancel_mono e'.hom).1
+    simpa only [Category.assoc, Iso.inv_hom_id, Category.comp_id] using comparison.hom.naturality j
+  letI : IsLocalizedModule (Submonoid.powers r) (Q.map j).hom :=
+    restrictedPrincipalMap_localizes f N ((principalLocalizations_iff_tilde N).2 tildeN) r
+      (g ⁻¹ᵁ ⊤) (g ⁻¹ᵁ U) ((Opens.map g.base).op.map j) g.preimage_top
+      (SpecMap_preimage_basicOpen f r)
+  change IsLocalizedModule (Submonoid.powers r) (P.map j).hom
+  rw [equal]
+  letI : IsLocalizedModule (Submonoid.powers r) ((Q.map j).hom.comp e.toLinearEquiv.toLinearMap) :=
+    IsLocalizedModule.of_linearEquiv_right (Submonoid.powers r) (Q.map j).hom e.toLinearEquiv
+  exact IsLocalizedModule.of_linearEquiv (Submonoid.powers r)
+    ((Q.map j).hom.comp e.toLinearEquiv.toLinearMap) e'.symm.toLinearEquiv
+
 /-- If the restriction to an open affine chart has a tilde presentation,
 restricting its sections to a principal open of the ambient affine scheme
 localizes them at the ambient scalar. -/
