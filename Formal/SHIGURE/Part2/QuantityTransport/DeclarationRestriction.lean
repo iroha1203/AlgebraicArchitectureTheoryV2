@@ -33,6 +33,26 @@ universe u
 
 noncomputable section
 
+namespace SHIGURE.ContextStructure
+
+open DeclarationContext
+
+variable {P : PrimitivePresentation.{u}} {U V : DeclarationContext P}
+
+/-- A supported tuple in the actual reduct has the same assigned values in the ambient structure. -/
+def restrictAssignmentEquiv (A : ContextStructure U) (inside : V ≤ U) {Γ : List P.signature.SortType}
+    (support : Declaration.sorts Γ ⊆ V.declarations) :
+    Assignment (A.restrict inside).carrier Γ ≃ Assignment A.carrier Γ :=
+  Equiv.ofBijective (mapAssignment (selectedMap V A.carrier) support) (by
+    refine ⟨?_, mapAssignment_surjective _ (fun s hs => (selectedMap_bijective A.carrier s hs).2) _⟩
+    intro a b same
+    apply Assignment.ext
+    intro s i
+    exact (selectedMap_bijective A.carrier s (varKept support i)).1
+      (congrArg (fun e : Assignment A.carrier Γ => e i) same))
+
+end SHIGURE.ContextStructure
+
 namespace SHIGURE.Quantities
 
 open DeclarationContext
@@ -464,7 +484,8 @@ private def readLeaf (l : L.KeptLaw U) (e : L.lawInput A l) :
   | ⟨.inl coefficient, used⟩ => I.coefficientValue l e ⟨coefficient, used⟩
   | ⟨.inr app, used⟩ => ⟨L.keptApplication l ⟨app, used⟩, I.value l e ⟨app, used⟩⟩
 
-/-- Compile exactly the originally designated quantity equations surviving in the context. -/
+/-- Compile the classified coefficient expressions surviving in the context.
+Native satisfaction for these expressions uses an `Interpretation`. -/
 def presentation : Presentation k (Selected.readStructure A) where
   Quantity := L.KeptQuantity U
   Domain := fun j => I.domain j
@@ -479,8 +500,10 @@ namespace Interpretation
 
 variable {L} {A : ContextStructure U} (I : L.Interpretation (k := k) A)
 
+/-- The designated domain inherited from the fixed-state reading. -/
 abbrev domain (j : L.KeptQuantity U) := I.toReading.domain j
 
+/-- The scalar presentation whose equations this interpretation compares with native satisfaction. -/
 abbrev presentation := I.toReading.presentation
 
 /-- The actual restricted operations obtained by replacing the chosen quantity values.
@@ -688,18 +711,6 @@ variable {L} {A : ContextStructure U} (I : L.Reading (k := k) A)
 
 variable (inside : V ≤ U)
 
-/-- A supported tuple in the actual reduct has the same assigned values in the ambient structure. -/
-private def assignmentEquiv {Γ : List P.signature.SortType}
-    (support : Declaration.sorts Γ ⊆ V.declarations) :
-    Assignment (A.restrict inside).carrier Γ ≃ Assignment A.carrier Γ :=
-  Equiv.ofBijective (mapAssignment (selectedMap V A.carrier) support) (by
-    refine ⟨?_, mapAssignment_surjective _ (fun s hs => (selectedMap_bijective A.carrier s hs).2) _⟩
-    intro a b same
-    apply Assignment.ext
-    intro s i
-    exact (selectedMap_bijective A.carrier s (varKept support i)).1
-      (congrArg (fun e : Assignment A.carrier Γ => e i) same))
-
 /-- The retained carriers identify the same scalar value before and after forgetting. -/
 private def restrictRead : CarrierMap V (A.restrict inside).carrier (fun _ => k) :=
   fun s keep x => I.read s (inside keep) (selectedMap V A.carrier s keep x)
@@ -707,7 +718,7 @@ private def restrictRead : CarrierMap V (A.restrict inside).carrier (fun _ => k)
 /-- Choose the corresponding argument set on the retained state carriers. -/
 private def restrictSelectedDomain (j : L.KeptQuantity V) :
     Set (Assignment (A.restrict inside).carrier j.val.val.operation.arity.inputs) :=
-  (assignmentEquiv (A := A) inside (L.keptQuantity_sorts j)) ⁻¹'
+  (A.restrictAssignmentEquiv inside (L.keptQuantity_sorts j)) ⁻¹'
     I.selectedDomain (L.includeQuantity inside j)
 
 omit [CommRing k] in
@@ -715,7 +726,7 @@ omit [CommRing k] in
 private theorem restrict_domain_iff (j : L.KeptQuantity V)
     (e : Assignment (A.restrict inside).carrier j.val.val.operation.arity.inputs) :
     e ∈ L.fixedDomain (A.restrict inside) (I.restrictSelectedDomain inside) j ↔
-      assignmentEquiv (A := A) inside (L.keptQuantity_sorts j) e ∈ I.domain (L.includeQuantity inside j) := by
+      A.restrictAssignmentEquiv inside (L.keptQuantity_sorts j) e ∈ I.domain (L.includeQuantity inside j) := by
   rcases j with ⟨⟨j, chosen⟩, keep⟩
   cases j <;> rfl
 
@@ -729,7 +740,7 @@ theorem restrict_lawInput_iff (l : L.KeptLaw V)
 /-- The image of a retained input in the original antecedent's input set. -/
 def includeInput (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l) :
     L.lawInput A (L.includeLaw inside l) :=
-  ⟨assignmentEquiv (A := A) inside (L.keptLaw_sorts l) e.val,
+  ⟨A.restrictAssignmentEquiv inside (L.keptLaw_sorts l) e.val,
     (restrict_lawInput_iff inside l e.val).1 e.property⟩
 
 /-- Return the original evaluated tuple through the actual reduct's carrier identification. -/
@@ -737,7 +748,7 @@ private def restrictValue (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) 
     (a : L.UsedApplication l.val) :
     L.fixedDomain (A.restrict inside) (I.restrictSelectedDomain inside) (L.keptApplication l a) := by
   let original := I.value (L.includeLaw inside l) (includeInput inside l e) a
-  let reads := assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))
+  let reads := A.restrictAssignmentEquiv inside (L.keptQuantity_sorts (L.keptApplication l a))
   refine ⟨reads.symm original.val, (I.restrict_domain_iff inside _ _).2 ?_⟩
   change reads (reads.symm original.val) ∈ I.domain (L.keptApplication (L.includeLaw inside l) a)
   rw [reads.apply_symm_apply]
@@ -767,11 +778,11 @@ def restrict : L.Reading (k := k) (A.restrict inside) where
     let v := (I.restrictValue inside l e a).val
     let original := (I.value (L.includeLaw inside l) input a).val
     have atIndex := congrArg (fun x : Assignment A.carrier _ => x i)
-      ((assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply original)
+      ((A.restrictAssignmentEquiv inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply original)
     apply (A.restrict_evaluates_iff inside t e.val (v i)).2
     change A.evaluates ⟨t.val, t.property.trans inside⟩ input.val
-      ((assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))) v i)
-    change ((assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))) v i) =
+      ((A.restrictAssignmentEquiv inside (L.keptQuantity_sorts (L.keptApplication l a))) v i)
+    change ((A.restrictAssignmentEquiv inside (L.keptQuantity_sorts (L.keptApplication l a))) v i) =
       original i at atIndex
     rw [atIndex]
     exact I.argumentState (L.includeLaw inside l) input a i
@@ -952,7 +963,7 @@ private theorem termGraph_extend_iff
 def includeArgument (j : L.KeptQuantity V)
     (e : L.fixedDomain (A.restrict inside) (I.toReading.restrictSelectedDomain inside) j) :
     I.domain (L.includeQuantity inside j) :=
-  ⟨assignmentEquiv (A := A) inside (L.keptQuantity_sorts j) e.val,
+  ⟨A.restrictAssignmentEquiv inside (L.keptQuantity_sorts j) e.val,
     (I.toReading.restrict_domain_iff inside j e.val).1 e.property⟩
 
 /-- Restriction transports the chosen output through the actual carrier identification. -/
@@ -973,7 +984,7 @@ private theorem extendEvaluation_representsLaw (l : L.KeptLaw V)
   have keep : Declaration.ofOperation op ∈ V.declarations :=
     Declaration.lawBody_subset_of_mem l.property relevant
   let localName : L.KeptQuantity V := ⟨j.val, keep⟩
-  let readArgs := assignmentEquiv (A := A) inside (L.keptQuantity_sorts localName)
+  let readArgs := A.restrictAssignmentEquiv inside (L.keptQuantity_sorts localName)
   let localArg : L.fixedDomain (A.restrict inside) (I.toReading.restrictSelectedDomain inside) localName :=
     ⟨readArgs.symm e.val, (I.toReading.restrict_domain_iff inside localName _).2 (by
       change readArgs (readArgs.symm e.val) ∈ I.domain j
@@ -1088,7 +1099,7 @@ def restrict : L.Interpretation (k := k) (A.restrict inside) where
       (selectedMap_bijective A.carrier) term.val.graph keep witness
     rw [I.extendEvaluation_restrict inside B same] at transfer
     apply transfer.2
-    have sameValue := (assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply originalValue.val
+    have sameValue := (A.restrictAssignmentEquiv inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply originalValue.val
     have atIndex := congrArg (fun x : Assignment A.carrier _ => x i) sameValue
     have witnessMapped :
         mapAssignment (selectedMap V A.carrier) ((Declaration.sorts_subset_formulaSupport _).trans keep) witness =
@@ -1126,7 +1137,7 @@ variable (inside : V ≤ U)
 /-- Read a retained quantity and its designated argument in the ambient context. -/
 private def declarationQuantityMap : QuantityMap (I.restrict inside).presentation I.presentation where
   name := L.includeQuantity inside
-  argument j x := ⟨assignmentEquiv (A := A) inside (L.keptQuantity_sorts j) x.val,
+  argument j x := ⟨A.restrictAssignmentEquiv inside (L.keptQuantity_sorts j) x.val,
     (I.restrict_domain_iff inside j x.val).1 x.property⟩
 
 omit [CommRing k] in
@@ -1152,7 +1163,7 @@ private theorem declarationCoordinate (l : L.KeptLaw V) (e : L.lawInput (A.restr
   · rfl
   apply heq_of_eq
   apply Subtype.ext
-  exact (assignmentEquiv (A := A) inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply _
+  exact (A.restrictAssignmentEquiv inside (L.keptQuantity_sorts (L.keptApplication l a))).apply_symm_apply _
 
 omit [CommRing k] in
 /-- Reading a compiled leaf commutes with the comparison of declaration contexts. -/
@@ -1166,7 +1177,7 @@ private theorem declarationReadLeaf (l : L.KeptLaw V) (e : L.lawInput (A.restric
   · exact I.declarationCoordinate inside l e ⟨app, used⟩
 
 /-- The actual context inclusion induces a comparison of the original retained scalar equations. -/
-def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation where
+private def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation where
   toQuantityMap := I.declarationQuantityMap inside
   law := L.includeLaw inside
   input := fun l e => includeInput (A := A) inside l e
@@ -1186,14 +1197,33 @@ def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation w
     exact I.declarationReadLeaf inside l e ⟨a, Or.inr h⟩
 
 /-- Declaration restriction along the Chapter 3 context inclusion commutes with changing coefficients. -/
-theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
+private theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
     let F := (I.restrict inside).presentation
     let ι := I.declarationLawMap inside
     (baseChangeQuotient (R := k) R I.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
   (I.declarationLawMap inside).extendedEquationMap_natural R
 
-/-- The same square for the coefficient restriction to the principal open of `r`. -/
+end Reading
+
+namespace Interpretation
+
+variable {L} {A : ContextStructure U} (I : L.Interpretation (k := k) A)
+variable (inside : V ≤ U)
+
+/-- The declaration comparison of native coefficient readings with a satisfaction interpretation. -/
+def declarationLawMap : LawMap (I.restrict inside).presentation I.presentation :=
+  I.toReading.declarationLawMap inside
+
+/-- The native equations, read with the original satisfaction comparison, commute with coefficient change. -/
+theorem declarationLawMap_baseChange (R : Type u) [CommRing R] [Algebra k R] :
+    let F := (I.restrict inside).presentation
+    let ι := I.declarationLawMap inside
+    (baseChangeQuotient (R := k) R I.presentation.residualIdeal).symm.toAlgHom.comp (ι.extendedEquationMap R) =
+      (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
+  I.toReading.declarationLawMap_baseChange inside R
+
+/-- The native declaration comparison commutes with principal-open localization. -/
 theorem declarationLawMap_localization (r : k) :
     let R := Localization.Away r
     let F := (I.restrict inside).presentation
@@ -1202,6 +1232,7 @@ theorem declarationLawMap_localization (r : k) :
       (ι.extendedLawMap R).comp (baseChangeQuotient (R := k) R F.residualIdeal).symm.toAlgHom :=
   I.declarationLawMap_baseChange inside (Localization.Away r)
 
-end Reading
+end Interpretation
+
 end DeclaredQuantityLaws
 end SHIGURE.Quantities
