@@ -1,5 +1,5 @@
 import Formal.SHIGURE.Part2.QuantityTransport.Maps
-import Formal.SHIGURE.Part1.StructureMaps
+import Formal.SHIGURE.Part1.StructureCategory
 
 /-!
 # Transport of written quantity Laws along structure maps
@@ -61,5 +61,21 @@ def lawMap : LawMap I.presentation J.presentation where
     rw [Expression.rename_comp]
     exact congrArg (fun a => (L.right l).rename a)
       (funext (I.applicationCoordinate_map J f onDomain onInput l e))
+
+/-- The identity structure map induces the identity comparison of written Law models. -/
+theorem lawMap_id :
+    I.lawMap I (StructureMap.id A) (fun _ x => x.property) (fun _ e => e.property) =
+      LawMap.id I.presentation :=
+  rfl
+
+/-- Composition of actual structure maps induces composition of their Law comparisons. -/
+theorem lawMap_comp {D : Structure sig} (K : L.Interpretation D) (g : StructureMap B D)
+    (onDomain' : ∀ (j : L.Quantity) (x : J.domain j), x.val.map g.onSort ∈ K.domain j)
+    (onInput' : ∀ (l : L.Law) (e : J.input l), e.val.map g.onSort ∈ K.input l) :
+    I.lawMap K (g.comp f)
+        (fun j x => onDomain' j ⟨x.val.map f.onSort, onDomain j x⟩)
+        (fun l e => onInput' l ⟨e.val.map f.onSort, onInput l e⟩) =
+      (I.lawMap J f onDomain onInput).comp (J.lawMap K g onDomain' onInput') :=
+  rfl
 
 end SHIGURE.Quantities.WrittenLaws.Interpretation
