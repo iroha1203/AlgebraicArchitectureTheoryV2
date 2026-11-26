@@ -11,9 +11,11 @@ of their product ring. Its structural map is faithfully flat.
 
 ## Implementation notes
 
-The refinement retains the actual factorizations into the given cover.
-The coproduct comparison identifies the actual component maps to the
-affine base. This gives the coefficient algebra for Lemma B.4.
+The standard affine cover and its map into the original cover retain
+the component factorizations and their commuting equalities `over.w₀`.
+A finite family of rings alone would give no such comparison.
+The coproduct identifies the actual component maps to the affine base
+and gives the coefficient algebra for Lemma B.4.
 -/
 
 namespace SHIGURE.SchemeDescent
@@ -44,7 +46,8 @@ structure AffineRefinement (cover : FppfCover (Spec R)) where
   /-- Each comparison into the original component is an open immersion. -/
   openImmersion (i : affine.I₀) : IsOpenImmersion (over.h₀ i)
 
-/-- Universal openness and compactness give a finite affine refinement of an fppf cover of a spectrum. -/
+/-- The affine refinement used in Appendix B.3. Universal openness and compactness
+select a finite affine refinement of an fppf cover of a spectrum. -/
 theorem affineRefinement_exists (cover : FppfCover (Spec R)) : Nonempty (AffineRefinement cover) := by
   have openMaps (i : cover.I₀) : IsOpenMap (cover.f i) := by
     letI : Flat (cover.f i) := (cover.map_prop i).1
