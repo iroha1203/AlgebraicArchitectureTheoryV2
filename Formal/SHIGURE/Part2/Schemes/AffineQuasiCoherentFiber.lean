@@ -39,6 +39,7 @@ def affineTildeFunctor : ModuleCat.{u} R ⥤ affineFiber R :=
   (affineProperty R).lift (tilde.functor R)
     (fun N => isQuasiCoherentModule_of_tilde _ ⟨N, ⟨Iso.refl _⟩⟩)
 
+/-- The associated sheaf functor is fully faithful and reaches every affine quasi-coherent module. -/
 instance : (affineTildeFunctor R).IsEquivalence := by
   letI : (tilde.functor R).Full := (tilde.fullyFaithfulFunctor (R := R)).full
   letI : (tilde.functor R).Faithful := (tilde.fullyFaithfulFunctor (R := R)).faithful

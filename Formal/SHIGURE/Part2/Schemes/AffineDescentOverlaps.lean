@@ -34,12 +34,14 @@ def affinePairEmbedding (i j : Fin 3) : (B ⊗[A] B) →ₐ[A] B ⊗[A] (B ⊗[A
   Algebra.TensorProduct.lift (affineTripleEmbedding A B i) (affineTripleEmbedding A B j)
     (fun x y => mul_comm (affineTripleEmbedding A B i x) (affineTripleEmbedding A B j y))
 
+/-- Normalize the pair embedding after the first scalar embedding to the direct embedding at `i`. -/
 @[simp]
 theorem affinePairEmbedding_comp_left (i j : Fin 3) :
     (affinePairEmbedding A B i j).comp (affineDoubleEmbedding A B 0) = affineTripleEmbedding A B i := by
   ext x
   simp [affinePairEmbedding, affineDoubleEmbedding]
 
+/-- Normalize the pair embedding after the second scalar embedding to the direct embedding at `j`. -/
 @[simp]
 theorem affinePairEmbedding_comp_right (i j : Fin 3) :
     (affinePairEmbedding A B i j).comp (affineDoubleEmbedding A B 1) = affineTripleEmbedding A B j := by
@@ -61,6 +63,7 @@ def affinePairProjection (i j : Fin 3) :
     Spec (CommRingCat.of (B ⊗[A] (B ⊗[A] B))) ⟶ Spec (CommRingCat.of (B ⊗[A] B)) :=
   Spec.map (CommRingCat.ofHom (affinePairEmbedding A B i j).toRingHom)
 
+/-- Either projection followed by the covering map is the structure map of the double overlap. -/
 @[reassoc]
 theorem affineDoubleProjection_base (i : Fin 2) :
     affineDoubleProjection A B i ≫ affineScalarMap A B =
@@ -70,6 +73,7 @@ theorem affineDoubleProjection_base (i : Fin 2) :
   ext a
   exact (affineDoubleEmbedding A B i).commutes a
 
+/-- Each projection followed by the covering map is the structure map of the triple overlap. -/
 @[reassoc]
 theorem affineTripleProjection_base (i : Fin 3) :
     affineTripleProjection A B i ≫ affineScalarMap A B =
@@ -79,6 +83,7 @@ theorem affineTripleProjection_base (i : Fin 3) :
   ext a
   exact (affineTripleEmbedding A B i).commutes a
 
+/-- Taking the first component of a pair projection recovers the triple projection at `i`. -/
 @[reassoc]
 theorem affinePairProjection_left (i j : Fin 3) :
     affinePairProjection A B i j ≫ affineDoubleProjection A B 0 = affineTripleProjection A B i := by
@@ -87,6 +92,7 @@ theorem affinePairProjection_left (i j : Fin 3) :
   exact congrArg (fun f : B →ₐ[A] B ⊗[A] (B ⊗[A] B) => CommRingCat.ofHom (R := B) (S := B ⊗[A] (B ⊗[A] B)) f.toRingHom)
     (affinePairEmbedding_comp_left A B i j)
 
+/-- Taking the second component of a pair projection recovers the triple projection at `j`. -/
 @[reassoc]
 theorem affinePairProjection_right (i j : Fin 3) :
     affinePairProjection A B i j ≫ affineDoubleProjection A B 1 = affineTripleProjection A B j := by

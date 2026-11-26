@@ -48,8 +48,9 @@ theorem fppfComparison_faithful_of_refinement
   exact Functor.Faithful.of_comp_iso
     (e ≪≫ Functor.isoWhiskerRight unit E ≪≫ E.leftUnitor)
 
-/-- Choose one original chart over each point. This gives a covering
-subfamily whose indexing universe is that of the base scheme. -/
+/-- Choose one original chart over each point. This puts the indexing type in
+the base universe, so the product of the rings in an affine refinement can
+be used in the same universe as the base ring. -/
 def fppfPointSubcover (cover : FppfCover X) : FppfCover.{u,u} X where
   I₀ := X
   X x := cover.X (cover.idx x)

@@ -25,7 +25,8 @@ def tensorModuleAction : B ⊗[A] C →ₐ[A] Module.End A (X ⊗[A] Y) :=
     (Algebra.TensorProduct.map (Algebra.lsmul A A X : B →ₐ[A] Module.End A X)
       (Algebra.lsmul A A Y : C →ₐ[A] Module.End A Y))
 
-/-- The coefficient algebra acts independently on the two slots. -/
+/-- The coefficient algebra acts independently on the two slots. This action
+lets scalar extension be compared with tensor coordinates in the specified order. -/
 def tensorProductModule : Module (B ⊗[A] C) (X ⊗[A] Y) :=
   Module.compHom _ (tensorModuleAction (A := A) (B := B) (C := C) (X := X) (Y := Y)).toRingHom
 
@@ -183,6 +184,7 @@ abbrev secondMixedEmbedding (A B C : Type u) [CommRing A] [CommRing B] [CommRing
     [Algebra A B] [Algebra A C] : C →+* B ⊗[A] C :=
   (Algebra.TensorProduct.comm A C B).toRingHom.comp (firstMixedEmbedding A C B)
 
+/-- Normalize evaluation of the second embedding to a pure tensor with unit on the left. -/
 @[simp]
 theorem secondMixedEmbedding_apply (c : C) :
     secondMixedEmbedding A B C c = (1 : B) ⊗ₜ[A] c := rfl
@@ -499,6 +501,7 @@ abbrev secondScalarEmbedding (A B : Type u) [CommRing A] [CommRing B] [Algebra A
     B →+* B ⊗[A] B :=
   secondMixedEmbedding A B B
 
+/-- Normalize evaluation of the second overlap embedding to a pure tensor with unit on the left. -/
 @[simp]
 theorem secondScalarEmbedding_apply (b : B) :
     secondScalarEmbedding A B b = (1 : B) ⊗ₜ[A] b := rfl
