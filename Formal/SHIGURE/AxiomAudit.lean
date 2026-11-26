@@ -22,6 +22,8 @@ import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
+import Formal.SHIGURE.Part2.Schemes.FiniteFreeAffinePullback
+import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeFppf
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
@@ -4845,7 +4847,25 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.fppfHom_isSeparatedFor,
   SchemeDescent.fppfHom_isSheafFor_of_affine,
   SchemeDescent.fppf_isPrestackFor_of_covering_refinement,
-  SchemeDescent.quasiCoherentModules_isFppfPrestack_of_affine
+  SchemeDescent.quasiCoherentModules_isFppfPrestack_of_affine,
+  SchemeDescent.pullbackTildePresentationIso,
+  SchemeDescent.iSup_affineOpens_in_preimage_eq_top,
+  SchemeDescent.finiteFreeModule,
+  SchemeDescent.finiteFreeScalarsIso,
+  SchemeDescent.affineFiniteFreePullbackIso,
+  CoefficientDescent.finitePresentation_of_localizationSpan,
+  CoefficientDescent.finiteLocallyFree_of_localizationSpan,
+  SchemeDescent.finiteLocallyFree_of_moduleIso,
+  SchemeDescent.finiteLocallyFree_extendScalars,
+  SchemeDescent.finiteLocallyFree_of_faithfullyFlat_extendScalars,
+  SchemeDescent.HasFiniteLocallyFreeOn,
+  SchemeDescent.IsFiniteLocallyFreeModule,
+  SchemeDescent.IsFiniteLocallyFreeModule.quasiCoherent,
+  SchemeDescent.HasFiniteLocallyFreeOn.pullback,
+  SchemeDescent.IsFiniteLocallyFreeModule.pullback,
+  SchemeDescent.HasFiniteLocallyFreeOn.restrict,
+  SchemeDescent.isFiniteLocallyFreeModule_iff_on_affineOpens,
+  SchemeDescent.isFiniteLocallyFreeModule_of_fppfCover
 ]
 
 end SHIGURE.AxiomAudit
