@@ -9,13 +9,17 @@ import Mathlib.RingTheory.Spectrum.Prime.FreeLocus
 
 /-! # Finite locally free modules in faithfully flat descent
 
-A finite principal cover records the affine local definition of a finite
+In Lemma B.5, a finite principal cover records the affine local definition of a finite
 locally free module. Finite generation, finite presentation, flatness
 and constant rank descend through the comparison of Lemma B.4.
 
 ## Implementation notes
 
-The principal cover provides finite free localizations of the module.
+The explicit principal-cover definition retains the actual localization
+data used in B.5. A finite projective presentation also characterizes
+finite local freeness. The theorem `finiteLocallyFree_iff_finite_projective`
+relates the two descriptions, with finite basic opens available from
+either one.
 The local finite generation theorem and base change of the actual kernel
 give finite presentation. The resulting comparison with mathlib's finite
 projective modules recovers a finite principal cover in the other direction.
@@ -40,7 +44,9 @@ def FiniteLocallyFree (A : Type u) [CommRing A] (M : Type u) [AddCommGroup M] [M
     ∀ f : cover, Module.Free (Localization.Away f.val) (LocalizedModule (Submonoid.powers f.val) M) ∧
       Module.Finite (Localization.Away f.val) (LocalizedModule (Submonoid.powers f.val) M)
 
-private theorem finiteTensorKernel (B : Type u) [CommRing B] [Algebra A B] [Module.Flat A B]
+/-- In B.5, a finite free surjection with finitely presented scalar extension has
+a finite base-changed kernel, identified by the flat comparison. -/
+theorem finite_baseChange_ker_of_surjective (B : Type u) [CommRing B] [Algebra A B] [Module.Flat A B]
     {n : ℕ} (f : (Fin n → A) →ₗ[A] M) (surj : Function.Surjective f)
     [Module.FinitePresentation B (B ⊗[A] M)] :
     Module.Finite B (B ⊗[A] LinearMap.ker f) := by
@@ -67,7 +73,7 @@ theorem FiniteLocallyFree.finitePresentation (h : FiniteLocallyFree A M) :
   haveI : Module.FinitePresentation Rg (Rg ⊗[A] M) :=
     Module.FinitePresentation.of_equiv (LocalizedModule.equivTensorProduct S M)
   haveI : Module.Flat A Rg := IsLocalization.flat Rg S
-  haveI : Module.Finite Rg (Rg ⊗[A] LinearMap.ker f) := finiteTensorKernel Rg f surj
+  haveI : Module.Finite Rg (Rg ⊗[A] LinearMap.ker f) := finite_baseChange_ker_of_surjective Rg f surj
   exact Module.Finite.equiv (LocalizedModule.equivTensorProduct S (LinearMap.ker f)).symm
 
 /-- Finite local freeness gives flatness on the underlying affine. -/
@@ -80,7 +86,8 @@ theorem FiniteLocallyFree.flat (h : FiniteLocallyFree A M) : Module.Flat A M := 
     IsLocalization.flat (Localization.Away g.val) (Submonoid.powers g.val)
   exact Module.Flat.trans A (Localization.Away g.val) _
 
-/-- Finite local freeness gives finite projectivity on the affine. -/
+/-- A finite locally free module is projective. The comparison with finite
+projective modules also records finite generation. -/
 theorem FiniteLocallyFree.projective (h : FiniteLocallyFree A M) : Module.Projective A M := by
   haveI := h.finitePresentation
   haveI := h.flat
@@ -116,7 +123,7 @@ theorem finitePresentation_of_equiv_baseChange (e : B ⊗[A] M ≃ₗ[B] N) [Mod
   haveI := finite_of_equiv_baseChange e
   haveI : Module.FinitePresentation B (B ⊗[A] M) := Module.FinitePresentation.of_equiv e.symm
   obtain ⟨n, f, surj⟩ := Module.Finite.exists_fin' A M
-  haveI := finiteTensorKernel B f surj
+  haveI := finite_baseChange_ker_of_surjective B f surj
   haveI : Module.Finite A (LinearMap.ker f) := Module.Finite.of_finite_tensorProduct_of_faithfullyFlat B
   exact Module.finitePresentation_of_free_of_surjective f surj (Module.Finite.iff_fg.mp ‹_›)
 
@@ -173,6 +180,7 @@ end Datum
 
 namespace Examples
 
+/-- The product of two rational fields supplies a split faithfully flat cover. -/
 private abbrev SplitCover := ℚ × ℚ
 
 /-- The extended rational line is finite locally free on the split affine cover. -/

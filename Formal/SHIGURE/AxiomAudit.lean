@@ -4008,6 +4008,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
 -- Finite locally free coefficient modules and constant rank, Appendix B.2.
 #shigure_assert_standard_axioms_of [
   CoefficientDescent.FiniteLocallyFree,
+  CoefficientDescent.finite_baseChange_ker_of_surjective,
   CoefficientDescent.FiniteLocallyFree.finitePresentation,
   CoefficientDescent.FiniteLocallyFree.flat,
   CoefficientDescent.FiniteLocallyFree.projective,
