@@ -3815,13 +3815,24 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   Quantities.WrittenLaws.Interpretation.evaluate,
   Quantities.WrittenLaws.Interpretation.holds_iff_written,
   Quantities.WrittenLaws.Interpretation.Model,
-  Quantities.WrittenLaws.Interpretation.modelEquiv,
   Quantities.WrittenLaws.Interpretation.modelAlgHomEquiv,
   Quantities.WrittenLaws.Interpretation.evaluate_residual,
   Quantities.WrittenLaws.Interpretation.substitutedCoordinate,
   Quantities.WrittenLaws.Interpretation.substitutedCoordinate_eq,
   Quantities.WrittenLaws.Interpretation.residual_substitute,
-  Quantities.WrittenLaws.Interpretation.evaluate_residual_substitute
+  Quantities.WrittenLaws.Interpretation.evaluate_residual_substitute,
+  Quantities.AlgebraStateLaw,
+  Quantities.writtenAlgebraLaws,
+  Quantities.writtenAlgebraInterpretation,
+  Quantities.ModuleStateLaw,
+  Quantities.writtenModuleLaws,
+  Quantities.writtenModuleInterpretation,
+  Quantities.algebraPresentation_holds_iff_written,
+  Quantities.modulePresentation_holds_iff_written,
+  Quantities.writtenAlgebraModelEquiv,
+  Quantities.writtenModuleModelEquiv,
+  Quantities.writtenAlgebraLawAlgebraEquiv,
+  Quantities.writtenModuleLawAlgebraEquiv
 ]
 
 end SHIGURE.AxiomAudit

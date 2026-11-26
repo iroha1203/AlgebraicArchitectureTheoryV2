@@ -96,7 +96,7 @@ theorem evaluate_unique (q : P.Candidate R) (f : P.CoordinateAlgebra →ₐ[k] R
   intro x
   rw [h, evaluate_X]
 
-/-- Specialization of a universal residual agrees with the original expression difference. -/
+/-- Specialization of a universal residual agrees with the difference of its coordinate expressions. -/
 theorem evaluate_residual (q : P.Candidate R) (l : P.Law) (e : P.Input l) :
     P.evaluate q (P.residual l e) =
       (P.left l e).eval (fun x => q x.1 x.2) - (P.right l e).eval (fun x => q x.1 x.2) := by

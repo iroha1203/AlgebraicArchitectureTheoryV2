@@ -2,6 +2,7 @@ import Formal.SHIGURE.Part2.Quantities.AlgebraExample
 import Formal.SHIGURE.Part2.Quantities.InverseExample
 import Formal.SHIGURE.Part2.Quantities.LawfulLocus
 import Formal.SHIGURE.Part2.Quantities.NilpotentConormal
+import Formal.SHIGURE.Part2.Quantities.WrittenAlgebraExamples
 import Formal.SHIGURE.Part2.Quantities.WrittenModels
 
 /-!

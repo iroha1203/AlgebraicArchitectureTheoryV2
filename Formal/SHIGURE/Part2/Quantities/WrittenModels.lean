@@ -95,20 +95,14 @@ theorem holds_iff_written (q : I.presentation.Candidate R) :
   simp only [Presentation.Holds, presentation, evaluate, Expression.eval_rename]
   rfl
 
-/-- Quantity assignments satisfying the original written Laws. -/
+/-- The shared model type, characterized by the original written Laws in `holds_iff_written`.
+Coefficient maps and scheme representations use this same type. -/
 abbrev Model (R : Type u) [CommRing R] [Algebra k R] :=
-  {q : I.presentation.Candidate R // ∀ l e, I.evaluate l e (L.left l) q = I.evaluate l e (L.right l) q}
-
-/-- The coordinate presentation has exactly the models of the original written Laws. -/
-def modelEquiv : I.Model R ≃ I.presentation.Model R where
-  toFun q := ⟨q.val, (I.holds_iff_written q.val).mpr q.property⟩
-  invFun q := ⟨q.val, (I.holds_iff_written q.val).mp q.property⟩
-  left_inv _ := Subtype.ext rfl
-  right_inv _ := Subtype.ext rfl
+  I.presentation.Model R
 
 /-- The original written Law models are represented by the named residuals' quotient algebra. -/
 def modelAlgHomEquiv : I.Model R ≃ (I.presentation.LawAlgebra →ₐ[k] R) :=
-  I.modelEquiv.trans I.presentation.modelAlgHomEquiv
+  I.presentation.modelAlgHomEquiv
 
 /-- Lemma 5.3 evaluates the named universal residual using the original state terms. -/
 theorem evaluate_residual (q : I.presentation.Candidate R) (l : L.Law) (e : I.input l) :
@@ -119,6 +113,7 @@ theorem evaluate_residual (q : I.presentation.Candidate R) (l : L.Law) (e : I.in
   rfl
 
 omit [CommRing k] in
+/-- Evaluate each state argument after substituting the written terms in Lemma 5.3. -/
 private def substitutedArgument {l : L.Law} {Δ : List sig.SortType}
     (θ : Substitution sig (L.inputContext l) Δ) (e : θ.domain A)
     (he : θ.value A e ∈ I.input l) (a : L.Occurrence l) :
@@ -129,6 +124,7 @@ private def substitutedArgument {l : L.Law} {Δ : List sig.SortType}
     ((t.substitute θ).eval A e.val).get ((congrArg Part.Dom (t.eval_substitute θ A e)).mpr h)
 
 omit [CommRing k] in
+/-- Theorem 1.8 identifies that argument with evaluation at the substituted Law input. -/
 private theorem substitutedArgument_eq {l : L.Law} {Δ : List sig.SortType}
     (θ : Substitution sig (L.inputContext l) Δ) (e : θ.domain A)
     (he : θ.value A e ∈ I.input l) (a : L.Occurrence l) :

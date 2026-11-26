@@ -26,7 +26,7 @@ namespace SHIGURE.Quantities
 inductive Expression (k L : Type u)
   /-- A coefficient from the base ring. -/
   | scalar (a : k)
-  /-- An application of a named quantity to an already evaluated state input. -/
+  /-- A quantity application identified by an occurrence or a compiled coordinate. -/
   | quantity (x : L)
   /-- Addition of two expressions. -/
   | add (left right : Expression k L)
