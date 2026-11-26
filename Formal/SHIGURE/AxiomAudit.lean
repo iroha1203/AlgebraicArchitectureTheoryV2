@@ -24,6 +24,7 @@ import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeExamples
 import Formal.SHIGURE.Part2.Schemes.FppfEpimorphisms
+import Formal.SHIGURE.Part2.Schemes.AffineGeometryToCoefficients
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
@@ -4871,6 +4872,10 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.epi_modulePullback,
   SchemeDescent.epi_of_fppfModulePullbacks,
   SchemeDescent.epi_iff_fppfModulePullbacks,
+  SchemeDescent.affineDescentCoefficientTensorCocycle,
+  SchemeDescent.affineCoefficientDatum,
+  SchemeDescent.affineGeometryToCoefficients,
+  SchemeDescent.affineGeometryToCoefficientsFullyFaithful,
   CoefficientDescent.extendScalarsTensorIso,
   CoefficientDescent.extendScalarsTensorIso_unit,
   CoefficientDescent.extendScalarsTensorIso_natural,
