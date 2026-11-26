@@ -36,9 +36,6 @@ private def varying : Set (QuantityDeclaration signature) := {.total ()}
 /-- The only varying operation has this declared name. -/
 private def quantityName : varying := ⟨.total (), Set.mem_singleton _⟩
 
-/-- The sole argument of both declared operations is the source variable. -/
-private def stateVariable : Term signature [false] false := .var .here
-
 /-- The left side reads the actual varying quantity. -/
 private def left : CoefficientTerm varying [false] true := .quantity quantityName ⟨.var⟩
 
@@ -282,12 +279,12 @@ theorem scalar_input_law
     change Sum.inl ⟨true, embedTerm⟩ ∈ left.leaves ∪ right.leaves
     simp [left, right, CoefficientTerm.leaves]⟩
   obtain ⟨z, held⟩ := embed_defined ambient e.val
-  have value := interpretation.coefficientValue_eq_of_evaluates l e coefficient z held
+  have value := interpretation.toReading.coefficientValue_eq_of_evaluates l e coefficient z held
   have native := embed_read ambient.evaluation (DeclaredQuantityLaws.SameDeclarationState.refl written ambient _)
     e.val z held
-  change interpretation.coefficientValue l e coefficient = (readCarrier true z).getD 0 at value
+  change interpretation.toReading.coefficientValue l e coefficient = (readCarrier true z).getD 0 at value
   rw [native] at value
-  change q appliedQuantity (atInput e) - interpretation.coefficientValue l e coefficient = 0 ↔ _
+  change q appliedQuantity (atInput e) - interpretation.toReading.coefficientValue l e coefficient = 0 ↔ _
   rw [value]
   exact sub_eq_zero
 

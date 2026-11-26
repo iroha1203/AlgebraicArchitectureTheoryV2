@@ -6,10 +6,9 @@ import Formal.SHIGURE.Part2.QuantityTransport.DeclarationStates
 /-!
 # Typed coefficient syntax for declared quantity Laws
 
-The typed terms retain the original operation at each node. A literal
-uses the actual interpreted nullary symbol. The arithmetic relations
-compare the declared operations with the coefficient ring on
-the value sort of their occurrence.
+The typed terms retain the original operation at each node. A fixed
+coefficient is read from its original state term. Each arithmetic node
+reads its typed operands and result in the coefficient ring.
 
 ## Implementation notes
 

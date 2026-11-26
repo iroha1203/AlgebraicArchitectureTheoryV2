@@ -2,6 +2,7 @@ import Formal.SHIGURE.Part2.QuantityTransport.DeclarationExamples
 import Formal.SHIGURE.Part2.QuantityTransport.CoefficientInputExample
 import Formal.SHIGURE.Part2.QuantityTransport.ExtensionColimit
 import Formal.SHIGURE.Part2.QuantityTransport.FiniteFieldVanishing
+import Formal.SHIGURE.Part2.QuantityTransport.FreeCoefficientRestrictionExample
 import Formal.SHIGURE.Part2.QuantityTransport.MissingLawInput
 import Formal.SHIGURE.Part2.QuantityTransport.RegularExtensionExamples
 import Formal.SHIGURE.Part2.QuantityTransport.WrittenLaws

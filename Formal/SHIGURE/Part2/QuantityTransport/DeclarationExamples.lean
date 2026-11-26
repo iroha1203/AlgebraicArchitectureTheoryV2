@@ -346,7 +346,7 @@ private def oneLeaf : written.UsedCoefficient law.val :=
   ⟨⟨true, oneTerm⟩, by simp [written, left, right, sampleTerm, CoefficientTerm.leaves]⟩
 
 private theorem literal_one (e : written.lawInput ambient law) :
-    interpretation.coefficientValue law e oneLeaf = 1 := by
+    interpretation.toReading.coefficientValue law e oneLeaf = 1 := by
   let z := (carrierRead true).symm 1
   have graph : oneSymbol.graph ambient (Set.mem_univ _) Assignment.empty z := by
     apply (ContextStructure.ofStructure_graph_iff Full base (.partialOp .one)
@@ -357,7 +357,7 @@ private theorem literal_one (e : written.lawInput ambient law) :
     refine ⟨Assignment.empty, ?_, graph⟩
     intro _ i
     nomatch i
-  exact (interpretation.coefficientValue_eq_of_evaluates law e oneLeaf z held).trans
+  exact (interpretation.toReading.coefficientValue_eq_of_evaluates law e oneLeaf z held).trans
     ((carrierRead true).apply_symm_apply 1)
 
 /-- The guard reads the fixed relation and native domain in every candidate structure. -/
@@ -482,7 +482,7 @@ theorem candidate_zero_holds :
   apply (interpretation.candidate_satisfies_iff law _).2
   intro e
   rw [Presentation.evaluate_residual]
-  let c := algebraMap ℤ ℤ (interpretation.coefficientValue law e oneLeaf)
+  let c := algebraMap ℤ ℤ (interpretation.toReading.coefficientValue law e oneLeaf)
   change (0 + 0 : ℤ) - (c + -c) = 0
   simp [c, literal_one]
 
@@ -493,7 +493,7 @@ theorem candidate_one_fails :
   intro held
   have atInput := (interpretation.candidate_satisfies_iff law (fun _ _ => (1 : ℤ))).1 held input
   rw [Presentation.evaluate_residual] at atInput
-  let c := algebraMap ℤ ℤ (interpretation.coefficientValue law input oneLeaf)
+  let c := algebraMap ℤ ℤ (interpretation.toReading.coefficientValue law input oneLeaf)
   change (1 + 1 : ℤ) - (c + -c) = 0 at atInput
   norm_num [c, literal_one] at atInput
 
