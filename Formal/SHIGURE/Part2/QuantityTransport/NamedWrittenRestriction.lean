@@ -122,76 +122,60 @@ theorem nativeInput_restrict_iff (A : ContextStructure U) (inside : V ≤ U)
         L.nativeInput A (Set.inclusion (L.inclusion inside).laws l) :=
   A.restrict_holds_iff inside _ _ e
 
-/-- The part of a declaration context supplying the fixed state. Guards and
-argument graphs can be evaluated in this context with all varying quantity names forgotten. -/
-structure FixedState (U : DeclarationContext P) where
-  /-- The declarations needed to read all retained guards and state arguments. -/
-  context : DeclarationContext P
-  /-- Fixed state declarations are part of the original context. -/
-  inside : context ≤ U
-  /-- No operation giving a varying quantity value may be read in the fixed state. -/
-  forgetsQuantity (j : L.quantities) : Declaration.ofOperation j.val.operation ∉ context.declarations
-  /-- The written antecedents are supported by the fixed state. -/
-  guardSupport (l : (L.selection U).laws) :
-    Declaration.formulaSupport (P.theory.law l.val.val).input ⊆ context.declarations
-  /-- Actual argument graphs, including the domain tests of partial terms, are supported there. -/
-  argumentSupport (l : (L.selection U).laws) (a : L.written.UsedOccurrence l.val)
+/-- Guards and state terms can read relations and fixed partial domains, while the
+values of the designated quantities are supplied by the coefficient model. -/
+structure FixedState (U : DeclarationContext P) : Prop where
+  /-- The original antecedent only observes the fixed state. -/
+  guard (l : (L.selection U).laws) :
+    StateFormula (QuantityDeclaration.operation '' L.quantities) (P.theory.law l.val.val).input
+  /-- The original argument terms only observe the fixed state. -/
+  argument (l : (L.selection U).laws) (a : L.written.UsedOccurrence l.val)
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s) :
-    Declaration.formulaSupport ((L.selection U).applicationTerm l a i).val.graph ⊆ context.declarations
+    StateTerm (QuantityDeclaration.operation '' L.quantities) ((L.selection U).applicationTerm l a i).val
 
-/-- The input set computed after forgetting the values of all varying quantities. -/
-def FixedState.input {L : NamedWrittenLaws k P} (S : L.FixedState U) (A : ContextStructure U) (l : (L.selection U).laws) :
+/-- Read the state with the varying value graphs hidden. The domains of partial
+quantities remain available through the domain component. -/
+def fixedStateEvaluation (A : ContextStructure U) : RestrictedEvaluation U A.carrier where
+  relation := A.evaluation.relation
+  domain := A.evaluation.domain
+  graph op keep x y :=
+    op ∉ QuantityDeclaration.operation '' L.quantities ∧ A.evaluation.graph op keep x y
+
+/-- Hiding the varying values preserves the fixed state, including every partial domain. -/
+theorem fixedStateEvaluation_agrees (A : ContextStructure U) :
+    SameStateEvaluation (QuantityDeclaration.operation '' L.quantities) A.evaluation (L.fixedStateEvaluation A) where
+  relation _ _ _ := Iff.rfl
+  domain _ _ _ := Iff.rfl
+  graph _ fixed _ _ _ := ⟨fun holds => ⟨fixed, holds⟩, And.right⟩
+
+/-- Evaluate a retained antecedent on the fixed state. -/
+def fixedStateInput (A : ContextStructure U) (l : (L.selection U).laws) :
     Set (Assignment A.carrier (L.written.inputContext l.val)) :=
-  let p := (P.theory.law l.val.val).input
-  let kept := S.guardSupport l
-  let sorts := (Declaration.sorts_subset_formulaSupport p).trans kept
-  {e | (A.restrict S.inside).evaluation.holds p kept ((A.restrictAssignmentEquiv S.inside sorts).symm e)}
+  {e | (L.fixedStateEvaluation A).holds (P.theory.law l.val.val).input
+    (lawInputSupport (Declaration.lawBody_subset_of_mem l.property)) e}
 
-/-- The guard evaluated on the fixed state gives the original named input under reindexing. -/
-theorem FixedState.input_eq_native {L : NamedWrittenLaws k P} (S : L.FixedState U) (A : ContextStructure U)
-    (l : (L.selection U).laws) : S.input A l = L.nativeInput A l := by
-  ext e
-  let p := (P.theory.law l.val.val).input
-  let kept := S.guardSupport l
-  let sorts := (Declaration.sorts_subset_formulaSupport p).trans kept
-  let iso := A.restrictAssignmentEquiv S.inside sorts
-  change (A.restrict S.inside).evaluation.holds p kept (iso.symm e) ↔ _
-  have same := A.restrict_holds_iff S.inside p kept (iso.symm e)
-  change (A.restrict S.inside).evaluation.holds p kept (iso.symm e) ↔ iso (iso.symm e) ∈ L.nativeInput A l at same
-  simpa only [Equiv.apply_symm_apply] using same
+/-- The original antecedent has the same truth with varying value graphs hidden. -/
+theorem FixedState.input_eq_native {L : NamedWrittenLaws k P} (S : L.FixedState U)
+    (A : ContextStructure U) (l : (L.selection U).laws) :
+    L.fixedStateInput A l = L.nativeInput A l :=
+  Set.ext fun e => ((L.fixedStateEvaluation_agrees A).holds_iff _ (S.guard l) _ e).symm
 
-/-- Read an argument in the fixed state, with ambient inputs and outputs reindexed to it. -/
-def FixedState.evaluatesArgument {L : NamedWrittenLaws k P} (S : L.FixedState U) (A : ContextStructure U)
+/-- Evaluate a retained term on the fixed state, keeping its original typed arguments. -/
+def fixedStateEvaluatesArgument (A : ContextStructure U)
     (l : (L.selection U).laws) (a : L.written.UsedOccurrence l.val)
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s)
     (e : Assignment A.carrier (L.written.inputContext l.val)) (y : A.carrier s) : Prop :=
   let t := (L.selection U).applicationTerm l a i
-  let fixed : S.context.TermIn _ s :=
-    ⟨t.val, (Declaration.termContext_le_iff t.val).2 (S.argumentSupport l a i)⟩
-  let sorts := ContextStructure.termSortSupport fixed
-  let inputs := A.restrictAssignmentEquiv S.inside ((tailSortsSubset _ _).trans sorts)
-  let kept := varKept sorts .here
-  let results := Equiv.ofBijective (selectedMap S.context A.carrier s kept)
-    (selectedMap_bijective A.carrier s kept)
-  (A.restrict S.inside).evaluates fixed (inputs.symm e) (results.symm y)
+  (L.fixedStateEvaluation A).holds t.val.graph ((Declaration.termContext_le_iff t.val).1 t.property)
+    (Assignment.cons y e)
 
-/-- Reading the argument on the fixed state determines its actual value in the full context. -/
-theorem FixedState.argument_evaluates_iff {L : NamedWrittenLaws k P} (S : L.FixedState U) (A : ContextStructure U)
-    (l : (L.selection U).laws) (a : L.written.UsedOccurrence l.val)
+/-- Reading a state term gives its actual value, whether the varying values are visible or hidden. -/
+theorem FixedState.argument_evaluates_iff {L : NamedWrittenLaws k P} (S : L.FixedState U)
+    (A : ContextStructure U) (l : (L.selection U).laws) (a : L.written.UsedOccurrence l.val)
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s)
     (e : Assignment A.carrier (L.written.inputContext l.val)) (y : A.carrier s) :
-    S.evaluatesArgument A l a i e y ↔ A.evaluates ((L.selection U).applicationTerm l a i) e y := by
-  let t := (L.selection U).applicationTerm l a i
-  let fixed : S.context.TermIn _ s :=
-    ⟨t.val, (Declaration.termContext_le_iff t.val).2 (S.argumentSupport l a i)⟩
-  let sorts := ContextStructure.termSortSupport fixed
-  let inputs := A.restrictAssignmentEquiv S.inside ((tailSortsSubset _ _).trans sorts)
-  let kept := varKept sorts .here
-  let results := Equiv.ofBijective (selectedMap S.context A.carrier s kept)
-    (selectedMap_bijective A.carrier s kept)
-  have same := A.restrict_evaluates_iff S.inside fixed (inputs.symm e) (results.symm y)
-  change S.evaluatesArgument A l a i e y ↔ A.evaluates t (inputs (inputs.symm e)) (results (results.symm y)) at same
-  simpa only [Equiv.apply_symm_apply] using same
+    L.fixedStateEvaluatesArgument A l a i e y ↔ A.evaluates ((L.selection U).applicationTerm l a i) e y :=
+  ((L.fixedStateEvaluation_agrees A).evaluates_iff _ (S.argument l a i) e y).symm
 
 /-- Prescribed quantity domains and evaluated arguments at the actual guards. -/
 structure GuardedInterpretation (A : ContextStructure U) where
@@ -205,13 +189,13 @@ structure GuardedInterpretation (A : ContextStructure U) where
   /-- Each stored argument is read by evaluating the original typed term on the fixed state. -/
   argument (l : (L.selection U).laws) (e : L.nativeInput A l) (a : L.written.UsedOccurrence l.val)
     {s : P.signature.SortType} (i : Var (L.written.domainContext (L.written.application l.val a.val).1) s) :
-    fixedState.evaluatesArgument A l a i e.val ((value l e a).val i)
+    L.fixedStateEvaluatesArgument A l a i e.val ((value l e a).val i)
 
 /-- Read the prescribed values and the actual original antecedent as a written interpretation. -/
 def GuardedInterpretation.toInterpretation {A : ContextStructure U} (I : L.GuardedInterpretation A) :
     (L.selection U).Interpretation A where
   domain := I.domain
-  input := I.fixedState.input A
+  input := L.fixedStateInput A
   value l e := I.value l ⟨e.val, (I.fixedState.input_eq_native A l) ▸ e.property⟩
   argument l e a := by
     intro s i
@@ -224,7 +208,7 @@ theorem restrict_input_eq_native {A : ContextStructure U} (I : L.GuardedInterpre
     (I.toInterpretation.restrict (L.inclusion inside)).input l = L.nativeInput (A.restrict inside) l := by
   rw [I.toInterpretation.restrict_input]
   change {e | A.restrictAssignmentEquiv inside ((L.selection V).inputSorts l.property) e ∈
-    I.fixedState.input A (Set.inclusion (L.inclusion inside).laws l)} = L.nativeInput (A.restrict inside) l
+    L.fixedStateInput A (Set.inclusion (L.inclusion inside).laws l)} = L.nativeInput (A.restrict inside) l
   rw [I.fixedState.input_eq_native]
   exact Set.ext fun e => (L.nativeInput_restrict_iff A inside l e).symm
 

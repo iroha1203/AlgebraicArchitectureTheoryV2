@@ -2,10 +2,10 @@ import Formal.SHIGURE.Part2.QuantityTransport.NamedWrittenRestriction
 
 /-! # A literal coefficient equation with a declared guard
 
-The native state has one point. Its declared guarded Law names a
-quantity read at that point. The written scalar equation prescribes
-the external coefficient `1`. A second quantity is independent and
-is forgotten, while the guarded Law retains its relation.
+The written scalar equation prescribes the external coefficient `1` on
+a partial quantity whose fixed domain consists of the input `true`.
+The original guard reads that domain and a relation. Forgetting an
+independent quantity leaves the registered equation and its guard intact.
 -/
 
 namespace SHIGURE.Quantities.NamedWrittenRestrictionExample
@@ -18,18 +18,19 @@ private def signature : Signature where
   SortType := Unit
   Total := Unit
   Rel := Unit
-  Partial := Empty
+  Partial := Unit
   Quantity := Bool
   totalArity _ := ⟨[()], ()⟩
   relInputs _ := [()]
-  partialArity p := nomatch p
+  partialArity _ := ⟨[()], ()⟩
   quantityArity _ := ⟨[()], ()⟩
 
-private def guard : Formula signature [()] := .atom (.rel () (fun i => i))
+private def guard : Formula signature [()] :=
+  (Formula.atom (sig := signature) (.rel () (fun i => i))).conj (.atom (.domain () (fun i => i)))
 private def law : Law signature := ⟨[()], guard, .truth⟩
 
 private def application : DeclaredApplication signature [()] :=
-  ⟨.total false, ⟨.var⟩⟩
+  ⟨.partialOp (), ⟨.var⟩⟩
 
 private def registeredEquation : WrittenCoefficientEquation ℤ signature [()] :=
   (.quantity application, .scalar 1)
@@ -71,7 +72,12 @@ private def retained : DeclarationContext primitive where
     | sort => exact hd
     | total => obtain ⟨_, _, h⟩ := hd; cases h
     | relation => obtain ⟨_, _, h⟩ := hd; cases h
-    | partialOp p => exact nomatch p
+    | partialOp p =>
+      rw [Declaration.partial_dependencies] at hd
+      change Declaration.quantity (P := primitive) true ∈ Declaration.sorts [(), ()] ∪ ∅ at hd
+      rcases hd with ⟨_, _, h⟩ | impossible
+      · cases h
+      · exact impossible
     | quantity q => obtain ⟨_, _, h⟩ := hd; cases h
     | law l =>
       change Declaration.quantity true ∈ Declaration.declaredLawSupport (P := primitive) l ∪ ∅ at hd
@@ -94,66 +100,50 @@ private def retained : DeclarationContext primitive where
 private theorem inside : retained ≤ Full := fun _ _ => Set.mem_univ _
 
 private def state : Structure signature where
-  carrier _ := PUnit
-  total _ _ := PUnit.unit
+  carrier _ := Bool
+  total _ _ := false
   relation _ := Set.univ
-  partialDomain p := nomatch p
-  partialValue p := nomatch p
-  quantity _ _ := PUnit.unit
+  partialDomain _ := {x | x .here = true}
+  partialValue _ _ := false
+  quantity _ _ := false
 
 private def ambient : ContextStructure Full := ContextStructure.ofStructure Full state
 
-private def fixedContext : DeclarationContext primitive where
-  declarations := {d | match d with
-    | .sort _ | .relation _ => True
-    | _ => False}
-  closed {a} ha := by
-    intro d hd
-    cases a with
-    | sort => exact hd.elim
-    | relation =>
-      obtain ⟨_, _, rfl⟩ := hd
-      trivial
-    | total | partialOp | quantity | law => exact ha.elim
+private def fixedState : written.FixedState Full where
+  guard _ := by
+    change StateFormula _ guard
+    exact ⟨trivial, trivial⟩
+  argument l a := by
+    intro s i
+    obtain ⟨⟨application, support⟩, used⟩ := a
+    obtain rfl := used_eq l.val ⟨application, support⟩
+    trivial
 
-private theorem fixedGuard (l : (written.selection Full).laws) :
-    Declaration.formulaSupport (primitive.theory.law l.val.val).input ⊆ fixedContext.declarations := by
-  intro d hd
-  change d ∈ Declaration.formulaSupport (P := primitive) guard at hd
-  change d ∈ (Declaration.sorts [()] ∪ ({Declaration.relation ()} : Set _)) at hd
-  rcases hd with ⟨_, _, rfl⟩ | rfl <;> trivial
+private def fixedDomain : Set (Assignment ambient.carrier [()]) :=
+  {x | selectedMap Full state.carrier () (Set.mem_univ _) (x .here) = true}
 
-private theorem fixedArgument (l : (written.selection Full).laws) (a : written.written.UsedOccurrence l.val)
-    {s : signature.SortType} (i : Var (written.written.domainContext (written.written.application l.val a.val).1) s) :
-    Declaration.formulaSupport ((written.selection Full).applicationTerm l a i).val.graph ⊆
-      fixedContext.declarations := by
-  obtain ⟨⟨a, support⟩, used⟩ := a
-  obtain rfl := used_eq l.val ⟨a, support⟩
-  intro d hd
-  change d ∈ Declaration.formulaSupport (P := primitive) (Term.var (sig := signature) i).graph at hd
-  have sorted : d ∈ Declaration.sorts (P := primitive) (s :: [()]) := by
-    simpa [Declaration.formulaSupport, Term.graph_eq_graphAt, Term.graphAt, Declaration.formula,
-      Declaration.atomic] using hd
-  obtain ⟨_, _, rfl⟩ := sorted
-  trivial
+private theorem nativeInput_iff_domain (l : (written.selection Full).laws)
+    (e : Assignment ambient.carrier [()]) :
+    e ∈ written.nativeInput ambient l ↔ e ∈ fixedDomain := by
+  change ambient.evaluation.holds guard (Set.subset_univ _) e ↔ e ∈ fixedDomain
+  unfold guard
+  rw [RestrictedEvaluation.holds_conj_iff, RestrictedEvaluation.holds_atom_iff,
+    RestrictedEvaluation.holds_atom_iff]
+  change (True ∧ e ∈ fixedDomain) ↔ e ∈ fixedDomain
+  exact ⟨And.right, fun input => ⟨trivial, input⟩⟩
 
 private def reading : written.GuardedInterpretation ambient where
-  fixedState :=
-    { context := fixedContext
-      inside := Set.subset_univ _
-      forgetsQuantity := by
-        rintro ⟨j, _⟩
-        cases j <;> exact id
-      guardSupport := fixedGuard
-      argumentSupport := fixedArgument }
-  domain _ := Set.univ
+  fixedState := fixedState
+  domain j := by
+    rcases j with ⟨⟨j, _⟩, _⟩
+    cases j <;> exact fixedDomain
   value l e a := by
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
-    exact ⟨e.val, Set.mem_univ _⟩
+    exact ⟨e.val, (nativeInput_iff_domain l e.val).mp e.property⟩
   argument l _ a := by
     intro s i
-    rw [NamedWrittenLaws.FixedState.argument_evaluates_iff]
+    rw [fixedState.argument_evaluates_iff]
     obtain ⟨⟨a, support⟩, used⟩ := a
     obtain rfl := used_eq l.val ⟨a, support⟩
     rfl
@@ -163,20 +153,31 @@ private abbrev interpreted := reading.toInterpretation
 private def l : (written.selection Full).laws :=
   ⟨⟨⟨(), rfl⟩, by simp [NamedWrittenLaws.laws, registeredCoefficientLaws, coefficientEquation_eq]⟩, Set.mem_univ _⟩
 
-private def point : Assignment ambient.carrier [()] :=
+private def point (x : Bool) : Assignment ambient.carrier [()] :=
   Assignment.cons
     ((Equiv.ofBijective (selectedMap Full state.carrier () (Set.mem_univ _))
-      (selectedMap_bijective (U := Full) state.carrier () (Set.mem_univ _))).symm PUnit.unit) Assignment.empty
+      (selectedMap_bijective (U := Full) state.carrier () (Set.mem_univ _))).symm x) Assignment.empty
 
-private theorem inGuard : point ∈ written.nativeInput ambient l := by
-  change ambient.evaluation.holds (.atom (.rel () (fun i => i))) (Set.subset_univ _) point
-  rw [RestrictedEvaluation.holds_atom_iff, RestrictedEvaluation.atomic_rel_iff]
-  exact Set.mem_univ _
+private theorem point_mem_fixedDomain_iff (x : Bool) : point x ∈ fixedDomain ↔ x = true := by
+  unfold fixedDomain point
+  exact Iff.of_eq (congrArg (· = true) (Equiv.apply_symm_apply
+    (Equiv.ofBijective (selectedMap Full state.carrier () (Set.mem_univ _))
+      (selectedMap_bijective (U := Full) state.carrier () (Set.mem_univ _))) x))
+
+/-- The input of the registered equation is the actual fixed partial domain. -/
+theorem named_law_input_iff_fixed_domain (x : Bool) :
+    point x ∈ written.fixedStateInput ambient l ↔ x = true := by
+  rw [fixedState.input_eq_native, nativeInput_iff_domain, point_mem_fixedDomain_iff]
+
+/-- The same fixed state hides the value graph of that partial quantity. -/
+theorem named_law_hides_partial_graph (y : ambient.carrier ()) :
+    ¬ (written.fixedStateEvaluation ambient).graph (.partialOp ()) (Set.mem_univ _) (point true) y :=
+  fun holds => holds.1 ⟨.partialOp (), Set.mem_univ _, rfl⟩
 
 /-- A context keeping the actual Law declaration also keeps the guard relation. -/
 theorem named_law_keeps_guard (U : DeclarationContext primitive) (l : (written.selection U).laws) :
     Declaration.relation () ∈ U.declarations :=
-  Declaration.lawBody_subset_of_mem l.property (Or.inl (Or.inr (Set.mem_singleton _)))
+  Declaration.lawBody_subset_of_mem l.property (Or.inl (Or.inr (Or.inl (Set.mem_singleton _))))
 
 /-- The same original declaration cannot register zero in place of the written coefficient one. -/
 theorem named_law_retains_literal :
@@ -186,7 +187,7 @@ theorem named_law_retains_literal :
 
 /-- The coefficient equation keeps its quantity in every selected declaration context. -/
 theorem named_law_keeps_quantity (U : DeclarationContext primitive) (l : (written.selection U).laws) :
-    Declaration.quantity false ∈ U.declarations := by
+    Declaration.partialOp () ∈ U.declarations := by
   apply Declaration.coefficientWritingSupport_subset_of_mem l.property
     (show primitive.coefficientWriting l.val.val.val = some ⟨ℤ, registeredEquation⟩ from rfl)
   exact ⟨application, Or.inl (Set.mem_singleton _), Or.inl (Set.mem_singleton _)⟩
@@ -204,13 +205,12 @@ theorem named_restriction_retains_literal (l : (written.selection retained).laws
   rw [Option.bind_some]
   exact RegisteredCoefficientEquation.atType_mk ℤ (selected.2.1, .scalar 1)
 
-/-- The actual named scalar Law excludes zero even though the native carrier has one point. -/
+/-- The registered scalar Law excludes the zero candidate on its fixed domain. -/
 theorem named_law_rejects_zero :
     ¬ interpreted.presentation.Holds (R := ℤ) (fun _ _ => 0) := by
   intro holds
-  have input : point ∈ reading.fixedState.input ambient l :=
-    (reading.fixedState.input_eq_native ambient l).symm ▸ inGuard
-  have eq := holds l ⟨point, input⟩
+  have input := (named_law_input_iff_fixed_domain true).mpr rfl
+  have eq := holds l ⟨point true, input⟩
   simp only [WrittenLaws.DeclarationSelection.Interpretation.presentation, NamedWrittenLaws.written,
     Expression.eval_compile_const] at eq
   rw [equation_eq l.val] at eq
