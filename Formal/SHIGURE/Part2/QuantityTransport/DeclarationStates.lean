@@ -209,6 +209,10 @@ namespace ContextStructure
 variable (B : ContextStructure U)
 variable {Γ Δ : List P.signature.SortType} {s : P.signature.SortType}
 
+/-- The context of a supported term retains its result sort. -/
+theorem termResultSupport (t : U.TermIn Γ s) : Declaration.sort s ∈ U.declarations :=
+  termSortSupport t (Declaration.sort_mem_sorts (by simp))
+
 private theorem selected_evaluates_iff (t : U.TermIn Γ s)
     (hΓ : Declaration.sorts Γ ⊆ U.declarations) (hs : Declaration.sort s ∈ U.declarations)
     (refs : termReferences t.val ⊆ U.declarations) (e : Assignment B.carrier Γ) (z : B.carrier s) :

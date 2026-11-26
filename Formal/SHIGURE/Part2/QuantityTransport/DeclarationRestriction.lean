@@ -1,4 +1,4 @@
-import Formal.SHIGURE.Part1.ContextSelectedEquations
+import Formal.SHIGURE.Part1.ContextSelectedPresentation
 import Formal.SHIGURE.Part1.MarkedLawSupport
 import Formal.SHIGURE.Part2.QuantityTransport.CoefficientSyntax
 import Formal.SHIGURE.Part2.QuantityTransport.Coefficients
@@ -67,6 +67,12 @@ structure DeclaredQuantityLaws (P : PrimitivePresentation.{u}) where
   expansion (l : quantityLaws) : OrderedEquation.Expansion
     ⟨(P.theory.law l.val).context, valueSort l, (P.theory.law l.val).input, (leftSource l).term, (rightSource l).term⟩
     (P.theory.law l.val).conclusion
+  /-- When the declaration already has ordered syntax, its term pair and input are authoritative. -/
+  registeredEquation (l : quantityLaws) (registered : NamedOrderedEquation P.laws l.val.val) :
+    P.orderedEquation l.val.val = some registered →
+      registered.written.equation =
+        ⟨(P.theory.law l.val).context, valueSort l, (P.theory.law l.val).input,
+          (leftSource l).term, (rightSource l).term⟩
 
 namespace DeclaredQuantityLaws
 
@@ -89,12 +95,40 @@ def writing (l : L.quantityLaws) : OrderedEquation.Written P.signature :=
 theorem writing_toLaw (l : L.quantityLaws) : (L.writing l).toLaw = P.theory.law l.val :=
   rfl
 
+/-- The compiler reads the same ordered equation whenever the source registers one. -/
+theorem writing_eq_registered (l : L.quantityLaws) (registered : NamedOrderedEquation P.laws l.val.val)
+    (attached : P.orderedEquation l.val.val = some registered) :
+    (L.writing l).equation = registered.written.equation :=
+  (L.registeredEquation l registered attached).symm
+
+/-- The selected presentation retains the registered writing that supplies the compiled term pair. -/
+theorem selected_writing_eq_registered (l : L.KeptLaw U)
+    (registered : NamedOrderedEquation P.laws l.val.val.val)
+    (attached : P.orderedEquation l.val.val.val = some registered) :
+    (Selected.presentation U).orderedEquation ⟨l.val.val.val, l.property⟩ =
+      some (Selected.selectNamedEquation ⟨l.val.val.val, l.property⟩ registered) ∧
+    (L.writing l.val).equation = registered.written.equation := by
+  constructor
+  · rw [Selected.presentation_orderedEquation]
+    change (P.orderedEquation l.val.val.val).map _ = _
+    rw [attached]
+    rfl
+  · exact L.writing_eq_registered l.val registered attached
+
 private theorem keptWriting_refs (l : L.KeptLaw U) :
     Declaration.sort (L.valueSort l.val) ∈ U.declarations ∧
       Selected.termReferences (L.leftSource l.val).term ⊆ U.declarations ∧
-      Selected.termReferences (L.rightSource l.val).term ⊆ U.declarations :=
-  Selected.selectWritten_terms_kept (L.writing l.val)
-    (by rw [L.writing_toLaw]; exact Declaration.lawBody_subset_of_mem l.property)
+      Selected.termReferences (L.rightSource l.val).term ⊆ U.declarations := by
+  cases attached : P.orderedEquation l.val.val.val with
+  | none =>
+    exact Selected.selectWritten_terms_kept (L.writing l.val)
+      (by rw [L.writing_toLaw]; exact Declaration.lawBody_subset_of_mem l.property)
+  | some registered =>
+    have kept := Selected.selectWritten_terms_kept (U := U) registered.written
+      (by rw [registered.statement_eq]; exact Declaration.lawBody_subset_of_mem l.property)
+    have equation := L.writing_eq_registered l.val registered attached
+    rw [← equation] at kept
+    exact kept
 
 private theorem compiledRefs_kept {Γ : List P.signature.SortType} {s : P.signature.SortType}
     {compiled : CoefficientTerm L.quantities Γ s} (source : SourceSide compiled)
@@ -115,7 +149,7 @@ theorem keptLaw_refs (l : L.KeptLaw U) :
     L.compiledRefs_kept (L.leftSource l.val) (L.keptWriting_refs l).2.1,
     L.compiledRefs_kept (L.rightSource l.val) (L.keptWriting_refs l).2.2⟩
 
-/-- Only literal symbols and applications present in the two original terms are compiled. -/
+/-- The literal symbols and quantity applications used by either side after binder expansion. -/
 abbrev UsedLeaf (l : L.quantityLaws) :=
   {a : CoefficientTerm.Literal P.signature ⊕
       CoefficientTerm.Application L.quantities (P.theory.law l.val).context //
@@ -128,20 +162,29 @@ theorem keptLeaf_refs (l : L.KeptLaw U) (a : L.UsedLeaf l.val) :
     (fun h => (CoefficientTerm.leafReferences_subset _ h).trans (L.keptLaw_refs l).2.1)
     (fun h => (CoefficientTerm.leafReferences_subset _ h).trans (L.keptLaw_refs l).2.2)
 
-/-- The selected Law's arithmetic symbols are also retained. -/
-theorem keptArithmetic (l : L.KeptLaw U) {a : ArithmeticOperation P.signature}
-    (used : a ∈ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
-    Declaration.ofOperation a.operation ∈ U.declarations :=
-  used.elim
-    (fun h => (L.keptLaw_refs l).2.1 (CoefficientTerm.arithmetic_reference _ h))
-    (fun h => (L.keptLaw_refs l).2.2 (CoefficientTerm.arithmetic_reference _ h))
+/-- An arithmetic application occurring in either side after binder expansion. -/
+abbrev UsedArithmetic (l : L.quantityLaws) :=
+  {a : ArithmeticApplication P.signature (P.theory.law l.val).context //
+    a ∈ (L.left l).arithmeticApplications ∪ (L.right l).arithmeticApplications}
 
-/-- A designated quantity application occurring in either original side. -/
+/-- Every reference of a used arithmetic application survives selection. -/
+theorem keptArithmetic_refs (l : L.KeptLaw U) (a : L.UsedArithmetic l.val) :
+    Selected.termReferences (a.val.1.symbol.term (fun i => a.val.2 i)) ⊆ U.declarations :=
+  a.property.elim
+    (fun h => ((L.left l.val).arithmeticApplication_references h).trans (L.keptLaw_refs l).2.1)
+    (fun h => ((L.right l.val).arithmeticApplication_references h).trans (L.keptLaw_refs l).2.2)
+
+/-- The operator at each used arithmetic application survives selection. -/
+theorem keptArithmetic (l : L.KeptLaw U) (a : L.UsedArithmetic l.val) :
+    Declaration.ofOperation a.val.1.operation ∈ U.declarations :=
+  L.keptArithmetic_refs l a (CoefficientTerm.coefficientHead_ref a.val.1.symbol (fun i => a.val.2 i))
+
+/-- A designated quantity application occurring in either expanded side. -/
 abbrev UsedApplication (l : L.quantityLaws) :=
   {a : CoefficientTerm.Application L.quantities (P.theory.law l.val).context //
     Sum.inr a ∈ (L.left l).leaves ∪ (L.right l).leaves}
 
-/-- An original coefficient literal occurring in either original side. -/
+/-- An original coefficient literal occurring in either expanded side. -/
 abbrev UsedLiteral (l : L.quantityLaws) :=
   {a : CoefficientTerm.Literal P.signature //
     Sum.inl a ∈ (L.left l).leaves ∪ (L.right l).leaves}
@@ -168,7 +211,7 @@ def keptTerm (l : L.KeptLaw U) (a : L.UsedApplication l.val) {s : P.signature.So
   ⟨a.val.2 i, L.keptTerm_support l a i⟩
 
 /-- A literal's nullary operation survives selection of its written Law. -/
-private theorem keptLiteral_name (l : L.KeptLaw U) (a : L.UsedLiteral l.val) :
+theorem keptLiteral_name (l : L.KeptLaw U) (a : L.UsedLiteral l.val) :
     Declaration.ofOperation a.val.2.operation ∈ U.declarations := by
   let op := a.val.2
   have kept := L.keptLeaf_refs l ⟨.inl a.val, a.property⟩
@@ -186,6 +229,14 @@ def lawInput (A : ContextStructure U) (l : L.KeptLaw U) :
 theorem keptLaw_sorts (l : L.KeptLaw U) :
     Declaration.sorts (P.theory.law l.val.val).context ⊆ U.declarations :=
   lawSortSupport (Declaration.lawBody_subset_of_mem l.property)
+
+/-- Keep the original argument term at the given position of a used arithmetic application. -/
+def keptArithmeticArgument (l : L.KeptLaw U) (a : L.UsedArithmetic l.val) {s : P.signature.SortType}
+    (i : Var a.val.1.profile.inputs s) : U.TermIn (P.theory.law l.val.val).context s :=
+  ⟨a.val.2 i, Selected.termContext_le_of_references _ (L.keptLaw_sorts l)
+    (varKept (a.val.1.symbol.keepsInputs (L.keptArithmetic l a)) i)
+    ((CoefficientTerm.coefficientArg_refs a.val.1.symbol (fun j => a.val.2 j) i).trans
+      (L.keptArithmetic_refs l a))⟩
 
 /-- The left term of the actual declared Law is supported in the retained context. -/
 def keptLeftSource (l : L.KeptLaw U) : U.TermIn (P.theory.law l.val.val).context (L.valueSort l.val) :=
@@ -302,17 +353,15 @@ structure Interpretation (A : ContextStructure U) where
     Function.Bijective (read _ (operationOutput j.val.val.operation j.property))
   /-- The designated argument sets of marked total quantities. -/
   totalDomain (j : L.KeptTotal U) : Set (Assignment A.carrier (P.signature.quantityArity j.val).inputs)
-  /-- The actual declared operations at arithmetic nodes realize their written meanings. -/
-  arithmetic (l : L.KeptLaw U) (a : ArithmeticOperation P.signature)
-    (used : a ∈ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
-    a.realizes A read (L.keptArithmetic l used)
-  /-- Each coefficient operation keeps its original values as the candidate quantities vary. -/
-  fixedArithmetic (l : L.KeptLaw U) (a : ArithmeticOperation P.signature)
-    (used : a ∈ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic) :
-    ∀ (B : RestrictedEvaluation U A.carrier), L.SameDeclarationState A totalDomain B →
-      ∀ keep x y, A.evaluation.graph a.operation keep x y ↔ B.graph a.operation keep x y
-  /-- Each literal keeps the value of its original nullary operation. -/
-  fixedLiteral (l : L.KeptLaw U) (a : L.UsedLiteral l.val) :
+  /-- A reached arithmetic application reads as its scalar operation on the evaluated child terms. -/
+  arithmeticAt (l : L.KeptLaw U) (a : L.UsedArithmetic l.val) (e : L.lawInput A l)
+    (B : RestrictedEvaluation U A.carrier) (same : L.SameDeclarationState A totalDomain B)
+    (x : Assignment A.carrier a.val.1.profile.inputs) (y : A.carrier a.val.1.profile.output) :
+    (∀ {s} (i : Var a.val.1.profile.inputs s), termGraph B (L.keptArithmeticArgument l a i) e.val (x i)) →
+      a.val.1.symbol.graph ⟨A.carrier, A.omitted, B, same.structural⟩ (L.keptArithmetic l a) x y →
+      a.val.1.ReadsValue ⟨A.carrier, A.omitted, B, same.structural⟩ (L.keptArithmetic l a) read x y
+  /-- For an input of its Law, each literal keeps the value of its original nullary operation. -/
+  fixedLiteral (l : L.KeptLaw U) (a : L.UsedLiteral l.val) (_ : L.lawInput A l) :
     ∀ (B : RestrictedEvaluation U A.carrier), L.SameDeclarationState A totalDomain B →
       let op := a.val.2.operation
       ∀ keep x y, A.evaluation.graph op keep x y ↔ B.graph op keep x y
@@ -410,13 +459,6 @@ def presentation : Presentation k (Selected.readStructure A) where
   left l e := (L.left l.val).compile (fun a h => I.readLeaf l e ⟨a, Or.inl h⟩)
   right l e := (L.right l.val).compile (fun a h => I.readLeaf l e ⟨a, Or.inr h⟩)
 
-/-- Reading an element after retyping its sort uses the same retained carrier. -/
-private theorem read_cast {s t : P.signature.SortType} (eq : s = t)
-    (hs : Declaration.sort s ∈ U.declarations) (ht : Declaration.sort t ∈ U.declarations)
-    (x : A.carrier s) : I.read t ht (cast (congrArg A.carrier eq) x) = I.read s hs x := by
-  cases eq
-  rfl
-
 /-- The identification of the original equality's value sort with the coefficient ring. -/
 def lawCoefficients (l : L.KeptLaw U) : A.carrier (L.valueSort l.val) ≃ k :=
   Equiv.ofBijective _ (I.lawRead l)
@@ -504,7 +546,8 @@ private theorem compiledValue_read (l : L.KeptLaw U) (e : L.lawInput A l)
     (t : CoefficientTerm L.quantities (P.theory.law l.val.val).context (L.valueSort l.val))
     (keep : Selected.termReferences t.toTerm ⊆ U.declarations)
     (used : t.leaves ⊆ (L.left l.val).leaves ∪ (L.right l.val).leaves)
-    (arithmetic : t.arithmetic ⊆ (L.left l.val).arithmetic ∪ (L.right l.val).arithmetic)
+    (arithmetic : t.arithmeticApplications ⊆
+      (L.left l.val).arithmeticApplications ∪ (L.right l.val).arithmeticApplications)
     (supported : Declaration.termContext t.toTerm ≤ U) (y : A.carrier (L.valueSort l.val))
     (evaluated : (I.candidateStructure q).evaluates ⟨t.toTerm, supported⟩ e.val y) :
     I.read _ (L.keptLaw_refs l).1 y =
@@ -521,10 +564,9 @@ private theorem compiledValue_read (l : L.KeptLaw U) (e : L.lawInput A l)
       obtain ⟨args, _, edge⟩ := (op.evaluates_term_iff B Term.argsNil hTerm e.val kept z).1 value
       have atEmpty : op.graph B kept Assignment.empty z := Assignment.eq_empty args ▸ edge
       have original : op.graph A kept Assignment.empty z :=
-        (I.fixedLiteral l leaf B.evaluation fixed kept _ _).2 atEmpty
+        (I.fixedLiteral l leaf e B.evaluation fixed kept _ _).2 atEmpty
       have same := op.graph_rightUnique A kept original (I.literalGraph_exists l e leaf).choose_spec
-      have read := I.read_cast (t.leafSort_eq h) (op.keepsResult kept) (L.keptLaw_refs l).1 z
-      exact read.trans (congrArg (I.read literal.1 (op.keepsResult kept)) same)
+      exact congrArg (I.read literal.1 (op.keepsResult kept)) same
     | inr application =>
       let a : L.UsedApplication l.val := ⟨application, used h⟩
       let j := L.keptApplication l a
@@ -540,16 +582,13 @@ private theorem compiledValue_read (l : L.KeptLaw U) (e : L.lawInput A l)
         exact B.evaluates_unique (L.keptTerm l a i) e.val witness
           (I.argumentIndependent l B.evaluation fixed e a i)
       have same := B.graph_rightUnique op keepOp (agreed ▸ edge) (I.candidateStructure_graph q j input)
-      have sortEq : op.arity.output = L.valueSort l.val := t.leafSort_eq h
-      refine (I.read_cast sortEq (operationOutput op keepOp) (L.keptLaw_refs l).1 z).trans ?_
       exact (congrArg (I.read _ (operationOutput op keepOp)) same).trans ((I.quantityCoefficients j).apply_symm_apply _)
-  · intro a h
-    have original := I.arithmetic l a (arithmetic h)
-    have agreement := I.fixedArithmetic l a (arithmetic h) B.evaluation fixed
-    cases a with
-    | add op | neg op | sub op | mul op =>
-      intro args result edge
-      exact original args result ((agreement _ _ _).2 edge)
+  · intro a h x y each edge
+    let applied : L.UsedArithmetic l.val := ⟨a, arithmetic h⟩
+    refine I.arithmeticAt l applied e B.evaluation fixed x y ?_ edge
+    intro _ i
+    obtain ⟨_, holds⟩ := each i
+    exact holds
 
 /-- On the original guard, the declared conclusion holds exactly when its compiled residual is zero. -/
 theorem candidate_conclusion_iff (l : L.KeptLaw U) (e : L.lawInput A l)
@@ -649,7 +688,7 @@ theorem restrict_lawInput_iff (l : L.KeptLaw V)
   A.restrict_holds_iff inside _ _ e
 
 /-- The image of a retained input in the original antecedent's input set. -/
-private def includeInput (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l) :
+def includeInput (l : L.KeptLaw V) (e : L.lawInput (A.restrict inside) l) :
     L.lawInput A (L.includeLaw inside l) :=
   ⟨assignmentEquiv (A := A) inside (L.keptLaw_sorts l) e.val,
     (restrict_lawInput_iff inside l e.val).1 e.property⟩
@@ -820,22 +859,44 @@ def restrict : L.Interpretation (k := k) (A.restrict inside) where
   lawRead l := (I.lawRead (L.includeLaw inside l)).comp (selectedMap_bijective A.carrier _ _)
   quantityRead j := (I.quantityRead (L.includeQuantity inside j)).comp (selectedMap_bijective A.carrier _ _)
   totalDomain := I.restrictTotal inside
-  arithmetic l a used :=
-    a.realizes_restrict inside (L.keptArithmetic l used) I.read (I.arithmetic (L.includeLaw inside l) a used)
-  fixedArithmetic l a used B same keep x y := by
+  arithmeticAt l a e B same x y each edge := by
     let extended := extendEvaluation (A := A) inside B
-    have fixed := I.fixedArithmetic (L.includeLaw inside l) a used extended
-      (I.extendEvaluation_sameState inside B same) (inside keep)
-      (mapAssignment (selectedMap V A.carrier) (operationInputs a.operation keep) x)
-      (selectedMap V A.carrier _ (operationOutput a.operation keep) y)
-    change (A.restrict inside).evaluation.graph a.operation keep x y ↔
-      (extended.pullback inside (selectedMap V A.carrier)).graph a.operation keep x y at fixed
-    rw [I.extendEvaluation_restrict inside B same] at fixed
-    exact fixed
-  fixedLiteral l a B same keep x y := by
+    let ambientState := I.extendEvaluation_sameState inside B same
+    let ambientCandidate : ContextStructure U := ⟨A.carrier, A.omitted, extended, ambientState.structural⟩
+    let originalInput := includeInput inside l e
+    let op := a.val.1
+    let kept := L.keptArithmetic l a
+    let keepInputs := op.symbol.keepsInputs kept
+    let keepResult := op.symbol.keepsResult kept
+    let x' := mapAssignment (selectedMap V A.carrier) keepInputs x
+    let y' := selectedMap V A.carrier _ keepResult y
+    have edges := op.symbol.graph_restrict_iff ambientCandidate inside kept x y
+    have reduced : (ambientCandidate.restrict inside).evaluation = B := I.extendEvaluation_restrict inside B same
+    have edge' : op.symbol.graph ambientCandidate (inside kept) x' y' := by
+      apply edges.1
+      simpa only [CoefficientSymbol.graph, reduced] using edge
+    have each' : ∀ {s} (i : Var op.profile.inputs s),
+        termGraph extended (L.keptArithmeticArgument (L.includeLaw inside l) a i) originalInput.val (x' i) := by
+      intro s i
+      let t := L.keptArithmeticArgument l a i
+      let keep := (Declaration.termContext_le_iff t.val).1 t.property
+      have transfer := extended.holds_pullback_iff inside (selectedMap V A.carrier)
+        (selectedMap_bijective A.carrier) t.val.graph keep (Assignment.cons (x i) e.val)
+      rw [I.extendEvaluation_restrict inside B same] at transfer
+      have transport :=
+        mapAssignment_cons (selectedMap V A.carrier) (varKept keepInputs i) (L.keptLaw_sorts l) (x i) e.val
+      have result := transfer.1 (each i)
+      rw [transport] at result
+      exact result
+    have held := I.arithmeticAt (L.includeLaw inside l) a originalInput extended ambientState x' y' each' edge'
+    unfold ArithmeticOperation.ReadsValue at held ⊢
+    change I.read _ (inside keepResult) y' = op.scalar (mapAssignment (I.restrictRead inside) keepInputs x)
+    exact held.trans (congrArg op.scalar
+      (mapAssignment_comp (selectedMap V A.carrier) I.read inside keepInputs x))
+  fixedLiteral l a e B same keep x y := by
     let extended := extendEvaluation (A := A) inside B
     let op := a.val.2.operation
-    have fixed := I.fixedLiteral (L.includeLaw inside l) a extended
+    have fixed := I.fixedLiteral (L.includeLaw inside l) a (includeInput inside l e) extended
       (I.extendEvaluation_sameState inside B same) (inside keep)
       (mapAssignment (selectedMap V A.carrier) (operationInputs op keep) x)
       (selectedMap V A.carrier _ (operationOutput op keep) y)

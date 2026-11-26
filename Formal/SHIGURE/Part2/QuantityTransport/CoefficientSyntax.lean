@@ -144,40 +144,52 @@ end CoefficientSymbol
 
 /-- The arithmetic meaning assigned to a written coefficient operation. -/
 inductive ArithmeticOperation (sig : Signature.{u})
-  | add {s} (symbol : CoefficientSymbol sig ⟨[s, s], s⟩)
-  | neg {s} (symbol : CoefficientSymbol sig ⟨[s], s⟩)
-  | sub {s} (symbol : CoefficientSymbol sig ⟨[s, s], s⟩)
-  | mul {s} (symbol : CoefficientSymbol sig ⟨[s, s], s⟩)
+  | add {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
+  | neg {a s} (symbol : CoefficientSymbol sig ⟨[a], s⟩)
+  | sub {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
+  | mul {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
 
 namespace ArithmeticOperation
 
 open DeclarationContext
 
+/-- The ordered input sorts and result sort at a written arithmetic node. -/
+def profile {sig : Signature.{u}} : ArithmeticOperation sig → Arity sig.SortType
+  | .add (l := l) (r := r) (s := s) _ | .sub (l := l) (r := r) (s := s) _
+  | .mul (l := l) (r := r) (s := s) _ => ⟨[l, r], s⟩
+  | .neg (a := a) (s := s) _ => ⟨[a], s⟩
+
+/-- The original typed coefficient symbol at the arithmetic node. -/
+def symbol {sig : Signature.{u}} : (a : ArithmeticOperation sig) → CoefficientSymbol sig a.profile
+  | .add op | .sub op | .mul op | .neg op => op
+
 /-- The original operation at a written arithmetic node. -/
-def operation {sig : Signature.{u}} : ArithmeticOperation sig → Operation sig
-  | .add op | .neg op | .sub op | .mul op => op.operation
+def operation {sig : Signature.{u}} (a : ArithmeticOperation sig) : Operation sig := a.symbol.operation
 
 variable {k : Type u} [CommRing k]
+
+/-- Evaluate the scalar operation on readings from its ordered input positions. -/
+def scalar {sig : Signature.{u}} : (a : ArithmeticOperation sig) →
+    Assignment (fun _ : sig.SortType => k) a.profile.inputs → k
+  | .add _, x => x .here + x (.there .here)
+  | .sub _, x => x .here - x (.there .here)
+  | .mul _, x => x .here * x (.there .here)
+  | .neg _, x => - x .here
+
 variable {P : PrimitivePresentation.{u}} {U V : DeclarationContext P}
 
-/-- The actual operation is the indicated arithmetic when read in the coefficient ring. -/
-def realizes (A : ContextStructure U) (read : CarrierMap U A.carrier (fun _ => k)) :
-    (a : ArithmeticOperation P.signature) → Declaration.ofOperation a.operation ∈ U.declarations → Prop
-  | .add op, keep => op.Realizes A keep read (fun x => x .here + x (.there .here))
-  | .neg op, keep => op.Realizes A keep read (fun x => - x .here)
-  | .sub op, keep => op.Realizes A keep read (fun x => x .here - x (.there .here))
-  | .mul op, keep => op.Realizes A keep read (fun x => x .here * x (.there .here))
-
-/-- The interpretation of a written arithmetic operation survives restriction. -/
-theorem realizes_restrict (a : ArithmeticOperation P.signature) {A : ContextStructure U}
-    (inside : V ≤ U) (keep : Declaration.ofOperation a.operation ∈ V.declarations)
-    (read : CarrierMap U A.carrier (fun _ => k)) (valid : a.realizes A read (inside keep)) :
-    a.realizes (A.restrict inside)
-      (fun s hs x => read s (inside hs) (selectedMap V A.carrier s hs x)) keep := by
-  cases a <;> simp only [realizes] at valid ⊢
-  all_goals exact CoefficientSymbol.Realizes.restrict inside keep valid
+/-- The value at one actual arithmetic application reads as the result on its scalar inputs. -/
+def ReadsValue (a : ArithmeticOperation P.signature) (A : ContextStructure U)
+    (keep : Declaration.ofOperation a.operation ∈ U.declarations)
+    (read : CarrierMap U A.carrier (fun _ => k))
+    (input : Assignment A.carrier a.profile.inputs) (output : A.carrier a.profile.output) : Prop :=
+  read _ (a.symbol.keepsResult keep) output = a.scalar (mapAssignment read (a.symbol.keepsInputs keep) input)
 
 end ArithmeticOperation
+
+/-- A written arithmetic application retains the actual term at each primitive argument position. -/
+abbrev ArithmeticApplication (sig : Signature.{u}) (Γ : List sig.SortType) :=
+  Σ op : ArithmeticOperation sig, Substitution sig op.profile.inputs Γ
 
 /-- The typed syntax of the written coefficient equations.
 Each arithmetic node refers to the actual operation of that occurrence. -/
@@ -186,14 +198,17 @@ inductive CoefficientTerm {sig : Signature.{u}} (quantity : Set (QuantityDeclara
   | scalar {s} (symbol : CoefficientSymbol sig ⟨[], s⟩) : CoefficientTerm quantity Γ s
   | quantity (j : quantity) (args : Substitution sig j.val.operation.arity.inputs Γ) :
       CoefficientTerm quantity Γ j.val.operation.arity.output
-  | add {s} (symbol : CoefficientSymbol sig ⟨[s, s], s⟩)
-      (left right : CoefficientTerm quantity Γ s) : CoefficientTerm quantity Γ s
-  | neg {s} (symbol : CoefficientSymbol sig ⟨[s], s⟩) (arg : CoefficientTerm quantity Γ s) :
+  | add {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
+      (left : CoefficientTerm quantity Γ l) (right : CoefficientTerm quantity Γ r) :
       CoefficientTerm quantity Γ s
-  | sub {s} (symbol : CoefficientSymbol sig ⟨[s, s], s⟩)
-      (left right : CoefficientTerm quantity Γ s) : CoefficientTerm quantity Γ s
-  | mul {s} (symbol : CoefficientSymbol sig ⟨[s, s], s⟩)
-      (left right : CoefficientTerm quantity Γ s) : CoefficientTerm quantity Γ s
+  | neg {a s} (symbol : CoefficientSymbol sig ⟨[a], s⟩) (arg : CoefficientTerm quantity Γ a) :
+      CoefficientTerm quantity Γ s
+  | sub {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
+      (left : CoefficientTerm quantity Γ l) (right : CoefficientTerm quantity Γ r) :
+      CoefficientTerm quantity Γ s
+  | mul {l r s} (symbol : CoefficientSymbol sig ⟨[l, r], s⟩)
+      (left : CoefficientTerm quantity Γ l) (right : CoefficientTerm quantity Γ r) :
+      CoefficientTerm quantity Γ s
 
 namespace CoefficientTerm
 
@@ -222,13 +237,17 @@ def leaves : {s : sig.SortType} → CoefficientTerm quantity Γ s → Set (Liter
   | _, .add _ l r | _, .sub _ l r | _, .mul _ l r => l.leaves ∪ r.leaves
   | _, .neg _ x => x.leaves
 
-/-- Only arithmetic operations appearing in the written expression need an interpretation. -/
-def arithmetic : {s : sig.SortType} → CoefficientTerm quantity Γ s → Set (ArithmeticOperation sig)
+/-- Record each occurrence of an actual arithmetic argument tuple after expanding the binders. -/
+def arithmeticApplications : {s : sig.SortType} →
+    CoefficientTerm quantity Γ s → Set (ArithmeticApplication sig Γ)
   | _, .scalar _ | _, .quantity _ _ => ∅
-  | _, .add op l r => {ArithmeticOperation.add op} ∪ (l.arithmetic ∪ r.arithmetic)
-  | _, .neg op t => {ArithmeticOperation.neg op} ∪ t.arithmetic
-  | _, .sub op l r => {ArithmeticOperation.sub op} ∪ (l.arithmetic ∪ r.arithmetic)
-  | _, .mul op l r => {ArithmeticOperation.mul op} ∪ (l.arithmetic ∪ r.arithmetic)
+  | _, .add op l r => {⟨.add op, ⟨fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i⟩⟩} ∪
+      (l.arithmeticApplications ∪ r.arithmeticApplications)
+  | _, .sub op l r => {⟨.sub op, ⟨fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i⟩⟩} ∪
+      (l.arithmeticApplications ∪ r.arithmeticApplications)
+  | _, .mul op l r => {⟨.mul op, ⟨fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i⟩⟩} ∪
+      (l.arithmeticApplications ∪ r.arithmeticApplications)
+  | _, .neg op t => {⟨.neg op, ⟨fun i => t.toTerm.argsCons Term.argsNil i⟩⟩} ∪ t.arithmeticApplications
 
 /-- Scalars and coordinates have different result types when reading a leaf. -/
 def LeafValue {L Q : Type u} (k Z : Type u) : L ⊕ Q → Type u
@@ -267,21 +286,6 @@ def leafTerm (a : Literal sig ⊕ Application quantity Γ) : Σ s : sig.SortType
   match a with
   | .inl ⟨s, symbol⟩ => ⟨s, symbol.term Term.argsNil⟩
   | .inr ⟨j, args⟩ => ⟨_, Term.app j.val.operation (fun i => args i)⟩
-
-/-- Each actual leaf has the value sort of its enclosing coefficient term. -/
-theorem leafSort_eq {s : sig.SortType} (t : CoefficientTerm quantity Γ s)
-    {a : Literal sig ⊕ Application quantity Γ} (used : a ∈ t.leaves) : (leafTerm a).1 = s := by
-  induction t with
-  | scalar symbol =>
-    obtain rfl := Set.mem_singleton_iff.mp used
-    rfl
-  | quantity j args =>
-    obtain rfl := Set.mem_singleton_iff.mp used
-    rfl
-  | add op l r il ir => exact used.elim il ir
-  | neg op t it => exact it used
-  | sub op l r il ir => exact used.elim il ir
-  | mul op l r il ir => exact used.elim il ir
 
 section References
 
@@ -338,47 +342,34 @@ theorem coefficientHead_ref {profile : Arity P.signature.SortType}
   change Declaration.ofOperation symbol ∈ termReferences (Term.app symbol args)
   exact Or.inl (Set.mem_singleton _)
 
-/-- Written arithmetic nodes are retained by the support of their original typed term. -/
-theorem arithmetic_reference {s : P.signature.SortType} (t : CoefficientTerm Q Δ s)
-    {a : ArithmeticOperation P.signature} (ha : a ∈ t.arithmetic) :
-    Declaration.ofOperation a.operation ∈ termReferences t.toTerm := by
+/-- The operator and arguments of an arithmetic application are retained by the source term. -/
+theorem arithmeticApplication_references {s : P.signature.SortType} (t : CoefficientTerm Q Δ s)
+    {a : ArithmeticApplication P.signature Δ} (used : a ∈ t.arithmeticApplications) :
+    termReferences (a.1.symbol.term (fun i => a.2 i)) ⊆ termReferences t.toTerm := by
   induction t with
-  | scalar => exact False.elim ha
-  | quantity => exact False.elim ha
-  | add op l r il ir =>
-    rcases ha with atHead | atLeft | atRight
-    · have eq := Set.mem_singleton_iff.mp atHead
-      subst a
-      exact coefficientHead_ref op _
-    · exact coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i)
-        .here (il atLeft)
-    · exact coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i)
-        (.there .here) (ir atRight)
+  | scalar => exact False.elim used
+  | quantity => exact False.elim used
   | neg op x ix =>
-    rcases ha with atHead | atArg
-    · have eq := Set.mem_singleton_iff.mp atHead
-      subst a
-      exact coefficientHead_ref op _
-    · exact coefficientArg_refs op (fun i => x.toTerm.argsCons Term.argsNil i) .here (ix atArg)
-  | sub op l r il ir =>
-    rcases ha with atHead | atLeft | atRight
-    · have eq := Set.mem_singleton_iff.mp atHead
-      subst a
-      exact coefficientHead_ref op _
-    · exact coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i)
-        .here (il atLeft)
-    · exact coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i)
-        (.there .here) (ir atRight)
-
+    rcases used with head | child
+    · obtain rfl := Set.mem_singleton_iff.mp head
+      exact Set.Subset.rfl
+    · exact (ix child).trans (coefficientArg_refs op (fun i => x.toTerm.argsCons Term.argsNil i) .here)
+  | add op l r il ir
+  | sub op l r il ir
   | mul op l r il ir =>
-    rcases ha with atHead | atLeft | atRight
-    · have eq := Set.mem_singleton_iff.mp atHead
-      subst a
-      exact coefficientHead_ref op _
-    · exact coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i)
-        .here (il atLeft)
-    · exact coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i)
-        (.there .here) (ir atRight)
+    rcases used with head | onLeft | onRight
+    · obtain rfl := Set.mem_singleton_iff.mp head
+      exact Set.Subset.rfl
+    · exact (il onLeft).trans (coefficientArg_refs op
+        (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here)
+    · exact (ir onRight).trans (coefficientArg_refs op
+        (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here))
+
+/-- A used arithmetic application's original primitive declaration survives. -/
+theorem arithmeticApplication_reference {s : P.signature.SortType} (t : CoefficientTerm Q Δ s)
+    {a : ArithmeticApplication P.signature Δ} (used : a ∈ t.arithmeticApplications) :
+    Declaration.ofOperation a.1.operation ∈ termReferences t.toTerm :=
+  t.arithmeticApplication_references used (coefficientHead_ref a.1.symbol (fun i => a.2 i))
 
 end References
 
@@ -438,9 +429,13 @@ theorem evaluates_read (read : CarrierMap U A.carrier (fun _ => k))
     (compiled : ∀ a ∈ t.leaves, LeafValue k Z a) (q : Z → k)
     (leafMeaning : ∀ a h (hTerm : Declaration.termContext (leafTerm a).2 ≤ U)
       (z : A.carrier (leafTerm a).1), A.evaluates ⟨(leafTerm a).2, hTerm⟩ e z →
-        read s keepSort (cast (congrArg A.carrier (t.leafSort_eq h)) z) =
+        read (leafTerm a).1 (ContextStructure.termResultSupport ⟨(leafTerm a).2, hTerm⟩) z =
           compiledLeafValue q a (compiled a h))
-    (arithmeticMeaning : ∀ a (h : a ∈ t.arithmetic), a.realizes A read (keep (t.arithmetic_reference h))) :
+    (arithmeticMeaning : ∀ (a : ArithmeticApplication P.signature Γ) (h : a ∈ t.arithmeticApplications)
+      (input : Assignment A.carrier a.1.profile.inputs) (y : A.carrier a.1.profile.output),
+      (∀ {iSort} (i : Var a.1.profile.inputs iSort), ∃ hp, A.evaluates ⟨a.2 i, hp⟩ e (input i)) →
+      a.1.symbol.graph A (keep (t.arithmeticApplication_reference h)) input y →
+      a.1.ReadsValue A (keep (t.arithmeticApplication_reference h)) read input y) :
     ∀ (supported : Declaration.termContext t.toTerm ≤ U) (y : A.carrier s),
       A.evaluates ⟨t.toTerm, supported⟩ e y →
       read s keepSort y = (t.compile compiled).eval q := by
@@ -456,61 +451,65 @@ theorem evaluates_read (read : CarrierMap U A.carrier (fun _ => k))
     intro supported y evaluated
     obtain ⟨input, each, edge⟩ := (op.evaluates_term_iff A _ supported e
       (keep (coefficientHead_ref op _)) y).1 evaluated
-    have meaning := arithmeticMeaning (.add op) (Or.inl (Set.mem_singleton _))
-    have readValue := meaning input y edge
+    have inputSorts := op.keepsInputs (keep (coefficientHead_ref op _))
+    let applied : ArithmeticApplication P.signature Γ := ⟨.add op, ⟨fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i⟩⟩
+    have readValue := arithmeticMeaning applied (Or.inl (Set.mem_singleton _)) input y each edge
     change read _ keepSort y = _ at readValue
     rw [readValue]
-    simp only [compile, Expression.eval, mapAssignment_apply]
+    simp only [compile, Expression.eval]
     obtain ⟨hl, left⟩ := each (.here : Var [_, _] _)
     obtain ⟨hr, right⟩ := each (.there .here : Var [_, _] _)
     exact congrArg₂ (· + ·)
-      (il ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here).trans keep) keepSort _ (fun a h => leafMeaning a (Or.inl h))
+      (il ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here).trans keep) (varKept inputSorts .here) _ (fun a h => leafMeaning a (Or.inl h))
         (fun a h => arithmeticMeaning a (Or.inr (Or.inl h))) hl _ left)
-      (ir ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here)).trans keep) keepSort _ (fun a h => leafMeaning a (Or.inr h))
+      (ir ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here)).trans keep) (varKept inputSorts (.there .here)) _ (fun a h => leafMeaning a (Or.inr h))
         (fun a h => arithmeticMeaning a (Or.inr (Or.inr h))) hr _ right)
   | neg op t it =>
     intro supported y evaluated
     obtain ⟨input, each, edge⟩ := (op.evaluates_term_iff A _ supported e
       (keep (coefficientHead_ref op _)) y).1 evaluated
-    have meaning := arithmeticMeaning (.neg op) (Or.inl (Set.mem_singleton _))
-    have readValue := meaning input y edge
+    have inputSorts := op.keepsInputs (keep (coefficientHead_ref op _))
+    let applied : ArithmeticApplication P.signature Γ := ⟨.neg op, ⟨fun i => t.toTerm.argsCons Term.argsNil i⟩⟩
+    have readValue := arithmeticMeaning applied (Or.inl (Set.mem_singleton _)) input y each edge
     change read _ keepSort y = _ at readValue
     rw [readValue]
-    simp only [compile, Expression.eval, mapAssignment_apply]
+    simp only [compile, Expression.eval]
     obtain ⟨hArg, value⟩ := each (.here : Var [_] _)
     exact congrArg Neg.neg
-      (it ((coefficientArg_refs op (fun i => t.toTerm.argsCons Term.argsNil i) .here).trans keep) keepSort _ leafMeaning (fun a h => arithmeticMeaning a (Or.inr h)) hArg _ value)
+      (it ((coefficientArg_refs op (fun i => t.toTerm.argsCons Term.argsNil i) .here).trans keep) (varKept inputSorts .here) _ leafMeaning (fun a h => arithmeticMeaning a (Or.inr h)) hArg _ value)
   | sub op l r il ir =>
     intro supported y evaluated
     obtain ⟨input, each, edge⟩ := (op.evaluates_term_iff A _ supported e
       (keep (coefficientHead_ref op _)) y).1 evaluated
-    have meaning := arithmeticMeaning (.sub op) (Or.inl (Set.mem_singleton _))
-    have readValue := meaning input y edge
+    have inputSorts := op.keepsInputs (keep (coefficientHead_ref op _))
+    let applied : ArithmeticApplication P.signature Γ := ⟨.sub op, ⟨fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i⟩⟩
+    have readValue := arithmeticMeaning applied (Or.inl (Set.mem_singleton _)) input y each edge
     change read _ keepSort y = _ at readValue
     rw [readValue]
-    simp only [compile, Expression.eval, mapAssignment_apply, sub_eq_add_neg]
+    simp only [compile, Expression.eval, ArithmeticOperation.scalar, sub_eq_add_neg]
     obtain ⟨hl, left⟩ := each (.here : Var [_, _] _)
     obtain ⟨hr, right⟩ := each (.there .here : Var [_, _] _)
     exact congrArg₂ (fun x y : k => x + -y)
-      (il ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here).trans keep) keepSort _ (fun a h => leafMeaning a (Or.inl h))
+      (il ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here).trans keep) (varKept inputSorts .here) _ (fun a h => leafMeaning a (Or.inl h))
         (fun a h => arithmeticMeaning a (Or.inr (Or.inl h))) hl _ left)
-      (ir ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here)).trans keep) keepSort _ (fun a h => leafMeaning a (Or.inr h))
+      (ir ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here)).trans keep) (varKept inputSorts (.there .here)) _ (fun a h => leafMeaning a (Or.inr h))
         (fun a h => arithmeticMeaning a (Or.inr (Or.inr h))) hr _ right)
   | mul op l r il ir =>
     intro supported y evaluated
     obtain ⟨input, each, edge⟩ := (op.evaluates_term_iff A _ supported e
       (keep (coefficientHead_ref op _)) y).1 evaluated
-    have meaning := arithmeticMeaning (.mul op) (Or.inl (Set.mem_singleton _))
-    have readValue := meaning input y edge
+    have inputSorts := op.keepsInputs (keep (coefficientHead_ref op _))
+    let applied : ArithmeticApplication P.signature Γ := ⟨.mul op, ⟨fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i⟩⟩
+    have readValue := arithmeticMeaning applied (Or.inl (Set.mem_singleton _)) input y each edge
     change read _ keepSort y = _ at readValue
     rw [readValue]
-    simp only [compile, Expression.eval, mapAssignment_apply]
+    simp only [compile, Expression.eval]
     obtain ⟨hl, left⟩ := each (.here : Var [_, _] _)
     obtain ⟨hr, right⟩ := each (.there .here : Var [_, _] _)
     exact congrArg₂ (· * ·)
-      (il ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here).trans keep) keepSort _ (fun a h => leafMeaning a (Or.inl h))
+      (il ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) .here).trans keep) (varKept inputSorts .here) _ (fun a h => leafMeaning a (Or.inl h))
         (fun a h => arithmeticMeaning a (Or.inr (Or.inl h))) hl _ left)
-      (ir ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here)).trans keep) keepSort _ (fun a h => leafMeaning a (Or.inr h))
+      (ir ((coefficientArg_refs op (fun i => l.toTerm.argsCons (r.toTerm.argsCons Term.argsNil) i) (.there .here)).trans keep) (varKept inputSorts (.there .here)) _ (fun a h => leafMeaning a (Or.inr h))
         (fun a h => arithmeticMeaning a (Or.inr (Or.inr h))) hr _ right)
 
 end SHIGURE.Quantities.CoefficientTerm
