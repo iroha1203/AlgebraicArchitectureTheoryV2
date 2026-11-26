@@ -132,46 +132,45 @@ pub fn solve_diagnostics_task(task: &CheckedDiagnosticsTask) -> ShigureOutcome {
         }
     };
 
+    let ctx = DiagnosticsRunContext {
+        spec,
+        nerve: &nerve,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+    };
+
     match &spec.readout {
-        DiagnosticsReadoutSpec::Static {
-            sources,
-            reading,
-            laws,
-            ..
-        } => solve_static_diagnostics(
-            spec,
-            &nerve,
-            sources,
-            reading,
-            laws,
-            coeff_domain,
-            point_domain,
-            checks,
-            provenance,
-        ),
-        DiagnosticsReadoutSpec::Polynomial { .. } => solve_polynomial_diagnostics(
-            spec,
-            &nerve,
-            coeff_domain,
-            point_domain,
-            checks,
-            provenance,
-        ),
+        DiagnosticsReadoutSpec::Static { reading, laws, .. } => {
+            solve_static_diagnostics(ctx, reading, laws)
+        }
+        DiagnosticsReadoutSpec::Polynomial { .. } => solve_polynomial_diagnostics(ctx),
     }
 }
 
-#[allow(clippy::too_many_arguments)]
-fn solve_static_diagnostics(
-    spec: &DiagnosticsTaskSpec,
-    nerve: &ComputedNerve,
-    _sources: &[String],
-    reading: &[(String, String)],
-    laws: &[crate::ir::diagnostics::StaticLawReadoutSpec],
+struct DiagnosticsRunContext<'a> {
+    spec: &'a DiagnosticsTaskSpec,
+    nerve: &'a ComputedNerve,
     coeff_domain: CoeffDomain,
     point_domain: PointDomain,
-    mut checks: Vec<ApplicabilityCheck>,
+    checks: Vec<ApplicabilityCheck>,
     provenance: Provenance,
+}
+
+fn solve_static_diagnostics(
+    ctx: DiagnosticsRunContext<'_>,
+    reading: &[(String, String)],
+    laws: &[crate::ir::diagnostics::StaticLawReadoutSpec],
 ) -> ShigureOutcome {
+    let DiagnosticsRunContext {
+        spec,
+        nerve,
+        coeff_domain,
+        point_domain,
+        mut checks,
+        provenance,
+    } = ctx;
     let reading_map: BTreeMap<&str, &str> = reading
         .iter()
         .map(|(s, t)| (s.as_str(), t.as_str()))
@@ -318,14 +317,15 @@ fn solve_static_diagnostics(
     )
 }
 
-fn solve_polynomial_diagnostics(
-    spec: &DiagnosticsTaskSpec,
-    nerve: &ComputedNerve,
-    coeff_domain: CoeffDomain,
-    point_domain: PointDomain,
-    mut checks: Vec<ApplicabilityCheck>,
-    mut provenance: Provenance,
-) -> ShigureOutcome {
+fn solve_polynomial_diagnostics(ctx: DiagnosticsRunContext<'_>) -> ShigureOutcome {
+    let DiagnosticsRunContext {
+        spec,
+        nerve,
+        coeff_domain,
+        point_domain,
+        mut checks,
+        mut provenance,
+    } = ctx;
     for clause in [
         MathClause::G142B1,
         MathClause::G142B2,
