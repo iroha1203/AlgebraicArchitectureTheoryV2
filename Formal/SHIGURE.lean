@@ -31,6 +31,7 @@ import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
 import Formal.SHIGURE.Part2.QuantityTransport
 import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
+import Formal.SHIGURE.Part2.Schemes.RelativeSpecBaseChange
 
 /-! # SHIGURE
 
