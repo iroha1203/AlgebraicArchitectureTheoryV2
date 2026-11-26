@@ -53,7 +53,8 @@ theorem epi_modulePullback {M N : X.Modules} (f : M ⟶ N) (g : Y ⟶ X) [Epi f]
     Epi ((Scheme.Modules.pullback g).map f) :=
   inferInstance
 
-/-- The quasi-coherent module pseudofunctor whose fppf comparison detects equality of sheaf maps. -/
+/-- The quasi-coherent module pseudofunctor used to detect equality of sheaf
+maps on the fppf covering families of Appendix B.3. -/
 private abbrev Q := quasiCoherentModulesPseudofunctor.{u}
 
 set_option maxHeartbeats 100000 in
