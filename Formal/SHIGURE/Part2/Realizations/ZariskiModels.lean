@@ -86,28 +86,59 @@ theorem restrictStructure_comp {S'' : Scheme.{u}} {sig : Signature.{u}} (g : S''
   have h := restrictStructureAlong_congr (Over.mapComp_eq g f).symm A
   exact h
 
+private def restrictStructureMapAlong {sig : Signature.{u}} (F : Over S' ⥤ Over S)
+    [F.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)]
+    {A B : SheafStructure sig (Scheme.zariskiTopology.over S)} (h : SheafStructure.Hom A B) :
+    SheafStructure.Hom (restrictStructureAlong F A) (restrictStructureAlong F B) where
+  onSort s := (F.sheafPushforwardContinuous (Type u) _ _).map (h.onSort s)
+  preservesTotal op := congrArg ((F.sheafPushforwardContinuous (Type u) _ _).map)
+    (h.preservesTotal op)
+  preservesRelation r := fun U _ hx => h.preservesRelation r (op (F.obj U.unop)) hx
+  preservesDomain p := fun U _ hx => h.preservesDomain p (op (F.obj U.unop)) hx
+  preservesPartial p := congrArg ((F.sheafPushforwardContinuous (Type u) _ _).map)
+    (h.preservesPartial p)
+  preservesQuantity q := congrArg ((F.sheafPushforwardContinuous (Type u) _ _).map)
+    (h.preservesQuantity q)
+
 /-- A structure-preserving sheaf map restricts to a structure-preserving map on the new test site. -/
 def restrictStructureMap {sig : Signature.{u}} (f : S' ⟶ S)
     {A B : SheafStructure sig (Scheme.zariskiTopology.over S)} (h : SheafStructure.Hom A B) :
-    SheafStructure.Hom (restrictStructure f A) (restrictStructure f B) where
-  onSort s := (Scheme.zariskiTopology.overMapPullback (Type u) f).map (h.onSort s)
-  preservesTotal op := congrArg ((Scheme.zariskiTopology.overMapPullback (Type u) f).map)
-    (h.preservesTotal op)
-  preservesRelation r := fun U _ hx => h.preservesRelation r (op ((Over.map f).obj U.unop)) hx
-  preservesDomain p := fun U _ hx => h.preservesDomain p (op ((Over.map f).obj U.unop)) hx
-  preservesPartial p := congrArg ((Scheme.zariskiTopology.overMapPullback (Type u) f).map)
-    (h.preservesPartial p)
-  preservesQuantity q := congrArg ((Scheme.zariskiTopology.overMapPullback (Type u) f).map)
-    (h.preservesQuantity q)
+    SheafStructure.Hom (restrictStructure f A) (restrictStructure f B) :=
+  restrictStructureMapAlong (Over.map f) h
+
+private def restrictStructureFunctorAlong (sig : Signature.{u}) (F : Over S' ⥤ Over S)
+    [F.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)] :
+    SheafStructure sig (Scheme.zariskiTopology.over S) ⥤
+      SheafStructure sig (Scheme.zariskiTopology.over S') where
+  obj := restrictStructureAlong F
+  map := restrictStructureMapAlong F
+  map_id _ := SheafStructure.Hom.ext rfl
+  map_comp _ _ := SheafStructure.Hom.ext rfl
 
 /-- Restriction on base schemes is functorial on the full primitive structures. -/
 def restrictStructureFunctor (sig : Signature.{u}) (f : S' ⟶ S) :
     SheafStructure sig (Scheme.zariskiTopology.over S) ⥤
-      SheafStructure sig (Scheme.zariskiTopology.over S') where
-  obj := restrictStructure f
-  map := restrictStructureMap f
-  map_id _ := SheafStructure.Hom.ext rfl
-  map_comp _ _ := SheafStructure.Hom.ext rfl
+      SheafStructure sig (Scheme.zariskiTopology.over S') :=
+  restrictStructureFunctorAlong sig (Over.map f)
+
+private theorem restrictStructureFunctorAlong_congr (sig : Signature.{u}) {F G : Over S' ⥤ Over S}
+    [F.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)]
+    [G.IsContinuous (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)] (h : F = G) :
+    restrictStructureFunctorAlong sig F = restrictStructureFunctorAlong sig G := by
+  subst G
+  rfl
+
+/-- Restriction along the identity agrees on both structures and arrows. -/
+theorem restrictStructureFunctor_id (sig : Signature.{u}) (S : Scheme.{u}) :
+    restrictStructureFunctor sig (𝟙 S) = 𝟭 _ :=
+  restrictStructureFunctorAlong_congr sig (Over.mapId_eq S)
+
+/-- Restriction along a composite agrees with iterated restriction on structures and arrows. -/
+theorem restrictStructureFunctor_comp {S'' : Scheme.{u}} (sig : Signature.{u}) (g : S'' ⟶ S') (f : S' ⟶ S) :
+    restrictStructureFunctor sig f ⋙ restrictStructureFunctor sig g = restrictStructureFunctor sig (g ≫ f) := by
+  letI := Functor.isContinuous_comp (Over.map g) (Over.map f)
+    (Scheme.zariskiTopology.over S'') (Scheme.zariskiTopology.over S') (Scheme.zariskiTopology.over S)
+  exact restrictStructureFunctorAlong_congr sig (Over.mapComp_eq g f).symm
 
 /-- Changing the base of a constant structure changes only its relative test category. -/
 theorem restrictConstantStructure {sig : Signature.{u}} (f : S' ⟶ S) (A : Structure sig) :

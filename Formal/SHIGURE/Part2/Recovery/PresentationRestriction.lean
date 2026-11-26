@@ -100,12 +100,10 @@ theorem isZariskiSplit_restrictCoefficients (T : Theory.{u}) (f : B' ⟶ B)
 /-- Coefficient restriction is a functor on the existing copying semantic categories. -/
 def restrictCopyingCoefficients (T : Theory.{u}) (f : B' ⟶ B) :
     (zariskiCopyingProperty T B).FullSubcategory ⥤
-      (zariskiCopyingProperty T B').FullSubcategory where
-  obj A := ⟨restrictStructure f A.obj, isZariskiSplit_restrictCoefficients T f A.property.1,
-    fun l => restrictStructure_holdsLaw f A.obj (T.law l) (A.property.2 l)⟩
-  map h := ObjectProperty.homMk (restrictStructureMap f h.hom)
-  map_id _ := ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl)
-  map_comp _ _ := ObjectProperty.hom_ext _ (SheafStructure.Hom.ext rfl)
+      (zariskiCopyingProperty T B').FullSubcategory :=
+  (zariskiCopyingProperty T B').lift ((zariskiCopyingProperty T B).ι ⋙ restrictStructureFunctor T.signature f)
+    (fun A => ⟨isZariskiSplit_restrictCoefficients T f A.property.1,
+      fun l => restrictStructure_holdsLaw f A.obj (T.law l) (A.property.2 l)⟩)
 
 /-- The square for declaration and coefficient restriction commutes within the copying model categories. -/
 def restrictCopyingPresentation_changeIso (inside : V ≤ U) (f : B' ⟶ B) :
