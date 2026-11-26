@@ -6,9 +6,7 @@ use crate::ir::atlas::{
     validate_atlas_task,
 };
 use crate::ir::change::NamedPoly;
-use crate::ir::diagnostics::{
-    ChartSupportSpec, NerveEdgeSpec, NerveFaceSpec, SupportedNerveSpec,
-};
+use crate::ir::diagnostics::{ChartSupportSpec, NerveEdgeSpec, NerveFaceSpec, SupportedNerveSpec};
 use crate::ir::provenance::{MathClause, OriginKind, Provenance, SourceRef};
 use crate::ir::result::{SilenceReason, Verdict};
 use crate::ir::term::{CoeffDomain, PolyExpr, ScalarLit};
@@ -246,7 +244,13 @@ fn h8_w3_triangle_solvable_and_vertex_constraints_over_z_q_fp() {
         }
         assert!(a.vertex_constrained_repair.repair_exists);
         assert_eq!(a.vertex_constrained_repair.torsor_basis.len(), 1);
-        assert!(a.vertex_constrained_repair.reevaluation.as_ref().unwrap().matched);
+        assert!(
+            a.vertex_constrained_repair
+                .reevaluation
+                .as_ref()
+                .unwrap()
+                .matched
+        );
 
         // 2. 1 頂点固定 (v0 固定): 一意解 (0, 1, 3)
         let task_fix1 = validate_atlas_task(AtlasTaskSpec {
@@ -271,11 +275,21 @@ fn h8_w3_triangle_solvable_and_vertex_constraints_over_z_q_fp() {
         let a1 = solve_atlas_task(&task_fix1).atlas.unwrap();
         assert!(a1.vertex_constrained_repair.repair_exists);
         assert_eq!(a1.vertex_constrained_repair.torsor_basis.len(), 0);
-        let pd = a1.vertex_constrained_repair.particular_delta.as_ref().unwrap();
+        let pd = a1
+            .vertex_constrained_repair
+            .particular_delta
+            .as_ref()
+            .unwrap();
         assert_eq!(pd["v0"], "0");
         assert_eq!(pd["v1"], "1");
         assert_eq!(pd["v2"], "3");
-        assert!(a1.vertex_constrained_repair.reevaluation.as_ref().unwrap().matched);
+        assert!(
+            a1.vertex_constrained_repair
+                .reevaluation
+                .as_ref()
+                .unwrap()
+                .matched
+        );
 
         // 3. W3 対照: 無制約 κ_b = 0 かつ全頂点固定 -> 制約付き修復不能
         let task_fix_all = validate_atlas_task(AtlasTaskSpec {
@@ -340,10 +354,19 @@ fn h8_w3_triangle_obstructed_and_edge_repairs() {
         assert_eq!(a.diagnostic_h1_rank, 1); // offset に依存せず一定！
         assert!(!a.unconstrained_global_operation_exists);
         assert_eq!(a.edge_constrained_repair.repair_exists, exp_exists);
-        assert_eq!(a.edge_constrained_repair.torsor_basis.len(), exp_torsor_rank);
+        assert_eq!(
+            a.edge_constrained_repair.torsor_basis.len(),
+            exp_torsor_rank
+        );
         assert_eq!(a.edge_constrained_repair.h0_operation_torsor_rank, exp_h0);
         if exp_exists {
-            assert!(a.edge_constrained_repair.reevaluation.as_ref().unwrap().matched);
+            assert!(
+                a.edge_constrained_repair
+                    .reevaluation
+                    .as_ref()
+                    .unwrap()
+                    .matched
+            );
             if exp_torsor_rank == 0 {
                 let pd = a.edge_constrained_repair.particular_delta.as_ref().unwrap();
                 assert_eq!(pd["e01"], "-1");
@@ -375,7 +398,13 @@ fn h8_w3_triangle_obstructed_and_edge_repairs() {
     assert!(!az.o_b_is_zero);
     assert_eq!(az.z_to_q_zero_reflection_verified, Some(true));
     assert!(az.edge_constrained_repair.repair_exists);
-    assert!(az.edge_constrained_repair.reevaluation.as_ref().unwrap().matched);
+    assert!(
+        az.edge_constrained_repair
+            .reevaluation
+            .as_ref()
+            .unwrap()
+            .matched
+    );
 }
 
 #[test]
@@ -483,7 +512,12 @@ fn condition_c0_to_c6_each_fails_independently() {
             provenance: prov(),
         })
         .unwrap();
-        solve_atlas_task(&task).atlas.unwrap().refinement.unwrap().condition_c
+        solve_atlas_task(&task)
+            .atlas
+            .unwrap()
+            .refinement
+            .unwrap()
+            .condition_c
     };
 
     // C0 違反: fine v0b の支持から s01 を落とす -> v0 の像が {s20} != {s20, s01}
@@ -699,7 +733,10 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
             AtomicOpCompareSpec {
                 name: "apply".into(),
                 arg_vars: vec!["u".into()],
-                before_updates: vec![("B".into(), add(var("B"), arg("u"))), ("C".into(), var("C"))],
+                before_updates: vec![
+                    ("B".into(), add(var("B"), arg("u"))),
+                    ("C".into(), var("C")),
+                ],
                 after_updates: vec![
                     ("B".into(), add(var("B"), mul(c_lit(&q, 2), arg("u")))),
                     ("C".into(), sub(var("C"), arg("u"))),
@@ -730,7 +767,11 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
                     ("h".into(), c_lit(&q, 0)),
                 ],
                 before_steps: vec![
-                    vec![("B".into(), var("B")), ("C".into(), var("C")), ("h".into(), var("C"))],
+                    vec![
+                        ("B".into(), var("B")),
+                        ("C".into(), var("C")),
+                        ("h".into(), var("C")),
+                    ],
                     vec![
                         ("B".into(), add(var("B"), c_lit(&q, 1))),
                         ("C".into(), var("C")),
@@ -743,7 +784,11 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
                     ],
                 ],
                 after_steps: vec![
-                    vec![("B".into(), var("B")), ("C".into(), var("C")), ("h".into(), var("C"))],
+                    vec![
+                        ("B".into(), var("B")),
+                        ("C".into(), var("C")),
+                        ("h".into(), var("C")),
+                    ],
                     vec![
                         ("B".into(), add(var("B"), c_lit(&q, 2))),
                         ("C".into(), sub(var("C"), c_lit(&q, 1))),
@@ -840,138 +885,4 @@ fn h12_atomic_ops_commute_but_extended_protocol_and_runtime_arg_fail() {
     assert_eq!(rt_eq.before_values, vec!["0", "0"]);
     assert_eq!(rt_eq.after_values, vec!["0", "0"]);
     assert!(!rt_eq.law_residuals.is_empty());
-}
-
-#[test]
-fn atlas_two_cycle_graph_and_silence_disconnected_or_unobserved() {
-    // 1. 非三角形一般グラフ（4 頂点 5 辺 => |E|-|V|+1 = 2 の 2-chord グラフ）
-    let q = CoeffDomain::Q;
-    let task_2c = validate_atlas_task(AtlasTaskSpec {
-        name: "two_cycles".into(),
-        coeff_domain: q.clone(),
-        vertices: vec!["v0".into(), "v1".into(), "v2".into(), "v3".into()],
-        edges: vec![
-            GraphEdgeSpec {
-                name: "e01".into(),
-                from: "v0".into(),
-                to: "v1".into(),
-                offset: c_lit(&q, 1),
-            },
-            GraphEdgeSpec {
-                name: "e12".into(),
-                from: "v1".into(),
-                to: "v2".into(),
-                offset: c_lit(&q, 2),
-            },
-            GraphEdgeSpec {
-                name: "e20".into(),
-                from: "v2".into(),
-                to: "v0".into(),
-                offset: c_lit(&q, -3),
-            },
-            GraphEdgeSpec {
-                name: "e03".into(),
-                from: "v0".into(),
-                to: "v3".into(),
-                offset: c_lit(&q, 4),
-            },
-            GraphEdgeSpec {
-                name: "e32".into(),
-                from: "v3".into(),
-                to: "v2".into(),
-                offset: c_lit(&q, -1),
-            },
-        ],
-        mu: c_lit(&q, 1),
-        base_lambdas: vec![
-            ("v0".into(), c_lit(&q, 0)),
-            ("v1".into(), c_lit(&q, 0)),
-            ("v2".into(), c_lit(&q, 0)),
-            ("v3".into(), c_lit(&q, 0)),
-        ],
-        allowed_vertices: vec!["v0".into(), "v1".into(), "v2".into(), "v3".into()],
-        allowed_edges: vec!["e20".into(), "e32".into()],
-        compare_to_q: false,
-        refinement: None,
-        extended_language_check: None,
-        provenance: prov(),
-    })
-    .unwrap();
-    let out_2c = solve_atlas_task(&task_2c);
-    assert_eq!(out_2c.verdict, Verdict::Established);
-    let a2c = out_2c.atlas.unwrap();
-    assert_eq!(a2c.diagnostic_h1_rank, 2);
-    assert_eq!(a2c.chord_edges.len(), 2);
-    assert!(a2c.o_b_is_zero);
-    assert!(a2c.saga_sign_commutes_verified);
-    assert!(a2c.primitive_relation_connected_verified);
-    assert!(a2c.unconstrained_reevaluation.as_ref().unwrap().matched);
-
-    // 2. 非連結グラフ -> DisconnectedGraphOutOfScope 沈黙
-    let task_disc = validate_atlas_task(AtlasTaskSpec {
-        name: "disconnected".into(),
-        coeff_domain: q.clone(),
-        vertices: vec!["v0".into(), "v1".into(), "v2".into(), "v3".into()],
-        edges: vec![
-            GraphEdgeSpec {
-                name: "e01".into(),
-                from: "v0".into(),
-                to: "v1".into(),
-                offset: c_lit(&q, 0),
-            },
-            GraphEdgeSpec {
-                name: "e23".into(),
-                from: "v2".into(),
-                to: "v3".into(),
-                offset: c_lit(&q, 0),
-            },
-        ],
-        mu: c_lit(&q, 1),
-        base_lambdas: vec![
-            ("v0".into(), c_lit(&q, 0)),
-            ("v1".into(), c_lit(&q, 0)),
-            ("v2".into(), c_lit(&q, 0)),
-            ("v3".into(), c_lit(&q, 0)),
-        ],
-        allowed_vertices: Vec::new(),
-        allowed_edges: Vec::new(),
-        compare_to_q: false,
-        refinement: None,
-        extended_language_check: None,
-        provenance: prov(),
-    })
-    .unwrap();
-    assert!(matches!(
-        solve_atlas_task(&task_disc).verdict,
-        Verdict::Undetermined(SilenceReason::DisconnectedGraphOutOfScope { .. })
-    ));
-
-    // 3. 未観測 offset -> UnobservedDependency 沈黙
-    let task_unobs = validate_atlas_task(AtlasTaskSpec {
-        name: "unobs_atlas".into(),
-        coeff_domain: q.clone(),
-        vertices: vec!["v0".into(), "v1".into()],
-        edges: vec![GraphEdgeSpec {
-            name: "e01".into(),
-            from: "v0".into(),
-            to: "v1".into(),
-            offset: PolyExpr::Unobserved {
-                slot: "missing_b".into(),
-                origin: Some(SourceRef::new("u", OriginKind::LlmCandidate)),
-            },
-        }],
-        mu: c_lit(&q, 1),
-        base_lambdas: vec![("v0".into(), c_lit(&q, 0)), ("v1".into(), c_lit(&q, 0))],
-        allowed_vertices: Vec::new(),
-        allowed_edges: Vec::new(),
-        compare_to_q: false,
-        refinement: None,
-        extended_language_check: None,
-        provenance: prov(),
-    })
-    .unwrap();
-    assert!(matches!(
-        solve_atlas_task(&task_unobs).verdict,
-        Verdict::Undetermined(SilenceReason::UnobservedDependency { .. })
-    ));
 }

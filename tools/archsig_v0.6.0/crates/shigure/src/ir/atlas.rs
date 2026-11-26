@@ -435,7 +435,12 @@ fn validate_refinement(
         .iter()
         .map(|c| c.name.as_str())
         .collect();
-    let f_charts: BTreeSet<&str> = r.fine_nerve.charts.iter().map(|c| c.name.as_str()).collect();
+    let f_charts: BTreeSet<&str> = r
+        .fine_nerve
+        .charts
+        .iter()
+        .map(|c| c.name.as_str())
+        .collect();
     let mut cm_map = BTreeMap::new();
     for (fc, cc) in &r.nerve_chart_map {
         if !f_charts.contains(fc.as_str()) || !c_charts.contains(cc.as_str()) {

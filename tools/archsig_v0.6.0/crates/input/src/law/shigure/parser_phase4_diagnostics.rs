@@ -141,9 +141,7 @@ impl<E: InputError> Parser<E> {
     }
 
     fn parse_poly_or_observed(&mut self) -> PResult<RawPolyOrObserved, E> {
-        if self.is_kw("observed")
-            && self.peek_at(1).is_some_and(|t| t.kind == TokenKind::Name)
-        {
+        if self.is_kw("observed") && self.peek_at(1).is_some_and(|t| t.kind == TokenKind::Name) {
             self.advance();
             let f_start = self.here().0;
             let field = self.qname()?;
@@ -219,8 +217,7 @@ impl<E: InputError> Parser<E> {
                     return self
                         .err("duplicate `dimension_realization` block in `shigure diagnostics`");
                 }
-                dimension_realization =
-                    Some(self.parse_dimension_realization(self.prev_span().0)?);
+                dimension_realization = Some(self.parse_dimension_realization(self.prev_span().0)?);
             } else if self.eat_kw("max_partitions") {
                 if max_partitions.is_some() {
                     return self.err("duplicate `max_partitions` clause in `shigure diagnostics`");
@@ -235,8 +232,10 @@ impl<E: InputError> Parser<E> {
         self.expect_sym("}")?;
         let span = (start, self.prev_end());
         let Some(diagnostic_coeff) = diagnostic_coeff else {
-            return self
-                .p4_syntax_err(span, "`shigure diagnostics` requires a `diagnostic_coeff` clause");
+            return self.p4_syntax_err(
+                span,
+                "`shigure diagnostics` requires a `diagnostic_coeff` clause",
+            );
         };
         if origins.is_empty() {
             return self.p4_syntax_err(
@@ -359,8 +358,7 @@ impl<E: InputError> Parser<E> {
                 base_vars = Some(self.parse_p4_ident_list("`poly_readout` base_vars")?);
                 self.expect_sym(";")?;
             } else if self.eat_kw("base_relation") {
-                base_relations
-                    .push(self.parse_shigure_named_eq("`poly_readout` base_relation")?);
+                base_relations.push(self.parse_shigure_named_eq("`poly_readout` base_relation")?);
             } else if self.eat_kw("sources") {
                 if sources.is_some() {
                     return self.err("duplicate `sources` in `poly_readout`");
@@ -531,8 +529,7 @@ impl<E: InputError> Parser<E> {
                 coarse_partition = Some(self.parse_partition_blocks("`collision` coarse")?);
                 self.expect_sym(";")?;
             } else if self.eat_kw("alt_path") {
-                alternative_merge_paths
-                    .push(self.parse_partition_path("`collision` alt_path")?);
+                alternative_merge_paths.push(self.parse_partition_path("`collision` alt_path")?);
                 self.expect_sym(";")?;
             } else {
                 self.reject_conclusion_or_unknown("`collision`")?;
@@ -591,8 +588,10 @@ impl<E: InputError> Parser<E> {
         self.expect_sym("}")?;
         let span = (start, self.prev_end());
         let (Some(ring_var), Some(ring_max_deg)) = (ring_var, ring_max_deg) else {
-            return self
-                .p4_syntax_err(span, "`r_point_probe` requires `ring_var` and `ring_max_deg`");
+            return self.p4_syntax_err(
+                span,
+                "`r_point_probe` requires `ring_var` and `ring_max_deg`",
+            );
         };
         Ok(RawRPointProbe {
             ring_var,
@@ -602,10 +601,7 @@ impl<E: InputError> Parser<E> {
         })
     }
 
-    fn parse_dimension_realization(
-        &mut self,
-        start: usize,
-    ) -> PResult<RawDimensionRealization, E> {
+    fn parse_dimension_realization(&mut self, start: usize) -> PResult<RawDimensionRealization, E> {
         self.expect_sym("{")?;
         let mut base_domain = None;
         let mut base_vars = None;

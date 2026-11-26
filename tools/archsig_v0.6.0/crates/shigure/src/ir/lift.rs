@@ -13,7 +13,10 @@ use std::collections::{BTreeMap, BTreeSet};
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SquareZeroSpec {
     /// 1 変数打ち切り冪零商の 1 段拡大 `k[var]/(var^{base_degree + 2}) ↠ k[var]/(var^{base_degree + 1})`。
-    TruncatedPoly { var_name: String, base_degree: usize },
+    TruncatedPoly {
+        var_name: String,
+        base_degree: usize,
+    },
     /// 乗法表と射影行列による明示的有限代数拡大（`M² = 0` は計算核で厳密検証する）。
     ExplicitTable {
         r_prime_basis: Vec<String>,
@@ -194,12 +197,12 @@ pub fn validate_lift_task(spec: LiftTaskSpec) -> Result<CheckedLiftTask, Validat
         .ok_or_else(|| ValidationError::ConversionError {
             detail: format!("{ctx} extension base dimension overflow"),
         })?;
-    let rp_dim =
-        spec.extension
-            .r_prime_dim()
-            .ok_or_else(|| ValidationError::ConversionError {
-                detail: format!("{ctx} extension prime dimension overflow"),
-            })?;
+    let rp_dim = spec
+        .extension
+        .r_prime_dim()
+        .ok_or_else(|| ValidationError::ConversionError {
+            detail: format!("{ctx} extension prime dimension overflow"),
+        })?;
     let empty_vars = BTreeSet::new();
 
     let dom = &spec.coeff_domain;

@@ -17,8 +17,8 @@
 pub mod artin;
 pub mod atlas;
 pub mod change;
-pub mod diagram;
 pub mod diagnostics;
+pub mod diagram;
 pub mod family;
 pub mod lift;
 pub mod morphism;
@@ -62,7 +62,6 @@ pub use atlas::{
 pub use change::{
     ChangeSpec, EditableTarget, EvalCondition, FixedTarget, NamedPoly, ParamDecl, PointDomain,
 };
-pub use diagram::{CheckedDiagramTask, DiagramEdge, DiagramRelation, DiagramSpec, DiagramVertex};
 pub use diagnostics::{
     ChartSupportSpec, CheckedDiagnosticsTask, CoeffChangeComparisonSpec, CollisionComparisonSpec,
     DiagnosticsReadoutSpec, DiagnosticsTaskSpec, DimensionRealizationSpec, ExplicitZComplexSpec,
@@ -70,6 +69,7 @@ pub use diagnostics::{
     RPointProbeSpec, StaticLawReadoutSpec, SupportedNerveSpec, validate_diagnostics_task,
     validate_supported_nerve,
 };
+pub use diagram::{CheckedDiagramTask, DiagramEdge, DiagramRelation, DiagramSpec, DiagramVertex};
 pub use family::{
     CandidateFamilySpec, CandidateMember, CandidateSpace, CheckedFamilySpec, FamilySpec,
     GoodnessKind, GoodnessSpec, PreservationGoodnessSource, RawSequenceCheck,

@@ -262,7 +262,14 @@ pub(crate) fn solve_artin_z(
         composition_law,
         base_change,
     };
-    artin_outcome(verdict, coeff_domain, point_domain, checks, provenance, detail)
+    artin_outcome(
+        verdict,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+        detail,
+    )
 }
 
 fn detect_order_z(
@@ -335,8 +342,8 @@ fn detect_order_z(
             }
             prev_dim = monos.len();
         } else {
-            let cols = build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r)
-                .map_err(map_artin_err)?;
+            let cols =
+                build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r).map_err(map_artin_err)?;
             let mat = cols_to_mat(&cols, monos.len());
             let snf = smith_normal_form_z(&mat, cols.len()).map_err(map_artin_err)?;
             let mut trunc_vecs = Vec::with_capacity(shifted_extra.len());
@@ -419,10 +426,11 @@ fn verify_z_f5_syzygies(
     if all_gens.len() <= 1 {
         return Ok(true);
     }
-    let syz =
-        compute_syzygies_z(&all_gens, obs_order.clone()).map_err(|e| SilenceReason::SyzygyOutOfScope {
+    let syz = compute_syzygies_z(&all_gens, obs_order.clone()).map_err(|e| {
+        SilenceReason::SyzygyOutOfScope {
             detail: e.to_string(),
-        })?;
+        }
+    })?;
     let ok = syz.generators.iter().all(|s_vec| {
         let mut acc = vec![BigInt::zero(); dim];
         for (s_poly, img) in s_vec.iter().take(extra_res.len()).zip(trunc_vecs) {
@@ -537,15 +545,15 @@ fn compute_base_change_from_z(
         .collect::<Result<_, _>>()
         .map_err(map_artin_err)?;
 
-    let j_cols = build_z_ideal_matrix(&shifted_extra, &monos, &mono_idx, r)
-        .map_err(map_artin_err)?;
+    let j_cols =
+        build_z_ideal_matrix(&shifted_extra, &monos, &mono_idx, r).map_err(map_artin_err)?;
     let (dr_free_rank, dr_torsions, snf_io_opt) = if shifted_rels.is_empty() {
         let mat = cols_to_mat(&j_cols, monos.len());
         let snf = smith_normal_form_z(&mat, j_cols.len()).map_err(map_artin_err)?;
         (snf.rank, Vec::new(), None)
     } else {
-        let io_cols = build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r)
-            .map_err(map_artin_err)?;
+        let io_cols =
+            build_z_ideal_matrix(&shifted_rels, &monos, &mono_idx, r).map_err(map_artin_err)?;
         let mut combined_cols = io_cols.clone();
         combined_cols.extend(j_cols.iter().cloned());
         let snf_io = smith_normal_form_z(&cols_to_mat(&io_cols, monos.len()), io_cols.len())
@@ -638,16 +646,17 @@ fn compute_base_change_from_z(
             })
         }
         CoeffDomain::Fp(p) => {
-            let zero_fp = FpElem::zero(p.clone()).ok_or_else(|| {
-                SilenceReason::UnsupportedCoeffRing {
+            let zero_fp =
+                FpElem::zero(p.clone()).ok_or_else(|| SilenceReason::UnsupportedCoeffRing {
                     domain: bc.target_domain.clone(),
                     detail: format!("modulus {p} is not prime"),
-                }
-            })?;
+                })?;
             let obs_rels_fp: Vec<Poly<FpElem>> =
                 obs_rels.iter().map(|poly| poly_z_to_fp(poly, p)).collect();
-            let extra_fp: Vec<Poly<FpElem>> =
-                eliminated.iter().map(|poly| poly_z_to_fp(poly, p)).collect();
+            let extra_fp: Vec<Poly<FpElem>> = eliminated
+                .iter()
+                .map(|poly| poly_z_to_fp(poly, p))
+                .collect();
             let base_fp: Vec<FpElem> = base_pt
                 .iter()
                 .map(|v| FpElem::from_checked_prime(v.clone(), p.clone()))
@@ -700,7 +709,10 @@ fn compute_base_change_from_z(
     }
 }
 
-fn shift_poly_to_base(poly: &Poly<BigInt>, base_pt: &[BigInt]) -> Result<Poly<BigInt>, AlgebraError> {
+fn shift_poly_to_base(
+    poly: &Poly<BigInt>,
+    base_pt: &[BigInt],
+) -> Result<Poly<BigInt>, AlgebraError> {
     let d = base_pt.len();
     let shift: Vec<Poly<BigInt>> = base_pt
         .iter()
@@ -740,7 +752,9 @@ fn build_z_ideal_matrix(
         for m in monos {
             let mut m_poly = Poly::zero(m.num_vars(), BigInt::zero());
             m_poly.add_term(m.clone(), BigInt::one());
-            let prod = m_poly.checked_mul(&g_trunc)?.truncate_degree(max_deg as u64);
+            let prod = m_poly
+                .checked_mul(&g_trunc)?
+                .truncate_degree(max_deg as u64);
             if !prod.is_zero() {
                 cols.push(poly_to_z_vec(&prod, mono_idx, dim));
             }

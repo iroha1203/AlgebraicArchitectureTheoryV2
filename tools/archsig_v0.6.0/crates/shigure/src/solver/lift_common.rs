@@ -118,7 +118,10 @@ pub(crate) fn reevaluate_laws_in_rp<C: RingCoeff>(
         checked: true,
         matched: bad.is_empty(),
         detail: if bad.is_empty() {
-            format!("all {} primitive laws re-evaluated to 0 in R'", law_polys.len())
+            format!(
+                "all {} primitive laws re-evaluated to 0 in R'",
+                law_polys.len()
+            )
         } else {
             format!("nonzero law residuals in R': {}", bad.join(", "))
         },
@@ -200,9 +203,9 @@ where
         .collect();
     let mut out = Vec::with_capacity(var_order.len());
     for v in var_order {
-        let exprs = map.get(v.as_str()).ok_or_else(|| AlgebraError::UnknownVariable {
-            name: v.clone(),
-        })?;
+        let exprs = map
+            .get(v.as_str())
+            .ok_or_else(|| AlgebraError::UnknownVariable { name: v.clone() })?;
         let mut coords = Vec::with_capacity(exprs.len());
         for e in *exprs {
             coords.push(eval_const_expr(e, expand_expr)?);
@@ -231,7 +234,6 @@ where
     Ok(out)
 }
 
-
 pub(crate) fn conv_vec<C, FL>(lits: &[ScalarLit], f: &FL) -> Result<Vec<C>, AlgebraError>
 where
     FL: Fn(&ScalarLit) -> Result<C, AlgebraError>,
@@ -258,11 +260,11 @@ where
 
 pub(crate) fn lit_to_q(lit: &ScalarLit) -> Result<Rat, AlgebraError> {
     match lit {
-        ScalarLit::Q { num, den } => Rat::new(num.clone(), den.clone()).ok_or_else(|| {
-            AlgebraError::OutOfScope {
+        ScalarLit::Q { num, den } => {
+            Rat::new(num.clone(), den.clone()).ok_or_else(|| AlgebraError::OutOfScope {
                 detail: "zero denominator in Q literal".to_owned(),
-            }
-        }),
+            })
+        }
         ScalarLit::Z(z) => Ok(Rat::from_int(z.clone())),
         other => Err(AlgebraError::DomainMismatch {
             expected: "Q".to_owned(),
@@ -296,7 +298,9 @@ pub(crate) fn lit_to_fp(lit: &ScalarLit, p: &BigUint) -> Result<FpElem, AlgebraE
 
 pub(crate) fn map_lift_algebra_error(err: AlgebraError) -> SilenceReason {
     match err {
-        AlgebraError::UnobservedDependency { slots } => SilenceReason::UnobservedDependency { slots },
+        AlgebraError::UnobservedDependency { slots } => {
+            SilenceReason::UnobservedDependency { slots }
+        }
         AlgebraError::OutOfScope { detail } => SilenceReason::SyzygyOutOfScope { detail },
         other => SilenceReason::ApplicabilityConditionNotMet {
             condition: "lift_algebra_computation".to_owned(),
@@ -352,7 +356,6 @@ pub(crate) fn format_algebra_label(ext: &SquareZeroSpec, is_prime: bool) -> Stri
         }
     }
 }
-
 
 pub(crate) fn lift_undetermined(
     coeff_domain: CoeffDomain,
@@ -519,14 +522,20 @@ fn verify_mu_d_cocycle_identities(
     let w13 = w12.checked_mul(&w23).map_err(map_lift_algebra_error)?;
     let z1_d = z1.checked_pow(d).map_err(map_lift_algebra_error)?;
     let z2_d = z2.checked_pow(d).map_err(map_lift_algebra_error)?;
-    let w12_d_m1 = w12.checked_pow(d).map_err(map_lift_algebra_error)?.sub(&one);
-    let pairwise_ok = z2_d.sub(&z1_d) == z1_d.checked_mul(&w12_d_m1).map_err(map_lift_algebra_error)?;
+    let w12_d_m1 = w12
+        .checked_pow(d)
+        .map_err(map_lift_algebra_error)?
+        .sub(&one);
+    let pairwise_ok = z2_d.sub(&z1_d)
+        == z1_d
+            .checked_mul(&w12_d_m1)
+            .map_err(map_lift_algebra_error)?;
     let triple_ok = z3
         .sub(&w13.checked_mul(&z1).map_err(map_lift_algebra_error)?)
         .is_zero();
 
-    let vars = VarOrder::new(vec!["w12".to_owned(), "w23".to_owned()])
-        .map_err(map_lift_algebra_error)?;
+    let vars =
+        VarOrder::new(vec!["w12".to_owned(), "w23".to_owned()]).map_err(map_lift_algebra_error)?;
     let ideal_ok = match coeff_domain {
         CoeffDomain::Q => {
             let a = Poly::var(2, 0, Rat::zero());
@@ -588,8 +597,7 @@ pub(crate) fn check_cover_support_closure(
     laws: &[NamedPoly],
     rel_reading: Option<&RelativeReadingSpec>,
 ) -> (bool, Vec<String>) {
-    let law_map: BTreeMap<&str, &NamedPoly> =
-        laws.iter().map(|l| (l.name.as_str(), l)).collect();
+    let law_map: BTreeMap<&str, &NamedPoly> = laws.iter().map(|l| (l.name.as_str(), l)).collect();
     let mut unclosed = Vec::new();
     let mut covered_vars: BTreeSet<&str> = BTreeSet::new();
     let mut covered_laws: BTreeSet<&str> = BTreeSet::new();
@@ -762,7 +770,12 @@ pub(crate) fn format_subset_rp_map<C: RingCoeff>(
     allowed_vars
         .iter()
         .enumerate()
-        .map(|(i, name)| (name.clone(), ext.r_prime().format_elem(&vec[i * dp..(i + 1) * dp])))
+        .map(|(i, name)| {
+            (
+                name.clone(),
+                ext.r_prime().format_elem(&vec[i * dp..(i + 1) * dp]),
+            )
+        })
         .collect()
 }
 

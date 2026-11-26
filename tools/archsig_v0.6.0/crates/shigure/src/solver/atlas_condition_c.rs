@@ -128,7 +128,8 @@ pub(crate) fn check_condition_c0_to_c6(
         match edge_map[fei] {
             Some(cei) => {
                 let ce = &coarse_nerve.edges[cei];
-                if chart_map[fe.left_idx] != ce.left_idx || chart_map[fe.right_idx] != ce.right_idx {
+                if chart_map[fe.left_idx] != ce.left_idx || chart_map[fe.right_idx] != ce.right_idx
+                {
                     return Err(SilenceReason::ApplicabilityConditionNotMet {
                         condition: "target_supported_nerve_morphism_axioms".to_owned(),
                         detail: format!(

@@ -158,7 +158,13 @@ fn w1_explicit_z_complex_nonflat_f2_and_nonfaithful_q() {
     .unwrap();
     let out_q = solve_diagnostics_task(&task_q);
     assert_eq!(out_q.verdict, Verdict::Established);
-    let cc_q = out_q.diagnostics.as_ref().unwrap().coeff_change.as_ref().unwrap();
+    let cc_q = out_q
+        .diagnostics
+        .as_ref()
+        .unwrap()
+        .coeff_change
+        .as_ref()
+        .unwrap();
     assert!(cc_q.is_flat);
     assert!(!cc_q.is_faithfully_flat);
     let ex_q = cc_q.explicit_complex_check.as_ref().unwrap();
@@ -303,12 +309,7 @@ fn w2_stratification_mv_r_point_and_upper_semicontinuity() {
                         vec!["a".into(), "b".into(), "c".into()],
                         vec!["h".into()],
                     ],
-                    coarse_partition: vec![vec![
-                        "a".into(),
-                        "b".into(),
-                        "c".into(),
-                        "h".into(),
-                    ]],
+                    coarse_partition: vec![vec!["a".into(), "b".into(), "c".into(), "h".into()]],
                     alternative_merge_paths: Vec::new(),
                 },
                 // C2 多段合流の順序独立性: {{a,c},{b},{h}} -> {{a,b,c,h}} を 2 経路で合成比較
@@ -320,12 +321,7 @@ fn w2_stratification_mv_r_point_and_upper_semicontinuity() {
                         vec!["b".into()],
                         vec!["h".into()],
                     ],
-                    coarse_partition: vec![vec![
-                        "a".into(),
-                        "b".into(),
-                        "c".into(),
-                        "h".into(),
-                    ]],
+                    coarse_partition: vec![vec!["a".into(), "b".into(), "c".into(), "h".into()]],
                     alternative_merge_paths: vec![
                         vec![vec![
                             vec!["a".into(), "b".into(), "c".into()],
@@ -614,10 +610,13 @@ fn diagnostics_silence_inadequate_reading_max_partitions_unobserved_and_bad_ring
                 law_name: "L".into(),
                 values: vec![
                     ("a".into(), q_const(0)),
-                    ("b".into(), PolyExpr::Unobserved {
-                        slot: "missing_readout".into(),
-                        origin: Some(SourceRef::new("m", OriginKind::LlmCandidate)),
-                    }),
+                    (
+                        "b".into(),
+                        PolyExpr::Unobserved {
+                            slot: "missing_readout".into(),
+                            origin: Some(SourceRef::new("m", OriginKind::LlmCandidate)),
+                        },
+                    ),
                     ("c".into(), q_const(0)),
                     ("h".into(), PolyExpr::StateVar("lambda".into())),
                 ],

@@ -4,9 +4,7 @@ use super::ast_ext::ShigureScalarLit;
 use super::ast_phase3::{
     RawMemberCoordValue, RawOriginRef, ShigureMemberCoordValue, ShigureOriginRef,
 };
-use super::{
-    RawCoeffDomain, RawNamedPoly, ShigureCoeffDomain, ShigureNamedPoly, ShigurePolyExpr,
-};
+use super::{RawCoeffDomain, RawNamedPoly, ShigureCoeffDomain, ShigureNamedPoly, ShigurePolyExpr};
 use crate::law::ast::{Ident, Span};
 
 // ---- 平方零拡大 (`extension`) ----

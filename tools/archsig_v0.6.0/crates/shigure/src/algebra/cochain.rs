@@ -3,9 +3,7 @@
 //! $H^0/H^1/H^2$（自由階数＋$\mathbb{Z}$ torsion）・cocycle 零性判定・cochain 射誘導写像核/余核
 //! （G-141 E2–E5・G1–G5 / G-142 A1–A3・C1–C4・E1–E6・F3）。
 
-use crate::algebra::artin::{
-    AffineSolutionField, check_same_ring, rref_field, solve_affine_field,
-};
+use crate::algebra::artin::{AffineSolutionField, check_same_ring, rref_field, solve_affine_field};
 pub use crate::algebra::linear::{SmithFormZ, smith_normal_form_z};
 use crate::algebra::poly::AlgebraError;
 use crate::algebra::scalar::RingCoeff;
@@ -596,14 +594,7 @@ impl<C: FieldCoeff> CochainMap<C> {
         let dc = dst.cohomology_field()?;
 
         // H^0(f): 各 src H^0 基底元の f0 像を dst H^0 基底座標へ展開。
-        let h0 = induced_from_bases(
-            &sc.h0_basis,
-            &[],
-            &dc.h0_basis,
-            &self.f0,
-            dst.dim0,
-            &z,
-        )?;
+        let h0 = induced_from_bases(&sc.h0_basis, &[], &dc.h0_basis, &self.f0, dst.dim0, &z)?;
         // H^1(f): 各 src H^1 代表元を f1 で送り、dst B^1 + dst H^1 代表元で座標展開。
         let h1 = induced_from_bases(
             &sc.h1_rep_basis,
@@ -620,14 +611,7 @@ impl<C: FieldCoeff> CochainMap<C> {
         let dst_b2 = independent_vectors_field(&matrix_columns(&dst.d1, dst.dim1), dst.dim2, &z)?;
         let dst_std2 = standard_basis(dst.dim2, &z);
         let dst_h2_reps = quotient_complement_basis_field(&dst_b2, &dst_std2, dst.dim2, &z)?;
-        let h2 = induced_from_bases(
-            &src_h2_reps,
-            &dst_b2,
-            &dst_h2_reps,
-            &self.f2,
-            dst.dim2,
-            &z,
-        )?;
+        let h2 = induced_from_bases(&src_h2_reps, &dst_b2, &dst_h2_reps, &self.f2, dst.dim2, &z)?;
 
         Ok(InducedCohomologyMapField { h0, h1, h2 })
     }

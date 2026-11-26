@@ -133,11 +133,8 @@ fn stratify_over_q(
 
     let mut law_polys: Vec<LawPolyGroup<Rat>> = Vec::with_capacity(laws.len());
     for law in laws {
-        let map: BTreeMap<&str, &PolyExpr> = law
-            .values
-            .iter()
-            .map(|(s, e)| (s.as_str(), e))
-            .collect();
+        let map: BTreeMap<&str, &PolyExpr> =
+            law.values.iter().map(|(s, e)| (s.as_str(), e)).collect();
         let mut entries = Vec::with_capacity(sources.len());
         for s in sources {
             let expr = map[s.as_str()];
@@ -314,15 +311,12 @@ fn stratify_over_fp(
     }
     let mut law_polys: Vec<LawPolyGroup<FpElem>> = Vec::with_capacity(laws.len());
     for law in laws {
-        let map: BTreeMap<&str, &PolyExpr> = law
-            .values
-            .iter()
-            .map(|(s, e)| (s.as_str(), e))
-            .collect();
+        let map: BTreeMap<&str, &PolyExpr> =
+            law.values.iter().map(|(s, e)| (s.as_str(), e)).collect();
         let mut entries = Vec::with_capacity(sources.len());
         for s in sources {
-            let p = Poly::from_expr_fp(map[s.as_str()], bindings, modulus)
-                .map_err(map_diag_alg_err)?;
+            let p =
+                Poly::from_expr_fp(map[s.as_str()], bindings, modulus).map_err(map_diag_alg_err)?;
             entries.push((s.clone(), p));
         }
         law_polys.push((law.law_name.clone(), entries));
@@ -333,7 +327,11 @@ fn stratify_over_fp(
     }
 
     type BlockEntry = (String, Poly<FpElem>);
-    type State = (Vec<Vec<Vec<BlockEntry>>>, Vec<Poly<FpElem>>, Vec<Poly<FpElem>>);
+    type State = (
+        Vec<Vec<Vec<BlockEntry>>>,
+        Vec<Poly<FpElem>>,
+        Vec<Poly<FpElem>>,
+    );
     let mut active: Vec<State> = vec![(vec![Vec::new(); law_polys.len()], base_eqs, Vec::new())];
     let mut visited = 1usize;
 
@@ -710,11 +708,19 @@ where
 {
     let alg = FiniteAlgebra::truncated_univariate(&rp.ring_var, rp.ring_max_deg, zero.clone())
         .map_err(map_diag_alg_err)?;
-    let ring_label = format!("{base_ring_label}[{}]/({}^{})", rp.ring_var, rp.ring_var, rp.ring_max_deg + 1);
+    let ring_label = format!(
+        "{base_ring_label}[{}]/({}^{})",
+        rp.ring_var,
+        rp.ring_var,
+        rp.ring_max_deg + 1
+    );
 
     let mut rel_polys = Vec::with_capacity(base_relations.len());
     for rel in base_relations {
-        rel_polys.push((rel.name.as_str(), expand(&rel.expr, bindings).map_err(map_diag_alg_err)?));
+        rel_polys.push((
+            rel.name.as_str(),
+            expand(&rel.expr, bindings).map_err(map_diag_alg_err)?,
+        ));
     }
 
     let mut law_polys: Vec<LawPolyGroup<C>> = Vec::with_capacity(laws.len());
@@ -797,7 +803,9 @@ where
 
     let r_vals_list: Vec<&BTreeMap<String, String>> = r_values_by_point.values().collect();
     let r_values_differ = r_vals_list.windows(2).any(|w| w[0] != w[1])
-        || r_vals_list.iter().any(|m| Some(*m) != r_vals_list.first().copied());
+        || r_vals_list
+            .iter()
+            .any(|m| Some(*m) != r_vals_list.first().copied());
     let geometric_stalks_agree = geom_partitions
         .first()
         .is_none_or(|first| geom_partitions.iter().all(|g| g == first));

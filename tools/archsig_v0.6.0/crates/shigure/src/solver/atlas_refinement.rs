@@ -67,8 +67,18 @@ where
     // 2. 粗→細 cochain 比較写像 p^0, p^1 と可換性 d_f^0 p^0 == p^1 d_c^0（F3）。
     let (p0, p1, p0_z, p1_z, v_map_idx, e_map_idx) =
         build_refinement_cochain_maps(ref_spec, coarse_graph, &fine_graph);
-    let lhs = mat_mul(&fine_graph.d0, &p0, coarse_graph.vertices.len(), &coarse_graph.zero);
-    let rhs = mat_mul(&p1, &coarse_graph.d0, coarse_graph.vertices.len(), &coarse_graph.zero);
+    let lhs = mat_mul(
+        &fine_graph.d0,
+        &p0,
+        coarse_graph.vertices.len(),
+        &coarse_graph.zero,
+    );
+    let rhs = mat_mul(
+        &p1,
+        &coarse_graph.d0,
+        coarse_graph.vertices.len(),
+        &coarse_graph.zero,
+    );
     let cochain_map_commutes = lhs == rhs;
 
     // 3. H^0, H^1 同型判定（係数環 R 上で厳密判定: 体なら RREF、Z なら SNF）。
@@ -102,7 +112,8 @@ where
     let phi_diff = apply_spanning_tree_phi(&fine_graph, &fine_tree, &diff_residuals);
     let designated_o_preserved =
         cochain_map_commutes && phi_diff.iter().all(RingCoeff::coeff_is_zero);
-    let nerve_aligns_with_graph = check_nerve_aligns_with_graph(ref_spec, coarse_graph, &fine_graph)?;
+    let nerve_aligns_with_graph =
+        check_nerve_aligns_with_graph(ref_spec, coarse_graph, &fine_graph)?;
     let designated_kappa_preserved =
         designated_o_preserved && condition_c.all_passed && nerve_aligns_with_graph;
 
@@ -324,7 +335,9 @@ fn check_graph_h0_h1_isomorphism<C: RingCoeff>(
                 Vec::new(),
             )
             .map_err(map_atlas_alg_err)?;
-            let ind = map.induced_field(&cpx_c, &cpx_f).map_err(map_atlas_alg_err)?;
+            let ind = map
+                .induced_field(&cpx_c, &cpx_f)
+                .map_err(map_atlas_alg_err)?;
             Ok((ind.h0.isomorphism, ind.h1.isomorphism))
         }
         CoeffDomain::Fp(p) => {
@@ -355,7 +368,9 @@ fn check_graph_h0_h1_isomorphism<C: RingCoeff>(
                 Vec::new(),
             )
             .map_err(map_atlas_alg_err)?;
-            let ind = map.induced_field(&cpx_c, &cpx_f).map_err(map_atlas_alg_err)?;
+            let ind = map
+                .induced_field(&cpx_c, &cpx_f)
+                .map_err(map_atlas_alg_err)?;
             Ok((ind.h0.isomorphism, ind.h1.isomorphism))
         }
         CoeffDomain::Z => {
@@ -420,11 +435,7 @@ where
         .iter()
         .map(|v| coarse.v_idx[v])
         .collect();
-    let allowed_ec: BTreeSet<usize> = spec
-        .allowed_edges
-        .iter()
-        .map(|e| coarse.e_idx[e])
-        .collect();
+    let allowed_ec: BTreeSet<usize> = spec.allowed_edges.iter().map(|e| coarse.e_idx[e]).collect();
 
     let fine_av: Vec<usize> = (0..fine.vertices.len())
         .filter(|&fv| allowed_vc.contains(&v_map[fv]))
@@ -437,23 +448,23 @@ where
         .iter()
         .map(|v| coarse.v_idx[v])
         .collect();
-    let coarse_ae: Vec<usize> = spec
-        .allowed_edges
-        .iter()
-        .map(|e| coarse.e_idx[e])
-        .collect();
+    let coarse_ae: Vec<usize> = spec.allowed_edges.iter().map(|e| coarse.e_idx[e]).collect();
 
     // 空 fiber でも偽陽性を防ぐため、自然同型 Φ_R の構造前提（d_f^0 p^0 = p^1 d_c^0、
     // 引き戻し条件 b_f = p^1 b_c、頂点射・辺射の全射性）を最初に検算する。
     let offsets_pulled_back = fine.offsets == mat_vec(p1, &coarse.offsets, &coarse.zero);
     let v_covered: BTreeSet<usize> = v_map.iter().copied().collect();
     let v_map_surjective = v_covered.len() == coarse.vertices.len();
-    let e_covered: BTreeSet<usize> = e_map.iter().filter_map(|opt| opt.map(|(ce, _)| ce)).collect();
+    let e_covered: BTreeSet<usize> = e_map
+        .iter()
+        .filter_map(|opt| opt.map(|(ce, _)| ce))
+        .collect();
     let e_map_surjective = e_covered.len() == coarse.edges.len();
     let structural_ok =
         cochain_map_commutes && offsets_pulled_back && v_map_surjective && e_map_surjective;
 
-    let (c_part, c_ker) = solve_joint_repair(coarse, coarse_lambdas, &coarse_av, &coarse_ae, solve_linear)?;
+    let (c_part, c_ker) =
+        solve_joint_repair(coarse, coarse_lambdas, &coarse_av, &coarse_ae, solve_linear)?;
     let (f_part, f_ker) = solve_joint_repair(fine, fine_lambdas, &fine_av, &fine_ae, solve_linear)?;
 
     let mut iso_ok =

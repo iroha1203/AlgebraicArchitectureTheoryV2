@@ -62,7 +62,10 @@ fn archmap_json(digest: &str, include_kind: bool) -> String {
     )
 }
 
-fn try_check(law_body: &str, include_kind: bool) -> Result<archsig_input::input::CheckedInputs, String> {
+fn try_check(
+    law_body: &str,
+    include_kind: bool,
+) -> Result<archsig_input::input::CheckedInputs, String> {
     let d = sample_digest();
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\nreading Neg {{\n  use vocabulary Sample version \"1\" digest \"{d}\";\n{law_body}\n}}\n"
@@ -125,10 +128,7 @@ fn rejects_phase4_conclusion_injection_across_all_four_declarations() {
             "atlas repair_solutions",
             r#"shigure atlas G { domain Z; origin human_adopted "o"; vertices [v0, v1]; edge e01 (v0 -> v1) offset 0; mu 1; base_lambdas { v0 = 0; v1 = 0; } repair_solutions []; }"#,
         ),
-        (
-            "top-level syzygy",
-            r#"shigure syzygy Bad { domain Q; }"#,
-        ),
+        ("top-level syzygy", r#"shigure syzygy Bad { domain Q; }"#),
     ];
 
     for (label, body) in cases {
@@ -166,7 +166,10 @@ fn rejects_missing_origin_and_missing_archmap_origin_kind() {
     let err = ShigureConverter::for_task("A")
         .convert_artin(&inputs)
         .expect_err("archmap origin without kind must be rejected at conversion");
-    assert!(format!("{err:?}").contains("kind"), "unexpected error: {err:?}");
+    assert!(
+        format!("{err:?}").contains("kind"),
+        "unexpected error: {err:?}"
+    );
 }
 
 #[test]

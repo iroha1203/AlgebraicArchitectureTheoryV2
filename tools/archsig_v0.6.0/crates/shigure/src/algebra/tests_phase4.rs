@@ -134,8 +134,7 @@ fn syzygy_h2_z_and_f2_and_z_cases_2_3() {
     assert_eq!(syz_c2.generators.len(), 1);
 
     // Case 3 (Z unimodular 線形族): (x - y, y - x, x) => 受理され定数 syzygy + Koszul を生成
-    let syz_c3 =
-        compute_syzygies_z(&[x.sub(&y), y.sub(&x), x.clone()], vars_xy.clone()).unwrap();
+    let syz_c3 = compute_syzygies_z(&[x.sub(&y), y.sub(&x), x.clone()], vars_xy.clone()).unwrap();
     assert!(syz_c3.verified);
     assert!(syz_c3.generators.len() >= 2);
 
@@ -274,7 +273,8 @@ fn square_zero_extension_field_z_and_rejections() {
     let z3 = FpElem::zero(BigUint::from(3u32)).unwrap();
     let rp_2 = FiniteAlgebra::truncated_univariate("e", 1, z2.clone()).unwrap();
     let rb_3 = FiniteAlgebra::base_ring(z3);
-    let err = SquareZeroExtension::new_field(rp_2, rb_3, vec![vec![z2.one_like(), z2]]).unwrap_err();
+    let err =
+        SquareZeroExtension::new_field(rp_2, rb_3, vec![vec![z2.one_like(), z2]]).unwrap_err();
     assert!(matches!(err, AlgebraError::DomainMismatch { .. }));
 
     // 失敗 4: 次元上限超過・オーバーフローは fail-closed に OutOfScope
@@ -359,15 +359,8 @@ fn cochain_complex_z_torsion_nonzero_d1_and_nontrivial_induced_maps() {
     assert_eq!(coh_h2.h2.display("Z"), "Z/2");
 
     // 2. W1: K = [Z --2--> Z] => H^1 = Z/2, cocycle [1] は Z で非零・Q で零・位数 2
-    let k_z = CochainComplex::new(
-        1,
-        1,
-        0,
-        vec![vec![BigInt::from(2)]],
-        vec![],
-        BigInt::zero(),
-    )
-    .unwrap();
+    let k_z =
+        CochainComplex::new(1, 1, 0, vec![vec![BigInt::from(2)]], vec![], BigInt::zero()).unwrap();
     let chk = k_z.check_h1_cocycle_z(&[BigInt::from(1)]).unwrap();
     assert!(chk.is_cocycle && !chk.is_zero_in_z && chk.is_zero_in_q);
     assert_eq!(chk.torsion_order, Some(BigInt::from(2)));
@@ -470,12 +463,24 @@ fn boundary_checks_z_kernel_arity_and_cochain_map_ring_mismatch() {
     ));
 
     // CochainMap::induced_field は別複体対で可換性が破れる場合に fail-closed に OutOfScope を返す
-    let c_zero =
-        CochainComplex::new(1, 2, 0, vec![vec![Rat::zero()], vec![Rat::zero()]], vec![], Rat::zero())
-            .unwrap();
-    let c_nonzero =
-        CochainComplex::new(1, 2, 0, vec![vec![Rat::one()], vec![Rat::zero()]], vec![], Rat::zero())
-            .unwrap();
+    let c_zero = CochainComplex::new(
+        1,
+        2,
+        0,
+        vec![vec![Rat::zero()], vec![Rat::zero()]],
+        vec![],
+        Rat::zero(),
+    )
+    .unwrap();
+    let c_nonzero = CochainComplex::new(
+        1,
+        2,
+        0,
+        vec![vec![Rat::one()], vec![Rat::zero()]],
+        vec![],
+        Rat::zero(),
+    )
+    .unwrap();
     let f_for_zero = CochainMap::new(
         &c_zero,
         &c_zero,

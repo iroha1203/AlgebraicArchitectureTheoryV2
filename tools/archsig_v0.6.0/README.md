@@ -26,7 +26,7 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
-| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合/syzygy/Artin 商/有限加群コホモロジー計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測/変形障害/Artin 試験/診断層/Atlas 細分化エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
 下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
@@ -89,7 +89,7 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
 
 SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
 `shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・
-`shigure_observations` の 9 種別の問いを実行できます。
+`shigure_observations`・`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas` の 13 種別の問いを実行できます。
 
 ```bash
 archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.atoms.json \
@@ -160,6 +160,50 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase3
 2 つ目の例は Chevalley 4 領域分類・有理 fiber probe / Laurent 障害・双対数全係数移送対照（全件 `established`, 終了コード 0）、
 3 つ目の例は W4 の両包含極小集合（`["e1"]` と `["e2", "e3"]`）＋費用順位と差なし空集合解（両件 `established`, 終了コード 0）、
 4 つ目の例は未観測座標依存（`unobserved_dependency`）と非線形有理点範囲外（`nonlinear_point_existence_out_of_scope`）を理由付き `undetermined`（`status = "partial"`, 終了コード 2）として返します。
+
+全 syzygy 平方零 lift・全 Artin 試験・診断層 $B_\pi$・有限グラフ実 adapter と Atlas 細分化は次のように実行します。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/lift.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.archmap.json \
+  --ask 'h1=shigure_lift(LiftAC3.H1Full, snapshot=snap1)' \
+  --ask 'h2=shigure_lift(LiftAC3.H2RedundantQ)' \
+  --ask 'h10=shigure_lift(LiftAC3.H10FinishSnap)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/artin.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.archmap.json \
+  --ask 'h4=shigure_artin(ArtinAC4.H4Artin, snapshot=snap1)' \
+  --ask 'h5=shigure_artin(ArtinAC4.H5Chain3)' \
+  --ask 'h6=shigure_artin(ArtinAC4.H6BaseChangeF2)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/diagnostics.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.archmap.json \
+  --ask 'w1=shigure_diagnostics(DiagnosticsAC5.W1NonFlatF2)' \
+  --ask 'w2=shigure_diagnostics(DiagnosticsAC5.W2SheafQ)' \
+  --ask 'd1=shigure_diagnostics(DiagnosticsAC5.D1DimRealization)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/atlas.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.archmap.json \
+  --ask 'solv=shigure_atlas(AtlasAC6.H8TriangleSolvable, snapshot=snap1)' \
+  --ask 'w3=shigure_atlas(AtlasAC6.W3Refinement8Pt)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/silence.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase4/phase4.archmap.json \
+  --ask 'unobs=shigure_lift(SilenceAC7.LiftUnobserved, snapshot=snap_missing)' \
+  --ask 'm2=shigure_lift(SilenceAC7.LiftNotSquareZero)' \
+  --ask 'h7=shigure_artin(SilenceAC7.ArtinH7Infinite)'
+```
+
+1 つ目の例は H1 の affine 修復・H2 の冗長生成族障害比較（`refuted`）・H10 `finish_snap` の相対リフト復元（`reevaluation.matched = true`）を返します（反証を含むため終了コード 1）。
+2 つ目の例は H4（$\nu = 2$）・H5（$\nu = 8$, 鋭い構文次数上界 8）・H6（$\mathbb{Z}\to\mathbb{F}_2$ で $\nu: 2 \to 3$, $D_2$ 像零）を返します（終了コード 1）。
+3 つ目の例は W1 の $\mathbb{Z}\to\mathbb{F}_2$ 非 flat 対比・W2 の 5 stratum 層別と Mayer–Vietoris 合流・D1 の 4 probe 次元実現を返します（全件 `established`, 終了コード 0）。
+4 つ目の例は H8 三角形の可解修復（`solv` が `established`）と W3 の 8 点細分化（Condition C0–C6 全合格・全修復 fiber 同型・F7/H12 反例、非移送反例を含むため `w3` が `refuted`）を返します（終了コード 1）。
+5 つ目の例は未観測座標依存（`unobserved_dependency`）・平方零違反（`square_zero_condition_violated`）・非 Noetherian 無限表示（`non_noetherian_infinite_presentation`）を理由付き `undetermined`（`status = "partial"`, 終了コード 2）として返します。
 
 ## 仕様
 

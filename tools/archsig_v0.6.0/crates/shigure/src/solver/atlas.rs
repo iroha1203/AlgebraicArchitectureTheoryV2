@@ -159,19 +159,26 @@ where
         return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
     }
 
-    let graph = match build_evaluated_graph(&spec.vertices, &spec.edges, zero.clone(), &empty_bindings, expand) {
+    let graph = match build_evaluated_graph(
+        &spec.vertices,
+        &spec.edges,
+        zero.clone(),
+        &empty_bindings,
+        expand,
+    ) {
         Ok(g) => g,
         Err(reason) => {
             return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
         }
     };
 
-    let base_lambdas = match eval_vertex_map(&spec.vertices, &spec.base_lambdas, &empty_bindings, expand) {
-        Ok(v) => v,
-        Err(reason) => {
-            return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-        }
-    };
+    let base_lambdas =
+        match eval_vertex_map(&spec.vertices, &spec.base_lambdas, &empty_bindings, expand) {
+            Ok(v) => v,
+            Err(reason) => {
+                return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+            }
+        };
 
     let saga_ok = verify_saga_sign_comparison(&graph);
     checks.push(ApplicabilityCheck {
@@ -243,25 +250,22 @@ where
         };
 
     // 頂点許容修復 H_V: d^0|_{H_V} a = b - d^0 λ。
-    let vertex_constrained_repair = match solve_vertex_repair_field(
-        &graph,
-        &base_lambdas,
-        &spec.allowed_vertices,
-    ) {
-        Ok(s) => s,
-        Err(reason) => {
-            return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-        }
-    };
-
-    // 辺許容修復 H_E: Φ_R(Δb|_{H_E}) = -Φ_R(b)。
-    let edge_constrained_repair =
-        match solve_edge_repair_field(&graph, &tree, &spec.allowed_edges) {
+    let vertex_constrained_repair =
+        match solve_vertex_repair_field(&graph, &base_lambdas, &spec.allowed_vertices) {
             Ok(s) => s,
             Err(reason) => {
                 return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
             }
         };
+
+    // 辺許容修復 H_E: Φ_R(Δb|_{H_E}) = -Φ_R(b)。
+    let edge_constrained_repair = match solve_edge_repair_field(&graph, &tree, &spec.allowed_edges)
+    {
+        Ok(s) => s,
+        Err(reason) => {
+            return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+        }
+    };
 
     // Atlas 細分化（F1–F7）。
     let refinement = if let Some(ref_spec) = &spec.refinement {
@@ -360,7 +364,14 @@ where
         extended_language_non_transport,
     };
 
-    atlas_outcome(verdict, coeff_domain, point_domain, checks, provenance, detail)
+    atlas_outcome(
+        verdict,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+        detail,
+    )
 }
 
 fn solve_atlas_z(
@@ -399,12 +410,13 @@ fn solve_atlas_z(
             return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
         }
     };
-    let base_lambdas = match eval_vertex_map(&spec.vertices, &spec.base_lambdas, &empty_bindings, &expand) {
-        Ok(v) => v,
-        Err(reason) => {
-            return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
-        }
-    };
+    let base_lambdas =
+        match eval_vertex_map(&spec.vertices, &spec.base_lambdas, &empty_bindings, &expand) {
+            Ok(v) => v,
+            Err(reason) => {
+                return atlas_undetermined(coeff_domain, point_domain, checks, provenance, reason);
+            }
+        };
 
     let saga_ok = verify_saga_sign_comparison(&graph);
     checks.push(ApplicabilityCheck {
@@ -628,7 +640,14 @@ fn solve_atlas_z(
         extended_language_non_transport,
     };
 
-    atlas_outcome(verdict, coeff_domain, point_domain, checks, provenance, detail)
+    atlas_outcome(
+        verdict,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+        detail,
+    )
 }
 
 fn eval_vertex_map<C, FE>(
@@ -649,7 +668,10 @@ where
     Ok(out)
 }
 
-pub(crate) fn vec_to_named_map<C: ToString>(names: &[String], vals: &[C]) -> BTreeMap<String, String> {
+pub(crate) fn vec_to_named_map<C: ToString>(
+    names: &[String],
+    vals: &[C],
+) -> BTreeMap<String, String> {
     names
         .iter()
         .zip(vals)
@@ -689,7 +711,9 @@ fn determine_atlas_verdict(
 
 pub(crate) fn map_atlas_alg_err(err: AlgebraError) -> SilenceReason {
     match err {
-        AlgebraError::UnobservedDependency { slots } => SilenceReason::UnobservedDependency { slots },
+        AlgebraError::UnobservedDependency { slots } => {
+            SilenceReason::UnobservedDependency { slots }
+        }
         other => SilenceReason::ApplicabilityConditionNotMet {
             condition: "atlas_algebra".to_owned(),
             detail: other.to_string(),

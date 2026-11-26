@@ -120,8 +120,14 @@ fn phase4_ir_rejects_bad_literals_unobserved_provenance_and_edge_cases() {
             base_degree: 0,
         },
         base_point: vec![
-            ("x".into(), vec![PolyExpr::Const(ScalarLit::Z(BigInt::from(0)))]),
-            ("y".into(), vec![PolyExpr::Const(ScalarLit::Z(BigInt::from(0)))]),
+            (
+                "x".into(),
+                vec![PolyExpr::Const(ScalarLit::Z(BigInt::from(0)))],
+            ),
+            (
+                "y".into(),
+                vec![PolyExpr::Const(ScalarLit::Z(BigInt::from(0)))],
+            ),
         ],
         ambient_lift: None,
         relative_reading: None,

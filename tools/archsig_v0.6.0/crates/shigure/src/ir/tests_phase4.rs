@@ -1,8 +1,6 @@
 //! Phase 4 IR（`lift`・`artin`・`diagnostics`・`atlas`・`result_phase4`）の構築・検証・JSON 出力単体テスト（AC1）。
 
-use crate::ir::artin::{
-    ArtinTaskSpec, AuxiliaryDefSpec, CompositeStageSpec, validate_artin_task,
-};
+use crate::ir::artin::{ArtinTaskSpec, AuxiliaryDefSpec, CompositeStageSpec, validate_artin_task};
 use crate::ir::atlas::{
     AtlasRefinementSpec, AtlasTaskSpec, AtomicOpCompareSpec, ExtendedLanguageCheckSpec,
     ExtendedOperationCheckSpec, GraphEdgeSpec, validate_atlas_task,
@@ -196,8 +194,8 @@ fn diagnostics_task_validation_enforces_k1_endpoints_and_collision_coarsening() 
             e2: "e12".into(),
         }],
     };
-    let make_spec = |nerve: SupportedNerveSpec, collisions: Vec<CollisionComparisonSpec>| {
-        DiagnosticsTaskSpec {
+    let make_spec =
+        |nerve: SupportedNerveSpec, collisions: Vec<CollisionComparisonSpec>| DiagnosticsTaskSpec {
             name: "k1_check".into(),
             diagnostic_coeff: CoeffDomain::Z,
             nerve,
@@ -219,8 +217,7 @@ fn diagnostics_task_validation_enforces_k1_endpoints_and_collision_coarsening() 
             dimension_realization: None,
             max_partitions: None,
             provenance: sample_prov(),
-        }
-    };
+        };
     assert!(validate_diagnostics_task(make_spec(nerve_ok.clone(), vec![])).is_ok());
 
     // coarse が fine の粗化でない（逆に細分化になっている）場合は拒否

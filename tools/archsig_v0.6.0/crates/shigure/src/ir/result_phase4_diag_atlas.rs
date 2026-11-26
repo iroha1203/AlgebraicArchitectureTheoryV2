@@ -135,7 +135,12 @@ impl DiagnosticsOutcomeDetail {
             ),
             (
                 "cell_dims".into(),
-                Json::Arr(self.cell_dims.iter().map(|&d| Json::Nat(d as u64)).collect()),
+                Json::Arr(
+                    self.cell_dims
+                        .iter()
+                        .map(|&d| Json::Nat(d as u64))
+                        .collect(),
+                ),
             ),
             ("h0".into(), Json::str(&self.h0_summary)),
             ("h1".into(), Json::str(&self.h1_summary)),
@@ -222,7 +227,10 @@ impl DiagnosticsOutcomeDetail {
                                 ),
                             ]);
                             if let Some(indep) = c.multi_stage_order_independent {
-                                co.insert("multi_stage_order_independent".into(), Json::Bool(indep));
+                                co.insert(
+                                    "multi_stage_order_independent".into(),
+                                    Json::Bool(indep),
+                                );
                             }
                             Json::Obj(co)
                         })
@@ -235,7 +243,10 @@ impl DiagnosticsOutcomeDetail {
                 ("source_domain".into(), Json::str(&cc.source_domain)),
                 ("target_domain".into(), Json::str(&cc.target_domain)),
                 ("is_flat".into(), Json::Bool(cc.is_flat)),
-                ("is_faithfully_flat".into(), Json::Bool(cc.is_faithfully_flat)),
+                (
+                    "is_faithfully_flat".into(),
+                    Json::Bool(cc.is_faithfully_flat),
+                ),
                 (
                     "fixed_label_c0_dim".into(),
                     Json::Nat(cc.fixed_label_c0_dim as u64),
@@ -535,7 +546,10 @@ impl AtlasOutcomeDetail {
                 (
                     "condition_c".into(),
                     Json::obj([
-                        ("c0_support_image", Json::Bool(r.condition_c.c0_support_image)),
+                        (
+                            "c0_support_image",
+                            Json::Bool(r.condition_c.c0_support_image),
+                        ),
                         (
                             "c1_block_fiber_connected",
                             Json::Bool(r.condition_c.c1_block_fiber_connected),
@@ -692,11 +706,7 @@ fn constrained_repair_json(s: &ConstrainedRepairSummary) -> Json {
 }
 
 fn str_map_json(map: &BTreeMap<String, String>) -> Json {
-    Json::Obj(
-        map.iter()
-            .map(|(k, v)| (k.clone(), Json::str(v)))
-            .collect(),
-    )
+    Json::Obj(map.iter().map(|(k, v)| (k.clone(), Json::str(v))).collect())
 }
 
 fn partition_json(partition: &[Vec<String>]) -> Json {

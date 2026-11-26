@@ -4,9 +4,7 @@ use super::ast_ext::ShigureScalarLit;
 use super::ast_phase3::{
     RawMemberCoordValue, RawOriginRef, ShigureMemberCoordValue, ShigureOriginRef,
 };
-use super::{
-    RawCoeffDomain, RawNamedPoly, ShigureCoeffDomain, ShigureNamedPoly, ShigurePolyExpr,
-};
+use super::{RawCoeffDomain, RawNamedPoly, ShigureCoeffDomain, ShigureNamedPoly, ShigurePolyExpr};
 use crate::law::ast::{Ident, QName, Span};
 
 // ---- 共通: K1 `TargetSupportedNerve` ----

@@ -181,37 +181,33 @@ pub(crate) fn solve_edge_repair_field<C: FieldCoeff>(
                 .zip(&full_db)
                 .map(|(b, db)| b.add_ref(db))
                 .collect();
-            let (reeval, h0_rank) = match solve_affine_field(
-                &graph.d0,
-                &repaired_b,
-                graph.vertices.len(),
-                &graph.zero,
-            )
-            .map_err(map_atlas_alg_err)?
-            {
-                AffineSolutionField::Consistent {
-                    particular: lam_sol,
-                    kernel_basis: lam_ker,
-                    ..
-                } => (
-                    reevaluate_adapter_commutativity(
-                        graph,
-                        &lam_sol,
-                        &repaired_b,
-                        "edge_constrained_repair",
+            let (reeval, h0_rank) =
+                match solve_affine_field(&graph.d0, &repaired_b, graph.vertices.len(), &graph.zero)
+                    .map_err(map_atlas_alg_err)?
+                {
+                    AffineSolutionField::Consistent {
+                        particular: lam_sol,
+                        kernel_basis: lam_ker,
+                        ..
+                    } => (
+                        reevaluate_adapter_commutativity(
+                            graph,
+                            &lam_sol,
+                            &repaired_b,
+                            "edge_constrained_repair",
+                        ),
+                        lam_ker.len(),
                     ),
-                    lam_ker.len(),
-                ),
-                AffineSolutionField::Inconsistent { .. } => (
-                    ReevalCheck {
-                        checked: true,
-                        matched: false,
-                        detail: "repaired offset b + delta_b did not admit a global operation"
-                            .to_owned(),
-                    },
-                    0,
-                ),
-            };
+                    AffineSolutionField::Inconsistent { .. } => (
+                        ReevalCheck {
+                            checked: true,
+                            matched: false,
+                            detail: "repaired offset b + delta_b did not admit a global operation"
+                                .to_owned(),
+                        },
+                        0,
+                    ),
+                };
             let basis_maps = kernel_basis
                 .iter()
                 .map(|v| {
@@ -267,8 +263,12 @@ pub(crate) fn solve_edge_repair_z(
                 .zip(&full_db)
                 .map(|(b, db)| b + db)
                 .collect();
-            let (reeval, h0_rank) = match solve_affine_z(&graph.d0, &repaired_b, graph.vertices.len())
-                .map_err(map_atlas_alg_err)?
+            let (reeval, h0_rank) = match solve_affine_z(
+                &graph.d0,
+                &repaired_b,
+                graph.vertices.len(),
+            )
+            .map_err(map_atlas_alg_err)?
             {
                 AffineSolutionZ::Consistent {
                     particular: lam_sol,
@@ -287,8 +287,9 @@ pub(crate) fn solve_edge_repair_z(
                     ReevalCheck {
                         checked: true,
                         matched: false,
-                        detail: "repaired offset b + delta_b did not admit an integer global operation"
-                            .to_owned(),
+                        detail:
+                            "repaired offset b + delta_b did not admit an integer global operation"
+                                .to_owned(),
                     },
                     0,
                 ),

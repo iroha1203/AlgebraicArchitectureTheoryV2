@@ -365,7 +365,14 @@ where
         composition_law,
         base_change,
     };
-    artin_outcome(verdict, coeff_domain, point_domain, checks, provenance, detail)
+    artin_outcome(
+        verdict,
+        coeff_domain,
+        point_domain,
+        checks,
+        provenance,
+        detail,
+    )
 }
 
 /// F2–F3: 体上の普遍局所 Artin 商 `A / m^{r+1}` で初回検出次数 `ν` を決定する。
@@ -667,7 +674,12 @@ pub(crate) fn verify_base_point_vanishing<C: RingCoeff>(
 
 pub(crate) fn unpack_detection(
     det: OrderDetection,
-) -> (Option<usize>, bool, String, Option<UniversalObstructionSummary>) {
+) -> (
+    Option<usize>,
+    bool,
+    String,
+    Option<UniversalObstructionSummary>,
+) {
     match det {
         OrderDetection::Infinite => (None, true, "infinite_local_iso".to_owned(), None),
         OrderDetection::Finite {
@@ -743,15 +755,12 @@ where
     C: RingCoeff,
     FE: Fn(&PolyExpr, &ExprBindings) -> Result<Poly<C>, AlgebraError>,
 {
-    let map: BTreeMap<&str, &PolyExpr> = base_point
-        .iter()
-        .map(|(k, v)| (k.as_str(), v))
-        .collect();
+    let map: BTreeMap<&str, &PolyExpr> = base_point.iter().map(|(k, v)| (k.as_str(), v)).collect();
     let mut out = Vec::with_capacity(obs_vars.len());
     for v in obs_vars {
-        let e = map.get(v.as_str()).ok_or_else(|| AlgebraError::UnknownVariable {
-            name: v.clone(),
-        })?;
+        let e = map
+            .get(v.as_str())
+            .ok_or_else(|| AlgebraError::UnknownVariable { name: v.clone() })?;
         out.push(eval_const_expr(e, expand_expr)?);
     }
     Ok(out)
@@ -759,7 +768,9 @@ where
 
 pub(crate) fn map_artin_err(err: AlgebraError) -> SilenceReason {
     match err {
-        AlgebraError::UnobservedDependency { slots } => SilenceReason::UnobservedDependency { slots },
+        AlgebraError::UnobservedDependency { slots } => {
+            SilenceReason::UnobservedDependency { slots }
+        }
         AlgebraError::OutOfScope { detail } => SilenceReason::ArtinOrderOutOfScope { detail },
         other => SilenceReason::ApplicabilityConditionNotMet {
             condition: "artin_algebra_computation".to_owned(),

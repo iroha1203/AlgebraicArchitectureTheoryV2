@@ -13,9 +13,7 @@ use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason, Verdi
 use crate::ir::result_phase4::{DiagnosticsOutcomeDetail, LawValueBlockSummary};
 use crate::ir::term::{CoeffDomain, ScalarLit};
 use crate::solver::diagnostics_change::compute_coeff_change;
-use crate::solver::diagnostics_collision::{
-    compute_collision_mv, compute_dimension_realization,
-};
+use crate::solver::diagnostics_collision::{compute_collision_mv, compute_dimension_realization};
 use crate::solver::diagnostics_strat::{
     compute_polynomial_stratification, compute_r_point_contrast, detect_upper_semicontinuity,
 };
@@ -697,9 +695,18 @@ pub(crate) fn compute_block_decomposition(
         for (val_label, targets) in by_val {
             let (c, e, f, d0, d1) = build_block_complex(nerve, &targets);
             let data = DiagnosticComplexData {
-                coords0: c.iter().map(|&i| (i, law_name.clone(), val_label.clone())).collect(),
-                coords1: e.iter().map(|&i| (i, law_name.clone(), val_label.clone())).collect(),
-                coords2: f.iter().map(|&i| (i, law_name.clone(), val_label.clone())).collect(),
+                coords0: c
+                    .iter()
+                    .map(|&i| (i, law_name.clone(), val_label.clone()))
+                    .collect(),
+                coords1: e
+                    .iter()
+                    .map(|&i| (i, law_name.clone(), val_label.clone()))
+                    .collect(),
+                coords2: f
+                    .iter()
+                    .map(|&i| (i, law_name.clone(), val_label.clone()))
+                    .collect(),
                 d0_z: d0,
                 d1_z: d1,
             };
