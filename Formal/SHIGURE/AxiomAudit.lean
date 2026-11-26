@@ -21,6 +21,7 @@ import Formal.SHIGURE.Part1.PullbackExamples
 import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
+import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
@@ -4023,6 +4024,31 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   CoefficientDescent.Examples.split_extension_finiteLocallyFree,
   CoefficientDescent.Examples.split_finiteLocallyFree_descends,
   CoefficientDescent.Examples.infinite_free_not_finiteLocallyFree
+]
+
+-- The finite affine faithfully flat refinement in Appendix B.3.
+#shigure_assert_standard_axioms_of [
+  SchemeDescent.FppfComponent,
+  SchemeDescent.FppfCover,
+  SchemeDescent.AffineRefinement,
+  SchemeDescent.affineRefinement_exists,
+  SchemeDescent.affineRefinement,
+  SchemeDescent.AffineRefinement.componentMap,
+  SchemeDescent.AffineRefinement.spec_componentMap,
+  SchemeDescent.AffineRefinement.productRing,
+  SchemeDescent.AffineRefinement.productMap,
+  SchemeDescent.AffineRefinement.productMap_eval,
+  SchemeDescent.AffineRefinement.productSpecIso,
+  SchemeDescent.AffineRefinement.productSpec_over,
+  SchemeDescent.AffineRefinement.product_flat_surjective,
+  SchemeDescent.AffineRefinement.productAlgebra,
+  SchemeDescent.AffineRefinement.productFaithfullyFlat,
+  SchemeDescent.AffineRefinement.descentEquivalence,
+  SchemeDescent.AffineRefinement.overlapIso,
+  SchemeDescent.AffineRefinement.overlapIso_fst,
+  SchemeDescent.AffineRefinement.overlapIso_snd,
+  SchemeDescent.AffineFppfExamples.two_components_faithfullyFlat,
+  SchemeDescent.AffineFppfExamples.one_component_not_surjective
 ]
 
 end SHIGURE.AxiomAudit
