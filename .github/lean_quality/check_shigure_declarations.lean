@@ -67,33 +67,46 @@ private def checkSyntax (input : Parser.InputContext) (moduleName : Name)
       valid := false
   return valid
 
+private unsafe def ptrAddrOfImpl {α : Type u} (a : α) : USize :=
+  ptrAddrUnsafe a
+
+@[implemented_by ptrAddrOfImpl]
+private opaque ptrAddrOf {α : Type u} (a : α) : USize := 0
+
 /-- A name reused after an anonymous declaration can refer to a different kernel proof. -/
-private def survives (current final : Environment) (name : Name) : Bool :=
-  if final.isImportedConst name then true
-  else
-    match current.checked.get.find? name, final.checked.get.find? name with
-    | some earlier, some later =>
-      earlier.type == later.type && earlier.value? true == later.value? true
-    | _, _ => false
+private def survivesChecked (current final : Environment) (name : Name) : Bool :=
+  match current.checked.get.find? name, final.checked.get.find? name with
+  | some earlier, some later =>
+    ptrAddrOf earlier == ptrAddrOf later ||
+      (earlier.type == later.type && earlier.value? true == later.value? true)
+  | _, _ => false
 
 /-- Check proof terms in temporary environments that do not survive their command. -/
 private def transientAxioms (state : Frontend.State) (proofImports : Option Environment) :
     NameSet := Id.run do
   let env := state.commandState.env
+  let mut seen : Std.HashSet USize := {}
+  seen := seen.insert (ptrAddrOf env)
   let mut found : NameSet := {}
   for tree in state.commandState.infoState.trees do
-    found := tree.foldInfo (init := found) fun ctx info found =>
-      if ctx.parentDecl?.any (survives ctx.env env) then found
+    (seen, found) := tree.foldInfo (init := (seen, found)) fun ctx _ (seen, found) =>
+      let addr := ptrAddrOf ctx.env
+      if seen.contains addr then (seen, found)
       else
-        let expressions := match info with
-          | .ofTermInfo term => #[(instantiateMVarsCore ctx.mctx term.expr).1]
-          | .ofTacticInfo tactic => tactic.goalsBefore.toArray.map fun goal =>
-              (instantiateMVarsCore tactic.mctxAfter (.mvar goal)).1
-          | _ => #[]
-        let referenced := expressions.flatMap Expr.getUsedConstants
-        let temporary := referenced.filter (!survives ctx.env env ·)
-        let discovered := SHIGURE.kernelAxioms ctx.env proofImports temporary
-        discovered.foldl (fun acc name => acc.insert name) found
+        let seen := seen.insert addr
+        if ptrAddrOf ctx.env.constants.map₂ == ptrAddrOf env.constants.map₂ then
+          (seen, found)
+        else
+          let temporary := ctx.env.constants.foldStage2 (s := #[]) fun acc name earlier =>
+            match env.constants.map₂.find? name with
+            | some later =>
+              if ptrAddrOf earlier == ptrAddrOf later || survivesChecked ctx.env env name then acc
+              else acc.push name
+            | none => acc.push name
+          if temporary.isEmpty then (seen, found)
+          else
+            let discovered := SHIGURE.kernelAxioms ctx.env proofImports temporary
+            (seen, discovered.foldl (fun acc name => acc.insert name) found)
   return found
 
 /-- Check the effective kernel setting during elaboration, including options set by macros. -/
@@ -148,8 +161,11 @@ private unsafe def checkFile (file : System.FilePath) : IO Bool := do
 private def isAuditSource (name : Name) : Bool :=
   name == `Formal.SHIGURE.AxiomAudit || isAuditTest name
 
-/-- Audit all production declarations from the same build in one private import. -/
-private unsafe def checkCompiled (files : List String) : IO Bool := do
+/-- Audit all production declarations from the same build in one private import.
+If `separateOut?` is provided, record modules with cross-module name collisions to that NUL-delimited
+file so the caller can audit them after this process releases the combined environment. -/
+private unsafe def checkCompiled (files : List String)
+    (separateOut? : Option System.FilePath := none) (isolated : Bool := false) : IO Bool := do
   let mut sources : NameMap System.FilePath := {}
   for file in files do
     let path := System.FilePath.mk file
@@ -173,7 +189,8 @@ private unsafe def checkCompiled (files : List String) : IO Bool := do
       -- Lean can merge synthesized theorems with the same name and different proofs.
       if data.constants.any (fun original =>
           !(env.find? original.name).any (fun combined =>
-            original.type == combined.type && original.value? true == combined.value? true)) then
+            ptrAddrOf original == ptrAddrOf combined ||
+              (original.type == combined.type && original.value? true == combined.value? true))) then
         separate := separate.push path
   let absent := modules.filter (!seen.contains ·)
   if !absent.isEmpty then
@@ -188,17 +205,37 @@ private unsafe def checkCompiled (files : List String) : IO Bool := do
     unless SHIGURE.isStandardAxiom dependency do
       IO.eprintln s!"nonstandard kernel assumption {dependency}"
       valid := false
-  for path in separate do
-    IO.println s!"Checking the original proof environment for {path}."
-    unless ← checkFile path do
-      valid := false
+  if let some outPath := separateOut? then
+    let mut bytes := ByteArray.empty
+    for path in separate do
+      IO.println s!"Deferring original proof environment check for {path}."
+      bytes := bytes ++ path.toString.toUTF8
+      bytes := bytes.push 0
+    IO.FS.writeBinFile outPath bytes
+  else
+    let exe ← IO.appPath
+    let checker := (← IO.getEnv "SHIGURE_CHECKER_SCRIPT").getD ".github/lean_quality/check_shigure_declarations.lean"
+    for path in separate do
+      IO.println s!"Checking the original proof environment for {path}."
+      let childArgs :=
+        if isolated || modules.size == 1 then
+          #["--run", checker, path.toString]
+        else
+          #["--run", checker, "--compiled-isolated", path.toString]
+      let child ← IO.Process.spawn { cmd := exe.toString, args := childArgs }
+      unless (← child.wait) == 0 do
+        valid := false
   IO.println s!"Checked {modules.size} compiled modules and {roots.size} declarations."
   return valid
 
 /-- Run from the repository root after the SHIGURE build. Paths optionally select local fixtures. -/
 unsafe def main (args : List String) : IO UInt32 := do
+  if let "--compiled" :: "--separate-out" :: outPath :: files := args then
+    return if ← checkCompiled files (separateOut? := some (System.FilePath.mk outPath)) then 0 else 1
   if let "--compiled" :: files := args then
     return if ← checkCompiled files then 0 else 1
+  if let ["--compiled-isolated", file] := args then
+    return if ← checkCompiled [file] (isolated := true) then 0 else 1
   if let [file] := args then
     return if ← checkFile file then 0 else 1
   let files ← if args.isEmpty then do
@@ -206,12 +243,13 @@ unsafe def main (args : List String) : IO UInt32 := do
     pure ((files.filter (·.extension == some "lean")).push "Formal/SHIGURE.lean")
   else pure (args.toArray.map System.FilePath.mk)
   let exe ← IO.appPath
+  let checker := (← IO.getEnv "SHIGURE_CHECKER_SCRIPT").getD ".github/lean_quality/check_shigure_declarations.lean"
   let mut valid := true
   for file in files do
     -- Extension caches can keep imported environments alive. Release them at process exit.
     let child ← IO.Process.spawn {
       cmd := exe.toString
-      args := #["--run", ".github/lean_quality/check_shigure_declarations.lean", file.toString]
+      args := #["--run", checker, file.toString]
     }
     unless (← child.wait) == 0 do
       valid := false
