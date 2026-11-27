@@ -35,6 +35,7 @@ import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.Realizations.PolynomialCoefficientChange
 import Formal.SHIGURE.Part2.Realizations.PolynomialCoordinates
+import Formal.SHIGURE.Part2.Realizations.PolynomialLawExamples
 import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
@@ -4961,6 +4962,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.PolynomialLaw,
   SHIGURE.RealizationFamilies.PolynomialLaw.Holds,
   SHIGURE.RealizationFamilies.PolynomialLaw.residual,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residual_apply,
   SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_residual_eq_zero,
   SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_all_monomial_coefficients_zero,
   SHIGURE.RealizationFamilies.polynomialResidualIdeal,
@@ -4972,6 +4974,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.polynomialResidualIdeal_reparameterize_le,
   SHIGURE.RealizationFamilies.polynomialResidualIdeal_changeCoordinates,
   SHIGURE.RealizationFamilies.transformPolynomialResiduals,
+  SHIGURE.RealizationFamilies.transformPolynomialResiduals_apply,
   SHIGURE.RealizationFamilies.transformPolynomialResiduals_comp,
   SHIGURE.RealizationFamilies.transformPolynomialResiduals_id,
   SHIGURE.RealizationFamilies.polynomialResidualIdeal_transform,
@@ -4988,14 +4991,23 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.inputChartBasis_repr,
   SHIGURE.RealizationFamilies.inputChartMatrix_baseChange,
   SHIGURE.RealizationFamilies.outputChartMatrix_baseChange,
-  SHIGURE.RealizationFamilies.PolynomialLaw.residual_changeBasis,
-  SHIGURE.RealizationFamilies.PolynomialLaw.residualIdeal_changeBasis,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidual,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidual_eq_transform,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidual_sortwise,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidual_changeBasis,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidualIdeal_changeBasis,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_chartResidualIdeal_eq_bot,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidual_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw.chartResidualIdeal_baseChange,
   SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_residualIdeal_eq_bot,
   SHIGURE.RealizationFamilies.PolynomialLaw.residual_baseChange,
   SHIGURE.RealizationFamilies.PolynomialLaw.residualIdeal_baseChange,
   SHIGURE.RealizationFamilies.PolynomialLaw.holds_of_injective_baseChange,
   SHIGURE.RealizationFamilies.PolynomialLaw.holds_baseChange,
-  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_of_iso
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_of_iso,
+  SHIGURE.RealizationFamilies.Examples.twoCopiesLaw_holds,
+  SHIGURE.RealizationFamilies.Examples.frobeniusLaw_originalPoints,
+  SHIGURE.RealizationFamilies.Examples.frobeniusLaw_not_holds
 ]
 
 end SHIGURE.AxiomAudit

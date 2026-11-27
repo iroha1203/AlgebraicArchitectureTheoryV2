@@ -158,6 +158,12 @@ def transformPolynomialResiduals [Fintype O] (matrix : Matrix P O R)
     P → MvPolynomial J R :=
   fun p => ∑ o, C (matrix p o) * substitute (r o)
 
+/-- Read one output component of the transformed residual family. -/
+theorem transformPolynomialResiduals_apply [Fintype O] (matrix : Matrix P O R)
+    (substitute : MvPolynomial I R →ₐ[R] MvPolynomial J R) (r : O → MvPolynomial I R) (p : P) :
+    transformPolynomialResiduals matrix substitute r p = ∑ o, C (matrix p o) * substitute (r o) :=
+  rfl
+
 /-- Consecutive changes of output coordinates in Definition 6.1 multiply
 their matrices, and the corresponding input substitutions compose. -/
 theorem transformPolynomialResiduals_comp [Fintype O] [Fintype P]

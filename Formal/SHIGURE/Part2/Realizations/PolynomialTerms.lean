@@ -10,8 +10,12 @@ import Mathlib.LinearAlgebra.Basis.Defs
 The syntax uses the original signature and typed argument positions.
 Expansion evaluates the original operations on basis vectors and sums
 over all basis choices of each finite arity. Working in a free chart
-produces a polynomial for each output coordinate. The universal
-coefficient algebra then detects every coefficient of the written Law.
+produces a polynomial for each output coordinate. Defining a Law directly
+by coordinate polynomials would require bases on the carriers before
+evaluating it. Here the original tensor operations already evaluate
+the term, and chart coordinates are read afterwards. An enlarged
+coefficient algebra detects coefficients that point evaluations over
+the original ring can miss.
 -/
 
 namespace SHIGURE.RealizationFamilies
@@ -208,6 +212,8 @@ def extendedBasis (A : TensorStructure R sig) (basis : ∀ s, Basis (Fin (rank s
     ∀ s, Basis (Fin (rank s)) S ((extendStructure R S A).carrier s) :=
   fun s => (basis s).baseChange S
 
+/-- Reading a primitive on basis vectors after scalar extension extends
+its original coefficient by the ring map. -/
 private theorem operationCoefficient_baseChange {a : Arity sig.SortType} (A : TensorStructure R sig)
     (basis : ∀ s, Basis (Fin (rank s)) R (A.carrier s)) (op : TensorOperation R A.carrier a)
     (idx : ∀ i : TensorPosition a.inputs, Fin (rank i.1)) (j : Fin (rank a.output)) :
@@ -314,6 +320,12 @@ def Holds : Prop :=
 def residual (basis : ∀ t, Basis (Fin (rank t)) R (A.carrier t)) (j : Fin (rank s)) :
     MvPolynomial (PolynomialInputCoordinates rank Γ) R :=
   l.left.expand c A basis j - l.right.expand c A basis j
+
+/-- The residual at an output position is the difference of the two
+expanded terms at that position. -/
+theorem residual_apply (basis : ∀ t, Basis (Fin (rank t)) R (A.carrier t)) (j : Fin (rank s)) :
+    l.residual c A basis j = l.left.expand c A basis j - l.right.expand c A basis j :=
+  rfl
 
 variable (basis : ∀ t, Basis (Fin (rank t)) R (A.carrier t))
 
