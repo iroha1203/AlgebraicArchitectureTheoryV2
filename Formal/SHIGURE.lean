@@ -26,6 +26,8 @@ import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
+import Formal.SHIGURE.Part2.Realizations.PolynomialCoefficientChange
+import Formal.SHIGURE.Part2.Realizations.PolynomialCoordinates
 import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels

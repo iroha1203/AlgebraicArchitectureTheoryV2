@@ -33,6 +33,8 @@ import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
+import Formal.SHIGURE.Part2.Realizations.PolynomialCoefficientChange
+import Formal.SHIGURE.Part2.Realizations.PolynomialCoordinates
 import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
@@ -4939,6 +4941,61 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.fppfAffineTargetMaps_existUnique_onAffineBase,
   SchemeDescent.fppfAffineTargetMaps_existUnique,
   SchemeDescent.relativeAffineSection_descent
+]
+
+-- Typed polynomial Laws on free affine charts of Chapter 6.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.PolynomialTerm,
+  SHIGURE.RealizationFamilies.PolynomialTerm.eval,
+  SHIGURE.RealizationFamilies.PolynomialTerm.eval_map,
+  SHIGURE.RealizationFamilies.PolynomialInputCoordinates,
+  SHIGURE.RealizationFamilies.operationPolynomial,
+  SHIGURE.RealizationFamilies.PolynomialTerm.expand,
+  SHIGURE.RealizationFamilies.operation_coordinates,
+  SHIGURE.RealizationFamilies.operationPolynomial_eval,
+  SHIGURE.RealizationFamilies.PolynomialTerm.inputValues,
+  SHIGURE.RealizationFamilies.PolynomialTerm.eval_expand,
+  SHIGURE.RealizationFamilies.extendedBasis,
+  SHIGURE.RealizationFamilies.operationPolynomial_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialTerm.expand_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw,
+  SHIGURE.RealizationFamilies.PolynomialLaw.Holds,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residual,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_residual_eq_zero,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_all_monomial_coefficients_zero,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_le_iff,
+  SHIGURE.RealizationFamilies.universalInput_vanishes_iff,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_map,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_subst_le,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_outputCombination_le,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_reparameterize_le,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_changeCoordinates,
+  SHIGURE.RealizationFamilies.transformPolynomialResiduals,
+  SHIGURE.RealizationFamilies.transformPolynomialResiduals_comp,
+  SHIGURE.RealizationFamilies.transformPolynomialResiduals_id,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_transform,
+  SHIGURE.RealizationFamilies.linearPolynomialSubstitution,
+  SHIGURE.RealizationFamilies.linearPolynomialSubstitution_X,
+  SHIGURE.RealizationFamilies.linearPolynomialSubstitution_comp,
+  SHIGURE.RealizationFamilies.linearPolynomialSubstitution_id,
+  SHIGURE.RealizationFamilies.linearPolynomialSubstitutionEquiv,
+  SHIGURE.RealizationFamilies.polynomialResidualIdeal_linearCoordinateChange,
+  SHIGURE.RealizationFamilies.map_linearPolynomialSubstitution,
+  SHIGURE.RealizationFamilies.map_linearCoordinateResiduals,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residual_eval,
+  SHIGURE.RealizationFamilies.inputChartBasis,
+  SHIGURE.RealizationFamilies.inputChartBasis_repr,
+  SHIGURE.RealizationFamilies.inputChartMatrix_baseChange,
+  SHIGURE.RealizationFamilies.outputChartMatrix_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residual_changeBasis,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residualIdeal_changeBasis,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_residualIdeal_eq_bot,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residual_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw.residualIdeal_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_of_injective_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_baseChange,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_of_iso
 ]
 
 end SHIGURE.AxiomAudit
