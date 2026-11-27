@@ -40,6 +40,8 @@ import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentZariskiStack
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
+import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionExamples
+import Formal.SHIGURE.Part2.Schemes.RelativeSpecStackExamples
 
 /-! # SHIGURE
 

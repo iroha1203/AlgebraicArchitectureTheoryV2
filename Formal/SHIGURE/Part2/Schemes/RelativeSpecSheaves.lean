@@ -334,17 +334,21 @@ def pullbackAlgebraAdjunction (g : Y ⟶ X) :
     ext
     simp [pushforwardAlgebra]
 
-/-- Algebra maps into the test structure sheaf are adjoint to maps into its direct image. -/
-def pullbackAlgebraHomEquiv (g : Y ⟶ X) (D : Under X.sheaf) :
-    ((pullbackAlgebra g).obj D ⟶ Under.mk (𝟙 Y.sheaf)) ≃ (D ⟶ directImageStructure g) := by
-  refine ((pullbackAlgebraAdjunction g).homEquiv D (Under.mk (𝟙 Y.sheaf))).trans ?_
-  refine (Under.isoMk (Iso.refl _) ?_).homToEquiv
+/-- Direct image of the source unit algebra uses the original algebra of
+functions of the test scheme over the target. -/
+def pushforwardAlgebraUnitIso (g : Y ⟶ X) :
+    (pushforwardAlgebra g).obj (Under.mk (𝟙 Y.sheaf)) ≅ directImageStructure g := by
+  refine Under.isoMk (Iso.refl _) ?_
   change ((directImageStructure g).hom ≫ (TopCat.Sheaf.pushforward CommRingCat g.base).map
     (𝟙 Y.sheaf)) ≫ 𝟙 _ = (directImageStructure g).hom
-  rw [Category.comp_id]
-  rw [show (TopCat.Sheaf.pushforward CommRingCat g.base).map (𝟙 Y.sheaf) = 𝟙 _ from
-    (TopCat.Sheaf.pushforward CommRingCat g.base).map_id _]
+  rw [Category.comp_id, (TopCat.Sheaf.pushforward CommRingCat g.base).map_id]
   exact Category.comp_id _
+
+/-- Algebra maps into the test structure sheaf are adjoint to maps into its direct image. -/
+def pullbackAlgebraHomEquiv (g : Y ⟶ X) (D : Under X.sheaf) :
+    ((pullbackAlgebra g).obj D ⟶ Under.mk (𝟙 Y.sheaf)) ≃ (D ⟶ directImageStructure g) :=
+  ((pullbackAlgebraAdjunction g).homEquiv D (Under.mk (𝟙 Y.sheaf))).trans
+    (pushforwardAlgebraUnitIso g).homToEquiv
 
 namespace QuasiCoherentAlgebra
 
