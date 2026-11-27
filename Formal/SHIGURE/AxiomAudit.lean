@@ -26,6 +26,7 @@ import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeExamples
 import Formal.SHIGURE.Part2.Schemes.FppfEpimorphisms
 import Formal.SHIGURE.Part2.Schemes.AffineGeometryToCoefficients
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
+import Formal.SHIGURE.Part2.Schemes.FppfRelativeAffineSections
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
@@ -4927,6 +4928,21 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.Examples.finiteFreeAffine_isFiniteLocallyFree,
   SchemeDescent.Examples.rationalInfiniteTilde_not_on_top,
   SchemeDescent.Examples.rationalInfiniteTilde_not_finiteLocallyFree
+]
+
+-- Fppf descent of sections of an affine morphism.
+#shigure_assert_standard_axioms_of [
+  SchemeDescent.affineCover_double_equalizer,
+  SchemeDescent.affineCover_ringHomEqualizer,
+  SchemeDescent.affineCover_descendsMap,
+  SchemeDescent.fppfCover_hom_ext,
+  SchemeDescent.CompatibleSchemeMapFamily,
+  SchemeDescent.CompatibleSchemeMapFamily.RecoveredOn,
+  SchemeDescent.CompatibleSchemeMapFamily.recoveredOn_of_pullback,
+  SchemeDescent.CompatibleSchemeMapFamily.glue_recovered,
+  SchemeDescent.fppfAffineTargetMaps_existUnique_onAffineBase,
+  SchemeDescent.fppfAffineTargetMaps_existUnique,
+  SchemeDescent.relativeAffineSection_descent
 ]
 
 end SHIGURE.AxiomAudit
