@@ -49,6 +49,11 @@ theorem integerTwoGeneratorMarking_cover :
     exact difference
   exact x.isPrime.ne_top ((Ideal.eq_top_iff_one _).mpr one)
 
+/-- The common open of the two charts is the principal open at six. -/
+theorem integerTwoGeneratorMarking_overlap_open :
+    basicOpen (2 : ℤ) ⊓ basicOpen (3 : ℤ) = basicOpen (6 : ℤ) :=
+  (basicOpen_mul (2 : ℤ) 3).symm
+
 noncomputable section
 
 variable {S : Type*} [CommRing S] [Algebra ℤ S]
@@ -71,15 +76,71 @@ theorem integerTwoGeneratorMarking_normalize_right [IsLocalization.Away (3 : ℤ
   · rfl
   · exact IsLocalization.Away.mul_invSelf (S := S) (3 : ℤ)
 
-/-- On the common localization, the ratios for changing basis are inverse. -/
-theorem integerTwoGeneratorMarking_overlap
-    [IsLocalization.Away (2 : ℤ) S] [IsLocalization.Away (3 : ℤ) S] :
-    (algebraMap ℤ S 2 * IsLocalization.Away.invSelf (S := S) (3 : ℤ)) *
-      (algebraMap ℤ S 3 * IsLocalization.Away.invSelf (S := S) (2 : ℤ)) = 1 := by
+private theorem integerTwoGeneratorMarking_overlap_units [IsLocalization.Away (6 : ℤ) S] :
+    IsUnit (algebraMap ℤ S 2) ∧ IsUnit (algebraMap ℤ S 3) := by
+  apply IsUnit.mul_iff.mp
+  rw [← map_mul]
+  change IsUnit (algebraMap ℤ S (6 : ℤ))
+  exact IsLocalization.Away.algebraMap_isUnit (S := S) (6 : ℤ)
+
+/-- The first chart has its actual restriction map to the localization at six. -/
+def integerTwoGeneratorMarking_restrictTwo [IsLocalization.Away (6 : ℤ) S] :
+    Localization.Away (2 : ℤ) →+* S :=
+  IsLocalization.Away.lift (g := algebraMap ℤ S) (2 : ℤ) integerTwoGeneratorMarking_overlap_units.1
+
+/-- The second chart has its actual restriction map to the localization at six. -/
+def integerTwoGeneratorMarking_restrictThree [IsLocalization.Away (6 : ℤ) S] :
+    Localization.Away (3 : ℤ) →+* S :=
+  IsLocalization.Away.lift (g := algebraMap ℤ S) (3 : ℤ) integerTwoGeneratorMarking_overlap_units.2
+
+/-- The change-of-basis ratios from the two charts are inverse after both are
+restricted to the actual overlap, the localization at six. -/
+theorem integerTwoGeneratorMarking_overlap [IsLocalization.Away (6 : ℤ) S] :
+    integerTwoGeneratorMarking_restrictThree
+      (algebraMap ℤ (Localization.Away (3 : ℤ)) 2 * IsLocalization.Away.invSelf (3 : ℤ)) *
+    integerTwoGeneratorMarking_restrictTwo
+      (algebraMap ℤ (Localization.Away (2 : ℤ)) 3 * IsLocalization.Away.invSelf (2 : ℤ)) = (1 : S) := by
+  let u := integerTwoGeneratorMarking_restrictTwo (S := S)
+  let v := integerTwoGeneratorMarking_restrictThree (S := S)
+  let a := algebraMap ℤ S 2
+  let b := algebraMap ℤ S 3
+  let i₂ := u (IsLocalization.Away.invSelf (S := Localization.Away (2 : ℤ)) (2 : ℤ))
+  let i₃ := v (IsLocalization.Away.invSelf (S := Localization.Away (3 : ℤ)) (3 : ℤ))
+  have hu (x : ℤ) : u (algebraMap ℤ _ x) = algebraMap ℤ S x :=
+    IsLocalization.Away.lift_eq (2 : ℤ) _ x
+  have hv (x : ℤ) : v (algebraMap ℤ _ x) = algebraMap ℤ S x :=
+    IsLocalization.Away.lift_eq (3 : ℤ) _ x
+  have ha : a * i₂ = 1 := by
+    have e := congrArg u (IsLocalization.Away.mul_invSelf (S := Localization.Away (2 : ℤ)) (2 : ℤ))
+    rw [map_mul, hu, map_one] at e
+    exact e
+  have hb : b * i₃ = 1 := by
+    have e := congrArg v (IsLocalization.Away.mul_invSelf (S := Localization.Away (3 : ℤ)) (3 : ℤ))
+    rw [map_mul, hv, map_one] at e
+    exact e
+  change v (_ * _) * u (_ * _) = 1
+  rw [map_mul v, map_mul u, hv, hu]
+  change (a * i₃) * (b * i₂) = 1
   calc
-    _ = (algebraMap ℤ S 2 * IsLocalization.Away.invSelf (S := S) (2 : ℤ)) *
-        (algebraMap ℤ S 3 * IsLocalization.Away.invSelf (S := S) (3 : ℤ)) := by ring
-    _ = 1 := by simp only [IsLocalization.Away.mul_invSelf, one_mul]
+    _ = (a * i₂) * (b * i₃) := by ring
+    _ = 1 := by rw [ha, hb, one_mul]
+
+/-- Multiplying the restricted first row by the change of basis gives the
+restricted second row on the common localization. -/
+theorem integerTwoGeneratorMarking_overlap_rows [IsLocalization.Away (6 : ℤ) S] (j : Fin 2) :
+    integerTwoGeneratorMarking_restrictThree (S := S)
+      (![algebraMap ℤ (Localization.Away (3 : ℤ)) 2 * IsLocalization.Away.invSelf (3 : ℤ), 1] j) =
+    integerTwoGeneratorMarking_restrictThree (S := S)
+      (algebraMap ℤ (Localization.Away (3 : ℤ)) 2 * IsLocalization.Away.invSelf (3 : ℤ)) *
+    integerTwoGeneratorMarking_restrictTwo (S := S)
+      (![1, algebraMap ℤ (Localization.Away (2 : ℤ)) 3 * IsLocalization.Away.invSelf (2 : ℤ)] j) := by
+  fin_cases j
+  · change _ = _ * integerTwoGeneratorMarking_restrictTwo (S := S) (1 : Localization.Away (2 : ℤ))
+    rw [map_one, mul_one]
+    rfl
+  · change integerTwoGeneratorMarking_restrictThree (S := S) (1 : Localization.Away (3 : ℤ)) = _
+    rw [map_one]
+    exact (integerTwoGeneratorMarking_overlap (S := S)).symm
 
 end
 

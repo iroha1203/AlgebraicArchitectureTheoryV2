@@ -80,6 +80,22 @@ theorem multilinearOfCoefficients_coefficients (b : ∀ i, Basis (Fin (n i)) R (
   simp only [evaluate, Basis.coord_apply]
   exact (op.map_smul_univ (fun i => (b i).repr (x i) (a i)) (fun i => b i (a i))).symm
 
+/-- Reading an output coordinate of a reconstructed operation gives the
+sum over the original basis tuples. -/
+theorem multilinearOfCoefficients_coordinates
+    (c : (∀ i, Fin (n i)) → Fin r → R) (x : ∀ i, Fin (n i) → R) (j : Fin r) :
+    letI : DecidableEq I := Classical.decEq I
+    multilinearOfCoefficients (fun i => Pi.basisFun R (Fin (n i))) (Pi.basisFun R (Fin r)) c x j =
+      ∑ a : (∀ i, Fin (n i)), c a j * ∏ i, x i (a i) := by
+  classical
+  rw [multilinearOfCoefficients, MultilinearMap.sum_apply, Finset.sum_apply]
+  simp only [MultilinearMap.compLinearMap_apply, MultilinearMap.mkPiRing_apply,
+    Pi.basisFun_equivFun, LinearEquiv.refl_symm, LinearEquiv.refl_apply,
+    Basis.coord_apply, ← Basis.equivFun_apply, Pi.smul_apply, smul_eq_mul]
+  apply Finset.sum_congr rfl
+  intro a _
+  rw [mul_comm]
+
 /-- A free chart specifies one coefficient per input tuple and output basis vector. -/
 def multilinearCoefficientsEquiv (b : ∀ i, Basis (Fin (n i)) R (M i))
     (d : Basis (Fin r) R N) :
