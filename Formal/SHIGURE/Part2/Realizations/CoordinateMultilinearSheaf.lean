@@ -93,43 +93,44 @@ def coordinateMultilinearOperation :
     moduleMultilinearTensor (fun i => coordinateModuleSheaf X (n i)) ⟶ coordinateModuleSheaf X r :=
   (moduleMultilinearTensorHomEquiv _ _).symm (coordinateMultilinearFamily X n r c)
 
-private def coordinateBasis (m : ℕ) (U : X.Opensᵒᵖ) :
+/-- The section basis of the standard free sheaf on the specified open. -/
+def coordinateModuleSectionBasis (m : ℕ) (U : X.Opensᵒᵖ) :
     Basis (Fin m) (sectionsRing X U) ((coordinateModuleSheaf X m).val.obj U) :=
   (Pi.basisFun (sectionsRing X U) (Fin m)).map (coordinateModuleSectionIso X m U).toLinearEquiv.symm
 
-private theorem coordinateBasis_in_coordinates (m : ℕ) (U : X.Opensᵒᵖ) (j : Fin m) :
-    (coordinateModuleSectionIso X m U).hom (coordinateBasis X m U j) = Pi.basisFun (sectionsRing X U) _ j :=
+private theorem coordinateModuleSectionBasis_in_coordinates (m : ℕ) (U : X.Opensᵒᵖ) (j : Fin m) :
+    (coordinateModuleSectionIso X m U).hom (coordinateModuleSectionBasis X m U j) = Pi.basisFun (sectionsRing X U) _ j :=
   (coordinateModuleSectionIso X m U).toLinearEquiv.apply_symm_apply _
 
-private theorem coordinateBasis_restrict (m : ℕ) {U V : X.Opensᵒᵖ} (g : U ⟶ V)
+private theorem coordinateModuleSectionBasis_restrict (m : ℕ) {U V : X.Opensᵒᵖ} (g : U ⟶ V)
     (j : Fin m) :
-    (coordinateModuleSheaf X m).val.map g (coordinateBasis X m U j) = coordinateBasis X m V j := by
+    (coordinateModuleSheaf X m).val.map g (coordinateModuleSectionBasis X m U j) = coordinateModuleSectionBasis X m V j := by
   classical
   apply (coordinateModuleSectionIso X m V).toLinearEquiv.injective
   funext i
   change (coordinateModuleSectionIso X m V).hom
-      ((coordinateModuleSheaf X m).val.map g (coordinateBasis X m U j)) i =
-    (coordinateModuleSectionIso X m V).hom (coordinateBasis X m V j) i
-  rw [coordinateModuleSectionIso_restrict, coordinateBasis_in_coordinates, coordinateBasis_in_coordinates]
+      ((coordinateModuleSheaf X m).val.map g (coordinateModuleSectionBasis X m U j)) i =
+    (coordinateModuleSectionIso X m V).hom (coordinateModuleSectionBasis X m V j) i
+  rw [coordinateModuleSectionIso_restrict, coordinateModuleSectionBasis_in_coordinates, coordinateModuleSectionBasis_in_coordinates]
   simp [Pi.basisFun_apply, Pi.single_apply]
 
 private theorem coordinateMultilinearApp_onBasis (U : X.Opensᵒᵖ)
     (a : ∀ i, Fin (n i)) (j : Fin r) :
     (coordinateModuleSectionIso X r U).hom
-      (coordinateMultilinearApp X n r c U (fun i => coordinateBasis X (n i) U (a i))) j =
+      (coordinateMultilinearApp X n r c U (fun i => coordinateModuleSectionBasis X (n i) U (a i))) j =
         fromTop X U (c a j) := by
   let e := coordinateModuleSectionIso X r U
   let RU := sectionsRing X U
   let basis (i : I) := Pi.basisFun RU (Fin (n i))
-  let x (i : I) := (coordinateModuleSectionIso X (n i) U).hom (coordinateBasis X (n i) U (a i))
+  let x (i : I) := (coordinateModuleSectionIso X (n i) U).hom (coordinateModuleSectionBasis X (n i) U (a i))
   let y : Fin r → RU := multilinearOfCoefficients basis (Pi.basisFun RU (Fin r))
     (fun a j => fromTop X U (c a j)) x
   have recover : e.hom (e.inv y) = y := congrArg (fun m => m y) e.inv_hom_id
   change e.hom (e.inv y) j = _
   rw [recover]
   change multilinearOfCoefficients basis (Pi.basisFun RU (Fin r)) (fun b k => fromTop X U (c b k))
-    (fun i => (coordinateModuleSectionIso X (n i) U).hom (coordinateBasis X (n i) U (a i))) j = _
-  rw [funext (fun i => coordinateBasis_in_coordinates X (n i) U (a i))]
+    (fun i => (coordinateModuleSectionIso X (n i) U).hom (coordinateModuleSectionBasis X (n i) U (a i))) j = _
+  rw [funext (fun i => coordinateModuleSectionBasis_in_coordinates X (n i) U (a i))]
   rw [multilinearOfCoefficients_basis, Pi.basisFun_equivFun, LinearEquiv.refl_symm, LinearEquiv.refl_apply]
 
 variable (h : MultilinearSectionFamily (R := X.sheaf.val)
@@ -139,7 +140,7 @@ variable (h : MultilinearSectionFamily (R := X.sheaf.val)
 globally chosen unit coordinate vectors. -/
 def coordinateMultilinearRead : (∀ i, Fin (n i)) → Fin r → sectionsRing X (topOpen X) :=
   fun a j => (coordinateModuleSectionIso X r (topOpen X)).hom
-    (h.app (topOpen X) (fun i => coordinateBasis X (n i) (topOpen X) (a i))) j
+    (h.app (topOpen X) (fun i => coordinateModuleSectionBasis X (n i) (topOpen X) (a i))) j
 
 private theorem fromTop_self (x : sectionsRing X (topOpen X)) : fromTop X (topOpen X) x = x := by
   unfold fromTop
@@ -156,9 +157,10 @@ theorem coordinateMultilinearRead_reconstruct :
   funext a j
   exact (coordinateMultilinearApp_onBasis X n r c (topOpen X) a j).trans (fromTop_self X _)
 
-private theorem coordinateBasis_repr (m : ℕ) (U : X.Opensᵒᵖ)
+/-- The basis coordinate of a section equals its sheaf projection coordinate. -/
+theorem coordinateModuleSectionBasis_repr (m : ℕ) (U : X.Opensᵒᵖ)
     (x : (coordinateModuleSheaf X m).val.obj U) (j : Fin m) :
-    (coordinateBasis X m U).repr x j = (coordinateModuleSectionIso X m U).hom x j := by
+    (coordinateModuleSectionBasis X m U).repr x j = (coordinateModuleSectionIso X m U).hom x j := by
   change (Pi.basisFun (sectionsRing X U) (Fin m)).repr
     ((coordinateModuleSectionIso X m U).hom x) j = _
   rw [← Basis.equivFun_apply, Pi.basisFun_equivFun]
@@ -170,20 +172,20 @@ theorem coordinateMultilinearFamily_read :
     coordinateMultilinearFamily X n r (coordinateMultilinearRead X n r h) = h := by
   apply MultilinearSectionFamily.ext
   funext U
-  apply (multilinearCoefficientsEquiv (fun i => coordinateBasis X (n i) U) (coordinateBasis X r U)).injective
+  apply (multilinearCoefficientsEquiv (fun i => coordinateModuleSectionBasis X (n i) U) (coordinateModuleSectionBasis X r U)).injective
   funext a j
-  let x (i : I) := coordinateBasis X (n i) (topOpen X) (a i)
+  let x (i : I) := coordinateModuleSectionBasis X (n i) (topOpen X) (a i)
   let g : topOpen X ⟶ U := (homOfLE (le_top (a := U.unop))).op
   have restrict : (fun i => (coordinateModuleSheaf X (n i)).val.map g (x i)) =
-      (fun i => coordinateBasis X (n i) U (a i)) := by
+      (fun i => coordinateModuleSectionBasis X (n i) U (a i)) := by
     funext i
-    exact coordinateBasis_restrict X (n i) g (a i)
+    exact coordinateModuleSectionBasis_restrict X (n i) g (a i)
   have operation := (h.naturality g x).trans (congrArg (h.app U) restrict)
-  change (coordinateBasis X r U).repr
+  change (coordinateModuleSectionBasis X r U).repr
       (coordinateMultilinearApp X n r (coordinateMultilinearRead X n r h) U
-        (fun i => coordinateBasis X (n i) U (a i))) j =
-    (coordinateBasis X r U).repr (h.app U (fun i => coordinateBasis X (n i) U (a i))) j
-  rw [coordinateBasis_repr, coordinateBasis_repr, coordinateMultilinearApp_onBasis]
+        (fun i => coordinateModuleSectionBasis X (n i) U (a i))) j =
+    (coordinateModuleSectionBasis X r U).repr (h.app U (fun i => coordinateModuleSectionBasis X (n i) U (a i))) j
+  rw [coordinateModuleSectionBasis_repr, coordinateModuleSectionBasis_repr, coordinateMultilinearApp_onBasis]
   exact (coordinateModuleSectionIso_restrict X r g (h.app (topOpen X) x) j).symm.trans
     (congrArg (fun y => (coordinateModuleSectionIso X r U).hom y j) operation)
 
