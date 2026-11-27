@@ -14,6 +14,7 @@ universe u
 
 variable {A B : Type u} [CommRing A] [CommRing B] [Algebra A B] [Module.FaithfullyFlat A B]
 
+/-- Faithfully flat scalar extension is injective on coefficients. -/
 private theorem scalar_injective : Function.Injective (algebraMap A B) :=
   (RingHom.faithfullyFlat_algebraMap_iff.2
     (inferInstance : Module.FaithfullyFlat A B)).injective

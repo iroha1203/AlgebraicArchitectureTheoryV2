@@ -4936,10 +4936,6 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.affineCover_ringHomEqualizer,
   SchemeDescent.affineCover_descendsMap,
   SchemeDescent.fppfCover_hom_ext,
-  SchemeDescent.CompatibleSchemeMapFamily,
-  SchemeDescent.CompatibleSchemeMapFamily.RecoveredOn,
-  SchemeDescent.CompatibleSchemeMapFamily.recoveredOn_of_pullback,
-  SchemeDescent.CompatibleSchemeMapFamily.glue_recovered,
   SchemeDescent.fppfAffineTargetMaps_existUnique_onAffineBase,
   SchemeDescent.fppfAffineTargetMaps_existUnique,
   SchemeDescent.relativeAffineSection_descent
