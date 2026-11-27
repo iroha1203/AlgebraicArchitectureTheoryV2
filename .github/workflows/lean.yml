@@ -222,6 +222,7 @@ jobs:
             .github/lean_quality/check_shigure_imports.lean \
             .github/lean_quality/check_shigure_declarations.lean \
             .github/lean_quality/ShigureBuildAudit.lean \
+            .github/lean_quality/shigure_cache_manifest.py \
             .github/lean_quality/test_shigure_declarations.sh \
             .github/workflows/lean.yml)"
           if [ -n "$changed_paths" ]; then
@@ -268,12 +269,33 @@ jobs:
           mapfile -t imports < "$RUNNER_TEMP/shigure-mathlib-imports"
           lake exe cache get "${imports[@]}"
 
+      - name: Restore SHIGURE build cache
+        if: steps.shigure-changes.outputs.run == 'true'
+        id: shigure-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: |
+            .lake/build
+            .lake/shigure-audit/verified-manifest.tsv
+          key: shigure-build-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json', '.github/lean_quality/ShigureBuildAudit.lean', '.github/lean_quality/shigure_cache_manifest.py') }}-${{ github.sha }}
+          restore-keys: |
+            shigure-build-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lakefile.toml', 'lake-manifest.json', '.github/lean_quality/ShigureBuildAudit.lean', '.github/lean_quality/shigure_cache_manifest.py') }}-
+
       - name: Build SHIGURE
         if: steps.shigure-changes.outputs.run == 'true'
         run: |
           audit_dir="$RUNNER_TEMP/shigure-build-audit"
+          plugin_dir=".lake/shigure-audit"
           export SHIGURE_AUDIT_STAMPS="$audit_dir/stamps"
-          mkdir -p "$SHIGURE_AUDIT_STAMPS"
+          rm -rf "$SHIGURE_AUDIT_STAMPS"
+          mkdir -p "$SHIGURE_AUDIT_STAMPS" "$plugin_dir"
+
+          # Keep only cached build artifacts whose source, trace, and olean match the verified manifest.
+          python3 .github/lean_quality/shigure_cache_manifest.py prune \
+            --files "$RUNNER_TEMP/shigure-files" \
+            --manifest "$plugin_dir/verified-manifest.tsv" \
+            --build-root .lake/build/lib/lean
+
           cp .github/lean_quality/ShigureBuildAudit.lean "$audit_dir"
           (
             export ELAN_TOOLCHAIN="$(cat lean-toolchain)"
@@ -281,7 +303,9 @@ jobs:
             lean -c ShigureBuildAudit.c ShigureBuildAudit.lean
             leanc -shared -fPIC -DLEAN_EXPORTING -o libShigureBuildAudit.so ShigureBuildAudit.c
           )
-          plugin="$audit_dir/libShigureBuildAudit.so"
+          cp "$audit_dir/libShigureBuildAudit.so" "$plugin_dir/libShigureBuildAudit.so"
+          # Use a deterministic workspace-relative plugin path so Lake traces remain reusable across runners.
+          plugin="$plugin_dir/libShigureBuildAudit.so"
           awk -v plugin="$plugin" '
             { print }
             $0 == "name = \"Formal\"" { print "moreLeanArgs = [\"--plugin=" plugin "\"]" }
@@ -306,37 +330,30 @@ jobs:
           lake env lean -o "$checker_dir/ShigureDeclarationCheck.olean" .github/lean_quality/check_shigure_declarations.lean
           printf 'import ShigureDeclarationCheck\n' > "$checker_dir/Run.lean"
           audit_dir="$RUNNER_TEMP/shigure-build-audit"
-          source_checks=()
-          while IFS= read -r -d '' file; do
-            case "$file" in
-              Formal/SHIGURE/AxiomAudit.lean|Formal/SHIGURE/AssertStandardAxiomsTest.lean)
-                source_checks+=("$file")
-                continue ;;
-            esac
-            module="${file%.lean}"
-            stamp="$audit_dir/stamps/${module//\//.}"
-            if [[ ! -f "$stamp" ]]; then
-              echo "$file: the source audit did not reach the end of the file" >&2
-              exit 1
-            fi
-            audit_status="$(cat "$stamp")"
-            case "$audit_status" in
-              checked) ;;
-              frontend) source_checks+=("$file") ;;
-              *)
-                echo "$file: invalid source audit result" >&2
-                exit 1 ;;
-            esac
-          done < "$RUNNER_TEMP/shigure-files"
+          plugin_dir=".lake/shigure-audit"
+          python3 .github/lean_quality/shigure_cache_manifest.py verify \
+            --files "$RUNNER_TEMP/shigure-files" \
+            --manifest "$plugin_dir/verified-manifest.tsv" \
+            --stamps "$audit_dir/stamps" \
+            --build-root .lake/build/lib/lean \
+            --new-manifest "$audit_dir/verified-manifest.tsv" \
+            --source-checks-out "$audit_dir/source-checks.nul"
+
+          separate_file="$audit_dir/separate-modules.nul"
           lake env bash -e -o pipefail -c '
             export LEAN_PATH="$1:$LEAN_PATH"
-            xargs -0 -r lean --run "$1/Run.lean" --compiled < "$2"
-            runner="$1/Run.lean"
-            shift 2
-            printf "%s\0" "$@" |
-              xargs -0 -r -n 1 -P "$(nproc)" -t lean -j 1 --run "$runner"
-          ' bash "$checker_dir" "$RUNNER_TEMP/shigure-files" "${source_checks[@]}"
-          bash .github/lean_quality/test_shigure_declarations.sh "$audit_dir/libShigureBuildAudit.so"
+            export SHIGURE_CHECKER_SCRIPT="$1/Run.lean"
+            xargs -0 -r lean --run "$1/Run.lean" --compiled --separate-out "$3" < "$2"
+            if [[ -s "$3" ]]; then
+              xargs -0 -r -n 1 -P 2 -t lean --run "$1/Run.lean" --compiled-isolated < "$3"
+            fi
+            if [[ -s "$4" ]]; then
+              xargs -0 -r -n 1 -P 2 -t lean --run "$1/Run.lean" < "$4"
+            fi
+          ' bash "$checker_dir" "$RUNNER_TEMP/shigure-files" "$separate_file" "$audit_dir/source-checks.nul"
+          SHIGURE_CHECKER_DIR="$checker_dir" SHIGURE_CHECKER_SCRIPT="$checker_dir/Run.lean" \
+            bash .github/lean_quality/test_shigure_declarations.sh "$PWD/$plugin_dir/libShigureBuildAudit.so"
+          mv "$audit_dir/verified-manifest.tsv" "$plugin_dir/verified-manifest.tsv"
 
       - name: Audit SHIGURE kernel dependencies
         if: steps.shigure-changes.outputs.run == 'true'
@@ -344,3 +361,14 @@ jobs:
           test "$(grep -v '^[[:space:]]*$' Formal/SHIGURE/AxiomAudit.lean | tail -n 1)" = '#shigure_assert_standard_axioms_only SHIGURE.AxiomAudit'
           lake env lean Formal/SHIGURE/AssertStandardAxiomsTest.lean
           lake env lean Formal/SHIGURE/AxiomAudit.lean
+
+      - name: Save SHIGURE build cache
+        if: >
+          steps.shigure-changes.outputs.run == 'true' &&
+          steps.shigure-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v5
+        with:
+          path: |
+            .lake/build
+            .lake/shigure-audit/verified-manifest.tsv
+          key: ${{ steps.shigure-cache.outputs.cache-primary-key }}

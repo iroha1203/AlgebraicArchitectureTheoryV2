@@ -22,26 +22,46 @@ private partial def checkSyntax (stx : Syntax) : CommandElabM Unit := do
       logErrorAt stx m!"disallowed syntax {value}"
   | _ => pure ()
 
-private def survives (current final : Environment) (name : Name) : Bool :=
-  if final.isImportedConst name then true
-  else
-    match current.checked.get.find? name, final.checked.get.find? name with
-    | some earlier, some later =>
-      earlier.type == later.type && earlier.value? true == later.value? true
-    | _, _ => false
+private unsafe def ptrAddrOfImpl {α : Type u} (a : α) : USize :=
+  ptrAddrUnsafe a
 
-private def transientAxioms (tree : InfoTree) (final : Environment) (found : NameSet) : NameSet :=
-  tree.foldInfo (init := found) fun ctx info found =>
-    if ctx.parentDecl?.any (survives ctx.env final) then found
+@[implemented_by ptrAddrOfImpl]
+private opaque ptrAddrOf {α : Type u} (a : α) : USize := 0
+
+private def survivesChecked (current final : Environment) (name : Name) : Bool :=
+  match current.checked.get.find? name, final.checked.get.find? name with
+  | some earlier, some later =>
+    ptrAddrOf earlier == ptrAddrOf later ||
+      (earlier.type == later.type && earlier.value? true == later.value? true)
+  | _, _ => false
+
+/-- Collect kernel axioms from local declarations in `current` that do not survive unchanged in `final`. -/
+private def collectEnvTransientAxioms (current final : Environment) (found : NameSet) : NameSet :=
+  if ptrAddrOf current == ptrAddrOf final ||
+      ptrAddrOf current.constants.map₂ == ptrAddrOf final.constants.map₂ then
+    found
+  else
+    let temporary := current.constants.foldStage2 (s := #[]) fun acc name earlier =>
+      match final.constants.map₂.find? name with
+      | some later =>
+        if ptrAddrOf earlier == ptrAddrOf later || survivesChecked current final name then acc
+        else acc.push name
+      | none => acc.push name
+    if temporary.isEmpty then found
     else
-      let expressions := match info with
-        | .ofTermInfo term => #[(instantiateMVarsCore ctx.mctx term.expr).1]
-        | .ofTacticInfo tactic => tactic.goalsBefore.toArray.map fun goal =>
-            (instantiateMVarsCore tactic.mctxAfter (.mvar goal)).1
-        | _ => #[]
-      let temporary := (expressions.flatMap Expr.getUsedConstants).filter (!survives ctx.env final ·)
-      let (_, dependencies) := ((temporary.forM CollectAxioms.collect).run ctx.env).run {}
+      let (_, dependencies) := ((temporary.forM CollectAxioms.collect).run current).run {}
       dependencies.axioms.foldl (fun names name => names.insert name) found
+
+private def transientAxioms (trees : PersistentArray InfoTree) (final : Environment) : NameSet := Id.run do
+  let mut seen : Std.HashSet USize := {}
+  seen := seen.insert (ptrAddrOf final)
+  let mut found : NameSet := {}
+  for tree in trees do
+    (seen, found) := tree.foldInfo (init := (seen, found)) fun ctx _ (seen, found) =>
+      let addr := ptrAddrOf ctx.env
+      if seen.contains addr then (seen, found)
+      else (seen.insert addr, collectEnvTransientAxioms ctx.env final found)
+  return found
 
 private def checkTransient (stx : Syntax) : CommandElabM Unit := do
   let final ← getEnv
@@ -49,7 +69,7 @@ private def checkTransient (stx : Syntax) : CommandElabM Unit := do
   if info.trees.any (fun tree =>
       tree.foldInfo (init := false) fun ctx _ found => found || debug.skipKernelTC.get ctx.options) then
     logErrorAt stx "kernel checking was disabled during elaboration"
-  let dependencies := info.trees.foldl (fun names tree => transientAxioms tree final names) ({} : NameSet)
+  let dependencies := transientAxioms info.trees final
   let unexpected := dependencies.toList.filter (!standardAxiom ·)
   unless unexpected.isEmpty do
     let unexplained ← if final.header.isModule then do
