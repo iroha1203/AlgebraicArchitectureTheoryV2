@@ -2,7 +2,19 @@ import Mathlib.AlgebraicGeometry.Morphisms.Flat
 import Formal.SHIGURE.Part2.Descent.Standard
 import Formal.SHIGURE.Part2.Schemes.AffineOverlapRingDiagram
 
-/-! # Ring maps across an affine faithfully flat cover -/
+/-! # Ring maps across an affine faithfully flat cover
+
+## Implementation notes
+
+The comparison is an equivalence on ring maps from an arbitrary affine
+target ring. Applying the B.4 equalizer to individual coefficients
+supplies their preimages. Injectivity of the faithfully flat ring map
+then proves that the preimages preserve the ring operations. This
+packages the operation laws needed by Spec into the equalizer itself.
+A formulation using only A-algebra maps would require a presentation of
+the target as an A-algebra. The general ring-map formulation also
+handles the affine chart maps used to descend the section.
+-/
 
 namespace SHIGURE.SchemeDescent
 
