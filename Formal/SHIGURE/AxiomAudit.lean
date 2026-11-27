@@ -31,8 +31,7 @@ import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionExamples
-import Formal.SHIGURE.Part2.Schemes.RelativeSpecOnStack
-import Formal.SHIGURE.Part2.Schemes.StackAlgebraFromSheaves
+import Formal.SHIGURE.Part2.Schemes.RelativeSpecStackExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
@@ -4659,6 +4658,18 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.QuasiCoherentAlgebraOnStack.relativeSpecOnStack_isGroupoid,
   SchemeDescent.QuasiCoherentAlgebraOnStack.fixedStructureFiber,
   SchemeDescent.QuasiCoherentAlgebraOnStack.relativeSpecOnStack_isFppfStack,
+  SchemeDescent.FiberwiseSections.normalizedSection_comp,
+  SchemeDescent.elementsFiberSection,
+  SchemeDescent.elementsFiberSection_mk,
+  SchemeDescent.elementsFiberEquivDiscrete_obj_as,
+  SchemeDescent.elementsFiberTransport,
+  SchemeDescent.elementsFiberTransport_section,
+  SchemeDescent.QuasiCoherentAlgebraOnStack.fixedStructureFiberRestriction,
+  SchemeDescent.QuasiCoherentAlgebraOnStack.relativeSpecTestPrecompose,
+  SchemeDescent.QuasiCoherentAlgebraOnStack.fixedStructureFiber_naturality,
+  SchemeDescent.identityAffineSectionRepresentation,
+  SchemeDescent.constantTwoSections_not_affinelyRepresented,
+  SchemeDescent.structureAlgebra_fixedFiber_integerToTwo,
   SchemeDescent.overlapRight,
   SchemeDescent.overlapRight_isOpenImmersion,
   SchemeDescent.overlapRight_comp_chart,

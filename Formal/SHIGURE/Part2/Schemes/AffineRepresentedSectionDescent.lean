@@ -28,6 +28,19 @@ def normalizedSection {Y Z : Scheme.{u}} (p : Y ⟶ X) (q : Z ⟶ Y) (r : Z ⟶ 
       (congrArg (fun k => k.op.toLoc) equal)).inv.toNatTrans.app M)
     ((A.restrict q.op.toLoc).app ((F.map p.op.toLoc).toFunctor.obj M) s)
 
+/-- For the actual composite, the normalized section is the restricted
+section transported by the inverse composition comparison. -/
+theorem normalizedSection_comp {Y Z : Scheme.{u}} (p : Y ⟶ X) (q : Z ⟶ Y)
+    (s : (A.fiber (.mk (op Y))).obj ((F.map p.op.toLoc).toFunctor.obj M)) :
+    A.normalizedSection M p q (q ≫ p) rfl s =
+      (A.fiber (.mk (op Z))).map ((F.mapComp p.op.toLoc q.op.toLoc).inv.toNatTrans.app M)
+        ((A.restrict q.op.toLoc).app ((F.map p.op.toLoc).toFunctor.obj M) s) := by
+  have equality : p.op.toLoc ≫ q.op.toLoc = (q ≫ p).op.toLoc := rfl
+  have comparison : F.mapComp' p.op.toLoc q.op.toLoc (q ≫ p).op.toLoc equality =
+      F.mapComp p.op.toLoc q.op.toLoc := F.mapComp'_eq_mapComp p.op.toLoc q.op.toLoc
+  unfold normalizedSection
+  rw [comparison]
+
 /-- Restricting the global section twice gives its actual restriction to the composite. -/
 theorem normalizedSection_global {Y Z : Scheme.{u}} (p : Y ⟶ X) (q : Z ⟶ Y) (r : Z ⟶ X)
     (equal : q ≫ p = r) (s : (A.fiber (.mk (op X))).obj M) :

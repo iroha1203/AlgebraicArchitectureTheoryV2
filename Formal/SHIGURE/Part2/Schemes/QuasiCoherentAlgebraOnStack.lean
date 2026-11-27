@@ -184,7 +184,7 @@ def sectionsFunctor (T : Scheme.{u}) : F.obj (.mk (op T)) ⥤ Type u where
 /-- The unit algebra maps to the direct image by the original scheme map on functions. -/
 def baseAlgebraToDirectImage {S T : Scheme.{u}} (f : S ⟶ T) :
     Under.mk (𝟙 T.sheaf) ⟶ directImageStructure f :=
-  Under.homMk (directImageStructure f).hom (Category.id_comp _)
+  Under.mkIdInitial.to (directImageStructure f)
 
 /-- Pull a section back through the actual Cartesian algebra comparison. -/
 def restrictedSection {S T : Scheme.{u}} (f : S ⟶ T) (N : F.obj (.mk (op T))) (s : C.sections N) :
@@ -319,7 +319,9 @@ theorem pushforwardUnit_directImageMap {R S T : Scheme.{u}} (f : S ⟶ T) (g : R
   funext U
   let V := f ⁻¹ᵁ U.unop
   let W := g ⁻¹ᵁ V
-  change 𝟙 Γ(S, V) ≫ g.appLE V W le_rfl = g.app V ≫ 𝟙 Γ(R, W)
+  change 𝟙 Γ(S, V) ≫ g.appLE V W le_rfl =
+    (baseAlgebraToDirectImage g).right.val.app (op V) ≫ 𝟙 Γ(R, W)
+  rw [baseAlgebraToDirectImage, Under.mkIdInitial_to_right]
   exact (Category.id_comp _).trans ((g.appLE_eq_app).trans (Category.comp_id _).symm)
 
 /-- Restriction of a section over a test scheme corresponds to
@@ -347,26 +349,14 @@ theorem sectionDirectImage_refine {R S T : Scheme.{u}} (f : S ⟶ T) (g : R ⟶ 
 /-- The unit algebra comparison agrees with the identity test scheme. -/
 theorem baseAlgebraToDirectImage_identity (T : Scheme.{u}) :
     baseAlgebraToDirectImage (𝟙 T) = (directImageStructure_id T).inv := by
-  apply Under.UnderMorphism.ext
-  apply Sheaf.hom_ext
-  ext1
-  funext U
-  change (Scheme.Hom.app (𝟙 T) U.unop) = 𝟙 _
-  exact Scheme.Hom.id_app _
+  exact Under.mkIdInitial.hom_ext _ _
 
 /-- The unit algebra maps coherently into the functions of nested tests. -/
 theorem baseAlgebraToDirectImage_comp {R S T : Scheme.{u}} (f : S ⟶ T) (g : R ⟶ S) :
     baseAlgebraToDirectImage f ≫ directImageStructureMap
       (Over.homMk g rfl : Over.mk (g ≫ f) ⟶ Over.mk f) =
-      baseAlgebraToDirectImage (g ≫ f) := by
-  apply Under.UnderMorphism.ext
-  let m := baseAlgebraToDirectImage f ≫ directImageStructureMap
-    (Over.homMk g rfl : Over.mk (g ≫ f) ⟶ Over.mk f)
-  have hm : m.right = (directImageStructure (g ≫ f)).hom := by
-    have eq := Under.w m
-    change 𝟙 T.sheaf ≫ m.right = _ at eq
-    exact (Category.id_comp _).symm.trans eq
-  exact hm
+      baseAlgebraToDirectImage (g ≫ f) :=
+  Under.mkIdInitial.hom_ext _ _
 
 /-- Pullback along the identity uses precisely the unit comparison in
 the pseudofunctor of base structures. -/
@@ -394,6 +384,9 @@ theorem restriction_identity {T : Scheme.{u}} (N : F.obj (.mk (op T))) (s : C.se
     funext U
     let a := (C.transition q).right.val.app U
     let tU := t.right.val.app U
+    change a ≫ tU ≫ 𝟙 (T.sheaf.val.obj U) =
+      ((a ≫ 𝟙 _) ≫ tU) ≫ f.right.val.app U
+    rw [show f.right = (directImageStructure (𝟙 T)).hom from Under.mkIdInitial_to_right _]
     change a ≫ tU ≫ 𝟙 (T.sheaf.val.obj U) =
       ((a ≫ 𝟙 _) ≫ tU) ≫ Scheme.Hom.app (𝟙 T) U.unop
     rw [Scheme.Hom.id_app]

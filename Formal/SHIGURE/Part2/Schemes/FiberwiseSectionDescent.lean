@@ -3,7 +3,18 @@ import Mathlib.CategoryTheory.Sites.Descent.IsStack
 import Mathlib.CategoryTheory.Bicategory.Functor.LocallyDiscrete
 import Mathlib.CategoryTheory.Bicategory.Functor.Cat
 
-/-! # Families of sections on the fibers of a pseudofunctor -/
+/-! # Families of sections on the fibers of a pseudofunctor
+
+## Implementation notes
+
+Each fiber is a mathlib category of elements of a Type-valued functor on
+the original category of structures. The restriction data give the
+maps between those categories of elements, so their arrows keep both
+the underlying structure morphism and its section equation. The
+independent section universe allows the sets of sections to be larger
+than the original sets of structures. The comparison uses the actual
+pseudofunctor descent data on the same family.
+-/
 
 namespace SHIGURE.SchemeDescent
 

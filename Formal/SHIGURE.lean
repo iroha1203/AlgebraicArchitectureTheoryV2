@@ -41,8 +41,7 @@ import Formal.SHIGURE.Part2.Schemes.QuasiCoherentExamples
 import Formal.SHIGURE.Part2.Schemes.QuasiCoherentZariskiStack
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionExamples
-import Formal.SHIGURE.Part2.Schemes.RelativeSpecOnStack
-import Formal.SHIGURE.Part2.Schemes.StackAlgebraFromSheaves
+import Formal.SHIGURE.Part2.Schemes.RelativeSpecStackExamples
 
 /-! # SHIGURE
 

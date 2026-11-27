@@ -56,15 +56,6 @@ def directImageStructure_id (X : Scheme.{u}) :
     directImageStructure (𝟙 X) ≅ Under.mk (𝟙 X.sheaf) :=
   Under.isoMk (Iso.refl _) (by rfl)
 
-/-- The direct image of the source unit is the algebra of functions of
-the actual test object over the target. -/
-def pushforwardAlgebraUnitIso {S T : Scheme.{u}} (f : S ⟶ T) :
-    (pushforwardAlgebra f).obj (Under.mk (𝟙 S.sheaf)) ≅ directImageStructure f :=
-  Under.isoMk (Iso.refl _) (by
-    change ((directImageStructure f).hom ≫ (TopCat.Sheaf.pushforward CommRingCat f.base).map
-      (𝟙 S.sheaf)) ≫ 𝟙 _ = (directImageStructure f).hom
-    rw [Category.comp_id, (TopCat.Sheaf.pushforward CommRingCat f.base).map_id]
-    exact Category.comp_id _)
 
 end
 

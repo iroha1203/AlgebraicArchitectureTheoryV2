@@ -52,13 +52,8 @@ def affineRepresentation {T : Scheme.{u}} (N : F.obj (.mk (op T))) :
     have direct :
         A.normalizedSection N f g (g ≫ f) rfl s =
           (C.sectionsFunctor R).map p
-            (C.restrictedSection g ((F.map f.op.toLoc).toFunctor.obj N) s) := by
-      have c : f.op.toLoc ≫ g.op.toLoc = (g ≫ f).op.toLoc := rfl
-      have coh : F.mapComp' f.op.toLoc g.op.toLoc (g ≫ f).op.toLoc c =
-          F.mapComp f.op.toLoc g.op.toLoc := F.mapComp'_eq_mapComp f.op.toLoc g.op.toLoc
-      unfold FiberwiseSections.normalizedSection
-      rw [coh]
-      rfl
+            (C.restrictedSection g ((F.map f.op.toLoc).toFunctor.obj N) s) :=
+      A.normalizedSection_comp N f g s
     change (C.sectionsOnTestEquiv (g ≫ f) N).symm (A.normalizedSection N f g (g ≫ f) rfl s) =
       (Over.homMk g rfl : Over.mk (g ≫ f) ⟶ Over.mk f) ≫ (C.sectionsOnTestEquiv f N).symm s
     apply E.injective
