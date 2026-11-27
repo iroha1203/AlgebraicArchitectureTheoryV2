@@ -24,6 +24,7 @@ import Formal.SHIGURE.Part1.ReadingExamples
 import Formal.SHIGURE.Part2.AffineFoundations
 import Formal.SHIGURE.Part2.CoefficientDescent
 import Formal.SHIGURE.Part2.CopyingCoalgebra
+import Formal.SHIGURE.Part2.MarkedCharts
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.Realizations.PolynomialCoefficientChange

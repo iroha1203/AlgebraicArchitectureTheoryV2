@@ -62,10 +62,9 @@ def universalMarkedTensor_specializationIso (c : PrimitiveCoefficients sig rank 
   let A := ambient (R := R) sig rank generators choice
   letI : Algebra A S := q.toRingHom.toAlgebra
   let U := universalMarkedTensor (R := R) sig rank generators choice
-  exact PrimitiveCoefficients.tensorIsoOfBasis sig rank (extendStructure A S U)
-    (extendedBasis U (fun _ => Pi.basisFun _ _)) ≪≫
-      eqToIso (congrArg (PrimitiveCoefficients.toTensor sig rank)
-        (universalMarkedTensor_coefficients (R := R) sig rank generators choice c v))
+  exact tensorIsoOfBasisAndCoefficients sig rank (extendStructure A S U)
+    (extendedBasis U (fun _ => Pi.basisFun _ _)) c
+    (universalMarkedTensor_coefficients (R := R) sig rank generators choice c v)
 
 variable {J : Type u} (laws : MarkedPolynomialLaws (R := R) sig J)
 

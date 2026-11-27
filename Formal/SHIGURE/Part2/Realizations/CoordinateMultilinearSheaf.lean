@@ -98,11 +98,13 @@ def coordinateModuleSectionBasis (m : ℕ) (U : X.Opensᵒᵖ) :
     Basis (Fin m) (sectionsRing X U) ((coordinateModuleSheaf X m).val.obj U) :=
   (Pi.basisFun (sectionsRing X U) (Fin m)).map (coordinateModuleSectionIso X m U).toLinearEquiv.symm
 
-private theorem coordinateModuleSectionBasis_in_coordinates (m : ℕ) (U : X.Opensᵒᵖ) (j : Fin m) :
+/-- Applying the coordinate comparison to a basis section gives the corresponding unit vector. -/
+theorem coordinateModuleSectionBasis_in_coordinates (m : ℕ) (U : X.Opensᵒᵖ) (j : Fin m) :
     (coordinateModuleSectionIso X m U).hom (coordinateModuleSectionBasis X m U j) = Pi.basisFun (sectionsRing X U) _ j :=
   (coordinateModuleSectionIso X m U).toLinearEquiv.apply_symm_apply _
 
-private theorem coordinateModuleSectionBasis_restrict (m : ℕ) {U V : X.Opensᵒᵖ} (g : U ⟶ V)
+/-- Restriction carries each standard basis section to the same chosen basis section. -/
+theorem coordinateModuleSectionBasis_restrict (m : ℕ) {U V : X.Opensᵒᵖ} (g : U ⟶ V)
     (j : Fin m) :
     (coordinateModuleSheaf X m).val.map g (coordinateModuleSectionBasis X m U j) = coordinateModuleSectionBasis X m V j := by
   classical

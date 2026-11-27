@@ -213,6 +213,43 @@ def PrimitiveCoefficients.tensorIsoOfBasis (A : TensorStructure R sig)
   structureIsoOfCarrierEquiv (PrimitiveCoefficients.tensorHomOfBasis sig rank A b)
     (fun s => (b s).equivFun) (fun _ => rfl)
 
+
+/-- Changing a coefficient-array presentation by equality leaves every
+standard free carrier map equal to the identity. -/
+theorem PrimitiveCoefficients.toTensor_eqToIso_hom_onSort
+    {c d : PrimitiveCoefficients sig rank R} (equal : c = d) (s : sig.SortType) :
+    (eqToIso (congrArg (PrimitiveCoefficients.toTensor sig rank) equal)).hom.onSort s =
+      LinearMap.id := by
+  subst d
+  rfl
+
+/-- Reconstruct the same standard free realization while exposing its native carrier maps. -/
+def tensorIsoOfBasisAndCoefficients (A : TensorStructure R sig)
+    (b : ∀ s, Basis (Fin (rank s)) R (A.carrier s))
+    (c : PrimitiveCoefficients sig rank R) (h : PrimitiveCoefficients.ofTensor sig rank A b = c) :
+    A ≅ c.toTensor sig rank := by
+  let orig := PrimitiveCoefficients.tensorHomOfBasis sig rank A b
+  refine structureIsoOfCarrierEquiv
+    { onSort := fun s => (b s).equivFun.toLinearMap
+      preservesTotal := ?_
+      preservesQuantity := ?_ } (fun s => (b s).equivFun) (fun _ => rfl)
+  · intro k x
+    let arguments (i : TensorPosition (sig.totalArity k).inputs) := (b i.1).equivFun (x i)
+    have eval := congrArg (fun p : PrimitiveCoefficients sig rank R => (p.toTensor sig rank).total k arguments) h
+    exact (orig.preservesTotal k x).trans eval
+  · intro k x
+    let arguments (i : TensorPosition (sig.quantityArity k).inputs) := (b i.1).equivFun (x i)
+    have eval := congrArg (fun p : PrimitiveCoefficients sig rank R => (p.toTensor sig rank).quantity k arguments) h
+    exact (orig.preservesQuantity k x).trans eval
+
+/-- The native forward map is the coordinate equivalence, independent of the proof relating arrays. -/
+theorem tensorIsoOfBasisAndCoefficients_onSort (A : TensorStructure R sig)
+    (b : ∀ s, Basis (Fin (rank s)) R (A.carrier s))
+    (c : PrimitiveCoefficients sig rank R) (h : PrimitiveCoefficients.ofTensor sig rank A b = c) (s : sig.SortType) :
+    (tensorIsoOfBasisAndCoefficients sig rank A b c h).hom.onSort s =
+      (b s).equivFun.toLinearMap :=
+  rfl
+
 end PrimitiveCoordinates
 
 section CoordinateVariables

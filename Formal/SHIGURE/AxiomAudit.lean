@@ -33,6 +33,7 @@ import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecStackExamples
 import Formal.SHIGURE.Part2.CopyingCoalgebra
+import Formal.SHIGURE.Part2.MarkedCharts
 import Formal.SHIGURE.Part2.SupportProfiles
 import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.Realizations.PolynomialCoefficientChange
@@ -5080,6 +5081,338 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.Examples.twoCopiesLaw_holds,
   SHIGURE.RealizationFamilies.Examples.frobeniusLaw_originalPoints,
   SHIGURE.RealizationFamilies.Examples.frobeniusLaw_not_holds
+]
+
+-- Selected basis charts, their sheaf realizations, and the integer marking.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.BasedMarkedTensor,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.marking_surjective,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.readMarking,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.markingMap_readMarking,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.hom_ext_marking,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.ofCoordinates,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.readCoefficients,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.normalizeIso,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.normalizeIso_marking,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.readCoefficients_ofCoordinates,
+  SHIGURE.RealizationFamilies.BasedMarkedTensor.readMarking_ofCoordinates
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateModulePullbackIso_projection,
+  SHIGURE.RealizationFamilies.coordinateModuleBasisMap,
+  SHIGURE.RealizationFamilies.coordinateModuleBasisMap_projection,
+  SHIGURE.RealizationFamilies.coordinateModulePullbackIso_basis,
+  SHIGURE.RealizationFamilies.schemeUnitPullbackIso,
+  SHIGURE.RealizationFamilies.pullbackUnitMap_coefficient,
+  SHIGURE.RealizationFamilies.coordinateAdjunct_top_apply
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateModuleMatrix_pullback
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixApp,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixApp_apply,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixHom,
+  SHIGURE.RealizationFamilies.coordinateModuleUnitColumn,
+  SHIGURE.RealizationFamilies.coordinateModuleUnitColumn_coordinates,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixHom_column,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixRead,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixRead_hom,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixHom_read,
+  SHIGURE.RealizationFamilies.coordinateModuleMatrixEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateModulePullbackIso
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateModuleSheaf,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionIso,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionIso_apply,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionIso_restrict
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateMultilinearOperation_pullback
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.coordinateMultilinearApp,
+  SHIGURE.RealizationFamilies.coordinateMultilinearApp_coordinates,
+  SHIGURE.RealizationFamilies.coordinateMultilinearFamily,
+  SHIGURE.RealizationFamilies.coordinateMultilinearOperation,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionBasis,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionBasis_in_coordinates,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionBasis_restrict,
+  SHIGURE.RealizationFamilies.coordinateMultilinearRead,
+  SHIGURE.RealizationFamilies.coordinateMultilinearRead_reconstruct,
+  SHIGURE.RealizationFamilies.coordinateModuleSectionBasis_repr,
+  SHIGURE.RealizationFamilies.coordinateMultilinearFamily_read,
+  SHIGURE.RealizationFamilies.coordinateMultilinearOperationEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.freeMultilinearHom_ext
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.FreeSchemePrimitive,
+  SHIGURE.RealizationFamilies.freeSchemePrimitiveCoordinateEquiv,
+  SHIGURE.RealizationFamilies.FreeSchemePrimitive.sectionStructure,
+  SHIGURE.RealizationFamilies.freeSchemePrimitive_globalCoefficients,
+  SHIGURE.RealizationFamilies.freeSchemePrimitive_globalStructureIso
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_surjective,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_no_global_basis,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_cover,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_overlap_open,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_normalize_left,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_normalize_right,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_restrictTwo,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_restrictThree,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_overlap,
+  SHIGURE.RealizationFamilies.integerTwoGeneratorMarking_overlap_rows
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.MarkedBasisChoice,
+  SHIGURE.RealizationFamilies.MarkingCoordinate,
+  SHIGURE.RealizationFamilies.MarkedChartVariable,
+  SHIGURE.RealizationFamilies.markingMatrix,
+  SHIGURE.RealizationFamilies.markingMatrix_selected,
+  SHIGURE.RealizationFamilies.markingMatrix_nonselected,
+  SHIGURE.RealizationFamilies.markingMap,
+  SHIGURE.RealizationFamilies.markingMap_selected,
+  SHIGURE.RealizationFamilies.markingMap_surjective,
+  SHIGURE.RealizationFamilies.universalPrimitiveCoefficients,
+  SHIGURE.RealizationFamilies.universalMarkingMatrix,
+  SHIGURE.RealizationFamilies.universalMarkedTensor,
+  SHIGURE.RealizationFamilies.markedChartEvaluator,
+  SHIGURE.RealizationFamilies.universalMarkingMatrix_eval,
+  SHIGURE.RealizationFamilies.universalPrimitiveCoefficients_eval,
+  SHIGURE.RealizationFamilies.MarkedPolynomialLaws,
+  SHIGURE.RealizationFamilies.markedResidualIdeal,
+  SHIGURE.RealizationFamilies.markedChartAlgebra,
+  SHIGURE.RealizationFamilies.markedResidualIdeal_map,
+  SHIGURE.RealizationFamilies.markedResidualIdeal_le_ker_iff,
+  SHIGURE.RealizationFamilies.markedChartAlgHomEquiv,
+  SHIGURE.RealizationFamilies.markedChartScheme,
+  SHIGURE.RealizationFamilies.markedChartSchemePointEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.markedChartCoordinateEquiv_primitive,
+  SHIGURE.RealizationFamilies.markedChartCoordinateEquiv_marking,
+  SHIGURE.RealizationFamilies.markedChartCoordinatePointEquiv_precomp_primitive,
+  SHIGURE.RealizationFamilies.markedChartCoordinatePointEquiv_precomp_marking
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.primitiveCoordinates_baseChange,
+  SHIGURE.RealizationFamilies.universalMarkedTensor_coefficients,
+  SHIGURE.RealizationFamilies.universalMarkedTensor_specializationIso,
+  SHIGURE.RealizationFamilies.markedChartEvaluator_lawful_iff,
+  SHIGURE.RealizationFamilies.MarkedCoordinatePair,
+  SHIGURE.RealizationFamilies.markedAmbientCoordinateEquiv,
+  SHIGURE.RealizationFamilies.markedAmbientCoordinateEquiv_symm_apply,
+  SHIGURE.RealizationFamilies.LawfulMarkedCoordinates,
+  SHIGURE.RealizationFamilies.markedChartCoordinateEquiv,
+  SHIGURE.RealizationFamilies.markedChartCoordinatePointEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.SchemeMarking,
+  SHIGURE.RealizationFamilies.schemeMarkingMatricesEquiv,
+  SHIGURE.RealizationFamilies.NormalizedSchemeMarking,
+  SHIGURE.RealizationFamilies.normalizedSchemeMarkingEquiv,
+  SHIGURE.RealizationFamilies.normalizedSchemeMarking_selected_sections,
+  SHIGURE.RealizationFamilies.normalizedSchemeMarking_surjective_sections,
+  SHIGURE.RealizationFamilies.NormalizedSchemeMarkedTensor,
+  SHIGURE.RealizationFamilies.normalizedSchemeMarkedTensorCoordinates,
+  SHIGURE.RealizationFamilies.LawfulNormalizedSchemeMarking,
+  SHIGURE.RealizationFamilies.markedChartRealizationEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.markingSignature,
+  SHIGURE.RealizationFamilies.withMarkingOperations,
+  SHIGURE.RealizationFamilies.withMarkingOperations_designated,
+  SHIGURE.RealizationFamilies.universalNamedMarkedTensor
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.markedScalarIso,
+  SHIGURE.RealizationFamilies.markPreservingExtension,
+  SHIGURE.RealizationFamilies.markPreservingExtensionIso
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.Examples.mixedMarkedZeroColumnPoint,
+  SHIGURE.RealizationFamilies.Examples.mixedMarkedNonzeroColumn_rejected
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.LawfulMixedMarkedClasses,
+  SHIGURE.RealizationFamilies.mixedMarkedChartClassEquiv,
+  SHIGURE.RealizationFamilies.mixedMarkedChartUniversal,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPointCoordinates,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_primitive,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_marking,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_primitive_precomp,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_marking_precomp
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_total_pullback,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_quantity_pullback,
+  SHIGURE.RealizationFamilies.mixedMarkedChartPoint_marking_pullback
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.MixedMarkedLaw,
+  SHIGURE.RealizationFamilies.MixedMarkedLaw.holds,
+  SHIGURE.RealizationFamilies.mixedMarkedLawIdeal,
+  SHIGURE.RealizationFamilies.mixedMarkedLawIdeal_le_ker_iff,
+  SHIGURE.RealizationFamilies.mixedMarkedResidualIdeal,
+  SHIGURE.RealizationFamilies.mixedMarkedChartAlgebra,
+  SHIGURE.RealizationFamilies.mixedMarkedChartScheme,
+  SHIGURE.RealizationFamilies.mixedMarkedChart_universal_holds,
+  SHIGURE.RealizationFamilies.mixedMarkedChartAlgHomEquiv,
+  SHIGURE.RealizationFamilies.mixedMarkedChartSchemePointEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.MixedMarkedLaw.holds_iff_of_iso,
+  SHIGURE.RealizationFamilies.namedMarkedCoordinateTensor,
+  SHIGURE.RealizationFamilies.LawfulMixedMarkedCoordinates,
+  SHIGURE.RealizationFamilies.mixedMarkedChartCoordinateEquiv,
+  SHIGURE.RealizationFamilies.LawfulMixedMarkedSchemeTensor,
+  SHIGURE.RealizationFamilies.mixedMarkedChartRealizationEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.universalMarkedTensor_specializationIso_unit,
+  SHIGURE.RealizationFamilies.universalNamedMarkedTensor_specializationIso
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.freeSchemePrimitive_globalStructureIso_onSort,
+  SHIGURE.RealizationFamilies.schemeMarkingGlobalSection,
+  SHIGURE.RealizationFamilies.namedSchemeMarkedStructure,
+  SHIGURE.RealizationFamilies.schemeMarkingGlobalSection_coordinates,
+  SHIGURE.RealizationFamilies.namedSchemeMarkedStructure_coordinateIso
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.NormalizedMarkingMatrices,
+  SHIGURE.RealizationFamilies.normalizedMarkingMatricesEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.operationCoefficient_baseChange
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.multilinearCoefficients,
+  SHIGURE.RealizationFamilies.multilinearOfCoefficients,
+  SHIGURE.RealizationFamilies.multilinearOfCoefficients_basis,
+  SHIGURE.RealizationFamilies.multilinearCoefficients_ofCoefficients,
+  SHIGURE.RealizationFamilies.multilinearOfCoefficients_coefficients,
+  SHIGURE.RealizationFamilies.multilinearOfCoefficients_coordinates,
+  SHIGURE.RealizationFamilies.multilinearCoefficientsEquiv,
+  SHIGURE.RealizationFamilies.freeCarrier,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.toTensor,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.ofTensor,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.ofTensor_toTensor,
+  SHIGURE.RealizationFamilies.multilinearOfCoefficients_free_apply,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.tensorHomOfBasis,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.tensorIsoOfBasis,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.toTensor_eqToIso_hom_onSort,
+  SHIGURE.RealizationFamilies.tensorIsoOfBasisAndCoefficients,
+  SHIGURE.RealizationFamilies.tensorIsoOfBasisAndCoefficients_onSort,
+  SHIGURE.RealizationFamilies.PrimitiveCoordinate,
+  SHIGURE.RealizationFamilies.PrimitiveCoefficients.valuesEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.normalize,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.ofNormalized,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.MarkedIso,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.normalizeIso,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.marking_surjective,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.markingIso_carrier_unique,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.normalize_eq_of_iso,
+  SHIGURE.RealizationFamilies.BasedSchemeMarkedRealization.markedIsoClassEquiv
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.TensorRealization.structureCarrierEquiv,
+  SHIGURE.TensorRealization.tensorShapeEquiv,
+  SHIGURE.TensorRealization.ShapeMapsCommute,
+  SHIGURE.TensorRealization.tensorExpression_natural,
+  SHIGURE.TensorRealization.tensorLaw_holds_iff_of_iso
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.TensorExpression.mapScalars_comp,
+  SHIGURE.TensorLaw.mapScalars_comp
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.tensorShapeIndices,
+  SHIGURE.RealizationFamilies.tensorShapeBasis,
+  SHIGURE.RealizationFamilies.extendShapeBasis,
+  SHIGURE.RealizationFamilies.extendShapeMap_entry,
+  SHIGURE.RealizationFamilies.tensorLawResidualIdeal,
+  SHIGURE.RealizationFamilies.tensorLawResidualIdeal_le_ker_iff
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.moduleMultilinearPushforwardComparison_read,
+  SHIGURE.SchemeDescent.moduleMultilinearPullbackComparison_read,
+  SHIGURE.SchemeDescent.moduleMultilinearOriginalBaseChange_read
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.moduleMultilinearPresheaf,
+  SHIGURE.SchemeDescent.moduleMultilinearPresheaf_map_tprod,
+  SHIGURE.SchemeDescent.MultilinearSectionFamily,
+  SHIGURE.SchemeDescent.MultilinearSectionFamily.toPresheafHom,
+  SHIGURE.SchemeDescent.MultilinearSectionFamily.ofPresheafHom,
+  SHIGURE.SchemeDescent.moduleMultilinearTensor,
+  SHIGURE.SchemeDescent.moduleMultilinearTensorHomEquiv,
+  SHIGURE.SchemeDescent.moduleMultilinearPresheafMap,
+  SHIGURE.SchemeDescent.moduleMultilinearPresheafMap_app_tprod,
+  SHIGURE.SchemeDescent.moduleMultilinearPresheafMap_id,
+  SHIGURE.SchemeDescent.moduleMultilinearPresheafMap_comp,
+  SHIGURE.SchemeDescent.moduleMultilinearTensorMap,
+  SHIGURE.SchemeDescent.moduleMultilinearTensorFunctor
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.MultilinearSectionFamily.pushforward,
+  SHIGURE.SchemeDescent.moduleMultilinearPushforwardComparison,
+  SHIGURE.SchemeDescent.moduleMultilinearPullbackComparison
+]
+
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.moduleTensorPresheaf,
+  SHIGURE.SchemeDescent.moduleSheafTensor,
+  SHIGURE.SchemeDescent.moduleSheafTensorHomEquiv,
+  SHIGURE.SchemeDescent.BilinearSectionFamily,
+  SHIGURE.SchemeDescent.moduleTensorPresheaf_map_tmul,
+  SHIGURE.SchemeDescent.BilinearSectionFamily.toPresheafHom,
+  SHIGURE.SchemeDescent.BilinearSectionFamily.ofPresheafHom,
+  SHIGURE.SchemeDescent.moduleSheafTensorBilinearEquiv
 ]
 
 end SHIGURE.AxiomAudit
