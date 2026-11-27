@@ -54,44 +54,114 @@ private theorem gluedChartSquare {K : Type*} [Category K] {A A' B B' M N : K}
       Iso.hom_inv_id, Category.comp_id]
   rw [Category.assoc, glue, ← Category.assoc, invert, Category.assoc]
 
-set_option maxHeartbeats 350000 in
-private theorem chartRecoveryIso_comm (i j : D.J) :
-    let p := D.f i j
-    let q := overlapRight D i j
-    (Q.map p.op.toLoc).toFunctor.map (chartRecoveryIso D data C i).hom ≫
-      data.hom (p ≫ D.ι i) p q rfl (overlapRight_comp_chart D i j) =
-    (canon D data C).hom (p ≫ D.ι i) p q rfl (overlapRight_comp_chart D i j) ≫
-      (Q.map q.op.toLoc).toFunctor.map (chartRecoveryIso D data C j).hom := by
-  let G := openGluedRestrictionData D data
-  let p := D.f i j
-  let q := overlapRight D i j
-  let N := openGluedRestrictionObject D data C
+private theorem openDataRestrictIso_hom_eq {ι : Type u} {X T : Scheme.{u}} {U : ι → Scheme.{u}}
+    {f : ∀ i, U i ⟶ X} (d : Q.DescentData f) {i j : ι} (base : T ⟶ X)
+    (a : T ⟶ U i) (b : T ⟶ U j) [IsOpenImmersion a] [IsOpenImmersion b]
+    (ha : a ≫ f i = base) (hb : b ≫ f j = base) :
+    (openDataRestrictIso d base a b ha hb).hom =
+      (restrictFunctorIsoPullback a).hom.app (d.obj i).obj ≫
+      (quasiCoherentModulesProperty.prop (.mk (op T))).ι.map (d.hom base a b ha hb) ≫
+      (restrictFunctorIsoPullback b).inv.app (d.obj j).obj := rfl
+
+private theorem ofModule_transition_hom (D : Scheme.GlueData.{u}) (M : D.glued.Modules) (i j : D.J) :
+    ((ModuleGluingData.ofModule M).transition i j).hom =
+      (restrictFunctorComp (D.f i j) (D.ι i)).inv.app M ≫
+      (restrictFunctorCongr (overlapRight_comp_chart D i j).symm).hom.app M ≫
+      (restrictFunctorComp (overlapRight D i j) (D.ι j)).hom.app M := by
+  simp only [ModuleGluingData.ofModule, Iso.trans_hom, Iso.symm_hom, Iso.app_hom, Iso.app_inv]
+
+private theorem assoc4_left {K : Type*} [Category K] {A B E F G : K}
+    (u : A ⟶ B) (v : B ⟶ E) (w : E ⟶ F) (x : F ⟶ G) :
+    (u ≫ v ≫ w) ≫ x = u ≫ v ≫ w ≫ x := by
+  simp only [Category.assoc]
+
+private theorem openCanonicalComparison_exact {ι : Type u} {X T : Scheme.{u}} {U : ι → Scheme.{u}}
+    {f : ∀ i, U i ⟶ X} [∀ i, IsOpenImmersion (f i)] (i j : ι) (p : T ⟶ U i) (q : T ⟶ U j)
+    [IsOpenImmersion p] [IsOpenImmersion q]
+    (hq : q ≫ f j = p ≫ f i) (P : Q.obj (.mk (op X))) :
+    (restrictFunctor p).map ((restrictFunctorIsoPullback (f i)).hom.app P.obj) ≫
+      (openDataRestrictIso ((Q.toDescentData f).obj P) (p ≫ f i) p q rfl hq).hom =
+    ((restrictFunctorComp p (f i)).inv.app P.obj ≫
+      (restrictFunctorCongr hq.symm).hom.app P.obj ≫
+      (restrictFunctorComp q (f j)).hom.app P.obj) ≫
+      (restrictFunctor q).map ((restrictFunctorIsoPullback (f j)).hom.app P.obj) := by
+  rw [openDataRestrictIso_hom_eq, assoc4_left]
+  have h0 := openCanonicalComparison (f := f) i j p q hq.symm P
+  exact (congrArg (fun hb =>
+    (restrictFunctor p).map ((restrictFunctorIsoPullback (f i)).hom.app P.obj) ≫
+      (restrictFunctorIsoPullback p).hom.app ((pullback (f i)).obj P.obj) ≫
+      (quasiCoherentModulesProperty.prop (.mk (op T))).ι.map
+        ((DescentData.ofObj (F := quasiCoherentModulesPseudofunctor) (f := f) P).hom
+          (p ≫ f i) p q rfl hb) ≫
+      (restrictFunctorIsoPullback q).inv.app ((pullback (f j)).obj P.obj))
+    (Subsingleton.elim hq hq.symm.symm)).trans h0
+
+private theorem chartRecovery_core {ι : Type u} {X T : Scheme.{u}} {U : ι → Scheme.{u}}
+    {f : ∀ i, U i ⟶ X} [∀ i, IsOpenImmersion (f i)] (data : Q.DescentData f)
+    (N : Q.obj (.mk (op X))) {i j : ι} (p : T ⟶ U i) (q : T ⟶ U j)
+    [IsOpenImmersion p] [IsOpenImmersion q] (hq : q ≫ f j = p ≫ f i)
+    (mi : N.obj.restrict (f i) ⟶ (data.obj i).obj)
+    (mj : N.obj.restrict (f j) ⟶ (data.obj j).obj)
+    (ci : ((Q.toDescentData f).obj N).obj i ⟶ data.obj i)
+    (cj : ((Q.toDescentData f).obj N).obj j ⟶ data.obj j)
+    (hci : (quasiCoherentModulesProperty.prop (.mk (op (U i)))).ι.map ci =
+      ((restrictFunctorIsoPullback (f i)).app N.obj).inv ≫ mi)
+    (hcj : (quasiCoherentModulesProperty.prop (.mk (op (U j)))).ι.map cj =
+      ((restrictFunctorIsoPullback (f j)).app N.obj).inv ≫ mj)
+    (e : (N.obj.restrict (f i)).restrict p ⟶ (N.obj.restrict (f j)).restrict q)
+    (he : e = (restrictFunctorComp p (f i)).inv.app N.obj ≫
+      (restrictFunctorCongr hq.symm).hom.app N.obj ≫
+      (restrictFunctorComp q (f j)).hom.app N.obj)
+    (glue : (restrictFunctor p).map mi ≫ (openDataRestrictIso data (p ≫ f i) p q rfl hq).hom =
+      e ≫ (restrictFunctor q).map mj) :
+    (Q.map p.op.toLoc).toFunctor.map ci ≫ data.hom (p ≫ f i) p q rfl hq =
+    ((Q.toDescentData f).obj N).hom (p ≫ f i) p q rfl hq ≫ (Q.map q.op.toLoc).toFunctor.map cj := by
+  subst e
   let A := restrictFunctor p
   let B := restrictFunctor q
-  let a := (restrictFunctorIsoPullback (D.ι i)).app N.obj
-  let b := (restrictFunctorIsoPullback (D.ι j)).app N.obj
-  let m := (G.chartIso C i).hom
-  let n := (G.chartIso C j).hom
-  let h := (openDataRestrictIso (canon D data C) (p ≫ D.ι i) p q rfl
-    (overlapRight_comp_chart D i j)).hom
-  let e := ((ModuleGluingData.ofModule N.obj).transition i j).hom
-  let t := (G.transition i j).hom
-  have canonical : A.map a.hom ≫ h = e ≫ B.map b.hom :=
-    openCanonicalComparison (f := D.ι) i j p q (overlapRight_comp_chart D i j).symm N
-  have glue : A.map m ≫ t = e ≫ B.map n := G.chartIso_transition C i j
-  have leftMap : A.map (a.inv ≫ m) = (A.mapIso a).inv ≫ A.map m := A.map_comp _ _
-  have rightMap : B.map (b.inv ≫ n) = (B.mapIso b).inv ≫ B.map n := B.map_comp _ _
-  have compare := gluedChartSquare (A.mapIso a) (B.mapIso b) (A.map m) (B.map n) e h t
+  let a := (restrictFunctorIsoPullback (f i)).app N.obj
+  let b := (restrictFunctorIsoPullback (f j)).app N.obj
+  let h := (openDataRestrictIso ((Q.toDescentData f).obj N) (p ≫ f i) p q rfl hq).hom
+  let t := (openDataRestrictIso data (p ≫ f i) p q rfl hq).hom
+  let e' := (restrictFunctorComp p (f i)).inv.app N.obj ≫
+      (restrictFunctorCongr hq.symm).hom.app N.obj ≫
+      (restrictFunctorComp q (f j)).hom.app N.obj
+  have canonical : (A.mapIso a).hom ≫ h = e' ≫ (B.mapIso b).hom :=
+    openCanonicalComparison_exact i j p q hq N
+  have leftMap : A.map (a.inv ≫ mi) = (A.mapIso a).inv ≫ A.map mi := A.map_comp _ _
+  have rightMap : B.map (b.inv ≫ mj) = (B.mapIso b).inv ≫ B.map mj := B.map_comp _ _
+  have compare := gluedChartSquare (A.mapIso a) (B.mapIso b) (A.map mi) (B.map mj) e' h t
     canonical glue
-  have square : A.map (a.inv ≫ m) ≫ t = h ≫ B.map (b.inv ≫ n) :=
+  have square : A.map (a.inv ≫ mi) ≫ t = h ≫ B.map (b.inv ≫ mj) :=
     (congrArg (· ≫ t) leftMap).trans (compare.trans (congrArg (h ≫ ·) rightMap.symm))
-  apply (openDescentHom_comm_iff (D₁ := canon D data C) (D₂ := data)
-    (p ≫ D.ι i) p q rfl (overlapRight_comp_chart D i j)
-    (chartRecoveryIso D data C i).hom (chartRecoveryIso D data C j).hom).2
-  rw [chartRecoveryHom, chartRecoveryHom]
+  apply (openDescentHom_comm_iff (D₁ := (Q.toDescentData f).obj N) (D₂ := data)
+    (p ≫ f i) p q rfl hq ci cj).2
+  rw [hci, hcj]
   exact square
 
-set_option maxHeartbeats 450000 in
+private theorem chartRecoveryIso_comm (i j : D.J) :
+    (Q.map (D.f i j).op.toLoc).toFunctor.map (chartRecoveryIso D data C i).hom ≫
+      data.hom (D.f i j ≫ D.ι i) (D.f i j) (overlapRight D i j) rfl (overlap_isPullback D i j).w.symm =
+    (canon D data C).hom (D.f i j ≫ D.ι i) (D.f i j) (overlapRight D i j) rfl (overlap_isPullback D i j).w.symm ≫
+      (Q.map (overlapRight D i j).op.toLoc).toFunctor.map (chartRecoveryIso D data C j).hom := by
+  have hq : (overlap_isPullback D i j).w.symm = overlapRight_comp_chart D i j := Subsingleton.elim _ _
+  exact (congrArg (fun h =>
+    (Q.map (D.f i j).op.toLoc).toFunctor.map (chartRecoveryIso D data C i).hom ≫
+      data.hom (D.f i j ≫ D.ι i) (D.f i j) (overlapRight D i j) rfl h =
+    (canon D data C).hom (D.f i j ≫ D.ι i) (D.f i j) (overlapRight D i j) rfl h ≫
+      (Q.map (overlapRight D i j).op.toLoc).toFunctor.map (chartRecoveryIso D data C j).hom) hq).mpr
+    (chartRecovery_core data (openGluedRestrictionObject D data C) (D.f i j) (overlapRight D i j)
+      (overlapRight_comp_chart D i j)
+      ((openGluedRestrictionData D data).chartIso C i).hom
+      ((openGluedRestrictionData D data).chartIso C j).hom
+      (chartRecoveryIso D data C i).hom
+      (chartRecoveryIso D data C j).hom
+      (chartRecoveryHom D data C i)
+      (chartRecoveryHom D data C j)
+      ((ModuleGluingData.ofModule (openGluedRestrictionObject D data C).obj).transition i j).hom
+      (ofModule_transition_hom D (openGluedRestrictionObject D data C).obj i j)
+      ((openGluedRestrictionData D data).chartIso_transition C i j))
+
 /-- The actual compatible-section gluing recovers the full descent datum
 on the chosen scheme gluing. -/
 def openGluedRestrictionDescentIso : canon D data C ≅ data :=
