@@ -214,7 +214,7 @@ def extendedBasis (A : TensorStructure R sig) (basis : ∀ s, Basis (Fin (rank s
 
 /-- Reading a primitive on basis vectors after scalar extension extends
 its original coefficient by the ring map. -/
-private theorem operationCoefficient_baseChange {a : Arity sig.SortType} (A : TensorStructure R sig)
+theorem operationCoefficient_baseChange {a : Arity sig.SortType} (A : TensorStructure R sig)
     (basis : ∀ s, Basis (Fin (rank s)) R (A.carrier s)) (op : TensorOperation R A.carrier a)
     (idx : ∀ i : TensorPosition a.inputs, Fin (rank i.1)) (j : Fin (rank a.output)) :
     (extendedBasis (S := S) A basis a.output).repr
