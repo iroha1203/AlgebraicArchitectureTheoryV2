@@ -8,8 +8,11 @@ import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionDescent
 
 A test object belongs to the category of elements of the base
 pseudofunctor. Its algebra is recorded by its affine-open presentation,
-the input to B.7. The test-arrow transition is adjoint to the map of
-pulled-back algebras. Composition of direct images keeps the original
+so B.7 can form the relative spectrum directly on every test scheme.
+Starting from the original algebra sheaf is also supported: `ofSheaves`
+extracts the affine-open presentation by localization and transports
+the original transitions through the reconstruction isomorphism.
+The test-arrow transition is adjoint to the map of pulled-back algebras. Composition of direct images keeps the original
 maps on functions, and the Cartesian condition expresses the pullback
 isomorphism for the algebra. This records the coherent algebra data
 before constructing the representing scheme and comparing its sections.

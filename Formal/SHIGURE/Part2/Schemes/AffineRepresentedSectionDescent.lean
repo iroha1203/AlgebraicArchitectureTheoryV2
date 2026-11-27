@@ -52,11 +52,7 @@ theorem normalizedSection_global {Y Z : Scheme.{u}} (p : Y ⟶ X) (q : Z ⟶ Y) 
   have hc : P.map c.hom ((A.restrict (q ≫ p).op.toLoc).app M s) =
       (A.restrict q.op.toLoc).app ((F.map p.op.toLoc).toFunctor.obj M) ((A.restrict p.op.toLoc).app M s) :=
     A.restrict_comp p.op.toLoc q.op.toLoc M s
-  have eq : p.op.toLoc ≫ q.op.toLoc = (q ≫ p).op.toLoc := rfl
-  have composition : F.mapComp' p.op.toLoc q.op.toLoc (q ≫ p).op.toLoc eq =
-      F.mapComp p.op.toLoc q.op.toLoc := F.mapComp'_eq_mapComp p.op.toLoc q.op.toLoc
-  unfold normalizedSection
-  rw [composition]
+  rw [A.normalizedSection_comp]
   exact (congrArg (P.map c.inv) hc).symm.trans
     (FunctorToTypes.map_inv_map_hom_apply P c _)
 

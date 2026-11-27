@@ -4670,6 +4670,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.identityAffineSectionRepresentation,
   SchemeDescent.constantTwoSections_not_affinelyRepresented,
   SchemeDescent.structureAlgebra_fixedFiber_integerToTwo,
+  SchemeDescent.affineLine_fixedFiber_zero_one_after_reduction,
   SchemeDescent.overlapRight,
   SchemeDescent.overlapRight_isOpenImmersion,
   SchemeDescent.overlapRight_comp_chart,
