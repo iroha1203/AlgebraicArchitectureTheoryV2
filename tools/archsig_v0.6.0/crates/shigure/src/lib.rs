@@ -10,5 +10,6 @@ pub mod solver;
 
 pub use solver::{
     solve_artin_task, solve_atlas_task, solve_diagnostics_task, solve_diagram_task,
-    solve_lift_task, solve_path_task, solve_transfer_task,
+    solve_lift_task, solve_occurrence_task, solve_partial_task, solve_path_task,
+    solve_transfer_task,
 };

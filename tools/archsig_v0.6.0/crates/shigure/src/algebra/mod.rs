@@ -73,9 +73,9 @@ pub use linear::{
     solve_polynomial_system_q,
 };
 pub use partition::{
-    BaseReading, DEFAULT_MAX_SET_PARTITIONS, PartialOpTable, PartitionRefinementResult,
-    RefinementInput, SeparatingContext, SeparatingWitness, enumerate_set_partitions,
-    partition_refines, refine_partition,
+    BaseReading, DEFAULT_MAX_SET_PARTITIONS, PartialOpTable, PartialRelTable,
+    PartitionRefinementResult, RefinementInput, SeparatingContext, SeparatingWitness,
+    enumerate_set_partitions, partition_refines, refine_partition,
 };
 pub use poly::{AlgebraError, ExprBindings, Monomial, Poly, VarOrder};
 pub use quotient::{

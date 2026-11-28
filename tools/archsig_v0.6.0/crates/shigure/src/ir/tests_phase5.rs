@@ -870,7 +870,7 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         Err(ValidationError::EmptyName { .. })
     ));
 
-    let mut let_bound = base_open;
+    let mut let_bound = base_open.clone();
     let_bound.positive_or_law.conclusion = PartialFormula::Eq(
         PartialTerm::Let {
             var: "x".into(),
@@ -880,4 +880,102 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         PartialTerm::Const("a0".into()),
     );
     assert!(validate_partial_task(make_open_task(let_bound)).is_ok());
+
+    let mut empty_var_ref = base_open.clone();
+    empty_var_ref.positive_or_law.conclusion =
+        PartialFormula::Eq(PartialTerm::Var("".into()), PartialTerm::Const("a0".into()));
+    assert!(matches!(
+        validate_partial_task(make_open_task(empty_var_ref)),
+        Err(ValidationError::EmptyName { .. })
+    ));
+
+    let mut empty_let_binder = base_open;
+    empty_let_binder.positive_or_law.conclusion = PartialFormula::Eq(
+        PartialTerm::Let {
+            var: "".into(),
+            bound: Box::new(PartialTerm::Const("a0".into())),
+            body: Box::new(PartialTerm::Const("a0".into())),
+        },
+        PartialTerm::Const("a0".into()),
+    );
+    assert!(matches!(
+        validate_partial_task(make_open_task(empty_let_binder)),
+        Err(ValidationError::EmptyName { .. })
+    ));
+
+    // direction_t 列数が 0 のとき非零 x0 は拒否され、零 x0 は受理される
+    use super::partial::AffinePartialPresentation;
+    let make_aff = |x0_val: i64| PartialTaskSpec {
+        name: "aff_zero_tcols".into(),
+        representation: PartialRepresentation::Affine(AffinePartialPresentation {
+            coeff_domain: CoeffDomain::Z,
+            coord_names: vec!["p".into()],
+            x0: vec![ScalarLit::int(x0_val)],
+            direction_t: vec![vec![]],
+            background_rows: vec![],
+            record_rows: vec![],
+            eval_equations: vec![],
+        }),
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(validate_partial_task(make_aff(0)).is_ok());
+    assert!(matches!(
+        validate_partial_task(make_aff(1)),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // Affine + 非空 eval_laws は黙殺せず ConversionError で拒否
+    use super::occurrence::OccurrenceReadingSpec;
+    use super::partial::{PartialFormula as PF, PartialTerm as PT};
+    let mut aff_with_laws = make_aff(0);
+    aff_with_laws.eval_laws.push(PartialEvalLawSpec {
+        name: "l".into(),
+        antecedent: None,
+        conclusion: PF::Eq(PT::Const("0".into()), PT::Const("0".into())),
+        is_required_law: true,
+    });
+    assert!(matches!(
+        validate_partial_task(aff_with_laws),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // base_readings と explicit_contexts を横断する同名読取りは拒否
+    let dup_reading = OccurrenceTaskSpec {
+        name: "dup_reading".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![],
+        pred_records: vec![],
+        base_readings: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), Some("0".into()))]),
+        }],
+        context_closed_17_5: false,
+        explicit_contexts: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), Some("1".into()))]),
+        }],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: sample_prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_occurrence_task(dup_reading),
+        Err(ValidationError::DuplicateDecl { .. })
+    ));
 }

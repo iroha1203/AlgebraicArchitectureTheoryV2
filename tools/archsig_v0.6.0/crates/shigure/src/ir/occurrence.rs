@@ -361,12 +361,20 @@ pub fn validate_occurrence_task(
         }
     }
 
-    let mut seen_base_readings = BTreeSet::new();
+    let mut seen_reading_names = BTreeSet::new();
     for r in &spec.base_readings {
         require_non_empty(&r.name, "occurrence.reading.name")?;
-        if !seen_base_readings.insert(r.name.clone()) {
+        if r.name.starts_with("__initial_readout_") {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "reading `{}` cannot use reserved prefix `__initial_readout_`",
+                    r.name
+                ),
+            });
+        }
+        if !seen_reading_names.insert(r.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
-                kind: "occurrence_base_reading",
+                kind: "occurrence_reading",
                 name: r.name.clone(),
             });
         }
@@ -396,12 +404,19 @@ pub fn validate_occurrence_task(
         }
     }
 
-    let mut seen_explicit_contexts = BTreeSet::new();
     for r in &spec.explicit_contexts {
         require_non_empty(&r.name, "occurrence.explicit_context.name")?;
-        if !seen_explicit_contexts.insert(r.name.clone()) {
+        if r.name.starts_with("__initial_readout_") {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "explicit_context `{}` cannot use reserved prefix `__initial_readout_`",
+                    r.name
+                ),
+            });
+        }
+        if !seen_reading_names.insert(r.name.clone()) {
             return Err(ValidationError::DuplicateDecl {
-                kind: "occurrence_explicit_context",
+                kind: "occurrence_reading",
                 name: r.name.clone(),
             });
         }

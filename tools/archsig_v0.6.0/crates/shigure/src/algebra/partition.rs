@@ -26,6 +26,14 @@ pub struct PartialOpTable {
     pub entries: BTreeMap<Vec<String>, Option<String>>,
 }
 
+/// 関係の部分表（設定 17.5 では全入力組の真偽が指定される）。
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PartialRelTable {
+    pub name: String,
+    pub arg_sorts: Vec<String>,
+    pub entries: BTreeMap<Vec<String>, bool>,
+}
+
 /// 二つの出現を区別する分離文脈木。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SeparatingContext {
@@ -34,6 +42,12 @@ pub enum SeparatingContext {
     },
     Base {
         reading_name: String,
+    },
+    Rel {
+        rel_name: String,
+        arg_index: usize,
+        prefix_args: Vec<String>,
+        suffix_args: Vec<String>,
     },
     OpDomain {
         op_name: String,
@@ -56,6 +70,17 @@ impl SeparatingContext {
         match self {
             SeparatingContext::FixedIdentity { .. } => var.to_owned(),
             SeparatingContext::Base { reading_name } => format!("{reading_name}({var})"),
+            SeparatingContext::Rel {
+                rel_name,
+                prefix_args,
+                suffix_args,
+                ..
+            } => {
+                let mut args = prefix_args.clone();
+                args.push(var.to_owned());
+                args.extend(suffix_args.iter().cloned());
+                format!("{rel_name}({})", args.join(", "))
+            }
             SeparatingContext::OpDomain {
                 op_name,
                 prefix_args,
@@ -90,11 +115,37 @@ impl SeparatingContext {
         readings: &[BaseReading],
         ops: &[PartialOpTable],
     ) -> Option<Option<String>> {
+        self.evaluate_with_rels(elem, readings, ops, &[])
+    }
+
+    /// 関係表を含む文脈評価を計算する。
+    pub fn evaluate_with_rels(
+        &self,
+        elem: &str,
+        readings: &[BaseReading],
+        ops: &[PartialOpTable],
+        rels: &[PartialRelTable],
+    ) -> Option<Option<String>> {
         match self {
             SeparatingContext::FixedIdentity { .. } => Some(Some(elem.to_owned())),
             SeparatingContext::Base { reading_name } => {
                 let r = readings.iter().find(|r| r.name == *reading_name)?;
                 r.values.get(elem).cloned()
+            }
+            SeparatingContext::Rel {
+                rel_name,
+                prefix_args,
+                suffix_args,
+                ..
+            } => {
+                let rel = rels.iter().find(|r| r.name == *rel_name)?;
+                let mut full_args = Vec::with_capacity(prefix_args.len() + 1 + suffix_args.len());
+                full_args.extend(prefix_args.iter().cloned());
+                full_args.push(elem.to_owned());
+                full_args.extend(suffix_args.iter().cloned());
+                rel.entries
+                    .get(&full_args)
+                    .map(|&holds| Some(if holds { "true" } else { "false" }.to_owned()))
             }
             SeparatingContext::OpDomain {
                 op_name,
@@ -125,7 +176,7 @@ impl SeparatingContext {
                 full_args.push(elem.to_owned());
                 full_args.extend(suffix_args.iter().cloned());
                 match op.entries.get(&full_args)? {
-                    Some(next_elem) => inner.evaluate(next_elem, readings, ops),
+                    Some(next_elem) => inner.evaluate_with_rels(next_elem, readings, ops, rels),
                     None => Some(None),
                 }
             }
@@ -140,6 +191,7 @@ pub struct RefinementInput {
     pub fixed_sorts: BTreeSet<String>,
     pub base_readings: Vec<BaseReading>,
     pub ops: Vec<PartialOpTable>,
+    pub rels: Vec<PartialRelTable>,
     pub max_iterations: usize,
 }
 
@@ -164,6 +216,8 @@ pub struct PartitionRefinementResult {
     pub iterations: usize,
     pub all_witnesses_verified: bool,
 }
+
+type RelReadingsBySort = BTreeMap<String, Vec<(SeparatingContext, BTreeMap<String, bool>)>>;
 
 /// 設定 17.5 の反復細分を実行し、文脈同値 $\approx_{\mathcal{V}}$ と分離文脈を構成する。
 pub fn refine_partition(
@@ -233,6 +287,65 @@ pub fn refine_partition(
         }
     }
 
+    // 関係表のアリティ・要素所属検査と 1 座標関係読取りの構築（設定 17.5 第1項）
+    let mut rel_readings_by_sort: RelReadingsBySort = BTreeMap::new();
+    for rel in &input.rels {
+        for s in &rel.arg_sorts {
+            if !sort_sets.contains_key(s.as_str()) {
+                return Err(AlgebraError::UnknownVariable { name: s.clone() });
+            }
+        }
+        for args in rel.entries.keys() {
+            if args.len() != rel.arg_sorts.len() {
+                return Err(AlgebraError::OutOfScope {
+                    detail: format!(
+                        "relation `{}` entry arity mismatch: expected {}, got {}",
+                        rel.name,
+                        rel.arg_sorts.len(),
+                        args.len()
+                    ),
+                });
+            }
+            for (arg, sort_name) in args.iter().zip(&rel.arg_sorts) {
+                if !sort_sets[sort_name.as_str()].contains(arg.as_str()) {
+                    return Err(AlgebraError::UnknownVariable { name: arg.clone() });
+                }
+            }
+        }
+        for (arg_idx, target_sort) in rel.arg_sorts.iter().enumerate() {
+            let fixed_combos = enumerate_fixed_arg_combos(&input.sorts, &rel.arg_sorts, arg_idx)?;
+            for (prefix, suffix) in fixed_combos {
+                let mut val_map = BTreeMap::new();
+                for e in &input.sorts[target_sort] {
+                    let mut full_args = prefix.clone();
+                    full_args.push(e.clone());
+                    full_args.extend(suffix.iter().cloned());
+                    let &holds =
+                        rel.entries
+                            .get(&full_args)
+                            .ok_or_else(|| AlgebraError::OutOfScope {
+                                detail: format!(
+                                    "relation `{}` missing entry for ({}) in setting 17.5",
+                                    rel.name,
+                                    full_args.join(", ")
+                                ),
+                            })?;
+                    val_map.insert(e.clone(), holds);
+                }
+                let ctx = SeparatingContext::Rel {
+                    rel_name: rel.name.clone(),
+                    arg_index: arg_idx,
+                    prefix_args: prefix,
+                    suffix_args: suffix,
+                };
+                rel_readings_by_sort
+                    .entry(target_sort.clone())
+                    .or_default()
+                    .push((ctx, val_map));
+            }
+        }
+    }
+
     // 各要素の現在クラス ID を構築する（分離文脈木は下の `pair_sep` で管理する）。
     let mut class_of: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
 
@@ -250,6 +363,13 @@ pub fn refine_partition(
             for r in input.base_readings.iter().filter(|r| r.sort == *s_name) {
                 sig.push(Some(r.values.get(e).cloned().flatten()));
             }
+            if let Some(rel_list) = rel_readings_by_sort.get(s_name) {
+                for (_, val_map) in rel_list {
+                    sig.push(Some(Some(
+                        if val_map[e] { "true" } else { "false" }.to_owned(),
+                    )));
+                }
+            }
             let cid = if let Some(&existing) = sig_to_cid.get(&sig) {
                 existing
             } else {
@@ -263,7 +383,7 @@ pub fn refine_partition(
         class_of.insert(s_name.clone(), elem_cid);
     }
 
-    // 各 sort で初期分割が 2 クラス以上なら、分離する基本読取りを記録した `pair_sep` を構築する。
+    // 各 sort で初期分割が 2 クラス以上なら、分離する基本読取り/関係読取りを記録した `pair_sep` を構築する。
     let mut pair_sep: BTreeMap<(String, String, String), SeparatingContext> = BTreeMap::new();
     for (s_name, elems) in &input.sorts {
         let is_fixed = input.fixed_sorts.contains(s_name);
@@ -292,6 +412,11 @@ pub fn refine_partition(
                             reading_name: r.name.clone(),
                         },
                     );
+                } else if let Some((ctx, _)) = rel_readings_by_sort
+                    .get(s_name)
+                    .and_then(|list| list.iter().find(|(_, vm)| vm[a] != vm[b]))
+                {
+                    pair_sep.insert(ordered_key(s_name, a, b), ctx.clone());
                 }
             }
         }
@@ -327,7 +452,6 @@ pub fn refine_partition(
                     let mut new_sig_map: BTreeMap<(usize, Option<usize>), usize> = BTreeMap::new();
                     let mut new_elem_cid: BTreeMap<String, usize> = BTreeMap::new();
                     let mut rep_by_new_cid: Vec<String> = Vec::new();
-                    let mut key_by_new_cid: Vec<(usize, Option<usize>)> = Vec::new();
 
                     for e in target_elems {
                         let old_cid = class_of[target_sort][e];
@@ -354,7 +478,6 @@ pub fn refine_partition(
                             let id = rep_by_new_cid.len();
                             new_sig_map.insert(sig, id);
                             rep_by_new_cid.push(e.clone());
-                            key_by_new_cid.push(sig);
                             id
                         };
                         new_elem_cid.insert(e.clone(), nid);
@@ -456,8 +579,8 @@ pub fn refine_partition(
                     continue;
                 };
                 let (lhs_value, rhs_value, verified) = match (
-                    ctx.evaluate(a, &input.base_readings, &input.ops),
-                    ctx.evaluate(b, &input.base_readings, &input.ops),
+                    ctx.evaluate_with_rels(a, &input.base_readings, &input.ops, &input.rels),
+                    ctx.evaluate_with_rels(b, &input.base_readings, &input.ops, &input.rels),
                 ) {
                     (Some(va), Some(vb)) => (va.clone(), vb.clone(), va != vb),
                     _ => (None, None, false),
