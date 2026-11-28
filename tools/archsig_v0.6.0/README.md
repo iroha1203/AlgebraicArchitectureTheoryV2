@@ -26,7 +26,7 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
-| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合/syzygy/Artin 商/有限加群コホモロジー計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測/変形障害/Artin 試験/診断層/Atlas 細分化エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合/syzygy/Artin 商/有限加群コホモロジー/出現同定/三値評価/SNF/多源支持計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測/変形障害/Artin 試験/診断層/Atlas 細分化/出現同定/部分提示/改訂/多源衝突エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
 下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。
@@ -89,7 +89,8 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
 
 SHIGURE 宣言を含む入力では、`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
 `shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・
-`shigure_observations`・`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas` の 13 種別の問いを実行できます。
+`shigure_observations`・`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas`・
+`shigure_occurrence`・`shigure_partial`・`shigure_revision`・`shigure_multisource` の 17 種別の問いを実行できます。
 
 ```bash
 archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-ledger/ledger.atoms.json \
@@ -204,6 +205,47 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase4
 3 つ目の例は W1 の $\mathbb{Z}\to\mathbb{F}_2$ 非 flat 対比・W2 の 5 stratum 層別と Mayer–Vietoris 合流・D1 の 4 probe 次元実現を返します（全件 `established`, 終了コード 0）。
 4 つ目の例は H8 三角形の可解修復（`solv` が `established`）と W3 の 8 点細分化（Condition C0–C6 全合格・全修復 fiber 同型・F7/H12 反例、非移送反例を含むため `w3` が `refuted`）を返します（終了コード 1）。
 5 つ目の例は未観測座標依存（`unobserved_dependency`）・平方零違反（`square_zero_condition_violated`）・非 Noetherian 無限表示（`non_noetherian_infinite_presentation`）を理由付き `undetermined`（`status = "partial"`, 終了コード 2）として返します。
+
+出現同定・部分提示・改訂・多源衝突は次のように実行します。
+
+```bash
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/occurrence.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.archmap.json \
+  --ask 'quot=shigure_occurrence(OccAC3.Prop17_8Quotient)' \
+  --ask 'attr=shigure_occurrence(OccAC3.Ex17_12AttrOk)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/partial.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.archmap.json \
+  --ask 'kl=shigure_partial(PartAC4.KleeneStrictLet, snapshot=snap1)' \
+  --ask 'mus=shigure_partial(PartAC4.Ex18_2Mus)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/revision.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.archmap.json \
+  --ask 'cone=shigure_revision(RevAC5.Ex19_5ConeSpan, snapshot=snap1)' \
+  --ask 'snf=shigure_revision(RevAC5.Thm19_7SnfZ2Ok)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/multisource.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.archmap.json \
+  --ask 'supp=shigure_multisource(MultiAC6.Ex19_13MinimalSupports)' \
+  --ask 'conf=shigure_multisource(MultiAC6.Thm19_9ThreeWayConflict)'
+
+archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/silence.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/shigure-phase5/phase5.archmap.json \
+  --ask 'unobs=shigure_occurrence(SilenceAC7.OccUnobs, snapshot=snap_missing)' \
+  --ask 'unsup=shigure_partial(SilenceAC7.PartUnsup)' \
+  --ask 'force=shigure_revision(SilenceAC7.RevForceReuse)'
+```
+
+1 つ目の例は最粗健全商・例 17.12 の属性値域分離（両件 `established`, 終了コード 0）、
+2 つ目の例は正格 `let` / 排中律と例 18.2 の MUS 抽出（`mus` が `refuted` のため終了コード 1）、
+3 つ目の例は例 19.5 の無効化錐と $2p=b$ の SNF 再利用復元（両件 `established`, 終了コード 0）、
+4 つ目の例は例 19.13 の費用最小由来支持と 3 源高次衝突（`conf` が `refuted` のため終了コード 1）、
+5 つ目の例は未観測座標依存（`unobserved_dependency`）・非対応補完クラス（`unsupported_completion_class`）・作用素改訂再利用拒否（`operator_revision_reuse_rejected`）を理由付き `undetermined`（`status = "partial"`, 終了コード 2）として返します。
 
 ## 仕様
 

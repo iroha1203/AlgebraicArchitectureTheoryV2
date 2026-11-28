@@ -55,6 +55,7 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
            | shigure_diagram | shigure_path | shigure_transfer
            | shigure_robustness | shigure_chevalley | shigure_observations
            | shigure_lift | shigure_artin | shigure_diagnostics | shigure_atlas
+           | shigure_occurrence | shigure_partial | shigure_revision | shigure_multisource
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
@@ -157,6 +158,10 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | `shigure_artin(Artin,snapshot=Id?)` | 指定した `shigure artin` について原始消去・構文次数上界 $D$・全 Artin 試験の初回検出次数 $\nu$・普遍初回障害 $\kappa_u$・2 段合成則・一般係数冪零商 base change を計算する。`shigure:ShigureOutcome` |
 | `shigure_diagnostics(Diagnostics,snapshot=Id?)` | 指定した `shigure diagnostics` について固定 label 整数診断複体 $C_\Lambda$・係数変更 vs 値域再生成・多項式 readout 層別 $B_\pi$・合流 Mayer–Vietoris・$R$-点 vs 幾何点 stalk・上半連続性反証・診断次元実現を計算する。`shigure:ShigureOutcome` |
 | `shigure_atlas(Atlas,snapshot=Id?)` | 指定した `shigure atlas` について有限グラフ実 adapter・SAGA 符号比較・指定診断類 $o_b, \kappa_b$・頂点/辺制約付き全修復・Atlas 細分化 Condition C0–C6 と全修復 fiber 同型・忘却 reading 反例・拡張言語非移送反例を計算する。`shigure:ShigureOutcome` |
+| `shigure_occurrence(Occurrence,snapshot=Id?)` | 指定した `shigure occurrence` について最小機能閉包・衝突有限導出列・反復細分（文脈同値・分離文脈・最粗健全商）・部分記録最粗商不存在・評価分離と操作保存の最小補助属性値域 $\kappa$ と再評価検算を計算する。`shigure:ShigureOutcome` |
+| `shigure_partial(Partial,snapshot=Id?)` | 指定した `shigure partial` について明示不在/未観測分離・有限表/アフィン整合性と MUS・強 Kleene 三値評価（正格 `let` 含む）と超評価/アフィン正規化・条件付き Law 相関・解の量化 4 階層 $E/U/G/Q$・開領域局所網羅/正の存在式保存/アフィン一意修復を計算する。`shigure:ShigureOutcome` |
+| `shigure_revision(Revision,snapshot=Id?)` | 指定した `shigure revision` について非空追記の単調保存・無効化錐 $\operatorname{Cone}(\Delta)$ と錐外射影/評価不変性・$\mathbb{Q}/\mathbb{Z}$ SNF $UMV=D$ 検算と作用素不変時の右辺/由来改訂再利用復元を計算する。`shigure:ShigureOutcome` |
+| `shigure_multisource(Multisource,snapshot=Id?)` | 指定した `shigure multisource` について高次多源衝突（ペアワイズ整合かつ 3 源破綻含む）の全包含極小衝突集合列挙、信頼済み提示＋候補からの全包含極小由来支持・費用最小化・不足 witness・安定性検算・検証不一致再評価を計算する。`shigure:ShigureOutcome` |
 
 各行にない固定引数を拒否する。evaluateのBはviewの全parameterを束縛する。
 LawのBは部分束縛を許し、未束縛parameterは[Lawの適用](law.md#5-law-の表示と適用)に従って全称化する。
@@ -170,13 +175,14 @@ checkに対象選択がない場合は現在のArchMap全体、localize/solve/re
 未観測fieldの補完をBで与えることはできない。
 `build/map/compose/compare/diagnose/needed`にはBを指定しない。
 
-SHIGURE の 13 種別の問い（`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
+SHIGURE の 17 種別の問い（`shigure_preservation`・`shigure_solve`・`shigure_interaction`・
 `shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations`・
-`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas`）では、
-対象頭語に Law ファイル内の対応する `shigure` 宣言（`task` / `diagram` / `path` / `transfer` / `robustness` / `chevalley` / `observations` / `lift` / `artin` / `diagnostics` / `atlas`）の
+`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas`・
+`shigure_occurrence`・`shigure_partial`・`shigure_revision`・`shigure_multisource`）では、
+対象頭語に Law ファイル内の対応する `shigure` 宣言（`task` / `diagram` / `path` / `transfer` / `robustness` / `chevalley` / `observations` / `lift` / `artin` / `diagnostics` / `atlas` / `occurrence` / `partial` / `revision` / `multisource`）の
 完全名（`Reading.Decl`）または読む範囲で一意な短名を指定する（別種別の宣言名や曖昧・未宣言名は `usage` / exit 64）。
 任意の `snapshot=Id` で `observed` 座標参照の対象 ArchMap snapshot を絞れる。
-同一の `archsig run` に上記 13 種別を含む複数の SHIGURE 問いを並べて実行できるが、通常の観測評価系の問いとは混在できない（混在は `usage` / exit 64）。
+同一の `archsig run` に上記 17 種別を含む複数の SHIGURE 問いを並べて実行できるが、通常の観測評価系の問いとは混在できない（混在は `usage` / exit 64）。
 SHIGURE 問いへ `--reuse` を渡した場合はキャッシュを再利用せず、`warnings`（`details.argument: "--reuse"`）を添えて現在入力から再計算する。
 出力は通常と同じ `archsig.summary/1`（stdout）および `archsig.result/4`（`--out` 保存時）に従い、
 1 件以上の `undetermined`（判断不能）があれば `partial` / exit 2、全件確定かつ 1 件以上の `refuted` があれば `complete` / exit 1、

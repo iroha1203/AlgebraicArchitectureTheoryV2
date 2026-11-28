@@ -309,9 +309,9 @@ Bool の false and x、true or x、同じ未知整数 h の h−h は補完に�
 未観測値の全補完が空になる提示は `inconsistent_observation` として拒否し、空虚な成立を返さない。
 change の自由 parameter と未観測 slot は異なる。修復・探索で後者を決定変数にしない。
 
-## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク・図式・経路・移送・複数解釈族・変形障害・診断層・Atlas）
+## 7. SHIGURE 宣言（原始表示・比較・変更仕様・評価条件・タスク・図式・経路・移送・複数解釈族・変形障害・診断層・Atlas・出現同定・部分提示・改訂・多源衝突）
 
-`reading` 本体の中に、文脈キーワード `shigure` で始まる 16 種類の宣言を置ける。
+`reading` 本体の中に、文脈キーワード `shigure` で始まる 20 種類の宣言を置ける。
 `shigure` は予約語一覧へ追加しないため、既存の宣言名・view 名・変数名と衝突しない。
 通常の `view` / `law` / `local` / `change` / `relation` 宣言と同一 `reading` 内で共存できる。
 
@@ -321,7 +321,8 @@ ShigureDecl ::=
            | ShigureEvalCondition | ShigureTask
            | ShigureDiagram | ShigurePath | ShigureTransfer
            | ShigureFamily | ShigureRobustness | ShigureChevalley | ShigureObservations
-           | ShigureLift | ShigureArtin | ShigureDiagnostics | ShigureAtlas)
+           | ShigureLift | ShigureArtin | ShigureDiagnostics | ShigureAtlas
+           | ShigureOccurrence | ShigurePartial | ShigureRevision | ShigureMultisource)
 
 ShigureDirection ::= "state_map" | "time_order"
 
@@ -775,14 +776,176 @@ ShigureAtlas ::= "atlas" Name "{"
       "}" )*
   "}")?
 "}"
+
+ShigureSym      ::= Name | ("-")? Integer | String
+ShigureSymValue ::= "observed" QName | "missing" | ShigureSym
+ShigureSymList  ::= "[" (ShigureSym ("," ShigureSym)*)? "]"
+
+ShigureOccurrence ::= "occurrence" Name "{"
+  ShigureOriginRef+
+  (("fixed_value")? "sort" Name "=" ShigureSymList ";")*
+  (("operation" | "partial_operation") Name "(" "[" (Name ("," Name)*)? "]" ")" "->" Name ";")*
+  ("relation" Name "(" "[" (Name ("," Name)*)? "]" ")" ";")*
+  ("identify" Name ShigureSym "=" ShigureSym ";")*
+  ("op_record" Name "(" ShigureSymList ")" "->" ShigureSymValue ";")*
+  (("domain_record" | "rel_record") Name "(" ShigureSymList ")" "=" ("true" | "false") ";")*
+  (("base_reading" | "explicit_context") Name ":" Name "{" (ShigureSym "->" (ShigureSymValue | "none") ";")* "}")*
+  ("context_closed" "=" ("true" | "false") ";")?
+  ("preserve_full_domain" "[" (Name ("," Name)*)? "]" ";")*
+  ("initial_readout" Name "{" (ShigureSym "->" ShigureSymValue ";")* "}")*
+  ("max_congruence_steps" "=" Integer ";")?
+  ("max_partitions" "=" Integer ";")?
+"}"
+
+PartialValue   ::= "known" ShigureSymValue | "absent" | "unobserved" Name
+PartialTruth   ::= "true" | "absent" | "unobserved" Name
+PartialTerm    ::= "slot" "(" Name ")" | "const" "(" ShigureSym ")" | ("-")? Integer | String
+                 | Name ("(" (PartialTerm ("," PartialTerm)*)? ")")?
+                 | "let" Name "=" PartialTerm "in" PartialTerm
+                 | PartialTerm ("+" | "-" | "*") PartialTerm | "(" PartialTerm ")"
+PartialFormula ::= "not" PartialFormula
+                 | PartialFormula ("and" | "or") PartialFormula
+                 | PartialTerm "=" PartialTerm
+                 | "rel" "(" Name "(" (PartialTerm ("," PartialTerm)*)? ")" ")"
+                 | "defined" "(" Name "(" (PartialTerm ("," PartialTerm)*)? ")" ")"
+                 | "graph" "(" Name "(" (PartialTerm ("," PartialTerm)*)? ")" "," PartialTerm ")"
+                 | ("exists" | "forall") Name ":" Name ("in" ShigureSymList)? "." PartialFormula
+                 | "(" PartialFormula ")"
+
+ShigurePartial ::= "partial" Name "{"
+  ShigureOriginRef+
+  ( "finite_table" "{"
+      ("sort" Name "=" ShigureSymList ";")*
+      (("operation" | "partial_operation") Name "(" "[" (Name ("," Name)*)? "]" ")" "->" Name ";")*
+      ("relation" Name "(" "[" (Name ("," Name)*)? "]" ")" ";")*
+      ("slot" Name ":" Name "in" ShigureSymList ";")*
+      ("background" "{"
+        ( "slot_eq" "(" Name "," Name ")" ";"
+        | "slot_neq" "(" Name "," Name ")" ";"
+        | ("injective" | "surjective") "(" Name ")" ";" )*
+      "}")*
+      ("record" Name ":"
+        ( "op_value" Name "(" ShigureSymList ")" "=" PartialValue
+        | "op_domain" Name "(" ShigureSymList ")" "=" PartialTruth
+        | "op_graph" Name "(" ShigureSymList "," ShigureSym ")" "=" PartialTruth
+        | "rel" Name "(" ShigureSymList ")" "=" PartialTruth
+        | "slot_assign" Name "=" ShigureSym ) ";")*
+      ("max_completions" "=" Integer ";")?
+    "}"
+  | "affine" "{"
+      "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+      ("coords" "[" (Name ("," Name)*)? "]" ";")?
+      ("x0" "=" ShigureCoordVec ";")?
+      ("direction_t" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";")?
+      (("background_row" | "record_row" | "eval_eq") Name ":" ShigureCoordVec "=" ShigureMemberValue ";")*
+    "}"
+  | "unsupported" String ";" )
+  ("eval_law" Name "{"
+    ("required" "=" ("true" | "false") ";")?
+    ("antecedent" "=" PartialFormula ";")?
+    "conclusion" "=" PartialFormula ";"
+  "}")*
+  ("quantifier" "{"
+    ("candidates" "[" (Name ("," Name)*)? "]" ";")?
+    ("completion" Name "{"
+      ("slots" "{" (Name "=" ShigureSym ";")* "}")*
+      ("valid" "[" (Name ("," Name)*)? "]" ";")?
+      "output" "=" ShigureSym ";"
+    "}")*
+    ("max_steps" "=" Integer ";")?
+  "}")?
+  ("open_domain" "{"
+    ("substructure" | "ambient") "{"
+      ("sort" Name "=" ShigureSymList ";")*
+      ("op_table" Name "(" "[" (Name ("," Name)*)? "]" ")" "->" Name "{"
+        (ShigureSymList "->" (ShigureSym | "none") ";")* "}")*
+      ("rel_table" Name "(" "[" (Name ("," Name)*)? "]" ")" "{"
+        (ShigureSymList ";")* "}")*
+    "}"
+    ("fiber_check" Name ":" Name "->" Name "targets" ShigureSymList ";")*
+    "positive_law" Name "{"
+      ("required" "=" ("true" | "false") ";")?
+      ("antecedent" "=" PartialFormula ";")?
+      "conclusion" "=" PartialFormula ";"
+    "}"
+    ("affine_restriction" "{"
+      "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+      "num_vars" "=" Integer ";"
+      "m_matrix" "=" LitMatrix ";"
+      "b_rhs" "=" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";"
+      "r_matrix" "=" LitMatrix ";"
+    "}")?
+  "}")?
+"}"
+
+ShigureRevConstraint ::= Name "support" "[" (Name ("," Name)*)? "]" ":"
+  ( "eq" "(" Name "," Name ")"
+  | "linear_zero" "[" ("(" ShigureScalarLit "," Name ")" ("," "(" ShigureScalarLit "," Name ")")*)? "]"
+  | "allowed_tuples" "(" "[" (Name ("," Name)*)? "]" "," LitMatrix ")" ) ";"
+
+ShigureRevision ::= "revision" Name "{"
+  "kind" "=" ("extension" | "span") ";"
+  "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+  ShigureOriginRef+
+  ("coord" Name "in" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")*
+  ("shared_constraint" ShigureRevConstraint)*
+  (("before" | "after") "{"
+    ("assign" Name "=" ShigureMemberValue ";")*
+    ("constraint" ShigureRevConstraint)*
+  "}")*
+  ("explicit_delta" "[" (Name ("," Name)*)? "]" ";")*
+  ("probe" Name "support" "[" (Name ("," Name)*)? "]" ":"
+    ("if" Name "=" ShigureScalarLit "=>")? Name "=" ShigureScalarLit ";")*
+  ("snf" "{"
+    "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+    "num_cols" "=" Integer ";"
+    ( "common_operator" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";"
+    | "operator_before" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";"
+      "operator_after" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";" )
+    "rhs_before" "=" ShigureCoordVec ";"
+    "rhs_after" "=" ShigureCoordVec ";"
+    ("operator_unobserved" "[" (Name ("," Name)*)? "]" ";")*
+    ("force_reuse" "=" ("true" | "false") ";")?
+    ("origin_label_only" "=" ("true" | "false") ";")?
+  "}")?
+  ("max_completions" "=" Integer ";")?
+"}"
+
+ShigureMultisource ::= "multisource" Name "{"
+  "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
+  ShigureOriginRef+
+  ("coord" Name "in" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";")*
+  ("background_constraint" ShigureRevConstraint)*
+  ("source" Name "{"
+    ShigureOriginRef
+    ("assign" Name "=" ShigureMemberValue ";")*
+    ("forbidden" Name "=" ShigureMemberValue ";")*
+    ("constraint" ShigureRevConstraint)*
+  "}")*
+  ("support_goal" "{"
+    ("trusted" "{" (Name "=" ShigureScalarLit ";")* "}")*
+    ("candidate" Name "{"
+      ShigureOriginRef
+      "coord" "=" Name ";"
+      "value" "=" ShigureMemberValue ";"
+      ("cost" "=" ShigureScalarLit ";")?
+      ("verified_actual" "=" ShigureMemberValue ";")?
+    "}")*
+    "goal" "=" ("eq" "(" Name "," Name ")" | "eq_const" "(" Name "," ShigureScalarLit ")") ";"
+    "expected_truth" "=" ("true" | "false") ";"
+    ("check_stability" "=" ("true" | "false") ";")?
+  "}")?
+  ("max_steps" "=" Integer ";")?
+  ("max_results" "=" Integer ";")?
+"}"
 ```
 
 `PolyExpr` は係数定数（整数、`rat(n,d)`、`fp(v,p)`）、座標・引数・探索パラメータ変数、
 `+` / `-` / `*` / 単項 `-` / `pow(PolyExpr, Integer)` / 括弧からなる多項式である。`Fp(p)` の法 `p` は素数であることを検査する。
 `shigure path` の `mode` 省略時は `find`、`shigure transfer` の `require_full_domain` 省略時は `false` を既定とする。
-また、`shigure lift` の `etale_descent.base_invertible` 省略時は `true` を、`affine_allowed.finite_displacement`・`shigure artin` の `non_noetherian_infinite`・`shigure diagnostics` の `compare_codomain_regeneration`・`shigure atlas` の `compare_to_q` 省略時は `false` を既定とする。
+また、`shigure lift` の `etale_descent.base_invertible` 省略時は `true` を、`affine_allowed.finite_displacement`・`shigure artin` の `non_noetherian_infinite`・`shigure diagnostics` の `compare_codomain_regeneration`・`shigure atlas` の `compare_to_q`・`shigure occurrence` の `context_closed`・`shigure partial` の `eval_law.required`・`shigure revision` の `snf.force_reuse` / `snf.origin_label_only`・`shigure multisource` の `support_goal.check_stability` 省略時はそれぞれ既定値（`context_closed = true`、`eval_law.required = true`、その他 `false`）を採用する。
 各 `rule`・`edge`・`subdivide`・移送 `step` における射本体 `ShigureMorphismClause` では、`comparison`・`identity`・インライン（`state_map` / `translate`）の混在を禁止する（`step` では `comparison` と `before`/`after` の混在も禁止する）。
-`shigure diagram` / `shigure path` / `shigure transfer` / `shigure family` / `shigure robustness` / `shigure chevalley` / `shigure observations` / `shigure lift` / `shigure artin` / `shigure diagnostics` / `shigure atlas` の各ブロックおよび `phase` ブロック内では、異なる句の配置順は上記の多重度制約のもと任意であるが、`shigure transfer` の `step`、`shigure artin`（および `composite_stage`）の `aux_def`（先行定義のみ参照する依存順）、`shigure atlas` `protocol_sequence` の `before_step` / `after_step` は記述順が意味を持つ。
+`shigure diagram` / `shigure path` / `shigure transfer` / `shigure family` / `shigure robustness` / `shigure chevalley` / `shigure observations` / `shigure lift` / `shigure artin` / `shigure diagnostics` / `shigure atlas` / `shigure occurrence` / `shigure partial` / `shigure revision` / `shigure multisource` の各ブロックおよび `phase` ブロック内では、異なる句の配置順は上記の多重度制約のもと任意であるが、`shigure transfer` の `step`、`shigure artin`（および `composite_stage`）の `aux_def`（先行定義のみ参照する依存順）、`shigure atlas` `protocol_sequence` の `before_step` / `after_step` は記述順が意味を持つ。
 
 静的検査と変換検査では次を強制する。
 
@@ -803,23 +966,35 @@ ShigureAtlas ::= "atlas" Name "{"
   `coker_h0_rho_dim`、`im_h1_rho_dim`、`mayer_vietoris`、`mayer_vietoris_identity_verified`、`strata`、`upper_semicontinuity_refutation`、
   `condition_c`、`condition_c0`..`condition_c6`、`h0_isomorphism`、`h1_isomorphism`、`designated_o_preserved`、`designated_kappa_preserved`、
   `repair_fiber_isomorphism_verified`、`inverse_reconstruction_verified`、`repair_solutions`、`unconstrained_repair`、
-  `vertex_constrained_repair`、`edge_constrained_repair`、`torsor_basis`、`particular_solution`、`restored_lift`、`global_lift_exists`
+  `vertex_constrained_repair`、`edge_constrained_repair`、`torsor_basis`、`particular_solution`、`restored_lift`、`global_lift_exists`、
+  および出現同定・部分提示・改訂・多源衝突系の `minimal_functional_classes`、`context_equivalence_classes`、`separating_contexts`、
+  `coarsest_sound_exists`、`coarsest_sound_classes`、`derivation_verified`、`attribute_realization`、
+  `completion_consistent`、`completion_count`、`minimal_inconsistent_subsets`、`mus_verified`、`kleene_soundness_verified`、
+  `quantifier_hierarchy`、`required_slot_sets`、`positive_preserved`、`affine_unique_repair_exists`、
+  `monotonicity_preserved`、`invalidation_cone`、`outside_cone_coords`、`outside_projection_equal`、
+  `umv_verified`、`reused_snf`、`after_solvable`、`after_particular`、`kernel_basis`、
+  `pairwise_consistent`、`all_sources_consistent`、`minimal_conflict_sets`、`minimal_conflicts_verified`、`minimal_supports`、`min_cost_supports`
   などの計算結論相当の語を、`shigure <種別>` の宣言種別位置、各宣言本体・下位ブロックの句（フィールド）位置、および内部識別子・変数位置に含めた場合、構文検査で拒否する。
-- **守る意味 Law と固定部分圏・初段基準の保護**: `editable semantic_law` は構文・型検査で拒否する。
+- **守る意味 Law と固定部分圏・初段基準・背景制約分離の保護**: `editable semantic_law` は構文・型検査で拒否する。
   `editable representation_law` で `semantic` 宣言を指す不適合な指定、`fixed` と `editable` の重複、
   `editable` による `shigure task` や `shigure family` `preservation` の `before` 表示変更・探索パラメータ混入も拒否する。
   `shigure diagram` では固定部分圏 $K$ の頂点・辺および意味 Law への編集指定と、固定辺が非固定頂点を結ぶ非閉指定を拒否する。
   `shigure transfer` では多段連鎖（`step[i].after == step[i+1].before`）を要求し、
   初段 `step[0]` の始端表示 $X_0$ をパラメータフリーかつ編集不可に制限する（2 段目以降の共有中間表示における編集・パラメータ指定は許容する）。
+  `shigure partial` では `eval_law` の `finite_table` / `background` ブロック内への混入を構文上拒否し、必須 Law と背景制約による補完空間を分離する。
 - **名前・参照・型・循環・無界境界の検査**: 同一 reading 内の宣言名重複、`use` alias・原始定義完全名・組込み演算名との衝突、
-  `shigure` reading 間の循環参照、未宣言の phase・座標・操作・変数、
+  `shigure` reading 間の循環参照、未宣言の phase・座標・操作・sort・slot・候補・変数、
   `state`/`arg`/`param` の名前空間衝突（`word_check`・`old_word_lift` の仮引数重複およびパラメータとの衝突、`u_vars`/`b_vars`/`c_vars` 間の名前衝突および `witness_vars`・`fine_b_vars` と `u_vars`/`b_vars`/`c_vars` の名前衝突を含む）、
   `goodness existential` の空 `witness_vars`、`raw_sequence` 指定時の必須 `presentation`・フェーズ連結・`start_state` 網羅・終端/基準フェーズ観測不整合、
-  `observe.cost` の負数または小数、`realization`・`candidate`・`observe`・`lift`・`artin`・`diagnostics`・`atlas` における `origin` 欠如および空 `ArchMap` origin ID 参照、
+  `observe.cost` および `multisource` `candidate.cost` の負数（および `observe.cost` の小数）、`realization`・`candidate`・`observe`・`lift`・`artin`・`diagnostics`・`atlas`・`occurrence`・`partial`・`revision`・`multisource` における `origin` 欠如および空 `ArchMap` origin ID 参照、
   `shigure lift` の `vars`/`base_point` 不整合・`ring_param` 長不一致・`explicit_table` 次元不整合・未宣言変数参照、
   `shigure artin` の `aux_def` の循環・逆順依存（後方参照）・`max_order == 0`・`obs_vars` と `aux_def` の名前衝突、
   `shigure diagnostics` の `static_readout` と `poly_readout` の排他違反・`nerve` の端点/面不整合・`collision` の未宣言 Law 参照、
   `shigure atlas` の単純有向グラフ端点・辺数（1 本以上必須）違反・`base_lambdas` 欠落・`refinement` の写像域外参照・`extended_language_check` の状態変数不一致、
+  `shigure occurrence` の未宣言 sort/操作/関係/要素参照・記録重複、
+  `shigure partial` の未宣言 sort/slot/束縛変数・`affine` 次元不一致・`eval_eq` を評価不能値へ置く背景混在、
+  `shigure revision` の `snf` における列数・右辺・作用素次元不一致、`origin_label_only = true` 時の作用素/右辺差分、および未観測 `snf` 成分（`missing` または欠測）の入力、
+  `shigure multisource` の未宣言座標・`coord`/`source`/`candidate`/`assign` 重複・`support_goal` 未定義目標、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
   （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
   `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
