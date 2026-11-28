@@ -69,6 +69,30 @@ import Formal.SHIGURE.Part2.Minimal.WordExamples
 import Formal.SHIGURE.Part2.Minimal.WordLength
 import Formal.SHIGURE.Part2.Minimal.WordReverse
 
+import Formal.SHIGURE.Part2.Schemes.Effective.BaseChange
+import Formal.SHIGURE.Part2.Schemes.Effective.CanonicalSolution
+import Formal.SHIGURE.Part2.Schemes.Effective.CanonicalTransition
+import Formal.SHIGURE.Part2.Schemes.Effective.CombinedGluing
+import Formal.SHIGURE.Part2.Schemes.Effective.CombinedRecovery
+import Formal.SHIGURE.Part2.Schemes.Effective.CombinedSolutions
+import Formal.SHIGURE.Part2.Schemes.Effective.CompositePull
+import Formal.SHIGURE.Part2.Schemes.Effective.DescentChartCompatibility
+import Formal.SHIGURE.Part2.Schemes.Effective.DirectPull
+import Formal.SHIGURE.Part2.Schemes.Effective.Examples
+import Formal.SHIGURE.Part2.Schemes.Effective.FppfStack
+import Formal.SHIGURE.Part2.Schemes.Effective.IndependentExamples
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalDatum
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalDatumActual
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalOverlap
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalSolution
+import Formal.SHIGURE.Part2.Schemes.Effective.OverlapPull
+import Formal.SHIGURE.Part2.Schemes.Effective.OverlapTest
+import Formal.SHIGURE.Part2.Schemes.Effective.ProductRefinement
+import Formal.SHIGURE.Part2.Schemes.Effective.PullComponent
+import Formal.SHIGURE.Part2.Schemes.Effective.RebaseTest
+import Formal.SHIGURE.Part2.Schemes.Effective.TestComparison
+import Formal.SHIGURE.Part2.Schemes.Effective.TestNaturality
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.
