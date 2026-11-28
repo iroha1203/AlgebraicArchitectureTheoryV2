@@ -48,8 +48,21 @@ pub fn read_file_handle_bounded(file: std::fs::File, max_bytes: u64) -> std::io:
         return Err(size_exceeded_error(meta.len(), max_bytes));
     }
     let initial_cap = usize::try_from(meta.len().min(1024 * 1024)).unwrap_or(1024 * 1024);
+    read_reader_bounded_with_cap(file, max_bytes, initial_cap)
+}
+
+/// 任意の `Read`（stdin 等）から上限 `max_bytes` まで安全に読み込む。
+pub fn read_reader_bounded(reader: impl Read, max_bytes: u64) -> std::io::Result<Vec<u8>> {
+    read_reader_bounded_with_cap(reader, max_bytes, 0)
+}
+
+fn read_reader_bounded_with_cap(
+    reader: impl Read,
+    max_bytes: u64,
+    initial_cap: usize,
+) -> std::io::Result<Vec<u8>> {
     let mut bytes = Vec::with_capacity(initial_cap);
-    let mut reader = file.take(max_bytes.saturating_add(1));
+    let mut reader = reader.take(max_bytes.saturating_add(1));
     reader.read_to_end(&mut bytes)?;
     if (bytes.len() as u64) > max_bytes {
         return Err(size_exceeded_error(bytes.len() as u64, max_bytes));
@@ -88,5 +101,11 @@ mod tests {
         let dir_err = read_regular_file_bounded(&dir, 1024).unwrap_err();
         assert!(dir_err.to_string().contains("not a regular file"));
         let _ = std::fs::remove_dir_all(&dir);
+
+        let reader_ok = read_reader_bounded(&b"hello"[..], 5).unwrap();
+        assert_eq!(reader_ok, b"hello");
+        let reader_err = read_reader_bounded(&b"hello!"[..], 5).unwrap_err();
+        assert_eq!(reader_err.kind(), std::io::ErrorKind::InvalidData);
+        assert!(reader_err.to_string().contains("exceeds limit of 5 bytes"));
     }
 }

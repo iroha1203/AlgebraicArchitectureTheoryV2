@@ -2,12 +2,13 @@
 
 mod args;
 mod evaluate;
-mod output;
+pub(crate) mod output;
 mod reobserve;
 mod reuse;
 mod shigure;
 pub use evaluate::{run_internal_outcome, run_requests};
 
+pub use crate::cli::help::{CHECK_HELP, HELP, REOBSERVE_HELP, RUN_HELP};
 pub use args::{Checked, parse_args};
 
 use archsig_common::canonical::{Json, sha256_digest};
@@ -23,50 +24,12 @@ use std::path::{Path, PathBuf};
 pub const VERSION_LINE: &str =
     r#"{"product":"archsig","version":"0.6.0","semantics":["archsig/0.6.0"]}"#;
 
-pub const HELP: &str = "ArchSig: check inputs and answer questions from Atom definitions, Law and ArchMap.
-Usage: archsig <run|reobserve|check|evidence|law-fibers|version> [options]
-  run      Compute answers; saving is optional
-  reobserve Evaluate previous and current inputs in one process
-  check    Validate inputs without computing questions; saving is optional
-  evidence Verify selected atoms against local source bytes
-  law-fibers Check an explicitly enumerated finite evaluation table
-  version  Print product and semantics versions as JSON
-Use archsig help COMMAND for options.
-Example (no files are written):
-  archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'
---help, -h: show help; --version: show version.";
-pub const RUN_HELP: &str = "Usage: archsig run --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [options]
-  --atom-definition D  Atom definition file (required, repeatable)
-  --law L              Law file (required)
-  --archmap A          Observations file (required)
-  --ask 'ID=QUESTION'   Question (required, repeatable; quote $ references)
-  --out NEW_DIRECTORY      Save full result and inputs (optional; never overwrite)
-  --reuse DIRECTORY        Recheck an earlier result (optional)
-  --max-file-bytes N       Bound input/artifact file reads in bytes (default: 67108864)
-  --shigure-limit KEY=N    Override a SHIGURE resource limit (repeatable)
-  --help, -h               Show this help
-Answers and warnings: one JSON summary on stdout; execution errors: JSON on stderr.
-Exit: 0 established, 1 refuted, 2 undetermined, 64 usage, 65 invalid input,
-69 unsupported version, 70 internal, 74 I/O, 130 SIGINT, 141 broken pipe, 143 SIGTERM.
-Example:
-  archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'";
-pub const REOBSERVE_HELP: &str = "Usage: archsig reobserve --before-atom-definition D --before-law L --before-archmap A --before-ask 'ID=QUESTION' --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [--alignment JSON] [--out NEW_DIRECTORY] [--max-file-bytes N] [--shigure-limit KEY=N]
-Repeat the definition and question options as needed. Use --alignment for explicit assembly and candidate correspondence.
-The output contains separate previous and current evaluations. Exit status reflects the current evaluation or an execution failure.";
-pub const CHECK_HELP: &str =
-    "Usage: archsig check --atom-definition D --law L [--archmap A] [--out NEW_DIRECTORY]
-  --atom-definition D  Atom definition file (required, repeatable)
-  --law L              Law file (required)
-  --archmap A          Observations file (optional)
-  --out NEW_DIRECTORY      Save checked declarations and inputs (optional; never overwrite)
-  --max-file-bytes N       Bound input file reads in bytes (default: 67108864)
-  --help, -h               Show this help
-Validation status: JSON on stdout; execution errors: JSON on stderr.
-Example: archsig check --atom-definition counter.atoms.json --law counter.law";
-
 /// 出力のファイル操作。テストで失敗を差し込めるように分ける。
 pub trait Io {
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()>;
+    fn create_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::create_dir_all(path)
+    }
     fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()>;
     /// 確定済みJSONの配送。既定実装は従来のwrite失敗注入を保つ。
     /// FileIoは全文Stringを作らずstreamする。独自Ioの既定実装はStringを保持する。
@@ -91,6 +54,10 @@ impl Io for FileIo {
 
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()> {
         std::fs::create_dir(path)
+    }
+
+    fn create_dir_all(&mut self, path: &Path) -> std::io::Result<()> {
+        std::fs::create_dir_all(path)
     }
 
     fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()> {
@@ -149,6 +116,18 @@ pub struct ReobserveArgs {
 }
 
 impl ReobserveArgs {
+    pub(crate) fn from_parts(
+        previous: Checked<RunArgs>,
+        current: Checked<RunArgs>,
+        alignment: Option<PathBuf>,
+    ) -> Self {
+        Self {
+            previous,
+            current,
+            alignment,
+        }
+    }
+
     pub fn max_file_bytes(&self) -> u64 {
         self.current.max_file_bytes()
     }
@@ -232,7 +211,7 @@ pub fn active_max_file_bytes() -> u64 {
     ACTIVE_MAX_FILE_BYTES.with(std::cell::Cell::get)
 }
 
-fn with_max_file_bytes<T>(max_bytes: u64, f: impl FnOnce() -> T) -> T {
+pub fn with_max_file_bytes<T>(max_bytes: u64, f: impl FnOnce() -> T) -> T {
     let prev = active_max_file_bytes();
     ACTIVE_MAX_FILE_BYTES.with(|cell| cell.set(max_bytes));
     let _guard = MaxFileBytesGuard(prev);
@@ -289,6 +268,7 @@ fn run_check_validated(
     args: &CheckArgs,
     control: &Control,
 ) -> Outcome {
+    crate::cli::emit_progress("check: reading input files");
     let out = args.out.as_deref();
     // 開始時に明示された全入力を読み切る。検査中に再読しない。
     let mut issues = Vec::new();

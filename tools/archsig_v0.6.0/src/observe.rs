@@ -2,6 +2,8 @@
 mod evidence;
 mod fibers;
 
+pub use crate::cli::help::{EVIDENCE_HELP, FIBERS_HELP};
+use crate::cli::{EvidenceArgs, FibersArgs, emit_progress};
 use crate::run::Outcome;
 use archsig_common::{
     canonical::Json,
@@ -16,28 +18,6 @@ use std::{
 };
 
 type Result<T> = std::result::Result<T, Box<ResultIssue>>;
-
-pub const EVIDENCE_HELP: &str =
-    "Usage: archsig evidence --archmap A --atom SNAPSHOT/ATOM [--source ID=FILE ...]
-  --archmap A       ArchMap JSON (required)
-  --atom ID         Select snapshot/atom (required, repeatable, distinct)
-  --source ID=FILE      Bind a source ID to a local file (repeatable, distinct)
-  --max-file-bytes N    Bound file reads in bytes (default: 67108864)
-  --help, -h            Show this help
-Expand explicit references and verify SHA256, UTF-8 byte spans and excerpts.
-Revision provenance, coverage, meaning and Law fidelity remain reading obligations.
-Result: JSON on stdout; errors: receipt JSON on stderr. No files are written.
-Exit: 0 verified bytes, 64 usage, 65 invalid input, 70 internal, 74 I/O,
-130 SIGINT, 141 broken pipe, 143 SIGTERM.";
-pub const FIBERS_HELP: &str = "Usage: archsig law-fibers --table TABLE
-  --table TABLE         Explicit finite evaluation table JSON (required)
-  --max-file-bytes N    Bound table file read in bytes (default: 67108864)
-  --help, -h            Show this help
-Compute counterexamples, partitions and descent on the supplied table.
-Complete enumeration and faithful equality tokens are caller obligations; no Law DSL evaluation.
-Result: JSON on stdout; errors: receipt JSON on stderr. No files are written.
-Exit: 0 adequate on table (including vacuous), 1 counterexamples, 64 usage,
-65 invalid input, 70 internal, 74 I/O, 130 SIGINT, 141 broken pipe, 143 SIGTERM.";
 
 /// Successful read-only response, or help, and its exit status.
 pub struct Response {
@@ -64,6 +44,42 @@ pub fn execute(args: &[OsString]) -> std::result::Result<Response, Outcome> {
             message: "internal observation helper failure".into(),
         }))
     });
+    map_observe_result(result)
+}
+
+pub fn execute_evidence(
+    args: &EvidenceArgs,
+    max_file_bytes: u64,
+) -> std::result::Result<Response, Outcome> {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        run_evidence_inner(&args.archmap, &args.atoms, &args.sources, max_file_bytes)
+    }))
+    .unwrap_or_else(|_| {
+        Err(Box::new(ResultIssue::Internal {
+            operation: "observe".into(),
+            message: "internal observation helper failure".into(),
+        }))
+    });
+    map_observe_result(result)
+}
+
+pub fn execute_fibers(
+    args: &FibersArgs,
+    max_file_bytes: u64,
+) -> std::result::Result<Response, Outcome> {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        run_fibers_inner(&args.table, max_file_bytes)
+    }))
+    .unwrap_or_else(|_| {
+        Err(Box::new(ResultIssue::Internal {
+            operation: "observe".into(),
+            message: "internal observation helper failure".into(),
+        }))
+    });
+    map_observe_result(result)
+}
+
+fn map_observe_result(result: Result<Response>) -> std::result::Result<Response, Outcome> {
     result.map_err(|issue| {
         let (status, code) = match issue.as_ref() {
             ResultIssue::Usage { .. } => (Status::Invalid, 64),
@@ -188,9 +204,38 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
             "input file is required",
         )
     })?;
-    let bytes = read(&input, max_file_bytes)?;
+    if evidence {
+        run_evidence_inner(&input, &atoms, &files, max_file_bytes)
+    } else {
+        run_fibers_inner(&input, max_file_bytes)
+    }
+}
+
+fn run_evidence_inner(
+    archmap: &Path,
+    atoms: &[String],
+    files: &BTreeMap<String, PathBuf>,
+    max_file_bytes: u64,
+) -> Result<Response> {
+    emit_progress(&format!("evidence: reading archmap {}", archmap.display()));
+    let bytes = read(archmap, max_file_bytes)?;
+    let node = archsig_common::json::parse(&bytes)
+        .map_err(|issue| Box::new(ResultIssue::Input(*issue)))?;
+    emit_progress(&format!(
+        "evidence: verifying {} atom selector(s)",
+        atoms.len()
+    ));
+    Ok(Response {
+        text: evidence::expand(&node, atoms, files, max_file_bytes)?,
+        code: 0,
+    })
+}
+
+fn run_fibers_inner(table: &Path, max_file_bytes: u64) -> Result<Response> {
+    emit_progress(&format!("law-fibers: reading table {}", table.display()));
+    let bytes = read(table, max_file_bytes)?;
     let node = archsig_common::json::parse(&bytes).map_err(|mut issue| {
-        if !evidence && let Location::ArchMap { pointer, span } = &issue.location {
+        if let Location::ArchMap { pointer, span } = &issue.location {
             issue.location = Location::Definition {
                 input: "table".into(),
                 pointer: pointer.clone(),
@@ -199,18 +244,12 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
         }
         Box::new(ResultIssue::Input(*issue))
     })?;
-    if evidence {
-        Ok(Response {
-            text: evidence::expand(&node, &atoms, &files, max_file_bytes)?,
-            code: 0,
-        })
-    } else {
-        let (result, adequate) = fibers::check(&node)?;
-        Ok(Response {
-            text: result.canonical(),
-            code: u8::from(!adequate),
-        })
-    }
+    emit_progress("law-fibers: evaluating table fibers");
+    let (result, adequate) = fibers::check(&node)?;
+    Ok(Response {
+        text: result.canonical(),
+        code: u8::from(!adequate),
+    })
 }
 
 fn read(path: &Path, max_bytes: u64) -> Result<Vec<u8>> {

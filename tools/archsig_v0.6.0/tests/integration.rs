@@ -10,6 +10,7 @@ mod archmap_values;
 mod checked_models;
 mod cli;
 mod cli_ac1_limits;
+mod cli_ac3_commands;
 mod cli_architecture_environment;
 mod cli_arguments;
 mod cli_build_resolution;

@@ -144,6 +144,174 @@ impl Json {
         )
     }
 
+    /// 2 スペース字下げの整形済み canonical JSON を生成する。
+    pub fn pretty(&self) -> String {
+        self.try_pretty_with_max_depth(crate::limits::DEFAULT_MAX_JSON_DEPTH)
+            .expect("通常の整形表示は深度上限を超えない")
+    }
+
+    pub fn try_pretty_with_max_depth(
+        &self,
+        max_depth: usize,
+    ) -> Result<String, Box<crate::issue::Issue>> {
+        let mut out = String::new();
+        self.write_pretty_controlled(
+            0,
+            max_depth,
+            &mut |text| {
+                out.push_str(text);
+                Ok(())
+            },
+            &mut || Ok(()),
+            &mut |limit| {
+                Box::new(crate::issue::Issue {
+                    code: crate::issue::Code::Syntax,
+                    message: format!("JSON nesting depth exceeds limit ({limit})"),
+                    location: crate::issue::Location::ArchMap {
+                        pointer: String::new(),
+                        span: None,
+                    },
+                    details: crate::issue::Details::Empty,
+                })
+            },
+        )?;
+        Ok(out)
+    }
+
+    /// 2 スペース字下げの整形済み canonical JSON をストリーム出力する。
+    pub fn write_pretty(&self, out: &mut impl std::io::Write) -> std::io::Result<()> {
+        self.write_pretty_with_max_depth(out, crate::limits::DEFAULT_MAX_JSON_DEPTH)
+    }
+
+    pub fn write_pretty_with_max_depth(
+        &self,
+        out: &mut impl std::io::Write,
+        max_depth: usize,
+    ) -> std::io::Result<()> {
+        self.write_pretty_controlled(
+            0,
+            max_depth,
+            &mut |text| out.write_all(text.as_bytes()),
+            &mut || Ok(()),
+            &mut |limit| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    format!("JSON nesting depth exceeds limit ({limit})"),
+                )
+            },
+        )
+    }
+
+    fn write_pretty_controlled<E>(
+        &self,
+        depth: usize,
+        max_depth: usize,
+        emit: &mut impl FnMut(&str) -> Result<(), E>,
+        checkpoint: &mut impl FnMut() -> Result<(), E>,
+        on_depth_exceeded: &mut impl FnMut(usize) -> E,
+    ) -> Result<(), E> {
+        fn emit_indent<E>(
+            depth: usize,
+            emit: &mut impl FnMut(&str) -> Result<(), E>,
+        ) -> Result<(), E> {
+            for _ in 0..depth {
+                emit("  ")?;
+            }
+            Ok(())
+        }
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            checkpoint()?;
+            match self {
+                Json::Bool(b) => emit(if *b { "true" } else { "false" })?,
+                Json::Nat(n) => emit(&n.to_string())?,
+                Json::Str(s) => emit_string(s, emit, checkpoint)?,
+                Json::Arr(items) => {
+                    if depth >= max_depth {
+                        return Err(on_depth_exceeded(max_depth));
+                    }
+                    if items.is_empty() {
+                        emit("[]")?;
+                    } else {
+                        emit("[\n")?;
+                        for (i, item) in items.iter().enumerate() {
+                            if i > 0 {
+                                emit(",\n")?;
+                            }
+                            emit_indent(depth + 1, emit)?;
+                            item.write_pretty_controlled(
+                                depth + 1,
+                                max_depth,
+                                emit,
+                                checkpoint,
+                                on_depth_exceeded,
+                            )?;
+                        }
+                        emit("\n")?;
+                        emit_indent(depth, emit)?;
+                        emit("]")?;
+                    }
+                }
+                Json::NodeReferences(items) => {
+                    if depth >= max_depth || (!items.is_empty() && depth + 1 >= max_depth) {
+                        return Err(on_depth_exceeded(max_depth));
+                    }
+                    if items.is_empty() {
+                        emit("[]")?;
+                    } else {
+                        emit("[\n")?;
+                        for (i, index) in items.iter().enumerate() {
+                            if i > 0 {
+                                emit(",\n")?;
+                            }
+                            emit_indent(depth + 1, emit)?;
+                            emit("{\n")?;
+                            emit_indent(depth + 2, emit)?;
+                            emit_string("node", emit, checkpoint)?;
+                            emit(": ")?;
+                            emit_string(&format!("n{index}"), emit, checkpoint)?;
+                            emit("\n")?;
+                            emit_indent(depth + 1, emit)?;
+                            emit("}")?;
+                        }
+                        emit("\n")?;
+                        emit_indent(depth, emit)?;
+                        emit("]")?;
+                    }
+                }
+                Json::Obj(entries) => {
+                    if depth >= max_depth {
+                        return Err(on_depth_exceeded(max_depth));
+                    }
+                    if entries.is_empty() {
+                        emit("{}")?;
+                    } else {
+                        emit("{\n")?;
+                        for (i, (k, v)) in entries.iter().enumerate() {
+                            if i > 0 {
+                                emit(",\n")?;
+                            }
+                            emit_indent(depth + 1, emit)?;
+                            emit_string(k, emit, checkpoint)?;
+                            emit(": ")?;
+                            v.write_pretty_controlled(
+                                depth + 1,
+                                max_depth,
+                                emit,
+                                checkpoint,
+                                on_depth_exceeded,
+                            )?;
+                        }
+                        emit("\n")?;
+                        emit_indent(depth, emit)?;
+                        emit("}")?;
+                    }
+                }
+            }
+            checkpoint()?;
+            Ok(())
+        })
+    }
+
     fn write_controlled<E>(
         &self,
         depth: usize,
@@ -388,6 +556,12 @@ mod controlled_tests {
             .unwrap();
         assert_eq!(result, expected);
         assert_eq!(value.canonical(), expected);
+        let expected_pretty = "{\n  \"a\": {\n    \"empty\": []\n  },\n  \"z\": [\n    false,\n    7\n  ],\n  \"é\": \"\\\"\\\\\\u000a/雪\"\n}";
+        assert_eq!(value.pretty(), expected_pretty);
+        let mut buf = Vec::new();
+        value.write_pretty(&mut buf).unwrap();
+        assert_eq!(String::from_utf8(buf).unwrap(), expected_pretty);
+        assert!(example().try_pretty_with_max_depth(2).is_err());
     }
 
     #[test]
