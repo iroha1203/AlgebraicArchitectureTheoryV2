@@ -86,6 +86,30 @@ import Formal.SHIGURE.Part2.Schemes.Effective.PullComponent
 import Formal.SHIGURE.Part2.Schemes.Effective.RebaseTest
 import Formal.SHIGURE.Part2.Schemes.Effective.TestComparison
 import Formal.SHIGURE.Part2.Schemes.Effective.TestNaturality
+import Formal.SHIGURE.Part2.MinimalRing.DirectSumBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.DirectSumDualBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.DualBaseChangeEquiv
+import Formal.SHIGURE.Part2.MinimalRing.DualBaseChangeMap
+import Formal.SHIGURE.Part2.MinimalRing.DualObservationBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.DualProduct
+import Formal.SHIGURE.Part2.MinimalRing.DualRank
+import Formal.SHIGURE.Part2.MinimalRing.FiberFieldReach
+import Formal.SHIGURE.Part2.MinimalRing.FiberSurjectivity
+import Formal.SHIGURE.Part2.MinimalRing.FieldBridge
+import Formal.SHIGURE.Part2.MinimalRing.FiniteDualObservationBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.IntegerExample
+import Formal.SHIGURE.Part2.MinimalRing.IntegerWordExample
+import Formal.SHIGURE.Part2.MinimalRing.MinimalityBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.MinimalityCriterion
+import Formal.SHIGURE.Part2.MinimalRing.ObservationBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.ObservationSplit
+import Formal.SHIGURE.Part2.MinimalRing.ProductBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.ReachBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.ReverseRanges
+import Formal.SHIGURE.Part2.MinimalRing.ReverseSystem
+import Formal.SHIGURE.Part2.MinimalRing.RingDualObservation
+import Formal.SHIGURE.Part2.MinimalRing.RingReachability
+import Formal.SHIGURE.Part2.MinimalRing.Systems
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -5458,6 +5482,101 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.SchemeDescent.EffectiveLocalSolution.transition_testHom,
   SHIGURE.SchemeDescent.EffectiveLocalSolution.testHom_pull,
   SHIGURE.SchemeDescent.EffectiveLocalSolution.testHom_comm
+]
+
+-- Minimality over commutative rings and scalar change.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.MinimalRing.scalarDirectSumEquiv,
+  SHIGURE.MinimalRing.scalarDirectSumEquiv_eq_directSumRight,
+  SHIGURE.MinimalRing.toModule_baseChange,
+  SHIGURE.MinimalRing.dualBaseChange_toModule,
+  SHIGURE.MinimalRing.directSumDualBaseChangeEquiv,
+  SHIGURE.MinimalRing.toModule_dual_baseChange,
+  SHIGURE.MinimalRing.dualBaseChangeMap_bijective_of_free,
+  SHIGURE.MinimalRing.dualBaseChangeMap_bijective,
+  SHIGURE.MinimalRing.dualBaseChangeEquiv,
+  SHIGURE.MinimalRing.dualBaseChangeEquiv_toLinearMap,
+  SHIGURE.MinimalRing.dualBaseChangeMap,
+  SHIGURE.MinimalRing.dualBaseChangeMap_tmul,
+  SHIGURE.MinimalRing.dualBaseChangeMap_natural,
+  SHIGURE.MinimalRing.allWordDualObservationBaseChangeEquiv,
+  SHIGURE.MinimalRing.allWordDualObservationMap_baseChange,
+  SHIGURE.MinimalRing.finiteDualProductEquiv,
+  SHIGURE.MinimalRing.finiteDualProductEquiv_lof,
+  SHIGURE.MinimalRing.finiteDualProductEquiv_dualMap_pi,
+  SHIGURE.MinimalRing.boundedWordDualObservationMap,
+  SHIGURE.MinimalRing.boundedObservationMap_dualMap_comp_equiv,
+  SHIGURE.MinimalRing.boundedObservationMap_dualMap_surjective_iff,
+  SHIGURE.MinimalRing.dual_rankAtStalk_eq,
+  SHIGURE.MinimalRing.fiber_allWordReachMap_iff_bounded,
+  SHIGURE.MinimalRing.surjective_iff_residueField_lTensor_surjective,
+  SHIGURE.MinimalRing.asFieldSystem,
+  SHIGURE.MinimalRing.evaluate_asFieldSystem,
+  SHIGURE.MinimalRing.allWordReachMap_asFieldSystem,
+  SHIGURE.MinimalRing.boundedWordReachMap_asFieldSystem,
+  SHIGURE.MinimalRing.boundedObservationMap_asFieldSystem,
+  SHIGURE.MinimalRing.allWordDualObservationMap_asFieldSystem,
+  SHIGURE.MinimalRing.boundedObservationDualBaseChangeEquiv,
+  SHIGURE.MinimalRing.boundedObservationMap_dualMap_baseChange,
+  SHIGURE.MinimalRing.boundedWordDualObservationMap_baseChange_via_product,
+  SHIGURE.MinimalRing.IntegerExample.twice,
+  SHIGURE.MinimalRing.IntegerExample.NoOperation,
+  SHIGURE.MinimalRing.IntegerExample.system,
+  SHIGURE.MinimalRing.IntegerExample.observation,
+  SHIGURE.MinimalRing.IntegerExample.twice_injective,
+  SHIGURE.MinimalRing.IntegerExample.twice_dualMap_not_surjective,
+  SHIGURE.MinimalRing.IntegerExample.twice_baseChange_zmod_two,
+  SHIGURE.MinimalRing.IntegerExample.emptyOutputWord,
+  SHIGURE.MinimalRing.IntegerExample.observationProductEquiv,
+  SHIGURE.MinimalRing.IntegerExample.allWordReach_surjective,
+  SHIGURE.MinimalRing.IntegerExample.boundedObservation_comp_equiv,
+  SHIGURE.MinimalRing.IntegerExample.boundedObservation_injective,
+  SHIGURE.MinimalRing.IntegerExample.boundedObservation_dualMap_not_surjective,
+  SHIGURE.MinimalRing.IntegerExample.boundedObservation_baseChange_zmod_two,
+  SHIGURE.MinimalRing.boundedObservationMap_baseChange_split,
+  SHIGURE.MinimalRing.dualMap_surjective_of_retraction,
+  SHIGURE.MinimalRing.allWord_minimality_baseChange,
+  SHIGURE.MinimalRing.allWord_minimality_baseChange_finiteFree,
+  SHIGURE.MinimalRing.allWord_minimality_iff_bounded,
+  SHIGURE.MinimalRing.observationProductEquiv,
+  SHIGURE.MinimalRing.boundedObservationMap_baseChange,
+  SHIGURE.MinimalRing.exists_retraction_of_dualMap_surjective,
+  SHIGURE.MinimalRing.boundedObservationMap_split,
+  SHIGURE.MinimalRing.allWordDualObservation_yields_bounded_split,
+  SHIGURE.MinimalRing.scalarProductEquiv,
+  SHIGURE.MinimalRing.scalarProductEquiv_tmul,
+  SHIGURE.MinimalRing.pi_baseChange,
+  SHIGURE.MinimalRing.allWordReachMap_baseChange,
+  SHIGURE.MinimalRing.boundedWordReachMap_baseChange,
+  SHIGURE.MinimalRing.allWordReachMap_baseChange_surjective_iff,
+  SHIGURE.MinimalRing.boundedWordReachMap_baseChange_surjective_iff,
+  SHIGURE.MinimalRing.allReachValues,
+  SHIGURE.MinimalRing.boundedReachValues,
+  SHIGURE.MinimalRing.allObservationValues,
+  SHIGURE.MinimalRing.boundedObservationValues,
+  SHIGURE.MinimalRing.range_allWordReachMap,
+  SHIGURE.MinimalRing.range_boundedWordReachMap,
+  SHIGURE.MinimalRing.range_allWordDualObservationMap,
+  SHIGURE.MinimalRing.range_boundedWordDualObservationMap,
+  SHIGURE.MinimalRing.allObservationValues_eq_reverseReachValues,
+  SHIGURE.MinimalRing.boundedObservationValues_eq_reverseReachValues,
+  SHIGURE.MinimalRing.range_allWordDualObservationMap_eq_reverseReach,
+  SHIGURE.MinimalRing.range_boundedWordDualObservationMap_eq_reverseReach,
+  SHIGURE.MinimalRing.reverseSystem,
+  SHIGURE.MinimalRing.evaluate_append,
+  SHIGURE.MinimalRing.evaluate_reverseSystem,
+  SHIGURE.MinimalRing.allWordDualObservationMap_iff_boundedObservation_dualMap,
+  SHIGURE.MinimalRing.allWordReachMap_iff_bounded,
+  SHIGURE.MinimalRing.LinearSystem,
+  SHIGURE.MinimalRing.evaluate,
+  SHIGURE.MinimalRing.evaluate_nil,
+  SHIGURE.MinimalRing.evaluate_snoc,
+  SHIGURE.MinimalRing.allWordReachMap,
+  SHIGURE.MinimalRing.boundedWordReachMap,
+  SHIGURE.MinimalRing.boundedObservationMap,
+  SHIGURE.MinimalRing.allWordDualObservationMap,
+  SHIGURE.MinimalRing.baseChangeSystem,
+  SHIGURE.MinimalRing.evaluate_baseChange
 ]
 
 end SHIGURE.AxiomAudit
