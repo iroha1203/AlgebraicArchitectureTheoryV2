@@ -279,6 +279,113 @@ fn archmap_value_to_scalar(
     }
 }
 
+/// 記号座標・状態用の `observed <Entity.field>` 解決（`Text`/`Bool`/`Z`/`Q`/`Fp` 対応・欠測時は `None`）。
+pub(super) fn resolve_observed_symbolic(
+    archmap: &CheckedArchMap,
+    snapshot_id: Option<&str>,
+    entity: &str,
+    field_full: &str,
+    fallback_law_ref: &SourceRef,
+) -> Result<(Option<String>, Vec<SourceRef>), ValidationError> {
+    let mut matches: Vec<(&Snapshot, &Subject)> = Vec::new();
+    for snap in archmap.snapshots() {
+        if let Some(sid) = snapshot_id
+            && snap.id != sid
+        {
+            continue;
+        }
+        for subj in &snap.subjects {
+            if subj.ty.as_str() == entity {
+                matches.push((snap, subj));
+            }
+        }
+    }
+    if matches.len() > 1 {
+        return Err(conv_err(format!(
+            "ambiguous observed subjects for entity `{entity}` (found {}); specify a snapshot or narrow ArchMap",
+            matches.len()
+        )));
+    }
+    let Some((snap, subj)) = matches.first().copied() else {
+        let missing_ref = fallback_law_ref
+            .clone()
+            .with_atom_ref(format!("missing_subject:{entity}:{field_full}"));
+        return Ok((None, vec![missing_ref]));
+    };
+
+    let field = subj
+        .fields
+        .iter()
+        .find(|f| f.name.as_str() == field_full)
+        .ok_or_else(|| ValidationError::UnknownRef {
+            kind: "archmap field",
+            name: field_full.to_owned(),
+            context: format!("{}:{}", snap.id, subj.id),
+        })?;
+
+    match &field.slot {
+        Slot::Missing => {
+            let origin = archmap
+                .origins()
+                .iter()
+                .find(|o| o.id == subj.origin)
+                .ok_or_else(|| ValidationError::UnknownRef {
+                    kind: "origin",
+                    name: subj.origin.clone(),
+                    context: format!("{}:{}", snap.id, subj.id),
+                })?;
+            let atom_slot = format!("{}:{}:{}", snap.id, subj.id, field_full);
+            let refs = origin_to_source_refs(origin, Some(atom_slot))?;
+            Ok((None, refs))
+        }
+        Slot::Known {
+            atom,
+            origin: origin_id,
+            value,
+            ..
+        } => {
+            let origin = archmap
+                .origins()
+                .iter()
+                .find(|o| o.id == *origin_id)
+                .ok_or_else(|| ValidationError::UnknownRef {
+                    kind: "origin",
+                    name: origin_id.clone(),
+                    context: format!("{}:{}:{atom}", snap.id, subj.id),
+                })?;
+            let atom_ref = format!("{}:{}:{}:{atom}", snap.id, subj.id, field_full);
+            let refs = origin_to_source_refs(origin, Some(atom_ref))?;
+            let text = match value {
+                Value::Text(s) => s.clone(),
+                Value::Bool(b) => b.to_string(),
+                Value::Z(n) => n.to_string(),
+                Value::Fp(n) => n.to_string(),
+                Value::Q(num, den) => {
+                    if *den <= BigInt::zero() {
+                        return Err(ValidationError::InvalidRational {
+                            context: field_full.to_owned(),
+                        });
+                    }
+                    let g = num.gcd(den);
+                    let nn = num / &g;
+                    let dd = den / g;
+                    if dd == BigInt::one() {
+                        nn.to_string()
+                    } else {
+                        format!("{nn}/{dd}")
+                    }
+                }
+                _ => {
+                    return Err(conv_err(format!(
+                        "observed symbolic field `{field_full}` must have Z, Q, Fp, Text, or Bool value"
+                    )));
+                }
+            };
+            Ok((Some(text), refs))
+        }
+    }
+}
+
 enum LowerFrame<'a> {
     Visit(&'a ShigurePolyExpr),
     ApplyNeg,
