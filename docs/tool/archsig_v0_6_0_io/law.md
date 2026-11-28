@@ -946,6 +946,7 @@ ShigureMultisource ::= "multisource" Name "{"
 また、`shigure lift` の `etale_descent.base_invertible` 省略時は `true` を、`affine_allowed.finite_displacement`・`shigure artin` の `non_noetherian_infinite`・`shigure diagnostics` の `compare_codomain_regeneration`・`shigure atlas` の `compare_to_q`・`shigure occurrence` の `context_closed`・`shigure partial` の `eval_law.required`・`shigure revision` の `snf.force_reuse` / `snf.origin_label_only`・`shigure multisource` の `support_goal.check_stability` 省略時はそれぞれ既定値（`context_closed = true`、`eval_law.required = true`、その他 `false`）を採用する。
 各 `rule`・`edge`・`subdivide`・移送 `step` における射本体 `ShigureMorphismClause` では、`comparison`・`identity`・インライン（`state_map` / `translate`）の混在を禁止する（`step` では `comparison` と `before`/`after` の混在も禁止する）。
 `shigure diagram` / `shigure path` / `shigure transfer` / `shigure family` / `shigure robustness` / `shigure chevalley` / `shigure observations` / `shigure lift` / `shigure artin` / `shigure diagnostics` / `shigure atlas` / `shigure occurrence` / `shigure partial` / `shigure revision` / `shigure multisource` の各ブロックおよび `phase` ブロック内では、異なる句の配置順は上記の多重度制約のもと任意であるが、`shigure transfer` の `step`、`shigure artin`（および `composite_stage`）の `aux_def`（先行定義のみ参照する依存順）、`shigure atlas` `protocol_sequence` の `before_step` / `after_step` は記述順が意味を持つ。
+なお `shigure occurrence` の `op_record` は DSL 上では正の出力記録を記述し、非定義記録には `domain_record ... = false` を用いる（出力負例と固定値衝突の別対比は内部 IR 単体検証でも扱う）。
 
 静的検査と変換検査では次を強制する。
 

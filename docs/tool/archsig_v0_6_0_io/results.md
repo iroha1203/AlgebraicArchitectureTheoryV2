@@ -1813,7 +1813,9 @@ PartialOutcomeDetail = {
   minimal_inconsistent_subsets: String[][],
   mus_verified: Bool,
   law_evaluations: {
-    law_name: String, strong_kleene: String, supervaluation: String,
+    law_name: String,
+    strong_kleene: "true" | "false" | "unknown",
+    supervaluation: "true" | "false" | "indeterminate" | "vacuously_true",
     antecedent_regime?: String, conditional_conclusion_eval?: String,
     affine_normalized_eval?: String
   }[],
