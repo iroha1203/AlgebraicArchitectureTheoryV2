@@ -902,4 +902,29 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         validate_partial_task(make_open_task(empty_let_binder)),
         Err(ValidationError::EmptyName { .. })
     ));
+
+    // direction_t 列数が 0 のとき非零 x0 は拒否され、零 x0 は受理される
+    use super::partial::AffinePartialPresentation;
+    let make_aff = |x0_val: i64| PartialTaskSpec {
+        name: "aff_zero_tcols".into(),
+        representation: PartialRepresentation::Affine(AffinePartialPresentation {
+            coeff_domain: CoeffDomain::Z,
+            coord_names: vec!["p".into()],
+            x0: vec![ScalarLit::int(x0_val)],
+            direction_t: vec![vec![]],
+            background_rows: vec![],
+            record_rows: vec![],
+            eval_equations: vec![],
+        }),
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(validate_partial_task(make_aff(0)).is_ok());
+    assert!(matches!(
+        validate_partial_task(make_aff(1)),
+        Err(ValidationError::ConversionError { .. })
+    ));
 }

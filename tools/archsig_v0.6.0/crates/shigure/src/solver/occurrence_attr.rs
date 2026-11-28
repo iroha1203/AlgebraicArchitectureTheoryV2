@@ -133,39 +133,27 @@ fn fiber_key_for<'a>(task: &'a CheckedOccurrenceTask, sort_name: &str, elem: &st
         .unwrap_or("_")
 }
 
-/// 評価分離のみ（操作非保存）に対する各 sort の最小補助属性値域サイズ $\kappa_s(\mathcal{S})$ を求める。
+/// 評価分離のみ（操作非保存）に対する各 sort の最小補助属性値域サイズ $\kappa_s(\mathcal{S})$ を求める（定理 17.10）。
 pub(super) fn compute_eval_separation_kappa(
     task: &CheckedOccurrenceTask,
+    context_classes: &ClassPartitionMap,
 ) -> BTreeMap<String, usize> {
+    let ctx_lookup = build_class_lookup(context_classes);
     let mut eval_kappa = BTreeMap::new();
     for sort in task.sorts() {
-        if sort.is_fixed_value {
-            let mut per_fiber: BTreeMap<&str, usize> = BTreeMap::new();
-            for elem in &sort.elements {
-                let fk = fiber_key_for(task, &sort.name, elem);
-                *per_fiber.entry(fk).or_insert(0) += 1;
-            }
-            eval_kappa.insert(
-                sort.name.clone(),
-                per_fiber.into_values().max().unwrap_or(1),
-            );
-            continue;
-        }
-        let mut per_fiber: BTreeMap<&str, BTreeSet<Vec<Option<&str>>>> = BTreeMap::new();
-        for elem in &sort.elements {
-            let sig: Vec<Option<&str>> = task
-                .base_readings()
-                .iter()
-                .chain(task.explicit_contexts())
-                .filter(|r| r.sort == sort.name)
-                .map(|r| r.values.get(elem).and_then(|v| v.as_deref()))
-                .collect();
+        let mut per_fiber: BTreeMap<&str, BTreeSet<usize>> = BTreeMap::new();
+        for (idx, elem) in sort.elements.iter().enumerate() {
             let fk = fiber_key_for(task, &sort.name, elem);
-            per_fiber.entry(fk).or_default().insert(sig);
+            let cid = ctx_lookup
+                .get(sort.name.as_str())
+                .and_then(|m| m.get(elem.as_str()))
+                .copied()
+                .unwrap_or(idx);
+            per_fiber.entry(fk).or_default().insert(cid);
         }
         eval_kappa.insert(
             sort.name.clone(),
-            per_fiber.into_values().map(|s| s.len()).max().unwrap_or(1),
+            per_fiber.into_values().map(|s| s.len()).max().unwrap_or(0),
         );
     }
     eval_kappa
@@ -173,10 +161,11 @@ pub(super) fn compute_eval_separation_kappa(
 
 pub(super) fn compute_attribute_failure_with_eval_kappa(
     task: &CheckedOccurrenceTask,
+    context_classes: &ClassPartitionMap,
     reason: &str,
 ) -> AttributeRealizationDetail {
     AttributeRealizationDetail {
-        eval_separation_kappa: compute_eval_separation_kappa(task),
+        eval_separation_kappa: compute_eval_separation_kappa(task, context_classes),
         sound_identification_exists: false,
         minimal_sound_kappa_tuples: vec![],
         selected_attribute_assignment: BTreeMap::new(),
@@ -185,16 +174,53 @@ pub(super) fn compute_attribute_failure_with_eval_kappa(
     }
 }
 
-/// 命題 17.11: 全健全同定から各 sort のファイバ別最大クラス数 $\kappa_s(\equiv)$ を計算し、
-/// パレート極小な組とその属性実現 $\alpha_s$ を構成・再評価検算する。
+/// 命題 17.11: 全健全同定のうち $\theta_s \subseteq \ker p_s$ を満たすものから各 sort のファイバ別最大クラス数
+/// $\kappa_s(\theta)$ を計算し、パレート極小な組とその属性実現 $\alpha_s$ を構成・再評価検算する。
 pub(super) fn compute_attribute_realization(
     task: &CheckedOccurrenceTask,
-    sound_partitions: &[BTreeMap<String, Vec<Vec<String>>>],
+    context_classes: &ClassPartitionMap,
+    sound_partitions: &[ClassPartitionMap],
 ) -> AttributeRealizationDetail {
-    let eval_separation_kappa = compute_eval_separation_kappa(task);
+    let eval_separation_kappa = compute_eval_separation_kappa(task, context_classes);
     let mut kappa_with_part: KappaPartitionList<'_> = Vec::new();
+    let mut rejected_ker_p_pairs = Vec::new();
 
     for part in sound_partitions {
+        let mut ker_p_ok = true;
+        for ro in task.initial_readouts() {
+            if let Some(cls_list) = part.get(&ro.sort) {
+                for cls in cls_list {
+                    if let Some(first) = cls.first() {
+                        let v0 = ro.values.get(first).map(String::as_str);
+                        if let Some(other) = cls
+                            .iter()
+                            .skip(1)
+                            .find(|e| ro.values.get(e.as_str()).map(String::as_str) != v0)
+                        {
+                            rejected_ker_p_pairs.push(format!(
+                                "{}: {} ~ {} yet p({})={:?} != p({})={:?}",
+                                ro.sort,
+                                first,
+                                other,
+                                first,
+                                v0,
+                                other,
+                                ro.values.get(other.as_str()).map(String::as_str)
+                            ));
+                            ker_p_ok = false;
+                            break;
+                        }
+                    }
+                }
+            }
+            if !ker_p_ok {
+                break;
+            }
+        }
+        if !ker_p_ok {
+            continue;
+        }
+
         let lookup = build_class_lookup(part);
         let mut tuple = BTreeMap::new();
         for sort in task.sorts() {
@@ -206,7 +232,7 @@ pub(super) fn compute_attribute_realization(
             }
             tuple.insert(
                 sort.name.clone(),
-                per_fiber.into_values().map(|s| s.len()).max().unwrap_or(1),
+                per_fiber.into_values().map(|s| s.len()).max().unwrap_or(0),
             );
         }
         kappa_with_part.push((tuple, part));
@@ -229,10 +255,15 @@ pub(super) fn compute_attribute_realization(
         minimal_pairs.iter().map(|(kt, _)| kt.clone()).collect();
 
     let Some((_, best_part)) = minimal_pairs.first() else {
-        return compute_attribute_failure_with_eval_kappa(
-            task,
-            "no minimal auxiliary attribute realization exists",
-        );
+        let reason = if rejected_ker_p_pairs.is_empty() {
+            "no sound identification preserving initial readouts (theta <= ker p) exists".to_owned()
+        } else {
+            format!(
+                "no sound identification satisfies theta_s <= ker(p_s): {}",
+                rejected_ker_p_pairs.join("; ")
+            )
+        };
+        return compute_attribute_failure_with_eval_kappa(task, context_classes, &reason);
     };
 
     let best_lookup = build_class_lookup(best_part);

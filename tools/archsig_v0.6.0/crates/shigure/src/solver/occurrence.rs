@@ -6,11 +6,13 @@ use crate::algebra::congruence::{
     compute_congruence_closure,
 };
 use crate::algebra::partition::{
-    BaseReading, PartialOpTable, PartitionRefinementResult, RefinementInput,
+    BaseReading, PartialOpTable, PartialRelTable, PartitionRefinementResult, RefinementInput,
     enumerate_set_partitions, partition_refines, refine_partition,
 };
 use crate::ir::change::PointDomain;
-use crate::ir::occurrence::{CheckedOccurrenceTask, OccurrenceOpSpec, OccurrenceReadingSpec};
+use crate::ir::occurrence::{
+    CheckedOccurrenceTask, OccurrenceOpSpec, OccurrenceReadingSpec, OccurrenceRelSpec,
+};
 use crate::ir::provenance::{MathClause, Provenance};
 use crate::ir::result::{ApplicabilityCheck, ShigureOutcome, SilenceReason, Verdict};
 use crate::ir::result_phase5_obs::{
@@ -76,9 +78,11 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
             "collision_witness_derivation_verified",
             MathClause::AatCh17Thm17Dot2,
         ));
+        let empty_ctx: BTreeMap<String, Vec<Vec<String>>> = BTreeMap::new();
         let attr_fail = if !task.initial_readouts().is_empty() {
             Some(compute_attribute_failure_with_eval_kappa(
                 task,
+                &empty_ctx,
                 "functional congruence closure collided before finding a sound attribute realization",
             ))
         } else {
@@ -137,6 +141,7 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
         let attr_fail = if !task.initial_readouts().is_empty() {
             Some(compute_attribute_failure_with_eval_kappa(
                 task,
+                &sound.context_equivalence_classes,
                 "no sound identification satisfies both identity requests and context separation",
             ))
         } else {
@@ -163,9 +168,22 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
             "initial_readouts_attribute_realization_checked",
             MathClause::AatCh17Thm17Dot11,
         ));
-        Some(compute_attribute_realization(task, &sound.sound_partitions))
+        Some(compute_attribute_realization(
+            task,
+            &sound.context_equivalence_classes,
+            &sound.sound_partitions,
+        ))
     } else {
         None
+    };
+
+    let attr_failed = attribute_realization.as_ref().is_some_and(|a| {
+        !a.sound_identification_exists || a.reevaluation.as_ref().is_some_and(|r| !r.matched)
+    });
+    let verdict = if attr_failed {
+        Verdict::Refuted
+    } else {
+        Verdict::Established
     };
 
     let detail = OccurrenceOutcomeDetail {
@@ -180,7 +198,7 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
         coarsest_sound_classes: sound.coarsest_sound_classes,
         attribute_realization,
     };
-    build_outcome(Verdict::Established, checks, provenance, Some(detail))
+    build_outcome(verdict, checks, provenance, Some(detail))
 }
 
 struct SoundAnalysisOutcome {
@@ -293,6 +311,18 @@ fn analyze_setting_17_5(
     task: &CheckedOccurrenceTask,
     checks: &mut Vec<ApplicabilityCheck>,
 ) -> Result<SoundAnalysisOutcome, SilenceReason> {
+    if let Some(neg_op) = task.op_records().iter().find(|rec| !rec.positive) {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "setting_17_5_no_negative_output_records".to_owned(),
+            detail: format!(
+                "negative output record `{}`({}) != `{}` violates Setting 17.5 (G_e^- = empty)",
+                neg_op.op_name,
+                neg_op.args.join(", "),
+                neg_op.output
+            ),
+        });
+    }
+
     let sort_map: BTreeMap<String, Vec<String>> = task
         .sorts()
         .iter()
@@ -307,6 +337,7 @@ fn analyze_setting_17_5(
     let base_readings: Vec<BaseReading> = task
         .base_readings()
         .iter()
+        .chain(task.explicit_contexts())
         .map(|r| BaseReading {
             name: r.name.clone(),
             sort: r.sort.clone(),
@@ -325,11 +356,22 @@ fn analyze_setting_17_5(
         });
     }
 
+    let mut rels = Vec::new();
+    for rel in task.relations() {
+        let entries = build_setting_17_5_rel_entries(rel, &sort_map, task)?;
+        rels.push(PartialRelTable {
+            name: rel.name.clone(),
+            arg_sorts: rel.arg_sorts.clone(),
+            entries,
+        });
+    }
+
     let ref_res: PartitionRefinementResult = refine_partition(&RefinementInput {
-        sorts: sort_map,
-        fixed_sorts,
-        base_readings,
-        ops,
+        sorts: sort_map.clone(),
+        fixed_sorts: fixed_sorts.clone(),
+        base_readings: base_readings.clone(),
+        ops: ops.clone(),
+        rels: rels.clone(),
         max_iterations: task.max_partitions(),
     })
     .map_err(|err| SilenceReason::ApplicabilityConditionNotMet {
@@ -354,12 +396,16 @@ fn analyze_setting_17_5(
         let cl = class_of[s.as_str()][lhs.as_str()];
         let cr = class_of[s.as_str()][rhs.as_str()];
         if cl != cr {
+            let rep_l = ref_res.classes[s.as_str()][cl][0].as_str();
+            let rep_r = ref_res.classes[s.as_str()][cr][0].as_str();
             let witness_expr = ref_res
                 .witnesses
                 .iter()
                 .find(|w| {
                     w.sort == *s
-                        && ((w.lhs == *lhs && w.rhs == *rhs) || (w.lhs == *rhs && w.rhs == *lhs))
+                        && (((w.lhs == *lhs && w.rhs == *rhs) || (w.lhs == *rhs && w.rhs == *lhs))
+                            || ((w.lhs == rep_l && w.rhs == rep_r)
+                                || (w.lhs == rep_r && w.rhs == rep_l)))
                 })
                 .map(|w| w.context_expr.clone())
                 .unwrap_or_else(|| "context_mismatch".to_owned());
@@ -389,10 +435,41 @@ fn analyze_setting_17_5(
         });
     }
 
+    let mut sound_partitions = vec![ref_res.classes.clone()];
+    if !task.initial_readouts().is_empty() {
+        let mut init_readings = base_readings;
+        for ro in task.initial_readouts() {
+            let mut values = BTreeMap::new();
+            for e in &sort_map[ro.sort.as_str()] {
+                values.insert(e.clone(), ro.values.get(e).cloned());
+            }
+            init_readings.push(BaseReading {
+                name: format!("__initial_readout_{}", ro.sort),
+                sort: ro.sort.clone(),
+                values,
+            });
+        }
+        if let Ok(kerp_res) = refine_partition(&RefinementInput {
+            sorts: sort_map,
+            fixed_sorts,
+            base_readings: init_readings,
+            ops,
+            rels,
+            max_iterations: task.max_partitions(),
+        }) {
+            let kerp_lookup = build_class_lookup(&kerp_res.classes);
+            if kerp_res.classes != ref_res.classes
+                && is_partition_sound(task, &all_readings, &kerp_lookup)
+            {
+                sound_partitions.push(kerp_res.classes);
+            }
+        }
+    }
+
     Ok(SoundAnalysisOutcome {
         context_equivalence_classes: ref_res.classes.clone(),
         separating_contexts,
-        sound_partitions: vec![ref_res.classes.clone()],
+        sound_partitions,
         coarsest_sound_classes: Some(ref_res.classes),
         extra_collisions,
     })
@@ -427,7 +504,26 @@ fn build_setting_17_5_op_entries(
             && rec.name == op.name
             && rec.arg_sorts == op.arg_sorts
         {
-            entries.insert(rec.args.clone(), None);
+            if op.is_total {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "setting_17_5_total_op".to_owned(),
+                    detail: format!(
+                        "total operation `{}` has absent domain record on ({})",
+                        op.name,
+                        rec.args.join(", ")
+                    ),
+                });
+            }
+            if let Some(Some(prev_out)) = entries.insert(rec.args.clone(), None) {
+                return Err(SilenceReason::ApplicabilityConditionNotMet {
+                    condition: "setting_17_5_consistent_op_domain".to_owned(),
+                    detail: format!(
+                        "operation `{}` has both output `{prev_out}` and absent domain on ({})",
+                        op.name,
+                        rec.args.join(", ")
+                    ),
+                });
+            }
         }
     }
 
@@ -438,6 +534,45 @@ fn build_setting_17_5_op_entries(
             detail: format!(
                 "operation `{}` defines {} of {} tuples (incomplete domain under setting 17.5)",
                 op.name,
+                entries.len(),
+                expected
+            ),
+        });
+    }
+    Ok(entries)
+}
+
+fn build_setting_17_5_rel_entries(
+    rel: &OccurrenceRelSpec,
+    sort_map: &BTreeMap<String, Vec<String>>,
+    task: &CheckedOccurrenceTask,
+) -> Result<BTreeMap<Vec<String>, bool>, SilenceReason> {
+    let mut entries = BTreeMap::new();
+    for rec in task.pred_records() {
+        if rec.kind == PredicateRecordKind::Relation
+            && rec.name == rel.name
+            && rec.arg_sorts == rel.arg_sorts
+            && let Some(prev) = entries.insert(rec.args.clone(), rec.positive)
+            && prev != rec.positive
+        {
+            return Err(SilenceReason::ApplicabilityConditionNotMet {
+                condition: "setting_17_5_consistent_rel".to_owned(),
+                detail: format!(
+                    "relation `{}` has conflicting records on ({})",
+                    rel.name,
+                    rec.args.join(", ")
+                ),
+            });
+        }
+    }
+
+    let expected = count_arg_product(&rel.arg_sorts, sort_map);
+    if entries.len() != expected {
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "setting_17_5_closed".to_owned(),
+            detail: format!(
+                "relation `{}` defines {} of {} tuples (incomplete relation table under setting 17.5)",
+                rel.name,
                 entries.len(),
                 expected
             ),
@@ -577,17 +712,8 @@ pub(super) fn is_partition_sound(
             let cid = class_of[r.sort.as_str()][elem.as_str()];
             let v = val_opt.as_deref();
             if let Some(prev) = class_val.get(&cid) {
-                match (*prev, v) {
-                    (Some(p), Some(cur)) if p != cur => return false,
-                    (None, Some(_)) | (Some(_), None)
-                        if preserve_all || preserve_set.contains(r.name.as_str()) =>
-                    {
-                        return false;
-                    }
-                    (None, Some(cur)) => {
-                        class_val.insert(cid, Some(cur));
-                    }
-                    _ => {}
+                if *prev != v {
+                    return false;
                 }
             } else {
                 class_val.insert(cid, v);
@@ -666,23 +792,27 @@ pub(super) fn is_partition_sound(
         }
     }
 
-    for (pk, pn, pas, _) in &pos_preds {
-        let want_full = preserve_all || preserve_set.contains(*pn);
+    let unique_preds: BTreeSet<(&PredicateRecordKind, &str, &[String])> = pos_preds
+        .iter()
+        .map(|(pk, pn, pas, _)| (*pk, *pn, *pas))
+        .collect();
+    for (pk, pn, pas) in unique_preds {
+        let want_full = preserve_all || preserve_set.contains(pn);
         if !want_full {
             continue;
         }
         let pos_cid_tuples: BTreeSet<Vec<usize>> = pos_preds
             .iter()
-            .filter(|(k, n, s, _)| *k == *pk && *n == *pn && *s == *pas)
+            .filter(|(k, n, s, _)| *k == pk && *n == pn && *s == pas)
             .map(|(_, _, s, a)| tuple_cids(s, a))
             .collect();
         let pos_arg_tuples: BTreeSet<Vec<&str>> = pos_preds
             .iter()
-            .filter(|(k, n, s, _)| *k == *pk && *n == *pn && *s == *pas)
+            .filter(|(k, n, s, _)| *k == pk && *n == pn && *s == pas)
             .map(|(_, _, _, a)| a.iter().map(String::as_str).collect())
             .collect();
         let mut all_tuples = vec![vec![]];
-        for s_name in *pas {
+        for s_name in pas {
             let elems = &task
                 .sorts()
                 .iter()

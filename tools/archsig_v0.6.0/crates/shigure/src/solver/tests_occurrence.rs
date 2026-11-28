@@ -229,13 +229,15 @@ fn ch17_example17_7_partial_recording_has_no_coarsest_sound_quotient() {
 
 #[test]
 fn ch17_example17_12_and_17_13_attribute_kappa_and_request_collision() {
-    // 例 17.12: T(c)=b, T(b)=a, T(a)=a, 評価 obs(a)=1, obs(b)=0, obs(c)=0、初期読み出しは定数 "_"
-    // 評価分離だけなら 2 値（{b,c}, {a}）だが、T 保存では 3 値（{a}, {b}, {c}）が必要。
+    // 数学本文 例 17.12: E = {a,b,c,d}, T(a)=a, T(b)=c, T(c)=c, T(d)=d
+    // o(a)=o(b)=o(c)=0, o(d)=1 により文脈同値 ≈_V = {a,b,c} | {d}
+    // 初期読み出し p(a)=p(b)=0, p(c)=1, p(d)=0 より、評価分離 kappa = |{a,b,d} / ≈_V| = 2。
+    // 一方、T 保存と θ ⊆ ker p かつ a~b => T(a)=a ~ c=T(b) (p(a)!=p(c)) のため、操作保存最小 kappa = 3。
     let base = OccurrenceTaskSpec {
         name: "ex_17_12".into(),
         sorts: vec![OccurrenceSortSpec {
             name: "S".into(),
-            elements: vec!["a".into(), "b".into(), "c".into()],
+            elements: vec!["a".into(), "b".into(), "c".into(), "d".into()],
             is_fixed_value: false,
         }],
         operations: vec![OccurrenceOpSpec {
@@ -250,9 +252,9 @@ fn ch17_example17_12_and_17_13_attribute_kappa_and_request_collision() {
             OpOutputRecord {
                 op_name: "T".into(),
                 arg_sorts: vec!["S".into()],
-                args: vec!["c".into()],
+                args: vec!["a".into()],
                 out_sort: "S".into(),
-                output: "b".into(),
+                output: "a".into(),
                 positive: true,
             },
             OpOutputRecord {
@@ -260,26 +262,35 @@ fn ch17_example17_12_and_17_13_attribute_kappa_and_request_collision() {
                 arg_sorts: vec!["S".into()],
                 args: vec!["b".into()],
                 out_sort: "S".into(),
-                output: "a".into(),
+                output: "c".into(),
                 positive: true,
             },
             OpOutputRecord {
                 op_name: "T".into(),
                 arg_sorts: vec!["S".into()],
-                args: vec!["a".into()],
+                args: vec!["c".into()],
                 out_sort: "S".into(),
-                output: "a".into(),
+                output: "c".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["d".into()],
+                out_sort: "S".into(),
+                output: "d".into(),
                 positive: true,
             },
         ],
         pred_records: vec![],
         base_readings: vec![OccurrenceReadingSpec {
-            name: "eval".into(),
+            name: "o".into(),
             sort: "S".into(),
             values: BTreeMap::from([
-                ("a".into(), Some("1".into())),
+                ("a".into(), Some("0".into())),
                 ("b".into(), Some("0".into())),
                 ("c".into(), Some("0".into())),
+                ("d".into(), Some("1".into())),
             ]),
         }],
         context_closed_17_5: true,
@@ -288,9 +299,10 @@ fn ch17_example17_12_and_17_13_attribute_kappa_and_request_collision() {
         initial_readouts: vec![OccurrenceInitialReadoutSpec {
             sort: "S".into(),
             values: BTreeMap::from([
-                ("a".into(), "u".into()),
-                ("b".into(), "u".into()),
-                ("c".into(), "u".into()),
+                ("a".into(), "0".into()),
+                ("b".into(), "0".into()),
+                ("c".into(), "1".into()),
+                ("d".into(), "0".into()),
             ]),
         }],
         provenance: prov(),
@@ -301,7 +313,15 @@ fn ch17_example17_12_and_17_13_attribute_kappa_and_request_collision() {
 
     let out = solve_occurrence_task(&validate_occurrence_task(base.clone()).unwrap());
     assert_eq!(out.verdict, Verdict::Established);
-    let attr = out.occurrence.unwrap().attribute_realization.unwrap();
+    let occ = out.occurrence.unwrap();
+    assert_eq!(
+        occ.context_equivalence_classes["S"],
+        vec![
+            vec!["a".to_owned(), "b".to_owned(), "c".to_owned()],
+            vec!["d".to_owned()],
+        ]
+    );
+    let attr = occ.attribute_realization.unwrap();
     assert!(attr.sound_identification_exists);
     assert_eq!(attr.eval_separation_kappa["S"], 2);
     assert_eq!(
@@ -313,22 +333,28 @@ fn ch17_example17_12_and_17_13_attribute_kappa_and_request_collision() {
             .as_ref()
             .is_some_and(|r| r.checked && r.matched)
     );
-    let assigned_vals: BTreeSet<usize> = attr.selected_attribute_assignment["S"]
-        .values()
-        .copied()
+    let p0_vals: BTreeSet<usize> = ["a", "b", "d"]
+        .into_iter()
+        .map(|e| attr.selected_attribute_assignment["S"][e])
         .collect();
-    assert_eq!(assigned_vals.len(), 3);
+    assert_eq!(p0_vals.len(), 3);
 
-    // 要求 b ~ c を追加すると T(b)=a vs T(c)=b => a ~ b が評価 obs で衝突する
+    // 要求 (a, b) ∈ ker(p) ∩ ≈_V を追加すると T(a)=a ~ c=T(b) が p(a)!=p(c) で破綻する
     let mut with_req = base;
     with_req
         .identity_requests
-        .push(("S".into(), "b".into(), "c".into()));
+        .push(("S".into(), "a".into(), "b".into()));
     let out_req = solve_occurrence_task(&validate_occurrence_task(with_req).unwrap());
     assert_eq!(out_req.verdict, Verdict::Refuted);
     let attr_fail = out_req.occurrence.unwrap().attribute_realization.unwrap();
     assert!(!attr_fail.sound_identification_exists);
-    assert!(attr_fail.failure_reason.is_some());
+    assert_eq!(attr_fail.eval_separation_kappa["S"], 2);
+    assert!(
+        attr_fail
+            .failure_reason
+            .as_deref()
+            .is_some_and(|msg| msg.contains("ker(p_s)"))
+    );
 
     // 例 17.13: 別名（x0, x1 同一）+ 多解釈タグ付き（y0, y1 を初期読出し同一ファイバ内で区別）
     let ex17_13 = OccurrenceTaskSpec {
@@ -445,4 +471,255 @@ fn ch17_undetermined_on_unobserved_and_partition_bound() {
         out_bound.verdict,
         Verdict::Undetermined(SilenceReason::FiniteEnumerationOutOfScope { .. })
     ));
+}
+
+#[test]
+fn ch17_setting17_5_relations_negative_guards_and_bot_reading_soundness() {
+    // 1. 関係表による設定 17.5 反復細分と分離文脈生成
+    let rel_task = OccurrenceTaskSpec {
+        name: "setting17_5_rel_sep".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a0".into(), "a1".into(), "b0".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![],
+        relations: vec![OccurrenceRelSpec {
+            name: "R".into(),
+            arg_sorts: vec!["S".into()],
+        }],
+        identity_requests: vec![],
+        op_records: vec![],
+        pred_records: vec![
+            PredicateRecord {
+                kind: PredicateRecordKind::Relation,
+                name: "R".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["a0".into()],
+                positive: true,
+            },
+            PredicateRecord {
+                kind: PredicateRecordKind::Relation,
+                name: "R".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["a1".into()],
+                positive: true,
+            },
+            PredicateRecord {
+                kind: PredicateRecordKind::Relation,
+                name: "R".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["b0".into()],
+                positive: false,
+            },
+        ],
+        base_readings: vec![],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    let rel_out = solve_occurrence_task(&validate_occurrence_task(rel_task).unwrap());
+    assert_eq!(rel_out.verdict, Verdict::Established);
+    let rel_occ = rel_out.occurrence.unwrap();
+    assert_eq!(
+        rel_occ.context_equivalence_classes["S"],
+        vec![
+            vec!["a0".to_owned(), "a1".to_owned()],
+            vec!["b0".to_owned()],
+        ]
+    );
+    assert!(
+        rel_occ
+            .separating_contexts
+            .iter()
+            .any(|sc| sc.context_expr == "R(x)" && sc.verified)
+    );
+
+    // 1b. 非代表元 (a1, b1) を同一視要求したときの代表元 (a0, b0) 経由 witness 検索
+    let nonrep_task = OccurrenceTaskSpec {
+        name: "setting17_5_nonrep_witness".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a0".into(), "a1".into(), "b0".into(), "b1".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![],
+        relations: vec![],
+        identity_requests: vec![("S".into(), "a1".into(), "b1".into())],
+        op_records: vec![],
+        pred_records: vec![],
+        base_readings: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([
+                ("a0".into(), Some("0".into())),
+                ("a1".into(), Some("0".into())),
+                ("b0".into(), Some("1".into())),
+                ("b1".into(), Some("1".into())),
+            ]),
+        }],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    let nonrep_out = solve_occurrence_task(&validate_occurrence_task(nonrep_task).unwrap());
+    assert_eq!(nonrep_out.verdict, Verdict::Refuted);
+    let nonrep_occ = nonrep_out.occurrence.unwrap();
+    let sep_col = nonrep_occ
+        .collisions
+        .iter()
+        .find(|c| c.kind == "context_separation_conflict")
+        .expect("context separation collision expected");
+    assert!(!sep_col.detail.contains("context_mismatch"));
+    assert!(sep_col.detail.contains("o(x)"));
+
+    // 2. 設定 17.5 で G_e^- が非空なら適用条件外で Undetermined
+    let neg_out_task = OccurrenceTaskSpec {
+        name: "setting17_5_neg_op".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![OccurrenceOpSpec {
+            name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "S".into(),
+            is_total: true,
+        }],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["a".into()],
+                out_sort: "S".into(),
+                output: "a".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["b".into()],
+                out_sort: "S".into(),
+                output: "b".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["b".into()],
+                out_sort: "S".into(),
+                output: "a".into(),
+                positive: false,
+            },
+        ],
+        pred_records: vec![],
+        base_readings: vec![],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        solve_occurrence_task(&validate_occurrence_task(neg_out_task).unwrap()).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    // 3. 設定 17.5 で is_total 操作に負の定義域記録があれば適用条件外で Undetermined
+    let total_dom_neg = OccurrenceTaskSpec {
+        name: "setting17_5_total_dom_neg".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![OccurrenceOpSpec {
+            name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "S".into(),
+            is_total: true,
+        }],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![OpOutputRecord {
+            op_name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            args: vec!["a".into()],
+            out_sort: "S".into(),
+            output: "a".into(),
+            positive: true,
+        }],
+        pred_records: vec![PredicateRecord {
+            kind: PredicateRecordKind::Domain,
+            name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            args: vec!["b".into()],
+            positive: false,
+        }],
+        base_readings: vec![],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        solve_occurrence_task(&validate_occurrence_task(total_dom_neg).unwrap()).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
+
+    // 4. 一般有限系で読取りに明示未定義 None (bot_c) と Some("0") がある場合、混同する同定は健全でない
+    let bot_sep = OccurrenceTaskSpec {
+        name: "general_bot_reading".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![],
+        pred_records: vec![],
+        base_readings: vec![OccurrenceReadingSpec {
+            name: "c".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), Some("0".into())), ("b".into(), None)]),
+        }],
+        context_closed_17_5: false,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    let bot_out = solve_occurrence_task(&validate_occurrence_task(bot_sep).unwrap());
+    assert_eq!(bot_out.verdict, Verdict::Established);
+    let bot_occ = bot_out.occurrence.unwrap();
+    assert_eq!(bot_occ.sound_identifications_count, Some(1));
+    assert_eq!(
+        bot_occ.coarsest_sound_classes.unwrap()["S"],
+        vec![vec!["a".to_owned()], vec!["b".to_owned()]]
+    );
 }

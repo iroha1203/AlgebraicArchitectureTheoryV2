@@ -459,7 +459,7 @@ fn ch18_quantifier_4_levels_and_theorem18_12_hitting_sets() {
             .unwrap()
     };
 
-    // 1. E=true, U=true, Q=false, G=false（両方可解だが結果が違い、slot s1 が必要スロット）
+    // 1. E=true, U=true, Q=false, G=false（各補完に一意解があるが共通解なし；slot s1 が必要スロット）
     let q_u_no_q = run_q(vec![
         QuantifierCompletionSpec {
             id: "c1".into(),
@@ -478,8 +478,63 @@ fn ch18_quantifier_4_levels_and_theorem18_12_hitting_sets() {
     assert!(q_u_no_q.g_iff_u_and_q_verified);
     assert_eq!(q_u_no_q.required_slot_sets, vec![vec!["s1".to_owned()]]);
 
-    // 2. E=true, U=false, Q=true, G=false（同一 slot 値なのに可解性が分かれる -> insufficiency_witness）
+    // 2. E=true, U=false, Q=true, G=false（共通解は唯一 x1 だが c1 で一意性を欠く）
     let q_q_no_u = run_q(vec![
+        QuantifierCompletionSpec {
+            id: "c1".into(),
+            slot_values: BTreeMap::from([("s1".into(), "0".into())]),
+            valid_candidates: vec!["x1".into(), "x2".into()],
+            output_value: "a".into(),
+        },
+        QuantifierCompletionSpec {
+            id: "c2".into(),
+            slot_values: BTreeMap::from([("s1".into(), "1".into())]),
+            valid_candidates: vec!["x1".into()],
+            output_value: "b".into(),
+        },
+    ]);
+    assert!(q_q_no_u.e_holds && !q_q_no_u.u_holds && q_q_no_u.q_holds && !q_q_no_u.g_holds);
+    assert!(q_q_no_u.g_iff_u_and_q_verified);
+    assert_eq!(q_q_no_u.required_slot_sets, vec![vec!["s1".to_owned()]]);
+
+    // 3. E=true, U=false, Q=false, G=false（両方複数有効解で一意共通解もなし）
+    let q_e_only = run_q(vec![
+        QuantifierCompletionSpec {
+            id: "c1".into(),
+            slot_values: BTreeMap::from([("s1".into(), "0".into())]),
+            valid_candidates: vec!["x1".into(), "x2".into()],
+            output_value: "ok".into(),
+        },
+        QuantifierCompletionSpec {
+            id: "c2".into(),
+            slot_values: BTreeMap::from([("s1".into(), "1".into())]),
+            valid_candidates: vec!["x1".into(), "x2".into()],
+            output_value: "ok".into(),
+        },
+    ]);
+    assert!(q_e_only.e_holds && !q_e_only.u_holds && !q_e_only.q_holds && !q_e_only.g_holds);
+    assert!(q_e_only.g_iff_u_and_q_verified);
+
+    // 4. E=true, U=true, Q=true, G=true（共通の唯一解 x1）
+    let q_all = run_q(vec![
+        QuantifierCompletionSpec {
+            id: "c1".into(),
+            slot_values: BTreeMap::from([("s1".into(), "0".into())]),
+            valid_candidates: vec!["x1".into()],
+            output_value: "ok".into(),
+        },
+        QuantifierCompletionSpec {
+            id: "c2".into(),
+            slot_values: BTreeMap::from([("s1".into(), "1".into())]),
+            valid_candidates: vec!["x1".into()],
+            output_value: "ok".into(),
+        },
+    ]);
+    assert!(q_all.e_holds && q_all.u_holds && q_all.q_holds && q_all.g_holds);
+    assert!(q_all.g_iff_u_and_q_verified);
+
+    // 5. E=false かつ同一スロットで可解性が割れる不足反例（insufficiency_witness）
+    let q_not_e = run_q(vec![
         QuantifierCompletionSpec {
             id: "c1".into(),
             slot_values: BTreeMap::from([("s1".into(), "0".into())]),
@@ -493,34 +548,44 @@ fn ch18_quantifier_4_levels_and_theorem18_12_hitting_sets() {
             output_value: "a".into(),
         },
     ]);
-    assert!(q_q_no_u.e_holds && !q_q_no_u.u_holds && q_q_no_u.q_holds && !q_q_no_u.g_holds);
-    assert!(q_q_no_u.g_iff_u_and_q_verified);
-    assert!(q_q_no_u.required_slot_sets.is_empty());
-    assert!(q_q_no_u.insufficiency_witness.is_some());
+    assert!(!q_not_e.e_holds && !q_not_e.u_holds && !q_not_e.q_holds && !q_not_e.g_holds);
+    assert!(q_not_e.g_iff_u_and_q_verified);
+    assert!(q_not_e.required_slot_sets.is_empty());
+    assert!(q_not_e.insufficiency_witness.is_some());
 
-    // 3. E=true, U=true, Q=true, G=true
-    let q_all = run_q(vec![
-        QuantifierCompletionSpec {
-            id: "c1".into(),
-            slot_values: BTreeMap::from([("s1".into(), "0".into())]),
-            valid_candidates: vec!["x1".into()],
-            output_value: "ok".into(),
-        },
-        QuantifierCompletionSpec {
-            id: "c2".into(),
-            slot_values: BTreeMap::from([("s1".into(), "1".into())]),
-            valid_candidates: vec!["x2".into()],
-            output_value: "ok".into(),
-        },
-    ]);
-    assert!(q_all.e_holds && q_all.u_holds && q_all.q_holds && q_all.g_holds);
-    assert!(q_all.g_iff_u_and_q_verified);
+    // 6. 空の補完族は定義 18.10 の前提外として Undetermined
+    let empty_q = PartialTaskSpec {
+        name: "q_empty".into(),
+        representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
+            sorts: BTreeMap::from([("V".into(), vec!["0".into()])]),
+            operations: vec![],
+            relations: vec![],
+            slots: vec![],
+            background_constraints: vec![],
+            records: vec![],
+            max_completions: 8,
+        }),
+        eval_laws: vec![],
+        quantifier_spec: Some(QuantifierHierarchySpec {
+            candidates: vec!["x1".into()],
+            completions: vec![],
+            max_steps: 1024,
+        }),
+        open_domain: None,
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        solve_partial_task(&validate_partial_task(empty_q).unwrap()).verdict,
+        Verdict::Undetermined(SilenceReason::ApplicabilityConditionNotMet { .. })
+    ));
 }
 
 #[test]
 fn ch18_open_domain_example18_15_thm18_16_and_thm18_18_affine_unique_repair() {
-    // 例 18.15: A_0 = {a0}, A = {a0, a1}（外部個体 a1 の存在により exists x. R(x) が A で成立、A_0 で不成立）
-    // また rho(a0) = b0, rho(a1) = b1 とすると known_targets=[b0] に対し rho(a1) が局所非網羅。
+    // 数学本文 例 18.15: ∀x ∃y R(x,y), A_0 = {a}, R_{A_0} = ∅; A = {a,b}, R_A = {(a,b),(b,a)}
+    // 正の式自体は A_0 で偽、A で真（positive_preserved）。
+    // ファイバー網羅 rho(a0)=b0, rho(a1)=b1 vs rho(a1)=b0（式 18.5 p_A^{-1}(B) ⊆ X_s(A_0)）の両向きを検査。
     let open_spec = PartialTaskSpec {
         name: "ex_18_15_open".into(),
         representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
@@ -560,13 +625,16 @@ fn ch18_open_domain_example18_15_thm18_16_and_thm18_18_affine_unique_repair() {
             }],
             substructure_rels: vec![OpenRelTable {
                 name: "R".into(),
-                arg_sorts: vec!["A".into()],
+                arg_sorts: vec!["A".into(), "A".into()],
                 entries: BTreeSet::new(),
             }],
             ambient_rels: vec![OpenRelTable {
                 name: "R".into(),
-                arg_sorts: vec!["A".into()],
-                entries: BTreeSet::from([vec!["a1".into()]]),
+                arg_sorts: vec!["A".into(), "A".into()],
+                entries: BTreeSet::from([
+                    vec!["a0".into(), "a1".into()],
+                    vec!["a1".into(), "a0".into()],
+                ]),
             }],
             fiber_checks: vec![FiberCoverageCheckSpec {
                 op_name: "rho".into(),
@@ -575,21 +643,25 @@ fn ch18_open_domain_example18_15_thm18_16_and_thm18_18_affine_unique_repair() {
                 known_targets: vec!["b0".into()],
             }],
             positive_or_law: PartialEvalLawSpec {
-                name: "exists_R".into(),
+                name: "forall_exists_R".into(),
                 antecedent: None,
-                conclusion: PartialFormula::Exists {
+                conclusion: PartialFormula::Forall {
                     var: "x".into(),
                     sort: "A".into(),
                     restricted_domain: None,
-                    body: Box::new(PartialFormula::Rel {
-                        rel_name: "R".into(),
-                        args: vec![PartialTerm::Var("x".into())],
+                    body: Box::new(PartialFormula::Exists {
+                        var: "y".into(),
+                        sort: "A".into(),
+                        restricted_domain: None,
+                        body: Box::new(PartialFormula::Rel {
+                            rel_name: "R".into(),
+                            args: vec![PartialTerm::Var("x".into()), PartialTerm::Var("y".into())],
+                        }),
                     }),
                 },
                 is_required_law: false,
             },
-            // 定理 18.18: M = [1, 1], b = [2], ker M = span{(1, -1)} (dim 1)
-            // 制限 R = [1, 0] (x0 への射影) は ker 上で非零なので image_dim=1, fiber_dim=0 => 一意修復存在！
+            // 定理 18.18 Case A: M = [1, 1], b = [2], R = [1, 0] -> img_dim=1, fiber_dim=0 -> 大域唯一ではない
             affine_restriction: Some(AffineRestrictionSpec {
                 coeff_domain: CoeffDomain::Q,
                 m_matrix: vec![vec![
@@ -607,17 +679,18 @@ fn ch18_open_domain_example18_15_thm18_16_and_thm18_18_affine_unique_repair() {
         provenance: prov(),
         undeclared_unobserved_slots: vec![],
     };
-    let out = solve_partial_task(&validate_partial_task(open_spec).unwrap());
+    let out = solve_partial_task(&validate_partial_task(open_spec.clone()).unwrap());
     assert_eq!(out.verdict, Verdict::Established);
     let od = out.partial.unwrap().open_domain.unwrap();
     assert!(od.is_full_substructure);
-    assert!(!od.all_fibers_locally_exhaustive);
-    assert_eq!(od.uncovered_fibers, vec!["rho(a1)"]);
+    // p_A^{-1}({b0}) = {a0} ⊆ {a0} = X_A(A_0) より局所網羅成立
+    assert!(od.all_fibers_locally_exhaustive);
+    assert!(od.uncovered_fibers.is_empty());
     assert_eq!(od.sub_law_eval, "false");
     assert_eq!(od.ambient_law_eval, "true");
     assert!(od.positive_preserved);
     assert!(!od.law_evaluations_match);
-    assert_eq!(od.affine_unique_repair_exists, Some(true));
+    assert_eq!(od.affine_unique_repair_exists, Some(false));
     assert_eq!(od.affine_image_dim, Some(1));
     assert_eq!(od.affine_fiber_dim, Some(0));
     assert!(
@@ -625,6 +698,87 @@ fn ch18_open_domain_example18_15_thm18_16_and_thm18_18_affine_unique_repair() {
             .as_ref()
             .is_some_and(|r| r.checked && r.matched)
     );
+
+    // 非正の式 (∀x ¬R(x, a0)) が A_0 で真・A で偽でも reevaluation.matched == true となること
+    // かつ a1 -> b0 により p_A^{-1}({b0}) = {a0, a1} ⊈ X_A(A_0) で局所網羅失敗
+    let mut non_exhaustive = open_spec.clone();
+    let od_mut = non_exhaustive.open_domain.as_mut().unwrap();
+    od_mut.ambient_ops[0]
+        .entries
+        .insert(vec!["a1".into()], Some("b0".into()));
+    od_mut.positive_or_law.conclusion = PartialFormula::Forall {
+        var: "x".into(),
+        sort: "A".into(),
+        restricted_domain: None,
+        body: Box::new(PartialFormula::Not(Box::new(PartialFormula::Rel {
+            rel_name: "R".into(),
+            args: vec![
+                PartialTerm::Var("x".into()),
+                PartialTerm::Const("a0".into()),
+            ],
+        }))),
+    };
+    let out_ne = solve_partial_task(&validate_partial_task(non_exhaustive).unwrap());
+    let od_ne = out_ne.partial.unwrap().open_domain.unwrap();
+    assert!(!od_ne.all_fibers_locally_exhaustive);
+    assert_eq!(od_ne.uncovered_fibers, vec!["rho(a1)"]);
+    assert_eq!(od_ne.sub_law_eval, "true");
+    assert_eq!(od_ne.ambient_law_eval, "false");
+    assert!(!od_ne.positive_preserved);
+    assert!(
+        od_ne
+            .reevaluation
+            .as_ref()
+            .is_some_and(|r| r.checked && r.matched)
+    );
+
+    // 定理 18.18 Case B (img_dim=0, fiber_dim=1 => false) と Case C (img_dim=0, fiber_dim=0 => true)
+    let mut case_b = open_spec.clone();
+    case_b
+        .open_domain
+        .as_mut()
+        .unwrap()
+        .affine_restriction
+        .as_mut()
+        .unwrap()
+        .r_matrix = vec![vec![
+        ScalarLit::rat(1, 1).unwrap(),
+        ScalarLit::rat(1, 1).unwrap(),
+    ]];
+    let od_b = solve_partial_task(&validate_partial_task(case_b).unwrap())
+        .partial
+        .unwrap()
+        .open_domain
+        .unwrap();
+    assert_eq!(od_b.affine_image_dim, Some(0));
+    assert_eq!(od_b.affine_fiber_dim, Some(1));
+    assert_eq!(od_b.affine_unique_repair_exists, Some(false));
+
+    let mut case_c = open_spec;
+    let ar_c = case_c
+        .open_domain
+        .as_mut()
+        .unwrap()
+        .affine_restriction
+        .as_mut()
+        .unwrap();
+    ar_c.m_matrix = vec![
+        vec![ScalarLit::rat(1, 1).unwrap(), ScalarLit::rat(0, 1).unwrap()],
+        vec![ScalarLit::rat(0, 1).unwrap(), ScalarLit::rat(1, 1).unwrap()],
+    ];
+    ar_c.b_rhs = vec![ScalarLit::rat(2, 1).unwrap(), ScalarLit::rat(3, 1).unwrap()];
+    ar_c.r_matrix = vec![vec![
+        ScalarLit::rat(1, 1).unwrap(),
+        ScalarLit::rat(0, 1).unwrap(),
+    ]];
+    let od_c = solve_partial_task(&validate_partial_task(case_c).unwrap())
+        .partial
+        .unwrap()
+        .open_domain
+        .unwrap();
+    assert_eq!(od_c.affine_image_dim, Some(0));
+    assert_eq!(od_c.affine_fiber_dim, Some(0));
+    assert_eq!(od_c.affine_unique_repair_exists, Some(true));
 }
 
 #[test]
@@ -747,4 +901,72 @@ fn ch18_undetermined_on_unsupported_class_unobserved_and_max_completions() {
         rp.minimal_inconsistent_subsets,
         vec![vec!["rel_neg".to_owned(), "rel_pos".to_owned()]]
     );
+
+    // 非真偽値スロット参照 (PartialTruth::UnobservedSlot) は黙示 true にならず整合しない
+    let non_bool_slot = PartialTaskSpec {
+        name: "non_bool_slot".into(),
+        representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
+            sorts: BTreeMap::from([("V".into(), vec!["abc".into()])]),
+            operations: vec![],
+            relations: vec![PartialPredSignature {
+                name: "R".into(),
+                arg_sorts: vec!["V".into()],
+            }],
+            slots: vec![PartialSlotDecl {
+                name: "s".into(),
+                sort: "V".into(),
+                domain_values: vec!["abc".into()],
+            }],
+            background_constraints: vec![],
+            records: vec![PartialRecordSpec {
+                id: "r_nonbool".into(),
+                kind: PartialRecordKind::Relation {
+                    rel_name: "R".into(),
+                    args: vec!["abc".into()],
+                    holds: PartialTruth::UnobservedSlot("s".into()),
+                },
+            }],
+            max_completions: 8,
+        }),
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    let non_bool_out = solve_partial_task(&validate_partial_task(non_bool_slot).unwrap());
+    assert_eq!(non_bool_out.verdict, Verdict::Refuted);
+    assert!(!non_bool_out.partial.unwrap().completion_consistent);
+
+    // アフィン評価方程式 (eval_equations) が supervaluation == "false" なら Verdict::Refuted
+    let aff_eval_false = PartialTaskSpec {
+        name: "aff_eval_false".into(),
+        representation: PartialRepresentation::Affine(AffinePartialPresentation {
+            coeff_domain: CoeffDomain::Q,
+            coord_names: vec!["t".into()],
+            x0: vec![ScalarLit::rat(0, 1).unwrap()],
+            direction_t: vec![vec![ScalarLit::rat(1, 1).unwrap()]],
+            background_rows: vec![],
+            record_rows: vec![(
+                "pin".into(),
+                vec![ScalarLit::rat(1, 1).unwrap()],
+                ScalarLit::rat(1, 1).unwrap(),
+            )],
+            eval_equations: vec![(
+                "must_hold_eq".into(),
+                vec![ScalarLit::rat(1, 1).unwrap()],
+                ScalarLit::rat(0, 1).unwrap(),
+            )],
+        }),
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    let aff_false_out = solve_partial_task(&validate_partial_task(aff_eval_false).unwrap());
+    assert_eq!(aff_false_out.verdict, Verdict::Refuted);
+    let aff_p = aff_false_out.partial.unwrap();
+    assert!(aff_p.completion_consistent);
+    assert_eq!(aff_p.law_evaluations[0].supervaluation, "false");
 }

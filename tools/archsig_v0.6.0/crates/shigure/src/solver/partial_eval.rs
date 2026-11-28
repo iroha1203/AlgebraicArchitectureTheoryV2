@@ -136,7 +136,13 @@ pub fn solve_partial_task(task: &CheckedPartialTask) -> ShigureOutcome {
             })
     });
 
-    let verdict = if !comp.consistent || required_law_refuted {
+    let affine_equation_refuted = matches!(task.representation(), PartialRepresentation::Affine(_))
+        && comp
+            .law_evaluations
+            .iter()
+            .any(|s| s.supervaluation == "false");
+
+    let verdict = if !comp.consistent || required_law_refuted || affine_equation_refuted {
         Verdict::Refuted
     } else {
         Verdict::Established

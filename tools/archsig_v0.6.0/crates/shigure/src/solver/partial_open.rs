@@ -20,24 +20,42 @@ use num_bigint::BigInt;
 use num_traits::Zero;
 use std::collections::{BTreeMap, BTreeSet};
 
-/// 命題 18.11・定理 18.12: 解の量化 4 階層 $E/U/G/Q$ と必要スロット極小横断集合を計算する。
+/// 定義 18.10・命題 18.11・定理 18.12: 解の量化 4 階層 $E/U/G/Q$ と必要スロット極小横断集合を計算する。
 pub(super) fn analyze_quantifier_hierarchy(
     q: &QuantifierHierarchySpec,
     checks: &mut Vec<ApplicabilityCheck>,
 ) -> Result<QuantifierHierarchyDetail, SilenceReason> {
-    let e_holds = q.completions.iter().any(|c| !c.valid_candidates.is_empty());
-    let u_holds =
-        !q.completions.is_empty() && q.completions.iter().all(|c| !c.valid_candidates.is_empty());
-    let q_holds = q
+    if q.completions.is_empty() {
+        checks.push(ApplicabilityCheck::failed(
+            "quantifier_hierarchy_nonempty_completions",
+            MathClause::AatCh18Prop18Dot11,
+            "quantifier hierarchy requires non-empty completion family (A != empty)",
+        ));
+        return Err(SilenceReason::ApplicabilityConditionNotMet {
+            condition: "quantifier_hierarchy_nonempty_completions".to_owned(),
+            detail: "quantifier hierarchy requires non-empty completion family (A != empty)"
+                .to_owned(),
+        });
+    }
+
+    let sets: Vec<BTreeSet<&str>> = q
         .completions
-        .windows(2)
-        .all(|w| w[0].output_value == w[1].output_value);
-    let g_holds = q.completions.first().is_some_and(|first| {
-        let target_out = &first.output_value;
-        q.completions
-            .iter()
-            .all(|c| !c.valid_candidates.is_empty() && &c.output_value == target_out)
-    });
+        .iter()
+        .map(|c| c.valid_candidates.iter().map(String::as_str).collect())
+        .collect();
+    // E: ∀A ∈ A, ∃c ∈ C, Valid(A, c)
+    let e_holds = sets.iter().all(|s| !s.is_empty());
+    // U: ∀A ∈ A, ∃!c ∈ C, Valid(A, c)
+    let u_holds = sets.iter().all(|s| s.len() == 1);
+    // 共通候補 ∩_A C_A
+    let mut common = sets[0].clone();
+    for s in sets.iter().skip(1) {
+        common.retain(|c| s.contains(c));
+    }
+    // Q: ∃!c ∈ C, ∀A ∈ A, Valid(A, c)
+    let q_holds = common.len() == 1;
+    // G: ∃c ∈ C, ∀A ∈ A, C_A = {c}
+    let g_holds = sets.iter().all(|s| s.len() == 1) && sets.windows(2).all(|w| w[0] == w[1]);
     let g_iff_u_and_q_verified = g_holds == (u_holds && q_holds);
 
     checks.push(ApplicabilityCheck::passed(
@@ -60,8 +78,8 @@ pub(super) fn analyze_quantifier_hierarchy(
         for j in (i + 1)..q.completions.len() {
             let c1 = &q.completions[i];
             let c2 = &q.completions[j];
-            let status1 = (!c1.valid_candidates.is_empty(), &c1.output_value);
-            let status2 = (!c2.valid_candidates.is_empty(), &c2.output_value);
+            let status1 = (!sets[i].is_empty(), &c1.output_value);
+            let status2 = (!sets[j].is_empty(), &c2.output_value);
             if status1 != status2 {
                 let edge: Vec<String> = universe
                     .iter()
@@ -105,8 +123,17 @@ pub(super) fn analyze_quantifier_hierarchy(
             verified,
             ..
         } => {
-            debug_assert!(verified);
-            debug_assert!(verify_minimal_hitting_sets(&hyperedges, &minimal_sets));
+            if !verified || !verify_minimal_hitting_sets(&hyperedges, &minimal_sets) {
+                checks.push(ApplicabilityCheck::failed(
+                    "required_slots_minimal_hitting_sets_verified",
+                    MathClause::AatCh18Thm18Dot12,
+                    "minimal hitting sets runtime verification failed",
+                ));
+                return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                    detail: "minimal hitting sets verification failed for required slots"
+                        .to_owned(),
+                });
+            }
             minimal_sets
         }
     };
@@ -140,22 +167,23 @@ pub(super) fn analyze_open_domain(
 
     let is_full_substructure = check_full_substructure(od, &sub_carriers);
 
-    // 参照操作によるファイバー局所網羅検査（定理 18.16）
+    // 参照操作によるファイバー局所網羅検査（式 18.5: p_A^{-1}(B) ⊆ X_s(A_0)）
     let mut uncovered_fibers = Vec::new();
     for fc in &od.fiber_checks {
         let known_set: BTreeSet<&str> = fc.known_targets.iter().map(String::as_str).collect();
+        let sub_set = &sub_carriers[&fc.arg_sort];
         let amb_op = od
             .ambient_ops
             .iter()
             .find(|o| o.name == fc.op_name)
             .expect("validated ambient op");
         for elem in &od.ambient_carriers[&fc.arg_sort] {
-            let covered = amb_op
+            let maps_into_known = amb_op
                 .entries
                 .get(&vec![elem.clone()])
                 .and_then(|opt| opt.as_deref())
                 .is_some_and(|y| known_set.contains(y));
-            if !covered {
+            if maps_into_known && !sub_set.contains(elem) {
                 uncovered_fibers.push(format!("{}({elem})", fc.op_name));
             }
         }
@@ -166,6 +194,25 @@ pub(super) fn analyze_open_domain(
         "open_domain_fiber_coverage_checked",
         MathClause::AatCh18Thm18Dot16,
     ));
+
+    let is_positive_syntax = od
+        .positive_or_law
+        .antecedent
+        .as_ref()
+        .is_none_or(is_positive_existential_formula)
+        && is_positive_existential_formula(&od.positive_or_law.conclusion);
+    if is_positive_syntax {
+        checks.push(ApplicabilityCheck::passed(
+            "open_domain_positive_existential_formula",
+            MathClause::AatCh18Thm18Dot16,
+        ));
+    } else {
+        checks.push(ApplicabilityCheck::failed(
+            "open_domain_positive_existential_formula",
+            MathClause::AatCh18Thm18Dot16,
+            "formula uses negation, implication, or universal quantifier outside Theorem 18.16 positive fragment",
+        ));
+    }
 
     let sub_world = CompleteFiniteWorld {
         slots: BTreeMap::new(),
@@ -217,7 +264,7 @@ pub(super) fn analyze_open_domain(
     let amb_re = eval_law_complete(&od.positive_or_law, &od.ambient_carriers, &amb_world, &env);
     let reeval = ReevalCheck {
         checked: true,
-        matched: sub_re == sub_holds && amb_re == amb_holds && positive_preserved,
+        matched: sub_re == sub_holds && amb_re == amb_holds,
         detail: format!(
             "substructure eval={sub_law_eval}, ambient eval={ambient_law_eval}, positive_preserved={positive_preserved}"
         ),
@@ -432,8 +479,27 @@ fn compute_restriction_dims<C: FieldCoeff>(
         }
     })?;
     let fiber_dim = ker_dim.saturating_sub(img_dim);
-    // 定理 18.18: 解空間上で R|_{Sol} が単射（fiber_dim == 0）なら局所制限から一意修復が定まる。
-    Ok((fiber_dim == 0, Some(img_dim), Some(fiber_dim)))
+    // 定理 18.18: |im r| = 1 (img_dim == 0) かつ唯一ファイバーが一元集合 (fiber_dim == 0) のとき大域一意修復存在。
+    Ok((
+        img_dim == 0 && fiber_dim == 0,
+        Some(img_dim),
+        Some(fiber_dim),
+    ))
+}
+
+fn is_positive_existential_formula(f: &crate::ir::partial::PartialFormula) -> bool {
+    use crate::ir::partial::PartialFormula;
+    match f {
+        PartialFormula::Eq(_, _)
+        | PartialFormula::Rel { .. }
+        | PartialFormula::Graph { .. }
+        | PartialFormula::Defined { .. } => true,
+        PartialFormula::And(list) | PartialFormula::Or(list) => {
+            list.iter().all(is_positive_existential_formula)
+        }
+        PartialFormula::Exists { body, .. } => is_positive_existential_formula(body),
+        PartialFormula::Not(_) | PartialFormula::Forall { .. } => false,
+    }
 }
 
 fn bool_str(b: bool) -> &'static str {

@@ -10,8 +10,8 @@ use super::hitting_set::{
     HittingSetOutcome, enumerate_minimal_hitting_sets,
 };
 use super::partition::{
-    BaseReading, PartialOpTable, RefinementInput, enumerate_set_partitions, partition_refines,
-    refine_partition,
+    BaseReading, PartialOpTable, PartialRelTable, RefinementInput, enumerate_set_partitions,
+    partition_refines, refine_partition,
 };
 use super::poly::AlgebraError;
 use super::scalar::Rat;
@@ -159,6 +159,7 @@ fn partition_refinement_produces_verified_separating_context() {
                 (vec!["c".into()], Some("c".into())),
             ]),
         }],
+        rels: vec![],
         max_iterations: 16,
     };
 
@@ -415,6 +416,7 @@ fn partition_refinement_verifies_fixed_sort_op_composition_and_domain_difference
                 ]),
             },
         ],
+        rels: vec![],
         max_iterations: 16,
     };
 
@@ -529,6 +531,7 @@ fn algebra_phase5_negative_and_boundary_cases() {
             out_sort: "S".into(),
             entries: BTreeMap::from([(vec!["a".into()], Some("unknown_elem".into()))]),
         }],
+        rels: vec![],
         max_iterations: 8,
     });
     assert!(matches!(
@@ -662,4 +665,46 @@ fn algebra_phase5_negative_and_boundary_cases() {
             derivation: vec![],
         }
     ));
+
+    // 関係表 R と T の合成による 1 座標分離と分離文脈構成の確認
+    let mut entries = BTreeMap::new();
+    let elems = ["a", "b", "c", "d"];
+    for x in elems {
+        for y in elems {
+            entries.insert(vec![x.to_owned(), y.to_owned()], x == "d" && y == "d");
+        }
+    }
+    let rel_ref = refine_partition(&RefinementInput {
+        sorts: BTreeMap::from([("S".into(), elems.iter().map(|s| (*s).to_owned()).collect())]),
+        fixed_sorts: BTreeSet::new(),
+        base_readings: vec![],
+        ops: vec![PartialOpTable {
+            name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "S".into(),
+            entries: BTreeMap::from([
+                (vec!["a".into()], Some("d".into())),
+                (vec!["b".into()], Some("a".into())),
+                (vec!["c".into()], Some("a".into())),
+                (vec!["d".into()], Some("d".into())),
+            ]),
+        }],
+        rels: vec![PartialRelTable {
+            name: "R".into(),
+            arg_sorts: vec!["S".into(), "S".into()],
+            entries,
+        }],
+        max_iterations: 16,
+    })
+    .expect("relation refinement succeeds");
+    assert!(rel_ref.all_witnesses_verified);
+    // R(_, d) が d と {a,b,c} を分け、T(a)=d vs T(b)=T(c)=a が a と {b,c} を分ける
+    assert_eq!(
+        rel_ref.classes["S"],
+        vec![
+            vec!["a".to_owned()],
+            vec!["b".to_owned(), "c".to_owned()],
+            vec!["d".to_owned()],
+        ]
+    );
 }

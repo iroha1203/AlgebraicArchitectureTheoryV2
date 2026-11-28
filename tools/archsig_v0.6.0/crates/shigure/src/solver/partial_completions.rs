@@ -444,8 +444,15 @@ fn world_consistent_so_far(
                     return false;
                 }
             }
-            BackgroundConstraint::OperationInjective(_)
-            | BackgroundConstraint::OperationSurjective(_) => {}
+            BackgroundConstraint::OperationInjective(op_name) => {
+                let mut seen = BTreeSet::new();
+                for out in cur.op_tables[op_name].values().flatten() {
+                    if !seen.insert(out.as_str()) {
+                        return false;
+                    }
+                }
+            }
+            BackgroundConstraint::OperationSurjective(_) => {}
         }
     }
 
@@ -504,7 +511,9 @@ fn world_consistent_so_far(
                         }
                         PartialTruth::UnobservedSlot(s) => {
                             if let Some(sv) = cur.slots.get(s) {
-                                let want = slot_truth(sv).unwrap_or(true);
+                                let Some(want) = slot_truth(sv) else {
+                                    return false;
+                                };
                                 if cell.is_some() != want {
                                     return false;
                                 }
@@ -534,7 +543,9 @@ fn world_consistent_so_far(
                         }
                         PartialTruth::UnobservedSlot(s) => {
                             if let Some(sv) = cur.slots.get(s) {
-                                let want = slot_truth(sv).unwrap_or(true);
+                                let Some(want) = slot_truth(sv) else {
+                                    return false;
+                                };
                                 if is_match != want {
                                     return false;
                                 }

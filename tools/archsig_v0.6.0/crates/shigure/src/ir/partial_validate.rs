@@ -697,6 +697,11 @@ fn validate_affine_partial(aff: &AffinePartialPresentation) -> Result<(), Valida
     }
     for v in &aff.x0 {
         validate_scalar_lit(v, &aff.coeff_domain, "partial.affine.x0")?;
+        if t_cols == 0 && !scalar_is_zero(v) {
+            return Err(ValidationError::ConversionError {
+                detail: "partial.affine with zero direction_t columns requires zero x0".to_owned(),
+            });
+        }
     }
     let mut bg_rec_ids = BTreeSet::new();
     for (id, row, rhs) in aff.background_rows.iter().chain(&aff.record_rows) {
@@ -741,4 +746,13 @@ fn validate_affine_row(
         validate_scalar_lit(v, domain, &format!("partial.affine row `{id}`"))?;
     }
     validate_scalar_lit(rhs, domain, &format!("partial.affine rhs `{id}`"))
+}
+
+fn scalar_is_zero(lit: &crate::ir::term::ScalarLit) -> bool {
+    use num_traits::Zero;
+    match lit {
+        crate::ir::term::ScalarLit::Z(n) => n.is_zero(),
+        crate::ir::term::ScalarLit::Q { num, .. } => num.is_zero(),
+        crate::ir::term::ScalarLit::Fp { value, .. } => value.is_zero(),
+    }
 }
