@@ -78,6 +78,27 @@ private theorem affineRead_apply (M : X.Modules) (W : (Spec Γ(X, U)).Opens) {V 
   rw [M.presheaf.map_id]
   rfl
 
+/-- The coefficient module of the restriction to an affine chart is the
+module of actual sections on that open. This API retains the action of
+the affine section ring, as required in Definition 6.1. -/
+def affineModuleSectionsIso (M : X.Modules) :
+    moduleSpecΓFunctor.obj (M.restrict hU.fromSpec) ≅ M.val.obj (op U) := by
+  let g := hU.fromSpec
+  have topImage : g ''ᵁ (⊤ : (Spec Γ(X, U)).Opens) = U :=
+    g.image_top_eq_opensRange.trans hU.opensRange_fromSpec
+  let topRes := X.presheaf.map (homOfLE (le_rfl : U ≤ U)).op
+  have identity : topRes.hom = RingHom.id Γ(X, U) := by simp [topRes]
+  exact affineRead hU M ⊤ topImage le_rfl ≪≫
+    ModuleCat.restrictScalarsId'App topRes.hom identity (M.val.obj (op U))
+
+/-- An affine tilde presentation identifies its original coefficient
+module with the actual section module. This is the scalar-preserving
+comparison used for finite local freeness and stalk rank in Definition 6.1. -/
+def affinePresentationSectionsIso (M : X.Modules) (N : ModuleCat.{u} Γ(X, U))
+    (e : (tilde.functor Γ(X, U)).obj N ≅ M.restrict hU.fromSpec) :
+    N ≅ M.val.obj (op U) :=
+  tilde.isoTop N ≪≫ moduleSpecΓFunctor.mapIso e ≪≫ affineModuleSectionsIso hU M
+
 /-- An affine tilde presentation localizes the module's original restriction
 map from that affine open to each principal open inside it.
 This supplies the restriction on principal opens used in Lemma B.7. The affine presentation

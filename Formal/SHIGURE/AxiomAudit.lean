@@ -119,6 +119,15 @@ import Formal.SHIGURE.Part2.Schemes.CoreDescent
 
 /-! # SHIGURE kernel audit entry point -/
 
+import Formal.SHIGURE.Part2.Schemes.ModuleTensor
+import Formal.SHIGURE.Part2.Schemes.TensorAffine
+import Formal.SHIGURE.Part2.Schemes.TensorPullback
+import Formal.SHIGURE.Part2.Schemes.ModuleTensorComparisons
+import Formal.SHIGURE.Part2.Schemes.AffineModuleSections
+import Formal.SHIGURE.Part2.Families.SchemeTensorStructures
+import Formal.SHIGURE.Part2.Families.SchemeSections
+import Formal.SHIGURE.Part2.Families.SchemeLaws
+
 namespace SHIGURE.AxiomAudit
 
 /-- Exercise the audit entry point with a kernel-checked use of propositional extensionality. -/
@@ -5636,6 +5645,99 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.SchemeDescent.coreComparisonIso,
   SHIGURE.SchemeDescent.coreComparison_isEquivalence,
   SHIGURE.SchemeDescent.corePseudofunctor_isStack
+]
+
+-- Appendix B.3 and Definition 6.1: canonical sheaf tensor comparisons and primitive structures.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.unitModule,
+  SHIGURE.SchemeDescent.tensorPresheaf,
+  SHIGURE.SchemeDescent.moduleTensorFunctor,
+  SHIGURE.SchemeDescent.tensorModule,
+  SHIGURE.SchemeDescent.tensorModules,
+  SHIGURE.SchemeDescent.tensorModuleMap,
+  SHIGURE.SchemeDescent.tensorModulesMap,
+  SHIGURE.SchemeDescent.tensorModuleIso,
+  SHIGURE.SchemeDescent.tensorModuleMap_id,
+  SHIGURE.SchemeDescent.tensorModuleMap_comp,
+  SHIGURE.SchemeDescent.tensorModuleHomEquiv,
+  SHIGURE.SchemeDescent.tensorModule_hom_ext,
+  SHIGURE.SchemeDescent.restrictModulePresheafFunctor,
+  SHIGURE.SchemeDescent.restrictModuleSheafificationIso,
+  SHIGURE.SchemeDescent.restrictTensorPresheafMap,
+  SHIGURE.SchemeDescent.restrictTensorPresheafMap_app_isIso,
+  SHIGURE.SchemeDescent.restrictTensorPresheafIso,
+  SHIGURE.SchemeDescent.restrictTensorModuleIso,
+  SHIGURE.SchemeDescent.tildeTensorMap,
+  SHIGURE.SchemeDescent.tildeTensorMap_toOpen,
+  SHIGURE.SchemeDescent.tildeTensorMap_naturality,
+  SHIGURE.SchemeDescent.tildeTensorIso,
+  SHIGURE.SchemeDescent.pushforwardTensorPresheafMap,
+  SHIGURE.SchemeDescent.pushforwardTensorPresheafMap_app_tmul,
+  SHIGURE.SchemeDescent.pushforwardTensorPresheafMap_naturality,
+  SHIGURE.SchemeDescent.pushforwardTensorMap,
+  SHIGURE.SchemeDescent.pushforwardTensorMap_naturality,
+  SHIGURE.SchemeDescent.tensorModuleHomEquiv_comp,
+  SHIGURE.SchemeDescent.tensorModuleHomEquiv_map_comp,
+  SHIGURE.SchemeDescent.pushforwardTensorMap_homEquiv,
+  SHIGURE.SchemeDescent.tensorModuleHomEquiv_map,
+  SHIGURE.SchemeDescent.pushforwardTensorMap_id,
+  SHIGURE.SchemeDescent.pushforwardTensorMap_comp,
+  SHIGURE.SchemeDescent.pullbackTensorMap,
+  SHIGURE.SchemeDescent.pullbackTensorMap_naturality,
+  SHIGURE.SchemeDescent.pullbackTensorNatTrans,
+  SHIGURE.SchemeDescent.pullbackTensorMap_homEquiv,
+  SHIGURE.SchemeDescent.pullbackTensorMap_homEquiv_app_tmul,
+  SHIGURE.SchemeDescent.pullbackId_homEquiv,
+  SHIGURE.SchemeDescent.pullbackTensorMap_id,
+  SHIGURE.SchemeDescent.pullbackTensorMap_comp_homEquiv,
+  SHIGURE.SchemeDescent.pullbackComp_inv_unit,
+  SHIGURE.SchemeDescent.pullbackTensorMap_comp_inv,
+  SHIGURE.SchemeDescent.pullbackTensorMap_comp,
+  SHIGURE.SchemeDescent.tensorModule_isQuasiCoherent,
+  SHIGURE.SchemeDescent.affine_pullbackTensorMap_isIso,
+  SHIGURE.SchemeDescent.pullbackTensorMap_restrict,
+  SHIGURE.SchemeDescent.pullbackTensorMap_isIso_of_isOpenImmersion,
+  SHIGURE.SchemeDescent.pullbackTensorMap_isIso,
+  SHIGURE.SchemeDescent.quasiCoherentPullbackTensorIso,
+  SHIGURE.SchemeDescent.affineModuleSectionsIso,
+  SHIGURE.SchemeDescent.affinePresentationSectionsIso,
+  SHIGURE.SchemeDescent.affineSections_localize,
+  SHIGURE.SchemeDescent.tensorModulesMap_id,
+  SHIGURE.SchemeDescent.tensorModulesMap_comp,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.ext,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.Hom,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.Hom.ext,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.Hom.id,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.Hom.comp,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.id_onSort,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.comp_onSort,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.carrierFunctor,
+  SHIGURE.RealizationFamilies.sectionTensorMap,
+  SHIGURE.RealizationFamilies.sectionTensorMap_restrict_tmul,
+  SHIGURE.RealizationFamilies.inputSectionsMap,
+  SHIGURE.RealizationFamilies.pureTensorSections,
+  SHIGURE.RealizationFamilies.pureTensorSections_nil,
+  SHIGURE.RealizationFamilies.pureTensorSections_cons,
+  SHIGURE.RealizationFamilies.pureTensorSections_restrict,
+  SHIGURE.RealizationFamilies.sectionOperation,
+  SHIGURE.RealizationFamilies.sectionOperation_apply,
+  SHIGURE.RealizationFamilies.sectionOperation_restrict,
+  SHIGURE.RealizationFamilies.sectionsStructure,
+  SHIGURE.RealizationFamilies.sectionsStructure_total_restrict,
+  SHIGURE.RealizationFamilies.sectionsStructure_quantity_restrict,
+  SHIGURE.RealizationFamilies.sectionBaseMap,
+  SHIGURE.RealizationFamilies.sectionBaseMap_restrict,
+  SHIGURE.RealizationFamilies.SatisfiesSchemeLaws,
+  SHIGURE.RealizationFamilies.SatisfiesSchemeLaws.tensor,
+  SHIGURE.RealizationFamilies.SatisfiesSchemeLaws.polynomial,
+  SHIGURE.RealizationFamilies.schemeRealizationProperty,
+  SHIGURE.RealizationFamilies.SchemeRealization,
+  SHIGURE.RealizationFamilies.SchemeRealizationCore,
+  SHIGURE.RealizationFamilies.schemeRealizationProperty_carrier,
+  SHIGURE.RealizationFamilies.schemeRealizationProperty_laws,
+  SHIGURE.RealizationFamilies.affineSections_finiteLocallyFreeOfRank,
+  SHIGURE.RealizationFamilies.schemeRealizationProperty_affine
 ]
 
 end SHIGURE.AxiomAudit

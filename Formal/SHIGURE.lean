@@ -128,3 +128,12 @@ import Formal.SHIGURE.Part2.Schemes.CoreDescent
 
 The entry point for the SHIGURE formalization.
 -/
+
+-- Appendix B.3 and Definition 6.1: actual tensor sheaves and primitive operations.
+import Formal.SHIGURE.Part2.Schemes.ModuleTensor
+import Formal.SHIGURE.Part2.Schemes.TensorAffine
+import Formal.SHIGURE.Part2.Schemes.TensorPullback
+import Formal.SHIGURE.Part2.Schemes.ModuleTensorComparisons
+import Formal.SHIGURE.Part2.Families.SchemeTensorStructures
+import Formal.SHIGURE.Part2.Families.SchemeSections
+import Formal.SHIGURE.Part2.Families.SchemeLaws
