@@ -704,6 +704,10 @@ fn atlas_outcome(
         artin: None,
         diagnostics: None,
         atlas: Some(detail),
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -734,5 +738,9 @@ fn atlas_undetermined(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }

@@ -150,7 +150,11 @@ struct QStratBackend;
 impl StratifyFieldBackend for QStratBackend {
     type Coeff = Rat;
 
-    fn expand_expr(&self, expr: &PolyExpr, bindings: &ExprBindings) -> Result<Poly<Rat>, AlgebraError> {
+    fn expand_expr(
+        &self,
+        expr: &PolyExpr,
+        bindings: &ExprBindings,
+    ) -> Result<Poly<Rat>, AlgebraError> {
         Poly::from_expr_q(expr, bindings)
     }
 

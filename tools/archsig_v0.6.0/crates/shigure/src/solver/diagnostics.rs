@@ -858,6 +858,10 @@ fn diag_outcome(
         artin: None,
         diagnostics: Some(detail),
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -888,5 +892,9 @@ fn diag_undetermined(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }

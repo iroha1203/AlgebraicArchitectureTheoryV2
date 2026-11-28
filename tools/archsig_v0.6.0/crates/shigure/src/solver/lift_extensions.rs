@@ -128,8 +128,7 @@ pub(crate) fn compute_relative_cone<B: LiftRingBackend>(
         }
     }
 
-    let jac_rho =
-        jacobian_polys(&reading_polys, ctx.vars.len()).map_err(map_lift_algebra_error)?;
+    let jac_rho = jacobian_polys(&reading_polys, ctx.vars.len()).map_err(map_lift_algebra_error)?;
     let mut j_rho = vec![vec![z.clone(); n * dm]; m * dm];
     for (a, jac_row) in jac_rho.iter().enumerate().take(m) {
         for (j, jac_entry) in jac_row.iter().enumerate().take(n) {
@@ -687,9 +686,8 @@ fn solve_context_local_lift<B: LiftRingBackend>(
     }
 
     if let Some(rel) = &ctx.spec.relative_reading {
-        let obs_lift_rp =
-            eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, &expand)
-                .map_err(map_lift_algebra_error)?;
+        let obs_lift_rp = eval_var_coords_generic(&rel.obs_vars, &rel.designated_obs_lift, &expand)
+            .map_err(map_lift_algebra_error)?;
         let rm_map: BTreeMap<&str, &PolyExpr> = rel
             .reading_map
             .iter()

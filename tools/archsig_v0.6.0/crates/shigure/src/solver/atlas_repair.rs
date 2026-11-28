@@ -38,12 +38,8 @@ pub(crate) fn solve_vertex_repair<B: AtlasRingBackend>(
                 .map(|(l, a)| l.add_ref(a))
                 .collect();
             let context = format!("vertex_constrained_repair{}", backend.reeval_suffix());
-            let reeval = reevaluate_adapter_commutativity(
-                graph,
-                &repaired_lam,
-                &graph.offsets,
-                &context,
-            );
+            let reeval =
+                reevaluate_adapter_commutativity(graph, &repaired_lam, &graph.offsets, &context);
             let basis_maps = kernel_basis
                 .iter()
                 .map(|v| {

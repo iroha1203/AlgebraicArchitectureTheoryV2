@@ -865,6 +865,10 @@ fn phase3_math_clauses_and_outcome_json_render_cleanly() {
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     };
     let json = outcome.to_json();
     let Json::Obj(map) = &json else {
