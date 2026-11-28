@@ -77,7 +77,12 @@ impl<E: InputError> Checker<'_, E> {
         Ok(())
     }
 
-    fn params(&mut self, ri: usize, fields: &[Field], change: bool) -> CResult<Vec<Param>, E> {
+    pub(super) fn params(
+        &mut self,
+        ri: usize,
+        fields: &[Field],
+        change: bool,
+    ) -> CResult<Vec<Param>, E> {
         let mut ps: Vec<Param> = Vec::new();
         for (i, f) in fields.iter().enumerate() {
             self.cooperate()?;
@@ -131,7 +136,7 @@ impl<E: InputError> Checker<'_, E> {
         Ok(env)
     }
 
-    fn check_decl_body(
+    pub(super) fn check_decl_body(
         &mut self,
         ri: usize,
         name: &str,
@@ -417,7 +422,7 @@ impl<E: InputError> Checker<'_, E> {
     }
 
     /// view の相互呼出しは非循環。自己再帰は構造再帰として別に検査済み。
-    fn check_view_cycles(&mut self) -> CResult<(), E> {
+    pub(super) fn check_view_cycles(&mut self) -> CResult<(), E> {
         let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
         let mut first_spans = BTreeMap::new();
         for (a, b, span) in &self.view_edges {

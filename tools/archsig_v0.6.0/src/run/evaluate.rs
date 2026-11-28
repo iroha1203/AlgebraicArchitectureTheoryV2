@@ -105,6 +105,12 @@ pub(super) fn load_requests(
 ) -> Result<archsig_computation::observed::PreparedObserved, Outcome> {
     let texts: Vec<_> = args.asks.iter().map(String::as_str).collect();
     if let Err(error) = check_request_syntax(&texts, control) {
+        if texts.len() > 1
+            && matches!(error, ResolveFailure::Invalid { .. })
+            && let Some(batch) = collect_observed_ask_syntax_batch(signals, &texts, control)
+        {
+            return Err(batch);
+        }
         return Err(request_failure(signals, error, control));
     }
     let map_path = args.inputs.archmap.as_ref().expect("検査済みrunのArchMap");
@@ -134,17 +140,84 @@ pub(super) fn load_requests(
                 InputStatus::Interrupted => (Status::Interrupted, 75),
                 InputStatus::Error => (Status::Error, 70),
             };
-            Err(output::notify(
+            let mut outcome = output::notify(
                 signals,
                 status,
                 code,
                 control.stop_reason(),
                 failure.issues().to_vec(),
-            ))
+            );
+            super::diagnostics::decorate_outcome_with_sources(&mut outcome, failure.sources());
+            Err(outcome)
         }
         Err(PrepareFailure::Requests { failure: error, .. }) => {
             Err(request_failure(signals, error, control))
         }
+    }
+}
+
+fn collect_observed_ask_syntax_batch(
+    signals: &mut dyn Signals,
+    texts: &[&str],
+    control: &Control,
+) -> Option<Outcome> {
+    let max_errors = archsig_common::diagnostic::DEFAULT_MAX_COLLECTED_ERRORS;
+    let mut seen_ids = std::collections::BTreeMap::<&str, usize>::new();
+    let mut collected: Vec<Json> = Vec::new();
+
+    for (idx, &text) in texts.iter().enumerate() {
+        match check_request_syntax(&[text], control) {
+            Ok(()) => {
+                if let Some(eq) = text.find('=') {
+                    let id = text[..eq].trim();
+                    if let Some(&first_idx) = seen_ids.get(id) {
+                        if let Err(ResolveFailure::Invalid { issues, .. }) =
+                            check_request_syntax(&[texts[first_idx], text], control)
+                        {
+                            for issue in issues {
+                                if collected.len() >= max_errors {
+                                    break;
+                                }
+                                collected.push(issue.wire());
+                            }
+                        }
+                    } else {
+                        seen_ids.insert(id, idx);
+                    }
+                }
+            }
+            Err(ResolveFailure::Invalid { issues, .. }) => {
+                for issue in issues {
+                    if collected.len() >= max_errors {
+                        break;
+                    }
+                    collected.push(issue.wire());
+                }
+            }
+            Err(ResolveFailure::Interrupted { reason }) => {
+                return Some(output::notify(
+                    signals,
+                    Status::Interrupted,
+                    75,
+                    control.stop_reason(),
+                    vec![reason.issue()],
+                ));
+            }
+            Err(_) => return None,
+        }
+    }
+
+    if collected.is_empty() {
+        None
+    } else {
+        collected.truncate(max_errors);
+        Some(output::notify(
+            signals,
+            Status::Invalid,
+            64,
+            control.stop_reason(),
+            collected,
+        ))
     }
 }
 
@@ -247,6 +320,7 @@ fn deliver(
             result: None,
             issues: notifications,
             summary: Some(summary),
+            snippets: Vec::new(),
         };
     };
     let inputs = evaluation.prepared().inputs();
@@ -322,6 +396,7 @@ fn deliver(
             result: Some(out.join("result.json")),
             summary: Some(summary),
             issues: receipt_issues,
+            snippets: Vec::new(),
         },
     )
 }

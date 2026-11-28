@@ -51,3 +51,35 @@ pub fn add_location_positions<'a>(
         }
     }
 }
+
+/// 各 issue の `location` から元ソース行の抜粋（`SourceSnippet`）を取り出す。
+pub fn extract_issue_snippets<'a>(
+    issues: &[Json],
+    sources: impl IntoIterator<Item = (&'a str, &'a [u8])>,
+) -> Vec<Option<archsig_common::diagnostic::SourceSnippet>> {
+    let sources: Vec<(&str, &[u8])> = sources.into_iter().collect();
+    issues
+        .iter()
+        .map(|issue| {
+            let Json::Obj(fields) = issue else {
+                return None;
+            };
+            let Json::Obj(loc) = fields.get("location")? else {
+                return None;
+            };
+            let Json::Str(input_id) = loc.get("input")? else {
+                return None;
+            };
+            let Json::Arr(span) = loc.get("span")? else {
+                return None;
+            };
+            let [Json::Nat(start), Json::Nat(end)] = span.as_slice() else {
+                return None;
+            };
+            let start = usize::try_from(*start).ok()?;
+            let end = usize::try_from(*end).ok()?;
+            let (_, bytes) = sources.iter().find(|(id, _)| id == input_id)?;
+            archsig_common::diagnostic::extract_source_snippet(bytes, (start, end))
+        })
+        .collect()
+}

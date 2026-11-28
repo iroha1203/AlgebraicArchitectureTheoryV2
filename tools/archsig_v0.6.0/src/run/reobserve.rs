@@ -267,6 +267,7 @@ pub(super) fn execute(
             result: None,
             summary: None,
             issues,
+            snippets: Vec::new(),
         };
     }
     let mut summary = envelope("archsig.reobservation.summary/1", state, &issues);
@@ -284,6 +285,7 @@ pub(super) fn execute(
         result: out.map(|path| path.join("result.json")),
         summary: Some(Json::Obj(summary)),
         issues,
+        snippets: Vec::new(),
     };
     let Some(out) = out else {
         return outcome;
