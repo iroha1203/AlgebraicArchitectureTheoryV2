@@ -837,7 +837,7 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         })
     ));
 
-    let mut empty_elem = base_open;
+    let mut empty_elem = base_open.clone();
     empty_elem
         .ambient_carriers
         .insert("A".into(), vec!["".into()]);
@@ -845,4 +845,39 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         validate_partial_task(make_open_task(empty_elem)),
         Err(ValidationError::EmptyName { .. })
     ));
+
+    // 5. partial term Var binding & identifier non-emptiness checks
+    let mut unbound_var = base_open.clone();
+    unbound_var.positive_or_law.conclusion = PartialFormula::Eq(
+        PartialTerm::Var("unbound".into()),
+        PartialTerm::Const("a0".into()),
+    );
+    assert!(matches!(
+        validate_partial_task(make_open_task(unbound_var)),
+        Err(ValidationError::UnknownRef {
+            kind: "bound_var",
+            ..
+        })
+    ));
+
+    let mut empty_const = base_open.clone();
+    empty_const.positive_or_law.conclusion = PartialFormula::Eq(
+        PartialTerm::Const("".into()),
+        PartialTerm::Const("a0".into()),
+    );
+    assert!(matches!(
+        validate_partial_task(make_open_task(empty_const)),
+        Err(ValidationError::EmptyName { .. })
+    ));
+
+    let mut let_bound = base_open;
+    let_bound.positive_or_law.conclusion = PartialFormula::Eq(
+        PartialTerm::Let {
+            var: "x".into(),
+            bound: Box::new(PartialTerm::Const("a0".into())),
+            body: Box::new(PartialTerm::Var("x".into())),
+        },
+        PartialTerm::Const("a0".into()),
+    );
+    assert!(validate_partial_task(make_open_task(let_bound)).is_ok());
 }

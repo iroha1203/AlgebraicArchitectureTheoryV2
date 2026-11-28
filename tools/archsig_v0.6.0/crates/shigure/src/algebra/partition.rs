@@ -233,15 +233,14 @@ pub fn refine_partition(
         }
     }
 
-    // 各要素の現在クラス ID とクラスごとの分離文脈木を保持する。
+    // 各要素の現在クラス ID を構築する（分離文脈木は下の `pair_sep` で管理する）。
     let mut class_of: BTreeMap<String, BTreeMap<String, usize>> = BTreeMap::new();
-    let mut class_ctx: BTreeMap<String, Vec<Option<SeparatingContext>>> = BTreeMap::new();
 
     for (s_name, elems) in &input.sorts {
         let is_fixed = input.fixed_sorts.contains(s_name);
         let mut sig_to_cid: BTreeMap<Vec<Option<Option<String>>>, usize> = BTreeMap::new();
         let mut elem_cid = BTreeMap::new();
-        let mut ctxs = Vec::new();
+        let mut num_classes = 0usize;
 
         for e in elems {
             let mut sig = Vec::new();
@@ -254,15 +253,14 @@ pub fn refine_partition(
             let cid = if let Some(&existing) = sig_to_cid.get(&sig) {
                 existing
             } else {
-                let id = ctxs.len();
+                let id = num_classes;
                 sig_to_cid.insert(sig, id);
-                ctxs.push(None);
+                num_classes += 1;
                 id
             };
             elem_cid.insert(e.clone(), cid);
         }
         class_of.insert(s_name.clone(), elem_cid);
-        class_ctx.insert(s_name.clone(), ctxs);
     }
 
     // 各 sort で初期分割が 2 クラス以上なら、分離する基本読取りを記録した `pair_sep` を構築する。
@@ -479,7 +477,6 @@ pub fn refine_partition(
     }
 
     let all_witnesses_verified = witnesses.iter().all(|w| w.verified);
-    let _ = class_ctx;
     Ok(PartitionRefinementResult {
         classes,
         witnesses,

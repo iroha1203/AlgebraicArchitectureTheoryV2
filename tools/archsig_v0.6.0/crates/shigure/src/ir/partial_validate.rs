@@ -452,10 +452,22 @@ pub(super) fn validate_formula_refs(
     sorts: &BTreeMap<String, BTreeSet<String>>,
     slots: &BTreeSet<&str>,
 ) -> Result<(), ValidationError> {
+    let bound_vars = BTreeSet::new();
+    validate_formula_refs_with_vars(formula, op_arities, rel_arities, sorts, slots, &bound_vars)
+}
+
+fn validate_formula_refs_with_vars(
+    formula: &PartialFormula,
+    op_arities: &BTreeMap<&str, usize>,
+    rel_arities: &BTreeMap<&str, usize>,
+    sorts: &BTreeMap<String, BTreeSet<String>>,
+    slots: &BTreeSet<&str>,
+    bound_vars: &BTreeSet<&str>,
+) -> Result<(), ValidationError> {
     match formula {
         PartialFormula::Eq(a, b) => {
-            validate_term_refs(a, op_arities, slots)?;
-            validate_term_refs(b, op_arities, slots)
+            validate_term_refs(a, op_arities, slots, bound_vars)?;
+            validate_term_refs(b, op_arities, slots, bound_vars)
         }
         PartialFormula::Rel { rel_name, args } => {
             let Some(&arity) = rel_arities.get(rel_name.as_str()) else {
@@ -473,7 +485,7 @@ pub(super) fn validate_formula_refs(
                 });
             }
             for a in args {
-                validate_term_refs(a, op_arities, slots)?;
+                validate_term_refs(a, op_arities, slots, bound_vars)?;
             }
             Ok(())
         }
@@ -497,9 +509,9 @@ pub(super) fn validate_formula_refs(
                 });
             }
             for a in args {
-                validate_term_refs(a, op_arities, slots)?;
+                validate_term_refs(a, op_arities, slots, bound_vars)?;
             }
-            validate_term_refs(output, op_arities, slots)
+            validate_term_refs(output, op_arities, slots, bound_vars)
         }
         PartialFormula::Defined { op_name, args } => {
             let Some(&arity) = op_arities.get(op_name.as_str()) else {
@@ -517,25 +529,31 @@ pub(super) fn validate_formula_refs(
                 });
             }
             for a in args {
-                validate_term_refs(a, op_arities, slots)?;
+                validate_term_refs(a, op_arities, slots, bound_vars)?;
             }
             Ok(())
         }
-        PartialFormula::Not(inner) => {
-            validate_formula_refs(inner, op_arities, rel_arities, sorts, slots)
-        }
+        PartialFormula::Not(inner) => validate_formula_refs_with_vars(
+            inner,
+            op_arities,
+            rel_arities,
+            sorts,
+            slots,
+            bound_vars,
+        ),
         PartialFormula::Exists {
+            var,
             sort,
             restricted_domain,
             body,
-            ..
         }
         | PartialFormula::Forall {
+            var,
             sort,
             restricted_domain,
             body,
-            ..
         } => {
+            require_non_empty(var, "partial.formula.quantifier.var")?;
             let Some(carrier) = sorts.get(sort.as_str()) else {
                 return Err(ValidationError::UnknownRef {
                     kind: "sort",
@@ -554,11 +572,27 @@ pub(super) fn validate_formula_refs(
                     }
                 }
             }
-            validate_formula_refs(body, op_arities, rel_arities, sorts, slots)
+            let mut next_bound = bound_vars.clone();
+            next_bound.insert(var.as_str());
+            validate_formula_refs_with_vars(
+                body,
+                op_arities,
+                rel_arities,
+                sorts,
+                slots,
+                &next_bound,
+            )
         }
         PartialFormula::And(list) | PartialFormula::Or(list) => {
             for f in list {
-                validate_formula_refs(f, op_arities, rel_arities, sorts, slots)?;
+                validate_formula_refs_with_vars(
+                    f,
+                    op_arities,
+                    rel_arities,
+                    sorts,
+                    slots,
+                    bound_vars,
+                )?;
             }
             Ok(())
         }
@@ -569,9 +603,21 @@ fn validate_term_refs(
     term: &PartialTerm,
     op_arities: &BTreeMap<&str, usize>,
     slots: &BTreeSet<&str>,
+    bound_vars: &BTreeSet<&str>,
 ) -> Result<(), ValidationError> {
     match term {
-        PartialTerm::Var(_) | PartialTerm::Const(_) => Ok(()),
+        PartialTerm::Var(v) => {
+            require_non_empty(v, "partial.term.var")?;
+            if !bound_vars.contains(v.as_str()) {
+                return Err(ValidationError::UnknownRef {
+                    kind: "bound_var",
+                    name: v.clone(),
+                    context: "partial.term".to_owned(),
+                });
+            }
+            Ok(())
+        }
+        PartialTerm::Const(c) => require_non_empty(c, "partial.term.const"),
         PartialTerm::Slot(s) => {
             if !slots.contains(s.as_str()) {
                 return Err(ValidationError::UnknownRef {
@@ -598,17 +644,20 @@ fn validate_term_refs(
                 });
             }
             for a in args {
-                validate_term_refs(a, op_arities, slots)?;
+                validate_term_refs(a, op_arities, slots, bound_vars)?;
             }
             Ok(())
         }
-        PartialTerm::Let { bound, body, .. } => {
-            validate_term_refs(bound, op_arities, slots)?;
-            validate_term_refs(body, op_arities, slots)
+        PartialTerm::Let { var, bound, body } => {
+            require_non_empty(var, "partial.term.let.var")?;
+            validate_term_refs(bound, op_arities, slots, bound_vars)?;
+            let mut next_bound = bound_vars.clone();
+            next_bound.insert(var.as_str());
+            validate_term_refs(body, op_arities, slots, &next_bound)
         }
         PartialTerm::BinOp { lhs, rhs, .. } => {
-            validate_term_refs(lhs, op_arities, slots)?;
-            validate_term_refs(rhs, op_arities, slots)
+            validate_term_refs(lhs, op_arities, slots, bound_vars)?;
+            validate_term_refs(rhs, op_arities, slots, bound_vars)
         }
     }
 }
