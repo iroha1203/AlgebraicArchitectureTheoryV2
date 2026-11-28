@@ -927,4 +927,55 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         validate_partial_task(make_aff(1)),
         Err(ValidationError::ConversionError { .. })
     ));
+
+    // Affine + 非空 eval_laws は黙殺せず ConversionError で拒否
+    use super::occurrence::OccurrenceReadingSpec;
+    use super::partial::{PartialFormula as PF, PartialTerm as PT};
+    let mut aff_with_laws = make_aff(0);
+    aff_with_laws.eval_laws.push(PartialEvalLawSpec {
+        name: "l".into(),
+        antecedent: None,
+        conclusion: PF::Eq(PT::Const("0".into()), PT::Const("0".into())),
+        is_required_law: true,
+    });
+    assert!(matches!(
+        validate_partial_task(aff_with_laws),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // base_readings と explicit_contexts を横断する同名読取りは拒否
+    let dup_reading = OccurrenceTaskSpec {
+        name: "dup_reading".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![],
+        pred_records: vec![],
+        base_readings: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), Some("0".into()))]),
+        }],
+        context_closed_17_5: false,
+        explicit_contexts: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), Some("1".into()))]),
+        }],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: sample_prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_occurrence_task(dup_reading),
+        Err(ValidationError::DuplicateDecl { .. })
+    ));
 }

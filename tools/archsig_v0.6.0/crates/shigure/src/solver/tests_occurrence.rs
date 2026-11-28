@@ -722,4 +722,151 @@ fn ch17_setting17_5_relations_negative_guards_and_bot_reading_soundness() {
         bot_occ.coarsest_sound_classes.unwrap()["S"],
         vec![vec!["a".to_owned()], vec!["b".to_owned()]]
     );
+
+    // 5. 一般有限系では eval_separation_kappa が操作や要求でなく許容評価文脈のみで定まり、
+    // 設定 17.5 では sound_identifications_count が None かつ ker(p) 細分の上限超過で Undetermined になる。
+    let mut kappa_general = rel_task_gen_setup();
+    kappa_general
+        .initial_readouts
+        .push(OccurrenceInitialReadoutSpec {
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), "0".into()), ("b".into(), "0".into())]),
+        });
+    let kg_out = solve_occurrence_task(&validate_occurrence_task(kappa_general).unwrap());
+    let kg_occ = kg_out.occurrence.unwrap();
+    assert_eq!(
+        kg_occ.context_equivalence_classes["S"],
+        vec![vec!["a", "b"]]
+    );
+    assert_eq!(
+        kg_occ.attribute_realization.unwrap().eval_separation_kappa["S"],
+        1
+    );
+
+    // 6. ker(p) 追加細分時に max_partitions=1 で上限超過すると Refuted でなく FiniteEnumerationOutOfScope
+    let kerp_bound = OccurrenceTaskSpec {
+        name: "kerp_bound".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into(), "c".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![OccurrenceOpSpec {
+            name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "S".into(),
+            is_total: true,
+        }],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["a".into()],
+                out_sort: "S".into(),
+                output: "a".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["b".into()],
+                out_sort: "S".into(),
+                output: "c".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["c".into()],
+                out_sort: "S".into(),
+                output: "c".into(),
+                positive: true,
+            },
+        ],
+        pred_records: vec![],
+        base_readings: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([
+                ("a".into(), Some("0".into())),
+                ("b".into(), Some("0".into())),
+                ("c".into(), Some("0".into())),
+            ]),
+        }],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![OccurrenceInitialReadoutSpec {
+            sort: "S".into(),
+            values: BTreeMap::from([
+                ("a".into(), "0".into()),
+                ("b".into(), "0".into()),
+                ("c".into(), "1".into()),
+            ]),
+        }],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 1,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        solve_occurrence_task(&validate_occurrence_task(kerp_bound).unwrap()).verdict,
+        Verdict::Undetermined(SilenceReason::FiniteEnumerationOutOfScope { .. })
+    ));
+}
+
+fn rel_task_gen_setup() -> OccurrenceTaskSpec {
+    OccurrenceTaskSpec {
+        name: "general_eval_kappa".into(),
+        sorts: vec![
+            OccurrenceSortSpec {
+                name: "S".into(),
+                elements: vec!["a".into(), "b".into()],
+                is_fixed_value: false,
+            },
+            OccurrenceSortSpec {
+                name: "V".into(),
+                elements: vec!["0".into(), "1".into()],
+                is_fixed_value: true,
+            },
+        ],
+        operations: vec![OccurrenceOpSpec {
+            name: "f".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "V".into(),
+            is_total: true,
+        }],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![
+            OpOutputRecord {
+                op_name: "f".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["a".into()],
+                out_sort: "V".into(),
+                output: "0".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "f".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec!["b".into()],
+                out_sort: "V".into(),
+                output: "1".into(),
+                positive: true,
+            },
+        ],
+        pred_records: vec![],
+        base_readings: vec![],
+        context_closed_17_5: false,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    }
 }

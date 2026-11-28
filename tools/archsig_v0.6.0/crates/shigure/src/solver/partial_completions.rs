@@ -188,7 +188,7 @@ fn enumerate_completions_for_records(
     enforce_limit: bool,
 ) -> Result<Vec<CompleteFiniteWorld>, SilenceReason> {
     let vars = build_decision_vars(fin, records);
-    let max_c = fin.max_completions.max(1);
+    let max_c = fin.max_completions;
     let mut results = Vec::new();
     let mut cur = CompleteFiniteWorld {
         slots: BTreeMap::new(),

@@ -78,11 +78,11 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
             "collision_witness_derivation_verified",
             MathClause::AatCh17Thm17Dot2,
         ));
-        let empty_ctx: BTreeMap<String, Vec<Vec<String>>> = BTreeMap::new();
+        let eval_ctx = compute_eval_equivalence_classes(task);
         let attr_fail = if !task.initial_readouts().is_empty() {
             Some(compute_attribute_failure_with_eval_kappa(
                 task,
-                &empty_ctx,
+                &eval_ctx,
                 "functional congruence closure collided before finding a sound attribute realization",
             ))
         } else {
@@ -93,7 +93,7 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
             collisions: formatted_collisions,
             derivation_verified: cong.derivation_verified,
             context_closed_17_5: task.context_closed_17_5(),
-            context_equivalence_classes: BTreeMap::new(),
+            context_equivalence_classes: eval_ctx,
             separating_contexts: vec![],
             sound_identifications_count: Some(0),
             coarsest_sound_exists: false,
@@ -154,7 +154,7 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
             context_closed_17_5: task.context_closed_17_5(),
             context_equivalence_classes: sound.context_equivalence_classes,
             separating_contexts: sound.separating_contexts,
-            sound_identifications_count: Some(0),
+            sound_identifications_count: sound.sound_identifications_count,
             coarsest_sound_exists: false,
             coarsest_sound_classes: None,
             attribute_realization: attr_fail,
@@ -193,7 +193,7 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
         context_closed_17_5: task.context_closed_17_5(),
         context_equivalence_classes: sound.context_equivalence_classes,
         separating_contexts: sound.separating_contexts,
-        sound_identifications_count: Some(sound.sound_partitions.len()),
+        sound_identifications_count: sound.sound_identifications_count,
         coarsest_sound_exists: sound.coarsest_sound_classes.is_some(),
         coarsest_sound_classes: sound.coarsest_sound_classes,
         attribute_realization,
@@ -205,6 +205,7 @@ struct SoundAnalysisOutcome {
     context_equivalence_classes: BTreeMap<String, Vec<Vec<String>>>,
     separating_contexts: Vec<SeparatingContextDetail>,
     sound_partitions: Vec<BTreeMap<String, Vec<Vec<String>>>>,
+    sound_identifications_count: Option<usize>,
     coarsest_sound_classes: Option<BTreeMap<String, Vec<Vec<String>>>>,
     extra_collisions: Vec<OccurrenceCollisionDetail>,
 }
@@ -374,10 +375,7 @@ fn analyze_setting_17_5(
         rels: rels.clone(),
         max_iterations: task.max_partitions(),
     })
-    .map_err(|err| SilenceReason::ApplicabilityConditionNotMet {
-        condition: "setting_17_5_closed".to_owned(),
-        detail: format!("{err:?}"),
-    })?;
+    .map_err(map_refinement_err)?;
 
     checks.push(ApplicabilityCheck::passed(
         "setting_17_5_context_refinement_computed",
@@ -430,6 +428,7 @@ fn analyze_setting_17_5(
             context_equivalence_classes: ref_res.classes,
             separating_contexts,
             sound_partitions: vec![],
+            sound_identifications_count: Some(0),
             coarsest_sound_classes: None,
             extra_collisions,
         });
@@ -449,20 +448,20 @@ fn analyze_setting_17_5(
                 values,
             });
         }
-        if let Ok(kerp_res) = refine_partition(&RefinementInput {
+        let kerp_res = refine_partition(&RefinementInput {
             sorts: sort_map,
             fixed_sorts,
             base_readings: init_readings,
             ops,
             rels,
             max_iterations: task.max_partitions(),
-        }) {
-            let kerp_lookup = build_class_lookup(&kerp_res.classes);
-            if kerp_res.classes != ref_res.classes
-                && is_partition_sound(task, &all_readings, &kerp_lookup)
-            {
-                sound_partitions.push(kerp_res.classes);
-            }
+        })
+        .map_err(map_refinement_err)?;
+        let kerp_lookup = build_class_lookup(&kerp_res.classes);
+        if kerp_res.classes != ref_res.classes
+            && is_partition_sound(task, &all_readings, &kerp_lookup)
+        {
+            sound_partitions.push(kerp_res.classes);
         }
     }
 
@@ -470,9 +469,59 @@ fn analyze_setting_17_5(
         context_equivalence_classes: ref_res.classes.clone(),
         separating_contexts,
         sound_partitions,
+        sound_identifications_count: None,
         coarsest_sound_classes: Some(ref_res.classes),
         extra_collisions,
     })
+}
+
+fn map_refinement_err(err: crate::algebra::poly::AlgebraError) -> SilenceReason {
+    let detail = format!("{err:?}");
+    if detail.contains("iteration bound") || detail.contains("exceeded") {
+        SilenceReason::FiniteEnumerationOutOfScope { detail }
+    } else {
+        SilenceReason::ApplicabilityConditionNotMet {
+            condition: "setting_17_5_closed".to_owned(),
+            detail,
+        }
+    }
+}
+
+/// 定義 17.4 式 (17.2) に従い、許容評価文脈族と固定値 sort のみから文脈同値 $\approx_{\mathcal{V}}$ を計算する。
+fn compute_eval_equivalence_classes(
+    task: &CheckedOccurrenceTask,
+) -> BTreeMap<String, Vec<Vec<String>>> {
+    let mut result = BTreeMap::new();
+    for s in task.sorts() {
+        if s.is_fixed_value {
+            result.insert(
+                s.name.clone(),
+                s.elements.iter().map(|e| vec![e.clone()]).collect(),
+            );
+            continue;
+        }
+        let mut by_sig: BTreeMap<Vec<Option<Option<&str>>>, Vec<String>> = BTreeMap::new();
+        for elem in &s.elements {
+            let sig: Vec<Option<Option<&str>>> = task
+                .base_readings()
+                .iter()
+                .chain(task.explicit_contexts())
+                .filter(|r| r.sort == s.name)
+                .map(|r| r.values.get(elem).map(|opt| opt.as_deref()))
+                .collect();
+            by_sig.entry(sig).or_default().push(elem.clone());
+        }
+        let mut cls: Vec<Vec<String>> = by_sig
+            .into_values()
+            .map(|mut g| {
+                g.sort();
+                g
+            })
+            .collect();
+        cls.sort();
+        result.insert(s.name.clone(), cls);
+    }
+    result
 }
 
 fn build_setting_17_5_op_entries(
@@ -656,23 +705,14 @@ fn analyze_general_finite(
         })
         .cloned();
 
-    let mut ctx_classes = coarsest_sound_classes
-        .clone()
-        .or_else(|| sound_partitions.first().cloned())
-        .unwrap_or_default();
-    if ctx_classes.is_empty() {
-        for s in task.sorts() {
-            ctx_classes.insert(
-                s.name.clone(),
-                s.elements.iter().map(|e| vec![e.clone()]).collect(),
-            );
-        }
-    }
+    let ctx_classes = compute_eval_equivalence_classes(task);
+    let sound_count = Some(sound_partitions.len());
 
     Ok(SoundAnalysisOutcome {
         context_equivalence_classes: ctx_classes,
         separating_contexts: vec![],
         sound_partitions,
+        sound_identifications_count: sound_count,
         coarsest_sound_classes,
         extra_collisions: vec![],
     })

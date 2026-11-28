@@ -15,7 +15,9 @@ use crate::ir::result::{ApplicabilityCheck, ReevalCheck, SilenceReason};
 use crate::ir::result_phase5_obs::{OpenDomainResultDetail, QuantifierHierarchyDetail};
 use crate::ir::term::{CoeffDomain, ScalarLit};
 use crate::solver::partial_affine::{rank_over_field, scalar_to_fp, scalar_to_rat};
-use crate::solver::partial_kleene::{CompleteFiniteWorld, eval_formula_complete};
+use crate::solver::partial_kleene::{
+    CompleteFiniteWorld, eval_formula_complete, eval_law_complete_via_kleene,
+};
 use num_bigint::BigInt;
 use num_traits::Zero;
 use std::collections::{BTreeMap, BTreeSet};
@@ -254,14 +256,29 @@ pub(super) fn analyze_open_domain(
     let positive_preserved = !sub_holds || amb_holds;
     let law_evaluations_match = sub_holds == amb_holds;
 
-    // 独立再評価検算
-    let sub_re = eval_law_complete(
+    // 独立再評価検算（完全構造評価器と強 Kleene 評価器の独立一致を確認）
+    let sub_rel_arities: Vec<(&str, &[String])> = od
+        .substructure_rels
+        .iter()
+        .map(|r| (r.name.as_str(), r.arg_sorts.as_slice()))
+        .collect();
+    let amb_rel_arities: Vec<(&str, &[String])> = od
+        .ambient_rels
+        .iter()
+        .map(|r| (r.name.as_str(), r.arg_sorts.as_slice()))
+        .collect();
+    let sub_re = eval_law_complete_via_kleene(
         &od.positive_or_law,
         &od.substructure_carriers,
         &sub_world,
-        &env,
+        &sub_rel_arities,
     );
-    let amb_re = eval_law_complete(&od.positive_or_law, &od.ambient_carriers, &amb_world, &env);
+    let amb_re = eval_law_complete_via_kleene(
+        &od.positive_or_law,
+        &od.ambient_carriers,
+        &amb_world,
+        &amb_rel_arities,
+    );
     let reeval = ReevalCheck {
         checked: true,
         matched: sub_re == sub_holds && amb_re == amb_holds,

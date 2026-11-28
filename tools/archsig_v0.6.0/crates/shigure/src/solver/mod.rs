@@ -93,6 +93,8 @@ mod tests_occurrence;
 #[cfg(test)]
 mod tests_partial;
 #[cfg(test)]
+mod tests_partial_open;
+#[cfg(test)]
 mod tests_path;
 #[cfg(test)]
 mod tests_path_extra;

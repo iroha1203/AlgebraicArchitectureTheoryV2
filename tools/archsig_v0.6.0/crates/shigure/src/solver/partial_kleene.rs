@@ -196,6 +196,81 @@ pub(super) fn eval_law_kleene(
     }
 }
 
+/// 完全世界 `CompleteFiniteWorld` を `PartialWorld`（全要素決定済み）へ写して強 Kleene 評価で独立再評価する。
+pub(super) fn eval_law_complete_via_kleene(
+    law: &PartialEvalLawSpec,
+    sorts: &BTreeMap<String, Vec<String>>,
+    world: &CompleteFiniteWorld,
+    rel_arities: &[(&str, &[String])],
+) -> bool {
+    let mut rel_decided = BTreeSet::new();
+    for (rel_name, arg_sorts) in rel_arities {
+        let mut tuples = vec![vec![]];
+        for s in *arg_sorts {
+            let Some(elems) = sorts.get(s) else {
+                tuples.clear();
+                break;
+            };
+            let mut next = Vec::with_capacity(tuples.len() * elems.len());
+            for prefix in &tuples {
+                for e in elems {
+                    let mut row = prefix.clone();
+                    row.push(e.clone());
+                    next.push(row);
+                }
+            }
+            tuples = next;
+        }
+        for tup in tuples {
+            rel_decided.insert(((*rel_name).to_owned(), tup));
+        }
+    }
+    let pw = PartialWorld {
+        slots: world.slots.clone(),
+        ops: world.op_tables.clone(),
+        op_known_defined: BTreeSet::new(),
+        op_graph_absent: BTreeSet::new(),
+        rels: world.rel_tables.clone(),
+        rel_decided,
+    };
+    let env = BTreeMap::new();
+    let conc_val = eval_formula_kleene(&law.conclusion, sorts, &pw, &env);
+    let total = match &law.antecedent {
+        None => conc_val,
+        Some(ant) => eval_formula_kleene(ant, sorts, &pw, &env)
+            .not()
+            .or(conc_val),
+    };
+    total == KleeneVal::True
+}
+
+enum EvalArgs {
+    Defined(Vec<String>),
+    ExplicitAbsent,
+    Unknown,
+}
+
+fn eval_terms_kleene(
+    terms: &[PartialTerm],
+    env: &BTreeMap<&str, Option<String>>,
+    pw: &PartialWorld,
+) -> EvalArgs {
+    let mut vals = Vec::with_capacity(terms.len());
+    let mut saw_unknown = false;
+    for t in terms {
+        match eval_term_kleene(t, env, pw) {
+            KleeneTerm::Defined(v) => vals.push(v),
+            KleeneTerm::ExplicitAbsent => return EvalArgs::ExplicitAbsent,
+            KleeneTerm::Unknown => saw_unknown = true,
+        }
+    }
+    if saw_unknown {
+        EvalArgs::Unknown
+    } else {
+        EvalArgs::Defined(vals)
+    }
+}
+
 fn eval_term_kleene(
     term: &PartialTerm,
     env: &BTreeMap<&str, Option<String>>,
@@ -212,21 +287,17 @@ fn eval_term_kleene(
             Some(v) => KleeneTerm::Defined(v.clone()),
             None => KleeneTerm::Unknown,
         },
-        PartialTerm::App { op_name, args } => {
-            let mut arg_vals = Vec::with_capacity(args.len());
-            for a in args {
-                match eval_term_kleene(a, env, pw) {
-                    KleeneTerm::Defined(v) => arg_vals.push(v),
-                    KleeneTerm::ExplicitAbsent => return KleeneTerm::ExplicitAbsent,
-                    KleeneTerm::Unknown => return KleeneTerm::Unknown,
+        PartialTerm::App { op_name, args } => match eval_terms_kleene(args, env, pw) {
+            EvalArgs::Defined(arg_vals) => {
+                match pw.ops.get(op_name).and_then(|t| t.get(&arg_vals)) {
+                    Some(Some(out)) => KleeneTerm::Defined(out.clone()),
+                    Some(None) => KleeneTerm::ExplicitAbsent,
+                    None => KleeneTerm::Unknown,
                 }
             }
-            match pw.ops.get(op_name).and_then(|t| t.get(&arg_vals)) {
-                Some(Some(out)) => KleeneTerm::Defined(out.clone()),
-                Some(None) => KleeneTerm::ExplicitAbsent,
-                None => KleeneTerm::Unknown,
-            }
-        }
+            EvalArgs::ExplicitAbsent => KleeneTerm::ExplicitAbsent,
+            EvalArgs::Unknown => KleeneTerm::Unknown,
+        },
         PartialTerm::Let { var, bound, body } => match eval_term_kleene(bound, env, pw) {
             KleeneTerm::Defined(val) => {
                 let mut next = env.clone();
@@ -237,19 +308,13 @@ fn eval_term_kleene(
             KleeneTerm::Unknown => KleeneTerm::Unknown,
         },
         PartialTerm::BinOp { op, lhs, rhs } => {
-            let lv = match eval_term_kleene(lhs, env, pw) {
-                KleeneTerm::Defined(v) => v,
-                KleeneTerm::ExplicitAbsent => return KleeneTerm::ExplicitAbsent,
-                KleeneTerm::Unknown => return KleeneTerm::Unknown,
-            };
-            let rv = match eval_term_kleene(rhs, env, pw) {
-                KleeneTerm::Defined(v) => v,
-                KleeneTerm::ExplicitAbsent => return KleeneTerm::ExplicitAbsent,
-                KleeneTerm::Unknown => return KleeneTerm::Unknown,
-            };
-            match apply_binop(*op, &lv, &rv) {
-                Some(res) => KleeneTerm::Defined(res),
-                None => KleeneTerm::ExplicitAbsent,
+            match eval_terms_kleene(&[lhs.as_ref().clone(), rhs.as_ref().clone()], env, pw) {
+                EvalArgs::Defined(vals) => match apply_binop(*op, &vals[0], &vals[1]) {
+                    Some(res) => KleeneTerm::Defined(res),
+                    None => KleeneTerm::ExplicitAbsent,
+                },
+                EvalArgs::ExplicitAbsent => KleeneTerm::ExplicitAbsent,
+                EvalArgs::Unknown => KleeneTerm::Unknown,
             }
         }
     }
@@ -277,79 +342,62 @@ fn eval_formula_kleene(
                 _ => KleeneVal::Unknown,
             }
         }
-        PartialFormula::Rel { rel_name, args } => {
-            let mut arg_vals = Vec::with_capacity(args.len());
-            for a in args {
-                match eval_term_kleene(a, env, pw) {
-                    KleeneTerm::Defined(v) => arg_vals.push(v),
-                    KleeneTerm::ExplicitAbsent => return KleeneVal::False,
-                    KleeneTerm::Unknown => return KleeneVal::Unknown,
+        PartialFormula::Rel { rel_name, args } => match eval_terms_kleene(args, env, pw) {
+            EvalArgs::Defined(arg_vals) => {
+                if !pw
+                    .rel_decided
+                    .contains(&(rel_name.clone(), arg_vals.clone()))
+                {
+                    KleeneVal::Unknown
+                } else if pw
+                    .rels
+                    .get(rel_name)
+                    .is_some_and(|set| set.contains(&arg_vals))
+                {
+                    KleeneVal::True
+                } else {
+                    KleeneVal::False
                 }
             }
-            if !pw
-                .rel_decided
-                .contains(&(rel_name.clone(), arg_vals.clone()))
-            {
-                KleeneVal::Unknown
-            } else if pw
-                .rels
-                .get(rel_name)
-                .is_some_and(|set| set.contains(&arg_vals))
-            {
-                KleeneVal::True
-            } else {
-                KleeneVal::False
-            }
-        }
+            EvalArgs::ExplicitAbsent => KleeneVal::False,
+            EvalArgs::Unknown => KleeneVal::Unknown,
+        },
         PartialFormula::Graph {
             op_name,
             args,
             output,
         } => {
-            let mut arg_vals = Vec::with_capacity(args.len());
-            for a in args {
-                match eval_term_kleene(a, env, pw) {
-                    KleeneTerm::Defined(v) => arg_vals.push(v),
-                    KleeneTerm::ExplicitAbsent => return KleeneVal::False,
-                    KleeneTerm::Unknown => return KleeneVal::Unknown,
-                }
-            }
-            let out_v = match eval_term_kleene(output, env, pw) {
-                KleeneTerm::Defined(v) => v,
-                KleeneTerm::ExplicitAbsent => return KleeneVal::False,
-                KleeneTerm::Unknown => return KleeneVal::Unknown,
-            };
-            match pw.ops.get(op_name).and_then(|t| t.get(&arg_vals)) {
-                Some(Some(actual)) => {
-                    if *actual == out_v {
-                        KleeneVal::True
-                    } else {
-                        KleeneVal::False
+            let mut all_terms = Vec::with_capacity(args.len() + 1);
+            all_terms.extend(args.iter().cloned());
+            all_terms.push(output.clone());
+            match eval_terms_kleene(&all_terms, env, pw) {
+                EvalArgs::Defined(mut vals) => {
+                    let out_v = vals.pop().expect("output appended");
+                    match pw.ops.get(op_name).and_then(|t| t.get(&vals)) {
+                        Some(Some(actual)) => {
+                            if *actual == out_v {
+                                KleeneVal::True
+                            } else {
+                                KleeneVal::False
+                            }
+                        }
+                        Some(None) => KleeneVal::False,
+                        None => {
+                            if pw.op_graph_absent.contains(&(op_name.clone(), vals, out_v)) {
+                                KleeneVal::False
+                            } else {
+                                KleeneVal::Unknown
+                            }
+                        }
                     }
                 }
-                Some(None) => KleeneVal::False,
-                None => {
-                    if pw
-                        .op_graph_absent
-                        .contains(&(op_name.clone(), arg_vals, out_v))
-                    {
-                        KleeneVal::False
-                    } else {
-                        KleeneVal::Unknown
-                    }
-                }
+                EvalArgs::ExplicitAbsent => KleeneVal::False,
+                EvalArgs::Unknown => KleeneVal::Unknown,
             }
         }
-        PartialFormula::Defined { op_name, args } => {
-            let mut arg_vals = Vec::with_capacity(args.len());
-            for a in args {
-                match eval_term_kleene(a, env, pw) {
-                    KleeneTerm::Defined(v) => arg_vals.push(v),
-                    KleeneTerm::ExplicitAbsent => return KleeneVal::False,
-                    KleeneTerm::Unknown => return KleeneVal::Unknown,
-                }
-            }
-            match pw.ops.get(op_name).and_then(|t| t.get(&arg_vals)) {
+        PartialFormula::Defined { op_name, args } => match eval_terms_kleene(args, env, pw) {
+            EvalArgs::Defined(arg_vals) => match pw.ops.get(op_name).and_then(|t| t.get(&arg_vals))
+            {
                 Some(Some(_)) => KleeneVal::True,
                 Some(None) => KleeneVal::False,
                 None => {
@@ -359,8 +407,10 @@ fn eval_formula_kleene(
                         KleeneVal::Unknown
                     }
                 }
-            }
-        }
+            },
+            EvalArgs::ExplicitAbsent => KleeneVal::False,
+            EvalArgs::Unknown => KleeneVal::Unknown,
+        },
         PartialFormula::Not(inner) => eval_formula_kleene(inner, sorts, pw, env).not(),
         PartialFormula::And(list) => list.iter().fold(KleeneVal::True, |acc, f| {
             acc.and(eval_formula_kleene(f, sorts, pw, env))

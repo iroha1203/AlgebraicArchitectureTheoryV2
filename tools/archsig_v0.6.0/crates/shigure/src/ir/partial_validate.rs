@@ -13,7 +13,11 @@ use crate::ir::validate::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-pub fn validate_partial_task(spec: PartialTaskSpec) -> Result<CheckedPartialTask, ValidationError> {
+pub const DEFAULT_MAX_COMPLETIONS: usize = 4_096;
+
+pub fn validate_partial_task(
+    mut spec: PartialTaskSpec,
+) -> Result<CheckedPartialTask, ValidationError> {
     require_non_empty(&spec.name, "partial.name")?;
     validate_nonempty_provenance(&spec.provenance, &format!("partial `{}`", spec.name))?;
 
@@ -28,9 +32,22 @@ pub fn validate_partial_task(spec: PartialTaskSpec) -> Result<CheckedPartialTask
         }
     }
 
-    match &spec.representation {
-        PartialRepresentation::FiniteTable(fin) => validate_finite_partial(fin, &spec.eval_laws)?,
-        PartialRepresentation::Affine(aff) => validate_affine_partial(aff)?,
+    match &mut spec.representation {
+        PartialRepresentation::FiniteTable(fin) => {
+            if fin.max_completions == 0 {
+                fin.max_completions = DEFAULT_MAX_COMPLETIONS;
+            }
+            validate_finite_partial(fin, &spec.eval_laws)?;
+        }
+        PartialRepresentation::Affine(aff) => {
+            if !spec.eval_laws.is_empty() {
+                return Err(ValidationError::ConversionError {
+                    detail: "affine partial presentation must specify evaluation laws via `eval_equations` rather than `eval_laws`"
+                        .to_owned(),
+                });
+            }
+            validate_affine_partial(aff)?;
+        }
         PartialRepresentation::UnsupportedClass { description } => {
             require_non_empty(description, "partial.unsupported_class.description")?;
         }
