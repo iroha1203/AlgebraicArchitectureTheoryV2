@@ -52,6 +52,17 @@ import Formal.SHIGURE.Part2.StackQuantities.NonflatExample
 import Formal.SHIGURE.Part2.StackQuantities.NonflatWrittenLaw
 import Formal.SHIGURE.Part2.StackQuantities.ResidualExamples
 import Formal.SHIGURE.Part2.StackQuantities.SectionModel
+import Formal.SHIGURE.Part2.Minimal.DimensionGrowth
+import Formal.SHIGURE.Part2.Minimal.DirectSumRange
+import Formal.SHIGURE.Part2.Minimal.DualObservation
+import Formal.SHIGURE.Part2.Minimal.FiniteObservationComparison
+import Formal.SHIGURE.Part2.Minimal.FiniteWords
+import Formal.SHIGURE.Part2.Minimal.ReachabilityMaps
+import Formal.SHIGURE.Part2.Minimal.SharpnessExample
+import Formal.SHIGURE.Part2.Minimal.TypedWords
+import Formal.SHIGURE.Part2.Minimal.WordExamples
+import Formal.SHIGURE.Part2.Minimal.WordLength
+import Formal.SHIGURE.Part2.Minimal.WordReverse
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -5254,6 +5265,102 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.StackQuantities.sectionCandidate_holds_transport,
   SHIGURE.StackQuantities.section_identity_holds,
   SHIGURE.StackQuantities.section_zero_not_holds
+]
+
+-- Field-level typed-word bounds and actual dual observations.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.Minimal.filtration_eq_top_at_finrank_sub_one,
+  SHIGURE.Minimal.range_toModule_eq_span,
+  SHIGURE.Minimal.dualSystem,
+  SHIGURE.Minimal.evaluate_reverse,
+  SHIGURE.Minimal.boundedObservationGenerators_eq_dualGenerators,
+  SHIGURE.Minimal.boundedObservation_eq_dualReach,
+  SHIGURE.Minimal.allObservation_eq_dualReach,
+  SHIGURE.Minimal.allObservation_iff_boundedObservation,
+  SHIGURE.Minimal.allObservation_iff_boundedObservation_sum,
+  SHIGURE.Minimal.finiteDualProductEquiv,
+  SHIGURE.Minimal.finiteDualProductEquiv_lof,
+  SHIGURE.Minimal.finiteDualProductEquiv_dualMap_pi,
+  SHIGURE.Minimal.boundedObservationMap,
+  SHIGURE.Minimal.boundedObservationMap_dualMap_comp_equiv,
+  SHIGURE.Minimal.boundedObservationMap_dualMap_surjective_iff,
+  SHIGURE.Minimal.surjective_allWordDualObservationMap_iff_actual_bounded_dual,
+  SHIGURE.Minimal.boundedNil,
+  SHIGURE.Minimal.boundedStep,
+  SHIGURE.Minimal.finite_bounded_words,
+  SHIGURE.Minimal.finite_shortOutputWord,
+  SHIGURE.Minimal.InputWord,
+  SHIGURE.Minimal.ShortInputWord,
+  SHIGURE.Minimal.allWordReachMap,
+  SHIGURE.Minimal.boundedWordReachMap,
+  SHIGURE.Minimal.range_allWordReachMap,
+  SHIGURE.Minimal.range_boundedWordReachMap,
+  SHIGURE.Minimal.surjective_allWordReachMap_iff_bounded,
+  SHIGURE.Minimal.OutputWord,
+  SHIGURE.Minimal.ShortOutputWord,
+  SHIGURE.Minimal.allWordDualObservationMap,
+  SHIGURE.Minimal.boundedWordDualObservationMap,
+  SHIGURE.Minimal.range_allWordDualObservationMap,
+  SHIGURE.Minimal.range_boundedWordDualObservationMap,
+  SHIGURE.Minimal.surjective_allWordDualObservationMap_iff_bounded,
+  SHIGURE.Minimal.SharpnessExample.ChainOp,
+  SHIGURE.Minimal.SharpnessExample.chainSystem,
+  SHIGURE.Minimal.SharpnessExample.first,
+  SHIGURE.Minimal.SharpnessExample.chainWord,
+  SHIGURE.Minimal.SharpnessExample.word_length_eq_displacement,
+  SHIGURE.Minimal.SharpnessExample.evaluate_chainWord,
+  SHIGURE.Minimal.SharpnessExample.all_sorts_reached,
+  SHIGURE.Minimal.SharpnessExample.last_bounded_eq_bot,
+  SHIGURE.Minimal.SharpnessExample.chain_dimension,
+  SHIGURE.Minimal.SharpnessExample.bound_is_sharp,
+  SHIGURE.Minimal.Word,
+  SHIGURE.Minimal.Word.length,
+  SHIGURE.Minimal.Word.LinearSystem,
+  SHIGURE.Minimal.Word.evaluate,
+  SHIGURE.Minimal.boundedGenerators,
+  SHIGURE.Minimal.allGenerators,
+  SHIGURE.Minimal.boundedReach,
+  SHIGURE.Minimal.allReach,
+  SHIGURE.Minimal.boundedReach_mono,
+  SHIGURE.Minimal.boundedReach_le_allReach,
+  SHIGURE.Minimal.operation_boundedReach_le,
+  SHIGURE.Minimal.allReach_le_of_stationary,
+  SHIGURE.Minimal.iSup_boundedReach,
+  SHIGURE.Minimal.boundedObservationGenerators,
+  SHIGURE.Minimal.boundedObservation,
+  SHIGURE.Minimal.allObservationGenerators,
+  SHIGURE.Minimal.allObservation,
+  SHIGURE.Minimal.boundedObservation_le_allObservation,
+  SHIGURE.Minimal.iSup_boundedObservation,
+  SHIGURE.Minimal.WordExamples.TwoSortOp,
+  SHIGURE.Minimal.WordExamples.twoSortSystem,
+  SHIGURE.Minimal.WordExamples.first_reached_at_zero,
+  SHIGURE.Minimal.WordExamples.second_reached_at_one,
+  SHIGURE.Minimal.WordExamples.all_sorts_reached,
+  SHIGURE.Minimal.WordExamples.second_not_reached_at_zero,
+  SHIGURE.Minimal.WordExamples.twoSort_dimension,
+  SHIGURE.Minimal.WordExamples.length_one_is_necessary,
+  SHIGURE.Minimal.totalReach,
+  SHIGURE.Minimal.component_le_of_pi_le,
+  SHIGURE.Minimal.totalReach_mono,
+  SHIGURE.Minimal.allReach_eq_bot_of_input_eq_zero,
+  SHIGURE.Minimal.totalReach_stationary_eq_top,
+  SHIGURE.Minimal.totalReach_zero_ne_bot,
+  SHIGURE.Minimal.allReach_iff_boundedReach,
+  SHIGURE.Minimal.allReach_iff_boundedReach_sum,
+  SHIGURE.Minimal.Word.append,
+  SHIGURE.Minimal.Word.append_nil,
+  SHIGURE.Minimal.Word.append_snoc,
+  SHIGURE.Minimal.Word.nil_append,
+  SHIGURE.Minimal.Word.append_assoc,
+  SHIGURE.Minimal.Word.length_append,
+  SHIGURE.Minimal.Word.reverse,
+  SHIGURE.Minimal.Word.reverse_nil,
+  SHIGURE.Minimal.Word.reverse_snoc,
+  SHIGURE.Minimal.Word.reverse_append,
+  SHIGURE.Minimal.Word.reverse_reverse,
+  SHIGURE.Minimal.Word.length_reverse,
+  SHIGURE.Minimal.Word.evaluate_append
 ]
 
 end SHIGURE.AxiomAudit
