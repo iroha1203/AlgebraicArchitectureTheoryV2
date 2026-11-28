@@ -117,6 +117,14 @@ import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeDescent
 import Formal.SHIGURE.Part2.Schemes.FppfBaseMaps
 import Formal.SHIGURE.Part2.Schemes.CoreDescent
 
+import Formal.SHIGURE.Part2.Marked.Coordinates
+import Formal.SHIGURE.Part2.Marked.UniversalOperations
+import Formal.SHIGURE.Part2.Marked.ChartResidualBaseChange
+import Formal.SHIGURE.Part2.Marked.ChartLaws
+import Formal.SHIGURE.Part2.Marked.ChartRingRepresentation
+
+import Formal.SHIGURE.Part2.Marked.ChartExamples
+
 /-! # SHIGURE kernel audit entry point -/
 
 namespace SHIGURE.AxiomAudit
@@ -5636,6 +5644,107 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.SchemeDescent.coreComparisonIso,
   SHIGURE.SchemeDescent.coreComparison_isEquivalence,
   SHIGURE.SchemeDescent.corePseudofunctor_isStack
+]
+
+-- Construction 6.4: independent normalized free realizations and their coordinate ring.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.Marked.PrimitiveSymbol,
+  SHIGURE.RealizationFamilies.Marked.primitiveArity,
+  SHIGURE.RealizationFamilies.Marked.OperationCoordinate,
+  SHIGURE.RealizationFamilies.Marked.ChartIndex,
+  SHIGURE.RealizationFamilies.Marked.MarkingCoordinate,
+  SHIGURE.RealizationFamilies.Marked.ChartVariable,
+  SHIGURE.RealizationFamilies.Marked.ChartAmbient,
+  SHIGURE.RealizationFamilies.Marked.markingEntry,
+  SHIGURE.RealizationFamilies.Marked.markingEntry_selected,
+  SHIGURE.RealizationFamilies.Marked.operationEntry,
+  SHIGURE.RealizationFamilies.Marked.markingEntry_unselected,
+  SHIGURE.RealizationFamilies.Marked.primitiveOperation,
+  SHIGURE.RealizationFamilies.Marked.freeBasis,
+  SHIGURE.RealizationFamilies.Marked.operationOfCoefficients,
+  SHIGURE.RealizationFamilies.Marked.freeStructure,
+  SHIGURE.RealizationFamilies.Marked.operationOfCoefficients_basis,
+  SHIGURE.RealizationFamilies.Marked.operationOfCoefficients_reconstruct,
+  SHIGURE.RealizationFamilies.Marked.operationCoefficientEquiv,
+  SHIGURE.RealizationFamilies.Marked.universalStructure,
+  SHIGURE.RealizationFamilies.Marked.universalPolynomialResidual,
+  SHIGURE.RealizationFamilies.Marked.universalPolynomialResidualIdeal,
+  SHIGURE.RealizationFamilies.Marked.freeCarrierBaseChange,
+  SHIGURE.RealizationFamilies.Marked.freeCarrierBaseChange_unit,
+  SHIGURE.RealizationFamilies.Marked.freeCarrierBaseChange_basis,
+  SHIGURE.RealizationFamilies.Marked.freeCarrierBaseChange_operation,
+  SHIGURE.RealizationFamilies.Marked.freeStructureBaseChangeHom,
+  SHIGURE.RealizationFamilies.Marked.freeStructureBaseChangeIso,
+  SHIGURE.RealizationFamilies.Marked.freeShapeBaseChange,
+  SHIGURE.RealizationFamilies.Marked.freeShapeBaseChange_eval,
+  SHIGURE.RealizationFamilies.Marked.ShapeCoordinate,
+  SHIGURE.RealizationFamilies.Marked.shapeBasis,
+  SHIGURE.RealizationFamilies.Marked.freeShapeBaseChange_basis,
+  SHIGURE.RealizationFamilies.Marked.freeShapeBaseChange_repr,
+  SHIGURE.RealizationFamilies.Marked.tensorResidual,
+  SHIGURE.RealizationFamilies.Marked.tensorResidual_baseChange,
+  SHIGURE.RealizationFamilies.Marked.tensorLaw_holds_iff_residual_zero,
+  SHIGURE.RealizationFamilies.Marked.TensorResidualCoordinate,
+  SHIGURE.RealizationFamilies.Marked.PolynomialResidualCoordinate,
+  SHIGURE.RealizationFamilies.Marked.ResidualCoordinate,
+  SHIGURE.RealizationFamilies.Marked.chartResidual,
+  SHIGURE.RealizationFamilies.Marked.chartLawIdeal,
+  SHIGURE.RealizationFamilies.Marked.chartLawIdeal_le_iff,
+  SHIGURE.RealizationFamilies.Marked.chartResidual_mem,
+  SHIGURE.RealizationFamilies.Marked.ChartRing,
+  SHIGURE.RealizationFamilies.Marked.chartQuotient,
+  SHIGURE.RealizationFamilies.Marked.chartGenerator,
+  SHIGURE.RealizationFamilies.Marked.tensorResidual_aeval,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData.carrierEquiv,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData.carrierBasis,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData.IsNormalized,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData.Satisfies,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData.coordinates,
+  SHIGURE.RealizationFamilies.Marked.FreeMarkedData.IsNormalized.surjective,
+  SHIGURE.RealizationFamilies.Marked.dataOfAssignment,
+  SHIGURE.RealizationFamilies.Marked.dataOfAssignment_normalized,
+  SHIGURE.RealizationFamilies.Marked.coordinates_dataOfAssignment,
+  SHIGURE.RealizationFamilies.Marked.dataOfAssignment_coordinates,
+  SHIGURE.RealizationFamilies.Marked.normalizedDataEquiv,
+  SHIGURE.RealizationFamilies.Marked.dataOfAssignment_satisfies_iff,
+  SHIGURE.RealizationFamilies.Marked.NormalizedMarkedFreeRealization,
+  SHIGURE.RealizationFamilies.Marked.normalized_affineProperty,
+  SHIGURE.RealizationFamilies.Marked.normalizedToAffine,
+  SHIGURE.RealizationFamilies.Marked.assignmentOfChartHom,
+  SHIGURE.RealizationFamilies.Marked.aeval_assignmentOfChartHom,
+  SHIGURE.RealizationFamilies.Marked.assignmentOfChartHom_vanishes,
+  SHIGURE.RealizationFamilies.Marked.realizationOfChartHom,
+  SHIGURE.RealizationFamilies.Marked.realization_coordinates_vanish,
+  SHIGURE.RealizationFamilies.Marked.chartHomOfRealization,
+  SHIGURE.RealizationFamilies.Marked.assignmentOfChartHom_chartHomOfRealization,
+  SHIGURE.RealizationFamilies.Marked.chartPointEquiv,
+  SHIGURE.RealizationFamilies.Marked.normalizedMap,
+  SHIGURE.RealizationFamilies.Marked.chartPointEquiv_natural,
+  SHIGURE.RealizationFamilies.Marked.normalizedMap_tensorComparison
+]
+
+-- Concrete normalization/Law instance pairs on the same integer free carrier.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.sectionSignature,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.singleChart,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.vanishingSectionLaw,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.vanishingSectionLaws,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.assignedData,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.assignedData_normalized,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.assignedData_satisfies_iff,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.zeroAssignment_satisfies,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.oneAssignment_not_satisfies,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.assigned_ideal_vanishes_iff,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.zeroMarkedData,
+  SHIGURE.RealizationFamilies.Marked.ChartExamples.zeroMarkedData_not_normalized
+]
+
+-- Named projection/application APIs from the noncentral review finding.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.Marked.freeBasis_apply,
+  SHIGURE.RealizationFamilies.Marked.freeStructure_total,
+  SHIGURE.RealizationFamilies.Marked.freeStructure_quantity
 ]
 
 end SHIGURE.AxiomAudit

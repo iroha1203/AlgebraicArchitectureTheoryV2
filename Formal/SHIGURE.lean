@@ -124,6 +124,14 @@ import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeDescent
 import Formal.SHIGURE.Part2.Schemes.FppfBaseMaps
 import Formal.SHIGURE.Part2.Schemes.CoreDescent
 
+import Formal.SHIGURE.Part2.Marked.Coordinates
+import Formal.SHIGURE.Part2.Marked.UniversalOperations
+import Formal.SHIGURE.Part2.Marked.ChartResidualBaseChange
+import Formal.SHIGURE.Part2.Marked.ChartLaws
+import Formal.SHIGURE.Part2.Marked.ChartRingRepresentation
+
+import Formal.SHIGURE.Part2.Marked.ChartExamples
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.
