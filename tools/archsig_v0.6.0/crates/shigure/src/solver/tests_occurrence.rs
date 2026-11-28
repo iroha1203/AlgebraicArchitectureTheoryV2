@@ -815,6 +815,26 @@ fn ch17_setting17_5_relations_negative_guards_and_bot_reading_soundness() {
         solve_occurrence_task(&validate_occurrence_task(kerp_bound).unwrap()).verdict,
         Verdict::Undetermined(SilenceReason::FiniteEnumerationOutOfScope { .. })
     ));
+
+    // 7. 設定 17.5 で Step (a) 衝突が起きても context_equivalence_classes / eval_separation_kappa に操作文脈を反映
+    let mut coll_17_5 = rel_task_gen_setup();
+    coll_17_5.context_closed_17_5 = true;
+    coll_17_5.identity_requests = vec![("S".into(), "a".into(), "b".into())];
+    coll_17_5.initial_readouts = vec![OccurrenceInitialReadoutSpec {
+        sort: "S".into(),
+        values: BTreeMap::from([("a".into(), "0".into()), ("b".into(), "0".into())]),
+    }];
+    let c17_out = solve_occurrence_task(&validate_occurrence_task(coll_17_5).unwrap());
+    assert_eq!(c17_out.verdict, Verdict::Refuted);
+    let c17_occ = c17_out.occurrence.unwrap();
+    assert_eq!(
+        c17_occ.context_equivalence_classes["S"],
+        vec![vec!["a".to_owned()], vec!["b".to_owned()]]
+    );
+    assert_eq!(
+        c17_occ.attribute_realization.unwrap().eval_separation_kappa["S"],
+        2
+    );
 }
 
 fn rel_task_gen_setup() -> OccurrenceTaskSpec {

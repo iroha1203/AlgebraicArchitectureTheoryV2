@@ -473,4 +473,64 @@ fn ch18_undetermined_on_unsupported_class_unobserved_and_max_completions() {
         .unwrap();
     assert_eq!(so_p.law_evaluations[0].strong_kleene, "false");
     assert!(so_p.kleene_soundness_verified);
+
+    // 開領域で OpenOpTable に未登録（暗黙未定義）のタプルに対する ¬Defined(...) でも reevaluation.matched == true
+    let omitted_op_open = PartialTaskSpec {
+        name: "omitted_op_open_reeval".into(),
+        representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
+            sorts: BTreeMap::from([("V".into(), vec!["0".into()])]),
+            operations: vec![],
+            relations: vec![],
+            slots: vec![],
+            background_constraints: vec![],
+            records: vec![],
+            max_completions: 8,
+        }),
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: Some(OpenDomainSpec {
+            substructure_carriers: BTreeMap::from([("A".into(), vec!["a0".into()])]),
+            ambient_carriers: BTreeMap::from([("A".into(), vec!["a0".into()])]),
+            substructure_ops: vec![OpenOpTable {
+                name: "f".into(),
+                arg_sorts: vec!["A".into()],
+                out_sort: "A".into(),
+                entries: BTreeMap::new(),
+            }],
+            ambient_ops: vec![OpenOpTable {
+                name: "f".into(),
+                arg_sorts: vec!["A".into()],
+                out_sort: "A".into(),
+                entries: BTreeMap::new(),
+            }],
+            substructure_rels: vec![],
+            ambient_rels: vec![],
+            fiber_checks: vec![],
+            positive_or_law: PartialEvalLawSpec {
+                name: "not_def_f".into(),
+                antecedent: None,
+                conclusion: PartialFormula::Not(Box::new(PartialFormula::Defined {
+                    op_name: "f".into(),
+                    args: vec![PartialTerm::Const("a0".into())],
+                })),
+                is_required_law: false,
+            },
+            affine_restriction: None,
+        }),
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    let omitted_od = solve_partial_task(&validate_partial_task(omitted_op_open).unwrap())
+        .partial
+        .unwrap()
+        .open_domain
+        .unwrap();
+    assert_eq!(omitted_od.sub_law_eval, "true");
+    assert_eq!(omitted_od.ambient_law_eval, "true");
+    assert!(
+        omitted_od
+            .reevaluation
+            .as_ref()
+            .is_some_and(|r| r.checked && r.matched)
+    );
 }

@@ -257,6 +257,16 @@ pub(super) fn analyze_open_domain(
     let law_evaluations_match = sub_holds == amb_holds;
 
     // 独立再評価検算（完全構造評価器と強 Kleene 評価器の独立一致を確認）
+    let sub_op_arities: Vec<(&str, &[String])> = od
+        .substructure_ops
+        .iter()
+        .map(|o| (o.name.as_str(), o.arg_sorts.as_slice()))
+        .collect();
+    let amb_op_arities: Vec<(&str, &[String])> = od
+        .ambient_ops
+        .iter()
+        .map(|o| (o.name.as_str(), o.arg_sorts.as_slice()))
+        .collect();
     let sub_rel_arities: Vec<(&str, &[String])> = od
         .substructure_rels
         .iter()
@@ -271,12 +281,14 @@ pub(super) fn analyze_open_domain(
         &od.positive_or_law,
         &od.substructure_carriers,
         &sub_world,
+        &sub_op_arities,
         &sub_rel_arities,
     );
     let amb_re = eval_law_complete_via_kleene(
         &od.positive_or_law,
         &od.ambient_carriers,
         &amb_world,
+        &amb_op_arities,
         &amb_rel_arities,
     );
     let reeval = ReevalCheck {

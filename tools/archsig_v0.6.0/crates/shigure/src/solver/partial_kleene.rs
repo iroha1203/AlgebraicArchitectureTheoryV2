@@ -196,38 +196,52 @@ pub(super) fn eval_law_kleene(
     }
 }
 
-/// 完全世界 `CompleteFiniteWorld` を `PartialWorld`（全要素決定済み）へ写して強 Kleene 評価で独立再評価する。
+fn enumerate_carrier_tuples(
+    sorts: &BTreeMap<String, Vec<String>>,
+    arg_sorts: &[String],
+) -> Vec<Vec<String>> {
+    let mut tuples = vec![vec![]];
+    for s in arg_sorts {
+        let Some(elems) = sorts.get(s) else {
+            return Vec::new();
+        };
+        let mut next = Vec::with_capacity(tuples.len() * elems.len());
+        for prefix in &tuples {
+            for e in elems {
+                let mut row = prefix.clone();
+                row.push(e.clone());
+                next.push(row);
+            }
+        }
+        tuples = next;
+    }
+    tuples
+}
+
+/// 完全世界 `CompleteFiniteWorld` を `PartialWorld`（全要素・全未定義タプル決定済み）へ写して強 Kleene 評価で独立再評価する。
 pub(super) fn eval_law_complete_via_kleene(
     law: &PartialEvalLawSpec,
     sorts: &BTreeMap<String, Vec<String>>,
     world: &CompleteFiniteWorld,
+    op_arities: &[(&str, &[String])],
     rel_arities: &[(&str, &[String])],
 ) -> bool {
+    let mut ops = world.op_tables.clone();
+    for (op_name, arg_sorts) in op_arities {
+        let entry_map = ops.entry((*op_name).to_owned()).or_default();
+        for tup in enumerate_carrier_tuples(sorts, arg_sorts) {
+            entry_map.entry(tup).or_insert(None);
+        }
+    }
     let mut rel_decided = BTreeSet::new();
     for (rel_name, arg_sorts) in rel_arities {
-        let mut tuples = vec![vec![]];
-        for s in *arg_sorts {
-            let Some(elems) = sorts.get(s) else {
-                tuples.clear();
-                break;
-            };
-            let mut next = Vec::with_capacity(tuples.len() * elems.len());
-            for prefix in &tuples {
-                for e in elems {
-                    let mut row = prefix.clone();
-                    row.push(e.clone());
-                    next.push(row);
-                }
-            }
-            tuples = next;
-        }
-        for tup in tuples {
+        for tup in enumerate_carrier_tuples(sorts, arg_sorts) {
             rel_decided.insert(((*rel_name).to_owned(), tup));
         }
     }
     let pw = PartialWorld {
         slots: world.slots.clone(),
-        ops: world.op_tables.clone(),
+        ops,
         op_known_defined: BTreeSet::new(),
         op_graph_absent: BTreeSet::new(),
         rels: world.rel_tables.clone(),

@@ -78,7 +78,21 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
             "collision_witness_derivation_verified",
             MathClause::AatCh17Thm17Dot2,
         ));
-        let eval_ctx = compute_eval_equivalence_classes(task);
+        let eval_ctx = if task.context_closed_17_5()
+            && let Ok((sort_map, fixed_sorts, base_readings, ops, rels)) =
+                build_setting_17_5_inputs(task)
+            && let Ok(ref_res) = refine_partition(&RefinementInput {
+                sorts: sort_map,
+                fixed_sorts,
+                base_readings,
+                ops,
+                rels,
+                max_iterations: task.max_partitions(),
+            }) {
+            ref_res.classes
+        } else {
+            compute_eval_equivalence_classes(task)
+        };
         let attr_fail = if !task.initial_readouts().is_empty() {
             Some(compute_attribute_failure_with_eval_kappa(
                 task,
@@ -308,10 +322,17 @@ fn build_congruence_input(task: &CheckedOccurrenceTask) -> CongruenceInput {
     }
 }
 
-fn analyze_setting_17_5(
+type Setting175Inputs = (
+    BTreeMap<String, Vec<String>>,
+    BTreeSet<String>,
+    Vec<BaseReading>,
+    Vec<PartialOpTable>,
+    Vec<PartialRelTable>,
+);
+
+fn build_setting_17_5_inputs(
     task: &CheckedOccurrenceTask,
-    checks: &mut Vec<ApplicabilityCheck>,
-) -> Result<SoundAnalysisOutcome, SilenceReason> {
+) -> Result<Setting175Inputs, SilenceReason> {
     if let Some(neg_op) = task.op_records().iter().find(|rec| !rec.positive) {
         return Err(SilenceReason::ApplicabilityConditionNotMet {
             condition: "setting_17_5_no_negative_output_records".to_owned(),
@@ -366,6 +387,15 @@ fn analyze_setting_17_5(
             entries,
         });
     }
+
+    Ok((sort_map, fixed_sorts, base_readings, ops, rels))
+}
+
+fn analyze_setting_17_5(
+    task: &CheckedOccurrenceTask,
+    checks: &mut Vec<ApplicabilityCheck>,
+) -> Result<SoundAnalysisOutcome, SilenceReason> {
+    let (sort_map, fixed_sorts, base_readings, ops, rels) = build_setting_17_5_inputs(task)?;
 
     let ref_res: PartitionRefinementResult = refine_partition(&RefinementInput {
         sorts: sort_map.clone(),
