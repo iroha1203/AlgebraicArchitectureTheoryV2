@@ -173,6 +173,19 @@ fn equals_syntax_and_ask_file_including_stdin_work_uniformly() {
         None,
     );
     assert_eq!(code, 64);
+
+    // 空の入力パス（`--law=""` 等）も全サブコマンド共通で exit 64 になること
+    let (code, _, _) = run_raw(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            def.to_str().unwrap(),
+            "--law=",
+        ],
+        None,
+    );
+    assert_eq!(code, 64);
 }
 
 #[test]
@@ -491,6 +504,49 @@ fn digest_and_inspect_commands_work_for_inputs_and_saved_results() {
     assert_eq!(code, 0);
     assert!(full_out.contains("\"residual_ideal\""));
     assert!(full_out.contains("\"evidence\""));
+
+    // 5. `inspect --result` の fail-closed スキーマ・版検証（他形式 JSON / 非互換 result 版）
+    let wrong_format_dir = dir.join("wrong_fmt");
+    std::fs::create_dir(&wrong_format_dir).unwrap();
+    std::fs::write(
+        wrong_format_dir.join("result.json"),
+        r#"{"format":"archsig.atom-definition/1"}"#,
+    )
+    .unwrap();
+    let (code, _, _) = run_raw(
+        &dir,
+        &["inspect", "--result", wrong_format_dir.to_str().unwrap()],
+        None,
+    );
+    assert_eq!(code, 65);
+
+    let unsupported_ver_dir = dir.join("unsupported_ver");
+    std::fs::create_dir(&unsupported_ver_dir).unwrap();
+    std::fs::write(
+        unsupported_ver_dir.join("result.json"),
+        r#"{"format":"archsig.result/99","status":"complete","exit_code":0,"answers":[]}"#,
+    )
+    .unwrap();
+    let (code, _, _) = run_raw(
+        &dir,
+        &["inspect", "--result", unsupported_ver_dir.to_str().unwrap()],
+        None,
+    );
+    assert_eq!(code, 69);
+
+    let missing_answers_dir = dir.join("missing_answers");
+    std::fs::create_dir(&missing_answers_dir).unwrap();
+    std::fs::write(
+        missing_answers_dir.join("result.json"),
+        r#"{"format":"archsig.result/4","status":"complete","exit_code":0}"#,
+    )
+    .unwrap();
+    let (code, _, _) = run_raw(
+        &dir,
+        &["inspect", "--result", missing_answers_dir.to_str().unwrap()],
+        None,
+    );
+    assert_eq!(code, 65);
 }
 
 #[test]
@@ -539,7 +595,7 @@ fn format_pretty_human_detail_concise_and_progress_behave_cleanly() {
     assert!(saved_txt.contains("\"residual_ideal\""));
     assert!(saved_txt.contains("\"provenance\""));
 
-    // `--format human` と `--format pretty`
+    // `--format human`（SHIGURE concise の由来・省略案内 + Observed 反例描画）
     let (code, human, stderr) = run_raw(
         &dir,
         &[
@@ -560,6 +616,41 @@ fn format_pretty_human_detail_concise_and_progress_behave_cleanly() {
     assert_eq!(code, 0, "stderr={stderr}");
     assert!(human.contains("Status: complete"));
     assert!(human.contains("verdict: established"));
+    assert!(human.contains("origins:"));
+    assert!(human.contains("detail_hint:"));
+
+    let c_def = fixture("counter.atoms.json");
+    let c_law = fixture("counter.law");
+    let refuted_map = dir.join("human_refuted.archmap.json");
+    std::fs::write(
+        &refuted_map,
+        std::fs::read_to_string(fixture("counter.archmap.json"))
+            .unwrap()
+            .replace("\"value\": \"2\"", "\"value\": \"12\""),
+    )
+    .unwrap();
+    let (code, obs_human, _) = run_raw(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            c_def.to_str().unwrap(),
+            "--law",
+            c_law.to_str().unwrap(),
+            "--archmap",
+            refuted_map.to_str().unwrap(),
+            "--ask",
+            "b=check(CountAudit.bounded,s=@v/s)",
+            "--format=human",
+        ],
+        None,
+    );
+    assert_eq!(code, 1);
+    assert!(
+        obs_human.contains("counterexamples (showing 1 of 1):"),
+        "obs_human={obs_human}"
+    );
+    assert!(obs_human.contains("12"), "obs_human={obs_human}");
 }
 
 #[test]

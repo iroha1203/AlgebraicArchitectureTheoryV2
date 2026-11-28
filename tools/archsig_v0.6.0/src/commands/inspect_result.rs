@@ -54,22 +54,127 @@ pub fn execute(
         )
     })?;
 
-    let Some(source_format) = obj_field(&root, "format").and_then(as_str) else {
+    let JValue::Obj(_) = &root.value else {
         return Err(schema_error(
             signals,
             control,
+            "/format",
             "saved result.json must be a JSON object with a string `format` field",
         ));
     };
 
+    let Some(source_format) = obj_field(&root, "format").and_then(as_str) else {
+        return Err(schema_error(
+            signals,
+            control,
+            "/format",
+            "saved result.json must be a JSON object with a string `format` field",
+        ));
+    };
+
+    if source_format != archsig_input::result::RESULT_FORMAT {
+        let is_unsupported_version = source_format.starts_with("archsig.result/");
+        let code = if is_unsupported_version {
+            Code::UnsupportedVersion
+        } else {
+            Code::Syntax
+        };
+        let status = if is_unsupported_version {
+            archsig_input::result::Status::Unsupported
+        } else {
+            archsig_input::result::Status::Invalid
+        };
+        let exit_code = if is_unsupported_version { 69 } else { 65 };
+        return Err(output::notify(
+            signals,
+            status,
+            exit_code,
+            control.stop_reason(),
+            vec![
+                ResultIssue::Input(Issue {
+                    code,
+                    message: format!(
+                        "unsupported or invalid result.json format `{source_format}` (expected `{}`)",
+                        archsig_input::result::RESULT_FORMAT
+                    ),
+                    location: Location::ArchMap {
+                        pointer: "/format".to_owned(),
+                        span: None,
+                    },
+                    details: Details::Version {
+                        found_format: source_format.to_owned(),
+                        found_semantics: obj_field(&root, "semantics")
+                            .and_then(as_str)
+                            .map(str::to_owned),
+                    },
+                })
+                .wire(),
+            ],
+        ));
+    }
+
+    let Some(status_str) = obj_field(&root, "status")
+        .and_then(as_str)
+        .filter(|s| !s.is_empty())
+    else {
+        return Err(schema_error(
+            signals,
+            control,
+            "/status",
+            "saved result.json requires a non-empty string `status` field",
+        ));
+    };
+
+    let Some(exit_code_val) = obj_field(&root, "exit_code").and_then(|n| match &n.value {
+        JValue::Num(raw) => raw.parse::<u64>().ok(),
+        _ => None,
+    }) else {
+        return Err(schema_error(
+            signals,
+            control,
+            "/exit_code",
+            "saved result.json requires an integer `exit_code` field",
+        ));
+    };
+
+    if let Some(nodes_node) = obj_field(&root, "nodes")
+        && !matches!(&nodes_node.value, JValue::Arr(_))
+    {
+        return Err(schema_error(
+            signals,
+            control,
+            "/nodes",
+            "saved result.json `nodes` field must be an array",
+        ));
+    }
+
     let nodes = collect_node_index(&root);
 
-    let answers_arr = obj_field(&root, "answers")
-        .and_then(|n| match &n.value {
-            JValue::Arr(items) => Some(items.as_slice()),
-            _ => None,
-        })
-        .unwrap_or(&[]);
+    let answers_arr = match obj_field(&root, "answers") {
+        Some(node) => match &node.value {
+            JValue::Arr(items) => items.as_slice(),
+            _ => {
+                return Err(schema_error(
+                    signals,
+                    control,
+                    "/answers",
+                    "saved result.json `answers` field must be an array",
+                ));
+            }
+        },
+        None => {
+            if obj_field(&root, "command").and_then(as_str) == Some("check") {
+                &[]
+            } else {
+                return Err(schema_error(
+                    signals,
+                    control,
+                    "/answers",
+                    "saved result.json requires an `answers` array",
+                ));
+            }
+        }
+    };
 
     if !args.answers.is_empty() {
         let available: Vec<&str> = answers_arr
@@ -125,20 +230,8 @@ pub fn execute(
     let mut out_obj = JsonObject::from([
         ("format".into(), Json::str("archsig.inspect-result/1")),
         ("source_format".into(), Json::str(source_format)),
-        (
-            "status".into(),
-            Json::str(
-                obj_field(&root, "status")
-                    .and_then(as_str)
-                    .unwrap_or("unknown"),
-            ),
-        ),
-        (
-            "exit_code".into(),
-            obj_field(&root, "exit_code")
-                .map(jnode_to_json)
-                .unwrap_or_else(|| Json::Nat(0)),
-        ),
+        ("status".into(), Json::str(status_str)),
+        ("exit_code".into(), Json::Nat(exit_code_val)),
         ("answers".into(), Json::Arr(extracted_answers)),
     ]);
 
@@ -163,6 +256,7 @@ pub fn execute(
 fn schema_error(
     signals: &mut dyn Signals,
     control: &Control,
+    pointer: &str,
     message: &str,
 ) -> crate::run::Outcome {
     output::notify(
@@ -175,7 +269,7 @@ fn schema_error(
                 code: Code::Syntax,
                 message: message.to_owned(),
                 location: Location::ArchMap {
-                    pointer: "/format".to_owned(),
+                    pointer: pointer.to_owned(),
                     span: None,
                 },
                 details: Details::Empty,

@@ -497,7 +497,12 @@ fn parse_check_or_run(running: bool, rest: &[OsString]) -> Result<ParsedCli, Cli
                 }
                 project_path = Some(PathBuf::from(value));
             }
-            "--atom-definition" => definitions.push(PathBuf::from(value)),
+            "--atom-definition" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
+                definitions.push(PathBuf::from(value));
+            }
             "--ask" => {
                 let s = value
                     .to_str()
@@ -514,6 +519,9 @@ fn parse_check_or_run(running: bool, rest: &[OsString]) -> Result<ParsedCli, Cli
             }
             "--shigure-limit" => cli_shigure_limits.push(value),
             _ => {
+                if flag != "--out" && value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
                 if singles.contains_key(flag) {
                     return Err(usage(flag, "duplicate flag"));
                 }
@@ -652,17 +660,31 @@ fn parse_reobserve(rest: &[OsString]) -> Result<ParsedCli, CliError> {
         let value = take_value(&tok, rest, &mut i)?;
         match flag {
             "--alignment" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
                 if alignment.replace(PathBuf::from(value)).is_some() {
                     return Err(usage(flag, "duplicate flag"));
                 }
             }
-            "--before-atom-definition" => before_defs.push(PathBuf::from(value)),
+            "--before-atom-definition" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
+                before_defs.push(PathBuf::from(value));
+            }
             "--before-law" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
                 if before_law.replace(PathBuf::from(value)).is_some() {
                     return Err(usage(flag, "duplicate flag"));
                 }
             }
             "--before-archmap" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
                 if before_archmap.replace(PathBuf::from(value)).is_some() {
                     return Err(usage(flag, "duplicate flag"));
                 }
@@ -681,13 +703,24 @@ fn parse_reobserve(rest: &[OsString]) -> Result<ParsedCli, CliError> {
                     flag,
                 )?);
             }
-            "--atom-definition" => cur_defs.push(PathBuf::from(value)),
+            "--atom-definition" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
+                cur_defs.push(PathBuf::from(value));
+            }
             "--law" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
                 if cur_law.replace(PathBuf::from(value)).is_some() {
                     return Err(usage(flag, "duplicate flag"));
                 }
             }
             "--archmap" => {
+                if value.is_empty() {
+                    return Err(usage(flag, "path must be nonempty"));
+                }
                 if cur_archmap.replace(PathBuf::from(value)).is_some() {
                     return Err(usage(flag, "duplicate flag"));
                 }

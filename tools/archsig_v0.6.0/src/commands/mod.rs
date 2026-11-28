@@ -4,7 +4,7 @@ pub mod digest;
 pub mod inspect;
 pub mod inspect_result;
 
-use crate::cli::{CliCommand, DigestArgs, InspectInputsArgs, InspectResultArgs};
+use crate::cli::CliCommand;
 use crate::run::{Outcome, Signals, output};
 use archsig_common::canonical::Json;
 use archsig_common::control::{Control, Signal};
@@ -19,14 +19,14 @@ pub struct CommandOutput {
     pub exit_code: u8,
 }
 
-/// 発見性サブコマンドを実行する。
+/// 発見性サブコマンドを実行する（内部パニック時は構造化 exit 70 receipt へ変換）。
 pub fn execute_cli_command(
     command: &CliCommand,
     max_file_bytes: u64,
     signals: &mut dyn Signals,
     control: &Control,
 ) -> Result<CommandOutput, Outcome> {
-    match command {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match command {
         CliCommand::Digest(args) => digest::execute(args, max_file_bytes, signals, control),
         CliCommand::InspectInputs(args) => inspect::execute(args, max_file_bytes, signals, control),
         CliCommand::InspectResult(args) => {
@@ -38,6 +38,17 @@ pub fn execute_cli_command(
             vec![ResultIssue::Internal {
                 operation: "commands".to_owned(),
                 message: "unexpected command passed to commands dispatcher".to_owned(),
+            }],
+        )),
+    }));
+    match result {
+        Ok(res) => res,
+        Err(_) => Err(output::without_result(
+            signals,
+            Status::Error,
+            vec![ResultIssue::Internal {
+                operation: "commands".to_owned(),
+                message: "internal failure during discoverability command".to_owned(),
             }],
         )),
     }
@@ -77,6 +88,31 @@ pub(crate) fn input_status(code: archsig_common::issue::Code) -> (Status, u8) {
     }
 }
 
-/// 引数型の再エクスポート用プレースホルダー。
-#[allow(dead_code)]
-fn _check_exports(_: &DigestArgs, _: &InspectInputsArgs, _: &InspectResultArgs) {}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cli::DigestArgs;
+    use archsig_input::result::Signal;
+
+    struct NoSignals;
+    impl Signals for NoSignals {
+        fn freeze(&mut self) -> Option<Signal> {
+            None
+        }
+    }
+
+    #[test]
+    fn catch_unwind_returns_structured_exit_70_receipt_on_panic() {
+        let def = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("tests/fixtures/counter.atoms.json");
+        let cmd = CliCommand::Digest(DigestArgs {
+            atom_definitions: vec![def],
+        });
+        let control = Control::new(|_| panic!("injected panic in digest"));
+        let mut signals = NoSignals;
+        let outcome = execute_cli_command(&cmd, 1024 * 1024, &mut signals, &control).unwrap_err();
+        assert_eq!(outcome.status, Status::Error);
+        assert_eq!(outcome.exit_code, 70);
+        assert!(outcome.receipt().contains("\"code\":\"internal\""));
+    }
+}

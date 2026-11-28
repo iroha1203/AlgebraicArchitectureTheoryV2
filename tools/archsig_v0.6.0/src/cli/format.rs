@@ -11,7 +11,7 @@ use std::fmt::Write as _;
 pub fn render_outcome(outcome: &Outcome, format: OutputFormat) -> String {
     match format {
         OutputFormat::Json => outcome.receipt(),
-        OutputFormat::Pretty => outcome_json(outcome).pretty(),
+        OutputFormat::Pretty => render_raw_json_str(&outcome.receipt(), OutputFormat::Pretty),
         OutputFormat::Human => render_human_jnode(&parse_or_fallback(&outcome.receipt())),
     }
 }
@@ -42,37 +42,10 @@ pub fn render_raw_json_str(raw: &str, format: OutputFormat) -> String {
     }
 }
 
-fn outcome_json(outcome: &Outcome) -> Json {
-    let receipt = outcome.receipt();
-    let Ok(node) = parse_with_max_depth(receipt.as_bytes(), DEFAULT_MAX_JSON_DEPTH) else {
-        return Json::str(receipt);
-    };
-    jnode_to_json(&node)
-}
-
 fn parse_or_fallback(raw: &str) -> JNode {
     parse_with_max_depth(raw.as_bytes(), DEFAULT_MAX_JSON_DEPTH).unwrap_or_else(|_| JNode {
         value: JValue::Str(raw.to_owned()),
     })
-}
-
-fn jnode_to_json(node: &JNode) -> Json {
-    match &node.value {
-        JValue::Null => Json::str("null"),
-        JValue::Bool(b) => Json::Bool(*b),
-        JValue::Num(n) => n
-            .parse::<u64>()
-            .map(Json::Nat)
-            .unwrap_or_else(|_| Json::str(n)),
-        JValue::Str(s) => Json::str(s),
-        JValue::Arr(items) => Json::Arr(items.iter().map(jnode_to_json).collect()),
-        JValue::Obj(entries) => Json::Obj(
-            entries
-                .iter()
-                .map(|(k, v)| (k.clone(), jnode_to_json(v)))
-                .collect(),
-        ),
-    }
 }
 
 /// `JNode` を元の key 順と数値表現を保ったまま 2 スペース字下げ JSON へ整形する。
@@ -287,6 +260,11 @@ fn render_summary_answer(ans: &JNode, indent: &str, out: &mut String) {
     let question = obj_field(ans, "question").and_then(as_str).unwrap_or("?");
     let status = obj_field(ans, "status").and_then(as_str).unwrap_or("?");
     let _ = writeln!(out, "{indent}- {id} [{question}]: {status}");
+    for extra_key in ["applicability", "existence", "uniqueness"] {
+        if let Some(val) = obj_field(ans, extra_key) {
+            let _ = writeln!(out, "{indent}    {extra_key}: {}", scalar_text(val));
+        }
+    }
     if let Some(outputs) = obj_field(ans, "outputs") {
         if let Some(shigure) = obj_field(outputs, "shigure") {
             render_shigure_summary(shigure, &format!("{indent}    "), out);
@@ -294,6 +272,21 @@ fn render_summary_answer(ans: &JNode, indent: &str, out: &mut String) {
             for (k, v) in entries {
                 let _ = writeln!(out, "{indent}    output.{k}: {}", scalar_text(v));
             }
+        }
+    }
+    if let Some(examples) = obj_field(ans, "counterexamples").and_then(as_arr)
+        && !examples.is_empty()
+    {
+        let total = obj_field(ans, "counterexamples_total")
+            .map(scalar_text)
+            .unwrap_or_else(|| examples.len().to_string());
+        let _ = writeln!(
+            out,
+            "{indent}    counterexamples (showing {} of {total}):",
+            examples.len()
+        );
+        for ex in examples {
+            let _ = writeln!(out, "{indent}      * {}", scalar_text(ex));
         }
     }
     if let Some(reasons) = obj_field(ans, "reasons").and_then(as_arr)
@@ -313,8 +306,49 @@ fn render_shigure_summary(shigure: &JNode, indent: &str, out: &mut String) {
         let code = obj_field(sr, "code").and_then(as_str).unwrap_or("unknown");
         let _ = writeln!(out, "{indent}silence_reason: {code} ({})", scalar_text(sr));
     }
+    if let Some(passed) = obj_field(shigure, "passed_applicability_count") {
+        let _ = writeln!(
+            out,
+            "{indent}passed_applicability_count: {}",
+            scalar_text(passed)
+        );
+    }
+    if let Some(app) = obj_field(shigure, "applicability").and_then(as_arr)
+        && !app.is_empty()
+    {
+        let failed: Vec<_> = app
+            .iter()
+            .filter(|a| {
+                obj_field(a, "satisfied").and_then(|v| match v.value {
+                    JValue::Bool(b) => Some(b),
+                    _ => None,
+                }) == Some(false)
+            })
+            .collect();
+        if !failed.is_empty() {
+            let _ = writeln!(
+                out,
+                "{indent}failed_applicability: {}",
+                failed
+                    .into_iter()
+                    .map(scalar_text)
+                    .collect::<Vec<_>>()
+                    .join("; ")
+            );
+        }
+    }
+    if let Some(witness) = obj_field(shigure, "empty_witness") {
+        let _ = writeln!(out, "{indent}empty_witness: {}", scalar_text(witness));
+    }
     if let Some(restored) = obj_field(shigure, "restored") {
         let _ = writeln!(out, "{indent}repairs/restored: {}", scalar_text(restored));
+    }
+    if let Some(res_count) = obj_field(shigure, "residual_ideal_count") {
+        let _ = writeln!(
+            out,
+            "{indent}residual_ideal_count: {}",
+            scalar_text(res_count)
+        );
     }
     for key in [
         "interaction",
@@ -336,6 +370,19 @@ fn render_shigure_summary(shigure: &JNode, indent: &str, out: &mut String) {
         if let Some(val) = obj_field(shigure, key) {
             let _ = writeln!(out, "{indent}{key}: {}", scalar_text(val));
         }
+    }
+    if let Some(origin_ids) = obj_field(shigure, "origin_ids").and_then(as_arr)
+        && !origin_ids.is_empty()
+    {
+        let _ = writeln!(
+            out,
+            "{indent}origins: {}",
+            origin_ids
+                .iter()
+                .map(scalar_text)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
     }
     if let Some(prov) = obj_field(shigure, "provenance") {
         if let Some(origins) = obj_field(prov, "origins").and_then(as_arr)
@@ -364,6 +411,22 @@ fn render_shigure_summary(shigure: &JNode, indent: &str, out: &mut String) {
                     .join("; ")
             );
         }
+    }
+    if let Some(omitted) = obj_field(shigure, "omitted_fields").and_then(as_arr)
+        && !omitted.is_empty()
+    {
+        let _ = writeln!(
+            out,
+            "{indent}omitted_fields: {}",
+            omitted
+                .iter()
+                .map(scalar_text)
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
+    if let Some(hint) = obj_field(shigure, "detail_hint").and_then(as_str) {
+        let _ = writeln!(out, "{indent}detail_hint: {hint}");
     }
 }
 
