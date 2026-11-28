@@ -51,7 +51,29 @@ reading PartAC4 {
     }
   }
 
-  shigure partial Ex18_7Correlations {
+  shigure partial Ex18_7LosingCorrelations {
+    origin static_analysis "sa_18_7_loss";
+    finite_table {
+      sort V = [0, 1];
+      operation f([V]) -> V;
+      slot xi : V in [0, 1];
+      max_completions = 32;
+    }
+    eval_law self_sub_zero {
+      required = false;
+      conclusion = slot(xi) - slot(xi) = 0;
+    }
+    eval_law exists_eq_xi {
+      required = false;
+      conclusion = exists x : V . x = slot(xi);
+    }
+    eval_law total_op_graph_disj {
+      required = false;
+      conclusion = graph(f(0), 0) or graph(f(0), 1);
+    }
+  }
+
+  shigure partial ConditionalLawRegimes {
     origin static_analysis "sa_18_7";
     finite_table {
       sort V = [0, 1];

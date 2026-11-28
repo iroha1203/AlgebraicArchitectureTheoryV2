@@ -334,7 +334,9 @@ fn shigure_phase5_ac4_partial_via_cli() {
             "--ask",
             "kleene=shigure_partial(PartAC4.KleeneStrictLet, snapshot=snap1)",
             "--ask",
-            "corr=shigure_partial(Ex18_7Correlations)",
+            "ex18_7=shigure_partial(Ex18_7LosingCorrelations)",
+            "--ask",
+            "corr=shigure_partial(ConditionalLawRegimes)",
             "--ask",
             "aff_q=shigure_partial(AffineProp18_9Q, snapshot=snap1)",
             "--ask",
@@ -363,6 +365,21 @@ fn shigure_phase5_ac4_partial_via_cli() {
     assert_eq!(s(get(&kl_laws[0], "strong_kleene")), "false");
     assert_eq!(s(get(&kl_laws[1], "strong_kleene")), "unknown");
     assert_eq!(s(get(&kl_laws[1], "supervaluation")), "true");
+
+    let ex18_7 = get(answer_shigure(&sum_ok, "ex18_7"), "partial");
+    assert!(bool_val(get(ex18_7, "completion_consistent")));
+    assert_eq!(num(get(ex18_7, "completion_count")), 8);
+    assert!(bool_val(get(ex18_7, "kleene_soundness_verified")));
+    let ex18_7_laws = arr(get(ex18_7, "law_evaluations"));
+    assert_eq!(ex18_7_laws.len(), 3);
+    for expected_name in ["self_sub_zero", "exists_eq_xi", "total_op_graph_disj"] {
+        let found = ex18_7_laws
+            .iter()
+            .find(|l| s(get(l, "law_name")) == expected_name)
+            .unwrap_or_else(|| panic!("missing Example 18.7 law `{expected_name}`"));
+        assert_eq!(s(get(found, "strong_kleene")), "unknown", "{expected_name}");
+        assert_eq!(s(get(found, "supervaluation")), "true", "{expected_name}");
+    }
 
     let corr_laws = arr(get(
         get(answer_shigure(&sum_ok, "corr"), "partial"),

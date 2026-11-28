@@ -74,10 +74,18 @@ pub fn solve_occurrence_task(task: &CheckedOccurrenceTask) -> ShigureOutcome {
         cong.collisions.iter().map(format_collision).collect();
 
     if !cong.collisions.is_empty() {
-        checks.push(ApplicabilityCheck::passed(
-            "collision_witness_derivation_verified",
-            MathClause::AatCh17Thm17Dot2,
-        ));
+        if cong.derivation_verified {
+            checks.push(ApplicabilityCheck::passed(
+                "collision_witness_derivation_verified",
+                MathClause::AatCh17Thm17Dot2,
+            ));
+        } else {
+            checks.push(ApplicabilityCheck::failed(
+                "collision_witness_derivation_verified",
+                MathClause::AatCh17Thm17Dot2,
+                "collision derivation step verification failed",
+            ));
+        }
         let eval_ctx = if task.context_closed_17_5()
             && let Ok((sort_map, fixed_sorts, base_readings, ops, rels)) =
                 build_setting_17_5_inputs(task)

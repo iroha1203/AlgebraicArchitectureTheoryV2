@@ -251,12 +251,99 @@ fn ch18_strong_kleene_strict_let_and_example18_7_correlations() {
     assert_eq!(p.law_evaluations[2].strong_kleene, "true");
     assert_eq!(p.law_evaluations[2].supervaluation, "true");
 
-    // 例 18.7 の 3 相関: 背景 SlotEquality(xi, eta) のもとで
+    // 例 18.7 の相関喪失 3 例（すべて強 Kleene `unknown` かつ 超評価 `true`）:
+    // 1) xi - xi = 0 （同一未観測スロットの引き算）
+    // 2) exists x : V . x = xi （有限台 V = {0, 1} 上の存在量化）
+    // 3) G_f(0, 0) \/ G_f(0, 1) （全域単項操作 f : V -> V の未観測出力に関するグラフ論理和）
+    let ex18_7_loss_spec = PartialTaskSpec {
+        name: "ex_18_7_losing_correlations".into(),
+        representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
+            sorts: BTreeMap::from([("V".into(), vec!["0".into(), "1".into()])]),
+            operations: vec![PartialOpSignature {
+                name: "f".into(),
+                arg_sorts: vec!["V".into()],
+                out_sort: "V".into(),
+                is_total: true,
+            }],
+            relations: vec![],
+            slots: vec![PartialSlotDecl {
+                name: "xi".into(),
+                sort: "V".into(),
+                domain_values: vec!["0".into(), "1".into()],
+            }],
+            background_constraints: vec![],
+            records: vec![],
+            max_completions: 32,
+        }),
+        eval_laws: vec![
+            PartialEvalLawSpec {
+                name: "self_sub_zero".into(),
+                antecedent: None,
+                conclusion: PartialFormula::Eq(
+                    PartialTerm::BinOp {
+                        op: PartialArithOp::Sub,
+                        lhs: Box::new(PartialTerm::Slot("xi".into())),
+                        rhs: Box::new(PartialTerm::Slot("xi".into())),
+                    },
+                    PartialTerm::Const("0".into()),
+                ),
+                is_required_law: false,
+            },
+            PartialEvalLawSpec {
+                name: "exists_eq_xi".into(),
+                antecedent: None,
+                conclusion: PartialFormula::Exists {
+                    var: "x".into(),
+                    sort: "V".into(),
+                    restricted_domain: None,
+                    body: Box::new(PartialFormula::Eq(
+                        PartialTerm::Var("x".into()),
+                        PartialTerm::Slot("xi".into()),
+                    )),
+                },
+                is_required_law: false,
+            },
+            PartialEvalLawSpec {
+                name: "total_op_graph_disj".into(),
+                antecedent: None,
+                conclusion: PartialFormula::Or(vec![
+                    PartialFormula::Graph {
+                        op_name: "f".into(),
+                        args: vec![PartialTerm::Const("0".into())],
+                        output: PartialTerm::Const("0".into()),
+                    },
+                    PartialFormula::Graph {
+                        op_name: "f".into(),
+                        args: vec![PartialTerm::Const("0".into())],
+                        output: PartialTerm::Const("1".into()),
+                    },
+                ]),
+                is_required_law: false,
+            },
+        ],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    let ex18_7_loss_out = solve_partial_task(&validate_partial_task(ex18_7_loss_spec).unwrap());
+    assert_eq!(ex18_7_loss_out.verdict, Verdict::Established);
+    let lp = ex18_7_loss_out.partial.unwrap();
+    assert!(lp.completion_consistent);
+    assert_eq!(lp.completion_count, Some(8));
+    assert!(lp.kleene_soundness_verified);
+    assert_eq!(lp.law_evaluations.len(), 3);
+    for law_eval in &lp.law_evaluations {
+        assert_eq!(law_eval.strong_kleene, "unknown", "{}", law_eval.law_name);
+        assert_eq!(law_eval.supervaluation, "true", "{}", law_eval.law_name);
+    }
+
+    // 条件付き Law の 3 区分（例 18.7 系補完空間、背景 SlotEquality(xi, eta)）:
     // 1) (xi=0 |- eta=0) => 前提成立時に必ず成立 (valid_on_antecedent_domain)
     // 2) (xi=0 |- eta=1) => 前提成立時に必ず反証 (refuted_on_antecedent_domain)
     // 3) (xi=0 |- zeta=0) => 独立スロット zeta により混在 (indeterminate_on_antecedent_domain)
     let corr_spec = PartialTaskSpec {
-        name: "ex_18_7_correlations".into(),
+        name: "conditional_law_regimes".into(),
         representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
             sorts: BTreeMap::from([("V".into(), vec!["0".into(), "1".into()])]),
             operations: vec![],
