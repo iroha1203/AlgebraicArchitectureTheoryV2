@@ -38,7 +38,7 @@ theorem exists_retraction_of_dualMap_surjective (f : E →ₗ[R] Q)
 
 section Observation
 
-variable {S : Type*} [Fintype S] {Op : S → S → Type*} [∀ s t, Finite (Op s t)]
+variable {S : Type*} {Op : S → S → Type*}
 variable {States Inputs Outputs : S → Type*}
 variable [∀ s, AddCommGroup (States s)] [∀ s, Module R (States s)]
 variable [∀ s, AddCommGroup (Inputs s)] [∀ s, Module R (Inputs s)]
@@ -53,6 +53,8 @@ theorem boundedObservationMap_split
     ∃ r : (∀ w : ShortOutputWord Op s n, Outputs w.1.1) →ₗ[R] States s,
       r.comp (boundedObservationMap A observe s n) = LinearMap.id :=
   exists_retraction_of_dualMap_surjective _ h
+
+variable [Fintype S] [∀ s t, Finite (Op s t)]
 
 /-- All-word dual observation yields a global retraction of the N−1
 observation map at each sort, and hence a local retraction on the affine base. -/

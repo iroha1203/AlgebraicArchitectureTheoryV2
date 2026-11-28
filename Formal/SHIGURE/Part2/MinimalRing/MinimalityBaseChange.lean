@@ -21,7 +21,6 @@ variable {E I O : S → Type*}
 variable [∀ s, AddCommGroup (E s)] [∀ s, Module R (E s)]
 variable [∀ s, AddCommGroup (I s)] [∀ s, Module R (I s)]
 variable [∀ s, AddCommGroup (O s)] [∀ s, Module R (O s)]
-variable [∀ s, Module.Finite R (E s)] [∀ s, Module.Projective R (E s)]
 
 /-- A retraction of the actual finite observation map extends to a retraction
 of the corresponding map of the scalar-extended system. -/
@@ -46,6 +45,8 @@ theorem boundedObservationMap_baseChange_split
   change (r.baseChange T) (e.symm (e ((boundedObservationMap A observe s n).baseChange T x))) = x
   rw [e.symm_apply_apply]
   exact LinearMap.congr_fun hsplit x
+
+variable [∀ s, Module.Finite R (E s)] [∀ s, Module.Projective R (E s)]
 
 /-- A split injection has surjective dual, over an arbitrary commutative ring. -/
 theorem dualMap_surjective_of_retraction
