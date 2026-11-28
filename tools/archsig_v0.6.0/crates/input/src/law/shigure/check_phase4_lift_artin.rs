@@ -182,9 +182,21 @@ pub(super) fn check_p4_coord_vec_map<E: InputError>(
     ctx: &CoordCheckCtx<'_, '_, E>,
     meta: KeyedBlockMeta<'_>,
 ) -> CResult<Vec<(String, Vec<ShigureMemberCoordValue>)>, E> {
-    check_p4_keyed_entries(raw, required_keys, meta, ctx.control, |name, vals, v_span| {
-        check_p4_coord_vec(vals, expected_len, ctx, v_span, &format!("{} `{name}`", meta.context))
-    })
+    check_p4_keyed_entries(
+        raw,
+        required_keys,
+        meta,
+        ctx.control,
+        |name, vals, v_span| {
+            check_p4_coord_vec(
+                vals,
+                expected_len,
+                ctx,
+                v_span,
+                &format!("{} `{name}`", meta.context),
+            )
+        },
+    )
 }
 
 pub(super) fn check_p4_poly_assign_map<E: InputError>(

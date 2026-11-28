@@ -510,7 +510,11 @@ fn verify_repair_fiber_iso<B: AtlasRingBackend>(
             p1,
             fiber_iso_ok: iso_ok && inv_ok,
         };
-        Some(verify_eval_condition_f5(backend, &eval_input, &try_inverse)?)
+        Some(verify_eval_condition_f5(
+            backend,
+            &eval_input,
+            &try_inverse,
+        )?)
     } else {
         None
     };

@@ -386,6 +386,10 @@ pub(crate) fn lift_undetermined(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -417,6 +421,10 @@ pub(crate) fn lift_outcome(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 

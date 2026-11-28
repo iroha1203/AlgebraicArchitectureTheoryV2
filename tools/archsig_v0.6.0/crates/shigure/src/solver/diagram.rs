@@ -462,6 +462,10 @@ pub fn solve_diagram_task(task: &CheckedDiagramTask) -> ShigureOutcome {
                 artin: None,
                 diagnostics: None,
                 atlas: None,
+                occurrence: None,
+                partial: None,
+                revision: None,
+                multisource: None,
             }
         }
     }
@@ -504,6 +508,10 @@ fn undetermined_diagram(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -544,6 +552,10 @@ fn refuted_diagram(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 

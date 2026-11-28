@@ -307,6 +307,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
             artin: None,
             diagnostics: None,
             atlas: None,
+            occurrence: None,
+            partial: None,
+            revision: None,
+            multisource: None,
         };
     }
 
@@ -355,6 +359,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
             artin: None,
             diagnostics: None,
             atlas: None,
+            occurrence: None,
+            partial: None,
+            revision: None,
+            multisource: None,
         };
     }
 
@@ -456,6 +464,10 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -600,5 +612,9 @@ fn undetermined_obs(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }

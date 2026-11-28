@@ -48,7 +48,11 @@ impl<'a, 'c, E: InputError> ShigureDeclCtx<'a, 'c, E> {
         full(self.reading_name, &[short])
     }
 
-    pub(super) fn resolve_ref(&mut self, qname: &QName, expected: DeclCategory) -> CResult<String, E> {
+    pub(super) fn resolve_ref(
+        &mut self,
+        qname: &QName,
+        expected: DeclCategory,
+    ) -> CResult<String, E> {
         resolve_shigure_ref(
             qname,
             expected,

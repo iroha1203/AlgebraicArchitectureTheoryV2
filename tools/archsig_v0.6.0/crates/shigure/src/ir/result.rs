@@ -9,6 +9,8 @@ use crate::ir::result_phase3::{
 use crate::ir::result_phase4::{
     ArtinOutcomeDetail, AtlasOutcomeDetail, DiagnosticsOutcomeDetail, LiftOutcomeDetail,
 };
+use crate::ir::result_phase5_obs::{OccurrenceOutcomeDetail, PartialOutcomeDetail};
+use crate::ir::result_phase5_rev::{MultisourceOutcomeDetail, RevisionOutcomeDetail};
 use crate::ir::term::CoeffDomain;
 use archsig_common::canonical::{Json, JsonObject};
 use std::collections::BTreeMap;
@@ -96,6 +98,12 @@ pub enum SilenceReason {
     DiagnosticsStratificationOutOfScope { detail: String },
     /// 非連結グラフまたは単純グラフ適用条件外。
     DisconnectedGraphOutOfScope { detail: String },
+    /// Phase 5: 有限表でもアフィン表示（Q/F_p/Z）でもない非対応補完クラス。
+    UnsupportedCompletionClass { detail: String },
+    /// Phase 5: 共通部分 $P_0$ から修復作用素 $M$ が一意に定まらない。
+    OperatorNotUniquelyDetermined { detail: String },
+    /// Phase 5: 作用素改訂時に既存 SNF 分解の再利用が強制指定された。
+    OperatorRevisionReuseRejected { detail: String },
     /// その他の適用条件未充足。
     ApplicabilityConditionNotMet { condition: String, detail: String },
 }
@@ -129,6 +137,13 @@ impl SilenceReason {
                 "diagnostics_stratification_out_of_scope"
             }
             SilenceReason::DisconnectedGraphOutOfScope { .. } => "disconnected_graph_out_of_scope",
+            SilenceReason::UnsupportedCompletionClass { .. } => "unsupported_completion_class",
+            SilenceReason::OperatorNotUniquelyDetermined { .. } => {
+                "operator_not_uniquely_determined"
+            }
+            SilenceReason::OperatorRevisionReuseRejected { .. } => {
+                "operator_revision_reuse_rejected"
+            }
             SilenceReason::ApplicabilityConditionNotMet { .. } => "applicability_condition_not_met",
         }
     }
@@ -161,7 +176,10 @@ impl SilenceReason {
             | SilenceReason::SyzygyOutOfScope { detail }
             | SilenceReason::ArtinOrderOutOfScope { detail }
             | SilenceReason::DiagnosticsStratificationOutOfScope { detail }
-            | SilenceReason::DisconnectedGraphOutOfScope { detail } => {
+            | SilenceReason::DisconnectedGraphOutOfScope { detail }
+            | SilenceReason::UnsupportedCompletionClass { detail }
+            | SilenceReason::OperatorNotUniquelyDetermined { detail }
+            | SilenceReason::OperatorRevisionReuseRejected { detail } => {
                 obj.insert("detail".into(), Json::str(detail));
             }
             SilenceReason::UnsupportedCoeffRing { domain, detail } => {
@@ -379,6 +397,10 @@ pub struct ShigureOutcome {
     pub artin: Option<ArtinOutcomeDetail>,
     pub diagnostics: Option<DiagnosticsOutcomeDetail>,
     pub atlas: Option<AtlasOutcomeDetail>,
+    pub occurrence: Option<OccurrenceOutcomeDetail>,
+    pub partial: Option<PartialOutcomeDetail>,
+    pub revision: Option<RevisionOutcomeDetail>,
+    pub multisource: Option<MultisourceOutcomeDetail>,
 }
 
 impl ShigureOutcome {
@@ -444,6 +466,18 @@ impl ShigureOutcome {
         }
         if let Some(atlas) = &self.atlas {
             obj.insert("atlas".into(), atlas.to_json());
+        }
+        if let Some(occurrence) = &self.occurrence {
+            obj.insert("occurrence".into(), occurrence.to_json());
+        }
+        if let Some(partial) = &self.partial {
+            obj.insert("partial".into(), partial.to_json());
+        }
+        if let Some(revision) = &self.revision {
+            obj.insert("revision".into(), revision.to_json());
+        }
+        if let Some(multisource) = &self.multisource {
+            obj.insert("multisource".into(), multisource.to_json());
         }
         Json::Obj(obj)
     }

@@ -544,6 +544,10 @@ fn phase4_outcome_details_and_silence_serialize_cleanly() {
                 all_extended_checks_preserved: false,
             }),
         }),
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     };
     let json = outcome.to_json();
     let Json::Obj(ref map) = json else {

@@ -541,6 +541,10 @@ fn outcome_json_preserves_domains_silence_and_origin_kinds() {
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     };
     let rendered = outcome.to_json().canonical();
     assert!(rendered.contains(r#""verdict":"undetermined""#));

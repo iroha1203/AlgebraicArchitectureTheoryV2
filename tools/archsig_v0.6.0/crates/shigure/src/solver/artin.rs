@@ -938,6 +938,10 @@ pub(crate) fn artin_undetermined(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -969,5 +973,9 @@ pub(crate) fn artin_outcome(
         artin: Some(detail),
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
