@@ -78,8 +78,20 @@ impl<E: InputError> Parser<E> {
             "atlas" => self
                 .parse_shigure_atlas(start)
                 .map(|a| ShigureDeclAst::Atlas(Box::new(a))),
+            "occurrence" => self
+                .parse_shigure_occurrence(start)
+                .map(|o| ShigureDeclAst::Occurrence(Box::new(o))),
+            "partial" => self
+                .parse_shigure_partial(start)
+                .map(|p| ShigureDeclAst::Partial(Box::new(p))),
+            "revision" => self
+                .parse_shigure_revision(start)
+                .map(|r| ShigureDeclAst::Revision(Box::new(r))),
+            "multisource" => self
+                .parse_shigure_multisource(start)
+                .map(|m| ShigureDeclAst::Multisource(Box::new(m))),
             other => self.err(format!(
-                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, `observations`, `lift`, `artin`, `diagnostics`, or `atlas`"
+                "unknown SHIGURE declaration kind `{other}`; expected `presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, `observations`, `lift`, `artin`, `diagnostics`, `atlas`, `occurrence`, `partial`, `revision`, or `multisource`"
             )),
         }
     }

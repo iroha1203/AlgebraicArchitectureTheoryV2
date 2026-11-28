@@ -14,6 +14,9 @@ mod lower_path;
 mod lower_phase3;
 mod lower_phase4_diag_atlas;
 mod lower_phase4_lift_artin;
+mod lower_phase5_occ;
+mod lower_phase5_partial;
+mod lower_phase5_rev;
 mod lower_transfer;
 #[cfg(test)]
 mod tests;
@@ -31,14 +34,22 @@ mod tests_phase3_neg;
 mod tests_phase4;
 #[cfg(test)]
 mod tests_phase4_neg;
+#[cfg(test)]
+mod tests_phase5;
+#[cfg(test)]
+mod tests_phase5_neg;
 
 use crate::ir::artin::CheckedArtinTask;
 use crate::ir::atlas::CheckedAtlasTask;
 use crate::ir::diagnostics::CheckedDiagnosticsTask;
 use crate::ir::diagram::CheckedDiagramTask;
 use crate::ir::lift::CheckedLiftTask;
+use crate::ir::multisource::CheckedMultisourceTask;
 use crate::ir::observation::CheckedObservationTask;
+use crate::ir::occurrence::CheckedOccurrenceTask;
+use crate::ir::partial::CheckedPartialTask;
 use crate::ir::path::CheckedPathTask;
+use crate::ir::revision::CheckedRevisionTask;
 use crate::ir::robustness::{CheckedChevalleyTask, CheckedRobustnessTask};
 use crate::ir::transfer::CheckedTransferTask;
 use crate::ir::validate::{CheckedShigureTask, ValidationError};
@@ -118,6 +129,38 @@ pub trait ToShigureDiagnosticsTask {
 /// `CheckedInputs` から有限グラフ実 adapter・Atlas 細分化タスク `CheckedAtlasTask` への変換境界。
 pub trait ToShigureAtlasTask {
     fn convert_atlas(&self, inputs: &CheckedInputs) -> Result<CheckedAtlasTask, ValidationError>;
+}
+
+/// `CheckedInputs` から出現同定・使用文脈同値・補助属性タスク `CheckedOccurrenceTask` への変換境界。
+pub trait ToShigureOccurrenceTask {
+    fn convert_occurrence(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedOccurrenceTask, ValidationError>;
+}
+
+/// `CheckedInputs` から部分提示・欠測と開領域の確定評価タスク `CheckedPartialTask` への変換境界。
+pub trait ToShigurePartialTask {
+    fn convert_partial(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedPartialTask, ValidationError>;
+}
+
+/// `CheckedInputs` から観測改訂・無効化錐・SNF 再利用タスク `CheckedRevisionTask` への変換境界。
+pub trait ToShigureRevisionTask {
+    fn convert_revision(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedRevisionTask, ValidationError>;
+}
+
+/// `CheckedInputs` から多源衝突・検証後最小由来支持タスク `CheckedMultisourceTask` への変換境界。
+pub trait ToShigureMultisourceTask {
+    fn convert_multisource(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedMultisourceTask, ValidationError>;
 }
 
 /// `CheckedInputs` から指定 SHIGURE タスクを抽出して `CheckedShigureTask` へ変換する標準変換器。
@@ -273,6 +316,58 @@ impl ToShigureAtlasTask for ShigureConverter {
     }
 }
 
+impl ToShigureOccurrenceTask for ShigureConverter {
+    fn convert_occurrence(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedOccurrenceTask, ValidationError> {
+        lower_phase5_occ::convert_occurrence_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigurePartialTask for ShigureConverter {
+    fn convert_partial(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedPartialTask, ValidationError> {
+        lower_phase5_partial::convert_partial_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureRevisionTask for ShigureConverter {
+    fn convert_revision(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedRevisionTask, ValidationError> {
+        lower_phase5_rev::convert_revision_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
+impl ToShigureMultisourceTask for ShigureConverter {
+    fn convert_multisource(
+        &self,
+        inputs: &CheckedInputs,
+    ) -> Result<CheckedMultisourceTask, ValidationError> {
+        lower_phase5_rev::convert_multisource_task(
+            inputs,
+            self.task_name.as_deref(),
+            self.snapshot_id.as_deref(),
+        )
+    }
+}
+
 /// `CheckedInputs` 内の Law に宣言されている全 `shigure family` の完全名一覧を返す。
 pub fn list_shigure_families(inputs: &CheckedInputs) -> Vec<String> {
     inputs.law().shigure().families.keys().cloned().collect()
@@ -355,4 +450,48 @@ pub fn list_shigure_diagnostics_tasks(inputs: &CheckedInputs) -> Vec<String> {
 /// `CheckedInputs` 内の Law に宣言されている全 `shigure atlas` の完全名一覧を返す。
 pub fn list_shigure_atlas_tasks(inputs: &CheckedInputs) -> Vec<String> {
     inputs.law().shigure().atlas_tasks.keys().cloned().collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure occurrence` の完全名一覧を返す。
+pub fn list_shigure_occurrence_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .occurrence_tasks
+        .keys()
+        .cloned()
+        .collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure partial` の完全名一覧を返す。
+pub fn list_shigure_partial_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .partial_tasks
+        .keys()
+        .cloned()
+        .collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure revision` の完全名一覧を返す。
+pub fn list_shigure_revision_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .revision_tasks
+        .keys()
+        .cloned()
+        .collect()
+}
+
+/// `CheckedInputs` 内の Law に宣言されている全 `shigure multisource` の完全名一覧を返す。
+pub fn list_shigure_multisource_tasks(inputs: &CheckedInputs) -> Vec<String> {
+    inputs
+        .law()
+        .shigure()
+        .multisource_tasks
+        .keys()
+        .cloned()
+        .collect()
 }

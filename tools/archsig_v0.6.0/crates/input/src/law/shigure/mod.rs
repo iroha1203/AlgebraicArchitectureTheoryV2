@@ -8,6 +8,8 @@ pub mod ast_ext;
 pub mod ast_phase3;
 pub mod ast_phase4_diag_atlas;
 pub mod ast_phase4_lift_artin;
+pub mod ast_phase5_obs;
+pub mod ast_phase5_rev;
 pub mod check;
 mod check_comparison;
 mod check_diagram;
@@ -20,6 +22,11 @@ mod check_phase3_tasks;
 mod check_phase4_atlas;
 mod check_phase4_diagnostics;
 mod check_phase4_lift_artin;
+mod check_phase5_common;
+mod check_phase5_occ;
+mod check_phase5_partial;
+mod check_phase5_partial_ext;
+mod check_phase5_rev;
 mod check_presentation;
 mod check_relations;
 mod check_transfer;
@@ -34,12 +41,18 @@ mod parser_phase4_atlas;
 mod parser_phase4_common;
 mod parser_phase4_diagnostics;
 mod parser_phase4_lift_artin;
+mod parser_phase5_occ;
+mod parser_phase5_partial;
+mod parser_phase5_partial_ext;
+mod parser_phase5_rev;
 mod parser_transfer;
 
 pub use ast_ext::*;
 pub use ast_phase3::*;
 pub use ast_phase4_diag_atlas::*;
 pub use ast_phase4_lift_artin::*;
+pub use ast_phase5_obs::*;
+pub use ast_phase5_rev::*;
 pub use forbidden::{FORBIDDEN_CONCLUSION_FIELDS, is_forbidden_conclusion_field};
 
 use super::ast::{Ident, QName, Span};
@@ -378,6 +391,10 @@ pub enum ShigureDeclAst {
     Artin(Box<RawArtinTask>),
     Diagnostics(Box<RawDiagnosticsTask>),
     Atlas(Box<RawAtlasTask>),
+    Occurrence(Box<RawOccurrenceTask>),
+    Partial(Box<RawPartialTask>),
+    Revision(Box<RawRevisionTask>),
+    Multisource(Box<RawMultisourceTask>),
 }
 
 impl ShigureDeclAst {
@@ -399,6 +416,10 @@ impl ShigureDeclAst {
             ShigureDeclAst::Artin(a) => &a.name,
             ShigureDeclAst::Diagnostics(d) => &d.name,
             ShigureDeclAst::Atlas(a) => &a.name,
+            ShigureDeclAst::Occurrence(o) => &o.name,
+            ShigureDeclAst::Partial(p) => &p.name,
+            ShigureDeclAst::Revision(r) => &r.name,
+            ShigureDeclAst::Multisource(m) => &m.name,
         }
     }
 
@@ -420,6 +441,10 @@ impl ShigureDeclAst {
             ShigureDeclAst::Artin(a) => a.span,
             ShigureDeclAst::Diagnostics(d) => d.span,
             ShigureDeclAst::Atlas(a) => a.span,
+            ShigureDeclAst::Occurrence(o) => o.span,
+            ShigureDeclAst::Partial(p) => p.span,
+            ShigureDeclAst::Revision(r) => r.span,
+            ShigureDeclAst::Multisource(m) => m.span,
         }
     }
 }
@@ -642,6 +667,10 @@ pub struct CheckedShigureDecls {
     pub artin_tasks: BTreeMap<String, ShigureArtinTask>,
     pub diagnostics_tasks: BTreeMap<String, ShigureDiagnosticsTask>,
     pub atlas_tasks: BTreeMap<String, ShigureAtlasTask>,
+    pub occurrence_tasks: BTreeMap<String, ShigureOccurrenceTask>,
+    pub partial_tasks: BTreeMap<String, ShigurePartialTask>,
+    pub revision_tasks: BTreeMap<String, ShigureRevisionTask>,
+    pub multisource_tasks: BTreeMap<String, ShigureMultisourceTask>,
 }
 
 impl CheckedShigureDecls {
@@ -662,5 +691,9 @@ impl CheckedShigureDecls {
             && self.artin_tasks.is_empty()
             && self.diagnostics_tasks.is_empty()
             && self.atlas_tasks.is_empty()
+            && self.occurrence_tasks.is_empty()
+            && self.partial_tasks.is_empty()
+            && self.revision_tasks.is_empty()
+            && self.multisource_tasks.is_empty()
     }
 }
