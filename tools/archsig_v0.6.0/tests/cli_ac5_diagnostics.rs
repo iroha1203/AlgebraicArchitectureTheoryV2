@@ -246,6 +246,180 @@ fn multi_error_batch_collects_across_definitions_law_and_archmap() {
     let rec = parse(stderr.trim().as_bytes()).unwrap();
     let issues = arr(get(&rec, "issues"));
     assert_eq!(issues.len(), 2, "stderr={stderr}");
+
+    // 5. ArchMap 複数 atom エラー一括収集（subject typo + field typo + duplicate_fact + 不正 value 型）
+    let multi_atom_bad_map = r#"{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{"namespace": "Counter", "version": "1", "digest": "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11"}],
+  "sources": [],
+  "origins": [{"id": "model", "mode": "specification", "method": "m", "locations": [], "note": "n"}],
+  "snapshots": [{
+    "id": "v", "origin": "model",
+    "subjects": [
+      {"id": "s1", "type": "Counter.State", "origin": "model"},
+      {"id": "s2", "type": "Counter.State", "origin": "model"}
+    ],
+    "atoms": [
+      {"id": "a_sub", "subject": "s3", "field": "Counter.State.count", "value": "1", "origin": "model"},
+      {"id": "a_fld", "subject": "s1", "field": "Counter.State.counts", "value": "1", "origin": "model"},
+      {"id": "a_ok", "subject": "s1", "field": "Counter.State.count", "value": "2", "origin": "model"},
+      {"id": "a_dup", "subject": "s1", "field": "Counter.State.count", "value": "3", "origin": "model"},
+      {"id": "a_val", "subject": "s2", "field": "Counter.State.count", "value": "not_an_int", "origin": "model"}
+    ]
+  }]
+}"#;
+    std::fs::write(dir.join("multi_atom_bad.archmap.json"), multi_atom_bad_map).unwrap();
+    let (code, _, stderr) = run_raw(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "multi_atom_bad.archmap.json",
+        ],
+    );
+    assert_eq!(code, 65, "stderr={stderr}");
+    let rec = parse(stderr.trim().as_bytes()).unwrap();
+    let issues = arr(get(&rec, "issues"));
+    assert_eq!(issues.len(), 4, "stderr={stderr}");
+    assert!(
+        issues
+            .iter()
+            .any(|i| s(get(i, "message")).contains("subject `s3`")
+                && has_key(get(i, "details"), "suggestions")),
+        "stderr={stderr}"
+    );
+    assert!(
+        issues.iter().any(
+            |i| s(get(i, "message")).contains("no field `Counter.State.counts`")
+                && has_key(get(i, "details"), "suggestions")
+        ),
+        "stderr={stderr}"
+    );
+    assert!(
+        issues.iter().any(|i| s(get(i, "code")) == "duplicate_fact"),
+        "stderr={stderr}"
+    );
+
+    // 6. Atom Definition validate_batch での複数独立意味エラー収集
+    // 6a: 複数の宣言で依存未宣言 namespace 参照を一括収集
+    let multi_dep_bad_def = r#"{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{
+    "semantics": "archsig/0.6.0",
+    "namespace": "Counter",
+    "version": "1",
+    "dependencies": [],
+    "declarations": [
+      {
+        "kind": "entity", "name": "Counter.BadDep1", "meaning": "m1",
+        "parameters": [],
+        "fields": [{"name": "f1", "type": ["Ref", "UnknownA.Item"], "meaning": "f1"}],
+        "alignments": []
+      },
+      {
+        "kind": "entity", "name": "Counter.BadDep2", "meaning": "m2",
+        "parameters": [],
+        "fields": [{"name": "f2", "type": ["Ref", "UnknownB.Item"], "meaning": "f2"}],
+        "alignments": []
+      }
+    ]
+  }]
+}"#;
+    std::fs::write(dir.join("multi_dep_bad.atoms.json"), multi_dep_bad_def).unwrap();
+    let (code, _, stderr) = run_raw(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            "multi_dep_bad.atoms.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ],
+    );
+    assert_eq!(code, 65, "stderr={stderr}");
+    let rec = parse(stderr.trim().as_bytes()).unwrap();
+    assert_eq!(arr(get(&rec, "issues")).len(), 2, "stderr={stderr}");
+
+    // 6b: 複数の宣言で原始型エラーを一括収集
+    let multi_prim_bad_def = r#"{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [{
+    "semantics": "archsig/0.6.0",
+    "namespace": "Counter",
+    "version": "1",
+    "dependencies": [],
+    "declarations": [
+      {
+        "kind": "entity", "name": "Counter.BadType1", "meaning": "m1",
+        "parameters": [],
+        "fields": [{"name": "f1", "type": ["Ref", "Counter.MissingA"], "meaning": "f1"}],
+        "alignments": []
+      },
+      {
+        "kind": "entity", "name": "Counter.BadType2", "meaning": "m2",
+        "parameters": [],
+        "fields": [{"name": "f2", "type": ["Ref", "Counter.MissingB"], "meaning": "f2"}],
+        "alignments": []
+      }
+    ]
+  }]
+}"#;
+    std::fs::write(dir.join("multi_prim_bad.atoms.json"), multi_prim_bad_def).unwrap();
+    let (code, _, stderr) = run_raw(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            "multi_prim_bad.atoms.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+        ],
+    );
+    assert_eq!(code, 65, "stderr={stderr}");
+    let rec = parse(stderr.trim().as_bytes()).unwrap();
+    assert_eq!(arr(get(&rec, "issues")).len(), 2, "stderr={stderr}");
+
+    // 7. Law 内 SHIGURE 宣言検査での複数エラー一括収集
+    let shigure_multi_bad_law = r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading LedgerMigration {
+  use vocabulary LedgerVocab version "1" digest "sha256:cb35ebe9d9af7271972225abdcd0993b4ae6051104a331f094dd45cea9f4daae";
+  shigure comparison BadCmp1 {
+    before UnknownPresA;
+    after UnknownPresB;
+  }
+  shigure comparison BadCmp2 {
+    before UnknownPresC;
+    after UnknownPresD;
+  }
+}
+"#;
+    std::fs::write(dir.join("shigure_multi_bad.law"), shigure_multi_bad_law).unwrap();
+    let (code, _, stderr) = run_raw(
+        &dir,
+        &[
+            "check",
+            "--atom-definition",
+            shigure_fixture("ledger.atoms.json").to_str().unwrap(),
+            "--law",
+            "shigure_multi_bad.law",
+            "--archmap",
+            shigure_fixture("ledger.archmap.json").to_str().unwrap(),
+        ],
+    );
+    assert_eq!(code, 65, "stderr={stderr}");
+    let rec = parse(stderr.trim().as_bytes()).unwrap();
+    assert_eq!(arr(get(&rec, "issues")).len(), 2, "stderr={stderr}");
 }
 
 #[test]
@@ -295,13 +469,26 @@ fn multi_error_batch_collects_asks_and_caps_at_50() {
             "q1=shigure_solve(BadTask, bogus=1)",
             "--ask",
             "q2=shigure_preservation(NoParens",
+            "--ask",
+            "q3=shigure_solv(BadTask)",
         ],
     );
     assert_eq!(code, 64, "stderr={stderr}");
     let rec = parse(stderr.trim().as_bytes()).unwrap();
     let issues = arr(get(&rec, "issues"));
-    assert_eq!(issues.len(), 2, "stderr={stderr}");
+    assert_eq!(issues.len(), 3, "stderr={stderr}");
     assert!(stderr.contains("snapshot=<SnapshotId>"), "stderr={stderr}");
+    let q3_issue = issues
+        .iter()
+        .find(|i| s(get(i, "message")).contains("`shigure_solv`"))
+        .expect("q3 shigure_solv typo issue missing");
+    assert_eq!(
+        arr(get(get(q3_issue, "details"), "suggestions"))
+            .iter()
+            .map(|v| s(v))
+            .collect::<Vec<_>>(),
+        vec!["shigure_solve"]
+    );
 
     // SHIGURE resolve 段階の複数エラー（未知宣言 + 未知スナップショット）と suggestions
     let (code, _, stderr) = run_raw(

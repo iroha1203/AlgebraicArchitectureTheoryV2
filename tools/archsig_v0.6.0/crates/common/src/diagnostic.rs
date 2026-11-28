@@ -357,7 +357,7 @@ pub fn silence_reason_hint(reason_key: &str, limit_name: Option<&str>, slots: &[
                 "adjust `--shigure-limit <name>=<value>` or simplify/decompose the polynomial presentation".to_owned()
             }
         }
-        "nonlinear_rational_or_integer_existence" => {
+        "nonlinear_point_existence_out_of_scope" => {
             "existence checking over Q or Z with nonlinear constraints is undecidable/out of scope; linearize the constraints, add concrete bounds, or check over a finite field Fp(p)".to_owned()
         }
         "infinite_presentation_not_finitely_reducible" => {
@@ -462,7 +462,7 @@ mod tests {
     fn silence_reason_hint_covers_all_21_variants() {
         let keys = [
             "unobserved_dependency",
-            "nonlinear_rational_or_integer_existence",
+            "nonlinear_point_existence_out_of_scope",
             "infinite_presentation_not_finitely_reducible",
             "unsupported_coeff_ring",
             "quotient_ideal_out_of_scope",

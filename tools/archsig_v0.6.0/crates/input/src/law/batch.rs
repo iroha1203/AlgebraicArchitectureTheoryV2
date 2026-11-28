@@ -131,9 +131,20 @@ fn check_law_batch_processing(
         },
     }
 
-    let shigure_result = shigure::check::check_shigure_decls(&mut checker, control);
-    let shigure = E::finish(shigure_result, control, Checkpoint::LawSemantics)
-        .map_err(|e| fail_single(e, &bytes_digest, Some(digest.clone())))?;
+    let shigure_result =
+        shigure::batch::check_shigure_decls_batch(&mut checker, control, max_errors);
+    let shigure = match (shigure_result, control.checkpoint(Checkpoint::LawSemantics)) {
+        (_, Err(stop)) => return Err(CheckFailure::Stopped(stop)),
+        (Err(CheckFailure::Stopped(stop)), Ok(())) => return Err(CheckFailure::Stopped(stop)),
+        (Err(CheckFailure::Input(shig_issues)), Ok(())) => {
+            return Err(CheckFailure::Input(LawBatchFailure {
+                issues: shig_issues,
+                bytes_digest,
+                model_digest: Some(digest),
+            }));
+        }
+        (Ok(shig), Ok(())) => shig,
+    };
     let infos = checker
         .declaration_infos()
         .map_err(|e| fail_single(e, &bytes_digest, Some(digest.clone())))?;

@@ -43,6 +43,7 @@ pub(crate) struct DiagnosticContext {
     pub readings: Vec<String>,
     pub sources: Vec<String>,
     pub origins: Vec<String>,
+    pub subjects: Vec<String>,
 }
 
 impl DiagnosticContext {
@@ -59,6 +60,7 @@ impl DiagnosticContext {
         let mut readings = BTreeSet::new();
         let mut sources = BTreeSet::new();
         let mut origins = BTreeSet::new();
+        let mut subjects = BTreeSet::new();
 
         for def_bytes in definitions {
             if let Ok(node) = parse_with_max_depth(def_bytes, DEFAULT_MAX_JSON_DEPTH) {
@@ -77,7 +79,7 @@ impl DiagnosticContext {
         if let Some(map_bytes) = archmap
             && let Ok(node) = parse_with_max_depth(map_bytes, DEFAULT_MAX_JSON_DEPTH)
         {
-            collect_from_archmap_json(&node, &mut sources, &mut origins);
+            collect_from_archmap_json(&node, &mut sources, &mut origins, &mut subjects);
         }
 
         Self {
@@ -88,6 +90,7 @@ impl DiagnosticContext {
             readings: readings.into_iter().collect(),
             sources: sources.into_iter().collect(),
             origins: origins.into_iter().collect(),
+            subjects: subjects.into_iter().collect(),
         }
     }
 
@@ -227,6 +230,7 @@ fn collect_from_archmap_json(
     node: &JNode,
     sources: &mut BTreeSet<String>,
     origins: &mut BTreeSet<String>,
+    subjects: &mut BTreeSet<String>,
 ) {
     if let Some(items) = j_field(node, "sources").and_then(j_arr) {
         for s in items {
@@ -239,6 +243,17 @@ fn collect_from_archmap_json(
         for o in items {
             if let Some(id) = j_field(o, "id").and_then(j_str) {
                 origins.insert(id.to_owned());
+            }
+        }
+    }
+    if let Some(snaps) = j_field(node, "snapshots").and_then(j_arr) {
+        for snap in snaps {
+            if let Some(subs) = j_field(snap, "subjects").and_then(j_arr) {
+                for sub in subs {
+                    if let Some(id) = j_field(sub, "id").and_then(j_str) {
+                        subjects.insert(id.to_owned());
+                    }
+                }
             }
         }
     }
@@ -308,6 +323,8 @@ fn enrich_issue(issue: &mut Json, ctx: &DiagnosticContext) {
         suggest_identifiers(tokens[0], ctx.sources.iter().map(String::as_str), 3)
     } else if message.starts_with("origin `") {
         suggest_identifiers(tokens[0], ctx.origins.iter().map(String::as_str), 3)
+    } else if message.starts_with("subject `") {
+        suggest_identifiers(tokens[0], ctx.subjects.iter().map(String::as_str), 3)
     } else if message.starts_with("vocabulary `")
         || message.contains("missing dependency for namespace")
     {
@@ -396,7 +413,7 @@ pub(crate) fn silence_reason_details_with_hint(reason: &SilenceReason) -> Json {
     let (key, limit_name, slots): (&str, Option<&str>, &[String]) = match reason {
         SilenceReason::UnobservedDependency { slots } => ("unobserved_dependency", None, slots),
         SilenceReason::NonLinearRationalOrIntegerExistence { .. } => {
-            ("nonlinear_rational_or_integer_existence", None, &[])
+            ("nonlinear_point_existence_out_of_scope", None, &[])
         }
         SilenceReason::InfinitePresentationNotFinitelyReducible { .. } => {
             ("infinite_presentation_not_finitely_reducible", None, &[])
@@ -451,4 +468,107 @@ pub(crate) fn silence_reason_details_with_hint(reason: &SilenceReason) -> Json {
         fields.insert("hint".to_owned(), Json::str(hint));
     }
     json
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use archsig_shigure::ir::change::PointDomain;
+    use archsig_shigure::ir::term::CoeffDomain;
+
+    #[test]
+    fn silence_reason_hints_match_all_variants() {
+        let cases = [
+            SilenceReason::UnobservedDependency {
+                slots: vec!["acc.balance".into()],
+            },
+            SilenceReason::NonLinearRationalOrIntegerExistence {
+                point_domain: PointDomain::RationalPoints,
+                detail: "nonlinear".into(),
+            },
+            SilenceReason::InfinitePresentationNotFinitelyReducible {
+                detail: "inf".into(),
+            },
+            SilenceReason::UnsupportedCoeffRing {
+                domain: CoeffDomain::Z,
+                detail: "ring".into(),
+            },
+            SilenceReason::QuotientIdealOutOfScope {
+                detail: "quot".into(),
+            },
+            SilenceReason::OpenConditionInInteraction {
+                detail: "open".into(),
+            },
+            SilenceReason::UnboundedSearchOutOfScope {
+                detail: "unbounded".into(),
+            },
+            SilenceReason::ConstructibleStratificationOutOfScope {
+                detail: "strat".into(),
+            },
+            SilenceReason::FiniteEnumerationOutOfScope {
+                detail: "enum".into(),
+            },
+            SilenceReason::UniversalRingOutOfScope {
+                detail: "univ".into(),
+            },
+            SilenceReason::NonNoetherianInfinitePresentation {
+                detail: "nonnoeth".into(),
+            },
+            SilenceReason::SquareZeroConditionViolated {
+                detail: "sq0".into(),
+            },
+            SilenceReason::SyzygyOutOfScope {
+                detail: "syz".into(),
+            },
+            SilenceReason::ArtinOrderOutOfScope {
+                detail: "artin".into(),
+            },
+            SilenceReason::DiagnosticsStratificationOutOfScope {
+                detail: "diag".into(),
+            },
+            SilenceReason::DisconnectedGraphOutOfScope {
+                detail: "disc".into(),
+            },
+            SilenceReason::UnsupportedCompletionClass {
+                detail: "comp".into(),
+            },
+            SilenceReason::OperatorNotUniquelyDetermined {
+                detail: "op".into(),
+            },
+            SilenceReason::OperatorRevisionReuseRejected {
+                detail: "rev".into(),
+            },
+            SilenceReason::ResourceLimitExceeded {
+                limit_name: "max_poly_terms".into(),
+                limit: 10,
+                observed: 11,
+                detail: "limit".into(),
+            },
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "finite".into(),
+                detail: "cond".into(),
+            },
+        ];
+        assert_eq!(cases.len(), 21);
+        for reason in &cases {
+            let details = silence_reason_details_with_hint(reason);
+            let Json::Obj(fields) = &details else {
+                panic!("expected object for {reason:?}");
+            };
+            let code = match fields.get("code") {
+                Some(Json::Str(s)) => s.as_str(),
+                other => panic!("missing code for {reason:?}: {other:?}"),
+            };
+            assert_eq!(code, reason.code());
+            let hint = match fields.get("hint") {
+                Some(Json::Str(s)) => s.as_str(),
+                other => panic!("missing hint for {reason:?}: {other:?}"),
+            };
+            assert!(!hint.is_empty(), "empty hint for {code}");
+            assert!(
+                !hint.starts_with("inspect the Shigure diagnostics"),
+                "variant `{code}` fell through to generic fallback: {hint}"
+            );
+        }
+    }
 }

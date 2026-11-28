@@ -3,6 +3,7 @@
 use super::*;
 use archsig_common::control::{CheckFailure, Checkpoint, Control};
 use archsig_common::issue::Issue;
+use std::collections::BTreeSet;
 
 /// 複数エラー収集時の Atom 定義失敗。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -126,16 +127,197 @@ pub fn check_definitions_batch_controlled(
         }));
     }
 
-    let validate_result = validate::check::<CheckFailure<Box<Issue>>>(&mut checked, control);
-    if let Err(err) = control.checkpoint(Checkpoint::DefinitionCanonical) {
-        return Err(CheckFailure::Stopped(err));
-    }
-    match validate_result {
-        Ok(()) => Ok(checked),
+    match validate_batch(&mut checked, control, max_errors) {
+        Ok(()) => {
+            if let Err(err) = control.checkpoint(Checkpoint::DefinitionCanonical) {
+                return Err(CheckFailure::Stopped(err));
+            }
+            Ok(checked)
+        }
         Err(CheckFailure::Stopped(reason)) => Err(CheckFailure::Stopped(reason)),
-        Err(CheckFailure::Input(issue)) => Err(CheckFailure::Input(DefinitionBatchFailure {
-            issues: vec![*issue],
-            inputs: checked.inputs,
-        })),
+        Err(CheckFailure::Input(issues)) => {
+            if let Err(err) = control.checkpoint(Checkpoint::DefinitionCanonical) {
+                return Err(CheckFailure::Stopped(err));
+            }
+            Err(CheckFailure::Input(DefinitionBatchFailure {
+                issues,
+                inputs: checked.inputs,
+            }))
+        }
+    }
+}
+
+fn push_unique_issue(issues: &mut Vec<Issue>, issue: Issue, max_errors: usize) {
+    if issues.len() >= max_errors {
+        return;
+    }
+    if issues.iter().any(|existing| {
+        existing.code == issue.code
+            && existing.location == issue.location
+            && existing.message == issue.message
+    }) {
+        return;
+    }
+    issues.push(issue);
+}
+
+#[allow(clippy::result_large_err)]
+fn validate_batch(
+    defs: &mut CheckedDefinitions,
+    control: &Control,
+    max_errors: usize,
+) -> Result<(), CheckFailure<Vec<Issue>>> {
+    let mut dep_issues: Vec<Issue> = Vec::new();
+    let mut done = BTreeSet::new();
+    let vocab_names: Vec<String> = defs.vocabularies.keys().cloned().collect();
+    for n in &vocab_names {
+        control
+            .checkpoint(Checkpoint::DefinitionDependency)
+            .map_err(CheckFailure::Stopped)?;
+        let mut active = BTreeSet::new();
+        match validate::dag::<CheckFailure<Box<Issue>>>(n, defs, &mut active, &mut done, control) {
+            Ok(()) => {}
+            Err(CheckFailure::Stopped(reason)) => return Err(CheckFailure::Stopped(reason)),
+            Err(CheckFailure::Input(issue)) => {
+                push_unique_issue(&mut dep_issues, *issue, max_errors);
+            }
+        }
+        control
+            .checkpoint(Checkpoint::DefinitionDependency)
+            .map_err(CheckFailure::Stopped)?;
+    }
+
+    for v in defs.vocabularies.values() {
+        control
+            .checkpoint(Checkpoint::DefinitionDependency)
+            .map_err(CheckFailure::Stopped)?;
+        for b in &v.dependencies {
+            control
+                .checkpoint(Checkpoint::DefinitionDependency)
+                .map_err(CheckFailure::Stopped)?;
+            if let Err(issue) = defs.check_binding(b) {
+                push_unique_issue(&mut dep_issues, *issue, max_errors);
+            }
+            control
+                .checkpoint(Checkpoint::DefinitionDependency)
+                .map_err(CheckFailure::Stopped)?;
+        }
+        control
+            .checkpoint(Checkpoint::DefinitionDependency)
+            .map_err(CheckFailure::Stopped)?;
+    }
+
+    for d in defs.declarations.values() {
+        control
+            .checkpoint(Checkpoint::DefinitionDependency)
+            .map_err(CheckFailure::Stopped)?;
+        let v = &defs.vocabularies[&d.namespace];
+        for (at, target) in &d.references {
+            control
+                .checkpoint(Checkpoint::DefinitionDependency)
+                .map_err(CheckFailure::Stopped)?;
+            let ns = target.split('.').next().expect("完全名の字句を確認済み");
+            let declared_dependency =
+                ns == d.namespace || v.dependencies.iter().any(|b| b.namespace == ns);
+            if !declared_dependency {
+                push_unique_issue(
+                    &mut dep_issues,
+                    Issue {
+                        code: Code::Reference,
+                        message: format!("missing dependency for namespace `{ns}`"),
+                        location: at.clone(),
+                        details: Details::Empty,
+                    },
+                    max_errors,
+                );
+            }
+            control
+                .checkpoint(Checkpoint::DefinitionDependency)
+                .map_err(CheckFailure::Stopped)?;
+        }
+        control
+            .checkpoint(Checkpoint::DefinitionDependency)
+            .map_err(CheckFailure::Stopped)?;
+    }
+
+    if !dep_issues.is_empty() {
+        return Err(CheckFailure::Input(dep_issues));
+    }
+
+    match super::primitive::check::<CheckFailure<Box<Issue>>>(defs, control) {
+        Ok(()) => {
+            control
+                .checkpoint(Checkpoint::DefinitionDependency)
+                .map_err(CheckFailure::Stopped)?;
+            Ok(())
+        }
+        Err(CheckFailure::Stopped(reason)) => Err(CheckFailure::Stopped(reason)),
+        Err(CheckFailure::Input(first)) => {
+            let mut issues = Vec::new();
+            push_unique_issue(&mut issues, *first, max_errors);
+            for d in defs.declarations.values() {
+                if issues.len() >= max_errors {
+                    break;
+                }
+                if let Some((parameters, fields)) = d.signature.record_fields() {
+                    let mut earlier = Vec::new();
+                    for p in parameters {
+                        control
+                            .checkpoint(Checkpoint::DefinitionSemantics)
+                            .map_err(CheckFailure::Stopped)?;
+                        if let Err(issue) = defs.check_primitive_type(
+                            &p.ty,
+                            &super::primitive::child(&p.location, "type"),
+                            &earlier,
+                        ) {
+                            push_unique_issue(&mut issues, *issue, max_errors);
+                        }
+                        earlier.push((p.name.as_str(), &p.ty));
+                        if issues.len() >= max_errors {
+                            break;
+                        }
+                    }
+                    for f in fields {
+                        if issues.len() >= max_errors {
+                            break;
+                        }
+                        control
+                            .checkpoint(Checkpoint::DefinitionSemantics)
+                            .map_err(CheckFailure::Stopped)?;
+                        if let Err(issue) = defs.check_primitive_type(
+                            &f.ty,
+                            &super::primitive::child(&f.location, "type"),
+                            &earlier,
+                        ) {
+                            push_unique_issue(&mut issues, *issue, max_errors);
+                        }
+                    }
+                } else if let super::model::PrimitiveSignature::Data { constructors } = &d.signature
+                {
+                    for c in constructors {
+                        if issues.len() >= max_errors {
+                            break;
+                        }
+                        let args_at = super::primitive::child(&c.location, "arguments");
+                        for (i, t) in c.arguments.iter().enumerate() {
+                            if issues.len() >= max_errors {
+                                break;
+                            }
+                            control
+                                .checkpoint(Checkpoint::DefinitionSemantics)
+                                .map_err(CheckFailure::Stopped)?;
+                            if let Err(issue) = defs.check_primitive_type(
+                                t,
+                                &super::primitive::child(&args_at, &i.to_string()),
+                                &[],
+                            ) {
+                                push_unique_issue(&mut issues, *issue, max_errors);
+                            }
+                        }
+                    }
+                }
+            }
+            Err(CheckFailure::Input(issues))
+        }
     }
 }

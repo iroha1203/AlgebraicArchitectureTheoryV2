@@ -777,6 +777,26 @@ pub fn check_assignment<E: InputError>(
     check_assignment_for(value, ty, definitions, roster, namespace, control)
 }
 
+pub(super) fn read_atom_value<E: InputError>(
+    a: &super::schema::RawAtom<'_>,
+    ty: &Type,
+    namespace: &str,
+    vptr: &str,
+    definitions: &CheckedDefinitions,
+    roster: &Roster<'_>,
+    control: &Control,
+) -> Result<Value, E> {
+    let mut reader = Reader::<E> {
+        control: control.clone(),
+        error: std::marker::PhantomData,
+        definitions,
+        roster,
+        namespace,
+        rebases: &a.rebases,
+    };
+    reader.read(a.value, ty, vptr)
+}
+
 pub(super) fn check_assignment_for<E: InputError>(
     value: &Json,
     ty: &Type,

@@ -51,18 +51,20 @@ fn looks_like_shigure_ask(ask: &str) -> bool {
         (Some(eq), None) => ask[eq + 1..].trim_start(),
         _ => ask.trim_start(),
     };
-    for prefix in SHIGURE_QUERY_PREFIXES {
-        if let Some(rest) = rhs.strip_prefix(prefix)
-            && (rest.is_empty()
-                || !rest
-                    .as_bytes()
-                    .first()
-                    .is_some_and(|b| b.is_ascii_alphanumeric() || *b == b'_'))
-        {
-            return true;
-        }
+    let head = rhs
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+        .next()
+        .unwrap_or("");
+    if SHIGURE_QUERY_PREFIXES.contains(&head) {
+        return true;
     }
-    false
+    head.starts_with("shigure_")
+        && !archsig_common::diagnostic::suggest_identifiers(
+            head,
+            SHIGURE_QUERY_PREFIXES.iter().copied(),
+            1,
+        )
+        .is_empty()
 }
 
 pub(super) fn parse_shigure_requests(

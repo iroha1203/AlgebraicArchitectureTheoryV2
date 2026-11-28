@@ -338,10 +338,14 @@ fn check_document_batch(
         return Err(CheckFailure::Input(issues));
     }
 
-    let snapshots = match value::check_snapshots::<E>(&raw.snapshots, definitions, control) {
+    let snapshots = match check_snapshots_batch(&raw.snapshots, definitions, control, max_errors) {
         Ok(s) => s,
         Err(CheckFailure::Stopped(r)) => return Err(CheckFailure::Stopped(r)),
-        Err(CheckFailure::Input(i)) => return Err(CheckFailure::Input(vec![*i])),
+        Err(CheckFailure::Input(atom_issues)) => {
+            issues.extend(atom_issues);
+            issues.truncate(max_errors);
+            return Err(CheckFailure::Input(issues));
+        }
     };
     if let Err(err) = complete::check_completion::<E>(&snapshots, definitions, control) {
         return match err {
@@ -378,4 +382,215 @@ fn check_document_batch(
         origins: origins_out,
         snapshots,
     })
+}
+
+fn check_snapshots_batch(
+    raw: &[schema::RawSnapshot<'_>],
+    definitions: &CheckedDefinitions,
+    control: &Control,
+    max_errors: usize,
+) -> Result<Vec<Snapshot>, CheckFailure<Vec<Issue>>> {
+    control
+        .checkpoint(Checkpoint::ArchMapSchema)
+        .map_err(CheckFailure::Stopped)?;
+    let res = check_snapshots_batch_inner(raw, definitions, control, max_errors);
+    match (res, control.checkpoint(Checkpoint::ArchMapSchema)) {
+        (_, Err(stop)) => Err(CheckFailure::Stopped(stop)),
+        (Err(CheckFailure::Stopped(stop)), Ok(())) => Err(CheckFailure::Stopped(stop)),
+        (other, Ok(())) => other,
+    }
+}
+
+fn check_snapshots_batch_inner(
+    raw: &[schema::RawSnapshot<'_>],
+    definitions: &CheckedDefinitions,
+    control: &Control,
+    max_errors: usize,
+) -> Result<Vec<Snapshot>, CheckFailure<Vec<Issue>>> {
+    let mut types = HashMap::new();
+    for snap in raw {
+        control
+            .checkpoint(Checkpoint::ArchMapIteration)
+            .map_err(CheckFailure::Stopped)?;
+        for s in &snap.subjects {
+            control
+                .checkpoint(Checkpoint::ArchMapIteration)
+                .map_err(CheckFailure::Stopped)?;
+            types.insert((snap.id.as_str(), s.id.as_str()), s.ty.as_str());
+            control
+                .checkpoint(Checkpoint::ArchMapIteration)
+                .map_err(CheckFailure::Stopped)?;
+        }
+        control
+            .checkpoint(Checkpoint::ArchMapIteration)
+            .map_err(CheckFailure::Stopped)?;
+    }
+    let roster = value::Roster { types };
+    let mut out = Vec::new();
+    let mut issues: Vec<Issue> = Vec::new();
+
+    for snap in raw {
+        control
+            .checkpoint(Checkpoint::ArchMapIteration)
+            .map_err(CheckFailure::Stopped)?;
+        let mut subjects: Vec<Subject> = Vec::new();
+        for s in &snap.subjects {
+            control
+                .checkpoint(Checkpoint::ArchMapIteration)
+                .map_err(CheckFailure::Stopped)?;
+            let decl = &definitions.declarations[&s.ty];
+            let (params, members) = decl
+                .signature
+                .record_fields()
+                .expect("entity・arrow・correspondence");
+            let mut fields = Vec::new();
+            for parameter in params.iter().chain(members) {
+                control
+                    .checkpoint(Checkpoint::ArchMapSchema)
+                    .map_err(CheckFailure::Stopped)?;
+                fields.push(Field {
+                    name: format!("{}.{}", s.ty, parameter.name).into(),
+                    ty: parameter.ty.clone(),
+                    slot: Slot::Missing,
+                });
+                control
+                    .checkpoint(Checkpoint::ArchMapSchema)
+                    .map_err(CheckFailure::Stopped)?;
+            }
+            subjects.push(Subject {
+                snapshot: snap.id.clone(),
+                id: s.id.clone(),
+                ty: s.ty.clone().into(),
+                origin: s.origin.clone(),
+                fields,
+                pointer: s.pointer.clone(),
+            });
+            control
+                .checkpoint(Checkpoint::ArchMapIteration)
+                .map_err(CheckFailure::Stopped)?;
+        }
+        let mut index = HashMap::new();
+        for (i, subject) in subjects.iter().enumerate() {
+            control
+                .checkpoint(Checkpoint::ArchMapSchema)
+                .map_err(CheckFailure::Stopped)?;
+            index.insert(subject.id.clone(), i);
+            control
+                .checkpoint(Checkpoint::ArchMapSchema)
+                .map_err(CheckFailure::Stopped)?;
+        }
+
+        for a in &snap.atoms {
+            control
+                .checkpoint(Checkpoint::ArchMapIteration)
+                .map_err(CheckFailure::Stopped)?;
+            let Some(&si) = index.get(&a.subject) else {
+                push_issue(
+                    &mut issues,
+                    max_errors,
+                    issue(
+                        Code::Reference,
+                        &format!("{}/subject", a.pointer),
+                        format!("subject `{}` does not exist", a.subject),
+                    ),
+                );
+                continue;
+            };
+            let subject_ty = &subjects[si].ty;
+            let mut field_index = None;
+            let mut missing_field_err = None;
+            for (i, field) in subjects[si].fields.iter().enumerate() {
+                control
+                    .checkpoint(Checkpoint::ArchMapSchema)
+                    .map_err(CheckFailure::Stopped)?;
+                let matches = field.name == a.field;
+                if !matches && i + 1 == subjects[si].fields.len() {
+                    missing_field_err = Some(issue(
+                        Code::Reference,
+                        &format!("{}/field", a.pointer),
+                        format!("`{subject_ty}` has no field `{}`", a.field),
+                    ));
+                }
+                control
+                    .checkpoint(Checkpoint::ArchMapSchema)
+                    .map_err(CheckFailure::Stopped)?;
+                if matches {
+                    field_index = Some(i);
+                    break;
+                }
+            }
+            let Some(fi) = field_index else {
+                push_issue(
+                    &mut issues,
+                    max_errors,
+                    missing_field_err.unwrap_or_else(|| {
+                        issue(
+                            Code::Reference,
+                            &format!("{}/field", a.pointer),
+                            format!("`{subject_ty}` has no field `{}`", a.field),
+                        )
+                    }),
+                );
+                continue;
+            };
+            if subjects[si].fields[fi].slot != Slot::Missing {
+                push_issue(
+                    &mut issues,
+                    max_errors,
+                    issue(
+                        Code::DuplicateFact,
+                        &a.pointer,
+                        format!(
+                            "field of `{}` named `{}` is recorded twice",
+                            a.subject, a.field
+                        ),
+                    ),
+                );
+                continue;
+            }
+            let vptr = format!("{}/value", a.pointer);
+            let namespace = &definitions.declarations[subject_ty.as_str()].namespace;
+            let ty = &subjects[si].fields[fi].ty;
+            match value::read_atom_value::<E>(
+                a,
+                ty,
+                namespace,
+                &vptr,
+                definitions,
+                &roster,
+                control,
+            ) {
+                Ok(value) => {
+                    subjects[si].fields[fi].slot = Slot::Known {
+                        atom: a.id.clone(),
+                        origin: a.origin.clone(),
+                        value,
+                        pointer: vptr,
+                    };
+                }
+                Err(CheckFailure::Stopped(reason)) => return Err(CheckFailure::Stopped(reason)),
+                Err(CheckFailure::Input(iss)) => {
+                    push_issue(&mut issues, max_errors, iss);
+                    continue;
+                }
+            }
+            control
+                .checkpoint(Checkpoint::ArchMapIteration)
+                .map_err(CheckFailure::Stopped)?;
+        }
+
+        out.push(Snapshot {
+            id: snap.id.clone(),
+            origin: snap.origin.clone(),
+            subjects,
+        });
+        control
+            .checkpoint(Checkpoint::ArchMapIteration)
+            .map_err(CheckFailure::Stopped)?;
+    }
+
+    if !issues.is_empty() {
+        return Err(CheckFailure::Input(issues));
+    }
+    Ok(out)
 }
