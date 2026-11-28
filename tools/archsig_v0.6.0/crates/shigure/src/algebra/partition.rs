@@ -170,9 +170,13 @@ pub fn refine_partition(
     input: &RefinementInput,
 ) -> Result<PartitionRefinementResult, AlgebraError> {
     // 入力妥当性確認
-    for (s, elems) in &input.sorts {
-        let uniq: BTreeSet<&str> = elems.iter().map(String::as_str).collect();
-        if uniq.len() != elems.len() {
+    let sort_sets: BTreeMap<&str, BTreeSet<&str>> = input
+        .sorts
+        .iter()
+        .map(|(s, elems)| (s.as_str(), elems.iter().map(String::as_str).collect()))
+        .collect();
+    for (s, uniq) in &sort_sets {
+        if uniq.len() != input.sorts[*s].len() {
             return Err(AlgebraError::OutOfScope {
                 detail: format!("duplicate elements in sort `{s}`"),
             });
@@ -193,14 +197,38 @@ pub fn refine_partition(
         }
     }
     for op in &input.ops {
-        if !input.sorts.contains_key(&op.out_sort) {
+        let Some(out_set) = sort_sets.get(op.out_sort.as_str()) else {
             return Err(AlgebraError::UnknownVariable {
                 name: op.out_sort.clone(),
             });
-        }
+        };
         for s in &op.arg_sorts {
-            if !input.sorts.contains_key(s) {
+            if !sort_sets.contains_key(s.as_str()) {
                 return Err(AlgebraError::UnknownVariable { name: s.clone() });
+            }
+        }
+        for (args, out_opt) in &op.entries {
+            if args.len() != op.arg_sorts.len() {
+                return Err(AlgebraError::OutOfScope {
+                    detail: format!(
+                        "operation `{}` entry arity mismatch: expected {}, got {}",
+                        op.name,
+                        op.arg_sorts.len(),
+                        args.len()
+                    ),
+                });
+            }
+            for (arg, sort_name) in args.iter().zip(&op.arg_sorts) {
+                if !sort_sets[sort_name.as_str()].contains(arg.as_str()) {
+                    return Err(AlgebraError::UnknownVariable { name: arg.clone() });
+                }
+            }
+            if let Some(out_elem) = out_opt
+                && !out_set.contains(out_elem.as_str())
+            {
+                return Err(AlgebraError::UnknownVariable {
+                    name: out_elem.clone(),
+                });
             }
         }
     }

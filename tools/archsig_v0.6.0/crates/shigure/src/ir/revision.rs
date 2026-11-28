@@ -4,7 +4,7 @@
 use crate::ir::provenance::Provenance;
 use crate::ir::term::{CoeffDomain, ScalarLit};
 use crate::ir::validate::{
-    ValidationError, require_non_empty, validate_coeff_domain, validate_provenance,
+    ValidationError, require_non_empty, validate_coeff_domain, validate_nonempty_provenance,
     validate_scalar_lit,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -183,7 +183,7 @@ pub fn validate_revision_task(
     mut spec: RevisionTaskSpec,
 ) -> Result<CheckedRevisionTask, ValidationError> {
     require_non_empty(&spec.name, "revision.name")?;
-    validate_provenance(&spec.provenance, &format!("revision `{}`", spec.name))?;
+    validate_nonempty_provenance(&spec.provenance, &format!("revision `{}`", spec.name))?;
     validate_coeff_domain(&spec.coeff_domain, &format!("revision `{}`", spec.name))?;
     if spec.max_completions == 0 {
         spec.max_completions = DEFAULT_MAX_REVISION_COMPLETIONS;
@@ -214,7 +214,7 @@ pub fn validate_revision_task(
         .chain(&spec.before.extra_constraints)
         .chain(&spec.after.extra_constraints)
     {
-        validate_constraint(con, &coord_names, &spec.coeff_domain)?;
+        validate_constraint(con, &coord_names, &spec.coeff_domain, "revision")?;
     }
 
     for (k, v) in spec
@@ -332,12 +332,13 @@ pub fn validate_revision_task(
     })
 }
 
-fn validate_constraint(
+pub(super) fn validate_constraint(
     con: &RevisionConstraintSpec,
     coord_names: &BTreeSet<String>,
     domain: &CoeffDomain,
+    scope: &str,
 ) -> Result<(), ValidationError> {
-    require_non_empty(&con.id, "revision.constraint.id")?;
+    require_non_empty(&con.id, &format!("{scope}.constraint.id"))?;
     let mut sup_set = BTreeSet::new();
     for s in &con.support {
         if !coord_names.contains(s) {

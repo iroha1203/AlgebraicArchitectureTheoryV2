@@ -3,10 +3,10 @@
 
 use crate::algebra::hitting_set::{DEFAULT_MAX_HITTING_SET_RESULTS, DEFAULT_MAX_HITTING_SET_STEPS};
 use crate::ir::provenance::{Provenance, SourceRef};
-use crate::ir::revision::{RevisionConstraintSpec, RevisionCoordSpec, RevisionPredicate};
+use crate::ir::revision::{RevisionConstraintSpec, RevisionCoordSpec, validate_constraint};
 use crate::ir::term::{CoeffDomain, ScalarLit};
 use crate::ir::validate::{
-    ValidationError, require_non_empty, validate_coeff_domain, validate_provenance,
+    ValidationError, require_non_empty, validate_coeff_domain, validate_nonempty_provenance,
     validate_scalar_lit, validate_source_ref,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -132,7 +132,7 @@ pub fn validate_multisource_task(
     mut spec: MultisourceTaskSpec,
 ) -> Result<CheckedMultisourceTask, ValidationError> {
     require_non_empty(&spec.name, "multisource.name")?;
-    validate_provenance(&spec.provenance, &format!("multisource `{}`", spec.name))?;
+    validate_nonempty_provenance(&spec.provenance, &format!("multisource `{}`", spec.name))?;
     validate_coeff_domain(&spec.coeff_domain, &format!("multisource `{}`", spec.name))?;
 
     if spec.max_sources_subset_steps == 0 {
@@ -166,7 +166,7 @@ pub fn validate_multisource_task(
     }
 
     for con in &spec.background_constraints {
-        validate_ms_constraint(con, &coord_names, &spec.coeff_domain)?;
+        validate_constraint(con, &coord_names, &spec.coeff_domain, "multisource")?;
     }
 
     let mut source_ids = BTreeSet::new();
@@ -211,7 +211,7 @@ pub fn validate_multisource_task(
             )?;
         }
         for con in &src.extra_constraints {
-            validate_ms_constraint(con, &coord_names, &spec.coeff_domain)?;
+            validate_constraint(con, &coord_names, &spec.coeff_domain, "multisource")?;
         }
     }
 
@@ -262,14 +262,7 @@ pub fn validate_multisource_task(
             }
             if let Some(cost) = &cand.cost {
                 with_cost += 1;
-                if !is_valid_nonnegative_cost(cost) {
-                    return Err(ValidationError::ConversionError {
-                        detail: format!(
-                            "candidate `{}` cost must be nonnegative integer or rational",
-                            cand.id
-                        ),
-                    });
-                }
+                validate_nonnegative_cost(cost, &format!("candidate `{}` cost", cand.id))?;
             } else {
                 without_cost += 1;
             }
@@ -319,103 +312,28 @@ pub fn validate_multisource_task(
     })
 }
 
-fn is_valid_nonnegative_cost(lit: &ScalarLit) -> bool {
-    use num_traits::{Signed, Zero};
+fn validate_nonnegative_cost(lit: &ScalarLit, context: &str) -> Result<(), ValidationError> {
+    use num_traits::Signed;
     match lit {
-        ScalarLit::Z(n) => !n.is_negative(),
-        ScalarLit::Q { num, den } => !den.is_zero() && !(num.is_negative() ^ den.is_negative()),
-        ScalarLit::Fp { .. } => false,
+        ScalarLit::Z(n) => {
+            if n.is_negative() {
+                return Err(ValidationError::ConversionError {
+                    detail: format!("{context} must be nonnegative integer or rational"),
+                });
+            }
+            Ok(())
+        }
+        ScalarLit::Q { num, .. } => {
+            validate_scalar_lit(lit, &CoeffDomain::Q, context)?;
+            if num.is_negative() {
+                return Err(ValidationError::ConversionError {
+                    detail: format!("{context} must be nonnegative integer or rational"),
+                });
+            }
+            Ok(())
+        }
+        ScalarLit::Fp { .. } => Err(ValidationError::ConversionError {
+            detail: format!("{context} cannot be finite-field literal"),
+        }),
     }
-}
-
-fn validate_ms_constraint(
-    con: &RevisionConstraintSpec,
-    coord_names: &BTreeSet<String>,
-    domain: &CoeffDomain,
-) -> Result<(), ValidationError> {
-    require_non_empty(&con.id, "multisource.constraint.id")?;
-    let mut sup_set = BTreeSet::new();
-    for s in &con.support {
-        if !coord_names.contains(s) {
-            return Err(ValidationError::UnknownRef {
-                kind: "coord",
-                name: s.clone(),
-                context: format!("constraint `{}` support", con.id),
-            });
-        }
-        sup_set.insert(s.as_str());
-    }
-    match &con.predicate {
-        RevisionPredicate::Equality(a, b) => {
-            for x in [a, b] {
-                if !coord_names.contains(x) {
-                    return Err(ValidationError::UnknownRef {
-                        kind: "coord",
-                        name: x.clone(),
-                        context: format!("constraint `{}`", con.id),
-                    });
-                }
-                if !sup_set.contains(x.as_str()) {
-                    return Err(ValidationError::ConversionError {
-                        detail: format!(
-                            "constraint `{}` support must include referenced coord `{x}`",
-                            con.id
-                        ),
-                    });
-                }
-            }
-        }
-        RevisionPredicate::LinearZero { terms } => {
-            for (c, x) in terms {
-                validate_scalar_lit(c, domain, &format!("constraint `{}`", con.id))?;
-                if !coord_names.contains(x) {
-                    return Err(ValidationError::UnknownRef {
-                        kind: "coord",
-                        name: x.clone(),
-                        context: format!("constraint `{}`", con.id),
-                    });
-                }
-                if !sup_set.contains(x.as_str()) {
-                    return Err(ValidationError::ConversionError {
-                        detail: format!(
-                            "constraint `{}` support must include referenced coord `{x}`",
-                            con.id
-                        ),
-                    });
-                }
-            }
-        }
-        RevisionPredicate::AllowedTuples { coords, tuples } => {
-            for x in coords {
-                if !coord_names.contains(x) {
-                    return Err(ValidationError::UnknownRef {
-                        kind: "coord",
-                        name: x.clone(),
-                        context: format!("constraint `{}`", con.id),
-                    });
-                }
-                if !sup_set.contains(x.as_str()) {
-                    return Err(ValidationError::ConversionError {
-                        detail: format!(
-                            "constraint `{}` support must include referenced coord `{x}`",
-                            con.id
-                        ),
-                    });
-                }
-            }
-            for tup in tuples {
-                if tup.len() != coords.len() {
-                    return Err(ValidationError::ArityMismatch {
-                        context: format!("constraint `{}` tuple", con.id),
-                        expected: coords.len(),
-                        actual: tup.len(),
-                    });
-                }
-                for v in tup {
-                    validate_scalar_lit(v, domain, &format!("constraint `{}`", con.id))?;
-                }
-            }
-        }
-    }
-    Ok(())
 }

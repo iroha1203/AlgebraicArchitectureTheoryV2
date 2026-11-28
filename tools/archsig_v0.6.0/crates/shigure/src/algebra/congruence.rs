@@ -666,21 +666,9 @@ fn emit_pair_derivation(
     let mut acc = suf.elems[path[0].0].clone();
     for &(_, v, _) in &path {
         let next = suf.elems[v].clone();
-        if acc != next && !proven.contains(&(sort.to_owned(), acc.clone(), next.clone())) {
-            let step = DerivationStep {
-                sort: sort.to_owned(),
-                lhs: acc.clone(),
-                rhs: next.clone(),
-                reason: DerivationReason::Transitivity {
-                    sort: sort.to_owned(),
-                    a: acc.clone(),
-                    b: suf.elems[path[0].0].clone(),
-                    c: next.clone(),
-                },
-            };
-            proven.insert((sort.to_owned(), acc.clone(), next.clone()));
-            steps.push(step);
-        }
+        debug_assert!(
+            acc == next || proven.contains(&(sort.to_owned(), acc.clone(), next.clone()))
+        );
         if acc != lhs {
             let mid = acc.clone();
             if !proven.contains(&(sort.to_owned(), lhs.to_owned(), next.clone())) {
@@ -753,6 +741,8 @@ pub fn verify_collision_witness(input: &CongruenceInput, witness: &CollisionWitn
                     };
                     input.op_records.iter().any(|r1| {
                         match_rec(r1, out_a)
+                            && r1.arg_sorts.len() == args_a.len()
+                            && r1.arg_sorts.len() == args_b.len()
                             && r1.arg_sorts.iter().enumerate().all(|(k, s)| {
                                 proven.contains(&(s.clone(), args_a[k].clone(), args_b[k].clone()))
                                     || proven.contains(&(

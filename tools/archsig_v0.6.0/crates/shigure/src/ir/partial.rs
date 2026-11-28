@@ -279,16 +279,37 @@ pub struct PartialTaskSpec {
 /// 検証済みの部分提示タスク。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct CheckedPartialTask {
-    pub(crate) name: String,
-    pub(crate) representation: PartialRepresentation,
-    pub(crate) eval_laws: Vec<PartialEvalLawSpec>,
-    pub(crate) quantifier_spec: Option<QuantifierHierarchySpec>,
-    pub(crate) open_domain: Option<OpenDomainSpec>,
-    pub(crate) provenance: Provenance,
-    pub(crate) undeclared_unobserved_slots: Vec<String>,
+    name: String,
+    representation: PartialRepresentation,
+    eval_laws: Vec<PartialEvalLawSpec>,
+    quantifier_spec: Option<QuantifierHierarchySpec>,
+    open_domain: Option<OpenDomainSpec>,
+    provenance: Provenance,
+    undeclared_unobserved_slots: Vec<String>,
 }
 
 impl CheckedPartialTask {
+    #[allow(clippy::too_many_arguments)]
+    pub(super) fn from_validated(
+        name: String,
+        representation: PartialRepresentation,
+        eval_laws: Vec<PartialEvalLawSpec>,
+        quantifier_spec: Option<QuantifierHierarchySpec>,
+        open_domain: Option<OpenDomainSpec>,
+        provenance: Provenance,
+        undeclared_unobserved_slots: Vec<String>,
+    ) -> Self {
+        Self {
+            name,
+            representation,
+            eval_laws,
+            quantifier_spec,
+            open_domain,
+            provenance,
+            undeclared_unobserved_slots,
+        }
+    }
+
     pub fn validate(spec: PartialTaskSpec) -> Result<Self, ValidationError> {
         validate_partial_task(spec)
     }

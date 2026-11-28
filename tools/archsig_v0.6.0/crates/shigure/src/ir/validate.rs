@@ -500,6 +500,18 @@ pub(crate) fn validate_provenance(
     Ok(())
 }
 
+pub(crate) fn validate_nonempty_provenance(
+    provenance: &Provenance,
+    context: &str,
+) -> Result<(), ValidationError> {
+    if provenance.origins.is_empty() {
+        return Err(ValidationError::ConversionError {
+            detail: format!("{context} requires at least one origin"),
+        });
+    }
+    validate_provenance(provenance, context)
+}
+
 pub fn validate_coeff_domain(domain: &CoeffDomain, context: &str) -> Result<(), ValidationError> {
     if let CoeffDomain::Fp(p) = domain
         && !is_prime(p)

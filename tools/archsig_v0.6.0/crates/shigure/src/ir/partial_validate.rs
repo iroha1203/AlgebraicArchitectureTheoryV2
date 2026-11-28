@@ -2,19 +2,19 @@
 
 use crate::ir::partial::{
     AffinePartialPresentation, BackgroundConstraint, CheckedPartialTask, FinitePartialPresentation,
-    OpenDomainSpec, PartialEvalLawSpec, PartialFormula, PartialOpSignature, PartialPredSignature,
-    PartialRecordKind, PartialRepresentation, PartialTaskSpec, PartialTerm, PartialTruth,
-    PartialValue, QuantifierHierarchySpec,
+    OpenDomainSpec, OpenOpTable, OpenRelTable, PartialEvalLawSpec, PartialFormula,
+    PartialOpSignature, PartialPredSignature, PartialRecordKind, PartialRepresentation,
+    PartialTaskSpec, PartialTerm, PartialTruth, PartialValue, QuantifierHierarchySpec,
 };
 use crate::ir::validate::{
-    ValidationError, require_non_empty, validate_coeff_domain, validate_provenance,
+    ValidationError, require_non_empty, validate_coeff_domain, validate_nonempty_provenance,
     validate_scalar_lit,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
 pub fn validate_partial_task(spec: PartialTaskSpec) -> Result<CheckedPartialTask, ValidationError> {
     require_non_empty(&spec.name, "partial.name")?;
-    validate_provenance(&spec.provenance, &format!("partial `{}`", spec.name))?;
+    validate_nonempty_provenance(&spec.provenance, &format!("partial `{}`", spec.name))?;
 
     let mut seen_law_names = BTreeSet::new();
     for law in &spec.eval_laws {
@@ -43,15 +43,15 @@ pub fn validate_partial_task(spec: PartialTaskSpec) -> Result<CheckedPartialTask
         validate_open_domain(od)?;
     }
 
-    Ok(CheckedPartialTask {
-        name: spec.name,
-        representation: spec.representation,
-        eval_laws: spec.eval_laws,
-        quantifier_spec: spec.quantifier_spec,
-        open_domain: spec.open_domain,
-        provenance: spec.provenance,
-        undeclared_unobserved_slots: spec.undeclared_unobserved_slots,
-    })
+    Ok(CheckedPartialTask::from_validated(
+        spec.name,
+        spec.representation,
+        spec.eval_laws,
+        spec.quantifier_spec,
+        spec.open_domain,
+        spec.provenance,
+        spec.undeclared_unobserved_slots,
+    ))
 }
 
 fn validate_quantifier_spec(q: &QuantifierHierarchySpec) -> Result<(), ValidationError> {
@@ -401,18 +401,17 @@ fn validate_finite_partial(
         .iter()
         .map(|(&k, v)| (k, v.arg_sorts.len()))
         .collect();
-    let sort_names: BTreeSet<&str> = sort_elems.keys().map(String::as_str).collect();
     let slot_name_set: BTreeSet<&str> = slot_sorts.keys().map(String::as_str).collect();
 
     for law in eval_laws {
         if let Some(ant) = &law.antecedent {
-            validate_formula_refs(ant, &op_arities, &rel_arities, &sort_names, &slot_name_set)?;
+            validate_formula_refs(ant, &op_arities, &rel_arities, &sort_elems, &slot_name_set)?;
         }
         validate_formula_refs(
             &law.conclusion,
             &op_arities,
             &rel_arities,
-            &sort_names,
+            &sort_elems,
             &slot_name_set,
         )?;
     }
@@ -449,7 +448,7 @@ fn validate_formula_refs(
     formula: &PartialFormula,
     op_arities: &BTreeMap<&str, usize>,
     rel_arities: &BTreeMap<&str, usize>,
-    sorts: &BTreeSet<&str>,
+    sorts: &BTreeMap<String, BTreeSet<String>>,
     slots: &BTreeSet<&str>,
 ) -> Result<(), ValidationError> {
     match formula {
@@ -524,13 +523,35 @@ fn validate_formula_refs(
         PartialFormula::Not(inner) => {
             validate_formula_refs(inner, op_arities, rel_arities, sorts, slots)
         }
-        PartialFormula::Exists { sort, body, .. } | PartialFormula::Forall { sort, body, .. } => {
-            if !sorts.contains(sort.as_str()) {
+        PartialFormula::Exists {
+            sort,
+            restricted_domain,
+            body,
+            ..
+        }
+        | PartialFormula::Forall {
+            sort,
+            restricted_domain,
+            body,
+            ..
+        } => {
+            let Some(carrier) = sorts.get(sort.as_str()) else {
                 return Err(ValidationError::UnknownRef {
                     kind: "sort",
                     name: sort.clone(),
                     context: "partial.formula quantifier".to_owned(),
                 });
+            };
+            if let Some(dom) = restricted_domain {
+                for elem in dom {
+                    if !carrier.contains(elem) {
+                        return Err(ValidationError::UnknownRef {
+                            kind: "occurrence",
+                            name: elem.clone(),
+                            context: format!("partial.formula quantifier sort `{sort}`"),
+                        });
+                    }
+                }
             }
             validate_formula_refs(body, op_arities, rel_arities, sorts, slots)
         }
@@ -672,18 +693,102 @@ fn validate_affine_row(
     validate_scalar_lit(rhs, domain, &format!("partial.affine rhs `{id}`"))
 }
 
+fn validate_open_op_tables<'a>(
+    ops: &'a [OpenOpTable],
+    carriers: &BTreeMap<String, BTreeSet<String>>,
+    scope: &str,
+) -> Result<BTreeMap<&'a str, &'a OpenOpTable>, ValidationError> {
+    let mut map = BTreeMap::new();
+    for op in ops {
+        require_non_empty(&op.name, &format!("open_domain.{scope}_op.name"))?;
+        for s in op.arg_sorts.iter().chain(std::iter::once(&op.out_sort)) {
+            if !carriers.contains_key(s) {
+                return Err(ValidationError::UnknownRef {
+                    kind: "sort",
+                    name: s.clone(),
+                    context: format!("open_domain {scope}_op `{}`", op.name),
+                });
+            }
+        }
+        if map.insert(op.name.as_str(), op).is_some() {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "open_domain_op",
+                name: op.name.clone(),
+            });
+        }
+        for (args, out_opt) in &op.entries {
+            validate_typed_args(
+                args,
+                &op.arg_sorts,
+                carriers,
+                &format!("open_domain.{scope}.{}", op.name),
+            )?;
+            if let Some(out) = out_opt
+                && !carriers[&op.out_sort].contains(out)
+            {
+                return Err(ValidationError::UnknownRef {
+                    kind: "occurrence",
+                    name: out.clone(),
+                    context: format!("open_domain {scope}_op `{}` output", op.name),
+                });
+            }
+        }
+    }
+    Ok(map)
+}
+
+fn validate_open_rel_tables<'a>(
+    rels: &'a [OpenRelTable],
+    carriers: &BTreeMap<String, BTreeSet<String>>,
+    scope: &str,
+) -> Result<BTreeMap<&'a str, &'a OpenRelTable>, ValidationError> {
+    let mut map = BTreeMap::new();
+    for rel in rels {
+        require_non_empty(&rel.name, &format!("open_domain.{scope}_rel.name"))?;
+        for s in &rel.arg_sorts {
+            if !carriers.contains_key(s) {
+                return Err(ValidationError::UnknownRef {
+                    kind: "sort",
+                    name: s.clone(),
+                    context: format!("open_domain {scope}_rel `{}`", rel.name),
+                });
+            }
+        }
+        if map.insert(rel.name.as_str(), rel).is_some() {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "open_domain_rel",
+                name: rel.name.clone(),
+            });
+        }
+        for args in &rel.entries {
+            validate_typed_args(
+                args,
+                &rel.arg_sorts,
+                carriers,
+                &format!("open_domain.{scope}.{}", rel.name),
+            )?;
+        }
+    }
+    Ok(map)
+}
+
 fn validate_open_domain(od: &OpenDomainSpec) -> Result<(), ValidationError> {
+    let amb_carriers: BTreeMap<String, BTreeSet<String>> = od
+        .ambient_carriers
+        .iter()
+        .map(|(s, elems)| (s.clone(), elems.iter().cloned().collect()))
+        .collect();
+    let mut sub_carriers: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for (s, sub_elems) in &od.substructure_carriers {
-        let Some(amb_elems) = od.ambient_carriers.get(s) else {
+        let Some(amb_set) = amb_carriers.get(s) else {
             return Err(ValidationError::UnknownRef {
                 kind: "ambient_sort",
                 name: s.clone(),
                 context: "open_domain".to_owned(),
             });
         };
-        let amb_set: BTreeSet<&str> = amb_elems.iter().map(String::as_str).collect();
         for e in sub_elems {
-            if !amb_set.contains(e.as_str()) {
+            if !amb_set.contains(e) {
                 return Err(ValidationError::ConversionError {
                     detail: format!(
                         "substructure element `{e}` in sort `{s}` is not contained in ambient carrier"
@@ -691,126 +796,88 @@ fn validate_open_domain(od: &OpenDomainSpec) -> Result<(), ValidationError> {
                 });
             }
         }
+        sub_carriers.insert(s.clone(), sub_elems.iter().cloned().collect());
     }
 
-    let mut sub_ops = BTreeMap::new();
-    for op in &od.substructure_ops {
-        require_non_empty(&op.name, "open_domain.substructure_op.name")?;
-        for s in op.arg_sorts.iter().chain(std::iter::once(&op.out_sort)) {
-            if !od.substructure_carriers.contains_key(s) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "substructure_sort",
-                    name: s.clone(),
-                    context: format!("open_domain substructure_op `{}`", op.name),
-                });
-            }
-        }
-        if sub_ops
-            .insert(op.name.as_str(), op.arg_sorts.len())
-            .is_some()
-        {
-            return Err(ValidationError::DuplicateDecl {
-                kind: "open_domain_sub_op",
-                name: op.name.clone(),
+    let sub_ops = validate_open_op_tables(&od.substructure_ops, &sub_carriers, "substructure")?;
+    let amb_ops = validate_open_op_tables(&od.ambient_ops, &amb_carriers, "ambient")?;
+    for (name, sub_op) in &sub_ops {
+        let Some(amb_op) = amb_ops.get(name) else {
+            return Err(ValidationError::UnknownRef {
+                kind: "ambient_op",
+                name: (*name).to_owned(),
+                context: "open_domain".to_owned(),
+            });
+        };
+        if sub_op.arg_sorts != amb_op.arg_sorts || sub_op.out_sort != amb_op.out_sort {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "open_domain op `{name}` signature differs between substructure and ambient"
+                ),
             });
         }
     }
 
-    let mut amb_ops = BTreeMap::new();
-    for op in &od.ambient_ops {
-        require_non_empty(&op.name, "open_domain.ambient_op.name")?;
-        for s in op.arg_sorts.iter().chain(std::iter::once(&op.out_sort)) {
-            if !od.ambient_carriers.contains_key(s) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "ambient_sort",
-                    name: s.clone(),
-                    context: format!("open_domain ambient_op `{}`", op.name),
-                });
-            }
-        }
-        if amb_ops
-            .insert(op.name.as_str(), op.arg_sorts.len())
-            .is_some()
-        {
-            return Err(ValidationError::DuplicateDecl {
-                kind: "open_domain_amb_op",
-                name: op.name.clone(),
+    let sub_rels = validate_open_rel_tables(&od.substructure_rels, &sub_carriers, "substructure")?;
+    let amb_rels = validate_open_rel_tables(&od.ambient_rels, &amb_carriers, "ambient")?;
+    for (name, sub_rel) in &sub_rels {
+        let Some(amb_rel) = amb_rels.get(name) else {
+            return Err(ValidationError::UnknownRef {
+                kind: "ambient_rel",
+                name: (*name).to_owned(),
+                context: "open_domain".to_owned(),
             });
-        }
-    }
-
-    let mut sub_rels = BTreeMap::new();
-    for rel in &od.substructure_rels {
-        require_non_empty(&rel.name, "open_domain.substructure_rel.name")?;
-        for s in &rel.arg_sorts {
-            if !od.substructure_carriers.contains_key(s) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "substructure_sort",
-                    name: s.clone(),
-                    context: format!("open_domain substructure_rel `{}`", rel.name),
-                });
-            }
-        }
-        if sub_rels
-            .insert(rel.name.as_str(), rel.arg_sorts.len())
-            .is_some()
-        {
-            return Err(ValidationError::DuplicateDecl {
-                kind: "open_domain_sub_rel",
-                name: rel.name.clone(),
-            });
-        }
-    }
-
-    let mut amb_rels = BTreeMap::new();
-    for rel in &od.ambient_rels {
-        require_non_empty(&rel.name, "open_domain.ambient_rel.name")?;
-        for s in &rel.arg_sorts {
-            if !od.ambient_carriers.contains_key(s) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "ambient_sort",
-                    name: s.clone(),
-                    context: format!("open_domain ambient_rel `{}`", rel.name),
-                });
-            }
-        }
-        if amb_rels
-            .insert(rel.name.as_str(), rel.arg_sorts.len())
-            .is_some()
-        {
-            return Err(ValidationError::DuplicateDecl {
-                kind: "open_domain_amb_rel",
-                name: rel.name.clone(),
+        };
+        if sub_rel.arg_sorts != amb_rel.arg_sorts {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "open_domain rel `{name}` signature differs between substructure and ambient"
+                ),
             });
         }
     }
 
     for fc in &od.fiber_checks {
-        if !sub_ops.contains_key(fc.op_name.as_str()) || !amb_ops.contains_key(fc.op_name.as_str())
-        {
+        if !sub_ops.contains_key(fc.op_name.as_str()) {
             return Err(ValidationError::UnknownRef {
                 kind: "operation",
                 name: fc.op_name.clone(),
                 context: "open_domain.fiber_check".to_owned(),
             });
         }
-        if !od.ambient_carriers.contains_key(&fc.arg_sort) {
+        let Some(amb_op) = amb_ops.get(fc.op_name.as_str()) else {
+            return Err(ValidationError::UnknownRef {
+                kind: "operation",
+                name: fc.op_name.clone(),
+                context: "open_domain.fiber_check".to_owned(),
+            });
+        };
+        if !amb_carriers.contains_key(&fc.arg_sort) {
             return Err(ValidationError::UnknownRef {
                 kind: "sort",
                 name: fc.arg_sort.clone(),
                 context: "open_domain.fiber_check.arg_sort".to_owned(),
             });
         }
-        let Some(sub_targets) = od.substructure_carriers.get(&fc.target_sort) else {
+        let Some(target_set) = sub_carriers.get(&fc.target_sort) else {
             return Err(ValidationError::UnknownRef {
                 kind: "substructure_sort",
                 name: fc.target_sort.clone(),
                 context: "open_domain.fiber_check.target_sort".to_owned(),
             });
         };
-        let target_set: BTreeSet<&str> = sub_targets.iter().map(String::as_str).collect();
+        if amb_op.arg_sorts.as_slice() != [fc.arg_sort.as_str()]
+            || amb_op.out_sort != fc.target_sort
+        {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "open_domain fiber_check op `{}` must have unary signature `{}` -> `{}`",
+                    fc.op_name, fc.arg_sort, fc.target_sort
+                ),
+            });
+        }
         for t in &fc.known_targets {
-            if !target_set.contains(t.as_str()) {
+            if !target_set.contains(t) {
                 return Err(ValidationError::UnknownRef {
                     kind: "occurrence",
                     name: t.clone(),
@@ -821,16 +888,29 @@ fn validate_open_domain(od: &OpenDomainSpec) -> Result<(), ValidationError> {
     }
 
     require_non_empty(&od.positive_or_law.name, "open_domain.positive_or_law.name")?;
-    let amb_sorts: BTreeSet<&str> = od.ambient_carriers.keys().map(String::as_str).collect();
+    let amb_op_arities: BTreeMap<&str, usize> = amb_ops
+        .iter()
+        .map(|(&k, op)| (k, op.arg_sorts.len()))
+        .collect();
+    let amb_rel_arities: BTreeMap<&str, usize> = amb_rels
+        .iter()
+        .map(|(&k, rel)| (k, rel.arg_sorts.len()))
+        .collect();
     let empty_slots = BTreeSet::new();
     if let Some(ant) = &od.positive_or_law.antecedent {
-        validate_formula_refs(ant, &amb_ops, &amb_rels, &amb_sorts, &empty_slots)?;
+        validate_formula_refs(
+            ant,
+            &amb_op_arities,
+            &amb_rel_arities,
+            &amb_carriers,
+            &empty_slots,
+        )?;
     }
     validate_formula_refs(
         &od.positive_or_law.conclusion,
-        &amb_ops,
-        &amb_rels,
-        &amb_sorts,
+        &amb_op_arities,
+        &amb_rel_arities,
+        &amb_carriers,
         &empty_slots,
     )?;
 

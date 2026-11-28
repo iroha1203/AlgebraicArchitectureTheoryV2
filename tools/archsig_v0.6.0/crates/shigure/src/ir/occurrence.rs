@@ -6,7 +6,7 @@ use crate::algebra::congruence::{
 };
 use crate::algebra::partition::DEFAULT_MAX_SET_PARTITIONS;
 use crate::ir::provenance::Provenance;
-use crate::ir::validate::{ValidationError, require_non_empty, validate_provenance};
+use crate::ir::validate::{ValidationError, require_non_empty, validate_nonempty_provenance};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// sort 仕様（固定値 sort かどうかを区別する）。
@@ -171,7 +171,7 @@ pub fn validate_occurrence_task(
     mut spec: OccurrenceTaskSpec,
 ) -> Result<CheckedOccurrenceTask, ValidationError> {
     require_non_empty(&spec.name, "occurrence.name")?;
-    validate_provenance(&spec.provenance, &format!("occurrence `{}`", spec.name))?;
+    validate_nonempty_provenance(&spec.provenance, &format!("occurrence `{}`", spec.name))?;
     if spec.max_congruence_steps == 0 {
         spec.max_congruence_steps = DEFAULT_MAX_CONGRUENCE_STEPS;
     }

@@ -490,3 +490,245 @@ fn phase5_ir_rejects_missing_support_arity_mismatch_fp_cost_and_contradictory_sn
 
     let _ = BTreeSet::<String>::new();
 }
+
+#[test]
+fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduced_q_cost() {
+    use super::multisource::{MultisourceTaskSpec, SourcePresentationSpec};
+    use super::occurrence::{OccurrenceSortSpec, OccurrenceTaskSpec};
+    use super::partial::{
+        FiberCoverageCheckSpec, OpenDomainSpec, OpenOpTable, PartialEvalLawSpec, PartialFormula,
+        PartialTaskSpec, PartialTerm,
+    };
+    use super::revision::{RevisionCoordSpec, RevisionKind, RevisionSideSpec, RevisionTaskSpec};
+
+    let empty_prov = Provenance::new(vec![], vec![MathClause::AatCh17Thm17Dot2]);
+
+    // 1. All 4 specs reject empty origins
+    assert!(matches!(
+        validate_occurrence_task(OccurrenceTaskSpec {
+            name: "no_orig_occ".into(),
+            sorts: vec![OccurrenceSortSpec {
+                name: "S".into(),
+                elements: vec!["a".into()],
+                is_fixed_value: false,
+            }],
+            operations: vec![],
+            relations: vec![],
+            identity_requests: vec![],
+            op_records: vec![],
+            pred_records: vec![],
+            base_readings: vec![],
+            context_closed_17_5: true,
+            explicit_contexts: vec![],
+            preserve_full_domains: vec![],
+            initial_readouts: vec![],
+            provenance: empty_prov.clone(),
+            max_congruence_steps: 0,
+            max_partitions: 0,
+            undeclared_unobserved_slots: vec![],
+        }),
+        Err(ValidationError::ConversionError { .. })
+    ));
+    assert!(matches!(
+        validate_partial_task(PartialTaskSpec {
+            name: "no_orig_part".into(),
+            representation: PartialRepresentation::UnsupportedClass {
+                description: "none".into(),
+            },
+            eval_laws: vec![],
+            quantifier_spec: None,
+            open_domain: None,
+            provenance: empty_prov.clone(),
+            undeclared_unobserved_slots: vec![],
+        }),
+        Err(ValidationError::ConversionError { .. })
+    ));
+    assert!(matches!(
+        validate_revision_task(RevisionTaskSpec {
+            name: "no_orig_rev".into(),
+            kind: RevisionKind::Extension,
+            coeff_domain: CoeffDomain::Z,
+            coords: vec![RevisionCoordSpec {
+                id: "x".into(),
+                domain_values: vec![ScalarLit::int(0)],
+            }],
+            shared_constraints: vec![],
+            before: RevisionSideSpec {
+                assignments: BTreeMap::new(),
+                extra_constraints: vec![],
+            },
+            after: RevisionSideSpec {
+                assignments: BTreeMap::new(),
+                extra_constraints: vec![],
+            },
+            explicit_delta_coords: vec![],
+            probes: vec![],
+            snf_spec: None,
+            max_completions: 0,
+            provenance: empty_prov.clone(),
+            undeclared_unobserved_slots: vec![],
+        }),
+        Err(ValidationError::ConversionError { .. })
+    ));
+    assert!(matches!(
+        validate_multisource_task(MultisourceTaskSpec {
+            name: "no_orig_ms".into(),
+            coeff_domain: CoeffDomain::Z,
+            coords: vec![RevisionCoordSpec {
+                id: "x".into(),
+                domain_values: vec![ScalarLit::int(0)],
+            }],
+            background_constraints: vec![],
+            sources: vec![SourcePresentationSpec {
+                source_id: "s1".into(),
+                origin: SourceRef::new("s1", OriginKind::StaticAnalysis),
+                assignments: BTreeMap::new(),
+                forbidden_values: vec![],
+                extra_constraints: vec![],
+            }],
+            support_goal: None,
+            max_sources_subset_steps: 0,
+            max_results: 0,
+            provenance: empty_prov,
+            undeclared_unobserved_slots: vec![],
+        }),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // 2. partial: restricted_domain unknown element & open_domain bad fiber / out-of-carrier entry
+    let bad_restricted = PartialTaskSpec {
+        name: "bad_restricted".into(),
+        representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
+            sorts: BTreeMap::from([("V".into(), vec!["0".into(), "1".into()])]),
+            operations: vec![],
+            relations: vec![],
+            slots: vec![],
+            background_constraints: vec![],
+            records: vec![],
+            max_completions: 8,
+        }),
+        eval_laws: vec![PartialEvalLawSpec {
+            name: "q".into(),
+            antecedent: None,
+            conclusion: PartialFormula::Exists {
+                var: "x".into(),
+                sort: "V".into(),
+                restricted_domain: Some(vec!["999".into()]),
+                body: Box::new(PartialFormula::Eq(
+                    PartialTerm::Var("x".into()),
+                    PartialTerm::Var("x".into()),
+                )),
+            },
+            is_required_law: true,
+        }],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_partial_task(bad_restricted),
+        Err(ValidationError::UnknownRef {
+            kind: "occurrence",
+            ..
+        })
+    ));
+
+    let bad_open_sig = PartialTaskSpec {
+        name: "bad_open_sig".into(),
+        representation: PartialRepresentation::UnsupportedClass {
+            description: "open_only".into(),
+        },
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: Some(OpenDomainSpec {
+            substructure_carriers: BTreeMap::from([
+                ("A".into(), vec!["a0".into()]),
+                ("B".into(), vec!["b0".into()]),
+            ]),
+            ambient_carriers: BTreeMap::from([
+                ("A".into(), vec!["a0".into(), "a1".into()]),
+                ("B".into(), vec!["b0".into(), "b1".into()]),
+            ]),
+            substructure_ops: vec![OpenOpTable {
+                name: "rho".into(),
+                arg_sorts: vec!["A".into(), "A".into()],
+                out_sort: "B".into(),
+                entries: BTreeMap::new(),
+            }],
+            ambient_ops: vec![OpenOpTable {
+                name: "rho".into(),
+                arg_sorts: vec!["A".into(), "A".into()],
+                out_sort: "B".into(),
+                entries: BTreeMap::new(),
+            }],
+            substructure_rels: vec![],
+            ambient_rels: vec![],
+            fiber_checks: vec![FiberCoverageCheckSpec {
+                op_name: "rho".into(),
+                arg_sort: "A".into(),
+                target_sort: "B".into(),
+                known_targets: vec!["b0".into()],
+            }],
+            positive_or_law: PartialEvalLawSpec {
+                name: "pos".into(),
+                antecedent: None,
+                conclusion: PartialFormula::Eq(
+                    PartialTerm::Const("a0".into()),
+                    PartialTerm::Const("a0".into()),
+                ),
+                is_required_law: true,
+            },
+            affine_restriction: None,
+        }),
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_partial_task(bad_open_sig),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // 3. multisource: unreduced rational cost (2/4 or -1/-2) rejected
+    let unreduced_ms = MultisourceTaskSpec {
+        name: "unreduced_q".into(),
+        coeff_domain: CoeffDomain::Q,
+        coords: vec![RevisionCoordSpec {
+            id: "x".into(),
+            domain_values: vec![ScalarLit::rat(0, 1).unwrap(), ScalarLit::rat(1, 1).unwrap()],
+        }],
+        background_constraints: vec![],
+        sources: vec![SourcePresentationSpec {
+            source_id: "s1".into(),
+            origin: SourceRef::new("s1", OriginKind::StaticAnalysis),
+            assignments: BTreeMap::new(),
+            forbidden_values: vec![],
+            extra_constraints: vec![],
+        }],
+        support_goal: Some(SupportGoalSpec {
+            trusted_assignments: BTreeMap::new(),
+            candidates: vec![CandidateRecordSpec {
+                id: "h1".into(),
+                coord: "x".into(),
+                value: ScalarLit::rat(1, 1).unwrap(),
+                cost: Some(ScalarLit::Q {
+                    num: num_bigint::BigInt::from(2),
+                    den: num_bigint::BigInt::from(4),
+                }),
+                origin: SourceRef::new("c1", OriginKind::LlmCandidate),
+                verified_actual_value: None,
+            }],
+            goal: SupportGoalFormula::CoordEqualsConst("x".into(), ScalarLit::rat(1, 1).unwrap()),
+            expected_truth: true,
+            check_post_adoption_stability: false,
+        }),
+        max_sources_subset_steps: 0,
+        max_results: 0,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_multisource_task(unreduced_ms),
+        Err(ValidationError::InvalidRational { .. })
+    ));
+}

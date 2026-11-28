@@ -1,8 +1,9 @@
 //! Phase 5 離散・代数計算核（`congruence`, `partition`, `hitting_set`, `snf`）の単体テスト。
 
 use super::congruence::{
-    CollisionKind, CongruenceInput, CongruenceSort, DEFAULT_MAX_CONGRUENCE_STEPS, OpOutputRecord,
-    PredicateRecord, PredicateRecordKind, compute_congruence_closure, verify_collision_witness,
+    CollisionKind, CollisionWitness, CongruenceInput, CongruenceSort, DEFAULT_MAX_CONGRUENCE_STEPS,
+    DerivationReason, DerivationStep, OpOutputRecord, PredicateRecord, PredicateRecordKind,
+    compute_congruence_closure, verify_collision_witness,
 };
 use super::hitting_set::{
     DEFAULT_MAX_HITTING_SET_RESULTS, DEFAULT_MAX_HITTING_SET_STEPS, HittingSetInput,
@@ -516,4 +517,79 @@ fn algebra_phase5_negative_and_boundary_cases() {
     let zero_z = SnfFactorizationZ::compute(&[vec![BigInt::from(0), BigInt::from(0)]], 2).unwrap();
     assert_eq!(zero_z.rank, 0);
     assert!(zero_z.umv_verified && zero_z.unimodular_verified);
+
+    // refine_partition rejects unknown op.entries output element without panicking
+    let err_part = refine_partition(&RefinementInput {
+        sorts: BTreeMap::from([("S".into(), vec!["a".into(), "b".into()])]),
+        fixed_sorts: BTreeSet::new(),
+        base_readings: vec![],
+        ops: vec![PartialOpTable {
+            name: "f".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "S".into(),
+            entries: BTreeMap::from([(vec!["a".into()], Some("unknown_elem".into()))]),
+        }],
+        max_iterations: 8,
+    });
+    assert!(matches!(
+        err_part,
+        Err(AlgebraError::UnknownVariable { .. })
+    ));
+
+    // verify_collision_witness safely returns false on Functionality arg length mismatch
+    let bad_witness = CollisionWitness {
+        kind: CollisionKind::FixedValueCollision {
+            sort: "S".into(),
+            lhs: "a".into(),
+            rhs: "b".into(),
+        },
+        derivation: vec![DerivationStep {
+            sort: "S".into(),
+            lhs: "a".into(),
+            rhs: "b".into(),
+            reason: DerivationReason::Functionality {
+                op_name: "T".into(),
+                args_a: vec![],
+                args_b: vec!["x".into()],
+                out_a: "a".into(),
+                out_b: "b".into(),
+            },
+        }],
+    };
+    let cong_in = CongruenceInput {
+        sorts: vec![
+            CongruenceSort {
+                name: "X".into(),
+                elements: vec!["x".into()],
+                is_fixed_value: false,
+            },
+            CongruenceSort {
+                name: "S".into(),
+                elements: vec!["a".into(), "b".into()],
+                is_fixed_value: true,
+            },
+        ],
+        requests: vec![("S".into(), "a".into(), "b".into())],
+        op_records: vec![
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["X".into()],
+                args: vec!["x".into()],
+                out_sort: "S".into(),
+                output: "a".into(),
+                positive: true,
+            },
+            OpOutputRecord {
+                op_name: "T".into(),
+                arg_sorts: vec!["X".into()],
+                args: vec!["x".into()],
+                out_sort: "S".into(),
+                output: "b".into(),
+                positive: true,
+            },
+        ],
+        predicate_records: vec![],
+        max_steps: DEFAULT_MAX_CONGRUENCE_STEPS,
+    };
+    assert!(!verify_collision_witness(&cong_in, &bad_witness));
 }
