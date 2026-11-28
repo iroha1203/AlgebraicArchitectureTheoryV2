@@ -1,9 +1,9 @@
 //! 複数解釈族の存在型良否 $E_{\mathrm{exists}}$ における witness 復元と独立再評価検算。
 
 use crate::algebra::{
-    AffineSolutionQ, AffineSolutionZ, ExprBindings, FpElem, GroebnerBasis, MonomialOrder, Poly,
-    QuotientStratum, Rat, VarOrder, rabinowitsch_solve, solve_affine_q, solve_affine_z,
-    solve_fp_enumeration,
+    AffineSolutionQ, AffineSolutionZ, AlgebraError, ExprBindings, FpElem, GroebnerBasis,
+    MonomialOrder, Poly, QuotientStratum, Rat, VarOrder, rabinowitsch_solve, solve_affine_q,
+    solve_affine_z, solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, NamedPoly, PointDomain};
 use crate::ir::family::PreservationGoodnessSource;
@@ -16,8 +16,7 @@ use crate::solver::common_solve::{
 use crate::solver::context::display_polys;
 use crate::solver::family_direct::substitute_preservation_pair;
 use crate::solver::family_eval::{
-    DEFAULT_MAX_ENUM_POINTS, EnumCandidate, EnumRealization, ScalarVal, build_assignment_map,
-    univariate_rational_roots,
+    EnumCandidate, EnumRealization, ScalarVal, build_assignment_map, univariate_rational_roots,
 };
 use crate::solver::preservation::{
     build_preservation_obligations, compute_preservation_locus_q, extract_closed_residuals_fp,
@@ -130,10 +129,16 @@ pub(crate) fn evaluate_existential_point(
                 .map(|e| Poly::from_expr_fp(e, &w_bind, m))
                 .collect::<Result<_, _>>()
                 .map_err(map_algebra_silence)?;
-            let sol = solve_fp_enumeration(&eqs, &invs, w_names.len(), m, DEFAULT_MAX_ENUM_POINTS)
-                .map_err(|_| SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: "existential witness search over Fp exceeded limit".to_owned(),
-                })?;
+            let sol = solve_fp_enumeration(
+                &eqs,
+                &invs,
+                w_names.len(),
+                m,
+                crate::limits::active_limits().max_enum_points,
+            )
+            .map_err(|_| SilenceReason::FiniteEnumerationOutOfScope {
+                detail: "existential witness search over Fp exceeded limit".to_owned(),
+            })?;
             if let Some(pt) = sol.solutions.into_iter().next() {
                 let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Fp).collect();
                 return Ok(pass_pair(
@@ -261,6 +266,9 @@ fn evaluate_existential_q_or_z(
                         display_polys(&eqs_z, w_vars),
                         None,
                     ));
+                }
+                Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                    return Err(map_algebra_silence(e));
                 }
                 _ => {}
             }
@@ -460,10 +468,16 @@ fn solve_existential_with_preservation(
                 |e, b| Poly::from_expr_fp(e, b, m),
             )?;
             eqs.extend(ceqs);
-            let sol = solve_fp_enumeration(&eqs, &cinvs, w_vars.len(), m, DEFAULT_MAX_ENUM_POINTS)
-                .map_err(|_| SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: "Fp existential preservation witness search exceeded limit".to_owned(),
-                })?;
+            let sol = solve_fp_enumeration(
+                &eqs,
+                &cinvs,
+                w_vars.len(),
+                m,
+                crate::limits::active_limits().max_enum_points,
+            )
+            .map_err(|_| SilenceReason::FiniteEnumerationOutOfScope {
+                detail: "Fp existential preservation witness search exceeded limit".to_owned(),
+            })?;
             if let Some(pt) = sol.solutions.into_iter().next() {
                 let art = restore_and_reeval_fp(&pair, cond_ref, w_vars, &pt, m)?;
                 return Ok(pass_pair(

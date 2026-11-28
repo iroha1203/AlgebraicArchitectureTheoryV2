@@ -177,7 +177,7 @@ impl CheckedRevisionTask {
     }
 }
 
-pub const DEFAULT_MAX_REVISION_COMPLETIONS: usize = 4_096;
+pub use crate::limits::DEFAULT_MAX_REVISION_COMPLETIONS;
 
 pub fn validate_revision_task(
     mut spec: RevisionTaskSpec,
@@ -186,7 +186,7 @@ pub fn validate_revision_task(
     validate_nonempty_provenance(&spec.provenance, &format!("revision `{}`", spec.name))?;
     validate_coeff_domain(&spec.coeff_domain, &format!("revision `{}`", spec.name))?;
     if spec.max_completions == 0 {
-        spec.max_completions = DEFAULT_MAX_REVISION_COMPLETIONS;
+        spec.max_completions = crate::limits::active_limits().max_revision_completions;
     }
 
     let mut coord_names = BTreeSet::new();

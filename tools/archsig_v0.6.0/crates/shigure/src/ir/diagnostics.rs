@@ -2,7 +2,6 @@
 //! 診断層 $B_\pi$ 層別・値合流 Mayer–Vietoris・診断次元実現の検証済み IR
 //! （G-142 A1–A3・B1–B6・C1–C4・D1–D3・W1–W2）。
 
-use crate::algebra::artin::DEFAULT_MAX_ARTIN_DIM;
 use crate::ir::artin::{check_expr_refs, check_named_poly};
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
@@ -623,10 +622,11 @@ pub fn validate_diagnostics_task(
                 detail: "r_point_probe.ring_max_deg overflow".to_owned(),
             });
         };
-        if expected_len > DEFAULT_MAX_ARTIN_DIM {
+        let max_artin_dim = crate::limits::active_limits().max_artin_dim;
+        if expected_len > max_artin_dim {
             return Err(ValidationError::ConversionError {
                 detail: format!(
-                    "r_point_probe ring dimension {expected_len} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                    "r_point_probe ring dimension {expected_len} exceeds limit {max_artin_dim}"
                 ),
             });
         }

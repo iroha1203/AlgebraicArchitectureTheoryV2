@@ -24,6 +24,13 @@ pub enum AlgebraError {
     ArityMismatch { expected: usize, actual: usize },
     /// 計算資源・ステップ上限超過または適用域外。
     OutOfScope { detail: String },
+    /// BigInt ビット長や多項式項数などのリソース上限超過（沈黙理由 `ResourceLimitExceeded` へ接続）。
+    ResourceLimitExceeded {
+        limit_name: String,
+        limit: u64,
+        observed: u64,
+        detail: String,
+    },
 }
 
 impl fmt::Display for AlgebraError {
@@ -50,6 +57,15 @@ impl fmt::Display for AlgebraError {
                 write!(f, "arity mismatch: expected {expected}, got {actual}")
             }
             AlgebraError::OutOfScope { detail } => write!(f, "out of scope: {detail}"),
+            AlgebraError::ResourceLimitExceeded {
+                limit_name,
+                limit,
+                observed,
+                detail,
+            } => write!(
+                f,
+                "resource limit exceeded ({limit_name}: observed {observed} > limit {limit}): {detail}"
+            ),
         }
     }
 }

@@ -10,7 +10,7 @@ use crate::algebra::scalar::Rat;
 use crate::ir::result::SilenceReason;
 
 /// 構成可能集合が保持できる最大局所閉層数（組合せ爆発時に fail-closed 沈黙する）。
-pub const DEFAULT_MAX_CONSTRUCTIBLE_STRATA: usize = 128;
+pub use crate::limits::DEFAULT_MAX_CONSTRUCTIBLE_STRATA;
 
 /// 単一の局所閉層 `V(equations) ∩ D(invertibles)`。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -307,11 +307,10 @@ fn push_canonical_stratum(
     }
     if !strata.contains(&candidate) {
         strata.push(candidate);
-        if strata.len() > DEFAULT_MAX_CONSTRUCTIBLE_STRATA {
+        let max_strata = crate::limits::active_limits().max_constructible_strata;
+        if strata.len() > max_strata {
             return Err(SilenceReason::ConstructibleStratificationOutOfScope {
-                detail: format!(
-                    "constructible set exceeded stratum limit ({DEFAULT_MAX_CONSTRUCTIBLE_STRATA})"
-                ),
+                detail: format!("constructible set exceeded stratum limit ({max_strata})"),
             });
         }
     }

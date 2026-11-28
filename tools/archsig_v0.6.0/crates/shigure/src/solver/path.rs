@@ -17,9 +17,6 @@ use crate::solver::path_fixed::solve_fixed_change_path;
 use crate::solver::path_protocol::solve_enlarged_protocol_path;
 use std::collections::BTreeSet;
 
-/// 有限経路候補列挙の探索予算（超過時は無界／予算超過として沈黙する）。
-pub(crate) const MAX_PATH_CANDIDATES: usize = 512;
-
 /// 検証済み経路タスク `CheckedPathTask` を解き、`PathOutcomeDetail` 付き `ShigureOutcome` を返す。
 pub fn solve_path_task(task: &CheckedPathTask) -> ShigureOutcome {
     let spec = task.spec();

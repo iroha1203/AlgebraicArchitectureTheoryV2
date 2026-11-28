@@ -13,8 +13,6 @@ use crate::solver::partial_kleene::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-const MAX_MUS_RECORDS: usize = 14;
-
 pub(super) struct CompletionEvalOutput {
     pub consistent: bool,
     pub completion_count: Option<usize>,
@@ -627,10 +625,11 @@ fn extract_and_verify_finite_mus(
     fin: &FinitePartialPresentation,
 ) -> Result<(Vec<Vec<String>>, bool), SilenceReason> {
     let n = fin.records.len();
-    if n > MAX_MUS_RECORDS {
+    let max_mus_records = crate::limits::active_limits().max_mus_records;
+    if n > max_mus_records {
         return Err(SilenceReason::FiniteEnumerationOutOfScope {
             detail: format!(
-                "record count ({n}) exceeds bounded MUS enumeration limit ({MAX_MUS_RECORDS})"
+                "record count ({n}) exceeds bounded MUS enumeration limit ({max_mus_records})"
             ),
         });
     }

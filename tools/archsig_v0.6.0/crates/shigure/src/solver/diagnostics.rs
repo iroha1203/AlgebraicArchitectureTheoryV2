@@ -820,14 +820,14 @@ pub(crate) fn lift_mat_z_to_fp(mat: &[Vec<BigInt>], p: &num_bigint::BigUint) -> 
 }
 
 pub(crate) fn map_diag_alg_err(err: crate::algebra::poly::AlgebraError) -> SilenceReason {
-    match err {
+    SilenceReason::from_algebra_with(err, |err| match err {
         crate::algebra::poly::AlgebraError::UnobservedDependency { slots } => {
             SilenceReason::UnobservedDependency { slots }
         }
         other => SilenceReason::DiagnosticsStratificationOutOfScope {
             detail: other.to_string(),
         },
-    }
+    })
 }
 
 fn diag_outcome(

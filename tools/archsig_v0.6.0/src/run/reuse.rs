@@ -7,7 +7,6 @@ use archsig_input::result::ResultIssue;
 use archsig_input::result::Signal;
 use std::{
     collections::{BTreeMap, BTreeSet},
-    io::Read,
     path::{Path, PathBuf},
 };
 
@@ -83,6 +82,7 @@ impl Candidate {
 pub(super) fn inspect(
     path: Option<&Path>,
     prepared: &PreparedObserved,
+    max_file_bytes: u64,
     control: &Control,
 ) -> Result<Candidate, Signal> {
     let mut candidate = Candidate {
@@ -97,29 +97,7 @@ pub(super) fn inspect(
     // componentsは末尾のslash/dotを除く。NOFOLLOWを意図した最終directoryへ適用する。
     // 親pathのOS解決は通常の明示pathと同じであり、候補から追加pathを探索しない。
     let normalized: PathBuf = path.components().collect();
-    let read = || -> std::io::Result<Vec<u8>> {
-        use rustix::fs::{Mode, OFlags, openat};
-        let directory = openat(
-            rustix::fs::CWD,
-            &normalized,
-            OFlags::RDONLY | OFlags::DIRECTORY | OFlags::NOFOLLOW,
-            Mode::empty(),
-        )?;
-        let file = openat(
-            &directory,
-            "result.json",
-            OFlags::RDONLY | OFlags::NOFOLLOW | OFlags::NONBLOCK,
-            Mode::empty(),
-        )?;
-        let mut file = std::fs::File::from(file);
-        if !file.metadata()?.is_file() {
-            return Err(std::io::Error::other("result.json is not a regular file"));
-        }
-        let mut bytes = Vec::new();
-        file.read_to_end(&mut bytes)?;
-        Ok(bytes)
-    };
-    let read = read();
+    let read = crate::platform::read_reuse_result_nofollow(&normalized, max_file_bytes);
     control.checkpoint(Checkpoint::Reuse)?;
     let mut bytes = match read {
         Ok(bytes) => bytes,

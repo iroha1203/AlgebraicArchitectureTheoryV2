@@ -18,7 +18,7 @@ use crate::solver::common_solve::{
     ParamWitness, SystemSolveOutcome, collect_eval_and_extra, solve_obligations_and_evals,
 };
 use crate::solver::path::{
-    MAX_PATH_CANDIDATES, established_path, path_query_mode_wire, refuted_path, undetermined_path,
+    established_path, path_query_mode_wire, refuted_path, undetermined_path,
 };
 use crate::solver::preservation::{
     PreservationObligation, build_presentation_closure_obligations, build_preservation_obligations,
@@ -830,15 +830,16 @@ fn enumerate_rule_paths<'a>(
         return Ok(if start == end { vec![vec![]] } else { vec![] });
     }
     let mut results = Vec::new();
+    let max_candidates = crate::limits::active_limits().max_path_candidates;
     let mut stack: Vec<(String, Vec<&'a OneStepRule>)> = vec![(start.to_owned(), Vec::new())];
     while let Some((cur, seq)) = stack.pop() {
         if seq.len() == target_len {
             if cur == end {
                 results.push(seq);
-                if results.len() > MAX_PATH_CANDIDATES {
+                if results.len() > max_candidates {
                     return Err(SilenceReason::UnboundedSearchOutOfScope {
                         detail: format!(
-                            "fixed path enumeration exceeded finite budget of {MAX_PATH_CANDIDATES} candidates"
+                            "fixed path enumeration exceeded finite budget of {max_candidates} candidates"
                         ),
                     });
                 }
@@ -850,10 +851,10 @@ fn enumerate_rule_paths<'a>(
                 let mut next = seq.clone();
                 next.push(r);
                 stack.push((r.to_vertex.clone(), next));
-                if stack.len() + results.len() > MAX_PATH_CANDIDATES * 4 {
+                if stack.len() + results.len() > max_candidates.saturating_mul(4) {
                     return Err(SilenceReason::UnboundedSearchOutOfScope {
                         detail: format!(
-                            "fixed path search frontier exceeded finite budget ({MAX_PATH_CANDIDATES})"
+                            "fixed path search frontier exceeded finite budget ({max_candidates})"
                         ),
                     });
                 }

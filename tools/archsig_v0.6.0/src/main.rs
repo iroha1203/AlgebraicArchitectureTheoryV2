@@ -1,118 +1,26 @@
 //! `archsig check`・`run`・`version`。
 
-use archsig::run::{
-    FileIo, Outcome, Signals, VERSION_LINE, execute_command, parse_args, usage_outcome,
-};
+use archsig::platform::{self, PlatformError, ProcessSignals};
+use archsig::run::{FileIo, Outcome, VERSION_LINE, execute_command, parse_args, usage_outcome};
+#[cfg(test)]
 use archsig_input::result::Signal;
+use archsig_input::result::{ResultIssue, Status};
 #[cfg(test)]
 use std::io::Write;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 
-// -1: computation/publication, 0: delivery, positive: already captured interruption.
-static DELIVERY: AtomicI32 = AtomicI32::new(-1);
-
-/// 保存中はsignalをblockし、配送開始時に解除する。
-struct ProcessSignals {
-    first: Arc<AtomicI32>,
-    int: Arc<AtomicBool>,
-    term: Arc<AtomicBool>,
-    frozen: Option<Option<Signal>>,
-}
-
-impl ProcessSignals {
-    fn new() -> ProcessSignals {
-        use signal_hook::consts::{SIGINT, SIGTERM};
-        let int = Arc::new(AtomicBool::new(false));
-        let term = Arc::new(AtomicBool::new(false));
-        let first = Arc::new(AtomicI32::new(0));
-        for (signal, flag) in [(SIGINT, Arc::clone(&int)), (SIGTERM, Arc::clone(&term))] {
-            let seen = Arc::clone(&first);
-            // SAFETY: handlerは固定サイズのlock-free atomic操作だけを行う。
-            // allocation、lock、I/Oを行わず、参照先は登録closureのArcが保持する。
-            unsafe {
-                signal_hook::low_level::register(signal, move || {
-                    let _ = seen.compare_exchange(0, signal, Ordering::SeqCst, Ordering::SeqCst);
-                    flag.store(true, Ordering::SeqCst);
-                    let delivery = DELIVERY.load(Ordering::SeqCst);
-                    if delivery >= 0 {
-                        // SAFETY: _exit is async-signal-safe. Publication has finished;
-                        // no temporary artifact or buffered file needs cleanup here.
-                        nix::libc::_exit(if delivery > 0 { delivery } else { 128 + signal });
-                    }
-                })
+fn signal_init_failure_outcome(err: &PlatformError) -> Outcome {
+    Outcome {
+        status: Status::Error,
+        exit_code: 70,
+        result: None,
+        summary: None,
+        issues: vec![
+            ResultIssue::Internal {
+                operation: err.operation.to_owned(),
+                message: err.message.clone(),
             }
-            .expect("SIGINT/SIGTERMのhandlerを登録できる");
-        }
-        ProcessSignals {
-            first,
-            int,
-            term,
-            frozen: None,
-        }
-    }
-
-    fn observed_signal(first: &AtomicI32, int: &AtomicBool, term: &AtomicBool) -> Option<Signal> {
-        use signal_hook::consts::{SIGINT, SIGTERM};
-        if first.load(Ordering::SeqCst) == 0 {
-            let observed = if int.load(Ordering::SeqCst) {
-                SIGINT
-            } else if term.load(Ordering::SeqCst) {
-                SIGTERM
-            } else {
-                return None;
-            };
-            // checkpointでも最初の捕捉順を共有し、後着signalで置き換えない。
-            let _ = first.compare_exchange(0, observed, Ordering::SeqCst, Ordering::SeqCst);
-        }
-        match first.load(Ordering::SeqCst) {
-            SIGINT => Some(Signal::Int),
-            SIGTERM => Some(Signal::Term),
-            _ => None,
-        }
-    }
-
-    /// checkpointでsignalを確かめる。
-    fn control(&self) -> archsig_common::control::Control {
-        // Flags may already be set before control construction (including test injection).
-        Self::observed_signal(&self.first, &self.int, &self.term);
-        archsig_common::control::Control::from_signal_flag(
-            Arc::clone(&self.first),
-            signal_hook::consts::SIGINT,
-            signal_hook::consts::SIGTERM,
-        )
-    }
-}
-
-impl Signals for ProcessSignals {
-    fn freeze(&mut self) -> Option<Signal> {
-        if let Some(decided) = self.frozen {
-            return decided;
-        }
-        use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
-        let mut blocked = SigSet::empty();
-        blocked.add(OsSignal::SIGINT);
-        blocked.add(OsSignal::SIGTERM);
-        pthread_sigmask(SigmaskHow::SIG_BLOCK, Some(&blocked), None)
-            .expect("SIGINT/SIGTERMをblockできる");
-        // SAFETY: sigpendingは有効なsigset_tへの書込みだけを行い、成功後にだけ読む。
-        let pending = unsafe {
-            let mut pending = std::mem::MaybeUninit::<nix::libc::sigset_t>::uninit();
-            assert_eq!(nix::libc::sigpending(pending.as_mut_ptr()), 0);
-            pending.assume_init()
-        };
-        // SAFETY: pendingはsigpendingで初期化済み、signal番号はOS定数。
-        unsafe {
-            if nix::libc::sigismember(&pending, signal_hook::consts::SIGINT) == 1 {
-                self.int.store(true, Ordering::SeqCst);
-            }
-            if nix::libc::sigismember(&pending, signal_hook::consts::SIGTERM) == 1 {
-                self.term.store(true, Ordering::SeqCst);
-            }
-        }
-        let decided = Self::observed_signal(&self.first, &self.int, &self.term);
-        self.frozen = Some(decided);
-        decided
+            .wire(),
+        ],
     }
 }
 
@@ -120,13 +28,19 @@ fn main() {
     // 捕捉した内部障害は receipt で通知する。panic の既定表示を重複させない。
     std::panic::set_hook(Box::new(|_| {}));
     let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
-    let mut signals = ProcessSignals::new();
+    let mut signals = match ProcessSignals::install() {
+        Ok(signals) => signals,
+        Err(err) => {
+            let outcome = signal_init_failure_outcome(&err);
+            let _ = platform::write_stderr_line(&outcome.receipt());
+            std::process::exit(70);
+        }
+    };
     if archsig::observe::handles(&args) {
         // Read-only helpers publish no files: interruption may exit immediately.
-        DELIVERY.store(0, Ordering::SeqCst);
-        let prior = signals.first.load(Ordering::SeqCst);
-        if prior != 0 {
-            std::process::exit(128 + prior);
+        ProcessSignals::enter_immediate_delivery();
+        if let Some(code) = signals.prior_signal_exit_code() {
+            std::process::exit(code);
         }
         match archsig::observe::execute(&args) {
             Ok(response) => finish_with_code(None, &response.text, response.code),
@@ -143,31 +57,18 @@ fn finish(outcome: Option<Outcome>, information: &str) -> ! {
 
 fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u8) -> ! {
     let code = outcome.as_ref().map_or(success_code, |o| o.exit_code);
-    // Only the atomic publication is protected. Delivery can block on either stream.
-    DELIVERY.store(
-        if matches!(code, 130 | 143) {
-            i32::from(code)
-        } else {
-            0
-        },
-        Ordering::SeqCst,
-    );
-    use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
-    let mut mask = SigSet::empty();
-    mask.add(OsSignal::SIGINT);
-    mask.add(OsSignal::SIGTERM);
-    pthread_sigmask(SigmaskHow::SIG_UNBLOCK, Some(&mask), None)
-        .expect("配送前にSIGINT/SIGTERMを解除できる");
+    if let Err(err) = ProcessSignals::begin_delivery(code) {
+        let failure = signal_init_failure_outcome(&err);
+        let _ = platform::write_stderr_line(&failure.receipt());
+        std::process::exit(70);
+    }
     let line = outcome
         .as_ref()
         .map_or_else(|| information.to_owned(), Outcome::receipt);
     let failed = outcome.as_ref().is_some_and(|o| {
         matches!(
             o.status,
-            archsig_input::result::Status::Invalid
-                | archsig_input::result::Status::Unsupported
-                | archsig_input::result::Status::Error
-                | archsig_input::result::Status::Interrupted
+            Status::Invalid | Status::Unsupported | Status::Error | Status::Interrupted
         )
     });
     // Verified partial answers remain useful even when execution was interrupted.
@@ -181,7 +82,7 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
             summary: None,
             issues: o.issues.clone(),
         };
-        if let Err(error) = write_line(&mut std::io::stderr().lock(), &diagnostic.receipt()) {
+        if let Err(error) = platform::write_stderr_line(&diagnostic.receipt()) {
             std::process::exit(if error.kind() == std::io::ErrorKind::BrokenPipe {
                 141
             } else {
@@ -190,9 +91,9 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
         }
     }
     let result = if failed && !has_answers {
-        write_line(&mut std::io::stderr().lock(), &line)
+        platform::write_stderr_line(&line)
     } else {
-        write_line(&mut std::io::stdout().lock(), &line)
+        platform::write_stdout_line(&line)
     };
     let exit = match result {
         Ok(()) => code,
@@ -200,12 +101,12 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
         Err(error) => {
             if !failed || has_answers {
                 let diagnostic = Outcome {
-                    status: archsig_input::result::Status::Error,
+                    status: Status::Error,
                     exit_code: 74,
                     result: outcome.as_ref().and_then(|o| o.result.clone()),
                     summary: None,
                     issues: vec![
-                        archsig_input::result::ResultIssue::Io {
+                        ResultIssue::Io {
                             operation: "write",
                             path: "stdout".into(),
                             message: format!("cannot deliver stdout: {error}"),
@@ -213,7 +114,7 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
                         .wire(),
                     ],
                 };
-                if let Err(error) = write_line(&mut std::io::stderr().lock(), &diagnostic.receipt())
+                if let Err(error) = platform::write_stderr_line(&diagnostic.receipt())
                     && error.kind() == std::io::ErrorKind::BrokenPipe
                 {
                     std::process::exit(141);
@@ -223,22 +124,6 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
         }
     };
     std::process::exit(i32::from(exit));
-}
-
-fn write_line(writer: &mut impl std::os::fd::AsFd, line: &str) -> std::io::Result<()> {
-    // std::io::Stdout suppresses EBADF for a closed descriptor. Use unbuffered
-    // descriptor writes so a missing or read-only destination is a real failure.
-    for mut bytes in [line.as_bytes(), b"\n".as_slice()] {
-        while !bytes.is_empty() {
-            match rustix::io::write(&*writer, bytes) {
-                Ok(0) => return Err(std::io::ErrorKind::WriteZero.into()),
-                Ok(written) => bytes = &bytes[written..],
-                Err(rustix::io::Errno::INTR) => continue,
-                Err(error) => return Err(error.into()),
-            }
-        }
-    }
-    Ok(())
 }
 
 fn execute(
@@ -270,158 +155,56 @@ mod delivery_tests;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use archsig_common::control::Checkpoint;
     use std::time::Instant;
 
-    /// handler登録はprocess共有でmaskはthreadに残るため、各試験を別processで行う。
-    fn isolated_signal_test(name: &str) -> bool {
-        if std::env::var("ARCHSIG_TEST_SIGNAL_CASE").as_deref() == Ok(name) {
-            return true;
-        }
-        let output = std::process::Command::new(std::env::current_exe().unwrap())
-            .args(["--exact", &format!("tests::{name}"), "--test-threads=1"])
-            .env("ARCHSIG_TEST_SIGNAL_CASE", name)
-            .output()
-            .unwrap();
-        assert!(
-            output.status.success(),
-            "{name}: {}\n{}",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr)
-        );
-        false
-    }
-
-    fn signal_reaches_control(signal: i32, expected: Signal) {
-        let mut signals = ProcessSignals::new();
-        let control = signals.control();
-        signal_hook::low_level::raise(signal).unwrap();
+    #[test]
+    fn signal_init_failure_produces_structured_exit_70_receipt() {
+        let err = PlatformError {
+            operation: "signal_init",
+            message: "injected signal failure".into(),
+        };
+        let outcome = signal_init_failure_outcome(&err);
+        assert_eq!(outcome.status, Status::Error);
+        assert_eq!(outcome.exit_code, 70);
+        let receipt = outcome.receipt();
+        let node = archsig_common::json::parse(receipt.as_bytes()).unwrap();
+        let archsig_common::json::JValue::Obj(fields) = &node.value else {
+            panic!("receipt must be object");
+        };
         assert_eq!(
-            control.checkpoint(Checkpoint::DefinitionSchema),
-            Err(expected)
+            fields.iter().find(|(k, _)| k == "status").unwrap().1.value,
+            archsig_common::json::JValue::Str("error".into())
         );
-        assert_eq!(signals.frozen, None, "checkpointでfinalizeを開始しない");
-        assert_eq!(signals.freeze(), Some(expected));
-    }
-
-    #[test]
-    fn observed_first_signal_survives_a_later_signal_before_finalize() {
-        for (first_signal, later_signal, expected) in [
-            (
-                signal_hook::consts::SIGTERM,
-                signal_hook::consts::SIGINT,
-                Signal::Term,
-            ),
-            (
-                signal_hook::consts::SIGINT,
-                signal_hook::consts::SIGTERM,
-                Signal::Int,
-            ),
-        ] {
-            let mut signals = ProcessSignals {
-                first: Arc::new(AtomicI32::new(0)),
-                int: Arc::new(AtomicBool::new(first_signal == signal_hook::consts::SIGINT)),
-                term: Arc::new(AtomicBool::new(
-                    first_signal == signal_hook::consts::SIGTERM,
-                )),
-                frozen: None,
-            };
-            let control = signals.control();
-            assert_eq!(control.checkpoint(Checkpoint::LawSemantics), Err(expected));
-            if later_signal == signal_hook::consts::SIGINT {
-                signals.int.store(true, Ordering::SeqCst);
-            } else {
-                signals.term.store(true, Ordering::SeqCst);
-            }
-            // 後着handlerも、既に捕捉したsignalを置き換えない。
-            let _ =
-                signals
-                    .first
-                    .compare_exchange(0, later_signal, Ordering::SeqCst, Ordering::SeqCst);
-            assert_eq!(signals.freeze(), Some(expected));
-            assert_eq!(signals.frozen, Some(Some(expected)));
-        }
-    }
-
-    #[test]
-    fn sigint_reaches_control_without_freezing() {
-        if !isolated_signal_test("sigint_reaches_control_without_freezing") {
-            return;
-        }
-        signal_reaches_control(signal_hook::consts::SIGINT, Signal::Int);
-    }
-
-    #[test]
-    fn sigterm_reaches_control_without_freezing() {
-        if !isolated_signal_test("sigterm_reaches_control_without_freezing") {
-            return;
-        }
-        signal_reaches_control(signal_hook::consts::SIGTERM, Signal::Term);
-    }
-
-    #[test]
-    fn signal_handler_records_received_order_without_a_monitor_thread() {
-        if !isolated_signal_test("signal_handler_records_received_order_without_a_monitor_thread") {
-            return;
-        }
-        let mut signals = ProcessSignals::new();
-        signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
-        signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
         assert_eq!(
-            signals.first.load(Ordering::SeqCst),
-            signal_hook::consts::SIGTERM
+            fields
+                .iter()
+                .find(|(k, _)| k == "exit_code")
+                .unwrap()
+                .1
+                .value,
+            archsig_common::json::JValue::Num("70".into())
         );
-        assert_eq!(signals.freeze(), Some(Signal::Term));
-    }
-
-    #[test]
-    fn finalize_includes_both_pending_signals_with_sigint_priority() {
-        if !isolated_signal_test("finalize_includes_both_pending_signals_with_sigint_priority") {
-            return;
-        }
-        use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
-        let mut signals = ProcessSignals::new();
-        let mut blocked = SigSet::empty();
-        blocked.add(OsSignal::SIGINT);
-        blocked.add(OsSignal::SIGTERM);
-        pthread_sigmask(SigmaskHow::SIG_BLOCK, Some(&blocked), None).unwrap();
-        signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
-        signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
-        assert_eq!(signals.first.load(Ordering::SeqCst), 0);
-        assert_eq!(signals.freeze(), Some(Signal::Int));
-    }
-
-    #[test]
-    fn finalize_keeps_signals_blocked_and_ignores_later_pending_signals() {
-        if !isolated_signal_test("finalize_keeps_signals_blocked_and_ignores_later_pending_signals")
-        {
-            return;
-        }
-        use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
-        let mut signals = ProcessSignals::new();
-        assert_eq!(signals.freeze(), None);
-        let mut mask = SigSet::empty();
-        pthread_sigmask(SigmaskHow::SIG_BLOCK, None, Some(&mut mask)).unwrap();
-        assert!(mask.contains(OsSignal::SIGINT));
-        assert!(mask.contains(OsSignal::SIGTERM));
-        signal_hook::low_level::raise(signal_hook::consts::SIGTERM).unwrap();
-        signal_hook::low_level::raise(signal_hook::consts::SIGINT).unwrap();
-        assert_eq!(signals.first.load(Ordering::SeqCst), 0);
-        assert_eq!(signals.freeze(), None);
+        let archsig_common::json::JValue::Arr(issues) =
+            &fields.iter().find(|(k, _)| k == "issues").unwrap().1.value
+        else {
+            panic!("issues must be array");
+        };
+        assert_eq!(issues.len(), 1);
     }
 
     // 製品へ同期flag/環境変数を追加せず、同じparse/execute/finishをsubprocessで使う。
+    #[cfg(unix)]
     #[test]
     #[ignore = "real_signals_cancel_cli_execution_before_artifactsがsubprocessとして起動する"]
     fn signal_cli_child() {
         use std::io::Read;
         let kind = std::env::var("ARCHSIG_TEST_CHILD_KIND").unwrap();
-        let mut signals = ProcessSignals::new();
+        let mut signals = ProcessSignals::install().unwrap();
         println!("\nARCHSIG_READY");
         std::io::stdout().flush().unwrap();
         std::io::stdin().read_exact(&mut [0]).unwrap();
         let deadline = Instant::now() + std::time::Duration::from_secs(30);
-        while signals.first.load(Ordering::SeqCst) == 0 {
+        while signals.prior_signal_exit_code().is_none() {
             assert!(Instant::now() < deadline, "実signalを捕捉しなかった");
             std::thread::yield_now();
         }
@@ -456,11 +239,10 @@ mod tests {
         finish(outcome, version);
     }
 
+    #[cfg(unix)]
     #[test]
     fn real_signals_cancel_cli_execution_before_artifacts() {
         use archsig_common::json::{JNode, JValue, parse};
-        use nix::sys::signal::{Signal as OsSignal, kill};
-        use nix::unistd::Pid;
         use std::io::{BufRead, BufReader, Read};
         use std::process::{Child, Command, Stdio};
         struct Running(Child);
@@ -483,10 +265,9 @@ mod tests {
             value
         }
         for kind in ["check", "run", "reobserve"] {
-            for (signal, code, name) in [
-                (OsSignal::SIGINT, 130, "SIGINT"),
-                (OsSignal::SIGTERM, 143, "SIGTERM"),
-            ] {
+            for (signal, code, name) in
+                [(Signal::Int, 130, "SIGINT"), (Signal::Term, 143, "SIGTERM")]
+            {
                 let dir = std::env::temp_dir().join(format!(
                     "archsig-signal-{}-{kind}-{name}",
                     std::process::id()
@@ -547,7 +328,7 @@ mod tests {
                     received
                         .recv_timeout(std::time::Duration::from_secs(30))
                         .expect("signal child readiness deadline");
-                    kill(Pid::from_raw(child.0.id().try_into().unwrap()), signal).unwrap();
+                    platform::send_signal(child.0.id(), signal).unwrap();
                     child.0.stdin.take().unwrap().write_all(b"x").unwrap();
                     let (status, timed_out) =
                         test_watchdog::wait(&mut child.0, std::time::Duration::from_secs(30))

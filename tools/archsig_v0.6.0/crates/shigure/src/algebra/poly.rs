@@ -301,6 +301,55 @@ impl<C: RingCoeff> Poly<C> {
         self.terms.remove(mono)
     }
 
+    /// 変数数・係数環・単項式指数のオーバーフロー・項数/係数ビット長上限を検査しながら
+    /// `self -= other * (scalar * mono)` を in-place 実行する（失敗時は `self` を破壊しない）。
+    pub fn checked_sub_mul_term_assign_bounded(
+        &mut self,
+        other: &Self,
+        mono: &Monomial,
+        scalar: &C,
+        limits: &crate::limits::ShigureLimits,
+        context: &str,
+    ) -> Result<(), AlgebraError> {
+        self.check_arity(other.num_vars)?;
+        self.check_arity(mono.num_vars())?;
+        self.check_ring(&other.zero_coeff)?;
+        self.check_ring(scalar)?;
+        if scalar.coeff_is_zero() || other.is_zero() {
+            return Ok(());
+        }
+        let mut updates = Vec::with_capacity(other.terms.len());
+        let mut predicted_terms = self.terms.len();
+        for (m, c) in &other.terms {
+            let prod = c.mul_ref(scalar).neg_ref();
+            if !prod.coeff_is_zero() {
+                let shifted = m
+                    .checked_mul(mono)
+                    .ok_or_else(|| AlgebraError::OutOfScope {
+                        detail: "monomial exponent addition overflowed u32".to_owned(),
+                    })?;
+                if let Some(existing) = self.terms.get(&shifted) {
+                    let combined = existing.add_ref(&prod);
+                    if combined.coeff_is_zero() {
+                        predicted_terms = predicted_terms.saturating_sub(1);
+                    } else {
+                        limits.check_coeff(&combined, context)?;
+                    }
+                } else {
+                    limits.check_coeff(&prod, context)?;
+                    predicted_terms += 1;
+                    limits.check_poly_terms(predicted_terms, context)?;
+                }
+                updates.push((shifted, prod));
+            }
+        }
+        for (shifted, prod) in updates {
+            self.add_term(shifted, prod);
+        }
+        limits.check_poly(self, context)?;
+        Ok(())
+    }
+
     /// 変数数・係数環・単項式指数のオーバーフローを検査しながら
     /// `self -= other * (scalar * mono)` を in-place 実行する（失敗時は `self` を破壊しない）。
     pub fn checked_sub_mul_term_assign(
@@ -422,6 +471,34 @@ impl<C: RingCoeff> Poly<C> {
     pub fn mul_term(&self, mono: &Monomial, scalar: &C) -> Self {
         self.checked_mul_term(mono, scalar)
             .expect("polynomial arity, ring, or exponent overflow in mul_term")
+    }
+
+    /// 変数数・係数環・単項式指数のオーバーフローおよび項数・係数ビット長上限を検査しながら乗算する。
+    pub fn checked_mul_bounded(
+        &self,
+        other: &Self,
+        limits: &crate::limits::ShigureLimits,
+        context: &str,
+    ) -> Result<Self, AlgebraError> {
+        self.check_arity(other.num_vars)?;
+        self.check_ring(&other.zero_coeff)?;
+        if self.is_zero() || other.is_zero() {
+            return Ok(Self::zero(self.num_vars, self.zero_coeff.clone()));
+        }
+        let mut out = Self::zero(self.num_vars, self.zero_coeff.clone());
+        for (m1, c1) in &self.terms {
+            for (m2, c2) in &other.terms {
+                let mono = m1.checked_mul(m2).ok_or_else(|| AlgebraError::OutOfScope {
+                    detail: "monomial exponent addition overflowed u32".to_owned(),
+                })?;
+                let prod = c1.mul_ref(c2);
+                limits.check_coeff(&prod, context)?;
+                out.add_term(mono, prod);
+                limits.check_poly_terms(out.terms.len(), context)?;
+            }
+        }
+        limits.check_poly(&out, context)?;
+        Ok(out)
     }
 
     /// 変数数・係数環・単項式指数のオーバーフローを検査しながら乗算する。

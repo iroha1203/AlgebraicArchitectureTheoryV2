@@ -21,16 +21,18 @@ pub const EVIDENCE_HELP: &str =
     "Usage: archsig evidence --archmap A --atom SNAPSHOT/ATOM [--source ID=FILE ...]
   --archmap A       ArchMap JSON (required)
   --atom ID         Select snapshot/atom (required, repeatable, distinct)
-  --source ID=FILE  Bind a source ID to a local file (repeatable, distinct)
-  --help, -h        Show this help
+  --source ID=FILE      Bind a source ID to a local file (repeatable, distinct)
+  --max-file-bytes N    Bound file reads in bytes (default: 67108864)
+  --help, -h            Show this help
 Expand explicit references and verify SHA256, UTF-8 byte spans and excerpts.
 Revision provenance, coverage, meaning and Law fidelity remain reading obligations.
 Result: JSON on stdout; errors: receipt JSON on stderr. No files are written.
 Exit: 0 verified bytes, 64 usage, 65 invalid input, 70 internal, 74 I/O,
 130 SIGINT, 141 broken pipe, 143 SIGTERM.";
 pub const FIBERS_HELP: &str = "Usage: archsig law-fibers --table TABLE
-  --table TABLE  Explicit finite evaluation table JSON (required)
-  --help, -h     Show this help
+  --table TABLE         Explicit finite evaluation table JSON (required)
+  --max-file-bytes N    Bound table file read in bytes (default: 67108864)
+  --help, -h            Show this help
 Compute counterexamples, partitions and descent on the supplied table.
 Complete enumeration and faithful equality tokens are caller obligations; no Law DSL evaluation.
 Result: JSON on stdout; errors: receipt JSON on stderr. No files are written.
@@ -105,6 +107,8 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
     let mut input = None;
     let mut atoms = Vec::new();
     let mut files = BTreeMap::new();
+    let mut max_file_bytes = archsig_common::limits::DEFAULT_MAX_FILE_BYTES;
+    let mut saw_max_file_bytes = false;
     let mut i = 1;
     while i < args.len() {
         let flag = args[i]
@@ -112,7 +116,10 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
             .ok_or_else(|| usage("", "flag must be UTF-8"))?;
         if !matches!(
             (evidence, flag),
-            (true, "--archmap" | "--atom" | "--source") | (false, "--table")
+            (
+                true,
+                "--archmap" | "--atom" | "--source" | "--max-file-bytes"
+            ) | (false, "--table" | "--max-file-bytes")
         ) {
             return Err(usage(flag, "unknown flag or positional argument"));
         }
@@ -129,6 +136,21 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
                 }
                 input = Some(PathBuf::from(value));
             }
+            "--max-file-bytes" => {
+                if saw_max_file_bytes {
+                    return Err(usage(flag, "duplicate flag"));
+                }
+                let text = value
+                    .to_str()
+                    .ok_or_else(|| usage(flag, "byte limit must be UTF-8"))?;
+                let parsed: u64 = text
+                    .parse()
+                    .ok()
+                    .filter(|&n| n > 0)
+                    .ok_or_else(|| usage(flag, "byte limit must be a positive integer"))?;
+                max_file_bytes = parsed;
+                saw_max_file_bytes = true;
+            }
             "--atom" => {
                 let value = value
                     .to_str()
@@ -143,25 +165,15 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
                 atoms.push(value.to_owned());
             }
             "--source" => {
-                // Split the OS string so non-UTF-8 file paths remain usable.
-                use std::os::unix::ffi::{OsStrExt, OsStringExt};
-                let bytes = value.as_os_str().as_bytes();
-                let at = bytes
-                    .iter()
-                    .position(|b| *b == b'=')
-                    .ok_or_else(|| usage(flag, "expected source-id=local-file"))?;
-                let id = std::str::from_utf8(&bytes[..at])
-                    .map_err(|_| usage(flag, "source ID must be UTF-8"))?;
-                if id.is_empty() || at + 1 == bytes.len() || files.contains_key(id) {
+                let (id, path) = crate::platform::split_source_binding(value.as_os_str())
+                    .map_err(|msg| usage(flag, msg))?;
+                if files.contains_key(&id) {
                     return Err(usage(
                         flag,
                         "source bindings need distinct IDs and nonempty paths",
                     ));
                 }
-                files.insert(
-                    id.into(),
-                    PathBuf::from(OsString::from_vec(bytes[at + 1..].to_vec())),
-                );
+                files.insert(id, path);
             }
             _ => unreachable!(),
         }
@@ -176,7 +188,7 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
             "input file is required",
         )
     })?;
-    let bytes = read(&input)?;
+    let bytes = read(&input, max_file_bytes)?;
     let node = archsig_common::json::parse(&bytes).map_err(|mut issue| {
         if !evidence && let Location::ArchMap { pointer, span } = &issue.location {
             issue.location = Location::Definition {
@@ -189,7 +201,7 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
     })?;
     if evidence {
         Ok(Response {
-            text: evidence::expand(&node, &atoms, &files)?,
+            text: evidence::expand(&node, &atoms, &files, max_file_bytes)?,
             code: 0,
         })
     } else {
@@ -201,14 +213,8 @@ fn execute_inner(args: &[OsString]) -> Result<Response> {
     }
 }
 
-fn read(path: &Path) -> Result<Vec<u8>> {
-    let read = || {
-        if !std::fs::metadata(path)?.is_file() {
-            return Err(std::io::Error::other("not a regular file"));
-        }
-        std::fs::read(path)
-    };
-    read().map_err(|error| {
+fn read(path: &Path, max_bytes: u64) -> Result<Vec<u8>> {
+    archsig_common::limits::read_regular_file_bounded(path, max_bytes).map_err(|error| {
         Box::new(ResultIssue::Io {
             operation: "read",
             path: path.to_string_lossy().into_owned(),

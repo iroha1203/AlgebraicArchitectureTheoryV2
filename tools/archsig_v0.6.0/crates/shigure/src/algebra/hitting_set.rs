@@ -6,8 +6,7 @@ use crate::algebra::scalar::{Rat, RingCoeff};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 既定の探索ステップ・結果上限。
-pub const DEFAULT_MAX_HITTING_SET_STEPS: usize = 50_000;
-pub const DEFAULT_MAX_HITTING_SET_RESULTS: usize = 4_096;
+pub use crate::limits::{DEFAULT_MAX_HITTING_SET_RESULTS, DEFAULT_MAX_HITTING_SET_STEPS};
 
 /// 極小横断集合列挙の入力。
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -7,7 +7,7 @@ use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
-use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, ideal_membership_field};
+use crate::algebra::syzygy::{FieldCoeff, ideal_membership_field};
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::lift::{
     DeclarationCoverSpec, FiniteEtaleDescentSpec, LiftTaskSpec, RelativeReadingSpec, SquareZeroSpec,
@@ -299,7 +299,7 @@ pub(crate) fn lit_to_fp(lit: &ScalarLit, p: &BigUint) -> Result<FpElem, AlgebraE
 }
 
 pub(crate) fn map_lift_algebra_error(err: AlgebraError) -> SilenceReason {
-    match err {
+    SilenceReason::from_algebra_with(err, |err| match err {
         AlgebraError::UnobservedDependency { slots } => {
             SilenceReason::UnobservedDependency { slots }
         }
@@ -308,7 +308,7 @@ pub(crate) fn map_lift_algebra_error(err: AlgebraError) -> SilenceReason {
             condition: "lift_algebra_computation".to_owned(),
             detail: other.to_string(),
         },
-    }
+    })
 }
 
 pub(crate) fn derive_lift_verdict(
@@ -564,7 +564,7 @@ fn verify_mu_d_cocycle_identities(
                 &[g1, g2],
                 &vars,
                 MonomialOrder::Grevlex,
-                DEFAULT_MAX_SYZYGY_PAIRS,
+                crate::limits::active_limits().max_syzygy_pairs,
             )
             .map_err(map_lift_algebra_error)?
             .is_some()
@@ -587,7 +587,7 @@ fn verify_mu_d_cocycle_identities(
                 &[g1, g2],
                 &vars,
                 MonomialOrder::Grevlex,
-                DEFAULT_MAX_SYZYGY_PAIRS,
+                crate::limits::active_limits().max_syzygy_pairs,
             )
             .map_err(map_lift_algebra_error)?
             .is_some()

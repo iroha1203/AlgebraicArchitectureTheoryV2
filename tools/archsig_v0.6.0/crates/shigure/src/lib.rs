@@ -6,7 +6,10 @@
 pub mod algebra;
 pub mod convert;
 pub mod ir;
+pub mod limits;
 pub mod solver;
+
+pub use limits::ShigureLimits;
 
 pub use solver::{
     solve_artin_task, solve_atlas_task, solve_diagnostics_task, solve_diagram_task,

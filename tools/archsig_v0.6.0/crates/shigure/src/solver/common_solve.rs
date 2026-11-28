@@ -1,9 +1,8 @@
 //! Phase 2（図式補完・一段変更経路・合法状態移送）で共有する多項式系解法と Z 商環単位ピボット判定。
 
 use crate::algebra::{
-    AffineSolutionZ, AlgebraError, DEFAULT_MAX_FP_POINTS, ExprBindings, FpElem, GroebnerBasis,
-    Monomial, MonomialOrder, Poly, Rat, RingCoeff, VarOrder, rabinowitsch_solve, solve_affine_z,
-    solve_fp_enumeration,
+    AffineSolutionZ, AlgebraError, ExprBindings, FpElem, GroebnerBasis, Monomial, MonomialOrder,
+    Poly, Rat, RingCoeff, VarOrder, rabinowitsch_solve, solve_affine_z, solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
@@ -374,7 +373,7 @@ fn solve_fp_system(
         &invs_fp,
         param_vars.len(),
         modulus,
-        DEFAULT_MAX_FP_POINTS,
+        crate::limits::active_limits().max_fp_points,
     ) {
         Ok(res) => {
             checks.push(ApplicabilityCheck::passed(

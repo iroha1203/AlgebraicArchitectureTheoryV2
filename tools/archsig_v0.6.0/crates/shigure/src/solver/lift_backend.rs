@@ -247,8 +247,10 @@ impl<A: FieldRingAdapter> LiftRingBackend for FieldLiftBackend<A> {
         max_pairs: usize,
     ) -> Result<SyzygyModule<A::Coeff>, SilenceReason> {
         let syz_res = compute_syzygies_field(law_polys, vars, MonomialOrder::Grevlex, max_pairs)
-            .map_err(|e| SilenceReason::SyzygyOutOfScope {
-                detail: e.to_string(),
+            .map_err(|e| {
+                SilenceReason::from_algebra_with(e, |err| SilenceReason::SyzygyOutOfScope {
+                    detail: err.to_string(),
+                })
             })?;
         if !syz_res.verified || !syz_res.generating_certified {
             return Err(SilenceReason::SyzygyOutOfScope {
@@ -391,10 +393,11 @@ impl LiftRingBackend for ZLiftBackend {
         vars: VarOrder,
         _max_pairs: usize,
     ) -> Result<SyzygyModule<BigInt>, SilenceReason> {
-        let syz_res =
-            compute_syzygies_z(law_polys, vars).map_err(|e| SilenceReason::SyzygyOutOfScope {
-                detail: e.to_string(),
-            })?;
+        let syz_res = compute_syzygies_z(law_polys, vars).map_err(|e| {
+            SilenceReason::from_algebra_with(e, |err| SilenceReason::SyzygyOutOfScope {
+                detail: err.to_string(),
+            })
+        })?;
         if !syz_res.verified || !syz_res.generating_certified {
             return Err(SilenceReason::SyzygyOutOfScope {
                 detail: "Z syzygy generating certification failed".to_owned(),

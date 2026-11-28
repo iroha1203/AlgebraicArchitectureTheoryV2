@@ -10,7 +10,7 @@ pub use crate::algebra::artin_quotient::{
 };
 
 /// 有限次元局所 Artin 商環の既定安全次元上限。
-pub const DEFAULT_MAX_ARTIN_DIM: usize = 256;
+pub use crate::limits::DEFAULT_MAX_ARTIN_DIM;
 
 /// 体 `K`（`Q`・`F_p`）上のアフィン線形系 `L x = b` の全解または不存在 certificate。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -313,10 +313,11 @@ impl<C: RingCoeff> FiniteAlgebra<C> {
                 detail: "truncated_univariate max_deg overflow".to_owned(),
             });
         };
-        if dim > DEFAULT_MAX_ARTIN_DIM {
+        let max_artin_dim = crate::limits::active_limits().max_artin_dim;
+        if dim > max_artin_dim {
             return Err(AlgebraError::OutOfScope {
                 detail: format!(
-                    "truncated_univariate dimension {dim} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                    "truncated_univariate dimension {dim} exceeds limit {max_artin_dim}"
                 ),
             });
         }

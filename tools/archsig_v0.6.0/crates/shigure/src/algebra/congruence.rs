@@ -4,7 +4,7 @@ use crate::algebra::poly::AlgebraError;
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 /// 既定の導出・閉包ステップ上限。
-pub const DEFAULT_MAX_CONGRUENCE_STEPS: usize = 10_000;
+pub use crate::limits::DEFAULT_MAX_CONGRUENCE_STEPS;
 
 /// sort 定義（固定値 sort かどうかを区別する）。
 #[derive(Clone, Debug, PartialEq, Eq)]

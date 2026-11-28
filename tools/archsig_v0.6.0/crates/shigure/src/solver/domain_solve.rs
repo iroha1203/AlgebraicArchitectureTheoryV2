@@ -1,8 +1,8 @@
 //! Z アフィン（Smith 標準形）および F_p 有限全列挙のドメイン特化ソルバ（G-141 D4）。
 
 use crate::algebra::{
-    AffineSolutionZ, DEFAULT_MAX_FP_POINTS, ExprBindings, Poly, Rat, VarOrder, rabinowitsch_solve,
-    solve_affine_z, solve_fp_enumeration,
+    AffineSolutionZ, ExprBindings, Poly, Rat, VarOrder, rabinowitsch_solve, solve_affine_z,
+    solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
@@ -170,7 +170,7 @@ pub(crate) fn solve_over_fp(
         &invs,
         param_vars.len(),
         modulus,
-        DEFAULT_MAX_FP_POINTS,
+        crate::limits::active_limits().max_fp_points,
     ) {
         Ok(fp_res) => {
             ctx.checks.push(ApplicabilityCheck::passed(

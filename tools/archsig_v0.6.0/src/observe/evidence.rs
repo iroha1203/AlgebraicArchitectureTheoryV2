@@ -22,6 +22,7 @@ pub(super) fn expand(
     map: &JNode,
     selected: &[String],
     files: &BTreeMap<String, PathBuf>,
+    max_file_bytes: u64,
 ) -> Result<String> {
     let sources = index(field(map, "sources")?)?;
     let origins = index(field(map, "origins")?)?;
@@ -54,7 +55,7 @@ pub(super) fn expand(
                 let path = files
                     .get(source_id)
                     .ok_or_else(|| invalid(format!("missing source binding: {source_id}")))?;
-                let bytes = read(path)?;
+                let bytes = read(path, max_file_bytes)?;
                 let text = String::from_utf8(bytes)
                     .map_err(|_| invalid(format!("source is not UTF-8: {source_id}")))?;
                 if token(field(source, "digest")?)? != sha256_digest(text.as_bytes()) {

@@ -231,13 +231,11 @@ pub(super) fn publish(
         Ok(()) => outcome,
         Err((op, path, e)) => {
             let mut message = format!("output {op} failed ({}): {e}", path.display());
-            if created {
-                if let Err(cleanup) = io.remove_dir_all(&tmp) {
-                    message.push_str(&format!(
-                        "; cannot clean up incomplete temporary directory ({}): {cleanup}",
-                        tmp.display()
-                    ));
-                }
+            if created && let Err(cleanup) = io.remove_dir_all(&tmp) {
+                message.push_str(&format!(
+                    "; cannot clean up incomplete temporary directory ({}): {cleanup}",
+                    tmp.display()
+                ));
             }
             let issue = ResultIssue::Io {
                 operation: op,

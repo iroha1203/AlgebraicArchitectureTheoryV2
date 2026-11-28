@@ -104,11 +104,39 @@ pub enum SilenceReason {
     OperatorNotUniquelyDetermined { detail: String },
     /// Phase 5: 作用素改訂時に既存 SNF 分解の再利用が強制指定された。
     OperatorRevisionReuseRejected { detail: String },
+    /// BigInt ビット長・多項式項数・計算ステップ等のリソース上限超過。
+    ResourceLimitExceeded {
+        limit_name: String,
+        limit: u64,
+        observed: u64,
+        detail: String,
+    },
     /// その他の適用条件未充足。
     ApplicabilityConditionNotMet { condition: String, detail: String },
 }
 
 impl SilenceReason {
+    /// `AlgebraError` を `SilenceReason` へ変換し、`ResourceLimitExceeded` を常に保持する。
+    pub fn from_algebra_with(
+        err: crate::algebra::poly::AlgebraError,
+        fallback: impl FnOnce(crate::algebra::poly::AlgebraError) -> Self,
+    ) -> Self {
+        match err {
+            crate::algebra::poly::AlgebraError::ResourceLimitExceeded {
+                limit_name,
+                limit,
+                observed,
+                detail,
+            } => Self::ResourceLimitExceeded {
+                limit_name,
+                limit,
+                observed,
+                detail,
+            },
+            other => fallback(other),
+        }
+    }
+
     pub fn code(&self) -> &'static str {
         match self {
             SilenceReason::UnobservedDependency { .. } => "unobserved_dependency",
@@ -144,6 +172,7 @@ impl SilenceReason {
             SilenceReason::OperatorRevisionReuseRejected { .. } => {
                 "operator_revision_reuse_rejected"
             }
+            SilenceReason::ResourceLimitExceeded { .. } => "resource_limit_exceeded",
             SilenceReason::ApplicabilityConditionNotMet { .. } => "applicability_condition_not_met",
         }
     }
@@ -180,6 +209,17 @@ impl SilenceReason {
             | SilenceReason::UnsupportedCompletionClass { detail }
             | SilenceReason::OperatorNotUniquelyDetermined { detail }
             | SilenceReason::OperatorRevisionReuseRejected { detail } => {
+                obj.insert("detail".into(), Json::str(detail));
+            }
+            SilenceReason::ResourceLimitExceeded {
+                limit_name,
+                limit,
+                observed,
+                detail,
+            } => {
+                obj.insert("limit_name".into(), Json::str(limit_name));
+                obj.insert("limit".into(), Json::Nat(*limit));
+                obj.insert("observed".into(), Json::Nat(*observed));
                 obj.insert("detail".into(), Json::str(detail));
             }
             SilenceReason::UnsupportedCoeffRing { domain, detail } => {

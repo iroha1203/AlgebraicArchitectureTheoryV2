@@ -24,9 +24,6 @@ use num_bigint::BigInt;
 use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
 
-/// D1 次元実現の full 2-skeleton 頂点数上限（`\Theta(n^5)` 密行列の組合せ爆発を防ぐ）。
-pub const DEFAULT_MAX_DIM_REALIZATION_VERTICES: usize = 16;
-
 /// 粗化 partition `π -> π'` の単射合流射 `r` と余核複体 `Q` の長完全列を計算する（C2–C4）。
 pub(crate) fn compute_collision_mv(
     col: &CollisionComparisonSpec,
@@ -692,10 +689,11 @@ pub(crate) fn compute_dimension_realization(
 ) -> Result<DimensionRealizationResult, SilenceReason> {
     let r = dr.vanishing_polys.len();
     let n = std::cmp::max(3, r + 1);
-    if n > DEFAULT_MAX_DIM_REALIZATION_VERTICES {
+    let max_vertices = crate::limits::active_limits().max_dim_realization_vertices;
+    if n > max_vertices {
         return Err(SilenceReason::DiagnosticsStratificationOutOfScope {
             detail: format!(
-                "dimension realization cycle size n={n} exceeds safe limit ({DEFAULT_MAX_DIM_REALIZATION_VERTICES})"
+                "dimension realization cycle size n={n} exceeds safe limit ({max_vertices})"
             ),
         });
     }

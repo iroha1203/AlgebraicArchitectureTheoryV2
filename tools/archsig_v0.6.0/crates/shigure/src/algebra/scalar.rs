@@ -40,6 +40,8 @@ pub trait RingCoeff: Clone + Eq + fmt::Debug + fmt::Display {
     fn same_ring(&self, _other: &Self) -> bool {
         true
     }
+    /// 係数の多倍長整数表現における最大ビット長を返す。
+    fn coeff_max_bits(&self) -> u64;
 }
 
 impl RingCoeff for BigInt {
@@ -73,6 +75,10 @@ impl RingCoeff for BigInt {
 
     fn one_like(&self) -> Self {
         BigInt::one()
+    }
+
+    fn coeff_max_bits(&self) -> u64 {
+        self.bits()
     }
 }
 
@@ -298,6 +304,10 @@ impl RingCoeff for Rat {
     fn one_like(&self) -> Self {
         Rat::one()
     }
+
+    fn coeff_max_bits(&self) -> u64 {
+        self.num.bits().max(self.den.bits())
+    }
 }
 
 impl fmt::Display for Rat {
@@ -469,6 +479,10 @@ impl RingCoeff for FpElem {
 
     fn same_ring(&self, other: &Self) -> bool {
         self.modulus == other.modulus
+    }
+
+    fn coeff_max_bits(&self) -> u64 {
+        self.value.bits().max(self.modulus.bits())
     }
 }
 

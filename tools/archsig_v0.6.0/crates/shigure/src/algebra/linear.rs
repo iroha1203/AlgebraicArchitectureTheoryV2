@@ -7,13 +7,14 @@ use crate::algebra::poly::{AlgebraError, Poly, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat};
 use crate::ir::change::PointDomain;
 use crate::ir::result::{EmptyWitness, SilenceReason};
+use crate::limits::ShigureLimits;
 use archsig_common::prime::is_prime;
 use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 
 /// F_p 有限全列挙の既定上限（`p^m` がこれを超える場合は部分列挙を返さず沈黙する）。
-pub const DEFAULT_MAX_FP_POINTS: usize = 65_536;
+pub use crate::limits::DEFAULT_MAX_FP_POINTS;
 
 /// Q アフィン系 `L x = b` の全解または不存在 certificate（G-141 D4）。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -87,6 +88,16 @@ pub fn smith_normal_form_z(
     matrix: &[Vec<BigInt>],
     num_cols: usize,
 ) -> Result<SmithFormZ, AlgebraError> {
+    let limits = crate::limits::active_limits();
+    smith_normal_form_z_with_limits(matrix, num_cols, &limits)
+}
+
+/// 整数行列 `matrix` (`m x num_cols`) の Smith 標準形を指定上限付きで計算する。
+pub fn smith_normal_form_z_with_limits(
+    matrix: &[Vec<BigInt>],
+    num_cols: usize,
+    limits: &ShigureLimits,
+) -> Result<SmithFormZ, AlgebraError> {
     let m = matrix.len();
     for row in matrix {
         if row.len() != num_cols {
@@ -94,6 +105,9 @@ pub fn smith_normal_form_z(
                 expected: num_cols,
                 actual: row.len(),
             });
+        }
+        for v in row {
+            limits.check_bigint_bits(v, "snf_z_input")?;
         }
     }
     let mut d: Vec<Vec<BigInt>> = matrix.to_vec();
@@ -115,15 +129,15 @@ pub fn smith_normal_form_z(
         }
         loop {
             if d[k][k].is_negative() {
-                negate_row(&mut d, k);
-                negate_row(&mut u, k);
+                negate_row(&mut d, k, limits)?;
+                negate_row(&mut u, k, limits)?;
             }
             let mut changed = false;
             for r in (k + 1)..m {
                 if !d[r][k].is_zero() {
                     let q = d[r][k].div_floor(&d[k][k]);
-                    row_sub_mul(&mut d, r, k, &q);
-                    row_sub_mul(&mut u, r, k, &q);
+                    row_sub_mul(&mut d, r, k, &q, limits)?;
+                    row_sub_mul(&mut u, r, k, &q, limits)?;
                     if !d[r][k].is_zero() {
                         d.swap(k, r);
                         u.swap(k, r);
@@ -138,8 +152,8 @@ pub fn smith_normal_form_z(
             for c in (k + 1)..num_cols {
                 if !d[k][c].is_zero() {
                     let q = d[k][c].div_floor(&d[k][k]);
-                    col_sub_mul(&mut d, c, k, &q);
-                    col_sub_mul(&mut v, c, k, &q);
+                    col_sub_mul(&mut d, c, k, &q, limits)?;
+                    col_sub_mul(&mut v, c, k, &q, limits)?;
                     if !d[k][c].is_zero() {
                         swap_cols(&mut d, k, c);
                         swap_cols(&mut v, k, c);
@@ -152,8 +166,8 @@ pub fn smith_normal_form_z(
                 continue;
             }
             if d[k][k].is_negative() {
-                negate_row(&mut d, k);
-                negate_row(&mut u, k);
+                negate_row(&mut d, k, limits)?;
+                negate_row(&mut u, k, limits)?;
             }
             let mut non_div = None;
             'outer: for r in (k + 1)..m {
@@ -165,8 +179,8 @@ pub fn smith_normal_form_z(
                 }
             }
             if let Some(r) = non_div {
-                row_add(&mut d, k, r);
-                row_add(&mut u, k, r);
+                row_add(&mut d, k, r, limits)?;
+                row_add(&mut u, k, r, limits)?;
                 continue;
             }
             break;
@@ -214,6 +228,16 @@ pub fn solve_affine_z(
     rhs: &[BigInt],
     num_vars: usize,
 ) -> Result<AffineSolutionZ, AlgebraError> {
+    let limits = crate::limits::active_limits();
+    solve_affine_z_with_limits(matrix, rhs, num_vars, &limits)
+}
+
+pub fn solve_affine_z_with_limits(
+    matrix: &[Vec<BigInt>],
+    rhs: &[BigInt],
+    num_vars: usize,
+    limits: &ShigureLimits,
+) -> Result<AffineSolutionZ, AlgebraError> {
     let m = matrix.len();
     if rhs.len() != m {
         return Err(AlgebraError::ArityMismatch {
@@ -221,7 +245,10 @@ pub fn solve_affine_z(
             actual: rhs.len(),
         });
     }
-    let snf = smith_normal_form_z(matrix, num_vars)?;
+    for v in rhs {
+        limits.check_bigint_bits(v, "solve_affine_z_rhs")?;
+    }
+    let snf = smith_normal_form_z_with_limits(matrix, num_vars, limits)?;
     let rank = snf.rank;
     let u = snf.u;
     let v = snf.v;
@@ -231,9 +258,10 @@ pub fn solve_affine_z(
             for c in 0..m {
                 acc += &u[r][c] * &rhs[c];
             }
-            acc
+            limits.check_bigint_bits(&acc, "solve_affine_z_beta")?;
+            Ok(acc)
         })
-        .collect();
+        .collect::<Result<Vec<_>, AlgebraError>>()?;
 
     // 不整合検査: d_i ∤ beta_i または零行で beta_j != 0。
     for (i, diag) in snf.diagonals.iter().enumerate() {
@@ -329,31 +357,60 @@ fn swap_cols(mat: &mut [Vec<BigInt>], c1: usize, c2: usize) {
     }
 }
 
-fn row_sub_mul(mat: &mut [Vec<BigInt>], target: usize, src: usize, factor: &BigInt) {
+fn row_sub_mul(
+    mat: &mut [Vec<BigInt>],
+    target: usize,
+    src: usize,
+    factor: &BigInt,
+    limits: &ShigureLimits,
+) -> Result<(), AlgebraError> {
     let src_row = mat[src].clone();
     for (dst, s) in mat[target].iter_mut().zip(&src_row) {
         *dst -= factor * s;
+        limits.check_bigint_bits(dst, "snf_z_row_sub_mul")?;
     }
+    Ok(())
 }
 
-fn row_add(mat: &mut [Vec<BigInt>], target: usize, src: usize) {
+fn row_add(
+    mat: &mut [Vec<BigInt>],
+    target: usize,
+    src: usize,
+    limits: &ShigureLimits,
+) -> Result<(), AlgebraError> {
     let src_row = mat[src].clone();
     for (dst, s) in mat[target].iter_mut().zip(&src_row) {
         *dst += s;
+        limits.check_bigint_bits(dst, "snf_z_row_add")?;
     }
+    Ok(())
 }
 
-fn col_sub_mul(mat: &mut [Vec<BigInt>], target: usize, src: usize, factor: &BigInt) {
+fn col_sub_mul(
+    mat: &mut [Vec<BigInt>],
+    target: usize,
+    src: usize,
+    factor: &BigInt,
+    limits: &ShigureLimits,
+) -> Result<(), AlgebraError> {
     for row in mat.iter_mut() {
         let sub = factor * &row[src];
         row[target] -= sub;
+        limits.check_bigint_bits(&row[target], "snf_z_col_sub_mul")?;
     }
+    Ok(())
 }
 
-fn negate_row(mat: &mut [Vec<BigInt>], row_idx: usize) {
+fn negate_row(
+    mat: &mut [Vec<BigInt>],
+    row_idx: usize,
+    limits: &ShigureLimits,
+) -> Result<(), AlgebraError> {
     for v in &mut mat[row_idx] {
         *v = -v.clone();
+        limits.check_bigint_bits(v, "snf_z_negate_row")?;
     }
+    Ok(())
 }
 
 fn verify_consistent_z(
@@ -577,6 +634,26 @@ pub fn solve_fp_enumeration(
     })
 }
 
+fn map_system_alg_err(condition: &str, err: AlgebraError) -> SilenceReason {
+    match err {
+        AlgebraError::ResourceLimitExceeded {
+            limit_name,
+            limit,
+            observed,
+            detail,
+        } => SilenceReason::ResourceLimitExceeded {
+            limit_name,
+            limit,
+            observed,
+            detail,
+        },
+        other => SilenceReason::ApplicabilityConditionNotMet {
+            condition: condition.to_owned(),
+            detail: other.to_string(),
+        },
+    }
+}
+
 /// Q 上の多項式系 `(equations, invertibles)` を `PointDomain` に従って判定する（AC5(b) 沈黙規律）。
 ///
 /// - `AlgebraicClosure`: Rabinowitsch + Gröbner 基底で `1 in I` を厳密判定。
@@ -612,10 +689,7 @@ pub fn solve_polynomial_system_q(
                 parameter_equations: rab.parameter_equations,
             },
             Err(e) => {
-                SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
-                    condition: "groebner_computation".to_owned(),
-                    detail: e.to_string(),
-                })
+                SystemPointOutcome::Undetermined(map_system_alg_err("groebner_computation", e))
             }
         },
         PointDomain::RationalPoints => {
@@ -623,12 +697,10 @@ pub fn solve_polynomial_system_q(
                 let (mat, rhs) = extract_affine_q(equations, vars.len());
                 return match solve_affine_q(&mat, &rhs, vars.len()) {
                     Ok(sol) => SystemPointOutcome::AffineQ(sol),
-                    Err(e) => SystemPointOutcome::Undetermined(
-                        SilenceReason::ApplicabilityConditionNotMet {
-                            condition: "rational_affine_solver".to_owned(),
-                            detail: e.to_string(),
-                        },
-                    ),
+                    Err(e) => SystemPointOutcome::Undetermined(map_system_alg_err(
+                        "rational_affine_solver",
+                        e,
+                    )),
                 };
             }
             match rabinowitsch_solve(equations, invertibles, vars) {
@@ -652,10 +724,7 @@ pub fn solve_polynomial_system_q(
                     )
                 }
                 Err(e) => {
-                    SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
-                        condition: "groebner_computation".to_owned(),
-                        detail: e.to_string(),
-                    })
+                    SystemPointOutcome::Undetermined(map_system_alg_err("groebner_computation", e))
                 }
             }
         }
@@ -664,12 +733,10 @@ pub fn solve_polynomial_system_q(
                 return match extract_affine_z_from_q(equations, vars.len()) {
                     Some((mat, rhs)) => match solve_affine_z(&mat, &rhs, vars.len()) {
                         Ok(sol) => SystemPointOutcome::AffineZ(sol),
-                        Err(e) => SystemPointOutcome::Undetermined(
-                            SilenceReason::ApplicabilityConditionNotMet {
-                                condition: "integer_affine_solver".to_owned(),
-                                detail: e.to_string(),
-                            },
-                        ),
+                        Err(e) => SystemPointOutcome::Undetermined(map_system_alg_err(
+                            "integer_affine_solver",
+                            e,
+                        )),
                     },
                     None => SystemPointOutcome::Undetermined(
                         SilenceReason::ApplicabilityConditionNotMet {
@@ -690,10 +757,7 @@ pub fn solve_polynomial_system_q(
                     },
                 ),
                 Err(e) => {
-                    SystemPointOutcome::Undetermined(SilenceReason::ApplicabilityConditionNotMet {
-                        condition: "groebner_computation".to_owned(),
-                        detail: e.to_string(),
-                    })
+                    SystemPointOutcome::Undetermined(map_system_alg_err("groebner_computation", e))
                 }
             }
         }

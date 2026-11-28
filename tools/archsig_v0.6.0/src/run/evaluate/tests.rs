@@ -334,6 +334,7 @@ fn quantified_delivery_keeps_raw_summary_save_reuse_and_final_signal_contracts()
                             let checked = super::super::reuse::inspect(
                                 Some(&baseline),
                                 evaluation.prepared(),
+                                archsig_common::limits::DEFAULT_MAX_FILE_BYTES,
                                 &control,
                             )
                             .unwrap()

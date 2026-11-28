@@ -514,15 +514,17 @@ fn analyze_setting_17_5(
 }
 
 fn map_refinement_err(err: crate::algebra::poly::AlgebraError) -> SilenceReason {
-    let detail = format!("{err:?}");
-    if detail.contains("iteration bound") || detail.contains("exceeded") {
-        SilenceReason::FiniteEnumerationOutOfScope { detail }
-    } else {
-        SilenceReason::ApplicabilityConditionNotMet {
-            condition: "setting_17_5_closed".to_owned(),
-            detail,
+    SilenceReason::from_algebra_with(err, |err| {
+        let detail = format!("{err:?}");
+        if detail.contains("iteration bound") || detail.contains("exceeded") {
+            SilenceReason::FiniteEnumerationOutOfScope { detail }
+        } else {
+            SilenceReason::ApplicabilityConditionNotMet {
+                condition: "setting_17_5_closed".to_owned(),
+                detail,
+            }
         }
-    }
+    })
 }
 
 /// 定義 17.4 式 (17.2) に従い、許容評価文脈族と固定値 sort のみから文脈同値 $\approx_{\mathcal{V}}$ を計算する。

@@ -3,8 +3,7 @@
 
 use crate::algebra::artin::{AffineSolutionField, solve_affine_field};
 use crate::algebra::hitting_set::{
-    DEFAULT_MAX_HITTING_SET_RESULTS, HittingSetInput, HittingSetOutcome,
-    enumerate_minimal_hitting_sets, verify_minimal_hitting_sets,
+    HittingSetInput, HittingSetOutcome, enumerate_minimal_hitting_sets, verify_minimal_hitting_sets,
 };
 use crate::algebra::linear::{AffineSolutionQ, AffineSolutionZ, solve_affine_q, solve_affine_z};
 use crate::algebra::scalar::{FpElem, Rat};
@@ -104,7 +103,7 @@ pub(super) fn analyze_quantifier_hierarchy(
         hyperedges: hyperedges.clone(),
         weights: None,
         max_steps: q.max_steps,
-        max_results: DEFAULT_MAX_HITTING_SET_RESULTS,
+        max_results: crate::limits::active_limits().max_hitting_set_results,
     })
     .map_err(|e| SilenceReason::FiniteEnumerationOutOfScope {
         detail: format!("{e:?}"),
@@ -417,9 +416,11 @@ fn analyze_affine_restriction(
                 Ok(AffineSolutionQ::Consistent { kernel_basis, .. }) => {
                     compute_restriction_dims(&r_mat, &kernel_basis, &zero)
                 }
-                Err(e) => Err(SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: format!("{e:?}"),
-                }),
+                Err(e) => Err(SilenceReason::from_algebra_with(e, |err| {
+                    SilenceReason::FiniteEnumerationOutOfScope {
+                        detail: format!("{err:?}"),
+                    }
+                })),
             }
         }
         CoeffDomain::Fp(p) => {
@@ -440,9 +441,11 @@ fn analyze_affine_restriction(
                 Ok(AffineSolutionField::Consistent { kernel_basis, .. }) => {
                     compute_restriction_dims(&r_mat, &kernel_basis, &zero)
                 }
-                Err(e) => Err(SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: format!("{e:?}"),
-                }),
+                Err(e) => Err(SilenceReason::from_algebra_with(e, |err| {
+                    SilenceReason::FiniteEnumerationOutOfScope {
+                        detail: format!("{err:?}"),
+                    }
+                })),
             }
         }
         CoeffDomain::Z => {
@@ -472,9 +475,11 @@ fn analyze_affine_restriction(
                         .collect();
                     compute_restriction_dims(&r_mat, &ker_rat, &Rat::zero())
                 }
-                Err(e) => Err(SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: format!("{e:?}"),
-                }),
+                Err(e) => Err(SilenceReason::from_algebra_with(e, |err| {
+                    SilenceReason::FiniteEnumerationOutOfScope {
+                        detail: format!("{err:?}"),
+                    }
+                })),
             }
         }
     }

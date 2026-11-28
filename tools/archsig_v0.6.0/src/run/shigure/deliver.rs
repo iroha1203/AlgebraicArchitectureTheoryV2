@@ -629,6 +629,17 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
             "unsupported_algorithm",
             format!("applicability condition `{condition}` not met: {detail}"),
         ),
+        SilenceReason::ResourceLimitExceeded {
+            limit_name,
+            limit,
+            observed,
+            detail,
+        } => (
+            "resource_limit_exceeded",
+            format!(
+                "resource limit `{limit_name}` exceeded (limit={limit}, observed={observed}): {detail}"
+            ),
+        ),
     };
     Json::obj([
         ("code", Json::str(code)),

@@ -18,8 +18,6 @@ use crate::solver::partial_affine::scalar_to_rat;
 use crate::solver::revision::{NormScalar, enumerate_coord_completions, point_domain_for};
 use std::collections::{BTreeMap, BTreeSet};
 
-const DEFAULT_SUPPORT_MAX_COMPLETIONS: usize = 4_096;
-
 /// `shigure_multisource`（第19章後半）の計算核入口。
 pub fn solve_multisource_task(task: &CheckedMultisourceTask) -> ShigureOutcome {
     let provenance = with_ch19_multi_clauses(task.provenance());
@@ -118,7 +116,7 @@ fn solve_multisource_inner(
             &forbids,
             &cons,
             domain,
-            DEFAULT_SUPPORT_MAX_COMPLETIONS,
+            crate::limits::active_limits().max_support_completions,
         )?;
         Ok(!comps.is_empty())
     };
@@ -463,13 +461,14 @@ fn solve_support_instance(
     for c in cands {
         all_assigns.push((c.spec.coord.clone(), c.norm_val.clone()));
     }
+    let max_support_completions = crate::limits::active_limits().max_support_completions;
     let comp_ti = enumerate_coord_completions(
         coords,
         &all_assigns,
         &[],
         &cons_refs,
         domain,
-        DEFAULT_SUPPORT_MAX_COMPLETIONS,
+        max_support_completions,
     )?;
     let all_candidates_consistent = !comp_ti.is_empty();
 
@@ -479,7 +478,7 @@ fn solve_support_instance(
         &[],
         &cons_refs,
         domain,
-        DEFAULT_SUPPORT_MAX_COMPLETIONS,
+        max_support_completions,
     )?;
     if comp_t.is_empty() {
         return Ok((
@@ -555,7 +554,7 @@ fn solve_support_instance(
             &[],
             &cons_refs,
             domain,
-            DEFAULT_SUPPORT_MAX_COMPLETIONS,
+            max_support_completions,
         )?;
         if comps.is_empty() {
             return Ok((false, false));
@@ -741,7 +740,7 @@ fn check_stability_rec(
             extra_neg,
             cons_refs,
             domain,
-            DEFAULT_SUPPORT_MAX_COMPLETIONS,
+            crate::limits::active_limits().max_support_completions,
         )?;
         for a in &comps {
             if eval_goal(goal, a, domain)? != expected_truth {

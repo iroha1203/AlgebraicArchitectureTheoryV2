@@ -1,7 +1,6 @@
 //! AAT 第19章後半（多源高次構造衝突の極小列挙・検証後に結論を支える最小由来支持）の検証済み IR
 //! （`MultisourceTaskSpec` / `CheckedMultisourceTask`）。
 
-use crate::algebra::hitting_set::{DEFAULT_MAX_HITTING_SET_RESULTS, DEFAULT_MAX_HITTING_SET_STEPS};
 use crate::ir::provenance::{Provenance, SourceRef};
 use crate::ir::revision::{RevisionConstraintSpec, RevisionCoordSpec, validate_constraint};
 use crate::ir::term::{CoeffDomain, ScalarLit};
@@ -136,10 +135,10 @@ pub fn validate_multisource_task(
     validate_coeff_domain(&spec.coeff_domain, &format!("multisource `{}`", spec.name))?;
 
     if spec.max_sources_subset_steps == 0 {
-        spec.max_sources_subset_steps = DEFAULT_MAX_HITTING_SET_STEPS;
+        spec.max_sources_subset_steps = crate::limits::active_limits().max_hitting_set_steps;
     }
     if spec.max_results == 0 {
-        spec.max_results = DEFAULT_MAX_HITTING_SET_RESULTS;
+        spec.max_results = crate::limits::active_limits().max_hitting_set_results;
     }
 
     let mut coord_names = BTreeSet::new();

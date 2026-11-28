@@ -19,9 +19,6 @@ use crate::solver::transfer_words::{
 };
 use std::collections::BTreeMap;
 
-const MAX_WORD_LIFT_SKELETONS: usize = 256;
-const MAX_LIFT_BASIS_TERMS: usize = 28;
-
 /// 旧側操作語 `v` を移送後にも実行できる新語 `w`（`tau(w) = v` かつ `D_w` 非空）を独立探索する。
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn search_old_word_lift(
@@ -179,15 +176,14 @@ fn enumerate_matching_skeletons<'a>(
 ) -> Result<Vec<Vec<&'a OperationDecl>>, SilenceReason> {
     let mut out = Vec::new();
     let mut frontier_count = 0usize;
+    let max_skeletons = crate::limits::active_limits().max_word_lift_skeletons;
     let mut stack: Vec<(&str, usize, Vec<&'a OperationDecl>)> = vec![(start_phase, 0, Vec::new())];
     while let Some((cur_ph, matched, seq)) = stack.pop() {
         if matched == target_ops.len() {
             out.push(seq.clone());
-            if out.len() > MAX_WORD_LIFT_SKELETONS {
+            if out.len() > max_skeletons {
                 return Err(SilenceReason::UnboundedSearchOutOfScope {
-                    detail: format!(
-                        "old word lift skeleton count exceeded {MAX_WORD_LIFT_SKELETONS}"
-                    ),
+                    detail: format!("old word lift skeleton count exceeded {max_skeletons}"),
                 });
             }
         }
@@ -213,11 +209,9 @@ fn enumerate_matching_skeletons<'a>(
                 continue;
             }
             frontier_count += 1;
-            if frontier_count > MAX_WORD_LIFT_SKELETONS * 8 {
+            if frontier_count > max_skeletons.saturating_mul(8) {
                 return Err(SilenceReason::UnboundedSearchOutOfScope {
-                    detail: format!(
-                        "old word lift search frontier exceeded {MAX_WORD_LIFT_SKELETONS}"
-                    ),
+                    detail: format!("old word lift search frontier exceeded {max_skeletons}"),
                 });
             }
             let mut next = seq.clone();
@@ -291,7 +285,7 @@ fn collect_monomials(
     combo: &mut [usize],
     out: &mut Vec<PolyExpr>,
 ) {
-    if out.len() > MAX_LIFT_BASIS_TERMS {
+    if out.len() > crate::limits::active_limits().max_lift_basis_terms {
         return;
     }
     if depth == rem_deg {
@@ -331,7 +325,7 @@ fn build_lift_basis(
         let mut deg_terms = Vec::new();
         let mut combo = vec![0usize; deg];
         collect_monomials(&vars, 0, deg, 0, &mut combo, &mut deg_terms);
-        if basis.len() + deg_terms.len() > MAX_LIFT_BASIS_TERMS {
+        if basis.len() + deg_terms.len() > crate::limits::active_limits().max_lift_basis_terms {
             break;
         }
         basis.extend(deg_terms);

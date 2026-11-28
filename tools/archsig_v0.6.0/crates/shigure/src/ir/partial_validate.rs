@@ -13,8 +13,6 @@ use crate::ir::validate::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-pub const DEFAULT_MAX_COMPLETIONS: usize = 4_096;
-
 pub fn validate_partial_task(
     mut spec: PartialTaskSpec,
 ) -> Result<CheckedPartialTask, ValidationError> {
@@ -35,7 +33,7 @@ pub fn validate_partial_task(
     match &mut spec.representation {
         PartialRepresentation::FiniteTable(fin) => {
             if fin.max_completions == 0 {
-                fin.max_completions = DEFAULT_MAX_COMPLETIONS;
+                fin.max_completions = crate::limits::active_limits().max_completions;
             }
             validate_finite_partial(fin, &spec.eval_laws)?;
         }

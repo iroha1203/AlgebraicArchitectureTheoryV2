@@ -3,10 +3,11 @@
 
 use crate::algebra::artin::solve_affine_field;
 use crate::algebra::cochain::{mat_mul, mat_vec};
-use crate::algebra::linear::smith_normal_form_z;
+use crate::algebra::linear::smith_normal_form_z_with_limits;
 use crate::algebra::poly::AlgebraError;
 use crate::algebra::scalar::{Rat, RingCoeff};
 use crate::algebra::syzygy::FieldCoeff;
+use crate::limits::ShigureLimits;
 use num_bigint::BigInt;
 use num_traits::{One, Signed, Zero};
 
@@ -43,8 +44,17 @@ pub struct SnfRhsSolutionZ {
 impl SnfFactorizationZ {
     /// 整数行列 `matrix` ($m \times n$) の SNF を計算し、$UMV = D$・$|\det U| = |\det V| = 1$・整除鎖を検算する。
     pub fn compute(matrix: &[Vec<BigInt>], num_cols: usize) -> Result<Self, AlgebraError> {
+        let limits = crate::limits::active_limits();
+        Self::compute_with_limits(matrix, num_cols, &limits)
+    }
+
+    pub fn compute_with_limits(
+        matrix: &[Vec<BigInt>],
+        num_cols: usize,
+        limits: &ShigureLimits,
+    ) -> Result<Self, AlgebraError> {
         let rows = matrix.len();
-        let snf = smith_normal_form_z(matrix, num_cols)?;
+        let snf = smith_normal_form_z_with_limits(matrix, num_cols, limits)?;
         let rank = snf.rank;
 
         let mut d_expected = vec![vec![BigInt::zero(); num_cols]; rows];
@@ -53,10 +63,13 @@ impl SnfFactorizationZ {
         }
         let um = mat_mul(&snf.u, matrix, num_cols, &BigInt::zero());
         let umv = mat_mul(&um, &snf.v, num_cols, &BigInt::zero());
+        for row in umv.iter().flatten() {
+            limits.check_bigint_bits(row, "snf_z_umv")?;
+        }
         let umv_verified = umv == d_expected;
 
-        let det_u = determinant_z(&snf.u)?;
-        let det_v = determinant_z(&snf.v)?;
+        let det_u = determinant_z(&snf.u, limits)?;
+        let det_v = determinant_z(&snf.v, limits)?;
         let unimodular_verified = det_u.abs().is_one() && det_v.abs().is_one();
 
         let divisibility_verified = snf.diagonals.iter().all(|d| d > &BigInt::zero())
@@ -112,7 +125,11 @@ impl SnfFactorizationZ {
                 });
             }
         }
+        let limits = crate::limits::active_limits();
         let u_rhs = mat_vec(&self.u, rhs, &BigInt::zero());
+        for val in &u_rhs {
+            limits.check_bigint_bits(val, "snf_z solve_rhs u_rhs")?;
+        }
 
         for (i, diag) in self.diagonals.iter().enumerate() {
             if !(&u_rhs[i] % diag).is_zero() {
@@ -157,6 +174,9 @@ impl SnfFactorizationZ {
             y0[i] = &u_rhs[i] / diag;
         }
         let particular = mat_vec(&self.v, &y0, &BigInt::zero());
+        for val in &particular {
+            limits.check_bigint_bits(val, "snf_z solve_rhs particular")?;
+        }
 
         let mp = mat_vec(original_m, &particular, &BigInt::zero());
         let particular_ok = mp == rhs;
@@ -207,6 +227,15 @@ pub struct SnfRhsSolutionQ {
 impl SnfFactorizationQ {
     /// 有理行列 `matrix` ($m \times n$) の分解 $U M V = \operatorname{diag}(1,\dots,1,0,\dots,0)$ を計算・検算する。
     pub fn compute(matrix: &[Vec<Rat>], num_cols: usize) -> Result<Self, AlgebraError> {
+        let limits = crate::limits::active_limits();
+        Self::compute_with_limits(matrix, num_cols, &limits)
+    }
+
+    pub fn compute_with_limits(
+        matrix: &[Vec<Rat>],
+        num_cols: usize,
+        limits: &ShigureLimits,
+    ) -> Result<Self, AlgebraError> {
         let rows = matrix.len();
         for row in matrix {
             if row.len() != num_cols {
@@ -214,6 +243,9 @@ impl SnfFactorizationQ {
                     expected: num_cols,
                     actual: row.len(),
                 });
+            }
+            for v in row {
+                limits.check_rat_bits(v, "snf_q_input")?;
             }
         }
         let mut d = matrix.to_vec();
@@ -247,11 +279,14 @@ impl SnfFactorizationQ {
                 }
             }
             let scale = d[k][k].coeff_inv().expect("nonzero pivot");
+            limits.check_rat_bits(&scale, "snf_q_scale")?;
             for val in &mut d[k] {
                 *val = val.mul_ref(&scale);
+                limits.check_rat_bits(val, "snf_q_row_scale")?;
             }
             for val in &mut u[k] {
                 *val = val.mul_ref(&scale);
+                limits.check_rat_bits(val, "snf_q_u_scale")?;
             }
             for r in 0..rows {
                 if r == k || d[r][k].coeff_is_zero() {
@@ -261,10 +296,12 @@ impl SnfFactorizationQ {
                 let d_piv = d[k].clone();
                 for (dst, pv) in d[r].iter_mut().zip(&d_piv) {
                     *dst = dst.sub_ref(&factor.mul_ref(pv));
+                    limits.check_rat_bits(dst, "snf_q_row_elim")?;
                 }
                 let u_piv = u[k].clone();
                 for (dst, pv) in u[r].iter_mut().zip(&u_piv) {
                     *dst = dst.sub_ref(&factor.mul_ref(pv));
+                    limits.check_rat_bits(dst, "snf_q_u_elim")?;
                 }
             }
             for c in 0..num_cols {
@@ -275,10 +312,12 @@ impl SnfFactorizationQ {
                 for row in &mut d {
                     let sub = factor.mul_ref(&row[k]);
                     row[c] = row[c].sub_ref(&sub);
+                    limits.check_rat_bits(&row[c], "snf_q_col_elim")?;
                 }
                 for row in &mut v {
                     let sub = factor.mul_ref(&row[k]);
                     row[c] = row[c].sub_ref(&sub);
+                    limits.check_rat_bits(&row[c], "snf_q_v_elim")?;
                 }
             }
             k += 1;
@@ -332,7 +371,11 @@ impl SnfFactorizationQ {
                 });
             }
         }
+        let limits = crate::limits::active_limits();
         let u_rhs = mat_vec(&self.u, rhs, &Rat::zero());
+        for val in &u_rhs {
+            limits.check_rat_bits(val, "snf_q solve_rhs u_rhs")?;
+        }
         for (j, val) in u_rhs.iter().enumerate().skip(self.rank) {
             if !val.coeff_is_zero() {
                 let cert = &self.u[j];
@@ -364,6 +407,9 @@ impl SnfFactorizationQ {
             y0[i] = val.clone();
         }
         let particular = mat_vec(&self.v, &y0, &Rat::zero());
+        for val in &particular {
+            limits.check_rat_bits(val, "snf_q solve_rhs particular")?;
+        }
         let mp = mat_vec(original_m, &particular, &Rat::zero());
         let particular_ok = mp == rhs;
         let kernel_ok = self.kernel_basis.iter().all(|k| {
@@ -408,7 +454,7 @@ fn is_invertible_q(mat: &[Vec<Rat>]) -> Result<bool, AlgebraError> {
 }
 
 /// Bareiss 厳密整数行列式（正方行列のみ）。
-fn determinant_z(mat: &[Vec<BigInt>]) -> Result<BigInt, AlgebraError> {
+fn determinant_z(mat: &[Vec<BigInt>], limits: &ShigureLimits) -> Result<BigInt, AlgebraError> {
     let n = mat.len();
     if n == 0 {
         return Ok(BigInt::one());
@@ -427,12 +473,16 @@ fn determinant_z(mat: &[Vec<BigInt>]) -> Result<BigInt, AlgebraError> {
         for i in (k + 1)..n {
             for j in (k + 1)..n {
                 let num = &a[i][j] * &a[k][k] - &a[i][k] * &a[k][j];
-                a[i][j] = num / &prev;
+                let entry = num / &prev;
+                limits.check_bigint_bits(&entry, "snf_z_determinant")?;
+                a[i][j] = entry;
             }
         }
         prev = a[k][k].clone();
     }
-    Ok(sign * &a[n - 1][n - 1])
+    let det = sign * &a[n - 1][n - 1];
+    limits.check_bigint_bits(&det, "snf_z_determinant")?;
+    Ok(det)
 }
 
 fn left_mul_row_z(row_vec: &[BigInt], mat: &[Vec<BigInt>], cols: usize) -> Vec<BigInt> {

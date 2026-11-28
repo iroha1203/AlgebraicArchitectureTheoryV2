@@ -1,9 +1,9 @@
 //! 複数解釈族・共有規則族の有限点列挙と 1 変数有理根定理。
 
 use crate::algebra::{
-    AffineSolutionQ, AffineSolutionZ, ExprBindings, FpElem, GroebnerBasis, LocallyClosedStratum,
-    MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve, solve_affine_q, solve_affine_z,
-    solve_fp_enumeration,
+    AffineSolutionQ, AffineSolutionZ, AlgebraError, ExprBindings, FpElem, GroebnerBasis,
+    LocallyClosedStratum, MonomialOrder, Poly, Rat, VarOrder, rabinowitsch_solve, solve_affine_q,
+    solve_affine_z, solve_fp_enumeration,
 };
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::family::{CandidateSpace, CheckedFamilySpec, RealizationSpace};
@@ -21,12 +21,6 @@ use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 use std::collections::{BTreeMap, BTreeSet};
-
-/// 有限列挙型実現族・候補族・Fp 点全列挙の上限。
-pub const DEFAULT_MAX_ENUM_POINTS: usize = 256;
-
-const MAX_RATIONAL_ROOT_COEFF: u64 = 1_000_000_000;
-const MAX_RATIONAL_ROOT_DIVISORS: usize = 4_096;
 
 /// 係数域に応じた正確なスカラー値。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -263,13 +257,12 @@ pub(crate) fn univariate_rational_roots(
     for (m, c) in poly.terms() {
         coeffs[m.exps()[0] as usize] = c.num() * (&lcm_den / c.den());
     }
-    let limit = BigInt::from(MAX_RATIONAL_ROOT_COEFF);
+    let max_coeff = crate::limits::active_limits().max_rational_root_coeff;
+    let limit = BigInt::from(max_coeff);
     if coeffs.iter().any(|c| c.abs() > limit) {
         return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
             point_domain: PointDomain::RationalPoints,
-            detail: format!(
-                "univariate polynomial coefficient magnitude exceeds {MAX_RATIONAL_ROOT_COEFF}"
-            ),
+            detail: format!("univariate polynomial coefficient magnitude exceeds {max_coeff}"),
         });
     }
 
@@ -330,10 +323,11 @@ fn positive_divisors_u64(n: u64) -> Result<Vec<u64>, SilenceReason> {
             if d != n / d {
                 divs.push(n / d);
             }
-            if divs.len() > MAX_RATIONAL_ROOT_DIVISORS {
+            let max_divs = crate::limits::active_limits().max_rational_root_divisors;
+            if divs.len() > max_divs {
                 return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
                     point_domain: PointDomain::RationalPoints,
-                    detail: format!("divisor count exceeded {MAX_RATIONAL_ROOT_DIVISORS}"),
+                    detail: format!("divisor count exceeded {max_divs}"),
                 });
             }
         }
@@ -721,6 +715,9 @@ fn enumerate_scheme_realizations(
                             detail: "cannot finitely enumerate infinite affine integer realization fiber".to_owned(),
                         });
                     }
+                    Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                        return Err(map_algebra_silence(e));
+                    }
                     _ => {}
                 }
             }
@@ -729,17 +726,23 @@ fn enumerate_scheme_realizations(
             && invs_q.iter().all(Poly::is_affine)
             && let Ok((mat, rhs)) =
                 polys_to_affine_system_q(&rab.parameter_equations, u_names.len())
-            && let Ok(AffineSolutionQ::Consistent {
-                kernel_basis,
-                verified: true,
-                ..
-            }) = solve_affine_q(&mat, &rhs, u_names.len())
-            && !kernel_basis.is_empty()
         {
-            return Err(SilenceReason::FiniteEnumerationOutOfScope {
-                detail: "cannot finitely enumerate infinite affine rational/integer fiber"
-                    .to_owned(),
-            });
+            match solve_affine_q(&mat, &rhs, u_names.len()) {
+                Ok(AffineSolutionQ::Consistent {
+                    kernel_basis,
+                    verified: true,
+                    ..
+                }) if !kernel_basis.is_empty() => {
+                    return Err(SilenceReason::FiniteEnumerationOutOfScope {
+                        detail: "cannot finitely enumerate infinite affine rational/integer fiber"
+                            .to_owned(),
+                    });
+                }
+                Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                    return Err(map_algebra_silence(e));
+                }
+                _ => {}
+            }
         }
         return Err(SilenceReason::NonLinearRationalOrIntegerExistence {
             point_domain: point_domain.clone(),

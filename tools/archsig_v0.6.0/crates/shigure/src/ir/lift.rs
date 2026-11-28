@@ -1,7 +1,6 @@
 //! 全 syzygy 平方零 lift・相対障害・宣言被覆比較・有限 étale 被覆 cocycle descent の検証済み IR
 //! （G-141 E1–E8・C8–C9・H1–H4・H10 / W5）。
 
-use crate::algebra::artin::DEFAULT_MAX_ARTIN_DIM;
 use crate::ir::artin::{check_expr_refs, check_named_poly, validate_lit_for_domain};
 use crate::ir::change::NamedPoly;
 use crate::ir::provenance::Provenance;
@@ -671,10 +670,11 @@ fn validate_square_zero_spec(
                     detail: format!("{context} extension base_degree overflow"),
                 });
             };
-            if rp_dim > DEFAULT_MAX_ARTIN_DIM {
+            let max_artin_dim = crate::limits::active_limits().max_artin_dim;
+            if rp_dim > max_artin_dim {
                 return Err(ValidationError::ConversionError {
                     detail: format!(
-                        "{context} extension dimension {rp_dim} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                        "{context} extension dimension {rp_dim} exceeds limit {max_artin_dim}"
                     ),
                 });
             }
@@ -696,10 +696,11 @@ fn validate_square_zero_spec(
                     detail: format!("{context} explicit algebras must have positive dimension"),
                 });
             }
-            if dp > DEFAULT_MAX_ARTIN_DIM || dr > DEFAULT_MAX_ARTIN_DIM {
+            let max_artin_dim = crate::limits::active_limits().max_artin_dim;
+            if dp > max_artin_dim || dr > max_artin_dim {
                 return Err(ValidationError::ConversionError {
                     detail: format!(
-                        "{context} explicit algebra dimension exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                        "{context} explicit algebra dimension exceeds limit {max_artin_dim}"
                     ),
                 });
             }

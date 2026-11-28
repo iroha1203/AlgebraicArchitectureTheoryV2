@@ -2,14 +2,11 @@
 //! 2 段合成則（F6）・自由観測 chart 構文次数上界 $D$（F7）・非 Noetherian 沈黙（H7）の計算核。
 
 use crate::algebra::MonomialOrder;
-use crate::algebra::artin::DEFAULT_MAX_ARTIN_DIM;
 use crate::algebra::artin_quotient::LocalArtinQuotient;
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, RingCoeff};
-use crate::algebra::syzygy::{
-    DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, compute_syzygies_field, ideal_membership_field,
-};
+use crate::algebra::syzygy::{FieldCoeff, compute_syzygies_field, ideal_membership_field};
 use crate::ir::artin::{ArtinTaskSpec, AuxiliaryDefSpec, BaseChangeSpec, CheckedArtinTask};
 use crate::ir::change::{NamedPoly, PointDomain};
 use crate::ir::provenance::{MathClause, Provenance};
@@ -71,7 +68,9 @@ pub fn solve_artin_task(task: &CheckedArtinTask) -> ShigureOutcome {
         MathClause::G140P0Dot1,
     ));
 
-    let max_dim = spec.max_artin_dim.unwrap_or(DEFAULT_MAX_ARTIN_DIM);
+    let max_dim = spec
+        .max_artin_dim
+        .unwrap_or_else(|| crate::limits::active_limits().max_artin_dim);
     match &spec.coeff_domain {
         CoeffDomain::Q => solve_artin_with_backend(
             spec,
@@ -505,14 +504,18 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
             let mut all_gens = Vec::with_capacity(extra_res.len() + obs_rels.len());
             all_gens.extend_from_slice(extra_res);
             all_gens.extend_from_slice(obs_rels);
+            let max_syzygy_pairs = crate::limits::active_limits().max_syzygy_pairs;
             let syz = compute_syzygies_field(
                 &all_gens,
                 obs_order.clone(),
                 MonomialOrder::Grevlex,
-                DEFAULT_MAX_SYZYGY_PAIRS,
+                max_syzygy_pairs,
             )
-            .map_err(|e| SilenceReason::SyzygyOutOfScope {
-                detail: e.to_string(),
+            .map_err(|e| match e {
+                AlgebraError::ResourceLimitExceeded { .. } => map_artin_err(e),
+                other => SilenceReason::SyzygyOutOfScope {
+                    detail: other.to_string(),
+                },
             })?;
             let two_context_cech_matches = syz.generators.iter().all(|s_vec| {
                 let mut acc = q_r.algebra.zero_elem();
@@ -555,7 +558,7 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
                 obs_rels,
                 obs_order,
                 MonomialOrder::Grevlex,
-                DEFAULT_MAX_SYZYGY_PAIRS,
+                crate::limits::active_limits().max_syzygy_pairs,
             ) {
                 Ok(Some(_)) => {}
                 Ok(None) => {
@@ -848,7 +851,7 @@ where
 }
 
 pub(crate) fn map_artin_err(err: AlgebraError) -> SilenceReason {
-    match err {
+    SilenceReason::from_algebra_with(err, |err| match err {
         AlgebraError::UnobservedDependency { slots } => {
             SilenceReason::UnobservedDependency { slots }
         }
@@ -857,7 +860,7 @@ pub(crate) fn map_artin_err(err: AlgebraError) -> SilenceReason {
             condition: "artin_algebra_computation".to_owned(),
             detail: other.to_string(),
         },
-    }
+    })
 }
 
 fn build_artin_provenance(spec: &ArtinTaskSpec) -> Provenance {

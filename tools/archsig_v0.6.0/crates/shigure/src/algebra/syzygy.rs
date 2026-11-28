@@ -2,16 +2,17 @@
 //! 形式偏微分 Jacobian 計算（G-141 E2・E8・H2–H3）。
 
 use crate::algebra::MonomialOrder;
-use crate::algebra::linear::{AffineSolutionZ, solve_affine_z};
+use crate::algebra::linear::{AffineSolutionZ, solve_affine_z_with_limits};
 use crate::algebra::poly::{AlgebraError, Monomial, Poly, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
+use crate::limits::ShigureLimits;
 use num_bigint::BigInt;
 use num_integer::Integer;
 use num_traits::{One, Zero};
 use std::collections::BTreeSet;
 
 /// Schreyer / Buchberger S-pair 計算の既定安全上限。
-pub const DEFAULT_MAX_SYZYGY_PAIRS: usize = 4_096;
+pub use crate::limits::DEFAULT_MAX_SYZYGY_PAIRS;
 
 /// 体係数（`Q`・`F_p`）に対する共通逆元トレイト。
 pub trait FieldCoeff: RingCoeff {
@@ -105,6 +106,18 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
     order: MonomialOrder,
     max_pairs: usize,
 ) -> Result<SyzygyModule<C>, AlgebraError> {
+    let mut limits = crate::limits::active_limits();
+    limits.max_syzygy_pairs = max_pairs;
+    compute_syzygies_field_with_limits(originals, vars, order, &limits)
+}
+
+pub fn compute_syzygies_field_with_limits<C: FieldCoeff>(
+    originals: &[Poly<C>],
+    vars: VarOrder,
+    order: MonomialOrder,
+    limits: &ShigureLimits,
+) -> Result<SyzygyModule<C>, AlgebraError> {
+    let max_pairs = limits.max_syzygy_pairs;
     let n = vars.len();
     let r = originals.len();
     for f in originals {
@@ -114,6 +127,7 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
                 actual: f.num_vars(),
             });
         }
+        limits.check_poly(f, "syzygy_field_input")?;
     }
     if r == 0 {
         return Ok(SyzygyModule {
@@ -137,7 +151,7 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
     let one_p = Poly::one(n, zero_c.clone());
 
     // 1. cofactor 追跡付き Gröbner 基底 G = A * F を構成する。
-    let basis = compute_tracked_gb(originals, n, &zero_c, order, max_pairs)?;
+    let basis = compute_tracked_gb(originals, n, &zero_c, order, limits)?;
 
     // 2. 各原始多項式 f_i を G で割って B_{i,*} を得る: f_i = sum_a B_{i,a} * g_a。
     //    I_r - B * A の各行は Syz(F) に属する。
@@ -149,7 +163,7 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
             raw_syzs.push(e_i);
             continue;
         }
-        let (rem, b_row) = divide_field(f_i, &basis, &zero_c, order)?;
+        let (rem, b_row) = divide_field(f_i, &basis, &zero_c, order, limits)?;
         if !rem.is_zero() {
             return Err(AlgebraError::OutOfScope {
                 detail: "internal Groebner division invariant violated while expressing originals"
@@ -165,7 +179,9 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
             }
             for (dst, a_aj) in syz.iter_mut().zip(&g_a.cofactors) {
                 if !a_aj.is_zero() {
-                    *dst = dst.sub(&b_ia.checked_mul(a_aj)?);
+                    let prod = b_ia.checked_mul_bounded(a_aj, limits, "syzygy_lift_row")?;
+                    *dst = dst.sub(&prod);
+                    limits.check_poly(dst, "syzygy_lift_row")?;
                 }
             }
         }
@@ -202,7 +218,8 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
                 .poly
                 .checked_mul_term(&m_a, &inv_a)?
                 .sub(&basis[b].poly.checked_mul_term(&m_b, &inv_b)?);
-            let (rem, q_row) = divide_field(&s_poly, &basis, &zero_c, order)?;
+            limits.check_poly(&s_poly, "syzygy_schreyer_spoly")?;
+            let (rem, q_row) = divide_field(&s_poly, &basis, &zero_c, order, limits)?;
             if !rem.is_zero() {
                 return Err(AlgebraError::OutOfScope {
                     detail: "internal Groebner basis S-polynomial did not reduce to zero"
@@ -216,6 +233,7 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
             for (dst, q_c) in u.iter_mut().zip(&q_row) {
                 if !q_c.is_zero() {
                     *dst = dst.sub(q_c);
+                    limits.check_poly(dst, "syzygy_schreyer_u")?;
                 }
             }
             // Lift u * A into Syz(F)
@@ -226,7 +244,9 @@ pub fn compute_syzygies_field<C: FieldCoeff>(
                 }
                 for (dst, a_cj) in lifted.iter_mut().zip(&g_c.cofactors) {
                     if !a_cj.is_zero() {
-                        *dst = dst.add(&u_c.checked_mul(a_cj)?);
+                        let prod = u_c.checked_mul_bounded(a_cj, limits, "syzygy_schreyer_lift")?;
+                        *dst = dst.add(&prod);
+                        limits.check_poly(dst, "syzygy_schreyer_lift")?;
                     }
                 }
             }
@@ -259,6 +279,15 @@ pub fn compute_syzygies_z(
     originals: &[Poly<BigInt>],
     vars: VarOrder,
 ) -> Result<SyzygyModule<BigInt>, AlgebraError> {
+    let limits = crate::limits::active_limits();
+    compute_syzygies_z_with_limits(originals, vars, &limits)
+}
+
+pub fn compute_syzygies_z_with_limits(
+    originals: &[Poly<BigInt>],
+    vars: VarOrder,
+    limits: &ShigureLimits,
+) -> Result<SyzygyModule<BigInt>, AlgebraError> {
     let n = vars.len();
     let r = originals.len();
     for f in originals {
@@ -268,6 +297,7 @@ pub fn compute_syzygies_z(
                 actual: f.num_vars(),
             });
         }
+        limits.check_poly(f, "syzygy_z_input")?;
     }
     let zero_p = Poly::zero(n, BigInt::zero());
     let one_p = Poly::one(n, BigInt::zero());
@@ -328,7 +358,7 @@ pub fn compute_syzygies_z(
     if let Some(coeffs) = extract_common_primitive_multiples(originals, &nonzero_indices) {
         let row = vec![coeffs];
         let rhs = vec![BigInt::zero()];
-        match solve_affine_z(&row, &rhs, nonzero_indices.len())? {
+        match solve_affine_z_with_limits(&row, &rhs, nonzero_indices.len(), limits)? {
             AffineSolutionZ::Consistent { kernel_basis, .. } => {
                 for vec_z in kernel_basis {
                     let mut syz = vec![zero_p.clone(); r];
@@ -353,7 +383,8 @@ pub fn compute_syzygies_z(
     if nonzero_indices
         .iter()
         .all(|&i| originals[i].terms().keys().all(|m| m.total_degree() == 1))
-        && let Some(linear_syzs) = try_unimodular_linear_syzygies_z(originals, &nonzero_indices, n)?
+        && let Some(linear_syzs) =
+            try_unimodular_linear_syzygies_z(originals, &nonzero_indices, n, limits)?
     {
         raw_syzs.extend(linear_syzs);
         return finalize_z_syzygies(vars, originals, raw_syzs);
@@ -429,6 +460,7 @@ fn try_unimodular_linear_syzygies_z(
     originals: &[Poly<BigInt>],
     nonzero_indices: &[usize],
     num_vars: usize,
+    limits: &ShigureLimits,
 ) -> Result<Option<Vec<Vec<Poly<BigInt>>>>, AlgebraError> {
     let r = originals.len();
     let k = nonzero_indices.len();
@@ -442,7 +474,7 @@ fn try_unimodular_linear_syzygies_z(
         }
     }
     let rhs = vec![BigInt::zero(); num_vars];
-    let sol = solve_affine_z(&mat, &rhs, k)?;
+    let sol = solve_affine_z_with_limits(&mat, &rhs, k, limits)?;
     let AffineSolutionZ::Consistent {
         kernel_basis,
         smith_diagonals,
@@ -498,8 +530,9 @@ fn compute_tracked_gb<C: FieldCoeff>(
     n: usize,
     zero_c: &C,
     order: MonomialOrder,
-    max_pairs: usize,
+    limits: &ShigureLimits,
 ) -> Result<Vec<FieldTracked<C>>, AlgebraError> {
+    let max_pairs = limits.max_syzygy_pairs;
     let r = originals.len();
     let zero_p = Poly::zero(n, zero_c.clone());
     let one_p = Poly::one(n, zero_c.clone());
@@ -518,7 +551,8 @@ fn compute_tracked_gb<C: FieldCoeff>(
                 cofactors,
             },
             order,
-        );
+            limits,
+        )?;
         let Some((lm, _)) = tracked.poly.leading_term(order) else {
             continue;
         };
@@ -558,11 +592,11 @@ fn compute_tracked_gb<C: FieldCoeff>(
             handled.insert(key);
             continue;
         }
-        let s_poly = s_polynomial_field(&basis[i], &basis[j], order)?;
-        let reduced = reduce_tracked_field(&s_poly, &basis, zero_c, order)?;
+        let s_poly = s_polynomial_field(&basis[i], &basis[j], order, limits)?;
+        let reduced = reduce_tracked_field(&s_poly, &basis, zero_c, order, limits)?;
         handled.insert(key);
         if !reduced.poly.is_zero() {
-            let monic = make_monic_field(reduced, order);
+            let monic = make_monic_field(reduced, order, limits)?;
             let Some((new_lm, _)) = monic.poly.leading_term(order) else {
                 continue;
             };
@@ -586,25 +620,29 @@ fn compute_tracked_gb<C: FieldCoeff>(
 fn make_monic_field<C: FieldCoeff>(
     mut tracked: FieldTracked<C>,
     order: MonomialOrder,
-) -> FieldTracked<C> {
+    limits: &ShigureLimits,
+) -> Result<FieldTracked<C>, AlgebraError> {
     let Some((_, lc)) = tracked.poly.leading_term(order) else {
-        return tracked;
+        return Ok(tracked);
     };
     if lc.coeff_is_one() {
-        return tracked;
+        return Ok(tracked);
     }
     let inv = lc.coeff_inv().expect("leading coefficient is nonzero");
     tracked.poly = tracked.poly.scale(&inv);
+    limits.check_poly(&tracked.poly, "syzygy_make_monic")?;
     for c in &mut tracked.cofactors {
         *c = c.scale(&inv);
+        limits.check_poly(c, "syzygy_make_monic_cofactor")?;
     }
-    tracked
+    Ok(tracked)
 }
 
 fn s_polynomial_field<C: FieldCoeff>(
     a: &FieldTracked<C>,
     b: &FieldTracked<C>,
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<FieldTracked<C>, AlgebraError> {
     let (lm_a, lc_a) = a
         .poly
@@ -624,11 +662,14 @@ fn s_polynomial_field<C: FieldCoeff>(
         .poly
         .checked_mul_term(&m_a, &inv_a)?
         .sub(&b.poly.checked_mul_term(&m_b, &inv_b)?);
+    limits.check_poly(&poly, "syzygy_s_poly")?;
     let mut cofactors = Vec::with_capacity(a.cofactors.len());
     for (ca, cb) in a.cofactors.iter().zip(&b.cofactors) {
         let left = ca.checked_mul_term(&m_a, &inv_a)?;
         let right = cb.checked_mul_term(&m_b, &inv_b)?;
-        cofactors.push(left.sub(&right));
+        let diff = left.sub(&right);
+        limits.check_poly(&diff, "syzygy_s_poly_cofactor")?;
+        cofactors.push(diff);
     }
     Ok(FieldTracked { poly, cofactors })
 }
@@ -638,6 +679,7 @@ fn reduce_tracked_field<C: FieldCoeff>(
     basis: &[FieldTracked<C>],
     zero_c: &C,
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<FieldTracked<C>, AlgebraError> {
     let n = target.poly.num_vars();
     let mut p = target.poly.clone();
@@ -654,10 +696,23 @@ fn reduce_tracked_field<C: FieldCoeff>(
             {
                 let inv_g = lc_g.coeff_inv().expect("divisor leading coeff nonzero");
                 let q_coeff = lc_p.mul_ref(&inv_g);
-                p.checked_sub_mul_term_assign(&g.poly, &q_mono, &q_coeff)?;
+                limits.check_coeff(&q_coeff, "syzygy_reduce_quotient")?;
+                p.checked_sub_mul_term_assign_bounded(
+                    &g.poly,
+                    &q_mono,
+                    &q_coeff,
+                    limits,
+                    "syzygy_reduce",
+                )?;
                 for (acc, gc) in cofactors.iter_mut().zip(&g.cofactors) {
                     if !gc.is_zero() {
-                        acc.checked_sub_mul_term_assign(gc, &q_mono, &q_coeff)?;
+                        acc.checked_sub_mul_term_assign_bounded(
+                            gc,
+                            &q_mono,
+                            &q_coeff,
+                            limits,
+                            "syzygy_reduce_cofactor",
+                        )?;
                     }
                 }
                 divided = true;
@@ -667,6 +722,7 @@ fn reduce_tracked_field<C: FieldCoeff>(
         if !divided {
             p.remove_term(&lm_p);
             rem.add_term(lm_p, lc_p);
+            limits.check_poly(&rem, "syzygy_reduce_rem")?;
         }
     }
 
@@ -681,6 +737,7 @@ fn divide_field<C: FieldCoeff>(
     basis: &[FieldTracked<C>],
     zero_c: &C,
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<(Poly<C>, Vec<Poly<C>>), AlgebraError> {
     let n = target.num_vars();
     let mut p = target.clone();
@@ -697,8 +754,16 @@ fn divide_field<C: FieldCoeff>(
             {
                 let inv_g = lc_g.coeff_inv().expect("divisor leading coeff nonzero");
                 let q_coeff = lc_p.mul_ref(&inv_g);
-                p.checked_sub_mul_term_assign(&g.poly, &q_mono, &q_coeff)?;
+                limits.check_coeff(&q_coeff, "syzygy_divide_quotient")?;
+                p.checked_sub_mul_term_assign_bounded(
+                    &g.poly,
+                    &q_mono,
+                    &q_coeff,
+                    limits,
+                    "syzygy_divide",
+                )?;
                 quotients[idx].add_term(q_mono, q_coeff);
+                limits.check_poly(&quotients[idx], "syzygy_divide_quotients")?;
                 divided = true;
                 break;
             }
@@ -706,6 +771,7 @@ fn divide_field<C: FieldCoeff>(
         if !divided {
             p.remove_term(&lm_p);
             rem.add_term(lm_p, lc_p);
+            limits.check_poly(&rem, "syzygy_divide_rem")?;
         }
     }
 
@@ -721,6 +787,18 @@ pub fn ideal_membership_field<C: FieldCoeff>(
     order: MonomialOrder,
     max_pairs: usize,
 ) -> Result<Option<Vec<Poly<C>>>, AlgebraError> {
+    let mut limits = crate::limits::active_limits();
+    limits.max_syzygy_pairs = max_pairs;
+    ideal_membership_field_with_limits(target, gens, vars, order, &limits)
+}
+
+pub fn ideal_membership_field_with_limits<C: FieldCoeff>(
+    target: &Poly<C>,
+    gens: &[Poly<C>],
+    vars: &VarOrder,
+    order: MonomialOrder,
+    limits: &ShigureLimits,
+) -> Result<Option<Vec<Poly<C>>>, AlgebraError> {
     let n = vars.len();
     if target.num_vars() != n {
         return Err(AlgebraError::ArityMismatch {
@@ -728,6 +806,7 @@ pub fn ideal_membership_field<C: FieldCoeff>(
             actual: target.num_vars(),
         });
     }
+    limits.check_poly(target, "ideal_membership_target")?;
     for g in gens {
         if g.num_vars() != n {
             return Err(AlgebraError::ArityMismatch {
@@ -735,6 +814,7 @@ pub fn ideal_membership_field<C: FieldCoeff>(
                 actual: g.num_vars(),
             });
         }
+        limits.check_poly(g, "ideal_membership_gen")?;
     }
     let zero_c = target.zero_coeff().clone();
     for g in gens {
@@ -751,8 +831,8 @@ pub fn ideal_membership_field<C: FieldCoeff>(
     if gens.is_empty() {
         return Ok(None);
     }
-    let basis = compute_tracked_gb(gens, n, &zero_c, order, max_pairs)?;
-    let (rem, q_row) = divide_field(target, &basis, &zero_c, order)?;
+    let basis = compute_tracked_gb(gens, n, &zero_c, order, limits)?;
+    let (rem, q_row) = divide_field(target, &basis, &zero_c, order, limits)?;
     if !rem.is_zero() {
         return Ok(None);
     }
@@ -763,14 +843,18 @@ pub fn ideal_membership_field<C: FieldCoeff>(
         }
         for (dst, a_aj) in cofactors.iter_mut().zip(&g_a.cofactors) {
             if !a_aj.is_zero() {
-                *dst = dst.add(&q_a.checked_mul(a_aj)?);
+                let prod = q_a.checked_mul_bounded(a_aj, limits, "ideal_membership_cofactor")?;
+                *dst = dst.add(&prod);
+                limits.check_poly(dst, "ideal_membership_cofactor")?;
             }
         }
     }
     let mut acc = Poly::zero(n, zero_c);
     for (c, g) in cofactors.iter().zip(gens) {
         if !c.is_zero() && !g.is_zero() {
-            acc = acc.add(&c.checked_mul(g)?);
+            let prod = c.checked_mul_bounded(g, limits, "ideal_membership_verify")?;
+            acc = acc.add(&prod);
+            limits.check_poly(&acc, "ideal_membership_verify")?;
         }
     }
     if acc != *target {
