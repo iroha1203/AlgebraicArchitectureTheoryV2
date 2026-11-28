@@ -2,6 +2,7 @@
 //! 共通定義を参照する型付き宣言、原式と出現位置、名前参照を返す。
 
 pub mod ast;
+pub mod batch;
 mod body;
 pub(crate) mod check;
 mod expr;
@@ -18,7 +19,8 @@ use archsig_common::control::{CheckFailure, Checkpoint, Control};
 use archsig_common::issue::{Code, Details, Issue, Location};
 use archsig_common::json::InputError;
 use archsig_common::types::Type;
-use ast::{Expr, ExprId};
+pub use ast::{Expr, ExprId};
+pub use batch::{LawBatchFailure, check_law_batch_controlled};
 use check::Checker;
 use model::{Declaration, DeclarationInfo};
 use std::collections::BTreeMap;
@@ -339,7 +341,7 @@ pub fn model_digest(tokens: &[lexer::Token]) -> String {
         .expect("通常の digest 計算は中断しない")
 }
 
-fn model_digest_inner<E: InputError>(
+pub(super) fn model_digest_inner<E: InputError>(
     tokens: &[lexer::Token],
     control: &Control,
 ) -> Result<String, E> {
@@ -500,7 +502,7 @@ fn check_law_processing<E: InputError>(
 }
 
 // 元入力が持つ名前の区切りは、評価へ渡す前に一度だけ確定する。
-fn resolve_names<E: InputError>(
+pub(super) fn resolve_names<E: InputError>(
     definitions: &CheckedDefinitions,
     declarations: &BTreeMap<String, Declaration>,
     infos: &[DeclarationInfo],

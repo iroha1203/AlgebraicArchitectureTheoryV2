@@ -7,14 +7,15 @@ mod comparison_shigure_phase3;
 
 use crate::result::Signal;
 use crate::{
-    archmap::{CheckedArchMap, check_archmap_controlled},
+    archmap::{CheckedArchMap, check_archmap_batch_controlled},
     definition::{
-        CheckedDefinitions, PrimitiveDeclaration, Vocabulary, check_definitions_controlled,
+        CheckedDefinitions, PrimitiveDeclaration, Vocabulary, check_definitions_batch_controlled,
     },
-    law::{CheckedLaw, check_law_controlled, model::DeclarationInfo},
+    law::{CheckedLaw, check_law_batch_controlled, model::DeclarationInfo},
     result::{InputIdentity, ResultIssue, metadata_wire},
 };
 use archsig_common::control::{CheckFailure, Checkpoint, Control};
+use archsig_common::diagnostic::DEFAULT_MAX_COLLECTED_ERRORS;
 use archsig_common::{
     canonical::{Json, sha256_digest},
     issue::{Code, Details, Issue, Location},
@@ -210,15 +211,26 @@ impl InputFailure {
         }
     }
 
-    fn input(mut self, issue: Issue) -> Self {
-        self.status = if issue.code == Code::UnsupportedVersion {
+    fn input(self, issue: Issue) -> Self {
+        self.input_batch(vec![issue])
+    }
+    fn input_batch(mut self, issues: Vec<Issue>) -> Self {
+        let unsupported = issues
+            .iter()
+            .any(|issue| issue.code == Code::UnsupportedVersion);
+        self.status = if unsupported {
             InputStatus::Unsupported
         } else {
             InputStatus::Invalid
         };
-        let mut wire = ResultIssue::Input(issue).wire();
-        self.sources.add_location_positions(&mut wire);
-        self.issues.push(wire);
+        let mut wrapped: Vec<ResultIssue> = issues.into_iter().map(ResultIssue::Input).collect();
+        wrapped.sort_by_key(ResultIssue::sort_key);
+        wrapped.truncate(DEFAULT_MAX_COLLECTED_ERRORS);
+        for item in wrapped {
+            let mut wire = item.wire();
+            self.sources.add_location_positions(&mut wire);
+            self.issues.push(wire);
+        }
         self
     }
     fn stopped(mut self, reason: Signal) -> Self {
@@ -442,16 +454,17 @@ pub fn check_inputs(
             return Err(failure.checked(error));
         }
     }
-    let definitions = match check_definitions_controlled(&files, control) {
-        Ok(d) => d,
-        Err(CheckFailure::Input(f)) => {
-            for identity in f.inputs {
-                failure.digest(&identity.input, identity.model_digest);
+    let definitions =
+        match check_definitions_batch_controlled(&files, control, DEFAULT_MAX_COLLECTED_ERRORS) {
+            Ok(d) => d,
+            Err(CheckFailure::Input(f)) => {
+                for identity in f.inputs {
+                    failure.digest(&identity.input, identity.model_digest);
+                }
+                return Err(failure.input_batch(f.issues));
             }
-            return Err(failure.input(f.issue));
-        }
-        Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
-    };
+            Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
+        };
     for identity in &definitions.inputs {
         failure.digest(&identity.input, identity.model_digest.clone());
     }
@@ -460,11 +473,16 @@ pub fn check_inputs(
             return Err(failure.stopped(reason));
         }
     }
-    let law = match check_law_controlled(failure.sources.law.bytes(), &definitions, control) {
+    let law = match check_law_batch_controlled(
+        failure.sources.law.bytes(),
+        &definitions,
+        control,
+        DEFAULT_MAX_COLLECTED_ERRORS,
+    ) {
         Ok(law) => law,
         Err(CheckFailure::Input(f)) => {
             failure.digest("law", f.model_digest);
-            return Err(failure.input(f.issue));
+            return Err(failure.input_batch(f.issues));
         }
         Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
     };
@@ -474,16 +492,22 @@ pub fn check_inputs(
             return Err(failure.with_checked_law(definitions, law).stopped(reason));
         }
     }
-    let archmap =
-        match check_archmap_controlled(failure.sources.archmap.bytes(), &definitions, control) {
-            Ok(map) => map,
-            Err(CheckFailure::Input(f)) => {
-                return Err(failure.with_checked_law(definitions, law).input(f.issue));
-            }
-            Err(CheckFailure::Stopped(reason)) => {
-                return Err(failure.with_checked_law(definitions, law).stopped(reason));
-            }
-        };
+    let archmap = match check_archmap_batch_controlled(
+        failure.sources.archmap.bytes(),
+        &definitions,
+        control,
+        DEFAULT_MAX_COLLECTED_ERRORS,
+    ) {
+        Ok(map) => map,
+        Err(CheckFailure::Input(f)) => {
+            return Err(failure
+                .with_checked_law(definitions, law)
+                .input_batch(f.issues));
+        }
+        Err(CheckFailure::Stopped(reason)) => {
+            return Err(failure.with_checked_law(definitions, law).stopped(reason));
+        }
+    };
     failure.digest("archmap", Some(archmap.model_digest.clone()));
     if let Err(reason) = control.checkpoint(Checkpoint::AfterArchMap) {
         return Err(failure.with_checked_law(definitions, law).stopped(reason));

@@ -3,6 +3,7 @@
 use super::OutputFormat;
 use crate::run::Outcome;
 use archsig_common::canonical::Json;
+use archsig_common::diagnostic::SourceSnippet;
 use archsig_common::json::{JNode, JValue, parse_with_max_depth};
 use archsig_common::limits::DEFAULT_MAX_JSON_DEPTH;
 use std::fmt::Write as _;
@@ -12,7 +13,9 @@ pub fn render_outcome(outcome: &Outcome, format: OutputFormat) -> String {
     match format {
         OutputFormat::Json => outcome.receipt(),
         OutputFormat::Pretty => render_raw_json_str(&outcome.receipt(), OutputFormat::Pretty),
-        OutputFormat::Human => render_human_jnode(&parse_or_fallback(&outcome.receipt())),
+        OutputFormat::Human => {
+            render_human_jnode(&parse_or_fallback(&outcome.receipt()), &outcome.snippets)
+        }
     }
 }
 
@@ -31,7 +34,7 @@ pub fn render_json_value(json: &Json, format: OutputFormat) -> String {
         OutputFormat::Human => {
             let raw = canonical();
             match parse_with_max_depth(raw.as_bytes(), encode_depth) {
-                Ok(node) => render_human_jnode(&node),
+                Ok(node) => render_human_jnode(&node, &[]),
                 Err(_) => raw,
             }
         }
@@ -49,7 +52,7 @@ pub fn render_raw_json_str(raw: &str, format: OutputFormat) -> String {
             }
         }
         OutputFormat::Human => match parse_with_max_depth(raw.as_bytes(), DEFAULT_MAX_JSON_DEPTH) {
-            Ok(node) => render_human_jnode(&node),
+            Ok(node) => render_human_jnode(&node, &[]),
             Err(_) => raw.to_owned(),
         },
     }
@@ -171,12 +174,12 @@ fn scalar_text(node: &JNode) -> String {
     }
 }
 
-fn render_human_jnode(node: &JNode) -> String {
+fn render_human_jnode(node: &JNode, snippets: &[Option<SourceSnippet>]) -> String {
     let format_tag = obj_field(node, "format").and_then(as_str);
     let mut out = String::new();
     match format_tag {
-        Some("archsig.summary/1") => render_human_summary(node, &mut out),
-        Some("archsig.receipt/1") => render_human_receipt(node, &mut out),
+        Some("archsig.summary/1") => render_human_summary(node, snippets, &mut out),
+        Some("archsig.receipt/1") => render_human_receipt(node, snippets, &mut out),
         Some("archsig.reobservation.summary/1") => render_human_reobserve(node, &mut out),
         Some("archsig.digest/1") => render_human_digest(node, &mut out),
         Some("archsig.inspect/1") => render_human_inspect(node, &mut out),
@@ -189,7 +192,7 @@ fn render_human_jnode(node: &JNode) -> String {
     out
 }
 
-fn render_human_receipt(node: &JNode, out: &mut String) {
+fn render_human_receipt(node: &JNode, snippets: &[Option<SourceSnippet>], out: &mut String) {
     let status = obj_field(node, "status")
         .and_then(as_str)
         .unwrap_or("unknown");
@@ -204,13 +207,14 @@ fn render_human_receipt(node: &JNode, out: &mut String) {
         && !issues.is_empty()
     {
         let _ = writeln!(out, "Issues ({}):", issues.len());
-        for issue in issues {
-            render_issue_line(issue, "  ", out);
+        for (idx, issue) in issues.iter().enumerate() {
+            let snip = snippets.get(idx).and_then(Option::as_ref);
+            render_issue_line(issue, snip, "  ", out);
         }
     }
 }
 
-fn render_human_summary(node: &JNode, out: &mut String) {
+fn render_human_summary(node: &JNode, snippets: &[Option<SourceSnippet>], out: &mut String) {
     let status = obj_field(node, "status")
         .and_then(as_str)
         .unwrap_or("unknown");
@@ -232,15 +236,16 @@ fn render_human_summary(node: &JNode, out: &mut String) {
     {
         let _ = writeln!(out, "Warnings ({}):", warnings.len());
         for w in warnings {
-            render_issue_line(w, "  ", out);
+            render_issue_line(w, None, "  ", out);
         }
     }
     if let Some(issues) = obj_field(node, "issues").and_then(as_arr)
         && !issues.is_empty()
     {
         let _ = writeln!(out, "Issues ({}):", issues.len());
-        for issue in issues {
-            render_issue_line(issue, "  ", out);
+        for (idx, issue) in issues.iter().enumerate() {
+            let snip = snippets.get(idx).and_then(Option::as_ref);
+            render_issue_line(issue, snip, "  ", out);
         }
     }
 }
@@ -259,7 +264,7 @@ fn render_human_reobserve(node: &JNode, out: &mut String) {
     for (label, key) in [("Previous", "previous"), ("Current", "current")] {
         if let Some(stage) = obj_field(node, key) {
             let _ = writeln!(out, "\n[{label}]");
-            render_human_summary(stage, out);
+            render_human_summary(stage, &[], out);
         }
     }
     if let Some(asm) = obj_field(node, "assembly") {
@@ -306,7 +311,7 @@ fn render_summary_answer(ans: &JNode, indent: &str, out: &mut String) {
         && !reasons.is_empty()
     {
         for r in reasons {
-            render_issue_line(r, &format!("{indent}    reason "), out);
+            render_issue_line(r, None, &format!("{indent}    reason "), out);
         }
     }
 }
@@ -318,6 +323,9 @@ fn render_shigure_summary(shigure: &JNode, indent: &str, out: &mut String) {
     if let Some(sr) = obj_field(shigure, "silence_reason") {
         let code = obj_field(sr, "code").and_then(as_str).unwrap_or("unknown");
         let _ = writeln!(out, "{indent}silence_reason: {code} ({})", scalar_text(sr));
+        if let Some(hint) = obj_field(sr, "hint").and_then(as_str) {
+            let _ = writeln!(out, "{indent}hint: {hint}");
+        }
     }
     if let Some(passed) = obj_field(shigure, "passed_applicability_count") {
         let _ = writeln!(
@@ -443,12 +451,60 @@ fn render_shigure_summary(shigure: &JNode, indent: &str, out: &mut String) {
     }
 }
 
-fn render_issue_line(issue: &JNode, prefix: &str, out: &mut String) {
+fn render_issue_line(
+    issue: &JNode,
+    snippet: Option<&SourceSnippet>,
+    prefix: &str,
+    out: &mut String,
+) {
     let code = obj_field(issue, "code").and_then(as_str).unwrap_or("issue");
     let msg = obj_field(issue, "message").and_then(as_str).unwrap_or("");
     let _ = writeln!(out, "{prefix}[{code}] {msg}");
     if let Some(loc) = obj_field(issue, "location") {
-        let _ = writeln!(out, "{prefix}  location: {}", scalar_text(loc));
+        let input = obj_field(loc, "input").and_then(as_str);
+        let pointer = obj_field(loc, "pointer").and_then(as_str).unwrap_or("");
+        let line = obj_field(loc, "line").map(scalar_text);
+        let col = obj_field(loc, "column").map(scalar_text);
+        if let (Some(input), Some(line), Some(col)) = (input, line, col) {
+            if pointer.is_empty() {
+                let _ = writeln!(out, "{prefix}  location: {input}:{line}:{col}");
+            } else {
+                let _ = writeln!(
+                    out,
+                    "{prefix}  location: {input} {pointer} (line {line}, column {col})"
+                );
+            }
+        } else {
+            let _ = writeln!(out, "{prefix}  location: {}", scalar_text(loc));
+        }
+    }
+    if let Some(snip) = snippet {
+        let ln = snip.line.to_string();
+        let pad = " ".repeat(ln.len());
+        let _ = writeln!(out, "{prefix}    {ln} | {}", snip.source_line);
+        let _ = writeln!(out, "{prefix}    {pad} | {}", snip.caret_line);
+    }
+    if let Some(details) = obj_field(issue, "details") {
+        if let Some(panic_msg) = obj_field(details, "panic_message").and_then(as_str) {
+            let loc = obj_field(details, "panic_location")
+                .and_then(as_str)
+                .unwrap_or("unknown");
+            let _ = writeln!(out, "{prefix}  panic: {panic_msg} (at {loc})");
+        }
+        if let Some(sugs) = obj_field(details, "suggestions").and_then(as_arr)
+            && !sugs.is_empty()
+        {
+            let _ = writeln!(
+                out,
+                "{prefix}  suggestions: {}",
+                sugs.iter().map(scalar_text).collect::<Vec<_>>().join(", ")
+            );
+        }
+        if let Some(hint) = obj_field(details, "hint").and_then(as_str)
+            && !hint.is_empty()
+        {
+            let _ = writeln!(out, "{prefix}  hint: {hint}");
+        }
     }
     if let Some(missing) = obj_field(issue, "missing").and_then(as_arr)
         && !missing.is_empty()

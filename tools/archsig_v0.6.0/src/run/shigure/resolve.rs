@@ -22,8 +22,16 @@ pub(super) fn resolve_and_convert(
     signals: &mut dyn Signals,
     control: &Control,
 ) -> Result<Vec<ResolvedShigureRequest>, Outcome> {
+    let max_errors = archsig_common::diagnostic::DEFAULT_MAX_COLLECTED_ERRORS;
     let shigure_decls = checked.law().shigure();
     let mut resolved = Vec::with_capacity(parsed_requests.len());
+    let mut errors: Vec<(bool, archsig_common::canonical::Json)> = Vec::new();
+    let snapshot_ids: Vec<&str> = checked
+        .archmap()
+        .snapshots()
+        .iter()
+        .map(|s| s.id.as_str())
+        .collect();
 
     for req in parsed_requests {
         if let Err(signal) = control.checkpoint(Checkpoint::Resolve) {
@@ -38,93 +46,119 @@ pub(super) fn resolve_and_convert(
 
         let name_res = match req.query {
             ShigureCliQuery::Task(_) => {
-                resolve_decl_name(&shigure_decls.tasks, "shigure task", &req.task_name)
+                resolve_decl_with_suggestions(&shigure_decls.tasks, "shigure task", &req.task_name)
             }
-            ShigureCliQuery::Diagram => {
-                resolve_decl_name(&shigure_decls.diagrams, "shigure diagram", &req.task_name)
-            }
+            ShigureCliQuery::Diagram => resolve_decl_with_suggestions(
+                &shigure_decls.diagrams,
+                "shigure diagram",
+                &req.task_name,
+            ),
             ShigureCliQuery::Path => {
-                resolve_decl_name(&shigure_decls.paths, "shigure path", &req.task_name)
+                resolve_decl_with_suggestions(&shigure_decls.paths, "shigure path", &req.task_name)
             }
-            ShigureCliQuery::Transfer => {
-                resolve_decl_name(&shigure_decls.transfers, "shigure transfer", &req.task_name)
-            }
-            ShigureCliQuery::Robustness => resolve_decl_name(
+            ShigureCliQuery::Transfer => resolve_decl_with_suggestions(
+                &shigure_decls.transfers,
+                "shigure transfer",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Robustness => resolve_decl_with_suggestions(
                 &shigure_decls.robustness_tasks,
                 "shigure robustness",
                 &req.task_name,
             ),
-            ShigureCliQuery::Chevalley => resolve_decl_name(
+            ShigureCliQuery::Chevalley => resolve_decl_with_suggestions(
                 &shigure_decls.chevalley_tasks,
                 "shigure chevalley",
                 &req.task_name,
             ),
-            ShigureCliQuery::Observations => resolve_decl_name(
+            ShigureCliQuery::Observations => resolve_decl_with_suggestions(
                 &shigure_decls.observation_tasks,
                 "shigure observations",
                 &req.task_name,
             ),
-            ShigureCliQuery::Lift => {
-                resolve_decl_name(&shigure_decls.lift_tasks, "shigure lift", &req.task_name)
-            }
-            ShigureCliQuery::Artin => {
-                resolve_decl_name(&shigure_decls.artin_tasks, "shigure artin", &req.task_name)
-            }
-            ShigureCliQuery::Diagnostics => resolve_decl_name(
+            ShigureCliQuery::Lift => resolve_decl_with_suggestions(
+                &shigure_decls.lift_tasks,
+                "shigure lift",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Artin => resolve_decl_with_suggestions(
+                &shigure_decls.artin_tasks,
+                "shigure artin",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Diagnostics => resolve_decl_with_suggestions(
                 &shigure_decls.diagnostics_tasks,
                 "shigure diagnostics",
                 &req.task_name,
             ),
-            ShigureCliQuery::Atlas => {
-                resolve_decl_name(&shigure_decls.atlas_tasks, "shigure atlas", &req.task_name)
-            }
-            ShigureCliQuery::Occurrence => resolve_decl_name(
+            ShigureCliQuery::Atlas => resolve_decl_with_suggestions(
+                &shigure_decls.atlas_tasks,
+                "shigure atlas",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Occurrence => resolve_decl_with_suggestions(
                 &shigure_decls.occurrence_tasks,
                 "shigure occurrence",
                 &req.task_name,
             ),
-            ShigureCliQuery::Partial => resolve_decl_name(
+            ShigureCliQuery::Partial => resolve_decl_with_suggestions(
                 &shigure_decls.partial_tasks,
                 "shigure partial",
                 &req.task_name,
             ),
-            ShigureCliQuery::Revision => resolve_decl_name(
+            ShigureCliQuery::Revision => resolve_decl_with_suggestions(
                 &shigure_decls.revision_tasks,
                 "shigure revision",
                 &req.task_name,
             ),
-            ShigureCliQuery::Multisource => resolve_decl_name(
+            ShigureCliQuery::Multisource => resolve_decl_with_suggestions(
                 &shigure_decls.multisource_tasks,
                 "shigure multisource",
                 &req.task_name,
             ),
         };
-        let resolved_task_name = name_res.map_err(|msg| {
-            output::notify(
-                signals,
-                Status::Invalid,
-                64,
-                control.stop_reason(),
-                vec![usage_issue(Some(&req.id), &msg)],
-            )
-        })?;
+        let resolved_task_name = match name_res {
+            Ok(name) => name,
+            Err((msg, suggestions)) => {
+                if errors.len() < max_errors {
+                    let mut issue = usage_issue(Some(&req.id), &msg);
+                    if let archsig_common::canonical::Json::Obj(fields) = &mut issue
+                        && let Some(archsig_common::canonical::Json::Obj(details)) =
+                            fields.get_mut("details")
+                    {
+                        crate::run::diagnostics::attach_suggestions(details, suggestions);
+                    }
+                    errors.push((true, issue));
+                }
+                continue;
+            }
+        };
 
         if let Some(sid) = &req.snapshot
             && !checked.archmap().snapshots().iter().any(|s| s.id == *sid)
         {
-            return Err(output::notify(
-                signals,
-                Status::Invalid,
-                64,
-                control.stop_reason(),
-                vec![usage_issue(
+            if errors.len() < max_errors {
+                let mut issue = usage_issue(
                     Some(&req.id),
                     &format!(
                         "unknown ArchMap snapshot `{sid}` in SHIGURE request `{}`",
                         req.id
                     ),
-                )],
-            ));
+                );
+                let suggestions = archsig_common::diagnostic::suggest_identifiers(
+                    sid,
+                    snapshot_ids.iter().copied(),
+                    3,
+                );
+                if let archsig_common::canonical::Json::Obj(fields) = &mut issue
+                    && let Some(archsig_common::canonical::Json::Obj(details)) =
+                        fields.get_mut("details")
+                {
+                    crate::run::diagnostics::attach_suggestions(details, suggestions);
+                }
+                errors.push((true, issue));
+            }
+            continue;
         }
 
         let mut converter = ShigureConverter::for_task(&resolved_task_name);
@@ -177,17 +211,16 @@ pub(super) fn resolve_and_convert(
             ShigureCliQuery::Multisource => converter
                 .convert_multisource(checked)
                 .map(|t| ResolvedShigurePayload::Multisource(Box::new(t))),
-        }
-        .map_err(|err| {
-            let issue = conversion_error_issue(&req.id, &err);
-            output::notify(
-                signals,
-                Status::Invalid,
-                65,
-                control.stop_reason(),
-                vec![issue],
-            )
-        })?;
+        };
+        let payload = match payload {
+            Ok(payload) => payload,
+            Err(err) => {
+                if errors.len() < max_errors {
+                    errors.push((false, conversion_error_issue(&req.id, &err)));
+                }
+                continue;
+            }
+        };
 
         let reading_name = resolved_task_name
             .rsplit_once('.')
@@ -201,14 +234,30 @@ pub(super) fn resolve_and_convert(
         });
     }
 
+    if !errors.is_empty() {
+        let code = if errors.iter().any(|(is_usage, _)| *is_usage) {
+            64
+        } else {
+            65
+        };
+        let issues: Vec<_> = errors.into_iter().map(|(_, issue)| issue).collect();
+        return Err(output::notify(
+            signals,
+            Status::Invalid,
+            code,
+            control.stop_reason(),
+            issues,
+        ));
+    }
+
     Ok(resolved)
 }
 
-fn resolve_decl_name<T>(
+fn resolve_decl_with_suggestions<T>(
     decls: &BTreeMap<String, T>,
     kind_label: &str,
     requested: &str,
-) -> Result<String, String> {
+) -> Result<String, (String, Vec<String>)> {
     if decls.contains_key(requested) {
         return Ok(requested.to_owned());
     }
@@ -216,16 +265,29 @@ fn resolve_decl_name<T>(
     let matches: Vec<&String> = decls.keys().filter(|k| k.ends_with(&suffix)).collect();
     match matches.as_slice() {
         [only] => Ok((*only).clone()),
-        [] => Err(format!(
-            "unknown {kind_label} `{requested}`; declared names: [{}]",
-            decls.keys().cloned().collect::<Vec<_>>().join(", ")
-        )),
-        many => Err(format!(
-            "ambiguous short {kind_label} name `{requested}`; specify full name among [{}]",
-            many.iter()
-                .map(|s| s.as_str())
-                .collect::<Vec<_>>()
-                .join(", ")
+        [] => {
+            let mut pool: Vec<&str> = decls.keys().map(String::as_str).collect();
+            for fq in decls.keys() {
+                if let Some((_, short)) = fq.rsplit_once('.') {
+                    pool.push(short);
+                }
+            }
+            let suggestions = archsig_common::diagnostic::suggest_identifiers(requested, pool, 3);
+            let msg = format!(
+                "unknown {kind_label} `{requested}`; declared names: [{}]",
+                decls.keys().cloned().collect::<Vec<_>>().join(", ")
+            );
+            Err((msg, suggestions))
+        }
+        many => Err((
+            format!(
+                "ambiguous short {kind_label} name `{requested}`; specify full name among [{}]",
+                many.iter()
+                    .map(|s| s.as_str())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Vec::new(),
         )),
     }
 }

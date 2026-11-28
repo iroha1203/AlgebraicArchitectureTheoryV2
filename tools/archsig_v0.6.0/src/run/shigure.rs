@@ -212,13 +212,15 @@ pub(super) fn run_shigure_validated(
                 InputStatus::Interrupted => (Status::Interrupted, 75),
                 InputStatus::Error => (Status::Error, 70),
             };
-            return output::notify(
+            let mut outcome = output::notify(
                 signals,
                 status,
                 code,
                 control.stop_reason(),
                 failure.issues().to_vec(),
             );
+            super::diagnostics::decorate_outcome_with_sources(&mut outcome, failure.sources());
+            return outcome;
         }
     };
 

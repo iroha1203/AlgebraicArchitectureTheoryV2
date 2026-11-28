@@ -163,7 +163,15 @@ pub(super) fn deliver_shigure(
 
         if let Some(outcome) = outcome_opt {
             let node_id = format!("n{idx}");
-            let outcome_json = outcome.to_json();
+            let mut outcome_json = outcome.to_json();
+            if let Verdict::Undetermined(reason) = &outcome.verdict
+                && let Json::Obj(ref mut fields) = outcome_json
+            {
+                fields.insert(
+                    "silence_reason".to_owned(),
+                    crate::run::diagnostics::silence_reason_details_with_hint(reason),
+                );
+            }
             let answer_reasons: Vec<Json> = match &outcome.verdict {
                 Verdict::Undetermined(reason) => {
                     vec![silence_reason_issue(&req.parsed.id, reason)]
@@ -269,6 +277,7 @@ pub(super) fn deliver_shigure(
             result: None,
             issues: top_issues,
             summary: Some(summary),
+            snippets: Vec::new(),
         };
     };
 
@@ -337,6 +346,7 @@ pub(super) fn deliver_shigure(
             result: Some(out.join("result.json")),
             summary: Some(summary),
             issues: receipt_issues,
+            snippets: Vec::new(),
         },
     )
 }
@@ -656,6 +666,9 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
         ("request", Json::str(request_id)),
         ("dependencies", Json::Arr(vec![])),
         ("missing", Json::Arr(vec![])),
-        ("details", reason.to_json()),
+        (
+            "details",
+            crate::run::diagnostics::silence_reason_details_with_hint(reason),
+        ),
     ])
 }

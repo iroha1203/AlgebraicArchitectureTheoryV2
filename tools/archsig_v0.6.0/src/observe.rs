@@ -38,11 +38,12 @@ pub fn handles(args: &[OsString]) -> bool {
 }
 
 pub fn execute(args: &[OsString]) -> std::result::Result<Response, Outcome> {
-    let result = std::panic::catch_unwind(|| execute_inner(args)).unwrap_or_else(|_| {
-        Err(Box::new(ResultIssue::Internal {
-            operation: "observe".into(),
-            message: "internal observation helper failure".into(),
-        }))
+    let result = std::panic::catch_unwind(|| execute_inner(args)).unwrap_or_else(|payload| {
+        Err(Box::new(crate::run::diagnostics::panic_internal_issue(
+            "observe",
+            "internal observation helper failure",
+            payload,
+        )))
     });
     map_observe_result(result)
 }
@@ -54,11 +55,12 @@ pub fn execute_evidence(
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         run_evidence_inner(&args.archmap, &args.atoms, &args.sources, max_file_bytes)
     }))
-    .unwrap_or_else(|_| {
-        Err(Box::new(ResultIssue::Internal {
-            operation: "observe".into(),
-            message: "internal observation helper failure".into(),
-        }))
+    .unwrap_or_else(|payload| {
+        Err(Box::new(crate::run::diagnostics::panic_internal_issue(
+            "observe",
+            "internal observation helper failure",
+            payload,
+        )))
     });
     map_observe_result(result)
 }
@@ -70,11 +72,12 @@ pub fn execute_fibers(
     let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         run_fibers_inner(&args.table, max_file_bytes)
     }))
-    .unwrap_or_else(|_| {
-        Err(Box::new(ResultIssue::Internal {
-            operation: "observe".into(),
-            message: "internal observation helper failure".into(),
-        }))
+    .unwrap_or_else(|payload| {
+        Err(Box::new(crate::run::diagnostics::panic_internal_issue(
+            "observe",
+            "internal observation helper failure",
+            payload,
+        )))
     });
     map_observe_result(result)
 }
@@ -93,6 +96,7 @@ fn map_observe_result(result: Result<Response>) -> std::result::Result<Response,
             result: None,
             issues: vec![issue.wire()],
             summary: None,
+            snippets: Vec::new(),
         }
     })
 }

@@ -1,6 +1,7 @@
 //! CLI の入力検査・要求評価・成果物配送(実行仕様 §§1・5–7)。
 
 mod args;
+pub(crate) mod diagnostics;
 mod evaluate;
 pub(crate) mod output;
 mod reobserve;
@@ -13,10 +14,11 @@ pub use args::{Checked, parse_args};
 
 use archsig_common::canonical::{Json, sha256_digest};
 use archsig_common::control::{CheckFailure, Control};
+use archsig_common::diagnostic::{DEFAULT_MAX_COLLECTED_ERRORS, SourceSnippet};
 use archsig_common::issue::Code;
-use archsig_input::archmap::check_archmap_controlled;
-use archsig_input::definition::check_definitions_controlled;
-use archsig_input::law::check_law_controlled;
+use archsig_input::archmap::check_archmap_batch_controlled;
+use archsig_input::definition::check_definitions_batch_controlled;
+use archsig_input::law::check_law_batch_controlled;
 use archsig_input::result::*;
 use output::{finalize, usage_without_result};
 use std::path::{Path, PathBuf};
@@ -162,6 +164,7 @@ pub struct Outcome {
     pub result: Option<PathBuf>,
     pub issues: Vec<Json>,
     pub summary: Option<Json>,
+    pub snippets: Vec<Option<SourceSnippet>>,
 }
 
 impl Outcome {
@@ -319,7 +322,8 @@ fn run_check_validated(
             .zip(&definition_bytes)
             .map(|(id, bytes)| (id.id.as_str(), bytes.as_deref().expect("読めた定義")))
             .collect();
-        let definitions = check_definitions_controlled(&files, control);
+        let definitions =
+            check_definitions_batch_controlled(&files, control, DEFAULT_MAX_COLLECTED_ERRORS);
         let identities = match &definitions {
             Ok(d) => d.inputs(),
             Err(CheckFailure::Input(f)) => &f.inputs,
@@ -331,17 +335,43 @@ fn run_check_validated(
         match definitions {
             Err(CheckFailure::Stopped(reason)) => return stopped(signals, reason),
             Err(CheckFailure::Input(f)) => {
-                status = input_failure_status(f.issue.code);
-                issues.push(ResultIssue::Input(f.issue));
+                status = if f
+                    .issues
+                    .iter()
+                    .any(|issue| issue.code == Code::UnsupportedVersion)
+                {
+                    Status::Unsupported
+                } else {
+                    Status::Invalid
+                };
+                for issue in f.issues {
+                    issues.push(ResultIssue::Input(issue));
+                }
             }
             Ok(definitions) => {
                 let law_bytes = law_bytes.as_ref().expect("読めた Law");
-                match check_law_controlled(law_bytes, &definitions, control) {
+                match check_law_batch_controlled(
+                    law_bytes,
+                    &definitions,
+                    control,
+                    DEFAULT_MAX_COLLECTED_ERRORS,
+                ) {
                     Err(CheckFailure::Stopped(reason)) => return stopped(signals, reason),
                     Err(CheckFailure::Input(f)) => {
                         law_id.model_digest = f.model_digest.clone();
-                        status = input_failure_status(f.issue.code);
-                        issues.push(ResultIssue::Input(f.issue));
+                        for issue in f.issues {
+                            issues.push(ResultIssue::Input(issue));
+                        }
+                        status = if issues.iter().any(|item| {
+                            matches!(
+                                item,
+                                ResultIssue::Input(i) if i.code == Code::UnsupportedVersion
+                            )
+                        }) {
+                            Status::Unsupported
+                        } else {
+                            Status::Invalid
+                        };
                     }
                     Ok(law) => {
                         law_id.model_digest = Some(law.model_digest().to_owned());
@@ -349,13 +379,28 @@ fn run_check_validated(
                         primitives = definitions.declarations().values().cloned().collect();
                         vocabularies = definitions.vocabularies().values().cloned().collect();
                         if let Some(Some(bytes)) = &map_bytes {
-                            match check_archmap_controlled(bytes, &definitions, control) {
+                            match check_archmap_batch_controlled(
+                                bytes,
+                                &definitions,
+                                control,
+                                DEFAULT_MAX_COLLECTED_ERRORS,
+                            ) {
                                 Err(CheckFailure::Stopped(reason)) => {
                                     return stopped(signals, reason);
                                 }
                                 Err(CheckFailure::Input(f)) => {
-                                    status = input_failure_status(f.issue.code);
-                                    issues.push(ResultIssue::Input(f.issue));
+                                    status = if f
+                                        .issues
+                                        .iter()
+                                        .any(|issue| issue.code == Code::UnsupportedVersion)
+                                    {
+                                        Status::Unsupported
+                                    } else {
+                                        Status::Invalid
+                                    };
+                                    for issue in f.issues {
+                                        issues.push(ResultIssue::Input(issue));
+                                    }
                                 }
                                 Ok(map) => {
                                     if let Some(id) = map_id.as_mut() {
@@ -368,6 +413,10 @@ fn run_check_validated(
                 }
             }
         }
+    }
+    if issues.len() > DEFAULT_MAX_COLLECTED_ERRORS {
+        issues.sort_by_key(ResultIssue::sort_key);
+        issues.truncate(DEFAULT_MAX_COLLECTED_ERRORS);
     }
     let mut inputs = definition_ids;
     inputs.push(law_id);
@@ -394,7 +443,22 @@ fn run_check_validated(
         owned_copies.push(("inputs/archmap.json".to_owned(), bytes.as_slice()));
     }
     let copies: Vec<_> = owned_copies.iter().map(|(p, b)| (p.as_str(), *b)).collect();
-    finalize(io, signals, out, result, &copies)
+    let mut outcome = finalize(io, signals, out, result, &copies);
+    if !outcome.issues.is_empty() {
+        let def_slices: Vec<&[u8]> = definition_bytes
+            .iter()
+            .flatten()
+            .map(Vec::as_slice)
+            .collect();
+        let map_slice = map_bytes.as_ref().and_then(|o| o.as_deref());
+        let ctx = diagnostics::DiagnosticContext::from_raw_inputs(
+            &def_slices,
+            law_bytes.as_deref(),
+            map_slice,
+        );
+        diagnostics::enrich_issues(&mut outcome.issues, &ctx);
+    }
+    outcome
 }
 
 fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
@@ -408,13 +472,6 @@ fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
             });
             None
         }
-    }
-}
-
-fn input_failure_status(code: Code) -> Status {
-    match code {
-        Code::UnsupportedVersion => Status::Unsupported,
-        _ => Status::Invalid,
     }
 }
 
@@ -453,10 +510,20 @@ pub fn execute_command(
         }),
         Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
     }));
-    Some(outcome.unwrap_or_else(|_| match command {
-        Command::Check(args) => internal_outcome(io, signals, args),
-        Command::Run(_) | Command::Reobserve(_) => run_internal_outcome(signals),
-        Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
+    Some(outcome.unwrap_or_else(|payload| {
+        let (operation, message) = match command {
+            Command::Check(_) => ("check", "internal failure during input validation"),
+            Command::Run(_) => ("run", "internal failure during computation"),
+            Command::Reobserve(_) => ("reobserve", "internal failure during computation"),
+            Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
+        };
+        output::without_result(
+            signals,
+            Status::Error,
+            vec![diagnostics::panic_internal_issue(
+                operation, message, payload,
+            )],
+        )
     }))
 }
 
@@ -475,6 +542,8 @@ mod command_tests {
 
     #[test]
     fn shared_execution_catches_panics_with_command_specific_receipts() {
+        archsig_common::diagnostic::install_panic_hook();
+        archsig_common::diagnostic::clear_last_panic();
         let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
         for kind in ["check", "run"] {
             let out =
@@ -507,15 +576,18 @@ mod command_tests {
             } else {
                 "internal failure during computation"
             };
-            assert_eq!(
-                outcome.issues,
-                vec![
-                    ResultIssue::Internal {
-                        operation: kind.into(),
-                        message: expected.into()
-                    }
-                    .wire()
-                ]
+            assert_eq!(outcome.issues.len(), 1);
+            let receipt = outcome.receipt();
+            assert!(receipt.contains("\"code\":\"internal\""), "{receipt}");
+            assert!(receipt.contains(expected), "{receipt}");
+            assert!(
+                receipt.contains("\"panic_message\":\"injected computation failure\""),
+                "{receipt}"
+            );
+            assert!(receipt.contains("\"panic_location\":\""), "{receipt}");
+            assert!(
+                !receipt.contains("\"panic_location\":\"unknown\""),
+                "{receipt}"
             );
             assert_eq!(signals.0, 1);
             assert!(outcome.result.is_none());
