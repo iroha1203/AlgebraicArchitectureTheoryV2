@@ -327,7 +327,6 @@ pub fn refine_partition(
                     let mut new_sig_map: BTreeMap<(usize, Option<usize>), usize> = BTreeMap::new();
                     let mut new_elem_cid: BTreeMap<String, usize> = BTreeMap::new();
                     let mut rep_by_new_cid: Vec<String> = Vec::new();
-                    let mut key_by_new_cid: Vec<(usize, Option<usize>)> = Vec::new();
 
                     for e in target_elems {
                         let old_cid = class_of[target_sort][e];
@@ -354,7 +353,6 @@ pub fn refine_partition(
                             let id = rep_by_new_cid.len();
                             new_sig_map.insert(sig, id);
                             rep_by_new_cid.push(e.clone());
-                            key_by_new_cid.push(sig);
                             id
                         };
                         new_elem_cid.insert(e.clone(), nid);

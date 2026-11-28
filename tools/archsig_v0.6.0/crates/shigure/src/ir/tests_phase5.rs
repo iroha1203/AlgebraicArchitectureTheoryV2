@@ -870,7 +870,7 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         Err(ValidationError::EmptyName { .. })
     ));
 
-    let mut let_bound = base_open;
+    let mut let_bound = base_open.clone();
     let_bound.positive_or_law.conclusion = PartialFormula::Eq(
         PartialTerm::Let {
             var: "x".into(),
@@ -880,4 +880,26 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         PartialTerm::Const("a0".into()),
     );
     assert!(validate_partial_task(make_open_task(let_bound)).is_ok());
+
+    let mut empty_var_ref = base_open.clone();
+    empty_var_ref.positive_or_law.conclusion =
+        PartialFormula::Eq(PartialTerm::Var("".into()), PartialTerm::Const("a0".into()));
+    assert!(matches!(
+        validate_partial_task(make_open_task(empty_var_ref)),
+        Err(ValidationError::EmptyName { .. })
+    ));
+
+    let mut empty_let_binder = base_open;
+    empty_let_binder.positive_or_law.conclusion = PartialFormula::Eq(
+        PartialTerm::Let {
+            var: "".into(),
+            bound: Box::new(PartialTerm::Const("a0".into())),
+            body: Box::new(PartialTerm::Const("a0".into())),
+        },
+        PartialTerm::Const("a0".into()),
+    );
+    assert!(matches!(
+        validate_partial_task(make_open_task(empty_let_binder)),
+        Err(ValidationError::EmptyName { .. })
+    ));
 }

@@ -39,6 +39,13 @@ mod lift_backend;
 mod lift_common;
 mod lift_extensions;
 mod observation;
+mod occurrence;
+mod occurrence_attr;
+mod partial_affine;
+mod partial_completions;
+mod partial_eval;
+mod partial_kleene;
+mod partial_open;
 mod path;
 mod path_fixed;
 mod path_protocol;
@@ -82,6 +89,10 @@ mod tests_lift_r3_r4;
 #[cfg(test)]
 mod tests_observation;
 #[cfg(test)]
+mod tests_occurrence;
+#[cfg(test)]
+mod tests_partial;
+#[cfg(test)]
 mod tests_path;
 #[cfg(test)]
 mod tests_path_extra;
@@ -111,6 +122,8 @@ pub use diagnostics::solve_diagnostics_task;
 pub use diagram::solve_diagram_task;
 pub use lift::solve_lift_task;
 pub use observation::solve_observation_task;
+pub use occurrence::solve_occurrence_task;
+pub use partial_eval::solve_partial_task;
 pub use path::solve_path_task;
 pub use robustness::solve_robustness_task;
 pub use transfer::solve_transfer_task;
