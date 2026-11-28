@@ -358,4 +358,82 @@ fn ch19_theorem19_7_snf_reuse_z_q_origin_only_and_rejections() {
         solve_revision_task(&validate_revision_task(unobs).unwrap()).verdict,
         Verdict::Undetermined(SilenceReason::UnobservedDependency { .. })
     ));
+
+    // 6. force_reuse_existing_snf = false かつ作用素変更時は m_after で再計算し reused_snf = false
+    let recompute_op = solve_revision_task(
+        &validate_revision_task(mk_snf_task(
+            CoeffDomain::Z,
+            vec![vec![ScalarLit::int(2)]],
+            vec![vec![ScalarLit::int(3)]],
+            vec![ScalarLit::int(2)],
+            vec![ScalarLit::int(6)],
+            false,
+            true,
+            false,
+            false,
+        ))
+        .unwrap(),
+    );
+    assert_eq!(recompute_op.verdict, Verdict::Established);
+    let rec_snf = recompute_op.revision.unwrap().snf_reuse.unwrap();
+    assert!(!rec_snf.reused_snf);
+    assert!(rec_snf.after_solvable && rec_snf.reeval.matched);
+    assert_eq!(rec_snf.after_particular, Some(vec!["2".to_owned()]));
+
+    // 7. F_p ドメイン + AllowedTuples + max_completions 超過境界
+    let p5 = num_bigint::BigUint::from(5u32);
+    let fp = |v: i64| ScalarLit::fp(num_bigint::BigInt::from(v), p5.clone()).unwrap();
+    let fp_tuples = RevisionTaskSpec {
+        name: "fp_allowed_tuples".into(),
+        kind: RevisionKind::Extension,
+        coeff_domain: CoeffDomain::Fp(p5.clone()),
+        coords: vec![
+            RevisionCoordSpec {
+                id: "a".into(),
+                domain_values: vec![fp(1), fp(6)],
+            },
+            RevisionCoordSpec {
+                id: "b".into(),
+                domain_values: vec![fp(2), fp(3)],
+            },
+        ],
+        shared_constraints: vec![RevisionConstraintSpec {
+            id: "allow".into(),
+            support: vec!["a".into(), "b".into()],
+            predicate: RevisionPredicate::AllowedTuples {
+                coords: vec!["a".into(), "b".into()],
+                tuples: vec![vec![fp(1), fp(2)]],
+            },
+        }],
+        before: RevisionSideSpec {
+            assignments: BTreeMap::from([("a".into(), fp(6))]),
+            extra_constraints: vec![],
+        },
+        after: RevisionSideSpec {
+            assignments: BTreeMap::from([("a".into(), fp(1)), ("b".into(), fp(2))]),
+            extra_constraints: vec![],
+        },
+        explicit_delta_coords: vec![],
+        probes: vec![],
+        snf_spec: None,
+        max_completions: 8,
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    let fp_out = solve_revision_task(&validate_revision_task(fp_tuples.clone()).unwrap());
+    assert_eq!(fp_out.verdict, Verdict::Established);
+    let fp_rev = fp_out.revision.unwrap();
+    // 6 mod 5 == 1 mod 5 が正規化一致するため delta_coords は ["b"] のみ
+    assert_eq!(fp_rev.delta_coords, vec!["b".to_owned()]);
+    assert!(fp_rev.monotonicity_applicable && fp_rev.monotonicity_preserved == Some(true));
+
+    let mut fp_bounded = fp_tuples;
+    fp_bounded.max_completions = 1;
+    fp_bounded.shared_constraints.clear();
+    fp_bounded.before.assignments.clear();
+    fp_bounded.after.assignments.clear();
+    assert!(matches!(
+        solve_revision_task(&validate_revision_task(fp_bounded).unwrap()).verdict,
+        Verdict::Undetermined(SilenceReason::FiniteEnumerationOutOfScope { .. })
+    ));
 }

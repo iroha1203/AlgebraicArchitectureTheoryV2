@@ -202,15 +202,21 @@ fn ch19_example19_13_two_minimal_supports_cost_stability_and_prop19_12() {
     // omega=1 のもと xi==eta にできる整合支持は空（{h_x, h_e} も矛盾するため空補完排除）
     assert!(pv.is_empty());
 
-    // 非整合候補族: h_bad (xi=1) と h_good (xi=0) の両方が T_I 上不整合でも
-    // 空補完になる {h_bad, ...} を採用せず Comp(T_S) != empty の最小支持のみ残すこと
+    // 非整合候補族: 極小横断集合として不整合な {c0, c1} と整合な {c2} の両方が列挙され、
+    // 空補完になる {c0, c1} を非空性検査で除外し Comp(T_S) != empty の {c2} のみ残す
     let inconsistent_cands = MultisourceTaskSpec {
         name: "inconsistent_cands_filter".into(),
         coeff_domain: CoeffDomain::Z,
-        coords: vec![RevisionCoordSpec {
-            id: "x".into(),
-            domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
-        }],
+        coords: vec![
+            RevisionCoordSpec {
+                id: "x".into(),
+                domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
+            },
+            RevisionCoordSpec {
+                id: "y".into(),
+                domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
+            },
+        ],
         background_constraints: vec![],
         sources: vec![],
         support_goal: Some(SupportGoalSpec {
@@ -232,12 +238,20 @@ fn ch19_example19_13_two_minimal_supports_cost_stability_and_prop19_12() {
                     origin: SourceRef::new("c1", OriginKind::LlmCandidate),
                     verified_actual_value: None,
                 },
+                CandidateRecordSpec {
+                    id: "c2".into(),
+                    coord: "y".into(),
+                    value: ScalarLit::int(0),
+                    cost: None,
+                    origin: SourceRef::new("c2", OriginKind::LlmCandidate),
+                    verified_actual_value: None,
+                },
             ],
-            goal: SupportGoalFormula::CoordEqualsConst("x".into(), ScalarLit::int(0)),
+            goal: SupportGoalFormula::CoordEqualsConst("y".into(), ScalarLit::int(0)),
             expected_truth: true,
             check_post_adoption_stability: true,
         }),
-        max_sources_subset_steps: 64,
+        max_sources_subset_steps: 256,
         max_results: 32,
         provenance: prov(),
         undeclared_unobserved_slots: vec![],
@@ -247,7 +261,44 @@ fn ch19_example19_13_two_minimal_supports_cost_stability_and_prop19_12() {
     let inc_sg = inc_out.multisource.unwrap().support_goal.unwrap();
     assert!(!inc_sg.all_candidates_consistent);
     assert_eq!(inc_sg.minimal_supports.len(), 1);
-    assert_eq!(inc_sg.minimal_supports[0].support, vec!["c0".to_owned()]);
+    assert_eq!(inc_sg.minimal_supports[0].support, vec!["c2".to_owned()]);
+
+    // 多数の単独不整合源（m = 30: 25 個が単独不整合、5 個が整合）が超集合枝刈りで即座に完了すること
+    let mut many_singletons = Vec::new();
+    for i in 0..30usize {
+        let assignments = if i < 25 {
+            BTreeMap::from([("y".into(), ScalarLit::int(99))])
+        } else {
+            BTreeMap::from([("y".into(), ScalarLit::int(0))])
+        };
+        many_singletons.push(SourcePresentationSpec {
+            source_id: format!("ms_{i:02}"),
+            origin: SourceRef::new(format!("src_{i}"), OriginKind::StaticAnalysis),
+            assignments,
+            forbidden_values: vec![],
+            extra_constraints: vec![],
+        });
+    }
+    let pruned_30 = MultisourceTaskSpec {
+        name: "pruned_30_singletons".into(),
+        coeff_domain: CoeffDomain::Z,
+        coords: vec![RevisionCoordSpec {
+            id: "y".into(),
+            domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
+        }],
+        background_constraints: vec![],
+        sources: many_singletons,
+        support_goal: None,
+        max_sources_subset_steps: 50_000,
+        max_results: 64,
+        provenance: prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    let p30_out = solve_multisource_task(&validate_multisource_task(pruned_30).unwrap());
+    assert_eq!(p30_out.verdict, Verdict::Refuted);
+    let p30_ms = p30_out.multisource.unwrap();
+    assert!(p30_ms.minimal_conflicts_verified);
+    assert_eq!(p30_ms.minimal_conflict_sets.len(), 25);
 
     // 不足反例: 全候補を入れても目標と逆になる補完が残る場合 insufficiency_witness を返す
     let mut insufficient = ex13;

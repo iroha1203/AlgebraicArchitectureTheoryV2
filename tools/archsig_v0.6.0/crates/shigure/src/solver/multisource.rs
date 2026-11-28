@@ -129,23 +129,58 @@ fn solve_multisource_inner(
     let max_results = task.max_results();
     let mut steps = 0usize;
     let mut minimal_conflict_idx: Vec<Vec<usize>> = Vec::new();
+    let all_indices: Vec<usize> = (0..m).collect();
+    let mut eligible_indices: Vec<usize> = (0..m).collect();
 
     for size in 0..=m {
-        let mut current = Vec::with_capacity(size);
-        let mut size_conflicts = Vec::new();
-        enumerate_size_subsets(
-            0,
-            m,
-            size,
-            &mut current,
-            &mut steps,
-            max_steps,
-            max_results,
-            &minimal_conflict_idx,
-            &check_subset_consistent,
-            &mut size_conflicts,
-        )?;
-        minimal_conflict_idx.extend(size_conflicts);
+        if size == 0 || size == 1 {
+            let mut current = Vec::with_capacity(size);
+            let mut size_conflicts = Vec::new();
+            enumerate_size_subsets(
+                0,
+                &all_indices,
+                size,
+                &mut current,
+                &mut steps,
+                max_steps,
+                max_results,
+                &minimal_conflict_idx,
+                &check_subset_consistent,
+                &mut size_conflicts,
+            )?;
+            minimal_conflict_idx.extend(size_conflicts);
+            if size == 0 && !minimal_conflict_idx.is_empty() {
+                // 空部分集合が既に不整合なら他のどの非空部分集合も極小でない
+                break;
+            }
+            if size == 1 {
+                let singletons: BTreeSet<usize> = minimal_conflict_idx
+                    .iter()
+                    .filter(|c| c.len() == 1)
+                    .map(|c| c[0])
+                    .collect();
+                eligible_indices.retain(|idx| !singletons.contains(idx));
+            }
+        } else {
+            if size > eligible_indices.len() {
+                break;
+            }
+            let mut current = Vec::with_capacity(size);
+            let mut size_conflicts = Vec::new();
+            enumerate_size_subsets(
+                0,
+                &eligible_indices,
+                size,
+                &mut current,
+                &mut steps,
+                max_steps,
+                max_results,
+                &minimal_conflict_idx,
+                &check_subset_consistent,
+                &mut size_conflicts,
+            )?;
+            minimal_conflict_idx.extend(size_conflicts);
+        }
     }
 
     let mut minimal_conflict_sets: Vec<Vec<String>> = minimal_conflict_idx
@@ -214,10 +249,24 @@ fn solve_multisource_inner(
     ))
 }
 
+fn is_sorted_subset(needle: &[usize], haystack: &[usize]) -> bool {
+    let mut hi = 0usize;
+    for &x in needle {
+        while hi < haystack.len() && haystack[hi] < x {
+            hi += 1;
+        }
+        if hi == haystack.len() || haystack[hi] != x {
+            return false;
+        }
+        hi += 1;
+    }
+    true
+}
+
 #[allow(clippy::too_many_arguments)]
 fn enumerate_size_subsets<F>(
     start: usize,
-    n: usize,
+    universe: &[usize],
     remaining: usize,
     cur: &mut Vec<usize>,
     steps: &mut usize,
@@ -230,21 +279,17 @@ fn enumerate_size_subsets<F>(
 where
     F: Fn(&[usize]) -> Result<bool, SilenceReason>,
 {
+    // 既出の極小衝突集合を含む部分木はすべて非極小のため即枝刈り（ヒープ確保なし）
+    if discovered.iter().any(|prev| is_sorted_subset(prev, cur)) {
+        return Ok(());
+    }
+    *steps += 1;
+    if *steps > max_steps {
+        return Err(SilenceReason::FiniteEnumerationOutOfScope {
+            detail: format!("source subset enumeration exceeded max_steps ({max_steps})"),
+        });
+    }
     if remaining == 0 {
-        // 既出の極小衝突集合を含む超集合は包含極小でないため枝刈り
-        let cur_set: BTreeSet<usize> = cur.iter().copied().collect();
-        if discovered
-            .iter()
-            .any(|prev| prev.iter().all(|x| cur_set.contains(x)))
-        {
-            return Ok(());
-        }
-        *steps += 1;
-        if *steps > max_steps {
-            return Err(SilenceReason::FiniteEnumerationOutOfScope {
-                detail: format!("source subset enumeration exceeded max_steps ({max_steps})"),
-            });
-        }
         if !is_consistent(cur)? {
             if discovered.len() + out.len() >= max_results {
                 return Err(SilenceReason::FiniteEnumerationOutOfScope {
@@ -255,14 +300,14 @@ where
         }
         return Ok(());
     }
-    if start + remaining > n {
+    if start + remaining > universe.len() {
         return Ok(());
     }
-    for i in start..=(n - remaining) {
-        cur.push(i);
+    for i in start..=(universe.len() - remaining) {
+        cur.push(universe[i]);
         enumerate_size_subsets(
             i + 1,
-            n,
+            universe,
             remaining - 1,
             cur,
             steps,
@@ -681,13 +726,13 @@ fn check_stability_rec(
     extra_pos: &mut Vec<(String, NormScalar)>,
     extra_neg: &mut Vec<(String, NormScalar)>,
 ) -> Result<bool, SilenceReason> {
+    *states_checked += 1;
+    if *states_checked > max_steps {
+        return Err(SilenceReason::FiniteEnumerationOutOfScope {
+            detail: format!("post-adoption stability checks exceeded max_steps ({max_steps})"),
+        });
+    }
     if idx == rem.len() {
-        *states_checked += 1;
-        if *states_checked > max_steps {
-            return Err(SilenceReason::FiniteEnumerationOutOfScope {
-                detail: format!("post-adoption stability checks exceeded max_steps ({max_steps})"),
-            });
-        }
         let mut assigns = base_assigns.to_vec();
         assigns.extend(extra_pos.iter().cloned());
         let comps = enumerate_coord_completions(
