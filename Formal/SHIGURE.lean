@@ -140,6 +140,12 @@ import Formal.SHIGURE.Part2.Marked.ChartRingRepresentation
 
 import Formal.SHIGURE.Part2.Marked.ChartExamples
 
+import Formal.SHIGURE.Part2.Schemes.AffinePullbackSections
+import Formal.SHIGURE.Part2.Families.SchemeLawRestriction
+import Formal.SHIGURE.Part2.Families.SchemeRealizations
+import Formal.SHIGURE.Part2.Marked.MarkedRealizations
+import Formal.SHIGURE.Part2.Marked.MarkedExamples
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.
