@@ -880,8 +880,8 @@ CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)�
 
 ## 11. SHIGURE の標準構成・適用条件・判断不能の原則
 
-独立クレート `archsig-shigure` は、[Law §7](law.md#7-shigure-宣言原始表示比較変更仕様評価条件タスク図式経路移送複数解釈族変形障害診断層atlas) の
-原始表示・比較・変更仕様・評価条件・図式・経路・移送・複数解釈族・変形障害・診断層・Atlas 宣言から、次の 14 構成を有限特殊化として計算する。
+独立クレート `archsig-shigure` は、[Law §7](law.md#7-shigure-宣言原始表示比較変更仕様評価条件タスク図式経路移送複数解釈族変形障害診断層atlas出現同定部分提示改訂多源衝突) の
+原始表示・比較・変更仕様・評価条件・図式・経路・移送・複数解釈族・変形障害・診断層・Atlas・出現同定・部分提示・改訂・多源衝突宣言から、次の 18 構成を有限特殊化として計算する。
 
 | 構成 | 入力と計算内容 | 適用条件（コード上で明示検査） | 条件外時の振る舞い |
 | --- | --- | --- | --- |
@@ -899,14 +899,18 @@ CLI で読める成分は[意味上の射影](results.md#2-回答条件導出)�
 | 原始消去と全 Artin 試験・一般係数冪零商（`shigure_artin`） | 非循環な補助定義の原始消去・自由観測 chart の構文次数上界 $D$（既存関係付き表示では非適用）・全局所 Artin 代数試験の普遍商 $A/\mathfrak{m}^{r+1}$ による初回検出次数 $\nu$・普遍初回障害 $\kappa_u$ と二文脈 Čech 比較・$\nu=1$ と $\nu\ge 2$ の lift 失敗区分・2 段合成則 $\nu(v \circ u) = \min\{\nu(u), \nu(v)\}$・一般係数冪零商 $D_r$ の base change を計算する | Noetherian 有限表示、非循環な補助定義、探索次数 `max_order`・次元 `max_artin_dim` 上限内、未観測座標不在 | 曲線 jet 試験だけで全 Artin 試験を代用せず、既存関係付き表示に自由上界を適用しない。非 Noetherian 無限表示（`non_noetherian_infinite_presentation`）・探索次数/次元上限超過（`artin_order_out_of_scope`）・未観測依存は `undetermined` とする |
 | 整数診断複体・診断層 $B_\pi$・合流・次元実現（`shigure_diagnostics`） | 固定 label 整数診断複体 $C_\Lambda$（$d^1 d^0 = 0$ 検算・block 分解・SNF による自由階数と torsion）を構成し、係数変更（flat / faithfully flat 判定、固定 label テンソル vs 値域再生成・比較射、明示 $\mathbb{Z}$ 複体の係数変更）、多項式 readout の非空 partition 層別 $B_\pi$、値合流の Mayer–Vietoris 長完全列次元恒等式と多段合流順序独立性、$R$-点（双対数等）値 vs 幾何点 stalk の分離、上半連続性反証、および $V(g_1,\dots,g_r)\cap D(h)$ 診断次元実現を計算する | 有限神経・partition 上限 `max_partitions` 内、有効な係数域（明示 $\mathbb{Z}$ 複体は `diagnostic_coeff Z`）、未観測座標不在 | 固定 label テンソルと値域再生成、または $R$-点値と幾何点 stalk を混同せず、非 flat / 非 faithful 係数変更で $H^i$ 保存・零性反映を無条件主張しない。partition 上限超過や適用外は `undetermined`（`diagnostics_stratification_out_of_scope`）とする |
 | 有限グラフ実 adapter・制約付き修復・Atlas 細分化（`shigure_atlas`） | 有限連結有向単純グラフ上の実 adapter 残差・SAGA 符号比較 $T \delta^0_{\mathrm{SAGA}} = d^0_\Gamma$・spanning tree $\Phi_R$ による指定診断類 $o_b, \kappa_b$ と診断 $H^1$ 階数の分離・$\mathbb{Z} \to \mathbb{Q}$ 零性反映・無制約全解と頂点/辺制約付き修復（$H_V, H_E$）および再評価検算を計算する。さらに粗/細 nerve の Condition C0–C6 全 7 条件独立検査・$H^0/H^1$ 同型・指定類保存・評価条件付き全修復 fiber 同型と逆復元、忘却 reading 降下反例、および原子操作 adapter の拡張操作言語非移送反例を計算する | 有限連結単純有向グラフ、有効な係数域（`Z` / `Q` / `Fp(p)`）、未観測座標不在 | 診断 $H^1$ 階数一定と $\kappa_b = 0$、あるいは無制約 $\kappa_b = 0$ と制約付き修復存在を混同せず、adequacy・C0–C6 成立から評価条件降下や原子操作可換から拡張言語保存を推論しない。非連結グラフ等は `undetermined`（`disconnected_graph_out_of_scope`）とする |
+| 出現同定と観測語彙（`shigure_occurrence`） | 最小機能閉包と固定値／正負記録衝突の有限導出列、Setting 17.5 反復細分による文脈同値・分離文脈・最粗健全商、部分記録での健全同定全列挙と最粗商不存在、評価分離 vs 操作保存の最小補助属性値域 $\kappa$・割り当てと再評価検算を計算する | 有限 sort・記録、分割数/合同ステップ上限内、未観測値不在 | 部分記録から単一最粗商の存在を仮定せず、評価分離 $\kappa$ で操作保存 $\kappa$ を代用しない。未観測依存（`unobserved_dependency`）や分割/反復上限超過（`finite_enumeration_out_of_scope`）・負記録混入の設定 17.5 不適合（`applicability_condition_not_met`）は `undetermined` とする |
+| 部分提示・欠測と開領域（`shigure_partial`） | 明示不在（`absent`）と未観測（`unobserved`）の分離、有限表・アフィン表示の整合性判定と包含極小不整合部分提示（MUS）抽出、強 Kleene 三値評価（正格 `let` 含む）と超評価／アフィン正規化比較、条件付き Law の `antecedent_regime` 分類、解の量化 4 階層 $E/U/G/Q$（$G \iff U \wedge Q$）と極小横断集合・不足 witness、開領域局所網羅検査・正の存在式保存・外部存在量化反例解消・アフィン制限一意修復を計算する | 有限表または有効係数域（`Z` / `Q` / `Fp(p)`）のアフィン表示、列挙/ステップ上限内、未観測依存解決済み | 必須 `eval_law` を補完空間に混入せず、部分構造上の非成立を開領域全体の反証や強 Kleene `unknown` を超評価 `false` へ強めない。非対応補完クラスは `undetermined`（`unsupported_completion_class`）とする |
+| 改訂・無効化錐・SNF 再利用（`shigure_revision`） | 非空追記の確定評価単調保存と空補完不整合時の非適用、構造制約支持からの無効化錐 $\operatorname{Cone}(\Delta)$・両端非空検査・錐外射影像および評価プローブ不変性、$\mathbb{Q}$ / $\mathbb{Z}$ の Smith 標準形 $UMV = D$ 検算と作用素不変時の右辺／由来改訂再利用復元・元方程式再評価を計算する | `before`/`after` 整合および `extension` の単調収録、補完上限内、SNF 作用素の一意決定性・未観測値不在 | 空補完不整合下で単調性を主張せず、作用素改訂時に旧 SNF 分解を流用しない。非包含拡張（`applicability_condition_not_met`）・作用素非一意（`operator_not_uniquely_determined`）・強制再利用拒否（`operator_revision_reuse_rejected`）は `undetermined` とする |
+| 多源衝突と最小由来支持（`shigure_multisource`） | 複数源のペアワイズ整合性と 3 源以上で破綻する高次構造衝突の全包含極小衝突集合列挙、信頼済み提示＋未確認候補に対する全包含極小由来支持・費用最小化、候補族整合性の個別非空検査、最小支持採用後の残余撤回／反転に対する安定性検算、検証不一致時の改訂スパン再評価を計算する | 有限候補/部分集合上限内、非負費用、`support_goal` 整合、未観測値不在 | ペアワイズ整合から全体整合や空補完からの目標成立を推論しない。上限超過・不足は仕様通りの `refuted` / `insufficiency_witness` または `undetermined`（`finite_enumeration_out_of_scope`）で返す |
 
 ### 判断不能の原則と射の向き・再評価のスコープ区別
 
 1. **係数域と点集合域を混同しない**: 代数閉包上の幾何点存在（`algebraic_closure`）と、
    $\mathbb{Q}$ 点（`Q_points`）・$\mathbb{Z}$ 点（`Z_points`）・$\mathbb{F}_p$ 点（`Fp_points`）・
    普遍環（`universal_ring`）の判定を型と出力欄で常に区別する。
-2. **判断不能（undetermined）は正常出力**: 適用条件を外れる入力（無界経路探索・無界旧語 lift 探索・構成可能層別分岐上限・有限列挙上限・$\mathcal{R}(R)$ 適用外・平方零条件違反 $M^2 \ne 0$・syzygy/Artin 次数/partition 上限超過・非 Noetherian 無限表示・非連結グラフを含む）に対し、
-   誤った `established` / `refuted` や暗黙の近似を返さず、理由コード（`unbounded_search_out_of_scope`・`constructible_stratification_out_of_scope`・`finite_enumeration_out_of_scope`・`universal_ring_out_of_scope`・`non_noetherian_infinite_presentation`・`square_zero_condition_violated`・`syzygy_out_of_scope`・`artin_order_out_of_scope`・`diagnostics_stratification_out_of_scope`・`disconnected_graph_out_of_scope` 等）・
+2. **判断不能（undetermined）は正常出力**: 適用条件を外れる入力（無界経路探索・無界旧語 lift 探索・構成可能層別分岐上限・有限列挙上限・$\mathcal{R}(R)$ 適用外・平方零条件違反 $M^2 \ne 0$・syzygy/Artin 次数/partition 上限超過・非 Noetherian 無限表示・非連結グラフ・非対応補完クラス・SNF 作用素非一意・作用素改訂強制再利用を含む）に対し、
+   誤った `established` / `refuted` や暗黙の近似を返さず、理由コード（`unbounded_search_out_of_scope`・`constructible_stratification_out_of_scope`・`finite_enumeration_out_of_scope`・`universal_ring_out_of_scope`・`non_noetherian_infinite_presentation`・`square_zero_condition_violated`・`syzygy_out_of_scope`・`artin_order_out_of_scope`・`diagnostics_stratification_out_of_scope`・`disconnected_graph_out_of_scope`・`unsupported_completion_class`・`operator_not_uniquely_determined`・`operator_revision_reuse_rejected` 等）・
    不足スロット・適用外詳細を添えた `verdict: "undetermined"` を正常出力（CLI では `status: "partial"`, exit 2）として返す。
 3. **射の向きと合成順の型レベル区別**: 図式および経路では、状態比較射の向き（`state_map`: `after -> before`、合成 $h_{01} \circ h_{12}$）と
    変更の時間順（`time_order`: `before -> after`）を `MorphismDirection` として明示的に区別し、逆転混在を許さない。

@@ -1276,7 +1276,7 @@ established・undetermined回答の表示と、`--out` 指定時のresult.json�
 
 ## 8. SHIGURE の型付き結果（`ShigureOutcome`）
 
-`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations`・`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas` の回答は、
+`shigure_preservation`・`shigure_solve`・`shigure_interaction`・`shigure_diagram`・`shigure_path`・`shigure_transfer`・`shigure_robustness`・`shigure_chevalley`・`shigure_observations`・`shigure_lift`・`shigure_artin`・`shigure_diagnostics`・`shigure_atlas`・`shigure_occurrence`・`shigure_partial`・`shigure_revision`・`shigure_multisource` の回答は、
 標準出力の `archsig.summary/1` では `answers[].outputs.shigure` に直接保持し、
 `--out` 保存時の `archsig.result/4` では `type: "ShigureOutcome"` の `SavedNode`（`answers[].outputs.shigure = {"node": ...}`、
 `scope.domain = "shigure_presentation"`）として保存する。ここでも `null` は出力せず、省略可能な欄は値があるときだけ出力する。
@@ -1321,7 +1321,11 @@ ShigureOutcome = {
   lift?: LiftOutcomeDetail,
   artin?: ArtinOutcomeDetail,
   diagnostics?: DiagnosticsOutcomeDetail,
-  atlas?: AtlasOutcomeDetail
+  atlas?: AtlasOutcomeDetail,
+  occurrence?: OccurrenceOutcomeDetail,
+  partial?: PartialOutcomeDetail,
+  revision?: RevisionOutcomeDetail,
+  multisource?: MultisourceOutcomeDetail
 }
 
 ReevalCheck = {
@@ -1781,6 +1785,91 @@ AtlasOutcomeDetail = {
   }
 }
 
+OccurrenceOutcomeDetail = {
+  minimal_functional_classes: { [Sort]: String[][] },
+  collisions: { kind: String, detail: String, derivation_steps: String[] }[],
+  derivation_verified: Bool,
+  context_closed_17_5: Bool,
+  context_equivalence_classes: { [Sort]: String[][] },
+  separating_contexts: {
+    sort: String, lhs: String, rhs: String, context_expr: String, verified: Bool,
+    lhs_value?: String, rhs_value?: String
+  }[],
+  coarsest_sound_exists: Bool,
+  sound_identifications_count?: Nat,
+  coarsest_sound_classes?: { [Sort]: String[][] },
+  attribute_realization?: {
+    eval_separation_kappa: { [Sort]: Nat },
+    sound_identification_exists: Bool,
+    minimal_sound_kappa_tuples: { [Sort]: Nat }[],
+    selected_attribute_assignment: { [Sort]: { [Elem]: Nat } },
+    failure_reason?: String,
+    reevaluation?: ReevalCheck
+  }
+}
+
+PartialOutcomeDetail = {
+  completion_consistent: Bool,
+  minimal_inconsistent_subsets: String[][],
+  mus_verified: Bool,
+  law_evaluations: {
+    law_name: String, strong_kleene: String, supervaluation: String,
+    antecedent_regime?: String, conditional_conclusion_eval?: String,
+    affine_normalized_eval?: String
+  }[],
+  kleene_soundness_verified: Bool,
+  completion_count?: Nat,
+  quantifier_hierarchy?: {
+    E: Bool, U: Bool, G: Bool, Q: Bool,
+    g_iff_u_and_q_verified: Bool,
+    required_slot_sets: String[][],
+    insufficiency_witness?: String
+  },
+  open_domain?: {
+    is_full_substructure: Bool, all_fibers_locally_exhaustive: Bool,
+    uncovered_fibers: String[],
+    sub_law_eval: String, ambient_law_eval: String,
+    positive_preserved: Bool, law_evaluations_match: Bool,
+    affine_unique_repair_exists?: Bool,
+    affine_image_dim?: Nat, affine_fiber_dim?: Nat,
+    reevaluation?: ReevalCheck
+  }
+}
+
+RevisionOutcomeDetail = {
+  kind: String,
+  before_consistent: Bool, after_consistent: Bool,
+  monotonicity_applicable: Bool, monotonicity_preserved?: Bool,
+  delta_coords: String[], invalidation_cone: String[], outside_cone_coords: String[],
+  outside_projection_equal?: Bool,
+  probe_results: {
+    probe_name: String, outside_cone: Bool,
+    before_eval: String, after_eval: String, invariant_satisfied: Bool
+  }[],
+  snf_reuse?: {
+    coeff_domain: String, rank: Nat,
+    diagonals: String[], cokernel_torsion: String[], cokernel_free_rank: Nat,
+    umv_verified: Bool, reused_snf: Bool, after_solvable: Bool,
+    after_particular?: String[], kernel_basis: String[][],
+    inconsistency_cert_row?: Nat,
+    reevaluation: ReevalCheck
+  }
+}
+
+MultisourceOutcomeDetail = {
+  pairwise_consistent: Bool, all_sources_consistent: Bool,
+  minimal_conflict_sets: String[][], minimal_conflicts_verified: Bool,
+  support_goal?: {
+    all_candidates_consistent: Bool,
+    minimal_supports: { support: String[], stability_verified: Bool, total_cost?: String }[],
+    min_cost_supports: { support: String[], stability_verified: Bool, total_cost?: String }[],
+    insufficiency_witness?: { [Coord]: String },
+    post_verification_reeval_needed: Bool,
+    post_verification_minimal_supports?: { support: String[], stability_verified: Bool, total_cost?: String }[],
+    reevaluation?: ReevalCheck
+  }
+}
+
 ApplicabilityCheck = { condition: String, clause: String, satisfied: Bool, detail?: String }
 ShigureOriginRef = {
   origin_id: String,
@@ -1797,7 +1886,8 @@ SilenceReason = {
       | "non_noetherian_infinite_presentation" | "square_zero_condition_violated"
       | "syzygy_out_of_scope" | "artin_order_out_of_scope"
       | "diagnostics_stratification_out_of_scope" | "disconnected_graph_out_of_scope"
-      | "applicability_condition_not_met",
+      | "unsupported_completion_class" | "operator_not_uniquely_determined"
+      | "operator_revision_reuse_rejected" | "applicability_condition_not_met",
   missing_slots?: String[],
   point_domain?: ShigurePointDomain,
   coeff_domain?: "Z" | "Q" | ["Fp", DecimalPrime],
@@ -1813,4 +1903,4 @@ Issue を付与し、`details` へ `silence_reason` の構造体をそのまま�
 `lift.redundant_comparison.h0_matches` および `h1_matches` は、元の生成族と参照生成族（`ref_law`）の $H^0(D)$・$H^1(D)$ の抽象的な加群・ベクトル空間同型（体上は次元一致、$\mathbb{Z}$ 上は自由階数と不変因子の一致）を示す。
 `path.valid_paths[].step_states` と `path.rejected_candidates[].intermediate_state` のキーには、`fixed_protocol_change_path` では `change_spec` のパラメータ名、`enlarged_protocol_execution_path` では対象位相の状態座標名を格納する。
 `path.valid_paths[].intermediate_vertices` には、`fixed_protocol_change_path` では経路上の頂点名列、`enlarged_protocol_execution_path` では実行経路が通過した位相名列を格納し、`enlarged_protocol_execution_path` の `path.valid_paths[].composite_word_translation` には各操作名 `OpName` に加えて、`steps` 全体に対応する翻訳語列を予約キー `"sequence"` で格納する。
-`restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope`・`lift.reevaluation.scope`・`lift.relative_cone.reevaluation.scope`・`lift.affine_repair.reevaluation.scope`・`atlas.unconstrained_reevaluation.scope`・`atlas.{vertex,edge}_constrained_repair.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
+`restored.reevaluation.scope`・`diagram.restored_diagram.reevaluation.scope`・`path.valid_paths[].reevaluation.scope`・`transfer.restored_transfer.reevaluation.scope`・`lift.reevaluation.scope`・`lift.relative_cone.reevaluation.scope`・`lift.affine_repair.reevaluation.scope`・`atlas.unconstrained_reevaluation.scope`・`atlas.{vertex,edge}_constrained_repair.reevaluation.scope`・`occurrence.attribute_realization.reevaluation.scope`・`partial.open_domain.reevaluation.scope`・`revision.snf_reuse.reevaluation.scope`・`multisource.support_goal.reevaluation.scope` は常に `"mathematical_model_reevaluation"` とし、実ソースコードへの適用・再観測確認と区別する。
