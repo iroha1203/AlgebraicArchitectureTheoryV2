@@ -1,0 +1,160 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Phase5Vocab",
+      "version": "1",
+      "digest": "sha256:d0d6b9efd51420191a25f2c48792cd0957ba3e24d975109154d7024889246b67"
+    }
+  ],
+  "sources": [
+    {
+      "id": "p5_src",
+      "uri": "file://phase5.rs",
+      "revision": "rev1",
+      "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000005"
+    }
+  ],
+  "origins": [
+    {
+      "id": "o_static",
+      "mode": "observed",
+      "method": "ast-extractor",
+      "kind": "static_analysis",
+      "locations": [
+        {
+          "source": "p5_src",
+          "path": "src/phase5.rs",
+          "span": [1, 45]
+        }
+      ]
+    },
+    {
+      "id": "o_rt",
+      "mode": "observed",
+      "method": "runtime-probe",
+      "kind": "runtime_observation",
+      "locations": [
+        {
+          "source": "p5_src",
+          "path": "src/runtime.rs",
+          "span": [3, 24]
+        }
+      ]
+    },
+    {
+      "id": "o_llm",
+      "mode": "proposed",
+      "method": "llm-reader",
+      "kind": "llm_candidate",
+      "locations": [],
+      "note": "llm candidate observation"
+    },
+    {
+      "id": "o_human",
+      "mode": "observed",
+      "method": "design-review",
+      "kind": "human_adopted",
+      "locations": [
+        {
+          "source": "p5_src",
+          "path": "src/doc.md",
+          "span": [1, 5]
+        }
+      ],
+      "note": "human adopted specification"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "snap1",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "svc1",
+          "type": "Phase5Vocab.Service",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_weight",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.weight",
+          "value": "1",
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_weight_q",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.weight_q",
+          "value": ["1", "1"],
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_mod3",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.mod3_val",
+          "value": "1",
+          "origin": "o_static"
+        },
+        {
+          "id": "a_quota",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.quota",
+          "value": "10",
+          "origin": "o_static"
+        },
+        {
+          "id": "a_tag",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.tag",
+          "value": "w0",
+          "origin": "o_human"
+        }
+      ]
+    },
+    {
+      "id": "snap_missing",
+      "origin": "o_static",
+      "subjects": [
+        {
+          "id": "svc1",
+          "type": "Phase5Vocab.Service",
+          "origin": "o_static"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a_weight_m",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.weight",
+          "value": "1",
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_weight_q_m",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.weight_q",
+          "value": ["1", "1"],
+          "origin": "o_rt"
+        },
+        {
+          "id": "a_mod3_m",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.mod3_val",
+          "value": "1",
+          "origin": "o_static"
+        },
+        {
+          "id": "a_tag_m",
+          "subject": "svc1",
+          "field": "Phase5Vocab.Service.tag",
+          "value": "w0",
+          "origin": "o_human"
+        }
+      ]
+    }
+  ]
+}

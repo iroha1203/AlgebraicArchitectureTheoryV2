@@ -121,6 +121,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "shigure_artin(Base.A, snapshot=snap1)",
         "shigure_diagnostics(Base.D, snapshot=snap1)",
         "shigure_atlas(Base.G, snapshot=snap1)",
+        "shigure_occurrence(Base.Occ, snapshot=snap1)",
+        "shigure_partial(Base.Part, snapshot=snap1)",
+        "shigure_revision(Base.Rev, snapshot=snap1)",
+        "shigure_multisource(Base.Ms, snapshot=snap1)",
     ] {
         let valid_ask = "p=shigure_solve(LedgerMigration.P1AtomicMarked)".to_owned();
         assert_eq!(
@@ -143,6 +147,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "a=shigure_artin([3])",
         "a=shigure_diagnostics(.d)",
         "a=shigure_atlas([4])",
+        "a=shigure_occurrence(.occ)",
+        "a=shigure_partial([5])",
+        "a=shigure_revision(.rev)",
+        "a=shigure_multisource([6])",
     ] {
         let msg = parse::parse_single_ask(bad).unwrap_err();
         assert!(
@@ -213,6 +221,30 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
             "R.AtlasTask",
             Some("snap_1"),
         ),
+        (
+            "o=shigure_occurrence(R.OccTask, snapshot=snap1)",
+            ShigureCliQuery::Occurrence,
+            "R.OccTask",
+            Some("snap1"),
+        ),
+        (
+            "p=shigure_partial(PartTask)",
+            ShigureCliQuery::Partial,
+            "PartTask",
+            None,
+        ),
+        (
+            "r=shigure_revision(R.RevTask, snapshot=snap_2)",
+            ShigureCliQuery::Revision,
+            "R.RevTask",
+            Some("snap_2"),
+        ),
+        (
+            "m=shigure_multisource(R.MsTask)",
+            ShigureCliQuery::Multisource,
+            "R.MsTask",
+            None,
+        ),
     ] {
         assert_eq!(classify_asks(&[ask.to_owned()]), AskPartition::AllShigure);
         let parsed = parse::parse_single_ask(ask).unwrap();
@@ -229,6 +261,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "x=shigure_artin_extra(Foo)",
         "x=shigure_diagnostics_extra(Foo)",
         "x=shigure_atlas_extra(Foo)",
+        "x=shigure_occurrence_extra(Foo)",
+        "x=shigure_partial_extra(Foo)",
+        "x=shigure_revision_extra(Foo)",
+        "x=shigure_multisource_extra(Foo)",
     ] {
         assert_eq!(classify_asks(&[extra.to_owned()]), AskPartition::None);
     }
@@ -241,6 +277,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
         "b=shigure_artin(R.A)",
         "b=shigure_diagnostics(R.D)",
         "b=shigure_atlas(R.G)",
+        "b=shigure_occurrence(R.Occ)",
+        "b=shigure_partial(R.Part)",
+        "b=shigure_revision(R.Rev)",
+        "b=shigure_multisource(R.Ms)",
     ] {
         assert_eq!(
             classify_asks(&[
@@ -258,6 +298,10 @@ fn shigure_ask_classifier_and_head_error_match_execution_spec() {
     assert!(parse::parse_single_ask("a=shigure_artin(R.A, foo=bar)").is_err());
     assert!(parse::parse_single_ask("d=shigure_diagnostics(R.D, foo=bar)").is_err());
     assert!(parse::parse_single_ask("g=shigure_atlas(R.G, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("o=shigure_occurrence(R.Occ, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("p=shigure_partial(R.Part, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("r=shigure_revision(R.Rev, foo=bar)").is_err());
+    assert!(parse::parse_single_ask("m=shigure_multisource(R.Ms, foo=bar)").is_err());
 }
 
 #[test]

@@ -1,0 +1,48 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Phase5Vocab",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Phase5Vocab.Service",
+          "meaning": "Observation subject for SHIGURE Phase 5 occurrence, partial, revision, and multisource checks.",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "weight",
+              "type": "Z",
+              "meaning": "Observed integer weight."
+            },
+            {
+              "name": "weight_q",
+              "type": "Q",
+              "meaning": "Observed rational weight."
+            },
+            {
+              "name": "mod3_val",
+              "type": ["Fp", "3"],
+              "meaning": "Observed Fp(3) coordinate."
+            },
+            {
+              "name": "quota",
+              "type": "Z",
+              "meaning": "Optional integer quota omitted in missing-slot snapshots."
+            },
+            {
+              "name": "tag",
+              "type": "Text",
+              "meaning": "Observed symbolic tag."
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

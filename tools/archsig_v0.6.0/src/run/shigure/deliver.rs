@@ -501,7 +501,11 @@ fn collect_decl_readings(
         ShigureCliQuery::Lift
         | ShigureCliQuery::Artin
         | ShigureCliQuery::Diagnostics
-        | ShigureCliQuery::Atlas => {}
+        | ShigureCliQuery::Atlas
+        | ShigureCliQuery::Occurrence
+        | ShigureCliQuery::Partial
+        | ShigureCliQuery::Revision
+        | ShigureCliQuery::Multisource => {}
     }
 }
 

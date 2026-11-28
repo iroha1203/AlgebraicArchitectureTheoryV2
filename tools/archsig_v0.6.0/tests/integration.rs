@@ -52,6 +52,7 @@ mod cli_shigure;
 mod cli_shigure_phase2;
 mod cli_shigure_phase3;
 mod cli_shigure_phase4;
+mod cli_shigure_phase5;
 mod cli_signals;
 mod cli_summary;
 mod cli_validation_english;

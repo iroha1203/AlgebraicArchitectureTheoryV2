@@ -1,0 +1,104 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading RevAC5 {
+  use vocabulary Phase5Vocab version "1" digest "sha256:d0d6b9efd51420191a25f2c48792cd0957ba3e24d975109154d7024889246b67";
+
+  shigure revision MonotoneCondExt {
+    kind = extension;
+    domain Z;
+    origin runtime_observation "rt_ext";
+    coord mode in [0, 1];
+    coord val in [0, 1];
+    before {
+      assign mode = 1;
+      constraint mode_val_eq support [mode, val] : eq(mode, val);
+    }
+    after {
+      assign mode = 1;
+      assign val = 1;
+      constraint mode_val_eq support [mode, val] : eq(mode, val);
+    }
+    probe cond_val support [mode, val] : if mode = 1 => val = 1;
+  }
+
+  shigure revision InconsistentExt {
+    kind = extension;
+    domain Z;
+    origin static_analysis "sa_incext";
+    coord xi in [0, 1];
+    coord eta in [0, 1];
+    coord zeta in [0, 1];
+    shared_constraint c_xi_eta support [xi, eta] : eq(xi, eta);
+    before {
+      assign xi = 0;
+      assign zeta = 0;
+    }
+    after {
+      assign xi = 0;
+      assign eta = 1;
+      assign zeta = 0;
+    }
+  }
+
+  shigure revision Ex19_5ConeSpan {
+    kind = span;
+    domain Z;
+    origin archmap "o_rt";
+    origin human_adopted "hum_19_5";
+    coord xi in [0, 1];
+    coord eta in [0, 1];
+    coord zeta in [0, 1];
+    shared_constraint c_xi_eta support [xi, eta] : eq(xi, eta);
+    before {
+      assign xi = observed Phase5Vocab.Service.weight;
+      assign zeta = 0;
+    }
+    after {
+      assign xi = 0;
+      assign zeta = 0;
+    }
+    probe eta_zero support [eta] : eta = 0;
+    probe zeta_zero support [zeta] : zeta = 0;
+  }
+
+  shigure revision Thm19_7SnfZ2Ok {
+    kind = span;
+    domain Z;
+    origin human_adopted "hum_snf_ok";
+    snf {
+      domain Z;
+      num_cols = 1;
+      common_operator = [[2]];
+      rhs_before = [2];
+      rhs_after = [4];
+      force_reuse = true;
+    }
+  }
+
+  shigure revision Thm19_7SnfZ3Bad {
+    kind = span;
+    domain Z;
+    origin human_adopted "hum_snf_bad";
+    snf {
+      domain Z;
+      num_cols = 1;
+      common_operator = [[2]];
+      rhs_before = [2];
+      rhs_after = [3];
+      force_reuse = true;
+    }
+  }
+
+  shigure revision Thm19_7SnfQOk {
+    kind = span;
+    domain Q;
+    origin static_analysis "sa_snf_q";
+    snf {
+      domain Q;
+      num_cols = 2;
+      common_operator = [[2, 0], [0, 1]];
+      rhs_before = [rat(1, 2), 1];
+      rhs_after = [rat(3, 2), 2];
+    }
+  }
+}
