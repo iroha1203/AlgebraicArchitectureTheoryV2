@@ -731,4 +731,118 @@ fn phase5_ir_rejects_empty_origins_bad_open_domain_restricted_domain_and_unreduc
         validate_multisource_task(unreduced_ms),
         Err(ValidationError::InvalidRational { .. })
     ));
+
+    // 4. open_domain bidirectional equality & carrier checks
+    let base_open = OpenDomainSpec {
+        substructure_carriers: BTreeMap::from([("A".into(), vec!["a0".into()])]),
+        ambient_carriers: BTreeMap::from([("A".into(), vec!["a0".into(), "a1".into()])]),
+        substructure_ops: vec![OpenOpTable {
+            name: "f".into(),
+            arg_sorts: vec!["A".into()],
+            out_sort: "A".into(),
+            entries: BTreeMap::new(),
+        }],
+        ambient_ops: vec![OpenOpTable {
+            name: "f".into(),
+            arg_sorts: vec!["A".into()],
+            out_sort: "A".into(),
+            entries: BTreeMap::new(),
+        }],
+        substructure_rels: vec![super::partial::OpenRelTable {
+            name: "R".into(),
+            arg_sorts: vec!["A".into()],
+            entries: BTreeSet::new(),
+        }],
+        ambient_rels: vec![super::partial::OpenRelTable {
+            name: "R".into(),
+            arg_sorts: vec!["A".into()],
+            entries: BTreeSet::new(),
+        }],
+        fiber_checks: vec![],
+        positive_or_law: PartialEvalLawSpec {
+            name: "pos".into(),
+            antecedent: None,
+            conclusion: PartialFormula::Eq(
+                PartialTerm::Const("a0".into()),
+                PartialTerm::Const("a0".into()),
+            ),
+            is_required_law: true,
+        },
+        affine_restriction: None,
+    };
+    let make_open_task = |od: OpenDomainSpec| PartialTaskSpec {
+        name: "open_neg".into(),
+        representation: PartialRepresentation::UnsupportedClass {
+            description: "open_only".into(),
+        },
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: Some(od),
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+
+    let mut amb_only_sort = base_open.clone();
+    amb_only_sort
+        .ambient_carriers
+        .insert("B".into(), vec!["b0".into()]);
+    assert!(matches!(
+        validate_partial_task(make_open_task(amb_only_sort)),
+        Err(ValidationError::UnknownRef {
+            kind: "substructure_sort",
+            ..
+        })
+    ));
+
+    let mut amb_only_op = base_open.clone();
+    amb_only_op.ambient_ops.push(OpenOpTable {
+        name: "g".into(),
+        arg_sorts: vec!["A".into()],
+        out_sort: "A".into(),
+        entries: BTreeMap::new(),
+    });
+    assert!(matches!(
+        validate_partial_task(make_open_task(amb_only_op)),
+        Err(ValidationError::UnknownRef {
+            kind: "substructure_op",
+            ..
+        })
+    ));
+
+    let mut amb_only_rel = base_open.clone();
+    amb_only_rel
+        .ambient_rels
+        .push(super::partial::OpenRelTable {
+            name: "Q".into(),
+            arg_sorts: vec!["A".into()],
+            entries: BTreeSet::new(),
+        });
+    assert!(matches!(
+        validate_partial_task(make_open_task(amb_only_rel)),
+        Err(ValidationError::UnknownRef {
+            kind: "substructure_rel",
+            ..
+        })
+    ));
+
+    let mut dup_carrier = base_open.clone();
+    dup_carrier
+        .ambient_carriers
+        .insert("A".into(), vec!["a0".into(), "a0".into()]);
+    assert!(matches!(
+        validate_partial_task(make_open_task(dup_carrier)),
+        Err(ValidationError::DuplicateDecl {
+            kind: "open_domain_element",
+            ..
+        })
+    ));
+
+    let mut empty_elem = base_open;
+    empty_elem
+        .ambient_carriers
+        .insert("A".into(), vec!["".into()]);
+    assert!(matches!(
+        validate_partial_task(make_open_task(empty_elem)),
+        Err(ValidationError::EmptyName { .. })
+    ));
 }

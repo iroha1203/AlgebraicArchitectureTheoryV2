@@ -782,19 +782,26 @@ pub fn verify_collision_witness(input: &CongruenceInput, witness: &CollisionWitn
             neg_out,
         } => {
             let Some(pos) = input.op_records.iter().find(|r| {
-                r.positive && r.op_name == *op_name && r.args == *pos_args && r.output == *pos_out
+                r.positive
+                    && r.op_name == *op_name
+                    && r.args.len() == r.arg_sorts.len()
+                    && r.args == *pos_args
+                    && r.output == *pos_out
             }) else {
                 return false;
             };
             let has_neg = input.op_records.iter().any(|r| {
                 !r.positive
                     && r.op_name == *op_name
+                    && r.args.len() == r.arg_sorts.len()
                     && r.args == *neg_args
                     && r.output == *neg_out
                     && r.arg_sorts == pos.arg_sorts
                     && r.out_sort == pos.out_sort
             });
             has_neg
+                && pos.arg_sorts.len() == pos_args.len()
+                && pos.arg_sorts.len() == neg_args.len()
                 && pos.arg_sorts.iter().enumerate().all(|(k, s)| {
                     proven.contains(&(s.clone(), pos_args[k].clone(), neg_args[k].clone()))
                 })
@@ -809,6 +816,7 @@ pub fn verify_collision_witness(input: &CongruenceInput, witness: &CollisionWitn
                 r.positive
                     && r.kind == PredicateRecordKind::Domain
                     && r.name == *op_name
+                    && r.args.len() == r.arg_sorts.len()
                     && r.args == *pos_args
             }) else {
                 return false;
@@ -817,10 +825,13 @@ pub fn verify_collision_witness(input: &CongruenceInput, witness: &CollisionWitn
                 !r.positive
                     && r.kind == PredicateRecordKind::Domain
                     && r.name == *op_name
+                    && r.args.len() == r.arg_sorts.len()
                     && r.args == *neg_args
                     && r.arg_sorts == pos.arg_sorts
             });
             has_neg
+                && pos.arg_sorts.len() == pos_args.len()
+                && pos.arg_sorts.len() == neg_args.len()
                 && pos.arg_sorts.iter().enumerate().all(|(k, s)| {
                     proven.contains(&(s.clone(), pos_args[k].clone(), neg_args[k].clone()))
                 })
@@ -834,6 +845,7 @@ pub fn verify_collision_witness(input: &CongruenceInput, witness: &CollisionWitn
                 r.positive
                     && r.kind == PredicateRecordKind::Relation
                     && r.name == *rel_name
+                    && r.args.len() == r.arg_sorts.len()
                     && r.args == *pos_args
             }) else {
                 return false;
@@ -842,10 +854,13 @@ pub fn verify_collision_witness(input: &CongruenceInput, witness: &CollisionWitn
                 !r.positive
                     && r.kind == PredicateRecordKind::Relation
                     && r.name == *rel_name
+                    && r.args.len() == r.arg_sorts.len()
                     && r.args == *neg_args
                     && r.arg_sorts == pos.arg_sorts
             });
             has_neg
+                && pos.arg_sorts.len() == pos_args.len()
+                && pos.arg_sorts.len() == neg_args.len()
                 && pos.arg_sorts.iter().enumerate().all(|(k, s)| {
                     proven.contains(&(s.clone(), pos_args[k].clone(), neg_args[k].clone()))
                 })

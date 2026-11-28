@@ -592,4 +592,74 @@ fn algebra_phase5_negative_and_boundary_cases() {
         max_steps: DEFAULT_MAX_CONGRUENCE_STEPS,
     };
     assert!(!verify_collision_witness(&cong_in, &bad_witness));
+
+    // verify_collision_witness returns false safely on malformed record arity for Output/Domain/Relation collisions
+    let malformed_out_in = CongruenceInput {
+        sorts: vec![CongruenceSort {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        requests: vec![],
+        op_records: vec![OpOutputRecord {
+            op_name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            args: vec![],
+            out_sort: "S".into(),
+            output: "a".into(),
+            positive: true,
+        }],
+        predicate_records: vec![
+            PredicateRecord {
+                kind: PredicateRecordKind::Domain,
+                name: "D".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec![],
+                positive: true,
+            },
+            PredicateRecord {
+                kind: PredicateRecordKind::Relation,
+                name: "R".into(),
+                arg_sorts: vec!["S".into()],
+                args: vec![],
+                positive: true,
+            },
+        ],
+        max_steps: DEFAULT_MAX_CONGRUENCE_STEPS,
+    };
+    assert!(!verify_collision_witness(
+        &malformed_out_in,
+        &CollisionWitness {
+            kind: CollisionKind::OutputRecordCollision {
+                op_name: "T".into(),
+                pos_args: vec![],
+                pos_out: "a".into(),
+                neg_args: vec![],
+                neg_out: "a".into(),
+            },
+            derivation: vec![],
+        }
+    ));
+    assert!(!verify_collision_witness(
+        &malformed_out_in,
+        &CollisionWitness {
+            kind: CollisionKind::DomainRecordCollision {
+                op_name: "D".into(),
+                pos_args: vec![],
+                neg_args: vec![],
+            },
+            derivation: vec![],
+        }
+    ));
+    assert!(!verify_collision_witness(
+        &malformed_out_in,
+        &CollisionWitness {
+            kind: CollisionKind::RelationRecordCollision {
+                rel_name: "R".into(),
+                pos_args: vec![],
+                neg_args: vec![],
+            },
+            derivation: vec![],
+        }
+    ));
 }
