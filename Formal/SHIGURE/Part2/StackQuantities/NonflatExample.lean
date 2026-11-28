@@ -57,7 +57,8 @@ theorem multiplyGenerator_range :
   ext x
   simp [multiplyGenerator, residualIdeal, Ideal.mem_span_singleton', mul_comm]
 
-/-- The residual ideal, as a `k[a]`-module, has a free generator `a t`. -/
+/-- Multiplication by `a t` identifies `k[a,t]` with the residual ideal
+as a `k[a]`-module. -/
 def generatorEquiv : Ambient k ≃ₗ[Base k] residualIdeal k :=
   LinearEquiv.ofInjective (multiplyGenerator k) (by
     intro x y h
@@ -66,7 +67,7 @@ def generatorEquiv : Ambient k ≃ₗ[Base k] residualIdeal k :=
     LinearEquiv.ofEq _ _ (multiplyGenerator_range k) ≪≫ₗ
     (Submodule.restrictScalarsEquiv (Base k) (Ambient k) (Ambient k) (residualIdeal k)).restrictScalars (Base k)
 
-/-- The chosen free generator is the original polynomial `a t`. -/
+/-- The image of `1` under the multiplication is the polynomial `a t`. -/
 theorem generatorEquiv_one : (generatorEquiv k 1 : Ambient k) = generator k := by
   simp [generatorEquiv, multiplyGenerator]
 
