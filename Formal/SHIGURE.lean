@@ -57,6 +57,18 @@ import Formal.SHIGURE.Part2.StackQuantities.NonflatWrittenLaw
 import Formal.SHIGURE.Part2.StackQuantities.ResidualExamples
 import Formal.SHIGURE.Part2.StackQuantities.SectionModel
 
+import Formal.SHIGURE.Part2.Minimal.DimensionGrowth
+import Formal.SHIGURE.Part2.Minimal.DirectSumRange
+import Formal.SHIGURE.Part2.Minimal.DualObservation
+import Formal.SHIGURE.Part2.Minimal.FiniteObservationComparison
+import Formal.SHIGURE.Part2.Minimal.FiniteWords
+import Formal.SHIGURE.Part2.Minimal.ReachabilityMaps
+import Formal.SHIGURE.Part2.Minimal.SharpnessExample
+import Formal.SHIGURE.Part2.Minimal.TypedWords
+import Formal.SHIGURE.Part2.Minimal.WordExamples
+import Formal.SHIGURE.Part2.Minimal.WordLength
+import Formal.SHIGURE.Part2.Minimal.WordReverse
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.
