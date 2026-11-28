@@ -32,6 +32,8 @@ mod tests;
 #[cfg(test)]
 mod tests_constructible;
 #[cfg(test)]
+mod tests_limits;
+#[cfg(test)]
 mod tests_phase4;
 #[cfg(test)]
 mod tests_phase5;

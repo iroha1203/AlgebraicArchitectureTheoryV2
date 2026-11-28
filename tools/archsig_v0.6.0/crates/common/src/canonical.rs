@@ -62,20 +62,58 @@ impl Json {
         .expect("通常の表示は中断しない")
     }
 
+    pub fn try_canonical_with_max_depth(
+        &self,
+        max_depth: usize,
+    ) -> Result<String, Box<crate::issue::Issue>> {
+        self.canonical_controlled_with_max_depth::<Box<crate::issue::Issue>>(
+            max_depth,
+            &Control::unlimited(),
+            Checkpoint::Expression,
+        )
+    }
+
     /// 検査中のcanonical encodingは、子構造と文字列の区切りにも同じ停止制御を渡す。
     pub fn canonical_controlled<E: InputError>(
         &self,
         control: &Control,
         point: Checkpoint,
     ) -> Result<String, E> {
+        self.canonical_controlled_with_max_depth(
+            crate::limits::DEFAULT_MAX_JSON_DEPTH,
+            control,
+            point,
+        )
+    }
+
+    pub fn canonical_controlled_with_max_depth<E: InputError>(
+        &self,
+        max_depth: usize,
+        control: &Control,
+        point: Checkpoint,
+    ) -> Result<String, E> {
         E::checkpoint(control, point)?;
         let mut out = String::new();
         self.write_controlled(
+            0,
+            max_depth,
             &mut |text| {
                 out.push_str(text);
                 Ok(())
             },
             &mut || E::checkpoint(control, point),
+            &mut |limit| {
+                Box::new(crate::issue::Issue {
+                    code: crate::issue::Code::Syntax,
+                    message: format!("JSON nesting depth exceeds limit ({limit})"),
+                    location: crate::issue::Location::ArchMap {
+                        pointer: String::new(),
+                        span: None,
+                    },
+                    details: crate::issue::Details::Empty,
+                })
+                .into()
+            },
         )?;
         E::checkpoint(control, point)?;
         Ok(out)
@@ -84,13 +122,35 @@ impl Json {
     /// 確定済みの表示を全文Stringなしで配送する。計算の停止制御は再導入しない。
     /// flushと公開の確定は呼出し側が担う。
     pub fn write_canonical(&self, out: &mut impl std::io::Write) -> std::io::Result<()> {
-        self.write_controlled(&mut |text| out.write_all(text.as_bytes()), &mut || Ok(()))
+        self.write_canonical_with_max_depth(out, crate::limits::DEFAULT_MAX_JSON_DEPTH)
+    }
+
+    pub fn write_canonical_with_max_depth(
+        &self,
+        out: &mut impl std::io::Write,
+        max_depth: usize,
+    ) -> std::io::Result<()> {
+        self.write_controlled(
+            0,
+            max_depth,
+            &mut |text| out.write_all(text.as_bytes()),
+            &mut || Ok(()),
+            &mut |limit| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    format!("JSON nesting depth exceeds limit ({limit})"),
+                )
+            },
+        )
     }
 
     fn write_controlled<E>(
         &self,
+        depth: usize,
+        max_depth: usize,
         emit: &mut impl FnMut(&str) -> Result<(), E>,
         checkpoint: &mut impl FnMut() -> Result<(), E>,
+        on_depth_exceeded: &mut impl FnMut(usize) -> E,
     ) -> Result<(), E> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             checkpoint()?;
@@ -99,18 +159,30 @@ impl Json {
                 Json::Nat(n) => emit(&n.to_string())?,
                 Json::Str(s) => emit_string(s, emit, checkpoint)?,
                 Json::Arr(items) => {
+                    if depth >= max_depth {
+                        return Err(on_depth_exceeded(max_depth));
+                    }
                     emit("[")?;
                     for (i, item) in items.iter().enumerate() {
                         checkpoint()?;
                         if i > 0 {
                             emit(",")?;
                         }
-                        item.write_controlled(emit, checkpoint)?;
+                        item.write_controlled(
+                            depth + 1,
+                            max_depth,
+                            emit,
+                            checkpoint,
+                            on_depth_exceeded,
+                        )?;
                         checkpoint()?;
                     }
                     emit("]")?;
                 }
                 Json::NodeReferences(items) => {
+                    if depth >= max_depth || (!items.is_empty() && depth + 1 >= max_depth) {
+                        return Err(on_depth_exceeded(max_depth));
+                    }
                     emit("[")?;
                     for (i, index) in items.iter().enumerate() {
                         checkpoint()?;
@@ -127,6 +199,9 @@ impl Json {
                     emit("]")?;
                 }
                 Json::Obj(entries) => {
+                    if depth >= max_depth {
+                        return Err(on_depth_exceeded(max_depth));
+                    }
                     emit("{")?;
                     for (i, (k, v)) in entries.iter().enumerate() {
                         checkpoint()?;
@@ -135,7 +210,13 @@ impl Json {
                         }
                         emit_string(k, emit, checkpoint)?;
                         emit(":")?;
-                        v.write_controlled(emit, checkpoint)?;
+                        v.write_controlled(
+                            depth + 1,
+                            max_depth,
+                            emit,
+                            checkpoint,
+                            on_depth_exceeded,
+                        )?;
                         checkpoint()?;
                     }
                     emit("}")?;

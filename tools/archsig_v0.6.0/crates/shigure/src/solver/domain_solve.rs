@@ -1,8 +1,8 @@
 //! Z アフィン（Smith 標準形）および F_p 有限全列挙のドメイン特化ソルバ（G-141 D4）。
 
 use crate::algebra::{
-    AffineSolutionZ, DEFAULT_MAX_FP_POINTS, ExprBindings, Poly, Rat, VarOrder, rabinowitsch_solve,
-    solve_affine_z, solve_fp_enumeration,
+    AffineSolutionZ, ExprBindings, Poly, Rat, VarOrder, rabinowitsch_solve, solve_affine_z,
+    solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
@@ -57,14 +57,29 @@ pub(crate) fn solve_affine_direct_z(
                 // 自由変数 0（唯一解が不成立）または代数閉包上で空（1 in I）なら確実に Refuted。
                 let eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
                 let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();
-                if let Ok(rab) = rabinowitsch_solve(&eqs_q, &invs_q, param_vars)
-                    && rab.is_empty_over_closure
-                {
-                    ctx.checks.push(ApplicabilityCheck::passed(
-                        "rabinowitsch_emptiness_verified",
-                        MathClause::G141D5,
-                    ));
-                    return ctx.refuted(residual_display, rab.empty_witness);
+                match rabinowitsch_solve(&eqs_q, &invs_q, param_vars) {
+                    Ok(rab) if rab.is_empty_over_closure => {
+                        ctx.checks.push(ApplicabilityCheck::passed(
+                            "rabinowitsch_emptiness_verified",
+                            MathClause::G141D5,
+                        ));
+                        return ctx.refuted(residual_display, rab.empty_witness);
+                    }
+                    Err(e)
+                        if matches!(
+                            e,
+                            crate::algebra::poly::AlgebraError::ResourceLimitExceeded { .. }
+                        ) =>
+                    {
+                        let reason = map_algebra_silence(e);
+                        ctx.checks.push(ApplicabilityCheck::failed(
+                            "integer_open_witness_verified",
+                            MathClause::G141D4,
+                            reason.code(),
+                        ));
+                        return ctx.undetermined(residual_display, reason);
+                    }
+                    _ => {}
                 }
                 if kernel_basis.is_empty() {
                     ctx.checks.push(ApplicabilityCheck::passed(
@@ -170,7 +185,7 @@ pub(crate) fn solve_over_fp(
         &invs,
         param_vars.len(),
         modulus,
-        DEFAULT_MAX_FP_POINTS,
+        crate::limits::active_limits().max_fp_points,
     ) {
         Ok(fp_res) => {
             ctx.checks.push(ApplicabilityCheck::passed(

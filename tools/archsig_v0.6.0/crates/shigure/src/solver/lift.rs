@@ -7,7 +7,7 @@ use crate::algebra::cochain::CochainComplex;
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::ExprBindings;
 use crate::algebra::scalar::{FpElem, RingCoeff};
-use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, jacobian_polys};
+use crate::algebra::syzygy::jacobian_polys;
 use crate::ir::change::PointDomain;
 use crate::ir::lift::{CheckedLiftTask, LiftTaskSpec, SquareZeroSpec};
 use crate::ir::provenance::{MathClause, Provenance};
@@ -232,7 +232,9 @@ fn solve_lift_with_backend<B: LiftRingBackend>(
         param_vals_r,
         ambient_lift_rp,
         param_vals_rp,
-        max_pairs: spec.max_syzygy_pairs.unwrap_or(DEFAULT_MAX_SYZYGY_PAIRS),
+        max_pairs: spec
+            .max_syzygy_pairs
+            .unwrap_or_else(|| crate::limits::active_limits().max_syzygy_pairs),
     };
 
     let core = match run_core_lift(&ctx, &ctx.law_polys) {

@@ -8,7 +8,7 @@ use crate::algebra::groebner::rabinowitsch_solve;
 use crate::algebra::poly::{AlgebraError, Poly};
 use crate::algebra::poly_expr::{ExprBindings, VarOrder};
 use crate::algebra::scalar::{FpElem, Rat, RingCoeff};
-use crate::algebra::syzygy::{DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, ideal_membership_field};
+use crate::algebra::syzygy::{FieldCoeff, ideal_membership_field};
 use crate::ir::diagnostics::{DiagnosticsReadoutSpec, DiagnosticsTaskSpec, RPointProbeSpec};
 use crate::ir::result::SilenceReason;
 use crate::ir::result_phase4::{
@@ -24,8 +24,6 @@ use crate::solver::lift_backend::{FieldRingAdapter, FpFieldAdapter, QFieldAdapte
 use num_bigint::BigUint;
 use num_traits::{One, Zero};
 use std::collections::{BTreeMap, BTreeSet};
-
-pub const DEFAULT_MAX_DIAGNOSTIC_PARTITIONS: usize = 128;
 
 type LawPolyGroup<C> = (String, Vec<(String, Poly<C>)>);
 type PartitionBlocks<C> = Vec<Vec<(String, Poly<C>)>>;
@@ -76,7 +74,7 @@ pub(crate) fn compute_polynomial_stratification(
 
     let max_partitions = spec
         .max_partitions
-        .unwrap_or(DEFAULT_MAX_DIAGNOSTIC_PARTITIONS);
+        .unwrap_or_else(|| crate::limits::active_limits().max_diagnostic_partitions);
     let (var_order, bindings) =
         ExprBindings::from_slices(base_vars, &[], &[]).map_err(map_diag_alg_err)?;
 
@@ -443,7 +441,7 @@ fn is_nonempty_fp(
         &gens,
         &all_vars,
         MonomialOrder::Grevlex,
-        DEFAULT_MAX_SYZYGY_PAIRS,
+        crate::limits::active_limits().max_syzygy_pairs,
     )
     .map_err(map_diag_alg_err)?;
     Ok(mem.is_none())

@@ -1,8 +1,8 @@
 //! Phase 2 Q／代数閉包・商環層別・具体点／アフィン代入ソルバ。
 
 use crate::algebra::{
-    AffineSolutionQ, DEFAULT_MAX_FP_POINTS, ExprBindings, GroebnerBasis, MonomialOrder, Poly,
-    QuotientStratum, Rat, VarOrder, rabinowitsch_solve, solve_affine_q, solve_fp_enumeration,
+    AffineSolutionQ, ExprBindings, GroebnerBasis, MonomialOrder, Poly, QuotientStratum, Rat,
+    VarOrder, rabinowitsch_solve, solve_affine_q, solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
@@ -598,8 +598,13 @@ pub(crate) fn is_ideal_nonempty(
                 }
             }
             let invs_fp: Vec<Poly<_>> = ev_invs.into_iter().map(|iv| iv.lift_vars(sa)).collect();
-            let res =
-                solve_fp_enumeration(&eqs_fp, &invs_fp, order.len(), m, DEFAULT_MAX_FP_POINTS)?;
+            let res = solve_fp_enumeration(
+                &eqs_fp,
+                &invs_fp,
+                order.len(),
+                m,
+                crate::limits::active_limits().max_fp_points,
+            )?;
             Ok(!res.solutions.is_empty())
         }
     }

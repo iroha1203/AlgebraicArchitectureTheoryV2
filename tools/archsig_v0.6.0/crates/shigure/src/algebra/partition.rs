@@ -5,7 +5,7 @@ use crate::algebra::poly::AlgebraError;
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 既定の分割列挙上限（一般有限系での同値関係列挙）。
-pub const DEFAULT_MAX_SET_PARTITIONS: usize = 4_096;
+pub use crate::limits::DEFAULT_MAX_SET_PARTITIONS;
 
 /// 基本使用文脈（読取り $c: D_c \to Z_c$、未定義は `None`）。
 #[derive(Clone, Debug, PartialEq, Eq)]

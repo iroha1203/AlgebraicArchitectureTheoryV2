@@ -6,6 +6,7 @@ pub mod control;
 pub mod internal;
 pub mod issue;
 pub mod json;
+pub mod limits;
 pub mod names;
 pub mod prime;
 pub mod types;

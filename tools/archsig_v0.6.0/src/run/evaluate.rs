@@ -60,7 +60,12 @@ pub(super) fn run_requests_validated(
         Ok(prepared) => prepared,
         Err(outcome) => return outcome,
     };
-    let candidate = match super::reuse::inspect(args.reuse.as_deref(), &prepared, control) {
+    let candidate = match super::reuse::inspect(
+        args.reuse.as_deref(),
+        &prepared,
+        super::active_max_file_bytes(),
+        control,
+    ) {
         Ok(rejected) => rejected,
         Err(reason) => {
             return output::notify(

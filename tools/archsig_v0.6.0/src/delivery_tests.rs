@@ -34,7 +34,7 @@ impl Io for FailingSave {
 #[test]
 #[ignore = "save_failures_keep_answers_on_stdout が独立プロセスで起動する"]
 fn save_child() {
-    let mut signals = ProcessSignals::new();
+    let mut signals = ProcessSignals::install().unwrap();
     let args: Vec<_> = [
         "run",
         "--atom-definition",

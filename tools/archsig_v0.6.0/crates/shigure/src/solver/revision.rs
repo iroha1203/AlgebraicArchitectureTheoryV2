@@ -629,8 +629,10 @@ fn solve_snf_revision(
         MathClause::AatCh19Thm19Dot7,
     ));
 
-    let map_alg_err = |e: AlgebraError| SilenceReason::FiniteEnumerationOutOfScope {
-        detail: format!("{e:?}"),
+    let map_alg_err = |e: AlgebraError| {
+        SilenceReason::from_algebra_with(e, |err| SilenceReason::FiniteEnumerationOutOfScope {
+            detail: format!("{err:?}"),
+        })
     };
 
     match snf.coeff_domain {

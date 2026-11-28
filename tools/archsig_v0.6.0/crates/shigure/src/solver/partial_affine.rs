@@ -15,8 +15,6 @@ use num_bigint::{BigInt, BigUint};
 use num_integer::Integer;
 use num_traits::{Signed, Zero};
 
-const MAX_AFFINE_MUS_RECORDS: usize = 16;
-
 type AffineBasisResult<C> = Result<Option<(Vec<C>, Vec<Vec<C>>)>, SilenceReason>;
 
 pub(super) fn analyze_affine_partial(
@@ -129,12 +127,15 @@ where
                 b.push(rhs.clone());
             }
         }
-        solve_fn(&m, &b, num_vars).map_err(|e| SilenceReason::FiniteEnumerationOutOfScope {
-            detail: format!("{e:?}"),
+        solve_fn(&m, &b, num_vars).map_err(|e| {
+            SilenceReason::from_algebra_with(e, |err| SilenceReason::FiniteEnumerationOutOfScope {
+                detail: format!("{err:?}"),
+            })
         })
     };
 
-    let Some((part_t, ker_t)) = (if rec_rows.len() > MAX_AFFINE_MUS_RECORDS {
+    let max_affine_mus = crate::limits::active_limits().max_affine_mus_records;
+    let Some((part_t, ker_t)) = (if rec_rows.len() > max_affine_mus {
         let mut m = Vec::new();
         let mut b = Vec::new();
         for (r, rhs) in &bg {
@@ -145,8 +146,10 @@ where
             m.push(r.clone());
             b.push(rhs.clone());
         }
-        solve_fn(&m, &b, num_vars).map_err(|e| SilenceReason::FiniteEnumerationOutOfScope {
-            detail: format!("{e:?}"),
+        solve_fn(&m, &b, num_vars).map_err(|e| {
+            SilenceReason::from_algebra_with(e, |err| SilenceReason::FiniteEnumerationOutOfScope {
+                detail: format!("{err:?}"),
+            })
         })?
     } else {
         let full_mask = (1usize << rec_rows.len()) - 1;
@@ -308,13 +311,16 @@ fn solve_affine_z_partial(
                 ..
             }) => Ok(Some((particular, kernel_basis))),
             Ok(AffineSolutionZ::Inconsistent { .. }) => Ok(None),
-            Err(e) => Err(SilenceReason::FiniteEnumerationOutOfScope {
-                detail: format!("{e:?}"),
-            }),
+            Err(e) => Err(SilenceReason::from_algebra_with(e, |err| {
+                SilenceReason::FiniteEnumerationOutOfScope {
+                    detail: format!("{err:?}"),
+                }
+            })),
         }
     };
 
-    let Some((part_t, ker_t)) = (if rec_rows.len() > MAX_AFFINE_MUS_RECORDS {
+    let max_affine_mus = crate::limits::active_limits().max_affine_mus_records;
+    let Some((part_t, ker_t)) = (if rec_rows.len() > max_affine_mus {
         let mut m = Vec::new();
         let mut b = Vec::new();
         for (r, rhs) in &bg {
@@ -333,9 +339,11 @@ fn solve_affine_z_partial(
             }) => Some((particular, kernel_basis)),
             Ok(AffineSolutionZ::Inconsistent { .. }) => None,
             Err(e) => {
-                return Err(SilenceReason::FiniteEnumerationOutOfScope {
-                    detail: format!("{e:?}"),
-                });
+                return Err(SilenceReason::from_algebra_with(e, |err| {
+                    SilenceReason::FiniteEnumerationOutOfScope {
+                        detail: format!("{err:?}"),
+                    }
+                }));
             }
         }
     } else {
@@ -443,11 +451,10 @@ where
     FCheck: Fn(usize) -> Result<Option<S>, SilenceReason>,
 {
     let n = rec_rows.len();
-    if n > MAX_AFFINE_MUS_RECORDS {
+    let max_affine_mus = crate::limits::active_limits().max_affine_mus_records;
+    if n > max_affine_mus {
         return Err(SilenceReason::FiniteEnumerationOutOfScope {
-            detail: format!(
-                "affine record count ({n}) exceeds MUS bound ({MAX_AFFINE_MUS_RECORDS})"
-            ),
+            detail: format!("affine record count ({n}) exceeds MUS bound ({max_affine_mus})"),
         });
     }
     let mut mus_masks: Vec<usize> = Vec::new();

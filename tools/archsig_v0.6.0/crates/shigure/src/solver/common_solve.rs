@@ -1,9 +1,8 @@
 //! Phase 2（図式補完・一段変更経路・合法状態移送）で共有する多項式系解法と Z 商環単位ピボット判定。
 
 use crate::algebra::{
-    AffineSolutionZ, AlgebraError, DEFAULT_MAX_FP_POINTS, ExprBindings, FpElem, GroebnerBasis,
-    Monomial, MonomialOrder, Poly, Rat, RingCoeff, VarOrder, rabinowitsch_solve, solve_affine_z,
-    solve_fp_enumeration,
+    AffineSolutionZ, AlgebraError, ExprBindings, FpElem, GroebnerBasis, Monomial, MonomialOrder,
+    Poly, Rat, RingCoeff, VarOrder, rabinowitsch_solve, solve_affine_z, solve_fp_enumeration,
 };
 use crate::ir::change::{EvalCondition, PointDomain};
 use crate::ir::provenance::MathClause;
@@ -374,7 +373,7 @@ fn solve_fp_system(
         &invs_fp,
         param_vars.len(),
         modulus,
-        DEFAULT_MAX_FP_POINTS,
+        crate::limits::active_limits().max_fp_points,
     ) {
         Ok(res) => {
             checks.push(ApplicabilityCheck::passed(
@@ -799,14 +798,24 @@ pub(crate) fn solve_affine_or_nonlinear_z(
     if !all_affine {
         let eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
         let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();
-        if let Ok(rab) = rabinowitsch_solve(&eqs_q, &invs_q, param_vars)
-            && rab.is_empty_over_closure
-        {
-            checks.push(ApplicabilityCheck::passed(
-                "rabinowitsch_emptiness_verified",
-                MathClause::G141D5,
-            ));
-            return refuted_system(checks, residual_display, rab.empty_witness);
+        match rabinowitsch_solve(&eqs_q, &invs_q, param_vars) {
+            Ok(rab) if rab.is_empty_over_closure => {
+                checks.push(ApplicabilityCheck::passed(
+                    "rabinowitsch_emptiness_verified",
+                    MathClause::G141D5,
+                ));
+                return refuted_system(checks, residual_display, rab.empty_witness);
+            }
+            Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                let reason = map_algebra_silence(e);
+                checks.push(ApplicabilityCheck::failed(
+                    "integer_point_existence_decidable",
+                    MathClause::G141D4,
+                    reason.code(),
+                ));
+                return undetermined_system(checks, residual_display, reason);
+            }
+            _ => {}
         }
         let reason = SilenceReason::NonLinearRationalOrIntegerExistence {
             point_domain: PointDomain::IntegerPoints,

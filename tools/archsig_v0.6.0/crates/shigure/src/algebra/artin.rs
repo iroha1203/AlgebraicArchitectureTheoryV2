@@ -10,7 +10,7 @@ pub use crate::algebra::artin_quotient::{
 };
 
 /// 有限次元局所 Artin 商環の既定安全次元上限。
-pub const DEFAULT_MAX_ARTIN_DIM: usize = 256;
+pub use crate::limits::DEFAULT_MAX_ARTIN_DIM;
 
 /// 体 `K`（`Q`・`F_p`）上のアフィン線形系 `L x = b` の全解または不存在 certificate。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -50,6 +50,7 @@ pub fn rref_field<C: FieldCoeff>(
     num_cols: usize,
     zero_c: &C,
 ) -> Result<RrefResult<C>, AlgebraError> {
+    let limits = crate::limits::active_limits();
     let m = matrix.len();
     for row in matrix {
         if row.len() != num_cols {
@@ -60,6 +61,7 @@ pub fn rref_field<C: FieldCoeff>(
         }
         for val in row {
             check_same_ring(zero_c, val)?;
+            limits.check_coeff(val, "rref_field input")?;
         }
     }
     let mut a = matrix.to_vec();
@@ -78,6 +80,7 @@ pub fn rref_field<C: FieldCoeff>(
             .expect("pivot is nonzero in field");
         for val in &mut a[pivot_row][col..num_cols] {
             *val = val.mul_ref(&inv);
+            limits.check_coeff(val, "rref_field normalize")?;
         }
         for r in 0..m {
             if r == pivot_row || a[r][col].coeff_is_zero() {
@@ -88,6 +91,7 @@ pub fn rref_field<C: FieldCoeff>(
             for (dst, pv) in a[r][col..num_cols].iter_mut().zip(&piv) {
                 let prod = factor.mul_ref(pv);
                 *dst = dst.sub_ref(&prod);
+                limits.check_coeff(dst, "rref_field eliminate")?;
             }
             a[r][col] = zero_c.zero_like();
         }
@@ -108,6 +112,7 @@ pub fn solve_affine_field<C: FieldCoeff>(
     num_vars: usize,
     zero_c: &C,
 ) -> Result<AffineSolutionField<C>, AlgebraError> {
+    let limits = crate::limits::active_limits();
     let m = matrix.len();
     if rhs.len() != m {
         return Err(AlgebraError::ArityMismatch {
@@ -124,10 +129,12 @@ pub fn solve_affine_field<C: FieldCoeff>(
         }
         for val in row {
             check_same_ring(zero_c, val)?;
+            limits.check_coeff(val, "solve_affine_field input")?;
         }
     }
     for val in rhs {
         check_same_ring(zero_c, val)?;
+        limits.check_coeff(val, "solve_affine_field rhs")?;
     }
     let z = zero_c.zero_like();
     let o = zero_c.one_like();
@@ -157,10 +164,13 @@ pub fn solve_affine_field<C: FieldCoeff>(
         let inv = a[pivot_row][col].coeff_inv().expect("nonzero pivot");
         for val in &mut a[pivot_row][col..num_vars] {
             *val = val.mul_ref(&inv);
+            limits.check_coeff(val, "solve_affine_field normalize")?;
         }
         b[pivot_row] = b[pivot_row].mul_ref(&inv);
+        limits.check_coeff(&b[pivot_row], "solve_affine_field normalize rhs")?;
         for val in &mut t[pivot_row] {
             *val = val.mul_ref(&inv);
+            limits.check_coeff(val, "solve_affine_field normalize cert")?;
         }
 
         for r in 0..m {
@@ -172,13 +182,16 @@ pub fn solve_affine_field<C: FieldCoeff>(
             for (dst, pv) in a[r][col..num_vars].iter_mut().zip(&piv_a) {
                 let prod = factor.mul_ref(pv);
                 *dst = dst.sub_ref(&prod);
+                limits.check_coeff(dst, "solve_affine_field eliminate")?;
             }
             let prod_b = factor.mul_ref(&b[pivot_row]);
             b[r] = b[r].sub_ref(&prod_b);
+            limits.check_coeff(&b[r], "solve_affine_field eliminate rhs")?;
             let piv_t = t[pivot_row].clone();
             for (dst, pv) in t[r].iter_mut().zip(&piv_t) {
                 let prod_t = factor.mul_ref(pv);
                 *dst = dst.sub_ref(&prod_t);
+                limits.check_coeff(dst, "solve_affine_field eliminate cert")?;
             }
         }
         pivot_cols.push((pivot_row, col));
@@ -313,10 +326,11 @@ impl<C: RingCoeff> FiniteAlgebra<C> {
                 detail: "truncated_univariate max_deg overflow".to_owned(),
             });
         };
-        if dim > DEFAULT_MAX_ARTIN_DIM {
+        let max_artin_dim = crate::limits::active_limits().max_artin_dim;
+        if dim > max_artin_dim {
             return Err(AlgebraError::OutOfScope {
                 detail: format!(
-                    "truncated_univariate dimension {dim} exceeds limit {DEFAULT_MAX_ARTIN_DIM}"
+                    "truncated_univariate dimension {dim} exceeds limit {max_artin_dim}"
                 ),
             });
         }

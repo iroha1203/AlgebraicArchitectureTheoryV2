@@ -40,15 +40,17 @@ pub const RUN_HELP: &str = "Usage: archsig run --atom-definition D --law L --arc
   --law L              Law file (required)
   --archmap A          Observations file (required)
   --ask 'ID=QUESTION'   Question (required, repeatable; quote $ references)
-  --out NEW_DIRECTORY  Save full result and inputs (optional; never overwrite)
-  --reuse DIRECTORY    Recheck an earlier result (optional)
-  --help, -h           Show this help
+  --out NEW_DIRECTORY      Save full result and inputs (optional; never overwrite)
+  --reuse DIRECTORY        Recheck an earlier result (optional)
+  --max-file-bytes N       Bound input/artifact file reads in bytes (default: 67108864)
+  --shigure-limit KEY=N    Override a SHIGURE resource limit (repeatable)
+  --help, -h               Show this help
 Answers and warnings: one JSON summary on stdout; execution errors: JSON on stderr.
 Exit: 0 established, 1 refuted, 2 undetermined, 64 usage, 65 invalid input,
 69 unsupported version, 70 internal, 74 I/O, 130 SIGINT, 141 broken pipe, 143 SIGTERM.
 Example:
   archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'";
-pub const REOBSERVE_HELP: &str = "Usage: archsig reobserve --before-atom-definition D --before-law L --before-archmap A --before-ask 'ID=QUESTION' --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [--alignment JSON] [--out NEW_DIRECTORY]
+pub const REOBSERVE_HELP: &str = "Usage: archsig reobserve --before-atom-definition D --before-law L --before-archmap A --before-ask 'ID=QUESTION' --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [--alignment JSON] [--out NEW_DIRECTORY] [--max-file-bytes N] [--shigure-limit KEY=N]
 Repeat the definition and question options as needed. Use --alignment for explicit assembly and candidate correspondence.
 The output contains separate previous and current evaluations. Exit status reflects the current evaluation or an execution failure.";
 pub const CHECK_HELP: &str =
@@ -56,8 +58,9 @@ pub const CHECK_HELP: &str =
   --atom-definition D  Atom definition file (required, repeatable)
   --law L              Law file (required)
   --archmap A          Observations file (optional)
-  --out NEW_DIRECTORY  Save checked declarations and inputs (optional; never overwrite)
-  --help, -h           Show this help
+  --out NEW_DIRECTORY      Save checked declarations and inputs (optional; never overwrite)
+  --max-file-bytes N       Bound input file reads in bytes (default: 67108864)
+  --help, -h               Show this help
 Validation status: JSON on stdout; execution errors: JSON on stderr.
 Example: archsig check --atom-definition counter.atoms.json --law counter.law";
 
@@ -104,8 +107,7 @@ impl Io for FileIo {
     }
 
     fn rename_noreplace(&mut self, from: &Path, to: &Path) -> std::io::Result<()> {
-        use rustix::fs::{CWD, RenameFlags, renameat_with};
-        renameat_with(CWD, from, CWD, to, RenameFlags::NOREPLACE).map_err(std::io::Error::from)
+        crate::platform::rename_noreplace(from, to)
     }
 }
 
@@ -144,6 +146,16 @@ pub struct ReobserveArgs {
     previous: Checked<RunArgs>,
     current: Checked<RunArgs>,
     alignment: Option<PathBuf>,
+}
+
+impl ReobserveArgs {
+    pub fn max_file_bytes(&self) -> u64 {
+        self.current.max_file_bytes()
+    }
+
+    pub fn shigure_limits(&self) -> &archsig_shigure::ShigureLimits {
+        self.current.shigure_limits()
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -203,12 +215,33 @@ impl Outcome {
     }
 }
 
-/// 入力を読む。symlink は開始時に解決し、通常ファイルだけを読む。
-fn read_input(path: &Path) -> std::io::Result<Vec<u8>> {
-    if !std::fs::metadata(path)?.is_file() {
-        return Err(std::io::Error::other("not a regular file"));
+thread_local! {
+    static ACTIVE_MAX_FILE_BYTES: std::cell::Cell<u64> =
+        const { std::cell::Cell::new(archsig_common::limits::DEFAULT_MAX_FILE_BYTES) };
+}
+
+struct MaxFileBytesGuard(u64);
+
+impl Drop for MaxFileBytesGuard {
+    fn drop(&mut self) {
+        ACTIVE_MAX_FILE_BYTES.with(|cell| cell.set(self.0));
     }
-    std::fs::read(path)
+}
+
+pub fn active_max_file_bytes() -> u64 {
+    ACTIVE_MAX_FILE_BYTES.with(std::cell::Cell::get)
+}
+
+fn with_max_file_bytes<T>(max_bytes: u64, f: impl FnOnce() -> T) -> T {
+    let prev = active_max_file_bytes();
+    ACTIVE_MAX_FILE_BYTES.with(|cell| cell.set(max_bytes));
+    let _guard = MaxFileBytesGuard(prev);
+    f()
+}
+
+/// 入力を読む。symlink は開始時に解決し、通常ファイルかつ上限サイズ内だけを読む。
+fn read_input_bounded(path: &Path, max_bytes: u64) -> std::io::Result<Vec<u8>> {
+    archsig_common::limits::read_regular_file_bounded(path, max_bytes)
 }
 
 pub fn usage_outcome(_io: &mut dyn Io, signals: &mut dyn Signals, err: UsageError) -> Outcome {
@@ -385,7 +418,7 @@ fn run_check_validated(
 }
 
 fn read(path: &Path, issues: &mut Vec<ResultIssue>) -> Option<Vec<u8>> {
-    match read_input(path) {
+    match read_input_bounded(path, active_max_file_bytes()) {
         Ok(b) => Some(b),
         Err(e) => {
             issues.push(ResultIssue::Io {
@@ -425,9 +458,19 @@ pub fn execute_command(
         return None;
     }
     let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match command {
-        Command::Check(args) => run_check_validated(io, signals, args, control),
-        Command::Run(args) => evaluate::run_requests_validated(io, signals, args, control),
-        Command::Reobserve(args) => reobserve::execute(io, signals, args, control),
+        Command::Check(args) => with_max_file_bytes(args.max_file_bytes(), || {
+            run_check_validated(io, signals, args, control)
+        }),
+        Command::Run(args) => with_max_file_bytes(args.max_file_bytes(), || {
+            archsig_shigure::limits::with_active_limits(args.shigure_limits(), || {
+                evaluate::run_requests_validated(io, signals, args, control)
+            })
+        }),
+        Command::Reobserve(args) => with_max_file_bytes(args.max_file_bytes(), || {
+            archsig_shigure::limits::with_active_limits(args.shigure_limits(), || {
+                reobserve::execute(io, signals, args, control)
+            })
+        }),
         Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
     }));
     Some(outcome.unwrap_or_else(|_| match command {

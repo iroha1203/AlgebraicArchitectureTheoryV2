@@ -7,12 +7,26 @@ use std::path::PathBuf;
 
 /// 引数検査を通過した値。外部からの構築・変更は許さない。
 #[derive(Debug, PartialEq, Eq)]
-pub struct Checked<T>(T);
+pub struct Checked<T> {
+    inner: T,
+    max_file_bytes: u64,
+    shigure_limits: Box<archsig_shigure::ShigureLimits>,
+}
+
+impl<T> Checked<T> {
+    pub fn max_file_bytes(&self) -> u64 {
+        self.max_file_bytes
+    }
+
+    pub fn shigure_limits(&self) -> &archsig_shigure::ShigureLimits {
+        &self.shigure_limits
+    }
+}
 
 impl<T> std::ops::Deref for Checked<T> {
     type Target = T;
     fn deref(&self) -> &T {
-        &self.0
+        &self.inner
     }
 }
 
@@ -114,13 +128,17 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
     let mut singles = BTreeMap::new();
     let mut definitions = Vec::new();
     let mut asks = Vec::new();
+    let mut max_file_bytes = archsig_common::limits::DEFAULT_MAX_FILE_BYTES;
+    let mut saw_max_file_bytes = false;
+    let mut shigure_limits = archsig_shigure::ShigureLimits::default();
     let mut index = 1;
     while index < args.len() {
         let flag = args[index].to_string_lossy();
         let known = matches!(
             flag.as_ref(),
-            "--atom-definition" | "--law" | "--archmap" | "--out"
-        ) || (running && matches!(flag.as_ref(), "--ask" | "--reuse"));
+            "--atom-definition" | "--law" | "--archmap" | "--out" | "--max-file-bytes"
+        ) || (running
+            && matches!(flag.as_ref(), "--ask" | "--reuse" | "--shigure-limit"));
         if !known {
             return Err(usage(
                 &flag,
@@ -139,6 +157,33 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
                     .ok_or_else(|| usage(&flag, "request must be UTF-8"))?
                     .to_owned(),
             );
+        } else if flag == "--max-file-bytes" {
+            if saw_max_file_bytes {
+                return Err(usage(&flag, "duplicate flag"));
+            }
+            let text = value
+                .to_str()
+                .ok_or_else(|| usage(&flag, "byte limit must be UTF-8"))?;
+            let parsed = text
+                .parse::<u64>()
+                .ok()
+                .filter(|&n| n > 0)
+                .ok_or_else(|| usage(&flag, "byte limit must be a positive integer"))?;
+            max_file_bytes = parsed;
+            saw_max_file_bytes = true;
+        } else if flag == "--shigure-limit" {
+            let text = value
+                .to_str()
+                .ok_or_else(|| usage(&flag, "shigure limit must be UTF-8"))?;
+            let (name, raw_val) = text
+                .split_once('=')
+                .ok_or_else(|| usage(&flag, "expected LIMIT_NAME=POSITIVE_INT"))?;
+            let val = raw_val
+                .parse::<u64>()
+                .map_err(|_| usage(&flag, format!("invalid integer for `{name}`: `{raw_val}`")))?;
+            shigure_limits
+                .set(name, val)
+                .map_err(|msg| usage(&flag, msg))?;
         } else {
             if singles.contains_key(flag.as_ref()) {
                 return Err(usage(&flag, "duplicate flag"));
@@ -177,10 +222,18 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
             reuse: singles.remove("--reuse").map(PathBuf::from),
         };
         validate_run(&args)?;
-        Ok(Command::Run(Checked(args)))
+        Ok(Command::Run(Checked {
+            inner: args,
+            max_file_bytes,
+            shigure_limits: Box::new(shigure_limits),
+        }))
     } else {
         validate_check(&inputs)?;
-        Ok(Command::Check(Checked(inputs)))
+        Ok(Command::Check(Checked {
+            inner: inputs,
+            max_file_bytes,
+            shigure_limits: Box::new(shigure_limits),
+        }))
     }
 }
 
@@ -188,6 +241,7 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
     let mut previous = vec![OsString::from("run")];
     let mut current = vec![OsString::from("run")];
     let mut alignment = None;
+    let mut saw_max_file_bytes = false;
     let mut pairs = args.chunks_exact(2);
     for pair in &mut pairs {
         let flag = pair[0].to_string_lossy();
@@ -196,6 +250,15 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
             if alignment.replace(PathBuf::from(value)).is_some() {
                 return Err(usage(&flag, "duplicate flag"));
             }
+            continue;
+        }
+        if flag == "--max-file-bytes" {
+            if saw_max_file_bytes {
+                return Err(usage(&flag, "duplicate flag"));
+            }
+            saw_max_file_bytes = true;
+            previous.extend([OsString::from("--max-file-bytes"), value.clone()]);
+            current.extend([OsString::from("--max-file-bytes"), value.clone()]);
             continue;
         }
         let (destination, option) = if let Some(option) = flag.strip_prefix("--before-") {
@@ -210,7 +273,7 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
         } else {
             if !matches!(
                 flag.as_ref(),
-                "--atom-definition" | "--law" | "--archmap" | "--ask" | "--out"
+                "--atom-definition" | "--law" | "--archmap" | "--ask" | "--out" | "--shigure-limit"
             ) {
                 return Err(usage(&flag, "unknown reobservation flag"));
             }
@@ -221,11 +284,14 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
     if let [flag] = pairs.remainder() {
         return Err(usage(&flag.to_string_lossy(), "flag requires a value"));
     }
-    let Command::Run(previous) = parse_args(&previous).map_err(|error| {
-        usage(
-            &format!("--before-{}", error.argument.trim_start_matches("--")),
-            error.message,
-        )
+    let Command::Run(previous) = parse_args(&previous).map_err(|error| UsageError {
+        argument: if error.argument == "--max-file-bytes" {
+            error.argument
+        } else {
+            format!("--before-{}", error.argument.trim_start_matches("--"))
+        },
+        message: error.message,
+        prefix_argument: error.prefix_argument,
     })?
     else {
         unreachable!("previous arguments use the run parser")

@@ -30,7 +30,8 @@ fn legacy_assignment<E: InputError>(
     .read(&node, ty, "")
 }
 fn legacy_node(value: &Json) -> JNode {
-    archsig_common::json::parse(value.canonical().as_bytes()).unwrap()
+    let encoded = value.try_canonical_with_max_depth(8192).unwrap();
+    archsig_common::json::parse_with_max_depth(encoded.as_bytes(), 8192).unwrap()
 }
 fn definitions() -> CheckedDefinitions {
     let json = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Bridge","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Bridge.Root","meaning":"root","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Bridge.Item","meaning":"item","parameters":[{"name":"owner","type":["Ref","Bridge.Root"],"meaning":"owner"}],"fields":[],"alignments":[]},{"kind":"data","name":"Bridge.Choice","meaning":"choice","constructors":[{"name":"Some","arguments":["Z"],"meaning":"some"},{"name":"Empty","arguments":[],"meaning":"empty"}]}]}]}"#;

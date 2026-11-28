@@ -17,9 +17,9 @@ use crate::solver::family_direct::{
     check_family_presentations_applicability, evaluate_goodness_at_point,
 };
 use crate::solver::family_eval::{
-    CandidateFiberEnum, DEFAULT_MAX_ENUM_POINTS, EnumCandidate, EnumRealization,
-    RealizationFiberEnum, ScalarVal, collect_family_origins, enumerate_candidates_for_base,
-    enumerate_realizations_for_base, eval_expr_at, map_scalar_assignments, scalar_eq,
+    CandidateFiberEnum, EnumCandidate, EnumRealization, RealizationFiberEnum, ScalarVal,
+    collect_family_origins, enumerate_candidates_for_base, enumerate_realizations_for_base,
+    eval_expr_at, map_scalar_assignments, scalar_eq,
 };
 use crate::solver::preservation::map_algebra_silence;
 use crate::solver::robustness_reading::compute_reading_comparison;
@@ -38,11 +38,12 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
         return undetermined_robustness(coeff_domain, point_domain, checks, provenance, reason);
     }
 
+    let max_enum_points = crate::limits::active_limits().max_enum_points;
     let (real_enum, empty_w) = match enumerate_realizations_for_base(
         family,
         task.base_value(),
         &point_domain,
-        DEFAULT_MAX_ENUM_POINTS,
+        max_enum_points,
     ) {
         Ok(res) => res,
         Err(reason) => {
@@ -59,7 +60,7 @@ pub fn solve_robustness_task(task: &CheckedRobustnessTask) -> ShigureOutcome {
         family,
         task.base_value(),
         &point_domain,
-        DEFAULT_MAX_ENUM_POINTS,
+        max_enum_points,
     ) {
         Ok(res) => res,
         Err(reason) => {

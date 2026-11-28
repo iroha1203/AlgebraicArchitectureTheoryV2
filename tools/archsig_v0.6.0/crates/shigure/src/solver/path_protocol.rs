@@ -18,7 +18,7 @@ use crate::solver::common_solve::{ParamWitness, solve_obligations_and_evals};
 use crate::solver::common_solve_q::{IdealNonemptyCtx, is_ideal_nonempty};
 use crate::solver::context::collect_presentation_params;
 use crate::solver::path::{
-    MAX_PATH_CANDIDATES, established_path, path_query_mode_wire, refuted_path, undetermined_path,
+    established_path, path_query_mode_wire, refuted_path, undetermined_path,
 };
 use crate::solver::preservation::{
     PreservationObligation, build_preservation_obligations, map_algebra_silence,
@@ -398,16 +398,17 @@ fn enumerate_op_sequences<'a>(
         .map(|name| after.operation(name).expect("checked allowed op"))
         .collect();
     let mut results = Vec::new();
+    let max_candidates = crate::limits::active_limits().max_path_candidates;
     let mut stack: Vec<(&str, Vec<&'a OperationDecl>)> =
         vec![(proto.start_phase.as_str(), Vec::new())];
     while let Some((cur_ph, seq)) = stack.pop() {
         if seq.len() == length {
             if cur_ph == proto.end_phase {
                 results.push(seq);
-                if results.len() > MAX_PATH_CANDIDATES {
+                if results.len() > max_candidates {
                     return Err(SilenceReason::UnboundedSearchOutOfScope {
                         detail: format!(
-                            "protocol execution path enumeration exceeded {MAX_PATH_CANDIDATES} candidates"
+                            "protocol execution path enumeration exceeded {max_candidates} candidates"
                         ),
                     });
                 }
@@ -419,11 +420,9 @@ fn enumerate_op_sequences<'a>(
                 let mut next = seq.clone();
                 next.push(*op);
                 stack.push((op.target_phase.as_str(), next));
-                if stack.len() + results.len() > MAX_PATH_CANDIDATES * 4 {
+                if stack.len() + results.len() > max_candidates.saturating_mul(4) {
                     return Err(SilenceReason::UnboundedSearchOutOfScope {
-                        detail: format!(
-                            "protocol path search frontier exceeded {MAX_PATH_CANDIDATES}"
-                        ),
+                        detail: format!("protocol path search frontier exceeded {max_candidates}"),
                     });
                 }
             }

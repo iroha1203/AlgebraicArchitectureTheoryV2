@@ -24,11 +24,6 @@ use num_bigint::BigInt;
 use num_traits::Zero;
 use std::collections::BTreeMap;
 
-pub const DEFAULT_MAX_OBS_REALIZATIONS: usize = 256;
-pub const DEFAULT_MAX_OBS_CANDIDATES: usize = 256;
-pub const DEFAULT_MAX_OBS_INDICES: usize = 16;
-pub const DEFAULT_MAX_SUBSET_STEPS: usize = 65_536;
-
 /// `shigure_observations` の計算核入口（G-142 G5–G6）。
 pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
     let family = task.family();
@@ -57,10 +52,11 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
         MathClause::G140P0Dot1,
     ));
 
-    if task.observations().len() > DEFAULT_MAX_OBS_INDICES {
+    let max_obs_indices = crate::limits::active_limits().max_obs_indices;
+    if task.observations().len() > max_obs_indices {
         let reason = SilenceReason::FiniteEnumerationOutOfScope {
             detail: format!(
-                "candidate observation count {} exceeds enumeration index limit ({DEFAULT_MAX_OBS_INDICES})",
+                "candidate observation count {} exceeds enumeration index limit ({max_obs_indices})",
                 task.observations().len()
             ),
         };
@@ -92,11 +88,12 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
         return undetermined_obs(coeff_domain, point_domain, checks, provenance, reason);
     }
 
+    let limits = crate::limits::active_limits();
     let u_list = match enumerate_realizations_for_base(
         family,
         task.base_value(),
         &point_domain,
-        DEFAULT_MAX_OBS_REALIZATIONS,
+        limits.max_obs_realizations,
     ) {
         Ok((RealizationFiberEnum::Finite(us), _)) => us,
         Ok((RealizationFiberEnum::NonFiniteScheme { .. }, _)) => {
@@ -124,7 +121,7 @@ pub fn solve_observation_task(task: &CheckedObservationTask) -> ShigureOutcome {
         family,
         task.base_value(),
         &point_domain,
-        DEFAULT_MAX_OBS_CANDIDATES,
+        limits.max_obs_candidates,
     ) {
         Ok(CandidateFiberEnum::Finite(cs)) => cs,
         Ok(CandidateFiberEnum::NonFiniteScheme) => {
@@ -481,10 +478,11 @@ fn enumerate_all_minimal_hitting_sets(
         let mut indices: Vec<usize> = (0..size).collect();
         loop {
             visited += 1;
-            if visited > DEFAULT_MAX_SUBSET_STEPS {
+            let max_subset_steps = crate::limits::active_limits().max_subset_steps;
+            if visited > max_subset_steps {
                 return Err(SilenceReason::FiniteEnumerationOutOfScope {
                     detail: format!(
-                        "minimal observation subset search exceeded step limit ({DEFAULT_MAX_SUBSET_STEPS})"
+                        "minimal observation subset search exceeded step limit ({max_subset_steps})"
                     ),
                 });
             }

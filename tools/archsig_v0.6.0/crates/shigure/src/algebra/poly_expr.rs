@@ -24,6 +24,13 @@ pub enum AlgebraError {
     ArityMismatch { expected: usize, actual: usize },
     /// 計算資源・ステップ上限超過または適用域外。
     OutOfScope { detail: String },
+    /// BigInt ビット長や多項式項数などのリソース上限超過（沈黙理由 `ResourceLimitExceeded` へ接続）。
+    ResourceLimitExceeded {
+        limit_name: String,
+        limit: u64,
+        observed: u64,
+        detail: String,
+    },
 }
 
 impl fmt::Display for AlgebraError {
@@ -50,6 +57,15 @@ impl fmt::Display for AlgebraError {
                 write!(f, "arity mismatch: expected {expected}, got {actual}")
             }
             AlgebraError::OutOfScope { detail } => write!(f, "out of scope: {detail}"),
+            AlgebraError::ResourceLimitExceeded {
+                limit_name,
+                limit,
+                observed,
+                detail,
+            } => write!(
+                f,
+                "resource limit exceeded ({limit_name}: observed {observed} > limit {limit}): {detail}"
+            ),
         }
     }
 }
@@ -226,9 +242,28 @@ where
     C: RingCoeff,
     F: Fn(&ScalarLit) -> Result<C, AlgebraError>,
 {
+    let limits = crate::limits::active_limits();
+    expand_expr_with_limits(expr, bindings, zero, lit_to_coeff, &limits)
+}
+
+fn expand_expr_with_limits<C, F>(
+    expr: &PolyExpr,
+    bindings: &ExprBindings,
+    zero: &C,
+    lit_to_coeff: &F,
+    limits: &crate::limits::ShigureLimits,
+) -> Result<Poly<C>, AlgebraError>
+where
+    C: RingCoeff,
+    F: Fn(&ScalarLit) -> Result<C, AlgebraError>,
+{
     let n = bindings.num_vars();
     match expr {
-        PolyExpr::Const(lit) => Ok(Poly::constant(n, lit_to_coeff(lit)?)),
+        PolyExpr::Const(lit) => {
+            let c = lit_to_coeff(lit)?;
+            limits.check_coeff(&c, "poly_expr const")?;
+            Ok(Poly::constant(n, c))
+        }
         PolyExpr::StateVar(v) => {
             let idx = bindings
                 .state_index(v)
@@ -256,16 +291,46 @@ where
         PolyExpr::Unobserved { slot, .. } => Err(AlgebraError::UnobservedDependency {
             slots: vec![slot.clone()],
         }),
-        PolyExpr::Neg(e) => Ok(expand_expr_with(e, bindings, zero, lit_to_coeff)?.neg()),
-        PolyExpr::Add(a, b) => Ok(expand_expr_with(a, bindings, zero, lit_to_coeff)?
-            .add(&expand_expr_with(b, bindings, zero, lit_to_coeff)?)),
-        PolyExpr::Sub(a, b) => Ok(expand_expr_with(a, bindings, zero, lit_to_coeff)?
-            .sub(&expand_expr_with(b, bindings, zero, lit_to_coeff)?)),
-        PolyExpr::Mul(a, b) => expand_expr_with(a, bindings, zero, lit_to_coeff)?
-            .checked_mul(&expand_expr_with(b, bindings, zero, lit_to_coeff)?),
-        PolyExpr::Pow(e, exp) => {
-            expand_expr_with(e, bindings, zero, lit_to_coeff)?.checked_pow(*exp)
+        PolyExpr::Neg(e) => {
+            let p = expand_expr_with_limits(e, bindings, zero, lit_to_coeff, limits)?.neg();
+            limits.check_poly(&p, "poly_expr neg")?;
+            Ok(p)
         }
+        PolyExpr::Add(..) | PolyExpr::Sub(..) => {
+            let mut rest = Vec::new();
+            let mut cur = expr;
+            loop {
+                match cur {
+                    PolyExpr::Add(a, b) => {
+                        rest.push((b.as_ref(), false));
+                        cur = a;
+                    }
+                    PolyExpr::Sub(a, b) => {
+                        rest.push((b.as_ref(), true));
+                        cur = a;
+                    }
+                    _ => break,
+                }
+            }
+            let mut acc = expand_expr_with_limits(cur, bindings, zero, lit_to_coeff, limits)?;
+            for (rhs_expr, is_sub) in rest.into_iter().rev() {
+                let rhs = expand_expr_with_limits(rhs_expr, bindings, zero, lit_to_coeff, limits)?;
+                acc = if is_sub {
+                    acc.checked_sub_bounded(&rhs, limits, "poly_expr sub")?
+                } else {
+                    acc.checked_add_bounded(&rhs, limits, "poly_expr add")?
+                };
+            }
+            Ok(acc)
+        }
+        PolyExpr::Mul(a, b) => expand_expr_with_limits(a, bindings, zero, lit_to_coeff, limits)?
+            .checked_mul_bounded(
+                &expand_expr_with_limits(b, bindings, zero, lit_to_coeff, limits)?,
+                limits,
+                "poly_expr mul",
+            ),
+        PolyExpr::Pow(e, exp) => expand_expr_with_limits(e, bindings, zero, lit_to_coeff, limits)?
+            .checked_pow_bounded(*exp, limits, "poly_expr pow"),
     }
 }
 

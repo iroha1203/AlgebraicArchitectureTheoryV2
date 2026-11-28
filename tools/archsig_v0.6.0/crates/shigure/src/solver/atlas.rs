@@ -665,7 +665,7 @@ fn determine_atlas_verdict(
 }
 
 pub(crate) fn map_atlas_alg_err(err: AlgebraError) -> SilenceReason {
-    match err {
+    SilenceReason::from_algebra_with(err, |err| match err {
         AlgebraError::UnobservedDependency { slots } => {
             SilenceReason::UnobservedDependency { slots }
         }
@@ -673,7 +673,7 @@ pub(crate) fn map_atlas_alg_err(err: AlgebraError) -> SilenceReason {
             condition: "atlas_algebra".to_owned(),
             detail: other.to_string(),
         },
-    }
+    })
 }
 
 fn atlas_outcome(

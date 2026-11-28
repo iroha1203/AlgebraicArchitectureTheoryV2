@@ -4,10 +4,11 @@ use crate::algebra::MonomialOrder;
 use crate::algebra::poly::{AlgebraError, Monomial, Poly, VarOrder};
 use crate::algebra::scalar::Rat;
 use crate::ir::result::EmptyWitness;
+use crate::limits::ShigureLimits;
 use std::collections::BTreeSet;
 
 /// Buchberger 反復の安全上限（超過時は誤判定せず `AlgebraError::OutOfScope` を返す）。
-pub const DEFAULT_MAX_BUCHBERGER_PAIRS: usize = 4_096;
+pub use crate::limits::DEFAULT_MAX_BUCHBERGER_PAIRS;
 
 /// 元の生成元列 `F = [f_0, ..., f_{k-1}]` に対する表現 `poly = sum_i cofactors[i] * f_i` を保持する元。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -56,7 +57,8 @@ impl GroebnerBasis {
         vars: VarOrder,
         order: MonomialOrder,
     ) -> Result<Self, AlgebraError> {
-        Self::compute_with_limit(generators, vars, order, DEFAULT_MAX_BUCHBERGER_PAIRS)
+        let limits = crate::limits::active_limits();
+        Self::compute_with_limits(generators, vars, order, &limits)
     }
 
     pub fn compute_with_limit(
@@ -64,6 +66,17 @@ impl GroebnerBasis {
         vars: VarOrder,
         order: MonomialOrder,
         max_pairs: usize,
+    ) -> Result<Self, AlgebraError> {
+        let mut limits = crate::limits::active_limits();
+        limits.max_buchberger_pairs = max_pairs;
+        Self::compute_with_limits(generators, vars, order, &limits)
+    }
+
+    pub fn compute_with_limits(
+        generators: &[Poly<Rat>],
+        vars: VarOrder,
+        order: MonomialOrder,
+        limits: &ShigureLimits,
     ) -> Result<Self, AlgebraError> {
         let n = vars.len();
         for g in generators {
@@ -73,7 +86,9 @@ impl GroebnerBasis {
                     actual: g.num_vars(),
                 });
             }
+            limits.check_poly(g, "groebner_input")?;
         }
+        let max_pairs = limits.max_buchberger_pairs;
         let k = generators.len();
         let zero_p = Poly::zero(n, Rat::zero());
         let one_p = Poly::one(n, Rat::zero());
@@ -92,7 +107,8 @@ impl GroebnerBasis {
                     cofactors,
                 },
                 order,
-            );
+                limits,
+            )?;
             let Some((lm, _)) = tracked.poly.leading_term(order) else {
                 continue;
             };
@@ -141,11 +157,11 @@ impl GroebnerBasis {
                 continue;
             }
 
-            let s_poly = s_polynomial(&basis[i], &basis[j], order)?;
-            let reduced = reduce_tracked(&s_poly, &basis, order)?;
+            let s_poly = s_polynomial(&basis[i], &basis[j], order, limits)?;
+            let reduced = reduce_tracked(&s_poly, &basis, order, limits)?;
             handled.insert(pair_key);
             if !reduced.poly.is_zero() {
-                let monic = make_monic(reduced, order);
+                let monic = make_monic(reduced, order, limits)?;
                 let Some((new_lm, _)) = monic.poly.leading_term(order) else {
                     continue;
                 };
@@ -170,7 +186,7 @@ impl GroebnerBasis {
             }
         }
 
-        let reduced_basis = inter_reduce(basis, order)?;
+        let reduced_basis = inter_reduce(basis, order, limits)?;
         Ok(Self {
             vars,
             order,
@@ -206,16 +222,27 @@ impl GroebnerBasis {
     /// 対象多項式 `target` の ideal 所属を判定し、元の生成元に対する witness
     /// `target = sum_i cofactors[i] * originals[i] + remainder` を構成して独立検算する。
     pub fn membership(&self, target: &Poly<Rat>) -> Result<MembershipResult, AlgebraError> {
+        let limits = crate::limits::active_limits();
+        self.membership_with_limits(target, &limits)
+    }
+
+    pub fn membership_with_limits(
+        &self,
+        target: &Poly<Rat>,
+        limits: &ShigureLimits,
+    ) -> Result<MembershipResult, AlgebraError> {
         if target.num_vars() != self.vars.len() {
             return Err(AlgebraError::ArityMismatch {
                 expected: self.vars.len(),
                 actual: target.num_vars(),
             });
         }
+        limits.check_poly(target, "groebner_membership_target")?;
         let n = self.vars.len();
         let k = self.originals.len();
         let zero_p = Poly::zero(n, Rat::zero());
-        let (remainder, quotients) = divide_with_quotients(target, &self.basis, self.order)?;
+        let (remainder, quotients) =
+            divide_with_quotients(target, &self.basis, self.order, limits)?;
 
         let mut cofactors = vec![zero_p; k];
         for (q, g) in quotients.iter().zip(&self.basis) {
@@ -224,7 +251,9 @@ impl GroebnerBasis {
             }
             for (acc, gc) in cofactors.iter_mut().zip(&g.cofactors) {
                 if !gc.is_zero() {
-                    *acc = acc.add(&q.checked_mul(gc)?);
+                    let term = q.checked_mul_bounded(gc, limits, "groebner_membership_cofactor")?;
+                    *acc = acc.add(&term);
+                    limits.check_poly(acc, "groebner_membership_cofactor")?;
                 }
             }
         }
@@ -233,7 +262,9 @@ impl GroebnerBasis {
         let mut recon = remainder.clone();
         for (h, f) in cofactors.iter().zip(&self.originals) {
             if !h.is_zero() && !f.is_zero() {
-                recon = recon.add(&h.checked_mul(f)?);
+                let term = h.checked_mul_bounded(f, limits, "groebner_membership_verify")?;
+                recon = recon.add(&term);
+                limits.check_poly(&recon, "groebner_membership_verify")?;
             }
         }
         let verified = recon == *target;
@@ -273,13 +304,23 @@ impl GroebnerBasis {
 
     /// 基底による正規形（剰余のみ）を返す。
     pub fn normal_form(&self, target: &Poly<Rat>) -> Result<Poly<Rat>, AlgebraError> {
+        let limits = crate::limits::active_limits();
+        self.normal_form_with_limits(target, &limits)
+    }
+
+    pub fn normal_form_with_limits(
+        &self,
+        target: &Poly<Rat>,
+        limits: &ShigureLimits,
+    ) -> Result<Poly<Rat>, AlgebraError> {
         if target.num_vars() != self.vars.len() {
             return Err(AlgebraError::ArityMismatch {
                 expected: self.vars.len(),
                 actual: target.num_vars(),
             });
         }
-        let (rem, _) = divide_with_quotients(target, &self.basis, self.order)?;
+        limits.check_poly(target, "groebner_normal_form")?;
+        let (rem, _) = divide_with_quotients(target, &self.basis, self.order, limits)?;
         Ok(rem)
     }
 }
@@ -291,6 +332,16 @@ pub fn rabinowitsch_solve(
     invertibles: &[Poly<Rat>],
     vars: &VarOrder,
 ) -> Result<RabinowitschResult, AlgebraError> {
+    let limits = crate::limits::active_limits();
+    rabinowitsch_solve_with_limits(equations, invertibles, vars, &limits)
+}
+
+pub fn rabinowitsch_solve_with_limits(
+    equations: &[Poly<Rat>],
+    invertibles: &[Poly<Rat>],
+    vars: &VarOrder,
+    limits: &ShigureLimits,
+) -> Result<RabinowitschResult, AlgebraError> {
     let n = vars.len();
     for p in equations.iter().chain(invertibles) {
         if p.num_vars() != n {
@@ -299,6 +350,7 @@ pub fn rabinowitsch_solve(
                 actual: p.num_vars(),
             });
         }
+        limits.check_poly(p, "rabinowitsch_input")?;
     }
     let m = invertibles.len();
     let aux_names: Vec<String> = (0..m).map(|i| fresh_aux_name(vars, i)).collect();
@@ -310,14 +362,40 @@ pub fn rabinowitsch_solve(
     for (i, g) in invertibles.iter().enumerate() {
         let u_i = Poly::var(ext_n, i, Rat::zero());
         let g_ext = g.lift_vars(m);
-        ext_gens.push(u_i.checked_mul(&g_ext)?.sub(&one));
+        ext_gens.push(
+            u_i.checked_mul_bounded(&g_ext, limits, "rabinowitsch_aux")?
+                .sub(&one),
+        );
     }
 
     // 補助変数を最上位に置いた Lex 順序により、補助変数を含まないパラメータ式が自然に消去される。
-    let basis = GroebnerBasis::compute(&ext_gens, ext_vars.clone(), MonomialOrder::Lex)?;
+    let basis = GroebnerBasis::compute_with_limits(
+        &ext_gens,
+        ext_vars.clone(),
+        MonomialOrder::Lex,
+        limits,
+    )?;
     let is_empty = basis.contains_one();
     let empty_witness = if is_empty {
-        basis.empty_witness()?
+        let one_ext = Poly::one(ext_vars.len(), Rat::zero());
+        let res = basis.membership_with_limits(&one_ext, limits)?;
+        if res.is_member {
+            Some(EmptyWitness {
+                generators: basis
+                    .originals()
+                    .iter()
+                    .map(|p| p.display(&ext_vars, MonomialOrder::Lex))
+                    .collect(),
+                cofactors: res
+                    .cofactors
+                    .iter()
+                    .map(|p| p.display(&ext_vars, MonomialOrder::Lex))
+                    .collect(),
+                verified: res.verified,
+            })
+        } else {
+            None
+        }
     } else {
         None
     };
@@ -350,25 +428,32 @@ fn fresh_aux_name(vars: &VarOrder, idx: usize) -> String {
     candidate
 }
 
-fn make_monic(mut tracked: TrackedPoly, order: MonomialOrder) -> TrackedPoly {
+fn make_monic(
+    mut tracked: TrackedPoly,
+    order: MonomialOrder,
+    limits: &ShigureLimits,
+) -> Result<TrackedPoly, AlgebraError> {
     let Some((_, lc)) = tracked.poly.leading_term(order) else {
-        return tracked;
+        return Ok(tracked);
     };
     if lc.is_one() {
-        return tracked;
+        return Ok(tracked);
     }
     let inv = lc.inv().expect("leading coefficient is nonzero");
     tracked.poly = tracked.poly.scale(&inv);
+    limits.check_poly(&tracked.poly, "groebner_make_monic")?;
     for c in &mut tracked.cofactors {
         *c = c.scale(&inv);
+        limits.check_poly(c, "groebner_make_monic_cofactor")?;
     }
-    tracked
+    Ok(tracked)
 }
 
 fn s_polynomial(
     a: &TrackedPoly,
     b: &TrackedPoly,
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<TrackedPoly, AlgebraError> {
     let (lm_a, lc_a) = a
         .poly
@@ -388,11 +473,14 @@ fn s_polynomial(
         .poly
         .checked_mul_term(&m_a, &inv_a)?
         .sub(&b.poly.checked_mul_term(&m_b, &inv_b)?);
+    limits.check_poly(&poly, "groebner_s_poly")?;
     let mut cofactors = Vec::with_capacity(a.cofactors.len());
     for (ca, cb) in a.cofactors.iter().zip(&b.cofactors) {
         let left = ca.checked_mul_term(&m_a, &inv_a)?;
         let right = cb.checked_mul_term(&m_b, &inv_b)?;
-        cofactors.push(left.sub(&right));
+        let diff = left.sub(&right);
+        limits.check_poly(&diff, "groebner_s_poly_cofactor")?;
+        cofactors.push(diff);
     }
     Ok(TrackedPoly { poly, cofactors })
 }
@@ -401,6 +489,7 @@ fn reduce_tracked(
     target: &TrackedPoly,
     basis: &[TrackedPoly],
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<TrackedPoly, AlgebraError> {
     let n = target.poly.num_vars();
     let mut p = target.poly.clone();
@@ -416,10 +505,23 @@ fn reduce_tracked(
                 && let Some(q_mono) = lm_p.div_exact(lm_g)
             {
                 let q_coeff = (&lc_p / lc_g).expect("divisor leading coeff nonzero");
-                p.checked_sub_mul_term_assign(&g.poly, &q_mono, &q_coeff)?;
+                limits.check_rat_bits(&q_coeff, "groebner_reduce_quotient")?;
+                p.checked_sub_mul_term_assign_bounded(
+                    &g.poly,
+                    &q_mono,
+                    &q_coeff,
+                    limits,
+                    "groebner_reduce",
+                )?;
                 for (acc, gc) in cofactors.iter_mut().zip(&g.cofactors) {
                     if !gc.is_zero() {
-                        acc.checked_sub_mul_term_assign(gc, &q_mono, &q_coeff)?;
+                        acc.checked_sub_mul_term_assign_bounded(
+                            gc,
+                            &q_mono,
+                            &q_coeff,
+                            limits,
+                            "groebner_reduce_cofactor",
+                        )?;
                     }
                 }
                 divided = true;
@@ -429,6 +531,7 @@ fn reduce_tracked(
         if !divided {
             p.remove_term(&lm_p);
             rem.add_term(lm_p, lc_p);
+            limits.check_poly(&rem, "groebner_reduce_rem")?;
         }
     }
 
@@ -442,6 +545,7 @@ fn divide_with_quotients(
     target: &Poly<Rat>,
     basis: &[TrackedPoly],
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<(Poly<Rat>, Vec<Poly<Rat>>), AlgebraError> {
     let n = target.num_vars();
     let mut p = target.clone();
@@ -457,8 +561,16 @@ fn divide_with_quotients(
                 && let Some(q_mono) = lm_p.div_exact(lm_g)
             {
                 let q_coeff = (&lc_p / lc_g).expect("divisor leading coeff nonzero");
-                p.checked_sub_mul_term_assign(&g.poly, &q_mono, &q_coeff)?;
+                limits.check_rat_bits(&q_coeff, "groebner_divide_quotient")?;
+                p.checked_sub_mul_term_assign_bounded(
+                    &g.poly,
+                    &q_mono,
+                    &q_coeff,
+                    limits,
+                    "groebner_divide",
+                )?;
                 quotients[idx].add_term(q_mono, q_coeff);
+                limits.check_poly(&quotients[idx], "groebner_divide_quotients")?;
                 divided = true;
                 break;
             }
@@ -466,6 +578,7 @@ fn divide_with_quotients(
         if !divided {
             p.remove_term(&lm_p);
             rem.add_term(lm_p, lc_p);
+            limits.check_poly(&rem, "groebner_divide_rem")?;
         }
     }
 
@@ -513,6 +626,7 @@ fn chain_criterion_applies(
 fn inter_reduce(
     basis: Vec<TrackedPoly>,
     order: MonomialOrder,
+    limits: &ShigureLimits,
 ) -> Result<Vec<TrackedPoly>, AlgebraError> {
     let mut minimal: Vec<TrackedPoly> = Vec::new();
     for (i, candidate) in basis.iter().enumerate() {
@@ -529,7 +643,7 @@ fn inter_reduce(
             lm_j.divides(lm_i) && (lm_j != lm_i || j < i)
         });
         if !redundant {
-            minimal.push(make_monic(candidate.clone(), order));
+            minimal.push(make_monic(candidate.clone(), order, limits)?);
         }
     }
 
@@ -541,7 +655,11 @@ fn inter_reduce(
             .filter(|&(j, _)| j != i)
             .map(|(_, g)| g.clone())
             .collect();
-        let next = make_monic(reduce_tracked(&reduced[i], &others, order)?, order);
+        let next = make_monic(
+            reduce_tracked(&reduced[i], &others, order, limits)?,
+            order,
+            limits,
+        )?;
         reduced[i] = next;
     }
     reduced.retain(|g| !g.poly.is_zero());

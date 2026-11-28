@@ -102,7 +102,16 @@ fn syntax(span: Span, message: impl Into<String>) -> Box<Issue> {
 }
 
 pub fn parse(bytes: &[u8]) -> Result<JNode, Box<Issue>> {
-    parse_inner(bytes, &Control::unlimited(), Checkpoint::ArchMapIteration)
+    parse_with_max_depth(bytes, crate::limits::DEFAULT_MAX_JSON_DEPTH)
+}
+
+pub fn parse_with_max_depth(bytes: &[u8], max_depth: usize) -> Result<JNode, Box<Issue>> {
+    parse_inner_with_max_depth(
+        bytes,
+        max_depth,
+        &Control::unlimited(),
+        Checkpoint::ArchMapIteration,
+    )
 }
 
 pub fn parse_inner<E: InputError>(
@@ -110,7 +119,16 @@ pub fn parse_inner<E: InputError>(
     control: &Control,
     point: Checkpoint,
 ) -> Result<JNode, E> {
-    parse_document(bytes, None, control, point).map(|(document, _)| document)
+    parse_inner_with_max_depth(bytes, crate::limits::DEFAULT_MAX_JSON_DEPTH, control, point)
+}
+
+pub fn parse_inner_with_max_depth<E: InputError>(
+    bytes: &[u8],
+    max_depth: usize,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<JNode, E> {
+    parse_document(bytes, None, max_depth, control, point).map(|(document, _)| document)
 }
 
 /// Validate the entire document while retaining only byte spans for the items
@@ -122,12 +140,29 @@ pub fn parse_deferred_root_array<E: InputError>(
     control: &Control,
     point: Checkpoint,
 ) -> Result<(JNode, Option<Vec<Span>>), E> {
-    parse_document(bytes, Some(key), control, point)
+    parse_deferred_root_array_with_max_depth(
+        bytes,
+        key,
+        crate::limits::DEFAULT_MAX_JSON_DEPTH,
+        control,
+        point,
+    )
+}
+
+pub fn parse_deferred_root_array_with_max_depth<E: InputError>(
+    bytes: &[u8],
+    key: &str,
+    max_depth: usize,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(JNode, Option<Vec<Span>>), E> {
+    parse_document(bytes, Some(key), max_depth, control, point)
 }
 
 fn parse_document<E: InputError>(
     bytes: &[u8],
     deferred_key: Option<&str>,
+    max_depth: usize,
     control: &Control,
     point: Checkpoint,
 ) -> Result<(JNode, Option<Vec<Span>>), E> {
@@ -149,6 +184,8 @@ fn parse_document<E: InputError>(
             deferred_key,
             spans: None,
             i: 0,
+            depth: 0,
+            max_depth,
             control,
             point,
             error: std::marker::PhantomData::<E>,
@@ -172,6 +209,8 @@ struct P<'a, 'c, E> {
     deferred_key: Option<&'a str>,
     spans: Option<Vec<Span>>,
     i: usize,
+    depth: usize,
+    max_depth: usize,
     control: &'c Control,
     point: Checkpoint,
     error: std::marker::PhantomData<E>,
@@ -197,6 +236,18 @@ impl<E: InputError> P<'_, '_, E> {
         (self.i, self.i + len)
     }
 
+    fn enter_container(&mut self) -> Result<(), E> {
+        if self.depth >= self.max_depth {
+            return Err((syntax(
+                self.here(),
+                format!("JSON nesting depth exceeds limit ({})", self.max_depth),
+            ))
+            .into());
+        }
+        self.depth += 1;
+        Ok(())
+    }
+
     fn value(&mut self, pointer: &str) -> Result<JNode, E> {
         self.checkpoint()?;
         let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || self.value_inner(pointer));
@@ -209,66 +260,75 @@ impl<E: InputError> P<'_, '_, E> {
         };
         let value = match c {
             b'{' => {
-                self.i += 1;
-                let mut entries: Vec<(String, JNode)> = Vec::new();
-                let mut keys = std::collections::HashSet::new();
-                self.ws()?;
-                if self.s.get(self.i) == Some(&b'}') {
+                self.enter_container()?;
+                let res: Result<JValue, E> = (|| {
                     self.i += 1;
-                } else {
-                    loop {
-                        self.ws()?;
-                        if self.s.get(self.i) != Some(&b'"') {
-                            return Err((syntax(self.here(), "object key must be a string")).into());
-                        }
-                        let key = self.string()?;
-                        let child = pointer_push(pointer, &key);
-                        if !keys.insert(key.clone()) {
-                            return Err((Box::new(Issue {
-                                code: Code::DuplicateKey,
-                                message: format!("duplicate key `{key}`"),
-                                location: Location::ArchMap {
-                                    pointer: child,
-                                    span: None,
-                                },
-                                details: crate::issue::Details::Empty,
-                            }))
-                            .into());
-                        }
-                        self.ws()?;
-                        if self.s.get(self.i) != Some(&b':') {
-                            return Err((syntax(self.here(), "expected `:`")).into());
-                        }
+                    let mut entries: Vec<(String, JNode)> = Vec::new();
+                    let mut keys = std::collections::HashSet::new();
+                    self.ws()?;
+                    if self.s.get(self.i) == Some(&b'}') {
                         self.i += 1;
-                        self.ws()?;
-                        let v = if pointer.is_empty()
-                            && self.deferred_key == Some(key.as_str())
-                            && self.s.get(self.i) == Some(&b'[')
-                        {
-                            self.checkpoint()?;
-                            let mut spans = Vec::new();
-                            self.array(&child, |_, span| spans.push(span))?;
-                            self.checkpoint()?;
-                            self.spans = Some(spans);
-                            JNode {
-                                value: JValue::Arr(Vec::new()),
+                    } else {
+                        loop {
+                            self.ws()?;
+                            if self.s.get(self.i) != Some(&b'"') {
+                                return Err(
+                                    (syntax(self.here(), "object key must be a string")).into()
+                                );
                             }
-                        } else {
-                            self.value(&child)?
-                        };
-                        entries.push((key, v));
-                        self.ws()?;
-                        match self.s.get(self.i) {
-                            Some(b',') => self.i += 1,
-                            Some(b'}') => {
-                                self.i += 1;
-                                break;
+                            let key = self.string()?;
+                            let child = pointer_push(pointer, &key);
+                            if !keys.insert(key.clone()) {
+                                return Err((Box::new(Issue {
+                                    code: Code::DuplicateKey,
+                                    message: format!("duplicate key `{key}`"),
+                                    location: Location::ArchMap {
+                                        pointer: child,
+                                        span: None,
+                                    },
+                                    details: crate::issue::Details::Empty,
+                                }))
+                                .into());
                             }
-                            _ => return Err((syntax(self.here(), "expected `,` or `}`")).into()),
+                            self.ws()?;
+                            if self.s.get(self.i) != Some(&b':') {
+                                return Err((syntax(self.here(), "expected `:`")).into());
+                            }
+                            self.i += 1;
+                            self.ws()?;
+                            let v = if pointer.is_empty()
+                                && self.deferred_key == Some(key.as_str())
+                                && self.s.get(self.i) == Some(&b'[')
+                            {
+                                self.checkpoint()?;
+                                let mut spans = Vec::new();
+                                self.array(&child, |_, span| spans.push(span))?;
+                                self.checkpoint()?;
+                                self.spans = Some(spans);
+                                JNode {
+                                    value: JValue::Arr(Vec::new()),
+                                }
+                            } else {
+                                self.value(&child)?
+                            };
+                            entries.push((key, v));
+                            self.ws()?;
+                            match self.s.get(self.i) {
+                                Some(b',') => self.i += 1,
+                                Some(b'}') => {
+                                    self.i += 1;
+                                    break;
+                                }
+                                _ => {
+                                    return Err((syntax(self.here(), "expected `,` or `}`")).into());
+                                }
+                            }
                         }
                     }
-                }
-                JValue::Obj(entries)
+                    Ok(JValue::Obj(entries))
+                })();
+                self.depth -= 1;
+                res?
             }
             b'[' => {
                 let mut items = Vec::new();
@@ -295,30 +355,35 @@ impl<E: InputError> P<'_, '_, E> {
     }
 
     fn array(&mut self, pointer: &str, mut item: impl FnMut(JNode, Span)) -> Result<(), E> {
-        self.i += 1;
-        self.ws()?;
-        if self.s.get(self.i) == Some(&b']') {
+        self.enter_container()?;
+        let res: Result<(), E> = (|| {
             self.i += 1;
-            return Ok(());
-        }
-        let mut index = 0_usize;
-        loop {
             self.ws()?;
-            let child = pointer_push(pointer, &index.to_string());
-            let start = self.i;
-            let value = self.value(&child)?;
-            item(value, (start, self.i));
-            index += 1;
-            self.ws()?;
-            match self.s.get(self.i) {
-                Some(b',') => self.i += 1,
-                Some(b']') => {
-                    self.i += 1;
-                    return Ok(());
-                }
-                _ => return Err((syntax(self.here(), "expected `,` or `]`")).into()),
+            if self.s.get(self.i) == Some(&b']') {
+                self.i += 1;
+                return Ok(());
             }
-        }
+            let mut index = 0_usize;
+            loop {
+                self.ws()?;
+                let child = pointer_push(pointer, &index.to_string());
+                let start = self.i;
+                let value = self.value(&child)?;
+                item(value, (start, self.i));
+                index += 1;
+                self.ws()?;
+                match self.s.get(self.i) {
+                    Some(b',') => self.i += 1,
+                    Some(b']') => {
+                        self.i += 1;
+                        return Ok(());
+                    }
+                    _ => return Err((syntax(self.here(), "expected `,` or `]`")).into()),
+                }
+            }
+        })();
+        self.depth -= 1;
+        res
     }
 
     fn number(&mut self) -> Result<String, E> {
@@ -523,5 +588,50 @@ mod deferred_array_tests {
             parse_deferred_root_array::<Box<Issue>>(absent, "nodes", &control, point).unwrap();
         assert!(spans.is_none());
         assert_eq!(header, parse(absent).unwrap());
+    }
+
+    #[test]
+    fn default_parser_accepts_depth_256_and_rejects_depth_257() {
+        let depth = crate::limits::DEFAULT_MAX_JSON_DEPTH;
+        let ok_arr = format!("{}false{}", "[".repeat(depth), "]".repeat(depth));
+        assert!(parse(ok_arr.as_bytes()).is_ok());
+
+        let over_arr = format!("{}false{}", "[".repeat(depth + 1), "]".repeat(depth + 1));
+        let err = parse(over_arr.as_bytes()).unwrap_err();
+        assert_eq!(err.code, Code::Syntax);
+        assert!(err.message.contains("JSON nesting depth exceeds limit"));
+
+        let ok_obj = format!(
+            "{}{}\"x\":1{}",
+            "{\"a\":".repeat(depth - 1),
+            "{",
+            "}".repeat(depth)
+        );
+        assert!(parse(ok_obj.as_bytes()).is_ok());
+
+        let over_obj = format!(
+            "{}{}\"x\":1{}",
+            "{\"a\":".repeat(depth),
+            "{",
+            "}".repeat(depth + 1)
+        );
+        let err_obj = parse(over_obj.as_bytes()).unwrap_err();
+        assert_eq!(err_obj.code, Code::Syntax);
+        assert!(err_obj.message.contains("JSON nesting depth exceeds limit"));
+
+        let deferred_over = format!(
+            "{{\"nodes\":{}false{}}}",
+            "[".repeat(depth),
+            "]".repeat(depth)
+        );
+        let err_def = parse_deferred_root_array::<Box<Issue>>(
+            deferred_over.as_bytes(),
+            "nodes",
+            &Control::unlimited(),
+            Checkpoint::Reuse,
+        )
+        .unwrap_err();
+        assert_eq!(err_def.code, Code::Syntax);
+        assert!(err_def.message.contains("JSON nesting depth exceeds limit"));
     }
 }

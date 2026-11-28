@@ -16,9 +16,6 @@ use crate::ir::term::PolyExpr;
 use num_bigint::{BigInt, BigUint};
 use std::collections::{BTreeMap, BTreeSet};
 
-/// 複数義務の層別積・閉包検査で許容する最大層数（組合せ爆発時に fail-closed する）。
-pub const MAX_COMBINED_STRATA: usize = 128;
-
 /// 単一の保存義務 `target(state, arg, param) in (source_laws(state, param))`。
 #[derive(Clone, Debug)]
 pub struct PreservationObligation {
@@ -644,10 +641,11 @@ pub fn intersect_strata_lists(
                 };
                 if !next.contains(&candidate) {
                     next.push(candidate);
-                    if next.len() > MAX_COMBINED_STRATA {
+                    let max_combined_strata = crate::limits::active_limits().max_combined_strata;
+                    if next.len() > max_combined_strata {
                         return Err(SilenceReason::QuotientIdealOutOfScope {
                             detail: format!(
-                                "combined quotient strata exceeded limit ({MAX_COMBINED_STRATA})"
+                                "combined quotient strata exceeded limit ({max_combined_strata})"
                             ),
                         });
                     }
@@ -799,10 +797,11 @@ pub fn is_stratum_covered_by_union(
                     });
                 }
             }
-            if next_rem.len() > MAX_COMBINED_STRATA {
+            let max_combined_strata = crate::limits::active_limits().max_combined_strata;
+            if next_rem.len() > max_combined_strata {
                 return Err(SilenceReason::QuotientIdealOutOfScope {
                     detail: format!(
-                        "Zariski containment verification exceeded piece limit ({MAX_COMBINED_STRATA})"
+                        "Zariski containment verification exceeded piece limit ({max_combined_strata})"
                     ),
                 });
             }
@@ -827,7 +826,7 @@ fn is_union_equal_to_closure(
 
 /// `AlgebraError` を対応する `SilenceReason` へ fail-closed 変換する。
 pub fn map_algebra_silence(err: AlgebraError) -> SilenceReason {
-    match err {
+    SilenceReason::from_algebra_with(err, |err| match err {
         AlgebraError::UnobservedDependency { slots } => {
             SilenceReason::UnobservedDependency { slots }
         }
@@ -839,7 +838,7 @@ pub fn map_algebra_silence(err: AlgebraError) -> SilenceReason {
             condition: "algebraic_computation_in_scope".to_owned(),
             detail: other.to_string(),
         },
-    }
+    })
 }
 
 /// `ComparisonPair` の全観測・操作・比較射・語翻訳に含まれる非自明な `SourceRef` 群を収集する（重複除去・決定順）。

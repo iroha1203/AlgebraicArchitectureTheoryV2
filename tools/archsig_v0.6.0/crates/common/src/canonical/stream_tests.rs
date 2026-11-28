@@ -78,11 +78,49 @@ fn streaming_deep_tree_uses_the_stack_safe_encoder() {
         value = Json::Arr(vec![value]);
     }
     let mut bytes = Vec::new();
-    value.write_canonical(&mut bytes).unwrap();
+    value
+        .write_canonical_with_max_depth(&mut bytes, 16_384)
+        .unwrap();
     assert_eq!(bytes.len(), 20_005);
     assert_eq!(&bytes[..10_000], vec![b'['; 10_000]);
     assert_eq!(&bytes[10_000..10_005], b"false");
     assert_eq!(&bytes[10_005..], vec![b']'; 10_000]);
+}
+
+#[test]
+fn default_encoder_accepts_depth_256_and_rejects_depth_257() {
+    let mut at_limit = Json::Bool(false);
+    for _ in 0..crate::limits::DEFAULT_MAX_JSON_DEPTH {
+        at_limit = Json::Arr(vec![at_limit]);
+    }
+    let mut bytes = Vec::new();
+    at_limit.write_canonical(&mut bytes).unwrap();
+    assert!(
+        at_limit
+            .canonical_controlled::<Box<crate::issue::Issue>>(
+                &Control::unlimited(),
+                Checkpoint::Expression
+            )
+            .is_ok()
+    );
+
+    let over_limit = Json::Arr(vec![at_limit]);
+    let err = over_limit.write_canonical(&mut Vec::new()).unwrap_err();
+    assert_eq!(err.kind(), io::ErrorKind::InvalidData);
+    assert!(err.to_string().contains("JSON nesting depth exceeds limit"));
+
+    let ctrl_err = over_limit
+        .canonical_controlled::<Box<crate::issue::Issue>>(
+            &Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .unwrap_err();
+    assert_eq!(ctrl_err.code, crate::issue::Code::Syntax);
+    assert!(
+        ctrl_err
+            .message
+            .contains("JSON nesting depth exceeds limit")
+    );
 }
 
 #[test]

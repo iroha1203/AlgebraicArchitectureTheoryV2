@@ -1,10 +1,7 @@
 //! AAT 第17章（出現の同定・使用文脈同値・補助属性の最小値域）の検証済み IR
 //! （`OccurrenceTaskSpec` / `CheckedOccurrenceTask`）。
 
-use crate::algebra::congruence::{
-    DEFAULT_MAX_CONGRUENCE_STEPS, OpOutputRecord, PredicateRecord, PredicateRecordKind,
-};
-use crate::algebra::partition::DEFAULT_MAX_SET_PARTITIONS;
+use crate::algebra::congruence::{OpOutputRecord, PredicateRecord, PredicateRecordKind};
 use crate::ir::provenance::Provenance;
 use crate::ir::validate::{ValidationError, require_non_empty, validate_nonempty_provenance};
 use std::collections::{BTreeMap, BTreeSet};
@@ -173,10 +170,10 @@ pub fn validate_occurrence_task(
     require_non_empty(&spec.name, "occurrence.name")?;
     validate_nonempty_provenance(&spec.provenance, &format!("occurrence `{}`", spec.name))?;
     if spec.max_congruence_steps == 0 {
-        spec.max_congruence_steps = DEFAULT_MAX_CONGRUENCE_STEPS;
+        spec.max_congruence_steps = crate::limits::active_limits().max_congruence_steps;
     }
     if spec.max_partitions == 0 {
-        spec.max_partitions = DEFAULT_MAX_SET_PARTITIONS;
+        spec.max_partitions = crate::limits::active_limits().max_set_partitions;
     }
 
     let mut sort_elems: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();

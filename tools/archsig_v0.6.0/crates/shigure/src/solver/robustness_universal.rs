@@ -5,8 +5,7 @@
 //! 反証時は普遍座標環反例に加え、1 変数重根での形式微分による双対数環反例も一般構成する。
 
 use crate::algebra::{
-    DEFAULT_MAX_BUCHBERGER_PAIRS, ExprBindings, FpElem, GroebnerBasis, Monomial, MonomialOrder,
-    Poly, Rat, RingCoeff, VarOrder,
+    ExprBindings, FpElem, GroebnerBasis, Monomial, MonomialOrder, Poly, Rat, RingCoeff, VarOrder,
 };
 use crate::ir::family::{CheckedFamilySpec, GoodnessSpec, RealizationSpace};
 use crate::ir::result::SilenceReason;
@@ -761,11 +760,10 @@ fn fp_groebner(
             continue;
         }
         processed += 1;
-        if processed > DEFAULT_MAX_BUCHBERGER_PAIRS {
+        let max_pairs = crate::limits::active_limits().max_buchberger_pairs;
+        if processed > max_pairs {
             return Err(SilenceReason::UniversalRingOutOfScope {
-                detail: format!(
-                    "Fp Buchberger ideal membership exceeded limit ({DEFAULT_MAX_BUCHBERGER_PAIRS})"
-                ),
+                detail: format!("Fp Buchberger ideal membership exceeded limit ({max_pairs})"),
             });
         }
         let lm_i = &lms[i];

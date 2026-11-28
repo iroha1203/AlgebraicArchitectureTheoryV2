@@ -13,10 +13,8 @@ use crate::algebra::scalar::Rat;
 use crate::ir::result::SilenceReason;
 use std::collections::BTreeMap;
 
-/// 射影層別分岐の安全上限（超過時は誤判定せず沈黙する）。
-pub const DEFAULT_MAX_IMAGE_BRANCHES: usize = 64;
-/// 単一枝上の fiber 方向 Gröbner 補完における S-pair 処理上限。
-pub const DEFAULT_MAX_IMAGE_Y_PAIRS: usize = 256;
+/// 射影層別分岐の安全上限および単一枝上の fiber 方向 Gröbner 補完における S-pair 処理上限。
+pub use crate::limits::{DEFAULT_MAX_IMAGE_BRANCHES, DEFAULT_MAX_IMAGE_Y_PAIRS};
 
 /// fiber 単項式ごとのパラメータ多項式係数 `sum_alpha c_alpha(c) * y^alpha`。
 type FiberPoly = BTreeMap<Monomial, Poly<Rat>>;
@@ -168,11 +166,14 @@ fn fiber_poly_scale(sp: &FiberPoly, factor: &Poly<Rat>) -> Result<FiberPoly, Alg
     if factor.is_zero() {
         return Ok(BTreeMap::new());
     }
+    let limits = crate::limits::active_limits();
     let mut out = BTreeMap::new();
     for (m, c) in sp {
-        let prod = c.checked_mul(factor)?;
+        let prod =
+            c.checked_mul_bounded(factor, &limits, "constructible_image fiber_poly_scale")?;
         if !prod.is_zero() {
             out.insert(m.clone(), prod);
+            limits.check_poly_terms(out.len(), "constructible_image fiber_poly_scale")?;
         }
     }
     Ok(out)
@@ -189,17 +190,24 @@ fn fiber_poly_sub_mul(
     if c_factor.is_zero() {
         return Ok(out);
     }
+    let limits = crate::limits::active_limits();
     for (m, c) in rhs {
         let shifted = m
             .checked_mul(y_shift)
             .ok_or_else(|| AlgebraError::OutOfScope {
                 detail: "fiber monomial exponent addition overflowed u32".to_owned(),
             })?;
-        let sub_val = c.checked_mul(c_factor)?;
+        let sub_val =
+            c.checked_mul_bounded(c_factor, &limits, "constructible_image fiber_poly_sub_mul")?;
         let entry = out
             .entry(shifted)
             .or_insert_with(|| Poly::zero(param_count, Rat::zero()));
-        *entry = entry.sub(&sub_val);
+        *entry = entry.checked_sub_bounded(
+            &sub_val,
+            &limits,
+            "constructible_image fiber_poly_sub_mul",
+        )?;
+        limits.check_poly_terms(out.len(), "constructible_image fiber_poly_sub_mul")?;
     }
     out.retain(|_, c| !c.is_zero());
     Ok(out)
@@ -244,10 +252,11 @@ fn stratify_projection_branch(
     visited: &mut usize,
 ) -> Result<(), SilenceReason> {
     *visited += 1;
-    if *visited > DEFAULT_MAX_IMAGE_BRANCHES {
+    let max_branches = crate::limits::active_limits().max_image_branches;
+    if *visited > max_branches {
         return Err(SilenceReason::ConstructibleStratificationOutOfScope {
             detail: format!(
-                "constructible projection stratification exceeded branch limit ({DEFAULT_MAX_IMAGE_BRANCHES})"
+                "constructible projection stratification exceeded branch limit ({max_branches})"
             ),
         });
     }
@@ -332,10 +341,11 @@ fn stratify_projection_branch(
     let mut pair_steps = 0usize;
     while let Some((i, j)) = pairs.pop() {
         pair_steps += 1;
-        if pair_steps > DEFAULT_MAX_IMAGE_Y_PAIRS {
+        let max_y_pairs = crate::limits::active_limits().max_image_y_pairs;
+        if pair_steps > max_y_pairs {
             return Err(SilenceReason::ConstructibleStratificationOutOfScope {
                 detail: format!(
-                    "constructible projection fiber S-pair computation exceeded limit ({DEFAULT_MAX_IMAGE_Y_PAIRS})"
+                    "constructible projection fiber S-pair computation exceeded limit ({max_y_pairs})"
                 ),
             });
         }
