@@ -25,6 +25,7 @@ import Formal.SHIGURE.Part2.Schemes.AffineFppfExamples
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeExamples
 import Formal.SHIGURE.Part2.Schemes.FppfEpimorphisms
 import Formal.SHIGURE.Part2.Schemes.AffineGeometryToCoefficients
+import Formal.SHIGURE.Part2.Schemes.AffineSingletonExamples
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
 import Formal.SHIGURE.Part2.Schemes.FppfRelativeAffineSections
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
@@ -5080,6 +5081,36 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.Examples.twoCopiesLaw_holds,
   SHIGURE.RealizationFamilies.Examples.frobeniusLaw_originalPoints,
   SHIGURE.RealizationFamilies.Examples.frobeniusLaw_not_holds
+]
+
+-- The affine singleton comparison and the concrete positive and negative checks.
+#shigure_assert_standard_axioms_of [
+  CoefficientDescent.canonicalScalarComparison,
+  CoefficientDescent.canonicalScalarComparison_unit,
+  CoefficientDescent.standardOverlap_eq_of_units,
+  CoefficientDescent.canonicalScalarComparisonOnTensor,
+  CoefficientDescent.canonicalScalarComparisonOnTensor_eq_standard,
+  CoefficientDescent.canonicalScalarComparisonOnTensor_standard,
+  SchemeDescent.affineCanonicalDatum,
+  SchemeDescent.affineCanonicalCoefficientIso,
+  SchemeDescent.affineCanonicalCoefficientIso_tilde_hom,
+  SchemeDescent.affineCanonicalTensorIso,
+  SchemeDescent.affineChartEvaluation,
+  SchemeDescent.affineCoefficientFunctor,
+  SchemeDescent.affineCanonicalDatumFunctor,
+  SchemeDescent.affineCanonicalCoefficientNatIso,
+  SchemeDescent.affineCanonicalCoefficientNatIso_app_hom,
+  SchemeDescent.tildePullbackIso_congr_at,
+  SchemeDescent.singletonCanonicalComparison_forget,
+  SchemeDescent.singletonCanonicalComparison_along,
+  SchemeDescent.affineIteratedTildeChart,
+  SchemeDescent.affineCanonicalOverlapComparison,
+  SchemeDescent.singletonMappedIso_hom_betweenPullbacks,
+  SchemeDescent.singletonCanonicalAffineComparison,
+  SchemeDescent.affineSingletonFaithfullyFlatDescent,
+  SchemeDescent.AffineSingletonExamples.splitComparison_equivalence,
+  SchemeDescent.AffineSingletonExamples.splitComparison_distinguishes_maps,
+  SchemeDescent.AffineSingletonExamples.zeroRing_not_faithfullyFlat
 ]
 
 end SHIGURE.AxiomAudit
