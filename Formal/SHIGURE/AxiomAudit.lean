@@ -5135,6 +5135,7 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RealizationFamilies.Examples.lineLaws,
   RealizationFamilies.Examples.lineStructure,
   RealizationFamilies.Examples.integerLine,
+  RealizationFamilies.Examples.integerLine_not_rank_zero,
   RealizationFamilies.Examples.negateLine,
   RealizationFamilies.Examples.negateLine_ne_id,
   RealizationFamilies.Examples.zeroLine,

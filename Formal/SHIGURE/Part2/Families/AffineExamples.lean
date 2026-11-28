@@ -53,6 +53,19 @@ def integerLine : AffineRealization lineLaws (fun _ => 1) (RingHom.id ℤ) :=
       change Empty at i
       exact nomatch i⟩
 
+/-- The same integer line does not satisfy the rank-zero realization property:
+its stalk at the zero prime has rank one. -/
+theorem integerLine_not_rank_zero :
+    ¬ affineProperty lineLaws (fun _ => 0) (RingHom.id ℤ) lineStructure := by
+  intro h
+  obtain ⟨_, ranks, _, _⟩ := h
+  let p : PrimeSpectrum ℤ := ⟨⊥, Ideal.isPrime_bot⟩
+  have rankZero := ranks () p
+  change Module.rankAtStalk (R := ℤ) ℤ p = 0 at rankZero
+  have rankOne : Module.rankAtStalk (R := ℤ) ℤ p = 1 := by
+    simp only [Module.rankAtStalk_self, Pi.one_apply]
+  exact (by decide : (1 : ℕ) ≠ 0) (rankOne.symm.trans rankZero)
+
 private def negateLineMap : lineStructure ⟶ lineStructure where
   onSort _ := (LinearEquiv.neg ℤ).toLinearMap
   preservesTotal p := nomatch p
