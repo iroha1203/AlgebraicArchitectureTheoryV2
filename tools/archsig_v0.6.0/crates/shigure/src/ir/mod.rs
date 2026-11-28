@@ -26,6 +26,7 @@ pub mod multisource;
 pub mod observation;
 pub mod occurrence;
 pub mod partial;
+mod partial_validate;
 pub mod path;
 pub mod presentation;
 pub mod provenance;

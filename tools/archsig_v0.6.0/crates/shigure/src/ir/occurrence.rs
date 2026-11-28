@@ -343,6 +343,13 @@ pub fn validate_occurrence_task(
                 detail: format!("predicate record for `{}` signature mismatch", rec.name),
             });
         }
+        if rec.args.len() != expected_sorts.len() {
+            return Err(ValidationError::ArityMismatch {
+                context: format!("predicate_record `{}`", rec.name),
+                expected: expected_sorts.len(),
+                actual: rec.args.len(),
+            });
+        }
         for (s, a) in rec.arg_sorts.iter().zip(&rec.args) {
             if !sort_elems[s].contains(a) {
                 return Err(ValidationError::UnknownRef {
@@ -354,8 +361,15 @@ pub fn validate_occurrence_task(
         }
     }
 
-    for r in spec.base_readings.iter().chain(&spec.explicit_contexts) {
+    let mut seen_base_readings = BTreeSet::new();
+    for r in &spec.base_readings {
         require_non_empty(&r.name, "occurrence.reading.name")?;
+        if !seen_base_readings.insert(r.name.clone()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "occurrence_base_reading",
+                name: r.name.clone(),
+            });
+        }
         let Some(elems) = sort_elems.get(&r.sort) else {
             return Err(ValidationError::UnknownRef {
                 kind: "sort",
@@ -369,6 +383,41 @@ pub fn validate_occurrence_task(
                     kind: "occurrence",
                     name: k.clone(),
                     context: format!("reading `{}`", r.name),
+                });
+            }
+        }
+        if spec.context_closed_17_5 && r.values.len() != elems.len() {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "base_reading `{}` must cover all elements of sort `{}` under setting 17.5",
+                    r.name, r.sort
+                ),
+            });
+        }
+    }
+
+    let mut seen_explicit_contexts = BTreeSet::new();
+    for r in &spec.explicit_contexts {
+        require_non_empty(&r.name, "occurrence.explicit_context.name")?;
+        if !seen_explicit_contexts.insert(r.name.clone()) {
+            return Err(ValidationError::DuplicateDecl {
+                kind: "occurrence_explicit_context",
+                name: r.name.clone(),
+            });
+        }
+        let Some(elems) = sort_elems.get(&r.sort) else {
+            return Err(ValidationError::UnknownRef {
+                kind: "sort",
+                name: r.sort.clone(),
+                context: format!("explicit_context `{}`", r.name),
+            });
+        };
+        for k in r.values.keys() {
+            if !elems.contains(k) {
+                return Err(ValidationError::UnknownRef {
+                    kind: "occurrence",
+                    name: k.clone(),
+                    context: format!("explicit_context `{}`", r.name),
                 });
             }
         }

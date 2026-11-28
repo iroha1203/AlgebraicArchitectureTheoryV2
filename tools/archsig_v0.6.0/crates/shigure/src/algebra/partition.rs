@@ -29,8 +29,17 @@ pub struct PartialOpTable {
 /// 二つの出現を区別する分離文脈木。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum SeparatingContext {
+    FixedIdentity {
+        sort: String,
+    },
     Base {
         reading_name: String,
+    },
+    OpDomain {
+        op_name: String,
+        arg_index: usize,
+        prefix_args: Vec<String>,
+        suffix_args: Vec<String>,
     },
     OpSub {
         op_name: String,
@@ -45,7 +54,19 @@ impl SeparatingContext {
     /// 人間可読な合成文脈式を整形する（例: `o(T(x))`）。
     pub fn format_expr(&self, var: &str) -> String {
         match self {
+            SeparatingContext::FixedIdentity { .. } => var.to_owned(),
             SeparatingContext::Base { reading_name } => format!("{reading_name}({var})"),
+            SeparatingContext::OpDomain {
+                op_name,
+                prefix_args,
+                suffix_args,
+                ..
+            } => {
+                let mut args = prefix_args.clone();
+                args.push(var.to_owned());
+                args.extend(suffix_args.iter().cloned());
+                format!("dom_{op_name}({})", args.join(", "))
+            }
             SeparatingContext::OpSub {
                 op_name,
                 prefix_args,
@@ -70,9 +91,26 @@ impl SeparatingContext {
         ops: &[PartialOpTable],
     ) -> Option<Option<String>> {
         match self {
+            SeparatingContext::FixedIdentity { .. } => Some(Some(elem.to_owned())),
             SeparatingContext::Base { reading_name } => {
                 let r = readings.iter().find(|r| r.name == *reading_name)?;
                 r.values.get(elem).cloned()
+            }
+            SeparatingContext::OpDomain {
+                op_name,
+                prefix_args,
+                suffix_args,
+                ..
+            } => {
+                let op = ops.iter().find(|o| o.name == *op_name)?;
+                let mut full_args = Vec::with_capacity(prefix_args.len() + 1 + suffix_args.len());
+                full_args.extend(prefix_args.iter().cloned());
+                full_args.push(elem.to_owned());
+                full_args.extend(suffix_args.iter().cloned());
+                match op.entries.get(&full_args)? {
+                    Some(_) => Some(Some("defined".to_owned())),
+                    None => Some(Some("undefined".to_owned())),
+                }
             }
             SeparatingContext::OpSub {
                 op_name,
@@ -213,8 +251,8 @@ pub fn refine_partition(
                 if is_fixed {
                     pair_sep.insert(
                         ordered_key(s_name, a, b),
-                        SeparatingContext::Base {
-                            reading_name: format!("id_{s_name}"),
+                        SeparatingContext::FixedIdentity {
+                            sort: s_name.clone(),
                         },
                     );
                 } else if let Some(r) = input
@@ -335,29 +373,13 @@ pub fn refine_partition(
                                                 inner: Box::new(inner),
                                             }
                                         }
-                                        // 片方のみ定義: 定義域を保つ任意の出力基本読取りで区別可能、
-                                        // 読取りが無ければ最初の読取りまたはダミー基本読取りの代わりに
-                                        // 定義域差異自体を `Base` で表す。
-                                        (Some(oa), None) | (None, Some(oa)) => {
-                                            let inner = input
-                                                .base_readings
-                                                .iter()
-                                                .find(|r| r.sort == op.out_sort)
-                                                .map(|r| SeparatingContext::Base {
-                                                    reading_name: r.name.clone(),
-                                                })
-                                                .unwrap_or_else(|| SeparatingContext::Base {
-                                                    reading_name: format!(
-                                                        "domain_{}_{}",
-                                                        op.name, oa
-                                                    ),
-                                                });
-                                            SeparatingContext::OpSub {
+                                        // 片方のみ定義: 操作の定義域読取り自体で区別する。
+                                        (Some(_), None) | (None, Some(_)) => {
+                                            SeparatingContext::OpDomain {
                                                 op_name: op.name.clone(),
                                                 arg_index: arg_idx,
                                                 prefix_args: prefix.clone(),
                                                 suffix_args: suffix.clone(),
-                                                inner: Box::new(inner),
                                             }
                                         }
                                         (None, None) => unreachable!("same out_cid_or_bot"),
@@ -400,7 +422,6 @@ pub fn refine_partition(
     // 異なるクラス代表間の witness を構築・独立検算
     let mut witnesses = Vec::new();
     for (s_name, cls) in &classes {
-        let is_fixed = input.fixed_sorts.contains(s_name);
         for i in 0..cls.len() {
             for j in (i + 1)..cls.len() {
                 let a = &cls[i][0];
@@ -408,22 +429,12 @@ pub fn refine_partition(
                 let Some(ctx) = pair_sep.get(&ordered_key(s_name, a, b)).cloned() else {
                     continue;
                 };
-                let (lhs_value, rhs_value, verified) = if is_fixed
-                    && matches!(&ctx, SeparatingContext::Base { reading_name } if reading_name == &format!("id_{s_name}"))
-                {
-                    (Some(a.clone()), Some(b.clone()), a != b)
-                } else {
-                    match (
-                        ctx.evaluate(a, &input.base_readings, &input.ops),
-                        ctx.evaluate(b, &input.base_readings, &input.ops),
-                    ) {
-                        (Some(va), Some(vb)) => {
-                            let ok = va != vb;
-                            (va, vb, ok)
-                        }
-                        // 定義域差による分離（出力 sort に base reading がないケース）
-                        _ => (None, None, false),
-                    }
+                let (lhs_value, rhs_value, verified) = match (
+                    ctx.evaluate(a, &input.base_readings, &input.ops),
+                    ctx.evaluate(b, &input.base_readings, &input.ops),
+                ) {
+                    (Some(va), Some(vb)) => (va.clone(), vb.clone(), va != vb),
+                    _ => (None, None, false),
                 };
                 witnesses.push(SeparatingWitness {
                     sort: s_name.clone(),

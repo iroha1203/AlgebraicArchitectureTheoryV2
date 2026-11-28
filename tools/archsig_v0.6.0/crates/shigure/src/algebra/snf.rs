@@ -104,6 +104,14 @@ impl SnfFactorizationZ {
                 actual: rhs.len(),
             });
         }
+        for row in original_m {
+            if row.len() != self.cols {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: self.cols,
+                    actual: row.len(),
+                });
+            }
+        }
         let u_rhs = mat_vec(&self.u, rhs, &BigInt::zero());
 
         for (i, diag) in self.diagonals.iter().enumerate() {
@@ -315,6 +323,14 @@ impl SnfFactorizationQ {
                 expected: self.rows,
                 actual: rhs.len(),
             });
+        }
+        for row in original_m {
+            if row.len() != self.cols {
+                return Err(AlgebraError::ArityMismatch {
+                    expected: self.cols,
+                    actual: row.len(),
+                });
+            }
         }
         let u_rhs = mat_vec(&self.u, rhs, &Rat::zero());
         for (j, val) in u_rhs.iter().enumerate().skip(self.rank) {

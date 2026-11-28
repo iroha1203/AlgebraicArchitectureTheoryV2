@@ -244,5 +244,249 @@ fn revision_and_multisource_ir_validate_constraints_and_mixed_costs() {
     };
     let json = silence_outcome.to_json().canonical();
     assert!(json.contains("unsupported_completion_class"));
+}
+
+#[test]
+fn phase5_ir_rejects_missing_support_arity_mismatch_fp_cost_and_contradictory_snf() {
+    use super::multisource::{MultisourceTaskSpec, SourcePresentationSpec};
+    use super::occurrence::{
+        OccurrenceOpSpec, OccurrenceReadingSpec, OccurrenceRelSpec, OccurrenceSortSpec,
+    };
+    use super::revision::SnfRevisionSpec;
+    use crate::algebra::congruence::{PredicateRecord, PredicateRecordKind};
+    use num_bigint::BigUint;
+
+    // 1. revision: support に述語参照座標が含まれない場合拒否 ([中心-2])
+    let bad_rev = RevisionTaskSpec {
+        name: "bad_sup".into(),
+        kind: RevisionKind::Span,
+        coeff_domain: CoeffDomain::Z,
+        coords: vec![
+            RevisionCoordSpec {
+                id: "xi".into(),
+                domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
+            },
+            RevisionCoordSpec {
+                id: "eta".into(),
+                domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
+            },
+        ],
+        shared_constraints: vec![RevisionConstraintSpec {
+            id: "c_eq".into(),
+            support: vec!["xi".into()],
+            predicate: RevisionPredicate::Equality("xi".into(), "eta".into()),
+        }],
+        before: RevisionSideSpec {
+            assignments: BTreeMap::new(),
+            extra_constraints: vec![],
+        },
+        after: RevisionSideSpec {
+            assignments: BTreeMap::new(),
+            extra_constraints: vec![],
+        },
+        explicit_delta_coords: vec![],
+        probes: vec![],
+        snf_spec: None,
+        max_completions: 0,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_revision_task(bad_rev),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // 2. revision: origin_label_only なのに rhs が異なる矛盾拒否 ([非中心-3])
+    let bad_snf = RevisionTaskSpec {
+        name: "bad_snf".into(),
+        kind: RevisionKind::Span,
+        coeff_domain: CoeffDomain::Z,
+        coords: vec![RevisionCoordSpec {
+            id: "x".into(),
+            domain_values: vec![ScalarLit::int(0)],
+        }],
+        shared_constraints: vec![],
+        before: RevisionSideSpec {
+            assignments: BTreeMap::new(),
+            extra_constraints: vec![],
+        },
+        after: RevisionSideSpec {
+            assignments: BTreeMap::new(),
+            extra_constraints: vec![],
+        },
+        explicit_delta_coords: vec![],
+        probes: vec![],
+        snf_spec: Some(SnfRevisionSpec {
+            coeff_domain: CoeffDomain::Z,
+            m_before: vec![vec![ScalarLit::int(2)]],
+            m_after: vec![vec![ScalarLit::int(2)]],
+            num_cols: 1,
+            rhs_before: vec![ScalarLit::int(2)],
+            rhs_after: vec![ScalarLit::int(4)],
+            op_in_common_p0: true,
+            op_uniquely_determined: true,
+            force_reuse_existing_snf: false,
+            origin_label_only: true,
+        }),
+        max_completions: 0,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_revision_task(bad_snf),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // 3. multisource: Fp 費用および support 漏れを拒否 ([非中心-1], [中心-2])
+    let bad_ms = MultisourceTaskSpec {
+        name: "bad_ms_fp".into(),
+        coeff_domain: CoeffDomain::Z,
+        coords: vec![RevisionCoordSpec {
+            id: "x".into(),
+            domain_values: vec![ScalarLit::int(0), ScalarLit::int(1)],
+        }],
+        background_constraints: vec![],
+        sources: vec![SourcePresentationSpec {
+            source_id: "s1".into(),
+            origin: SourceRef::new("s1", OriginKind::StaticAnalysis),
+            assignments: BTreeMap::new(),
+            forbidden_values: vec![],
+            extra_constraints: vec![],
+        }],
+        support_goal: Some(SupportGoalSpec {
+            trusted_assignments: BTreeMap::new(),
+            candidates: vec![CandidateRecordSpec {
+                id: "h1".into(),
+                coord: "x".into(),
+                value: ScalarLit::int(0),
+                cost: Some(ScalarLit::Fp {
+                    value: BigUint::from(1u32),
+                    modulus: BigUint::from(3u32),
+                }),
+                origin: SourceRef::new("c1", OriginKind::LlmCandidate),
+                verified_actual_value: None,
+            }],
+            goal: SupportGoalFormula::CoordEqualsConst("x".into(), ScalarLit::int(0)),
+            expected_truth: true,
+            check_post_adoption_stability: true,
+        }),
+        max_sources_subset_steps: 0,
+        max_results: 0,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_multisource_task(bad_ms),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // 4. occurrence: pred_records アリティ不一致・setting 17.5 不完全読取りを拒否 ([中心-3])
+    let bad_occ_arity = OccurrenceTaskSpec {
+        name: "bad_occ".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![OccurrenceOpSpec {
+            name: "T".into(),
+            arg_sorts: vec!["S".into()],
+            out_sort: "S".into(),
+            is_total: true,
+        }],
+        relations: vec![OccurrenceRelSpec {
+            name: "R".into(),
+            arg_sorts: vec!["S".into(), "S".into()],
+        }],
+        identity_requests: vec![],
+        op_records: vec![],
+        pred_records: vec![PredicateRecord {
+            name: "R".into(),
+            kind: PredicateRecordKind::Relation,
+            arg_sorts: vec!["S".into(), "S".into()],
+            args: vec!["a".into()],
+            positive: true,
+        }],
+        base_readings: vec![],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: sample_prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_occurrence_task(bad_occ_arity),
+        Err(ValidationError::ArityMismatch { .. })
+    ));
+
+    let bad_occ_reading = OccurrenceTaskSpec {
+        name: "bad_occ_read".into(),
+        sorts: vec![OccurrenceSortSpec {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        operations: vec![],
+        relations: vec![],
+        identity_requests: vec![],
+        op_records: vec![],
+        pred_records: vec![],
+        base_readings: vec![OccurrenceReadingSpec {
+            name: "o".into(),
+            sort: "S".into(),
+            values: BTreeMap::from([("a".into(), Some("0".into()))]),
+        }],
+        context_closed_17_5: true,
+        explicit_contexts: vec![],
+        preserve_full_domains: vec![],
+        initial_readouts: vec![],
+        provenance: sample_prov(),
+        max_congruence_steps: 0,
+        max_partitions: 0,
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_occurrence_task(bad_occ_reading),
+        Err(ValidationError::ConversionError { .. })
+    ));
+
+    // 5. partial: 有限表のアリティ不一致・空評価 Law 名・アフィン行重複を拒否 ([中心-3])
+    let bad_part = PartialTaskSpec {
+        name: "bad_part".into(),
+        representation: PartialRepresentation::FiniteTable(FinitePartialPresentation {
+            sorts: BTreeMap::from([("V".into(), vec!["0".into(), "1".into()])]),
+            operations: vec![PartialOpSignature {
+                name: "f".into(),
+                arg_sorts: vec!["V".into()],
+                out_sort: "V".into(),
+                is_total: false,
+            }],
+            relations: vec![],
+            slots: vec![],
+            background_constraints: vec![],
+            records: vec![PartialRecordSpec {
+                id: "r1".into(),
+                kind: PartialRecordKind::OpValue {
+                    op_name: "f".into(),
+                    args: vec![],
+                    value: super::partial::PartialValue::Known("0".into()),
+                },
+            }],
+            max_completions: 16,
+        }),
+        eval_laws: vec![],
+        quantifier_spec: None,
+        open_domain: None,
+        provenance: sample_prov(),
+        undeclared_unobserved_slots: vec![],
+    };
+    assert!(matches!(
+        validate_partial_task(bad_part),
+        Err(ValidationError::ArityMismatch { .. })
+    ));
+
     let _ = BTreeSet::<String>::new();
 }

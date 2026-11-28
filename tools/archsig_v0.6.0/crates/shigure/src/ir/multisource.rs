@@ -262,9 +262,12 @@ pub fn validate_multisource_task(
             }
             if let Some(cost) = &cand.cost {
                 with_cost += 1;
-                if !is_nonnegative_scalar(cost) {
+                if !is_valid_nonnegative_cost(cost) {
                     return Err(ValidationError::ConversionError {
-                        detail: format!("candidate `{}` cost must be nonnegative", cand.id),
+                        detail: format!(
+                            "candidate `{}` cost must be nonnegative integer or rational",
+                            cand.id
+                        ),
                     });
                 }
             } else {
@@ -316,12 +319,12 @@ pub fn validate_multisource_task(
     })
 }
 
-fn is_nonnegative_scalar(lit: &ScalarLit) -> bool {
+fn is_valid_nonnegative_cost(lit: &ScalarLit) -> bool {
     use num_traits::{Signed, Zero};
     match lit {
         ScalarLit::Z(n) => !n.is_negative(),
         ScalarLit::Q { num, den } => !den.is_zero() && !(num.is_negative() ^ den.is_negative()),
-        ScalarLit::Fp { .. } => true,
+        ScalarLit::Fp { .. } => false,
     }
 }
 
@@ -331,6 +334,7 @@ fn validate_ms_constraint(
     domain: &CoeffDomain,
 ) -> Result<(), ValidationError> {
     require_non_empty(&con.id, "multisource.constraint.id")?;
+    let mut sup_set = BTreeSet::new();
     for s in &con.support {
         if !coord_names.contains(s) {
             return Err(ValidationError::UnknownRef {
@@ -339,6 +343,7 @@ fn validate_ms_constraint(
                 context: format!("constraint `{}` support", con.id),
             });
         }
+        sup_set.insert(s.as_str());
     }
     match &con.predicate {
         RevisionPredicate::Equality(a, b) => {
@@ -348,6 +353,14 @@ fn validate_ms_constraint(
                         kind: "coord",
                         name: x.clone(),
                         context: format!("constraint `{}`", con.id),
+                    });
+                }
+                if !sup_set.contains(x.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "constraint `{}` support must include referenced coord `{x}`",
+                            con.id
+                        ),
                     });
                 }
             }
@@ -362,6 +375,14 @@ fn validate_ms_constraint(
                         context: format!("constraint `{}`", con.id),
                     });
                 }
+                if !sup_set.contains(x.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "constraint `{}` support must include referenced coord `{x}`",
+                            con.id
+                        ),
+                    });
+                }
             }
         }
         RevisionPredicate::AllowedTuples { coords, tuples } => {
@@ -371,6 +392,14 @@ fn validate_ms_constraint(
                         kind: "coord",
                         name: x.clone(),
                         context: format!("constraint `{}`", con.id),
+                    });
+                }
+                if !sup_set.contains(x.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "constraint `{}` support must include referenced coord `{x}`",
+                            con.id
+                        ),
                     });
                 }
             }

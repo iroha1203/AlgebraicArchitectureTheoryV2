@@ -177,12 +177,17 @@ impl CheckedRevisionTask {
     }
 }
 
+pub const DEFAULT_MAX_REVISION_COMPLETIONS: usize = 4_096;
+
 pub fn validate_revision_task(
-    spec: RevisionTaskSpec,
+    mut spec: RevisionTaskSpec,
 ) -> Result<CheckedRevisionTask, ValidationError> {
     require_non_empty(&spec.name, "revision.name")?;
     validate_provenance(&spec.provenance, &format!("revision `{}`", spec.name))?;
     validate_coeff_domain(&spec.coeff_domain, &format!("revision `{}`", spec.name))?;
+    if spec.max_completions == 0 {
+        spec.max_completions = DEFAULT_MAX_REVISION_COMPLETIONS;
+    }
 
     let mut coord_names = BTreeSet::new();
     for c in &spec.coords {
@@ -247,6 +252,7 @@ pub fn validate_revision_task(
                 context: format!("revision probe `{}`", p.name),
             });
         }
+        let mut probe_sup = BTreeSet::new();
         for s in &p.support {
             if !coord_names.contains(s) {
                 return Err(ValidationError::UnknownRef {
@@ -255,30 +261,53 @@ pub fn validate_revision_task(
                     context: format!("revision probe `{}` support", p.name),
                 });
             }
+            probe_sup.insert(s.as_str());
+        }
+        if !probe_sup.contains(p.target_coord.as_str()) {
+            return Err(ValidationError::ConversionError {
+                detail: format!(
+                    "revision probe `{}` support must contain target_coord `{}`",
+                    p.name, p.target_coord
+                ),
+            });
         }
         validate_scalar_lit(
             &p.expected_value,
             &spec.coeff_domain,
             &format!("revision probe `{}`", p.name),
         )?;
-        if let Some(ac) = &p.antecedent_coord {
-            if !coord_names.contains(ac) {
-                return Err(ValidationError::UnknownRef {
-                    kind: "coord",
-                    name: ac.clone(),
-                    context: format!("revision probe `{}` antecedent", p.name),
+        match (&p.antecedent_coord, &p.antecedent_value) {
+            (Some(ac), Some(av)) => {
+                if !coord_names.contains(ac) {
+                    return Err(ValidationError::UnknownRef {
+                        kind: "coord",
+                        name: ac.clone(),
+                        context: format!("revision probe `{}` antecedent", p.name),
+                    });
+                }
+                if !probe_sup.contains(ac.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "revision probe `{}` support must contain antecedent_coord `{ac}`",
+                            p.name
+                        ),
+                    });
+                }
+                validate_scalar_lit(
+                    av,
+                    &spec.coeff_domain,
+                    &format!("revision probe `{}` antecedent", p.name),
+                )?;
+            }
+            (None, None) => {}
+            _ => {
+                return Err(ValidationError::ConversionError {
+                    detail: format!(
+                        "revision probe `{}` antecedent_coord and antecedent_value must both be present or both absent",
+                        p.name
+                    ),
                 });
             }
-            let Some(av) = &p.antecedent_value else {
-                return Err(ValidationError::ConversionError {
-                    detail: format!("revision probe `{}` antecedent_value missing", p.name),
-                });
-            };
-            validate_scalar_lit(
-                av,
-                &spec.coeff_domain,
-                &format!("revision probe `{}` antecedent", p.name),
-            )?;
         }
     }
 
@@ -309,6 +338,7 @@ fn validate_constraint(
     domain: &CoeffDomain,
 ) -> Result<(), ValidationError> {
     require_non_empty(&con.id, "revision.constraint.id")?;
+    let mut sup_set = BTreeSet::new();
     for s in &con.support {
         if !coord_names.contains(s) {
             return Err(ValidationError::UnknownRef {
@@ -317,6 +347,7 @@ fn validate_constraint(
                 context: format!("constraint `{}` support", con.id),
             });
         }
+        sup_set.insert(s.as_str());
     }
     match &con.predicate {
         RevisionPredicate::Equality(a, b) => {
@@ -326,6 +357,14 @@ fn validate_constraint(
                         kind: "coord",
                         name: x.clone(),
                         context: format!("constraint `{}`", con.id),
+                    });
+                }
+                if !sup_set.contains(x.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "constraint `{}` support must include referenced coord `{x}`",
+                            con.id
+                        ),
                     });
                 }
             }
@@ -340,6 +379,14 @@ fn validate_constraint(
                         context: format!("constraint `{}`", con.id),
                     });
                 }
+                if !sup_set.contains(x.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "constraint `{}` support must include referenced coord `{x}`",
+                            con.id
+                        ),
+                    });
+                }
             }
         }
         RevisionPredicate::AllowedTuples { coords, tuples } => {
@@ -349,6 +396,14 @@ fn validate_constraint(
                         kind: "coord",
                         name: x.clone(),
                         context: format!("constraint `{}`", con.id),
+                    });
+                }
+                if !sup_set.contains(x.as_str()) {
+                    return Err(ValidationError::ConversionError {
+                        detail: format!(
+                            "constraint `{}` support must include referenced coord `{x}`",
+                            con.id
+                        ),
                     });
                 }
             }
@@ -404,6 +459,16 @@ fn validate_snf_spec(snf: &SnfRevisionSpec) -> Result<(), ValidationError> {
     }
     for v in snf.rhs_before.iter().chain(&snf.rhs_after) {
         validate_scalar_lit(v, &snf.coeff_domain, "snf rhs")?;
+    }
+    if snf.origin_label_only && (snf.m_before != snf.m_after || snf.rhs_before != snf.rhs_after) {
+        return Err(ValidationError::ConversionError {
+            detail: "snf origin_label_only cannot differ in operator or rhs".to_owned(),
+        });
+    }
+    if snf.op_in_common_p0 && snf.m_before != snf.m_after {
+        return Err(ValidationError::ConversionError {
+            detail: "snf op_in_common_p0 requires m_before == m_after".to_owned(),
+        });
     }
     Ok(())
 }

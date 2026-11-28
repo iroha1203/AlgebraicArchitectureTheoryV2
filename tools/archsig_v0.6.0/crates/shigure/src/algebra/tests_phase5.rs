@@ -381,3 +381,139 @@ fn hitting_set_empty_hyperedges_returns_single_empty_set() {
         other => panic!("expected Enumerated, got {other:?}"),
     }
 }
+
+#[test]
+fn partition_refinement_verifies_fixed_sort_op_composition_and_domain_difference() {
+    // 1) 操作が固定値 sort へ写し、2) 部分操作が定義域差を持つケース（[中心-1] 回帰テスト）
+    let input = RefinementInput {
+        sorts: BTreeMap::from([
+            ("S".into(), vec!["a".into(), "b".into(), "c".into()]),
+            ("V".into(), vec!["0".into(), "1".into()]),
+        ]),
+        fixed_sorts: BTreeSet::from(["V".to_owned()]),
+        base_readings: vec![],
+        ops: vec![
+            PartialOpTable {
+                name: "read".into(),
+                arg_sorts: vec!["S".into()],
+                out_sort: "V".into(),
+                entries: BTreeMap::from([
+                    (vec!["a".into()], Some("0".into())),
+                    (vec!["b".into()], Some("1".into())),
+                    (vec!["c".into()], Some("0".into())),
+                ]),
+            },
+            PartialOpTable {
+                name: "part".into(),
+                arg_sorts: vec!["S".into()],
+                out_sort: "S".into(),
+                entries: BTreeMap::from([
+                    (vec!["a".into()], Some("a".into())),
+                    (vec!["b".into()], Some("b".into())),
+                    (vec!["c".into()], None),
+                ]),
+            },
+        ],
+        max_iterations: 16,
+    };
+
+    let res = refine_partition(&input).expect("refinement succeeds");
+    assert!(
+        res.all_witnesses_verified,
+        "all witnesses should be independently verified: {:?}",
+        res.witnesses
+    );
+    assert_eq!(
+        res.classes["S"],
+        vec![
+            vec!["a".to_owned()],
+            vec!["b".to_owned()],
+            vec!["c".to_owned()]
+        ]
+    );
+}
+
+#[test]
+fn algebra_phase5_negative_and_boundary_cases() {
+    // RelationRecordCollision
+    let rel_col = compute_congruence_closure(&CongruenceInput {
+        sorts: vec![CongruenceSort {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        requests: vec![("S".into(), "a".into(), "b".into())],
+        op_records: vec![],
+        predicate_records: vec![
+            PredicateRecord {
+                name: "R".into(),
+                kind: PredicateRecordKind::Relation,
+                arg_sorts: vec!["S".into()],
+                args: vec!["a".into()],
+                positive: true,
+            },
+            PredicateRecord {
+                name: "R".into(),
+                kind: PredicateRecordKind::Relation,
+                arg_sorts: vec!["S".into()],
+                args: vec!["b".into()],
+                positive: false,
+            },
+        ],
+        max_steps: DEFAULT_MAX_CONGRUENCE_STEPS,
+    })
+    .unwrap();
+    assert!(rel_col.derivation_verified);
+    assert_eq!(rel_col.collisions.len(), 1);
+    assert!(matches!(
+        rel_col.collisions[0].kind,
+        CollisionKind::RelationRecordCollision { .. }
+    ));
+
+    // Congruence step bound exceeded
+    let err_cong = compute_congruence_closure(&CongruenceInput {
+        sorts: vec![CongruenceSort {
+            name: "S".into(),
+            elements: vec!["a".into(), "b".into()],
+            is_fixed_value: false,
+        }],
+        requests: vec![("S".into(), "a".into(), "b".into())],
+        op_records: vec![],
+        predicate_records: vec![],
+        max_steps: 0,
+    });
+    assert!(matches!(err_cong, Err(AlgebraError::OutOfScope { .. })));
+
+    // Hitting set negative weight rejection and step limit
+    let err_wt = enumerate_minimal_hitting_sets(&HittingSetInput {
+        universe: vec!["x".into()],
+        hyperedges: vec![vec!["x".into()]],
+        weights: Some(BTreeMap::from([("x".into(), Rat::from_int(-1))])),
+        max_steps: DEFAULT_MAX_HITTING_SET_STEPS,
+        max_results: DEFAULT_MAX_HITTING_SET_RESULTS,
+    });
+    assert!(matches!(err_wt, Err(AlgebraError::OutOfScope { .. })));
+
+    // SNF solve_rhs rejects mismatched column counts without panicking ([非中心-2])
+    let snf_z = SnfFactorizationZ::compute(&[vec![BigInt::from(2), BigInt::from(0)]], 2).unwrap();
+    let bad_cols_z = snf_z.solve_rhs(
+        &[vec![BigInt::from(2), BigInt::from(0), BigInt::from(1)]],
+        &[BigInt::from(2)],
+    );
+    assert!(matches!(
+        bad_cols_z,
+        Err(AlgebraError::ArityMismatch { .. })
+    ));
+
+    let snf_q = SnfFactorizationQ::compute(&[vec![Rat::from_int(1), Rat::from_int(0)]], 2).unwrap();
+    let bad_cols_q = snf_q.solve_rhs(&[vec![Rat::from_int(1)]], &[Rat::from_int(1)]);
+    assert!(matches!(
+        bad_cols_q,
+        Err(AlgebraError::ArityMismatch { .. })
+    ));
+
+    // Zero matrix SNF
+    let zero_z = SnfFactorizationZ::compute(&[vec![BigInt::from(0), BigInt::from(0)]], 2).unwrap();
+    assert_eq!(zero_z.rank, 0);
+    assert!(zero_z.umv_verified && zero_z.unimodular_verified);
+}
