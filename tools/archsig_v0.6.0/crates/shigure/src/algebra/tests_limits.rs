@@ -395,3 +395,198 @@ fn poly_expr_expand_substitute_q_linear_and_z_syzygy_enforce_limits() {
         } if limit_name == "max_bigint_bits"
     ));
 }
+
+#[test]
+fn post_elim_q_affine_and_z_existential_preserve_resource_limit_exceeded() {
+    use crate::algebra::linear::{SystemPointOutcome, solve_polynomial_system_q};
+    use crate::ir::change::PointDomain;
+    use crate::ir::family::{
+        CandidateFamilySpec, CandidateMember, CandidateSpace, FamilySpec, GoodnessSpec,
+        PreservationGoodnessSource, RealizationFamilySpec, RealizationMember, RealizationSpace,
+    };
+    use crate::ir::presentation::CoordValue;
+    use crate::ir::provenance::SourceRef;
+    use crate::ir::robustness::{CandidateSelector, CheckedRobustnessTask, RobustnessTaskSpec};
+    use crate::ir::term::ScalarLit;
+    use crate::solver::solve_robustness_task;
+
+    // 1. solve_polynomial_system_q (RationalPoints): rabinowitsch_solve passes <= 8 bits,
+    //    then post-elimination solve_affine_q exceeds max_bigint_bits=8.
+    let vars = VarOrder::new(vec!["w".into(), "y".into(), "x".into(), "z".into()]).unwrap();
+    let w = Poly::var(4, 0, Rat::zero());
+    let y = Poly::var(4, 1, Rat::zero());
+    let x = Poly::var(4, 2, Rat::zero());
+    let z = Poly::var(4, 3, Rat::zero());
+    let eqs = vec![
+        w.mul(&w),
+        w,
+        Poly::constant(4, Rat::from_int(31))
+            .mul(&y)
+            .add(&Poly::constant(4, Rat::from_int(37)).mul(&x))
+            .sub(&Poly::constant(4, Rat::from_int(1))),
+        Poly::constant(4, Rat::from_int(41))
+            .mul(&x)
+            .add(&Poly::constant(4, Rat::from_int(43)).mul(&z))
+            .sub(&Poly::constant(4, Rat::from_int(2))),
+    ];
+    let limit_8 = ShigureLimits {
+        max_bigint_bits: 8,
+        ..Default::default()
+    };
+    let q_outcome = with_active_limits(&limit_8, || {
+        solve_polynomial_system_q(&eqs, &[], &vars, &PointDomain::RationalPoints)
+    });
+    assert!(
+        matches!(
+            q_outcome,
+            SystemPointOutcome::Undetermined(SilenceReason::ResourceLimitExceeded {
+                ref limit_name,
+                limit: 8,
+                ..
+            }) if limit_name == "max_bigint_bits"
+        ),
+        "expected ResourceLimitExceeded, got {q_outcome:?}"
+    );
+
+    // 2. Z + IntegerPoints existential robustness must return Undetermined(ResourceLimitExceeded),
+    //    never Refuted via fail_pair when inner solver hits max_bigint_bits.
+    let z_origin = SourceRef::new("test:z", OriginKind::HumanAdopted);
+    let make_z_pres = |name: &str, step_delta: PolyExpr| Presentation {
+        name: name.to_owned(),
+        coeff_domain: CoeffDomain::Z,
+        sorts: vec![SortDecl {
+            name: "S".to_owned(),
+            rank: 1,
+            coeff_domain: CoeffDomain::Z,
+            provenance: Some(z_origin.clone()),
+        }],
+        phases: vec![PhaseDecl {
+            name: "Active".to_owned(),
+            coords: vec![CoordDecl::symbolic("x", "S")],
+            state_laws: vec![],
+            provenance: None,
+        }],
+        operations: vec![OperationDecl {
+            name: "step".to_owned(),
+            source_phase: "Active".to_owned(),
+            target_phase: "Active".to_owned(),
+            args: vec![],
+            domain_laws: vec![],
+            updates: BTreeMap::from([("x".to_owned(), PolyExpr::state("x") + step_delta)]),
+            provenance: None,
+        }],
+        observations: vec![ObservationDecl {
+            name: "obs".to_owned(),
+            phase: "Active".to_owned(),
+            components: vec![PolyExpr::state("x")],
+            provenance: None,
+        }],
+        provenance: Provenance::default(),
+    };
+    let z_fam = FamilySpec {
+        name: "ZExist".to_owned(),
+        coeff_domain: CoeffDomain::Z,
+        realizations: RealizationFamilySpec {
+            name: "U".to_owned(),
+            u_vars: vec!["u".to_owned()],
+            b_vars: vec![],
+            reading_q: vec![],
+            space: RealizationSpace::FiniteMembers(vec![RealizationMember {
+                id: "u1".to_owned(),
+                assignments: BTreeMap::from([(
+                    "u".to_owned(),
+                    CoordValue::Observed(ScalarLit::Z(BigInt::from(1))),
+                )]),
+                is_raw_candidate: false,
+                presentation: None,
+                origin: z_origin.clone(),
+            }]),
+        },
+        candidates: CandidateFamilySpec {
+            name: "C".to_owned(),
+            c_vars: vec!["c".to_owned()],
+            pi: vec![],
+            space: CandidateSpace::FiniteMembers(vec![CandidateMember {
+                id: "c1".to_owned(),
+                assignments: BTreeMap::from([(
+                    "c".to_owned(),
+                    CoordValue::Observed(ScalarLit::Z(BigInt::from(1))),
+                )]),
+                origin: z_origin.clone(),
+            }]),
+        },
+        goodness: GoodnessSpec::Existential {
+            witness_vars: vec!["w".to_owned()],
+            equations: vec![],
+            invertibles: vec![],
+            preservation: Some(PreservationGoodnessSource {
+                pair: ComparisonPair {
+                    before: make_z_pres("BeforeZ", PolyExpr::Const(ScalarLit::Z(BigInt::from(20)))),
+                    after: make_z_pres("AfterZ", PolyExpr::param("p")),
+                    state_comparisons: vec![StateComparison {
+                        after_phase: "Active".to_owned(),
+                        before_phase: "Active".to_owned(),
+                        map: BTreeMap::from([("x".to_owned(), PolyExpr::state("x"))]),
+                        provenance: None,
+                    }],
+                    word_translation: WordTranslation {
+                        entries: vec![TranslatedWord {
+                            after_operation: "step".to_owned(),
+                            steps: vec![TranslatedStep {
+                                before_operation: "step".to_owned(),
+                                arg_exprs: vec![],
+                            }],
+                            provenance: None,
+                        }],
+                    },
+                },
+                change_spec: ChangeSpec {
+                    name: "HZ".to_owned(),
+                    coeff_domain: CoeffDomain::Z,
+                    parameters: vec![ParamDecl {
+                        name: "p".to_owned(),
+                        coeff_domain: CoeffDomain::Z,
+                        provenance: None,
+                    }],
+                    fixed: vec![],
+                    editable: vec![EditableTarget::OperationExpr {
+                        presentation: "AfterZ".to_owned(),
+                        operation: "step".to_owned(),
+                    }],
+                    provenance: Provenance::default(),
+                },
+                param_bindings: BTreeMap::from([("p".to_owned(), PolyExpr::param("w"))]),
+            }),
+        },
+        reading_comparison: None,
+        provenance: Provenance::default(),
+    };
+    let r_task = CheckedRobustnessTask::validate(RobustnessTaskSpec {
+        name: "z_exist_limit".to_owned(),
+        family: z_fam,
+        point_domain: PointDomain::IntegerPoints,
+        base_value: vec![],
+        designated_candidate: Some(CandidateSelector::ById("c1".to_owned())),
+        check_universal_ring: false,
+        fine_base_value: None,
+        provenance: Provenance::default(),
+    })
+    .unwrap();
+    let limit_3 = ShigureLimits {
+        max_bigint_bits: 3,
+        ..Default::default()
+    };
+    let r_out = with_active_limits(&limit_3, || solve_robustness_task(&r_task));
+    assert!(
+        matches!(
+            r_out.verdict,
+            Verdict::Undetermined(SilenceReason::ResourceLimitExceeded {
+                ref limit_name,
+                limit: 3,
+                ..
+            }) if limit_name == "max_bigint_bits"
+        ),
+        "expected Undetermined(ResourceLimitExceeded), got {:?}",
+        r_out.verdict
+    );
+}

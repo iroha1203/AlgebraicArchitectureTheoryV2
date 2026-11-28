@@ -483,8 +483,10 @@ pub(crate) fn detect_order_field<C: FieldCoeff>(
             zero_coeff.clone(),
             max_dim,
         )
-        .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
-            detail: e.to_string(),
+        .map_err(|e| {
+            SilenceReason::from_algebra_with(e, |err| SilenceReason::ArtinOrderOutOfScope {
+                detail: err.to_string(),
+            })
         })?;
         let mut nonzero_imgs = Vec::new();
         let mut projected_tuple = Vec::with_capacity(extra_res.len());
@@ -601,8 +603,10 @@ fn compute_base_change_from_field<C: FieldCoeff>(
         zero,
         input.max_dim,
     )
-    .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
-        detail: e.to_string(),
+    .map_err(|e| {
+        SilenceReason::from_algebra_with(e, |err| SilenceReason::ArtinOrderOutOfScope {
+            detail: err.to_string(),
+        })
     })?;
     let mut imgs = Vec::new();
     for g in input.eliminated {

@@ -532,10 +532,7 @@ fn solve_existential_with_preservation(
                     art.reeval,
                 ));
             }
-            if let Verdict::Undetermined(
-                r @ SilenceReason::NonLinearRationalOrIntegerExistence { .. },
-            ) = sol.verdict
-            {
+            if let Verdict::Undetermined(r) = sol.verdict {
                 return Err(r);
             }
             Ok(fail_pair(

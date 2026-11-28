@@ -417,8 +417,10 @@ fn compute_base_change_from_z(
                 Rat::zero(),
                 max_dim,
             )
-            .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
-                detail: e.to_string(),
+            .map_err(|e| {
+                SilenceReason::from_algebra_with(e, |err| SilenceReason::ArtinOrderOutOfScope {
+                    detail: err.to_string(),
+                })
             })?;
             let mut target_imgs = Vec::new();
             for g in &extra_q {
@@ -475,8 +477,10 @@ fn compute_base_change_from_z(
                 zero_fp,
                 max_dim,
             )
-            .map_err(|e| SilenceReason::ArtinOrderOutOfScope {
-                detail: e.to_string(),
+            .map_err(|e| {
+                SilenceReason::from_algebra_with(e, |err| SilenceReason::ArtinOrderOutOfScope {
+                    detail: err.to_string(),
+                })
             })?;
             let mut target_imgs = Vec::new();
             for g in &extra_fp {

@@ -712,8 +712,15 @@ pub fn solve_polynomial_system_q(
                     if invertibles.is_empty() && rab.parameter_equations.iter().all(Poly::is_affine)
                     {
                         let (mat, rhs) = extract_affine_q(&rab.parameter_equations, vars.len());
-                        if let Ok(sol) = solve_affine_q(&mat, &rhs, vars.len()) {
-                            return SystemPointOutcome::AffineQ(sol);
+                        match solve_affine_q(&mat, &rhs, vars.len()) {
+                            Ok(sol) => return SystemPointOutcome::AffineQ(sol),
+                            Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                                return SystemPointOutcome::Undetermined(map_system_alg_err(
+                                    "rational_affine_solver",
+                                    e,
+                                ));
+                            }
+                            Err(_) => {}
                         }
                     }
                     SystemPointOutcome::Undetermined(

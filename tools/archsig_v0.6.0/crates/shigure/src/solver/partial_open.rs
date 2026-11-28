@@ -508,9 +508,9 @@ fn compute_restriction_dims<C: FieldCoeff>(
         })
         .collect();
     let img_dim = rank_over_field(&image_cols, sc_rows, zero).map_err(|e| {
-        SilenceReason::FiniteEnumerationOutOfScope {
-            detail: format!("{e:?}"),
-        }
+        SilenceReason::from_algebra_with(e, |err| SilenceReason::FiniteEnumerationOutOfScope {
+            detail: format!("{err:?}"),
+        })
     })?;
     let fiber_dim = ker_dim.saturating_sub(img_dim);
     // 定理 18.18: |im r| = 1 (img_dim == 0) かつ唯一ファイバーが一元集合 (fiber_dim == 0) のとき大域一意修復存在。
