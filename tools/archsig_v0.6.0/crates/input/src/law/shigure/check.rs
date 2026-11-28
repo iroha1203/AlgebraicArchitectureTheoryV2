@@ -1,14 +1,14 @@
 //! `archsig.law/2` 内の SHIGURE 宣言群の静的検査（名前・型・参照・素数・意味 Law 保護）。
 
 use super::ast_phase3::{RawMemberCoordValue, ShigureMemberCoordValue};
-use super::check_comparison::check_comparison;
-use super::check_diagram::check_diagram;
+pub(super) use super::check_comparison::check_comparison;
+pub(super) use super::check_diagram::check_diagram;
 use super::check_ext_common::check_scalar_lit;
-use super::check_path::check_path;
-use super::check_presentation::check_presentation;
+pub(super) use super::check_path::check_path;
+pub(super) use super::check_presentation::check_presentation;
 pub(super) use super::check_presentation::resolve_observed_field;
-use super::check_relations::{check_change_spec, check_eval_condition, check_task};
-use super::check_transfer::check_transfer;
+pub(super) use super::check_relations::{check_change_spec, check_eval_condition, check_task};
+pub(super) use super::check_transfer::check_transfer;
 use super::*;
 use crate::law::ast::{QName, Span};
 use crate::law::check::{Checker, check_decl_name, duplicate, full, reference};

@@ -117,6 +117,7 @@ fn streaming_write_and_final_buffer_failures_leave_no_published_artifact() {
                 result: Some(out.join("result.json")),
                 summary: Some(summary.clone()),
                 issues: vec![],
+                snippets: Vec::new(),
             },
         );
         assert_eq!(written.get(), 5, "exercise a real partially written file");
@@ -157,6 +158,7 @@ fn file_io_publish_delivers_the_already_frozen_interrupted_document() {
             result: Some(out.join("result.json")),
             summary: None,
             issues: vec![],
+            snippets: Vec::new(),
         },
     );
     assert_eq!(outcome.status, Status::Interrupted);

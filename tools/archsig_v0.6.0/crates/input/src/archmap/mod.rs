@@ -1,8 +1,10 @@
 //! ArchMap の静的検査(入力仕様 §§1–6)。版・schema・ID・由来・語彙 binding・原始値の型・
 //! 参照・補完の存在を検査し、既知値と欠測 slot を持つ内部表現を返す。
 
+pub mod batch;
 mod canonical;
 mod complete;
+pub use batch::{ArchMapBatchFailure, check_archmap_batch_controlled};
 pub use complete::{
     CompletionPreparation, FieldAssignment, check_completion_with_values,
     check_valuation_with_values,
@@ -103,7 +105,7 @@ fn check_archmap_inner<E: InputError>(
 }
 
 /// subject と、その field 型から推移的に参照する宣言の namespace。
-fn required_namespaces<E: InputError>(
+pub(super) fn required_namespaces<E: InputError>(
     definitions: &CheckedDefinitions,
     types: &BTreeSet<String>,
     control: &Control,

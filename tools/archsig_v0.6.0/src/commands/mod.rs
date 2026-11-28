@@ -43,13 +43,14 @@ pub fn execute_cli_command(
     }));
     match result {
         Ok(res) => res,
-        Err(_) => Err(output::without_result(
+        Err(payload) => Err(output::without_result(
             signals,
             Status::Error,
-            vec![ResultIssue::Internal {
-                operation: "commands".to_owned(),
-                message: "internal failure during discoverability command".to_owned(),
-            }],
+            vec![crate::run::diagnostics::panic_internal_issue(
+                "commands",
+                "internal failure during discoverability command",
+                payload,
+            )],
         )),
     }
 }
@@ -103,6 +104,8 @@ mod tests {
 
     #[test]
     fn catch_unwind_returns_structured_exit_70_receipt_on_panic() {
+        archsig_common::diagnostic::install_panic_hook();
+        archsig_common::diagnostic::clear_last_panic();
         let def = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("tests/fixtures/counter.atoms.json");
         let cmd = CliCommand::Digest(DigestArgs {
@@ -113,6 +116,9 @@ mod tests {
         let outcome = execute_cli_command(&cmd, 1024 * 1024, &mut signals, &control).unwrap_err();
         assert_eq!(outcome.status, Status::Error);
         assert_eq!(outcome.exit_code, 70);
-        assert!(outcome.receipt().contains("\"code\":\"internal\""));
+        let receipt = outcome.receipt();
+        assert!(receipt.contains("\"code\":\"internal\""));
+        assert!(receipt.contains("\"panic_message\":\"injected panic in digest\""));
+        assert!(receipt.contains("\"panic_location\":\""));
     }
 }

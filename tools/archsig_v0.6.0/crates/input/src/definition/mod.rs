@@ -1,4 +1,5 @@
 //! 共通 Atom 定義の schema、namespace 登録、依存と原始型の検査。
+pub mod batch;
 pub mod model;
 mod primitive;
 mod reader;
@@ -9,6 +10,7 @@ use archsig_common::{
     canonical::sha256_digest,
     issue::{Code, Details, Issue, Location},
 };
+pub use batch::{DefinitionBatchFailure, check_definitions_batch_controlled};
 pub use model::*;
 
 pub const FORMAT: &str = "archsig.atom-definition/1";

@@ -127,6 +127,7 @@ pub(crate) fn notify(
         result: None,
         summary: None,
         issues,
+        snippets: Vec::new(),
     }
 }
 
@@ -172,6 +173,8 @@ pub(super) fn finalize(
         for issue in &mut outcome.issues {
             input_positions(issue, copies);
         }
+        outcome.snippets =
+            crate::run::diagnostics::extract_snippets_for_copies(&outcome.issues, copies);
         return outcome;
     }
     if let Some(signal) = signals.freeze() {
@@ -187,6 +190,7 @@ pub(super) fn finalize(
         result: out.map(|out| out.join("result.json")),
         summary: None,
         issues: result.issues.iter().map(ResultIssue::wire).collect(),
+        snippets: Vec::new(),
     };
     let Some(out) = out else {
         return outcome;
@@ -367,6 +371,7 @@ pub(super) fn publish(
                 result: None,
                 summary: outcome.summary,
                 issues: vec![issue.wire()],
+                snippets: Vec::new(),
             }
         }
     }

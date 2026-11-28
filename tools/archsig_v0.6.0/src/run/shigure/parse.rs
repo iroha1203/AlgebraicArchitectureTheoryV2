@@ -51,18 +51,20 @@ fn looks_like_shigure_ask(ask: &str) -> bool {
         (Some(eq), None) => ask[eq + 1..].trim_start(),
         _ => ask.trim_start(),
     };
-    for prefix in SHIGURE_QUERY_PREFIXES {
-        if let Some(rest) = rhs.strip_prefix(prefix)
-            && (rest.is_empty()
-                || !rest
-                    .as_bytes()
-                    .first()
-                    .is_some_and(|b| b.is_ascii_alphanumeric() || *b == b'_'))
-        {
-            return true;
-        }
+    let head = rhs
+        .split(|c: char| !c.is_ascii_alphanumeric() && c != '_')
+        .next()
+        .unwrap_or("");
+    if SHIGURE_QUERY_PREFIXES.contains(&head) {
+        return true;
     }
-    false
+    head.starts_with("shigure_")
+        && !archsig_common::diagnostic::suggest_identifiers(
+            head,
+            SHIGURE_QUERY_PREFIXES.iter().copied(),
+            1,
+        )
+        .is_empty()
 }
 
 pub(super) fn parse_shigure_requests(
@@ -70,8 +72,10 @@ pub(super) fn parse_shigure_requests(
     signals: &mut dyn Signals,
     control: &Control,
 ) -> Result<Vec<ParsedShigureRequest>, Outcome> {
+    let max_errors = archsig_common::diagnostic::DEFAULT_MAX_COLLECTED_ERRORS;
     let mut parsed = Vec::with_capacity(asks.len());
     let mut seen_ids = BTreeSet::new();
+    let mut issues: Vec<archsig_common::canonical::Json> = Vec::new();
     for ask in asks {
         if let Err(signal) = control.checkpoint(Checkpoint::RequestSyntax) {
             return Err(output::notify(
@@ -82,30 +86,71 @@ pub(super) fn parse_shigure_requests(
                 vec![signal.issue()],
             ));
         }
-        let req = parse_single_ask(ask).map_err(|msg| {
-            output::notify(
-                signals,
-                Status::Invalid,
-                64,
-                control.stop_reason(),
-                vec![usage_issue(None, &msg)],
-            )
-        })?;
-        if !seen_ids.insert(req.id.clone()) {
-            return Err(output::notify(
-                signals,
-                Status::Invalid,
-                64,
-                control.stop_reason(),
-                vec![usage_issue(
-                    Some(&req.id),
-                    &format!("duplicate request id `{}`", req.id),
-                )],
-            ));
+        match parse_single_ask(ask) {
+            Ok(req) => {
+                if !seen_ids.insert(req.id.clone()) && issues.len() < max_errors {
+                    issues.push(usage_issue(
+                        Some(&req.id),
+                        &format!("duplicate request id `{}`", req.id),
+                    ));
+                } else {
+                    parsed.push(req);
+                }
+            }
+            Err(msg) => {
+                if issues.len() < max_errors {
+                    let mut issue = usage_issue(None, &msg);
+                    enrich_shigure_parse_issue(&mut issue, ask);
+                    issues.push(issue);
+                }
+            }
         }
-        parsed.push(req);
+    }
+    if !issues.is_empty() {
+        return Err(output::notify(
+            signals,
+            Status::Invalid,
+            64,
+            control.stop_reason(),
+            issues,
+        ));
     }
     Ok(parsed)
+}
+
+fn enrich_shigure_parse_issue(issue: &mut archsig_common::canonical::Json, ask: &str) {
+    let archsig_common::canonical::Json::Obj(fields) = issue else {
+        return;
+    };
+    let Some(msg) = fields.get("message").and_then(|v| match v {
+        archsig_common::canonical::Json::Str(s) => Some(s.clone()),
+        _ => None,
+    }) else {
+        return;
+    };
+    if msg.starts_with("unknown SHIGURE query kind `")
+        && let Some(rest) = msg.strip_prefix("unknown SHIGURE query kind `")
+        && let Some(bad_kind) = rest.split('`').next()
+    {
+        let suggestions = archsig_common::diagnostic::suggest_identifiers(
+            bad_kind,
+            SHIGURE_QUERY_PREFIXES.iter().copied(),
+            3,
+        );
+        if let Some(archsig_common::canonical::Json::Obj(details)) = fields.get_mut("details") {
+            crate::run::diagnostics::attach_suggestions(details, suggestions);
+        }
+    } else if msg.contains("unknown argument `")
+        && let Some(archsig_common::canonical::Json::Obj(details)) = fields.get_mut("details")
+    {
+        let _ = ask;
+        details.insert(
+            "hint".to_owned(),
+            archsig_common::canonical::Json::str(
+                "supported SHIGURE arguments: optional `snapshot=<SnapshotId>`",
+            ),
+        );
+    }
 }
 
 pub(super) fn parse_single_ask(ask: &str) -> Result<ParsedShigureRequest, String> {

@@ -8,7 +8,7 @@ use archsig_common::issue::{Code, Details, Issue, Location};
 use std::collections::BTreeSet;
 
 mod position;
-pub use position::add_location_positions;
+pub use position::{add_location_positions, extract_issue_snippets};
 
 pub const RESULT_FORMAT: &str = "archsig.result/4";
 
@@ -55,6 +55,12 @@ pub enum ResultIssue {
         operation: String,
         message: String,
     },
+    InternalPanic {
+        operation: String,
+        message: String,
+        panic_message: String,
+        panic_location: Option<String>,
+    },
     Cancelled(Signal),
 }
 
@@ -64,7 +70,7 @@ impl ResultIssue {
             ResultIssue::Input(i) => code_name(i.code),
             ResultIssue::Usage { .. } => "usage",
             ResultIssue::Io { .. } => "io",
-            ResultIssue::Internal { .. } => "internal",
+            ResultIssue::Internal { .. } | ResultIssue::InternalPanic { .. } => "internal",
             ResultIssue::Cancelled(_) => "cancelled",
         }
     }
@@ -194,6 +200,26 @@ impl ResultIssue {
             ResultIssue::Internal { operation, message } => (
                 format!("{message}: {operation}"),
                 Json::obj([("operation", Json::str(operation.clone()))]),
+            ),
+            ResultIssue::InternalPanic {
+                operation,
+                message,
+                panic_message,
+                panic_location,
+            } => (
+                format!("{message}: {operation}"),
+                Json::obj([
+                    ("operation", Json::str(operation.clone())),
+                    ("panic_message", Json::str(panic_message.clone())),
+                    (
+                        "panic_location",
+                        Json::str(
+                            panic_location
+                                .clone()
+                                .unwrap_or_else(|| "unknown".to_owned()),
+                        ),
+                    ),
+                ]),
             ),
             ResultIssue::Cancelled(s) => (
                 format!("interrupted by signal {}", s.wire()),

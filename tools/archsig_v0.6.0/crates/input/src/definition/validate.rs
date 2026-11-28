@@ -71,7 +71,7 @@ pub(super) fn check<E: InputError>(
     E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     Ok(())
 }
-fn dag<E: InputError>(
+pub(super) fn dag<E: InputError>(
     n: &str,
     defs: &CheckedDefinitions,
     active: &mut BTreeSet<String>,

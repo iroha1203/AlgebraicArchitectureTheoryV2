@@ -11,6 +11,7 @@ pub mod ast_phase4_lift_artin;
 pub mod ast_phase5_obs;
 mod ast_phase5_obs_drop;
 pub mod ast_phase5_rev;
+pub(crate) mod batch;
 pub mod check;
 mod check_comparison;
 mod check_diagram;
