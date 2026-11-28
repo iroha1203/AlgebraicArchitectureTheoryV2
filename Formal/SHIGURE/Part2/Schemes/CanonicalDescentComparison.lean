@@ -20,11 +20,12 @@ private theorem singleton_ofObj_map_abstract
     (M : G.obj (.mk (op X))) (c : T ⟶ X) {i j : ι}
     (a : T ⟶ U i) (b : T ⟶ U j) (ha : a ≫ f i = c) (hb : b ≫ f j = c)
     {D : Type*} [Category D] (I : G.obj (.mk (op T)) ⥤ D) :
-    I.map ((DescentData.ofObj (F := G) (f := f) M).hom c a b ha hb) =
+    I.map (((G.toDescentData f).obj M).hom c a b ha hb) =
       I.map ((G.mapComp' (f i).op.toLoc a.op.toLoc c.op.toLoc
         (congrArg (fun g => g.op.toLoc) ha)).inv.toNatTrans.app M) ≫
       I.map ((G.mapComp' (f j).op.toLoc b.op.toLoc c.op.toLoc
         (congrArg (fun g => g.op.toLoc) hb)).hom.toNatTrans.app M) := by
+  change I.map ((DescentData.ofObj (F := G) (f := f) M).hom c a b ha hb) = _
   simp only [DescentData.ofObj_hom, Functor.map_comp]
 
 section OriginalComparison
