@@ -40,6 +40,8 @@ import Formal.SHIGURE.Part2.RealizationSchemes
 import Formal.SHIGURE.Part2.Realizations.PolynomialCoefficientChange
 import Formal.SHIGURE.Part2.Realizations.PolynomialCoordinates
 import Formal.SHIGURE.Part2.Realizations.PolynomialLawExamples
+import Formal.SHIGURE.Part2.Families.AffinePseudofunctor
+import Formal.SHIGURE.Part2.Families.AffineExamples
 import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
@@ -5125,6 +5127,49 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.fppfModuleComparison_existsUnique,
   SchemeDescent.AffineFppfExamples.two_components_identity_descends,
   SchemeDescent.AffineFppfExamples.two_components_distinguish_maps
+]
+
+-- Affine realization categories, scalar-change coherence, and examples.
+#shigure_assert_standard_axioms_of [
+  RealizationFamilies.Examples.lineSignature,
+  RealizationFamilies.Examples.lineLaws,
+  RealizationFamilies.Examples.lineStructure,
+  RealizationFamilies.Examples.integerLine,
+  RealizationFamilies.Examples.negateLine,
+  RealizationFamilies.Examples.negateLine_ne_id,
+  RealizationFamilies.Examples.zeroLine,
+  RealizationFamilies.Examples.zeroLine_not_isIso,
+  RealizationFamilies.Examples.changedNegateLine,
+  RealizationFamilies.Examples.changedZeroLine_onSort,
+  RealizationFamilies.Examples.changedNegateLine_rational_ne_id,
+  RealizationFamilies.Examples.changedZeroLine_rational_not_isIso,
+  RealizationFamilies.algebraRealizations,
+  RealizationFamilies.algebraBaseChange,
+  RealizationFamilies.algebraBaseChangeId,
+  RealizationFamilies.algebraBaseChangeComp,
+  RealizationFamilies.algebraBaseChange_assoc,
+  RealizationFamilies.algebraBaseChange_id_comp,
+  RealizationFamilies.algebraBaseChange_comp_id,
+  RealizationFamilies.algebraCoreBaseChange,
+  RealizationFamilies.algebraCoreBaseChangeId,
+  RealizationFamilies.algebraCoreBaseChangeComp,
+  RealizationFamilies.algebraCoreBaseChange_assoc,
+  RealizationFamilies.algebraCoreBaseChange_id_comp,
+  RealizationFamilies.algebraCoreBaseChange_comp_id,
+  RealizationFamilies.affineRealizationPseudofunctor,
+  RealizationFamilies.AffineLawPresentation,
+  RealizationFamilies.affineProperty,
+  RealizationFamilies.AffineRealization,
+  RealizationFamilies.AffineRealizationCore,
+  RealizationFamilies.tensorExpression_mapScalars_comp,
+  RealizationFamilies.tensorLaw_mapScalars_comp,
+  RealizationFamilies.affineProperty_baseChange,
+  RealizationFamilies.affineBaseChange,
+  RealizationFamilies.affineCoreBaseChange,
+  RealizationFamilies.affineScalarUnit,
+  RealizationFamilies.affineCoreScalarUnit,
+  RealizationFamilies.affineScalarTower,
+  RealizationFamilies.affineCoreScalarTower
 ]
 
 end SHIGURE.AxiomAudit
