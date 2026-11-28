@@ -64,6 +64,7 @@ instances for every primitive coefficient, independently of the Law. -/
 theorem assignedData_normalized (c : ℤ) : (assignedData c).IsNormalized singleChart :=
   dataOfAssignment_normalized ℤ singleChart (fun _ => c)
 
+/-- Read the actual nullary multilinear operation on its standard output coordinate. -/
 private theorem assignedData_primitive (c : ℤ)
     (x : ∀ i : TensorPosition ([] : List sectionSignature.SortType),
       (assignedData c).realization.carrier i.1) (b : Fin 1) :

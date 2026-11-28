@@ -5740,6 +5740,13 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.Marked.ChartExamples.zeroMarkedData_not_normalized
 ]
 
+-- Named projection/application APIs from the noncentral review finding.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.RealizationFamilies.Marked.freeBasis_apply,
+  SHIGURE.RealizationFamilies.Marked.freeStructure_total,
+  SHIGURE.RealizationFamilies.Marked.freeStructure_quantity
+]
+
 end SHIGURE.AxiomAudit
 
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit

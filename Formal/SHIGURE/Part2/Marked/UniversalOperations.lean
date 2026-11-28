@@ -41,6 +41,13 @@ def primitiveOperation (A : TensorStructure R sig) (e : PrimitiveSymbol sig) :
 def freeBasis (s : sig.SortType) : Basis (Fin (rank s)) R (Fin (rank s) → R) :=
   Pi.basisFun R (Fin (rank s))
 
+/-- The standard chart basis vector is the corresponding coordinate unit.
+This application API keeps downstream reconstruction independent of the basis definition. -/
+theorem freeBasis_apply (s : sig.SortType) (i : Fin (rank s)) :
+    freeBasis rank R s i = Pi.single i 1 := by
+  classical
+  simp only [freeBasis, Pi.basisFun_apply]
+
 /-- A coefficient array specifies a genuine multilinear operation in finite
 free coordinates, using mathlib's basis of multilinear maps. -/
 def operationOfCoefficients (a : Arity sig.SortType)
@@ -59,6 +66,18 @@ def freeStructure (c : OperationCoordinate sig rank → R) : TensorStructure R s
     (fun b a => c ⟨Sum.inl f, b, a⟩)
   quantity q := operationOfCoefficients rank R (sig.quantityArity q)
     (fun b a => c ⟨Sum.inr q, b, a⟩)
+
+/-- The total-operation projection of a free chart is its coefficient-defined map.
+This is the public projection API used by the chart reconstruction theorem. -/
+theorem freeStructure_total (c : OperationCoordinate sig rank → R) (f : sig.Total) :
+    (freeStructure rank R c).total f =
+      operationOfCoefficients rank R (sig.totalArity f) (fun b a => c ⟨Sum.inl f, b, a⟩) := rfl
+
+/-- The quantity projection of a free chart is its coefficient-defined map.
+This is the public projection API used by the chart reconstruction theorem. -/
+theorem freeStructure_quantity (c : OperationCoordinate sig rank → R) (q : sig.Quantity) :
+    (freeStructure rank R c).quantity q =
+      operationOfCoefficients rank R (sig.quantityArity q) (fun b a => c ⟨Sum.inr q, b, a⟩) := rfl
 
 /-- The coefficient array recovers the value on each tuple of standard basis
 vectors. This is the comparison needed by the chart representation theorem. -/

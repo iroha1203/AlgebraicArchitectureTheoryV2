@@ -111,7 +111,7 @@ theorem dataOfAssignment_normalized (v : ChartVariable I → R) :
     Matrix.mulVec_single_one]
   funext b
   change MvPolynomial.aeval v (markingEntry k I s b (I s a)) = (freeBasis rank R s a) b
-  simp [markingEntry_selected, freeBasis, Pi.single_apply, eq_comm]
+  simp [markingEntry_selected, freeBasis_apply, Pi.single_apply, eq_comm]
 
 /-- Reading actual multilinear and marking entries recovers each assignment. -/
 theorem coordinates_dataOfAssignment (v : ChartVariable I → R) :
@@ -129,12 +129,12 @@ theorem coordinates_dataOfAssignment (v : ChartVariable I → R) :
     cases e with
     | inl f =>
       simpa [FreeMarkedData.coordinates, dataOfAssignment, FreeMarkedData.carrierBasis,
-        FreeMarkedData.carrierEquiv, freeStructure] using
+        FreeMarkedData.carrierEquiv, freeStructure_total, freeStructure_quantity] using
         operationOfCoefficients_basis rank R (sig.totalArity f)
           (fun b v' => v (Sum.inr ⟨Sum.inl f, b, v'⟩)) b v'
     | inr q =>
       simpa [FreeMarkedData.coordinates, dataOfAssignment, FreeMarkedData.carrierBasis,
-        FreeMarkedData.carrierEquiv, freeStructure] using
+        FreeMarkedData.carrierEquiv, freeStructure_total, freeStructure_quantity] using
         operationOfCoefficients_basis rank R (sig.quantityArity q)
           (fun b v' => v (Sum.inr ⟨Sum.inr q, b, v'⟩)) b v'
 
@@ -163,23 +163,23 @@ theorem dataOfAssignment_coordinates (D : FreeMarkedData (sig := sig) R generato
     apply (freeBasis generators R s).ext
     intro j
     funext a
-    simp only [freeBasis, Pi.basisFun_apply, Matrix.mulVecLin_apply, Matrix.mulVec_single_one]
+    simp only [freeBasis_apply, Matrix.mulVecLin_apply, Matrix.mulVec_single_one]
     change MvPolynomial.aeval _ (markingEntry k I s a j) = (marking s (Pi.single j 1)) a
     by_cases selected : ∃ b, I s b = j
     · obtain ⟨b, rfl⟩ := selected
       rw [markingEntry_selected]
       have normalized := congrFun (h s b) a
       simpa [FreeMarkedData.carrierBasis, FreeMarkedData.carrierEquiv,
-        freeBasis, Pi.single_apply, eq_comm] using normalized.symm
+        freeBasis_apply, Pi.single_apply, eq_comm] using normalized.symm
     · rw [markingEntry_unselected k I s a j selected]
       rw [MvPolynomial.aeval_X]
       rfl
-  simp only [dataOfAssignment, freeStructure, FreeMarkedData.coordinates,
+  simp only [dataOfAssignment, FreeMarkedData.coordinates,
     FreeMarkedData.carrierBasis, FreeMarkedData.carrierEquiv]
   congr 1
-  · congr 1
-    · exact funext totals
-    · exact funext quantities
+  · exact congrArg₂
+      (fun t q => (⟨fun s => ModuleCat.of R (Fin (rank s) → R), t, q⟩ : TensorStructure R sig))
+      (funext totals) (funext quantities)
   · exact funext marks
 
 /-- Arbitrary assignments correspond to all independent normalized free data. -/
