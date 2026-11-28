@@ -284,11 +284,14 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
     if let [flag] = pairs.remainder() {
         return Err(usage(&flag.to_string_lossy(), "flag requires a value"));
     }
-    let Command::Run(previous) = parse_args(&previous).map_err(|error| {
-        usage(
-            &format!("--before-{}", error.argument.trim_start_matches("--")),
-            error.message,
-        )
+    let Command::Run(previous) = parse_args(&previous).map_err(|error| UsageError {
+        argument: if error.argument == "--max-file-bytes" {
+            error.argument
+        } else {
+            format!("--before-{}", error.argument.trim_start_matches("--"))
+        },
+        message: error.message,
+        prefix_argument: error.prefix_argument,
     })?
     else {
         unreachable!("previous arguments use the run parser")

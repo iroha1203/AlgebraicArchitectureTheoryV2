@@ -304,23 +304,26 @@ fn cli_shigure_limit_flag_bounds_solver_and_rejects_invalid_limit_args() {
         assert_stderr_code(&r, 64, "usage");
     }
 
-    let dup_reobs = run_binary(
-        &dir,
-        &[
+    for reobs_args in [
+        vec![
             "reobserve",
             "--max-file-bytes",
             "100",
             "--max-file-bytes",
             "200",
         ],
-    );
-    assert_stderr_code(&dup_reobs, 64, "usage");
-    let dup_receipt = parse(dup_reobs.stderr.as_bytes()).unwrap();
-    let dup_arg = s(get(
-        get(&arr(get(&dup_receipt, "issues"))[0], "details"),
-        "argument",
-    ));
-    assert_eq!(dup_arg, "--max-file-bytes");
+        vec!["reobserve", "--max-file-bytes", "0"],
+        vec!["reobserve", "--max-file-bytes", "not-a-number"],
+    ] {
+        let r = run_binary(&dir, &reobs_args);
+        assert_stderr_code(&r, 64, "usage");
+        let receipt = parse(r.stderr.as_bytes()).unwrap();
+        let arg = s(get(
+            get(&arr(get(&receipt, "issues"))[0], "details"),
+            "argument",
+        ));
+        assert_eq!(arg, "--max-file-bytes", "{reobs_args:?}");
+    }
 
     for help_args in [
         vec!["run", "--help"],
