@@ -93,6 +93,31 @@ import Formal.SHIGURE.Part2.Schemes.Effective.RebaseTest
 import Formal.SHIGURE.Part2.Schemes.Effective.TestComparison
 import Formal.SHIGURE.Part2.Schemes.Effective.TestNaturality
 
+import Formal.SHIGURE.Part2.MinimalRing.DirectSumBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.DirectSumDualBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.DualBaseChangeEquiv
+import Formal.SHIGURE.Part2.MinimalRing.DualBaseChangeMap
+import Formal.SHIGURE.Part2.MinimalRing.DualObservationBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.DualProduct
+import Formal.SHIGURE.Part2.MinimalRing.DualRank
+import Formal.SHIGURE.Part2.MinimalRing.FiberFieldReach
+import Formal.SHIGURE.Part2.MinimalRing.FiberSurjectivity
+import Formal.SHIGURE.Part2.MinimalRing.FieldBridge
+import Formal.SHIGURE.Part2.MinimalRing.FiniteDualObservationBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.IntegerExample
+import Formal.SHIGURE.Part2.MinimalRing.IntegerWordExample
+import Formal.SHIGURE.Part2.MinimalRing.MinimalityBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.MinimalityCriterion
+import Formal.SHIGURE.Part2.MinimalRing.ObservationBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.ObservationSplit
+import Formal.SHIGURE.Part2.MinimalRing.ProductBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.ReachBaseChange
+import Formal.SHIGURE.Part2.MinimalRing.ReverseRanges
+import Formal.SHIGURE.Part2.MinimalRing.ReverseSystem
+import Formal.SHIGURE.Part2.MinimalRing.RingDualObservation
+import Formal.SHIGURE.Part2.MinimalRing.RingReachability
+import Formal.SHIGURE.Part2.MinimalRing.Systems
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.
