@@ -1,0 +1,111 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading MultiAC6 {
+  use vocabulary Phase5Vocab version "1" digest "sha256:d0d6b9efd51420191a25f2c48792cd0957ba3e24d975109154d7024889246b67";
+
+  shigure multisource Thm19_9ThreeWayConflict {
+    domain Z;
+    origin static_analysis "ms_root";
+    coord a in [0, 1];
+    coord b in [0, 1];
+    coord c in [0, 1];
+    source s_ab {
+      origin static_analysis "src_ab";
+      constraint eq_ab support [a, b] : eq(a, b);
+    }
+    source s_bc {
+      origin runtime_observation "src_bc";
+      constraint eq_bc support [b, c] : eq(b, c);
+    }
+    source s_ac {
+      origin human_adopted "src_ac";
+      constraint neq_ac support [a, c] : allowed_tuples([a, c], [[0, 1], [1, 0]]);
+    }
+    max_steps = 128;
+    max_results = 16;
+  }
+
+  shigure multisource Ex19_13MinimalSupports {
+    domain Z;
+    origin human_adopted "ms_19_13";
+    coord xi in [0, 1];
+    coord eta in [0, 1];
+    coord omega in [-1, 0, 1];
+    background_constraint diff_eq support [omega, xi, eta] : linear_zero [(1, omega), (-1, xi), (1, eta)];
+    support_goal {
+      candidate h_w {
+        origin llm_candidate "cand_w";
+        coord = omega;
+        value = 0;
+        cost = 3;
+      }
+      candidate h_x {
+        origin llm_candidate "cand_x";
+        coord = xi;
+        value = 0;
+        cost = 1;
+      }
+      candidate h_e {
+        origin llm_candidate "cand_e";
+        coord = eta;
+        value = 0;
+        cost = 1;
+      }
+      goal = eq(xi, eta);
+      expected_truth = true;
+      check_stability = true;
+    }
+    max_steps = 128;
+    max_results = 16;
+  }
+
+  shigure multisource Prop19_12Reeval {
+    domain Fp(3);
+    origin archmap "o_static";
+    origin static_analysis "ms_p12";
+    coord a in [0, 1, 2];
+    coord b in [0, 1, 2];
+    source s_a {
+      origin static_analysis "src_a";
+      assign a = observed Phase5Vocab.Service.mod3_val;
+    }
+    support_goal {
+      trusted {
+        a = 1;
+      }
+      candidate h_b {
+        origin llm_candidate "cand_b";
+        coord = b;
+        value = 1;
+        cost = 1;
+        verified_actual = 2;
+      }
+      goal = eq(a, b);
+      expected_truth = true;
+      check_stability = true;
+    }
+    max_steps = 128;
+    max_results = 16;
+  }
+
+  shigure multisource Prop19_12Insufficient {
+    domain Z;
+    origin human_adopted "ms_insuff";
+    coord a in [0, 1];
+    coord b in [0, 1];
+    support_goal {
+      trusted {
+        a = 0;
+      }
+      candidate h_bad {
+        origin llm_candidate "cand_bad";
+        coord = b;
+        value = 1;
+        cost = 1;
+      }
+      goal = eq(a, b);
+      expected_truth = true;
+      check_stability = false;
+    }
+  }
+}

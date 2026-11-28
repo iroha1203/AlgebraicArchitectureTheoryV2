@@ -1,0 +1,318 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading PartAC4 {
+  use vocabulary Phase5Vocab version "1" digest "sha256:d0d6b9efd51420191a25f2c48792cd0957ba3e24d975109154d7024889246b67";
+
+  shigure partial Ex18_2Mus {
+    origin runtime_observation "rt_18_2";
+    finite_table {
+      sort V = [0, 1];
+      slot xi : V in [0, 1];
+      slot eta : V in [0, 1];
+      record r1 : slot_assign xi = 0;
+      record r2 : slot_assign xi = 1;
+      record r3 : slot_assign eta = 0;
+      max_completions = 64;
+    }
+  }
+
+  shigure partial Ex18_2NoEvalMix {
+    origin static_analysis "sa_18_2_nomix";
+    finite_table {
+      sort V = [0, 1];
+      slot xi : V in [0, 1];
+      record r1 : slot_assign xi = 0;
+      max_completions = 16;
+    }
+    eval_law req_one {
+      required = true;
+      conclusion = slot(xi) = 1;
+    }
+  }
+
+  shigure partial KleeneStrictLet {
+    origin archmap "o_rt";
+    origin human_adopted "hum_kl";
+    finite_table {
+      sort V = [0, 1];
+      partial_operation f([V]) -> V;
+      slot a : V in [0, 1];
+      record f0 : op_value f([0]) = absent;
+      record f1 : op_value f([1]) = known 1;
+      max_completions = 32;
+    }
+    eval_law strict_let_bot {
+      required = false;
+      conclusion = (let x = f(0) in 1) = 1;
+    }
+    eval_law tautology {
+      required = false;
+      conclusion = slot(a) = 0 or slot(a) = 1;
+    }
+  }
+
+  shigure partial Ex18_7Correlations {
+    origin static_analysis "sa_18_7";
+    finite_table {
+      sort V = [0, 1];
+      slot xi : V in [0, 1];
+      slot eta : V in [0, 1];
+      slot zeta : V in [0, 1];
+      background {
+        slot_eq(xi, eta);
+      }
+      max_completions = 32;
+    }
+    eval_law same_sign {
+      required = false;
+      antecedent = slot(xi) = 0;
+      conclusion = slot(eta) = 0;
+    }
+    eval_law anti_corr {
+      required = false;
+      antecedent = slot(xi) = 0;
+      conclusion = slot(eta) = 1;
+    }
+    eval_law indep_zeta {
+      required = false;
+      antecedent = slot(xi) = 0;
+      conclusion = slot(zeta) = 0;
+    }
+  }
+
+  shigure partial AffineProp18_9Q {
+    origin archmap "o_rt";
+    origin static_analysis "aff_q";
+    affine {
+      domain Q;
+      coords [x, y];
+      x0 = [0, 0];
+      direction_t = [[1], [1]];
+      eval_eq invariant_diff : [1, -1] = 0;
+      eval_eq dependent_x : [1, 0] = observed Phase5Vocab.Service.weight_q;
+    }
+  }
+
+  shigure partial AffineMusZ {
+    origin runtime_observation "aff_z";
+    affine {
+      domain Z;
+      coords [p];
+      x0 = [0];
+      direction_t = [[1]];
+      record_row even_two : [2] = 1;
+      record_row aux_ok : [1] = 0;
+    }
+  }
+
+  shigure partial QuantUnotQ {
+    origin human_adopted "q_uq";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    quantifier {
+      candidates [x1, x2];
+      completion c1 {
+        slots { s1 = 0; s2 = 0; }
+        valid [x1];
+        output = a;
+      }
+      completion c2 {
+        slots { s1 = 1; s2 = 0; }
+        valid [x2];
+        output = b;
+      }
+      max_steps = 256;
+    }
+  }
+
+  shigure partial QuantQnotU {
+    origin human_adopted "q_qu";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    quantifier {
+      candidates [x1, x2];
+      completion c1 {
+        slots { s1 = 0; }
+        valid [x1, x2];
+        output = a;
+      }
+      completion c2 {
+        slots { s1 = 1; }
+        valid [x1];
+        output = b;
+      }
+      max_steps = 256;
+    }
+  }
+
+  shigure partial QuantGTrue {
+    origin human_adopted "q_g";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    quantifier {
+      candidates [x1, x2];
+      completion c1 {
+        slots { s1 = 0; }
+        valid [x1];
+        output = a;
+      }
+      completion c2 {
+        slots { s1 = 1; }
+        valid [x1];
+        output = a;
+      }
+      max_steps = 256;
+    }
+  }
+
+  shigure partial QuantEOnly {
+    origin human_adopted "q_e";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    quantifier {
+      candidates [x1, x2];
+      completion c1 {
+        slots { s1 = 0; }
+        valid [x1, x2];
+        output = ok;
+      }
+      completion c2 {
+        slots { s1 = 1; }
+        valid [x1, x2];
+        output = ok;
+      }
+      max_steps = 256;
+    }
+  }
+
+  shigure partial OpenEx18_15NonExh {
+    origin human_adopted "open_18_15_ne";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    open_domain {
+      substructure {
+        sort A = [a0];
+        sort B = [b0];
+        op_table rho([A]) -> B {
+          [a0] -> b0;
+        }
+        rel_table R([A, A]) {
+        }
+      }
+      ambient {
+        sort A = [a0, a1];
+        sort B = [b0, b1];
+        op_table rho([A]) -> B {
+          [a0] -> b0;
+          [a1] -> b0;
+        }
+        rel_table R([A, A]) {
+          [a0, a1];
+          [a1, a0];
+        }
+      }
+      fiber_check rho : A -> B targets [b0];
+      positive_law forall_not_R {
+        required = false;
+        conclusion = forall x : A . not (rel(R(x, a0)));
+      }
+    }
+  }
+
+  shigure partial OpenEx18_15UniqueFalse {
+    origin human_adopted "open_18_15";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    open_domain {
+      substructure {
+        sort A = [a0];
+        sort B = [b0];
+        op_table rho([A]) -> B {
+          [a0] -> b0;
+        }
+        rel_table R([A, A]) {
+        }
+      }
+      ambient {
+        sort A = [a0, a1];
+        sort B = [b0, b1];
+        op_table rho([A]) -> B {
+          [a0] -> b0;
+          [a1] -> b1;
+        }
+        rel_table R([A, A]) {
+          [a0, a1];
+          [a1, a0];
+        }
+      }
+      fiber_check rho : A -> B targets [b0];
+      positive_law forall_exists_R {
+        required = false;
+        conclusion = forall x : A . exists y : A . rel(R(x, y));
+      }
+      affine_restriction {
+        domain Q;
+        num_vars = 2;
+        m_matrix = [[1, 1]];
+        b_rhs = [2];
+        r_matrix = [[1, 0]];
+      }
+    }
+  }
+
+  shigure partial OpenThm18_18UniqueTrue {
+    origin human_adopted "open_18_18_true";
+    finite_table {
+      sort V = [0];
+      max_completions = 8;
+    }
+    open_domain {
+      substructure {
+        sort A = [a0];
+        sort B = [b0];
+        op_table rho([A]) -> B {
+          [a0] -> b0;
+        }
+        rel_table R([A, A]) {
+          [a0, a0];
+        }
+      }
+      ambient {
+        sort A = [a0, a1];
+        sort B = [b0, b1];
+        op_table rho([A]) -> B {
+          [a0] -> b0;
+          [a1] -> b1;
+        }
+        rel_table R([A, A]) {
+          [a0, a0];
+          [a1, a1];
+        }
+      }
+      fiber_check rho : A -> B targets [b0];
+      positive_law forall_exists_R {
+        required = true;
+        conclusion = forall x : A . exists y : A . rel(R(x, y));
+      }
+      affine_restriction {
+        domain Q;
+        num_vars = 2;
+        m_matrix = [[1, 0], [0, 1]];
+        b_rhs = [1, 1];
+        r_matrix = [[1, 0]];
+      }
+    }
+  }
+}

@@ -1,0 +1,72 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading SilenceAC7 {
+  use vocabulary Phase5Vocab version "1" digest "sha256:d0d6b9efd51420191a25f2c48792cd0957ba3e24d975109154d7024889246b67";
+
+  shigure occurrence OccUnobs {
+    origin archmap "o_static";
+    sort S = [e0, e1];
+    fixed_value sort V = [0, 10];
+    base_reading r1 : S {
+      e0 -> observed Phase5Vocab.Service.quota;
+      e1 -> 0;
+    }
+  }
+
+  shigure occurrence OccMaxPart {
+    origin runtime_observation "rt_maxp";
+    sort S = [a, b, c, d];
+    context_closed = false;
+    max_partitions = 2;
+  }
+
+  shigure partial PartUnsup {
+    origin llm_candidate "llm_unsup";
+    unsupported "non-finite quantifier-alternating presentation";
+  }
+
+  shigure revision RevOpUnobs {
+    kind = span;
+    domain Z;
+    origin runtime_observation "rt_opunobs";
+    snf {
+      domain Z;
+      num_cols = 1;
+      operator_before = [[1]];
+      operator_after = [[2]];
+      rhs_before = [1];
+      rhs_after = [1];
+      operator_unobserved [op0];
+    }
+  }
+
+  shigure revision RevForceReuse {
+    kind = span;
+    domain Z;
+    origin human_adopted "hum_force";
+    snf {
+      domain Z;
+      num_cols = 1;
+      operator_before = [[1]];
+      operator_after = [[2]];
+      rhs_before = [1];
+      rhs_after = [1];
+      force_reuse = true;
+    }
+  }
+
+  shigure revision RevApplicability {
+    kind = extension;
+    domain Z;
+    origin runtime_observation "rt_app";
+    coord mode in [0, 1];
+    coord val in [0, 1];
+    before {
+      assign mode = 1;
+    }
+    after {
+      assign mode = 0;
+      assign val = 1;
+    }
+  }
+}

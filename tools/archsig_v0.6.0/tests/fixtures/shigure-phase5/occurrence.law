@@ -1,0 +1,115 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+
+reading OccAC3 {
+  use vocabulary Phase5Vocab version "1" digest "sha256:d0d6b9efd51420191a25f2c48792cd0957ba3e24d975109154d7024889246b67";
+
+  shigure occurrence Thm17_2FixedAndRelColl {
+    origin static_analysis "sa_occ";
+    origin runtime_observation "rt_occ";
+    origin llm_candidate "llm_occ";
+    origin human_adopted "hum_occ";
+    origin archmap "o_static";
+    sort S = [e0, e1];
+    fixed_value sort V = [w0, w1];
+    operation f([S]) -> V;
+    relation active([S]);
+    identify S e0 = e1;
+    op_record f([e0]) -> observed Phase5Vocab.Service.tag;
+    op_record f([e1]) -> w1;
+    rel_record active([e0]) = true;
+    rel_record active([e1]) = false;
+  }
+
+  shigure occurrence Prop17_8Quotient {
+    origin human_adopted "hum_q";
+    sort S = [a, b, c];
+    fixed_value sort V = [0, 1];
+    operation next([S]) -> S;
+    op_record next([a]) -> a;
+    op_record next([b]) -> a;
+    op_record next([c]) -> c;
+    base_reading o : S {
+      a -> 0;
+      b -> 0;
+      c -> 1;
+    }
+    context_closed = true;
+  }
+
+  shigure occurrence Ex17_7NoCoarsest {
+    origin runtime_observation "rt_17_7";
+    sort S = [a, b, c];
+    fixed_value sort V = [0, 1];
+    partial_operation f([S]) -> V;
+    op_record f([b]) -> 0;
+    op_record f([c]) -> 1;
+    context_closed = false;
+  }
+
+  shigure occurrence Ex17_12AttrOk {
+    origin static_analysis "sa_17_12";
+    sort S = [a, b, c, d];
+    operation T([S]) -> S;
+    op_record T([a]) -> a;
+    op_record T([b]) -> c;
+    op_record T([c]) -> c;
+    op_record T([d]) -> d;
+    base_reading o : S {
+      a -> 0;
+      b -> 0;
+      c -> 0;
+      d -> 1;
+    }
+    context_closed = true;
+    initial_readout S {
+      a -> 0;
+      b -> 0;
+      c -> 1;
+      d -> 0;
+    }
+  }
+
+  shigure occurrence Ex17_12AttrReqFail {
+    origin static_analysis "sa_17_12_fail";
+    sort S = [a, b, c, d];
+    operation T([S]) -> S;
+    identify S a = b;
+    op_record T([a]) -> a;
+    op_record T([b]) -> c;
+    op_record T([c]) -> c;
+    op_record T([d]) -> d;
+    base_reading o : S {
+      a -> 0;
+      b -> 0;
+      c -> 0;
+      d -> 1;
+    }
+    context_closed = true;
+    initial_readout S {
+      a -> 0;
+      b -> 0;
+      c -> 1;
+      d -> 0;
+    }
+  }
+
+  shigure occurrence Ex17_13AliasAndMultiTags {
+    origin human_adopted "hum_17_13";
+    sort S = [x0, x1, y0, y1];
+    relation tag([S]);
+    identify S x0 = x1;
+    base_reading mode : S {
+      x0 -> m1;
+      x1 -> m1;
+      y0 -> m1;
+      y1 -> m2;
+    }
+    context_closed = false;
+    initial_readout S {
+      x0 -> syn_x;
+      x1 -> syn_x;
+      y0 -> syn_y;
+      y1 -> syn_y;
+    }
+  }
+}

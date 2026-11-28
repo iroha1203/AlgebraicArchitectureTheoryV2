@@ -10,8 +10,9 @@ use archsig_input::input::CheckedInputs;
 use archsig_input::result::Status;
 use archsig_shigure::convert::{
     ShigureConverter, ToShigureArtinTask, ToShigureAtlasTask, ToShigureChevalleyTask,
-    ToShigureDiagnosticsTask, ToShigureDiagramTask, ToShigureLiftTask, ToShigureObservationTask,
-    ToShigurePathTask, ToShigureRobustnessTask, ToShigureTask, ToShigureTransferTask,
+    ToShigureDiagnosticsTask, ToShigureDiagramTask, ToShigureLiftTask, ToShigureMultisourceTask,
+    ToShigureObservationTask, ToShigureOccurrenceTask, ToShigurePartialTask, ToShigurePathTask,
+    ToShigureRevisionTask, ToShigureRobustnessTask, ToShigureTask, ToShigureTransferTask,
 };
 use std::collections::BTreeMap;
 
@@ -77,6 +78,26 @@ pub(super) fn resolve_and_convert(
             ShigureCliQuery::Atlas => {
                 resolve_decl_name(&shigure_decls.atlas_tasks, "shigure atlas", &req.task_name)
             }
+            ShigureCliQuery::Occurrence => resolve_decl_name(
+                &shigure_decls.occurrence_tasks,
+                "shigure occurrence",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Partial => resolve_decl_name(
+                &shigure_decls.partial_tasks,
+                "shigure partial",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Revision => resolve_decl_name(
+                &shigure_decls.revision_tasks,
+                "shigure revision",
+                &req.task_name,
+            ),
+            ShigureCliQuery::Multisource => resolve_decl_name(
+                &shigure_decls.multisource_tasks,
+                "shigure multisource",
+                &req.task_name,
+            ),
         };
         let resolved_task_name = name_res.map_err(|msg| {
             output::notify(
@@ -144,6 +165,18 @@ pub(super) fn resolve_and_convert(
             ShigureCliQuery::Atlas => converter
                 .convert_atlas(checked)
                 .map(|t| ResolvedShigurePayload::Atlas(Box::new(t))),
+            ShigureCliQuery::Occurrence => converter
+                .convert_occurrence(checked)
+                .map(|t| ResolvedShigurePayload::Occurrence(Box::new(t))),
+            ShigureCliQuery::Partial => converter
+                .convert_partial(checked)
+                .map(|t| ResolvedShigurePayload::Partial(Box::new(t))),
+            ShigureCliQuery::Revision => converter
+                .convert_revision(checked)
+                .map(|t| ResolvedShigurePayload::Revision(Box::new(t))),
+            ShigureCliQuery::Multisource => converter
+                .convert_multisource(checked)
+                .map(|t| ResolvedShigurePayload::Multisource(Box::new(t))),
         }
         .map_err(|err| {
             let issue = conversion_error_issue(&req.id, &err);
