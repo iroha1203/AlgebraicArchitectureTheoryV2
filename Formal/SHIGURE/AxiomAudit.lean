@@ -46,6 +46,12 @@ import Formal.SHIGURE.Part2.TensorRealizations
 import Formal.SHIGURE.Part2.RealizationRecovery
 import Formal.SHIGURE.Part2.QuantityModels
 import Formal.SHIGURE.Part2.QuantityTransport
+import Formal.SHIGURE.Part2.StackQuantities.ChartRankOne
+import Formal.SHIGURE.Part2.StackQuantities.ChartRankTwo
+import Formal.SHIGURE.Part2.StackQuantities.NonflatExample
+import Formal.SHIGURE.Part2.StackQuantities.NonflatWrittenLaw
+import Formal.SHIGURE.Part2.StackQuantities.ResidualExamples
+import Formal.SHIGURE.Part2.StackQuantities.SectionModel
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -5171,6 +5177,83 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   RealizationFamilies.affineCoreScalarUnit,
   RealizationFamilies.affineScalarTower,
   RealizationFamilies.affineCoreScalarTower
+]
+
+-- Residual coefficients, specified sections, and non-flat specialization.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.StackQuantities.RankOneChart.signature,
+  SHIGURE.StackQuantities.RankOneChart.twoPositions,
+  SHIGURE.StackQuantities.RankOneChart.twoPositions_card,
+  SHIGURE.StackQuantities.RankOneChart.prod_twoPositions,
+  SHIGURE.StackQuantities.RankOneChart.scalarProduct,
+  SHIGURE.StackQuantities.RankOneChart.scalarStructure,
+  SHIGURE.StackQuantities.RankOneChart.quantityTerm,
+  SHIGURE.StackQuantities.RankOneChart.law,
+  SHIGURE.StackQuantities.RankOneChart.scalarRank,
+  SHIGURE.StackQuantities.RankOneChart.basisFor,
+  SHIGURE.StackQuantities.RankOneChart.inputIndex,
+  SHIGURE.StackQuantities.RankOneChart.chartResidual_eq,
+  SHIGURE.StackQuantities.RankOneChart.chartResidual_ideal,
+  SHIGURE.StackQuantities.RankTwoChart.firstIndex,
+  SHIGURE.StackQuantities.RankTwoChart.secondIndex,
+  SHIGURE.StackQuantities.RankTwoChart.quantityTerm,
+  SHIGURE.StackQuantities.RankTwoChart.linearQuantity,
+  SHIGURE.StackQuantities.RankTwoChart.vectorInputs,
+  SHIGURE.StackQuantities.RankTwoChart.quantityTerm_eval,
+  SHIGURE.StackQuantities.RankTwoChart.vectorInputsEquiv,
+  SHIGURE.StackQuantities.RankTwoChart.vectorInputsLinearEquiv,
+  SHIGURE.StackQuantities.RankTwoChart.squareArguments,
+  SHIGURE.StackQuantities.RankTwoChart.law,
+  SHIGURE.StackQuantities.RankTwoChart.law_left_eval,
+  SHIGURE.StackQuantities.RankTwoChart.law_eval_iff,
+  SHIGURE.StackQuantities.RankTwoChart.chartResidual_eq,
+  SHIGURE.StackQuantities.RankTwoChart.inputPosition,
+  SHIGURE.StackQuantities.RankTwoChart.inputEmbedding,
+  SHIGURE.StackQuantities.RankTwoChart.chartResidual_rename_forward,
+  SHIGURE.StackQuantities.RankTwoChart.chartResidual_mixed_coefficient,
+  SHIGURE.StackQuantities.RankTwoChart.chartResidual_rename,
+  SHIGURE.StackQuantities.RankTwoChart.chartResidual_mixed_mem,
+  SHIGURE.StackQuantities.Nonflat.Base,
+  SHIGURE.StackQuantities.Nonflat.Ambient,
+  SHIGURE.StackQuantities.Nonflat.specialize,
+  SHIGURE.StackQuantities.Nonflat.generator,
+  SHIGURE.StackQuantities.Nonflat.residualIdeal,
+  SHIGURE.StackQuantities.Nonflat.generator_regular,
+  SHIGURE.StackQuantities.Nonflat.multiplyGenerator,
+  SHIGURE.StackQuantities.Nonflat.multiplyGenerator_range,
+  SHIGURE.StackQuantities.Nonflat.generatorEquiv,
+  SHIGURE.StackQuantities.Nonflat.generatorEquiv_one,
+  SHIGURE.StackQuantities.Nonflat.tensor_generator_ne_zero,
+  SHIGURE.StackQuantities.Nonflat.generator_baseChange_eq_zero,
+  SHIGURE.StackQuantities.Nonflat.imageIdeal_eq_bot,
+  SHIGURE.StackQuantities.Nonflat.inclusion_baseChange_eq_zero,
+  SHIGURE.StackQuantities.Nonflat.inclusion_kills_tensor_generator,
+  SHIGURE.StackQuantities.Nonflat.inclusion_baseChange_not_injective,
+  SHIGURE.StackQuantities.Nonflat.quotientEquivPolynomial,
+  SHIGURE.StackQuantities.Nonflat.writtenPresentation,
+  SHIGURE.StackQuantities.Nonflat.writtenCoordinates,
+  SHIGURE.StackQuantities.Nonflat.writtenCoordinates_quantity,
+  SHIGURE.StackQuantities.Nonflat.writtenCoordinates_residual,
+  SHIGURE.StackQuantities.Nonflat.writtenCoordinates_residualIdeal,
+  SHIGURE.StackQuantities.rankOneInput,
+  SHIGURE.StackQuantities.rankOneQuantity,
+  SHIGURE.StackQuantities.rankOneInput_eq_quantity,
+  SHIGURE.StackQuantities.idempotentResidual,
+  SHIGURE.StackQuantities.idempotentResidual_linear_coefficient,
+  SHIGURE.StackQuantities.idempotentResidual_ideal,
+  SHIGURE.StackQuantities.rankTwoInput,
+  SHIGURE.StackQuantities.rankTwoQuantity,
+  SHIGURE.StackQuantities.rankTwoInput_eq_quantity,
+  SHIGURE.StackQuantities.squareZeroResidual,
+  SHIGURE.StackQuantities.squareZeroResidual_mixed_coefficient,
+  SHIGURE.StackQuantities.squareZeroResidual_mixed_mem,
+  SHIGURE.StackQuantities.specifiedSection_preserved,
+  SHIGURE.StackQuantities.sectionPresentation,
+  SHIGURE.StackQuantities.sectionCandidate,
+  SHIGURE.StackQuantities.sectionCandidate_holds_iff,
+  SHIGURE.StackQuantities.sectionCandidate_holds_transport,
+  SHIGURE.StackQuantities.section_identity_holds,
+  SHIGURE.StackQuantities.section_zero_not_holds
 ]
 
 end SHIGURE.AxiomAudit

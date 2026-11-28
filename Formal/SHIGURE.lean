@@ -50,6 +50,13 @@ import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecStackExamples
 
+import Formal.SHIGURE.Part2.StackQuantities.ChartRankOne
+import Formal.SHIGURE.Part2.StackQuantities.ChartRankTwo
+import Formal.SHIGURE.Part2.StackQuantities.NonflatExample
+import Formal.SHIGURE.Part2.StackQuantities.NonflatWrittenLaw
+import Formal.SHIGURE.Part2.StackQuantities.ResidualExamples
+import Formal.SHIGURE.Part2.StackQuantities.SectionModel
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.
