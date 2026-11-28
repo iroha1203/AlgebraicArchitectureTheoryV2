@@ -26,7 +26,7 @@ Cargo workspaceは次の順に依存します。下位から上位への依存�
 | `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `crates/common/src/lib.rs` |
 | `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `crates/input/src/lib.rs` |
 | `archsig-computation` | construction・observedとowner補完 | `crates/computation/src/lib.rs` |
-| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合/syzygy/Artin 商/有限加群コホモロジー計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測/変形障害/Artin 試験/診断層/Atlas 細分化エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
+| `archsig-shigure` | SHIGURE 原始表示 IR・多項式/構成可能集合/syzygy/Artin 商/有限加群コホモロジー/出現同定/三値評価/SNF/多源支持計算コア・保存/解空間/相互作用/図式/経路/移送/頑健性/Chevalley 分類/追加観測/変形障害/Artin 試験/診断層/Atlas 細分化/出現同定/部分提示/改訂/多源衝突エンジン・入力変換層 | `crates/shigure/src/lib.rs` |
 | `archsig` | run・main | `src/lib.rs`、`src/main.rs` |
 
 下位4 packageのmanifestとソースはそれぞれ`crates/<名前>/`に置きます。

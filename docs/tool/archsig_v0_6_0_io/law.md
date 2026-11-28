@@ -777,7 +777,7 @@ ShigureAtlas ::= "atlas" Name "{"
   "}")?
 "}"
 
-ShigureSym      ::= Name | Integer | String
+ShigureSym      ::= Name | ("-")? Integer | String
 ShigureSymValue ::= "observed" QName | "missing" | ShigureSym
 ShigureSymList  ::= "[" (ShigureSym ("," ShigureSym)*)? "]"
 
@@ -790,11 +790,11 @@ ShigureOccurrence ::= "occurrence" Name "{"
   ("op_record" Name "(" ShigureSymList ")" "->" ShigureSymValue ";")*
   (("domain_record" | "rel_record") Name "(" ShigureSymList ")" "=" ("true" | "false") ";")*
   (("base_reading" | "explicit_context") Name ":" Name "{" (ShigureSym "->" (ShigureSymValue | "none") ";")* "}")*
-  ("context_closed" ("true" | "false") ";")?
+  ("context_closed" "=" ("true" | "false") ";")?
   ("preserve_full_domain" "[" (Name ("," Name)*)? "]" ";")*
   ("initial_readout" Name "{" (ShigureSym "->" ShigureSymValue ";")* "}")*
-  ("max_congruence_steps" Integer ";")?
-  ("max_partitions" Integer ";")?
+  ("max_congruence_steps" "=" Integer ";")?
+  ("max_partitions" "=" Integer ";")?
 "}"
 
 PartialValue   ::= "known" ShigureSymValue | "absent" | "unobserved" Name
@@ -803,10 +803,12 @@ PartialTerm    ::= "slot" "(" Name ")" | "const" "(" ShigureSym ")" | ("-")? Int
                  | Name ("(" (PartialTerm ("," PartialTerm)*)? ")")?
                  | "let" Name "=" PartialTerm "in" PartialTerm
                  | PartialTerm ("+" | "-" | "*") PartialTerm | "(" PartialTerm ")"
-PartialFormula ::= "true" | "false" | "not" PartialFormula
+PartialFormula ::= "not" PartialFormula
                  | PartialFormula ("and" | "or") PartialFormula
                  | PartialTerm "=" PartialTerm
                  | "rel" "(" Name "(" (PartialTerm ("," PartialTerm)*)? ")" ")"
+                 | "defined" "(" Name "(" (PartialTerm ("," PartialTerm)*)? ")" ")"
+                 | "graph" "(" Name "(" (PartialTerm ("," PartialTerm)*)? ")" "," PartialTerm ")"
                  | ("exists" | "forall") Name ":" Name ("in" ShigureSymList)? "." PartialFormula
                  | "(" PartialFormula ")"
 
@@ -828,7 +830,7 @@ ShigurePartial ::= "partial" Name "{"
         | "op_graph" Name "(" ShigureSymList "," ShigureSym ")" "=" PartialTruth
         | "rel" Name "(" ShigureSymList ")" "=" PartialTruth
         | "slot_assign" Name "=" ShigureSym ) ";")*
-      ("max_completions" Integer ";")?
+      ("max_completions" "=" Integer ";")?
     "}"
   | "affine" "{"
       "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
@@ -850,7 +852,7 @@ ShigurePartial ::= "partial" Name "{"
       ("valid" "[" (Name ("," Name)*)? "]" ";")?
       "output" "=" ShigureSym ";"
     "}")*
-    ("max_steps" Integer ";")?
+    ("max_steps" "=" Integer ";")?
   "}")?
   ("open_domain" "{"
     ("substructure" | "ambient") "{"
@@ -897,15 +899,16 @@ ShigureRevision ::= "revision" Name "{"
   ("snf" "{"
     "domain" ("Z" | "Q" | "Fp" "(" Integer ")") ";"
     "num_cols" "=" Integer ";"
-    ( "common_operator" "=" LitMatrix ";"
-    | "operator_before" "=" LitMatrix ";" "operator_after" "=" LitMatrix ";" )
-    "rhs_before" "=" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";"
-    "rhs_after" "=" "[" (ShigureScalarLit ("," ShigureScalarLit)*)? "]" ";"
+    ( "common_operator" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";"
+    | "operator_before" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";"
+      "operator_after" "=" "[" (ShigureCoordVec ("," ShigureCoordVec)*)? "]" ";" )
+    "rhs_before" "=" ShigureCoordVec ";"
+    "rhs_after" "=" ShigureCoordVec ";"
     ("operator_unobserved" "[" (Name ("," Name)*)? "]" ";")*
     ("force_reuse" "=" ("true" | "false") ";")?
     ("origin_label_only" "=" ("true" | "false") ";")?
   "}")?
-  ("max_completions" Integer ";")?
+  ("max_completions" "=" Integer ";")?
 "}"
 
 ShigureMultisource ::= "multisource" Name "{"
@@ -916,6 +919,7 @@ ShigureMultisource ::= "multisource" Name "{"
   ("source" Name "{"
     ShigureOriginRef
     ("assign" Name "=" ShigureMemberValue ";")*
+    ("forbidden" Name "=" ShigureMemberValue ";")*
     ("constraint" ShigureRevConstraint)*
   "}")*
   ("support_goal" "{"
@@ -931,8 +935,8 @@ ShigureMultisource ::= "multisource" Name "{"
     "expected_truth" "=" ("true" | "false") ";"
     ("check_stability" "=" ("true" | "false") ";")?
   "}")?
-  ("max_steps" Integer ";")?
-  ("max_results" Integer ";")?
+  ("max_steps" "=" Integer ";")?
+  ("max_results" "=" Integer ";")?
 "}"
 ```
 
@@ -989,8 +993,8 @@ ShigureMultisource ::= "multisource" Name "{"
   `shigure atlas` の単純有向グラフ端点・辺数（1 本以上必須）違反・`base_lambdas` 欠落・`refinement` の写像域外参照・`extended_language_check` の状態変数不一致、
   `shigure occurrence` の未宣言 sort/操作/関係/要素参照・記録重複、
   `shigure partial` の未宣言 sort/slot/束縛変数・`affine` 次元不一致・`eval_eq` を評価不能値へ置く背景混在、
-  `shigure revision` の `snf` における列数・右辺・作用素次元不一致および `origin_label_only = true` 時の作用素/右辺差分、
-  `shigure multisource` の未宣言座標・制約重複・`support_goal` 未定義目標、
+  `shigure revision` の `snf` における列数・右辺・作用素次元不一致、`origin_label_only = true` 時の作用素/右辺差分、および未観測 `snf` 成分（`missing` または欠測）の入力、
+  `shigure multisource` の未宣言座標・`coord`/`source`/`candidate`/`assign` 重複・`support_goal` 未定義目標、
   `observed Entity.field` の型と係数域の不一致、`point_domain` と `domain` の不整合
   （例: `domain Q` と `integer_points`、`domain Z` / `Q` と `finite_field_points(p)`、
   `domain Fp(p)` と `algebraic_closure` / `rational_points` / `integer_points`、
