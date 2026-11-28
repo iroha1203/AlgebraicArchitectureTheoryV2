@@ -63,6 +63,29 @@ import Formal.SHIGURE.Part2.Minimal.TypedWords
 import Formal.SHIGURE.Part2.Minimal.WordExamples
 import Formal.SHIGURE.Part2.Minimal.WordLength
 import Formal.SHIGURE.Part2.Minimal.WordReverse
+import Formal.SHIGURE.Part2.Schemes.Effective.BaseChange
+import Formal.SHIGURE.Part2.Schemes.Effective.CanonicalSolution
+import Formal.SHIGURE.Part2.Schemes.Effective.CanonicalTransition
+import Formal.SHIGURE.Part2.Schemes.Effective.CombinedGluing
+import Formal.SHIGURE.Part2.Schemes.Effective.CombinedRecovery
+import Formal.SHIGURE.Part2.Schemes.Effective.CombinedSolutions
+import Formal.SHIGURE.Part2.Schemes.Effective.CompositePull
+import Formal.SHIGURE.Part2.Schemes.Effective.DescentChartCompatibility
+import Formal.SHIGURE.Part2.Schemes.Effective.DirectPull
+import Formal.SHIGURE.Part2.Schemes.Effective.Examples
+import Formal.SHIGURE.Part2.Schemes.Effective.FppfStack
+import Formal.SHIGURE.Part2.Schemes.Effective.IndependentExamples
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalDatum
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalDatumActual
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalOverlap
+import Formal.SHIGURE.Part2.Schemes.Effective.LocalSolution
+import Formal.SHIGURE.Part2.Schemes.Effective.OverlapPull
+import Formal.SHIGURE.Part2.Schemes.Effective.OverlapTest
+import Formal.SHIGURE.Part2.Schemes.Effective.ProductRefinement
+import Formal.SHIGURE.Part2.Schemes.Effective.PullComponent
+import Formal.SHIGURE.Part2.Schemes.Effective.RebaseTest
+import Formal.SHIGURE.Part2.Schemes.Effective.TestComparison
+import Formal.SHIGURE.Part2.Schemes.Effective.TestNaturality
 
 /-! # SHIGURE kernel audit entry point -/
 
@@ -5361,6 +5384,80 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.Minimal.Word.reverse_reverse,
   SHIGURE.Minimal.Word.length_reverse,
   SHIGURE.Minimal.Word.evaluate_append
+]
+
+-- Effective descent for arbitrary fppf covering families.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.compositeBaseChangeChart,
+  SHIGURE.SchemeDescent.compositeBaseChangeCharts,
+  SHIGURE.SchemeDescent.compositeBaseChangeCharts_isEquivalence,
+  SHIGURE.SchemeDescent.fppfDescentBaseChange_composite,
+  SHIGURE.SchemeDescent.compositeBaseChangeCharts_comparison,
+  SHIGURE.SchemeDescent.canonicalComponentSolution,
+  SHIGURE.SchemeDescent.canonicalComponent_chartHom,
+  SHIGURE.SchemeDescent.canonicalComponent_testHom,
+  SHIGURE.SchemeDescent.canonicalComponent_transitionAt,
+  SHIGURE.SchemeDescent.combinedSolutionsGlobal,
+  SHIGURE.SchemeDescent.originalDatumFromCombined,
+  SHIGURE.SchemeDescent.fppfComparison_isEquivalence_of_local,
+  SHIGURE.SchemeDescent.combinedFppfCover,
+  SHIGURE.SchemeDescent.combinedLocalSolutions,
+  SHIGURE.SchemeDescent.combinedSolutionsDatum,
+  SHIGURE.SchemeDescent.pullHom_composite_source,
+  SHIGURE.SchemeDescent.pullHom_composite_source_along,
+  SHIGURE.SchemeDescent.descentHom_reindex,
+  SHIGURE.SchemeDescent.descent_comm_of_test,
+  SHIGURE.SchemeDescent.comparisonIsoOfTest,
+  SHIGURE.SchemeDescent.comparisonIsoOfTest_hom_hom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.directPull,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.directPull_chartHom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.directPull_testHom,
+  SHIGURE.SchemeDescent.EffectiveExamples.rationalProduct,
+  SHIGURE.SchemeDescent.EffectiveExamples.rationalComponent,
+  SHIGURE.SchemeDescent.EffectiveExamples.rationalAffineCover,
+  SHIGURE.SchemeDescent.affineFppfModuleComparison_isEquivalence,
+  SHIGURE.SchemeDescent.fppfModuleComparison_isEquivalence,
+  SHIGURE.SchemeDescent.quasiCoherentModules_isFppfStack,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentChartModule,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentChart,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentRationalDatum,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentRationalDatum_obj,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentZeroEnd,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentRationalDatum_distinguishes_maps,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentRationalGlobalization,
+  SHIGURE.SchemeDescent.EffectiveExamples.independentRationalGlobalization_distinguishes_maps,
+  SHIGURE.SchemeDescent.localSolutionsDatum,
+  SHIGURE.SchemeDescent.localSolutionsActualDatum,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.rebase,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.rebase_module,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transitionAt,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transitionAt_comp,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transitionAt_self,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.ofEquivalence,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.pull,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transition,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transition_component,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transition_comp,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transition_self,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transitionAt_testHom_along,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transitionAt_pull,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transitionAt_testHom,
+  SHIGURE.SchemeDescent.effectiveOpenCoverAsFppf,
+  SHIGURE.SchemeDescent.AffineRefinement.productOpenCoverToPullback,
+  SHIGURE.SchemeDescent.AffineRefinement.productCover_isEquivalence,
+  SHIGURE.SchemeDescent.AffineRefinement.productPullback_isEquivalence,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.pullComponentIso,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.pullComponentIso_pull,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.rebase_testHom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.chartHom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.testHom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.testHom_eq_pull,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.testIso,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.testIso_hom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.transition_testHom,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.testHom_pull,
+  SHIGURE.SchemeDescent.EffectiveLocalSolution.testHom_comm
 ]
 
 end SHIGURE.AxiomAudit
