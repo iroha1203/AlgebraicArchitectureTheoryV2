@@ -185,6 +185,7 @@ pub(super) fn execute(
         Ok(prepared) => prepared,
         Err(outcome) => return input_stage(outcome, "previous"),
     };
+    crate::cli::emit_progress("reobserve: evaluating previous and current stages");
     let current = match evaluate::load_requests(signals, &args.current, c) {
         Ok(prepared) => prepared,
         Err(outcome) => return input_stage(outcome, "current"),

@@ -60,7 +60,7 @@ fn save_child() {
         &mut signals,
         &control,
     );
-    finish(outcome, "");
+    finish_and_exit_for_test(outcome, "");
 }
 
 fn field<'a>(node: &'a JNode, key: &str) -> &'a JNode {

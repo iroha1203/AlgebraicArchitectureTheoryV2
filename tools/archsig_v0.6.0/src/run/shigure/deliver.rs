@@ -177,7 +177,16 @@ pub(super) fn deliver_shigure(
                 ("status".into(), Json::str(outcome.verdict.wire())),
                 (
                     "outputs".into(),
-                    Json::obj([("shigure", outcome_json.clone())]),
+                    Json::obj([(
+                        "shigure",
+                        if crate::cli::active_detail_level()
+                            == Some(crate::cli::DetailLevel::Concise)
+                        {
+                            super::concise::trim_shigure_outcome_concise(&outcome_json)
+                        } else {
+                            outcome_json.clone()
+                        },
+                    )]),
                 ),
             ]);
             if !answer_reasons.is_empty() {

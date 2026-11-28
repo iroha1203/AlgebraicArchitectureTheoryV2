@@ -10,6 +10,7 @@
 //! - 実行仕様 §§1・5–7 に従い、`archsig.summary/1`（stdout）と `archsig.result/4`（`--out` 保存時）および終了コードを返す
 //! - `Verdict::Undetermined`（判断不能）をエラーではなく正常な `partial` / exit 2 出力として返す
 
+mod concise;
 mod deliver;
 mod parse;
 mod resolve;
@@ -239,6 +240,10 @@ pub(super) fn run_shigure_validated(
         );
     }
 
+    crate::cli::emit_progress(&format!(
+        "run: solving {} shigure question(s)",
+        resolved.len()
+    ));
     let mut executed: Vec<(ResolvedShigureRequest, Option<ShigureOutcome>)> =
         Vec::with_capacity(resolved.len());
     let mut interrupted_reason = None;
@@ -251,6 +256,11 @@ pub(super) fn run_shigure_validated(
         if interrupted_reason.is_some() {
             executed.push((req, None));
         } else {
+            crate::cli::emit_progress(&format!(
+                "run: executing question `{}` ({})",
+                req.parsed.id,
+                req.parsed.query.kind_wire()
+            ));
             let outcome = req.payload.execute();
             executed.push((req, Some(outcome)));
         }

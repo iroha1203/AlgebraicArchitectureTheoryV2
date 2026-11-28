@@ -1,12 +1,20 @@
-//! `archsig check`・`run`・`version`。
+//! `archsig` CLI エントリポイント（`ExitCode` でクリーン終了）。
 
+use archsig::cli::format::{render_json_value, render_outcome, render_raw_json_str};
+use archsig::cli::{
+    CliCommand, OutputFormat, parse_cli, with_detail_level, with_out_options, with_progress,
+};
+use archsig::commands::execute_cli_command;
 use archsig::platform::{self, PlatformError, ProcessSignals};
-use archsig::run::{FileIo, Outcome, VERSION_LINE, execute_command, parse_args, usage_outcome};
+#[cfg(test)]
+use archsig::run::parse_args;
+use archsig::run::{Command, FileIo, Outcome, VERSION_LINE, execute_command, with_max_file_bytes};
 #[cfg(test)]
 use archsig_input::result::Signal;
 use archsig_input::result::{ResultIssue, Status};
 #[cfg(test)]
 use std::io::Write;
+use std::process::ExitCode;
 
 fn signal_init_failure_outcome(err: &PlatformError) -> Outcome {
     Outcome {
@@ -24,7 +32,7 @@ fn signal_init_failure_outcome(err: &PlatformError) -> Outcome {
     }
 }
 
-fn main() {
+fn main() -> ExitCode {
     // 捕捉した内部障害は receipt で通知する。panic の既定表示を重複させない。
     std::panic::set_hook(Box::new(|_| {}));
     let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
@@ -33,38 +41,141 @@ fn main() {
         Err(err) => {
             let outcome = signal_init_failure_outcome(&err);
             let _ = platform::write_stderr_line(&outcome.receipt());
-            std::process::exit(70);
+            return ExitCode::from(70);
         }
     };
-    if archsig::observe::handles(&args) {
-        // Read-only helpers publish no files: interruption may exit immediately.
-        ProcessSignals::enter_immediate_delivery();
-        if let Some(code) = signals.prior_signal_exit_code() {
-            std::process::exit(code);
+
+    let parsed = match parse_cli(&args) {
+        Ok(parsed) => parsed,
+        Err(err) => {
+            let outcome = err.into_outcome(&mut signals);
+            return finish_formatted(Some(outcome), "", 0, OutputFormat::Json).1;
         }
-        match archsig::observe::execute(&args) {
-            Ok(response) => finish_with_code(None, &response.text, response.code),
-            Err(outcome) => finish(Some(outcome), ""),
+    };
+
+    let options = parsed.options;
+    let progress = options.verbose || options.progress;
+    let format = options.format;
+
+    match parsed.command {
+        CliCommand::Help(text) => finish_formatted(None, text, 0, OutputFormat::Json).1,
+        CliCommand::Version => {
+            ProcessSignals::enter_immediate_delivery();
+            if let Some(code) = signals.prior_signal_exit_code() {
+                return ExitCode::from(u8::try_from(code).unwrap_or(70));
+            }
+            let rendered = render_raw_json_str(VERSION_LINE, format);
+            finish_formatted(None, &rendered, 0, format).1
+        }
+        CliCommand::Evidence(ref ev_args) => {
+            ProcessSignals::enter_immediate_delivery();
+            if let Some(code) = signals.prior_signal_exit_code() {
+                return ExitCode::from(u8::try_from(code).unwrap_or(70));
+            }
+            let res = with_progress(progress, || {
+                archsig::observe::execute_evidence(ev_args, options.max_file_bytes)
+            });
+            match res {
+                Ok(resp) => {
+                    let rendered = render_raw_json_str(&resp.text, format);
+                    finish_formatted(None, &rendered, resp.code, format).1
+                }
+                Err(outcome) => finish_formatted(Some(outcome), "", 0, format).1,
+            }
+        }
+        CliCommand::LawFibers(ref fib_args) => {
+            ProcessSignals::enter_immediate_delivery();
+            if let Some(code) = signals.prior_signal_exit_code() {
+                return ExitCode::from(u8::try_from(code).unwrap_or(70));
+            }
+            let res = with_progress(progress, || {
+                archsig::observe::execute_fibers(fib_args, options.max_file_bytes)
+            });
+            match res {
+                Ok(resp) => {
+                    let rendered = render_raw_json_str(&resp.text, format);
+                    finish_formatted(None, &rendered, resp.code, format).1
+                }
+                Err(outcome) => finish_formatted(Some(outcome), "", 0, format).1,
+            }
+        }
+        CliCommand::Digest(_) | CliCommand::InspectInputs(_) | CliCommand::InspectResult(_) => {
+            let control = signals.control();
+            let res = with_progress(progress, || {
+                execute_cli_command(
+                    &parsed.command,
+                    options.max_file_bytes,
+                    &mut signals,
+                    &control,
+                )
+            });
+            match res {
+                Ok(output) => {
+                    let rendered = render_json_value(&output.json, format);
+                    finish_formatted(None, &rendered, output.exit_code, format).1
+                }
+                Err(outcome) => finish_formatted(Some(outcome), "", 0, format).1,
+            }
+        }
+        CliCommand::Check(c) => {
+            let cmd = Command::Check(c);
+            let mut io = FileIo;
+            let control = signals.control();
+            let outcome = with_progress(progress, || {
+                with_out_options(options.out_options, || {
+                    with_detail_level(options.detail, || {
+                        execute_command(&cmd, &mut io, &mut signals, &control)
+                    })
+                })
+            });
+            finish_formatted(outcome, "", 0, format).1
+        }
+        CliCommand::Run(r) => {
+            let cmd = Command::Run(r);
+            let mut io = FileIo;
+            let control = signals.control();
+            let outcome = with_progress(progress, || {
+                with_out_options(options.out_options, || {
+                    with_detail_level(options.detail, || {
+                        execute_command(&cmd, &mut io, &mut signals, &control)
+                    })
+                })
+            });
+            finish_formatted(outcome, "", 0, format).1
+        }
+        CliCommand::Reobserve(r) => {
+            let cmd = Command::Reobserve(r);
+            let mut io = FileIo;
+            let control = signals.control();
+            let outcome = with_progress(progress, || {
+                with_out_options(options.out_options, || {
+                    with_detail_level(options.detail, || {
+                        with_max_file_bytes(options.max_file_bytes, || {
+                            execute_command(&cmd, &mut io, &mut signals, &control)
+                        })
+                    })
+                })
+            });
+            finish_formatted(outcome, "", 0, format).1
         }
     }
-    let (outcome, version) = execute(&args, &mut signals);
-    finish(outcome, version);
 }
 
-fn finish(outcome: Option<Outcome>, information: &str) -> ! {
-    finish_with_code(outcome, information, 0)
-}
-
-fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u8) -> ! {
+fn finish_formatted(
+    outcome: Option<Outcome>,
+    information: &str,
+    success_code: u8,
+    format: OutputFormat,
+) -> (u8, ExitCode) {
     let code = outcome.as_ref().map_or(success_code, |o| o.exit_code);
     if let Err(err) = ProcessSignals::begin_delivery(code) {
         let failure = signal_init_failure_outcome(&err);
-        let _ = platform::write_stderr_line(&failure.receipt());
-        std::process::exit(70);
+        let _ = platform::write_stderr_line(&render_outcome(&failure, format));
+        return (70, ExitCode::from(70));
     }
-    let line = outcome
+    let rendered = outcome
         .as_ref()
-        .map_or_else(|| information.to_owned(), Outcome::receipt);
+        .map_or_else(|| information.to_owned(), |o| render_outcome(o, format));
     let failed = outcome.as_ref().is_some_and(|o| {
         matches!(
             o.status,
@@ -82,18 +193,19 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
             summary: None,
             issues: o.issues.clone(),
         };
-        if let Err(error) = platform::write_stderr_line(&diagnostic.receipt()) {
-            std::process::exit(if error.kind() == std::io::ErrorKind::BrokenPipe {
+        if let Err(error) = platform::write_stderr_line(&render_outcome(&diagnostic, format)) {
+            let c = if error.kind() == std::io::ErrorKind::BrokenPipe {
                 141
             } else {
                 74
-            });
+            };
+            return (c, ExitCode::from(c));
         }
     }
     let result = if failed && !has_answers {
-        platform::write_stderr_line(&line)
+        platform::write_stderr_line(&rendered)
     } else {
-        platform::write_stdout_line(&line)
+        platform::write_stdout_line(&rendered)
     };
     let exit = match result {
         Ok(()) => code,
@@ -114,18 +226,26 @@ fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u
                         .wire(),
                     ],
                 };
-                if let Err(error) = platform::write_stderr_line(&diagnostic.receipt())
+                if let Err(error) =
+                    platform::write_stderr_line(&render_outcome(&diagnostic, format))
                     && error.kind() == std::io::ErrorKind::BrokenPipe
                 {
-                    std::process::exit(141);
+                    return (141, ExitCode::from(141));
                 }
             }
             74
         }
     };
-    std::process::exit(i32::from(exit));
+    (exit, ExitCode::from(exit))
 }
 
+#[cfg(test)]
+fn finish_and_exit_for_test(outcome: Option<Outcome>, information: &str) -> ! {
+    let (code, _) = finish_formatted(outcome, information, 0, OutputFormat::Json);
+    std::process::exit(i32::from(code));
+}
+
+#[cfg(test)]
 fn execute(
     args: &[std::ffi::OsString],
     signals: &mut ProcessSignals,
@@ -140,7 +260,7 @@ fn execute(
                 VERSION_LINE,
             )
         }
-        Err(e) => (Some(usage_outcome(&mut io, signals, e)), ""),
+        Err(e) => (Some(archsig::run::usage_outcome(&mut io, signals, e)), ""),
     }
 }
 
@@ -236,7 +356,7 @@ mod tests {
         }
         let args: Vec<_> = args.into_iter().map(std::ffi::OsString::from).collect();
         let (outcome, version) = execute(&args, &mut signals);
-        finish(outcome, version);
+        finish_and_exit_for_test(outcome, version);
     }
 
     #[cfg(unix)]

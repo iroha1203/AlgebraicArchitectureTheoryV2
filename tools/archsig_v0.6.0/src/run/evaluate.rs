@@ -47,6 +47,10 @@ pub(super) fn run_requests_validated(
     args: &RunArgs,
     control: &Control,
 ) -> Outcome {
+    crate::cli::emit_progress(&format!(
+        "run: starting evaluation of {} request(s)",
+        args.asks.len()
+    ));
     match super::shigure::classify_asks(&args.asks) {
         super::shigure::AskPartition::None => {}
         super::shigure::AskPartition::AllShigure => {
@@ -56,10 +60,12 @@ pub(super) fn run_requests_validated(
             return super::shigure::mixed_asks_outcome(signals, control);
         }
     }
+    crate::cli::emit_progress("run: reading and checking inputs");
     let prepared = match load_requests(signals, args, control) {
         Ok(prepared) => prepared,
         Err(outcome) => return outcome,
     };
+    crate::cli::emit_progress("run: evaluating observed requests");
     let candidate = match super::reuse::inspect(
         args.reuse.as_deref(),
         &prepared,

@@ -78,3 +78,12 @@ pub(super) fn split_source_binding(value: &OsStr) -> Result<(String, PathBuf), &
     }
     Ok((id.to_owned(), PathBuf::from(path)))
 }
+
+pub(super) fn split_flag_value(arg: &OsStr) -> Option<(&str, std::ffi::OsString)> {
+    let s = arg.to_str()?;
+    let (flag, val) = s.split_once('=')?;
+    if flag.len() <= 2 || !flag.starts_with("--") {
+        return None;
+    }
+    Some((flag, std::ffi::OsString::from(val)))
+}

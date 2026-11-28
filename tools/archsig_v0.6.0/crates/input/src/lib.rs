@@ -5,4 +5,5 @@ pub mod archmap;
 pub mod definition;
 pub mod input;
 pub mod law;
+pub mod manifest;
 pub mod result;

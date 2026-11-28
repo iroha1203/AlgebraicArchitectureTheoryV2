@@ -92,6 +92,11 @@ pub fn split_source_binding(value: &OsStr) -> Result<(String, PathBuf), &'static
     imp::split_source_binding(value)
 }
 
+/// `--flag=value` 形式の CLI 引数を最初の `=` で分解する（Unix では非 UTF-8 値も保持）。
+pub fn split_flag_value(arg: &OsStr) -> Option<(&str, std::ffi::OsString)> {
+    imp::split_flag_value(arg)
+}
+
 #[doc(hidden)]
 #[cfg(unix)]
 pub fn send_signal(pid: u32, signal: Signal) -> Result<(), PlatformError> {

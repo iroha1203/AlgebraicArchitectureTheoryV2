@@ -206,6 +206,16 @@ pub(super) fn split_source_binding(value: &OsStr) -> Result<(String, PathBuf), &
     ))
 }
 
+pub(super) fn split_flag_value(arg: &OsStr) -> Option<(&str, OsString)> {
+    let bytes = arg.as_bytes();
+    let eq = bytes.iter().position(|b| *b == b'=')?;
+    if eq <= 2 || !bytes.starts_with(b"--") {
+        return None;
+    }
+    let flag = std::str::from_utf8(&bytes[..eq]).ok()?;
+    Some((flag, OsString::from_vec(bytes[eq + 1..].to_vec())))
+}
+
 pub(super) fn send_signal(pid: u32, signal: Signal) -> Result<(), PlatformError> {
     use nix::sys::signal::{Signal as OsSignal, kill};
     use nix::unistd::Pid;
@@ -378,5 +388,26 @@ mod tests {
         assert!(split_source_binding(OsStr::new("missing_eq")).is_err());
         assert!(split_source_binding(OsStr::new("=empty_id")).is_err());
         assert!(split_source_binding(OsStr::new("empty_path=")).is_err());
+    }
+
+    #[test]
+    fn split_flag_value_preserves_embedded_equals_and_non_utf8_paths() {
+        let raw = OsString::from_vec(b"--archmap=/tmp/\xffmap.json".to_vec());
+        let (flag, val) = split_flag_value(&raw).unwrap();
+        assert_eq!(flag, "--archmap");
+        assert_eq!(val.as_os_str().as_bytes(), b"/tmp/\xffmap.json");
+
+        let (ask_flag, ask_val) =
+            split_flag_value(OsStr::new("--ask=q=evaluate(A.x,s=@v/s)")).unwrap();
+        assert_eq!(ask_flag, "--ask");
+        assert_eq!(ask_val, "q=evaluate(A.x,s=@v/s)");
+
+        let (empty_flag, empty_val) = split_flag_value(OsStr::new("--archmap=")).unwrap();
+        assert_eq!(empty_flag, "--archmap");
+        assert!(empty_val.is_empty());
+
+        assert!(split_flag_value(OsStr::new("--law")).is_none());
+        assert!(split_flag_value(OsStr::new("--=val")).is_none());
+        assert!(split_flag_value(OsStr::new("-h=val")).is_none());
     }
 }
