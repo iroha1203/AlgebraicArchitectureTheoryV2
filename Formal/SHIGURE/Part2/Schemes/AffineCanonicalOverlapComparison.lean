@@ -132,6 +132,43 @@ variable {R S T : CommRingCat.{u}}
 /-- The quasi-coherent pseudofunctor used for affine descent in Appendix B.3. -/
 private abbrev Q := quasiCoherentModulesPseudofunctor.{u}
 
+private theorem mappedDescentIso_hom
+    {C : Type*} [Category C]
+    {F : Pseudofunctor (LocallyDiscrete Cᵒᵖ) Cat}
+    {ι : Type*} {S T : C} {U : ι → C} {f : ∀ i, U i ⟶ S}
+    (D : F.DescentData f) (b : T ⟶ S) {i j : ι}
+    (r : T ⟶ U i) (s : T ⟶ U j)
+    (hr : r ≫ f i = b) (hs : s ≫ f j = b)
+    {E : Type*} [Category E] (I : F.obj (.mk (op T)) ⥤ E) :
+    (I.mapIso (D.iso b (i₁ := i) (i₂ := j) r s hr hs)).hom =
+      I.map (D.hom b (i₁ := i) (i₂ := j) r s hr hs) := rfl
+
+/-- The underlying map of the canonical singleton isomorphism between the
+two iterated pullbacks of the original module sheaf. -/
+theorem singletonMappedIso_hom_betweenPullbacks
+    {X Y Z : Scheme.{u}} (a : Y ⟶ X) (r s : Z ⟶ Y) (b : Z ⟶ X)
+    (hr : r ≫ a = b) (hs : s ≫ a = b)
+    (N : Q.obj (.mk (op X))) :
+    @Eq ((pullback a ⋙ pullback r).obj N.obj ⟶
+         (pullback a ⋙ pullback s).obj N.obj)
+      (Iso.hom (C := Z.Modules)
+        (X := (pullback a ⋙ pullback r).obj N.obj)
+        (Y := (pullback a ⋙ pullback s).obj N.obj)
+        ((quasiCoherentModulesProperty.prop (.mk (op Z))).ι.mapIso
+          (((quasiCoherentModulesPseudofunctor.toDescentData
+              (fun _ : Unit => a)).obj N).iso b
+            (i₁ := ()) (i₂ := ()) r s hr hs)))
+      ((quasiCoherentModulesProperty.prop (.mk (op Z))).ι.map
+        (((Q.toDescentData (fun _ : Unit => a)).obj N).hom b
+          (i₁ := ()) (i₂ := ()) r s hr hs)) := by
+  unfold Q
+  exact mappedDescentIso_hom
+    (F := quasiCoherentModulesPseudofunctor) (f := fun _ : Unit => a)
+    ((quasiCoherentModulesPseudofunctor.toDescentData
+      (fun _ : Unit => a)).obj N)
+    b (i := ()) (j := ()) r s hr hs
+    (quasiCoherentModulesProperty.prop (.mk (op Z))).ι
+
 /-- State the comparison in the actual category of module sheaves. -/
 private theorem singletonComparisonSchemeModules
     {X Y Z : Scheme.{u}} (a : Y ⟶ X) (r s : Z ⟶ Y) (b₀ b₁ b : Z ⟶ X)
