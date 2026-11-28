@@ -2,110 +2,61 @@
 
 [English version](README.md)
 
-このリポジトリは、**Algebraic Architecture Theory**（AAT / 代数的アーキテクチャ論）と
-**Software Field Theory**（SFT / ソフトウェアの場の理論）に関する Lean 形式化、研究文書、
-ツール設計を管理するリポジトリです。
+このリポジトリは、**Algebraic Architecture Theory（AAT / 代数的アーキテクチャ論）**と
+**Software Field Theory（SFT / ソフトウェアの場の理論）**の数学本文、Lean 4 形式化、
+ツール実装、公開資料をまとめたモノレポです。
 
-大きな目的は、ソフトウェアアーキテクチャを静的な構造としてだけでなく、
-実装、レビュー、CI、運用、AI エージェントによる変更提案を通じて変化し続ける対象として扱い、
-何が保存され、何が破れ、どの未来へ進みやすくなったのかを診断できる理論と
-ツール群を作ることです。
+ソフトウェアアーキテクチャは静的な構造にとどまらず、実装・レビュー・CI・運用・AI を
+活用した開発を通じて変化し続けます。本プロジェクトはソフトウェアの意味を幾何的な空間として
+捉え、**AAT** で Atom と Law からその幾何を構成し、**SFT** でその上のソフトウェア進化を
+力学として記述し、**ツール群**で現実のコードベースと接続することを目指しています。
 
-この研究の役割分担は、次の三つにまとめられます。
+全体の構想は [研究の全体目標](docs/research_goal.md) にまとめています。
 
-- AAT は、Atom から代数幾何的なアーキテクチャを構成します。
-- ArchSig は、選んだアーキテクチャの観測データを計測します。
-- SFT は、ソフトウェア進化を計算可能な遷移として扱います。
+## なぜ AAT なのか
 
-英語では次のように表しています。
+建築には意匠設計だけでなく構造計算があり、荷重や応力、安全率を数学的に計算します。
+一方、ソフトウェアアーキテクチャの原則（MVC、クリーンアーキテクチャ、DDD、デザインパターンなど）は
+人間が理解しやすくするための意匠設計に近く、全体として意味が破綻していないかを確かめる
+**意味の構造計算**は、これまで人間のレビューが頭の中で担ってきました。AI エージェントが
+高速にコードを生成する時代に入り、人間の読解力だけではその計算が追いつかなくなっています。
 
-```text
-AAT makes architecture algebraic-geometric.
-ArchSig makes selected architecture evidence measurable.
-SFT makes software evolution computable.
-```
+既存の手法だけでは、この隙間は埋まりません。ユニットテストや CI は局所的な正しさを
+検証しますが、暗黙のインタフェース仮定や共有状態の競合など、部分と部分の重なりで起きる
+大域的な破綻は防ぎきれません。実装前に別立ての仕様を書く従来の形式手法は、仕様変更のたびに
+モデルと実装の乖離を埋める負担が重くなります。また、AI が大きなコードベースを毎回最初から
+読み直すのではなく、文脈の中での意味や制約を人間と AI が共有・検証できる**セマンティックレイヤー**も
+求められています。
 
-研究全体の目標は [研究の全体目標](docs/research_goal.md) にあり、現状ではなく目指す姿を
-記述しています。理論はこの目標に追いつくように進め、目標を現在の理論に合わせて弱めることはしません。
-研究ループの運用方法は [research/README.md](research/README.md) に、各 GOAL の定義は
-[research/goals](research/goals/README.md) に置いています。
+AAT は、この問題に対して次の立場をとります。
 
-## 研究の問い
+- **ソースコードを唯一の基準にする**：実装とは別に仕様モデルを維持するのではなく、既存の
+  コードから事実を **Atom** として抽象化し、設計上の約束を **Law** として表します。構文や
+  呼出し関係だけでは捉えきれない設計上の役割や保存条件を、プログラミング言語やフレームワークに
+  依存せずに扱います。
+- **アーキテクチャを連立方程式と空間として捉える**：各部分が守る Law と部分どうしを結ぶ条件は、
+  同時に満たすべき連立方程式をなし、その解の全体は**幾何的な空間**を形づくります。解の存在、
+  局所から大域への貼り合わせを妨げる**障害**、許された範囲での**修復**、判断に必要な**観測の十分性**を、
+  代数幾何の枠組みで統一的に計算することを目指します。
 
-この研究は、コードベースを代数幾何的なアーキテクチャ対象として捉え、
-その局所から大域への構造を記述することを目指しています。中心にある問いは次のとおりです。
+## AAT（代数的アーキテクチャ論）
 
-```text
-コードベースの局所構造、法則、障害（obstruction）、修復、進化を、
-代数幾何的なアーキテクチャとして記述できるか。
-その幾何は、実装、レビュー、CI、運用、AI による変更提案によってどう変わるか。
-その変化によって、どのような将来のアーキテクチャが到達可能になるか。
-```
+数学的には、AAT は状態・操作・関係・量と Law の型付き宣言から出発し、Law を満たす**モデル**と
+構造を保つ**射**を定義する純粋数学の理論です。モデルを可換環上に実現することで実現・変更・修復の
+全体を代数幾何の対象として扱い、次の四つの問いを中心に展開します。
 
-この問いに答えるため、次の四つを明確に区別します。
+- 与えられた制約のもとで、どのような実現や意味を保つ変更が可能か
+- 不整合を許された範囲で修復できるか、何が障害となるか、修復後にどの自由度が残るか
+- 修復の判定や解の選択、改訂・多源統合のために、何をどこまで観測すれば十分か
+- 局所的な記録から対象・射・修復の全体をどう再構成できるか、いつ有限の情報で決まるか
 
-- Lean で証明する構造的な主張
-- ツールが成果物から観測・計算する主張
-- 実証研究で検証する仮説
-- 明示された定理の仮定や予測範囲の外にあるため語らない領域
+- [数学本文（目次）](docs/aat/algebraic_geometric_theory/README.md)
+- [序論](docs/aat/algebraic_geometric_theory/introduction.md)
 
-## 層の分担
+## SFT（ソフトウェアの場の理論）
 
-| 層 | 役割 | 主な文書 |
-| --- | --- | --- |
-| AAT | Atom を出発点に architecture object を構成し、AAT site、sheaf、law algebra、obstruction ideal sheaf、lawful locus、architecture scheme、Čech descent、derived law geometry、measurement、evolution geometry へ展開する純粋な代数幾何理論。 | [代数幾何的 AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md) |
-| AAT / SFT Interface | 純粋な AAT 理論と SFT の開発系モデルを接続するインタフェース。現行 SFT v2 の整理は SFT 本文にあり、独立した interface ノートには v1 の記述が残っています。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) と [AAT / SFT interface note](docs/sft/aat_interface.md) |
-| ArchSig / ArchView / FieldSig ツール群 | ArchSig は供給された ArchMap・LawPolicy・MeasurementProfile から範囲の定まった診断・計測データを計算します。ArchView は ArchMap の Atom 構造を可視化し、ArchSig の分析結果を重ねて表示します（独自の判定は作りません）。FieldSig は ArchSig の出力と開発ワークフローの証拠を読み、SFT 側の進化計測を行います。 | [AAT Tooling Documentation](docs/tool/README.md) |
-| SFT | SFT v2 は、開発時間、進化空間と輸送、発生源、ポリシー、計測プロファイルからなる開発系（Development System）を通じてソフトウェア進化を扱います。 | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
-| Lean 形式化 | 前提を明示できる構造的命題、有限対象、lawfulness の橋渡し、範囲を明示した定理群。 | `Formal/` 以下の Lean ソース |
-| Website | AAT、SFT、ArchSig を公開向けに紹介するサイト。Eleventy でビルドし、静的な Cloudflare Pages サイトとして配信します。 | [Website source](website/src/index.html) |
-
-## 読む順序
-
-1. [研究の全体目標](docs/research_goal.md)
-2. [代数幾何的 AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md)
-3. [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
-4. [AAT Tooling Documentation](docs/tool/README.md)
-5. [Research-loop 運用ガイド](research/README.md)
-6. 必要に応じて [docs 読み方](docs/README.md)、
-   [AAT directory guide](docs/aat/README.md)、
-   [SFT directory guide](docs/sft/README.md)、
-   [AAT / SFT interface note](docs/sft/aat_interface.md)
-
-## AAT
-
-AAT は、アーキテクチャ上の基本的な事実である Atom から出発します。Atom 公理系と
-Atom family から構成と architecture object を組み立て、law universe、coverage topology、
-係数環・係数 sheaf を固定したうえで、AAT site、sheaf、law algebra、obstruction ideal sheaf、
-lawful locus、architecture scheme、Čech 障害類、derived law geometry へと展開します。
-
-```text
-AAT
-  = atom vocabulary
-  + atom axiom system
-  + atom family / configuration
-  + architecture object
-  + law universe
-  + coverage topology
-  + coefficient sheaf
-  + AAT site
-  + sheaves
-  + law algebra
-  + obstruction ideal sheaf
-  + lawful locus
-  + architecture scheme
-  + Čech descent
-  + derived law geometry
-```
-
-SOLID や Layered Architecture といった外部の設計語彙は、AAT の基本概念ではありません。
-必要な場合にだけ、選んだ代数幾何の設定における law presentation、cover、
-制限写像の整合条件、obstruction ideal、lawful locus の具体例として扱います。
-
-## SFT
-
-SFT v2 は、ソフトウェア進化を「変更を受け取るだけの静的なコードベース」ではなく、
-計算可能な開発系（Development System）として扱います。中心となる対象は次のように表します。
+SFT は、AAT が与えるアーキテクチャ幾何の上の力学系としてソフトウェア進化を扱います。
+中心となる対象は**開発系（Development System）**です。
 
 ```text
 𝔇 = (𝒯, 𝔛, 𝔖, Π, 𝔐)
@@ -113,69 +64,55 @@ SFT v2 は、ソフトウェア進化を「変更を受け取るだけの静的�
 𝒯 : 開発トレースの site と時間
 𝔛 : 進化族、空間、輸送データ
 𝔖 : 発生源と組織構造
-Π : ポリシーと運動の法則
+Π : 方針と運動の法則
 𝔐 : 計測プロファイルと観測
 ```
 
-PRD、仕様書、Issue、PR、レビュー、CI、組織、AI、ライフサイクル上の判断は、
-このモデルにおける発生源、ポリシー、観測、遷移として位置づけます。
-SFT はアーキテクチャ射影と局所代数を通じて AAT を利用しますが、AAT の定理がそのまま
-実証的な未来予測になるわけではありません。
-`ForecastCone` や `ConsequenceEnvelope` といった v1 の語彙は互換用の領域に残っているものであり、
-現行 SFT v2 の中心概念ではありません。
+要求・仕様書・Issue・PR・レビュー・CI・組織構造・AI の変更提案・ライフサイクル上の判断を、
+発生源・方針・観測・遷移として記述し、どの将来のアーキテクチャが到達可能になるかを調べます。
 
-## Tooling
+- [ソフトウェアの場の理論](docs/sft/software_field_theory.md)
 
-ツールの目的は、AAT と SFT の語彙を実際の開発成果物へ接続することです。
-ArchSig は供給された ArchMap、LawPolicy、MeasurementProfile を読み込み、
-レビューや CI で扱える診断・計測データへ変換します。現行の受け渡し形式は
-`archsig-measurement-packet/v0.5.0` であり、FieldSig はこれをワークフローや運用の証拠と
-組み合わせて SFT 側の計測に使います。
+## ツール群
 
-ツールは理論そのものではありません。測って零だったことと測っていないことを混同せず、
-ツールの通過結果を Lean の定理として扱うこともしません。
+AAT と SFT を実際のコードベースや開発成果物へ接続するツールを収録しています。
 
-## Website
+- **ArchSig**：Atom 定義・Law・ArchMap から、構造・Law 検査・診断・修復候補・必要観測を
+  決定論的に計算する Rust エンジン。
+- **ArchView**：ArchMap の Atom 構造を可視化し、ArchSig の分析結果を重ねてソースコードの
+  該当箇所へ接続するビューア。
+- **FieldSig**：ArchSig の計測出力と開発ワークフローの証拠を組み合わせ、SFT に基づく
+  進化計測を行うツール。
 
-`website/` は、AAT・SFT・ArchSig を公開向けに紹介する Cloudflare Pages 用のサイトです。
-`website/src/` を Eleventy でビルドし、静的な配信物を生成します。
+各ツールの仕様、ビルド方法、使い方は [Tooling Documentation](docs/tool/README.md) を
+参照してください。
+
+## Lean 形式化
+
+AAT 数学本文の Lean 4・mathlib による形式化は `Formal/SHIGURE/`
+（[Formal/SHIGURE.lean](Formal/SHIGURE.lean)）に置いています。
+
+全体のビルドと公理監査は CI で実行します。ローカルでは単一ファイルまたは対象モジュールを
+指定して確認できます。
+
+```bash
+lake env lean Formal/SHIGURE/Part1/Reading.lean
+lake build +Formal.SHIGURE
+```
 
 ## リポジトリ構成
 
-- `Formal`
-  - Lean 形式化と定理群。
-- `docs`
-  - 主要な理論文書、ツール文書、実証プロトコル。
-  - `docs/aat`
-  - 代数幾何的 AAT の数学本文と補助文書。
-- `docs/sft`
-  - AAT / SFT インタフェースと SFT 本文。
-- `docs/tool`
-  - LLM による Atom の ArchMap、LawPolicy、ArchSig の分析出力、FieldSig への受け渡し、ツールの主張範囲。
-- `docs/website`
-  - 公開 website のサイトマップ、デザイン、トーン、公開規則を管理する内部運用メモ。
-- `research`
-  - 研究ループの運用ガイド、GOAL 定義、候補、レポート。
-- `tools`
-  - ArchSig・ArchView・FieldSig の実装、スキーマ、フィクスチャ、スキル。
-- `website`
-  - `src/` 以下の Eleventy ソースと、AAT・SFT・ArchSig 公開サイト用の静的出力。
-- `outreach`
-  - AAT・SFT・ArchSig の外部記事、英日翻訳、下書き、記事用素材。
-- `lakefile.toml`
-  - Lake のビルド設定。
-- `lean-toolchain`
-  - 固定された Lean のバージョン。
-
-## Build
-
-本体全体のフル Lean ビルドは、PR 作成後の CI で実行します。ローカルでは変更範囲に応じて、
-単一ファイルの確認や対象モジュールのビルドを選びます。
-
-```bash
-lake env lean Formal/AG/Atom/Atom.lean
-lake build +Formal.AG
-```
+| パス | 内容 | 入口 |
+| --- | --- | --- |
+| `docs/aat/` | AAT の数学本文と編集ガイドライン | [AAT 数学本文](docs/aat/algebraic_geometric_theory/README.md) |
+| `docs/sft/` | SFT 本文と AAT / SFT インタフェース | [ソフトウェアの場の理論](docs/sft/software_field_theory.md) |
+| `docs/tool/` | ツール群のコンセプト・仕様・利用案内 | [Tooling Documentation](docs/tool/README.md) |
+| `docs/reports/` | 実験報告と証拠一式 | [実験報告](docs/reports/README.md) |
+| `Formal/` | Lean 4 形式化（`Formal/SHIGURE/`） | [Formal/SHIGURE.lean](Formal/SHIGURE.lean) |
+| `tools/` | ArchSig・ArchView・FieldSig の実装 | [Tooling Documentation](docs/tool/README.md) |
+| `website/` | Eleventy による公開サイト（Cloudflare Pages） | [website/src/index.html](website/src/index.html) |
+| `outreach/` | 記事・論文・モノグラフ PDF 生成パイプライン | [outreach/README.md](outreach/README.md) |
+| `research/` | 研究目標・探索記録・`research/lean/` | [research/README.md](research/README.md) |
 
 ## ライセンス
 

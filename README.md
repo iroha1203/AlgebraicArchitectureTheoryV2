@@ -2,112 +2,72 @@
 
 [日本語版はこちら](README.jp.md)
 
-This repository contains the Lean formalization, research notes, and tooling
-design for **Algebraic Architecture Theory** (AAT) and **Software Field Theory**
-(SFT).
+This repository brings together the mathematical theory, Lean 4 formalization,
+tooling, and publications for **Algebraic Architecture Theory (AAT)** and
+**Software Field Theory (SFT)**.
 
-The long-term goal is to treat software architecture not only as a static
-shape, but as an object that keeps changing through implementation, review, CI,
-operations, and AI-agent proposals. The project aims to build a theory and
-toolchain for diagnosing what is preserved, what breaks, and which futures a
-software system becomes more likely to reach.
+Software architecture is not only a static shape; it changes continuously through
+implementation, review, CI, operations, and AI-assisted development. This project
+treats software semantics as a geometric space: **AAT** constructs that geometry
+from architectural facts and laws, **SFT** models software evolution as dynamics
+within it, and the **tooling** connects the theory to real codebases.
 
-```text
-AAT makes architecture algebraic-geometric.
-ArchSig makes selected architecture evidence measurable.
-SFT makes software evolution computable.
-```
+For the overarching vision, see [Overall Research Goal](docs/research_goal.md) (Japanese).
 
-The overall research goal is in [docs/research_goal.md](docs/research_goal.md) (Japanese),
-which sets out the target state of the theory rather than its current status; the goal is
-not scaled back to fit what is already proved.
-The research-loop operating guide is [research/README.md](research/README.md), with
-GOAL definitions under [research/goals](research/goals/README.md).
+## Why AAT?
 
-## Research Question
+Buildings have both architectural design and structural engineering — loads,
+stresses, and safety factors are calculated mathematically. Software
+architecture, by contrast, has rich design principles (MVC, Clean Architecture,
+DDD, design patterns) that help humans read code, while the **structural
+calculation of meaning** — checking whether local changes actually hold together
+as a whole — was carried in people's heads during code review. As AI agents
+generate code far faster than humans can review, human comprehension alone can
+no longer carry that load.
 
-This project treats a codebase as an algebraic-geometric architecture object and
-asks how its local-to-global structure can be described. Its central questions are:
+Existing approaches leave a gap. Unit tests and CI verify local slices, yet
+systems still fail globally where parts overlap — through implicit interface
+assumptions, shared state, or unintended ripple effects. Traditional formal
+methods verify a separate specification written before implementation, making it
+costly to keep the model aligned with evolving code. Meanwhile, AI agents read
+large codebases from scratch every session without a shared, verifiable
+**semantic layer** that preserves what a system's parts mean in context.
 
-```text
-Can the local structure, laws, obstructions, repairs, and evolution of a codebase
-be described as algebraic-geometric architecture?
-How does that geometry change through implementation, review, CI, operations,
-and AI proposals?
-Which future architectures become reachable through those changes?
-```
+AAT approaches this from the opposite direction:
 
-To answer these questions, the project keeps the following layers separate:
+- **Source code as the single source of truth**: Abstract facts from existing
+  code into **Atoms** and express design rules as **Laws**, capturing design
+  roles and preservation conditions beyond syntax, types, and call graphs —
+  independently of any programming language or framework.
+- **Architecture as a system of equations**: When Laws act as algebraic
+  equations on realizations and changes, their solutions form a **geometric
+  space**. Algebraic geometry is the mathematics built for such spaces — turning
+  local-versus-global failures into computable **obstructions**, scoped fixes
+  into **repairs**, and minimal reading into **observation sufficiency**.
 
-- structural claims proved in Lean;
-- claims observed or inferred from artifacts by tooling;
-- hypotheses to be tested empirically;
-- non-conclusions outside explicit theorem assumptions and forecast scopes.
+## AAT (Algebraic Architecture Theory)
 
-## Layers
+Formally, AAT is a pure mathematical theory that starts from typed declarations
+of states, operations, relations, quantities, and Laws, defining **models** that
+satisfy those Laws and structure-preserving **morphisms** between them. Realizing
+models over commutative rings lifts realizations, changes, and repairs into
+algebraic geometry, where the theory investigates four core questions:
 
-| Layer | Role | Source of truth |
-| --- | --- | --- |
-| AAT | A pure algebraic-geometric theory that starts from architectural atoms and builds architecture objects, AAT sites, sheaves, law algebras, obstruction ideal sheaves, lawful loci, architecture schemes, Čech descent, derived law geometry, measurement, and evolution geometry. | [AAT algebraic-geometric mathematical text](docs/aat/algebraic_geometric_theory/README.md) |
-| AAT / SFT Interface | The interface between the pure AAT theory and SFT's development-system model. The current SFT v2 reading is in the SFT body; the separate interface note still contains v1 material. | [Software Field Theory](docs/sft/software_field_theory.md) and [AAT / SFT interface note](docs/sft/aat_interface.md) |
-| ArchSig / ArchView / FieldSig Tooling | ArchSig reads supplied ArchMap evidence, LawPolicy, and MeasurementProfile artifacts into bounded diagnostic / measurement packets. ArchView reads ArchMap Atom geometry directly and overlays supplied ArchSig analysis without creating a new verdict. FieldSig consumes serialized ArchSig measurement packets together with workflow evidence for SFT-oriented evolution measurement. | [AAT Tooling Documentation](docs/tool/README.md) |
-| SFT | SFT v2 models software evolution through a Development System containing development time, evolution space and transport, sources, policy, and measurement profiles. | [Software Field Theory](docs/sft/software_field_theory.md) |
-| Lean formalization | Structural propositions, finite universes, lawfulness bridges, and bounded theorem packages with explicit assumptions. | Lean source under `Formal/`. |
-| Website | The public reading surface for AAT, SFT, and ArchSig. It is authored and built with Eleventy, then published as a static Cloudflare Pages site. | [Website source](website/src/index.html) |
+- what realizations and semantics-preserving changes are possible under given constraints;
+- whether inconsistencies can be repaired within a permitted scope, what obstructions
+  block repair, and what degrees of freedom remain;
+- what observations are sufficient to decide repairability, select a solution, or
+  integrate revisions and multiple sources;
+- how global objects, morphisms, and repairs can be reconstructed from local records,
+  and when finite information determines them.
 
-Most detailed research notes are currently written in Japanese; English
-summaries will be added as the theory and Lean formalization stabilize.
+- [Mathematical Text (Table of Contents)](docs/aat/algebraic_geometric_theory/README.md) (Japanese)
+- [Introduction](docs/aat/algebraic_geometric_theory/introduction.md) (Japanese)
 
-## Reading Order
+## SFT (Software Field Theory)
 
-1. [Overall research goal](docs/research_goal.md)
-2. [AAT Algebraic-Geometric Mathematical Text](docs/aat/algebraic_geometric_theory/README.md)
-3. [Software Field Theory](docs/sft/software_field_theory.md)
-4. [AAT Tooling Documentation](docs/tool/README.md)
-5. [Research-loop operating guide](research/README.md)
-6. As needed:
-   [docs guide](docs/README.md),
-   [AAT directory guide](docs/aat/README.md),
-   [SFT directory guide](docs/sft/README.md),
-   [AAT / SFT interface note](docs/sft/aat_interface.md)
-
-## AAT
-
-AAT begins from primitive architectural facts called atoms. An atom axiom system
-and atom families generate configurations and architecture objects; after a law
-universe, coverage topology, and coefficient data are fixed, those objects are
-lifted to architecture geometry: AAT sites, sheaves, law algebras, obstruction
-ideal sheaves, lawful loci, architecture schemes, Čech obstruction classes, and
-derived law geometry.
-
-```text
-AAT
-  = atom vocabulary
-  + atom axiom system
-  + atom family / configuration
-  + architecture object
-  + law universe
-  + coverage topology
-  + coefficient sheaf
-  + AAT site
-  + sheaves
-  + law algebra
-  + obstruction ideal sheaf
-  + lawful locus
-  + architecture scheme
-  + Čech descent
-  + derived law geometry
-```
-
-External design vocabulary such as SOLID or Layered Architecture is not an AAT
-primitive. When useful, it is read as a concrete law presentation, cover,
-restriction-compatibility condition, obstruction ideal, or lawful-locus example
-inside a selected algebraic-geometric regime.
-
-## SFT
-
-SFT v2 models software evolution as a computable development system rather than
-as a static codebase. Its central object is represented by
+SFT models software evolution as dynamics on the architecture geometry provided
+by AAT. Its central object is a **Development System**:
 
 ```text
 𝔇 = (𝒯, 𝔛, 𝔖, Π, 𝔐)
@@ -119,70 +79,56 @@ as a static codebase. Its central object is represented by
 𝔐 : measurement profiles and observation
 ```
 
-PRDs, specs, issues, PRs, reviews, CI, organizations, AI, and lifecycle
-decisions become selected sources, policies, observations, and transitions in
-this model. SFT uses AAT through architecture projections and selected local
-algebra, but AAT theorems do not automatically become empirical forecasts.
-Older v1 names such as `ForecastCone` and `ConsequenceEnvelope` remain only in
-legacy or compatibility surfaces and should not be read as the current SFT v2
-center.
+Requirements, specifications, issues, PRs, reviews, CI, organizational structure,
+AI proposals, and lifecycle decisions are modeled as sources, policies,
+observations, and transitions in order to analyze which future architectures
+become reachable.
+
+- [Software Field Theory](docs/sft/software_field_theory.md) (Japanese)
 
 ## Tooling
 
-The tooling goal is to connect the vocabulary of AAT and SFT to real development
-artifacts. ArchSig reads supplied ArchMap evidence, LawPolicy, and
-MeasurementProfile artifacts, then emits bounded diagnostic / measurement
-packets that review and CI can handle. The current handoff is the serialized
-`archsig-measurement-packet/v0.5.0`; FieldSig consumes that packet together with
-workflow and operational evidence for SFT-oriented measurement.
+The repository includes a set of tools that connect AAT and SFT to real codebases
+and development artifacts:
 
-The tooling is not the theory itself. It does not confuse measured zero with
-unmeasured, and a tool pass is not read as a Lean theorem.
+- **ArchSig**: A deterministic Rust engine that computes structures, Law checks,
+  diagnostics, repair candidates, and required observations from Atom definitions,
+  Laws, and ArchMap evidence.
+- **ArchView**: Visualizes ArchMap Atom geometry and overlays ArchSig analysis
+  results, linking findings back to source locations.
+- **FieldSig**: Combines ArchSig measurement outputs with development workflow
+  evidence for SFT-oriented evolution measurement.
 
-## Website
+See [Tooling Documentation](docs/tool/README.md) for specifications, build steps,
+and usage.
 
-The public website in `website/` is a Cloudflare Pages reading surface for AAT, SFT,
-and ArchSig. It is authored with Eleventy from `website/src/` and published as
-static output.
+## Lean Formalization
 
-## Repository Layout
+Formal definitions and machine-checked proofs of the AAT mathematical text live
+under `Formal/SHIGURE/` ([Formal/SHIGURE.lean](Formal/SHIGURE.lean)) using Lean 4
+and mathlib.
 
-- `Formal`
-  - Lean formalization and theorem packages.
-- `docs`
-  - First-class theory documents, tool docs, and empirical protocol.
-  - `docs/aat`
-  - Canonical algebraic-geometric AAT text and supporting notes.
-- `docs/sft`
-  - AAT / SFT interface and the SFT body.
-- `docs/tool`
-  - LLM Atom ArchMap, LawPolicy, ArchSig analysis packet, FieldSig handoff, and tooling claim boundaries.
-- `docs/website`
-  - Internal operating notes for the public website, including sitemap, design,
-    tone, and publication rules.
-- `research`
-  - Research-loop operating guide, GOAL definitions, candidate ideas, and reports.
-- `tools`
-  - ArchSig, ArchView, and FieldSig tooling, schemas, fixtures, and skills.
-- `website`
-  - Eleventy source under `src/` and static Cloudflare Pages output for the public
-    AAT / SFT / ArchSig reading surface.
-- `outreach`
-  - External article drafts, English and Japanese translations, and publication assets
-    for AAT, SFT, and ArchSig.
-- `lakefile.toml`
-  - Lake build configuration.
-- `lean-toolchain`
-  - Pinned Lean version.
-
-## Build
-
-The root-wide full Lean build for the main package is run by CI after a pull request is opened. Choose a local check that matches the change scope; for example, a single target file or a targeted module build:
+Full Lean builds and kernel axiom audits run in CI. Locally, check a single file
+or a targeted module:
 
 ```bash
-lake env lean Formal/AG/Atom/Atom.lean
-lake build +Formal.AG
+lake env lean Formal/SHIGURE/Part1/Reading.lean
+lake build +Formal.SHIGURE
 ```
+
+## Repository Structure
+
+| Path | Description | Entry point |
+| --- | --- | --- |
+| `docs/aat/` | AAT mathematical text and guidelines | [AAT Mathematical Text](docs/aat/algebraic_geometric_theory/README.md) |
+| `docs/sft/` | SFT theory text and AAT/SFT interface | [Software Field Theory](docs/sft/software_field_theory.md) |
+| `docs/tool/` | Tool concepts, specifications, and usage | [Tooling Documentation](docs/tool/README.md) |
+| `docs/reports/` | Fixed experiment reports and evidence | [Reports](docs/reports/README.md) |
+| `Formal/` | Lean 4 formalization (`Formal/SHIGURE/`) | [Formal/SHIGURE.lean](Formal/SHIGURE.lean) |
+| `tools/` | Implementations of ArchSig, ArchView, and FieldSig | [Tooling Documentation](docs/tool/README.md) |
+| `website/` | Public site built with Eleventy (Cloudflare Pages) | [website/src/index.html](website/src/index.html) |
+| `outreach/` | Articles, papers, and monograph PDF pipeline | [outreach/README.md](outreach/README.md) |
+| `research/` | Research goals, explorations, and `research/lean/` | [research/README.md](research/README.md) |
 
 ## License
 
