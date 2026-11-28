@@ -1,4 +1,5 @@
 import Formal.SHIGURE.Part2.Schemes.AffineFppfRefinement
+import Formal.SHIGURE.Part2.Schemes.FppfGlobalFromAffineSingleton
 
 /-! # A two-component finite affine cover
 
@@ -67,6 +68,33 @@ theorem one_component_not_surjective (i : Bool) : ¬ Function.Surjective (compon
   have tag := congrArg Sigma.fst same
   change i = !i at tag
   cases i <;> cases tag
+
+/-- Compatible identity maps on the two actual charts have a unique global source. -/
+theorem two_components_identity_descends :
+    let T := affineTildeFunctor base
+    let L := T.obj (ModuleCat.of base base)
+    let C := fppfModuleComparison cover.cover
+    ∃! g : L ⟶ L, C.map g = C.map (𝟙 L) := by
+  dsimp only
+  exact fppfModuleComparison_existsUnique cover.cover _
+
+/-- The two-chart comparison retains the distinction between zero and identity. -/
+theorem two_components_distinguish_maps :
+    let T := affineTildeFunctor base
+    let L := ModuleCat.of base base
+    let C := fppfModuleComparison cover.cover
+    C.map (T.map (𝟙 L)) ≠ C.map (T.map (0 : L ⟶ L)) := by
+  dsimp only
+  let T := affineTildeFunctor base
+  let L := ModuleCat.of base base
+  let C := fppfModuleComparison cover.cover
+  intro equal
+  have same : (𝟙 L : L ⟶ L) = 0 :=
+    (affineTildeEquivalence base).fullyFaithfulFunctor.map_injective
+      ((fppfModuleComparison_fullyFaithful cover.cover).map_injective equal)
+  have value := congrArg (fun f : L ⟶ L => f (1 : base) true) same
+  change (1 : ℚ) = 0 at value
+  exact one_ne_zero value
 
 end
 

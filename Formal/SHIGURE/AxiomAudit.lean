@@ -26,6 +26,7 @@ import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeExamples
 import Formal.SHIGURE.Part2.Schemes.FppfEpimorphisms
 import Formal.SHIGURE.Part2.Schemes.AffineGeometryToCoefficients
 import Formal.SHIGURE.Part2.Schemes.AffineSingletonExamples
+import Formal.SHIGURE.Part2.Schemes.FppfGlobalFromAffineSingleton
 import Formal.SHIGURE.Part2.Schemes.FppfGlobalMorphismDescent
 import Formal.SHIGURE.Part2.Schemes.FppfRelativeAffineSections
 import Formal.SHIGURE.Part2.Schemes.OpenModuleGluingExamples
@@ -5111,6 +5112,19 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SchemeDescent.AffineSingletonExamples.splitComparison_equivalence,
   SchemeDescent.AffineSingletonExamples.splitComparison_distinguishes_maps,
   SchemeDescent.AffineSingletonExamples.zeroRing_not_faithfullyFlat
+]
+
+
+-- Global fppf descent for all morphisms and the two-chart example.
+#shigure_assert_standard_axioms_of [
+  SchemeDescent.AffineRefinement.affineComponents_isPrestackFor,
+  SchemeDescent.AffineRefinement.productMap_isPrestackFor,
+  SchemeDescent.quasiCoherentModules_isFppfPrestack_of_singleton,
+  SchemeDescent.quasiCoherentModules_isFppfPrestack,
+  SchemeDescent.fppfModuleComparison_fullyFaithful,
+  SchemeDescent.fppfModuleComparison_existsUnique,
+  SchemeDescent.AffineFppfExamples.two_components_identity_descends,
+  SchemeDescent.AffineFppfExamples.two_components_distinguish_maps
 ]
 
 end SHIGURE.AxiomAudit
