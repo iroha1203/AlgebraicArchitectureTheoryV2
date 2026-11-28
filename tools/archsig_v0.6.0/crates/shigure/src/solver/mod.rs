@@ -38,6 +38,7 @@ mod lift_affine;
 mod lift_backend;
 mod lift_common;
 mod lift_extensions;
+mod multisource;
 mod observation;
 mod occurrence;
 mod occurrence_attr;
@@ -52,6 +53,7 @@ mod path_protocol;
 pub(crate) mod preservation;
 pub(crate) mod restore;
 mod restore_format;
+mod revision;
 mod robustness;
 mod robustness_reading;
 mod robustness_symbolic;
@@ -87,6 +89,8 @@ mod tests_lift_extra;
 #[cfg(test)]
 mod tests_lift_r3_r4;
 #[cfg(test)]
+mod tests_multisource;
+#[cfg(test)]
 mod tests_observation;
 #[cfg(test)]
 mod tests_occurrence;
@@ -109,6 +113,8 @@ mod tests_phase3_rerun4_regressions;
 #[cfg(test)]
 mod tests_regressions;
 #[cfg(test)]
+mod tests_revision;
+#[cfg(test)]
 mod tests_robustness;
 #[cfg(test)]
 mod tests_robustness_extra;
@@ -123,10 +129,12 @@ pub use chevalley::solve_chevalley_task;
 pub use diagnostics::solve_diagnostics_task;
 pub use diagram::solve_diagram_task;
 pub use lift::solve_lift_task;
+pub use multisource::solve_multisource_task;
 pub use observation::solve_observation_task;
 pub use occurrence::solve_occurrence_task;
 pub use partial_eval::solve_partial_task;
 pub use path::solve_path_task;
+pub use revision::solve_revision_task;
 pub use robustness::solve_robustness_task;
 pub use transfer::solve_transfer_task;
 
