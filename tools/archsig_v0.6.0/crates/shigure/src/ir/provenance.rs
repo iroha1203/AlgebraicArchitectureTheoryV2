@@ -238,6 +238,30 @@ pub enum MathClause {
     G142W2,
     G142W3,
     G142W5,
+    /// AAT 第VI部 第17章（出現の同定と観測語彙）。
+    AatCh17Thm17Dot2,
+    AatCh17Def17Dot4,
+    AatCh17Thm17Dot6,
+    AatCh17Ex17Dot7,
+    AatCh17Thm17Dot10,
+    AatCh17Thm17Dot11,
+    /// AAT 第VI部 第18章（部分提示・欠測と開領域の確定評価）。
+    AatCh18Def18Dot1,
+    AatCh18Thm18Dot3,
+    AatCh18Def18Dot4,
+    AatCh18Thm18Dot6,
+    AatCh18Prop18Dot9,
+    AatCh18Prop18Dot11,
+    AatCh18Thm18Dot12,
+    AatCh18Prop18Dot14,
+    AatCh18Thm18Dot16,
+    AatCh18Thm18Dot18,
+    /// AAT 第VI部 第19章（観測の改訂・無効化範囲と多源統合）。
+    AatCh19Prop19Dot2,
+    AatCh19Thm19Dot4,
+    AatCh19Thm19Dot7,
+    AatCh19Thm19Dot9,
+    AatCh19Thm19Dot11,
 }
 
 impl MathClause {
@@ -347,6 +371,27 @@ impl MathClause {
             MathClause::G142W2 => "shigure:G-142:W2",
             MathClause::G142W3 => "shigure:G-142:W3",
             MathClause::G142W5 => "shigure:G-142:W5",
+            MathClause::AatCh17Thm17Dot2 => "aat:part6:17.2",
+            MathClause::AatCh17Def17Dot4 => "aat:part6:17.4",
+            MathClause::AatCh17Thm17Dot6 => "aat:part6:17.6",
+            MathClause::AatCh17Ex17Dot7 => "aat:part6:17.7",
+            MathClause::AatCh17Thm17Dot10 => "aat:part6:17.10",
+            MathClause::AatCh17Thm17Dot11 => "aat:part6:17.11",
+            MathClause::AatCh18Def18Dot1 => "aat:part6:18.1",
+            MathClause::AatCh18Thm18Dot3 => "aat:part6:18.3",
+            MathClause::AatCh18Def18Dot4 => "aat:part6:18.4",
+            MathClause::AatCh18Thm18Dot6 => "aat:part6:18.6",
+            MathClause::AatCh18Prop18Dot9 => "aat:part6:18.9",
+            MathClause::AatCh18Prop18Dot11 => "aat:part6:18.11",
+            MathClause::AatCh18Thm18Dot12 => "aat:part6:18.12",
+            MathClause::AatCh18Prop18Dot14 => "aat:part6:18.14",
+            MathClause::AatCh18Thm18Dot16 => "aat:part6:18.16",
+            MathClause::AatCh18Thm18Dot18 => "aat:part6:18.18",
+            MathClause::AatCh19Prop19Dot2 => "aat:part6:19.2",
+            MathClause::AatCh19Thm19Dot4 => "aat:part6:19.4",
+            MathClause::AatCh19Thm19Dot7 => "aat:part6:19.7",
+            MathClause::AatCh19Thm19Dot9 => "aat:part6:19.9",
+            MathClause::AatCh19Thm19Dot11 => "aat:part6:19.11",
         }
     }
 }

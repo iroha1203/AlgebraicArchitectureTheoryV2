@@ -391,11 +391,10 @@ impl LiftRingBackend for ZLiftBackend {
         vars: VarOrder,
         _max_pairs: usize,
     ) -> Result<SyzygyModule<BigInt>, SilenceReason> {
-        let syz_res = compute_syzygies_z(law_polys, vars).map_err(|e| {
-            SilenceReason::SyzygyOutOfScope {
+        let syz_res =
+            compute_syzygies_z(law_polys, vars).map_err(|e| SilenceReason::SyzygyOutOfScope {
                 detail: e.to_string(),
-            }
-        })?;
+            })?;
         if !syz_res.verified || !syz_res.generating_certified {
             return Err(SilenceReason::SyzygyOutOfScope {
                 detail: "Z syzygy generating certification failed".to_owned(),

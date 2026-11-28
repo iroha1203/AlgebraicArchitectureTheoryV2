@@ -22,7 +22,12 @@ pub mod diagram;
 pub mod family;
 pub mod lift;
 pub mod morphism;
+pub mod multisource;
 pub mod observation;
+pub mod occurrence;
+pub mod partial;
+mod partial_open_validate;
+mod partial_validate;
 pub mod path;
 pub mod presentation;
 pub mod provenance;
@@ -31,6 +36,9 @@ pub mod result_ext;
 pub mod result_phase3;
 pub mod result_phase4;
 pub mod result_phase4_diag_atlas;
+pub mod result_phase5_obs;
+pub mod result_phase5_rev;
+pub mod revision;
 pub mod robustness;
 pub mod term;
 pub mod transfer;
@@ -49,6 +57,8 @@ mod tests_phase3;
 mod tests_phase4;
 #[cfg(test)]
 mod tests_phase4_edge;
+#[cfg(test)]
+mod tests_phase5;
 
 pub use artin::{
     ArtinTaskSpec, AuxiliaryDefSpec, BaseChangeSpec, CheckedArtinTask, CompositeStageSpec,
@@ -84,8 +94,24 @@ pub use morphism::{
     MorphismDirection, StateMorphism, TimeStepMorphism, compose_state_order, compose_time_order,
     identity_state_morphism,
 };
+pub use multisource::{
+    CandidateRecordSpec, CheckedMultisourceTask, MultisourceTaskSpec, SourcePresentationSpec,
+    SupportGoalFormula, SupportGoalSpec, validate_multisource_task,
+};
 pub use observation::{
     CandidateObservationDecl, CheckedObservationTask, LawReadoutSpec, ObservationTaskSpec,
+};
+pub use occurrence::{
+    CheckedOccurrenceTask, OccurrenceInitialReadoutSpec, OccurrenceOpSpec, OccurrenceReadingSpec,
+    OccurrenceRelSpec, OccurrenceSortSpec, OccurrenceTaskSpec, validate_occurrence_task,
+};
+pub use partial::{
+    AffinePartialPresentation, AffineRestrictionSpec, BackgroundConstraint, CheckedPartialTask,
+    FiberCoverageCheckSpec, FinitePartialPresentation, OpenDomainSpec, OpenOpTable, OpenRelTable,
+    PartialArithOp, PartialEvalLawSpec, PartialFormula, PartialOpSignature, PartialPredSignature,
+    PartialRecordKind, PartialRecordSpec, PartialRepresentation, PartialSlotDecl, PartialTaskSpec,
+    PartialTerm, PartialTruth, PartialValue, QuantifierCompletionSpec, QuantifierHierarchySpec,
+    validate_partial_task,
 };
 pub use path::{
     CheckedPathTask, ModelEndpoint, OneStepRule, PathKind, PathQueryMode, PathSpec,
@@ -125,6 +151,20 @@ pub use result_phase4::{
     LawValueBlockSummary, LiftOutcomeDetail, NilpotentBaseChangeResult, PartitionStratumSummary,
     RPointContrastResult, RawCechComparisonResult, RedundantComparisonResult, RelativeConeResult,
     UniversalObstructionSummary, UpperSemicontinuityRefutation,
+};
+pub use result_phase5_obs::{
+    AttributeRealizationDetail, OccurrenceCollisionDetail, OccurrenceOutcomeDetail,
+    OpenDomainResultDetail, PartialLawEvalSummary, PartialOutcomeDetail, QuantifierHierarchyDetail,
+    SeparatingContextDetail,
+};
+pub use result_phase5_rev::{
+    MultisourceOutcomeDetail, RevisionOutcomeDetail, RevisionProbeResult, SnfReuseDetail,
+    SupportCostEntry, SupportGoalDetail,
+};
+pub use revision::{
+    CheckedRevisionTask, RevisionConstraintSpec, RevisionCoordSpec, RevisionEvalProbe,
+    RevisionKind, RevisionPredicate, RevisionSideSpec, RevisionTaskSpec, SnfRevisionSpec,
+    validate_revision_task,
 };
 pub use robustness::{
     CandidateSelector, CheckedChevalleyTask, CheckedRobustnessTask, ChevalleyTaskSpec,

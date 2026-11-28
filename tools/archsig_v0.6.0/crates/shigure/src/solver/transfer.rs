@@ -511,6 +511,10 @@ pub fn solve_transfer_task(task: &CheckedTransferTask) -> ShigureOutcome {
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -633,6 +637,10 @@ fn undetermined_transfer(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -675,5 +683,9 @@ fn refuted_transfer(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }

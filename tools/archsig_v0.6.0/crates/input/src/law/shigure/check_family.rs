@@ -396,13 +396,7 @@ pub(super) fn check_family<E: InputError>(
         c_owned: &c_owned,
         full_name: &full_name,
     };
-    let goodness = check_goodness(
-        &raw.goodness,
-        ctx,
-        &real_space,
-        &coeff_domain,
-        &var_sets,
-    )?;
+    let goodness = check_goodness(&raw.goodness, ctx, &real_space, &coeff_domain, &var_sets)?;
 
     let reading_comparison = raw
         .reading_comparison

@@ -72,8 +72,8 @@ pub(crate) fn compute_affine_repair<B: LiftRingBackend>(
             for kb in &kernel_basis {
                 let kb_full =
                     expand_subset_delta(ctx.spec.variables.len(), &allowed_indices, dm, kb, &z);
-                let shifted_k = apply_m_shift(&ctx.ext, &shifted, &kb_full)
-                    .map_err(map_lift_algebra_error)?;
+                let shifted_k =
+                    apply_m_shift(&ctx.ext, &shifted, &kb_full).map_err(map_lift_algebra_error)?;
                 let re_k =
                     reevaluate_laws_in_rp(&ctx.law_polys, &shifted_k, &ctx.param_vals_rp, &ctx.ext)
                         .map_err(map_lift_algebra_error)?;
@@ -171,12 +171,10 @@ fn compute_finite_affine_repair<B: LiftRingBackend>(
             let mut reeval =
                 reevaluate_laws_in_rp(&ctx.law_polys, &shifted, &ctx.param_vals_rp, &ctx.ext)
                     .map_err(map_lift_algebra_error)?;
-            let particular_map =
-                format_subset_rp_map(&aff.allowed_vars, &particular, dp, &ctx.ext);
+            let particular_map = format_subset_rp_map(&aff.allowed_vars, &particular, dp, &ctx.ext);
             let mut torsor_maps = Vec::with_capacity(kernel_basis.len());
             for kb in &kernel_basis {
-                let shifted_k =
-                    apply_rp_subset_shift(&shifted, allowed_indices, dp, kb, &ctx.ext);
+                let shifted_k = apply_rp_subset_shift(&shifted, allowed_indices, dp, kb, &ctx.ext);
                 let re_k =
                     reevaluate_laws_in_rp(&ctx.law_polys, &shifted_k, &ctx.param_vals_rp, &ctx.ext)
                         .map_err(map_lift_algebra_error)?;

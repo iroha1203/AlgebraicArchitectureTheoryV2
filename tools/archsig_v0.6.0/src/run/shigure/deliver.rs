@@ -609,6 +609,18 @@ fn silence_reason_issue(request_id: &str, reason: &SilenceReason) -> Json {
             "unsupported_algorithm",
             format!("disconnected graph out of scope: {detail}"),
         ),
+        SilenceReason::UnsupportedCompletionClass { detail } => (
+            "unsupported_algorithm",
+            format!("unsupported completion class: {detail}"),
+        ),
+        SilenceReason::OperatorNotUniquelyDetermined { detail } => (
+            "unsupported_algorithm",
+            format!("operator is not uniquely determined by common part: {detail}"),
+        ),
+        SilenceReason::OperatorRevisionReuseRejected { detail } => (
+            "unsupported_algorithm",
+            format!("SNF factorization reuse rejected on operator revision: {detail}"),
+        ),
         SilenceReason::ApplicabilityConditionNotMet { condition, detail } => (
             "unsupported_algorithm",
             format!("applicability condition `{condition}` not met: {detail}"),

@@ -55,6 +55,10 @@ impl SolveCtx {
             artin: None,
             diagnostics: None,
             atlas: None,
+            occurrence: None,
+            partial: None,
+            revision: None,
+            multisource: None,
         }
     }
 
@@ -83,6 +87,10 @@ impl SolveCtx {
             artin: None,
             diagnostics: None,
             atlas: None,
+            occurrence: None,
+            partial: None,
+            revision: None,
+            multisource: None,
         }
     }
 
@@ -111,6 +119,10 @@ impl SolveCtx {
             artin: None,
             diagnostics: None,
             atlas: None,
+            occurrence: None,
+            partial: None,
+            revision: None,
+            multisource: None,
         }
     }
 }

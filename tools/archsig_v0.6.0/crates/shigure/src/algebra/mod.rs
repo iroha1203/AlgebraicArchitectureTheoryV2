@@ -12,15 +12,19 @@
 pub mod artin;
 pub mod artin_quotient;
 pub mod cochain;
+pub mod congruence;
 pub mod constructible;
 pub mod constructible_image;
 pub mod groebner;
+pub mod hitting_set;
 pub mod interaction;
 pub mod linear;
+pub mod partition;
 pub mod poly;
 pub mod poly_expr;
 pub mod quotient;
 pub mod scalar;
+pub mod snf;
 pub mod syzygy;
 
 #[cfg(test)]
@@ -29,6 +33,8 @@ mod tests;
 mod tests_constructible;
 #[cfg(test)]
 mod tests_phase4;
+#[cfg(test)]
+mod tests_phase5;
 
 pub use artin::{
     AffineSolutionField, DEFAULT_MAX_ARTIN_DIM, FiniteAlgebra, LocalArtinQuotient, RrefResult,
@@ -45,9 +51,18 @@ pub use constructible_image::{
     project_stratum_image,
 };
 
+pub use congruence::{
+    CollisionKind, CollisionWitness, CongruenceClosureResult, CongruenceInput, CongruenceSort,
+    DEFAULT_MAX_CONGRUENCE_STEPS, DerivationReason, DerivationStep, OpOutputRecord,
+    PredicateRecord, PredicateRecordKind, compute_congruence_closure, verify_collision_witness,
+};
 pub use groebner::{
     DEFAULT_MAX_BUCHBERGER_PAIRS, GroebnerBasis, MembershipResult, RabinowitschResult, TrackedPoly,
     rabinowitsch_solve,
+};
+pub use hitting_set::{
+    DEFAULT_MAX_HITTING_SET_RESULTS, DEFAULT_MAX_HITTING_SET_STEPS, HittingSetInput,
+    HittingSetOutcome, enumerate_minimal_hitting_sets, verify_minimal_hitting_sets,
 };
 pub use interaction::{
     analyze_coordinate_interaction, analyze_interaction_on_face, require_closed_for_interaction,
@@ -57,12 +72,18 @@ pub use linear::{
     SystemPointOutcome, solve_affine_q, solve_affine_z, solve_fp_enumeration,
     solve_polynomial_system_q,
 };
+pub use partition::{
+    BaseReading, DEFAULT_MAX_SET_PARTITIONS, PartialOpTable, PartitionRefinementResult,
+    RefinementInput, SeparatingContext, SeparatingWitness, enumerate_set_partitions,
+    partition_refines, refine_partition,
+};
 pub use poly::{AlgebraError, ExprBindings, Monomial, Poly, VarOrder};
 pub use quotient::{
     DEFAULT_MAX_QUOTIENT_BRANCHES, DEFAULT_MAX_QUOTIENT_Y_PAIRS, QuotientStratum,
     quotient_membership_locus,
 };
 pub use scalar::{FpElem, Rat, RingCoeff};
+pub use snf::{SnfFactorizationQ, SnfFactorizationZ, SnfRhsSolutionQ, SnfRhsSolutionZ};
 pub use syzygy::{
     DEFAULT_MAX_SYZYGY_PAIRS, FieldCoeff, SyzygyModule, compute_syzygies_field, compute_syzygies_z,
     ideal_membership_field, jacobian_polys,

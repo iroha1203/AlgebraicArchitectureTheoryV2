@@ -308,6 +308,10 @@ pub fn solve_chevalley_task(task: &CheckedChevalleyTask) -> ShigureOutcome {
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
@@ -338,6 +342,10 @@ fn undetermined_chevalley(
         artin: None,
         diagnostics: None,
         atlas: None,
+        occurrence: None,
+        partial: None,
+        revision: None,
+        multisource: None,
     }
 }
 
