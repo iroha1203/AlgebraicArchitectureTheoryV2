@@ -118,6 +118,12 @@ import Formal.SHIGURE.Part2.MinimalRing.RingDualObservation
 import Formal.SHIGURE.Part2.MinimalRing.RingReachability
 import Formal.SHIGURE.Part2.MinimalRing.Systems
 
+import Formal.SHIGURE.Part2.Schemes.ConstantRank
+import Formal.SHIGURE.Part2.Schemes.ConstantRankExamples
+import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeDescent
+import Formal.SHIGURE.Part2.Schemes.FppfBaseMaps
+import Formal.SHIGURE.Part2.Schemes.CoreDescent
+
 /-! # SHIGURE
 
 The entry point for the SHIGURE formalization.

@@ -111,6 +111,12 @@ import Formal.SHIGURE.Part2.MinimalRing.RingDualObservation
 import Formal.SHIGURE.Part2.MinimalRing.RingReachability
 import Formal.SHIGURE.Part2.MinimalRing.Systems
 
+import Formal.SHIGURE.Part2.Schemes.ConstantRank
+import Formal.SHIGURE.Part2.Schemes.ConstantRankExamples
+import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeDescent
+import Formal.SHIGURE.Part2.Schemes.FppfBaseMaps
+import Formal.SHIGURE.Part2.Schemes.CoreDescent
+
 /-! # SHIGURE kernel audit entry point -/
 
 namespace SHIGURE.AxiomAudit
@@ -5577,6 +5583,59 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.MinimalRing.allWordDualObservationMap,
   SHIGURE.MinimalRing.baseChangeSystem,
   SHIGURE.MinimalRing.evaluate_baseChange
+]
+
+-- Appendix B.3 and Lemma 6.2: fixed ranks, effective descent, and maximal cores.
+#shigure_assert_standard_axioms_of [
+  SHIGURE.SchemeDescent.HasConstantRankOn,
+  SHIGURE.SchemeDescent.IsFiniteLocallyFreeOfRank,
+  SHIGURE.SchemeDescent.HasConstantRankOn.rank,
+  SHIGURE.SchemeDescent.hasConstantRankOn_iff,
+  SHIGURE.SchemeDescent.HasConstantRankOn.pullback,
+  SHIGURE.SchemeDescent.HasConstantRankOn.ofIso,
+  SHIGURE.SchemeDescent.HasConstantRankOn.restrict,
+  SHIGURE.SchemeDescent.IsFiniteLocallyFreeOfRank.of_affineCover,
+  SHIGURE.SchemeDescent.IsFiniteLocallyFreeOfRank.ofIso,
+  SHIGURE.SchemeDescent.IsFiniteLocallyFreeOfRank.pullback,
+  SHIGURE.SchemeDescent.isFiniteLocallyFreeOfRank_of_fppfCover,
+  SHIGURE.SchemeDescent.isFiniteLocallyFreeOfRank_iff_fppfCover,
+  SHIGURE.SchemeDescent.affineTilde_on_top_constantRank_iff,
+  SHIGURE.SchemeDescent.affineTilde_finiteLocallyFreeOfRank_iff,
+  SHIGURE.SchemeDescent.Examples.finiteFreeAffine_isFiniteLocallyFreeOfRank,
+  SHIGURE.SchemeDescent.Examples.rationalRankOne_not_rankZero,
+  SHIGURE.SchemeDescent.Examples.finiteFreeAffine_all_ranks_of_subsingleton,
+  SHIGURE.SchemeDescent.IsFiniteLocallyFreeModule.ofIso,
+  SHIGURE.SchemeDescent.finiteLocallyFreeProperty,
+  SHIGURE.SchemeDescent.FiniteLocallyFreeModules,
+  SHIGURE.SchemeDescent.fppfModuleDescentEvaluation,
+  SHIGURE.SchemeDescent.finiteLocallyFreeDescentProperty,
+  SHIGURE.SchemeDescent.FiniteLocallyFreeDescentData,
+  SHIGURE.SchemeDescent.finiteLocallyFreeComparison,
+  SHIGURE.SchemeDescent.finiteLocallyFreeComparison_fullyFaithful,
+  SHIGURE.SchemeDescent.finiteLocallyFreeComparison_essSurj,
+  SHIGURE.SchemeDescent.finiteLocallyFreeComparison_isEquivalence,
+  SHIGURE.SchemeDescent.finiteLocallyFreeComparisonEquivalence,
+  SHIGURE.SchemeDescent.constantRankProperty,
+  SHIGURE.SchemeDescent.constantRankDescentProperty,
+  SHIGURE.SchemeDescent.constantRankComparison,
+  SHIGURE.SchemeDescent.constantRankComparison_fullyFaithful,
+  SHIGURE.SchemeDescent.constantRankComparison_essSurj,
+  SHIGURE.SchemeDescent.constantRankComparison_isEquivalence,
+  SHIGURE.SchemeDescent.constantRankComparisonEquivalence,
+  SHIGURE.SchemeDescent.fppfAffineTargetMaps_existUnique_onAnyBase,
+  SHIGURE.SchemeDescent.fppfBaseMaps_existUnique,
+  SHIGURE.SchemeDescent.corePseudofunctor,
+  SHIGURE.SchemeDescent.coreDescentOfObj,
+  SHIGURE.SchemeDescent.forgetCoreDescentObj,
+  SHIGURE.SchemeDescent.descentEvaluation,
+  SHIGURE.SchemeDescent.coreDescentFunctor,
+  SHIGURE.SchemeDescent.coreDescentInverse,
+  SHIGURE.SchemeDescent.coreDescentUnitIso,
+  SHIGURE.SchemeDescent.coreDescentCounitIso,
+  SHIGURE.SchemeDescent.coreDescentEquivalence,
+  SHIGURE.SchemeDescent.coreComparisonIso,
+  SHIGURE.SchemeDescent.coreComparison_isEquivalence,
+  SHIGURE.SchemeDescent.corePseudofunctor_isStack
 ]
 
 end SHIGURE.AxiomAudit
