@@ -456,12 +456,16 @@ fn parse_check_or_run(running: bool, rest: &[OsString]) -> Result<ParsedCli, Cli
     }
     let effective_read_max = prescanned_max.unwrap_or(DEFAULT_MAX_FILE_BYTES);
 
+    enum AskSource {
+        Inline(String),
+        File(OsString),
+    }
+
     let mut project_path: Option<PathBuf> = None;
     let mut definitions = Vec::new();
-    let mut asks = Vec::new();
+    let mut ask_sources = Vec::new();
     let mut singles = BTreeMap::new();
     let mut cli_shigure_limits = Vec::new();
-    let mut used_stdin = false;
     let mut state = CommonFlagState::default();
 
     let policy = CommonFlagPolicy {
@@ -507,15 +511,10 @@ fn parse_check_or_run(running: bool, rest: &[OsString]) -> Result<ParsedCli, Cli
                 let s = value
                     .to_str()
                     .ok_or_else(|| usage(flag, "request must be UTF-8"))?;
-                asks.push(s.to_owned());
+                ask_sources.push(AskSource::Inline(s.to_owned()));
             }
             "--ask-file" => {
-                asks.extend(read_ask_file(
-                    &value,
-                    effective_read_max,
-                    &mut used_stdin,
-                    flag,
-                )?);
+                ask_sources.push(AskSource::File(value));
             }
             "--shigure-limit" => cli_shigure_limits.push(value),
             _ => {
@@ -530,8 +529,10 @@ fn parse_check_or_run(running: bool, rest: &[OsString]) -> Result<ParsedCli, Cli
         }
     }
 
+    let mut project_asks: Vec<String> = Vec::new();
     if let Some(p) = project_path.as_deref() {
         let m = load_project(p, effective_read_max)?;
+        // Note: project's `max_file_bytes` governs subsequent input & `--ask-file` reads unless overridden on CLI.
         if !state.saw_max_file_bytes
             && let Some(limit) = m.max_file_bytes
         {
@@ -554,9 +555,26 @@ fn parse_check_or_run(running: bool, rest: &[OsString]) -> Result<ParsedCli, Cli
         {
             singles.insert("--archmap".to_owned(), archmap.into_os_string());
         }
-        if running && asks.is_empty() {
-            asks = m.asks;
+        project_asks = m.asks;
+    }
+
+    let mut asks = Vec::new();
+    let mut used_stdin = false;
+    for source in ask_sources {
+        match source {
+            AskSource::Inline(s) => asks.push(s),
+            AskSource::File(val) => {
+                asks.extend(read_ask_file(
+                    &val,
+                    options.max_file_bytes,
+                    &mut used_stdin,
+                    "--ask-file",
+                )?);
+            }
         }
+    }
+    if running && asks.is_empty() {
+        asks = project_asks;
     }
 
     for val in cli_shigure_limits {

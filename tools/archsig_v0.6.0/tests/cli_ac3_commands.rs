@@ -257,6 +257,28 @@ fn project_manifest_resolves_relative_paths_and_rejects_implicit_discovery() {
         None,
     );
     assert_eq!(code, 69);
+
+    // マニフェストの `max_file_bytes` が `--ask-file` 読込上限にも適用されること
+    let strict_proj = sub.join("strict_max.json");
+    std::fs::write(
+        &strict_proj,
+        r#"{"format":"archsig.project/1","semantics":"archsig/0.6.0","atom_definitions":["c.atoms.json"],"law":"c.law","archmap":"c.archmap.json","max_file_bytes":10}"#,
+    )
+    .unwrap();
+    let asks_big = dir.join("big_asks.txt");
+    std::fs::write(&asks_big, "p=evaluate(CountCheck.amount,s=@v/s)\n").unwrap();
+    let (code, _, _) = run_raw(
+        &dir,
+        &[
+            "run",
+            "--project",
+            strict_proj.to_str().unwrap(),
+            "--ask-file",
+            asks_big.to_str().unwrap(),
+        ],
+        None,
+    );
+    assert_eq!(code, 74);
 }
 
 #[test]
@@ -547,6 +569,42 @@ fn digest_and_inspect_commands_work_for_inputs_and_saved_results() {
         None,
     );
     assert_eq!(code, 65);
+
+    let broken_ans_dir = dir.join("broken_ans");
+    std::fs::create_dir(&broken_ans_dir).unwrap();
+    std::fs::write(
+        broken_ans_dir.join("result.json"),
+        r#"{"format":"archsig.result/4","status":"complete","exit_code":0,"answers":[{}]}"#,
+    )
+    .unwrap();
+    let (code, _, _) = run_raw(
+        &dir,
+        &["inspect", "--result", broken_ans_dir.to_str().unwrap()],
+        None,
+    );
+    assert_eq!(code, 65);
+
+    // 深さ 240 の nodes 参照を展開してもパニックせず返ること
+    let mut deep_val = "\"leaf\"".to_owned();
+    for _ in 0..235 {
+        deep_val = format!("[{deep_val}]");
+    }
+    let deep_dir = dir.join("deep_nodes");
+    std::fs::create_dir(&deep_dir).unwrap();
+    std::fs::write(
+        deep_dir.join("result.json"),
+        format!(
+            r#"{{"format":"archsig.result/4","status":"complete","exit_code":0,"answers":[{{"id":"q","status":"established","outputs":{{"v":{{"node":"n0"}}}}}}],"nodes":[{{"id":"n0","value":{deep_val}}}]}}"#
+        ),
+    )
+    .unwrap();
+    let (code, deep_out, stderr) = run_raw(
+        &dir,
+        &["inspect", "--result", deep_dir.to_str().unwrap()],
+        None,
+    );
+    assert_eq!(code, 0, "stderr={stderr}");
+    assert!(deep_out.contains("\"node_id\":\"n0\""));
 }
 
 #[test]

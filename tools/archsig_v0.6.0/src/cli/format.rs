@@ -18,10 +18,23 @@ pub fn render_outcome(outcome: &Outcome, format: OutputFormat) -> String {
 
 /// 任意の `Json` 値（`digest`, `inspect`, `inspect --result` 等）を指定フォーマットで整形する。
 pub fn render_json_value(json: &Json, format: OutputFormat) -> String {
+    let encode_depth = DEFAULT_MAX_JSON_DEPTH.saturating_mul(2);
+    let canonical = || {
+        json.try_canonical_with_max_depth(encode_depth)
+            .unwrap_or_else(|err| Json::obj([("error", Json::str(&err.message))]).canonical())
+    };
     match format {
-        OutputFormat::Json => json.canonical(),
-        OutputFormat::Pretty => json.pretty(),
-        OutputFormat::Human => render_human_jnode(&parse_or_fallback(&json.canonical())),
+        OutputFormat::Json => canonical(),
+        OutputFormat::Pretty => json
+            .try_pretty_with_max_depth(encode_depth)
+            .unwrap_or_else(|_| canonical()),
+        OutputFormat::Human => {
+            let raw = canonical();
+            match parse_with_max_depth(raw.as_bytes(), encode_depth) {
+                Ok(node) => render_human_jnode(&node),
+                Err(_) => raw,
+            }
+        }
     }
 }
 

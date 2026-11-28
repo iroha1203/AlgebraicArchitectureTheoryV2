@@ -176,6 +176,39 @@ pub fn execute(
         }
     };
 
+    for (idx, ans) in answers_arr.iter().enumerate() {
+        if !matches!(&ans.value, JValue::Obj(_)) {
+            return Err(schema_error(
+                signals,
+                control,
+                &format!("/answers/{idx}"),
+                "each entry in `answers` must be a JSON object",
+            ));
+        }
+        if obj_field(ans, "id")
+            .and_then(as_str)
+            .is_none_or(str::is_empty)
+        {
+            return Err(schema_error(
+                signals,
+                control,
+                &format!("/answers/{idx}/id"),
+                "each answer in `answers` requires a non-empty string `id` field",
+            ));
+        }
+        if obj_field(ans, "status")
+            .and_then(as_str)
+            .is_none_or(str::is_empty)
+        {
+            return Err(schema_error(
+                signals,
+                control,
+                &format!("/answers/{idx}/status"),
+                "each answer in `answers` requires a non-empty string `status` field",
+            ));
+        }
+    }
+
     if !args.answers.is_empty() {
         let available: Vec<&str> = answers_arr
             .iter()
@@ -247,8 +280,22 @@ pub fn execute(
         out_obj.insert("inputs".into(), jnode_to_json(inputs));
     }
 
+    let doc = Json::Obj(out_obj);
+    let expanded_max_depth = DEFAULT_MAX_JSON_DEPTH.saturating_mul(2);
+    if doc
+        .try_canonical_with_max_depth(expanded_max_depth)
+        .is_err()
+    {
+        return Err(schema_error(
+            signals,
+            control,
+            "/answers",
+            "expanded inspect result exceeds safe JSON nesting depth",
+        ));
+    }
+
     Ok(CommandOutput {
-        json: Json::Obj(out_obj),
+        json: doc,
         exit_code: 0,
     })
 }
