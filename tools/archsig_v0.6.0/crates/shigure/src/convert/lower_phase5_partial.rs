@@ -27,86 +27,212 @@ use archsig_input::law::shigure::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
+enum TermLowerFrame<'a> {
+    Visit(&'a ShigurePartialTerm),
+    BuildApp { op_name: &'a str, argc: usize },
+    BuildLet(&'a str),
+    BuildBinOp(PartialArithOp),
+}
+
 fn lower_partial_term(term: &ShigurePartialTerm) -> PartialTerm {
-    match term {
-        ShigurePartialTerm::Var(v) => PartialTerm::Var(v.clone()),
-        ShigurePartialTerm::Const(c) => PartialTerm::Const(c.clone()),
-        ShigurePartialTerm::Slot(s) => PartialTerm::Slot(s.clone()),
-        ShigurePartialTerm::App { op_name, args } => PartialTerm::App {
-            op_name: op_name.clone(),
-            args: args.iter().map(lower_partial_term).collect(),
-        },
-        ShigurePartialTerm::Let { var, bound, body } => PartialTerm::Let {
-            var: var.clone(),
-            bound: Box::new(lower_partial_term(bound)),
-            body: Box::new(lower_partial_term(body)),
-        },
-        ShigurePartialTerm::BinOp { op, lhs, rhs } => PartialTerm::BinOp {
-            op: match op {
-                ShigurePartialArithOp::Add => PartialArithOp::Add,
-                ShigurePartialArithOp::Sub => PartialArithOp::Sub,
-                ShigurePartialArithOp::Mul => PartialArithOp::Mul,
+    let mut work = vec![TermLowerFrame::Visit(term)];
+    let mut values: Vec<PartialTerm> = Vec::new();
+    while let Some(frame) = work.pop() {
+        match frame {
+            TermLowerFrame::Visit(node) => match node {
+                ShigurePartialTerm::Var(v) => values.push(PartialTerm::Var(v.clone())),
+                ShigurePartialTerm::Const(c) => values.push(PartialTerm::Const(c.clone())),
+                ShigurePartialTerm::Slot(s) => values.push(PartialTerm::Slot(s.clone())),
+                ShigurePartialTerm::App { op_name, args } => {
+                    work.push(TermLowerFrame::BuildApp {
+                        op_name: op_name.as_str(),
+                        argc: args.len(),
+                    });
+                    for a in args.iter().rev() {
+                        work.push(TermLowerFrame::Visit(a));
+                    }
+                }
+                ShigurePartialTerm::Let { var, bound, body } => {
+                    work.push(TermLowerFrame::BuildLet(var.as_str()));
+                    work.push(TermLowerFrame::Visit(body));
+                    work.push(TermLowerFrame::Visit(bound));
+                }
+                ShigurePartialTerm::BinOp { op, lhs, rhs } => {
+                    let arith = match op {
+                        ShigurePartialArithOp::Add => PartialArithOp::Add,
+                        ShigurePartialArithOp::Sub => PartialArithOp::Sub,
+                        ShigurePartialArithOp::Mul => PartialArithOp::Mul,
+                    };
+                    work.push(TermLowerFrame::BuildBinOp(arith));
+                    work.push(TermLowerFrame::Visit(rhs));
+                    work.push(TermLowerFrame::Visit(lhs));
+                }
             },
-            lhs: Box::new(lower_partial_term(lhs)),
-            rhs: Box::new(lower_partial_term(rhs)),
-        },
+            TermLowerFrame::BuildApp { op_name, argc } => {
+                let start = values.len().saturating_sub(argc);
+                let args = values.split_off(start);
+                values.push(PartialTerm::App {
+                    op_name: op_name.to_owned(),
+                    args,
+                });
+            }
+            TermLowerFrame::BuildLet(var) => {
+                let body = values.pop().expect("let body");
+                let bound = values.pop().expect("let bound");
+                values.push(PartialTerm::Let {
+                    var: var.to_owned(),
+                    bound: Box::new(bound),
+                    body: Box::new(body),
+                });
+            }
+            TermLowerFrame::BuildBinOp(op) => {
+                let rhs = values.pop().expect("binop rhs");
+                let lhs = values.pop().expect("binop lhs");
+                values.push(PartialTerm::BinOp {
+                    op,
+                    lhs: Box::new(lhs),
+                    rhs: Box::new(rhs),
+                });
+            }
+        }
     }
+    values.pop().expect("root lowered partial term")
+}
+
+enum FormulaLowerFrame<'a> {
+    Visit(&'a ShigurePartialFormula),
+    BuildNot,
+    BuildAnd(usize),
+    BuildOr(usize),
+    BuildQuant {
+        is_exists: bool,
+        var: &'a str,
+        sort: &'a str,
+        restricted: &'a Option<Vec<String>>,
+    },
 }
 
 fn lower_partial_formula(f: &ShigurePartialFormula) -> PartialFormula {
-    match f {
-        ShigurePartialFormula::Eq(a, b) => {
-            PartialFormula::Eq(lower_partial_term(a), lower_partial_term(b))
+    let mut work = vec![FormulaLowerFrame::Visit(f)];
+    let mut values: Vec<PartialFormula> = Vec::new();
+    while let Some(frame) = work.pop() {
+        match frame {
+            FormulaLowerFrame::Visit(node) => match node {
+                ShigurePartialFormula::Eq(a, b) => {
+                    values.push(PartialFormula::Eq(
+                        lower_partial_term(a),
+                        lower_partial_term(b),
+                    ));
+                }
+                ShigurePartialFormula::Rel { rel_name, args } => {
+                    values.push(PartialFormula::Rel {
+                        rel_name: rel_name.clone(),
+                        args: args.iter().map(lower_partial_term).collect(),
+                    });
+                }
+                ShigurePartialFormula::Graph {
+                    op_name,
+                    args,
+                    output,
+                } => {
+                    values.push(PartialFormula::Graph {
+                        op_name: op_name.clone(),
+                        args: args.iter().map(lower_partial_term).collect(),
+                        output: lower_partial_term(output),
+                    });
+                }
+                ShigurePartialFormula::Defined { op_name, args } => {
+                    values.push(PartialFormula::Defined {
+                        op_name: op_name.clone(),
+                        args: args.iter().map(lower_partial_term).collect(),
+                    });
+                }
+                ShigurePartialFormula::Not(inner) => {
+                    work.push(FormulaLowerFrame::BuildNot);
+                    work.push(FormulaLowerFrame::Visit(inner));
+                }
+                ShigurePartialFormula::And(list) => {
+                    work.push(FormulaLowerFrame::BuildAnd(list.len()));
+                    for item in list.iter().rev() {
+                        work.push(FormulaLowerFrame::Visit(item));
+                    }
+                }
+                ShigurePartialFormula::Or(list) => {
+                    work.push(FormulaLowerFrame::BuildOr(list.len()));
+                    for item in list.iter().rev() {
+                        work.push(FormulaLowerFrame::Visit(item));
+                    }
+                }
+                ShigurePartialFormula::Exists {
+                    var,
+                    sort,
+                    restricted_domain,
+                    body,
+                } => {
+                    work.push(FormulaLowerFrame::BuildQuant {
+                        is_exists: true,
+                        var: var.as_str(),
+                        sort: sort.as_str(),
+                        restricted: restricted_domain,
+                    });
+                    work.push(FormulaLowerFrame::Visit(body));
+                }
+                ShigurePartialFormula::Forall {
+                    var,
+                    sort,
+                    restricted_domain,
+                    body,
+                } => {
+                    work.push(FormulaLowerFrame::BuildQuant {
+                        is_exists: false,
+                        var: var.as_str(),
+                        sort: sort.as_str(),
+                        restricted: restricted_domain,
+                    });
+                    work.push(FormulaLowerFrame::Visit(body));
+                }
+            },
+            FormulaLowerFrame::BuildNot => {
+                let inner = values.pop().expect("not inner");
+                values.push(PartialFormula::Not(Box::new(inner)));
+            }
+            FormulaLowerFrame::BuildAnd(count) => {
+                let start = values.len().saturating_sub(count);
+                let items = values.split_off(start);
+                values.push(PartialFormula::And(items));
+            }
+            FormulaLowerFrame::BuildOr(count) => {
+                let start = values.len().saturating_sub(count);
+                let items = values.split_off(start);
+                values.push(PartialFormula::Or(items));
+            }
+            FormulaLowerFrame::BuildQuant {
+                is_exists,
+                var,
+                sort,
+                restricted,
+            } => {
+                let body = Box::new(values.pop().expect("quantifier body"));
+                let out = if is_exists {
+                    PartialFormula::Exists {
+                        var: var.to_owned(),
+                        sort: sort.to_owned(),
+                        restricted_domain: restricted.clone(),
+                        body,
+                    }
+                } else {
+                    PartialFormula::Forall {
+                        var: var.to_owned(),
+                        sort: sort.to_owned(),
+                        restricted_domain: restricted.clone(),
+                        body,
+                    }
+                };
+                values.push(out);
+            }
         }
-        ShigurePartialFormula::Rel { rel_name, args } => PartialFormula::Rel {
-            rel_name: rel_name.clone(),
-            args: args.iter().map(lower_partial_term).collect(),
-        },
-        ShigurePartialFormula::Graph {
-            op_name,
-            args,
-            output,
-        } => PartialFormula::Graph {
-            op_name: op_name.clone(),
-            args: args.iter().map(lower_partial_term).collect(),
-            output: lower_partial_term(output),
-        },
-        ShigurePartialFormula::Defined { op_name, args } => PartialFormula::Defined {
-            op_name: op_name.clone(),
-            args: args.iter().map(lower_partial_term).collect(),
-        },
-        ShigurePartialFormula::Not(inner) => {
-            PartialFormula::Not(Box::new(lower_partial_formula(inner)))
-        }
-        ShigurePartialFormula::And(list) => {
-            PartialFormula::And(list.iter().map(lower_partial_formula).collect())
-        }
-        ShigurePartialFormula::Or(list) => {
-            PartialFormula::Or(list.iter().map(lower_partial_formula).collect())
-        }
-        ShigurePartialFormula::Exists {
-            var,
-            sort,
-            restricted_domain,
-            body,
-        } => PartialFormula::Exists {
-            var: var.clone(),
-            sort: sort.clone(),
-            restricted_domain: restricted_domain.clone(),
-            body: Box::new(lower_partial_formula(body)),
-        },
-        ShigurePartialFormula::Forall {
-            var,
-            sort,
-            restricted_domain,
-            body,
-        } => PartialFormula::Forall {
-            var: var.clone(),
-            sort: sort.clone(),
-            restricted_domain: restricted_domain.clone(),
-            body: Box::new(lower_partial_formula(body)),
-        },
     }
+    values.pop().expect("root lowered partial formula")
 }
 
 fn lower_eval_law(law: &ShigurePartialEvalLaw) -> PartialEvalLawSpec {
@@ -295,9 +421,16 @@ pub(super) fn lower_required_scalar(
             }
             match cv {
                 CoordValue::Observed(lit) => Ok(lit),
-                CoordValue::Missing | CoordValue::Symbolic => Err(conv_err(format!(
-                    "observed field `{entity}.{field}` in {context} is missing or non-scalar"
-                ))),
+                CoordValue::Missing | CoordValue::Symbolic => {
+                    let field_display = if field.starts_with(&format!("{entity}.")) {
+                        field.clone()
+                    } else {
+                        format!("{entity}.{field}")
+                    };
+                    Err(conv_err(format!(
+                        "observed field `{field_display}` in {context} is missing or non-scalar"
+                    )))
+                }
             }
         }
         ShigureMemberCoordValue::Missing => Err(conv_err(format!(

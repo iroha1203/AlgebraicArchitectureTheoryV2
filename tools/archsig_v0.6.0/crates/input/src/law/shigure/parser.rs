@@ -19,7 +19,7 @@ impl<E: InputError> Parser<E> {
         self.expect_kw("shigure")?;
         let Some(tok) = self.peek().cloned() else {
             return self.err(
-                "expected SHIGURE declaration kind (`presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, `observations`, `lift`, `artin`, `diagnostics`, or `atlas`) after `shigure`",
+                "expected SHIGURE declaration kind (`presentation`, `comparison`, `change_spec`, `eval_condition`, `task`, `diagram`, `path`, `transfer`, `family`, `robustness`, `chevalley`, `observations`, `lift`, `artin`, `diagnostics`, `atlas`, `occurrence`, `partial`, `revision`, or `multisource`) after `shigure`",
             );
         };
         if tok.kind != TokenKind::Name {

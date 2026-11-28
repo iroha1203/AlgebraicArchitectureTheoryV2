@@ -9,6 +9,7 @@ pub mod ast_phase3;
 pub mod ast_phase4_diag_atlas;
 pub mod ast_phase4_lift_artin;
 pub mod ast_phase5_obs;
+mod ast_phase5_obs_drop;
 pub mod ast_phase5_rev;
 pub mod check;
 mod check_comparison;

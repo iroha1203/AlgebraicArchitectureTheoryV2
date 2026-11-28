@@ -332,7 +332,6 @@ pub(super) fn convert_revision_task(
                     )
                 })
                 .collect::<Result<Vec<_>, _>>()?;
-            missing_slots.extend(snf.operator_unobserved.iter().cloned());
             Some(SnfRevisionSpec {
                 coeff_domain: snf_dom,
                 m_before,

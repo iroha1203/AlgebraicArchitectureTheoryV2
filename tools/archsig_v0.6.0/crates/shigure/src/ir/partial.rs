@@ -342,3 +342,55 @@ impl CheckedPartialTask {
         &self.undeclared_unobserved_slots
     }
 }
+
+fn take_partial_term_children(t: &mut PartialTerm, stack: &mut Vec<PartialTerm>) {
+    let leaf = || PartialTerm::Var(String::new());
+    match t {
+        PartialTerm::Var(_) | PartialTerm::Const(_) | PartialTerm::Slot(_) => {}
+        PartialTerm::App { args, .. } => stack.append(args),
+        PartialTerm::Let { bound, body, .. } => {
+            stack.push(std::mem::replace(&mut **bound, leaf()));
+            stack.push(std::mem::replace(&mut **body, leaf()));
+        }
+        PartialTerm::BinOp { lhs, rhs, .. } => {
+            stack.push(std::mem::replace(&mut **lhs, leaf()));
+            stack.push(std::mem::replace(&mut **rhs, leaf()));
+        }
+    }
+}
+
+impl Drop for PartialTerm {
+    fn drop(&mut self) {
+        let mut stack = Vec::new();
+        take_partial_term_children(self, &mut stack);
+        while let Some(mut node) = stack.pop() {
+            take_partial_term_children(&mut node, &mut stack);
+        }
+    }
+}
+
+fn take_partial_formula_children(f: &mut PartialFormula, stack: &mut Vec<PartialFormula>) {
+    let leaf = || PartialFormula::And(Vec::new());
+    match f {
+        PartialFormula::Eq(_, _)
+        | PartialFormula::Rel { .. }
+        | PartialFormula::Graph { .. }
+        | PartialFormula::Defined { .. } => {}
+        PartialFormula::Not(inner)
+        | PartialFormula::Exists { body: inner, .. }
+        | PartialFormula::Forall { body: inner, .. } => {
+            stack.push(std::mem::replace(&mut **inner, leaf()));
+        }
+        PartialFormula::And(list) | PartialFormula::Or(list) => stack.append(list),
+    }
+}
+
+impl Drop for PartialFormula {
+    fn drop(&mut self) {
+        let mut stack = Vec::new();
+        take_partial_formula_children(self, &mut stack);
+        while let Some(mut node) = stack.pop() {
+            take_partial_formula_children(&mut node, &mut stack);
+        }
+    }
+}

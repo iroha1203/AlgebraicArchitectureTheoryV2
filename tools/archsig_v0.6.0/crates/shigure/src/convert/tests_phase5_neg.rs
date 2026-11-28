@@ -336,6 +336,135 @@ fn rejects_structural_cost_snf_and_missing_matrix_errors() {
         .convert_partial(&inputs)
         .expect_err("missing scalar in affine row must fail cleanly without fabrication");
     assert!(format!("{err:?}").contains("missing"), "err: {err:?}");
+
+    // 7. unknown identifier / out-of-scope bound var in partial eval_law
+    let err = try_check(
+        r#"
+  shigure partial BadTypo {
+    origin human_adopted "o";
+    finite_table {
+      sort S = [a];
+      operation f([S]) -> S;
+    }
+    eval_law l0 { conclusion = f(a) = typo; }
+  }
+"#,
+        true,
+    )
+    .unwrap_err();
+    assert!(
+        err.contains("unknown bound variable or sort element `typo`"),
+        "err: {err}"
+    );
+
+    let err = try_check(
+        r#"
+  shigure partial BadScope {
+    origin human_adopted "o";
+    finite_table {
+      sort S = [a];
+      relation R([S]);
+    }
+    eval_law l0 { conclusion = (exists x : S . rel(R(x))) and rel(R(x)); }
+  }
+"#,
+        true,
+    )
+    .unwrap_err();
+    assert!(
+        err.contains("unknown bound variable or sort element `x`"),
+        "err: {err}"
+    );
+
+    // 8. duplicate slot in quantifier.completion.slots
+    let err = try_check(
+        r#"
+  shigure partial DupQuantSlot {
+    origin human_adopted "o";
+    unsupported "u";
+    quantifier {
+      candidates [c0];
+      completion k0 { slots { xi = a; xi = b; } valid [c0]; output = a; }
+    }
+  }
+"#,
+        true,
+    )
+    .unwrap_err();
+    assert!(err.contains("duplicate slot `xi`"), "err: {err}");
+
+    // 9. duplicate op_table / rel_table entry in open_domain
+    let err = try_check(
+        r#"
+  shigure partial DupOpenOp {
+    origin human_adopted "o";
+    unsupported "u";
+    open_domain {
+      substructure {
+        sort S = [a];
+        op_table f([S]) -> S { [a] -> a; [a] -> a; }
+      }
+      ambient {
+        sort S = [a];
+        op_table f([S]) -> S { [a] -> a; }
+      }
+      positive_law l0 { conclusion = f(a) = a; }
+    }
+  }
+"#,
+        true,
+    )
+    .unwrap_err();
+    assert!(err.contains("duplicate op_table entry"), "err: {err}");
+
+    let err = try_check(
+        r#"
+  shigure partial DupOpenRel {
+    origin human_adopted "o";
+    unsupported "u";
+    open_domain {
+      substructure {
+        sort S = [a];
+        rel_table R([S]) { [a]; [a]; }
+      }
+      ambient {
+        sort S = [a];
+        rel_table R([S]) { [a]; }
+      }
+      positive_law l0 { conclusion = rel(R(a)); }
+    }
+  }
+"#,
+        true,
+    )
+    .unwrap_err();
+    assert!(err.contains("duplicate rel_table entry"), "err: {err}");
+
+    // 10. duplicate clause in affine_restriction
+    let err = try_check(
+        r#"
+  shigure partial DupAffRestr {
+    origin human_adopted "o";
+    unsupported "u";
+    open_domain {
+      substructure { sort S = [a]; }
+      ambient { sort S = [a]; }
+      positive_law l0 { conclusion = a = a; }
+      affine_restriction {
+        domain Q;
+        domain Q;
+        num_vars = 1;
+        m_matrix = [[1]];
+        b_rhs = [0];
+        r_matrix = [[1]];
+      }
+    }
+  }
+"#,
+        true,
+    )
+    .unwrap_err();
+    assert!(err.contains("duplicate `domain` clause"), "err: {err}");
 }
 
 #[test]

@@ -207,7 +207,11 @@ fn round_trip_partial_finite_quantifier_open_and_affine() {
     eval_law eq_self {
       required = true;
       antecedent = rel(R(a));
-      conclusion = exists x : S in [a, b] . let y = f(x) in f(x) = y;
+      conclusion = exists x : S in [a, b] . f(x) = let y = f(x) in y;
+    }
+    eval_law paren_let_quant {
+      required = true;
+      conclusion = exists x : S . rel(R(x)) and (let y = f(x) in y) = f(x) and ((a = a)) and -1 = -1;
     }
     quantifier {
       candidates [c0, c1];
@@ -364,11 +368,60 @@ fn round_trip_revision_snf_common_vs_split_and_unobserved_op() {
       force_reuse = true;
     }
   }
+
+  shigure revision RevOpUnobsOnly {
+    kind = span;
+    domain Z;
+    origin runtime_observation "rev_rt2";
+    coord z in [0, 1];
+    before {
+      assign z = 0;
+    }
+    after {
+      assign z = 1;
+    }
+    snf {
+      domain Z;
+      num_cols = 1;
+      operator_before = [[1]];
+      operator_after = [[2]];
+      rhs_before = [1];
+      rhs_after = [1];
+      operator_unobserved [op_entry_0];
+    }
+  }
+
+  shigure revision RevSplitForceReuse {
+    kind = span;
+    domain Z;
+    origin human_adopted "rev_h2";
+    coord z in [0, 1];
+    before {
+      assign z = 0;
+    }
+    after {
+      assign z = 1;
+    }
+    snf {
+      domain Z;
+      num_cols = 1;
+      operator_before = [[1]];
+      operator_after = [[2]];
+      rhs_before = [1];
+      rhs_after = [1];
+      force_reuse = true;
+    }
+  }
 "#;
     let inputs = check_sample_inputs(law);
     assert_eq!(
         list_shigure_revision_tasks(&inputs),
-        vec!["P5.RevCommon", "P5.RevSplitUnobs"]
+        vec![
+            "P5.RevCommon",
+            "P5.RevOpUnobsOnly",
+            "P5.RevSplitForceReuse",
+            "P5.RevSplitUnobs",
+        ]
     );
 
     let common_task = ShigureConverter::for_task("RevCommon")
@@ -397,6 +450,25 @@ fn round_trip_revision_snf_common_vs_split_and_unobserved_op() {
     assert!(matches!(
         split_out.verdict,
         Verdict::Undetermined(SilenceReason::UnobservedDependency { .. })
+    ));
+
+    let op_unobs_task = ShigureConverter::for_task("RevOpUnobsOnly")
+        .convert_revision(&inputs)
+        .expect("RevOpUnobsOnly lowers");
+    assert!(op_unobs_task.undeclared_unobserved_slots().is_empty());
+    let op_unobs_out = solve_revision_task(&op_unobs_task);
+    assert!(matches!(
+        op_unobs_out.verdict,
+        Verdict::Undetermined(SilenceReason::OperatorNotUniquelyDetermined { .. })
+    ));
+
+    let force_task = ShigureConverter::for_task("RevSplitForceReuse")
+        .convert_revision(&inputs)
+        .expect("RevSplitForceReuse lowers");
+    let force_out = solve_revision_task(&force_task);
+    assert!(matches!(
+        force_out.verdict,
+        Verdict::Undetermined(SilenceReason::OperatorRevisionReuseRejected { .. })
     ));
 }
 

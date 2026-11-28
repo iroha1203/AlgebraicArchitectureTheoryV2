@@ -11,9 +11,41 @@ const RED_ZONE: usize = 128 * 1024;
 const STACK_STEP: usize = 4 * 1024 * 1024;
 
 impl<E: InputError> Parser<E> {
-    fn peek_paren_is_formula(&self) -> bool {
+    fn matching_paren_end(&self, open_k: usize) -> Option<usize> {
         let mut depth = 0usize;
-        let mut k = 0usize;
+        let mut k = open_k;
+        while let Some(t) = self.peek_at(k) {
+            if t.kind == TokenKind::Sym && t.text == "(" {
+                depth += 1;
+            } else if t.kind == TokenKind::Sym && t.text == ")" {
+                depth = depth.saturating_sub(1);
+                if depth == 0 {
+                    return Some(k);
+                }
+            }
+            k += 1;
+        }
+        None
+    }
+
+    fn peek_paren_is_formula(&self) -> bool {
+        let mut start_k = 0usize;
+        while self
+            .peek_at(start_k)
+            .is_some_and(|t| t.kind == TokenKind::Sym && t.text == "(")
+            && self
+                .peek_at(start_k + 1)
+                .is_some_and(|t| t.kind == TokenKind::Sym && t.text == "(")
+            && let Some(inner_close) = self.matching_paren_end(start_k + 1)
+            && self
+                .peek_at(inner_close + 1)
+                .is_some_and(|t| t.kind == TokenKind::Sym && t.text == ")")
+        {
+            start_k += 1;
+        }
+        let mut depth = 0usize;
+        let mut k = start_k;
+        let mut let_pending_in: Vec<usize> = Vec::new();
         while let Some(t) = self.peek_at(k) {
             if t.kind == TokenKind::Sym && t.text == "(" {
                 depth += 1;
@@ -22,11 +54,18 @@ impl<E: InputError> Parser<E> {
                 if depth == 0 {
                     return false;
                 }
+            } else if t.kind == TokenKind::Name && t.text == "let" {
+                let_pending_in.push(depth);
+            } else if t.kind == TokenKind::Name && t.text == "in" {
+                if let_pending_in.last() == Some(&depth) {
+                    let_pending_in.pop();
+                }
             } else if depth == 1 {
                 if t.kind == TokenKind::Sym && t.text == "=" {
-                    return true;
-                }
-                if t.kind == TokenKind::Name
+                    if let_pending_in.last() != Some(&1) {
+                        return true;
+                    }
+                } else if t.kind == TokenKind::Name
                     && matches!(
                         t.text.as_str(),
                         "and" | "or" | "not" | "exists" | "forall" | "defined" | "graph" | "rel"
@@ -172,6 +211,18 @@ impl<E: InputError> Parser<E> {
                         }
                         return Ok(RawPartialTerm::IdentOrConst(id));
                     }
+                    TokenKind::Sym
+                        if tok.text == "-"
+                            && self.peek_at(1).is_some_and(|t| t.kind == TokenKind::Int) =>
+                    {
+                        let start = tok.span.0;
+                        self.advance();
+                        let n = self.expect_int_token()?;
+                        return Ok(RawPartialTerm::ConstLit(
+                            format!("-{n}"),
+                            (start, self.prev_end()),
+                        ));
+                    }
                     TokenKind::Sym => {}
                 }
             }
@@ -241,7 +292,7 @@ impl<E: InputError> Parser<E> {
                     None
                 };
                 self.expect_sym(".")?;
-                let body = self.parse_partial_unary()?;
+                let body = self.parse_partial_formula()?;
                 let span = (start, self.prev_end());
                 return Ok(if is_exists {
                     RawPartialFormula::Exists {
@@ -605,21 +656,36 @@ impl<E: InputError> Parser<E> {
                 while !self.is_sym("}") {
                     self.checkpoint_here()?;
                     if self.eat_kw("domain") {
+                        if domain.is_some() {
+                            return self.err("duplicate `domain` clause in `affine_restriction`");
+                        }
                         domain = Some(self.parse_shigure_coeff_domain()?);
                         self.expect_sym(";")?;
                     } else if self.eat_kw("num_vars") {
+                        if num_vars.is_some() {
+                            return self.err("duplicate `num_vars` clause in `affine_restriction`");
+                        }
                         self.expect_sym("=")?;
                         num_vars = Some(self.parse_usize_token("`num_vars`")?);
                         self.expect_sym(";")?;
                     } else if self.eat_kw("m_matrix") {
+                        if m_matrix.is_some() {
+                            return self.err("duplicate `m_matrix` clause in `affine_restriction`");
+                        }
                         self.expect_sym("=")?;
                         m_matrix = Some(self.parse_lit_matrix()?);
                         self.expect_sym(";")?;
                     } else if self.eat_kw("b_rhs") {
+                        if b_rhs.is_some() {
+                            return self.err("duplicate `b_rhs` clause in `affine_restriction`");
+                        }
                         self.expect_sym("=")?;
                         b_rhs = Some(self.parse_shigure_lit_bracket_list()?);
                         self.expect_sym(";")?;
                     } else if self.eat_kw("r_matrix") {
+                        if r_matrix.is_some() {
+                            return self.err("duplicate `r_matrix` clause in `affine_restriction`");
+                        }
                         self.expect_sym("=")?;
                         r_matrix = Some(self.parse_lit_matrix()?);
                         self.expect_sym(";")?;

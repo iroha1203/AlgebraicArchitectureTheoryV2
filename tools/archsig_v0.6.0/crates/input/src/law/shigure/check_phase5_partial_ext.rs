@@ -32,6 +32,16 @@ fn check_p5_term<E: InputError>(
             RawPartialTerm::IdentOrConst(id) => {
                 if bound_vars.contains(id.name.as_str()) {
                     Ok(ShigurePartialTerm::Var(id.name.clone()))
+                } else if !scope.allow_arbitrary_refs
+                    && !scope.sorts.values().any(|elems| elems.contains(&id.name))
+                {
+                    reference(
+                        id.span,
+                        format!(
+                            "unknown bound variable or sort element `{}` in partial formula",
+                            id.name
+                        ),
+                    )
                 } else {
                     Ok(ShigurePartialTerm::Const(id.name.clone()))
                 }
@@ -380,6 +390,7 @@ fn check_open_side<E: InputError>(
             );
         }
         let mut entries = Vec::with_capacity(op.entries.len());
+        let mut seen_op_args = HashSet::new();
         for (args, out_opt, e_span) in &op.entries {
             if args.len() != arg_sorts.len() {
                 return p4_type_err(*e_span, "open_domain op_table entry arity mismatch");
@@ -390,6 +401,16 @@ fn check_open_side<E: InputError>(
                     return reference(*a_span, format!("unknown element `{a}` of sort `{s}`"));
                 }
                 checked_args.push(a.clone());
+            }
+            if !seen_op_args.insert(checked_args.clone()) {
+                return duplicate(
+                    *e_span,
+                    format!(
+                        "duplicate op_table entry ({}) in `{}`",
+                        checked_args.join(", "),
+                        op.name.name
+                    ),
+                );
             }
             let checked_out = match out_opt {
                 Some((o, o_span)) => {
@@ -427,6 +448,7 @@ fn check_open_side<E: InputError>(
             arg_sorts.push(a.name.clone());
         }
         let mut entries = Vec::with_capacity(rel.entries.len());
+        let mut seen_rel_args = HashSet::new();
         for (args, e_span) in &rel.entries {
             if args.len() != arg_sorts.len() {
                 return p4_type_err(*e_span, "open_domain rel_table entry arity mismatch");
@@ -437,6 +459,16 @@ fn check_open_side<E: InputError>(
                     return reference(*a_span, format!("unknown element `{a}` of sort `{s}`"));
                 }
                 checked_args.push(a.clone());
+            }
+            if !seen_rel_args.insert(checked_args.clone()) {
+                return duplicate(
+                    *e_span,
+                    format!(
+                        "duplicate rel_table entry ({}) in `{}`",
+                        checked_args.join(", "),
+                        rel.name.name
+                    ),
+                );
             }
             entries.push(checked_args);
         }

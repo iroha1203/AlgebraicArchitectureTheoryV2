@@ -200,6 +200,23 @@ pub const FORBIDDEN_CONCLUSION_FIELDS: &[&str] = &[
     "stability_verified",
     "post_verification_minimal_supports",
     "support_invalidated",
+    "is_full_substructure",
+    "all_fibers_locally_exhaustive",
+    "uncovered_fibers",
+    "law_evaluations_match",
+    "before_consistent",
+    "after_consistent",
+    "all_candidates_consistent",
+    "g_iff_u_and_q_verified",
+    "sound_identification_exists",
+    "post_verification_reeval_needed",
+    "cokernel_free_rank",
+    "inconsistency_cert_row",
+    "sub_law_eval",
+    "ambient_law_eval",
+    "affine_image_dim",
+    "affine_fiber_dim",
+    "probe_results",
 ];
 
 pub fn is_forbidden_conclusion_field(name: &str) -> bool {

@@ -597,11 +597,20 @@ pub(super) fn check_partial<E: InputError>(
                     }
                     valid_candidates.push(vc.name.clone());
                 }
-                let slot_values = comp
-                    .slot_values
-                    .iter()
-                    .map(|(s, (v, _), _)| (s.name.clone(), v.clone()))
-                    .collect();
+                let mut seen_slots = HashSet::new();
+                let mut slot_values = Vec::with_capacity(comp.slot_values.len());
+                for (s, (v, _), _) in &comp.slot_values {
+                    if !seen_slots.insert(s.name.as_str()) {
+                        return duplicate(
+                            s.span,
+                            format!(
+                                "duplicate slot `{}` in completion `{}`",
+                                s.name, comp.id.name
+                            ),
+                        );
+                    }
+                    slot_values.push((s.name.clone(), v.clone()));
+                }
                 completions.push(ShigureQuantifierCompletion {
                     id: comp.id.name.clone(),
                     slot_values,
