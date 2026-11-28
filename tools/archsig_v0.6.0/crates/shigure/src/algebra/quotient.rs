@@ -96,11 +96,13 @@ fn state_poly_scale(sp: &StatePoly, factor: &Poly<Rat>) -> Result<StatePoly, Alg
     if factor.is_zero() {
         return Ok(BTreeMap::new());
     }
+    let limits = crate::limits::active_limits();
     let mut out = BTreeMap::new();
     for (m, c) in sp {
-        let prod = c.checked_mul(factor)?;
+        let prod = c.checked_mul_bounded(factor, &limits, "quotient state_poly_scale")?;
         if !prod.is_zero() {
             out.insert(m.clone(), prod);
+            limits.check_poly_terms(out.len(), "quotient state_poly_scale")?;
         }
     }
     Ok(out)
@@ -117,17 +119,19 @@ fn state_poly_sub_mul(
     if c_factor.is_zero() {
         return Ok(out);
     }
+    let limits = crate::limits::active_limits();
     for (m, c) in rhs {
         let shifted = m
             .checked_mul(y_shift)
             .ok_or_else(|| AlgebraError::OutOfScope {
                 detail: "state monomial exponent addition overflowed u32".to_owned(),
             })?;
-        let sub_val = c.checked_mul(c_factor)?;
+        let sub_val = c.checked_mul_bounded(c_factor, &limits, "quotient state_poly_sub_mul")?;
         let entry = out
             .entry(shifted)
             .or_insert_with(|| Poly::zero(param_count, Rat::zero()));
-        *entry = entry.sub(&sub_val);
+        *entry = entry.checked_sub_bounded(&sub_val, &limits, "quotient state_poly_sub_mul")?;
+        limits.check_poly_terms(out.len(), "quotient state_poly_sub_mul")?;
     }
     out.retain(|_, c| !c.is_zero());
     Ok(out)
@@ -150,9 +154,9 @@ fn can_vanish_on_branch(
 }
 
 fn map_out_of_scope(e: AlgebraError) -> SilenceReason {
-    SilenceReason::QuotientIdealOutOfScope {
-        detail: e.to_string(),
-    }
+    SilenceReason::from_algebra_with(e, |err| SilenceReason::QuotientIdealOutOfScope {
+        detail: err.to_string(),
+    })
 }
 
 fn stratify_quotient_branch(

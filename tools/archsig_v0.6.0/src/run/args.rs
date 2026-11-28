@@ -241,6 +241,7 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
     let mut previous = vec![OsString::from("run")];
     let mut current = vec![OsString::from("run")];
     let mut alignment = None;
+    let mut saw_max_file_bytes = false;
     let mut pairs = args.chunks_exact(2);
     for pair in &mut pairs {
         let flag = pair[0].to_string_lossy();
@@ -252,6 +253,10 @@ fn reobserve_args(args: &[OsString]) -> Result<Command, UsageError> {
             continue;
         }
         if flag == "--max-file-bytes" {
+            if saw_max_file_bytes {
+                return Err(usage(&flag, "duplicate flag"));
+            }
+            saw_max_file_bytes = true;
             previous.extend([OsString::from("--max-file-bytes"), value.clone()]);
             current.extend([OsString::from("--max-file-bytes"), value.clone()]);
             continue;

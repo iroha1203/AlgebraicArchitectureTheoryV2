@@ -385,12 +385,12 @@ fn require_same_vars(lhs: &VarOrder, rhs: &VarOrder) -> Result<(), SilenceReason
 }
 
 pub(crate) fn map_constructible_silence(err: AlgebraError) -> SilenceReason {
-    match err {
+    SilenceReason::from_algebra_with(err, |other| match other {
         AlgebraError::UnobservedDependency { slots } => {
             SilenceReason::UnobservedDependency { slots }
         }
         other => SilenceReason::ConstructibleStratificationOutOfScope {
             detail: other.to_string(),
         },
-    }
+    })
 }

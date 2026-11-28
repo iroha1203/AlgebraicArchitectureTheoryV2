@@ -50,7 +50,7 @@ Exit: 0 established, 1 refuted, 2 undetermined, 64 usage, 65 invalid input,
 69 unsupported version, 70 internal, 74 I/O, 130 SIGINT, 141 broken pipe, 143 SIGTERM.
 Example:
   archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'";
-pub const REOBSERVE_HELP: &str = "Usage: archsig reobserve --before-atom-definition D --before-law L --before-archmap A --before-ask 'ID=QUESTION' --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [--alignment JSON] [--out NEW_DIRECTORY]
+pub const REOBSERVE_HELP: &str = "Usage: archsig reobserve --before-atom-definition D --before-law L --before-archmap A --before-ask 'ID=QUESTION' --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [--alignment JSON] [--out NEW_DIRECTORY] [--max-file-bytes N] [--shigure-limit KEY=N]
 Repeat the definition and question options as needed. Use --alignment for explicit assembly and candidate correspondence.
 The output contains separate previous and current evaluations. Exit status reflects the current evaluation or an execution failure.";
 pub const CHECK_HELP: &str =
@@ -60,7 +60,6 @@ pub const CHECK_HELP: &str =
   --archmap A          Observations file (optional)
   --out NEW_DIRECTORY      Save checked declarations and inputs (optional; never overwrite)
   --max-file-bytes N       Bound input file reads in bytes (default: 67108864)
-  --shigure-limit KEY=N    Override a SHIGURE resource limit (repeatable)
   --help, -h               Show this help
 Validation status: JSON on stdout; execution errors: JSON on stderr.
 Example: archsig check --atom-definition counter.atoms.json --law counter.law";

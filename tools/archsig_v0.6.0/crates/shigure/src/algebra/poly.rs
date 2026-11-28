@@ -402,6 +402,47 @@ impl<C: RingCoeff> Poly<C> {
         out
     }
 
+    fn combine_bounded(
+        &self,
+        other: &Self,
+        negate_other: bool,
+        limits: &crate::limits::ShigureLimits,
+        context: &str,
+    ) -> Result<Self, AlgebraError> {
+        self.check_arity(other.num_vars)?;
+        self.check_ring(&other.zero_coeff)?;
+        limits.check_poly(self, context)?;
+        let mut out = self.clone();
+        for (m, c) in &other.terms {
+            let term_c = if negate_other { c.neg_ref() } else { c.clone() };
+            limits.check_coeff(&term_c, context)?;
+            out.add_term(m.clone(), term_c);
+            limits.check_poly_terms(out.terms.len(), context)?;
+        }
+        limits.check_poly(&out, context)?;
+        Ok(out)
+    }
+
+    /// 係数ビット長および多項式項数上限を検査しながら加算する。
+    pub fn checked_add_bounded(
+        &self,
+        other: &Self,
+        limits: &crate::limits::ShigureLimits,
+        context: &str,
+    ) -> Result<Self, AlgebraError> {
+        self.combine_bounded(other, false, limits, context)
+    }
+
+    /// 係数ビット長および多項式項数上限を検査しながら減算する。
+    pub fn checked_sub_bounded(
+        &self,
+        other: &Self,
+        limits: &crate::limits::ShigureLimits,
+        context: &str,
+    ) -> Result<Self, AlgebraError> {
+        self.combine_bounded(other, true, limits, context)
+    }
+
     pub fn neg(&self) -> Self {
         let terms = self
             .terms
@@ -525,6 +566,34 @@ impl<C: RingCoeff> Poly<C> {
             .expect("polynomial arity, ring, or exponent overflow in mul")
     }
 
+    /// 単項式指数のオーバーフロー・係数ビット長・多項式項数上限を検査しながら冪乗する。
+    pub fn checked_pow_bounded(
+        &self,
+        mut exp: u32,
+        limits: &crate::limits::ShigureLimits,
+        context: &str,
+    ) -> Result<Self, AlgebraError> {
+        if exp == 0 {
+            return Ok(Self::one(self.num_vars, self.zero_coeff.clone()));
+        }
+        if self.is_zero() {
+            return Ok(Self::zero(self.num_vars, self.zero_coeff.clone()));
+        }
+        limits.check_poly(self, context)?;
+        let mut result = Self::one(self.num_vars, self.zero_coeff.clone());
+        let mut base = self.clone();
+        while exp > 0 {
+            if exp % 2 == 1 {
+                result = result.checked_mul_bounded(&base, limits, context)?;
+            }
+            exp /= 2;
+            if exp > 0 {
+                base = base.checked_mul_bounded(&base, limits, context)?;
+            }
+        }
+        Ok(result)
+    }
+
     /// 単項式指数のオーバーフローを検査しながら冪乗する。
     pub fn checked_pow(&self, mut exp: u32) -> Result<Self, AlgebraError> {
         if exp == 0 {
@@ -591,16 +660,20 @@ impl<C: RingCoeff> Poly<C> {
             }
             self.check_ring(&p.zero_coeff)?;
         }
+        let limits = crate::limits::active_limits();
+        limits.check_poly(self, "poly_substitute")?;
         let mut acc = Self::zero(out_vars, self.zero_coeff.clone());
         for (mono, coeff) in &self.terms {
+            limits.check_coeff(coeff, "poly_substitute")?;
             let mut term = Self::constant(out_vars, coeff.clone());
             for (idx, &e) in mono.exps().iter().enumerate() {
                 if e > 0 {
-                    let powered = replacements[idx].checked_pow(e)?;
-                    term = term.checked_mul(&powered)?;
+                    let powered =
+                        replacements[idx].checked_pow_bounded(e, &limits, "poly_substitute")?;
+                    term = term.checked_mul_bounded(&powered, &limits, "poly_substitute")?;
                 }
             }
-            acc = acc.add(&term);
+            acc = acc.checked_add_bounded(&term, &limits, "poly_substitute")?;
         }
         Ok(acc)
     }

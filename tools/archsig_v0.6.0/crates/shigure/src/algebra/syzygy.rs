@@ -45,8 +45,8 @@ pub struct SyzygyModule<C: RingCoeff> {
 }
 
 impl<C: RingCoeff> SyzygyModule<C> {
-    /// 全生成元について多項式恒等式 `sum_i s[i] * f_i == 0` を独立検算する。
-    pub fn verify_all(&self) -> Result<bool, AlgebraError> {
+    /// 全生成元について多項式恒等式 `sum_i s[i] * f_i == 0` を上限付きで独立検算する。
+    pub fn verify_all_with_limits(&self, limits: &ShigureLimits) -> Result<bool, AlgebraError> {
         let n = self.vars.len();
         let zero_coeff = match self.originals.first() {
             Some(p) => p.zero_coeff().clone(),
@@ -59,7 +59,8 @@ impl<C: RingCoeff> SyzygyModule<C> {
             let mut acc = Poly::zero(n, zero_coeff.clone());
             for (s_i, f_i) in syz.iter().zip(&self.originals) {
                 if !s_i.is_zero() && !f_i.is_zero() {
-                    acc = acc.add(&s_i.checked_mul(f_i)?);
+                    let prod = s_i.checked_mul_bounded(f_i, limits, "syzygy verify_all")?;
+                    acc = acc.checked_add_bounded(&prod, limits, "syzygy verify_all")?;
                 }
             }
             if !acc.is_zero() {
@@ -67,6 +68,11 @@ impl<C: RingCoeff> SyzygyModule<C> {
             }
         }
         Ok(true)
+    }
+
+    /// 全生成元について多項式恒等式 `sum_i s[i] * f_i == 0` を独立検算する。
+    pub fn verify_all(&self) -> Result<bool, AlgebraError> {
+        self.verify_all_with_limits(&crate::limits::active_limits())
     }
 }
 
@@ -263,7 +269,7 @@ pub fn compute_syzygies_field_with_limits<C: FieldCoeff>(
         verified: false,
         generating_certified: true,
     };
-    module.verified = module.verify_all()?;
+    module.verified = module.verify_all_with_limits(limits)?;
     if !module.verified {
         return Err(AlgebraError::OutOfScope {
             detail: "computed syzygy failed polynomial identity verification".to_owned(),
@@ -325,7 +331,7 @@ pub fn compute_syzygies_z_with_limits(
 
     if nonzero_indices.len() <= 1 {
         // 非零元が 0 個または 1 個なら整域 Z[x] 上で残る syzygy は零のみ。
-        return finalize_z_syzygies(vars, originals, raw_syzs);
+        return finalize_z_syzygies(vars, originals, raw_syzs, limits);
     }
 
     // Case 1: 全非零元が単項式 c_i * m_i（UFD Z[x] ではペアごとの最小 syzygy が全体を生成）。
@@ -339,19 +345,24 @@ pub fn compute_syzygies_z_with_limits(
                 let j = nonzero_indices[b_pos];
                 let (m_i, c_i) = originals[i].terms().iter().next().expect("single term");
                 let (m_j, c_j) = originals[j].terms().iter().next().expect("single term");
+                limits.check_bigint_bits(c_i, "syzygy_z monomial coeff")?;
+                limits.check_bigint_bits(c_j, "syzygy_z monomial coeff")?;
                 let lcm_m = m_i.lcm(m_j);
                 let q_mi = lcm_m.div_exact(m_i).expect("lcm divisible");
                 let q_mj = lcm_m.div_exact(m_j).expect("lcm divisible");
                 let lcm_c = c_i.lcm(c_j);
+                limits.check_bigint_bits(&lcm_c, "syzygy_z monomial lcm")?;
                 let q_ci = &lcm_c / c_i;
                 let q_cj = -(&lcm_c / c_j);
+                limits.check_bigint_bits(&q_ci, "syzygy_z monomial cofactor")?;
+                limits.check_bigint_bits(&q_cj, "syzygy_z monomial cofactor")?;
                 let mut syz = vec![zero_p.clone(); r];
                 syz[i].add_term(q_mi, q_ci);
                 syz[j].add_term(q_mj, q_cj);
                 raw_syzs.push(syz);
             }
         }
-        return finalize_z_syzygies(vars, originals, raw_syzs);
+        return finalize_z_syzygies(vars, originals, raw_syzs, limits);
     }
 
     // Case 2: 全非零元が共通原始多項式 h の整数倍 f_i = c_i * h（整域なので ker(Z^r -> Z) が生成）。
@@ -364,12 +375,13 @@ pub fn compute_syzygies_z_with_limits(
                     let mut syz = vec![zero_p.clone(); r];
                     for (&orig_idx, c) in nonzero_indices.iter().zip(vec_z) {
                         if !c.is_zero() {
+                            limits.check_bigint_bits(&c, "syzygy_z common_factor")?;
                             syz[orig_idx] = Poly::constant(n, c);
                         }
                     }
                     raw_syzs.push(syz);
                 }
-                return finalize_z_syzygies(vars, originals, raw_syzs);
+                return finalize_z_syzygies(vars, originals, raw_syzs, limits);
             }
             AffineSolutionZ::Inconsistent { .. } => {
                 return Err(AlgebraError::OutOfScope {
@@ -387,7 +399,7 @@ pub fn compute_syzygies_z_with_limits(
             try_unimodular_linear_syzygies_z(originals, &nonzero_indices, n, limits)?
     {
         raw_syzs.extend(linear_syzs);
-        return finalize_z_syzygies(vars, originals, raw_syzs);
+        return finalize_z_syzygies(vars, originals, raw_syzs, limits);
     }
 
     Err(AlgebraError::OutOfScope {
@@ -399,6 +411,7 @@ fn finalize_z_syzygies(
     vars: VarOrder,
     originals: &[Poly<BigInt>],
     raw_syzs: Vec<Vec<Poly<BigInt>>>,
+    limits: &ShigureLimits,
 ) -> Result<SyzygyModule<BigInt>, AlgebraError> {
     let generators = dedup_nonzero_syzygies(raw_syzs);
     let mut module = SyzygyModule {
@@ -408,7 +421,7 @@ fn finalize_z_syzygies(
         verified: false,
         generating_certified: true,
     };
-    module.verified = module.verify_all()?;
+    module.verified = module.verify_all_with_limits(limits)?;
     if !module.verified {
         return Err(AlgebraError::OutOfScope {
             detail: "computed Z syzygy failed polynomial identity verification".to_owned(),

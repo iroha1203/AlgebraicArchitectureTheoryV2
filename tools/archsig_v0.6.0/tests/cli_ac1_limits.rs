@@ -288,6 +288,7 @@ fn cli_shigure_limit_flag_bounds_solver_and_rejects_invalid_limit_args() {
         vec!["--shigure-limit", "unknown_limit=10"],
         vec!["--shigure-limit", "max_bigint_bits=0"],
         vec!["--shigure-limit", "missing_equals"],
+        vec!["--shigure-limit", "max_bigint_bits=10"],
     ] {
         let mut args = vec![
             "check",
@@ -303,8 +304,27 @@ fn cli_shigure_limit_flag_bounds_solver_and_rejects_invalid_limit_args() {
         assert_stderr_code(&r, 64, "usage");
     }
 
+    let dup_reobs = run_binary(
+        &dir,
+        &[
+            "reobserve",
+            "--max-file-bytes",
+            "100",
+            "--max-file-bytes",
+            "200",
+        ],
+    );
+    assert_stderr_code(&dup_reobs, 64, "usage");
+    let dup_receipt = parse(dup_reobs.stderr.as_bytes()).unwrap();
+    let dup_arg = s(get(
+        get(&arr(get(&dup_receipt, "issues"))[0], "details"),
+        "argument",
+    ));
+    assert_eq!(dup_arg, "--max-file-bytes");
+
     for help_args in [
         vec!["run", "--help"],
+        vec!["reobserve", "--help"],
         vec!["check", "--help"],
         vec!["evidence", "--help"],
         vec!["law-fibers", "--help"],
@@ -313,5 +333,11 @@ fn cli_shigure_limit_flag_bounds_solver_and_rejects_invalid_limit_args() {
         assert!(out.status.success(), "{help_args:?}");
         let stdout = String::from_utf8(out.stdout).unwrap();
         assert!(stdout.contains("--max-file-bytes"), "{help_args:?}");
+        if help_args[0] == "check" {
+            assert!(!stdout.contains("--shigure-limit"), "{help_args:?}");
+        }
+        if matches!(help_args[0], "run" | "reobserve") {
+            assert!(stdout.contains("--shigure-limit"), "{help_args:?}");
+        }
     }
 }

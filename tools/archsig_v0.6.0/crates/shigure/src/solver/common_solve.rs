@@ -798,14 +798,24 @@ pub(crate) fn solve_affine_or_nonlinear_z(
     if !all_affine {
         let eqs_q: Vec<Poly<Rat>> = eqs_z.iter().map(lift_z_to_q).collect();
         let invs_q: Vec<Poly<Rat>> = invs_z.iter().map(lift_z_to_q).collect();
-        if let Ok(rab) = rabinowitsch_solve(&eqs_q, &invs_q, param_vars)
-            && rab.is_empty_over_closure
-        {
-            checks.push(ApplicabilityCheck::passed(
-                "rabinowitsch_emptiness_verified",
-                MathClause::G141D5,
-            ));
-            return refuted_system(checks, residual_display, rab.empty_witness);
+        match rabinowitsch_solve(&eqs_q, &invs_q, param_vars) {
+            Ok(rab) if rab.is_empty_over_closure => {
+                checks.push(ApplicabilityCheck::passed(
+                    "rabinowitsch_emptiness_verified",
+                    MathClause::G141D5,
+                ));
+                return refuted_system(checks, residual_display, rab.empty_witness);
+            }
+            Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                let reason = map_algebra_silence(e);
+                checks.push(ApplicabilityCheck::failed(
+                    "integer_point_existence_decidable",
+                    MathClause::G141D4,
+                    reason.code(),
+                ));
+                return undetermined_system(checks, residual_display, reason);
+            }
+            _ => {}
         }
         let reason = SilenceReason::NonLinearRationalOrIntegerExistence {
             point_domain: PointDomain::IntegerPoints,

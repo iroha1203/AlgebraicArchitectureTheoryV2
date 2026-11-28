@@ -298,3 +298,100 @@ fn with_active_limits_scopes_solver_to_undetermined_resource_limit() {
         other => panic!("expected ResourceLimitExceeded, got {other:?}"),
     }
 }
+
+#[test]
+fn poly_expr_expand_substitute_q_linear_and_z_syzygy_enforce_limits() {
+    use crate::algebra::artin::rref_field;
+    use crate::algebra::constructible::map_constructible_silence;
+    use crate::algebra::linear::solve_affine_q;
+    use crate::algebra::poly_expr::ExprBindings;
+    use crate::algebra::syzygy::compute_syzygies_z_with_limits;
+
+    let (_, bindings) = ExprBindings::from_slices(&["x".into(), "y".into()], &[], &[]).unwrap();
+    let strict_terms = ShigureLimits {
+        max_poly_terms: 4,
+        ..Default::default()
+    };
+    let expr = PolyExpr::Pow(
+        Box::new(PolyExpr::state("x") + PolyExpr::state("y") + PolyExpr::int(1)),
+        3,
+    );
+    let expand_err = with_active_limits(&strict_terms, || Poly::from_expr_q(&expr, &bindings))
+        .expect_err("PolyExpr expansion must enforce max_poly_terms");
+    assert!(matches!(
+        expand_err,
+        AlgebraError::ResourceLimitExceeded {
+            ref limit_name,
+            limit: 4,
+            ..
+        } if limit_name == "max_poly_terms"
+    ));
+
+    // map_constructible_silence preserves ResourceLimitExceeded instead of squashing
+    let preserved = map_constructible_silence(expand_err);
+    assert_eq!(preserved.code(), "resource_limit_exceeded");
+
+    // Poly::substitute enforces active max_poly_terms
+    let vars = VarOrder::new(vec!["x".into(), "y".into()]).unwrap();
+    let x = Poly::var(2, 0, Rat::zero());
+    let y = Poly::var(2, 1, Rat::zero());
+    let one = Poly::constant(2, Rat::from_int(1));
+    let x_cubed = x.mul(&x).mul(&x);
+    let sub_err = with_active_limits(&strict_terms, || {
+        x_cubed.substitute(&[x.add(&y).add(&one), y.clone()])
+    })
+    .expect_err("Poly::substitute must enforce max_poly_terms");
+    assert!(matches!(
+        sub_err,
+        AlgebraError::ResourceLimitExceeded {
+            ref limit_name,
+            limit: 4,
+            ..
+        } if limit_name == "max_poly_terms"
+    ));
+
+    // rref_field & solve_affine_q enforce active max_bigint_bits
+    let strict_bits = ShigureLimits {
+        max_bigint_bits: 5,
+        ..Default::default()
+    };
+    let mat_q = vec![
+        vec![Rat::from_int(17), Rat::from_int(19)],
+        vec![Rat::from_int(23), Rat::from_int(29)],
+    ];
+    let rhs_q = vec![Rat::from_int(1), Rat::from_int(2)];
+    let rref_err = with_active_limits(&strict_bits, || rref_field(&mat_q, 2, &Rat::zero()))
+        .expect_err("rref_field must enforce max_bigint_bits");
+    assert!(matches!(
+        rref_err,
+        AlgebraError::ResourceLimitExceeded {
+            ref limit_name,
+            limit: 5,
+            ..
+        } if limit_name == "max_bigint_bits"
+    ));
+    let q_err = with_active_limits(&strict_bits, || solve_affine_q(&mat_q, &rhs_q, 2))
+        .expect_err("solve_affine_q must enforce max_bigint_bits");
+    assert!(matches!(
+        q_err,
+        AlgebraError::ResourceLimitExceeded {
+            ref limit_name,
+            limit: 5,
+            ..
+        } if limit_name == "max_bigint_bits"
+    ));
+
+    // compute_syzygies_z_with_limits monomial Case 1 enforces max_bigint_bits
+    let mono_1 = Poly::constant(2, BigInt::from(7)).mul(&Poly::var(2, 0, BigInt::from(0)));
+    let mono_2 = Poly::constant(2, BigInt::from(11)).mul(&Poly::var(2, 1, BigInt::from(0)));
+    let syz_z_err = compute_syzygies_z_with_limits(&[mono_1, mono_2], vars, &strict_bits)
+        .expect_err("Z monomial syzygy lcm=77 (7 bits) must exceed max_bigint_bits=5");
+    assert!(matches!(
+        syz_z_err,
+        AlgebraError::ResourceLimitExceeded {
+            ref limit_name,
+            limit: 5,
+            ..
+        } if limit_name == "max_bigint_bits"
+    ));
+}

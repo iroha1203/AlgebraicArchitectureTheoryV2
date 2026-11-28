@@ -51,7 +51,7 @@ pub fn validate_partial_task(
         }
     }
 
-    if let Some(q) = &spec.quantifier_spec {
+    if let Some(q) = &mut spec.quantifier_spec {
         validate_quantifier_spec(q)?;
     }
 
@@ -70,7 +70,10 @@ pub fn validate_partial_task(
     ))
 }
 
-fn validate_quantifier_spec(q: &QuantifierHierarchySpec) -> Result<(), ValidationError> {
+fn validate_quantifier_spec(q: &mut QuantifierHierarchySpec) -> Result<(), ValidationError> {
+    if q.max_steps == 0 {
+        q.max_steps = crate::limits::active_limits().max_hitting_set_steps;
+    }
     if q.candidates.is_empty() && q.completions.is_empty() {
         return Err(ValidationError::ConversionError {
             detail: "quantifier_spec cannot have both empty candidates and empty completions"

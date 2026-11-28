@@ -223,9 +223,9 @@ fn verify_z_f5_syzygies(
         return Ok(true);
     }
     let syz = compute_syzygies_z(&all_gens, obs_order.clone()).map_err(|e| {
-        SilenceReason::SyzygyOutOfScope {
-            detail: e.to_string(),
-        }
+        SilenceReason::from_algebra_with(e, |err| SilenceReason::SyzygyOutOfScope {
+            detail: err.to_string(),
+        })
     })?;
     let ok = syz.generators.iter().all(|s_vec| {
         let mut acc = vec![BigInt::zero(); dim];

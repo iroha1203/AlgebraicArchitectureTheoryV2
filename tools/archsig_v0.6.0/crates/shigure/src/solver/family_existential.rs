@@ -389,15 +389,24 @@ fn evaluate_existential_q_or_z(
     let mut witness_assignments = BTreeMap::new();
     if rab.parameter_equations.iter().all(Poly::is_affine)
         && let Ok((mat, rhs)) = polys_to_affine_system_q(&rab.parameter_equations, w_names.len())
-        && let Ok(AffineSolutionQ::Consistent {
-            particular,
-            kernel_basis,
-            verified: true,
-        }) = solve_affine_q(&mat, &rhs, w_names.len())
-        && let Some(pt) = find_witness_point_q(&particular, &kernel_basis, &eqs_q, &invs_q)?
     {
-        let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
-        witness_assignments = build_assignment_map(w_names, &vals);
+        match solve_affine_q(&mat, &rhs, w_names.len()) {
+            Ok(AffineSolutionQ::Consistent {
+                particular,
+                kernel_basis,
+                verified: true,
+            }) => {
+                if let Some(pt) = find_witness_point_q(&particular, &kernel_basis, &eqs_q, &invs_q)?
+                {
+                    let vals: Vec<ScalarVal> = pt.into_iter().map(ScalarVal::Q).collect();
+                    witness_assignments = build_assignment_map(w_names, &vals);
+                }
+            }
+            Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                return Err(map_algebra_silence(e));
+            }
+            _ => {}
+        }
     }
     if witness_assignments.is_empty() {
         let disp = display_polys(&rab.parameter_equations, w_vars);
@@ -616,6 +625,9 @@ fn solve_existential_with_preservation(
                                 &st.equations,
                                 &st.invertibles,
                             )?,
+                            Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                                return Err(map_algebra_silence(e));
+                            }
                             _ => None,
                         },
                         Err(_) => None,
@@ -635,19 +647,35 @@ fn solve_existential_with_preservation(
                 } else if extracted.remaining_nonlinear.is_empty()
                     && let Ok((mat, rhs)) =
                         polys_to_affine_system_q(&rab.parameter_equations, w_vars.len())
-                    && let Ok(AffineSolutionQ::Consistent {
-                        particular,
-                        kernel_basis,
-                        verified: true,
-                    }) = solve_affine_q(&mat, &rhs, w_vars.len())
-                    && let Some(pt) = find_witness_point_q(
-                        &particular,
-                        &kernel_basis,
-                        &st.equations,
-                        &st.invertibles,
-                    )?
                 {
-                    restore_and_reeval_q_point(&pair, cond_ref, w_vars, &pt)?
+                    let pt = match solve_affine_q(&mat, &rhs, w_vars.len()) {
+                        Ok(AffineSolutionQ::Consistent {
+                            particular,
+                            kernel_basis,
+                            verified: true,
+                        }) => find_witness_point_q(
+                            &particular,
+                            &kernel_basis,
+                            &st.equations,
+                            &st.invertibles,
+                        )?,
+                        Err(e @ AlgebraError::ResourceLimitExceeded { .. }) => {
+                            return Err(map_algebra_silence(e));
+                        }
+                        _ => None,
+                    };
+                    if let Some(pt) = pt {
+                        restore_and_reeval_q_point(&pair, cond_ref, w_vars, &pt)?
+                    } else {
+                        restore_and_reeval_q(
+                            &pair,
+                            cond_ref,
+                            &st.invertibles,
+                            w_vars,
+                            &extracted,
+                            false,
+                        )?
+                    }
                 } else {
                     restore_and_reeval_q(
                         &pair,
