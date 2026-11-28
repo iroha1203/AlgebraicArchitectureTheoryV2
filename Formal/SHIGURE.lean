@@ -49,14 +49,12 @@ import Formal.SHIGURE.Part2.Schemes.QuasiCoherentZariskiStack
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecExamples
 import Formal.SHIGURE.Part2.Schemes.FiberwiseSectionExamples
 import Formal.SHIGURE.Part2.Schemes.RelativeSpecStackExamples
-
 import Formal.SHIGURE.Part2.StackQuantities.ChartRankOne
 import Formal.SHIGURE.Part2.StackQuantities.ChartRankTwo
 import Formal.SHIGURE.Part2.StackQuantities.NonflatExample
 import Formal.SHIGURE.Part2.StackQuantities.NonflatWrittenLaw
 import Formal.SHIGURE.Part2.StackQuantities.ResidualExamples
 import Formal.SHIGURE.Part2.StackQuantities.SectionModel
-
 import Formal.SHIGURE.Part2.Minimal.DimensionGrowth
 import Formal.SHIGURE.Part2.Minimal.DirectSumRange
 import Formal.SHIGURE.Part2.Minimal.DualObservation
@@ -68,7 +66,6 @@ import Formal.SHIGURE.Part2.Minimal.TypedWords
 import Formal.SHIGURE.Part2.Minimal.WordExamples
 import Formal.SHIGURE.Part2.Minimal.WordLength
 import Formal.SHIGURE.Part2.Minimal.WordReverse
-
 import Formal.SHIGURE.Part2.Schemes.Effective.BaseChange
 import Formal.SHIGURE.Part2.Schemes.Effective.CanonicalSolution
 import Formal.SHIGURE.Part2.Schemes.Effective.CanonicalTransition
@@ -92,7 +89,6 @@ import Formal.SHIGURE.Part2.Schemes.Effective.PullComponent
 import Formal.SHIGURE.Part2.Schemes.Effective.RebaseTest
 import Formal.SHIGURE.Part2.Schemes.Effective.TestComparison
 import Formal.SHIGURE.Part2.Schemes.Effective.TestNaturality
-
 import Formal.SHIGURE.Part2.MinimalRing.DirectSumBaseChange
 import Formal.SHIGURE.Part2.MinimalRing.DirectSumDualBaseChange
 import Formal.SHIGURE.Part2.MinimalRing.DualBaseChangeEquiv
@@ -117,19 +113,11 @@ import Formal.SHIGURE.Part2.MinimalRing.ReverseSystem
 import Formal.SHIGURE.Part2.MinimalRing.RingDualObservation
 import Formal.SHIGURE.Part2.MinimalRing.RingReachability
 import Formal.SHIGURE.Part2.MinimalRing.Systems
-
 import Formal.SHIGURE.Part2.Schemes.ConstantRank
 import Formal.SHIGURE.Part2.Schemes.ConstantRankExamples
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeDescent
 import Formal.SHIGURE.Part2.Schemes.FppfBaseMaps
 import Formal.SHIGURE.Part2.Schemes.CoreDescent
-
-/-! # SHIGURE
-
-The entry point for the SHIGURE formalization.
--/
-
--- Appendix B.3 and Definition 6.1: actual tensor sheaves and primitive operations.
 import Formal.SHIGURE.Part2.Schemes.ModuleTensor
 import Formal.SHIGURE.Part2.Schemes.TensorAffine
 import Formal.SHIGURE.Part2.Schemes.TensorPullback
@@ -137,3 +125,16 @@ import Formal.SHIGURE.Part2.Schemes.ModuleTensorComparisons
 import Formal.SHIGURE.Part2.Families.SchemeTensorStructures
 import Formal.SHIGURE.Part2.Families.SchemeSections
 import Formal.SHIGURE.Part2.Families.SchemeLaws
+import Formal.SHIGURE.Part2.Schemes.AffineModuleSections
+import Formal.SHIGURE.Part2.Families.SchemeTensorPullback
+import Formal.SHIGURE.Part2.Families.SchemeLawLocality
+import Formal.SHIGURE.Part2.Families.AffineLawCoefficientComparison
+import Formal.SHIGURE.Part2.Families.AffineSchemeComparison
+import Formal.SHIGURE.Part2.Families.SchemeLawExamples
+
+/-! # SHIGURE
+
+The entry point for the SHIGURE formalization.
+-/
+
+-- Appendix B.3 and Definition 6.1: actual tensor sheaves and primitive operations.

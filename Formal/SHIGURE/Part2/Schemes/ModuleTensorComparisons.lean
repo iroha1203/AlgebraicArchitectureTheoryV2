@@ -112,6 +112,17 @@ private theorem tildePullbackIso_unit_top {R S : CommRingCat.{u}} (a : R ⟶ S)
     ((pullbackPushforwardAdjunction (Spec.map a)).unit.app (tilde M)) h m
   exact moduleIso_hom_apply_of_inv ((tildePullbackIso a).app M) _ _ hinv
 
+/-- Public normalization of the affine tilde pullback on coefficient-unit sections.
+This is the comparison API used to recover primitive operations on affine opens. -/
+theorem affineTildePullbackIso_unit_top {R S : CommRingCat.{u}} (a : R ⟶ S)
+    (M : ModuleCat.{u} R) (m : M) :
+    ((tildePullbackIso a).hom.app M).val.app (.op ⊤)
+      (((pullbackPushforwardAdjunction (Spec.map a)).unit.app (tilde M)).val.app (.op ⊤)
+        (StructureSheaf.toOpenₗ R M ⊤ m)) =
+      StructureSheaf.toOpenₗ S ((ModuleCat.extendScalars a.hom).obj M) ⊤
+        ((1 : S) ⊗ₜ[R, a.hom] m) :=
+  tildePullbackIso_unit_top a M m
+
 /-- Mathlib scalar extension distributes over the coefficient tensor product. -/
 private def affineCoefficientTensorIso {R S : CommRingCat.{u}} (a : R ⟶ S)
     (M N : ModuleCat.{u} R) :
@@ -307,6 +318,14 @@ private theorem restrictFunctorIsoPullback_unit (f : Y ⟶ X) [IsOpenImmersion f
       (Scheme.Modules.pullbackPushforwardAdjunction f).unit.app M :=
   Adjunction.unit_leftAdjointUniq_hom_app _ _ _
 
+/-- Public unit normalization for the actual restriction/pullback comparison.
+The affine-operation comparison uses this to identify pulled-back generating sections. -/
+theorem restrictFunctorIsoPullback_unit_eq (f : Y ⟶ X) [IsOpenImmersion f] (M : X.Modules) :
+    (restrictAdjunction f).unit.app M ≫
+      (Scheme.Modules.pushforward f).map ((restrictFunctorIsoPullback f).hom.app M) =
+      (Scheme.Modules.pullbackPushforwardAdjunction f).unit.app M :=
+  restrictFunctorIsoPullback_unit f M
+
 /-- The restriction/sheafification comparison on a generating section
 is the original restriction to the image of its inverse-image open, followed
 by the sheafification unit. This is the section API for the existing comparison. -/
@@ -457,6 +476,14 @@ private theorem isIso_of_affineNeighborhoods {M N : X.Modules} (a : M ⟶ N)
         ((restrictFunctor V.property.fromSpec).map a))
   haveI : IsIso ((toPresheaf X).map a) := (TopCat.Sheaf.forget Ab.{u} _).map_isIso m
   exact isIso_of_reflects_iso a (toPresheaf X)
+
+/-- An actual module-sheaf map is invertible when it is invertible on
+affine neighborhoods of every point. This is the reusable local detection
+API for canonical tensor and dual pullback comparisons. -/
+theorem moduleMap_isIso_of_affineNeighborhoods {M N : X.Modules} (a : M ⟶ N)
+    (localIso : ∀ x : X, ∃ V : X.affineOpens,
+      x ∈ V.1 ∧ IsIso ((restrictFunctor V.property.fromSpec).map a)) : IsIso a :=
+  isIso_of_affineNeighborhoods a localIso
 
 /-- Affine scalar extension and open restriction determine the canonical comparison on quasi-coherent inputs. -/
 private theorem tensorMap_isIso_of_affine_and_open

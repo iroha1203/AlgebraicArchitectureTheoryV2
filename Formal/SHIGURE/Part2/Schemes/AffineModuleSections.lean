@@ -91,6 +91,61 @@ def affineModuleSectionsIso (M : X.Modules) :
   exact affineRead hU M ⊤ topImage le_rfl ≪≫
     ModuleCat.restrictScalarsId'App topRes.hom identity (M.val.obj (op U))
 
+/-- The affine section comparison reads the original restriction of a section.
+This normalization API is used to compare actual morphisms on an affine chart. -/
+theorem affineModuleSectionsIso_hom_apply (M : X.Modules)
+    (x : moduleSpecΓFunctor.obj (M.restrict hU.fromSpec)) :
+    (affineModuleSectionsIso hU M).hom x =
+      M.presheaf.map (eqToHom
+        (hU.fromSpec.image_top_eq_opensRange.trans hU.opensRange_fromSpec).symm).op x := by
+  change (affineRead hU M ⊤ _ le_rfl).hom x = _
+  exact affineRead_apply hU M ⊤ _ le_rfl x
+
+/-- The affine section comparison is natural in actual module-sheaf maps.
+This supplies the map compatibility needed for affine surjectivity tests. -/
+theorem affineModuleSectionsIso_naturality {M N : X.Modules} (f : M ⟶ N) :
+    moduleSpecΓFunctor.map ((restrictFunctor hU.fromSpec).map f) ≫
+      (affineModuleSectionsIso hU N).hom =
+    (affineModuleSectionsIso hU M).hom ≫ f.val.app (op U) := by
+  ext x
+  change (affineModuleSectionsIso hU N).hom _ = f.val.app (op U) _
+  rw [affineModuleSectionsIso_hom_apply]
+  have hx := affineModuleSectionsIso_hom_apply hU M x
+  change (affineModuleSectionsIso hU M).hom.hom' x = _ at hx
+  rw [hx]
+  exact (congrArg (fun g => g x)
+    (f.val.naturality (eqToHom
+      (hU.fromSpec.image_top_eq_opensRange.trans hU.opensRange_fromSpec).symm).op)).symm
+
+/-- The affine comparison sends the restriction adjunction's unit to the
+actual restriction of an original global section. This is the normalization
+used for scalar extension of primitive operations on affine opens. -/
+theorem affineModuleSectionsIso_restrict_unit (M : X.Modules)
+    (x : M.val.obj (op ⊤)) :
+    (affineModuleSectionsIso hU M).hom
+      (((restrictAdjunction hU.fromSpec).unit.app M).val.app (op ⊤) x) =
+      M.presheaf.map (homOfLE (show U ≤ ⊤ from le_top)).op x := by
+  let z : moduleSpecΓFunctor.obj (M.restrict hU.fromSpec) :=
+    ((restrictAdjunction hU.fromSpec).unit.app M).val.app (op ⊤) x
+  change (affineModuleSectionsIso hU M).hom z = _
+  calc
+    _ = M.presheaf.map (eqToHom
+      (hU.fromSpec.image_top_eq_opensRange.trans hU.opensRange_fromSpec).symm).op z :=
+        affineModuleSectionsIso_hom_apply hU M z
+    _ = _ := by
+      have hz : z = M.presheaf.map
+          (homOfLE (hU.fromSpec.image_preimage_le (⊤ : X.Opens))).op x :=
+        congrArg (fun g => g x) (restrictAdjunction_unit_app_app hU.fromSpec M ⊤)
+      rw [hz]
+      have maps : M.presheaf.map
+          ((homOfLE (hU.fromSpec.image_preimage_le (⊤ : X.Opens))).op ≫
+            (eqToHom (hU.fromSpec.image_top_eq_opensRange.trans
+              hU.opensRange_fromSpec).symm).op) =
+          M.presheaf.map (homOfLE (show U ≤ ⊤ from le_top)).op :=
+        congrArg M.presheaf.map (Subsingleton.elim _ _)
+      rw [Functor.map_comp] at maps
+      exact congrArg (fun g => g x) maps
+
 /-- An affine tilde presentation identifies its original coefficient
 module with the actual section module. This is the scalar-preserving
 comparison used for finite local freeness and stalk rank in Definition 6.1. -/
@@ -149,6 +204,64 @@ theorem affineSections_localize (M : X.Modules) (presentation : HasTildeOn M hU)
     IsLocalizedModule.of_linearEquiv_right (Submonoid.powers r) p.hom e.symm.toLinearEquiv
   exact IsLocalizedModule.of_linearEquiv (Submonoid.powers r)
     (p.hom.comp e.symm.toLinearEquiv.toLinearMap) e₁.toLinearEquiv
+
+/-- A sheaf has an associated-module presentation on an affine chart exactly
+when all actual principal-open restrictions localize its sections. This is
+B.3's affine criterion, stated using the original scheme's section maps. -/
+theorem hasTildeOn_iff_affineSections_localize (M : X.Modules) :
+    HasTildeOn M hU ↔ ∀ r : Γ(X, U),
+      IsLocalizedModule (Submonoid.powers r)
+        (M.val.map (homOfLE (X.basicOpen_le r)).op).hom := by
+  constructor
+  · intro presentation r
+    exact affineSections_localize hU M presentation r
+  · intro localizes
+    apply (principalLocalizations_iff_tilde (M.restrict hU.fromSpec)).1
+    intro r
+    let g := hU.fromSpec
+    let Z := Spec Γ(X, U)
+    let N := M.restrict g
+    let F := (modulesSpecToSheaf.obj N).val
+    let W : Z.Opens := PrimeSpectrum.basicOpen r
+    let V := X.basicOpen r
+    let topIncl : op (⊤ : Z.Opens) ⟶ op W := (homOfLE le_top).op
+    let openIncl : op U ⟶ op V := (homOfLE (X.basicOpen_le r)).op
+    have topImage : g ''ᵁ (⊤ : Z.Opens) = U :=
+      g.image_top_eq_opensRange.trans hU.opensRange_fromSpec
+    have openImage : g ''ᵁ W = V := hU.fromSpec_image_basicOpen r
+    let e₀ := affineRead hU M ⊤ topImage le_rfl
+    let e₁ := affineRead hU M W openImage (X.basicOpen_le r)
+    let topRes := X.presheaf.map (homOfLE (le_rfl : U ≤ U)).op
+    have identity : topRes.hom = RingHom.id Γ(X, U) := by
+      simp [topRes]
+    let e := e₀ ≪≫ ModuleCat.restrictScalarsId'App topRes.hom identity (M.val.obj (op U))
+    let p := F.map topIncl
+    let q := M.val.map openIncl
+    have equation : e.hom ≫ q = p ≫ e₁.hom := by
+      ext x
+      change M.presheaf.map openIncl (e₀.hom x) = e₁.hom (p x)
+      rw [show e₀.hom x = M.presheaf.map (eqToHom topImage.symm).op x from
+        affineRead_apply hU M ⊤ topImage le_rfl x,
+        show e₁.hom (p x) = M.presheaf.map (eqToHom openImage.symm).op (p x) from
+          affineRead_apply hU M W openImage (X.basicOpen_le r) (p x)]
+      change M.presheaf.map openIncl (M.presheaf.map (eqToHom topImage.symm).op x) =
+        M.presheaf.map (eqToHom openImage.symm).op (M.presheaf.map (g.opensFunctor.op.map topIncl) x)
+      have maps : M.presheaf.map ((eqToHom topImage.symm).op ≫ openIncl) =
+          M.presheaf.map (g.opensFunctor.op.map topIncl ≫ (eqToHom openImage.symm).op) :=
+        congrArg M.presheaf.map (Subsingleton.elim _ _)
+      simp only [Functor.map_comp] at maps
+      exact congrArg (fun m => m x) maps
+    have reversed : p = e.hom ≫ q ≫ e₁.inv := by
+      apply (cancel_mono e₁.hom).1
+      simpa only [Category.assoc, Iso.inv_hom_id, Category.comp_id] using equation.symm
+    letI : IsLocalizedModule (Submonoid.powers r) q.hom := localizes r
+    change IsLocalizedModule (Submonoid.powers r) p.hom
+    rw [reversed]
+    haveI : IsLocalizedModule (Submonoid.powers r)
+        (q.hom.comp e.toLinearEquiv.toLinearMap) :=
+      IsLocalizedModule.of_linearEquiv_right (Submonoid.powers r) q.hom e.toLinearEquiv
+    exact IsLocalizedModule.of_linearEquiv (Submonoid.powers r)
+      (q.hom.comp e.toLinearEquiv.toLinearMap) e₁.symm.toLinearEquiv
 
 end
 

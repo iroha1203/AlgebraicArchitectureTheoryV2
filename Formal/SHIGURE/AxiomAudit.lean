@@ -110,15 +110,11 @@ import Formal.SHIGURE.Part2.MinimalRing.ReverseSystem
 import Formal.SHIGURE.Part2.MinimalRing.RingDualObservation
 import Formal.SHIGURE.Part2.MinimalRing.RingReachability
 import Formal.SHIGURE.Part2.MinimalRing.Systems
-
 import Formal.SHIGURE.Part2.Schemes.ConstantRank
 import Formal.SHIGURE.Part2.Schemes.ConstantRankExamples
 import Formal.SHIGURE.Part2.Schemes.FiniteLocallyFreeDescent
 import Formal.SHIGURE.Part2.Schemes.FppfBaseMaps
 import Formal.SHIGURE.Part2.Schemes.CoreDescent
-
-/-! # SHIGURE kernel audit entry point -/
-
 import Formal.SHIGURE.Part2.Schemes.ModuleTensor
 import Formal.SHIGURE.Part2.Schemes.TensorAffine
 import Formal.SHIGURE.Part2.Schemes.TensorPullback
@@ -127,6 +123,14 @@ import Formal.SHIGURE.Part2.Schemes.AffineModuleSections
 import Formal.SHIGURE.Part2.Families.SchemeTensorStructures
 import Formal.SHIGURE.Part2.Families.SchemeSections
 import Formal.SHIGURE.Part2.Families.SchemeLaws
+import Formal.SHIGURE.Part2.Families.SchemeTensorPullback
+import Formal.SHIGURE.Part2.Families.SchemeLawLocality
+import Formal.SHIGURE.Part2.Families.AffineLawCoefficientComparison
+import Formal.SHIGURE.Part2.Families.AffineSchemeComparison
+import Formal.SHIGURE.Part2.Families.SchemeLawExamples
+
+/-! # SHIGURE kernel audit entry point -/
+
 
 namespace SHIGURE.AxiomAudit
 
@@ -5647,7 +5651,8 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.SchemeDescent.corePseudofunctor_isStack
 ]
 
--- Appendix B.3 and Definition 6.1: canonical sheaf tensor comparisons and primitive structures.
+
+-- Appendix B.3 and Definition 6.1: canonical tensor, sections and affine realization comparison.
 #shigure_assert_standard_axioms_of [
   SHIGURE.SchemeDescent.unitModule,
   SHIGURE.SchemeDescent.tensorPresheaf,
@@ -5694,14 +5699,21 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.SchemeDescent.pullbackTensorMap_comp_inv,
   SHIGURE.SchemeDescent.pullbackTensorMap_comp,
   SHIGURE.SchemeDescent.tensorModule_isQuasiCoherent,
+  SHIGURE.SchemeDescent.affineTildePullbackIso_unit_top,
   SHIGURE.SchemeDescent.affine_pullbackTensorMap_isIso,
+  SHIGURE.SchemeDescent.restrictFunctorIsoPullback_unit_eq,
   SHIGURE.SchemeDescent.pullbackTensorMap_restrict,
   SHIGURE.SchemeDescent.pullbackTensorMap_isIso_of_isOpenImmersion,
+  SHIGURE.SchemeDescent.moduleMap_isIso_of_affineNeighborhoods,
   SHIGURE.SchemeDescent.pullbackTensorMap_isIso,
   SHIGURE.SchemeDescent.quasiCoherentPullbackTensorIso,
   SHIGURE.SchemeDescent.affineModuleSectionsIso,
+  SHIGURE.SchemeDescent.affineModuleSectionsIso_hom_apply,
+  SHIGURE.SchemeDescent.affineModuleSectionsIso_naturality,
+  SHIGURE.SchemeDescent.affineModuleSectionsIso_restrict_unit,
   SHIGURE.SchemeDescent.affinePresentationSectionsIso,
   SHIGURE.SchemeDescent.affineSections_localize,
+  SHIGURE.SchemeDescent.hasTildeOn_iff_affineSections_localize,
   SHIGURE.SchemeDescent.tensorModulesMap_id,
   SHIGURE.SchemeDescent.tensorModulesMap_comp,
   SHIGURE.RealizationFamilies.SchemeTensorStructure,
@@ -5737,9 +5749,119 @@ theorem and_true_eq (p : Prop) : (p ∧ True) = p :=
   SHIGURE.RealizationFamilies.schemeRealizationProperty_carrier,
   SHIGURE.RealizationFamilies.schemeRealizationProperty_laws,
   SHIGURE.RealizationFamilies.affineSections_finiteLocallyFreeOfRank,
-  SHIGURE.RealizationFamilies.schemeRealizationProperty_affine
+  SHIGURE.RealizationFamilies.schemeRealizationProperty_affine,
+  SHIGURE.RealizationFamilies.unitModulePullbackIso,
+  SHIGURE.RealizationFamilies.unitModulePullbackIso_hom,
+  SHIGURE.RealizationFamilies.unitModulePullbackIso_homEquiv,
+  SHIGURE.RealizationFamilies.unitModule_isQuasiCoherent,
+  SHIGURE.RealizationFamilies.tensorModules_isQuasiCoherent,
+  SHIGURE.RealizationFamilies.tensorModulesPullbackIso,
+  SHIGURE.RealizationFamilies.tensorModulesPullbackIso_naturality,
+  SHIGURE.RealizationFamilies.unitModulePullbackIso_id,
+  SHIGURE.RealizationFamilies.tensorModulesPullbackIso_id,
+  SHIGURE.RealizationFamilies.unitModulePullbackIso_comp,
+  SHIGURE.RealizationFamilies.tensorModulesPullbackIso_comp,
+  SHIGURE.RealizationFamilies.sectionBaseMap_appLE,
+  SHIGURE.RealizationFamilies.coefficient_eq_zero_of_powers_cover,
+  SHIGURE.RealizationFamilies.coefficient_eq_zero_of_localizations,
+  SHIGURE.RealizationFamilies.coefficient_cover_map,
+  SHIGURE.RealizationFamilies.tensorStructureIsoOnSort,
+  SHIGURE.RealizationFamilies.TensorLaw.holds_iff_of_iso,
+  SHIGURE.RealizationFamilies.TensorLaw.holds_of_principal_cover,
+  SHIGURE.RealizationFamilies.sectionTensorMap_naturality,
+  SHIGURE.RealizationFamilies.pureTensorSections_naturality,
+  SHIGURE.RealizationFamilies.sectionsStructureMap,
+  SHIGURE.RealizationFamilies.sectionsStructureFunctor,
+  SHIGURE.RealizationFamilies.PolynomialLaw.eval_eq_of_holds,
+  SHIGURE.RealizationFamilies.PolynomialTerm.eval_unit,
+  SHIGURE.RealizationFamilies.PolynomialTerm.eval_mapCoefficients,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_of_principal_cover,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_sections_iff_of_iso,
+  SHIGURE.RealizationFamilies.SatisfiesSchemeLaws.iff_of_iso,
+  SHIGURE.RealizationFamilies.PolynomialTerm.eval_sections_restrict,
+  SHIGURE.RealizationFamilies.moduleSections_eq_of_locally_eq,
+  SHIGURE.RealizationFamilies.PolynomialLaw.eval_eq_of_locally_eq,
+  SHIGURE.RealizationFamilies.SatisfiesSchemeLaws.polynomial_eval,
+  SHIGURE.RealizationFamilies.tensorExpression_mapScalars_id,
+  SHIGURE.RealizationFamilies.tensorLaw_mapScalars_id,
+  SHIGURE.RealizationFamilies.TensorLaw.holds_iff_baseChange_ringEquiv,
+  SHIGURE.RealizationFamilies.PolynomialLaw.holds_iff_baseChange_ringEquiv,
+  SHIGURE.RealizationFamilies.affineProperty_iff_of_iso,
+  SHIGURE.RealizationFamilies.affineProperty_of_baseChange_ringEquiv,
+  SHIGURE.RealizationFamilies.tildeInputIso,
+  SHIGURE.RealizationFamilies.tildeInputIso_hom_cons,
+  SHIGURE.RealizationFamilies.inputTensorMap,
+  SHIGURE.RealizationFamilies.inputTensorMap_nil,
+  SHIGURE.RealizationFamilies.inputTensorMap_cons,
+  SHIGURE.RealizationFamilies.inputTensorMap_nil_inv,
+  SHIGURE.RealizationFamilies.inputTensorMap_cons_inv,
+  SHIGURE.RealizationFamilies.tildeInputIso_naturality,
+  SHIGURE.RealizationFamilies.tildeOperation,
+  SHIGURE.RealizationFamilies.tildeOperationEquiv,
+  SHIGURE.RealizationFamilies.tildeOperation_naturality,
+  SHIGURE.RealizationFamilies.tildeOperation_preserves_iff,
+  SHIGURE.RealizationFamilies.tildeStructure,
+  SHIGURE.RealizationFamilies.tildeStructureMap,
+  SHIGURE.RealizationFamilies.tildeStructureFunctor,
+  SHIGURE.RealizationFamilies.tildeStructureFullyFaithful,
+  SHIGURE.RealizationFamilies.SchemeTensorStructure.isoOfCarrierIso,
+  SHIGURE.RealizationFamilies.coefficientStructureOfTilde,
+  SHIGURE.RealizationFamilies.coefficientStructureOfTildeIso,
+  SHIGURE.RealizationFamilies.tildeStructure_essImage,
+  SHIGURE.RealizationFamilies.affineModule_tilde_essImage,
+  SHIGURE.RealizationFamilies.affineOpenCoefficientMap,
+  SHIGURE.RealizationFamilies.affineOpenCoefficientMap_eq_algebraMap,
+  SHIGURE.RealizationFamilies.affineOpenCoefficientMap_fromSpec,
+  SHIGURE.RealizationFamilies.affineTildePresentationOfMap,
+  SHIGURE.RealizationFamilies.affineTildeSectionsIsoOfMap,
+  SHIGURE.RealizationFamilies.affineOpenTildePresentation,
+  SHIGURE.RealizationFamilies.affineOpenTildeSectionsIso,
+  SHIGURE.RealizationFamilies.affineOpenTensorSectionsIso,
+  SHIGURE.RealizationFamilies.tildeStructure_essImage_of_quasiCoherent,
+  SHIGURE.RealizationFamilies.tilde_map_toOpen,
+  SHIGURE.RealizationFamilies.tilde_toOpen_restrict,
+  SHIGURE.RealizationFamilies.moduleSheaf_comp_apply,
+  SHIGURE.RealizationFamilies.moduleSheaf_id_apply,
+  SHIGURE.RealizationFamilies.tildeRestrictIso_unit_top,
+  SHIGURE.RealizationFamilies.moduleSheafIso_inv_apply_of_hom,
+  SHIGURE.RealizationFamilies.tildeRestrictIso_inv_unit_top,
+  SHIGURE.RealizationFamilies.restrictFunctorCongr_unit_top,
+  SHIGURE.RealizationFamilies.affinePresentationSectionsIso_apply,
+  SHIGURE.RealizationFamilies.affinePresentationSectionsIso_unit_core,
+  SHIGURE.RealizationFamilies.affineTildeSectionsIsoOfMap_unit,
+  SHIGURE.RealizationFamilies.affineOpenTildeSectionsIso_unit,
+  SHIGURE.RealizationFamilies.moduleIso_symm_trans_hom_apply,
+  SHIGURE.RealizationFamilies.affineOpenTensorSectionsIso_unit,
+  SHIGURE.RealizationFamilies.tildeInputIso_pureTensorSections,
+  SHIGURE.RealizationFamilies.tildeOperation_sections,
+  SHIGURE.RealizationFamilies.tildeOperation_sections_top,
+  SHIGURE.RealizationFamilies.tildeOperation_sections_open,
+  SHIGURE.RealizationFamilies.multilinear_extension_preserves_of_units,
+  SHIGURE.RealizationFamilies.affineOpenOperation_preserves,
+  SHIGURE.RealizationFamilies.affineOpenSectionsStructureMap,
+  SHIGURE.RealizationFamilies.tensorStructureIsoOfModuleIso,
+  SHIGURE.RealizationFamilies.affineOpenSectionsStructureIso,
+  SHIGURE.RealizationFamilies.sectionBaseMap_affine,
+  SHIGURE.RealizationFamilies.schemeRealizationProperty_tilde,
+  SHIGURE.RealizationFamilies.affineOpenCoefficientMap_top,
+  SHIGURE.RealizationFamilies.affineProperty_of_schemeRealizationProperty_tilde,
+  SHIGURE.RealizationFamilies.schemeTensorCarrierIso,
+  SHIGURE.RealizationFamilies.schemeRealizationProperty_of_iso,
+  SHIGURE.RealizationFamilies.affineSchemeRealizationFunctor,
+  SHIGURE.RealizationFamilies.affineSchemeRealizationFullyFaithful,
+  SHIGURE.RealizationFamilies.affineSchemeRealization_essSurj,
+  SHIGURE.RealizationFamilies.affineSchemeRealizationEquivalence,
+  SHIGURE.RealizationFamilies.affineSchemeRealizationEquivalence_carrier,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.sectionSignature,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.vanishingSectionLaw,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.vanishingSectionLaws,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.sectionStructure,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.sectionStructure_rank_one,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.zeroSection_satisfiesSchemeLaws,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.identitySection_not_satisfiesSchemeLaws,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.zeroSection_schemeRealizationProperty,
+  SHIGURE.RealizationFamilies.SchemeLawExamples.identitySection_not_schemeRealizationProperty
 ]
-
 end SHIGURE.AxiomAudit
 
 #shigure_assert_standard_axioms_only SHIGURE.AxiomAudit
